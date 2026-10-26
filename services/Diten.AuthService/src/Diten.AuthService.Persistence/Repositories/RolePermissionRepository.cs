@@ -48,9 +48,34 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
         }
         catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
-            // The unique (role, permission, tenant) index: the role already holds it. Said in the Application's own words.
+            // The unique (role, permission, tenant) index is not partial: a SOFT-DELETED grant (Q358 clean-up) still owns
+            // the slot. Granting it again revives that document with the new grant's source — only while it is still
+            // deleted, so a live grant (or a second writer that revived it first) stays the duplicate it is.
+            if (await ReactivateAsync(rolePermission, ct)) return;
+
+            // The role already holds it. Said in the Application's own words.
             throw new DuplicateRolePermissionException(rolePermission.RoleId, rolePermission.PermissionId, ex);
         }
+    }
+
+    private async Task<bool> ReactivateAsync(RolePermission rolePermission, CancellationToken ct)
+    {
+        var filter = Builders<RolePermission>.Filter.And(
+            Builders<RolePermission>.Filter.Eq(rp => rp.RoleId, rolePermission.RoleId),
+            Builders<RolePermission>.Filter.Eq(rp => rp.PermissionId, rolePermission.PermissionId),
+            Builders<RolePermission>.Filter.Eq(rp => rp.TenantId, rolePermission.TenantId),
+            Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, true));
+        var update = Builders<RolePermission>.Update
+            .Set(rp => rp.IsDeleted, false)
+            .Set(rp => rp.DeletedAt, null)
+            .Set(rp => rp.GrantSource, rolePermission.GrantSource)
+            .Set(rp => rp.SourceModuleCode, rolePermission.SourceModuleCode)
+            .Set(rp => rp.AssignedAt, rolePermission.AssignedAt)
+            .Set(rp => rp.AssignedBy, rolePermission.AssignedBy)
+            .Set(rp => rp.UpdatedAt, DateTimeOffset.UtcNow)
+            .Set(rp => rp.UpdatedBy, rolePermission.AssignedBy);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
     }
 
     public async Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct)

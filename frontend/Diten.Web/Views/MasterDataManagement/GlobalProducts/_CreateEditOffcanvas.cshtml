@@ -16,7 +16,7 @@
         <form id="formGlobalProduct" class="pt-0" novalidate>
             @Html.AntiForgeryToken()
             <div class="row g-4">
-                <div class="col-12">
+                <div class="col-12" id="globalProductNameField">
                     <label for="globalProductName" class="form-label fw-medium">
                         @Localizer["GlobalProductName"] <span class="text-danger">*</span>
                     </label>
@@ -27,6 +27,16 @@
                     </div>
                     <div class="invalid-feedback">@Localizer["GlobalProductNameRequired"]</div>
                     <div class="form-text">@Localizer["GlobalProductNameHelp"]</div>
+                </div>
+                @* MOD-0290-FU05: the optional brand — only linkable brands (MDM brand-options through the proxy). The field is
+                   always sent; the empty option means "no brand". *@
+                <div class="col-12" id="globalProductBrandField">
+                    <label for="globalProductBrand" class="form-label fw-medium">@Localizer["Brand"]</label>
+                    <select id="globalProductBrand" name="BrandId" class="form-select select2"
+                            data-placeholder="@Localizer["BrandNone"]">
+                        <option value="">@Localizer["BrandNone"]</option>
+                    </select>
+                    <div class="form-text">@Localizer["BrandHelp"]</div>
                 </div>
             </div>
         </form>

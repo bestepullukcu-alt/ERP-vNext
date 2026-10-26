@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- WP-AUTH-ADMIN-BOOTSTRAP-01 (BL-534 + BL-556) — a new environment's FIRST platform administrator: the Auth account
+         and the Platform record under one id, with a one-time set-password link and no password. Each half is written by
+         its own service's code (Auth Persistence FirstPlatformAdministratorAccount, Platform Infrastructure
+         FirstPlatformAdministratorRecord); the link is made and hashed by Auth's production classes. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Diten.AuthService.FirstPlatformAdministrator</RootNamespace>
+        <AssemblyName>Diten.AuthService.FirstPlatformAdministrator</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
+        <ProjectReference Include="..\..\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\Diten.Platform\src\Diten.Platform.Infrastructure\Diten.Platform.Infrastructure.csproj" />
+        <ProjectReference Include="..\Diten.AuthService.ServiceClientCredentialGenerator\Diten.AuthService.ServiceClientCredentialGenerator.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -10,5 +10,7 @@
     Context.Items["QuarantineL10nRendered"] = true;
     <script id="quarantine-l10n" type="application/json">@Json.Serialize(Diten.Web.Views.Quarantine.Quarantine.Keys.ToDictionary(k => k, k => Localizer[k].Value))</script>
     <script src="~/assets/js/Quarantine/quarantine.l10n.js" asp-append-version="true"></script>
+    @* D-KAR-1 (2026-10-19, A): the ONE person rule of MVP-1 (people.js — name, else "unknown user", the id only as the title) *@
+    <script src="~/assets/js/Inventory/StockMovements/people.js" asp-append-version="true"></script>
     <script src="~/assets/js/Quarantine/quarantine-ui.js" asp-append-version="true"></script>
 }

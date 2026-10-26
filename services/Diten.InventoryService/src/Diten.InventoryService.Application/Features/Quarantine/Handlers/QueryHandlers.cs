@@ -18,12 +18,25 @@ public sealed class QuarantineReads
 {
     private readonly IQuarantineDecisionRepository _decisions;
     private readonly IQuarantineLedgerReader _ledger;
+    private readonly Common.IAuditActorNames _names;
+    private readonly Common.ITenantContext _tenant;
 
-    public QuarantineReads(IQuarantineDecisionRepository decisions, IQuarantineLedgerReader ledger)
+    public QuarantineReads(IQuarantineDecisionRepository decisions, IQuarantineLedgerReader ledger, Common.IAuditActorNames names, Common.ITenantContext tenant)
     {
         _decisions = decisions;
         _ledger = ledger;
+        _names = names;
+        _tenant = tenant;
     }
+
+    /// <summary>
+    /// WP-MVP1-NAMES1 — the name AT THE TIME of each posting of a trail (<c>MovementLink.byUserName</c>): the central audit queue's display
+    /// name of the posting correlation and the posting user, this company only — ONE read for all the movements; none recorded → absent.
+    /// </summary>
+    public Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> PostingNamesAsync(
+        IReadOnlyList<Diten.InventoryService.Domain.Entities.InventoryTransaction> movements, CancellationToken ct)
+        => _names.NamesAsync(Inventory.InventoryMapping.QueueKeys(movements),
+            _tenant.LegalEntityId, ct);
 
     public async Task<IReadOnlyDictionary<Guid, (QuarantineDecision Decision, DecisionState State)>> ActiveAsync(
         IEnumerable<Guid?> activeIds, CancellationToken ct)
@@ -192,7 +205,7 @@ public sealed class GetHoldHandler : IRequestHandler<GetHoldQuery, Response<Hold
         var history = await _repository.HistoryAsync(HistorySubject.Hold, hold.Id, ct);
         var source = hold.SourceMovementId is { } s && Guid.TryParse(s, out var tx) ? [tx] : Array.Empty<Guid>();
         var (decisions, movements) = await _reads.TrailAsync(hold.Id, [hold.HoldNumber], source, ct);
-        return Response<HoldDetailDto>.Success(QuarantineMapping.HoldDetail(head, hold, history, movements, decisions));
+        return Response<HoldDetailDto>.Success(QuarantineMapping.HoldDetail(head, hold, history, movements, decisions, await _reads.PostingNamesAsync(movements, ct)));
     }
 }
 
@@ -313,6 +326,7 @@ public sealed class GetBlockedHandler : IRequestHandler<GetBlockedQuery, Respons
         var history = await _repository.HistoryAsync(HistorySubject.Blocked, blocked.Id, ct);
         var source = blocked.SourceMovementId is { } s && Guid.TryParse(s, out var tx) ? [tx] : Array.Empty<Guid>();
         var (decisions, movements) = await _reads.TrailAsync(blocked.Id, [blocked.BlockedNumber], source, ct);
+        var names = await _reads.PostingNamesAsync(movements, ct);
         return Response<BlockedStockDetailDto>.Success(new BlockedStockDetailDto
         {
             BlockedId = head.BlockedId,
@@ -336,7 +350,7 @@ public sealed class GetBlockedHandler : IRequestHandler<GetBlockedQuery, Respons
             ActiveDecision = head.ActiveDecision,
             Version = head.Version,
             History = history.Select(QuarantineMapping.History).ToList(),
-            Movements = movements.Select(QuarantineMapping.Movement).ToList(),
+            Movements = movements.Select(t => QuarantineMapping.Movement(t, names)).ToList(),
             Decisions = decisions
         });
     }

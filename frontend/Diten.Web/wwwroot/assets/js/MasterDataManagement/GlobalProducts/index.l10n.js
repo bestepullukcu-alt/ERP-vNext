@@ -4,7 +4,8 @@
     const payload = document.getElementById('globalproducts-l10n');
     const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
     const requiredKeys = [
-        'Actions', 'Active', 'AddNew', 'Apply', 'AreYouSure', 'Cancel', 'ColumnVisibility',
+        'Actions', 'Active', 'AddNew', 'Apply', 'AreYouSure', 'Brand', 'BrandNone', 'BrandUnchanged', 'Cancel', 'ChangeBrand',
+        'ChangeBrandConfirmation', 'ChangeBrandSuccess', 'ColumnVisibility',
         'ComingSoon', 'CreateConfirmation', 'CreateSuccessWithCode', 'Details',
         'ErrorConflict', 'ErrorForbidden', 'ErrorGateway', 'ErrorNotFound',
         'ErrorUnauthorized', 'ErrorValidation', 'Export', 'Filter', 'FormTitleCreate',

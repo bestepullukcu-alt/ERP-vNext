@@ -63,6 +63,12 @@ gelir ve Control Tower kararıdır.
 Sebep: her yeni üst klasör, "belgem nereye gider" sorusunu bir dal daha
 karmaşıklaştırır ve karmaşıklaşan kural delinir.
 
+> **Kayıtlı istisna — `docs/analysis/contracts/`.** Dondurulmuş API sözleşmelerinin geçerli yeri burasıdır (sahip
+> kararı 4c). **Neden taşınmadı:** 33 sözleşme dosyası; `docs/` dışında 35 dosyada 112 atıf (belgeler dahil 2341;
+> `git grep`, origin/main `50a9f6534`) ve bütün aktif MVP'ler bu yolu okuyor — taşımak hepsini aynı anda kırar (K8).
+> **Ne zaman:** kalıcı yer ile `docs/analysis/` ve `docs/decisions/` düzeni, bütün MVP'ler bittikten sonra merkezî
+> temizlik işinde belirlenir.
+
 **K3 · Her klasörün bir kırılım ekseni olmalı.** Eksen klasöre göre değişir:
 `audits/` **tarih** (`yyyy-mm`), `analysis/` **konu**, `modules/`
 **platform/tenant → modül**, `vendor/` **teslimat paketi**.

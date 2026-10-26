@@ -41,9 +41,26 @@ public class LotRefDto
     public bool RetestDue { get; init; }
     public string TrackingMode { get; init; } = string.Empty;
 
+    // TRACE 1.4.0 (MOD-0176 KF-D) — present only when the lot has them.
+    public string? SuggestedExpiryDate { get; init; }
+    public string? SuggestedRetestDate { get; init; }
+    public LotExpiryOverrideDto? ExpiryOverride { get; init; }
+
     /// <summary>Not on the wire body: the controller turns it into the <c>ETag: W/"n"</c> header.</summary>
     [JsonIgnore]
     public int? ETagVersion { get; init; }
+}
+
+/// <summary>TRACE 1.4.0 <c>LotExpiryOverride</c> (MOD-0176 KF-D): the override the lot dates were set with — a signature REFERENCE only.</summary>
+public sealed class LotExpiryOverrideDto
+{
+    public string OverrideId { get; init; } = string.Empty;
+    public string Reason { get; init; } = string.Empty;
+    public string? SignatureId { get; init; }
+    public string? SuggestedExpiry { get; init; }
+    public string? SuggestedRetest { get; init; }
+    public string By { get; init; } = string.Empty;
+    public string AtUtc { get; init; } = string.Empty;
 }
 
 /// <summary>Contract <c>LotDetail</c> (v1.1) = LotRef members + source + serialCount.</summary>
@@ -230,7 +247,16 @@ public static class TraceMapping
         ExpiryState = LotDateRules.ExpiryState(Day(lot.ExpiryDate), today),
         RetestDue = LotDateRules.RetestDue(Day(lot.RetestDate), today),
         TrackingMode = lot.TrackingMode.ToString(),
-        ETagVersion = withETag ? lot.Version : null
+        ETagVersion = withETag ? lot.Version : null,
+        SuggestedExpiryDate = Wire(lot.SuggestedExpiryDate),
+        SuggestedRetestDate = Wire(lot.SuggestedRetestDate),
+        ExpiryOverride = lot.ExpiryOverride is { } o
+            ? new LotExpiryOverrideDto
+            {
+                OverrideId = Id(o.OverrideId), Reason = o.Reason, SignatureId = o.SignatureId, SuggestedExpiry = Wire(o.SuggestedExpiry),
+                SuggestedRetest = Wire(o.SuggestedRetest), By = Id(o.By), AtUtc = Wire(o.AtUtc)!
+            }
+            : null
     };
 
     public static LotDetailDto ToDetail(Lot lot, DateOnly today, LotSourceDto? source, long serialCount, LotPosition? stock = null)
@@ -244,6 +270,7 @@ public static class TraceMapping
             RetestDate = r.RetestDate, CountryOfOrigin = r.CountryOfOrigin, Status = r.Status, CoaReference = r.CoaReference,
             SkuId = r.SkuId, SkuLevel = r.SkuLevel, Version = r.Version, LegalEntityId = r.LegalEntityId,
             ExpiryState = r.ExpiryState, RetestDue = r.RetestDue, TrackingMode = r.TrackingMode, ETagVersion = r.ETagVersion,
+            SuggestedExpiryDate = r.SuggestedExpiryDate, SuggestedRetestDate = r.SuggestedRetestDate, ExpiryOverride = r.ExpiryOverride,
             Source = source,
             SerialCount = serialCount
         };

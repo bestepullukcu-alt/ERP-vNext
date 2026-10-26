@@ -58,6 +58,7 @@ public sealed class PositionAssignmentDatesMongoFixture : IAsyncLifetime
 /// fields of one compound index are arrays ("cannot index parallel arrays"): an index holding both dates makes every
 /// seat with an end date unwritable — the open seat (no end) saves, ending it fails.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PositionAssignmentDatesMongoTests(PositionAssignmentDatesMongoFixture mongo)
     : IClassFixture<PositionAssignmentDatesMongoFixture>
 {

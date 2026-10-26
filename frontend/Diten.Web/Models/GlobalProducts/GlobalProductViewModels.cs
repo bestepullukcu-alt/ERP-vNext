@@ -7,6 +7,10 @@ public sealed class CreateGlobalProductViewModel
     [Required]
     [StringLength(200)]
     public string GlobalProductName { get; set; } = string.Empty;
+
+    // MOD-0290-FU05: the optional brand (empty = none). The controller reads the raw form value: a malformed id is a
+    // 400, never a silently dropped brand.
+    public Guid? BrandId { get; set; }
 }
 
 public class GlobalProductListItemViewModel
@@ -15,6 +19,10 @@ public class GlobalProductListItemViewModel
     public string CanonicalCode { get; set; } = string.Empty;
     public string GlobalProductName { get; set; } = string.Empty;
     public string LifecycleStatus { get; set; } = string.Empty;
+    // MOD-0290-FU05 (Karar b): the brand as MDM reads it now — all three null without a brand.
+    public Guid? BrandId { get; set; }
+    public string? BrandCode { get; set; }
+    public string? BrandName { get; set; }
 }
 
 public sealed class GlobalProductDetailViewModel : GlobalProductListItemViewModel
@@ -29,6 +37,9 @@ public sealed class GlobalProductSelectorItemViewModel
     public Guid Id { get; set; }
     public string CanonicalCode { get; set; } = string.Empty;
     public string GlobalProductName { get; set; } = string.Empty;
+    public Guid? BrandId { get; set; }
+    public string? BrandCode { get; set; }
+    public string? BrandName { get; set; }
 }
 
 public sealed class PagedResultViewModel<T>
@@ -53,6 +64,9 @@ public sealed class GlobalProductDraftViewModel
     public string GlobalProductName { get; set; } = string.Empty;
     public string LifecycleStatus { get; set; } = string.Empty;
     public int Version { get; set; }
+    public Guid? BrandId { get; set; }
+    public string? BrandCode { get; set; }
+    public string? BrandName { get; set; }
 }
 
 public sealed class GatewayResponse<T>

@@ -139,9 +139,7 @@ public sealed class WorkflowController : Controller
 
     private async Task<IActionResult> ProxyWorkflowAsync(string? relativePath)
     {
-        var targetPath = string.IsNullOrWhiteSpace(relativePath)
-            ? "/api/v1/workflow"
-            : $"/api/v1/workflow/{relativePath.TrimStart('/')}";
+        if (!Diten.Web.Services.Proxy.ProxyPath.TryBuild("/api/v1/workflow", relativePath, out var targetPath, out var refused)) return Diten.Web.Services.Proxy.ProxyPath.Refusal(refused); // WP-MVP1-SEC-PROXY1
 
         return await ProxyGatewayAsync(targetPath);
     }

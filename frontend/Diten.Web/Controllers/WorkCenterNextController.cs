@@ -11,7 +11,7 @@ namespace Diten.Web.Controllers;
 // WorkCenterNext — the Görev Merkezi / Task Center tenant surface (spec: docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md).
 // WC-1b: the page is fed by the REAL work-item projection through a SAME-ORIGIN proxy — the browser never talks
 // to a service port, and the JWT is read server-side from the HTTP-only auth cookie (never exposed to JS).
-// The legacy /WorkCenter route is left untouched for comparison + rollback.
+// The old mock /WorkCenter page was removed (BL-619); its URLs permanently redirect here (Program.cs).
 [Authorize]
 public class WorkCenterNextController : Controller
 {

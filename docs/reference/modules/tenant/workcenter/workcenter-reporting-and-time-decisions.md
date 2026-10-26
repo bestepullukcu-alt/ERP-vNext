@@ -1,3 +1,5 @@
+> **Removed 2026-10-16 (BL-619):** the old mock Task Center page `/WorkCenter` (its controller, views, scripts and mock API) is gone; its URLs permanently redirect to `/WorkCenterNext`. Mentions of `/WorkCenter` files below are historical — see `/WorkCenterNext`.
+
 # İş Raporu ve Zaman Takibi — Karar Kaydı
 
 MOD-0024 (Görev Merkezi motoru) · 2026-09-03 · CONTROL TOWER

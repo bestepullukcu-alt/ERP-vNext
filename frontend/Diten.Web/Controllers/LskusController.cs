@@ -422,7 +422,15 @@ public sealed class LskusController : Controller
         // S5b-FIX3: a submit refused while its withdrawal is under way is finished by re-sending the withdrawal (as GSKU).
         ["LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY"] = "ErrorSubmitDuringWithdrawal",
         // MOD-0290-FU04 S3b (R-04): its serial flag and its GSKU's lot flag must be set before it is sent for approval.
-        ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired"
+        ["STOCK_FLAGS_REQUIRED_FOR_APPROVAL"] = "ErrorStockFlagsRequired",
+        // WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity family's maker codes that reach this screen as a 409
+        // (ProductIdentityWorkflowMakerCodes.StatusFor) — the GSKU screen's sentences, and the new one: nobody but
+        // the maker may approve (segregation of duties) — the administrator adjusts the approvers, then resubmit.
+        ["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"] = "ErrorApprovalSetupIncomplete",
+        ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "ErrorApprovalSetupIncomplete",
+        ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "ErrorApprovalResubmit",
+        ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "ErrorApprovalChanging",
+        ["PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"] = "ErrorNoEligibleApprover"
     };
 
     private static readonly IReadOnlyDictionary<string, string> StockFlagLabels = new Dictionary<string, string>(StringComparer.Ordinal)

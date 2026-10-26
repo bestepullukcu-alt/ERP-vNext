@@ -152,6 +152,8 @@
                             </div>
                             <div class="invalid-feedback d-block" data-error-for="retestDate"></div>
                         </div>
+                        @* WP-0176-F5: the date suggestion / override band (KF-D) *@
+                        <partial name="~/Views/Shared/Expiry/_DateOverrideBand.cshtml" model="@("lot")" />
                         <div class="col-12 col-md-6">
                             <label for="lotCoa" class="form-label fw-medium">@Localizer["Form.Coa"]</label>
                             <div class="diten-field">
@@ -207,3 +209,5 @@
         </div>
     </div>
 </form>
+@* WP-0176-F5: the bands' vocabulary, token, MOD-0022 dialog and script (rendered once) *@
+<partial name="~/Views/Shared/Expiry/_ExpiryBandAssets.cshtml" />

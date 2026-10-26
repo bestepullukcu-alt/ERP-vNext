@@ -14,7 +14,9 @@ namespace Diten.InventoryService.Domain.Traceability.Rules;
 /// An inbound serial without a row is created. False only for a REVERSAL: it restores the serials of its original that
 /// the registry knows, and never creates a serial the original did not register.
 /// </param>
-public sealed record LotPostingContext(bool SerialLifecycle, bool AcceptUnregisteredSerials, bool RegisterNewSerials)
+/// <param name="Expiry">MOD-0176 F2 (CT-F2): what the expiry pre-check decided for the in-transaction re-check; null = no expiry hook.</param>
+public sealed record LotPostingContext(bool SerialLifecycle, bool AcceptUnregisteredSerials, bool RegisterNewSerials,
+    Expiry.Rules.ExpiryPostingInput? Expiry = null)
 {
     /// <summary>A REVERSAL: re-run the serial lifecycle of its original on the serials the registry knows.</summary>
     public static LotPostingContext ForReversal(bool hasSerials) => new(hasSerials, AcceptUnregisteredSerials: true, RegisterNewSerials: false);

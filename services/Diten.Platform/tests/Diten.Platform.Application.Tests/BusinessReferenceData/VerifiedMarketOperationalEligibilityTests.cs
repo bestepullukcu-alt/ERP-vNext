@@ -1,6 +1,7 @@
 using Diten.Platform.API.Configuration;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +14,13 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 [Collection(VerifiedMarketOperationalEnvironmentCollection.Name)]
 public sealed class VerifiedMarketOperationalEligibilityTests
 {
+    /// <summary>WP-PLT-MARKET-REFTENANT-01 — the Development reference tenant (appsettings.Development.json
+    /// BusinessReferenceData:Provider:ReferenceTenantId), the tenant the tests run the Market path under.</summary>
+    internal const string DevReferenceTenantId = "0b7d0048-0290-4000-8000-000000000001";
+
+    /// <summary>The Development GSKU consumer tenant (BusinessReferenceData:VerifiedGskuOperationalProvisioning:ConsumerTenantId).</summary>
+    internal const string GskuConsumerTenantId = "97c59330-dbc4-4665-b29c-0c26dbb5cc93";
+
     [Fact]
     public void Enabled_DefaultsFalse() => Assert.False(new VerifiedMarketOperationalProvisioningOptions().Enabled);
 
@@ -28,7 +36,7 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         Assert.True(decision.IsEligible);
         Assert.NotNull(decision.Authorization);
         Assert.NotNull(decision.Facts);
-        Assert.Equal(Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId), decision.Facts.ReferenceTenantId);
+        Assert.Equal(Guid.Parse(DevReferenceTenantId), decision.Facts.ReferenceTenantId); // the configured tenant, not a lock
         Assert.Equal(VerifiedMarketOperationalProvisioningOptions.LockedActorId, decision.Facts.ActorId);
         Assert.Equal("market-run", decision.Facts.IdempotencyNamespace);
         Assert.True(sut.IsAuthorized(decision.Authorization, decision.Facts));
@@ -111,16 +119,74 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         Assert.Null(decision.Authorization);
     }
 
+    // (b) The process names a reference tenant the configuration does not: refused as missing provenance (the one match).
     [Fact]
-    public async Task NonLockedReferenceTenant_IsFailClosed()
+    public async Task ProcessReferenceTenantDifferentFromConfiguration_IsRefused()
+    {
+        var options = Valid();
+        var process = ProcessValues(options);
+        process[VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey] = Guid.NewGuid().ToString();
+        using var environment = TemporaryProcessEnvironment.Apply(process);
+
+        var decision = await Create(options).EvaluateAsync();
+
+        Assert.False(decision.IsEligible);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_PROCESS_PROVENANCE_REQUIRED", decision.ReasonCode);
+        Assert.Null(decision.Authorization);
+    }
+
+    // (c) The platform system tenant as the reference tenant, named consistently by configuration and process: refused.
+    // (d) The GSKU consumer tenant as the reference tenant: refused with the same reason (MOD-0048-FU01: consumer ≠ reference).
+    [Theory]
+    [InlineData("system")]
+    [InlineData("gsku-consumer")]
+    public async Task SystemOrGskuConsumerTenantAsReference_IsRefusedAsReferenceTenantInvalid(string which)
+    {
+        var tenant = which == "system" ? SystemTenantRules.PlatformSystemTenantId.ToString() : GskuConsumerTenantId;
+        var options = Valid();
+        using var environment = TemporaryProcessEnvironment.Apply(ProcessValues(options, tenant));
+
+        var decision = await Create(options, tenant: tenant).EvaluateAsync();
+
+        Assert.False(decision.IsEligible);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID", decision.ReasonCode);
+        Assert.Null(decision.Facts);
+        Assert.Null(decision.Authorization);
+    }
+
+    // An empty reference tenant (configured and named as such) is refused with the same reason.
+    [Fact]
+    public async Task EmptyReferenceTenant_IsRefusedAsReferenceTenantInvalid()
+    {
+        var options = Valid();
+        var empty = Guid.Empty.ToString();
+        using var environment = TemporaryProcessEnvironment.Apply(ProcessValues(options, empty));
+
+        var decision = await Create(options, tenant: empty).EvaluateAsync();
+
+        Assert.False(decision.IsEligible);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID", decision.ReasonCode);
+    }
+
+    // (e) Production with EVERY process value exact: refused by the environment, by that reason, before anything else.
+    [Fact]
+    public async Task Production_WithEveryProcessValueExact_IsRefusedAsEnvironmentNotAllowed()
     {
         var options = Valid();
         using var environment = TemporaryProcessEnvironment.Apply(ProcessValues(options));
 
-        var decision = await Create(options, tenant: Guid.NewGuid()).EvaluateAsync();
+        var decision = await Create(options, "Production").EvaluateAsync();
 
         Assert.False(decision.IsEligible);
-        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_CONFIGURATION_INVALID", decision.ReasonCode);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_ENVIRONMENT_NOT_ALLOWED", decision.ReasonCode);
+        Assert.Null(decision.Authorization);
+    }
+
+    // (f) The actor lock is unchanged: the canonical Platform Administrator, nothing else.
+    [Fact]
+    public void ActorLock_IsTheCanonicalPlatformAdministrator()
+    {
+        Assert.Equal("11111111-1111-1111-1111-111111111111", VerifiedMarketOperationalProvisioningOptions.LockedActorId);
     }
 
     [Theory]
@@ -181,7 +247,9 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         IdempotencyNamespace = "market-run"
     };
 
-    internal static Dictionary<string, string?> ProcessValues(VerifiedMarketOperationalProvisioningOptions options) => new(StringComparer.Ordinal)
+    internal static Dictionary<string, string?> ProcessValues(
+        VerifiedMarketOperationalProvisioningOptions options,
+        string referenceTenantId = DevReferenceTenantId) => new(StringComparer.Ordinal)
     {
         [VerifiedMarketOperationalProvisioningOptions.EnabledEnvironmentKey] = options.Enabled ? "true" : "false",
         [VerifiedMarketOperationalProvisioningOptions.CatalogPathEnvironmentKey] = options.CatalogPath,
@@ -190,10 +258,12 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         [VerifiedMarketOperationalProvisioningOptions.ActorIdEnvironmentKey] = options.ActorId,
         [VerifiedMarketOperationalProvisioningOptions.IdempotencyNamespaceEnvironmentKey] = options.IdempotencyNamespace,
         [VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey] = "false",
-        [VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey] = VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId
+        [VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey] = referenceTenantId
     };
 
-    internal static IConfigurationRoot Configuration(VerifiedMarketOperationalProvisioningOptions options) =>
+    internal static IConfigurationRoot Configuration(
+        VerifiedMarketOperationalProvisioningOptions options,
+        string referenceTenantId = DevReferenceTenantId) =>
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -204,26 +274,26 @@ public sealed class VerifiedMarketOperationalEligibilityTests
                 [$"{VerifiedMarketOperationalProvisioningOptions.SectionName}:ActorId"] = options.ActorId,
                 [$"{VerifiedMarketOperationalProvisioningOptions.SectionName}:IdempotencyNamespace"] = options.IdempotencyNamespace,
                 ["BusinessReferenceData:CatalogLoad:Enabled"] = "false",
-                [$"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId"] = VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId
+                [$"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId"] = referenceTenantId
             })
             .Build();
 
+    /// <param name="tenant">The reference tenant, the SAME value in the configuration and the resolved provider options (as
+    /// the host binds both from one configuration).</param>
     private static DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility Create(
         VerifiedMarketOperationalProvisioningOptions options,
         string environmentName = "Development",
-        Guid? tenant = null,
+        string tenant = DevReferenceTenantId,
         IConfiguration? configuration = null)
     {
         var host = new Mock<IHostEnvironment>();
         host.SetupGet(x => x.EnvironmentName).Returns(environmentName);
         return new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
             host.Object,
-            configuration ?? Configuration(options),
+            configuration ?? Configuration(options, tenant),
             Options.Create(options),
-            Options.Create(new BusinessReferenceDataProviderOptions
-            {
-                ReferenceTenantId = tenant ?? Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId)
-            }));
+            Options.Create(new BusinessReferenceDataProviderOptions { ReferenceTenantId = Guid.Parse(tenant) }),
+            Options.Create(new VerifiedGskuOperationalProvisioningOptions { ConsumerTenantId = Guid.Parse(GskuConsumerTenantId) }));
     }
 
     private sealed class Forged : IBusinessReferenceDataVerifiedMarketOperationalAuthorization;

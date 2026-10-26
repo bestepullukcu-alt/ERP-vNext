@@ -1,0 +1,67 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+}
+
+@* Create-only offcanvas (CreateSandopPlanRequest, form_field_count 5 → GoldenReferenceSlim). No edit mode (O-02).
+   No client tightening (no HTML validation attributes, no trim) — the contract is authoritative; index.js mirrors only
+   required + horizon order. The company rides the query (never a body field), so its select is not one of the 5. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["CreatePlan"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formPlanAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+        <form id="formPlan" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="formLegalEntity" class="form-label fw-medium">@SharedLocalizer["LegalEntity"] <span class="text-danger">*</span></label>
+                    <select id="formLegalEntity" class="form-select"></select>
+                </div>
+                <div class="col-12">
+                    <label for="planName" class="form-label fw-medium">@Localizer["PlanName"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-rename diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planName" class="form-control" autocomplete="off" />
+                    </div>
+                    <div class="invalid-feedback" data-for="planName"></div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label for="planHorizonStart" class="form-label fw-medium">@Localizer["HorizonStart"] <span class="text-danger">*</span></label>
+                    <input type="date" id="planHorizonStart" class="form-control" dir="ltr" />
+                    <div class="invalid-feedback" data-for="planHorizonStart"></div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label for="planHorizonEnd" class="form-label fw-medium">@Localizer["HorizonEnd"] <span class="text-danger">*</span></label>
+                    <input type="date" id="planHorizonEnd" class="form-control" dir="ltr" />
+                    <div class="invalid-feedback" data-for="planHorizonEnd"></div>
+                </div>
+                <div class="col-12">
+                    <label for="planDemandPlanId" class="form-label fw-medium">@Localizer["DemandPlanId"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-line-chart diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planDemandPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
+                    <div class="invalid-feedback" data-for="planDemandPlanId"></div>
+                </div>
+                <div class="col-12">
+                    <label for="planDemandPlanVersion" class="form-label fw-medium">@Localizer["DemandPlanVersion"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="planDemandPlanVersion" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
+                    <div class="invalid-feedback" data-for="planDemandPlanVersion"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSavePlan" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

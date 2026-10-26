@@ -24,12 +24,16 @@ public static class DependencyInjection
         "Diten.SupplyChainService.Application.Features.CapacityPlans",
     ];
 
-    private static bool IsComposedFeatureType(Type type) =>
-        type.Namespace is not { } ns || !MediatRExcludedFeatureNamespaces.Any(excluded =>
-            ns == excluded || ns.StartsWith(excluded + ".", StringComparison.Ordinal));
+    private static bool IsExcluded(string ns) => MediatRExcludedFeatureNamespaces.Any(excluded =>
+        ns == excluded || ns.StartsWith(excluded + ".", StringComparison.Ordinal));
 
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    // G4 (Wave 6.1, 2026-10-18): includeDemandConsumers lifts the S&OP/Capacity exclusion — only when Program.cs also
+    // registers their persistence AND a demand source (the condition the comment above sets). Default false keeps
+    // every existing caller exactly as it was; one AddMediatR call either way, so no pipeline behaviour doubles.
+    public static IServiceCollection AddApplication(this IServiceCollection services, bool includeDemandConsumers = false)
     {
+        bool IsComposedFeatureType(Type type) =>
+            includeDemandConsumers || type.Namespace is not { } ns || !IsExcluded(ns);
         services.AddScoped<RequestContext>(); services.AddMediatR(c => { c.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly); c.TypeEvaluator = IsComposedFeatureType; });
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

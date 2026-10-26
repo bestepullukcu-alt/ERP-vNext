@@ -19,8 +19,8 @@ namespace Diten.Platform.API.Controllers;
 /// MOD-0024 — thin task engine controller. Version-explicit route under <c>api/v1/tasks</c>; gateway routing is a
 /// separate integration-agent task.
 ///
-/// <para>The route deliberately avoids <c>api/tasks</c>, which is already owned by the frozen legacy
-/// <c>TaskApiController</c> in Diten.Web (it serves the legacy /WorkCenter surface).</para>
+/// <para>The route deliberately avoids <c>api/tasks</c>, which the legacy <c>TaskApiController</c> in Diten.Web
+/// owned for the old /WorkCenter surface (both removed by BL-619; the prefix stays unused).</para>
 ///
 /// <para>Every action is permission-gated with keys the module MANIFEST declares, so their Module/Scope attribution
 /// is authored by the manifest sync rather than the reflection worker (which would stamp them PlatformAdmin and

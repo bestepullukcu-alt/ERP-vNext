@@ -89,16 +89,31 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, GlobalProductListSort.Default, cancellationToken);
 
     // WP-MDM-GP-LIST-01: the register sorted by a whitelisted stored field (ListSortDocument), id as the stable tiebreak.
+    public Task<GlobalProductPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GlobalProductListSort sort,
+        CancellationToken cancellationToken = default) =>
+        GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, sort, brandId: null, cancellationToken);
+
+    // MOD-0290-FU05: + one brand's products (ix_mdm_global_products_tenant_brand).
     public async Task<GlobalProductPage> GetPageAsync(
         int pageNumber,
         int pageSize,
         string? normalizedSearch,
         ProductIdentityLifecycleStatus? lifecycleStatus,
         GlobalProductListSort sort,
+        Guid? brandId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sort);
         var filter = ActiveTenantFilter;
+        if (brandId is { } brand)
+        {
+            filter &= Builders<GlobalProduct>.Filter.Eq(x => x.BrandId, brand);
+        }
         if (!string.IsNullOrWhiteSpace(normalizedSearch))
         {
             var escapedSearch = RegexEscape(normalizedSearch);
@@ -189,6 +204,20 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, referenceableOnly,
             GlobalProductListSort.Default, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
 
+    public Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        bool referenceableOnly,
+        GlobalProductListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, referenceableOnly,
+            sort, brandId: null, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    // MOD-0290-FU05: + one brand's products, inside the same Legal Entity scope.
     public async Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
         int pageNumber,
         int pageSize,
@@ -196,6 +225,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         ProductIdentityLifecycleStatus? lifecycleStatus,
         bool referenceableOnly,
         GlobalProductListSort sort,
+        Guid? brandId,
         IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default)
@@ -239,6 +269,10 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 new BsonDocument(nameof(GlobalProduct.CanonicalCode),
                     new BsonRegularExpression("^" + escapedSearch))
             };
+        }
+        if (brandId is { } brand)
+        {
+            productMatch[nameof(GlobalProduct.BrandId)] = GuidBson(brand);
         }
         if (lifecycleStatus.HasValue)
         {
@@ -304,6 +338,8 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             return existing.Id == globalProduct.Id
                    && existing.CanonicalCode == globalProduct.CanonicalCode
                    && existing.GlobalProductNameNormalized == globalProduct.GlobalProductNameNormalized
+                   // MOD-0290-FU05: a repeat that names another brand is not this create.
+                   && existing.BrandId == globalProduct.BrandId
                 ? new(true, existing)
                 : new(false, existing, "CODE_RESERVATION_MISMATCH");
         }
@@ -380,10 +416,24 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
     }
 
+    public Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
+        Guid id,
+        string globalProductName,
+        string normalizedName,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        UpdateDraftAsync(id, globalProductName, normalizedName, brandSpecified: false, brandId: null, expectedVersion,
+            auditIntent, cancellationToken);
+
+    // MOD-0290-FU05 (T-4): the brand travels in the same conditional write as the name and the intent; not specified =
+    // the stored brand is not touched (a client that does not know the field never clears it).
     public async Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
         Guid id,
         string globalProductName,
         string normalizedName,
+        bool brandSpecified,
+        Guid? brandId,
         int expectedVersion,
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default)
@@ -392,6 +442,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         cancellationToken.ThrowIfCancellationRequested();
         var contractError = id == Guid.Empty
                             || expectedVersion < 0
+                            || (brandSpecified && brandId == Guid.Empty)
                             || !GlobalProductNameRules.HasValidLength(globalProductName)
                             || !string.Equals(
                                 globalProductName,
@@ -432,6 +483,10 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, auditIntent);
+        if (brandSpecified)
+        {
+            update = update.Set(x => x.BrandId, brandId);
+        }
         try
         {
             // WP-MDM-GSKU-ACCEPT-01 FIX3 item 6 — GSKU's FIX2 rule, through the shared ProductIdentitySubmitState: the
@@ -594,6 +649,59 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         {
             return new(false, await GetByIdAsync(id, cancellationToken), "GLOBAL_PRODUCT_NAME_DUPLICATE");
         }
+    }
+
+    // MOD-0290-FU05 slice 2 (owner Karar a, CT decisions): an approved product's brand changes in ONE conditional write —
+    // approved, no lifecycle operation, still at expectedVersion and still carrying change.FromBrandId — with the change
+    // record and its intent (GlobalProductBrandChanged). Single document, no transaction: the version CAS orders it against
+    // a correction / retirement admission (each moves the version).
+    public async Task<GlobalProductLifecycleWriteResult> ChangeBrandAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductBrandChange change,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        cancellationToken.ThrowIfCancellationRequested();
+        var contractError = change.ToBrandId == Guid.Empty
+                            || change.FromBrandId == Guid.Empty
+                            || change.FromBrandId == change.ToBrandId
+                            || change.PreVersion != expectedVersion
+                            || !string.Equals(change.OperationKey, auditIntent.IdempotencyKey, StringComparison.Ordinal)
+            ? "GLOBAL_PRODUCT_BRAND_CHANGE_CONTRACT_INVALID"
+            : ValidateAuditIntent(id, expectedVersion, ProductAuditOperation.GlobalProductBrandChanged, auditIntent);
+        if (contractError is not null)
+        {
+            return new(false, null, contractError);
+        }
+
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var filter = ActiveTenantFilter
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+                     // A product stored before the field existed has no BrandId: Eq(null) matches it too.
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.BrandId, change.FromBrandId)
+                     & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.BrandId, change.ToBrandId)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.BrandChanges, change)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null
+            ? new(true, updated)
+            : await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
 
     // FIX3 item 6: the edit's refusals (the same words as GSKU's, under Global Product's names).
@@ -1837,7 +1945,11 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 Builders<GlobalProduct>.IndexKeys
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.GlobalProductNameNormalized),
-                new CreateIndexOptions { Unique = true, Name = "ux_mdm_global_products_tenant_normalized_name" })
+                new CreateIndexOptions { Unique = true, Name = "ux_mdm_global_products_tenant_normalized_name" }),
+            // MOD-0290-FU05: the register's brand filter and "this brand's Global Products" (not unique: a brand has many).
+            new CreateIndexModel<GlobalProduct>(
+                Builders<GlobalProduct>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.BrandId),
+                new CreateIndexOptions { Name = "ix_mdm_global_products_tenant_brand" })
         };
         _globalProducts.Indexes.CreateMany(models);
     }

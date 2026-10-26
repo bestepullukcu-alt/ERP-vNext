@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// their own partial index), so a backlog of undecided submitted weeks larger than the limit can never starve them.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class FinalizationSweepOrderMongoTests : TimeEntryScenario
 {
     public FinalizationSweepOrderMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

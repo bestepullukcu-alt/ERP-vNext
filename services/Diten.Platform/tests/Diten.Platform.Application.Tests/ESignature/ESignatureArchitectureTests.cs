@@ -148,9 +148,13 @@ public sealed class ESignatureArchitectureTests
             var gate = action.GetCustomAttribute<HasPermissionAttribute>();
             if (gate is null)
             {
-                // The two multi-key endpoints check their keys themselves: §4.20 (esign.meanings.read OR esign.signatures.sign)
-                // and the §4.17 sample image (owner key, approver key or signature-read key).
+                // WP-MVP1-SEC-ESIGN1: the two multi-key endpoints declare their keys with [HasAnyPermission] — §4.20
+                // (esign.meanings.read OR esign.signatures.sign) and the §4.17 sample image (owner, approver or signature-read key).
+                // No e-sign action checks keys in its body any more.
+                var any = action.GetCustomAttribute<HasAnyPermissionAttribute>();
+                Assert.True(any is not null, $"{action.DeclaringType!.Name}.{action.Name} has no [HasPermission] / [HasAnyPermission]");
                 Assert.Contains(action.Name, new[] { nameof(ESignatureSettingsController.ListMeanings), nameof(ESignatureSamplesController.Image) });
+                Assert.All(any!.Permissions, key => Assert.Contains(key, declared));
                 continue;
             }
 

@@ -89,6 +89,11 @@ public sealed class LoginOnlyEndpointGuardTests
         // WP-VW-W6 PLT-W6-DOC — a service's system step writes / reads its own document scopes: the internal API key is
         // checked before anything is read, a user token is refused, tenant from the request (InternalDocumentRepositoryTests).
         "InternalDocumentRepositoryController",
+        // MOD-0022 CT-D12 / WP-MVP1-SEC-ESIGN1 — POST api/internal/esign/actions/register (ESIGN-BUNDLE §4.23). Caller: a consumer
+        // module registering its signable actions at start-up (e.g. InventoryService MOD-0175 quarantine actions), service to service.
+        // Gate: X-Internal-Api-Key compared in fixed time with AuthService:InternalApiKey, fail closed when unset or absent — checked
+        // before the body is read (InternalESignActionsRegisterAuthTests). Not routed by the Gateway: no browser or tenant token reaches it.
+        "InternalESignActionsController",
         "InternalModuleRegistrationController",
         // WP-VW-W5 PLT-NOTIFY — services and schedulers start a catalogued notification: the internal API key is checked
         // before anything is read; tenant from the body, owner-module check (InternalNotificationEventDispatchTests).
@@ -304,6 +309,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
     private static bool IsKeyGated(MethodInfo action)
         => action.IsDefined(typeof(HasPermissionAttribute), true)
+           || action.IsDefined(typeof(HasAnyPermissionAttribute), true) // WP-MVP1-SEC-ESIGN1: any one of the declared keys
            || action.DeclaringType!.IsDefined(typeof(HasPermissionAttribute), true)
            || action.IsDefined(typeof(RequiresExplicitPermissionAttribute), true);
 

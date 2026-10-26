@@ -1,0 +1,12 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 pack §11.3 "Screen → button → action → permission": action code → may this user see it. The page scripts ask
+    RecallUi.can('RECALL_CASE_OPEN') — they never name a permission key. Display only (UAS-001 §4: absent, not disabled);
+    InventoryService's [HasPermission] stays the authority.
+*@
+<script id="recall-actions" type="application/json">@Json.Serialize(Diten.Web.Controllers.RecallKeys.For(Perms))</script>
+@if (Context.Items["RecallAntiforgeryRendered"] is not true)
+{
+    Context.Items["RecallAntiforgeryRendered"] = true;
+    <form id="rc-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}

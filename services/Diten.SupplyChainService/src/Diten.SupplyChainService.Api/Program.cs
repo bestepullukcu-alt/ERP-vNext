@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.SupplyChainService.Api.CentralAudit;
 using Diten.SupplyChainService.Api.Features.Loads;
 using Diten.SupplyChainService.Application.Features.Loads;
 using Diten.SupplyChainService.Persistence.Features.Loads;
@@ -5,6 +7,7 @@ using Diten.SupplyChainService.Infrastructure.Features.Loads;
 using Diten.SupplyChainService.Api.Features.Carriers;
 using Diten.SupplyChainService.Api.Features.Returns;
 using Diten.SupplyChainService.Api.Features.Claims;
+using Diten.SupplyChainService.Api.Features.CapacityPlans;
 using Diten.SupplyChainService.Application.Features.Carriers;
 using Diten.SupplyChainService.Persistence.Features.Carriers;
 // Q271/Q272 (2026-10-03): composing Returns (MOD-0186) and Claims (MOD-0187).
@@ -19,6 +22,14 @@ using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using System.Text.Json.Serialization;
 using Diten.SupplyChainService.Api.Middleware;
+using Diten.SupplyChainService.Api.Composition;
+using Diten.SupplyChainService.Api.Features.SandopPlans;
+using Diten.SupplyChainService.Persistence.Features.SandopPlans;
+using Diten.SupplyChainService.Persistence.Features.CapacityPlans;
+using SandopDomain = Diten.SupplyChainService.Domain.Features.SandopPlans;
+using SandopInfra = Diten.SupplyChainService.Infrastructure.Features.SandopPlans;
+using CapacityDomain = Diten.SupplyChainService.Domain.Features.CapacityPlans;
+using CapacityInfra = Diten.SupplyChainService.Infrastructure.Features.CapacityPlans;
 using Diten.SupplyChainService.Api.Logging;
 using Diten.SupplyChainService.Api.ModuleRegistration;
 using Diten.SupplyChainService.Application;
@@ -61,7 +72,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 builder.Services.AddAuthorization();
-builder.Services.AddApplication();
+// G4 (Wave 6.1): S&OP/Capacity are composed only where a demand source exists — see DemandConsumerComposition.
+var demandSeed = DemandConsumerComposition.SeedFor(builder.Configuration, builder.Environment);
+builder.Services.AddApplication(includeDemandConsumers: demandSeed is not null);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddCarrierPersistence();
 builder.Services.AddLoadPersistence();
@@ -90,6 +103,24 @@ builder.Services.AddHttpClient<ILegalEntityScopeValidator, MdmLegalEntityScopeVa
 // create would be rejected as a demand-plan mismatch while the module looked alive. A module that
 // silently refuses everything is worse than one that is plainly unreachable (K4), so S&OP stays in the
 // MediatR exclusion list until a real demand reader exists. See ledger Q273.
+// G4 (Wave 6.1, owner decisions 2026-10-18) keeps that K4 rule and makes composition conditional instead: S&OP and
+// Capacity are composed ONLY with a demand source (DemandConsumerComposition.SeedFor). Until DEMAND v2 that is the
+// non-production fixture seed (DemandFixtures:*); production carries none, so both stay uncomposed and 404 honestly.
+if (demandSeed is not null)
+{
+    builder.Services.AddSandopPersistence();
+    builder.Services.AddCapacityPersistence();
+    builder.Services.AddSingleton<SandopDomain.IDemandFixtureReader>(new SandopInfra.DemandFixtureReader(
+        [new SandopInfra.DemandFixture(demandSeed.TenantId, demandSeed.LegalEntityId, demandSeed.PlanId, demandSeed.Version, demandSeed.Checksum, true)]));
+    builder.Services.AddSingleton(new CapacityInfra.CapacityDemandFixture(
+        demandSeed.TenantId, demandSeed.LegalEntityId, demandSeed.PlanId, demandSeed.Version, demandSeed.Checksum));
+    builder.Services.AddSingleton<CapacityDomain.IDemandFixtureReader, CapacityInfra.DemandFixtureReader>();
+    builder.Services.AddSingleton<CapacityDomain.IConstraintFixtureReader, CapacityInfra.ConstraintFixtureReader>();
+    // The approved evaluation runner (mod-0192-executor-exact-decisions-01: lease/fence claim, fixture-literal oracle).
+    // Registered nowhere before — the tests drive RunOnceAsync directly — so a composed host would leave every
+    // evaluation Accepted forever.
+    builder.Services.AddHostedService<CapacityInfra.CapacityEvaluationExecutor>();
+}
 builder.Services.AddHostedService<ShipmentOutboxWorker>();
 // Q339-R2 (2026-10-03): ShipmentTrackingPodManifestProvider and ModuleRegistrationHostedService were
 // written and tested, but nothing composed them, so Shipment never reached the Platform module catalog.
@@ -108,6 +139,13 @@ builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifest
 builder.Services.AddSingleton<IModuleManifestProvider, RoutingLoadPlanningManifestProvider>();
 // R-4c (2026-10-04): Claims (MOD-0187 §33 ship rule) ships with its UI in the same change (MOD-0187 §32).
 builder.Services.AddSingleton<IModuleManifestProvider, ClaimsManagementManifestProvider>();
+// G6 (2026-10-18, G4 item C): S&OP (MOD-0190 §24) and Capacity (MOD-0192 §24) ship with their UI, and only where composed —
+// a catalog page on a host whose routes answer 404 would be dead navigation (the demand-seed rule above).
+if (demandSeed is not null)
+{
+    builder.Services.AddSingleton<IModuleManifestProvider, SopWorkflowSignoffsManifestProvider>();
+    builder.Services.AddSingleton<IModuleManifestProvider, CapacityPlanningManifestProvider>(); // MOD-0192 §24, same rule
+}
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 // Q381 (2026-10-04, owner decision §4): routes of uncomposed modules answer 404, not 500. The filter below reads
 // which modules exist from the registrations above; it keeps no list of its own (K6).
@@ -127,6 +165,10 @@ builder.Services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseF
     var context = c.HttpContext.RequestServices.GetRequiredService<RequestContext>();
     return new BadRequestObjectResult(ContractError.Create("INVALID_REQUEST", "Request schema validation failed.", context.CorrelationId == Guid.Empty ? Guid.NewGuid() : context.CorrelationId));
 });
+// BL-501 (WP-A1, E-2): every write command is recorded in Platform's central audit log through the shared forwarder.
+// Registered after every MediatR registration above (innermost behavior). RequireEnlistment: each command's write runs in
+// a Mongo transaction that enlists the event (CentralAuditDeclarationTests guards it), so an idempotent replay files nothing.
+builder.Services.AddCentralAudit<SupplyChainCentralAuditScope>(builder.Configuration, "Diten.SupplyChainService", options => options.RequireEnlistment = true);
 var app = builder.Build();
 app.UseAuthentication();
 app.UseWhen(CarrierContextMiddleware.IsCarrierPath, branch => branch.UseMiddleware<CarrierContextMiddleware>());
@@ -140,11 +182,24 @@ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<Loa
 // UUIDs." from the Shipment middleware; with this branch wired it returns 200 and the handler runs.
 app.UseWhen(ReturnContextMiddleware.IsReturnPath, branch => branch.UseMiddleware<ReturnContextMiddleware>());
 app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
+// Q484 (owner decision 2026-10-18, Option 2'): the Capacity context middleware is composed ONLY in the test
+// host — gated to the "Testing" environment — never in the production runtime, so the §22 uptake gate (Q292)
+// keeps it out of production until the gate opens. A non-Testing host does not compose Capacity; its controller
+// is dropped (Q381) and a Capacity path 404s (the catch-all exclusion below keeps the Shipment middleware off
+// it). The branch stays at THIS position, not in an outermost test-host IStartupFilter, because
+// CapacityContextMiddleware needs routing and authentication to have run first (it reads GetEndpoint() and
+// User) — measured 2026-10-18, the filter saw a null endpoint and no-opped. See
+// docs/records/decisions/2026-10/mvp6-q484-capacity-middleware-owner-decision-01.md.
+// G4: a host composed with a demand source runs the Capacity branch too; otherwise it stays test-host-only (Q484).
+if (demandSeed is not null || string.Equals(app.Environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase))
+    app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
 app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context)
-    && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context),
+    && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context)
+    && !CapacityContextMiddleware.IsCapacityPath(context) && !SandopContextMiddleware.IsSandopPath(context),
     branch => branch.UseMiddleware<ShipmentContextMiddleware>());
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();
+app.MapHealthChecks("/health/central-audit").AllowAnonymous();
 app.MapControllers();
 app.Run();
 public partial class Program { }

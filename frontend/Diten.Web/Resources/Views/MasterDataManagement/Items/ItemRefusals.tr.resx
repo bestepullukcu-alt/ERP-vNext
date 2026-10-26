@@ -24,4 +24,6 @@
   <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>Oturumunuz onay servisi tarafından kabul edilmedi. Yeniden giriş yapıp işlemi tekrarlayın.</value></data>
   <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>Bu işlemin onay ayarları tamamlanmamış. Lütfen yöneticinize bildirin.</value></data>
   <data name="RefusalApprovalResubmit" xml:space="preserve"><value>İstek onay servisine ulaşmadı. Aynı isteği yeniden gönderin.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>Gönderdiğiniz kaydı sizden başka onaylayabilecek kimse yok. Onaycıları düzenlemesi için yöneticinize başvurun; ardından kaydı yeniden gönderebilirsiniz.</value></data>
 </root>

@@ -60,13 +60,21 @@ public sealed class MovementPagesSurfaceTests : IClassFixture<WebApplicationFact
     }
 
     [Fact]
-    public async Task New_movement_offers_the_seven_manual_types_and_three_inbound_statuses_only()
+    public async Task New_movement_offers_the_seven_manual_types_plus_customer_return_and_a_customer_return_only_held_statuses()
     {
         var html = await RenderAsync(Create, StockMovementFormViewModel.ForCreate(new QueryCollection()), "inventory.stock.read", PostPermission);
 
         Assert.DoesNotContain("diten-access-denied", html, StringComparison.Ordinal);
-        Assert.Equal(ManualTypes.OrderBy(t => t), OptionsOf(html, "movementType").OrderBy(t => t));
-        Assert.Equal(["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE"], OptionsOf(html, "toStockStatus"));
+        // WP-0177-R7c (KR-H, CT decision A): the 7 manual types + CUSTOMER_RETURN — exactly MovementRules.FormTypes, nothing else
+        Assert.Equal([.. ManualTypes, "CUSTOMER_RETURN"], MovementRules.FormTypes);
+        Assert.Equal(MovementRules.FormTypes.OrderBy(t => t), OptionsOf(html, "movementType").OrderBy(t => t));
+        // the target statuses: the three inbound ones as before + BLOCKED; each option names the types that may use it
+        Assert.Equal(["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE", "BLOCKED"], OptionsOf(html, "toStockStatus"));
+        string Types(string status) => Regex.Match(html, $@"<option value=""{status}"" data-types=""(?<t>[^""]*)""").Groups["t"].Value;
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN", Types("AVAILABLE"));                              // a customer return never into AVAILABLE
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN CUSTOMER_RETURN", Types("QUALITY_INSPECTION"));
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN CUSTOMER_RETURN", Types("QUARANTINE"));
+        Assert.Equal("CUSTOMER_RETURN", Types("BLOCKED"));                                           // BLOCKED belongs to it alone
         Assert.DoesNotContain("STATUS_TRANSFER", html, StringComparison.Ordinal);
         Assert.DoesNotContain("GOODS_RECEIPT", html, StringComparison.Ordinal);
         // BG-03: the Reason field is not drawn while no MOD-0173 movement-reason set exists.
@@ -106,6 +114,22 @@ public sealed class MovementPagesSurfaceTests : IClassFixture<WebApplicationFact
         Assert.Matches("id=\"reversalAt\" value=\"\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ\"", html);
         Assert.Contains("INV-2026-0000007", html, StringComparison.Ordinal);
         Assert.Contains("movement-partial", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_receipt_prints_the_lot_number_and_an_unresolved_lot_as_its_id_with_the_hint()
+    {
+        // WP-MVP1-FIX-LIVE2 (finding 9)
+        const string lot = "d4e5f6a7-0000-4000-8000-000000000042";
+        var named = await RenderAsync(Details, new MovementReceiptViewModel { TransactionNumber = "INV-1", LotId = lot, LotNumber = "LOT-2026-042", BalanceLotId = lot, BalanceLotNumber = "LOT-2026-042" }, PostPermission);
+        Assert.Contains("LOT-2026-042", named, StringComparison.Ordinal);
+        Assert.DoesNotContain(lot, named, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-lot-unresolved", named, StringComparison.Ordinal);
+
+        var bare = await RenderAsync(Details, new MovementReceiptViewModel { TransactionNumber = "INV-1", LotId = lot, LotUnresolved = true }, PostPermission);
+        Assert.Contains(lot, bare, StringComparison.Ordinal);
+        Assert.Contains("data-lot-unresolved", bare, StringComparison.Ordinal);
+        Assert.Matches("(lot number could not be read|lot numarası okunamadı)", bare);
     }
 
     [Fact]

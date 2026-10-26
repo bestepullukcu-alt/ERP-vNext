@@ -91,7 +91,17 @@ field of entry `n` is blank or malformed. Nothing was written.
 
 ### 4. Create and publish the approval definition — once per tenant
 
-Nothing seeds it. It must have **one** approval step: MDM requires the deciding task to be the task the start created.
+Nothing seeds it at start-up. It must have **one** approval step: MDM requires the deciding task to be the task the start
+created.
+
+**Now with a command (WP-PLT-WORKFLOW-TEMPLATES-01):** the seven product-identity definitions (`GLOBAL-PRODUCT-IDENTITY`,
+`GSKU-IDENTITY`, `GSKU-CORRECTION`, `GSKU-RETIREMENT-REQUEST`, `LSKU-IDENTITY`, `LSKU-RETIREMENT-REQUEST`, `ITEM-ACTIVATION`)
+are installed from Platform's catalog `Seed/workflow-templates/product-identity-templates.json` with
+`scripts/dev/ensure-workflow-templates.sh --tenant <guid> [--apply]` (or `.ps1 -Tenant <guid> [-Apply]`; live: the host's
+`--ensure-workflow-templates --tenant <guid> [--apply]`). Without `--apply` it only lists what it would do. A definition that
+already exists is never overwritten: published and equal → `already-published`; published and different → `drift` (exit 2);
+designed by the tenant → `needs-owner` (exit 2). `MDM-COMP-PROPOSAL` is not in the catalog (tenant-specific). The manual
+calls below remain the alternative.
 Both calls go through the gateway and must resolve to the tenant you test with.
 
 **Create** — `POST /api/v1/workflow/definitions` · permission `platform.workflow.definitions.manage`

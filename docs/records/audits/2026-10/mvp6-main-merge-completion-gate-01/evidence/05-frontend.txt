@@ -1,0 +1,22 @@
+# frontend baseline (vitest)
+before the fix: 5194 tests, 25 failed
+after  the fix: 5195 tests, 24 failed
+
+resolved by WP-LANE-MAIN-SYNC-05:
+   page-help-ledger.test.js :: page help: text or a ledger row, and the ledger only shrinks every tenant page — menu or manifest — has its help text in
+
+newly failing: none
+
+# the 24 that remain, by file
+  campaign-targeting-admin-ui.test.js          7
+  consent-preference-admin-ui.test.js          4
+  global-confirm-text-is-text.test.js          1
+  objectives-edit-hydration.test.js            1
+  planning-cycles-owner-position.test.js       1
+  planning-cycles-register.test.js             1
+  pvg-case-intake-triage-ui.test.js            1
+  strategy-apis.test.js                        4
+  strategy-periods-owner-position.test.js      1
+  strategy-periods-register.test.js            1
+  wcn-calendar-view.test.js                    1
+  wcn-dead-code-and-timer.test.js              1

@@ -100,7 +100,8 @@ public static class MovementRequestReader
                 SourceLineId = S("sourceLineId"),
                 SourceSystem = S("sourceSystem"),
                 TransactionDate = S("transactionDate"),
-                PostingDate = S("postingDate")
+                PostingDate = S("postingDate"),
+                FefoBypassReason = S("fefoBypassReason")
             };
 
             return errors.Count > 0 ? (null, string.Join(" ", errors)) : (command, null);

@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// (confirmed / withdrawn / conflict) on every read, so a minutes correction is picked up without anything stored.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeSuggestionHttpMongoTests : TimerScenario
 {
     private const string MeetingCategory = "INTERNAL_MEETING";

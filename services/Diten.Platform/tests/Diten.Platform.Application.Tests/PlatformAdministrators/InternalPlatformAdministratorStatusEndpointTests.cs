@@ -32,8 +32,16 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// <c>PlatformAdministratorStatusClientWireTests</c> feed the production client.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class InternalPlatformAdministratorStatusEndpointTests
+[Trait("Category", "Mongo")]
+public sealed class InternalPlatformAdministratorStatusEndpointTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_admin_status_endpoint";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public InternalPlatformAdministratorStatusEndpointTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     private const string TestOnlyInternalKey = "bl521-fix2-test-only-internal-key-platform";
 
     [Theory]
@@ -41,7 +49,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [InlineData(ActorType.PlatformAdmin, "PlatformAdmin")]
     public async Task An_active_record_answers_its_own_actor_type(ActorType type, string expected)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var email = await host.SeedAsync(type, AdministratorStatus.Active);
 
         var (status, root) = await host.GetAsync(email);
@@ -60,7 +68,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [InlineData(AdministratorStatus.Disabled)]
     public async Task An_inactive_record_answers_not_active_with_its_status_and_type(AdministratorStatus state)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var email = await host.SeedAsync(ActorType.PartnerAdmin, state);
 
         var (status, root) = await host.GetAsync(email);
@@ -77,7 +85,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [InlineData("deleted")]
     public async Task A_missing_or_deleted_record_answers_platforms_404_envelope(string state)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var email = state == "missing"
             ? $"nobody.{Guid.NewGuid():N}@bl521.test"
             : await host.SeedAsync(ActorType.PlatformAdmin, AdministratorStatus.Active, deleted: true);
@@ -93,7 +101,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [Fact]
     public async Task Without_the_internal_key_nothing_is_answered()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var email = await host.SeedAsync(ActorType.PlatformAdmin, AdministratorStatus.Active);
 
         var (status, _) = await host.GetAsync(email, internalKey: "not-the-key");
@@ -112,7 +120,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [Fact]
     public async Task A_login_acceptance_writes_only_the_sign_in_fields_and_leaves_version_updated_by_and_the_mark_alone()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var seeded = await host.SeedInvitedAsync();
 
         var status = await host.AcceptLoginAsync(seeded.Email);
@@ -131,7 +139,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
     [InlineData(AdministratorStatus.Disabled)]
     public async Task A_login_acceptance_for_a_record_that_is_not_active_is_404_and_writes_nothing(AdministratorStatus state)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var seeded = await host.SeedInvitedAsync(state);
 
         var status = await host.AcceptLoginAsync(seeded.Email);
@@ -182,10 +190,9 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        public static async Task<Host> StartAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>())
                          .Where(c => c.Name == PlatformCollections.PlatformAdministrators))
             {
@@ -252,7 +259,7 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
         public ValueTask DisposeAsync()
         {
             _server.Dispose();
-            return _mongo.DisposeAsync();
+            return ValueTask.CompletedTask; // the replica set is the class fixture's
         }
 
         private sealed class OnlyStatusController : ControllerFeatureProvider

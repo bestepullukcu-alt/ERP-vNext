@@ -1,0 +1,24 @@
+# REP-001 §6 vs K4 — measured 2026-10-17
+
+## how many records exist, and how many carry the künye §6 requires
+record .md files under docs/records/        : 1203
+carrying an evidence_level field            : 1
+
+## of this month's lane reports, how many are inside a seal
+REPORT.md hashed by its own ARTIFACTS.sha256 : 27   (künye cannot be added without breaking the seal)
+not hashed                                   : 28   (künye can be added freely)
+
+## the sealed lanes the readiness table cites — all five are in the first group
+  mvp6-r4a-carriers-ui-01  REPORT.md hashed: 1
+  mvp6-r4b-loads-ui-01  REPORT.md hashed: 1
+  mvp6-r2-returns-ui-01  REPORT.md hashed: 1
+  mvp6-r4c-claims-ui-01  REPORT.md hashed: 1
+  mvp6-q446-gate-18-0-four-modules-01  REPORT.md hashed: 1
+
+## what the script does with the deeper glob and a künye-bearing record present
+(ct-discipline-and-readiness-audit-2026-10-17-01 carries a künye; it is cross-module, so module_code_of finds nothing)
+| MOD-0190 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0192 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0193 | done | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+
+Toplam 3 paket; CT karar kaydı olan 0. Yüzde yazacaksan bu tabloyla birlikte yaz (REP-001 §2).

@@ -38,10 +38,25 @@ const StockMovementsList = (function () {
         .catch(() => { /* not answered: the badge keeps today's rule */ });
 
     const tableEl = document.querySelector('.datatables-stockmovements');
+    // WP-MVP1-FU-CLEAN2 (f): the list factory's ONE header rule (the same headers its own ajax sends) for every call of this page.
+    const getAuthHeaders = (includeJson = false) => window.DitenDataTable?.getAuthHeaders?.(includeJson) || {};
     const L = () => window.L10n || {};
     const byId = (id) => document.getElementById(id);
     const can = (key) => window.Permissions?.has?.(key) === true;
     const canReverse = () => can('inventory.movements.create');
+    // WP-MVP1-FIX-LIVE3: the LOT cell — the TRACE lot number of a registered lot (resolved server-side, one read per SKU of the page),
+    // a link to the lot for a reader of lots; a registered lot whose number could not be read says "unknown lot" (the id only as the
+    // title, the person rule's principle); a typed lot text stays text with the W-UI-02 badge. The filter and S-1 "History" keep the id.
+    const lotCell = (data, full) => {
+        if (!data) return '';
+        if (full.lotNumber) {
+            return can('trace.lots.read')
+                ? `<a href="/Lots/Details?${new URLSearchParams({ lotId: data })}" title="${esc(data)}">${esc(full.lotNumber)}</a>`
+                : `<span title="${esc(data)}">${esc(full.lotNumber)}</span>`;
+        }
+        if (full.lotUnresolved) return `<span title="${esc(data)}">${esc(L().UnknownLot)}</span>`;
+        return `${esc(data)}${lotBadge(data)}`;
+    };
     const esc = (value) => String(value ?? '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const numberFormat = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumFractionDigits: 6 });
@@ -110,7 +125,7 @@ const StockMovementsList = (function () {
         if (!select) return;
         if (!warehouseId) { fillSelect(select, [], { showAllText: L().ShowAll || '' }); return; }
         try {
-            const res = await fetch(`/StockMovements/lookups/locations?warehouseId=${encodeURIComponent(warehouseId)}`, { credentials: 'same-origin' });
+            const res = await fetch(`/StockMovements/lookups/locations?warehouseId=${encodeURIComponent(warehouseId)}`, { credentials: 'same-origin', headers: getAuthHeaders() });
             const data = res.ok ? await res.json() : null;
             pickerNotice(!!data && data.available !== false);
             fillSelect(select, data?.items || [], { showAllText: L().ShowAll || '' });
@@ -150,7 +165,7 @@ const StockMovementsList = (function () {
         const warehouse = byId('filterWarehouseId');
         if (warehouse) {
             try {
-                const res = await fetch('/StockMovements/lookups/warehouses', { credentials: 'same-origin' });
+                const res = await fetch('/StockMovements/lookups/warehouses', { credentials: 'same-origin', headers: getAuthHeaders() });
                 const data = res.ok ? await res.json() : null;
                 pickerNotice(!!data && data.available !== false);
                 fillSelect(warehouse, data?.items || [], { showAllText: L().ShowAll || '' });
@@ -177,9 +192,10 @@ const StockMovementsList = (function () {
             box.classList.remove('d-none');
         }
         // A failed FIRST load never reaches initComplete, where the export menu is removed: remove it here too.
+        // WP-MVP1-FU-CLEAN2 (f): the DataTables v2 API of the list (the handle, else the v2 Api of the table) — never the jQuery plugin.
         try {
-            const api = window.jQuery(tableEl).DataTable();
-            api.buttons('.dt-export-collection-btn').remove();
+            const api = list?.dt || (window.DataTable?.isDataTable?.(tableEl) ? new window.DataTable.Api(tableEl) : null);
+            api?.buttons('.dt-export-collection-btn').remove();
         } catch (error) { /* table not built yet */ }
     };
 
@@ -198,7 +214,7 @@ const StockMovementsList = (function () {
             const res = await fetch(`/StockMovements/reverse/${encodeURIComponent(row.id)}`, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': antiforgeryToken() },
+                headers: Object.assign(getAuthHeaders(true), { 'RequestVerificationToken': antiforgeryToken() }),
                 body: JSON.stringify({
                     idempotencyKey: idempotencyKey,
                     itemId: row.itemId,
@@ -232,8 +248,9 @@ const StockMovementsList = (function () {
 
         window.showConfirm?.(L().ReversalConfirmTitle || '', null, {
             type: 'danger',
-            subtext: esc(sentence),
-            entityName: `${esc(movementText(row.movementType))} · ${esc(formatQuantity(row.quantity))} ${esc(row.uomId || '')}`,
+            // FU-QUI1-ESC-TEST: subtext / entityName are TEXT — the dialog escapes them (escaping here showed &amp; etc.)
+            subtext: sentence,
+            entityName: `${movementText(row.movementType)} · ${formatQuantity(row.quantity)} ${row.uomId || ''}`,
             confirmButtonText: L().ReversalConfirmButton || '',
             cancelButtonText: L().Cancel || '',
             didOpen: (popup, swal) => {
@@ -285,6 +302,9 @@ const StockMovementsList = (function () {
     };
 
     const rowActionHandlers = { reversal: reverse, correct: correct };
+
+    // WP-MVP1-NAMES1: the "Kaydeden" cell — the rule is StockMovementPeople (people.js, measured by Node), never the id as a name
+    const recordedBy = (full) => window.StockMovementPeople.html(full, L().UnknownUser);
 
     const renderAction = (full) => {
         if (!canReverse()) return '';
@@ -354,6 +374,7 @@ const StockMovementsList = (function () {
                     { data: 'lotId', name: 'lot' },
                     { data: 'toStockStatus', name: 'statusChange' },
                     { data: 'sourceModule', name: 'source' },
+                    { data: 'createdByName', name: 'recordedBy' },
                     { data: 'transactionDate', name: 'transactionDate' },
                     { data: 'postingDate', name: 'postingDate' },
                     { data: 'id', name: 'action' }
@@ -393,7 +414,7 @@ const StockMovementsList = (function () {
                             + `<small class="text-muted">${esc(full.toLocationLabel || full.toLocationId || '')}</small></div>`
                     },
                     // W-UI-02 badge: typed lot text only, until the migration closes typing (MOD-0174 P4).
-                    { targets: 8, render: (data) => (data ? `${esc(data)}${lotBadge(data)}` : '') },
+                    { targets: 8, render: (data, type, full) => lotCell(data, full) },
                     {
                         targets: 9,
                         // "from → to" only when the movement names both and they differ (an outbound has no "to").
@@ -406,7 +427,9 @@ const StockMovementsList = (function () {
                         render: (data, type, full) => `<div class="d-flex flex-column"><span>${esc(full.sourceModule || '')}</span>`
                             + `<small class="text-muted">${esc([full.sourceDocumentId, full.sourceLineId].filter(Boolean).join(' / '))}</small></div>`
                     },
-                    { targets: [11, 12], render: (data) => esc(formatDate(data)) },
+                    // WP-MVP1-NAMES1 (BG-05): the poster's name at the posting, else "unknown user" — the id only as the hover title, never as a name
+                    { targets: 11, render: (data, type, full) => recordedBy(full) },
+                    { targets: [12, 13], render: (data) => esc(formatDate(data)) },
                     {
                         targets: -1,
                         title: L().Actions,

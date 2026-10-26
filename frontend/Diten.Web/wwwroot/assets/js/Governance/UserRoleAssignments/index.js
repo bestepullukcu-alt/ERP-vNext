@@ -60,7 +60,7 @@ const UserRoleAssignments = (function () {
     const showError = (msg) => { if (els.alert) { els.alert.textContent = msg || L.ErrorOccurred || ''; els.alert.classList.remove('d-none'); } };
     const clearError = () => els.alert?.classList.add('d-none');
     // WP-ROLES-CLOSE-01 — a refusal tagged with a stable code is said in the reader's language (shared/diten-refusal.js).
-    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', USER_ROLE_USER_NOT_FOUND: 'ErrorUserRoleUserNotFound' };
+    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', USER_ROLE_USER_NOT_FOUND: 'ErrorUserRoleUserNotFound', USER_ROLE_REVOKE_LAST_STEWARD: 'ErrorUserRoleRevokeLastSteward' };
     const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L, 'UserRoleAssignments');
 
     const unwrap = (json) => {

@@ -1,0 +1,36 @@
+# Idempotent replay: direct vs through the gateway — measured 2026-10-17, lane stack
+# stack: gateway 5000, web 5001, auth 5056, platform 5057, mdm 5059, supplychain 5066, mongod 34994
+# actor: admin@diten.com (SuperAdmin) tenant 00000000-...-0001, legal entity dd674dbb-... ACTIVE/referenceable
+
+## direct  (http://localhost:5066/api/shipment-bundle)
+   sent X-Correlation-Id: a4c1b9ae-85ec-4a6a-a1c7-1a9a3d43a88c
+   Idempotency-Key      : bd41f824-8173-4e48-967b-824aade41994
+   call 1 -> HTTP 201
+     echoed X-Correlation-Id: a4c1b9ae-85ec-4a6a-a1c7-1a9a3d43a88c
+     body: {"shipmentId":"e528b6df-a500-4d5a-b768-c4c22a60a805","shipmentNumber":"SHP-e528b6dfa5004d5ab768c4c22a60a805","status":"Draft","idempotentReplay":false,"contractVersion":"v1"}
+   call 2 -> HTTP 200
+     echoed X-Correlation-Id: a4c1b9ae-85ec-4a6a-a1c7-1a9a3d43a88c
+     body: {"shipmentId":"e528b6df-a500-4d5a-b768-c4c22a60a805","shipmentNumber":"SHP-e528b6dfa5004d5ab768c4c22a60a805","status":"Draft","idempotentReplay":true,"contractVersion":"v1"}
+
+## gateway  (http://localhost:5000/api/shipment-bundle)
+   sent X-Correlation-Id: 0ff81320-505f-4821-b24e-318ecc845f64
+   Idempotency-Key      : ed8300ef-1e3b-412c-b216-20aa9aba5710
+   call 1 -> HTTP 201
+     echoed X-Correlation-Id: 8029a2b6744e4976a99f88280cc743f1
+     body: {"shipmentId":"6d7e9dd8-c307-4f5b-b108-c154fd72eb01","shipmentNumber":"SHP-6d7e9dd8c3074f5bb108c154fd72eb01","status":"Draft","idempotentReplay":false,"contractVersion":"v1"}
+   call 2 -> HTTP 400
+     echoed X-Correlation-Id: 1f3a666a13434b91b3ce21356be74e63
+     body: {"error":{"code":"INVALID_REQUEST","message":"INVALID_REQUEST","correlationId":"1f3a666a-1343-4b91-b3ce-21356be74e63"},"contractVersion":"v1"}
+
+## mechanism
+gateway/Diten.ApiGateway/Program.cs:97  // INTX FIX2 - the edge does not adopt a caller's X-Correlation-Id (EdgeCorrelation).
+gateway/Diten.ApiGateway/Program.cs:98  builder.Services.AddEdgeCorrelation();
+                    var receipt = await _receipts.Find(transaction, receiptFilter).FirstOrDefaultAsync(token);
+                    if (receipt is not null)
+                    {
+                        if (receipt["Fingerprint"].AsString != fingerprint) return new ShipmentMutationResult(null, false, 409, "IDEMPOTENCY_KEY_REUSED");
+                        if (receipt["CorrelationId"].AsString != correlationId.ToString()) return new ShipmentMutationResult(null, false, 400, "INVALID_REQUEST");
+                        var snapshot = JsonSerializer.Deserialize<Shipment>(receipt["Snapshot"].AsString)!;
+                        var visible = await _shipments.Find(transaction, scopeFilter & Builders<Shipment>.Filter.Eq(x => x.Id, snapshot.Id)).AnyAsync(token);
+                        if (!visible) return new ShipmentMutationResult(null, false, 404, "SHIPMENT_NOT_FOUND");
+                        return new ShipmentMutationResult(snapshot, true, operation == "create" ? 200 : receipt["StatusCode"].AsInt32, null);

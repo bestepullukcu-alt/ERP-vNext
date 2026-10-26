@@ -20,6 +20,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// MOD-0024's real scope and team resolvers; only the data-scope SOURCE is the test's (as in production it is Auth's).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryTaskGateHttpMongoTests : TimeEntryScenario
 {
     private readonly PersonScopes _scopes = new();

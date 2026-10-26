@@ -161,6 +161,12 @@ public sealed class GskuKnownFailureSentenceTests
     // administrator); a submit whose start is not yet confirmed is on its way.
     [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED", "ErrorSubmitStuck")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED", "ErrorSubmitInFlight")]
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes that reach this screen as a 409.
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED", "ErrorApprovalSetupIncomplete")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY", "ErrorApprovalSetupIncomplete")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", "ErrorApprovalResubmit")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING", "ErrorApprovalChanging")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER", "ErrorNoEligibleApprover")]
     public async Task A_global_product_in_flight_refusal_is_said_in_words(string code, string key)
     {
         var wire = new ScriptedHandler((HttpStatusCode.Conflict, Envelope(code)));
@@ -170,8 +176,9 @@ public sealed class GskuKnownFailureSentenceTests
             new PrefixLocalizer<Diten.Web.SharedResource>(), new PrefixLocalizer<Diten.Web.Views.MasterDataManagement.GlobalProducts.GlobalProductsIndex>(),
             NullLogger<GlobalProductsController>.Instance)
         {
+            // MOD-0290-FU05 (T-4, CT decision): the draft-edit form always carries BrandId ("" = no brand).
             ControllerContext = new ControllerContext { HttpContext = Context("mdm.global-products.update",
-                new() { ["ExpectedVersion"] = "3", ["GlobalProductName"] = "Renamed", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
+                new() { ["ExpectedVersion"] = "3", ["GlobalProductName"] = "Renamed", ["BrandId"] = "", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
         };
 
         var result = await controller.UpdateDraft(Guid.NewGuid(), 3, "Renamed", CancellationToken.None);
@@ -205,6 +212,19 @@ public sealed class GskuKnownFailureSentenceTests
         var (status, errors) = Read(result);
         Assert.Equal(StatusCodes.Status409Conflict, status);
         Assert.Equal("localized:" + key, Assert.Single(errors));
+    }
+
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: nobody but the maker may approve (segregation of duties) — the GSKU screen says
+    // its own sentence (GskuRefusals), not the conflict / service sentence, and the code stays behind.
+    [Fact]
+    public async Task A_gsku_submit_with_no_eligible_approver_is_said_in_its_own_sentence()
+    {
+        var result = await SubmitAgainstAsync(HttpStatusCode.Conflict, Envelope("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"));
+
+        var (status, errors) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal("refusal:RefusalNoEligibleApprover", Assert.Single(errors));
+        Assert.DoesNotContain("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER", JsonSerializer.Serialize(((ObjectResult)result).Value));
     }
 
     private static string Envelope(string code) =>

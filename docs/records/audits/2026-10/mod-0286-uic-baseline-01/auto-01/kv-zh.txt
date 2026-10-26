@@ -1,0 +1,636 @@
+About	关于
+AccessDenied	访问被拒绝。
+AccessDeniedMessage	请联系管理员为您授予此页面的访问权限。
+AccessDeniedTitle	您无权访问{0}
+AccessGovernance	Access Governance
+AccessMatrix	访问矩阵
+AccountsMenu	客户账户
+Action	操作
+Activate	启用
+Active	启用
+Address	地址
+Admin	管理员
+Apply	应用
+AreYouSure	确定吗？
+Attributes	属性
+Auth.Dialog.Ok	确定
+Auth.Error.AccountDeactivated	您的账户已被管理员停用。请联系您的管理员。
+Auth.Error.CurrentPasswordIncorrect	您的当前密码不正确。
+Auth.Error.EmailLoginDisabled	此组织已关闭电子邮件登录。
+Auth.Error.InvalidCredentials	电子邮件或密码不正确，或账户已被暂时锁定。请稍后重试。
+Auth.Error.InvalidVerificationCode	验证码无效或已过期。
+Auth.Error.LinkInvalid	此链接已失效。请向您的管理员索取新链接。
+Auth.Error.LoginFailed	登录失败。请重试。
+Auth.Error.LoginUnavailable	登录暂时不可用。请稍后重试。
+Auth.Error.PasswordChangeFailed	无法更改您的密码。请重试。
+Auth.Error.PasswordChangedMeanwhile	您的密码已在此期间被更改（例如由管理员更改）。请重新登录。
+Auth.Error.PlatformPrivilegesRequired	此账户没有平台管理角色。
+Auth.Error.RequestInvalid	请求不完整。请检查各字段后重试。
+Auth.Error.ServiceUnavailable	登录服务暂时不可用。请稍后重试。
+Auth.Error.SessionEnded	您的会话已结束。请重新登录。
+Auth.Error.TemporaryPasswordExpired	您的临时密码已过期。请重置您的密码。
+Auth.Error.TenantMissing	此登录链接不包含组织信息。请重新使用您的邀请链接。
+Auth.Error.TooManyRequests	请求过多。请等待几分钟后重试。
+Auth.Error.VerificationChallengeRequired	验证步骤已过期。请重新登录。
+Auth.Error.VerificationCodeRequired	请输入验证码。
+Auth.Error.VerificationFailed	无法完成验证。请重试。
+Auth.Mfa.CodeLabel	验证码
+Auth.Mfa.Prompt	请输入发送至以下地址的验证码：
+Auth.Mfa.Resend	重新发送验证码
+Auth.Mfa.Resending	正在发送...
+Auth.Mfa.ResentMessage	新的验证码已发送。
+Auth.Mfa.ResentTitle	验证码已发送
+Auth.Mfa.Title	两步验证
+Auth.Mfa.Verifying	正在验证...
+Back	返回
+BackToList	返回列表
+BackToLogin	Back to login
+BasicInfo	基本信息
+BrandsMenu	品牌
+BulkDelete	批量删除
+BulkDeleteConfirm	确定要删除选中的 {0} 条记录吗？
+BulkDeleteSuccess	已成功删除 {0} 条记录
+CalendarAllDay	全天
+CalendarDay	日
+CalendarMonth	月
+CalendarMore	另外 {0} 项
+CalendarNext	下一个
+CalendarNoEvents	没有可显示的内容
+CalendarPrevious	上一个
+CalendarToday	今天
+CalendarUnresolved	未定义工作日历——无法显示周末和节假日。
+CalendarWeek	周
+CampaignsMenu	活动
+Cancel	取消
+CategoryManagement	类别管理
+ChangePassword.Subtitle	You must change your temporary password before continuing.
+ChangePassword.Title	Change Password
+ClearSelection	清除选择
+Close	关闭
+CollapseAll	全部折叠
+ColumnOrder	列顺序
+ColumnVisibility	列可见性
+ComingSoon	此功能即将推出。
+CommercialSuite	商务套件
+CompositionManagement	组合管理
+ConfirmAction	确定要继续吗？
+ConfirmPassword	Confirm Password
+ConsentPreferencesMenu	同意与偏好
+ContactPerson	联系人
+ContactsMenu	联系人
+ContentEngagementJourneysMenu	内容互动旅程
+ContractEditDraftOnly	仅可更新草稿合同；已激活的合同通过生命周期操作管理，而非编辑。
+ControlledCopy.CreatedAt	创建时间
+ControlledCopy.CreatedBy	创建人
+ControlledCopy.Filters	筛选条件
+ControlledCopy.None	无
+ControlledCopy.Page	第 {0} 页，共 {1} 页
+ControlledCopy.Report	报告
+ControlledCopy.Rows	行数
+ControlledCopy.Search	搜索
+ControlledCopy.Sort	排序
+ControlledCopy.SortAsc	升序
+ControlledCopy.SortDesc	降序
+ControlledCopy.Tenant	公司
+ControlledCopy.Uncontrolled	本打印件为非受控副本 — {0}
+ControlledDocuments	受控文档
+Copied	已复制
+Copy	复制
+CurrentPassword	Current Password
+CycleCapacitiesMenu	周期产能
+CyclePeriodsMenu	周期
+Dark	深色
+DateNotRecognized	您输入的日期无法识别，因此未保存。请按字段格式重新输入，或从日历中选择。
+Deactivate	停用
+DefaultTimeZone	默认时区
+Delete	删除
+DeleteConfirmationSubText	此操作无法撤销！
+DeleteConfirmationTitle	确定吗？
+DeleteConfirmationYesBtn	是，删除
+Description	描述
+DescriptionPlaceholder	请输入描述...
+Details	详情
+DeveloperSandbox	开发者沙盒
+DocumentMasterRegister	文件主登记簿
+DocumentationStructures	文档结构
+DtEmptyTable	表中没有可用数据
+DtInfo	显示第 _START_ 至 _END_ 条，共 _TOTAL_ 条
+DtInfoEmpty	显示第 0 至 0 条，共 0 条
+DtInfoFiltered	（从 _MAX_ 条记录中过滤）
+DtLoadFailed	无法加载列表。
+DtLoadNoPermission	您无权查看此列表。
+DtNoRecords	未找到匹配记录
+DtRetry	重试
+DtZeroRecords	未找到匹配记录
+Edit	编辑
+EditRecord	编辑记录
+EmailAddress	电子邮件地址
+EmployeeDraftsMenu	员工草稿
+Error	错误
+ErrorOccurred	处理请求时发生错误。
+ExpandAll	全部展开
+Export	导出
+ExportTooLarge	要导出的行数过多（超过 50,000 行）。请缩小筛选范围后重试。
+FailedToLoadData	无法加载数据。请稍后重试。
+FieldRequired	此字段为必填项
+Filter	筛选
+ForgotPassword.SentMessage	If the email exists, reset instructions have been sent.
+ForgotPassword.SentTitle	Check your email
+ForgotPassword.Submit	Send reset link
+ForgotPassword.Subtitle	Enter your email and we will send reset instructions.
+ForgotPassword.Title	Forgot Password?
+GatewayError	与服务器通信时发生错误。
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	不支持修改收货单；已过账的收货通过冲销移动更正，而非编辑。
+HumanCapitalManagement	人力资本管理
+Import	导入
+InvalidEmail	电子邮件地址无效
+InvalidFiscalYear	格式无效（例如：01-01）
+InvalidPhone	电话号码无效
+InvalidUrl	URL 格式无效
+InviteAccept	接受
+InviteAcceptAnyway	仍然接受
+InviteCardType	会议邀请
+InviteDecline	拒绝
+InviteOverlapText	它与您已计划的时间块“{0}”（{1}）重叠。仍要接受吗？
+InviteOverlapTitle	此会议与您的计划冲突
+InvoiceUpdateNotSupported	不支持更新发票；请通过重新运行三方匹配或解决其异常来更正，而不是通过编辑。
+ItemMaster	物料主数据
+KnowledgeConceptsMenu	Concepts
+KnowledgeMenu	知识库
+KnowledgePathsMenu	知识路径
+LegalEntities	法律实体
+LegalEntity	法律实体
+LegalEntityNone	此租户没有有效的法律实体。
+LegalEntityRequired	请选择法律实体。
+LegalEntityUnavailable	法律实体列表不可用。
+LevelPrefix	级别
+Light	浅色
+Loading	加载中...
+LogOut	退出登录
+Login.Email	电子邮件
+Login.EmailOrUsername	电子邮件或用户名
+Login.EmailRequired	Email is required.
+Login.Error	电子邮件或密码无效
+Login.ErrorRequired	电子邮件和密码为必填项
+Login.ErrorTitle	错误
+Login.ForgotPassword	Forgot Password?
+Login.Loading	正在登录...
+Login.Password	密码
+Login.RememberMe	记住我
+Login.Submit	登录
+Login.Subtitle	请登录您的账户
+Login.Title	登录
+MDM	MDM
+MarkAllAsRead	全部标记为已读
+MasterData	主数据
+ModuleCodeInUse	此模块代码已被使用。
+MyProfile	我的资料
+Nav.Domain.ADMINISTRATION	管理
+Nav.Domain.DEVENABLEMENT	开发者赋能
+Nav.Domain.DOCUMENTMANAGEMENT	文档管理
+Nav.Domain.HUMANCAPITAL	人力资本
+Nav.Domain.MANAGEMENTGOVERNANCE	管理与治理
+Nav.Domain.MANUFACTURING	生产制造
+Nav.Domain.MASTERDATAMANAGEMENT	主数据管理
+Nav.Domain.PLATFORMSHAREDSERVICES	平台共享服务
+Nav.Domain.PORTFOLIODELIVERY	项目组合交付
+Nav.Domain.PROCUREMENT	采购
+Nav.Domain.SALES	销售
+Nav.Domain.SUPPLYCHAINEXECUTION	供应链执行
+Nav.Domain.TALENTECOSYSTEM	人才生态系统
+Nav.Domain.WORKSPACE	工作区
+Nav.Module.ACCESSGOVERNANCE	访问治理
+Nav.Module.ADMINISTRATORS	管理员
+Nav.Module.AUDIT	审计
+Nav.Module.BOMROUTINGS	物料清单与工艺路线
+Nav.Module.BRANDPRODUCTMASTER	品牌与产品主数据
+Nav.Module.CAPACITYPLANNING	产能规划
+Nav.Module.CARRIERMANAGEMENT	承运商管理
+Nav.Module.CLAIMSMANAGEMENT	索赔管理
+Nav.Module.CONTRACTS	合同
+Nav.Module.CRM	客户关系管理
+Nav.Module.DEMANDPLANNING	需求计划
+Nav.Module.DOCUMENTMANAGEMENT	文档管理
+Nav.Module.ESIGN	电子签名
+Nav.Module.EXPIRYFEFOMANAGEMENT	有效期 / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	收货 (GRN)
+Nav.Module.HCMEMPLOYEEMASTER	员工主数据
+Nav.Module.HUMANCAPITAL	人力资本
+Nav.Module.INTERFACEREGISTRY	接口注册表
+Nav.Module.INVENTORYLEDGER	库存管理
+Nav.Module.INVOICEMATCH	发票匹配
+Nav.Module.LEGALENTITY	法律实体
+Nav.Module.LOOKUPS	参照列表
+Nav.Module.LOTSERIALTRACKING	批次/序列号追踪
+Nav.Module.MEETINGS	会议
+Nav.Module.MODULECATALOG	模块目录
+Nav.Module.MODULEDOMAINS	模块域
+Nav.Module.MODULESERVICES	模块服务
+Nav.Module.NOTIFICATIONS	通知
+Nav.Module.ORGANIZATION	组织
+Nav.Module.PERSON	人员目录
+Nav.Module.PPM	项目与项目组合管理
+Nav.Module.PROCUREMENTSUPPLIERS	供应商
+Nav.Module.PRODUCTITEMSKUMASTER	产品／物料／SKU 主数据
+Nav.Module.PURCHASEORDERS	采购订单
+Nav.Module.QUARANTINEBLOCKEDSTOCK	质量
+Nav.Module.RECALLREADINESS	召回准备
+Nav.Module.REFERENCEDATA	参考数据
+Nav.Module.REQUISITIONS	采购申请
+Nav.Module.REVERSELOGISTICS	逆向物流
+Nav.Module.ROUTINGLOADPLANNING	路线与装载计划
+Nav.Module.SHIPMENTTRACKINGPOD	货运跟踪与交付证明
+Nav.Module.SOPWORKFLOWSIGNOFFS	S&amp;OP 工作流与签核
+Nav.Module.SOURCING	寻源
+Nav.Module.SUBSCRIPTIONFEATURES	订阅功能
+Nav.Module.SUBSCRIPTIONPLANS	订阅方案
+Nav.Module.SUPPLIERS	供应商
+Nav.Module.TALENTECOSYSTEM	人才生态系统
+Nav.Module.TASKS	任务设置
+Nav.Module.TENANTS	租户
+Nav.Module.TENANTSETTINGS	租户设置
+Nav.Module.TIMEENTRY	工时表
+Nav.Module.WORKAGGREGATION	任务中心
+Nav.Module.WORKFLOW	工作流
+Nav.Module.WORKINGCALENDAR	工作日历
+Nav.Module.WORKINGCALENDARIMPORT	工作日历导入
+Nav.Module.WORKREPORT	工作报告
+Nav.Page.ACCESSMATRIX	文档访问矩阵
+Nav.Page.ACCOUNT	客户
+Nav.Page.ACCOUNTCONTACT	客户联系人
+Nav.Page.ACCOUNTRELATIONSHIP	客户关系
+Nav.Page.ACCOUNTS	客户账户
+Nav.Page.APPLICANTINTAKE	申请人受理
+Nav.Page.ASSOCIATIONMEMBERSHIPS	协会会员
+Nav.Page.ASSOCIATIONOPERATIONS	协会运营
+Nav.Page.ATTRIBUTE	属性
+Nav.Page.BENEFITCOMMITMENTS	收益承诺
+Nav.Page.BLOCKEDSTOCK	冻结库存
+Nav.Page.BOMS	物料清单
+Nav.Page.BRANDS	品牌
+Nav.Page.CAMPAIGN	营销活动
+Nav.Page.CAMPAIGNS	活动
+Nav.Page.CAMPAIGNSNAPSHOT	活动快照
+Nav.Page.CAMPAIGNTARGET	活动目标
+Nav.Page.CANDIDATECAREERPASSPORT	候选人职业护照
+Nav.Page.CANDIDATEDISPUTES	候选人争议
+Nav.Page.CANDIDATEPIPELINE	候选人管道
+Nav.Page.CANDIDATEPROFILES	候选人档案
+Nav.Page.CAPACITYPLANS	产能计划
+Nav.Page.CARRIERS	承运商
+Nav.Page.CLAIMS	声明
+Nav.Page.COMPENSATIONBENEFITS	薪酬与福利
+Nav.Page.COMPETENCYSKILLS	胜任力与技能
+Nav.Page.COMPETITORPRODUCTS	竞品
+Nav.Page.CONSENT	同意
+Nav.Page.CONSENTPREFERENCES	同意与偏好
+Nav.Page.CONSENTVISIBILITYPOLICIES	同意可见性政策
+Nav.Page.CONTACT	联系人
+Nav.Page.CONTACTS	联系人
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	内容互动旅程
+Nav.Page.CONTENTSETS	内容集
+Nav.Page.CONTRACTS	合同与条款库
+Nav.Page.CONTROLLEDDOCUMENTS	受控文档
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	潜力阈值
+Nav.Page.CUSTOMFIELDS	自定义字段
+Nav.Page.CYCLECAPACITIES	周期产能
+Nav.Page.CYCLECAPACITY	周期容量
+Nav.Page.CYCLEPERIOD	周期期间
+Nav.Page.CYCLEPERIODS	周期
+Nav.Page.DATAQUALITY	数据质量
+Nav.Page.DEFINITIONS	工作流定义
+Nav.Page.DEMANDPLANNING	需求计划
+Nav.Page.DEVELOPMENTPLANS	发展计划
+Nav.Page.DOCUMENTLIST	文档清单
+Nav.Page.EARLYWARNINGSIGNALS	预警信号
+Nav.Page.ELIGIBILITYPOLICIES	资格策略
+Nav.Page.EMPLOYEE	员工
+Nav.Page.EMPLOYEEMASTER	员工主数据
+Nav.Page.EMPLOYEEONBOARDING	员工入职
+Nav.Page.EMPLOYEEPROJECTIONS	员工预测
+Nav.Page.EMPLOYMENTCHANGES	雇佣变更
+Nav.Page.ESIGNAUDITEXPORT	审计导出
+Nav.Page.ESIGNMEANINGS	签名含义
+Nav.Page.ESIGNMYSIGNATURE	我的签名
+Nav.Page.ESIGNPOLICY	电子签名策略
+Nav.Page.ESIGNREQUESTS	签名请求
+Nav.Page.ESIGNSAMPLEAPPROVALS	签名样本审批
+Nav.Page.ESIGNVERIFICATION	签名验证
+Nav.Page.EXITREFERENCERECORDS	离职参考记录
+Nav.Page.EXPIREDSTOCK	过期库存
+Nav.Page.EXPIRYAPPROACHING	即将过期
+Nav.Page.EXPIRYDASHBOARD	FEFO 看板
+Nav.Page.EXPIRYEVIDENCE	证据包
+Nav.Page.EXPIRYEXCEPTIONDETAILS	异常详情
+Nav.Page.EXPIRYEXCEPTIONS	异常收件箱
+Nav.Page.EXPIRYPOLICY	保质期规则与设置
+Nav.Page.FEFOORDER	FEFO 顺序
+Nav.Page.FIELDDEFINITIONS	字段定义
+Nav.Page.FINISHEDGOODS	成品
+Nav.Page.GLOBALPRODUCTS	全球产品
+Nav.Page.GRN	收货 (GRN)
+Nav.Page.GSKUS	GSKU
+Nav.Page.HEADCOUNTBUDGET	编制预算
+Nav.Page.HIERARCHY	层级
+Nav.Page.HIRINGRISKINDICATORS	招聘风险指标
+Nav.Page.HRCASEMANAGEMENT	人力资源案例管理
+Nav.Page.HRCOMPLIANCE	人力资源合规
+Nav.Page.HRDOCUMENTATION	人力资源文档
+Nav.Page.HRKPIANALYTICS	人力资源KPI分析
+Nav.Page.INBOX	收件箱
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	行业知识网络
+Nav.Page.INDUSTRYSKILLPASSPORT	行业技能护照
+Nav.Page.INDUSTRYSUCCESSIONPOOL	行业继任人才库
+Nav.Page.INDUSTRYTALENTPOOL	行业人才库
+Nav.Page.INITIATIVES	举措
+Nav.Page.INSTANCES	文档实例
+Nav.Page.INVESTMENTCASES	投资案例
+Nav.Page.INVOICEMATCH	发票采集与三方匹配
+Nav.Page.ITEMS	物料
+Nav.Page.KNOWLEDGE	知识库
+Nav.Page.KNOWLEDGECONCEPT	知识概念
+Nav.Page.KNOWLEDGECONCEPTS	Concepts
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	内容互动旅程
+Nav.Page.KNOWLEDGEPATH	知识路径
+Nav.Page.KNOWLEDGEPATHS	知识路径
+Nav.Page.KNOWLEDGESUBJECT	知识主题
+Nav.Page.LEARNINGTRAINING	学习与培训
+Nav.Page.LEGALENTITIES	法律实体
+Nav.Page.LEGALPROFILES	法律概况
+Nav.Page.LOADS	装载计划
+Nav.Page.LOCATIONTREE	库位
+Nav.Page.LOTMIGRATION	手工录入批次迁移
+Nav.Page.LOTS	批次浏览
+Nav.Page.LOTTRACE	可追溯性
+Nav.Page.LSKUS	本地 SKU
+Nav.Page.MASTERREGISTER	文件主登记簿
+Nav.Page.MEETINGREPORT	会议报告
+Nav.Page.MEETINGS	会议
+Nav.Page.MEETINGSERIES	会议系列
+Nav.Page.MEETINGTYPES	会议类型
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	导师推荐网络
+Nav.Page.MENUSETTINGS	菜单设置
+Nav.Page.MODEL	模型
+Nav.Page.MYTIMESHEET	我的工时表
+Nav.Page.NODE	节点
+Nav.Page.OBJECTIONRESPONSES	异议库
+Nav.Page.OFFBOARDINGCASES	离职案例
+Nav.Page.OFFERMANAGEMENT	录用管理
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	字段定义
+Nav.Page.ORGANIZATIONUNITS	组织单位
+Nav.Page.OVERRIDE	例外
+Nav.Page.OVERVIEW	概览
+Nav.Page.PAYBENCHMARKING	薪酬基准分析
+Nav.Page.PERFORMANCEREVIEWS	绩效评估
+Nav.Page.PLANNEDVISIT	计划拜访
+Nav.Page.PLANNEDVISITS	计划拜访
+Nav.Page.PORTFOLIOS	项目组合
+Nav.Page.POSITIONASSIGNMENTS	职位分配
+Nav.Page.POSITIONS	职位
+Nav.Page.PREFERENCE	偏好
+Nav.Page.PRODUCTABBREVIATIONS	产品缩写
+Nav.Page.PRODUCTS	产品
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	职业声誉账簿
+Nav.Page.PROGRAMS	项目群
+Nav.Page.PROJECTS	项目
+Nav.Page.PURCHASEORDERS	采购订单
+Nav.Page.QMSBASELINES	QMS 基线
+Nav.Page.QUARANTINEQUEUE	隔离队列
+Nav.Page.QUARANTINESETTINGS	隔离设置
+Nav.Page.RDSETS	参考数据集
+Nav.Page.RECALLCASEDETAILS	召回案例
+Nav.Page.RECALLCASES	召回案例
+Nav.Page.RECALLDASHBOARD	召回准备情况
+Nav.Page.RECALLDRILLS	召回演练计划
+Nav.Page.RECALLEVIDENCE	召回证据包
+Nav.Page.RECALLSETTINGS	召回设置
+Nav.Page.RECALLTRACE	召回追溯
+Nav.Page.RECORDS	记录
+Nav.Page.RECURRENCERULES	重复规则
+Nav.Page.REFERENCEEXCHANGE	背景调查交换
+Nav.Page.REHIRERECOMMENDATIONS	再雇佣建议
+Nav.Page.REPORTINGLINE	汇报线
+Nav.Page.REPORTS	报表
+Nav.Page.REPOSITORYASSESSMENT	存储库评估
+Nav.Page.REQUISITIONS	采购申请
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	受限诚信登记册
+Nav.Page.RETESTQUEUE	复检队列
+Nav.Page.RETURNS	退货
+Nav.Page.REVIEWBOARD	审查委员会
+Nav.Page.ROLEPERMISSIONS	角色权限
+Nav.Page.ROLES	角色
+Nav.Page.SAFETYTEXTS	安全性文本
+Nav.Page.SANDOPPLANS	S&amp;OP 计划
+Nav.Page.SECTORMOBILITYINTELLIGENCE	行业流动情报
+Nav.Page.SECTORTALENTTRENDS	行业人才趋势
+Nav.Page.SECURITYSETTINGS	安全设置
+Nav.Page.SEGMENT	细分
+Nav.Page.SEGMENTS	客户细分
+Nav.Page.SELFSERVICE	自助服务
+Nav.Page.SENSITIVEACCESS	敏感访问
+Nav.Page.SERIALS	序列号浏览
+Nav.Page.SHIPMENTCLAIMS	运输索赔
+Nav.Page.SHIPMENTS	货运
+Nav.Page.SKILLSGAPHEATMAP	技能差距热力图
+Nav.Page.SOURCING	寻源
+Nav.Page.STOCKLEDGER	库存台账
+Nav.Page.STRATEGYTEMPLATE	策略模板
+Nav.Page.STRATEGYTEMPLATES	策略模板
+Nav.Page.SUCCESSION	继任
+Nav.Page.SUPPLIERS	供应商
+Nav.Page.TALENTDATAFOUNDATION	人才数据基础
+Nav.Page.TALENTDEVELOPMENTNETWORK	人才发展网络
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	人才供需预测
+Nav.Page.TASKCHECKLISTTEMPLATES	检查清单模板
+Nav.Page.TASKCREATE	新建任务
+Nav.Page.TASKDETAIL	任务详情
+Nav.Page.TASKDOCUMENTLIST	受控文件
+Nav.Page.TASKEDIT	编辑任务
+Nav.Page.TASKFIELDDEFINITIONS	字段定义
+Nav.Page.TASKRECURRENCERULES	重复任务规则
+Nav.Page.TASKS	任务
+Nav.Page.TASKTEMPLATES	任务模板
+Nav.Page.TASKTYPES	任务类型
+Nav.Page.TASKWORKREPORT	工作报告
+Nav.Page.TEMPLATEMASTERS	企业模板主文件
+Nav.Page.TEMPLATEVARIANTS	模板变体
+Nav.Page.TENANTNAVIGATION	菜单设置
+Nav.Page.TENANTSECURITY	安全设置
+Nav.Page.TERRITORY	区域
+Nav.Page.TERRITORYMANAGEMENT	区域管理
+Nav.Page.TERRITORYMODEL	区域模型
+Nav.Page.TERRITORYNODE	区域节点
+Nav.Page.TIMEAPPROVALS	工时表审批
+Nav.Page.TIMEATTENDANCELEAVE	考勤与休假
+Nav.Page.TIMECATEGORIES	工作类别
+Nav.Page.TIMESETTINGS	工时记录设置
+Nav.Page.TRUSTLEVELS	信任级别
+Nav.Page.USERROLES	用户角色
+Nav.Page.USERS	用户
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	已验证认证登记册
+Nav.Page.VERIFIEDPARTICIPANTS	已验证参与者
+Nav.Page.VISITEVIDENCESETTINGS	拜访证据
+Nav.Page.VISITEXECUTION	拜访执行
+Nav.Page.VISITFREQUENCYPOLICIES	拜访频率策略
+Nav.Page.VISITPLANNING	拜访计划
+Nav.Page.VISITWORKSPACE	拜访工作台
+Nav.Page.WORKCENTER	任务中心
+Nav.Page.WORKFORCEANALYTICS	劳动力分析
+Nav.Page.WORKFORCEPLANNING	劳动力规划
+Nav.Page.WORKINGCALENDARIMPORTS	工作日历导入
+Nav.Page.WORKINGCALENDAROVERRIDES	工作日历例外
+Nav.Page.WORKINGCALENDARS	工作日历
+NavigationLoadFailed	菜单加载失败
+NavigationLoadFailedHint	请刷新页面重试。
+NewNotifications	{0} 个新通知
+NewPassword	New Password
+NoNotifications	暂无通知
+NoRecords	无记录
+NoRecordsFound	暂无子记录。
+NotAvailable	不可用
+Notification	通知
+NumericOnly	只允许输入数字
+Organization	组织
+OrganizationUnits	组织单元
+Overview	概览
+PDF	PDF
+Passive	停用
+Password.Error.CurrentRequired	当前密码为必填项。
+Password.Error.NeedsSpecial	密码必须包含至少一个特殊字符。
+Password.Error.NeedsUppercase	密码必须包含至少一个大写字母。
+Password.Error.NewRequired	新密码为必填项。
+Password.Error.Required	密码为必填项。
+Password.Error.ResetEmailRequired	电子邮件为必填项。
+Password.Error.ResetTokenRequired	重置令牌为必填项。
+Password.Error.TooLong	密码长度不能超过 {0} 个字符。
+Password.Error.TooShort	密码长度必须至少为 {0} 个字符。
+Perm.Entity.APPROVALS	审批
+Perm.Entity.CATEGORIES	类别
+Perm.Entity.CHECKLISTTEMPLATES	检查清单模板
+Perm.Entity.CONTENTSCOPE	内容范围
+Perm.Entity.CONTENTSET	内容集
+Perm.Entity.ELIGIBILITY	资格
+Perm.Entity.SETTINGS	设置
+Perm.Entity.TEMPLATES	模板
+Perm.Entity.TIMESHEETS	工时表
+Perm.Entity.VISITFREQUENCYPOLICY	访问频率策略
+Perm.Entity.WEEKS	周
+Perm.Module.CRMACCOUNT	CRM 客户账户
+Perm.Module.CRMCONTACT	CRM 联系人
+Perm.Module.CRMCONTENTCOMPOSITION	CRM 内容编排
+Perm.Module.CRMDOCTORINSIGHTS	CRM 医生洞察
+Perm.Module.CRMKNOWLEDGE	CRM 知识
+Perm.Module.CRMPLANNEDVISIT	CRM 计划拜访
+Perm.Module.CRMTERRITORY	CRM 区域
+Perm.Module.CRMVISITPLAN	CRM 拜访计划
+Perm.Module.CRMVISITREPORT	CRM 拜访报告
+Perm.Module.MOD0251	员工登记（核心人力资源）
+Perm.Module.TASKS	任务
+PermissionsMenu	Permissions
+PhoneNumber	电话号码
+PlannedVisitsMenu	计划拜访
+Platform	平台
+PlatformAdministration	平台管理
+PositionAssignments	职位分配
+Positions	职位
+PrimaryCurrency	主要货币
+Print	打印
+ProductMaster	产品主数据
+ProductsMenu	产品
+PurchaseOrderUpdateNotSupported	不支持修改采购订单；请新建采购订单，或批准此订单。
+QmsBaselines	QMS 基线
+Reconciliation	核对
+RecordActivated	记录已激活。
+RecordCreated	记录已成功创建。
+RecordDeleted	记录已成功删除。
+RecordSaved	更改已成功保存。
+RecordUpdated	记录已成功更新。
+ReferenceDataMenu	参考数据
+RepositoryAssessments	存储库评估
+RequiredProgress	必填：{{0}} / {{1}}
+RequiredStatus	必填：{0} / {1}
+RequisitionUpdateNotSupported	不支持修改采购申请；请新建申请，或提交此申请以供审批。
+Reset	重置
+ResetPassword.Mismatch	Passwords do not match.
+ResetPassword.Required	All password fields are required.
+ResetPassword.Subtitle	Your new password must be different from previously used passwords.
+ResetPassword.SuccessMessage	Your password has been updated.
+ResetPassword.SuccessTitle	Password updated
+ResetPassword.Title	Reset Password
+RfxUpdateNotSupported	不支持修改 RFx；请新建 RFx，或通过发布、报价和授标进行管理。
+RoleName_Admin	管理员
+RoleName_ReadOnly	只读
+RoleName_SuperAdmin	超级管理员
+RoleName_Viewer	查看者
+RolePermissionAssignmentMenu	Role Permissions
+RolesMenu	Roles
+SKUManagement	SKU 管理
+Sandbox	沙盒
+Save	保存
+SaveView	保存视图
+SavedNotActivated	已保存，但无法激活。
+Saving	正在保存...
+Search	搜索..
+SearchFilter	搜索和筛选
+Sector	行业
+SegmentsMenu	客户细分
+SelectPlaceholder	请选择...
+SelectedCount	条记录已选择
+SelfAccessMenu	My Access
+SetNewPassword	Set new password
+Settings	设置
+ShellSearchPlaceholder	搜索 ({0})
+Shortcuts.Close	关闭
+Shortcuts.DialogTitle	键盘快捷键
+Shortcuts.Key.Space	空格
+Shortcuts.Scope.Global	全局
+Shortcuts.Scope.TaskDetails	任务详情
+Shortcuts.Scope.WorkCenter	任务中心
+Shortcuts.ShowList	显示此列表
+Shortcuts.SilenceNote	在字段中输入时，或对话框、侧边面板打开时，快捷键不会生效。
+Shortcuts.Task.Back	返回任务列表
+Shortcuts.Task.Edit	编辑任务
+Shortcuts.Wcn.Accept	接受或审批所选项
+Shortcuts.Wcn.ClearSelection	清除选择
+Shortcuts.Wcn.Next	选择下一项
+Shortcuts.Wcn.Open	打开所选项
+Shortcuts.Wcn.OpenFocused	打开当前聚焦的行
+Shortcuts.Wcn.Previous	选择上一项
+Shortcuts.Wcn.Reject	拒绝或退回所选项
+Shortcuts.Wcn.Tabs	在选项卡之间切换（焦点位于选项卡上时）
+ShowAll	显示全部
+Status	状态
+StrategyTemplatesMenu	策略模板
+SubRecords	子记录
+SubscriptionPlans	订阅计划
+Success	成功
+SystemTheme	系统
+TagsCount	{0} 个标签
+TagsPlaceholder	输入标签后按回车
+TagsRemove	移除 {0}
+TaxNumber	税号
+TemplateMasters	企业模板主库
+TemplateVariants	模板变体
+TerritoryManagementMenu	区域管理
+Title	标题
+ToggleTheme	切换主题
+Unauthorized	未授权
+Unknown	未知
+Update	更新
+User	用户
+UserRoleAssignmentMenu	User Roles
+UsersMenu	Users
+ValidationErrors	错误：{0}
+ValidationFailed	请填写必填字段。
+VariantManagement	变体管理
+Variants	变体
+ViewAllNotifications	查看所有通知
+ViewDetails	查看详情
+Website	网站
+WorkCenterNextMenu	工作中心（新版）
+WorkflowApprovalsMenu	工作流审批
+Workspace	工作区

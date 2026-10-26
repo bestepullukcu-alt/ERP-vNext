@@ -241,7 +241,8 @@ public sealed class ReturnFormContractTests
         }
 
         // Identical-to-English values are allowed only where the word is genuinely the same in that language.
-        var sameWordAllowList = new HashSet<string>(StringComparer.Ordinal) { "fr:ActionsHeader" };
+        var sameWordAllowList = new HashSet<string>(StringComparer.Ordinal) { "fr:ActionsHeader", "fr:ShipmentStatusException" };
+        // fr ShipmentStatusException = "Exception" (7211cf3cc A4: converged to the Shipments source; the French word is the same).
         foreach (var (language, rows) in dictionaries.Where(d => d.Key != "en"))
         {
             foreach (var (key, value) in rows)

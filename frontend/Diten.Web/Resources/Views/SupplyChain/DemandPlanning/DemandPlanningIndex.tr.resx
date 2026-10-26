@@ -67,22 +67,22 @@
   <data name="HistoryPrevious" xml:space="preserve"><value>Önceki</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>Sonraki</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Kabul geçmişi yükleniyor...</value></data>
-  <data name="ForecastIntro" xml:space="preserve"><value>Tek SKU × Warehouse için kabul edilmiş geçmişi değerlendirin ve yöntemi açıkça seçin.</value></data>
-  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Şirketler tenant’ın MDM’deki aktif şirketleridir. Kullanıcı şirket yetkisi ve canlı seri doğrulaması bekliyor; doğrulama yapılamazsa işlem durur.</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Tek SKU × Depo için kabul edilmiş geçmişi değerlendirin ve yöntemi açıkça seçin.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Şirketler kiracının MDM’deki aktif şirketleridir. Kullanıcı şirket yetkisi ve canlı seri doğrulaması bekliyor; doğrulama yapılamazsa işlem durur.</value></data>
   <data name="ForecastLoading" xml:space="preserve"><value>Doğrulanmış veriler yükleniyor…</value></data>
   <data name="ForecastCycleVersion" xml:space="preserve"><value>Beklenen çevrim sürümü</value></data>
-  <data name="ForecastScopeHelp" xml:space="preserve"><value>Mevcut çevrim, SKU ve Warehouse kimliğini girin. Bu değerler sunucuda yeniden doğrulanır ve erişim yetkisi vermez.</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Mevcut çevrim, SKU ve Depo kimliğini girin. Bu değerler sunucuda yeniden doğrulanır ve erişim yetkisi vermez.</value></data>
   <data name="ForecastEvaluate" xml:space="preserve"><value>Yöntemleri Değerlendir</value></data>
   <data name="ForecastCandidates" xml:space="preserve"><value>Yöntem karşılaştırması</value></data>
-  <data name="ForecastComparisonHelp" xml:space="preserve"><value>Otomatik kazanan veya sıralama yoktur. WAPE’nin gerçekleşen talep paydası sıfırsa tanımsızdır; başka ölçü yerine geçmez. Pozitif bias düşük tahmindir. Her origin × test haftası ayrı örnektir; örtüşen haftalar birden çok sayılabilir.</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>Otomatik kazanan veya sıralama yoktur. WAPE’nin gerçekleşen talep paydası sıfırsa tanımsızdır; başka ölçü yerine geçmez. Pozitif bias düşük tahmindir. Her başlangıç noktası × test haftası ayrı örnektir; örtüşen haftalar birden çok sayılabilir.</value></data>
   <data name="ForecastPolicy" xml:space="preserve"><value>Politika sürümü</value></data>
   <data name="ForecastMethod" xml:space="preserve"><value>Açık yöntem seçimi</value></data>
   <data name="ForecastChooseMethod" xml:space="preserve"><value>Uygun bir yöntem seçin</value></data>
-  <data name="ForecastCreate" xml:space="preserve"><value>Tahmin Ve Draft Oluştur</value></data>
-  <data name="ForecastOpenDraft" xml:space="preserve"><value>Oluşan Draft’ı Aç</value></data>
-  <data name="ForecastCreated" xml:space="preserve"><value>Tahmin koşusu ve Draft zorunlu audit kayıtlarıyla kaydedildi.</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Tahmin Ve Taslak Oluştur</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Oluşan Taslağı Aç</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Tahmin koşusu ve taslak zorunlu denetim kayıtlarıyla kaydedildi.</value></data>
   <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Tek seri seçin, değerlendirin ve uygun yöntemi açıkça seçin.</value></data>
-  <data name="ForecastInvalidScope" xml:space="preserve"><value>Geçerli şirket, çevrim, SKU, Warehouse ve çevrim sürümü girin.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Geçerli şirket, çevrim, SKU, Depo ve çevrim sürümü girin.</value></data>
   <data name="ForecastUnavailable" xml:space="preserve"><value>Doğrulama yapılamıyor. Başarılı işlem teyit edilmedi. Kaynak erişilebilir olduğunda yeniden deneyin.</value></data>
   <data name="ForecastSessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapıp sayfayı yenileyin.</value></data>
   <data name="ForecastPermissionLost" xml:space="preserve"><value>Hesabınızın bu işlem için izni yok. Yöneticinizden yetki isteyip sayfayı yenileyin.</value></data>

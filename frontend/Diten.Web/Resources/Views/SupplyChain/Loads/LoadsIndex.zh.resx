@@ -42,12 +42,12 @@
   <data name="StatusDispatched" xml:space="preserve"><value>已发运</value></data>
   <data name="StatusCompleted" xml:space="preserve"><value>已完成</value></data>
   <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>未找到装载计划。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到装载计划。</value></data>
   <data name="NotProvided" xml:space="preserve"><value>未提供</value></data>
   <data name="SupportReference" xml:space="preserve"><value>支持参考号</value></data>
-  <data name="ListUnavailable" xml:space="preserve"><value>无法加载装载计划。请稍后重试。</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>请检查输入值后重试。</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>无法加载装载计划。请稍后重试。</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>请检查输入值后重试。</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>装载计划创建成功。</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>此装载计划请求此前已成功完成。</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>请勿更改表单并重试，以保留请求标识。</value></data>

@@ -1,0 +1,249 @@
+key	lang	class	values(modules:value)
+AccessDenied	ar	CANDIDATE-DRIFT	Shipments:ليس لديك إذن لهذا الإجراء. || Carriers:لم يعد لديك إذن لتنفيذ هذا الإجراء. || Loads:ليس لديك إذن لتنفيذ هذا الإجراء.
+AccessDenied	en	CANDIDATE-DRIFT	Loads/Shipments:You do not have permission for this action. || Carriers:You no longer have permission for this action.
+AccessDenied	es	CANDIDATE-DRIFT	Loads/Shipments:No tiene permiso para esta acción. || Carriers:Ya no tiene permiso para esta acción.
+AccessDenied	fr	CANDIDATE-DRIFT	Shipments:Vous n’avez pas l’autorisation requise. || Carriers:Vous n’avez plus l’autorisation d’effectuer cette action. || Loads:Vous n’avez pas l’autorisation pour cette action.
+AccessDenied	ru	CANDIDATE-DRIFT	Loads/Shipments:У вас нет разрешения на это действие. || Carriers:У вас больше нет разрешения на это действие.
+AccessDenied	tr	CANDIDATE-DRIFT	Loads/Shipments:Bu işlem için yetkiniz yok. || Carriers:Bu işlem için artık yetkiniz yok.
+AccessDenied	zh	CANDIDATE-DRIFT	Loads/Shipments:您无权执行此操作。 || Carriers:您已无权执行此操作。
+CarrierId	ar	CANDIDATE-DRIFT	Shipments:الناقل || Loads:معرّف شركة النقل
+CarrierId	en	CANDIDATE-DRIFT	Shipments:Carrier || Loads:Carrier ID
+CarrierId	es	CANDIDATE-DRIFT	Shipments:Transportista || Loads:ID del transportista
+CarrierId	fr	CANDIDATE-DRIFT	Shipments:Transporteur || Loads:ID du transporteur
+CarrierId	ru	CANDIDATE-DRIFT	Shipments:Перевозчик || Loads:ID перевозчика
+CarrierId	tr	CANDIDATE-DRIFT	Shipments:Taşıyıcı || Loads:Taşıyıcı Kimliği
+CarrierId	zh	CANDIDATE-DRIFT	Shipments:承运商 || Loads:承运商 ID
+ConfirmTransition	ar	module-specific	Returns:هل تريد تغيير حالة المرتجع إلى القيمة المحددة؟ || Claims:هل تريد تغيير حالة المطالبة إلى القيمة المحددة؟
+ConfirmTransition	en	module-specific	Returns:Change the return status to the selected value? || Claims:Change the claim status to the selected value?
+ConfirmTransition	es	module-specific	Returns:¿Cambiar el estado de la devolución al valor seleccionado? || Claims:¿Cambiar el estado de la reclamación al valor seleccionado?
+ConfirmTransition	fr	module-specific	Returns:Modifier le statut du retour avec la valeur sélectionnée ? || Claims:Modifier le statut de la réclamation avec la valeur sélectionnée ?
+ConfirmTransition	ru	module-specific	Returns:Изменить статус возврата на выбранное значение? || Claims:Изменить статус претензии на выбранный?
+ConfirmTransition	tr	CANDIDATE-DRIFT	Returns:İade durumu seçilen değere değiştirilsin mi? || Claims:Talep durumu seçilen değere değiştirilsin mi?
+ConfirmTransition	zh	module-specific	Returns:要将退货状态更改为所选值吗？ || Claims:要将索赔状态更改为所选值吗？
+CreateReplaySuccess	ar	CANDIDATE-DRIFT	Carriers:اكتمل طلب شركة النقل هذا بنجاح من قبل. || Loads:اكتمل طلب خطة الحمولة هذا بنجاح من قبل.
+CreateReplaySuccess	en	module-specific	Carriers:This carrier request was already completed successfully. || Loads:This load plan request was already completed successfully.
+CreateReplaySuccess	es	module-specific	Carriers:Esta solicitud de transportista ya se completó correctamente. || Loads:Esta solicitud de plan de carga ya se completó correctamente.
+CreateReplaySuccess	fr	module-specific	Carriers:Cette demande de transporteur a déjà abouti. || Loads:Cette demande de plan de chargement a déjà abouti.
+CreateReplaySuccess	ru	CANDIDATE-DRIFT	Carriers:Этот запрос на создание перевозчика уже был успешно выполнен. || Loads:Этот запрос на план рейса уже был успешно выполнен.
+CreateReplaySuccess	tr	module-specific	Carriers:Bu taşıyıcı isteği daha önce başarıyla tamamlandı. || Loads:Bu yük planı isteği daha önce başarıyla tamamlandı.
+CreateReplaySuccess	zh	module-specific	Carriers:此承运商请求此前已成功完成。 || Loads:此装载计划请求此前已成功完成。
+CreateSuccess	ar	CANDIDATE-DRIFT	Carriers:تم إنشاء شركة النقل بنجاح. || Loads:تم إنشاء خطة الحمولة بنجاح.
+CreateSuccess	en	module-specific	Carriers:Carrier created successfully. || Loads:Load plan created successfully.
+CreateSuccess	es	module-specific	Carriers:El transportista se creó correctamente. || Loads:El plan de carga se creó correctamente.
+CreateSuccess	fr	module-specific	Carriers:Le transporteur a été créé. || Loads:Le plan de chargement a été créé.
+CreateSuccess	ru	CANDIDATE-DRIFT	Carriers:Перевозчик успешно создан. || Loads:План рейса успешно создан.
+CreateSuccess	tr	module-specific	Carriers:Taşıyıcı başarıyla oluşturuldu. || Loads:Yük planı başarıyla oluşturuldu.
+CreateSuccess	zh	module-specific	Carriers:承运商创建成功。 || Loads:装载计划创建成功。
+EligibilityNote	ar	module-specific	Returns:يمكن إنشاء مرتجع للشحنات المسلّمة أو المغلقة فقط. || Claims:يمكن إنشاء مطالبة للشحنات التي حالتها: مُرسلة أو قيد النقل أو تم التسليم أو استثناء أو مغلقة.
+EligibilityNote	en	module-specific	Returns:A return can be created for shipments that are Delivered or Closed. || Claims:A claim can be created for shipments that are Dispatched, In Transit, Delivered, Exception or Closed.
+EligibilityNote	es	module-specific	Returns:Se puede crear una devolución para envíos entregados o cerrados. || Claims:Se puede crear una reclamación para envíos en estado Despachado, En tránsito, Entregado, Incidencia o Cerrado.
+EligibilityNote	fr	module-specific	Returns:Un retour peut être créé pour les expéditions livrées ou clôturées. || Claims:Une réclamation peut être créée pour les expéditions Expédiée, En transit, Livrée, Incident ou Clôturée.
+EligibilityNote	ru	module-specific	Returns:Возврат можно создать только для доставленных или закрытых отгрузок. || Claims:Претензию можно создать для отгрузок в статусе «Отправлена», «В пути», «Доставлена», «Исключение» или «Закрыта».
+EligibilityNote	tr	module-specific	Returns:Yalnızca Teslim Edildi veya Kapandı durumundaki sevkiyatlar için iade oluşturulabilir. || Claims:Talep yalnızca Sevk Edildi, Yolda, Teslim Edildi, İstisna veya Kapandı durumundaki sevkiyatlar için oluşturulabilir.
+EligibilityNote	zh	module-specific	Returns:只有已交付或已关闭的发运单才能创建退货。 || Claims:仅可为状态为“已发运”“运输中”“已交付”“异常”或“已关闭”的货运创建索赔。
+EmptyList	ar	CANDIDATE-DRIFT	Carriers:لم يتم العثور على شركات نقل. || Loads:لم يتم العثور على حمولات.
+EmptyList	en	module-specific	Carriers:No carriers were found. || Loads:No loads were found.
+EmptyList	es	module-specific	Carriers:No se encontraron transportistas. || Loads:No se encontraron cargas.
+EmptyList	fr	module-specific	Carriers:Aucun transporteur trouvé. || Loads:Aucun chargement trouvé.
+EmptyList	ru	CANDIDATE-DRIFT	Carriers:Перевозчики не найдены. || Loads:Рейсы не найдены.
+EmptyList	tr	module-specific	Carriers:Taşıyıcı bulunamadı. || Loads:Yük bulunamadı.
+EmptyList	zh	module-specific	Carriers:未找到承运商。 || Loads:未找到装载计划。
+EmptyState	ar	module-specific	Shipments:لم يتم العثور على شحنات. || Returns:لا توجد مرتجعات تطابق عامل التصفية الحالي. || Claims:لا توجد مطالبات تطابق عامل التصفية الحالي.
+EmptyState	en	module-specific	Shipments:No shipments were found. || Returns:No returns match the current filter. || Claims:No claims match the current filter.
+EmptyState	es	module-specific	Shipments:No se encontraron envíos. || Returns:Ninguna devolución coincide con el filtro actual. || Claims:Ninguna reclamación coincide con el filtro actual.
+EmptyState	fr	module-specific	Shipments:Aucune expédition trouvée. || Returns:Aucun retour ne correspond au filtre actuel. || Claims:Aucune réclamation ne correspond au filtre actuel.
+EmptyState	ru	module-specific	Shipments:Отгрузки не найдены. || Returns:Нет возвратов, соответствующих текущему фильтру. || Claims:Нет претензий, соответствующих текущему фильтру.
+EmptyState	tr	module-specific	Shipments:Sevkiyat bulunamadı. || Returns:Geçerli filtreyle eşleşen iade yok. || Claims:Geçerli filtreye uyan talep yok.
+EmptyState	zh	module-specific	Shipments:未找到货运。 || Returns:没有符合当前筛选条件的退货。 || Claims:没有符合当前筛选条件的索赔。
+ErrCorrelationRootMismatch	ar	CANDIDATE-DRIFT	Loads:لم يعد هذا الطلب مطابقًا للحمولة التي بدأها. أغلق هذا النموذج وافتح نموذجًا جديدًا. || Returns:لم يعد الطلب مطابقًا لسجل الشحنة.
+ErrCorrelationRootMismatch	en	CANDIDATE-DRIFT	Loads:This request no longer matches the load it started. Close this form and open a new one. || Returns:The request no longer matches the shipment record.
+ErrCorrelationRootMismatch	es	CANDIDATE-DRIFT	Loads:Esta solicitud ya no coincide con la carga que inició. Cierre este formulario y abra uno nuevo. || Returns:La solicitud ya no coincide con el registro del envío.
+ErrCorrelationRootMismatch	fr	CANDIDATE-DRIFT	Loads:Cette demande ne correspond plus au chargement qu’elle a créé. Fermez ce formulaire et ouvrez-en un nouveau. || Returns:La demande ne correspond plus à l’enregistrement de l’expédition.
+ErrCorrelationRootMismatch	ru	CANDIDATE-DRIFT	Loads:Этот запрос больше не соответствует созданному им рейсу. Закройте эту форму и откройте новую. || Returns:Запрос больше не соответствует записи об отгрузке.
+ErrCorrelationRootMismatch	tr	CANDIDATE-DRIFT	Loads:Bu istek başlattığı yükle artık eşleşmiyor. Bu formu kapatıp yeni bir form açın. || Returns:İstek artık sevkiyat kaydıyla eşleşmiyor.
+ErrCorrelationRootMismatch	zh	CANDIDATE-DRIFT	Loads:此请求已与其发起的装载计划不一致。请关闭此表单并打开新表单。 || Returns:该请求与货运记录已不再一致。
+ErrDependencyResponseInvalid	ar	CANDIDATE-DRIFT	Loads:تعذّرت قراءة بيانات شركة النقل أو الشحنة. تواصل مع الدعم مع ذكر المرجع. || Returns:بيانات الشحنة التي أعادها النظام المصدر غير صالحة. يُرجى التواصل مع الدعم.
+ErrDependencyResponseInvalid	en	CANDIDATE-DRIFT	Loads:Carrier or shipment data could not be read. Contact support with the reference. || Returns:The shipment data returned by the source system is invalid. Please contact support.
+ErrDependencyResponseInvalid	es	CANDIDATE-DRIFT	Loads:No se pudieron leer los datos de transportista o envío. Contacte con soporte indicando la referencia. || Returns:Los datos del envío devueltos por el sistema de origen no son válidos. Póngase en contacto con soporte.
+ErrDependencyResponseInvalid	fr	CANDIDATE-DRIFT	Loads:Les données de transporteur ou d’expédition n’ont pas pu être lues. Contactez l’assistance avec la référence. || Returns:Les données d’expédition renvoyées par le système source ne sont pas valides. Veuillez contacter le support.
+ErrDependencyResponseInvalid	ru	CANDIDATE-DRIFT	Loads:Не удалось прочитать данные перевозчика или отгрузки. Обратитесь в поддержку, указав номер. || Returns:Данные отгрузки, полученные из исходной системы, недействительны. Обратитесь в поддержку.
+ErrDependencyResponseInvalid	tr	CANDIDATE-DRIFT	Loads:Taşıyıcı veya sevkiyat verileri okunamadı. Referansla destek ekibine başvurun. || Returns:Kaynak sistemin döndürdüğü sevkiyat verisi geçersiz. Lütfen destek ekibine başvurun.
+ErrDependencyResponseInvalid	zh	CANDIDATE-DRIFT	Loads:无法读取承运商或发运单数据。请凭参考号联系支持人员。 || Returns:源系统返回的发运数据无效，请联系支持团队。
+ErrDependencyUnavailable	ar	CANDIDATE-DRIFT	Loads:بيانات شركة النقل أو الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه. || Returns:بيانات مرجع الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.
+ErrDependencyUnavailable	en	CANDIDATE-DRIFT	Loads:Carrier or shipment data is temporarily unavailable. Try the same request again. || Returns:The shipment reference data is temporarily unavailable. Try the same request again.
+ErrDependencyUnavailable	es	CANDIDATE-DRIFT	Loads:Los datos de transportista o envío no están disponibles temporalmente. Reintente la misma solicitud. || Returns:Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.
+ErrDependencyUnavailable	fr	CANDIDATE-DRIFT	Loads:Les données de transporteur ou d’expédition sont temporairement indisponibles. Réessayez la même demande. || Returns:Les données de référence de l’expédition sont temporairement indisponibles. Réessayez la même demande.
+ErrDependencyUnavailable	ru	CANDIDATE-DRIFT	Loads:Данные перевозчика или отгрузки временно недоступны. Повторите тот же запрос. || Returns:Справочные данные отгрузки временно недоступны. Повторите тот же запрос.
+ErrDependencyUnavailable	tr	CANDIDATE-DRIFT	Loads:Taşıyıcı veya sevkiyat verileri geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin. || Returns:Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.
+ErrDependencyUnavailable	zh	CANDIDATE-DRIFT	Loads:承运商或发运单数据暂时不可用。请重试相同的请求。 || Returns:货运参考数据暂时不可用，请重试同一请求。
+ErrIdempotencyKeyReused	ar	CANDIDATE-DRIFT	Claims/Loads:تم استلام هذا الطلب بالفعل بقيم مختلفة. لتقديم طلب مختلف، أغلق هذا النموذج وافتح نموذجًا جديدًا. || Returns:استُخدم هذا الطلب مسبقًا بقيم مختلفة. ابدأ إجراءً جديدًا.
+ErrIdempotencyKeyReused	en	CANDIDATE-DRIFT	Claims/Loads:This request was already received with different values. To make a different request, close this form and open a new one. || Returns:This request was already used with different values. Start a new action.
+ErrIdempotencyKeyReused	es	CANDIDATE-DRIFT	Claims/Loads:Esta solicitud ya se recibió con valores diferentes. Para hacer otra solicitud, cierre este formulario y abra uno nuevo. || Returns:Esta solicitud ya se usó con otros valores. Inicie una nueva acción.
+ErrIdempotencyKeyReused	fr	CANDIDATE-DRIFT	Claims/Loads:Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau. || Returns:Cette demande a déjà été utilisée avec d’autres valeurs. Lancez une nouvelle action.
+ErrIdempotencyKeyReused	ru	CANDIDATE-DRIFT	Claims/Loads:Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую. || Returns:Этот запрос уже использовался с другими значениями. Начните новое действие.
+ErrIdempotencyKeyReused	tr	CANDIDATE-DRIFT	Claims/Loads:Bu istek farklı değerlerle zaten alındı. Farklı bir istek için bu formu kapatıp yeni bir form açın. || Returns:Bu istek farklı değerlerle zaten kullanıldı. Yeni bir işlem başlatın.
+ErrIdempotencyKeyReused	zh	CANDIDATE-DRIFT	Claims/Loads:此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。 || Returns:此请求已使用不同的值提交过。请重新开始操作。
+ErrInternalError	ar	CANDIDATE-DRIFT	Loads:حدث خطأ غير متوقع. تواصل مع الدعم مع ذكر المرجع. || Claims/Returns:حدث خطأ غير متوقع. يمكنك إعادة محاولة الإجراء نفسه.
+ErrInternalError	en	CANDIDATE-DRIFT	Loads:An unexpected error occurred. Contact support with the reference. || Claims/Returns:An unexpected error occurred. You can retry the same action.
+ErrInternalError	es	CANDIDATE-DRIFT	Loads:Se produjo un error inesperado. Contacte con soporte indicando la referencia. || Claims/Returns:Se produjo un error inesperado. Puede reintentar la misma acción.
+ErrInternalError	fr	CANDIDATE-DRIFT	Loads:Une erreur inattendue s’est produite. Contactez l’assistance avec la référence. || Claims/Returns:Une erreur inattendue s’est produite. Vous pouvez réessayer la même action.
+ErrInternalError	ru	CANDIDATE-DRIFT	Loads:Произошла непредвиденная ошибка. Обратитесь в поддержку, указав номер. || Claims/Returns:Произошла непредвиденная ошибка. Можно повторить то же действие.
+ErrInternalError	tr	CANDIDATE-DRIFT	Loads:Beklenmeyen bir hata oluştu. Referansla destek ekibine başvurun. || Claims/Returns:Beklenmeyen bir hata oluştu. Aynı işlemi yeniden deneyebilirsiniz.
+ErrInternalError	zh	CANDIDATE-DRIFT	Loads:发生意外错误。请凭参考号联系支持人员。 || Claims/Returns:发生意外错误。您可以重试同一操作。
+ErrPersistenceUnavailable	ar	CANDIDATE-DRIFT	Loads:نتيجة الطلب غير متاحة حالياً. || Returns:المرتجعات غير متاحة مؤقتًا. لم يتم تأكيد النتيجة؛ أعد محاولة الطلب نفسه.
+ErrPersistenceUnavailable	en	CANDIDATE-DRIFT	Loads:The request outcome is unavailable. || Returns:Returns are temporarily unavailable. The outcome is not confirmed; try the same request again.
+ErrPersistenceUnavailable	es	CANDIDATE-DRIFT	Loads:El resultado de la solicitud no está disponible. || Returns:Las devoluciones no están disponibles temporalmente. El resultado no está confirmado; vuelva a intentar la misma solicitud.
+ErrPersistenceUnavailable	fr	CANDIDATE-DRIFT	Loads:Le résultat de la demande n’est pas disponible. || Returns:Les retours sont temporairement indisponibles. Le résultat n’est pas confirmé ; réessayez la même demande.
+ErrPersistenceUnavailable	ru	CANDIDATE-DRIFT	Loads:Результат запроса сейчас недоступен. || Returns:Возвраты временно недоступны. Результат не подтверждён; повторите тот же запрос.
+ErrPersistenceUnavailable	tr	CANDIDATE-DRIFT	Loads:İsteğin sonucu şu anda belirlenemiyor. || Returns:İadeler geçici olarak kullanılamıyor. Sonuç doğrulanmadı; aynı isteği yeniden deneyin.
+ErrPersistenceUnavailable	zh	CANDIDATE-DRIFT	Loads:目前无法确定请求结果。 || Returns:退货服务暂时不可用。结果尚未确认，请重试同一请求。
+ErrReferenceStateUnavailable	ar	CANDIDATE-DRIFT	Loads:تعذّر تأكيد الحالة الحالية للشحنة. أعد محاولة الطلب نفسه لاحقًا. || Returns:حالة الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.
+ErrReferenceStateUnavailable	en	CANDIDATE-DRIFT	Loads:The shipment’s current state could not be confirmed. Try the same request again later. || Returns:The shipment state is temporarily unavailable. Try the same request again.
+ErrReferenceStateUnavailable	es	CANDIDATE-DRIFT	Loads:No se pudo confirmar el estado actual del envío. Reintente la misma solicitud más tarde. || Returns:El estado del envío no está disponible temporalmente. Vuelva a intentar la misma solicitud.
+ErrReferenceStateUnavailable	fr	CANDIDATE-DRIFT	Loads:L’état actuel de l’expédition n’a pas pu être confirmé. Réessayez la même demande plus tard. || Returns:L’état de l’expédition est temporairement indisponible. Réessayez la même demande.
+ErrReferenceStateUnavailable	ru	CANDIDATE-DRIFT	Loads:Не удалось подтвердить текущее состояние отгрузки. Повторите тот же запрос позже. || Returns:Состояние отгрузки временно недоступно. Повторите тот же запрос.
+ErrReferenceStateUnavailable	tr	CANDIDATE-DRIFT	Loads:Sevkiyatın güncel durumu doğrulanamadı. Aynı isteği daha sonra yeniden deneyin. || Returns:Sevkiyat durumu geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin.
+ErrReferenceStateUnavailable	zh	CANDIDATE-DRIFT	Loads:无法确认发运单的当前状态。请稍后重试相同的请求。 || Returns:发运单状态暂时不可用，请重试同一请求。
+ErrShipmentNotFound	ar	CANDIDATE-DRIFT	Loads:لم يتم العثور على شحنة بهذا المعرّف ضمن نطاقك. || Returns:لم يتم العثور على السجل أو أنه غير متاح لك.
+ErrShipmentNotFound	en	CANDIDATE-DRIFT	Loads:A shipment with this ID was not found in your scope. || Returns:The record was not found or is not available to you.
+ErrShipmentNotFound	es	CANDIDATE-DRIFT	Loads:No se encontró ningún envío con este ID en su ámbito. || Returns:El registro no se encontró o no está disponible para usted.
+ErrShipmentNotFound	fr	CANDIDATE-DRIFT	Loads:Aucune expédition avec cet ID n’a été trouvée dans votre périmètre. || Returns:L’enregistrement est introuvable ou ne vous est pas accessible.
+ErrShipmentNotFound	ru	CANDIDATE-DRIFT	Loads:В вашей области не найдена отгрузка с этим ID. || Returns:Запись не найдена или недоступна вам.
+ErrShipmentNotFound	tr	CANDIDATE-DRIFT	Loads:Kapsamınızda bu kimliğe sahip sevkiyat bulunamadı. || Returns:Kayıt bulunamadı veya sizin için erişilebilir değil.
+ErrShipmentNotFound	zh	CANDIDATE-DRIFT	Loads:在您的范围内未找到此 ID 的发运单。 || Returns:未找到该记录，或您无法访问该记录。
+EvidenceHelp	ar	CANDIDATE-DRIFT	Shipments:أدخل مرجعاً واحداً في كل سطر أو افصل المراجع بفواصل. || Claims/Returns:اختياري. تُرسل المراجع بالترتيب المعروض.
+EvidenceHelp	en	CANDIDATE-DRIFT	Shipments:Enter one reference per line or separate references with commas. || Claims/Returns:Optional. References are sent in the order shown.
+EvidenceHelp	es	CANDIDATE-DRIFT	Shipments:Introduzca una referencia por línea o sepárelas con comas. || Claims/Returns:Opcional. Las referencias se envían en el orden mostrado.
+EvidenceHelp	fr	CANDIDATE-DRIFT	Shipments:Saisissez une référence par ligne ou séparez-les par des virgules. || Claims/Returns:Facultatif. Les références sont envoyées dans l’ordre affiché.
+EvidenceHelp	ru	CANDIDATE-DRIFT	Shipments:Введите по одной ссылке в строке или разделите ссылки запятыми. || Claims/Returns:Необязательно. Ссылки отправляются в показанном порядке.
+EvidenceHelp	tr	CANDIDATE-DRIFT	Shipments:Her satıra bir referans girin veya virgülle ayırın. || Claims/Returns:İsteğe bağlı. Referanslar gösterilen sırayla gönderilir.
+EvidenceHelp	zh	CANDIDATE-DRIFT	Shipments:每行输入一个引用，或用逗号分隔。 || Claims/Returns:可选。引用按显示顺序发送。
+EvidenceReferenceIds	ar	CANDIDATE-DRIFT	Shipments:مراجع الإثبات || Claims/Returns:مراجع الأدلة
+EvidenceReferenceIds	fr	CANDIDATE-DRIFT	Shipments:Références de preuve || Claims/Returns:Références de justificatifs
+FormTitleCreate	ar	module-specific	Returns:مرتجع جديد || Claims:مطالبة جديدة
+FormTitleCreate	en	module-specific	Returns:New Return || Claims:New Claim
+FormTitleCreate	es	module-specific	Returns:Nueva devolución || Claims:Nueva reclamación
+FormTitleCreate	fr	module-specific	Returns:Nouveau retour || Claims:Nouvelle réclamation
+FormTitleCreate	ru	module-specific	Returns:Новый возврат || Claims:Новая претензия
+FormTitleCreate	tr	CANDIDATE-DRIFT	Returns:Yeni İade || Claims:Yeni Talep
+FormTitleCreate	zh	module-specific	Returns:新建退货 || Claims:新建索赔
+IdempotencyKeyReused	ar	CANDIDATE-DRIFT	Shipments:هوية الطلب تخص محتوى مختلفاً. || Carriers:تم استلام هذا الطلب بالفعل بقيم مختلفة. لتقديم طلب مختلف، أغلق هذا النموذج وافتح نموذجًا جديدًا.
+IdempotencyKeyReused	en	CANDIDATE-DRIFT	Shipments:The request identity belongs to different content. || Carriers:This request was already received with different values. To make a different request, close this form and open a new one.
+IdempotencyKeyReused	es	CANDIDATE-DRIFT	Shipments:La identidad de solicitud pertenece a otro contenido. || Carriers:Esta solicitud ya se recibió con valores diferentes. Para hacer otra solicitud, cierre este formulario y abra uno nuevo.
+IdempotencyKeyReused	fr	CANDIDATE-DRIFT	Shipments:L’identité de requête appartient à un autre contenu. || Carriers:Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau.
+IdempotencyKeyReused	ru	CANDIDATE-DRIFT	Shipments:Идентификатор запроса относится к другому содержимому. || Carriers:Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.
+IdempotencyKeyReused	tr	CANDIDATE-DRIFT	Shipments:İstek kimliği farklı bir içeriğe ait. || Carriers:Bu istek farklı değerlerle zaten alındı. Farklı bir istek için bu formu kapatıp yeni bir form açın.
+IdempotencyKeyReused	zh	CANDIDATE-DRIFT	Shipments:请求标识属于其他内容。 || Carriers:此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。
+LineNumber	ar	CANDIDATE-DRIFT	Shipments:رقم البند || Returns:رقم السطر
+ListErrorState	ar	module-specific	Returns:تعذّر تحميل المرتجعات. || Claims:تعذّر تحميل المطالبات.
+ListErrorState	en	module-specific	Returns:Returns could not be loaded. || Claims:Claims could not be loaded.
+ListErrorState	es	module-specific	Returns:No se pudieron cargar las devoluciones. || Claims:No se pudieron cargar las reclamaciones.
+ListErrorState	fr	module-specific	Returns:Les retours n’ont pas pu être chargés. || Claims:Impossible de charger les réclamations.
+ListErrorState	ru	module-specific	Returns:Не удалось загрузить возвраты. || Claims:Не удалось загрузить претензии.
+ListErrorState	tr	CANDIDATE-DRIFT	Returns:İadeler yüklenemedi. || Claims:Talepler yüklenemedi.
+ListErrorState	zh	module-specific	Returns:无法加载退货。 || Claims:无法加载索赔。
+ListUnavailable	ar	module-specific	Shipments:تعذر تحميل الشحنات. حاول مرة أخرى لاحقًا. || Carriers:تعذّر تحميل شركات النقل. حاول مرة أخرى لاحقًا. || Loads:تعذّر تحميل الحمولات. حاول مرة أخرى لاحقًا.
+ListUnavailable	en	module-specific	Shipments:Shipments could not be loaded. Try again later. || Carriers:Carriers could not be loaded. Try again later. || Loads:Loads could not be loaded. Try again later.
+ListUnavailable	es	module-specific	Shipments:No se pudieron cargar los envíos. Vuelva a intentarlo más tarde. || Carriers:No se pudieron cargar los transportistas. Inténtelo de nuevo más tarde. || Loads:No se pudieron cargar las cargas. Inténtelo de nuevo más tarde.
+ListUnavailable	fr	module-specific	Shipments:Les expéditions n’ont pas pu être chargées. Réessayez plus tard. || Carriers:Les transporteurs n’ont pas pu être chargés. Réessayez plus tard. || Loads:Les chargements n’ont pas pu être chargés. Réessayez plus tard.
+ListUnavailable	ru	module-specific	Shipments:Не удалось загрузить отгрузки. Повторите попытку позже. || Carriers:Не удалось загрузить перевозчиков. Повторите попытку позже. || Loads:Не удалось загрузить рейсы. Повторите попытку позже.
+ListUnavailable	tr	module-specific	Shipments:Sevkiyatlar yüklenemedi. Daha sonra tekrar deneyin. || Carriers:Taşıyıcılar yüklenemedi. Daha sonra tekrar deneyin. || Loads:Yükler yüklenemedi. Daha sonra tekrar deneyin.
+ListUnavailable	zh	module-specific	Shipments:无法加载货运。请稍后重试。 || Carriers:无法加载承运商。请稍后重试。 || Loads:无法加载装载计划。请稍后重试。
+NotProvided	es	CANDIDATE-DRIFT	Loads:No proporcionado || Claims/Returns:No indicado
+NotProvided	fr	CANDIDATE-DRIFT	Loads:Non fourni || Claims/Returns:Non renseigné
+NotProvided	tr	CANDIDATE-DRIFT	Loads:Sağlanmadı || Claims/Returns:Belirtilmemiş
+OccurredAt	ar	CANDIDATE-DRIFT	Shipments:وقت الحدث || Claims/Returns:وقت الحدوث
+OccurredAt	es	CANDIDATE-DRIFT	Shipments:Fecha del evento || Claims/Returns:Ocurrido el
+OccurredAt	fr	CANDIDATE-DRIFT	Shipments:Date de l’événement || Claims/Returns:Survenu le
+OccurredAtHelp	ar	CANDIDATE-DRIFT	Returns:التاريخ والوقت المحليان لديك. يُرسلان بتوقيت UTC. || Claims:التاريخ والوقت مع فرق التوقيت، مثل 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	en	CANDIDATE-DRIFT	Returns:Your local date and time. It is sent in UTC. || Claims:Date and time with offset, for example 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	es	CANDIDATE-DRIFT	Returns:Su fecha y hora locales. Se envían en UTC. || Claims:Fecha y hora con desfase, por ejemplo 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	fr	CANDIDATE-DRIFT	Returns:Votre date et heure locales. Elles sont envoyées en UTC. || Claims:Date et heure avec décalage, par exemple 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	ru	CANDIDATE-DRIFT	Returns:Ваши местные дата и время. Они отправляются в UTC. || Claims:Дата и время со смещением, например 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	tr	CANDIDATE-DRIFT	Returns:Yerel tarih ve saatiniz. UTC olarak gönderilir. || Claims:Saat farkıyla tarih ve saat, örneğin 2026-09-26T14:30:00+03:00.
+OccurredAtHelp	zh	CANDIDATE-DRIFT	Returns:您的本地日期和时间，将以 UTC 发送。 || Claims:带时区偏移的日期和时间，例如 2026-09-26T14:30:00+03:00。
+PageDescription	ar	CANDIDATE-DRIFT	Shipments:تتبّع الشحنات وإجراءات دورة الحياة وإثبات التسليم. || Carriers:اعرض شركات النقل وأنشئ شركة جديدة وأدر حالة دورة حياتها. || Loads:اعرض خطط الحمولات وأنشئ خطة حمولة من مراجع شركات النقل والشحنات الموجودة. || Returns:اطلب مرتجعات البضائع المشحونة واعتمدها وتابعها. || Claims:سجّل مطالبات شركات النقل المتعلقة بالشحنات وحقّق فيها واتخذ القرار بشأنها.
+PageDescription	en	module-specific	Shipments:Track shipments, lifecycle actions and proof of delivery. || Carriers:View carriers, create a carrier, and manage lifecycle status. || Loads:View load plans and create a load plan from existing carrier and shipment references. || Returns:Request, authorize and track returns of shipped goods. || Claims:Record, investigate and decide carrier claims for shipments.
+PageDescription	es	module-specific	Shipments:Controle envíos, acciones del ciclo de vida y comprobantes de entrega. || Carriers:Consulte transportistas, cree uno y gestione su estado de ciclo de vida. || Loads:Consulte los planes de carga y cree uno a partir de referencias existentes de transportista y envío. || Returns:Solicite, autorice y controle las devoluciones de mercancías enviadas. || Claims:Registre, investigue y resuelva las reclamaciones al transportista relacionadas con los envíos.
+PageDescription	fr	module-specific	Shipments:Suivez les expéditions, leur cycle de vie et la preuve de livraison. || Carriers:Consultez les transporteurs, créez-en un et gérez son statut de cycle de vie. || Loads:Consultez les plans de chargement et créez-en un à partir de références de transporteur et d’expédition existantes. || Returns:Demandez, autorisez et suivez les retours de marchandises expédiées. || Claims:Enregistrez, instruisez et tranchez les réclamations transporteur liées aux expéditions.
+PageDescription	ru	CANDIDATE-DRIFT	Shipments:Отслеживайте отгрузки, действия жизненного цикла и подтверждение доставки. || Carriers:Просматривайте и создавайте перевозчиков, а также управляйте их статусом. || Loads:Просматривайте планы рейсов и создавайте план рейса по существующим ссылкам на перевозчика и отгрузки. || Returns:Оформляйте, согласовывайте и отслеживайте возвраты отгруженных товаров. || Claims:Регистрируйте, расследуйте и решайте претензии к перевозчикам по отгрузкам.
+PageDescription	tr	module-specific	Shipments:Sevkiyatları, yaşam döngüsü işlemlerini ve teslimat kanıtını izleyin. || Carriers:Taşıyıcıları görüntüleyin, taşıyıcı oluşturun ve yaşam döngüsü durumunu yönetin. || Loads:Yük planlarını görüntüleyin ve mevcut taşıyıcı ve sevkiyat referanslarından yük planı oluşturun. || Returns:Sevk edilen malların iadelerini talep edin, onaylayın ve izleyin. || Claims:Sevkiyatlara ait taşıyıcı hasar taleplerini kaydedin, inceleyin ve karara bağlayın.
+PageDescription	zh	module-specific	Shipments:跟踪货运、生命周期操作和交付证明。 || Carriers:查看并创建承运商，以及管理其生命周期状态。 || Loads:查看装载计划，并根据现有承运商和发运引用创建装载计划。 || Returns:申请、授权并跟踪已发运货物的退货。 || Claims:登记、调查并裁定与货运相关的承运商索赔。
+PersistenceUnavailable	ar	CANDIDATE-DRIFT	Shipments:نتيجة الطلب غير متاحة. أعد المحاولة بنفس الإجراء. || Carriers:نتيجة الطلب غير متاحة حالياً.
+PersistenceUnavailable	en	CANDIDATE-DRIFT	Shipments:The request outcome is unavailable. Retry the same intent. || Carriers:The request outcome is unavailable.
+PersistenceUnavailable	es	CANDIDATE-DRIFT	Shipments:El resultado no está disponible. Reintente la misma acción. || Carriers:El resultado de la solicitud no está disponible.
+PersistenceUnavailable	fr	CANDIDATE-DRIFT	Shipments:Le résultat est indisponible. Réessayez la même intention. || Carriers:Le résultat de la demande n’est pas disponible.
+PersistenceUnavailable	ru	CANDIDATE-DRIFT	Shipments:Результат запроса недоступен. Повторите то же действие. || Carriers:Результат запроса сейчас недоступен.
+PersistenceUnavailable	tr	CANDIDATE-DRIFT	Shipments:İstek sonucu bilinmiyor. Aynı işlemi yeniden deneyin. || Carriers:İsteğin sonucu şu anda belirlenemiyor.
+PersistenceUnavailable	zh	CANDIDATE-DRIFT	Shipments:请求结果不可用，请重试相同操作。 || Carriers:目前无法确定请求结果。
+ResolveFirst	ar	module-specific	Returns:ابحث عن الشحنة واختر سطرًا واحدًا على الأقل قبل إنشاء المرتجع. || Claims:استعلم عن الشحنة قبل إنشاء المطالبة.
+ResolveFirst	en	module-specific	Returns:Look up the shipment and select at least one line before creating the return. || Claims:Look up the shipment before creating the claim.
+ResolveFirst	es	module-specific	Returns:Busque el envío y seleccione al menos una línea antes de crear la devolución. || Claims:Consulte el envío antes de crear la reclamación.
+ResolveFirst	fr	module-specific	Returns:Recherchez l’expédition et sélectionnez au moins une ligne avant de créer le retour. || Claims:Recherchez l’expédition avant de créer la réclamation.
+ResolveFirst	ru	module-specific	Returns:Перед созданием возврата найдите отгрузку и выберите хотя бы одну строку. || Claims:Найдите отгрузку перед созданием претензии.
+ResolveFirst	tr	CANDIDATE-DRIFT	Returns:İadeyi oluşturmadan önce sevkiyatı arayın ve en az bir satır seçin. || Claims:Talebi oluşturmadan önce sevkiyatı sorgulayın.
+ResolveFirst	zh	module-specific	Returns:创建退货前，请先查找发运单并至少选择一行。 || Claims:创建索赔前请先查询货运。
+ShipmentId	fr	CANDIDATE-DRIFT	Loads:ID d’expédition || Claims/Returns:Identifiant de l’expédition
+ShipmentId	ru	CANDIDATE-DRIFT	Loads:ID отгрузки || Claims/Returns:Идентификатор отгрузки
+ShipmentId	zh	CANDIDATE-DRIFT	Loads:发运单 ID || Claims/Returns:货运 ID
+ShipmentIneligible	ar	CANDIDATE-DRIFT	Returns:حالة هذه الشحنة لا تسمح بالإرجاع. || Claims:حالة هذه الشحنة لا تسمح بإنشاء مطالبة.
+ShipmentIneligible	en	module-specific	Returns:This shipment’s status does not allow a return. || Claims:This shipment’s status does not allow a claim.
+ShipmentIneligible	es	module-specific	Returns:El estado de este envío no permite una devolución. || Claims:El estado de este envío no permite una reclamación.
+ShipmentIneligible	fr	module-specific	Returns:Le statut de cette expédition ne permet pas de retour. || Claims:Le statut de cette expédition ne permet pas de réclamation.
+ShipmentIneligible	ru	module-specific	Returns:Статус этой отгрузки не допускает возврат. || Claims:Статус этой отгрузки не позволяет создать претензию.
+ShipmentIneligible	tr	module-specific	Returns:Bu sevkiyatın durumu iadeye izin vermiyor. || Claims:Bu sevkiyatın durumu talep oluşturmaya izin vermiyor.
+ShipmentIneligible	zh	module-specific	Returns:该发运单的状态不允许退货。 || Claims:该货运的状态不允许创建索赔。
+StatusCancelled	ar	CANDIDATE-DRIFT	Loads/Shipments:ملغاة || Returns:ملغى
+StatusCancelled	es	CANDIDATE-DRIFT	Shipments:Cancelado || Loads/Returns:Cancelada
+StatusCancelled	fr	CANDIDATE-DRIFT	Shipments:Annulée || Loads/Returns:Annulé
+StatusCancelled	ru	CANDIDATE-DRIFT	Shipments:Отменена || Loads/Returns:Отменён
+StatusClosed	ar	CANDIDATE-DRIFT	Claims/Shipments:مغلقة || Returns:مغلق
+StatusClosed	es	CANDIDATE-DRIFT	Shipments:Cerrado || Claims/Returns:Cerrada
+StatusClosed	fr	CANDIDATE-DRIFT	Claims/Shipments:Clôturée || Returns:Clôturé
+StatusClosed	ru	CANDIDATE-DRIFT	Claims/Shipments:Закрыта || Returns:Закрыт
+StatusClosed	tr	CANDIDATE-DRIFT	Returns/Shipments:Kapatıldı || Claims:Kapandı
+StatusDispatched	es	CANDIDATE-DRIFT	Shipments:Despachado || Loads:Despachada
+StatusDispatched	fr	CANDIDATE-DRIFT	Shipments:Expédiée || Loads:Expédié
+StatusDispatched	ru	CANDIDATE-DRIFT	Shipments:Отправлена || Loads:Отправлен
+StatusPlanned	es	CANDIDATE-DRIFT	Shipments:Planificado || Loads:Planificada
+StatusPlanned	fr	CANDIDATE-DRIFT	Shipments:Planifiée || Loads:Planifié
+StatusPlanned	ru	CANDIDATE-DRIFT	Shipments:Запланирована || Loads:Запланирован
+StatusRejected	ar	CANDIDATE-DRIFT	Returns:مرفوض || Claims:مرفوضة
+StatusRejected	fr	CANDIDATE-DRIFT	Returns:Rejeté || Claims:Rejetée
+StatusRejected	ru	CANDIDATE-DRIFT	Returns:Отклонён || Claims:Отклонена
+SupportReference	fr	CANDIDATE-DRIFT	Carriers/Loads/Shipments:Référence d’assistance || Claims/Returns:Référence support
+SupportReference	ru	CANDIDATE-DRIFT	Shipments:Ссылка для поддержки || Carriers/Loads:Номер обращения || Claims/Returns:Код для поддержки
+SupportReference	zh	CANDIDATE-DRIFT	Shipments:支持引用 || Carriers/Claims/Loads/Returns:支持参考号
+TotalLabel	ar	module-specific	Returns:عدد المرتجعات المُعادة || Claims:عدد المطالبات المُعادة
+TotalLabel	en	module-specific	Returns:Returns returned || Claims:Claims returned
+TotalLabel	es	module-specific	Returns:Devoluciones devueltas || Claims:Reclamaciones devueltas
+TotalLabel	fr	module-specific	Returns:Retours renvoyés || Claims:Réclamations renvoyées
+TotalLabel	ru	module-specific	Returns:Получено возвратов || Claims:Получено претензий
+TotalLabel	tr	module-specific	Returns:Dönen iade sayısı || Claims:Dönen talep sayısı
+TotalLabel	zh	module-specific	Returns:返回的退货数 || Claims:返回的索赔数
+TransitionCompleted	ar	module-specific	Returns:تم تحديث حالة المرتجع. || Claims:تم تحديث حالة المطالبة.
+TransitionCompleted	en	module-specific	Returns:Return status updated. || Claims:Claim status updated.
+TransitionCompleted	es	module-specific	Returns:Estado de la devolución actualizado. || Claims:Estado de la reclamación actualizado.
+TransitionCompleted	fr	module-specific	Returns:Statut du retour mis à jour. || Claims:Statut de la réclamation mis à jour.
+TransitionCompleted	ru	module-specific	Returns:Статус возврата обновлён. || Claims:Статус претензии обновлён.
+TransitionCompleted	tr	CANDIDATE-DRIFT	Returns:İade durumu güncellendi. || Claims:Talep durumu güncellendi.
+TransitionCompleted	zh	module-specific	Returns:退货状态已更新。 || Claims:索赔状态已更新。
+TransitionReplayed	ar	CANDIDATE-DRIFT	Returns:تم تطبيق تغيير الحالة هذا مسبقًا بالطلب نفسه ويُعرض على أنه مكتمل. || Claims:طُبّق تغيير الحالة هذا مسبقًا بالطلب نفسه، ويُعرض على أنه مكتمل.
+TransitionReplayed	es	CANDIDATE-DRIFT	Returns:Este cambio de estado ya se aplicó con la misma solicitud y se muestra como completado. || Claims:Este cambio de estado ya se aplicó con la misma solicitud; se muestra como completado.
+TransitionReplayed	fr	CANDIDATE-DRIFT	Returns:Ce changement de statut a déjà été appliqué par la même demande ; il s’affiche comme terminé. || Claims:Ce changement de statut a déjà été appliqué par la même demande ; il est affiché comme terminé.
+TransitionReplayed	tr	CANDIDATE-DRIFT	Returns:Bu durum değişikliği aynı istekle zaten uygulanmıştı ve tamamlanmış olarak gösteriliyor. || Claims:Bu durum değişikliği aynı istekle zaten uygulanmıştı; tamamlandı olarak gösteriliyor.
+TransitionReplayed	zh	CANDIDATE-DRIFT	Returns:该状态更改已由同一请求应用，显示为已完成。 || Claims:此状态变更已由同一请求应用，显示为已完成。
+TransitionTitle	ar	module-specific	Returns:تغيير حالة المرتجع || Claims:تغيير حالة المطالبة
+TransitionTitle	en	module-specific	Returns:Change Return Status || Claims:Change Claim Status
+TransitionTitle	es	module-specific	Returns:Cambiar estado de la devolución || Claims:Cambiar el estado de la reclamación
+TransitionTitle	fr	module-specific	Returns:Modifier le statut du retour || Claims:Modifier le statut de la réclamation
+TransitionTitle	ru	module-specific	Returns:Изменить статус возврата || Claims:Изменить статус претензии
+TransitionTitle	tr	CANDIDATE-DRIFT	Returns:İade Durumunu Değiştir || Claims:Talep Durumunu Değiştir
+TransitionTitle	zh	module-specific	Returns:更改退货状态 || Claims:更改索赔状态
+ValidationError	ar	CANDIDATE-DRIFT	Shipments:تحقق من القيم المدخلة. || Carriers/Loads:تحقق من القيم المدخلة ثم أعد المحاولة.
+ValidationError	en	CANDIDATE-DRIFT	Shipments:Check the entered values. || Carriers/Loads:Check the entered values and try again.
+ValidationError	es	CANDIDATE-DRIFT	Shipments:Revise los valores introducidos. || Carriers/Loads:Revise los valores introducidos e inténtelo de nuevo.
+ValidationError	fr	CANDIDATE-DRIFT	Shipments:Vérifiez les valeurs saisies. || Carriers/Loads:Vérifiez les valeurs saisies puis réessayez.
+ValidationError	ru	CANDIDATE-DRIFT	Shipments:Проверьте введённые значения. || Carriers/Loads:Проверьте введённые значения и повторите попытку.
+ValidationError	tr	CANDIDATE-DRIFT	Shipments:Girilen değerleri kontrol edin. || Carriers/Loads:Girilen değerleri kontrol edip yeniden deneyin.
+ValidationError	zh	CANDIDATE-DRIFT	Shipments:请检查输入的值。 || Carriers/Loads:请检查输入值后重试。

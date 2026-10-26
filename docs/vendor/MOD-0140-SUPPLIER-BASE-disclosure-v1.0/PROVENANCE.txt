@@ -1,0 +1,10 @@
+Inbound producer disclosure, vendored UNEDITED per docs-organization K5.
+source repo      : /Users/natig/Projects/ERP-vNext
+source path      : docs/modules/MOD-0140/
+inspected snapshot: c165eb24203024ec2ad4acd0f4e7579b9e114d0d (producer's own pin)
+received         : 2026-10-11
+copied by        : lane mod-0140-dual-implementation-01, byte-for-byte, no edits
+digest verified  : the disclosure's SHA-256 matches the digest in its own manifest.
+NOTE: the manifest's "authoritative contract SHA-256" is deliberately UNAVAILABLE.
+      The producer found no SUPPLIER OpenAPI artifact in its repository. That is a
+      finding, not a missing deliverable on our side.

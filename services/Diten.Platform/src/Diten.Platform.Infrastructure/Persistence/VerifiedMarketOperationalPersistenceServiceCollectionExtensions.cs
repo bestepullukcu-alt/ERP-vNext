@@ -53,6 +53,11 @@ public static class VerifiedMarketOperationalPersistenceServiceCollectionExtensi
 
         services.Configure<BusinessReferenceDataProviderOptions>(
             configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
+        // WP-PLT-MARKET-REFTENANT-01 — the RESOLVED reference tenant (Empty when it does not resolve), the one value the
+        // adapter, the preflight and the event publisher match against. Allowed or not is the eligibility's decision.
+        services.AddSingleton(provider => new VerifiedMarketOperationalReferenceTenant(
+            BusinessReferenceDataProviderOptionsResolver.Resolve(
+                provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BusinessReferenceDataProviderOptions>>()).ReferenceTenantId));
         services.AddScoped<IBusinessReferenceDataStewardshipRepository, BusinessReferenceDataStewardshipRepository>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
         services.AddScoped<IBusinessReferenceDataPublicationEligibility, RuntimeBusinessReferenceDataPublicationEligibility>();
@@ -85,9 +90,13 @@ public static class VerifiedMarketOperationalPersistenceServiceCollectionExtensi
 
 public sealed class VerifiedMarketOperationalNoWriteEventPublisher : IBusinessReferenceDataEventPublisher
 {
-    private static readonly Guid LockedReferenceTenantId =
-        Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private readonly Guid _referenceTenantId;
     private bool _accepted;
+
+    public VerifiedMarketOperationalNoWriteEventPublisher(VerifiedMarketOperationalReferenceTenant referenceTenant)
+    {
+        _referenceTenantId = referenceTenant?.TenantId ?? Guid.Empty;
+    }
 
     public Task PublishAsync(
         EventEnvelope envelope,
@@ -102,7 +111,8 @@ public sealed class VerifiedMarketOperationalNoWriteEventPublisher : IBusinessRe
             || envelope.EventId == Guid.Empty
             || !string.Equals(envelope.EventName, "reference_data.version_published.v1", StringComparison.Ordinal)
             || envelope.EventVersion != 1
-            || envelope.TenantId != LockedReferenceTenantId
+            || _referenceTenantId == Guid.Empty
+            || envelope.TenantId != _referenceTenantId
             || envelope.CorrelationId == Guid.Empty
             || envelope.CausationId != envelope.CorrelationId
             || !string.Equals(envelope.Producer, "BusinessReferenceData", StringComparison.Ordinal)

@@ -64,7 +64,7 @@ public static class QuarantineMapping
 
     public static HoldDetailDto HoldDetail(
         HoldRefDto head, QuarantineHold hold, IReadOnlyList<QuarantineHistoryEntry> history, IReadOnlyList<InventoryTransaction> movements,
-        IReadOnlyList<DecisionRefDto> decisions) => new()
+        IReadOnlyList<DecisionRefDto> decisions, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names = null) => new()
     {
         HoldId = head.HoldId,
         HoldNumber = head.HoldNumber,
@@ -93,7 +93,7 @@ public static class QuarantineMapping
         ReviewStartedBy = hold.ReviewStartedBy is { } by ? new UserRefDto(Id(by)) : null,
         DecidedAtUtc = QuarantineSupport.Wire(hold.DecidedAtUtc),
         History = history.Select(History).ToList(),
-        Movements = movements.Select(Movement).ToList(),
+        Movements = movements.Select(t => Movement(t, names)).ToList(),
         Decisions = decisions
     };
 
@@ -102,10 +102,12 @@ public static class QuarantineMapping
             entry.DecisionId is { } d ? Id(d) : null, entry.SignatureId, entry.ApproverSignatureId,
             entry.NoteChange is { } n ? new NoteChangeDto(n.PreviousNoteLength, n.NoteLength, n.PreviousAttachmentCount, n.AttachmentCount) : null);
 
-    public static MovementLinkDto Movement(InventoryTransaction t)
+    /// <summary>A movement of the trail; <c>byUserName</c> (WP-MVP1-NAMES1) = the posting name of <paramref name="names"/> for (posting correlation, posting user), else absent.</summary>
+    public static MovementLinkDto Movement(InventoryTransaction t, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names = null)
         => new(Id(t.Id), t.TransactionNumber, WireNames.ToWire(t.MovementType), QuarantineSupport.Wire(t.PostingDate),
             t.FromStockStatus is { } f ? WireNames.ToWire(f) : null, t.ToStockStatus is { } s ? WireNames.ToWire(s) : null,
-            t.FromLocationId, t.ToLocationId, t.BaseQuantity);
+            t.FromLocationId, t.ToLocationId, t.BaseQuantity,
+            Inventory.InventoryMapping.PostingName(t, names)); // WP-MVP1-FU-CLEAN2: stored name → queue name → none
 
     public static DecisionDto Decision(QuarantineDecision decision, IReadOnlyList<QuarantineDecisionEvent> events)
     {

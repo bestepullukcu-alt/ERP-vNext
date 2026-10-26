@@ -21,6 +21,8 @@ public static class ProductItemSkuMasterModels
         public Guid ReservationId { get; init; }
         public int ExpectedReservationVersion { get; init; }
         public string IdempotencyKey { get; init; } = string.Empty;
+        // MOD-0290-FU05: optional; a linkable brand of this tenant. Its code and name are never accepted (unknown fields).
+        public Guid? BrandId { get; init; }
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
@@ -43,12 +45,32 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         CodeReservationBindingState CodeBindingState,
-        bool BindingReconciliationRequired);
+        bool BindingReconciliationRequired,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
     public sealed class UpdateGlobalProductDraftRequest
     {
+        private readonly Guid? _brandId;
+
         public string? GlobalProductName { get; init; }
         public int? ExpectedVersion { get; init; }
+
+        // MOD-0290-FU05 (T-4): the serializer calls this setter only when the field is in the body, so its absence leaves
+        // the stored brand as it is, null removes it and a value links it.
+        public Guid? BrandId
+        {
+            get => _brandId;
+            init
+            {
+                _brandId = value;
+                BrandIdSpecified = true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool BrandIdSpecified { get; private set; }
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
@@ -60,13 +82,21 @@ public static class ProductItemSkuMasterModels
         string GlobalProductName,
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
-        bool IsReplay);
+        bool IsReplay,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
+    // MOD-0290-FU05 (Karar b): BrandId is the stored link; BrandCode / BrandName are read from the brand at read time
+    // (never stored on the product). No brand = all three null; a brand that cannot be read = id only.
     public sealed record GlobalProductListItemDto(
         Guid Id,
         string CanonicalCode,
         string GlobalProductName,
-        ProductIdentityLifecycleStatus LifecycleStatus);
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
     public sealed record GlobalProductDetailDto(
         Guid Id,
@@ -76,12 +106,64 @@ public static class ProductItemSkuMasterModels
         int Version,
         DateTimeOffset CreatedAt,
         DateTimeOffset? UpdatedAt,
-        IReadOnlyList<string> AvailableActions);
+        IReadOnlyList<string> AvailableActions,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
     public sealed record GlobalProductSelectorDto(
         Guid Id,
         string CanonicalCode,
-        string GlobalProductName);
+        string GlobalProductName,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
+
+    /// <summary>
+    /// MOD-0290-FU05 slice 2 — an approved product's new brand. The field is required (its absence is a 400); null
+    /// removes the brand. Code and name are never accepted (unknown fields).
+    /// </summary>
+    public sealed class ChangeGlobalProductBrandRequest
+    {
+        private readonly Guid? _brandId;
+
+        public int? ExpectedVersion { get; init; }
+
+        public Guid? BrandId
+        {
+            get => _brandId;
+            init
+            {
+                _brandId = value;
+                BrandIdSpecified = true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool BrandIdSpecified { get; private set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    /// <summary>MOD-0290-FU05 slice 2 — the product after the change (Changed = false: the same brand, nothing written).</summary>
+    public sealed record GlobalProductBrandChangeDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool Changed,
+        bool IsReplay,
+        Guid? BrandId,
+        string? BrandCode,
+        string? BrandName);
+
+    /// <summary>MOD-0290-FU05 (T-1) — a brand a Global Product may be linked to now (active, inside its window).</summary>
+    public sealed record GlobalProductBrandOptionDto(
+        Guid Id,
+        string BrandCode,
+        string BrandName);
 
     public sealed record PagedResult<T>(
         IReadOnlyList<T> Items,

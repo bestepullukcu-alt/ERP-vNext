@@ -1,0 +1,254 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Controllers
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Drills"].Value;
+    ViewData["PageCode"] = "RECALLDRILLS";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R7b — Tatbikat Planlayıcı (RECALLDRILLS, pack §11.1, §11.3, §8.10; mockup "isDrills"). Reads: /Recall/data/drill-plans,
+    /Recall/data/drill-runs, /Recall/data/drill-runs/{id} (recall.drills.read); commands through their own doors: the plan form
+    (recall.drills.manage), start / step / cancel / the result (recall.drills.run). The running panel's clock comes from the SERVER (the door
+    adds the service's answer time; drill-view.js never reads the browser's clock). Three steps in the server's order; "Sistem seçsin" lets the
+    server pick the lot. "Tatbikatı iptal et" asks a reason and keeps the run (Cancelled — D-13). "Sonucu imzala" is two steps: prepare → the
+    ONE MOD-0022 dialog (when the policy asks) → result. Not built: "+30 dk (demo)", "Kaydetmeden çık" (D-14).
+    A button is DRAWN only when the user holds its key (UAS-001: absent, not disabled). Nothing below without recall.drills.read. No redirect.
+*@
+@if (!Perms.Has(RecallKeys.DrillsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Drills"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+    var me = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+    var runParam = Guid.TryParse(Context.Request.Query["run"], out var runId) ? runId.ToString("D") : string.Empty;
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLDRILLS")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="rc-drills" data-user-id="@me" data-run="@runParam">
+        <p class="text-muted mb-3" id="rc-drill-target"></p>
+        <div class="alert alert-warning d-none align-items-center gap-2" role="status" id="rc-freq-band">
+            <i class="bx bx-alarm-exclamation fs-4"></i>
+            <span><strong id="rc-freq-title"></strong> <span id="rc-freq-detail"></span></span>
+        </div>
+        <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="rc-saved" class="alert alert-success d-none" role="status"></div>
+
+        <div class="card mb-4 d-none border border-primary" id="rc-drill-panel">
+            <div class="card-header d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-primary">@Localizer["Recall.Drills.Badge"]</span>
+                <span class="small text-muted">@Localizer["Recall.Drills.ReadOnly"]</span>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
+                    <div class="d-flex flex-column gap-1">
+                        <span class="small text-muted">@Localizer["Recall.Drills.Plan"]</span>
+                        <span class="fw-medium text-heading" id="rc-drill-plan"></span>
+                        <span class="small">@Localizer["Recall.Drills.Lot"] <strong class="font-monospace" id="rc-drill-lot"></strong> <span class="font-monospace text-muted" id="rc-drill-number"></span></span>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <span class="display-6 fw-semibold font-monospace" id="rc-drill-clock">—</span>
+                        <span class="small text-muted" id="rc-drill-clock-sub"></span>
+                        <span class="small text-muted">@Localizer["Recall.Drills.ServerClock"]</span>
+                    </div>
+                </div>
+
+                <div class="d-none" id="rc-drill-setup">
+                    <span class="small text-muted d-block mb-2">@Localizer["Recall.Drills.LotSelection"]</span>
+                    <div class="btn-group mb-3" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-mode="Auto">@Localizer["Recall.Drills.ModeAuto"]</button>
+                        <button type="button" class="btn btn-outline-primary" data-mode="Manual">@Localizer["Recall.Drills.ModeManual"]</button>
+                    </div>
+                    <div class="mb-3 d-none" id="rc-drill-lot-box">
+                        <label class="form-label" for="rc-drill-lot-select">@Localizer["Recall.Drills.Lot"]</label>
+                        <select class="form-select" id="rc-drill-lot-select"></select>
+                        <div class="invalid-feedback">@Localizer["Recall.Drills.LotRequired"]</div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-primary" id="rc-drill-start"><i class="bx bx-play me-1"></i>@Localizer["Recall.Drills.StartTimer"]</button>
+                        <button type="button" class="btn btn-label-secondary" id="rc-drill-back">@Localizer["Recall.Common.Cancel"]</button>
+                    </div>
+                </div>
+
+                <div class="d-none" id="rc-drill-run">
+                    <ol class="list-unstyled d-flex flex-wrap gap-3 mb-3" id="rc-drill-steps"></ol>
+                    <div class="small mb-2" id="rc-drill-step-info"></div>
+                    <div class="small text-muted mb-2 d-none" id="rc-drill-summary"></div>
+                    <div class="alert alert-warning small py-2 d-none" id="rc-drill-gaps"></div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (Perms.Has(RecallKeys.DrillsRun))
+                        {
+                            <button type="button" class="btn btn-primary d-none" id="rc-drill-step"><i class="bx bx-check me-1"></i><span id="rc-drill-step-text"></span></button>
+                            <button type="button" class="btn btn-label-secondary d-none" id="rc-drill-cancel">@Localizer["Recall.Drills.Cancel"]</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-none" id="rc-drill-done">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-3"><span class="small text-muted d-block">@Localizer["Recall.Drills.Duration"]</span><span class="fw-medium" id="rc-drill-duration"></span></div>
+                        <div class="col-6 col-md-3"><span class="small text-muted d-block" id="rc-drill-result-label"></span><span id="rc-drill-result"></span></div>
+                        <div class="col-6 col-md-3"><span class="small text-muted d-block">@Localizer["Recall.Drills.GapsFound"]</span><span class="fw-medium" id="rc-drill-gapcount"></span></div>
+                        <div class="col-6 col-md-3"><span class="small text-muted d-block">@Localizer["Recall.Col.Status"]</span><span id="rc-drill-status"></span></div>
+                    </div>
+                    <p class="small mb-2 d-none" id="rc-drill-note"></p>
+                    @if (Perms.Has(RecallKeys.DrillsRun))
+                    {
+                        <button type="button" class="btn btn-primary d-none" id="rc-drill-sign"><i class="bx bx-pen me-1"></i>@Localizer["Recall.Drills.Sign"]</button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h5 class="card-title mb-0">@Localizer["Recall.Drills.Plans"]</h5>
+                @if (Perms.Has(RecallKeys.DrillsManage))
+                {
+                    <button type="button" class="btn btn-sm btn-primary" id="rc-plan-add"><i class="bx bx-plus me-1"></i>@Localizer["Recall.Drills.AddPlan"]</button>
+                }
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" id="rc-plans">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Recall.Drills.Plan"]</th>
+                            <th>@Localizer["Recall.Drills.Frequency"]</th>
+                            <th>@Localizer["Recall.Drills.Scope"]</th>
+                            <th>@Localizer["Recall.Drills.NextDue"]</th>
+                            <th>@Localizer["Recall.Col.Owner"]</th>
+                            <th>@Localizer["Recall.Drills.LastResult"]</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="7" class="text-muted">@Localizer["Recall.Common.Loading"]</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5 class="card-title mb-0">@Localizer["Recall.Drills.Recent"]</h5></div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" id="rc-runs">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Recall.Col.Number"]</th>
+                            <th>@Localizer["Recall.Drills.Lot"]</th>
+                            <th>@Localizer["Recall.TCol.Date"]</th>
+                            <th>@Localizer["Recall.Drills.Duration"]</th>
+                            <th>@Localizer["Recall.Drills.GapsFound"]</th>
+                            <th>@Localizer["Recall.Drills.Result"]</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="6" class="text-muted">@Localizer["Recall.Common.Loading"]</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @if (Perms.Has(RecallKeys.DrillsManage))
+    {
+        <div class="modal fade" id="rc-plan-modal" tabindex="-1" aria-labelledby="rc-plan-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" id="rc-plan-form" novalidate>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rc-plan-title"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="rc-plan-name">@Localizer["Recall.Drills.PlanName"]</label>
+                            <input type="text" class="form-control" id="rc-plan-name" maxlength="200" required />
+                            <div class="invalid-feedback">@Localizer["Recall.Common.Required"]</div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label" for="rc-plan-frequency">@Localizer["Recall.Drills.Frequency"]</label>
+                                <select class="form-select" id="rc-plan-frequency">
+                                    @foreach (var f in new[] { "Yearly1", "Yearly2", "Quarterly", "CustomDays" })
+                                    {
+                                        <option value="@f">@Localizer["Recall.Freq." + f]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 d-none" id="rc-plan-days-box">
+                                <label class="form-label" for="rc-plan-days">@Localizer["Recall.Drills.CustomDays"]</label>
+                                <input type="number" class="form-control" id="rc-plan-days" min="1" max="730" />
+                                <div class="invalid-feedback">@Localizer["Recall.Drills.CustomDaysRange"]</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="rc-plan-scope">@Localizer["Recall.Drills.Scope"]</label>
+                            <select class="form-select" id="rc-plan-scope">
+                                @foreach (var s in new[] { "RandomFinishedGoodLot", "RawMaterialLot", "SelectedLot" })
+                                {
+                                    <option value="@s">@Localizer["Recall.DrillScope." + s]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="rc-plan-next">@Localizer["Recall.Drills.NextDue"]</label>
+                            <input type="date" class="form-control" id="rc-plan-next" required />
+                            <div class="invalid-feedback">@Localizer["Recall.Common.Required"]</div>
+                        </div>
+                        <p class="small text-muted mb-2" id="rc-plan-owner"></p>
+                        @* WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER): the owner picker — active users of the caller's tenant (/Recall/lookups/users) *@
+                        <div class="mb-3">
+                            <label class="form-label" for="rc-plan-owner-select">@Localizer["Recall.Drills.OwnerPick"]</label>
+                            <div class="input-group">
+                                <input type="search" class="form-control" id="rc-plan-owner-search" maxlength="100" autocomplete="off"
+                                       placeholder="@Localizer["Recall.Drills.OwnerSearch"]" aria-label="@Localizer["Recall.Drills.OwnerSearch"]" />
+                                <button type="button" class="btn btn-outline-secondary" id="rc-plan-owner-find" title="@Localizer["Recall.Drills.OwnerFind"]"
+                                        aria-label="@Localizer["Recall.Drills.OwnerFind"]"><i class="bx bx-search"></i></button>
+                            </div>
+                            <select class="form-select mt-2" id="rc-plan-owner-select"></select>
+                            <div class="form-text d-none" id="rc-plan-owner-none">@Localizer["Recall.Drills.OwnerNone"]</div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rc-plan-active" checked />
+                            <label class="form-check-label" for="rc-plan-active">@Localizer["Recall.Drills.Active"]</label>
+                        </div>
+                        <div class="alert alert-danger small d-none mt-3 mb-0" id="rc-plan-error" role="alert"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["Recall.Drills.SavePlan"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+    @if (Perms.Has(RecallKeys.DrillsRun))
+    {
+        <partial name="~/Views/Recall/_ReasonModal.cshtml" />
+        <partial name="~/Views/Recall/_SignDialog.cshtml" />
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Recall/drill-view.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/drills.js" asp-append-version="true"></script>
+    }
+}

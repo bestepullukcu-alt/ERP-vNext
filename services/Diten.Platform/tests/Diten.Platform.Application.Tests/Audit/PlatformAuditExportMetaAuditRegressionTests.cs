@@ -32,6 +32,7 @@ namespace Diten.Platform.Application.Tests.Audit;
 /// an admin path (<c>SetPlatformContext(Guid.Empty)</c>). The record is found by its own correlation id, because
 /// the platform-system tenant is shared by every platform-global record in the test database.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PlatformAuditExportMetaAuditRegressionTests
 {
     [Fact]

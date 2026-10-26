@@ -1,0 +1,25 @@
+# Why the prescribed script can only print 'kayıt yok' — measured 2026-10-17
+
+REP-001 §6 requires every CT decision record under docs/records/audits/<yyyy-mm>/ to carry this front matter,
+and says why: "Künye insan için değil, §7'deki betik için vardır: kararların listesi elle sayılmaz."
+
+    ---
+    module: MOD-0183
+    work_package: WP-MVP6-LOGISTICS-01
+    evidence_level: E4
+    decision: accepted
+    commit: 4a8d4d4b
+    ---
+
+## cause 1 — no record carries the künye
+record .md files under docs/records/ : 1202
+carrying an evidence_level field     : 0
+
+## cause 2 — the default decision glob misses the lane layout
+docs/records/audits/*/*.md   (the script's default) : 309 files
+docs/records/audits/*/*/*.md (where lane REPORTs live): 764 files
+
+Consequence: REP-001 §2's mandatory status table has never been producible by its own instrument, for any
+module, since the rule was written. Every status report in this programme — CT's included, and the per-module
+percentages CT gave the owner on 2026-10-17 — was therefore hand-written, which §2 forbids in its first line
+("sayılar elle yazılmaz").

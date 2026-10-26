@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@*
+    The pages' vocabulary (pack §11.6): exactly Diten.Web.Views.Expiry.Expiry.Keys, key → value in the reader's language. The scripts
+    read the same dotted names (window.ExpiryL10n); a missing one is reported by expiry.l10n.js, never replaced by hardcoded text.
+*@
+@if (Context.Items["ExpiryL10nRendered"] is not true)
+{
+    Context.Items["ExpiryL10nRendered"] = true;
+    <script id="expiry-l10n" type="application/json">@Json.Serialize(Diten.Web.Views.Expiry.Expiry.Keys.ToDictionary(k => k, k => Localizer[k].Value))</script>
+    <script src="~/assets/js/Expiry/expiry.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Expiry/expiry-ui.js" asp-append-version="true"></script>
+}

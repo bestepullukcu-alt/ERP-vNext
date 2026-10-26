@@ -41,6 +41,8 @@ public static class TrustedSourceAuditIntentOperationMap
             [("GlobalProduct", "GlobalProductCorrectionEnded")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
             [("GlobalProduct", "GlobalProductRetirementEnded")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
             [("GlobalProduct", "GlobalProductIdentityDecisionNotApplicable")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
+            // MDM MOD-0290-FU05 slice 2 (XMC-001, owner-approved 2026-10-15): an approved Global Product's brand changed.
+            [("GlobalProduct", "GlobalProductBrandChanged")] = ("GlobalProduct", AuditOperation.Update),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionDraftCreated")] = ("ProductDefinitionRevision", AuditOperation.Create),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionIdentitySubmitted")] = ("ProductDefinitionRevision", AuditOperation.LifecycleTransition),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionIdentityApproved")] = ("ProductDefinitionRevision", AuditOperation.LifecycleTransition),

@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.WorkingCalendar;
 /// precisely because a guard that is looser than the index is invisible to a mocked test — it only shows up as an
 /// E11000 500 at runtime, which is the defect being fixed here.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class WorkingCalendarCodeUniquenessMongoTests : IAsyncLifetime
 {
     private const string CollectionName = "working_calendars";

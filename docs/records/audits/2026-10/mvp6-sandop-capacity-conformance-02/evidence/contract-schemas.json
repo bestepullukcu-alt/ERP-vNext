@@ -1,0 +1,1000 @@
+{
+ "ContractVersion": {
+  "required": [],
+  "properties": {}
+ },
+ "Decimal": {
+  "required": [],
+  "properties": {}
+ },
+ "CreateSandopPlanRequest": {
+  "required": [
+   "name",
+   "horizonStart",
+   "horizonEnd",
+   "demandPlanId",
+   "demandPlanVersion"
+  ],
+  "properties": {
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonStart": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonEnd": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "SandopPlan": {
+  "required": [
+   "sandopPlanId",
+   "name",
+   "horizonStart",
+   "horizonEnd",
+   "demandPlanId",
+   "demandPlanVersion",
+   "status",
+   "createdAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonStart": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonEnd": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "status": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "currentSnapshotId": {
+    "nullable": false,
+    "type": "[string,",
+    "ref": null
+   },
+   "createdAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "CaptureSandopSnapshotRequest": {
+  "required": [
+   "demandPlanId",
+   "demandPlanVersion",
+   "sourceCapturedAt",
+   "sourceChecksum"
+  ],
+  "properties": {
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceCapturedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceChecksum": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "supplyInputRefs": {
+    "nullable": false,
+    "type": "array",
+    "ref": "ExternalInputReference"
+   }
+  }
+ },
+ "InputSnapshotProvenance": {
+  "required": [
+   "demandPlanId",
+   "demandPlanVersion",
+   "sourceContract",
+   "sourceContractVersion",
+   "sourceCapturedAt",
+   "sourceChecksum"
+  ],
+  "properties": {
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceContract": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceContractVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceCapturedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceChecksum": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "ExternalInputReference": {
+  "required": [
+   "source",
+   "resourceId",
+   "resourceVersion"
+  ],
+  "properties": {
+   "source": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "resourceId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "resourceVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "SandopSnapshot": {
+  "required": [
+   "snapshotId",
+   "sandopPlanId",
+   "provenance",
+   "supplyInputRefs",
+   "capturedAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "snapshotId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "provenance": {
+    "nullable": false,
+    "type": null,
+    "ref": "InputSnapshotProvenance"
+   },
+   "supplyInputRefs": {
+    "nullable": false,
+    "type": "array",
+    "ref": "ExternalInputReference"
+   },
+   "capturedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "RecordSignOffRequest": {
+  "required": [
+   "snapshotId",
+   "role",
+   "decision"
+  ],
+  "properties": {
+   "snapshotId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "role": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "decision": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "comment": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "SignOff": {
+  "required": [
+   "signOffId",
+   "sandopPlanId",
+   "snapshotId",
+   "role",
+   "decision",
+   "decidedBy",
+   "decidedAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "signOffId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "snapshotId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "role": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "decision": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "comment": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "decidedBy": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "decidedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "CreateCapacityPlanRequest": {
+  "required": [
+   "name",
+   "horizonStart",
+   "horizonEnd",
+   "demandPlanId",
+   "demandPlanVersion",
+   "sourceCapturedAt",
+   "sourceChecksum"
+  ],
+  "properties": {
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonStart": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonEnd": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceCapturedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceChecksum": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CapacityPlan": {
+  "required": [
+   "capacityPlanId",
+   "name",
+   "horizonStart",
+   "horizonEnd",
+   "provenance",
+   "status",
+   "createdAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonStart": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "horizonEnd": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "provenance": {
+    "nullable": false,
+    "type": null,
+    "ref": "InputSnapshotProvenance"
+   },
+   "status": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "createdAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "ConstraintReference": {
+  "required": [
+   "constraintId",
+   "source",
+   "sourceVersion"
+  ],
+  "properties": {
+   "constraintId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "source": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "sourceVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CapacityAdjustment": {
+  "required": [
+   "resourceRef",
+   "period",
+   "availableCapacityDelta",
+   "uomId"
+  ],
+  "properties": {
+   "resourceRef": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "period": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "availableCapacityDelta": {
+    "nullable": false,
+    "type": null,
+    "ref": "Decimal"
+   },
+   "uomId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CreateCapacityScenarioRequest": {
+  "required": [
+   "name",
+   "constraintRefs",
+   "adjustments"
+  ],
+  "properties": {
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "constraintRefs": {
+    "nullable": false,
+    "type": "array",
+    "ref": "ConstraintReference"
+   },
+   "adjustments": {
+    "nullable": false,
+    "type": "array",
+    "ref": "CapacityAdjustment"
+   }
+  }
+ },
+ "CapacityScenario": {
+  "required": [
+   "scenarioId",
+   "capacityPlanId",
+   "name",
+   "constraintRefs",
+   "adjustments",
+   "status",
+   "createdAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "scenarioId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "name": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "constraintRefs": {
+    "nullable": false,
+    "type": "array",
+    "ref": "ConstraintReference"
+   },
+   "adjustments": {
+    "nullable": false,
+    "type": "array",
+    "ref": "CapacityAdjustment"
+   },
+   "status": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "createdAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "EvaluateCapacityScenarioRequest": {
+  "required": [
+   "evaluationMode",
+   "resourceRefs"
+  ],
+  "properties": {
+   "evaluationMode": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "resourceRefs": {
+    "nullable": false,
+    "type": "array",
+    "ref": null
+   }
+  }
+ },
+ "Bottleneck": {
+  "required": [
+   "resourceRef",
+   "period",
+   "requiredCapacity",
+   "availableCapacity",
+   "shortfall",
+   "uomId"
+  ],
+  "properties": {
+   "resourceRef": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "period": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "requiredCapacity": {
+    "nullable": false,
+    "type": null,
+    "ref": "Decimal"
+   },
+   "availableCapacity": {
+    "nullable": false,
+    "type": null,
+    "ref": "Decimal"
+   },
+   "shortfall": {
+    "nullable": false,
+    "type": null,
+    "ref": "Decimal"
+   },
+   "uomId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CapacityEvaluation": {
+  "required": [
+   "evaluationId",
+   "capacityPlanId",
+   "scenarioId",
+   "evaluationMode",
+   "status",
+   "bottlenecks",
+   "submittedAt",
+   "contractVersion"
+  ],
+  "properties": {
+   "evaluationId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "scenarioId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "evaluationMode": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "status": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "bottlenecks": {
+    "nullable": false,
+    "type": "array",
+    "ref": "Bottleneck"
+   },
+   "submittedAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "completedAt": {
+    "nullable": false,
+    "type": "[string,",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "SandopPlanCreatedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "SandopPlanEventPayload"
+   }
+  }
+ },
+ "SandopSnapshotCapturedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "SandopSnapshotEventPayload"
+   }
+  }
+ },
+ "SandopSignOffRecordedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "SandopSignOffEventPayload"
+   }
+  }
+ },
+ "CapacityPlanCreatedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "CapacityPlanEventPayload"
+   }
+  }
+ },
+ "CapacityScenarioCreatedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "CapacityScenarioEventPayload"
+   }
+  }
+ },
+ "CapacityEvaluationCompletedEvent": {
+  "required": [],
+  "properties": {
+   "eventType": {
+    "nullable": false,
+    "type": null,
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": null,
+    "ref": "CapacityEvaluationEventPayload"
+   }
+  }
+ },
+ "LifecycleEventEnvelope": {
+  "required": [
+   "eventId",
+   "eventType",
+   "occurredAt",
+   "correlationId",
+   "payload",
+   "contractVersion"
+  ],
+  "properties": {
+   "eventId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "eventType": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "occurredAt": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "correlationId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "causationId": {
+    "nullable": false,
+    "type": "[string,",
+    "ref": null
+   },
+   "payload": {
+    "nullable": false,
+    "type": "object",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ },
+ "SandopPlanEventPayload": {
+  "required": [
+   "sandopPlanId",
+   "demandPlanId",
+   "demandPlanVersion"
+  ],
+  "properties": {
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "demandPlanVersion": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "SandopSnapshotEventPayload": {
+  "required": [
+   "sandopPlanId",
+   "snapshotId",
+   "provenance"
+  ],
+  "properties": {
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "snapshotId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "provenance": {
+    "nullable": false,
+    "type": null,
+    "ref": "InputSnapshotProvenance"
+   }
+  }
+ },
+ "SandopSignOffEventPayload": {
+  "required": [
+   "sandopPlanId",
+   "snapshotId",
+   "signOffId",
+   "role",
+   "decision"
+  ],
+  "properties": {
+   "sandopPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "snapshotId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "signOffId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "role": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "decision": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CapacityPlanEventPayload": {
+  "required": [
+   "capacityPlanId",
+   "provenance"
+  ],
+  "properties": {
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "provenance": {
+    "nullable": false,
+    "type": null,
+    "ref": "InputSnapshotProvenance"
+   }
+  }
+ },
+ "CapacityScenarioEventPayload": {
+  "required": [
+   "capacityPlanId",
+   "scenarioId"
+  ],
+  "properties": {
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "scenarioId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "CapacityEvaluationEventPayload": {
+  "required": [
+   "capacityPlanId",
+   "scenarioId",
+   "evaluationId",
+   "status"
+  ],
+  "properties": {
+   "capacityPlanId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "scenarioId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "evaluationId": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   },
+   "status": {
+    "nullable": false,
+    "type": "string",
+    "ref": null
+   }
+  }
+ },
+ "Error": {
+  "required": [
+   "error",
+   "contractVersion"
+  ],
+  "properties": {
+   "error": {
+    "nullable": false,
+    "type": "object",
+    "ref": null
+   },
+   "contractVersion": {
+    "nullable": false,
+    "type": null,
+    "ref": "ContractVersion"
+   }
+  }
+ }
+}

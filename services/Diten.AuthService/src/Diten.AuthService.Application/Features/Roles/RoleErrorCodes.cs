@@ -39,6 +39,15 @@ public static class RoleErrorCodes
     /// <summary>User Roles screen: the user the role is being assigned to does not exist in this tenant.</summary>
     public const string UserRoleUserNotFound = "USER_ROLE_USER_NOT_FOUND";
 
+    // WP-USERS-ROLES-SMALL-02 — the last-steward rule (Users/Services/RecoveryCapabilityGuard): the change would leave no
+    // ACTIVE account in the tenant that can create users. One situation per screen, one code each.
+    /// <summary>User Roles screen: taking this role from this user.</summary>
+    public const string UserRoleRevokeLastSteward = "USER_ROLE_REVOKE_LAST_STEWARD";
+    /// <summary>Roles screen: deleting this role.</summary>
+    public const string DeleteLastSteward = "ROLE_DELETE_LAST_STEWARD";
+    /// <summary>Role Permissions screen: taking auth.users.create from this role.</summary>
+    public const string PermissionRevokeLastSteward = "ROLE_PERMISSION_REVOKE_LAST_STEWARD";
+
     /// <summary>A refusal that carries its code next to the English sentence.</summary>
     public static Response<T> Refuse<T>(string code, string error, int statusCode) =>
         Response<T>.Fail(error, [new ResponseError(code)], statusCode);

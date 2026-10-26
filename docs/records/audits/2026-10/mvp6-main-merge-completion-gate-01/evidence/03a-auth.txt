@@ -1,0 +1,17 @@
+# item 3 — Platform / Auth targeted regression, on the merged tree (1b3408c2b)
+
+Auth (Diten.AuthService.Application.Tests):
+  2817 passed, 0 failed, 0 skipped — 26 m 17 s
+
+Platform (Diten.Platform.Application.Tests):
+  8645 passed, 3 failed, 2 skipped of 8650 — 35 m 4 s
+  All three classified in 03b-platform.txt; none is attributable to this merge.
+
+Environment for both: DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod, lane variables from
+scripts/test-env/mvp6-test-mongo-env.sh --slot 1 --rs rsgate1 --all-supplychain (single-member replica
+set on 127.0.0.1:31994). The Auth suite starts its own mongods per test (Support/OwnedMongo.cs), which is
+the behaviour its CI row documents.
+
+Verdict for item 3: PARTIAL. Auth passes outright. Platform's three reds are pre-existing or
+load-sensitive, each measured rather than assumed, and each has a backlog row (BL-648, BL-649) with its
+owner named — but the item cannot be called PASS while they are red.

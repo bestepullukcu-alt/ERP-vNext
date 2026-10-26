@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>حالة هذا السجل لا تسمح بتغيير سلوك المخزون.</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>لا يمكن تغيير قيمة مُدخلة في سجل معتمد هنا — تتغير فقط عبر تصحيح. لا يمكن للقوائم إلا إضافة صفوف جديدة.</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>منتج نهائي آخر يستخدم هذا GTIN بالفعل.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>لا يوجد أحد غيرك يمكنه اعتماد السجل الذي أرسلته. اطلب من المسؤول تعديل المعتمدين، ثم يمكنك إرساله مرة أخرى.</value></data>
 </root>

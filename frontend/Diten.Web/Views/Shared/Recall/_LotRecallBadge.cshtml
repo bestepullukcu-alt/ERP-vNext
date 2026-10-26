@@ -1,0 +1,12 @@
+@model string?
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 R7c — 0174 lot detail: "Açık geri çağırma: RC-…" + "İzle" (pack §11.1). MODEL: the lot id. Drawn only for a holder of
+    recall.lots.status.read (getLotRecallStatus); recall-bands.js fills it from /Recall/band/lots/{lotId}/status and leaves it hidden when
+    the lot is not under recall or the read fails. Another company's case: its number only, no link (CT-R7).
+*@
+@if (Perms.Has(Diten.Web.Controllers.RecallKeys.LotsStatusRead) && Guid.TryParse(Model, out var lot))
+{
+    <div class="d-none d-flex flex-wrap align-items-center gap-2 mt-1" data-recall-lot-badge data-lot-id="@lot.ToString("D")"></div>
+    <partial name="~/Views/Shared/Recall/_RecallBandAssets.cshtml" />
+}

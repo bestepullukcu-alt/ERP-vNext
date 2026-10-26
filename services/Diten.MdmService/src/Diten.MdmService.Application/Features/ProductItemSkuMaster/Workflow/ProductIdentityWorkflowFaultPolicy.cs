@@ -62,6 +62,13 @@ public static class ProductIdentityWorkflowMakerCodes
     /// <summary>The approval step has nobody assigned to it.</summary>
     public const string ApproverNotAssigned = "PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED";
 
+    /// <summary>
+    /// WP-MDM-NO-ELIGIBLE-APPROVER-01 — segregation of duties: the maker would be the approval's only eligible approver
+    /// (Platform WORKFLOW_NO_ELIGIBLE_APPROVER on the start). Nothing was started; an administrator must adjust the
+    /// approvers before the maker submits again.
+    /// </summary>
+    public const string NoEligibleApprover = "PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER";
+
     /// <summary>The approval definition is missing or not published.</summary>
     public const string DefinitionNotReady = "PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY";
 
@@ -87,7 +94,7 @@ public static class ProductIdentityWorkflowMakerCodes
 
     public static bool IsMakerCode(string? code) => code is SessionExpired or StartPermissionRequired
         or ApproverNotAssigned or DefinitionNotReady or ServiceUnavailableResubmit or MakerReplayRequired
-        or ApprovalChanging;
+        or ApprovalChanging or NoEligibleApprover;
 }
 
 /// <summary>
@@ -125,6 +132,9 @@ public static class ProductIdentityWorkflowFaultPolicy
     private const string TenantMismatch = "WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH";
     private const string CancelRequesterForbidden = "WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN";
     private const string CandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
+    // Platform (WorkflowModels.WorkflowNoEligibleApprover): the start's only candidate is the maker (SoD) — refused 400
+    // before anything is written. Named apart from the maker code it becomes.
+    private const string PlatformNoEligibleApprover = "WORKFLOW_NO_ELIGIBLE_APPROVER";
 
     private static readonly ProductIdentityWorkflowFaultDecision Quarantine =
         new(ProductIdentityWorkflowFaultKind.Quarantine);
@@ -168,6 +178,10 @@ public static class ProductIdentityWorkflowFaultPolicy
             // is unknown: wait and ask again, and say so loudly at once, because waiting will not fix it.
             ResponseInvalid => new(ProductIdentityWorkflowFaultKind.ServiceWait, Loud: true),
             CandidatesRequired => Maker(ProductIdentityWorkflowMakerCodes.ApproverNotAssigned),
+            // WP-MDM-NO-ELIGIBLE-APPROVER-01: only a START can meet it (at a decision Platform answers 409 and MDM does
+            // not decide); elsewhere it stays what any other record answer is.
+            PlatformNoEligibleApprover when call == ProductIdentityWorkflowCall.Start =>
+                Maker(ProductIdentityWorkflowMakerCodes.NoEligibleApprover),
             _ => Quarantine
         },
 

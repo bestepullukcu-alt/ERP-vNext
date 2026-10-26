@@ -14,6 +14,7 @@ using Task = System.Threading.Tasks.Task;
 /// WP-WF-ENGINE-CANDIDATES-01 · D2 fix round 4 (CT-WF-D2-FIX4), item 7 — the soft delete that is conditional on the version the
 /// caller read, against a REAL mongod: a delete that withdrew a running approval first must not delete around a new start.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskDeleteFenceMongoTests
 {
     private static readonly Guid Tenant = TaskTestData.Tenant;

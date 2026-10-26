@@ -19,6 +19,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// planner's choice for the repository's own filter (an IXSCAN on that index, never a collection scan).
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class AuditOutboxIdempotencyIndexMongoTests
 {
     private static readonly Guid Tenant = Guid.Parse("70070070-0000-4000-8000-0000000000a1");

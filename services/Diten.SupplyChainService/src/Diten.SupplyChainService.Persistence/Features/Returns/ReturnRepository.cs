@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -132,7 +133,7 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                     var pending = Scope(scope); pending.Add("_id", Guid.NewGuid().ToString()); pending.Add("EventId", eventId.ToString());
                     pending.Add("ReturnId", order.Id.ToString()); pending.Add("Status", "Pending"); pending.Add("Envelope", BsonDocument.Parse(JsonSerializer.Serialize(envelope)));
                     await database.GetCollection<BsonDocument>("returns_outbox").InsertOneAsync(session, pending, cancellationToken: ct);
-                    await probe.AtAsync("outbox", ct); await probe.AtAsync("beforeCommit", ct);
+                    await probe.AtAsync("outbox", ct); await CentralAuditTransaction.EnlistAsync(session, order.Id, ct); await probe.AtAsync("beforeCommit", ct);
                     commitAttempted = true;
                     for (var commit = 0; ; commit++)
                     {

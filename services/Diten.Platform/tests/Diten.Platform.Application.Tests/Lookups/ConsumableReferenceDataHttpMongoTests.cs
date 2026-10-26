@@ -38,6 +38,7 @@ namespace Diten.Platform.Application.Tests.Lookups;
  * 400; 14 ACCOUNT-TYPE upper case. Draft / submitted / deprecated, unpublished / retired, the unchanged sets/{setCode}
  * route and the 403 on the consumer path are pinned too. §9 12-13 (Web/mobile create through CRM) are CT E4.
  */
+[Trait("Category", "Mongo")]
 public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
 {
     private const string ConsumerRead = "Platform.BusinessReferenceData.Consumer.Read";

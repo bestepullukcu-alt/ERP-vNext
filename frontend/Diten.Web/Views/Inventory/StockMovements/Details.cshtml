@@ -8,6 +8,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    ViewData["PageCode"] = "STOCKMOVEMENTDETAILS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
     string Dash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 }
@@ -145,7 +146,12 @@
                         <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
                             <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
                             <div class="backbone-preview-value mt-1">
-                                @Dash(Model.LotId)
+                                @* WP-MVP1-FIX-LIVE2 (finding 9): the lot NUMBER (TRACE); a registered lot whose number could not be read: the id + a hint *@
+                                @Dash(Model.LotNumber ?? Model.LotId)
+                                @if (Model.LotUnresolved)
+                                {
+                                    <span class="small text-muted ms-1" data-lot-unresolved>(@Localizer["LotUnresolvedHint"])</span>
+                                }
                                 @* W-UI-02: a TYPED lot text only (a registered lot id is not "unregistered"), until the P4 migration closes typing. *@
                                 @if (!string.IsNullOrWhiteSpace(Model.LotId) && !Diten.Web.Models.Inventory.MovementRules.IsRegisteredLotId(Model.LotId)
                                      && !await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(Http, Configuration["GatewayUrl"] ?? string.Empty,
@@ -204,6 +210,13 @@
                             <div class="backbone-preview-value mt-1"><time data-utc="@Model.PostingDate">@Dash(Model.PostingDate)</time></div>
                         </div></div>
                     </div>
+                    @* WP-MVP1-NAMES1 (BG-05 "Recorded by"): the name at the posting, else "unknown user" — the id only as the hover title *@
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-user"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColRecordedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break" data-recorded-by title="@(Model.RecordedByName is null ? Model.RecordedById : null)">@(Model.RecordedByName ?? Localizer["UnknownUser"].Value)</div>
+                        </div></div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -241,7 +254,8 @@
                     <div class="col-6">
                         <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
                             <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
-                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLotId)</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLotNumber ?? Model.BalanceLotId)@if (Model.BalanceLotUnresolved)
+                                {<span class="small text-muted ms-1" data-lot-unresolved>(@Localizer["LotUnresolvedHint"])</span>}</div>
                         </div></div>
                     </div>
                 </div>

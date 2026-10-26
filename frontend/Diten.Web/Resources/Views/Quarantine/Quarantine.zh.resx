@@ -434,4 +434,25 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>分析备注已更新</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>此记录有待审批或待执行的决定时，备注已锁定。</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>备注：{0} → {1} 个字符 · 附件：{2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>可用：{0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>全部</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>填入该行全部数量</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>未结</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>已留样</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>全部</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>隔离库存</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>所选可用库存转为隔离状态，并在隔离队列中等待决定。</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>继续</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>确认隔离此库存？</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>已开立隔离记录：{0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>帮助</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>将手动选择的可用库存隔离以待质量决定（退货、可疑产品、投诉）。</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>质量保证和仓库负责人。</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>选择库存</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>搜索批次，选择其可用行和数量；数量不得超过该行库存。</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>附理由确认</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>确认时须填写至少 10 个字符的理由；记录随后在队列中等待决定。</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

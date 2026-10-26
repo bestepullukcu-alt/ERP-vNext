@@ -1,0 +1,37 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    Breadcrumb "Geri Çağırma / {sayfa}" (pack §9) + the R6 pages as links (the mockup's sidebar group; each is its own manifest page).
+    MODEL: the active page code. A page the user may not open is not offered (UAS-001). R7b: Tatbikat Planlayıcı, Kanıt Paketi, Ayarlar.
+*@
+@{
+    var tabs = new (string Code, string Url, string Icon, string Key, string Permission)[]
+    {
+        ("RECALLDASHBOARD", "/Recall", "bx-tachometer", "Recall.Tabs.Dashboard", Diten.Web.Controllers.RecallKeys.DashboardRead),
+        ("RECALLTRACE", "/Recall/Trace", "bx-git-branch", "Recall.Tabs.Trace", Diten.Web.Controllers.RecallKeys.TraceRun),
+        ("RECALLCASES", "/Recall/Cases", "bx-list-ul", "Recall.Tabs.Cases", Diten.Web.Controllers.RecallKeys.CasesRead),
+        ("RECALLDRILLS", "/Recall/Drills", "bx-timer", "Recall.Tabs.Drills", Diten.Web.Controllers.RecallKeys.DrillsRead),
+        ("RECALLEVIDENCE", "/Recall/Evidence", "bx-archive", "Recall.Tabs.Evidence", Diten.Web.Controllers.RecallKeys.EvidenceExport),
+        ("RECALLSETTINGS", "/Recall/Settings", "bx-cog", "Recall.Tabs.Settings", Diten.Web.Controllers.RecallKeys.SettingsRead)
+    };
+    var active = tabs.FirstOrDefault(t => t.Code == Model);
+}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item text-muted">@Localizer["Recall.Common.Crumb.Root"]</li>
+        <li class="breadcrumb-item active text-primary" aria-current="page">@(active.Key is null ? ViewData["Title"] : Localizer[active.Key].Value)</li>
+    </ol>
+</nav>
+<ul class="nav nav-pills flex-wrap gap-2 mb-4" role="tablist" id="rc-tabs">
+    @foreach (var tab in tabs.Where(t => Perms.Has(t.Permission)))
+    {
+        var on = tab.Code == Model;
+        <li class="nav-item">
+            <a class="nav-link text-none d-flex align-items-center gap-2 @(on ? "active" : "shadow-sm")" style="@(on ? null : "background-color: var(--bs-paper-bg)")" href="@tab.Url" @(on ? "aria-current=page" : "")>
+                <i class="bx @tab.Icon"></i><span>@Localizer[tab.Key]</span>
+            </a>
+        </li>
+    }
+</ul>

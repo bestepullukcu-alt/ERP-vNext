@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -78,7 +79,7 @@ public sealed class SandopRepository(IMongoDatabase db):ISandopRepository
  var audit=Scope(scope);audit.Add("_id",Guid.NewGuid().ToString());audit.Add("PlanId",aggregateId.ToString());audit.Add("Operation",action.ToString());audit.Add("ActorId",scope.ActorId.ToString());audit.Add("CorrelationId",correlation.ToString());audit.Add("OccurredAt",now.ToString("O"));await Audit.InsertOneAsync(session,audit,cancellationToken:ct);
  var ev=new{eventId=Guid.NewGuid(),eventType,occurredAt=now,correlationId=correlation,causationId=(Guid?)null,payload,contractVersion="v1"};
  var outbox=Scope(scope);outbox.Add("_id",Guid.NewGuid().ToString());outbox.Add("PlanId",aggregateId.ToString());outbox.Add("Status","Pending");outbox.Add("Envelope",JsonSerializer.Serialize(ev));await Outbox.InsertOneAsync(session,outbox,cancellationToken:ct);
- commitAttempted=true;await session.CommitTransactionAsync(ct);return new(201,null,result);
+ await CentralAuditTransaction.EnlistAsync(session,aggregateId,ct);commitAttempted=true;await session.CommitTransactionAsync(ct);return new(201,null,result);
  }catch(OperationCanceledException)when(ct.IsCancellationRequested){throw;}
  catch(Exception ex)when(ex is MongoException or TimeoutException)
  { if(!commitAttempted&&session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(Exception abortError)when(abortError is MongoException or TimeoutException){}

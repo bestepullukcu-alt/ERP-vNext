@@ -20,6 +20,10 @@ public sealed class UpdateGlobalProductDraftValidator : AbstractValidator<Update
             RuleFor(x => x.Request.ExpectedVersion)
                 .NotNull()
                 .GreaterThanOrEqualTo(0);
+            RuleFor(x => x.Request.BrandId)
+                .Must(brandId => brandId != Guid.Empty)
+                .When(x => x.Request.BrandIdSpecified && x.Request.BrandId.HasValue)
+                .WithMessage("GLOBAL_PRODUCT_BRAND_ID_INVALID");
             RuleFor(x => x.Request.UnmappedFields)
                 .Must(fields => fields is null || fields.Count == 0)
                 .WithMessage("UNKNOWN_WRITE_FIELD_FORBIDDEN");

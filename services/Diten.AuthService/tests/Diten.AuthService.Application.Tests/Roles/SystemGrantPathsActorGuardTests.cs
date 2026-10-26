@@ -50,6 +50,9 @@ public sealed class SystemGrantPathsActorGuardTests
         "Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs",
         "Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RegisterCommandHandler.cs",
         "Diten.AuthService.Persistence/Seed/DataSeeder.cs",
+        // WP-AUTH-ADMIN-BOOTSTRAP-01 — the dev accounts' role links (SuperAdmin for the dev platform administrator, Admin for the
+        // dev tenant administrator) moved here with the account step; same "system" actor.
+        "Diten.AuthService.Persistence/Seed/DevAccountSeed.cs",
     ];
 
     private static readonly string[] SystemActorArguments = ["\"system\"", "SystemUser", "SystemActor"];
@@ -67,6 +70,7 @@ public sealed class SystemGrantPathsActorGuardTests
         typeof(InternalEventsController),
         typeof(InternalPermissionsController),
         typeof(DataSeeder),
+        typeof(DevAccountSeed),
         typeof(TenantAdminSelfServiceReconciler),
         typeof(RegisterCommandHandler),
         typeof(PlatformAdministratorRoleConvergence), // BL-521 FIX4 — the platform-admin role writer (see SystemUserRoleWriters)
@@ -100,6 +104,7 @@ public sealed class SystemGrantPathsActorGuardTests
     [InlineData(typeof(RoleProvisioningService), "SystemActor", "system")]
     [InlineData(typeof(FullCatalogPermissionGrantService), "GrantActor", "system")]
     [InlineData(typeof(DataSeeder), "SystemUser", "system")]
+    [InlineData(typeof(DevAccountSeed), "SystemUser", "system")]
     [InlineData(typeof(EntitlementSyncConsumer), "Actor", "entitlement-sync")]
     [InlineData(typeof(InternalEventsController), "EntitlementSyncActor", "tenant-provisioning")]
     [InlineData(typeof(RegisterCommandHandler), "SystemActor", "system")]

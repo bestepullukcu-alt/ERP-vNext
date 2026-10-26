@@ -79,7 +79,13 @@ printf 'export DITEN_PLATFORM_TEST_MONGO_URI=%q\n' "$uri"
 printf 'export MVP6_MOD0192_MONGO_URI=%q\n' "$uri"
 if [ "$all_supplychain" -eq 1 ]; then
   # The existing SupplyChain suite variables, all on the same lane mongod (as in Q103/Q119/Q121c).
-  for name in MOD0183_TEST_MONGO MOD0184_TEST_MONGO MOD0185_TEST_MONGO MVP6_MOD0190_MONGO_URI RETURNS_MONGO_URI CLAIMS_TEST_MONGO; do
+  #
+  # Q492: SUPPLYCHAIN_COMPOSITION_GUARD_MONGO_URI was missing from this list. CompositionRootGuardTests builds
+  # the PRODUCTION container and asserts every controller constructor parameter resolves — and in an ordinary
+  # lane it never ran, because this script never printed its variable, so the only thing the guard ever produced
+  # was its own fail-closed refusal ("this guard must not be skipped"). Measured 2026-10-16: 3 failed / 5 passed
+  # without it, 3 passed / 0 failed with it.
+  for name in MOD0183_TEST_MONGO MOD0184_TEST_MONGO MOD0185_TEST_MONGO MVP6_MOD0190_MONGO_URI RETURNS_MONGO_URI CLAIMS_TEST_MONGO SUPPLYCHAIN_COMPOSITION_GUARD_MONGO_URI; do
     printf 'export %s=%q\n' "$name" "$uri"
   done
 fi

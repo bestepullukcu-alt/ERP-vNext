@@ -31,6 +31,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// <para>Isolation follows <see cref="MongoIntegrationHarness"/>: one shared database, a fresh TenantId per test
 /// (DB-010). The rows are hard-deleted by that TenantId on dispose, because the shared database is never dropped.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class UnknownFieldToleranceMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

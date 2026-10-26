@@ -1,3 +1,5 @@
+> **Removed 2026-10-16 (BL-619):** the old mock Task Center page `/WorkCenter` (its controller, views, scripts and mock API) is gone; its URLs permanently redirect to `/WorkCenterNext`. Mentions of `/WorkCenter` files below are historical — see `/WorkCenterNext`.
+
 # Görev Merkezi kullanıma alma SOP'u
 
 > **Sahibi:** CONTROL TOWER · **Yazıldı:** 2026-08-11 · **Kayıt:** [BL-073](./product-backlog.md)

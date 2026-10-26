@@ -40,6 +40,7 @@ using Task = System.Threading.Tasks.Task;
 ///
 /// <para>Isolation is the tenant (DB-010): the shared test database, a fresh <c>TenantId</c> per harness.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class WorkReportExportAuditTrailMongoTests
 {
     private static readonly DateTimeOffset From = DateTimeOffset.UtcNow.AddDays(-1);

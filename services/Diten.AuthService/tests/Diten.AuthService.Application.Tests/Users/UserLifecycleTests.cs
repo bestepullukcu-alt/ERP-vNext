@@ -248,7 +248,7 @@ public sealed class UserLifecycleTests
     }
 
     private static SetUserActiveStatusCommandHandler StatusHandler(IUserRepository repo)
-        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), RecoveryGuardForTests.Permits(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
 
     /// <summary>The signed-in administrator is never the row under test here; self-deactivation has its own guard file.</summary>
     private sealed class SomeoneElse : ICurrentUserAccessor
@@ -260,7 +260,7 @@ public sealed class UserLifecycleTests
         => UpdateHandler(repo, new SomeoneElse(), new NoRefreshTokens());
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, ICurrentUserAccessor actor, IRefreshTokenRepository tokens)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())), UserAuditForTests.None(), new RecordingUserQuotaClient(), actor, tokens, NullLogger<UpdateUserCommandHandler>.Instance);
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())), UserAuditForTests.None(), new RecordingUserQuotaClient(), actor, tokens, RecoveryGuardForTests.Permits(), NullLogger<UpdateUserCommandHandler>.Instance);
 
     private static CreateUserCommandHandler CreateHandler(IUserRepository repo, FakeInvitationEmailService email)
         => new(repo, new FakePasswordHasher(), new FakePasswordPolicyService(), TenantContextFor(TenantA), new FakeTokenService(),
@@ -530,7 +530,7 @@ public sealed class UserLifecycleTests
 
     private static UpdateUserCommandHandler UpdateHandlerWith(IUserRepository repo, AuditRows rows, RecordingUserQuotaClient quota)
         => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())),
-            UserAuditForTests.Over(rows), quota, new Actor(Guid.NewGuid()), new CountingRevokes(), NullLogger<UpdateUserCommandHandler>.Instance);
+            UserAuditForTests.Over(rows), quota, new Actor(Guid.NewGuid()), new CountingRevokes(), RecoveryGuardForTests.Permits(), NullLogger<UpdateUserCommandHandler>.Instance);
 
     private sealed class AuditRows : IRbacAuditRecorder
     {

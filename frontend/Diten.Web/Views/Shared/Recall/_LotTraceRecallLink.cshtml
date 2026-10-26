@@ -1,0 +1,14 @@
+@model string?
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 R7c — 0174 /LotTrace (CT-R15): "Tam izleme (geri çağırma)" → /Recall/Trace?lot=… for a holder of recall.trace.run. MODEL: the
+    lot the page opened with; recall-bands.js follows the page's lot picker when the reader re-roots.
+*@
+@if (Perms.Has(Diten.Web.Controllers.RecallKeys.TraceRun))
+{
+    var lot = Guid.TryParse(Model, out var id) ? id.ToString("D") : string.Empty;
+    <a class="btn btn-sm btn-label-danger @(lot.Length == 0 ? "d-none" : "")" data-recall-lottrace data-lot-id="@lot" href="@(lot.Length == 0 ? "/Recall/Trace" : "/Recall/Trace?lot=" + lot)"><i class="bx bx-git-branch me-1"></i>@Localizer["Recall.Band.FullTrace"]</a>
+    <partial name="~/Views/Shared/Recall/_RecallBandAssets.cshtml" />
+}

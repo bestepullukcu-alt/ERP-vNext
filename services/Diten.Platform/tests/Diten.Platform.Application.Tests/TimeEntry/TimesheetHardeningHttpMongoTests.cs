@@ -44,6 +44,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// </list>
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetHardeningHttpMongoTests : TimerScenario
 {
     private static readonly DateOnly PreviousMonday = Monday.AddDays(-7);          // 2026-09-28, W40

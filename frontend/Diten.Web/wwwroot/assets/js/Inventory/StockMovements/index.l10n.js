@@ -13,7 +13,7 @@
         'ReversedInSource', 'Automatic', 'Unknown', 'Cancel', 'Filter', 'Apply', 'Reset', 'ShowAll', 'SaveView',
         'ColumnVisibility', 'RecordSaved', 'ErrorOccurred', 'Searching', 'NoResults', 'PickerUnavailable',
         'ErrServiceUnavailable', 'SkuLevelGsku', 'SkuLevelLsku', 'SkuLevelFinishedGood', 'SkuLevelItem',
-        'NewMovement', 'Correct', 'LotUnregisteredBadge', 'LotUnregisteredHint'
+        'NewMovement', 'Correct', 'LotUnregisteredBadge', 'LotUnregisteredHint', 'UnknownUser'
     ].concat(movementTypes.map((t) => 'Movement' + t), statuses.map((s) => 'Status' + s));
 
     const logMissingKeys = (dictionary) => {

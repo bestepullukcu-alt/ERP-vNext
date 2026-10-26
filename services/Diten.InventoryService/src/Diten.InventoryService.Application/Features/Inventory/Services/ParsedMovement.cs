@@ -26,4 +26,5 @@ public sealed record ParsedMovement(
     string? SourceLineId,
     string? SourceSystem,
     DateTimeOffset TransactionDate,
-    DateTimeOffset PostingDate);
+    DateTimeOffset PostingDate,
+    string? FefoBypassReason = null);

@@ -10,6 +10,8 @@ public static class ProductIdentityLifecyclePermissions
     public const string GlobalProductWithdraw = "mdm.global-products.withdraw";
     public const string GlobalProductRequestCorrection = "mdm.global-products.request-correction";
     public const string GlobalProductRequestRetirement = "mdm.global-products.request-retirement";
+    // MOD-0290-FU05 slice 2 (owner Karar a): an approved product's brand, by its own key (PKS-001 Tier-3).
+    public const string GlobalProductUpdateBrand = "mdm.global-products.update-brand";
 }
 
 public sealed record RetireGlobalProductIdentityRequest(

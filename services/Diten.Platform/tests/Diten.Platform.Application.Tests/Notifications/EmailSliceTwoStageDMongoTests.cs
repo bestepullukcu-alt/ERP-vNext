@@ -12,6 +12,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// no link) are carried forward to 1.2.0, an operator's edit is kept — and counted ONCE although two previous seeds
 /// (1.0.0 and 1.1.0) lead to the same 1.2.0. The seed is database-global: an isolated database of its own (DB-010).
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class EmailSliceTwoStageDMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

@@ -6,6 +6,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Application.Tests.Persistence;
 using System.Diagnostics;
 using Moq;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
@@ -51,6 +52,61 @@ internal sealed class WindowsCompatibleMongodProcessStarter : IMongodProcessStar
 
         return Process.Start(startInfo);
     }
+}
+
+/// <summary>
+/// WP-PLT-MARKET-REFTENANT-01 v1.3 — the preflight's OWN tenant check (VerifyAuditOutboxAsync), measured on the production
+/// class over a test-owned replica set: a proof request for another tenant than the resolved reference tenant is refused by
+/// the request check itself, before any read, and nothing is written. The eligibility and the adapter guard the same rule
+/// earlier; this test keeps the preflight's line from being removed silently.
+/// </summary>
+[Collection(VerifiedMarketReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
+public sealed class VerifiedMarketOperationalPreflightTenantTests
+{
+    private readonly VerifiedMarketReplicaSetFixture _fixture;
+
+    public VerifiedMarketOperationalPreflightTenantTests(VerifiedMarketReplicaSetFixture fixture) => _fixture = fixture;
+
+    [Fact]
+    public async Task Preflight_refuses_a_request_for_another_tenant()
+    {
+        var database = _fixture.Replica.CreateDatabase();
+        var referenceTenant = Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId);
+        var preflight = new Diten.Platform.Infrastructure.Persistence.VerifiedMarketOperationalPreflight(
+            database, new VerifiedMarketOperationalReferenceTenant(referenceTenant));
+        var collectionsBefore = await (await database.ListCollectionNamesAsync()).ToListAsync();
+
+        var foreign = await preflight.VerifyAuditOutboxAsync(
+            ProofRequest(Guid.Parse(VerifiedMarketOperationalEligibilityTests.GskuConsumerTenantId)));
+
+        Assert.False(foreign.IsExact);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_AUDIT_PROOF_INVALID", foreign.ReasonCode);
+        Assert.Equal(0, foreign.MatchCount);
+        Assert.Equal(collectionsBefore, await (await database.ListCollectionNamesAsync()).ToListAsync()); // nothing written
+
+        // Non-vacuity: the SAME request for the reference tenant passes the request check and reaches the outbox read (no
+        // proof row exists here) — the tenant is the only difference.
+        var own = await preflight.VerifyAuditOutboxAsync(ProofRequest(referenceTenant));
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_AUDIT_PROOF_AMBIGUOUS", own.ReasonCode);
+        Assert.Equal(collectionsBefore, await (await database.ListCollectionNamesAsync()).ToListAsync());
+    }
+
+    private static VerifiedMarketOperationalAuditProofRequest ProofRequest(Guid tenantId) => new(
+        tenantId,
+        Guid.NewGuid(),
+        "publication-correlation",
+        "audit-idempotency-key",
+        "BusinessReferenceData.publish",
+        "BusinessReferenceDataVersion",
+        Guid.NewGuid(),
+        AuditOperation.Activate,
+        "publish",
+        "Immediate",
+        VerifiedMarketOperationalProvisioningOptions.LockedActorId,
+        "market-run:businessreferencedata-catalog-vunsd-m49-2026-08-08:market",
+        VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
+        "market");
 }
 
 public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTests
@@ -279,14 +335,14 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
     {
         var audit = new Mock<IAuditService>(MockBehavior.Strict);
         var preflight = new Mock<IVerifiedMarketOperationalPreflight>(MockBehavior.Strict);
-        return (new VerifiedMarketOperationalGovernanceAuditAdapter(audit.Object, preflight.Object), audit, preflight);
+        return (new VerifiedMarketOperationalGovernanceAuditAdapter(audit.Object, preflight.Object, new VerifiedMarketOperationalReferenceTenant(Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId))), audit, preflight);
     }
 
     private static VerifiedMarketOperationalFacts Facts() => new(
         BusinessReferenceDataTestHarness.GetSeedPath(VerifiedMarketOperationalProvisioningOptions.LockedCatalogFileName),
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
-        Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId),
+        Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId),
         VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-operational-test");
 

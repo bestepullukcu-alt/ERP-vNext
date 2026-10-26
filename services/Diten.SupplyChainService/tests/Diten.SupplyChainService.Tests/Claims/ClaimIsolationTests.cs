@@ -9,6 +9,7 @@ using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Infrastructure.Features.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Logging.Abstractions;
 namespace Diten.SupplyChainService.Tests.Claims;
 public sealed class ClaimIsolationTests
 {
@@ -48,7 +49,7 @@ public sealed class ClaimIsolationTests
  private static async Task<(bool Called,ClaimRequestContext Context,JsonElement? Error)> Invoke(DefaultHttpContext http)
  {
   var called=false;var context=new ClaimRequestContext();
-  var middleware=new ClaimContextMiddleware(_=>{called=true;return Task.CompletedTask;});
+  var middleware=new ClaimContextMiddleware(_=>{called=true;return Task.CompletedTask;},NullLogger<ClaimContextMiddleware>.Instance);
   await middleware.InvokeAsync(http,context,new RequestContext(),Diten.SupplyChainService.Tests.Common.StubLegalEntityScopeValidator.Valid);
   http.Response.Body.Position=0;
   using var reader=new StreamReader(http.Response.Body,leaveOpen:true);

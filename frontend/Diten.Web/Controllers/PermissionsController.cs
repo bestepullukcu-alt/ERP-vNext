@@ -1,9 +1,13 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Diten.Web.Models;
 using Diten.Web.Models.Governance;
+using Diten.Web.Security;
+using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers;
 
@@ -14,28 +18,59 @@ namespace Diten.Web.Controllers;
 [Route("Permissions")]
 public sealed class PermissionsController : Controller
 {
+    // WP-USERS-ROLES-SMALL-01 (BL-617, UAS-001; the URA FIX1 pattern of RoleAssignmentsController) — the key that opens
+    // this screen: AuthService's PermissionsController reads the catalog under [HasPermission("auth.roles.read")].
+    // Display + proxy gate only; AuthService stays the authority.
+    public const string ReadPermission = "auth.roles.read";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
+    private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<PermissionsController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
     };
 
-    public PermissionsController(HttpClient httpClient, IConfiguration configuration, ILogger<PermissionsController> logger)
+    public PermissionsController(
+        HttpClient httpClient,
+        IConfiguration configuration,
+        IStringLocalizer<SharedResource> sharedLocalizer,
+        ILogger<PermissionsController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
+        _sharedLocalizer = sharedLocalizer;
         _logger = logger;
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/Governance/Permissions/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001 — 403 and the access-denied face inside the shell (Index.cshtml checks first); never a redirect.
+        if (!PermissionClaims.HasPermission(User, ReadPermission))
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("~/Views/Governance/Permissions/Index.cshtml");
+    }
+
+    // A read this user may not make is refused here, before any call leaves for the gateway, with the sentence a 403
+    // from AuthService produces through GatewayRefusal. A JsonResult, not StatusCode(403, value): the refusal is always
+    // the same JSON body whatever the caller's Accept header (RoleAssignmentsController, URA FIX2).
+    private IActionResult? RefuseWithoutPermission() =>
+        PermissionClaims.HasPermission(User, ReadPermission)
+            ? null
+            : new JsonResult(GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value))
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
 
     [HttpGet("lookups")]
     public async Task<IActionResult> Lookups()
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (!AddAuthHeaders())
             return Json(new { modules = Array.Empty<object>() });
 

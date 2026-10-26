@@ -47,6 +47,20 @@ public sealed class AuditIdempotencyKeyBuilder : IAuditIdempotencyKeyBuilder
         return $"audit:{Convert.ToHexString(hash).ToLowerInvariant()}";
     }
 
+    /// <summary>
+    /// BL-501 — the key of an event its sender named. A separate prefix, so it can never equal a composite key; the same
+    /// unique index (<c>ux_audit_outbox_idempotency_key</c>) refuses the second copy.
+    /// </summary>
+    public static string ForEvent(Guid eventId)
+    {
+        if (eventId == Guid.Empty)
+        {
+            throw new ArgumentException("Audit event id is required.", nameof(eventId));
+        }
+
+        return $"audit:event:{eventId:N}";
+    }
+
     private static string Normalize(string value)
     {
         return value.Trim().ToLowerInvariant();

@@ -37,6 +37,7 @@ using Task = System.Threading.Tasks.Task;
 ///
 /// AC references are to pack §23.9. Each `[Fact]` names the AC it proves in its own method name.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingReportMongoTests : IAsyncLifetime
 {
     private readonly Guid _organizer = Guid.NewGuid();

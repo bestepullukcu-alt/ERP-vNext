@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// conditional writes of the production repository, and the seed keeps an edit of the shell or of the plain-text body.
 /// An isolated database of its own (DB-010).
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class EmailShellCFixOneMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// the cases a widening could break are here next to the ones it must open. Real HTTP host, real Mongo.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureTenantLevelVisibilityTests : IClassFixture<WorkflowESignatureTestHost>
 {
     private const string Workflow = "api/v1/workflow";

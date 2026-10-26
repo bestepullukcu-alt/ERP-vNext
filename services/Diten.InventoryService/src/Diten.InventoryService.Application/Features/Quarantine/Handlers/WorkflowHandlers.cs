@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
@@ -5,17 +6,31 @@ using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
 
 /// <summary>§4.9 refreshDecision — "Durumu yenile".</summary>
-public sealed record RefreshDecisionCommand(Guid DecisionId) : IRequest<Response<DecisionDto>>;
+public sealed record RefreshDecisionCommand(Guid DecisionId) : IRequest<Response<DecisionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => ForQuarantine("Execute", "QuarantineDecision");
+    public Guid? CentralAuditEntityId(object? response) => DecisionId;
+}
 
 /// <summary>§4.10 withdrawDecision — "Kararı geri çek" (decider only, PendingApproval only).</summary>
-public sealed record WithdrawDecisionCommand(Guid DecisionId, string? Reason, string IdempotencyKey) : IRequest<Response<DecisionDto>>;
+public sealed record WithdrawDecisionCommand(Guid DecisionId, string? Reason, string IdempotencyKey) : IRequest<Response<DecisionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => ForQuarantine("LifecycleTransition", "QuarantineDecision");
+    public Guid? CentralAuditEntityId(object? response) => DecisionId;
+}
 
 /// <summary>§4.18 prepareWorkflowTemplate — "Onay şablonunu hazırla".</summary>
-public sealed record PrepareWorkflowTemplateCommand(string IdempotencyKey) : IRequest<Response<WorkflowTemplateResultDto>>;
+public sealed record PrepareWorkflowTemplateCommand(string IdempotencyKey) : IRequest<Response<WorkflowTemplateResultDto>>, ICentralAuditOutsideTransaction
+{
+    // BL-501: writes nothing in Inventory (only MOD-0023 calls over HTTP) — recorded right after it succeeds.
+    public CentralAuditMetadata CentralAudit => ForQuarantine("Create", "WorkflowTemplate");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<WorkflowTemplateResultDto>(response)?.TemplateId);
+}
 
 /// <summary>Contract §4.18 <c>WorkflowTemplateResult</c>.</summary>
 public sealed record WorkflowTemplateResultDto(string Code, string TemplateId, int PublishedVersion, bool Created);

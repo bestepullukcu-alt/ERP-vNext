@@ -243,7 +243,8 @@ window.LotMigrationPage = (function () {
         const targets = new Set(state.groups.map((g) => finalTarget(g.groupId)).filter(Boolean));
         const created = [...targets].filter((x) => x.startsWith('new:')).length;
         const existing = targets.size - created;
-        const subtext = `<p class="mb-2">${esc(t('Confirm.Count', ui.qty(moves), ui.qty(targets.size)))}</p>`
+        // FU-QUI1-LOTSTATUS family: the confirmation body is markup → subtextHtml (subtext is TEXT and would show the tags)
+        const bodyHtml = `<p class="mb-2">${esc(t('Confirm.Count', ui.qty(moves), ui.qty(targets.size)))}</p>`
             + `<p class="mb-2 small">${esc(t('Confirm.Existing', ui.qty(existing)))} · ${esc(t('Confirm.New', ui.qty(created)))}</p>`
             + `<div class="alert alert-danger small py-2 mb-0">${esc(t('Confirm.Danger'))}</div>`;
 
@@ -272,7 +273,7 @@ window.LotMigrationPage = (function () {
             }
         }, {
             type: 'danger',
-            subtext,
+            subtextHtml: bodyHtml,
             confirmButtonText: t('Confirm.Button'),
             cancelButtonText: t('Cancel'),
             showInput: true,

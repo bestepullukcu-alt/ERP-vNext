@@ -13,15 +13,18 @@ public sealed class GetGlobalProductSelectorHandler : IRequestHandler<GetGlobalP
 {
     private readonly IGlobalProductRepository _repository;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IBrandRepository? _brands;
 
     public GetGlobalProductSelectorHandler(
         IGlobalProductRepository repository,
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IBrandRepository? brands = null)
     {
         _repository = repository;
+        _brands = brands;
         _scopeGuard = new ProductLegalEntityScopeConsumerGuard(
             rolloutStates,
             policies,
@@ -65,10 +68,19 @@ public sealed class GetGlobalProductSelectorHandler : IRequestHandler<GetGlobalP
                 cancellationToken),
             _ => new GlobalProductPage([], 0)
         };
-        var items = page.Items.Select(x => new ProductItemSkuMasterModels.GlobalProductSelectorDto(
-            x.Id,
-            x.CanonicalCode,
-            x.GlobalProductName)).ToList();
+        // MOD-0290-FU05 (Karar b): one brand read per page.
+        var brands = await GlobalProductBrands.ReadAsync(_brands, page.Items.Select(x => x.BrandId), cancellationToken);
+        var items = page.Items.Select(x =>
+        {
+            var brand = GlobalProductBrands.Describe(x.BrandId, brands);
+            return new ProductItemSkuMasterModels.GlobalProductSelectorDto(
+                x.Id,
+                x.CanonicalCode,
+                x.GlobalProductName,
+                brand.Id,
+                brand.Code,
+                brand.Name);
+        }).ToList();
         return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.GlobalProductSelectorDto>>.Success(
             new(items, request.PageNumber, request.PageSize, page.TotalCount));
     }

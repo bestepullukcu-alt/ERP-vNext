@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
@@ -46,6 +47,7 @@ public sealed class InventoryReservationRepository : IInventoryReservationReposi
         {
             return await session.WithTransactionAsync(async (s, ct) =>
             {
+                await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
                 await _operations.ExpireDueAsync(s, sku, reservation.CorrelationId, reservation.CreatedBy, now, ct);
 
                 var position = await _operations.TryReserveAsync(s, sku, reservation.Quantity, now, ct);
@@ -84,6 +86,7 @@ public sealed class InventoryReservationRepository : IInventoryReservationReposi
         using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
         return await session.WithTransactionAsync(async (s, ct) =>
         {
+            await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
             var current = await _operations.FindAsync(s, reservationId, ct);
             if (current is null)
             {

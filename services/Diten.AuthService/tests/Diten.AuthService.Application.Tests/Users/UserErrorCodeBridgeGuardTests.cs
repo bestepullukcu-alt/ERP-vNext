@@ -105,6 +105,9 @@ public sealed class UserErrorCodeBridgeGuardTests
         Assert.Equal("USER_DELETE_SELF", DeleteUserCommandHandler.SelfDeleteCode);
         Assert.Equal("USER_DELETE_LAST_STEWARD", DeleteUserCommandHandler.LastStewardCode);
         Assert.Equal("USER_DEACTIVATE_SELF", SetUserActiveStatusCommandHandler.SelfDeactivateCode);
+        // WP-USERS-ROLES-SMALL-02 (CT K2) — the last-steward deactivation code, for both doors (kebab and edit form).
+        Assert.Equal("USER_DEACTIVATE_LAST_STEWARD", UserErrorCodes.DeactivateLastSteward);
+        Assert.Equal("USER_DEACTIVATE_LAST_STEWARD", SetUserActiveStatusCommandHandler.LastStewardCode);
         Assert.Equal("PERM_DENIED", CreateUserCommandHandler.PermissionDeniedCode);
     }
 

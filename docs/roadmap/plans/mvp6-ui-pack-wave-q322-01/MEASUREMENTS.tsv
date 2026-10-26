@@ -1,0 +1,5 @@
+module	page_count	view	create_edit_fields	status_fields	filter_fields	golden_reference	layout_line	access_denied_line	datatable_v2_line	controller_route_line	l10n_keys_per_language	view_model
+MOD-0184 Carriers	1	Index.cshtml	5	3	2	Slim (8 ve alti)	Index.cshtml:8	Index.cshtml:13	_DataTable.cshtml:15	SupplyChainCarriersController.cs:15	45 x 7 (en,tr,fr,es,zh,ar,ru)	Models/SupplyChain/Carriers/CarrierViewModels.cs
+MOD-0185 Loads	1	Index.cshtml	8	-	3	Slim (8 ve alti, TAM SINIRDA)	Index.cshtml:9	Index.cshtml:14	_DataTable.cshtml:16	SupplyChainLoadsController.cs:20	62 x 7	NONE - no file under Models matches *Load*, controller references no view model
+MOD-0186 Returns	1	Index.cshtml	6	-	3	Slim (8 ve alti)	Index.cshtml:10	Index.cshtml:16	_DataTable.cshtml:34	SupplyChainReturnsController.cs:35	106 x 7	Models/SupplyChain/Returns/ReturnViewModels.cs
+MOD-0187 Claims	1	Index.cshtml	7	-	3	Slim (8 ve alti)	Index.cshtml:10	Index.cshtml:16	_DataTable.cshtml:34	SupplyChainClaimsController.cs:29	95 x 7	Models/SupplyChain/Claims/ClaimViewModels.cs

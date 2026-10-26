@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>El estado de este registro no permite cambiar el comportamiento de stock.</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Un valor completado en un registro aprobado no puede cambiarse aquí: solo mediante una corrección. Las listas solo admiten filas nuevas.</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Otro producto terminado ya utiliza este GTIN.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>Nadie más que usted puede aprobar el registro que envió. Pida a su administrador que ajuste los aprobadores; después podrá enviarlo de nuevo.</value></data>
 </root>

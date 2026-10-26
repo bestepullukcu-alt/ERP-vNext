@@ -128,7 +128,7 @@ const ShipmentList = (function () {
                 { data: 'status', render: badge },
                 { data: 'plannedShipAt', render: formatDate },
                 { data: 'plannedDeliverAt', render: formatDate },
-                { data: 'shipmentId', orderable: false, searchable: false, render: (id) => `<a class="btn btn-sm btn-icon btn-label-primary" href="/SupplyChain/Shipments/Details/${encodeURIComponent(id)}" aria-label="${escapeHtml(L.details)}"><i class="bx bx-show" aria-hidden="true"></i></a>` }
+                { data: 'shipmentId', orderable: false, searchable: false, render: (id) => `<a class="btn btn-sm btn-icon btn-label-primary" href="/SupplyChain/Shipments/Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(document.getElementById('filterLegalEntity')?.value || '')}" aria-label="${escapeHtml(L.details)}"><i class="bx bx-show" aria-hidden="true"></i></a>` }
             ], buttons: toolbar, language: { emptyTable: L.empty, zeroRecords: L.empty }
         }));
         document.getElementById('btnFilterApply')?.addEventListener('click', () => table.ajax.reload());

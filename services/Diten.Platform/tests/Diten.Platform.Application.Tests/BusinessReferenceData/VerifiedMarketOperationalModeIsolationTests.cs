@@ -80,6 +80,10 @@ public sealed class VerifiedMarketOperationalModeIsolationTests
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IVerifiedMarketOperationalPreflight));
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IBusinessReferenceDataVerifiedMarketOperationalEligibility));
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(VerifiedMarketOperationalGovernanceAuditAdapter));
+        // WP-PLT-MARKET-REFTENANT-01 — the GSKU options are read (consumer ≠ reference tenant); the GSKU runner is not composed.
+        Assert.Contains(services, descriptor =>
+            descriptor.ServiceType == typeof(Microsoft.Extensions.Options.IConfigureOptions<Diten.Platform.API.Configuration.VerifiedGskuOperationalProvisioningOptions>));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(VerifiedMarketOperationalReferenceTenant));
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions
         {
             ValidateOnBuild = true,

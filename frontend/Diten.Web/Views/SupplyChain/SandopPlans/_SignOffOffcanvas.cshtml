@@ -1,0 +1,59 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Details.cshtml states it.
+}
+@* RecordSignOffRequest: snapshotId (chosen from the listed snapshots), role, decision (required), comment (optional,
+   ≤ 2000). Shown only while the plan is InReview (pack §13). A decision is final, so submit asks window.showConfirm. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasSignOff" aria-labelledby="offcanvasSignOffLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasSignOffLabel" class="offcanvas-title">@Localizer["RecordSignOff"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formSignOffAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+        <div class="alert alert-warning small" role="note">@Localizer["SignOffFinalNote"]</div>
+        <form id="formSignOff" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="signOffSnapshot" class="form-label fw-medium">@Localizer["SignOffSnapshot"] <span class="text-danger">*</span></label>
+                    <select id="signOffSnapshot" class="form-select" dir="ltr"></select>
+                    <div class="invalid-feedback" data-for="signOffSnapshot"></div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffRole" class="form-label fw-medium">@Localizer["SignOffRole"] <span class="text-danger">*</span></label>
+                    <select id="signOffRole" class="form-select">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        <option value="DemandPlanning">@Localizer["RoleDemandPlanning"]</option>
+                        <option value="SupplyPlanning">@Localizer["RoleSupplyPlanning"]</option>
+                        <option value="Finance">@Localizer["RoleFinance"]</option>
+                        <option value="Operations">@Localizer["RoleOperations"]</option>
+                        <option value="Executive">@Localizer["RoleExecutive"]</option>
+                    </select>
+                    <div class="invalid-feedback" data-for="signOffRole"></div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffDecision" class="form-label fw-medium">@Localizer["SignOffDecision"] <span class="text-danger">*</span></label>
+                    <select id="signOffDecision" class="form-select">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        <option value="Approved">@Localizer["DecisionApproved"]</option>
+                        <option value="Rejected">@Localizer["DecisionRejected"]</option>
+                    </select>
+                    <div class="invalid-feedback" data-for="signOffDecision"></div>
+                </div>
+                <div class="col-12">
+                    <label for="signOffComment" class="form-label fw-medium">@Localizer["SignOffComment"]</label>
+                    <textarea id="signOffComment" class="form-control" rows="3"></textarea>
+                    <div class="invalid-feedback" data-for="signOffComment"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitSignOff" class="btn btn-primary">@Localizer["RecordSignOff"]</button>
+    </div>
+</div>

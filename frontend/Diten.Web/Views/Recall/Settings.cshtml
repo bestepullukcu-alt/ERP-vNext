@@ -1,0 +1,121 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Controllers
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Settings"].Value;
+    ViewData["PageCode"] = "RECALLSETTINGS";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R7b — Ayarlar (RECALLSETTINGS, pack §11.1, §4.14; mockup "isSet"). Reads /Recall/data/settings and /Recall/data/settings/history
+    (recall.settings.read). "Kaydet" (recall.settings.manage) asks a reason (≥ 10, CT-R16) and is two steps when the company's MOD-0022 row
+    recall.settings.update asks for a signature (prepare rs-v1 → the ONE MOD-0022 dialog → save). Without the save key the fields are shown
+    read-only and there is no button (UAS-001: absent, not disabled).
+    Not here: the e-signature policy select (D-10 — MOD-0022's policy rows), the "Öner / Otomatik iste" quarantine toggle (D-1 — automatic
+    by KR-B), "Karar G: sabit 4 saat" (D-8 — a company setting, default 4).
+    UAS-001 — nothing below without recall.settings.read. No redirect.
+*@
+@if (!Perms.Has(RecallKeys.SettingsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Settings"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+    var manage = Perms.Has(RecallKeys.SettingsManage);
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLSETTINGS")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="rc-settings">
+        <p class="text-muted mb-3">@Localizer["Recall.Settings.Subtitle"]</p>
+        <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="rc-saved" class="alert alert-success d-none" role="status"></div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-7">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="rc-settings-form" novalidate>
+                            <div class="mb-3">
+                                <label class="form-label" for="rc-set-target">@Localizer["Recall.Settings.Target"]</label>
+                                <input type="number" class="form-control" style="max-width:10rem" id="rc-set-target" min="1" max="72" @(manage ? "" : "disabled") />
+                                <div class="invalid-feedback">@Localizer["Recall.Settings.RangeHours"]</div>
+                                <div class="form-text">@Localizer["Recall.Settings.TargetHint"]</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="rc-set-freq">@Localizer["Recall.Settings.Frequency"]</label>
+                                <input type="number" class="form-control" style="max-width:10rem" id="rc-set-freq" min="30" max="730" @(manage ? "" : "disabled") />
+                                <div class="invalid-feedback">@Localizer["Recall.Settings.RangeDays"]</div>
+                                <div class="form-text">@Localizer["Recall.Settings.FrequencyHint"]</div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="form-label d-block">@Localizer["Recall.Settings.Effectiveness"]</span>
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (var n in new[] { 1, 2, 3 })
+                                    {
+                                        <div style="max-width:9rem">
+                                            <label class="form-label small" for="rc-set-e@(n)">@Localizer["Recall.Class.N", n]</label>
+                                            <input type="number" class="form-control" id="rc-set-e@(n)" min="0" max="100" step="0.1" @(manage ? "" : "disabled") />
+                                            <div class="invalid-feedback">@Localizer["Recall.Settings.RangePercent"]</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="alert alert-info small py-2">@Localizer["Recall.Settings.SignatureNote"]</div>
+                            @if (manage)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label" for="rc-set-reason">@Localizer["Recall.Reason.Label"]</label>
+                                    <textarea class="form-control" id="rc-set-reason" rows="2" maxlength="1000"></textarea>
+                                    <div class="invalid-feedback">@Localizer["Recall.Common.ReasonMin"]</div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                    <button type="button" class="btn btn-label-secondary d-none" id="rc-set-reset">@Localizer["Recall.Settings.Reset"]</button>
+                                    <button type="submit" class="btn btn-primary" id="rc-set-save" disabled><i class="bx bx-save me-1"></i>@Localizer["Recall.Sign.Save"]</button>
+                                </div>
+                            }
+                        </form>
+                        <p class="small text-muted mt-3 mb-0" id="rc-set-meta"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-5">
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title mb-0">@Localizer["Recall.Settings.History"]</h5></div>
+                    <ul class="list-group list-group-flush" id="rc-set-history"><li class="list-group-item text-muted">@Localizer["Recall.Common.Loading"]</li></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (manage)
+    {
+        <partial name="~/Views/Recall/_SignDialog.cshtml" />
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Recall/settings-form.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/settings.js" asp-append-version="true"></script>
+    }
+}

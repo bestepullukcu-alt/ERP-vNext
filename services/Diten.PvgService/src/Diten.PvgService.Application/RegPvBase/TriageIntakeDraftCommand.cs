@@ -5,4 +5,5 @@ public sealed record TriageIntakeDraftCommand(
     PvgActorContext ActorContext,
     PvgCorrelationContext CorrelationContext,
     string IntakeDraftId,
-    PvgTriageIntakeDraftRequest Draft);
+    PvgTriageIntakeDraftRequest Draft,
+    long? ExpectedVersion = null);

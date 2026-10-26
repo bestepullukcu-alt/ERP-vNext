@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// answered 409 at signing); "one signature binds one approval" is the E4 gate alone — context = this task, single use on
 /// the transition log — and a task is approved once. So a task may hold several signatures, at most one of them BOUND.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed partial class WorkflowESignatureGateTests
 {
     private async Task InvalidateAsync(World w, Guid signer, Guid signature)

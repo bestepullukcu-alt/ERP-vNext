@@ -106,7 +106,7 @@
   <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>استُخدم هذا الطلب مسبقًا بقيم مختلفة. ابدأ إجراءً جديدًا.</value></data>
   <data name="ErrReturnSourceChanged" xml:space="preserve"><value>تغيّرت الشحنة منذ أول مرتجع لها. راجع الشحنة؛ لم يتم تعديل أي شيء تلقائيًا.</value></data>
   <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>بيانات مرجع الشحنة غير صالحة. يُرجى التواصل مع الدعم.</value></data>
-  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>بيانات الشحنة التي أعادها النظام المصدر غير صالحة. يُرجى الاتصال بالدعم.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>بيانات الشحنة التي أعادها النظام المصدر غير صالحة. يُرجى التواصل مع الدعم.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير مكتملة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>حالة الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
   <data name="ErrDependencyUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>

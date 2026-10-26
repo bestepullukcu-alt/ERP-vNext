@@ -235,6 +235,7 @@ const UsersList = (function () {
     const ERROR_CODE_KEYS = {
         USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded',
         USER_DELETE_SELF: 'ErrorUserDeleteSelf', USER_DELETE_LAST_STEWARD: 'ErrorUserDeleteLastSteward', USER_DEACTIVATE_SELF: 'ErrorUserDeactivateSelf',
+        USER_DEACTIVATE_LAST_STEWARD: 'ErrorUserDeactivateLastSteward',
         USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
         USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
         USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_EMAIL_TOO_LONG: 'ErrorUserEmailTooLong', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',

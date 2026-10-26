@@ -18,6 +18,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     private readonly IUserQuotaClient _quota;
     private readonly ICurrentUserAccessor _currentUser;
     private readonly IRefreshTokenRepository _refreshTokens;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly ILogger<UpdateUserCommandHandler> _logger;
 
     public UpdateUserCommandHandler(
@@ -29,8 +30,10 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         IUserQuotaClient quota,
         ICurrentUserAccessor currentUser,
         IRefreshTokenRepository refreshTokens,
+        IRecoveryCapabilityGuard recoveryGuard,
         ILogger<UpdateUserCommandHandler> logger)
     {
+        _recoveryGuard = recoveryGuard;
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
         _tenantContext = tenantContext;
@@ -86,6 +89,15 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         if (UserLifecycle.RefusesActivation(user, isActive))
         {
             return UserLifecycle.InvitationPendingRefusal<UserDto>();
+        }
+
+        // WP-USERS-ROLES-SMALL-02 — the form's Active switch is the second deactivation door: the same rule and code as the
+        // kebab's disable. A refusal refuses the WHOLE update — the name it carried is not written either.
+        if (!isActive && user.IsActive
+            && await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                _tenantContext.TenantId, new RecoveryCapabilityChange.DeactivateUser(user.Id), ct))
+        {
+            return SetUserActiveStatusCommandHandler.LastStewardRefusal<UserDto>();
         }
 
         // BL-459 F1 — the edit form is the second door to switching an Inactive account back on; same seat question as

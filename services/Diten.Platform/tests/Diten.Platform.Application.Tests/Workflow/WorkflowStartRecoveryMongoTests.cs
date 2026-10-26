@@ -48,6 +48,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// <item>BL-540 (1) — the orphan recovery lists by default and closes only orphans when told to.</item>
 /// </list>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
     IAsyncLifetime,
     IClassFixture<AuditOutboxTemporalReplicaSetFixture>

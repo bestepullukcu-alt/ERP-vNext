@@ -47,6 +47,10 @@ public sealed class SupplyChainShipmentsController : Controller
     public IActionResult Details(Guid shipmentId)
     {
         ViewBag.ShipmentId = shipmentId;
+        // G6-prep fix (2026-10-18): the workspace's API calls need the legal-entity scope the adapter requires
+        // (?legalEntityId=, else 400). It arrives on the page URL from the list or the create flow; parsed here with the
+        // same rule as the adapter so the page never forwards a value the adapter would reject. Empty = fail closed.
+        ViewBag.LegalEntityId = LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId) ? legalEntityId.ToString("D") : string.Empty;
         return View("~/Views/SupplyChain/Shipments/Details.cshtml");
     }
 

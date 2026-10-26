@@ -1,0 +1,20 @@
+## Apply #1
+Q358 retraction Apply finished: 5 Admin role(s), 9 grant(s) planned, 4 converted to Module, 5 soft-deleted, 0 not applied, 0 tenant(s) unknown, 0 failed.
+tenant 000000000001 Admin      holds 0/5  
+tenant 000000000001 SuperAdmin holds 25/5  cancel(0) create(0) dispatch(0) pod.capture(0) read(0) supplychain.carriers.create(0) supplychain.carriers.read(0) supplychain.carriers.status.change(0) supplychain.claims.create(0) supplychain.claims.decide(0) supplychain.claims.investigate(0) supplychain.claims.read(0) supplychain.claims.settle(0) supplychain.loads.create(0) supplychain.loads.read(0) supplychain.loads.transition(0) supplychain.returns.authorize(0) supplychain.returns.cancel(0) supplychain.returns.close(0) supplychain.returns.create(0) supplychain.returns.disposition(0) supplychain.returns.read(0) supplychain.returns.receive(0) supplychain.returns.transit(0) supplychain.returns.transition(0)
+tenant 000000000001 Viewer     holds 0/5  
+tenant 711c08aa273f Admin      holds 4/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod)
+tenant 711c08aa273f Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+tenant a0c8d5cd0c65 Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant a0c8d5cd0c65 Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+tenant b8d2de805cb0 Admin      holds 0/5  
+tenant b8d2de805cb0 Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+tenant 9dcf8dbb1eae Admin      holds 0/5  
+tenant 9dcf8dbb1eae Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+role_permission_source_corrected=4
+role_permission_revoked=5
+role_permission_retraction_not_applied=0
+soft-deleted grants=6
+version c-0c26dbb5cc = 1
+version 1-711c08aa27 = 1
+version f-b8d2de805c = 1

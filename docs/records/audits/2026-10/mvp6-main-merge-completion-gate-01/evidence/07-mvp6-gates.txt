@@ -1,0 +1,15 @@
+# item 7 — required MVP-6 gates
+
+SupplyChain suites on the MERGED tree (1b3408c2b):
+  529 passed, 1 failed, 0 skipped of 530 — 3 m 1 s
+
+Identical to the pre-merge run on the lane branch (529/1/530, 2 m 31 s):
+  the merge changed nothing for SupplyChain — origin/main touched 0 files under services/Diten.SupplyChainService.
+
+The one failure, named rather than hidden:
+  Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+  InvalidOperationException: 'Explicit write/read restart mode required; exclude from ordinary suite.'
+  It throws unless CLAIMS_RESTART_MODE is write or read — a two-process restart test, from a3c335256,
+  untouched by any commit in this session. A deliberate self-exclusion, not a regression.
+
+GATE-18-0 after the merge: 43 of 56 MET — unchanged. No cell was measured in this gate run.

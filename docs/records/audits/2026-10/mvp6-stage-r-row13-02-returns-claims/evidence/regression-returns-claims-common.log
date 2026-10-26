@@ -1,0 +1,1420 @@
+Test run for /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.63]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:01.08]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:01.09]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.NotFound_IsNotReferenceable_ForForeignAndForInactiveAlike [30 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.MissingOrNonHttpBaseUrl_IsUnavailable_AndNoCallIsMade(baseUrl: null) [8 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.MissingOrNonHttpBaseUrl_IsUnavailable_AndNoCallIsMade(baseUrl: "   ") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.MissingOrNonHttpBaseUrl_IsUnavailable_AndNoCallIsMade(baseUrl: "") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.MissingOrNonHttpBaseUrl_IsUnavailable_AndNoCallIsMade(baseUrl: "ftp://mdm.invalid/") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.MissingOrNonHttpBaseUrl_IsUnavailable_AndNoCallIsMade(baseUrl: "not-a-url") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: Unauthorized) [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: ServiceUnavailable) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: BadGateway) [< 1 ms]
+[22:46:40 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: InternalServerError) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: BadRequest) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EveryOtherStatus_IsUnavailable_NeverValid(status: Forbidden) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.Timeout_IsUnavailable [2 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.EmptyIdentifiersOrBlankToken_AreRejectedBeforeAnyCall [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.TransportFailure_IsUnavailable [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityScopeValidatorTests.Ok_IsValid_AndTheRequestIsOneGetCarryingTenantAndCallerToken [12 ms]
+[22:46:42 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[22:46:42 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[22:46:42 INF] Now listening on: http://127.0.0.1:5066 CorrelationId= TenantId= LegalEntityId=
+[22:46:43 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId=6c276f04-3969-435f-8cfa-bb148c308f0d TenantId= LegalEntityId=
+[22:46:43 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 401 null application/json; charset=utf-8 183.2946ms CorrelationId=6c276f04-3969-435f-8cfa-bb148c308f0d TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Capacity_controller_is_mapped_and_its_context_middleware_is_composed [4 s]
+[22:46:43 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - application/json; charset=utf-8 120 CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Route matched with {action = "Create", controller = "SandopPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController (Diten.SupplyChainService.Api). CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Handling CreateSandopPlanCommand CorrelationId=00000000-0000-0000-0000-000000000000 TenantId=00000000-0000-0000-0000-000000000000 LegalEntityId=00000000-0000-0000-0000-000000000000
+[22:46:43 INF] Executing ContentResult with HTTP Response ContentType of application/json CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Executed action Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api) in 212.2607ms CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+[22:46:43 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - 201 292 application/json 355.2665ms CorrelationId=042f3655-6bab-4ff5-9930-95587e870af4 TenantId= LegalEntityId=
+CAPACITY_EXCEPTION=System.FormatException;MESSAGE=Size 17825967 is larger than MaxDocumentSize 16777216.
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Sandop_controller_is_mapped_and_serves_a_request [401 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "beforeCommit") [349 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "receipt") [13 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "outbox") [14 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "aggregate") [10 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "audit") [12 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Storage_CapacityExceeded_FailsWithoutPartialDocuments [226 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.DriverCapacityFailure_HasMeasuredExceptionType [95 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.Mutation_ResponseLostAfterCommit_RecoversOriginalReceiptWithoutSecondWrite [62 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests.MissingUniqueIndex_FailsClosedBeforeAnyWrite [244 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "--1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1e2") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: " 1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "+1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: ".1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "١") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1.") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1 ") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "1.0000000000000000000000000000000000001", right: "1", expected: 1) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "000250.00", right: "250", expected: 0) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "99999999999999999999999999999999999999", right: "100000000000000000000000000000000000000", expected: -1) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-1.0000000000000000000000000000000000001", right: "-1", expected: -1) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-0", right: "0", expected: 0) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0.0000000000000000000000000000000000000001", positive: True, negative: False) [2 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0", positive: False, negative: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.000", positive: False, negative: False) [< 1 ms]
+[22:46:44 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[22:46:46 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[22:46:46 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[22:46:46 INF] Now listening on: http://127.0.0.1:5066 CorrelationId= TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 POST http://localhost/api/shipment-bundle/returns - application/json; charset=utf-8 142 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "Create", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api). CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Handling CreateReturnCommand CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.01", positive: False, negative: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "000250.00", positive: True, negative: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0", positive: False, negative: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimAmountTests.Approval_ZeroRetainedThroughSettlementAndClosure_ExactBsonStrings [81 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimOutboxTests.Mutations_PersistPendingOutboxAndOriginalTransitionTime [35 ms]
+[22:46:46 INF] Return outcome createReturn 201 null False CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnResponse'. CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api) in 82.8275ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Return request completed 201 6ed93dbf-f1e0-469b-a681-994a2933ea53 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 POST http://localhost/api/shipment-bundle/returns - 201 null application/json; charset=utf-8 102.8131ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 POST http://localhost/api/shipment-bundle/returns - application/json; charset=utf-8 142 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "Create", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api). CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Handling CreateReturnCommand CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Return outcome createReturn 201 null True CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnResponse'. CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api) in 3.0714ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Return request completed 201 6ed93dbf-f1e0-469b-a681-994a2933ea53 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 POST http://localhost/api/shipment-bundle/returns - 201 null application/json; charset=utf-8 6.13ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 POST http://localhost/api/shipment-bundle/returns/374ccc15-dbe9-45aa-ad1e-2244f425abf3/transition - application/json; charset=utf-8 75 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Transition (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "Transition", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Transition(System.String, System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api). CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Handling TransitionReturnCommand CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Return outcome transitionReturn 200 null False CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnResponse'. CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Transition (Diten.SupplyChainService.Api) in 21.3168ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Transition (Diten.SupplyChainService.Api)' CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Return request completed 200 6ed93dbf-f1e0-469b-a681-994a2933ea53 CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 POST http://localhost/api/shipment-bundle/returns/374ccc15-dbe9-45aa-ad1e-2244f425abf3/transition - 200 null application/json; charset=utf-8 30.0885ms CorrelationId=6ed93dbf-f1e0-469b-a681-994a2933ea53 TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 GET http://localhost/api/shipment-bundle/returns - null null CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)' CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "List", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api). CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Handling GetReturnListQuery CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Return outcome queryReturns 200 null False CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnListResponse'. CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api) in 14.9643ms CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)' CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Return request completed 200 c37d2227-50b6-4d36-8715-33dc9bfdeb2f CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 GET http://localhost/api/shipment-bundle/returns - 200 null application/json; charset=utf-8 18.2405ms CorrelationId=c37d2227-50b6-4d36-8715-33dc9bfdeb2f TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 POST http://localhost/api/shipment-bundle/claims - application/json; charset=utf-8 118 CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)' CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api). CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Handling CreateClaimCommand CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Claim outcome createClaim 201 null False CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimResponse'. CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 21.0604ms CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)' CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Claim request completed 201 031d5b43-f204-4579-8917-791d3c3be716 CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 POST http://localhost/api/shipment-bundle/claims - 201 null application/json; charset=utf-8 30.437ms CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 POST http://localhost/api/shipment-bundle/claims - application/json; charset=utf-8 118 CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)' CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api). CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Handling CreateClaimCommand CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Claim outcome createClaim 201 null True CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimResponse'. CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 1.9414ms CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)' CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Claim request completed 201 031d5b43-f204-4579-8917-791d3c3be716 CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 POST http://localhost/api/shipment-bundle/claims - 201 null application/json; charset=utf-8 2.614ms CorrelationId=031d5b43-f204-4579-8917-791d3c3be716 TenantId= LegalEntityId=
+[22:46:46 INF] Request starting HTTP/1.1 GET http://localhost/api/shipment-bundle/claims - null null CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)' CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Route matched with {action = "List", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api). CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Handling GetClaimListQuery CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId=18b811af-c25d-40bf-93ea-7f906d3e16bd LegalEntityId=3a133aa7-2082-4d1c-ab2f-31ae8947afbf
+[22:46:46 INF] Claim outcome queryClaims 200 null False CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimListResponse'. CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api) in 13.1522ms CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)' CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Claim request completed 200 12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+[22:46:46 INF] Request finished HTTP/1.1 GET http://localhost/api/shipment-bundle/claims - 200 null application/json; charset=utf-8 19.0944ms CorrelationId=12d0f5fb-2eb3-4cd3-b93a-74a1139551d3 TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.Common.ReturnsClaimsObservabilityTests.Return_create_replay_transition_and_query_all_answer_over_http [1 s]
+  Passed Diten.SupplyChainService.Tests.Common.ReturnsClaimsObservabilityTests.Claim_create_replay_and_query_all_answer_over_http [55 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimLifecycleTests.CanTransition_All49Pairs_ExactlySevenFrozenArrows [2 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Every_fixture_reader_answers_from_memory [32 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.The_two_modules_persist_into_disjoint_collections [19 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans") [5 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans") [2 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_reaches_a_live_producer(feature: "SandopPlans") [7 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_reaches_a_live_producer(feature: "CapacityPlans") [6 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "supportedModes") [12 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierCode") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "status") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "displayName") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierId") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Active") [5 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Suspended") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Retired") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Dispatched", eligible: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "InTransit", eligible: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Draft", eligible: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Delivered", eligible: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Cancelled", eligible: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Closed", eligible: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Planned", eligible: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Exception", eligible: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ProducerShipmentRootInvalid500_MapsToClaimReferenceInvalid [2 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "null", status: 503) [4 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "malformed", status: 502) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "empty", status: 503) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "missing", status: 503) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_RealNilRoot_PreservesNilAndUsesSeparateNonNilDependencyTrace [4 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "not-json") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_MismatchedIdentity_IsMalformedNotNotFound [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Unauthorized, status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE", reads: 1) [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "carrier", refusal: Unauthorized, status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE", reads: 2) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "shipment", refusal: Forbidden, status: 403, code: "FORBIDDEN", reads: 1) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(refusingRead: "carrier", refusal: Forbidden, status: 403, code: "FORBIDDEN", reads: 2) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "invalid-json", status: 502, code: "CLAIM_REFERENCE_INVALID") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "timeout", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "refusal", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "not-found", status: 404, code: "CLAIM_NOT_FOUND") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierNotInList_Generic404 [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithNullShipmentCarrier_BusinessMismatch422 [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithMissingShipmentField_IncompleteBeforeCarrierRead [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.TransitionFingerprint_EquivalentInstantsDifferentText_Conflicts [3 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.NilAuthoritativeRoot_PersistsAndReplaysWithoutDefaulting [310 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Scope_SoftDeleteAndActorReplay_PreserveReceiptAndAudit [185 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_LexicalAmountChanges_Conflicts [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_RootBeforeChangedPayload_AndOriginalResultReplay [37 ms]
+[xUnit.net 00:00:09.65]     Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [FAIL]
+[xUnit.net 00:00:09.65]       System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.
+[xUnit.net 00:00:09.65]       Stack Trace:
+[xUnit.net 00:00:09.65]         /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReplayTests.cs(46,0): at Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery()
+[xUnit.net 00:00:09.65]         --- End of stack trace from previous location ---
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns scoped counts a6eaae49-6f5e-4329-9d69-de256ed6dcc9=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts a6eaae49-6f5e-4329-9d69-de256ed6dcc9=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns scoped counts 61e451b5-b0e5-4513-847b-4f09e1484cbd=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 61e451b5-b0e5-4513-847b-4f09e1484cbd=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns scoped counts 7a8c567c-6789-4a0c-b64f-9fe43b7119b1=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 7a8c567c-6789-4a0c-b64f-9fe43b7119b1=1,1,1,1,1
+Returns write stage=entitlement
+Returns scoped counts 2061b10c-1057-4d03-9e40-cda5684b7557=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2061b10c-1057-4d03-9e40-cda5684b7557=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns scoped counts 702fc98c-dca5-47c5-834c-82ac7b519e08=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 702fc98c-dca5-47c5-834c-82ac7b519e08=1,1,1,1,1
+Returns write stage=entitlement
+Returns scoped counts 635e7643-c402-4ca6-a7aa-546b6126459a=0,0,0,0,0
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_NullableOmissionAndEmptyEvidence_Replays [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.CreateFingerprint_EvidenceOrderAndMultiplicity_RemainSignificant [< 1 ms]
+  Failed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [2 ms]
+  Error Message:
+   System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery() in /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReplayTests.cs:line 46
+--- End of stack trace from previous location ---
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "receipt", reached: 3) [316 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "aggregate", reached: 2) [27 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "outbox", reached: 5) [45 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "entitlement", reached: 1) [29 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "audit", reached: 4) [30 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.MultilineFailure_SecondLineOverCap_LeavesNoFirstLineDebit [19 ms]
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns commit fail point fired 3 time(s)
+Returns scoped counts 473bb62a-c56e-403f-90cd-ddbdd8413df7=0,0,0,0,0
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Unknown commit same-key recovery status=201
+Returns scoped counts 473bb62a-c56e-403f-90cd-ddbdd8413df7=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts f9116539-37d0-4e5f-a8df-7e951a512a8f=1,1,1,1,1
+Returns scoped counts f9116539-37d0-4e5f-a8df-7e951a512a8f=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 6b1bdd0c-d377-41fa-a11d-6ff2d2e5619a=1,1,1,1,1
+Returns scoped counts 6b1bdd0c-d377-41fa-a11d-6ff2d2e5619a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 22fc3955-dc19-4020-ae66-a09d9fda8f84=1,1,1,1,1
+Returns scoped counts 22fc3955-dc19-4020-ae66-a09d9fda8f84=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 55ffaa2f-cd04-45e4-abf9-d9484f4dffbd=1,1,1,1,1
+Returns scoped counts 55ffaa2f-cd04-45e4-abf9-d9484f4dffbd=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts ad68b486-7c05-4f26-b96f-dd2f2bfc313d=1,1,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts ad68b486-7c05-4f26-b96f-dd2f2bfc313d=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8b3732ce-6589-4511-882c-d45972ed3a2c=1,1,2,2,2
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=entitlement
+Returns write stage=afterCommit
+Returns scoped counts 8b3732ce-6589-4511-882c-d45972ed3a2c=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts aeae9bb3-6bf2-40e5-8962-02032749316e=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts aeae9bb3-6bf2-40e5-8962-02032749316e=1,2,2,2,2
+Returns scoped counts aeae9bb3-6bf2-40e5-8962-02032749316e=1,2,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.UnknownCommit_Unresolved503_AllOrNoneThenSameKeyRecovery [46 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnAtomicityTests.PostCommitResponseLoss_RecoversOriginalReceipt_NotZeroWrites [32 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "uom") [34 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "item") [33 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "sku") [35 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_Races_TwoActorsOneReturn_ExactlyOneMoveTakesEffect(firstIssued: "Cancelled", secondIssued: "InTransit") [84 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_Races_TwoActorsOneReturn_ExactlyOneMoveTakesEffect(firstIssued: "InTransit", secondIssued: "Cancelled") [62 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_NumericEquivalentAllowed_DriftConflictsAtomically [45 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "4", second: "6", successes: 2) [48 ms]
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 02aa8d41-e373-41cf-a0cf-dee84d82a30a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns scoped counts 02aa8d41-e373-41cf-a0cf-dee84d82a30a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 02aa8d41-e373-41cf-a0cf-dee84d82a30a=1,2,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8f2cf761-f697-4d3b-8835-be121ae53b6c=1,1,2,2,2
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8f2cf761-f697-4d3b-8835-be121ae53b6c=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 20abaf45-278a-4b64-ba34-39517b468014=1,1,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 20abaf45-278a-4b64-ba34-39517b468014=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts df1f1c4d-8851-44a8-ac4c-d991ca6cfe38=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "6", second: "6", successes: 1) [35 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.RmaNumber_KnownCollision_MaxThreeAttemptsAndAtomicRecovery [112 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.ClosedAndManualReceived_RetainEntitlementOpaqueReferenceAndPendingEvents [82 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_ConflictIsSymmetric_EitherTargetRefusesTheOther(applied: "InTransit", refused: "Cancelled", usedAfter: "10") [52 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_ConflictIsSymmetric_EitherTargetRefusesTheOther(applied: "Cancelled", refused: "InTransit", usedAfter: "0") [53 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Rejected) [51 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Cancelled) [54 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.SameKey_TwentyConcurrentCalls_OneAggregateReceiptEvent [93 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Entitlement_DefaultCaseInsensitiveCollection_UsesExplicitOrdinalOperations [316 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "scope-query", expected: 400) [9 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unknown-query", expected: 200) [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unauthenticated", expected: 401) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "foreign-scope", expected: 404) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "untrusted", expected: 403) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-root", expected: 400) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "valid", expected: 200) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "duplicate-root", expected: 400) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-scope", expected: 400) [< 1 ms]
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts a5f4d37b-75bb-4a97-8045-f66d868f9947=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 480125cf-6c35-4dc7-83ed-49997d7d6abd=1,1,1,1,1
+Returns scoped counts 480125cf-6c35-4dc7-83ed-49997d7d6abd=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2be3fe2b-5b27-436c-91cb-29df37af03a7=1,1,1,1,1
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts baf76686-9551-40e8-a418-6e2bc8a1e19a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 82488572-272a-44bf-96e7-b629c055ae5d=1,1,1,1,1
+Returns scoped counts 82488572-272a-44bf-96e7-b629c055ae5d=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts a14011c1-dfd6-432e-9e84-9ad8b05673ef=1,1,1,1,1
+Returns scoped counts a14011c1-dfd6-432e-9e84-9ad8b05673ef=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 805abece-5784-484b-9ee1-a2ce3e8b8530=1,1,1,1,1
+Returns scoped counts 805abece-5784-484b-9ee1-a2ce3e8b8530=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 047b36f4-74ef-43c7-9023-967f3b8ece57=1,1,1,1,1
+Returns scoped counts 047b36f4-74ef-43c7-9023-967f3b8ece57=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1625b686-23c4-49f3-bd41-3d811c881913=1,1,1,1,1
+Returns scoped counts 1625b686-23c4-49f3-bd41-3d811c881913=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1f85c259-d715-4557-b53d-62b2313ea106=1,1,1,1,1
+Returns scoped counts 1f85c259-d715-4557-b53d-62b2313ea106=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts b1cc3be2-0018-4862-bcbe-0f6be793fa93=1,1,1,1,1
+Returns scoped counts b1cc3be2-0018-4862-bcbe-0f6be793fa93=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts c57a43f2-d990-4e2b-a8c1-7ceee972820a=1,1,1,1,1
+Returns scoped counts c57a43f2-d990-4e2b-a8c1-7ceee972820a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 9455e167-d2b4-4245-9242-16e746fdd59a=1,1,1,1,1
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 448935a4-803e-467a-94a6-8a39d9faab38=1,1,1,1,1
+Returns scoped counts 448935a4-803e-467a-94a6-8a39d9faab38=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1d9ebea3-139b-4b14-9310-070ba1840864=1,1,1,1,1
+Returns scoped counts 1d9ebea3-139b-4b14-9310-070ba1840864=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts b657c74f-4825-48f4-88ce-113b030252e0=1,1,1,1,1
+Returns scoped counts b657c74f-4825-48f4-88ce-113b030252e0=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 9ad5bcc6-c72e-47f7-95ad-216e127c4a58=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts afdc3209-fcd3-46a1-97c1-fe748c50806a=1,1,1,1,1
+Returns scoped counts afdc3209-fcd3-46a1-97c1-fe748c50806a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1e334934-c772-409a-b8f3-8f5a305b2fee=1,1,1,1,1
+Returns scoped counts 1e334934-c772-409a-b8f3-8f5a305b2fee=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 4ff82ff8-f590-420e-a369-aa5ac49e6e21=1,1,1,1,1
+Returns scoped counts 4ff82ff8-f590-420e-a369-aa5ac49e6e21=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 90c564fa-4387-4917-bb2b-16a0be6e4d4b=1,1,1,1,1
+Returns scoped counts 90c564fa-4387-4917-bb2b-16a0be6e4d4b=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2afdef45-6256-4b04-a22b-cba3217e618a=1,1,1,1,1
+Returns scoped counts 2afdef45-6256-4b04-a22b-cba3217e618a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8b7da99e-68ae-4af1-bddf-2021e3c846bf=1,1,1,1,1
+Returns scoped counts 8b7da99e-68ae-4af1-bddf-2021e3c846bf=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts a030e69d-ba95-4e8c-b3ac-a5a13b991cb7=1,1,1,1,1
+Returns scoped counts a030e69d-ba95-4e8c-b3ac-a5a13b991cb7=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 98f8b17b-c216-4212-88be-79e1e539dd02=1,1,1,1,1
+Returns scoped counts 98f8b17b-c216-4212-88be-79e1e539dd02=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 3450e9db-ed78-4694-9ced-7be789efe271=1,1,1,1,1
+Returns scoped counts 3450e9db-ed78-4694-9ced-7be789efe271=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 5af7a018-66c1-4ddd-a227-3acedf0f3d92=1,1,1,1,1
+Returns scoped counts 5af7a018-66c1-4ddd-a227-3acedf0f3d92=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 9b32d69e-5bf2-42f2-a282-68ee627f9c30=1,1,1,1,1
+Returns scoped counts 9b32d69e-5bf2-42f2-a282-68ee627f9c30=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts f8149838-7df1-4505-a8a9-1fb4de910ae3=1,1,1,1,1
+Returns scoped counts f8149838-7df1-4505-a8a9-1fb4de910ae3=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts ad90d990-8419-4a98-a13f-edacc1830a8c=1,1,1,1,1
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 24f485fe-5fe9-44f9-b686-5d1166e6466b=1,1,1,1,1
+Returns scoped counts 24f485fe-5fe9-44f9-b686-5d1166e6466b=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 908e7337-81db-4943-9b55-11d33fb50783=1,1,1,1,1
+Returns scoped counts 908e7337-81db-4943-9b55-11d33fb50783=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.SoftDelete_HidesAggregate_PreservesReceiptAndEntitlement [35 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Receipt_SameKeyDifferentLegalEntity_IsIndependent [38 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Permissions_ReturnsSpecificTargets_HaveNoClaimsInheritance [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnIsolationTests.Scope_AnotherTenantOrLE_CannotReadMutateOrReplay [27 ms]
+Returns scoped counts b3fbaf1f-6eba-4df5-993a-fbf69df35058=1,1,1,1,1
+Returns scoped counts b3fbaf1f-6eba-4df5-993a-fbf69df35058=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 0f4629e3-430e-4b6a-9953-39a414eab40c=1,1,1,1,1
+Returns scoped counts 0f4629e3-430e-4b6a-9953-39a414eab40c=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2bb70952-3f9e-4e97-b2de-3773c41c5b4a=1,1,1,1,1
+Returns scoped counts 2bb70952-3f9e-4e97-b2de-3773c41c5b4a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 60b92007-1572-4a6f-945f-d1b2937b89c4=1,1,1,1,1
+Returns scoped counts 60b92007-1572-4a6f-945f-d1b2937b89c4=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 96f363e5-a666-4d98-a932-7e53fbdfa4c6=1,1,1,1,1
+Returns scoped counts 96f363e5-a666-4d98-a932-7e53fbdfa4c6=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 3cfa9f43-da39-4821-86c9-9bfd0ed2bbda=1,1,1,1,1
+Returns scoped counts 3cfa9f43-da39-4821-86c9-9bfd0ed2bbda=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts c46b530d-b49c-4dcb-b589-32b257004939=1,1,1,1,1
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 5e64a30a-abed-4415-bd58-07822ce9d999=1,1,1,1,1
+Returns scoped counts 5e64a30a-abed-4415-bd58-07822ce9d999=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 771f771b-6a1a-42c1-8c28-08fb358af13f=1,1,1,1,1
+Returns scoped counts 771f771b-6a1a-42c1-8c28-08fb358af13f=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8179d175-33f9-4eb8-b12d-38992b460b59=1,1,1,1,1
+Returns scoped counts 8179d175-33f9-4eb8-b12d-38992b460b59=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 063ba965-4c31-43a6-b131-8eb5533d367e=1,1,1,1,1
+Returns scoped counts 063ba965-4c31-43a6-b131-8eb5533d367e=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 66c35d94-d8d9-4acc-b726-3a1e6b9b989c=1,1,1,1,1
+Returns scoped counts 66c35d94-d8d9-4acc-b726-3a1e6b9b989c=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8367f3d4-d45e-4ff3-8201-7daf6f3fd330=1,1,1,1,1
+Returns scoped counts 8367f3d4-d45e-4ff3-8201-7daf6f3fd330=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts e9b1f60c-5fdc-428b-a7c3-6ba31b580a9e=1,1,1,1,1
+Returns scoped counts e9b1f60c-5fdc-428b-a7c3-6ba31b580a9e=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 6701bf9f-066f-4d44-9ace-8c37b93f5285=1,1,1,1,1
+Returns scoped counts 6701bf9f-066f-4d44-9ace-8c37b93f5285=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts c6fa5747-995f-4a48-9e0d-2b029c6f315b=1,1,1,1,1
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts a1a60d80-421a-4b87-adab-3e7dedf65a32=1,1,1,1,1
+Returns scoped counts a1a60d80-421a-4b87-adab-3e7dedf65a32=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts d45566cb-1ebc-4763-8287-ca0043e28441=1,1,1,1,1
+Returns scoped counts d45566cb-1ebc-4763-8287-ca0043e28441=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 9aa66e3d-2afd-4a60-b379-f1aab6904a2c=1,1,1,1,1
+Returns scoped counts 9aa66e3d-2afd-4a60-b379-f1aab6904a2c=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 06c73fff-6267-4b90-a6ff-37db9b061357=1,1,1,1,1
+Returns scoped counts 06c73fff-6267-4b90-a6ff-37db9b061357=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 42548db7-06f8-4779-92e7-e45d7cde8061=1,1,1,1,1
+Returns scoped counts 42548db7-06f8-4779-92e7-e45d7cde8061=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts f764e050-1832-4d57-9697-ee32b982287f=1,1,1,1,1
+Returns scoped counts f764e050-1832-4d57-9697-ee32b982287f=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1d746f04-53cf-40a9-be0f-f1294c053cac=1,1,1,1,1
+Returns scoped counts 1d746f04-53cf-40a9-be0f-f1294c053cac=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 533a8e67-9bb9-4d25-9847-c2072dd24e00=1,1,1,1,1
+Returns scoped counts 533a8e67-9bb9-4d25-9847-c2072dd24e00=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts e2c84aae-2f8c-4f61-aa72-a6540e52f4b6=1,1,1,1,1
+Returns scoped counts e2c84aae-2f8c-4f61-aa72-a6540e52f4b6=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 5bb57d79-06b2-44e8-a068-45ab61ae522f=1,1,1,1,1
+Returns scoped counts 5bb57d79-06b2-44e8-a068-45ab61ae522f=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 94e3d635-7bdc-4b20-8bee-5d986a446a9e=1,1,1,1,1
+Returns scoped counts 94e3d635-7bdc-4b20-8bee-5d986a446a9e=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 4f74fca5-1b6a-4377-8302-7c7a5a6630c0=1,1,1,1,1
+Returns scoped counts 4f74fca5-1b6a-4377-8302-7c7a5a6630c0=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts ab9b8b9f-0eac-43f0-a2e8-db38bc72892a=1,1,1,1,1
+Returns scoped counts ab9b8b9f-0eac-43f0-a2e8-db38bc72892a=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts df2cbdc1-0567-4460-a8f4-c851b8b8ec93=1,1,1,1,1
+Returns scoped counts df2cbdc1-0567-4460-a8f4-c851b8b8ec93=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 7ba2782a-216f-4b8b-b2ca-126c2638f0b0=1,1,1,1,1
+Returns scoped counts 7ba2782a-216f-4b8b-b2ca-126c2638f0b0=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 91d5c277-9355-46fe-8706-7d1a0a4fc352=1,1,1,1,1
+Returns scoped counts 91d5c277-9355-46fe-8706-7d1a0a4fc352=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1827eed6-3498-4fd8-9814-b9c7001973a8=1,1,1,1,1
+Returns scoped counts 1827eed6-3498-4fd8-9814-b9c7001973a8=1,1,1,1,1
+Returns scoped counts 47e1c787-5245-4efe-8971-b5c66d0ceee9=0,0,0,0,0
+Returns scoped counts eb83e9c3-59d6-4f92-bd80-f1108d08dd6d=0,0,0,0,0
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Lifecycle_ActualRepository_All64PairsRejectWithoutWrites [2 s]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Entitlement_OnlyRejectedCancelled_Release [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnLifecycleTests.Lifecycle_All64Pairs_MatchesSevenCanonicalArrows [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "null", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE") [9 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "missing", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "bad", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "0") [30 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-0.00") [26 ms]
+Returns scoped counts 34f29083-7487-45dd-807e-887207a9bf6a=0,0,0,0,0
+Returns scoped counts 394b4bfd-d498-4c01-8760-21a6512f327f=0,0,0,0,0
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-1") [40 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\"},\"contrac"···) [6 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "not-json") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.MalformedSuccessfulRoot_RemainsReturnsRootInvalid [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.LocalDuplicateLines_RejectsBeforeReferenceLookup [21 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_DuplicateOrNonpositiveLines_RejectsMalformed [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_MockedTransport_OnlyShipmentGetAndTrustedScope [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerShipmentRootInvalid500_MapsToReturnsRootInvalid [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.RefusedProducer_RemainsDependencyUnavailable [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.ProducerDenial403_IsReportedAsContextDenialNotOutage(body: "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"R"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.TimedOutProducer_RemainsDependencyUnavailable [1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Root_PersistedNil_IsPreserved [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "shipmentId", status: 503) [< 1 ms]
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts fb08cf13-e2d9-462c-8e7d-474206be5f70=1,1,1,1,1
+Returns scoped counts fb08cf13-e2d9-462c-8e7d-474206be5f70=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 15df5397-a191-45d0-80a0-c4f493026715=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "sourceModule", status: 502) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "status", status: 503) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.Receipt_RootBeforePayload_AndCurrentActorDoesNotRewriteAudit [36 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.RawCreateAudit_PreservesUuidSpellingAndOmission_WhileFingerprintNormalizes [22 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.RestartReceipt [24 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnReplayTests.Receipt_AfterLaterState_ReturnsOriginalResultWithoutReread [38 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_LeapSecond_OffsetEquivalentDistinctFromNextSecond [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "١") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: " 1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1.") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "+1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: ".1") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1e2") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Wire_BoundedShape_RejectsNullEvidenceAndExtrasAllowsOpaqueEmpty [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "-0", b: "000.000") [2 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "1.0", b: "1.00") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "123456789012345678901234567890.1234567890123456789"···, b: "123456789012345678901234567890.1234567890123456789"···) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Quantity_Arithmetic_HasNoPrecisionLoss [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Fingerprint_NumericAndInstantEquivalence_ReplaysWhileArrayOrderConflicts [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnContractTests.Instant_GregorianYearZeroAndBoundaries_KeepEquivalentInstants [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Transition_ConcurrentApproveReject_OneWinnerAndLifecycleLoser [44 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.DefiniteNumberCollisionAfterSoftDelete_DoesNotRenumberOrPartiallyWrite [28 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Create_TwentyDifferentKeysSameShipment_AllIndependentClaims [90 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests.Create_TwentySameKeys_OneFourCollectionCommit [77 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.EveryRemainingModule_Answers404OnNotReferenceable_And503OnUnavailable(module: "loads") [14 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.EveryRemainingModule_Answers404OnNotReferenceable_And503OnUnavailable(module: "shipments") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.EveryRemainingModule_Answers404OnNotReferenceable_And503OnUnavailable(module: "carriers") [7 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.MissingLegalEntityHeader_Is400_AndMdmIsNeverAsked(module: "claims") [2 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.MissingLegalEntityHeader_Is400_AndMdmIsNeverAsked(module: "returns") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.Valid_LetsTheRequestThrough_AndTheMiddlewareAskedWithTheTokenTenantAndHeaderLegalEntity [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.Claims_Unavailable_Is503_AndNeverReachesTheHandler [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.Returns_NotReferenceable_Is404_AndNeverReachesTheHandler [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.Claims_NotReferenceable_Is403_AndNeverReachesTheHandler [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.LegalEntityMiddlewareWiringTests.Returns_Unavailable_Is503_AndNeverReachesTheHandler [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnauthenticatedPrecedesBadHeader [3 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims/123/transition", match: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims", match: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/returns", match: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claimsXYZ", match: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "duplicate") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "missing") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "nil") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "{aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}", valid: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "00000000-0000-0000-0000-000000000000", valid: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", valid: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: " aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", valid: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", valid: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "X-TENANT-ID") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "legal_ENTITY_id") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "tenant_ID") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "LEGALENTITYID") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "x-LEGAL-entity-ID") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "TeNaNtId") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: null) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: "not-a-uuid") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "empty") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "duplicate") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "overlong") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "unicode") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "comma,inside") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_OptionalScopeMismatchForbidden [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests.Component_OrdinaryUnknownQueryAndNilTraceProceedWithSignedScope [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:34:56.1234567890123456789+03:00", valid: True) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:00:00", valid: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-02-30T12:00:00Z", valid: False) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"reasonCode\":\"duplicate\"") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"tenantId\":\"x\"") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"evidenceReferenceIds\":null") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_NumberTokenCannotReplaceDecimalString [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimContractTests.Create_OpaqueEvidencePreservesEmptyDuplicatesOrder [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Closed, suffix: "decide") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Settled, suffix: "settle") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Approved, suffix: "decide") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Investigating, suffix: "investigate") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Rejected, suffix: "decide") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Withdrawn, suffix: "investigate") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Open, suffix: "create") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "settle", expected: 403) [2 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "investigate", expected: 200) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "decide", expected: 200) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "decide", expected: 200) [< 1 ms]
+[xUnit.net 00:00:14.77]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "create", expected: 403) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "create", expected: 403) [< 1 ms]
+
+Test Run Failed.
+Total tests: 253
+     Passed: 252
+     Failed: 1
+ Total time: 15.6493 Seconds

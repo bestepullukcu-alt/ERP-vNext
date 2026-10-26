@@ -1,0 +1,5 @@
+module	route	http_title	denied_text	inside_shell	redirect	observed
+MOD-0184 Carriers	/SupplyChain/Carriers	Carriers - Di10	You don't have access to Carriers	yes - full tenant menu rendered above the card	no - URL unchanged	2026-10-13 live
+MOD-0185 Loads	/SupplyChain/Loads	Loads - Di10	You don't have access to Loads	yes	no	2026-10-13 live
+MOD-0186 Returns	/SupplyChain/Returns	Returns - Di10	You don't have access to Returns	yes	no	2026-10-13 live
+MOD-0187 Claims	/SupplyChain/Claims	Claims - Di10	You don't have access to Claims	yes	no	2026-10-13 live

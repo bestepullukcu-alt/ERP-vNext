@@ -2,6 +2,7 @@ using System.Text.Json;
 using Diten.InventoryService.Application.Features.Locations;
 using Diten.InventoryService.Application.Features.Traceability;
 using Diten.InventoryService.Application.Features.Traceability.Commands;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Application.Features.Traceability.Queries;
 
 namespace Diten.InventoryService.Api.Traceability;
@@ -21,11 +22,11 @@ public static class TraceRequestReader
     private static readonly HashSet<string> CreateMembers = new(StringComparer.Ordinal)
     {
         "idempotencyKey", "itemId", "lotNumber", "manufacturerLot", "supplierLot", "manufacturingDate", "expiryDate",
-        "retestDate", "countryOfOrigin", "skuId", "skuLevel", "coaReference"
+        "retestDate", "countryOfOrigin", "skuId", "skuLevel", "coaReference", "dateOverride"
     };
 
     private static readonly HashSet<string> UpdateMembers = new(StringComparer.Ordinal)
-        { "manufacturerLot", "supplierLot", "manufacturingDate", "expiryDate", "retestDate", "countryOfOrigin", "coaReference", "reason" };
+        { "manufacturerLot", "supplierLot", "manufacturingDate", "expiryDate", "retestDate", "countryOfOrigin", "coaReference", "reason", "dateOverride" };
 
     private static readonly HashSet<string> ImmutableMembers = new(StringComparer.Ordinal)
         { "lotNumber", "itemId", "skuId", "skuLevel", "status", "lotId" };
@@ -35,6 +36,9 @@ public static class TraceRequestReader
 
     private static readonly HashSet<string> GenealogyMembers = new(StringComparer.Ordinal)
         { "idempotencyKey", "parentLotId", "childLotId", "transformationReference", "sourceModule", "quantityConsumed", "uomId" };
+
+    /// <summary>TRACE 1.4.0 (MOD-0176 KF-D) <c>dateOverride</c>.</summary>
+    private static readonly HashSet<string> DateOverrideMembers = new(StringComparer.Ordinal) { "overrideId", "signatureId" };
 
     private static readonly HashSet<string> ValidateMembers = new(StringComparer.Ordinal) { "lotIds", "serialIds" };
 
@@ -64,7 +68,8 @@ public static class TraceRequestReader
             CountryOfOrigin = r.String("countryOfOrigin"),
             SkuId = r.String("skuId"),
             SkuLevel = r.String("skuLevel"),
-            CoaReference = r.String("coaReference")
+            CoaReference = r.String("coaReference"),
+            DateOverride = r.Object("dateOverride", DateOverrideMembers, d => new LotDateOverrideRef(d.String("overrideId"), d.String("signatureId")))
         });
 
     public static Task<ReadResult<UpdateLotCommand>> ReadUpdateAsync(
@@ -82,7 +87,8 @@ public static class TraceRequestReader
             RetestDate = r.PatchString("retestDate"),
             CountryOfOrigin = r.PatchString("countryOfOrigin"),
             CoaReference = r.PatchString("coaReference"),
-            Reason = r.String("reason")
+            Reason = r.String("reason"),
+            DateOverride = r.Object("dateOverride", DateOverrideMembers, d => new LotDateOverrideRef(d.String("overrideId"), d.String("signatureId")))
         });
 
     public static Task<ReadResult<ChangeLotStatusCommand>> ReadStatusAsync(Stream body, string lotId, string? ifMatch, string? headerKey, CancellationToken ct)

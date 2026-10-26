@@ -1,0 +1,10 @@
+# CT-APR-01 (D6): the version-bound approval system and the checks that enforce it change only with a
+# code-owner review. Owners: CEO and senior developers (owner decision 2026-10-19). Keep this list short.
+/.github/CODEOWNERS             @gmg-10 @Bestepul @bestepullukcu-alt
+/.github/workflows/             @gmg-10 @Bestepul @bestepullukcu-alt
+/execution/approvals/           @gmg-10 @Bestepul @bestepullukcu-alt
+/scripts/pack_approval.py       @gmg-10 @Bestepul @bestepullukcu-alt
+/scripts/prompt_gate.py         @gmg-10 @Bestepul @bestepullukcu-alt
+/scripts/ct_queue.py            @gmg-10 @Bestepul @bestepullukcu-alt
+/scripts/acceptance_record.py   @gmg-10 @Bestepul @bestepullukcu-alt
+/scripts/run_phase1_gates.sh    @gmg-10 @Bestepul @bestepullukcu-alt

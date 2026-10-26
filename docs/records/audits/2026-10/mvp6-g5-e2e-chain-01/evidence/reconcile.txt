@@ -1,0 +1,30 @@
+{
+  shipment: {
+    doc: 1,
+    history: 5,
+    audit: 5,
+    outbox: 0
+  },
+  shipmentOutboxRoot: true,
+  shipmentEventTypes: [],
+  load: {
+    audit: 6,
+    outbox: 6
+  },
+  loadOutboxRoot: true,
+  returnRow: {
+    audit: 2,
+    outbox: 2,
+    auditRoot: true,
+    outboxRoot: true
+  },
+  claim: {
+    outbox: 2,
+    outboxRoot: true,
+    auditRoot: true
+  },
+  carrier: {
+    doc: 1
+  },
+  financeOrStock: []
+}

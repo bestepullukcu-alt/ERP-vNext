@@ -7,6 +7,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["LocationsTitle"].Value;
+    ViewData["PageCode"] = "LOCATIONS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -52,12 +53,12 @@
 <div class="nav-align-top mb-4">
     <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
         <li class="nav-item">
-            <a class="nav-link small border shadow-none wc-tab-compact" href="/LocationTree">
+            <a class="nav-link text-none small border shadow-none wc-tab-compact" href="/LocationTree">
                 <i class="bx bx-sitemap me-1 wc-tab-icon"></i>@Localizer["TabTree"]
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active small border shadow-none wc-tab-compact" href="/Locations" aria-current="page">
+            <a class="nav-link text-none active small border shadow-none wc-tab-compact" href="/Locations" aria-current="page">
                 <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["TabList"]
             </a>
         </li>
@@ -84,6 +85,7 @@
 }
 
 @section Scripts {
+    <partial name="~/Views/Inventory/_MvpOneListL10n.cshtml" /> @* WP-MVP1-FIX-LIVE3: the list words, before the list script *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/Inventory/Locations/_IndexL10n.cshtml" />

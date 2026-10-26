@@ -24,4 +24,6 @@
   <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>لم تقبل خدمة الموافقات جلستك. سجّل الدخول مرة أخرى وكرّر الإجراء.</value></data>
   <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>إعدادات الموافقة لهذا الإجراء غير مكتملة. يرجى إبلاغ المسؤول.</value></data>
   <data name="RefusalApprovalResubmit" xml:space="preserve"><value>لم يصل الطلب إلى خدمة الموافقات. أرسل الطلب نفسه مرة أخرى.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>لا يوجد أحد غيرك يمكنه اعتماد السجل الذي أرسلته. اطلب من المسؤول تعديل المعتمدين، ثم يمكنك إرساله مرة أخرى.</value></data>
 </root>

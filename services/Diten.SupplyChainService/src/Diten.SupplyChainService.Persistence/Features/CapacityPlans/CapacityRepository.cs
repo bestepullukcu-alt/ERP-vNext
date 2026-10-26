@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -89,7 +90,7 @@ public sealed class CapacityRepository(IMongoDatabase db, IDemandFixtureReader d
                         new BsonDocument { {"capacityPlanId",plan.Id.ToString()}, {"provenance",new BsonDocument {
                             {"demandPlanId",plan.DemandPlanId},{"demandPlanVersion",plan.DemandPlanVersion},{"sourceContract","DEMAND"},
                             {"sourceContractVersion","v1"},{"sourceCapturedAt",plan.SourceCapturedAt.UtcDateTime},{"sourceChecksum",plan.SourceChecksum} }} }),cancellationToken:ct);
-                    commitAttempted=true;await session.CommitTransactionAsync(ct);return new(plan,201);
+                    await CentralAuditTransaction.EnlistAsync(session,plan.Id,ct);commitAttempted=true;await session.CommitTransactionAsync(ct);return new(plan,201);
                 }
                 catch { if(!commitAttempted && session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);throw; }
             }
@@ -129,7 +130,7 @@ public sealed class CapacityRepository(IMongoDatabase db, IDemandFixtureReader d
                     await audit.InsertOneAsync(session,Audit(scope,scenario.Id,"createCapacityScenario",correlation),cancellationToken:ct);
                     await outbox.InsertOneAsync(session,Pending(scope,scenario.CreatedEventId,"capacity.scenario.created.v1",correlation,parent.CreatedEventId,scenario.Id,scenario.CreatedAt,
                         new BsonDocument {{"capacityPlanId",planId.ToString()},{"scenarioId",scenario.Id.ToString()}}),cancellationToken:ct);
-                    commitAttempted=true;await session.CommitTransactionAsync(ct);return new(scenario,201);
+                    await CentralAuditTransaction.EnlistAsync(session,scenario.Id,ct);commitAttempted=true;await session.CommitTransactionAsync(ct);return new(scenario,201);
                 }
                 catch {if(!commitAttempted && session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);throw;}
             }
@@ -165,7 +166,7 @@ public sealed class CapacityRepository(IMongoDatabase db, IDemandFixtureReader d
                     await slots.InsertOneAsync(session,sk,cancellationToken:ct);
                     await receipts.InsertOneAsync(session,Receipt(rk,fingerprint,evaluation,202,correlation),cancellationToken:ct);
                     await audit.InsertOneAsync(session,Audit(scope,evaluation.Id,"evaluateCapacityScenario",correlation),cancellationToken:ct);
-                    commitAttempted=true;await session.CommitTransactionAsync(ct);return new(evaluation,202);
+                    await CentralAuditTransaction.EnlistAsync(session,evaluation.Id,ct);commitAttempted=true;await session.CommitTransactionAsync(ct);return new(evaluation,202);
                 }
                 catch {if(!commitAttempted && session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);throw;}
             }

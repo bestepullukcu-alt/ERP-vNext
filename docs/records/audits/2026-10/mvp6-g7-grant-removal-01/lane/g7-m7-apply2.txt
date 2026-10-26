@@ -1,0 +1,5 @@
+## G7 Apply #2
+retraction Apply finished: 7 Admin role(s), 0 grant(s) planned, 0 converted to Module, 0 soft-deleted, 0 not applied, 0 tenant(s) unknown, 0 failed.
+role_permission_source_corrected=12
+role_permission_revoked=4
+role_permission_retraction_not_applied=0

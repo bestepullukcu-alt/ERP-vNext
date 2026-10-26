@@ -18,6 +18,14 @@
                         </select>
                     </div>
 
+                    @* MOD-0290-FU05 (CT decision): one brand only — no "without brand" option (MDM has no such filter). The
+                       options are the linkable brands, loaded by index.js. *@
+                    <div class="filter-chip filter-brand">
+                        <select id="filterBrand" class="form-select form-select-sm select2" data-placeholder="@Localizer["Brand"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
                             @SharedLocalizer["Apply"]

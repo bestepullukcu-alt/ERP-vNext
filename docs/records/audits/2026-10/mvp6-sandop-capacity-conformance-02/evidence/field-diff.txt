@@ -1,0 +1,12 @@
+schema                         verdict   fields   missing                            extra
+SandopPlan                     MET       10/10    -                                  -
+SandopSnapshot                 MET       6/6      -                                  -
+SignOff                        MET       9/9      -                                  -
+SandopPlanEventPayload         MET       3/3      -                                  -
+SandopSnapshotEventPayload     MET       3/3      -                                  -
+SandopSignOffEventPayload      MET       5/5      -                                  -
+LifecycleEventEnvelope         MET       7/7      -                                  -
+CapacityPlan                   MET       8/8      -                                  -
+CapacityScenario               MET       8/8      -                                  -
+CapacityEvaluation             MET       9/9      -                                  -
+InputSnapshotProvenance        MET       6/6      -                                  -

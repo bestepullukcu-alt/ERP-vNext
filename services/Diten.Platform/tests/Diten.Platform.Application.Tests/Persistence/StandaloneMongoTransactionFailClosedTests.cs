@@ -7,6 +7,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.Persistence;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class StandaloneMongoTransactionFailClosedTests
 {
     [Fact]

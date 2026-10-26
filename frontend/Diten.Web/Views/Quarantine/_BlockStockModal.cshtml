@@ -32,7 +32,10 @@
                             <div class="input-group">
                                 <input type="number" min="0" step="any" id="qr-block-qty" class="form-control" inputmode="decimal" />
                                 <span class="input-group-text" id="qr-block-uom"></span>
+                                @* WP-MVP1-FIX-LIVE4 (FU-0175-BLOCK-QTY): the whole row only on purpose — the row choice never fills the field *@
+                                <button type="button" class="btn btn-outline-secondary" id="qr-block-all" disabled title="@Localizer["Quarantine.BlockStock.AllHint"]">@Localizer["Quarantine.BlockStock.All"]</button>
                             </div>
+                            <div class="form-text" id="qr-block-available" dir="auto"></div>
                             <div class="invalid-feedback d-block" data-err="qty"></div>
                         </div>
                         <div class="col-12 col-md-6">

@@ -1,3 +1,5 @@
+> **Removed 2026-10-16 (BL-619):** the old mock Task Center page `/WorkCenter` (its controller, views, scripts and mock API) is gone; its URLs permanently redirect to `/WorkCenterNext`. Mentions of `/WorkCenter` files below are historical — see `/WorkCenterNext`.
+
 # WorkCenter ("Görev Merkezi") — Frontend Rebuild Spec (v2)
 
 > **Faz:** YALNIZCA frontend rebuild (mock-driven). Backend (MOD-0024 aggregation) YOK — frontend kesinleşip kontrat çıkınca gelir.

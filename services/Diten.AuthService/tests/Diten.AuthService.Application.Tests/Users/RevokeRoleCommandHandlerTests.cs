@@ -170,6 +170,7 @@ public sealed class RevokeRoleCommandHandlerTests
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             UserAuditForTests.None(),
+            RecoveryGuardForTests.Permits(),
             NullLogger<RevokeRoleCommandHandler>.Instance);
     }
 

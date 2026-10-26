@@ -1,0 +1,160 @@
+{
+  "catalogVersion": 1,
+  "description": "WP-PLT-WORKFLOW-TEMPLATES-01 — the product-identity approval definitions MDM starts through Platform's trusted start (TrustedWorkflowStartAuthorization). One stage, one approval step, no assignment: the candidates MDM sends decide who approves. Installed by the --ensure-workflow-templates command, never at start-up. MDM-COMP-PROPOSAL and the CRM claim flows are not here (tenant-specific definitions).",
+  "templates": [
+    {
+      "templateCode": "GLOBAL-PRODUCT-IDENTITY",
+      "name": "Global product identity approval",
+      "description": "Approves a global product's identity (MDM, object type GlobalProduct).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "GSKU-IDENTITY",
+      "name": "GSKU identity approval",
+      "description": "Approves a global SKU's identity (MDM, object type gsku).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "GSKU-CORRECTION",
+      "name": "GSKU correction approval",
+      "description": "Approves a correction to an approved global SKU (MDM, object type GskuCorrection).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "GSKU-RETIREMENT-REQUEST",
+      "name": "GSKU retirement approval",
+      "description": "Approves a global SKU retirement request (MDM, object type GskuRetirementRequest).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "LSKU-IDENTITY",
+      "name": "LSKU identity approval",
+      "description": "Approves a local SKU's identity (MDM, object type lsku).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "LSKU-RETIREMENT-REQUEST",
+      "name": "LSKU retirement approval",
+      "description": "Approves a local SKU retirement request (MDM, object type LskuRetirementRequest).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "templateCode": "ITEM-ACTIVATION",
+      "name": "Item activation approval",
+      "description": "Approves an item's activation (MDM, object type Item).",
+      "schemaVersion": "1.0",
+      "expressionVersion": "1.0",
+      "definition": {
+        "stages": [
+          {
+            "code": "review",
+            "name": "Review",
+            "steps": [
+              {
+                "code": "approve",
+                "name": "Approve",
+                "type": "approval"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

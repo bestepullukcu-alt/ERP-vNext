@@ -82,10 +82,8 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 });
 
 builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "ApiGateway");
-builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "ApiGateway", [
-    new("JwtSettings:Secret", "ApiGateway", SecretRequirementKind.JwtCurrent),
-    new("JwtSettings:PreviousSecrets", "ApiGateway", SecretRequirementKind.JwtPreviousCollection, Required: false)
-]);
+builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "ApiGateway",
+    GatewaySecretRequirements.For(builder.Environment));
 
 var gatewaySecret = builder.Configuration["JwtSettings:Secret"] ?? string.Empty;
 if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(gatewaySecret))
@@ -119,6 +117,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Q151 D2 — outside Development a missing signing key fails startup (GatewaySecretRequirements); in Development it
+// only warns, because without it SupplyChain lifecycle steps after create fail through the gateway.
+if (app.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(app.Configuration[GatewaySecretRequirements.CorrelationSigningKey]))
+{
+    app.Logger.LogWarning("{Key} is not set: the gateway adopts no inbound correlation, so SupplyChain transitions, returns and claims fail through the gateway. Set it via the environment for multi-step runs.", GatewaySecretRequirements.CorrelationSigningKey);
+}
 
 app.UseCors("AllowAllOrigins");
 app.UseMiddleware<CorrelationIdMiddleware>();

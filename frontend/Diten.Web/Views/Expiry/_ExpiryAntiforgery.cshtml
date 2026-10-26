@@ -1,0 +1,9 @@
+@*
+    The antiforgery token of the expiry writes (ExpiryUi.call reads #ex-antiforgery). Rendered once per page: the "İstisna aç" modal and the
+    F5 pages (decision, comment, settings, evidence) share it.
+*@
+@if (Context.Items["ExpiryAntiforgeryRendered"] is not true)
+{
+    Context.Items["ExpiryAntiforgeryRendered"] = true;
+    <form id="ex-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}

@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// controls that never touch the task, switch + undo, and tenant isolation.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimerHttpMongoTests : TimerScenario
 {
     public TimerHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

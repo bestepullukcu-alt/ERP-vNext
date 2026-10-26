@@ -1,0 +1,64 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Details.cshtml states it.
+}
+@* CaptureSandopSnapshotRequest: 4 scalars + the optional supplyInputRefs[] repeater (each row: source, resourceId,
+   resourceVersion — all three). Shown only while the plan is Draft or InReview (pack §13). Values sent as typed. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCapture" aria-labelledby="offcanvasCaptureLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCaptureLabel" class="offcanvas-title">@Localizer["CaptureSnapshot"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCaptureAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+        <form id="formCapture" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="captureDemandPlanId" class="form-label fw-medium">@Localizer["DemandPlanId"] <span class="text-danger">*</span></label>
+                    <input type="text" id="captureDemandPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="invalid-feedback" data-for="captureDemandPlanId"></div>
+                </div>
+                <div class="col-12">
+                    <label for="captureDemandPlanVersion" class="form-label fw-medium">@Localizer["DemandPlanVersion"] <span class="text-danger">*</span></label>
+                    <input type="text" id="captureDemandPlanVersion" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="invalid-feedback" data-for="captureDemandPlanVersion"></div>
+                </div>
+                <div class="col-12">
+                    <label for="captureSourceCapturedAt" class="form-label fw-medium">@Localizer["SourceCapturedAt"] <span class="text-danger">*</span></label>
+                    <input type="text" id="captureSourceCapturedAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="invalid-feedback" data-for="captureSourceCapturedAt"></div>
+                </div>
+                <div class="col-12">
+                    <label for="captureSourceChecksum" class="form-label fw-medium">@Localizer["SourceChecksum"] <span class="text-danger">*</span></label>
+                    <input type="text" id="captureSourceChecksum" class="form-control font-monospace" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="invalid-feedback" data-for="captureSourceChecksum"></div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["SupplyInputRefs"]</span>
+                        <button type="button" id="btnAddSupplyInputRef" class="btn btn-sm btn-label-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddSupplyInputRef"]</button>
+                    </div>
+                    <div id="supplyInputRefs" class="d-flex flex-column gap-3"></div>
+                    <template id="supplyInputRefTemplate">
+                        <div class="border rounded p-3 js-ref-row">
+                            <div class="row g-2">
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["RefSource"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-ref-source" aria-label="@Localizer["RefSource"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["RefResourceId"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-ref-resource-id" aria-label="@Localizer["RefResourceId"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["RefResourceVersion"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-ref-resource-version" aria-label="@Localizer["RefResourceVersion"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                            </div>
+                            <div class="text-end mt-2"><button type="button" class="btn btn-sm btn-text-danger js-ref-remove"><i class="bx bx-trash me-1" aria-hidden="true"></i>@Localizer["RemoveSupplyInputRef"]</button></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitCapture" class="btn btn-primary">@Localizer["CaptureSnapshot"]</button>
+    </div>
+</div>

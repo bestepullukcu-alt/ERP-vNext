@@ -14,6 +14,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// of that name with ANY other definition is left alone (K3 (c)); no record is touched; production runs the step.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureWorkflowTaskIndexMigrationTests : IClassFixture<ESignatureWorkflowTaskIndexMigrationTests.Mongo>
 {
     /// <summary>One test-owned replica set for the class; every test takes a database of its own.</summary>

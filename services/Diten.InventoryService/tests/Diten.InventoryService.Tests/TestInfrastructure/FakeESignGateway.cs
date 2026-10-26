@@ -21,7 +21,8 @@ public sealed class FakeESignHandler(FakeESignGateway gateway) : HttpMessageHand
 /// </summary>
 public sealed class FakeESignGateway
 {
-    public sealed record Record(Guid Tenant, string Id, Guid Signer, string Module, string SubjectType, string SubjectId, string Meaning, string SubjectHash)
+    public sealed record Record(Guid Tenant, string Id, Guid Signer, string Module, string SubjectType, string SubjectId, string Meaning, string SubjectHash,
+        string? ActionCode = null, DateTimeOffset? SignedAtUtc = null, Guid? LegalEntityId = null, string? SignerName = null, string? MeaningText = null)
     {
         public bool Invalidated { get; set; }
     }
@@ -36,10 +37,12 @@ public sealed class FakeESignGateway
     public void Policy(Guid tenant, string actionCode, bool required, string? meaning) => _policies[(tenant, actionCode)] = (required, meaning);
 
     public string Sign(Guid tenant, Guid signer, string subjectId, string meaning, string subjectHash,
-        string module = "quarantine", string subjectType = "quarantine.decision")
+        string module = "quarantine", string subjectType = "quarantine.decision", string? actionCode = null, DateTimeOffset? signedAtUtc = null,
+        Guid? legalEntityId = null, string? signerName = null, string? meaningText = null)
     {
         var id = Guid.NewGuid().ToString("D");
-        _records[id] = new Record(tenant, id, signer, module, subjectType, subjectId, meaning, subjectHash);
+        _records[id] = new Record(tenant, id, signer, module, subjectType, subjectId, meaning, subjectHash, actionCode,
+            signedAtUtc ?? DateTimeOffset.UtcNow, legalEntityId, signerName, meaningText);
         return id;
     }
 
@@ -70,8 +73,12 @@ public sealed class FakeESignGateway
                 ["id"] = r.Id,
                 ["signatureNumber"] = "ESIG-2026-000001",
                 ["subject"] = new JsonObject { ["module"] = r.Module, ["subjectType"] = r.SubjectType, ["subjectId"] = r.SubjectId },
+                ["legalEntityId"] = r.LegalEntityId?.ToString("D"),
+                ["actionCode"] = r.ActionCode,
                 ["meaningCode"] = r.Meaning,
-                ["signer"] = new JsonObject { ["userId"] = r.Signer.ToString("D"), ["login"] = "signer", ["name"] = "Signer" },
+                ["meaningText"] = r.MeaningText,
+                ["signedAtUtc"] = r.SignedAtUtc?.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+                ["signer"] = new JsonObject { ["userId"] = r.Signer.ToString("D"), ["login"] = "signer", ["name"] = r.SignerName ?? "Signer" },
                 ["subjectHashAlgorithm"] = "CanonicalJsonSha256",
                 ["subjectHash"] = r.SubjectHash,
                 ["signatureDigest"] = "d",

@@ -11,6 +11,13 @@ public sealed class StubLegalEntityScopeValidator(LegalEntityScopeOutcome outcom
 {
     public static StubLegalEntityScopeValidator Valid => new(LegalEntityScopeOutcome.Valid);
 
+    /// <summary>
+    /// H2: settable, so a host test can drive one request through the real pipeline with MDM answering "not
+    /// referenceable" or being unreachable, and measure the refusal and that nothing was written. Reset it to
+    /// Valid in a finally — the host is shared by its collection.
+    /// </summary>
+    public LegalEntityScopeOutcome Outcome { get; set; } = outcome;
+
     public List<(Guid TenantId, Guid LegalEntityId, string Authorization, Guid CorrelationId)> Calls { get; } = [];
 
     public Task<LegalEntityScopeOutcome> ValidateAsync(
@@ -20,7 +27,7 @@ public sealed class StubLegalEntityScopeValidator(LegalEntityScopeOutcome outcom
         Guid correlationId,
         CancellationToken cancellationToken)
     {
-        Calls.Add((tenantId, legalEntityId, authorization, correlationId));
-        return Task.FromResult(outcome);
+        lock (Calls) Calls.Add((tenantId, legalEntityId, authorization, correlationId));
+        return Task.FromResult(Outcome);
     }
 }

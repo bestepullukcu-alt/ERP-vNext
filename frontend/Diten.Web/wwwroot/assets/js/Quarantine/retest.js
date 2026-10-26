@@ -41,7 +41,7 @@
             ui.loadCounts('RETESTQUEUE');
         }, {
             type: 'warning',
-            subtext: esc(t('Quarantine.Retest.Confirm.Text', row.lotNumber || row.lotId, amount)),
+            subtext: t('Quarantine.Retest.Confirm.Text', row.lotNumber || row.lotId, amount),
             confirmButtonText: t('Quarantine.Action.Quarantine'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,

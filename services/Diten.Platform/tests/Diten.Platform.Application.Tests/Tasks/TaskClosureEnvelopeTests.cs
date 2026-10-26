@@ -31,6 +31,7 @@ using Task = System.Threading.Tasks.Task;
 /// a type with one Required closure field that ALSO gated ordinary creation would make every new task of that
 /// type unsavable for a field nobody on the create screen could ever see.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskClosureEnvelopeTests
 {
     private static readonly Guid Tenant = TaskTestData.Tenant;

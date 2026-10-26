@@ -22,6 +22,14 @@ if (WorkflowOrphanRecoveryOperationalMode.IsRequested(args))
     return;
 }
 
+// WP-PLT-WORKFLOW-TEMPLATES-01 — the operator's one-shot approval-template install (dry run unless --apply): decided before
+// anything else, like the orphan recovery; never run by a normal start. See WorkflowTemplatesOperationalMode.
+if (WorkflowTemplatesOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await WorkflowTemplatesOperationalMode.RunAsync(args);
+    return;
+}
+
 var apiStartupExecutionMode = ApiStartupExecutionMode.Resolve(args);
 
 if (await VerifiedMarketOperationalMode.TryRunAsync(args))

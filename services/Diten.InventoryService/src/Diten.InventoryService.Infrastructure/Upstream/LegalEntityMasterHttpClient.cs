@@ -74,4 +74,46 @@ public sealed class LegalEntityMasterHttpClient : ILegalEntityMasterClient
             }
         }
     }
+
+    /// <summary>
+    /// WP-MVP1-FIX-LIVE2: MDM <c>GET /api/legal-entities/{id}</c> (<c>LegalEntityDetailDto</c>). Only a 200 that names the same id
+    /// with a code and a name is a name; every other answer (404, 401 / 403, 5xx, timeout, refused connection, another id, a
+    /// missing code / name, an unparseable body) is null — "okunamadı", never an invented name. <see cref="ValidateAsync"/> is
+    /// untouched.
+    /// </summary>
+    public async Task<LegalEntityName?> GetLegalEntityNameAsync(Guid legalEntityId, CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{legalEntityId:D}");
+        try
+        {
+            using var response = await _http.SendAsync(request, cancellationToken);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                return null;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            var data = document.RootElement.TryGetProperty("data", out var d) ? d : document.RootElement;
+            if (data.ValueKind != JsonValueKind.Object
+                || !Guid.TryParse(UpstreamHttp.OptionalString(data, "legalEntityId"), out var answered) || answered != legalEntityId)
+            {
+                return null;
+            }
+
+            var code = UpstreamHttp.OptionalString(data, "code");
+            var name = UpstreamHttp.OptionalString(data, "displayName") is { Length: > 0 } display
+                ? display
+                : UpstreamHttp.OptionalString(data, "legalName");
+            return string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name) ? null : new LegalEntityName(legalEntityId, code, name);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JsonException or InvalidOperationException or FormatException)
+        {
+            return null;
+        }
+    }
 }

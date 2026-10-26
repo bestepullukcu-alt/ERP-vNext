@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -134,6 +135,7 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
                             new BsonDocument { { "TenantId", scope.TenantId.ToString() }, { "LegalEntityId", scope.LegalEntityId.ToString() }, { "Key", source.Key } },
                             new BsonDocument("$set", new BsonDocument("State", "Committed")), cancellationToken: token);
                     }
+                    await CentralAuditTransaction.EnlistAsync(transaction, s.Id, token);
                     await probe.BeforeCommitAsync(token);
                     enqueued = eventTypes.Length;
                     return new ShipmentMutationResult(s, false, change.StatusCode, null);

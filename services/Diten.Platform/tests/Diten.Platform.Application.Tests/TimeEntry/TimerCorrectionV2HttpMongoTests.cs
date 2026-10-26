@@ -24,6 +24,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// a task write with the timer off audits nothing (F6), and the midnight job's cap comes after its filter (F9).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimerCorrectionV2HttpMongoTests : TimerScenario
 {
     public TimerCorrectionV2HttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

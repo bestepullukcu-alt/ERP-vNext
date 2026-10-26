@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Дата повторного контроля партии истекла; использовать нельзя до решения по качеству.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>Учётный период закрыт.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Место неизвестно или недоступно.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>неизвестный пользователь</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Глобальный SKU</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Локальный SKU</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
@@ -434,4 +434,25 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Примечание к анализу обновлено</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Примечание заблокировано, пока решение по этой записи ожидает утверждения или применения.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Примечание: {0} → {1} символов · Вложения: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Доступно: {0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>Всё</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>Вписать всё количество строки</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Открыт</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Образец сохранён</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Все</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Поместить запас в карантин</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>Выбранный доступный запас переходит в КАРАНТИН и ожидает решения в очереди карантина.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Далее</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Поместить этот запас в карантин?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Открыта запись карантина: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Справка</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Помещает выбранный вручную доступный запас в карантин для решения по качеству (возврат, подозрительный товар, жалоба).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Обеспечение качества и руководители складов.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Выберите запас</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Найдите партию, выберите доступную строку и количество; количество не может превышать запас строки.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Подтвердите с обоснованием</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Подтверждение требует обоснования не короче 10 символов; затем запись ожидает решения в очереди.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>

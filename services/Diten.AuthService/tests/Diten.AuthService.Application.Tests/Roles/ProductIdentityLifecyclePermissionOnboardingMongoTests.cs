@@ -129,7 +129,8 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(Dispo
                 .ToArray();
             // FIX2 (item 1, CT model A) — 41: the product descriptor no longer carries mdm.brands.read (Brand is its own
             // module, brand-product-master). The brand key stays in the global catalog, owned by that module.
-            Assert.Equal(41, declaredKeys.Length);
+            // MOD-0290-FU05 slice 2: 41 → 42 (+ mdm.global-products.update-brand).
+            Assert.Equal(42, declaredKeys.Length);
             Assert.DoesNotContain(declaredKeys, key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
             await service.GrantModuleWithKeysAsync(
                 tenantA,
@@ -150,7 +151,8 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(Dispo
             var startGrant = (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None))
                 .Single(grant => grant.PermissionId == workflowStart.Id);
             await rolePermissions.RemoveByIdAsync(startGrant.Id, tenantA, CancellationToken.None);
-            Assert.Equal(19, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
+            // MOD-0290-FU05 slice 2: 19 → 20 (the Steward also holds mdm.global-products.update-brand).
+            Assert.Equal(20, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
 
             await service.SyncTenantModulesWithKeysAsync(
                 tenantA,
@@ -170,11 +172,19 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(Dispo
             Assert.Equal(12, firstRoleCount);
             // 81 / 74 since GSKU FIX1 (B5): the Retirement Steward no longer holds direct GSKU retirement.
             // 80 / 73 since FG FIX1 item 9 (CT decision B): nor direct Finished Good retirement.
-            Assert.Equal(80, firstGrantCount);
-            Assert.Equal(73, await grantCollection.CountDocumentsAsync(grant =>
+            // 81 / 74 since MOD-0290-FU05 slice 2: + the Steward's mdm.global-products.update-brand.
+            Assert.Equal(81, firstGrantCount);
+            Assert.Equal(74, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+            var updateBrand = catalog.Single(permission =>
+                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand);
+            var updateBrandHolders = await grantCollection.Find(grant =>
+                    grant.TenantId == tenantA && grant.PermissionId == updateBrand.Id)
+                .ToListAsync();
+            Assert.Equal([stewardBeforeUpgrade.Id], updateBrandHolders.Select(grant => grant.RoleId));
+            Assert.DoesNotContain(updateBrandHolders, grant => grant.RoleId == admin.Id);
             var preservedRecovery = Assert.Single(await grantCollection.Find(grant =>
                     grant.TenantId == tenantA
                     && grant.PermissionId == recovery.Id)

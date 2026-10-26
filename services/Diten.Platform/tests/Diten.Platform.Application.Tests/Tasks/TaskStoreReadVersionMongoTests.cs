@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// this (a comment and an overlay are replaced by id / by owner, an attachment is soft-deleted by a field update, an edge
 /// is never updated).</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskStoreReadVersionMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

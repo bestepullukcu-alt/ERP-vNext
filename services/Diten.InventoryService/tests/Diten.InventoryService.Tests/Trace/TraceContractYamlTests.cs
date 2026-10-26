@@ -48,9 +48,66 @@ public sealed class TraceContractYamlTests
     /// 1.1.0 → 1.2.0: nothing of 1.1.0 may change except its version number; 1.3.0 (WP-0174-ITEM) also appends <c>Item</c> to the
     /// <c>SkuLevel</c> enum — measured exactly by <see cref="The_1_3_0_additions_are_Item_and_the_two_createLot_codes"/>.
     /// </summary>
-    private static readonly HashSet<string> AllowedChangedSinceV11 = new(StringComparer.Ordinal) { "info.version", "components.schemas.SkuLevel.enum" };
+    private static readonly HashSet<string> AllowedChangedSinceV11 = new(StringComparer.Ordinal) { "info.version", "components.schemas.SkuLevel.enum",
+        // 1.4.0 (WP-0176-F2): LotChangeEntry.action gains ExpiryOverridden (appended) — measured exactly by The_1_4_0_change_…
+        "components.schemas.LotChangeEntry.properties.action.enum" };
 
     private static string FixtureV12Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "trace-v1.2.0.openapi.yaml");
+
+    /// <summary>WP-0176-F2: the 1.3.0 file as frozen by WP-0174-ITEM, kept byte for byte (LF-normalised).</summary>
+    private const string FrozenV13Sha256 = "9db9d6817820c2855da6d3784c2b46849ccb56d3fa8d59e49ecfff7333ea17c2";
+
+    private static string FixtureV13Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "trace-v1.3.0.openapi.yaml");
+
+    private static readonly string[] V14LotDateCodes =
+        ["LOT_DATE_OVERRIDE_REQUIRED", "LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED", "LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH", "LOT_DATE_OVERRIDE_MISMATCH", "EXPIRY_DATE_OVERRIDE_NOT_USABLE"];
+
+    [Fact]
+    public void The_v1_3_fixture_is_the_1_3_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV13Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV13Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+        Assert.Equal("1.3.0", Map(Load(FixtureV13Path)["info"])["version"]);
+    }
+
+    /// <summary>
+    /// WP-0176-F2 — 1.3.0 → 1.4.0 is ADDITIVE (MOD-0176 KF-D, CT-F6 / CT-F7): every 1.3.0 element is present and unchanged except the version and
+    /// the LotChangeEntry.action enum, which gains exactly <c>ExpiryOverridden</c> (appended); createLot and updateLot append exactly the five
+    /// lot-date codes (updateLot also PRODUCT_MASTER_UNAVAILABLE + response 503); no other operation changes its codes.
+    /// </summary>
+    [Fact]
+    public void The_1_4_0_change_is_the_lot_date_override_and_nothing_else()
+    {
+        var v13 = Load(FixtureV13Path);
+        var current = Load(ContractSchemas.TraceContractPath);
+        var differences = new List<string>();
+        Contained(v13, current, "", differences, new HashSet<string>(StringComparer.Ordinal) { "info.version", "components.schemas.LotChangeEntry.properties.action.enum" });
+        Assert.True(differences.Count == 0, "1.3.0 elements removed or changed:\n" + string.Join("\n", differences));
+
+        static IList Action(Dictionary<object, object> file)
+            => List(Map(Map(Map(Map(Map(file["components"])["schemas"])["LotChangeEntry"])["properties"])["action"])["enum"]);
+        Assert.Equal([.. Action(v13).Cast<string>(), "ExpiryOverridden"], Action(current).Cast<string>());
+
+        static List<string> Codes(Dictionary<object, object> file, string path, string op)
+            => List(Map(Map(Map(file["paths"])[path])[op])["x-error-codes"]).Cast<string>().ToList();
+        Assert.Equal([.. Codes(v13, "/lots", "post"), .. V14LotDateCodes], Codes(current, "/lots", "post"));
+        Assert.Equal([.. Codes(v13, "/lots/{lotId}", "patch"), .. V14LotDateCodes, "PRODUCT_MASTER_UNAVAILABLE"], Codes(current, "/lots/{lotId}", "patch"));
+        foreach (DictionaryEntry path in Map(current["paths"]))
+        foreach (DictionaryEntry op in Map(path.Value))
+        {
+            if (((string)path.Key, (string)op.Key) is ("/lots", "post") or ("/lots/{lotId}", "patch")) continue;
+            var now = Map(op.Value).Contains("x-error-codes") ? List(Map(op.Value)["x-error-codes"]).Cast<string>().ToList() : [];
+            var before = Map(Map(v13["paths"])[path.Key])[op.Key] is IDictionary b && b.Contains("x-error-codes") ? List(b["x-error-codes"]).Cast<string>().ToList() : [];
+            Assert.True(before.SequenceEqual(now), $"{path.Key} {op.Key}: x-error-codes changed");
+        }
+
+        var schemas = Map(Map(current["components"])["schemas"]);
+        Assert.Equal(["overrideId"], List(Map(schemas["LotDateOverrideRef"])["required"]).Cast<string>());
+        Assert.All(new[] { "LotRef", "LotDetail" }, s => Assert.True(Map(Map(schemas[s])["properties"]).Contains("expiryOverride"), s));
+        Assert.False(Map(schemas["CreateLotRequest"]).Contains("required") && List(Map(schemas["CreateLotRequest"])["required"]).Cast<string>().Contains("dateOverride"));
+        Assert.All(V14LotDateCodes.Take(4), c => Assert.Contains(c, typeof(Diten.InventoryService.Application.Features.Traceability.TraceErrorCodes)
+            .GetFields().Select(f => (string?)f.GetValue(null))));
+    }
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "trace-v1.0.0.openapi.yaml");
 
@@ -83,7 +140,7 @@ public sealed class TraceContractYamlTests
     public void Every_1_2_0_element_is_present_and_unchanged_in_1_3_0()
     {
         var differences = new List<string>();
-        Contained(Load(FixtureV12Path), Load(ContractSchemas.TraceContractPath), "", differences, AllowedChangedSinceV11);
+        Contained(Load(FixtureV12Path), Load(FixtureV13Path), "", differences, AllowedChangedSinceV11);
         Assert.True(differences.Count == 0, "1.2.0 elements removed or changed:\n" + string.Join("\n", differences));
     }
 
@@ -91,7 +148,7 @@ public sealed class TraceContractYamlTests
     public void The_1_3_0_additions_are_Item_and_the_two_createLot_codes()
     {
         var v12 = Load(FixtureV12Path);
-        var current = Load(ContractSchemas.TraceContractPath);
+        var current = Load(FixtureV13Path);
         Assert.Equal(["Gsku", "Lsku", "FinishedGood"], List(Map(Map(Map(v12["components"])["schemas"])["SkuLevel"])["enum"]).Cast<string>());
         Assert.Equal(["Gsku", "Lsku", "FinishedGood", "Item"], List(Map(Map(Map(current["components"])["schemas"])["SkuLevel"])["enum"]).Cast<string>());
 
@@ -115,7 +172,7 @@ public sealed class TraceContractYamlTests
     public void Every_1_1_0_element_is_present_and_unchanged_in_1_2_0()
     {
         var v11 = Load(FixtureV11Path);
-        var current = Load(ContractSchemas.TraceContractPath);
+        var current = Load(FixtureV12Path);
         var differences = new List<string>();
         Contained(v11, current, "", differences, AllowedChangedSinceV11);
         Assert.True(differences.Count == 0, "1.1.0 elements removed or changed:\n" + string.Join("\n", differences));
@@ -138,7 +195,7 @@ public sealed class TraceContractYamlTests
     {
         var current = Load(ContractSchemas.TraceContractPath);
         var info = Map(current["info"]);
-        Assert.Equal("1.3.0", info["version"]);
+        Assert.Equal("1.4.0", info["version"]);
         Assert.Equal("FROZEN", info["x-status"]);
         Assert.Equal("MOD-0174", info["x-owner"]);
         var changelog = string.Join("\n", List(info["x-changelog"]).Cast<string>());
@@ -147,7 +204,7 @@ public sealed class TraceContractYamlTests
         Assert.Contains("1.2.0", changelog);
         Assert.Contains("1.3.0", changelog);
         foreach (var marker in new[] { "B-1", "B-2", "B-3", "LOT_SKU_REQUIRED", "K4-1", "getManualLotMigrationStatus", "WP-0174-ITEM", "Item",
-                     "PRODUCT_MASTER_DATA_INCOMPLETE", "SKU_LEVEL_NOT_STOCKABLE" }) Assert.Contains(marker, changelog);
+                     "PRODUCT_MASTER_DATA_INCOMPLETE", "SKU_LEVEL_NOT_STOCKABLE", "1.4.0", "WP-0176-F2", "dateOverride", "ExpiryOverridden" }) Assert.Contains(marker, changelog);
     }
 
     [Fact]

@@ -57,7 +57,7 @@ const StockMovementForm = (function () {
     // A GS1 / ITS code typed or scanned into the "one by one" box goes through the code check (K-B).
     const GS1 = /^\(01\)|^01\d{14}|\u001d/;
     const DIRECTION = {
-        OPENING_BALANCE: 'in', COUNT_GAIN: 'in',
+        OPENING_BALANCE: 'in', COUNT_GAIN: 'in', CUSTOMER_RETURN: 'in', // WP-0177-R7c: a customer return is an inbound into a held status
         COUNT_LOSS: 'out', SCRAP: 'out', WRITE_OFF: 'out',
         WAREHOUSE_TRANSFER: 'wh', LOCATION_TRANSFER: 'loc'
     };
@@ -173,8 +173,24 @@ const StockMovementForm = (function () {
     };
 
     // ── the direction matrix ────────────────────────────────────────────────────────────────────────────
+    // WP-0177-R7c (KR-H): the target statuses of the chosen type only (each server-drawn option names its types); the list is REBUILT so the
+    // picker never offers another type's status (BLOCKED belongs to CUSTOMER_RETURN alone, AVAILABLE never to it). The server checks the same.
+    const statusOptions = [...(byId('toStockStatus')?.options || [])].map((o) => ({
+        value: o.value, text: o.textContent, types: (o.dataset.types || '').split(' ').filter(Boolean), defaults: (o.dataset.defaultFor || '').split(' ').filter(Boolean)
+    }));
+    const applyTargetStatuses = () => {
+        if (!el.toStatus || statusOptions.length === 0) return;
+        const type = el.type?.value || '';
+        const allowed = statusOptions.filter((o) => o.types.includes(type));
+        const keep = allowed.some((o) => o.value === el.toStatus.value) ? el.toStatus.value : (allowed.find((o) => o.defaults.includes(type)) || allowed[0])?.value;
+        el.toStatus.innerHTML = '';
+        allowed.forEach((o) => el.toStatus.add(new Option(o.text, o.value, false, o.value === keep)));
+        if (hasSelect2()) $(el.toStatus).trigger('change.select2');
+    };
+
     const applyType = () => {
         const dir = direction();
+        applyTargetStatuses();
         const shown = dir ? MATRIX[dir] : { source: false, 'target-warehouse': false, 'target-location': false, 'target-status': false, lot: false };
         form.querySelector('[data-matrix-empty]')?.classList.toggle('d-none', !!dir);
         form.querySelectorAll('[data-matrix]').forEach((block) => {
@@ -182,6 +198,8 @@ const StockMovementForm = (function () {
             block.classList.toggle('d-none', !visible);
             block.querySelectorAll('select, input, textarea').forEach((control) => {
                 // The lot block's own controls (picker, typed text, retest confirmation) are required by the facts, not the matrix.
+                // WP-MVP1-FIX-LIVE4: the FEFO band's reason (rendered inside the source block) is required by the band, not the matrix
+                if (control.id === 'ex-band-reason') return;
                 control.required = visible && !['lotId', 'lotIdTyped', 'lotRetestConfirm'].includes(control.id);
                 control.setAttribute('aria-required', control.required ? 'true' : 'false');
             });
@@ -322,6 +340,9 @@ const StockMovementForm = (function () {
             const box = byId('lotRetestConfirm');
             if (box && !show) box.checked = false;
         }
+        // WP-0176-F5: the goods-receipt minimum-remaining band (expiry-bands.js; informational, the posting hook decides)
+        window.ExpiryBands?.movement.onLot({ direction: direction(), movementType: el.type.value, itemId: el.item.value, sku: el.sku.value,
+            expiryDate: typedLotOpen() ? null : option?.expiryDate, postingDate: isoOf(el.postingDate) || new Date().toISOString() });
         refreshEffect();
     };
     // A source row of a registered lot is named by its lot NUMBER, not its id (the ledger stores the id, ASSUMPTION-0174-03).
@@ -349,6 +370,9 @@ const StockMovementForm = (function () {
         const row = state.sources.get(el.source.value);
         hint('source', row ? fmt(t('HintSourceStock'), qty(row.onHand), row.baseUomId || '') : form.querySelector('[data-hint-for="source"]')?.textContent);
         syncWarehouseFromSource();
+        // WP-0176-F5: the outbound FEFO band — the source row's lot against the FEFO order of its warehouse (expiry-bands.js)
+        // WP-MVP1-FIX-LIVE4: the type and the source status decide whether the service checks FEFO at all (an exempt type gets no band)
+        window.ExpiryBands?.movement.onSource({ direction: direction(), movementType: el.type.value, fromStatus: row?.stockStatus, itemId: el.item.value, sku: el.sku.value, warehouseId: row?.warehouseId, lotId: row?.lotId });
         refreshEffect();
     };
 
@@ -615,6 +639,7 @@ const StockMovementForm = (function () {
             body.lotId = currentLot();
         }
         if (state.facts?.serialControlled) body.serialNumbers = el.serials.value;
+        window.ExpiryBands?.movement.extend(body); // WP-0176-F5: fefoBypassReason only when the band asked for it and it was written
         return body;
     };
 
@@ -655,6 +680,8 @@ const StockMovementForm = (function () {
                 errors.serialNumbers = fmt(t('ValSerialCount'), lines.length, qty(state.baseQuantity));
             }
         }
+        // WP-0176-F5: the FEFO band asked for a reason (≥ 10) — said before the post (the server repeats it)
+        if (window.ExpiryBands && !window.ExpiryBands.movement.reasonValid()) errors.source = window.ExpiryBands.t('Expiry.Band.ReasonMin');
         return errors;
     };
 
@@ -711,12 +738,26 @@ const StockMovementForm = (function () {
             return;
         }
         setBusy(false);
+        // WP-0176-F5 (CT-F1): a receipt refused because it is below the minimum remaining shelf life, with the server's
+        // details.requiredToStockStatus = QUARANTINE, is sent again into QUARANTINE with a NEW key — said on the page, never silent
+        const band = window.ExpiryBands?.movement.refused(res?.status, json, body);
+        if (band?.resubmit && form.dataset.mode !== 'correct') {
+            const key = window.ExpiryBands.movement.newKey();
+            byId('idempotencyKey').value = key;
+            if (el.toStatus) { el.toStatus.value = band.toStockStatus; if (hasSelect2()) $(el.toStatus).trigger('change.select2'); }
+            showAlert('movement-form-alert', window.ExpiryBands.t('Expiry.Band.ResubmitAlert'));
+            post({ ...body, idempotencyKey: key, toStockStatus: band.toStockStatus });
+            return;
+        }
         handleRefusal(res, json);
     };
 
     const handleRefusal = (res, json) => {
         if (!res) { showAlert('movement-page-alert', t('ErrServiceUnavailable')); return; }
         if (res.status === 401) { showAlert('movement-form-alert', t('ErrSessionExpired')); return; }
+        // WP-0177-R7c: 422 LOT_UNDER_RECALL — the recall band shows it and the form says THE SAME sentence (the server is the control)
+        const recall = window.RecallBands?.exitRefused(res.status, json);
+        if (recall) { showAlert('movement-form-alert', recall, json?.error?.correlationId); return; }
 
         if (json?.fields) {
             Object.entries(json.fields).forEach(([id, message]) => fieldError(id, message));
@@ -823,7 +864,7 @@ const StockMovementForm = (function () {
 
     const bind = () => {
         const on = (select, handler) => { if (select) $(select).on('change', handler); };
-        on(el.type, () => { clearErrors(); applyType(); });
+        on(el.type, () => { clearErrors(); applyType(); onSourceChanged(); }); // WP-MVP1-FIX-LIVE4: the band follows the type too
         on(el.item, async () => { clearErrors(); await loadSkus(); await onSkuChanged(); });
         on(el.sku, () => { clearErrors(); onSkuChanged(); });
         on(el.source, onSourceChanged);

@@ -27,7 +27,7 @@ window.LotStatus = (function () {
     const open = async (lotId, options) => {
         const reply = await ui.getJson(`/Lots/data/${encodeURIComponent(lotId)}`);
         if (!reply.ok) {
-            window.showConfirm?.(t('Status.Dialog.Title'), null, { type: 'error', subtext: ui.esc(ui.errorText(reply)), hideIcon: false });
+            window.showConfirm?.(t('Status.Dialog.Title'), null, { type: 'error', subtext: ui.errorText(reply), hideIcon: false });
             return;
         }
         const data = reply.json;
@@ -68,7 +68,7 @@ window.LotStatus = (function () {
                 const submitUrl = result.json.submitUrl;
                 window.showConfirm?.(t('Status.Dialog.Pending.Title'), () => { if (submitUrl) window.location.href = submitUrl; }, {
                     type: 'success',
-                    subtext: ui.esc(t('Status.Dialog.Pending.Text')),
+                    subtext: t('Status.Dialog.Pending.Text'),
                     confirmButtonText: t('Status.Dialog.Pending.Link'),
                     cancelButtonText: t('Cancel')
                 });
@@ -80,10 +80,11 @@ window.LotStatus = (function () {
                 options?.onDone?.(result.json);
                 return;
             }
-            window.showConfirm?.(t('Status.Dialog.Title'), null, { type: 'error', subtext: ui.esc(ui.errorText(result)) });
+            window.showConfirm?.(t('Status.Dialog.Title'), null, { type: 'error', subtext: ui.errorText(result) });
         }, {
             type: 'warning',
-            subtext: body.outerHTML,
+            // FU-QUI1-LOTSTATUS: the form body (radios, acknowledgement) is markup → subtextHtml; subtext is TEXT (the dialog escapes it)
+            subtextHtml: body.outerHTML,
             confirmButtonText: t('Status.Dialog.Confirm'),
             cancelButtonText: t('Cancel'),
             showInput: true,

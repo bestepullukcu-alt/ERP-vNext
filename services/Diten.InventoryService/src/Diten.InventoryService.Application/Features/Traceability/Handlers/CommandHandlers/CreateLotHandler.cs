@@ -35,14 +35,17 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
     private readonly ITraceSkuDirectory _skus;
     private readonly TraceWriteSupport _support;
     private readonly Common.ITenantContext _tenant;
+    private readonly ILotDateOverrideGate _dateGate;
 
     public CreateLotHandler(
         ILotRepository lots,
         IProductMasterClient products,
         ITraceSkuDirectory skus,
         TraceWriteSupport support,
-        Common.ITenantContext tenant)
+        Common.ITenantContext tenant,
+        ILotDateOverrideGate dateGate)
     {
+        _dateGate = dateGate;
         _lots = lots;
         _products = products;
         _skus = skus;
@@ -87,6 +90,12 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
             ("supplierLot", attributes.SupplierLot), ("countryOfOrigin", attributes.Country), ("coaReference", attributes.Coa),
             ("manufacturingDate", TraceMapping.Wire(dates.Manufacturing)), ("expiryDate", TraceMapping.Wire(dates.Expiry)),
             ("retestDate", TraceMapping.Wire(dates.Retest)));
+        // TRACE 1.4.0 (MOD-0176 KF-D): the override is part of the request ONLY when sent — a request without it keeps its pre-1.4.0
+        // fingerprint, so the replay of a lot created earlier still matches.
+        if (request.DateOverride is { } sentOverride)
+        {
+            fingerprint = TraceWriteSupport.Fingerprint(("base", fingerprint), ("overrideId", sentOverride.OverrideId), ("signatureId", sentOverride.SignatureId));
+        }
 
         var committed = await _lots.FindByCreateKeyAsync(key, cancellationToken);
         if (committed is not null) return Replay(committed, fingerprint, today);
@@ -123,6 +132,13 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
         if (!skuLotControlled)
             return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductNotLotControlled, "The product is not lot-controlled.", 422);
 
+        // MOD-0176 F2 (KF-D, pack §8.3.3): dates apart from the suggestion (manufacturing date + the SKU's shelf life / retest days) need a
+        // prepared override (+ signature by the company's mode); the override is consumed in the lot transaction below.
+        var dateGate = await _dateGate.CheckAsync(new LotDateGateRequest(itemId, skuId, skuLevel, lotNumber!, TraceMapping.Day(dates.Manufacturing), TraceMapping.Day(dates.Expiry),
+            TraceMapping.Day(dates.Retest), sku.ShelfLifeDays, sku.RetestDays, request.DateOverride), cancellationToken);
+        if (dateGate.Refusal is { } dateRefusal)
+            return Response<LotRefDto>.Fail(dateRefusal.Code, dateRefusal.Message, dateRefusal.Status, dateRefusal.Details);
+
         Response<LotRefDto> outcome;
         try
         {
@@ -155,13 +171,35 @@ public sealed class CreateLotHandler : IRequestHandler<CreateLotCommand, Respons
                     CreatedBy = _support.UserId,
                     Version = 1,
                     CreateIdempotencyKey = key,
-                    CreateRequestFingerprint = fingerprint
+                    CreateRequestFingerprint = fingerprint,
+                    SuggestedExpiryDate = dateGate.SuggestedExpiry is { } se ? TraceMapping.Midnight(se) : null,
+                    SuggestedRetestDate = dateGate.SuggestedRetest is { } sr ? TraceMapping.Midnight(sr) : null,
+                    ExpiryOverride = dateGate.OverrideId is { } overrideId
+                        ? new LotExpiryOverride
+                        {
+                            OverrideId = overrideId, Reason = dateGate.Reason!, SignatureId = dateGate.SignatureId,
+                            SuggestedExpiry = dateGate.SuggestedExpiry is { } oe ? TraceMapping.Midnight(oe) : null,
+                            SuggestedRetest = dateGate.SuggestedRetest is { } or ? TraceMapping.Midnight(or) : null,
+                            By = _support.UserId, AtUtc = now
+                        }
+                        : null
                 };
 
                 await tx.InsertAsync(lot, ct);
                 await tx.AppendHistoryAsync([_support.History(lot.Id, LotChangeAction.Created, null, null, lot.LotNumber, null, now)], ct);
+                if (dateGate.OverrideId is not null)
+                {
+                    // KF-D: consume the override + open EXPIRY_DATE_OVERRIDE in THIS transaction; one history row names the override.
+                    await _dateGate.ApplyAsync(tx, lot, dateGate, ct);
+                    await tx.AppendHistoryAsync([_support.History(lot.Id, LotChangeAction.ExpiryOverridden, "expiryDate",
+                        TraceMapping.Wire(lot.SuggestedExpiryDate), TraceMapping.Wire(lot.ExpiryDate), dateGate.Reason, now)], ct);
+                }
                 return Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: true), 201);
             }, cancellationToken);
+        }
+        catch (LotDateOverrideConflictException conflict)
+        {
+            outcome = TraceWriteSupport.Fail<LotRefDto>(conflict.Code, conflict.Message, 409);
         }
         catch (LotUniqueViolationException violation) when (violation.Index == LotUniqueIndex.Identity)
         {

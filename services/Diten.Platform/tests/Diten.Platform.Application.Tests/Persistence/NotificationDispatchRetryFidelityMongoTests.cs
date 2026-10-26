@@ -13,6 +13,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// <c>TemplateSemanticVersion</c> existed is still readable, with both defaulting exactly as a schema-additive
 /// field should; (2) a dispatch written WITH an attachment round-trips its bytes exactly.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationDispatchRetryFidelityMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

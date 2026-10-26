@@ -9,6 +9,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Detail.Title"].Value;
+    ViewData["PageCode"] = "LOTDETAILS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -46,6 +47,11 @@
             </ol>
         </nav>
         <div id="lot-warnings" class="d-flex flex-wrap gap-2 mt-1"></div>
+        @* WP-0177-R7c (owner step MOD-0174): "Açık geri çağırma: RC-…" + "İzle" — recall.lots.status.read only; nothing when the read fails *@
+        @if (company.Ready && Model.LotId is not null)
+        {
+            <partial name="~/Views/Shared/Recall/_LotRecallBadge.cshtml" model="@Model.LotId" />
+        }
     </div>
     @if (company.Ready && Model.LotId is not null)
     {

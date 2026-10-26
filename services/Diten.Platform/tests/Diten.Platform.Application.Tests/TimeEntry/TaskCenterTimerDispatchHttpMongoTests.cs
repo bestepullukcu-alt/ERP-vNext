@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// is the TimeEntry handler's, and its refusal code comes back through the dispatcher untouched.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TaskCenterTimerDispatchHttpMongoTests : TimerScenario
 {
     public TaskCenterTimerDispatchHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

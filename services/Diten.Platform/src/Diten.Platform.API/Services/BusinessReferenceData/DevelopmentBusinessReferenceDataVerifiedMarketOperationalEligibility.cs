@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Diten.Platform.API.Configuration;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.Options;
 
@@ -13,18 +14,22 @@ public sealed class DevelopmentBusinessReferenceDataVerifiedMarketOperationalEli
     private readonly IConfiguration _configuration;
     private readonly IOptions<VerifiedMarketOperationalProvisioningOptions> _options;
     private readonly IOptions<BusinessReferenceDataProviderOptions> _provider;
+    private readonly IOptions<VerifiedGskuOperationalProvisioningOptions> _gsku;
     private readonly object _issuer = new();
 
+    /// <param name="gsku">READ ONLY: the GSKU consumer tenant, which can never be the reference tenant (MOD-0048-FU01).</param>
     public DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
         IHostEnvironment environment,
         IConfiguration configuration,
         IOptions<VerifiedMarketOperationalProvisioningOptions> options,
-        IOptions<BusinessReferenceDataProviderOptions> provider)
+        IOptions<BusinessReferenceDataProviderOptions> provider,
+        IOptions<VerifiedGskuOperationalProvisioningOptions> gsku)
     {
         _environment = environment;
         _configuration = configuration;
         _options = options;
         _provider = provider;
+        _gsku = gsku;
     }
 
     public async Task<VerifiedMarketOperationalEligibilityDecision> EvaluateAsync(CancellationToken ct = default)
@@ -34,36 +39,43 @@ public sealed class DevelopmentBusinessReferenceDataVerifiedMarketOperationalEli
             return Denied("VERIFIED_MARKET_OPERATIONAL_ENVIRONMENT_NOT_ALLOWED");
         }
 
+        // The reference tenant's process value is matched HERE, once, against the configuration (MOD-0048-FU01 amendment
+        // 2026-10-15): the process must name the same BusinessReferenceData__Provider__ReferenceTenantId the host resolves.
         if (!HasExactProcessValue(VerifiedMarketOperationalProvisioningOptions.EnabledEnvironmentKey, "true")
             || !HasExactProcessValue(VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey, "false")
-            || !HasExactProcessValue(
-                VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey,
-                VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId))
+            || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey, VerifiedMarketOperationalProvisioningOptions.ReferenceTenantConfigurationKey))
         {
             return Denied("VERIFIED_MARKET_OPERATIONAL_PROCESS_PROVENANCE_REQUIRED");
         }
 
         VerifiedMarketOperationalProvisioningOptions options;
+        Guid? gskuConsumerTenantId;
         try
         {
             options = _options.Value;
+            gskuConsumerTenantId = _gsku.Value.ConsumerTenantId;
         }
         catch
         {
             return Denied("VERIFIED_MARKET_OPERATIONAL_CONFIGURATION_INVALID");
         }
 
+        // The reference tenant: the RESOLVED provider value — empty or malformed, the platform system tenant, or the GSKU
+        // consumer tenant are refused here, once (the adapter / preflight only match against what this decided).
         var provider = BusinessReferenceDataProviderOptionsResolver.Resolve(_provider);
         if (!provider.IsValid
-            || provider.ReferenceTenantId != Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId)
-            || !options.Enabled
+            || provider.ReferenceTenantId == SystemTenantRules.PlatformSystemTenantId || provider.ReferenceTenantId == gskuConsumerTenantId)
+        {
+            return Denied("VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID");
+        }
+
+        if (!options.Enabled
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.CatalogPathEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:CatalogPath")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.CatalogVersionEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:ExpectedCatalogVersion")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.CatalogFingerprintEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:ExpectedCatalogFingerprint")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.ActorIdEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:ActorId")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.IdempotencyNamespaceEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:IdempotencyNamespace")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey, "BusinessReferenceData:CatalogLoad:Enabled")
-            || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey, $"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId")
             || !string.Equals(options.ActorId, VerifiedMarketOperationalProvisioningOptions.LockedActorId, StringComparison.Ordinal)
             || !IsValidNamespace(options.IdempotencyNamespace)
             || options.ExpectedCatalogVersion != VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion

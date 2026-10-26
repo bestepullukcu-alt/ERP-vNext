@@ -13,6 +13,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// <para>The subject is DATABASE-GLOBAL — platform-default rows, <c>TenantId == null</c> — so it cannot be isolated
 /// by tenant; it gets the harness's fixed-name isolated database (DB-010), emptied before each test.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationTemplateSeedUpgradeMongoTests : IAsyncLifetime
 {
     private const string Key = "platform.tasks.assigned";

@@ -448,7 +448,7 @@ public sealed class AccountKindTests
         => new(repo, TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), NullLogger<SetAccountKindCommandHandler>.Instance);
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), UserAuditForTests.None(), new RecordingUserQuotaClient(), new AnotherActor(), new NoRevokes(), NullLogger<UpdateUserCommandHandler>.Instance);
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), UserAuditForTests.None(), new RecordingUserQuotaClient(), new AnotherActor(), new NoRevokes(), RecoveryGuardForTests.Permits(), NullLogger<UpdateUserCommandHandler>.Instance);
 
     private sealed class AnotherActor : ICurrentUserAccessor { public Guid? UserId { get; } = Guid.NewGuid(); }
 

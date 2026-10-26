@@ -10,6 +10,7 @@ builder.Services.Configure<PlatformRegistrationOptions>(
     builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, DemandPlanningManifestProvider>();
+builder.Services.AddSingleton<IModuleManifestProvider, MrpManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 var app = builder.Build();

@@ -14,6 +14,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
 
+[Trait("Category", "Mongo")]
 public sealed class WorkflowTransitionGateMongoRepositoryTests
 {
     private static readonly Guid TenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");

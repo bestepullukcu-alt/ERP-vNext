@@ -1,0 +1,3 @@
+tenant 0-0000000000 SuperAdmin 8/8  capacity.create(0) capacity.evaluate(0) capacity.read(0) capacity.scenario.create(0) sandop.create(0) sandop.read(0) sandop.sign-off.record(0) sandop.snapshot.capture(0)
+tenant e-ee0fe3aebf Admin      8/8  capacity.create(0) capacity.evaluate(0) capacity.read(0) capacity.scenario.create(0) sandop.create(0) sandop.read(0) sandop.sign-off.record(0) sandop.snapshot.capture(0)
+tenant e-ee0fe3aebf Viewer     2/8  capacity.read(0) sandop.read(0)

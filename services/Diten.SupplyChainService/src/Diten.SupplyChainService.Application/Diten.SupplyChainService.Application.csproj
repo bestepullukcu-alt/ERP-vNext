@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup><ItemGroup><ProjectReference Include="../Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj" />
 <PackageReference Include="MediatR" Version="12.3.0" />
+<!-- BL-501: the marker only (ICentralAuditDeclaration); no Mongo / HTTP dependency. -->
+<ProjectReference Include="../../../Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit.Abstractions/Diten.BuildingBlocks.CentralAudit.Abstractions.csproj" />
 <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
 <FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup></Project>

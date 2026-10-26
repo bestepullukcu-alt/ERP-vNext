@@ -17,6 +17,8 @@ public interface ITraceSkuDirectory
 /// <remarks>
 /// WP-0173-PM1: <c>LotControlled</c> / <c>SerialControlled</c> are the SKU-level flags of PRODUCT-MASTER v1.1 (null = unknown).
 /// WP-0174-ITEM: <c>Stockable</c> (null = not stated; only an explicit false refuses a new lot).
+/// WP-0176-F1 (PRODUCT-MASTER 1.1 <c>SkuRef</c> <c>:729-732</c>, days): <c>ShelfLifeDays</c>, <c>RetestDays</c>,
+/// <c>MinRemainingShelfLifeDays</c> — absent or null = null ("Tanımsız"), NEVER 0 (KF-C: a null minimum is not applied).
 /// </remarks>
 public sealed record TraceSku(Guid SkuId, SkuLevel Level, Guid ItemId, string? Gtin, bool? LotControlled = null, bool? SerialControlled = null,
-    bool? Stockable = null);
+    bool? Stockable = null, int? ShelfLifeDays = null, int? RetestDays = null, int? MinRemainingShelfLifeDays = null);

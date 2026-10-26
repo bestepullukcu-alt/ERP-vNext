@@ -19,6 +19,8 @@
         <ProjectReference Include="..\Diten.InventoryService.Application\Diten.InventoryService.Application.csproj" />
         <ProjectReference
             Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <!-- BL-501: repositories enlist the central-audit event in their own transaction (CentralAuditTransaction). -->
+        <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit\Diten.BuildingBlocks.CentralAudit.csproj" />
     </ItemGroup>
 
 </Project>

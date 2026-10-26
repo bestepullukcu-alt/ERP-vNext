@@ -1,0 +1,51 @@
+# GATE-18-0 as published vs as held locally — measured 2026-10-17
+#
+# The base matrix is on origin/main (mvp6-q446-gate-18-0-four-modules-01, 4 files).
+# All four MOVED.tsv overlay lanes are LOCAL ONLY: 0 files on origin/main.
+# REP-001 section 3 excludes a branch that exists only locally from counting as evidence.
+
+## PUBLISHED (origin/main, base matrix only)
+MET 37 / NOT MET 9 / NOT MEASURED 10  = 56 cells   (66.1% MET)
+  MOD-0184 Carriers    row  2  NOT MEASURED
+  MOD-0184 Carriers    row  7  NOT MEASURED
+  MOD-0184 Carriers    row 12  NOT MEASURED
+  MOD-0184 Carriers    row 13  NOT MET
+  MOD-0185 Loads       row  1  NOT MET
+  MOD-0185 Loads       row  2  NOT MEASURED
+  MOD-0185 Loads       row 13  NOT MET
+  MOD-0186 Returns     row  2  NOT MEASURED
+  MOD-0186 Returns     row  3  NOT MET
+  MOD-0186 Returns     row  5  NOT MEASURED
+  MOD-0186 Returns     row 10  NOT MET
+  MOD-0186 Returns     row 12  NOT MEASURED
+  MOD-0186 Returns     row 13  NOT MET
+  MOD-0187 Claims      row  2  NOT MEASURED
+  MOD-0187 Claims      row  3  NOT MET
+  MOD-0187 Claims      row  7  NOT MEASURED
+  MOD-0187 Claims      row 10  NOT MET
+  MOD-0187 Claims      row 12  NOT MEASURED
+  MOD-0187 Claims      row 13  NOT MET
+
+## LOCAL (base + 4 overlays, unpushed)
+MET 43 / NOT MET 4 / NOT MEASURED 9  = 56 cells   (76.8% MET)
+  MOD-0184 Carriers    row  2  NOT MEASURED
+  MOD-0184 Carriers    row  7  NOT MEASURED
+  MOD-0184 Carriers    row 12  NOT MEASURED
+  MOD-0185 Loads       row  2  NOT MEASURED
+  MOD-0186 Returns     row  2  NOT MEASURED
+  MOD-0186 Returns     row  3  NOT MET
+  MOD-0186 Returns     row 10  NOT MET
+  MOD-0186 Returns     row 12  NOT MEASURED
+  MOD-0187 Claims      row  2  NOT MEASURED
+  MOD-0187 Claims      row  3  NOT MET
+  MOD-0187 Claims      row  7  NOT MEASURED
+  MOD-0187 Claims      row 10  NOT MET
+  MOD-0187 Claims      row 12  NOT MEASURED
+
+## the six cells the overlays move, and the lane each lives in
+  MOD-0184 Carriers    row 13  NOT MET       -> MET   mvp6-stage-r-row13-01  (0 files on origin/main)
+  MOD-0185 Loads       row 13  NOT MET       -> MET   mvp6-stage-r-row13-01  (0 files on origin/main)
+  MOD-0186 Returns     row 13  NOT MET       -> MET   mvp6-stage-r-row13-02-returns-claims  (0 files on origin/main)
+  MOD-0187 Claims      row 13  NOT MET       -> MET   mvp6-stage-r-row13-02-returns-claims  (0 files on origin/main)
+  MOD-0186 Returns     row  5  NOT MEASURED  -> MET   mvp6-stage-r-row5-returns-01  (0 files on origin/main)
+  MOD-0185 Loads       row  1  NOT MET       -> MET   mvp6-stage-r-row1-loads-config-01  (0 files on origin/main)

@@ -1,6 +1,8 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Locations;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Traceability.Commands;
 
@@ -9,8 +11,11 @@ namespace Diten.InventoryService.Application.Features.Traceability.Commands;
 /// unchanged, present null = cleared. The two permission flags come from the caller's token (the controller reads them);
 /// which one is needed depends on the lot's status, which only the handler knows (Draft → update, else update-released).
 /// </summary>
-public sealed record UpdateLotCommand : IRequest<Response<LotRefDto>>
+public sealed record UpdateLotCommand : IRequest<Response<LotRefDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLotSerial("Update", "Lot");
+    public Guid? CentralAuditEntityId(object? response) => Id(LotId);
+
     public string? LotId { get; init; }
     public string? IfMatch { get; init; }
     public bool CanUpdateDraft { get; init; }
@@ -23,4 +28,7 @@ public sealed record UpdateLotCommand : IRequest<Response<LotRefDto>>
     public Patch<string> CountryOfOrigin { get; init; }
     public Patch<string> CoaReference { get; init; }
     public string? Reason { get; init; }
+
+    /// <summary>TRACE 1.4.0 (MOD-0176 KF-D, CT-F7): on a Draft lot, the override of dates that differ from the suggestion.</summary>
+    public Ports.LotDateOverrideRef? DateOverride { get; init; }
 }

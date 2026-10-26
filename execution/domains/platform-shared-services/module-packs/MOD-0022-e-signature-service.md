@@ -1736,6 +1736,79 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   keys to existing roles. **O-ROLE1-4:** `how-to-add-a-module.md` step 3 still describes the old behaviour (docs follow-up).
 - **Owner decision 2026-10-12 — O-ROLE1-1 and O-ROLE1-2 stay as they are**, as deliberate exceptions to "the system adds no permission by itself": the Admin reconciler keeps re-adding its four self-service keys to every tenant Admin role at start-up (lock-out protection), and the module-licence sync keeps granting / revoking a licensed module's keys on the Admin and Viewer roles (entitlement-driven). The default-role template itself applies only at role creation (ROLE1).
 
+### SEC-ESIGN1 — closing-line fixes 1, 4, 5 (WP-MVP1-SEC-ESIGN1, 2026-10-14, pending CT); 6 BLOCKED
+
+- **Branch:** `fix/mvp1-sec-esign1` from `acff1f7be`. Evidence: `docs/records/audits/2026-10/mvp1-sec-esign1-evidence-2026-10-14.md`.
+- **1 — request list order** (`fd88f8832`). `ESignatureRequestListOrderMongoTests` on the real `ESignRequestRepository`
+  and a test-owned replica set:
+  - ListForSignerAsync = exactly b, c2, c1, a (due date ascending, then the newer request first);
+  - ListOverdueAsync = waiting requests past due, ascending;
+  - another tenant's request never appears.
+  - No production change.
+- **4 — `[HasAnyPermission]`** (`8687da0a2`).
+  - Measured: `HasPermission` is AllowMultiple and several of them are AND.
+  - New `HasAnyPermissionAttribute`: any one key is enough. Each key is evaluated by a real `HasPermissionAttribute` (401, the
+    platform actor rule and alias matching are unchanged). A1 registers every key.
+  - `Image` (3 keys) and `ListMeanings` (2 keys) use it; the in-body checks are gone.
+  - The baseline-red `LoginOnlyEndpointGuardTests` "no permission key" guard is green.
+- **5 — internal allow-list** (`a013a621e`).
+  - The guard (`LoginOnlyEndpointGuardTests.AnonymousInternalControllers`) is on this branch AND on origin/main (identical
+    file), and it was red here. `InternalESignActionsController` was added with its reason.
+  - `InternalESignActionsRegisterAuthTests`: no key, a wrong key or a tenant token → 401 and nothing registered.
+  - The round-2 version of the list does not carry the entry (O-ESIGN1-2).
+- **6 — BLOCKED (O-ESIGN1-1).** No existing page-level "?" help component exists to reuse (not here, not on main, not on
+  round-2, not in any branch history). Options: A = CT approves one shared component; B = the existing inline
+  `bx-info-circle` note.
+- **Sabotages.** Each restored by writing the original bytes back; green again; porcelain clean.
+  - Required, all red: 1a ThenBy, 1b SortByDescending, 4a attribute removed, 4b all-of (7 red).
+  - Extra, all red: 1c overdue descending, 5a allow-list line removed, 5b key check off.
+- **Tests.**
+  - Platform `~ESign` 163 → **176**.
+  - Platform Application 6041 → **6064**; red 262 → 260 (no new red; 252 of the rest are the pre-existing
+    `DITEN_PLATFORM_TEST_MONGO_URI is not set` fail-closed tests).
+  - Architecture 69/77 (same 8 pre-existing red); Web 1458/1458.
+- **FU proposal FU-0022-AUD-01.** AuthService `ConsumeESignTicketCommand` / `IssueESignWindowTicketCommand` are red in the
+  AUD-001 architecture test.
+- **CT-ACCEPTED (2026-10-14), items 1, 4, 5.** Read `HasAnyPermissionAttribute` (delegates each key to a real `HasPermissionAttribute`, no re-implemented rule; 401 stops early) and the guard edits (strengthened: `ESignatureArchitectureTests` now demands the attribute and that its keys are declared). CT trial merge on the MVP-1 tip: ESign + guard + HasAnyPermission filter **192/192**. **CT sabotage:** `[HasAnyPermission]` removed from `ListMeanings` (the agent sabotaged only `Image`) → 4 red (A1 registration, LoginOnly guard, e-sign architecture, HTTP 403/401); restored, porcelain clean. Merged `46bfe9186` `--no-ff` into MVP-1 — NOT the agent's main-merge `bc258528f` (the main sync stays a separate CT step). **Item 6 → CT decision B** (existing inline `bx-info-circle` note pattern, en + tr, parity test; no new component) → WP-MVP1-ESIGN-HELP; the shared "?" component is FU-WEB-HELP-01 (design-system decision). O-ESIGN1-2 (round-2 allow-list line) forwarded to the closing-line CT; FU-0022-AUD-01 accepted.
+
+### SEC-PROXY1 — `/ESignature/api/{**everything}` path boundary (WP-MVP1-SEC-PROXY1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-sec-proxy1` from `9362c0402`, commits `717092d0b` (fix) + `655103dca` (tests), local only. Evidence `docs/records/audits/2026-10/mvp1-sec-proxy1-evidence-2026-10-14.md`.
+
+- **Finding.** `/ESignature/api/..%5C..%5Clocations` reached `/api/locations` (another service, the caller's session). `ESignatureController.ProxyApi`
+  now builds the path with `ProxyPath.TryBuild("/api/v1/esign", …)`. All `/api/v1/esign/**` contract paths still forwarded.
+  `ESignatureWebTests.Routes_are_tenant_routes_…` lost the `"/api/v1/esign/"` literal from its expected list (moved into the helper) — the one
+  changed line in a shared test file (evidence §7 D-3). The same fix covers the ReferenceData, Workflow and Tenants-lookups proxies (Platform Web).
+- **Helper.** `frontend/Diten.Web/Services/Proxy/ProxyPath.cs` `TryBuild(prefix, everything, out path)`: bounded repeated percent-decode (5),
+  refuses `.`/`..` segments, `\`, `%2F`/`%5C`/`%2E`, control chars, `//`/scheme/`@`, anything outside `A-Z a-z 0-9 - _ ~ . /`, and a final
+  `Uri` prefix check → 400 `INVALID_PROXY_PATH` (`details.reason`), nothing sent to the gateway. Query string forwarded unchanged.
+- **Tests.** `Diten.Web.Tests/Security/**`: 528 attack rows (6 proxies, CT handoff 19 + 29) → 400 and no gateway call; 154 legitimate rows read
+  from the contracts / Platform routes → forwarded under the prefix; helper units; architecture guard over every `{**x}` action. Web 1468 → **2199 / 2199**,
+  architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
+- **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
+  `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+
+### ESIGN-HELP — sayfa açıklamaları (WP-MVP1-ESIGN-HELP, 2026-10-14, agent result, pending CT) — SEC-ESIGN1 madde 6, karar B
+
+- **Dal / commit:** dal `fix/mvp1-esign-help`, taban `cd3680d7c`, commit `94782c7cb`. Kanıt: `docs/records/audits/2026-10/mvp1-esign-help-evidence-2026-10-14.md`.
+- **Değişiklik:**
+  - Yedi e-imza sayfasına modülün mevcut satır içi bilgi notu eklendi (`alert alert-info role="note"` + `bx-info-circle`, `MySignature.cshtml:28–30` deseni, `id="esignPageHelp"`). Notlar sayfanın amacını, gereken yetkiyi ve sayfadaki kuralları anlatıyor: imza anlamı, dört göz, şifre, gerekçe, geçmiş.
+  - Yeni bileşen, JS ya da CSS yok.
+- **Anahtarlar:** `ESign.Help.*` ×7, katalog ve resx.
+  - Platform modülü için zorunlu diller en ve tr.
+  - Mevcut 7 dil parite koruması yüzünden fr, es, zh, ar ve ru'ya da gerçek çeviri eklendi.
+- **Testler ve sabotaj:**
+  - Web 2199 → **2220** (`ESignaturePageHelpWebTests` +21; tabanda 14 kırmızı). Uyarı 24 → 24.
+  - Sabotaj: tr anahtarı silindi → 2 kırmızı; özgün baytlar geri yazıldı → yeşil, porcelain temiz.
+- **O-ESIGN1-1 kapandı** (karar B uygulandı).
+- **ESIGN-HELP CT-ACCEPTED (2026-10-14).** Read the seven views (existing `bx-info-circle` note markup, `id=esignPageHelp`, no new component) and the texts (owner-readable, rules checked against code). 7 languages instead of 2 accepted: the existing `ESignatureWebTests` pins all seven `ESignature.*.resx` to one key set. CT run: Web **2220/2220**. **CT sabotage:** the note block removed from `Verification.cshtml` → `The_rendered_page_draws_the_help_note_with_its_text(Verification)` red; restored, porcelain clean. Merged `--no-ff` into MVP-1. SEC-ESIGN1 item 6 closed.
+
+**WP-MVP1-FU-CLEAN2 — e-İmza sayfa açıklamaları "?" paneline (agent result, pending CT, 2026-10-19; yalnız Web görünümleri, e-İmza servisi değişmedi).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- ESIGN-HELP'in 7 sayfa içi notu (`#esignPageHelp`, `ESign.Help.*`) UXH-001 yapısında panele taşındı (kiracı kabuğu, 7 dil); sayfadaki not ve anahtarları kaldırıldı (aynı metin iki kez yok). Notlardaki yanlışlar sayfaya karşı düzeltildi (ör. "Onay bekliyor" etiketi, iki adımlı geçersiz kılma, anlamın kodu kullanılana kadar değişebilir).
+- `ESignaturePageHelpWebTests` taşımayı ölçecek biçimde yeniden yazıldı.
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0022 --name "E-Signature Service"` → OK (proven against Blueprint/registry) → **W-0022-01 closed**.
+
+
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
@@ -1761,6 +1834,13 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   show its own group without the shared domain heading "Platform Paylaşılan Hizmetler" (menu infrastructure, platform owner;
   `DynamicModuleMenu/Default.cshtml:56-58`, `GetTenantNavigationMenuQueryHandler.cs:94-141`, Domain seed-once
   `RegisterModuleManifestCommandHandler.cs:18-20`).
+- FU-0022-AUD-01 — **KAPANDI (2026-10-14, CT kararı A, WP-MVP1-AUDIT1 / BL-501).** Platform e-imza komutlarının işlem içi merkezi
+  denetim yazımı (`ESignatureAuditIntent.EnqueueAsync`) iz olarak kabul edildi (`tests/architecture/audit-ledger/Diten.Platform.md`,
+  `esign-islem-ici-denetim`); Auth `ConsumeESignTicketCommand` / `IssueESignWindowTicketCommand` / `ReauthenticateForESignCommand` mevcut
+  `IUserAuditRecorder` ile merkezi günlüğe, K2 borcunda (8 → 11). `RegisterSignableActionsCommand` ve `VerifySignatureCommand` kaydı
+  işlem dışında `IAuditService.AppendAsync` ile yazar — karar metnine girmiyor, CT'ye soru (BL-501 kanıtı §11).
+- FU-0022-AUD-02 — **AÇIK.** Auth e-imza komutları için önce-yaz kalıbı (`IAuthAuditService.WriteOnceAsync`, AUD-001 §4.4): kayıt
+  yazılamazsa komut başarısız olsun; gelince üç komut K2 borcundan çıkar (11 → 8).
 
 ## 21. UI input — approved mockup
 

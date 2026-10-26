@@ -1,0 +1,217 @@
+--- a/.github/workflows/service-tests.yml
++++ b/.github/workflows/service-tests.yml
+@@ -101,6 +101,13 @@
+             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
+           - suite: planning-tests
+             project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
++          # WP-LANE-MAIN-SYNC-05 (owner decision 2026-10-16) / MVP-6 plan v9.9: SCE / MVP-6's own suite. It needs a
++          # single-member REPLICA SET with enableTestCommands=1 (ShipmentSchema refuses a standalone; the CapacityPlans /
++          # SandopPlans tests set fail points) and reads eight fail-closed variables (Q131a: no fallback port), all
++          # provided by supplychain-ci-mongo.sh below. Its one skip, the Claims restart child, is allow-listed: its
++          # parent test runs it twice in this job.
++          - suite: supplychain-tests
++            project: services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj
+           # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
+           - suite: gateway
+             project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
+@@ -218,6 +225,10 @@
+         if: matrix.suite == 'planning-tests'
+         run: bash scripts/test-env/mod0188-ci-mongo.sh start
+ 
++      - name: Start owned Mongo (SupplyChain)
++        if: matrix.suite == 'supplychain-tests'
++        run: bash scripts/test-env/supplychain-ci-mongo.sh start
++
+       # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
+       - name: Test
+         run: |
+@@ -234,6 +245,10 @@
+         if: always() && matrix.suite == 'planning-tests'
+         run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+ 
++      - name: Stop owned Mongo (SupplyChain)
++        if: always() && matrix.suite == 'supplychain-tests'
++        run: bash scripts/test-env/supplychain-ci-mongo.sh stop
++
+       - name: Upload test results
+         if: always()
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+--- a/scripts/ci-skip-allowlist.tsv
++++ b/scripts/ci-skip-allowlist.tsv
+@@ -10,3 +10,4 @@
+ manufacturing-tests	MANUFACTURING_TEST_MONGO	35	WP-LANE-MAIN-SYNC-02 B3 (owner decision 2026-10-14): owner Üretim (MVP-3) geliştiricisi; MANUFACTURING_TEST_MONGO yok, BL-637; süre 30 gün (2026-11-13); this project only
+ platform-app	BL-534	2	WP-CI-SERVICE-TESTS-05 (BL-646 item 3): PlatformAdministratorSeedMeasurementTests, two measurements of the old seed kept as evidence until the owner decided BL-534; owner CT; the decision is made (WP-AUTH-ADMIN-BOOTSTRAP-01, accepted 2026-10-15) and its merge turns both into running rules: remove this line with that merge, at the latest 2026-11-14
+ mdm-api	CONTRACT_LINE_ABSENT	1	WP-CI-SERVICE-TESTS-05 (BL-646 item 6): ProductMasterContractFixtureTests.S4_Fixture_v11_is_the_contract_lines_current_file compares the fixture with the contract line worktree next to the checkout (SOURCE.txt), which a CI runner never has; owner CT; review date 2026-12-31 (no open-ended line); hat dosyası CI'a gelirse satır silinir — if the contract line's file (SOURCE.txt) is ever provided in CI, this line is removed
++supplychain-tests	CLAIMS_RESTART_CHILD	1	MVP-6 plan v9.9 step 3 (2cbd1396b): owner SCE / MVP-6; ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery is the CHILD of a two-process restart pair and runs only when its parent Receipt_DurableRecovery_AcrossTwoTestProcesses starts it with CLAIMS_RESTART_MODE=write|read - in this same job, so the proof itself is not skipped; max 1 = the one test carrying the code
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs
+@@ -66,9 +66,8 @@
+     {
+         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
+         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
+-        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard.)
+-        ["services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj"] =
+-            "main (SCE / MVP-6): needs MVP6_MOD0192_MONGO_URI (its own replica set, CapacityTestMongo); SCE's file",
++        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
++        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
+         ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
+             "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
+         ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
+@@ -177,7 +176,7 @@
+     // Main sync FIX1 (CT decision D, revised by BL-650): no row starts a job-local mongod INLINE in the workflow and
+     // no step hands the tests a Mongo address — the three text checks below still bind service-tests.yml itself. A row
+     // MAY start a job-local mongod, but only from a named script under scripts/test-env/ (planning-tests does, via
+-    // mod0188-ci-mongo.sh; the SupplyChain CI row will), carrying its rationale beside the invocation — and the guard
++    // mod0188-ci-mongo.sh; supplychain-tests via supplychain-ci-mongo.sh), carrying its rationale beside the invocation — and the guard
+     // pins that every such script the workflow runs exists in the tree, so a row cannot point tests at a server through
+     // a script that is not here. Every service test still owns its mongod (DITEN_TEST_MONGOD): Platform's
+     // PlatformTestMongo, MDM's MdmTestMongo (which ignores MDM_TEST_MONGO by design), Auth's owned replica set; a
+@@ -430,8 +429,11 @@
+             "matrix.suite == 'inventory-tests'",
+             "startsWith(matrix.suite, 'auth-')",
+             "matrix.suite == 'planning-tests'",
++            // MVP-6 plan v9.9: the SupplyChain row's owned replica set, started and stopped like Planning's.
++            "matrix.suite == 'supplychain-tests'",
+             "always()",
+             "always() && matrix.suite == 'planning-tests'",
++            "always() && matrix.suite == 'supplychain-tests'",
+             "always()",
+             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
+             "startsWith(matrix.suite, 'auth-')",
+diff --git a/scripts/test-env/supplychain-ci-mongo.sh b/scripts/test-env/supplychain-ci-mongo.sh
+new file mode 100755
+--- /dev/null
++++ b/scripts/test-env/supplychain-ci-mongo.sh
+@@ -0,0 +1,132 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++# WP-LANE-MAIN-SYNC-05 — the owned test replica set for the supplychain-tests row of service-tests.yml.
++#
++# Modelled on scripts/test-env/mod0188-ci-mongo.sh, which main added for the planning-tests row on 2026-10-16.
++#
++# Allowed shape (CT decision D as revised by BL-650, CiServiceTestsGuardTests
++# A_job_local_mongod_starts_only_from_a_named_test_env_script_never_inline): a row MAY start a job-local mongod, but only
++# from a named script under scripts/test-env/, never inline in the workflow. The alternative - a fixture that starts its
++# own replica set - would reverse Q131a's deliberate "there is no fallback port, a missing URI fails closed" across seven
++# call sites plus the child-process tests that inherit the variable from their parent; that is its own work package.
++# Owner decision (2026-10-16, WP-LANE-MAIN-SYNC-05): follow the planning-tests precedent.
++#
++# What the SupplyChain suite needs from a mongod, and why a plain one will not do:
++#   - a single-member REPLICA SET: the suites use transactions, and ShipmentSchema refuses to start without
++#     "Mongo transaction support (replica set or mongos)";
++#   - enableTestCommands=1: the CapacityPlans and SandopPlans fail-point tests configure fail points;
++#   - loopback only, and never the operational band 27017-27021 - CapacityTestMongo rejects those ports itself.
++#
++# It writes no credential: loopback, no auth, and it dies with the job.
++
++state="$RUNNER_TEMP/supplychain-ci-mongo-state"
++rs="rs-supplychain"
++
++# The seven fail-closed variables the suite reads (measured: GetEnvironmentVariable call sites in
++# services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests), plus the composition-root guard's own.
++# Q492: SUPPLYCHAIN_COMPOSITION_GUARD_MONGO_URI is included because without it CompositionRootGuardTests refuses to run
++# ("this guard must not be skipped") - it builds the PRODUCTION container and asserts every controller resolves.
++variables=(
++  MOD0183_TEST_MONGO
++  MOD0184_TEST_MONGO
++  MOD0185_TEST_MONGO
++  MVP6_MOD0190_MONGO_URI
++  MVP6_MOD0192_MONGO_URI
++  RETURNS_MONGO_URI
++  CLAIMS_TEST_MONGO
++  SUPPLYCHAIN_COMPOSITION_GUARD_MONGO_URI
++)
++
++stop_owned() {
++  if [[ ! -f "$state" ]]; then
++    return
++  fi
++  dir=$(cat "$state")
++  case "$dir" in
++    "$RUNNER_TEMP"/supplychain-ci-mongo-*) ;;
++    *) echo "Unexpected SupplyChain test directory" >&2; exit 1 ;;
++  esac
++  if [[ -f "$dir/mongod.pid" ]]; then
++    pid=$(cat "$dir/mongod.pid")
++    if [[ "$pid" =~ ^[0-9]+$ ]] && [[ -e "/proc/$pid/cmdline" ]]; then
++      if ! tr '\0' ' ' < "/proc/$pid/cmdline" | grep -Fq -- "--dbpath $dir/data"; then
++        echo "PID $pid is not the SupplyChain test mongod" >&2
++        exit 1
++      fi
++      kill "$pid"
++      for _ in $(seq 1 30); do
++        [[ ! -e "/proc/$pid/cmdline" ]] && break
++        sleep 1
++      done
++      [[ ! -e "/proc/$pid/cmdline" ]] || { echo "Owned mongod did not stop" >&2; exit 1; }
++    fi
++  fi
++  # Nothing is deleted: $RUNNER_TEMP belongs to the job and goes with the runner.
++}
++
++case "${1:-}" in
++  stop) stop_owned ;;
++  start)
++    [[ ! -e "$state" ]] || { echo "SupplyChain test Mongo already started" >&2; exit 1; }
++    dir=$(mktemp -d "$RUNNER_TEMP/supplychain-ci-mongo-XXXXXXXX")
++    printf '%s\n' "$dir" > "$state"
++    mkdir "$dir/data"
++    # Deliberately not 31994-34994: those are mod0188-ci-mongo.sh's candidates. Never the operational band, and
++    # below the OS ephemeral range - the same two rules scripts/test-env/mvp6-test-mongo-env.sh enforces.
++    port=''
++    for candidate in 35994 36994 37994 38994; do
++      if python3 - "$candidate" <<'PY'
++import socket
++import sys
++with socket.socket() as sock:
++    sock.bind(("127.0.0.1", int(sys.argv[1])))
++PY
++      then
++        port="$candidate"
++        break
++      fi
++    done
++    [[ -n "$port" ]] || { echo "No free SupplyChain test port" >&2; exit 1; }
++    "$DITEN_TEST_MONGOD" --replSet "$rs" --port "$port" --bind_ip 127.0.0.1 \
++      --setParameter enableTestCommands=1 \
++      --dbpath "$dir/data" --logpath "$dir/mongod.log" --pidfilepath "$dir/mongod.pid" --fork
++    python3 -m venv "$dir/venv"
++    "$dir/venv/bin/pip" install --disable-pip-version-check 'pymongo==4.10.1'
++    "$dir/venv/bin/python" - "$port" "$rs" <<'PY'
++import sys
++import time
++from pymongo import MongoClient
++
++port, rs = int(sys.argv[1]), sys.argv[2]
++client = MongoClient(f"mongodb://127.0.0.1:{port}/?directConnection=true&serverSelectionTimeoutMS=1000")
++deadline = time.monotonic() + 30
++while True:
++    try:
++        client.admin.command({"replSetInitiate": {"_id": rs, "members": [{"_id": 0, "host": f"127.0.0.1:{port}"}]}})
++        break
++    except Exception:
++        if time.monotonic() >= deadline:
++            raise
++        time.sleep(0.5)
++while True:
++    try:
++        if client.admin.command("hello").get("isWritablePrimary"):
++            break
++    except Exception:
++        pass
++    if time.monotonic() >= deadline:
++        raise TimeoutError("SupplyChain test replica set did not become PRIMARY")
++    time.sleep(0.5)
++PY
++    # Q480 (owner decision 2026-10-09): 15000 ms, not 5000 - error 91 injected into commitTransaction marks the lane
++    # set's only server Unknown until the monitor's hello long-poll returns, up to 10 s. The same value the lane script
++    # uses, for the same reason.
++    uri="mongodb://127.0.0.1:$port/?replicaSet=$rs&serverSelectionTimeoutMS=15000"
++    for name in "${variables[@]}"; do
++      echo "$name=$uri" >> "$GITHUB_ENV"
++    done
++    echo "[supplychain] owned test replica set ready on $port (${#variables[@]} variables exported)"
++    ;;
++  *) echo 'Usage: supplychain-ci-mongo.sh start|stop' >&2; exit 2 ;;
++esac

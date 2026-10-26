@@ -1,4 +1,5 @@
 using Diten.InventoryService.Tests.TestInfrastructure;
+using MongoDB.Bson;
 using Xunit;
 
 namespace Diten.InventoryService.Tests.Api;
@@ -53,17 +54,24 @@ public sealed class AuditCorrelationTests : IClassFixture<InventoryApiFactory>
         Assert.Equal(mine, Assert.Single(s.Persisted("inventory_outbox"))["CorrelationId"].AsString);
     }
 
+    /// <summary>
+    /// FU-INT1-02 (owner decision G1-D3 = A, 2026-10-20 — WP-MVP1-FIX-LIVE3) CHANGES this expectation: a non-UUID X-Correlation-Id was 400; now
+    /// the request goes on with a FRESH server UUID — the one in the response header and in every record; the caller's text is in none.
+    /// </summary>
     [Fact]
-    public async Task A_non_uuid_correlation_id_is_400_and_the_error_carries_the_echoed_id()
+    public async Task A_non_uuid_correlation_id_is_replaced_by_a_fresh_uuid_used_everywhere()
     {
         var s = new InventoryScenario(_factory);
 
         using var response = await s.PostAsync(s.Receipt("1"), configure: r => r.Headers.Add("X-Correlation-Id", "req-1"));
-        var json = await s.ReadAsync(response);
 
-        Assert.Equal(400, (int)response.StatusCode);
-        Assert.Equal(response.Headers.GetValues("X-Correlation-Id").Single(), json.GetProperty("error").GetProperty("correlationId").GetString());
-        Assert.Empty(s.Persisted("inventory_transactions"));
+        Assert.Equal(201, (int)response.StatusCode);
+        var minted = response.Headers.GetValues("X-Correlation-Id").Single();
+        Assert.True(Guid.TryParse(minted, out var id) && id != Guid.Empty, minted);
+        Assert.Equal(minted, Assert.Single(s.Persisted("inventory_transactions"))["CorrelationId"].AsString);
+        Assert.Equal(minted, Assert.Single(s.Persisted("inventory_audit"))["CorrelationId"].AsString);
+        Assert.Equal(minted, Assert.Single(s.Persisted("inventory_outbox"))["CorrelationId"].AsString);
+        Assert.DoesNotContain(s.Persisted("inventory_audit").Concat(s.Persisted("inventory_outbox")), d => d.ToJson().Contains("req-1", StringComparison.Ordinal));
     }
 
     [Fact]

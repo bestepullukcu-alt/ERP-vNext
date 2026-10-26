@@ -21,6 +21,20 @@ public sealed record LotFormInput
     public string? IfMatch { get; init; }
     /// <summary>Where the lot is created: <c>lot-form</c> (Yeni Lot page) or <c>ledger-shortcut</c> (Stock Ledger quick lot).</summary>
     public string? Origin { get; init; }
+
+    /// <summary>
+    /// WP-0176-F5 seam (CT decision A, KF-D): the prepared FEFO-BUNDLE date override of a lot whose expiry / retest differs from the
+    /// suggestion — passed to TRACE 1.4.0 createLot (and a Draft updateLot, CT-F7) ONLY when sent; absent = the body is unchanged.
+    /// </summary>
+    public LotDateOverrideInput? DateOverride { get; init; }
+}
+
+/// <summary>TRACE 1.4.0 <c>dateOverride</c>: the override id (FEFO-BUNDLE createDateOverride) and, under ReasonAndSignature, the MOD-0022 signature id.</summary>
+public sealed record LotDateOverrideInput
+{
+    public string? OverrideId { get; init; }
+
+    public string? SignatureId { get; init; }
 }
 
 /// <summary>One allowed / disallowed target of the status dialog (pack §11.3 "Durum Değiştir", K-E).</summary>

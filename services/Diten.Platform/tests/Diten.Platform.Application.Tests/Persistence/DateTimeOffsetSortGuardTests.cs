@@ -42,7 +42,10 @@ public sealed class DateTimeOffsetSortGuardTests
                 ("MOD-0022 e-imza geliştiricisi", "yanlış pozitif — ad eşleşmesi, tür DateTime; sahip ölçtü 2026-10-14", "BL-636")
         };
 
+    // TEST-HIZ-01: a whole-repository source scan, 6–7 s on a developer machine; left out of the local fast run
+    // (scripts/test-env/fast-local-tests.sh), CI runs it on every push.
     [Fact]
+    [Trait("Category", "Slow")]
     public void No_repository_sorts_on_two_date_time_offset_keys()
     {
         var servicesRoot = LocateServicesRoot();

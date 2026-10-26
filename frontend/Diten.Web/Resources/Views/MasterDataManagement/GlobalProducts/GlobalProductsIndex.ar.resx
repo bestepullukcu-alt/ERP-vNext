@@ -15,4 +15,20 @@
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>يجري إرسال هذا المنتج للموافقة. لا يمكن تعديله حتى يصل الإرسال إلى محرك الموافقات.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>تغيّرت المسودة أثناء تقديمها. افتحها مرة أخرى وقدّم النسخة الحالية.</value></data>
   <data name="ErrorSubmitStuck" xml:space="preserve"><value>إرسال هذا المنتج متوقف. يحلّه الشخص الذي أرسله بالضغط على «إرسال» مرة أخرى؛ وإن لم يُحلّ بذلك فعلى المسؤول أن يحلّه.</value></data>
+  <!-- MOD-0290-FU05: the Global Product brand (slice 3). -->
+  <data name="Brand" xml:space="preserve"><value>العلامة التجارية</value></data>
+  <data name="BrandNone" xml:space="preserve"><value>بدون علامة تجارية</value></data>
+  <data name="BrandHelp" xml:space="preserve"><value>اختياري. تُعرض فقط العلامات التجارية النشطة ضمن فترة سريانها.</value></data>
+  <data name="ChangeBrand" xml:space="preserve"><value>تغيير العلامة التجارية</value></data>
+  <data name="ChangeBrandConfirmation" xml:space="preserve"><value>ستتغير العلامة التجارية لهذا المنتج العالمي المعتمد. يُسجَّل التغيير في سجل التدقيق.</value></data>
+  <data name="ChangeBrandSuccess" xml:space="preserve"><value>تم تغيير العلامة التجارية.</value></data>
+  <data name="BrandUnchanged" xml:space="preserve"><value>العلامة التجارية المختارة مرتبطة بالفعل؛ لم يتم تغيير أي شيء.</value></data>
+  <data name="ErrorBrandNotFound" xml:space="preserve"><value>تعذر العثور على العلامة التجارية المختارة. اختر علامة تجارية أخرى.</value></data>
+  <data name="ErrorBrandArchived" xml:space="preserve"><value>العلامة التجارية المختارة مؤرشفة ولا يمكن ربطها. اختر علامة تجارية أخرى.</value></data>
+  <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>العلامة التجارية المختارة غير نشطة أو خارج فترة سريانها. اختر علامة تجارية أخرى.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>إعدادات الموافقة لهذا الإجراء غير مكتملة. يرجى إبلاغ المسؤول.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>لم يصل الطلب إلى خدمة الموافقات. أرسل الطلب نفسه مرة أخرى.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>الموافقة قيد التغيير الآن. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>لا يوجد أحد غيرك يمكنه اعتماد السجل الذي أرسلته. اطلب من المسؤول تعديل المعتمدين، ثم يمكنك إرساله مرة أخرى.</value></data>
 </root>

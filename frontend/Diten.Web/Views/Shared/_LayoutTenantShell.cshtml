@@ -226,10 +226,10 @@
                        below, from the `work-aggregation` module catalog entry (page WORKCENTER → /WorkCenterNext,
                        gated on platform.work-aggregation.inbox.view) — same migration Access Governance and
                        Tenant Settings went through, so the sidebar shows exactly ONE Görev Merkezi link.
-                       The LEGACY /WorkCenter link was also removed from the menu by explicit decision
-                       (2026-07-25): the page, controller and views remain FROZEN and reachable by direct URL for
-                       comparison/rollback — only its navigation entry is gone. Its `WorkCenterMenu` /
-                       `WorkCenterNextMenu` resx keys are intentionally left in place (harmless).
+                       The LEGACY mock /WorkCenter link was removed from the menu (2026-07-25), and the page itself,
+                       its controller, views, scripts and the `WorkCenterMenu` resx key were removed by BL-619
+                       (2026-10-16); its URLs now permanently redirect to /WorkCenterNext (Program.cs).
+                       The `WorkCenterNextMenu` resx key is intentionally left in place (harmless).
                        This "Workspace" header still labels the Document Management items below. *@
 
                     @* FEAT-BASELINE-MODULES-S2 — Security Settings (/TenantSecurity) and Menu Settings (/TenantNavigation)

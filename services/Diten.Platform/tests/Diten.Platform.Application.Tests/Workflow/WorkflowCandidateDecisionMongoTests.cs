@@ -34,6 +34,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// The assignment state is SEEDED exactly as production writes it (start / next-step / escalation snapshots), so
 /// each test controls the candidate list; every decision goes through the production handlers.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
     IAsyncLifetime,
     IClassFixture<AuditOutboxTemporalReplicaSetFixture>

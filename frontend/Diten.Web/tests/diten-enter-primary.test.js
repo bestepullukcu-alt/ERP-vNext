@@ -451,6 +451,10 @@ const MAIN_SYNC_UNMARKED = {
   "CRM/VisitPlanning/_DoctorPanel.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
   "CRM/VisitPlanning/_NewPlanDrawer.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
   "Inventory/Locations/_CreateEditOffcanvas.cshtml": { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  // WP-LANE-MAIN-SYNC-03 (main-sync 2026-10-14, BL-641): CRM W4 visit report v2 panels.
+  "CRM/KnowledgePaths/_PresentationNotes.cshtml": { owner: CRM, why: MAIN_SYNC_2_WHY },
+  "CRM/PotentialThresholds/Index.cshtml": { owner: CRM, why: MAIN_SYNC_2_WHY },
+  "CRM/VisitEvidenceSettings/Index.cshtml": { owner: CRM, why: MAIN_SYNC_2_WHY },
   "Manufacturing/Boms/Details.cshtml": { owner: MANUFACTURING, why: MAIN_SYNC_2_WHY },
   "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
   "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
@@ -493,7 +497,6 @@ const LIST_KEYS = {
     "CRM/KnowledgePaths/Workspace.cshtml",
     "CRM/VisitPlanning/_DoctorPanel.cshtml",
     "CRM/VisitPlanning/_NewPlanDrawer.cshtml",
-    "Inventory/Locations/_CreateEditOffcanvas.cshtml",
     "Manufacturing/Boms/Details.cshtml",
     "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml",
     "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml",

@@ -67,4 +67,31 @@ public sealed class Lot : EntityBase
     /// never recomputed from the date.
     /// </summary>
     public DateTimeOffset? RetestHeldAtUtc { get; set; }
+
+    /// <summary>MOD-0176 F2 (TRACE 1.4.0 <c>LotRef.suggestedExpiryDate</c>): manufacturing date + getSku <c>shelfLifeDays</c> at creation; null = no suggestion.</summary>
+    public DateTimeOffset? SuggestedExpiryDate { get; set; }
+
+    /// <summary>MOD-0176 F2 (TRACE 1.4.0 <c>LotRef.suggestedRetestDate</c>): manufacturing date + getSku <c>retestDays</c>; null = no suggestion.</summary>
+    public DateTimeOffset? SuggestedRetestDate { get; set; }
+
+    /// <summary>MOD-0176 F2 (KF-D, TRACE 1.4.0 <c>LotRef.expiryOverride</c>): the override the lot dates were set with; null = none.</summary>
+    public LotExpiryOverride? ExpiryOverride { get; set; }
+}
+
+/// <summary>KF-D: the reason (+ MOD-0022 signature id) of a lot date that differs from its suggestion — a reference, no signature record.</summary>
+public sealed class LotExpiryOverride
+{
+    public Guid OverrideId { get; set; }
+
+    public string Reason { get; set; } = string.Empty;
+
+    public string? SignatureId { get; set; }
+
+    public DateTimeOffset? SuggestedExpiry { get; set; }
+
+    public DateTimeOffset? SuggestedRetest { get; set; }
+
+    public Guid By { get; set; }
+
+    public DateTimeOffset AtUtc { get; set; }
 }

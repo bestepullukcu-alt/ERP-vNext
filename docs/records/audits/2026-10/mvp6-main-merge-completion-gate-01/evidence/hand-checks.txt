@@ -1,0 +1,21 @@
+# the four hand-checks the owner decision names
+
+AGENTS.md — main's change:
+-1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}.md`
++1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
++| Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
+-3. Varsa `execution/domains/{domain}/module-packs/{ID}.md`
++3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
+-| **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
++| **Module Pack** | `execution/domains/{d}/module-packs/{ID}-{slug}.md` — tek bir modülün kimlik + AC dosyası |
+
+Q302 — eager JWT validation present:
+  HumanCapitalService: 7 jwt-related lines in services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+  TalentEcosystemService: 7 jwt-related lines in services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+
+Q363 — IInternalScopeResolutionContext:
+  references in services/: 0
+  present at 2acce233b (R-2b): 0
+  present at e9b0f3b19 (before R-2b): 4
+  present on origin/main: 0
+  => removed deliberately by R-2b (owner decision, Q481 condition measured), not lost in the merge

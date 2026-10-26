@@ -37,6 +37,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// SMTP socket, and the provider is not what breaks. The assertion is the dispatch ROW, which is written before
 /// any provider is called and is exactly what stayed missing in production.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationDispatchMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

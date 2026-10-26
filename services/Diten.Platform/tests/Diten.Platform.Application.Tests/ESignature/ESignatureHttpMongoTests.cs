@@ -25,6 +25,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// codes.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureHttpMongoTests : IClassFixture<ESignatureTestHost>
 {
     private const string Signatures = "api/v1/esign/signatures";

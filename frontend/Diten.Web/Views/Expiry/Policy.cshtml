@@ -1,0 +1,184 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.Policy"].Value;
+    ViewData["PageCode"] = "EXPIRYPOLICY"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
+    Layout = "_LayoutTenantShell";
+    var manage = Perms.Has("expiry.policies.manage");
+}
+
+@*
+    MOD-0176 F5 — Raf Ömrü Kuralları ve Ayarlar (EXPIRYPOLICY, pack §4.1, §11.3; mockup "set" + "hist"). Three tabs: the company settings
+    (FEFO-BUNDLE getPolicy / updatePolicy — If-Match, the reason modal ≥ 10, one history row per changed field on the server), the
+    read-only product view (PRODUCT-MASTER getSku days, "Tanımsız" when absent — corrected in MDM), the change history. Without
+    expiry.policies.manage the form is read-only and there is no "Kaydet" (UAS-001 §4). No product / market rule (KF-G, KF-H — D-14).
+    UAS-001 — nothing below is drawn without expiry.policies.read. No redirect.
+*@
+@if (!Perms.Has("expiry.policies.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.Policy"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+    var types = new[] { "FEFO_BYPASS", "BELOW_MIN_REMAINING", "EXPIRY_DATE_OVERRIDE", "EXPIRED_ON_HAND" };
+    var disabled = manage ? null : "disabled";
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYPOLICY")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <ul class="nav nav-tabs flex-wrap mb-4" role="tablist" id="ex-policy-tabs">
+        <li class="nav-item"><button type="button" class="nav-link text-none active" data-bs-toggle="tab" data-bs-target="#ex-policy-company" role="tab"><i class="bx bx-cog me-1"></i>@Localizer["Expiry.Policy.Tab.Company"]</button></li>
+        <li class="nav-item"><button type="button" class="nav-link text-none" data-bs-toggle="tab" data-bs-target="#ex-policy-products" role="tab" id="ex-policy-products-tab"><i class="bx bx-package me-1"></i>@Localizer["Expiry.Policy.Tab.Products"]</button></li>
+        <li class="nav-item"><button type="button" class="nav-link text-none" data-bs-toggle="tab" data-bs-target="#ex-policy-history" role="tab"><i class="bx bx-history me-1"></i>@Localizer["Expiry.Policy.Tab.History"]</button></li>
+    </ul>
+    <div id="ex-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="tab-content p-0">
+        <div class="tab-pane fade show active" id="ex-policy-company" role="tabpanel">
+            @if (!manage)
+            {
+                <div class="alert alert-secondary" role="note" id="ex-policy-readonly"><i class="bx bx-lock-alt me-1"></i>@Localizer["Expiry.Policy.ReadOnly"]</div>
+            }
+            <form class="card" id="ex-policy-form" novalidate data-no-tracker>
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <h5 class="card-title mb-0">@Localizer["Expiry.Policy.Tab.Company"]</h5>
+                    <small class="text-muted" id="ex-policy-meta"></small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="ex-p-approaching">@Localizer["Expiry.Policy.Approaching"]</label>
+                            <div class="input-group"><input class="form-control" type="number" min="1" max="730" id="ex-p-approaching" @disabled /><span class="input-group-text">@Localizer["Expiry.Policy.UnitDays"]</span></div>
+                            <div class="form-text">@Localizer["Expiry.Policy.ApproachingHelp"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="ex-p-critical">@Localizer["Expiry.Policy.Critical"]</label>
+                            <div class="input-group"><input class="form-control" type="number" min="1" max="730" id="ex-p-critical" @disabled /><span class="input-group-text">@Localizer["Expiry.Policy.UnitDays"]</span></div>
+                            <div class="form-text">@Localizer["Expiry.Policy.CriticalHelp"]</div>
+                        </div>
+                        @foreach (var (field, options, help) in new[]
+                        {
+                            ("fefoOutboundMode", new[] { "Warn", "RequireReason", "Block" }, "Expiry.Policy.FefoHelp"),
+                            ("belowMinRemainingMode", new[] { "Warn", "AutoQuarantine", "Reject" }, "Expiry.Policy.BelowMinHelp"),
+                            ("dateOverrideMode", new[] { "Reason", "ReasonAndSignature" }, "Expiry.Policy.DateOverrideHelp")
+                        })
+                        {
+                            <div class="col-12">
+                                <span class="form-label d-block" id="ex-p-@field-label">@Localizer["Expiry.Policy.Field." + field]</span>
+                                <div class="btn-group flex-wrap" role="radiogroup" aria-labelledby="ex-p-@field-label">
+                                    @foreach (var option in options)
+                                    {
+                                        <input type="radio" class="btn-check" name="ex-p-@field" id="ex-p-@field-@option" value="@option" autocomplete="off" @disabled />
+                                        <label class="btn btn-outline-primary btn-sm" for="ex-p-@field-@option">@Localizer["Expiry.Policy.Mode." + option]</label>
+                                    }
+                                </div>
+                                <div class="form-text">@Localizer[help]</div>
+                            </div>
+                        }
+                        <div class="col-12">
+                            <span class="form-label d-block">@Localizer["Expiry.Policy.Sla"]</span>
+                            <div class="row g-3">
+                                @foreach (var type in types)
+                                {
+                                    <div class="col-12 col-sm-6 col-lg-3">
+                                        <label class="form-label small text-muted" for="ex-p-sla-@type">@Localizer["Expiry.Type." + type]</label>
+                                        <div class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="2160" id="ex-p-sla-@type" data-sla="@type" @disabled /><span class="input-group-text">@Localizer["Expiry.Policy.UnitHours"]</span></div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="form-text">@Localizer["Expiry.Policy.SlaHelp"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="ex-p-threshold">@Localizer["Expiry.Policy.Threshold"]</label>
+                            <div class="input-group"><input class="form-control" type="number" min="0" max="365" id="ex-p-threshold" @disabled /><span class="input-group-text">@Localizer["Expiry.Policy.UnitDays"]</span></div>
+                            <div class="form-text">@Localizer["Expiry.Policy.ThresholdHelp"]</div>
+                        </div>
+                    </div>
+                    <div class="form-text text-danger mt-3" id="ex-p-invalid"></div>
+                </div>
+                @if (manage)
+                {
+                    <div class="card-footer d-flex flex-wrap align-items-center justify-content-end gap-2 border-top">
+                        <small class="text-warning me-auto d-none" id="ex-p-dirty"><i class="bx bx-error-circle me-1"></i>@Localizer["Expiry.Policy.Dirty"]</small>
+                        <button type="button" class="btn btn-label-secondary" id="ex-p-reset" disabled>@Localizer["Expiry.Common.Cancel"]</button>
+                        <button type="button" class="btn btn-primary" id="ex-p-save" disabled>@Localizer["Expiry.Policy.Save"]</button>
+                    </div>
+                }
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="ex-policy-products" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Policy.Tab.Products"]</h5><small class="text-muted">@Localizer["Expiry.Policy.ProductsSubtitle"]</small></div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="ex-policy-products-table">
+                        <thead><tr><th>@Localizer["Expiry.Col.Product"]</th><th>@Localizer["Expiry.Col.SkuLevel"]</th><th class="text-end">@Localizer["Expiry.Policy.ShelfLife"]</th><th class="text-end">@Localizer["Expiry.Policy.Retest"]</th><th class="text-end">@Localizer["Expiry.Policy.MinRemaining"]</th></tr></thead>
+                        <tbody><tr><td colspan="5" class="text-muted">@Localizer["Expiry.Common.Loading"]</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="card-footer small text-muted">@Localizer["Expiry.Policy.ProductsFooter"]</div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="ex-policy-history" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Policy.Tab.History"]</h5></div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="ex-policy-history-table">
+                        <thead><tr><th>@Localizer["Expiry.Policy.WhenWho"]</th><th>@Localizer["Expiry.Policy.Setting"]</th><th>@Localizer["Expiry.Policy.OldNew"]</th><th>@Localizer["Expiry.Drawer.Reason"]</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (manage)
+    {
+        <partial name="~/Views/Expiry/_ExpiryAntiforgery.cshtml" />
+        <div class="modal fade" id="ex-p-modal" tabindex="-1" aria-hidden="true" aria-labelledby="ex-p-modal-title">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ex-p-modal-title">@Localizer["Expiry.Policy.SaveTitle"]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Expiry.Common.Cancel"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="small mb-3" id="ex-p-diff"></ul>
+                        <div id="ex-p-modal-error" class="alert alert-danger d-none" role="alert"></div>
+                        <label class="form-label d-flex justify-content-between" for="ex-p-reason"><span>@Localizer["Expiry.Policy.ChangeReason"] *</span><small class="text-muted" id="ex-p-counter" dir="ltr"></small></label>
+                        <textarea class="form-control" id="ex-p-reason" rows="3" maxlength="1000"></textarea>
+                        <div class="form-text text-danger" data-err="reason"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Expiry.Common.Cancel"]</button>
+                        <button type="button" class="btn btn-primary" id="ex-p-confirm">@Localizer["Expiry.Policy.Save"]</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/policy.js" asp-append-version="true"></script>
+    }
+}

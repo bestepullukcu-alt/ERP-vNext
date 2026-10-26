@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
  * MongoIntegrationHarness.CreateCoreAsync and both harness proofs go red — the "blocked" child opens a database
  * at once instead of waiting, and the child with file locking switched off runs instead of refusing.
  */
+[Trait("Category", "Mongo")]
 public sealed class PlatformMongoTestLockTests
 {
     private static readonly TimeSpan ChildDeadline = TimeSpan.FromSeconds(120);

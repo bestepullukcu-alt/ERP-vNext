@@ -192,6 +192,8 @@ public static class GskuRefusalSentences
         ["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"] = "RefusalSetupIncomplete",
         ["PRODUCT_IDENTITY_WORKFLOW_CONFIGURATION_INVALID"] = "RefusalSetupIncomplete",
         ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "RefusalResubmit",
+        // WP-MDM-NO-ELIGIBLE-APPROVER-01: nobody but the maker may approve (segregation of duties).
+        ["PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"] = "RefusalNoEligibleApprover",
         ["PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT"] = "RefusalResubmit",
         ["PRODUCT_IDENTITY_WORKFLOW_SESSION_EXPIRED"] = "RefusalSessionExpired",
         ["PRODUCT_IDENTITY_WORKFLOW_START_FACTS_INVALID"] = "RefusalPackInvalid",
@@ -218,6 +220,7 @@ public static class GskuRefusalSentences
         ["WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED"] = "RefusalSetupIncomplete",
         ["WORKFLOW_DELEGATED_USER_FORBIDDEN"] = "RefusalForbidden",
         ["WORKFLOW_DELEGATED_USER_UNAUTHENTICATED"] = "RefusalSessionExpired",
+        ["WORKFLOW_NO_ELIGIBLE_APPROVER"] = "RefusalNoEligibleApprover",
         ["WORKFLOW_TEMPLATE_NOT_PUBLISHED"] = "RefusalSetupIncomplete",
         ["WORKFLOW_TEMPLATE_NO_ACTIVE_VERSION"] = "RefusalSetupIncomplete",
         ["WORKFLOW_TEMPLATE_VERSION_NOT_FOUND"] = "RefusalSetupIncomplete",

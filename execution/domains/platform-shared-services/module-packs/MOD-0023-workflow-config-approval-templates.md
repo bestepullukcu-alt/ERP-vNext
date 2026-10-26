@@ -481,3 +481,216 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
   PlatformAdmin. A tenant administrator can grant the runtime keys to any tenant role (e.g. QA).
 - Follow-ups: FU-0023-FX-WEB (remove the free-text "Actor Id" field from the `/Platform/Workflow` task forms),
   FU-0023-FX-SOD-SWITCH (per-template SoD switch, not built).
+
+## 17. TRM-15 — retention policy, additive reconciliation read fields, same-key race answer (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
+D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
+questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
+until it passes CT-APR-02 and CT-APR-01. **Read §17.7 first: the producer answer and D25 supersede earlier text where they conflict.** TRM-15 is closed only when §17 is approved, AC-W1…W14 have **passed** (running
+a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
+consumer owner's evidence. **If AC-W5…W12 fail against today's write path, §17 stays blocked**: §17 authorizes no
+write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
+and the Treasury re-issue gate stays closed until then. Queue: `treasury-intake` TRM-15. The policy decisions
+below do not prove that today's code behaves this way; the ACs do.
+
+### 17.1 Why
+
+Diten.FinanceTreasuryService (MOD-0126, MOD-0119, MOD-0120, MOD-0124) starts MOD-0023 instances and records
+transitions with deterministic idempotency keys. After an unknown outcome its Reconcile must (a) find **its own**
+instance / transition by key, not "the newest one for the object", and (b) rely on the key staying claimed forever
+before it re-issues with the same key. Today neither is guaranteed by contract.
+
+### 17.2 Current code truth (@ef4f3a8bc; Diten.Platform identical to origin/main)
+
+- Entities carry the keys: `WorkflowInstance.IdempotencyKey` (`WorkflowInstance.cs:30`), `WorkflowTransitionLog`
+  `ApprovalTaskId` / `Action` / `IdempotencyKey` (`WorkflowTransitionLog.cs:12-22`).
+- Unique partial indexes `ux_workflow_instances_tenant_idempotency_key_active` and
+  `ux_workflow_transition_logs_task_action_idempotency_active` (`PlatformSchemaManifest.WorkflowWorkCenter.cs:118-131,
+  211-225`), both filtered `IsDeleted = false`.
+- No delete path and no `ExpireAfter` for these two types; the only workflow soft delete
+  (`WorkflowRepositories.cs:961-974`) is `SlaEscalationRule`.
+- Reads do **not** expose the keys: `WorkflowInstanceStatusDto` (`WorkflowModels.cs:200-207`: Id, Status, Outcome,
+  Stage, Step, StartedAt, CompletedAt) used by `GET instances/by-objects`, which hides deleted rows
+  (`GetWorkflowInstancesByObjectsHandler.cs:51`); `WorkflowInstanceDto` (`:406-424`, `GET instances/{id}`);
+  `WorkflowInstanceHistoryEntryDto` (`:451-465`, `GET instances/{id}/history`: SequenceNo, Action, Actor…, no task id,
+  no key).
+- Same-key behaviour: sequential replay returns the stored start (`StartWorkflowInstanceHandler.cs:76-85`) and stored
+  transitions (`RejectWorkflowTaskHandler.cs:79-80`, `WorkflowTaskTransitionSupport.cs:61, 381, 539`). Concurrent same-key
+  starts: the loser re-reads after a write conflict and answers as the winner's replay when the start is whole, 503
+  "replay the same key" when it is not whole yet, 409 when the instance left Active
+  (`StartWorkflowInstanceHandler.cs:300-330, 700-716`); terminal transitions follow the same pattern
+  (`WorkflowTerminalTransitionWriter.cs:112-114, 357-…`). Mongo tests exist in the Platform suite
+  (e.g. `WorkflowCandidateDecisionMongoTests*`, `TrustedWorkflowStartRecoveryMongoTests`); whether they cover concurrent
+  **same-key** start and transition was **not measured**.
+
+### 17.3 Change
+
+1. **Retention policy (D21/1):** `WorkflowInstance` and `WorkflowTransitionLog` are never deleted (no hard delete, no
+   soft delete, no TTL, no archive-and-remove). Written into this pack; guarded by an architecture test (AC-W1).
+2. **No deleted-distinguishing read (D21/2):** not added; the policy plus AC-W1 replace it. Consumers keep their rule:
+   a deleted row that is nevertheless seen means "do not re-issue".
+3. **Additive read fields (D21/3)** — trailing optional members, the existing "additive, trailing" pattern:
+   - `WorkflowInstanceStatusDto` + `string? IdempotencyKey = null` (`by-objects`);
+   - `WorkflowInstanceDto` + `string? IdempotencyKey = null` (`instances/{id}`);
+   - `WorkflowInstanceHistoryEntryDto` + `Guid? ApprovalTaskId = null`, `string? IdempotencyKey = null` (`history`).
+   Values come from the entity unchanged (null when the write had no key). Same permission (`instances.view`), same
+   tenant filter, same 404, same routes; nothing removed or renamed; property order is not part of the contract. The key
+   is not a secret (deterministic for Treasury; caller-chosen otherwise) and is returned only to callers that may
+   already view the instance.
+4. **Same-key answer (D21/4, clarified by D22/3) — target behaviour, measured against today's code** (rows for a whole start
+   with different facts and for concurrent transitions are **corrected in §17.7/5**):
+   | Case | Final answer (after any replay) | Today's code (@ef4f3a8bc, read, not run) |
+   |---|---|---|
+   | two concurrent starts, one key, same facts and starter | both **200**, same instance id; one instance row | re-read after write conflict (`StartWorkflowInstanceHandler.cs:300-330, 700-716`) |
+   | replay after the first start was **whole**, whatever the instance became since (approved, rejected, cancelled, closed) | **200**, same instance id, current status — never a new refusal | `ExistingStartResponseAsync` returns the whole start "whatever has become of the instance since" (`:372-391`) |
+   | replay of a start that was **never whole** and was closed by the abandoned-start recovery | **409** `WORKFLOW_INSTANCE_START_CONFLICT` — a defined *closed* answer, not a business refusal; Treasury closes the intent only from the recovery's close record (`Cancelled`), otherwise `Unknown` | `:393-398` |
+   | same key, different facts or a different starter | **409** `WORKFLOW_INSTANCE_START_CONFLICT` (key misuse) — Treasury never sends this (deterministic keys); treated as `Unknown` + alert | `:419-438` |
+   | two concurrent identical transitions (same task, action, key) | both **200**, same transition (one log row) | replay by (task, action, key) (`WorkflowTaskTransitionSupport.cs:61, 381, 539`; terminal writer `WorkflowTerminalTransitionWriter.cs:357-…`) |
+   | replay of a transition that was recorded, after the task moved on | **200**, the recorded transition | same lookup |
+   | two different decisions on one task (e.g. approve vs reject, different keys) | exactly one terminal decision; the loser gets **409** `WORKFLOW_TASK_INVALID_STATE` — a defined conflict, not a business refusal of the loser's own intent | `WorkflowTaskTransitionSupport.cs:87` (409) |
+   An interim **503** "replay the same key" (start or transition not whole yet) is not a final answer: consumers keep
+   the intent `Unknown` and replay. A duplicate-key error is never returned as a business refusal.
+
+Allowed paths: `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`, the three
+read handlers (`GetWorkflowInstancesByObjectsHandler.cs`, `GetWorkflowInstanceByIdHandler`, `GetWorkflowInstanceHistoryHandler.cs`)
+for the mapping only, `services/Diten.Platform/tests/**`, `tests/architecture/**` (new rule only). No index, schema,
+route, permission or write-path change (D22/2) — if the race ACs fail, see the status note above.
+
+### 17.4 Acceptance criteria (defined; not implemented or run)
+
+- AC-W1 — Retention guard (architecture test): no code path deletes, soft-deletes (`IsDeleted` / `DeletedAt` set) or
+  TTL-expires `WorkflowInstance` / `WorkflowTransitionLog`; the schema manifest declares no `ExpireAfter` on their
+  collections. Sabotage: adding a `DeleteAsync` or an `ExpireAfter` turns the test red.
+- AC-W2 — `by-objects` and `history` return the stored `idempotencyKey` (and `approvalTaskId` on history) for keyed writes
+  and `null` for unkeyed ones; other-tenant id → 404 unchanged. `instances/{id}` + `idempotencyKey` is **optional** (§17.7/4)
+  and not asserted by this AC.
+- AC-W3 — JSON compatibility: existing properties keep name, JSON type and meaning; the new ones are added; order not
+  asserted. **Consumers (measured @ef4f3a8bc) — each one's own test must pass against a body with the new fields;
+  status until run: expected compatibility, not tested:**
+  | Read | Consumer | Test |
+  |---|---|---|
+  | `by-objects`, `history` | Diten.InventoryService `GatewayWorkflowClient.cs:103, 129` (+ `QuarantineWorkflow.cs:183`) | `QuarantineWorkflowTests`, `QuarantineArchitectureTests` (`FakeWorkflowGateway`) |
+  | `by-objects`, `history` | Diten.CrmService `GatewayClaimWorkflowClient.cs:109, 236` | `ClaimsWorkflowApprovalTests`, `KnowledgePathReviewTests` |
+  | `by-objects`, `history` | Diten.MdmService `GatewayWorkflowClient.cs:110, 237` | **none found** (no test references it) — owner follow-up |
+  | `history` | Diten.Web `ClaimsController.V2.cs:280` (MVC proxy) | owner to name; none found by name |
+  | all three | Treasury (MOD-0126/0119/0120/0124) | new consumer; its own AC (AC-36/38 family) |
+  Measured by `grep` for `workflow/instances` / `instances/by-objects` over `services/` and `frontend/` outside Diten.Platform
+  (@ef4f3a8bc); `instances/{id}` (single read) has no consumer outside Platform in this scan. Re-run at code time.
+  A Platform build alone is **not** compatibility evidence (gap 11 improvement).
+- AC-W4 — Code compatibility: `dotnet build` of Diten.Platform succeeds; construction sites
+  (`git grep -n "WorkflowInstanceStatusDto\|WorkflowInstanceDto\|WorkflowInstanceHistoryEntryDto"`) re-scanned at code time;
+  optional trailing members keep existing calls compiling.
+- AC-W5 — Concurrent same-key **start** on a real Mongo replica set (N ≥ 2 parallel requests, repeated): exactly one
+  instance; every final answer (after replaying any 503) names that instance; no answer is a business refusal.
+  Sabotage: removing the post-conflict re-read turns it red.
+- AC-W6 — **Approve–Approve** replay race (final expectation per §17.7/5): two concurrent approves, same task and key →
+  exactly one transition row; each answer is either 200 (that transition) or 409 `WORKFLOW_TRANSITION_CONFLICT` / 503
+  `WORKFLOW_TRANSACTION_UNAVAILABLE` / 503 `WORKFLOW_TRANSITION_CONFLICT`; a replay of the same key after the race returns
+  200 with `isIdempotent = true` and the same transition.
+- AC-W7 — **Reject–Reject** and **RequestInfo–RequestInfo** replay races (MOD-0119 RequestInfo, MOD-0126 RequestEvidence):
+  the same final expectation as AC-W6.
+- AC-W8 — **Approve–Reject conflict** (different keys / actions, one pending task): exactly one terminal decision is
+  recorded; the loser's final answer is 409 `WORKFLOW_TASK_INVALID_STATE`; no second terminal row; a replay of the
+  loser's own key afterwards returns the same 409 (never 200 for a decision that was not recorded).
+  Sabotage for W5–W8: removing the post-conflict re-read or the (task, action, key) lookup turns them red.
+
+Sequential (non-concurrent) replay cases of the §17.3/4 table — separate from the race tests (gap 12):
+
+- AC-W9 — **Replay after a whole start, instance since closed:** start with key K, let the instance reach each terminal
+  state in turn (approved, rejected, cancelled by the user, closed by the abandoned-start recovery *after* it was whole);
+  replay K with the same facts and starter → **200**, the same instance id, its current status; no second instance; no
+  business refusal. Sabotage: answering a non-Active instance with 409 turns it red.
+- AC-W10 — **Replay of a recorded transition after the task moved on:** approve (and separately reject, request-info)
+  with key K; advance the instance (next step, or terminal); replay the same (task, action, K) → **200**, the same
+  transition (same `SequenceNo`), no new log row, no state change. Sabotage: re-evaluating the task's current state
+  before the (task, action, key) lookup turns it red.
+- AC-W11 — **Same key, different facts or a different starter:** replay K with (a) a different template, (b) a different
+  object id / ref, (c) a different candidate set (fingerprint), (d) another authenticated starter → each **409**
+  `WORKFLOW_INSTANCE_START_CONFLICT`; the first instance is unchanged and no second one exists. For transitions: the
+  same (task, action, K) with a different actor or reason → the defined conflict code measured at code time (no new row).
+- AC-W12 — **Never-whole start closed by recovery:** a start that wrote its instance but not its task, then closed by
+  `CloseAbandonedWorkflowStart` → replay K → **409** `WORKFLOW_INSTANCE_START_CONFLICT`; the recovery's close record for
+  that instance (transition log, key `workflow-start-recovery-close:{instanceId:N}`) is readable through `history`
+  with its `IdempotencyKey`, so a consumer can map the 409 to that close evidence (Treasury: `Cancelled` only with that
+  record; without it `Unknown`).
+
+### 17.4a Treasury → MOD-0023 action matrix (gap 11/P2)
+
+| Treasury command | Packs | MOD-0023 endpoint | Action | Same-key replay AC | Race AC |
+|---|---|---|---|---|---|
+| Submit (start) | 0126, 0119, 0120, 0124 | `POST instances` | start | AC-W9, W11, W12 | AC-W5 |
+| Approve, ApproveWithSodWaiver (0126) | all four | `POST tasks/{taskId}/approve` | approve | AC-W10, W11 | AC-W6, AC-W8 |
+| Reject | all four | `POST tasks/{taskId}/reject` | reject | AC-W10, W11 | AC-W7, AC-W8 |
+| RequestEvidence (0126), RequestInfo (0119) | 0126, 0119 | `POST tasks/{taskId}/request-info` | request-info | AC-W10, W11 | AC-W7 |
+| Escalate (0126) | — | **none** — no task-level endpoint (only `POST escalations/run`, an SLA job) | — | — | **removed from v1 (D22/1)** |
+| (no Treasury command) | — | `delegate`, `cancel` | — | not used by Treasury | — |
+
+Reads used by Reconcile: `GET instances/by-objects`, `GET instances/{id}`, `GET instances/{id}/history` (AC-W2).
+
+### 17.5 Delivery
+
+- Code lands **with MOD-0126 DL-2** (first consumer of the reconciliation reads), as its own commit within the paths
+  above; XMC-001 consent is D9 and must be restated in that WP prompt.
+- Consumer-side rules stay in the Treasury packs (MOD-0126 / 0119 / 0120 / 0124 Runtime Constraints): match only by
+  key (+ task + action for transitions); a read without the key field cannot close an `Unknown` intent.
+
+### 17.6 Out of scope
+
+Deleted-row reads; any write-path or index change; trusted service identity (MOD-0033-FU02); background reconciliation
+sweeper; changes to SoD, actor binding or permissions.
+
+### 17.7 Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict
+
+Source: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-MOD0023-01.md` (platform code owner,
+measured at origin/main @05f311784, read-only, no tests run — producer's statement). Decisions: D25 in
+`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`.
+
+1. **Delivery (D25/1):** §17 is the specification for the **MOD-0023 owner's WP** (policy + guard, additive read fields,
+   fingerprint fix + race tests). The owner writes and merges the code. The §17 rule "no write-path change" (D22/2) does
+   not apply to that WP: the fingerprint fix is a write-path change made under the owner's own approval. Treasury slices
+   that use MOD-0023 (MOD-0126/0119 DL-2, MOD-0120/0124 DL-3) are not accepted before this WP is on main.
+2. **Retention (17.3/1, widened):** the policy covers `WorkflowInstance`, **`ApprovalTask`** and `WorkflowTransitionLog`:
+   never deleted, never expired; a change needs an owner decision and prior notice to consumers (Treasury). AC-W1 guards
+   all three.
+3. **Deleted flag (D25/2 — replaces 17.3/2):** `by-objects` and `history` return `isDeleted`; `by-objects` hides deleted rows
+   by default and returns them flagged with `includeDeleted=true`. Treasury Reconcile reads with `includeDeleted=true`; a
+   deleted row seen means no re-issue. New AC-W13: `includeDeleted` default unchanged for existing consumers; with
+   `includeDeleted=true` a soft-deleted row (test fixture) is returned with `isDeleted=true`.
+4. **Read fields (17.3/3, producer's list):** `by-objects` → `idempotencyKey`, `isDeleted`; `history` → `approvalTaskId`,
+   `idempotencyKey`, `isDeleted` (`action` already present). `instances/{id}` + `idempotencyKey` was not in the producer's
+   list — optional; Treasury does not depend on it (reads use `by-objects` and `history`).
+5. **Corrections to the 17.3/4 table (CT's earlier reading was wrong):**
+   - *Same key + different facts on a **whole** start:* today **200 + existing instance, facts not compared**
+     (`StartWorkflowInstanceHandler.cs:385-391`, producer). The `:419-438` comparison applies only to an **incomplete**
+     start. Target after the owner's fix: 409 `WORKFLOW_INSTANCE_START_CONFLICT`, plus an `idempotentReplay` flag on
+     replays. AC-W11 fails on today's code and passes only after the fix.
+   - *Concurrent identical starts:* loser gets the winner's 200, or a retryable **503 `WORKFLOW_TRANSITION_CONFLICT`** if the
+     winner is not whole yet (existing test `Parallel_submits_of_one_key_write_one_task_and_answer_200_or_a_retryable_503`).
+   - *Concurrent identical transitions:* the loser usually gets **409 `WORKFLOW_TRANSITION_CONFLICT`** (not 200); without a
+     transaction: 200 replay / 409 / 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`. Sequential replay: 200 + `isIdempotent=true`
+     (`WorkflowTaskTransitionSupport.cs:1054-1084`). AC-W6/W7 are restated: one transition row; every final answer is
+     either 200 (same transition) or 409 `WORKFLOW_TRANSITION_CONFLICT` / 503, and a replay of the same key after the race
+     returns 200 `isIdempotent=true`.
+   - *Same key + different body on a transition (D25/3):* today only the actor is compared (403); target 409. New AC-W14
+     (sequential and concurrent).
+6. **Consumer rule (CT, applying D21/7):** for Treasury, 409 `WORKFLOW_TRANSITION_CONFLICT` and 503
+   `WORKFLOW_TRANSACTION_UNAVAILABLE` / `WORKFLOW_TRANSITION_CONFLICT` are **never a business refusal** → intent `Unknown`,
+   replay the same key or read. 409 `WORKFLOW_TASK_INVALID_STATE` (task decided by another decision, AC-W8) stays a definite
+   refusal of the loser's own intent. Never reuse a key for a different intent (producer's warning; Treasury keys are
+   deterministic per intent).
+
+TRM-15 closure now needs AC-W1…W14 passed in the MOD-0023 owner's WP, the Platform build green and consumer evidence.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Delivery |
+| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Delivery |
+
+Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
+durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1). Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3
+(tüketici sahiplerinin kanıtıyla), AC-W4, AC-W13. **DL-2:** AC-W5…AC-W12, AC-W14 (fingerprint düzeltmesi bir yazma yolu
+değişikliğidir ve yalnız bu dilimde, sahibin onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve**
+DL-2 main'e girmeden kabul edilmez.

@@ -37,6 +37,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// <para>Production repository over a test-owned replica set; the shared database is never touched.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorAuthSyncMarkMongoTests
 {
     // ── item 14: the mark's own branches ─────────────────────────────────────────────────────────────────

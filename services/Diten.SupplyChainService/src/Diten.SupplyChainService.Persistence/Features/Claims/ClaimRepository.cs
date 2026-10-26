@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.Json;
 using Diten.SupplyChainService.Domain.Features.Claims;
 using MongoDB.Bson;
@@ -133,7 +134,7 @@ public sealed class ClaimRepository(IMongoDatabase database, IClaimCommitProbe p
                     var pending = Scope(scope); pending.Add("_id", Guid.NewGuid().ToString()); pending.Add("ClaimId", claim.Id.ToString());
                     pending.Add("EventId", eventId.ToString()); pending.Add("Status", "Pending"); pending.Add("Envelope", BsonDocument.Parse(JsonSerializer.Serialize(envelope)));
                     await database.GetCollection<BsonDocument>("claims_outbox").InsertOneAsync(session, pending, cancellationToken: ct); await probe.AtAsync("outbox", ct);
-                    await probe.AtAsync("beforeCommit", ct); commitAttempted = true;
+                    await CentralAuditTransaction.EnlistAsync(session, claim.Id, ct); await probe.AtAsync("beforeCommit", ct); commitAttempted = true;
                     for (var commit = 0; ; commit++)
                     {
                         try { await session.CommitTransactionAsync(ct); break; }

@@ -9,6 +9,15 @@ public enum VerifiedMarketOperationalTargetDisposition
     ManualReconciliationRequired
 }
 
+/// <summary>
+/// WP-PLT-MARKET-REFTENANT-01 (MOD-0048-FU01 amendment 2026-10-15, BL-645) — the reference tenant this isolated mode was
+/// composed with: the RESOLVED <c>BusinessReferenceData:Provider:ReferenceTenantId</c> (the same source as the GSKU path),
+/// <see cref="Guid.Empty"/> when it does not resolve. Whether that tenant is ALLOWED (not the platform system tenant, not the
+/// GSKU consumer, process value equal to configuration) is decided once, by the eligibility; the audit adapter, the preflight
+/// and the event publisher only check that what they are given belongs to this tenant.
+/// </summary>
+public sealed record VerifiedMarketOperationalReferenceTenant(Guid TenantId);
+
 public sealed record VerifiedMarketOperationalTargetPreflightResult(
     VerifiedMarketOperationalTargetDisposition Disposition,
     string ReasonCode);

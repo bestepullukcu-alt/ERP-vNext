@@ -12,6 +12,8 @@
     const { t, esc, qty, date } = ui;
     const tableEl = document.querySelector('.datatables-quarantine-holds');
     let list = null;
+    // WP-MVP1-FU-CLEAN1 (FU-0175-UI-MANUALHOLD-01): "Stoğu karantinaya al" reloads the list after a hold (manual-hold.js)
+    window.QuarantineQueue = { reload: () => list?.dt?.ajax?.reload(null, false) };
 
     const filterFields = [
         { id: 'filterWarehouse', key: 'warehouseId', kind: 'single' },
@@ -91,7 +93,12 @@
             ajax: { url: '/Quarantine/list/holds', type: 'GET', error: onListError },
             onResponse,
             actions: { onRowAction: rowActionHandlers },
-            toolbar: { addNewText: '', colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9] },
+            // FU-0175-UI-MANUALHOLD-01: the button only with quarantine.holds.create (QUARANTINELOT) AND the modal the view drew for that key
+            toolbar: {
+                addNewText: ui.can('QUARANTINELOT') && ui.byId('qr-manual-modal') ? t('Quarantine.ManualHold.Action') : '',
+                onAddNew: () => window.QuarantineManualHold?.open(),
+                colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9]
+            },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadWarehouses },
             savedView: {
                 moduleKey: 'Quarantine',

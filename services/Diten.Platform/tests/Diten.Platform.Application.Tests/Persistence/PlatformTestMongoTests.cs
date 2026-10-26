@@ -9,6 +9,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// (main's Q131a check, PlatformMongoTestConnectionTests holds its details), else a mongod this process starts from
 /// DITEN_TEST_MONGOD (Auth's rule, BL-570), else red by name — never 27017. And the live answer of this run.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PlatformTestMongoTests
 {
     private const string Installed = "/usr/test/bin/mongod";

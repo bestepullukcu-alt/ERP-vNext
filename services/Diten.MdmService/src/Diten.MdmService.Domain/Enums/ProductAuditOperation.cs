@@ -100,7 +100,11 @@ public enum ProductAuditOperation
     LskuRetirementManualReconciliationRequired = 85,
     // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves so a resubmit
     // is a new operation.
-    LskuIdentitySubmitAbandoned = 86
+    LskuIdentitySubmitAbandoned = 86,
+
+    // MOD-0290-FU05 slice 2 (CT decision T-2, 2026-10-15): an approved Global Product's brand changed by its own audited
+    // command (no approval flow — owner Karar a). 120: after the Finished Good (87–99) and Item (100–119) ranges.
+    GlobalProductBrandChanged = 120
 
     // CT decision 3 (2026-10-07, MOD-0290-FU04 S1): 87–99 stay reserved for the Finished Good lifecycle (unused);
     // 100–119 are the Item's (MOD-0290-FU04). S1 needs none — its commands audit through path b (AuditOperation); the

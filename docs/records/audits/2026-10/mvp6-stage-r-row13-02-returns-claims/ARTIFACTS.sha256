@@ -1,0 +1,7 @@
+# mvp6-stage-r-row13-02-returns-claims — sealed 2026-10-12T19:47:29Z
+# lane: slot 4, port 34994, rs rsq202s4 (restarted on a fresh dbpath after a disk-full FTDC termination)
+# new test infrastructure: Common/ReturnsClaimsHttpHost.cs, Common/ReturnsClaimsObservabilityTests.cs
+0ee663936472e6ed52ce17f198645a86547e2d42276a2f9e9afed0f129553c3f  REPORT.md
+60777c8668c0f70bc3c62fd4dc9167b3b59e002ea1c05d048a310be3f5e57400  MOVED.tsv
+adc3a20f2898c44290de60fd93ce798f6cbfab4b1215a091dba86a9cb7bf1182  evidence/regression-returns-claims-common.log
+a758e472e40db138d89528e33bce6dcf6d6d88a055563c36b70f1f046a80b9b3  evidence/returns-claims-http.log

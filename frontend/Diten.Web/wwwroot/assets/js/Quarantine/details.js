@@ -46,7 +46,7 @@
                 <span class="timeline-point timeline-point-${HISTORY_DOT[h.action] || 'secondary'}"></span>
                 <div class="timeline-event pb-3">
                     <div class="timeline-header mb-1"><h6 class="mb-0">${esc(t('Quarantine.History.' + h.action) || h.action)}</h6><small class="text-muted">${esc(dateTime(h.atUtc))}</small></div>
-                    <div class="small text-muted">${esc(ui.person(h.by))}</div>
+                    <div class="small text-muted">${ui.personHtml(h.by)}</div>
                     ${h.reason ? `<div class="small mt-1">“${esc(h.reason)}”</div>` : ''}
                     ${h.noteChange ? `<div class="small mt-1">${esc(t('Quarantine.Details.History.NoteChange', h.noteChange.previousNoteLength, h.noteChange.noteLength, h.noteChange.previousAttachmentCount, h.noteChange.attachmentCount))}</div>` : ''}
                     <div class="d-flex flex-wrap gap-1">${signatureChip('Quarantine.Details.History.Signature', h.signatureId)}${signatureChip('Quarantine.Details.History.ApproverSignature', h.approverSignatureId)}</div>
@@ -66,7 +66,7 @@
             <td class="small">${esc(t('Quarantine.MovementType.' + m.movementType) || m.movementType)}</td>
             <td>${m.fromStockStatus || m.toStockStatus ? `${ui.stockBadge(m.fromStockStatus)} <i class="bx bx-right-arrow-alt text-muted"></i> ${ui.stockBadge(m.toStockStatus)}` : '—'}</td>
             <td class="text-end" dir="ltr">${esc(qty(m.quantity))}</td>
-            <td class="small">${esc(m.byUserName || '')}</td>
+            <td class="small">${esc(m.byUserName || t('Quarantine.Details.Moves.UnknownUser'))}</td>
         </tr>`).join('');
     };
 
@@ -89,8 +89,8 @@
         const wf = decision.workflow || {};
         const rows = [
             [t('Quarantine.Workflow.Decision'), `<span class="font-monospace">${esc(decision.decisionNumber)}</span> · ${esc(t('Quarantine.DecisionKind.' + decision.kind))}`],
-            [t('Quarantine.Workflow.Decider'), esc(ui.person(decision.decider))],
-            [t('Quarantine.Workflow.Approver'), esc(ui.person(wf.approver) || '—')],
+            [t('Quarantine.Workflow.Decider'), ui.personHtml(decision.decider)],
+            [t('Quarantine.Workflow.Approver'), wf.approver?.userId ? ui.personHtml(wf.approver) : '—'],
             [t('Quarantine.Workflow.Instance'), wf.instanceId ? `<span class="font-monospace small">${esc(String(wf.instanceId).slice(0, 8))}</span>` : '—']
         ];
         if (decision.deciderSignatureId) rows.push([t('Quarantine.Workflow.DeciderSignature'), signatureChip('Quarantine.Details.History.Signature', decision.deciderSignatureId)]);
@@ -141,7 +141,8 @@
         set('where', `${esc(h.warehouseLabel || '')}<small class="d-block text-muted">${esc(h.locationLabel || '')}</small>`);
         set('wait', `<span class="${h.late ? 'text-warning' : ''}">${esc(t('Quarantine.Common.Days', h.waitDays))}</span><small class="d-block text-muted">${esc(t('Quarantine.Common.Target', h.targetDays))}</small>`);
         set('source', `${esc(t('Quarantine.Source.' + h.source) || h.source)}<small class="d-block text-muted font-monospace">${esc(h.sourceDocument?.number || h.sourceDocument?.text || '')}</small>`);
-        set('createdBy', `${esc(ui.person(h.createdBy))}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
+        window.RecallBands?.holdSource(null, h); // WP-0177-R7c: "Kaynak: Geri çağırma RC-…" (link only with recall.cases.read)
+        set('createdBy', `${ui.personHtml(h.createdBy)}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
         set('coa', esc(h.lot?.coaReference || '—'));
         set('lotStatus', h.lot?.lotStatus ? `<span class="badge bg-label-secondary">${esc(t('Quarantine.LotStatus.' + h.lot.lotStatus) || h.lot.lotStatus)}</span>` : '—');
         set('note', h.analysisNote ? esc(h.analysisNote) : `<span class="text-muted">${esc(t('Quarantine.Details.Quality.NoNote'))}</span>`);
@@ -206,7 +207,7 @@
             if (!reply.ok) return failed(t('Quarantine.Workflow.Reapply'), reply);
             ui.toast(t('Quarantine.Workflow.Reapplied'), 'success');
             await load();
-        }, { type: 'warning', subtext: esc(t('Quarantine.Workflow.ReapplyText')), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
+        }, { type: 'warning', subtext: t('Quarantine.Workflow.ReapplyText'), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
     });
 
     ui.byId('qr-wf-withdraw')?.addEventListener('click', () => {
@@ -217,7 +218,7 @@
             await load();
         }, {
             type: 'warning',
-            subtext: esc(t('Quarantine.Workflow.WithdrawText')),
+            subtext: t('Quarantine.Workflow.WithdrawText'),
             confirmButtonText: t('Quarantine.Workflow.Withdraw'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
@@ -236,7 +237,7 @@
             await load();
         }, {
             type: 'info',
-            subtext: esc(t('Quarantine.Details.StartReviewText')),
+            subtext: t('Quarantine.Details.StartReviewText'),
             confirmButtonText: t('Quarantine.Details.StartReview'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,

@@ -106,7 +106,7 @@
   <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值提交过。请重新开始操作。</value></data>
   <data name="ErrReturnSourceChanged" xml:space="preserve"><value>自首次退货以来，该发运单已发生变化。请检查发运单；系统未自动调整任何内容。</value></data>
   <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>货运参考数据无效，请联系支持团队。</value></data>
-  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>源系统返回的发运数据无效，请联系支持人员。</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>源系统返回的发运数据无效，请联系支持团队。</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>货运参考数据不完整，请稍后重试同一请求。</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>发运单状态暂时不可用，请重试同一请求。</value></data>
   <data name="ErrDependencyUnavailable" xml:space="preserve"><value>货运参考数据暂时不可用，请重试同一请求。</value></data>

@@ -76,4 +76,5 @@
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>اسم العائلة طويل جداً. اختصره ثم حاول مرة أخرى.</value></data>
   <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>عنوان البريد الإلكتروني طويل جداً. اختصره ثم حاول مرة أخرى.</value></data>
   <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>توجد مشكلة أخرى؛ راجع ما أدخلته ثم حاول مرة أخرى.</value></data>
+  <data name="ErrorUserDeactivateLastSteward" xml:space="preserve"><value>تعطيل هذا الحساب لن يترك أي حساب نشط آخر يمكنه إضافة المستخدمين. امنح هذا الحق لمستخدم آخر أولاً.</value></data>
 </root>

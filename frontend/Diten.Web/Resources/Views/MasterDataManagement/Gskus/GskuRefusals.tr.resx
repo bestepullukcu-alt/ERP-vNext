@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>Bu kaydın durumu stok davranışı değişikliğine izin vermiyor.</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Onaylı kayıttaki dolu bir değer burada değiştirilemez — yalnız düzeltmeyle değişir. Listelere yalnız yeni satır eklenir.</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Bu GTIN'i başka bir Bitmiş Ürün kullanıyor.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>Gönderdiğiniz kaydı sizden başka onaylayabilecek kimse yok. Onaycıları düzenlemesi için yöneticinize başvurun; ardından kaydı yeniden gönderebilirsiniz.</value></data>
 </root>

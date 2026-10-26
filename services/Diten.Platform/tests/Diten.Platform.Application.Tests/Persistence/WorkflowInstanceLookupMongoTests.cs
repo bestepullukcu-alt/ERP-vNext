@@ -14,6 +14,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 // test substitutes IWorkflowInstanceRepository with a fake — the Mongo query was never issued. Even the
 // in-process chain test that used the real gate handler and the real MOD-0023 handler missed it, because
 // the repository at the end of that chain was still a fake. Only a real driver + real server reproduces it.
+[Trait("Category", "Mongo")]
 public sealed class WorkflowInstanceLookupMongoTests : IAsyncLifetime
 {
     private const string ObjectType = "task";

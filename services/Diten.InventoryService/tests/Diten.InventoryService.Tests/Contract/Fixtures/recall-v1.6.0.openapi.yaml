@@ -1,0 +1,1764 @@
+openapi: 3.1.0
+info:
+  title: RECALL-BUNDLE
+  description: >
+    MOD-0177 Recall Readiness — full forward / backward trace, recall cases with a sealed scope, automatic quarantine requests, the exit
+    block, customer / shipment follow-up, effectiveness check, read-only drills and the evidence pack, on top of the MOD-0173 ledger, the
+    MOD-0174 lots / genealogy and the MOD-0175 quarantine (Blueprint W-4; report :189 RecallCase · RecallDrillPlan · TraceForwardQuery ·
+    TraceBackwardQuery · EvidencePack). Frozen from the CT-accepted proposal drafts/recall-bundle-v1-proposal.md (WP-0177-P0 CT-ACCEPTED
+    49aca0bbd) by WP-0177-R1, with the CT decisions of pack §19.7. MOD-0177 keeps no balance, creates no lot or genealogy link, makes no
+    quarantine decision and writes no shipment, return or movement; it defines no stock status and no movement type. Tenant from the token,
+    company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN, another tenant →
+    404 — except getLotRecallStatus, which answers for the lot in every company of the tenant (CT-R7). Success bodies are the schemas below
+    (unwrapped); failures are the INVENTORY Error schema.
+  version: 1.6.0
+  x-status: FROZEN
+  x-owner: MOD-0177
+  x-owner-service: Diten.InventoryService (MOD-0177, in-process with MOD-0173 / MOD-0174 / MOD-0175 / MOD-0176)
+  x-changelog:
+    - "1.6.0 — WP-0177-R7a (additive only; pack §8.6, §11.1 Vaka Detayı; CT decision A 2026-10-15 — D-26, D-27): getCaseCustomers and getCaseEffectiveness are served. getCaseCustomers: one row per customer of the case's effectively included Shipment items (customerRef = shipToReference read at trace time, else DOC:<document>, D-18), each shipment with its ledger movements (net of reversals, the caller's company only) and — for MOD-0183 documents — the shipment re-read live (KR-E degrade NotApplicable / Ok / Forbidden / NotFound / Unavailable; delivered = actualDeliverAt, D-19); the current notification, the notification history and the effective consumption declarations of the customer. New schema CaseCustomerShipment (the shape of CustomerRow.shipments[]); CustomerRow gains the optional notifications and consumptions. getCaseEffectiveness: the LIVE result (the same function prepareCaseAction / completeEffectivenessCheck use) until the check is completed, then the stored result; per (customer, SKU, base unit), totals per SKU + base unit — never summed across units (D-20). Effectiveness gains the optional source (Live | Stored)."
+    - "1.5.0 — WP-0177-R6 (additive only; pack §8.9, §8.10, §11.1; CT decision A 2026-10-15): getDashboard is served — DashboardView gains its members (asOfUtc, legalEntityId, openCases {total, byClass}, lastDrill, drillChart, lotCoverage, traceGaps, returnedOpenCases, frequencyWarning, openCaseRows), all optional, the 1.4.0 required list unchanged. listCases is the UNION read of Vakalar: a drill run is NOT a case (pack §4.11 / §4.12 give it no class or level, CaseRef keeps its required list), so drill runs travel in the new optional CasePage.drillRows (schema DrillCaseRow: runId, number, type Drill, status DrillRunStatus, lot, item, startedAtUtc, endedAtUtc, owner, durationMinutes, targetHours, passed); items still carries ONLY real cases. ONE page is cut on the server over both kinds (sort -openedAtUtc: case openedAtUtc / drill startedAtUtc descending, then number descending, cases before drills on a tie; sort number: number ascending), every row of the page carries sortAt (its sort time) and position (0-based place in the merged page), total counts both kinds. Filters: type Real → cases only, Drill → drills only, absent → both; status filters cases and the new repeatable drillStatus filters drills — a status of only one kind excludes the other kind; class excludes the drill rows (a drill has no class); skuId, openedFrom (drill startedAtUtc) and q (number / lot number) apply to both. CasePage gains the optional drillStatusCounts. Mockup difference D-25 (pack §21.3): the drill row carries no class or level (mockup cls:1, lvl)."
+    - "1.4.0 — WP-0177-R5 (additive only; pack §4.11, §4.12, §8.8 dr-v1, §8.10 KR-G, CT-R17): the drills are served — listDrillPlans, createDrillPlan, updateDrillPlan (DP-NN per company, If-Match), listDrillRuns, startDrill, getDrillRun, completeDrillStep, prepareDrillResult, signDrillResult, cancelDrill. startDrill: StartedAtUtc and EndedAtUtc are SERVER times (no body takes a time member), TargetHours = the settings at start, Auto = a server random pick (audited) from the plan's candidates (finished-good lots with GOODS_ISSUE_SALES in the last 365 days / raw-material lots with genealogy children), Manual = the user's lot, one Running run per company (409 RECALL_DRILL_ALREADY_RUNNING). Steps strictly Trace → Scope → CustomerList (409 RECALL_DRILL_STEP_ORDER): Trace runs the R2 engine both ways at the company's full depth and stores a trace snapshot of purpose Drill; Scope writes no case scope; CustomerList stops the timer (DurationMinutes = ceil((End − Start) / 1 min), Passed = Duration ≤ TargetHours × 60). The result is prepared (resultNote 10–2000, 15 minutes) and signed as recall.drill.result on recall.drill-run (dr-v1, computed from the stored run; getSignableSubject now answers it, tenant + company bound); policy not required → completes unsigned. cancelDrill keeps the run as Cancelled (CT-R17); a Completed / Cancelled run never changes. A drill writes only the drill records, a Drill snapshot, the counter and audit rows. New code RECALL_DRILL_NOT_FOUND (404, registry) on the drill operations with a plan / run id. Reconciliations (R5 evidence §2): R5-1 prepareDrillResult reuses PendingActionResponse — caseId carries the run id, action SignDrillResult (the R4-1 pattern); R5-2 DrillRunPage gains the optional member frequencyWarning (DrillFrequencyWarning: days since the last Completed run > drillFrequencyWarningDays, or no completed run); R5-3 cancelDrill takes a mandatory reason (10–1000): x-error-codes gains INVALID_REQUEST, REASON_REQUIRED and the 400 response; R5-4 completeDrillStep gains INVALID_REQUEST + the 400 response (key / If-Match missing) and UNKNOWN_LOT (the drill lot vanished before the trace); R5-5 signDrillResult gains REASON_REQUIRED and RECALL_INVALID_TRANSITION (a closed run / steps not done). O-R5-2 (CT decision 2026-10-14): getSignableSubject gains a description and x-permission-by-subject-type — recall.drill-run is also readable with recall.drills.read (recall.case / recall.settings-change still recall.cases.read only); x-permission unchanged."
+    - "1.3.0 — WP-0177-R4 (additive only; pack §8.8, CT-R1 / CT-R16, CT decision F3-A): getSignableSubject (the MOD-0022 subject provider — recall.case rc-v1, recall.settings-change rs-v1; recall.drill-run dr-v1 answers 404 until R5) and prepareSettingsChange (the proposal kept 15 minutes as the subject recall.settings-change) are served; getSignableSubject x-error-codes gains RECALL_SUBJECT_NOT_FOUND (404, new in the registry). Signatures bind with getSignature + the provider's own hash (not verifySignature): same tenant, signer = actor, action, meaning = the effective policy's, current subject hash, not invalidated, signed after the preparation, never used before; updateSettings accepts a signature only for the caller's prepared change of the same proposal on the same version (else 409 RECALL_SIGNATURE_MISMATCH). Reconciliations R4-1 the prepareSettingsChange answer reuses PendingActionResponse — caseId carries the change id, action UpdateSettings; R4-2 the effectiveness.* fields of rc-v1 are effectiveness.targetPercent + effectiveness.{skuId}.{baseUomId}.{shipped|returned|consumed|open|percent|met}."
+    - "1.2.0 — WP-0177-R3 (additive only; pack §8.3 step 5, §8.4, §8.5, §8.6; CT-R2 / CT-R4 / CT-R5 / CT-R7 / CT-R10 / CT-R11 / CT-R12): getCaseStock, requestQuarantine, retryQuarantineRequest, getCaseReturns, linkReturn and reviseScope are served. KR-B: approveScope writes, in its transaction, the lot blocks (root + included forward lots) and one QuarantineRequest per Stock item of the approved revision (Pending, or NotNeeded with notNeededReason AlreadyQuarantined / AlreadyBlocked / LotBlocked / LotExpired / Excluded); after the commit each Pending request is ONE MOD-0175 quarantineStock call (mode Manual, one bucket, key recall:{caseId}:r{revision}:{nodeKey}, the approver as actor — QUARANTINE 1.3.0 origin MOD-0177 / RECALL_CASE); 409 QUARANTINE_STOCK_RESERVED → BlockedByReservation with the reservation lines (never cancelled), 409 QUARANTINE_NOTHING_AVAILABLE → NothingAvailable, other refusals → Failed; a hosted sweeper retries Pending older than 2 minutes every 60 s; retryQuarantineRequest moves to the key :a{n}. Hold status is read from MOD-0175 at display time. KR-C: the exit block is INVENTORY 1.4.0 LOT_UNDER_RECALL (GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER refused; by movement type only; tenant-wide by lot id; typed lots by number + SKU; checked before the FEFO hook, re-checked in the posting transaction); each refusal is a timeline row ExitRefused. KR-H: returns = CUSTOMER_RETURNs of the lots the case blocks; linkReturn needs a return posted after the approval into a held status (422 RECALL_RETURN_NOT_QUARANTINED otherwise), one case per return (409 RECALL_RETURN_ALREADY_LINKED), a customer of the approved scope; returned joins the effectiveness. CT-R5: reviseScope opens revision r+1 from out-of-scope findings of the live trace (the approved items copied unchanged, only the delta marked), CaseDetail.pendingRevision; the delta is approved by prepareCaseAction(ApproveScope) + approveScope on the Active case (same signature rule, the reviser cannot approve); the approval adds the delta lots' blocks and requests, never removes a block. New optional member CaseDetail.pendingRevision (PendingRevision); CaseEventKind + QuarantineRequested, QuarantineFailed, QuarantineRetried, ExitRefused, ReturnLinked, ScopeRevised; x-error-codes appended on retryQuarantineRequest (RECALL_CONFLICT) and reviseScope (RECALL_SCOPE_ITEM_NOT_MARKABLE, RECALL_SCOPE_EXCLUSION_REASON_REQUIRED, UNKNOWN_LOT). Reconciliations (R3 evidence §2): R3-1 a refusal in another company of the tenant carries recallCaseNumber but no recallCaseId (CT-R7, the getLotRecallStatus rule); R3-2 a request whose stock line names no location is Failed (INVALID_REQUEST) — 0175 needs a bucket; R3-3 the extra members of QuarantineRequest / StockLine / ReturnLink / ReturnCandidate (lot, warehouse, quantities, reservations, live holds) ride additionalProperties: true; R3-4 the segregation 'request held' rule (RECALL_SEGREGATION_NOT_HELD) stays open (R7)."
+    - "1.1.0 — WP-0177-R2 (additive only; pack §8.2 / §8.3 / §8.6): runTrace, exportTrace and getCaseScopeDiff are served. The trace seal is canonical form rt-v1 (SHA-256 over the rule-10 ordered nodes and edges; shipment reads, customerRef derived from them and timing are excluded, so an MVP-6 outage never changes a seal). submitScope freezes a trace snapshot (Purpose Submitted, insert-only); prepareCaseAction(ApproveScope) / approveScope re-trace live and answer 409 RECALL_SCOPE_CHANGED with details {submittedSha256, currentSha256, added, removed} (node keys) when the seal differs; approveScope freezes the Approved snapshot and the scope reads show it from then on. New optional members: CaseDetail.submittedSnapshot / approvedSnapshot, ScopeView.snapshot (SnapshotRef), ScopeItem.origin (Manual | Trace) / new; CaseEventKind + TraceRun, OutOfScopeFinding. openCase fills the scope from the trace (root + forward Lot / Stock / Shipment nodes; Manual items are never touched by a re-trace). Reconciliations (R2 evidence §2): R2-1 WAREHOUSE_TRANSFER is internal to the company and is not an outbound node; R2-2 rule-10 orders by warehouse id (not code — no MDM read in the hash path); R2-3 the customer is carried on the Shipment node (customerRef), no separate Customer node is emitted; R2-4 reviseScope (CT-R5) moves to R3 with the lot blocks it changes; R2-5 holdId on Stock nodes joins with the R3 quarantine requests; R2-6 an unknown lot-control flag of a SKU is treated as lot-controlled (UNRESOLVED_TYPED_LOT stays visible); R2-7 OTHER_COMPANY_ACTIVITY carries a count only (CT-R8)."
+    - "1.0.0 — frozen by WP-0177-R1 from the accepted proposal (2026-10-13) + pack §19.7: CT-R1 four-eyes both ways adds 409 RECALL_SOD_VIOLATION to prepareCaseAction / approveScope (the scope submitter cannot approve) and to prepareCaseAction / closeCase (the effectiveness completer cannot close); 409 RECALL_SCOPE_CHANGED on prepareCaseAction / approveScope (the scope is re-sealed at approval and compared with the submitted seal); CT-R5 reviseScope is a revision r+1 with its own signed approval of the delta; CT-R6 excluding a derived item excludes its subtree (reason ≥ 10); CT-R7 getLotRecallStatus is tenant-wide; CT-R16 recall.settings.update is signable with defaultRequired=false (reason mandatory); CT-R17 a cancelled drill run is kept (Cancelled); CT-R18 serial-level recall is out of v1 (scope and block are lot-level). Reconciliations of the freeze (R1 evidence §2): R-1 the envelope is the measured INVENTORY / FEFO wire (unwrapped success body, Error on failure); R-2 R1 enters the scope by hand — new operation addScopeItems (POST /cases/{caseId}/scope/items; Lot / Stock / Shipment items, node keys computed by the server) and new code 409 RECALL_SCOPE_ITEM_EXISTS; R2 fills the same items from the trace; R-3 ScopeView is {caseId, revision, editable, excludedCount, sha256, items, version} — the scope seal is the SHA-256 of the canonical scope (form rs-scope-v1); the trace snapshot (TraceResult) joins as an optional member in R2 (additive); R-4 CaseDetail carries submittedScope / approvedScope as ScopeSeal {revision, sha256, canonicalVersion, itemCount, computedAtUtc} instead of SnapshotRef; R-5 a case id that is not found answers 404 RECALL_CASE_NOT_FOUND (owned code, FEFO pattern); R-6 prepareCaseAction answers version (the If-Match of the decision) and is gated per action (approve / complete / close key) inside the handler, the route carries recall.cases.read; R-7 quantities and percents are JSON numbers, effectivenessTargetPercent is {\"1\",\"2\",\"3\"} → number; R-8 CaseRef.openedAtUtc (date-time) replaces openedOn; listCases sort is -openedAtUtc | number and the Drill filter answers an empty page until R5; R-9 confirmSegregation takes nodeKey in R1 (requestId with the R3 quarantine requests; RECALL_SEGREGATION_NOT_HELD from R3); R-10 declareConsumption requires evidence (1–1000); R-11 the audit actions of R1 are pack §8.12 plus recall.scope.items-added and recall.case.action-prepared (they change the scope / the case head). R-12 CaseRef / CaseDetail / ScopeItem carry item {itemId, skuId, skuLevel} (the FEFO R-2 shape) instead of product — the service guard forbids a Model-B Product type."
+  x-decisions: [KR-A, KR-B, KR-C, KR-D, KR-E, KR-F, KR-G, KR-H, CT-R1, CT-R5, CT-R6, CT-R7, CT-R16, CT-R17, CT-R18]
+  x-implemented-by-slice:
+    R7a: [getCaseCustomers, getCaseEffectiveness]
+    R6: [getDashboard]
+    R5: [listDrillPlans, createDrillPlan, updateDrillPlan, listDrillRuns, startDrill, getDrillRun, completeDrillStep, prepareDrillResult, signDrillResult, cancelDrill]
+    R4: [prepareSettingsChange, getSignableSubject]
+    R3: [getCaseStock, requestQuarantine, retryQuarantineRequest, getCaseReturns, linkReturn, reviseScope]
+    R2: [runTrace, exportTrace, getCaseScopeDiff]
+    R1: [getSettings, getSettingsHistory, updateSettings, listCases, getCase, getCaseScope, getCaseTimeline, getLotRecallStatus, openCase, addScopeItems, markScopeItems, submitScope, returnScope, prepareCaseAction, approveScope, cancelCase, confirmSegregation, recordNotification, declareConsumption, startEffectivenessCheck, completeEffectivenessCheck, closeCase]
+    not-yet-implemented: [previewEvidence, listEvidenceExports, getEvidenceFile, createEvidenceExport]
+servers: [{ url: /api/recall }]
+security: [{ bearerAuth: [] }]
+x-rules:
+  - "Every write takes the Idempotency-Key header equal to body idempotencyKey (8–100). Same key + same body → the first result (200); same key + different body → 400 IDEMPOTENCY_KEY_REUSED."
+  - "Mutable records (case, settings, drill plan, drill run) need If-Match W/\"<version>\" or \"<version>\" where stated; stale → 409 RECALL_CONFLICT. updateSettings takes If-Match \"0\" before the company's first save. Append-only records (notification, consumption, segregation, return link) take no If-Match."
+  - "This contract moves no stock, writes no lot, genealogy link, hold decision, shipment, return or signature. Quarantine requests go through MOD-0175's own command in-process (pack §8.4); the exit block runs inside INVENTORY postMovement (422 LOT_UNDER_RECALL, INVENTORY 1.4.0 — R3)."
+  - "Every command writes an audit row (inventory_audit, pack §8.12) in the transaction of its change; case events are insert-only. Signatures are MOD-0022 references only (signatureId) — this module keeps no signature record."
+  - "Scope approval, effectiveness completion and closure need a prepared decision of the same user (15 minutes) and, when the MOD-0022 effective policy of the action says required, a verified signatureId (default: required). CT-R1: the scope submitter cannot approve; the effectiveness completer cannot close."
+  - "The scope is sealed at submit (SHA-256 of its canonical form) and re-sealed at approval; a different seal refuses the approval (409 RECALL_SCOPE_CHANGED). The approved scope never changes afterwards; additions are a revision (CT-R5)."
+  - "Quantities of different SKUs or base units are never summed."
+  - "No new stock status and no new movement type is defined."
+x-permissions:
+  owned: [recall.dashboard.read, recall.trace.run, recall.trace.export, recall.cases.read, recall.cases.create, recall.cases.update, recall.cases.approve, recall.cases.cancel, recall.cases.close, recall.effectiveness.complete, recall.quarantine-requests.create, recall.segregations.confirm, recall.notifications.create, recall.consumptions.create, recall.returns.link, recall.drills.read, recall.drills.manage, recall.drills.run, recall.evidence.export, recall.settings.read, recall.settings.manage, recall.lots.status.read]
+  api-only: [recall.lots.status.read]
+  external-used-not-declared: [esign.signatures.sign, trace.lots.read, quarantine.holds.read, inventory.movements.create]
+x-signable-actions:
+  module: recall
+  defaultMeaningCode: APPROVE
+  defaultVisualMode: savedAccepted
+  actions:
+    - { actionCode: recall.scope.approve, defaultRequired: true, subject: recall.case }
+    - { actionCode: recall.effectiveness.complete, defaultRequired: true, subject: recall.case }
+    - { actionCode: recall.case.close, defaultRequired: true, subject: recall.case }
+    - { actionCode: recall.drill.result, defaultRequired: true, subject: recall.drill-run }
+    - { actionCode: recall.settings.update, defaultRequired: false, subject: recall.settings-change }
+  subjects:
+    recall.case: { fieldListVersion: rc-v1, fields: [number, status, class, level, legalEntityId, rootLotId, rootLotNumber, skuId, direction, reason, reasonReference, scopeRevision, submittedSnapshotSha256, approvedSnapshotSha256, excludedCount, includedStockCount, includedShipmentCount, pendingAction, pendingActionPayloadSha256, "effectiveness.*", closureSummary, openQuantityAcceptance, version] }
+    recall.drill-run: { fieldListVersion: dr-v1, fields: [number, planCode, lotId, lotNumber, startedAtUtc, endedAtUtc, durationMinutes, targetHours, passed, gapCount, snapshotSha256, resultNote, version] }
+    recall.settings-change: { fieldListVersion: rs-v1, fields: [legalEntityId, settingsVersion, "changes.*", reason] }
+  note: "Registration (POST /api/internal/esign/actions/register) and the golden vectors of the canonical subjects come with R4; until then the production gate is fail-closed (no approval, completion or closure passes)."
+paths:
+  /dashboard:
+    get:
+      operationId: getDashboard
+      summary: "Hazırlık Paneli (R6) — open cases by class, last drill vs target, 90-day lot coverage and gaps, returned quantity of open cases, last 12 drills, frequency warning (pack §8.9)."
+      x-permission: recall.dashboard.read
+      x-error-codes: [CROSS_LE_FORBIDDEN]
+      responses:
+        '200': { description: Panel, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardView' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /trace:
+    get:
+      operationId: runTrace
+      summary: "İzleme (R2) — full genealogy backward / forward (KR-D), stock, outbound movements, shipments read at read time (KR-E), gaps as rows, 'Takip dışı' inputs. Writes nothing but the audit row recall.trace.run."
+      x-permission: recall.trace.run
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOT, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: rootLotId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: direction, in: query, schema: { $ref: '#/components/schemas/TraceDirection' } }
+        - { name: asOfUtc, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200': { description: Trace, content: { application/json: { schema: { $ref: '#/components/schemas/TraceResult' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /trace/export:
+    get:
+      operationId: exportTrace
+      summary: "Trace CSV (R2) — UTF-8 BOM, ';' separated; not logged as evidence."
+      x-permission: recall.trace.export
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOT, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: rootLotId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: direction, in: query, schema: { $ref: '#/components/schemas/TraceDirection' } }
+        - { name: format, in: query, schema: { type: string, enum: [csv] } }
+      responses:
+        '200': { description: CSV, content: { text/csv: { schema: { type: string } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases:
+    get:
+      operationId: listCases
+      summary: "Vakalar — filters type (Real | Drill; Drill rows from R5), status (repeatable), class, skuId, openedFrom, q (number / root lot number); sort -openedAtUtc (default) | number; status chip counts."
+      description: "1.5.0 (R6, CT decision A) — the union read: real cases in items (CaseRef), drill runs in drillRows (DrillCaseRow); one page cut on the server over both kinds, every row with sortAt + position. type Real / Drill / absent; status (CaseStatus) filters cases, drillStatus (DrillRunStatus) filters drills, a status of only one kind excludes the other kind; class excludes drill rows; skuId, openedFrom, q apply to both."
+      x-permission: recall.cases.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [Real, Drill] } }
+        - { name: status, in: query, schema: { type: array, items: { $ref: '#/components/schemas/CaseStatus' } }, style: form, explode: true }
+        - { name: class, in: query, schema: { type: integer, minimum: 1, maximum: 3 } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: openedFrom, in: query, schema: { type: string, format: date } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: sort, in: query, schema: { type: string, enum: [-openedAtUtc, number], default: -openedAtUtc } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: drillStatus, in: query, schema: { type: array, items: { $ref: '#/components/schemas/DrillRunStatus' } }, style: form, explode: true }
+      responses:
+        '200': { description: Cases, content: { application/json: { schema: { $ref: '#/components/schemas/CasePage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: openCase
+      summary: "Vaka aç — R1 by hand from a root lot (from a trace in R2). One non-terminal case per company + root lot (409 RECALL_CASE_ALREADY_OPEN, details.caseId). Creates the root Lot item of the scope."
+      x-permission: recall.cases.create
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOT, RECALL_CASE_ALREADY_OPEN, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, rootLotId, direction, class, level, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                rootLotId: { type: string, format: uuid }
+                direction: { $ref: '#/components/schemas/TraceDirection' }
+                class: { type: integer, minimum: 1, maximum: 3 }
+                level: { $ref: '#/components/schemas/RecallLevel' }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+                reasonReference: { type: string, maxLength: 100 }
+      responses:
+        '201': { description: Opened (Draft), headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '200': { description: Replay of the same key + body, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}:
+    get:
+      operationId: getCase
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Case, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/scope:
+    get:
+      operationId: getCaseScope
+      summary: "Kapsam — the items with their own and their effective inclusion (CT-R6) and the current canonical SHA-256."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Scope, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ScopeView' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/scope/diff:
+    get:
+      operationId: getCaseScopeDiff
+      summary: "Live re-trace vs the approved scope (R2) — nodes found later are 'Kapsam dışı bulgu'; they change nothing by themselves."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Diff, content: { application/json: { schema: { $ref: '#/components/schemas/ScopeDiff' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/items:
+    post:
+      operationId: addScopeItems
+      summary: "R1 hand entry of scope items (Draft). Lot: a tenant lot under a Lot parent (default the root). Stock: warehouse + stockStatus + quantity + baseUomId under its lot's item. Shipment: sourceDocumentId + customerRef + quantity + baseUomId under its lot's item. Node keys are computed; an existing key → 409 RECALL_SCOPE_ITEM_EXISTS."
+      x-permission: recall.cases.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, UNKNOWN_LOT, UNKNOWN_LOCATION, RECALL_INVALID_TRANSITION, RECALL_SCOPE_ITEM_EXISTS, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, items]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                items: { type: array, minItems: 1, maxItems: 200, items: { $ref: '#/components/schemas/ScopeItemInput' } }
+      responses:
+        '200': { description: Scope, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ScopeView' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/marks:
+    post:
+      operationId: markScopeItems
+      summary: "Dahil / Hariç (Draft). Exclusion needs a reason ≥ 10; the root cannot be marked; excluding an item excludes its subtree (CT-R6)."
+      x-permission: recall.cases.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_SCOPE_EXCLUSION_REASON_REQUIRED, RECALL_SCOPE_ITEM_NOT_MARKABLE, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, marks]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                marks:
+                  type: array
+                  minItems: 1
+                  maxItems: 500
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [nodeKey, included]
+                    properties:
+                      nodeKey: { type: string }
+                      included: { type: boolean }
+                      exclusionReason: { type: string, maxLength: 1000 }
+      responses:
+        '200': { description: Scope, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ScopeView' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/submit:
+    post:
+      operationId: submitScope
+      summary: "Kapsam onayına gönder — Draft → PendingScopeApproval; the scope is sealed (SHA-256) and the submitter recorded (CT-R1)."
+      x-permission: recall.cases.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/NoteBody' } } } }
+      responses:
+        '200': { description: Submitted, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/return:
+    post:
+      operationId: returnScope
+      summary: "Geri gönder — PendingScopeApproval → Draft, reason ≥ 10; the seal and any prepared approval are dropped."
+      x-permission: recall.cases.approve
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReasonBody' } } } }
+      responses:
+        '200': { description: Returned, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/pending-action:
+    post:
+      operationId: prepareCaseAction
+      summary: "The decision the caller is about to sign (15 minutes): ApproveScope (note?), CompleteEffectiveness (note 10–1000), Close (summary 10–2000, openQuantityAcceptance 10–1000 when an open quantity remains). Refused like the decision itself (status, CT-R1, scope changed, acceptance). Gated by the decision's own key (approve / complete / close) — R-6."
+      x-permission: recall.cases.read
+      x-action-permissions: { ApproveScope: recall.cases.approve, CompleteEffectiveness: recall.effectiveness.complete, Close: recall.cases.close }
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_SOD_VIOLATION, RECALL_SCOPE_CHANGED, RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, action]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                action: { $ref: '#/components/schemas/PendingActionKind' }
+                note: { type: string, maxLength: 1000 }
+                summary: { type: string, minLength: 10, maxLength: 2000 }
+                openQuantityAcceptance: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '200': { description: Prepared, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/PendingActionResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/approve:
+    post:
+      operationId: approveScope
+      summary: "Kapsamı onayla — PendingScopeApproval → Active. Order: case → status → SoD (CT-R1) → prepared approval (same user, same note, unexpired) → re-seal = submitted seal = prepared seal (RECALL_SCOPE_CHANGED) → signature by policy → If-Match. Writes the lot blocks of the effectively included Lot items (read by getLotRecallStatus; enforced by postMovement from R3)."
+      x-permission: recall.cases.approve
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_SOD_VIOLATION, RECALL_PENDING_ACTION_MISMATCH, RECALL_SCOPE_CHANGED, RECALL_SIGNATURE_REQUIRED, RECALL_SIGNATURE_MISMATCH, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SignedNoteBody' } } } }
+      responses:
+        '200': { description: Approved, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/scope/revisions:
+    post:
+      operationId: reviseScope
+      summary: "Kapsam revizyonu (R2, CT-R5) — revision r+1 with the out-of-scope findings; its own signed approval of the delta; the approved scope's blocks stay meanwhile."
+      x-permission: recall.cases.update
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, RECALL_SCOPE_ITEM_NOT_MARKABLE, RECALL_SCOPE_EXCLUSION_REASON_REQUIRED, UNKNOWN_LOT]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, addNodeKeys, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                addNodeKeys: { type: array, minItems: 1, items: { type: string } }
+                marks: { type: array, items: { type: object, additionalProperties: false, required: [nodeKey, included], properties: { nodeKey: { type: string }, included: { type: boolean }, exclusionReason: { type: string, maxLength: 1000 } } } }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '201': { description: Revision pending approval, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/cancel:
+    post:
+      operationId: cancelCase
+      summary: "Vakayı iptal et — Draft | PendingScopeApproval → Cancelled, reason ≥ 10."
+      x-permission: recall.cases.cancel
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReasonBody' } } } }
+      responses:
+        '200': { description: Cancelled, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/stock:
+    get:
+      operationId: getCaseStock
+      summary: "Eldeki stok (R3) — in-scope stock lines with their quarantine request (KR-B), 0175 hold status read live, segregation."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Stock lines, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/StockLine' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/quarantine-requests:
+    post:
+      operationId: requestQuarantine
+      summary: "Karantina isteği gönder (R3) — stock lines without a request; MOD-0175 quarantineStock in-process, one bucket per call."
+      x-permission: recall.quarantine-requests.create
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_QUARANTINE_REQUEST_EXISTS, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, nodeKeys]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                nodeKeys: { type: array, minItems: 1, maxItems: 50, items: { type: string } }
+      responses:
+        '202': { description: Requests accepted, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/QuarantineRequest' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/quarantine-requests/{requestId}/retry:
+    post:
+      operationId: retryQuarantineRequest
+      summary: "Yeniden dene (R3) — BlockedByReservation / NothingAvailable / Failed; the 0175 key family :a{n} (CT-R2)."
+      x-permission: recall.quarantine-requests.create
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE, CROSS_LE_FORBIDDEN, RECALL_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyBody' } } } }
+      responses:
+        '202': { description: Retried, content: { application/json: { schema: { $ref: '#/components/schemas/QuarantineRequest' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/segregations:
+    post:
+      operationId: confirmSegregation
+      summary: "Fiziksel ayırmayı teyit et — record only, no movement. R1: nodeKey of an included Stock item of the approved scope (R-9); the 'request held' rule (RECALL_SEGREGATION_NOT_HELD) and requestId come with R3."
+      x-permission: recall.segregations.confirm
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, UNKNOWN_LOCATION, RECALL_INVALID_TRANSITION, RECALL_SEGREGATION_NOT_HELD, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, nodeKey, locationId, quantity]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                nodeKey: { type: string }
+                requestId: { type: string, format: uuid, description: "R3" }
+                locationId: { type: string, format: uuid }
+                quantity: { type: number, exclusiveMinimum: 0 }
+                note: { type: string, maxLength: 1000 }
+      responses:
+        '201': { description: Confirmed, content: { application/json: { schema: { $ref: '#/components/schemas/Segregation' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/Segregation' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /cases/{caseId}/customers:
+    get:
+      operationId: getCaseCustomers
+      description: "1.6.0 — rows of the effectively included Shipment items of the case's current scope revision; shipments[] have the shape CaseCustomerShipment. The ledger movements are the caller's company's only."
+      summary: "Müşteriler ve sevkiyatlar (R2) — shipments re-read live (KR-E degrade: Forbidden / NotFound / Unavailable), notification and consumption per customer."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Customers, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CustomerRow' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/notifications:
+    post:
+      operationId: recordNotification
+      summary: "Bilgilendirildi olarak kaydet — KR-F record only (no e-mail); Active | EffectivenessCheck; the customer must be a customer of the approved scope."
+      x-permission: recall.notifications.create
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_UNKNOWN_CUSTOMER, RECALL_INVALID_TRANSITION, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, customerRef, notifiedOn, channel]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                customerRef: { type: string, minLength: 1, maxLength: 200 }
+                notifiedOn: { type: string, format: date }
+                channel: { $ref: '#/components/schemas/NotificationChannel' }
+                note: { type: string, maxLength: 1000 }
+                supersedesId: { type: string, format: uuid }
+      responses:
+        '201': { description: Recorded, content: { application/json: { schema: { $ref: '#/components/schemas/Notification' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/Notification' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/consumption-declarations:
+    post:
+      operationId: declareConsumption
+      summary: "Tüketim beyanı — consumed + returned may not exceed shipped for the customer + SKU (422 RECALL_QUANTITY_EXCEEDS_SHIPPED); the unit is the customer's shipment unit."
+      x-permission: recall.consumptions.create
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_UNKNOWN_CUSTOMER, RECALL_QUANTITY_EXCEEDS_SHIPPED, RECALL_INVALID_TRANSITION, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, customerRef, skuId, skuLevel, quantity, declaredOn, evidence]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                customerRef: { type: string, minLength: 1, maxLength: 200 }
+                skuId: { type: string, format: uuid }
+                skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+                quantity: { type: number, exclusiveMinimum: 0 }
+                declaredOn: { type: string, format: date }
+                evidence: { type: string, minLength: 1, maxLength: 1000 }
+                supersedesId: { type: string, format: uuid }
+      responses:
+        '201': { description: Declared, content: { application/json: { schema: { $ref: '#/components/schemas/ConsumptionDeclaration' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/ConsumptionDeclaration' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /cases/{caseId}/returns:
+    get:
+      operationId: getCaseReturns
+      summary: "Geri dönüşler (R3) — linked returns + candidates (CUSTOMER_RETURN of in-scope lots after approval, not yet linked)."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200':
+          description: Returns
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [links, candidates]
+                properties:
+                  links: { type: array, items: { $ref: '#/components/schemas/ReturnLink' } }
+                  candidates: { type: array, items: { $ref: '#/components/schemas/ReturnCandidate' } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/return-links:
+    post:
+      operationId: linkReturn
+      summary: "İadeyi bağla (R3, KR-H) — a CUSTOMER_RETURN into QUARANTINE / QI of an in-scope lot after approval; one case per return."
+      x-permission: recall.returns.link
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_RETURN_NOT_ELIGIBLE, RECALL_RETURN_NOT_QUARANTINED, RECALL_RETURN_ALREADY_LINKED, RECALL_UNKNOWN_CUSTOMER, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, transactionId, customerRef]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                transactionId: { type: string }
+                customerRef: { type: string, minLength: 1, maxLength: 200 }
+                returnReference: { type: string, maxLength: 100 }
+      responses:
+        '201': { description: Linked, content: { application/json: { schema: { $ref: '#/components/schemas/ReturnLink' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /cases/{caseId}/effectiveness:
+    get:
+      operationId: getCaseEffectiveness
+      description: "1.6.0 — the live result until completeEffectivenessCheck, then the stored one (source Live | Stored); one computation for both (pack §8.6)."
+      summary: "Etkinlik kontrolü (R3) — live until completed, then the stored result."
+      x-permission: recall.cases.read
+      x-error-codes: [RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }]
+      responses:
+        '200': { description: Effectiveness, content: { application/json: { schema: { $ref: '#/components/schemas/Effectiveness' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases/{caseId}/effectiveness/start:
+    post:
+      operationId: startEffectivenessCheck
+      summary: "Etkinlik kontrolüne geç — Active → EffectivenessCheck."
+      x-permission: recall.effectiveness.complete
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyBody' } } } }
+      responses:
+        '200': { description: Started, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/effectiveness/complete:
+    post:
+      operationId: completeEffectivenessCheck
+      summary: "Etkinlik kontrolünü tamamla (+ e-imza) — stores the result (shipped − returned − consumed = open per customer + SKU + unit; target = the class target, KR-G); the completer cannot close (CT-R1)."
+      x-permission: recall.effectiveness.complete
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_PENDING_ACTION_MISMATCH, RECALL_SIGNATURE_REQUIRED, RECALL_SIGNATURE_MISMATCH, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, note]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                note: { type: string, minLength: 10, maxLength: 1000 }
+                signatureId: { type: string, maxLength: 100 }
+      responses:
+        '200': { description: Completed, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/close:
+    post:
+      operationId: closeCase
+      summary: "Vakayı kapat (+ e-imza) — EffectivenessCheck (completed) → Closed. CT-R1: the effectiveness completer cannot close. Open quantity → openQuantityAcceptance required. Releases the case's lot blocks."
+      x-permission: recall.cases.close
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_SOD_VIOLATION, RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED, RECALL_PENDING_ACTION_MISMATCH, RECALL_SIGNATURE_REQUIRED, RECALL_SIGNATURE_MISMATCH, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, summary]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                summary: { type: string, minLength: 10, maxLength: 2000 }
+                openQuantityAcceptance: { type: string, minLength: 10, maxLength: 1000 }
+                signatureId: { type: string, maxLength: 100 }
+      responses:
+        '200': { description: Closed, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/CaseDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /cases/{caseId}/timeline:
+    get:
+      operationId: getCaseTimeline
+      summary: "Zaman çizelgesi — insert-only events, oldest first, 1-based positions."
+      x-permission: recall.cases.read
+      x-error-codes: [INVALID_REQUEST, RECALL_CASE_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: Timeline, content: { application/json: { schema: { $ref: '#/components/schemas/TimelinePage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /lots/{lotId}/status:
+    get:
+      operationId: getLotRecallStatus
+      summary: "Is the lot under recall — in the approved scope of a case that is Active or in its effectiveness check, in ANY company of the tenant (CT-R7). Another company's case shows its number and status only. Consumers: 0174 lot badge, 0173 movement band, 0175 decision warning, 0176 / 0178."
+      x-permission: recall.lots.status.read
+      x-error-codes: [UNKNOWN_LOT]
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Status, content: { application/json: { schema: { $ref: '#/components/schemas/LotRecallStatus' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /drill-plans:
+    get:
+      operationId: listDrillPlans
+      x-permission: recall.drills.read
+      x-error-codes: [CROSS_LE_FORBIDDEN]
+      responses:
+        '200': { description: Plans, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/DrillPlan' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: createDrillPlan
+      x-permission: recall.drills.manage
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DrillPlanInput' } } } }
+      responses:
+        '201': { description: Created, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillPlan' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /drill-plans/{planId}:
+    put:
+      operationId: updateDrillPlan
+      x-permission: recall.drills.manage
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ name: planId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DrillPlanInput' } } } }
+      responses:
+        '200': { description: Updated, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillPlan' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /drill-runs:
+    get:
+      operationId: listDrillRuns
+      x-permission: recall.drills.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/DrillRunStatus' } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: Runs, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRunPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: startDrill
+      summary: "Başlat (R5) — server timer; at most one running drill per company; Auto = server random pick from the plan's candidate set."
+      x-permission: recall.drills.run
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOT, RECALL_DRILL_ALREADY_RUNNING, RECALL_DRILL_NO_CANDIDATE, CROSS_LE_FORBIDDEN, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, planId, selectionMode]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                planId: { type: string, format: uuid }
+                selectionMode: { type: string, enum: [Auto, Manual] }
+                lotId: { type: string, format: uuid }
+      responses:
+        '201': { description: Running, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRun' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /drill-runs/{runId}:
+    get:
+      operationId: getDrillRun
+      x-permission: recall.drills.read
+      x-error-codes: [CROSS_LE_FORBIDDEN, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: Run, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRun' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /drill-runs/{runId}/steps/{step}:
+    post:
+      operationId: completeDrillStep
+      x-permission: recall.drills.run
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, RECALL_DRILL_STEP_ORDER, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, INVALID_REQUEST, UNKNOWN_LOT, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { name: step, in: path, required: true, schema: { $ref: '#/components/schemas/DrillStep' } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyBody' } } } }
+      responses:
+        '200': { description: Step done, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRun' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /drill-runs/{runId}/pending-result:
+    post:
+      operationId: prepareDrillResult
+      x-permission: recall.drills.run
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [idempotencyKey, resultNote], properties: { idempotencyKey: { type: string, minLength: 8, maxLength: 100 }, resultNote: { type: string, minLength: 10, maxLength: 2000 } } }
+      responses:
+        '200': { description: Prepared, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/PendingActionResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /drill-runs/{runId}/result:
+    post:
+      operationId: signDrillResult
+      x-permission: recall.drills.run
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_SIGNATURE_REQUIRED, RECALL_SIGNATURE_MISMATCH, RECALL_PENDING_ACTION_MISMATCH, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, REASON_REQUIRED, RECALL_INVALID_TRANSITION, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [idempotencyKey, resultNote], properties: { idempotencyKey: { type: string, minLength: 8, maxLength: 100 }, resultNote: { type: string, minLength: 10, maxLength: 2000 }, signatureId: { type: string, maxLength: 100 } } }
+      responses:
+        '200': { description: Completed, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRun' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /drill-runs/{runId}/cancel:
+    post:
+      operationId: cancelDrill
+      summary: "İptal — the run is kept as Cancelled (CT-R17)."
+      x-permission: recall.drills.run
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, INVALID_REQUEST, REASON_REQUIRED, RECALL_DRILL_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false, required: [idempotencyKey], properties: { idempotencyKey: { type: string, minLength: 8, maxLength: 100 }, reason: { type: string, maxLength: 1000 } } }
+      responses:
+        '200': { description: Cancelled, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/DrillRun' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /evidence/preview:
+    get:
+      operationId: previewEvidence
+      summary: "Kanıt Paketi önizleme (R7) — 7 sections for a case, a drill run or a period."
+      x-permission: recall.evidence.export
+      x-error-codes: [INVALID_REQUEST, RECALL_EVIDENCE_RANGE_INVALID, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: caseId, in: query, schema: { type: string, format: uuid } }
+        - { name: runId, in: query, schema: { type: string, format: uuid } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Preview, content: { application/json: { schema: { $ref: '#/components/schemas/EvidencePreview' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /evidence/exports:
+    get:
+      operationId: listEvidenceExports
+      x-permission: recall.evidence.export
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: Export log, content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceExportPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: createEvidenceExport
+      summary: "PDF / CSV indir (R7) — SHA-256 of the produced bytes; same key → same file + hash."
+      x-permission: recall.evidence.export
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, RECALL_EVIDENCE_RANGE_INVALID, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, format]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                caseId: { type: string, format: uuid }
+                runId: { type: string, format: uuid }
+                from: { type: string, format: date }
+                to: { type: string, format: date }
+                format: { type: string, enum: [Pdf, Csv] }
+      responses:
+        '201': { description: Exported, content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceExport' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /evidence/exports/{exportId}/file:
+    get:
+      operationId: getEvidenceFile
+      x-permission: recall.evidence.export
+      x-error-codes: [CROSS_LE_FORBIDDEN]
+      parameters: [{ name: exportId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: The stored bytes, content: { application/pdf: { schema: { type: string, format: binary } }, text/csv: { schema: { type: string } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /settings:
+    get:
+      operationId: getSettings
+      summary: "Ayarlar — the company's settings, or the KR-G defaults at version 0 (isDefault: true): 4 h, 180 days, class targets 100 / 95 / 90."
+      x-permission: recall.settings.read
+      x-error-codes: [CROSS_LE_FORBIDDEN]
+      responses:
+        '200': { description: Settings, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/RecallSettings' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      operationId: updateSettings
+      summary: "Kaydet — full replacement, reason ≥ 10, If-Match (\"0\" first), one history row per changed field; signature by the MOD-0022 row recall.settings.update (CT-R16: not required by default; a sent signature is verified)."
+      x-permission: recall.settings.manage
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_SETTINGS_INVALID, RECALL_NO_CHANGES, RECALL_SIGNATURE_REQUIRED, RECALL_SIGNATURE_MISMATCH, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, drillTargetHours, drillFrequencyWarningDays, effectivenessTargetPercent, traceMaxDepth, traceMaxNodes, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                drillTargetHours: { type: integer, minimum: 1, maximum: 72 }
+                drillFrequencyWarningDays: { type: integer, minimum: 30, maximum: 730 }
+                effectivenessTargetPercent: { $ref: '#/components/schemas/EffectivenessTargets' }
+                traceMaxDepth: { type: integer, minimum: 2, maximum: 50 }
+                traceMaxNodes: { type: integer, minimum: 100, maximum: 20000 }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+                signatureId: { type: string, maxLength: 100 }
+      responses:
+        '200': { description: Saved, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/RecallSettings' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/history:
+    get:
+      operationId: getSettingsHistory
+      x-permission: recall.settings.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: History, content: { application/json: { schema: { $ref: '#/components/schemas/SettingsHistoryPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /settings/pending-change:
+    post:
+      operationId: prepareSettingsChange
+      summary: "R4 — prepares a signed settings change when the tenant's policy requires a signature (CT-R16)."
+      x-permission: recall.settings.manage
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_SETTINGS_INVALID, RECALL_NO_CHANGES, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, drillTargetHours, drillFrequencyWarningDays, effectivenessTargetPercent, traceMaxDepth, traceMaxNodes, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                drillTargetHours: { type: integer, minimum: 1, maximum: 72 }
+                drillFrequencyWarningDays: { type: integer, minimum: 30, maximum: 730 }
+                effectivenessTargetPercent: { $ref: '#/components/schemas/EffectivenessTargets' }
+                traceMaxDepth: { type: integer, minimum: 2, maximum: 50 }
+                traceMaxNodes: { type: integer, minimum: 100, maximum: 20000 }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '200': { description: Prepared, content: { application/json: { schema: { $ref: '#/components/schemas/PendingActionResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /esign-subjects/{subjectType}/{subjectId}:
+    get:
+      operationId: getSignableSubject
+      summary: "MOD-0022 subject provider (R4) — recall.case (rc-v1), recall.drill-run (dr-v1), recall.settings-change (rs-v1); every refusal is 404."
+      description: "1.4.0 (O-R5-2, CT decision 2026-10-14) — the key depends on the subject type (x-permission-by-subject-type): recall.case and recall.settings-change need recall.cases.read; recall.drill-run needs recall.cases.read OR recall.drills.read. x-permission keeps the 1.3.0 value (recall.cases.read always suffices). A missing key is the same 404 RECALL_SUBJECT_NOT_FOUND as every refusal."
+      x-permission: recall.cases.read
+      x-permission-by-subject-type:
+        recall.case: [recall.cases.read]
+        recall.settings-change: [recall.cases.read]
+        recall.drill-run: [recall.cases.read, recall.drills.read]
+      x-error-codes: [RECALL_SUBJECT_NOT_FOUND]
+      parameters:
+        - { name: subjectType, in: path, required: true, schema: { type: string, enum: [recall.case, recall.drill-run, recall.settings-change] } }
+        - { name: subjectId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Subject, content: { application/json: { schema: { $ref: '#/components/schemas/SignableSubject' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+x-error-codes:
+  RECALL_SETTINGS_INVALID: 400
+  RECALL_SCOPE_EXCLUSION_REASON_REQUIRED: 400
+  RECALL_SCOPE_ITEM_NOT_MARKABLE: 400
+  RECALL_SIGNATURE_REQUIRED: 400
+  RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED: 400
+  RECALL_EVIDENCE_RANGE_INVALID: 400
+  RECALL_UNKNOWN_CUSTOMER: 404
+  RECALL_CASE_NOT_FOUND: 404
+  RECALL_SUBJECT_NOT_FOUND: 404
+  RECALL_DRILL_NOT_FOUND: 404
+  RECALL_CONFLICT: 409
+  RECALL_INVALID_TRANSITION: 409
+  RECALL_CASE_ALREADY_OPEN: 409
+  RECALL_SCOPE_CHANGED: 409
+  RECALL_SOD_VIOLATION: 409
+  RECALL_SIGNATURE_MISMATCH: 409
+  RECALL_PENDING_ACTION_MISMATCH: 409
+  RECALL_NO_CHANGES: 409
+  RECALL_SCOPE_ITEM_EXISTS: 409
+  RECALL_QUARANTINE_REQUEST_EXISTS: 409
+  RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE: 409
+  RECALL_RETURN_ALREADY_LINKED: 409
+  RECALL_DRILL_ALREADY_RUNNING: 409
+  RECALL_DRILL_STEP_ORDER: 409
+  RECALL_RETURN_NOT_ELIGIBLE: 422
+  RECALL_RETURN_NOT_QUARANTINED: 422
+  RECALL_SEGREGATION_NOT_HELD: 422
+  RECALL_QUANTITY_EXCEEDS_SHIPPED: 422
+  RECALL_DRILL_NO_CANDIDATE: 422
+  shared: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOT, UNKNOWN_LOCATION, CROSS_LE_FORBIDDEN]
+  owned-by-INVENTORY-1.4.0: [LOT_UNDER_RECALL]
+x-state-machine:
+  - "Draft ──submitScope──▶ PendingScopeApproval ──approveScope(+sig)──▶ Active ──startEffectivenessCheck──▶ EffectivenessCheck"
+  - "PendingScopeApproval ──returnScope──▶ Draft"
+  - "EffectivenessCheck ──completeEffectivenessCheck(+sig)──▶ (completed) ──closeCase(+sig)──▶ Closed"
+  - "Draft | PendingScopeApproval ──cancelCase──▶ Cancelled"
+  - "Active ──reviseScope──▶ revision r+1 pending approval (case stays Active; R3 per 1.1.0 R2-4, CT-R5)"
+  - "Four-eyes (CT-R1): approver ≠ scope submitter; closer ≠ effectiveness completer."
+  - "Active + pendingRevision ──approveScope(+sig)──▶ Active (1.2.0: the delta approved; its blocks and quarantine requests added, no block removed)"
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 100 } }
+    IfMatch: { name: If-Match, in: header, required: true, schema: { type: string }, description: 'W/"<version>" or "<version>"' }
+    CaseId: { name: caseId, in: path, required: true, schema: { type: string, format: uuid } }
+    RunId: { name: runId, in: path, required: true, schema: { type: string, format: uuid } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 25 } }
+  headers:
+    ETag: { schema: { type: string, pattern: '^W/"\d+"$' } }
+  schemas:
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
+    StockStatus: { type: string, enum: [AVAILABLE, QUALITY_INSPECTION, QUARANTINE, BLOCKED, IN_TRANSIT, DAMAGED, EXPIRED] }
+    CaseStatus: { type: string, enum: [Draft, PendingScopeApproval, Active, EffectivenessCheck, Closed, Cancelled] }
+    RecallLevel: { type: string, enum: [Wholesale, Pharmacy, Patient] }
+    TraceDirection: { type: string, enum: [Backward, Forward, Both] }
+    ScopeItemKind: { type: string, enum: [Lot, Stock, Shipment] }
+    NotificationChannel: { type: string, enum: [Phone, ExternalEmail, Fax, InPerson, Other] }
+    PendingActionKind: { type: string, enum: [ApproveScope, CompleteEffectiveness, Close] }
+    CaseEventKind: { type: string, enum: [Opened, ScopeItemsAdded, ScopeMarked, ScopeSubmitted, ScopeReturned, ScopeApproved, SegregationConfirmed, CustomerNotified, ConsumptionDeclared, EffectivenessStarted, EffectivenessCompleted, Closed, Cancelled, TraceRun, OutOfScopeFinding, QuarantineRequested, QuarantineFailed, QuarantineRetried, ExitRefused, ReturnLinked, ScopeRevised], description: "R1 kinds + R2 (TraceRun, OutOfScopeFinding) + R3 (QuarantineRequested … ScopeRevised); later slices add kinds (additive)." }
+    DrillRunStatus: { type: string, enum: [Running, Completed, Cancelled] }
+    DrillStep: { type: string, enum: [Trace, Scope, CustomerList] }
+    UserRef:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string, format: uuid }
+    UserAt:
+      type: object
+      required: [userId, atUtc]
+      properties:
+        userId: { type: string, format: uuid }
+        atUtc: { type: string, format: date-time }
+    LotRef:
+      type: object
+      required: [lotId, lotNumber]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+    ItemRef:
+      type: object
+      required: [itemId, skuId, skuLevel]
+      properties:
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+    Quantity:
+      type: object
+      required: [skuId, baseUomId, quantity]
+      properties:
+        skuId: { type: string, format: uuid }
+        baseUomId: { type: string }
+        quantity: { type: number }
+    Progress:
+      type: object
+      required: [skuId, baseUomId, returned, shipped, percent]
+      properties:
+        skuId: { type: string, format: uuid }
+        baseUomId: { type: string }
+        returned: { type: number }
+        shipped: { type: number }
+        percent: { type: number }
+    EffectivenessTargets:
+      type: object
+      additionalProperties: false
+      required: ['1', '2', '3']
+      properties:
+        '1': { type: number, minimum: 0, maximum: 100 }
+        '2': { type: number, minimum: 0, maximum: 100 }
+        '3': { type: number, minimum: 0, maximum: 100 }
+    RecallSettings:
+      type: object
+      required: [legalEntityId, isDefault, drillTargetHours, drillFrequencyWarningDays, effectivenessTargetPercent, traceMaxDepth, traceMaxNodes, version]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        isDefault: { type: boolean }
+        drillTargetHours: { type: integer }
+        drillFrequencyWarningDays: { type: integer }
+        effectivenessTargetPercent: { $ref: '#/components/schemas/EffectivenessTargets' }
+        traceMaxDepth: { type: integer }
+        traceMaxNodes: { type: integer }
+        updatedAtUtc: { type: string, format: date-time }
+        updatedBy: { $ref: '#/components/schemas/UserRef' }
+        version: { type: integer }
+    SettingsHistoryEntry:
+      type: object
+      required: [field, reason, changedBy, changedAtUtc, settingsVersion]
+      properties:
+        field: { type: string }
+        oldValue: { type: string }
+        newValue: { type: string }
+        reason: { type: string }
+        changedBy: { $ref: '#/components/schemas/UserRef' }
+        changedAtUtc: { type: string, format: date-time }
+        settingsVersion: { type: integer }
+        signatureId: { type: string }
+    SettingsHistoryPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SettingsHistoryEntry' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    DrillResult:
+      type: object
+      required: [passed, durationMinutes]
+      properties:
+        passed: { type: boolean }
+        durationMinutes: { type: integer }
+    CaseRef:
+      type: object
+      required: [caseId, number, type, status, class, level, item, rootLot, openedAtUtc, owner, affectedQuantity, progress, version]
+      properties:
+        caseId: { type: string, format: uuid }
+        number: { type: string, pattern: '^RC-\d{4}-(\d{4}|D\d{3})$' }
+        type: { type: string, enum: [Real, Drill] }
+        status: { $ref: '#/components/schemas/CaseStatus' }
+        class: { type: integer, minimum: 1, maximum: 3 }
+        level: { $ref: '#/components/schemas/RecallLevel' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        rootLot: { $ref: '#/components/schemas/LotRef' }
+        openedAtUtc: { type: string, format: date-time }
+        owner: { $ref: '#/components/schemas/UserRef' }
+        affectedQuantity: { type: array, items: { $ref: '#/components/schemas/Quantity' } }
+        progress: { type: array, items: { $ref: '#/components/schemas/Progress' } }
+        drillResult: { $ref: '#/components/schemas/DrillResult' }
+        version: { type: integer }
+        sortAt: { type: string, format: date-time, description: "1.5.0 — the row's sort time (openedAtUtc) in the union page" }
+        position: { type: integer, minimum: 0, description: "1.5.0 — the row's 0-based place in the merged page (cases + drill rows)" }
+    CasePage:
+      type: object
+      required: [items, total, page, pageSize, statusCounts]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CaseRef' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        statusCounts: { type: object, additionalProperties: { type: integer } }
+        drillRows: { type: array, items: { $ref: '#/components/schemas/DrillCaseRow' }, description: "1.5.0 — the drill runs of this page (a drill run is not a case)" }
+        drillStatusCounts: { type: object, additionalProperties: { type: integer }, description: "1.5.0 — DrillRunStatus chip counts under the other filters" }
+    DrillCaseRow:
+      type: object
+      description: "1.5.0 (R6, CT decision A, pack §8.10) — a drill run as a Vakalar row. Not a case: no class, no level (mockup difference D-25)."
+      required: [runId, number, type, status, lot, startedAtUtc, owner, targetHours, sortAt, position, version]
+      additionalProperties: false
+      properties:
+        runId: { type: string, format: uuid }
+        number: { type: string, pattern: '^RC-\d{4}-D\d{3}$' }
+        type: { type: string, enum: [Drill] }
+        status: { $ref: '#/components/schemas/DrillRunStatus' }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        startedAtUtc: { type: string, format: date-time }
+        endedAtUtc: { type: string, format: date-time }
+        owner: { $ref: '#/components/schemas/UserRef' }
+        durationMinutes: { type: integer }
+        targetHours: { type: integer }
+        passed: { type: boolean }
+        sortAt: { type: string, format: date-time }
+        position: { type: integer, minimum: 0 }
+        version: { type: integer }
+    PendingRevision:
+      type: object
+      description: "1.2.0 (CT-R5) — a revision r+1 whose delta waits for its signed approval; the case stays Active."
+      required: [revision, reason, addedNodeKeys, revisedBy]
+      properties:
+        revision: { type: integer }
+        reason: { type: string }
+        addedNodeKeys: { type: array, items: { type: string } }
+        revisedBy: { $ref: '#/components/schemas/UserAt' }
+    ScopeSeal:
+      type: object
+      required: [revision, sha256, canonicalVersion, itemCount, computedAtUtc]
+      properties:
+        revision: { type: integer }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        canonicalVersion: { type: string }
+        itemCount: { type: integer }
+        computedAtUtc: { type: string, format: date-time }
+    PendingAction:
+      type: object
+      required: [action, setBy, expiresAtUtc]
+      properties:
+        action: { $ref: '#/components/schemas/PendingActionKind' }
+        setBy: { $ref: '#/components/schemas/UserRef' }
+        expiresAtUtc: { type: string, format: date-time }
+    EffectivenessRow:
+      type: object
+      required: [skuId, baseUomId, shipped, returned, consumed, open, percent, met, notified]
+      properties:
+        customerRef: { type: string, description: "absent on a total row" }
+        skuId: { type: string, format: uuid }
+        baseUomId: { type: string }
+        shipped: { type: number }
+        returned: { type: number }
+        consumed: { type: number }
+        open: { type: number }
+        percent: { type: number }
+        met: { type: boolean }
+        notified: { type: boolean }
+    Effectiveness:
+      type: object
+      required: [class, targetPercent, rows, totals, computedAtUtc]
+      properties:
+        class: { type: integer }
+        targetPercent: { type: number }
+        rows: { type: array, items: { $ref: '#/components/schemas/EffectivenessRow' } }
+        totals: { type: array, items: { $ref: '#/components/schemas/EffectivenessRow' } }
+        computedAtUtc: { type: string, format: date-time }
+        source: { type: string, enum: [Live, Stored], description: "1.6.0 — getCaseEffectiveness: Live until completed, then Stored" }
+    Closure:
+      type: object
+      required: [summary, closedBy]
+      properties:
+        summary: { type: string }
+        openQuantityAcceptance: { type: string }
+        closedBy: { $ref: '#/components/schemas/UserAt' }
+        signatureId: { type: string }
+    Cancellation:
+      type: object
+      required: [reason, cancelledBy]
+      properties:
+        reason: { type: string }
+        cancelledBy: { $ref: '#/components/schemas/UserAt' }
+    CaseCounts:
+      type: object
+      required: [scopeItems, excludedItems, customers, notified, consumptionDeclarations, segregations]
+      properties:
+        scopeItems: { type: integer }
+        excludedItems: { type: integer }
+        customers: { type: integer }
+        notified: { type: integer }
+        consumptionDeclarations: { type: integer }
+        segregations: { type: integer }
+    CaseDetail:
+      type: object
+      required: [caseId, number, type, status, class, level, item, rootLot, openedAtUtc, owner, affectedQuantity, progress, version, reason, direction, scopeRevision, counts]
+      properties:
+        caseId: { type: string, format: uuid }
+        number: { type: string, pattern: '^RC-\d{4}-\d{4}$' }
+        type: { type: string, enum: [Real] }
+        status: { $ref: '#/components/schemas/CaseStatus' }
+        class: { type: integer, minimum: 1, maximum: 3 }
+        level: { $ref: '#/components/schemas/RecallLevel' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        rootLot: { $ref: '#/components/schemas/LotRef' }
+        openedAtUtc: { type: string, format: date-time }
+        owner: { $ref: '#/components/schemas/UserRef' }
+        affectedQuantity: { type: array, items: { $ref: '#/components/schemas/Quantity' } }
+        progress: { type: array, items: { $ref: '#/components/schemas/Progress' } }
+        version: { type: integer }
+        reason: { type: string }
+        reasonReference: { type: string }
+        direction: { $ref: '#/components/schemas/TraceDirection' }
+        scopeRevision: { type: integer }
+        submittedScope: { $ref: '#/components/schemas/ScopeSeal' }
+        approvedScope: { $ref: '#/components/schemas/ScopeSeal' }
+        submittedSnapshot: { $ref: '#/components/schemas/SnapshotRef' }
+        approvedSnapshot: { $ref: '#/components/schemas/SnapshotRef' }
+        pendingRevision: { $ref: '#/components/schemas/PendingRevision' }
+        scopeSubmittedBy: { $ref: '#/components/schemas/UserAt' }
+        scopeApprovedBy: { $ref: '#/components/schemas/UserAt' }
+        scopeApprovalSignatureId: { type: string }
+        effectivenessStartedAtUtc: { type: string, format: date-time }
+        effectiveness: { $ref: '#/components/schemas/Effectiveness' }
+        effectivenessCompletedBy: { $ref: '#/components/schemas/UserAt' }
+        effectivenessSignatureId: { type: string }
+        closure: { $ref: '#/components/schemas/Closure' }
+        cancellation: { $ref: '#/components/schemas/Cancellation' }
+        pendingAction: { $ref: '#/components/schemas/PendingAction' }
+        counts: { $ref: '#/components/schemas/CaseCounts' }
+    ScopeItemInput:
+      type: object
+      additionalProperties: false
+      required: [kind, lotId]
+      properties:
+        kind: { $ref: '#/components/schemas/ScopeItemKind' }
+        lotId: { type: string, format: uuid }
+        parentKey: { type: string, description: "Lot items only (default: the root)" }
+        warehouseId: { type: string, format: uuid }
+        locationId: { type: string, format: uuid }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        sourceDocumentId: { type: string, maxLength: 100 }
+        customerRef: { type: string, maxLength: 200 }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        baseUomId: { type: string, maxLength: 50 }
+    ScopeItem:
+      type: object
+      required: [nodeKey, kind, isRoot, lot, item, included, effectivelyIncluded]
+      properties:
+        nodeKey: { type: string }
+        parentKey: { type: string }
+        kind: { $ref: '#/components/schemas/ScopeItemKind' }
+        isRoot: { type: boolean }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        warehouseId: { type: string, format: uuid }
+        locationId: { type: string, format: uuid }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        sourceDocumentId: { type: string }
+        customerRef: { type: string }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        included: { type: boolean, description: "the item's own mark" }
+        effectivelyIncluded: { type: boolean, description: "false when the item or an ancestor is excluded (CT-R6)" }
+        exclusionReason: { type: string }
+        origin: { type: string, enum: [Manual, Trace], description: "R2 — Trace items are reconciled by every re-trace; Manual items never" }
+        new: { type: boolean, description: "R2 — found by a re-trace after the case was opened" }
+    ScopeView:
+      type: object
+      required: [caseId, revision, editable, excludedCount, sha256, items, version]
+      properties:
+        caseId: { type: string, format: uuid }
+        revision: { type: integer }
+        editable: { type: boolean }
+        excludedCount: { type: integer }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        items: { type: array, items: { $ref: '#/components/schemas/ScopeItem' } }
+        version: { type: integer }
+        snapshot: { $ref: '#/components/schemas/SnapshotRef', description: "R2 — the governing trace snapshot (approved, else submitted)" }
+    SnapshotRef:
+      type: object
+      required: [snapshotId, revision, purpose, sha256, canonicalVersion, nodeCount, gapCount, truncated, computedAtUtc]
+      properties:
+        snapshotId: { type: string, format: uuid }
+        revision: { type: integer }
+        purpose: { type: string, enum: [Submitted, Approved] }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        canonicalVersion: { type: string, enum: [rt-v1] }
+        nodeCount: { type: integer }
+        gapCount: { type: integer }
+        truncated: { type: boolean }
+        computedAtUtc: { type: string, format: date-time }
+    TimelineEntry:
+      type: object
+      required: [seq, kind, atUtc, refs]
+      properties:
+        seq: { type: integer }
+        kind: { $ref: '#/components/schemas/CaseEventKind' }
+        actor: { $ref: '#/components/schemas/UserRef' }
+        atUtc: { type: string, format: date-time }
+        text: { type: string }
+        refs: { type: object, additionalProperties: { type: string } }
+        signatureId: { type: string }
+    TimelinePage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/TimelineEntry' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    SubjectRef:
+      type: object
+      required: [module, subjectType, subjectId]
+      properties:
+        module: { type: string }
+        subjectType: { type: string }
+        subjectId: { type: string, format: uuid }
+    PendingActionResponse:
+      type: object
+      required: [caseId, action, signatureRequired, actionCode, meaningCode, visualMode, subject, expiresAtUtc, version]
+      properties:
+        caseId: { type: string, format: uuid }
+        action: { type: string }
+        signatureRequired: { type: boolean }
+        actionCode: { type: string }
+        meaningCode: { type: string }
+        visualMode: { type: string }
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        expiresAtUtc: { type: string, format: date-time }
+        version: { type: integer }
+    Notification:
+      type: object
+      required: [notificationId, caseId, customerRef, notifiedOn, channel, recordedBy]
+      properties:
+        notificationId: { type: string, format: uuid }
+        caseId: { type: string, format: uuid }
+        customerRef: { type: string }
+        notifiedOn: { type: string, format: date }
+        channel: { $ref: '#/components/schemas/NotificationChannel' }
+        note: { type: string }
+        supersedesId: { type: string, format: uuid }
+        recordedBy: { $ref: '#/components/schemas/UserAt' }
+    ConsumptionDeclaration:
+      type: object
+      required: [declarationId, caseId, customerRef, skuId, skuLevel, baseUomId, quantity, declaredOn, evidence, recordedBy]
+      properties:
+        declarationId: { type: string, format: uuid }
+        caseId: { type: string, format: uuid }
+        customerRef: { type: string }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        baseUomId: { type: string }
+        quantity: { type: number }
+        declaredOn: { type: string, format: date }
+        evidence: { type: string }
+        supersedesId: { type: string, format: uuid }
+        recordedBy: { $ref: '#/components/schemas/UserAt' }
+    Segregation:
+      type: object
+      required: [segregationId, caseId, nodeKey, locationId, quantity, confirmedBy]
+      properties:
+        segregationId: { type: string, format: uuid }
+        caseId: { type: string, format: uuid }
+        nodeKey: { type: string }
+        warehouseId: { type: string, format: uuid }
+        locationId: { type: string, format: uuid }
+        quantity: { type: number }
+        note: { type: string }
+        confirmedBy: { $ref: '#/components/schemas/UserAt' }
+    LotRecallCase:
+      type: object
+      required: [number, sameCompany]
+      properties:
+        caseId: { type: string, format: uuid, description: "only for a case of the caller's company" }
+        number: { type: string }
+        status: { $ref: '#/components/schemas/CaseStatus' }
+        sameCompany: { type: boolean }
+    LotRecallStatus:
+      type: object
+      required: [lotId, underRecall, cases]
+      properties:
+        lotId: { type: string, format: uuid }
+        underRecall: { type: boolean }
+        cases: { type: array, items: { $ref: '#/components/schemas/LotRecallCase' } }
+    NoteBody:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        note: { type: string, maxLength: 1000 }
+    ReasonBody:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, reason]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+    KeyBody:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    SignedNoteBody:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        note: { type: string, maxLength: 1000 }
+        signatureId: { type: string, maxLength: 100 }
+    TraceNode:
+      type: object
+      required: [nodeKey, level, kind]
+      additionalProperties: true
+      description: "Pack §8.2 node (R2): lot, item, warehouse, stockStatus, holdId, quantity, baseUomId, movement, shipment {shipmentId, read: Ok|Forbidden|NotFound|Unavailable|NotApplicable, status, actualDeliverAt, shipToReference}, customerRef, serials, badges, untracked (Takip dışı — never a gap), scope {included, exclusionReason, new, outOfScopeFinding}."
+      properties:
+        nodeKey: { type: string }
+        parentKey: { type: string }
+        level: { type: integer }
+        kind: { type: string, enum: [RawMaterialLot, FinishedGoodLot, Lot, Input, Stock, Shipment, Customer, Gap, Disposal] }
+        untracked: { type: boolean }
+    TraceGap:
+      type: object
+      required: [code, nodeKey, text]
+      additionalProperties: true
+      properties:
+        code: { type: string, enum: [LOTLESS_OUTBOUND, UNRESOLVED_TYPED_LOT, MISSING_GENEALOGY_LINK, CONSUMED_WITHOUT_OUTPUT_LINK, NO_CUSTOMER_REFERENCE, LIMIT_REACHED, OTHER_COMPANY_ACTIVITY] }
+        nodeKey: { type: string }
+        text: { type: string }
+    TraceResult:
+      type: object
+      required: [rootLotId, direction, computedAtUtc, durationMs, truncated, nodes, edges, gaps, summary, canonicalVersion, sha256]
+      additionalProperties: true
+      properties:
+        rootLotId: { type: string, format: uuid }
+        rootLotNumber: { type: string }
+        direction: { $ref: '#/components/schemas/TraceDirection' }
+        asOfUtc: { type: string, format: date-time }
+        computedAtUtc: { type: string, format: date-time }
+        durationMs: { type: integer }
+        truncated: { type: boolean }
+        nodes: { type: array, items: { $ref: '#/components/schemas/TraceNode' } }
+        edges: { type: array, items: { type: object, additionalProperties: true } }
+        gaps: { type: array, items: { $ref: '#/components/schemas/TraceGap' } }
+        summary: { type: object, additionalProperties: true }
+        canonicalVersion: { type: string }
+        sha256: { type: string }
+    ScopeDiff:
+      type: object
+      required: [approvedSha256, liveSha256, added, removed, computedAtUtc]
+      properties:
+        approvedSha256: { type: string }
+        liveSha256: { type: string }
+        added: { type: array, items: { $ref: '#/components/schemas/TraceNode' } }
+        removed: { type: array, items: { type: string } }
+        computedAtUtc: { type: string, format: date-time }
+    QuarantineRequest:
+      type: object
+      required: [requestId, status, holdIds, attempts]
+      additionalProperties: true
+      properties:
+        requestId: { type: string, format: uuid }
+        status: { type: string, enum: [Pending, Held, PartiallyHeld, BlockedByReservation, NothingAvailable, Failed, NotNeeded] }
+        notNeededReason: { type: string, enum: [AlreadyQuarantined, AlreadyBlocked, LotBlocked, LotExpired, Excluded] }
+        holdIds: { type: array, items: { type: string } }
+        attempts: { type: integer }
+    StockLine:
+      type: object
+      required: [nodeKey, lot, quantity, baseUomId]
+      additionalProperties: true
+      properties:
+        nodeKey: { type: string }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        request: { $ref: '#/components/schemas/QuarantineRequest' }
+    CustomerRow:
+      type: object
+      required: [customerRef, shipments]
+      additionalProperties: true
+      properties:
+        customerRef: { type: string }
+        label: { type: string }
+        shipments: { type: array, items: { type: object, additionalProperties: true } }
+        notification: { $ref: '#/components/schemas/Notification' }
+        notifications: { type: array, items: { $ref: '#/components/schemas/Notification' }, description: "1.6.0 — every notification of the customer, oldest first (superseded ones included)" }
+        consumptions: { type: array, items: { $ref: '#/components/schemas/ConsumptionDeclaration' }, description: "1.6.0 — the effective (not superseded) consumption declarations of the customer" }
+    CaseCustomerShipment:
+      type: object
+      description: "1.6.0 — one Shipment item of the scope as getCaseCustomers shows it"
+      required: [nodeKey, lot, item, quantity, baseUomId, movements, read]
+      additionalProperties: false
+      properties:
+        nodeKey: { type: string }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        sourceDocumentId: { type: string }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        movements: { type: array, items: { type: object, additionalProperties: false, required: [transactionId, quantity, postingDate], properties: { transactionId: { type: string }, number: { type: string }, quantity: { type: number }, postingDate: { type: string, format: date-time } } } }
+        read: { type: string, enum: [NotApplicable, Ok, Forbidden, NotFound, Unavailable] }
+        status: { type: string }
+        actualDeliverAt: { type: string, format: date-time }
+        shipToReference: { type: string }
+    ReturnLink:
+      type: object
+      required: [linkId, source, transactionId, quantity, baseUomId, customerRef]
+      additionalProperties: true
+      properties:
+        linkId: { type: string, format: uuid }
+        source: { type: string, enum: [Mod0186Return, ManualCustomerReturn] }
+        transactionId: { type: string }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        customerRef: { type: string }
+    ReturnCandidate:
+      type: object
+      required: [transactionId, quantity, baseUomId, eligible]
+      additionalProperties: true
+      properties:
+        transactionId: { type: string }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        eligible: { type: boolean }
+        ineligibleReason: { type: string, enum: [NotQuarantined, NotInScope, BeforeApproval, AlreadyLinked] }
+    DashboardView:
+      type: object
+      required: [openCases]
+      additionalProperties: true
+      properties:
+        openCases: { type: object, additionalProperties: true }
+        asOfUtc: { type: string, format: date-time }
+        legalEntityId: { type: string, format: uuid }
+        lastDrill: { $ref: '#/components/schemas/DashboardDrillPoint' }
+        drillChart: { $ref: '#/components/schemas/DashboardDrillChart' }
+        lotCoverage: { $ref: '#/components/schemas/DashboardLotCoverage' }
+        traceGaps: { $ref: '#/components/schemas/DashboardTraceGaps' }
+        returnedOpenCases: { type: array, items: { $ref: '#/components/schemas/DashboardReturned' } }
+        frequencyWarning: { $ref: '#/components/schemas/DrillFrequencyWarning' }
+        openCaseRows: { type: array, items: { $ref: '#/components/schemas/CaseRef' } }
+    DashboardDrillPoint:
+      type: object
+      description: "1.5.0 — one Completed drill run: duration vs the CURRENT DrillTargetHours (onTarget = durationMinutes ≤ targetHours × 60)."
+      required: [runId, number, lot, endedAtUtc, durationMinutes, targetHours, onTarget]
+      additionalProperties: false
+      properties:
+        runId: { type: string, format: uuid }
+        number: { type: string }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        endedAtUtc: { type: string, format: date-time }
+        durationMinutes: { type: integer }
+        targetHours: { type: integer }
+        onTarget: { type: boolean }
+    DashboardDrillChart:
+      type: object
+      description: "1.5.0 — the last 12 Completed drill runs, oldest first, and the target line (DrillTargetHours now)."
+      required: [targetHours, runs]
+      additionalProperties: false
+      properties:
+        targetHours: { type: integer }
+        runs: { type: array, maxItems: 12, items: { $ref: '#/components/schemas/DashboardDrillPoint' } }
+    DashboardLotCoverage:
+      type: object
+      description: "1.5.0 — outbound movements of lot-controlled SKUs (reversals netted) in the last windowDays: with a lot ÷ all; percent null when there is none."
+      required: [windowDays, fromUtc, toUtc, withLot, total]
+      additionalProperties: false
+      properties:
+        windowDays: { type: integer }
+        fromUtc: { type: string, format: date-time }
+        toUtc: { type: string, format: date-time }
+        withLot: { type: integer }
+        total: { type: integer }
+        percent: { type: number }
+    DashboardTraceGaps:
+      type: object
+      description: "1.5.0 — the LOTLESS_OUTBOUND movements of the window (lot-controlled SKU, no lot), newest first; movements lists at most 20."
+      required: [windowDays, count, movements]
+      additionalProperties: false
+      properties:
+        windowDays: { type: integer }
+        count: { type: integer }
+        movements:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [transactionId, postingDate, skuId, quantity, baseUomId]
+            additionalProperties: false
+            properties:
+              transactionId: { type: string }
+              number: { type: string }
+              postingDate: { type: string, format: date-time }
+              skuId: { type: string, format: uuid }
+              quantity: { type: number }
+              baseUomId: { type: string }
+    DashboardReturned:
+      type: object
+      description: "1.5.0 — the linked return quantity of one open case per SKU + base unit (never summed across units)."
+      required: [caseId, number, skuId, baseUomId, quantity]
+      additionalProperties: false
+      properties:
+        caseId: { type: string, format: uuid }
+        number: { type: string }
+        skuId: { type: string, format: uuid }
+        baseUomId: { type: string }
+        quantity: { type: number }
+    DrillPlanInput:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, name, frequency, scopeKind, nextDueOn, ownerUserId]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        frequency: { type: string, enum: [Yearly1, Yearly2, Quarterly, CustomDays] }
+        customDays: { type: integer, minimum: 1, maximum: 730 }
+        scopeKind: { type: string, enum: [RandomFinishedGoodLot, RawMaterialLot, SelectedLot] }
+        nextDueOn: { type: string, format: date }
+        ownerUserId: { type: string, format: uuid }
+        active: { type: boolean }
+    DrillPlan:
+      type: object
+      required: [planId, code, name, frequency, scopeKind, nextDueOn, owner, active, version]
+      additionalProperties: true
+      properties:
+        planId: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        frequency: { type: string }
+        scopeKind: { type: string }
+        nextDueOn: { type: string, format: date }
+        owner: { $ref: '#/components/schemas/UserRef' }
+        active: { type: boolean }
+        version: { type: integer }
+    DrillRun:
+      type: object
+      required: [runId, number, planId, status, selectionMode, lot, startedAtUtc, steps, targetHours, version]
+      additionalProperties: true
+      properties:
+        runId: { type: string, format: uuid }
+        number: { type: string, pattern: '^RC-\d{4}-D\d{3}$' }
+        planId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/DrillRunStatus' }
+        selectionMode: { type: string, enum: [Auto, Manual] }
+        lot: { $ref: '#/components/schemas/LotRef' }
+        startedAtUtc: { type: string, format: date-time }
+        steps: { type: array, items: { type: object, additionalProperties: true } }
+        targetHours: { type: integer }
+        version: { type: integer }
+    DrillRunPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/DrillRun' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        frequencyWarning: { $ref: '#/components/schemas/DrillFrequencyWarning' }
+    DrillFrequencyWarning:
+      type: object
+      required: [warning, warningDays]
+      additionalProperties: true
+      properties:
+        warning: { type: boolean }
+        daysSinceLastCompleted: { type: integer }
+        lastCompletedAtUtc: { type: string, format: date-time }
+        warningDays: { type: integer }
+    EvidencePreview:
+      type: object
+      required: [subject, generatedAtUtc, sections]
+      additionalProperties: true
+      properties:
+        subject: { type: object, additionalProperties: true }
+        generatedAtUtc: { type: string, format: date-time }
+        sections: { type: object, additionalProperties: true, description: "1_summary, 2_trace, 3_quarantine, 4_customers, 5_returnsAndEffectiveness, 6_timeline, 7_signatures" }
+    EvidenceExport:
+      type: object
+      required: [exportId, subject, format, fileName, sha256, sizeBytes, exportedBy]
+      additionalProperties: true
+      properties:
+        exportId: { type: string, format: uuid }
+        subject: { type: object, additionalProperties: true }
+        format: { type: string, enum: [Pdf, Csv] }
+        fileName: { type: string }
+        sha256: { type: string, description: "of the produced file bytes" }
+        sizeBytes: { type: integer }
+        exportedBy: { $ref: '#/components/schemas/UserAt' }
+    EvidenceExportPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/EvidenceExport' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    SignableSubject:
+      type: object
+      required: [display, legalEntityId, fields]
+      additionalProperties: true
+      properties:
+        display: { type: string, maxLength: 300 }
+        summary: { type: array, maxItems: 20, items: { type: object, additionalProperties: true } }
+        legalEntityId: { type: string, format: uuid }
+        fields: { type: object, additionalProperties: true }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+        contractVersion: { type: string }
+  responses:
+    BadRequest: { description: Malformed request or a shape / rule code (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Forbidden: { description: Missing key / other company (CROSS_LE_FORBIDDEN), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    NotFound: { description: Unknown or another tenant's record, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Conflict: { description: A state / version / SoD / scope / signature rule refused (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Unprocessable: { description: A business rule refused (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }

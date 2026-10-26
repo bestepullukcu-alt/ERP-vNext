@@ -26,6 +26,13 @@ public static class UserAuditEvents
     public const string RoleRemoved = "user_role_removed";
     public const string AccountKindChanged = AccountKindWriter.AuditEventName;
 
+    // WP-MVP1-AUDIT1 / CT decision 2026-10-14 (CT-DECISIONS.md): the three MOD-0022 e-signature re-authentication commands reach
+    // Platform's central log through this same recorder. Their own tenant_esign_* rows in authAuditLogs are unchanged; these are
+    // the central events (K2 debt: best effort until the write-once pattern, FU-0022-AUD-02).
+    public const string ESignReauthenticated = "user_esign_reauthenticated";
+    public const string ESignWindowTicketIssued = "user_esign_window_ticket_issued";
+    public const string ESignTicketConsumed = "user_esign_ticket_consumed";
+
     public const string EntityType = "User";
 
     // Platform AuditOperation values.
@@ -57,6 +64,9 @@ public static class UserAuditEvents
         [Updated] = OperationUpdate,
         [RoleAssigned] = OperationAssign,
         [RoleRemoved] = OperationRevoke,
-        [AccountKindChanged] = OperationUpdate
+        [AccountKindChanged] = OperationUpdate,
+        [ESignReauthenticated] = OperationExecute,
+        [ESignWindowTicketIssued] = OperationExecute,
+        [ESignTicketConsumed] = OperationExecute
     };
 }

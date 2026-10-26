@@ -1,0 +1,42 @@
+{
+ "argv": [
+  "sh",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/uic-sabotage.sh",
+  "/private/tmp/claude-501/-Users-alitufanoglu-ERP-vNext/05ce4e4b-9875-47e7-8842-ee9372026895/scratchpad/sab-run-01",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01"
+ ],
+ "artifacts": [
+  {
+   "bytes": 6362,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/baseline.txt",
+   "sha256": "ea15d1ec0bea0e016960ca0c730e2f70333c7dcf62fa28bb65ada1b898754628"
+  },
+  {
+   "bytes": 802,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/sabotage.txt",
+   "sha256": "3ebf322f02613154f30a414f28ba24c49b0865910e7c579a102de9d007e0b629"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 587,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/stdout.txt",
+   "sha256": "3cc58e5da7d191de1c95e9fc4493a53405bc23ce6019a629fd0c4e9d6aac74ed"
+  }
+ ],
+ "commit": "3fbf891bbdceef89032097bd80898c1d391d21e4",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-10-23T08:16:27Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01",
+ "started_utc": "2026-10-23T08:16:25Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "26b2c73cea84a17553d3c464545071f880d7baa1"
+}

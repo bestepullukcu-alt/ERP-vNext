@@ -1,0 +1,5 @@
+## replay tenant.activated for C after Apply (soft-deleted read must come back)
+{"status":"processed"}
+tenant 711c08aa273f Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant 711c08aa273f Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+soft-deleted grants=5

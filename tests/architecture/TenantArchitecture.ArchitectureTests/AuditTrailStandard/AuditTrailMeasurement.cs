@@ -57,6 +57,13 @@ internal sealed class ServiceMeasurement
     public required IReadOnlyList<string> UnresolvedHandlers { get; init; }
     public required IReadOnlyList<string> WritingQueryHandlers { get; init; }
     public AuditLedger? Ledger { get; init; }
+
+    /// <summary>
+    /// Every source file of the service (comments and literals removed), INCLUDING top-level statements — `Program.cs` has
+    /// no type to scan, and it is where a service adds a shared behavior (AUD-001 K4: the registration is searched in the
+    /// service itself).
+    /// </summary>
+    public string SourceText { get; init; } = string.Empty;
 }
 
 internal static class AuditTrailMeasurement
@@ -323,9 +330,33 @@ internal static class AuditTrailMeasurement
             CommandsFiledAsQueries = filedAsQueries,
             UnresolvedHandlers = unresolved,
             WritingQueryHandlers = writingQueryHandlers,
-            Ledger = ledger
+            Ledger = ledger,
+            SourceText = ReadSourceText(Path.Combine(repoRoot, "services", service, "src"))
         };
     }
+
+    private static string ReadSourceText(string directory) => !Directory.Exists(directory)
+        ? string.Empty
+        : string.Join(
+            "\n",
+            Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories)
+                .Where(path => !path.Replace('\\', '/').Contains("/obj/", StringComparison.Ordinal)
+                               && !path.Replace('\\', '/').Contains("/bin/", StringComparison.Ordinal))
+                .Select(path => CSharpSourceScanner.StripCommentsAndStrings(File.ReadAllText(path))));
+
+    /// <summary>
+    /// AUD-001 K4 — how a service adds a SHARED pipeline behavior: by naming it, or by calling the Building.Blocks
+    /// registration member that names it (<c>AddCentralAudit</c>). The entry points are the <c>Add…</c> members DECLARED in
+    /// a Diten.Building.Blocks type whose body names the behavior — read from source, never listed by hand.
+    /// </summary>
+    public static IReadOnlyList<string> RegistrationEntryPoints(SourceType behavior, IReadOnlyList<SourceType> pool) =>
+        pool.Where(t => t.RelativePath.StartsWith($"services/{BuildingBlocks}/", StringComparison.Ordinal)
+                        && t.Name != behavior.Name
+                        && CSharpSourceScanner.ContainsIdentifier(t.Body, behavior.Name))
+            .SelectMany(t => Regex.Matches(t.Body, @"\bpublic\s+static\s+[\w<>\[\],\s?]+?\s(Add\w+)\s*(?:<[^<>()]*>)?\s*\(")
+                .Select(m => m.Groups[1].Value))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 
     /// <summary>
     /// Does <paramref name="text"/> CALL the write member <c>Type.Method</c>?

@@ -1,5 +1,7 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Locations.Commands;
 
@@ -7,8 +9,11 @@ namespace Diten.InventoryService.Application.Features.Locations.Commands;
 /// PATCH /api/locations/{id} (v1.1 <c>updateLocation</c>, <c>If-Match</c> required). An absent member leaves the
 /// field unchanged; <c>type</c> is not accepted (ASSUMPTION-LOC-04). A <c>parentId</c> change is a move (K-07).
 /// </summary>
-public sealed record UpdateLocationCommand : IRequest<Response<LocationDetailDto>>
+public sealed record UpdateLocationCommand : IRequest<Response<LocationDetailDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLedger("Update", "Location");
+    public Guid? CentralAuditEntityId(object? response) => Id(LocationId);
+
     public string? LocationId { get; init; }
     public string? IfMatch { get; init; }
     public Patch<string> Code { get; init; }

@@ -42,12 +42,12 @@
   <data name="StatusDispatched" xml:space="preserve"><value>Expédié</value></data>
   <data name="StatusCompleted" xml:space="preserve"><value>Terminé</value></data>
   <data name="StatusCancelled" xml:space="preserve"><value>Annulé</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>Aucun chargement trouvé.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun chargement trouvé.</value></data>
   <data name="NotProvided" xml:space="preserve"><value>Non fourni</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Référence d’assistance</value></data>
-  <data name="ListUnavailable" xml:space="preserve"><value>Les chargements n’ont pas pu être chargés. Réessayez plus tard.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Vérifiez les valeurs saisies puis réessayez.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Les chargements n’ont pas pu être chargés. Réessayez plus tard.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Vérifiez les valeurs saisies puis réessayez.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>Le plan de chargement a été créé.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>Cette demande de plan de chargement a déjà abouti.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>Réessayez sans modifier le formulaire afin de conserver l’identité de la demande.</value></data>

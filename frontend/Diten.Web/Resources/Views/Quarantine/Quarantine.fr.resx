@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Le lot a dépassé sa date de recontrôle ; inutilisable jusqu’à une décision qualité.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>La période comptable est close.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>L’emplacement est inconnu ou inutilisable.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>utilisateur inconnu</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Produit fini</value></data>
@@ -434,4 +434,25 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Note d'analyse mise à jour</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>La note est verrouillée tant qu'une décision sur cet enregistrement attend une approbation ou son application.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Note : {0} → {1} caractères · Pièces jointes : {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Disponible : {0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>Tout</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>Saisir toute la quantité de la ligne</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Clôturé</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Échantillon conservé</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Tous</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Mettre du stock en quarantaine</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>Le stock disponible choisi passe en QUARANTAINE et attend une décision dans la file de quarantaine.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Continuer</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Mettre ce stock en quarantaine ?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Enregistrement de quarantaine ouvert : {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Aide</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Met en quarantaine un stock disponible choisi à la main, pour une décision qualité (retour, produit suspect, réclamation).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Assurance qualité et responsables d’entrepôt.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Choisissez le stock</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Cherchez le lot, choisissez sa ligne disponible et la quantité ; la quantité ne peut dépasser le stock de la ligne.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirmez avec un motif</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>La confirmation demande un motif d’au moins 10 caractères ; l’enregistrement attend ensuite une décision dans la file.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
 </root>

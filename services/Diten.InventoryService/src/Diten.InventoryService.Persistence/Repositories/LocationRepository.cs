@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.RegularExpressions;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Domain.Entities;
@@ -147,7 +148,7 @@ public sealed class LocationRepository : ILocationRepository
         try
         {
             return await session.WithTransactionAsync(
-                (s, ct) =>
+                async (s, ct) =>
                 {
                     if (++attempt > 1)
                     {
@@ -155,7 +156,9 @@ public sealed class LocationRepository : ILocationRepository
                         _logger.LogInformation("Location transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
                     }
 
-                    return work(new Transaction(this, s), ct);
+                    await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
+
+                    return await work(new Transaction(this, s), ct);
                 },
                 new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),
                 cancellationToken);

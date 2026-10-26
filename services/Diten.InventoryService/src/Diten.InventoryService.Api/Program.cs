@@ -1,7 +1,11 @@
 using System.Text.Json.Serialization;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.InventoryService.Api.CentralAudit;
+using Diten.InventoryService.Api.Expiry;
 using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Api.Quarantine;
+using Diten.InventoryService.Api.Recall;
 using Diten.InventoryService.Api.Traceability;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
@@ -43,9 +47,20 @@ builder.Services.AddSingleton<IModuleManifestProvider, LotSerialTrackingManifest
 builder.Services.AddTraceability(builder.Configuration); // MOD-0174 slice P1
 // MOD-0173 posting path shared by postMovement and the MOD-0175 apply engine (MOD-0175 pack §5 Q1 seam).
 builder.Services.AddScoped<Diten.InventoryService.Application.Features.Inventory.Services.InternalMovementPostingService>();
+// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME): the name stored on each new movement (token name, or a background flow's stored name)
+builder.Services.AddScoped<Diten.InventoryService.Application.Common.IPostingActorName, Diten.InventoryService.Api.CentralAudit.PostingActorName>();
 builder.Services.AddSingleton<IModuleManifestProvider, QuarantineBlockedStockManifestProvider>(); // MOD-0175 (pack §14)
 builder.Services.AddQuarantine(builder.Configuration); // MOD-0175 slice Q1
+builder.Services.AddSingleton<IModuleManifestProvider, ExpiryFefoManifestProvider>(); // MOD-0176 (pack §14.4)
+builder.Services.AddExpiry(builder.Configuration); // MOD-0176 slice F1
+builder.Services.AddSingleton<IModuleManifestProvider, RecallReadinessManifestProvider>(); // MOD-0177 (pack §14.4)
+builder.Services.AddRecall(builder.Configuration); // MOD-0177 slice R1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+// BL-501 (AUD-001 K4): every marked write command also lands in Platform's central audit log — outbox in this database, written in
+// the command's own transaction (RequireEnlistment: every Inventory write runs in an enlisting transaction, so a success that enlisted
+// nothing — an idempotent replay — files nothing); PlatformRegistration:BaseUrl / InternalApiKey unset → events accumulate, warning +
+// /health/central-audit.
+builder.Services.AddCentralAudit<InventoryCentralAuditScope>(builder.Configuration, "Diten.InventoryService", options => options.RequireEnlistment = true);
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -142,6 +157,7 @@ app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", module = InventoryContract.ModuleId }))
     .AllowAnonymous();
+app.MapHealthChecks("/health/central-audit").AllowAnonymous(); // BL-501: Degraded while audit delivery is unconfigured / stuck
 app.MapControllers();
 
 app.Run();

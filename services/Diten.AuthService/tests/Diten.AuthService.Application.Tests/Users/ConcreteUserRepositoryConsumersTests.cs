@@ -11,7 +11,12 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// <list type="bullet">
 /// <item>the decorator's field and constructor (<c>PlatformAccountScopedUserRepository.cs</c>);</item>
 /// <item>its DI registration as itself, so the decorator can be built (<c>Persistence/DependencyInjection.cs</c>);</item>
-/// <item>the seed's own hand-built instance (<c>Seed/DataSeeder.cs</c>: runs at startup, before any request, as the system);</item>
+/// <item>the development account seed's own hand-built instance (<c>Seed/DevAccountSeed.cs</c>: runs at startup in Development
+/// only, before any request, as the system — owner correction 2026-10-15, WP-AUTH-ADMIN-BOOTSTRAP-01: it moved out of
+/// <c>Seed/DataSeeder.cs</c> with the account step);</item>
+/// <item>the first platform administrator command's account write (<c>Operations/FirstPlatformAdministratorAccount.cs</c>: an
+/// operator command outside the web host that writes the platform account itself — owner correction 2026-10-15,
+/// WP-AUTH-ADMIN-BOOTSTRAP-01);</item>
 /// <item>the one-time service-client CLI's own persistence (<c>ServiceClientOperationalPersistenceRegistration.cs</c>: an
 /// operator command outside the web host, no request and no tenant actor — nothing to hide from).</item>
 /// </list>
@@ -23,7 +28,8 @@ public sealed class ConcreteUserRepositoryConsumersTests
     {
         ["services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs"] = 2,
         ["services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"] = 1,
-        ["services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs"] = 1,
+        ["services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DevAccountSeed.cs"] = 1,
+        ["services/Diten.AuthService/src/Diten.AuthService.Persistence/Operations/FirstPlatformAdministratorAccount.cs"] = 1,
         ["services/Diten.AuthService/src/Diten.AuthService.Persistence/ServiceClientOperationalPersistenceRegistration.cs"] = 1
     };
 

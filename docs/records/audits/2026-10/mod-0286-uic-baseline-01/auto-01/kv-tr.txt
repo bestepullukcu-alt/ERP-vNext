@@ -1,0 +1,671 @@
+About	Hakkında
+AccessDenied	Erişim reddedildi.
+AccessDeniedMessage	Bu sayfaya erişim için yöneticinizden yetki isteyin.
+AccessDeniedTitle	{0} için erişim yetkiniz yok
+AccessGovernance	Erişim Yönetişimi
+AccessMatrix	Erişim Matrisi
+AccountsMenu	Hesaplar
+Action	İşlem
+Activate	Aktif Et
+Active	Aktif
+AddModule	Modül Ekle
+AddNotificationSettings	Ayar Ekle
+AddNotificationTemplate	Şablon Ekle
+AddSubscriptionPlan	Abonelik Planı Ekle
+AddTenant	Tenant Ekle
+AddWorkingCalendar	Takvim Ekle
+Address	Adres
+Admin	Yönetici
+AdminBulkDeletePartial	Bazı yöneticiler silindi, ancak istek silinemeyen bir yöneticide durdu. Kalanları görmek için listeyi yeniden yükleyin.
+AdminBulkDuplicateIds	Aynı yönetici birden fazla kez listelenmiş. Hiçbir şey silinmedi.
+AdminChangeUnavailable	Yönetici değişikliği şu anda kaydedilemedi; hiçbir şey yazılmadı. Lütfen yeniden deneyin.
+AdminEmailImmutable	Bir yöneticinin e-posta adresi değiştirilemez. Yeni adresi yeni bir yönetici olarak davet edin ve eski yöneticiyi kaldırın.
+AdminLastSuperAdminDenied	Sistemde en az bir aktif Super Admin kalmalıdır.
+AdminSeedDeleteDenied	Sistem seed yoneticisi silinemez.
+AdminSeedEmailChangeDenied	Sistem seed yöneticisinin e-posta adresi değiştirilemez.
+AdminSeedSuspendDenied	Sistem seed yoneticisi askıya alınamaz.
+AdminSelfActionDenied	Kendi yonetici hesabınızı silemez veya askıya alamazsınız.
+AdminSelfRoleDowngradeDenied	Kendi yonetici rolunuzu kaldıramazsınız.
+Apply	Uygula
+AreYouSure	Emin misiniz?
+Attributes	Özellikler
+AuditLogMenu	Audit Kaydi
+AuditRetentionMenu	Audit Retention
+Auth.Dialog.Ok	Tamam
+Auth.Error.AccountDeactivated	Hesabınız bir yönetici tarafından pasifleştirildi. Yöneticinize başvurun.
+Auth.Error.CurrentPasswordIncorrect	Mevcut şifreniz hatalı.
+Auth.Error.EmailLoginDisabled	Bu kuruluş için e-posta ile giriş kapalı.
+Auth.Error.InvalidCredentials	E-posta ya da parola hatalı, ya da hesap kısa süreliğine kilitlendi. Biraz sonra yeniden deneyin.
+Auth.Error.InvalidVerificationCode	Doğrulama kodu geçersiz veya süresi dolmuş.
+Auth.Error.LinkInvalid	Bu bağlantı artık geçerli değil. Yöneticinizden yeni bağlantı isteyin.
+Auth.Error.LoginFailed	Giriş yapılamadı. Lütfen tekrar deneyin.
+Auth.Error.LoginUnavailable	Giriş şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin.
+Auth.Error.PasswordChangeFailed	Şifreniz değiştirilemedi. Lütfen tekrar deneyin.
+Auth.Error.PasswordChangedMeanwhile	Parolanız bu arada değiştirildi (örneğin bir yönetici tarafından). Lütfen yeniden oturum açın.
+Auth.Error.PlatformPrivilegesRequired	Bu hesabın platform yönetimi rolü yok.
+Auth.Error.RequestInvalid	İstek eksik. Lütfen alanları kontrol edip tekrar deneyin.
+Auth.Error.ServiceUnavailable	Giriş hizmeti şu anda kullanılamıyor. Lütfen biraz sonra tekrar deneyin.
+Auth.Error.SessionEnded	Oturumunuz sona erdi. Lütfen yeniden giriş yapın.
+Auth.Error.TemporaryPasswordExpired	Geçici şifrenizin süresi doldu. Lütfen şifrenizi sıfırlayın.
+Auth.Error.TenantMissing	Bu giriş bağlantısında kuruluş bilgisi yok. Lütfen davet bağlantınızı yeniden kullanın.
+Auth.Error.TooManyRequests	Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyip yeniden deneyin.
+Auth.Error.VerificationChallengeRequired	Doğrulama adımının süresi doldu. Lütfen yeniden giriş yapın.
+Auth.Error.VerificationCodeRequired	Lütfen doğrulama kodunu girin.
+Auth.Error.VerificationFailed	Doğrulama tamamlanamadı. Lütfen tekrar deneyin.
+Auth.Mfa.CodeLabel	Doğrulama kodu
+Auth.Mfa.Prompt	Şu adrese gönderilen doğrulama kodunu girin:
+Auth.Mfa.Resend	Kodu yeniden gönder
+Auth.Mfa.Resending	Gönderiliyor...
+Auth.Mfa.ResentMessage	Yeni bir doğrulama kodu gönderildi.
+Auth.Mfa.ResentTitle	Kod gönderildi
+Auth.Mfa.Title	İki adımlı doğrulama
+Auth.Mfa.Verifying	Doğrulanıyor...
+Back	Geri
+BackToList	Listeye Dön
+BackToLogin	Girise don
+BaselineCannotBeDeactivated	Baseline modüller deaktive edilemez — her tenant'a otomatik gelir.
+BasicInfo	Temel Bilgiler
+BrandsMenu	Markalar
+BulkDelete	Toplu Sil
+BulkDeleteConfirm	Seçili {0} kaydı silmek istediğinize emin misiniz?
+BulkDeleteSuccess	{0} kayıt başarıyla silindi
+CalendarAllDay	Tüm gün
+CalendarDay	Gün
+CalendarMonth	Ay
+CalendarMore	+{0} daha
+CalendarNext	Sonraki
+CalendarNoEvents	Gösterilecek kayıt yok
+CalendarPrevious	Önceki
+CalendarToday	Bugün
+CalendarUnresolved	Çalışma takvimi tanımlı değil — hafta sonu ve tatiller gösterilemiyor.
+CalendarWeek	Hafta
+CampaignsMenu	Kampanyalar
+Cancel	İptal
+CategoryManagement	Kategori Yönetimi
+ChangePassword.Subtitle	Devam etmeden once gecici parolanizi degistirmelisiniz.
+ChangePassword.Title	Parola Degistir
+ClearSelection	Seçimi Temizle
+Close	Kapat
+CollapseAll	Tümünü kapat
+ColumnOrder	Sütun Sırası
+ColumnVisibility	Sütun Görünürlüğü
+ComingSoon	Bu özellik yakında eklenecektir.
+CommercialSuite	Ticari Paket
+CompositionManagement	Bileşim Yönetimi
+ConfirmAction	Devam etmek istediğinize emin misiniz?
+ConfirmPassword	Parolayi Onayla
+ConsentPreferencesMenu	Onay ve Tercihler
+ContactPerson	İletişim Kişisi
+ContactsMenu	Kişiler
+ContentEngagementJourneysMenu	İçerik Etkileşim Yolculukları
+ContractEditDraftOnly	Yalnızca taslak sözleşmeler güncellenebilir; aktifleştirilmiş bir sözleşme düzenlemeyle değil yaşam döngüsü işlemleriyle yönetilir.
+ControlledCopy.CreatedAt	Oluşturma zamanı
+ControlledCopy.CreatedBy	Oluşturan
+ControlledCopy.Filters	Filtreler
+ControlledCopy.None	Yok
+ControlledCopy.Page	Sayfa {0} / {1}
+ControlledCopy.Report	Rapor
+ControlledCopy.Rows	Satır sayısı
+ControlledCopy.Search	Arama
+ControlledCopy.Sort	Sıralama
+ControlledCopy.SortAsc	artan
+ControlledCopy.SortDesc	azalan
+ControlledCopy.Tenant	Şirket
+ControlledCopy.Uncontrolled	Bu çıktı kontrolsüz kopyadır — {0}
+ControlledDocuments	Kontrollü Belgeler
+Copied	Kopyalandı
+Copy	Kopyala
+CurrentPassword	Mevcut Parola
+CycleCapacitiesMenu	Dönem Kapasitesi
+CyclePeriodsMenu	Dönemler
+Dark	Karanlık
+DateNotRecognized	Yazdığınız bir tarih okunamadığı için kaydedilmedi. Alanın biçiminde yeniden yazın ya da takvimden seçin.
+Deactivate	Pasif Et
+DefaultTimeZone	Varsayılan Saat Dilimi
+Delete	Sil
+DeleteConfirmationSubText	Bu işlem geri alınamaz!
+DeleteConfirmationTitle	Emin misiniz?
+DeleteConfirmationYesBtn	Evet, Sil
+Description	Açıklama
+DescriptionPlaceholder	Açıklama girin...
+Details	Detaylar
+DeveloperSandbox	Geliştirici Kum Havuzu
+DocumentMasterRegister	Doküman Ana Kayıt Defteri
+DocumentationStructures	Dokümantasyon Yapıları
+DomainCodeInUse	Bu alan kodu zaten kullanımda.
+DomainManagement	Alan Yönetimi
+DtEmptyTable	Tabloda veri bulunmuyor
+DtInfo	_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor
+DtInfoEmpty	0 kayıttan 0 - 0 arasındaki kayıtlar gösteriliyor
+DtInfoFiltered	(_MAX_ kayıt içerisinden filtrelendi)
+DtLoadFailed	Liste yüklenemedi.
+DtLoadNoPermission	Bu listeyi görme yetkiniz yok.
+DtNoRecords	Eşleşen kayıt bulunamadı
+DtRetry	Yeniden Dene
+DtZeroRecords	Eşleşen kayıt bulunamadı
+Edit	Düzenle
+EditRecord	Düzenle
+EmailAddress	E-posta Adresi
+EmployeeDraftsMenu	Çalışan Taslakları
+Error	Hata
+ErrorOccurred	İşlem sırasında bir hata oluştu.
+ExpandAll	Tümünü aç
+Export	Dışa Aktar
+ExportTooLarge	Dışa aktarılacak satır sayısı çok fazla (50.000'den fazla). Süzgeci daraltıp yeniden deneyin.
+FailedToLoadData	Veri yüklenemedi. Lütfen daha sonra tekrar deneyin.
+FieldRequired	Bu alan zorunludur
+Filter	Filtrele
+ForgotPassword.SentMessage	E-posta kayitliysa sifirlama talimatlari gonderildi.
+ForgotPassword.SentTitle	E-postanizi kontrol edin
+ForgotPassword.Submit	Sifirlama baglantisi gonder
+ForgotPassword.Subtitle	E-postanizi girin, sifirlama talimatlarini gonderelim.
+ForgotPassword.Title	Parolami Unuttum?
+GatewayError	Sunucu ile iletişim sırasında bir hata oluştu.
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.
+HumanCapitalManagement	İnsan Sermayesi Yönetimi
+Import	İçe Aktar
+InterfaceRegistry	Arayüz Kayıt Defteri
+InvalidEmail	Geçersiz e-posta adresi
+InvalidFiscalYear	Geçersiz format (Örn: 01-01)
+InvalidPhone	Geçersiz telefon numarası
+InvalidUrl	Geçersiz URL formatı
+InvitationEmailSendFailed	Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.
+InviteAccept	Kabul Et
+InviteAcceptAnyway	Yine De Kabul Et
+InviteCardType	Toplantı daveti
+InviteDecline	Reddet
+InviteOverlapText	Planlı bloğunuz "{0}" ({1}) ile çakışıyor. Yine de kabul edilsin mi?
+InviteOverlapTitle	Bu toplantı planınızla çakışıyor
+InvoiceUpdateNotSupported	Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.
+ItemMaster	Kalem Kartı
+KnowledgeConceptsMenu	Kavramlar
+KnowledgeMenu	Bilgi Bankası
+KnowledgePathsMenu	Bilgi Yolları
+LegalEntities	Tüzel Kişilikler
+LegalEntity	Tüzel Kişilik
+LegalEntityNone	Bu kiracının etkin tüzel kişiliği yok.
+LegalEntityRequired	Bir tüzel kişilik seçin.
+LegalEntityUnavailable	Tüzel kişilik listesi kullanılamıyor.
+LevelPrefix	Seviye
+Light	Aydınlık
+Loading	Yükleniyor...
+LogOut	Çıkış Yap
+Login.Email	E-posta
+Login.EmailOrUsername	E-posta veya kullanıcı adı
+Login.EmailRequired	E-posta zorunludur.
+Login.Error	Geçersiz e-posta veya şifre
+Login.ErrorRequired	E-posta ve şifre zorunludur
+Login.ErrorTitle	Hata
+Login.ForgotPassword	Parolami Unuttum?
+Login.Loading	Giriş yapılıyor...
+Login.Password	Şifre
+Login.RememberMe	Beni Hatırla
+Login.Submit	Giriş Yap
+Login.Subtitle	E-posta ve şifrenizle giriş yapın
+Login.Title	Giriş Yap
+MDM	MDM
+MarkAllAsRead	Tümünü okundu olarak işaretle
+MasterData	Ana Veri
+ModuleCatalog	Modül Kataloğu
+ModuleCodeInUse	Bu modül kodu zaten kullanılıyor.
+ModuleManagedByCode	Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.
+MyProfile	Profilim
+Nav.Domain.ADMINISTRATION	Yönetim
+Nav.Domain.DEVENABLEMENT	Geliştirici Etkinleştirme
+Nav.Domain.DOCUMENTMANAGEMENT	Doküman Yönetimi
+Nav.Domain.HUMANCAPITAL	İnsan Sermayesi
+Nav.Domain.MANAGEMENTGOVERNANCE	Yönetim ve Yönetişim
+Nav.Domain.MANUFACTURING	Üretim
+Nav.Domain.MASTERDATAMANAGEMENT	Ana Veri Yönetimi
+Nav.Domain.PLATFORMSHAREDSERVICES	Platform Paylaşılan Hizmetler
+Nav.Domain.PORTFOLIODELIVERY	Portföy Teslimatı
+Nav.Domain.PROCUREMENT	Satın Alma
+Nav.Domain.SALES	Satış
+Nav.Domain.SUPPLYCHAINEXECUTION	Tedarik Zinciri Yürütme
+Nav.Domain.TALENTECOSYSTEM	Yetenek Ekosistemi
+Nav.Domain.WORKSPACE	Çalışma Alanı
+Nav.Module.ACCESSGOVERNANCE	Erişim Yönetişimi
+Nav.Module.ADMINISTRATORS	Yöneticiler
+Nav.Module.AUDIT	Denetim
+Nav.Module.BOMROUTINGS	Reçete ve Rotalar
+Nav.Module.BRANDPRODUCTMASTER	Marka ve Ürün Ana Verisi
+Nav.Module.CAPACITYPLANNING	Kapasite Planlama
+Nav.Module.CARRIERMANAGEMENT	Taşıyıcı Yönetimi
+Nav.Module.CLAIMSMANAGEMENT	Hasar Talebi Yönetimi
+Nav.Module.CONTRACTS	Sözleşmeler
+Nav.Module.CRM	Müşteri İlişkileri Yönetimi
+Nav.Module.DEMANDPLANNING	Talep Planlama
+Nav.Module.DOCUMENTMANAGEMENT	Doküman Yönetimi
+Nav.Module.ESIGN	e-İmza
+Nav.Module.EXPIRYFEFOMANAGEMENT	Son Kullanma / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	Mal Kabul
+Nav.Module.HCMEMPLOYEEMASTER	Çalışan Ana Verisi
+Nav.Module.HUMANCAPITAL	İnsan Sermayesi
+Nav.Module.INTERFACEREGISTRY	Arayüz Kaydı
+Nav.Module.INVENTORYLEDGER	Envanter
+Nav.Module.INVOICEMATCH	Fatura Eşleştirme
+Nav.Module.LEGALENTITY	Tüzel Kişilik
+Nav.Module.LOOKUPS	Referans Listeleri
+Nav.Module.LOTSERIALTRACKING	Lot / Seri Takibi
+Nav.Module.MEETINGS	Toplantılar
+Nav.Module.MODULECATALOG	Modül Kataloğu
+Nav.Module.MODULEDOMAINS	Modül Alanları
+Nav.Module.MODULESERVICES	Modül Servisleri
+Nav.Module.NOTIFICATIONS	Bildirimler
+Nav.Module.ORGANIZATION	Organizasyon
+Nav.Module.PERSON	Kişi Rehberi
+Nav.Module.PPM	Proje ve Portföy Yönetimi
+Nav.Module.PROCUREMENTSUPPLIERS	Tedarikçiler
+Nav.Module.PRODUCTITEMSKUMASTER	Ürün / Kalem / SKU Ana Verisi
+Nav.Module.PURCHASEORDERS	Satın Alma Siparişleri
+Nav.Module.QUARANTINEBLOCKEDSTOCK	Kalite
+Nav.Module.RECALLREADINESS	Geri Çağırma Hazırlığı
+Nav.Module.REFERENCEDATA	Referans Verileri
+Nav.Module.REQUISITIONS	Talepler
+Nav.Module.REVERSELOGISTICS	Tersine Lojistik
+Nav.Module.ROUTINGLOADPLANNING	Rota ve Yük Planlama
+Nav.Module.SHIPMENTTRACKINGPOD	Sevkiyat Takibi ve Teslimat Kanıtı
+Nav.Module.SOPWORKFLOWSIGNOFFS	S&amp;OP İş Akışı ve Onaylar
+Nav.Module.SOURCING	Tedarik
+Nav.Module.SUBSCRIPTIONFEATURES	Abonelik Özellikleri
+Nav.Module.SUBSCRIPTIONPLANS	Abonelik Planları
+Nav.Module.SUPPLIERS	Tedarikçiler
+Nav.Module.TALENTECOSYSTEM	Yetenek Ekosistemi
+Nav.Module.TASKS	Görev Tanımları
+Nav.Module.TENANTS	Kiracılar
+Nav.Module.TENANTSETTINGS	Kiracı Ayarları
+Nav.Module.TIMEENTRY	Zaman Çizelgesi
+Nav.Module.WORKAGGREGATION	Görev Merkezi
+Nav.Module.WORKFLOW	İş Akışı
+Nav.Module.WORKINGCALENDAR	Çalışma Takvimi
+Nav.Module.WORKINGCALENDARIMPORT	Çalışma Takvimi İçe Aktarma
+Nav.Module.WORKREPORT	İş Raporu
+Nav.Page.ACCESSMATRIX	Doküman Erişim Matrisi
+Nav.Page.ACCOUNT	Müşteri Hesabı
+Nav.Page.ACCOUNTCONTACT	Hesap Kişisi
+Nav.Page.ACCOUNTRELATIONSHIP	Hesap İlişkisi
+Nav.Page.ACCOUNTS	Hesaplar
+Nav.Page.APPLICANTINTAKE	Aday Başvuru Alımı
+Nav.Page.ASSOCIATIONMEMBERSHIPS	Dernek Üyelikleri
+Nav.Page.ASSOCIATIONOPERATIONS	Dernek Operasyonları
+Nav.Page.ATTRIBUTE	Öznitelik
+Nav.Page.BENEFITCOMMITMENTS	Fayda Taahhütleri
+Nav.Page.BLOCKEDSTOCK	Bloke Stok
+Nav.Page.BOMS	Ürün Reçeteleri
+Nav.Page.BRANDS	Markalar
+Nav.Page.CAMPAIGN	Kampanya
+Nav.Page.CAMPAIGNS	Kampanyalar
+Nav.Page.CAMPAIGNSNAPSHOT	Kampanya Anlık Görüntüsü
+Nav.Page.CAMPAIGNTARGET	Kampanya Hedefi
+Nav.Page.CANDIDATECAREERPASSPORT	Aday Kariyer Pasaportu
+Nav.Page.CANDIDATEDISPUTES	Aday İtirazları
+Nav.Page.CANDIDATEPIPELINE	Aday Hattı
+Nav.Page.CANDIDATEPROFILES	Aday Profilleri
+Nav.Page.CAPACITYPLANS	Kapasite Planları
+Nav.Page.CARRIERS	Taşıyıcılar
+Nav.Page.CLAIMS	İddialar
+Nav.Page.COMPENSATIONBENEFITS	Ücret ve Yan Haklar
+Nav.Page.COMPETENCYSKILLS	Yetkinlik ve Beceriler
+Nav.Page.COMPETITORPRODUCTS	Rakip ürünler
+Nav.Page.CONSENT	Rıza
+Nav.Page.CONSENTPREFERENCES	Onay ve Tercihler
+Nav.Page.CONSENTVISIBILITYPOLICIES	Onay Görünürlük Politikaları
+Nav.Page.CONTACT	Kişi
+Nav.Page.CONTACTS	Kişiler
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	İçerik Etkileşim Yolculukları
+Nav.Page.CONTENTSETS	İçerik Setleri
+Nav.Page.CONTRACTS	Sözleşme ve Clause Kütüphanesi
+Nav.Page.CONTROLLEDDOCUMENTS	Kontrollü Dokümanlar
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	Potansiyel Eşikleri
+Nav.Page.CUSTOMFIELDS	Özel Alanlar
+Nav.Page.CYCLECAPACITIES	Dönem Kapasitesi
+Nav.Page.CYCLECAPACITY	Döngü Kapasitesi
+Nav.Page.CYCLEPERIOD	Döngü Dönemi
+Nav.Page.CYCLEPERIODS	Dönemler
+Nav.Page.DATAQUALITY	Veri Kalitesi
+Nav.Page.DEFINITIONS	İş Akışı Tanımları
+Nav.Page.DEMANDPLANNING	Talep Planlama
+Nav.Page.DEVELOPMENTPLANS	Gelişim Planları
+Nav.Page.DOCUMENTLIST	Doküman Listesi
+Nav.Page.EARLYWARNINGSIGNALS	Erken Uyarı Sinyalleri
+Nav.Page.ELIGIBILITYPOLICIES	Uygunluk Politikaları
+Nav.Page.EMPLOYEE	Çalışan
+Nav.Page.EMPLOYEEMASTER	Çalışan Ana Verisi
+Nav.Page.EMPLOYEEONBOARDING	Çalışan Oryantasyonu
+Nav.Page.EMPLOYEEPROJECTIONS	Çalışan Projeksiyonları
+Nav.Page.EMPLOYMENTCHANGES	İstihdam Değişiklikleri
+Nav.Page.ESIGNAUDITEXPORT	Denetim Dışa Aktarımı
+Nav.Page.ESIGNMEANINGS	İmza Anlamları
+Nav.Page.ESIGNMYSIGNATURE	İmzam
+Nav.Page.ESIGNPOLICY	e-İmza Politikası
+Nav.Page.ESIGNREQUESTS	İmza Talepleri
+Nav.Page.ESIGNSAMPLEAPPROVALS	İmza Örneği Onayları
+Nav.Page.ESIGNVERIFICATION	Doğrulama
+Nav.Page.EXITREFERENCERECORDS	Çıkış Referans Kayıtları
+Nav.Page.EXPIREDSTOCK	Süresi Dolmuş Stok
+Nav.Page.EXPIRYAPPROACHING	Son Kullanma Yaklaşanlar
+Nav.Page.EXPIRYDASHBOARD	FEFO Paneli
+Nav.Page.EXPIRYEVIDENCE	Kanıt Paketi
+Nav.Page.EXPIRYEXCEPTIONDETAILS	İstisna Detayı
+Nav.Page.EXPIRYEXCEPTIONS	İstisna Kutusu
+Nav.Page.EXPIRYPOLICY	Raf Ömrü Kuralları ve Ayarlar
+Nav.Page.FEFOORDER	FEFO Sırası
+Nav.Page.FIELDDEFINITIONS	Alan Tanımları
+Nav.Page.FINISHEDGOODS	Bitmiş Ürünler
+Nav.Page.GLOBALPRODUCTS	Küresel Ürünler
+Nav.Page.GRN	Mal Kabul
+Nav.Page.GSKUS	GSKU’lar
+Nav.Page.HEADCOUNTBUDGET	Kadro Bütçesi
+Nav.Page.HIERARCHY	Hiyerarşi
+Nav.Page.HIRINGRISKINDICATORS	İşe Alım Risk Göstergeleri
+Nav.Page.HRCASEMANAGEMENT	İK Vaka Yönetimi
+Nav.Page.HRCOMPLIANCE	İK Uyumu
+Nav.Page.HRDOCUMENTATION	İK Dokümantasyonu
+Nav.Page.HRKPIANALYTICS	İK KPI Analitiği
+Nav.Page.INBOX	Gelen Kutusu
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	Sektör Bilgi Ağı
+Nav.Page.INDUSTRYSKILLPASSPORT	Sektör Beceri Pasaportu
+Nav.Page.INDUSTRYSUCCESSIONPOOL	Sektör Yedekleme Havuzu
+Nav.Page.INDUSTRYTALENTPOOL	Sektör Yetenek Havuzu
+Nav.Page.INITIATIVES	Girişimler
+Nav.Page.INSTANCES	Doküman Örnekleri
+Nav.Page.INVESTMENTCASES	Yatırım Vakaları
+Nav.Page.INVOICEMATCH	Fatura Yakalama ve 3-Yönlü Eşleştirme
+Nav.Page.ITEMS	Kalemler
+Nav.Page.KNOWLEDGE	Bilgi Bankası
+Nav.Page.KNOWLEDGECONCEPT	Bilgi Kavramı
+Nav.Page.KNOWLEDGECONCEPTS	Kavramlar
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	İçerik Etkileşim Yolculuğu
+Nav.Page.KNOWLEDGEPATH	Bilgi Yolu
+Nav.Page.KNOWLEDGEPATHS	Bilgi Yolları
+Nav.Page.KNOWLEDGESUBJECT	Bilgi Konusu
+Nav.Page.LEARNINGTRAINING	Öğrenme ve Eğitim
+Nav.Page.LEGALENTITIES	Tüzel Kişilikler
+Nav.Page.LEGALPROFILES	Ülke Yasal Profilleri
+Nav.Page.LOADS	Yükler
+Nav.Page.LOCATIONTREE	Lokasyonlar
+Nav.Page.LOTMIGRATION	Elle Girilmiş Lotları Aktarma
+Nav.Page.LOTS	Lot Gezgini
+Nav.Page.LOTTRACE	İzlenebilirlik
+Nav.Page.LSKUS	Yerel SKU'lar
+Nav.Page.MASTERREGISTER	Doküman Ana Kayıt Defteri
+Nav.Page.MEETINGREPORT	Toplantı Raporu
+Nav.Page.MEETINGS	Toplantılar
+Nav.Page.MEETINGSERIES	Toplantı Serileri
+Nav.Page.MEETINGTYPES	Toplantı Türleri
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	Mentorluk Öneri Ağı
+Nav.Page.MENUSETTINGS	Menü Ayarları
+Nav.Page.MODEL	Model
+Nav.Page.MYTIMESHEET	Zaman Çizelgem
+Nav.Page.NODE	Düğüm
+Nav.Page.OBJECTIONRESPONSES	İtiraz Kütüphanesi
+Nav.Page.OFFBOARDINGCASES	İşten Ayrılış Vakaları
+Nav.Page.OFFERMANAGEMENT	Teklif Yönetimi
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	Alan Tanımları
+Nav.Page.ORGANIZATIONUNITS	Organizasyon Birimleri
+Nav.Page.OVERRIDE	İstisna
+Nav.Page.OVERVIEW	Genel Bakış
+Nav.Page.PAYBENCHMARKING	Ücret Kıyaslama
+Nav.Page.PERFORMANCEREVIEWS	Performans Değerlendirmeleri
+Nav.Page.PLANNEDVISIT	Planlı Ziyaret
+Nav.Page.PLANNEDVISITS	Planlanan Ziyaretler
+Nav.Page.PORTFOLIOS	Portföyler
+Nav.Page.POSITIONASSIGNMENTS	Pozisyon Atamaları
+Nav.Page.POSITIONS	Pozisyonlar
+Nav.Page.PREFERENCE	Tercih
+Nav.Page.PRODUCTABBREVIATIONS	Ürün Kısaltmaları
+Nav.Page.PRODUCTS	Ürünler
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	Profesyonel İtibar Defteri
+Nav.Page.PROGRAMS	Programlar
+Nav.Page.PROJECTS	Projeler
+Nav.Page.PURCHASEORDERS	Satın Alma Siparişleri
+Nav.Page.QMSBASELINES	KYS Temel Çizgileri
+Nav.Page.QUARANTINEQUEUE	Karantina Kuyruğu
+Nav.Page.QUARANTINESETTINGS	Karantina Ayarları
+Nav.Page.RDSETS	Referans Veri Kümeleri
+Nav.Page.RECALLCASEDETAILS	Geri Çağırma Vakası
+Nav.Page.RECALLCASES	Geri Çağırma Vakaları
+Nav.Page.RECALLDASHBOARD	Geri Çağırma Hazırlığı
+Nav.Page.RECALLDRILLS	Tatbikat Planlayıcı
+Nav.Page.RECALLEVIDENCE	Geri Çağırma Kanıt Paketi
+Nav.Page.RECALLSETTINGS	Geri Çağırma Ayarları
+Nav.Page.RECALLTRACE	Geri Çağırma İzleme
+Nav.Page.RECORDS	Kayıtlar
+Nav.Page.RECURRENCERULES	Yineleme Kuralları
+Nav.Page.REFERENCEEXCHANGE	Referans Değişimi
+Nav.Page.REHIRERECOMMENDATIONS	Yeniden İşe Alım Önerileri
+Nav.Page.REPORTINGLINE	Raporlama Hattı
+Nav.Page.REPORTS	Raporlar
+Nav.Page.REPOSITORYASSESSMENT	Depo Değerlendirmeleri
+Nav.Page.REQUISITIONS	Talepler
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	Kısıtlı Bütünlük Sicili
+Nav.Page.RETESTQUEUE	Yeniden Test Kuyruğu
+Nav.Page.RETURNS	İadeler
+Nav.Page.REVIEWBOARD	Değerlendirme Kurulu
+Nav.Page.ROLEPERMISSIONS	Rol İzinleri
+Nav.Page.ROLES	Roller
+Nav.Page.SAFETYTEXTS	Güvenlilik Metinleri
+Nav.Page.SANDOPPLANS	S&amp;OP Planları
+Nav.Page.SECTORMOBILITYINTELLIGENCE	Sektör Hareketlilik İstihbaratı
+Nav.Page.SECTORTALENTTRENDS	Sektör Yetenek Trendleri
+Nav.Page.SECURITYSETTINGS	Güvenlik Ayarları
+Nav.Page.SEGMENT	Segment
+Nav.Page.SEGMENTS	Segmentler
+Nav.Page.SELFSERVICE	Self Servis
+Nav.Page.SENSITIVEACCESS	Hassas Erişim
+Nav.Page.SERIALS	Seri Gezgini
+Nav.Page.SHIPMENTCLAIMS	Hasar Talepleri
+Nav.Page.SHIPMENTS	Sevkiyatlar
+Nav.Page.SKILLSGAPHEATMAP	Beceri Açığı Isı Haritası
+Nav.Page.SOURCING	Tedarik
+Nav.Page.STOCKLEDGER	Stok Defteri
+Nav.Page.STRATEGYTEMPLATE	Strateji Şablonu
+Nav.Page.STRATEGYTEMPLATES	Strateji Şablonları
+Nav.Page.SUCCESSION	Yedekleme Planlaması
+Nav.Page.SUPPLIERS	Tedarikçiler
+Nav.Page.TALENTDATAFOUNDATION	Yetenek Veri Temeli
+Nav.Page.TALENTDEVELOPMENTNETWORK	Yetenek Geliştirme Ağı
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	Yetenek Arz Talep Tahmini
+Nav.Page.TASKCHECKLISTTEMPLATES	Kontrol Listesi Şablonları
+Nav.Page.TASKCREATE	Yeni görev
+Nav.Page.TASKDETAIL	Görev detayı
+Nav.Page.TASKDOCUMENTLIST	Kontrollü Dokümanlar
+Nav.Page.TASKEDIT	Görevi düzenle
+Nav.Page.TASKFIELDDEFINITIONS	Alan Tanımları
+Nav.Page.TASKRECURRENCERULES	Yinelenen Görev Kuralları
+Nav.Page.TASKS	Görevler
+Nav.Page.TASKTEMPLATES	Görev Şablonları
+Nav.Page.TASKTYPES	Görev Türleri
+Nav.Page.TASKWORKREPORT	İş Raporu
+Nav.Page.TEMPLATEMASTERS	Kurumsal Şablon Ana Kayıtları
+Nav.Page.TEMPLATEVARIANTS	Şablon Varyantları
+Nav.Page.TENANTNAVIGATION	Menü Ayarları
+Nav.Page.TENANTSECURITY	Güvenlik Ayarları
+Nav.Page.TERRITORY	Bölge
+Nav.Page.TERRITORYMANAGEMENT	Bölge Yönetimi
+Nav.Page.TERRITORYMODEL	Bölge Modeli
+Nav.Page.TERRITORYNODE	Bölge Düğümü
+Nav.Page.TIMEAPPROVALS	Zaman Çizelgesi Onayları
+Nav.Page.TIMEATTENDANCELEAVE	Zaman, Devam ve İzin
+Nav.Page.TIMECATEGORIES	İş Kategorileri
+Nav.Page.TIMESETTINGS	Zaman Kaydı Ayarları
+Nav.Page.TRUSTLEVELS	Güven Düzeyleri
+Nav.Page.USERROLES	Kullanıcı Rolleri
+Nav.Page.USERS	Kullanıcılar
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	Doğrulanmış Sertifika Sicili
+Nav.Page.VERIFIEDPARTICIPANTS	Doğrulanmış Katılımcılar
+Nav.Page.VISITEVIDENCESETTINGS	Ziyaret Kanıtı
+Nav.Page.VISITEXECUTION	Ziyaret Yürütme
+Nav.Page.VISITFREQUENCYPOLICIES	Ziyaret Sıklığı Politikaları
+Nav.Page.VISITPLANNING	Ziyaret Planlama
+Nav.Page.VISITWORKSPACE	Ziyaret Çalışma Alanı
+Nav.Page.WORKCENTER	Görev Merkezi
+Nav.Page.WORKFORCEANALYTICS	İş Gücü Analitiği
+Nav.Page.WORKFORCEPLANNING	İş Gücü Planlaması
+Nav.Page.WORKINGCALENDARIMPORTS	Çalışma Takvimi İçe Aktarımları
+Nav.Page.WORKINGCALENDAROVERRIDES	Çalışma Takvimi İstisnaları
+Nav.Page.WORKINGCALENDARS	Çalışma Takvimleri
+NavigationLoadFailed	Menü yüklenemedi
+NavigationLoadFailedHint	Yeniden denemek için sayfayı yenileyin.
+NewNotifications	{0} Yeni
+NewPassword	Yeni Parola
+NoNotifications	Bildirim yok
+NoRecords	Kayıt yok
+NoRecordsFound	Henüz alt kayıt bulunmuyor.
+NotAvailable	Mevcut Değil
+Notification	Bildirim
+NotificationDispatchesMenu	Bildirim Gönderimleri
+NotificationEventsMenu	Bildirim Olayları
+NotificationSettingsMenu	Bildirim Ayarları
+NotificationTemplatesMenu	Bildirim Şablonları
+NumericOnly	Sadece rakam girilebilir
+Organization	Organizasyon
+OrganizationUnits	Organizasyon Birimleri
+Overview	Genel Bakış
+PDF	PDF
+Passive	Pasif
+Password.Error.CurrentRequired	Mevcut şifre gereklidir.
+Password.Error.NeedsSpecial	Şifre en az bir özel karakter içermelidir.
+Password.Error.NeedsUppercase	Şifre en az bir büyük harf içermelidir.
+Password.Error.NewRequired	Yeni şifre gereklidir.
+Password.Error.Required	Şifre gereklidir.
+Password.Error.ResetEmailRequired	E-posta adresi gereklidir.
+Password.Error.ResetTokenRequired	Sıfırlama anahtarı gereklidir.
+Password.Error.TooLong	Şifre en fazla {0} karakter olabilir.
+Password.Error.TooShort	Şifre en az {0} karakter olmalıdır.
+Perm.Entity.APPROVALS	Onaylar
+Perm.Entity.CATEGORIES	Kategoriler
+Perm.Entity.CHECKLISTTEMPLATES	Kontrol Listesi Şablonları
+Perm.Entity.CONTENTSCOPE	İçerik Kapsamı
+Perm.Entity.CONTENTSET	İçerik Seti
+Perm.Entity.ELIGIBILITY	Uygunluk
+Perm.Entity.SETTINGS	Ayarlar
+Perm.Entity.TEMPLATES	Şablonlar
+Perm.Entity.TIMESHEETS	Zaman Çizelgeleri
+Perm.Entity.VISITFREQUENCYPOLICY	Ziyaret Sıklığı Politikası
+Perm.Entity.WEEKS	Haftalar
+Perm.Module.CRMACCOUNT	CRM Müşteri Hesapları
+Perm.Module.CRMCONTACT	CRM Kişileri
+Perm.Module.CRMCONTENTCOMPOSITION	CRM İçerik Kurgusu
+Perm.Module.CRMDOCTORINSIGHTS	CRM Hekim İçgörüleri
+Perm.Module.CRMKNOWLEDGE	CRM Bilgi Yönetimi
+Perm.Module.CRMPLANNEDVISIT	CRM Planlanan Ziyaretler
+Perm.Module.CRMTERRITORY	CRM Bölgeleri
+Perm.Module.CRMVISITPLAN	CRM Ziyaret Planlama
+Perm.Module.CRMVISITREPORT	CRM Ziyaret Raporları
+Perm.Module.MOD0251	Çalışan Kaydı (Temel İK)
+Perm.Module.TASKS	Görevler
+PermissionsMenu	İzinler
+PhoneNumber	Telefon Numarası
+PlannedVisitsMenu	Planlanan Ziyaretler
+Platform	Platform Altyapisi
+PlatformAdministration	Platform Yönetimi
+PlatformAdministrators	Platform Yoneticileri
+PositionAssignments	Pozisyon Atamaları
+Positions	Pozisyonlar
+PrimaryCurrency	Ana Para Birimi
+Print	Yazdır
+ProductMaster	Ürün Kartı
+ProductsMenu	Ürünler
+PurchaseOrderUpdateNotSupported	Satın alma siparişi güncelleme desteklenmiyor; yeni bir sipariş oluşturun veya bunu onaylayın.
+QmsBaselines	QMS Baseline'lari
+Reconciliation	Mutabakat
+RecordActivated	Kayıt aktifleştirildi.
+RecordCreated	Kayıt başarıyla oluşturuldu.
+RecordDeleted	Kayıt başarıyla silindi.
+RecordSaved	Değişiklikler başarıyla kaydedildi.
+RecordUpdated	Kayıt başarıyla güncellendi.
+ReferenceDataMenu	Referans Veri
+RepositoryAssessments	Depo Değerlendirmeleri
+RequiredProgress	Zorunlu Alan: {{0}} / {{1}}
+RequiredStatus	Zorunlu: {0} / {1}
+RequisitionUpdateNotSupported	Talep güncelleme desteklenmiyor; yeni bir talep oluşturun veya bunu onaya gönderin.
+Reset	Sıfırla
+ResetPassword.Mismatch	Parolalar eslesmiyor.
+ResetPassword.Required	Tum parola alanlari zorunludur.
+ResetPassword.Subtitle	Yeni parolaniz daha once kullandiklarinizdan farkli olmalidir.
+ResetPassword.SuccessMessage	Parolaniz guncellendi.
+ResetPassword.SuccessTitle	Parola guncellendi
+ResetPassword.Title	Parola Sifirla
+RfxUpdateNotSupported	RFx güncelleme desteklenmiyor; yeni bir RFx oluşturun veya yayınla/teklif/kazanan akışıyla yönetin.
+RoleName_Admin	Yönetici
+RoleName_ReadOnly	Salt Okunur
+RoleName_SuperAdmin	Süper Yönetici
+RoleName_Viewer	İzleyici
+RolePermissionAssignmentMenu	Rol İzinleri
+RolesMenu	Roller
+SKUManagement	SKU Yönetimi
+Sandbox	Sandbox
+Save	Kaydet
+SaveView	Görünümü Kaydet
+SavedNotActivated	Kaydedildi, ancak aktifleştirilemedi.
+Saving	Kaydediliyor...
+Search	Ara..
+SearchFilter	Ara ve Filtrele
+Sector	Sektör
+SegmentsMenu	Segmentler
+SelectPlaceholder	Seçiniz...
+SelectedCount	kayıt seçildi
+SelfAccessMenu	Erişimim
+ServiceCodeInUse	Servis kodu zaten kullanımda.
+ServiceManagement	Servis Yönetimi
+SetNewPassword	Yeni parolayi ayarla
+Settings	Ayarlar
+ShellSearchPlaceholder	Ara ({0})
+Shortcuts.Close	Kapat
+Shortcuts.DialogTitle	Klavye kısayolları
+Shortcuts.Key.Space	Boşluk
+Shortcuts.Scope.Global	Her yerde
+Shortcuts.Scope.TaskDetails	Görev detayı
+Shortcuts.Scope.WorkCenter	Görev Merkezi
+Shortcuts.ShowList	Bu listeyi göster
+Shortcuts.SilenceNote	Bir alana yazarken ya da bir diyalog veya yan panel açıkken kısayollar çalışmaz.
+Shortcuts.Task.Back	Görev listesine dön
+Shortcuts.Task.Edit	Görevi düzenle
+Shortcuts.Wcn.Accept	Seçili kaydı kabul et veya onayla
+Shortcuts.Wcn.ClearSelection	Seçimi temizle
+Shortcuts.Wcn.Next	Sonraki kaydı seç
+Shortcuts.Wcn.Open	Seçili kaydı aç
+Shortcuts.Wcn.OpenFocused	Odaktaki satırı aç
+Shortcuts.Wcn.Previous	Önceki kaydı seç
+Shortcuts.Wcn.Reject	Seçili kaydı reddet veya iade et
+Shortcuts.Wcn.Tabs	Sekmeler arasında geç (odak bir sekmedeyken)
+ShowAll	Tümünü Göster
+Status	Durum
+StrategyTemplatesMenu	Strateji Şablonları
+SubRecords	Alt Kayıtlar
+SubscriptionFeatures	Abonelik Ozellikleri
+SubscriptionPlans	Abonelik Planlari
+Success	Başarılı
+SystemTheme	Sistem
+TagsCount	{0} etiket
+TagsPlaceholder	Etiket yazıp Enter'a basın
+TagsRemove	{0} etiketini kaldır
+TaxNumber	Vergi Numarası
+TemplateMasters	Kurumsal Şablonlar
+TemplateVariants	Şablon Varyantları
+TenantManagementMenu	Tenant Yönetimi
+TerritoryManagementMenu	Bölge Yönetimi
+Title	Başlık
+ToggleTheme	Temayı Değiştir
+Unauthorized	Yetkisiz
+Unknown	Bilinmiyor
+Update	Güncelle
+User	Kullanıcı
+UserRoleAssignmentMenu	Kullanıcı Rolleri
+UsersMenu	Kullanıcılar
+ValidationErrors	Hata: {0}
+ValidationFailed	Lütfen zorunlu alanları doldurun.
+VariantManagement	Varyant Yönetimi
+Variants	Varyantlar
+ViewAllNotifications	Tüm bildirimleri gör
+ViewDetails	Görüntüle
+Website	Web Sitesi
+WorkCenterNextMenu	Görev Merkezi (Yeni)
+WorkflowApprovalsMenu	İş Akışı Onayları
+WorkingCalendarsMenu	Çalışma Takvimleri
+Workspace	Çalışma Alanı

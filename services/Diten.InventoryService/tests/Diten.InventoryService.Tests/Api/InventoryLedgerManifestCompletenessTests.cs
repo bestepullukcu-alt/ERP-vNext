@@ -213,6 +213,10 @@ public sealed class InventoryLedgerManifestCompletenessTests
             .Where(t => t.Namespace?.EndsWith(".Controllers.Traceability", StringComparison.Ordinal) != true)
             // MOD-0175: the quarantine controllers belong to QUARANTINE-BLOCKED-STOCK (own completeness test, QuarantineManifestTests).
             .Where(t => t.Namespace?.EndsWith(".Controllers.Quarantine", StringComparison.Ordinal) != true)
+            // MOD-0176: the expiry controller belongs to EXPIRY-FEFO-MANAGEMENT (own completeness test, ExpiryArchitectureTests).
+            .Where(t => t.Namespace?.EndsWith(".Controllers.Expiry", StringComparison.Ordinal) != true)
+            // MOD-0177: the recall controller belongs to RECALL-READINESS (own completeness test, RecallArchitectureTests).
+            .Where(t => t.Namespace?.EndsWith(".Controllers.Recall", StringComparison.Ordinal) != true)
             .SelectMany(t => t.GetCustomAttributes<HasPermissionAttribute>(inherit: true)
                 .Concat(t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true))))

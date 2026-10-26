@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 
@@ -17,6 +18,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     private readonly ITenantContext _tenantContext;
     private readonly IPermissionRepository _permissionRepository;
     private readonly IRoleAuditRecorder _rbacAudit;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
 
     public RevokePermissionCommandHandler(
         IRoleRepository roleRepository,
@@ -27,8 +29,10 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         IPermissionRepository permissionRepository,
-        IRoleAuditRecorder rbacAudit)
+        IRoleAuditRecorder rbacAudit,
+        IRecoveryCapabilityGuard recoveryGuard)
     {
+        _recoveryGuard = recoveryGuard;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _userRoleRepository = userRoleRepository;
@@ -63,6 +67,17 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         if (target.GrantSource != GrantSource.Manual)
             return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionGrantManaged, "System/Module grants are provisioning-managed and cannot be manually removed.", 409);
 
+        // WP-USERS-ROLES-SMALL-02 — the key is read BEFORE the write now (it used to be read after, for the audit only):
+        // taking auth.users.create from a role must not leave the tenant with no ACTIVE account that can create users. An
+        // unknown key is not auth.users.create — the rule lets it through and the flow goes on as before.
+        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
+        if (await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                tenantId, new RecoveryCapabilityChange.RevokeRolePermission(request.RoleId, permission?.Key), ct))
+        {
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionRevokeLastSteward,
+                "Removing this permission would leave the tenant with no active account that can create users.", 409);
+        }
+
         await _rolePermissionRepository.RevokeAsync(request.RoleId, request.PermissionId, tenantId, ct);
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
@@ -85,8 +100,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
             await _refreshTokenRepository.RevokeAllByUserAsync(userId, tenantId, ct);
         }
 
-        // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort for readability).
-        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
+        // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort above, for readability).
         // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
         await _rbacAudit.RecordAsync(RoleAuditEvents.PermissionRevoked, tenantId, request.RoleId,
             new Dictionary<string, object?> { ["roleName"] = role?.Name, ["permissionId"] = request.PermissionId, ["permissionKey"] = permission?.Key }, ct);

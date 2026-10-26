@@ -3,11 +3,16 @@
 const ShipmentDetails = (function () {
     const host = document.getElementById('shipment-details');
     const shipmentId = host?.dataset.shipmentId;
+    // The adapter requires the legal-entity scope on every call (?legalEntityId=, else 400); the controller validated it
+    // from the page URL. Missing = fail closed: no request is sent and the shared 'legal entity required' message shows.
+    const legalEntityId = host?.dataset.legalEntityId || '';
+    const scoped = (path) => `${path}?legalEntityId=${encodeURIComponent(legalEntityId)}`;
     const L = window.L10n || {};
     let permissions = { canDispatch: false, canCancel: false, canCapturePod: false };
     let shipment = null;
     const intents = new Map();
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    // Any canonical UUID, as the adapter and service accept (G8 NL-3: the RFC version/variant check refused valid IDs).
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const transitions = { Draft: ['Planned', 'Cancelled'], Planned: ['Dispatched', 'Cancelled'],
         Dispatched: ['InTransit', 'Delivered', 'Exception'], InTransit: ['Delivered', 'Exception'],
         Exception: ['InTransit', 'Cancelled'], Delivered: ['Closed'], Closed: [], Cancelled: [] };
@@ -128,7 +133,7 @@ const ShipmentDetails = (function () {
     };
     const load = async () => {
         const version = ++loadVersion;
-        try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}`, { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
+        try { const response = await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}`), { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
             if (version !== loadVersion) return;
             if (!response.ok) {
                 hideSkeleton();
@@ -151,7 +156,7 @@ const ShipmentDetails = (function () {
         const intent = previous?.body === body && previous?.correlationId === correlationId
             ? previous : { body, key: uuid(), correlationId }; intents.set(kind, intent);
         const execute = async () => {
-            try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`, { method: 'POST', credentials: 'same-origin',
+            try { const response = await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`), { method: 'POST', credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token(form), 'Idempotency-Key': intent.key, 'X-Correlation-Id': intent.correlationId }, body: intent.body });
                 if (!response.ok) { const code = await error(response, alertId); if (code === 'IDEMPOTENCY_KEY_REUSED') intents.delete(kind); await load(); return; }
                 const result = await response.json(); window.showToast?.(result.idempotentReplay ? L.replay : L.success, 'success');
@@ -162,6 +167,7 @@ const ShipmentDetails = (function () {
     };
     const init = () => {
         if (!host) return; readPermissions();
+        if (!uuidPattern.test(legalEntityId)) { hideSkeleton(); text('shipmentNumber', L.unavailable); showError(L.legalEntityRequired); return; }
         document.getElementById('formTransition')?.addEventListener('submit', (event) => { event.preventDefault();
             const occurredAt = instant('occurredAt');
             if (rejectInvalid(event.currentTarget, [['targetStatus', !!document.getElementById('targetStatus').value], ['occurredAt', !!occurredAt]], 'transitionAlert')) return;

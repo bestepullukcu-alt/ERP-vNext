@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.BrandProductContract;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -24,6 +25,7 @@ public sealed class UpdateGlobalProductDraftHandler
     private readonly IProductIdentityLifecycleActorContext _actorContext;
     private readonly TimeProvider _clock;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IBrandRepository? _brands;
 
     public UpdateGlobalProductDraftHandler(
         IGlobalProductRepository products,
@@ -32,12 +34,14 @@ public sealed class UpdateGlobalProductDraftHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository scopePolicies,
         ProductLegalEntityScopeCandidateFacade scopeCandidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IBrandRepository? brands = null)
     {
         _products = products;
         _actorContext = actorContext;
         _clock = clock;
         _scopeGuard = new(rolloutStates, scopePolicies, scopeCandidates, tenantContext);
+        _brands = brands;
     }
 
     public async Task<Response<ProductItemSkuMasterModels.GlobalProductDraftUpdateDto>> Handle(
@@ -54,7 +58,8 @@ public sealed class UpdateGlobalProductDraftHandler
         var input = request.Request;
         if (input is null || request.GlobalProductId == Guid.Empty || request.OperationId == Guid.Empty
             || input.ExpectedVersion is null || input.ExpectedVersion < 0
-            || !GlobalProductNameRules.HasValidLength(input.GlobalProductName))
+            || !GlobalProductNameRules.HasValidLength(input.GlobalProductName)
+            || (input.BrandIdSpecified && input.BrandId == Guid.Empty))
         {
             return Fail("GLOBAL_PRODUCT_UPDATE_REQUEST_INVALID", 400);
         }
@@ -76,20 +81,36 @@ public sealed class UpdateGlobalProductDraftHandler
             return Fail("GLOBAL_PRODUCT_NOT_FOUND", 404);
         }
 
+        // MOD-0290-FU05 (T-4): no brandId field = the brand stays; null removes it; a value links it. Only a NEW brand is
+        // checked against the link rule — a product keeps a brand that stopped being linkable (FU02: existing links hold).
+        if (input.BrandIdSpecified && input.BrandId is { } requestedBrand && requestedBrand != product.BrandId)
+        {
+            var link = await GlobalProductBrands.ResolveLinkAsync(_brands, requestedBrand, _clock.GetUtcNow(), cancellationToken);
+            if (link.Refusal is { } refusal)
+            {
+                return BrandProductFailures.Fail<ProductItemSkuMasterModels.GlobalProductDraftUpdateDto>(
+                    refusal.ReasonCode, refusal.Message, refusal.StatusCode);
+            }
+        }
+
         var visibleName = GlobalProductNameRules.CleanVisible(input.GlobalProductName!);
         var normalizedName = GlobalProductNameRules.NormalizeDuplicateKey(visibleName);
-        var auditIntent = CreateAuditIntent(
+        var auditIntent = CreateAuditIntentWithBrand(
             product,
             input.ExpectedVersion.Value,
             request.OperationId,
             actorId,
             visibleName,
             normalizedName,
+            input.BrandIdSpecified,
+            input.BrandId,
             _clock.GetUtcNow());
         var result = await _products.UpdateDraftAsync(
             product.Id,
             visibleName,
             normalizedName,
+            input.BrandIdSpecified,
+            input.BrandId,
             input.ExpectedVersion.Value,
             auditIntent,
             cancellationToken);
@@ -101,15 +122,22 @@ public sealed class UpdateGlobalProductDraftHandler
         }
 
         var updated = result.GlobalProduct;
+        var brand = GlobalProductBrands.Describe(
+            updated.BrandId,
+            await GlobalProductBrands.ReadAsync(_brands, [updated.BrandId], cancellationToken));
         return Response<ProductItemSkuMasterModels.GlobalProductDraftUpdateDto>.Success(new(
             updated.Id,
             updated.CanonicalCode,
             updated.GlobalProductName,
             updated.LifecycleStatus,
             updated.Version,
-            result.IsReplay));
+            result.IsReplay,
+            brand.Id,
+            brand.Code,
+            brand.Name));
     }
 
+    // The edit's intent without a brand field — the facts it had before MOD-0290-FU05 (read by tests through reflection).
     private static LocalAuditIntent CreateAuditIntent(
         GlobalProduct product,
         int expectedVersion,
@@ -117,16 +145,39 @@ public sealed class UpdateGlobalProductDraftHandler
         Guid actorId,
         string visibleName,
         string normalizedName,
+        DateTimeOffset timestampUtc) =>
+        CreateAuditIntentWithBrand(product, expectedVersion, operationId, actorId, visibleName, normalizedName,
+            brandSpecified: false, brandId: null, timestampUtc);
+
+    private static LocalAuditIntent CreateAuditIntentWithBrand(
+        GlobalProduct product,
+        int expectedVersion,
+        Guid operationId,
+        Guid actorId,
+        string visibleName,
+        string normalizedName,
+        bool brandSpecified,
+        Guid? brandId,
         DateTimeOffset timestampUtc)
     {
         var operationKey = operationId.ToString("D");
-        var evidence = EncodeFacts(
+        // MOD-0290-FU05: the brand the edit asks for is a fact of the edit — a repeat of the same key with another brand is
+        // a different edit (idempotency conflict). Taken from the request only, like the name: the stored brand changes
+        // with the first write, so a fact read from it would turn this edit's own exact repeat into a conflict. The brand
+        // before is the one at PreVersion (the previous intent's).
+        // An edit without the field keeps the evidence it had before the brand existed.
+        string[] facts =
+        [
             product.TenantId.ToString("D"),
             product.Id.ToString("D"),
             actorId.ToString("D"),
             expectedVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
             visibleName,
-            normalizedName);
+            normalizedName
+        ];
+        var evidence = EncodeFacts(brandSpecified
+            ? [.. facts, brandId is { } brand ? $"BRAND:{brand:D}" : "BRAND:NONE"]
+            : facts);
         var intentId = DeterministicGuid(
             $"{product.TenantId:D}|{product.Id:D}|{ProductAuditOperation.GlobalProductDraftUpdated}|{operationKey}");
         var postVersion = checked(expectedVersion + 1);

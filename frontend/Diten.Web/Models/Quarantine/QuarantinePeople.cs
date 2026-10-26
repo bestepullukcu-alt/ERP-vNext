@@ -101,4 +101,46 @@ public static class QuarantinePeople
             return null;
         }
     }
+
+    // ── WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER): the shared person PICKER ──────────────────────────────────────────────────────────
+
+    /// <summary>Rows one picker search asks for (AuthService allows 1–50).</summary>
+    public const int PickerLimit = 20;
+
+    /// <summary>Longest search text sent (AuthService refuses more than 100).</summary>
+    public const int MaxSearchLength = 100;
+
+    /// <summary>
+    /// The picker search: AuthService's existing <c>GET /api/users/lookup</c> (key <c>auth.users.lookup</c>, the same key as the label read;
+    /// ACTIVE users of the caller's tenant only, label only — no e-mail, no roles). The path carries ONLY the search and the limit: the tenant
+    /// is the caller's token's (the Web never names one), so a query string cannot widen the search to another tenant.
+    /// </summary>
+    public static string SearchPath(string? search)
+    {
+        var text = (search ?? string.Empty).Trim();
+        if (text.Length > MaxSearchLength) text = text[..MaxSearchLength];
+        return $"/api/users/lookup?search={Uri.EscapeDataString(text)}&limit={PickerLimit}";
+    }
+
+    /// <summary>The picker options of a lookup answer (envelope <c>{ data: [ { userId, displayLabel } ] }</c>): uuid ids with a label, distinct, in order.</summary>
+    public static JsonArray Options(string body)
+    {
+        var items = new JsonArray();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            if (JsonNode.Parse(body)?["data"] is not JsonArray data) return items;
+            foreach (var row in data.OfType<JsonObject>())
+            {
+                if (!Guid.TryParse((string?)row["userId"], out var id) || (string?)row["displayLabel"] is not { } label || string.IsNullOrWhiteSpace(label)) continue;
+                if (seen.Add(id.ToString("D"))) items.Add(new JsonObject { ["value"] = id.ToString("D"), ["text"] = label.Trim() });
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
+        {
+            return new JsonArray();
+        }
+
+        return items;
+    }
 }

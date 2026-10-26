@@ -551,8 +551,9 @@ window.LocationForm = (function () {
 
         window.showConfirm?.(L()[words.title] || '', null, {
             type: words.type,
-            subtext: ui.esc(ui.format(L()[words.text], location.code || '')),
-            entityName: ui.esc(label),
+            // FU-QUI1-ESC-TEST: subtext / entityName are TEXT — the dialog escapes them
+            subtext: ui.format(L()[words.text], location.code || ''),
+            entityName: label,
             confirmButtonText: L()[words.button] || '',
             cancelButtonText: L().Cancel || '',
             didOpen: (popup, swal) => {

@@ -75,6 +75,31 @@ public interface IGlobalProductRepository
             ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus,
                 referenceableOnly, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
             : throw new NotSupportedException("GLOBAL_PRODUCT_LIST_SORT_NOT_IMPLEMENTED");
+    // MOD-0290-FU05: the register narrowed to one brand (null = every product, the overloads above).
+    Task<GlobalProductPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GlobalProductListSort sort,
+        Guid? brandId,
+        CancellationToken cancellationToken = default) => brandId is null
+            ? GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, sort, cancellationToken)
+            : throw new NotSupportedException("GLOBAL_PRODUCT_LIST_BRAND_FILTER_NOT_IMPLEMENTED");
+    Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        bool referenceableOnly,
+        GlobalProductListSort sort,
+        Guid? brandId,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) => brandId is null
+            ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus,
+                referenceableOnly, sort, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
+            : throw new NotSupportedException("GLOBAL_PRODUCT_LIST_BRAND_FILTER_NOT_IMPLEMENTED");
     /// <summary>WP-VW-W4 (W4-FIX-d, G-8) — the ids of the tenant's active global products whose NAME or CODE contains the text
     /// (<see cref="MdmSearchText"/>: case and Turkish I / İ insensitive).</summary>
     Task<IReadOnlyList<Guid>> FindIdsContainingAsync(string search, CancellationToken cancellationToken = default) =>
@@ -88,6 +113,28 @@ public interface IGlobalProductRepository
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Global Product draft update is not implemented by this repository.");
+    // MOD-0290-FU05 (T-4): the draft edit with its brand. brandSpecified = false leaves the stored brand as it is (the
+    // edit above); true writes brandId (null = no brand) in the same conditional write as the name and the intent.
+    Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
+        Guid id,
+        string globalProductName,
+        string normalizedName,
+        bool brandSpecified,
+        Guid? brandId,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => brandSpecified
+            ? throw new NotSupportedException("Global Product draft brand update is not implemented by this repository.")
+            : UpdateDraftAsync(id, globalProductName, normalizedName, expectedVersion, auditIntent, cancellationToken);
+    // MOD-0290-FU05 slice 2: an approved product's brand (null = none), only while it is approved with no lifecycle operation
+    // and still at expectedVersion with fromBrandId; the change record and the intent travel in the same write.
+    Task<GlobalProductLifecycleWriteResult> ChangeBrandAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductBrandChange change,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product brand change is not implemented by this repository.");
     Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,
         int expectedVersion,

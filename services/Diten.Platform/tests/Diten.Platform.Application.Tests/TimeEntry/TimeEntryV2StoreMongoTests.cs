@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// meeting window is read in the database (F9), and the sweep's two queries each keep their share (F9 / BL-479).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryV2StoreMongoTests : TimerScenario
 {
     public TimeEntryV2StoreMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

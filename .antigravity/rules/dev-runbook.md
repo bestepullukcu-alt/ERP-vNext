@@ -11,7 +11,7 @@ Bu rehber, projenin tüm mikroservis bileşenlerini yerel ortamda (Localhost) ha
 ## ✅ Ön Koşul: MongoDB (Port: 27017)
 
 Auth ve MDM servisleri MongoDB’ye bağlanır. MongoDB çalışmıyorsa:
-- Auth seeding (default admin user/role/permission) çalışmaz → login başarısız olur.
+- Auth seeding (rol/izin; Development'ta dev hesapları) çalışmaz → login başarısız olur.
 - MDM repository çağrıları timeout/exception → Gateway üzerinden 500 döner → DataTable veri çekemez.
 
 **Hızlı kontrol:**
@@ -48,7 +48,8 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 - **Dizin:** services/Diten.AuthService/src/Diten.AuthService.Api
 - **Komut:** dotnet run (Development)
 - **Neden:** Diğer tüm servislerin yetki kontrolü (JWT validation) yapabilmesi için kimlik servisinin ayakta olması gerekir.
-- **Seed Kullanıcı (MongoDB açık olmalı):** `admin@diten.com` / `Admin123!`
+- **Seed Kullanıcı (yalnız Development, MongoDB açık olmalı):** `admin@diten.com` — dev parolası depoda yazılmaz, yerel kurulum notundadır. Development dışında (Staging, Production) açılışta hiçbir hesap yaratılmaz; yeni bir ortamın ilk platform yöneticisi `services/Diten.AuthService/tools/Diten.AuthService.FirstPlatformAdministrator` komutuyla, tek kullanımlık şifre belirleme bağlantısıyla kurulur (WP-AUTH-ADMIN-BOOTSTRAP-01).
+- **Dev platform yöneticisi isteğe bağlıdır:** yerel (commit edilmeyen) `appsettings.Development.json`'a `"DevSeeds": { "PlatformAdmin": true }` ekleyin (Auth ve Platform aynı anahtarı okur); anahtar yoksa Development'ta da yönetici yaratılmaz.
 
 ### 2. TAB 2: DevEnablement Service (Port: 5058)
 - **Dizin:** services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api

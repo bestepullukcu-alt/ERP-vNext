@@ -42,6 +42,13 @@ public static class RequestFingerprint
             ["transactionDate"] = movement.TransactionDate.UtcTicks,
             ["postingDate"] = movement.PostingDate.UtcTicks
         };
+        // INVENTORY 1.3.0 (MOD-0176 KF-B): the bypass reason is part of the request ONLY when sent — a request without it keeps the
+        // fingerprint it had before 1.3.0, so the replay of a movement committed earlier still matches.
+        if (movement.FefoBypassReason is { } reason)
+        {
+            canonical["fefoBypassReason"] = reason;
+        }
+
 
         var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(canonical));
         return Convert.ToHexString(SHA256.HashData(bytes));

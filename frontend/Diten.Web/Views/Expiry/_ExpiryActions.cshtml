@@ -1,0 +1,7 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0176 pack §11.3 "Screen → button → action → permission": action code → may this user see it. The page scripts ask
+    ExpiryUi.can('EXPIRY_EXCEPTION_OPEN') — they never name a permission key. Display only (UAS-001 §4: absent, not disabled);
+    InventoryService's [HasPermission] stays the authority.
+*@
+<script id="expiry-actions" type="application/json">@Json.Serialize(Diten.Web.Controllers.ExpiryKeys.For(Perms))</script>

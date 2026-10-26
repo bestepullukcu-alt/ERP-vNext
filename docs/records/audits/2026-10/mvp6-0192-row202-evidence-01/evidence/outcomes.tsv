@@ -1,0 +1,31 @@
+run	test	outcome	ms
+clean-run-1	Every_fixture_reader_answers_from_memory	Passed	32 ms
+clean-run-1	The_two_modules_persist_into_disjoint_collections	Passed	19 ms
+clean-run-1	Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans")	Passed	23 ms
+clean-run-1	Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans")	Passed	5 ms
+clean-run-1	Neither_module_reaches_a_live_producer(feature: "SandopPlans")	Passed	6 ms
+clean-run-1	Neither_module_reaches_a_live_producer(feature: "CapacityPlans")	Passed	5 ms
+clean-run-2	Every_fixture_reader_answers_from_memory	Passed	27 ms
+clean-run-2	The_two_modules_persist_into_disjoint_collections	Passed	17 ms
+clean-run-2	Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans")	Passed	13 ms
+clean-run-2	Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans")	Passed	4 ms
+clean-run-2	Neither_module_reaches_a_live_producer(feature: "SandopPlans")	Passed	7 ms
+clean-run-2	Neither_module_reaches_a_live_producer(feature: "CapacityPlans")	Passed	5 ms
+clean-run-3	Every_fixture_reader_answers_from_memory	Passed	20 ms
+clean-run-3	The_two_modules_persist_into_disjoint_collections	Passed	13 ms
+clean-run-3	Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans")	Passed	12 ms
+clean-run-3	Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans")	Passed	4 ms
+clean-run-3	Neither_module_reaches_a_live_producer(feature: "SandopPlans")	Passed	6 ms
+clean-run-3	Neither_module_reaches_a_live_producer(feature: "CapacityPlans")	Passed	5 ms
+sabotage-run	Every_fixture_reader_answers_from_memory	Failed	17 ms
+sabotage-run	The_two_modules_persist_into_disjoint_collections	Passed	16 ms
+sabotage-run	Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans")	Passed	12 ms
+sabotage-run	Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans")	Passed	3 ms
+sabotage-run	Neither_module_reaches_a_live_producer(feature: "SandopPlans")	Passed	6 ms
+sabotage-run	Neither_module_reaches_a_live_producer(feature: "CapacityPlans")	Failed	6 ms
+restored-run	Every_fixture_reader_answers_from_memory	Passed	18 ms
+restored-run	The_two_modules_persist_into_disjoint_collections	Passed	13 ms
+restored-run	Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans")	Passed	11 ms
+restored-run	Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans")	Passed	4 ms
+restored-run	Neither_module_reaches_a_live_producer(feature: "SandopPlans")	Passed	6 ms
+restored-run	Neither_module_reaches_a_live_producer(feature: "CapacityPlans")	Passed	5 ms

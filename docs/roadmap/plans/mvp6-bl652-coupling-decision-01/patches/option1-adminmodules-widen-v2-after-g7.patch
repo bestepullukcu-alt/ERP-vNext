@@ -1,0 +1,20 @@
+diff --git a/services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs b/services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs
+index d7d00619f..4c62a8b34 100644
+--- a/services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs
++++ b/services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs
+@@ -65,7 +65,14 @@ public static class DefaultRolePermissionTemplate
+     // keys through the read rule below. Their keys enter the catalog only where the modules are composed (non-production
+     // demand seed), so this grants nothing elsewhere. Remove when the entitlement path grants them. Decision:
+     // docs/records/decisions/2026-10/mvp6-0190-0192-g7-role-grants-owner-decision-01.md
+-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign", "shipment-tracking-pod", "sop-workflow-signoffs", "capacity-planning" };
++    // BL-652 — TEMPORARY, EXPIRES 2026-11-03 (aligned with Q358; owner confirms the date). The four MVP-6
++    // logistics manifest ModuleCodes join shipment-tracking-pod in the Admin baseline so every tenant Admin
++    // holds their supplychain.* keys AND, because "legal-entity" is already in this list,
++    // mdm.legal-entities.read — which MdmLegalEntityScopeValidator forwards to MDM's lookup-validation, so a
++    // create 503s without it. Same curated-list suspension as Q358; remove when the entitlement path grants
++    // these (Option 2, a SupplyChain MDM service identity, supersedes both), or re-approve in writing at the
++    // expiry. Decision: docs/records/decisions/2026-10/mvp6-bl652-admin-baseline-coupling-owner-decision-01.md
++    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign", "shipment-tracking-pod", "sop-workflow-signoffs", "capacity-planning", "carrier-management", "routing-load-planning", "reverse-logistics", "claims-management" };
+ 
+     /// <summary>
+     /// MOD-0022 CT-D10 — the e-signature keys EVERY default tenant role holds: signing, keeping one's own signature sample

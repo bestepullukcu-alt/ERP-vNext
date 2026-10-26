@@ -61,4 +61,5 @@
   <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
     <value>System roles cannot be edited.</value>
   </data>
+  <data name="ErrorRoleDeleteLastSteward" xml:space="preserve"><value>Deleting this role would leave no other active account that can add users. Give another user that right first.</value></data>
 </root>

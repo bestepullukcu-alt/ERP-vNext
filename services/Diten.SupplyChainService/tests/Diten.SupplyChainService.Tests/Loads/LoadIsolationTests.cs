@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Diten.SupplyChainService.Domain.Features.Loads;
+using Diten.SupplyChainService.Tests.Common;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
@@ -10,6 +11,17 @@ namespace Diten.SupplyChainService.Tests.Loads;
 
 public sealed class LoadIsolationTests
 {
+    // H2: the legal-entity gate over the real host with AuthService's token shape — the refusal, and no write.
+    [Theory]
+    [InlineData(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome.NotReferenceable, 404)]
+    [InlineData(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome.Unavailable, 503)]
+    public async Task LegalEntityGateRefusalWritesNothing(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome outcome, int expected)
+    {
+        await using var f = new LoadTestContext();
+        await LegalEntityGate.AssertRefusedWithoutWrites(LegalEntityGate.Stub(f.App.Services), f.Db, f.Tenant, outcome, expected,
+            async () => (int)(await f.Send("POST", "/api/shipment-bundle/loads", f.CreateBody(f.ShipmentId), "gate-" + Guid.NewGuid())).Response.StatusCode);
+    }
+
     [Fact]
     public async Task TwoTenantsByTwoLegalEntitiesCanReuseIdsWithoutCrossScopeVisibility()
     {
@@ -97,8 +109,9 @@ public sealed class LoadIsolationTests
         var header = Base64UrlEncoder.Encode("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
         var payload = Base64UrlEncoder.Encode(JsonSerializer.Serialize(new
         {
-            iss = "loads-tests", aud = "loads-tests", exp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds(),
-            tenant_id = tenant.ToString(), tenantIdDuplicate = tenant.ToString(), legal_entity_id = le.ToString(), sub = actor.ToString(),
+            // A forged token: AuthService's issuer and audience (the host accepts only those), but a duplicated tenant_id.
+            iss = AuthServiceToken.Issuer, aud = AuthServiceToken.Audience, exp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds(),
+            tenant_id = tenant.ToString(), tenantIdDuplicate = tenant.ToString(), sub = actor.ToString(),
             permission = new[] { "supplychain.loads.read" }
         }).Replace("tenantIdDuplicate", "tenant_id", StringComparison.Ordinal));
         var input = header + "." + payload;

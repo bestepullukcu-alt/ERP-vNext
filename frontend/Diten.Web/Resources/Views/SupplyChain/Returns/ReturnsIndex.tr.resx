@@ -43,7 +43,7 @@
   <data name="ResolveFirst" xml:space="preserve"><value>İadeyi oluşturmadan önce sevkiyatı arayın ve en az bir satır seçin.</value></data>
   <data name="ShipmentNumber" xml:space="preserve"><value>Sevkiyat Numarası</value></data>
   <data name="ShipmentStatus" xml:space="preserve"><value>Sevkiyat Durumu</value></data>
-  <data name="EligibilityNote" xml:space="preserve"><value>Yalnızca Teslim Edildi veya Kapatıldı durumundaki sevkiyatlar için iade oluşturulabilir.</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Yalnızca Teslim Edildi veya Kapandı durumundaki sevkiyatlar için iade oluşturulabilir.</value></data>
   <data name="ShipmentIneligible" xml:space="preserve"><value>Bu sevkiyatın durumu iadeye izin vermiyor.</value></data>
   <data name="ReturnLines" xml:space="preserve"><value>İade Edilen Satırlar</value></data>
   <data name="ReturnLinesHelp" xml:space="preserve"><value>İade edilecek her sevkiyat satırını seçin ve miktarını girin. Sevk edilen miktar yalnızca bilgi içindir; kalan miktar değildir.</value></data>
@@ -106,7 +106,7 @@
   <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir işlem başlatın.</value></data>
   <data name="ErrReturnSourceChanged" xml:space="preserve"><value>Sevkiyat, ilk iadesinden bu yana değişti. Sevkiyatı inceleyin; hiçbir şey otomatik olarak düzeltilmedi.</value></data>
   <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>Sevkiyat referans verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
-  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Kaynak sistemin döndürdüğü sevkiyat verisi geçersiz. Lütfen destekle iletişime geçin.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Kaynak sistemin döndürdüğü sevkiyat verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Sevkiyat referans verisi eksik. Aynı isteği daha sonra yeniden deneyin.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Sevkiyat durumu geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin.</value></data>
   <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.</value></data>

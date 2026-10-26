@@ -9,6 +9,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["LocationTreeTitle"].Value;
+    ViewData["PageCode"] = "LOCATIONTREE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -49,12 +50,12 @@
 <div class="nav-align-top mb-4">
     <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
         <li class="nav-item">
-            <a class="nav-link active small border shadow-none wc-tab-compact" href="/LocationTree" aria-current="page">
+            <a class="nav-link text-none active small border shadow-none wc-tab-compact" href="/LocationTree" aria-current="page">
                 <i class="bx bx-sitemap me-1 wc-tab-icon"></i>@Localizer["TabTree"]
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link small border shadow-none wc-tab-compact" href="/Locations">
+            <a class="nav-link text-none small border shadow-none wc-tab-compact" href="/Locations">
                 <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["TabList"]
             </a>
         </li>

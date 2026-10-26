@@ -1,38 +1,52 @@
-# Owner decision — explicit gateway routes for the shipment-bundle family
+# Gateway explicit-routes re-derivation — owner ruling (shipment-bundle swap + supply-chain reserve)
 
-- date: 2026-10-05
-- owner: ny@gmgroup.ch
-- status: ACCEPTED, **sequenced after the origin/main merge**
-- ledger: Q397, Q446, Q456
+> **OWNER RULING RECORDED. Not yet in effect.** `gateway/**` and `tests/**` are Protected Paths; the two
+> patches below are the integration-agent's to apply, not CT's. CT built them from the current contracts and
+> verified both apply clean against HEAD; the guard's expectations were data-cross-checked against the
+> generated route set (0 mismatches). Argument: `docs/roadmap/plans/mvp6-gateway-routes-conversion-01/PREP.md`.
 
-## Decision
+- owner: **ny@gmgroup.ch** (product/integration owner) — decision relayed by the Control Tower, 2026-10-18
+- module: gateway (`Diten.ApiGateway`, 5000) → `Diten.SupplyChainService` (5066) · MOD-0183/0184/0185/0186/0187
+  (A) and MOD-0190/0192 (B)
+- precedent / rules: OD-P1 (SupplyChain = 5066), NET-001 / OD-8 (explicit routes carry OPTIONS), OD-9
+  (sandop-plans collection POST-only), Q484/Q381 (S&OP + Capacity not composed in production)
 
-The five modules get **explicit gateway routes**, and the `/api/shipment-bundle/{everything}`
-catch-all is **removed**. The gateway's other catch-all routes are not touched.
+## The ruling
 
-## Why the packs are right, and it is not a style question
+- **A — ACCEPTED: the explicit swap.** Replace the two `/api/shipment-bundle` catch-all routes with **12
+  explicit per-operation routes** on 5066, each carrying OPTIONS. Accepted consequence: an **undeclared**
+  path under `/api/shipment-bundle/...` now **404s at the gateway** instead of proxying through — the
+  NET-001 intent (only declared operations are routed).
+- **B — RESERVE NOW: the 10 supply-chain routes.** Add the **10** `/api/supply-chain` routes (S&OP +
+  Capacity) now as a documented **"reserved, 404-until-composed"** set. They reach 5066 and 404 until the
+  §22/Q292 composition gate opens (S&OP/Capacity are not composed in production). The route surface is
+  complete ahead of composition; no behaviour depends on them until then.
+- **OD-7 guard — ACCEPTED.** A test asserts exactly 12 shipment-bundle + 10 supply-chain routes on 5066,
+  each with OPTIONS and the exact method set per route (so a dropped method or a resurrected catch-all
+  fails the build).
 
-MOD-0186:749 and MOD-0187:699 require explicit routes with OPTIONS (NET-001), header
-passthrough, **and `/returnsXYZ` not matched**.
+Net route delta: **+20** (323 → 343; 2 catch-all removed, 22 explicit added).
 
-That last clause is the substance. The catch-all matches `/api/shipment-bundle/returnsXYZ`
-today, so a garbage path is forwarded downstream instead of answering 404. That is a real
-behavioural defect, not a preference.
+## The two patches (integration-agent applies; CT cannot — Protected Paths)
 
-## Why the scope stops at this route family
+```
+git apply docs/roadmap/plans/mvp6-gateway-routes-conversion-01/patches/ocelot-explicit-routes.patch
+git apply docs/roadmap/plans/mvp6-gateway-routes-conversion-01/patches/od7-guard-new-test.patch
+```
 
-CT measured: **135 of the gateway's 271 routes are catch-all**. The pattern is established
-across the whole gateway, and changing it everywhere is not MVP-6's work. Within this family
-the pack asks for the opposite and its reason holds, so this family changes and nothing else.
+- `ocelot-explicit-routes.patch` — edits `gateway/Diten.ApiGateway/ocelot.json`: removes the two
+  `/api/shipment-bundle` catch-all routes, adds the 22 explicit routes (12 A + 10 B). Result validated as
+  JSON (343 routes). Applies clean against HEAD.
+- `od7-guard-new-test.patch` — adds `gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs` (the OD-7
+  guard, self-contained loader mirroring `OcelotConfigurationTests`). Applies clean against HEAD. CT
+  verified by inspection + a data cross-check that it passes once the ocelot patch is also applied; the
+  integration-agent compiles and runs `Diten.ApiGateway.Tests` in CI to confirm.
 
-## Why it waits for the merge
+Apply **both together** — the guard asserts the explicit set and would fail against the pre-swap catch-all.
 
-Q435 measured that `ocelot.json` **auto-merges silently** — no conflict marker appears. Routes
-written now could be altered by the merge without anyone seeing it. Doing this after the merge
-costs one pass; doing it before costs two and risks a silent loss.
+## Scope / out of scope
 
-## Acceptance
-
-Explicit routes for all five modules with OPTIONS and the five headers passed through; the
-family catch-all gone; `/api/shipment-bundle/returnsXYZ` answering 404; every existing
-shipment-bundle path still answering as it does today, proven by a gateway smoke.
+- OD-8, OD-9 already resolved by the current contracts (no further call).
+- OD-12 (permission keys) is platform-owner and unrelated to routing — not in these patches.
+- The supply-chain routes being reserved does **not** compose S&OP/Capacity or change their 404 behaviour;
+  they remain fixture-bound per `mvp6-0190-0192-fixture-bound-owner-decision-01`.

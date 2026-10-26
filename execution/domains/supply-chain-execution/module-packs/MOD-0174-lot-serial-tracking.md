@@ -16,7 +16,7 @@ screens:
   - module: LotMigration
     data_mode: server
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 status_note: "ready-for-dev 2026-10-05 (owner). Was draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0174-lot-serial-tracking
@@ -1026,6 +1026,15 @@ F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
 
 **ITEM — CT acceptance (2026-10-10):** TRACE 1.3.0 FROZEN (`SkuLevel` + `Item`; `createLot` + `PRODUCT_MASTER_DATA_INCOMPLETE`,
 `SKU_LEVEL_NOT_STOCKABLE`). Lot-controlled `Item` materials get lots and post; details and decisions in the MOD-0175 pack §19 ITEM CT note.
+
+**WP-MVP1-FU-CLEAN1 — agent result, pending CT (2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
+- **`089467b8b` FU-QUI1-LOTSTATUS (kapandı):** lot durum / göç onayının form gövdesi `subtextHtml` (sabit şablon, değerler `textContent`); üç `ui.esc` kaldırıldı. Bekçi: `web-scripts-guard.test.mjs` + `global-confirm-text-is-text.test.js` pin listesi.
+- **`359532230` FU-WEB-CONTRACT-FAKES:** `TraceProxyControllerTests` ve `LotMigrationWebTests` sahteleri trace sözleşmesine bağlandı — uyumsuzluk yok.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0174 --name "Lot/Batch/Serial Tracking"` → OK (proven against Blueprint/registry) → **W-0174-01 closed**.
+
+**WP-MVP1-FIX-LIVE3 (ek) — updateLot anahtarı öznitelikte (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (ek maddeler e / f), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md` (§7).
+- `PATCH /api/trace/lots/{lotId}` `[HasAnyPermission(trace.lots.update, trace.lots.update-released)]` taşır; hangi anahtarın gerektiği lotun durumuna bağlı — adıyla istisna (`BodyKeyedActions`). Manifest tamlık testi PATCH anahtarlarını artık öznitelikten okur.
+
 
 ## 20. Follow-up Items
 

@@ -100,10 +100,11 @@ public sealed class QuarantineController : CustomBaseController
     // ── decisions ────────────────────────────────────────────────────────────────────────────────────────
 
     [HttpPost("decisions")]
+    [HasAnyPermission(QuarantinePermissions.DecisionsCreate, QuarantinePermissions.BlockedDispose, QuarantinePermissions.BlockedUnblock)]
     public async Task<IActionResult> CreateDecision(CancellationToken ct)
     {
-        // §4.6: the key follows the kind (decisions.create / blocked.dispose / blocked.unblock) — checked here, like updateLot.
-        if (!DecisionKeys.Any(Holds)) return Forbidden();
+        // §4.6: any of the three decision keys opens the action (the attribute, WP-MVP1-FIX-LIVE3); WHICH one is needed follows the kind in the
+        // body — a named exception (AuthorizationGuardTests.BodyKeyedActions): no attribute can read the body's kind.
         var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.DecisionMembers, b => new
         {
             Kind = b.Enum<DecisionKind>("kind"),
@@ -133,10 +134,10 @@ public sealed class QuarantineController : CustomBaseController
     }
 
     [HttpPost("decisions/{decisionId}/submit")]
+    [HasAnyPermission(QuarantinePermissions.DecisionsCreate, QuarantinePermissions.BlockedDispose, QuarantinePermissions.BlockedUnblock)]
     public async Task<IActionResult> SubmitDecision(string decisionId, CancellationToken ct)
     {
-        // §4.7: one of the three decision keys; the handler admits only the decision's own decider.
-        if (!DecisionKeys.Any(Holds)) return Forbidden();
+        // §4.7: one of the three decision keys (the attribute, WP-MVP1-FIX-LIVE3); the handler admits only the decision's own decider.
         if (!QuarantineSupport.TryParseId(decisionId, out var id)) return NotFoundContract("QUARANTINE_DECISION_NOT_FOUND", "Decision not found.");
         var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.SubmitMembers,
             b => new { SignatureId = b.String("signatureId"), Key = b.String("idempotencyKey") }, ct);
@@ -329,9 +330,6 @@ public sealed class QuarantineController : CustomBaseController
         var header = Request.Headers[InventoryContract.IfMatchHeader].ToString();
         return string.IsNullOrWhiteSpace(header) ? null : QuarantineSupport.ExpectedVersion(header);
     }
-
-    private static readonly string[] DecisionKeys =
-        [QuarantinePermissions.DecisionsCreate, QuarantinePermissions.BlockedDispose, QuarantinePermissions.BlockedUnblock];
 
     private bool Holds(string key) => User.Claims.Any(c => c.Type == "permission" && c.Value == key);
 

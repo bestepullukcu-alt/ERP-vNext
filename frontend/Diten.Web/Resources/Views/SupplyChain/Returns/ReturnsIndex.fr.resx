@@ -9,7 +9,7 @@
   <data name="AddNewReturns" xml:space="preserve"><value>Ajouter un retour</value></data>
   <data name="ActionsHeader" xml:space="preserve"><value>Actions</value></data>
   <data name="RmaNumber" xml:space="preserve"><value>Numéro RMA</value></data>
-  <data name="ReturnId" xml:space="preserve"><value>ID du retour</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>Identifiant du retour</value></data>
   <data name="ShipmentId" xml:space="preserve"><value>Identifiant de l’expédition</value></data>
   <data name="ShipmentIdHelp" xml:space="preserve"><value>Saisissez l’UUID de l’expédition.</value></data>
   <data name="ReturnSummary" xml:space="preserve"><value>Résumé du retour</value></data>
@@ -35,7 +35,7 @@
   <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Expédiée</value></data>
   <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En transit</value></data>
   <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Livrée</value></data>
-  <data name="ShipmentStatusException" xml:space="preserve"><value>Incident</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Exception</value></data>
   <data name="ShipmentStatusClosed" xml:space="preserve"><value>Clôturée</value></data>
   <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Annulée</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau retour</value></data>
@@ -62,7 +62,7 @@
   <data name="EvidenceHelp" xml:space="preserve"><value>Facultatif. Les références sont envoyées dans l’ordre affiché.</value></data>
   <data name="CreateReturn" xml:space="preserve"><value>Créer le retour</value></data>
   <data name="ReturnCreated" xml:space="preserve"><value>Retour créé.</value></data>
-  <data name="ReturnCreateReplayed" xml:space="preserve"><value>Ce retour a déjà été créé par la même requête et s’affiche comme terminé.</value></data>
+  <data name="ReturnCreateReplayed" xml:space="preserve"><value>Ce retour a déjà été créé par la même demande ; il s’affiche comme terminé.</value></data>
   <data name="TransitionTitle" xml:space="preserve"><value>Modifier le statut du retour</value></data>
   <data name="TransitionTarget" xml:space="preserve"><value>Nouveau statut</value></data>
   <data name="ActionAuthorize" xml:space="preserve"><value>Autoriser</value></data>
@@ -86,7 +86,7 @@
   <data name="SubmitTransition" xml:space="preserve"><value>Appliquer le statut</value></data>
   <data name="ConfirmTransition" xml:space="preserve"><value>Modifier le statut du retour avec la valeur sélectionnée ?</value></data>
   <data name="TransitionCompleted" xml:space="preserve"><value>Statut du retour mis à jour.</value></data>
-  <data name="TransitionReplayed" xml:space="preserve"><value>Ce changement de statut a déjà été appliqué par la même requête et s’affiche comme terminé.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Ce changement de statut a déjà été appliqué par la même demande ; il s’affiche comme terminé.</value></data>
   <data name="RequestPending" xml:space="preserve"><value>Une demande pour cette action est encore en cours.</value></data>
   <data name="NoticeSessionEnded" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
   <data name="NoticeForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à effectuer cette action.</value></data>
@@ -108,8 +108,8 @@
   <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>Les données de référence de l’expédition sont invalides. Veuillez contacter le support.</value></data>
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Les données d’expédition renvoyées par le système source ne sont pas valides. Veuillez contacter le support.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Les données de référence de l’expédition sont incomplètes. Réessayez plus tard la même demande.</value></data>
-  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>L’état de l’expédition est temporairement indisponible. Réessayez la même requête.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>L’état de l’expédition est temporairement indisponible. Réessayez la même demande.</value></data>
   <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Les données de référence de l’expédition sont temporairement indisponibles. Réessayez la même demande.</value></data>
-  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Les retours sont temporairement indisponibles. Le résultat n’est pas confirmé ; réessayez la même requête.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Les retours sont temporairement indisponibles. Le résultat n’est pas confirmé ; réessayez la même demande.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite. Vous pouvez réessayer la même action.</value></data>
 </root>

@@ -15,6 +15,7 @@ public sealed class StubLegalEntityMaster : ILegalEntityMasterClient
     private readonly ConcurrentDictionary<Guid, bool> _down = new();
     private readonly ConcurrentDictionary<Guid, bool> _refusing = new();
     private readonly ConcurrentDictionary<Guid, int> _calls = new();
+    private readonly ConcurrentDictionary<Guid, LegalEntityName> _names = new();
 
     public IHttpContextAccessor? HttpContextAccessor { get; set; }
 
@@ -25,6 +26,9 @@ public sealed class StubLegalEntityMaster : ILegalEntityMasterClient
 
     /// <summary>MDM answers 403 to this tenant's callers (no <c>mdm.legal-entities.read</c>).</summary>
     public void RefuseCallersOf(Guid tenant) => _refusing[tenant] = true;
+
+    /// <summary>WP-MVP1-FIX-LIVE2: the code and name MDM answers for this legal entity (display only).</summary>
+    public void RegisterName(Guid legalEntity, string code, string name) => _names[legalEntity] = new LegalEntityName(legalEntity, code, name);
 
     /// <summary>How many times MDM was asked about this legal entity.</summary>
     public int CallsFor(Guid legalEntity) => _calls.GetValueOrDefault(legalEntity);
@@ -51,5 +55,13 @@ public sealed class StubLegalEntityMaster : ILegalEntityMasterClient
         return Task.FromResult(_entities.TryGetValue((tenant, legalEntityId), out var active) && active
             ? LegalEntityMembership.Active
             : LegalEntityMembership.NotReferenceable);
+    }
+
+    /// <summary>Like the HTTP client: an unregistered name, MDM down or a refused caller is null ("okunamadı"), never invented.</summary>
+    public Task<LegalEntityName?> GetLegalEntityNameAsync(Guid legalEntityId, CancellationToken cancellationToken = default)
+    {
+        var claim = HttpContextAccessor?.HttpContext?.User.FindFirst("tenant_id")?.Value;
+        var readable = Guid.TryParse(claim, out var tenant) && !_down.ContainsKey(tenant) && !_refusing.ContainsKey(tenant);
+        return Task.FromResult(readable && _names.TryGetValue(legalEntityId, out var name) ? name : null);
     }
 }

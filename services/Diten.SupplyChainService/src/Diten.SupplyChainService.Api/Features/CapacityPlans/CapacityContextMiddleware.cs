@@ -23,11 +23,12 @@ public sealed class CapacityContextMiddleware(RequestDelegate next)
             var segment=authorization[7..].Split('.')[1].Replace('-','+').Replace('_','/');
             segment=segment.PadRight((segment.Length+3)/4*4,'=');
             using var payload=JsonDocument.Parse(Convert.FromBase64String(segment));
-            return new[]{"tenant_id","legal_entity_id","sub"}.All(n=>payload.RootElement.EnumerateObject().Count(x=>x.NameEquals(n))==1);
+            // R-2 alignment (owner, 2026-10-18): the token carries no legal_entity_id any more (AuthService, R-2 66250b1a1).
+            return new[]{"tenant_id","sub"}.All(n=>payload.RootElement.EnumerateObject().Count(x=>x.NameEquals(n))==1);
         }
         catch(Exception ex) when(ex is FormatException or JsonException or IndexOutOfRangeException or ArgumentException){return false;}
     }
-    public async Task InvokeAsync(HttpContext http,CapacityRequestContext context,RequestContext loggingContext)
+    public async Task InvokeAsync(HttpContext http,CapacityRequestContext context,RequestContext loggingContext,ILegalEntityScopeValidator legalEntities)
     {
         var permission=http.GetEndpoint()?.Metadata.GetMetadata<CapacityPermissionAttribute>();
         if(permission is null){await next(http);return;}
@@ -44,10 +45,24 @@ public sealed class CapacityContextMiddleware(RequestDelegate next)
         }
         if(http.User.Identity?.IsAuthenticated!=true){await Error(401,"UNAUTHENTICATED");return;}
         if(!UniqueSignedContextFields(http.Request.Headers.Authorization.FirstOrDefault()) ||
-           !Claim(http,"tenant_id",out var tenant) || !Claim(http,"legal_entity_id",out var le) ||
+           !Claim(http,"tenant_id",out var tenant) ||
            !Claim(http,"sub",out var actor) || !http.User.HasClaim("permission",permission.Permission))
         {await Error(403,"FORBIDDEN");return;}
         if(!validCorrelation){await Error(400,"INVALID_CORRELATION_ID");return;}
+        // R-2 alignment (owner, 2026-10-18), as the five shipment-bundle modules: the legal entity is the request's
+        // (X-Legal-Entity-Id, the page's choice) and MDM — not the caller — decides it is the tenant's and Active.
+        // An X-Tenant-Id, when sent, must be the token's. Every outcome but Valid refuses (fail-closed); a foreign or
+        // inactive entity answers this module's own not-found, so the response discloses nothing either way.
+        var leValues=http.Request.Headers["X-Legal-Entity-Id"];
+        if(leValues.Count!=1 || !Uuid(leValues[0],out var le)){await Error(400,"INVALID_REQUEST");return;}
+        var tenantValues=http.Request.Headers["X-Tenant-Id"];
+        if(tenantValues.Count>0 && (tenantValues.Count!=1 || !Uuid(tenantValues[0],out var headerTenant) || headerTenant!=tenant))
+        {await Error(403,"FORBIDDEN");return;}
+        switch(await legalEntities.ValidateAsync(tenant,le,http.Request.Headers.Authorization.ToString(),context.CorrelationId,http.RequestAborted))
+        {
+            case LegalEntityScopeOutcome.NotReferenceable:await Error(404,"UNKNOWN_CAPACITY_PLAN");return;
+            case LegalEntityScopeOutcome.Unavailable:await Error(503,"DEPENDENCY_UNAVAILABLE");return;
+        }
         if(HttpMethods.IsPost(http.Request.Method))
         {
             var values=http.Request.Headers["Idempotency-Key"];

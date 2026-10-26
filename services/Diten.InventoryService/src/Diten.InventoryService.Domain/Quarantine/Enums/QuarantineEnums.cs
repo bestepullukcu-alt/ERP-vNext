@@ -12,7 +12,10 @@ public enum HoldSource
     Manual,
     Retest,
     Rework,
-    OtherInbound
+    OtherInbound,
+
+    /// <summary>QUARANTINE 1.3.0 (MOD-0177 CT-R3): taken out of use for a recall case (sourceDocument MOD-0177 / RECALL_CASE).</summary>
+    Recall
 }
 
 /// <summary>"Bekliyor" / "İncelemede".</summary>

@@ -54,7 +54,9 @@ Yalnızca gerekli minimal kanonik bağlantılar güncellenir (ör. portfolio ind
 
 ## 10. İnsan incelemesi için DUR
 
-Pack `draft` olarak kullanıcı incelemesine bırakılır. Onay alınmadan bir sonraki faza geçilmez.
+Pack `draft` olarak bırakılır. Onaydan önce aynı sürümün bağımsız incelemesi yapılır (Codex ya da Claude, geliştirici
+seçer; yazandan ayrı oturum) ve kaydedilir (`execution/approvals/reviews.tsv`, SOP §20.4). `## 8.1 Delivery slices`
+tablosu zorunludur. Sonra kullanıcı incelemesine gider; onay alınmadan bir sonraki faza geçilmez.
 
 ## 11. Onaya kadar production implementation engeli
 
@@ -73,4 +75,6 @@ Teslim fazları tamamlandıkça pack'in §20 "Audit and reconciliation notes" b�
 - [ ] Naming/ownership netleşti mi ("Delivery Capability Pack", yalın `Capability` değil)?
 - [ ] Authoring branch yalnızca yazım başlarken mi açıldı?
 - [ ] Pack `draft` ve insan incelemesinde mi?
+- [ ] Bağımsız inceleme kaydı var ve açık ENGEL yok mu (CT-APR-02)?
+- [ ] `## 8.1 Delivery slices` tablosu var mı; DCP tek seferde uygulanmıyor mu?
 - [ ] Onaysız production kod engellendi mi?

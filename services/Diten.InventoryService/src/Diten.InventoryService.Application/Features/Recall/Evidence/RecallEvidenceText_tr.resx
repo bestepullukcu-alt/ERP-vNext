@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Class.N" xml:space="preserve"><value>{0}. sınıf</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Kapsam onayı bekliyor</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Etkinlik kontrolü</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Tatbikat sürüyor</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Tatbikat tamamlandı</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Tatbikat iptal edildi</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Toptan</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Eczane</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>Geriye</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>İleriye</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>İkisi</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Hammadde lotu</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Bitmiş ürün lotu</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Girdi</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Depo stoğu</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Sevkiyat</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Müşteri</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>İzleme boşluğu</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>İmha / tedarikçiye iade</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Çıkış hareketinde lot alanı boş</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Yazılı lot metni bir lota bağlanmadı</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Soy ağacı bağı eksik</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Üretimde çıktı bağı olmadan tüketildi</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Müşteri referansı olmayan sevkiyat</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>İzleme sınırına ulaşıldı</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Başka şirkette hareket (yalnız sayı)</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>Gönderilmeyi bekliyor</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>Karantinada</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>Kısmen karantinada</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>Rezervasyon nedeniyle bekliyor</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>Kullanılabilir stok yok</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>Gerekmiyor</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>zaten karantinada</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>zaten bloke</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>lot bloke</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>lotun süresi dolmuş</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>kapsamdan hariç</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>E-posta (sistem dışı)</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>Faks</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>Yüz yüze</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>Vaka açıldı</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>Kapsama kalem eklendi</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>Dahil / hariç değiştirildi</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>Kapsam onayına gönderildi</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>Kapsam geri gönderildi</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>Kapsam onaylandı</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>Fiziksel ayırma teyit edildi</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>Müşteri bilgilendirildi</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>Tüketim beyan edildi</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>Etkinlik kontrolüne geçildi</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>Etkinlik kontrolü tamamlandı</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>Vaka kapandı</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>Vaka iptal edildi</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>İzleme çalıştırıldı</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>Kapsam dışı bulgu</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>Karantina isteği gönderildi</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>Karantina isteği başarısız</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>Karantina isteği yeniden denendi</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>Çıkış hareketi reddedildi (lot geri çağırmada)</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>İade bağlandı</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>Kapsam revizyonu gönderildi</value></data>
+  <data name="Recall.Drills.ModeAuto" xml:space="preserve"><value>Sistem seçsin</value></data>
+  <data name="Recall.Drills.ModeManual" xml:space="preserve"><value>Ben seçeyim</value></data>
+  <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Özet</value></data>
+  <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · İzleme sonucu</value></data>
+  <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Karantina istekleri ve sonuçları</value></data>
+  <data name="Recall.Ev.W.4_customers" xml:space="preserve"><value>4 · Müşteri ve bilgilendirme</value></data>
+  <data name="Recall.Ev.W.5_returnsAndEffectiveness" xml:space="preserve"><value>5 · Geri dönüşler ve etkinlik kontrolü</value></data>
+  <data name="Recall.Ev.W.6_timeline" xml:space="preserve"><value>6 · Zaman çizelgesi</value></data>
+  <data name="Recall.Ev.W.7_signatures" xml:space="preserve"><value>7 · İmzalar</value></data>
+  <data name="Recall.Ev.W.notApplicable" xml:space="preserve"><value>Uygulanmaz</value></data>
+  <data name="Recall.Ev.W.notApplicableDrill" xml:space="preserve"><value>Uygulanmaz — tatbikat salt-okunur provadır</value></data>
+  <data name="Recall.Ev.W.notApplicablePeriod" xml:space="preserve"><value>Uygulanmaz — dönem raporu yalnız tatbikat listesidir</value></data>
+  <data name="Recall.Ev.W.notSealed" xml:space="preserve"><value>Kapsam mühürlenmedi; izleme anlık görüntüsü yok</value></data>
+  <data name="Recall.Ev.W.none" xml:space="preserve"><value>Kayıt yok</value></data>
+  <data name="Recall.Ev.W.field" xml:space="preserve"><value>Alan</value></data>
+  <data name="Recall.Ev.W.value" xml:space="preserve"><value>Değer</value></data>
+  <data name="Recall.Ev.W.nodeKind" xml:space="preserve"><value>Düğüm</value></data>
+  <data name="Recall.Ev.W.lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Ev.W.place" xml:space="preserve"><value>Depo / müşteri</value></data>
+  <data name="Recall.Ev.W.quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Recall.Ev.W.unit" xml:space="preserve"><value>Birim</value></data>
+  <data name="Recall.Ev.W.document" xml:space="preserve"><value>Belge</value></data>
+  <data name="Recall.Ev.W.date" xml:space="preserve"><value>Tarih</value></data>
+  <data name="Recall.Ev.W.warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="Recall.Ev.W.location" xml:space="preserve"><value>Lokasyon</value></data>
+  <data name="Recall.Ev.W.status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Recall.Ev.W.reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="Recall.Ev.W.held" xml:space="preserve"><value>Tutulan</value></data>
+  <data name="Recall.Ev.W.holds" xml:space="preserve"><value>Karantina kaydı</value></data>
+  <data name="Recall.Ev.W.customer" xml:space="preserve"><value>Müşteri</value></data>
+  <data name="Recall.Ev.W.notifiedOn" xml:space="preserve"><value>Bilgilendirme</value></data>
+  <data name="Recall.Ev.W.channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="Recall.Ev.W.note" xml:space="preserve"><value>Not</value></data>
+  <data name="Recall.Ev.W.transaction" xml:space="preserve"><value>Hareket</value></data>
+  <data name="Recall.Ev.W.sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.shipped" xml:space="preserve"><value>Sevk</value></data>
+  <data name="Recall.Ev.W.returned" xml:space="preserve"><value>Geri dönen</value></data>
+  <data name="Recall.Ev.W.consumed" xml:space="preserve"><value>Tüketildi</value></data>
+  <data name="Recall.Ev.W.open" xml:space="preserve"><value>Açık</value></data>
+  <data name="Recall.Ev.W.percent" xml:space="preserve"><value>Etkinlik %</value></data>
+  <data name="Recall.Ev.W.target" xml:space="preserve"><value>Hedef %</value></data>
+  <data name="Recall.Ev.W.met" xml:space="preserve"><value>Hedefte</value></data>
+  <data name="Recall.Ev.W.seq" xml:space="preserve"><value>Sıra</value></data>
+  <data name="Recall.Ev.W.at" xml:space="preserve"><value>Zaman</value></data>
+  <data name="Recall.Ev.W.event" xml:space="preserve"><value>Olay</value></data>
+  <data name="Recall.Ev.W.actor" xml:space="preserve"><value>Kişi</value></data>
+  <data name="Recall.Ev.W.text" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Recall.Ev.W.signatureId" xml:space="preserve"><value>İmza</value></data>
+  <data name="Recall.Ev.W.action" xml:space="preserve"><value>İşlem</value></data>
+  <data name="Recall.Ev.W.signer" xml:space="preserve"><value>İmzalayan</value></data>
+  <data name="Recall.Ev.W.meaning" xml:space="preserve"><value>Anlam</value></data>
+  <data name="Recall.Ev.W.signedAt" xml:space="preserve"><value>İmza zamanı</value></data>
+  <data name="Recall.Ev.W.run" xml:space="preserve"><value>Tatbikat</value></data>
+  <data name="Recall.Ev.W.started" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="Recall.Ev.W.duration" xml:space="preserve"><value>Süre (dk)</value></data>
+  <data name="Recall.Ev.W.targetHours" xml:space="preserve"><value>Hedef (sa)</value></data>
+  <data name="Recall.Ev.W.passed" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="Recall.Ev.W.returns" xml:space="preserve"><value>Geri dönüşler</value></data>
+  <data name="Recall.Ev.W.effectiveness" xml:space="preserve"><value>Etkinlik</value></data>
+  <data name="Recall.Ev.W.summary" xml:space="preserve"><value>Özet</value></data>
+  <data name="Recall.Ev.W.runs" xml:space="preserve"><value>Tatbikatlar</value></data>
+  <data name="Recall.Ev.W.trace" xml:space="preserve"><value>İzleme</value></data>
+  <data name="Recall.Ev.W.requests" xml:space="preserve"><value>İstekler</value></data>
+  <data name="Recall.Ev.W.customers" xml:space="preserve"><value>Müşteriler</value></data>
+  <data name="Recall.Ev.W.timeline" xml:space="preserve"><value>Olaylar</value></data>
+  <data name="Recall.Ev.W.signatures" xml:space="preserve"><value>İmzalar</value></data>
+  <data name="Recall.Ev.W.number" xml:space="preserve"><value>Numara</value></data>
+  <data name="Recall.Ev.W.class" xml:space="preserve"><value>Sınıf</value></data>
+  <data name="Recall.Ev.W.level" xml:space="preserve"><value>Düzey</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Ürün kimliği</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU kimliği</value></data>
+  <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Kök lot</value></data>
+  <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Neden referansı</value></data>
+  <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Açan</value></data>
+  <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Açılış</value></data>
+  <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Yön</value></data>
+  <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Kapsam revizyonu</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>İz anlık görüntüsü özeti</value></data>
+  <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Kapsamı onaylayan</value></data>
+  <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Kapsam onayı</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Etkinliği tamamlayan</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedAtUtc" xml:space="preserve"><value>Etkinlik tamamlandı</value></data>
+  <data name="Recall.Ev.W.closedBy" xml:space="preserve"><value>Kapatan</value></data>
+  <data name="Recall.Ev.W.closedAtUtc" xml:space="preserve"><value>Kapanış</value></data>
+  <data name="Recall.Ev.W.closureSummary" xml:space="preserve"><value>Kapanış özeti</value></data>
+  <data name="Recall.Ev.W.openQuantityAcceptance" xml:space="preserve"><value>Açık miktar kabulü</value></data>
+  <data name="Recall.Ev.W.cancelledBy" xml:space="preserve"><value>İptal eden</value></data>
+  <data name="Recall.Ev.W.cancelReason" xml:space="preserve"><value>İptal gerekçesi</value></data>
+  <data name="Recall.Ev.W.planCode" xml:space="preserve"><value>Plan</value></data>
+  <data name="Recall.Ev.W.selectionMode" xml:space="preserve"><value>Lot seçimi</value></data>
+  <data name="Recall.Ev.W.startedAtUtc" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="Recall.Ev.W.endedAtUtc" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="Recall.Ev.W.durationMinutes" xml:space="preserve"><value>Süre (dk)</value></data>
+  <data name="Recall.Ev.W.gapCount" xml:space="preserve"><value>İzleme boşluğu</value></data>
+  <data name="Recall.Ev.W.resultNote" xml:space="preserve"><value>Sonuç notu</value></data>
+  <data name="Recall.Ev.W.from" xml:space="preserve"><value>Başlangıç tarihi</value></data>
+  <data name="Recall.Ev.W.to" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Tatbikat sayısı</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>SKU kodu</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>Şirket</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>Şirket kimliği</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>Gönderilen kapsam mührü (imzalanan)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>Onaylanan kapsam mührü (imzalanan)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>Açan (kimlik)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>Kapsamı onaylayan (kimlik)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>Etkinliği tamamlayan (kimlik)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>Kapatan (kimlik)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>İptal eden (kimlik)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>Kişi kimliği</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>İmzalayan kimliği</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>Depo kimliği</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>Lokasyon kimliği</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (ad okunamadı)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (okunamadı)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>Başarılı</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>Geçerli</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>Geçersiz kılındı</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>Okunamadı ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>Etkinlik kontrolü sonucu</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>Sevkiyat yok — ölçülecek miktar yok</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>Henüz tamamlanmadı — anlık değerler</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>Onay</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>Bu belge İngilizce üretildi (seçilen dil PDF'te desteklenmiyor)</value></data>
+  <data name="RecallPdf.Title" xml:space="preserve"><value>Geri çağırma kanıt paketi</value></data>
+  <data name="RecallPdf.Subject" xml:space="preserve"><value>Konu</value></data>
+  <data name="RecallPdf.Generated" xml:space="preserve"><value>Oluşturma</value></data>
+  <data name="RecallPdf.Page" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="RecallPdf.RequestedLanguage" xml:space="preserve"><value>İstenen dil: {0}</value></data>
+  <data name="RecallPdf.Kind.Case" xml:space="preserve"><value>Gerçek vaka</value></data>
+  <data name="RecallPdf.Kind.DrillRun" xml:space="preserve"><value>Tatbikat</value></data>
+  <data name="RecallPdf.Kind.Period" xml:space="preserve"><value>Dönem</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>İnceleme</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Serbest bırakma</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Hazırlayan</value></data>
+</root>

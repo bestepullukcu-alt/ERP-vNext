@@ -61,4 +61,5 @@
   <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
     <value>Sistem rolleri düzenlenemez.</value>
   </data>
+  <data name="ErrorRoleDeleteLastSteward" xml:space="preserve"><value>Bu rolü silmek, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
 </root>

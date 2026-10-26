@@ -1,0 +1,146 @@
+Test run for /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.12]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.25]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.25]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect [1 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-time") [638 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-status") [458 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-causation") [463 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-duplicate") [475 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-missing") [499 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-correlation") [478 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-duplicate") [463 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-correlation") [429 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-time") [430 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "slot-not-released") [447 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-payload") [453 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-status") [465 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-missing") [451 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-exact", aggregateSkip: 1) [506 ms]
+  Standard Output Messages:
+ X07 later read boundary=event-exact aggregateSkip=1 failpointEntries=1 injectedFailures=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-broad", aggregateSkip: 2) [463 ms]
+  Standard Output Messages:
+ X07 later read boundary=audit-broad aggregateSkip=2 failpointEntries=1 injectedFailures=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "active-slot", aggregateSkip: 4) [465 ms]
+  Standard Output Messages:
+ X07 later read boundary=active-slot aggregateSkip=4 failpointEntries=1 injectedFailures=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-broad", aggregateSkip: 0) [468 ms]
+  Standard Output Messages:
+ X07 later read boundary=event-broad aggregateSkip=0 failpointEntries=1 injectedFailures=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-exact", aggregateSkip: 3) [495 ms]
+  Standard Output Messages:
+ X07 later read boundary=audit-exact aggregateSkip=3 failpointEntries=1 injectedFailures=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt [468 ms]
+  Standard Output Messages:
+ X01 commit acknowledgment loss hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success [435 ms]
+  Standard Output Messages:
+ X07 reconciliation read failure hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [495 ms]
+  Standard Output Messages:
+ X06 definite audit-insert cut hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [464 ms]
+  Standard Output Messages:
+ X01 definite commit cut hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [475 ms]
+  Standard Output Messages:
+ X07 uncommitted unknown result hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved [469 ms]
+  Standard Output Messages:
+ X01 uncertain commit hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect [1 m 19 s]
+  Standard Output Messages:
+ X07 committed acknowledgment loss hits=1
+
+
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures [675 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set [489 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation [469 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data [418 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal [440 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [35 s]
+[20:48:53 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [2 ms]
+[20:48:54 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[20:48:54 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[20:48:54 INF] Now listening on: http://127.0.0.1:5066 CorrelationId= TenantId= LegalEntityId=
+[20:48:54 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId=e39a1f96-8ed7-4fb2-8a83-cfc6f0ecf8b9 TenantId= LegalEntityId=
+[20:48:54 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 401 null application/json; charset=utf-8 49.3924ms CorrelationId=e39a1f96-8ed7-4fb2-8a83-cfc6f0ecf8b9 TenantId= LegalEntityId=
+[20:48:54 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - application/json; charset=utf-8 120 CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:54 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Route matched with {action = "Create", controller = "SandopPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController (Diten.SupplyChainService.Api). CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Handling CreateSandopPlanCommand CorrelationId=00000000-0000-0000-0000-000000000000 TenantId=00000000-0000-0000-0000-000000000000 LegalEntityId=00000000-0000-0000-0000-000000000000
+[20:48:55 INF] Executing ContentResult with HTTP Response ContentType of application/json CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Executed action Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api) in 50.6915ms CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - 201 292 application/json 99.94ms CorrelationId=d3a438b6-a508-4706-836d-51956911b314 TenantId= LegalEntityId=
+[20:48:55 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Route matched with {action = "Create", controller = "CapacityPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.CapacityPlans.CreateCapacityPlanRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController (Diten.SupplyChainService.Api). CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Handling CreateCapacityPlanCommand CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId=19200000-0000-4000-8000-000000000001 LegalEntityId=19200000-0000-4000-8000-000000000002
+[20:48:55 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityPlanResponse'. CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Executed action Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api) in 58.1475ms CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 201 null application/json; charset=utf-8 66.0664ms CorrelationId=2a13b46c-979b-4ba0-b984-635842001d44 TenantId= LegalEntityId=
+[20:48:55 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId= TenantId= LegalEntityId=
+[20:48:55 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 400 null application/json; charset=utf-8 0.5795ms CorrelationId=5eda666f-9fba-43c5-848a-0f758c1ff140 TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Capacity_controller_is_mapped_and_its_context_middleware_is_composed [2 s]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Sandop_controller_is_mapped_and_serves_a_request [115 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityCorrelationTests.Correlation_survives_request_response_audit_and_event [72 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityCorrelationTests.Malformed_correlation_is_rejected_before_any_write [4 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityReplayTests.Fingerprint_uses_decoded_business_body_and_exact_target [5 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Infinite", count: 0) [2 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Finite", count: 1) [2 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Request_does_not_accept_client_scope_or_unknown_fields [1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Scenario_name_conflict_uses_the_exact_successor_message [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Plan_projection_has_published_wire_keys_and_provenance [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Every_fixture_reader_answers_from_memory [31 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.The_two_modules_persist_into_disjoint_collections [13 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_names_a_type_of_the_other(mine: "SandopPlans", theirs: "CapacityPlans") [5 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_names_a_type_of_the_other(mine: "CapacityPlans", theirs: "SandopPlans") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_reaches_a_live_producer(feature: "SandopPlans") [6 ms]
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacitySeparationTests.Neither_module_reaches_a_live_producer(feature: "CapacityPlans") [11 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://localhost/?replicaSet=rs0") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://127.0.0.1:27017/?replicaSet=rs0") [< 1 ms]
+[xUnit.net 00:02:13.83]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.ExplicitSelectionTimeout_IsKept [2 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: null) [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "   ") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://db.example.test:31994/?replicaSet=rsq131") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://127.0.0.1:31994/") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityTestMongoTests.LaneReplicaSet_IsAccepted_AndKeepsTheFiveSecondSelectionTimeout [< 1 ms]
+
+Test Run Successful.
+Total tests: 58
+     Passed: 58
+ Total time: 2.2405 Minutes

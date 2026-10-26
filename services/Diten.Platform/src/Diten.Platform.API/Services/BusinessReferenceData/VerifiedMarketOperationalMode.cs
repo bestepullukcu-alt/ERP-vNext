@@ -64,6 +64,10 @@ public static class VerifiedMarketOperationalMode
             configuration.GetSection(VerifiedMarketOperationalProvisioningOptions.SectionName));
         services.Configure<BusinessReferenceDataProviderOptions>(
             configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
+        // WP-PLT-MARKET-REFTENANT-01 — read only, for the eligibility's "reference tenant ≠ GSKU consumer" rule; the GSKU
+        // path itself (its runner, eligibility, behaviour) is not composed here and does not change.
+        services.Configure<VerifiedGskuOperationalProvisioningOptions>(
+            configuration.GetSection(VerifiedGskuOperationalProvisioningOptions.SectionName));
         services.AddScoped<IBusinessReferenceDataVerifiedMarketOperationalEligibility,
             DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility>();
         services.AddScoped<VerifiedMarketOperationalProvisioningRunner>();

@@ -1,0 +1,12 @@
+contract-declared codes: 22
+implementation codes   : 23 (21 in factories, 16 at emission sites)
+
+A) emitted/declarable in code but NOT in the contract:
+
+   - INTERNAL_ERROR
+
+B) in the contract but NOT found anywhere in code:
+   none
+
+C) (status, code) pairs whose STATUS the contract never declares:
+   - Sandop: 500 INTERNAL_ERROR

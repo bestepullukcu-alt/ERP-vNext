@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.AccessGovernance;
 
+[Trait("Category", "Mongo")]
 public sealed class TrustedLegalEntityScopeResolutionMongoTests : IAsyncLifetime
 {
     // Main sync (CT decision C): this process's Mongo (PlatformMongoTestConnection) — never the shared 27017.

@@ -1,0 +1,29 @@
+{
+ "log": [
+  "POST /shipments -> 201",
+  "POST /shipments/bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65/transition -> 200",
+  "POST /carriers -> 201",
+  "POST /loads -> 201",
+  "POST /loads/a6977fbc-7cd9-4818-94da-d891af06de10/transition -> 200",
+  "POST /loads/a6977fbc-7cd9-4818-94da-d891af06de10/transition -> 200",
+  "POST /loads/a6977fbc-7cd9-4818-94da-d891af06de10/transition -> 200",
+  "POST /loads/a6977fbc-7cd9-4818-94da-d891af06de10/transition -> 200",
+  "POST /shipments/bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65/transition -> 200",
+  "POST /shipments/bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65/transition -> 200",
+  "POST /shipments/bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65/pod -> 201",
+  "POST /loads/a6977fbc-7cd9-4818-94da-d891af06de10/transition -> 200",
+  "POST /returns -> 201",
+  "POST /returns/81ab7123-ea2e-4998-a309-d95be13d2063/transition -> 200",
+  "POST /claims -> 201",
+  "POST /claims/85934fdd-a79b-4753-9625-92131c3fa17a/transition -> 200",
+  "GET /shipments/bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65 -> 200"
+ ],
+ "root": "0742bf92-a5a8-4048-b7f1-99b83ed4cf7a",
+ "shipment": "bbaff1bb-b8ea-4cfb-a2ad-17de659b8a65",
+ "carrier": "f6ac60ef-a8e8-4ca0-a4a4-a0eeac0ecaaf",
+ "load": "a6977fbc-7cd9-4818-94da-d891af06de10",
+ "return": "81ab7123-ea2e-4998-a309-d95be13d2063",
+ "claim": "85934fdd-a79b-4753-9625-92131c3fa17a",
+ "tenant": "193bc3dd-f786-4e99-b059-ed9edb543ce8",
+ "finalShipmentStatus": "Delivered"
+}

@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AnyPermissionAuthorizationHandler>(); // WP-MVP1-FIX-LIVE3: [HasAnyPermission]
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, ContractAuthorizationResultHandler>();
         // WP-0173-PM2: service keys of the internal operations (own key pairs, Inventory:InternalServiceKeys).
         services.AddSingleton<InternalAccess.InternalServiceKeyAuthenticator>();

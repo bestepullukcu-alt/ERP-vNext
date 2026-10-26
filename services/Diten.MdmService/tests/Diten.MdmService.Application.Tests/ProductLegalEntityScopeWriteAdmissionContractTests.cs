@@ -25,11 +25,13 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
         "CancelFinishedGoodDraftCommand", "CancelLskuDraftCommand", "RepairLskuChildAdmissionsCommand",
         // WP-MDM-ITEM-MASTER S3 (CT decision R9): the stock-behaviour writers are born fenced.
         "SetGskuStockBehaviourCommand", "SetLskuStockBehaviourCommand", "SetFinishedGoodStockBehaviourCommand",
-        "AssignFinishedGoodGtinCommand"
+        "AssignFinishedGoodGtinCommand",
+        // MOD-0290-FU05 slice 2 (CT decision A): the approved product's brand change is born fenced.
+        "ChangeGlobalProductBrandCommand"
     ];
 
     [Fact]
-    public void Mutation_inventory_is_exactly_the_frozen_25_commands_and_has_no_unclassified_twenty_sixth_writer()
+    public void Mutation_inventory_is_exactly_the_frozen_26_commands_and_has_no_unclassified_twenty_seventh_writer()
     {
         var marker = typeof(IProductLegalEntityScopeInventoryMutation);
         var applicationTypes = marker.Assembly.GetTypes();
@@ -61,9 +63,9 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
 
         Assert.True(unclassified.Length == 0,
             "Unclassified product inventory command(s): " + string.Join(", ", unclassified));
-        Assert.Equal(25, actual.Length);
+        Assert.Equal(26, actual.Length);
         Assert.Equal(ExactMutationCommands.OrderBy(name => name, StringComparer.Ordinal), actual);
-        Assert.Equal(25, ExactMutationCommands.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(26, ExactMutationCommands.Distinct(StringComparer.Ordinal).Count());
     }
 
     private static bool IsProductCommandNamespace(string ns) =>

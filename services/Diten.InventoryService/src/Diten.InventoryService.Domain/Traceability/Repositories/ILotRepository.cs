@@ -72,6 +72,12 @@ public interface ILotTransaction
     /// Balance rows are untouched.
     /// </summary>
     Task ApplyStatusToAvailabilityAsync(Lot lot, LotStatus from, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// MOD-0176 F2: the store's own transaction handle (opaque here), so a gate that writes its own records in THIS transaction (the KF-D
+    /// lot-date override) commits with the lot or not at all. Null when the store has no such handle.
+    /// </summary>
+    object? Session => null;
 }
 
 public enum LotSortField

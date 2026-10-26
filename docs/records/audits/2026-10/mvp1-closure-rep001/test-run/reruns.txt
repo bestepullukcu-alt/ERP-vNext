@@ -1,0 +1,5 @@
+PrismConsumedContractSmokeTests re-run alone at 3a4bf51b1: 16/16 passed (cold-start timeout in the full run).
+UserErrorCodeBridgeGuardTests re-run alone at 3a4bf51b1: 7/7 passed (IOException "İşleyici geçersiz" while another process read the same resx in the full run).
+Web 4 reds re-run on clean origin/main dfb5de610: the same 4 red (NavManifestL10nGuardTests x2, SandopPlansPageTests, CapacityPlansPageTests).
+Auth new-vs-baseline diff: only UserErrorCodeBridgeGuardTests (see above).
+Platform 19 reds: identical to the clean-main baseline measured on this machine (environment: owned test mongod, index state).

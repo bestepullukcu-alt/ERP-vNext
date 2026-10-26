@@ -36,6 +36,16 @@ public sealed class GlobalProductsController : CustomBaseController
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(query, cancellationToken));
 
+    // MOD-0290-FU05 (T-1): the brands a create / draft edit may link — for whoever may write a Global Product, without
+    // mdm.brands.read (slice 2: + the approved product's brand key).
+    [HttpGet("brand-options")]
+    [HasPermission("mdm.global-products.create", "mdm.global-products.update",
+        ProductIdentityLifecyclePermissions.GlobalProductUpdateBrand)]
+    public async Task<IActionResult> GetBrandOptions(
+        [FromQuery] GetGlobalProductBrandOptionsQuery query,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(query, cancellationToken));
+
     [HttpGet("{id:guid}")]
     [HasPermission("mdm.global-products.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
@@ -74,6 +84,30 @@ public sealed class GlobalProductsController : CustomBaseController
 
         return CreateActionResultInstance(await _mediator.Send(
             new UpdateGlobalProductDraftCommand(id, request, operationId),
+            cancellationToken));
+    }
+
+    // MOD-0290-FU05 slice 2 (owner Karar a): an approved product's brand, directly and audited, by its own key.
+    [HttpPost("{id:guid}/brand")]
+    [HasPermission(ProductIdentityLifecyclePermissions.GlobalProductUpdateBrand)]
+    public async Task<IActionResult> ChangeBrand(
+        Guid id,
+        [FromBody] ProductItemSkuMasterModels.ChangeGlobalProductBrandRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null || !request.BrandIdSpecified
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new ChangeGlobalProductBrandCommand(id, request, operationId),
             cancellationToken));
     }
 

@@ -50,10 +50,14 @@ public sealed class InventoryScopeResolutionMiddleware
 
     private static readonly string[] ForbiddenQueryKeys = ["tenantId", "legalEntityId", "tenant_id", "legal_entity_id"];
 
-    /// <summary>Every base path this middleware scopes (MOD-0173 ledger + MOD-0173-FU02 locations + MOD-0174 trace + MOD-0175 quarantine).</summary>
+    /// <summary>
+    /// Every base path this middleware scopes (MOD-0173 ledger + MOD-0173-FU02 locations + MOD-0174 trace + MOD-0175 quarantine + MOD-0176
+    /// expiry, WP-0176-F1: without it an <c>/api/expiry</c> request would reach a handler with an unresolved scope).
+    /// </summary>
     public static readonly IReadOnlyList<string> ScopedBasePaths =
         [InventoryContract.BasePath, InventoryContract.LocationsBasePath, Application.Features.Traceability.TraceContract.BasePath,
-         Application.Features.Quarantine.QuarantineContract.BasePath];
+         Application.Features.Recall.RecallContract.BasePath, // MOD-0177 (WP-0177-R1): /api/recall resolves the tenant + company scope
+         Application.Features.Quarantine.QuarantineContract.BasePath, Application.Features.Expiry.ExpiryContract.BasePath];
 
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;
@@ -178,10 +182,14 @@ public sealed class InventoryScopeResolutionMiddleware
         await _next(context);
     }
 
-    /// <summary>MOD-0175 Q3: <c>GET /api/quarantine/esign-subjects/…</c> (the MOD-0022 subject provider, read-only).</summary>
+    /// <summary>MOD-0175 Q3: <c>GET /api/quarantine/esign-subjects/…</c>; MOD-0176 F3: <c>GET /api/expiry/esign-subjects/…</c> (the MOD-0022
+    /// subject providers, read-only).</summary>
     private static bool IsSubjectProvider(HttpContext context)
         => HttpMethods.IsGet(context.Request.Method)
-           && context.Request.Path.StartsWithSegments(Application.Features.Quarantine.QuarantineContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase);
+           && (context.Request.Path.StartsWithSegments(Application.Features.Quarantine.QuarantineContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase)
+               || context.Request.Path.StartsWithSegments(Application.Features.Expiry.ExpiryContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase)
+               // MOD-0177 R4: GET /api/recall/esign-subjects/… (the same read-only provider rule)
+               || context.Request.Path.StartsWithSegments(Application.Features.Recall.RecallContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>The frozen LOCATION v1 <c>listLocations</c> filter <c>legalEntityId</c> on <c>GET /api/locations</c> only.</summary>
     private static bool IsFrozenListFilter(HttpContext context, string key)

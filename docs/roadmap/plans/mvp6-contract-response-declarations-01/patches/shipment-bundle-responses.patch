@@ -1,0 +1,100 @@
+diff --git a/docs/analysis/contracts/shipment-bundle.openapi.yaml b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+index c42a659c8..4c71e2c66 100644
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -65,6 +65,68 @@ paths:
+                 total: 1
+                 contractVersion: v1
+         '400': { $ref: '#/components/responses/BadRequest' }
++        '401':
++          description: Shipments 401; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                UNAUTHENTICATED:
++                  value:
++                    error:
++                      code: UNAUTHENTICATED
++                      message: Authentication required.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '403':
++          description: Shipments 403; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                FORBIDDEN:
++                  value:
++                    error:
++                      code: FORBIDDEN
++                      message: The requested operation is not permitted.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '404':
++          $ref: '#/components/responses/NotFound'
++        '500':
++          description: Shipments 500; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: An unexpected error occurred.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+         '503': { $ref: '#/components/responses/DependencyUnavailable' }
+     post:
+       tags: [Shipments]
+@@ -2331,6 +2393,26 @@ paths:
+                 type: string
+                 format: uuid
+               example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++        '404':
++          description: Claims 404; applicability and precedence in normative annex.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                CLAIM_NOT_FOUND:
++                  value:
++                    error:
++                      code: CLAIM_NOT_FOUND
++                      message: The requested claim was not found.
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              schema:
++                type: string
++                format: uuid
++              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+         '500':
+           description: Claims 500; applicability and precedence in normative annex.
+           content:

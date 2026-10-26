@@ -14,7 +14,10 @@ public sealed class VerifiedMarketOperationalProvisioningOptions
     public const string LockedCatalogFileName = "mod-0290-market-reference.json";
     public const string LockedCatalogVersion = "UNSD-M49-2026-08-08";
     public const string LockedCatalogFingerprint = "b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039";
-    public const string LockedReferenceTenantId = "00000000-0000-0000-0000-000000000001";
+    // WP-PLT-MARKET-REFTENANT-01 (MOD-0048-FU01 amendment 2026-10-15, BL-645): no reference-tenant lock any more — the
+    // reference tenant is BusinessReferenceData:Provider:ReferenceTenantId (the GSKU path's source), never the platform
+    // system tenant and never the GSKU consumer. The actor lock below is unchanged.
+    public const string ReferenceTenantConfigurationKey = "BusinessReferenceData:Provider:ReferenceTenantId";
     public const string LockedActorId = "11111111-1111-1111-1111-111111111111";
     public bool Enabled { get; set; }
     public string CatalogPath { get; set; } = string.Empty;

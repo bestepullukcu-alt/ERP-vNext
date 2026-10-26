@@ -30,6 +30,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// last.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorResendConvergenceMongoTests
 {
     [Fact]

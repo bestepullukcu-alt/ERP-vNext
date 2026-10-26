@@ -44,4 +44,12 @@ public static class TraceErrorCodes
     // TRACE-BUNDLE 1.3.0 (WP-0174-ITEM) — createLot, the same spelling as INVENTORY-BUNDLE 1.2.0
     public const string ProductMasterDataIncomplete = InventoryErrorCodes.ProductMasterDataIncomplete;
     public const string SkuLevelNotStockable = InventoryErrorCodes.SkuLevelNotStockable;
+
+    // TRACE-BUNDLE 1.4.0 (MOD-0176 WP-0176-F2, KF-D) — createLot / Draft updateLot with a date that differs from the suggestion
+    public const string LotDateOverrideRequired = "LOT_DATE_OVERRIDE_REQUIRED";
+    public const string LotDateOverrideSignatureRequired = "LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED";
+    public const string LotDateOverrideSignatureMismatch = "LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH";
+    public const string LotDateOverrideMismatch = "LOT_DATE_OVERRIDE_MISMATCH";
+    /// <summary>The FEFO-BUNDLE code, answered by TRACE when the override is consumed, expired, another user's or unknown.</summary>
+    public const string ExpiryDateOverrideNotUsable = "EXPIRY_DATE_OVERRIDE_NOT_USABLE";
 }

@@ -118,11 +118,11 @@ Use frozen `SHIPMENT-BUNDLE` `/returns**`; route publication is a separate integ
 
 ## 16. Acceptance Criteria
 
-- [ ] Runtime remains absent while `draft`.
-- [ ] Future code consumes MOD-0183/INVENTORY strictly by frozen contract/mock.
-- [ ] Return quantity invariants and lifecycle are atomic and deterministic.
-- [ ] No stock collection, projection or movement SoR exists in MOD-0186.
-- [ ] Correlation ID remains unchanged through reverse lifecycle events.
+- [ ] Runtime remains absent while `draft`. — **⊘ SUPERSEDED** (pack :582 item 01 superseded for the isolated scope; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Future code consumes MOD-0183/INVENTORY strictly by frozen contract/mock. — **⚠ PARTIAL** (reference by mocked transport; BOUNDARY-REFS B-04 (`ShipmentScope` type coupling) unruled; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Return quantity invariants and lifecycle are atomic and deterministic. — **✅ MET** (`ReturnLifecycleTests.…All64Pairs…`, `ReturnConcurrencyTests.Create_Races…`, `ReturnAtomicityTests.*`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] No stock collection, projection or movement SoR exists in MOD-0186. — **✅ MET** (`ReturnEventCorrelationTests.A_received_and_dispositioned_return_creates_no_stock_record` (2026-10-19); G5 DB check; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Correlation ID remains unchanged through reverse lifecycle events. — **✅ MET** (`ReturnEventCorrelationTests.Every_return_event_type_carries_the_shipment_root` (8/8, 2026-10-19); G5 run; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 
 ## 17. Test Expectations
 

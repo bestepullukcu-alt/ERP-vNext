@@ -11,7 +11,7 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 ## Port Bandları
 - **5000**: Gateway (Ocelot) — dev
 - **5001**: Frontend (Diten.Web) — dev
-- **5011–5064**: Microservice bandı (Backend servis portları) — band 5060'tan 5064'e genişletildi (CT kararı 2026-09-14; HumanCapitalService=5063, TalentEcosystemService=5064 kurtarma servisleri için).
+- **5011–5071**: Microservice bandı (Backend servis portları) — band 5060'tan 5064'e genişletildi (CT kararı 2026-09-14; HumanCapitalService=5063, TalentEcosystemService=5064 kurtarma servisleri için); fiilen 5065–5070 de kullanımda (AGENTS §3); 5071'e genişletildi (sahip kararı D10/3, Treasury intake, 2026-10-24).
 - **7000+**: Dev tools / özel (mümkünse kullanılmaz; bazı tool’lar kapabilir)
 
 ## Aktif Kullanımlar (Şu an)
@@ -25,7 +25,8 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 | **Diten.MdmService.Api** | `5059` | Master data: tüzel kişilik, ürün, marka. |
 | **Diten.HcmService.Api** | `5060` | Core HR / employment records. |
 | **Diten.HumanCapitalService.Api** | `5063` | HCM readiness — applicant intake, onboarding, competency/development. |
-| **Diten.TalentEcosystemService.Api** | `5064` | TEP — talent ecosystem / association & career readiness. ⚠ Bandın **son portu** (band 5064'e genişletildi — CT kararı 2026-09-14). |
+| **Diten.TalentEcosystemService.Api** | `5064` | TEP — talent ecosystem / association & career readiness. (band 5064'e genişletildi — CT kararı 2026-09-14). |
+| **Diten.FinanceTreasuryService.Api** | `5071` | Finance & Treasury — ödemeler, AP, AR, nakit pozisyonu (planlı — kod yok; D10/3). ⚠ Bandın **son portu**. |
 
 > **Kural:** Frontend (5001) hiçbir zaman doğrudan servis portlarına istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.
 

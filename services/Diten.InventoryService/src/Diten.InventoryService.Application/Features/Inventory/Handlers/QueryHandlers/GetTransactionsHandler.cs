@@ -26,11 +26,15 @@ public sealed class GetTransactionsHandler : IRequestHandler<GetTransactionsQuer
 
     private readonly IInventoryLedgerRepository _ledger;
     private readonly ILotMasterClient _lots;
+    private readonly Common.IAuditActorNames _names;
+    private readonly Common.ITenantContext _tenant;
 
-    public GetTransactionsHandler(IInventoryLedgerRepository ledger, ILotMasterClient lots)
+    public GetTransactionsHandler(IInventoryLedgerRepository ledger, ILotMasterClient lots, Common.IAuditActorNames names, Common.ITenantContext tenant)
     {
         _ledger = ledger;
         _lots = lots;
+        _names = names;
+        _tenant = tenant;
     }
 
     public async Task<Response<TransactionPageDto>> Handle(GetTransactionsQuery request, CancellationToken cancellationToken)
@@ -84,9 +88,15 @@ public sealed class GetTransactionsHandler : IRequestHandler<GetTransactionsQuer
             }
         }
 
+        // INVENTORY 1.5.0 (WP-MVP1-NAMES1): the posting names of the WHOLE page in ONE read — the central audit queue's display name of
+        // each row's posting correlation and posting user, this company only. A row without a correlation or a user asks for nothing.
+        var names = await _names.NamesAsync(
+            InventoryMapping.QueueKeys(items), // WP-MVP1-FU-CLEAN2: a row with a stored name asks for nothing
+            _tenant.LegalEntityId, cancellationToken);
+
         return Response<TransactionPageDto>.Success(new TransactionPageDto
         {
-            Items = items.Select(InventoryMapping.ToTransactionItem).ToList(),
+            Items = items.Select(t => InventoryMapping.ToTransactionItem(t, names)).ToList(),
             Page = page,
             PageSize = pageSize,
             Total = total

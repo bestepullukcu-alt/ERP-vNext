@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// the person accepts is saved with <c>Source = Plan</c>.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlanFillInHttpMongoTests : TimerScenario
 {
     public PlanFillInHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

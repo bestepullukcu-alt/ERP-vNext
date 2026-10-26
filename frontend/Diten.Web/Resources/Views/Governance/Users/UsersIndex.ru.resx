@@ -76,4 +76,5 @@
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>Фамилия слишком длинная. Сократите её и повторите попытку.</value></data>
   <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>Адрес электронной почты слишком длинный. Сократите его и повторите попытку.</value></data>
   <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Есть ещё одна проблема; проверьте введённые данные и повторите попытку.</value></data>
+  <data name="ErrorUserDeactivateLastSteward" xml:space="preserve"><value>После деактивации этой учётной записи не останется другой активной учётной записи, которая может добавлять пользователей. Сначала предоставьте это право другому пользователю.</value></data>
 </root>

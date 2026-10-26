@@ -1,0 +1,14 @@
+copy
+exit=0
+baseline
+exit=1
+baseline PASS=97 FAIL=1
+sabotage: delete _IndexL10n.cshtml and index.l10n.js in the copy
+exit=0
+exit=1
+sabotage PASS=7 FAIL=2
+named red: _IndexL10n.cshtml exists=1 index.l10n.js exists=1
+docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/baseline.txt:[FAIL] personalizationClient sends tenant header only for tenant users
+docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/sabotage.txt:[FAIL] _IndexL10n.cshtml exists
+docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01/sabotage.txt:[FAIL] index.l10n.js exists
+exit=0

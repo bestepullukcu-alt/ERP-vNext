@@ -1,0 +1,13 @@
+G7 in catalog: [{"ModuleCode":"SOP-WORKFLOW-SIGNOFFS","IsTenantAssignable":true},{"ModuleCode":"CAPACITY-PLANNING","IsTenantAssignable":true}]
+auth G7 keys: 8
+tenant 0-0000000000 Admin      0/8  
+tenant 0-0000000000 SuperAdmin 8/8  capacity.create(0) capacity.evaluate(0) capacity.read(0) capacity.scenario.create(0) sandop.create(0) sandop.read(0) sandop.sign-off.record(0) sandop.snapshot.capture(0)
+tenant 0-0000000000 Viewer     0/8  
+tenant 1-711c08aa27 Admin      0/8  
+tenant 1-711c08aa27 Viewer     0/8  
+tenant 0-a0c8d5cd0c Admin      0/8  
+tenant 0-a0c8d5cd0c Viewer     0/8  
+tenant f-b8d2de805c Admin      0/8  
+tenant f-b8d2de805c Viewer     0/8  
+tenant 4-9dcf8dbb1e Admin      0/8  
+tenant 4-9dcf8dbb1e Viewer     0/8  

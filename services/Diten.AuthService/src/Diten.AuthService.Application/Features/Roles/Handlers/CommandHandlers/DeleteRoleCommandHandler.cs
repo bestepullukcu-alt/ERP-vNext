@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,7 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
     private readonly ITenantContext _tenantContext;
     private readonly IRoleAuditRecorder _rbacAudit;
     private readonly ICurrentUserAccessor _currentUser;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly ILogger<DeleteRoleCommandHandler> _logger;
 
     public DeleteRoleCommandHandler(
@@ -21,8 +23,10 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         ITenantContext tenantContext,
         IRoleAuditRecorder rbacAudit,
         ICurrentUserAccessor currentUser,
+        IRecoveryCapabilityGuard recoveryGuard,
         ILogger<DeleteRoleCommandHandler> logger)
     {
+        _recoveryGuard = recoveryGuard;
         _roleRepository = roleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
@@ -42,6 +46,15 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         if (role == null) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
         if (role.IsSystem) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.SystemNotDeletable, "System roles cannot be deleted.", 403);
+
+        // WP-USERS-ROLES-SMALL-02 — a custom role can carry auth.users.create; deleting it must not leave the tenant with no
+        // ACTIVE account that can create users. Before the delete, the version bump and the audit.
+        if (await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                _tenantContext.TenantId, new RecoveryCapabilityChange.DeleteRole(role.Id), ct))
+        {
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.DeleteLastSteward,
+                "Deleting this role would leave the tenant with no active account that can create users.", 409);
+        }
 
         await _roleRepository.DeleteAsync(request.Id, _tenantContext.TenantId, actorId.ToString(), ct);
 

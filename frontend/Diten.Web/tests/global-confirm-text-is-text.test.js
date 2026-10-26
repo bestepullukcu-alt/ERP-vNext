@@ -381,6 +381,9 @@ describe("the callers of the shared confirm", () => {
       "wwwroot/assets/js/CRM/Contacts/index.js",
       "wwwroot/assets/js/CRM/TerritoryManagement/resource-assignments.js",
       "wwwroot/assets/js/Platform/AuditLog/index.js",
+      "wwwroot/assets/js/Quarantine/blocked.js", // WP-MVP1-FIX-QUI1: the unblock body (constant template, subject via textContent)
+      "wwwroot/assets/js/Traceability/LotMigration/index.js", // WP-MVP1-FU-CLEAN1: the migration confirmation body (values escaped, constant tags)
+      "wwwroot/assets/js/Traceability/Lots/status.js", // WP-MVP1-FU-CLEAN1 (FU-QUI1-LOTSTATUS): the status form body (radios + acknowledgement)
     ]);
   });
 

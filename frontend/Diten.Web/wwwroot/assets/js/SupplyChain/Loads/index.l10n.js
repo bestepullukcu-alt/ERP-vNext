@@ -5,7 +5,7 @@
 (function () {
     const payload = document.getElementById('loads-l10n');
     const requiredKeys = [
-        'AccessDenied',
+        'ErrForbidden',
         'ActionDelivery',
         'ActionPickup',
         'ActionReturn',
@@ -19,7 +19,7 @@
         'ColumnVisibility',
         'CreateReplaySuccess',
         'CreateSuccess',
-        'EmptyList',
+        'EmptyState',
         'ErrCarrierModeUnsupported',
         'ErrCarrierNotFound',
         'ErrCorrelationRootMismatch',
@@ -38,7 +38,7 @@
         'ErrorOccurred',
         'Filter',
         'FilterCarrierId',
-        'ListUnavailable',
+        'ListErrorState',
         'LoadNumber',
         'LoadsTitle',
         'Mode',
@@ -78,7 +78,7 @@
         'Stops',
         'StopsHelp',
         'SupportReference',
-        'ValidationError'
+        'ErrInvalidRequest'
     ];
     const hasLocalizedValue = (dictionary, key) =>
         Object.prototype.hasOwnProperty.call(dictionary, key) && typeof dictionary[key] === 'string' && dictionary[key].trim().length > 0;

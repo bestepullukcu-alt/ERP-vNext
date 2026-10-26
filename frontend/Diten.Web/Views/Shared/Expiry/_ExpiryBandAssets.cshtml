@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0176 F5 — what the three bands need on a MOD-0173 / MOD-0174 page, rendered once: their vocabulary (Expiry.Band.*, 7 languages), the
+    antiforgery token of /Expiry/api/date-overrides, the ONE MOD-0022 signature dialog (for a holder of expiry.date-overrides.create) and
+    expiry-bands.js.
+*@
+@if (Context.Items["ExpiryBandAssetsRendered"] is not true)
+{
+    Context.Items["ExpiryBandAssetsRendered"] = true;
+    <script id="expiry-band-l10n" type="application/json">@Json.Serialize(Diten.Web.Views.Expiry.Expiry.BandKeys.ToDictionary(k => k, k => Localizer[k].Value))</script>
+    <partial name="~/Views/Expiry/_ExpiryAntiforgery.cshtml" />
+    @if (Perms.Has("expiry.date-overrides.create"))
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    }
+    <script src="~/assets/js/Expiry/expiry-bands.js" asp-append-version="true"></script>
+}

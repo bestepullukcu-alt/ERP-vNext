@@ -1,0 +1,9 @@
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Loads/LoadContextMiddleware.cs:99:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarrierContextMiddleware.cs:97:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Returns/ReturnContextMiddleware.cs:123:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Claims/ClaimContextMiddleware.cs:116:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs:93: catch(Exception){return LoadMutationResult.Error(500,"INTERNAL_ERROR");}
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopRepository.cs:91: catch{if(session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(MongoException){}return SandopResult.Error(500,"INTERNAL_ERROR");}
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierRepository.cs:107:            catch (Exception) { return Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Claims/ClaimRepository.cs:178:            catch (Exception) { return ClaimMutationResult.Error(500, "INTERNAL_ERROR"); }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Returns/ReturnRepository.cs:178:            catch (Exception) { return ReturnMutationResult.Error(500, "INTERNAL_ERROR"); }

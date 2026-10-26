@@ -1,0 +1,16 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 R7c — 0173 movement form: the RED band "Bu lot geri çağırmada — çıkış engelli (RC-…)" (pack §11.1, KR-C). Shown by recall-bands.js
+    when the source row's lot is under recall AND the type is one the exit block refuses (GOODS_ISSUE_SALES, GOODS_ISSUE_PROD,
+    WAREHOUSE_TRANSFER). Information only: the control is INVENTORY's 422 LOT_UNDER_RECALL, whose sentence the band repeats. The band box
+    needs recall.lots.status.read; the sentences are rendered for every reader so the server's refusal is worded the same way.
+*@
+@if (Perms.Has(Diten.Web.Controllers.RecallKeys.LotsStatusRead))
+{
+    <div class="d-none" data-recall-exit-band role="alert"></div>
+}
+else
+{
+    <div class="d-none" data-recall-exit-band data-recall-refusal-only role="alert"></div>
+}
+<partial name="~/Views/Shared/Recall/_RecallBandAssets.cshtml" />

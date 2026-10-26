@@ -879,3 +879,105 @@ amendment; gateway changes; live acceptance; and any runtime/test/build/Mongo/Gi
 A1a implementation/evidence is complete, subject to the stated parent-referenceability limitation. A1b has no
 code-start until its producer/transport, durable outcome/audit and startup-migration writer decisions are explicitly
 approved. No `ready-for-dev`, all-writer-fence, Production or live-acceptance claim is granted.
+
+## 22. TRM-14 — additive `approvalStatus` on the lookup / validation contract (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9
+and D10/2 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, took the
+MDM domain owner's decision for this change). It does **not** change this pack's frontmatter/status and authorizes no
+code until it passes CT-APR-02 (independent review) and CT-APR-01 (approval rows bound to this pack's hash). Contract:
+[`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`](../../../../docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md)
+(LEGAL-ENTITY-LOOKUP 1.1.0, rev 3). Queue: `treasury-intake` TRM-14. This pack's existing `ready-for-dev` status covers
+the earlier slices only and does **not** approve §22; TRM-14 is not closed until §22 is approved, AC-T1…T5 have **passed** (running a test is not passing
+it), the MdmService build is green (AC-T5) and every AC-T4 consumer result is bound to that service owner's evidence
+(§22.6a).
+
+### 22.1 Why
+
+Treasury (MOD-0126, MOD-0119, MOD-0120, MOD-0124) may move money only for a legal entity that is **Active and
+Approved** (D10/1, D14/4). The current contract returns only `lifecycleState` (from `OperationalStatus`) and
+`referenceable`; `ApprovalStatus` exists on the entity (`LegalEntity.cs:50@03fb1257c`) but is not exposed. A second
+read path or a copy in Treasury would duplicate MDM state; one additive field is the smallest change (D9).
+
+### 22.2 Current code truth (@03fb1257c; MdmService identical to origin/main, last change e87fa5a4)
+
+- Endpoint `GET /api/legal-entities/{id}/lookup-validation`, `[HasPermission("mdm.legal-entities.read")]`
+  (`LegalEntitiesController.cs:48-54`).
+- Handler returns 404 when the entity is missing or `OperationalStatus != Active`
+  (`ValidateLegalEntityReferenceHandler.cs:19-25`); tenant and soft-delete filters in the repository
+  (`LegalEntityRepository.cs:22, 41-43`).
+- Response `LegalEntityLookupDto(LegalEntityId, Code, LegalName, DisplayName, LifecycleState, Referenceable)`
+  (`LegalEntityModels.cs:100-106`), single mapping `ToLookupDto` (`:238-245`), also used by `GET /api/legal-entities/lookup`.
+- Drift noted, not fixed here: §4/§12 of this pack still say `LifecycleStatus` / `Status == ACTIVE`; code uses
+  `OperationalStatus` (six values) plus a separate `ApprovalStatus` (four values).
+
+### 22.3 Change (additive only)
+
+1. Add `string ApprovalStatus` to `LegalEntityLookupDto` (appended as the last positional member); map it in
+   `ToLookupDto` as `e.ApprovalStatus.ToString().ToUpperInvariant()` (`DRAFT` | `SUBMITTED` | `APPROVED` | `REJECTED`).
+   The constructor signature changes: measured (@4cf291b94) the only construction site is `ToLookupDto`
+   (`LegalEntityModels.cs:238-245`); no other `new LegalEntityLookupDto(` in `services/`, `frontend/` or `tests/`, and the
+   type is not shared as a compiled reference outside MdmService.
+2. No other change: 404 decision, `Referenceable`, `LifecycleState`, route, permission, gateway, index, schema and
+   collection unchanged. `ApprovalStatus` never takes part in the 404 decision or in `Referenceable`.
+3. The `/lookup` list gains the same field through the shared mapping (no second DTO).
+
+Allowed paths: `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs`
+and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other service.
+
+### 22.4 Acceptance criteria (defined; not implemented or run)
+
+- AC-T1 — `lookup-validation` for an Active entity returns `approvalStatus` equal to the entity's `ApprovalStatus`
+  in upper case, for each of the four values (theory test).
+- AC-T2 — 404 unchanged: missing, soft-deleted, other-tenant and every non-Active `OperationalStatus` (Draft, InReview,
+  Approved, Suspended, Archived) still return 404 with the same body, **including** when `ApprovalStatus = Approved`;
+  an Active entity with `ApprovalStatus = Rejected` still returns 200 with `referenceable = true`. Sabotage: if the
+  handler is changed to use `ApprovalStatus` in the 404 decision, the test turns red.
+- AC-T3 — JSON compatibility: the 200 JSON keeps the six existing properties with the same **name, JSON type and
+  meaning** and adds exactly one, `approvalStatus` (non-empty string, one of four values); `/lookup` list items carry the
+  same seven. **Property order is not asserted.** The contract example (full UUID) deserializes into the test's
+  expectation unchanged.
+- AC-T4 — Existing consumers unaffected: the existing MdmService tests and the consumer parsers' own tests
+  (Manufacturing `MdmLegalEntityReferenceValidatorTests`, SupplyChain `LegalEntityScopeValidatorTests`, Planning
+  `MrpUpstreamReaderTests` / `LiveHistoryImportReferencesTests`, Web `CompanySelectionTests`) pass unchanged, run
+  against a body that includes `approvalStatus`. CRM `MdmCyclePeriodLegalEntityValidator` has no parser test
+  (measured: no test file references it); its typed `System.Text.Json` read ignores unknown members by default. Adding a
+  CRM test is another service (XMC-001) and is listed as a follow-up, not done here.
+  **Status until run: expected compatibility, not tested** — for all 13 read points listed in the contract §3 (CRM ×2,
+  SupplyChain, Manufacturing, Planning ×2, Inventory, Platform ×2, HCM, SafetyStock, Web ×2). Running or adding a
+  consumer's test is that service owner's task (§22.7); only MdmService tests are in this amendment's paths.
+- AC-T5 — Code compatibility (separate from JSON): `dotnet build` of `Diten.MdmService` succeeds and the construction-site
+  scan (`git grep -n "LegalEntityLookupDto"` over `services/ frontend/ tests/`) is re-run at code time and shows no
+  construction outside `ToLookupDto`; any new site found is updated in the same commit or the change stops.
+
+### 22.5 Delivery
+
+- Code lands **together with MOD-0126 DL-1** (first Treasury consumer), as a separate commit inside the MdmService
+  allowed paths above; XMC-001 consent is D9 and must be restated in that WP prompt.
+- Treasury side (not this pack): `ILegalEntityEligibilityPort` classifies responses by the contract §2 table — invalid or
+  contradictory 200 (missing / null / empty / unknown `approvalStatus`, missing or different `legalEntityId`,
+  `referenceable = false`, `lifecycleState ≠ ACTIVE`) → 503; defined but not approved, or 404 → 422; never approved by
+  default. Reconcile is exempt only when recording an existing remote result; a Reconcile re-issue re-checks.
+
+### 22.6a Consumer-test follow-ups (owners, not this amendment)
+
+| Service | Test to run / add with an `approvalStatus` body | Owner |
+|---|---|---|
+| CRM | add parser tests for `MdmCyclePeriodLegalEntityValidator` and `MdmCyclePeriodLegalEntityCatalog` (none exist) | commercial-suite |
+| SupplyChain, Manufacturing, Planning, Inventory, Platform, HCM, SafetyStock, Web | run existing tests (contract §3) with the new body | each service owner |
+
+### 22.6 Out of scope
+
+Rejecting unapproved entities inside MOD-0220; any change to the 404 rule (that would be a major contract version);
+fixing the §4/§12 status-name drift; frontend; gateway; new permission; any other MDM field.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | TRM-14 `approvalStatus` eki (yalnız §22) | Change (additive only), Acceptance criteria (defined; not implemented or run), Delivery |
+
+Bu tablo **yalnız §22 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25). §1–§21'in eski kapsamı ve pack'in mevcut
+`ready-for-dev` durumu bu dilime yetki **vermez**; bu dilim de eski kapsamdan yetki almaz. Bitiş: AC-T1, AC-T2, AC-T3,
+AC-T4 (tüketici sahiplerinin kanıtıyla), AC-T5. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır
+(onaylayanın kararı); kod MOD-0126 DL-1 ile aynı WP'de, yalnız §22.3'teki izinli yollarda.

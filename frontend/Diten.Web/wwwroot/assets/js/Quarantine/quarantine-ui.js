@@ -235,18 +235,20 @@ window.QuarantineUi = (function () {
         if (then) window.location.href = then;
     };
 
-    /** FU-0175-Q5-02: a UserRef → its display name (filled by the Web), else the short id + "unknown user" — never a guessed name. */
-    const person = (ref) => {
-        if (ref?.name) return ref.name;
-        return ref?.userId ? unknownPerson(ref.userId) : '';
-    };
-    const unknownPerson = (id) => `${String(id).slice(0, 8)} · ${t('Quarantine.Common.UnknownUser')}`;
+    /**
+     * D-KAR-1 (owner decision A, 2026-10-19; was FU-0175-Q5-02's "short id · unknown user"): a UserRef is shown by the ONE person rule of
+     * MVP-1 — the shared StockMovementPeople rule (people.js, no copy): the name, else the localized "unknown user"; the id is never shown as
+     * text, only as the hover title of an unnamed person. person = the text, personHtml = the escaped markup with that title.
+     */
+    const personRow = (ref) => ({ createdById: ref?.userId || '', createdByName: ref?.name || '' });
+    const person = (ref) => window.StockMovementPeople.text(personRow(ref), t('Quarantine.Common.UnknownUser'));
+    const personHtml = (ref) => window.StockMovementPeople.html(personRow(ref), t('Quarantine.Common.UnknownUser'));
 
     /** WP-0174-ITEM: the SKU level in the reader's language (Item = a material item that is its own SKU). */
     const levelLabel = (level) => (level ? t('Quarantine.Level.' + level) || level : '');
 
     return {
-        t, has, esc, qty, date, dateTime, daysUntil, newKey, byId, person, unknownPerson, levelLabel,
+        t, has, esc, qty, date, dateTime, daysUntil, newKey, byId, person, personHtml, levelLabel,
         can: (code) => actions[code] === true,
         get, api, write, send, codeOf, errorText, showError, hideError, toast,
         stockBadge, holdState, holdBadge, decisionBadge, lotUrl, lotLink, productCell, whereCell, uom,

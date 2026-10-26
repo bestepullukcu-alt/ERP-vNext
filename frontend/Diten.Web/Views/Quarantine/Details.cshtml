@@ -6,6 +6,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Quarantine.Details.Title"].Value;
+    ViewData["PageCode"] = "QUARANTINEDETAILS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -74,7 +75,7 @@
                             <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.Quantity"]</small><span class="fw-medium" data-f="quantity">—</span></div>
                             <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.Where"]</small><span class="fw-medium" data-f="where">—</span></div>
                             <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.Wait"]</small><span class="fw-medium" data-f="wait">—</span></div>
-                            <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.Source"]</small><span class="fw-medium" data-f="source">—</span></div>
+                            <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.Source"]</small><span class="fw-medium" data-f="source">—</span>@* WP-0177-R7c (owner step MOD-0175): the recall source *@<partial name="~/Views/Shared/Recall/_HoldRecallSource.cshtml" /></div>
                             <div class="col-6 col-md-4"><small class="text-muted d-block">@Localizer["Quarantine.Details.Fact.CreatedBy"]</small><span class="fw-medium" data-f="createdBy">—</span></div>
                         </div>
                     </div>

@@ -5,6 +5,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ESign.Mine.Title"].Value;
+    ViewData["PageCode"] = "ESIGNMYSIGNATURE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 @*
@@ -24,6 +25,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
     <h5 class="mb-0">@Localizer["ESign.Mine.Title"]</h5>
 </div>
+
 
 <div class="alert alert-info d-flex gap-2 align-items-start" role="note">
     <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Mine.Statement"]</span>
@@ -74,8 +76,8 @@
                 <span class="flex-grow-1"></span>
                 <div class="nav-align-top">
                     <ul class="nav nav-pills" role="tablist">
-                        <li class="nav-item"><button type="button" class="nav-link btn-sm active" data-bs-toggle="tab" data-bs-target="#esignMineDrawTab" role="tab" id="esignTabDraw"><i class="bx bx-pen me-1"></i>@Localizer["ESign.Mine.Tab.Draw"]</button></li>
-                        <li class="nav-item"><button type="button" class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#esignMineUploadTab" role="tab" id="esignTabUpload"><i class="bx bx-image me-1"></i>@Localizer["ESign.Mine.Tab.Upload"]</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link text-none btn-sm active" data-bs-toggle="tab" data-bs-target="#esignMineDrawTab" role="tab" id="esignTabDraw"><i class="bx bx-pen me-1"></i>@Localizer["ESign.Mine.Tab.Draw"]</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link text-none btn-sm" data-bs-toggle="tab" data-bs-target="#esignMineUploadTab" role="tab" id="esignTabUpload"><i class="bx bx-image me-1"></i>@Localizer["ESign.Mine.Tab.Upload"]</button></li>
                     </ul>
                 </div>
             </div>

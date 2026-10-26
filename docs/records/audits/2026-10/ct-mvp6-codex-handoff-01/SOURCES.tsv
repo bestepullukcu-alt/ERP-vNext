@@ -1,0 +1,51 @@
+path	location	sha256	purpose_in_this_handoff
+CLAUDE.md	IN-GIT	8bd329cccb2e4543c13cf647a9343b10edd5c09c1e40ae44b00cb66984fb49ba	Authority order, standing rules, port table, the AGENTS.md doorway
+AGENTS.md	IN-GIT	a25a22e73439e34a276c1ab6e87d4edf21bf84def56e2c187d67ae586556f073	The engineering contract itself; changed by origin/main (4+/3-)
+.antigravity/rules/docs-organization.md	IN-GIT	24eebbf7fd7dcb7d14aa3a364c2a0f271690d4b704d6143195acfc8b2a1781e5	Five questions that placed this handoff under records/audits/2026-10
+execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	IN-GIT	b8fd382600aa299856e360630bc92f0fce80c0a4159df26584bd5bfc575d1a11	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md	IN-GIT	bcc3a52569eb6d5710bcb7aedb1ed22172f8816ebd142a344bae180cc5052104	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md	IN-GIT	f989d7019edbf5f858b593fc99362e7d0ea6c518068d79d322cad727a6beb4f8	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md	IN-GIT	d5a6764bcfed1e3b200249dd9bd15297fe694c9d87827b044aa1ac7ba9ce34de	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md	IN-GIT	c69fa01ec1ec9f740614e4d183e798e49cd9b07a03bc29e4f2130371a0f4bf35	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md	IN-GIT	827fdb022a20caa31939c754b8fd13e85a0db1daeb8c03eeb61d7039c38979f8	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md	IN-GIT	8f281e019c2412e00a07f7ee96ab3db3406ca51d0b0b28382caaeacca1a7d3e2	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md	IN-GIT	cec7ca4f3abf3995981648a0ef219c5d9a556d02dd19bc65be203366ba4a1f88	Module pack: status, scope, authority chain, acceptance checkboxes
+execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	IN-GIT	54075c4da3c5538f175102decc8b624f86fa1ea9e875d69978a20a1425a3793b	Module pack: status, scope, authority chain, acceptance checkboxes
+docs/roadmap/plans/mvp6-development-plan-v9.5.md	IN-GIT	de8a56feb70192e11a16d97e8f000dce46a5d2fd7fa92b639668b3fc9854a265	Current CT plan; source of the 43/56 figure and the owner queue
+docs/roadmap/plans/mvp6-development-plan-v9.4.md	IN-GIT	de29b7ec6d039d18f827ada723f5373d103c3ff1d8e5aa57a577fdb35f66fbaf	Superseded plan; its 37/9/10 reproduces the sealed gate base
+docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv	IN-GIT	c3eaa5ef702a52a952372141e9081ea39b3718c195807fee0f63d8b027c850cf	595-row CT ledger; rows Q484-Q499 read in detail
+docs/records/audits/2026-10/mvp6-q446-gate-18-0-four-modules-01/GATE-18-0.tsv	IN-GIT	4518f9a7ec231c757be17e3d42b759b8e306ab89e5e579fa85cd5856cc8be9e8	FROZEN BASE acceptance matrix, 56 cells (37 MET / 9 NOT MET / 10 NOT MEASURED)
+docs/records/audits/2026-10/mvp6-stage-r-row13-01/MOVED.tsv	IN-GIT	e25a0aebe785ab8a81afea415ce1c8b648bb4a4f17ad9721a791c9e0dc3100a3	Overlay: MOD-0184 + MOD-0185 row 13 NOT MET -> MET
+docs/records/audits/2026-10/mvp6-stage-r-row13-02-returns-claims/MOVED.tsv	IN-GIT	60777c8668c0f70bc3c62fd4dc9167b3b59e002ea1c05d048a310be3f5e57400	Overlay: MOD-0186 + MOD-0187 row 13 NOT MET -> MET
+docs/records/audits/2026-10/mvp6-stage-r-row5-returns-01/MOVED.tsv	IN-GIT	f8791299ef6de92510b3d36695473155e7de403d20900f413eb187e9c55f0ef1	Overlay: MOD-0186 row 5 NOT MEASURED -> MET
+docs/records/audits/2026-10/mvp6-stage-r-row1-loads-config-01/MOVED.tsv	IN-GIT	073ee4e0014706e86a6cf74f8184f236afc7bdcf5435a595f212e9ce5a61cb0b	Overlay: MOD-0185 row 1 NOT MET -> MET; records the v9.4 read failure
+docs/records/decisions/2026-10/mvp6-merge-origin-main-owner-decision-01.md	IN-GIT	0e18314f8bb1964632cdac7c8fa036ba7c63cbb7ff440c3c817967b8f53e0a16	GOVERNING decision for the main sync: merge never rebase, 7-item completion gate, secret gate
+docs/records/decisions/2026-10/mvp6-gateway-explicit-routes-owner-decision-01.md	IN-GIT	a285ef2c2ea142cbd57c6b0042ff396ac9c8e5b1f7c7b1e85881198cd5e44f65	Closes GATE rows 3; sequenced after the merge; unassigned
+docs/records/decisions/2026-10/mvp6-0190-0192-fixture-bound-owner-decision-01.md	IN-GIT	ad100a5430dc5670c42795f00b8aeb6e8172fe178697f1ab18a2c47e852fcb99	MOD-0190/0192 stay fixture-bound for all of MVP-6
+docs/records/decisions/2026-10/mvp6-returns-claims-evidence-row10-waiver-owner-decision-01.md	IN-GIT	0c52d760c193e189b2dfc46c3d385ac56ae4b34118297a4841eed349d8331737	Waives rows 10 for MOD-0186/0187; makes GATE-18-0.tsv stale on those cells
+docs/records/decisions/2026-10/mvp6-shipment-pod-evidence-row10-waiver-owner-decision-01.md	IN-GIT	f00c1ae76a9e899d379d563e2502181037968eaa124ddbd96143bbf4ba184693	Precedent for the Returns/Claims row-10 waiver
+docs/records/decisions/2026-10/mvp6-carrier-loads-ui-scope-owner-decision-01.md	IN-GIT	e4ea5a2530bad3adba11b66f76d04530e3d6ec012cebf0a38b264ac24d286e8f	ONLY 2026-10 record with verbatim owner text: 'Approve both scopes, build'
+docs/records/decisions/2026-10/mvp6-five-owner-decisions-01.md	IN-GIT	1377942f4044909d1563fa947f5c062ec52792007382f008cc6fffbc5b54337d	dotnet-counters INSTALL, frontend node testing narrow scope
+docs/records/decisions/2026-10/mvp6-secret-gate-scope-owner-decision-01.md	IN-GIT	4a0182450118c154580323685278cb0a58798a2fb65d56fa75d490a950cbeff8	Secret gate scope
+docs/records/decisions/2026-10/mvp6-ct-ruling-dc01-dc05-concurrence-01.md	IN-GIT	c270070d238ff61bee50bbe4155cc9753ca05acc75b8e42c8d574c69deaaec7e	CT ruling (NOT owner approval) on DC-01..DC-05 for MOD-0147/0148
+docs/records/audits/2026-10/mvp6-stage-r-stack-up-01/STACK.tsv	IN-GIT	107d4c4ba204834b486fbf53112dbb37eec33d6b6006ad45aeaef327f66bb384	Six services + helper + 1 mongod measured LISTENING
+docs/records/audits/2026-10/mvp6-stage-r-stack-up-01/REPORT.md	IN-GIT	7f5e526fb50b0579adf67b3f40b23f64729b79784ddca8a4167224b5e422e3aa	Stage R stack-up lane report
+docs/records/audits/2026-10/mvp6-stage-r-gateway-contract-01/MEASUREMENTS.tsv	IN-GIT	2a69c2b8cd760bd78a3f7390be9a22e24077df1133bb02d19ab2d9a0e4366102	Q497: gateway catch-all transparent on all five paths
+docs/records/audits/2026-10/mvp6-stage-r-readiness-01/REPORT.md	IN-GIT	3ca20e308c4805a64e747440b19b5117e7420ea19d92048fed0b06e9fecdd809	Map of the nine remaining browser cells
+docs/records/audits/2026-10/mvp6-q484-capacity-branch-01/REPORT.md	IN-GIT	f72d5a0e6630408f1543ee111d6649e9f91bad1fd01182ea3e03ef0b8978a770	Q484 measurement; CT refusal and test-host recommendation
+docs/roadmap/plans/mvp6-ui-pack-wave-q322-01/LIVE-DENIED-ACCESS.tsv	IN-GIT	21a704d802f44b20f8192000bdd1d79d127a82f9be367fec685185c9cf19a144	UAS-001 observed live on all four modules
+docs/roadmap/plans/mvp6-ui-pack-wave-q322-01/MEASUREMENTS.tsv	IN-GIT	58d5d88024b68fa1c90b2373ce6bec1997c21d3f264947ebbc793d404d3d0324	Q322: four UI packs measured Slim (5/8/6/7)
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	IN-GIT	0d66f096247b644c6192abb8ec50974539318beb60f1047679adb653142a3dd4	Line 46 Required('JwtSettings:Secret') - the F2 boot failure
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.Development.json	IN-GIT	d0b1ca4061fe1b45dd4b6345bacd20f139fc4d38698a5856183d05ca2c6c3e8b	F2: carries no JwtSettings section, contradicting plan v9.5 section 6.1
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/TrackedConfigurationGuardTests.cs	IN-GIT	9db28d36f42c04e459a7a535e59c7fb2ffa1641984963164818c2e0d5fe150ea	Q491 guard, COMMITTED; asserts 5066 not 5061
+.github/workflows/service-tests.yml	IN-GIT	0872d648eb9e7de796a055c2e66fe7f2c9632224746f91694e6b7956835494fa	F4: 12 services named, SupplyChain absent
+.github/workflows/phase1-gates.yml	IN-GIT	e27ee62ee5d2b428a9f76a1e3136bc88e618ea18b58ea7b1a10cf880bd303967	G3: the only phase-gate workflow that exists
+gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs	IN-GIT	2c70ca00a3fdc39ba6b44b591876f3383c9e504a4bb647845b854fe2afd57499	KnownDownstreamPorts; main adds 5068 for Planning
+.claude/launch.json	IN-GIT	d7bdcb0a519c31ea5ebcec8fec7added9987673d1a0991d9c3d74de3d69ab4af	8 dev-server configs; SupplyChain is NOT one of them
+docs/roadmap/backlog/product-backlog.md	IN-GIT	08c86d04ca2eac07784e1ed9532cc2f1a574209683f6a1a8a13dd626f6eb8748	BL-534 security assessment 2026-10-14; BL-643/644/645
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411	EXTERNAL-ABSOLUTE	DIRECTORY-NOT-HASHED	F1/F2/F3: the ONLY copy of 35 hash-verified evidence files, 2 gate-moving test files and the Q495 config fix. Branch feature/sce/mod-0190-0192-bounded-slice @ 15f9cb9b6, already merged.
+/Users/natig/mvp6-env/contracts-33-20261013-123316	EXTERNAL-ABSOLUTE	DIRECTORY-NOT-HASHED	Worktree for SHIPMENT-BUNDLE 3.3.0 (4b4722ece), pushed, PR left for the owner
+/Users/natig/.dotnet/tools/dotnet-counters	EXTERNAL-ABSOLUTE	NOT-HASHED	dotnet-counters 10.0.745401; not on the default PATH
+/opt/homebrew/bin/mongod	EXTERNAL-ABSOLUTE	NOT-HASHED	mongod used by the lanes
+docs/records/audits/2026-09/mvp6-mod0186-patch-disposition-02/authority-source.md	IN-GIT-NOT-OPENED	447fb83b5418104430ab0d5be59dd26443cf692719b1cba8b980d6d43ad6667d	Raw owner authority for MOD-0186 (hash per pack line 579); NOT opened for this handoff
+docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/authority-source.md	IN-GIT-NOT-OPENED	a57efad020a7070d3b83f0504489e4ebd8bcd5266ee38afe889318568005f979	Exact replacement grant item 2 (hash per pack line 579); NOT opened for this handoff

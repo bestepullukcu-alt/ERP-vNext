@@ -260,6 +260,8 @@ public static class ItemRefusalSentences
         ["PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT"] = "RefusalApprovalResubmit",
         ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "RefusalApprovalResubmit",
         ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "RefusalApprovalBusy",
+        // WP-MDM-NO-ELIGIBLE-APPROVER-01: nobody but the maker may approve (segregation of duties).
+        ["PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"] = "RefusalApprovalNoEligibleApprover",
         ["ITEM_ACTIVATION_WORKFLOW_START_REFUSED"] = "RefusalApprovalStartRefused",
         ["ITEM_ACTIVATION_SELF_APPROVAL_IGNORED"] = "RefusalApprovalSelf",
         // The submit freezes the item lists (S2 FIX1): a value went away or changed, or the lists cannot be checked.

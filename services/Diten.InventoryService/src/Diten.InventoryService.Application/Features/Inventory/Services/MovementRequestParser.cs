@@ -15,6 +15,9 @@ public static class MovementRequestParser
     /// <summary>Upper bound for free-text identifiers (warehouse, location, lot, source refs, uom).</summary>
     public const int MaxTextLength = 200;
 
+    /// <summary>INVENTORY 1.3.0 <c>fefoBypassReason</c> maximum length.</summary>
+    public const int MaxFefoBypassReasonLength = 1000;
+
     public static (ParsedMovement? Movement, IReadOnlyList<FieldError> Errors) Parse(PostMovementCommand command)
     {
         var errors = new List<FieldError>();
@@ -123,6 +126,11 @@ public static class MovementRequestParser
                 errors.Add(Invalid("REVERSAL derives lotId and serialIds from the original transaction: they must be omitted."));
         }
 
+        // INVENTORY 1.3.0 (MOD-0176 KF-B): fefoBypassReason is optional; blank = absent; the 10-character floor is the hook's 422.
+        var fefoBypassReason = Blank(command.FefoBypassReason)?.Trim();
+        if (fefoBypassReason is { Length: > MaxFefoBypassReasonLength })
+            errors.Add(Invalid($"fefoBypassReason must be at most {MaxFefoBypassReasonLength} characters."));
+
         if (errors.Count > 0)
         {
             return (null, errors);
@@ -147,7 +155,8 @@ public static class MovementRequestParser
             Blank(command.SourceLineId),
             Blank(command.SourceSystem),
             transactionDate,
-            postingDate), errors);
+            postingDate,
+            fefoBypassReason), errors);
     }
 
     private static void RequireText(string? value, string name, List<FieldError> errors)

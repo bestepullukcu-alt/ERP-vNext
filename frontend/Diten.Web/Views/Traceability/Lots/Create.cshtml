@@ -5,6 +5,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Form.TitleNew"].Value;
+    ViewData["PageCode"] = "LOTCREATE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 @* MOD-0174 P3 — Yeni Lot (LOTCREATE). UAS-001: without trace.lots.create only _AccessDenied, no form, no redirect. *@
