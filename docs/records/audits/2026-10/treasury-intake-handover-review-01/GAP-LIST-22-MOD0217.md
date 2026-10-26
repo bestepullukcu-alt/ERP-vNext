@@ -32,6 +32,12 @@ Girdi: ZIP `MOD-0217-rev2-35d913e87.zip` (manifest 2/2); 57 AC tekil; `slices()`
 | 8 | P1 | Negatif okuma hâlâ kesin bağsızlık sayılıyor (479, 482–487): çoğunluk okuması geç commit'i dışlamaz | İşaretçinin bulunması bağlı sayılır; bulunmaması **tek başına telafi izni değildir**. Sıra: aynı oturumla commit yeniden denemesi → çoğunluk okuması → `Version = V`'ye koşullu, çoğunluk onaylı **çit yazımı** (`Version = V+1`, `AbandonedContentIds += contentId`); telafi yalnız çit uygulanınca. Çit eşleşmezse yeniden okuma; işaretçi yoksa bilinmiyor, telafi yok. Reconcile aynı kurala bağlandı. AC-58 geç commit testi + sabotaj; `AbandonedContentIds` alanı Entity Fields'a |
 | 9 | P2 | İş akışı başlatma sınıfları çakışıyor (502–503, AC-54): genel 5xx / 503 hem geçici hem bilinmiyor | Öncelik sırası: (1) tanınan MOD-0023 kodu → (2) gönderilmedi / 401 → geçici → (3) gönderildi ve kodsuz 5xx / 503 / tanınmayan 4xx / gönderim sonrası zaman aşımı → bilinmiyor. Tablo ve AC-54 bu sıraya göre yeniden yazıldı (tablo testi: aynı yanıt iki sınıfa düşmez) |
 
+## 3. tur (2026-10-26) — sahip denetimi "KOŞULLU", 2. turun iki bulgusu kapalı
+
+| # | Öncelik | Gap | Kapanış (Revizyon 4) |
+|---|---|---|---|
+| 10 | P2 | Reconcile çit yolu `Version` ve `AbandonedContentIds` yazıyor, ama 179 / 494 / 794 komutu "MDM'ye yazmaz / niyet yok" diye tanımlıyor — AC-11 (her yazma niyet taşır) ile çelişki | Reconcile iki yola ayrıldı: okuma yolu (yazmaz, niyet yok) ve çit yolu. Çit yazımı `mdm.contract-version.document-binding-abandoned` niyetini aynı atomik yazımda taşır (Add'in (4b)(iii) yolu dahil); niyet yazılamazsa çit uygulanmaz, telafi çağrılmaz. Audited Events'e iki çit satırı; AC-58 dördüncü durum + sabotaj |
+
 Teknik dayanak (denetim): MongoDB `majority` okuması çoğunlukça onaylanmış görünümü döndürür; belirsiz commit'in gerçekleşmediğini
 tek başına kanıtlamaz.
 

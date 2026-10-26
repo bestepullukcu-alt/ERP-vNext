@@ -78,6 +78,10 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > telafi izni değildir: önce aynı oturumla commit yeniden denemesi, sonra çoğunluk okuması, bağsızlık yalnız `Version`'a koşullu
 > **çit yazımı** uygulanınca kanıtlanır (AC-58, geç commit testi); (P2) başlatma yanıtı sınıflayıcısına öncelik sırası: tanınan
 > kod → gönderilmedi → gönderildi ve kodsuz = bilinmiyor.
+>
+> **Revizyon 4 (2026-10-26):** gap listesi 22, 3. tur — Reconcile'ın okuma yolu (yazmaz, niyet yok) ile çit yolu ayrıldı; çit
+> yazımı `mdm.contract-version.document-binding-abandoned` denetim niyetini aynı atomik yazımda taşır (Add'in (4b)(iii) yolu dahil); niyet yazılamazsa çit
+> uygulanmaz, telafi çağrılmaz (AC-58 dördüncü durum); Audited Events iki yola göre yazıldı (AC-11 ile tutarlı).
 
 ## Module Summary
 
@@ -176,7 +180,7 @@ Kaynak tabanı `api/contracts` ve `api/v1/contracts` (`services/DitenMdmService/
 |---|---|---|
 | `DeleteContractCommand`, `BulkDeleteContractCommand` | `DELETE /api/mdm/contracts/{id}`, `DELETE /api/mdm/contracts/bulk` | kaynakta API silme yok (paket §F); Golden Reference silme seti — yalnız hiç onaya gönderilmemiş taslak, soft delete |
 | `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `GetContractDocumentContentQuery` | `POST …/{id}/versions/{versionNo}/documents` (multipart), `POST …/documents/{contentId}/withdraw`, `GET …/documents/{contentId}/content` | kaynakta yükleme web katmanında yerel geçici klasöre yazıyordu (`frontend/Diten.Web/Controllers/ContractsController.cs:712-748@da4abb20`, paket §D) — taşınmaz; D37 yolu |
-| `ReconcileContractDocumentCommand` | `POST …/{id}/versions/{versionNo}/documents/{contentId}/reconcile` | işaretçi yazımının sonucu bilinmediğinde (Runtime Constraints → "Uzak çağrı sırası") bağın sonradan okunarak çözülmesi; MDM'ye yazmaz, telafiyi yalnız kanıtla çağırır (Revizyon 2, P1-a) |
+| `ReconcileContractDocumentCommand` | `POST …/{id}/versions/{versionNo}/documents/{contentId}/reconcile` | işaretçi yazımının sonucu bilinmediğinde (Runtime Constraints → "Uzak çağrı sırası") bağın sonradan çözülmesi; **okuma yolu** MDM'ye yazmaz; **çit yolu** `Version` + `AbandonedContentIds` ile `mdm.contract-version.document-binding-abandoned` niyetini tek atomik yazımda yazar; telafiyi yalnız uygulanmış çitten sonra çağırır (Revizyon 2 P1-a, Revizyon 4) |
 | `WithdrawContractVersionCommand` | `POST …/{id}/versions/{versionNo}/withdraw` | açık değişiklik taslağını kapatma (silme değil) |
 
 - **DTO'lar (tek dosya, Golden Reference):** `ContractModels.cs` — `ContractListItemDto`, `ContractDetailDto` (+
@@ -482,7 +486,7 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   | Sınıf | (3)'te görülen | Yapılan | Yanıt |
   |---|---|---|---|
   | (4a) kesin geri alma — yazım **kesinlikle uygulanmadı** | CAS eşleşmedi (`matchedCount = 0`: bayat sürüm ya da durum değişti); işlem commit çağrılmadan iptal edildi; doğrulama ya da tekil indeks hatası; niyet yazımı reddedildi | telafi tam bir kez | 409 (CAS) / 503 |
-  | (4b) sonuç bilinmiyor — yazım işlenmiş olabilir | zaman aşımı; bağlantı sıfırlama / kopma; `UnknownTransactionCommitResult`; yazma onayı (write concern) zaman aşımı ya da hatası; tanınmayan sürücü hatası | (i) işlem kullanıldıysa **aynı oturumla `commitTransaction` yeniden denenir** (sürücünün yeniden denenebilir commit'i) — kesin sonuç gelirse ona göre: işlendi → bağlı, iptal → (4a). (ii) Sonuç hâlâ bilinmiyorsa **mutabakat okuması**: sürüm çoğunluk (`majority`) okumasıyla aranır; `Documents[].ContentId = contentId` **bulunursa bağlıdır** (telafi yok). **Bulunmaması tek başına telafi izni değildir** — çoğunluk okuması geç commit'i dışlamaz. (iii) Bulunmazsa **çit yazımı**: (3)'teki beklenen sürüme (`Version = V`) koşullu, çoğunluk onaylı tek yazım `Version = V+1` ve `AbandonedContentIds += contentId` yazar. Çit **uygulandıysa** (`matchedCount = 1`, majority onayı) (3)'ün yazımı uygulanmamıştır ve artık uygulanamaz (aynı `Version = V` koşuluna bağlı) → telafi tam bir kez. Çit eşleşmediyse (`matchedCount = 0`) sürüm yeniden okunur: işaretçi varsa bağlı (telafi yok); yoksa başka bir yazım araya girmiştir → (4c), telafi yok | bağlı → 201 (aynı `ContentId`, tek niyet); çitle bağsızlık kanıtlandı → 503 |
+  | (4b) sonuç bilinmiyor — yazım işlenmiş olabilir | zaman aşımı; bağlantı sıfırlama / kopma; `UnknownTransactionCommitResult`; yazma onayı (write concern) zaman aşımı ya da hatası; tanınmayan sürücü hatası | (i) işlem kullanıldıysa **aynı oturumla `commitTransaction` yeniden denenir** (sürücünün yeniden denenebilir commit'i) — kesin sonuç gelirse ona göre: işlendi → bağlı, iptal → (4a). (ii) Sonuç hâlâ bilinmiyorsa **mutabakat okuması**: sürüm çoğunluk (`majority`) okumasıyla aranır; `Documents[].ContentId = contentId` **bulunursa bağlıdır** (telafi yok). **Bulunmaması tek başına telafi izni değildir** — çoğunluk okuması geç commit'i dışlamaz. (iii) Bulunmazsa **çit yazımı**: (3)'teki beklenen sürüme (`Version = V`) koşullu, çoğunluk onaylı tek atomik yazım `Version = V+1`, `AbandonedContentIds += contentId` ve denetim niyeti `mdm.contract-version.document-binding-abandoned`'yi birlikte yazar (niyet yazılamazsa çit uygulanmamıştır, telafi yok). Çit **uygulandıysa** (`matchedCount = 1`, majority onayı) (3)'ün yazımı uygulanmamıştır ve artık uygulanamaz (aynı `Version = V` koşuluna bağlı) → telafi tam bir kez. Çit eşleşmediyse (`matchedCount = 0`) sürüm yeniden okunur: işaretçi varsa bağlı (telafi yok); yoksa başka bir yazım araya girmiştir → (4c), telafi yok | bağlı → 201 (aynı `ContentId`, tek niyet); çitle bağsızlık kanıtlandı → 503 |
   | (4c) okuma da yok | (4b)'nin okuması erişilemez, zaman aşımına uğradı ya da çoğunluk okuması verilemedi | telafi **yok**; durum **bilinmiyor**; uygulama günlüğüne yapılandırılmış uyarı (kiracı, sözleşme, sürüm, `contentId`; içerik ve dosya adı yok); nesne yetim sayılmaz, MOD-0262-FU03 mutabakatına verilmez | 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN` + `contentId` |
 
   **(4c)'nin sonradan çözümü:** `ReconcileContractDocumentCommand` (izin `mdm.contracts.documents.create`, aynı kiracı / kapsam
@@ -491,7 +495,10 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   nesnenin bu sözleşmenin bu sürümüne ait olduğunu gösterdi (`owningItemId = ContractId`, `owningVersionId = ContractVersion.Id`;
   bu alanların meta yanıtında döndüğü DL-2 başında ölçülür — dönmüyorsa telafi yok, 503) → telafi tam bir kez, 200; okuma
   yine yok → 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`, telafi yok; nesne başka sözleşmenin / sürümün ya da başka kiracının
-  → 404, telafi yok. Komut MDM'ye yazmaz. Kanıtlı telafi de başarısızsa yetim ikili MOD-0262-FU03 mutabakatına kalır ve
+  → 404, telafi yok. **İki yol:** (a) okuma yolu — işaretçi bulundu, okuma yok ya da nesne başka sürümün → MDM'ye yazmaz, niyet
+  yok; (b) çit yolu — (4b)(iii)'teki çit yazımı `Version = V+1`, `AbandonedContentIds += contentId` ve denetim niyeti
+  `mdm.contract-version.document-binding-abandoned`'yi **aynı atomik yazımda** (aynı Mongo işlemi, `CentralAuditTransaction` / MDM güvenilir niyet yolu) taşır; niyet
+  yazılamazsa işlem geri alınır, çit uygulanmamış sayılır ve telafi çağrılmaz (503, durum bilinmiyor). Kanıtlı telafi de başarısızsa yetim ikili MOD-0262-FU03 mutabakatına kalır ve
   uygulama günlüğüne (içerik olmadan) yazılır. Belge dosyası MdmService'te diske ya da geçici klasöre yazılmaz; istek bedeni
   ara belleğe tümüyle alınmaz.
 - **Onaya gönderme (MOD-0023):** (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`, yeni deneme
@@ -791,7 +798,9 @@ yazıldığı için pratikte kapalı-başarısızdır.
 | UpdateContractVersionCommand | mdm.contract-version.updated | ContractVersion | b | değişen alan **adları** (tutar yok) | hayır | — |
 | AddContractDocumentCommand | mdm.contract-version.document-added | ContractVersion | b | ContentId, DocumentRole, MediaType, ByteSize, Checksum (dosya adı ve içerik yok) | hayır | — |
 | WithdrawContractDocumentCommand | mdm.contract-version.document-withdrawn | ContractVersion | b | ContentId, DocumentRole | hayır | — |
-| ReconcileContractDocumentCommand | — (MDM'ye yazmaz) | ContractVersion (yalnız okuma) | — | — | hayır | MDM'de kalıcı değişiklik yok → niyet yok (Sync'in durum değişmeyen yoluyla aynı gerekçe: komut yazmıyor); kanıtlı telafi MOD-0262'nin kendi yazmasıdır ve onun denetim yolundadır |
+| ReconcileContractDocumentCommand (okuma yolu) | — (MDM'ye yazmaz) | ContractVersion (yalnız okuma) | — | — | hayır | işaretçi bulundu / okuma yok / nesne başka sürümün → MDM'de kalıcı değişiklik yok → niyet yok |
+| ReconcileContractDocumentCommand (çit yolu) | mdm.contract-version.document-binding-abandoned | ContractVersion | b | Version önce → sonra, eklenen `AbandonedContentIds` öğesi (`contentId`; dosya adı ve içerik yok) | hayır | — (çit ve niyet tek atomik yazım; niyet yazılamazsa çit yok, telafi yok) |
+| AddContractDocumentCommand (çit yolu, (4b)(iii)) | mdm.contract-version.document-binding-abandoned | ContractVersion | b | Version önce → sonra, eklenen `AbandonedContentIds` öğesi | hayır | — (aynı kural) |
 | SubmitContractVersionForApprovalCommand | (1) mdm.contract-version.submitted; (3) başarıda mdm.contract-version.workflow-start-confirmed; kesin retde mdm.contract-version.submission-refused | ContractVersion | b | submitted: Status önce→sonra, ApprovalAttempt, WorkflowIdempotencyKey; start-confirmed: WorkflowInstanceId, ApprovalAttempt; submission-refused: Status önce→sonra, ApprovalAttempt, LastApprovalReasonCode | hayır | geçici / bilinmiyor sınıfında (3) yazmaz → ek niyet yok |
 | SyncContractVersionApprovalCommand | mdm.contract-version.approval-recorded (yalnız durum değiştiğinde); örnek kimliğini ilk kez yazdığında mdm.contract-version.workflow-start-confirmed | ContractVersion | b | Status önce→sonra, LastApprovalOutcome, WorkflowInstanceId, ApprovalAttempt | **evet (O-6)** | durum ve örnek kimliği değişmeyen Sync yazmaz → niyet yok (kalıcı değişiklik yok; İ5 değil, komut yazmıyor) |
 | RecordContractSignatureCommand | mdm.contract-version.signature-recorded (+ son imzada mdm.contract-version.effective, mdm.contract.activated / superseded) | ContractVersion, Contract | b | SignatoryId, Side, SignedAt, SignedCopyContentId; Status önce→sonra (imzacı adı yok) | **evet (O-6)** | — |
@@ -960,6 +969,10 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   geç gelen eski yazım `Version = V` koşulu yüzünden uygulanamaz. Üçüncü durum: aynı oturumla commit yeniden denemesi kesin
   sonuç verir → okuma ve çit adımlarına geçilmez. Sabotaj: işaretçinin okunmaması telafi izni sayıldığında (çit atlandığında)
   birinci durum kırmızıya döner (telafi çağrılır, sürümün gösterdiği nesne silinir).
+  Dördüncü durum (gap 22 / 3. tur): çit yazımında denetim niyeti yazılamaz (niyet dikişi hata verir) → işlem geri alınır,
+  `Version` ve `AbandonedContentIds` değişmez, `mdm.contract-version.document-binding-abandoned` niyeti yok, `compensate` **hiç** çağrılmaz, 503 ve durum bilinmiyor.
+  Çit uygulanan durumda `mdm.contract-version.document-binding-abandoned` niyeti tam bir kez. Sabotaj: niyet çitten ayrı (işlem dışı) yazıldığında dördüncü durum kırmızıya
+  döner (çit uygulanır, niyet yok ya da telafi çağrılır).
 - [ ] AC-51 (zorunlu) — **Sync güncel denemeye bağlı (P1-b):** sahte MOD-0023 `by-objects` (`includeDeleted=true`) yanıtlarıyla
   (a) önceki reddedilmiş denemenin anahtarlı örneği "Rejected", güncel denemenin örneği terminal değil → durum değişmez (sürüm
   `Draft`'a çekilmez); (b) başka nesnenin anahtarlı "Approved" örneği → durum değişmez; (c) güncel anahtarla iki satır → durum
