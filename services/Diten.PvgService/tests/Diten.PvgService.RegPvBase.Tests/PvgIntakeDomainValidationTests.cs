@@ -18,14 +18,40 @@ public sealed class PvgIntakeDomainValidationTests
         "client-supplied-case-id"
     ];
 
+    // The 16 slice 1 intake fields: the 15 kept fields and ProductNameAsReported, the successor of
+    // SuspectProductText (pack "Entity Fields"). The full 34-entry equality is measured by
+    // Intake_field_definitions_match_the_34_revision04_intake_field_entries.
+    private static readonly PvgIntakeField[] Slice1IntakeFields =
+    [
+        PvgIntakeField.IntakeChannel,
+        PvgIntakeField.SourceType,
+        PvgIntakeField.SourceReference,
+        PvgIntakeField.ReceivedAtUtc,
+        PvgIntakeField.ReporterType,
+        PvgIntakeField.ReporterContactSummary,
+        PvgIntakeField.PatientSubjectCode,
+        PvgIntakeField.EventOnsetDate,
+        PvgIntakeField.AdverseEventNarrative,
+        PvgIntakeField.ProductNameAsReported,
+        PvgIntakeField.Seriousness,
+        PvgIntakeField.IntakePriority,
+        PvgIntakeField.TriageOutcome,
+        PvgIntakeField.TriageReason,
+        PvgIntakeField.RouteTargetQueue,
+        PvgIntakeField.EvidenceLinkReferences
+    ];
+
     [Fact]
     public void Approved_field_definitions_cover_the_16_MOD_0230_fields()
     {
-        var fields = PvgIntakeFieldDefinition.ApprovedFields;
+        var fields = PvgIntakeFieldDefinition.ApprovedFields
+            .Where(field => Slice1IntakeFields.Contains(field.Field))
+            .ToArray();
 
-        Assert.Equal(16, fields.Count);
+        Assert.Equal(16, Slice1IntakeFields.Length);
+        Assert.Equal(16, fields.Length);
         Assert.Equal(16, fields.Select(field => field.Field).Distinct().Count());
-        Assert.Equal(Enum.GetValues<PvgIntakeField>().Order(), fields.Select(field => field.Field).Order());
+        Assert.Equal(Slice1IntakeFields.Order(), fields.Select(field => field.Field).Order());
         Assert.Contains(fields, field => field.Field == PvgIntakeField.ReporterContactSummary && field.Sensitivity == PvgFieldSensitivity.Pii);
         Assert.Contains(fields, field => field.Field == PvgIntakeField.PatientSubjectCode && field.Sensitivity == PvgFieldSensitivity.Phi);
         Assert.Contains(fields, field => field.Field == PvgIntakeField.AdverseEventNarrative && field.IsFreeText);
@@ -46,7 +72,7 @@ public sealed class PvgIntakeDomainValidationTests
             [PvgIntakeField.PatientSubjectCode] = (PvgFieldSensitivity.Phi, false),
             [PvgIntakeField.EventOnsetDate] = (PvgFieldSensitivity.Phi, false),
             [PvgIntakeField.AdverseEventNarrative] = (PvgFieldSensitivity.Phi, true),
-            [PvgIntakeField.SuspectProductText] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ProductNameAsReported] = (PvgFieldSensitivity.RegulatedSafety, true),
             [PvgIntakeField.Seriousness] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.IntakePriority] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.TriageOutcome] = (PvgFieldSensitivity.RegulatedSafety, false),
@@ -55,14 +81,76 @@ public sealed class PvgIntakeDomainValidationTests
             [PvgIntakeField.EvidenceLinkReferences] = (PvgFieldSensitivity.Confidential, false)
         };
 
-        var fields = PvgIntakeFieldDefinition.ApprovedFields;
+        var fields = PvgIntakeFieldDefinition.ApprovedFields
+            .Where(field => expectedFields.ContainsKey(field.Field))
+            .ToArray();
 
         Assert.Equal(16, expectedFields.Count);
+        Assert.Equal(expectedFields.Keys.Order(), fields.Select(field => field.Field).Order());
+        Assert.Equal(Slice1IntakeFields.Order(), expectedFields.Keys.Order());
+
+        foreach (var field in fields)
+        {
+            var expected = expectedFields[field.Field];
+            Assert.Equal(expected.Sensitivity, field.Sensitivity);
+            Assert.Equal(expected.IsFreeText, field.IsFreeText);
+        }
+    }
+
+    [Fact]
+    public void Intake_field_definitions_match_the_34_revision04_intake_field_entries()
+    {
+        var expectedFields = new Dictionary<PvgIntakeField, (bool IsRequiredAtCreate, PvgFieldSensitivity Sensitivity, bool IsFreeText)>
+        {
+            [PvgIntakeField.IntakeChannel] = (true, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceType] = (true, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceReference] = (false, PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.ReceivedAtUtc] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReporterType] = (true, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterContactSummary] = (false, PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.PatientSubjectCode] = (false, PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.EventOnsetDate] = (false, PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.AdverseEventNarrative] = (true, PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.Seriousness] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.IntakePriority] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageOutcome] = (false, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageReason] = (false, PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.RouteTargetQueue] = (false, PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.EvidenceLinkReferences] = (false, PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.ProductLines] = (false, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ProductRole] = (false, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.GlobalProductId] = (false, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ProductNameAsReported] = (false, PvgFieldSensitivity.RegulatedSafety, true),
+            [PvgIntakeField.PresentationGskuId] = (false, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.LotNumber] = (false, PvgFieldSensitivity.RegulatedSafety, true),
+            [PvgIntakeField.AwarenessAtUtc] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.CompanyRecipientPersonId] = (false, PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.EventCountry] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReportType] = (true, PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReporterSelectionDirectory] = (false, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSelectionId] = (false, PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.RemoveReporterLink] = (false, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSource] = (false, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSourceId] = (false, PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterCrmSearchState] = (false, PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterNameOrInitials] = (false, PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterProfession] = (false, PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterCountry] = (false, PvgFieldSensitivity.Pii, false)
+        };
+
+        var fields = PvgIntakeFieldDefinition.ApprovedFields;
+
+        Assert.Equal(34, expectedFields.Count);
+        Assert.Equal(34, fields.Count);
+        Assert.Equal(34, Enum.GetValues<PvgIntakeField>().Length);
+        Assert.Equal(34, fields.Select(field => field.Field).Distinct().Count());
+        Assert.Equal(Enum.GetValues<PvgIntakeField>().Order(), fields.Select(field => field.Field).Order());
         Assert.Equal(expectedFields.Keys.Order(), fields.Select(field => field.Field).Order());
 
         foreach (var field in fields)
         {
             var expected = expectedFields[field.Field];
+            Assert.Equal(expected.IsRequiredAtCreate, field.IsRequiredAtCreate);
             Assert.Equal(expected.Sensitivity, field.Sensitivity);
             Assert.Equal(expected.IsFreeText, field.IsFreeText);
         }
@@ -105,10 +193,19 @@ public sealed class PvgIntakeDomainValidationTests
             "patient-subject-code",
             null,
             " ",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "",
             null,
-            ["evidence-ref"]);
+            ["evidence-ref"],
+            null,
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null);
 
         var result = PvgIntakeDraftValidator.ValidateCreate(
             new PvgServerTenantContext("tenant-secret-123"),
@@ -138,10 +235,19 @@ public sealed class PvgIntakeDomainValidationTests
             "PAT 123@unsafe",
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
             new string('n', 8001),
-            new string('p', 513),
+            [new PvgIntakeProductLineRequest("Suspect", null, new string('p', 513), null, null)],
             "serious",
             "high",
-            Enumerable.Range(1, 21).Select(index => $"evidence-ref-{index}").ToArray());
+            Enumerable.Range(1, 21).Select(index => $"evidence-ref-{index}").ToArray(),
+            DateTimeOffset.UtcNow.AddMinutes(10),
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null);
 
         var result = PvgIntakeDraftValidator.ValidateCreate(
             new PvgServerTenantContext("tenant-secret-123"),
@@ -154,7 +260,7 @@ public sealed class PvgIntakeDomainValidationTests
         AssertContainsInvalid(result, PvgIntakeField.PatientSubjectCode);
         AssertContainsInvalid(result, PvgIntakeField.EventOnsetDate);
         AssertContainsInvalid(result, PvgIntakeField.AdverseEventNarrative);
-        AssertContainsInvalid(result, PvgIntakeField.SuspectProductText);
+        AssertContainsInvalid(result, PvgIntakeField.ProductNameAsReported);
         AssertContainsInvalid(result, PvgIntakeField.EvidenceLinkReferences);
         AssertValidationResultDoesNotEchoSensitiveValues(result);
     }
@@ -175,6 +281,16 @@ public sealed class PvgIntakeDomainValidationTests
             null,
             " ",
             "",
+            null,
+            null,
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null,
             null);
 
         var result = PvgIntakeDraftValidator.ValidateUpdate(
@@ -199,9 +315,19 @@ public sealed class PvgIntakeDomainValidationTests
             "PAT-123-45-67",
             new DateOnly(1899, 12, 31),
             "free text narrative with PHI",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "serious",
             "high",
+            null,
+            new DateTimeOffset(1899, 12, 31, 23, 59, 59, TimeSpan.Zero),
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null,
             null);
 
         var result = PvgIntakeDraftValidator.ValidateUpdate(

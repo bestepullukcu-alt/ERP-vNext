@@ -239,10 +239,21 @@ public sealed record PvgCaseIntakeCreateRequest(
             PatientSubjectCode,
             EventOnsetDate,
             AdverseEventNarrative,
-            SuspectProductText,
+            string.IsNullOrWhiteSpace(SuspectProductText)
+                ? []
+                : [new PvgIntakeProductLineRequest("Suspect", null, SuspectProductText, null, null)],
             Seriousness,
             IntakePriority,
-            EvidenceLinkReferences);
+            EvidenceLinkReferences,
+            AwarenessAtUtc: null,
+            CompanyRecipientPersonId: null,
+            EventCountry: null,
+            ReportType: null,
+            ReporterSelectionDirectory: null,
+            ReporterSelectionId: null,
+            ReporterNameOrInitials: null,
+            ReporterProfession: null,
+            ReporterCountry: null);
 }
 
 public sealed record PvgCaseIntakeUpdateRequest(
@@ -271,10 +282,22 @@ public sealed record PvgCaseIntakeUpdateRequest(
             PatientSubjectCode,
             EventOnsetDate,
             AdverseEventNarrative,
-            SuspectProductText,
+            string.IsNullOrWhiteSpace(SuspectProductText)
+                ? []
+                : [new PvgIntakeProductLineRequest("Suspect", null, SuspectProductText, null, null)],
             Seriousness,
             IntakePriority,
-            EvidenceLinkReferences);
+            EvidenceLinkReferences,
+            AwarenessAtUtc: null,
+            CompanyRecipientPersonId: null,
+            EventCountry: null,
+            ReportType: null,
+            ReporterSelectionDirectory: null,
+            ReporterSelectionId: null,
+            ReporterNameOrInitials: null,
+            ReporterProfession: null,
+            ReporterCountry: null,
+            RemoveReporterLink: null);
 }
 
 public sealed record PvgCaseIntakeTriageRequest(
