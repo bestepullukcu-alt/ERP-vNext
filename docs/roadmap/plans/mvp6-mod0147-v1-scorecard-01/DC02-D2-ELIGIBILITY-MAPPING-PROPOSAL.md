@@ -54,3 +54,15 @@ conditions), which needs a new CT-APR-02 round.
 - **Q2 — yes:** MOD-0147 may evaluate a supplier whose onboarding is not approved yet.
 - Q3 and Q4 sent to Cihan by Natig (2026-10-23); open. The mapping enters MOD-0147 / MOD-0148 §0.0 after his answers, as one
   revision with a new CT-APR-02 round. D2 as a whole stays open until Cihan, as joint owner, confirms the mapping.
+
+## Cihan's answer and Natig's approval (2026-10-26)
+
+- **Q3:** 1.3.0's eligibility answer returns, for the caller's own company only, `relationshipExists`,
+  `eligibleForTransactions` (true only when `Status = Active`), `status` (Active / OnHold / Blocked / Inactive),
+  `onboardingStatus` and `purchasingEnabled`; no relationship → 404 (today's behaviour). The portal keeps `PENDING`.
+- **Q4:** a narrow permission `procurement.suppliers.eligibility.read`, version 1.3.0, endpoint written with MOD-0140 S2.
+- **Natig approved both** (2026-10-26, question box) → Cihan changes MOD-0140 §3 / §8 / §16; the MOD-0140 hash changes, so
+  the MVP-1 CT reviews the new version. Mapping consequence for MVP-6: `ACTIVE` = `status = Active` and onboarding approved
+  and `purchasingEnabled`; `PENDING` = `Active` with onboarding not approved or purchasing disabled; `SUSPENDED` = OnHold /
+  Blocked / Inactive; 404 → portal 403 / 404 and MOD-0147 422 as in the table above. D2 closes when Cihan's revised pack is
+  approved; then the mapping goes into MOD-0147 / MOD-0148 §0.0.
