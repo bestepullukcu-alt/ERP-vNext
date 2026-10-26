@@ -11,7 +11,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 /// while Viewer does not. What the one-way backfill does with it — for this key and for <c>auth.users.export</c> — is
 /// in <c>ExportGrantBackfillScenarioTests</c> (S-A … S-H).
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class RolesExportPermissionSeedTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

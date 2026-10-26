@@ -19,7 +19,7 @@ namespace Diten.AuthService.Application.Tests.Password;
 /// are fixed answers. A weak password keeps its four fields and gains <c>errorCodes</c> (with <c>minLength</c>); a
 /// wrong token and an unknown e-mail answer exactly as before and exactly alike — nothing new leaks about accounts.
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPolicyDoorEndpointTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

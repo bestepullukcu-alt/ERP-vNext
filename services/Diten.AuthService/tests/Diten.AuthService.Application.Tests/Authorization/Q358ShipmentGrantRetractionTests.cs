@@ -69,6 +69,7 @@ public sealed class Q358ShipmentGrantRetractionPlanTests
 }
 
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private static readonly BaselineGrantRetraction.Definition Q358 = Q358ShipmentGrantRetraction.Definition;

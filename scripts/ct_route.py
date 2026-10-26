@@ -1103,7 +1103,14 @@ def self_test() -> int:
     real = {}
     for f in sorted(dcp_dir.glob("*.md")) if dcp_dir.exists() else []:
         t = f.read_text(encoding="utf-8")
-        real[f.name] = (t.startswith("---\n"), safe(parse_slices, t + "\n" + SLICE_HEADING + "\n\n| Slice | Kapsam | Not |\n|---|---|---|\n| MVP1 | MOD-0150 | sentetik |\n", {"MOD-0150"}))
+        # S-58: a real DCP may carry its own slice table (the Treasury intake DCP does); the synthetic one is added only
+        # when it has none — two tables would be the reader's own "exactly one section" refusal, not a reading failure
+        own = any(l.strip() == SLICE_HEADING for l in t.split("\n"))
+        synthetic = "" if own else "\n" + SLICE_HEADING + "\n\n| Slice | Kapsam | Not |\n|---|---|---|\n| MVP1 | MOD-0150 | sentetik |\n"
+        # what this test measures is that the künye and the table READ; with its own table the modules it names are the
+        # known set (whether they exist is the routing check's question, measured elsewhere against the registry)
+        dcp_known = set(re.findall(r"MOD-\d{4}(?:-FU\d+)?", t)) if own else {"MOD-0150"}
+        real[f.name] = (t.startswith("---\n"), safe(parse_slices, t + synthetic, dcp_known))
     d9 = real.get("DCP-009-supply-chain-inventory.md", (False, None))[1]
     cases.append(("the real DCP-009 künye (quoted values with '#', an inputs: list) reads, with a synthetic slice table added in memory",
                   d9 is not None and not d9[2] and d9[0].get("id") == "DCP-009" and d9[0].get("status") == "approved" and d9[1] == {"MVP1": ["MOD-0150"]}))
