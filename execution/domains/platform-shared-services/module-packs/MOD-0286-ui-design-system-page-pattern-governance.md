@@ -20,10 +20,11 @@ slice: "P1 - Design System Specification as a short index (DL-1) + UI Compliance
 
 # MOD-0286 - UI Design System & Page Pattern Governance
 
-> **Ready for development, revision 11, 2026-10-26 - narrowed in revision 09 (owner decision "daralt", record
+> **Ready for development, revision 12, 2026-10-26 - narrowed in revision 09 (owner decision "daralt", record
 > `docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md`); revision 10 closes Codex review 09 (F-19…F-22, DL-3
 > design only; owner decision `kaydet-rev10`); revision 11 closes Codex review 10 (F-22, F-23, DL-3 design only; owner
-> decision `kaydet-rev11`).** P1 ends when the automatic DL-2 items run in CI for new
+> decision `kaydet-rev11`); revision 12 closes Codex review 11 (F-24, DL-3 line-check patterns only; owner decision
+> `kaydet-rev12`).** P1 ends when the automatic DL-2 items run in CI for new
 > and changed pages, old pages recorded as a baseline that does not stop CI (DL-3); P2 (governance console) is no longer in
 > this pack - it opens as a separate pack with the first real consumer (D-4). `status: ready-for-dev`; the approval itself
 > is the CT-APR-01 row in `execution/approvals/approvals.tsv` (`scripts/pack_approval.py check`), not this field. Both gates
@@ -365,7 +366,11 @@ acceptance path - no workflow, no acceptance. DL-3 has three parts:
    (`:970-975`), the page's other CI-3 baseline rows are printed `ölçülmedi - doğrulayıcı eksik dosyada durdu`, never
    `kapandı`. `--self-test` covers the mapping (deleted path, both rename paths, registry entry added / removed / changed,
    only the `navigation` item of a `url` removed while its `suggestions` item stays, page removed), the match count
-   (part 2), the baseline reader and the three exits on a throw-away repository.
+   (part 2), the baseline reader and the three exits on a throw-away repository. It also reads the line-check patterns
+   (rev 12, F-24): every pattern is taken from the raw string of its line in the code block of "DL-3 satır kontrol
+   desenleri" (end of this section) and never from a table cell (the CI table's "Red when" or the readable pattern
+   table), is compiled with `re.compile`, and the selector's own pattern for each key is the same string; a pattern
+   that does not compile, a missing key or a different string fails the self-test (non-zero exit).
 2. **Baseline `tests/ui-compliance-baseline.tsv`** - tab-separated, header `page` · `check` · `instance` · `count` ·
    `reason` · `fu` · `owner` (rev 11, F-23), one row per today's red **instance**. Placed
    under `tests/` and not under `docs/records/`: the file changes (a row is deleted when its red closes), and `docs/records/**`
@@ -379,7 +384,9 @@ acceptance path - no workflow, no acceptance. DL-3 has three parts:
    condition>`; `bilgi:` rows `-`; for all of these `count` = `-`. **Line checks** CI-2, CI-4, CI-5, CI-6, CI-7, CI-8,
    CI-10 and the `api/personalization` half of CI-9 (rev 11, F-23; replaces the rev 10 line fingerprint `<path>:<h12>#<k>`):
    `instance` = `<path>` (the file, relative to `frontend/Diten.Web/`) and `count` = the file's **violation count** = the
-   number of matches of the check's pattern (column "Red when" of the CI table) over the **whole file text** - Python `re`,
+   number of matches of the check's pattern over the **whole file text**, where the pattern is the raw string of the
+   check's key in the code block of "DL-3 satır kontrol desenleri" (end of this section; rev 12, F-24) - the single
+   binding source; the "Red when" column of the CI table is a readable description, not the machine pattern - Python `re`,
    no flags, `re.finditer` on the file read as UTF-8 (`errors="replace"`), non-overlapping, left to right; not lines and not
    line starts: two matches on one line count 2, a match that runs over several lines counts 1 (`\s` and `[^,()]` cross
    line ends in CI-5). Rule per checked page, per line check, per file of the check's scope at HEAD, with `b` = the row's
@@ -434,20 +441,21 @@ Check set (page-level counterparts of the RC rows; "Reds today" measured 2026-10
 directory with every page treated as changed - the size of the first baseline; for the line checks (CI-2, CI-4…CI-8, CI-10 and the
 `api/personalization` half of CI-9) the counts are files and pages; since rev 11 the baseline holds one row per violating **file** with its match
 count (part 2), so its row count for a line check is the file count, and the match totals were measured at `0eb90a4ce` (part 2); for these checks
-"Red when" names the pattern - the red itself is the file's match count above its row's `count`):
+"Red when" is a readable description, not the machine pattern - the binding pattern is the raw string in "DL-3 satır
+kontrol desenleri" below (rev 12, F-24) - and the red itself is the file's match count above its row's `count`):
 
 | Id | Check (UIC; RC origin) | Runs on | Red when | Reds today |
 |---|---|---|---|---|
 | CI-1 | Explicit layout (UIC-1; RC-1) | every non-partial `.cshtml` of the page | no `Layout = "` | 0 |
-| CI-2 | No spinner (UIC-2; RC-2 second block) | every `.cshtml` of the page | `spinner-border` present | 17 files / 14 pages |
+| CI-2 | No spinner (UIC-2; RC-2 second block) | every `.cshtml` of the page | `spinner-border` present (desen için bkz. DL-3 satır kontrol desenleri) | 17 files / 14 pages |
 | CI-3 | DataTable verifier (UIC-3, 5, 6 bridge, 19, 22, 25, 31 server export; RC-3, RC-12, RC-14) | list page = `Views/{Area}/{Module}/_DataTable.cshtml` at HEAD or at the base (a deleted `_DataTable.cshtml` still runs CI-3, red on `_DataTable.cshtml exists`) | each numbered line of `verify_datatable_page.py . --area A --module M [--reference slim\|compact] --format gaps --ok-line`; reference inferred as `list_screen_touch_hook.py:111-115` does (`_CreateEditOffcanvas.cshtml` slim, `_Form.cshtml` compact, else none), files read at HEAD and at the base; API profile and data mode = the verifier's defaults (`verify_datatable_page.py:935`, `:901-906`) | 152 list pages, all exit 1, 1182 gap lines, 1182 unique page + check keys; FU-4 line on 63 pages; Golden Slim and Golden Compact 1 line each (FU-4) |
-| CI-4 | No legacy factory (UIC-4; RC-4 first block) | page JS (`wwwroot/assets/js/{Area}/{Module}/**/*.js`) | `createCrudTable(` present | 77 files / 71 pages |
-| CI-5 | No raw DataTable (UIC-4; `frontend-js-standard.md:30`) | page JS and the page's `.cshtml` | pattern `DataTable\(\s*\{\|new DataTable\([^,()]+,\s*\{` (Python `re` over the whole file, part 2; `\|` is the table escape of the regex alternation bar; the alternative `[^,()]+,\s*\{` runs over line ends) - match count above the row's `count` | 16 JS files / 16 pages, 16 matches (e.g. `Meetings/Report/index.js:134`); 0 views |
-| CI-6 | No inline CSS (UIC-13; RC-7) | page `.cshtml` / page JS | `style="` / `.style.` present | 59 views / 36 pages; 35 JS files / 28 pages |
-| CI-7 | Shared confirm and toast (UIC-14; RC-8 first block) | page JS | `\balert\(`, `Swal\.fire` or `toastr\.` | 8 files / 8 pages |
-| CI-8 | No token in browser JS (UIC-20; RC-10) | page JS | `document.cookie`, `Bearer` or `access_token` | 0 |
-| CI-9 | Save View wiring (UIC-24; RC-13 page blocks) | list page `index.js` / page JS | no `savedView` / `api/personalization` present | 123 pages / 2 files |
-| CI-10 | ColReorder not overridden (UIC-32; RC-20) | page JS | `colReorder` present (the `frontend-js-standard.md:76` exception is a baseline row with its reason) | 107 files / 78 pages |
+| CI-4 | No legacy factory (UIC-4; RC-4 first block) | page JS (`wwwroot/assets/js/{Area}/{Module}/**/*.js`) | `createCrudTable(` present (desen için bkz. DL-3 satır kontrol desenleri) | 77 files / 71 pages |
+| CI-5 | No raw DataTable (UIC-4; `frontend-js-standard.md:30`) | page JS and the page's `.cshtml` | pattern `DataTable\(\s*\{\|new DataTable\([^,()]+,\s*\{` (Python `re` over the whole file, part 2; the same string as key `CI-5` in the code block of DL-3 satır kontrol desenleri; `\|` is the table escape of the regex alternation bar; the alternative `[^,()]+,\s*\{` runs over line ends) - match count above the row's `count` | 16 JS files / 16 pages, 16 matches (e.g. `Meetings/Report/index.js:134`); 0 views |
+| CI-6 | No inline CSS (UIC-13; RC-7) | page `.cshtml` / page JS | `style="` / `.style.` present (desen için bkz. DL-3 satır kontrol desenleri: keys `CI-6v`, `CI-6j`) | 59 views / 36 pages; 35 JS files / 28 pages |
+| CI-7 | Shared confirm and toast (UIC-14; RC-8 first block) | page JS | `alert(`, `Swal.fire` or `toastr.` (desen için bkz. DL-3 satır kontrol desenleri) | 8 files / 8 pages |
+| CI-8 | No token in browser JS (UIC-20; RC-10) | page JS | `document.cookie`, `Bearer` or `access_token` (desen için bkz. DL-3 satır kontrol desenleri) | 0 |
+| CI-9 | Save View wiring (UIC-24; RC-13 page blocks) | list page `index.js` / page JS | no `savedView` / `api/personalization` present (`api/personalization`: desen için bkz. DL-3 satır kontrol desenleri, key `CI-9p`) | 123 pages / 2 files |
+| CI-10 | ColReorder not overridden (UIC-32; RC-20) | page JS | `colReorder` present (the `frontend-js-standard.md:76` exception is a baseline row with its reason; desen için bkz. DL-3 satır kontrol desenleri) | 107 files / 78 pages |
 | CI-11 | Pattern A bridge on a new surface (UIC-6; RC-5) | an `_IndexL10n.cshtml` / `_L10n.cshtml` **added** by the pull request | no `GetAllStrings(true)` | none (added files only) |
 | CI-12 | Ctrl+K entry (UIC-17; RC-9) | Platform page with `Index.cshtml` (at HEAD or at the base), selected by a change under the page or by an added or removed registry key (JSON path + whole item, a changed item = both) whose `url` is `/Platform/{Module}` or starts with `/Platform/{Module}/` (F-22, part 1) | no item under `navigation` (any group) with `url` = `/Platform/{Module}` in `platform-search.en.json` or in `.tr.json` - a `suggestions` item does not satisfy it (rev 11, F-22: `platform-global-search-registry.md:84` every module's route set goes into both files, `:86` `suggestions` carries only the most important shortcuts and not every navigation item is a suggestion, so `navigation` is where the route set lives); stricter than the fixture row RC-9, which counts any `"url"` line | 11 of 19 Platform pages (rev 11 re-measured at `0eb90a4ce` with the `navigation` rule: the same 11; no Platform page is in `suggestions` only) |
 | CI-13 | Module resx language set and key parity (UIC-7; RC-6 file block) | each added, changed, deleted or renamed (old and new base) `Resources/Views/**/<base>.<lang>.resx` | a required language file missing (2 under `Resources/Views/Platform/`, 7 elsewhere) or a key of `<base>.en.resx` missing in another language | 0 (163 base names read; the only parity red is `SharedResource`, CI-14) |
@@ -468,6 +476,41 @@ files (a change to `diten-datatable.js` would mean all 152 list pages, a full ru
 outside `Views/{Area}/{Module}/` (`Views/Meetings/_DataTable.cshtml`, `Views/CRM/ConsentPreferences/Preferences/`,
 `.../Consents/`; the verifier takes `--area` / `--module`, the touch hook's pattern `list_screen_touch_hook.py:26-29` has the
 same limit) - the other CI checks still run on their files.
+
+### DL-3 satır kontrol desenleri
+
+The patterns of the line checks of DL-3 part 2 (rev 12, F-24 of review 11: the CI table's "Red when" cells held plain
+text - `createCrudTable(` does not compile, `.style.` and `document.cookie` let `.` match any character - while the rev 11
+measurement used the escaped forms). One key per pattern: `CI-6v` = CI-6 on the page's views, `CI-6j` = CI-6 on the
+page's JS, `CI-9p` = the `api/personalization` half of CI-9; the files are those of the check's "Runs on" cell. **The
+code block below is the single binding source:** each line is `<key><TAB><pattern>` (one tab), the pattern is the raw
+string after the tab byte for byte, with no markdown escape - a Python raw string, compiled with `re.compile` and no
+flags, counted with `re.finditer` as in part 2. The table is for reading only: its `\|` is the markdown escape of the
+regex alternation bar `|`, and no tool reads a pattern from it.
+
+| Kontrol | Dosyalar | Desen (Python re, ham dize, bayraksız) |
+|---|---|---|
+| `CI-2` | every `.cshtml` of the page (CI-2) | `spinner-border` |
+| `CI-4` | page JS (CI-4) | `createCrudTable\(` |
+| `CI-5` | page JS and the page's `.cshtml` (CI-5) | `DataTable\(\s*\{\|new DataTable\([^,()]+,\s*\{` |
+| `CI-6v` | page `.cshtml` (CI-6, views) | `style="` |
+| `CI-6j` | page JS (CI-6, JS) | `\.style\.` |
+| `CI-7` | page JS (CI-7) | `\balert\(\|Swal\.fire\|toastr\.` |
+| `CI-8` | page JS (CI-8) | `document\.cookie\|Bearer\|access_token` |
+| `CI-9p` | page JS (CI-9, `api/personalization` half) | `api/personalization` |
+| `CI-10` | page JS (CI-10) | `colReorder` |
+
+```text
+CI-2	spinner-border
+CI-4	createCrudTable\(
+CI-5	DataTable\(\s*\{|new DataTable\([^,()]+,\s*\{
+CI-6v	style="
+CI-6j	\.style\.
+CI-7	\balert\(|Swal\.fire|toastr\.
+CI-8	document\.cookie|Bearer|access_token
+CI-9p	api/personalization
+CI-10	colReorder
+```
 
 ## Entity Fields
 
@@ -746,6 +789,7 @@ No code, no build. Document-level evidence, commands as written; none of the run
 - Rev 09 (2026-10-26): sahip kararı "daralt" (`docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md`, uygulama sırası `daralt-rev09`). Özet: P1 bitiş çizgisi = DL-2'nin otomatik maddeleri yeni ve değişen sayfalar için CI'da koşar, eski sayfalar bugünkü kırmızılarıyla taban (CI'ı durdurmaz); P2 bu paketten çıktı, ilk tüketiciyle ayrı paket (D-4 kapandı); DL-1 kısa dizin, D-8a..c kuralın kendisinde düzeltilir; yeni açık karar D-9; Golden Slim FU-4 / FU-12 ve DEV-0001 `in-progress` tabanda adıyla. Değişen bölümler: künye `slice` satırı ve başlık bandı (künye alanlarının anlamı P2'siz); Open Decisions (D-4 kapandı, D-7 metni, D-8a..c durum, D-9 yeni); Module Summary (DL-3); Ownership and Boundaries; Owned Objects (DL-3 nesneleri, RCS/Nav P2 satırları kısaldı, yeni alt bölüm "DL-3 UI uyum CI bağlantısı" ve CI-1…CI-15 tablosu); Entity Fields; Repo Scope; Protected Paths; Dependencies (P2 tablosu çıktı, DL-3 bağımlılıkları); Runtime Constraints; Layout & Shell Contract; Backend File Convention; Frontend File Contract; Validation Rules; Failure Path to Verify (D-8 satırı, DL-3 durumları); Authorization Convention; Audited Events (P2 tablosu çıktı); Gateway / API Routing Decision; Acceptance Criteria (AC-3 ve AC-11 birer cümle; AC-17…AC-20 yeni); Test Expectations (DL-3 ölçüm yolları ve rev 09 ölçümleri); Page Help (UXH-001); Ready-for-dev Checklist; çatışma kaydı satır 1-3 durumu; Follow-up Items (FU-7 yeniden yazıldı, FU-14 ve FU-15 yeni); Teslim dilimleri (DL-1 adı, DL-3 yeniden tanım). Değişmeyen: `status`, `owner`, `target`, gate alanları; UIC tablosu (32), RC tablosu (24); AC-1…AC-16 numaraları. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
 - Rev 10 (2026-10-26): Codex inceleme 09 (rev 09 `9ef09732…`) UYGUN DEĞİL — bulgu dosyası `docs/records/reviews/MOD-0286/2026-10-26-9ef09732.md`, CT karşılaştırması `…-9ef09732-ct-karsilastirma-09.md` (dördü de kabul); sahip kararı `kaydet-rev10`. Yalnız DL-3 tasarımı değişti: **F-19** -> seçici `git diff --name-status --find-renames --diff-filter=ACDMRT`; silinen yol ve yeniden adlandırmanın eski + yeni yolu aynı eşlemeyle sayfaya / resx kümesine bağlanır; liste sayfası ve Slim/Compact çıkarımı HEAD + taban dosyalarından okunur; klasörü boşalan sayfa `sayfa kaldırıldı` (satırları `kapandı - satır silinmeli`); doğrulayıcı eksik dosyada durunca (`verify_datatable_page.py:953-975`) sayfanın öteki CI-3 satırları `ölçülmedi`; AC-18 (c) silme sabotajı. **F-20** -> taban sütunları `page`, `check`, `instance`, `reason`, `fu`, `owner`; anahtar page + check + instance; satır kontrollerinde parmak izi `<path>:<h12>#<k>` (normalize satır içeriğinin SHA-256'sının ilk 12 hanesi + aynı satırın dosyadaki sıra numarası; satır numarası seçilmedi, gerekçe DL-3 bölüm 2); Failure Path "red hidden by the baseline key" cümlesi düzeltildi (rev 09'daki iddia yalnız CI-3 için doğruydu); AC-18 (b) tabanda kırmızı dosyaya ikinci ihlal sabotajı; AC-19, Validation Rules. **F-21** -> AC-17 iki adım: yerel run_record ara teslim (yalnız iş paketi raporu), DL-3 ve P1 nihai kabulü CT-Setup + sahip onayıyla yazılan workflow'un kabul edilen commit'teki koşu kaydı ve artefaktı; workflow yoksa kabul yok; DL-3 sahiplik notu, Dependencies, Repo Scope, Test Expectations, AC-20 buna göre. **F-22** -> `platform-search.en.json` / `.tr.json` tetikleyicide ve seçicide; değişen / silinen / eklenen kayıt `url`'sine göre `Platform/{Module}` sayfası CI-12 için seçilir (`platform-global-search-registry.md` §2, §5); CI-12 tablo hücresi; AC-18 (d). Değişmeyen: künye (status, owner, target, gate alanları, `slice`), UIC tablosu (32), RC tablosu (24), AC-1…AC-16, D-1…D-9, Teslim dilimleri. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
 - Rev 11 (2026-10-26): Codex inceleme 10 (rev 10 `51bbd629…`) UYGUN DEĞİL — bulgu dosyası `docs/records/reviews/MOD-0286/2026-10-26-51bbd629.md`, CT karşılaştırması `…-51bbd629-ct-karsilastirma-10.md` (ikisi de kabul; inceleme 09'un F-19 ve F-21'i kapandı, metinlerine dokunulmadı); sahip kararı `kaydet-rev11`. Yalnız DL-3 tasarımı değişti: **F-23** -> CT'nin sayı tabanlı önerisi benimsendi: satır kontrollerinde (CI-2, CI-4…CI-8, CI-10, CI-9 `api/personalization`) parmak izi `<path>:<h12>#<k>` kaldırıldı; taban satırı = sayfa + kontrol + `instance` = dosya yolu + yeni `count` sütunu (dosyanın tamamında düzenli ifadenin eşleşme sayısı; `instance`'a `#<n>` eklemek yerine ayrı sütun seçildi: anahtar page + check + instance aynı kalır, sayı anahtar değil karşılaştırılan değerdir, borç kapanınca anahtar değil değer değişir, doğrulayıcı tamsayıyı ayrıca denetler); kural `n > b` YENİ KIRMIZI `+<n-b>`, `n = b` TABAN, `n < b` `kapandı - satırı güncelle`, `n = 0` `kapandı - satır silinmeli`; sınır açıkça yazıldı (aynı dosyada bir ihlal kapanıp biri eklenirse `TABAN`, "borç büyümedi"); DL-3 bölüm 1 çıktı satırı, bölüm 2, CI tablosu girişi ve CI-5 hücresi, Validation Rules, Failure Path, AC-17 (yeşil tanımı), AC-18 (b1 aynı satır, b2 çok satırlı devam + hazırlık commit'i), AC-19 (sayı kuralı, ölçülen 321 dosya satırı / 743 eşleşme). CI-3 ve yokluk kontrolleri (CI-1, CI-9 savedView, CI-12, CI-13, CI-14, CI-15) anahtarlarını korur. **F-22** -> arama kayıtları her dosyada kendi tabanıyla (JSON yolu `navigation/<grup>` ya da `suggestions/<grup>` + nesnenin tamamı) çoklu kümesi olarak karşılaştırılır, değişen her anahtar kendi `url`'siyle sayfa seçer; CI-12 kırmızı ölçütü `navigation` kaydı ister (kural `platform-global-search-registry.md:84`, `:86` ölçüldü; bugünkü 11 kırmızı değişmedi); AC-18 (e) yalnız navigation kaydını silen sabotaj. Değişmeyen: künye, UIC tablosu (32), RC tablosu (24; RC-9 fikstür satırı herhangi bir `"url"` satırını sayar, CI-12 daha sıkı), AC-1…AC-16, AC-20, D-1…D-9, FU listesi, Teslim dilimleri. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
+- Rev 12 (2026-10-26): Codex inceleme 11 (rev 11 `35e035a1…`) UYGUN DEĞİL — bulgu dosyası `docs/records/reviews/MOD-0286/2026-10-26-35e035a1.md`, CT karşılaştırması `…-35e035a1-ct-karsilastirma-11.md` (kabul; F-22 ve F-23 kapandı); sahip kararı `kaydet-rev12`. Yalnız DL-3 satır kontrol desenleri değişti: **F-24** -> CI tablosunun "Red when" hücresi hem okunur açıklama hem makine deseniydi; CI-4 `createCrudTable(` derlenmiyor, CI-6 JS `.style.` ve CI-8 `document.cookie` noktayı joker okuyordu, ölçüm (321 dosya / 743 eşleşme @ `0eb90a4ce`) ise kaçışlı biçimlerle alınmıştı. DL-3 bölümünün sonuna yeni alt başlık "DL-3 satır kontrol desenleri": okunur tablo (`Kontrol | Dosyalar | Desen`) + tek bağlayıcı kaynak `text` kod bloğu (`<anahtar><TAB><ham desen>`, dokuz anahtar `CI-2`, `CI-4`, `CI-5`, `CI-6v`, `CI-6j`, `CI-7`, `CI-8`, `CI-9p`, `CI-10`; desenler rev 11 ölçüm betiğiyle birebir, yardımcı `CI-5-scriptform` alınmadı); bölüm 2 sayım kuralı deseni bu kod bloğundan alır, "Red when" yalnız açıklama; CI tablosu girişi ve satır kontrol hücreleri (CI-2, CI-4…CI-10) "desen için bkz. DL-3 satır kontrol desenleri" taşır, CI-7 hücresi kaçışlı parçalar yerine okunur metin, CI-5 hücresindeki desen kod bloğuyla aynı; bölüm 1 `--self-test` desenleri kod bloğundan okur, `re.compile` ile derler, seçicinin kendi desenleriyle aynı olduğunu denetler. Değişmeyen: künye, UIC tablosu (32), RC tablosu (24), AC-1…AC-20, D-1…D-9, FU listesi, Teslim dilimleri, rev 11 sayım kuralı (`n > b` YENİ KIRMIZI …) ve arama kaydı karşılaştırması. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
 
 ## Follow-up Items
 
