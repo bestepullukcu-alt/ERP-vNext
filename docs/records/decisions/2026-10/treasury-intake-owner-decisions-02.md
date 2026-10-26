@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D33 (D16–D31: 2026-10-25, D32–D33: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D34 (D16–D31: 2026-10-25, D32–D34: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -348,7 +348,19 @@ Sahip (K1) güvenlik onayını kendisi verir. Pack'e işlenmesi **ertelendi** (m
 5. **Pack'e işleme zamanı:** MOD-0289 pack'i (`63896f93…`) K2 onay turunda; değiştirilirse onaylanacak sürüm eskir. D33/1–4,
    K2 onay satırları main'e girdikten sonra **ayrı bir MOD-0289 revizyonuyla** işlenir (yeni CT-APR-02 + CT-APR-01). O zamana
    kadar pack'teki ilgili `ready-for-dev` maddeleri (güvenlik onayı, anahtar kaynağı / döndürme, AC-50 eşiği,
-   `ApprovalRef` kaynağı) pack'te açık görünür; kararları bu kayıt taşır.
+   `ApprovalRef` kaynağı) pack'te açık görünür; kararları bu kayıt taşır. (**D34/3 ile değişti.**)
+
+## D34 — Onay turu S-49'a göre daraltıldı (2026-10-26, soru kutusu; önerilen seçenek)
+
+Kaynak: main'e giren CT-APR-06 kuralı S-49 (`scripts/pack_approval.py` `DRAFT_WARNING`; kart): künyesi `status: draft` olan
+paketin onay satırı yalnız uyarıyla kabul edilir, kodu yetkilendirmez; onay satırı künyesi `ready-for-dev` olan sürüme yazılır.
+
+1. **Bu tur:** K2 yalnız künyesi `ready-for-dev` olan iki eki onaylar — MOD-0220 §22 (`91248a47…`, `whole_pack=TRM-14`) ve
+   MOD-0048-FU01 §21 (`8fc68be8…`, `whole_pack=TRM-17`). D32/8'deki sekiz hedefli tur bununla değişir.
+2. **Taslak paketler:** MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289 ve DCP, künyeleri `ready-for-dev` olunca tek seferde
+   onaya gelir (yeni CT-APR-02 + CT-APR-01). DCP numarası ayrıca ve önce istenir (yalnız numara).
+3. **D33/5 yerine:** MOD-0289 bu turda olmadığı için D33/1–4 K2 satırlarını beklemez; bir sonraki MOD-0289 revizyonunda işlenir
+   (yeni CT-APR-02).
 
 ## Karar olmayanlar
 
