@@ -6,10 +6,12 @@ namespace Diten.PlanningService.Cycles.Tests;
 public sealed class MrpFixtureNettingTests
 {
     private static readonly DateOnly Monday = new(2026, 10, 19);
+    private static readonly DateTimeOffset InventoryAsOf =
+        new(2026, 10, 19, 12, 0, 0, TimeSpan.Zero);
 
     private static MrpInput Input(params MrpWeek[] weeks) =>
         new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "EA",
-            "published-revision-1", 4, "checksum-1", DateTimeOffset.UtcNow, "approved-safety-1",
+            "published-revision-1", 4, "checksum-1", InventoryAsOf, "approved-safety-1",
             "approved-lead-time-1", 9, 15m, weeks);
 
     [Fact]

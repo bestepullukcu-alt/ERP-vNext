@@ -9,6 +9,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// the role-name lookup without its <c>role.TenantId</c> match, a search that uses only the FIRST token, and a
 /// <c>roleId</c>-only call falling through to the legacy unfiltered list. Each is pinned here over the real API.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed partial class UserListQueryTests
 {
     [Fact]

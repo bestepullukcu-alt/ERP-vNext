@@ -41,13 +41,23 @@ public sealed class SafetyCaseIntake
     public string? PatientSubjectCode { get; init; }
     public DateOnly? EventOnsetDate { get; init; }
     public string AdverseEventNarrative { get; }
-    public string? SuspectProductText { get; init; }
     public string Seriousness { get; }
     public string IntakePriority { get; }
     public PvgTriageOutcome? TriageOutcome { get; private set; }
     public string? TriageReason { get; private set; }
     public string? RouteTargetQueue { get; private set; }
     public IReadOnlyList<string> EvidenceLinkReferences { get; init; } = [];
+    public IReadOnlyList<PvgIntakeProductLine> ProductLines { get; init; } = [];
+    public DateTimeOffset AwarenessAtUtc { get; init; }
+    public string? CompanyRecipientPersonId { get; init; }
+    public string EventCountry { get; init; } = string.Empty;
+    public string ReportType { get; init; } = string.Empty;
+    public PvgReporterSource ReporterSource { get; init; }
+    public string? ReporterSourceId { get; init; }
+    public PvgReporterCrmSearchState ReporterCrmSearchState { get; init; }
+    public string? ReporterNameOrInitials { get; init; }
+    public string? ReporterProfession { get; init; }
+    public string? ReporterCountry { get; init; }
 
     public void MarkUpdated() => Status = PvgIntakeStatus.IntakeUpdated;
 

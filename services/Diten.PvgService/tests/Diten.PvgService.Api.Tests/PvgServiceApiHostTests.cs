@@ -38,7 +38,7 @@ public sealed class PvgServiceApiHostTests
         nameof(PvgIntakeField.PatientSubjectCode),
         nameof(PvgIntakeField.EventOnsetDate),
         nameof(PvgIntakeField.AdverseEventNarrative),
-        nameof(PvgIntakeField.SuspectProductText),
+        "SuspectProductText",
         nameof(PvgIntakeField.Seriousness),
         nameof(PvgIntakeField.IntakePriority),
         nameof(PvgIntakeField.TriageOutcome),
