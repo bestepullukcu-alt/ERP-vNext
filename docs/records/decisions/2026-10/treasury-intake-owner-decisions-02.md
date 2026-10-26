@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D31 (D16–D31: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D32 (D16–D31: 2026-10-25, D32: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -306,6 +306,28 @@ Sahibin mesajı: "Önce AGENTS/ports 5071 ve RCS-001 yamalarını uygula, sync_a
 4. **Başka sahiplerin işleri:** "Ek önerileri + mesajlar" (önerilen) — MOD-0048-FU01 §21 (TRM-17: `payment-method` ve
    `currency-minor-units` kümeleri) eki yazılır; Ali, procurement, commercial-suite, MOD-0018, BL-565 ve güvenlik için
    gönderilmeye hazır mesajlar hazırlanır.
+
+## D32 — MOD-0023 §17 sahibinin altı noktası ve onay turu (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Kaynak: MOD-0023 sahibinin §17 için altı noktası (sahip iletti, 2026-10-26). Pack'teki karşılığı: MOD-0023 §17.8 (rev 2).
+
+1. **Yazan ≠ merge eden:** MOD-0023 sahibi WP kodunu yazar, başka biri (K2 onaylayan) merge commit'iyle birleştirir
+   (sahibin kendi önerisi; kabul edildi).
+2. **`isDeleted` / `includeDeleted` anlamı:** yalnız savunma amaçlı; politika silmeyi yasaklar. Koddan ölçülen (okundu,
+   çalıştırılmadı): üç tip miras `TenantRepository.DeleteAsync` ile soft delete edilebilir (`IsDeleted` yazar, `DeletedAt`
+   yazmaz), `by-objects` ise `DeletedAt` ile süzer — tek silme işareti `IsDeleted` olur, miras silme kapatılır (AC-W15).
+   Ortamlardaki silinmiş satır sayısını MOD-0023 sahibi ölçer.
+3. **KVKK / GDPR:** "Kayıt kalır, kişi alanı anonimleşir" — satır silinmez; silme talebinde kişiyi tanıtan alanlar yerinde
+   takma ad ile değiştirilir; anahtar, durum, sıra kalır. Kesin prosedür hukuk görüşüne bağlı açık madde **O-S17-1**
+   (sahip K1 + hukuk / veri koruma); dilimleri bloklamaz, ilk silme talebinden önce karara bağlanır.
+4. **DL-2 tüketici kontrolü:** kabul — AC-W17 (403 → 409, 200 → 409, `idempotentReplay`).
+5. **MDM testi:** "MDM sahibi test yazsın" — istisna yok; AC-W3 ve AC-W17 MDM testi olmadan geçmez.
+6. **`includeDeleted` yetkisi:** "Mevcut `instances.view` + kiracı testi" — yeni izin yok; AC-W16.
+7. **Onay turu:** "Onaydan çıkar, §17'yi düzelt" — MOD-0023 §17 `a8df05e7…` sürümü K2 onay turundan çıkarıldı (diğer sekiz
+   hedef sürer); rev 2 yeniden CT-APR-02 incelemesinden geçer, sonra ayrıca CT-APR-01 onayı istenir.
+8. **Beste onay notu (aynı gün, soru kutusu):** not dosya + SHA-256 ile iletilir (push yok); `whole_pack=TRM-14`
+   (MOD-0220 §22), `whole_pack=TRM-17` (MOD-0048-FU01 §21); DCP numarasız onaylanır, numara sonra (yol ve hash değişince yeni
+   inceleme + onay).
 
 ## Karar olmayanlar
 

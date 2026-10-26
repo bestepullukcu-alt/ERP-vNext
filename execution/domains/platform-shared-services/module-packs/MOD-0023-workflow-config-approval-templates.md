@@ -487,7 +487,7 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
 **Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
 questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
-until it passes CT-APR-02 and CT-APR-01. **Read §17.7 first: the producer answer and D25 supersede earlier text where they conflict.** TRM-15 is closed only when §17 is approved, AC-W1…W14 have **passed** (running
+until it passes CT-APR-02 and CT-APR-01. **Read §17.8, then §17.7 first: the producer's review points and D32, then the producer answer and D25, supersede earlier text where they conflict** (revision 2, 2026-10-26). TRM-15 is closed only when §17 is approved, AC-W1…W14 have **passed** (running
 a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
 consumer owner's evidence. **If AC-W5…W12 fail against today's write path, §17 stays blocked**: §17 authorizes no
 write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
@@ -509,7 +509,8 @@ before it re-issues with the same key. Today neither is guaranteed by contract.
   `ux_workflow_transition_logs_task_action_idempotency_active` (`PlatformSchemaManifest.WorkflowWorkCenter.cs:118-131,
   211-225`), both filtered `IsDeleted = false`.
 - No delete path and no `ExpireAfter` for these two types; the only workflow soft delete
-  (`WorkflowRepositories.cs:961-974`) is `SlaEscalationRule`.
+  (`WorkflowRepositories.cs:961-974`) is `SlaEscalationRule`. **Corrected in §17.8/2:** an inherited
+  `TenantRepository.DeleteAsync` exists for all three types (no caller found).
 - Reads do **not** expose the keys: `WorkflowInstanceStatusDto` (`WorkflowModels.cs:200-207`: Id, Status, Outcome,
   Stage, Step, StartedAt, CompletedAt) used by `GET instances/by-objects`, which hides deleted rows
   (`GetWorkflowInstancesByObjectsHandler.cs:51`); `WorkflowInstanceDto` (`:406-424`, `GET instances/{id}`);
@@ -680,17 +681,75 @@ measured at origin/main @05f311784, read-only, no tests run — producer's state
    refusal of the loser's own intent. Never reuse a key for a different intent (producer's warning; Treasury keys are
    deterministic per intent).
 
-TRM-15 closure now needs AC-W1…W14 passed in the MOD-0023 owner's WP, the Platform build green and consumer evidence.
+TRM-15 closure now needs AC-W1…W14 passed in the MOD-0023 owner's WP, the Platform build green and consumer evidence
+(**superseded by §17.8 closure**).
+
+### 17.8 Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict
+
+Source: the MOD-0023 owner's six review points on §17 (relayed by the repository owner, 2026-10-26) and owner decisions D32
+(`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`). Code facts below were **read at origin/main
+@dea686c73, not run**.
+
+1. **Author ≠ merger (D32/1):** the MOD-0023 owner writes the WP code; a different person (the K2 approver) merges it by
+   merge commit. The same person never writes and merges a write-path change of this WP.
+2. **Correction to §17.2 — an inherited delete path exists (read, not run):** `WorkflowInstanceRepository`,
+   `ApprovalTaskRepository` and `WorkflowTransitionLogRepository` derive from `TenantRepository<T>`
+   (`WorkflowRepositories.cs:141, 452, 798`), whose public `DeleteAsync` soft-deletes: it sets `IsDeleted = true` and does
+   **not** set `DeletedAt` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:35-46`). No
+   caller in `Features/Workflow` was found by `grep`. Whether any environment holds soft-deleted rows of the three types was
+   **not measured** (data, not code): the owner counts `isDeleted: true` rows per environment and records the result in the
+   WP. `by-objects` hides deleted rows with `DeletedAt is null` (`GetWorkflowInstancesByObjectsHandler.cs:51`), so a row
+   deleted through the inherited method would **not** be hidden — the two deletion markers disagree.
+3. **Meaning of `isDeleted` / `includeDeleted` (D32/2):** defensive only. The policy (§17.7/2) is that no row of the three
+   types is deleted; the flag exists so that a row deleted before the policy, or outside it, is still seen and a consumer
+   does not re-issue. `isDeleted` is read from `IsDeleted`; the deleted filter of every §17 read uses `IsDeleted` (one
+   marker), not `DeletedAt` alone.
+4. **Retention vs. personal-data erasure (D32/3):** rows are never deleted. On an erasure request (KVKK / GDPR) the
+   person-identifying fields are **pseudonymised in place**; the row, its keys (`IdempotencyKey`, `ApprovalTaskId`,
+   `Action`), status, `SequenceNo` and timestamps stay. Candidate fields (found by name, @dea686c73): `ApprovalTask`
+   `AssigneeRef`, `ActionedBy`; `WorkflowTransitionLog` `ActorId`, `ActorRef`, `Comment`; `WorkflowInstance` `StartedBy`,
+   `StartedByUserId`, `DelegatedMakerUserId`. Pseudonymising `StartedByUserId` must keep the same-starter comparison of
+   AC-W11 meaningful (the owner states how). The owner confirms the full list in the WP. The erasure procedure itself is **not** built by this WP; it is
+   open item **O-S17-1**, pending a legal opinion (owner: repository owner K1 with the legal / data-protection function).
+   AC-W1 must not forbid an in-place pseudonymising update.
+5. **Consumer check for DL-2 (D32/4):** the DL-2 answer changes (transition: same key + different body 403 → 409; whole
+   start: same key + different facts 200 → 409; `idempotentReplay` flag added) are checked against existing consumers the
+   way AC-W3 checks DL-1 (AC-W17).
+6. **MDM consumer test (D32/5):** no exception. The MDM domain owner writes a consumer test for `Diten.MdmService`
+   `GatewayWorkflowClient` (`by-objects`, `history`); AC-W3 and AC-W17 do not pass without it.
+7. **`includeDeleted` permission (D32/6):** no new permission; the existing `instances.view`
+   (`WorkflowDefinitionsController.cs:121-122`). A deleted row is a row of the same tenant that the caller could already view.
+8. **Template codes and step counts** (MOD-0126 O-8, MOD-0119 O-11, MOD-0124 O-20) and the WP delivery date: the MOD-0023
+   owner proposes them after this revision is approved (no decision here).
+
+New acceptance criteria (defined; not implemented or run):
+
+- AC-W15 — **One deletion marker; inherited delete closed (DL-1):** for the three types the inherited
+  `TenantRepository.DeleteAsync` cannot delete (overridden to fail, guarded by the AC-W1 architecture test), and every §17
+  read filters deleted rows by `IsDeleted`. A fixture row with `IsDeleted = true`, `DeletedAt = null` is hidden by default
+  and returned with `isDeleted = true` under `includeDeleted=true`. Sabotage: reverting the filter to `DeletedAt is null`, or
+  calling the inherited `DeleteAsync`, turns it red.
+- AC-W16 — **`includeDeleted` stays inside the tenant and the permission (DL-1):** with `includeDeleted=true`, another
+  tenant's instance id / object → 404 (as without the flag); a caller without `instances.view` → refused as today; no row of
+  another tenant appears. Sabotage: dropping the tenant filter on the `includeDeleted` branch turns it red.
+- AC-W17 — **DL-2 consumer compatibility:** each AC-W3 consumer (Inventory, CRM, MDM, Web) and Treasury is checked for the
+  new 409 answers and the `idempotentReplay` flag: either its own test passes against them, or the consumer owner records
+  that the consumer never sends the changed case, with the code line. Status until run: expected, not tested.
+
+**Closure (replaces the last line of §17.7):** TRM-15 closes when AC-W1…W17 have passed in the MOD-0023 owner's WP, the
+Platform build is green, every AC-W3 / AC-W17 result is bound to its consumer owner's evidence (MDM included), and each
+slice is merged by someone other than its author. O-S17-1 does not block the slices; it must be decided before the first
+erasure request is handled.
 
 ## Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Delivery |
-| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Delivery |
+| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Delivery |
+| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Delivery |
 
 Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
-durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1). Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3
-(tüketici sahiplerinin kanıtıyla), AC-W4, AC-W13. **DL-2:** AC-W5…AC-W12, AC-W14 (fingerprint düzeltmesi bir yazma yolu
-değişikliğidir ve yalnız bu dilimde, sahibin onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve**
-DL-2 main'e girmeden kabul edilmez.
+durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu sahibi yazar, başka biri merge eder (D32/1).
+Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16.
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17 (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
+onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
