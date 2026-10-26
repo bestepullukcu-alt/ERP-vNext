@@ -20,15 +20,23 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// nothing.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class TenantModuleEntitlementTenantGuardMongoTests
+[Trait("Category", "Mongo")]
+public sealed class TenantModuleEntitlementTenantGuardMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_entitlement_tenant_guard";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public TenantModuleEntitlementTenantGuardMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     private static readonly Guid Ours = Guid.Parse("60060060-0000-4000-8000-0000000000a1");
     private static readonly Guid Theirs = Guid.Parse("60060060-0000-4000-8000-0000000000b2");
 
     [Fact]
     public async Task Update_in_the_platform_context_writes_the_rows_own_tenant()
     {
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
         var version = row.RowVersion;
 
@@ -41,7 +49,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task Update_in_a_tenant_context_still_writes_its_own_row()
     {
-        await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
+        await using var rig = await Rig.StartAsync(_mongo, TenantContextFor(Ours));
         var row = await rig.SeedAsync(Ours);
         var version = row.RowVersion;
 
@@ -54,7 +62,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task Update_in_a_tenant_context_is_refused_another_tenants_row_and_the_row_is_unchanged()
     {
-        await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
+        await using var rig = await Rig.StartAsync(_mongo, TenantContextFor(Ours));
         var row = await rig.SeedAsync(Theirs);
         var version = row.RowVersion;
 
@@ -71,7 +79,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     {
         // The platform context has no tenant of its own to compare with, so the FILTER is what stands between a row
         // object that names tenant A and a stored row of tenant B with the same id.
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var stored = await rig.SeedAsync(Theirs);
         var forged = new TenantModuleEntitlement
         {
@@ -87,7 +95,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task Update_with_a_version_that_is_not_the_stored_one_is_refused()
     {
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
         var version = row.RowVersion;
 
@@ -101,7 +109,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task SoftDelete_in_the_platform_context_removes_the_row_of_the_tenant_the_route_names()
     {
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
 
         await rig.InTransactionAsync(session => rig.Repository.SoftDeleteAsync(session, Theirs, row.Id, row.RowVersion));
@@ -112,7 +120,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task SoftDelete_in_a_tenant_context_is_refused_another_tenants_row_and_the_row_is_unchanged()
     {
-        await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
+        await using var rig = await Rig.StartAsync(_mongo, TenantContextFor(Ours));
         var row = await rig.SeedAsync(Theirs);
 
         await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(
@@ -124,7 +132,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task SoftDelete_never_matches_a_row_of_a_tenant_other_than_the_one_it_was_given()
     {
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
 
         await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
@@ -136,7 +144,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task Create_in_a_tenant_context_is_refused_a_row_for_another_tenant_and_nothing_is_stored()
     {
-        await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
+        await using var rig = await Rig.StartAsync(_mongo, TenantContextFor(Ours));
         var row = NewRow(Theirs);
 
         await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(
@@ -152,7 +160,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     {
         // BL-500 — the version condition used to be added only when a version was given: a request without one wrote
         // over whatever another screen had saved in between.
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
         var version = row.RowVersion;
         byte[]? none = emptyRatherThanNull ? [] : null;
@@ -172,7 +180,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         // BL-500 — two screens suspending the same plan module at once both insert an override row. The production
         // index (ux_tenant_module_entitlements_active_source) keeps ONE; the second writer hears "stale", not a
         // transaction failure.
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         await rig.ApplyProductionIndexesAsync();
 
         await rig.InTransactionAsync(session => rig.Repository.CreateAsync(session, NewRow(Theirs)));
@@ -188,7 +196,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         // FIX2 — the unique key is held by a row another transaction has written but not committed yet: Mongo answers
         // the second insert with a WRITE CONFLICT inside the transaction, not a duplicate key. Measured on a real
         // replica set with the production index.
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         await rig.ApplyProductionIndexesAsync();
         using var other = await rig.Client.StartSessionAsync();
         other.StartTransaction();
@@ -210,7 +218,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     [Fact]
     public async Task The_base_repositorys_delete_by_id_is_closed_and_the_row_is_unchanged()
     {
-        await using var rig = await Rig.StartAsync(PlatformContext());
+        await using var rig = await Rig.StartAsync(_mongo, PlatformContext());
         var row = await rig.SeedAsync(Theirs);
 
         await Assert.ThrowsAsync<PlatformTransactionUnavailableException>(() => rig.Repository.DeleteAsync(row.Id));
@@ -246,7 +254,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         private Rig(DisposableMongoReplicaSet mongo, ITenantContext tenantContext)
         {
             _mongo = mongo;
-            var database = mongo.CreateDatabase();
+            var database = ReplicaSetClassFixture.FreshDatabase(mongo, DatabaseName);
             var context = new PlatformDbContext(mongo.Client, database);
             Rows = database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements");
             Repository = new TenantModuleEntitlementRepository(context, tenantContext);
@@ -263,8 +271,8 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
                 .Single(collection => collection.Name == "tenant_module_entitlements")
                 .ApplyAsync(Rows.Database, CancellationToken.None);
 
-        public static async Task<Rig> StartAsync(ITenantContext tenantContext) =>
-            new(await DisposableMongoReplicaSet.StartAsync(), tenantContext);
+        public static Task<Rig> StartAsync(DisposableMongoReplicaSet mongo, ITenantContext tenantContext) =>
+            Task.FromResult(new Rig(mongo, tenantContext));
 
         public async Task<TenantModuleEntitlement> SeedAsync(Guid tenantId)
         {
@@ -291,6 +299,6 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
             Assert.Equal(version, stored.RowVersion);
         }
 
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 }

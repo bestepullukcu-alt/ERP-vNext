@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// ESignatureHttpMongoTests reads the list but never asserted its order (CT, closing line of MOD-0022).
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureRequestListOrderMongoTests : IClassFixture<ESignatureRequestListOrderMongoTests.Mongo>
 {
     public sealed class Mongo : IAsyncLifetime

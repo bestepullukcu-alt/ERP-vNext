@@ -25,7 +25,7 @@ namespace Diten.AuthService.Application.Tests.Persistence;
 /// <para>The unique index of the collection is dropped only inside this class's own throw-away database, to construct the
 /// duplicates a missing index lets in; production indexes are not touched.</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class UserRoleRepositoryMongoTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

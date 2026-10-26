@@ -34,6 +34,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// would. The clock cannot be injected into the sweep, so "time passes" is the dispatch row's own NextRetryAt moved
 /// back five minutes — a null NextRetryAt stays null.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
 {
     private const string TemplateKey = "platform.meetings.invite";

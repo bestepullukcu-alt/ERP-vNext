@@ -172,7 +172,9 @@ public sealed class PerformanceFactAttribute : FactAttribute
     {
         if (Environment.GetEnvironmentVariable(EnvironmentVariable) != "1")
         {
-            Skip = "performance test — run alone with INVENTORY_PERF_TESTS=1, CT measures at acceptance";
+            // TEST-HIZ-01: the reason starts with a code so CI's "Skipped = 0" step can allow exactly these skips
+            // (scripts/ci-skip-allowlist.tsv, inventory-tests INVENTORY_PERF).
+            Skip = "INVENTORY_PERF: performance test — run alone with INVENTORY_PERF_TESTS=1, CT measures at acceptance";
         }
     }
 }

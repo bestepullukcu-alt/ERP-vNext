@@ -93,21 +93,37 @@ public sealed class ProductDefinitionRevisionRepository : IProductDefinitionRevi
         var filter = Builders<BsonDocument>.Filter.Eq("_id", allocatorId)
                      & Builders<BsonDocument>.Filter.Ne("Allocations.CreationCommandId", creationCommandId);
 
-        try
+        async Task<bool> TryAllocateAsync()
         {
-            await _allocators.FindOneAndUpdateAsync(
-                filter,
-                new PipelineUpdateDefinition<BsonDocument>(new[] { stage }),
-                new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = true, ReturnDocument = ReturnDocument.After },
-                cancellationToken);
+            try
+            {
+                await _allocators.FindOneAndUpdateAsync(
+                    filter,
+                    new PipelineUpdateDefinition<BsonDocument>(new[] { stage }),
+                    new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = true, ReturnDocument = ReturnDocument.After },
+                    cancellationToken);
+                return true;
+            }
+            catch (MongoCommandException exception) when (exception.Code == 11000)
+            {
+                // A same-parent or same-command contender won. The durable command allocation below is authoritative.
+                return false;
+            }
+            catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                // Same recovery path as the command-level duplicate above.
+                return false;
+            }
         }
-        catch (MongoCommandException exception) when (exception.Code == 11000)
+
+        // TEST-HIZ-01: a duplicate key does not always mean THIS command's allocation exists. While the allocator document
+        // does not exist yet, concurrent first commands race the upsert and every loser gets a duplicate key on _id
+        // without its own allocation being written (the server does not retry an upsert whose filter is more than the
+        // unique key) — measured: REVISION_ORDINAL_CONFLICT for a loser. One retry finds the document and appends the
+        // allocation; a duplicate again means the filter excluded this command because its allocation is already there.
+        if (!await TryAllocateAsync())
         {
-            // A same-parent or same-command contender won. The durable command allocation below is authoritative.
-        }
-        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
-        {
-            // Same recovery path as the command-level duplicate above.
+            await TryAllocateAsync();
         }
 
         var document = await _allocators.Find(Builders<BsonDocument>.Filter.Eq("_id", allocatorId))

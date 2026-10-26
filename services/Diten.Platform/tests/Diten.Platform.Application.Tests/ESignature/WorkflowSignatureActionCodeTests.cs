@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// the visual mode the tenant sets is the one the signing dialog gets for that action. Real HTTP host, real Mongo.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class WorkflowSignatureActionCodeTests : IClassFixture<WorkflowESignatureTestHost>
 {
     private const string Workflow = "api/v1/workflow";

@@ -32,6 +32,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// index models <c>PlatformSchemaManifest.Meetings.cs</c> declares for production, never a hand-rolled second
 /// definition.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class RecordLinkRepositoryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;
