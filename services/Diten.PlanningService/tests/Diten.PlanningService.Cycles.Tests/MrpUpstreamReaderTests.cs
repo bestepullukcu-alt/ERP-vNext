@@ -72,6 +72,71 @@ public sealed class MrpUpstreamReaderTests
         Assert.Null(await reader.ReadAsync(tenant, company, sku, Guid.NewGuid(), CancellationToken.None));
     }
 
+    [Fact]
+    public async Task SafetyStockReader_ForwardsScopeAndReadsVersionedEffectiveQuantity()
+    {
+        var tenant = Guid.NewGuid();
+        var company = Guid.NewGuid();
+        var sku = Guid.NewGuid();
+        var warehouse = Guid.NewGuid();
+        var revision = Guid.NewGuid();
+        var reader = new SafetyStockQuantityReader(new Clients(request =>
+        {
+            Assert.Equal("Bearer fixture", request.Headers.Authorization?.ToString());
+            Assert.Equal(tenant.ToString("D"), request.Headers.GetValues("X-Tenant-Id").Single());
+            Assert.Equal(company.ToString("D"), request.Headers.GetValues("X-Legal-Entity-Id").Single());
+            Assert.Contains($"skuId={sku:D}", request.RequestUri!.Query);
+            Assert.Contains($"warehouseId={warehouse:D}", request.RequestUri.Query);
+            Assert.Contains("asOf=2026-10-19", request.RequestUri.Query);
+            return Json(HttpStatusCode.OK, JsonSerializer.Serialize(new { data = new {
+                quantity = 2.5m, baseUomId = "EA", source = "Manual",
+                policyRevisionId = revision, effectiveFrom = "2026-10-19",
+                effectiveUntil = "2026-10-25", recordVersion = 3 } }));
+        }), new HttpContextAccessor { HttpContext = Context(tenant) });
+
+        var result = await reader.ReadAsync(tenant, company, sku, warehouse,
+            new DateOnly(2026, 10, 19), CancellationToken.None);
+        Assert.Equal(MrpSafetyStockStatus.Found, result.Status);
+        Assert.Equal(2.5m, result.Value!.Quantity);
+        Assert.Equal(revision, result.Value.PolicyRevisionId);
+        Assert.Equal(3, result.Value.RecordVersion);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, MrpSafetyStockStatus.NotFound)]
+    [InlineData(HttpStatusCode.Forbidden, MrpSafetyStockStatus.Unavailable)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, MrpSafetyStockStatus.Unavailable)]
+    public async Task SafetyStockReader_DistinguishesAbsentRecordFromUnavailableAuthority(
+        HttpStatusCode status, MrpSafetyStockStatus expected)
+    {
+        var tenant = Guid.NewGuid();
+        var reader = new SafetyStockQuantityReader(new Clients(_ => Json(status, "{}")),
+            new HttpContextAccessor { HttpContext = Context(tenant) });
+        var result = await reader.ReadAsync(tenant, Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid(), new DateOnly(2026, 10, 19), CancellationToken.None);
+        Assert.Equal(expected, result.Status);
+    }
+
+    [Fact]
+    public async Task SafetyStockReader_RejectsMalformedSuccessAndWrongTenant()
+    {
+        var tenant = Guid.NewGuid();
+        var reader = new SafetyStockQuantityReader(new Clients(_ => Json(HttpStatusCode.OK,
+            "{\"data\":{\"quantity\":-1}}")),
+            new HttpContextAccessor { HttpContext = Context(tenant) });
+        var company = Guid.NewGuid();
+        var sku = Guid.NewGuid();
+        var warehouse = Guid.NewGuid();
+        var asOf = new DateOnly(2026, 10, 19);
+
+        Assert.Equal(MrpSafetyStockStatus.Unavailable,
+            (await reader.ReadAsync(tenant, company, sku, warehouse, asOf,
+                CancellationToken.None)).Status);
+        Assert.Equal(MrpSafetyStockStatus.Unavailable,
+            (await reader.ReadAsync(Guid.NewGuid(), company, sku, warehouse, asOf,
+                CancellationToken.None)).Status);
+    }
+
     private static DefaultHttpContext Context(Guid tenant)
     {
         var context = new DefaultHttpContext();
