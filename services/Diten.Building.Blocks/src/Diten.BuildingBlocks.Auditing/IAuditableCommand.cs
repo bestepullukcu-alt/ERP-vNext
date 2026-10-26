@@ -79,7 +79,9 @@ public enum AuditOutcome
     Unknown = 0,
     Succeeded = 1,
     Failed = 2,
-    Denied = 3
+    Denied = 3,
+    // main-sync 2026-10-26 — mirrors Platform's BL-501 value (AuditEnums.AuditOutcome.Unconfirmed); this forwarder never sets it.
+    Unconfirmed = 4
 }
 
 public enum AuditActorType

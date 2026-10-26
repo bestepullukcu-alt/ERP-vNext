@@ -118,19 +118,6 @@ const MAIN_SYNC_2_PAGE_KEYS = [
 ];
 
 /*
- * WP-LANE-MAIN-SYNC-03 (main-sync 2026-10-14, origin/main 19497c934, BL-642) — the same rule for the third sync: CRM W4 visit
- * report v2 pages (COMPETITORPRODUCTS is the W4 competitor list on MDM's menu, same owner). Pinned keys, named, only shrinks.
- */
-const MAIN_SYNC_3_PAGES = {
-  COMPETITORPRODUCTS: { owner: CRM, why: MAIN_SYNC_2_WHY },
-  CRMDOCTORINSIGHTTHRESHOLDS: { owner: CRM, why: MAIN_SYNC_2_WHY },
-  OBJECTIONRESPONSES: { owner: CRM, why: MAIN_SYNC_2_WHY },
-  VISITEVIDENCESETTINGS: { owner: CRM, why: MAIN_SYNC_2_WHY },
-  VISITWORKSPACE: { owner: CRM, why: MAIN_SYNC_2_WHY }
-};
-const MAIN_SYNC_3_PAGE_KEYS = ["COMPETITORPRODUCTS", "CRMDOCTORINSIGHTTHRESHOLDS", "OBJECTIONRESPONSES", "VISITEVIDENCESETTINGS", "VISITWORKSPACE"];
-
-/*
  * WP-LANE-MAIN-SYNC-05 (main-sync 2026-10-16, origin/main 3912d568b = PR #146, owner decision in session) — the same rule
  * for the fourth sync. One page: MOD-0188 Demand Planning. (WP number 05, list number 4: WP-LANE-MAIN-SYNC-04 is
  * already the 2026-10-14 sync's, the finder on BL-645.)
@@ -163,7 +150,7 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
 
   test("every tenant page — menu or manifest — has its help text in 7 languages or is named in the ledger", () => {
     const missing = tenantCodes.filter((code) => !hasText(code, TENANT_LANGS) && !tenantRows.includes(code)
-      && !MAIN_SYNC_2_PAGES[code] && !MAIN_SYNC_3_PAGES[code] && !MAIN_SYNC_4_PAGES[code]);
+      && !MAIN_SYNC_2_PAGES[code] && !MAIN_SYNC_4_PAGES[code]);
     expect(missing, "pages with no help text and no ledger row").toEqual([]);
   });
 
@@ -173,16 +160,8 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
     expect(Object.entries(MAIN_SYNC_4_PAGES).filter(([, row]) => !row || row.owner !== PLANNING || row.why !== MAIN_SYNC_4_WHY)
       .map(([code]) => code), "a row without MOD-0188 as its owner or the fourth sync's reason").toEqual([]);
     expect(Object.keys(MAIN_SYNC_4_PAGES).filter((code) => !tenantCodes.includes(code) || hasText(code, TENANT_LANGS)
-      || tenantRows.includes(code) || MAIN_SYNC_2_PAGES[code] || MAIN_SYNC_3_PAGES[code]),
+      || tenantRows.includes(code) || MAIN_SYNC_2_PAGES[code]),
     "rows whose page has its text now, is in the ledger or an earlier sync's list, or no longer exists — remove them").toEqual([]);
-  });
-
-  test("WP-LANE-MAIN-SYNC-03: the third sync's page list is exactly its pinned keys, named, and only shrinks", () => {
-    expect(Object.keys(MAIN_SYNC_3_PAGES).sort()).toEqual([...MAIN_SYNC_3_PAGE_KEYS].sort());
-    expect(Object.entries(MAIN_SYNC_3_PAGES).filter(([, row]) => !row || row.owner !== CRM || row.why !== MAIN_SYNC_2_WHY)
-      .map(([code]) => code)).toEqual([]);
-    expect(Object.keys(MAIN_SYNC_3_PAGES).filter((code) => !tenantCodes.includes(code) || hasText(code, TENANT_LANGS)
-      || tenantRows.includes(code) || MAIN_SYNC_2_PAGES[code])).toEqual([]);
   });
 
   test("WP-LANE-MAIN-SYNC-02: the main-sync 2026-10-14 page list is exactly its pinned keys, named, and only shrinks", () => {

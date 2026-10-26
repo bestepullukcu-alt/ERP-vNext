@@ -26,7 +26,9 @@ public static class CentralAuditPlatformValues
         ["MasterData"] = 14,
         ["PortfolioDelivery"] = 15,
         ["Tasks"] = 16,
-        ["ESignature"] = 17
+        ["ESignature"] = 17,
+        // main-sync 2026-10-26 — Platform AuditEnums.AuditModule.Crm (WP-VW-W6 F8-a, CRM central forwarding).
+        ["Crm"] = 18
     };
 
     public static readonly IReadOnlyDictionary<string, int> Operations = new Dictionary<string, int>(StringComparer.Ordinal)
