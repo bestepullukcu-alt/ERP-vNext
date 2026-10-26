@@ -394,6 +394,18 @@ Generic CRUD cannot implement this atomic multi-document operation alone; module
 under REPO-001 is proposed with mandatory tenant+LE+soft-delete predicates, subject to Phase1.5 approval.
 Gateway publication/shared permission seeding/live Event Bus transport are separate integration-owner WPs.
 
+**§34 DL-1 and DL-2 additions (WP-P1 r3, MOD-0186 review F-2).** Written only when §34 is approved; still no parent
+wildcard. New: `S.Domain/Features/Returns/ReturnReceiptAttempt.cs`, `S.Application/Features/Returns/Receipt/ReturnReceiptCoordinator.cs`,
+`S.Application/Features/Returns/Receipt/CustomerReturnMovementMapper.cs`, tests
+`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReceiptInventoryTests.cs` and
+`…/Returns/ReturnReceiptRetryTests.cs`. Changed beyond the list above: `S.Infrastructure/Features/Returns/ReturnReferenceReader.cs`
+(reads `issueTransactionId`, `skuLevel`, `lotId` of the completed dispatch attempt over the existing shipment seam — the
+**only** way MOD-0186 reads MOD-0183 data; no Shipment source file is read or written, the prohibition above stands),
+`S.Persistence/Features/Returns/ReturnRepository.cs`, `S.Persistence/Features/Returns/ReturnSchema.cs`, and for DL-2 the
+refusal texts `frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx` and
+`frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js`. Used, not written: MOD-0183's INVENTORY client
+`S.Application/Features/Shipments/Dispatch/IInventoryMovementClient.cs` and its implementation (MOD-0183 DL-1).
+
 ## 26. Transaction/event and verification contract (future acceptance)
 
 Proposed durability L3: replica-set Mongo transaction, no standalone/in-memory fallback. Collections owned only
@@ -883,14 +895,14 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 5. Rebase required if the Q39 Returns sign-off changes this pack's base first (see the base note).
 6. Runtime tests R-02…R-04 need a native executor and the integrated target.
 
-## 34. Customer return to Inventory (E-7) — revision draft WP-P1 r2
+## 34. Customer return to Inventory
 
-> Owner decisions: E-7 (Beste, 2026-10-21, integration plan §2.1) and G5 / G8 (Natig, 2026-10-22,
+> E-7 — revision draft WP-P1 r3 (§34.3 adds to §26). Owner decisions: E-7 (Beste, 2026-10-21, integration plan §2.1) and G5 / G8 (Natig, 2026-10-22,
 > `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a), revised after the MVP-1 CT's CT-APR-02 review of
 > 2026-10-23 (`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md`, KOŞULLU): the receipt stores its requests, dates and
 > target location at the first attempt (F-1), a retry after partial success leaves completed lines untouched (F-2), the
 > company header comes from the return (F-4), the issue is read over the shipment seam (F-5), serial-tracked returns are
-> out of v1. It changes §2, §7, §8 and the `InTransit → Received` row of the transition table above (the client's
+> out of v1; r3 closes F-2 (§25 file list), F-3 (slice table, two slices), F-6 (contract and resx named). It changes §2, §7, §8 and the `InTransit → Received` row of the transition table above (the client's
 > `inventoryTransactionReferenceId` is refused on `Received`). **Draft revision — not approved.** Needs a new CT-APR-02 round
 > (MVP-1 CT) and a CT-APR-01 row (high risk: integration and product code path) before any code.
 
@@ -916,7 +928,7 @@ The caller's token is forwarded (G5): the receiving role needs `inventory.moveme
 Permissions (the BL-652 interim path), never through the default role template. An INVENTORY 403 is answered as 403
 `INVALID_REQUEST`, never 503 (F-4).
 
-### 34.2 Receipt attempt, lifecycle and failure behaviour
+### 34.2 Receipt attempt and failure behaviour
 
 - **First attempt stores everything (F-1).** The first `Received` command stores on the return a `ReceiptAttempt`: per line
   the full §34.1 request body, the dates and the target warehouse / location, plus a single-writer lease (as MOD-0183
@@ -935,13 +947,13 @@ Permissions (the BL-652 interim path), never through the default role template. 
   §23 DL-1) is refused at receipt with 422 `RETURN_SOURCE_MOVEMENT_MISSING` (SHIPMENT-BUNDLE 3.4.0); no movement, no lot
   guessed.
 
-### 34.3 Acceptance and tests (in addition to §26)
+### 34.3 Return acceptance
 
 | AC | Measurable acceptance |
 |---|---|
 | R34-1 | Receipt of a 1-line and an N-line return posts N `CUSTOMER_RETURN` movements into QUARANTINE with the §34.1 fields and `X-Legal-Entity-Id` = the return's LE; the stock rises in QUARANTINE, not AVAILABLE (MVP-1 live tour "iade → karantina") |
 | R34-2 | Replaying the receipt command posts no second movement and no second event |
-| R34-3 | A refused line: return state unchanged, posted lines kept with their `transactionId`, retry completes with replay for them; INVENTORY code shown localized (7 languages) |
+| R34-3 | A refused line: return state unchanged, posted lines kept with their `transactionId`, retry completes with replay for them; the INVENTORY code and `RETURN_SOURCE_MOVEMENT_MISSING` / `RETURN_RECEIPT_IN_PROGRESS` shown localized in all 7 languages of `ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (DL-2) |
 | R34-4 | INVENTORY unavailable → 503, no transition, no event; INVENTORY 403 → 403, never 503 |
 | R34-5 | Cross-tenant / cross-LE return id → 404, no movement |
 | R34-6 | No completed issue on the shipment line → 422 `RETURN_SOURCE_MOVEMENT_MISSING`, no movement, no lot guessed |
@@ -956,8 +968,9 @@ read attempt a1's issue → the matching test is red). The full SupplyChain test
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 (R34-1…R34-9) |
+| DL-1 | iade → karantina | Exact prospective DEV owned files and shared exception proposal, Customer return to Inventory, What is posted, Receipt attempt and failure behaviour, Return acceptance |
+| DL-2 | ret metinleri | Receipt attempt and failure behaviour, Return acceptance |
 
-DL-1 is dispatchable only after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue
-(`issueTransactionId`, `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1; after
-MOD-0183 DL-1".
+DL-1 covers R34-1, R34-2, R34-4…R34-9 and the non-text part of R34-3; DL-2 covers the R34-3 texts. DL-1 is dispatchable only
+after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
+`lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".

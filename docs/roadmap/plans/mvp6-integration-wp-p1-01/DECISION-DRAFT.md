@@ -110,7 +110,7 @@ DL-2 (metinler); ürün doğrulaması ve MVP-5 rezervasyonu dilim değil. Koşul
 
 Sonuç: MOD-0183 **UYGUN DEĞİL** (1 ENGEL, 6 ORTA, 4 DÜŞÜK), MOD-0186 **KOŞULLU** (0 ENGEL, 4 ORTA, 2 DÜŞÜK); inceleme
 `d0366fa73`'te, paket özetleri `c0111bcb8`'de aynı. Bulgu dosyaları: `docs/records/reviews/MOD-0183/2026-10-23-febf6e35.md`,
-`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md` (**dosyalar henüz bu dalda değil** — MVP-1 CT'den istendi).
+`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md` (commit `6c5cec410`, 2026-10-26). r3 (2026-10-26) bulgu dosyalarına göre kalan noktaları kapattı: MOD-0183 F-3 (REVERSAL alanları INVENTORY koduna göre: `lotId`/`serialIds`/`from*`/`to*` gönderilmez, 400 bütünlük hatası), F-4 (çıkışın izin/ekran/denetim), F-5 (403 kodu ayrı), F-6 (§5 DL-1 istisnası), F-7 (dilim tablosu başlık adlarıyla, `slices()` → DL-1, DL-2), F-8, F-9, F-10, F-11; MOD-0186 F-2 (§25 dosya listesi), F-3 (iki dilim), F-6.
 
 - **ENGEL (G3/G4 cevabından):** sabit anahtar telafiden sonra yeniden sevkte geri alınmış eski hareketi `idempotentReplay`
   ile döndürür. **Düzeltilmiş kural (MVP-1 CT):** saklı deneme numarası `n`; anahtarlar `…:dispatch:a{n}` /
