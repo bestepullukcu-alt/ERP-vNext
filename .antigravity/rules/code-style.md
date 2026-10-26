@@ -209,6 +209,20 @@ global using Diten.Shared.Core;
 > [!WARNING]
 > Sadece Backend'de yapılan bir rename, Frontend'de sessizce başarısız olan (silent failure) veya validasyon hatalarına (400 Bad Request) sebep olan kırılmalara yol açar. Her rename sonrası mutlaka **hem Backend hem Frontend** projeleri derlenmelidir.
 
+## 🌍 Kültürden Bağımsız Metin Karşılaştırma (S-56)
+
+Geliştirme makineleri Türkçe kültürle (`tr-TR`) çalışır; CI başka bir kültürle koşar. Türkçede "I"↔"ı" ve "i"↔"İ"
+eşleşmesi yüzünden `ToLower()`, `ToUpper()`, `CurrentCultureIgnoreCase` ve kültür belirtilmemiş `string.Compare` yerelde
+ve CI'da farklı sonuç verir (ör. `"PRODUCTION".ToLower()` tr-TR'de `"productıon"` olur).
+
+- Makine değerleri (kod tanımlayıcısı, ortam adı, anahtar, dosya yolu, izin anahtarı) `StringComparison.Ordinal` ya da
+  `OrdinalIgnoreCase` ile karşılaştırılır; dönüşüm gerekiyorsa `ToUpperInvariant()` / `ToLowerInvariant()`.
+- Kullanıcıya gösterilen metnin sıralaması ve karşılaştırması bilerek kullanıcının kültürüyle yapılır ve kodda yorumla
+  belirtilir.
+- Harfe duyarsız karşılaştırma yapan bir koruma (guard) için en az bir test, kültürü açıkça `tr-TR`'ye ayarlayarak koşar
+  (`CultureInfo.CurrentCulture = new CultureInfo("tr-TR")`; test sonunda eski kültür geri konur). Sabotaj kanıtı:
+  karşılaştırma kültüre bağlı yapılınca bu test kırmızıya döner.
+
 ## ✅ Kontrol Listesi
 
 - [ ] Kod içi yorumlar ve log mesajları İngilizce mi?
@@ -221,3 +235,4 @@ global using Diten.Shared.Core;
 - [ ] String property'ler `= string.Empty` ile başlatılıyor mu?
 - [ ] `.Result` veya `.Wait()` kullanımı var mı? (varsa ihlal)
 - [ ] Lookup/referans kodları (lifecycle, status) Domain enum ile mi temsil ediliyor? (string literal yasak)
+- [ ] Makine değeri karşılaştırmaları `Ordinal` / `OrdinalIgnoreCase` mı; harfe duyarsız koruma için `tr-TR` testi var mı? (S-56)
