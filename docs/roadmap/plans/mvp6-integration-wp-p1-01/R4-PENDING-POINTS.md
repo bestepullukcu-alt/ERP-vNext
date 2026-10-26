@@ -18,3 +18,24 @@ REVERSAL gövdesi, çıkış hareketi okuması, G2 metni, 403).
 | 6 | MOD-0186 | F-5 | DL-1 devreye girdiği gün, çıkış hareketi olmayan sevkiyatların `InTransit` iadeleri ne alınır ne iptal edilir — takılır | Geçiş kuralı: DL-1 öncesi sevk edilmiş satır için `Received` eski davranışla (INVENTORY yazmadan, "manual assertion") kalır ve bu açıkça işaretlenir; ya da sahip kararı — Natig'e soru |
 
 Not: 6. nokta bir sahip kararı gerektirebilir (eski iadeler INVENTORY'siz alınsın mı); r4 yazılırken soru kutusuyla sorulur.
+
+## Ek: aynı paralel incelemenin r3 turu (2026-10-26, oturum `local_e3703e4c`, r3 `ada5e1901` üzerinde)
+
+MVP-1 CT incelemesi **değildir** (o hâlâ bekleniyor); yalnız r4 girdisi. Sonuç: MOD-0183 KOŞULLU (4 ORTA, 1 DÜŞÜK), MOD-0186
+KOŞULLU (3 ORTA, 1 DÜŞÜK), engel yok; hedefler `2acd1866…` / `ec08008e…`, `slices()` DL-1, DL-2. Bulgu dosyaları o oturumun
+paylaşılan not klasöründe (`MOD-0183-r3-2acd1866.md` sha256 `589db9b9…`, `MOD-0186-r3-ec08008e.md` sha256 `98c04df8…`); repoya
+alınmadı.
+
+| # | Paket | Bulgu | Yukarıdaki noktalarla ilişki |
+|---|---|---|---|
+| 7 | MOD-0183 | F-1 ORTA: kirası dolmuş eski yazıcı, telafi edilmiş bir denemeye geri alınmamış çıkış yazabilir — çit belirteci (attempt + lease sürümü her yazımda koşul) ve kendi geç yazımını geri alma | yeni |
+| — | MOD-0183 | F-2 ORTA: `ALREADY_REVERSED` dışarıdan elle REVERSAL ile olabilir → telafi edilmiş say; yoksa CompensationFailed çıkışı sonsuz döngü | = 1 |
+| — | MOD-0183 | F-3 ORTA: 403 `INVALID_REQUEST` ve 500 `transitionShipment`'ta tanımsız; `inventoryCode` listesi `SERIAL_COUNT_MISMATCH` vb. eksik | = 2 (+ kod listesi) |
+| — | MOD-0183 | F-4 ORTA: S23-5 PRODUCT-MASTER olmadan ölçülemez; boş `skuLevel` davranışı yok | = 3 (+ boş skuLevel) |
+| 8 | MOD-0183 | F-5 DÜŞÜK: :699-701 kopmuş cümle; :167 "DL-4" bayat; satırların gönderim sırası yazılı değil | yeni |
+| — | MOD-0186 | F-1 ORTA: :704 geçiş satırı, D186-04 :518, R06 :561, §4 :52-54, :783 hâlâ "Inventory yok / manual assertion"; 3.4.0 returns-semantics'i değiştirmiyor; satır başına referans wire'da yok | = 4 + 5 (+ paket içi eski metinler) |
+| 9 | MOD-0186 | F-2 ORTA: saklı ilk deneme değişmez → yanlış lokasyon / kapalı dönem / `ITEM_NOT_ACTIVE` iadeyi `InTransit`'te sonsuza kilitler; hiç satır yazılmamışken denemeyi yeniden açma ve kalıcı ret için çıkış | yeni |
+| — | MOD-0186 | F-3 ORTA: DL-1 öncesi sevkiyatların yoldaki iadeleri takılır (`InTransit → Cancelled` yok) | = 6 |
+| 10 | MOD-0186 | F-4 DÜŞÜK: iadede ret wire kodu ve INVENTORY 400 eşlemesi adsız | yeni (2'nin iade karşılığı) |
+
+r4 = MVP-1 CT bulguları + 1–10.
