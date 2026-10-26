@@ -475,8 +475,17 @@ public sealed class EntitlementReconciliationOperationStore : IEntitlementReconc
             // before BSON deserialization; retain client, command, transaction, namespace and operation facts.
             new BsonDocument("$project", new BsonDocument("waitingForLock", 0))
         };
-        using var cursor = await admin.AggregateAsync<BsonDocument>(pipeline, cancellationToken: ct);
-        var rows = await cursor.ToListAsync(ct);
+        var rows = await CurrentOperationsAsync(admin, pipeline, ct);
+        // TEST-HIZ-01: a connection the server has accepted but whose handshake has not named it yet carries no client
+        // metadata, so it would count as an unknown client — measured, a client's own new monitoring connection, seen
+        // for 51 ms between a plan and its commit, refused the commit as QUIESCENCE_DRIFT. Give such connections a short,
+        // bounded time to name themselves; one that stays unnamed is still observed, so the refusal stays fail-closed.
+        for (var settle = 0; settle < HandshakeSettleAttempts && rows.Any(IsMidHandshake); settle++)
+        {
+            await Task.Delay(HandshakeSettleDelay, ct);
+            rows = await CurrentOperationsAsync(admin, pipeline, ct);
+        }
+
         var observations = new List<string>();
         foreach (var row in rows)
         {
@@ -499,6 +508,19 @@ public sealed class EntitlementReconciliationOperationStore : IEntitlementReconc
         }
         return EntitlementReconciliationPlan.Hash(string.Join("\n", observations.Order(StringComparer.Ordinal)));
     }
+
+    private const int HandshakeSettleAttempts = 10;
+    private static readonly TimeSpan HandshakeSettleDelay = TimeSpan.FromMilliseconds(25);
+
+    private static async Task<List<BsonDocument>> CurrentOperationsAsync(IMongoDatabase admin, BsonDocument[] pipeline, CancellationToken ct)
+    {
+        using var cursor = await admin.AggregateAsync<BsonDocument>(pipeline, cancellationToken: ct);
+        return await cursor.ToListAsync(ct);
+    }
+
+    // A connection whose handshake has not named it yet: the server lists it with no client metadata.
+    private static bool IsMidHandshake(BsonDocument row) =>
+        row.Contains("client") && (!row.TryGetValue("clientMetadata", out var metadata) || metadata.AsBsonDocument.ElementCount == 0);
 
     private bool TargetsDatabase(BsonValue value)
     {
