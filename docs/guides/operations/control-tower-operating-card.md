@@ -60,6 +60,13 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
   özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
   metnin birebir aynısıdır. Sahibe gidecek prompt'lar yine kod bloğunda verilir (S-28).
+- **Paket onayı değişince prompt'lar (S-53):** bir paketin onayı (yeni revizyon) değişince, eski Expected HEAD'e bağlı
+  dağıtılmamış prompt'ları dağıtım kapısı reddeder; bu bilinçli bir kuraldır. CT planına "tabanı yeni main'e al ve
+  yeniden inceletmek" adımını koyar.
+- **İnceleme kaydını commit'ten önce dene (S-54):** prompt inceleme kaydı commit'lenmeden önce
+  `python3 scripts/prompt_gate.py review-check <prompt> <kayıt dosyası>` ile denenir (her `kontrol` satırının kanıtı kaynak
+  paketindeki bir yolu göstermeli). Çıkış 0 dağıtım izni değildir; dağıtım için kayıt commit'lenir ve
+  `check --review YOL@COMMIT` koşulur.
 - **Prompt'tan önce sade özet (S-45, sahip kararı 2026-10-23):** başkasına gidecek her prompt'tan **önce**, sohbette
   ve kod bloğunun dışında, sahibin dilinde beş satırlık bir özet verilir; teknik kod ve dosya adı kullanılmaz (gerekiyorsa
   ne olduğu yanında yazılır):
