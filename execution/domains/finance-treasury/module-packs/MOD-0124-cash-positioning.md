@@ -41,9 +41,11 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 >
 > **Revizyon (2026-10-26, D36 + D43):** D29/1'in diğer sahip teyitleri sahip teyidiyle kapandı — O-3 (D36/1), O-17 (D36/2),
 > O-14 (D36/3; `treasury-intake-owner-decisions-03.md`, PR #242) ve O-7 (D43; `treasury-intake-owner-decisions-04.md`); checklist
-> satırları kapandı. MOD-0126 sabitlemesi D42 revizyonuna (`3773c4ee…`) çekildi. Bu revizyon pack'i `ready-for-dev` yapmaz.
+> satırları kapandı. MOD-0126 sabitlemesi D42 + D44 revizyonuna (`25065d5e…`) çekildi. Bu revizyon pack'i `ready-for-dev` yapmaz.
 >
-> **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** — kaynak:
+> **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** (tarihçe — **D36 / D43 ile güncellendi**: aşağıdaki
+> "O-3 teyidi açık" ifadesi D36/1 ile kapandı, (6)'daki `684e89d6…` sabitlemesi yerini güncel MOD-0126 sabitlemesine bıraktı;
+> güncel durum üstteki D36 + D43 notunda ve Implementation Notes'tadır) — kaynak:
 > `execution/domains/finance-treasury/work-packs/MOD-0124-DL1-hazirlik.md` §6. (1) O-3: sahip payı verildi (D29/1),
 > platform-shared-services teyidi açık ve D29/1 gereği `ready-for-dev` engeli, dolayısıyla DL-1 önkoşulu — Dependencies,
 > Checklist ve Açık kararlar aynı dili kullanır; (2) D30 sonrası bayat liste: AGENTS §2/§3/§9, `ports.md` 5071 ve RCS-001
@@ -650,7 +652,7 @@ ister.
 | MOD-0037 kapı kararı | **KARAR D29/1** (sahip payı, 2026-10-25: v1 MOD-0037'yi tüketmez, O-3); platform-shared-services teyidi yerine sahip teyidi **KARAR D36/1** (2026-10-26, PR #242) | — | sahip (K1) | — (çağrı yok) | karar kayıtları D29/1 · D36/1 | kapandı — önkoşul değil |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-8) | TBD | platform-shared-services | hane yok → 503 | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
-| RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
+| RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | servis sahibi **Beste — KARAR D44** (2026-10-26; `treasury-intake-owner-decisions-04.md`); önek CT + `.antigravity` onayı (D29/2, D30) | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-23; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / `current` / yazma 404 | kapsam testi AC-31 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | AC-17 (tek aşamalı kısım DL-1; iki aşamalı + sabotaj DL-4) · AUD-001 §8 dev kanıtı AC-29 (DL-1: oluşturma / güncelleme / silme) | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + şablon kodu — **TBD** (O-20) | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
@@ -1494,7 +1496,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `3773c4ee6e2b6acccd0eb976ba39b8093c7f141753512a686501cad155fe6ca1` (bu revizyonla aynı commit, dal
+  `25065d5e4613785a30ace0883d6c749c93c3fc6da6aee7bdadc6a8f5981a928c` (bu revizyonla aynı commit, dal
   `docs/ct/treasury-decisions-04`; önceki sabitlemeler `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
   Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
