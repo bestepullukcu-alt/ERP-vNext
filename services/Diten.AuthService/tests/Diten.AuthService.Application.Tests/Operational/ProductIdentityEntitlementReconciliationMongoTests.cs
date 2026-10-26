@@ -239,6 +239,51 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Equal(fixture.Plan.LocalFingerprint, snapshot.Fingerprint);
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 — the commit's own quiescence refusal. Measured: with both QUIESCENCE_DRIFT checks of CommitAsync
+    /// disabled, no other test of this class turned red (the read-side test above proves only that the fingerprint
+    /// moves). A client the plan did not see connects after the plan was read: the commit is refused by name and
+    /// nothing is written.
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAnUnknownClientConnectsAfterThePlan_IsRefusedAsQuiescenceDriftAndWritesNothing()
+    {
+        var fixture = await SeedPlanAsync();
+        var late = mongo.NewClient(applicationName: "Unknown.Late.Client");
+        await late.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+        var before = await AllRowsAsync(); fixture.Probe.Commands.Clear();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
+
+        Assert.Equal("QUIESCENCE_DRIFT", error.Message);
+        Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
+    }
+
+    /// <summary>
+    /// TEST-HIZ-01 — the commit's SECOND quiescence check, inside the transaction: a client that connects while the
+    /// commit is reading its snapshot is seen there, and the commit is refused by name with nothing written. (The test
+    /// above is caught by the first check, before the transaction; this one is not.)
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAnUnknownClientConnectsDuringTheCommit_IsRefusedAsQuiescenceDriftAndWritesNothing()
+    {
+        var fixture = await SeedPlanAsync();
+        var before = await AllRowsAsync(); fixture.Probe.Commands.Clear();
+        IMongoClient? late = null;
+        fixture.Probe.After = (name, command) =>
+        {
+            if (late is not null || name != "find" || command["find"] != "permissions" || !command.Contains("startTransaction")) return;
+            late = mongo.NewClient(applicationName: "Unknown.Mid.Client");
+            late.GetDatabase("admin").RunCommand<BsonDocument>(new BsonDocument("ping", 1));
+        };
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
+
+        Assert.NotNull(late);
+        Assert.Equal("QUIESCENCE_DRIFT", error.Message);
+        Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
+    }
+
     [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
