@@ -94,6 +94,67 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   açıklanır: "K3 (siz — GMG-ERP hesabı)", "isteyen GMG-ERP (incelemeyi isteyen sizsiniz)". Değeri CT türettiyse
   nereden türettiğini de yazar. Sahip neyi onayladığını açıklamayı okumadan anlayabilmelidir (S-25).
 
+## Sahibe rapor ve mesaj biçimi — her Control Tower (S-61, sahip kararı 2026-10-26)
+
+Control Tower'ı kullanan kişi geliştirici olmayabilir. Sahibe (ve geliştirici olmayan kullanıcıya) giden **her mesaj**
+sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu) yalnız sahip isterse ya da CT-Setup'a giden
+5 satırlık özette yer alır.
+
+- **Kısa haber** (her mesaj): yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
+  (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
+  "Soru biçimi" kutusu bu başlığın içinde kullanılır.
+- **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
+
+```text
+### <Control Tower> — <modülün sade adı> · <kaçıncı gün>
+
+Katmanlara göre
+  Belge        ▓▓▓▓░░░░░░  x / y  <tek satır açıklama>
+  Arka uç      …
+  API          …
+  Gateway      …
+  Ekran        …
+  Canlı ortam  …
+  Kabul edilen: x / y  (<neden henüz değil>)
+
+Parçalar
+| Parça | Ne için | Tür | Durum | Kalan prompt (tahmin) | Kimi bekliyor |
+
+Kalan iş: yaklaşık N prompt (tahmin) — X'i şimdi yapılabilir, Y'si bekliyor
+  Türlerine göre: …
+  Ekranda ne zaman görürsünüz: …
+
+Biten
+- <iş>: önce …, şimdi …
+
+Çalışan
+- <iş>
+  - Ne yapılıyor: …
+  - Kullanıcı için: …
+
+Sıradaki
+- <iş> — Kullanıcı için: …
+
+Sizden istenen
+- <tek iş>
+```
+
+Kurallar:
+1. **Kod ve kısaltma yok** (WP-…, AC-…, DL…, UIC-…, E3, rev 10, F-22 gibi); gerekiyorsa önce sade anlamı, kod en sonda
+   parantez içinde. Her iş "önce / şimdi" ya da "kullanıcı için" cümlesiyle anlatılır; kullanıcı, işten etkilenen kişidir
+   (ekranı kullanan ya da geliştirici).
+2. **Parçalar** paketin teslim dilimleridir (modülün tamamı); "Tür" Belge · Arka uç · API · Gateway · Ekran · Yapılandırma
+   · Kapı'dan biridir (birden çoksa "Arka uç + API"). Bu modülde olmayan katman "—" ile yazılır.
+3. **Sayılar ölçülür:** çubuklar ve sayılar kuyruk satırlarından, paketin dilim tablosundan ve GitHub'dan sayılır; elle
+   yüzde yazılmaz. Yüzde yalnız neye göre olduğu yazılarak verilir ("iş paketi sayısına göre %30"); iş miktarına göre
+   yüzde ancak onaylı efor tabanıyla (REP-001 §7.1).
+4. **"Kalan prompt" her zaman "tahmin"dir:** bir dilim ≈ 1–2 geliştirme prompt'u; karar ya da başka dilim bekleyenler
+   ayrı sayılır ve "Kimi bekliyor" sütununda kimin kararı beklendiği yazılır (sahip, Beste, başka modülün sahibi).
+5. **"Ekranda ne zaman görürsünüz"** her raporda yazılır; ekranı olmayan modülde ne görüleceği söylenir (ör. "her PR'da
+   otomatik kontrol").
+6. Kayıt ve denetim için teknik tablo (REP-001 §2, `status_report.py`) ayrıca durur; bu biçim onun yerine geçmez, sahibe
+   giden anlatımdır.
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
