@@ -142,7 +142,9 @@ Bir satır birden çok lot / staging lokasyonuyla toplanırsa: 1.0.0 `OutboundLi
 ```
 `kind: Pick` S2'de aynı şemayı kullanır (+ `outboundId`, `outboundLineRef`, `reservationId`, `fefoRank`, `fefoBypassReason`).
 `item` şekli FEFO / RECALL R-12 emsalidir (`{ itemId, skuId, skuLevel }`). İsim üyeleri (`name`) RECALL 1.8.0 kuralıdır: eylemi yapan
-kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" gösterir.
+kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" gösterir. `integrationFlag` görev başına tek değerdir
+(türetilir, saklanmaz); görevin onayları arasında öncelik `PostingIntegrityError` > `PostingPendingLong` > `PostingPending` >
+`PostingRefused` > `None` (pack §4.1; bağımsız inceleme 14 F-1).
 
 ### 3.2 `TaskConfirmation`
 ```json
@@ -178,7 +180,8 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
   (her 5xx: 500 / 502 / 503 / 504, zaman aşımı, ağ hatası, iptal (`OperationCanceledException`), beklenmeyen istisna) → `Pending`; sonraki deneme ve uzlaştırıcı önce
   `postingKey` araması yapar (F-2; Codex incelemesi P2, bağımsız inceleme 13 F-2). Deneme sınırı yoktur; onay
   `LongPendingMinutes`'tan (öneri 30) uzun Pending kalırsa görevin `integrationFlag`'i `PostingPendingLong` olur (pack §8.3 adım 5;
-  bağımsız inceleme 13 F-3).
+  bağımsız inceleme 13 F-3). `integrationFlag` görev başına tek değerdir; görevin onayları arasında öncelik `PostingIntegrityError` >
+  `PostingPendingLong` > `PostingPending` > `PostingRefused` > `None` (pack §4.1; bağımsız inceleme 14 F-1).
   `resolution` yalnız `Refused` onayda (F-4); `IntegrityError`'da resolution kapalı (`priorResolution`'a taşınır; tek koşullu güncelleme,
   `version` CAS — bağımsız inceleme 06 F-3). `refusalSource` / `refusedOnRetry` / `refusedAtUtc` savunma dalının seçim ölçütüdür
   (yalnız `PreCheck` / `Ledger4xx` + `refusedOnRetry = true`, son 30 dk; bağımsız inceleme 06 F-2).
@@ -396,9 +399,11 @@ Olay zarfı: `eventId` (uuid), `occurredAt`, `correlationId` (uuid), `tenantId`,
 
 ## 9. Exception model (S3 iskeleti)
 
-`WarehouseException { exceptionId, kind: PostingRefused | PostingPendingTooLong | OutboundDrift | DispatchNotSeen | CancelAfterReady,
+`WarehouseException { exceptionId, kind: PostingRefused | PostingPendingLong | OutboundDrift | DispatchNotSeen | CancelAfterReady,
 taskId? | outboundId?, code, details, openedAtUtc, status: Open | Acknowledged | Resolved, resolvedBy?, note? }` — kaynakları S1 onay
-kayıtları ve S2 outbound durumu; salt okunur liste `GET /exceptions` (`warehouse.exceptions.read`). Çözümleme eylemleri S3'te.
+kayıtları ve S2 outbound durumu; salt okunur liste `GET /exceptions` (`warehouse.exceptions.read`). Çözümleme eylemleri S3'te. `PostingPendingLong` türü görev bayrağıyla
+aynı addır ve aynı eşiğe bağlıdır: onay `ConfirmedAtUtc`'den bu yana `Warehouse:Putaway:LongPendingMinutes`'tan uzun Pending (pack §8.3
+adım 5; bağımsız inceleme 14 F-2).
 Activity Trace: `GET /activity` = görev olayları + `sourceModule = MOD-0178` INVENTORY hareketleri (okuma). Integration Monitor:
 `GET /integration/status` = outbox Pending / Delivered sayıları, son poll zamanı, MVP-6 okunabilirliği.
 
@@ -470,7 +475,7 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
-İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) ve bağımsız inceleme 09 F-1…F-5 (§19.1.12; merkezi kayıt ad ve gövde taşımaz — değerler yerel zaman çizelgesinde; (C2) → 409 `WMS_CONFLICT`) ve bağımsız inceleme 10 F-1…F-3 (§19.1.13; bütün yazma operasyonlarında istek idempotency'si — anahtar If-Match'ten önce, kural 5; 0-satır (D) yalnız Refused, zaten `IntegrityError` ise yazım yok) ve bağımsız inceleme 11 F-1…F-3 (§19.1.14; onay cevabında `seq`, anahtar kapsamı kullanıcı + operasyon, yaratmada her yinelenen kayıtta anahtar araması) ve bağımsız inceleme 12 F-1…F-4 + Codex incelemesi P1 / P2 (§19.1.15; `details.seq`, `ConfirmPutawayTaskResult` §3.9, `RequestOp` kabloda yok, commit sonucu bilinmeyen posting → Pending) ve bağımsız inceleme 13 F-1…F-3 (§19.1.16; iptal, `PostingPendingLong` — deneme sınırı yok, bilinçli kabul) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
+İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) ve bağımsız inceleme 09 F-1…F-5 (§19.1.12; merkezi kayıt ad ve gövde taşımaz — değerler yerel zaman çizelgesinde; (C2) → 409 `WMS_CONFLICT`) ve bağımsız inceleme 10 F-1…F-3 (§19.1.13; bütün yazma operasyonlarında istek idempotency'si — anahtar If-Match'ten önce, kural 5; 0-satır (D) yalnız Refused, zaten `IntegrityError` ise yazım yok) ve bağımsız inceleme 11 F-1…F-3 (§19.1.14; onay cevabında `seq`, anahtar kapsamı kullanıcı + operasyon, yaratmada her yinelenen kayıtta anahtar araması) ve bağımsız inceleme 12 F-1…F-4 + Codex incelemesi P1 / P2 (§19.1.15; `details.seq`, `ConfirmPutawayTaskResult` §3.9, `RequestOp` kabloda yok, commit sonucu bilinmeyen posting → Pending) ve bağımsız inceleme 13 F-1…F-3 (§19.1.16; iptal, `PostingPendingLong` — deneme sınırı yok, bilinçli kabul) ve bağımsız inceleme 14 F-1…F-3 (§19.1.17; bayrak öncelik sırası, istisna türü `PostingPendingLong`, `LongPendingMinutes` açılış doğrulaması) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).
