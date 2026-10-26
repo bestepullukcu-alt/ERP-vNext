@@ -100,7 +100,9 @@ Control Tower'ı kullanan kişi geliştirici olmayabilir. Sahibe (ve geliştiric
 sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu) yalnız sahip isterse ya da CT-Setup'a giden
 5 satırlık özette yer alır.
 
-- **Kısa haber** (her mesaj): yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
+- **Kısa haber** (her mesaj): en üstte **tek satırlık ilerleme** (S-61b, sahip kararı `tek-satir`), örn.
+  `**Vaka girişi · 7. gün** ▓▓▓░░░░░░ 3/9 parça bitti · 0 kabul` (parça = paketin teslim dilimi; sayı ölçülür), sonra
+  yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
   (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
 - **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
