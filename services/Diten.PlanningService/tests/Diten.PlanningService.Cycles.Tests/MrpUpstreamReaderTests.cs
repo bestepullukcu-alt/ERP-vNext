@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Diten.PlanningService.Api.Features.Mrp;
+using Diten.PlanningService.Api.Features.DemandPlanning;
 using Diten.PlanningService.Application.Features.Mrp;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -9,6 +10,28 @@ namespace Diten.PlanningService.Cycles.Tests;
 
 public sealed class MrpUpstreamReaderTests
 {
+    [Theory]
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    [InlineData("AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA")]
+    public void PlanningCorrelation_RejectsInvalidInboundIdentity(string value)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers["X-Correlation-Id"] = value;
+        Assert.False(PlanningCorrelation.IsValid(context));
+    }
+
+    [Fact]
+    public void PlanningCorrelation_RejectsMultipleValuesAndAcceptsCanonicalGuid()
+    {
+        var context = new DefaultHttpContext();
+        var id = Guid.NewGuid().ToString("D");
+        context.Request.Headers["X-Correlation-Id"] = id;
+        Assert.True(PlanningCorrelation.IsValid(context));
+        context.Request.Headers["X-Correlation-Id"] = new[] { id, Guid.NewGuid().ToString("D") };
+        Assert.False(PlanningCorrelation.IsValid(context));
+    }
+
     [Fact]
     public async Task MdmReader_ValidatesActiveCompanyAndListsOnlyActive()
     {
@@ -16,8 +39,11 @@ public sealed class MrpUpstreamReaderTests
         var company = Guid.NewGuid();
         var other = Guid.NewGuid();
         var context = Context(tenant);
+        var correlation = Guid.NewGuid().ToString("D");
+        context.Request.Headers["X-Correlation-Id"] = correlation;
         var reader = new MdmLegalEntityScopeReader(new Clients(request =>
         {
+            Assert.Equal(correlation, request.Headers.GetValues("X-Correlation-Id").Single());
             Assert.Equal("Bearer fixture", request.Headers.Authorization?.ToString());
             Assert.Equal(tenant.ToString("D"), request.Headers.GetValues("X-Tenant-Id").Single());
             var json = request.RequestUri!.AbsolutePath.EndsWith("lookup-validation")
@@ -56,8 +82,11 @@ public sealed class MrpUpstreamReaderTests
         var sku = Guid.NewGuid();
         var warehouse = Guid.NewGuid();
         var context = new HttpContextAccessor { HttpContext = Context(tenant) };
+        var correlation = Guid.NewGuid().ToString("D");
+        context.HttpContext!.Request.Headers["X-Correlation-Id"] = correlation;
         var reader = new InventoryAvailabilityReader(new Clients(request =>
         {
+            Assert.Equal(correlation, request.Headers.GetValues("X-Correlation-Id").Single());
             Assert.Equal(company.ToString("D"),
                 request.Headers.GetValues("X-Legal-Entity-Id").Single());
             return Json(HttpStatusCode.OK, JsonSerializer.Serialize(new {
@@ -80,8 +109,12 @@ public sealed class MrpUpstreamReaderTests
         var sku = Guid.NewGuid();
         var warehouse = Guid.NewGuid();
         var revision = Guid.NewGuid();
+        var context = Context(tenant);
+        var correlation = Guid.NewGuid().ToString("D");
+        context.Request.Headers["X-Correlation-Id"] = correlation;
         var reader = new SafetyStockQuantityReader(new Clients(request =>
         {
+            Assert.Equal(correlation, request.Headers.GetValues("X-Correlation-Id").Single());
             Assert.Equal("Bearer fixture", request.Headers.Authorization?.ToString());
             Assert.Equal(tenant.ToString("D"), request.Headers.GetValues("X-Tenant-Id").Single());
             Assert.Equal(company.ToString("D"), request.Headers.GetValues("X-Legal-Entity-Id").Single());
@@ -92,7 +125,7 @@ public sealed class MrpUpstreamReaderTests
                 quantity = 2.5m, baseUomId = "EA", source = "Manual",
                 policyRevisionId = revision, effectiveFrom = "2026-10-19",
                 effectiveUntil = "2026-10-25", recordVersion = 3 } }));
-        }), new HttpContextAccessor { HttpContext = Context(tenant) });
+        }), new HttpContextAccessor { HttpContext = context });
 
         var result = await reader.ReadAsync(tenant, company, sku, warehouse,
             new DateOnly(2026, 10, 19), CancellationToken.None);

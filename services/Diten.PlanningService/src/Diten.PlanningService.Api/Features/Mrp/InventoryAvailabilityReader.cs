@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Diten.PlanningService.Application.Features.Mrp;
+using Diten.PlanningService.Api.Features.DemandPlanning;
 
 namespace Diten.PlanningService.Api.Features.Mrp;
 
@@ -21,6 +22,7 @@ public sealed class InventoryAvailabilityReader(IHttpClientFactory clients,
 
         var path = $"api/inventory/availability?skuId={skuId:D}&warehouseId={warehouseId:D}";
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        PlanningCorrelation.Forward(context, request);
         request.Headers.TryAddWithoutValidation("Authorization", bearer);
         request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantId.ToString("D"));
         request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", legalEntityId.ToString("D"));

@@ -2,6 +2,7 @@ using System.Net;
 using System.Globalization;
 using System.Text.Json;
 using Diten.PlanningService.Application.Features.Mrp;
+using Diten.PlanningService.Api.Features.DemandPlanning;
 
 namespace Diten.PlanningService.Api.Features.Mrp;
 
@@ -24,6 +25,7 @@ public sealed class SafetyStockQuantityReader(IHttpClientFactory clients,
         {
             var path = $"api/v1/safety-stock/policies/manual-quantities/effective?skuId={skuId:D}&warehouseId={warehouseId:D}&asOf={asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
             using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            PlanningCorrelation.Forward(context, request);
             request.Headers.TryAddWithoutValidation("Authorization", bearer);
             request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantId.ToString("D"));
             request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", legalEntityId.ToString("D"));
