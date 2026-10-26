@@ -1,5 +1,10 @@
 # MOD-0289 Bank Master & Bank Account Registry — destination placement (note v0.1)
 
+> **Superseded (2026-10-25):** bu öneri sahip kararı **D20/1** ile karara bağlandı — MOD-0289 →
+> `master-data-management` / `Diten.MdmService` (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`).
+> Pack: `execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md`. Aşağıdaki
+> metin tarihsel öneridir; değiştirilmedi.
+
     created  : 2026-10-21
     status   : PROPOSAL — placement for an owner decision (MDM owner); no pack, no code
     measured : destination origin/main 9d44e8a1f (read-only); source = ERP-vNext pack + Treasury worktree (read-only)
