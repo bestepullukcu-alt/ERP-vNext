@@ -63,6 +63,9 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
 - **Paket onayı değişince prompt'lar (S-53):** bir paketin onayı (yeni revizyon) değişince, eski Expected HEAD'e bağlı
   dağıtılmamış prompt'ları dağıtım kapısı reddeder; bu bilinçli bir kuraldır. CT planına "tabanı yeni main'e al ve
   yeniden inceletmek" adımını koyar.
+- **Bulgu dosyasında düz metin (S-59):** inceleme isteği ve bulgu dosyasında kapanmış bulgular düz metin olarak
+  "Kapananlar (inceleme NN): F-19, F-20 …" biçiminde yazılır. Bulgu tablosunun dışında satır başında `F-` ve büyük harfle
+  `ENGEL` kullanılmaz; ayrıştırıcı böyle bir satırı bozuk bulgu sayar.
 - **İnceleme kaydını commit'ten önce dene (S-54):** prompt inceleme kaydı commit'lenmeden önce
   `python3 scripts/prompt_gate.py review-check <prompt> <kayıt dosyası>` ile denenir (her `kontrol` satırının kanıtı kaynak
   paketindeki bir yolu göstermeli). Çıkış 0 dağıtım izni değildir; dağıtım için kayıt commit'lenir ve
