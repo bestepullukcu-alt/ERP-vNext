@@ -330,8 +330,10 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    `git merge origin/main` ile yapılır, dal birinci ebeveyn kalır; GitHub'daki "Update branch" da bu yöndedir. Main'i
    birinci ebeveyn yapan **ters merge yapılmaz**: PR merge'ünde dalın satırları ikinci ebeveyn tarafında kalır ve onay
    aracı onları "iç içe ya da ters merge" diye reddeder (S-40). Dalda koşan `check` bunu "UYARI (S-48)" ile merge'den
-   önce söyler. Onay ya da inceleme satırı bir kez main'e girip geçersiz sayılırsa geri alınamaz (dosyalar yalnız ekleme
-   kabul eder); çıkış yolu paketin yeni bir revizyonudur.
+   önce söyler. Main'e girmiş bir satır geri alınamaz (dosyalar yalnız ekleme kabul eder). **Geçersiz onay satırı:** aynı
+   paket sürümü için doğru yoldan yeni bir onay satırı eklenir; son satır geçerlidir (Codex F-3). **Geçersiz inceleme
+   satırı:** o sürümün bütün inceleme satırları sayıldığı için sürüm onaylanamaz; çıkış yolu paketin yeni bir
+   revizyonudur.
 2. Çakışma çıkarsa: kendi satırlarını ana dalın satırlarının ALTINA taşır; başkasının satırını silmez, değiştirmez,
    sırasını değiştirmez. Emin değilse `git merge --abort` ile geri alır ve sahibe sorar.
 3. Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller

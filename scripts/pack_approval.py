@@ -1138,6 +1138,17 @@ def branch_line_warnings(ctx: "Ctx", data: bytes) -> list[str]:
     return out
 
 
+def safe_warnings(ctx: "Ctx", data: bytes, text: str) -> list[str]:
+    """S-48/S-49 warnings, computed once before any decision and shown on every result (Codex F-2). They never change
+    the decision: anything they cannot read becomes one warning line, not an exit code (Codex F-1)."""
+    out = [DRAFT_WARNING] if kunye(text).get("status") == "draft" else []
+    try:
+        out += branch_line_warnings(ctx, data)
+    except (Unreadable, UnicodeDecodeError, IndexError, KeyError, ValueError, OSError) as e:
+        out.append(f"UYARI (S-48): dal çizgisi ölçülemedi — {str(e)[:160]} (karar bundan etkilenmez)")
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ the decision
 def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
     head = [f"PACK-APPROVAL v1 — {path} @ {ref}"]
@@ -1158,6 +1169,7 @@ def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
             raise Unreadable(f"paket {path} bu ref'te yok")
         text = data.decode("utf-8", errors="replace")
         ctx = Ctx(root, commit, path)
+        head = head + safe_warnings(ctx, data, text)       # S-48/S-49: before every decision below, never part of it
         if is_dcp(path) and ctx.rstart is None:
             return 0, head + ["DCP onay kuralı yürürlükte değil (POLICY-REVIEW-START hiç eklenmedi)", "çıkış: 0"]
         last_change = git(root, "log", "-1", "--format=%H", commit, "--", path).decode().strip()
@@ -1188,8 +1200,7 @@ def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
             return 1, head + [f"sonuç: paket onaydan sonra değişti ({n} satır) — yeniden onay gerekli", "çıkış: 1"]
         fails, out, effective, _ = judge(ctx, len(rows) - 1)
         fails = fails + today_problems(ctx, len(rows) - 1)
-        out = head + out + ([DRAFT_WARNING] if kunye(text).get("status") == "draft" else []) \
-            + branch_line_warnings(ctx, data)
+        out = head + out
         if fails:
             return 1, out + [f"ENGEL: {f}" for f in fails] + ["sonuç: onay geçersiz", "çıkış: 1"]
         return 0, out + [f"sonuç: onaylı — {effective} · onaylayan {row['approver']} · {row['approved_at']}", "çıkış: 0"]
@@ -1492,6 +1503,13 @@ def self_test() -> int:
     code, out = check("s48rev")
     cases.append(("sabotage S-48: on a branch whose row sits behind a reversed merge (main first parent) -> the approval "
                   "row is named with a warning before the PR", any("UYARI (S-48)" in l and "onay satırı" in l for l in out)))
+    # Codex F-2: an early return (the pack changed after its approval) still shows the S-48 warning
+    g("checkout", "-q", "s48rev")
+    put(PACK, get(PACK) + "- s48 later\n")
+    commit("pack changed after the reversed merge")
+    code, out = check("s48rev")
+    cases.append(("S-48 (Codex F-2): the pack changed after its approval (early return) -> the S-48 warning is still shown",
+                  code == 1 and any("yeniden onay" in l for l in out) and any("UYARI (S-48)" in l for l in out)))
     g("checkout", "-q", "s48")
     g("merge", "-q", "--no-ff", "-m", "merge main into s48", "main", who=DEV)
     code, out = check("s48")
@@ -1505,6 +1523,17 @@ def self_test() -> int:
     code, out = check("s48after")
     cases.append(("S-48: a new branch from main whose approval row reached main through a PR (second parent) -> no "
                   "warning (already on main)", not any("UYARI (S-48)" in l for l in out) and any("sonuç" in l for l in out)))
+    # Codex F-1: a warning that cannot be read never changes the decision
+    saved_blw = globals()["branch_line_warnings"]
+    plain = check("s48")
+
+    def unreadable_warnings(ctx_, data_):
+        raise Unreadable("bozuk inceleme dosyası (test)")
+    globals()["branch_line_warnings"] = unreadable_warnings
+    broken = check("s48")
+    globals()["branch_line_warnings"] = saved_blw
+    cases.append(("sabotage S-48 (Codex F-1): the warning's own read fails -> same exit code, one 'ölçülemedi' warning",
+                  broken[0] == plain[0] and any("ölçülemedi" in l for l in broken[1])))
     # S-49: an approval row for a pack whose künye says status: draft carries a warning
     g("checkout", "-q", "-b", "s49", "main")
     put(PACK, get(PACK).replace("status: approved", "status: draft", 1))
@@ -1515,6 +1544,12 @@ def self_test() -> int:
     cases.append(("S-49: an approval row for a status: draft pack -> warning", any("UYARI (S-49)" in l for l in out)))
     code, out = check("s48")
     cases.append(("S-49: a status: approved pack -> no draft warning", not any("UYARI (S-49)" in l for l in out)))
+    g("checkout", "-q", "s49")
+    put(PACK, get(PACK) + "- s49 later\n")
+    commit("draft pack changed after its approval")
+    code, out = check("s49")
+    cases.append(("S-49 (Codex F-2): a draft pack whose approval is for an older version (early return) -> still warned",
+                  code == 1 and any("UYARI (S-49)" in l for l in out)))
     g("checkout", "-q", "main")
     g("reset", "-q", "--hard", s48_start)
     # the real GitHub path, driven by a fake GitHub (independent review F-2, Codex F-7…F-13)
