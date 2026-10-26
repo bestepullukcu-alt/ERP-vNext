@@ -56,6 +56,16 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
   çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında **mutlak yolu** (`/Users/…` ile başlayan, kısa `.ct-teslim/…` değil)
   ve SHA-256'sı **ayrı bir kod bloğunda** yazılır, kopyalanabilsin (S-36); araç izin veriyorsa dosya Finder'da gösterilir.
+- **Prompt'tan önce sade özet (S-45, sahip kararı 2026-10-23):** başkasına gidecek her prompt'tan **önce**, sohbette
+  ve kod bloğunun dışında, sahibin dilinde beş satırlık bir özet verilir; teknik kod ve dosya adı kullanılmaz (gerekiyorsa
+  ne olduğu yanında yazılır):
+  - **Bu ne:** bir cümle — iş isteği mi, geliştirme işi mi, bağımsız inceleme mi.
+  - **Kime:** hangi oturuma, kime yapıştırılacak.
+  - **Neden:** hangi iş takıldı ya da ne bekleniyor.
+  - **Siz ne yapacaksınız:** "yapıştırın" ya da "önce karar verin" (ne kararı).
+  - **Başka yol:** varsa kısaca; özellikle iş isteğinde istek sahibinin sorunu kendi tarafında çözüp çözemeyeceği
+    (sorunu kim yarattı, daha basit yol var mı, değişiklik kaç işe yarıyor).
+  Prompt'un kendisi yine `HEDEF:` satırıyla başlar.
 - **Dış istek (S-30):** başka bir ekipten istek gelince CT (1) her isteği sınıflandırır (modül, kimin kararı, mevcut
   paketi etkiliyor mu), (2) her soruya önerilen cevabı **sohbette** gösterir — yalnız itiraz listesi yetmez, (3) isteyene
   gidecek mesajı kod bloğunda hazırlar; doğrulama gereken yerleri (ör. QPPV, başka modül sahibi) işaretler. Mesajı
