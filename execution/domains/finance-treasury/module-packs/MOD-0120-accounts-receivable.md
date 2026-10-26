@@ -24,6 +24,14 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; **MOD-0120 için** kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** (`MOD-0120-DL1-hazirlik.md`) — AC-2, AC-5,
+> AC-31 ve AC-32 dilim bitişlerinde "(… kısmı)" ile bölündü (AC-31 açma kısmı DL-2'ye, AC-32 (d) DL-1'e); Audited Events
+> `Category` ve Repo Scope defter satırı **D35**'e (`treasury-intake-owner-decisions-02.md` D35 (PR #235)) göre yazıldı;
+> D30 ile uygulanan port 5071 / AGENTS §2/§3/§9 / RCS-001 `ARI` işleri açık listesinden çıkarıldı; listede olmayan para
+> birimi için `RECEIVABLE_CURRENCY_CODE_INVALID` 400 eklendi (dört Treasury paketinde aynı kural — girdi alanı hatası); kısmi indeks değer kümesi yazımı (`$in` yok, `$or` eşitlikleri)
+> netleştirildi; test yolu (`services/Diten.FinanceTreasuryService/tests/**`) Repo Scope ve Test Expectations'a yazıldı.
+> Kod, onay ya da `ready-for-dev` izni vermez; künye `draft` kalır (D34/2).
+>
 > **D27 (2026-10-25, sahip) — kapı kararları verildi:** karar 0.3 → **KARAR D27/1** süreli T32 sapması: Treasury
 > sözleşmeleri `docs/analysis/contracts/` altında dondurulmuş dosya olarak tutulur ve MOD-0003 gelince oraya kaydedilir;
 > **bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (hangisi önce gelirse)**. Karar 0.5 → **KARAR D27/2** (AR kısıtlı
@@ -458,8 +466,14 @@ Kaynak indekslerinin hiçbiri olduğu gibi taşınmaz (varlıkların çoğu taş
 `ix_finance_treasury_command_receipt_pending` servis ortak `finance_treasury_command_receipts` koleksiyonundadır ve sahibi
 MOD-0126 DL-1'dir (MOD-0126 pack Entity Fields → Mongo indeksleri); MOD-0120 yeniden bildirmez.
 
-Kısmi indeks ifadeleri `$in` yerine eşitlik/`$type` ile yazılır; Mongo kısmi filtresinin desteklediği biçim DL-1'de
-gerçek replika kümesinde ölçülür (kaynak §N.8: indeks semantiği kaynakta da ölçülmemiş). Kurulum servis iskeletinin
+Tablodaki `∈ {…}` değer kümesi filtrenin **anlamıdır**, yazılı ifadesi değil; kısmi indeks ifadeleri `$in` ile yazılmaz.
+Tek değerli filtre eşitlik ya da `$type` ile yazılır (`ux_receivable_invoice_external_number`,
+`ux_receivable_payment_reference_active`, `ux_receivable_payment_reversal_of`); değer kümeli filtre (`ux_receivable_adjustment_open`,
+`ux_receivable_adjustment_start_open`, `ux_receivable_adjustment_decision_open`) her değer için ayrı eşitlik ifadesinin
+`$or` birleşimi olarak yazılır (ör. `{$or: [{Status: "Submitted"}, {Status: "PendingApproval"}]}`). Hangi satırların tekil
+olduğu ve filtrenin kapsadığı değerler bu yazım biçiminden bağımsızdır. Mongo kısmi filtresinin bu biçimi kabul ettiği DL-1'de
+gerçek replika kümesinde ölçülür (kaynak §N.8: indeks semantiği kaynakta da ölçülmemiş); kabul etmezse yazım biçimi pack
+revizyonuyla değiştirilir, tekillik ve değer kümesi değişmez. Kurulum servis iskeletinin
 indeks barındırılan hizmetiyle (`mongo-indexing`); taşıma/geri doldurma yok.
 
 ### Hata sözlüğü (`RECEIVABLE_*`; kaynak 134 `MOD0120_*`, `AccountsReceivableErrorCodes.cs@218acaf5`, paket §E)
@@ -469,10 +483,14 @@ Kaynak kodları **kopyalanmaz**; anlamı korunanlar Recovery adıyla yeniden yaz
 - **Korunan anlam:** `RECEIVABLE_IDEMPOTENCY_KEY_REQUIRED` 400 (kaynak `MOD0120_IDEMPOTENCY_KEY_REQUIRED`),
   `RECEIVABLE_IDEMPOTENCY_CONFLICT` 409 (`MOD0120_IDEMPOTENCY_CONFLICT`), `RECEIVABLE_CUSTOMER_NOT_FOUND` 422
   (`MOD0120_REFERENCE_CUSTOMER_UNRESOLVED`), `RECEIVABLE_CUSTOMER_UNAVAILABLE` 503 (`MOD0120_REFERENCE_CUSTOMER_UNAVAILABLE`),
-  `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `RECEIVABLE_COLLECTION_TRANSITION_INVALID` 409.
+  `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `RECEIVABLE_COLLECTION_TRANSITION_INVALID` 409, `RECEIVABLE_CURRENCY_CODE_INVALID`
+  400 (biçimi geçerli ama MOD-0048 para birimi listesinde olmayan kod — girdi alanı hatası; MOD-0119 `AP_CURRENCY_CODE_INVALID`,
+  MOD-0124 `CASH_POSITION_INVALID_CURRENCY_CODE`, MOD-0126 `PAYMENT_CURRENCY_CODE_INVALID` ile aynı 400; kaynak
+  `MOD0120_REFERENCE_CURRENCY_INVALID` 422 idi, `CustomBaseController.cs:140@218acaf5` — uyarlandı; biçim hatası `^[A-Z]{3}$` 400 `RECEIVABLE_VALIDATION_FAILED`, liste
+  erişilemez 503 — MOD-0126 O-11 ile ortak kaynak).
 - **Yeni:** `RECEIVABLE_VALIDATION_FAILED` 400, `RECEIVABLE_INVOICE_NOT_FOUND` 404, `RECEIVABLE_INVOICE_VERSION_CONFLICT`
   409, `RECEIVABLE_INVOICE_STATUS_INVALID` 409, `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE` 422 (O-4), `RECEIVABLE_LEGAL_ENTITY_UNAVAILABLE`
-  503, `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` 503, `RECEIVABLE_RECORD_CODE_UNAVAILABLE` 503,
+  503, `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` 503, `RECEIVABLE_CURRENCY_SOURCE_UNAVAILABLE` 503 (para birimi listesi okunamıyor — bağımlılık hatası, girdi hatası değil), `RECEIVABLE_RECORD_CODE_UNAVAILABLE` 503,
   `RECEIVABLE_EXTERNAL_NUMBER_DUPLICATE` 409, `RECEIVABLE_REQUEST_IN_PROGRESS` 202 (makbuz `Pending`; kurtarma yok),
   `RECEIVABLE_ADJUSTMENT_NOT_FOUND` 404, `RECEIVABLE_ADJUSTMENT_PENDING` 409 (açık düzeltme), `RECEIVABLE_ADJUSTMENT_NOT_ALLOWED`
   409 (Void/WriteOff ön koşulu yok), `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `RECEIVABLE_WORKFLOW_START_FAILED` 502
@@ -511,9 +529,17 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
     — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
     D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; burada yalnız kullanılır, yeniden tanımlanmaz
   - `src/Diten.FinanceTreasuryService.Api/Controllers/ReceivableInvoicesController.cs`
-- `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — aynı servis, aynı iz
-  (`finance-treasury-merkezi-iletim | b`); yeni satır gerekmez. `AuditTrailStandardTests` sayaçları (`PinnedCounts`)
-  yeni bildirimlerle değişirse aynı değişiklikte `CT-DECISIONS.md` satırı — **CT kararı ister** (DL-1'de ölçülür).
+- `services/Diten.FinanceTreasuryService/tests/**` — MOD-0120 testleri; test projesi servis iskeletiyle **MOD-0126 DL-1'de**
+  açılır (MOD-0126 pack Repo Scope: "5 katman … + `tests/`"), MOD-0120 yeni test projesi açmaz. MOD-0120'nin klasörü
+  `tests/<servis test projesi>/ReceivableInvoices/**` (öneri — emsal `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/`;
+  proje adı iskeletle kesinleşir). DL-1 testleri: birim, entegrasyon (gerçek Mongo replika kümesi), mimari ve sözleşme
+  testleri (Test Expectations); DL-2 / DL-3 testleri aynı klasöre eklenir. (DL-1…DL-3)
+- `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — **KARAR D35** (`treasury-intake-owner-decisions-02.md`
+  D35 (PR #235)): iz `finance-treasury-merkezi-iletim | b | işaret | ICentralAuditDeclaration`, borç / K2 borcu / istisna
+  satırı ve `PinnedCounts` sıfır; defter dosyası, `CT-DECISIONS.md` satırı ve `AuditTrailStandardTests.AcceptedTrails` /
+  `PinnedCounts` **MOD-0126 DL-1** değişikliğinde birlikte yazılır (D35/4). MOD-0120 aynı servisin aynı izine komut ekler;
+  yeni iz satırı, borç ya da istisna satırı yazmaz, defter dosyasını açmaz. Sonradan borç / istisna satırı eklemek ya da
+  sayaç değiştirmek ayrı Control Tower kararıdır (D35/2); AC-19 bunun testidir.
 - `docs/analysis/contracts/accounts-receivable.openapi.yaml` — yeni üretici sözleşmesi (x-owner MOD-0120). (DL-1)
 - `frontend/Diten.Web/Views/FinanceTreasury/ReceivableInvoices/**`,
   `frontend/Diten.Web/wwwroot/assets/js/FinanceTreasury/ReceivableInvoices/**`,
@@ -525,9 +551,10 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 MOD-0149 müşteri doğrulama + dış referans çözümleme eki (commercial-suite, O-3); MOD-0220 TRM-14 (MOD-0126 ile ortak);
-MOD-0023 AR düzeltme iş akışı şablonu; `ocelot.json` rotaları (integration-agent); AGENTS.md §2/§3/§9 ve
-`.antigravity/rules/ports.md` (5071; TRM-03/04); `record-coding-standard.md` §3 tablosuna `ARI` satırı; Platform
-`AuditCategory` eki (MOD-0126 O-6 ile ortak); FinanceTreasury servisinde veri kapsamı çözücüsü (SEC-002, O-14).
+MOD-0023 AR düzeltme iş akışı şablonu; `ocelot.json` rotaları (integration-agent); Platform `AuditCategory`'ye yalnız
+ekleme olarak `Finance` değeri (Platform sahibinin işi, XMC-001; MOD-0126 DL-1'den önce main'de — D35/3, MOD-0126 O-6 ile
+ortak); FinanceTreasury servisinde veri kapsamı çözücüsü (SEC-002, O-14). **Uygulandı, açık değil (D30, 2026-10-25):**
+AGENTS.md §2/§3/§9 ve `.antigravity/rules/ports.md` 5071 kaydı (TRM-03/04); `record-coding-standard.md` §3 `ARI` satırı.
 
 ## Protected Paths
 
@@ -591,7 +618,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-3 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-3 |
 | MOD-0031 kanıt bağlantısı | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → talep oluşmaz · AR MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AR'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
-| CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 | DL-1 |
+| CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 (oluşturma ve silme DL-1, açma DL-2) | DL-1 |
 
 ## Runtime Constraints
 
@@ -906,7 +933,7 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
 | InvoiceDate | Evet | `DateOnly`, default değil | — | — |
 | DueDate | Evet | ≥ InvoiceDate; taksit varsa son taksit vadesine eşit | — | — |
 | ExpectedCollectionDate | Hayır | ≥ InvoiceDate | — | — |
-| CurrencyCode | Evet | `^[A-Z]{3}$` (upper normalize), MOD-0048 listesinde | — | `ICurrencyReferencePort` |
+| CurrencyCode | Evet | `^[A-Z]{3}$` (upper normalize; aksi 400 `RECEIVABLE_VALIDATION_FAILED`), MOD-0048 listesinde (aksi 400 `RECEIVABLE_CURRENCY_CODE_INVALID`) | — | `ICurrencyReferencePort` |
 | CollectionDestinationRef | Hayır | Guid ≠ Empty ise kabul | — | — |
 | Notes | Hayır | trim, ≤ 2000 | — | — |
 | Lines | Evet | 1..200 satır | — | — |
@@ -991,6 +1018,11 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   / 5xx / zaman aşımı → `Unknown` (asla `Refused` değil). MOD-0031'e hiçbir kurtarma yolu yazmaz.
 - **Eksik alan** (müşteri, para birimi, satır) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
 - **Hassasiyet aşımı** (JPY'de küsurat) → 400; hane kaynağı yok → 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `RECEIVABLE_CURRENCY_SOURCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `RECEIVABLE_CURRENCY_CODE_INVALID` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `ReceivableCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Taksit toplamı ≠ brüt toplam** → 400.
 - **Eşzamanlılık** (bayat `If-Match`) → 409 `RECEIVABLE_INVOICE_VERSION_CONFLICT`, sessiz üzerine yazma yok.
 - **Açılmış faturayı güncelleme / silme** → 409 `RECEIVABLE_INVOICE_STATUS_INVALID`.
@@ -1067,7 +1099,12 @@ ilk adımıdır (Dependencies). Kaynak denetim yolu (`IAccountsReceivableControl
 `FailClosedArControlAuditSink` her zaman `false`, `FailClosedAccountsReceivableReferenceValidators.cs:59-65@218acaf5`;
 paket §H, §L.2) **taşınmaz**.
 
-`Category`: Platform `AuditCategory`'de finans değeri yok — MOD-0126 **O-6** ile ortak; karar çıkana kadar değer uydurulmaz.
+`Category`: `Finance` — **KARAR D35/3** (`treasury-intake-owner-decisions-02.md` D35 (PR #235)): Platform `AuditCategory`'ye
+yalnız ekleme olarak `Finance` değeri Platform sahibince eklenir (XMC-001; MOD-0126 O-6 kalanı); MOD-0126 DL-1 bu değer
+main'e girmeden başlamaz, MOD-0120 DL-1 de dolayısıyla bekler. Bugün Platform'da değer yok; değer main'e girmeden başka bir
+kategori (ör. `MasterData` ara çözümü — D35/3'te seçilmedi) kullanılmaz. Defter dosyası ve `CT-DECISIONS.md` satırı MOD-0126
+DL-1 ile yazılır (D35/4); MOD-0120 komutları aynı denetim izine (`finance-treasury-merkezi-iletim | b`) eklenir, borç / istisna
+yok (D35/2).
 `SourceModule`: `MOD-0120`. `EntityType`: `ReceivableInvoice` (aksi yazılmadıkça).
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | K2 (fail-closed) | İstisna sınıfı + gerekçe |
@@ -1115,7 +1152,7 @@ paket §H, §L.2) **taşınmaz**.
 - **Karar: Gateway değişikliği gerekli.** `ocelot.json`'da `/api/receivable-invoices` yok (yeni servis). Gerekli rotalar:
   `/api/receivable-invoices`, `/api/receivable-invoices/{everything}` → `localhost:5071`; `UpstreamHttpMethod` GET, POST,
   PUT, PATCH, DELETE, **OPTIONS**; explicit rotalar catch-all'dan önce (`routes.md`).
-- `ocelot.json` korunur: **integration-agent task'ı**; önkoşul AGENTS.md §3 / `ports.md` 5071 kaydı (MOD-0126 rotalarıyla
+- `ocelot.json` korunur: **integration-agent task'ı**; önkoşul AGENTS.md §3 / `ports.md` 5071 kaydı — D30 ile yapıldı (2026-10-25) (MOD-0126 rotalarıyla
   aynı task'ta açılabilir).
 - Kaynak rotaları (`/api/v1/mod0120` ve `/{everything}` → 127.0.0.1:5058, kaynak `ocelot.json:1237-1284@218acaf5`, paket §C)
   taşınmaz.
@@ -1295,6 +1332,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 ## Test Expectations
 
+- **Yol:** `services/Diten.FinanceTreasuryService/tests/**` — test projesi MOD-0126 DL-1 iskeletiyle gelir; MOD-0120 testleri
+  `ReceivableInvoices/` klasöründe (öneri; Repo Scope). DL-1 testleri (AC-1, 2, 3, 5, 6, 17, 18, 20…24, 30, 32 (d), 34, 35'in
+  DL-1 kısımları) bu yoldadır; AC-19 mimari testi `tests/architecture/TenantArchitecture.ArchitectureTests`'te koşulur.
 - **Birim:** validatorlar (her alan); durum ve aşama geçiş tabloları (izinli/izinsiz her çift); yaşlandırma türetme (sınır
   günleri, taksitli fatura); düzeltme SoD kuralları A1–A7 (eşik sınırı `Amount == eşik`, para birimi farkı, ayar yok, Guid
   karşılaştırması); idempotency parmak izi; RCS kod portu sahtesiyle kod biçimi; toplam ve taksit hesapları (hane sınırları).
@@ -1353,7 +1393,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
-- [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5) ve port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04)
+- [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
+- [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)
+- [ ] Platform `AuditCategory`'ye `Finance` değeri main'de (D35/3; Platform sahibi, XMC-001) — MOD-0126 DL-1'in, dolayısıyla MOD-0120 DL-1'in önkoşulu
 - [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3: sahip payı KARAR D29/1; commercial-suite sahibinin teyidi ve eki açık, D9)
 - [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak) — kural D14/4 ile kararlaştırıldı
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14)
@@ -1575,7 +1617,8 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dilimler o bölümün kendilerine düşen kısmını uygular
 (ör. Audited Events tablosundaki denetim kaydı DL-1'in ilk komutuyla gelir, bölüm DL-3'te K2 sabotaj ve kurtarma testiyle
 kapanır; Validation Rules'un fatura alanları DL-1'de, aşama kuralları DL-2'de, SoD kuralları DL-3'te uygulanır). Ortak
-bölümler her dilimde aşağıdaki AC kimlikleriyle ölçülür.
+bölümler her dilimde aşağıdaki AC kimlikleriyle ölçülür. Birden çok dilimde "(… kısmı)" ile yazılan AC, o dilimde yalnız
+yazılan kısmıyla ölçülür ve onu sayan **son** dilimde kapanır (AC-2, AC-5, AC-17, AC-18, AC-31, AC-32, AC-35).
 
 Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
@@ -1584,15 +1627,24 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   MOD-0126 DL-1'indir), `accounts-receivable.openapi.yaml`. Önkoşul: Ready-for-dev engelleri (DCP, S-2 bitiş teyidi, **MOD-0126
   DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, O-3, TRM-14, O-14, O-6, küsurat; 0.3 / 0.5 / 0.6 / 0.7 ve kod
   alma D27/1–5 ile verildi).
-  Bitiş: AC-1, 2, 3, 5, 6, 17 (Create kısmı), 18 (tek aşamalı), 19, 20, 21, 22, 23, 24, 30, 31, 34, 35 (Create / Update /
-  Delete kısmı).
+  Bitiş: AC-1, 2 (Create / Update / Delete / BulkDelete kısmı: dört komutta şirket uygun değilken 422 ve kayıt değişmez,
+  MOD-0220 erişilemezken 503, liste ve detay okuması 200), 3, 5 (okuma ve Create / Update / Delete / BulkDelete kısmı: başka
+  kiracının ya da başka şirketin faturasına liste / detay / iz okuması ve bu dört yazma 404), 6, 17 (Create kısmı), 18 (tek
+  aşamalı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
+  iki merkezi kayıt AUD-001 §8 sorgusuyla gösterilir ve on alan işaretlenir; açma kaydı DL-2'dedir), 32 (d) kısmı (aynı dış
+  numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number` kaldırıldığında kırmızı — sabotaj),
+  34, 35 (Create / Update / Delete kısmı).
 - **DL-2** — Yollar: Issue, SetCollectionStage, yaşlandırma türetme. **Neden ayrı:** fatura kilitlenmesi ve aşama tablosu
-  bağımsız incelenebilir; DL-3'ün ön koşulu. Önkoşul: DL-1. Bitiş: AC-4, 7, 8, 28 (arka uç kısmı), 35 (Issue,
-  SetCollectionStage kısmı).
+  bağımsız incelenebilir; DL-3'ün ön koşulu. Önkoşul: DL-1. Bitiş: AC-2 (Issue / SetCollectionStage kısmı), 4, 5 (Issue /
+  SetCollectionStage kısmı), 7, 8, 28 (arka uç kısmı), 31 (açma kısmı: dev ortamında bir Issue, merkezi kaydı AUD-001 §8
+  sorgusuyla, on alan işaretli — AC-31 bu dilimde kapanır), 35 (Issue, SetCollectionStage kısmı).
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
   (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
   Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
-  Bitiş: AC-43, AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32, 33, 35 (düzeltme, karar, Reconcile,
+  Bitiş: AC-43, AC-2 (RequestAdjustment / Approve / Reject / RecordPayment kısmı ve açık niyetin Reconcile'ının şirket
+  uygun değilken tamamlanması — AC-2 bu dilimde kapanır), AC-5 (düzeltme talebi, karar ve tahsilat kısmı — AC-5 bu dilimde
+  kapanır), AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32 (a), (b), (c) kısmı ve (a), (b) sabotajı
+  ((d) DL-1'de — AC-32 bu dilimde kapanır), 33, 35 (düzeltme, karar, Reconcile,
   tahsilat kısmı), 36, 37, 38, 39, 40, 41, 42. **RecordPayment (elle tahsilat) ve tahsilat geri alma (`PaymentReversal`) da bu
   dilimdedir** (sahip kararları D15/1, 2026-10-24 — ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu —
   ve D16, 2026-10-25 — elle tahsilat v1'de, kurallarıyla); K2 komutları aynı onay ve denetim altyapısını kullanır.
