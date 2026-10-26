@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D32 (D16–D31: 2026-10-25, D32: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D33 (D16–D31: 2026-10-25, D32–D33: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -329,6 +329,26 @@ Kaynak: MOD-0023 sahibinin §17 için altı noktası (sahip iletti, 2026-10-26).
 8. **Beste onay notu (aynı gün, soru kutusu):** not dosya + SHA-256 ile iletilir (push yok); `whole_pack=TRM-14`
    (MOD-0220 §22), `whole_pack=TRM-17` (MOD-0048-FU01 §21); DCP numarasız onaylanır, numara sonra (yol ve hash değişince yeni
    inceleme + onay).
+
+## D33 — MOD-0289 güvenlik onayı (O-6), anahtar kaynağı, döndürme ve AC-50 eşiği (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Sahip (K1) güvenlik onayını kendisi verir. Pack'e işlenmesi **ertelendi** (madde 5).
+
+1. **O-6 güvenlik onayı:** "Onay, testler kapıda" — MOD-0289'daki tasarım (AES-256-GCM, CSPRNG 96-bit nonce, AAD = kiracı +
+   hesap + anahtar sürümü, ayrı sürümlü HMAC özet, `BankDataKeyFence`, `BankDataKeySetTarget` + artan `ApprovalRevision`,
+   maskesiz okuma için ayrı izin + gerekçe + değerden önce denetim) yazıldığı gibi onaylanır. Gerçek Mongo testleri ve AC-50
+   DL-2 dilim kabul kapısında kalır; geçmezlerse dilim kabul edilmez.
+2. **Anahtar kaynağı:** "Ortam gizli deposu" — şifreleme ve özet anahtarları her ortamın gizli deposundan / yapılandırmasından
+   gelir (yerelde user-secrets), depoya asla yazılmaz; kod yalnız `Mdm:BankData:*` anahtarlarını okur
+   (`docs/guides/operations/service-trust-chain-runbook.md` deseni). Harici KMS / Vault seçilmedi.
+3. **Döndürme ve `ApprovalRef`:** anahtarlar yılda bir ve sızıntı şüphesinde hemen döndürülür. `ApprovalRef` = yapılandırma
+   değişikliğini onaylayan PR ve merge commit'i; onaylayan K2, yazandan farklı.
+4. **AC-50 kabul eşiği** (8 paralel yazıcı, 10 dakika, aynı sürede bir çit ilerletmesi): kayıp ve çift yazım 0; ilerletmeden
+   sonra eski kümeli commit 0; yeniden deneme oranı ≤ %5; p95 ≤ 500 ms; p99 ≤ 1,5 sn.
+5. **Pack'e işleme zamanı:** MOD-0289 pack'i (`63896f93…`) K2 onay turunda; değiştirilirse onaylanacak sürüm eskir. D33/1–4,
+   K2 onay satırları main'e girdikten sonra **ayrı bir MOD-0289 revizyonuyla** işlenir (yeni CT-APR-02 + CT-APR-01). O zamana
+   kadar pack'teki ilgili `ready-for-dev` maddeleri (güvenlik onayı, anahtar kaynağı / döndürme, AC-50 eşiği,
+   `ApprovalRef` kaynağı) pack'te açık görünür; kararları bu kayıt taşır.
 
 ## Karar olmayanlar
 
