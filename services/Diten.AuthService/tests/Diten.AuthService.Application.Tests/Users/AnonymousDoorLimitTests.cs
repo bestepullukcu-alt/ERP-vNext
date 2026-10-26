@@ -92,8 +92,14 @@ public sealed class AnonymousDoorLimitTests
             PasswordDoorRateLimiter.DefaultPerClientLimit, TimeSpan.FromSeconds(2));
         for (var i = 0; i < PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
             doors.RecordLoginFailure(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.3");
+        var lastFailure = DateTime.UtcNow;
 
+        // TEST-HIZ-01: the limiter measures its window on the wall clock (DateTime.UtcNow), Task.Delay on a monotonic
+        // timer; measured on CI the delay ended 0.07 ms early by the limiter's clock (RetryAfter 800.07 ms). Wait until
+        // 1.2 s have passed on the limiter's OWN clock — the window opened at the first failure, before lastFailure.
         await Task.Delay(TimeSpan.FromMilliseconds(1200));
+        while (DateTime.UtcNow - lastFailure < TimeSpan.FromMilliseconds(1200))
+            await Task.Delay(TimeSpan.FromMilliseconds(5));
         var refused = doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.3", countPerClient: true, null);
         Assert.False(refused.Allowed);
         Assert.InRange(refused.RetryAfter, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(800));

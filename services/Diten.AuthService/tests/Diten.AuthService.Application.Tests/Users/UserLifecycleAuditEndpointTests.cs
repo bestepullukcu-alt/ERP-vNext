@@ -18,7 +18,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// "User", entity id = the user, tenant = the caller's tenant, actor = the caller). HTTP round trips through the real Api
 /// on a test-owned mongod; only the network under the forwarder's typed client is fake. A disposable tenant per class.
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class UserLifecycleAuditEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private const string AppendPath = "/api/internal/audit/append";

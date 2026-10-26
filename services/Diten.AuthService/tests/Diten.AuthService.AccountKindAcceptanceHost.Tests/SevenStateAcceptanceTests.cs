@@ -189,7 +189,13 @@ public sealed class SevenStateAcceptanceTests
             await Task.Delay(1500);
             var groupResult = h.KillGroup(hostPid, hostPgid, hostStart, "scenario5-backup");
             _output.WriteLine(groupResult);
+            // TEST-HIZ-01: SIGTERM asks mongod and the API to shut down; measured on the macOS runner that can take
+            // longer than the fixed 1 s this waited (the processes were signalled, the assertion still saw one alive).
+            // Wait for both to be gone, up to 15 s — the assertions below are unchanged.
+            var gone = DateTime.UtcNow + TimeSpan.FromSeconds(15);
             await Task.Delay(1000);
+            while (DateTime.UtcNow < gone && (h.ProcessExists(ready.ApiPid) || h.ProcessExists(ready.MongodPid)))
+                await Task.Delay(100);
 
             Assert.False(h.ProcessExists(ready.ApiPid));
             Assert.False(h.ProcessExists(ready.MongodPid));

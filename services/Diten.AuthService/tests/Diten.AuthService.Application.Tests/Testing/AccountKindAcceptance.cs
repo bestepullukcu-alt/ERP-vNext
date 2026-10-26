@@ -144,10 +144,11 @@ public static class AccountKindAcceptance
     public class AuthTestHost : IAsyncLifetime
     {
         // C1/C3 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
-        // interleave their env-var mutation windows. [Collection("AccountKindAcceptance")] already serializes every
-        // xunit test class that opts into it; this static lock is the belt-and-suspenders that also protects a
-        // direct `new AuthTestHost()` used outside that collection (as the guard tests below do), and makes the
-        // serialization independently verifiable rather than merely assumed from xunit's collection semantics.
+        // interleave their env-var mutation windows. THIS static lock is what serializes them. TEST-HIZ-01: the test
+        // classes that use an AuthTestHost no longer share the serialized "AccountKindAcceptance" collection (that
+        // collection ran all 856 of their tests one after another, 8 of the 11 CI minutes); they run in parallel, and
+        // every Start() still waits here. AccountKindAcceptanceGuardTests proves the lock with concurrent Start() calls
+        // (removing it turns that test red), so the serialization stays verifiable, not assumed.
         // C3 — the window this lock brackets is the FULL set-override → pre-flight → build-host → capture-config →
         // RESTORE-override span (see InitializeCoreAsync): the environment is back to its pre-Start value before
         // the lock is ever released, on every path, success or failure — see the class remarks.
