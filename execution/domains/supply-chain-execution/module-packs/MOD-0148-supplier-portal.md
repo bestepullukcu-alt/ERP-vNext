@@ -50,7 +50,9 @@ Owner decision 2026-10-22 — revision draft.
 | UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
 
 **Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack;
-DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) and the **service identity for the eligibility read**: MOD-0140 1.4.0 DL-7
+DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3),
+proven by a live run through the Gateway with the service token that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a
+real refusal of an unaccepted token (Natig P2, 2026-10-26); the **service identity for the eligibility read**: MOD-0140 1.4.0 DL-7
 with BL-652 Option 2, SupplyChain's `service_name` on the accepted list (MOD-0140 S-5, Auth owner) and Procurement's own
 MDM service identity (MOD-0140 §7 / S-2); PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
 permission/composition single writer (§14); and the replay receipt (§0.1, needs DC-03's issuer/subject).
@@ -108,7 +110,7 @@ its relationship with another company. `X-Tenant-Id` is the tenant of the `suppl
 
 | `SupplierEligibility` answer | `accessStatus` | status | own list | create | own get | submit |
 |---|---|---|---|---|---|---|
-| Procurement **404 `UnknownSupplier`** (no relationship, unknown supplier, other tenant — MOD-0140 §3.1; on a 200 `relationshipExists` is always `true`, so a 200 with `relationshipExists != true` is handled the same way) | — | 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` | 403 (same) | 403 (same) | 404 | 404 |
+| Procurement **404 with body `code = UNKNOWN_SUPPLIER`** (no relationship, unknown supplier, other tenant — MOD-0140 §3.1; on a 200 `relationshipExists` is always `true`, so a 200 with `relationshipExists != true` is handled the same way) — only this 404 | — | 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` | 403 (same) | 403 (same) | 404 | 404 |
 | `status = Active`, `onboardingStatus = Approved`, `purchasingEnabled = true` | `ACTIVE` | 200 | 200 | allowed | 200 | allowed |
 | `status = Active`, but onboarding not `Approved` or `purchasingEnabled` not `true` | `PENDING` | 200 | 200 | 422 `BUSINESS_RULE_VIOLATION`, `details.code = PORTAL_SUPPLIER_PENDING` | 200 | 422 (same) |
 | `status` = OnHold, Blocked or Inactive | `SUSPENDED` | 200 with `openSubmissionCount = 0` and no `lastSubmissionAt` (AC-05) | 403 (AC-05) | 403 (AC-05) | 404 (no 403 declared) | 404 (no 403 declared) |
@@ -120,15 +122,19 @@ allowed"; v1 adds `PENDING` (owner decision, D2 Q3) where create and submit answ
 is `INVALID_STATUS_TRANSITION` (the `Error` body is the same; the contract successor names it) (F-5).
 
 `eligibleForTransactions` is not used (it ignores onboarding and purchasing; MOD-0140 §20 S-1). **Any other answer → 503,
-no write (AC-04, F-1):** Procurement unreachable / 5xx / timeout; a 200 that does not match `SupplierEligibility`, has a null
-`status`, or names a `supplierId` other than the binding's mapped supplier; a rejection of the service token (401 / 403) or
+no write (AC-04, F-1):** Procurement unreachable / 5xx / timeout; every other 404 — `UNKNOWN_LEGAL_ENTITY` from MOD-0140's
+LE check (C2), a route 404 before MOD-0140 DL-3, a 404 without a body or with another code (review F-1); a 200 that does not match `SupplierEligibility`, has a null
+`status`, or names a `supplierId` other than the binding's mapped supplier — **the DC-03 binding stores the canonical `SUP-` code**
+(a requirement on the DC-03 pack; MOD-0140 always answers with the canonical code, review F-2), so the comparison is exact;
+if MOD-0140 ever changes a canonical code (merge in its DL-2 migration) the binding is updated by that migration's owner,
+and until then the mismatch answers 503 rather than mapping to a different supplier; a rejection of the service token (401 / 403) or
 any other unexpected status. **Service identity (F-3):** the `supplier_user` token cannot make this read — the Gateway
 allow-list keeps that actor inside `/portal/*`, and a supplier must never hold a Procurement permission. The read therefore
 uses **a trusted service token with no permission claim, accepted by MOD-0140 DL-7** (for the two eligibility endpoints the
 scheme itself is the authorization, MOD-0140 §14), with `X-Tenant-Id` = the token's tenant and a mandatory
 `X-Legal-Entity-Id`. Its prerequisites are v1 gates (above). Tests: T-0148-V1-ELIG-01 (each table row with the Procurement
-mock answering **404** for no relationship; a malformed 200, a mismatched `supplierId` and a service-token 401 → 503 with no
-write; an LE outside the binding → no Procurement read at all; sabotage: forwarding the supplier's token instead of the
+mock answering **404** for no relationship; a malformed 200, a mismatched `supplierId`, a 404 `UNKNOWN_LEGAL_ENTITY`, a 404 without a body and a service-token 401 →
+503 with no write; a binding that holds a non-canonical code → 503; an LE outside the binding → no Procurement read at all; sabotage: forwarding the supplier's token instead of the
 service identity, or taking the LE from the header, makes the test red).
 
 **Visible code (RCS-001, BL-565):** a portal submission is a new record type, but the shared record-code service (BL-565)

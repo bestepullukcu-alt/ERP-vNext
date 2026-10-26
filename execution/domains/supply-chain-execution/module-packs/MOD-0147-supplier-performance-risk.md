@@ -47,7 +47,10 @@ Owner decision 2026-10-22 — revision draft.
 | Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
-**Still gates for v1 code:** DC-02 (MOD-0140 1.3.0 contract **frozen on `main`** — MOD-0140 Revision 2 DL-1), PR #198 on
+**Still gates for v1 code:** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`** (MOD-0140 Revision 2 DL-1) **and the
+eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404, MOD-0140 §38),
+proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
+(403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
 `main` (audit path b), this revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay
 receipt amendment (Phase 1.5, §0 table), and for the eligibility read the evaluating role's `mdm.legal-entities.read` or
 MOD-0140's S-2 decision (below).
@@ -55,24 +58,31 @@ MOD-0140's S-2 decision (below).
 **Supplier eligibility — DC-02 D2 (Natig 2026-10-23 Q1/Q2, 2026-10-26 Q3/Q4; Cihan's MOD-0140 Revision 2,
 `origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`):**
 
+- **Request identity (Natig P1, review F-2):** v1 accepts only a canonical `SUP-` code or the tenant-wide master uuid as the
+  request's `supplierId`; a legacy supplier code → 422 `BUSINESS_RULE_VIOLATION` with `details.code =
+  SUPPLIER_CODE_NOT_CANONICAL`, no Procurement call (there is no live supplier data, so no legacy code is in use; a legacy code
+  could not be matched against the answer).
 - At create, the service reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) through the Gateway with the
   caller's token and `X-Legal-Entity-Id` = the evaluation's validated LE (XMC-001, read only; no copy of Procurement data).
   The evaluating role needs `procurement.suppliers.eligibility.read` in addition to `.evaluate`, granted through Roles →
   Permissions (the BL-652 interim path), **and `mdm.legal-entities.read`**: MOD-0140 validates the LE header with MDM using
   the same caller token (MOD-0140 §7, C2) and answers 503 without that permission — unless MOD-0140's open question S-2
   (a Procurement → MDM service identity) is decided otherwise (F-3).
-- **How the endpoint answers "no":** MOD-0140 answers **404 `UnknownSupplier`** when the supplier is unknown, belongs to
-  another tenant or has no relationship with the caller's company; on a 200 `relationshipExists` is always `true` (MOD-0140
-  §3.1). MOD-0147 maps that Procurement 404 → **404** (declared for create; the same answer as a supplier of another tenant or
-  company, so nothing leaks), no draft. A 200 with `relationshipExists != true` is handled the same way (defensive).
-- **Malformed or mismatched answer (AC-04, F-1):** a 200 that does not match the `SupplierEligibility` schema, has a null
-  `status`, a null `supplierMasterId` or a `supplierId` that is not a `SUP-` code, and every other unexpected Procurement
-  status (400, 401, …) → 503, no draft.
+- **How the endpoint answers "no":** MOD-0140 answers **404 with body `code = UNKNOWN_SUPPLIER`** when the supplier is
+  unknown, belongs to another tenant or has no relationship with the caller's company; on a 200 `relationshipExists` is
+  always `true` (MOD-0140 §3.1). **Only that 404** maps to **404** (declared for create; the same answer as a supplier of
+  another tenant or company, so nothing leaks), no draft. A 200 with `relationshipExists != true` is handled the same way
+  (defensive). Every other 404 — `UNKNOWN_LEGAL_ENTITY` from MOD-0140's LE check (C2), a route 404 before MOD-0140 DL-3, a 404
+  without a body or with another code — is a dependency failure → 503 `SUPPLIER_BASE_UNAVAILABLE` (review F-1).
+- **Malformed or mismatched answer (AC-04):** a 200 that does not match the `SupplierEligibility` schema, has a null
+  `status` or a null `supplierMasterId`, or **belongs to another supplier** — when the request names a `SUP-` code the
+  answer's `supplierId` must equal it, when it names a master uuid the answer's `supplierMasterId` must equal it (Natig P1,
+  review F-2) — and every other unexpected Procurement status (400, 401, …) → 503, no draft.
 - Any relationship `status` (Active, OnHold, Blocked, Inactive) and any `onboardingStatus` **may be evaluated** (Q1, Q2): a
   block stops new purchasing (`eligibleForTransactions`), not the record of past performance. `eligibleForTransactions` is
   not used by MOD-0147.
-- The evaluation stores the **canonical** `supplierId` returned by the answer (a legacy code or uuid in the request is
-  resolved), so one supplier never gets two evaluation series (F-5): the "one active evaluation per Tenant + LE + supplier +
+- The evaluation stores the **canonical** `supplierId` returned by the answer (a master uuid in the request is resolved to
+  it), so one supplier never gets two evaluation series: the "one active evaluation per Tenant + LE + supplier +
   period" key uses the canonical code; the idempotency fingerprint covers the request as sent (a replay is the same request);
   the `supplierId` filter of `listSupplierEvaluations` / `listSupplierScorecards` matches the stored canonical code exactly
   (a legacy code in the filter finds nothing and is not resolved — no Procurement call on reads).
@@ -87,7 +97,7 @@ documented exceptions that the contract successor declares:
 
 | Operation | Declared (frozen v1) | Also returned in v1 (undeclared) |
 |---|---|---|
-| `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 500 |
+| `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 409 `DUPLICATE_EVALUATION` (an active evaluation exists for the same Tenant + LE + canonical supplier + period, review F-3), 500 |
 | `submitSupplierEvaluation` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403, 500 |
 | `listSupplierEvaluations` | 200, 400 | 401, 403, 500 |
 | `getSupplierEvaluation` | 200, 404 | 401, 403, 500 |
@@ -145,7 +155,9 @@ T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fi
 T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping),
 T-0147-V1-ELIG-01 (D2: the Procurement mock answers **404** for no relationship → 404; a malformed 200, a null `status`
 and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 503 (MDM via MOD-0140); a second create with the
-legacy code of an already evaluated supplier and period → 409; OnHold, Blocked, Inactive and not-approved
+master uuid of an already evaluated supplier and period → 409 `DUPLICATE_EVALUATION`; a legacy code → 422
+`SUPPLIER_CODE_NOT_CANONICAL` with no Procurement call; a 200 naming another (validly formatted) supplier → 503; a 404
+`UNKNOWN_LEGAL_ENTITY` and a 404 without a body → 503; OnHold, Blocked, Inactive and not-approved
 onboarding → 201; legacy code stored as the canonical `supplierId`; Procurement 403 → 403, 503 → 503, no draft; sabotage:
 skipping the read makes the no-relationship case red).
 
