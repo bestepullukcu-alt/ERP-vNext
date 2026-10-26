@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D34 (D16–D31: 2026-10-25, D32–D34: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D35 (D16–D31: 2026-10-25, D32–D35: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -361,6 +361,23 @@ paketin onay satırı yalnız uyarıyla kabul edilir, kodu yetkilendirmez; onay 
    onaya gelir (yeni CT-APR-02 + CT-APR-01). DCP numarası ayrıca ve önce istenir (yalnız numara).
 3. **D33/5 yerine:** MOD-0289 bu turda olmadığı için D33/1–4 K2 satırlarını beklemez; bir sonraki MOD-0289 revizyonunda işlenir
    (yeni CT-APR-02).
+
+## D35 — Diten.FinanceTreasuryService denetim defteri: Control Tower kararı (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Kaynak: MOD-0126 "Repo Scope" ve "Ready-for-dev Checklist" ("Yeni servis defteri + CT-DECISIONS satırı için Control Tower
+kararı (yol b izi kabulü)"), AUD-001, `tests/architecture/audit-ledger/README.md`, emsal: SupplyChain E-2
+(`tests/architecture/audit-ledger/CT-DECISIONS.md` 2026-10-21 satırı, `Diten.SupplyChainService.md`).
+
+1. **İz:** `finance-treasury-merkezi-iletim | b | işaret | ICentralAuditDeclaration` — ortak iletici
+   (`Diten.BuildingBlocks.CentralAudit`, K4); `AddCentralAudit<FinanceTreasuryCentralAuditScope>(RequireEnlistment = true)`;
+   her yazma komutu işaretli, olay iş verisiyle aynı Mongo işleminde `CentralAuditTransaction.EnlistAsync` ile yazılır (K2).
+2. **Borç ve istisna sıfır:** `## Bilinen borç`, `## K2 borcu`, `## İstisnalar`, `## Dolaylı`, `## Yazan sorgular` boş başlar;
+   `PinnedCounts` sıfır. Sonradan satır eklemek ayrı Control Tower kararıdır.
+3. **Kategori:** Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` değeri (MOD-0126 O-6 kalanı, D9). Platform sahibinin
+   işidir (XMC-001); **MOD-0126 DL-1 bu değer main'e girmeden başlamaz**. `MasterData` ara çözümü seçilmedi.
+4. **Uygulama:** defter dosyası `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md`, `CT-DECISIONS.md` satırı
+   ("kararı veren": Natig, 2026-10-26 — Treasury CT önerisi, D35) ve `AuditTrailStandardTests.AcceptedTrails` / `PinnedCounts`
+   MOD-0126 DL-1 değişikliğinde birlikte yazılır (CI aynı değişikliği ister); bu kayıt yalnız kararı taşır.
 
 ## Karar olmayanlar
 
