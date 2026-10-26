@@ -89,6 +89,12 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > dosyası CT tarafından bu paketin tanımından **taslak** olarak yazıldı: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (fikstürler F-E1…F-E9, F-503);
 > dondurulması DL-2 maddesidir. D27 kaydı bu revizyonla aynı commit'te. Bu revizyon pack'i
 > `ready-for-dev` yapmaz. Kapanış tablosu "Implementation Notes → D27 uygulaması".
+>
+> **Revizyon 8 (2026-10-26):** sahip kararları **D33/1–4** uygulandı — O-6 **güvenlik onayı verildi** (sahip K1 güvenlik onayını
+> kendisi verdi; gerçek Mongo testleri ve AC-50 DL-2 dilim kabul kapısında kalır), anahtar kaynağı = her ortamın gizli deposu
+> (yerelde user-secrets), döndürme = yılda bir + sızıntı şüphesinde hemen, `ApprovalRef` = onaylayan PR + merge commit'i, AC-50
+> kabul eşiği yazıldı. Karar kaydı: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D33 (main'e PR #235 ile
+> girer; yerel `a181e933b`). Bu revizyon pack'i `ready-for-dev` yapmaz. Kapanış tablosu "Implementation Notes → D33 uygulaması".
 
 ## Module Summary
 
@@ -287,7 +293,7 @@ iyimser eşzamanlılık sağlamaz. Bu modül `LegalEntityRepository.UpdateEditab
 | BankId / BranchId | Guid / Guid? | aynı kiracıda; şube verilmişse o bankaya ait; `Domestic` hesapta bankanın `DomesticKeyIncludesBranch = true` ise şube zorunlu | `BankId`, `BranchId` |
 | CurrencyCode | string(3) | zorunlu, `^[A-Z]{3}$`, MOD-0048 listesinde; Active hesapta değişmez | `CurrencyCode` |
 | AccountIdentifierType | enum `Iban`=1, `Domestic`=2 | zorunlu | yeni |
-| AccountIdentifierEnvelope | string (base64) | AES-256-GCM zarfı: biçim baytı `0x01` ‖ 12 bayt nonce ‖ şifreli metin ‖ 16 bayt etiket (Runtime Constraints → "Şifreleme", KARAR D24/3 — sahip onayı; güvenlik onayı açık); **düz metin hiçbir alanda yok** | kaynak `ProtectedAccountRef` (dış referans modeli — taşınmaz, Recovery'de kasa yok) |
+| AccountIdentifierEnvelope | string (base64) | AES-256-GCM zarfı: biçim baytı `0x01` ‖ 12 bayt nonce ‖ şifreli metin ‖ 16 bayt etiket (Runtime Constraints → "Şifreleme", KARAR D24/3 — sahip onayı; güvenlik onayı D33/1); **düz metin hiçbir alanda yok** | kaynak `ProtectedAccountRef` (dış referans modeli — taşınmaz, Recovery'de kasa yok) |
 | EncryptionKeyVersion | string | zarfı üreten anahtar sürümü (ör. `k2026a`); ek doğrulanmış veriye (AAD) de girer | yeni |
 | UniquenessKeyDigests | string[] | tekillik anahtarının **her etkin özet anahtarı sürümüyle** HMAC-SHA256'sı, `"{hashKeyVersion}:{hex}"` biçiminde (döndürme sırasında birden çok öğe); düz SHA-256 değil (IBAN uzayı küçük, düz özet tersine çevrilebilir) | kaynak `FingerprintHash` (yalnız import satırında) |
 | HashKeyVersions | string[] | `UniquenessKeyDigests`'teki sürümler (sorgu ve başlangıç kontrolü için) | yeni (gap 13 P1-b) |
@@ -438,7 +444,8 @@ Kiracıya ait değildir; `EntityBase` / `GlobalEntity` değil, MDM'deki servis d
   = K2` ve kendi `ApprovalRef`'i olan yeni bir onaylı yapılandırma dağıtılır; eski revizyonun tekrar oynatılması geri dönüş
   sayılmaz. Onayın insan
   tarafı yapılandırma değişikliğinin onaylı dağıtımıdır (`ApprovalRef` ona işaret eder); hangi onay kaydının kullanılacağı
-  güvenlik onayının parçasıdır (O-6: sahip onayı D24/3 var, güvenlik onayı açık).
+  güvenlik onayının parçasıdır. **KARAR D33/3:** `ApprovalRef` = yapılandırma değişikliğini onaylayan PR ve merge commit'i
+  (`<owner>/<repo>#<PR>@<merge-commit>`); onaylayan K2 ve yazandan farklı; `ApprovalRevision` her onaylı dağıtımda bir artar.
 - Hedef yoksa hiçbir kiracı çiti oluşturulamaz → banka hesabı yazmaları 503 `MDM_BANK_KEYSET_TARGET_UNAVAILABLE`
   (kapalı-güvenli).
 
@@ -562,7 +569,7 @@ satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MD
 | RCS-001 ortak kod servisi | `BNK` / `BAC` kodları | **yok** (BL-565); MDM'de yalnız ürün ailesine ait `CodeReservation` (`…/Domain/Entities/CodeReservation.cs:5-27`) | engel: modül kendi sayacını yazamaz (RCS-001 §6); servis gelmeden Create yazılamaz (O-7) |
 | SEC-002 veri kapsamı | şirket hesaplarında görünürlük | MDM'de Platform'a giden güvenilir sağlayıcı **var**: `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`…/Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-22`), bugün ürün kapsamında kullanılıyor (`ProductLegalEntityScopeCandidateFacade.cs`); MOD-0289 izin anahtarlarıyla çalışıp çalışmadığı **ölçülmedi** | kapsam kuralı **KARAR D23/1**; sağlayıcı ölçülmeden `ready-for-dev` yok |
 | MDM denetim izi | yazma ve maskesiz okuma kaydı | `mdm-guvenilir-kaynak-niyeti` (yol `b`, CT kararı 2026-10-07) ve `mdm-merkezi-iletim` (yol `b`, en iyi çaba) defterde kabul edilmiş (`tests/architecture/audit-ledger/Diten.MdmService.md` `## İzler`) | **bugün var**; yol KARAR D24/2 ile seçildi; yeni koleksiyonlar için genişletme + defter belirteci ayrı CT kararı ister (Audited Events) |
-| Şifreleme altyapısı | tam tanımlayıcı | servislerde alan şifreleme yok (`git grep` `IDataProtector|AddDataProtection|ClientEncryption|AesGcm|AutoEncryption` `services/*.cs` → 0) | **engel**: O-6 — sahip onayı D24/3 var, **güvenlik onayı ve gerçek Mongo testleri açık** + anahtar yönetimi; anahtar yoksa servis açılmaz. `System.Security.Cryptography.AesGcm` ve `RandomNumberGenerator` .NET'in parçasıdır; MdmService'in hedef çerçevesinde kullanılabilirliği **ölçülmedi** (DL-2 başında `dotnet --version` + csproj hedefi) |
+| Şifreleme altyapısı | tam tanımlayıcı | servislerde alan şifreleme yok (`git grep` `IDataProtector|AddDataProtection|ClientEncryption|AesGcm|AutoEncryption` `services/*.cs` → 0) | **engel**: O-6 — sahip onayı D24/3, güvenlik onayı D33/1 verildi; **gerçek Mongo testleri açık** (DL-2 kabul kapısı) + anahtar yönetimi (kaynak D33/2); anahtar yoksa servis açılmaz. `System.Security.Cryptography.AesGcm` ve `RandomNumberGenerator` .NET'in parçasıdır; MdmService'in hedef çerçevesinde kullanılabilirliği **ölçülmedi** (DL-2 başında `dotnet --version` + csproj hedefi) |
 | MOD-0018 / Auth explicit-grant | maskesiz okuma ve kiracı geneli izinleri | `ExplicitGrantOnlyPermissions` Auth'ta (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs:8-29`) | iki anahtar eklenmesi Auth değişikliği (D9, Auth sahibi) |
 | MOD-0003 Data Contract Registry | sözleşme kaydı | kayıt satırı planned / missing; uygulama 0 dosya (paket §D, Recovery düzeltmesi) | v1'de kullanılmaz; sözleşme dosyası `docs/analysis/contracts/` altında |
 | MOD-0023 Workflow | hesap onay akışı | var (Platform) | v1'de kullanılmaz (**KARAR D23/2**) |
@@ -585,7 +592,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | DL-2 başında | platform-shared-services | erişilemez → 503, listede yok → 400 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-2 |
 | RCS-001 | **yok** (BL-565) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` (MDM kodu) + Platform sağlayıcı ucu | DL-2 başında | platform-shared-services | hata → boş kapsam, boş liste, detay / yazma 404 | AC-17 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-2 |
-| Şifreleme ve özet anahtarları | O-6 (D24/3 sahip onayı; güvenlik onayı açık) — `Mdm:BankData:EncryptionKeys` / `Mdm:BankData:HashKeys` (sürümlü); üretim gizli deposu **ölçülmedi** | — | sahip + güvenlik | eksik / hatalı anahtar → servis açılmaz; kayıttaki sürüm yok → 503; doğrulama hatası → 500, değer yok | AC-13, AC-35, AC-37…AC-39 · dev ortamı anahtar döndürme denemesi | DL-2 |
+| Şifreleme ve özet anahtarları | O-6 (D24/3 sahip onayı; **güvenlik onayı D33/1**) — `Mdm:BankData:EncryptionKeys` / `Mdm:BankData:HashKeys` (sürümlü); kaynak her ortamın gizli deposu, yerelde user-secrets (D33/2); hangi ürün olduğu ortam kurulumunda **ölçülür** | — | sahip + güvenlik | eksik / hatalı anahtar → servis açılmaz; kayıttaki sürüm yok → 503; doğrulama hatası → 500, değer yok | AC-13, AC-35, AC-37…AC-39 · dev ortamı anahtar döndürme denemesi | DL-2 |
 | IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi) | **yok**; sahibi referans veri (MOD-0048 / REF slotu) | — | MOD-0048 sahibi | kapı kapalı (v1) → `FormatAndChecksum`; kapı açık + kaynak yok / erişilemez → 503 | AC-40 (sahte kaynak) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
 | Banka dizini + yurt içi hesap kuralı kaynakları (`IBankDirectorySource`, `IDomesticAccountRuleSource`) | **yok**; sahibi adlandırılmadı (referans veri / bankacılık sahibi) | — | TBD (sahip) | kapı kapalı (v1) → `DomesticFormat`; kapı açık + kaynak yok / erişilemez → 503 | AC-47 (sahte kaynaklar) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
 | Anahtar kümesi çiti + onaylı hedef (`mdm_bank_data_key_fences`, `mdm_bank_data_key_set_targets`) | MDM kodu (bu paket) | — | master-data-management | eski küme / onaysız küme → 503, yazma yok; hedef yok → 503 | AC-43, AC-44, AC-48, AC-49 (gerçek replica set) · AC-50 yük testi · dev ortamı döndürme provası | DL-2 |
@@ -614,8 +621,8 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 1. **Saklama:** tam tanımlayıcı istekle gelir, sunucuda **türüne göre** normalize edilir (aşağıda "Tekillik anahtarı"),
    doğrulanır, `IBankAccountIdentifierProtector` ile şifrelenir (`AccountIdentifierEnvelope` + `EncryptionKeyVersion`,
    aşağıda "Şifreleme"), tekillik özetleri (`UniquenessKeyDigests`) ve son 4 hanesi türetilir. Düz metin hiçbir belgede,
-   indekste, denetim niyetinde, olayda ya da önbellekte bulunmaz. Mekanizma O-6 (KARAR D24/3 — sahip onayı; **güvenlik onayı
-   ve gerçek Mongo testleri açık**).
+   indekste, denetim niyetinde, olayda ya da önbellekte bulunmaz. Mekanizma O-6 (KARAR D24/3 — sahip onayı; güvenlik onayı
+   D33/1; **gerçek Mongo testleri açık**).
 2. **Değiştirilemezlik:** Active ya da Inactive hesapta tanımlayıcı, para birimi, banka, şube ve sahip değişmez (409
    `MDM_BANK_ACCOUNT_IMMUTABLE_FIELD`); değişiklik = yeni hesap + eskisini pasifleştirme. Böylece bir tüketicinin tuttuğu
    opak referansın gösterdiği hesap hiçbir zaman sessizce başka bir hesaba dönüşmez (ödeme yönlendirme sahtekârlığına
@@ -716,7 +723,7 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
   anahtarı bir şifreleme anahtarıyla aynıysa servis açılmaz; ayrıca **hiçbir `Active` sürümü taşımayan** silinmemiş kayıt
   varsa (`HashKeyVersions` ∩ Active = ∅; tek `limit 1` sorgusu) servis açılmaz — yoksa o kaydın yinelenmesi görünmez olurdu.
 
-### Şifreleme (iyileştirme 2; KARAR D24/3 — sahip onayı var, **güvenlik onayı ve gerçek Mongo testleri açık**)
+### Şifreleme (iyileştirme 2; KARAR D24/3 — sahip onayı, KARAR D33/1 — güvenlik onayı; **gerçek Mongo testleri açık**)
 
 - **Algoritma:** AES-256-GCM (`System.Security.Cryptography.AesGcm`), 128 bit etiket. **Nonce:** her şifrelemede (Create,
   Draft'ta değişiklik, döndürme) `RandomNumberGenerator` ile üretilen yeni 96 bit (12 bayt) değer; hiçbir zaman sayaçtan,
@@ -728,8 +735,9 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - **Saklanan:** `AccountIdentifierEnvelope` = `0x01` ‖ nonce ‖ şifreli metin ‖ etiket (base64) ve `EncryptionKeyVersion`.
   Anahtar kaydın içinde yoktur.
 - **Anahtarlar:** `Mdm:BankData:EncryptionKeys` = `{version → 32 bayt, state: Active | DecryptOnly}` ve tek
-  `CurrentEncryptionKeyVersion`; Development anahtarı üretimden ayrı. Üretimde gizli depodan gelir (hangi depo —
-  **ölçülmedi**; `configuration-safety`).
+  `CurrentEncryptionKeyVersion`; Development anahtarı üretimden ayrı. Her ortamın gizli deposundan / yapılandırmasından gelir, yerelde
+  user-secrets; depoya hiçbir zaman yazılmaz (**KARAR D33/2**; `configuration-safety`, `docs/guides/operations/service-trust-chain-runbook.md`
+  deseni). Döndürme: yılda bir ve sızıntı şüphesinde hemen (**KARAR D33/3**); her döndürme onaylı hedef revizyonuyla yapılır.
 - **Davranış:** (a) başlangıçta güncel anahtar yok, 32 bayt değil, ya da kayıtlarda geçen bir `EncryptionKeyVersion`
   yapılandırmada yok (kiracılar arası `distinct`, `ix_mdm_bank_account_key_versions`) → servis açılmaz; (b) çalışırken
   kayıttaki sürüm yok / anahtar erişilemez → 503 `MDM_BANK_PROTECTION_UNAVAILABLE`, değer ve kayıt yok; (c) etiket
@@ -1437,9 +1445,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - [ ] AC-50 (zorunlu) — Çit yük testi (gap 14/1 ölçülmeyen kalemi; DL-2 dilim kabul kapısında geçmeli): gerçek replica
   set'te tek kiracıda en az 8 paralel yazar 10 dakika banka hesabı Create / Update yazar ve aynı sürede bir çit ilerletmesi
   yapılır; her istek ya başarılı ya tanımlı sonuçla (409 / 503) biter, kayıp ya da çift yazım yoktur, ilerletmeden sonra eski
-  kümeli commit yoktur; çakışma ve yeniden deneme oranı, p95 / p99 gecikme `scripts/run_record.py` ile kaydedilir. Kabul
-  eşiği (ör. yeniden deneme oranı ve p95 üst sınırı) sahip + güvenlik tarafından **`ready-for-dev`'den önce** yazılır (tasarım
-  kapısı maddesi); eşik yazılmadan bu AC geçmiş sayılamaz.
+  kümeli commit yoktur; çakışma ve yeniden deneme oranı, p95 / p99 gecikme `scripts/run_record.py` ile kaydedilir. **Kabul
+  eşiği (KARAR D33/4):** kayıp yazım 0, çift yazım 0, ilerletmeden sonra eski kümeli commit 0; yeniden deneme oranı ≤ %5;
+  p95 ≤ 500 ms; p99 ≤ 1,5 sn. Ölçüm makinesinin yükü kayda yazılır (kart S-51); eşiklerden biri aşılırsa AC geçmez.
 - [ ] AC-51 (zorunlu) — Onaylı hedef geri alınamaz (gap 16/1): hedef K2 (revizyon n) iken, eski yapılandırmayla kalmış iş K1'i
   revizyon n-1 ile yeniden onaylamaya çalışır → 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE`, hedef K2, `ApprovalRevision` n,
   `History` değişmez; aynı revizyon n'nin tekrarı da 409; revizyon n+1 ama `ExpectedPreviousKeySetId = K1` → 409
@@ -1563,12 +1571,12 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 - [ ] RCS-001 ortak kod servisi (BL-565); `BNK` / `BAC` önekleri RCS-001 §3'e yazıldı (D24/4, D30)
 - [x] Denetim defteri — KARAR D27/11 (yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS
   satırı kod aşamasında yazılır)
-- [ ] Şifreleme ve özet anahtarı kaynağı (üretim gizli deposu) ve döndürme prosedürü yazıldı (O-6) — DL-2 için
-- [ ] **Güvenlik onayı (O-6, D24/3 sahip onayı var) — şifreleme + anahtar çiti + onaylı hedef + revizyon tasarımı; görünür
-  engel.** Gerçek Mongo testleri de açıktır; onlar DL-2 dilim kabul kapısındadır (gap 16/2)
-- [ ] Çit yük testinin kabul eşiği (AC-50 için: yeniden deneme oranı, p95 / p99 üst sınırı) sahip + güvenlik tarafından yazıldı
-- [ ] Onaylı dağıtım revizyonunun (`ApprovalRevision`) ve `ApprovalRef`'in hangi onay kaydından geldiği yazıldı (güvenlik
-  onayının parçası)
+- [x] Şifreleme ve özet anahtarı kaynağı ve döndürme prosedürü yazıldı (O-6) — KARAR D33/2–3 (ortam gizli deposu, yıllık +
+  sızıntıda hemen); ortamdaki ürünün adı kurulumda ölçülür
+- [x] **Güvenlik onayı (O-6)** — KARAR D33/1 (sahip K1 verdi; D24/3 sahip onayının üstüne). Gerçek Mongo testleri hâlâ açık;
+  onlar DL-2 dilim kabul kapısındadır (gap 16/2)
+- [x] Çit yük testinin kabul eşiği (AC-50) yazıldı — KARAR D33/4
+- [x] Onaylı dağıtım revizyonunun (`ApprovalRevision`) ve `ApprovalRef`'in hangi onay kaydından geldiği yazıldı — KARAR D33/3
 - [ ] SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalıştığı ölçüldü (D23/1 kuralı) — DL-2 için
 - [ ] MOD-0140 1.3.0'da "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okumasının hangi işlemle verildiği ölçüldü
   (D23/1 liste süzgeci) — DL-3 için
@@ -1682,6 +1690,15 @@ D24/5; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (D2
 | D27/11 (O-5 defter) | yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS kod aşamasında | Repo Scope, Audited Events, Ready-for-dev maddesi kapandı | AC-6, AC-7 |
 | — | `BANK-ACCOUNT-LOOKUP` 1.0.0 taslak dosyası (CT yazdı, F-E1…F-E9, F-503) | Ownership, Repo Scope, Dependencies kapanış tablosu, Runtime Constraints başlığı, Follow-up; dondurma DL-2 | AC-20, AC-42 |
 
+### D33 uygulaması (sahip kararları D33/1–4, 2026-10-26 → revizyon 8)
+
+| Karar | Seçim | Bu pakette uygulandığı yer | AC |
+|---|---|---|---|
+| D33/1 (O-6) | güvenlik onayı verildi (sahip K1); testler kapıda | Açık kararlar O-6, Ready-for-dev, Dependencies, Teslim dilimleri DL-2 önkoşulu | AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 (DL-2 kabul kapısı) |
+| D33/2 | anahtarlar her ortamın gizli deposundan (yerelde user-secrets), depoda asla | Runtime Constraints → "Anahtarlar", Dependencies, Ready-for-dev | AC-13, AC-37…AC-39 |
+| D33/3 | döndürme yılda bir + sızıntı şüphesinde hemen; `ApprovalRef` = onaylayan PR + merge commit'i, onaylayan K2 ≠ yazan | Runtime Constraints → onaylı hedef ve "Anahtarlar", Ready-for-dev | AC-49, AC-51 |
+| D33/4 | AC-50 eşiği: kayıp / çift / eski küme 0; yeniden deneme ≤ %5; p95 ≤ 500 ms; p99 ≤ 1,5 sn | Acceptance Criteria AC-50, Ready-for-dev | AC-50 |
+
 ### Taşınmayacaklar (do-not-carry)
 
 1. Operasyonel outbox ve iş çalıştırma (`BankAccountOperationalOutboxItem`, `BankAccountOperationalJobRun`, API-071…075):
@@ -1759,7 +1776,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-3 | Maskesiz okuma izni kimde? | (a) `mdm.bank-accounts.read-unmasked`, Tier 3, yalnız açık atama, gerekçe kodu zorunlu (b) hesap oluşturma izniyle birlikte (c) maskesiz okuma yok | **KARAR D23/4 (2026-10-25): (a)** — yalnız açık atama (rol şablonunda varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı. Kalan (karar değil): gerekçe değer listesi önerisi `PAYMENT_INVESTIGATION`, `BANK_CONFIRMATION`, `AUDIT_REQUEST`, `DATA_CORRECTION`; ilk sahipler rol şablonu MOD-0018 sahibiyle | sahip (K1) + MOD-0018 / Auth sahibi (uygulama) |
 | O-4 | Tedarikçi hesabı aktivasyonunda doğrulama kanıtı | (a) kanıt yok (b) zorunlu doğrulama kodu + dört göz (c) MOD-0031 kanıt bağlantısı zorunlu | **KARAR D24/1 (2026-10-25): (b)** — etkinleştirmede zorunlu kod (`CALLBACK_CONFIRMED` / `BANK_LETTER_ON_FILE` / `SUPPLIER_PORTAL_CONFIRMED`) ve farklı kişi; MOD-0031 kanıt bağlantısı MOD-0269 gerçek gönderiminden önce zorunlu kapı (Follow-up) | sahip (K1) |
 | O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. Defter belirteci: **KARAR D27/11** (yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında). `AuditCategory` değeri MOD-0126 O-6 ile ortak | sahip (K1); defter: D27/11 |
-| O-6 | Tam tanımlayıcının saklanması | (a) uygulama düzeyi AES-GCM (b) MongoDB istemci tarafı şifreleme (c) dış kasa referansı (d) saklamama | **KARAR D24/3 (2026-10-25): (a) — yalnız sahip onayı.** Pack'teki tasarım (AES-256-GCM, rastgele 96 bit nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar kümesi çiti, onaylı hedef + revizyon). **Güvenlik onayı ve gerçek Mongo testleri hâlâ açık**; bu karar onları kapatmaz (Ready-for-dev: güvenlik onayı; DL-2 dilim kabul kapısı: testler) | sahip (K1) — **güvenlik onayı açık** |
+| O-6 | Tam tanımlayıcının saklanması | (a) uygulama düzeyi AES-GCM (b) MongoDB istemci tarafı şifreleme (c) dış kasa referansı (d) saklamama | **KARAR D24/3 (2026-10-25): (a) — yalnız sahip onayı.** Pack'teki tasarım (AES-256-GCM, rastgele 96 bit nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar kümesi çiti, onaylı hedef + revizyon). Gerçek Mongo testleri DL-2 dilim kabul kapısında. **Güvenlik onayı KARAR D33/1 (2026-10-26): verildi** | sahip (K1) — güvenlik onayı K1 (D33/1) |
 | O-7 | RCS-001 kayıt kodları | `BNK` / `BAC` OTOMATİK · başka | **KARAR D24/4 (2026-10-25):** banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki, tedarikçide grup öneki), OTOMATİK; şube kodu doğal anahtar. `.antigravity` §3 satırı ayrı onay | sahip (K1); `.antigravity`: ayrı onay |
 | O-8 | Ülke kodu kaynağı | (a) yalnız ISO biçimi (b) PSS-011 (c) MDM iş ülkesi referansı | **KARAR D24/5 (2026-10-25): (a)** — ISO 3166-1 alfa-2 biçimi; MDM iş ülkesi kaynağı gelince bağlanır | sahip (K1) |
 | O-9 | Tedarikçi hesabı kapsamı | (a) kiracı geneli (b) **ilişkili şirketler** (c) kapsam yok | **KARAR D23/1 (2026-10-25): (b)** — liste, detay ve lookup yalnız tedarikçiyle MOD-0140'ta `Active` ilişkisi olan şirketin kullanıcısına; ilişkisiz 404; maskesiz okuma ayrıca izin + ilişki; `read-tenant-wide` tüm tedarikçi hesaplarını maskeli gösterir. Şirket hesapları `LegalEntityId` kapsamıyla; bankalar kiracı geneli. Kalan (karar değil): sağlayıcı ölçümü (DL-2) ve ilişkili tedarikçi listesinin 1.3.0 işlemi (DL-3) | sahip (K1) |
@@ -1794,7 +1811,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-2** — Yollar: `Domain/Entities/{BankAccount,BankAccountSensitiveRead}.cs`, `Features/BankAccount/**` (şirket sahibi),
   `Rules/`, `Infrastructure/{BankData,Currency}/**`, `BankAccountsController`, `BANK-ACCOUNT-LOOKUP` sözleşme dosyası.
   **Neden ayrı:** hassas veri, şifreleme ve veri kapsamı modülün en riskli kısmıdır; bağımsız inceleme tek başına
-  yapılabilsin. Önkoşul: DL-1, O-6 güvenlik onayı (sahip onayı D24/3), şifreleme ve özet anahtarları, Auth explicit-grant
+  yapılabilsin. Önkoşul: DL-1, O-6 güvenlik onayı (D33/1 ile verildi), şifreleme ve özet anahtarları (kaynak D33/2), Auth explicit-grant
   eki, kapsam sağlayıcısı ölçümü, MOD-0048 tüketim yolu, `ValidationBehavior` ölçümü, AC-50 eşiği yazılmış (çok
   anahtarlı tekil indeks ve `AesGcm` soruları isteğe bağlı S-1 / S-2'de ya da bu dilimin kabul kapısında cevaplanır).
   Bitiş: AC-3 (hesap kısmı), 4 (hesap kısmı), 5 (hesap kısmı), 6 (hesap kısmı), 8 (hesap kısmı), 9 (hesap kısmı), 10, 11,
