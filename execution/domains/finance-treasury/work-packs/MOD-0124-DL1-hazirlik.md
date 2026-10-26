@@ -7,6 +7,13 @@ pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5 — pack satır 38-39)
 ---
 
+> **Güncelleme (2026-10-26) — pack revizyon turu 02'ye bağlandı.** Bu kayıt pack'in `f55d401f…` sürümüne göre
+> yazıldı. Güncel ve incelenmiş sürüm: sha256 `54a22a668aa32f87f5ae2c0bca8b34dcf8e3db5878fa13a6fef014cdae582d4a` (dal `docs/ct/treasury-packs-rev-02` @ `c5df75338`,
+> CT-APR-02 Codex UYGUN, açık bulgu 0). Bu kayıtta "pack'te tutarsızlık" olarak listelenen maddeler sahip denetimi gap
+> listesi 21 ile pack'e işlendi (`docs/records/audits/2026-10/treasury-intake-handover-review-01/GAP-LIST-21-PREP.md`);
+> geçerli olan pack metnidir. Buradaki "pack satır N" atıfları eski sürümün satırlarıdır; WP prompt'u alıntıları yeni
+> sürümden yeniden alır.
+
 # MOD-0124 DL-1 hazırlığı — anlık görüntü çekirdeği, eşik politikası, makbuz ve denetim
 
 Bu kayıt, MOD-0124 `ready-for-dev` olduğunda DL-1 WP prompt'unun hızla yazılabilmesi için **kaynaktan ne alınacağını**,

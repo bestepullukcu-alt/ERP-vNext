@@ -7,6 +7,13 @@ pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approval
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
+> **Güncelleme (2026-10-26) — pack revizyon turu 02'ye bağlandı.** Bu kayıt pack'in `684e89d6…` sürümüne göre
+> yazıldı. Güncel ve incelenmiş sürüm: sha256 `94d3ad937f55dc56962ef837646d156d27c2fa4385327949b51b8cbb0aaaf587` (dal `docs/ct/treasury-packs-rev-02` @ `c5df75338`,
+> CT-APR-02 Codex UYGUN, açık bulgu 0). Bu kayıtta "pack'te tutarsızlık" olarak listelenen maddeler sahip denetimi gap
+> listesi 21 ile pack'e işlendi (`docs/records/audits/2026-10/treasury-intake-handover-review-01/GAP-LIST-21-PREP.md`);
+> geçerli olan pack metnidir. Buradaki "pack satır N" atıfları eski sürümün satırlarıdır; WP prompt'u alıntıları yeni
+> sürümden yeniden alır.
+
 # MOD-0126 DL-1 hazırlığı — servis iskeleti, parti çekirdeği ve denetim altyapısı
 
 Bu kayıt, MOD-0126 `ready-for-dev` olduğunda DL-1 WP prompt'unun hızla yazılabilmesi için **kaynaktan ne alınacağını**,
