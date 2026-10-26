@@ -173,6 +173,7 @@ public sealed class ServiceTokenTenantExemptionMiddlewareTests
 /// user secrets, no dev bypass), data-protection keys in memory. The service client below is a throwaway: a random
 /// code and a random secret, written into that disposable database through the production repositories.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class ServiceTokenEndpointOutsideDevelopmentHttpTests(ServiceTokenEndpointOutsideDevelopmentHttpTests.NonDevelopmentAuthHost fixture)
     : IClassFixture<ServiceTokenEndpointOutsideDevelopmentHttpTests.NonDevelopmentAuthHost>
 {

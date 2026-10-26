@@ -61,6 +61,7 @@ public static class AdminAccountSeedStartUp
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class AdminAccountSeedProductionStartTests : IClassFixture<AdminAccountSeedStartUp.ProductionHost>
 {
     private readonly AdminAccountSeedStartUp.ProductionHost _host;
@@ -78,6 +79,7 @@ public sealed class AdminAccountSeedProductionStartTests : IClassFixture<AdminAc
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class AdminAccountSeedDevelopmentStartTests : IClassFixture<AdminAccountSeedStartUp.DevelopmentHost>
 {
     private readonly AdminAccountSeedStartUp.DevelopmentHost _host;
@@ -96,6 +98,7 @@ public sealed class AdminAccountSeedDevelopmentStartTests : IClassFixture<AdminA
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class AdminAccountSeedDevelopmentOptInStartTests : IClassFixture<AdminAccountSeedStartUp.DevelopmentOptInHost>
 {
     private readonly AdminAccountSeedStartUp.DevelopmentOptInHost _host;
@@ -122,6 +125,7 @@ public sealed class AdminAccountSeedDevelopmentOptInStartTests : IClassFixture<A
 
 /// <summary>The account step itself, on fixed-name databases of the shared test-owned mongod (the seed writes the platform
 /// tenant: never the host's database), each emptied first.</summary>
+[Trait("Category", "Mongo")]
 public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid PlatformTenantId = AdminAccountSeedStartUp.PlatformTenantId;

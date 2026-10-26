@@ -14,6 +14,7 @@ using Diten.AuthService.Application.Common.Interfaces;
 namespace Diten.AuthService.Application.Tests.Operational;
 
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ProductIdentityEntitlementReconciliationMongoTests(DisposableAuthMongoReplicaSet mongo)
 {
     [OwnedMongoFact]

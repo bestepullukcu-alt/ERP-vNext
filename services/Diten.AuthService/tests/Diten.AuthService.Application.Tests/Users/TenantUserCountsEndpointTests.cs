@@ -16,6 +16,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// BL-459 — <c>GET internal/users/counts?tenantId=</c>, the numbers Platform's tenant users summary now reads: live users
 /// of THAT tenant by lifecycle status, over HTTP on the real Api + a test-owned mongod. Two disposable tenants.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TenantUserCountsEndpointTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

@@ -15,6 +15,7 @@ namespace Diten.AuthService.Application.Tests.Password;
 /// which dropped them: on the wire there was only English text. Now the same prefix list and helper serve both doors,
 /// so <c>set-password</c> and <c>change-password</c> carry their codes. Real HTTP, test-owned mongod.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PasswordValidatorCodeEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private readonly PlatformEdgeTestHost _host;

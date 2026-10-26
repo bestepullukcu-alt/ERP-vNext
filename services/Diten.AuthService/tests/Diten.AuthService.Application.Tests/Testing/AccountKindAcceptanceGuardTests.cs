@@ -25,6 +25,7 @@ public sealed class AccountKindAcceptanceCollection;
 /// slower; each spins at most one or two real <see cref="AccountKindAcceptance.AuthTestHost"/> instances.</para>
 /// </summary>
 [Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class AccountKindAcceptanceGuardTests
 {
     // ── §1(a) — the environment actually holds the override (pure) ─────────────────────────────────────────

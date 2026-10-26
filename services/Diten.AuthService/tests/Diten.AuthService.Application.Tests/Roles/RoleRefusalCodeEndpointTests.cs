@@ -16,6 +16,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 /// <c>ExceptionHandlingBehavior</c> belongs to another branch; <c>RoleErrorCodeContractTests</c> proves them at the
 /// validator.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly RoleEndpointWorld _world;
