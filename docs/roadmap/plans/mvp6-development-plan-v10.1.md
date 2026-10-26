@@ -27,13 +27,13 @@ repeated here. Measured on `origin/main` `04c8fb4cf` (after #233). Accounts: **A
 
 | # | step | owner | state |
 |---|---|---|---|
-| M1 | #236: CT-APR-01 rows for both versions (HIGH), merged by another person with a merge commit; no push to the PR while it is under review | **Beste** | open |
+| M1 | #236: CT-APR-01 rows for both versions (HIGH), merged by another person with a merge commit; no push to the PR while it is under review | **any of K2 / K3 / K4** (D5); Natig may merge | open |
 | M2 | DC-03: accept the canonical-code requirement | **Beste** | sent 2026-10-26 |
-| M3 | MOD-0140 Revision 2: CT-APR-02 review | **MVP-1 CT** | to request (§4 message 1) |
-| M4 | MOD-0140 Revision 2: CT-APR-01 row | **Beste (K2)** | after M3 |
+| M3 | MOD-0140 Revision 2: CT-APR-02 review | **MVP-6 CT**, separate session (D3) | to start |
+| M4 | MOD-0140 Revision 2: CT-APR-01 row | **Natig (K1)** (D3); another person merges | after M3 |
 | M5 | MOD-0140 DL-1: `supplier.openapi.yaml` 1.3.0 FROZEN on `main` | **Cihan** | after M4 |
-| M6 | Permission / composition single writer for `supplychain.supplier-performance.*` and `supplychain.supplier-portal.*` | **Ali** names the writer | to ask (§4 message 2) |
-| M7 | MOD-0140 S-2: evaluator role gets `mdm.legal-entities.read`, or a Procurement → MDM service identity | **Cihan** (+ Natig) | to ask (§4 message 3) |
+| M6 | Permission / composition single writer for `supplychain.supplier-performance.*` and `supplychain.supplier-portal.*` | **MVP-6 CT** (D2) | decided 2026-10-26; written with DL-1 |
+| M7 | MOD-0140 S-2, MVP-6 side: evaluator role gets `mdm.legal-entities.read` (Roles → Permissions) | Natig (D1) | decided 2026-10-26; Cihan informed |
 | M8 | Replay receipt amendment (Phase 1.5) | CT | open |
 | M9 | **MOD-0147 v1 code:** DL-1 (create, four GETs, eligibility read against the 1.3.0 mock), then DL-2 (submit / publish). Live link after MOD-0140 DL-3 merges | CT | after M1, M5–M8 |
 | M10 | MOD-0148 extra gates: DC-03 binding pack + build (Beste); MOD-0140 DL-7 service token (1.4.0) with BL-652 Option 2 and the `service_name` registration (Auth owner) | Beste, Auth owner | after M2 |
@@ -48,7 +48,7 @@ closure note in the next revision).
 
 | # | step | owner | state |
 |---|---|---|---|
-| I3 | WP-P1: G2 reservation, G3 REVERSAL source, G4 two-phase multi-line | **MVP-1 CT** | waiting (§4 message 1) |
+| I3 | WP-P1: G2 reservation, G3 REVERSAL source, G4 two-phase multi-line | Natig (D4) | decided 2026-10-26; next: update the §8 pack patches, then CT-APR-02 → CT-APR-01 |
 | I4 | Wave 2 code DL-1 … DL-6 | CT | after I3 approval |
 
 **A / B — carried**
@@ -57,23 +57,26 @@ closure note in the next revision).
 - **B1–B5** main reds stay with their owners (#174, #175, #180, MOD-0022, BL-615); not re-measured for this revision.
   `phase1-gates` is red on every `main` push since at least #219.
 
+**Owner decisions 2026-10-26** (`docs/records/decisions/2026-10/mvp6-owner-decisions-2026-10-26.md`): D1 S-2 role
+permission, D2 CT writes the permission keys, D3 MVP-6 CT reviews MOD-0140 and Natig approves it, D4 WP-P1 G2–G4, D5 any
+available non-author approver on #236 / #237. The messages in §4 below are now **for information**, not questions.
+
 ## 3. What Natig and the CT can do without waiting
 
-1. Natig sends `READ-CONTRACT-REQUEST-PROCUREMENT.md` (M12) and the three messages in §4.
-2. CT watches #236 CI and separates `main`-originated reds from ours.
-3. CT prepares the next pack revision locally (the two low findings), and pushes nothing while #236 is under review.
+1. Natig sends `READ-CONTRACT-REQUEST-PROCUREMENT.md` (M12) and the information messages in §4.
+2. CT runs the MOD-0140 Revision 2 CT-APR-02 review in a separate session (M3).
+3. CT updates the WP-P1 §8 pack patches for G2–G4 (I3).
+4. CT watches #236 / #237 CI and prepares the next MOD-0147/0148 revision locally (two low findings), without pushing to
+   #236 while it is under review.
 
-## 4. Messages (drafts — Natig sends)
+## 4. Messages (information — Natig sends)
 
-1. **MVP-6 CT → MVP-1 CT:** "MOD-0147/0148 v1 paketleri incelendi; onay PR'ı #236 açık. Bundan sonraki adım sizin iki
-   işinize bağlı: (1) Cihan'ın MOD-0140 Revizyon 2 paketi (`origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`) için
-   CT-APR-02 bağımsız incelemesi — sonra Beste CT-APR-01 satırını ekler ve 1.3.0 donar; (2) WP-P1'deki G2 (rezervasyon),
-   G3 (REVERSAL kaynağı) ve G4 (iki aşamalı çok satırlı) cevapları — Wave 2 kodu bunları bekliyor. Ne zaman
-   bakabilirsiniz?"
-2. **MVP-6 CT → Ali:** "MOD-0147 ve MOD-0148'in izin anahtarları (`supplychain.supplier-performance.*`,
-   `supplychain.supplier-portal.*`) ve kompozisyon kaydı tek yazarlı ortak bir alan. Bu anahtarları kim yazsın — CT mi,
-   Platform/Auth sahibi mi? Kod bu karar olmadan başlamaz."
-3. **MVP-6 CT → Cihan:** "MOD-0140 §7 / S-2: uygunluk okumasında Procurement LE'yi MDM'ye çağıranın token'ıyla doğruluyor.
-   MOD-0147 değerlendiricisinde `mdm.legal-entities.read` yoksa her istek 503 olur. Senin tercihin hangisi: değerlendirici
-   rolüne bu izni vermek (Roles → Permissions) mı, yoksa Procurement → MDM servis kimliği mi? Paketlerimiz ikisini de
-   karşılıyor; yalnız hangisinin geleceğini bilmemiz gerekiyor."
+1. **MVP-6 CT → MVP-1 CT:** "Bilgi: (1) WP-P1 G2–G4 kararlaştırıldı — G2 ilk dilim rezervasyonsuz (reservationId sonra,
+   DL-6), G3 REVERSAL `MOD-0173`/`REVERSAL` ile, G4 satır başına anahtar + geri alma; Inventory kuralı ve sözleşmesi
+   değişmiyor. (2) Cihan'ın MOD-0140 Revizyon 2 incelemesini MVP-6 CT yapıyor, onaylayıcı Natig. (3) #237 (MOD-0176/0177
+   nav anahtarları, phase1'i yeşile çevirir) açık; paketler sizin, bilginize."
+2. **MVP-6 CT → Cihan:** "Bilgi: MOD-0147 v1'de değerlendirici rolü `mdm.legal-entities.read`'i Roles → Permissions'tan
+   alacak (BL-652 ara yolu); MOD-0140 S-2'nin kendi cevabı senin. MOD-0140 Revizyon 2'nin CT-APR-02 incelemesini MVP-6 CT
+   yapıyor, CT-APR-01 onaylayıcısı Natig. Onaydan sonra 1.3.0'ı yazıp dondurman yeter."
+3. **MVP-6 CT → Beste / Ali / Cihan:** "#236 (MOD-0147/0148 onay satırları) ve #237 (nav anahtarları) için yazar olmayan,
+   müsait olan biri onaylasın; merge'ü Natig yapabilir."

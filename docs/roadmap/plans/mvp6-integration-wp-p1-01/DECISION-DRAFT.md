@@ -7,8 +7,8 @@ consumed: [INVENTORY-BUNDLE 1.5.0, PRODUCT-MASTER 1.1.0-draft.16, WAREHOUSE-OUTB
 measured_at: origin/main 1afd37843 (2026-10-22)
 ---
 
-DURUM: TASLAK — **kısmen kararlaştırıldı (Natig, yönetim, 2026-10-22): G1, G5, G6, G7, G8, G9, G10 öneriler gibi kabul edildi
-(§3a).** G2, G3, G4 MVP-1 CT'nin cevabını bekliyor. Paket yamaları yalnız kararlaştırılmış kısımlar için yazıldı (§8).
+DURUM: TASLAK — **kararlaştırıldı (Natig, yönetim): G1, G5–G10 2026-10-22; G2, G3, G4 2026-10-26 (§3a), öneriler gibi.**
+Paket yamaları G2–G4 için henüz güncellenmedi (§8).
 
 # WP-P1 — MOD-0183 / MOD-0186 paket revizyonu: Inventory'ye yazma (karar taslağı)
 
@@ -79,8 +79,12 @@ P3 W-4 ile çelişmez (API üzerinden yazma, ikinci bakiye yok); P1, P2, P4, P5 
 | G8 | İadede kalem / SKU / lot orijinal çıkış hareketinden okunur; varış deposu / lokasyonu iade alımında girilir (RETURNS sözleşmesine ekleme) |
 | G9 | `Dispatched` olayının biçimi değişmez; yalnız bütün satırlar yazıldıktan sonra yayımlanır |
 | G10 | G1 ile karşılanır (depo modülü olmayan kiracıda kullanıcı girer) |
+| G2 | (2026-10-26) **İlk dilim rezervasyonsuz** (c): çıkış yalnız `available` stoktan. Hedef (a): INVENTORY'ye `MovementRequest.reservationId` + aynı işlemde tüketim — MOD-0173 değişikliği, DL-6 ile ayrı iş; (b) (önce release) yarış açtığı için seçilmedi |
+| G3 | (2026-10-26) **(a):** MOD-0183 REVERSAL'ı `sourceModule = MOD-0173`, `sourceType = REVERSAL`, `sourceDocumentId` = orijinal hareketle gönderir; izlenebilirlik `documentGroupId = shipmentId`. Inventory ve sözleşme değişmez |
+| G4 | (2026-10-26) **(a):** satır başına deterministik anahtar `{shipmentId}:{lineNumber}:dispatch:v1`; iç durum `DispatchPending` (wire'da yok) → bütün satırlar 201/200 → `Dispatched`; bir satır reddedilirse yazılan satırlar REVERSAL (G3) ile geri alınır ve sevkiyat `Planned`'a döner; çökmeden sonra aynı anahtarlarla devam. Toplu uç (b) sonra |
 
-Açık: **G2, G3, G4** (MVP-1 CT). DL-2 (çıkış çekirdeği) ve DL-6 (rezervasyon) bunlara bağlı.
+G2–G4 kararını Natig (K1, yönetim) verdi; MVP-1 CT'ye **bilgi** verilir (Inventory kuralları değişmiyor). Açık karar kalmadı;
+sıradaki adım §8 yamalarının G2–G4 ile güncellenmesi, sonra CT-APR-02 → CT-APR-01.
 
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
