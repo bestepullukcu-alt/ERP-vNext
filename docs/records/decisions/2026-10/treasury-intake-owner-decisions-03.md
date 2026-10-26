@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-03
-status: approved — D36–D38 (2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D36–D40 (2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-26
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-26)
@@ -50,6 +50,28 @@ Emsal: D20/1 (MOD-0289 → MDM, sahip MDM sahibi yerine karar verdi). Sahibin so
    önerilir (MOD-0289 satırı da domain-config'te eksik — aynı öneride). Pack önce sahibe ZIP olarak gider, sonra CT-APR-02.
 3. **Kod alma yok:** D27/5 yalnız dört Treasury modülünü kapsar; kaynak yalnız okunur. Kod `ready-for-dev` olmadan yazılmaz.
 4. MDM sahibine (Ali) bilgi verilir; MOD-0023'te MOD-0217 iş akışı şablonu onun cevabını yine gerektirir.
+
+## D39 — MOD-0217 ile MOD-0144 sınırı (MOD-0217 O-1; soru kutusu, önerilen seçenek)
+
+Ölçüm: MOD-0144 Contracting & Clause Library (procurement, `ready-for-dev`, kodlanmış) Gateway'de `/api/contracts` → 5065'i tutuyor
+(`gateway/Diten.ApiGateway/ocelot.json:842-870`); web rotası `/Contracts`, izinler `procurement.contracts.*`.
+
+1. **Satın alma / tedarik sözleşmeleri MOD-0144'te kalır** (onların SoR'u). MOD-0217 **satın alma dışı** hukuki sözleşmeleri tutar:
+   satış, hizmet, gizlilik (NDA), kira, lisans, ortaklık, grup içi. MOD-0217'nin sözleşme türü listesinde `PURCHASE` yok.
+2. MOD-0144'e dokunulmaz; iki modül arasında başvuru bağlantısı sonraki bir iş (follow-up). MOD-0217 rotası `/api/mdm/contracts`,
+   ekranı `/MasterData/Contracts`.
+3. Procurement sahibine bilgi verilir (MOD-0144'ü değiştirmeyen sınır; itiraz edebilir).
+
+## D40 — MOD-0217 belge kaydı ve sürümleri (MOD-0217 O-2; D37'nin yorumu; soru kutusu, önerilen seçenek)
+
+Ölçüm: MOD-0028 Documentation & Evidence Management pack'i kontrollü belge yaşam döngüsünü (MOD-0029) ve ikili dosya
+depolamayı kapsam dışı sayıyor; iş belgesi kaydı yüzeyi yok. Blueprint MOD-0217 SoR'u: "contracts, contract versions,
+approvals/sign-offs, contract metadata".
+
+1. **Sözleşme sürümü MOD-0217'nin kendi kaydıdır** (`ContractVersion`, Blueprint SoR); dosyanın kendisi **MOD-0262-FU01** belge
+   deposunda, sürüm onu `ContentId` ile işaret eder. **D37'nin "MOD-0028 kayıt ve sürümler" kısmı bu şekilde yorumlanır:** v1'de
+   MOD-0028'e bağımlılık yoktur; MOD-0028 bağı (gerekirse) sonraki bir iş. MOD-0262-FU01 kısmı aynen geçerlidir.
+2. MOD-0028'den ek istenmez; MOD-0217 DL-2 bu karar yüzünden beklemez.
 
 ## Karar olmayanlar
 
