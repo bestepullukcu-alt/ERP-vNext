@@ -392,6 +392,7 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
 `PAYMENT_SOD_DENIED` 403, `PAYMENT_SOD_WAIVER_REQUIRED` 422, `PAYMENT_SOD_WAIVER_FORBIDDEN` 403,
 `PAYMENT_SOD_WAIVER_REASON_REQUIRED` 400, `PAYMENT_TIER2_APPROVER_REQUIRED` 403,
 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` 422, `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` 503,
+`PAYMENT_CURRENCY_SOURCE_UNAVAILABLE` 503 (para birimi listesi okunamıyor — bağımlılık hatası, girdi hatası değil),
 `PAYMENT_CURRENCY_CODE_INVALID` 400 (biçimi geçerli ama MOD-0048 para birimi listesinde olmayan kod — girdi alanı hatası; dört
 Treasury paketinde aynı 400), `PAYMENT_EVIDENCE_*`).
 
@@ -953,6 +954,11 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
   `PAYMENT_METHOD_SOURCE_UNAVAILABLE`, yazma yok; serbest metne ya da gömülü listeye düşülmez.
 - **Para birimi MOD-0048 listesinde yok** (biçimi geçerli, ör. `XYZ`) → 400 `PAYMENT_CURRENCY_CODE_INVALID`, kayıt yok.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `PAYMENT_CURRENCY_CODE_INVALID` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `PaymentCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Eşzamanlılık** (bayat `If-Match`) → 409 `PAYMENT_BATCH_VERSION_CONFLICT`, sessiz üzerine yazma yok.
 - **Yetkisiz aktör** (ilgili izin yok) → API 403; UI: kabuk içinde erişim açıklaması, düğme yok (UAS-001).
 - **Gönderilmiş partiyi silme/güncelleme** → 409 `PAYMENT_DECISION_STATUS_INVALID`.

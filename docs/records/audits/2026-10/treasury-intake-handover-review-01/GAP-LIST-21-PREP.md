@@ -39,4 +39,19 @@ pack'lere işlenir ve değişen hash'lerle yeniden incelenir; hazırlık notu pa
 MOD-0120'de kısmi indekste `$or` desteği gerçek replica set'te ölçülecek; hazırlık kayıtları eski pack hash'lerine bağlı —
 pack'ler incelendikten sonra güncellenir. Bütün pack'ler `draft`; bu düzeltmeler geliştirme izni değildir.
 
+## 2. tur (2026-10-26) — sahip denetimi "CONDITIONAL PASS", bir P2
+
+Girdi: ZIP `treasury-packs-rev02-1f1c191d0.zip` (manifest 6/6). Denetim 1. turun kapsam / dilim bulgularını kapalı buldu; beş
+pack'in `slices()` kontrolü geçti, AC kimlikleri tekil.
+
+| # | Öncelik | Gap | Kapanış |
+|---|---|---|---|
+| 4 | P2 | MOD-0119: para birimi listesi okunamazsa (zaman aşımı, 5xx, bozuk gövde) hangi kodun döndüğü yazılı değil; bağımlılık hatası girdi hatası sayılmamalı | MOD-0119 Failure Path'e kural + test: liste okunamıyor → 503 `AP_CURRENCY_SOURCE_UNAVAILABLE`, kayıt yok, asla 400; liste okundu ve kod yok → 400 `AP_CURRENCY_CODE_INVALID`. Test `ApCurrencySourceUnavailableIsNotInvalidInputTests`: (a) 5xx (b) zaman aşımı (c) bozuk gövde → 503, (d) kod yok → 400; sabotaj: okunamayan listeyi "kod yok" sayan eşleme kırmızı. Kod hata sözlüğüne eklendi. **Aynı kural** tutarlılık için MOD-0126 (`PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`), MOD-0120 (`RECEIVABLE_CURRENCY_SOURCE_UNAVAILABLE`) ve MOD-0124'e (mevcut `CASH_POSITION_REFERENCE_UNAVAILABLE`) yazıldı |
+
+2. tur hash'leri: MOD-0126 `94d3ad937f55dc56962ef837646d156d27c2fa4385327949b51b8cbb0aaaf587`, MOD-0119
+`f97cd3fa670f41c49776d02b0866bf282ad4a987fa5887e21d19cf289d78ef31`, MOD-0120
+`da4ca5f8a17dc631fbeb7c023d951836af5990dc905d6a74c7475be63cd48551`, MOD-0124
+`54a22a668aa32f87f5ae2c0bca8b34dcf8e3db5878fa13a6fef014cdae582d4a` (MOD-0126 sabitlemesi `94d3ad93…`'e çekildi), MOD-0289
+değişmedi (`785291d2…`). Hazırlık kayıtları eski hash'lere bağlı; sonraki WP'den önce güncellenir.
+
 Bu sahip denetimi resmî CT-APR-02 kaydı değildir. Belge incelemesidir; build / test / runtime yok.

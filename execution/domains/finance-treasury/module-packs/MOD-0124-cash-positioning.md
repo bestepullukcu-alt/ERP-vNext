@@ -1108,6 +1108,11 @@ yoktur (O-21).
 - **Karışık para birimi satırı** → 400 `CASH_POSITION_MIXED_CURRENCY`; **yinelenen satır anahtarı** → 400
   `CASH_POSITION_DUPLICATE_LINE_KEY`.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `CASH_POSITION_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `CASH_POSITION_REFERENCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `CASH_POSITION_INVALID_CURRENCY_CODE` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `CashPositionCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Kaynak referansında 8+ ardışık rakam** → 400 `CASH_POSITION_SENSITIVE_TEXT_REJECTED`; değer kayda ve loga yazılmaz.
 - **Politika yok** → Reconcile 422 `CASH_POSITION_THRESHOLD_POLICY_MISSING`; kodda varsayılan eşik yok.
 - **Çakışan politika aralığı / eşzamanlı iki politika yazımı** → 409 `CASH_POSITION_THRESHOLD_POLICY_OVERLAP` /
@@ -1485,7 +1490,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `65a619148d704eb681ab240e87d3ac5882b89e23618c14f93f399bcf195eaed8` (bu revizyonla aynı commit, dal
+  `94d3ad937f55dc56962ef837646d156d27c2fa4385327949b51b8cbb0aaaf587` (bu revizyonla aynı commit, dal
   `docs/ct/treasury-packs-rev-02`; önceki sabitleme main @ `f3fcd3b4d` `684e89d6…` idi). (Makbuz, niyet durum sözlüğü,
   Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden

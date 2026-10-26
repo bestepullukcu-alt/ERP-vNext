@@ -490,7 +490,7 @@ Kaynak kodları **kopyalanmaz**; anlamı korunanlar Recovery adıyla yeniden yaz
   erişilemez 503 — MOD-0126 O-11 ile ortak kaynak).
 - **Yeni:** `RECEIVABLE_VALIDATION_FAILED` 400, `RECEIVABLE_INVOICE_NOT_FOUND` 404, `RECEIVABLE_INVOICE_VERSION_CONFLICT`
   409, `RECEIVABLE_INVOICE_STATUS_INVALID` 409, `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE` 422 (O-4), `RECEIVABLE_LEGAL_ENTITY_UNAVAILABLE`
-  503, `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` 503, `RECEIVABLE_RECORD_CODE_UNAVAILABLE` 503,
+  503, `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` 503, `RECEIVABLE_CURRENCY_SOURCE_UNAVAILABLE` 503 (para birimi listesi okunamıyor — bağımlılık hatası, girdi hatası değil), `RECEIVABLE_RECORD_CODE_UNAVAILABLE` 503,
   `RECEIVABLE_EXTERNAL_NUMBER_DUPLICATE` 409, `RECEIVABLE_REQUEST_IN_PROGRESS` 202 (makbuz `Pending`; kurtarma yok),
   `RECEIVABLE_ADJUSTMENT_NOT_FOUND` 404, `RECEIVABLE_ADJUSTMENT_PENDING` 409 (açık düzeltme), `RECEIVABLE_ADJUSTMENT_NOT_ALLOWED`
   409 (Void/WriteOff ön koşulu yok), `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `RECEIVABLE_WORKFLOW_START_FAILED` 502
@@ -1018,6 +1018,11 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   / 5xx / zaman aşımı → `Unknown` (asla `Refused` değil). MOD-0031'e hiçbir kurtarma yolu yazmaz.
 - **Eksik alan** (müşteri, para birimi, satır) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
 - **Hassasiyet aşımı** (JPY'de küsurat) → 400; hane kaynağı yok → 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `RECEIVABLE_CURRENCY_SOURCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `RECEIVABLE_CURRENCY_CODE_INVALID` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `ReceivableCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Taksit toplamı ≠ brüt toplam** → 400.
 - **Eşzamanlılık** (bayat `If-Match`) → 409 `RECEIVABLE_INVOICE_VERSION_CONFLICT`, sessiz üzerine yazma yok.
 - **Açılmış faturayı güncelleme / silme** → 409 `RECEIVABLE_INVOICE_STATUS_INVALID`.

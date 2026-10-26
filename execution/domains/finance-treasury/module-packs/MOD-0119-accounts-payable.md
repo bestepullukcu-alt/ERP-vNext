@@ -427,7 +427,7 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   taban net), `AP_CREDITED_INVOICE_INVALID` 422,
   `AP_CURRENCY_CODE_INVALID` 400 (biçimi geçerli kod MOD-0048 para birimi listesinde yok — girdi alanı hatası, şirket /
   tedarikçi / eşleşme gibi iş durumuna bağlı uygunluk değil; bu yüzden 422 değil 400, hane aşımıyla aynı sınıf; MOD-0124
-  `CASH_POSITION_INVALID_CURRENCY_CODE` 400 ile tutarlı), `AP_CURRENCY_PRECISION_UNAVAILABLE` 503, `AP_RECORD_CODE_UNAVAILABLE` 503, `AP_WORKFLOW_START_FAILED` 502 (yalnız kesin
+  `CASH_POSITION_INVALID_CURRENCY_CODE` 400 ile tutarlı), `AP_CURRENCY_PRECISION_UNAVAILABLE` 503, `AP_CURRENCY_SOURCE_UNAVAILABLE` 503 (para birimi listesi okunamıyor — bağımlılık hatası, girdi hatası değil), `AP_RECORD_CODE_UNAVAILABLE` 503, `AP_WORKFLOW_START_FAILED` 502 (yalnız kesin
   ret), `AP_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `AP_WORKFLOW_START_PENDING` 409, `AP_DECISION_OUTCOME_UNKNOWN` 202,
   `AP_DECISION_PENDING` 409, `AP_DECISION_REASON_REQUIRED` 400, `AP_WORKFLOW_TASK_INVALID` 400,
   `AP_WORKFLOW_TRANSITION_FAILED` 502, `AP_INVOICE_ON_HOLD` 409, `AP_BLOCKING_EXCEPTION_OPEN` 409,
@@ -988,6 +988,11 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
   202 `AP_REQUEST_IN_PROGRESS`, kurtarma yok; aynı anahtar + farklı yük: 409 `AP_IDEMPOTENCY_CONFLICT`.
 - **Eksik alan** (SupplierId, InvoiceNumber, satır) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `AP_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `AP_CURRENCY_SOURCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `AP_CURRENCY_CODE_INVALID` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `ApCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Para birimi MOD-0048 listesinde yok** (biçimi geçerli, ör. `XYZ`) → 400 `AP_CURRENCY_CODE_INVALID`, kayıt yok.
 - **Satır para birimi farklı / negatif tutar / sıfır toplam / `DueDate < InvoiceDate`** → 400 `AP_VALIDATION_FAILED`.
 - **İstemcinin gönderdiği başlık tutarı ya da kod** → 400 (sunucu alanı).
