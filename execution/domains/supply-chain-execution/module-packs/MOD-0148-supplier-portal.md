@@ -50,8 +50,9 @@ Owner decision 2026-10-22 — revision draft.
 | UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
 
 **Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack;
-DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) and the **service identity for the eligibility read** (MOD-0140 1.4.0 DL-7
-with BL-652 Option 2 — Auth owner); PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
+DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) and the **service identity for the eligibility read**: MOD-0140 1.4.0 DL-7
+with BL-652 Option 2, SupplyChain's `service_name` on the accepted list (MOD-0140 S-5, Auth owner) and Procurement's own
+MDM service identity (MOD-0140 §7 / S-2); PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
 permission/composition single writer (§14); and the replay receipt (§0.1, needs DC-03's issuer/subject).
 
 **Open-draft cap (Natig, 2026-10-22, revised after review round 2):** the cap counts **only `DRAFT` records** — at most
@@ -93,30 +94,42 @@ list.
 | Operation | Declared (frozen v1) | Also returned in v1 (undeclared) |
 |---|---|---|
 | `getSupplierPortalStatus` | 200, 403, 503 | 401, 500 |
-| `listOwnPortalSubmissions` | 200, 403 | 401, 503 (SUPPLIER-BASE / eligibility read unavailable, deadline), 500 |
+| `listOwnPortalSubmissions` | 200, 403 | 400 (invalid `status` / `submissionType` query value), 401, 503 (SUPPLIER-BASE / eligibility read unavailable, deadline), 500 |
 | `createOwnPortalSubmission` | 201, 200, 403, 422 | 400 (body over 1 MiB, malformed JSON, scope override AC-12), 401, 503 (eligibility read unavailable, deadline), 500 |
 | `getOwnPortalSubmission` | 200, 404 | 401, 503 (eligibility read unavailable), 500 |
 | `submitOwnPortalSubmission` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 503 (eligibility read unavailable, deadline), 500 |
 
 **Supplier eligibility — DC-02 D2 (Natig 2026-10-23 / 2026-10-26; Cihan's MOD-0140 Revision 2,
 `origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`).** On every portal operation the service
-reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) for the binding's mapped supplier and the request's
-validated LE, and maps the answer:
+reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) for the binding's mapped supplier and **the LE of the
+DC-03 binding — never a header the supplier chooses** (F-2): a request whose LE is not in the binding is answered before any
+read with 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (status / list / create) or 404 (get / submit), so a supplier cannot learn
+its relationship with another company. `X-Tenant-Id` is the tenant of the `supplier_user` token. The answer is mapped:
 
 | `SupplierEligibility` answer | `accessStatus` | status | own list | create | own get | submit |
 |---|---|---|---|---|---|---|
-| `relationshipExists = false` | — | 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` | 403 (same) | 403 (same) | 404 | 404 |
+| Procurement **404 `UnknownSupplier`** (no relationship, unknown supplier, other tenant — MOD-0140 §3.1; on a 200 `relationshipExists` is always `true`, so a 200 with `relationshipExists != true` is handled the same way) | — | 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` | 403 (same) | 403 (same) | 404 | 404 |
 | `status = Active`, `onboardingStatus = Approved`, `purchasingEnabled = true` | `ACTIVE` | 200 | 200 | allowed | 200 | allowed |
 | `status = Active`, but onboarding not `Approved` or `purchasingEnabled` not `true` | `PENDING` | 200 | 200 | 422 `BUSINESS_RULE_VIOLATION`, `details.code = PORTAL_SUPPLIER_PENDING` | 200 | 422 (same) |
 | `status` = OnHold, Blocked or Inactive | `SUSPENDED` | 200 with `openSubmissionCount = 0` and no `lastSubmissionAt` (AC-05) | 403 (AC-05) | 403 (AC-05) | 404 (no 403 declared) | 404 (no 403 declared) |
 
-`eligibleForTransactions` is not used (it ignores onboarding and purchasing; MOD-0140 §20 S-1). Procurement unreachable /
-5xx / timeout → 503 (AC-04; undeclared on some operations, table above). **Service identity:** the `supplier_user` token
-cannot make this read — the Gateway allow-list keeps that actor inside `/portal/*`, and a supplier must never hold a
-Procurement permission. The read therefore uses the SupplyChain service's own identity with
-`procurement.suppliers.eligibility.read`, which comes with MOD-0140 1.4.0 (DL-7) and BL-652 Option 2 (Auth owner) — a v1
-gate (above). Tests: T-0148-V1-ELIG-01 (each table row; Procurement 503 → 503 with no write; sabotage: forwarding the
-supplier's token instead of the service identity makes the test red).
+**Deviation from AC-03 / AC-05, recorded (F-4):** AC-05 expects 403 on list, get, create and submit for `SUSPENDED`; get
+and submit declare no 403, so v1 answers 404 there (the r3 oracle is this table). AC-03 expects "Active → operations
+allowed"; v1 adds `PENDING` (owner decision, D2 Q3) where create and submit answer 422. The 422 on submit uses
+`BUSINESS_RULE_VIOLATION` with `details.code = PORTAL_SUPPLIER_PENDING` deliberately, although submit's declared 422 example
+is `INVALID_STATUS_TRANSITION` (the `Error` body is the same; the contract successor names it) (F-5).
+
+`eligibleForTransactions` is not used (it ignores onboarding and purchasing; MOD-0140 §20 S-1). **Any other answer → 503,
+no write (AC-04, F-1):** Procurement unreachable / 5xx / timeout; a 200 that does not match `SupplierEligibility`, has a null
+`status`, or names a `supplierId` other than the binding's mapped supplier; a rejection of the service token (401 / 403) or
+any other unexpected status. **Service identity (F-3):** the `supplier_user` token cannot make this read — the Gateway
+allow-list keeps that actor inside `/portal/*`, and a supplier must never hold a Procurement permission. The read therefore
+uses **a trusted service token with no permission claim, accepted by MOD-0140 DL-7** (for the two eligibility endpoints the
+scheme itself is the authorization, MOD-0140 §14), with `X-Tenant-Id` = the token's tenant and a mandatory
+`X-Legal-Entity-Id`. Its prerequisites are v1 gates (above). Tests: T-0148-V1-ELIG-01 (each table row with the Procurement
+mock answering **404** for no relationship; a malformed 200, a mismatched `supplierId` and a service-token 401 → 503 with no
+write; an LE outside the binding → no Procurement read at all; sabotage: forwarding the supplier's token instead of the
+service identity, or taking the LE from the header, makes the test red).
 
 **Visible code (RCS-001, BL-565):** a portal submission is a new record type, but the shared record-code service (BL-565)
 does not exist yet. v1 shows **no visible code** — only the frozen contract's opaque `submissionId` — and never creates its
@@ -163,9 +176,9 @@ label wins**: the text is the target, not an approved rule.
 | Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r2.tsv`) |
 |---|---|---|---|---|
 | `GET /portal/status` (getSupplierPortalStatus) | ONAYLI | **BLOKE** — actor binding (DC-03), Tenant+LE eligibility (DC-02); status matrix ÖNERİLEN | Platform security owner; MOD-0140 owner | AC-03, AC-04, AC-08, AC-09 |
-| `POST /portal/submissions` (createOwnPortalSubmission) | ONAYLI wire; **payload contradiction** (§0.2) | **BLOKE** — DC-03, DC-02; receipt ÖNERİLEN (§0.1) | security owner; CT Supplier Seam Owner | AC-05 (suspended → 403), AC-12 (scope override → 400), AC-13 (create replay), AC-15 (fingerprint, whitespace key), AC-16 (remap), AC-17 (race) |
+| `POST /portal/submissions` (createOwnPortalSubmission) | ONAYLI wire; **payload contradiction** (§0.2) | **BLOKE** — DC-03, DC-02; receipt ÖNERİLEN (§0.1) | security owner; CT Supplier Seam Owner | AC-05 (r3 oracle = §0.0 D2 table: suspended → 403 on list / create, 404 on get / submit), AC-12 (scope override → 400), AC-13 (create replay), AC-15 (fingerprint, whitespace key), AC-16 (remap), AC-17 (race) |
 | `POST /portal/submissions/{id}/submit` (submitOwnPortalSubmission) | ONAYLI | ÖNERİLEN — only `DRAFT→SUBMITTED`; **BLOKE** — DC-03 | security owner | AC-14, AC-15, AC-17 |
-| `GET /portal/submissions`, `GET /portal/submissions/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE+mapped Supplier+non-deleted predicate; **BLOKE** — DC-03 | security owner | AC-05 (suspended → 403), AC-10 (predicate), AC-11 (revocation fence) |
+| `GET /portal/submissions`, `GET /portal/submissions/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE+mapped Supplier+non-deleted predicate; **BLOKE** — DC-03 | security owner | AC-05 (r3 oracle = §0.0 D2 table: suspended → 403 on list / create, 404 on get / submit), AC-10 (predicate), AC-11 (revocation fence) |
 | Review operation | **none in v1** — the statuses `UNDER_REVIEW`, `ACCEPTED`, `REJECTED` **are** in the v1 enum | **BLOKE** — no command reaches them; not in the first slice | MOD-0148 owner; CT contract writer | — |
 | Portal-source resolution for MOD-0147 | — | **BLOKE** — later slice, with MOD-0147's risk part (§0.0) | MOD-0147/Risk owner | AC-25 |
 | Placement / Supplier pointer / frozen contract hashes | — | ONAYLI (DC-01) / pointer re-pinned to SUPPLIER v1.2.0 / hash guard | — | AC-01 (r2: CONCURRED), AC-02, AC-07 (hashes only) |

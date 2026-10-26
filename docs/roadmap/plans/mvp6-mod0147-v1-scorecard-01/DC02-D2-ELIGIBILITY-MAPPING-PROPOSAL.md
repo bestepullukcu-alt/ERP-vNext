@@ -73,4 +73,12 @@ MOD-0147 §0.0 and MOD-0148 §0.0 carry the mapping on Cihan's actual `SupplierE
 table above, both because of the frozen wire and the Gateway: (1) MOD-0147 answers **404** (declared for create) instead of
 422 when there is no relationship; (2) the MOD-0148 eligibility read uses the **service identity** (MOD-0140 1.4.0 DL-7, BL-652
 Option 2), because a `supplier_user` token cannot leave `/portal/*` and a supplier must not hold a Procurement permission —
-a new v1 gate for MOD-0148. SUSPENDED follows AC-03/AC-05 (list and create 403; get and submit 404).
+a new v1 gate for MOD-0148. SUSPENDED **deviates** from AC-05 on get and submit (404, because those operations declare
+no 403; list and create keep AC-05's 403), and `PENDING` is an addition to AC-03; the r3 oracle is the MOD-0148 §0.0 table.
+
+## Correction after review (2026-10-26, CT-APR-02 on b406efbf / 9d7887ec)
+
+MOD-0140 §3.1 answers "no relationship / unknown supplier / other tenant" with **404 `UnknownSupplier`**; on a 200
+`relationshipExists` is always `true`. The packs now map that Procurement 404 (MOD-0147 → 404; MOD-0148 → 403 / 404 as in its
+table) and send every malformed or mismatched answer to 503. The MOD-0147 evaluating role also needs
+`mdm.legal-entities.read` (MOD-0140 validates the LE with MDM using the caller token) unless MOD-0140 S-2 decides otherwise.
