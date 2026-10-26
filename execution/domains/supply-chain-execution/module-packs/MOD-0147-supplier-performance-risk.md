@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -47,8 +47,16 @@ Owner decision 2026-10-22 — revision draft.
 | Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
-**Still gates for v1 code:** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`** (MOD-0140 Revision 2 DL-1) **and the
-eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
+**Start on mock (Natig, 2026-10-26):** DL-1 code may be **written, tested and merged** once this revision's CT-APR-01 row is on
+`main`, the PR #198 audit path is on `main` and the SUPPLIER **1.3.0 contract is frozen on `main`** (MOD-0140 Revision 2
+DL-1) — tested against a mock built from that frozen contract (all `SupplierEligibility` answers of §0.0, including 404
+`UNKNOWN_SUPPLIER`, `UNKNOWN_LEGAL_ENTITY` and the route 404). It is safe to merge before MOD-0140 DL-3: until the endpoint
+exists Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILABLE` — create fails closed, nothing is
+written. **Enabling** MOD-0147 for users (its Gateway routes and the evaluating role's permissions) waits for the gates
+below.
+
+**Still gates for enabling v1 (Gateway routes and role permissions):** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`**
+(MOD-0140 Revision 2 DL-1) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
 proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
 (403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
 `main` (audit path b), this revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay
