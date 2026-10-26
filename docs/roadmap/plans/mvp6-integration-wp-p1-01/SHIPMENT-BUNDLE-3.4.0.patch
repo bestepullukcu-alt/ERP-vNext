@@ -1,5 +1,5 @@
---- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 15:50:18
-+++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 15:50:33
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 21:20:13
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 21:21:01
 @@ -12,7 +12,7 @@
      shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
      yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
@@ -9,7 +9,46 @@
    x-status: FROZEN
    x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
    x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
-@@ -3132,6 +3132,11 @@
+@@ -246,6 +246,8 @@
+         '409': { $ref: '#/components/responses/Conflict' }
+         '422': { $ref: '#/components/responses/Unprocessable' }
+         '503': { $ref: '#/components/responses/DependencyUnavailable' }
++        '403': { $ref: '#/components/responses/Forbidden' }
++        '500': { $ref: '#/components/responses/InternalError' }
+   /shipments/{shipmentId}/pod:
+     post:
+       tags: [Shipments]
+@@ -2007,13 +2009,16 @@
+       operationId: transitionReturn
+       summary: Return/RMA lifecycle durumunu ilerlet
+       description: 'Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled; InTransit->Received;
+-        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY
+-        posting bu API''nin disindadir ve frozen INVENTORY contract''ina korele referansla yapilir.
++        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. 3.4.0
++        (WP-P1, MOD-0186 §34): InTransit->Received posts one INVENTORY CUSTOMER_RETURN movement per line into QUARANTINE and
++        the service sets each line''s reference (ReturnResponse.lines); the client''s inventoryTransactionReferenceId is
++        refused on Received. A shipment dispatched before the 3.4.0 stock issue is received without stock posting
++        (inventoryPosting NotPosted, reason PRE_WP_P1).
+ 
+ 
+         Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+-        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+-        publisher.'
++        replay, entitlement, manual receiving and inherited Shipment root. 3.4.0: the only Inventory HTTP call is the
++        CUSTOMER_RETURN posting on Received (MOD-0186 §34); no Warehouse HTTP, worker or publisher.'
+       parameters:
+       - name: returnId
+         in: path
+@@ -2288,6 +2293,8 @@
+                       message: PERSISTENCE UNAVAILABLE
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
++        '403': { $ref: '#/components/responses/Forbidden' }
++        '500': { $ref: '#/components/responses/InternalError' }
+   /claims:
+     get:
+       tags:
+@@ -3132,6 +3139,11 @@
          quantity: { $ref: '#/components/schemas/Decimal' }
          uomId: { type: string }
          inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
@@ -21,7 +60,7 @@
      CreateShipmentCommand:
        type: object
        additionalProperties: false
-@@ -3205,6 +3210,7 @@
+@@ -3205,6 +3217,7 @@
              lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
              pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
              lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
@@ -29,16 +68,63 @@
              contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      ShipmentListResponse:
        type: object
-@@ -3343,6 +3349,8 @@
+@@ -3343,6 +3356,18 @@
          occurredAt: { type: string, format: date-time }
          inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
          dispositionCode: { type: [string, 'null'] }
 +        toWarehouseId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — the warehouse a Received return enters; required by the business rule when targetStatus is Received (MOD-0186 §34). Item, SKU, level and lot come from the shipment line's issue movement, never from the client." }
 +        toLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — optional receiving location." }
++        unpostedLines:
++          type: [array, 'null']
++          description: "3.4.0 (WP-P1 r4, additive) — lines received without stock posting after a permanent INVENTORY refusal (ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE, UNKNOWN_ITEM); refused (422) for any other line (MOD-0186 §34.2)"
++          items:
++            type: object
++            additionalProperties: false
++            required: [shipmentLineNumber, reasonCode]
++            properties:
++              shipmentLineNumber: { type: string }
++              reasonCode: { type: string }
      ReturnSummary:
        type: object
        properties:
-@@ -3517,6 +3525,9 @@
+@@ -3357,6 +3382,17 @@
+           required: [idempotentReplay, contractVersion]
+           properties:
+             idempotentReplay: { type: boolean }
++            lines:
++              type: array
++              description: "3.4.0 (WP-P1 r4, additive, read-only) — per-line Inventory result of Received (MOD-0186 §34.2); absent before Received"
++              items:
++                type: object
++                required: [shipmentLineNumber, inventoryPosting]
++                properties:
++                  shipmentLineNumber: { type: string }
++                  inventoryTransactionReferenceId: { type: [string, 'null'], description: "the CUSTOMER_RETURN transactionId; null when NotPosted" }
++                  inventoryPosting: { type: string, enum: [Posted, NotPosted] }
++                  inventoryPostingReason: { type: [string, 'null'], description: "PRE_WP_P1 or the reasonCode of unpostedLines; null when Posted" }
+             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+     ReturnListResponse:
+       type: object
+@@ -3492,6 +3528,18 @@
+             correlationId: { type: string, format: uuid }
+         contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+   responses:
++    Forbidden:
++      description: "3.4.0 (WP-P1 r4, additive) — authorization outcome of a dependency the command writes to (INVENTORY 403); no state change"
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example: { error: { code: INVALID_REQUEST, message: "INVENTORY refused the caller's authorization", details: { inventoryCode: CROSS_LE_FORBIDDEN }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
++    InternalError:
++      description: "3.4.0 (WP-P1 r4, additive) — integrity fault (e.g. INVENTORY 400 to a request this service built); logged with the correlation id"
++      content:
++        application/json:
++          schema: { $ref: '#/components/schemas/Error' }
++          example: { error: { code: INTERNAL_ERROR, message: Integrity fault, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
+     BadRequest:
+       description: Request semasi veya header gecersiz
+       content:
+@@ -3517,6 +3565,9 @@
            examples:
              idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
@@ -48,7 +134,7 @@
      Unprocessable:
        description: Is kurali veya lifecycle gecisi gecersiz
        content:
-@@ -3528,6 +3539,9 @@
+@@ -3528,6 +3579,9 @@
              returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }

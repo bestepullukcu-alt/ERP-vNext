@@ -81,6 +81,19 @@ Yalnız ekleme; var olan istemciler etkilenmez.
 Hepsi ekleme; var olan istemciler etkilenmez. İki yeni kod `ContractErrorCodeParityTests` için DL-1 koduyla aynı değişiklikte
 sabit olarak eklenir.
 
+## 3c. r4 ekleri (2026-10-26, bağımsız r3 incelemesi + Natig kararları)
+
+| Ek | Tür | Neden |
+|---|---|---|
+| `responses.Forbidden` (403) ve `responses.InternalError` (500) | yeni paylaşılan yanıtlar | MOD-0183 r3 F-3: `transitionShipment` ve `transitionReturn` INVENTORY 403 → 403 ve INVENTORY 400 → 500 döndürüyor; artık bildirilmiş |
+| `transitionShipment` / `transitionReturn` → `'403'`, `'500'` | eklemeli yanıt | aynı |
+| `transitionReturn` açıklaması | metin | MOD-0186 r3 F-1: "No Inventory HTTP" yerine "tek Inventory çağrısı Received'deki CUSTOMER_RETURN"; DL-1 öncesi sevkiyat `NotPosted` / `PRE_WP_P1` |
+| `TransitionReturnCommand.unpostedLines` | eklemeli alan | MOD-0186 r3 F-2: kalıcı INVENTORY reddi (`ITEM_NOT_ACTIVE`, `SKU_LEVEL_NOT_STOCKABLE`, `UNKNOWN_ITEM`) için çıkış |
+| `ReturnResponse.lines[]` | eklemeli, salt-okunur | MOD-0186 r3 F-1: satır başına `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason` |
+
+`returns-semantics-v3.0.0.md` ("Inventory and Warehouse HTTP calls ZERO") 3.0.0 için tarihsel kalır; 3.4.0'ın normatif metni
+`transitionReturn` açıklaması ve MOD-0186 §34'tür. Yeni kodlar `ContractErrorCodeParityTests` için DL-1 koduyla aynı değişiklikte.
+
 ## 4. Değişmeyenler
 
 `ShipmentStatus` kümesi, `ShipmentEventPayload` ve `LifecycleEventEnvelope` (G9: `ShipmentDispatched` biçimi aynı, yalnız

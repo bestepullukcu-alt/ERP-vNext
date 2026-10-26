@@ -125,6 +125,15 @@ Sonuç: MOD-0183 **UYGUN DEĞİL** (1 ENGEL, 6 ORTA, 4 DÜŞÜK), MOD-0186 **KO�
 İşlendiği yer: MOD-0183 §23 r2, MOD-0186 §34 r2, `SHIPMENT-BUNDLE-3.4.0.patch` + PROPOSAL §3b (2026-10-26). §8'deki
 `MOD-0183-section-23.patch` / `MOD-0186-section-34.patch` tarihseldir; güncel metin paketlerdedir.
 
+## 3d. Natig kararları (2026-10-26, soru kutusu) ve r4
+
+- r4 **şimdi** yazılır; girdisi bağımsız r3 incelemesi (oturum `local_e3703e4c`, `docs/records/reviews/MOD-018{3,6}/2026-10-26-{2acd1866,ec08008e}.md`)
+  ve `R4-PENDING-POINTS.md`'deki on nokta. MVP-1 CT r3'ü değil, **yalnız r4'ü** inceler (Inventory'ye dokunduğu için,
+  XMC-001).
+- DL-1 öncesi sevk edilmiş sevkiyatların iadeleri **eski yolla** alınır: INVENTORY çağrısı yok, `NotPosted`, sebep `PRE_WP_P1`,
+  denetim kaydında ve yanıtta işaretli (MOD-0186 §34.2).
+- MOD-0147/0148 CT-APR-01 satırları **Beste'de kalır**; DC-03 bağlaması **Beste'de kalır**.
+
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
 **MOD-0183**
