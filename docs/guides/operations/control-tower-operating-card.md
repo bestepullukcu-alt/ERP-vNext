@@ -56,6 +56,20 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
   çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında **mutlak yolu** (`/Users/…` ile başlayan, kısa `.ct-teslim/…` değil)
   ve SHA-256'sı **ayrı bir kod bloğunda** yazılır, kopyalanabilsin (S-36); araç izin veriyorsa dosya Finder'da gösterilir.
+- **Uzun prompt işçiye dosyayla (S-52, sahip kararı 2026-10-26):** işçi oturumuna verilen prompt yaklaşık 10 bin
+  token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
+  özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
+  metnin birebir aynısıdır. Sahibe gidecek prompt'lar yine kod bloğunda verilir (S-28).
+- **Paket onayı değişince prompt'lar (S-53):** bir paketin onayı (yeni revizyon) değişince, eski Expected HEAD'e bağlı
+  dağıtılmamış prompt'ları dağıtım kapısı reddeder; bu bilinçli bir kuraldır. CT planına "tabanı yeni main'e al ve
+  yeniden inceletmek" adımını koyar.
+- **Bulgu dosyasında düz metin (S-59):** inceleme isteği ve bulgu dosyasında kapanmış bulgular düz metin olarak
+  "Kapananlar (inceleme NN): F-19, F-20 …" biçiminde yazılır. Bulgu tablosunun dışında satır başında `F-` ve büyük harfle
+  `ENGEL` kullanılmaz; ayrıştırıcı böyle bir satırı bozuk bulgu sayar.
+- **İnceleme kaydını commit'ten önce dene (S-54):** prompt inceleme kaydı commit'lenmeden önce
+  `python3 scripts/prompt_gate.py review-check <prompt> <kayıt dosyası>` ile denenir (her `kontrol` satırının kanıtı kaynak
+  paketindeki bir yolu göstermeli). Çıkış 0 dağıtım izni değildir; dağıtım için kayıt commit'lenir ve
+  `check --review YOL@COMMIT` koşulur.
 - **Prompt'tan önce sade özet (S-45, sahip kararı 2026-10-23):** başkasına gidecek her prompt'tan **önce**, sohbette
   ve kod bloğunun dışında, sahibin dilinde beş satırlık bir özet verilir; teknik kod ve dosya adı kullanılmaz (gerekiyorsa
   ne olduğu yanında yazılır):
@@ -79,6 +93,67 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
 - Soruda ya da onay istenen satırda geçen her kod, kişi anahtarı, hesap ya da dosya satırı yanında düz cümleyle
   açıklanır: "K3 (siz — GMG-ERP hesabı)", "isteyen GMG-ERP (incelemeyi isteyen sizsiniz)". Değeri CT türettiyse
   nereden türettiğini de yazar. Sahip neyi onayladığını açıklamayı okumadan anlayabilmelidir (S-25).
+
+## Sahibe rapor ve mesaj biçimi — her Control Tower (S-61, sahip kararı 2026-10-26)
+
+Control Tower'ı kullanan kişi geliştirici olmayabilir. Sahibe (ve geliştirici olmayan kullanıcıya) giden **her mesaj**
+sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu) yalnız sahip isterse ya da CT-Setup'a giden
+5 satırlık özette yer alır.
+
+- **Kısa haber** (her mesaj): yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
+  (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
+  "Soru biçimi" kutusu bu başlığın içinde kullanılır.
+- **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
+
+```text
+### <Control Tower> — <modülün sade adı> · <kaçıncı gün>
+
+Katmanlara göre
+  Belge        ▓▓▓▓░░░░░░  x / y  <tek satır açıklama>
+  Arka uç      …
+  API          …
+  Gateway      …
+  Ekran        …
+  Canlı ortam  …
+  Kabul edilen: x / y  (<neden henüz değil>)
+
+Parçalar
+| Parça | Ne için | Tür | Durum | Kalan prompt (tahmin) | Kimi bekliyor |
+
+Kalan iş: yaklaşık N prompt (tahmin) — X'i şimdi yapılabilir, Y'si bekliyor
+  Türlerine göre: …
+  Ekranda ne zaman görürsünüz: …
+
+Biten
+- <iş>: önce …, şimdi …
+
+Çalışan
+- <iş>
+  - Ne yapılıyor: …
+  - Kullanıcı için: …
+
+Sıradaki
+- <iş> — Kullanıcı için: …
+
+Sizden istenen
+- <tek iş>
+```
+
+Kurallar:
+1. **Kod ve kısaltma yok** (WP-…, AC-…, DL…, UIC-…, E3, rev 10, F-22 gibi); gerekiyorsa önce sade anlamı, kod en sonda
+   parantez içinde. Her iş "önce / şimdi" ya da "kullanıcı için" cümlesiyle anlatılır; kullanıcı, işten etkilenen kişidir
+   (ekranı kullanan ya da geliştirici).
+2. **Parçalar** paketin teslim dilimleridir (modülün tamamı); "Tür" Belge · Arka uç · API · Gateway · Ekran · Yapılandırma
+   · Kapı'dan biridir (birden çoksa "Arka uç + API"). Bu modülde olmayan katman "—" ile yazılır.
+3. **Sayılar ölçülür:** çubuklar ve sayılar kuyruk satırlarından, paketin dilim tablosundan ve GitHub'dan sayılır; elle
+   yüzde yazılmaz. Yüzde yalnız neye göre olduğu yazılarak verilir ("iş paketi sayısına göre %30"); iş miktarına göre
+   yüzde ancak onaylı efor tabanıyla (REP-001 §7.1).
+4. **"Kalan prompt" her zaman "tahmin"dir:** bir dilim ≈ 1–2 geliştirme prompt'u; karar ya da başka dilim bekleyenler
+   ayrı sayılır ve "Kimi bekliyor" sütununda kimin kararı beklendiği yazılır (sahip, Beste, başka modülün sahibi).
+5. **"Ekranda ne zaman görürsünüz"** her raporda yazılır; ekranı olmayan modülde ne görüleceği söylenir (ör. "her PR'da
+   otomatik kontrol").
+6. Kayıt ve denetim için teknik tablo (REP-001 §2, `status_report.py`) ayrıca durur; bu biçim onun yerine geçmez, sahibe
+   giden anlatımdır.
 
 ## 0. Yeni Control Tower açılışı
 
@@ -315,7 +390,14 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 `execution/delivery/ct-queue-registry.tsv`, `execution/registries/module-id-registry.md`, `AGENTS.md` §3 port tablosu.
 
 1. Push'tan önce: CT dalını main ile birleştirir (merge commit) ve kontrolleri birleşmiş hâlde yeniden koşar:
-   `pack_approval.py check <paket>`, `ct_queue.py validate --queue <kuyruk>`.
+   `pack_approval.py check <paket>`, `ct_queue.py validate --queue <kuyruk>`. **Yön (S-47):** birleştirme dalda
+   `git merge origin/main` ile yapılır, dal birinci ebeveyn kalır; GitHub'daki "Update branch" da bu yöndedir. Main'i
+   birinci ebeveyn yapan **ters merge yapılmaz**: PR merge'ünde dalın satırları ikinci ebeveyn tarafında kalır ve onay
+   aracı onları "iç içe ya da ters merge" diye reddeder (S-40). Dalda koşan `check` bunu "UYARI (S-48)" ile merge'den
+   önce söyler. Main'e girmiş bir satır geri alınamaz (dosyalar yalnız ekleme kabul eder). **Geçersiz onay satırı:** aynı
+   paket sürümü için doğru yoldan yeni bir onay satırı eklenir; son satır geçerlidir (Codex F-3). **Geçersiz inceleme
+   satırı:** o sürümün bütün inceleme satırları sayıldığı için sürüm onaylanamaz; çıkış yolu paketin yeni bir
+   revizyonudur.
 2. Çakışma çıkarsa: kendi satırlarını ana dalın satırlarının ALTINA taşır; başkasının satırını silmez, değiştirmez,
    sırasını değiştirmez. Emin değilse `git merge --abort` ile geri alır ve sahibe sorar.
 3. Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
@@ -323,6 +405,9 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
 5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı
    geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
+   **Yük altında kırmızı (S-51, sahip kararı 2026-10-26):** aralıklı (zamana bağlı) bir test kırmızısı ölçülürken
+   makinenin yükü (`uptime`, çekirdek sayısıyla birlikte) kayda yazılır. Yük çekirdek sayısını aşıyorken çıkan kırmızı,
+   yük düştükten sonra bir kez daha koşulmadan "kalıcı" ya da "üründe hata" sayılmaz; iki koşunun sonucu da kayda girer.
 6. Kuralları değiştiren bir PR (`.antigravity/`, kart, SOP) merge edilince her CT kartı yeniden okur; skill
    değiştiyse yeni oturum açılır.
 7. **Bir PR'da bir paket için tek onay satırı (S-41).** Ara sürümler onaylanmaz; PR'a giren son paket sürümü onaylanır.

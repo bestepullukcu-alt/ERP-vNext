@@ -28,13 +28,38 @@ public sealed class PvgApplicationContractShapeTests
         nameof(PvgIntakeField.PatientSubjectCode),
         nameof(PvgIntakeField.EventOnsetDate),
         nameof(PvgIntakeField.AdverseEventNarrative),
-        nameof(PvgIntakeField.SuspectProductText),
         nameof(PvgIntakeField.Seriousness),
         nameof(PvgIntakeField.IntakePriority),
         nameof(PvgIntakeField.TriageOutcome),
         nameof(PvgIntakeField.TriageReason),
         nameof(PvgIntakeField.RouteTargetQueue),
-        nameof(PvgIntakeField.EvidenceLinkReferences)
+        nameof(PvgIntakeField.EvidenceLinkReferences),
+        nameof(PvgIntakeField.ProductLines),
+        nameof(PvgIntakeField.ProductRole),
+        nameof(PvgIntakeField.GlobalProductId),
+        nameof(PvgIntakeField.ProductNameAsReported),
+        nameof(PvgIntakeField.PresentationGskuId),
+        nameof(PvgIntakeField.LotNumber),
+        nameof(PvgIntakeField.AwarenessAtUtc),
+        nameof(PvgIntakeField.CompanyRecipientPersonId),
+        nameof(PvgIntakeField.EventCountry),
+        nameof(PvgIntakeField.ReportType),
+        nameof(PvgIntakeField.ReporterSelectionDirectory),
+        nameof(PvgIntakeField.ReporterSelectionId),
+        nameof(PvgIntakeField.RemoveReporterLink),
+        nameof(PvgIntakeField.ReporterSource),
+        nameof(PvgIntakeField.ReporterSourceId),
+        nameof(PvgIntakeField.ReporterCrmSearchState),
+        nameof(PvgIntakeField.ReporterNameOrInitials),
+        nameof(PvgIntakeField.ReporterProfession),
+        nameof(PvgIntakeField.ReporterCountry)
+    ];
+
+    private static readonly string[] ServerSetReporterFieldNames =
+    [
+        nameof(PvgIntakeField.ReporterSource),
+        nameof(PvgIntakeField.ReporterSourceId),
+        nameof(PvgIntakeField.ReporterCrmSearchState)
     ];
 
     private static readonly string[] AnnexPermissionKeys =
@@ -91,7 +116,7 @@ public sealed class PvgApplicationContractShapeTests
     [Fact]
     public void Annex_field_inventory_matches_domain_field_contract()
     {
-        Assert.Equal(16, AnnexFieldNames.Length);
+        Assert.Equal(34, AnnexFieldNames.Length);
         Assert.Equal(AnnexFieldNames.Length, AnnexFieldNames.Distinct(StringComparer.Ordinal).Count());
 
         var domainFields = Enum.GetNames<PvgIntakeField>()
@@ -120,13 +145,31 @@ public sealed class PvgApplicationContractShapeTests
             [PvgIntakeField.PatientSubjectCode] = (PvgFieldSensitivity.Phi, false),
             [PvgIntakeField.EventOnsetDate] = (PvgFieldSensitivity.Phi, false),
             [PvgIntakeField.AdverseEventNarrative] = (PvgFieldSensitivity.Phi, true),
-            [PvgIntakeField.SuspectProductText] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.Seriousness] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.IntakePriority] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.TriageOutcome] = (PvgFieldSensitivity.RegulatedSafety, false),
             [PvgIntakeField.TriageReason] = (PvgFieldSensitivity.Phi, true),
             [PvgIntakeField.RouteTargetQueue] = (PvgFieldSensitivity.Confidential, false),
-            [PvgIntakeField.EvidenceLinkReferences] = (PvgFieldSensitivity.Confidential, false)
+            [PvgIntakeField.EvidenceLinkReferences] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.ProductLines] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ProductRole] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.GlobalProductId] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ProductNameAsReported] = (PvgFieldSensitivity.RegulatedSafety, true),
+            [PvgIntakeField.PresentationGskuId] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.LotNumber] = (PvgFieldSensitivity.RegulatedSafety, true),
+            [PvgIntakeField.AwarenessAtUtc] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.CompanyRecipientPersonId] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.EventCountry] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReportType] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReporterSelectionDirectory] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSelectionId] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.RemoveReporterLink] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSource] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterSourceId] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterCrmSearchState] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterNameOrInitials] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterProfession] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.ReporterCountry] = (PvgFieldSensitivity.Pii, false)
         };
 
         var approvedDefinitions = PvgIntakeFieldDefinition.ApprovedFields.ToDictionary(
@@ -144,7 +187,8 @@ public sealed class PvgApplicationContractShapeTests
             typeof(PvgCreateIntakeDraftRequest),
             typeof(PvgUpdateIntakeDraftRequest),
             typeof(PvgTriageIntakeDraftRequest),
-            typeof(PvgRouteIntakeDraftRequest)
+            typeof(PvgRouteIntakeDraftRequest),
+            typeof(PvgIntakeProductLineRequest)
         }
         .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
         .Select(property => property.Name)
@@ -153,7 +197,65 @@ public sealed class PvgApplicationContractShapeTests
         .Order(StringComparer.Ordinal)
         .ToArray();
 
-        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), requestFieldNames);
+        Assert.Equal(
+            AnnexFieldNames.Except(ServerSetReporterFieldNames, StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            requestFieldNames);
+    }
+
+    [Fact]
+    public void Safety_case_intake_and_field_contract_carry_product_list_without_suspect_product_text()
+    {
+        foreach (var type in new[] { typeof(SafetyCaseIntake), typeof(PvgCreateIntakeDraftRequest), typeof(PvgUpdateIntakeDraftRequest) })
+        {
+            var propertyNames = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(property => property.Name).ToArray();
+
+            Assert.DoesNotContain("SuspectProductText", propertyNames);
+            Assert.Contains(nameof(SafetyCaseIntake.ProductLines), propertyNames);
+        }
+
+        Assert.Equal(typeof(IReadOnlyList<PvgIntakeProductLine>), typeof(SafetyCaseIntake).GetProperty(nameof(SafetyCaseIntake.ProductLines))!.PropertyType);
+        Assert.Equal(
+            typeof(IReadOnlyList<PvgIntakeProductLineRequest>),
+            typeof(PvgCreateIntakeDraftRequest).GetProperty(nameof(PvgCreateIntakeDraftRequest.ProductLines))!.PropertyType);
+        Assert.Equal(
+            typeof(IReadOnlyList<PvgIntakeProductLineRequest>),
+            typeof(PvgUpdateIntakeDraftRequest).GetProperty(nameof(PvgUpdateIntakeDraftRequest.ProductLines))!.PropertyType);
+        Assert.DoesNotContain("SuspectProductText", Enum.GetNames<PvgIntakeField>());
+        Assert.Equal(34, Enum.GetNames<PvgIntakeField>().Length);
+        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), Enum.GetNames<PvgIntakeField>().Order(StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
+    public void Create_and_update_requests_carry_reporter_selection_pair_and_no_server_set_reporter_fields()
+    {
+        var createDraftType = typeof(CreateIntakeDraftCommand).GetProperty(nameof(CreateIntakeDraftCommand.Draft))!.PropertyType;
+        var updateDraftType = typeof(UpdateIntakeDraftCommand).GetProperty(nameof(UpdateIntakeDraftCommand.Draft))!.PropertyType;
+        var createDraftNames = PropertyNames(createDraftType);
+        var updateDraftNames = PropertyNames(updateDraftType);
+
+        Assert.Contains(nameof(PvgIntakeField.ReporterSelectionDirectory), createDraftNames);
+        Assert.Contains(nameof(PvgIntakeField.ReporterSelectionId), createDraftNames);
+        Assert.Contains(nameof(PvgIntakeField.ReporterSelectionDirectory), updateDraftNames);
+        Assert.Contains(nameof(PvgIntakeField.ReporterSelectionId), updateDraftNames);
+        Assert.Contains(nameof(PvgIntakeField.RemoveReporterLink), updateDraftNames);
+        Assert.DoesNotContain(nameof(PvgIntakeField.RemoveReporterLink), createDraftNames);
+
+        var visited = new HashSet<Type>();
+        var reachableNames = new[]
+            {
+                typeof(CreateIntakeDraftCommand),
+                typeof(UpdateIntakeDraftCommand),
+                typeof(TriageIntakeDraftCommand),
+                typeof(RouteIntakeDraftCommand)
+            }
+            .SelectMany(type => ReachablePropertyNames(type, visited))
+            .ToArray();
+
+        Assert.Contains(typeof(PvgIntakeProductLineRequest), visited);
+        foreach (var serverSetName in ServerSetReporterFieldNames)
+        {
+            Assert.DoesNotContain(serverSetName, reachableNames);
+        }
     }
 
     [Fact]
@@ -267,7 +369,7 @@ public sealed class PvgApplicationContractShapeTests
             SourceReference = "source-ref",
             ReporterContactSummary = "reporter@example.test",
             PatientSubjectCode = "patient-subject-code",
-            SuspectProductText = "suspect product",
+            ProductLines = [new PvgIntakeProductLine("Suspect", null, "suspect product", null, null)],
             EvidenceLinkReferences = ["evidence-ref"]
         };
 
@@ -282,7 +384,9 @@ public sealed class PvgApplicationContractShapeTests
         Assert.Equal("source-ref", intake.SourceReference);
         Assert.Equal("reporter@example.test", intake.ReporterContactSummary);
         Assert.Equal("patient-subject-code", intake.PatientSubjectCode);
-        Assert.Equal("suspect product", intake.SuspectProductText);
+        var productLine = Assert.Single(intake.ProductLines);
+        Assert.Equal("Suspect", productLine.ProductRole);
+        Assert.Equal("suspect product", productLine.ProductNameAsReported);
         Assert.Equal(["evidence-ref"], intake.EvidenceLinkReferences);
         AssertNoForbiddenNames(PublicMemberNames(typeof(SafetyCaseIntake)));
     }
@@ -385,6 +489,38 @@ public sealed class PvgApplicationContractShapeTests
             Assert.DoesNotContain(names, name => name.Contains(forbiddenTerm, StringComparison.OrdinalIgnoreCase));
         }
     }
+
+    private static string[] PropertyNames(Type type) =>
+        type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(property => property.Name).ToArray();
+
+    // Walks command properties, their request types, and the element types of request lists.
+    private static IEnumerable<string> ReachablePropertyNames(Type type, ISet<Type> visited)
+    {
+        if (!visited.Add(type))
+        {
+            yield break;
+        }
+
+        foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            yield return property.Name;
+
+            var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+            var nestedTypes = propertyType.IsGenericType
+                ? propertyType.GetGenericArguments()
+                : [propertyType];
+            foreach (var nestedType in nestedTypes.Where(IsPvgContractType))
+            {
+                foreach (var nestedName in ReachablePropertyNames(nestedType, visited))
+                {
+                    yield return nestedName;
+                }
+            }
+        }
+    }
+
+    private static bool IsPvgContractType(Type type) =>
+        type.Namespace is not null && type.Namespace.StartsWith("Diten.PvgService", StringComparison.Ordinal) && !type.IsEnum;
 
     private static IEnumerable<string> PublicMemberNames(Type type) =>
         type.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)

@@ -184,7 +184,10 @@ public sealed class WireLevelErrorMappingTests
             stream.Dispose();
             sock.Dispose();
 
-            var exitCode = await h.WaitForExitAsync(hostPid, TimeSpan.FromSeconds(20));
+            // TEST-HIZ-01: the host notices the closed channel only at its next send, after the seed — the step the
+            // other tests give 60 s to reach `ready`. 20 s ended the wait twice on the macOS runner (-1: still running),
+            // so the host gets the same 60 s plus its own teardown. The exit code asserted below is unchanged.
+            var exitCode = await h.WaitForExitAsync(hostPid, TimeSpan.FromSeconds(90));
             Assert.Equal(6, exitCode); // ExitCodes.SupervisorLost
 
             await Task.Delay(1000);

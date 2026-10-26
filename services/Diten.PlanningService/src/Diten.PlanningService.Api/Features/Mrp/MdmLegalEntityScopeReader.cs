@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Diten.PlanningService.Application.Features.Mrp;
+using Diten.PlanningService.Api.Features.DemandPlanning;
 
 namespace Diten.PlanningService.Api.Features.Mrp;
 
@@ -72,6 +73,7 @@ public sealed class MdmLegalEntityScopeReader(IHttpClientFactory clients,
             !bearer.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Caller tenant and bearer token are required.");
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        PlanningCorrelation.Forward(context, request);
         request.Headers.TryAddWithoutValidation("Authorization", bearer);
         request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantId.ToString("D"));
         return await clients.CreateClient("DemandGateway").SendAsync(request, ct);

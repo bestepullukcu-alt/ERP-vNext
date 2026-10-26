@@ -34,6 +34,7 @@ public sealed class CompositionRootGuardCollection
 }
 
 [Collection(CompositionRootGuardCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host host) : IClassFixture<CompositionRootGuardTests.Host>
 {
     internal const string MongoVariable = "AUTH_COMPOSITION_GUARD_MONGO_URI";

@@ -24,7 +24,7 @@ namespace Diten.AuthService.Application.Tests.Auth;
 /// 500, no platform token in the answer, no refresh row minted, none revoked, the password unchanged — and without the fault the
 /// same call succeeds and marks the account (the control).</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class PlatformMintMarkerFailureTests : IClassFixture<PlatformMintMarkerFailureTests.Host>
 {
     private static readonly Guid PlatformTenant = PlatformSystemTenant.Id;
