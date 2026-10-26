@@ -26,7 +26,8 @@ DL-1 prompt'u ancak bunlar kapanınca dağıtılabilir (paket "Ready-for-dev Che
 | O-9 RCS-001 ortak kod servisi (BL-565) | yok; sahibi belirlenmedi | sahip ataması |
 | O-11 küsurat hanesi + O-13 `payment-method` kümesi (TRM-17, MOD-0048-FU01 §21) | önerildi; onay turu açık | Beste |
 | O-19 SEC-002 tüketim yolu | yok | Beste |
-| Yeni servis defteri + CT-DECISIONS satırı için CT kararı | açık | CT + sahip |
+| Yeni servis defteri + CT-DECISIONS satırı için CT kararı | **verildi — D35** (yol b, borç / istisna 0) | — |
+| Platform `AuditCategory`'ye `Finance` değeri (D35/3) | yok | Platform sahibi |
 | MOD-0018 `finance-treasury.*` izin tohumu ve rol şablonları | açık | Beste |
 
 **Dayanak kararlar (D34 henüz main'de değil):** `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`
