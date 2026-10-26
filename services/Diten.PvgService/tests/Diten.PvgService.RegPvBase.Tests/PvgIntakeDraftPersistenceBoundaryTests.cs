@@ -108,7 +108,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
                 .Select(_ => Task.Factory.StartNew(
                     () =>
                     {
-                        startBarrier.SignalAndWait();
+                        Assert.True(startBarrier.SignalAndWait(TimeSpan.FromSeconds(30)));
                         return repository
                             .ReplaceAsync(tenant, intakeDraftId, expectedVersion, Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated))
                             .AsTask()
@@ -119,7 +119,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
                     TaskCreationOptions.LongRunning,
                     TaskScheduler.Default))
                 .ToArray();
-            var results = await Task.WhenAll(calls);
+            var results = await Task.WhenAll(calls).WaitAsync(TimeSpan.FromSeconds(60));
             var persisted = await repository.FindByIdAsync(tenant, intakeDraftId);
 
             Assert.Equal(1, results.Count(result => result.Outcome == PvgIntakeDraftReplaceOutcome.Replaced));
@@ -215,7 +215,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
             ReporterContactSummary = "reporter@example.test",
             PatientSubjectCode = "patient-subject-code",
             EventOnsetDate = DateOnly.FromDateTime(DateTime.UnixEpoch),
-            SuspectProductText = "suspect product",
+            ProductLines = [new PvgIntakeProductLine("Suspect", null, "suspect product", null, null)],
             EvidenceLinkReferences = ["evidence-ref"]
         };
 
