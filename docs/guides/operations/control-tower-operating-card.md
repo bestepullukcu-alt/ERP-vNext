@@ -56,6 +56,10 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
   çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında **mutlak yolu** (`/Users/…` ile başlayan, kısa `.ct-teslim/…` değil)
   ve SHA-256'sı **ayrı bir kod bloğunda** yazılır, kopyalanabilsin (S-36); araç izin veriyorsa dosya Finder'da gösterilir.
+- **Uzun prompt işçiye dosyayla (S-52, sahip kararı 2026-10-26):** işçi oturumuna verilen prompt yaklaşık 10 bin
+  token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
+  özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
+  metnin birebir aynısıdır. Sahibe gidecek prompt'lar yine kod bloğunda verilir (S-28).
 - **Prompt'tan önce sade özet (S-45, sahip kararı 2026-10-23):** başkasına gidecek her prompt'tan **önce**, sohbette
   ve kod bloğunun dışında, sahibin dilinde beş satırlık bir özet verilir; teknik kod ve dosya adı kullanılmaz (gerekiyorsa
   ne olduğu yanında yazılır):
@@ -315,7 +319,12 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 `execution/delivery/ct-queue-registry.tsv`, `execution/registries/module-id-registry.md`, `AGENTS.md` §3 port tablosu.
 
 1. Push'tan önce: CT dalını main ile birleştirir (merge commit) ve kontrolleri birleşmiş hâlde yeniden koşar:
-   `pack_approval.py check <paket>`, `ct_queue.py validate --queue <kuyruk>`.
+   `pack_approval.py check <paket>`, `ct_queue.py validate --queue <kuyruk>`. **Yön (S-47):** birleştirme dalda
+   `git merge origin/main` ile yapılır, dal birinci ebeveyn kalır; GitHub'daki "Update branch" da bu yöndedir. Main'i
+   birinci ebeveyn yapan **ters merge yapılmaz**: PR merge'ünde dalın satırları ikinci ebeveyn tarafında kalır ve onay
+   aracı onları "iç içe ya da ters merge" diye reddeder (S-40). Dalda koşan `check` bunu "UYARI (S-48)" ile merge'den
+   önce söyler. Onay ya da inceleme satırı bir kez main'e girip geçersiz sayılırsa geri alınamaz (dosyalar yalnız ekleme
+   kabul eder); çıkış yolu paketin yeni bir revizyonudur.
 2. Çakışma çıkarsa: kendi satırlarını ana dalın satırlarının ALTINA taşır; başkasının satırını silmez, değiştirmez,
    sırasını değiştirmez. Emin değilse `git merge --abort` ile geri alır ve sahibe sorar.
 3. Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
@@ -323,6 +332,9 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
 5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı
    geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
+   **Yük altında kırmızı (S-51, sahip kararı 2026-10-26):** aralıklı (zamana bağlı) bir test kırmızısı ölçülürken
+   makinenin yükü (`uptime`, çekirdek sayısıyla birlikte) kayda yazılır. Yük çekirdek sayısını aşıyorken çıkan kırmızı,
+   yük düştükten sonra bir kez daha koşulmadan "kalıcı" ya da "üründe hata" sayılmaz; iki koşunun sonucu da kayda girer.
 6. Kuralları değiştiren bir PR (`.antigravity/`, kart, SOP) merge edilince her CT kartı yeniden okur; skill
    değiştiyse yeni oturum açılır.
 7. **Bir PR'da bir paket için tek onay satırı (S-41).** Ara sürümler onaylanmaz; PR'a giren son paket sürümü onaylanır.

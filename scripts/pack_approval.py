@@ -1111,6 +1111,33 @@ def slice_rule(root: str, ref: str, path: str) -> tuple[bool, list[str] | None, 
 
 
 
+DRAFT_WARNING = ("UYARI (S-49): paket künyesi `status: draft` — onay satırı kodu yetkilendirmez; prompt kapısı "
+                 "`ready-for-dev` ister. Onay satırını künyesi ready-for-dev olan sürüme yazın")
+
+
+def branch_line_warnings(ctx: "Ctx", data: bytes) -> list[str]:
+    """S-48: on a branch, every row of this decision that is not on main yet (the last approval row, this version's
+    review rows) must lie on the checked ref's OWN first-parent line. The pull request's merge brings the branch tip in
+    as its second parent and main_merge counts a row only on that parent's first-parent line (S-40, F-2); a row behind
+    a reversed merge (main as the first parent) or a nested merge would be refused only after the merge — say it now."""
+    root, ref = ctx.root, ctx.commit
+    if ref in _main_line_set(root, ctx.main):
+        return []
+    line = set(git(root, "rev-list", "--first-parent", ref).decode().split())
+    digest = sha256(data)
+    rows = ([("onay satırı", row_commit(root, ref, ctx.rows[-1]["_n"]))] if ctx.rows else []) + [
+        (f"inceleme satır {r['_n']}", row_commit(root, ref, r["_n"], REVIEWS))
+        for r in review_rows(root, ref) if r["target"] == ctx.path and r["target_sha256"] == digest]
+    out = []
+    for label, c in rows:
+        if c in line or git(root, "merge-base", "--is-ancestor", c, ctx.main, ok_fail=True) is not None:
+            continue
+        out.append(f"UYARI (S-48): {label} ({c[:12]}) bu dalın kendi çizgisinde değil — main'i birinci ebeveyn yapan bir "
+                   "ters merge ya da iç içe merge'ün arkasında; PR main'e girince insan adımı sayılmaz. Dalda "
+                   "`git merge origin/main` kullanın (dal birinci ebeveyn kalır), ters merge yapmayın (kart §7a-1)")
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ the decision
 def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
     head = [f"PACK-APPROVAL v1 — {path} @ {ref}"]
@@ -1161,7 +1188,8 @@ def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
             return 1, head + [f"sonuç: paket onaydan sonra değişti ({n} satır) — yeniden onay gerekli", "çıkış: 1"]
         fails, out, effective, _ = judge(ctx, len(rows) - 1)
         fails = fails + today_problems(ctx, len(rows) - 1)
-        out = head + out
+        out = head + out + ([DRAFT_WARNING] if kunye(text).get("status") == "draft" else []) \
+            + branch_line_warnings(ctx, data)
         if fails:
             return 1, out + [f"ENGEL: {f}" for f in fails] + ["sonuç: onay geçersiz", "çıkış: 1"]
         return 0, out + [f"sonuç: onaylı — {effective} · onaylayan {row['approver']} · {row['approved_at']}", "çıkış: 0"]
@@ -1447,6 +1475,48 @@ def self_test() -> int:
     cases.append(("sabotage S-40/Codex F-6: a row straight on main carried by another person's pull-merge and a "
                   "fast-forward -> not a pull request's merge (GitHub), exit 1",
                   code == 1 and any("PR'ın merge commit'i değil" in l for l in out)))
+    # S-48: a row behind a reversed merge (main as the first parent) is named on the branch, before the pull request
+    g("checkout", "-q", "main")
+    s48_start = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "-b", "s48", s48_start)
+    put(PACK, get(PACK) + "- s48\n")
+    commit("pack change s48")
+    add_row("dev", "lead", "HIGH", "2026-10-26")
+    commit("s48 approval row")
+    g("checkout", "-q", "main")
+    put("z48.txt", "main moves\n")
+    commit("main moves (s48)", who=LEAD)
+    g("checkout", "-q", "--detach", "main")
+    g("merge", "-q", "--no-ff", "-m", "merge s48 with main as the first parent", "s48", who=DEV)
+    g("branch", "-f", "s48rev", "HEAD")
+    code, out = check("s48rev")
+    cases.append(("sabotage S-48: on a branch whose row sits behind a reversed merge (main first parent) -> the approval "
+                  "row is named with a warning before the PR", any("UYARI (S-48)" in l and "onay satırı" in l for l in out)))
+    g("checkout", "-q", "s48")
+    g("merge", "-q", "--no-ff", "-m", "merge main into s48", "main", who=DEV)
+    code, out = check("s48")
+    cases.append(("S-48: the same branch taking main in the normal way (branch first parent) -> no warning",
+                  not any("UYARI (S-48)" in l for l in out)))
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s48", "s48", who=LEAD)
+    g("checkout", "-q", "-b", "s48after", "main")
+    put("z48b.txt", "later work\n")
+    commit("later work on a new branch")
+    code, out = check("s48after")
+    cases.append(("S-48: a new branch from main whose approval row reached main through a PR (second parent) -> no "
+                  "warning (already on main)", not any("UYARI (S-48)" in l for l in out) and any("sonuç" in l for l in out)))
+    # S-49: an approval row for a pack whose künye says status: draft carries a warning
+    g("checkout", "-q", "-b", "s49", "main")
+    put(PACK, get(PACK).replace("status: approved", "status: draft", 1))
+    commit("pack back to draft")
+    add_row("dev", "lead", "HIGH", "2026-10-26")
+    commit("s49 approval row")
+    code, out = check("s49")
+    cases.append(("S-49: an approval row for a status: draft pack -> warning", any("UYARI (S-49)" in l for l in out)))
+    code, out = check("s48")
+    cases.append(("S-49: a status: approved pack -> no draft warning", not any("UYARI (S-49)" in l for l in out)))
+    g("checkout", "-q", "main")
+    g("reset", "-q", "--hard", s48_start)
     # the real GitHub path, driven by a fake GitHub (independent review F-2, Codex F-7…F-13)
     saved = globals()["_gh_json"]
     globals()["_PR_SOURCE"] = None
@@ -2453,7 +2523,11 @@ def main(argv: list[str]) -> int:
             print(make_review_row(root, a.ref, a.pack, a.findings, a.verdict, a.reviewer, a.model, a.effort,
                                   a.reviewer_session, a.author, a.author_session, a.requested_by, a.date))
             return 0
-        print(make_row(root, a.ref, a.pack, a.author, a.approver, a.risk, a.reason, a.date, a.note))
+        row = make_row(root, a.ref, a.pack, a.author, a.approver, a.risk, a.reason, a.date, a.note)
+        pack_text = (read(root, commit_of(root, a.ref) or a.ref, a.pack) or b"").decode("utf-8", errors="replace")
+        if kunye(pack_text).get("status") == "draft":
+            print(DRAFT_WARNING, file=sys.stderr)
+        print(row)
         return 0
     except Unreadable as e:
         print(f"okunamadı — {e}")
