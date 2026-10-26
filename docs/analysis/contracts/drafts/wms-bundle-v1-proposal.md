@@ -270,7 +270,7 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 |---|---|---|
 | `WMS_TASK_NOT_FOUND` | 404 | görev yok / başka kiracı |
 | `WMS_LOCATION_ROLE_NOT_FOUND` | 404 | rol yok |
-| `WMS_CONFLICT` | 409 | bayat If-Match |
+| `WMS_CONFLICT` | 409 | bayat If-Match; ya da 0-satır kuralının (C2) / (E) dalı — kayıt bu denemeden bağımsız değişti, yazım yok, `details.task` güncel görev (pack §8.3; bağımsız inceleme 09 F-5) |
 | `WMS_INVALID_TRANSITION` | 409 | durum geçişi izinsiz |
 | `WMS_CONFIRMATION_PENDING` | 409 | Pending onay varken yeni onay / düzenleme / üstlenme / kısa kapatma / iptal / **görevdeki başka bir onayın "Uzlaştır"ı** / **"Geri taşındı"** / **toplu atama** (satır sonucu `PendingConfirmation`) (görev kilidi, M-4; inceleme 05 F-1, bağımsız inceleme 07 F-1, 08 F-5) |
 | `WMS_CONFIRMATION_CONFLICT_RETRY` | 503 | onay yazımı 0-satır kuralının (A) dalında 3 kez CAS'ı kaybetti; onay Pending, kilit korunur; hareket defterde olabilir — "Yeniden dene" ya da uzlaştırıcı çözer (bağımsız inceleme 08 F-5) |
@@ -329,13 +329,14 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `Pending` | `Refused` | işlem 2 (4xx) / retry ön kontrol reddi | — |
 | `Pending` | `IntegrityError` | `IDEMPOTENCY_KEY_REUSED` · işlem 2 durum farkı (`StatusDiverged`) · `Confirmed + q > Planned` (savunma; gerçek akışta tetiklenmez) | — |
 | `Refused` (`refusalSource ∈ {PreCheck, Ledger4xx}`, `refusedOnRetry = true`, `refusedAtUtc` son 30 dk; `resolution`'dan ve görev durumundan bağımsız) | `IntegrityError` | uzlaştırıcının savunma dalı (ayrı imleç ve bütçe), ledger `Committed` (geç commit); filtre `version` + `status == Refused` | `StatusDiverged`; `resolution` → `priorResolution`, `resolution = null` (inceleme 05 F-3, bağımsız inceleme 05 F-1, 06 F-2, 07 F-5 e) |
-| `Pending` | `Posted` (CAS yinelemesi) | işlem 2 / retry (i) / uzlaştırıcı yazımı 0 kayıt; onay hâlâ Pending ve deneme bu (uzlaştırıcı: kilit boş) | yeni `version` ile yinelenir (≤ 3); onayın kendi durumu farklıysa `IntegrityError` (`StatusDiverged`); başka denemenin kilidi → 409 `WMS_CONFIRMATION_IN_FLIGHT` (bağımsız inceleme 07 F-1) |
+| `Pending` | `Posted` (CAS yinelemesi) | işlem 2 / retry (i) / uzlaştırıcı yazımı 0 kayıt; onay hâlâ Pending ve deneme bu (uzlaştırıcı: kilit boş) | yeni `version` ile yinelenir (≤ 3); onayın kendi durumu farklıysa `IntegrityError` (`StatusDiverged`); başka denemenin kilidi: geçerliyse 409 `WMS_CONFIRMATION_IN_FLIGHT` (bağımsız inceleme 07 F-1), dolmuşsa yazım yok, 409 `WMS_CONFLICT` (bağımsız inceleme 09 F-5) |
 | `Refused` | `IntegrityError` (+ komut 409) | yeni onay / markPutawayConfirmationReturned / cancelPutawayTask / closePutawayTaskShort — önce ledger araması, `Committed` | `StatusDiverged`; komut kendi değişikliğini yazmaz (bağımsız inceleme 05 F-1) |
 | `Pending` | `IntegrityError` | retry (i) / uzlaştırıcı: ledger `Committed` ama `reversedByTransactionId` dolu | `HolderReversed` (bağımsız inceleme 05 F-2) |
 | `IntegrityError` | `Posted` | resolvePutawayIntegrity (a) | görevde Pending onay yok; anahtarı tutan hareket bu onayın (`MOD-0178`, görev, `seq`); defter değerleri (lot, seriler dahil) yazılır; `confirmedQuantity > plannedQuantity` olabilir → sapma olayı |
 | `IntegrityError` | `Refused` (çözümsüz) | resolvePutawayIntegrity (b) | anahtarı tutan hareket yabancı, işlenmemiş **ya da ters kaydedilmiş**; görev açık kalır |
 | `IntegrityError` (görev terminal) | `Posted` / `Refused` | resolvePutawayIntegrity | yalnız onay kaydı düzelir; görev yeniden açılmaz; Cancelled görevde Posted → sapma `PostedAfterCancel` (bağımsız inceleme 05 F-1) |
 | `Refused` | `Refused` + `resolution` | yeni Posted onay / markPutawayConfirmationReturned | `SupersededByNewConfirmation` / `ReturnedToSource` |
+
 Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`, aynı tarihler) ve görevi kilitler; sonuç
 yazımı koşulludur (`status == Pending`, F-3). `Refused` → `resolution: SupersededByNewConfirmation` (aynı görevde yeni Posted onay) ya
 da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). `IntegrityError` istisnadır: resolution ve görev eylemleri kapalı
@@ -352,7 +353,7 @@ türetilir; `integrationFlag` ayrı rozettir. Açık görevde otomatik askı yok
 | Olay | Yön | Şema | Durum |
 |---|---|---|---|
 | `OutboundShipmentReady` | 0178 → MOD-0183 | WAREHOUSE-OUTBOUND `OutboundShipmentReadyEvent` (aynen) + §2.3 eklemeli üyeler | S2; outbox'a yazılır; taşıma (MOD-0035 bus) bugün kapalı → Pending; donmuş alternatif = `GET /outbound-shipments?status=ReadyToShip` poll |
-| `WarehouseTaskCompleted` | iç | `{ taskId, number, kind, legalEntityId, warehouseId, item, lotId, confirmedQuantity, transactionIds[], correlationId }` | S1 iç olay; tüketici yok — **yayınlanmış sözleşme değildir** (INVENTORY ASSUMPTION-0173-08 emsali) |
+| `WarehouseTaskCompleted` | iç | `{ taskId, number, kind, legalEntityId, warehouseId, item, lotId, confirmedQuantity, transactionIds[], correlationId }` | S1'de **yazılmaz** (pack §8.9: S1'de iç olay yok; görevin tamamlanması yerel zaman çizelgesinde `Completed`, pack §4.3 — bağımsız inceleme 09 F-2 d); tüketici yok — **yayınlanmış sözleşme değildir** (INVENTORY ASSUMPTION-0173-08 emsali) |
 | MVP-6 `ShipmentDispatched` | MOD-0183 → 0178 | SHIPMENT-BUNDLE `LifecycleEventEnvelope` (`receiveShipmentLifecycleEvent`) | S2; bus kapalıyken poll: `GET /api/shipment-bundle/shipments?sourceDocumentId={outboundId}&legalEntityId=…` (pack Q-M6-4) |
 
 Olay zarfı: `eventId` (uuid), `occurredAt`, `correlationId` (uuid), `tenantId`, `legalEntityId` — LE bağı olaya yazılır (GAP-0183-02).
@@ -439,7 +440,7 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
-İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
+İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) ve bağımsız inceleme 09 F-1…F-5 (§19.1.12; merkezi kayıt ad ve gövde taşımaz — değerler yerel zaman çizelgesinde; (C2) → 409 `WMS_CONFLICT`) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).
