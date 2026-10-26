@@ -742,6 +742,60 @@ public sealed class TenantModulesScreenHttpMongoTests : IClassFixture<TenantModu
         Assert.False(stored.IsDeleted);
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 — the race of the test below, made deterministic: the second suspend reads the module's rows, then the
+    /// first suspend runs to its commit, then the second goes on. The second decided on rows without an override, so it
+    /// may not take over the one the first just wrote (it did: 204 twice, two audit intents — CI, line 754). It meets
+    /// that row on its insert and is refused as stale; one override, one audit intent.
+    /// </summary>
+    [Fact]
+    public async Task A_second_suspend_that_read_before_the_first_one_committed_is_refused_as_stale_and_writes_nothing()
+    {
+        await using var host = await _shared.ResetAsync();
+        object Suspend() => new { moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "at once", rowVersion = (string?)null };
+        HttpResponseMessage? first = null;
+        host.AfterNextModuleRowsRead = async () => { first = await host.PostAsync(Tenant, "disable", Suspend()); };
+
+        var second = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", Suspend()));
+
+        Assert.NotNull(first);
+        Assert.Equal(HttpStatusCode.NoContent, first!.StatusCode);
+        Assert.True(second.Status == HttpStatusCode.Conflict, $"{(int)second.Status}: {second.Body} {string.Join(" || ", host.Failures)}");
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.Stale, second.Code);
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+        Assert.Equal(1, await host.CountAsync("audit_outbox"));
+    }
+
+    /// <summary>
+    /// TEST-HIZ-01 — the same race on the takeover path: both suspends read the EXPIRED override, the first takes it over
+    /// and commits, then the second goes on. The second decided on the expired row at its old version; the first's
+    /// takeover moved that version, so the second is refused as stale (before: it read the row again, now current, took
+    /// it over a second time and answered 204 — two audit intents, and for a switched-on row a second slot release).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_second_takeover_of_an_expired_override_that_read_before_the_first_one_committed_is_refused_as_stale(bool switchedOn)
+    {
+        await using var host = await _shared.ResetAsync();
+        var expired = await host.SeedAsync(Tenant, Host.PlanModule, EntitlementSource.ManualOverride, enabled: switchedOn, expiry: DateTimeOffset.UtcNow.AddDays(-2));
+        object Suspend() => new { moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "at once", rowVersion = (string?)null };
+        HttpResponseMessage? first = null;
+        host.AfterNextModuleRowsRead = async () => { first = await host.PostAsync(Tenant, "disable", Suspend()); };
+
+        var second = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", Suspend()));
+
+        Assert.NotNull(first);
+        Assert.Equal(HttpStatusCode.NoContent, first!.StatusCode);
+        Assert.True(second.Status == HttpStatusCode.Conflict, $"{(int)second.Status}: {second.Body} {string.Join(" || ", host.Failures)}");
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.Stale, second.Code);
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+        Assert.Equal(1, await host.CountAsync("audit_outbox"));
+        Assert.False((await host.StoredAsync(expired.Id)).IsEnabled);
+        host.Quota.Verify(x => x.ReleaseEntitlementAsync(It.IsAny<IPlatformTransactionSession>(),
+            It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()), switchedOn ? Times.Once() : Times.Never());
+    }
+
     [Fact]
     public async Task Two_screens_suspending_the_same_plan_module_at_once_write_one_override_and_the_other_hears_why()
     {
@@ -1038,7 +1092,8 @@ public sealed class TenantModulesScreenHttpMongoTests : IClassFixture<TenantModu
 
                     // Real persistence, over the test-owned replica set.
                     services.AddSingleton<IPlatformDbContext>(dbContext);
-                    services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
+                    services.AddScoped<TenantModuleEntitlementRepository>();
+                    services.AddScoped<ITenantModuleEntitlementRepository>(sp => ModuleRowsReadHook.Wrap(sp.GetRequiredService<TenantModuleEntitlementRepository>(), this));
                     services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
                     services.AddScoped<IEntitlementStateVersionRepository, EntitlementStateVersionRepository>();
                     services.AddScoped<AuditOutboxRepository>();
@@ -1098,6 +1153,7 @@ public sealed class TenantModulesScreenHttpMongoTests : IClassFixture<TenantModu
             }
 
             Quota.Invocations.Clear();
+            AfterNextModuleRowsRead = null;
             while (Failures.TryDequeue(out _))
             {
             }
@@ -1159,6 +1215,60 @@ public sealed class TenantModulesScreenHttpMongoTests : IClassFixture<TenantModu
             var client = _server.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", PlatformToken(withSubject: false));
             return client.PostAsync(Path(tenantId, suffix), JsonContent.Create(body, options: Json));
+        }
+
+        /// <summary>TEST-HIZ-01 — runs once, right after the next read of a module's stored rows has returned (the read a
+        /// command decides on), and before that command goes on. Null for every test that does not set it.</summary>
+        public Func<Task>? AfterNextModuleRowsRead
+        {
+            get => Volatile.Read(ref _afterNextModuleRowsRead);
+            set => Volatile.Write(ref _afterNextModuleRowsRead, value);
+        }
+
+        private Func<Task>? _afterNextModuleRowsRead;
+
+        private Func<Task>? TakeAfterNextModuleRowsRead() => Interlocked.Exchange(ref _afterNextModuleRowsRead, null);
+
+        /// <summary>The real repository, with <see cref="AfterNextModuleRowsRead"/> after its module-rows read.</summary>
+        public class ModuleRowsReadHook : System.Reflection.DispatchProxy
+        {
+            private ITenantModuleEntitlementRepository _inner = null!;
+            private Host _host = null!;
+
+            public static ITenantModuleEntitlementRepository Wrap(ITenantModuleEntitlementRepository inner, Host host)
+            {
+                var proxy = Create<ITenantModuleEntitlementRepository, ModuleRowsReadHook>();
+                var hook = (ModuleRowsReadHook)(object)proxy;
+                hook._inner = inner;
+                hook._host = host;
+                return proxy;
+            }
+
+            protected override object? Invoke(System.Reflection.MethodInfo? method, object?[]? args)
+            {
+                object? result;
+                try
+                {
+                    result = method!.Invoke(_inner, args);
+                }
+                catch (System.Reflection.TargetInvocationException exception) when (exception.InnerException is not null)
+                {
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+                    throw;
+                }
+
+                if (method.Name != nameof(ITenantModuleEntitlementRepository.GetByTenantAndModuleAsync)) return result;
+                var after = _host.TakeAfterNextModuleRowsRead();
+                return after is null ? result : ThenAsync((Task<IReadOnlyList<TenantModuleEntitlement>>)result!, after);
+            }
+
+            private static async Task<IReadOnlyList<TenantModuleEntitlement>> ThenAsync(
+                Task<IReadOnlyList<TenantModuleEntitlement>> read, Func<Task> after)
+            {
+                var rows = await read;
+                await after();
+                return rows;
+            }
         }
 
         public Task<long> CountAsync(string collection) =>
