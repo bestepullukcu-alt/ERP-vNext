@@ -604,7 +604,9 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 > F-4), the company header comes from the shipment (F-5), `inventoryReferenceId` is unused in v1 (F-10); r3 closes F-3
 > (REVERSAL fields as INVENTORY's code requires), F-6 (§5 scope), F-7 (slice table), F-8, F-9, F-10, F-11; **r4** (2026-10-26)
 > closes the independent r3 review (`docs/records/reviews/MOD-0183/2026-10-26-2acd1866.md`, KOŞULLU): fencing F-1, external
-> reversal F-2, closed code list and declared statuses F-3, `skuLevel` / lot check F-4, text and order F-5. **Draft revision —
+> reversal F-2, closed code list and declared statuses F-3, `skuLevel` / lot check F-4, text and order F-5; **r5** closes the
+> review of r4 (`docs/records/reviews/MOD-0183/2026-10-26-85e1bd04.md`): late writer reverses only a closed attempt's
+> unrecorded issue, reconciliation job, 403 during compensation, patch texts. **Draft revision —
 > not approved.** Needs a new CT-APR-02 round (MVP-1 CT) and a CT-APR-01 row (high risk) before any code.
 
 ### 23.1 What is posted
@@ -640,7 +642,8 @@ The caller's token is forwarded. The dispatching role needs `inventory.movements
 role template. **An INVENTORY 403 is an authorization outcome and is answered as 403 `INVALID_REQUEST`** (the pattern of the
 return reader, Q420), never as 503; the log line keeps INVENTORY's code, so `CROSS_LE_FORBIDDEN` (wrong or missing
 `X-Legal-Entity-Id`) is told apart from a missing permission: before the first post of an attempt nothing changes; during an attempt the attempt stays
-`InProgress` (§23.4) and the shipment stays `Planned`. A service identity comes with BL-652 Option 2.
+`InProgress` (§23.4) and the shipment stays `Planned`. During a **compensation**, an INVENTORY 403 on a REVERSAL makes the
+attempt `CompensationFailed` (§23.4), like any failed REVERSAL; the user exit resends it (r5, review F-2). A service identity comes with BL-652 Option 2.
 
 ### 23.3 Refusals and events
 
@@ -721,11 +724,21 @@ owner). "Release first, then issue" is not used.
   original `transactionId`. When the other lines are reversed, the attempt is `Compensated` — no `CompensationFailed` loop.
   During a dispatch (not a compensation) a line whose issue was reversed externally is still a posted line; the attempt is
   completed or compensated as usual.
-- **Fencing a late writer (r4, review F-1).** The lease carries an id. Every INVENTORY call and every write of a result is
-  conditional on the shipment still holding **this attempt `n` and this lease id**. A writer whose lease has expired (a
-  paused process) may still get a 201 from INVENTORY for a line; when it then cannot record the `transactionId`, it reverses
-  that issue itself with the REVERSAL body of §23.4 and key `{shipmentId}:{lineNumber}:reversal:a{n}` (unused for that line,
-  which was never recorded in attempt `n`), and logs an integrity fault. So no issue stays unrecorded and unreversed.
+- **Fencing a late writer (r4, corrected in r5 — review F-1).** The lease carries an id. Every INVENTORY call and every
+  write of a result is conditional on the shipment still holding **this attempt `n` and this lease id**. A writer whose lease
+  has expired (a paused process) may still get a 201 for a line and then fail to record it. It then **re-reads the shipment**
+  and acts only on what it sees:
+  - attempt `n` is still `InProgress` or is `Completed` → it **does nothing** but log: the new lease holder resends the same
+    key with the same body and receives the same `transactionId` by replay (or already has), so reversing it would leave a
+    `Dispatched` shipment without its stock issue;
+  - attempt `n` is closed (`Compensated` or `CompensationFailed`, so nobody will send `…:dispatch:a{n}` again) **and** that
+    `transactionId` is recorded on no line → it reverses the issue with the §23.4 REVERSAL body and key
+    `{shipmentId}:{lineNumber}:reversal:a{n}` (unused: the line was never recorded in attempt `n`) and logs an integrity fault.
+  A writer that crashes before this step leaves an unrecorded issue behind. A **reconciliation job** finds it: for shipments
+  with a closed attempt it lists INVENTORY movements with `documentGroupId` = the shipment id and **flags** (never posts or
+  reverses, S23-12) every `GOODS_ISSUE_SALES` whose `transactionId` is on no line, for a user to reverse through the
+  `CompensationFailed` exit. Whether INVENTORY's transaction query filters by `documentGroupId` is asked of the MVP-1 CT
+  (**R-3**); if it does not, that filter is an INVENTORY addition requested from the MOD-0173 owner before DL-1.
 - **Order (r4, review F-5).** Lines are posted, and reversed, in the order they are stored on the shipment (create order),
   never sorted by `lineNumber` text.
 - **Failed compensation and the exit (F-4).** If a REVERSAL itself fails, the attempt becomes `CompensationFailed`, the
@@ -766,7 +779,7 @@ owner). "Release first, then issue" is not used.
 | S23-10 | Compensating REVERSAL fails → `CompensationFailed`, transitions and POD 409 `DISPATCH_COMPENSATION_FAILED`; exit by `Cancelled` and by `Dispatched` both resend the reversals first; `Dispatched` then opens attempt 2 with keys `…:a2` |
 | S23-11 | Stored dates are resent within an attempt; a forced date change in a test shows `IDEMPOTENCY_KEY_REUSED` handled as an integrity fault |
 | S23-12 | A background job never posts or reverses; it only flags an expired lease |
-| S23-18 | **Fencing (review F-1):** a writer whose lease expired posts line 3 after the attempt was compensated → its issue is reversed by itself with `…:3:reversal:a1`, net stock unchanged, integrity fault logged; sabotage: dropping the lease-id condition makes the test red |
+| S23-18 | **Fencing (review F-1, r5):** (a) A gets 201 `T2` for line 2 and pauses; B takes the lease, resends `…:2:dispatch:a1` → replay `T2`, records it, completes `Dispatched`; A wakes → **does not reverse**, AVAILABLE net −(sum of lines). (b) A's attempt was compensated while it paused → A reverses its unrecorded issue with `…:3:reversal:a1`, net stock unchanged. (c) A crashes after its 201 → the reconciliation job flags the unrecorded movement. Sabotage: reversing in case (a), or dropping the lease-id condition, makes the test red |
 | S23-19 | **External reversal (review F-2):** line 1's issue is reversed in INVENTORY by a user, then line 2 is refused → our REVERSAL of line 1 answers `ALREADY_REVERSED`, counted as reversed, attempt `Compensated`, no `CompensationFailed` loop |
 | S23-17 | REVERSAL body: only the §23.4 fields are sent; sabotage: adding `lotId` or a `from*` field makes the compensation test red (INVENTORY 400), and a 400 is handled as an integrity fault |
 | S23-13 | Compensation retried after a crash → each REVERSAL resent with its `…:reversal:a{n}` key and stored dates → `idempotentReplay: true`, no `ALREADY_REVERSED`, no second reversal |
