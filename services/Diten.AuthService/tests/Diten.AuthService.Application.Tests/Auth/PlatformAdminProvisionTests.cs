@@ -25,6 +25,7 @@ namespace Diten.AuthService.Application.Tests.Auth;
 ///
 /// <para>Real HTTP on the production Api over a test-owned mongod. Disposable platform users only — never the seeded admin.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdminProvisionTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

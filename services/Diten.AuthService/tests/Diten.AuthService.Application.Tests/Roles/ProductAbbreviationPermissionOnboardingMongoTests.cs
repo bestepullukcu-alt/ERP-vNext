@@ -16,6 +16,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // WP-AUTH-BL570-01: on the OWNED disposable mongod (DITEN_TEST_MONGOD, the AuthReconciliationMongoCollection child), never
 // a shared or application Mongo. Without the variable each test is SKIPPED BY NAME (OwnedMongoFact), not silently passed.
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ProductAbbreviationPermissionOnboardingMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private const string DatabaseName = "diten_auth_fu20_itest";

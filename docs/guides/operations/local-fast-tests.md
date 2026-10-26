@@ -10,6 +10,10 @@ yalnız geliştirme sırasındaki bekleme süresini kısaltır.
 scripts/test-env/fast-local-tests.sh services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj
 ```
 
+```bash
+scripts/test-env/fast-local-tests.sh services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
+```
+
 Yalnız bir bölümü koşmak için ikinci argümana ek bir filtre verilir. Bu filtre `Category!=Mongo&Category!=Slow` ile
 birlikte uygulanır:
 
@@ -38,8 +42,9 @@ olur. Çözüm, o testin sınıfına `[Trait("Category", "Mongo")]` eklemektir.
 
 ## Hangi projelerde çalışır
 
-Pilot yalnız `Diten.Platform.Application.Tests`. Komut başka bir proje verildiğinde koşmaz; etiketlenmemiş Mongo
-testleri yanlış nedenle kırmızı olurdu. Proje etiketlendikçe betiğin `TAGGED_PROJECTS` listesine eklenir.
+Bugün `Diten.Platform.Application.Tests` ve `Diten.AuthService.Application.Tests`. Komut başka bir proje verildiğinde
+koşmaz; etiketlenmemiş Mongo testleri yanlış nedenle kırmızı olurdu. Proje etiketlendikçe betiğin `TAGGED_PROJECTS`
+listesine eklenir.
 
 ## Ölçüm (2026-10-23, geliştirici makinesi, Platform.Application.Tests)
 
@@ -53,4 +58,17 @@ testleri yanlış nedenle kırmızı olurdu. Proje etiketlendikçe betiğin `TAG
 - Hızlı koşu sırasında yeni hiçbir mongod süreci başlamadı.
 - Bir sınıfın Mongo etiketi kaldırıldığında komut kırmızıya döndü (`exited with code 97`); etiket geri konunca yeşile
   döndü.
-- Kaynak: `docs/records/analysis/test-speed/`.
+
+## Ölçüm (2026-10-26, geliştirici makinesi, AuthService.Application.Tests)
+
+| | Test | Süre |
+|---|---:|---:|
+| CI, filtresiz (service-tests 39965450499, "Test" adımı derleme dahil) | 2.929 | 11 dk 21 sn |
+| Yerel hızlı koşu, `--no-build` | 1.950 | 14 sn |
+| Yerel hızlı koşu, artımlı derlemeyle (günlük komut) | 1.950 | 19 sn |
+
+- Dışarıda kalanlar: 54 sınıftaki Mongo testleri. Auth'ta tek başına ≥ 5 sn süren Mongo'suz test yok, `Slow` yok.
+- Hızlı koşu sırasında yeni hiçbir mongod başlamadı ve paylaşılan 27017'ye hiçbir bağlantı açılmadı.
+- `ProductIdentityEntitlementReconciliationMongoTests`'in etiketi kaldırılınca komut 54/54 kırmızı verdi; etiket geri kondu.
+
+Kaynak: `docs/records/analysis/test-speed/`.

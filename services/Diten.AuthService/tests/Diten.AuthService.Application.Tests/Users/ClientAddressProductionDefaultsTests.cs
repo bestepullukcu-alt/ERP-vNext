@@ -20,6 +20,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// peer (the Web server / the gateway), so the per-client limit must be OFF — never one bucket for everybody — the host warns
 /// once, and the per-address limits still hold.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientAddressProductionDefaultsTests.Host>
 {
     private const string SharedPeer = "10.20.30.40"; // the Web server / gateway every request comes through

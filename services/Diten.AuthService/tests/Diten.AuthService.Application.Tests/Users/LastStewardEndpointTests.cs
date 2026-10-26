@@ -21,6 +21,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// active account — the tenant's last ACTIVE steward. Each path answers 409 with its own code and leaves the data as it
 /// was; with a second active steward the same request goes through (non-vacuity).
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class LastStewardEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private readonly PlatformEdgeTestHost _host;

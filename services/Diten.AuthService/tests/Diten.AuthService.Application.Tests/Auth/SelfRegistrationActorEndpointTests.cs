@@ -25,6 +25,7 @@ namespace Diten.AuthService.Application.Tests.Auth;
 /// parsing); only its primary HTTP handler answers in-process, so nothing leaves the test process for a shared
 /// service. The stub records every path it was asked for, and the tests assert the call happened.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class SelfRegistrationActorEndpointTests : IClassFixture<SelfRegistrationActorEndpointTests.SelfRegistrationTestHost>
 {
     private const string SelfRegisteredEvent = "tenant_user_self_registered";

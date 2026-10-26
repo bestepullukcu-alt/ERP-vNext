@@ -25,6 +25,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// The subjects and actors are the disposable tenant seeded by <see cref="AccountKindAcceptance"/>; the
 /// DefaultTenant and every pre-existing account are untouched (PPM boundary 1).</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

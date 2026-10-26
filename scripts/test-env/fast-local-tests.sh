@@ -15,6 +15,7 @@ set -euo pipefail
 # the refusing mongod and be red for the wrong reason.
 TAGGED_PROJECTS=(
   services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj
+  services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
 )
 
 if [ $# -lt 1 ]; then
