@@ -48,8 +48,9 @@ by Platform Shared Services and tenant business modules.
   code-take permission (D27/5); not `ready-for-dev`.
 - `MOD-0217 Contract Lifecycle Management (CLM)` — placement D19/1 + D38 (`treasury-intake-owner-decisions-03.md`; the
   repository owner decided on the MDM owner's behalf); draft pack
-  [MOD-0217](module-packs/MOD-0217-contract-lifecycle-management-clm.md); `Diten.MdmService`; documents via MOD-0028 and
-  MOD-0262-FU01 (D37, consumer only); no code-take; not `ready-for-dev`.
+  [MOD-0217](module-packs/MOD-0217-contract-lifecycle-management-clm.md); `Diten.MdmService`; contract versions are MOD-0217's own
+  `ContractVersion` records and files live in MOD-0262-FU01 (D37 as interpreted by D40, consumer only; no MOD-0028 dependency in
+  v1); purchase contracts stay in MOD-0144 (D39); no code-take; not `ready-for-dev`.
 - Both rows were added by the Treasury Intake Control Tower together with the packs; the MDM owner is informed and may
   object before the packs are approved.
 

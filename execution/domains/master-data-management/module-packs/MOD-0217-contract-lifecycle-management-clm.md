@@ -95,6 +95,10 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > yok: `IDocumentRecordPort`, `Infrastructure/DocumentRecords/`, `DocumentRecordRef` alanı, `MDM_CONTRACT_DOCUMENT_RECORD_UNAVAILABLE`
 > kodu, MOD-0028 kapanış satırı ve DL-2'nin O-2 önkoşulu kaldırıldı; AC-29 "v1'de MOD-0028 çağrısı yok" olarak yeniden yazıldı
 > (kimliği korundu, sabotajlı); MOD-0028 bağı Follow-up. AC numaraları değişmedi; bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **Revizyon 6 (2026-10-26):** CT-APR-02 ilk tur (Codex, KOŞULLU, 0 ENGEL) bulguları — F-1: kimlik kaydı ve MDM domain-config
+> satırları D40'a (ve D39'a) göre güncellendi (pack dışı); F-2: `quality-gate-datatable` AC-43, Test Expectations ve DL-4 kabul
+> kapısına eklendi.
 
 ## Module Summary
 
@@ -964,7 +968,10 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   eylemleri listeler; listede olmayan eylemin ucu çağrıldığında da sunucu reddeder (403 / 409).
 - [ ] AC-43 (zorunlu) — Ekran (DL-4): `Views/MasterData/Contracts/*.cshtml`'de `Layout = "_LayoutTenantShell"` açık;
   `python3 .antigravity/scripts/verify_datatable_page.py . --area MasterData --module Contracts --format gaps` sapma vermez ve
-  `data-dt-data-mode="server"` pack `data_mode` ile eşleşir; `_CreateEditOffcanvas.cshtml` ve `_DetailsQuickView.cshtml` yok.
+  `data-dt-data-mode="server"` pack `data_mode` ile eşleşir; `_CreateEditOffcanvas.cshtml` ve `_DetailsQuickView.cshtml` yok;
+  DataTable kalite kapısı `quality-gate-datatable` (`.antigravity/workflows/quality-gate-datatable.md`) geçer
+  (`module-pack-standard` §7 zorunlu atfı). Sabotaj: sayfaya istemci tarafı `data-dt-data-mode` ya da bilinmeyen sütun
+  eklendiğinde doğrulayıcı ve kalite kapısı kırmızıya döner.
 - [ ] AC-44 (zorunlu) — `ContractsIndex` resx 7 dilde (`en, tr, fr, es, zh, ar, ru`) parite PASS; sayfada sabit metin yok;
   `Help.LEGALCONTRACTS.*` ve `Nav.Page.LEGALCONTRACTS` 7 dilde; `python3 scripts/check_pack_nav_keys.py` PASS.
 - [ ] AC-45 (zorunlu) — `mdm.contracts.read` olmayan kullanıcıya UAS-001 erişim açıklaması (kabuk içinde, yönlendirme yok;
@@ -1073,6 +1080,9 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   seçenek çakışması, beklenmeyen 503, değişmezlik karşılaştırması; kök neden doğrulanmadı — TRM-11); spec zincirindeki test
   sayıları devralınmış etikettir (paket §J.3, §N.3). Hiçbiri güvence olarak alıntılanmaz; bütün testler Recovery'de yazılır
   (level-1 koşul 1).
+
+- **DL-4 ekran kapısı:** `python3 .antigravity/scripts/verify_datatable_page.py . --area MasterData --module Contracts --format gaps`
+  ve `quality-gate-datatable` iş akışı (`.antigravity/workflows/quality-gate-datatable.md`) — ikisi de zorunlu (AC-43).
 
 ## Page Help (UXH-001)
 
@@ -1339,6 +1349,6 @@ kapısındadır.
 | DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
 | DL-2 | "Bitiş" listesindeki AC'ler (kısımlarıyla); AC-31 ve AC-49 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (yükle, indir, başka kiracı 404, kesin geri almada telafi); AC-29 mimari testi (MOD-0028 çağrısı yok, sabotajlı — KARAR D40); build |
 | DL-3 | "Bitiş" listesindeki AC'ler (kesişen AC'lerin tam kapanışı dahil); AC-33, AC-37 ve AC-57 gerçek replica set'te; MOD-0023 §17 rev 2 okuma alanları main'de ve MOD-0023 AC-W2 / AC-W12 / AC-W13 geçmiş (MOD-0023 sahibinin WP'si); MOD-0023'e karşı dev ortamı onay ve ret turu kaydı; build |
-| DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı; RESX 7 dil parite; nav anahtar denetimi; Gateway uçtan uca belge yükleme / indirme; `Diten.Web` build |
+| DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı (`verify_datatable_page.py`) ve `quality-gate-datatable` (AC-43); RESX 7 dil parite; nav anahtar denetimi; Gateway uçtan uca belge yükleme / indirme; `Diten.Web` build |
 
 AC durumu kabul kaydında (`scripts/acceptance_record.py`) izlenir; bu pakette her AC yalnız "tanımlı"dır.
