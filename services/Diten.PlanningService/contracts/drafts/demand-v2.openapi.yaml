@@ -396,7 +396,7 @@ paths:
         - { $ref: '#/components/parameters/RevisionId' }
         - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
         - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 200 } }
-        - { name: cursor, in: query, required: false, schema: { type: string }, description: Opaque signed cursor; scope, revision, checksum, content/state versions and page size are bound as described in x-row-pagination. }
+        - { name: cursor, in: query, required: false, schema: { type: string }, description: "Opaque signed cursor; scope, revision, checksum, content/state versions and page size are bound as described in x-row-pagination." }
       responses:
         '200': { description: Verified page in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionRowPageEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
