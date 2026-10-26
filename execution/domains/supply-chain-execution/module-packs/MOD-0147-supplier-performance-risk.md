@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment, permission/composition single writer) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -47,20 +47,27 @@ Owner decision 2026-10-22 — revision draft.
 | Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
-**Start on mock (Natig, 2026-10-26):** DL-1 code may be **written, tested and merged** once this revision's CT-APR-01 row is on
-`main`, the PR #198 audit path is on `main` and the SUPPLIER **1.3.0 contract is frozen on `main`** (MOD-0140 Revision 2
-DL-1) — tested against a mock built from that frozen contract (all `SupplierEligibility` answers of §0.0, including 404
-`UNKNOWN_SUPPLIER`, `UNKNOWN_LEGAL_ENTITY` and the route 404). It is safe to merge before MOD-0140 DL-3: until the endpoint
-exists Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILABLE` — create fails closed, nothing is
-written. **Enabling** MOD-0147 for users (its Gateway routes and the evaluating role's permissions) waits for the gates
-below.
+**Start on mock (Natig, 2026-10-26):** DL-1 code may be **written, tested and merged** once (1) this revision's CT-APR-01 row
+is on `main`, (2) the PR #198 audit path is on `main`, (3) the SUPPLIER **1.3.0 contract is frozen on `main`** (MOD-0140
+Revision 2 DL-1), (4) the replay receipt amendment (Phase 1.5, §0 table) and (5) the permission/composition single writer
+(§14) are decided — DL-1's create is an idempotent command registered in `Program.cs`, so it is not written without them
+(review F-2). Tests use the frozen contract's **declared** answers plus **hand-written stubs** for every undeclared case of
+T-0147-V1-ELIG-01: a route 404 with a ProblemDetails body without `code`, a 404 without a body, a malformed or mismatched 200,
+Procurement 401 / 403 / 5xx / timeout (review F-3). It is safe to merge before MOD-0140 DL-3: until the endpoint exists
+Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILABLE` — create fails closed, nothing is written.
 
-**Still gates for enabling v1 (Gateway routes and role permissions):** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`**
+**Nothing is switched on by the merge (review F-1).** Until the enabling gates below close, a DL-1 merge **adds no
+`/api/supplier-performance` route to `ocelot.json` and registers no `supplychain.supplier-performance.*` permission in the
+catalog** — DL-1 has no `IModuleManifestProvider` for MOD-0147 and the module code is not added to `AdminModules`, so neither
+`FullCatalogPermissionGrantService` (SuperAdmin) nor `DefaultRolePermissionTemplate` (Viewer `read`) can grant it (the Q358
+lesson). Tests put the permissions into their tokens directly. The permission definition, the manifest provider and the
+Gateway route come in the **enabling change**, after the gates below.
+
+**Still gates for enabling v1 (the enabling change: manifest provider, permission definition, Gateway route):** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`**
 (MOD-0140 Revision 2 DL-1) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
 proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
 (403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
-`main` (audit path b), this revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay
-receipt amendment (Phase 1.5, §0 table), and for the eligibility read the evaluating role's `mdm.legal-entities.read` or
+`main` (audit path b), this revision's CT-APR-02 + CT-APR-01, and for the eligibility read the evaluating role's `mdm.legal-entities.read` or
 MOD-0140's S-2 decision (below).
 
 **Supplier eligibility — DC-02 D2 (Natig 2026-10-23 Q1/Q2, 2026-10-26 Q3/Q4; Cihan's MOD-0140 Revision 2,
@@ -508,13 +515,13 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [x] Backend-only proposed first slice, paths, objects, failures and acceptance are explicit.
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
-- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
+- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built. Start-on-mock (§0.0): for DL-1 code only the frozen 1.3.0 contract is needed; the DC-02 endpoint (DL-3) is an **enabling** gate.
 - [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) once this revision is approved.
 - [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration — **out of v1** (§0.0, risk part after MOD-0216).
 - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
 - [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
-- [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
+- [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev` — start-on-mock: when the §0.0 code conditions (1)–(5) are met (AGENTS Core 7).
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
 
 ## 19. Implementation Notes
