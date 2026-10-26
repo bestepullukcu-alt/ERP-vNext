@@ -812,7 +812,10 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         "Diten.MdmService: type AuditForwardingBehavior",
         "Diten.MdmService: type IPlatformAuditForwarder",
         "Diten.MdmService: type PlatformAuditForwarder",
-        "Diten.MdmService: services/Diten.MdmService/src/Diten.MdmService.Api/Audit/PlatformAuditForwarder.cs"
+        "Diten.MdmService: services/Diten.MdmService/src/Diten.MdmService.Api/Audit/PlatformAuditForwarder.cs",
+        // main-sync 2026-10-26 (CT decision, user-approved): CRM's settings for the F8-a shared forwarder (Diten.BuildingBlocks.Auditing),
+        // written alongside BL-501. F8-b moves CRM to Diten.BuildingBlocks.CentralAudit and removes this entry and that library.
+        "Diten.CrmService: type CrmAuditForwarding"
     };
 
     /// <summary>
