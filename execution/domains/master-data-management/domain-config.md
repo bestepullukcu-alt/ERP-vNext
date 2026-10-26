@@ -41,6 +41,18 @@ by Platform Shared Services and tenant business modules.
     Good stays a separate record, parent = GSKU); single read contract `product-master-bundle` v1.1 (`ItemKind`,
     `SkuLevel: Item`, additions only). Code opens slice by slice (S1–S7).
 
+## In-Scope Reserved Modules (Treasury intake — owner decisions D20/1, D38; proposal with the packs)
+
+- `MOD-0289 Bank Master & Bank Account Registry` — placement D20/1 (`treasury-intake-owner-decisions-02.md`); draft pack
+  [MOD-0289](module-packs/MOD-0289-bank-master-bank-account-registry.md); `Diten.MdmService`, no new service or port; no
+  code-take permission (D27/5); not `ready-for-dev`.
+- `MOD-0217 Contract Lifecycle Management (CLM)` — placement D19/1 + D38 (`treasury-intake-owner-decisions-03.md`; the
+  repository owner decided on the MDM owner's behalf); draft pack
+  [MOD-0217](module-packs/MOD-0217-contract-lifecycle-management-clm.md); `Diten.MdmService`; documents via MOD-0028 and
+  MOD-0262-FU01 (D37, consumer only); no code-take; not `ready-for-dev`.
+- Both rows were added by the Treasury Intake Control Tower together with the packs; the MDM owner is informed and may
+  object before the packs are approved.
+
 ## Frontend / Gateway Scope Exception (MOD-0290-FU02 only)
 
 The "frontend and gateway remain outside the first implementation slice" restriction recorded below for the
