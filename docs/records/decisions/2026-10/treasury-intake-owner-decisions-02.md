@@ -314,8 +314,9 @@ Kaynak: MOD-0023 sahibinin §17 için altı noktası (sahip iletti, 2026-10-26).
 1. **Yazan ≠ merge eden:** MOD-0023 sahibi WP kodunu yazar, başka biri (K2 onaylayan) merge commit'iyle birleştirir
    (sahibin kendi önerisi; kabul edildi).
 2. **`isDeleted` / `includeDeleted` anlamı:** yalnız savunma amaçlı; politika silmeyi yasaklar. Koddan ölçülen (okundu,
-   çalıştırılmadı): üç tip miras `TenantRepository.DeleteAsync` ile soft delete edilebilir (`IsDeleted` yazar, `DeletedAt`
-   yazmaz), `by-objects` ise `DeletedAt` ile süzer — tek silme işareti `IsDeleted` olur, miras silme kapatılır (AC-W15).
+   çalıştırılmadı): üç tip `TenantRepository<T>` üzerinden miras `RepositoryBase<T>.DeleteAsync` ile soft delete edilebilir (`IsDeleted` yazar, `DeletedAt`
+   yazmaz), `by-objects` ise `DeletedAt` ile süzer — tek silme işareti `IsDeleted` olur, miras silme üç repository'de override ile kapatılır; ortak taban sınıf
+   değişmez (AC-W15, §17.8/9).
    Ortamlardaki silinmiş satır sayısını MOD-0023 sahibi ölçer.
 3. **KVKK / GDPR:** "Kayıt kalır, kişi alanı anonimleşir" — satır silinmez; silme talebinde kişiyi tanıtan alanlar yerinde
    takma ad ile değiştirilir; anahtar, durum, sıra kalır. Kesin prosedür hukuk görüşüne bağlı açık madde **O-S17-1**

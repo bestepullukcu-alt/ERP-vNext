@@ -510,7 +510,7 @@ before it re-issues with the same key. Today neither is guaranteed by contract.
   211-225`), both filtered `IsDeleted = false`.
 - No delete path and no `ExpireAfter` for these two types; the only workflow soft delete
   (`WorkflowRepositories.cs:961-974`) is `SlaEscalationRule`. **Corrected in §17.8/2:** an inherited
-  `TenantRepository.DeleteAsync` exists for all three types (no caller found).
+  `RepositoryBase<T>.DeleteAsync` exists for all three types (no caller found).
 - Reads do **not** expose the keys: `WorkflowInstanceStatusDto` (`WorkflowModels.cs:200-207`: Id, Status, Outcome,
   Stage, Step, StartedAt, CompletedAt) used by `GET instances/by-objects`, which hides deleted rows
   (`GetWorkflowInstancesByObjectsHandler.cs:51`); `WorkflowInstanceDto` (`:406-424`, `GET instances/{id}`);
@@ -556,7 +556,7 @@ before it re-issues with the same key. Today neither is guaranteed by contract.
 Allowed paths: `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`, the three
 read handlers (`GetWorkflowInstancesByObjectsHandler.cs`, `GetWorkflowInstanceByIdHandler`, `GetWorkflowInstanceHistoryHandler.cs`)
 for the mapping only, `services/Diten.Platform/tests/**`, `tests/architecture/**` (new rule only). No index, schema,
-route, permission or write-path change (D22/2) — if the race ACs fail, see the status note above.
+route, permission or write-path change (D22/2) — if the race ACs fail, see the status note above. **Extended by §17.8/9** (repositories for DL-1, write-path files for DL-2).
 
 ### 17.4 Acceptance criteria (defined; not implemented or run)
 
@@ -694,9 +694,11 @@ Source: the MOD-0023 owner's six review points on §17 (relayed by the repositor
    merge commit. The same person never writes and merges a write-path change of this WP.
 2. **Correction to §17.2 — an inherited delete path exists (read, not run):** `WorkflowInstanceRepository`,
    `ApprovalTaskRepository` and `WorkflowTransitionLogRepository` derive from `TenantRepository<T>`
-   (`WorkflowRepositories.cs:141, 452, 798`), whose public `DeleteAsync` soft-deletes: it sets `IsDeleted = true` and does
-   **not** set `DeletedAt` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:35-46`). No
-   caller in `Features/Workflow` was found by `grep`. Whether any environment holds soft-deleted rows of the three types was
+   (`WorkflowRepositories.cs:141, 452, 798`), which inherits the public `virtual` `RepositoryBase<T>.DeleteAsync`; it
+   soft-deletes: it sets `IsDeleted = true` and does **not** set `DeletedAt`
+   (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:9, 35-46, 70`). The three
+   interfaces (`IWorkflowRepositories.cs:41, 191, 371`) declare no delete member. No caller in `Features/Workflow` was found
+   by `grep`. Whether any environment holds soft-deleted rows of the three types was
    **not measured** (data, not code): the owner counts `isDeleted: true` rows per environment and records the result in the
    WP. `by-objects` hides deleted rows with `DeletedAt is null` (`GetWorkflowInstancesByObjectsHandler.cs:51`), so a row
    deleted through the inherited method would **not** be hidden — the two deletion markers disagree.
@@ -721,14 +723,31 @@ Source: the MOD-0023 owner's six review points on §17 (relayed by the repositor
    (`WorkflowDefinitionsController.cs:121-122`). A deleted row is a row of the same tenant that the caller could already view.
 8. **Template codes and step counts** (MOD-0126 O-8, MOD-0119 O-11, MOD-0124 O-20) and the WP delivery date: the MOD-0023
    owner proposes them after this revision is approved (no decision here).
+9. **Allowed paths — extends §17.3 (CT-APR-02 rev-2 finding P2):**
+   - **DL-1** adds `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs`
+     — only an `override` of `DeleteAsync` in `WorkflowInstanceRepository`, `ApprovalTaskRepository` and
+     `WorkflowTransitionLogRepository` that refuses (throws, no write), and the deleted filter (`IsDeleted`) of the §17 reads;
+     plus the `by-objects` / `history` read handlers under
+     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/` for the
+     `includeDeleted` branch. **Not allowed:** `services/Diten.Platform.Common/**` — the shared
+     `RepositoryBase<T>.DeleteAsync` stays unchanged for every other module; the three repository interfaces gain no delete
+     member.
+   - **DL-2** adds the write-path files of the fingerprint fix (start handler, transition support, terminal writer under
+     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/`); the owner names each file in the WP
+     prompt before code (D25/1).
+   - Both slices keep `services/Diten.Platform/tests/**` and `tests/architecture/**` (new rules only).
 
 New acceptance criteria (defined; not implemented or run):
 
 - AC-W15 — **One deletion marker; inherited delete closed (DL-1):** for the three types the inherited
-  `TenantRepository.DeleteAsync` cannot delete (overridden to fail, guarded by the AC-W1 architecture test), and every §17
-  read filters deleted rows by `IsDeleted`. A fixture row with `IsDeleted = true`, `DeletedAt = null` is hidden by default
-  and returned with `isDeleted = true` under `includeDeleted=true`. Sabotage: reverting the filter to `DeletedAt is null`, or
-  calling the inherited `DeleteAsync`, turns it red.
+  `RepositoryBase<T>.DeleteAsync` cannot delete: it is overridden in the three repositories to refuse, guarded by the AC-W1
+  architecture test. The test calls delete through the derived repository **and** through a `RepositoryBase<T>` /
+  `TenantRepository<T>` reference of the same instance; both refuse and the row is unchanged (`IsDeleted` stays false,
+  `UpdatedAt` unchanged). The architecture test also asserts that the three interfaces declare no delete member and that
+  `services/Diten.Platform.Common/**` is unchanged by this WP. Every §17 read filters deleted rows by `IsDeleted`. A fixture
+  row with `IsDeleted = true`, `DeletedAt = null` is hidden by default and returned with `isDeleted = true` under
+  `includeDeleted=true`. Sabotage: removing an override, reverting the filter to `DeletedAt is null`, or adding a delete
+  member to an interface turns it red.
 - AC-W16 — **`includeDeleted` stays inside the tenant and the permission (DL-1):** with `includeDeleted=true`, another
   tenant's instance id / object → 404 (as without the flag); a caller without `instances.view` → refused as today; no row of
   another tenant appears. Sabotage: dropping the tenant filter on the `includeDeleted` branch turns it red.
