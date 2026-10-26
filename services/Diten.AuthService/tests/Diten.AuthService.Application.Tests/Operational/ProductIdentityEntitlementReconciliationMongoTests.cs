@@ -413,6 +413,33 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
     }
 
     private sealed record Scenario(EntitlementReconciliationOperationStore Store, EntitlementReconciliationPlan Plan, MongoCommandProbe Probe);
+    /// <summary>
+    /// TEST-HIZ-01 — the plan's quiescence fingerprint lists every connection the server sees that is not the operational
+    /// client's. A connection still in its handshake has no client metadata yet, so it is counted until it names itself.
+    /// The store's client is created just above, and its driver opens its monitoring connections in the background:
+    /// measured, one such unnamed connection appeared between the plan's read and the commit (conn36, 51 ms) and the
+    /// commit answered QUIESCENCE_DRIFT (the most frequent auth-app red on CI, 2026-10-21…24). Wait until no connection is mid-handshake, for a
+    /// steady 300 ms, before the plan is read. The store's refusal itself is unchanged.
+    /// </summary>
+    private async Task WaitForSettledConnectionsAsync()
+    {
+        var admin = mongo.Client.GetDatabase("admin").WithReadConcern(ReadConcern.Local);
+        var pipeline = new[] { new BsonDocument("$currentOp", new BsonDocument { { "allUsers", true }, { "idleConnections", true }, { "localOps", true } }) };
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        DateTime? quietSince = null;
+        while (true)
+        {
+            using var cursor = await admin.AggregateAsync<BsonDocument>(pipeline);
+            var handshaking = (await cursor.ToListAsync()).Any(row => row.Contains("client")
+                && (!row.TryGetValue("clientMetadata", out var metadata) || metadata.AsBsonDocument.ElementCount == 0));
+            var now = DateTime.UtcNow;
+            quietSince = handshaking ? null : quietSince ?? now;
+            if (quietSince is { } since && now - since >= TimeSpan.FromMilliseconds(300)) return;
+            if (now > deadline) throw new TimeoutException("A connection stayed mid-handshake for 10 s; the quiescence fingerprint cannot settle.");
+            await Task.Delay(20);
+        }
+    }
+
     private async Task<Scenario> SeedPlanAsync()
     {
         await SeedVersionAsync(new BsonInt64(7));
@@ -454,6 +481,7 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
             { { "_id", Id(Guid.NewGuid()) }, { "TenantId", Id(tenant) }, { "UserId", Id(holder.Id) }, { "IsDeleted", false } });
         var probe = new MongoCommandProbe();
         var store = new EntitlementReconciliationOperationStore(mongo.NewClient(probe).GetDatabase(DisposableAuthMongoReplicaSet.DatabaseName));
+        await WaitForSettledConnectionsAsync();
         var local = await store.ReadAsync(tenant, actor.Id, CancellationToken.None); Assert.True(local.Operator.IsAuthorized);
         var operation = Guid.NewGuid();
         var rows = permissions.Take(6).Select((permission, i) =>
