@@ -19,6 +19,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// host's own database, the Platform half to a database next to it, and the host's platform status check reads that
 /// Platform record — so the link the command hands over is redeemed at Auth's real set-password door.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class FirstPlatformAdministratorCommandTests : IClassFixture<FirstPlatformAdministratorCommandTests.BootstrapHost>
 {
     public const string PlatformDatabaseName = "first_admin_platform";

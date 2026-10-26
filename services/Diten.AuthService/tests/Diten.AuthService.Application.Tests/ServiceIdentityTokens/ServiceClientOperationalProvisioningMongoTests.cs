@@ -31,6 +31,7 @@ public sealed class OperationalMongoCollection : ICollectionFixture<OperationalM
 }
 
 [Collection(OperationalMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ServiceClientOperationalProvisioningMongoTests(OperationalMongoFixture fixture, ITestOutputHelper output)
 {
     [OwnedMongoTheory]

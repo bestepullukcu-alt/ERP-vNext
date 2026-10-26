@@ -14,6 +14,7 @@ using Diten.AuthService.Application.Common.Interfaces;
 namespace Diten.AuthService.Application.Tests.Operational;
 
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ProductIdentityEntitlementReconciliationMongoTests(DisposableAuthMongoReplicaSet mongo)
 {
     [OwnedMongoFact]
@@ -236,6 +237,72 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         var snapshot = await fixture.Store.ReadAsync(fixture.Plan.TenantId, fixture.Plan.ActorId, CancellationToken.None);
         Assert.NotEqual(fixture.Plan.QuiescenceFingerprint, snapshot.QuiescenceFingerprint);
         Assert.Equal(fixture.Plan.LocalFingerprint, snapshot.Fingerprint);
+    }
+
+    /// <summary>
+    /// TEST-HIZ-01 — the commit's own quiescence refusal. Measured: with both QUIESCENCE_DRIFT checks of CommitAsync
+    /// disabled, no other test of this class turned red (the read-side test above proves only that the fingerprint
+    /// moves). A client the plan did not see connects after the plan was read: the commit is refused by name and
+    /// nothing is written.
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAnUnknownClientConnectsAfterThePlan_IsRefusedAsQuiescenceDriftAndWritesNothing()
+    {
+        var fixture = await SeedPlanAsync();
+        var late = mongo.NewClient(applicationName: "Unknown.Late.Client");
+        await late.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+        var before = await AllRowsAsync(); fixture.Probe.Commands.Clear();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
+
+        Assert.Equal("QUIESCENCE_DRIFT", error.Message);
+        Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
+    }
+
+    /// <summary>
+    /// TEST-HIZ-01 — the commit's SECOND quiescence check, inside the transaction: a client that connects while the
+    /// commit is reading its snapshot is seen there, and the commit is refused by name with nothing written. (The test
+    /// above is caught by the first check, before the transaction; this one is not.)
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAnUnknownClientConnectsDuringTheCommit_IsRefusedAsQuiescenceDriftAndWritesNothing()
+    {
+        var fixture = await SeedPlanAsync();
+        var before = await AllRowsAsync(); fixture.Probe.Commands.Clear();
+        IMongoClient? late = null;
+        fixture.Probe.After = (name, command) =>
+        {
+            if (late is not null || name != "find" || command["find"] != "permissions" || !command.Contains("startTransaction")) return;
+            late = mongo.NewClient(applicationName: "Unknown.Mid.Client");
+            late.GetDatabase("admin").RunCommand<BsonDocument>(new BsonDocument("ping", 1));
+        };
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
+
+        Assert.NotNull(late);
+        Assert.Equal("QUIESCENCE_DRIFT", error.Message);
+        Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
+    }
+
+    /// <summary>
+    /// TEST-HIZ-01 — the store waits a short, bounded time for a connection to name itself in its handshake (a client's
+    /// own new connection was refused as an unknown client). A connection that stays unnamed must still be observed: a
+    /// raw TCP connection that never handshakes is open from after the plan until the commit, and the commit is refused
+    /// as QUIESCENCE_DRIFT with nothing written.
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAConnectionStaysUnnamedAfterThePlan_IsStillRefusedAsQuiescenceDrift()
+    {
+        var fixture = await SeedPlanAsync();
+        var server = new MongoUrl(mongo.ConnectionString).Server;
+        using var unnamed = new System.Net.Sockets.TcpClient();
+        await unnamed.ConnectAsync(server.Host, server.Port);
+        var before = await AllRowsAsync(); fixture.Probe.Commands.Clear();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None));
+
+        Assert.Equal("QUIESCENCE_DRIFT", error.Message);
+        Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
     }
 
     [OwnedMongoTheory]

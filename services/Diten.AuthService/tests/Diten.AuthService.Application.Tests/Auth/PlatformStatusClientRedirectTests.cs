@@ -26,7 +26,7 @@ namespace Diten.AuthService.Application.Tests.Auth;
 ///
 /// <para>Disposable platform users only — never the seeded admin.</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class PlatformStatusClientRedirectTests : IClassFixture<PlatformStatusClientRedirectTests.Host>, IClassFixture<PlatformStatusClientRedirectTests.LoopbackLifetime>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
