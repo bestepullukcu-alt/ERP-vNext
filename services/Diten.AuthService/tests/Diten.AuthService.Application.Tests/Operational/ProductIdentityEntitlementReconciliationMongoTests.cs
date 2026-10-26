@@ -305,6 +305,63 @@ public sealed class ProductIdentityEntitlementReconciliationMongoTests(Disposabl
         Assert.Empty(fixture.Probe.Writes); await AssertSameRowsAsync(before);
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 — the other side of the bounded wait: a connection the commit first sees mid-handshake and that then
+    /// names itself as the operational client does not refuse the commit. The raw connection is opened after the plan;
+    /// it sends its hello only after the commit's first quiescence observation has returned, so that observation saw it
+    /// unnamed. Without the wait the commit is refused as QUIESCENCE_DRIFT (the reds of 2026-10-21…24).
+    /// </summary>
+    [OwnedMongoFact]
+    public async Task Commit_WhenAConnectionNamesItselfAfterTheFirstObservation_WaitsForItAndCommits()
+    {
+        var fixture = await SeedPlanAsync();
+        var server = new MongoUrl(mongo.ConnectionString).Server;
+        using var connection = new System.Net.Sockets.TcpClient();
+        await connection.ConnectAsync(server.Host, server.Port);
+        var named = false;
+        fixture.Probe.After = (name, command) =>
+        {
+            if (named || name != "aggregate" || !command.GetValue("pipeline", new BsonArray()).AsBsonArray
+                    .Any(stage => stage.AsBsonDocument.Contains("$currentOp"))) return;
+            named = true;
+            SendHello(connection.GetStream(), EntitlementReconciliationOperationStore.ApplicationName);
+        };
+
+        var result = await fixture.Store.CommitAsync(fixture.Plan, CancellationToken.None);
+
+        fixture.Probe.After = null;
+        Assert.True(named);
+        Assert.Equal("LOCAL_COMMITTED_AUTHORITY_REVALIDATION_PENDING", result.State);
+    }
+
+    // A driver's first message on a connection, by hand (OP_MSG, opcode 2013): hello with the client metadata.
+    private static void SendHello(System.Net.Sockets.NetworkStream stream, string applicationName)
+    {
+        var body = new BsonDocument
+        {
+            { "hello", 1 },
+            { "client", new BsonDocument
+                {
+                    { "application", new BsonDocument("name", applicationName) },
+                    { "driver", new BsonDocument { { "name", "test-raw-socket" }, { "version", "0" } } },
+                    { "os", new BsonDocument("type", "unknown") }
+                } },
+            { "$db", "admin" }
+        }.ToBson();
+        using var message = new MemoryStream();
+        using (var writer = new BinaryWriter(message, System.Text.Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write(16 + 4 + 1 + body.Length); writer.Write(1); writer.Write(0); writer.Write(2013);
+            writer.Write(0); writer.Write((byte)0); writer.Write(body);
+        }
+        stream.Write(message.ToArray());
+        var header = new byte[16];
+        stream.ReadExactly(header);
+        var reply = new byte[BitConverter.ToInt32(header, 0) - 16];
+        stream.ReadExactly(reply);
+        Assert.Equal(1.0, BsonSerializer.Deserialize<BsonDocument>(reply.AsSpan(5).ToArray())["ok"].ToDouble());
+    }
+
     [OwnedMongoTheory]
     [InlineData(false)]
     [InlineData(true)]
