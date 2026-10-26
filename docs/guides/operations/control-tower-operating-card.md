@@ -60,6 +60,21 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
   özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
   metnin birebir aynısıdır. Sahibe gidecek prompt'lar yine kod bloğunda verilir (S-28).
+- **İşçi push ve PR açmaz; onay tek yere yazılır (S-63, sahip kararı 2026-10-26 `tek-onay`):**
+  1. **İşçi:** kendi dalında yerel commit yapar. Commit'in onayı ya sahibin onayıyla dağıtılan prompt'taki "commit et"
+     adımıdır ya da sahibin işçi sohbetine yazdığı sözdür (GIT-002 §4). Push'tan önceki main birleştirmesini (§7a/1) ve
+     filtreli testleri de kendi dalında koşar. Sonra CT'ye dal adını, HEAD sha'sını ve test sonucunu bildirir ve durur.
+     İşçiye giden prompt "push ve PR yok; commit sonrası dur ve bildir" der.
+  2. **Sahibe soru:** CT, "Soru biçimi"yle tek bir onay ister. Soruda dal adı ve kısa sha yazılır, örneğin
+     "`dl3b-pr` → `feature/pvg/…` dalının `44056fe` sürümü GitHub'a gönderilir ve PR açılır". Onay **yalnız o dal ve o
+     sha** içindir. Yeni bir commit, yeniden işleme ya da başka bir dal yeni bir onay ister; tek kelime kalıcı izin değildir.
+  3. **CT gönderir:** önce işçinin bildirdiği sha'nın dalda olduğunu ölçer. Dalın işçinin dalı olduğunu (main ya da CT dalı değil) ölçer. Sonra §7 yedek push satırındaki (S-27) taramayı yapar:
+     `git diff origin/main...<sha>` içinde e-posta, şifre ve anahtar aranır. Ardından **sha'yı** gönderir:
+     `git push origin <sha>:refs/heads/<dal>`. Dal adıyla `git push origin <dal>` kullanılmaz, çünkü o anki HEAD'i gönderir.
+     Push'tan sonra uzaktaki dalın sha'sının gönderilen sha'ya eşit olduğunu ölçer, sonra PR'ı açar. Açık PR'a yapılan
+     sonraki push'larda PR'ın hâlâ açık olduğunu da ölçer (SOP §20.4/7).
+  4. **Aktarılan onay yasağı değişmez:** işçi, CT'nin ilettiği bir onayla push yapmaz. CT de başka bir sohbette yazılmış
+     bir onayla push yapmaz. Sahip açıkça işçinin göndermesini isterse onay o işçinin sohbetine yazılır.
 - **Paket onayı değişince prompt'lar (S-53):** bir paketin onayı (yeni revizyon) değişince, eski Expected HEAD'e bağlı
   dağıtılmamış prompt'ları dağıtım kapısı reddeder; bu bilinçli bir kuraldır. CT planına "tabanı yeni main'e al ve
   yeniden inceletmek" adımını koyar.
@@ -396,7 +411,7 @@ Replanning = Closure
 | Ortak test kilidine uyarak, onaylı kapsamda test çalıştırma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Kendi geçici çalışma dosyalarını kullanma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
-| Commit, push, PR ve merge | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5 |
+| Commit, push, PR ve merge | **Her seferinde açık onay**; işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
 | CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
 | Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Kendi oturumunun ve kendi işçilerinin adı ve kenar çubuğu grubu (§0 "Oturum adı") | Kalıcı — tekrar sorulmaz; başka oturumlar için yalnız öneri | Sahip kararı 2026-10-26 (S-62) |
