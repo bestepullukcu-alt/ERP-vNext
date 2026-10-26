@@ -63,6 +63,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// <para>Shared test database, isolation by a fresh tenant per test (<see cref="MongoIntegrationHarness.CreateAsync"/>);
 /// never the dev database, never DefaultTenant. This tenant's rows are deleted on dispose.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskInquiryHttpMongoTests : IAsyncLifetime
 {
     private static readonly Guid Holder = Guid.Parse("43900000-0000-4000-8000-0000000000a1");

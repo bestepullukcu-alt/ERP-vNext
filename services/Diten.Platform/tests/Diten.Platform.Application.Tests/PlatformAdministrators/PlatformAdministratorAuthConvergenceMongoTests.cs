@@ -34,6 +34,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// set, and an in-memory Auth that holds, per address, what the last sync applied — never the shared database.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorAuthConvergenceMongoTests
 {
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(30);

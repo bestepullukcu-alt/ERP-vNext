@@ -41,6 +41,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// <para>The job runs with no user behind it, exactly as in production: the create handler's current user is
 /// <see cref="Guid.Empty"/> (what <c>CurrentUserContext</c> answers with no HTTP context).</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
 {
     private const string InviteEvent = "platform.meetings.invite";

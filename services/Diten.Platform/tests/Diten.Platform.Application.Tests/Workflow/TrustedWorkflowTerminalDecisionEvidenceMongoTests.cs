@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
 
+[Trait("Category", "Mongo")]
 public sealed class TrustedWorkflowTerminalDecisionEvidenceMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

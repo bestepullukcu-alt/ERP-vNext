@@ -19,3 +19,4 @@ Aynı değişiklikte `AuditTrailStandardTests.PinnedCounts` içindeki sayı da y
 Not: defterin ilk kez geldiği değişiklik (taban dalda `tests/architecture/audit-ledger/` yokken) bu denetimden muaftır —
 o değişiklikte her satır tanım gereği yenidir. 2026-10-02'de eklenen `## K2 borcu` (200 satır) ve `## Yazan sorgular` (3 satır)
 bölümleri o ilk gelişin parçasıdır (P-2026-10-02-03-FIX1, madde 2 ve 6).
+| 2026-10-21 | Diten.SupplyChainService | `## İzler` supplychain-merkezi-iletim (b, işaret) | Sahip kararı E-2 (2026-10-21, entegrasyon planı §2.1): BL-501 ortak iletici. 17 komut işaretli, 9 iş işlemi olayı commit'ten önce aynı işleme yazar (K2); `AcceptedTrails` satırı + `PinnedCounts` (borç 0, istisna 0). WP-A1 | Natig (yönetim), 2026-10-21 — MVP-6 Control Tower önerisi |

@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// record. These are now the rules.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorSeedMeasurementTests
 {
     private static readonly Guid SeedId = PlatformAdministratorSeed.DevelopmentAdministratorId;

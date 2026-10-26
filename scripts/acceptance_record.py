@@ -1112,6 +1112,16 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
     C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
     RUN = "docs/records/audits/2026-10/x/run-1"
@@ -1852,6 +1862,8 @@ class S5Repo:
             os.makedirs(root)
             self.g("init", "-q", "-b", "main")
             self.put(self.pa.REVIEWS, "\t".join(self.pa.REVIEW_COLUMNS) + "\n")
+            # S-40: a review row's merger must be a listed person (pack_approval.pr_person_check)
+            self.put(self.pa.APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
             self.commit("init", self.LEAD)
 
     def g(self, *args, who=None):

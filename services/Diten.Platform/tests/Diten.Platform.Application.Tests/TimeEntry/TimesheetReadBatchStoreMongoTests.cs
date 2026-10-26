@@ -23,6 +23,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// Fresh tenant ids per test; the shared development database is never touched.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetReadBatchStoreMongoTests
 {
     private readonly TimeEntryMongoFixture _fixture;

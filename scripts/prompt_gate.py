@@ -616,7 +616,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         first 8 hex of its findings_sha256. An older own UYGUN never settles a later negative.
       - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
-    trail = pa.append_only_problems(root, main, pa.REVIEWS)
+    trail = pa.append_only_problems(root, main, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
         return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
@@ -712,7 +712,7 @@ def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, acc
         return "kabul edilmiş ENGEL'i taşıyan sürümün onayı HIGH değil"
     merge = pa.main_merge(root, main, pa.row_commit(root, main, rows[-1]["_n"]))[0]
     listed = pa.approvers_at(root, f"{merge}^1") if merge else {}
-    person = listed.get(rows[-1]["approver"], {}).get("person")
+    person = pa.person_of(listed, rows[-1]["approver"])
     if accepted != {person}:
         return (f"ENGEL'i kabul eden ({', '.join(sorted(accepted))}) onay satırının onaylayanı değil "
                 f"({person or rows[-1]['approver']}) — riski yalnız onaylayan üstlenir")
@@ -1423,6 +1423,16 @@ class FakeRepo:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",
@@ -2238,6 +2248,11 @@ def self_test_dispatch_review(cases: list) -> None:
         root, "HEAD", PK10, "dev", "lead", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-21") + "\n"))
     e, i = lim("W-10", PK10)
     cases.append(("S-5 Q4: the same with a HIGH CT-APR-01 approval row whose approver (K1) is the acceptor -> pass",
+                  not s5(e)))
+    via_branch("approve-10b", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK10, "dev", "LEAD", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-22") + "\n"))
+    e, i = lim("W-10", PK10)
+    cases.append(("Codex F-14: the approval row's approver written LEAD is the listed lead (K1), the acceptor -> pass",
                   not s5(e)))
     eng12 = review(PK12, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
     review(PK12, "KOŞULLU", [f"F-1@{eng12} | ENGEL | yetki eksik | kabul — onaylayan | K2 | -"], 0)

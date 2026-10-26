@@ -242,6 +242,7 @@ public sealed class TaskTypeDeliverableRequirementTests
 /// <c>TaskTypeReviewMeetingRequirementMongoTests</c> proves for its own sibling field.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TaskTypeDeliverableRequirementMongoTests
 {
     private const string Field = nameof(TaskType.RequiresDeliverableOnCompletion);
