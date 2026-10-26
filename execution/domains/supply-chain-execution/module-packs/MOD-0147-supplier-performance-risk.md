@@ -48,7 +48,7 @@ Owner decision 2026-10-22 — revision draft.
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
 **Still gates for v1 code:** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`** (MOD-0140 Revision 2 DL-1) **and the
-eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404, MOD-0140 §38),
+eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
 proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
 (403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
 `main` (audit path b), this revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay
@@ -127,7 +127,9 @@ for v1):
   50; and `overallScore` is produced by **one** decimal division rounded half-even to two places
   (`round_half_even(Σ(value × 25) / Σ(25), 2)`), never by dividing first at a chosen precision and rounding again.
 - Codes are exactly `OTD`, `QTY_ACC`, `QUAL_ACC`, `INV_MATCH`. The frozen contract's examples (`ON_TIME_DELIVERY`,
-  `QUALITY_ACCEPTANCE`) are not normative and answer 422 in v1; fixtures use the v1 codes.
+  `QUALITY_ACCEPTANCE`) are not normative and answer 422 in v1; fixtures use the v1 codes. Likewise the contract's
+  `supplierId` example `sup-0140-8821` (`supplier-performance.openapi.yaml:51`, `:70`, `:83`) is not normative and answers
+  422 `SUPPLIER_CODE_NOT_CANONICAL` in v1; fixtures use canonical `SUP-` codes or master uuids.
 - **Period:** `periodStart` = the first day and `periodEnd` = the last day of the same calendar month (UTC dates), otherwise
   422; the contract's quarterly example is a 422 in v1. From §0.2: at most one active evaluation per Tenant + LE + supplier +
   period (`DRAFT`/`PUBLISHED`), second create → 409. There is no correction path (`CorrectionOf` is not in the v1 wire) and
@@ -158,7 +160,7 @@ and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 503 
 master uuid of an already evaluated supplier and period → 409 `DUPLICATE_EVALUATION`; a legacy code → 422
 `SUPPLIER_CODE_NOT_CANONICAL` with no Procurement call; a 200 naming another (validly formatted) supplier → 503; a 404
 `UNKNOWN_LEGAL_ENTITY` and a 404 without a body → 503; OnHold, Blocked, Inactive and not-approved
-onboarding → 201; legacy code stored as the canonical `supplierId`; Procurement 403 → 403, 503 → 503, no draft; sabotage:
+onboarding → 201; a master uuid stored as the canonical `supplierId`; Procurement 403 → 403, 503 → 503, no draft; sabotage:
 skipping the read makes the no-relationship case red).
 
 ## 0. Requirement status and traceability (review 2026-10-19)

@@ -49,7 +49,10 @@ Owner decision 2026-10-22 — revision draft.
 | Audit (§21) | path b, `supplychain-merkezi-iletim` — **valid from the moment PR #198 is on `main`**; the actor recorded is the `supplier_user` (issuer, subject, mapped supplier id) | review command |
 | UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
 
-**Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack;
+**Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack —
+**including that the binding stores the canonical `SUP-` code returned by MOD-0140 at bind time and that the DC-03 owner
+corrects a binding when a canonical code changes** (requirement sent to Beste:
+`docs/roadmap/plans/mvp6-mod0147-v1-scorecard-01/DC03-BINDING-CANONICAL-CODE-REQUEST.md`);
 DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3),
 proven by a live run through the Gateway with the service token that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a
 real refusal of an unaccepted token (Natig P2, 2026-10-26); the **service identity for the eligibility read**: MOD-0140 1.4.0 DL-7
@@ -125,9 +128,11 @@ is `INVALID_STATUS_TRANSITION` (the `Error` body is the same; the contract succe
 no write (AC-04, F-1):** Procurement unreachable / 5xx / timeout; every other 404 — `UNKNOWN_LEGAL_ENTITY` from MOD-0140's
 LE check (C2), a route 404 before MOD-0140 DL-3, a 404 without a body or with another code (review F-1); a 200 that does not match `SupplierEligibility`, has a null
 `status`, or names a `supplierId` other than the binding's mapped supplier — **the DC-03 binding stores the canonical `SUP-` code**
-(a requirement on the DC-03 pack; MOD-0140 always answers with the canonical code, review F-2), so the comparison is exact;
-if MOD-0140 ever changes a canonical code (merge in its DL-2 migration) the binding is updated by that migration's owner,
-and until then the mismatch answers 503 rather than mapping to a different supplier; a rejection of the service token (401 / 403) or
+(the canonical code MOD-0140 returned at bind time — a requirement on the DC-03 pack, gate above; MOD-0140 always answers
+with the canonical code, review F-2), so the comparison is exact; correcting a binding after a canonical-code change is the
+**DC-03 owner's** job, not MOD-0140's (MOD-0140 has no such duty and its DL-2 migration runs on dev/test data only,
+`MOD-0140-supplier-onboarding.md@7f937c812:171`, `:373`; XMC-001), and until it is corrected the mismatch answers 503 rather
+than mapping to a different supplier; a rejection of the service token (401 / 403) or
 any other unexpected status. **Service identity (F-3):** the `supplier_user` token cannot make this read — the Gateway
 allow-list keeps that actor inside `/portal/*`, and a supplier must never hold a Procurement permission. The read therefore
 uses **a trusted service token with no permission claim, accepted by MOD-0140 DL-7** (for the two eligibility endpoints the
