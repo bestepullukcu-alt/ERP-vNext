@@ -76,4 +76,5 @@
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>Soyad çok uzun. Kısaltıp yeniden deneyin.</value></data>
   <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>E-posta adresi çok uzun. Kısaltıp yeniden deneyin.</value></data>
   <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Bir sorun daha var; girdiklerinizi kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrorUserDeactivateLastSteward" xml:space="preserve"><value>Bu hesabı pasife almak, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
 </root>

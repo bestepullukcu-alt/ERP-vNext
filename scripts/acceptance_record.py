@@ -33,6 +33,17 @@ acceptance); the evidence commit differs from the code only in the run directory
 proven automatically is 'inceleme bekler — <neden>' and keeps a mandatory one open. A conditionally approved pack gives
 no new automatic acceptance (E1). What the run record does not prove is printed with every answer (SINIR).
 
+S-5 (CT-APR-02 dispatch gate, SOP §20.4 item 8), only once execution/approvals/POLICY-DISPATCH-REVIEW-START.md exists on
+main or at the record's commit (once added, its absence is a refusal): the bound pack version (module_pack) is read with
+the dispatch gate's own negative set (scripts/prompt_gate.py review_negatives: the review file's append-only history on
+main first; this version, every reviewed version with the same body and every version it is exempt from) — any UYGUN
+DEĞİL, open ENGEL or untrusted review record refuses the acceptance (exit 1), protected running work included. A product
+record (a MOD-nnnn module) whose commit is not strictly before the start must bind module_pack; the bound commit must be
+an ancestor of the verified code commit and the pack's bytes at the code commit must be the bound bytes; that version
+needs a valid CT-APR-01 approval on main AND (a valid review on main OR the WP's protected start version); an ENGEL
+accepted in its review needs the acceptor's own HIGH approval row; older records stay as they were. No review at all is not a stop here. A shallow
+repository is refused.
+
 The künye's `commit` is the verified code tree; the record itself is read at RECORD@COMMIT, a different commit.
 Nothing is derived: decision, queue state and completion level are separate fields (SOP §29.5).
 """
@@ -66,6 +77,7 @@ SPEC = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})(?::(\d+))?$")
 HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
 FULL_HEX = re.compile(r"^[0-9a-f]{40}$")
 REVIEW = re.compile(r"^inceleme bekler\s*[—-]\s*(.*)$")   # CT-FIX-05 (F3): applicable, not provable automatically
+PRODUCT_MODULE = re.compile(r"MOD-\d{4}")   # S-5: a record of product work names a MOD id in its module field
 
 
 def evidence_line_problem(content: str, n: int) -> str | None:
@@ -94,7 +106,11 @@ OPTIONAL_FIELDS = ["module_pack"]
 MODULE_PACK = re.compile(r"^(execution/domains/[a-z0-9][a-z0-9-]*/module-packs/[A-Za-z0-9][A-Za-z0-9._-]*\.md)@([0-9a-f]{40})$")
 PACK_PATH = re.compile(r"^execution/domains/[^/]+/module-packs/[^/]+\.md$")
 PACK_STATUS = {"approved", "ready-for-dev"}
-AC_HEADING = re.compile(r"^#{1,6}[ \t]*Acceptance Criteria[ \t]*$", re.I)
+AC_HEADING = re.compile(r"^#{1,6}[ \t]*(?:[0-9]+\.[ \t]*)?Acceptance Criteria[ \t]*$", re.I)
+# AUDIT-FU-01 (5): the one accepted form of the section heading — level 2, optionally numbered as the standard's §6
+# section table numbers it ("## 16. Acceptance Criteria", 108 of the 144 packs on main 37530d190). Any other heading
+# that AC_HEADING counts (another level, number 0, other spacing) is refused, never read.
+AC_SECTION = re.compile(r"^## (?:[1-9][0-9]*\. )?Acceptance Criteria$")
 AC_ITEM = re.compile(r"^- \[[ xX]\] AC-([1-9][0-9]*) \((zorunlu|isteğe bağlı)\) — (\S.*)$")
 AC_ID = re.compile(r"^AC-([1-9][0-9]*)$")
 DRAFT_MARK = "<<DOLDUR"   # CT-FIX-03 (U3): a field the draft left for a person; any left is an ENGEL
@@ -268,6 +284,10 @@ class Git:
         out = self._run("diff", "--name-only", "-z", "--no-renames", a, b, "--", ok_fail=True)
         return None if out is None else self._paths(out, "diff")
 
+    def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None, queue=None, wp=None):
+        """S-5: (start commit short or None when the rule never started, [(reason, next step or None)])."""
+        return s5_acceptance(self.root, record_at, module_pack, pdata, code_commit, product, declared, queue, wp)
+
     def v2_records(self, ref: str = "HEAD") -> dict[str, str]:
         """{path: text} of every v2 record committed at ref under docs/records/ (the supersedes graph)."""
         if ref.startswith("-") or self.resolve(ref) is None:
@@ -287,6 +307,135 @@ class Git:
             if is_v2(text):
                 records[path] = text
         return records
+
+
+# ------------------------------------------------------------------------------------------------ S-5
+_GATE = None
+
+
+def gate():
+    """scripts/prompt_gate.py — the dispatch gate's own S-5 functions (start, negatives, messages), never a copy."""
+    global _GATE
+    if _GATE is None:
+        _GATE = _load("prompt_gate_shared", ROOT / "scripts" / "prompt_gate.py")
+    return _GATE
+
+
+def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str] | None, pdata: bytes | None,
+                  code_commit: str, product: bool, declared: bool | None = None, queue: str | None = None,
+                  wp: str | None = None) -> tuple[str | None, list[tuple[str, str | None]]]:
+    """S-5 for one acceptance record: (the start, short — None when the rule never started (F-8); the problems, each
+    with its next step or None for the review default). record_at: the record's own commit; the record is under the
+    rule unless that commit is strictly before the start (N-2, the CT-APR-02 reading: a branch forked before the rule
+    is not 'before' it); unknown = under the rule. declared: the künye names a module_pack at all (N-7: a malformed or
+    missing one already has its own ENGEL). Under the rule the bound pack commit is an ancestor of the verified code
+    commit AND the pack's bytes at the code commit are the bound bytes (N-1), and that version needs (Q3) BOTH a valid
+    approval — the pack at main with these bytes and pack_approval.evaluate(root, main, path) exit 0 (CT-APR-01; a
+    legacy 'unchanged since the start' counts) — AND either a valid review cover on main (review_negatives) or the
+    start version of this WP (queue + work_package) protected at the start (prompt_gate.dispatch_protected). An
+    accepted ENGEL in a review read for this version needs the acceptor's HIGH approval row (Q4). A deleted start record
+    and a shallow repository are refusals."""
+    declared = module_pack is not None if declared is None else declared
+    pg = gate()
+    pa = _load("pack_approval_s5", ROOT / "scripts" / "pack_approval.py")
+    label = "?"
+    try:
+        shallow = pg.shallow_problem(pa, root)
+        if shallow:
+            return label, [(shallow, "deponun tam klonunda (git fetch --unshallow) yeniden koş")]
+        main = pa.main_line(root)
+        ref = (pa.commit_of(root, record_at) if record_at else None) or main
+        label = (pg.start_commit(pa, root, main, ref) or "?")[:9]
+        try:
+            start = pg.dispatch_start(pa, root, main, ref)
+        except pg.StartDeleted as e:
+            return label, [(str(e), pg.RESTORE_STEP)]
+        if start is None:
+            return None, []
+        ancestor = lambda a, b: bool(a and b) and pa.git(root, "merge-base", "--is-ancestor", a, b, ok_fail=True) is not None
+        rec = pa.commit_of(root, record_at) if record_at else None
+        after = rec is None or not pa.strictly_before(root, rec, start)
+        out: list[tuple[str, str | None]] = []
+        if after and product and not declared:
+            out.append(("kayıt kural altında (commit'i başlangıçtan kesin olarak önce değil) bir ürün işi kaydı ama module_pack bağlamıyor — kabul "
+                        "edilen paket sürümü ve incelemesi ölçülemez",
+                        "künyeye module_pack: <paket yolu>@<40 haneli commit> ekle (REP-001 §6.1)"))
+        if module_pack is not None and pdata is not None:
+            path, at = module_pack
+            at_full = pa.commit_of(root, at)
+            code_full = pa.commit_of(root, code_commit)
+            if after and not ancestor(at_full, code_full):
+                out.append((f"bağlı paket commit'i {at[:9]} doğrulanan kod commit'inin ({code_commit[:9]}) atası değil — "
+                            "kod bu paket sürümünden üretilmemiş", "module_pack'i kod ağacının geçmişindeki paket "
+                            "sürümüne bağla"))
+            elif after and (pa.read(root, code_full, path) if code_full else None) != pdata:
+                out.append((f"doğrulanan kod commit'inde ({code_commit[:9]}) paket, bağlanan sürüm ({at[:9]}, sha "
+                            f"{pa.sha256(pdata)[:8]}) değil — eski bir paket sürümüne bağlanmış", "module_pack'i doğrulanan "
+                            "kod commit'indeki paket sürümüne bağla (o sürümün incelemesi okunur)"))
+            stops, cover, _notes, step, accepted = pg.review_negatives(pa, root, main, at_full or main, path, pdata)
+            out += [(f"bağlı paket sürümü (sha {pa.sha256(pdata)[:8]}): {x}", f"{step}; yürüyen iş de bu sonuçla kabul "
+                     "edilmez") for x in stops]
+            sha8 = pa.sha256(pdata)[:8]
+            if after and not stops:
+                # Q3: BOTH a valid approval of exactly these bytes on main (pack_approval.evaluate exit 0; a legacy
+                # 'unchanged since the start' counts) AND a valid review cover or proven running-work protection — an
+                # old approval never replaces the review requirement
+                code_a, lines_a = (pa.evaluate(root, main, path) if pa.read(root, main, path) == pdata
+                                   else (1, ["sonuç: bu sürüm main'deki paket sürümü değil"]))
+                if code_a != 0:
+                    why_a = next((l for l in reversed(lines_a) if l.startswith(("sonuç:", "ENGEL:"))), lines_a[-1])
+                    out.append((f"kabul edilen paket sürümü (sha {sha8}) main'de onaylı değil (CT-APR-01: {why_a})",
+                                f"paketin bu sürümünü main'de onaylatın (`python3 scripts/pack_approval.py check {path}` "
+                                "çıkış 0; SOP §20.4)"))
+                if not cover:
+                    protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata, record_at,
+                                                     code_commit)
+                    if not protected:
+                        out.append((f"kabul edilen paket sürümü (sha {sha8}) incelenmemiş ve korunan yürüyen işin başlangıç "
+                                    f"sürümü değil ({why}) — eski onay inceleme şartının yerine geçmez",
+                                    "paket iş dalında değiştiyse yeni sürümü inceletin (SOP §20.4)"))
+            if not stops and accepted:
+                # Q4: an accepted ENGEL needs the acceptor's own HIGH CT-APR-01 approval row for exactly this sha
+                bad = pg.accepted_engel_problem(pa, root, main, path, pa.sha256(pdata), accepted)
+                if bad:
+                    out.append((bad, pg.ACCEPT_STEP.format(path=path)))
+        return start[:9], out
+    except (pa.Unreadable, UnicodeDecodeError, OSError, ValueError, KeyError) as e:
+        return label, [(f"incelemeler ölçülemedi — {e}", None)]
+
+
+def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None, wp: str | None, path: str,
+                    pdata: bytes, record_at: str | None = None, code_commit: str | None = None) -> tuple[bool, str]:
+    """R3-1 (b): is `pdata` the start version of this WP while the WP was protected at the start? The queue's path is
+    read from the registry at the start, its row today from main; the decision is the dispatch gate's own, its queue
+    history read from main, the record's commit (F-11) AND the verified code commit (Codex F-14: a worker branch's
+    REWORK and back may be in neither main nor the record's history)."""
+    if not queue or not wp:
+        return False, "kuyruk ya da WP bilinmiyor"
+    cq = pg._SHARED
+    raw = pa.read(root, start, cq.REGISTRY.relative_to(cq.ROOT).as_posix())
+    reg = cq.Table(raw.decode("utf-8", errors="replace")) if raw is not None else None
+    qi, pi = (reg.index("queue_id"), reg.index("path")) if reg else (None, None)
+    paths = [r[pi] for r in reg.rows if len(r) == len(reg.header) and r[qi] == queue] if qi is not None and pi is not None else []
+    if len(paths) != 1:
+        return False, f"kuyruk '{queue[:30]}' kural başlangıcındaki kayıtta tek satır değil"
+    qraw = pa.read(root, main, paths[0])
+    table = cq.Table(qraw.decode("utf-8", errors="replace")) if qraw is not None else None
+    rows = [r for r in table.rows if len(r) == len(table.header) and table.index("id") is not None
+            and r[table.index("id")] == wp] if table else []
+    if len(rows) != 1:
+        return False, f"{wp} main'deki kuyrukta tek satır değil"
+    return pg.dispatch_protected(pa, root, start, path, pdata, wp,
+                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))},
+                                 [main] + [c for c in (record_at, code_commit) if c], closing=True)
+
+
+def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
+    step = step or (f"paketi düzelt, yeni sürümü bağımsız incelet (`python3 scripts/pack_approval.py review-row "
+                    f"{path or '<paket>'} --findings <bulgu dosyası> …`, SOP §20.4 madde 8); yürüyen iş de bu sonuçla "
+                    "kabul edilmez")
+    return (f"paket incelemesi (S-5 / CT-APR-02 dağıtım kapısı, POLICY-DISPATCH-REVIEW-START @ {start}): kabul durdu — "
+            f"{' '.join(reason.split())} · sonraki adım: {step} · {gate().NEW_SESSION_HINT}")
 
 
 # ------------------------------------------------------------------------------------------------ checks
@@ -370,7 +519,7 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
 
 
 def check_record(text: str, read, exists, records: dict[str, str] | None, expect: dict,
-                 path: str | None = None, ops=None) -> tuple[int, list[str]]:
+                 path: str | None = None, ops=None, record_at: str | None = None) -> tuple[int, list[str]]:
     """The whole decision for one record. read(commit, path) -> bytes | None; exists(commit) -> bool; records:
     {path: text} of the v2 records at HEAD (None = the supersedes graph is not checked); expect: queue /
     work_package / module to match. ops (CT-FIX-05 F3): full(ref), tree(commit), blob(commit, path),
@@ -524,6 +673,7 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
     # module-check uses — it exists at its commit, its künye is this module's single id with a single approved /
     # ready-for-dev status, and every AC-<n> row of the acceptance list is one of its criteria with the same
     # mandatory flag. A record without module_pack stays valid (İ4 S2 backward compatibility); it says so.
+    s5_pack = None
     if f.get("module_pack"):
         mp = MODULE_PACK.match(f["module_pack"])
         pdata = read(mp.group(2), mp.group(1)) if mp else None
@@ -532,6 +682,7 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         else:
             criteria, pbad, old, _ = read_pack(mp.group(1), pdata.decode("utf-8", errors="replace"), f["module"])
             eng += pbad
+            s5_pack = (mp.group(1), mp.group(2), pdata)
             if old:
                 eng.append("paket: AC kimliği yok (eski biçim) — kabul listesinin bu pakete bağlı olduğu ölçülemez")
             elif not pbad:
@@ -560,6 +711,16 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
                     eng.append(f"kabul listesi: bağlı paketin hiçbir AC'si yok ({f['module_pack'][:70]}) — boş bir kabul üretilmez")
     else:
         info.append("module_pack yok — kabul listesindeki AC'lerin bir paket sürümünde olduğu denetlenmedi (İ4 S2 geriye uyum)")
+    # S-5: the dispatch gate's negatives stop the acceptance too (protected running work included); a product record
+    # written after the start binds its pack version (F-3, F-8)
+    s5 = getattr(ops, "s5", None)
+    if s5 is None:
+        eng.append(s5_line("?", "S-5 ölçülemedi — git erişimi yok", None, s5_pack[0] if s5_pack else None))
+    else:
+        start, problems = s5(record_at, (s5_pack[0], s5_pack[1]) if s5_pack else None, s5_pack[2] if s5_pack else None,
+                             f["commit"], bool(PRODUCT_MODULE.search(f["module"])), declared=bool(f.get("module_pack")),
+                             queue=f["queue"], wp=f["work_package"])
+        eng += [s5_line(start or "?", why, step, s5_pack[0] if s5_pack else None) for why, step in problems]
     if f["decision"] == "accepted":
         for r in rows:
             if r.get("Zorunlu") == "evet" and r.get("Sonuç") in ("kaldı", "denenmedi"):
@@ -644,7 +805,7 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         if data is None:
             raise Incomplete(f"kayıt {spec} commit'te yok")
         return check_record(data.decode("utf-8"), git.read, lambda c: git.commit_id(c) is not None, git.v2_records(index_ref),
-                            expect, m.group(1), ops=git)
+                            expect, m.group(1), ops=git, record_at=git.commit_id(m.group(2)))
     except Incomplete as e:
         return 2, [f"sonuç: tamamlanamadı — {e}", "çıkış: 2"]
     except (OSError, UnicodeDecodeError, ValueError) as e:
@@ -678,6 +839,7 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     closed block with a single id equal to the module and a single status approved / ready-for-dev. One pass over the
     body tracks fenced code by its opening mark and length (only the same mark, at least as long, alone on its line
     closes it); an unclosed fence anywhere makes the pack unreadable. Outside fences: one '## Acceptance Criteria'
+    (or '## <n>. Acceptance Criteria')
     section up to the next heading of level 1–2, every item there '- [ ] AC-<n> (zorunlu|isteğe bağlı) — <criterion>',
     at least one mandatory. A section without any identity is the old format: not measurable."""
     lines = text.replace("\r\n", "\n").split("\n")
@@ -717,8 +879,9 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     if fence is not None:
         return {}, bad + [f"paket: satır {opened + 1}'de açılan kod çiti kapanmıyor — sonrası okunamaz"], False
     heads = [i for i in outside if AC_HEADING.match(lines[i].strip())]
-    if len(heads) != 1 or lines[heads[0]].strip() != "## Acceptance Criteria":
-        return {}, bad + [f"paket: tek '## Acceptance Criteria' bölümü olmalı ({len(heads)} başlık)"], False
+    if len(heads) != 1 or not AC_SECTION.match(lines[heads[0]].strip()):
+        return {}, bad + [f"paket: tek '## Acceptance Criteria' ya da '## <n>. Acceptance Criteria' bölümü olmalı "
+                          f"({len(heads)} başlık)"], False
     after = [i for i in outside if i > heads[0]]
     end = next((i for i in after if re.match(r"^#{1,2}\s", lines[i])), len(lines))
     criteria: dict[int, tuple[bool, str]] = {}
@@ -949,6 +1112,16 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
     C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
     RUN = "docs/records/audits/2026-10/x/run-1"
@@ -1002,10 +1175,13 @@ def self_test() -> int:
         def changed(self, a, b):
             paths = {p for (c, p) in self.fs if c in (a, b)}
             return sorted(p for p in paths if self.fs.get((a, p)) != self.fs.get((b, p)))
+        # S-5: the rule has not started in this fixture (a real repository below)
+        def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None, queue=None, wp=None): return None, []
 
-    def run(text, fs=files, records=None, path="docs/records/audits/2026-10/x/kayit.md", exp=expect, ex=exists):
+    def run(text, fs=files, records=None, path="docs/records/audits/2026-10/x/kayit.md", exp=expect, ex=exists, ops=None,
+            record_at=None):
         recs = records if records is not None else {path: text}
-        return check_record(text, read_from(fs), ex, recs, exp, path, ops=FakeOps(fs))
+        return check_record(text, read_from(fs), ex, recs, exp, path, ops=ops or FakeOps(fs), record_at=record_at)
 
     def eng(r):
         return [l for l in r[1] if l.startswith("ENGEL")]
@@ -1241,6 +1417,230 @@ def self_test() -> int:
     cases.append(("CT-FIX-06 EK1-2: evidence line 1 of an empty file, line 2 of a one-line file ending in LF, a blank line -> refused; a filled line -> fine",
                   evidence_line_problem("", 1) and evidence_line_problem("AC-1 checked\n", 2)
                   and evidence_line_problem("x\n   \n", 2) and evidence_line_problem("AC-1 checked\n", 1) is None))
+    # S-5: the dispatch gate's negatives and start rules in acceptance (real repositories; F-3, F-6, F-7, F-8)
+    import tempfile
+    s5_tmp = tempfile.TemporaryDirectory()
+    hint = gate().NEW_SESSION_HINT
+    REV_OK, REV_NO = ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"]
+
+    class GitOps(FakeOps):
+        """The fixture's fake commits mapped to a real repository's: C1 (the bound pack) and C2 (the code)."""
+        def __init__(self, fs, repo, pack_at, code_at):
+            super().__init__(fs)
+            self.repo, self.pack_at, self.code_at = repo, pack_at, code_at
+        def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None, queue=None, wp=None):
+            mp = (module_pack[0], self.pack_at) if module_pack else None
+            return s5_acceptance(self.repo.root, record_at, mp, pdata, self.code_at, product, declared, queue, wp)
+
+    def s5_run(repo, pk_text, pack_at, code_at, record_at, mp=True):
+        fs = bound(pk_text=pk_text)
+        return run(rec(_extra_fm=good_mp) if mp else rec(), fs=fs, ops=GitOps(fs, repo, pack_at, code_at), record_at=record_at)
+    s5e = lambda r: [e for e in eng(r) if "S-5" in e]
+    V = pack(good_ac)
+    VD = pack(good_ac, fm="id: MOD-0151\nstatus: approved\nupdated: 2026-10-01\n")
+    # A — no start record: a negative review does not touch acceptance (F-8); a deleted start is a refusal
+    ra = S5Repo(os.path.join(s5_tmp.name, "a"))
+    pa_ = ra.commit_file(PK, V)
+    ra.review(PK, V, "UYGUN DEĞİL", REV_NO, 0)
+    r_a = s5_run(ra, V, pa_, pa_, ra.head())
+    cases.append(("S-5 F-8: before POLICY-DISPATCH-REVIEW-START exists, acceptance is as before (a negative review is not "
+                  "read) -> exit 0", r_a[0] == 0 and not s5e(r_a)))
+    start_a = ra.start()
+    ra.drop_start()
+    r_ad = s5_run(ra, V, pa_, pa_, ra.head())
+    cases.append(("sabotage S-5 F-8 / F-7: the start record deleted -> acceptance refused, the real start named, next step "
+                  "'geri getir'", r_ad[0] == 1 and any("silinerek" in e and f"@ {start_a[:9]}" in e and "geri getir" in e
+                                                       and "review-row" not in e for e in s5e(r_ad))))
+    # B — started: no review / UYGUN pass; UYGUN DEĞİL on the bound version refuses with a self-explaining line
+    rb = S5Repo(os.path.join(s5_tmp.name, "b"))
+    pb = rb.commit_file(PK, V)
+    sb = rb.start()
+    r_none = s5_run(rb, V, pb, pb, rb.head())
+    rb.review(PK, V, "UYGUN", REV_OK, 0)
+    r_ok5 = s5_run(rb, V, pb, pb, rb.head())
+    cases.append(("sabotage S-5 Q3: started, the record binds its pack version approved on main (no CT-APR-01 start) but "
+                  "unreviewed and unprotected -> refused (an old approval never replaces the review); a valid UYGUN -> "
+                  "exit 0", r_none[0] == 1 and any("eski onay inceleme şartının yerine geçmez" in e for e in s5e(r_none))
+                  and r_ok5[0] == 0))
+    rb.review(PK, V, "UYGUN DEĞİL", REV_NO, 0)
+    r_nd = s5_run(rb, V, pb, pb, rb.head())
+    cases.append(("sabotage S-5: UYGUN DEĞİL among the bound pack version's reviews on main (after an UYGUN) -> refused",
+                  r_nd[0] == 1 and any("UYGUN DEĞİL" in e for e in s5e(r_nd))))
+    cases.append(("S-5 F-7: the acceptance ENGEL names the real start (no '@ ?'), review-row and the 'yeni oturum aç' hint",
+                  any(f"POLICY-DISPATCH-REVIEW-START @ {sb[:9]}" in e and "review-row" in e and hint in e for e in s5e(r_nd))
+                  and not any("@ ?" in e for e in s5e(r_nd))))
+    other = pack(good_ac, after="\n## Notes\n- ikinci sürüm\n")
+    po = rb.commit_file(PK, other)
+    rb.review(PK, other, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
+    r_open = s5_run(rb, other, po, po, rb.head())
+    cases.append(("sabotage S-5: an open ENGEL in the bound pack version's review on main -> refused",
+                  r_open[0] == 1 and any("açık ENGEL" in e for e in s5e(r_open))))
+    # C — F-3a: UYGUN DEĞİL on V0; the record binds V1 = V0 + a date only
+    rc = S5Repo(os.path.join(s5_tmp.name, "c"))
+    rc.commit_file(PK, VD)
+    rc.start()
+    rc.review(PK, VD, "UYGUN DEĞİL", REV_NO, 0)
+    VD1 = VD.replace("updated: 2026-10-01", "updated: 2026-10-30")
+    p1 = rc.commit_file(PK, VD1)
+    r_c = s5_run(rc, VD1, p1, p1, rc.head())
+    cases.append(("sabotage S-5 F-3a: UYGUN DEĞİL on V0, the record binds V1 = V0 + a date -> refused (the dispatch gate's "
+                  "negative set, not only the exact bytes)", r_c[0] == 1 and any("muaf uzaklıkta" in e for e in s5e(r_c))))
+    # D — F-3b: the UYGUN DEĞİL row deleted from reviews.tsv on main by a merged PR
+    rd = S5Repo(os.path.join(s5_tmp.name, "d"))
+    pd_ = rd.commit_file(PK, V)
+    rd.start()
+    rd.review(PK, V, "UYGUN DEĞİL", REV_NO, 0)
+    rd.tidy_reviews()
+    r_d = s5_run(rd, V, pd_, pd_, rd.head())
+    cases.append(("sabotage S-5 F-3b: the UYGUN DEĞİL row deleted from reviews.tsv on main -> refused ('yalnız ekleme değil')",
+                  r_d[0] == 1 and any("yalnız ekleme değil" in e for e in s5e(r_d))))
+    # E — F-3c: a product record after the start binds module_pack, and the pack commit is an ancestor of the code
+    re_ = S5Repo(os.path.join(s5_tmp.name, "e"))
+    before = re_.commit_file(PK, V)
+    se = re_.start()
+    code = re_.commit_file("src/x.txt", "kod\n")
+    r_e1 = s5_run(re_, V, before, code, re_.head(), mp=False)
+    r_e0 = s5_run(re_, V, before, code, before, mp=False)
+    cases.append(("sabotage S-5 F-3c: a product record written after the start without module_pack -> refused; the same "
+                  "record before the start -> unchanged (exit 0)",
+                  r_e1[0] == 1 and any("module_pack bağlamıyor" in e for e in s5e(r_e1)) and r_e0[0] == 0 and not s5e(r_e0)))
+    later = re_.commit_file(PK, V + "\n")
+    late_pack = pack(good_ac) + "\n"
+    r_e2 = s5_run(re_, late_pack, later, code, re_.head())
+    cases.append(("sabotage S-5 F-3c: the bound pack commit is not an ancestor of the verified code commit -> refused",
+                  r_e2[0] == 1 and any("atası değil" in e for e in s5e(r_e2))))
+    # N-2: a record on a branch forked BEFORE the start, written after it, is under the rule (not strictly before)
+    re_.g("checkout", "-q", "-b", "stale", before)
+    stale = re_.commit_file("docs/x.md", "kayıt\n")
+    re_.g("checkout", "-q", "main")
+    r_n2 = s5_run(re_, V, before, code, stale, mp=False)
+    cases.append(("sabotage S-5 N-2: a product record on a branch forked before the start (written after it) is under the "
+                  "rule -> no module_pack refused", r_n2[0] == 1 and any("module_pack bağlamıyor" in e for e in s5e(r_n2))))
+    # N-7: a malformed module_pack, or one missing at its commit, gives its own ENGEL only — not also 'bağlamıyor'
+    fs7 = bound()
+    ops7 = GitOps(fs7, re_, before, code)
+    r_n7a = run(rec(_extra_fm="module_pack: execution/domains/x/MOD-0151.md@abc\n"), fs=fs7, ops=ops7, record_at=re_.head())
+    r_n7b = run(rec(_extra_fm=good_mp), fs=files, ops=GitOps(files, re_, before, code), record_at=re_.head())
+    cases.append(("sabotage S-5 N-7: a malformed module_pack, or one missing at its commit -> one clear ENGEL, no extra "
+                  "'module_pack bağlamıyor'", r_n7a[0] == 1 and r_n7b[0] == 1 and any("commit'te yok" in e for e in eng(r_n7b))
+                  and not any("module_pack bağlamıyor" in e for e in eng(r_n7a) + eng(r_n7b))))
+    # N-1: the record binds an OLD pack version (an ancestor of the code) while the code carries a newer one
+    rn = S5Repo(os.path.join(s5_tmp.name, "n1"))
+    VOLD = pack(good_ac, after="\n## Notes\n- eski not\n")
+    p_old = rn.commit_file(PK, VOLD)
+    rn.commit_file(PK, V)
+    rn.start()
+    code_n = rn.commit_file("src/x.txt", "kod\n")
+    rn.review(PK, V, "UYGUN", REV_OK, 0)
+    r_n1 = s5_run(rn, VOLD, p_old, code_n, rn.head())
+    r_n1ok = s5_run(rn, V, code_n, code_n, rn.head())
+    cases.append(("sabotage S-5 N-1: the bound pack version is an ancestor but not the pack at the verified code commit -> "
+                  "refused; the code commit's own version -> exit 0", r_n1[0] == 1
+                  and any("eski bir paket sürümüne bağlanmış" in e for e in s5e(r_n1)) and r_n1ok[0] == 0))
+    # R3-1: the worker edits the pack body on its branch; the record binds that unreviewed, unapproved version
+    rw = S5Repo(os.path.join(s5_tmp.name, "r31"))
+    rw.commit_file(PK, V)
+    rw.start()
+    rw.g("checkout", "-q", "-b", "worker")
+    VW = V + "- iş dalında eklenen not\n"
+    rw.put(PK, VW)
+    code_w = rw.commit_file("src/x.txt", "kod\n")
+    rw.g("checkout", "-q", "main")
+    r_w = s5_run(rw, VW, code_w, code_w, code_w)
+    cases.append(("sabotage S-5 R3-1: the record binds a pack version edited on the work branch (no review, not on main, "
+                  "not the protected start version) -> refused, self-explaining",
+                  r_w[0] == 1 and any("incelenmemiş" in e and "yeni sürümü inceletin" in e for e in s5e(r_w))
+                  and any("main'de onaylı değil" in e for e in s5e(r_w))))
+    # Q3 with protection: W7 running at the S-5 start; CT-APR-01 either keeps the pack's legacy approval (the pack is
+    # older than POLICY-START, unchanged) or does not (the pack changed after POLICY-START, no approval row)
+    cq = gate()._SHARED
+
+    def protected_repo(name, legacy, reopen=False, after=(), worker_reopen=False):
+        rq = S5Repo(os.path.join(s5_tmp.name, name))
+        reg_cols = cq.REGISTRY_COLUMNS
+        reg_row = {c: "x" for c in reg_cols} | {"queue_id": "pqg-ct", "path": "q/CT-QUEUE.tsv", "vocabulary": "sop7"}
+        rq.put(cq.REGISTRY.relative_to(cq.ROOT).as_posix(), "\t".join(reg_cols) + "\n" + "\t".join(reg_row[c] for c in reg_cols) + "\n")
+        rq.put(cq.STATES.relative_to(cq.ROOT).as_posix(), "\t".join(cq.STATE_COLUMNS) + "\nsop7\tIN_PROGRESS\tactive\tno\tx\tconfirmed\n"
+               "sop7\tVERIFYING\tactive\tno\tx\tconfirmed\nsop7\tDISCOVERED\tplanned\tno\tx\tconfirmed\n"
+               "sop7\tREWORK\trework\tno\tx\tconfirmed\nsop7\tACCEPTED\tclosed\tno\tx\tconfirmed\n")
+        rq.put("q/CT-QUEUE.tsv", "id\titem\tmodule\tstate\nW7\tiş\tMOD-0151\tIN_PROGRESS\nW8\tiş\tMOD-0151\tDISCOVERED\n")
+        if legacy:
+            rq.put(PK, V)
+        rq.commit("the queue" + (" and the pack" if legacy else ""), rq.LEAD)
+        rq.commit_file("execution/approvals/POLICY-START.md", "# start\n")
+        pv = rq.commit_file(PK, V) if not legacy else rq.head()
+        rq.start()
+        if worker_reopen:         # Codex F-14: REWORK and back only on the worker (code) branch; the record on main
+            rq.g("checkout", "-q", "-b", "worker")
+            for to in ("REWORK", "IN_PROGRESS"):
+                rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
+            code = rq.commit_file("src/x.txt", "kod\n")
+            rq.g("checkout", "-q", "main")
+            return rq, pv, code
+        for to in (("REWORK", "IN_PROGRESS") if reopen else ()):     # Codex Q7: re-opened after the start, then back
+            rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
+        rq.commit_file("q/CT-QUEUE.tsv", rq.get("q/CT-QUEUE.tsv").replace("W7\tiş\tMOD-0151\tIN_PROGRESS", "W7\tiş\tMOD-0151\tVERIFYING"))
+        code = rq.commit_file("src/x.txt", "kod\n")
+        for to in after:          # Codex F-7: the queue after the acceptance (ACCEPTED; or ACCEPTED and back)
+            rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
+        return rq, pv, code
+
+    def wp_run(rq, pv, code, wp):
+        fs = bound()
+        return run(rec(_extra_fm=good_mp, work_package=wp), fs=fs, ops=GitOps(fs, rq, pv, code), record_at=rq.head(),
+                   exp=dict(expect, work_package=wp))
+    rl, pl, cl = protected_repo("q3-legacy", True)
+    r_b, r_b8 = wp_run(rl, pl, cl, "W7"), wp_run(rl, pl, cl, "W8")
+    cases.append(("S-5 Q3: a valid approval (legacy, unchanged since POLICY-START) AND the WP's protected start version -> "
+                  "accepted without a review; the same version for an unprotected WP (W8) -> refused",
+                  r_b[0] == 0 and r_b8[0] == 1 and any("korunan yürüyen işin başlangıç sürümü değil" in e for e in s5e(r_b8))))
+    rr, pr7, cr = protected_repo("q7-reopened", True, reopen=True)
+    r_r = wp_run(rr, pr7, cr, "W7")
+    cases.append(("sabotage S-5 Q7: W7 running at the start, REWORK after it, then IN_PROGRESS again (no review) -> "
+                  "refused: protection is never regained",
+                  r_r[0] == 1 and any("korunan yürüyen işin başlangıç sürümü değil" in e and "geri kazanılamaz" in e
+                                      for e in s5e(r_r))))
+    rw14, pw14, cw14 = protected_repo("f14-worker", True, worker_reopen=True)
+    r_w14 = wp_run(rw14, pw14, cw14, "W7")
+    cases.append(("sabotage S-5 F-14 (Codex): REWORK and back only on the worker branch whose code is verified, the record "
+                  "written on main without it -> refused (the code commit's queue history is read too)",
+                  r_w14[0] == 1 and any("geri kazanılamaz" in e for e in s5e(r_w14))))
+    ra7, pa7, ca7 = protected_repo("f7-closed", True, after=("ACCEPTED",))
+    r_a7 = wp_run(ra7, pa7, ca7, "W7")
+    cases.append(("S-5 F-7 (Codex): the same protected WP after its normal closure (queue ACCEPTED) -> the record is still "
+                  "accepted (closure is not a leaving)", r_a7[0] == 0))
+    ro7, po7, co7 = protected_repo("f7-reopened", True, after=("ACCEPTED", "IN_PROGRESS"))
+    r_o7 = wp_run(ro7, po7, co7, "W7")
+    cases.append(("sabotage S-5 F-7: closed (ACCEPTED) and back to IN_PROGRESS -> a re-opening -> refused",
+                  r_o7[0] == 1 and any("kapanmış iş yeniden açıldı" in e for e in s5e(r_o7))))
+    rc, pc, cc = protected_repo("q3-unapproved", False)
+    r_c = wp_run(rc, pc, cc, "W7")
+    cases.append(("sabotage S-5 Q3: the WP's protected start version but no valid CT-APR-01 approval (changed after "
+                  "POLICY-START, no approval row) -> refused (protection never replaces the approval)",
+                  r_c[0] == 1 and any("main'de onaylı değil" in e and "CT-APR-01" in e for e in s5e(r_c))))
+    # Q4: an ENGEL accepted ('kabul — onaylayan') in a review of the bound version, no approval row for it
+    ra4 = S5Repo(os.path.join(s5_tmp.name, "q4"))
+    p4 = ra4.commit_file(PK, V)
+    ra4.start()
+    e4 = ra4.review(PK, V, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
+    ra4.review(PK, V, "KOŞULLU", [f"F-1@{e4} | ENGEL | yetki eksik | kabul — onaylayan | K1 | -"], 0)
+    r_q4 = s5_run(ra4, V, p4, p4, ra4.head())
+    cases.append(("sabotage S-5 Q4: an accepted ENGEL in the bound version's review and no HIGH CT-APR-01 approval row of the "
+                  "acceptor for this sha -> refused, self-explaining",
+                  r_q4[0] == 1 and any("kabul edilmiş ENGEL var" in e and "--risk HIGH" in e for e in s5e(r_q4))))
+    # F — F-6: a shallow clone
+    shallow = os.path.join(s5_tmp.name, "f")
+    subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + rb.root, shallow], check=True, capture_output=True,
+                   env=dict(os.environ, GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null"))
+    rf = S5Repo(shallow, init=False)
+    r_f = s5_run(rf, V, rf.head(), rf.head(), rf.head())
+    cases.append(("sabotage S-5 F-6: a shallow repository -> acceptance refused ('sığ')",
+                  r_f[0] == 1 and any("sığ (shallow)" in e for e in s5e(r_f))))
+    s5_tmp.cleanup()
+    bare = type("BareOps", (), {k: getattr(FakeOps, k) for k in ("__init__", "full", "tree", "blob", "tracked", "changed")})
+    r_bare = run(rec(_extra_fm=good_mp), fs=bound(), ops=bare(bound()))
+    cases.append(("sabotage S-5: the S-5 state cannot be read (no git operations) -> ENGEL, never a pass",
+                  r_bare[0] == 1 and any("S-5" in e and "ölçülemedi" in e for e in eng(r_bare))))
     cases.append(("CT-FIX-04 İ4: a WP's subset of the pack's ACs (AC-1 only), text and flag exact -> allows ACCEPTED",
                   run(rec(_extra_fm=good_mp), fs=bound(lst=lhead + lrow("AC-1", "evet", 1)))[0] == 0))
     ok_src = "---\nid: MOD-0151\nwork_package: W7\nstatus: approved\n---\nGerekli kanıt: E3\n"
@@ -1318,6 +1718,13 @@ def self_test() -> int:
     cases.append(("İ4 S2: an AC-like line in another section is not a criterion", r is not None and not r[1] and 7 not in r[0]))
     r = pp(pack("- [ ] liste açılır\n- [ ] yetkisiz kullanıcı 403 alır\n"))
     cases.append(("İ4 S2: an old pack without identities -> not measurable (old format), no criteria", r is not None and r[2] and not r[0]))
+    # AUDIT-FU-01 (5): the numbered heading the standard's §6 table gives (108 of 144 packs on main) is the same section
+    r = pp(pack(good_ac, heading="## 16. Acceptance Criteria"))
+    cases.append(("AUDIT-FU-01: '## 16. Acceptance Criteria' is the section; its AC rows are read",
+                  r is not None and not r[1] and not r[2] and sorted(r[0]) == [1, 2, 3, 4]))
+    r = pp(pack("- [ ] liste açılır\n- [ ] yetkisiz kullanıcı 403 alır\n", heading="## 16. Acceptance Criteria"))
+    cases.append(("AUDIT-FU-01: a numbered section without identities -> old format (not measurable), not '0 headings'",
+                  r is not None and r[2] and not r[0] and not r[1]))
     for label, text, module, why in (
             ("the pack's id is another module (FU)", pack(good_ac), "MOD-0151-FU01", "tek id"),
             ("no id", pack(good_ac, fm="status: approved\n"), "MOD-0151", "tek id"),
@@ -1327,6 +1734,9 @@ def self_test() -> int:
             ("no Acceptance Criteria section", pack(good_ac, heading="## Kabul"), "MOD-0151", "bölümü olmalı"),
             ("two Acceptance Criteria sections", pack(good_ac, after="\n## Acceptance Criteria\n- [ ] AC-5 (zorunlu) — x\n"), "MOD-0151", "bölümü olmalı"),
             ("the section at another heading level", pack(good_ac, heading="### Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a numbered section at another heading level", pack(good_ac, heading="### 16. Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a section numbered 0", pack(good_ac, heading="## 0. Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a numbered and an unnumbered section", pack(good_ac, after="\n## 16. Acceptance Criteria\n- [ ] AC-5 (zorunlu) — x\n"), "MOD-0151", "bölümü olmalı"),
             ("an unidentified item beside identified ones", pack(good_ac + "- [ ] gizli madde\n"), "MOD-0151", "uymayan madde"),
             ("an AC line outside the item form", pack(good_ac + "AC-5 (zorunlu) — liste dışı\n"), "MOD-0151", "uymayan madde"),
             ("AC-0", pack(good_ac + "- [ ] AC-0 (zorunlu) — sıfır\n"), "MOD-0151", "uymayan madde"),
@@ -1439,6 +1849,86 @@ def self_test() -> int:
         failed += not ok
     print(f"self-test: {len(cases) - failed}/{len(cases)} passed")
     return 1 if failed else 0
+
+
+class S5Repo:
+    """S-5 self-test: a tiny repository — commits on main; reviews on a branch that another person merges."""
+    DEV, LEAD = ("dev", "dev@x.invalid"), ("lead", "lead@x.invalid")
+
+    def __init__(self, root: str, init: bool = True):
+        self.root, self.n = root, 0
+        self.pa = _load("pack_approval_s5_test", ROOT / "scripts" / "pack_approval.py")
+        if init:
+            os.makedirs(root)
+            self.g("init", "-q", "-b", "main")
+            self.put(self.pa.REVIEWS, "\t".join(self.pa.REVIEW_COLUMNS) + "\n")
+            # S-40: a review row's merger must be a listed person (pack_approval.pr_person_check)
+            self.put(self.pa.APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
+            self.commit("init", self.LEAD)
+
+    def g(self, *args, who=None):
+        who = who or self.DEV
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", self.root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(self, rel, text):
+        full = os.path.join(self.root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8") as fh:
+            fh.write(text)
+
+    def get(self, rel):
+        with open(os.path.join(self.root, rel), encoding="utf-8") as fh:
+            return fh.read()
+
+    def head(self):
+        return self.g("rev-parse", "HEAD").strip()
+
+    def commit(self, msg, who=None):
+        self.g("add", "-A")
+        self.g("commit", "-q", "-m", msg, who=who)
+        return self.head()
+
+    def commit_file(self, rel, text):
+        self.put(rel, text)
+        return self.commit(f"write {rel}")
+
+    def start(self):
+        self.put(gate().DISPATCH_POLICY, "# S-5 start\n")
+        return self.commit("S-5 start", self.LEAD)
+
+    def drop_start(self):
+        self.g("rm", "-q", gate().DISPATCH_POLICY)
+        return self.commit("drop the start", self.LEAD)
+
+    def _merged(self, change):
+        self.n += 1
+        name = f"b-{self.n}"
+        self.g("checkout", "-q", "-b", name)
+        change()
+        self.commit(name)
+        self.g("checkout", "-q", "main")
+        self.g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=self.LEAD)
+
+    def review(self, path, text, verdict, findings, blockers):
+        """Returns the findings file's sha8 (how a later review names this one)."""
+        made = []
+
+        def change():
+            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            rel = f"docs/records/reviews/t/{self.n:02d}-{digest[:8]}.md"
+            body = f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings)
+            self.put(rel, body)
+            self.put(self.pa.REVIEWS, self.get(self.pa.REVIEWS) + "\t".join([
+                path, digest, rel, hashlib.sha256(body.encode("utf-8")).hexdigest(), verdict, str(blockers), "codex",
+                "gpt-x", "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"]) + "\n")
+            made.append(hashlib.sha256(body.encode("utf-8")).hexdigest()[:8])
+        self._merged(change)
+        return made[0]
+
+    def tidy_reviews(self):
+        self._merged(lambda: self.put(self.pa.REVIEWS, self.get(self.pa.REVIEWS).split("\n", 1)[0] + "\n"))
 
 
 def main() -> int:

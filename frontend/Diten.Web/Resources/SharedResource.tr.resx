@@ -378,9 +378,6 @@
   <data name="ServiceCodeInUse" xml:space="preserve">
     <value>Servis kodu zaten kullanımda.</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Görev Merkezi</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Kalem Kartı</value>
   </data>
@@ -894,6 +891,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Kişi Rehberi</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Referans Listeleri</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Çalışan Kaydı (Temel İK)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>CRM Müşteri Hesapları</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>CRM Kişileri</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>CRM İçerik Kurgusu</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>CRM Hekim İçgörüleri</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>CRM Bilgi Yönetimi</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>CRM Planlanan Ziyaretler</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>CRM Bölgeleri</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>CRM Ziyaret Planlama</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>CRM Ziyaret Raporları</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Zaman Çizelgeleri</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Kontrol Listesi Şablonları</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Şablonlar</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>İçerik Kapsamı</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>İçerik Seti</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Uygunluk</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Ziyaret Sıklığı Politikası</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
@@ -1193,6 +1211,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP İş Akışı ve Onaylar</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP Planları</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Kapasite Planlama</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Kapasite Planları</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>
@@ -1214,6 +1236,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-İmza Politikası</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>İmza Anlamları</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>İmza Örneği Onayları</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Son Kullanma / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO Paneli</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO Sırası</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>İstisna Kutusu</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>İstisna Detayı</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Raf Ömrü Kuralları ve Ayarlar</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Geri Çağırma İzleme</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Geri Çağırma Vakaları</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Geri Çağırma Vakası</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Tatbikat Planlayıcı</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Geri Çağırma Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Geri Çağırma Ayarları</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
 </root>

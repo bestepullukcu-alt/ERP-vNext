@@ -18,10 +18,14 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
     private const string LockedActorId = "11111111-1111-1111-1111-111111111111";
     private static readonly Guid LockedActorGuid = Guid.Parse(LockedActorId);
     private readonly IMongoDatabase _database;
+    private readonly Guid _referenceTenantId;
 
-    public VerifiedMarketOperationalPreflight(IMongoDatabase database)
+    /// <param name="referenceTenant">The resolved reference tenant (MOD-0048-FU01 amendment 2026-10-15): facts and audit proof
+    /// requests must belong to it. Whether it is allowed is the eligibility's decision, not this preflight's.</param>
+    public VerifiedMarketOperationalPreflight(IMongoDatabase database, VerifiedMarketOperationalReferenceTenant referenceTenant)
     {
         _database = database ?? throw new ArgumentNullException(nameof(database));
+        _referenceTenantId = referenceTenant?.TenantId ?? Guid.Empty;
     }
 
     public async Task<VerifiedMarketOperationalTargetPreflightResult> VerifyBeforeWriteAsync(
@@ -47,7 +51,8 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
         VerifiedMarketOperationalAuditProofRequest request,
         CancellationToken ct = default)
     {
-        if (request.TenantId != Guid.Parse("00000000-0000-0000-0000-000000000001")
+        if (_referenceTenantId == Guid.Empty
+            || request.TenantId != _referenceTenantId
             || request.CorrelationId == Guid.Empty
             || request.EntityId == Guid.Empty
             || string.IsNullOrWhiteSpace(request.AuditIdempotencyKey)
@@ -596,10 +601,11 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
         }
     }
 
-    private static void ValidateLockedFacts(VerifiedMarketOperationalFacts facts)
+    private void ValidateLockedFacts(VerifiedMarketOperationalFacts facts)
     {
         ArgumentNullException.ThrowIfNull(facts);
-        if (facts.ReferenceTenantId != Guid.Parse("00000000-0000-0000-0000-000000000001")
+        if (_referenceTenantId == Guid.Empty
+            || facts.ReferenceTenantId != _referenceTenantId
             || !string.Equals(facts.CatalogVersion, "UNSD-M49-2026-08-08", StringComparison.Ordinal)
             || !string.Equals(facts.CatalogFingerprint, "b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039", StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(facts.CatalogPath)

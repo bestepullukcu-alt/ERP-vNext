@@ -192,6 +192,7 @@ public sealed class LiveHistoryImportReferences : IHistoryImportScopeAuthority, 
             !authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Caller bearer token is required for reference validation.");
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        PlanningCorrelation.Forward(_context.HttpContext, request);
         request.Headers.TryAddWithoutValidation("Authorization", authorization);
         using var response = await _http.SendAsync(request, cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;

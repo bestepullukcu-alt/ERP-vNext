@@ -40,6 +40,10 @@ public sealed class LocationProxyControllerTests
     private static string Ref(string id, string code, string type, string? parent, string status = "Active") =>
         $$"""{"locationId":"{{id}}","code":"{{code}}","name":"{{code}} name","type":"{{type}}",{{(parent is null ? "" : $"\"parentId\":\"{parent}\",")}}"legalEntityId":"{{TokenCompanyId}}","status":"{{status}}","isStockable":{{(type == "Bin" ? "true" : "false")}},"contractVersion":"v1"}""";
 
+    /// <summary>FU-WEB-CONTRACT-FAKES: a single-location answer is LocationDetail (LocationRef + version / createdAt / createdBy), not a LocationRef.</summary>
+    private static string Detail(string id, string code, string type, string? parent, int version) =>
+        Ref(id, code, type, parent)[..^1] + $$""","version":{{version}},"createdAt":"2026-10-01T08:00:00Z","createdBy":"a4444444-0000-0000-0000-000000000004"}""";
+
     // ── L-2 list ─────────────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
@@ -165,7 +169,7 @@ public sealed class LocationProxyControllerTests
     {
         var key = Guid.NewGuid();
         var gateway = new FakeGateway();
-        gateway.On("/api/locations", 201, Ref(Warehouse, "WH-01", "Warehouse", Site), etag: "W/\"1\"");
+        gateway.On("/api/locations", 201, Detail(Warehouse, "WH-01", "Warehouse", Site, 1), etag: "W/\"1\"");
 
         var result = await Locations(gateway, Manager).Create(new LocationCreateRequestViewModel
         {
@@ -212,7 +216,7 @@ public sealed class LocationProxyControllerTests
     public async Task Edit_patches_only_contract_members_with_if_match()
     {
         var gateway = new FakeGateway();
-        gateway.On($"/api/locations/{Warehouse}", 200, Ref(Warehouse, "WH-02", "Warehouse", Site), etag: "W/\"4\"");
+        gateway.On($"/api/locations/{Warehouse}", 200, Detail(Warehouse, "WH-02", "Warehouse", Site, 4), etag: "W/\"4\"");
 
         var result = await Locations(gateway, Manager).Edit(Warehouse, new LocationEditRequestViewModel
         {
@@ -322,7 +326,7 @@ public sealed class LocationProxyControllerTests
         var gateway = new FakeGateway();
         gateway.On($"/api/locations/{Bin}/path", 200, $$"""{"locationId":"{{Bin}}","path":[{"type":"Site","id":"{{Site}}","code":"TR"},{"type":"Bin","id":"{{Bin}}","code":"A-1"}]}""");
         gateway.On($"/api/locations/{Bin}/stock-presence", 200, $$"""{"locationId":"{{Bin}}","hasStock":true,"subtreeHasStock":false,"contractVersion":"v1"}""");
-        gateway.On($"/api/locations/{Bin}", 200, Ref(Bin, "A-1", "Bin", Warehouse), etag: "W/\"7\"");
+        gateway.On($"/api/locations/{Bin}", 200, Detail(Bin, "A-1", "Bin", Warehouse, 7), etag: "W/\"7\"");
 
         var json = Body(await Locations(gateway, ReadOnly).Node(Bin.ToUpperInvariant(), CancellationToken.None));
 
@@ -475,7 +479,7 @@ public sealed class LocationProxyControllerTests
 
         public List<(string Method, string PathAndQuery, string? TenantHeader, string? IdempotencyKey, string? IfMatch, string Body, string? LegalEntity)> Requests { get; } = [];
 
-        public void On(string prefix, int status, string body, string? etag = null) => Routes.Add((prefix, status, body, etag));
+        public void On(string prefix, int status, string body, string? etag = null) { Contracts.ContractRoutes.Require(prefix, status, body); Routes.Add((prefix, status, body, etag)); } // FU-WEB-CONTRACT-FAKES
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

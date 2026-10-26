@@ -18,6 +18,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// A2 rounding and 8-minute floor (T-27), time that lands on a locked week (§13) and minimisation at approval (D4, T-23).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimerMidnightAndDraftHttpMongoTests : TimerScenario
 {
     public TimerMidnightAndDraftHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

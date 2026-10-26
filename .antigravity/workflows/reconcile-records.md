@@ -62,7 +62,7 @@ Yalnız uyuşmayanları listele; uyuşanları tek satırda say.
 
 ## 📋 2. Pack kabul kriterleri ↔ kod (İKİ YÖNLÜ)
 
-`execution/domains/**/module-packs/*.md` içindeki `## Acceptance Criteria` bölümlerinin
+`execution/domains/**/module-packs/*.md` içindeki `## Acceptance Criteria` (ya da numaralı `## <n>. Acceptance Criteria`) bölümlerinin
 `- [ ]` / `- [x]` kutularını denetle.
 
 İki yön de ölçülür ve **ayrı raporlanır**:

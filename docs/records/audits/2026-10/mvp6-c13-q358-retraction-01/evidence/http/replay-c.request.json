@@ -1,0 +1,1 @@
+{"eventId": "4b2a31b4-48a2-4870-8d38-bf94f3702f2a", "tenantId": "2287464d-77f1-4cb0-9b21-711c08aa273f", "eventName": "tenant.activated", "eventVersion": 1, "correlationId": "c375acb3-ef99-4e76-8a65-077fa9144ba4", "causationId": "00000000-0000-0000-0000-000000000000", "occurredAt": "2026-10-19T19:30:26.205880+00:00", "producer": "C13-replay-of-AuthServiceTenantActivationNotifier"}

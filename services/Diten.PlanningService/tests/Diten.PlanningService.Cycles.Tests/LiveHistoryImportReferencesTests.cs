@@ -17,6 +17,18 @@ public sealed class LiveHistoryImportReferencesTests
     private static readonly Guid Sku = Guid.NewGuid();
 
     [Fact]
+    public async Task MdmReferenceReader_ForwardsGatewayCorrelation()
+    {
+        var correlation = Guid.NewGuid().ToString("D");
+        var reader = Create(_ => Ok(new { data = new {
+            legalEntityId = LegalEntity, referenceable = true } }),
+            correlation: correlation);
+
+        Assert.Equal(LegalEntity,
+            await reader.ResolveSelectedAsync(Tenant, Actor, LegalEntity, default));
+    }
+
+    [Fact]
     public async Task ActiveCompanyWarehouseAndSku_AreVerifiedButUnitIsPending()
     {
         var reader = Create(path => path switch
@@ -252,12 +264,13 @@ public sealed class LiveHistoryImportReferencesTests
     { Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json") };
 
     private static LiveHistoryImportReferences Create(Func<string, HttpResponseMessage> response,
-        string mode = "SingleUnitInterim")
+        string mode = "SingleUnitInterim", string? correlation = null)
     {
         var context = new DefaultHttpContext();
         context.Request.Headers.Authorization = "Bearer test-token";
+        if (correlation is not null) context.Request.Headers["X-Correlation-Id"] = correlation;
         var accessor = new HttpContextAccessor { HttpContext = context };
-        var client = new HttpClient(new StubHandler(response))
+        var client = new HttpClient(new StubHandler(response, correlation))
         { BaseAddress = new Uri("http://127.0.0.1:5000/") };
         var configuration = new ConfigurationManager();
         configuration["DemandPlanning:HistoryUnitMode"] = mode;
@@ -269,12 +282,15 @@ public sealed class LiveHistoryImportReferencesTests
         public HttpClient CreateClient(string name) => client;
     }
 
-    private sealed class StubHandler(Func<string, HttpResponseMessage> response) : HttpMessageHandler
+    private sealed class StubHandler(Func<string, HttpResponseMessage> response,
+        string? correlation) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             Assert.Equal("Bearer test-token", request.Headers.Authorization?.ToString());
+            if (correlation is not null)
+                Assert.Equal(correlation, request.Headers.GetValues("X-Correlation-Id").Single());
             return Task.FromResult(response(request.RequestUri?.AbsolutePath ?? string.Empty));
         }
     }

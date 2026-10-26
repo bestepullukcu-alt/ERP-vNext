@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: SUPPLY-CONSTRAINTS
+  version: 0.1.0-draft.1
+  description: >
+    DRAFT producer contract for the supply/capacity-constraint seam that MOD-0192 Capacity Planning
+    consumes. NOT FROZEN. Authored by CT (gmg-10) 2026-10-18 as the G2 deliverable of
+    docs/roadmap/plans/mvp6-0190-0192-ui-wave-01/PLAN.md. It replaces the test-only
+    `ConstraintFixtureReader` seam (MOD-0192 pack §119, §244) with a live, owner-frozen contract.
+    Ownership is a PRODUCER-OWNER decision (see x-owner); MOD-0192 only consumes it.
+  x-status: DRAFT
+  x-owner: MOD-0193            # owner decision 2026-10-18 (mvp6-next-steps-owner-decisions-2026-10-18): BOM & Routings, Diten.ManufacturingService
+                                # manufacturing-resource module. The owner must be named + the contract
+                                # frozen before any live adapter (mirrors DEMAND x-owner MOD-0188).
+  x-consumed-by: [MOD-0192]
+  x-design-note: >
+    Keyed by the consumer's EXISTING identity (constraintId + source + version) so MOD-0192's
+    CapacityConstraintReference(ConstraintId, Source, SourceVersion) needs NO re-model — unlike DEMAND v2,
+    which forced one. Provenance (IntegrityProof.digest) mirrors demand-v2 so the two producer seams verify
+    the same way. The consumer stores only the opaque reference and never copies constraint values
+    (pack §79, §196); the availability payload returned here is for evaluation, not persistence.
+
+servers:
+  - url: /api/supply-constraints
+    description: Behind the gateway; tenant from the validated JWT.
+
+security:
+  - bearerAuth: []
+
+paths:
+  /constraint-sets/{constraintId}/revisions/{version}:
+    get:
+      operationId: resolveConstraintRevision
+      summary: >
+        Resolve one EXACT immutable constraint revision the consumer holds (constraintId + version),
+        scoped to the caller's tenant + legal entity. Fail-closed, no existence disclosure.
+      description: >
+        This is the operation MOD-0192 calls at scenario-create and at evaluation: it holds
+        (ConstraintId, Source="SUPPLY-CONSTRAINTS", SourceVersion) and must confirm the reference is
+        in-scope, is this exact non-stale version, and obtain the availability rows. Unknown, stale,
+        cross-scope or mismatched references all answer 422 INVALID_CONSTRAINT_REFERENCE with no
+        distinction between them (pack §159, no existence disclosure).
+      parameters:
+        - { name: constraintId, in: path, required: true, schema: { type: string, maxLength: 128 } }
+        - { name: version, in: path, required: true, schema: { type: string, maxLength: 64 },
+            description: "The SourceVersion the consumer holds (opaque; immutable once published)." }
+        - { name: X-Legal-Entity-Id, in: header, required: true,
+            schema: { type: string, format: uuid },
+            description: "The caller's selected legal entity; must match the JWT tenant's membership." }
+      responses:
+        "200":
+          description: The exact, in-scope, current (non-superseded) constraint revision.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConstraintRevision" }
+        "401": { $ref: "#/components/responses/Error" }   # UNAUTHENTICATED
+        "403": { $ref: "#/components/responses/Error" }   # FORBIDDEN (lacks supply.constraints.read)
+        "422": { $ref: "#/components/responses/Error" }   # INVALID_CONSTRAINT_REFERENCE (unknown/stale/cross-scope/mismatch)
+        "503": { $ref: "#/components/responses/Error" }   # PERSISTENCE_UNAVAILABLE
+      x-required-permission: supply.constraints.read
+
+  /constraint-sets/{constraintId}/status:
+    get:
+      operationId: getConstraintStatus
+      summary: Current lifecycle state of a constraint set's latest revision (for staleness checks).
+      parameters:
+        - { name: constraintId, in: path, required: true, schema: { type: string, maxLength: 128 } }
+        - { name: X-Legal-Entity-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Lifecycle state.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConstraintStatus" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+      x-required-permission: supply.constraints.read
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Error:
+      description: Fail-closed error envelope (same shape as the SupplyChain modules' wire).
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  schemas:
+    ConstraintRevision:
+      type: object
+      required: [contractVersion, constraintId, source, version, tenantId, legalEntityId, state, availability, integrity]
+      properties:
+        contractVersion: { type: string, enum: ["supply-constraints/v1"] }
+        constraintId: { type: string, maxLength: 128 }
+        source: { type: string, enum: ["SUPPLY-CONSTRAINTS"] }
+        version: { type: string, maxLength: 64, description: "Immutable; equals the SourceVersion the consumer holds." }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        state: { type: string, enum: [Published, Superseded, Invalidated] }
+        validFrom: { type: string, format: date }
+        validTo: { type: string, format: date, nullable: true }
+        availability:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/ConstraintAvailability" }
+        integrity: { $ref: "#/components/schemas/IntegrityProof" }
+
+    ConstraintAvailability:
+      type: object
+      required: [resourceRef, period, availableCapacity, uomId]
+      description: One resource's available capacity in one period. Matches the consumer's evaluation inputs.
+      properties:
+        resourceRef: { type: string, maxLength: 128, description: 'e.g. "line-4"' }
+        period: { type: string, maxLength: 16, description: 'ISO week or date, e.g. "2027-W03"' }
+        availableCapacity: { type: string, pattern: '^-?[0-9]+\.[0-9]{3}$', description: 'Decimal STRING, 3 fractional digits, e.g. "80.000" (no float).' }
+        uomId: { type: string, maxLength: 16, description: 'e.g. "HOUR"' }
+
+    IntegrityProof:
+      type: object
+      required: [definitionId, digest]
+      description: Mirrors demand-v2 IntegrityProof so both producer seams verify identically.
+      properties:
+        definitionId:
+          type: string
+          enum: ["SUPPLYCONSTRAINTS-CANONICAL-1/SHA-256"]
+        digest:
+          type: string
+          pattern: '^[0-9A-F]{64}$'
+          description: Uppercase hex SHA-256 over the canonical ordered revision fields.
+
+    ConstraintStatus:
+      type: object
+      required: [constraintId, version, state]
+      properties:
+        constraintId: { type: string }
+        version: { type: string }
+        state: { type: string, enum: [Published, Superseded, Invalidated] }
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, correlationId]
+          properties:
+            code:
+              type: string
+              enum: [UNAUTHENTICATED, FORBIDDEN, INVALID_CONSTRAINT_REFERENCE, PERSISTENCE_UNAVAILABLE]
+            correlationId: { type: string, format: uuid }
+            message: { type: string, nullable: true }
+
+x-known-gaps:
+  - "x-owner is unresolved — a PRODUCER-OWNER decision is required before freeze (who produces resource availability: a resource/capacity master, or manufacturing?)."
+  - "The canonical checksum (SUPPLYCONSTRAINTS-CANONICAL-1) is named but its exact field ordering is not yet defined; must be specified + an independent consumer test vector published before freeze (same open item DEMAND v2 has)."
+  - "DRAFT — not frozen, not in docs/analysis/contracts/. No live adapter may be built against it until the owner names the producer and freezes it (MOD-0192 pack §244)."

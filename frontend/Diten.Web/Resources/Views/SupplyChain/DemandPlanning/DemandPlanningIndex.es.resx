@@ -49,7 +49,7 @@
   <data name="ReviewReason" xml:space="preserve"><value>Motivo de la decisión</value></data>
   <data name="NoActionPermission" xml:space="preserve"><value>Acción no disponible con estos permisos.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>No hay un ámbito de empresa verificado disponible.</value></data>
-  <data name="SupersededReadOnly" xml:space="preserve"><value>Solo se muestra el estado de la versión sustituida. El contenido permanece cerrado sin prueba MRP vinculada aprobada.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>Solo se muestra el estado de la revisión sustituida. El contenido permanece cerrado sin prueba MRP vinculada aprobada.</value></data>
   <data name="HistoryTitle" xml:space="preserve"><value>Historial de demanda aceptada</value></data>
   <data name="HistorySelectCompany" xml:space="preserve"><value>No hay ninguna empresa activa disponible.</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>No hay líneas aceptadas para esta empresa.</value></data>
@@ -69,7 +69,7 @@
   <data name="HistoryNext" xml:space="preserve"><value>Siguiente</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Cargando historial aceptado...</value></data>
   <data name="ForecastIntro" xml:space="preserve"><value>Evalúe el historial aceptado de un SKU × almacén y elija explícitamente un método.</value></data>
-  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Se muestran las empresas activas del tenant en MDM. La autorización del usuario por empresa y la verificación real de series están pendientes; sin verificación se bloquea la operación.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Se muestran las empresas activas del inquilino en MDM. La autorización del usuario por empresa y la verificación real de series están pendientes; sin verificación se bloquea la operación.</value></data>
   <data name="ForecastLoading" xml:space="preserve"><value>Cargando datos verificados…</value></data>
   <data name="ForecastCycleVersion" xml:space="preserve"><value>Versión esperada del ciclo</value></data>
   <data name="ForecastScopeHelp" xml:space="preserve"><value>Introduzca los ID existentes del ciclo, SKU y almacén. El servidor los verifica de nuevo; no conceden acceso.</value></data>

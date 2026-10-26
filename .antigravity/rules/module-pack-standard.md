@@ -280,6 +280,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
 | 21 | `Audited Events` (Denetlenen Olaylar) | Yeni paketlerde zorunlu; mevcut pakette yazma komutu ekleyen/degistiren ilk iste zorunlu (Bolum 10.1 gecis kurali). Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
+| 22 | `Teslim dilimleri` | CT-APR-02'den sonra inceleme isteyen pakette zorunlu: `| DL-n | ad | kapsadığı bölümler |`; her WP bir ya da birkaç dilim alır, paketin tamamını tek WP alamaz (istisna: onay satırında `whole_pack=<WP>`). Bkz. Bölüm 16 "Onaydan önce bağımsız inceleme" |
 
 ---
 
@@ -290,8 +291,10 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 - DataTable modulunde `verify_datatable_page.py` ve `quality-gate-datatable` atiflari zorunludur
 - Layout zorunlulugu test edilebilir madde olarak yer alir (ornek: "Tum `Views/Platform/Administrators/*.cshtml` dosyalarinda `Layout = \"_LayoutPlatformAdmin\"` ACIKCA yazili")
 - Platform/Admin modul lookup kullaniyorsa AC icinde endpoint/proxy path, `LookupOptionDto` response shape, unauthorized davranis ve hardcoded fallback olmamasi test edilebilir yazilir. Yeni Platform lookup key gerekiyorsa bu key PSS lookup scope'u olarak acik onaylanir.
-- Yalniz yeni Control Tower'larin yeni paketlerinde (CT-I4 S2, 2026-10-16; eski Control Tower'lara yeni yuk gelmez) her madde sabit kimlik ve zorunluluk tasir: `- [ ] AC-<n> (zorunlu) — <kriter>` ya da `- [ ] AC-<n> (isteğe bağlı) — <kriter>`. `n` pozitif tam sayidir ve tekildir; madde silinmez, yeniden numaralanmaz. Bolum tek `## Acceptance Criteria` basligidir; icinde bu bicime uymayan madde olmaz ve en az bir madde zorunludur.
+- Yalniz yeni Control Tower'larin yeni paketlerinde (CT-I4 S2, 2026-10-16; eski Control Tower'lara yeni yuk gelmez) her madde sabit kimlik ve zorunluluk tasir: `- [ ] AC-<n> (zorunlu) — <kriter>` ya da `- [ ] AC-<n> (isteğe bağlı) — <kriter>`. `n` pozitif tam sayidir ve tekildir; madde silinmez, yeniden numaralanmaz. Bolum tek `## Acceptance Criteria` ya da numarali `## <n>. Acceptance Criteria` basligidir (ikinci seviye, herhangi bir pozitif `n`; ornek `## 16. Acceptance Criteria`); herhangi bir seviyede ikinci bir Acceptance Criteria basligi ya da baska bir bicim paketi olculemez yapar; icinde bu bicime uymayan madde olmaz ve en az bir madde zorunludur.
 - Mevcut paketler donusturulmez. Kimliksiz pakette AC kapsami mekanik olarak olculemez: `python3 scripts/acceptance_record.py module-check` cikis 2 verir (REP-001 §6.2).
+- Pakette yazilan nav anahtari runtime'in okudugu bicimdedir: `Nav.Domain.` / `Nav.Module.` / `Nav.Page.` + buyuk harf, yalniz harf ve rakam (`NavNameLocalizer.Normalize`; ornek `Nav.Page.SANDOPPLANS`, `Nav.Page.SANDOP_PLANS` degil). `python3 scripts/check_pack_nav_keys.py` olcer (phase1); bu kuraldan once yazilmis anahtarlar betikteki listededir ve liste yalniz kisalir (paket yeniden adlandirilirsa girdisi tasinir).
+- Acceptance Criteria maddesinin kutucugunun isaretli olup olmamasi ilerleme ya da kabul olcusu degildir (AUDIT-FU-01): kabul, REP-001 kabul kaydi ve kimlikli pakette `module-check` ile olculur; kutucuk kanit yerine gecmez. §12 Ready-for-dev Checklist bu kuralin disindadir.
 
 ---
 
@@ -429,6 +432,10 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - `gateway/Diten.ApiGateway/**/ocelot.json` integration-agent owned (gerekirse pack'ten cikarilan ayri task)
 - Platform/Admin lookup kararlarinda ERP Account, General Reference, Financial Reference, Territory Reference ve tenant-side ERP reference module path'leri protected/out-of-scope olarak acik yazilir.
 
+Sik degisen dosya sabitlenmez (AUDIT-FU-01):
+- Paket, her kompozisyon adiminda degisen bir dosyanin (`Program.cs`, DI / composition root, rol sablonu) SHA-256'sini kapsam ya da kabul kosulu olarak sabitlemez: dosya her degistiginde paket yeniden yazilir, kontrol degil is uretir. Bu dosyalarin kontrolu PR incelemesidir (sahibi belli bir inceleyici; CODEOWNERS kurulursa oradan).
+- SHA-256 kanitin kendisini baglar: kabul kaydi, kosu kaydi ve dogrulanan commit (REP-001). Bu kural onlari degistirmez.
+
 ---
 
 ## 13.1 Platform Lookup & Reference Data Decision
@@ -499,6 +506,35 @@ Bir modulun **gerceklesme durumu degistiginde** (frontend eklendi, test eklendi,
 - **Kaynak:** durum koddan dogrulanir (entity/controller/handler/test/view/`.resx`), dokuman iddiasindan degil.
 
 ---
+
+### Sürüme bağlı onay (CT-APR-01, 2026-10-19)
+
+- `execution/approvals/POLICY-START.md`'nin main'e girdiği commit'ten sonra değişen bir paket, dağıtımdan önce
+  `execution/approvals/approvals.tsv`'de geçerli bir onay satırı ister. Onay paketin tamamının SHA-256'sına bağlıdır;
+  paket değişince düşer. Komutlar: `scripts/pack_approval.py card | row | check`.
+- Risk gerekçeyle beyan edilir, araç yalnız yükseltir. İlk onay ve izin, güvenlik, kiracı, şema/taşıma, gateway, korunan
+  yol, ürün kodu yolu ya da entegrasyona dokunan değişiklik yüksek risktir. Yüksek riskli işi onaylayıcı listesinde
+  `high: evet` olan ve paketi yazmamış biri onaylar.
+- Eski onaylar geriye dönük düşmez. Ayrıntı ve güven sınırı: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §3.
+
+### Onaydan önce bağımsız inceleme ve teslim dilimleri (CT-APR-02, 2026-10-20)
+
+- `execution/approvals/POLICY-REVIEW-START.md`'den sonra eklenen onay satırı, paketin aynı sürümünün bağımsız incelemesini
+  ister (Codex ya da Claude, geliştirici seçer; yazandan ayrı oturum). Muaf olan yalnız tarih alanı, `owner` / `reviewer`
+  alanının TBD'den doldurulması ve boşluktur. Kayıt: `execution/approvals/reviews.tsv` ve bulgu dosyası; komut
+  `scripts/pack_approval.py review-row`. `UYGUN DEĞİL` ya da açık ENGEL onayı durdurur.
+- İnceleme isteyen paket `## Teslim dilimleri` tablosu taşır:
+
+  ```markdown
+  ## Teslim dilimleri
+
+  | dilim | ad | kapsadığı bölümler |
+  |---|---|---|
+  | DL-1 | çekirdek kayıt | Owned Objects, Entity Fields, Validation Rules |
+  | DL-2 | ekran | Frontend File Contract |
+  ```
+
+- Ayrıntı: `docs/guides/operations/control-tower-sop.md` §20.4.
 
 ## 17. Authority Rule
 

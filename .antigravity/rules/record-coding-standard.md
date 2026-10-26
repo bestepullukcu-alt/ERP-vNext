@@ -60,6 +60,13 @@ Notta adı geçen türler (bağlayıcı) + yeni türler için önerilen önekler
 | Ürün (MDM ürün kimliği ailesi) | KALSIN | — | `GP-` `GS-` `LS-` `FG-` + 12 hane, otomatik ✅ (§4) |
 | Kalem / Malzeme (MDM ürün kimliği ailesi, MOD-0290-FU04) | KALSIN | `IT` | `IT-` + 12 hane, ürün kimliği ailesinin ortak sayacı — **yeni (2026-10-07)**, henüz kod yok (FU04 S1) |
 | Doküman (QMS) | KALSIN | — | `UID-0000001` + `GMG-QMS-SOP-0001`, otomatik ✅ (GMG-QMS-LOG-0001) |
+| Ödeme Partisi (MOD-0126) | OTOMATİK | `PAY` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
+| AP Belgesi — fatura / alacak dekontu (MOD-0119) | OTOMATİK | `APD` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
+| AR Alacak Faturası (MOD-0120) | OTOMATİK | `ARI` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
+| Nakit Pozisyonu Anlık Görüntüsü (MOD-0124) | OTOMATİK | `CPS` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
+| Nakit Eşik Politikası (MOD-0124) | OTOMATİK | `CTP` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
+| Banka (MOD-0289) | OTOMATİK | `BNK` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); kiracı geneli kayıt — şirket öneki yerine grup öneki |
+| Banka Hesabı (MOD-0289) | OTOMATİK | `BAC` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); şirket hesabında şirket öneki, tedarikçi hesabında grup öneki |
 
 ## 4. Ürün kimliği ailesi (KALSIN'ın kapsamı)
 

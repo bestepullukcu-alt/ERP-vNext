@@ -1,0 +1,21 @@
+# measured 2026-10-17 from the frozen contracts, no file edited
+
+## shipment-bundle.openapi.yaml — GET response codes
+GET /returns    200,400,401,403,404,500,503   <- the complete GET shape
+GET /claims     200,400,401,403,500,503       <- missing 404
+GET /shipments  200,400,503                   <- missing 401,403,404,500
+
+## 500 declaration, the two contracts compared
+shipment-bundle.openapi.yaml: '500' declared 12 times, INTERNAL_ERROR named 24 times
+sandop-capacity.openapi.yaml: '500' declared 0 times, INTERNAL_ERROR named 0 times
+
+## code sites that can emit 500 INTERNAL_ERROR
+Diten.SupplyChainService.Api/Features/Loads/LoadContextMiddleware.cs:99:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Api/Features/Carriers/CarrierContextMiddleware.cs:97:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Api/Features/Claims/ClaimContextMiddleware.cs:116:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Api/Features/Returns/ReturnContextMiddleware.cs:123:        catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs:93: catch(Exception){return LoadMutationResult.Error(500,"INTERNAL_ERROR");}
+Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopRepository.cs:91: catch{if(session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(MongoException){}return SandopResult.Error(500,"INTERNAL_ERROR");}
+Diten.SupplyChainService.Persistence/Features/Carriers/CarrierRepository.cs:107:            catch (Exception) { return Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Persistence/Features/Returns/ReturnRepository.cs:178:            catch (Exception) { return ReturnMutationResult.Error(500, "INTERNAL_ERROR"); }
+Diten.SupplyChainService.Persistence/Features/Claims/ClaimRepository.cs:178:            catch (Exception) { return ClaimMutationResult.Error(500, "INTERNAL_ERROR"); }

@@ -28,8 +28,16 @@ Blueprint-canonical SoR modülleri (DCP-002 gate PASS; registry'ye DCP-009 ile e
 
 **Planning · Manufacturing · Logistics** (sonraki wave'ler)
 - `MOD-0188 Demand Planning` · `MOD-0189 MRP & Replenishment` · `MOD-0190 S&OP` · `MOD-0191 Safety Stock` · `MOD-0192 Capacity Planning`
-- `MOD-0193 BOM & Routings` · `MOD-0194 Work Orders` · `MOD-0195 Batch Execution/eBR` · `MOD-0196 OEE` · `MOD-0197 Co-Manufacturer`
+- `MOD-0193 BOM & Routings` · `MOD-0194 Production Work Orders` · `MOD-0195 Batch Execution/eBR` · `MOD-0196 OEE` · `MOD-0197 Co-Manufacturer`
 - `MOD-0183-0187 Transport/Logistics` (Shipment/Carrier/Load/Reverse/Claims)
+
+**Supplier (P2P-origin, placed by DC-01 2026-10-18 — delivery placement only)**
+- `MOD-0147 Supplier Performance & Risk` and `MOD-0148 Supplier Portal` — Blueprint Procurement Suite (P2P)
+  modules, durably PLACED in `supply-chain-execution` / `Diten.SupplyChainService` for delivery per DC-01.
+  They are NOT inventory/SoR of this domain. `MOD-0140 Supplier` remains the Supplier master owner
+  (domain `procurement`). Placement grants no runtime/contract/gateway/permission ownership; each module's
+  own module pack stays `draft` until its ready-for-dev gates close (DC-02/DC-03 build seams; DC-04/DC-05
+  deferred). Ref: docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md.
 
 > Her modül **kendi module pack'i** `approved`/`ready-for-dev` olmadan runtime kod yazmaz. Bu domain-config yalnız boundary/ownership tanımlar.
 

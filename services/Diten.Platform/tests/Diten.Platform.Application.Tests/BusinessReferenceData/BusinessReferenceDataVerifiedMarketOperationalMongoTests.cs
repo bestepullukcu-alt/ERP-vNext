@@ -17,9 +17,10 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
 [Collection(VerifiedMarketReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
 {
-    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId);
+    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId);
     private static readonly Guid HistoricalOwnerId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
     private static readonly Guid ConsumerTenantId = Guid.Parse("74355e70-4c7d-410c-8cf6-db5fe3b9547f");
     private readonly VerifiedMarketReplicaSetFixture _fixture;
@@ -249,9 +250,74 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
     }
 }
 
+/// <summary>
+/// WP-PLT-MARKET-REFTENANT-01 (a) — the REAL isolated composition (VerifiedMarketOperationalMode.CreateServices: the
+/// production eligibility, preflight, audit adapter and persistence) on a test-owned replica set, with the reference tenant
+/// configured as BusinessReferenceData:Provider:ReferenceTenantId = the Development tenant and every process value equal to the
+/// configuration (as scripts/dev/run-verified-market-provisioning.ps1 sets them): the run is eligible and the verified
+/// Market catalog is written to THAT tenant — nothing to the platform system tenant.
+/// </summary>
+[Collection(VerifiedMarketOperationalEnvironmentCollection.Name)]
+[Trait("Category", "Mongo")]
+public sealed class VerifiedMarketOperationalConfiguredReferenceTenantMongoTests : IClassFixture<VerifiedMarketReplicaSetFixture>
+{
+    private readonly VerifiedMarketReplicaSetFixture _fixture;
+
+    public VerifiedMarketOperationalConfiguredReferenceTenantMongoTests(VerifiedMarketReplicaSetFixture fixture) => _fixture = fixture;
+
+    [Fact]
+    public async Task ConfiguredReferenceTenantWithExactProcessValues_IsEligibleAndWritesToThatTenant()
+    {
+        var database = _fixture.Replica.CreateDatabase();
+        await PlatformSchemaManifest.ApplyAsync(database, [SchemaProfile.BusinessReferenceData, SchemaProfile.AccessGovernance]);
+        var referenceTenant = Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId);
+        var options = VerifiedMarketOperationalEligibilityTests.Valid();
+        var configuration = new ConfigurationBuilder()
+            .AddConfiguration(VerifiedMarketOperationalEligibilityTests.Configuration(options))
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MongoDbSettings:ConnectionString"] = _fixture.Replica.ConnectionString,
+                ["MongoDbSettings:DatabaseName"] = database.DatabaseNamespace.DatabaseName,
+                [$"{VerifiedGskuOperationalProvisioningOptions.SectionName}:ConsumerTenantId"] =
+                    VerifiedMarketOperationalEligibilityTests.GskuConsumerTenantId
+            })
+            .Build();
+        var host = new Moq.Mock<Microsoft.Extensions.Hosting.IHostEnvironment>();
+        host.SetupGet(value => value.EnvironmentName).Returns(Microsoft.Extensions.Hosting.Environments.Development);
+        using var environment = TemporaryProcessEnvironment.Apply(VerifiedMarketOperationalEligibilityTests.ProcessValues(options));
+
+        var method = typeof(VerifiedMarketOperationalMode).GetMethod(
+            "CreateServices", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        var services = Assert.IsAssignableFrom<IServiceCollection>(method!.Invoke(null, [configuration, host.Object]));
+        await using (var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true }))
+        {
+            await using var scope = provider.CreateAsyncScope();
+            var decision = await scope.ServiceProvider.GetRequiredService<IBusinessReferenceDataVerifiedMarketOperationalEligibility>().EvaluateAsync();
+            Assert.True(decision.IsEligible, decision.ReasonCode);
+            Assert.Equal(referenceTenant, decision.Facts!.ReferenceTenantId);
+
+            await scope.ServiceProvider.GetRequiredService<VerifiedMarketOperationalProvisioningRunner>().RunAsync();
+        }
+
+        var sets = await database.GetCollection<BusinessReferenceDataSet>(PlatformCollections.BusinessReferenceDataSets)
+            .Find(value => value.SetCode == "market").ToListAsync();
+        var set = Assert.Single(sets);
+        Assert.Equal(referenceTenant, set.TenantId);
+        var versions = await database.GetCollection<BusinessReferenceDataVersion>(PlatformCollections.BusinessReferenceDataVersions)
+            .Find(FilterDefinition<BusinessReferenceDataVersion>.Empty).ToListAsync();
+        Assert.All(versions, version => Assert.Equal(referenceTenant, version.TenantId));
+        Assert.Equal(249, Assert.Single(versions).Values.Count);
+        Assert.Equal(0, await database.GetCollection<BusinessReferenceDataSet>(PlatformCollections.BusinessReferenceDataSets)
+            .CountDocumentsAsync(value => value.TenantId == SystemTenantRules.PlatformSystemTenantId));
+        var audit = await database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .Find(FilterDefinition<BsonDocument>.Empty).SingleAsync();
+        Assert.Equal(referenceTenant, audit["TenantId"].AsBsonBinaryData.ToGuid());
+    }
+}
+
 internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
 {
-    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId);
+    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId);
     private static readonly Guid HistoricalOwnerId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
     private static readonly Guid ConsumerTenantId = Guid.Parse("74355e70-4c7d-410c-8cf6-db5fe3b9547f");
     private readonly ServiceProvider _provider;
@@ -287,7 +353,7 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
                 ["MongoDbSettings:ConnectionString"] = replica.ConnectionString,
                 ["MongoDbSettings:DatabaseName"] = databaseName,
                 [$"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId"] =
-                    VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId
+                    VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId
             })
             .Build();
         var lockedFacts = facts ?? LockedFacts();

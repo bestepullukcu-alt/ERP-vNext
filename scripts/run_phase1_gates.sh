@@ -147,6 +147,17 @@ python3 -B scripts/status_report.py --self-test
 python3 -B .antigravity/scripts/list_screen_touch_hook.py --self-test
 python3 -B scripts/known_failures.py --self-test
 python3 -B scripts/ct_route.py --self-test
+python3 -B scripts/pack_approval.py --self-test
+
+# AUDIT-FU-01 (4): a nav key written in a module pack has the runtime's normalized form (NavNameLocalizer.Normalize);
+# the keys written before this check are listed in the script (KNOWN, only shrinks). Standard library and git only.
+echo "[phase1] pack nav keys"
+python3 -B scripts/check_pack_nav_keys.py --self-test
+python3 -B scripts/check_pack_nav_keys.py
+
+# CT-APR-01: the version-bound pack approval's own self-test (a throw-away git repository; standard library and git only)
+echo "[phase1] pack approval self-test"
+python3 -B scripts/pack_approval.py --self-test
 
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
@@ -163,6 +174,10 @@ if [ -f "services/Diten.MdmService/Diten.MdmService.sln" ]; then
 else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
+
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj -c Debug
 
 # CT-FIX-03 (R0, Codex): the Control Tower CLI regression set (scripts/tests/test_ct_cli_regression.py) builds a
 # synthetic Blueprint workbook and needs openpyxl. It is installed from the repository's own pins
@@ -205,6 +220,7 @@ dotnet build services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.P
 dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj -c Debug
 dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c Debug
 dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
+dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/Diten.BuildingBlocks.CentralAudit.Tests.csproj -c Debug
 dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
 dotnet build services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj -c Debug
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug

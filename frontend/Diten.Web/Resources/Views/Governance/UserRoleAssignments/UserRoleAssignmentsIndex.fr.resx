@@ -38,4 +38,5 @@
   <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
     <value>Cet utilisateur n'existe plus. Actualisez la page.</value>
   </data>
+  <data name="ErrorUserRoleRevokeLastSteward" xml:space="preserve"><value>Retirer ce rôle ne laisserait aucun autre compte actif pouvant ajouter des utilisateurs. Accordez d'abord ce droit à un autre utilisateur.</value></data>
 </root>

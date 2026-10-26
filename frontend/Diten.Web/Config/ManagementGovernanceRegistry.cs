@@ -204,7 +204,7 @@ public static class ManagementGovernanceRegistry
             dependencies: new[] { "policy-authority-organizational-governance" },
             modules: new[]
             {
-                Module("mod-risk-management", "Risk Management", "risk-management", "Risk register signals and actions.", "Active", "Risk Office", "High", "/InventoryGovernance/Index", true),
+                Module("mod-risk-management", "Risk Management", "risk-management", "Risk register signals and actions.", "Active", "Risk Office", "High", "/Expiry", true),
                 Module("mod-internal-control", "Internal Control Management", "internal-control-management", "Control catalog and remediation visibility.", "Monitor", "Control Office", "High", "/management-governance/modules/mod-internal-control", false),
                 Module("mod-compliance-oversight", "Compliance Oversight", "compliance-oversight", "Compliance obligations and breach alerts.", "Active", "Compliance Office", "High", "/management-governance/modules/mod-compliance-oversight", false),
                 Module("mod-assurance-resilience", "Assurance & Resilience Oversight", "assurance-resilience-oversight", "Assurance plan execution and resilience posture.", "Monitor", "Assurance Office", "Medium", "/management-governance/modules/mod-assurance-resilience", false)

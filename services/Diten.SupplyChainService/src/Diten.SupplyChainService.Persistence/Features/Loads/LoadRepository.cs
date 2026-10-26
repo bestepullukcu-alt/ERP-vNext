@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.Json;
@@ -70,7 +71,7 @@ public sealed class LoadRepository(IMongoDatabase db,ILoadCommitProbe probe):ILo
  await db.GetCollection<BsonDocument>("loads_audit").InsertOneAsync(session,audit,cancellationToken:ct);await probe.AtAsync("audit",ct);
  var envelope=new {eventId,eventType=id is null?"LoadCreated":"Load"+load.Status,occurredAt=id is null?load.CreatedAt.ToString("O"):occurredAt,correlationId=root,causationId=cause,aggregateType="Load",aggregateId=load.Id,payload=new{loadId=load.Id,loadNumber=load.LoadNumber,status=load.Status.ToString(),shipmentIds=load.ShipmentIds},contractVersion="v1"};
  var pending=Scope(scope);pending.Add("_id",Guid.NewGuid().ToString());pending.Add("EventId",eventId.ToString());pending.Add("LoadId",load.Id.ToString());pending.Add("Status","Pending");pending.Add("Envelope",BsonDocument.Parse(JsonSerializer.Serialize(envelope)));
- await db.GetCollection<BsonDocument>("loads_outbox").InsertOneAsync(session,pending,cancellationToken:ct);await probe.AtAsync("event",ct);await probe.AtAsync("beforeCommit",ct);
+ await db.GetCollection<BsonDocument>("loads_outbox").InsertOneAsync(session,pending,cancellationToken:ct);await probe.AtAsync("event",ct);await CentralAuditTransaction.EnlistAsync(session,load.Id,ct);await probe.AtAsync("beforeCommit",ct);
  commitAttempted=true;
  for(var commit=0;;commit++){try{await session.CommitTransactionAsync(ct);break;}catch(MongoException ex)when(ex.HasErrorLabel("UnknownTransactionCommitResult")&&commit<2){}}
  await probe.AtAsync("afterCommit",ct);

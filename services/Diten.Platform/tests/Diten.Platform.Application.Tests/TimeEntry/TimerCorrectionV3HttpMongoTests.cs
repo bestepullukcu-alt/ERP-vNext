@@ -23,6 +23,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// took the task away ends a run (G6), and the midnight close audits the reason it closed with (G7).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimerCorrectionV3HttpMongoTests : TimerScenario
 {
     private static readonly DateOnly Today = new(2026, 10, 7);

@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>Plataforma</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Centro de trabajo</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Maestro de Artículos</value>
   </data>
@@ -829,6 +826,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Directorio de personas</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Listas de referencia</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tareas</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Registro de empleados (RR. HH. básicos)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>Cuentas CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>Contactos CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>Composición de contenido CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>Información de médicos CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>Conocimiento CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>Visitas planificadas CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>Territorios CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>Planificación de visitas CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>Informes de visita CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Aprobaciones</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Categorías</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Hojas de horas</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Semanas</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Plantillas de lista de verificación</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Plantillas</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Alcance de contenido</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Conjunto de contenidos</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Elegibilidad</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Productos</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaña</value></data>
@@ -1132,6 +1150,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Cargas</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestión de reclamaciones</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Reclamaciones de transporte</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>Flujo de trabajo S&amp;OP y validaciones</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>Planes S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Planificación de capacidad</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Planes de capacidad</value></data>
   <data name="Activate" xml:space="preserve"><value>Activar</value></data>
   <data name="Deactivate" xml:space="preserve"><value>Desactivar</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>Correo electrónico o nombre de usuario</value></data>
@@ -1156,6 +1178,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Política de firma</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significados de firma</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Aprobación de muestras</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Caducidad / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Preparación para retiradas</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Panel FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Próximos a caducar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Stock caducado</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Orden FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Bandeja de excepciones</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Detalle de la excepción</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Reglas de vida útil y ajustes</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Preparación ante retiradas</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Trazabilidad de retirada</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Casos de retirada</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Caso de retirada</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificador de simulacros de retirada</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Configuración de retirada</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
 </root>

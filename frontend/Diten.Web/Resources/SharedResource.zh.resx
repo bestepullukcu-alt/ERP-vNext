@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>平台</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>工作中心</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>物料主数据</value>
   </data>
@@ -789,8 +786,8 @@
   <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
     <value>竞品</value>
   </data>
-  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
-  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划拜访</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
     <value>项目组合交付</value>
   </data>
@@ -828,6 +825,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>人员目录</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>参照列表</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>任务</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>员工登记（核心人力资源）</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>CRM 客户账户</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>CRM 联系人</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>CRM 内容编排</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>CRM 医生洞察</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>CRM 知识</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>CRM 计划拜访</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>CRM 区域</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>CRM 拜访计划</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>CRM 拜访报告</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>审批</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>类别</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>设置</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>工时表</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>周</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>检查清单模板</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>模板</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>内容范围</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>内容集</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>资格</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>访问频率策略</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>营销活动</value></data>
@@ -841,7 +859,7 @@
   <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>内容互动旅程</value></data>
   <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>知识路径</value></data>
   <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>知识主题</value></data>
-  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>偏好</value></data>
   <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>细分</value></data>
   <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>策略模板</value></data>
@@ -1131,6 +1149,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP 工作流与签核</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP 计划</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>产能规划</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>产能计划</value></data>
   <data name="Activate" xml:space="preserve"><value>启用</value></data>
   <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>电子邮件或用户名</value></data>
@@ -1155,6 +1177,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>电子签名策略</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>签名含义</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>签名样本审批</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>有效期 / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>召回准备</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO 看板</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>即将过期</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>过期库存</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO 顺序</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>异常收件箱</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>异常详情</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>保质期规则与设置</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>证据包</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>召回准备情况</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>召回追溯</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>召回演练计划</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>召回证据包</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>召回设置</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
 </root>

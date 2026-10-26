@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>المنصة</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>مركز العمل</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>سجل العناصر</value>
   </data>
@@ -828,6 +825,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>دليل الأشخاص</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>قوائم المراجع</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>سجل الموظفين (الموارد البشرية الأساسية)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>حسابات العملاء في CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>جهات الاتصال في CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>تركيب المحتوى في CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>رؤى الأطباء في CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>المعرفة في CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>الزيارات المخططة في CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>مناطق CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>تخطيط الزيارات في CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>تقارير الزيارات في CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>الموافقات</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>الفئات</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>سجلات الساعات</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>الأسابيع</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>قوالب قوائم التحقق</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>القوالب</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>نطاق المحتوى</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>
@@ -1131,6 +1149,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>مطالبات الشحن</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>سير عمل S&amp;OP والاعتمادات</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>خطط S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>تخطيط القدرات</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>خطط القدرات</value></data>
   <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
   <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>البريد الإلكتروني أو اسم المستخدم</value></data>
@@ -1155,6 +1177,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>سياسة التوقيع</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>معاني التوقيع</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>موافقات نماذج التوقيع</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>انتهاء الصلاحية / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>الاستعداد للاستدعاء</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>لوحة FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>قرب انتهاء الصلاحية</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>ترتيب FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>صندوق الاستثناءات</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>تفاصيل الاستثناء</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>قواعد مدة الصلاحية والإعدادات</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>حزمة الأدلة</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>جاهزية الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>تتبّع الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>حالات الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>حالة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>مخطط تمارين الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>إعدادات الاستدعاء</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
 </root>

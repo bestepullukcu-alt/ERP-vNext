@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>El lote superó su fecha de reanálisis; no puede usarse hasta una decisión de calidad.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>El periodo contable está cerrado.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>La ubicación es desconocida o no se puede usar.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>usuario desconocido</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
@@ -434,4 +434,25 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Nota de análisis actualizada</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>La nota está bloqueada mientras una decisión sobre este registro espera aprobación o aplicación.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Nota: {0} → {1} caracteres · Adjuntos: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Disponible: {0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>Todo</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>Escribir toda la cantidad de la fila</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Abierto</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Muestra conservada</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Todos</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Poner stock en cuarentena</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>El stock disponible elegido pasa a CUARENTENA y espera una decisión en la cola de cuarentena.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Continuar</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>¿Poner este stock en cuarentena?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Registro de cuarentena abierto: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Ayuda</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Pone en cuarentena stock disponible elegido a mano para una decisión de calidad (devolución, producto sospechoso, reclamación).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Aseguramiento de la calidad y responsables de almacén.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Elija el stock</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Busque el lote, elija su fila disponible y la cantidad; la cantidad no puede superar el stock de la fila.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirme con un motivo</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>La confirmación pide un motivo de al menos 10 caracteres; el registro espera luego una decisión en la cola.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
 </root>

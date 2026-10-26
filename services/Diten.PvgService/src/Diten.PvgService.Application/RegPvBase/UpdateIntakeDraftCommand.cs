@@ -5,4 +5,5 @@ public sealed record UpdateIntakeDraftCommand(
     PvgActorContext ActorContext,
     PvgCorrelationContext CorrelationContext,
     string IntakeDraftId,
-    PvgUpdateIntakeDraftRequest Draft);
+    PvgUpdateIntakeDraftRequest Draft,
+    long? ExpectedVersion = null);

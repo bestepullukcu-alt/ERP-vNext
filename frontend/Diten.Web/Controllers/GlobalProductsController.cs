@@ -26,6 +26,9 @@ public sealed class GlobalProductsController : Controller
     private const string WithdrawPermission = "mdm.global-products.withdraw";
     private const string RequestCorrectionPermission = "mdm.global-products.request-correction";
     private const string RequestRetirementPermission = "mdm.global-products.request-retirement";
+    // MOD-0290-FU05: the approved product's brand change (MDM POST {id}/brand) and the brand picker's keys.
+    private const string CreatePermission = "mdm.global-products.create";
+    private const string UpdateBrandPermission = "mdm.global-products.update-brand";
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -103,6 +106,9 @@ public sealed class GlobalProductsController : Controller
             if (value.Length > 0)
                 parts.Add($"{key}={Uri.EscapeDataString(value)}");
         }
+        // MOD-0290-FU05: the brand filter — only a GUID is passed on (anything else is dropped here, MDM judges the rest).
+        if (Guid.TryParse(query["brandId"].ToString().Trim(), out var brandId))
+            parts.Add($"brandId={brandId:D}");
         return string.Join("&", parts);
     }
 
@@ -172,6 +178,32 @@ public sealed class GlobalProductsController : Controller
     public Task<IActionResult> Selector(CancellationToken cancellationToken) =>
         ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/global-products/selector{Request.QueryString}", null, cancellationToken);
 
+    // MOD-0290-FU05 (T-1): the brands a Global Product may be linked to now — MDM's brand-options, for whoever may write a
+    // Global Product (create, update or update-brand; MDM checks the same). Only search and paging are passed on.
+    [HttpGet("api/brand-options")]
+    public Task<IActionResult> BrandOptions(CancellationToken cancellationToken)
+    {
+        if (!PermissionClaims.HasPermission(User, CreatePermission)
+            && !PermissionClaims.HasPermission(User, UpdatePermission)
+            && !PermissionClaims.HasPermission(User, UpdateBrandPermission))
+            return Task.FromResult(LifecycleFailure(StatusCodes.Status403Forbidden));
+
+        return ProxyGatewayAsync(HttpMethod.Get,
+            $"{_gatewayUrl}/api/global-products/brand-options?{BuildBrandOptionsQuery(Request.Query)}", null, cancellationToken);
+    }
+
+    internal static string BuildBrandOptionsQuery(IQueryCollection query)
+    {
+        var parts = new List<string>();
+        foreach (var key in new[] { "search", "pageNumber", "pageSize" })
+        {
+            var value = query[key].ToString().Trim();
+            if (value.Length > 0)
+                parts.Add($"{key}={Uri.EscapeDataString(value)}");
+        }
+        return string.Join("&", parts);
+    }
+
     [HttpPost("api")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
@@ -179,7 +211,18 @@ public sealed class GlobalProductsController : Controller
         CancellationToken cancellationToken)
     {
         model.GlobalProductName = model.GlobalProductName?.Trim() ?? string.Empty;
-        if (!await HasOnlyFormFieldsAsync("GlobalProductName")
+        // MOD-0290-FU05: the panel always sends BrandId (empty = no brand); a malformed id is refused, never dropped.
+        Guid? brandId = null;
+        var onlyKnownFields = await HasOnlyFormFieldsAsync("GlobalProductName", "BrandId");
+        if (onlyKnownFields && !TryReadBrandId(out brandId))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                errors = new[] { _localizer["ErrorValidation"].Value }
+            });
+        }
+        if (!onlyKnownFields
             || string.IsNullOrWhiteSpace(model.GlobalProductName)
             || model.GlobalProductName.EnumerateRunes().Count() > 200)
         {
@@ -198,15 +241,24 @@ public sealed class GlobalProductsController : Controller
             if (!reservation.Success || reservation.Data is null)
                 return StatusCode(reservation.StatusCode, new { success = false, errors = reservation.Errors });
 
+            model.BrandId = brandId;
             var draft = await CreateDraftAsync(
                 model.GlobalProductName,
                 reservation.Data.ReservationId,
                 reservation.Data.Version,
+                model.BrandId,
                 operationKey,
                 cancellationToken);
 
             if (!draft.Success || draft.Data is null)
-                return StatusCode(draft.StatusCode, new { success = false, errors = draft.Errors });
+            {
+                // MOD-0290-FU05: MDM's brand refusals are said in the reader's language, never as MDM's code — the same
+                // rule as the lifecycle bridge (exactly one error, its code before ':').
+                var errors = draft.Errors.Count == 1 && BrandRefusalKey(draft.Errors[0]) is { } brandRefusal
+                    ? new[] { _localizer[brandRefusal].Value }
+                    : draft.Errors;
+                return StatusCode(draft.StatusCode, new { success = false, errors });
+            }
 
             return StatusCode(draft.StatusCode, new { success = true, data = draft.Data });
         }
@@ -260,23 +312,59 @@ public sealed class GlobalProductsController : Controller
         globalProductName = globalProductName?.Trim();
         if (!PermissionClaims.HasPermission(User, UpdatePermission))
             return LifecycleFailure(StatusCodes.Status403Forbidden);
+        // MOD-0290-FU05 (T-4, CT decision): the panel always sends BrandId and MDM always gets the field — empty removes
+        // the brand. "No field = unchanged" stays an API-client rule only.
         if (id == Guid.Empty || expectedVersion is null or < 0
             || string.IsNullOrWhiteSpace(globalProductName)
             || globalProductName.EnumerateRunes().Count() > 200
-            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "GlobalProductName"))
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "GlobalProductName", "BrandId")
+            || !TryReadBrandId(out var brandId))
+            return LifecycleFailure(StatusCodes.Status400BadRequest);
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return LifecycleFailure(StatusCodes.Status401Unauthorized);
+
+        // The brand is part of the operation: MDM treats the same key with another brand as a conflict.
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "GlobalProduct", "update", id, expectedVersion.Value,
+            globalProductName + '\u001f' + (brandId?.ToString("D") ?? "none"));
+        return await ProxyLifecycleAsync(
+            HttpMethod.Put,
+            $"{_gatewayUrl}/api/global-products/{id:D}",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value, globalProductName, brandId }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK },
+            LifecycleMutationKind.Update,
+            id,
+            cancellationToken);
+    }
+
+    // MOD-0290-FU05 slice 2 (owner Karar a): an approved product's brand — MDM POST {id}/brand under update-brand. The
+    // panel always sends BrandId (empty = remove the brand).
+    [HttpPost("api/{id:guid}/brand")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeBrand(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        CancellationToken cancellationToken)
+    {
+        if (!PermissionClaims.HasPermission(User, UpdateBrandPermission))
+            return LifecycleFailure(StatusCodes.Status403Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "BrandId")
+            || !TryReadBrandId(out var brandId))
             return LifecycleFailure(StatusCodes.Status400BadRequest);
         if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
             return LifecycleFailure(StatusCodes.Status401Unauthorized);
 
         var operationId = CreateLifecycleOperationId(
-            tenantId, actor, "GlobalProduct", "update", id, expectedVersion.Value, globalProductName);
+            tenantId, actor, "GlobalProduct", "change-brand", id, expectedVersion.Value, brandId?.ToString("D") ?? "none");
         return await ProxyLifecycleAsync(
-            HttpMethod.Put,
-            $"{_gatewayUrl}/api/global-products/{id:D}",
-            JsonContent.Create(new { expectedVersion = expectedVersion.Value, globalProductName }, options: _jsonOptions),
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/global-products/{id:D}/brand",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value, brandId }, options: _jsonOptions),
             operationId,
             new HashSet<int> { StatusCodes.Status200OK },
-            LifecycleMutationKind.Update,
+            LifecycleMutationKind.ChangeBrand,
             id,
             cancellationToken);
     }
@@ -439,6 +527,17 @@ public sealed class GlobalProductsController : Controller
                             errors = new[] { _localizer["ErrorWithdrawalPending"].Value }
                         });
                     }
+                    // MOD-0290-FU05: MDM's brand refusals ("brand_not_found: …" 404, "brand_archived: …" /
+                    // "brand_not_linkable: …" 409) are said in the reader's language, never as MDM's code or message.
+                    if (responseStatus is StatusCodes.Status404NotFound or StatusCodes.Status409Conflict
+                        && BrandRefusalKey(await SingleErrorCodeAsync(response, cancellationToken)) is { } brandRefusal)
+                    {
+                        return StatusCode(responseStatus, new
+                        {
+                            success = false,
+                            errors = new[] { _localizer[brandRefusal].Value }
+                        });
+                    }
                     // FIX3 item 6: the in-flight rule's two refusals are said in words (the draft is being submitted;
                     // the draft changed before the submit could be reserved).
                     if (responseStatus == StatusCodes.Status409Conflict
@@ -515,8 +614,48 @@ public sealed class GlobalProductsController : Controller
             // its way" — its own sentence names the way out (the same person submits again; else an administrator).
             ["GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorSubmitStuck",
             // A submit whose start the engine could not yet confirm IS on its way.
-            ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight"
+            ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight",
+            // WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity family's maker codes that reach this screen as a 409
+            // (ProductIdentityWorkflowMakerCodes.StatusFor) — the GSKU screen's sentences, and the new one: nobody but
+            // the maker may approve (segregation of duties) — the administrator adjusts the approvers, then resubmit.
+            ["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"] = "ErrorApprovalSetupIncomplete",
+            ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "ErrorApprovalSetupIncomplete",
+            ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "ErrorApprovalResubmit",
+            ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "ErrorApprovalChanging",
+            ["PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"] = "ErrorNoEligibleApprover"
         };
+
+    // MOD-0290-FU05: MDM's brand refusal codes (BrandProductReasonCodes) → this screen's sentences. MDM writes the first
+    // error as "<code>: <English message>"; only the code before ':' is read.
+    private static readonly IReadOnlyDictionary<string, string> BrandRefusalKeys =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["brand_not_found"] = "ErrorBrandNotFound",
+            ["brand_archived"] = "ErrorBrandArchived",
+            ["brand_not_linkable"] = "ErrorBrandNotLinkable"
+        };
+
+    private static string? BrandRefusalKey(string? error)
+    {
+        if (string.IsNullOrWhiteSpace(error))
+            return null;
+        var separator = error.IndexOf(':');
+        var code = (separator < 0 ? error : error[..separator]).Trim();
+        return BrandRefusalKeys.TryGetValue(code, out var key) ? key : null;
+    }
+
+    // MOD-0290-FU05: the form's BrandId — empty = no brand; anything else must be a non-empty GUID ("D").
+    private bool TryReadBrandId(out Guid? brandId)
+    {
+        brandId = null;
+        var raw = Request.Form["BrandId"].ToString().Trim();
+        if (raw.Length == 0)
+            return true;
+        if (!Guid.TryParseExact(raw, "D", out var parsed) || parsed == Guid.Empty)
+            return false;
+        brandId = parsed;
+        return true;
+    }
 
     private static async Task<string?> SingleErrorCodeAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
@@ -724,7 +863,8 @@ public sealed class GlobalProductsController : Controller
         Update,
         Withdraw,
         Correction,
-        Retirement
+        Retirement,
+        ChangeBrand
     }
 
     private static bool IsValidLifecycleEnvelope(
@@ -750,6 +890,10 @@ public sealed class GlobalProductsController : Controller
                 && HasNonNegativeInt(data, "version"),
             LifecycleMutationKind.Withdraw =>
                 HasMatchingGuid(data, "globalProductId", aggregateId) && HasLifecycleState(data, "lifecycleStatus")
+                && HasNonNegativeInt(data, "version"),
+            // MOD-0290-FU05: GlobalProductBrandChangeDto (id, lifecycleStatus, version; changed / isReplay / brand fields).
+            LifecycleMutationKind.ChangeBrand =>
+                HasMatchingGuid(data, "id", aggregateId) && HasLifecycleState(data, "lifecycleStatus")
                 && HasNonNegativeInt(data, "version"),
             LifecycleMutationKind.Correction or LifecycleMutationKind.Retirement =>
                 HasGuid(data, "operationId") && HasMatchingGuid(data, "globalProductId", aggregateId)
@@ -829,6 +973,7 @@ public sealed class GlobalProductsController : Controller
         string globalProductName,
         Guid reservationId,
         int expectedReservationVersion,
+        Guid? brandId,
         string operationKey,
         CancellationToken cancellationToken)
     {
@@ -837,7 +982,8 @@ public sealed class GlobalProductsController : Controller
             globalProductName,
             reservationId,
             expectedReservationVersion,
-            idempotencyKey = operationKey + ":draft"
+            idempotencyKey = operationKey + ":draft",
+            brandId
         };
 
         return await SendGatewayAsync<GlobalProductDraftViewModel>(

@@ -28,6 +28,17 @@ const StockLedgerList = (function () {
     const lotBadge = (data) => (!data || REGISTERED_LOT.test(data) || lotTypingClosed
         ? ''
         : ` <span class="badge bg-label-secondary ms-1" title="${esc(L().LotUnregisteredHint)}">${esc(L().LotUnregisteredBadge)}</span>`);
+    // FIX-LIVE1: the LOT cell shows the TRACE lot number (resolved server-side per SKU); a registered lot whose number could not be
+    // read keeps its id with the "unresolved" hint; a typed lot text keeps today's badge rule.
+    const lotCell = (data, full) => {
+        if (!data) return '';
+        if (full.lotNumber) return `<span title="${esc(data)}">${esc(full.lotNumber)}</span>`;
+        if (full.lotUnresolved) {
+            return `<span class="font-monospace small">${esc(data)}</span>`
+                + ` <span class="badge bg-label-warning ms-1" title="${esc(L().LotUnresolvedHint)}">${esc(L().LotUnresolvedHint)}</span>`;
+        }
+        return `${esc(data)}${lotBadge(data)}`;
+    };
     fetch('/LotMigration/status', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
         .then((response) => (response.ok ? response.json() : null))
         .then((status) => { if (status?.closed) { lotTypingClosed = true; list?.dt?.rows().invalidate('data').draw(false); } })
@@ -275,7 +286,7 @@ const StockLedgerList = (function () {
                             + `<small class="text-muted">${esc(full.locationLabel || full.locationId || '')}</small></div>`
                     },
                     // W-UI-02 badge: typed lot text only, until the migration closes typing (MOD-0174 P4).
-                    { targets: 3, render: (data) => (data ? `${esc(data)}${lotBadge(data)}` : '') },
+                    { targets: 3, render: (data, type, full) => lotCell(data, full) },
                     { targets: 4, render: (data) => statusBadge(data) },
                     { targets: [5, 6, 7, 8, 9, 10], className: 'text-end font-monospace', render: (data) => esc(formatQuantity(data)) },
                     { targets: 11, render: (data) => esc(data || '') },

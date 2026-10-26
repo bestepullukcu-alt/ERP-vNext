@@ -40,8 +40,16 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// that runs another user's save right after the handler's read — never the shared database.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class PlatformAdministratorLoadedVersionMongoTests
+[Trait("Category", "Mongo")]
+public sealed class PlatformAdministratorLoadedVersionMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_admin_loaded_version";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public PlatformAdministratorLoadedVersionMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     public static TheoryData<string, string> Cases()
     {
         var data = new TheoryData<string, string>();
@@ -58,7 +66,7 @@ public sealed class PlatformAdministratorLoadedVersionMongoTests
     [MemberData(nameof(Cases))]
     public async Task A_client_version_other_than_the_loaded_one_is_refused_409_and_nothing_is_written(string handler, string scenario)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var actor = await world.SeedAsync("actor", [AdministratorRole.SuperAdmin], AdministratorStatus.Active);
         await world.SeedAsync("second", [AdministratorRole.SuperAdmin], AdministratorStatus.Active); // nobody is the last one
         var target = await world.SeedAsync(
@@ -105,7 +113,7 @@ public sealed class PlatformAdministratorLoadedVersionMongoTests
     [Fact]
     public async Task The_update_path_refuses_a_different_version_before_any_other_rule_decides()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var self = await world.SeedAsync("self", [AdministratorRole.ReadOnly], AdministratorStatus.Active);
         await world.SeedAsync("second", [AdministratorRole.SuperAdmin], AdministratorStatus.Active);
         var loaded = await world.ReadAsync(self.Id);
@@ -143,10 +151,9 @@ public sealed class PlatformAdministratorLoadedVersionMongoTests
 
         public RecordingProvisioning Provisioning { get; } = new();
 
-        public static async Task<World> StartAsync()
+        public static async Task<World> StartAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>())
                          .Where(c => c.Name is PlatformCollections.PlatformAdministrators or PlatformCollections.PlatformAdministratorSafetyGuards))
             {
@@ -213,7 +220,7 @@ public sealed class PlatformAdministratorLoadedVersionMongoTests
             }
         }
 
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 
     /// <summary>The production repository; after the FIRST read of one record (by id or by address) it lets another user's

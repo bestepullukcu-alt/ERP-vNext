@@ -414,4 +414,1622 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>使用键盘</value>
   </data>
+  <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
+  <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
+    <value>按仓库、库位、批次和库存状态查看每个产品的库存数量。此列表只读：库存只能通过库存移动发生变化。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Audience" xml:space="preserve">
+    <value>仓库人员、库存管理员、采购和生产计划人员</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1" xml:space="preserve">
+    <value>如页面要求，请先在“公司”中选择公司。然后点击筛选图标（“筛选”），选择“产品”、“SKU（库存单位）”、“仓库”、“库位”、“批号”或“库存状态”，再点击“应用”；“重置”会清除筛选。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2" xml:space="preserve">
+    <value>按某个产品或 SKU 筛选后，列表上方的卡片会显示该选择的“现有总量”、“可用”、“质检中”和“隔离 / 冻结”。未按产品筛选时，卡片会有意留空。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2Title" xml:space="preserve">
+    <value>查看汇总</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3" xml:space="preserve">
+    <value>每一行代表一个产品在某个位置、批次和状态下的库存。“现有”是实际存放的数量，“已预留”是已被预留的数量，“可用”是您仍可使用的数量。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3Title" xml:space="preserve">
+    <value>阅读库存行</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4" xml:space="preserve">
+    <value>在行操作中，“历史”会打开按该产品和批次筛选的移动历史；“移动”会新建一条库存移动，并已将此行设为来源。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4Title" xml:space="preserve">
+    <value>追溯或移动</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5" xml:space="preserve">
+    <value>如需增加库存（期初余额或盘盈），请点击“新建入库”。“移动历史”标签页显示构成余额的所有移动。</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5Title" xml:space="preserve">
+    <value>登记入库</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Purpose" xml:space="preserve">
+    <value>登记不经单据流程进入的库存：期初余额或盘盈。库存列表从不直接修改；此页面过账一条入库移动。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Audience" xml:space="preserve">
+    <value>库存管理员、仓库主管</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Immediate" xml:space="preserve">
+    <value>点击“过账”后库存立即入账，不会再次确认。已过账的移动无法编辑；如有错误，请在移动历史中使用“冲销”或“更正”。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1" xml:space="preserve">
+    <value>在“移动类型”中选择“期初余额”或“盘盈”。类型决定下方显示哪些目标字段。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1Title" xml:space="preserve">
+    <value>选择入库类型</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2" xml:space="preserve">
+    <value>先选择“产品”，再选择其“库存单位 (SKU)”；只会列出该产品的 SKU。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2Title" xml:space="preserve">
+    <value>选择产品和 SKU</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3" xml:space="preserve">
+    <value>填写“目标仓库”、“目标库位”和“目标库存状态”；如果该 SKU 按批次管理，请选择“批次”。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3Title" xml:space="preserve">
+    <value>指定入库位置</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4" xml:space="preserve">
+    <value>输入“数量”和“单位”（如 SKU 需要，还要输入序列号），然后填写“单据号”、“业务日期”和“过账日期”。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4Title" xml:space="preserve">
+    <value>填写数量和日期</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5" xml:space="preserve">
+    <value>在“库存影响”中核对前后数值，然后点击“过账”。点击“取消”将返回库存列表，不会过账任何内容。</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5Title" xml:space="preserve">
+    <value>核对并过账</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Purpose" xml:space="preserve">
+    <value>公司的全部库存移动，最新的在最前。移动从不编辑：错误通过冲销取消，必要时再用一条新移动替代。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Audience" xml:space="preserve">
+    <value>库存管理员、仓库主管、审计人员</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1" xml:space="preserve">
+    <value>如页面要求，请先在“公司”中选择公司。点击筛选图标（“筛选”），设置“产品”、“批号”、“仓库”、“库位”、“开始日期”或“结束日期”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>缩小历史范围</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2" xml:space="preserve">
+    <value>每一行显示“交易编号”、“移动类型”、产品和数量、库存去向，以及“记录人”，即过账该移动的人。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>查看一条移动</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3" xml:space="preserve">
+    <value>对手工移动点击“冲销”会打开确认窗口；点击“确认冲销”会过账一条相反的移动来取消它。原始行仍保留在历史中。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>冲销移动</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4" xml:space="preserve">
+    <value>“更正”会打开已填入该移动数值的更正页面。它会过账一条冲销和一条更正后的移动，两条记录都会保留可见。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>更正移动</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5" xml:space="preserve">
+    <value>如需记录盘亏、报废、核销或调拨，请点击“新建库存移动”。“库存列表”标签页显示这些移动形成的余额。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>过账新移动</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Purpose" xml:space="preserve">
+    <value>过账一条手工库存移动：期初余额、盘盈或盘亏、报废、核销、调拨或客户退货。每条移动都会永久保留，并在过账时立即改变库存。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Audience" xml:space="preserve">
+    <value>库存管理员、仓库人员</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Immediate" xml:space="preserve">
+    <value>点击“过账”后库存立即变化，不会再次确认。已过账的移动无法编辑；如有错误，请在移动历史中使用“冲销”或“更正”。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1" xml:space="preserve">
+    <value>先选择“移动类型”。类型决定需要来源、目标还是两者都要，表单只显示这些字段。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1Title" xml:space="preserve">
+    <value>选择移动类型</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2" xml:space="preserve">
+    <value>先选择“产品”，再选择其“库存单位 (SKU)”；只会列出该产品的 SKU。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2Title" xml:space="preserve">
+    <value>选择产品和 SKU</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3" xml:space="preserve">
+    <value>出库和调拨时，在“来源（批次/库位）”中选择库存行。入库和调拨时，填写“目标仓库”、“目标库位”，如有要求再填写“目标库存状态”和“批次”。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3Title" xml:space="preserve">
+    <value>设置来源和目标</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4" xml:space="preserve">
+    <value>输入“数量”和“单位”（如 SKU 需要，还要输入序列号），然后填写“单据号”、“业务日期”和“过账日期”。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4Title" xml:space="preserve">
+    <value>填写数量和日期</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5" xml:space="preserve">
+    <value>在“库存影响”中核对前后数值，然后点击“过账”，随后会打开回执。点击“取消”将返回移动历史，不会过账。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5Title" xml:space="preserve">
+    <value>核对并过账</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Purpose" xml:space="preserve">
+    <value>更正一条录错的手工移动。原始移动从不改变：此页面先过账一条冲销来取消它，再过账更正后的移动，两条记录都保留在历史中。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Audience" xml:space="preserve">
+    <value>库存管理员、仓库主管</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1" xml:space="preserve">
+    <value>“被更正的移动”卡片显示原始移动的“交易编号”、“移动类型”、产品、数量和批次。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1Title" xml:space="preserve">
+    <value>核对被更正的移动</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2" xml:space="preserve">
+    <value>表单已填入原始数值。修改错误的内容，例如“数量”、“目标库位”或“批次”，并核对日期。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2Title" xml:space="preserve">
+    <value>修改数值</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3" xml:space="preserve">
+    <value>过账前，请在“库存影响”中查看前后数值。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3Title" xml:space="preserve">
+    <value>查看库存影响</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4" xml:space="preserve">
+    <value>点击“更正”。确认窗口会说明将产生两条记录；点击“冲销并过账”会过账冲销和更正后的移动，然后打开回执。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4Title" xml:space="preserve">
+    <value>确认更正</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5" xml:space="preserve">
+    <value>如果冲销已过账但更正后的移动被拒绝，页面上会保留一条警告。修改其指出的字段，然后点击“过账更正后的移动”；不会重复过账。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5Title" xml:space="preserve">
+    <value>完成部分更正</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Purpose" xml:space="preserve">
+    <value>您刚过账的移动回执：入账内容、库存去向以及由此形成的余额。仅在过账后立即显示一次。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Audience" xml:space="preserve">
+    <value>库存管理员、仓库人员</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1" xml:space="preserve">
+    <value>绿色横幅显示已过账移动的编号。更正后，第二条横幅会列出冲销和更正后的移动。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1Title" xml:space="preserve">
+    <value>核对结果</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2" xml:space="preserve">
+    <value>卡片重复您输入的内容：“移动类型”、“产品”、“库存单位 (SKU)”、“从”、“到”、“批次”、“数量”、“单据号”和日期。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2Title" xml:space="preserve">
+    <value>查看移动内容</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3" xml:space="preserve">
+    <value>“记录人”显示过账该移动的人。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3Title" xml:space="preserve">
+    <value>查看记录人</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4" xml:space="preserve">
+    <value>“当前余额”显示移动后该库位剩余的库存：现有、可用、状态和批次。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4Title" xml:space="preserve">
+    <value>查看新余额</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5" xml:space="preserve">
+    <value>点击“移动历史”返回移动列表；如果是入库，也可点击“库存列表”。</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5Title" xml:space="preserve">
+    <value>返回</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Purpose" xml:space="preserve">
+    <value>以一棵树维护公司的实体位置：工厂、仓库、存储区、区域和货位。库存、采购和生产都读取这份清单。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Audience" xml:space="preserve">
+    <value>仓库经理、物流管理员</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1" xml:space="preserve">
+    <value>如页面要求，请先在“公司”中选择公司。在“库位层级”中展开工厂查看其仓库，再依次查看存储区、区域和货位。打开“显示已归档”可同时查看已归档的位置。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1Title" xml:space="preserve">
+    <value>浏览层级</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2" xml:space="preserve">
+    <value>点击某个库位，可查看其“基本信息”、“库存”下该库位本身或下级是否有库存、“下级库位”以及“变更历史”。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2Title" xml:space="preserve">
+    <value>打开库位</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3" xml:space="preserve">
+    <value>点击“新建工厂”添加顶层工厂，或在选中的库位上点击“添加下级”。在侧边面板中填写“代码”、“名称”、“类型”和“可存放库存”，然后点击“保存”；按 Enter 也会保存。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3Title" xml:space="preserve">
+    <value>添加工厂或下级</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4" xml:space="preserve">
+    <value>使用“编辑”修改库位。在区域或存储区上，“批量生成货位”可一次创建多个货位：设置范围，点击“预览”，再用创建按钮确认。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4Title" xml:space="preserve">
+    <value>编辑或批量生成货位</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5" xml:space="preserve">
+    <value>“启用”、“停用”和“归档”都会先要求确认；归档无法撤销。“在库存列表中查看”会打开该库位的库存。</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5Title" xml:space="preserve">
+    <value>更改状态或查看库存</value>
+  </data>
+  <data name="Help.LOCATIONS.Purpose" xml:space="preserve">
+    <value>与层级中相同的公司库位，以可搜索、筛选和排序的平铺列表显示。用它快速找到某个位置，或批量处理同一类型的多个库位。</value>
+  </data>
+  <data name="Help.LOCATIONS.Audience" xml:space="preserve">
+    <value>仓库经理、物流管理员</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1" xml:space="preserve">
+    <value>如页面要求，请先在“公司”中选择公司。在搜索框中输入，或点击筛选图标（“筛选”），选择“类型”、“状态”、“可存放库存”或“上级”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1Title" xml:space="preserve">
+    <value>查找库位</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2" xml:space="preserve">
+    <value>每一行显示“代码”、“名称”、“类型”、“上级路径”、“状态”以及能否存放库存。点击“层级”可以树形查看相同的位置。</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2Title" xml:space="preserve">
+    <value>阅读列表</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3" xml:space="preserve">
+    <value>点击“新建库位”，在侧边面板中填写“代码”、“名称”、“类型”、“上级”和“可存放库存”，然后点击“保存”；按 Enter 也会保存。</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3Title" xml:space="preserve">
+    <value>添加库位</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4" xml:space="preserve">
+    <value>在行操作中，“编辑”会打开同一个侧边面板；“添加下级”会在此库位下创建新库位。已归档的库位无法再修改。</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4Title" xml:space="preserve">
+    <value>编辑或添加下级</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5" xml:space="preserve">
+    <value>“启用”、“停用”和“归档”都会先要求确认；归档无法撤销。“历史”会在层级页面打开变更历史，“在库存列表中查看”显示该处的库存。</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5Title" xml:space="preserve">
+    <value>状态、历史和库存</value>
+  </data>
+  <data name="Help.LOTS.Purpose" xml:space="preserve">
+    <value>在一个列表中查看公司产品的全部批次：日期、状态以及现有库存。您可以从这里打开批次、更改其状态或新建批次。</value>
+  </data>
+  <data name="Help.LOTS.Audience" xml:space="preserve">
+    <value>仓库、质量和计划人员</value>
+  </data>
+  <data name="Help.LOTS.Step1" xml:space="preserve">
+    <value>在搜索框中输入批号或制造商 / 供应商批次，或点击筛选图标，选择“产品”、“状态”、“有效期早于”或“仅显示有警告的批次”，然后点击“应用”。“清除”会清空筛选条件。</value>
+  </data>
+  <data name="Help.LOTS.Step1Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.LOTS.Step2" xml:space="preserve">
+    <value>“状态”列显示草稿、已放行、已冻结或已过期；日期临近或已过时“有效期至”会提示，“现有库存”是该批次在所选公司中的库存。</value>
+  </data>
+  <data name="Help.LOTS.Step2Title" xml:space="preserve">
+    <value>查看状态和有效期</value>
+  </data>
+  <data name="Help.LOTS.Step3" xml:space="preserve">
+    <value>点击某一行或“批次详情”查看完整批次。行菜单中还有“编辑”、“移动历史”和“可追溯性”。</value>
+  </data>
+  <data name="Help.LOTS.Step3Title" xml:space="preserve">
+    <value>打开批次</value>
+  </data>
+  <data name="Help.LOTS.Step4" xml:space="preserve">
+    <value>在行菜单中选择“更改状态”，选中新状态并填写至少 10 个字符的原因。冻结会使该批次的全部库存不可用，因此必须先勾选“我了解其影响。”。已过期状态只能由系统设置。</value>
+  </data>
+  <data name="Help.LOTS.Step4Title" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Help.LOTS.Step5" xml:space="preserve">
+    <value>点击“新建批次”手工登记批次；批次将保存为草稿。</value>
+  </data>
+  <data name="Help.LOTS.Step5Title" xml:space="preserve">
+    <value>新增批次</value>
+  </data>
+  <data name="Help.LOTDETAILS.Purpose" xml:space="preserve">
+    <value>一个批次的全部信息集中在一页：状态和警告、现有库存、库存所在位置、序列号，以及谁因何更改了什么。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Audience" xml:space="preserve">
+    <value>仓库、质量和计划人员</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1" xml:space="preserve">
+    <value>状态标记和警告显示在批号旁边。“现有库存”显示数量，“批次信息”显示批次的日期、原产地和来源。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1Title" xml:space="preserve">
+    <value>核对批次</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2" xml:space="preserve">
+    <value>“库存分布”列出该批次在所选公司中的每个“仓库”、“库位”、“库存状态”和“数量”。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2Title" xml:space="preserve">
+    <value>查看库存位置</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3" xml:space="preserve">
+    <value>“变更历史”显示谁更改了哪个字段、旧值 → 新值以及原因。用 ‹ 和 › 翻页；记录不能删除。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3Title" xml:space="preserve">
+    <value>阅读历史</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4" xml:space="preserve">
+    <value>点击“编辑”修正批次字段，或点击“更改状态”并填写至少 10 个字符的原因来放行或冻结批次。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4Title" xml:space="preserve">
+    <value>编辑或更改状态</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5" xml:space="preserve">
+    <value>通过顶部的“移动历史”、“可追溯性”或“在库存台账中打开”继续；对于按序列号追踪的批次，“序列号”卡片中的“全部序列号”会打开序列号浏览。</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5Title" xml:space="preserve">
+    <value>进一步查看</value>
+  </data>
+  <data name="Help.LOTCREATE.Purpose" xml:space="preserve">
+    <value>为按批次追踪的产品手工登记批次，包括日期和原产地。新批次将保存为草稿。</value>
+  </data>
+  <data name="Help.LOTCREATE.Audience" xml:space="preserve">
+    <value>仓库和质量人员</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1" xml:space="preserve">
+    <value>先选择“产品”，再选择该批次所属的“库存单位 (SKU)”。只有按批次追踪的产品才能创建批次。</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1Title" xml:space="preserve">
+    <value>选择产品</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2" xml:space="preserve">
+    <value>输入“批号”：1–40 个字符，A–Z、0–9 以及 . / -。保存后不能更改，并且在该产品下必须唯一。</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2Title" xml:space="preserve">
+    <value>输入批号</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3" xml:space="preserve">
+    <value>填写“生产日期”、“有效期至”，需要时填写“复验日期”：生产日期不晚于今天，有效期在生产日期之后，复验日期介于两者之间。</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3Title" xml:space="preserve">
+    <value>填写日期</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4" xml:space="preserve">
+    <value>可选填写“生产商批号”、“供应商批号”、“原产国”和“分析证书 (CoA) 编号”。</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4Title" xml:space="preserve">
+    <value>补充来源</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5" xml:space="preserve">
+    <value>核对“摘要”卡片后点击“保存”。“取消”不保存并返回批次浏览。</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5Title" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Help.LOTEDIT.Purpose" xml:space="preserve">
+    <value>修正现有批次的信息：日期、原产地和参考编号。每次更改都会保存在批次的变更历史中。</value>
+  </data>
+  <data name="Help.LOTEDIT.Audience" xml:space="preserve">
+    <value>仓库和质量人员</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1" xml:space="preserve">
+    <value>批次保存后，“产品”、“库存单位 (SKU)”和“批号”不能更改，以只读方式显示。</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1Title" xml:space="preserve">
+    <value>了解固定字段</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2" xml:space="preserve">
+    <value>如果批次不是草稿，需要在“变更原因”中填写至少 10 个字符，字段才会解锁。原因会保存在变更历史中。</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2Title" xml:space="preserve">
+    <value>填写原因</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3" xml:space="preserve">
+    <value>修正“生产日期”、“有效期至”、“复验日期”、“生产商批号”、“供应商批号”、“原产国”或“分析证书 (CoA) 编号”。</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3Title" xml:space="preserve">
+    <value>修改字段</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4" xml:space="preserve">
+    <value>保存前，“待保存的更改”会按旧值 → 新值列出您修改的每个字段。</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4Title" xml:space="preserve">
+    <value>核对更改</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5" xml:space="preserve">
+    <value>点击“保存”。“取消”不保存并返回批次详情。</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5Title" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Purpose" xml:space="preserve">
+    <value>查看一个批次在库存台账中的全部移动：入了什么、出了什么、去了哪里以及处于何种库存状态。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Audience" xml:space="preserve">
+    <value>仓库、质量和计划人员</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1" xml:space="preserve">
+    <value>在表格上方的“批次”选择器中搜索并选择批次。如果您是从某个批次进入的，该批次已被选中。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>选择批次</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2" xml:space="preserve">
+    <value>点击筛选图标，填写“开始日期”和“结束日期”，然后点击“应用”。“重置”会清除日期。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>限定日期</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3" xml:space="preserve">
+    <value>每行显示“交易编号”、“移动类型”、“数量”（入库为绿色 +，出库为红色 −）、“去向”、“状态”、“来源”和“交易日期”。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>阅读移动记录</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4" xml:space="preserve">
+    <value>点击某行或“移动凭证”，查看台账记录的该移动；“在库存台账中打开”会转到台账。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>打开凭证</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5" xml:space="preserve">
+    <value>从序列号浏览进入时，“序列号 …”标签会显示该序列号，其最近一次移动会在列表中高亮。</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>跟踪序列号</value>
+  </data>
+  <data name="Help.SERIALS.Purpose" xml:space="preserve">
+    <value>查找任意序列号：它现在在哪里、属于哪个批次以及能否使用。本页面为只读。</value>
+  </data>
+  <data name="Help.SERIALS.Audience" xml:space="preserve">
+    <value>仓库、质量和服务人员</value>
+  </data>
+  <data name="Help.SERIALS.Step1" xml:space="preserve">
+    <value>在列表上方的搜索框中输入序列号。</value>
+  </data>
+  <data name="Help.SERIALS.Step1Title" xml:space="preserve">
+    <value>查找序列号</value>
+  </data>
+  <data name="Help.SERIALS.Step2" xml:space="preserve">
+    <value>点击筛选图标，选择“产品”，再选择“批次”和“状态”（有效、已冻结、已消耗），然后点击“应用”。“重置”会清除筛选条件。</value>
+  </data>
+  <data name="Help.SERIALS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.SERIALS.Step3" xml:space="preserve">
+    <value>“仓库 / 库位”显示序列号所在位置，“最近移动”显示最后一次移动的时间，“状态”显示能否使用；批次被冻结时，其序列号显示为已冻结。</value>
+  </data>
+  <data name="Help.SERIALS.Step3Title" xml:space="preserve">
+    <value>查看位置</value>
+  </data>
+  <data name="Help.SERIALS.Step4" xml:space="preserve">
+    <value>在行菜单中选择“批次详情”，打开该序列号所属的批次。</value>
+  </data>
+  <data name="Help.SERIALS.Step4Title" xml:space="preserve">
+    <value>打开所属批次</value>
+  </data>
+  <data name="Help.SERIALS.Step5" xml:space="preserve">
+    <value>在行菜单中选择“移动历史”：打开该批次的移动记录，并高亮此序列号的最近一次移动。</value>
+  </data>
+  <data name="Help.SERIALS.Step5Title" xml:space="preserve">
+    <value>查看其移动</value>
+  </data>
+  <data name="Help.LOTTRACE.Purpose" xml:space="preserve">
+    <value>向后追溯批次的来源、向前追溯批次的去向，每个方向两级，并查看受影响的数量。</value>
+  </data>
+  <data name="Help.LOTTRACE.Audience" xml:space="preserve">
+    <value>质量、召回和仓库人员</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1" xml:space="preserve">
+    <value>在“批次”选择器中搜索并选择批次。如果您是从某个批次进入的，该批次已被选中。</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1Title" xml:space="preserve">
+    <value>选择批次</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2" xml:space="preserve">
+    <value>“受影响总数量”按单位汇总现有库存和已发出数量（不同单位绝不相加）；卡片显示“在库”、“已发出”和“受影响批次”。</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2Title" xml:space="preserve">
+    <value>查看受影响数量</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3" xml:space="preserve">
+    <value>“所选批次”位于中间，一侧是“反向 · 第 1 级”和“反向 · 第 2 级”，另一侧是“正向 · 第 1 级”和“正向 · 第 2 级”。目前反向显示批次的收货来源，正向仅显示出库单据号。</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3Title" xml:space="preserve">
+    <value>阅读流向</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4" xml:space="preserve">
+    <value>点击批次卡片可将其置于中心并从那里继续追溯；所选批次上的“批次详情”会打开其完整页面。</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4Title" xml:space="preserve">
+    <value>沿链条移动</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5" xml:space="preserve">
+    <value>如果您有召回权限，“完整追溯（召回）”会打开该批次的召回追溯。</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5Title" xml:space="preserve">
+    <value>启动完整追溯</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Purpose" xml:space="preserve">
+    <value>将批次登记之前手工填写在旧库存台账移动中的批次文本关联到已登记批次。迁移不会更改历史移动，只会添加与批次的关联。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Audience" xml:space="preserve">
+    <value>库存和质量负责人</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1" xml:space="preserve">
+    <value>卡片显示“总行数”、“已匹配”和“待处理”。使用“全部”、“待处理”和“已匹配”选项卡只查看需要的行；每一行是一个产品 +“手工录入批次”。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1Title" xml:space="preserve">
+    <value>查看剩余工作</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2" xml:space="preserve">
+    <value>当“建议匹配”显示某个批次时，在行菜单中选择“应用建议”，或点击“应用全部建议”一次采用所有建议。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2Title" xml:space="preserve">
+    <value>采用建议</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3" xml:space="preserve">
+    <value>选择“关联到现有批次”以选取同一 SKU 的已登记批次，或选择“录入错误 — 关联到其他批次”将该行并入另一个手工录入批次，然后点击“关联”。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3Title" xml:space="preserve">
+    <value>手工关联</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4" xml:space="preserve">
+    <value>选择“作为新批次创建”，核对批号和日期，然后点击“用作决定”。只有在确认迁移时，该批次才会以草稿状态创建。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4Title" xml:space="preserve">
+    <value>创建批次</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5" xml:space="preserve">
+    <value>确认之前，所有决定只保留在本页面；“更改”可重新打开一行。没有待处理行时，点击“确认迁移”并填写至少 10 个字符的原因。此操作无法撤销：之后将不能在库存台账中手工录入批次。</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5Title" xml:space="preserve">
+    <value>确认迁移</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Purpose" xml:space="preserve">
+    <value>跟踪每一条等待质量决定的隔离库存：查看逾期记录，手动隔离库存，并打开记录作出决定。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Audience" xml:space="preserve">
+    <value>质量保证人员和仓库负责人</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1" xml:space="preserve">
+    <value>选择“公司”。卡片显示待决定的行、按单位汇总的总数量以及超过等待目标的记录；逾期行在列表中高亮显示。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1Title" xml:space="preserve">
+    <value>选择公司</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2" xml:space="preserve">
+    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择仓库、库存状态、来源或“仅显示逾期”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3" xml:space="preserve">
+    <value>点击“隔离库存”，选择批次、其可用库存行和数量，点击“继续”，并填写至少 10 个字符的理由确认。该记录随后在本队列中等待决定。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3Title" xml:space="preserve">
+    <value>手动隔离库存</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4" xml:space="preserve">
+    <value>点击某一行或“详情”，查看记录的质量信息、决定历史和库存移动。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4Title" xml:space="preserve">
+    <value>打开记录</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
+    <value>在未关闭的记录上点击“作出决定”，放行、拒收或冻结库存。只有决定获批后库存才会移动。</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
+    <value>作出决定</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Purpose" xml:space="preserve">
+    <value>查看一条隔离记录的全部内容——批次、数量、质量信息、决定历史和库存移动——并推动其作出决定。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Audience" xml:space="preserve">
+    <value>质量保证人员和仓库负责人</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Immediate" xml:space="preserve">
+    <value>保存分析备注</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
+    <value>核对顶部信息、“质量信息”卡片以及该记录产生的库存移动；超过等待目标时会显示黄色提示。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
+    <value>阅读记录</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2" xml:space="preserve">
+    <value>点击“开始审查”，将记录转为审查中。库存不会移动。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2Title" xml:space="preserve">
+    <value>开始审查</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3" xml:space="preserve">
+    <value>点击“编辑备注”，填写分析结果后点击“保存”。有决定等待审批时备注会被锁定。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3Title" xml:space="preserve">
+    <value>填写分析备注</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4" xml:space="preserve">
+    <value>点击“作出决定”，打开决定页面以放行、拒收或冻结库存。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4Title" xml:space="preserve">
+    <value>作出决定</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5" xml:space="preserve">
+    <value>在工作流框中使用“刷新状态”、对草稿使用“签名并提交”、使用“撤回决定”，或在决定未能执行时使用“重新执行”。签名显示在“决定历史”中。</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5Title" xml:space="preserve">
+    <value>跟踪审批</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Purpose" xml:space="preserve">
+    <value>为隔离记录作出质量决定——放行、拒收或冻结——签名后提交审批。获批之前库存不会移动。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Audience" xml:space="preserve">
+    <value>质量保证决策人员</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1" xml:space="preserve">
+    <value>选择“放行”、“拒收”或“冻结”。如需拆分数量，打开“部分决定”，填写两行不同决定且合计等于记录数量。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1Title" xml:space="preserve">
+    <value>选择决定</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2" xml:space="preserve">
+    <value>拒收或冻结时选择“冻结原因”。放行时勾选“已核对 CoA / 分析结果”；已过复检日期的批次还需填写“新的复检日期”。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2Title" xml:space="preserve">
+    <value>补全细节</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3" xml:space="preserve">
+    <value>填写至少 10 个字符的“理由”。顶部提示会说明四眼原则是否要求由另一位质量用户审批。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3Title" xml:space="preserve">
+    <value>填写理由</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4" xml:space="preserve">
+    <value>点击“下一步：电子签名”。系统创建草稿（库存不移动），并在“待签名的决定”中显示；如需修改，点击“返回”。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4Title" xml:space="preserve">
+    <value>进入签名步骤</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5" xml:space="preserve">
+    <value>点击“签名并提交”，在电子签名窗口中签名（若政策不要求签名则为“提交审批”）。审批人批准后库存才会移动。</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5Title" xml:space="preserve">
+    <value>签名并提交</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Purpose" xml:space="preserve">
+    <value>签名并提交并非在此处表单中创建的草稿决定——例如批次放行申请，或提交失败的决定。获批后库存才会移动。</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Audience" xml:space="preserve">
+    <value>质量保证决策人员</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1" xml:space="preserve">
+    <value>阅读“待签名的决定”：其中按服务器生成的内容列出各行及目标状态、计划的库存移动和理由。</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1Title" xml:space="preserve">
+    <value>核对决定</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2" xml:space="preserve">
+    <value>点击“签名并提交”，在电子签名窗口中签名（若政策不要求签名则为“提交审批”）。随后该决定等待审批。</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2Title" xml:space="preserve">
+    <value>签名并提交</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3" xml:space="preserve">
+    <value>点击“取消”返回队列；不会提交任何内容。</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3Title" xml:space="preserve">
+    <value>不提交而离开</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Purpose" xml:space="preserve">
+    <value>管理已冻结的库存：必要时立即冻结库存、完成审查，并决定其去向——处置或解除冻结。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Audience" xml:space="preserve">
+    <value>质量保证人员和仓库负责人</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Immediate" xml:space="preserve">
+    <value>“冻结库存”→“冻结”：所选库存立即变为冻结，不经过审批流程</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
+    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择冻结原因、“仅显示待处置”或“状态”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2" xml:space="preserve">
+    <value>点击“冻结库存”，选择批次、其可用库存行、数量和“冻结原因”，填写至少 10 个字符的理由后点击“冻结”。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2Title" xml:space="preserve">
+    <value>冻结库存</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3" xml:space="preserve">
+    <value>调查结束后，在该行点击“完成审查”并填写理由。之后即可解除冻结。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3Title" xml:space="preserve">
+    <value>完成审查</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4" xml:space="preserve">
+    <value>点击“处置决定”，对库存进行销毁、退回供应商、返工或留作样品。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4Title" xml:space="preserve">
+    <value>作出处置决定</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5" xml:space="preserve">
+    <value>在已完成审查的记录上点击“解除冻结”并填写理由。该决定经签名后提交审批；获批后库存才变为可用。</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5Title" xml:space="preserve">
+    <value>解除冻结</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Purpose" xml:space="preserve">
+    <value>决定一条冻结库存记录的去向——销毁、退回供应商、返工或留作样品——并将决定提交签名和审批。</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Audience" xml:space="preserve">
+    <value>质量保证决策人员</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1" xml:space="preserve">
+    <value>选择“销毁”、“退回供应商”、“返工”或“留作样品 / 对照品”；每张卡片都显示将产生的库存移动。</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1Title" xml:space="preserve">
+    <value>选择处置方式</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2" xml:space="preserve">
+    <value>填写“数量”（不超过冻结数量；其余仍保持冻结）。退货需要“供应商”和“退货单号”；销毁需要“销毁方式”和“销毁日期”。留样需要在隔离设置中为该仓库设定样品库位。</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2Title" xml:space="preserve">
+    <value>填写数量和细节</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3" xml:space="preserve">
+    <value>填写至少 10 个字符的“理由”，并核对“批准后库存台账中将生成的移动”框。</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3Title" xml:space="preserve">
+    <value>填写理由</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4" xml:space="preserve">
+    <value>点击“下一步：电子签名”，核对摘要，然后点击“签名并提交”（或“提交审批”）。获批后库存才会移动。</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4Title" xml:space="preserve">
+    <value>签名并提交</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Purpose" xml:space="preserve">
+    <value>查看复检日期已过或即将到期的批次，并将其送入隔离以作出质量决定。</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Audience" xml:space="preserve">
+    <value>质量保证人员和仓库负责人</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1" xml:space="preserve">
+    <value>列表显示复检日期已过或将在 30 天内到期的批次及其状态：即将到期、已逾期且禁止使用，或已在隔离中。逾期批次在作出质量决定前不能销售、预留或出库。</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1Title" xml:space="preserve">
+    <value>阅读列表</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2" xml:space="preserve">
+    <value>在搜索框中输入产品或批次以缩小列表。</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2Title" xml:space="preserve">
+    <value>查找批次</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3" xml:space="preserve">
+    <value>在该行点击“隔离”，并填写至少 10 个字符的理由确认。该批次的可用库存转为隔离，并在隔离队列中新增一条记录。</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3Title" xml:space="preserve">
+    <value>隔离批次</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4" xml:space="preserve">
+    <value>对于已在隔离中的批次，点击“打开隔离记录”以跟踪其决定。</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4Title" xml:space="preserve">
+    <value>打开已有记录</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Purpose" xml:space="preserve">
+    <value>设置贵公司的隔离规则：等待目标、四眼原则和批次放行审批、由谁审批、样品存放位置以及有哪些冻结原因。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Audience" xml:space="preserve">
+    <value>质量经理和管理员</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Immediate" xml:space="preserve">
+    <value>设置中的“保存”以及保存冻结原因均立即生效</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1" xml:space="preserve">
+    <value>填写“等待目标（天）”（1–60）和“重新读取间隔（秒）”，并打开或关闭“四眼原则”和“批次放行审批”。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1Title" xml:space="preserve">
+    <value>设置通用规则</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2" xml:space="preserve">
+    <value>在“审批候选人”下选择职位或用户，然后点击“添加”（最多 10 个）。没有候选人则无法提交任何决定审批。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2Title" xml:space="preserve">
+    <value>选择审批人</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3" xml:space="preserve">
+    <value>在“样品库位”下选择仓库及其样品库位，然后点击“添加”；每个仓库一个库位。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3Title" xml:space="preserve">
+    <value>设置样品库位</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4" xml:space="preserve">
+    <value>点击顶部的“保存”。如果审批模板显示为缺失，请点击一次“准备审批模板”。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4Title" xml:space="preserve">
+    <value>保存并准备模板</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5" xml:space="preserve">
+    <value>点击“添加冻结原因”，填写代码以及全部七种语言的名称后保存；如需修改已有原因，请使用行操作。</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5Title" xml:space="preserve">
+    <value>管理冻结原因</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve">
+    <value>一目了然地查看贵公司的有效期风险：仍在库的过期库存、紧急和临近批次、低于最短剩余保质期的收货、未结例外以及 FEFO 合规情况。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve">
+    <value>质量保证、仓库经理和供应计划人员</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve">
+    <value>如有提示，请在“公司”中选择您的公司，然后用“所有仓库”和合规卡片的“期间”缩小数字范围；更改后页面会立即刷新。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve">
+    <value>选择范围</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve">
+    <value>过期、紧急和临近卡片按副标题中显示的公司阈值统计批次和数量；例外卡片显示有多少案件已超过 SLA。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve">
+    <value>查看卡片</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3" xml:space="preserve">
+    <value>点击“过期库存”卡片或紧急、临近卡片，即可打开已按您的仓库筛选的对应列表。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3Title" xml:space="preserve">
+    <value>打开卡片背后的批次</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4" xml:space="preserve">
+    <value>图表按月显示将要过期的“可用”和“暂扣”库存数量。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4Title" xml:space="preserve">
+    <value>展望未来 12 个月</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5" xml:space="preserve">
+    <value>在“风险最高的 10 个批次”中使用行图标“查看 FEFO 顺序”、“隔离（MOD-0175）”（打开隔离模块）或“创建例外”；“查看全部”打开完整的临近列表。</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5Title" xml:space="preserve">
+    <value>处理风险最高的批次</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve">
+    <value>列出即将过期的批次，按最早有效期优先（FEFO 顺序），可用与暂扣库存分列显示，便于您及时使用或处理。</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve">
+    <value>仓库、销售和质量用户</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve">
+    <value>选择“所有仓库”、“所有状态”、“范围”以及“包含暂扣库存”或“仅可用库存”，然后点击“应用”；“清除”重置筛选。未选范围时适用公司设置。</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve">
+    <value>“剩余天数”和“剩余保质期”显示批次的紧急程度；“可用”和“暂扣”显示仍可使用的数量。点击批号可打开“批次详情（MOD-0174）”。</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve">
+    <value>查看行</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3" xml:space="preserve">
+    <value>使用行图标：“查看 FEFO 顺序”显示应先使用哪个批次，“隔离（MOD-0175）”打开隔离模块，批次无法及时使用时用“创建例外”登记案件。</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3Title" xml:space="preserve">
+    <value>处理批次</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4" xml:space="preserve">
+    <value>“导出（CSV）”按您应用的筛选下载列表。</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4Title" xml:space="preserve">
+    <value>导出列表</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Purpose" xml:space="preserve">
+    <value>查看仍有库存的过期批次。过期批次会自动停止使用；此处不作任何决定，销毁或退货决定在隔离模块中作出。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Audience" xml:space="preserve">
+    <value>质量保证和仓库经理</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1" xml:space="preserve">
+    <value>在“所有仓库”中选择一个仓库并点击“应用”；“清除”重新显示所有仓库。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1Title" xml:space="preserve">
+    <value>选择仓库</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2" xml:space="preserve">
+    <value>“过期以来”显示批次已过期多少天；“可用”和“暂扣”显示仍在库的数量。点击批号可打开“批次详情（MOD-0174）”。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2Title" xml:space="preserve">
+    <value>检查库存</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3" xml:space="preserve">
+    <value>如已有未结案件，“例外”列会链接到它；否则请使用行中的“创建例外”登记案件。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3Title" xml:space="preserve">
+    <value>跟进或创建例外</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4" xml:space="preserve">
+    <value>行中的“隔离（MOD-0175）”打开隔离模块，您在那里决定销毁或退回库存。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4Title" xml:space="preserve">
+    <value>在隔离模块中决定</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5" xml:space="preserve">
+    <value>“导出（CSV）”下载所选仓库的列表。</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5Title" xml:space="preserve">
+    <value>导出列表</value>
+  </data>
+  <data name="Help.FEFOORDER.Purpose" xml:space="preserve">
+    <value>按有效期查看某仓库中某产品应先使用哪个批次。这是只读建议：此处不做预留也不出库；从较晚批次出库须遵守贵公司的 FEFO 出库规则。</value>
+  </data>
+  <data name="Help.FEFOORDER.Audience" xml:space="preserve">
+    <value>仓库操作员和计划人员</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1" xml:space="preserve">
+    <value>先选择“仓库”，再选择“产品（SKU）”；只列出在该仓库有批次库存的产品。</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1Title" xml:space="preserve">
+    <value>选择仓库和产品</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2" xml:space="preserve">
+    <value>如需特定数量，请在“需求数量（可选）”中输入，然后点击“计算顺序”。</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2Title" xml:space="preserve">
+    <value>计算顺序</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3" xml:space="preserve">
+    <value>“排序批次 · 按有效期”为当前可出库的批次排名；输入数量后，“用于此数量”显示每个批次应取多少以及无法满足的数量。</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3Title" xml:space="preserve">
+    <value>按顺序使用</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4" xml:space="preserve">
+    <value>“未排序的批次”列出当前无法使用的批次及原因；链接可转到过期库存或隔离模块。</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4Title" xml:space="preserve">
+    <value>查看被排除的批次</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>处理贵公司的 FEFO 例外：每一次偏离有效期规则的情况，从创建到关闭（待处理、审查中、已接受或已纠正、已关闭）。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve">
+    <value>审查并决定例外的质量保证用户</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve">
+    <value>使用“全部”、“待处理 + 审查中”、“已超时限”和“已结案”选项卡；每个选项卡显示其数量。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>选择视图</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve">
+    <value>选择“全部类型”、“所有状态”、“所有仓库”或“分配给我的”，然后点击“应用”；“清除”重置筛选。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3" xml:space="preserve">
+    <value>“时限 (SLA)”列显示剩余时间或案件逾期多久；“负责人”显示由谁处理。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3Title" xml:space="preserve">
+    <value>关注时限</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4" xml:space="preserve">
+    <value>点击行末的箭头（“打开异常”）查看其事实、时间线和决定。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4Title" xml:space="preserve">
+    <value>打开案件</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5" xml:space="preserve">
+    <value>点击“创建例外”，选择仓库、产品和批次，选择“例外类型”，填写至少 10 个字符的“说明”，再次点击“创建例外”；新案件会在其详情页打开。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5Title" xml:space="preserve">
+    <value>创建新例外</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve">
+    <value>处理单个例外：查看其事实和发生经过，跟踪时间线并记录决定。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve">
+    <value>质量保证用户及与该例外相关的人员</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Immediate" xml:space="preserve">
+    <value>“发送”、“接手并审查”和“关闭异常”点击后立即生效，不会再要求确认。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve">
+    <value>“事实”和“发生了什么”按记录显示批次、日期以及触发例外的移动；“批次详情（MOD-0174）”和“隔离 (MOD-0175)”打开相关模块。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve">
+    <value>审核事实</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve">
+    <value>“时间线”列出案件的每一步；在评论框中输入内容并点击“发送”。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve">
+    <value>在时间线中讨论</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3" xml:space="preserve">
+    <value>例外处于待处理状态时，点击“决定”卡片中的“接手并审查”来接手。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3Title" xml:space="preserve">
+    <value>接手审查</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4" xml:space="preserve">
+    <value>点击“作出决定”，选择“附理由接受”、“已纠正”或“已取消”，填写至少 10 个字符的“理由”并点击“继续”；如贵公司的电子签名策略要求，最后点击“签名并保存”，否则决定会立即保存。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4Title" xml:space="preserve">
+    <value>作出决定</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5" xml:space="preserve">
+    <value>在接受或纠正的决定之后，点击“关闭异常”。</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5Title" xml:space="preserve">
+    <value>关闭例外</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve">
+    <value>设置贵公司的有效期规则：临近和临界期限、FEFO 出库规则、收货低于最短剩余保质期时的处理、有效期变更、异常处理时限以及过期库存阈值。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve">
+    <value>负责有效期策略的质量经理</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve">
+    <value>在“公司设置”中以天为单位输入“临近”期限和“临界”阈值；临界阈值必须小于临近期限。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve">
+    <value>设置期限</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve">
+    <value>为“FEFO 出库规则”、“收货低于最短剩余保质期”和“有效期 / 复检日期变更”各选一个选项；在“异常处理时限”中按类型设置小时数，并以天为单位设置“在库过期库存”阈值。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve">
+    <value>选择规则</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3" xml:space="preserve">
+    <value>点击“保存更改”，检查已更改的字段，填写至少 10 个字符的“变更理由”，再点击“保存更改”确认；“取消”放弃您的修改。没有管理策略权限时表单为只读。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3Title" xml:space="preserve">
+    <value>附理由保存</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4" xml:space="preserve">
+    <value>“按产品查看”显示来自产品主数据的保质期、复检和最短剩余天数；“未定义”的值在 MDM 的产品卡片中更正，而不是在这里。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4Title" xml:space="preserve">
+    <value>检查产品</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5" xml:space="preserve">
+    <value>“变更历史”显示每次变更的时间和人员、旧值和新值以及理由。</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5Title" xml:space="preserve">
+    <value>查看历史</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve">
+    <value>为审计生成某一期间的 FEFO / 有效期证据包：合规摘要、带处理方式和签名的例外、策略变更以及 FEFO 绕过记录。</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve">
+    <value>质量保证、质量体系经理和审计人员</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve">
+    <value>选择一个“期间”，或选择“日期范围”并填写“开始”和“结束”；如有需要，用“仓库”和“类型”缩小范围。</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve">
+    <value>选择期间和范围</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve">
+    <value>点击“预览”查看证据包的四个部分：摘要指标、例外及其处理、策略变更和 FEFO 绕过。</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3" xml:space="preserve">
+    <value>点击“下载 PDF”或“下载 CSV”；文件在服务器上生成、下载并写入导出日志。</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3Title" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4" xml:space="preserve">
+    <value>“导出日志”列出每次导出的人员、时间以及根据文件字节计算的 SHA-256；可点击文件名再次打开文件，并用“复制 SHA-256 值”进行比对。</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4Title" xml:space="preserve">
+    <value>验证文件</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve">
+    <value>一眼看清贵公司应对召回的准备情况：未结案例、上次演练与目标的对比、出库的批次覆盖率、无法追溯的出库以及未结案例的退货。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve">
+    <value>质量（召回负责人）、质量体系管理员和管理层（只读）。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve">
+    <value>如页面要求，请在“公司”中选择公司。本页的每个数字都只属于该公司。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve">
+    <value>选择公司</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve">
+    <value>查看五张卡片：“未结召回案例”“上次演练时长”“可追溯覆盖率”“无批次出库（无法追溯）”和“已退回（未结案例）”。上次演练出现红色“超出目标”或无法追溯数量不为零时，需要您关注。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve">
+    <value>查看卡片</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve">
+    <value>“演练历史 · 最近 12 次”将最近完成的演练与目标线对比；红色柱表示该次演练超出目标。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve">
+    <value>关注演练历史</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4" xml:space="preserve">
+    <value>当黄色横幅提示上次演练过久时，点击“安排演练”打开演练计划页。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4Title" xml:space="preserve">
+    <value>处理提醒</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5" xml:space="preserve">
+    <value>“未结案例”表显示每个案例的级别、受影响数量和退回比例；点击“全部案例 →”打开完整列表。</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5Title" xml:space="preserve">
+    <value>跟进未结案例</value>
+  </data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve">
+    <value>沿完整谱系追溯一个批次：向后追到其投入，向前追到库存、发货和客户，并找出批次无法证明货物去向的缺口。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve">
+    <value>质量（召回负责人）和质量体系管理员。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve">
+    <value>“开启草稿案例”会立即创建草稿案例；在案例页面批准范围之前不会冻结任何内容。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve">
+    <value>在“批次号”中搜索批次，或点击“最近的批次：”中的某个批次。产品会自动填写。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve">
+    <value>选择批次</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve">
+    <value>选择“向后”“向前”或“双向”，然后点击“追溯”。结果上方的摘要统计批次、库存行、发货和缺口。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve">
+    <value>选择方向并追溯</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve">
+    <value>在“树形”和“表格”之间切换；两者显示相同的节点，“全部展开”会展开每个分支。红色行是追溯缺口；其他公司的活动只显示为数量。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve">
+    <value>查看树形或表格</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4" xml:space="preserve">
+    <value>“下载 CSV”提供相同的行。“以此范围开启召回案例”要求填写“级别”“层级”“原因”，如有还可填写“偏差 / 投诉编号”；然后点击“开启草稿案例”。</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4Title" xml:space="preserve">
+    <value>导出或开启案例</value>
+  </data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve">
+    <value>在一个列表中按从新到旧跟进贵公司的真实召回案例和演练，以及它们的状态和进度。</value>
+  </data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve">
+    <value>所有关注召回的人：质量、仓库、商务和管理层。</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve">
+    <value>点击列表上方的状态按钮，例如“草稿”“范围待审批”或“进行中”；按钮上的数字是该状态的案例数。</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve">
+    <value>选择状态</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve">
+    <value>在搜索框中输入，或点击“筛选”，选择“全部类型”“全部状态”“演练状态”“全部级别”“全部产品”或“开启日期不早于”，然后点击“应用”；“清除”可重置。级别筛选只显示真实案例。</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3" xml:space="preserve">
+    <value>演练行的“类型”显示“演练”，进度处显示其结果和时长，级别和层级为“—”。</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3Title" xml:space="preserve">
+    <value>区分演练</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4" xml:space="preserve">
+    <value>点击编号即可打开：真实案例打开其案例页面，进行中的演练打开演练计划页，已结束的演练打开其证据包。</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4Title" xml:space="preserve">
+    <value>打开一行</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve">
+    <value>从草稿到关闭处理一个召回案例：范围、库存、客户、退货、有效性检查和历史。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve">
+    <value>公司的质量（QA）、仓库和客户服务用户。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Immediate" xml:space="preserve">
+    <value>“保存包含 / 排除”“提交范围审批”“隔离所选项”和“开始有效性检查”会立即生效，不弹出确认窗口。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve">
+    <value>在“范围”中关闭未受影响的项并填写“排除理由”，点击“保存包含 / 排除”，再点击“提交范围审批”。“重新追溯”会显示新节点，您可通过“范围修订”附理由加入。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve">
+    <value>标记并提交范围</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve">
+    <value>由另一位用户点击“批准范围”（或附理由点击“退回草稿”），核对摘要，点击“继续”，并在策略要求时于电子签名窗口签名。随后批次被冻结，隔离请求被发送。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve">
+    <value>批准范围</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve">
+    <value>在“现有库存”中勾选行并点击“隔离所选项”；请求失败时用“重试”，货物实际分开后用“确认物理隔离”。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve">
+    <value>隔离库存</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
+    <value>在“客户与发货”中使用“标记为已通知”和“添加消耗声明”。在“退回”中，“录入客户退货”会打开库存移动表单；然后在候选项上点击“关联退货”。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
+    <value>跟进客户和退货</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5" xml:space="preserve">
+    <value>在“有效性检查”中点击“开始有效性检查”，再以电子签名点击“完成有效性检查”；由另一位用户点击“关闭案例”。“证据包”和“时间线”保留记录。</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5Title" xml:space="preserve">
+    <value>检查有效性并关闭</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve">
+    <value>安排召回演练并计时执行，不触碰库存。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve">
+    <value>质量保证人员和质量体系管理员。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Immediate" xml:space="preserve">
+    <value>“开始计时”和每个步骤按钮会立即生效，不弹出确认窗口；绝不触碰库存。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve">
+    <value>点击“添加计划”，填写“计划名称”“频率”“范围”和“下次日期”，然后点击“保存计划”。用“编辑”修改已有计划。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve">
+    <value>添加计划</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve">
+    <value>在“计划负责人”下的搜索框中输入姓名，点击“查找”，再从列表中选择人员。不搜索时负责人保持不变（新计划为您本人）。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve">
+    <value>选择计划负责人</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve">
+    <value>在计划行上点击“开始演练”，为批次选择“由系统选择”或“我来选择”，然后点击“开始计时”。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve">
+    <value>开始演练</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4" xml:space="preserve">
+    <value>依次点击“执行追溯”“核实范围”和“完成客户清单 · 停止计时”；时钟以服务器时间为准。“取消演练”需要填写原因，并保留该次演练。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4Title" xml:space="preserve">
+    <value>完成三个步骤</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5" xml:space="preserve">
+    <value>点击“以电子签名保存结果”，填写结果说明，并在策略要求时签名。“近期演练结果”列出每次演练；点击编号可再次打开。</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5Title" xml:space="preserve">
+    <value>保存结果</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve">
+    <value>为审计生成案例、演练或期间的证据包，并证明您交出的文件正是已记录的文件。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve">
+    <value>质量保证人员、质量体系管理员和审计员。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Immediate" xml:space="preserve">
+    <value>每次下载都会立即记入“导出日志”。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve">
+    <value>在“对象”下点击“真实”“演练”或“期间”；然后在“案例或演练”中选择案例或演练，或为期间填写“开始”和“结束”。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve">
+    <value>选择对象</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve">
+    <value>点击“预览”；它按文件原样显示七个部分。只有预览后下载按钮才会启用。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve">
+    <value>预览证据包</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3" xml:space="preserve">
+    <value>点击“下载 PDF”或“下载 CSV”。页面会计算所下载文件的哈希，并告诉您其 SHA-256 是否与导出日志一致。文件标签为土耳其语或英语。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3Title" xml:space="preserve">
+    <value>下载并核验</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4" xml:space="preserve">
+    <value>“导出日志”列出每个文件及其用户、时间和 SHA-256；点击文件名可再次下载。</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4Title" xml:space="preserve">
+    <value>使用导出日志</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve">
+    <value>设置贵公司的演练目标时间、演练频率提醒和按等级的有效性目标。</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve">
+    <value>质量体系管理员。</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve">
+    <value>修改“演练目标时间（小时）”（1–72）、“演练频率提醒（天）”（30–730）以及“有效性目标（%）· 按等级”下各等级的数值（0–100）。没有修改权限时，这些字段为只读。</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve">
+    <value>修改数值</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve">
+    <value>填写“理由（至少 10 个字符）”并点击“保存”；“撤销”可恢复已保存的数值。策略要求时，点击“签名并保存”并在电子签名窗口签名。</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve">
+    <value>填写理由并保存</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3" xml:space="preserve">
+    <value>“变更历史”显示每次变更及其理由和签名。电子签名策略不在此处设置，而由 MOD-0022 管理。</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3Title" xml:space="preserve">
+    <value>查看历史</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Purpose" xml:space="preserve">
+    <value>签署或拒绝各模块分配给您的签名工作。截止日期最近的排在最前；截止日期相同时，较新的请求在前。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Audience" xml:space="preserve">
+    <value>所有被要求签署记录的人员</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Immediate" xml:space="preserve">
+    <value>签署和拒绝请求；完成任一操作后请求即关闭</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1" xml:space="preserve">
+    <value>点击“筛选”，选择“模块”、“状态”或“请求日期”范围，然后点击“应用”。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2" xml:space="preserve">
+    <value>查看“截止日期”列：今天到期的待处理请求带有“今天”标签，列表上方的计数显示有多少请求在等待。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2Title" xml:space="preserve">
+    <value>找出紧急工作</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3" xml:space="preserve">
+    <value>在待处理行上点击“签名”；签名窗口会按请求中指定的含义打开。输入您的“密码”（在密码有效期内则改为输入用户名），然后点击“签名”。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3Title" xml:space="preserve">
+    <value>签名</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4" xml:space="preserve">
+    <value>点击“拒绝”，填写至少 10 个字符的“理由”，再用“拒绝”确认；系统会通知请求人。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4Title" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5" xml:space="preserve">
+    <value>点击“记录的签名”，在验证页面打开该记录。</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5Title" xml:space="preserve">
+    <value>查看记录的签名</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Purpose" xml:space="preserve">
+    <value>查看记录上的签名，以及每个签名今天是否仍然有效：有效、记录已变更、被篡改或已作废。验证会把签署时的内容与记录的当前状态进行比较；签名记录本身永不改变。</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Audience" xml:space="preserve">
+    <value>质量、审计人员和电子签名管理员</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Immediate" xml:space="preserve">
+    <value>作废签名：该签名在所有使用处均显示为无效，且无法撤销</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1" xml:space="preserve">
+    <value>选择“模块”，输入“记录类型”和“记录标识”，然后点击“显示”；也可以从“最近签名的记录”中选择（仅在拥有导出权限时显示）。“记录的签名”链接会直接打开该记录。</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1Title" xml:space="preserve">
+    <value>选择记录</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2" xml:space="preserve">
+    <value>计数显示有多少签名为“有效”、“记录已变更”、“被篡改”或“已作废”；每张卡片显示签名人、含义、外观和签署时的摘要。公司记录仅显示您数据范围内的公司；您自己的签名始终显示。</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2Title" xml:space="preserve">
+    <value>查看结果</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3" xml:space="preserve">
+    <value>点击“重新验证”，将每个签名再次与当前记录比较；不会更改任何内容。</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3Title" xml:space="preserve">
+    <value>重新验证</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4" xml:space="preserve">
+    <value>在卡片上点击“作废签名”，填写至少 10 个字符的“理由”并点击“继续”，然后输入“密码”并点击“作废签名”。此操作无法撤销，作废会作为单独的永久条目保存。</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4Title" xml:space="preserve">
+    <value>作废签名</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Purpose" xml:space="preserve">
+    <value>筛选签名记录，并将其下载为 PDF 或 CSV，用于审计和检查。每次导出都会获得一个编号，导出人、筛选条件、记录数和文件的 SHA-256 摘要都会被永久记录。</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Audience" xml:space="preserve">
+    <value>审计、质量和合规人员</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Immediate" xml:space="preserve">
+    <value>“导出为 PDF”和“导出为 CSV”：点击后即记录此次导出，即使您没有保存文件</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1" xml:space="preserve">
+    <value>点击“筛选”，设置“开始”和“结束”，选择“模块”、“签名人”、“签名含义”或“公司”，然后点击“应用”；公司记录仅限于您的数据范围。</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1Title" xml:space="preserve">
+    <value>筛选记录</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2" xml:space="preserve">
+    <value>在“表格”和“PDF 预览”之间切换，以报告签名块的形式查看屏幕上的行。</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2Title" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3" xml:space="preserve">
+    <value>点击“导出为 PDF”或“导出为 CSV”；文件由服务器生成，日期以 UTC 打印。</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3Title" xml:space="preserve">
+    <value>下载文件</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4" xml:space="preserve">
+    <value>“导出审计日志”列出每次导出的编号、日期、人员、格式、记录数、筛选条件和文件摘要。</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4Title" xml:space="preserve">
+    <value>查看日志</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Purpose" xml:space="preserve">
+    <value>保存您在电子签名时可以使用的签名样本，并查看样本历史。同一时间只有一个有效样本；保存新样本时始终需要输入密码。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Audience" xml:space="preserve">
+    <value>所有进行电子签名的人员</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Immediate" xml:space="preserve">
+    <value>停用和删除样本；没有审批规则时，保存的样本立即生效</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1" xml:space="preserve">
+    <value>“我的签名样本”显示您的有效样本、添加时间、批准人以及被多少次签名使用；点击图片可放大。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1Title" xml:space="preserve">
+    <value>查看您的样本</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2" xml:space="preserve">
+    <value>在“新签名样本”下，在“绘制”选项卡中绘制（设置“粗细”和“颜色”，或在手机上使用“全屏（横向）”），或在“上传图片”选项卡中选择不超过 1 MB 的 PNG 或 JPG，裁剪后根据需要打开“清除背景”。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2Title" xml:space="preserve">
+    <value>绘制或上传</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3" xml:space="preserve">
+    <value>点击“凭密码保存”，输入“密码”，然后点击“验证并保存”。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3Title" xml:space="preserve">
+    <value>凭密码保存</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4" xml:space="preserve">
+    <value>如果策略要求审批，新样本会显示“待批准”，直到另一位电子签名管理员批准；在此之前继续使用您当前的样本。您永远不能批准自己的样本。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4Title" xml:space="preserve">
+    <value>等待批准</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5" xml:space="preserve">
+    <value>在“签名样本历史”中，对有效样本使用“停用”，对从未使用过的样本使用“删除”；已用于签名的样本不能删除，只能停用。</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5Title" xml:space="preserve">
+    <value>管理旧样本</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Purpose" xml:space="preserve">
+    <value>决定哪些操作需要电子签名、使用哪种含义和可视签名规则，以及多久要求一次密码。更改适用于新的签名；每次更改都需要理由并写入变更历史。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Audience" xml:space="preserve">
+    <value>电子签名管理员</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Immediate" xml:space="preserve">
+    <value>保存策略以及将公司恢复为租户默认；两者都会立即应用于新的签名</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1" xml:space="preserve">
+    <value>点击“租户默认”查看所有没有单独策略的公司所使用的策略，或点击“按公司”并选择公司。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1Title" xml:space="preserve">
+    <value>选择范围</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2" xml:space="preserve">
+    <value>如果该公司使用租户默认，点击“为此公司设置单独策略”从副本开始；有差异的行带有“不同”标签。“恢复为租户默认”会在填写理由后删除该公司的策略。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2Title" xml:space="preserve">
+    <value>为公司设置单独策略</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3" xml:space="preserve">
+    <value>在“按操作的签名规则”中，将每个操作设为“必需”或“关闭”，并选择其“签名含义”和“可视签名”；“第二因素”显示“即将推出”。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3Title" xml:space="preserve">
+    <value>设置各操作的规则</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4" xml:space="preserve">
+    <value>在“常规设置”下选择“每次签名都要求密码”或“时限内一次”，并设置“密码重新验证的有效期”（1–60 分钟）。“签名样本使用前需管理员批准”是租户范围的设置。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4Title" xml:space="preserve">
+    <value>设置密码规则</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5" xml:space="preserve">
+    <value>点击“填写理由并保存”，写下至少 10 个字符的理由并点击“保存”；更改会显示在“变更历史”中。没有管理策略的权限时，页面为只读。</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5Title" xml:space="preserve">
+    <value>填写理由并保存</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Purpose" xml:space="preserve">
+    <value>定义签名所声明的内容，例如我批准或我已审阅；签名窗口会提供处于启用状态的含义。含义一旦被使用，其代码即被锁定，每个签名都保留签署当时的含义文本。</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Audience" xml:space="preserve">
+    <value>电子签名管理员</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Immediate" xml:space="preserve">
+    <value>保存、启用和停用含义</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1" xml:space="preserve">
+    <value>点击“筛选”，选择“状态”或“使用情况”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1Title" xml:space="preserve">
+    <value>查找含义</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2" xml:space="preserve">
+    <value>点击“新建含义”，输入“代码”（以大写字母开头的 2–32 个字符：A–Z、0–9、_）、全部 7 种语言的“显示名称”，以及可选的“说明”，然后点击“保存”。</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2Title" xml:space="preserve">
+    <value>添加含义</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3" xml:space="preserve">
+    <value>在行上点击“编辑”；已使用的含义保留其代码，名称更改只影响新的签名。没有管理含义的权限时，行上显示“查看”。</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3Title" xml:space="preserve">
+    <value>编辑含义</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4" xml:space="preserve">
+    <value>使用“状态”列中的开关，并用“启用”或“停用”确认。已停用的含义不能用于新的签名，被策略行使用的含义不能停用。</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4Title" xml:space="preserve">
+    <value>启用或停用</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Purpose" xml:space="preserve">
+    <value>在策略要求审批时，审核等待批准的新签名样本。批准后的样本成为其所有者唯一的有效样本，每项决定都会永久保存在决定历史中。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Audience" xml:space="preserve">
+    <value>电子签名管理员</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Immediate" xml:space="preserve">
+    <value>批准和拒绝样本</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1" xml:space="preserve">
+    <value>点击“筛选”，选择“添加方式”，然后点击“应用”。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1Title" xml:space="preserve">
+    <value>缩小队列</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2" xml:space="preserve">
+    <value>点击“图像”列中的图片，可放大查看其所有者、日期和摘要。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2Title" xml:space="preserve">
+    <value>检查图像</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3" xml:space="preserve">
+    <value>点击“批准”并用“批准”确认；该用户之前的有效样本将变为停用。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3Title" xml:space="preserve">
+    <value>批准</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4" xml:space="preserve">
+    <value>点击“拒绝”，填写至少 10 个字符的“理由”，再用“拒绝”确认；用户会在“我的签名”页面看到理由。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4Title" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5" xml:space="preserve">
+    <value>对于您自己的样本，该行显示“由其他管理员审批”而不是按钮。每项决定都显示在下方的“决定历史”中。</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
+    <value>自己的样本交给他人</value>
+  </data>
 </root>

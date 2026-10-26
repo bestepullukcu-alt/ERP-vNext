@@ -1,0 +1,17 @@
+# mvp6-stage-r-row5-returns-01 — sealed 2026-10-12T18:29:31Z
+# lane: slot 4, port 34994, rs rsq202s4   ReturnConcurrencyTests 16/16; Tests.Returns namespace 86/86
+05a42a804ef7c83f0ee99397c7aa03a3df255f888da865d7135a8aff1273cd83  REPORT.md
+f8791299ef6de92510b3d36695473155e7de403d20900f413eb187e9c55f0ef1  MOVED.tsv
+66af58a77348c81e8f3008dbb426feaa821470fbeec934096890794902803531  evidence/returns-concurrency-suite.log
+b915124e1af9eab0247c84dab99e6993596471b172ebc1f272894bafbed3b9d0  evidence/returns-namespace-regression.log
+5b554021a4c4a9edfe2a97d6ecf0c2d52a36e275c9dc09e1c98f7ca5cdad6dff  evidence/run-1.log
+6539680df6de44aede82b3e95c575f6747c9c14e7e52f05860742904358f9569  evidence/run-10.log
+072c27313ad46a0207c5822f9e0416ca6766e9e67398adb9e89a82420bf218cb  evidence/run-2.log
+d42ae9bac32887c6f6852374d9ad355004270e303bcb55b793a1b8ad91423631  evidence/run-3.log
+8cbbe797ef826fcb29937ee5949008373c1fc7a7656d7f7f83fb8c984a0453ea  evidence/run-4.log
+007346fedc678515844b7bad10eb41bfa5a4c3b6599af7c9e8b17204f9a56f86  evidence/run-5.log
+6bc01cb94d56f75c1f24796ff85a2f7bffb97e7419116e8bc7d6b5509815124f  evidence/run-6.log
+0531b83978a553902ee466c9111fe0d7fd2f01afdb1ef7b271af66677bb93439  evidence/run-7.log
+c00bc05e840a108240d4089fad54ef43a6084e116da75e76354474c8ff44dde5  evidence/run-8.log
+455bfb78c285867ac44fa762375fedeccf2651fef712d64b163b21808aaeaf6b  evidence/run-9.log
+93b95dd396363684cf55ec3349947bf4c471cb240b88012e9b4b614eba126237  evidence/theory-run-1.log

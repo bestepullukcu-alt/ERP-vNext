@@ -2687,6 +2687,48 @@ allow-list.
   Staging/Production behavior remain unchanged. This amendment authorizes code/test alignment only; it grants no live
   Market publication, Mongo operation, staging, commit, push or merge authority.
 
+#### Authorized amendment — Market operational reference tenant from configuration (2026-10-15)
+
+Owner decision 2026-10-15 ("uygun"), BL-645, WP-PLT-MARKET-REFTENANT-01. It replaces the 2026-10-14 decision "A" (keep the
+`0000…0001` lock). Measured reason: `00000000-0000-0000-0000-000000000001` is the Platform system tenant
+(`SystemTenantRules.PlatformSystemTenantId`); the verified catalog must not be written into the same tenant, and the
+lock cannot be supplied by configuration in a live environment (K-INFRA-2).
+
+- The REFERENCE TENANT of the Market operational path comes from `BusinessReferenceData:Provider:ReferenceTenantId` —
+  the same source as the verified GSKU path. It is the resolved `BusinessReferenceDataProviderOptions.ReferenceTenantId`.
+- The Platform system tenant `00000000-0000-0000-0000-000000000001` can NOT be the reference tenant, and neither can the
+  GSKU `ConsumerTenantId`. An empty, malformed, system-tenant or consumer-tenant value is refused with exactly
+  `VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID`. That refusal, and the process-value match below, are made once,
+  in the eligibility; the operational audit adapter, preflight and event publisher only verify that facts, versions,
+  envelopes and audit proof belong to the resolved reference tenant.
+- The actor stays the canonical Platform Administrator `11111111-1111-1111-1111-111111111111` (`LockedActorId`); the actor
+  lock, actor type `PlatformAdministrator` and the 2026-09-24 audit semantics are unchanged.
+- Development only, default-disabled, and the exact process-environment provenance rule are unchanged: the process value
+  `BusinessReferenceData__Provider__ReferenceTenantId` must equal the configured value exactly (no fallback), like every
+  other operational value.
+- This amendment explicitly SUPERSEDES (a) the tenant clause of the 2026-09-24 amendment ("accepts exactly Platform Admin
+  Tenant `00000000-0000-0000-0000-000000000001`") and (b) the locked-contract bullet "The new owner is exactly Platform
+  Admin Tenant `00000000-0000-0000-0000-000000000001`". The process value `BusinessReferenceData__Provider__ReferenceTenantId`
+  in the locked-contract provenance bullet is no longer `00000000-0000-0000-0000-000000000001`; it is the configured
+  reference tenant (Development: `0b7d0048-0290-4000-8000-000000000001`). The historical owner, consumer tenant, tenant
+  assignment and non-`market` invariants remain read-only. The two superseded texts stay in place as history.
+- Allow-list widening — ONLY these paths, in addition to the existing Section 20 allow-list (no other path):
+  - `scripts/dev/run-verified-market-provisioning.ps1` (sets the process values from `appsettings.Development.json` for the
+    child process only, restores them afterwards; no secret);
+  - `services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json` — only
+    `BusinessReferenceData:VerifiedMarketOperationalProvisioning:ActorId` (the dev value becomes the canonical actor
+    `11111111-1111-1111-1111-111111111111`; the lock itself does not change);
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDevProvisioningConfigTests.cs`;
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedMarketOperationalModeIsolationTests.cs`;
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`;
+  - `services/Diten.Platform/src/Diten.Platform.API/Services/BusinessReferenceData/VerifiedMarketOperationalMode.cs` — only
+    the read-only `VerifiedGskuOperationalProvisioningOptions` registration the eligibility needs for the consumer-tenant
+    rule (the GSKU path and its behaviour do not change);
+  - `services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/PlatformApiStartupExecutionModeTests.cs`;
+  - `docs/guides/operations/verified-reference-data-provisioning.md`.
+- Normal Platform host startup, general BRD publishing, the GSKU path and Staging/Production behaviour are unchanged. This
+  amendment grants no live Market publication, Mongo operation, staging, commit, push or merge authority.
+
 #### Acceptance and test gates
 
 - [ ] Normal no-argument Platform behavior is unchanged and the operational service collection is not constructed.
@@ -2811,3 +2853,99 @@ Auth real-Mongo grant evidence belongs to Section D. The universal GSKU resolver
 a test file named VerifiedResolveMongo is not counted as real-Mongo execution.
 Platform/Auth Release builds and MDM Release build passed. No credentials, configuration, grants, live requests,
 application data or services were changed. GSKU lifecycle integration and live acceptance remain separate gates.
+
+## 21. TRM-17 — Treasury consumable sets `payment-method` and `currency-minor-units` (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9, D28
+(MOD-0126 O-13) and D31/4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`). It does **not** change
+this pack's frontmatter/status and authorizes no change until it passes CT-APR-02 and CT-APR-01 and the reference-data owner
+accepts it. Queue: `treasury-intake` TRM-17. The value lists below are a starting proposal; the owner of the values is
+the reference-data owner together with Finance.
+
+### 21.1 Why
+
+Treasury (MOD-0126, MOD-0119, MOD-0120, MOD-0124) needs (a) a governed list of payment methods (MOD-0126 `PaymentMethod`,
+D28 / O-13) and (b) the ISO 4217 minor units of each currency (amount precision; MOD-0126 O-11, MOD-0119 O-10, MOD-0124 O-8,
+shared). Today neither exists: the consumable allow-list `BusinessReferenceData:ConsumableSets`
+(`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@ec53ec2d3`) has no `payment-method` and no currency
+set with minor units; `GET /api/lookups/reference/currencies` returns codes and names from `CultureInfo` without minor units
+(MOD-0126 pack, Dependencies).
+
+### 21.2 Current code truth (@ec53ec2d3; read, not run)
+
+- Read endpoint: `GET /api/lookups/reference-data/consumable-sets/{setCode}/published-values`, `[LoginOnly]`, caller tenant
+  from the token, set read by its own scope (`ConsumableReferenceDataController.cs:25, 43-60`).
+- Item shape: `Code`, `Label`, `Description`, `IsActive`, `SortOrder`, `Attributes` (`BusinessReferenceDataStewardshipModels.cs:159-165`).
+- Seed catalogs are JSON files under `services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/`
+  (`catalog_version`, `module`, `sets[]` with `set_code`, `scope_type`, `status`, `values[]` of `value_code`, `display_name`,
+  `is_active`, `sort_order`, optional `attributes`), loaded through `BusinessReferenceDataCatalogLoadOptions`
+  (`BusinessReferenceData:CatalogLoad`, `CatalogPath`, `RequiredSetCodes`; e.g. `appsettings.Development.json:212`).
+- `attributes` per value is already used by existing seeds (e.g. `mdm-competitor-reference.json:57`).
+
+### 21.3 Change (configuration + seed data only — no code)
+
+1. New seed catalog `Seed/business-reference-data/treasury-reference.json` (`module`: `FinanceTreasury`) with two global sets:
+   - **`payment-method`** (`scope_type: global`): proposed values `BANK_TRANSFER`, `SEPA_CREDIT_TRANSFER`, `SWIFT_TRANSFER`,
+     `DOMESTIC_TRANSFER`, `CHEQUE`, `CASH`; `display_name` in English; labels for the UI come from resx keys
+     `PaymentMethod.{CODE}` in the consumer (7 tenant languages) — the set carries codes, not translations.
+   - **`currency-minor-units`** (`scope_type: global`): one value per ISO 4217 alpha-3 code in use, `attributes.minorUnits`
+     as a string `"0"`…`"4"` (e.g. `CHF`/`EUR`/`USD`/`TRY` `"2"`, `JPY` `"0"`, `KWD`/`BHD` `"3"`); source ISO 4217 list,
+     `catalog_version` names the ISO edition.
+2. Add both set codes to `BusinessReferenceData:ConsumableSets` and to the catalog load `RequiredSetCodes`.
+3. No endpoint, schema, index, permission or route change; existing sets untouched.
+
+Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/treasury-reference.json` (new),
+`services/Diten.Platform/src/Diten.Platform.API/appsettings*.json` (the two list entries and one catalog-load block),
+`services/Diten.Platform/tests/**`.
+
+### 21.4 Consumer rules (Treasury packs; not this pack)
+
+- `payment-method`: published + `IsActive` code → valid; unknown / inactive → 422 `PAYMENT_METHOD_NOT_ALLOWED`; set
+  unreadable → 503 (MOD-0126 AC-41).
+- `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
+  `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
+  error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
+
+### 21.5 Acceptance criteria (defined; not implemented or run)
+
+- AC-R1 — Both sets are returned by the published-values endpoint for any signed-in tenant user, with `IsActive` values only
+  counted as valid; a set code not in the allow-list still answers as today (unchanged behaviour).
+- AC-R2 — `currency-minor-units`: every value has `attributes.minorUnits` ∈ {"0","1","2","3","4"}; no duplicate codes
+  (case-insensitive); the codes are a superset of the codes returned by `GET /api/lookups/reference/currencies`.
+  Sabotage: removing `minorUnits` from one value turns the test red.
+- AC-R3 — Missing set behaviour (gap 20/1, measured @e66746606): the loader does **not** stop — a required set that is not
+  published is reported as `published_set_not_found` in the lookup verification (`BusinessReferenceDataCatalogLoaderService.cs:506-513`)
+  and the worker logs it and continues (`BusinessReferenceDataCatalogLoadWorker.cs:86-92`; only blocked conflicts throw, and
+  that is caught and logged, `:105, 112-114`). The platform start-up is therefore **not** the stopping point. The stopping
+  point is the consumer write: with a set missing, the published-values read fails and every Treasury command that needs
+  it answers 503 (`PAYMENT_METHOD_SOURCE_UNAVAILABLE`, `…_CURRENCY_PRECISION_UNAVAILABLE`) and writes nothing (MOD-0126
+  AC-41(c) and the precision ACs of the four packs). This AC checks, **on a clean database where neither set was ever published** (precondition): (a) with
+  `treasury-reference.json` absent, the verification log contains `published_set_not_found` for both codes; (b) the
+  published-values endpoint answers not-found for them; (c) a stubbed Treasury consumer then returns 503 and no write.
+  **Separate case (CT-APR-02 F-2):** if the sets were published earlier and the seed file is later removed, the loader reads
+  the published versions from the database (`RequiredSetCodes` verification queries DB state), so the sets **stay
+  published** and consumers keep working on the last published version; removing a set needs an explicit unpublish /
+  deactivation through the reference-data stewardship flow, not the deletion of the seed file. AC-R3(d) asserts this:
+  published once, file removed, restart → published-values still returns the last version. **Scope stays seed + config only**; a readiness
+  health-check entry that would make the missing sets visible as `Unhealthy` is a code change and is listed as a follow-up
+  (§21.6), not part of this amendment.
+- AC-R4 — Existing consumable-set consumers are unaffected (their tests pass unchanged).
+
+### 21.6 Delivery and out of scope
+
+- Delivered by the reference-data owner (platform-shared-services) before MOD-0126 DL-1 Create; Treasury does not write
+  Platform files (XMC-001; D9 consent restated in that WP).
+- Out of scope: a tenant-editable payment-method list, FX rates, currency names / symbols beyond `display_name`; a readiness
+  health check for the two sets (`BusinessReferenceDataProviderReadinessHealthCheck`, code change — follow-up for the
+  reference-data owner).
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | TRM-17 Treasury consumable sets (yalnız §21) | Change (configuration + seed data only — no code), Acceptance criteria (defined; not implemented or run), Delivery and out of scope |
+
+Bu tablo **yalnız §21 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25). Pack'in mevcut adlandırılmış `ready-for-dev`
+adımı ("BRD Provider Internal Foundation") bu dilime yetki **vermez**; bu dilim ayrı onay ister ve eski kapsamı genişletmez.
+Bitiş: AC-R1, AC-R2, AC-R3 (a–d), AC-R4. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır
+(onaylayanın kararı); teslim reference-data sahibinin WP'siyle (§21.6).

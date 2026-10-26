@@ -57,7 +57,7 @@ Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Kök: `serv
 
 - **Servisler (17):** `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.PlanningService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`
 - **Ortak kütüphaneler (3):** `Diten.Building.Blocks`, `Diten.Platform.Common`, `Diten.Platform.Contracts`
-- **Domain'ler (11):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
+- **Domain'ler (12):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `finance-treasury`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
 
 Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 
@@ -80,9 +80,10 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 | Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
 | Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
 | Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
+| FinanceTreasury Service (planlı — kod yok) | 5071 | `services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar: 5062 (`PpmService` ve `DataKnowledgeService` — çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`); canonical tahsis EA kararını bekliyor. Port atamadan önce o notları oku.
+> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5011 (`PvgService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
@@ -252,7 +253,7 @@ Yeni modül: `/prepare-module-pack` → pack `approved` / `ready-for-dev` → da
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm` | `pvg` | `crm`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm` | `pvg` | `crm` | `fin`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
@@ -267,6 +268,7 @@ feature/{domain-kısa}/{module-id}-{slug}
 - `feature/ppm/mod-0117-work-records-core`
 - `feature/pvg/mod-0230-case-intake-triage`
 - `feature/crm/mod-0149-customer-360-account-hierarchy`
+- `feature/fin/mod-0126-payments-approvals` (`fin` = finance-treasury)
 
 
 Yedekleme branch'leri için ayrı kural: [.antigravity/rules/git-backup-policy.md](.antigravity/rules/git-backup-policy.md)
@@ -307,9 +309,9 @@ Katman SOP'undan (v2.1) sapmalar ve kimlik formatları: `.antigravity/AGENTS-REF
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. **Never invent a MOD / PSS / NEW identity:** Blueprint lookup → existing MOD or FU when available → otherwise `CAND-CAP-####` only (governance identity, never a runtime literal). Before creating or reserving any ID run the fail-closed preflight — a non-zero exit BLOCKS pack creation:
+The Blueprint (`Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. **Never invent a MOD / PSS / NEW identity:** Blueprint lookup → existing MOD or FU when available → otherwise a Module Change Request in the Master (Master-first rule, Blueprint 8.7; no new `CAND-CAP`). Before creating or reserving any ID run the fail-closed preflight — a non-zero exit BLOCKS pack creation:
 
 `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
-The six gate steps, repo-only reservation and the CAND-CAP lifecycle: `.antigravity/AGENTS-REFERENCE.md` (DCP-002). Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
+The six gate steps and the Master-first rule: `.antigravity/AGENTS-REFERENCE.md` (DCP-002). Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.

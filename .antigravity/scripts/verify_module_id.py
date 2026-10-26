@@ -2,7 +2,7 @@
 """verify_module_id.py — Module ID Canonicalization Gate (DCP-002).
 
 The Blueprint workbook
-    docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx :: Blueprint_Data
+    docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx :: Blueprint_Data
 is the canonical authority for MOD IDs and canonical capability names.
 
 Modes
@@ -26,7 +26,7 @@ import re
 import sys
 import unicodedata
 
-BLUEPRINT = "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx"
+BLUEPRINT = "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx"
 REGISTRY = "execution/registries/module-id-registry.md"
 PACK_GLOB = "execution/domains/*/module-packs/*.md"
 
@@ -215,7 +215,9 @@ def check_id(root, mid, name, parent, repo_only):
         if not inferred_parent and norm(name) and norm(bp[base]) and norm(name) != norm(bp[base]):
             fails.append(f"canonical-name mismatch: Blueprint {base} = '{bp[base]}' (!= '{name}')")
     else:
-        if repo_only:
+        if repo_only and mid not in FROZEN_REPO_ONLY:
+            fails.append(f"repo-only {mid} is not a reservation that existed before the Master-first rule — {MASTER_FIRST}")
+        elif repo_only:
             evidence = [r for r in reg if r["id"] == mid
                         and ("reserv" in r["notes"].lower() or "reserv" in r["status"].lower())]
             if not evidence:
@@ -251,6 +253,20 @@ def runtime_hits(root, token):
     return []
 
 
+# Master-first rule (CEO 2026-10-16, Blueprint 8.7 Module_Change_Requests): the CAND-CAP namespace and the repo-only
+# reservations are closed. These are the identities the registry held on main 37530d190 (2026-10-19); nothing outside
+# them passes --candidate or --repo-only, whatever a registry row says. A missing capability is a Module Change Request
+# in the Master, never a new row here.
+FROZEN_CANDIDATES = frozenset({
+    "CAND-CAP-0001", "CAND-CAP-0002", "CAND-CAP-0002-FU01", "CAND-CAP-0002-FU02", "CAND-CAP-0002-FU03",
+    "CAND-CAP-0002-FU04", "CAND-CAP-0002-FU05", "CAND-CAP-0003", "CAND-CAP-0003-FU01", "CAND-CAP-0003-FU02",
+    "CAND-CAP-0004", "CAND-CAP-0005", "CAND-CAP-0006", "CAND-CAP-0007", "CAND-CAP-0007-FU01", "CAND-CAP-0008",
+    "CAND-CAP-0009", "CAND-CAP-0010", "CAND-CAP-0011"})
+FROZEN_REPO_ONLY = frozenset({"NEW-MOD-0041"})
+MASTER_FIRST = ("no new identity outside the Master (Master-first rule): raise a Module Change Request in the "
+                "Blueprint's Module_Change_Requests sheet and wait for its MOD-ID or mapping")
+
+
 def check_candidate(root, cid, name):
     """Fail-closed gate for a temporary CAND-CAP governance identity (DCP-002)."""
     fails = []
@@ -261,7 +277,14 @@ def check_candidate(root, cid, name):
     reg = load_registry(root)
     rows = [r for r in reg if r["id"] == cid]
     if not rows:
-        fails.append(f"{cid} has no registry row")
+        # Master-first rule (CEO 2026-10-16, Blueprint 8.7 Module_Change_Requests): no new candidate identity
+        fails.append(f"{cid} has no registry row — {MASTER_FIRST}")
+    if cid not in FROZEN_CANDIDATES:
+        fails.append(f"{cid} is not one of the CAND-CAP identities that existed before the Master-first rule — {MASTER_FIRST}")
+    for r in rows:
+        if is_deprecated(r):
+            fails.append(f"{cid} is a deprecated alias of {r['replacement'] or '?'} — use the canonical id "
+                         f"(Blueprint 8.7 Main_Reconciliation_v8_2)")
     active = [r for r in rows if "candidate" in r["type"].lower()]
     if len(active) > 1:
         fails.append(f"duplicate candidate id {cid}")
@@ -316,7 +339,7 @@ def check_all(root):
     candidates = [f"{r['id']} ({r['name']})" for r in reg if "candidate" in r["type"].lower()]
     compat = sorted({r["id"] for r in reg if "runtime compat" in r["notes"].lower()})
     active_legacy = sorted({r["id"] for r in active if re.match(r"^(PSS|NEW)-\d", r["id"])})
-    print(f"\n[active candidate (CAND-CAP) records: {len(candidates)} — temporary, pending EA MOD-xxxx]")
+    print(f"\n[active candidate (CAND-CAP) records: {len(candidates)} — historical, closed namespace (Master-first); FU allocation under a canonical parent open]")
     for c in sorted(candidates):
         print(f"   - {c}")
     print(f"\n[runtime compatibility literals (governance-aliased, do NOT rename in code): {len(compat)}]")
@@ -736,10 +759,20 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
     return out
 
 
+# CT-START-04 (6): a discovery report is committed as evidence in a public repository; the pack künye values it quotes
+# (owner …) may hold a personal e-mail address. Every address is masked before the report is hashed.
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
+EMAIL_MASK = "<e-posta gizlendi>"
+
+
+def mask_personal(line):
+    return EMAIL.sub(EMAIL_MASK, line)
+
+
 def discover(root, name, resource=None, sor=None):
     """Return (report lines without the hash line, exit code). CT-FIX-06: the 'ÖZET' lines stand under the header."""
     lines, code = _discover(root, name, resource, sor)
-    lines = [_one_line(l) for l in lines]                   # CT-FIX-09: one logical line = one physical line
+    lines = [mask_personal(_one_line(l)) for l in lines]    # CT-FIX-09: one logical line = one physical line
     total = len(lines) + 1                                  # with the hash line
     lines = [l.replace("{n}", str(total)) if l.startswith("ÖZET sınır: ") else l for l in lines]
     return lines, code

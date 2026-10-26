@@ -56,7 +56,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     {
         // measured 2026-10-02 — see docs/records/audits/2026-10/
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): IssueServiceIdentityTokenCommand (İ5) — WP-GP-AUDIT-TRAIL-01 D3.
-        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 8),
+        // K2Debt 8 → 11: CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md) — the three MOD-0022 e-sign re-authentication
+        // commands on the existing best-effort recorder until the write-once pattern (FU-0022-AUD-02).
+        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 11),
         // Main sync (2026-10-11): the Crm ledger shrank to 169 on main (the CT line never touched it).
         ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
@@ -65,10 +67,15 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         // measured 2026-10-06 — new service (MOD-0193, MVP-3): every command audited through bom-surum-gecmisi, no debt.
         ["Diten.ManufacturingService"] = new(Debt: 0, Exceptions: 0),
+        // measured 2026-10-14 — WP-MVP1-AUDIT1 (BL-501): all 59 write commands (58 + R4 after the MVP-1 merge) audited through inventory-merkezi-iletim
+        // (shared forwarder, written in the command's own transaction), no debt, no exception.
+        ["Diten.InventoryService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
         // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
         // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
-        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
+        // CT kararı 2026-10-15 (MOD-0290-FU05 T-3): CreateGlobalProductDraftCommand borçtan çıktı (10 → 9) — oluşturma niyeti
+        // GlobalProductDraftCreated ürünle aynı ekleme yazımında; belirteçe IGlobalProductRepository.CreateDraftAsync girdi.
+        ["Diten.MdmService"] = new(Debt: 9, Exceptions: 2, Indirect: 19),
         // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
         // 3 dolaylı işleyicisi (Indirect: 3) aşağıdaki CT kararıyla kalır.
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
@@ -77,6 +84,10 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
+        ["Diten.SafetyStockService"] = new(Debt: 0, Exceptions: 0),
+        // measured 2026-10-21 — WP-A1 (MVP-6, E-2 / BL-501): all 17 write commands audited through supplychain-merkezi-iletim
+        // (shared forwarder, written in the command's own transaction), no debt, no exception. CT decision: CT-DECISIONS.md.
+        ["Diten.SupplyChainService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
         ["Diten.TalentEcosystemService"] = new(Debt: 106, Exceptions: 0),
     };
@@ -97,7 +108,10 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             "IProductLegalEntityScopePolicyRepository.CreateAsync"
             + "/IProductLegalEntityScopePolicyRepository.ReplaceAsync"
             + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
+            + "/IGlobalProductRepository.CreateDraftAsync"
             + "/IGlobalProductRepository.UpdateDraftAsync"
+            // CT kararı 2026-10-15 (MOD-0290-FU05 T-2): onaylı ürün marka değişikliği, niyet aynı koşullu yazımda.
+            + "/IGlobalProductRepository.ChangeBrandAsync"
             + "/IGlobalProductRepository.RetireIdentityAsync"
             + "/IGlobalProductRepository.SubmitIdentityAsync"
             + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"
@@ -114,6 +128,14 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // CT acceptance 2026-10-06 (MVP-3 lane, MOD-0193 pack §21): the BOM version history is written in the SAME Mongo
         // transaction as the BOM (K2 fail-closed), has no update/delete member, and is read on the BOM's own screen.
         ("Diten.ManufacturingService", "bom-surum-gecmisi", "c", "IBomHistoryJournal.CommitAsync"),
+        // Owner decision 2026-10-14 (A) / CT work package WP-MVP1-AUDIT1: BL-501, the shared forwarder of rule §5 K4
+        // (Diten.BuildingBlocks.CentralAudit), path b. Inventory is the first service on it: "komutlar yol b ile denetleniyor".
+        ("Diten.InventoryService", "inventory-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // CT decision 2026-10-21 (WP-A1, MVP-6; owner decision E-2 2026-10-21): SupplyChain on the same shared forwarder, path b.
+        ("Diten.SupplyChainService", "supplychain-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md): MOD-0022 e-signature commands write their central audit
+        // intent INSIDE the business transaction; accepted as a trail, path a markers are NOT added (double record, §4.4).
+        ("Diten.Platform", "esign-islem-ici-denetim", "a", "ESignatureAuditIntent.EnqueueAsync"),
         // Ali/CT 2026-10-14: temporary local Mongo traces, not the BL-501 central audit.
         ("Diten.PlanningService", "batch-inceleme-izi", "c", "IHistoryImportBatchStore.TryDecideAsync"),
         ("Diten.PlanningService", "satir-kabul-izi", "c", "IAcceptedDemandHistoryStore.AcceptAsync"),
@@ -125,6 +147,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
         ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
         ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
+        ("Diten.PlanningService", "mrp-lead-time-izi", "c", "ILeadTimeMutationStore.ExecuteAsync"),
+        ("Diten.SafetyStockService", "safety-stock-policy-izi", "c", "IPolicyMutationStore.ExecuteAsync"),
+        ("Diten.SafetyStockService", "safety-stock-manuel-miktar-izi", "c", "IManualQuantityStore.ExecuteAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
@@ -402,9 +427,17 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
                 }
 
                 // The REGISTRATION must be in the service itself: a behavior that exists in Building.Blocks but that
-                // this service never adds to its pipeline writes nothing for this service.
-                var registered = behaviors.Any(behavior => service.Types.Any(other =>
-                    other.Name != behavior.Name && CSharpSourceScanner.ContainsIdentifier(other.Body, behavior.Name)));
+                // this service never adds to its pipeline writes nothing for this service. K4: the service names the
+                // behavior, or calls the Building.Blocks member that registers it (AddCentralAudit) — in any of its files,
+                // top-level Program.cs included.
+                // (The whole-source search is only for a Building.Blocks behavior: a service's own behavior is named in its
+                // own declaration, which would make it look registered.)
+                var registered = behaviors.Any(behavior =>
+                    service.Types.Any(other => other.Name != behavior.Name && CSharpSourceScanner.ContainsIdentifier(other.Body, behavior.Name))
+                    || (behavior.RelativePath.StartsWith($"services/{AuditTrailMeasurement.BuildingBlocks}/", StringComparison.Ordinal)
+                        && (CSharpSourceScanner.ContainsIdentifier(service.SourceText, behavior.Name)
+                            || AuditTrailMeasurement.RegistrationEntryPoints(behavior, pool)
+                                .Any(entry => CSharpSourceScanner.ContainsIdentifier(service.SourceText, entry)))));
 
                 if (!registered)
                 {
@@ -761,6 +794,81 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
 
         Assert.True(AuditTrailMeasurement.CallsWriteMember(pool[1].Body, "IAuditRecorder.RecordAsync", pool));
         Assert.False(AuditTrailMeasurement.CallsWriteMember(pool[2].Body, "IAuditRecorder.RecordAsync", pool));
+    }
+
+    // ── K4: ONE forwarder (BL-501) ───────────────────────────────────────────────────────────────────────────────
+    // Rule §5 K4: the forwarder to Platform's central log lives in Diten.Building.Blocks once; copying it into a service is
+    // forbidden. MDM's and Auth's copies predate it — named here one by one (FU-BL501-MIGRATE moves them); a stale entry is
+    // red too, so the list only shrinks.
+
+    private static readonly HashSet<string> ForwarderCopiesBeforeBl501 = new(StringComparer.Ordinal)
+    {
+        "Diten.AuthService: type IPlatformAuditForwarder",
+        "Diten.AuthService: type PlatformAuditForwarder",
+        "Diten.AuthService: services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/PlatformAuditForwarder.cs",
+        "Diten.MdmService: type AuditForwardRequest",
+        "Diten.MdmService: type AuditForwardingBehavior",
+        "Diten.MdmService: type IPlatformAuditForwarder",
+        "Diten.MdmService: type PlatformAuditForwarder",
+        "Diten.MdmService: services/Diten.MdmService/src/Diten.MdmService.Api/Audit/PlatformAuditForwarder.cs"
+    };
+
+    /// <summary>
+    /// Outside Diten.Building.Blocks (and Platform, which RECEIVES the append), a type named <c>*AuditForward*</c> or a file
+    /// that calls <c>/api/internal/audit/append</c> is a forwarder copy. Comments do not count; string literals do (the
+    /// route is a literal).
+    /// </summary>
+    [Fact]
+    public void CentralAuditForwarder_LivesOnlyInBuildingBlocks_OlderCopiesAreNamedOneByOne()
+    {
+        var root = AuditTrailMeasurement.FindRepoRoot();
+        var found = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var service in AuditTrailMeasurement.All.Where(s => s.Service is not (AuditTrailMeasurement.BuildingBlocks or "Diten.Platform")))
+        {
+            found.UnionWith(service.Types
+                .Where(t => t.Name.Contains("AuditForward", StringComparison.Ordinal) || PlatformAuditForwarderLike(t.Name))
+                .Select(t => $"{service.Service}: type {t.Name}"));
+
+            var src = Path.Combine(root, "services", service.Service, "src");
+            found.UnionWith(Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories)
+                .Where(path => !path.Replace('\\', '/').Contains("/obj/", StringComparison.Ordinal))
+                .Where(path => WithoutComments(File.ReadAllText(path)).Contains("/api/internal/audit/append", StringComparison.Ordinal))
+                .Select(path => $"{service.Service}: {Path.GetRelativePath(root, path).Replace('\\', '/')}"));
+        }
+
+        var failures = found.Except(ForwarderCopiesBeforeBl501)
+            .Select(x => $"{x} — merkezi denetim İLETİCİSİ KOPYASI. Ortak ileticiyi kullan: Diten.BuildingBlocks.CentralAudit (AddCentralAudit + ICentralAuditDeclaration), kural §5 K4")
+            .Concat(ForwarderCopiesBeforeBl501.Except(found)
+                .Select(x => $"{x} — bu istisna artık bir koda karşılık gelmiyor (taşındı mı?): listeden çıkar"))
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.True(failures.Count == 0, Report("Building.Blocks dışında merkezi denetim ileticisi", failures));
+
+        static bool PlatformAuditForwarderLike(string name) => name.EndsWith("PlatformAuditForwarder", StringComparison.Ordinal);
+
+        static string WithoutComments(string source) =>
+            System.Text.RegularExpressions.Regex.Replace(source, @"/\*.*?\*/|//[^\n]*", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
+    }
+
+    /// <summary>K4 registration, by example: the shared behavior counts as wired only where the service calls its registration.</summary>
+    [Fact]
+    public void SharedBehavior_IsRegistered_OnlyWhereTheServiceCallsItsBuildingBlocksEntryPoint()
+    {
+        var behavior = new SourceType(
+            "services/Diten.Building.Blocks/src/X/CentralAuditBehavior.cs", "class", "CentralAuditBehavior", "X", false,
+            ["IPipelineBehavior<TRequest, TResponse>"], "if (request is not ICentralAuditDeclaration declaration) { }");
+        var extensions = new SourceType(
+            "services/Diten.Building.Blocks/src/X/CentralAuditServiceCollectionExtensions.cs", "class", "CentralAuditServiceCollectionExtensions", "X", false, [],
+            "public static IServiceCollection AddCentralAudit<TScope>(this IServiceCollection services) { services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CentralAuditBehavior<,>)); return services; }");
+        var pool = new List<SourceType> { behavior, extensions };
+
+        var entries = AuditTrailMeasurement.RegistrationEntryPoints(behavior, pool);
+
+        Assert.Equal(["AddCentralAudit"], entries);
+        Assert.True(CSharpSourceScanner.ContainsIdentifier("builder.Services.AddCentralAudit<InventoryCentralAuditScope>(builder.Configuration);", entries[0]));
+        Assert.False(CSharpSourceScanner.ContainsIdentifier("builder.Services.AddApplication();", entries[0]));
     }
 
     private static string Report(string headline, List<string> failures) =>

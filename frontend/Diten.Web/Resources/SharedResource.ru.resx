@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>Платформа</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Рабочий центр</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Справочник номенклатуры</value>
   </data>
@@ -828,6 +825,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Справочник персон</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Справочники</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Задачи</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Реестр сотрудников (базовый HR)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>Клиенты CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>Контакты CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>Компоновка контента CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>Аналитика по врачам CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>Знания CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>Запланированные визиты CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>Территории CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>Планирование визитов CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>Отчёты о визитах CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Согласования</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Категории</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Табели учёта времени</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Недели</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Шаблоны чек-листов</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Шаблоны</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Область контента</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Набор контента</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Критерии допуска</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Политика частоты визитов</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Продукты</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Клиент</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Кампания</value></data>
@@ -1131,6 +1149,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Рейсы</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Управление претензиями</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Претензии по перевозке</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>Процесс S&amp;OP и согласования</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>Планы S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Планирование мощностей</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Планы мощностей</value></data>
   <data name="Activate" xml:space="preserve"><value>Активировать</value></data>
   <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>Эл. почта или имя пользователя</value></data>
@@ -1155,6 +1177,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Политика подписи</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Значения подписи</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Одобрение образцов</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Сроки годности / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Готовность к отзыву</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Панель FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Истекающие сроки</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Просроченный запас</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Порядок FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Входящие исключения</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Карточка исключения</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Правила сроков годности и настройки</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Пакет доказательств</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Готовность к отзыву</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Прослеживание для отзыва</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Случаи отзыва</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Случай отзыва</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Планировщик учений по отзыву</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Пакет доказательств отзыва</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
 </root>

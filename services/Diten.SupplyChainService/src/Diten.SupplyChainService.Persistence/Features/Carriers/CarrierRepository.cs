@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Diten.SupplyChainService.Domain.Features.Carriers;
@@ -82,7 +83,7 @@ public sealed class CarrierRepository(IMongoDatabase db, ICarrierCommitProbe pro
                         { "CarrierId", carrier.Id.ToString() }, { "Operation", operation }, { "Version", carrier.Version }, { "FromStatus", oldStatus is null ? BsonNull.Value : oldStatus },
                         { "ToStatus", carrier.Status.ToString() }, { "ReasonCode", reason is null ? BsonNull.Value : reason }, { "ActorId", scope.ActorId.ToString() },
                         { "CorrelationId", correlation.ToString() }, { "OccurredAt", DateTime.UtcNow } }, cancellationToken: ct);
-                    await probe.AtAsync("audit", ct); await probe.AtAsync("beforeCommit", ct);
+                    await probe.AtAsync("audit", ct); await CentralAuditTransaction.EnlistAsync(session, carrier.Id, ct); await probe.AtAsync("beforeCommit", ct);
                     commitAttempted = true;
                     for (var commit = 0; ; commit++)
                     {

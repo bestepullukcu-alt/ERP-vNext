@@ -33,7 +33,7 @@ Bunlardan biri yoksa MDM 503 döner:
 | `…:ExpectedCatalogVersion` / `ExpectedCatalogFingerprint` | `1.0.0` / `e95ef856…422a5d`. Kod sabitiyle **aynı** olmalı; değiştirilmez. | hayır |
 | `…:ConsumerTenantId` | tüketici kiracı. `ReferenceTenantId` ile **aynı olamaz** (MOD-0048-FU01). | hayır |
 | `…:ActorId` / `IdempotencyNamespace` | işletim kimliği / tekrar oynatma ad alanı | hayır |
-| `BusinessReferenceData:VerifiedMarketOperationalProvisioning:*` | `Enabled`, `CatalogPath` (`mod-0290-market-reference.json`), `UNSD-M49-2026-08-08` / `b94c4528…360039`, `ActorId`, `IdempotencyNamespace` (`[A-Za-z0-9._-]`, ≤ 128) | hayır |
+| `BusinessReferenceData:VerifiedMarketOperationalProvisioning:*` | `Enabled`, `CatalogPath` (`mod-0290-market-reference.json`), `UNSD-M49-2026-08-08` / `b94c4528…360039`, `ActorId` (kanonik platform yöneticisi `11111111-…`), `IdempotencyNamespace` (`[A-Za-z0-9._-]`, ≤ 128). Referans kiracı `Provider:ReferenceTenantId`'den gelir; sistem kiracısı ve tüketici olamaz. | hayır |
 | `VerifiedGskuResolverCredential:Mdm:Identifier` | MDM'in kimlik adı | hayır |
 | `VerifiedGskuResolverCredential:Mdm:ConsumerService` / `AllowedAudience` | `DITENMDMSERVICE` / `VERIFIED_GSKU_RESOLVE` (kod sabiti) | hayır |
 | `VerifiedGskuResolverCredential:Mdm:ActiveSecret` | paylaşılan sır | **EVET** |
@@ -73,6 +73,9 @@ Adımlar:
 4. **Pazar (bir kez).** `powershell -ExecutionPolicy Bypass -File scripts/dev/run-verified-market-provisioning.ps1`.
    - Platform'un tek seferlik komutudur (`--run-verified-market-provisioning`).
    - Fleet'in derlemesini kullanır; port açmaz.
+   - Komut yalnız **süreç kendisi** değerleri verdiğinde çalışır: betik `appsettings.Development.json`'dan okuduğu sekiz değeri (`…VerifiedMarketOperationalProvisioning__Enabled=true`, `CatalogLoad__Enabled=false`, `Provider__ReferenceTenantId` ve pazar bölümünün beş değeri) yalnız çalıştırdığı alt süreç için ortam değişkeni olarak koyar, bitince geri alır. Değerler yapılandırmayla birebir aynı olmalı.
+   - Referans kiracı `BusinessReferenceData:Provider:ReferenceTenantId`'dir (GSKU ile aynı kaynak; yerelde `0b7d0048-…`). Platform sistem kiracısı (`0000…0001`) ve GSKU tüketici kiracısı (`97c5`) olamaz: `VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID` (MOD-0048-FU01, 2026-10-15).
+   - İşi yapan aktör kanonik platform yöneticisidir (`11111111-…`); `ActorId` başka bir değer olursa komut reddeder.
 5. **Doğrula:**
    - Platform `GET http://localhost:5057/health/ready` → 200;
    - MDM `GET api/gskus/create-options` → 200 + UOM listesi;

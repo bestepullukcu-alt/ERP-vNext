@@ -61,7 +61,6 @@ const KNOWN_RAW = [
   "DocumentManagement/TemplateMasters/index.js",
   "Platform/Administrators/index.js",
   "Platform/AuditRetention/index.js",
-  "WorkCenter/task-detail.js",
   "WorkCenterNext/app.js",
   "diten-unauthorized.js",
   "pages/demand-ideas/demandIdeaCapture.js",

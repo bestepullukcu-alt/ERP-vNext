@@ -61,15 +61,18 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain('deferRender: true');
     });
 
-    it("keeps the browser create payload to the single user field", () => {
+    // Owner / CT correction (MOD-0290-FU05 pack): form_field_count 1 → 2 — the panel sends exactly the name and the brand.
+    it("keeps the browser create payload to exactly the name and the brand id", () => {
         const view = read("Views/MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml");
         const source = indexScript();
 
+        expect([...view.matchAll(/\bname="([^"]+)"/g)].map((match) => match[1])).toEqual(["GlobalProductName", "BrandId"]);
         expect(view.match(/name="GlobalProductName"/g)).toHaveLength(1);
+        expect(view.match(/name="BrandId"/g)).toHaveLength(1);
         expect(view).toContain('<div class="diten-field">');
         expect(view).toContain('<i class="bx bx-text diten-field-icon" aria-hidden="true"></i>');
-        expect(view).not.toMatch(/name="(?:TenantId|CanonicalCode|ReservationId|IdempotencyKey)"/);
-        expect(source).not.toMatch(/body\.(?:set|append)\(['\"](?:TenantId|CanonicalCode|ReservationId|IdempotencyKey)/);
+        expect(view).not.toMatch(/name="(?:TenantId|CanonicalCode|ReservationId|IdempotencyKey|BrandCode|BrandName)"/);
+        expect(source).not.toMatch(/body\.(?:set|append)\(['\"](?:TenantId|CanonicalCode|ReservationId|IdempotencyKey|BrandCode|BrandName)/);
     });
 
     // WP-MDM-GP-LIST-01: the inline filter (select2 single chip, Apply / Reset, the saved view's filter) is the list
@@ -83,7 +86,10 @@ describe("MOD-0290 Global Product Register", () => {
         expect(view).not.toContain('id="filterLifecycleStatus" multiple');
         expect(view).toContain('id="btnFilterApply"');
         expect(view).toContain('id="btnFilterReset"');
-        expect(source).toContain("fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]");
+        // MOD-0290-FU05: + the brand filter (one brand; the options are the linkable brands).
+        expect(source).toContain("{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }");
+        expect(source).toContain("{ id: 'filterBrand', key: 'brandId', kind: 'single' }");
+        expect(source).toContain("loadOptions: loadBrandFilterOptions");
         expect(source).not.toMatch(/\$filter\.select2\(|appliedFilters|mountInlineFilter/);
         expect(styles).not.toContain('.dt-inline-filter-single--is-empty .select2-selection__rendered');
         expect(styles).not.toContain('.dt-inline-filter-single--has-value .select2-selection__rendered');
@@ -123,7 +129,7 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain("/api/global-products/code-reservations");
         expect(source).toContain("/api/global-products/drafts");
         expect(source).toContain("Guid.NewGuid().ToString(\"N\")");
-        expect(source).toContain('HasOnlyFormFieldsAsync("GlobalProductName")');
+        expect(source).toContain('HasOnlyFormFieldsAsync("GlobalProductName", "BrandId")');
         expect(source).toContain('model.GlobalProductName.EnumerateRunes().Count() > 200');
         expect(read("Views/MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml"))
             .toContain('maxlength="400"');
@@ -147,7 +153,7 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain("const raw = detail?.availableActions ?? detail?.AvailableActions");
         expect(source).toContain("actions[0] !== 'DETAILS'");
         expect(source).toContain("new Set(actions).size !== actions.length");
-        expect(source).toContain("actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']");
+        expect(source).toContain("actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'CHANGE_BRAND']");
         expect(source).not.toMatch(/lifecycleCode\(row\.|data-can-submit|data-can-retire/);
         expect(source).not.toMatch(/approve-identity|reject-identity/);
         expect(source).not.toMatch(/delete-record|\/bulk|\/retire['"`]/);
@@ -206,7 +212,7 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain('mediaType?.EndsWith("+json"');
         expect(lifecycleProxy).toContain('JsonSerializer.Deserialize<LifecycleGatewayEnvelope>');
         expect(source).toContain('IsValidLifecycleEnvelope(envelope, responseStatus, mutationKind, aggregateId)');
-        ['Submit', 'Update', 'Withdraw', 'Correction', 'Retirement']
+        ['Submit', 'Update', 'Withdraw', 'Correction', 'Retirement', 'ChangeBrand']
             .forEach((kind) => expect(source).toContain(`LifecycleMutationKind.${kind}`));
         expect(source).toContain('HasMatchingGuid(data, "globalProductId", aggregateId)');
         expect(source).toContain('HasMatchingGuid(data, "id", aggregateId)');
@@ -392,9 +398,12 @@ describe("Global Product register on the list component (executed)", () => {
         expect(options.dataMode).toBe("server");
         expect(options.ajax.url).toBe("/MasterDataManagement/GlobalProducts/api");
         expect(options.savedView).toMatchObject({
-            moduleKey: "MasterDataManagement", pageKey: "GlobalProducts", saveViewColumnIndexes: [1, 2, 3], baseOrder: [[2, "asc"]]
+            moduleKey: "MasterDataManagement", pageKey: "GlobalProducts", saveViewColumnIndexes: [1, 2, 3, 4], baseOrder: [[2, "asc"]]
         });
-        expect(options.filters.fields).toEqual([{ id: "filterLifecycleStatus", key: "lifecycleStatus", kind: "single" }]);
+        expect(options.filters.fields).toEqual([
+            { id: "filterLifecycleStatus", key: "lifecycleStatus", kind: "single" },
+            { id: "filterBrand", key: "brandId", kind: "single" }
+        ]);
         expect(options.quickView.offcanvasId).toBe("offcanvasDetailsPreview");
         expect(options.export).toBeUndefined();
         const sortable = options.config.columns
@@ -403,7 +412,7 @@ describe("Global Product register on the list component (executed)", () => {
             .map((column) => column.data);
         expect(sortable).toEqual(["canonicalCode", "globalProductName", "lifecycleStatus"]);
         expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
-            ["editDraft", "quickView", "requestCorrection", "requestRetirement", "submitIdentity", "withdrawApproval"]);
+            ["changeBrand", "editDraft", "quickView", "requestCorrection", "requestRetirement", "submitIdentity", "withdrawApproval"]);
         expect(options.config.pageLength).toBe(10);
     });
 
@@ -469,5 +478,212 @@ describe("Global Product register on the list component (executed)", () => {
 
         expect(h.realRequests).toEqual([request]);
         expect(h.aborted).toHaveLength(1);
+    });
+});
+
+// MOD-0290-FU05 slice 3: the brand on the register — picker, edit preselection, "No brand", CHANGE_BRAND, server order.
+describe("Global Product brand (MOD-0290-FU05)", () => {
+    const source = fs.readFileSync(path.join(__dirname, "../wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.js"), "utf8");
+    const brandId = "33333333-3333-3333-3333-333333333333";
+    const productId = "11111111-1111-1111-1111-111111111111";
+    const json = (status, body) => ({
+        ok: status >= 200 && status < 300, status, statusText: "OK",
+        headers: { get: () => "application/json" },
+        json: async () => body, text: async () => JSON.stringify(body)
+    });
+
+    function harness(answer) {
+        document.body.innerHTML =
+            '<div id="offcanvasCreateEdit"><h5 id="offcanvasCreateEditLabel"></h5>' +
+            '<form id="formGlobalProduct"><input type="hidden" name="__RequestVerificationToken" value="t" />' +
+            '<div id="globalProductNameField"><input id="globalProductName" name="GlobalProductName" required /></div>' +
+            '<select id="globalProductBrand" name="BrandId"><option value="">BrandNone</option></select></form>' +
+            '<button id="btnSaveGlobalProduct"></button></div>' +
+            '<div class="dropdown"><button class="js-global-product-actions-toggle" data-id="' + productId + '"></button>' +
+            '<div class="js-global-product-actions-menu"></div></div>' +
+            '<div id="offcanvasDetailsPreview"><span id="oc-title"></span><span id="oc-subtitle"></span><span id="oc-id"></span>' +
+            '<span id="oc-code"></span><span id="oc-name"></span><span id="oc-brand"></span><span id="oc-status"></span>' +
+            '<span id="oc-version"></span><span id="oc-created-at"></span><span id="oc-updated-at"></span></div>';
+        const calls = [];
+        const fetch = vi.fn(async (url, init) => { calls.push({ url, init }); return answer(url, init); });
+        const fakeWindow = {
+            L10n: new Proxy({}, { get: (_, key) => String(key) }),
+            showToast: vi.fn(),
+            showConfirm: vi.fn((message, callback) => callback()),
+            location: { origin: "https://register.test" }
+        };
+        const bootstrap = {
+            Dropdown: { getOrCreateInstance: () => ({ show() { } }) },
+            Offcanvas: { getOrCreateInstance: () => ({ show() { }, hide() { } }) }
+        };
+        const exposed = source.replace("init: async () => {", `test: {
+            brandPickerResults, readAvailableActions, loadActionMenu, renderDetail, openEdit, openCreate, submitEditor,
+            buildListOptions, loadBrandFilterOptions
+        }, init: async () => {`);
+        const api = vm.runInNewContext(exposed + "\nGlobalProductsList.test;", {
+            window: fakeWindow, document, fetch, URL, URLSearchParams, AbortController, Promise, FormData,
+            Option: document.defaultView.Option, bootstrap, setTimeout, clearTimeout, console
+        });
+        return { api, calls, window: fakeWindow };
+    }
+    const detail = (actions, extra = {}) => ({
+        data: {
+            id: productId, canonicalCode: "GP-1", globalProductName: "Product", lifecycleStatus: 3, version: 4,
+            availableActions: actions, brandId: null, brandCode: null, brandName: null, ...extra
+        }
+    });
+
+    it("draws in the brand picker only the brand-options answer, after one 'No brand' choice", () => {
+        const { api } = harness(() => json(200, {}));
+        const first = api.brandPickerResults(
+            { data: { items: [{ id: brandId, brandCode: "BRD", brandName: "Brand One" }], totalCount: 30 } }, 1);
+        const second = api.brandPickerResults({ data: { items: [], totalCount: 30 } }, 2);
+
+        expect(JSON.parse(JSON.stringify(first))).toEqual({
+            results: [{ id: "", text: "BrandNone" }, { id: brandId, text: "BRD · Brand One" }], pagination: { more: true }
+        });
+        expect(JSON.parse(JSON.stringify(second))).toEqual({ results: [], pagination: { more: false } });
+    });
+
+    it("preselects the product's current brand when a draft is edited", async () => {
+        const { api } = harness(() => json(200, detail(["DETAILS", "EDIT"], {
+            lifecycleStatus: 1, brandId, brandCode: "BRD", brandName: "Brand One"
+        })));
+
+        await api.openEdit(productId, null);
+
+        const select = document.getElementById("globalProductBrand");
+        expect(select.value).toBe(brandId);
+        expect(select.selectedOptions[0].textContent).toBe("BRD · Brand One");
+    });
+
+    it("sends an empty BrandId (no brand) when 'No brand' is chosen on create", async () => {
+        const { api, calls } = harness(() => json(201, { data: { canonicalCode: "GP-9" } }));
+        api.openCreate();
+        document.getElementById("globalProductName").value = "New product";
+
+        api.submitEditor();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        const post = calls.find((call) => call.init?.method === "POST");
+        expect(post.url).toBe("/MasterDataManagement/GlobalProducts/api");
+        expect(post.init.body.getAll("BrandId")).toEqual([""]);
+        expect(post.init.body.get("GlobalProductName")).toBe("New product");
+    });
+
+    it("draws CHANGE_BRAND only when the server lists it", async () => {
+        const offered = harness(() => json(200, detail(["DETAILS", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "CHANGE_BRAND"])));
+        await offered.api.loadActionMenu(document.querySelector(".js-global-product-actions-toggle"));
+        expect(document.querySelector('.js-global-product-actions-menu [data-action="CHANGE_BRAND"]')).not.toBeNull();
+
+        const withheld = harness(() => json(200, detail(["DETAILS", "REQUEST_CORRECTION", "REQUEST_RETIREMENT"])));
+        await withheld.api.loadActionMenu(document.querySelector(".js-global-product-actions-toggle"));
+        expect(document.querySelector('.js-global-product-actions-menu [data-action="CHANGE_BRAND"]')).toBeNull();
+        expect(document.querySelectorAll(".js-global-product-actions-menu [data-action]")).toHaveLength(3);
+    });
+
+    it("reads the server's order with CHANGE_BRAND last and refuses it out of order", () => {
+        const { api } = harness(() => json(200, {}));
+        const order = ["DETAILS", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "CHANGE_BRAND"];
+
+        expect(api.readAvailableActions({ availableActions: order })).toEqual(order);
+        expect(() => api.readAvailableActions({ availableActions: ["DETAILS", "CHANGE_BRAND", "REQUEST_RETIREMENT"] }))
+            .toThrow("ErrorGateway");
+    });
+
+    it("loads every page of brand options into the filter, never a capped first page", async () => {
+        const option = (n) => ({ id: `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`, brandCode: `B${n}`, brandName: `Brand ${n}` });
+        const { api, calls } = harness((url) => {
+            const page = Number(new URL(url, "https://register.test").searchParams.get("pageNumber"));
+            const items = page === 1 ? Array.from({ length: 100 }, (_, i) => option(i + 1)) : [option(101), option(102)];
+            return json(200, { data: { items, totalCount: 102 } });
+        });
+        document.body.insertAdjacentHTML("beforeend", '<div class="filter-chip"><select id="filterBrand"></select></div>');
+        let filled = null;
+
+        await api.loadBrandFilterOptions({ fillSelect: (select, items) => { filled = items; } });
+
+        expect(calls.map((call) => call.url)).toEqual([
+            "/MasterDataManagement/GlobalProducts/api/brand-options?pageNumber=1&pageSize=100",
+            "/MasterDataManagement/GlobalProducts/api/brand-options?pageNumber=2&pageSize=100"
+        ]);
+        expect(filled).toHaveLength(102);
+        expect(filled[101]).toEqual({ value: option(102).id, text: "B102 · Brand 102" });
+    });
+
+    // CT fix round v1.1 (critical): the filter's page loop is bounded and fails closed — never an endless loop.
+    it("hides the brand filter after one request when the count is not a number", async () => {
+        const { api, calls } = harness(() => json(200, { data: { items: [{ id: "a", brandCode: "A", brandName: "A" }], totalCount: "abc" } }));
+        document.body.insertAdjacentHTML("beforeend", '<div class="filter-chip"><select id="filterBrand"></select></div>');
+        let filled = false;
+
+        await api.loadBrandFilterOptions({ fillSelect: () => { filled = true; } });
+
+        expect(calls).toHaveLength(1);
+        expect(filled).toBe(false);
+        expect(document.getElementById("filterBrand").closest(".filter-chip").classList.contains("d-none")).toBe(true);
+    });
+
+    it("stops a server that repeats the same full page and shows no duplicated list", async () => {
+        const fullPage = Array.from({ length: 100 }, (_, i) => ({ id: `b${i}`, brandCode: `B${i}`, brandName: `Brand ${i}` }));
+        const { api, calls } = harness(() => json(200, { data: { items: fullPage, totalCount: 250 } }));
+        document.body.insertAdjacentHTML("beforeend", '<div class="filter-chip"><select id="filterBrand"></select></div>');
+        let filled = false;
+
+        await api.loadBrandFilterOptions({ fillSelect: () => { filled = true; } });
+
+        expect(calls).toHaveLength(3);
+        expect(filled).toBe(false);
+        expect(document.getElementById("filterBrand").closest(".filter-chip").classList.contains("d-none")).toBe(true);
+    });
+
+    it("never asks for more than fifty pages and does not cut the list silently past the cap", async () => {
+        const fullPage = Array.from({ length: 100 }, (_, i) => ({ id: `b${i}`, brandCode: `B${i}`, brandName: `Brand ${i}` }));
+        const { api, calls } = harness(() => json(200, { data: { items: fullPage, totalCount: 1000000 } }));
+        document.body.insertAdjacentHTML("beforeend", '<div class="filter-chip"><select id="filterBrand"></select></div>');
+        let filled = false;
+
+        await api.loadBrandFilterOptions({ fillSelect: () => { filled = true; } });
+
+        expect(calls.length).toBeLessThanOrEqual(50);
+        expect(filled).toBe(false);
+        expect(document.getElementById("filterBrand").closest(".filter-chip").classList.contains("d-none")).toBe(true);
+    });
+
+    it("serves every key index.js reads and requires the brand keys", () => {
+        const view = fs.readFileSync(path.join(__dirname, "../Views/MasterDataManagement/GlobalProducts/_IndexL10n.cshtml"), "utf8");
+        const l10n = fs.readFileSync(path.join(__dirname, "../wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.l10n.js"), "utf8");
+        const served = new Set([...view.matchAll(/^\s*([A-Z][A-Za-z]+)\s*=/gm)].map((match) => match[1]));
+        const used = [...new Set([...source.matchAll(/\bL\.([A-Z][A-Za-z]+)/g)].map((match) => match[1]))];
+
+        expect(used.filter((key) => !served.has(key))).toEqual([]);
+        ["Brand", "BrandNone", "BrandUnchanged", "ChangeBrand", "ChangeBrandConfirmation", "ChangeBrandSuccess"]
+            .forEach((key) => {
+                expect(served.has(key)).toBe(true);
+                expect(l10n).toContain(`'${key}'`);
+            });
+    });
+
+    it("hides the brand filter when the reader may not read the brand options", async () => {
+        const { api } = harness(() => json(403, { errors: ["ErrorForbidden"] }));
+        document.body.insertAdjacentHTML("beforeend", '<div class="filter-chip"><select id="filterBrand"></select></div>');
+        let filled = false;
+
+        await api.loadBrandFilterOptions({ fillSelect: () => { filled = true; } });
+
+        expect(filled).toBe(false);
+        expect(document.getElementById("filterBrand").closest(".filter-chip").classList.contains("d-none")).toBe(true);
+    });
+
+    it("shows the brand as 'CODE · Name' in the quick view and in the list, and '—' without one", () => {
+        const { api } = harness(() => json(200, {}));
+        api.renderDetail(detail(["DETAILS"], { brandId, brandCode: "BRD", brandName: "Brand One" }).data, productId);
+        expect(document.getElementById("oc-brand").textContent).toBe("BRD · Brand One");
+        api.renderDetail(detail(["DETAILS"]).data, productId);
+        expect(document.getElementById("oc-brand").textContent).toBe("—");
+
+        const brandColumn = api.buildListOptions().config.columnDefs.find((def) => def.targets === 4);
+        expect(brandColumn.orderable).toBe(false);
+        expect(brandColumn.render(null, "display", { brandId, brandCode: "B<1>", brandName: "N" })).toBe("B&lt;1&gt; · N");
     });
 });

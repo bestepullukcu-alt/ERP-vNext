@@ -1,0 +1,6 @@
+# sce_* collections after the flow, lane DB diten_supplychain_stage_r
+  sce_shipments: 8
+  sce_shipment_receipts: 8
+  sce_shipment_history: 8
+  sce_shipment_audit: 8
+  sce_shipment_outbox: 8

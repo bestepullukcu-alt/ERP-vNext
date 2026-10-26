@@ -28,6 +28,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// through the retry and the window close end to end. Both subjects are database-global (platform-default templates,
 /// a cross-tenant sweep), so the harness's fixed-name isolated database is used, emptied before each test.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class EmailSliceTwoStageCMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

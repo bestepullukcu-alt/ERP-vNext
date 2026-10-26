@@ -90,4 +90,9 @@
   <data name="ListSeparator" xml:space="preserve">
     <value>, </value>
   </data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>The approval setup for this action is incomplete. Please inform your administrator.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>The request did not reach the approval service. Send the same request again.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>The approval is being changed right now. Try again in a moment.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can approve the record you submitted. Ask your administrator to adjust the approvers; you can submit it again after that.</value></data>
 </root>

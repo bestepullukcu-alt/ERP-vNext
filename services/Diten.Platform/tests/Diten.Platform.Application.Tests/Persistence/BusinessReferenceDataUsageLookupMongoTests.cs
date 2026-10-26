@@ -9,6 +9,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 // GetUsageRegistrationsAsync sorts UpdatedAt then CreatedAt — the same two-DateTimeOffset-key shape that
 // broke the MOD-0023 gate lookup. These tests run it against a REAL MongoDB to establish whether it is
 // broken too, rather than inferring it from the code shape.
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
 {
     private const string SetCode = "COUNTRY";
