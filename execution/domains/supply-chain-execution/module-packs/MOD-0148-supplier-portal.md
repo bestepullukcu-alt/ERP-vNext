@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft; v1 scope revision 2026-10-22 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-03 binding pack and build, DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility, service identity gate and RCS-001 added 2026-10-26 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-03 binding pack and build, DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0148-supplier-portal
 started: 2026-09-15
@@ -39,19 +39,17 @@ form_field_count: 0
 |---|---|---|
 | Operations | `getSupplierPortalStatus`, `createOwnPortalSubmission`, `submitOwnPortalSubmission`, own `GET /portal/submissions[/{id}]` | internal review command (`UNDER_REVIEW`/`ACCEPTED`/`REJECTED`) — contract successor |
 | Actor (DC-03, approved 2026-10-21) | `supplier_user` from the DC-03 binding (Beste, separate Auth/Platform pack): separate portal subdomain, mandatory two-step verification, one account per email per tenant, Gateway allow-list `supplier_user` → `/api/supplier-performance/portal/*` + own session endpoints; `supplierId` resolved from the binding, never the request | — |
-| Supplier (DC-02) | tenant-wide master id (MOD-0140 1.3.0); which supplier–LE statuses may submit follows the **DC-02 D2 decision (open**, joint with the MOD-0140 owner); the `accessStatus` mapping (`ACTIVE` / `SUSPENDED` / `PENDING`) is written when D2 is decided | — |
+| Supplier (DC-02) | tenant-wide supplier (MOD-0140 1.3.0); `accessStatus` from the **DC-02 D2** mapping below; the eligibility read uses a service identity (below) | — |
 | Exposure | **internal only** — not on the internet until `TrustedProxies`, Gateway rate limit (MOD-0032) and a shared limiter store exist (DC-03) | public portal |
-| Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen create declares neither 400 nor 413 — a
-documented exception, see "Undeclared statuses" below); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
+| Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen create declares neither 400 nor 413 — a documented exception, see "Undeclared statuses" below); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
 | MOD-0147 link | none (portal-source resolution belongs to MOD-0147's risk part, after TPRM; AC-25 is a later slice) | with MOD-0147 risk |
-| Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `getSupplierPortalStatus`, the own list or create →
-403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (declared there); on own get and submit, which declare no 403, → 404 (no record is
-visible to an unmapped caller); a `supplier_user` outside `/portal/*` is refused by the Gateway allow-list. Whether the portal re-checks the two-step-verification claim or trusts Auth is decided with the DC-03 pack | `.review` |
+| Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `getSupplierPortalStatus`, the own list or create → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (declared there); on own get and submit, which declare no 403, → 404 (no record is visible to an unmapped caller); a `supplier_user` outside `/portal/*` is refused by the Gateway allow-list. Whether the portal re-checks the two-step-verification claim or trusts Auth is decided with the DC-03 pack | `.review` |
 | Audit (§21) | path b, `supplychain-merkezi-iletim` — **valid from the moment PR #198 is on `main`**; the actor recorded is the `supplier_user` (issuer, subject, mapped supplier id) | review command |
 | UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
 
 **Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack;
-DC-02 (MOD-0140 1.3.0 on `main`, Cihan) and the D2 decision; PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
+DC-02 (MOD-0140 1.3.0 frozen on `main`, Cihan) and the **service identity for the eligibility read** (MOD-0140 1.4.0 DL-7
+with BL-652 Option 2 — Auth owner); PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
 permission/composition single writer (§14); and the replay receipt (§0.1, needs DC-03's issuer/subject).
 
 **Open-draft cap (Natig, 2026-10-22, revised after review round 2):** the cap counts **only `DRAFT` records** — at most
@@ -65,24 +63,62 @@ secondary index; it is created by a separate step in the same transaction — an
 (`$setOnInsert`) and never filters on the count — and only then is the conditional increment run, **without upsert**. No
 matched document → 422 `PORTAL_DRAFT_LIMIT`, never an insert attempt.
 
-**Contention (closes review round 4 F-1):** the counter is one hot document per supplier + LE, so **both create and submit**
-run inside the MongoDB driver's `WithTransaction` callback API, never a hand-written retry loop: any error labelled
-`TransientTransactionError` (write conflict, the duplicate-key race on the first upsert) re-runs the whole callback with the
-driver's backoff, and `UnknownTransactionCommitResult` retries **only the commit**, so a committed draft is never created
-twice. The retry budget is the driver's time limit (120 s), not an attempt count, so ordinary contention among concurrent
-creates or a create racing a submit always reaches a business answer (201 / 422 for create; 200 / 404 / 422 for submit) —
-never a misleading 409 (`VersionConflict` is `If-Match` only) and never 500. A full cap is always 422. Only an exhausted
-time limit or a lost database is an infrastructure failure (500, logged with the correlation id). Tests: T-0148-V1-CAP-01
+**Contention (round 4 F-1, corrected after round 5 F-1):** the counter is one hot document per supplier + LE, so **both
+create and submit** run inside the MongoDB driver's `WithTransaction` callback API (`MongoDB.Driver` 2.27.0, the service's
+pinned version). What that API does, measured in 2.27.0 `TransactionExecutor`: an error labelled `TransientTransactionError`
+(e.g. a write conflict) re-runs the whole callback **immediately, without backoff**; `UnknownTransactionCommitResult`
+retries **only the commit**, so a committed draft is never created twice; the overall limit is 120 s. Two additions close
+the gaps: (1) a **duplicate-key error (E11000) is not labelled transient**, so the counter upsert catches it and the
+callback is re-run by a bounded outer loop (at most 3 runs) — the deterministic `_id` means the second run finds the
+document; (2) every create and submit runs under a `CancellationToken` that expires **below the Gateway's request
+timeout**, and a short random delay (10–50 ms) precedes each re-run of the callback. Ordinary contention (concurrent creates
+at the cap, a create racing a submit) therefore ends in a business answer (201 / 422 for create; 200 / 404 / 422 for submit)
+— never a misleading 409 (`VersionConflict` is `If-Match` only). A full cap is always 422. A request whose deadline expires
+answers 503 with the correlation id (declared only for status — see "Undeclared statuses"); a commit may still have happened
+in that case, which the replay receipt (§0.1, BLOKE on DC-03) will make safe to retry; until then the client sees the
+draft in its own list. Tests: T-0148-V1-CAP-01
 (201st draft → 422; submit frees a place; two concurrent creates at 199 → one 201/one 422; **counter at 200 → create → 422,
 not 500**; two concurrent first creates for a new supplier + LE → both 201, one counter document with `openDrafts = 2`;
 **a create concurrent with a submit → both succeed, counter consistent**; **five concurrent creates below the cap → all 201,
-no 500**; an injected `UnknownTransactionCommitResult` → exactly one draft).
+no 500**; an injected `UnknownTransactionCommitResult` → exactly one draft; **an injected E11000 on the first counter upsert →
+201, not 500**; an expired deadline → 503, never a hanging request).
 
-**Undeclared statuses (closes review round 4 F-2):** the frozen `createOwnPortalSubmission` declares only 201, 200, 403 and
-422 and no default response. v1 still returns framework-level statuses that are **not on the frozen wire**: 400 (body over
-1 MiB, malformed JSON, scope override AC-12), 401 (no or invalid token) and 500 (infrastructure failure). These are
-deliberate, documented exceptions, not contract behaviour; a generated client may not know them. The contract successor
-declares them for create (400 and 413, 401, 5xx), together with the paged own list.
+**Undeclared statuses (round 4 F-2, extended to all five operations after round 5 F-3):** the frozen wire declares no
+default response, and v1 returns some statuses it does not declare. They are deliberate, documented exceptions, not
+contract behaviour; a generated client may not know them. The contract successor declares them, together with the paged own
+list.
+
+| Operation | Declared (frozen v1) | Also returned in v1 (undeclared) |
+|---|---|---|
+| `getSupplierPortalStatus` | 200, 403, 503 | 401, 500 |
+| `listOwnPortalSubmissions` | 200, 403 | 401, 503 (SUPPLIER-BASE / eligibility read unavailable, deadline), 500 |
+| `createOwnPortalSubmission` | 201, 200, 403, 422 | 400 (body over 1 MiB, malformed JSON, scope override AC-12), 401, 503 (eligibility read unavailable, deadline), 500 |
+| `getOwnPortalSubmission` | 200, 404 | 401, 503 (eligibility read unavailable), 500 |
+| `submitOwnPortalSubmission` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 503 (eligibility read unavailable, deadline), 500 |
+
+**Supplier eligibility — DC-02 D2 (Natig 2026-10-23 / 2026-10-26; Cihan's MOD-0140 Revision 2,
+`origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`).** On every portal operation the service
+reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) for the binding's mapped supplier and the request's
+validated LE, and maps the answer:
+
+| `SupplierEligibility` answer | `accessStatus` | status | own list | create | own get | submit |
+|---|---|---|---|---|---|---|
+| `relationshipExists = false` | — | 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` | 403 (same) | 403 (same) | 404 | 404 |
+| `status = Active`, `onboardingStatus = Approved`, `purchasingEnabled = true` | `ACTIVE` | 200 | 200 | allowed | 200 | allowed |
+| `status = Active`, but onboarding not `Approved` or `purchasingEnabled` not `true` | `PENDING` | 200 | 200 | 422 `BUSINESS_RULE_VIOLATION`, `details.code = PORTAL_SUPPLIER_PENDING` | 200 | 422 (same) |
+| `status` = OnHold, Blocked or Inactive | `SUSPENDED` | 200 with `openSubmissionCount = 0` and no `lastSubmissionAt` (AC-05) | 403 (AC-05) | 403 (AC-05) | 404 (no 403 declared) | 404 (no 403 declared) |
+
+`eligibleForTransactions` is not used (it ignores onboarding and purchasing; MOD-0140 §20 S-1). Procurement unreachable /
+5xx / timeout → 503 (AC-04; undeclared on some operations, table above). **Service identity:** the `supplier_user` token
+cannot make this read — the Gateway allow-list keeps that actor inside `/portal/*`, and a supplier must never hold a
+Procurement permission. The read therefore uses the SupplyChain service's own identity with
+`procurement.suppliers.eligibility.read`, which comes with MOD-0140 1.4.0 (DL-7) and BL-652 Option 2 (Auth owner) — a v1
+gate (above). Tests: T-0148-V1-ELIG-01 (each table row; Procurement 503 → 503 with no write; sabotage: forwarding the
+supplier's token instead of the service identity makes the test red).
+
+**Visible code (RCS-001, BL-565):** a portal submission is a new record type, but the shared record-code service (BL-565)
+does not exist yet. v1 shows **no visible code** — only the frozen contract's opaque `submissionId` — and never creates its
+own counter or format. When BL-565 exists, a later revision takes the visible code (`MG-…` form) from that service.
 
 **Own-list size (closes review round 3 F-1):** the frozen list has no paging and returns every record with its payload, and
 `SUBMITTED` records are not capped, so the response can grow without bound (each record up to 1 MiB). v1 accepts this only
@@ -107,7 +143,7 @@ tests (recorded with the commit).
 
 v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0148-V1-PAY-01 (any object accepted; 1 MiB + 1 →
 400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user: status/list/create → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED`, get/submit → 404; mapping of §0.0), T-0148-V1-EXP-01
-(release gate evidence, including the paged-list precondition), T-0148-V1-CAP-01 and T-0148-V1-LIST-01 (above).
+(release gate evidence, including the paged-list precondition), T-0148-V1-CAP-01, T-0148-V1-LIST-01 and T-0148-V1-ELIG-01 (above).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 

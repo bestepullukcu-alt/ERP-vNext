@@ -66,3 +66,11 @@ conditions), which needs a new CT-APR-02 round.
   and `purchasingEnabled`; `PENDING` = `Active` with onboarding not approved or purchasing disabled; `SUSPENDED` = OnHold /
   Blocked / Inactive; 404 → portal 403 / 404 and MOD-0147 422 as in the table above. D2 closes when Cihan's revised pack is
   approved; then the mapping goes into MOD-0147 / MOD-0148 §0.0.
+
+## Written into the packs (2026-10-26)
+
+MOD-0147 §0.0 and MOD-0148 §0.0 carry the mapping on Cihan's actual `SupplierEligibility` schema. Two changes against the
+table above, both because of the frozen wire and the Gateway: (1) MOD-0147 answers **404** (declared for create) instead of
+422 when there is no relationship; (2) the MOD-0148 eligibility read uses the **service identity** (MOD-0140 1.4.0 DL-7, BL-652
+Option 2), because a `supplier_user` token cannot leave `/portal/*` and a supplier must not hold a Procurement permission —
+a new v1 gate for MOD-0148. SUSPENDED follows AC-03/AC-05 (list and create 403; get and submit 404).

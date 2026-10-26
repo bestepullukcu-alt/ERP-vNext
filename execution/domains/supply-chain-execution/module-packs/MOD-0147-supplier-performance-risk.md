@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft; v1 scope revision 2026-10-22 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -40,13 +40,39 @@ form_field_count: 0
 | Objects | `SupplierEvaluation`, `EvaluationMetricResult`, `SupplierScorecard` | `SupplierRisk` |
 | Metric policy (DC-04) | pack-held revision `supplier-score-policy/1` = §0.4 set | Metric Registry (MOD-0004) when it exists |
 | Metric values | **entered by the evaluator** per metric (frozen v1 contract shape); server enforces codes, weights, ranges, 3-of-4 rule | **v1.1:** computed from Procurement facts (read contracts MOD-0141/0142/0143 + QC source; XMC-001); 5-receipt-line minimum applies from v1.1 |
-| Supplier (DC-02) | tenant-wide master id from MOD-0140 1.3.0, eligibility per DC-02 D2 (still a gate) | — |
+| Supplier (DC-02) | tenant-wide supplier from MOD-0140 1.3.0; eligibility per **DC-02 D2** (below) | — |
 | Permissions | `create` → `.evaluate`; `submit` → `.publish`; the four GETs → `.read`; one person may hold both `.evaluate` and `.publish` (no separation of duty in v1 — Natig, 2026-10-22) | `.risk-manage` |
 | Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
-**Still gates for v1 code:** DC-02 (MOD-0140 1.3.0 contract on `main`), PR #198 on `main` (audit path b), this revision's
-CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay receipt amendment (Phase 1.5, §0 table).
+**Still gates for v1 code:** DC-02 (MOD-0140 1.3.0 contract **frozen on `main`** — MOD-0140 Revision 2 DL-1), PR #198 on
+`main` (audit path b), this revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), and the replay
+receipt amendment (Phase 1.5, §0 table).
+
+**Supplier eligibility — DC-02 D2 (Natig 2026-10-23 Q1/Q2, 2026-10-26 Q3/Q4; Cihan's MOD-0140 Revision 2,
+`origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`):**
+
+- At create, the service reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) through the Gateway with the
+  caller's token and `X-Legal-Entity-Id` = the evaluation's validated LE (XMC-001, read only; no copy of Procurement data).
+  The evaluating role needs `procurement.suppliers.eligibility.read` in addition to `.evaluate`, granted through Roles →
+  Permissions (the BL-652 interim path).
+- `relationshipExists = false` (unknown supplier or no relationship with the caller's company) → **404** (declared for
+  create; the same answer as a supplier of another tenant or company, so nothing leaks), no draft.
+- Any relationship `status` (Active, OnHold, Blocked, Inactive) and any `onboardingStatus` **may be evaluated** (Q1, Q2): a
+  block stops new purchasing (`eligibleForTransactions`), not the record of past performance. `eligibleForTransactions` is
+  not used by MOD-0147.
+- The evaluation stores the **canonical** `supplierId` returned by the answer (a legacy code or uuid in the request is
+  resolved), so one supplier never gets two evaluation series.
+- Procurement unreachable / 5xx / timeout → 503 `DEPENDENCY_UNAVAILABLE` (declared). Procurement 403 (the caller lacks
+  `procurement.suppliers.eligibility.read`) → 403 `INVALID_REQUEST` — an authorization outcome, never hidden as 503; create
+  declares no 403, so this is the same framework-level exception as the endpoint's own `[HasPermission]` 403 and goes into
+  the contract successor's list. No draft in any case.
+- Publish (`submitSupplierEvaluation`) does not re-read eligibility: the evaluation records a past period.
+
+**Visible code (RCS-001, BL-565):** evaluations and scorecards are new record types, but the shared record-code service
+(BL-565) does not exist yet. v1 shows **no visible code** — only the frozen contract's opaque `evaluationId` /
+`scorecardId` — and never creates its own counter or format. When BL-565 exists, a later revision takes the visible code
+(`MG-…` form) from that service; the opaque ids stay the keys.
 
 **Rules that bind v1** (owner decisions 2026-10-21 and 2026-10-22; where §0.1 / §0.2 say ÖNERİLEN or BLOKE, this list wins
 for v1):
@@ -91,7 +117,10 @@ arithmetic only, not v1 inputs — under v1 they are 422):
 v1 test IDs (added with this revision; the r2 test map stays unchanged and these IDs go into the next test-map revision, r3,
 when the folder's hash manifests are renewed with it): T-0147-V1-SCORE-01 (the table above),
 T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fifth metric, weight 25),
-T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping).
+T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping),
+T-0147-V1-ELIG-01 (D2: no relationship → 404; OnHold, Blocked, Inactive and not-approved
+onboarding → 201; legacy code stored as the canonical `supplierId`; Procurement 403 → 403, 503 → 503, no draft; sabotage:
+skipping the read makes the no-relationship case red).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 
