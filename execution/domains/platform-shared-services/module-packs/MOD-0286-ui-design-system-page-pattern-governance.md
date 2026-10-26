@@ -20,8 +20,9 @@ slice: "P1 - Design System Specification as a short index (DL-1) + UI Compliance
 
 # MOD-0286 - UI Design System & Page Pattern Governance
 
-> **Ready for development, revision 09, 2026-10-26 - narrowed (owner decision "daralt", record
-> `docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md`).** P1 ends when the automatic DL-2 items run in CI for new
+> **Ready for development, revision 10, 2026-10-26 - narrowed in revision 09 (owner decision "daralt", record
+> `docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md`); revision 10 closes Codex review 09 (F-19…F-22, DL-3
+> design only; owner decision `kaydet-rev10`).** P1 ends when the automatic DL-2 items run in CI for new
 > and changed pages, old pages recorded as a baseline that does not stop CI (DL-3); P2 (governance console) is no longer in
 > this pack - it opens as a separate pack with the first real consumer (D-4). `status: ready-for-dev`; the approval itself
 > is the CT-APR-01 row in `execution/approvals/approvals.tsv` (`scripts/pack_approval.py check`), not this field. Both gates
@@ -78,7 +79,7 @@ accessibility-ready consistency across modules (Blueprint aim). In P1 it deliver
 - **DL-2 UI Compliance Checklist** - a fixed-id list (`UIC-<n>`) of what a page or pack must satisfy, with the command
   that measures each item (run contract below) or the words "elle: inceleme kaydı" where no tool exists.
 - **DL-3 UI compliance CI binding** - the automatic DL-2 items (their page-level counterparts of the RC rows) run in a
-  separate CI job on every page a pull request adds or changes; today's reds of old pages are a recorded baseline that
+  separate CI job on every page a pull request adds, changes or deletes a file of (renames included); today's reds of old pages are a recorded baseline that
   does not stop CI; only a red outside the baseline fails the job (Owned Objects, "DL-3 UI uyum CI bağlantısı").
 
 Why now - three measurements (2026-10-22, this worktree at `41901c477`):
@@ -307,36 +308,83 @@ UIC-15 for `page-help-and-keyboard.md:48-53`; UIC-24 for `frontend-js-standard.m
 ### DL-3 UI uyum CI bağlantısı
 
 Ownership (CT-Setup note, verbatim): **kod: PSS-UI CT; workflow dosyası (`.github/workflows/…`): CT-Setup + sahip onayı
-(CODEOWNERS).** `.github/CODEOWNERS:4` already routes `/.github/workflows/` to the code owners. DL-3 has three parts:
+(CODEOWNERS).** `.github/CODEOWNERS:4` already routes `/.github/workflows/` to the code owners. Acceptance consequence
+(rev 10, F-21): the DL-3 work package delivers the selector, the baseline and an interim local record; DL-3 and P1 are
+accepted only on the CI job's run record and artefact at the accepted commit (AC-17), so the workflow file is on P1's
+acceptance path - no workflow, no acceptance. DL-3 has three parts:
 
 1. **Changed-page selector `scripts/uic_changed_pages.py`** (Python standard library + git only, like the CT tools in
-   `scripts/run_phase1_gates.sh:142-150`). `--base <ref>` (in CI the pull request's base) -> `git diff --name-only
-   --diff-filter=ACMR <base>...HEAD`. Mapping: `frontend/Diten.Web/Views/{Area}/{Module}/**` and
-   `frontend/Diten.Web/wwwroot/assets/js/{Area}/{Module}/**` -> page `{Area}/{Module}` (a JS path is a page only when
-   `Views/{Area}/{Module}/` exists); `frontend/Diten.Web/Resources/Views/**/*.resx` -> its resx base name (CI-13);
-   `Resources/SharedResource.*.resx` -> CI-14; `Resources/PageHelpResource.*.resx` or
-   `frontend/Diten.Web/Services/Help/PageHelpCatalog.cs` -> CI-15. Every other changed file under the three trees is listed
-   as "paylaşılan dosya, sayfa kontrolü yok" (e.g. `Views/Shared/**`, top-level `wwwroot/assets/js/*.js` such as
-   `diten-datatable.js`). Output: per page, every check applied, one line each (`PASS` / `TABAN <fu>` / `YENİ KIRMIZI`),
-   then the baseline rows of that page that no longer reproduce (`kapandı - satır silinmeli`, reported, not failed), the
-   duration, and the exit: 0 = no red outside the baseline; 1 = at least one `YENİ KIRMIZI`; 2 = tool error (git diff,
-   unreadable or malformed baseline, verifier output it cannot classify - the same fail-closed reading as
-   `.antigravity/scripts/list_screen_touch_hook.py:62`). `--self-test` covers the mapping, the baseline reader and the three
-   exits on a throw-away repository.
-2. **Baseline `tests/ui-compliance-baseline.tsv`** - tab-separated, header `page` · `check` · `reason` · `fu` · `owner`, one row per today's red. Placed
+   `scripts/run_phase1_gates.sh:142-150`). `--base <ref>` (in CI the pull request's base) -> `git diff --name-status
+   --find-renames --diff-filter=ACDMRT <base>...HEAD` (rev 10, F-19: `D` deleted paths and both paths of an `R` rename
+   are read; `T` type change is read like `M`; a status letter outside this set is a tool error, exit 2). Every path the
+   diff names - added, changed, **deleted**, and for a rename **the old and the new path** - goes through the same mapping:
+   `frontend/Diten.Web/Views/{Area}/{Module}/**` and `frontend/Diten.Web/wwwroot/assets/js/{Area}/{Module}/**` -> page
+   `{Area}/{Module}` (a JS path is a page only when `Views/{Area}/{Module}/` has a file at HEAD or at the base);
+   `frontend/Diten.Web/Resources/Views/**/*.resx` -> its resx base name (CI-13); `Resources/SharedResource.*.resx` -> CI-14;
+   `Resources/PageHelpResource.*.resx` or `frontend/Diten.Web/Services/Help/PageHelpCatalog.cs` -> CI-15;
+   `frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json` or `.tr.json` -> CI-12 for the Platform pages whose
+   entries changed (F-22: both files are read at the base (`git show <base>:<path>`) and at HEAD; an entry is keyed by its
+   `url`; every `url` added, removed or whose object (`name`, `icon`, `group`, `keywords`) differs in either file selects the
+   page `Platform/{Module}` when the `url` is `/Platform/{Module}` or starts with `/Platform/{Module}/` and
+   `Views/Platform/{Module}/Index.cshtml` exists at HEAD or at the base; a deleted file selects every `url` of its base
+   version; a `url` that maps to no page is listed `kayıt sayfaya eşlenmedi`; a file that does not parse as JSON is exit 2 -
+   the registry contract `.antigravity/rules/platform-global-search-registry.md` §2 (two files, same route set) and §5
+   (workflow gate); the legacy `platform-search.json` is not read by CI-12 and is not a trigger). A page selected only
+   through a registry entry runs CI-12 only; a resx base selected only through its resx runs CI-13 only. A deleted path
+   selects its page because the checks treat a missing required file as red: `.antigravity/scripts/verify_datatable_page.py:953-968`
+   build `check_file_exists` (`:48-51`, `Missing: <path>`) for `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`,
+   `_IndexL10n.cshtml`, `index.js`, `index.l10n.js` and the Slim / Compact reference files, and `:970-975` stop the run when
+   one of the first eight is missing; CI-13 is red on a missing required language file. The list-page test (CI-3) and the
+   Slim / Compact inference read the page's files at HEAD **and** at the base: a page whose `_DataTable.cshtml` or
+   `_CreateEditOffcanvas.cshtml` / `_Form.cshtml` the pull request deletes still runs CI-3 with that reference and is red on
+   the missing file. **Page removed:** when no file is left under `Views/{Area}/{Module}/` at HEAD (`git ls-tree -r
+   --name-only HEAD -- <dir>` empty) the page is listed `sayfa kaldırıldı`, no check runs, and every baseline row of that
+   page is printed `kapandı - satır silinmeli`; likewise a resx base with no language file left is `kaynak kümesi
+   kaldırıldı`. A renamed page folder is the old page removed plus a new page checked as added: the baseline rows do not
+   follow the rename, the new page's reds are `YENİ KIRMIZI` until the owner re-adds them with a decision (AC-19). Every other
+   changed file under the trees is listed as "paylaşılan dosya, sayfa kontrolü yok" (e.g. `Views/Shared/**`, top-level
+   `wwwroot/assets/js/*.js` such as `diten-datatable.js`). Output: per page, every check instance, one line each
+   (`PASS` / `TABAN <fu>` / `YENİ KIRMIZI` / `ölçülmedi`, with page, `CI-<n>` and the instance of part 2), then the baseline
+   rows of that page that no longer reproduce (`kapandı - satır silinmeli`, reported, not failed), the duration, and the
+   exit: 0 = no red outside the baseline; 1 = at least one `YENİ KIRMIZI`; 2 = tool error (git diff, unknown status letter,
+   unreadable or malformed baseline, unparsable registry JSON, verifier output it cannot classify - the same fail-closed
+   reading as `.antigravity/scripts/list_screen_touch_hook.py:62`). When the verifier stopped at a missing core file
+   (`:970-975`), the page's other CI-3 baseline rows are printed `ölçülmedi - doğrulayıcı eksik dosyada durdu`, never
+   `kapandı`. `--self-test` covers the mapping (deleted path, both rename paths, registry entry added / removed / changed,
+   page removed), the fingerprint (part 2), the baseline reader and the three exits on a throw-away repository.
+2. **Baseline `tests/ui-compliance-baseline.tsv`** - tab-separated, header `page` · `check` · `instance` · `reason` · `fu` ·
+   `owner`, one row per today's red **instance**. Placed
    under `tests/` and not under `docs/records/`: the file changes (a row is deleted when its red closes), and `docs/records/**`
    is never edited after commit (`.antigravity/rules/docs-organization.md:82`, K4); `tests/known-failures.tsv` (CT-OPS-01,
-   `scripts/known_failures.py`) is the existing hand-kept known-red registry beside the tests. `check` = `CI-<n>` plus the
-   detail that makes the row unique (CI-3: the verifier's check name, the gap-line text between `N) ` and ` — ` - the text
-   after ` — ` carries an absolute path and is not part of the key; CI-2, CI-4…CI-10: the file name; CI-14: `<lang>
-   missing|equal <key>`). `page` = `{Area}/{Module}`; for CI-13 / CI-14 the resx base path (e.g. `Resources/SharedResource`),
-   for CI-15 `PageHelp/{CODE}`. Rows whose `check` starts `bilgi:` are known reds the job does not measure; they are printed for
-   their page, never matched, never failed: `DevEnablement/GoldenReferenceSlim · bilgi: RC-6 AddNewGoldenReferenceSlim ·
-   FU-12 · developer-enablement` and `DevEnablement/GoldenReferenceCompact · bilgi: reference not ready (DEV-0001 status: in-progress) · FU-15 ·
+   `scripts/known_failures.py`) is the existing hand-kept known-red registry beside the tests. The key is `page` + `check` +
+   `instance` (rev 10, F-20); `check` = `CI-<n>` (or `bilgi: …`); `instance` is a stable fingerprint of one violation:
+   CI-3: the verifier's check name, the gap-line text between `N) ` and ` — ` (the text after ` — ` carries an absolute
+   path and is not part of the key; the verifier prints each check once per run - 1182 gap lines, 1182 unique keys,
+   rev 09); line checks CI-2, CI-4, CI-5, CI-6, CI-7, CI-8, CI-10 and the `api/personalization` half of CI-9:
+   `<path>:<h12>#<k>` - `<path>` relative to `frontend/Diten.Web/`, `<h12>` the first 12 hex digits of the SHA-256 of the
+   violating line normalized (CR removed, leading and trailing white space removed, inner white-space runs collapsed to one
+   space; for a multi-line regex match, the line on which the match starts), `<k>` the occurrence number of that normalized
+   line in that file, counted from the top; absence checks: CI-1 `<path>:yok:Layout`, CI-9 `<path>:yok:savedView`, CI-12
+   `platform-search.<lang>.json:yok`, CI-13 `<lang>:dosya-yok` / `<lang>:anahtar-yok:<key>`, CI-14 `<lang>:missing:<key>` /
+   `<lang>:equal:<key>`, CI-15 `<lang>:<failed RC-21 / RC-23 condition>`; `bilgi:` rows `-`. Why content and not the line
+   number: a line inserted or deleted above a red shifts every number below it, so an unrelated edit would close every old
+   row and raise each one again as `YENİ KIRMIZI`; the normalized content survives insertions, deletions elsewhere,
+   re-indentation and moving the line inside the file. What the fingerprint guarantees: adding a violation always adds a
+   key the baseline does not hold - a different line gets a new `<h12>`, a byte copy of a baselined line gets the next
+   `#<k>` - so a second `style="` or a second raw `DataTable({` in a file that is already in the baseline is `YENİ
+   KIRMIZI`, and the number of violations in a file can never grow under `TABAN`. Limits, both conservative (they raise,
+   never hide): editing a violating line itself gives a new key (a new red plus the old row `kapandı`); renaming the file
+   gives new keys (the owner re-adds rows with a decision). Measured 2026-10-26 at `530fc95f8` why the file name is not
+   enough: of the 90 non-Archive, non-Shared `.cshtml` files under `frontend/Diten.Web/Views` that contain `style="`, 48
+   contain it on two or more lines (253 lines in all). `page` = `{Area}/{Module}`; for CI-13 / CI-14 the resx base path (e.g.
+   `Resources/SharedResource`), for CI-15 `PageHelp/{CODE}`. Rows whose `check` starts `bilgi:` are known reds the job does
+   not measure; they are printed for their page, never matched, never failed (`page · check · instance · fu · owner`):
+   `DevEnablement/GoldenReferenceSlim · bilgi: RC-6 AddNewGoldenReferenceSlim · - · FU-12 · developer-enablement` and
+   `DevEnablement/GoldenReferenceCompact · bilgi: reference not ready (DEV-0001 status: in-progress) · - · FU-15 ·
    developer-enablement`. Golden Slim's and Golden Compact's CI-3 red is a normal row (`personalizationClient sends tenant header only
    for tenant users`, FU-4, developer-enablement / BL-440 owner); so is that line on every other list page (shared
    `personalization-client.js`). Every other row carries FU-14 (old-page UI debt) and, as owner, the domain that owns the page; an empty
-   `fu` or `owner` cell makes the file malformed (exit 2). The first baseline is drafted once, locally, by a separate
+   `instance`, `fu` or `owner` cell makes the file malformed (exit 2). The first baseline is drafted once, locally, by a separate
    selector mode over every page (measured cost: about 26 s for the 152 list pages plus about 5 s for the grep checks),
    reviewed, owners filled, and committed with an owner decision; the CI job never runs that mode. Adding a row needs an
    owner decision recorded in the row's reason; a row is deleted only when its red closes (AC-19).
@@ -345,19 +393,24 @@ Ownership (CT-Setup note, verbatim): **kod: PSS-UI CT; workflow dosyası (`.gith
    solutions; none of `phase1-gates.yml`, `service-tests.yml`, `agent-adapters.yml` runs a UIC check - phase1 reaches the web
    project only through `dotnet test frontend/Diten.Web.Tests/...` (`run_phase1_gates.sh:246`) and the touch hook's own
    `--self-test` (`:147`), never `verify_datatable_page.py` on a page). Trigger
-   `pull_request` on the three trees above plus `PageHelpCatalog.cs`; read-only token, actions pinned to a commit SHA
+   `pull_request` on the three trees above plus `PageHelpCatalog.cs` and the two registry files
+   `frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json`, `.tr.json` (F-22), deletions and renames included;
+   read-only token, actions pinned to a commit SHA
    (`phase1-gates.yml:8-12`); checkout with enough history for `<base>...HEAD`; no .NET, no service, no secret; it runs
-   `python3 scripts/uic_changed_pages.py --base <base>` and fails only on exit 1 or 2 of the selector. A red phase1 does not
-   stop it and it does not read phase1's result.
+   `python3 scripts/uic_changed_pages.py --base <base>`, keeps the selector's stdout as the job artefact (with its SHA-256
+   printed in the log) and fails only on exit 1 or 2 of the selector. A red phase1 does not
+   stop it and it does not read phase1's result. Its run on the accepted commit is the final evidence of AC-17.
 
 Check set (page-level counterparts of the RC rows; "Reds today" measured 2026-10-26 at `6d8cc6ace` in the session scratch
-directory with every page treated as changed - the size of the first baseline):
+directory with every page treated as changed - the size of the first baseline; for the line checks (CI-2, CI-4…CI-8, CI-10 and the
+`api/personalization` half of CI-9) the counts are files and pages, the baseline holds one row per violating line instance (part 2), so its row count is at least
+the file count - the instance count was not measured in rev 10):
 
 | Id | Check (UIC; RC origin) | Runs on | Red when | Reds today |
 |---|---|---|---|---|
 | CI-1 | Explicit layout (UIC-1; RC-1) | every non-partial `.cshtml` of the page | no `Layout = "` | 0 |
 | CI-2 | No spinner (UIC-2; RC-2 second block) | every `.cshtml` of the page | `spinner-border` present | 17 files / 14 pages |
-| CI-3 | DataTable verifier (UIC-3, 5, 6 bridge, 19, 22, 25, 31 server export; RC-3, RC-12, RC-14) | list page = `Views/{Area}/{Module}/_DataTable.cshtml` | each numbered line of `verify_datatable_page.py . --area A --module M [--reference slim\|compact] --format gaps --ok-line`; reference inferred as `list_screen_touch_hook.py:111-115` does (`_CreateEditOffcanvas.cshtml` slim, `_Form.cshtml` compact, else none); API profile and data mode = the verifier's defaults (`verify_datatable_page.py:935`, `:901-906`) | 152 list pages, all exit 1, 1182 gap lines, 1182 unique page + check keys; FU-4 line on 63 pages; Golden Slim and Golden Compact 1 line each (FU-4) |
+| CI-3 | DataTable verifier (UIC-3, 5, 6 bridge, 19, 22, 25, 31 server export; RC-3, RC-12, RC-14) | list page = `Views/{Area}/{Module}/_DataTable.cshtml` at HEAD or at the base (a deleted `_DataTable.cshtml` still runs CI-3, red on `_DataTable.cshtml exists`) | each numbered line of `verify_datatable_page.py . --area A --module M [--reference slim\|compact] --format gaps --ok-line`; reference inferred as `list_screen_touch_hook.py:111-115` does (`_CreateEditOffcanvas.cshtml` slim, `_Form.cshtml` compact, else none), files read at HEAD and at the base; API profile and data mode = the verifier's defaults (`verify_datatable_page.py:935`, `:901-906`) | 152 list pages, all exit 1, 1182 gap lines, 1182 unique page + check keys; FU-4 line on 63 pages; Golden Slim and Golden Compact 1 line each (FU-4) |
 | CI-4 | No legacy factory (UIC-4; RC-4 first block) | page JS (`wwwroot/assets/js/{Area}/{Module}/**/*.js`) | `createCrudTable(` present | 77 files / 71 pages |
 | CI-5 | No raw DataTable (UIC-4; `frontend-js-standard.md:30`) | page JS and the page's `.cshtml` | `grep -E 'DataTable\(\s*\{\|new DataTable\([^,()]+,\s*\{'` hit | 16 JS files / 16 pages (e.g. `Meetings/Report/index.js:134`); 0 views |
 | CI-6 | No inline CSS (UIC-13; RC-7) | page `.cshtml` / page JS | `style="` / `.style.` present | 59 views / 36 pages; 35 JS files / 28 pages |
@@ -366,8 +419,8 @@ directory with every page treated as changed - the size of the first baseline):
 | CI-9 | Save View wiring (UIC-24; RC-13 page blocks) | list page `index.js` / page JS | no `savedView` / `api/personalization` present | 123 pages / 2 files |
 | CI-10 | ColReorder not overridden (UIC-32; RC-20) | page JS | `colReorder` present (the `frontend-js-standard.md:76` exception is a baseline row with its reason) | 107 files / 78 pages |
 | CI-11 | Pattern A bridge on a new surface (UIC-6; RC-5) | an `_IndexL10n.cshtml` / `_L10n.cshtml` **added** by the pull request | no `GetAllStrings(true)` | none (added files only) |
-| CI-12 | Ctrl+K entry (UIC-17; RC-9) | Platform page with `Index.cshtml` | `"url": "/Platform/{Module}"` count 0 in `platform-search.en.json` or `.tr.json` | 11 of 19 Platform pages |
-| CI-13 | Module resx language set and key parity (UIC-7; RC-6 file block) | each changed `Resources/Views/**/<base>.<lang>.resx` | a required language file missing (2 under `Resources/Views/Platform/`, 7 elsewhere) or a key of `<base>.en.resx` missing in another language | 0 (163 base names read; the only parity red is `SharedResource`, CI-14) |
+| CI-12 | Ctrl+K entry (UIC-17; RC-9) | Platform page with `Index.cshtml` (at HEAD or at the base), selected by a change under the page or by an added, removed or changed registry entry whose `url` is `/Platform/{Module}` or starts with `/Platform/{Module}/` (F-22) | `"url": "/Platform/{Module}"` count 0 in `platform-search.en.json` or `.tr.json` | 11 of 19 Platform pages |
+| CI-13 | Module resx language set and key parity (UIC-7; RC-6 file block) | each added, changed, deleted or renamed (old and new base) `Resources/Views/**/<base>.<lang>.resx` | a required language file missing (2 under `Resources/Views/Platform/`, 7 elsewhere) or a key of `<base>.en.resx` missing in another language | 0 (163 base names read; the only parity red is `SharedResource`, CI-14) |
 | CI-14 | SharedResource (UIC-7; RC-22, RC-24) | `Resources/SharedResource.<lang>.resx` changed | checker `should be Title Case` > 0 or tool error; a `new_missing` / `new_equal` key against the baseline rows | Title Case 0; key rows = the RC-24 sets (missing fr/es/zh/ar/ru 35 each; equal tr 10, fr 47, es 39, zh/ar/ru 35) |
 | CI-15 | Page help keys (UIC-15; RC-21, RC-23 per code) | `PageHelpResource.<lang>.resx` or `PageHelpCatalog.cs` changed: every code with `Help.{CODE}.Purpose` in en | RC-21 / RC-23 acceptance fails for a code and language | 51 codes x 7 languages, 0 |
 
@@ -397,7 +450,9 @@ files under `docs/` (D-1), one script, one TSV baseline and one CI job (DL-3); n
 - DL-1 / DL-2: the D-1 folder under `docs/reference/...` (two files) - created only after D-1 is answered.
 - Measurement record directory: `docs/records/audits/2026-10/mod-0286-uic-baseline-01/` (`auto-01/`, `sabotage-01/` written by `scripts/run_record.py`, plus `manual.md`, the three committed scripts `uic-auto.sh`, `uic-sabotage.sh` (rev 04b), `uic-resx-baseline.sh` (rev 05) and the committed key-level baseline directory `resx-baseline/` (rev 05, RC-24)).
 - DL-3: `scripts/uic_changed_pages.py` (new; with its `--self-test`), `tests/ui-compliance-baseline.tsv` (new), and the DL-3
-  run records under `docs/records/audits/2026-10/` (a new dated directory, e.g. `mod-0286-uic-ci-01/`, AC-17, AC-18).
+  run records under `docs/records/audits/2026-10/` (a new dated directory, e.g. `mod-0286-uic-ci-01/`: the interim local
+  record of AC-17 part 1 and the AC-18 sabotage records); the final AC-17 part 2 evidence is the CI job's run and artefact,
+  named in the acceptance record of that commit.
   `.github/workflows/ui-compliance.yml` (proposed name) is **not** in the WP's scope: CT-Setup writes it with owner approval
   (Protected Paths); the WP hands over the job's contract (Owned Objects, part 3).
 - Nothing under `services/`, `frontend/`, `gateway/`, `.antigravity/`, `execution/registries/` in P1 (DL-3 reads
@@ -436,11 +491,15 @@ DL-3 dependencies (measured 2026-10-26):
 - Independent of phase1: on main the last `phase1-gates` and `service-tests` runs failed (decision record
   `pss-mod0286-daraltma-01`, Ölçümler); the DL-3 job is its own workflow, needs no .NET build and does not read phase1's
   result, so today's phase1 red neither blocks nor greens it.
-- The workflow file needs CT-Setup + owner approval before the job exists in CI; until then AC-17 is proven by a local
-  `run_record.py` run of the selector against a named base (AC-17 allows it).
-- The verifier stops at a missing file (AC-13 measurement: 7 `[PASS]` / 2 `[FAIL]`): a page that adds the missing file can
-  show reds that were hidden behind it; they are new reds for that pull request (the page's author fixes them or the owner
-  adds rows).
+- The workflow file needs CT-Setup + owner approval before the job exists in CI. Until then the DL-3 work package can
+  deliver only the **interim** evidence of AC-17 (a local `run_record.py` run of the selector against a named base, for the
+  work package report); the **final acceptance of DL-3 and of P1** is bound to the CI job's run record and artefact at the
+  accepted commit (AC-17 part 2). P1 acceptance therefore depends on CT-Setup delivering the workflow: a dependency, not an
+  exemption - no workflow, no acceptance (decision record `pss-mod0286-daraltma-01` Karar 1, "CI'da koşar"; rev 10, F-21).
+- The verifier stops at a missing core file (`verify_datatable_page.py:970-975`; AC-13 measurement: 7 `[PASS]` /
+  2 `[FAIL]`): while a file is missing, the selector reports the page's other CI-3 baseline rows as `ölçülmedi`, not
+  `kapandı` (DL-3 part 1); a page that adds the missing file can show reds that were hidden behind it - they are new reds
+  for that pull request (the page's author fixes them or the owner adds rows).
 
 P2 dependencies (Blueprint HARD dependencies MOD-0013, MOD-0014, MOD-0018, MOD-0021, MOD-0028 and the consumers MOD-0295,
 MOD-0297): P1'de yok; P2 bu paketten çıktı — ilk tüketiciyle ayrı paket (D-4, karar kaydı daraltma-01). The registry
@@ -474,8 +533,11 @@ DL-3 reads `frontend/Diten.Web/**` to check other pages; it writes no frontend f
 
 P1'de yok: no field. Document-level rules instead: every `UIC-<n>` id unique; every automatic item has the five run-contract
 fields (working directory, fixture, full argv, shell call made explicit, expected stdout/exit); every spec heading cites >= 1
-source rule. DL-3 baseline file: header exactly `page`, `check`, `reason`, `fu`, `owner` (tab-separated); no empty cell;
-`page` + `check` unique; `fu` in the form `FU-<n>` (FU-4, FU-12, FU-14, FU-15 today); a violation is exit 2 of the selector, never a pass.
+source rule. DL-3 baseline file: header exactly `page`, `check`, `instance`, `reason`, `fu`, `owner` (tab-separated,
+rev 10, F-20); no empty cell; `page` + `check` + `instance` unique; `check` = `CI-<n>` (n 1…15) or `bilgi: …`; `instance` in
+the form of its check (DL-3 part 2): CI-3 the verifier check name; line checks `<path>:<h12>#<k>` (`<h12>` = 12 lower-case
+hex digits, `<k>` >= 1); absence checks `<path>:yok:<what>` / `<lang>:…`; `bilgi:` rows exactly `-`; `fu` in the form
+`FU-<n>` (FU-4, FU-12, FU-14, FU-15 today); a violation is exit 2 of the selector, never a pass.
 P2: P1'de yok; P2 bu paketten çıktı — ilk tüketiciyle ayrı paket (D-4, karar kaydı daraltma-01).
 
 ## Failure Path to Verify
@@ -492,9 +554,12 @@ P1 (document failures, each must be reproducible):
 - **Missing §2 module key** - `AddNew{Module}` count `0` in any language -> RC-6 / UIC-7 fail; the Golden Slim fixture fails this today (FU-12), recorded as measured, not hidden.
 - **Spec contradicts a rule** - the rule wins; the contradiction goes to the Conflicts register, the spec text is corrected.
 - **Rule contradicts a rule** - neither wins by itself; the register row names the applied source, the decider and its status; D-8a..c are "karar: kuralın kendisinde düzeltilir" (owner, 2026-10-26) until the rule file is corrected; a row marked "çözüldü" before the rule file is corrected -> AC-3 fails.
-- **DL-3: new red on a changed page** - a pull request adds raw `DataTable({` to a page's JS -> CI-5 `YENİ KIRMIZI <page> CI-5 <file>`, exit 1, job red (AC-18).
-- **DL-3: red hidden by the baseline only by page** - a baseline keyed by page alone would let a second red on an already red page pass; the key is page + check (+ detail), so a new verifier line on a page that already has 10 baseline lines is still `YENİ KIRMIZI` (1182 page + check keys today, 0 duplicates).
-- **DL-3: tool error read as a pass** - `git diff` fails, the base ref is missing, the baseline has an empty cell or a duplicate key, or the verifier prints output the selector cannot classify -> exit 2, job red, never "0 changed pages".
+- **DL-3: new red on a changed page** - a pull request adds raw `DataTable({` to a page's JS file that has no CI-5 row -> `YENİ KIRMIZI <page> CI-5 <path>:<h12>#1`, exit 1, job red (AC-18 (a)).
+- **DL-3: red hidden by the baseline key** (F-20) - a key of page alone, or of page + check + file name (rev 09 for CI-2, CI-4…CI-10), lets a second violation in an already red page or file pass as `TABAN`. The key is page + check + instance (DL-3 part 2): a new verifier line on a page that already has 10 baseline lines is `YENİ KIRMIZI` (CI-3 instance = the check name; 1182 page + check keys today, 0 duplicates), and a second `style="` line in a view that already has a CI-6 row is `YENİ KIRMIZI` with its own `<h12>` - or with `#2` when it is a byte copy of the baselined line - while the old row stays `TABAN` (AC-18 (b)).
+- **DL-3: required file deleted** (F-19) - a pull request that only deletes a list page's `_IndexL10n.cshtml` (or `index.l10n.js`, or one language `.resx` of a resx base) selects that page / resx base through the deleted path; CI-3 prints `_IndexL10n.cshtml exists` (`verify_datatable_page.py:956`, `check_file_exists` `:48-51`) / CI-13 `<lang>:dosya-yok` as `YENİ KIRMIZI`, exit 1 (AC-18 (c)). With `--diff-filter=ACMR` (rev 09) the page was not selected and the job passed with the file gone. The page's other CI-3 rows are `ölçülmedi` while the verifier stops at the missing file (`:970-975`), never `kapandı`.
+- **DL-3: page removed or renamed** - no file left under `Views/{Area}/{Module}/` at HEAD -> `sayfa kaldırıldı`, every row of the page `kapandı - satır silinmeli`, exit unaffected; a renamed page folder = old page removed + new page checked as added, its reds `YENİ KIRMIZI` until the owner re-adds rows with a decision.
+- **DL-3: Ctrl+K entry removed** (F-22) - a pull request that changes only `platform-search.tr.json` and removes a Platform page's `"url": "/Platform/{Module}"` entries selects that page for CI-12 -> `YENİ KIRMIZI Platform/{Module} CI-12 platform-search.tr.json:yok`, exit 1 (AC-18 (d)); without the registry files in the trigger and the mapping the job would not run or would select nothing.
+- **DL-3: tool error read as a pass** - `git diff` fails, the base ref is missing, a status letter outside `ACDMRT`, the baseline has an empty cell, a malformed instance or a duplicate key, a registry file does not parse, or the verifier prints output the selector cannot classify -> exit 2, job red, never "0 changed pages".
 - **DL-3: stale baseline row** - a row whose red no longer reproduces on a checked page is printed `kapandı - satır silinmeli`; it does not fail the job (only a red outside the baseline does, AC-19 deletes the row).
 - **Unauthorized / concurrency** - not applicable in P1 (no runtime). P2: P1'de yok; P2 bu paketten çıktı — ilk tüketiciyle ayrı paket (D-4, karar kaydı daraltma-01).
 
@@ -534,10 +599,10 @@ commands: P1'de yok; P2 bu paketten çıktı — ilk tüketiciyle ayrı paket (D
 - [ ] AC-14 (isteğe bağlı) — The spec's component inventory table carries each shared file's line count measured at the DL-1 commit (`wc -l`).
 - [ ] AC-15 (zorunlu) — DL-2 carries the coverage table: for each of the 11 rule files the `grep -n -i "zorunlu" | wc -l` count, the lines mapped to UIC ids, and the uncovered lines listed by phrase; the counts are re-measured at the DL-2 commit and the 31 uncovered phrases (30 + `localization-standard.md:21` kısmi, F-13) are carried as a DL-2 revision input (FU-11); a line is "covered" only when the named UIC item's measuring command reads that whole phrase (F-11, F-13, F-14) - a count that two wrong values can satisfy does not cover a phrase.
 - [ ] AC-16 (zorunlu) — Every item marked auto has a run-contract row `RC-<n>` with working directory (repo root), fixture, full argv (shell made explicit: one block of the committed `uic-auto.sh`, run as `sh <file> <out-dir>`), and expected stdout/exit; each of the 22 auto UIC ids appears in at least one RC row's "UIC kapsamı" column (a row may cover several ids, e.g. RC-3 = UIC-3, UIC-5, UIC-6, UIC-19); RC ids are unique: `grep -oE '^\| RC-[0-9]+' | sort | uniq -d` empty. Measured at rev 03: 21 RC rows, 0 duplicates, 22/22 auto ids covered (UIC-15 keys additionally in RC-21). Measured at rev 04: 23 RC rows (RC-22, RC-23 added), 0 duplicates, 22/22 auto ids covered; UIC-7 in RC-6 + RC-22, UIC-15 keys in RC-21 + RC-23. Measured at rev 05: 24 RC rows (RC-24 added), 0 duplicates, 22/22 auto ids covered; UIC-7 in RC-6 + RC-22 + RC-24.
-- [ ] AC-17 (zorunlu) — The DL-3 job lists, for every page the pull request adds or changes, each check applied (CI-1…CI-15 as applicable, one line per check with `PASS` / `TABAN <fu>` / `YENİ KIRMIZI`) and every shared file it did not map to a page; it is green when the only reds are baseline rows; it proves its own output by a `python3 scripts/run_record.py run --out docs/records/audits/2026-10/<dir>/<run> -- python3 scripts/uic_changed_pages.py --base <ref>` record on a clean tree (`run_record.py verify` exit 0), and, once the workflow exists, by the CI run's artefact named in that record.
-- [ ] AC-18 (zorunlu) — Sabotage with a named new red (CT Sabotage rule): a commit on a scratch branch adds raw `DataTable({` to one changed page's JS; the selector exits 1 and prints that page and `CI-5` with the file name as `YENİ KIRMIZI`; the commit is reverted and the same command exits 0 again. Both runs are recorded (`run_record.py`), the two exits and the named line quoted.
-- [ ] AC-19 (zorunlu) — `tests/ui-compliance-baseline.tsv` lists every red of today's first measurement with an FU id and an owner (CI-3 `personalizationClient …` rows FU-4; Golden Slim FU-12 and Golden Compact "reference not ready" FU-15 as `bilgi:` rows; every other row FU-14); the selector rejects a row with an empty cell or a duplicate page + check (exit 2); a row is added only with an owner decision written in its `reason`; a row is deleted only when its red closes (the job prints `kapandı - satır silinmeli`).
-- [ ] AC-20 (zorunlu) — The job checks only the pages the pull request changes and never runs a full suite (no .NET build, no test project, no all-pages mode in CI); its duration is printed and recorded with the AC-17 record.
+- [ ] AC-17 (zorunlu) — The DL-3 job lists, for every page the pull request adds, changes or deletes a file of (for a rename the old and the new path, DL-3 part 1) and every Platform page whose Ctrl+K registry entry it adds, removes or changes, each check applied (CI-1…CI-15 as applicable, one line per check instance with `PASS` / `TABAN <fu>` / `YENİ KIRMIZI` / `ölçülmedi`), every removed page (`sayfa kaldırıldı`) and every shared file it did not map to a page; it is green when the only reds are baseline rows. Evidence in two steps: (1) **interim (ara teslim, for the DL-3 work package report only)** - `python3 scripts/uic_changed_pages.py --self-test` exit 0 and a `python3 scripts/run_record.py run --out docs/records/audits/2026-10/<dir>/<run> -- python3 scripts/uic_changed_pages.py --base <ref>` record on a clean tree (`run_record.py verify` exit 0); this record accepts neither DL-3 nor P1; (2) **final acceptance of DL-3 and of P1** - the independent CI job (workflow written by CT-Setup after owner approval, Protected Paths) has run on a pull request whose head commit is the accepted commit, and the acceptance record names the workflow file path at that commit, the CI run id and URL, the head SHA (= the accepted commit), the job's exit and the job artefact (the selector's stdout) with its SHA-256; a local record, or a CI run on another commit, does not satisfy (2). No workflow, no acceptance: until the job has run in CI, DL-3 and P1 stay open (decision record `docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md` Karar 1, "CI'da koşar").
+- [ ] AC-18 (zorunlu) — Sabotage with named new reds (CT Sabotage rule), four pairs on a scratch branch whose tree holds the committed baseline: each sabotage commit is run with `python3 scripts/uic_changed_pages.py --base <parent of the sabotage commit>` and must exit 1 with the named `YENİ KIRMIZI` line; its revert commit is run with `--base <the sabotage commit>` (the same files are in the diff, so the same page is selected again) and must exit 0: (a) clean file - raw `DataTable({` added to a page JS file that has no CI-5 row -> `YENİ KIRMIZI <Area>/<Module> CI-5 <path>:<h12>#1`; (b) second violation in a file that is already red in the baseline (F-20; (a) alone does not satisfy this AC) - in a view that already has a CI-6 baseline row, a byte copy of that baselined `style="` line is added on a new line -> `YENİ KIRMIZI <page> CI-6 <path>:<h12>#2` while the existing row prints `TABAN FU-14`; (c) deletion (F-19) - a commit that deletes only the `_IndexL10n.cshtml` of one changed list page -> the page is selected through the deleted path, `YENİ KIRMIZI <page> CI-3 _IndexL10n.cshtml exists`, its other CI-3 rows `ölçülmedi`, none `kapandı`; (d) Ctrl+K registry (F-22) - a commit that changes only `platform-search.tr.json` and removes the two `"url": "/Platform/Tenants"` entries (`:7`, `:117`) -> `YENİ KIRMIZI Platform/Tenants CI-12 platform-search.tr.json:yok`. All eight runs are recorded (`run_record.py`), the exits and the named lines quoted.
+- [ ] AC-19 (zorunlu) — `tests/ui-compliance-baseline.tsv` lists every red instance of today's first measurement with an FU id and an owner (CI-3 `personalizationClient …` rows FU-4; Golden Slim FU-12 and Golden Compact "reference not ready" FU-15 as `bilgi:` rows; every other row FU-14), each row keyed page + check + instance (Validation Rules); the selector rejects a row with an empty cell, a malformed instance or a duplicate page + check + instance (exit 2); a row is added only with an owner decision written in its `reason`; a row is deleted only when its red closes (the job prints `kapandı - satır silinmeli`).
+- [ ] AC-20 (zorunlu) — The job checks only the pages the pull request changes and never runs a full suite (no .NET build, no test project, no all-pages mode in CI); its duration is printed and recorded with both AC-17 records (interim and final).
 
 ## Test Expectations
 
@@ -580,10 +645,13 @@ No code, no build. Document-level evidence, commands as written; none of the run
 
 ### DL-3 ölçüm yolları (AC-17…AC-20) ve rev 09 ölçümleri
 
-- AC-17: `python3 scripts/uic_changed_pages.py --self-test` exit 0; then on a clean tree `python3 scripts/run_record.py run --out docs/records/audits/2026-10/<dir>/<run> -- python3 scripts/uic_changed_pages.py --base <ref>` with a base whose diff touches at least one list page, one non-list page and one shared file; `stdout.txt` shows one line per applied check per page and the shared file as "paylaşılan dosya, sayfa kontrolü yok"; `run_record.py verify <dir>/<run>/run-record-v1.json` exit 0. In CI (after CT-Setup adds the workflow): the job log / artefact of one pull request, named in the record.
-- AC-18: the sabotage pair of AC-18, each run recorded; expected exit 1 with `YENİ KIRMIZI <Area>/<Module> CI-5 <file>`, then exit 0 after the revert. Second named red, optional: `style="` in a changed `.cshtml` -> CI-6.
-- AC-19: `python3 scripts/uic_changed_pages.py --self-test` covers the baseline reader (empty cell, duplicate key, malformed FU id -> exit 2); a reviewer compares the committed baseline with the draft-mode output (row counts per CI id quoted in the record).
-- AC-20: the duration line of the AC-17 record; the selector has no all-pages mode reachable from the CI command line used by the workflow.
+- AC-17 part 1 (interim, DL-3 work package report only): `python3 scripts/uic_changed_pages.py --self-test` exit 0; then on a clean tree `python3 scripts/run_record.py run --out docs/records/audits/2026-10/<dir>/<run> -- python3 scripts/uic_changed_pages.py --base <ref>` with a base whose diff touches at least one list page, one non-list page, one deleted page file, one rename, one registry entry and one shared file; `stdout.txt` shows one line per applied check instance per page, the deleted file's page selected, both rename paths mapped, the registry entry's Platform page with CI-12, and the shared file as "paylaşılan dosya, sayfa kontrolü yok"; `run_record.py verify <dir>/<run>/run-record-v1.json` exit 0. This does not accept DL-3 or P1.
+- AC-17 part 2 (final acceptance of DL-3 and P1): after CT-Setup adds the workflow with owner approval, the CI job's run on a pull request whose head SHA is the accepted commit - the acceptance record quotes the workflow path at that commit, the run id and URL, the head SHA, the job exit and the artefact's SHA-256 (as printed in the job log and as re-computed on the downloaded artefact). Without that run there is no acceptance (F-21).
+- AC-18: the four sabotage pairs (a)-(d) of AC-18, eight runs, each recorded; expected exit 1 with the named line - (a) `YENİ KIRMIZI <Area>/<Module> CI-5 <path>:<h12>#1`, (b) `YENİ KIRMIZI <page> CI-6 <path>:<h12>#2` next to `TABAN FU-14 … #1`, (c) `YENİ KIRMIZI <page> CI-3 _IndexL10n.cshtml exists` with the other CI-3 rows `ölçülmedi`, (d) `YENİ KIRMIZI Platform/Tenants CI-12 platform-search.tr.json:yok` - then exit 0 for each revert.
+- AC-19: `python3 scripts/uic_changed_pages.py --self-test` covers the baseline reader (empty cell, duplicate page + check + instance, malformed instance, malformed FU id -> exit 2) and the fingerprint (same normalized line -> same `<h12>`; re-indented line -> same key; byte copy -> `#2`; line inserted above -> keys unchanged); a reviewer compares the committed baseline with the draft-mode output (row counts per CI id quoted in the record).
+- AC-20: the duration line of both AC-17 records; the selector has no all-pages mode reachable from the CI command line used by the workflow.
+- Rev 10 ölçümleri (2026-10-26, worktree at `530fc95f8`, read-only): `verify_datatable_page.py:953-968` (file checks; `_IndexL10n.cshtml` `:956`, `index.l10n.js` `:958`; Slim `:963`, Compact `:965-968`), `:48-51` (`check_file_exists` -> `Missing: <path>`), `:970-975` (stop after a missing core file); `platform-search.en.json` / `.tr.json` 22 `"url"` lines each, `/Platform/Tenants` at `:7`, `:117`, `/Platform/Tenants/Create` at `:14` (hence the `/Platform/{Module}/` prefix rule); `platform-global-search-registry.md` §2 (`:26-58`, two files, same route set `:33`) and §5 (`:80-89`); views with `style="` on two or more lines: 48 of 90 non-Archive, non-Shared `.cshtml` files (253 lines; `grep -rc`). Real history, git 2.50.1: commit `b026a0081` under `frontend/Diten.Web` -> `--name-status --find-renames --diff-filter=ACDMRT` gives 67 A, 39 M, 1 D (`Views/DocumentManagement/ControlledDocuments/_Filter.cshtml`) and 1 `R053` with both paths (`…/ControlledDocuments/_DataTable.cshtml` -> `…/TemplateMasters/_DataTable.cshtml`); the rev 09 form `--name-only --diff-filter=ACMR` gives 107 paths, neither the deleted path nor the rename's old path - and a HEAD-only list-page test would no longer run CI-3 on `ControlledDocuments`, which lost its `_DataTable.cshtml` in that commit (why the list test reads HEAD and the base). Machine load at the start was 13.6-16.0 (above 12): no new broad run was started.
+- Ölçülmedi (rev 10): the per-instance baseline size for the line checks (only files and pages are measured, rev 09); the fingerprint and the deletion / rename / registry mapping on real pull requests (the selector is not written; DL-3 WP).
 - Rev 09 ölçümleri (2026-10-26, worktree at `6d8cc6ace`, session scratch directory, no repo file written): every list page `Views/{Area}/{Module}/_DataTable.cshtml` outside Archive run through `verify_datatable_page.py --format gaps --ok-line` with the hook's reference inference - 152 pages (compact 89, slim 31, none 32), all exit 1, 1182 gap lines, 1182 unique page + check keys, FU-4 line on 63 pages, 25.7 s; Golden Slim and Golden Compact one line each (FU-4). Grep checks over 189 `Views/{Area}/{Module}` folders: 4.8 s, counts as in the CI table. resx: 163 base names, language set complete and keys equal to en except `SharedResource` (fr/es/zh/ar/ru 35 missing each, = RC-24). Help: 51 codes x 7 languages, RC-21 / RC-23 acceptance 0 reds. Platform: 19 pages with `Index.cshtml`, 11 without a `"url": "/Platform/{Module}"` entry. List pages: 155 `_DataTable.cshtml` outside Archive, 152 in the `{Area}/{Module}` shape. §2 module keys: 54 of 152 list pages have no `.en.resx` under `Resources/Views/{Area}/{Module}/`, 93 of the other 98 lack `AddNew{Folder}` (why RC-6 §2 keys are not a CI check).
 - Ölçülmedi: the selector itself (not written; DL-3 WP); any CI run (no workflow yet); the owner column of the baseline (filled when the baseline is drafted); FU-4 on the 89 list pages whose verifier run did not print that line (some runs stop at a missing file).
 
@@ -601,7 +669,7 @@ No code, no build. Document-level evidence, commands as written; none of the run
 - [ ] Layout & Shell, Backend / Frontend conventions, Entity Fields, Authorization, Gateway, Page Help: "P1'de yok; P2 bu paketten çıktı" written (D-4).
 - [ ] Validation Rules, Failure Path: P1 document rules and DL-3 cases written.
 - [ ] Audited Events: no write command in this pack (AUD-001).
-- [ ] DL-3: check set CI-1…CI-15 with today's red counts, excluded RC rows named, baseline location argued, workflow file ownership (CT-Setup + owner) written.
+- [ ] DL-3: check set CI-1…CI-15 with today's red counts, excluded RC rows named, baseline location argued, workflow file ownership (CT-Setup + owner) written; rev 10: deleted and renamed paths and the Ctrl+K registry files selected, baseline keyed page + check + instance, final acceptance bound to the CI run (AC-17 part 2).
 - [ ] Acceptance Criteria in `AC-<n> (zorunlu|isteğe bağlı)` form; Test Expectations quote commands only.
 - [ ] Run contract rows `RC-1..RC-24` cover every auto item (AC-16); evidence flow is one committed `resx-baseline/` + one `auto-01` run + one `sabotage-01` run.
 - [ ] Page help: "no page" in P1 - written.
@@ -641,6 +709,7 @@ No code, no build. Document-level evidence, commands as written; none of the run
 - Rev 07 (2026-10-23): prompt kapısı ENGEL'i — `scripts/prompt_gate.py` görev sınıfı denetimi künyeyi okur (`scripts/ct_queue.py:1297-1312` `pack_approval_limit`: `status` `ready-for-dev`/`approved`, `approval_status` yok ya da `approved`); sahip kararı `rev07`. Künye: `status: draft` -> `ready-for-dev`, `approval_status: none` silindi (paket standardı bu alanı tanımlamıyor; yukarıdaki dil notundaki "This pack writes `approval_status: none`" cümlesi rev 06 durumudur), başlık bandı yenilendi; `build_gate` ve `operational_runtime_gate` `closed`. Atıf düzeltmeleri: UIC-15 kaçışsız `|` -> `\|` (satır tablonun 6 sütununa döndü); a11y `frontend-datatable-template.md:630-633` (başlık `:628`); D-8b karşı tarafı `frontend-datatable-template.md:87`, `:100`, `:114` + BL-440 (`product-backlog.md:6199` başlık, `:6264` createList notu), `frontend-js-standard.md:981-991` tablosunda `createCrudTable`/`createList` yok; D-8a / UIC-13 `premium-modal-standard.md` `style=` satırı 8 (4 şablon x 2); D-5 listesine `.antigravity/ARCHITECTURE.md:234`, `.antigravity/workflows/debug.md:59` eklendi; satır 527 dil notu rev 07 gerçeğine göre (alan kaldırıldı, onay approvals.tsv satırında); FU-2 sayısı D-5 listesine göre (5 dosya / 8 satır); UIC-4 kaynağı `createList` için `frontend-datatable-template.md:87, :100, :114`, ham `DataTable` için `frontend-js-standard.md:30`, `:981-991`; UIC-11 odak halkası `frontend-datatable-template.md:633` (başlık `:628`). Yeni bağımsız inceleme ve yeni onay satırı gerekir; kod yetkisi vermez.
 - Rev 08 (2026-10-26): içerik değişmedi; yalnız bu satır eklendi. Neden: rev 07 (sha256 `ffeaae57…`) inceleme 07 (KOŞULLU) ve 07b (UYGUN) ile onaylanmış, PR #222 ile main'e girmişti (`ded2a4de0`); ancak satırlar dalda main-ilk ebeveyn birleştirmesinin ikinci ebeveyn tarafında kaldığı için `scripts/pack_approval.py` `main_merge` (S-42 düzeltmesi, main `cc597fec0`) onları "iç içe ya da ters merge" diye reddeder; `review_problems` bir sürümün bütün satırlarını saydığı ve `execution/approvals/*.tsv` yalnız ekleme aldığı için rev 07 bir daha onaylanamaz. Rev 08 yeni bir sürümdür; inceleme ve onay satırları güncel main'den açılan dalın kendi çizgisinde, hiçbir birleştirmeden önce yazılır. Başlık bandı rev 07 metnini korur (içerik aynı). Onaylı taban rev 06 (`7f6868d9…`). Kod yetkisi yoktur.
 - Rev 09 (2026-10-26): sahip kararı "daralt" (`docs/records/decisions/2026-10/pss-mod0286-daraltma-01.md`, uygulama sırası `daralt-rev09`). Özet: P1 bitiş çizgisi = DL-2'nin otomatik maddeleri yeni ve değişen sayfalar için CI'da koşar, eski sayfalar bugünkü kırmızılarıyla taban (CI'ı durdurmaz); P2 bu paketten çıktı, ilk tüketiciyle ayrı paket (D-4 kapandı); DL-1 kısa dizin, D-8a..c kuralın kendisinde düzeltilir; yeni açık karar D-9; Golden Slim FU-4 / FU-12 ve DEV-0001 `in-progress` tabanda adıyla. Değişen bölümler: künye `slice` satırı ve başlık bandı (künye alanlarının anlamı P2'siz); Open Decisions (D-4 kapandı, D-7 metni, D-8a..c durum, D-9 yeni); Module Summary (DL-3); Ownership and Boundaries; Owned Objects (DL-3 nesneleri, RCS/Nav P2 satırları kısaldı, yeni alt bölüm "DL-3 UI uyum CI bağlantısı" ve CI-1…CI-15 tablosu); Entity Fields; Repo Scope; Protected Paths; Dependencies (P2 tablosu çıktı, DL-3 bağımlılıkları); Runtime Constraints; Layout & Shell Contract; Backend File Convention; Frontend File Contract; Validation Rules; Failure Path to Verify (D-8 satırı, DL-3 durumları); Authorization Convention; Audited Events (P2 tablosu çıktı); Gateway / API Routing Decision; Acceptance Criteria (AC-3 ve AC-11 birer cümle; AC-17…AC-20 yeni); Test Expectations (DL-3 ölçüm yolları ve rev 09 ölçümleri); Page Help (UXH-001); Ready-for-dev Checklist; çatışma kaydı satır 1-3 durumu; Follow-up Items (FU-7 yeniden yazıldı, FU-14 ve FU-15 yeni); Teslim dilimleri (DL-1 adı, DL-3 yeniden tanım). Değişmeyen: `status`, `owner`, `target`, gate alanları; UIC tablosu (32), RC tablosu (24); AC-1…AC-16 numaraları. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
+- Rev 10 (2026-10-26): Codex inceleme 09 (rev 09 `9ef09732…`) UYGUN DEĞİL — bulgu dosyası `docs/records/reviews/MOD-0286/2026-10-26-9ef09732.md`, CT karşılaştırması `…-9ef09732-ct-karsilastirma-09.md` (dördü de kabul); sahip kararı `kaydet-rev10`. Yalnız DL-3 tasarımı değişti: **F-19** -> seçici `git diff --name-status --find-renames --diff-filter=ACDMRT`; silinen yol ve yeniden adlandırmanın eski + yeni yolu aynı eşlemeyle sayfaya / resx kümesine bağlanır; liste sayfası ve Slim/Compact çıkarımı HEAD + taban dosyalarından okunur; klasörü boşalan sayfa `sayfa kaldırıldı` (satırları `kapandı - satır silinmeli`); doğrulayıcı eksik dosyada durunca (`verify_datatable_page.py:953-975`) sayfanın öteki CI-3 satırları `ölçülmedi`; AC-18 (c) silme sabotajı. **F-20** -> taban sütunları `page`, `check`, `instance`, `reason`, `fu`, `owner`; anahtar page + check + instance; satır kontrollerinde parmak izi `<path>:<h12>#<k>` (normalize satır içeriğinin SHA-256'sının ilk 12 hanesi + aynı satırın dosyadaki sıra numarası; satır numarası seçilmedi, gerekçe DL-3 bölüm 2); Failure Path "red hidden by the baseline key" cümlesi düzeltildi (rev 09'daki iddia yalnız CI-3 için doğruydu); AC-18 (b) tabanda kırmızı dosyaya ikinci ihlal sabotajı; AC-19, Validation Rules. **F-21** -> AC-17 iki adım: yerel run_record ara teslim (yalnız iş paketi raporu), DL-3 ve P1 nihai kabulü CT-Setup + sahip onayıyla yazılan workflow'un kabul edilen commit'teki koşu kaydı ve artefaktı; workflow yoksa kabul yok; DL-3 sahiplik notu, Dependencies, Repo Scope, Test Expectations, AC-20 buna göre. **F-22** -> `platform-search.en.json` / `.tr.json` tetikleyicide ve seçicide; değişen / silinen / eklenen kayıt `url`'sine göre `Platform/{Module}` sayfası CI-12 için seçilir (`platform-global-search-registry.md` §2, §5); CI-12 tablo hücresi; AC-18 (d). Değişmeyen: künye (status, owner, target, gate alanları, `slice`), UIC tablosu (32), RC tablosu (24), AC-1…AC-16, D-1…D-9, Teslim dilimleri. Kod yetkisi yoktur; yeni bağımsız inceleme ve yeni onay satırı gerekir.
 
 ## Follow-up Items
 
