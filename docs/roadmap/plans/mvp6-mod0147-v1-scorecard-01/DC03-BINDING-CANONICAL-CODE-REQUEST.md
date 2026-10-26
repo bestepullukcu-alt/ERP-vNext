@@ -1,6 +1,6 @@
-# MOD-0148 → DC-03 binding: canonical supplier code requirement (to Beste, DC-03 owner) — draft
+# MOD-0148 → DC-03 binding: canonical supplier code requirement (to Beste, DC-03 owner) — sent
 
-DURUM: TASLAK — Natig gönderir. Kaynak: MOD-0148 §0.0 (D2 eligibility, v1 gates), CT-APR-02 on `d22c00f4` (F-1) and Natig's
+DURUM: GÖNDERİLDİ — Natig, 2026-10-26; Beste'nin (DC-03 sahibi) kabulü bekleniyor, kabul gelene kadar dış bağımlılık açık. Kaynak: MOD-0148 §0.0 (D2 eligibility, v1 gates), CT-APR-02 on `d22c00f4` (F-1) and Natig's
 check (2026-10-26). XMC-001: this asks the DC-03 owner; it changes nothing in the DC-03 pack by itself.
 
 ## Requirement
@@ -12,7 +12,7 @@ check (2026-10-26). XMC-001: this asks the DC-03 owner; it changes nothing in th
 3. Until a binding is corrected, MOD-0148 answers 503 for that supplier (the eligibility answer names another code); it
    never maps the request to a different supplier.
 
-## Message text (Natig sends)
+## Message text (sent by Natig, 2026-10-26)
 
 ```text
 MVP-6 CT → Beste (DC-03): MOD-0148 portalı, tedarikçi bağlamasını MOD-0140'ın uygunluk cevabıyla birebir karşılaştırıyor.
