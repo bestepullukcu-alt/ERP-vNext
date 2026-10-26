@@ -95,6 +95,9 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > (yerelde user-secrets), döndürme = yılda bir + sızıntı şüphesinde hemen, `ApprovalRef` = onaylayan PR + merge commit'i, AC-50
 > kabul eşiği yazıldı. Karar kaydı: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D33 (main'e PR #235 ile
 > girer; yerel `a181e933b`). Bu revizyon pack'i `ready-for-dev` yapmaz. Kapanış tablosu "Implementation Notes → D33 uygulaması".
+> Aynı revizyonda sahip denetimi (gap listesi 21) ve hazırlık kaydı tutarsızlıkları kapatıldı: AC-27 banka kısmı DL-1, tam
+> kapanış DL-3; Gateway listesine `bank-account-purposes` rotaları; kaynak servis boyutu ve `Guid.Empty` atıfları; RCS §3 satır
+> durumu (D29/2, D30).
 
 ## Module Summary
 
@@ -155,7 +158,7 @@ Kaynak: CONTRACT-STATE `data_catalog.types`, `BankMasterEntities.cs@da4abb20` (p
 | 6 | `SupplierPaymentDestinationOwnershipBinding` (:308) | **taşınmaz** | aynı |
 | 7 | `SensitiveBankDataAccessLog` (:544) | **uyarlanır** — `BankAccountSensitiveRead` (yalnız ekleme) | maskesiz okumanın izi; değer döndürülmeden önce yazılır (önce-yaz) |
 | 8 | `BankAccountToken` (:510) | **taşınmaz** | tüketiciye token değil opak Guid + `lookup-validation` verilir; token ödeme yürütmenin parçasıdır (MOD-0269, D5) |
-| 9 | `BankAccountOperationalOutboxItem` (:214) | **taşınmaz** | `TenantId = Guid.Empty` (`Mod0289BankService.cs:2450@da4abb20`, level-1 koşul 2) ve hiçbir kod `Published` atamıyor (paket §F) |
+| 9 | `BankAccountOperationalOutboxItem` (:214) | **taşınmaz** | `TenantId = Guid.Empty` (`Mod0289BankService.cs:2450@da4abb20`; aynı dosyada toplam 34 atama, banka oluşturma `:209` ve şube oluşturma `:293` dahil — kural AC-26 hepsini kapsar; level-1 koşul 2) ve hiçbir kod `Published` atamıyor (paket §F) |
 | 10 | `BankAccountOperationalJobRun` (:189) | **taşınmaz** | yalnız 9'u üreten işler |
 | 11–13 | `BankAccountImportJob` (:107), `BankAccountImportRow` (:128), `BankAccountImportRowIssue` (:166) | **v1 dışı** (follow-up) | toplu içe aktarma ayrı dilim; RCS-001 §5.11 içe aktarma kuralı ister |
 | 14–15 | `BankAccountChangeRequest` (:337), `BankAccountChangeRequestActionLog` (:390) | **v1 dışı** (D23/2) | MOD-0023 onay akışına bağlı; v1'de dört göz aktivasyonu (D23/2) |
@@ -544,7 +547,7 @@ satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MD
 
 ## Protected Paths
 
-- `.antigravity/**` (RCS-001 §3 satırı, kural değişiklikleri ayrı onay)
+- `.antigravity/**` (kural değişiklikleri ayrı onay; RCS-001 §3 `BNK` / `BAC` satırları sahip kararı D29/2 ile yazıldı, D30 ile uygulandı)
 - `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız `integration-agent`
 - `services/Diten.Platform/**` (MOD-0021, MOD-0023, MOD-0031, MOD-0048, veri kapsamı çözücüsü — platform-shared-services),
   `services/Diten.ProcurementService/**` (MOD-0140; tek yazar MVP-2, K15), `services/Diten.AuthService/**`,
@@ -596,7 +599,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi) | **yok**; sahibi referans veri (MOD-0048 / REF slotu) | — | MOD-0048 sahibi | kapı kapalı (v1) → `FormatAndChecksum`; kapı açık + kaynak yok / erişilemez → 503 | AC-40 (sahte kaynak) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
 | Banka dizini + yurt içi hesap kuralı kaynakları (`IBankDirectorySource`, `IDomesticAccountRuleSource`) | **yok**; sahibi adlandırılmadı (referans veri / bankacılık sahibi) | — | TBD (sahip) | kapı kapalı (v1) → `DomesticFormat`; kapı açık + kaynak yok / erişilemez → 503 | AC-47 (sahte kaynaklar) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
 | Anahtar kümesi çiti + onaylı hedef (`mdm_bank_data_key_fences`, `mdm_bank_data_key_set_targets`) | MDM kodu (bu paket) | — | master-data-management | eski küme / onaysız küme → 503, yazma yok; hedef yok → 503 | AC-43, AC-44, AC-48, AC-49 (gerçek replica set) · AC-50 yük testi · dev ortamı döndürme provası | DL-2 |
-| MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | MdmService commit SHA'sı DL-1 başında | master-data-management + CT | niyet yazılamazsa komut başarısız (iş verisi yok) | AC-6 (sabotaj) · AC-27 (AUD-001 §8 dev kanıtı) | DL-1 |
+| MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | MdmService commit SHA'sı DL-1 başında | master-data-management + CT | niyet yazılamazsa komut başarısız (iş verisi yok) | AC-6 (sabotaj) · AC-27 banka kısmı (bir banka oluşturmanın merkezi kaydı, AUD-001 §8 dev kanıtı) | DL-1 (AC-27'nin hesap, aktivasyon ve maskesiz okuma kısmı ve tam kapanışı DL-3) |
 
 ## Runtime Constraints
 
@@ -967,7 +970,7 @@ Api/Services/BankData/
 - Command/Query `sealed record` (`IRequest<Response<T>>`); Handler `sealed class` — **Command/Query suffix YOK**. Tek
   dosyada tek public tip. Controller `CustomBaseController`'dan türer (`LegalEntitiesController.cs:11-14@158e0dc93` deseni),
   `Response<T>` döner, her aksiyonda `[HasPermission]`.
-- İş kuralı handler + domain'de (`handler-design`); kaynaktaki büyük servis sınıfları (`Mod0289BankService` ~2500 satır,
+- İş kuralı handler + domain'de (`handler-design`); kaynaktaki büyük servis sınıfları (`Mod0289BankService` 5353 satır — `wc -l` @da4abb20,
   paket atıfı `:2446-2466`) alınmaz, kurallar bölünerek yeniden yazılır.
 - Her yazma komutu ve maskesiz okuma, denetim niyetini iş belgesiyle **aynı koşullu yazımda ya da aynı Mongo işleminde**
   taşır (Audited Events); `MasterDataAtomicWrite` politikası (işlem yoksa Development dışında yazmayı reddet,
@@ -1223,7 +1226,9 @@ yazıldığı için pratikte kapalı-başarısızdır.
 - **Karar: Gateway değişikliği gerekli.** `ocelot.json`'da `/api/mdm/{everything}` catch-all yok; MDM rotaları kaynak
   başına açık yazılmış (ör. `/api/mdm/brands`, `/api/mdm/brands/{everything}` — `gateway/Diten.ApiGateway/ocelot.json:3781,3798@158e0dc93`).
   Gerekli rotalar: `/api/mdm/banks`, `/api/mdm/banks/{everything}`, `/api/mdm/bank-branches/{everything}`,
-  `/api/mdm/bank-accounts`, `/api/mdm/bank-accounts/{everything}` → `localhost:5059`; `UpstreamHttpMethod` GET, POST, PUT,
+  `/api/mdm/bank-accounts`, `/api/mdm/bank-accounts/{everything}`, `/api/mdm/bank-account-purposes`,
+  `/api/mdm/bank-account-purposes/{everything}` (D24/6; uçlar ve `BankAccountPurposesController` DL-2'de, ekranı DL-4'te —
+  rota DL-2 teslimiyle birlikte istenir) → `localhost:5059`; `UpstreamHttpMethod` GET, POST, PUT,
   DELETE, OPTIONS; açık rotalar catch-all'dan önce (`routes.md`).
 - `ocelot.json` korunur: **integration-agent task'ı** olarak ayrı yürütülür.
 - Kaynak rotaları (`/api/v1/mod0289`, `/api/v1/mod0289/{everything}` — kaynak `ocelot.json:998-1022@da4abb20`, paket §C)
@@ -1324,7 +1329,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   `Guid.Empty`'ye sabitlendiğinde test kırmızıya döner (sabotaj).
 - [ ] AC-27 (zorunlu) — Bir banka oluşturma, bir hesap oluşturma, bir hesap aktivasyonu ve bir maskesiz okuma dev ortamında
   çalıştırılır; dört merkezi kayıt AUD-001 §8 sorgusuyla gösterilir, on alan işaretlenir ve hiçbirinde tanımlayıcı yoktur
-  (rapor ortamın adını yazar).
+  (rapor ortamın adını yazar). **Dilim ayrımı:** banka kısmı (bir banka oluşturmanın merkezi kaydı) DL-1'de kanıtlanır; hesap
+  oluşturma, aktivasyon ve maskesiz okuma kısmı ile AC-27'nin tam kapanışı DL-3'tedir.
 - [ ] AC-28 (zorunlu) — Tüm `Views/MasterData/{Banks,BankAccounts}/*.cshtml` dosyalarında `Layout = "_LayoutTenantShell"`
   açıkça yazılı; `_CreateEditOffcanvas.cshtml` / `_DetailsQuickView.cshtml` yok;
   `python3 .antigravity/scripts/verify_datatable_page.py . --area MasterData --module Banks --format gaps` ve aynı komut
@@ -1777,7 +1783,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-4 | Tedarikçi hesabı aktivasyonunda doğrulama kanıtı | (a) kanıt yok (b) zorunlu doğrulama kodu + dört göz (c) MOD-0031 kanıt bağlantısı zorunlu | **KARAR D24/1 (2026-10-25): (b)** — etkinleştirmede zorunlu kod (`CALLBACK_CONFIRMED` / `BANK_LETTER_ON_FILE` / `SUPPLIER_PORTAL_CONFIRMED`) ve farklı kişi; MOD-0031 kanıt bağlantısı MOD-0269 gerçek gönderiminden önce zorunlu kapı (Follow-up) | sahip (K1) |
 | O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. Defter belirteci: **KARAR D27/11** (yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında). `AuditCategory` değeri MOD-0126 O-6 ile ortak | sahip (K1); defter: D27/11 |
 | O-6 | Tam tanımlayıcının saklanması | (a) uygulama düzeyi AES-GCM (b) MongoDB istemci tarafı şifreleme (c) dış kasa referansı (d) saklamama | **KARAR D24/3 (2026-10-25): (a) — yalnız sahip onayı.** Pack'teki tasarım (AES-256-GCM, rastgele 96 bit nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar kümesi çiti, onaylı hedef + revizyon). Gerçek Mongo testleri DL-2 dilim kabul kapısında. **Güvenlik onayı KARAR D33/1 (2026-10-26): verildi** | sahip (K1) — güvenlik onayı K1 (D33/1) |
-| O-7 | RCS-001 kayıt kodları | `BNK` / `BAC` OTOMATİK · başka | **KARAR D24/4 (2026-10-25):** banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki, tedarikçide grup öneki), OTOMATİK; şube kodu doğal anahtar. `.antigravity` §3 satırı ayrı onay | sahip (K1); `.antigravity`: ayrı onay |
+| O-7 | RCS-001 kayıt kodları | `BNK` / `BAC` OTOMATİK · başka | **KARAR D24/4 (2026-10-25):** banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki, tedarikçide grup öneki), OTOMATİK; şube kodu doğal anahtar. `.antigravity` RCS-001 §3 satırları D29/2 kararıyla D30'da uygulandı (`record-coding-standard.md:68-69`) | sahip (K1); `.antigravity`: ayrı onay |
 | O-8 | Ülke kodu kaynağı | (a) yalnız ISO biçimi (b) PSS-011 (c) MDM iş ülkesi referansı | **KARAR D24/5 (2026-10-25): (a)** — ISO 3166-1 alfa-2 biçimi; MDM iş ülkesi kaynağı gelince bağlanır | sahip (K1) |
 | O-9 | Tedarikçi hesabı kapsamı | (a) kiracı geneli (b) **ilişkili şirketler** (c) kapsam yok | **KARAR D23/1 (2026-10-25): (b)** — liste, detay ve lookup yalnız tedarikçiyle MOD-0140'ta `Active` ilişkisi olan şirketin kullanıcısına; ilişkisiz 404; maskesiz okuma ayrıca izin + ilişki; `read-tenant-wide` tüm tedarikçi hesaplarını maskeli gösterir. Şirket hesapları `LegalEntityId` kapsamıyla; bankalar kiracı geneli. Kalan (karar değil): sağlayıcı ölçümü (DL-2) ve ilişkili tedarikçi listesinin 1.3.0 işlemi (DL-3) | sahip (K1) |
 | O-10 | `AccountPurpose` değer listesi | (a) serbest metin (b) kapalı kod listesi (c) **kod listesi + kiracı ekler** | **KARAR D24/6 (2026-10-25): (c) — sahibin kendi seçimi, önceki öneri (b) değil.** Sabit çekirdek kodlar + kiracı referans listesi (`BankAccountPurpose`, 7 dilde etiket) — tasarım Entity Fields → "Hesap amaçları" | sahip (K1) |
@@ -1807,7 +1813,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   genişletmesi (`AuditAggregateType`, işlem enum'u, teslim deposu koleksiyon listesi), defter + CT-DECISIONS satırı.
   **Neden önce:** banka ana verisi hassas veri içermez, denetim yolunu ve RCS bağını en düşük riskle kanıtlar. Önkoşul:
   CT-APR-02/01, kod alma izni (D1), DCP, RCS-001 servisi, CT defter kararı (D24/2, D24/4, D24/7 karar verildi). Bitiş: AC-1, 2, 3 (banka ve
-  şube kısmı), 4 (banka kısmı), 5 (banka ve şube kısmı), 6 (banka kısmı), 7, 8 (banka kısmı), 9 (banka kısmı).
+  şube kısmı), 4 (banka kısmı), 5 (banka ve şube kısmı), 6 (banka kısmı), 7, 8 (banka kısmı), 9 (banka kısmı), 27 (banka kısmı).
 - **DL-2** — Yollar: `Domain/Entities/{BankAccount,BankAccountSensitiveRead}.cs`, `Features/BankAccount/**` (şirket sahibi),
   `Rules/`, `Infrastructure/{BankData,Currency}/**`, `BankAccountsController`, `BANK-ACCOUNT-LOOKUP` sözleşme dosyası.
   **Neden ayrı:** hassas veri, şifreleme ve veri kapsamı modülün en riskli kısmıdır; bağımsız inceleme tek başına
