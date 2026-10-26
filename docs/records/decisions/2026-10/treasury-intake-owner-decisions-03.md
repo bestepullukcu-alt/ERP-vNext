@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-03
-status: approved — D36–D37 (2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D36–D38 (2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-26
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-26)
@@ -40,9 +40,20 @@ haritasında 'Documents' sahibi **MOD-0028**; Blueprint adayları MOD-0029, MOD-
    (`docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-TRM11-01.md`): kaynakta işlem atomikliği
    doğrulanmış sayılmaz, Recovery kendi testleriyle kanıtlar.
 
+## D38 — MOD-0217 MDM yerleşimi: sahip MDM sahibi yerine karar verir (soru kutusu; önerilen seçenek)
+
+Emsal: D20/1 (MOD-0289 → MDM, sahip MDM sahibi yerine karar verdi). Sahibin sorusu: "bunu main'den kendimiz çözebilir miyiz?"
+
+1. **Yerleşim:** MOD-0217 Contract Lifecycle Management (CLM) → `master-data-management` / `Diten.MdmService` (D19/1 teyit).
+   D19/1'in "MDM domain sahibinin onayı" koşulu bu kararla kapanır.
+2. **Pack:** taslak pack'i Treasury CT yazar; MDM domain-config satırı ve kimlik kaydı `reserved / planned` satırı pack ile
+   önerilir (MOD-0289 satırı da domain-config'te eksik — aynı öneride). Pack önce sahibe ZIP olarak gider, sonra CT-APR-02.
+3. **Kod alma yok:** D27/5 yalnız dört Treasury modülünü kapsar; kaynak yalnız okunur. Kod `ready-for-dev` olmadan yazılmaz.
+4. MDM sahibine (Ali) bilgi verilir; MOD-0023'te MOD-0217 iş akışı şablonu onun cevabını yine gerektirir.
+
 ## Karar olmayanlar
 
-MOD-0217 pack'inin yazılması (MDM sahibi onayı bekleniyor); MOD-0124 O-7 kur kaynağı (MOD-0048 sahibi teyidi).
+MOD-0124 O-7 kur kaynağı (MOD-0048 sahibi teyidi); MOD-0217 için MOD-0023 iş akışı şablonu (MOD-0023 sahibi).
 
 ## Bu kayıt ne değildir
 
