@@ -24,7 +24,8 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. **Kod alma yok (KARAR D38/3):** kaynak (`S@da4abb20`)
 > yalnız okunur, başvuru malzemesidir; kod Recovery'de, MDM düzeninde sıfırdan yazılır. Kod ancak paket `approved` /
 > `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02) ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra
-> yazılır. Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
+> yazılır. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket düzeyi; "— DL-n için" maddeleri o dilimin
+> önkoşulu) ve "Açık kararlar".
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D9 (başka modüldeki en küçük eklemeli değişiklik onayı; sorulmasını
 > yetkilendirir, o modül sahibinin cevabının yerine geçmez) ve **D19/1** (MOD-0217 → `master-data-management`; pack TRM-11
@@ -60,6 +61,18 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > kod alma yok, taslağı CT yazar), TRM-11 (işlem güvenceleri Recovery testiyle). MDM domain-config satırı ve kimlik kaydı
 > satırı aynı öneride CT tarafından yazılıyor (bu oturumun başında çalışma ağacında **commit edilmemiş** değişiklik olarak
 > görüldü; bu paket onları değiştirmez). Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **Revizyon 2 (2026-10-26): sahip denetimi (gap listesi 22) kapatıldı —** P1-a belge işaretçisi yazımında kesin geri alma ile
+> sonucu bilinmeyen yazım ayrıldı; telafi yalnız işaretçinin bağlı olmadığı okunarak kanıtlanınca, okuma yoksa durum
+> "bilinmiyor" ve sonra `ReconcileContractDocumentCommand` (Runtime Constraints → "Uzak çağrı sırası", AC-26, AC-49, AC-50);
+> P1-b Sync yalnız güncel onay denemesinin anahtarı ve örnek kimliğiyle eşleşen MOD-0023 örneğini kabul eder, MOD-0023 §17 rev 2
+> okuma alanlarıyla (AC-51, AC-52); P1-c MOD-0023 başlatma yanıtları kesin ret / geçici / bilinmiyor tablosuna ayrıldı, kesin
+> ret sürümü denetim kaydı ve gerekçe koduyla `Draft`'a döndürür, yeniden başlatmadan önce izin / şirket / aktör bağı yeniden
+> denetlenir (AC-53…AC-55); P2-a kesişen AC'ler dilimlere "(… kısmı)" ile bölündü, kapanış kuralı yazıldı; P2-b imzada
+> kullanılan belge geri çekilemez, son imza bütün imzaların belge başvurusunu aynı işlemde yeniden doğrular (AC-56, AC-57);
+> P2-c tek kapı kuralı: işaretsiz checklist maddeleri paket düzeyi, "— DL-n için" maddeleri o dilimin önkoşulu (O-2 → DL-2);
+> küçük: Create'in iki niyeti AC-4 ve işlem tablosunda adıyla yazıldı. Açık kararlar O-1…O-15 açık kalır; bu revizyon pack'i
+> `ready-for-dev` yapmaz.
 
 ## Module Summary
 
@@ -158,6 +171,7 @@ Kaynak tabanı `api/contracts` ve `api/v1/contracts` (`services/DitenMdmService/
 |---|---|---|
 | `DeleteContractCommand`, `BulkDeleteContractCommand` | `DELETE /api/mdm/contracts/{id}`, `DELETE /api/mdm/contracts/bulk` | kaynakta API silme yok (paket §F); Golden Reference silme seti — yalnız hiç onaya gönderilmemiş taslak, soft delete |
 | `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `GetContractDocumentContentQuery` | `POST …/{id}/versions/{versionNo}/documents` (multipart), `POST …/documents/{contentId}/withdraw`, `GET …/documents/{contentId}/content` | kaynakta yükleme web katmanında yerel geçici klasöre yazıyordu (`frontend/Diten.Web/Controllers/ContractsController.cs:712-748@da4abb20`, paket §D) — taşınmaz; D37 yolu |
+| `ReconcileContractDocumentCommand` | `POST …/{id}/versions/{versionNo}/documents/{contentId}/reconcile` | işaretçi yazımının sonucu bilinmediğinde (Runtime Constraints → "Uzak çağrı sırası") bağın sonradan okunarak çözülmesi; MDM'ye yazmaz, telafiyi yalnız kanıtla çağırır (Revizyon 2, P1-a) |
 | `WithdrawContractVersionCommand` | `POST …/{id}/versions/{versionNo}/withdraw` | açık değişiklik taslağını kapatma (silme değil) |
 
 - **DTO'lar (tek dosya, Golden Reference):** `ContractModels.cs` — `ContractListItemDto`, `ContractDetailDto` (+
@@ -167,7 +181,8 @@ Kaynak tabanı `api/contracts` ve `api/v1/contracts` (`services/DitenMdmService/
   `currencyCode`) yalnız `mdm.contracts.value.read` sahibine dolu döner; diğerlerine `null` + `valueMasked: true`.
 - **Portlar (Application):** `IRecordCodePort` (RCS-001), `ICurrencyReferencePort` (MOD-0048), `IDocumentBinaryStorePort`
   (MOD-0262-FU01: sakla, meta oku, akış oku, telafi), `IDocumentRecordPort` (MOD-0028 — yüzeyi O-2'ye bağlı),
-  `IContractWorkflowPort` (MOD-0023: başlat, nesneye göre örnek oku), `IContractDataScopeSource` (SEC-002). Şirket için port
+  `IContractWorkflowPort` (MOD-0023: başlat, nesneye göre örnek oku `includeDeleted=true`, örnek geçmişi oku — MOD-0023 §17
+  rev 2 alanlarıyla), `IContractDataScopeSource` (SEC-002). Şirket için port
   yok: `ILegalEntityRepository` süreç içi okunur (aynı servis). Tedarikçi karşı tarafı için port O-7'ye bağlı.
 - **Frontend rotaları:** `/MasterData/Contracts` (+ `/Create`, `/Edit/{id}`, `/Details/{id}`).
 
@@ -190,8 +205,8 @@ vardı (`Mod0217ContractEnums.cs@da4abb20`, paket §E); ara değerlerin adları 
 
 | Durum | Değer | Anlam | Giriş | Çıkış |
 |---|---|---|---|---|
-| Draft | 1 | düzenlenebilir | Create (sürüm 1), CreateAmendment, onay reddi / iptali | Submit, Withdraw (yalnız değişiklik sürümü) |
-| InApproval | 2 | donmuş; MOD-0023 örneği bekleniyor | Submit | Sync → Approved / Draft |
+| Draft | 1 | düzenlenebilir | Create (sürüm 1), CreateAmendment, onay reddi / iptali, MOD-0023 başlatmasının **kesin reddi** (Runtime Constraints → "Başlatma yanıtı sınıfları") | Submit, Withdraw (yalnız değişiklik sürümü) |
+| InApproval | 2 | donmuş; MOD-0023 örneği bekleniyor. `WorkflowInstanceId` boşsa **başlatma bekliyor** alt hâli (başlatma sonucu geçici hata ya da bilinmiyor) | Submit | Sync → Approved / Draft; Submit (kesin ret) → Draft; başlatma bekliyorken yalnız Sync ya da aynı anahtarla Submit tekrarı |
 | Approved | 3 | onaylı; imza bekliyor; yalnız imza ve imzalı kopya eklenir | Sync (onay) | RecordSignature (son imza) → Effective |
 | Effective | 4 | yürürlükteki sürüm (sözleşmede tek) | son imzanın kaydı | Superseded |
 | Superseded | 5 | yerini sonraki sürüm aldı | sonraki sürümün Effective olması | — |
@@ -256,13 +271,14 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 | CurrencyCode | string(3)? | `ContractValue` doluysa zorunlu; `^[A-Z]{3}$`, MOD-0048 listesinde |
 | ContractValue | decimal? | ≥ 0; küsurat hanesi MOD-0048'den (MOD-0289 D24/8 deseni — bu paket için karar değil, O-11) |
 | Summary | string? | ≤ 2000 |
-| Signatories | `List<ContractSignatory>` | `Id` (sunucu), `Side` (`Internal`=1, `Counterparty`=2), `Name` 1..140, `RoleTitle` ≤ 100, `InternalUserId` Guid? (`Internal`'da isteğe bağlı), `SignedAt` DateTimeOffset?, `SignatureRecordedBy` Guid?, `SignedCopyContentId` Guid?; onaya göndermeden önce en az bir `Internal` ve bir `Counterparty` (öneri) |
-| Documents | `List<ContractDocumentRef>` | `ContentId` (MOD-0262-FU01), `DocumentRole` (`Draft`=1, `SignedCopy`=2, `Annex`=3), `FileName`, `MediaType`, `ByteSize`, `Checksum` (MOD-0262'nin hesapladığı, istemciden alınmaz), `AddedAt`, `AddedBy`, `WithdrawnAt` / `WithdrawnBy`, `DocumentRecordRef` string? (MOD-0028, O-2) |
-| WorkflowIdempotencyKey | string? | `mdm-contract:{ContractId}:v{VersionNo}:a{ApprovalAttempt}`; Submit'te sunucu yazar |
-| WorkflowInstanceId | Guid? | MOD-0023 örneği; başlatma cevabı ya da nesneye göre okuma ile yazılır |
-| ApprovalAttempt | int | her Submit'te +1 |
-| SubmittedAt / SubmittedBy | DateTimeOffset? / Guid? | Submit |
-| LastApprovalOutcome / LastApprovalOutcomeAt | enum `None`=0, `Approved`=1, `Rejected`=2, `Cancelled`=3 / DateTimeOffset? | Sync |
+| Signatories | `List<ContractSignatory>` | `Id` (sunucu), `Side` (`Internal`=1, `Counterparty`=2), `Name` 1..140, `RoleTitle` ≤ 100, `InternalUserId` Guid? (`Internal`'da isteğe bağlı), `SignedAt` DateTimeOffset?, `SignatureRecordedBy` Guid?, `SignedCopyContentId` Guid?; onaya göndermeden önce en az bir `Internal` ve bir `Counterparty` (öneri). **`SignedCopyContentId` imza kaydında bir kez yazılır, sonra değişmez**; gösterdiği belge geri çekilemez (Validation Rules → WithdrawContractDocument) |
+| Documents | `List<ContractDocumentRef>` | `ContentId` (MOD-0262-FU01; sürüm içinde belge anahtarı), `DocumentRole` (`Draft`=1, `SignedCopy`=2, `Annex`=3), `FileName`, `MediaType`, `ByteSize`, `Checksum` (MOD-0262'nin hesapladığı, istemciden alınmaz), `AddedAt`, `AddedBy`, `WithdrawnAt` / `WithdrawnBy`, `DocumentRecordRef` string? (MOD-0028, O-2). Bir imzacının `SignedCopyContentId`'si olan belge **imzaya bağlıdır**: geri çekme 409 `MDM_CONTRACT_DOCUMENT_IN_USE` |
+| WorkflowIdempotencyKey | string? | **güncel onay denemesinin** anahtarı `mdm-contract:{ContractId}:v{VersionNo}:a{ApprovalAttempt}`; her Submit'te sunucu yeni denemeyle yazar (önceki denemenin anahtarı yeniden kullanılmaz) |
+| WorkflowInstanceId | Guid? | güncel denemenin MOD-0023 örneği; yalnız başlatma **doğrulandığında** yazılır (başlatma 200/201 yanıtı ya da Sync'te güncel anahtarla tek eşleşen satır); her Submit'te `null`'a döner |
+| ApprovalAttempt | int | her Submit'te +1; güncel deneme = (`ApprovalAttempt`, `WorkflowIdempotencyKey`, `WorkflowInstanceId`) üçlüsü |
+| SubmittedAt / SubmittedBy | DateTimeOffset? / Guid? | Submit (güncel deneme); aynı anahtarla tekrar yalnız `SubmittedBy` kullanıcısınca |
+| LastApprovalOutcome / LastApprovalOutcomeAt | enum `None`=0, `Approved`=1, `Rejected`=2, `Cancelled`=3, `StartRefused`=4 / DateTimeOffset? | Sync; `StartRefused` Submit'in kesin ret yolunda |
+| LastApprovalReasonCode | string? | yalnız `StartRefused`'da: `WORKFLOW_REQUEST_INVALID` \| `WORKFLOW_FORBIDDEN` \| `WORKFLOW_SOD_VIOLATION` \| `WORKFLOW_TEMPLATE_NOT_FOUND` \| `WORKFLOW_START_CLOSED` (öneri; MOD-0023 hata gövdesi kodları DL-3 başında ölçülür, izin ile SoD ayırt edilemezse ikisi de `WORKFLOW_FORBIDDEN`) |
 | CreatedBy / UpdatedBy | Guid? | token `sub` |
 | AuditIntents / AuditIntentReceipts | — | `IAuditIntentAggregate` |
 
@@ -304,7 +320,11 @@ taşınmaz (paket §L.12: kurulu indeks, göç, backfill yok).
 503, `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE` 503, `MDM_CONTRACT_AUDIT_UNAVAILABLE` 503 (niyet yazılamadı; iş verisi yok),
 `MDM_CONTRACT_DOCUMENT_STORE_UNAVAILABLE` 503, `MDM_CONTRACT_DOCUMENT_REJECTED` 400 (MOD-0262 biçim / tür / boyut reddi),
 `MDM_CONTRACT_DOCUMENT_TOO_LARGE` 413, `MDM_CONTRACT_DOCUMENT_RECORD_UNAVAILABLE` 503 (MOD-0028, O-2),
-`MDM_CONTRACT_WORKFLOW_UNAVAILABLE` 503, `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` 503 (MOD-0023 yanıtı tanınmıyor / çelişkili),
+`MDM_CONTRACT_DOCUMENT_IN_USE` 409 (imzaya bağlı belgeyi geri çekme), `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN` 503
+(işaretçi yazımının sonucu bilinmiyor ve okunamadı; yanıtta `contentId`, telafi yok),
+`MDM_CONTRACT_WORKFLOW_UNAVAILABLE` 503, `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` 503 (MOD-0023 yanıtı tanınmıyor / çelişkili /
+birden çok eşleşme / başlatma sonucu bilinmiyor), `MDM_CONTRACT_WORKFLOW_START_REFUSED` 422 (MOD-0023 başlatmayı kesin
+reddetti; yanıtta `reasonCode`), `MDM_CONTRACT_SUBMITTER_MISMATCH` 409 (aynı anahtarla tekrarı `SubmittedBy` dışındaki kullanıcı istedi),
 `MDM_CONTRACT_TRANSACTION_UNAVAILABLE` 503 (işlem desteklenmiyor ya da denemeler tükendi). Kullanıcıya giden ileti resx
 anahtarıdır.
 
@@ -368,7 +388,7 @@ MOD-0018 / Auth izin kataloğu ve açık atama listesi (O-4); MDM domain-config 
 |---|---|---|---|
 | **Document Management — MOD-0028** (D37) | belge kaydı ve sürümleri | pack `approved` (`execution/domains/platform-shared-services/module-packs/MOD-0028-document-management.md:9`); sahip olunan nesneler koleksiyon / baz / şablon / `ContentRef` (`:128-145`); **kapsam dışı:** "Controlled document lifecycle; owned by MOD-0029" ve "Binary upload/download" (`:116-126`). Platform'daki belge kaydı + sürüm uçları (`api/v1/document-management/controlled-documents/{documentId}/versions`) kodda **MOD-0029-FU01** olarak işaretli (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentManagementControlledDocumentsController.cs:18,105-122`) | **D37'nin MOD-0028 kısmını karşılayan bir iş belgesi kaydı yüzeyi bu oturumda bulunamadı** → O-2; çözülmeden DL-2 başlamaz. MOD-0217 tüketicidir; MOD-0028'de değişiklik XMC-001 ile sahibine sorulur |
 | **Document Management — MOD-0262-FU01** (D37) | dosya ikilisi | pack `ready-for-dev`, `runtime_implementation: in-progress` (`MOD-0262-FU01-document-binary-store.md:10,20`); kod var: `POST /api/v1/document-repository/objects` (multipart: `file`, `owningItemId`, `owningVersionId`, `companyId`, `scope`), `GET objects/{contentId}`, `GET objects/{contentId}/content`, `POST objects/{contentId}/compensate` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:40,59-119`); izinler `platform.document-repository.read` / `.manage`; Gateway rotası var (`ocelot.json:1857-1885`); pack kapanışı "KISMİ", çalışma zamanı smoke koşulmadı (pack §19) | MdmService'ten hangi kimlikle çağrılacağı **ölçülmedi** (O-13); canlı doğrulama kaydı yokken DL-2 kabul kapısı geçmez |
-| MOD-0023 Workflow Designer | onay | pack `ready-for-dev` (`MOD-0023-workflow-config-approval-templates.md:8`); `POST /api/v1/workflow/instances` (`WorkflowDefinitionsController.cs:87@31c448d5d`), `GET instances/by-objects` (`:121`), görev uçları (`:196-277`); aynı `IdempotencyKey` sıralı tekrarda kayıtlı sonucu döner, eşzamanlı yarış **ölçülmedi** (D21/4) | MOD-0217 iş akışı şablonu yok — **O-3, MOD-0023 sahibi (Ali), D38/4**; örnek durum adları ve eşlemesi DL-3 başında ölçülür |
+| MOD-0023 Workflow Designer | onay | pack `ready-for-dev` (`MOD-0023-workflow-config-approval-templates.md:8`); `POST /api/v1/workflow/instances` (`WorkflowDefinitionsController.cs:87@31c448d5d`), `GET instances/by-objects` (`:121`), görev uçları (`:196-277`); aynı `IdempotencyKey` sıralı tekrarda kayıtlı sonucu döner, eşzamanlı yarış **ölçülmedi** (D21/4) | MOD-0217 iş akışı şablonu yok — **O-3, MOD-0023 sahibi (Ali), D38/4**; örnek durum adları ve eşlemesi DL-3 başında ölçülür. Sync'in güncel denemeye bağlanması ve başlatma yanıtı sınıfları MOD-0023 §17 rev 2'ye (803fbaa5…, PR #235: `by-objects` / `history` `idempotencyKey`, `isDeleted`, `approvalTaskId`; `includeDeleted=true`; kapanış kaydı) dayanır — kodu MOD-0023 sahibinin WP'siyle gelir, bugün main'de **ölçülmedi** |
 | Audit Trail — MDM izi + MOD-0021 | yazma kaydı | `mdm-guvenilir-kaynak-niyeti` (yol `b`, CT kararı 2026-10-07) ve `mdm-merkezi-iletim` (yol `b`, en iyi çaba) defterde kabul edilmiş (`tests/architecture/audit-ledger/Diten.MdmService.md:10-14`) | **bugün var**; yeni koleksiyonlar için genişletme + defter belirteci ayrı CT kararı (O-6). Kaynağın röle bağdaştırıcısı taşınmaz (paket §D, §L.2) |
 | MOD-0220 Legal Entity | yöneten şirket, şirket karşı tarafı | **var, aynı servis** — `OperationalStatus`, `ApprovalStatus` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`), `IsReferenceable` (`:60`) | süreç içi depo okuması; LE kaydına yazılmaz |
 | MOD-0018 RBAC | `mdm.contracts.*` anahtarları | MDM manifest sağlayıcısıyla izin kaydı deseni var (`BrandProductMasterManifestProvider.cs:13`); `mdm.contracts` anahtarı kodda yok (`git grep` 0) | anahtar listesi öneri — O-4 (MOD-0018 sahibi); açık atama listesi Auth değişikliği (D9) |
@@ -394,9 +414,9 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | platform-shared-services | erişilemez → 503; listede yok → 400 | sahte istemci · dev ortamında TRY / EUR | DL-1 |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` | platform-shared-services | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | master-data-management + CT | niyet yazılamazsa komut 503, iş verisi yok | AC-11 (sabotaj) · bir sözleşme oluşturmanın merkezi kaydı (AUD-001 §8) | DL-1 |
-| MOD-0262-FU01 | `/api/v1/document-repository/objects` (kod; sözleşme dosyası yok) | platform-shared-services | erişilemez / 5xx / zaman aşımı → 503, işaretçi yok; ret → 400 / 413; işaretçi yazımı başarısız → `compensate` çağrısı | AC-24…AC-29 (sahte istemci) · dev ortamında yükle / indir / başka kiracı 404 | DL-2 |
+| MOD-0262-FU01 | `/api/v1/document-repository/objects` (kod; sözleşme dosyası yok) | platform-shared-services | erişilemez / 5xx / zaman aşımı → 503, işaretçi yok; ret → 400 / 413; işaretçi yazımı kesin geri alındı → `compensate`; sonucu bilinmiyor → önce okuma, telafi yalnız bağsızlık kanıtlanınca; okuma yok → bilinmiyor, telafi yok | AC-24…AC-29, AC-49, AC-50 (sahte istemci) · dev ortamında yükle / indir / başka kiracı 404 | DL-2 |
 | MOD-0028 belge kaydı | **TBD (O-2)** | platform-shared-services | erişilemez → 503 `MDM_CONTRACT_DOCUMENT_RECORD_UNAVAILABLE` | O-2 kararından sonra yazılır | DL-2 |
-| MOD-0023 | `/api/v1/workflow/instances` + `instances/by-objects` (kod) + MOD-0217 şablonu (**yok**, O-3) | platform-shared-services | başlatma erişilemez → sürüm `InApproval` + örnek kimliği boş, 503; okuma tanınmayan durum → 503, durum değişmez | AC-33…AC-36 · dev ortamında onay ve ret turu | DL-3 |
+| MOD-0023 | `/api/v1/workflow/instances` + `instances/by-objects` + `instances/{id}/history` (kod) + MOD-0023 §17 rev 2 okuma alanları (803fbaa5…, PR #235) + MOD-0217 şablonu (**yok**, O-3) | platform-shared-services | başlatma: kesin ret → `Draft` + gerekçe kodu, 422; geçici → `InApproval` başlatma bekliyor, 503; bilinmiyor → aynı, 503 + uyarı; Sync yalnız güncel anahtar + örnek kimliğiyle eşleşen tek satırı kabul eder; birden çok / silinmiş / tanınmayan → 503, durum değişmez | AC-33…AC-36, AC-51…AC-55 · dev ortamında onay ve ret turu | DL-3 |
 
 ## Runtime Constraints
 
@@ -432,9 +452,9 @@ Kaynakta `StartSession` / `WithTransaction` vardı (`Mod0217ContractAggregateSto
 
 | Grup | Belgeler | Test |
 |---|---|---|
-| Create | `Contract` + `ContractVersion` (v1) + iki denetim niyeti | AC-13 |
+| Create | `Contract` + `ContractVersion` (v1) + **tam iki** denetim niyeti, aynı işlemde: `Contract.AuditIntents`'e `mdm.contract.created`, `ContractVersion.AuditIntents`'e `mdm.contract-version.created` (başka niyet yok) | AC-4, AC-13 |
 | CreateAmendment | `Contract` (`LatestVersionNo`, `OpenVersionNo` CAS) + yeni `ContractVersion` + niyetler | AC-31, AC-39 |
-| RecordSignature (son imza) | sürüm → Effective + önceki Effective → Superseded + `Contract` (Status, `CurrentEffective*`, `OpenVersionNo = null`) + niyetler | AC-37 |
+| RecordSignature (son imza) | aynı işlemde önce **bütün imzacıların** `SignedCopyContentId`'si yeniden doğrulanır (her biri bu sürümde `SignedCopy` rolünde, `WithdrawnAt` boş; biri bile tutmazsa işlem iptal ve 422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`, hiçbir değişiklik kalmaz); sonra sürüm → Effective + önceki Effective → Superseded + `Contract` (Status, `CurrentEffective*`, `OpenVersionNo = null`) + niyetler | AC-37, AC-56 |
 | Delete / BulkDelete | `Contract` + sürüm 1 (+ kimlik başına niyet) | AC-8, AC-9 |
 | Withdraw (sürüm) | sürüm + `Contract.OpenVersionNo` + niyetler | AC-39 |
 | Terminate | `Contract` + açık sürüm (varsa Withdrawn) + niyetler | AC-41 |
@@ -447,20 +467,74 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
 
 - **Belge ekleme (MOD-0262-FU01):** (1) sözleşme ve sürüm kapsam / durum kontrolü (Draft; `SignedCopy` için Approved da);
   (2) MOD-0262'ye akışla yükle (`owningItemId = ContractId`, `owningVersionId = ContractVersion.Id`, `companyId =
-  GoverningLegalEntityId`, `scope` O-13'te ölçülür); (3) dönen `ContentRef` işaretçisini sürüme koşullu yaz + niyet;
-  (4) (3) başarısızsa `POST objects/{contentId}/compensate` çağrılır ve 409 / 503 döner; telafi de başarısızsa yetim ikili
-  MOD-0262-FU03 mutabakatına kalır ve uygulama günlüğüne (içerik olmadan) yazılır. Belge dosyası MdmService'te diske ya da
-  geçici klasöre yazılmaz; istek bedeni ara belleğe tümüyle alınmaz.
-- **Onaya gönderme (MOD-0023):** (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`,
-  `WorkflowIdempotencyKey` + niyet; (2) aynı anahtarla `POST /api/v1/workflow/instances`; (3) dönen örnek kimliği koşullu
-  yazılır. (2) başarısızsa sürüm `InApproval` + örnek kimliği boş kalır ve 503 döner; aynı kullanıcı Submit'i yeniden
-  çağırabilir (yalnız örnek kimliği boşken; aynı anahtar) ya da Sync örneği `instances/by-objects` ile bulur. Sürüm
-  `InApproval`'da donmuştur; içerik / anahtar uyuşmazlığı oluşamaz.
-- **Onay sonucu (Sync):** MOD-0023'ten okunur; terminal onay → `Approved`; terminal ret / iptal → `Draft` +
-  `LastApprovalOutcome`; terminal olmayan → değişiklik yok, 200; tanınmayan / çelişkili / yok → 503
-  `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN`, değişiklik yok. MOD-0023 durum adlarının eşleme tablosu DL-3 başında
-  `WorkflowInstanceStatusDto` okunarak yazılır (bu oturumda ölçülmedi). Sync'i yalnız kullanıcı komutu tetikler (arka plan işi
-  v1'de yok — Follow-up).
+  GoverningLegalEntityId`, `scope` O-13'te ölçülür); (3) dönen `ContentRef` işaretçisini sürüme koşullu yaz + niyet
+  (`Version` CAS; yazım sunucu tarafı süre sınırı taşır); (4) (3)'ün sonucu aşağıdaki üç sınıftan biridir. **Telafi
+  (`POST objects/{contentId}/compensate`) yalnız yazımın uygulanmadığı kesinse ya da okunarak kanıtlanınca çağrılır;
+  körlemesine telafi yasaktır** — yazım işlenmiş, yalnız yanıt kaybolmuş olabilir; o durumda telafi, sürümün gösterdiği
+  dosyayı siler.
+
+  | Sınıf | (3)'te görülen | Yapılan | Yanıt |
+  |---|---|---|---|
+  | (4a) kesin geri alma — yazım **kesinlikle uygulanmadı** | CAS eşleşmedi (`matchedCount = 0`: bayat sürüm ya da durum değişti); işlem commit çağrılmadan iptal edildi; doğrulama ya da tekil indeks hatası; niyet yazımı reddedildi | telafi tam bir kez | 409 (CAS) / 503 |
+  | (4b) sonuç bilinmiyor — yazım işlenmiş olabilir | zaman aşımı; bağlantı sıfırlama / kopma; `UnknownTransactionCommitResult`; yazma onayı (write concern) zaman aşımı ya da hatası; tanınmayan sürücü hatası | **önce mutabakat okuması:** sürüm (TenantId, ContractId, VersionNo) çoğunluk (`majority`) okumasıyla, (3)'ün süre sınırı geçtikten sonra okunur ve belge anahtarı `Documents[].ContentId = contentId` aranır. Bulundu → bağlı: telafi **yok**, işaretçi yerinde, sonuç başarılı. Bulunmadı → bağsızlık kanıtlandı: telafi tam bir kez | bağlı → 201 (aynı `ContentId`, tek niyet); bağsız → 503 |
+  | (4c) okuma da yok | (4b)'nin okuması erişilemez, zaman aşımına uğradı ya da çoğunluk okuması verilemedi | telafi **yok**; durum **bilinmiyor**; uygulama günlüğüne yapılandırılmış uyarı (kiracı, sözleşme, sürüm, `contentId`; içerik ve dosya adı yok); nesne yetim sayılmaz, MOD-0262-FU03 mutabakatına verilmez | 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN` + `contentId` |
+
+  **(4c)'nin sonradan çözümü:** `ReconcileContractDocumentCommand` (izin `mdm.contracts.documents.create`, aynı kiracı / kapsam
+  / durum denetimi) (4b)'nin okumasını yeniden yapar: bağlı → 200, telafi yok; bağsızlık kanıtlandı **ve** MOD-0262 meta okuması
+  nesnenin bu sözleşmenin bu sürümüne ait olduğunu gösterdi (`owningItemId = ContractId`, `owningVersionId = ContractVersion.Id`;
+  bu alanların meta yanıtında döndüğü DL-2 başında ölçülür — dönmüyorsa telafi yok, 503) → telafi tam bir kez, 200; okuma
+  yine yok → 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`, telafi yok; nesne başka sözleşmenin / sürümün ya da başka kiracının
+  → 404, telafi yok. Komut MDM'ye yazmaz. Kanıtlı telafi de başarısızsa yetim ikili MOD-0262-FU03 mutabakatına kalır ve
+  uygulama günlüğüne (içerik olmadan) yazılır. Belge dosyası MdmService'te diske ya da geçici klasöre yazılmaz; istek bedeni
+  ara belleğe tümüyle alınmaz.
+- **Onaya gönderme (MOD-0023):** (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`, yeni deneme
+  anahtarı `WorkflowIdempotencyKey`, `WorkflowInstanceId = null`, `SubmittedAt` / `SubmittedBy` + niyet
+  `mdm.contract-version.submitted`; (2) aynı anahtarla `POST /api/v1/workflow/instances`; (3) yanıt aşağıdaki tabloya göre
+  işlenir. Başarı (200 / 201): dönen örnek kimliği koşullu yazılır + niyet `mdm.contract-version.workflow-start-confirmed`
+  (başlatma doğrulandı). Sürüm `InApproval`'da donmuştur; içerik / anahtar uyuşmazlığı oluşamaz.
+
+  **Başlatma yanıtı sınıfları** (MOD-0023 §17 rev 2 anlamıyla — 803fbaa5…, PR #235; yalnız MOD-0023'ün tanınan hata
+  gövdesiyle sınıflanır, tanınmayan gövdeli 4xx — ör. Gateway rota 404'ü — "bilinmiyor"dur):
+
+  | Sınıf | MOD-0023 yanıtı | Sürüm | MOD-0217 yanıtı |
+  |---|---|---|---|
+  | Kesin ret — başlatma kesinlikle olmadı ya da üreticinin kapanış kaydıyla kapandı | 400 doğrulama; 403 izin ya da SoD; 404 şablon bulunamadı; 409 `WORKFLOW_INSTANCE_START_CONFLICT` **yalnız** güncel anahtarlı örneğin `history`'sinde üreticinin kapanış kaydı (`workflow-start-recovery-close:{instanceId:N}` anahtarlı satır — MOD-0023 AC-W12: hiç bütün olmamış başlatma kapatıldı) okunduğunda | aynı koşullu yazımda `InApproval → Draft` (Submit öncesi hâl), `LastApprovalOutcome = StartRefused`, `LastApprovalReasonCode`, `WorkflowInstanceId = null` + niyet `mdm.contract-version.submission-refused`; `ApprovalAttempt` geri alınmaz (anahtar yandı; sonraki Submit `a{n+1}`) | 422 `MDM_CONTRACT_WORKFLOW_START_REFUSED` + `reasonCode` |
+  | Geçici — gönderilmedi ya da işlenmedi | bağlantı kurulamadı ya da gönderimden önce zaman aşımı; 5xx; 503 (MOD-0023'ün ara "aynı anahtarla tekrar" yanıtı dahil); 401 (oturum yenilenir) | `InApproval`, başlatma bekliyor (`WorkflowInstanceId = null`); değişiklik yok | 503 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE` |
+  | Bilinmiyor — işlenmiş olabilir | gönderimden **sonra** zaman aşımı ya da bağlantı kopması; 409 `WORKFLOW_TRANSITION_CONFLICT`; 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`; 503 `WORKFLOW_TRANSITION_CONFLICT`; kapanış kaydı okunamayan ya da bulunmayan 409 `WORKFLOW_INSTANCE_START_CONFLICT` (anahtar kötüye kullanımı dahil); tanınmayan gövde | `InApproval`, başlatma bekliyor; değişiklik yok; uyarı günlüğü | 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` |
+
+  - **Zaman aşımı ve `WORKFLOW_TRANSITION_CONFLICT` hiçbir zaman kesin ret değildir** (MOD-0023 §17.7/6 tüketici kuralı):
+    sürüm bunlarda `Draft`'a dönmez — dönseydi sonraki Submit yeni anahtarla ikinci bir örnek açabilirdi.
+  - Geçici ve bilinmiyor sınıfı **yalnız** Sync (güncel anahtarla okuma) ya da aynı anahtarla Submit tekrarı ile çözülür; yeni
+    anahtar üretilmez. Tekrar yalnız `WorkflowInstanceId` boşken ve tekrardan hemen önceki `instances/by-objects`
+    (`includeDeleted=true`) okumasında güncel anahtarlı satır yokken gönderilir; satır varsa tekrar yerine Sync'in eşleme kuralı
+    uygulanır; silinmiş satır görüldüyse tekrar gönderilmez.
+  - **Yeniden başlatmadan önce yeniden denetim** (aynı anahtarla tekrar ve kesin retten sonraki yeni Submit): çağıranın
+    `mdm.contracts.submit-approval` izni ve yöneten şirketteki veri kapsamı (SEC-002); yöneten şirketin uygunluğu (aynı kiracı,
+    silinmemiş, `OperationalStatus = Active` — AC-18 kuralı); aktör bağı / SoD: aynı anahtarla tekrarı yalnız `SubmittedBy`
+    yapar (MOD-0023 farklı başlatanı anahtar kötüye kullanımı sayar — §17 AC-W11), başkası 409
+    `MDM_CONTRACT_SUBMITTER_MISMATCH`; onaylayıcı SoD'si MOD-0023'te yeniden değerlendirilir (403 → kesin ret). Denetimlerden
+    biri tutmazsa MOD-0023'e çağrı yapılmaz ve sürüm değişmez.
+  - `SubmittedBy` artık tekrar edemiyorsa (ayrıldı, yetkisi alındı) başlatma bekleyen sürüm yalnız Sync ile çözülür; yönetici
+    çözüm yolu Follow-up.
+- **Onay sonucu (Sync) — güncel denemeye bağlı:** MOD-0023 `GET instances/by-objects` `includeDeleted=true` ile okunur.
+  Okuma alanları MOD-0023 §17 rev 2 (803fbaa5…, PR #235): `by-objects` → `idempotencyKey`, `isDeleted`; `history` →
+  `approvalTaskId`, `idempotencyKey`, `isDeleted`. Eşleme kuralı:
+  1. Aday satırlar yalnız `idempotencyKey = WorkflowIdempotencyKey` (güncel deneme) olanlardır. Önceki denemelerin (reddedilmiş,
+     iptal edilmiş, kesin reddedilmiş) ve başka nesnenin örnekleri anahtarı farklı olduğu için **yok sayılır**; nesneye göre
+     "en yeni örnek" alınmaz. `idempotencyKey`'i boş dönen satır eşleşmez (alan yoksa okuma durumu değiştirmez).
+  2. `WorkflowInstanceId` doluysa adayın kimliği ona da eşit olmalıdır; kimlik ile anahtardan yalnız biri eşitse → bilinmiyor.
+  3. Tam bir aday, silinmemiş → durum eşlemesi: terminal onay → `Approved`; terminal ret / iptal → `Draft` +
+     `LastApprovalOutcome`; terminal olmayan → durum değişmez, 200. `WorkflowInstanceId` boşsa aynı yazımda örnek kimliği
+     yazılır (başlatma doğrulandı, niyet `mdm.contract-version.workflow-start-confirmed`).
+  4. Birden çok aday → durum **değiştirilmez**; 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` + uyarı günlüğü.
+  5. Aday silinmiş (`isDeleted = true`) → durum değişmez, bilinmiyor + uyarı; aynı anahtarla tekrar gönderilmez.
+  6. Aday yok: `WorkflowInstanceId` boşsa başlatma görünmüyor → değişiklik yok, 200 (aynı anahtarla tekrar açık); doluysa →
+     bilinmiyor + uyarı, 503.
+  7. Tanınmayan / çelişkili durum → 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN`, değişiklik yok.
+
+  MOD-0023 durum adlarının eşleme tablosu DL-3 başında `WorkflowInstanceStatusDto` okunarak yazılır (bu oturumda
+  ölçülmedi). §17 rev 2 okuma alanları main'de değilken Sync hiçbir sürümü `Approved`'a geçirmez (kural 1). Sync'i yalnız
+  kullanıcı komutu tetikler (arka plan işi v1'de yok — Follow-up).
 
 ### Veri kapsamı (SEC-002) — kapsam cümlesi
 
@@ -482,12 +556,15 @@ Değerin okunması denetlenmez (AUD-001 §7'nin üç sınıfına girmez); değer
 ### Hata sınıflandırması
 
 - **400** — biçim / zorunlu alan / bilinmeyen kod / istekte `tenantId` / istekte `Code` / `Idempotency-Key` yok.
-- **422** — tanımlı ama iş kuralına uymayan girdi (şirket aktif değil, karşı taraf uygun değil, imzacı eksik, imzalı kopya yok).
+- **422** — tanımlı ama iş kuralına uymayan girdi (şirket aktif değil, karşı taraf uygun değil, imzacı eksik, imzalı kopya yok);
+  MOD-0023'ün başlatmayı **kesin** reddi (`MDM_CONTRACT_WORKFLOW_START_REFUSED`, yalnız "Başlatma yanıtı sınıfları"nın kesin ret
+  satırı — erişilemezlik ya da bilinmeyen sonuç hiçbir zaman 422 değildir).
 - **404** — kayıt yok, silinmiş, başka kiracı, kapsam dışı.
-- **409** — durum geçişi geçersiz, bayat `If-Match`, açık sürüm var, değişmez alan, anahtar yeniden kullanımı.
+- **409** — durum geçişi geçersiz, bayat `If-Match`, açık sürüm var, değişmez alan, anahtar yeniden kullanımı, imzaya bağlı
+  belgeyi geri çekme (`MDM_CONTRACT_DOCUMENT_IN_USE`), başka kullanıcının aynı anahtarla tekrar isteği.
 - **503** — bağımlılık erişilemez ya da yanıtı tanınmıyor (RCS-001, MOD-0048, MOD-0262, MOD-0028, MOD-0023, denetim niyeti,
-  işlem). **Bağımlılık hatası hiçbir zaman 400 / 422 olarak dönmez; geçersiz girdi hiçbir zaman 503 dönmez** (AC-19, AC-25,
-  AC-34).
+  işlem) ya da işaretçi / başlatma sonucu bilinmiyor. **Bağımlılık hatası hiçbir zaman 400 / 422 olarak dönmez; geçersiz girdi
+  hiçbir zaman 503 dönmez** (AC-19, AC-25, AC-34, AC-54).
 
 ## Layout & Shell Contract
 
@@ -511,7 +588,7 @@ Golden Reference **Compact** birebir (`services/Diten.DevEnablementService/src/D
 Features/Contract/
   Commands/        CreateContractCommand.cs, UpdateContractCommand.cs, DeleteContractCommand.cs, BulkDeleteContractCommand.cs,
                    UpdateContractVersionCommand.cs, AddContractDocumentCommand.cs, WithdrawContractDocumentCommand.cs,
-                   SubmitContractVersionForApprovalCommand.cs, SyncContractVersionApprovalCommand.cs,
+                   ReconcileContractDocumentCommand.cs, SubmitContractVersionForApprovalCommand.cs, SyncContractVersionApprovalCommand.cs,
                    RecordContractSignatureCommand.cs, CreateContractAmendmentCommand.cs, WithdrawContractVersionCommand.cs,
                    RecordContractRenewalDecisionCommand.cs, TerminateContractCommand.cs, ArchiveContractCommand.cs
   Queries/         GetContractListQuery.cs, GetContractByIdQuery.cs, GetContractVersionListQuery.cs,
@@ -521,7 +598,9 @@ Features/Contract/
   Validators/      CreateContractValidator.cs, UpdateContractValidator.cs, UpdateContractVersionValidator.cs,
                    RecordContractSignatureValidator.cs, CreateContractAmendmentValidator.cs,
                    RecordContractRenewalDecisionValidator.cs, TerminateContractValidator.cs, GetContractListValidator.cs
-  Rules/           ContractStateMachine.cs, ContractAllowedActions.cs, ContractTypeCatalog.cs (sabit çekirdek kodlar; saf işlevler)
+  Rules/           ContractStateMachine.cs, ContractAllowedActions.cs, ContractTypeCatalog.cs,
+                   WorkflowStartOutcomeClassifier.cs (başlatma yanıtı sınıfları), WorkflowAttemptMatcher.cs (Sync eşleme kuralı)
+                   (sabit çekirdek kodlar; saf işlevler)
   ContractModels.cs
 Infrastructure/DocumentRepository/   DocumentBinaryStoreClient.cs (MOD-0262-FU01)
 Infrastructure/DocumentRecords/      DocumentRecordClient.cs (MOD-0028 — O-2)
@@ -585,7 +664,8 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 | Summary | Hayır | ≤ 2000 | — | — |
 | AmendmentReason | Amendment'ta Evet | 1..500 | — | — |
 | Signatories[] | Submit'te Evet | en az bir `Internal` + bir `Counterparty` (422); `Name` 1..140; `RoleTitle` ≤ 100; en çok 20 imzacı (öneri) | — | — |
-| RecordSignature | Evet | sürüm `Approved`; imzacı bu sürümde ve imzasız; `SignedAt` ≤ şimdi ve ≥ `SubmittedAt`; `SignedCopyContentId` bu sürümde `SignedCopy` rolünde, geri çekilmemiş belge (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`) | — | — |
+| RecordSignature | Evet | sürüm `Approved`; imzacı bu sürümde ve imzasız; `SignedAt` ≤ şimdi ve ≥ `SubmittedAt`; `SignedCopyContentId` bu sürümde `SignedCopy` rolünde, geri çekilmemiş belge (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`) — bu koşul ön kontrolle değil, imzayı yazan koşullu yazımın / işlemin süzgecinde (`Version` CAS + belgenin `WithdrawnAt` boş olması) denetlenir; son imzada bütün imzaların belge başvurusu aynı işlemde yeniden doğrulanır | CAS süzgeci | — |
+| WithdrawContractDocument | Evet | belge bu sürümde ve geri çekilmemiş; hiçbir imzacının `SignedCopyContentId`'si bu belgeyi göstermiyor (gösteriyorsa 409 `MDM_CONTRACT_DOCUMENT_IN_USE`) — bu koşul geri çekmeyi yazan koşullu yazımın süzgecindedir (`Version` CAS ile birlikte); imzaya bağlı belgenin yerine yenisini koymak da aynı kodla 409 (değiştirme ucu yok) | CAS süzgeci | — |
 | Document (yükleme) | Evet | `DocumentRole` tanımlı; dosya boş değil; boyut ≤ sınır (413); tür / uzantı MOD-0262 izin listesi (400) | — | MOD-0262 |
 | RenewalDecision | Evet | `Decision` O-11 listesinde; `Note` ≤ 500; sözleşme `Active` ve `CurrentEffectiveTo` dolu | — | — |
 | Terminate | Evet | `TerminationReasonCode` 1..64; `TerminationEffectiveDate` ≥ yürürlükteki sürümün `EffectiveFrom`'u | — | — |
@@ -596,6 +676,8 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 **Durum kuralları:** UpdateContract — `Draft` ve `ApprovalAttempt = 0` iken bütün başlık alanları; diğer durumlarda yalnız
 `Title` ve `InternalOwnerUserId` (Terminated / Archived'da hiçbiri). UpdateContractVersion — yalnız `Draft` sürüm.
 AddContractDocument — `Draft` sürümde her rol; `Approved` sürümde yalnız `SignedCopy`; diğer durumlarda 409.
+WithdrawContractDocument — `Draft` sürümde her rol; `Approved` sürümde yalnız imzaya bağlı olmayan `SignedCopy`; diğer
+durumlarda 409.
 CreateAmendment — sözleşme `Active`, açık sürüm yok (409 `MDM_CONTRACT_OPEN_VERSION_EXISTS`). Delete / BulkDelete — yalnız
 `Draft` + `ApprovalAttempt = 0`; BulkDelete'te kurala uymayan tek kimlik bütün isteği 409 yapar (kısmi silme yok). Archive —
 Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık sürüm `InApproval` değil.
@@ -603,7 +685,8 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 ## Failure Path to Verify
 
 - **Yinelenen oluşturma / idempotency:** aynı `Idempotency-Key` + aynı gövde → 200, tek kayıt; farklı gövde → 409
-  `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; eşzamanlı iki aynı anahtar → tek sözleşme, tek kod, tek niyet. Anahtar yok → 400.
+  `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; eşzamanlı iki aynı anahtar → tek sözleşme, tek kod, bir Create'in iki niyeti
+  (`mdm.contract.created` + `mdm.contract-version.created`). Anahtar yok → 400.
 - **Yinelenen sürüm numarası** (iki eşzamanlı CreateAmendment) → biri 409; `ux_mdm_contract_version_no` kaldırıldığında yarış
   testi kırmızı.
 - **Eksik alan** (Title, ContractType, şirket, karşı taraf, EffectiveFrom) → 400 + alan düzeyi resx iletisi; kayıt yok.
@@ -616,11 +699,19 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - **Bağımlılık erişilemez vs geçersiz girdi:** RCS-001 / MOD-0048 / MOD-0262 / MOD-0028 / MOD-0023 erişilemez, 5xx, zaman aşımı,
   tanınmayan gövde → 503, kayıt değişmez; para birimi listede yok → 400; şirket aktif değil → 422; MOD-0262 dosyayı reddetti →
   400 / 413 (503 değil).
-- **Belge işaretçisi yazılamadı** (zorla hata) → `compensate` çağrılır, sürümde işaretçi yok, 503; telafi de başarısız → yine
-  503, günlük kaydı (içerik yok).
-- **Onaya gönderme MOD-0023 düşükken** → 503; sürüm `InApproval`, örnek kimliği boş; yeniden Submit aynı anahtarla tek örnek
-  açar; Sync örneği bulur.
+- **Belge işaretçisi kesin yazılamadı** (CAS eşleşmedi / işlem iptal) → `compensate` tam bir kez, sürümde işaretçi yok,
+  409 / 503; telafi de başarısız → yine 503, günlük kaydı (içerik yok).
+- **İşaretçi yazıldı, yanıt kayboldu** (yazım işlendi, sonra zaman aşımı) → mutabakat okuması işaretçiyi bulur; telafi **yok**,
+  işaretçi yerinde, 201. **Mutabakat okuması da yok** → telafi yok, 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`; sonra
+  Reconcile çözer.
+- **Onaya gönderme MOD-0023 düşükken** (geçici) → 503; sürüm `InApproval`, örnek kimliği boş; yeniden Submit aynı anahtarla tek
+  örnek açar; Sync örneği bulur. **Gönderimden sonra zaman aşımı / 409 `WORKFLOW_TRANSITION_CONFLICT`** → sürüm `Draft`'a
+  dönmez (bilinmiyor). **Kesin ret** (400 / 403 / 404 / kapanış kayıtlı 409) → `Draft` + gerekçe kodu + niyet, 422.
+- **Eski deneme / başka nesne / birden çok eşleşme** → Sync durumu değiştirmez (eski reddin sonucu yeni denemeyi `Draft`'a
+  çekmez; başka nesnenin onayı bu sürümü `Approved` yapmaz).
 - **MOD-0023 tanınmayan durum** → Sync 503, sürüm değişmez.
+- **İmzada kullanılan belgeyi geri çekme** → 409 `MDM_CONTRACT_DOCUMENT_IN_USE`; geri çekme ile imza yarışında biri kazanır,
+  hiçbir imza geri çekilmiş belgeyi göstermez.
 - **Onaylanmamış sürüme imza** → 409; **imzalı kopya olmadan imza** → 422; **imzalı sürümün içeriğini değiştirme** → 409
   `MDM_CONTRACT_IMMUTABLE_FIELD`.
 - **Açık sürüm varken değişiklik** → 409 `MDM_CONTRACT_OPEN_VERSION_EXISTS`.
@@ -649,7 +740,7 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 | `mdm.contracts.update` | T1 | UpdateContract, UpdateContractVersion, WithdrawContractVersion | `contract.edit` |
 | `mdm.contracts.delete` / `mdm.contracts.bulk-delete` | T1 / T2 | taslak silme | — |
 | `mdm.contracts.value.read` | T1 (alt kaynak `value`) | ticari değeri görme ve yazma | 4 takma ad (`contract.value.view` …) |
-| `mdm.contracts.documents.read` / `mdm.contracts.documents.create` / `mdm.contracts.documents.delete` | T1 | belge içerik okuma / ekleme / geri çekme | — |
+| `mdm.contracts.documents.read` / `mdm.contracts.documents.create` / `mdm.contracts.documents.delete` | T1 | belge içerik okuma / ekleme (+ bağ mutabakatı `reconcile`) / geri çekme | — |
 | `mdm.contracts.submit-approval` | T3 | Submit, Sync | `contract.submit_review`, `contract.submit_approval` |
 | `mdm.contracts.record-signature` | T3 | RecordSignature | `contract.record_signature` |
 | `mdm.contracts.amendments.create` | T1 (alt kaynak) | CreateAmendment | `contract.amend` |
@@ -682,15 +773,16 @@ yazıldığı için pratikte kapalı-başarısızdır.
 
 | Komut | Olay adı | Nesne | Yol | Önceki/sonraki ya da değişen alanlar | K2 (öneri) | İstisna sınıfı + gerekçe |
 |---|---|---|---|---|---|---|
-| CreateContractCommand | mdm.contract.created (+ mdm.contract-version.created, v1) | Contract, ContractVersion | b | AfterState: Code, ContractType, GoverningLegalEntityId, CounterpartyType, Status; sürüm: VersionNo, Status (**değer ve tutar yok**) | hayır | — |
+| CreateContractCommand | mdm.contract.created (Contract'ta) + mdm.contract-version.created (sürüm 1'de) — tam iki niyet, aynı işlemde | Contract, ContractVersion | b | AfterState: Code, ContractType, GoverningLegalEntityId, CounterpartyType, Status; sürüm: VersionNo, Status (**değer ve tutar yok**) | hayır | — |
 | UpdateContractCommand | mdm.contract.updated | Contract | b | değişen alan **adları** | hayır | — |
 | DeleteContractCommand | mdm.contract.deleted | Contract | b | BeforeState: Code, Status | hayır | — |
 | BulkDeleteContractCommand | mdm.contract.deleted (kimlik başına bir niyet) | Contract | b | aynı | hayır | — |
 | UpdateContractVersionCommand | mdm.contract-version.updated | ContractVersion | b | değişen alan **adları** (tutar yok) | hayır | — |
 | AddContractDocumentCommand | mdm.contract-version.document-added | ContractVersion | b | ContentId, DocumentRole, MediaType, ByteSize, Checksum (dosya adı ve içerik yok) | hayır | — |
 | WithdrawContractDocumentCommand | mdm.contract-version.document-withdrawn | ContractVersion | b | ContentId, DocumentRole | hayır | — |
-| SubmitContractVersionForApprovalCommand | mdm.contract-version.submitted | ContractVersion | b | Status önce→sonra, ApprovalAttempt, WorkflowIdempotencyKey | hayır | — |
-| SyncContractVersionApprovalCommand | mdm.contract-version.approval-recorded (yalnız durum değiştiğinde) | ContractVersion | b | Status önce→sonra, LastApprovalOutcome, WorkflowInstanceId | **evet (O-6)** | durum değişmeyen Sync yazmaz → niyet yok (kalıcı değişiklik yok; İ5 değil, komut yazmıyor) |
+| ReconcileContractDocumentCommand | — (MDM'ye yazmaz) | ContractVersion (yalnız okuma) | — | — | hayır | MDM'de kalıcı değişiklik yok → niyet yok (Sync'in durum değişmeyen yoluyla aynı gerekçe: komut yazmıyor); kanıtlı telafi MOD-0262'nin kendi yazmasıdır ve onun denetim yolundadır |
+| SubmitContractVersionForApprovalCommand | (1) mdm.contract-version.submitted; (3) başarıda mdm.contract-version.workflow-start-confirmed; kesin retde mdm.contract-version.submission-refused | ContractVersion | b | submitted: Status önce→sonra, ApprovalAttempt, WorkflowIdempotencyKey; start-confirmed: WorkflowInstanceId, ApprovalAttempt; submission-refused: Status önce→sonra, ApprovalAttempt, LastApprovalReasonCode | hayır | geçici / bilinmiyor sınıfında (3) yazmaz → ek niyet yok |
+| SyncContractVersionApprovalCommand | mdm.contract-version.approval-recorded (yalnız durum değiştiğinde); örnek kimliğini ilk kez yazdığında mdm.contract-version.workflow-start-confirmed | ContractVersion | b | Status önce→sonra, LastApprovalOutcome, WorkflowInstanceId, ApprovalAttempt | **evet (O-6)** | durum ve örnek kimliği değişmeyen Sync yazmaz → niyet yok (kalıcı değişiklik yok; İ5 değil, komut yazmıyor) |
 | RecordContractSignatureCommand | mdm.contract-version.signature-recorded (+ son imzada mdm.contract-version.effective, mdm.contract.activated / superseded) | ContractVersion, Contract | b | SignatoryId, Side, SignedAt, SignedCopyContentId; Status önce→sonra (imzacı adı yok) | **evet (O-6)** | — |
 | CreateContractAmendmentCommand | mdm.contract-version.created (Kind = Amendment) | ContractVersion, Contract | b | VersionNo, AmendmentReason **var/yok**, OpenVersionNo | hayır | — |
 | WithdrawContractVersionCommand | mdm.contract-version.withdrawn | ContractVersion | b | Status önce→sonra | hayır | — |
@@ -731,8 +823,9 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
 - [ ] AC-2 (zorunlu) — Aynı `Idempotency-Key` + aynı gövdeyle ikinci istek 200 ve aynı sözleşme kimliği / kodu döner; kayıt
   sayısı, kod sayacı ve denetim niyeti sayısı değişmez. Anahtarsız istek 400.
 - [ ] AC-3 (zorunlu) — Aynı anahtar + farklı gövde 409 `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; ilk kayıt değişmez.
-- [ ] AC-4 (zorunlu) — Gerçek replica set'te aynı anahtarlı 20 eşzamanlı Create → tek sözleşme, tek sürüm 1, tek kod, tek
-  niyet; hepsi aynı kimliği döner. `ux_mdm_contract_create_idempotency` kaldırıldığında test kırmızıya döner (sabotaj).
+- [ ] AC-4 (zorunlu) — Gerçek replica set'te aynı anahtarlı 20 eşzamanlı Create → tek sözleşme, tek sürüm 1, tek kod ve tam
+  iki denetim niyeti (tek Create işleminde: sözleşmede `mdm.contract.created`, sürüm 1'de `mdm.contract-version.created`);
+  hepsi aynı kimliği döner. `ux_mdm_contract_create_idempotency` kaldırıldığında test kırmızıya döner (sabotaj).
 - [ ] AC-5 (zorunlu) — Başka kiracının sözleşmesi, sürümü ve belgesi için okuma, güncelleme, silme, belge ekleme / indirme,
   Submit, Sync, imza, değişiklik, yenileme, fesih ve arşiv 404 döner. Depo `TenantFilter`'ı kaldırıldığında test kırmızıya döner (sabotaj).
 - [ ] AC-6 (zorunlu) — Veri kapsamı (SEC-002 kanıt testi): A şirketi kapsamlı kullanıcı B şirketinin sözleşmesini listede
@@ -755,7 +848,7 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` boş (borç satırı yok); defter değişikliğinin
   CT-DECISIONS satırı aynı değişiklikte (O-6 kararıyla).
 - [ ] AC-13 (zorunlu) — İşlem bütünlüğü (Create): gerçek replica set'te sürüm 1 yazımı zorla başarısız edildiğinde sözleşme
-  belgesi, sürüm ve niyet **hiç** yazılmamıştır; yeniden deneme aynı `Idempotency-Key` ile başarılı olur. İşlem sarmalayıcısı
+  belgesi, sürüm ve iki niyetten hiçbiri yazılmamıştır; yeniden deneme aynı `Idempotency-Key` ile başarılı olur. İşlem sarmalayıcısı
   kaldırılıp sıralı yazıma çevrildiğinde yetim sözleşme bulunur ve test kırmızıya döner (sabotaj).
 - [ ] AC-14 (zorunlu) — İşlem desteklemeyen sunucuda (Development dışı yapılandırma) her yazma 503
   `MDM_CONTRACT_TRANSACTION_UNAVAILABLE` döner ve hiçbir belge yazılmaz.
@@ -785,8 +878,9 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   da geçici klasöre yazmaz (mimari test: `Path.GetTempPath` / `File.Create` kullanımı yok).
 - [ ] AC-25 (zorunlu) — MOD-0262 erişilemez / 5xx / zaman aşımı → 503 `MDM_CONTRACT_DOCUMENT_STORE_UNAVAILABLE`, işaretçi yok;
   MOD-0262 ret (tür / boyut) → 400 / 413, 503 değil.
-- [ ] AC-26 (zorunlu) — İşaretçi yazımı zorla başarısız edildiğinde `compensate` tam bir kez çağrılır ve sürümde işaretçi yoktur;
-  telafi çağrısı kaldırıldığında test kırmızıya döner (sabotaj).
+- [ ] AC-26 (zorunlu) — **Kesin geri alma:** işaretçi yazımı kesinlikle uygulanmadan başarısız edildiğinde (CAS eşleşmedi; işlem
+  commit'ten önce iptal) `compensate` tam bir kez çağrılır ve sürümde işaretçi yoktur; telafi çağrısı kaldırıldığında test
+  kırmızıya döner (sabotaj).
 - [ ] AC-27 (zorunlu) — Belge içerik okuma önce sözleşme kapsamını ve `mdm.contracts.documents.read`'i denetler: kapsam dışı
   sözleşmenin belgesi 404 ve MOD-0262'ye çağrı yapılmaz; başka kiracının `ContentId`'si 404. Kapsam denetimi kaldırıldığında
   test kırmızıya döner (sabotaj).
@@ -838,23 +932,75 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   rotası ve `Nav.Page.CONTRACTS` değişmez; MOD-0217 ekranı ve nav anahtarı ayrı (`/MasterData/Contracts`, `Nav.Page.LEGALCONTRACTS`).
 - [ ] AC-48 (zorunlu) — Gateway: `/api/mdm/contracts` ve `/api/mdm/contracts/{everything}` 5059'a gider (integration-agent
   teslimi); belge yükleme ve indirme Gateway üzerinden multipart / akışla uçtan uca çalışır (dev ortamı kaydı).
+- [ ] AC-49 (zorunlu) — **Yanıt kaybı (P1-a):** gerçek replica set'te işaretçi yazımı işlenir, ardından depo dikişi yanıtı
+  zaman aşımı / bağlantı sıfırlama olarak düşürür → mutabakat okuması işaretçiyi bulur; `compensate` **hiç** çağrılmaz;
+  işaretçi ve tek niyet sürümde yerinde; yanıt 201 ve aynı `ContentId`. Sabotaj: (4b) okuması atlanıp doğrudan telafi
+  çağrıldığında bu test kırmızıya döner (telafi çağrısı sayısı 1, sürümün gösterdiği nesne telafi edilmiş).
+- [ ] AC-50 (zorunlu) — **Okuma da yok (P1-a):** işaretçi yazımının sonucu bilinmiyor ve mutabakat okuması da erişilemez →
+  `compensate` hiç çağrılmaz; 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN` + `contentId`; içeriksiz uyarı günlüğü; nesne
+  MOD-0262-FU03'e yetim olarak verilmez. Ardından `ReconcileContractDocumentCommand`: işaretçi bulunursa 200 ve telafi yok;
+  bağsızlık kanıtlanır ve MOD-0262 meta `owningItemId` / `owningVersionId` bu sürümü gösterirse telafi tam bir kez; okuma yine
+  yoksa 503 ve telafi yok; nesne başka sürümün / sözleşmenin / kiracının ise 404 ve telafi yok. Sabotaj: Reconcile'da sahiplik
+  ya da okuma denetimi kaldırıldığında ilgili durum kırmızıya döner.
+- [ ] AC-51 (zorunlu) — **Sync güncel denemeye bağlı (P1-b):** sahte MOD-0023 `by-objects` (`includeDeleted=true`) yanıtlarıyla
+  (a) önceki reddedilmiş denemenin anahtarlı örneği "Rejected", güncel denemenin örneği terminal değil → durum değişmez (sürüm
+  `Draft`'a çekilmez); (b) başka nesnenin anahtarlı "Approved" örneği → durum değişmez; (c) güncel anahtarla iki satır → durum
+  değişmez, 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` + uyarı; (d) güncel anahtar ve `WorkflowInstanceId` ile eşleşen tek
+  "Approved" satır → `Approved`. Sabotaj: eşleme anahtar yerine nesneye ya da "en yeni örneğe" göre yapıldığında (a) ve (b)
+  kırmızıya döner.
+- [ ] AC-52 (zorunlu) — **§17 rev 2 alanları (P1-b):** Sync isteği `includeDeleted=true` taşır; güncel anahtarlı satır
+  `isDeleted = true` → durum değişmez, bilinmiyor + uyarı ve aynı anahtarla Submit tekrarı gönderilmez; `idempotencyKey`'i boş
+  satır → eşleşmez, durum değişmez; kimlik eşit anahtar farklı → bilinmiyor. `WorkflowInstanceId` boşken tek eşleşen satır
+  örnek kimliğini ve `mdm.contract-version.workflow-start-confirmed` niyetini yazar.
+- [ ] AC-53 (zorunlu) — **Kesin ret (P1-c):** MOD-0023 başlatması 400, 403 (izin), 403 (SoD), 404 (şablon yok) ve kapanış
+  kayıtlı 409 `WORKFLOW_INSTANCE_START_CONFLICT` (history'de `workflow-start-recovery-close:{instanceId:N}` satırı) döndüğünde
+  sürüm aynı koşullu yazımda `Draft`'a döner, `LastApprovalOutcome = StartRefused`, beklenen `LastApprovalReasonCode` yazılı,
+  `mdm.contract-version.submission-refused` niyeti tam bir kez; yanıt 422 `MDM_CONTRACT_WORKFLOW_START_REFUSED`; sonraki Submit
+  `a{n+1}` anahtarıyla başlar. Kapanış kaydı olmayan 409 `WORKFLOW_INSTANCE_START_CONFLICT` ve tanınmayan gövdeli 404 bu yola
+  girmez (bilinmiyor).
+- [ ] AC-54 (zorunlu) — **Geçici / bilinmiyor (P1-c):** gönderimden önce bağlantı hatası, 500, 503 → 503
+  `MDM_CONTRACT_WORKFLOW_UNAVAILABLE`; gönderimden sonra zaman aşımı, 409 `WORKFLOW_TRANSITION_CONFLICT`, 503
+  `WORKFLOW_TRANSACTION_UNAVAILABLE`, 503 `WORKFLOW_TRANSITION_CONFLICT` → 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN`; her
+  durumda sürüm `InApproval`, `WorkflowInstanceId` boş, `ApprovalAttempt` ve anahtar aynı; çözüm yalnız Sync ya da aynı
+  anahtarla tekrar (tekrar sonrası sahte MOD-0023'te tek örnek). Sabotaj: zaman aşımı ya da `WORKFLOW_TRANSITION_CONFLICT`
+  kesin ret sayıldığında sürüm `Draft`'a döner, sonraki Submit ikinci örneği açar ve test kırmızıya döner.
+- [ ] AC-55 (zorunlu) — **Yeniden başlatma denetimi (P1-c):** aynı anahtarla tekrardan ve kesin retten sonraki yeni Submit'ten
+  önce izin, veri kapsamı, yöneten şirket uygunluğu (`Active`) ve aktör bağı yeniden denetlenir: izni alınmış kullanıcı 403,
+  kapsam dışı 404, şirket artık `Active` değil 422, `SubmittedBy` dışındaki kullanıcının tekrarı 409
+  `MDM_CONTRACT_SUBMITTER_MISMATCH`; her birinde MOD-0023'e çağrı yok ve sürüm değişmez. Tekrar öncesi okumada güncel anahtarlı
+  satır varsa tekrar gönderilmez. Sabotaj: denetim kaldırıldığında sahte MOD-0023'e çağrı gider ve test kırmızıya döner.
+- [ ] AC-56 (zorunlu) — **İmzaya bağlı belge (P2-b):** kısmen imzalı `Approved` sürümde bir imzanın `SignedCopyContentId`'sinin
+  gösterdiği belgeyi geri çekme 409 `MDM_CONTRACT_DOCUMENT_IN_USE`, belge ve imza değişmez; imzaya bağlı olmayan `SignedCopy`
+  geri çekilebilir. Son imza, önceki imzalardan birinin belgesi (test fikstürüyle) geri çekilmiş gösterilirse 422
+  `MDM_CONTRACT_SIGNED_COPY_REQUIRED` döner ve hiçbir değişiklik kalmaz (sürüm `Effective` olmaz). Sabotaj: geri çekme
+  süzgecinden "imzaya bağlı değil" koşulu ya da son imzadaki yeniden doğrulama kaldırıldığında test kırmızıya döner.
+- [ ] AC-57 (zorunlu) — **Geri çekme ile imza yarışı (P2-b):** gerçek replica set'te aynı `SignedCopy` belgesi için eşzamanlı
+  WithdrawContractDocument ve RecordSignature (tekrarlı koşu) → biri başarılı, diğeri 409; sonuçta hiçbir imzanın
+  `SignedCopyContentId`'si geri çekilmiş bir belgeyi göstermez. Sabotaj: iki yazımdan birinin süzgecinden belge koşulu
+  kaldırıldığında imza geri çekilmiş belgeyi gösterir ve test kırmızıya döner.
 
 ## Test Expectations
 
 - **Birim:** doğrulayıcılar (her alan); durum makinesi (Durumlar tabloları); `allowedActions`; idempotency gövde özeti
-  (normalize, alan sırası bağımsız); MOD-0023 sonuç eşlemesi (tanınmayan → 503); MOD-0048 / MOD-0262 / MOD-0028 / RCS-001 yanıt
+  (normalize, alan sırası bağımsız); MOD-0023 sonuç eşlemesi (tanınmayan → 503); başlatma yanıtı sınıflayıcısı (her yanıt tam
+  bir sınıfa; zaman aşımı ve `WORKFLOW_TRANSITION_CONFLICT` kesin ret değil) ve güncel deneme eşleyicisi (AC-51…AC-54); MOD-0048 / MOD-0262 / MOD-0028 / RCS-001 yanıt
   sınıflandırması (erişilemez → 503, ret → 400 / 413 / 422); ticari değer maskesi.
 - **Entegrasyon (gerçek Mongo replica set, işlem):** kiracı izolasyonu (AC-5), veri kapsamı (AC-6), soft delete, CAS 409,
-  tekil indeksler ve yarışlar (AC-4, AC-10, AC-31, AC-33, AC-37), işlem bütünlüğü ve hata enjeksiyonu (AC-13, AC-37), niyetin iş
+  tekil indeksler ve yarışlar (AC-4, AC-10, AC-31, AC-33, AC-37, AC-57), işlem bütünlüğü ve hata enjeksiyonu (AC-13, AC-37,
+  AC-49), niyetin iş
   belgesiyle yazılması ve sabotajı (AC-11), `Guid.Empty` taraması (AC-22).
 - **Mongo yalıtımı (TRM-11 dersleri, AC-23):** suite kendi URI değişkenini ister (ad DL-1'de belirlenir; varsayılan port ya
   da başka suite'in değişkenine düşmez); her test sınıfı benzersiz veritabanı adı açar (paylaşılan sabit veritabanı yok);
   indeks oluşturan / değiştiren testler kendi veritabanında; aynı adlı indeksin farklı seçeneklerle iki kez kurulması testle
   yakalanır. Bellek içi sahte depo işlem / yarış AC'lerini kapatmaz.
-- **Hata enjeksiyonu:** depo / işlem sarmalayıcısı dikişiyle ikinci yazımı düşürme; Mongo `failCommand` kullanılacaksa
-  kümenin buna izin verdiği ölçülür (bu oturumda ölçülmedi).
-- **Sahte bağımlılıklar:** MOD-0262 (201, 400, 413, 500, zaman aşımı, telafi başarısız), MOD-0023 (başlatma 201 / tekrar / 503;
-  örnek durumları; tanınmayan durum), MOD-0048, RCS-001, SEC-002 sağlayıcısı. Sahte istemci canlı kanıt değildir
+- **Hata enjeksiyonu:** depo / işlem sarmalayıcısı dikişiyle ikinci yazımı düşürme; **yazımı uygulayıp yanıtı düşürme**
+  (yanıt kaybı, AC-49) ve yazımı uygulamadan düşürme (kesin geri alma, AC-26) ayrı dikiş durumlarıdır; mutabakat okumasını
+  düşürme (AC-50). Mongo `failCommand` kullanılacaksa kümenin buna izin verdiği ölçülür (bu oturumda ölçülmedi).
+- **Sahte bağımlılıklar:** MOD-0262 (201, 400, 413, 500, zaman aşımı, telafi başarısız, meta okumasında sahiplik alanları var /
+  yok), MOD-0023 (başlatma 201 / tekrar / 400 / 403 izin / 403 SoD / 404 şablon / 409 `WORKFLOW_INSTANCE_START_CONFLICT` kapanış
+  kayıtlı ve kayıtsız / 409 `WORKFLOW_TRANSITION_CONFLICT` / 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` / gönderimden sonra zaman
+  aşımı; `by-objects` satırları: güncel ve önceki anahtar, başka nesne, iki eşleşme, `isDeleted`, boş anahtar; `history`
+  kapanış kaydı; örnek durumları; tanınmayan durum), MOD-0048, RCS-001, SEC-002 sağlayıcısı. Sahte istemci canlı kanıt değildir
   (Dependencies → kapanış tablosu).
 - **Mimari:** her aksiyonda `[HasPermission]` (AC-16); onay / geri çağrı ucu yok (AC-36); MdmService'te dosya sistemi yazımı
   yok (AC-24); `mod0217_` / `Mod0217` / `MOD0217_` adları yok; `AuditTrailStandard` yeşil (AC-12).
@@ -895,23 +1041,35 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
 onaylar, sözleşmeler ve yalnız var olan kodun / sözleşmenin **okunarak** ölçülmesi. Yeni kodun test geçmesi bu kapının
 maddesi değildir. (b) **Dilim kabul kapısı** — "Dilim kabul kapısı" bölümünde.
 
-**ENGELLER — tasarım / onay kapısı (hepsi kapanmadan `ready-for-dev` olmaz):**
+**ENGELLER — tasarım / onay kapısı. Tek kural (MOD-0289 ve Treasury paketlerinin deseni):** işaretsiz maddeler **paket
+düzeyidir** — hepsi kapanmadan `ready-for-dev` olmaz ve dolayısıyla her dilimin örtük önkoşuludur. **"— DL-n için"** işaretli
+maddeler paket düzeyinde engel **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde o dilimin
+Önkoşul satırında yazılıdır ve o dilim başlamadan kapanır; daha önceki dilimler o madde açıkken ilerler (ör. O-2 → DL-2
+önkoşulu; DL-1 O-2 açıkken ilerler). Dilim önkoşulu "Dilim kabul kapısı"ndan ayrıdır: önkoşul karar / onay / okunarak ölçümdür,
+kabul kapısı yeni kodun testlerinin geçmesidir.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); paketi yazmamış onaylayıcı
 - [ ] DCP numarası atandı ve DCP `approved` (MOD-0217 bugün hiçbir DCP'de değil)
 - [ ] MDM domain-config satırı (D38/2 önerisi) ve kimlik kaydı satırı main'de (bugün çalışma ağacında, commit edilmemiş)
 - [ ] O-1 MOD-0144 sınırı karara bağlandı (K1 + procurement sahibi)
-- [ ] O-2 D37'nin MOD-0028 kısmı için yüzey belirlendi ve okunarak ölçüldü (platform-shared-services) — DL-2 için
-- [ ] MOD-0262-FU01 sözleşmesi ölçüldü: çağrı kimliği (O-13), `scope` değeri, boyut üst sınırı, izin listesi; canlı doğrulama
-  kaydı (pack §19'da açık) — DL-2 için
-- [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4) ve örnek durum adları ölçüldü — DL-3 için
 - [ ] O-4 `mdm.contracts.*` anahtar listesi MOD-0018 sahibince kabul; açık atama anahtarları (`read-tenant-wide`) Auth'a (D9)
 - [ ] O-5 RCS-001 öneki (`CTR` önerisi) sahip + `.antigravity` onayıyla §3'e yazıldı; RCS-001 ortak kod servisi (BL-565) ve sahibi
 - [ ] SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü
 - [ ] O-6 denetim defteri (yeni satırlar, belirteç, borç yok) ve K2 sınıfı CT kararı; `AuditCategory` değeri
 - [ ] O-7 karşı taraf modeli (Supplier seçilirse MOD-0140 sözleşme ölçümü)
-- [ ] O-8, O-9, O-10, O-11, O-12, O-14, O-15 sahip kararı
+- [ ] O-9, O-10, O-11, O-12, O-14, O-15 sahip kararı
 - [ ] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü
+- [ ] O-2 D37'nin MOD-0028 kısmı için yüzey belirlendi ve okunarak ölçüldü (platform-shared-services) — DL-2 için
+- [ ] MOD-0262-FU01 sözleşmesi ölçüldü: çağrı kimliği (O-13), `scope` değeri, boyut üst sınırı, izin listesi, meta okumasında
+  `owningItemId` / `owningVersionId` alanları (Reconcile'ın sahiplik denetimi); canlı doğrulama kaydı (pack §19'da açık) — DL-2 için
+- [ ] O-13 çağrı kimliği kararı — DL-2 için (DL-3'teki MOD-0023 çağrısı da buna bağlıdır)
+- [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4) ve örnek durum adları ölçüldü — DL-3 için
+- [ ] MOD-0023 §17 rev 2 (803fbaa5…, PR #235) onaylı (CT-APR-02/01): `by-objects` / `history` okuma alanları (`idempotencyKey`,
+  `isDeleted`, `approvalTaskId`), `includeDeleted=true`, kapanış kaydı anlamı — DL-3 için. Kod MOD-0023 sahibinin WP'siyle gelir;
+  okuma alanlarının main'de olması ve AC-W2 / AC-W12 / AC-W13'ün geçmesi DL-3 **dilim kabul kapısındadır**, önkoşulu değil
+- [ ] MOD-0023 başlatma hata gövdesi kodları (400, 403 izin / SoD, 404 şablon) okunarak ölçüldü (başlatma yanıtı sınıfları) — DL-3 için
+- [ ] O-8 imza modeli sahip kararı — DL-3 için
+- [ ] MDM domain-config frontend/gateway kapsam cümlesi — DL-4 için
 - [ ] Gateway rotaları (integration-agent) — DL-4 için
 
 ## Implementation Notes
@@ -952,13 +1110,13 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 
 | Karar | Seçim | Bu pakette | AC |
 |---|---|---|---|
-| D37/1 | MOD-0028 kayıt + sürümler, MOD-0262-FU01 dosya | Ownership, Owned Objects (portlar), Entity Fields (`Documents`), Dependencies, Runtime Constraints → "Uzak çağrı sırası" | AC-24…AC-29 |
+| D37/1 | MOD-0028 kayıt + sürümler, MOD-0262-FU01 dosya | Ownership, Owned Objects (portlar), Entity Fields (`Documents`), Dependencies, Runtime Constraints → "Uzak çağrı sırası" | AC-24…AC-29, AC-49, AC-50 |
 | D37/2 | MOD-0217 tüketici; değişiklik XMC-001 ile | Repo Scope "kapsamında olmayan" listesi, Protected Paths, O-2, O-13 | — |
 | D37/3 | kalan koşul MDM sahibi onayı | D38/1 ile kapandı | — |
 | D38/1 | MDM / `Diten.MdmService` | frontmatter, Runtime Constraints | — |
 | D38/2 | taslağı CT yazar; domain-config + kayıt satırı önerilir | bu dosya; satırlar CT'de (Ready-for-dev engeli) | — |
 | D38/3 | kod alma yok | durum notu, Repo Scope, Implementation Notes | — |
-| D38/4 | MOD-0023 şablonu MOD-0023 sahibinin cevabını gerektirir | O-3, Dependencies | AC-33…AC-35 |
+| D38/4 | MOD-0023 şablonu MOD-0023 sahibinin cevabını gerektirir | O-3, Dependencies, Runtime Constraints → "Uzak çağrı sırası" | AC-33…AC-35, AC-51…AC-55 |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1010,6 +1168,8 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 - e-imza sağlayıcısı ve imza geri çağrısı (O-8).
 - MOD-0031 kanıt bağlantısı, gizlilik düzeyi ve risk derecesi (O-9).
 - Onay sonucunu periyodik okuyan arka plan işi (varsayılan kapalı, İ2 satırıyla).
+- `SubmittedBy` artık tekrar edemediğinde başlatma bekleyen sürüm için yönetici çözüm yolu ve sonucu bilinmeyen belge
+  bağlarının (`MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`) dönemsel mutabakatı (v1'de yalnız kullanıcı tetikli Reconcile).
 - Merkezi ret kaydı (`Outcome = Denied`) — denetim sahibine.
 - MOD-0144 sözleşmesine bağlantı (O-1 kararına göre).
 - Müşteri karşı tarafı (CRM hesap kimliği ölçülünce, O-7).
@@ -1052,37 +1212,62 @@ kapanır; Runtime Constraints'in kiracı, idempotency ve işlem kuralları DL-1'
 Authorization Convention'ın temel anahtarları DL-1'de, belge anahtarları DL-2'de gelir). Ortak bölümler (Acceptance
 Criteria, Test Expectations, Ready-for-dev Checklist, Follow-up Items) her dilimde aşağıdaki AC kimlikleriyle ölçülür.
 
+**Kesişen AC kuralı:** birden çok dilimin eylemlerine uzanan AC (ör. AC-5 bütün uçlar, AC-11 her yazma, AC-16 her aksiyon)
+her dilimin Bitiş listesinde "(… kısmı)" ile yazılır ve o dilimde yalnız o dilimin eylemleri için kanıtlanır; **"kısmı" ile
+işaretli bir AC, onu listeleyen son dilimde — son eylemleri ekleyen dilimde — tam kapanır.** İşaretsiz yazılan AC o dilimde
+tam kapanır. **Önkoşul kuralı:** her dilimin önkoşulu, paket düzeyi ENGELLER'in tümü (`ready-for-dev`) ile Ready-for-dev
+Checklist'te "— DL-n için" işaretli kendi maddeleridir; başka dilimin maddesi bu dilimi bekletmez.
+
 Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: `Domain/Entities/{Contract,ContractVersion}.cs`, enum'lar, `Features/Contract/**` (Create, Update, Delete,
   BulkDelete, UpdateContractVersion, liste / detay / sürüm sorguları), depolar, indeksler, işlem grubu deposu,
   `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS / MOD-0048 portları, denetim izi genişletmesi, defter +
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
-  kurallarını en düşük riskle kanıtlar. Önkoşul: CT-APR-02/01, DCP, domain-config + kayıt satırı, O-1, O-4, O-5 + RCS-001
-  servisi, O-6, O-7, O-10, O-11, O-12, O-14, SEC-002 sağlayıcı ölçümü, MOD-0048 tüketim yolu. Bitiş: AC-1…AC-23, AC-32, AC-42
-  (DL-1 eylemleri için).
-- **DL-2** — Yollar: `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `GetContractDocumentContentQuery`,
-  `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`, `Infrastructure/{DocumentRepository,DocumentRecords}/**`,
-  belge uçları. **Neden ayrı:** iki dış bağımlılığa (D37) bağlıdır ve O-2 cevabını bekler; DL-1'i bekletmesin. Önkoşul: DL-1,
-  O-2 kararı + yüzey ölçümü, O-13, MOD-0262-FU01 sözleşme ölçümü. Bitiş: AC-24…AC-31, AC-39.
+  kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
+  domain-config + kayıt satırı, O-1, O-4, O-5 + RCS-001 servisi, SEC-002 sağlayıcı ölçümü, O-6, O-7, O-9, O-10, O-11, O-12,
+  O-14, O-15, MOD-0048 tüketim yolu); "— DL-1 için" işaretli madde yok — O-2, O-3, O-8, O-13 açıkken ilerler. Bitiş: AC-1,
+  AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
+  komutları kısmı), AC-11 (DL-1 yazmaları kısmı), AC-12 (DL-1 defter satırları kısmı), AC-13, AC-14 (DL-1 yazmaları kısmı),
+  AC-15 (DL-1 uçları kısmı), AC-16 (DL-1 aksiyonları kısmı), AC-17 (DL-1 alanları kısmı), AC-18 (şirket uygunluğu kısmı), AC-19,
+  AC-20, AC-21 (DL-1 okuma ve yazmaları kısmı), AC-22 (DL-1 yazmaları kısmı), AC-23, AC-32, AC-42 (DL-1 eylemleri kısmı).
+- **DL-2** — Yollar: `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `ReconcileContractDocumentCommand`,
+  `GetContractDocumentContentQuery`, `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`,
+  `Infrastructure/{DocumentRepository,DocumentRecords}/**`, belge uçları. **Neden ayrı:** iki dış bağımlılığa (D37) bağlıdır ve
+  O-2 cevabını bekler; DL-1'i bekletmesin. Önkoşul: DL-1 ve "— DL-2 için" maddeleri: O-2 kararı + yüzey ölçümü, O-13,
+  MOD-0262-FU01 sözleşme ölçümü (meta sahiplik alanları dahil). Bitiş: AC-5 (belge ve değişiklik uçları kısmı), AC-6 (belge ve
+  değişiklik uçları kısmı), AC-7 (DL-2 yazmaları kısmı), AC-10 (DL-2 komutları kısmı), AC-11 (DL-2 yazmaları kısmı), AC-12
+  (DL-2 defter satırları kısmı), AC-14 (DL-2 yazmaları kısmı), AC-15 (DL-2 uçları kısmı), AC-16 (DL-2 aksiyonları kısmı), AC-17
+  (belge ve değişiklik alanları kısmı), AC-21 (DL-2 yazmaları kısmı), AC-22 (DL-2 yazmaları kısmı), AC-24…AC-31, AC-39, AC-42
+  (belge ve değişiklik eylemleri kısmı), AC-49, AC-50.
 - **DL-3** — Yollar: `SubmitContractVersionForApprovalCommand`, `SyncContractVersionApprovalCommand`,
   `RecordContractSignatureCommand`, `RecordContractRenewalDecisionCommand`, `TerminateContractCommand`, `ArchiveContractCommand`,
-  `Infrastructure/Workflow/**`. **Neden ayrı:** MOD-0023 şablonuna (O-3) bağlıdır. Önkoşul: DL-2 (imzalı kopya belgesi için),
-  O-3 şablonu, MOD-0023 durum adları ölçümü, O-8, O-13. Bitiş: AC-33…AC-38, AC-40, AC-41, AC-42 (tam).
+  `Rules/{WorkflowStartOutcomeClassifier,WorkflowAttemptMatcher}.cs`, `Infrastructure/Workflow/**`. **Neden ayrı:** MOD-0023
+  şablonuna (O-3) bağlıdır. Önkoşul: DL-2 (imzalı kopya belgesi için) ve "— DL-3 için" maddeleri: O-3 şablonu ve MOD-0023
+  durum adları ölçümü, MOD-0023 §17 rev 2 onayı (803fbaa5…, PR #235), MOD-0023 başlatma hata gövdesi kodları ölçümü, O-8,
+  O-13. Bitiş (son arka uç dilimi — kesişen AC'ler burada tam kapanır): AC-5 (onay / imza / yaşam döngüsü uçları kısmı), AC-6
+  (onay / imza / yaşam döngüsü uçları kısmı), AC-7 (DL-3 yazmaları kısmı), AC-10 (DL-3 komutları kısmı), AC-11 (DL-3 yazmaları kısmı), AC-12 (DL-3 defter
+  satırları kısmı), AC-14 (DL-3 yazmaları kısmı), AC-15 (DL-3 uçları kısmı), AC-16 (DL-3 aksiyonları kısmı), AC-17 (imza /
+  yenileme / fesih alanları kısmı), AC-18 (ilk Submit sonrası değişmezlik kısmı), AC-21 (DL-3 yazmaları kısmı), AC-22 (DL-3
+  yazmaları kısmı), AC-33…AC-38, AC-40, AC-41, AC-42 (onay / imza / yaşam döngüsü eylemleri kısmı), AC-51…AC-57.
 - **DL-4** — Yollar: `Views/MasterData/Contracts/**`, JS, resx (7 dil), MVC vekili, sayfa yardımı, nav anahtarı; Gateway
   rotaları integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API'ye bağlıdır, arka uç değişmeden
-  ilerler. Önkoşul: DL-3, Gateway rotaları, domain-config frontend/gateway kapsam cümlesi. Bitiş: AC-43…AC-48.
+  ilerler. Önkoşul: DL-3 ve "— DL-4 için" maddeleri: Gateway rotaları, domain-config frontend/gateway kapsam cümlesi. Bitiş:
+  AC-43…AC-48.
 
 ## Dilim kabul kapısı
 
 **(MOD-0289 gap 16/2 deseni; ayrı başlık — `Teslim dilimleri` bölümünde tek tablo kuralı, CT-APR-02) her dilim için, kabul /
-birleştirmeden önce (`ready-for-dev`'den önce değil):**
+birleştirmeden önce (`ready-for-dev`'den önce değil):** Kabul kapısı dilimin önkoşulundan ayrıdır (Ready-for-dev Checklist'teki
+tek kural): önkoşul dilim başlamadan kapanan karar / onay / okunarak ölçümdür, kabul kapısı o dilimin yeni kodunun testlerinin
+geçmesidir. "(… kısmı)" ile listelenen AC o dilimde yalnız o kısım için geçer; tam geçişi onu listeleyen son dilimin kabul
+kapısındadır.
 
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
-| DL-1 | "Bitiş" listesindeki AC'ler; gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
-| DL-2 | "Bitiş" listesindeki AC'ler; AC-31 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (yükle, indir, başka kiracı 404, telafi); O-2 yüzeyinin sözleşme testi (AC-29); build |
-| DL-3 | "Bitiş" listesindeki AC'ler; AC-33 ve AC-37 gerçek replica set'te; MOD-0023'e karşı dev ortamı onay ve ret turu kaydı; build |
+| DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-2 | "Bitiş" listesindeki AC'ler (kısımlarıyla); AC-31 ve AC-49 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (yükle, indir, başka kiracı 404, kesin geri almada telafi); O-2 yüzeyinin sözleşme testi (AC-29); build |
+| DL-3 | "Bitiş" listesindeki AC'ler (kesişen AC'lerin tam kapanışı dahil); AC-33, AC-37 ve AC-57 gerçek replica set'te; MOD-0023 §17 rev 2 okuma alanları main'de ve MOD-0023 AC-W2 / AC-W12 / AC-W13 geçmiş (MOD-0023 sahibinin WP'si); MOD-0023'e karşı dev ortamı onay ve ret turu kaydı; build |
 | DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı; RESX 7 dil parite; nav anahtar denetimi; Gateway uçtan uca belge yükleme / indirme; `Diten.Web` build |
 
 AC durumu kabul kaydında (`scripts/acceptance_record.py`) izlenir; bu pakette her AC yalnız "tanımlı"dır.
