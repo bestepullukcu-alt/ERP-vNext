@@ -211,7 +211,8 @@ Kurallar:
   yanıtta ana klasörün dalını ve `origin/main`'e göre geri sayısını ölçer; main değilse ya da geride ise sahibe bildirir.
   Güncelleme, "Yer" maddesinin (S-18: değişiklik taşınmaz) ve skill'in "ana klasörde dal değiştirme" kuralının **tek
   istisnasıdır**: yalnız sahibin, işlemi yapacak oturuma kendi yazdığı sözle; değişik dosyalar önce yerel bir `backup/…`
-  dalına commit edilir, sonra `git merge --ff-only origin/main`; silme, reset ve `--force` yok. CT bunu kendiliğinden
+  dalına commit edilir, sonra `git fetch origin`, `git switch main` (yerel main yoksa
+  `git switch -c main --track origin/main`) ve `git merge --ff-only origin/main`; silme, reset ve `--force` yok. CT bunu kendiliğinden
   yapmaz, yalnız ölçer ve önerir.
 - [ ] **Klasör güveni verilmezse (S-80, 2026-10-27):** sahip yeni worktree için uygulamanın güven penceresini onaylamazsa
   ya da uzaktaysa işçi bir alt ajanla ve `EnterWorktree path` ile yürütülebilir; işçi kuralları (S-63) aynen geçerlidir.
