@@ -65,7 +65,8 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     [ManualDraftMongoFact]
     public async Task V2Outbox_PublishedAndSuperseded_DeliverOnceWithDurableReceipt()
     {
-        var (drafts, published, context) = Open(databaseName: $"mod0188_delivery_{Guid.NewGuid():N}");
+        var (drafts, published, context) = Open(databaseName: "mod0188_delivery_tests");
+        await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
         var tenant = Guid.NewGuid(); var company = Guid.NewGuid();
         var first = Draft(tenant, company, Guid.NewGuid(), FirstWeek);
         var second = Draft(tenant, company, Guid.NewGuid(), FirstWeek);
@@ -104,7 +105,8 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     [ManualDraftMongoFact]
     public async Task V2Outbox_BrokerFailure_RetriesWithoutLosingIntent()
     {
-        var (_, _, context) = Open(databaseName: $"mod0188_delivery_{Guid.NewGuid():N}");
+        var (_, _, context) = Open(databaseName: "mod0188_delivery_tests");
+        await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
         var eventId = Guid.NewGuid();
         var correlationId = Guid.NewGuid();
         await context.Outbox.InsertOneAsync(new DemandOutboxMessage
@@ -137,7 +139,8 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     [ManualDraftMongoFact]
     public async Task V2Outbox_LegacyRecordWithoutDeliveryFields_CanBeClaimed()
     {
-        var (_, _, context) = Open(databaseName: $"mod0188_delivery_{Guid.NewGuid():N}");
+        var (_, _, context) = Open(databaseName: "mod0188_delivery_tests");
+        await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
         var eventId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
         await context.Outbox.Database.GetCollection<MongoDB.Bson.BsonDocument>(
