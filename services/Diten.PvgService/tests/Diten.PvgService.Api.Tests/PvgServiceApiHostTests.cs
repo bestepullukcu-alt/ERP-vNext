@@ -306,15 +306,13 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActorContext.ReasonCode);
 
         var missingCorrelation = NewContextWithTenant();
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelation, "actor-reference", "safety-user");
         var missingCorrelationContext = PvgCaseIntakeRequestContext.From(missingCorrelation);
         Assert.False(missingCorrelationContext.IsValid);
         Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelationContext.ReasonCode);
 
         var invalidCorrelation = NewContextWithTenant();
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(invalidCorrelation, "actor-reference", "safety-user");
         invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation";
         var invalidCorrelationContext = PvgCaseIntakeRequestContext.From(invalidCorrelation);
         Assert.False(invalidCorrelationContext.IsValid);
@@ -357,8 +355,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
         var missingCorrelationResult = await PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
             request,
             missingCorrelationContext,
@@ -386,8 +383,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorDetailResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
 
         var missingCorrelationListResult = await PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
             missingCorrelationContext,
@@ -463,8 +459,7 @@ public sealed class PvgServiceApiHostTests
             AssertSafeBlockedResponse(missingActor, PvgPermissionReasonCodes.ActorContextRequired);
 
             var missingCorrelationContext = NewContextWithTenant();
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
             var missingCorrelation = await ResponseOfAsync(await endpoint.Invoke(missingCorrelationContext));
             AssertSafeBlockedResponse(missingCorrelation, PvgPermissionReasonCodes.CorrelationContextRequired);
         }
@@ -612,8 +607,7 @@ public sealed class PvgServiceApiHostTests
         foreach (var endpoint in endpoints)
         {
             var invalidCorrelationContext = NewContextWithTenant();
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(invalidCorrelationContext, "actor-reference", "safety-user");
             invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation value";
 
             var response = await ResponseOfAsync(await endpoint.Invoke(invalidCorrelationContext));
@@ -1263,15 +1257,14 @@ public sealed class PvgServiceApiHostTests
     private static DefaultHttpContext NewContextWithTenant()
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers[PvgCaseIntakeRequestContext.TenantContextHeader] = "server-tenant-context";
+        PvgTestIdentity.SetTenant(context, PvgTestIdentity.TenantA);
         return context;
     }
 
     private static DefaultHttpContext NewContextWithTenantActorAndCorrelation()
     {
         var context = NewContextWithTenant();
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(context, "actor-reference", "safety-user");
         context.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "correlation-reference";
         return context;
     }
