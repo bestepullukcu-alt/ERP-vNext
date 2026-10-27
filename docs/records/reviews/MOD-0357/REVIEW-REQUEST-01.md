@@ -23,7 +23,7 @@
 ```text
 HEDEF: MOD-0357 (Management Review & Cadence, ürün adı "Toplantılar") module pack revizyon R1 — bağımsız inceleme 01 (SOP §20.4 / CT-APR-02). İnceleyensin; paketi yazan oturum değilsin, CT · Toplantılar oturumu da değilsin.
 Yer: C:\dev\ERP-vNext\.claude\worktrees\mg-ct-01 (dal chore/ct/mg-ct-01, commit 6a1e3a855). Yalnız oku: dosya düzenleme, kod yazma, commit, push yok. Tek çıktın aşağıdaki bulgu metnidir.
-Önce doğrula: `git rev-parse HEAD` 6a1e3a855 ile başlamalı ve `sha256sum execution/domains/management-governance/module-packs/MOD-0357-management-review-cadence.md` = bd7b82cefc1f326e09cc174ee122ede72c4ebf60dda767fe727b4793468f2922. Tutmuyorsa dur ve bildir.
+Önce doğrula: `git merge-base --is-ancestor 6a1e3a855 HEAD` çıkış 0 olmalı (HEAD bu isteğin kendi commit'i ya da sonrası olabilir) ve `sha256sum execution/domains/management-governance/module-packs/MOD-0357-management-review-cadence.md` = bd7b82cefc1f326e09cc174ee122ede72c4ebf60dda767fe727b4793468f2922. Tutmuyorsa dur ve bildir.
 Model · Effort (istenen): Opus · high — kullandığın modeli, effort'u ve oturum kimliğini yanıtın başına yaz; ortam vermiyorsa "verilemiyor" yaz, uydurma.
 
 Bu paketin ilk bağımsız incelemesidir. R1 yalnız ekleme yapar: `git diff 826150ef4 6a1e3a855 -- <paket>` (1432 ekleme, 0 silme). §1–§23 (teslim edilmiş S1–S12) bağlam içindir; R1 ile çelişki ararken oku.
