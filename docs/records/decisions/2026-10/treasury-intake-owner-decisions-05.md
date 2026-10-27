@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D48 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D49 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -351,6 +351,26 @@ onaylanan içerik bu dosyadaki "D47 rol matrisi (CT04a)" bölümü (commit sonra
    hazırlayıcıda; taslak toplu silmeler hazine yöneticisinde; `…reconcile` / `…workflow-reconcile` hem hazırlayan hem karar veren
    rollerde; yayım nakit pozisyonu onaylayıcısında. AP / AR yöneticisi birleşimleri çalışma anı SoD kurallarıyla korunur
    (MOD-0119 R1–R3, MOD-0120 A1, A2, A7).
+
+## D49 — CT04a yeniden denetim (geçti, iki yetki düzeltmesi) üzerine kararlar (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); denetlenen
+belge `treasury-ct04a-9bd6d179b.zip` (`9fd7d04c06ab71c7daecf4a10c9c6e2d22150f820a1cd2ce1e11cedd085738f3`).
+
+1. **Modül bazında görüntüleyiciler:** "Hazine görüntüleyici" kaldırılır; yerine Ödeme, AP, AR ve Nakit pozisyonu görüntüleyicileri.
+   Her operatör / onaylayıcı yalnız kendi modülünün görüntüleyicisini miras alır. "Hazine konsolide görüntüleyici" (dört modülün
+   okumaları) ayrıca kalır; yalnız gerekçeyle atanır, hiçbir rol onu miras almaz.
+2. **Ticari değer yazma izni:** yeni anahtar `mdm.contracts.value.write` (D41/1 listesine ek). `mdm.contracts.value.read` yalnız
+   görüntüler; değeri yazmak `mdm.contracts.update` + `mdm.contracts.value.write` ister. Okuma ve yazma ayrı denetim olaylarıdır.
+   Sözleşme yöneticisine verilir.
+3. **AP / AR yönetici ayrımı:** birleşik yönetici rolleri kalkar (D48/2'nin AP / AR kısmının yerine geçer). AP operasyon yöneticisi
+   (hazırlama + operasyon: hold / release-hold / istisna çözümü / toplu silme), AP onay yöneticisi (karar + mutabakat); AR operasyon
+   yöneticisi, AR onay yöneticisi; "AR 2. kademe düzeltme onaylayıcı" ayrı rol (`receivable-adjustments.tier2-approve`).
+4. **SoD muafiyeti kuralları (`waive-sod` açık atama):** onaylayan muafiyetten yararlanmayan Hazine yöneticisi ya da K1; süre en çok
+   24 saat ve süre dolunca kendiliğinden düşer; gerekçe kodları `ACIL-ODEME`, `TEK-YETKILI`, `DENETIM-ISTEGI`; kapsam yalnız ilgili tek
+   ödeme partisi; her kullanım 5 iş günü içinde K1 incelemesine düşer; onaylayan muafiyetten yararlanamaz.
+5. **D46 tablosu karantinada:** D46 tablosu tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN"; işleyen tek rol matrisi D47 rol matrisinin
+   D49 ile güncellenmiş hâlidir.
 
 ## Karar olmayanlar
 
