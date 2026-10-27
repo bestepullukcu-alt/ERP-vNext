@@ -1,0 +1,30 @@
+{
+ "argv": [
+  "bash",
+  "execution/domains/pharmacovigilance/work-packs/scripts/dl8_gateway_smoke.sh"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/pvg-dl8-live-01/run-03/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4058,
+   "path": "docs/records/audits/2026-10/pvg-dl8-live-01/run-03/stdout.txt",
+   "sha256": "9e15a413152e42e0a51cfb9a85b609dd8a868d4a8315aa5b2490941469946400"
+  }
+ ],
+ "commit": "40d9d8effa64114b8bb387e7c4341c111242de81",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-10-27T09:36:27Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/pvg-dl8-live-01/run-03",
+ "started_utc": "2026-10-27T09:36:15Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "62c9fef66292832e99c1338125b2fe8166cd6182"
+}
