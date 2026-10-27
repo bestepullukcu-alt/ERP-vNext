@@ -449,6 +449,25 @@ Replanning = Closure
 | Canlı ortam müdahalesi | **Her seferinde açık onay** | Sahip kararı 2026-10-15 |
 | Ortak dosyada tek-yazar anlaşması | **Her seferinde**, etkin Control Tower ile | SOP §16.4, K15 |
 
+### 7b. PR yalnız zorunluysa (S-77, sahip kuralı 2026-10-27: "CT'ler sürekli PR açmasın, zorunlu olmadıkça PR olmasın")
+
+Varsayılan: iş CT dalında **yerel commit** olarak birikir; dalganın sonunda **tek PR** açılır (S-76). Ara PR yalnız şu
+durumlarda açılır; CT sahibe sorarken hangisi olduğunu tek cümleyle söyler ve bekleyen her şeyi o PR'a toplar:
+
+| Durum | Örnek |
+|---|---|
+| (a) Bir onay ya da inceleme satırı main'e girmeli | paket onayı ya da revizyonu (`approvals.tsv`, `reviews.tsv`) |
+| (b) Kuyruğun **kayıt satırı** (registry / profil) yeni ya da değişti | dağıtım kapısı kaydı yalnız `origin/main`'den okur (`ct_queue.py` `load_for_dispatch`) |
+| (c) Başka bir CT ya da geliştirici bu iş main'e girmeden ilerleyemiyor | ortak sözleşme, başka modülün beklediği alan |
+| (d) İş kırmızı main'i düzeltiyor | CI düzeltmesi |
+| (e) Sahip açıkça istedi | — |
+
+READY gibi **iş satırları** için ayrı PR gerekmez: dağıtım kapısı iş satırını CT'nin çalışma ağacından okur (`prompt_gate.py`
+`current_bytes`); kayıt satırı ise origin/main'dekiyle aynı olmalıdır (`ct_queue.py` `load_for_dispatch`). (a)'nın sebebi:
+inceleme satırları main'den okunur ve HIGH onay ancak onaylayanın merge ettiği bir PR ile main'e girince geçerli olur
+(`pack_approval.py`). Bir onay PR'ında §7a madde 7 (paket başına tek onay satırı, onaylayan merge eder) geçerlidir; "hepsini
+topla" onu aşmaz. CT-Setup'ın kurulum işleri de bu kurala uyar.
+
 ### 7a. Paralel Control Tower'lar ve paylaşılan dosyalar (S-38, sahip kararı 2026-10-22)
 
 Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyalar herkesin ortak kaydıdır:
