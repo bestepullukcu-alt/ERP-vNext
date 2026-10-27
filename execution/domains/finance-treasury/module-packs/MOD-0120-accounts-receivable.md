@@ -24,6 +24,8 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; **MOD-0120 için** kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-33'teki ek not zorunluluk parantezinin dışına alındı. Kapsam ve anlam değişmedi.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de"
 > maddesi açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-14, T-4; MOD-0126 O-19 ile tek karar);
@@ -1262,7 +1264,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   eşzamanlı düzeltme talebi → tek talep, diğeri 409; (b) iki onaylayıcının eşzamanlı Approve ve Reject'i → tek açık karar
   niyeti, MOD-0023'e tek çağrı; (c) düzeltme talebi ile eşzamanlı tahsilat → biri 409; (d) aynı fatura için iki eşzamanlı
   Create aynı dış numarayla → biri 409. Tekil kısmi indeksler kaldırıldığında (a), (b), (d) kırmızıya döner (sabotaj).
-- [ ] AC-33 (zorunlu — sahip kararı D16, DL-3) — Tahsilat: kalan 100'lük faturada 40 → `PartiallyPaid`, kalan 60, en eski
+- [ ] AC-33 (zorunlu) — (sahip kararı D16, DL-3) Tahsilat: kalan 100'lük faturada 40 → `PartiallyPaid`, kalan 60, en eski
   taksit düşer ve `InstallmentAllocations` yazılır; 60 → `Paid`, aşama `None`; 61 → 422
   `RECEIVABLE_PAYMENT_EXCEEDS_OUTSTANDING`; tahsilat kaydı güncellenemez/silinemez (güncelleme / silme ucu yok, depoda
   `Replace` / `Delete` yolu yok — mimari testi).

@@ -24,6 +24,8 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0126 için kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-6a kimliği tam sayı olmadığı için AC-42 oldu (madde aynı yerde, DL-2 bitiş listesi güncellendi). Kapsam ve anlam değişmedi.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) O-7 / O-10: D42'nin yanına MOD-0023 sahibinin (Ali) teyidi eklendi ("ikisi de uygun", Y-1); O-8 açık kalır (şablon kodu
 > ve adım sayısı iş akışı tarafındaki kule açılınca gelir, Y-3); (2) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de
@@ -1124,7 +1126,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   `PAYMENT_SOD_DENIED` (`FailedSelfApproval`) döner ve MOD-0023'e hiçbir istek gitmez (sahte istemciyle sayılır).
 - [ ] AC-5 (zorunlu) — Gönderen kullanıcının ve gönderme anındaki son güncelleyenin kararı 403 `PAYMENT_SOD_DENIED`
   (`FailedSubmitterApproval` / `FailedUpdaterApproval`).
-- [ ] AC-6a (zorunlu) — Muafiyet adayı (D13): R1–R3 dışlamasından sonra tier-2 aday yoksa `waive-sod` izni olanlar
+- [ ] AC-42 (zorunlu) — (önceki kimlik AC-6a; §7 tam sayı kimlik) Muafiyet adayı (D13): R1–R3 dışlamasından sonra tier-2 aday yoksa `waive-sod` izni olanlar
   `IsWaiverCandidate = true` ile aday olur ve yalnız muafiyetli onay verebilir (normal Approve 403); tier-2 aday varken
   muafiyet adayı eklenmez (iki ayrı test).
 - [ ] AC-6 (zorunlu) — `IsTier2` partide `tier2-approve` izni olmayan onaylayıcı 403 `PAYMENT_TIER2_APPROVER_REQUIRED`
@@ -1498,7 +1500,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul: DL-1, O-4, O-7, O-8, MOD-0023
-  şablonu, MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, AC-6a, 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
+  şablonu, MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, AC-42, 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul: DL-2, O-6 (MOD-0269 sözleşmesi dondu — D27/7, TRM-06 kapandı), MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse

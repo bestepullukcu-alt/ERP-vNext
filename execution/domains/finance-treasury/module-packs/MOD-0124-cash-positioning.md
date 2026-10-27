@@ -36,7 +36,7 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de" maddesi açık; (3) SEC-002 tüketim yolu Platform
 > sahibi yanıtı Y-4/6 ile yazıldı (O-23; MOD-0126 O-19 ile tek karar); (4) MOD-0048 `currency-minor-units` önerisi başlangıç
 > listesi olarak kabul (Y-4/3; O-8, MOD-0126 O-11 ile ortak) — seed önkoşul açık; (5) MOD-0126 sabitlemesi bu revizyonun
-> MOD-0126 sürümüne (`3e900f84…`) çekildi; (6) DCP numarası DCP-011 atandı (Y-4/2); dosya adı değişikliği ayrı adım —
+> MOD-0126 sürümüne (`8eab5e3c…`; AC biçimi düzeltmesiyle) çekildi; (6) DCP numarası DCP-011 atandı (Y-4/2); dosya adı değişikliği ayrı adım —
 > paketteki `UNASSIGNED-finance-treasury-intake.md` yolu bu revizyonda değişmez.
 > Bu revizyon pack'i `ready-for-dev` yapmaz; künye `draft` kalır.
 >
@@ -1506,8 +1506,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `3e900f8482b3ae02995fbc74a4449d8aaf27c277b7884d954d35edd54d5954a1` (bu revizyonla aynı commit, dal
-  `docs/ct/treasury-finance-answers-05`; önceki sabitlemeler `25065d5e…` (D42 + D44, dal `docs/ct/treasury-decisions-04`), `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
+  `8eab5e3ca02fda16d20eaba660d0f1612f39c0d711b26d3f4fba47191b1812c9` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-03`; önceki sabitlemeler `3e900f84…` (Y-1…Y-4), `25065d5e…` (D42 + D44, dal `docs/ct/treasury-decisions-04`), `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
   Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir.
