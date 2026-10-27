@@ -74,9 +74,9 @@ pvg_pid=$!
 echo "pvg pid $pvg_pid"
 
 echo "== start Gateway on $GW_PORT (Development)"
-( cd gateway/Diten.ApiGateway && ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:$GW_PORT dotnet "bin/Debug/net8.0/Diten.ApiGateway.dll" ) > "$T/gw.log" 2>&1 &
+( cd gateway/Diten.ApiGateway && ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:$GW_PORT exec dotnet "bin/Debug/net8.0/Diten.ApiGateway.dll" ) > "$T/gw.log" 2>&1 &
 gw_pid=$!
-echo "gateway pid $gw_pid"
+echo "gateway pid $gw_pid (exec: the subshell becomes the dotnet process)"
 
 wait_port() {
   for i in $(seq 1 60); do
