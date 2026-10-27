@@ -1,0 +1,1 @@
+execution/domains/pharmacovigilance/work-packs/scripts/dl8_gateway_smoke.sh: line 16: 38066 Terminated: 15          ( cd gateway/Diten.ApiGateway && ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:$GW_PORT dotnet "bin/Debug/net8.0/Diten.ApiGateway.dll" ) > "$T/gw.log" 2>&1
