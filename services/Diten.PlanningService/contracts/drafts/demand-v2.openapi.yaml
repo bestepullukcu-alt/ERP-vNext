@@ -72,7 +72,7 @@ x-implementation-gaps:
   - Current-Published-by-period lookup is implemented only with fixture authority; live Platform/data-scope authority is unconfigured and fails closed.
   - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
   - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
-  - Independent CANONICAL-1 and CANONICAL-2 recomputation from persisted Mongo documents is tested without producer checksum helpers; full external recomputation from HTTP by MOD-0189 still needs consumer verification against every manifest and row field. This DRAFT is not frozen.
+  - Independent CANONICAL-1 and CANONICAL-2 recomputation from persisted Mongo documents and PlanningService HTTP manifest/rows is tested without producer checksum helpers; MOD-0189 still needs its own consumer verification against every manifest and row field. This DRAFT is not frozen.
   - The publish transaction persists separate Published and, when replacing a baseline, Superseded outbox intents with both state changes and audit; event transport and delivery remain open.
 x-open-design-decisions:
   - Cursor expiry/encoding compatibility policy for a future frozen contract; current runtime behavior is recorded in x-row-pagination.
