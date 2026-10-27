@@ -10942,3 +10942,22 @@ tasarım ve Codex incelemesi ister.
 
     git show origin/main:AGENTS.md | wc -c
 
+### BL-664
+
+**Kurulum araç adayları (2026-10-27 dalgasından kalanlar)**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 (`kurulum-dalga`: bu dalga yalnız kart) · KAYIT: 2026-10-27
+
+**Ne:** (1) `pack_approval.py check` paketin Teslim dilimleri tablosunda dilim başına kanıt seviyesi yoksa UYARI versin
+(S-85); (2) `docs/records/**` için `.gitattributes` ile LF (S-87); (3) `prompt_gate.py` yardım metninde "kuyruk kayıtlı"
+yerine "kuyruğun kayıt satırı (`ct-queue-registry.tsv`)" (S-77'de yanlış okundu); (4) Views klasörü → domain eşleme
+tablosu (UI CT kendi tablosunu kullandı); (5) `tests/known-failures.tsv` güncel değil (Platform e-imza, DocsPathGuard
+parmak izi) — Platform sahibiyle.
+**Neden ertelendi:** her biri araç ya da ortak dosya değişikliği; ayrı inceleme ister. Bu dalga yalnız kart kurallarıydı.
+**Yapım tetikleyicisi:** aynı sorun ikinci kez yaşanınca ya da sahip istediğinde.
+**Gelecek regresyon riski:** 🟡 — kart kuralı insanlara söyler, araç denetlemez; unutulursa kabul ya da dağıtım geç durur.
+
+**Ölçüm komutu:**
+
+    git grep -n "S-85\|S-87" -- docs/guides/operations/control-tower-operating-card.md
+
