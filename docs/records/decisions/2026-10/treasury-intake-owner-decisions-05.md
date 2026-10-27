@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D46a (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D47 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -80,6 +80,29 @@ Hazine ve AP/AR rollerine mdm.bank-accounts.read ve mdm.banks.read eklenir (mask
 **D46a — ek (sahip onayı, 2026-10-27):** MOD-0217 belge yükleme / indirme çağrıları kullanıcı token'ıyla MOD-0262-FU01'e gider
 (D41/10; ölçüm 2026-10-27: `DocumentRepositoryModels.cs:17,20` @7c57e8466). Bu yüzden sözleşme görüntüleyiciye
 `platform.document-repository.read`, sözleşme yöneticisine ayrıca `platform.document-repository.manage` eklenir (tablo güncellendi).
+
+## D47 — Sahip denetimi CT04 (KOŞULLU) üzerine rol ve kontrol kararları (soru kutusu, hepsi önerilen seçenek, 2026-10-27)
+
+Onay kanıtı: onaylayan GitHub hesabı `gmg-10` (rol K1, depo sahibi); zaman 2026-10-27; oturum Treasury Intake CT
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); denetlenen belge `treasury-ct04-bfe32cd8b.zip`
+(`25167b42eb7d0fac328d21e08e0b73ce46f55b64a86d97f4b445524b7f81c4de`). Resmi onay yine CT-APR-01 satırı ve merge'dür.
+
+1. **Görev ayrılığı (SoD) rolleri:** "Hazine yöneticisi" işlem onayı, serbest bırakma ve muafiyet taşımaz; yalnız yapılandırma
+   ve operasyonel destek. `finance-treasury.payment-batches.waive-sod` hiçbir rol şablonunda yer almaz: yalnız açık atama
+   (`ExplicitGrantOnlyPermissions`), süreli, gerekçe kodlu, bağımsız onaylı; kendi kendine muafiyet yasak; her muafiyette
+   gerekçe, bitiş, etkilenen işlem, onaylayan ve atlanamaz denetim olayı.
+2. **Banka hesabı etkinleştirme:** ayrı "Banka hesabı etkinleştirici" rolü (`mdm.bank-accounts.activate` / `.deactivate` +
+   okuma); banka verisi yöneticisinde yok. Oluşturanın / son güncelleyenin etkinleştirememesi çalışma anında ayrıca denetlenir (D23/2).
+3. **Sözleşme gizliliği (D41/6'yı daraltır):** v1'e belge indirme denetimi ve ticari değer okuma denetimi eklenir (mevcut
+   izinlerle, yeni alan yok). Gizlilik düzeyi, kısıtlı gruplar, dış paylaşım ve saklama / yasal tutma Follow-up kalır.
+4. **Bağımlı banka okumaları:** `mdm.banks.read` / `mdm.bank-accounts.read` yalnız paketlerde banka verisini gerçekten okuyan
+   akışın rollerine verilir (ölçülerek); okumayan rolden kaldırılır.
+5. **İmza kaydı:** ayrı "Sözleşme imza kaydedici" rolü (`mdm.contracts.record-signature`); sözleşme yöneticisinde yok. İmzalı kopya
+   belgesi zorunlu; kaydeden, sözleşmeyi oluşturan ya da onaya gönderen olamaz; düzeltme yalnız yeni değişiklik sürümüyle (silme yok).
+6. **Onay kanıtı alanları:** bu kayıttan itibaren her sahip kararında onaylayan hesap, rol, zaman, oturum ve onaylanan belgenin
+   hash'i yazılır; kişi adı yazılmaz.
+
+D46 rol tablosu D47 ile güncellenir; güncel tam rol matrisi aşağıdaki "D47 rol matrisi" bölümündedir (CT04a revizyonu).
 
 ## Karar olmayanlar
 
