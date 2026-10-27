@@ -1,5 +1,5 @@
---- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 22:16:08
-+++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 22:16:35
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-27 11:09:08
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-27 11:09:28
 @@ -12,7 +12,7 @@
      shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
      yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
@@ -40,12 +40,10 @@
        parameters:
        - name: returnId
          in: path
-@@ -2146,6 +2152,15 @@
-                     error:
-                       code: INVALID_REQUEST
+@@ -2148,6 +2154,15 @@
                        message: INVALID REQUEST
-+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
-+                    contractVersion: v1
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
 +                INVENTORY_FORBIDDEN:
 +                  summary: "3.4.0 (WP-P1 r5) — INVENTORY refused the caller on the CUSTOMER_RETURN posting (MOD-0186 §34)"
 +                  value:
@@ -53,10 +51,77 @@
 +                      code: INVALID_REQUEST
 +                      message: INVENTORY refused the caller's authorization
 +                      details: { inventoryCode: CROSS_LE_FORBIDDEN }
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
+         '404':
+           description: Returns-specific branch; normative annex defines precedence.
+           headers:
+@@ -2197,6 +2212,15 @@
+                       message: IDEMPOTENCY KEY REUSED
                        correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                      contractVersion: v1
-         '404':
-@@ -3132,6 +3147,11 @@
++                RETURN_RECEIPT_IN_PROGRESS:
++                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
++                  value:
++                    error:
++                      code: RETURN_RECEIPT_IN_PROGRESS
++                      message: "a receipt attempt holds the lease, or the command changes a line that is not Refused"
++                      details: { shipmentLineNumber: "1" }
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
+         '415':
+           description: Returns-specific branch; normative annex defines precedence.
+           headers:
+@@ -2244,6 +2268,33 @@
+                     error:
+                       code: DISPOSITION_REQUIRED
+                       message: DISPOSITION REQUIRED
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                INVENTORY_REFUSED:
++                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
++                  value:
++                    error:
++                      code: INVENTORY_REFUSED
++                      message: "INVENTORY refused a line's CUSTOMER_RETURN"
++                      details: { shipmentLineNumber: "2", inventoryCode: UNKNOWN_LOCATION }
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_LINE_NOT_UNPOSTABLE:
++                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
++                  value:
++                    error:
++                      code: RETURN_LINE_NOT_UNPOSTABLE
++                      message: "unpostedLines names a line that is not permanently refused or Blocked"
++                      details: { shipmentLineNumber: "2", lastInventoryCode: UNKNOWN_LOCATION }
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                RETURN_SOURCE_MOVEMENT_MISSING:
++                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
++                  value:
++                    error:
++                      code: RETURN_SOURCE_MOVEMENT_MISSING
++                      message: "the shipment has a stock issue but this line has none"
++                      details: { shipmentLineNumber: "1" }
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+         '500':
+@@ -2286,6 +2337,14 @@
+                     error:
+                       code: PERSISTENCE_UNAVAILABLE
+                       message: PERSISTENCE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++                DEPENDENCY_UNAVAILABLE:
++                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
++                  value:
++                    error:
++                      code: DEPENDENCY_UNAVAILABLE
++                      message: "INVENTORY unreachable on the CUSTOMER_RETURN posting"
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+   /claims:
+@@ -3132,6 +3191,11 @@
          quantity: { $ref: '#/components/schemas/Decimal' }
          uomId: { type: string }
          inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
@@ -68,15 +133,16 @@
      CreateShipmentCommand:
        type: object
        additionalProperties: false
-@@ -3205,6 +3225,7 @@
+@@ -3205,6 +3269,8 @@
              lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
              pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
              lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
++            stockIssued: { type: [boolean, 'null'], description: "3.4.0 (WP-P1 r6, additive, read-only) — true once a dispatch attempt is Completed and every line carries its INVENTORY issue (MOD-0183 §23.4); null when the shipment has no dispatch attempt (never dispatched, or dispatched before the 3.4.0 stock issue — MOD-0186 reads null on a Dispatched-or-later shipment as PRE_WP_P1)" }
 +            dispatchState: { type: [string, 'null'], enum: [None, InProgress, CompensationFailed, null], description: "3.4.0 (WP-P1 G4, additive, read-only) — state of the open Inventory dispatch attempt behind Dispatched (MOD-0183 §23.4). None: no open attempt. InProgress: an attempt holds the lease; Cancelled and POD answer 409 DISPATCH_IN_PROGRESS. CompensationFailed: a compensating REVERSAL failed; status stays Planned and every transition except the exit (Dispatched or Cancelled, which first resends the reversals) answers 409 DISPATCH_COMPENSATION_FAILED." }
              contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      ShipmentListResponse:
        type: object
-@@ -3343,6 +3364,18 @@
+@@ -3343,6 +3409,18 @@
          occurredAt: { type: string, format: date-time }
          inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
          dispositionCode: { type: [string, 'null'] }
@@ -84,18 +150,18 @@
 +        toLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — optional receiving location." }
 +        unpostedLines:
 +          type: [array, 'null']
-+          description: "3.4.0 (WP-P1 r4, additive) — lines received without stock posting after a permanent INVENTORY refusal (ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE, UNKNOWN_ITEM); refused (422) for any other line (MOD-0186 §34.2)"
++          description: "3.4.0 (WP-P1 r6, additive) — lines received without stock posting: after a permanent INVENTORY refusal (reasonCode = that INVENTORY code) or a Blocked line after INVENTORY 400 INVALID_REQUEST (reasonCode INTEGRITY_FAULT); any other line → 422 RETURN_LINE_NOT_UNPOSTABLE (MOD-0186 §34.2)"
 +          items:
 +            type: object
 +            additionalProperties: false
 +            required: [shipmentLineNumber, reasonCode]
 +            properties:
 +              shipmentLineNumber: { type: string }
-+              reasonCode: { type: string }
++              reasonCode: { type: string, enum: [ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE, UNKNOWN_ITEM, INTEGRITY_FAULT] }
      ReturnSummary:
        type: object
        properties:
-@@ -3357,6 +3390,17 @@
+@@ -3357,6 +3435,17 @@
            required: [idempotentReplay, contractVersion]
            properties:
              idempotentReplay: { type: boolean }
@@ -113,7 +179,7 @@
              contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      ReturnListResponse:
        type: object
-@@ -3492,6 +3536,18 @@
+@@ -3492,6 +3581,18 @@
              correlationId: { type: string, format: uuid }
          contractVersion: { $ref: '#/components/schemas/ContractVersion' }
    responses:
@@ -132,7 +198,7 @@
      BadRequest:
        description: Request semasi veya header gecersiz
        content:
-@@ -3517,6 +3573,9 @@
+@@ -3517,6 +3618,9 @@
            examples:
              idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
@@ -142,13 +208,13 @@
      Unprocessable:
        description: Is kurali veya lifecycle gecisi gecersiz
        content:
-@@ -3528,6 +3587,10 @@
+@@ -3528,6 +3632,10 @@
              returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
 +            inventoryRefused: { value: { error: { code: INVENTORY_REFUSED, message: "3.4.0 (WP-P1 G7) — INVENTORY refused a line's movement; the shipment did not change state", details: { lineNumber: "1", inventoryCode: LOT_UNDER_RECALL, inventory: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, recallCaseNumber: RC-2026-0004 } }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
 +            shipmentLineStockIncomplete: { value: { error: { code: SHIPMENT_LINE_STOCK_INCOMPLETE, message: "3.4.0 (WP-P1 r5) — a line has no skuLevel at Dispatched; INVENTORY was not called", details: { lineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
-+            returnLineNotUnpostable: { value: { error: { code: RETURN_LINE_NOT_UNPOSTABLE, message: "3.4.0 (WP-P1 r5) — unpostedLines names a line whose last INVENTORY answer is not a permanent refusal", details: { shipmentLineNumber: "2", lastInventoryCode: UNKNOWN_LOCATION }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            returnLineNotUnpostable: { value: { error: { code: RETURN_LINE_NOT_UNPOSTABLE, message: "3.4.0 (WP-P1 r6) — unpostedLines names a line that is not permanently refused or Blocked", details: { shipmentLineNumber: "2", lastInventoryCode: UNKNOWN_LOCATION }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
 +            returnSourceMovementMissing: { value: { error: { code: RETURN_SOURCE_MOVEMENT_MISSING, message: "3.4.0 (WP-P1 G8) — the shipment line has no recorded issue movement; no lot is guessed", details: { shipmentLineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
      DependencyUnavailable:
        description: Frozen consumed contract mock'u erisilemez

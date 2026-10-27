@@ -606,7 +606,9 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 > closes the independent r3 review (`docs/records/reviews/MOD-0183/2026-10-26-2acd1866.md`, KOŞULLU): fencing F-1, external
 > reversal F-2, closed code list and declared statuses F-3, `skuLevel` / lot check F-4, text and order F-5; **r5** closes the
 > review of r4 (`docs/records/reviews/MOD-0183/2026-10-26-85e1bd04.md`): late writer reverses only a closed attempt's
-> unrecorded issue, reconciliation job, 403 during compensation, patch texts. **Draft revision —
+> unrecorded issue, 403 during compensation, patch texts; **r6** (simpler, Natig) replaces the reconciliation job with a *sent*
+> marker and resend-before-compensate, compares attempt numbers for a late writer, keeps attempt history, adds
+> `ShipmentDetail.stockIssued` (review `2026-10-26-c9976f3f.md`). **Draft revision —
 > not approved.** Needs a new CT-APR-02 round (MVP-1 CT) and a CT-APR-01 row (high risk) before any code.
 
 ### 23.1 What is posted
@@ -683,7 +685,7 @@ owner). "Release first, then issue" is not used.
 | `n` | attempt number, 1 for the first attempt; it increases **only** when an attempt is closed as `Compensated` (all its posted lines reversed). A completed (`Dispatched`) attempt ends the dispatch; an `InProgress` or `CompensationFailed` attempt keeps its `n` |
 | `state` | `InProgress` / `CompensationFailed` / `Compensated` / `Completed`; the wire shows it as `ShipmentDetail.dispatchState` (`None` when there is no open attempt, 3.4.0) |
 | `occurredAt`, `transactionDate`, `postingDate` | from the command that opened the attempt; sent unchanged on every retry within the attempt |
-| per line | the full §23.1 request body as first sent, the issue `transactionId` and `lotId` when INVENTORY answered, the reversal dates and reversal `transactionId` when compensated |
+| per line | the *sent* marker (r6), the full §23.1 request body as first sent, the issue `transactionId` and `lotId` when INVENTORY answered, the reversal dates and reversal `transactionId` when compensated |
 | `leaseUntil` | the attempt's single-writer lease (request timeout + 30 s), renewed before each INVENTORY call |
 
 - **One active attempt (F-2).** Opening or resuming an attempt is a conditional update on the shipment (`dispatchState` and
@@ -696,6 +698,8 @@ owner). "Release first, then issue" is not used.
   `IDEMPOTENCY_KEY_REUSED` is an integrity fault (logged; the attempt is blocked like `CompensationFailed`), never a reason to
   post again.
 - **Completion.** When every line has an issue `transactionId`, the shipment becomes `Dispatched`, the attempt `Completed`,
+  the read-only `ShipmentDetail.stockIssued` becomes `true` (SHIPMENT-BUNDLE 3.4.0; `null` on a shipment with no dispatch
+  attempt — e.g. one dispatched before DL-1 — which MOD-0186 uses as its pre-WP-P1 marker, r6),
   and the frozen `ShipmentDispatched` event is written in the same transaction (with receipt and central audit). MOD-0186
   reads the per-line issue of the **completed** attempt only.
 - **Refusal → compensation (G3, F-3).** If a line is refused (422), every posted line of the attempt is reversed. The
@@ -724,21 +728,26 @@ owner). "Release first, then issue" is not used.
   original `transactionId`. When the other lines are reversed, the attempt is `Compensated` — no `CompensationFailed` loop.
   During a dispatch (not a compensation) a line whose issue was reversed externally is still a posted line; the attempt is
   completed or compensated as usual.
-- **Fencing a late writer (r4, corrected in r5 — review F-1).** The lease carries an id. Every INVENTORY call and every
-  write of a result is conditional on the shipment still holding **this attempt `n` and this lease id**. A writer whose lease
-  has expired (a paused process) may still get a 201 for a line and then fail to record it. It then **re-reads the shipment**
-  and acts only on what it sees:
-  - attempt `n` is still `InProgress` or is `Completed` → it **does nothing** but log: the new lease holder resends the same
-    key with the same body and receives the same `transactionId` by replay (or already has), so reversing it would leave a
-    `Dispatched` shipment without its stock issue;
-  - attempt `n` is closed (`Compensated` or `CompensationFailed`, so nobody will send `…:dispatch:a{n}` again) **and** that
-    `transactionId` is recorded on no line → it reverses the issue with the §23.4 REVERSAL body and key
-    `{shipmentId}:{lineNumber}:reversal:a{n}` (unused: the line was never recorded in attempt `n`) and logs an integrity fault.
-  A writer that crashes before this step leaves an unrecorded issue behind. A **reconciliation job** finds it: for shipments
-  with a closed attempt it lists INVENTORY movements with `documentGroupId` = the shipment id and **flags** (never posts or
-  reverses, S23-12) every `GOODS_ISSUE_SALES` whose `transactionId` is on no line, for a user to reverse through the
-  `CompensationFailed` exit. Whether INVENTORY's transaction query filters by `documentGroupId` is asked of the MVP-1 CT
-  (**R-3**); if it does not, that filter is an INVENTORY addition requested from the MOD-0173 owner before DL-1.
+- **Sent marker and fencing (r6, simpler — review F-1 / F-2 on r5).** The lease carries an id. Every call a **lease
+  holder** makes to INVENTORY and every result it writes is conditional on the shipment still holding **this attempt `n` and
+  this lease id**; the only call made without the lease is the late writer's REVERSAL below (review F-3). Before each post,
+  the holder marks the line **sent** in the attempt (key and body), with that same condition. Consequences:
+  - **Resend before compensating or completing.** Whoever holds the lease treats a *sent* line without a `transactionId`
+    first: it resends the stored request with the same key — a replay returns the issue that a crashed or paused writer
+    made, a 422 means nothing was posted. Only then does it complete the attempt or compensate it. So a crash after a 201
+    leaves no unrecorded issue behind, and **no reconciliation job and no INVENTORY query are needed** (the r5 job and R-3
+    are dropped).
+  - **Late writer.** A writer whose lease expired and who got a 201 it cannot record re-reads the shipment and compares
+    **its own attempt number** with the stored `n`: stored `n` equal and the attempt `InProgress` or `Completed` → it does
+    nothing but log (the holder resends the same key and gets the same `transactionId`); stored `n` **greater**, or equal and
+    `Compensated` / `CompensationFailed` (its attempt is closed and nobody resends its key) → it reverses its issue with the
+    §23.4 REVERSAL body and key `{shipmentId}:{lineNumber}:reversal:a{own n}` and logs an integrity fault.
+  - **History.** The shipment keeps, per closed attempt, each line's issue and reversal `transactionId`s (an append-only
+    list beside the current attempt), so an audit can trace every movement of the shipment; MOD-0186 reads only the
+    `Completed` attempt.
+  - **Residual risk, stated:** INVENTORY may still process a request after the writer's own HTTP timeout. The lease is
+    longer than that timeout (request timeout + 30 s), and the holder's resend with the same key turns such a late post into a
+    replay, so the window is the gap between INVENTORY's own processing and the lease; it is logged, not reconciled.
 - **Order (r4, review F-5).** Lines are posted, and reversed, in the order they are stored on the shipment (create order),
   never sorted by `lineNumber` text.
 - **Failed compensation and the exit (F-4).** If a REVERSAL itself fails, the attempt becomes `CompensationFailed`, the
@@ -776,10 +785,11 @@ owner). "Release first, then issue" is not used.
 | S23-7 | Every `inventoryCode`, the module codes `INVENTORY_REFUSED`, `SHIPMENT_LINE_STOCK_INCOMPLETE`, `DISPATCH_IN_PROGRESS`, `DISPATCH_COMPENSATION_FAILED`, `DEPENDENCY_UNAVAILABLE`, and the `dispatchState` labels (`InProgress`, `CompensationFailed`) have a non-empty text in all 7 languages of `ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (parity measured by MATCH count); the screen never falls back to the generic `validationError` text for them (F-9) |
 | S23-8 | Three-line dispatch, line 2 refused → line 1 reversed with key `…:1:reversal:a1` and the §23.4 body; attempt `Compensated`, `n = 2`; shipment `Planned`; no event |
 | S23-9 | Crash between line 1 and line 2, user retry after the lease → line 1 resent with key `…:dispatch:a1` and the stored body answers `idempotentReplay: true`, line 2 posted, `Dispatched` once |
+| S23-20 | **403 during compensation (r5 rule, review F-3):** an INVENTORY 403 on a REVERSAL → attempt `CompensationFailed`, the command answers 409 `DISPATCH_COMPENSATION_FAILED` (not 403) |
 | S23-10 | Compensating REVERSAL fails → `CompensationFailed`, transitions and POD 409 `DISPATCH_COMPENSATION_FAILED`; exit by `Cancelled` and by `Dispatched` both resend the reversals first; `Dispatched` then opens attempt 2 with keys `…:a2` |
 | S23-11 | Stored dates are resent within an attempt; a forced date change in a test shows `IDEMPOTENCY_KEY_REUSED` handled as an integrity fault |
 | S23-12 | A background job never posts or reverses; it only flags an expired lease |
-| S23-18 | **Fencing (review F-1, r5):** (a) A gets 201 `T2` for line 2 and pauses; B takes the lease, resends `…:2:dispatch:a1` → replay `T2`, records it, completes `Dispatched`; A wakes → **does not reverse**, AVAILABLE net −(sum of lines). (b) A's attempt was compensated while it paused → A reverses its unrecorded issue with `…:3:reversal:a1`, net stock unchanged. (c) A crashes after its 201 → the reconciliation job flags the unrecorded movement. Sabotage: reversing in case (a), or dropping the lease-id condition, makes the test red |
+| S23-18 | **Fencing (review F-1, r6):** (d) a1 compensated, a2 `Dispatched`, then A wakes with an a1 201 for line 2 → stored `n` (2) is greater → A reverses it with `…:2:reversal:a1`; net stock −(sum of lines). (e) A crashes after a 201 while a1 is `InProgress` → B, holding the lease, resends the *sent* line → replay, recorded. Earlier cases:  (a) A gets 201 `T2` for line 2 and pauses; B takes the lease, resends `…:2:dispatch:a1` → replay `T2`, records it, completes `Dispatched`; A wakes → **does not reverse**, AVAILABLE net −(sum of lines). (b) A's attempt was compensated while it paused → A reverses its unrecorded issue with `…:3:reversal:a1`, net stock unchanged. (c) A crashes after its 201 → B resends the *sent* line before compensating. Sabotage: reversing in case (a), or dropping the lease-id condition, makes the test red |
 | S23-19 | **External reversal (review F-2):** line 1's issue is reversed in INVENTORY by a user, then line 2 is refused → our REVERSAL of line 1 answers `ALREADY_REVERSED`, counted as reversed, attempt `Compensated`, no `CompensationFailed` loop |
 | S23-17 | REVERSAL body: only the §23.4 fields are sent; sabotage: adding `lotId` or a `from*` field makes the compensation test red (INVENTORY 400), and a 400 is handled as an integrity fault |
 | S23-13 | Compensation retried after a crash → each REVERSAL resent with its `…:reversal:a{n}` key and stored dates → `idempotentReplay: true`, no `ALREADY_REVERSED`, no second reversal |
@@ -797,7 +807,7 @@ MVP-1 CT's live tours are the acceptance.
 | DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance |
 | DL-2 | ret ve durum metinleri | Refusals and events, Acceptance |
 
-DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-19; the 3.4.0 contract patch ships in the same change
+DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-20; the 3.4.0 contract patch ships in the same change
 (`ContractErrorCodeParityTests`) together with the return reader's acceptance of the 3.4.0 line fields (Repo Scope, §23 DL-1
 exception). DL-2 covers the screen texts and labels of S23-7. S23-16 is measured when MOD-0186 DL-1 lands (it needs both
 modules). Not slices of this version: the product check (Dependencies, PRODUCT-MASTER row — dispatchable only after
