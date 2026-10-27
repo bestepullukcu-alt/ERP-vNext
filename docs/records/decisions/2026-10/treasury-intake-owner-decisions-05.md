@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D49 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D50 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -435,6 +435,18 @@ belge `treasury-ct04a-9bd6d179b.zip` (`9fd7d04c06ab71c7daecf4a10c9c6e2d22150f820
    ödeme partisi; her kullanım 5 iş günü içinde K1 incelemesine düşer; onaylayan muafiyetten yararlanamaz.
 5. **D46 tablosu karantinada:** D46 tablosu tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN"; işleyen tek rol matrisi D47 rol matrisinin
    D49 ile güncellenmiş hâlidir.
+
+## D50 — CT04b rol matrisi üç nokta (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`a3288084f` (CT04b).
+
+1. **Onay yöneticileri birleşir:** "AP onay yöneticisi" ve "AR onay yöneticisi" kalkar (izinleri onaylayıcılarla birebir aynıydı);
+   AP onaylayıcı ve AR onaylayıcı mutabakatı (`reconcile`) da taşır.
+2. **AR 2. kademe düzeltme onaylayıcı** AR onaylayıcının izinlerini miras alır + `receivable-adjustments.tier2-approve`; tek başına
+   atanabilir (ödeme 2. kademe deseni).
+3. **AP istisna ayrılığı:** MOD-0119'a çalışma anı kuralı — istisnayı açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz;
+   hata kodu ve sabotajlı kabul ölçütüyle.
 
 ## Karar olmayanlar
 
