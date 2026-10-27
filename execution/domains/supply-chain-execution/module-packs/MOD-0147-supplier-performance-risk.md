@@ -58,10 +58,15 @@ Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILA
 
 **Nothing is switched on by the merge (review F-1).** Until the enabling gates below close, a DL-1 merge **adds no
 `/api/supplier-performance` route to `ocelot.json` and registers no `supplychain.supplier-performance.*` permission in the
-catalog** — DL-1 has no `IModuleManifestProvider` for MOD-0147 and the module code is not added to `AdminModules`, so neither
-`FullCatalogPermissionGrantService` (SuperAdmin) nor `DefaultRolePermissionTemplate` (Viewer `read`) can grant it (the Q358
-lesson). Tests put the permissions into their tokens directly. The permission definition, the manifest provider and the
-Gateway route come in the **enabling change**, after the gates below.
+catalog** — DL-1 registers no `IModuleManifestProvider` for MOD-0147 in `Program.cs` and the module code is not added to
+`AdminModules`, so neither `FullCatalogPermissionGrantService` (SuperAdmin) nor `DefaultRolePermissionTemplate` (Viewer
+`read`) can grant it (the Q358 lesson). Tests put the permissions into their tokens directly. **CI guard (review F-1):**
+`EnforcedPermissionDeclarationGuardTests.Every_enforced_key_is_declared_by_its_module_provider` (runs in `supplychain-tests`)
+requires every enforced key to be declared; DL-1 meets it with a **`KnownWithoutProvider` entry** for area
+`supplier-performance` (ModuleCode of MOD-0147, reason "provider ships with the enabling change") — the path S&OP and
+Capacity used until 2026-10-18 — and not with a provider class, which would be one `AddSingleton` away from switching the
+permissions on. The **enabling change** removes that entry and adds the provider, its `AddSingleton`, the permission
+definitions and the Gateway route, after the gates below.
 
 **Still gates for enabling v1 (the enabling change: manifest provider, permission definition, Gateway route):** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`**
 (MOD-0140 Revision 2 DL-1) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
