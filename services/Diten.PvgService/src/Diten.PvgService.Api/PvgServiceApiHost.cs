@@ -150,8 +150,15 @@ public static class PvgServiceApiHost
 public sealed record PvgServiceApiRuntimeOptions(
     bool IsProductionLike,
     bool OperationalRuntimeAuthorized,
-    bool UseNonProductionAdapters)
+    bool UseNonProductionAdapters,
+    string? ApprovalReference = null)
 {
+    // RTA-01 (runtime_approval_id): fixed shape, matched whole (\z, not $: no trailing newline), culture-invariant,
+    // case-sensitive. [0-9], not \d.
+    private static readonly System.Text.RegularExpressions.Regex ApprovalReferenceShape = new(
+        "^RTA-MOD0230-[0-9]{3}\\z",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
     public static PvgServiceApiRuntimeOptions From(IConfiguration configuration, string environmentName)
     {
         var isProductionLike =
@@ -167,10 +174,14 @@ public sealed record PvgServiceApiRuntimeOptions(
             "Pvg:Runtime:UseNonProductionAdapters",
             !isProductionLike);
 
+        // Read exactly as configured (no trimming): a padded value is invalid, not repaired.
+        var approvalReference = configuration["Pvg:Runtime:ApprovalReference"];
+
         return new PvgServiceApiRuntimeOptions(
             isProductionLike,
             operationalRuntimeAuthorized,
-            useNonProductionAdapters);
+            useNonProductionAdapters,
+            approvalReference);
     }
 
     public void ThrowIfUnsafe()
@@ -186,7 +197,17 @@ public sealed record PvgServiceApiRuntimeOptions(
             throw new InvalidOperationException(
                 "PVG production-like startup cannot use non-production adapters.");
         }
+
+        // The flag alone is not authority (OD-PVG-6): it must name an approval record. The value is never echoed.
+        if (IsProductionLike && OperationalRuntimeAuthorized && !HasValidApprovalReference())
+        {
+            throw new InvalidOperationException(
+                "PVG production-like startup requires an operational runtime approval reference.");
+        }
     }
+
+    private bool HasValidApprovalReference() =>
+        ApprovalReference is not null && ApprovalReferenceShape.IsMatch(ApprovalReference);
 }
 
 public sealed record PvgServiceHealthStatus(
