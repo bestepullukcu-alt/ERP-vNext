@@ -41,6 +41,33 @@ paketlere işleniş yalnız "Yanıt → paket" tablosundadır.
 > supplier 1.3.0: Main'de hâlâ 1.2.0. Cihan'a soruluyor. invoice-match 1.1.1 #247 ile main'e girdi.
 > PUSH ÖNCESİ MAIN SENKRONU: Her push ve PR güncellemesinden önce origin/main dala merge edilir.
 
+## Y-5 — Ali, yanıt 4 (2. dalga isteğine)
+
+Merhaba, teşekkürler. #243'ün birleştiğini ve MOD-0023 §17 ile MOD-0220 §22'nin onaylı sürümlerinin main'de olduğunu gördük.
+
+1. Şablon kodları ve adım sayıları (MOD-0126 O-8, MOD-0119 O-11, MOD-0124 O-20, MOD-0120 AR düzeltme, MOD-0217 O-3): bizde açık.
+   MOD-0023 tarafı için ayrı bir Control Tower açıyoruz; kodları ve adım sayılarını orada belirleyip size yazacağız. MOD-0124 için
+   önerdiğiniz tek adım / 15 sn not edildi.
+2. Auth: bugünkü cevabımız geçerli. Rol şablonları için rol → izin anahtarı listesini sizden bekliyoruz; elimize ulaşmadı, gönderebilir
+   misiniz? mdm.bank-accounts.read-tenant-wide de açık atamalı listeye girmeli mi, teyidinizi bekliyoruz. mdm.contracts.*: MOD-0217
+   paketi henüz taslak; anahtarlar MDM manifestinden kaydolur, Auth tarafındaki ek iş yalnız açık atama listesi olur ve MOD-0217
+   onaylandıktan sonra yapılır.
+3. MOD-0220 §22 onaylı ve LEGAL-ENTITY-LOOKUP 1.1.0 sözleşme taslağı mevcut; kodu aynı Control Tower'ın sırasına alınacak.
+
+İş paketi numaralarını ve tahmini tarihleri Control Tower açıldıktan sonraki ilk ölçümle yazacağız.
+
+## Y-6 — Ali, yanıt 5 (rol listesi alındı)
+
+Merhaba, teşekkürler. Rol listesini ve açık atamalı yedi anahtarı aldık; ikisi de not edildi.
+
+Auth tarafındaki işi şöyle yapacağız: rol şablonları ile açık atamalı anahtarlar için bir MOD-0018 paketi yazılacak, ardından kod.
+Paketin numarasını ve tahmini tarihini paketi açınca yazacağız. mdm.contracts.* kayıtları ve sözleşme rolleri (belge deposu izinleri
+dahil) MOD-0217 onaylandıktan sonra yapılır.
+
+İş akışı şablonları: beş şablondan üçü karara bağlandı (ödeme partisi, satıcı faturası, nakit pozisyonu: üçü de tek adım). Kalan ikisi
+(müşteri faturası düzeltmesi ve sözleşme onayı) bu hafta içinde bitecek; ardından şablon kodları, adım sayıları, iş paketi numaraları ve
+tarihleri birlikte yazacağız.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -65,3 +92,7 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-4 (BL-565 sahibi Beste) | MOD-0126 | işlenmedi — D44 ile zaten kayıtlı; çağrı sözleşmesi gelmedi |
 | Y-4 (supplier 1.3.0 main'de yok; invoice-match 1.1.1 #247) | MOD-0119 | işlenmedi — MOD-0140 1.3.0 checklist maddesi açık kalır; durum değişmedi |
 | Y-4 (push öncesi main senkronu) | — (süreç kuralı) | işlenmedi — paket metni değil; push/PR adımında uygulanır |
+| Y-5/1, Y-6 (şablonlar: ödeme, satıcı faturası, nakit pozisyonu tek adım; diğer ikisi bu hafta) | MOD-0126, MOD-0119, MOD-0124 (O-8 / O-11 / O-20); MOD-0120, MOD-0217 | işlenmedi — kodlar gelince "ready-for-dev" revizyonunda; MOD-0124'ün tek adım önerisi teyit edildi |
+| Y-5/2 (rol listesi istendi; `mdm.bank-accounts.read-tenant-wide` sorusu) | altı paket | D46 / D46a / D47 (`treasury-intake-owner-decisions-05.md`); soru MOD-0289 D23/1 ile cevaplandı |
+| Y-5/3 (MOD-0220 §22 onaylı, LEGAL-ENTITY-LOOKUP 1.1.0 taslağı; kod MOD-0023 kulesinin sırasında) | dört Treasury paketi (TRM-14) | işlenmedi — TRM-14 checklist maddesi kod gelene kadar açık |
+| Y-6 (Auth: MOD-0018 paketi + kod; `mdm.contracts.*` MOD-0217 onayından sonra) | altı paket | işlenmedi — Auth checklist maddeleri açık kalır; Ali'ye D47 güncellemesi ayrıca gönderilir |

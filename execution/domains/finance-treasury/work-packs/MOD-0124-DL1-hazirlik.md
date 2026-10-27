@@ -42,7 +42,7 @@ satır 1615-1617):
 | Koşul | Bugün | Kimden |
 |---|---|---|
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (D34: onay `ready-for-dev` turunda) | `draft` (pack satır 17) | CT + Beste |
-| DCP (`UNASSIGNED-finance-treasury-intake`) `approved` ve numarası atanmış (pack satır 1434) | `UNASSIGNED`, `draft` | Beste |
+| DCP (`DCP-011-finance-treasury-intake`) `approved` ve numarası atanmış (pack satır 1434) | `DCP-011` (numara atandı 2026-10-27), `draft` | Beste |
 | **MOD-0126 DL-1 main'de** — servis iskeleti, port 5071, servis ortak yapı taşları, CentralAudit kurulumu, servis defteri (pack satır 1440, 1616) | MOD-0126 pack `draft`; kod yok | MOD-0126 DL-1 WP'si |
 | Servis defteri + CT-DECISIONS satırı için CT kararı | **verildi — D35** (yol b, borç / istisna 0) | — |
 | Platform `AuditCategory`'ye `Finance` değeri (D35/3: MOD-0126 DL-1'den önce) | yok (pack satır 1158-1159 hâlâ "karar çıkana kadar değer uydurulmaz" diyor) | Platform sahibi |

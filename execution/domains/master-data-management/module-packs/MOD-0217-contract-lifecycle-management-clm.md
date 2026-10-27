@@ -123,6 +123,29 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > önerisidir (AC-59 deseni). (2) RCS-001 §3 `CTR` satırı yazıldı (`record-coding-standard.md:70` @ `82711f0ae`, PR #246);
 > eski "yazılmadı" ifadeleri ve checklist güncellendi; BL-565 servis engeli açık. (3) O-11 `OTHER` ve `AuditCategory`
 > açık kalır; `Finance = 18` MOD-0217'ye taşınmaz. `status: draft`.
+>
+> **Revizyon 9 (2026-10-27, sahip kararları D45/D46):** denetim kategorisi `AuditCategory.MasterData` (D45/1; Platform'da var,
+> yeni değer istenmez); O-11 `OTHER` kalır (D45/2); checklist'te iki madde kapandı. Rol şablonları (sözleşme görüntüleyici /
+> yöneticisi) D46 ile verildi; Auth kaydı MOD-0217 onayından sonra (Ali, 2026-10-27). DCP dosya adı DCP-011. `status: draft`.
+>
+> **Revizyon 10 (2026-10-27, CT04a — sahip denetimi; KARAR D47/3, D47/5):** (1) v1'e belge indirme denetimi ve ticari değer
+> okuma denetimi eklendi — Audited Events'e iki okuma satırı (`mdm.contract-version.document-content-read`,
+> `mdm.contract.value-read`; içerikten / değerden önce, niyet yazılamazsa 503), yeni AC-62 (DL-2) ve AC-63 (DL-1); O-9 ve O-12
+> satırları "D47/3 ile daraltıldı / değişti"; gizlilik düzeyi, kısıtlı gruplar, dış paylaşım ve saklama / yasal tutma Follow-up.
+> (2) İmza kaydı ayrı "sözleşme imza kaydedici" rolünde; kaydeden sözleşmeyi oluşturan ya da sürümü onaya gönderen olamaz —
+> yeni kod `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT` 403 (CT önerisi; değer izni reddinin 403 sınıfı), Validation / Failure Path /
+> Authorization, yeni AC-64 (DL-3); düzeltme yalnız yeni değişiklik sürümüyle. (3) Rol şablonu göstergesi D46 + D47 (rol matrisi
+> `treasury-intake-owner-decisions-05.md`). (4) Operatif katman: O-6 satırındaki `AuditCategory` açık ifadesi D45/1'e, DCP
+> satırları "DCP-011'de aday modül" durumuna çekildi. Mevcut AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon 11 (2026-10-27, D49):** KARAR D49/2 — yeni izin `mdm.contracts.value.write` (Authorization Convention, Tier 3
+> alt kaynak `value`). `mdm.contracts.value.read` artık **yalnız görüntüler**; ticari değeri yazmak komutun kendi izni (`create` /
+> `update` / `amendments.create`) + `value.write` ister, yoksa 403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED` (hata sözlüğünde
+> `MDM_CONTRACT_VALUE_ACCESS_REQUIRED`'ın yerine; o kod artık kullanılmaz). Değer yazma ayrı denetim olayıdır
+> (`mdm.contract-version.value-written`; okuma olayı `mdm.contract.value-read` AC-63'ten ayrı). Yeni AC-65 (DL-1 yazmaları +
+> DL-2 CreateAmendment kısmı); AC-4 ve AC-21 metni ve işlem tablosundaki Create niyet sayısı buna göre düzeltildi. O-4 satırına
+> "D49/2 ile `value.write` eklendi" notu. Rol şablonu: sözleşme yöneticisi `value.write` taşır (rol matrisi D49 ile güncellendi,
+> `treasury-intake-owner-decisions-05.md`). Mevcut AC numaraları değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -234,7 +257,8 @@ Kaynak tabanı `api/contracts` ve `api/v1/contracts` (`services/DitenMdmService/
   `allowedActions`), `ContractWriteRequest`, `ContractVersionDto`, `ContractVersionWriteRequest`, `ContractSignatoryDto`,
   `ContractDocumentDto`, `ContractSignatureRequest`, `ContractAmendmentRequest`, `ContractRenewalDecisionRequest`,
   `ContractTerminateRequest`. DTO'larda ve isteklerde `TenantId` **yoktur**. Ticari değer alanları (`contractValue`,
-  `currencyCode`) yalnız `mdm.contracts.value.read` sahibine dolu döner; diğerlerine `null` + `valueMasked: true`.
+  `currencyCode`) yalnız `mdm.contracts.value.read` sahibine dolu döner; diğerlerine `null` + `valueMasked: true`. Değer
+  alanını yazmak ayrıca `mdm.contracts.value.write` ister (KARAR D49/2; Runtime Constraints → "Ticari değer görünürlüğü").
 - **Portlar (Application):** `IRecordCodePort` (RCS-001), `ICurrencyReferencePort` (MOD-0048), `IDocumentBinaryStorePort`
   (MOD-0262-FU01: sakla, meta oku, akış oku, telafi), `IContractWorkflowPort` (MOD-0023: başlat, nesneye göre örnek oku `includeDeleted=true`, örnek geçmişi oku — MOD-0023 §17
   rev 2 alanlarıyla), `IContractDataScopeSource` (SEC-002). Şirket için port
@@ -293,7 +317,7 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 |---|---|---|---|
 | Code | string | RCS-001 OTOMATİK; tür öneki **`CTR`** (O-5, KARAR D41/2; RCS-001 §3 satırı yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer); şirket öneki = yöneten şirketin kısa kodu (RCS-001 §5.4; kısa kodun `LegalEntity`'deki alanı **ölçülmedi**); istekte gelirse 400; silinen kaydın kodu yeniden kullanılmaz | kaynak `ContractNumber` (tekil `(TenantId, ContractNumber)`, paket §E) |
 | Title | string | zorunlu, trim, 1..200, kontrol karakteri yok | yeni ad |
-| ContractType | string | zorunlu; sabit çekirdek kod listesinden (O-11, KARAR D41/8: `SALES`, `SERVICE`, `NDA`, `LEASE`, `LICENSE`, `PARTNERSHIP`, `INTRA_GROUP`, `OTHER` — `OTHER` için sahip teyidi bekleniyor, Açık kararlar O-11); **`PURCHASE` yok (KARAR D39)** — satın alma / tedarik sözleşmesi MOD-0144'tedir, bu türle istek 400 (AC-59); etiket resx'te | kaynakta referans veriden ("contract types" lookup, paket §I) |
+| ContractType | string | zorunlu; sabit çekirdek kod listesinden (O-11, KARAR D41/8: `SALES`, `SERVICE`, `NDA`, `LEASE`, `LICENSE`, `PARTNERSHIP`, `INTRA_GROUP`, `OTHER` — `OTHER` kalır, **KARAR D45/2** (`treasury-intake-owner-decisions-05.md`)); **`PURCHASE` yok (KARAR D39)** — satın alma / tedarik sözleşmesi MOD-0144'tedir, bu türle istek 400 (AC-59); etiket resx'te | kaynakta referans veriden ("contract types" lookup, paket §I) |
 | GoverningLegalEntityId | Guid | zorunlu; aynı kiracıda MOD-0220 `LegalEntity`, Create'te `OperationalStatus = Active`; sürüm 1 bir kez onaya gönderildikten sonra **değişmez**; SEC-002 kapsamını taşır | kaynak `GoverningLegalEntityId` (yalnız süzgeç, paket §G) |
 | CounterpartyType | enum `LegalEntity`=1, `Supplier`=2, `External`=3 | zorunlu (O-7, KARAR D41/4; `Supplier` MOD-0140 sözleşmesi ölçülene kadar kapalı); kural GoverningLegalEntityId ile aynı (değişmezlik) | kaynak `ContractCounterpartyType` 6 değer (adlar paket metninde yok) |
 | CounterpartyLegalEntityId | Guid? | `LegalEntity` türünde zorunlu; aynı kiracı; yöneten şirketten farklı | — |
@@ -373,7 +397,8 @@ taşınmaz (paket §L.12: kurulu indeks, göç, backfill yok).
 (aynı anahtar, farklı gövde), `MDM_CONTRACT_VERSION_CONFLICT` 409 (bayat `If-Match`), `MDM_CONTRACT_STATE_INVALID` 409,
 `MDM_CONTRACT_OPEN_VERSION_EXISTS` 409, `MDM_CONTRACT_IMMUTABLE_FIELD` 409, `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` 422,
 `MDM_CONTRACT_COUNTERPARTY_NOT_ELIGIBLE` 422, `MDM_CONTRACT_SIGNATORIES_INCOMPLETE` 422, `MDM_CONTRACT_SIGNED_COPY_REQUIRED`
-422, `MDM_CONTRACT_VALUE_ACCESS_REQUIRED` 403, `MDM_CONTRACT_CURRENCY_UNKNOWN` 400, `MDM_CONTRACT_CURRENCY_REFERENCE_UNAVAILABLE`
+422, `MDM_CONTRACT_VALUE_WRITE_REQUIRED` 403 (değer alanı dolu yazma isteği, `mdm.contracts.value.write` yok — KARAR D49/2;
+eski ad `MDM_CONTRACT_VALUE_ACCESS_REQUIRED` kullanılmaz), `MDM_CONTRACT_CURRENCY_UNKNOWN` 400, `MDM_CONTRACT_CURRENCY_REFERENCE_UNAVAILABLE`
 503, `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE` 503, `MDM_CONTRACT_AUDIT_UNAVAILABLE` 503 (niyet yazılamadı; iş verisi yok),
 `MDM_CONTRACT_DOCUMENT_STORE_UNAVAILABLE` 503, `MDM_CONTRACT_DOCUMENT_REJECTED` 400 (MOD-0262 biçim / tür / boyut reddi),
 `MDM_CONTRACT_DOCUMENT_TOO_LARGE` 413,
@@ -382,6 +407,7 @@ taşınmaz (paket §L.12: kurulu indeks, göç, backfill yok).
 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE` 503, `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` 503 (MOD-0023 yanıtı tanınmıyor / çelişkili /
 birden çok eşleşme / başlatma sonucu bilinmiyor), `MDM_CONTRACT_WORKFLOW_START_REFUSED` 422 (MOD-0023 başlatmayı kesin
 reddetti; yanıtta `reasonCode`), `MDM_CONTRACT_SUBMITTER_MISMATCH` 409 (aynı anahtarla tekrarı `SubmittedBy` dışındaki kullanıcı istedi),
+`MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT` 403 (imzayı sözleşmeyi oluşturan ya da sürümü onaya gönderen kaydetmek istedi — KARAR D47/5; değer izni reddiyle aynı 403 sınıfı),
 `MDM_CONTRACT_TRANSACTION_UNAVAILABLE` 503 (işlem desteklenmiyor ya da denemeler tükendi). Kullanıcıya giden ileti resx
 anahtarıdır.
 
@@ -457,7 +483,7 @@ ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — i
 | MOD-0031 Evidence | kanıt | var (Platform) | v1'de kullanılmaz (O-9, KARAR D41/6) |
 | MOD-0003 Data Contract Registry | sözleşme kaydı | kayıt satırı `planned / missing` (`module-id-registry.md:61`) | v1'de sahip olunan sözleşme yok |
 | Port | servis | MDM 5059 (`AGENTS.md:75`) | yeni servis / port yok (D38/1); kaynak portu 5050 taşınmaz |
-| DCP | dilim kapısı | MOD-0217 için DCP numarası **yok**; Treasury paketleri `UNASSIGNED-finance-treasury-intake` taslağını kullanıyor | DCP numarası ve `approved` olmadan `ready-for-dev` yok |
+| DCP | dilim kapısı | MOD-0217 `DCP-011-finance-treasury-intake`'te **aday modül** (TRM-S4; onaylı DCP üyesi değil — kapsama girmesi DCP değişikliği ister) | DCP numarası ve `approved` olmadan `ready-for-dev` yok |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -509,7 +535,7 @@ Kaynakta `StartSession` / `WithTransaction` vardı (`Mod0217ContractAggregateSto
 
 | Grup | Belgeler | Test |
 |---|---|---|
-| Create | `Contract` + `ContractVersion` (v1) + **tam iki** denetim niyeti, aynı işlemde: `Contract.AuditIntents`'e `mdm.contract.created`, `ContractVersion.AuditIntents`'e `mdm.contract-version.created` (başka niyet yok) | AC-4, AC-13 |
+| Create | `Contract` + `ContractVersion` (v1) + **tam iki** denetim niyeti, aynı işlemde: `Contract.AuditIntents`'e `mdm.contract.created`, `ContractVersion.AuditIntents`'e `mdm.contract-version.created` (başka niyet yok); **değer dolu Create'te** sürüm 1'e ayrıca tam bir `mdm.contract-version.value-written` (KARAR D49/2 — tam üç) | AC-4, AC-13, AC-65 |
 | CreateAmendment | `Contract` (`LatestVersionNo`, `OpenVersionNo` CAS) + yeni `ContractVersion` + niyetler | AC-31, AC-39 |
 | RecordSignature (son imza) | aynı işlemde önce **bütün imzacıların** `SignedCopyContentId`'si yeniden doğrulanır (her biri bu sürümde `SignedCopy` rolünde, `WithdrawnAt` boş; biri bile tutmazsa işlem iptal ve 422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`, hiçbir değişiklik kalmaz); sonra sürüm → Effective + önceki Effective → Superseded + `Contract` (Status, `CurrentEffective*`, `OpenVersionNo = null`) + niyetler | AC-37, AC-56 |
 | Delete / BulkDelete | `Contract` + sürüm 1 (+ kimlik başına niyet) | AC-8, AC-9 |
@@ -615,8 +641,19 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
 ### Ticari değer görünürlüğü (O-12, KARAR D41/9)
 
 `ContractValue` / `CurrencyCode` liste, detay ve sürüm DTO'larında yalnız `mdm.contracts.value.read` sahibine döner;
-diğerlerine `null` + `valueMasked: true`. Değer içeren yazma bu izni ister (yoksa 403 `MDM_CONTRACT_VALUE_ACCESS_REQUIRED`).
-Değerin okunması denetlenmez (AUD-001 §7'nin üç sınıfına girmez); değer günlüğe ve denetim niyetine yazılmaz.
+diğerlerine `null` + `valueMasked: true`. **`value.read` yalnız görüntüler (KARAR D49/2).** Değeri yazmak ayrı izin ister:
+değer sürümde tutulur ve yalnız şu komutlarla yazılır — Create (sürüm 1), UpdateContractVersion (`Draft` sürüm) ve, istek değer
+alanı taşıyorsa, CreateAmendment (yeni taslak sürüm); UpdateContract (başlık) değer taşımaz. İstekte `contractValue` ya da
+`currencyCode` doluysa komutun kendi izni (`mdm.contracts.create` / `.update` / `.amendments.create`) **ve**
+`mdm.contracts.value.write` gerekir; `value.write` yoksa 403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED` (yazımdan önce; kayıt, kod ve
+niyet yok). `value.write` olmayan kullanıcının isteğinde iki alan boş / yok sayılır ve saklı değer **değişmez** (maskeli
+kullanıcı değeri silemez); `value.write` sahibi değeri boş göndererek siler — bu da değer yazmasıdır. `value.write` tek başına
+okuma vermez (yanıt `value.read` yoksa maskeli kalır). Her değer yazması iş yazımıyla aynı koşullu yazımda / işlemde ayrı bir
+`mdm.contract-version.value-written` niyeti yazar (Audited Events, AC-65); okuma niyetinden (`mdm.contract.value-read`, AC-63)
+ayrıdır.
+**Değerin okunması v1'de denetlenir (KARAR D47/3 — D41/9'un "okuma ayrıca denetlenmez" kısmını değiştirir; yeni izin ve
+yeni alan yok):** değer dolu dönen her sözleşme için yanıt dönmeden önce `mdm.contract.value-read` okuma niyeti (Audited
+Events, AC-63); niyet yazılamazsa 503 `MDM_CONTRACT_AUDIT_UNAVAILABLE`, değer dönmez. Değer günlüğe ve denetim niyetine yazılmaz.
 
 ### Hata sınıflandırması
 
@@ -624,6 +661,8 @@ Değerin okunması denetlenmez (AUD-001 §7'nin üç sınıfına girmez); değer
 - **422** — tanımlı ama iş kuralına uymayan girdi (şirket aktif değil, karşı taraf uygun değil, imzacı eksik, imzalı kopya yok);
   MOD-0023'ün başlatmayı **kesin** reddi (`MDM_CONTRACT_WORKFLOW_START_REFUSED`, yalnız "Başlatma yanıtı sınıfları"nın kesin ret
   satırı — erişilemezlik ya da bilinmeyen sonuç hiçbir zaman 422 değildir).
+- **403** — izin yok; değer yazma izni olmadan değer yazma (`MDM_CONTRACT_VALUE_WRITE_REQUIRED`, KARAR D49/2); imza kaydedici sözleşmeyi oluşturan
+  ya da sürümü onaya gönderen (`MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`, KARAR D47/5).
 - **404** — kayıt yok, silinmiş, başka kiracı, kapsam dışı.
 - **409** — durum geçişi geçersiz, bayat `If-Match`, açık sürüm var, değişmez alan, anahtar yeniden kullanımı, imzaya bağlı
   belgeyi geri çekme (`MDM_CONTRACT_DOCUMENT_IN_USE`), başka kullanıcının aynı anahtarla tekrar isteği.
@@ -724,11 +763,11 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 | InternalOwnerUserId | Evet | Guid ≠ Empty; v1'de oluşturan kullanıcı (KARAR D41/11): Create'te çağıran kullanıcıdan, UpdateContract'ta kaydın `CreatedBy`'ından farklı değer 400 `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED` (AC-61); başka kullanıcı Auth kullanıcı araması ölçülünce | — | — |
 | EffectiveFrom / EffectiveTo | Evet / Hayır | ISO tarih; `EffectiveTo ≥ EffectiveFrom` | — | — |
 | NoticePeriodDays | Hayır | tam sayı 0..3650 | — | — |
-| ContractValue / CurrencyCode | Hayır / değer varsa Evet | değer ≥ 0, küsurat MOD-0048 (O-11, KARAR D41/8); `^[A-Z]{3}$`, MOD-0048 listesinde; `mdm.contracts.value.read` ister (403) | — | `ICurrencyReferencePort` |
+| ContractValue / CurrencyCode | Hayır / değer varsa Evet | değer ≥ 0, küsurat MOD-0048 (O-11, KARAR D41/8); `^[A-Z]{3}$`, MOD-0048 listesinde; doluysa `mdm.contracts.value.write` ister (403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED`, KARAR D49/2); izni olmayanın isteğinde saklı değer değişmez | — | `ICurrencyReferencePort` |
 | Summary | Hayır | ≤ 2000 | — | — |
 | AmendmentReason | Amendment'ta Evet | 1..500 | — | — |
 | Signatories[] | Submit'te Evet | en az bir `Internal` + bir `Counterparty` (422); `Name` 1..140; `RoleTitle` ≤ 100; en çok 20 imzacı (öneri) | — | — |
-| RecordSignature | Evet | sürüm `Approved`; imzacı bu sürümde ve imzasız; `SignedAt` ≤ şimdi ve ≥ `SubmittedAt`; `SignedCopyContentId` bu sürümde `SignedCopy` rolünde, geri çekilmemiş belge (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`) — bu koşul ön kontrolle değil, imzayı yazan koşullu yazımın / işlemin süzgecinde (`Version` CAS + belgenin `WithdrawnAt` boş olması) denetlenir; son imzada bütün imzaların belge başvurusu aynı işlemde yeniden doğrulanır | CAS süzgeci | — |
+| RecordSignature | Evet | sürüm `Approved`; imzacı bu sürümde ve imzasız; `SignedAt` ≤ şimdi ve ≥ `SubmittedAt`; `SignedCopyContentId` bu sürümde `SignedCopy` rolünde, geri çekilmemiş belge (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`) — bu koşul ön kontrolle değil, imzayı yazan koşullu yazımın / işlemin süzgecinde (`Version` CAS + belgenin `WithdrawnAt` boş olması) denetlenir; son imzada bütün imzaların belge başvurusu aynı işlemde yeniden doğrulanır. **Kaydeden (KARAR D47/5):** çağıran (token `sub`, Guid) sözleşmeyi oluşturan (`Contract.CreatedBy`) ya da sürümü onaya gönderen (`ContractVersion.SubmittedBy`) olamaz → 403 `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT` (yazımdan önce; `allowedActions`'ta da gösterilmez); kayıtlı imza silinmez ve değiştirilmez — düzeltme yalnız yeni değişiklik sürümüyle (CreateAmendment) | CAS süzgeci | — |
 | WithdrawContractDocument | Evet | belge bu sürümde ve geri çekilmemiş; hiçbir imzacının `SignedCopyContentId`'si bu belgeyi göstermiyor (gösteriyorsa 409 `MDM_CONTRACT_DOCUMENT_IN_USE`) — bu koşul geri çekmeyi yazan koşullu yazımın süzgecindedir (`Version` CAS ile birlikte); imzaya bağlı belgenin yerine yenisini koymak da aynı kodla 409 (değiştirme ucu yok) | CAS süzgeci | — |
 | Document (yükleme) | Evet | `DocumentRole` tanımlı; dosya boş değil; boyut ≤ sınır (413); tür / uzantı MOD-0262 izin listesi (400) | — | MOD-0262 |
 | RenewalDecision | Evet | `Decision` O-11 listesinde (KARAR D41/8); `Note` ≤ 500; sözleşme `Active` ve `CurrentEffectiveTo` dolu | — | — |
@@ -749,7 +788,7 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 ## Failure Path to Verify
 
 - **Yinelenen oluşturma / idempotency:** aynı `Idempotency-Key` + aynı gövde → 200, tek kayıt; farklı gövde → 409
-  `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; eşzamanlı iki aynı anahtar → tek sözleşme, tek kod, bir Create'in iki niyeti
+  `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; eşzamanlı iki aynı anahtar → tek sözleşme, tek kod, bir Create'in iki niyeti (değer dolu gövdede + `value-written`, AC-65)
   (`mdm.contract.created` + `mdm.contract-version.created`). Anahtar yok → 400.
 - **Yinelenen sürüm numarası** (iki eşzamanlı CreateAmendment) → biri 409; `ux_mdm_contract_version_no` kaldırıldığında yarış
   testi kırmızı.
@@ -763,7 +802,8 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - **Başka kiracının kaydı** (okuma, güncelleme, silme, sürüm, belge, imza, onay, fesih, arşiv) → 404, varlık sızdırılmaz.
 - **Kapsam dışı şirketin sözleşmesi** → liste boş, detay / yazma 404; çözücü hatası → aynı; yalnız `read-tenant-wide` ile
   görünen sözleşmeye yazma → 404, okuma 200.
-- **Yetkisiz aktör** → API 403; UI kabuk içinde erişim açıklaması (UAS-001). Değer izni olmadan değer yazma → 403.
+- **Yetkisiz aktör** → API 403; UI kabuk içinde erişim açıklaması (UAS-001). `mdm.contracts.value.write` olmadan değer yazma
+  (`value.read` olsa da) → 403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED`; kayıt, kod ve niyet yok; saklı değer değişmez (AC-65).
 - **Eşzamanlılık:** bayat `If-Match` → 409 `MDM_CONTRACT_VERSION_CONFLICT`; iki eşzamanlı Submit → biri 409, tek MOD-0023
   örneği; iki eşzamanlı son imza → biri 409, tek Effective sürüm.
 - **Bağımlılık erişilemez vs geçersiz girdi:** RCS-001 / MOD-0048 / MOD-0262 / MOD-0023 erişilemez, 5xx, zaman aşımı,
@@ -784,6 +824,11 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   hiçbir imza geri çekilmiş belgeyi göstermez.
 - **Onaylanmamış sürüme imza** → 409; **imzalı kopya olmadan imza** → 422; **imzalı sürümün içeriğini değiştirme** → 409
   `MDM_CONTRACT_IMMUTABLE_FIELD`.
+- **İmzayı oluşturan ya da onaya gönderen kaydetmek istiyor** (KARAR D47/5) → 403 `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`;
+  imza, sürüm ve sözleşme değişmez, niyet yok (AC-64). **Yanlış kaydedilmiş imza** → silme / düzeltme ucu yok; düzeltme yalnız
+  yeni değişiklik sürümüyle.
+- **Okuma niyeti yazılamıyor** (belge indirme ya da değer okuma, zorla hata — KARAR D47/3) → 503
+  `MDM_CONTRACT_AUDIT_UNAVAILABLE`; içerik akışı başlamaz, MOD-0262'ye içerik çağrısı yok; değer dönmez (AC-62, AC-63).
 - **Açık sürüm varken değişiklik** → 409 `MDM_CONTRACT_OPEN_VERSION_EXISTS`.
 - **Onaya gönderilmiş sözleşmeyi silme** → 409 `MDM_CONTRACT_STATE_INVALID`.
 - **Denetim niyeti yazılamıyor** (zorla hata) → komut 503, iş verisi yazılmaz.
@@ -809,7 +854,8 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 | `mdm.contracts.create` | T1 | Create | `contract.create` |
 | `mdm.contracts.update` | T1 | UpdateContract, UpdateContractVersion, WithdrawContractVersion | `contract.edit` |
 | `mdm.contracts.delete` / `mdm.contracts.bulk-delete` | T1 / T2 | taslak silme | — |
-| `mdm.contracts.value.read` | T1 (alt kaynak `value`) | ticari değeri görme ve yazma | 4 takma ad (`contract.value.view` …) |
+| `mdm.contracts.value.read` | T1 (alt kaynak `value`) | ticari değeri **yalnız görme** (liste, detay, sürüm yanıtlarında değer dolu döner — KARAR D49/2 ile yazma ayrıldı) | 4 takma ad (`contract.value.view` …) |
+| `mdm.contracts.value.write` | T3 (alt kaynak `value`; `write` sözlükte yok → bu pakette kayıtlı Tier 3 eylemi, PKS-001 §5) — **KARAR D49/2** | ticari değeri yazma: Create, UpdateContractVersion, değer taşıyan CreateAmendment — komutun kendi iznine **ek** (handler içi) | — (kaynakta yazma ayrı izin değildi) |
 | `mdm.contracts.documents.read` / `mdm.contracts.documents.create` / `mdm.contracts.documents.delete` | T1 | belge içerik okuma / ekleme (+ bağ mutabakatı `reconcile`) / geri çekme | — |
 | `mdm.contracts.submit-approval` | T3 | Submit, Sync | `contract.submit_review`, `contract.submit_approval` |
 | `mdm.contracts.record-signature` | T3 | RecordSignature | `contract.record_signature` |
@@ -824,6 +870,15 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   ayrıca onay ucu açmaz.
 - MdmService'in MOD-0262 / MOD-0023 çağrıları kullanıcı token'ıyla Gateway üzerinden gider (O-13, KARAR D41/10); kullanıcının
   `platform.document-repository.*` ve `platform.workflow.*` izinleri de gerekir. DL-2 başındaki ölçüm bunu çürütürse sahibe ayrıca sorulur.
+- **Rol şablonları:** D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) — sözleşme görüntüleyici
+  (`mdm.contracts.read`, `mdm.contracts.documents.read`, `platform.document-repository.read`), sözleşme yöneticisi (yazma, belge
+  ekleme / geri çekme, taslak silme, onaya gönderme, değer okuma `value.read` ve değer yazma `value.write` — KARAR D49/2) ve ayrı **sözleşme imza kaydedici** (KARAR D47/5:
+  `mdm.contracts.record-signature` + sözleşme okuma + imzalı kopya için belge okuma / ekleme + `platform.document-repository.read`
+  / `.manage`). `mdm.contracts.record-signature` sözleşme yöneticisinde yoktur.
+- **İmza kaydedici ayrılığı (KARAR D47/5) çalışma anında da denetlenir:** izin tek başına yetmez — sözleşmeyi oluşturan
+  (`Contract.CreatedBy`) ya da sürümü onaya gönderen (`ContractVersion.SubmittedBy`) imza kaydedemez (403
+  `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`, AC-64); imzalı kopya belgesi zorunludur (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`);
+  imza silme / düzeltme ucu yoktur, düzeltme yalnız yeni değişiklik sürümüyle.
 
 ## Audited Events
 
@@ -836,8 +891,8 @@ teslim deposu dokuz koleksiyon); genişletme yalnız eklemedir ama defter belirt
 deftere satır yazıldığını iddia etmez. Kaynağın `IMod0217AuditRelay` bağdaştırıcısı hiçbir komuttan çağrılmıyordu ve
 `Unavailable*` varsayılanları uygulama değildir (paket §D, §L.2) — taşınmaz, uyum sayılmaz.
 
-`SourceModule`: `MOD-0217`. `Category`: Platform `AuditCategory`'de sözleşme / hukuk değeri ölçülmedi — değer uydurulmaz
-(D41/3'ün dışında; denetim sahibiyle ayrıca — açık). **K2 (O-6, KARAR D41/3):** onay sonucunun yazılması, imza kaydı (değişikliğin
+`SourceModule`: `MOD-0217`. `Category`: **`AuditCategory.MasterData`** (Platform'da var, değer 14 — `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs@7c57e8466`;
+**KARAR D45/1**, `treasury-intake-owner-decisions-05.md`); yeni Platform değeri istenmez, `Finance = 18` uygulanmaz. **K2 (O-6, KARAR D41/3):** onay sonucunun yazılması, imza kaydı (değişikliğin
 yürürlüğe girmesi son imzayla olur) ve fesih hukuken bağlayıcı kayıttır; AUD-001 §4.3 listesinde açıkça sayılmaz, MOD-0289 D24/2
 deseniyle K2 sayılır. Diğer yazmalar aynı yoldan
 yazıldığı için pratikte kapalı-başarısızdır.
@@ -849,6 +904,7 @@ yazıldığı için pratikte kapalı-başarısızdır.
 | DeleteContractCommand | mdm.contract.deleted | Contract | b | BeforeState: Code, Status | hayır | — |
 | BulkDeleteContractCommand | mdm.contract.deleted (kimlik başına bir niyet) | Contract | b | aynı | hayır | — |
 | UpdateContractVersionCommand | mdm.contract-version.updated | ContractVersion | b | değişen alan **adları** (tutar yok) | hayır | — |
+| Değer yazan Create / UpdateContractVersion / CreateAmendment (**yazma satırı**, KARAR D49/2) | mdm.contract-version.value-written (değer yazılan sürüm başına bir niyet; iş niyetine **ek**, aynı koşullu yazımda / işlemde) | ContractVersion | b | yazılan alan **adları** (`ContractValue`, `CurrencyCode`), işlem (`Set` / `Changed` / `Cleared`), kaynak komut; **değer ve tutar yok** | hayır (K2 değil; niyet yazılamazsa iş verisi de yazılmaz) | değer değişmeyen yazma (aynı değer ya da izinsiz kullanıcının boş alanı) → niyet yok |
 | AddContractDocumentCommand | mdm.contract-version.document-added | ContractVersion | b | ContentId, DocumentRole, MediaType, ByteSize, Checksum (dosya adı ve içerik yok) | hayır | — |
 | WithdrawContractDocumentCommand | mdm.contract-version.document-withdrawn | ContractVersion | b | ContentId, DocumentRole | hayır | — |
 | ReconcileContractDocumentCommand (okuma yolu) | — (MDM'ye yazmaz) | ContractVersion (yalnız okuma) | — | — | hayır | işaretçi bulundu / okuma yok / nesne başka sürümün → MDM'de kalıcı değişiklik yok → niyet yok |
@@ -862,11 +918,20 @@ yazıldığı için pratikte kapalı-başarısızdır.
 | RecordContractRenewalDecisionCommand | mdm.contract.renewal-decision-recorded | Contract | b | Decision, ForVersionNo (not metni yok) | hayır | — |
 | TerminateContractCommand | mdm.contract.terminated | Contract | b | Status, TerminationReasonCode, TerminationEffectiveDate | **evet (D41/3)** | — |
 | ArchiveContractCommand | mdm.contract.archived | Contract | b | Status önce→sonra | hayır | — |
+| GetContractDocumentContentQuery (**okuma satırı**, KARAR D47/3) | mdm.contract-version.document-content-read | ContractVersion | b | ContentId, DocumentRole (dosya adı ve içerik yok) — içerik akışından **önce** | hayır (K2 değil; yine de içerikten önce, kapalı-başarısız) | — |
+| Liste / detay / sürüm sorguları — değer dolu yanıt (**okuma satırı**, KARAR D47/3) | mdm.contract.value-read (değer dolu dönen sözleşme başına bir niyet) | Contract | b | okunan alan **adları** (`ContractValue`, `CurrencyCode`), okuma yeri (liste / detay / sürüm); **değer yok** — yanıttan **önce** | hayır (K2 değil; yine de yanıttan önce, kapalı-başarısız) | — |
 
 - **Kayda yazılmayanlar:** ticari değer ve para birimi tutarı, sözleşme metni, belge içeriği ve dosya adı, imzacı adı ve
   unvanı, yenileme notu, değişiklik gerekçesi metni (yalnız var/yok).
-- **Okuma denetimi:** liste, detay, belge içeriği ve değer okuması denetlenmez (AUD-001 §7'nin üç sınıfına girmez). Gizlilik
-  düzeyi v1 dışıdır (O-9, KARAR D41/6); Follow-up'ta sahip sözleşme belgesini "gizli kayıt" sayarsa okuma satırı eklenir.
+- **Değer yazma denetimi (KARAR D49/2):** ticari değerin yazılması okumadan ayrı olaydır (`mdm.contract-version.value-written`
+  yukarıda; okuma `mdm.contract.value-read`). Değer niyete yazılmaz; yalnız alan adları ve işlem.
+- **Okuma denetimi (KARAR D47/3, D41/6'yı daraltır):** belge içeriği indirme ve ticari değer okuması v1'de denetlenir (yukarıdaki
+  iki okuma satırı; AUD-001 §7'nin üç sınıfına açıkça girmez, sahip daha sıkı kural seçti — MOD-0289 maskesiz okuma deseni:
+  niyet değerden önce, merkezi günlüğe gider, eşdeğer iz değildir). Niyet, sözleşme / sürüm belgesinin var olan `AuditIntents`
+  listesine iş alanlarını ve `Version`'ı değiştirmeyen tek atomik eklemeyle yazılır (yeni alan yok); eşzamanlı CAS yazımlarının
+  bu eklemeyi silmediği DL-1 başında MDM niyet deposunun yazım biçimi okunarak ölçülür — çürütülürse sahibe ayrıca sorulur.
+  Niyet yazılamazsa 503 `MDM_CONTRACT_AUDIT_UNAVAILABLE`, içerik / değer dönmez. Liste ve detayın diğer alanları ile maskeli
+  yanıt denetlenmez. Gizlilik düzeyi, kısıtlı gruplar, dış paylaşım ve saklama / yasal tutma Follow-up'tır (O-9).
 - **Bilinen boşluk:** reddedilen komut merkezi kayıt bırakmaz (MOD-0126 G-AUD-1 / MOD-0289 ile aynı sınıf); merkezi ret
   kaydı Follow-up.
 - **Arka plan işi:** yok.
@@ -897,7 +962,8 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   sayısı, kod sayacı ve denetim niyeti sayısı değişmez. Anahtarsız istek 400.
 - [ ] AC-3 (zorunlu) — Aynı anahtar + farklı gövde 409 `MDM_CONTRACT_IDEMPOTENCY_KEY_REUSED`; ilk kayıt değişmez.
 - [ ] AC-4 (zorunlu) — Gerçek replica set'te aynı anahtarlı 20 eşzamanlı Create → tek sözleşme, tek sürüm 1, tek kod ve tam
-  iki denetim niyeti (tek Create işleminde: sözleşmede `mdm.contract.created`, sürüm 1'de `mdm.contract-version.created`);
+  iki denetim niyeti (tek Create işleminde: sözleşmede `mdm.contract.created`, sürüm 1'de `mdm.contract-version.created`; testin
+  gövdesi değersizdir — değer dolu Create'in ek `value-written` niyeti AC-65'te);
   hepsi aynı kimliği döner. `ux_mdm_contract_create_idempotency` kaldırıldığında test kırmızıya döner (sabotaj).
 - [ ] AC-5 (zorunlu) — Başka kiracının sözleşmesi, sürümü ve belgesi için okuma, güncelleme, silme, belge ekleme / indirme,
   Submit, Sync, imza, değişiklik, yenileme, fesih ve arşiv 404 döner. Depo `TenantFilter`'ı kaldırıldığında test kırmızıya döner (sabotaj).
@@ -939,7 +1005,8 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
 - [ ] AC-20 (zorunlu) — RCS-001 portu erişilemezse Create 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, kayıt yok; eşzamanlı iki
   Create farklı kod alır.
 - [ ] AC-21 (zorunlu) — `mdm.contracts.value.read` olmayan kullanıcıya liste, detay ve sürüm yanıtlarında `contractValue` ve
-  `currencyCode` `null`, `valueMasked = true`; değer içeren yazma 403 `MDM_CONTRACT_VALUE_ACCESS_REQUIRED`; denetim niyetinde
+  `currencyCode` `null`, `valueMasked = true`; `mdm.contracts.value.write` olmadan değer içeren yazma 403
+  `MDM_CONTRACT_VALUE_WRITE_REQUIRED` (AC-65); denetim niyetinde
   ve uygulama günlüğünde değer yok. Maskeleme kaldırıldığında test kırmızıya döner (sabotaj).
 - [ ] AC-22 (zorunlu) — Ham belge taraması: testlerin yazdığı `mdm_contracts` ve `mdm_contract_versions` belgelerinde
   `TenantId = Guid.Empty` yok; depo boş kiracıyla yazmayı reddeder.
@@ -1085,6 +1152,33 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED` döner; Create'te kayıt, kod ve niyet yok; UpdateContract'ta kayıt değişmez
   (`Version` aynı, alanlar aynı, niyet yok); aynı değerle güncelleme geçer. Sabotaj: kontrol kaldırıldığında başka
   kullanıcıya atama yazılır ve test kırmızıya döner.
+- [ ] AC-62 (zorunlu) — **Belge indirme denetimi (KARAR D47/3):** `GET …/documents/{contentId}/content` her başarılı indirmede
+  içerik akışı başlamadan önce sürüme tam bir `mdm.contract-version.document-content-read` niyeti yazar (ContentId, DocumentRole;
+  dosya adı ve içerik yok); sürümün `Version`'ı ve iş alanları değişmez; niyet `AuditIntentDeliveryProcessor` ile merkezi
+  günlüğe teslim edilir. Niyet yazımı zorla başarısız edildiğinde 503 `MDM_CONTRACT_AUDIT_UNAVAILABLE` döner ve MOD-0262'ye
+  içerik okuma çağrısı yapılmaz. İzinsiz (403), kapsam dışı ve başka kiracı (404) denemelerinde niyet yok. Sabotaj: niyet yazımı
+  kaldırıldığında ya da içerik akışından sonraya taşındığında test kırmızıya döner.
+- [ ] AC-63 (zorunlu) — **Ticari değer okuma denetimi (KARAR D47/3):** `mdm.contracts.value.read` sahibine değer dolu dönen
+  liste, detay ve sürüm yanıtlarında, değer dolu dönen her sözleşme için tam bir `mdm.contract.value-read` niyeti (okunan alan
+  adları ve okuma yeri; değer yok) yanıt dönmeden önce yazılır; sözleşmenin `Version`'ı değişmez. Maskeli yanıtta ve değeri boş
+  sözleşmede niyet yok. Niyet yazımı zorla başarısız edildiğinde 503 `MDM_CONTRACT_AUDIT_UNAVAILABLE`, değer dönmez; niyette ve
+  uygulama günlüğünde değer yok. Sabotaj: niyet yazımı kaldırıldığında ya da maskesiz yanıt niyetsiz döndüğünde test kırmızıya döner.
+- [ ] AC-64 (zorunlu) — **İmza kaydedici ayrılığı (KARAR D47/5):** RecordSignature'ı sözleşmeyi oluşturan (`Contract.CreatedBy`)
+  ya da sürümü onaya gönderen (`ContractVersion.SubmittedBy`) çağırdığında 403 `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`; imza,
+  sürüm ve sözleşme değişmez, niyet yok; `allowedActions` bu kullanıcıya imza eylemini göstermez. `mdm.contracts.record-signature`
+  izni olmayan 403; izinli başka kullanıcı geçer (imzalı kopya şartı AC-37 ile aynı). Aktör karşılaştırması token `sub`'ının Guid
+  değeri üzerindendir. Mimari test: imza silme ya da düzeltme ucu yoktur (düzeltme yalnız CreateAmendment). Sabotaj: kontrol
+  kaldırıldığında oluşturanın imza kaydı yazılır ve test kırmızıya döner; imza silme ucu eklendiğinde mimari test kırmızıya döner.
+- [ ] AC-65 (zorunlu) — **Ticari değer yazma izni (KARAR D49/2):** `mdm.contracts.update` + `mdm.contracts.value.read` olan ama
+  `mdm.contracts.value.write` olmayan kullanıcı UpdateContractVersion'da dolu `contractValue` / `currencyCode` gönderdiğinde 403
+  `MDM_CONTRACT_VALUE_WRITE_REQUIRED`; sürüm, `Version` ve saklı değer değişmez, niyet yok. Aynı kural Create'te (`create` var,
+  `value.write` yok → 403; sözleşme, sürüm, kod ve niyet yok) ve değer taşıyan CreateAmendment'ta geçerlidir. Aynı kullanıcının
+  değer alanı boş isteği geçer ve saklı değer değişmez (maskeli kullanıcı değeri silemez). `update` + `value.write` olan kullanıcı
+  değeri yazar ve iş niyetine ek tam bir `mdm.contract-version.value-written` niyeti (alan adları, işlem; değer yok) aynı koşullu
+  yazımda / işlemde yazılır; değer dolu Create'te sürüm 1'de tam üç niyet. `value.write` olup `update` olmayan 403 (uç izni). Niyet
+  yazımı zorla başarısız edildiğinde değer yazılmaz (503 `MDM_CONTRACT_AUDIT_UNAVAILABLE`). Okuma niyeti (`mdm.contract.value-read`)
+  yazma olayı yerine sayılmaz. Sabotaj: handler'daki `value.write` kontrolü kaldırıldığında (ya da `value.read` kontrolüne
+  çevrildiğinde) değer yazılır ve test kırmızıya döner; `value-written` niyeti kaldırıldığında test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1160,13 +1254,13 @@ maddeler paket düzeyinde engel **değildir**: yalnız o dilimin (ve sonrakileri
 kabul kapısı yeni kodun testlerinin geçmesidir.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); paketi yazmamış onaylayıcı
-- [ ] DCP numarası atandı ve DCP `approved` (MOD-0217 bugün hiçbir DCP'de değil)
+- [ ] MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` (bugün DCP-011'de aday modül, TRM-S4; üyeliği DCP değişikliği ister)
 - [ ] MDM domain-config satırı (D38/2 önerisi) ve kimlik kaydı satırı main'de (bugün çalışma ağacında, commit edilmemiş)
 - [x] O-1 MOD-0144 sınırı karara bağlandı — **KARAR D39 (2026-10-26): (a)** — satın alma / tedarik sözleşmeleri MOD-0144'te;
   MOD-0217 satın alma dışı; `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz; procurement sahibine bilgi verilir (D39/3)
-- [x] O-4 `mdm.contracts.*` anahtar listesi — **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md)** — pack'teki liste; `read-tenant-wide` yalnız açık atama
+- [x] O-4 `mdm.contracts.*` anahtar listesi — **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md)** — pack'teki liste; `read-tenant-wide` yalnız açık atama; D49/2 ile `mdm.contracts.value.write` eklendi
 - [ ] Auth'ta `mdm.contracts.*` kaydı, açık atama anahtarları (`read-tenant-wide`) ve rol şablonları — MOD-0018 sahibi (Ali) iş
-  paketi (Y-2), Auth değişikliği (D9)
+  paketi (Y-2), Auth değişikliği (D9); şablon içeriği D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`)
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer)
 - [ ] RCS-001 §3 `CTR` satırı main'de (PR #246 birleşince) — servis (BL-565) ayrı madde, açık
@@ -1174,17 +1268,26 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [ ] SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
   borç yok; CT-DECISIONS satırı kod aşamasında
-- [ ] `AuditCategory` değeri (D41/3'ün dışında; denetim sahibiyle)
+- [x] `AuditCategory` değeri — `MasterData` (14), **KARAR D45/1** (`treasury-intake-owner-decisions-05.md`)
 - [x] O-7 karşı taraf modeli — **KARAR D41/4 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `LegalEntity`, `Supplier` (MOD-0140 sözleşmesi ölçülene kadar kapalı), `External`;
   müşteri v1'de yok
 - [x] O-9, O-10, O-11, O-12, O-14, O-15 sahip kararı — **KARAR D41/6, D41/7, D41/8, D41/9, D41/11, D41/12 (2026-10-26;
   treasury-intake-owner-decisions-04.md)** — hepsi önerilen seçenek (Açık kararlar)
-- [ ] O-11 `ContractType` listesinde `OTHER` teyidi (D41/8 metni yedi türü sayar, `OTHER`'ı anmaz) — sahip (K1)
-- [ ] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü
+- [x] O-11 `ContractType` listesinde `OTHER` teyidi — `OTHER` kalır, **KARAR D45/2** (`treasury-intake-owner-decisions-05.md`)
+- [x] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü (2026-10-27, @7c57e8466): **bugün yok** — MdmService'te
+  para birimi listesi okuyan istemci yok; Platform ucu `GET api/lookups/reference/currencies` kiracı kullanıcısına açık
+  (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:18,37-38`); yol: mevcut
+  `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:18,30-31,40-50`:
+  `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi) — portu ilk tüketen dilim yazar
 - [x] O-2 D37'nin MOD-0028 kısmı — **KARAR D40 (2026-10-26): (b)** — sürüm MOD-0217'nin `ContractVersion` kaydı, dosya
   MOD-0262-FU01'de `ContentId` ile; v1'de MOD-0028 bağımlılığı yok, MOD-0028 yüzey ölçümü **gerekmez**; DL-2 önkoşulu değil
-- [ ] MOD-0262-FU01 sözleşmesi ölçüldü: çağrı kimliği ve `scope` değeri (O-13 KARAR D41/10'un doğrulaması), boyut üst sınırı, izin listesi, meta okumasında
-  `owningItemId` / `owningVersionId` alanları (Reconcile'ın sahiplik denetimi); canlı doğrulama kaydı (pack §19'da açık) — DL-2 için
+- [x] MOD-0262-FU01 sözleşmesi kodda ölçüldü (2026-10-27, @7c57e8466; openapi dosyası yok — kaynak paket + kod): uçlar
+  `POST/GET api/v1/document-repository/objects…` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:59-119`);
+  servis kimliği yok, çağıran kullanıcı token'ını iletir ve `platform.document-repository.read` / `.manage` izni gerekir
+  (`DocumentRepositoryModels.cs:17,20`) — D41/10 ile tutarlı; `scope` `Documents` enum'da var (`IContentStorageGateway.cs:65-90`);
+  meta `OwningItemId` / `OwningVersionId` döner (`DocumentRepositoryModels.cs:53-64`; `CompanyId` dönmez); boyut varsayılanı 256 MB
+  (`ContentStorageOptions.cs:17,25`); uzantı izin listesi var, medya türü listesi boş (`:27-30`)
+- [ ] MOD-0262-FU01 canlı doğrulama kaydı (dev ortamında yükle / indir / başka kiracı 404) — DL-2 için
 - [x] O-13 çağrı kimliği kararı — **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md)** — kullanıcı token'ı Gateway üzerinden, `scope` = `Documents`; DL-2 başındaki
   ölçüm çürütürse sahibe ayrıca sorulur (DL-3'teki MOD-0023 çağrısı da buna bağlıdır)
 - [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4; şablon kodları Ali'den, Y-3) ve örnek durum adları ölçüldü — DL-3 için
@@ -1245,6 +1348,8 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 | D39 (O-1) | satın alma / tedarik sözleşmeleri MOD-0144'te; MOD-0217 satın alma dışı; `PURCHASE` yok; MOD-0144'e dokunulmaz; başvuru bağlantısı Follow-up | Module Summary, Ownership and Boundaries, Entity Fields (`ContractType`), Dependencies, Validation Rules, Failure Path, Gateway, Ready-for-dev Checklist, Follow-up Items, Açık kararlar | AC-47, AC-59 |
 | D40 (O-2) | sürüm `ContractVersion` (Blueprint SoR), dosya MOD-0262-FU01 `ContentId` ile; v1'de MOD-0028 bağımlılığı yok; DL-2 O-2'yi beklemez | Module Summary, Owned Objects (portlar), Entity Fields (`Documents`), Repo Scope, Dependencies (+ kapanış tablosu), Backend File Convention, Ready-for-dev Checklist, Teslim dilimleri, Dilim kabul kapısı | AC-29 |
 | D41 (O-4…O-15) | hepsi önerilen seçenek: izin listesi (1), `CTR` öneki + §3 satırı onayı (2), MDM güvenilir niyet izi ve K2 (3), türlü karşı taraf, `Supplier` kapalı (4), elle imza (5), kanıt / gizlilik / risk v1 dışı (6), `Idempotency-Key` (7), kod listeleri ve durum modeli (8), değer izni (9), kullanıcı token'ı + `Documents` (10), iç sorumlu oluşturan (11), olay / ödeme bağı yok (12); O-3 açık; O-11 `OTHER` teyidi açık | Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Frontend File Contract, Validation Rules, Authorization Convention, Audited Events, Ready-for-dev Checklist, Follow-up Items, Açık kararlar, Teslim dilimleri | AC-1…AC-4, AC-7, AC-11, AC-12, AC-16, AC-21, AC-59 |
+| D47/3, D47/5 (CT04a) | belge indirme ve ticari değer okuma denetimi v1'de (D41/6 ve D41/9'u daraltır); ayrı imza kaydedici rolü, kaydeden ≠ oluşturan / onaya gönderen, düzeltme yalnız yeni değişiklik sürümüyle | Runtime Constraints → "Ticari değer görünürlüğü", Hata sözlüğü, Validation Rules, Failure Path, Authorization Convention, Audited Events (iki okuma satırı), Follow-up, Açık kararlar O-9 / O-12 | AC-62, AC-63, AC-64 |
+| D49/2 (CT04b) | yeni izin `mdm.contracts.value.write`; `value.read` yalnız görüntüler; değer yazma ayrı denetim olayı | Owned Objects (DTO notu), Hata sözlüğü, Runtime Constraints → "Ticari değer görünürlüğü", Validation Rules, Failure Path, Authorization Convention, Audited Events, Açık kararlar O-4, Teslim dilimleri | AC-4, AC-21, AC-65 |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1295,7 +1400,8 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
   sürüm kuralıyla.
 - Entegrasyon olayları (`contract.*`) kalıcı yolla (outbox) — tüketici adlandırılınca (O-15, KARAR D41/12).
 - e-imza sağlayıcısı ve imza geri çağrısı (O-8, KARAR D41/5).
-- MOD-0031 kanıt bağlantısı, gizlilik düzeyi ve risk derecesi (O-9, KARAR D41/6).
+- MOD-0031 kanıt bağlantısı, gizlilik düzeyi, kısıtlı gruplar, dış paylaşım, saklama / yasal tutma ve risk derecesi (O-9, KARAR
+  D41/6 — D47/3 ile daraltıldı: belge indirme ve ticari değer okuma denetimi v1'de, AC-62 / AC-63).
 - Onay sonucunu periyodik okuyan arka plan işi (varsayılan kapalı, İ2 satırıyla).
 - `SubmittedBy` artık tekrar edemediğinde başlatma bekleyen sürüm için yönetici çözüm yolu ve sonucu bilinmeyen belge
   bağlarının (`MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`) dönemsel mutabakatı (v1'de yalnız kullanıcı tetikli Reconcile).
@@ -1316,15 +1422,15 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 | O-1 | MOD-0217 ile MOD-0144 (Contracting & Clause Library) sınırı | (a) MOD-0144 satın alma / tedarik sözleşmelerinin SoR'u kalır; MOD-0217 satın alma dışı hukuki sözleşmeler (satış, hizmet, NDA, kira, lisans, ortaklık, grup içi) (b) MOD-0217 bütün sözleşmelerin kurumsal kaydı, satın alma sözleşmeleri MOD-0144'e başvuruyla (c) MOD-0217 satın alma sözleşmelerini de üstlenir | **KARAR D39 (2026-10-26): (a)** — satın alma / tedarik sözleşmeleri MOD-0144'te kalır (onların SoR'u); MOD-0217 satın alma dışı hukuki sözleşmeleri (satış, hizmet, NDA, kira, lisans, ortaklık, grup içi) tutar; `ContractType` listesinde `PURCHASE` yok (AC-59); MOD-0144'e dokunulmaz; iki modül arasındaki başvuru bağlantısı Follow-up; MOD-0217 rotası `/api/mdm/contracts`, ekranı `/MasterData/Contracts`; procurement sahibine bilgi verilir, itiraz edebilir (D39/3) | sahip (K1) — karar verildi |
 | O-2 | D37'nin "MOD-0028 belge kaydı ve sürümleri" kısmının uygulanma yolu (ölçüm: MOD-0028'de iş belgesi kaydı yüzeyi yok; kayıt + sürüm uçları MOD-0029-FU01'de) | (a) MOD-0028 sahibine XMC-001 ile en küçük eklemeli "iş belgesi kaydı" yüzeyi önerisi; DL-2 cevaba kadar bekler (b) MOD-0217 yalnız `ContractVersion` (Blueprint SoR) + MOD-0262-FU01 işaretçisi; MOD-0028 bağı sonra — D37'nin yorumunu değiştirir (c) MOD-0029 denetimli belge — D37'de seçilmedi | **KARAR D40 (2026-10-26): (b)** — sözleşme sürümü MOD-0217'nin kendi kaydıdır (`ContractVersion`, Blueprint SoR); dosya MOD-0262-FU01'de, sürüm onu `ContentId` ile işaret eder. D37'nin "MOD-0028 kayıt ve sürümler" kısmı bu şekilde yorumlanır: v1'de MOD-0028 bağımlılığı yok, MOD-0028 bağı (gerekirse) Follow-up; D37'nin MOD-0262-FU01 kısmı aynen geçerli; MOD-0028'den ek istenmez, DL-2 O-2'yi beklemez | sahip (K1) — karar verildi |
 | O-3 | MOD-0023'te MOD-0217 onay iş akışı şablonu (şablon kodu, adımlar, onaylayıcı rolleri, inceleme adımı) | MOD-0023 sahibinin tasarımı | — (karar MOD-0023 sahibinin; D38/4; D41 dışında — şablon kodları iş akışı tarafındaki kule açılınca Ali'den, Y-3) | MOD-0023 sahibi (Ali) |
-| O-4 | İzin anahtarları | Authorization tablosundaki `mdm.contracts.*` listesi · başka ad alanı / ayrıntı | **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md): tablodaki liste** — Authorization Convention'daki `mdm.contracts.*` listesi; şirket geneli okuma (`read-tenant-wide`) yalnız açık atamayla; Auth tarafında kaydı MOD-0018 sahibinin (Ali) işi (Y-2: iş paketi açıyor) | sahip (K1, MDM sahibi rolü D38) — karar verildi; Auth kaydı MOD-0018 sahibi (Ali) |
+| O-4 | İzin anahtarları | Authorization tablosundaki `mdm.contracts.*` listesi · başka ad alanı / ayrıntı | **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md): tablodaki liste** — Authorization Convention'daki `mdm.contracts.*` listesi; şirket geneli okuma (`read-tenant-wide`) yalnız açık atamayla; Auth tarafında kaydı MOD-0018 sahibinin (Ali) işi (Y-2: iş paketi açıyor). **D49/2 ile `value.write` eklendi (2026-10-27; treasury-intake-owner-decisions-05.md):** `mdm.contracts.value.write` — `value.read` yalnız görüntüler, değer yazma `update` (ya da `create` / `amendments.create`) + `value.write` ister (AC-65) | sahip (K1, MDM sahibi rolü D38) — karar verildi; Auth kaydı MOD-0018 sahibi (Ali) |
 | O-5 | RCS-001 sözleşme kodu | (a) OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (b) İKİSİ DE (c) başka önek | **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) `CTR`** — OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (§3'te çakışmadığı ölçüldü; `CTP` nakit eşik politikasınındır); sahip RCS-001 §3'e `CTR` satırının eklenmesini onayladı — satır `.antigravity` satırı yazıldı (`record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer — Ready-for-dev engeli main'e girene kadar); ortak kod servisi BL-565'in sahibi Beste (D44), servis yok → engel | sahip (K1) — karar verildi; §3 satırı yazıldı (PR #246); BL-565 Beste (D44) |
-| O-6 | Denetim defteri ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi, yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında (D27/11 deseni); K2 = onay sonucu, imza, fesih (b) yalnız defter satırı, K2 yok | **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — MDM güvenilir niyet izi (`mdm-guvenilir-kaynak-niyeti`, D27/11 deseni); K2 = onay sonucu, imza, fesih; borç yok; CT-DECISIONS satırı kod aşamasında. `AuditCategory` değeri D41'in dışında — denetim sahibiyle ayrıca | CT + sahip (K1) — karar verildi |
+| O-6 | Denetim defteri ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi, yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında (D27/11 deseni); K2 = onay sonucu, imza, fesih (b) yalnız defter satırı, K2 yok | **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — MDM güvenilir niyet izi (`mdm-guvenilir-kaynak-niyeti`, D27/11 deseni); K2 = onay sonucu, imza, fesih; borç yok; CT-DECISIONS satırı kod aşamasında. `AuditCategory` → **KARAR D45/1** (2026-10-27): `MasterData` (14) | CT + sahip (K1) — karar verildi |
 | O-7 | Karşı taraf modeli | (a) türlü başvuru: `LegalEntity` (süreç içi), `Supplier` (MOD-0140 sözleşmesiyle), `External` (yalnız ad) (b) yalnız serbest ad (c) taraf ana verisi gelene kadar bekle | **KARAR D41/4 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — türlü başvuru: `LegalEntity` (süreç içi), `Supplier` (MOD-0140 sözleşmesi ölçülene kadar kapalı), `External` (yalnız ad); müşteri v1'de yok | sahip (K1) — karar verildi; MOD-0140 kullanımı procurement sahibi |
 | O-8 | İmza modeli v1 | (a) elle imza kaydı + imzalı kopya belgesi, sağlayıcı ve geri çağrı yok (b) e-imza sağlayıcısı + geri çağrı (c) imza kaydı yok | **KARAR D41/5 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — v1'de elle imza kaydı + imzalı kopya belgesi; e-imza sağlayıcısı ve geri çağrı yok | sahip (K1) — karar verildi |
-| O-9 | Kanıt (MOD-0031), gizlilik düzeyi, risk derecesi | (a) v1 dışı, Follow-up (b) v1'de alanlar, kural yok (c) v1'de MOD-0031 kapısı | **KARAR D41/6 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — kanıt (MOD-0031), gizlilik düzeyi ve risk derecesi v1 dışı (Follow-up) | sahip (K1) — karar verildi |
+| O-9 | Kanıt (MOD-0031), gizlilik düzeyi, risk derecesi | (a) v1 dışı, Follow-up (b) v1'de alanlar, kural yok (c) v1'de MOD-0031 kapısı | **KARAR D41/6 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — kanıt (MOD-0031), gizlilik düzeyi ve risk derecesi v1 dışı (Follow-up). **D47/3 ile daraltıldı (2026-10-27; treasury-intake-owner-decisions-05.md):** v1'e belge indirme denetimi ve ticari değer okuma denetimi eklendi (AC-62, AC-63; mevcut izinlerle, yeni alan yok); gizlilik düzeyi, kısıtlı gruplar, dış paylaşım ve saklama / yasal tutma Follow-up kalır | sahip (K1) — karar verildi |
 | O-10 | Create idempotency | (a) `Idempotency-Key` zorunlu + belgede anahtar ve gövde özeti (b) idempotency yok (MOD-0289 gibi) | **KARAR D41/7 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — Create'te `Idempotency-Key` zorunlu; anahtar + gövde özeti saklanır (kaynağın bilinmeyen sonuç boşluğunu kapatır) | sahip (K1, MDM sahibi rolü D38) — karar verildi |
 | O-11 | Kod listeleri ve durum modeli | Durumlar tabloları, `ContractType` çekirdek listesi, yenileme kararı değerleri, küsurat MOD-0048 · başka | **KARAR D41/8 (2026-10-26; treasury-intake-owner-decisions-04.md): pack'teki öneriler** — Durumlar tabloları, çekirdek `ContractType` listesi, yenileme kararı değerleri (`RENEW` / `RENEGOTIATE` / `NOT_RENEW`), küsurat MOD-0048; kiracı ek türleri v1'de yok. **Netleşmedi:** D41/8 metni çekirdek türleri yedi adla sayar (satış, hizmet, NDA, kira, lisans, ortaklık, grup içi), pack listesindeki `OTHER`'ı anmaz — sahip teyidi gerekir; teyide kadar liste değiştirilmez | sahip (K1) — karar verildi (`OTHER` teyidi bekleniyor) |
-| O-12 | Ticari değer görünürlüğü | (a) `mdm.contracts.value.read`, okuma denetimsiz (b) okuma denetimli (c) maskesiz | **KARAR D41/9 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — ayrı izin `mdm.contracts.value.read`; izni olmayana maskeli; okuma ayrıca denetlenmez | sahip (K1) + MOD-0018 sahibi — karar verildi |
+| O-12 | Ticari değer görünürlüğü | (a) `mdm.contracts.value.read`, okuma denetimsiz (b) okuma denetimli (c) maskesiz | **KARAR D41/9 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — ayrı izin `mdm.contracts.value.read`; izni olmayana maskeli; okuma ayrıca denetlenmez. **D47/3 ile değişti (2026-10-27):** değer okuması v1'de denetlenir (AC-63) | sahip (K1) + MOD-0018 sahibi — karar verildi |
 | O-13 | MdmService → Platform (MOD-0262, MOD-0023) çağrı kimliği ve MOD-0262 `scope` değeri | (a) kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni) — kullanıcı `platform.*` izinlerine de ihtiyaç duyar (b) güvenilir servis kimliği (c) `scope`: var olan `Documents` · eklemeli yeni değer | **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) + var olan `Documents`** — kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni; kullanıcının `platform.*` izinleri de gerekir); MOD-0262 `scope` = var olan `Documents`. DL-2 başındaki ölçüm bunu çürütürse sahibe ayrıca sorulur; yeni değer gerekirse XMC-001 | sahip (K1) + platform-shared-services — karar verildi |
 | O-14 | İç sorumlu kullanıcı başvurusunun doğrulanması | (a) Auth kullanıcı aramasıyla (sözleşme ölçülmedi) (b) doğrulamasız Guid (c) yalnız oluşturan | **KARAR D41/11 (2026-10-26; treasury-intake-owner-decisions-04.md): (c) v1'de varsayılan + (a) ölçülünce atama** — v1'de iç sorumlu oluşturan kullanıcı; Auth kullanıcı araması ölçülünce başka kullanıcı atanabilir | sahip (K1) + MOD-0018 / Auth sahibi — karar verildi |
 | O-15 | Olaylar ve ödeme sırası (EVENTS, PAYMENTS slotları) | (a) v1'de olay ve ödeme bağı yok (b) outbox'lı olaylar | **KARAR D41/12 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — v1'de olay yayını ve ödeme bağı yok; kaynağın "0126 → 0217 → 0124" sırası benimsenmez | sahip (K1) — karar verildi |
@@ -1358,13 +1464,13 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
   domain-config + kayıt satırı, Auth kaydı (MOD-0018), RCS-001 §3 `CTR` satırı main'de (PR #246) + RCS-001 servisi (BL-565), SEC-002 sağlayıcı
-  ölçümü, `AuditCategory` değeri, O-11 `OTHER` teyidi, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41 ile kapandı);
+  ölçümü, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
   "— DL-1 için" işaretli madde yok — O-3 açıkken ilerler. Bitiş: AC-1,
   AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
   komutları kısmı), AC-11 (DL-1 yazmaları kısmı), AC-12 (DL-1 defter satırları kısmı), AC-13, AC-14 (DL-1 yazmaları kısmı),
   AC-15 (DL-1 uçları kısmı), AC-16 (DL-1 aksiyonları kısmı), AC-17 (DL-1 alanları kısmı), AC-18 (şirket uygunluğu kısmı), AC-19,
   AC-20, AC-21 (DL-1 okuma ve yazmaları kısmı), AC-22 (DL-1 yazmaları kısmı), AC-23, AC-32, AC-42 (DL-1 eylemleri kısmı),
-  AC-59, AC-60, AC-61.
+  AC-59, AC-60, AC-61, AC-63, AC-65 (DL-1 yazmaları kısmı: Create, UpdateContractVersion).
 - **DL-2** — Yollar: `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `ReconcileContractDocumentCommand`,
   `GetContractDocumentContentQuery`, `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`,
   `Infrastructure/DocumentRepository/**`, belge uçları (MOD-0028 istemcisi yok — KARAR D40). **Neden ayrı:** MOD-0262-FU01
@@ -1373,7 +1479,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   değişiklik uçları kısmı), AC-7 (DL-2 yazmaları kısmı), AC-10 (DL-2 komutları kısmı), AC-11 (DL-2 yazmaları kısmı), AC-12
   (DL-2 defter satırları kısmı), AC-14 (DL-2 yazmaları kısmı), AC-15 (DL-2 uçları kısmı), AC-16 (DL-2 aksiyonları kısmı), AC-17
   (belge ve değişiklik alanları kısmı), AC-21 (DL-2 yazmaları kısmı), AC-22 (DL-2 yazmaları kısmı), AC-24…AC-31, AC-39, AC-42
-  (belge ve değişiklik eylemleri kısmı), AC-49, AC-50, AC-58.
+  (belge ve değişiklik eylemleri kısmı), AC-49, AC-50, AC-58, AC-62, AC-65 (CreateAmendment kısmı).
 - **DL-3** — Yollar: `SubmitContractVersionForApprovalCommand`, `SyncContractVersionApprovalCommand`,
   `RecordContractSignatureCommand`, `RecordContractRenewalDecisionCommand`, `TerminateContractCommand`, `ArchiveContractCommand`,
   `Rules/{WorkflowStartOutcomeClassifier,WorkflowAttemptMatcher}.cs`, `Infrastructure/Workflow/**`. **Neden ayrı:** MOD-0023
@@ -1383,7 +1489,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (onay / imza / yaşam döngüsü uçları kısmı), AC-7 (DL-3 yazmaları kısmı), AC-10 (DL-3 komutları kısmı), AC-11 (DL-3 yazmaları kısmı), AC-12 (DL-3 defter
   satırları kısmı), AC-14 (DL-3 yazmaları kısmı), AC-15 (DL-3 uçları kısmı), AC-16 (DL-3 aksiyonları kısmı), AC-17 (imza /
   yenileme / fesih alanları kısmı), AC-18 (ilk Submit sonrası değişmezlik kısmı), AC-21 (DL-3 yazmaları kısmı), AC-22 (DL-3
-  yazmaları kısmı), AC-33…AC-38, AC-40, AC-41, AC-42 (onay / imza / yaşam döngüsü eylemleri kısmı), AC-51…AC-57.
+  yazmaları kısmı), AC-33…AC-38, AC-40, AC-41, AC-42 (onay / imza / yaşam döngüsü eylemleri kısmı), AC-51…AC-57, AC-64.
 - **DL-4** — Yollar: `Views/MasterData/Contracts/**`, JS, resx (7 dil), MVC vekili, sayfa yardımı, nav anahtarı; Gateway
   rotaları integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API'ye bağlıdır, arka uç değişmeden
   ilerler. Önkoşul: DL-3 ve "— DL-4 için" maddeleri: Gateway rotaları, domain-config frontend/gateway kapsam cümlesi. Bitiş:

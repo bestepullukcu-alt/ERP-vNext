@@ -24,6 +24,25 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0119 için kod alma izni **verildi** (KARAR
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04a — sahip denetimi):** rol şablonu göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) olarak
+> güncellendi (D47/4: AP v1'de banka verisi okumaz — banka okuma izni AP rollerine verilmez). AC numaraları değişmedi.
+>
+> **Revizyon (2026-10-27, CT04b — KARAR D49/1, D49/3):** birleşik "AP yöneticisi" kalktı; hedef kullanıcılar, sayfa yardımı
+> hedef kitlesi ve O-20 D49 rol adlarına çekildi — AP görüntüleyici (okuma; her AP rolü yalnız bunu miras alır), AP operatörü,
+> AP onaylayıcı, AP operasyon yöneticisi (hazırlama + bekletme / bekletmeyi kaldırma, istisna çözme / yeniden açma, toplu silme),
+> AP onay yöneticisi (karar + mutabakat). "Hazine konsolide görüntüleyici" yalnız gerekçeyle atanır. Kod, izin anahtarı ve AC
+> değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, D50):** (1) "AP onay yöneticisi" kalktı (D50/1 — izinleri AP onaylayıcıyla aynıydı); karar ve mutabakat
+> AP onaylayıcıdadır; hedef kullanıcı, sayfa yardımı hedef kitlesi ve O-20 güncellendi. (2) **İstisna ayrılığı (D50/3):** istisnayı
+> açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz — 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE` (SoD reddi `AP_SOD_DENIED`
+> ile aynı 403 sınıfı); Entity Fields (durum makinesi), Hata sözlüğü, Validation Rules, Failure Path, Authorization Convention
+> ve yeni AC-42 (DL-3). Mevcut AC numaraları değişmedi. `status: draft`.
+> `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor; O-18); "değer
 > main'de" kalanı açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-22; MOD-0126 O-19 ile tek karar);
@@ -61,7 +80,7 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D12/1 ve D13 MOD-0126 içindir; bu pakette **emsal** olarak anılır, AP'ye uygulanması ayrıca "Açık kararlar"da sahibe
 > sorulur (D11/3'ün AP karşılığı D14/3 ile kararlaştırıldı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0119-v1.1.md` (koşul 1–4 bu pakette karşılanır, bkz.
-> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
+> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md`
 > (taslak; dilim **TRM-S2**, DCP §8 adım 5: "MOD-0003 kararından sonra" — bu karar D27/1 ile verildi; DCP metni aynı
 > commit'te güncellendi).
 >
@@ -84,7 +103,10 @@ girilmesi, doğrulanması, MOD-0023 iş akışıyla onaylanması, onay ayrılı�
 bağlantısı. Blueprint 8.8 W-3, Financial Management (paket §A).
 
 - **Hedef kullanıcı:** AP operatörü (kaydı girer, doğrular, onaya gönderir, istisna açar), AP onaylayıcısı (karar verir),
-  AP yöneticisi (bekletme, uzlaştırma).
+  AP operasyon yöneticisi (operatör eylemleri + bekletme / bekletmeyi kaldırma, istisna çözme / yeniden açma, toplu silme;
+  karar vermez; açtığı istisnayı çözemez — D50/3), AP görüntüleyici (okuma) — KARAR D49/1, D49/3, D50/1 (AP onay yöneticisi
+  kalktı, karar + uzlaştırma AP onaylayıcıda);
+  rol matrisi `treasury-intake-owner-decisions-05.md`, "D47 rol matrisi (CT04a; D49 ile güncellendi)".
 - **Çekirdek:** borç kaydı tek ve doğru olmalı — mükerrer fatura tekil indeksle engellenir, tutarlar sunucuda satırlardan
   hesaplanır, PO'lu fatura yalnız MOD-0143'ün eşleşme sonucu uygunsa ilerler; kaydı giren, gönderen ve son güncelleyen
   kişi o faturada karar veremez.
@@ -346,7 +368,9 @@ referansı tutmaz (v1). Ödeme dikişi açıldığında banka referansı yalnız
   tutulmaz (faturanın tutarı tek kaynaktır). `EvidenceManifestRef` (:99) taşınmaz.
 - **İstisna durum makinesi (kaynak 7 durumdan 3'ü, `AccountsPayableStateGuards.cs:21-31@218acaf5`):** `Open` → Resolve →
   `Resolved` → Reopen → `Reopened` → Resolve → `Resolved`. `Triaged`, `Assigned`, `RemediationPending`, `Closed`
-  taşınmaz (atama ve kapanış iş akışı v1'de yok; Follow-up).
+  taşınmaz (atama ve kapanış iş akışı v1'de yok; Follow-up). **İstisna ayrılığı (KARAR D50/3):** Resolve ve Reopen'ı istisnayı
+  açan kullanıcı (`RaisedBy`, token `sub` Guid'i) çağıramaz → 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`; istisna, fatura ve
+  makbuz değişmez, olay yok (AC-42). `ResolvedBy` yalnız bilgi alanıdır, kurala girmez.
 - **Tek aktif kuralı (O-13, OI-09):** `(TenantId, ApInvoiceId, ExceptionType)` için `Status ∈ {Open, Reopened}` olan en
   fazla bir kayıt — tekil kısmi indeks; ikinci açma 409 `AP_EXCEPTION_ALREADY_ACTIVE`. Kaynakta bu kural yoktu
   (etkin istisna indeksi tekil değil, `AccountsPayableMongoIndexes.cs:142-150`; kaynak sahip kararı S-OD-2 "nonunique
@@ -439,7 +463,8 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   ret), `AP_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `AP_WORKFLOW_START_PENDING` 409, `AP_DECISION_OUTCOME_UNKNOWN` 202,
   `AP_DECISION_PENDING` 409, `AP_DECISION_REASON_REQUIRED` 400, `AP_WORKFLOW_TASK_INVALID` 400,
   `AP_WORKFLOW_TRANSITION_FAILED` 502, `AP_INVOICE_ON_HOLD` 409, `AP_BLOCKING_EXCEPTION_OPEN` 409,
-  `AP_EXCEPTION_ALREADY_ACTIVE` 409, `AP_EXCEPTION_STATUS_INVALID` 409, `AP_EVIDENCE_LINK_INVALID` 422,
+  `AP_EXCEPTION_ALREADY_ACTIVE` 409, `AP_EXCEPTION_STATUS_INVALID` 409, `AP_EXCEPTION_RAISER_CANNOT_RESOLVE` 403 (istisnayı
+  açan kendi istisnasını çözmek ya da yeniden açmak istedi — KARAR D50/3; `AP_SOD_DENIED` ile aynı 403 sınıfı), `AP_EVIDENCE_LINK_INVALID` 422,
   `AP_EVIDENCE_UNAVAILABLE` 503, `AP_EVIDENCE_REQUIRED` 422 (O-17), `AP_CREDIT_NOTE_EXCEEDS_CAPACITY` 422 (bağlı alacak
   dekontu orijinalin kalan kapasitesini aşıyor; tam alacaklanmış orijinal dahil), `AP_RECONCILE_RESTART_ACTOR_MISMATCH` 409
   (Reconcile'ı çağıran asıl komutun aktörü değil; uzak yazma/başlatma çağrısı yok, niyet `Unknown` kalır).
@@ -526,12 +551,12 @@ korunan yol yamaları D30 ile 2026-10-25'te uygulandı; bu listede değildir.
 | MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.0 FROZEN, `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). **Üretici değişikliği onaylandı (KARAR D26/3):** `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç + %20 KDV'li örnek) ve MOD-0143 kaydında `lineAmount ≠ quantity × unitPrice` → 422 tutarlılık kontrolü (sabotajlı test); sahibi procurement (MOD-0143 sahibi, kendi dalında); **ready-for-dev engeli değildir** — AP kuralı yalnız iki durumla sınırlı olduğu için 1.1.0 ile güvenlidir (Validation Rules → MOD-0143 eşleşme kuralları) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` var, küsurat hanesi yok (MOD-0126 pack Dependencies ölçümü) | küsurat kaynağı MOD-0048-FU01 §21 `currency-minor-units` — başlangıç listesi kabul (Y-4/3), seed henüz yok (O-10, MOD-0126 O-11 ile ortak); yoksa Create 503 `AP_CURRENCY_PRECISION_UNAVAILABLE` — sabit tablo uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı okuma | **var** — `GET /api/v1/evidence/links/{id}` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/EvidenceLinksController.cs:83-84`); bağlantı nesne referansı `EvidenceObjectRefDto(Module, ObjectType, ObjectId, ObjectVersion)` (`…/Features/EvidenceLinking/EvidenceLinkingModels.cs:67`) | AP bağlantıyı **oluşturmaz**, var olanın nesnesinin `(MOD-0119, ApInvoice, {id})` olduğunu doğrular (DL-3) |
-| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
+| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20 — D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-22)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapı (kapsamı soran kod + kanıt testi) açık |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack ölçümü); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **ENGEL**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar Create yazılamaz (O-9) |
 | `Diten.FinanceTreasuryService` iskeleti + servis ortak yapı taşları | servis | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — O-21 kapandı, gap 4/G5); MOD-0126 DL-1, AP DL-1'in önkoşuludur; o olmadan AP DL-1 başlamaz |
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellendi** (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (DCP-011-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -896,6 +921,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 | Karar WorkflowTaskId | Evet | Guid ≠ Empty, faturanın örneğine ait | — | MOD-0023 |
 | Hold ReasonCode | Evet | trim, 1..64 | — | — |
 | İstisna ExceptionType / Severity / ReasonCode | Evet / Hayır / Evet | v1 türleri; enum; trim 1..64 | `ux_ap_exception_active` | — |
+| İstisna Resolve / Reopen aktörü (KARAR D50/3) | Evet | çağıran (token `sub`, Guid) ≠ istisnanın `RaisedBy`'ı; eşitse 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE` — yazımdan önce, durum kontrolünden bağımsız; `allowedActions`'ta bu kullanıcıya çöz / yeniden aç gösterilmez | — | — |
 | Evidence link id | Evet | Guid ≠ Empty; MOD-0031'de var, nesnesi `(MOD-0119, ApInvoice, {id})` | — | `IApEvidencePort` |
 
 **Durum kuralları:** Update yalnız `Received`/`Validated`, `WorkflowInstanceId = null` ya da son niyet `Refused`/`Cancelled`,
@@ -1008,6 +1034,8 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
 - **Gönderilmiş faturayı silme / onay akışındaki faturayı güncelleme ya da bekletme** → 409 `AP_INVOICE_STATUS_INVALID`.
 - **Engelleyici açık istisna varken Submit / Approve / ReleaseHold** → 409 `AP_BLOCKING_EXCEPTION_OPEN`; aynı türde ikinci
   aktif istisna → 409 `AP_EXCEPTION_ALREADY_ACTIVE`.
+- **İstisnayı açanın çözmesi ya da yeniden açması** (KARAR D50/3) → 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`; istisna durumu,
+  fatura ve makbuz değişmez, merkezi olay yok; aynı izinli başka kullanıcı geçer (AC-42).
 - **Başka nesneye ait kanıt bağlantısı** → 422 `AP_EVIDENCE_LINK_INVALID`; MOD-0031 erişilemez → 503, fatura değişmez.
 - **Yetkisiz aktör** (ilgili izin yok) → API 403 `AP_PERMISSION_DENIED`; UI: kabuk içinde erişim açıklaması, düğme yok (UAS-001).
 - **Denetim kaydı yazılamıyor** (outbox yazımı başarısız) → işlem geri alınır, komut başarısız, iş verisi yazılmaz.
@@ -1054,7 +1082,10 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
   `mdm.legal-entities.read` (MOD-0220), MOD-0140 tedarikçi okuma izni (1.3.0'da adı ölçülür), `procurement.invoice-match.read`
   (MOD-0143, `InvoiceMatchController.cs:53`), MOD-0031 kanıt okuma; MOD-0023'te `platform.workflow.instances.start`
   (gönderen) ve `platform.workflow.tasks.approve` / `.reject` / `.request-info` (onaylayıcı) (`WorkflowModels.cs:16-19`).
-  Rol şablonu O-20.
+  Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) (O-20).
+- **İstisna ayrılığı (KARAR D50/3) çalışma anında da denetlenir:** `ap-invoice-exceptions.resolve` / `.reopen` izni tek başına
+  yetmez — istisnayı açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz (403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`,
+  AC-42). Bir kişide AP operatörü + AP operasyon yöneticisi olsa da kural geçerlidir.
 - Tier-3 eylemler (`read-tenant-wide`, `validate`, `submit`, `reconcile`, `request-info`, `hold`, `release-hold`,
   `resolve`, `reopen`, `link`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol şablonunda
   varsayılan değildir (O-20).
@@ -1198,6 +1229,12 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] AC-16 (zorunlu) — Engelleyici açık istisna ya da `OnHold` varken Submit / Approve 409; aynı türde ikinci aktif istisna
   409 `AP_EXCEPTION_ALREADY_ACTIVE` (tekil kısmi indeks; kaldırıldığında eşzamanlı iki açma testi kırmızıya döner);
   `ApprovalPending` faturada Hold 409.
+- [ ] AC-42 (zorunlu) — **İstisna ayrılığı (KARAR D50/3):** istisnayı açan kullanıcı (`RaisedBy`) aynı istisnada Resolve ya da
+  Reopen çağırdığında — `ap-invoice-exceptions.resolve` / `.reopen` izni olsa da — 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`;
+  istisna `Status`'ü, `ResolvedBy` / `ResolvedAt`, fatura ve makbuz değişmez, merkezi denetim olayı yok (iki ayrı test: Resolve,
+  Reopen). İzinli başka kullanıcı aynı istisnayı çözer ve yeniden açar. Aktör karşılaştırması token `sub`'ının Guid değeri
+  üzerindendir (büyük / küçük harf farklı yazılmış aynı `sub` da reddedilir). Sabotaj: kontrol kaldırıldığında açanın çözümü
+  yazılır ve test kırmızıya döner.
 - [ ] AC-17 (zorunlu) — Merkezi denetim: tek aşamalı komutlar tam **bir** olay bırakır; iki aşamalı komutlar (Submit,
   kararlar) tx1'de tam bir **deneme** olayı ve sonuç kesinleştiğinde tx2'de (ya da Reconcile'da) tam bir **sonuç** olayı
   bırakır; idempotent tekrar yeni olay üretmez. Olay iş verisiyle aynı Mongo işleminde yazılır; outbox yazımı zorla
@@ -1338,7 +1375,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 - Sayfa kodu `APINVOICES` (`Nav.Page.APINVOICES`); Create/Edit/Details aynı kodun alt sayfalarıdır.
 - Anahtarlar (kiracı 7 dil): `Help.APINVOICES.Purpose` (satıcı borcu kaydı, doğrulama ve onay; ödeme yapılmadığı açıkça
-  yazılır), `Help.APINVOICES.Audience` (AP operatörü, AP onaylayıcısı, AP yöneticisi), `Help.APINVOICES.Step1…Step5` +
+  yazılır), `Help.APINVOICES.Audience` (AP operatörü, AP onaylayıcısı, AP operasyon yöneticisi — KARAR D49/3, D50/1), `Help.APINVOICES.Step1…Step5` +
   `Step{n}Title` (Fatura kaydı · Satırlar ve tutarlar · Doğrula · Onaya gönder · Karar, bekletme ve istisna). `Immediate`
   yok (onaysız hemen geçerli işlem yok). İlgili sayfa: MOD-0143 fatura eşleştirme ekranı (varsa `PageHelpCatalog`
   satırında bağlantı; yoksa "yok").
@@ -1366,7 +1403,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Karar 0.7 — GL kapsamı (O-3): KARAR D27/4, kapsam dışı (pack değişmez)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
@@ -1541,7 +1578,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-17 | Gönderme öncesi kanıt zorunluluğu | her belge / yalnız PO'suz / yok | **KARAR D28 (2026-10-25): öneri kabul** — her belge türünde en az 1 kanıt (fatura görüntüsü), yoksa 422 `AP_EVIDENCE_REQUIRED` | sahip (K1) |
 | O-18 | `AuditCategory` değeri (MOD-0126 O-6 ile ortak) | eklemeli `Finance` / başka | **KARAR D35/3 (2026-10-26; treasury-intake-owner-decisions-02.md D35 (PR #235)): eklemeli `Finance`** (değer 18; Y-4/7) — Platform `AuditCategory`'ye yalnız ekleme; Platform sahibinin işi (XMC-001, D9); MOD-0126 DL-1'den önce main'de olmalı (`MasterData` ara çözümü seçilmedi). Defter D35/1–2: iz `b` `ICentralAuditDeclaration`, borç / istisna sıfır. Kalan: `Finance` değerinin Platform'da main'e girmesi | CT + Platform sahibi |
 | O-19 | Fatura tarihi kuralı | ileri tarih serbest / yasak | **KARAR D28 (2026-10-25): öneri kabul** — `InvoiceDate ≤ bugün` (UTC); `DueDate ≥ InvoiceDate` (kaynak kuralı) | sahip (K1) |
-| O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **TBD** | sahip + MOD-0018 sahibi |
+| O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; **D49/1, D49/3, D50/1:** AP görüntüleyici, AP operatörü, AP onaylayıcı (karar + mutabakat) ve AP operasyon yöneticisi (birleşik AP yöneticisi ve AP onay yöneticisi kalktı); **D50/3:** istisnayı açan çözemez / yeniden açamaz (AC-42); Auth kaydı MOD-0018 sahibinde (Ali) | sahip + MOD-0018 sahibi |
 | O-21 | Servis iskeletini ve ortak yapı taşlarını hangi paket açar | MOD-0126 DL-1 / AP DL-1 | **KAPANDI (D14/2 ile tutarlı; gap 4/G5):** tek sahibi ve yazarı MOD-0126 DL-1 — iskelet, `FinanceTreasuryCommandReceipt` + indeksleri, `IFinanceTreasuryDataScopeSource`, ortak LE / para birimi / kod portları, CentralAudit kaydı; AP DL-1 onu bekler ve bunları yeniden tanımlamaz. "Hangi paket önce kodlanırsa" kuralı yoktur | sahip (K1) |
 | O-22 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 
@@ -1579,7 +1616,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   kanıt kuralı (O-17 "evet" ise bu dilimde eklenir; DL-2'de Submit kanıtsız çalışır ve bu fark DL-2 kaydına yazılır), Submit / Approve'daki
   bekletme ve engelleyici istisna kapısı (R9 — DL-2'de bu kayıtlar henüz yoktur), K2 sabotaj testi, dev ortamı denetim
   kanıtı. **Neden ayrı:** MOD-0031 davranış ölçümüne ve O-13/O-17'ye bağlı; DL-2'yi bekletmesin.
-  Önkoşul: DL-2, O-13, O-17, O-18. Bitiş: AC-16, 17 (sabotaj), 29, 33 (Hold, istisna, kanıt kısmı).
+  Önkoşul: DL-2, O-13, O-17, O-18. Bitiş: AC-16, 17 (sabotaj), 29, 33 (Hold, istisna, kanıt kısmı), 42.
 - **DL-4** — Yollar: `Views/FinanceTreasury/ApInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine
   bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-1 (liste/oluşturma), DL-2 (karar düğmeleri), DL-3 (bekletme, istisna),

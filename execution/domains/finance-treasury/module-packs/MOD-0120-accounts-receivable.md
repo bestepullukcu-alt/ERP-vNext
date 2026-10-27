@@ -26,6 +26,25 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 >
 > **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-33'teki ek not zorunluluk parantezinin dışına alındı. Kapsam ve anlam değişmedi.
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04a — sahip denetimi):** rol şablonu göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) olarak
+> güncellendi (D47/4: AR v1'de tahsilat hesabını yalnız opak Guid taşır, MOD-0289'u okumaz — banka okuma izni AR rollerine
+> verilmez). AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04b — KARAR D49/1, D49/3):** birleşik "AR yöneticisi" kalktı; hedef kullanıcılar, sayfa yardımı
+> hedef kitlesi ve O-15 D49 rol adlarına çekildi — AR görüntüleyici (okuma; her AR rolü yalnız bunu miras alır), AR operatörü,
+> AR onaylayıcı, AR operasyon yöneticisi (operatör eylemleri + tahsilat operasyonları + toplu silme), AR onay yöneticisi (düzeltme
+> onay / ret / uzlaştırma) ve ayrı "AR 2. kademe düzeltme onaylayıcı" (`receivable-adjustments.tier2-approve`; karar ucu
+> `.approve` ister — A3 — bu yüzden bir AR onay rolüyle birlikte atanır). "Hazine konsolide görüntüleyici" yalnız gerekçeyle
+> atanır. Kod, izin anahtarı ve AC değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, D50):** "AR onay yöneticisi" kalktı (D50/1 — izinleri AR onaylayıcıyla aynıydı; karar ve mutabakat
+> AR onaylayıcıda). "AR 2. kademe düzeltme onaylayıcı" AR onaylayıcının izinlerini miras alır + `receivable-adjustments.tier2-approve`
+> ve tek başına atanabilir (D50/2; ödeme 2. kademe deseni). Hedef kullanıcı, sayfa yardımı hedef kitlesi ve O-15 güncellendi.
+> Kod, izin anahtarı ve AC değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de"
 > maddesi açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-14, T-4; MOD-0126 O-19 ile tek karar);
@@ -71,7 +90,7 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > `treasury-intake-owner-decisions-02.md`. D11/1, D12/1, D13 MOD-0126'ya özgüdür; bu pakette
 > **desen** olarak önerilir, MOD-0120 için ayrıca sahip teyidi ister (O-7, O-8 muafiyet kısmı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0120-v1.0.md` (koşul 1–5 → "Implementation Notes →
-> Level-1 koşulları"). DCP: `UNASSIGNED-finance-treasury-intake.md` (taslak; dilim TRM-S2).
+> Level-1 koşulları"). DCP: `DCP-011-finance-treasury-intake.md` (taslak; dilim TRM-S2).
 >
 > **Kimlik ön kontrolü (DCP-002), 2026-10-24, bu worktree (HEAD `3a1c32b9e`):**
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0120 --name "Accounts Receivable (AR)"` →
@@ -95,8 +114,11 @@ Müşteri alacağının sistem-of-record'u: alacak faturası (receivable invoice
 aşaması ve alacağı azaltan onaylı düzeltmeler. Blueprint 8.8 W-3, Financial Management; Blueprint SoR "invoices (AR),
 receivables, collections states, credit memos" (paket §A).
 
-- **Hedef kullanıcı:** alacak operatörü (faturayı kaydeder ve açar, tahsilat aşamasını yürütür), alacak yöneticisi
-  (iptal / silme talebini onaylar ya da reddeder), finans kontrolörü (yüksek tutarlı düzeltme onayı), denetçi (okuma).
+- **Hedef kullanıcı:** alacak operatörü (faturayı kaydeder ve açar, tahsilat aşamasını yürütür), AR operasyon yöneticisi
+  (operatör eylemleri + tahsilat operasyonları + taslak toplu silme; karar vermez), AR onaylayıcı (iptal / silme talebini
+  onaylar ya da reddeder, uzlaştırır), AR 2. kademe düzeltme onaylayıcı — finans kontrolörü (AR onaylayıcı izinleri + yüksek
+  tutarlı düzeltme onayı; tek başına atanır), AR görüntüleyici — denetçi (okuma). KARAR D49/1, D49/3, D50/1, D50/2; rol matrisi
+  `treasury-intake-owner-decisions-05.md`, "D47 rol matrisi (CT04a; D49 ile güncellendi)".
 - **Kısıtlı MVP (KARAR D27/2, sapma S-2):** AR kendi alacak faturasını **yerel** olarak tutar; faturalama
   sisteminden (MOD-0169 / AR-BILLING-BUNDLE) fatura almaz, müşteriye fatura göndermez, yasal/e-fatura numarası üretmez.
   Kaynak da AR'yi faturalama entegrasyonu olmadan kurmuştur (paket §D; sıra belgesi Amendment 3 §4 "evidence for the
@@ -1069,7 +1091,7 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   `receivable.*` / `ar.*` anahtarları (`AccountsReceivableSecurity.cs:26-55@218acaf5`, 30 anahtar + `receivable.edit` takma
   adı :58-70) **kopyalanmaz**; aşağıdaki eşleme yalnız izlenebilirlik içindir (kaynak anahtar hiç yayımlanmadığından takma ad
   gerekmez, PKS-001 §3). Kaynak 7 rol sabiti (`treasury_viewer` … `service_principal`, :110-116) taşınmaz; rol şablonları
-  MOD-0018 sahibiyle (O-15).
+  D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); Auth kaydı MOD-0018 sahibinde (O-15).
 - Aktör: `tenant_user`; `platform_admin` geçişi standarttır. Arka plan aktörü bu sürümde yok.
 
 | Recovery anahtarı | Katman | Uçlar | Kaynak anahtar |
@@ -1374,8 +1396,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 - Sayfa kodu `RECEIVABLEINVOICES` (`Nav.Page.RECEIVABLEINVOICES`); Create/Edit/Details aynı kodun alt sayfalarıdır.
 - Anahtarlar (kiracı 7 dil): `Help.RECEIVABLEINVOICES.Purpose` (müşteri alacağını kaydetme ve izleme; bu ekranın yasal
-  fatura kesmediği ve müşteriye göndermediği açıkça yazılır), `Help.RECEIVABLEINVOICES.Audience` (alacak operatörü, alacak
-  yöneticisi, finans kontrolörü), `Help.RECEIVABLEINVOICES.Step1…Step5` + `Step{n}Title` (Fatura kaydet · Satır ve taksit ekle
+  fatura kesmediği ve müşteriye göndermediği açıkça yazılır), `Help.RECEIVABLEINVOICES.Audience` (alacak operatörü, AR
+  operasyon yöneticisi, AR onaylayıcı, AR 2. kademe düzeltme onaylayıcı — KARAR D49/3, D50/1), `Help.RECEIVABLEINVOICES.Step1…Step5` + `Step{n}Title` (Fatura kaydet · Satır ve taksit ekle
   · Aç · Tahsilatı izle · İptal/silme talebi ve onay). `Immediate` yok. İlgili sayfa: yok.
 - **Tur:** gerekmez — beş akıştan biri değil → "tur yok".
 
@@ -1404,7 +1426,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Karar 0.6 (ERP-FIN-BUNDLE) — KARAR D27/3; karar 0.7 (GL) — KARAR D27/4 (O-1c, O-1d)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
 - [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)
@@ -1617,7 +1639,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | **KARAR D28 (2026-10-25): öneri kabul** — UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
 | O-13 | WriteOff kanıtı zorunlu mu | evet / hayır | **KARAR D28 (2026-10-25): öneri kabul** — evet, en az 1 MOD-0031 bağlantısı | sahip (K1) |
 | O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
-| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — MOD-0018 sahibiyle; `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
+| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; **D49/1, D49/3, D50/1, D50/2:** AR görüntüleyici, AR operatörü, AR onaylayıcı (karar + mutabakat), AR operasyon yöneticisi ve AR 2. kademe düzeltme onaylayıcı (AR onaylayıcı + `tier2-approve`, tek başına atanır; birleşik AR yöneticisi ve AR onay yöneticisi kalktı); Auth kaydı MOD-0018 sahibinde (Ali); `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
 
 ## Teslim dilimleri
 
