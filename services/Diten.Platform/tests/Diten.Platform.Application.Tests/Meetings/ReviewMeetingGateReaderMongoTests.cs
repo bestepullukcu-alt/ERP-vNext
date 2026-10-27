@@ -23,12 +23,20 @@ using Task = System.Threading.Tasks.Task;
 /// this file covers every meeting/minutes SHAPE the reader itself must tell apart.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class ReviewMeetingGateReaderMongoTests
+[Trait("Category", "Mongo")]
+public sealed class ReviewMeetingGateReaderMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_review_meeting_gate";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public ReviewMeetingGateReaderMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Fact]
     public async Task No_linked_meeting_at_all_is_not_unlocked()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, _, taskId) = Arrange(mongo);
 
         Assert.False(await reader.HasUnlockedReviewMeetingAsync(taskId, CancellationToken.None));
@@ -37,7 +45,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task A_merely_scheduled_meeting_with_no_minutes_at_all_does_not_unlock()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         await ctx.LinkAsync(tenantId, taskId, meeting.Id);
@@ -48,7 +56,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task Draft_minutes_do_not_unlock()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         await ctx.LinkAsync(tenantId, taskId, meeting.Id);
@@ -60,7 +68,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task Published_minutes_on_a_live_meeting_unlock()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         await ctx.LinkAsync(tenantId, taskId, meeting.Id);
@@ -72,7 +80,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task A_CANCELLED_meeting_s_published_minutes_do_NOT_unlock()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Cancelled);
         await ctx.LinkAsync(tenantId, taskId, meeting.Id);
@@ -86,7 +94,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     {
         // Pack rule: a correction of a published minutes is created directly as Published — the LATEST version
         // is always read, never version 1 specifically.
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         await ctx.LinkAsync(tenantId, taskId, meeting.Id);
@@ -99,7 +107,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task Multiple_linked_meetings__ONE_published_is_enough_to_unlock()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var stillScheduled = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         var published = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
@@ -113,7 +121,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task Multiple_linked_meetings__the_ONLY_published_one_is_cancelled__stays_locked()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var cancelledPublished = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Cancelled);
         var scheduledOnly = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
@@ -127,7 +135,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task A_link_of_a_DIFFERENT_type_is_never_read_as_a_review_meeting()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskId) = Arrange(mongo);
         var meeting = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
         await ctx.SeedMinutesAsync(tenantId, meeting.Id, 1, MinutesStatus.Published);
@@ -150,7 +158,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task Batched_read_answers_several_tasks_in_one_call_without_cross_talk()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, ctx, tenantId, taskA) = Arrange(mongo);
         var taskB = Guid.NewGuid();
         var meetingA = await ctx.SeedMeetingAsync(tenantId, MeetingLifecycle.Scheduled);
@@ -169,7 +177,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
     [Fact]
     public async Task A_task_absent_from_the_batched_result_is_treated_as_not_unlocked()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (reader, _, _, _) = Arrange(mongo);
         var untouchedTaskId = Guid.NewGuid();
 
@@ -184,7 +192,7 @@ public sealed class ReviewMeetingGateReaderMongoTests
         DisposableMongoReplicaSet mongo)
     {
         var tenantId = Guid.NewGuid();
-        var database = mongo.CreateDatabase();
+        var database = ReplicaSetClassFixture.FreshDatabase(mongo, DatabaseName);
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
         var dbContext = new PlatformDbContext(mongo.Client, database);

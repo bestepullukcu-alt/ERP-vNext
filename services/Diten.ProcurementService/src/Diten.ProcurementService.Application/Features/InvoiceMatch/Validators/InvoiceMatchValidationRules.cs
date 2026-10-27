@@ -44,6 +44,26 @@ internal static partial class InvoiceMatchValidationRules
         return (q * p).ToString(CultureInfo.InvariantCulture);
     }
 
+    /// <summary>
+    /// lineAmount verilmediyse (boş) true — sunucu hesaplar. Verildiyse geçerli Decimal olmalı (float/üslü yazım
+    /// reddedilir) ve değeri
+    /// quantity × unitPrice'a eşit olmalı (ölçek farkı serbest: "1250" = "1250.0000"). Tutarlar net; vergi taşınmaz.
+    /// </summary>
+    public static bool LineAmountMatches(string quantity, string unitPrice, string? lineAmount)
+    {
+        if (string.IsNullOrWhiteSpace(lineAmount))
+        {
+            return true;
+        }
+        if (!IsValidDecimal(lineAmount) || !TryParseDecimal(lineAmount.Trim(), out var given)
+            || !TryParseDecimal(quantity.Trim(), out var q)
+            || !TryParseDecimal(unitPrice.Trim(), out var p))
+        {
+            return false;
+        }
+        return given == q * p;
+    }
+
     /// <summary>SERVER-COMPUTED toplam: Σ lineAmount (Decimal).</summary>
     public static string ComputeTotal(IEnumerable<string> lineAmounts)
     {

@@ -86,6 +86,7 @@ public sealed class WorkflowStatusMongoFixture : IAsyncLifetime
 /// <item>B3: an ESCALATED approval task can still be cancelled by the object's owner.</item>
 /// </list>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<WorkflowStatusMongoFixture>, IAsyncLifetime
 {
     private readonly WorkflowStatusMongoFixture _fixture;

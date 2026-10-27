@@ -353,7 +353,7 @@ class GitRepo:
 
     def symlinks(self, commit: str, prefix: str) -> list[str]:
         """CT-FIX-05 (C1): the symbolic links at `commit` on the way to `prefix` (every ancestor component, Codex:
-        docs/alias -> ../services under docs/alias/New.cs) and at or under it (git does not follow them)."""
+        docs/guides/alias -> ../services under docs/guides/alias/New.cs) and at or under it (git does not follow them)."""
         parts, found = prefix.split("/"), []
         for n in range(1, len(parts) + 1):            # each component itself, not recursively
             out = self._git(self.worktree, "ls-tree", "-z", commit, "--", "/".join(parts[:n])) or ""
@@ -616,7 +616,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         first 8 hex of its findings_sha256. An older own UYGUN never settles a later negative.
       - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
-    trail = pa.append_only_problems(root, main, pa.REVIEWS)
+    trail = pa.append_only_problems(root, main, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
         return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
@@ -712,7 +712,7 @@ def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, acc
         return "kabul edilmiş ENGEL'i taşıyan sürümün onayı HIGH değil"
     merge = pa.main_merge(root, main, pa.row_commit(root, main, rows[-1]["_n"]))[0]
     listed = pa.approvers_at(root, f"{merge}^1") if merge else {}
-    person = listed.get(rows[-1]["approver"], {}).get("person")
+    person = pa.person_of(listed, rows[-1]["approver"])
     if accepted != {person}:
         return (f"ENGEL'i kabul eden ({', '.join(sorted(accepted))}) onay satırının onaylayanı değil "
                 f"({person or rows[-1]['approver']}) — riski yalnız onaylayan üstlenir")
@@ -1208,6 +1208,24 @@ def check_review(p: dict, prompt_sha: str, digest: str, pack: list[tuple[str, st
     return eng
 
 
+def try_review(prompt: bytes, repo, review: bytes) -> tuple[int, list[str]]:
+    """S-54: the review record's own rules (check_review) on a record that is NOT committed yet, against the prompt and
+    its source pack at Expected HEAD — so a reviewer sees, before the commit, that every `kontrol` line must name a
+    path of the source pack. Never a dispatch permission: dispatch still needs `check --review PATH@COMMIT`."""
+    head = ["PROMPT İNCELEME DENEMESİ v1 — dağıtım izni değil (kayıt commit'lenmedi)", f"prompt-sha256: {sha256(prompt)}"]
+    p, _bad = parse_prompt(prompt.decode("utf-8"))
+    commit = repo.commit_id(p["expected"]) if p.get("expected") else None
+    if commit is None:
+        return 2, head + ["DUR: promptun Expected HEAD'i okunamadı ya da bu depoda yok", "çıkış: 2"]
+    pack = source_pack(p, repo, commit)
+    eng = check_review(p, sha256(prompt), pack_digest(pack), pack, review)
+    lines = head + [f"kaynak-paketi-sha256: {pack_digest(pack)} · {len(pack)} dosya"] + [f"ENGEL {e}" for e in eng]
+    if eng:
+        return 1, lines + [f"sonuç: kayıt bu hâliyle reddedilir — {len(eng)} bulgu", "çıkış: 1"]
+    return 0, lines + ["sonuç: kaydın kendi kuralları geçti — commit'leyin, sonra check --review YOL@COMMIT ile "
+                       "dağıtım denetimi", "çıkış: 0"]
+
+
 # ------------------------------------------------------------------------------------------------ gate
 def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read_report, names_for,
          root_common: str | None = None) -> tuple[int, list[str]]:
@@ -1423,6 +1441,16 @@ class FakeRepo:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",
@@ -1508,7 +1536,7 @@ Rapor formatı: §22
     cases.append(("dirty file in the allowed paths -> ENGEL; an unrelated one is only inventory",
                   sum("kirli" in e for e in eng(r)) == 1 and any("kapsam dışı 1 kirli" in l for l in r[1])))
     cases.append(("sabotage: a dirty source file -> ENGEL", any("docs/api.md" in e for e in eng(run(good, rp=FakeRepo(files, dirty=["docs/api.md"]))))))
-    globbed = good.replace("2. docs/api.md", "2. docs/api.md\n3. rules/*.md")
+    globbed = good.replace("2. docs/api.md", "2. docs/api.md" + "\n3. rules/*.md")
     cases.append(("sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL",
                   any("rules/a.md" in e for e in eng(run(globbed, rp=FakeRepo(files, dirty=["rules/a.md"]))))))
     cases.append(("sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL",
@@ -1675,6 +1703,11 @@ Rapor formatı: §22
     empty_ev = good_review.replace("docs/api.md:1-2 ve AGENTS.md karşılaştırıldı, uyumlu".encode(), "bakıldı, sorun yok herhalde".encode())
     cases.append(("sabotage: checklist evidence that names no source of the pack -> ENGEL",
                   any("kanıtı boş" in e for e in eng(run(high, review=empty_ev)))))
+    t_ok, t_bad = try_review(hp, repo, good_review), try_review(hp, repo, empty_ev)
+    cases.append(("S-54: review-check on an uncommitted valid record -> 0, says 'not a dispatch permission'",
+                  t_ok[0] == 0 and "dağıtım izni değil" in t_ok[1][0]))
+    cases.append(("sabotage S-54: review-check on a record whose evidence names no source of the pack -> 1 with the reason",
+                  t_bad[0] == 1 and any("kanıtı boş" in l for l in t_bad[1])))
     cases.append(("sabotage: a HIGH prompt with no quote at all -> ENGEL",
                   any("hiç alıntı yok" in e for e in eng(run(re.sub(r"«[^»]+» \([^)]+\)", "N/A — bu yüzey bu işte kullanılmıyor, gerekçe kayıtta", high), review=good_review)))))
     body = run(good)[1]
@@ -1808,12 +1841,12 @@ Rapor formatı: §22
     cases.append(("CT-FIX-05 C1: governance allowed paths into services/, frontend/, gateway/ (any case), a root-wide glob, "
                   "a brace glob, '..', './', '//', an absolute path -> ENGEL each",
                   all(gpaths([g]) for g in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "Services/x/**", "**", "*",
-                                            "{services,docs}/**", "docs/../services/**", "./docs/**", "docs//x", "/docs/**"))))
+                                            "{services,docs}/**", "docs/guides/../../services/**", "./docs/**", "docs//x", "/docs/**"))))
     cases.append(("CT-FIX-05 C1: a symbolic link at or under the prefix at Expected HEAD -> ENGEL; docs/** without one passes; "
                   "the product class is not limited by this rule",
-                  bool(gpaths(["docs/**"], links=("docs/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
-                  and bool(gpaths(["docs/alias/New.cs"], links=("docs/alias",)))
-                  and bool(gpaths(["docs/alias/sub/New.cs"], links=("docs/alias",)))
+                  bool(gpaths(["docs/**"], links=("docs/guides/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
+                  and bool(gpaths(["docs/guides/alias/New.cs"], links=("docs/guides/alias",)))
+                  and bool(gpaths(["docs/guides/alias/sub/New.cs"], links=("docs/guides/alias",)))
                   and not gpaths(["services/x/**"], cls="ürün")))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
@@ -2239,6 +2272,11 @@ def self_test_dispatch_review(cases: list) -> None:
     e, i = lim("W-10", PK10)
     cases.append(("S-5 Q4: the same with a HIGH CT-APR-01 approval row whose approver (K1) is the acceptor -> pass",
                   not s5(e)))
+    via_branch("approve-10b", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK10, "dev", "LEAD", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-22") + "\n"))
+    e, i = lim("W-10", PK10)
+    cases.append(("Codex F-14: the approval row's approver written LEAD is the listed lead (K1), the acceptor -> pass",
+                  not s5(e)))
     eng12 = review(PK12, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
     review(PK12, "KOŞULLU", [f"F-1@{eng12} | ENGEL | yetki eksik | kabul — onaylayan | K2 | -"], 0)
     via_branch("approve-12", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
@@ -2320,6 +2358,9 @@ def main() -> int:
     pc.add_argument("--prepare", action="store_true", help="preparation only: no dispatch permission")
     pp = sub.add_parser("pack")
     pp.add_argument("prompt")
+    pr = sub.add_parser("review-check", help="S-54: tries an uncommitted prompt review record — never a dispatch permission")
+    pr.add_argument("prompt")
+    pr.add_argument("review_file", help="the review record file in the working tree (not committed yet)")
     pd = sub.add_parser("draft", help="CT-FIX-03 U2: a §36.1 skeleton on stdout — never a dispatch permission")
     pd.add_argument("--queue", required=True)
     pd.add_argument("--wp", required=True)
@@ -2340,6 +2381,17 @@ def main() -> int:
               f"doldurulmadan check ENGEL verir. Sonra: python3 scripts/prompt_gate.py check <dosya> --queue {a.queue}"
               " (kayıt main'de değilse --prepare: yalnız hazırlık)", file=sys.stderr)
         return 0
+    if a.cmd == "review-check":
+        try:
+            prompt = Path(a.prompt).read_bytes()
+            p, _bad = parse_prompt(prompt.decode("utf-8"))
+            repo = GitRepo(p["worktree"] if os.path.isdir(p.get("worktree", "")) else str(ROOT))
+            code, lines = try_review(prompt, repo, Path(a.review_file).read_bytes())
+        except (Incomplete, OSError, UnicodeDecodeError) as e:
+            print(f"DUR: tamamlanamadı — {e}")
+            return 2
+        print("\n".join(lines))
+        return code
     if a.cmd == "pack":
         try:
             p, bad = parse_prompt(Path(a.prompt).read_text(encoding="utf-8"))

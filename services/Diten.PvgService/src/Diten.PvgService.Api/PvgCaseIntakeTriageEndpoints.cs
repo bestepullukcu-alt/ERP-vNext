@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Domain.RegPvBase;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -48,6 +49,7 @@ public static class PvgCaseIntakeTriageEndpoints
                 context.ActorContext!,
                 context.CorrelationContext!,
                 request.ToApplicationRequest()),
+            request.RequestShapeFailures(),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
@@ -77,7 +79,9 @@ public static class PvgCaseIntakeTriageEndpoints
                 context.ActorContext!,
                 context.CorrelationContext!,
                 intakeDraftId,
-                request.ToApplicationRequest()),
+                request.ToApplicationRequest(),
+                request.ExpectedVersion),
+            request.RequestShapeFailures(),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
@@ -162,7 +166,8 @@ public static class PvgCaseIntakeTriageEndpoints
                 context.ActorContext!,
                 context.CorrelationContext!,
                 intakeDraftId,
-                request.ToApplicationRequest()),
+                request.ToApplicationRequest(),
+                request.ExpectedVersion),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
@@ -192,7 +197,8 @@ public static class PvgCaseIntakeTriageEndpoints
                 context.ActorContext!,
                 context.CorrelationContext!,
                 intakeDraftId,
-                request.ToApplicationRequest()),
+                request.ToApplicationRequest(),
+                request.ExpectedVersion),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
@@ -223,10 +229,25 @@ public sealed record PvgCaseIntakeCreateRequest(
     string? PatientSubjectCode,
     DateOnly? EventOnsetDate,
     string? AdverseEventNarrative,
-    string? SuspectProductText,
+    IReadOnlyList<PvgIntakeProductLineRequest>? ProductLines,
     string? Seriousness,
     string? IntakePriority,
-    IReadOnlyList<string>? EvidenceLinkReferences)
+    IReadOnlyList<string>? EvidenceLinkReferences,
+    DateTimeOffset? AwarenessAtUtc = null,
+    string? CompanyRecipientPersonId = null,
+    string? EventCountry = null,
+    string? ReportType = null,
+    string? ReporterSelectionDirectory = null,
+    string? ReporterSelectionId = null,
+    string? ReporterNameOrInitials = null,
+    string? ReporterProfession = null,
+    string? ReporterCountry = null,
+    bool? RemoveReporterLink = null,
+    JsonElement? ValidityResult = null,
+    JsonElement? ValidityMissingCriteria = null,
+    JsonElement? ReporterSource = null,
+    JsonElement? ReporterSourceId = null,
+    JsonElement? ReporterCrmSearchState = null)
 {
     public PvgCreateIntakeDraftRequest ToApplicationRequest() =>
         new(
@@ -239,10 +260,39 @@ public sealed record PvgCaseIntakeCreateRequest(
             PatientSubjectCode,
             EventOnsetDate,
             AdverseEventNarrative,
-            SuspectProductText,
+            ProductLines,
             Seriousness,
             IntakePriority,
-            EvidenceLinkReferences);
+            EvidenceLinkReferences,
+            AwarenessAtUtc,
+            CompanyRecipientPersonId,
+            EventCountry,
+            ReportType,
+            ReporterSelectionDirectory,
+            ReporterSelectionId,
+            ReporterNameOrInitials,
+            ReporterProfession,
+            ReporterCountry);
+
+    // Response-only fields and a link removal on a record that has no link are request shape errors; the
+    // application service reports them after the permission gate (pack AC-7).
+    public IReadOnlyList<PvgValidationFailure> RequestShapeFailures()
+    {
+        var failures = PvgCaseIntakeRequestShape.ResponseOnlyFieldFailures(
+            ValidityResult,
+            ValidityMissingCriteria,
+            ReporterSource,
+            ReporterSourceId,
+            ReporterCrmSearchState);
+        if (RemoveReporterLink == true)
+        {
+            failures.Add(new PvgValidationFailure(
+                PvgIntakeField.RemoveReporterLink,
+                PvgValidationReasonCodes.ReporterLinkAbsent));
+        }
+
+        return failures;
+    }
 }
 
 public sealed record PvgCaseIntakeUpdateRequest(
@@ -255,10 +305,26 @@ public sealed record PvgCaseIntakeUpdateRequest(
     string? PatientSubjectCode,
     DateOnly? EventOnsetDate,
     string? AdverseEventNarrative,
-    string? SuspectProductText,
+    IReadOnlyList<PvgIntakeProductLineRequest>? ProductLines,
     string? Seriousness,
     string? IntakePriority,
-    IReadOnlyList<string>? EvidenceLinkReferences)
+    IReadOnlyList<string>? EvidenceLinkReferences,
+    DateTimeOffset? AwarenessAtUtc = null,
+    string? CompanyRecipientPersonId = null,
+    string? EventCountry = null,
+    string? ReportType = null,
+    string? ReporterSelectionDirectory = null,
+    string? ReporterSelectionId = null,
+    string? ReporterNameOrInitials = null,
+    string? ReporterProfession = null,
+    string? ReporterCountry = null,
+    bool? RemoveReporterLink = null,
+    long? ExpectedVersion = null,
+    JsonElement? ValidityResult = null,
+    JsonElement? ValidityMissingCriteria = null,
+    JsonElement? ReporterSource = null,
+    JsonElement? ReporterSourceId = null,
+    JsonElement? ReporterCrmSearchState = null)
 {
     public PvgUpdateIntakeDraftRequest ToApplicationRequest() =>
         new(
@@ -271,24 +337,120 @@ public sealed record PvgCaseIntakeUpdateRequest(
             PatientSubjectCode,
             EventOnsetDate,
             AdverseEventNarrative,
-            SuspectProductText,
+            ProductLines,
             Seriousness,
             IntakePriority,
-            EvidenceLinkReferences);
+            EvidenceLinkReferences,
+            AwarenessAtUtc,
+            CompanyRecipientPersonId,
+            EventCountry,
+            ReportType,
+            ReporterSelectionDirectory,
+            ReporterSelectionId,
+            ReporterNameOrInitials,
+            ReporterProfession,
+            ReporterCountry,
+            RemoveReporterLink);
+
+    public IReadOnlyList<PvgValidationFailure> RequestShapeFailures() =>
+        PvgCaseIntakeRequestShape.ResponseOnlyFieldFailures(
+            ValidityResult,
+            ValidityMissingCriteria,
+            ReporterSource,
+            ReporterSourceId,
+            ReporterCrmSearchState);
 }
 
 public sealed record PvgCaseIntakeTriageRequest(
     PvgTriageOutcome? TriageOutcome,
     string? TriageReasonCode,
-    string? TriageReason)
+    string? TriageReason,
+    long? ExpectedVersion = null)
 {
     public PvgTriageIntakeDraftRequest ToApplicationRequest() =>
         new(TriageOutcome, TriageReasonCode, TriageReason);
 }
 
-public sealed record PvgCaseIntakeRouteRequest(string? RouteTargetQueue)
+public sealed record PvgCaseIntakeRouteRequest(string? RouteTargetQueue, long? ExpectedVersion = null)
 {
     public PvgRouteIntakeDraftRequest ToApplicationRequest() => new(RouteTargetQueue);
+}
+
+internal static class PvgCaseIntakeRequestShape
+{
+    // JSON null is "not sent"; any other value (of any JSON type) on a response-only field is rejected.
+    private static bool IsCarried(JsonElement? value) =>
+        value.HasValue && value.Value.ValueKind != JsonValueKind.Null;
+
+    public static List<PvgValidationFailure> ResponseOnlyFieldFailures(
+        JsonElement? validityResult,
+        JsonElement? validityMissingCriteria,
+        JsonElement? reporterSource,
+        JsonElement? reporterSourceId,
+        JsonElement? reporterCrmSearchState)
+    {
+        var failures = new List<PvgValidationFailure>();
+        if (IsCarried(validityResult))
+        {
+            failures.Add(new PvgValidationFailure(null, PvgValidationReasonCodes.FieldValueInvalid));
+        }
+
+        if (IsCarried(validityMissingCriteria))
+        {
+            failures.Add(new PvgValidationFailure(null, PvgValidationReasonCodes.FieldValueInvalid));
+        }
+
+        if (IsCarried(reporterSource))
+        {
+            failures.Add(new PvgValidationFailure(PvgIntakeField.ReporterSource, PvgValidationReasonCodes.FieldValueInvalid));
+        }
+
+        if (IsCarried(reporterSourceId))
+        {
+            failures.Add(new PvgValidationFailure(PvgIntakeField.ReporterSourceId, PvgValidationReasonCodes.FieldValueInvalid));
+        }
+
+        if (IsCarried(reporterCrmSearchState))
+        {
+            failures.Add(new PvgValidationFailure(PvgIntakeField.ReporterCrmSearchState, PvgValidationReasonCodes.FieldValueInvalid));
+        }
+
+        return failures;
+    }
+}
+
+public sealed record PvgCaseIntakeDraftResponse(
+    string IntakeDraftId,
+    string Status,
+    long Version,
+    IReadOnlyList<PvgIntakeProductLine> ProductLines,
+    DateTimeOffset AwarenessAtUtc,
+    string? CompanyRecipientPersonId,
+    string EventCountry,
+    string ReportType,
+    string ReporterSource,
+    string? ReporterSourceId,
+    string ReporterCrmSearchState,
+    string? ReporterNameOrInitials,
+    string? ReporterProfession,
+    string? ReporterCountry)
+{
+    public static PvgCaseIntakeDraftResponse From(PvgIntakeDraftSummary summary, SafetyCaseIntake intake) =>
+        new(
+            summary.IntakeDraftId,
+            intake.Status.ToString(),
+            summary.Version,
+            intake.ProductLines,
+            intake.AwarenessAtUtc,
+            intake.CompanyRecipientPersonId,
+            intake.EventCountry,
+            intake.ReportType,
+            intake.ReporterSource.ToString(),
+            intake.ReporterSourceId,
+            intake.ReporterCrmSearchState.ToString(),
+            intake.ReporterNameOrInitials,
+            intake.ReporterProfession,
+            intake.ReporterCountry);
 }
 
 public sealed record PvgCaseIntakeApiResponse(
@@ -296,7 +458,11 @@ public sealed record PvgCaseIntakeApiResponse(
     string? ReasonCode,
     IReadOnlyList<string> ValidationReasonCodes,
     string? IntakeDraftId,
-    IReadOnlyList<PvgIntakeDraftSummary> Items)
+    IReadOnlyList<PvgIntakeDraftSummary> Items,
+    long? Version = null,
+    int? TotalCount = null,
+    int? FilteredCount = null,
+    PvgCaseIntakeDraftResponse? Draft = null)
 {
     public static PvgCaseIntakeApiResponse Blocked(string reasonCode) =>
         new(nameof(PvgApplicationOutcome.Blocked), reasonCode, [], null, []);
@@ -307,7 +473,8 @@ public sealed record PvgCaseIntakeApiResponse(
             result.Result.ReasonCode,
             result.Result.ValidationFailures.Select(failure => failure.ReasonCode).Distinct().ToArray(),
             result.IntakeDraftId,
-            []);
+            [],
+            result.Version);
 
     public static PvgCaseIntakeApiResponse From(PvgIntakeDraftQueryResult result) =>
         new(
@@ -315,7 +482,13 @@ public sealed record PvgCaseIntakeApiResponse(
             result.Result.ReasonCode,
             result.Result.ValidationFailures.Select(failure => failure.ReasonCode).Distinct().ToArray(),
             null,
-            result.Items);
+            result.Items,
+            null,
+            result.TotalCount,
+            result.FilteredCount,
+            result.Intake is { } intake && result.Items.Count == 1
+                ? PvgCaseIntakeDraftResponse.From(result.Items[0], intake)
+                : null);
 }
 
 public sealed record PvgCaseIntakeRequestContext(

@@ -1112,6 +1112,16 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
     C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
     RUN = "docs/records/audits/2026-10/x/run-1"
@@ -1121,7 +1131,7 @@ def self_test() -> int:
                "artifacts": [{"path": f"{RUN}/stdout.txt", "sha256": hashlib.sha256(stdout.encode()).hexdigest(), "bytes": len(stdout)}],
                "tool": {"path": "scripts/run_record.py", "sha256": hashlib.sha256(b"runner").hexdigest()}}
     files = {
-        (C1, "docs/wp/W7.md"): "---\nstatus: approved\nwork_package: W7\n---\nEvidence hedefi: E3 (runtime smoke)\n",
+        (C1, "docs/records/wp/W7.md"): "---\nstatus: approved\nwork_package: W7\n---\nEvidence hedefi: E3 (runtime smoke)\n",
         (C2, "src"): "x", (C2, "scripts/run_record.py"): "runner",
         (C3, "src"): "x", (C3, "scripts/run_record.py"): "runner", (C3, f"{RUN}/stdout.txt"): stdout,
         (C3, f"{RUN}/run-record-v1.json"): json.dumps(run_rec, indent=1, sort_keys=True) + "\n",
@@ -1133,7 +1143,7 @@ def self_test() -> int:
 
     def rec(**over) -> str:
         f = {"format": FORMAT, "module": "MOD-0151", "work_package": "W7", "queue": "pqg-ct", "evidence_level": "E3",
-             "required_evidence_level": "E3", "required_evidence_source": f"docs/wp/W7.md@{C1}:5", "decision": "accepted",
+             "required_evidence_level": "E3", "required_evidence_source": f"docs/records/wp/W7.md@{C1}:5", "decision": "accepted",
              "completion": "WP Done", "conditions": "-", "commit": C2, "evidence": f"{RUN}/run-record-v1.json@{C3}",
              "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}", "date": "2026-10-15", "supersedes": "-",
              "verifier": "bağımsız doğrulayıcı", "implementer": "geliştirme ajanı"}
@@ -1195,7 +1205,7 @@ def self_test() -> int:
             ("an artifact's bytes changed at the evidence commit", {"set": {(C3, f"{RUN}/stdout.txt"): "K1 ok\nK2 FAIL\n"}}, "bayt ve boyutla"),
             ("the run directory already tracked at the code commit", {"set": {(C2, f"{RUN}/stdout.txt"): stdout}}, "taze bir dizin değil"),
             ("the runner at the code commit is another file", {"set": {(C2, "scripts/run_record.py"): "other runner"}}, "araç özeti"),
-            ("a row's evidence that is not an artifact of the run", {"set": {(C1, LIST): good_list.replace(f"{RUN}/stdout.txt@{C3}:2", f"docs/wp/W7.md@{C1}:5")}}, "artefaktı değil"),
+            ("a row's evidence that is not an artifact of the run", {"set": {(C1, LIST): good_list.replace(f"{RUN}/stdout.txt@{C3}:2", f"docs/records/wp/W7.md@{C1}:5")}}, "artefaktı değil"),
             ("a mandatory row waiting for review", {"set": {(C1, LIST): good_list.replace("| 403 | geçti |", "| 403 | inceleme bekler — ekran elle incelenecek |")}}, "inceleme bekliyor"),
             ("'inceleme bekler' without a reason", {"set": {(C1, LIST): good_list.replace("| 403 | geçti |", "| 403 | inceleme bekler — |")}}, "gerekçesi"),
             ("an acceptance list outside docs/records/audits/", {"rec": {"acceptance_list": f"docs/records/decisions/kabul.md@{C1}"},
@@ -1225,8 +1235,8 @@ def self_test() -> int:
     cases.append(("sabotage (1): required level not stated on the source line -> ENGEL (stop)",
                   any("söylemiyor" in e for e in eng(run(rec(required_evidence_level="E4", evidence_level="E4"))))))
     cases.append(("sabotage (1): required level source without a line number -> ENGEL",
-                  any("required_evidence_source" in e for e in eng(run(rec(required_evidence_source=f"docs/wp/W7.md@{C1}"))))))
-    src_as = lambda body: {**files, (C1, "docs/wp/W7.md"): body}
+                  any("required_evidence_source" in e for e in eng(run(rec(required_evidence_source=f"docs/records/wp/W7.md@{C1}"))))))
+    src_as = lambda body: {**files, (C1, "docs/records/wp/W7.md"): body}
     cases.append(("sabotage (fu1): the level source is a draft -> ENGEL",
                   any("onaylı değil" in e for e in eng(run(rec(), fs=src_as("---\nstatus: draft\nwork_package: W7\n---\nEvidence hedefi: E3\n"))))))
     cases.append(("sabotage (fu1): the level source belongs to another work package -> ENGEL",
@@ -1339,7 +1349,7 @@ def self_test() -> int:
     # (the "record with a module_pack still allows ACCEPTED" case moved below the pack fixture: CT-FIX-03 R3 reads the pack)
     cases.append(("İ4 S2 (backward compatible): a record without module_pack -> no künye problem", not strict_front_matter(rec())[1]))
     for label, extra in (("twice", good_mp + good_mp), ("a short SHA", f"module_pack: {PK}@abc1234\n"),
-                         ("a path outside module-packs", f"module_pack: docs/x/MOD-0151.md@{C1}\n"),
+                         ("a path outside module-packs", f"module_pack: docs/records/x/MOD-0151.md@{C1}\n"),
                          ("a path with '..'", f"module_pack: execution/domains/x/module-packs/../../a.md@{C1}\n"),
                          ("no commit", f"module_pack: {PK}\n")):
         _, b = strict_front_matter(rec(_extra_fm=extra))
@@ -1678,7 +1688,7 @@ def self_test() -> int:
     lines_d = dl_text.split("\n")
     filled_list = "\n".join(lines_d[:2] + [filled_row(r, i) for i, r in enumerate(dl_rows[:2], start=1)]) + "\n"
     rec_d = draft_record("pqg-ct", "W7", "MOD-0151", f"{PK}@{C1}")
-    fills = {"evidence_level": "E3", "required_evidence_level": "E3", "required_evidence_source": f"docs/wp/W7.md@{C1}:5",
+    fills = {"evidence_level": "E3", "required_evidence_level": "E3", "required_evidence_source": f"docs/records/wp/W7.md@{C1}:5",
              "decision": "accepted", "completion": "WP Done", "conditions": "-", "commit": C2,
              "evidence": f"{RUN}/run-record-v1.json@{C3}", "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}",
              "date": "2026-10-17", "supersedes": "-", "verifier": "bağımsız doğrulayıcı", "implementer": "geliştirme ajanı"}
@@ -1852,6 +1862,8 @@ class S5Repo:
             os.makedirs(root)
             self.g("init", "-q", "-b", "main")
             self.put(self.pa.REVIEWS, "\t".join(self.pa.REVIEW_COLUMNS) + "\n")
+            # S-40: a review row's merger must be a listed person (pack_approval.pr_person_check)
+            self.put(self.pa.APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
             self.commit("init", self.LEAD)
 
     def g(self, *args, who=None):

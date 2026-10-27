@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// repository would run C# predicates that the driver may translate differently or refuse outright; this repo has
 /// already shipped one query that every unit test accepted and the server rejected (BL-030).</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskAcceptanceBackfillMongoTests : IAsyncLifetime
 {
     private static readonly Guid Assignee = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");

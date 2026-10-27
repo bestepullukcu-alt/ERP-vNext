@@ -1561,17 +1561,24 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
 3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
    (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
    takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.
-4. **Sahibin işaretleri.** Sahip sayfada bir kararı ya da işi işaretlerse CT bunu bir sonraki oturumda okur ve depoya
-   işler (karar kaydı, kuyruk durumu). İşaret tek başına karar kaydı değildir; CT kaydı yazmadan önce sahibe sorar.
+4. **Sayfa salt okunurdur (S-43, sahip kararı 2026-10-23; geliştirici isteği).** Sayfada işaretleme, silme ya da düzenleme
+   düğmesi olmaz; listeyi yalnız CT günceller. Veri yazma kuralı yalnız sayfa sahibine izin verir
+   (`db` `rules`: `{path: "items", read: "view", write: "owner"}`, `meta` için de aynı); paylaşılan kişiler okur, yazamaz.
+   Sahip bir değişiklik isterse sohbette söyler; CT önce depoya yazar (karar kaydı, kuyruk durumu), sonra sayfayı günceller.
+   Eski sayfada işaretleme düğmesi varsa CT, main'i aldıktan sonraki ilk uygun adımda düğmeleri kaldırır ve yazma
+   kuralını koyar; sayfada kalmış sahip işaretlerini (`markedOnPage`) bir kez okur ve depoya yazmadan önce sahibe sorar.
 5. **Biçim.** claude.ai Artifact, paylaşılan veritabanı (`db`) yeteneğiyle; adı "<Block adı> İş Takibi". Bölümler: Şimdi
    ve sırada · Karar bekleyenler · Sonraki fazlar · Bizim takipler · Başka sahiplerin işi (XMC-001) · Ortak bileşenler ·
    Duraklatılanlar. Her işte kod (WP / FU / K / BL), kısa başlık, bir cümle ayrıntı, bitti işareti ve tarihi. Sayfa
    sahibin dilindedir.
 6. **Gizlilik.** Sayfa ÖZEL başlar; yalnız ekip içinde paylaşılır, herkese açık (public) yapılmaz. Karar notları ve iş
    listesi herkese açık olmamalıdır.
-7. **CT'nin güncellemesi (istenmeden).** CT kabulü (K13 / `acceptance_record`) → iş bitti + commit. Yeni prompt →
-   "Şimdi ve sırada". Sahip kararı → "Karar bekleyenler"de kapanır, karar kaydının yolu yazılır. Yeni takip → doğru
-   bölüm. Yazmalar okunan sürüme sabitlenir; sahibin sayfadaki değişikliği ezilmez.
+7. **CT'nin güncellemesi (istenmeden; sahip "bitti" demek zorunda değildir — S-43).** CT kabulü (K13 /
+   `acceptance_record`) → iş bitti + commit. Yeni prompt → "Şimdi ve sırada". Sahip kararı → "Karar bekleyenler"de
+   kapanır, karar kaydının yolu yazılır. Yeni takip → doğru bölüm. Ayrıca her oturumun başında ve her main
+   birleştirmesinden sonra CT sayfadaki açık işleri depoyla karşılaştırır: PR'ı merge olmuş, kuyruk durumu kapanmış ya da
+   kabul / karar kaydı yazılmış işi kendiliğinden "bitti" yapar ve kanıtını (PR, commit ya da kayıt yolu) yazar.
+   Kanıtı olmayan iş bitti yapılmaz; açık kalır. Yazmalar okunan sürüme sabitlenir.
 8. **Kayıt.** Sayfa bağlantısı block'un kuyruk kaydının not alanına ya da block'un karar kaydına yazılır; sonraki
    oturumlar aynı sayfayı kullanır, yenisini açmaz.
 9. **Araç yoksa** (Artifact olmayan ajan ya da ortam): aynı liste depoda block'un klasöründe bir Markdown dosyasında

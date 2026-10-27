@@ -141,6 +141,7 @@ internal static class TaskTypeQueryHandlersTestSupport
 /// rejected write leaves the stored document byte-identical.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TaskTypeConcurrencyMongoTests
 {
     [Fact]

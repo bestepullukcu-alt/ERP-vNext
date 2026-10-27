@@ -1,0 +1,636 @@
+About	О программе
+AccessDenied	Доступ запрещён.
+AccessDeniedMessage	Попросите администратора предоставить вам доступ к этой странице.
+AccessDeniedTitle	У вас нет доступа к разделу «{0}»
+AccessGovernance	Access Governance
+AccessMatrix	Матрица доступа
+AccountsMenu	Клиенты
+Action	Действия
+Activate	Активировать
+Active	Активный
+Address	Адрес
+Admin	Администратор
+Apply	Применить
+AreYouSure	Вы уверены?
+Attributes	Атрибуты
+Auth.Dialog.Ok	ОК
+Auth.Error.AccountDeactivated	Ваша учётная запись отключена администратором. Обратитесь к администратору.
+Auth.Error.CurrentPasswordIncorrect	Текущий пароль указан неверно.
+Auth.Error.EmailLoginDisabled	Вход по электронной почте отключён для этой организации.
+Auth.Error.InvalidCredentials	Неверный адрес электронной почты или пароль, либо учётная запись временно заблокирована. Повторите попытку позже.
+Auth.Error.InvalidVerificationCode	Код подтверждения недействителен или истёк.
+Auth.Error.LinkInvalid	Эта ссылка больше не действительна. Запросите новую ссылку у администратора.
+Auth.Error.LoginFailed	Не удалось войти. Повторите попытку.
+Auth.Error.LoginUnavailable	Вход временно недоступен. Повторите попытку через некоторое время.
+Auth.Error.PasswordChangeFailed	Не удалось изменить пароль. Повторите попытку.
+Auth.Error.PasswordChangedMeanwhile	Ваш пароль тем временем был изменён (например, администратором). Войдите снова.
+Auth.Error.PlatformPrivilegesRequired	У этой учётной записи нет роли администрирования платформы.
+Auth.Error.RequestInvalid	Запрос неполный. Проверьте поля и повторите попытку.
+Auth.Error.ServiceUnavailable	Служба входа временно недоступна. Повторите попытку через некоторое время.
+Auth.Error.SessionEnded	Ваш сеанс завершён. Войдите снова.
+Auth.Error.TemporaryPasswordExpired	Срок действия временного пароля истёк. Сбросьте пароль.
+Auth.Error.TenantMissing	Эта ссылка для входа не содержит сведений об организации. Воспользуйтесь ссылкой из приглашения ещё раз.
+Auth.Error.TooManyRequests	Слишком много запросов. Подождите несколько минут и повторите попытку.
+Auth.Error.VerificationChallengeRequired	Срок действия этапа проверки истёк. Войдите снова.
+Auth.Error.VerificationCodeRequired	Введите код подтверждения.
+Auth.Error.VerificationFailed	Не удалось завершить проверку. Повторите попытку.
+Auth.Mfa.CodeLabel	Код подтверждения
+Auth.Mfa.Prompt	Введите код подтверждения, отправленный на
+Auth.Mfa.Resend	Отправить код повторно
+Auth.Mfa.Resending	Отправка...
+Auth.Mfa.ResentMessage	Новый код подтверждения отправлен.
+Auth.Mfa.ResentTitle	Код отправлен
+Auth.Mfa.Title	Двухэтапная проверка
+Auth.Mfa.Verifying	Проверка...
+Back	Назад
+BackToList	Назад к списку
+BackToLogin	Back to login
+BasicInfo	Основная информация
+BrandsMenu	Бренды
+BulkDelete	Массовое удаление
+BulkDeleteConfirm	Вы уверены, что хотите удалить {0} выбранных записей?
+BulkDeleteSuccess	{0} записей успешно удалено
+CalendarAllDay	Весь день
+CalendarDay	День
+CalendarMonth	Месяц
+CalendarMore	ещё {0}
+CalendarNext	Вперёд
+CalendarNoEvents	Нечего показать
+CalendarPrevious	Назад
+CalendarToday	Сегодня
+CalendarUnresolved	Рабочий календарь не задан — выходные и праздники не могут быть показаны.
+CalendarWeek	Неделя
+CampaignsMenu	Кампании
+Cancel	Отмена
+CategoryManagement	Управление категориями
+ChangePassword.Subtitle	You must change your temporary password before continuing.
+ChangePassword.Title	Change Password
+ClearSelection	Очистить выбор
+Close	Закрыть
+CollapseAll	Свернуть все
+ColumnOrder	Порядок столбцов
+ColumnVisibility	Видимость столбцов
+ComingSoon	Эта функция будет добавлена в ближайшее время.
+CommercialSuite	Коммерческий пакет
+CompositionManagement	Управление составами
+ConfirmAction	Вы уверены, что хотите продолжить?
+ConfirmPassword	Confirm Password
+ConsentPreferencesMenu	Согласие и предпочтения
+ContactPerson	Контактное лицо
+ContactsMenu	Контакты
+ContentEngagementJourneysMenu	Маршруты вовлечения контента
+ContractEditDraftOnly	Обновлять можно только черновики контрактов; активированный контракт управляется действиями жизненного цикла, а не редактированием.
+ControlledCopy.CreatedAt	Дата создания
+ControlledCopy.CreatedBy	Создал
+ControlledCopy.Filters	Фильтры
+ControlledCopy.None	Нет
+ControlledCopy.Page	Страница {0} из {1}
+ControlledCopy.Report	Отчёт
+ControlledCopy.Rows	Количество строк
+ControlledCopy.Search	Поиск
+ControlledCopy.Sort	Сортировка
+ControlledCopy.SortAsc	по возрастанию
+ControlledCopy.SortDesc	по убыванию
+ControlledCopy.Tenant	Компания
+ControlledCopy.Uncontrolled	Эта распечатка является неконтролируемой копией — {0}
+ControlledDocuments	Управляемые документы
+Copied	Скопировано
+Copy	Копировать
+CurrentPassword	Current Password
+CycleCapacitiesMenu	Ёмкость цикла
+CyclePeriodsMenu	Периоды циклов
+Dark	Темная
+DateNotRecognized	Введённую дату не удалось распознать, поэтому она не сохранена. Введите её снова в формате поля или выберите в календаре.
+Deactivate	Деактивировать
+DefaultTimeZone	Часовой пояс по умолчанию
+Delete	Удалить
+DeleteConfirmationSubText	Это действие нельзя отменить!
+DeleteConfirmationTitle	Вы уверены?
+DeleteConfirmationYesBtn	Да, удалить
+Description	Описание
+DescriptionPlaceholder	Введите описание...
+Details	Детали
+DeveloperSandbox	Песочница разработчика
+DocumentMasterRegister	Главный реестр документов
+DocumentationStructures	Структуры документации
+DtEmptyTable	В таблице нет данных
+DtInfo	Записи с _START_ до _END_ из _TOTAL_ записей
+DtInfoEmpty	Записи с 0 до 0 из 0 записей
+DtInfoFiltered	(отфильтровано из _MAX_ записей)
+DtLoadFailed	Не удалось загрузить список.
+DtLoadNoPermission	У вас нет прав на просмотр этого списка.
+DtNoRecords	Совпадающих записей не найдено
+DtRetry	Повторить
+DtZeroRecords	Совпадающих записей не найдено
+Edit	Изменить
+EditRecord	Редактировать запись
+EmailAddress	Адрес эл. почты
+EmployeeDraftsMenu	Черновики сотрудников
+Error	Ошибка
+ErrorOccurred	Произошла ошибка при выполнении операции.
+ExpandAll	Развернуть все
+Export	Экспорт
+ExportTooLarge	Слишком много строк для экспорта (более 50 000). Сузьте фильтр и повторите попытку.
+FailedToLoadData	Не удалось загрузить данные. Повторите попытку позже.
+FieldRequired	Это поле обязательно к заполнению
+Filter	Фильтр
+ForgotPassword.SentMessage	If the email exists, reset instructions have been sent.
+ForgotPassword.SentTitle	Check your email
+ForgotPassword.Submit	Send reset link
+ForgotPassword.Subtitle	Enter your email and we will send reset instructions.
+ForgotPassword.Title	Forgot Password?
+GatewayError	Произошла ошибка при обращении к серверу.
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.
+HumanCapitalManagement	Управление человеческим капиталом
+Import	Импорт
+InvalidEmail	Неверный адрес электронной почты
+InvalidFiscalYear	Неверный формат (например, 01-01)
+InvalidPhone	Неверный номер телефона
+InvalidUrl	Неверный формат URL
+InviteAccept	Принять
+InviteAcceptAnyway	Всё Равно Принять
+InviteCardType	Приглашение на встречу
+InviteDecline	Отклонить
+InviteOverlapText	Она пересекается с запланированным блоком «{0}» ({1}). Всё равно принять?
+InviteOverlapTitle	Эта встреча пересекается с вашим планом
+InvoiceUpdateNotSupported	Обновление счёта не поддерживается; исправьте его повторным сопоставлением или решением исключения, а не редактированием.
+ItemMaster	Справочник номенклатуры
+KnowledgeConceptsMenu	Concepts
+KnowledgeMenu	База знаний
+KnowledgePathsMenu	Пути знаний
+LegalEntities	Юридические лица
+LegalEntity	Юридическое лицо
+LegalEntityNone	У этого арендатора нет активного юридического лица.
+LegalEntityRequired	Выберите юридическое лицо.
+LegalEntityUnavailable	Список юридических лиц недоступен.
+LevelPrefix	Уровень
+Light	Светлая
+Loading	Загрузка...
+LogOut	Выйти
+Login.Email	Эл. почта
+Login.EmailOrUsername	Эл. почта или имя пользователя
+Login.EmailRequired	Email is required.
+Login.Error	Неверная эл. почта или пароль
+Login.ErrorRequired	Требуются эл. почта и пароль
+Login.ErrorTitle	Ошибка
+Login.ForgotPassword	Forgot Password?
+Login.Loading	Вход...
+Login.Password	Пароль
+Login.RememberMe	Запомнить меня
+Login.Submit	Войти
+Login.Subtitle	Войдите в свою учетную запись
+Login.Title	Вход
+MDM	MDM
+MarkAllAsRead	Отметить все как прочитанные
+MasterData	Мастер-данные
+ModuleCodeInUse	Этот код модуля уже используется.
+MyProfile	Мой профиль
+Nav.Domain.ADMINISTRATION	Администрирование
+Nav.Domain.DEVENABLEMENT	Инструменты разработчика
+Nav.Domain.DOCUMENTMANAGEMENT	Управление документами
+Nav.Domain.HUMANCAPITAL	Человеческий капитал
+Nav.Domain.MANAGEMENTGOVERNANCE	Менеджмент и управление
+Nav.Domain.MANUFACTURING	Производство
+Nav.Domain.MASTERDATAMANAGEMENT	Управление основными данными
+Nav.Domain.PLATFORMSHAREDSERVICES	Общие сервисы платформы
+Nav.Domain.PORTFOLIODELIVERY	Реализация портфеля
+Nav.Domain.PROCUREMENT	Закупки
+Nav.Domain.SALES	Продажи
+Nav.Domain.SUPPLYCHAINEXECUTION	Исполнение цепочки поставок
+Nav.Domain.TALENTECOSYSTEM	Экосистема талантов
+Nav.Domain.WORKSPACE	Рабочая область
+Nav.Module.ACCESSGOVERNANCE	Управление доступом
+Nav.Module.ADMINISTRATORS	Администраторы
+Nav.Module.AUDIT	Аудит
+Nav.Module.BOMROUTINGS	Спецификации и маршруты
+Nav.Module.BRANDPRODUCTMASTER	Справочник брендов и продуктов
+Nav.Module.CAPACITYPLANNING	Планирование мощностей
+Nav.Module.CARRIERMANAGEMENT	Управление перевозчиками
+Nav.Module.CLAIMSMANAGEMENT	Управление претензиями
+Nav.Module.CONTRACTS	Контракты
+Nav.Module.CRM	Управление взаимоотношениями с клиентами
+Nav.Module.DEMANDPLANNING	Планирование спроса
+Nav.Module.DOCUMENTMANAGEMENT	Управление документами
+Nav.Module.ESIGN	Электронная подпись
+Nav.Module.EXPIRYFEFOMANAGEMENT	Сроки годности / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	Приёмка (GRN)
+Nav.Module.HCMEMPLOYEEMASTER	Мастер-данные сотрудников
+Nav.Module.HUMANCAPITAL	Человеческий капитал
+Nav.Module.INTERFACEREGISTRY	Реестр интерфейсов
+Nav.Module.INVENTORYLEDGER	Запасы
+Nav.Module.INVOICEMATCH	Сопоставление счетов
+Nav.Module.LEGALENTITY	Юридическое лицо
+Nav.Module.LOOKUPS	Справочники
+Nav.Module.LOTSERIALTRACKING	Учёт партий / серийных номеров
+Nav.Module.MEETINGS	Совещания
+Nav.Module.MODULECATALOG	Каталог модулей
+Nav.Module.MODULEDOMAINS	Домены модулей
+Nav.Module.MODULESERVICES	Службы модулей
+Nav.Module.NOTIFICATIONS	Уведомления
+Nav.Module.ORGANIZATION	Организация
+Nav.Module.PERSON	Справочник персон
+Nav.Module.PPM	Управление проектами и портфелями
+Nav.Module.PROCUREMENTSUPPLIERS	Поставщики
+Nav.Module.PRODUCTITEMSKUMASTER	Мастер-данные продукта / позиции / SKU
+Nav.Module.PURCHASEORDERS	Заказы на закупку
+Nav.Module.QUARANTINEBLOCKEDSTOCK	Качество
+Nav.Module.RECALLREADINESS	Готовность к отзыву
+Nav.Module.REFERENCEDATA	Справочные данные
+Nav.Module.REQUISITIONS	Заявки
+Nav.Module.REVERSELOGISTICS	Обратная логистика
+Nav.Module.ROUTINGLOADPLANNING	Маршруты и планирование рейсов
+Nav.Module.SHIPMENTTRACKINGPOD	Отслеживание отгрузок и подтверждение доставки
+Nav.Module.SOPWORKFLOWSIGNOFFS	Процесс S&amp;OP и согласования
+Nav.Module.SOURCING	Источники
+Nav.Module.SUBSCRIPTIONFEATURES	Возможности подписки
+Nav.Module.SUBSCRIPTIONPLANS	Тарифные планы
+Nav.Module.SUPPLIERS	Поставщики
+Nav.Module.TALENTECOSYSTEM	Экосистема талантов
+Nav.Module.TASKS	Настройки задач
+Nav.Module.TENANTS	Арендаторы
+Nav.Module.TENANTSETTINGS	Настройки арендатора
+Nav.Module.TIMEENTRY	Табель рабочего времени
+Nav.Module.WORKAGGREGATION	Центр задач
+Nav.Module.WORKFLOW	Рабочий процесс
+Nav.Module.WORKINGCALENDAR	Рабочий календарь
+Nav.Module.WORKINGCALENDARIMPORT	Импорт рабочего календаря
+Nav.Module.WORKREPORT	Отчёт о работе
+Nav.Page.ACCESSMATRIX	Матрица доступа к документам
+Nav.Page.ACCOUNT	Клиент
+Nav.Page.ACCOUNTCONTACT	Контакт клиента
+Nav.Page.ACCOUNTRELATIONSHIP	Связь клиента
+Nav.Page.ACCOUNTS	Клиенты
+Nav.Page.APPLICANTINTAKE	Приём заявителей
+Nav.Page.ASSOCIATIONMEMBERSHIPS	Членство в ассоциациях
+Nav.Page.ASSOCIATIONOPERATIONS	Операции ассоциаций
+Nav.Page.ATTRIBUTE	Атрибут
+Nav.Page.BENEFITCOMMITMENTS	Обязательства по выгодам
+Nav.Page.BLOCKEDSTOCK	Заблокированный запас
+Nav.Page.BOMS	Спецификации
+Nav.Page.BRANDS	Бренды
+Nav.Page.CAMPAIGN	Кампания
+Nav.Page.CAMPAIGNS	Кампании
+Nav.Page.CAMPAIGNSNAPSHOT	Снимок кампании
+Nav.Page.CAMPAIGNTARGET	Цель кампании
+Nav.Page.CANDIDATECAREERPASSPORT	Карьерный паспорт кандидата
+Nav.Page.CANDIDATEDISPUTES	Споры кандидатов
+Nav.Page.CANDIDATEPIPELINE	Воронка кандидатов
+Nav.Page.CANDIDATEPROFILES	Профили кандидатов
+Nav.Page.CAPACITYPLANS	Планы мощностей
+Nav.Page.CARRIERS	Перевозчики
+Nav.Page.CLAIMS	Заявления
+Nav.Page.COMPENSATIONBENEFITS	Вознаграждение и льготы
+Nav.Page.COMPETENCYSKILLS	Компетенции и навыки
+Nav.Page.COMPETITORPRODUCTS	Продукты конкурентов
+Nav.Page.CONSENT	Согласие
+Nav.Page.CONSENTPREFERENCES	Согласие и предпочтения
+Nav.Page.CONSENTVISIBILITYPOLICIES	Политики видимости согласия
+Nav.Page.CONTACT	Контакт
+Nav.Page.CONTACTS	Контакты
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	Маршруты вовлечения контента
+Nav.Page.CONTENTSETS	Наборы контента
+Nav.Page.CONTRACTS	Контракты и библиотека положений
+Nav.Page.CONTROLLEDDOCUMENTS	Контролируемые документы
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	Пороги потенциала
+Nav.Page.CUSTOMFIELDS	Настраиваемые поля
+Nav.Page.CYCLECAPACITIES	Ёмкость цикла
+Nav.Page.CYCLECAPACITY	Ёмкость цикла
+Nav.Page.CYCLEPERIOD	Период цикла
+Nav.Page.CYCLEPERIODS	Периоды циклов
+Nav.Page.DATAQUALITY	Качество данных
+Nav.Page.DEFINITIONS	Определения рабочих процессов
+Nav.Page.DEMANDPLANNING	Планирование спроса
+Nav.Page.DEVELOPMENTPLANS	Планы развития
+Nav.Page.DOCUMENTLIST	Список документов
+Nav.Page.EARLYWARNINGSIGNALS	Сигналы раннего предупреждения
+Nav.Page.ELIGIBILITYPOLICIES	Политики допустимости
+Nav.Page.EMPLOYEE	Сотрудник
+Nav.Page.EMPLOYEEMASTER	Мастер-данные сотрудников
+Nav.Page.EMPLOYEEONBOARDING	Адаптация сотрудников
+Nav.Page.EMPLOYEEPROJECTIONS	Прогнозы по сотрудникам
+Nav.Page.EMPLOYMENTCHANGES	Изменения занятости
+Nav.Page.ESIGNAUDITEXPORT	Экспорт аудита
+Nav.Page.ESIGNMEANINGS	Значения подписи
+Nav.Page.ESIGNMYSIGNATURE	Моя подпись
+Nav.Page.ESIGNPOLICY	Политика подписи
+Nav.Page.ESIGNREQUESTS	Запросы на подпись
+Nav.Page.ESIGNSAMPLEAPPROVALS	Одобрение образцов
+Nav.Page.ESIGNVERIFICATION	Проверка подписей
+Nav.Page.EXITREFERENCERECORDS	Записи рекомендаций при увольнении
+Nav.Page.EXPIREDSTOCK	Просроченный запас
+Nav.Page.EXPIRYAPPROACHING	Истекающие сроки
+Nav.Page.EXPIRYDASHBOARD	Панель FEFO
+Nav.Page.EXPIRYEVIDENCE	Пакет доказательств
+Nav.Page.EXPIRYEXCEPTIONDETAILS	Карточка исключения
+Nav.Page.EXPIRYEXCEPTIONS	Входящие исключения
+Nav.Page.EXPIRYPOLICY	Правила сроков годности и настройки
+Nav.Page.FEFOORDER	Порядок FEFO
+Nav.Page.FIELDDEFINITIONS	Определения полей
+Nav.Page.FINISHEDGOODS	Готовая продукция
+Nav.Page.GLOBALPRODUCTS	Глобальные продукты
+Nav.Page.GRN	Приёмка (GRN)
+Nav.Page.GSKUS	GSKU
+Nav.Page.HEADCOUNTBUDGET	Бюджет численности
+Nav.Page.HIERARCHY	Иерархия
+Nav.Page.HIRINGRISKINDICATORS	Индикаторы рисков найма
+Nav.Page.HRCASEMANAGEMENT	Управление HR-обращениями
+Nav.Page.HRCOMPLIANCE	HR-комплаенс
+Nav.Page.HRDOCUMENTATION	HR-документация
+Nav.Page.HRKPIANALYTICS	Аналитика HR-KPI
+Nav.Page.INBOX	Входящие
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	Отраслевая сеть знаний
+Nav.Page.INDUSTRYSKILLPASSPORT	Отраслевой паспорт навыков
+Nav.Page.INDUSTRYSUCCESSIONPOOL	Отраслевой резерв преемников
+Nav.Page.INDUSTRYTALENTPOOL	Отраслевой кадровый резерв
+Nav.Page.INITIATIVES	Инициативы
+Nav.Page.INSTANCES	Экземпляры документов
+Nav.Page.INVESTMENTCASES	Инвестиционные обоснования
+Nav.Page.INVOICEMATCH	Захват счетов и трёхстороннее сопоставление
+Nav.Page.ITEMS	Номенклатура
+Nav.Page.KNOWLEDGE	База знаний
+Nav.Page.KNOWLEDGECONCEPT	Понятие знаний
+Nav.Page.KNOWLEDGECONCEPTS	Concepts
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	Путь взаимодействия с контентом
+Nav.Page.KNOWLEDGEPATH	Путь знаний
+Nav.Page.KNOWLEDGEPATHS	Пути знаний
+Nav.Page.KNOWLEDGESUBJECT	Предмет знаний
+Nav.Page.LEARNINGTRAINING	Обучение и подготовка
+Nav.Page.LEGALENTITIES	Юридические лица
+Nav.Page.LEGALPROFILES	Правовые профили
+Nav.Page.LOADS	Рейсы
+Nav.Page.LOCATIONTREE	Местоположения
+Nav.Page.LOTMIGRATION	Перенос вручную введённых партий
+Nav.Page.LOTS	Обзор партий
+Nav.Page.LOTTRACE	Прослеживаемость
+Nav.Page.LSKUS	Локальные SKU
+Nav.Page.MASTERREGISTER	Главный реестр документов
+Nav.Page.MEETINGREPORT	Отчёт по совещаниям
+Nav.Page.MEETINGS	Совещания
+Nav.Page.MEETINGSERIES	Серии совещаний
+Nav.Page.MEETINGTYPES	Типы совещаний
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	Сеть рекомендаций по наставничеству
+Nav.Page.MENUSETTINGS	Настройки меню
+Nav.Page.MODEL	Модель
+Nav.Page.MYTIMESHEET	Мой табель
+Nav.Page.NODE	Узел
+Nav.Page.OBJECTIONRESPONSES	Библиотека возражений
+Nav.Page.OFFBOARDINGCASES	Случаи увольнения
+Nav.Page.OFFERMANAGEMENT	Управление предложениями
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	Определения полей
+Nav.Page.ORGANIZATIONUNITS	Организационные единицы
+Nav.Page.OVERRIDE	Исключение
+Nav.Page.OVERVIEW	Обзор
+Nav.Page.PAYBENCHMARKING	Бенчмаркинг оплаты труда
+Nav.Page.PERFORMANCEREVIEWS	Оценка эффективности
+Nav.Page.PLANNEDVISIT	Плановый визит
+Nav.Page.PLANNEDVISITS	Запланированные визиты
+Nav.Page.PORTFOLIOS	Портфели
+Nav.Page.POSITIONASSIGNMENTS	Назначения на должности
+Nav.Page.POSITIONS	Должности
+Nav.Page.PREFERENCE	Предпочтение
+Nav.Page.PRODUCTABBREVIATIONS	Сокращения продуктов
+Nav.Page.PRODUCTS	Продукты
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	Реестр профессиональной репутации
+Nav.Page.PROGRAMS	Программы
+Nav.Page.PROJECTS	Проекты
+Nav.Page.PURCHASEORDERS	Заказы на закупку
+Nav.Page.QMSBASELINES	Базовые линии СМК
+Nav.Page.QUARANTINEQUEUE	Очередь карантина
+Nav.Page.QUARANTINESETTINGS	Настройки карантина
+Nav.Page.RDSETS	Наборы справочных данных
+Nav.Page.RECALLCASEDETAILS	Случай отзыва
+Nav.Page.RECALLCASES	Случаи отзыва
+Nav.Page.RECALLDASHBOARD	Готовность к отзыву
+Nav.Page.RECALLDRILLS	Планировщик учений по отзыву
+Nav.Page.RECALLEVIDENCE	Пакет доказательств отзыва
+Nav.Page.RECALLSETTINGS	Настройки отзыва
+Nav.Page.RECALLTRACE	Прослеживание для отзыва
+Nav.Page.RECORDS	Записи
+Nav.Page.RECURRENCERULES	Правила повторения
+Nav.Page.REFERENCEEXCHANGE	Обмен рекомендациями
+Nav.Page.REHIRERECOMMENDATIONS	Рекомендации по повторному найму
+Nav.Page.REPORTINGLINE	Линия подчинения
+Nav.Page.REPORTS	Отчёты
+Nav.Page.REPOSITORYASSESSMENT	Оценки хранилищ
+Nav.Page.REQUISITIONS	Заявки
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	Реестр ограниченной добросовестности
+Nav.Page.RETESTQUEUE	Очередь повторного контроля
+Nav.Page.RETURNS	Возвраты
+Nav.Page.REVIEWBOARD	Наблюдательный совет
+Nav.Page.ROLEPERMISSIONS	Разрешения ролей
+Nav.Page.ROLES	Роли
+Nav.Page.SAFETYTEXTS	Тексты по безопасности
+Nav.Page.SANDOPPLANS	Планы S&amp;OP
+Nav.Page.SECTORMOBILITYINTELLIGENCE	Аналитика отраслевой мобильности
+Nav.Page.SECTORTALENTTRENDS	Отраслевые тренды талантов
+Nav.Page.SECURITYSETTINGS	Настройки безопасности
+Nav.Page.SEGMENT	Сегмент
+Nav.Page.SEGMENTS	Сегменты
+Nav.Page.SELFSERVICE	Самообслуживание
+Nav.Page.SENSITIVEACCESS	Чувствительный доступ
+Nav.Page.SERIALS	Обзор серийных номеров
+Nav.Page.SHIPMENTCLAIMS	Претензии по перевозке
+Nav.Page.SHIPMENTS	Отгрузки
+Nav.Page.SKILLSGAPHEATMAP	Тепловая карта дефицита навыков
+Nav.Page.SOURCING	Источники
+Nav.Page.STOCKLEDGER	Складской учёт
+Nav.Page.STRATEGYTEMPLATE	Шаблон стратегии
+Nav.Page.STRATEGYTEMPLATES	Шаблоны стратегии
+Nav.Page.SUCCESSION	Преемственность
+Nav.Page.SUPPLIERS	Поставщики
+Nav.Page.TALENTDATAFOUNDATION	Основа данных о талантах
+Nav.Page.TALENTDEVELOPMENTNETWORK	Сеть развития талантов
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	Прогноз спроса и предложения талантов
+Nav.Page.TASKCHECKLISTTEMPLATES	Шаблоны чек-листов
+Nav.Page.TASKCREATE	Новая задача
+Nav.Page.TASKDETAIL	Детали задачи
+Nav.Page.TASKDOCUMENTLIST	Контролируемые документы
+Nav.Page.TASKEDIT	Изменить задачу
+Nav.Page.TASKFIELDDEFINITIONS	Определения полей
+Nav.Page.TASKRECURRENCERULES	Правила повторяющихся задач
+Nav.Page.TASKS	Задачи
+Nav.Page.TASKTEMPLATES	Шаблоны задач
+Nav.Page.TASKTYPES	Типы задач
+Nav.Page.TASKWORKREPORT	Отчёт о работе
+Nav.Page.TEMPLATEMASTERS	Корпоративные эталонные шаблоны
+Nav.Page.TEMPLATEVARIANTS	Варианты шаблонов
+Nav.Page.TENANTNAVIGATION	Настройки меню
+Nav.Page.TENANTSECURITY	Настройки безопасности
+Nav.Page.TERRITORY	Территория
+Nav.Page.TERRITORYMANAGEMENT	Управление территориями
+Nav.Page.TERRITORYMODEL	Модель территории
+Nav.Page.TERRITORYNODE	Узел территории
+Nav.Page.TIMEAPPROVALS	Утверждение табелей
+Nav.Page.TIMEATTENDANCELEAVE	Время, посещаемость и отпуска
+Nav.Page.TIMECATEGORIES	Категории работ
+Nav.Page.TIMESETTINGS	Настройки учёта времени
+Nav.Page.TRUSTLEVELS	Уровни доверия
+Nav.Page.USERROLES	Роли пользователей
+Nav.Page.USERS	Пользователи
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	Реестр подтверждённых сертификаций
+Nav.Page.VERIFIEDPARTICIPANTS	Подтверждённые участники
+Nav.Page.VISITEVIDENCESETTINGS	Подтверждение визита
+Nav.Page.VISITEXECUTION	Выполнение визитов
+Nav.Page.VISITFREQUENCYPOLICIES	Политики частоты визитов
+Nav.Page.VISITPLANNING	Планирование визитов
+Nav.Page.VISITWORKSPACE	Рабочая область визитов
+Nav.Page.WORKCENTER	Центр задач
+Nav.Page.WORKFORCEANALYTICS	Аналитика персонала
+Nav.Page.WORKFORCEPLANNING	Планирование персонала
+Nav.Page.WORKINGCALENDARIMPORTS	Импорты рабочего календаря
+Nav.Page.WORKINGCALENDAROVERRIDES	Исключения календаря
+Nav.Page.WORKINGCALENDARS	Рабочий календарь
+NavigationLoadFailed	Не удалось загрузить меню
+NavigationLoadFailedHint	Обновите страницу, чтобы повторить попытку.
+NewNotifications	{0} новых
+NewPassword	New Password
+NoNotifications	Уведомлений нет
+NoRecords	Нет записей
+NoRecordsFound	Подзаписей пока нет.
+NotAvailable	Недоступно
+Notification	Уведомление
+NumericOnly	Допускаются только цифры
+Organization	Организация
+OrganizationUnits	Организационные единицы
+Overview	Обзор
+PDF	PDF
+Passive	Неактивный
+Password.Error.CurrentRequired	Текущий пароль обязателен.
+Password.Error.NeedsSpecial	Пароль должен содержать хотя бы один специальный символ.
+Password.Error.NeedsUppercase	Пароль должен содержать хотя бы одну заглавную букву.
+Password.Error.NewRequired	Новый пароль обязателен.
+Password.Error.Required	Пароль обязателен.
+Password.Error.ResetEmailRequired	Электронная почта обязательна.
+Password.Error.ResetTokenRequired	Токен сброса обязателен.
+Password.Error.TooLong	Пароль не может превышать {0} символов.
+Password.Error.TooShort	Пароль должен содержать не менее {0} символов.
+Perm.Entity.APPROVALS	Согласования
+Perm.Entity.CATEGORIES	Категории
+Perm.Entity.CHECKLISTTEMPLATES	Шаблоны чек-листов
+Perm.Entity.CONTENTSCOPE	Область контента
+Perm.Entity.CONTENTSET	Набор контента
+Perm.Entity.ELIGIBILITY	Критерии допуска
+Perm.Entity.SETTINGS	Настройки
+Perm.Entity.TEMPLATES	Шаблоны
+Perm.Entity.TIMESHEETS	Табели учёта времени
+Perm.Entity.VISITFREQUENCYPOLICY	Политика частоты визитов
+Perm.Entity.WEEKS	Недели
+Perm.Module.CRMACCOUNT	Клиенты CRM
+Perm.Module.CRMCONTACT	Контакты CRM
+Perm.Module.CRMCONTENTCOMPOSITION	Компоновка контента CRM
+Perm.Module.CRMDOCTORINSIGHTS	Аналитика по врачам CRM
+Perm.Module.CRMKNOWLEDGE	Знания CRM
+Perm.Module.CRMPLANNEDVISIT	Запланированные визиты CRM
+Perm.Module.CRMTERRITORY	Территории CRM
+Perm.Module.CRMVISITPLAN	Планирование визитов CRM
+Perm.Module.CRMVISITREPORT	Отчёты о визитах CRM
+Perm.Module.MOD0251	Реестр сотрудников (базовый HR)
+Perm.Module.TASKS	Задачи
+PermissionsMenu	Permissions
+PhoneNumber	Номер телефона
+PlannedVisitsMenu	Запланированные визиты
+Platform	Платформа
+PlatformAdministration	Администрирование платформы
+PositionAssignments	Назначения должностей
+Positions	Должности
+PrimaryCurrency	Основная валюта
+Print	Печать
+ProductMaster	Справочник продуктов
+ProductsMenu	Продукты
+PurchaseOrderUpdateNotSupported	Изменение заказа на закупку не поддерживается; создайте новый заказ или утвердите этот.
+QmsBaselines	Базовые линии QMS
+Reconciliation	Сверка
+RecordActivated	Запись активирована.
+RecordCreated	Запись успешно создана.
+RecordDeleted	Запись успешно удалена.
+RecordSaved	Изменения успешно сохранены.
+RecordUpdated	Запись успешно обновлена.
+ReferenceDataMenu	Справочные данные
+RepositoryAssessments	Оценки хранилищ
+RequiredProgress	Обязательно: {{0}} / {{1}}
+RequiredStatus	Обязательно: {0} / {1}
+RequisitionUpdateNotSupported	Изменение заявки не поддерживается; создайте новую заявку или отправьте эту на утверждение.
+Reset	Сбросить
+ResetPassword.Mismatch	Passwords do not match.
+ResetPassword.Required	All password fields are required.
+ResetPassword.Subtitle	Your new password must be different from previously used passwords.
+ResetPassword.SuccessMessage	Your password has been updated.
+ResetPassword.SuccessTitle	Password updated
+ResetPassword.Title	Reset Password
+RfxUpdateNotSupported	Изменение RFx не поддерживается; создайте новый RFx или управляйте им через публикацию, предложение и присуждение.
+RoleName_Admin	Администратор
+RoleName_ReadOnly	Только чтение
+RoleName_SuperAdmin	Суперадминистратор
+RoleName_Viewer	Наблюдатель
+RolePermissionAssignmentMenu	Role Permissions
+RolesMenu	Roles
+SKUManagement	Управление SKU
+Sandbox	Песочница
+Save	Сохранить
+SaveView	Сохранить Вид
+SavedNotActivated	Сохранено, но активировать не удалось.
+Saving	Сохранение...
+Search	Поиск..
+SearchFilter	Поиск и фильтр
+Sector	Сектор
+SegmentsMenu	Сегменты
+SelectPlaceholder	Выберите...
+SelectedCount	записей выбрано
+SelfAccessMenu	My Access
+SetNewPassword	Set new password
+Settings	Настройки
+ShellSearchPlaceholder	Поиск ({0})
+Shortcuts.Close	Закрыть
+Shortcuts.DialogTitle	Сочетания клавиш
+Shortcuts.Key.Space	Пробел
+Shortcuts.Scope.Global	Везде
+Shortcuts.Scope.TaskDetails	Сведения о задаче
+Shortcuts.Scope.WorkCenter	Центр задач
+Shortcuts.ShowList	Показать этот список
+Shortcuts.SilenceNote	Сочетания клавиш не работают, пока вы вводите текст в поле или пока открыт диалог или боковая панель.
+Shortcuts.Task.Back	Вернуться к списку задач
+Shortcuts.Task.Edit	Изменить задачу
+Shortcuts.Wcn.Accept	Принять или согласовать выбранный элемент
+Shortcuts.Wcn.ClearSelection	Снять выделение
+Shortcuts.Wcn.Next	Выбрать следующий элемент
+Shortcuts.Wcn.Open	Открыть выбранный элемент
+Shortcuts.Wcn.OpenFocused	Открыть строку в фокусе
+Shortcuts.Wcn.Previous	Выбрать предыдущий элемент
+Shortcuts.Wcn.Reject	Отклонить или вернуть выбранный элемент
+Shortcuts.Wcn.Tabs	Переход между вкладками (когда вкладка в фокусе)
+ShowAll	Показать все
+Status	Статус
+StrategyTemplatesMenu	Шаблоны стратегии
+SubRecords	Подзаписи
+SubscriptionPlans	Планы подписки
+Success	Успешно
+SystemTheme	Система
+TagsCount	меток: {0}
+TagsPlaceholder	Введите метку и нажмите Enter
+TagsRemove	Удалить {0}
+TaxNumber	ИНН
+TemplateMasters	Корпоративные шаблоны
+TemplateVariants	Варианты шаблонов
+TerritoryManagementMenu	Управление территориями
+Title	Название
+ToggleTheme	Переключить тему
+Unauthorized	Не авторизовано
+Unknown	Неизвестно
+Update	Обновить
+User	Пользователь
+UserRoleAssignmentMenu	User Roles
+UsersMenu	Users
+ValidationErrors	Ошибки: {0}
+ValidationFailed	Пожалуйста, заполните обязательные поля.
+VariantManagement	Управление вариантами
+Variants	Варианты
+ViewAllNotifications	Посмотреть все уведомления
+ViewDetails	Подробнее
+Website	Веб-сайт
+WorkCenterNextMenu	Рабочий центр (новый)
+WorkflowApprovalsMenu	Согласования рабочих процессов
+Workspace	Рабочая область

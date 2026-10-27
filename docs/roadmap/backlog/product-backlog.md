@@ -10900,3 +10900,24 @@ bunlar başka ekiplerin modüllerinde olduğu için bilinen-borç listesiyle ba�
 **Ölçüm komutu:**
 
     git ls-tree -r --name-only HEAD tests/architecture | grep -E 'Tests\.cs$'
+
+### BL-662
+
+**Sahibe gelen geliştirici isteklerinin takibi — GitHub konusu mu, özel sayfa mı**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 ("bu backloga yaz") · KAYIT: 2026-10-27
+
+**Ne:** Diğer ekiplerin CT'leri sahibe (iş akışı MOD-0023, MDM, Auth MOD-0018 sahibi olarak) yazılı istek gönderiyor; bugün
+bunlar yalnız sohbetlerde ve masaüstündeki dosyalarda duruyor. İki yol önerildi: (a) her istek için GitHub konusu
+(issue), sahibe atanır, ilgili PR kapatır, Yönetici · Ofis "durum"da açık konuları sayar; (b) yalnız sahibin gördüğü
+claude.ai sayfası. 2026-10-26/27 istekleri: MOD-0178 onayı (#248), MOD-0126 O-7/O-10 teyidi, §17 rev 2 onay sırası
+(#243), Auth rol şablonları ve açık atamalı izinler, kişi verisi alan listesi, `isDeleted` sayımı, MDM tüketici testleri
+(AC-W3, AC-W17), iş akışı şablon kodları (O-8, O-11, O-20, MOD-0217 CLM), MOD-0289 / MOD-0217 MDM yerleşimi (itiraz yok).
+**Neden ertelendi:** sahip yöntemi daha sonra seçecek; bugünkü istekler sahibin elinde ve Yönetici · Ofis'in devir
+notunda.
+**Yapım tetikleyicisi:** sahibin `istek-konu` ya da `istek-sayfa` kararı, ya da bir isteğin unutulduğunun görülmesi.
+**Gelecek regresyon riski:** 🟡 — istekler sohbet geçmişinde kalırsa aylar sonra kaybolur; isteyen ekip cevap bekler.
+
+**Ölçüm komutu:**
+
+    gh issue list --repo bestepullukcu-alt/ERP-vNext --assignee GMG-ERP --state open

@@ -57,7 +57,7 @@ Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Kök: `serv
 
 - **Servisler (17):** `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.PlanningService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`
 - **Ortak kütüphaneler (3):** `Diten.Building.Blocks`, `Diten.Platform.Common`, `Diten.Platform.Contracts`
-- **Domain'ler (11):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
+- **Domain'ler (12):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `finance-treasury`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
 
 Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 
@@ -80,6 +80,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 | Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
 | Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
 | Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
+| FinanceTreasury Service (planlı — kod yok) | 5071 | `services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 > **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5011 (`PvgService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
@@ -133,7 +134,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) + denetim kaydı davranışı (Platform: `AuditBehavior`; diğer servisler: ortak iletici, AUD-001 K4) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
 | Denetim kaydı | Kiracı ya da platform verisini değiştiren **her komut denetlenir** (kim · neyi · ne zaman). Denetlenmemek istisnadır ve gerekçesiyle bildirilir; yeni denetimsiz komutu ve deftere eklenen borç satırını mimari testi + CI reddeder; kimlik / yetki / GxP sınıfında kayıt yazılamazsa işlem durmalıdır (karar K2; bugün hiçbir yol bunu teslim etmiyor, eksikler defterde `## K2 borcu` olarak sayılı — AUD-001 §4.4) | [.antigravity/rules/audit-trail-standard.md](.antigravity/rules/audit-trail-standard.md) |
-| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. Ölçüldü 2026-09-07: `Views/Platform/*` 2 dosya, `Views/Organization/*` 7 dosya taşır. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
+| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 | Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
@@ -154,10 +155,10 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 46 kural dosyası var (2026-10-17, `git ls-tree` ile sayıldı). Kural dosyaları kendiliğinden
+`.antigravity/rules/` altındaki kural dosyaları kendiliğinden
 yüklenmez; `.antigravity/adapters.json`'da listelenenlerin üretilmiş kopyaları `.claude/rules/` (Claude Code) ve
-`.agents/rules/` (Antigravity) altına konur — bu denetimde yalnız `agents-core.md`'nin yüklenmesi ölçüldü. Codex ve
-Antigravity bu haritayı bu dosyayla birlikte yükler (bu denetimde canlı ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
+`.agents/rules/` (Antigravity) altına konur. Codex ve
+Antigravity haritayı bu dosyayla yükler (ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
 işe başlamadan bu haritanın açılmasını şart koşar.
 
 Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
@@ -252,7 +253,7 @@ Yeni modül: `/prepare-module-pack` → pack `approved` / `ready-for-dev` → da
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm` | `pvg` | `crm`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm` | `pvg` | `crm` | `fin`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
@@ -267,6 +268,7 @@ feature/{domain-kısa}/{module-id}-{slug}
 - `feature/ppm/mod-0117-work-records-core`
 - `feature/pvg/mod-0230-case-intake-triage`
 - `feature/crm/mod-0149-customer-360-account-hierarchy`
+- `feature/fin/mod-0126-payments-approvals` (`fin` = finance-treasury)
 
 
 Yedekleme branch'leri için ayrı kural: [.antigravity/rules/git-backup-policy.md](.antigravity/rules/git-backup-policy.md)

@@ -47,7 +47,6 @@ namespace Diten.SupplyChainService.Tests.Common;
 public sealed class ReturnsClaimsHttpHost : WebApplicationFactory<Program>
 {
     private const string Secret = "returns-claims-http-host-signing-key-0123456789abcdef";
-    private const string Issuer = "returns-claims-tests";
 
     public Guid Tenant { get; } = Guid.NewGuid();
     public Guid LegalEntity { get; } = Guid.NewGuid();
@@ -69,11 +68,9 @@ public sealed class ReturnsClaimsHttpHost : WebApplicationFactory<Program>
         _settings = new Dictionary<string, string?>
         {
             ["Mongo:ConnectionString"] = mongo,
-            ["Mongo:DatabaseName"] = "DitenSupplyChain_Mod0186_0187_Http_Test",
-            ["JwtSettings:Secret"] = Secret,
-            ["JwtSettings:Issuer"] = Issuer,
-            ["JwtSettings:Audience"] = Issuer
+            ["Mongo:DatabaseName"] = "DitenSupplyChain_Mod0186_0187_Http_Test"
         };
+        foreach (var (key, value) in AuthServiceToken.JwtSettings(Secret)) _settings[key] = value;
         // Each instance invents its own tenant and legal entity, so runs do not collide and the database need
         // not be dropped between them. Nothing outside this host's own database is touched.
     }
@@ -120,20 +117,16 @@ public sealed class ReturnsClaimsHttpHost : WebApplicationFactory<Program>
                 context.CorrelationId, DateTimeOffset.UtcNow));
     }
 
-    public string Token(Guid? tenant = null, Guid? legalEntity = null, IEnumerable<string>? permissions = null, Guid? actor = null)
-    {
-        var claims = new List<Claim>
-        {
-            new("tenant_id", (tenant ?? Tenant).ToString()),
-            new("legal_entity_id", (legalEntity ?? LegalEntity).ToString()),
-            new("sub", (actor ?? Actor).ToString())
-        };
-        claims.AddRange((permissions ?? AllPermissions).Select(p => new Claim("permission", p)));
-        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(Issuer, Issuer, claims,
-            expires: DateTime.UtcNow.AddMinutes(10),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
-    }
+    /// <summary>
+    /// AuthService's real token shape (<see cref="AuthServiceToken"/>). <paramref name="legalEntity"/> is kept for the
+    /// callers' signature but is not a claim any more: the legal entity is the X-Legal-Entity-Id header (<see cref="Send"/>).
+    /// </summary>
+    public string Token(Guid? tenant = null, Guid? legalEntity = null, IEnumerable<string>? permissions = null, Guid? actor = null) =>
+        AuthServiceToken.Mint(Secret, tenant ?? Tenant, actor ?? Actor, permissions ?? AllPermissions);
+
+    /// <summary>The MDM legal-entity stub every request of this host consults; a test may set its outcome.</summary>
+    public StubLegalEntityScopeValidator LegalEntityValidator =>
+        (StubLegalEntityScopeValidator)Services.GetRequiredService<ILegalEntityScopeValidator>();
 
     /// <summary>
     /// Returns gates each transition on a permission of its own, not on the generic transition permission:

@@ -9,9 +9,10 @@ public interface IPvgIntakeDraftStore
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default);
 
-    ValueTask<bool> ReplaceAsync(
+    ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(
         PvgPersistenceTenantScope tenantScope,
         string intakeDraftId,
+        long? expectedVersion,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default);
 
@@ -22,6 +23,11 @@ public interface IPvgIntakeDraftStore
 
     ValueTask<IReadOnlyList<PvgPersistedIntakeDraft>> ListAsync(
         PvgPersistenceListScope listScope,
+        CancellationToken cancellationToken = default);
+
+    ValueTask<int> CountAsync(
+        PvgPersistenceTenantScope tenantScope,
+        PvgIntakeStatus? status,
         CancellationToken cancellationToken = default);
 }
 
@@ -35,4 +41,23 @@ public sealed record PvgPersistenceListScope(
 
 public sealed record PvgPersistedIntakeDraft(
     string IntakeDraftId,
-    SafetyCaseIntake Intake);
+    SafetyCaseIntake Intake,
+    long Version);
+
+public sealed record PvgIntakeDraftReplaceResult(
+    PvgIntakeDraftReplaceOutcome Outcome,
+    long? Version)
+{
+    public static PvgIntakeDraftReplaceResult Replaced(long version) => new(PvgIntakeDraftReplaceOutcome.Replaced, version);
+
+    public static PvgIntakeDraftReplaceResult NotFound() => new(PvgIntakeDraftReplaceOutcome.NotFound, null);
+
+    public static PvgIntakeDraftReplaceResult VersionConflict() => new(PvgIntakeDraftReplaceOutcome.VersionConflict, null);
+}
+
+public enum PvgIntakeDraftReplaceOutcome
+{
+    Replaced,
+    NotFound,
+    VersionConflict
+}

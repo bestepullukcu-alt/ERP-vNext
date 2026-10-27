@@ -94,6 +94,7 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddScoped<ILegalEntityScopeReader, MdmLegalEntityScopeReader>();
         services.AddScoped<ILeadTimeAuthority, MdmLeadTimeAuthority>();
         services.AddScoped<IMrpInventoryReader, InventoryAvailabilityReader>();
+        services.AddScoped<IMrpApprovedSafetyStockReader, SafetyStockQuantityReader>();
         services.AddSingleton<IMrpPublishedDemandReader, MrpPublishedDemandReader>();
         services.AddSingleton<IMrpApprovedLeadTimeReader, MrpApprovedLeadTimeReader>();
         services.AddScoped<MrpLiveCalculation>();
@@ -132,6 +133,8 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddHttpClient("DemandGateway", client => client.BaseAddress = new Uri(
             configuration["Upstream:GatewayBaseUrl"] ?? "http://127.0.0.1:5000/"));
+        services.AddHttpClient("SafetyStockService", client => client.BaseAddress = new Uri(
+            configuration["Upstream:SafetyStockBaseUrl"] ?? "http://127.0.0.1:5069/"));
         services.AddScoped<LiveHistoryImportReferences>();
         services.AddScoped<IHistoryImportScopeAuthority>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());
         services.AddScoped<IHistoryRowReferenceChecker>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());

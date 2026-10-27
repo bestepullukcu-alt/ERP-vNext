@@ -34,6 +34,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// path is guarded too), and a commit whose answer never came back (the record read again decides).</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorLastSuperAdminRaceMongoTests
 {
     public static TheoryData<string, string> Races() => new()

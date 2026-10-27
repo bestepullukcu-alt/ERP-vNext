@@ -1,0 +1,5 @@
+#!/bin/sh
+# TEST-HIZ-01: the mongod of the local fast run (scripts/test-env/fast-local-tests.sh). It never starts a database:
+# a test reaching it needs Mongo and must carry [Trait("Category", "Mongo")].
+echo "refuse-mongod: this run excludes Mongo tests; tag the test class [Trait(\"Category\", \"Mongo\")]" >&2
+exit 97

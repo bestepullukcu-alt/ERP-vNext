@@ -5,4 +5,5 @@ public sealed record RouteIntakeDraftCommand(
     PvgActorContext ActorContext,
     PvgCorrelationContext CorrelationContext,
     string IntakeDraftId,
-    PvgRouteIntakeDraftRequest Draft);
+    PvgRouteIntakeDraftRequest Draft,
+    long? ExpectedVersion = null);

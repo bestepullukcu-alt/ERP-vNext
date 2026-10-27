@@ -22,6 +22,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// </list>
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryT2bReadHttpMongoTests : TimerScenario
 {
     public TimeEntryT2bReadHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

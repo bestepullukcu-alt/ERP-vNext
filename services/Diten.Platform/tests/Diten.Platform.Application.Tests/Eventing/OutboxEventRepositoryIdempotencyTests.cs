@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
+[Trait("Category", "Mongo")]
 public sealed class OutboxEventRepositoryIdempotencyTests
 {
     [Fact]
