@@ -28,7 +28,7 @@ DL-1 prompt'u ancak bunlar kapanınca dağıtılabilir (paket "Ready-for-dev Che
 | Koşul | Bugün | Kimden |
 |---|---|---|
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (S-49, D34) | `draft` | CT + Beste |
-| DCP numarası ve `approved` — pack checklist satırı ("`approved` ve numarası atanmış") **değişmez** | `UNASSIGNED`, `draft` | Beste |
+| DCP numarası ve `approved` — pack checklist satırı ("`approved` ve numarası atanmış") **değişmez** | `DCP-011` (numara atandı 2026-10-27), `draft` | Beste |
 | TRM-14: MOD-0220 §22 onayı (`ApprovalStatus`) | onay turu açık (D34/1) | Beste |
 | O-9 RCS-001 ortak kod servisi (BL-565) | yok; sahibi belirlenmedi | sahip ataması |
 | O-11 küsurat hanesi + O-13 `payment-method` kümesi (TRM-17, MOD-0048-FU01 §21) | önerildi; onay turu açık | Beste |
