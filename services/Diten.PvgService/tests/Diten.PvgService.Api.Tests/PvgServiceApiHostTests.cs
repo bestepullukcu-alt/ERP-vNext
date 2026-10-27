@@ -29,25 +29,17 @@ namespace Diten.PvgService.Api.Tests;
 
 public sealed class PvgServiceApiHostTests
 {
+    // Revision 04 invariant (WP-0230-DL4A): every approved intake field name, plus the version a write carries and the
+    // two response-only fields a request may only send to be rejected. SuspectProductText no longer exists.
     private static readonly string[] AnnexFieldNames =
-    [
-        nameof(PvgIntakeField.IntakeChannel),
-        nameof(PvgIntakeField.SourceType),
-        nameof(PvgIntakeField.SourceReference),
-        nameof(PvgIntakeField.ReceivedAtUtc),
-        nameof(PvgIntakeField.ReporterType),
-        nameof(PvgIntakeField.ReporterContactSummary),
-        nameof(PvgIntakeField.PatientSubjectCode),
-        nameof(PvgIntakeField.EventOnsetDate),
-        nameof(PvgIntakeField.AdverseEventNarrative),
-        "SuspectProductText",
-        nameof(PvgIntakeField.Seriousness),
-        nameof(PvgIntakeField.IntakePriority),
-        nameof(PvgIntakeField.TriageOutcome),
-        nameof(PvgIntakeField.TriageReason),
-        nameof(PvgIntakeField.RouteTargetQueue),
-        nameof(PvgIntakeField.EvidenceLinkReferences)
-    ];
+        Enum.GetNames<PvgIntakeField>()
+            .Concat(
+            [
+                "ExpectedVersion",
+                "ValidityResult",
+                "ValidityMissingCriteria"
+            ])
+            .ToArray();
 
     [Fact]
     public void Development_host_wires_health_application_services_and_deny_adapters()
@@ -286,7 +278,8 @@ public sealed class PvgServiceApiHostTests
             typeof(PvgCaseIntakeCreateRequest),
             typeof(PvgCaseIntakeUpdateRequest),
             typeof(PvgCaseIntakeTriageRequest),
-            typeof(PvgCaseIntakeRouteRequest)
+            typeof(PvgCaseIntakeRouteRequest),
+            typeof(PvgIntakeProductLineRequest)
         }
         .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
         .Select(property => property.Name)
@@ -295,7 +288,8 @@ public sealed class PvgServiceApiHostTests
         .Order(StringComparer.Ordinal)
         .ToArray();
 
-        Assert.Equal(16, AnnexFieldNames.Length);
+        Assert.Equal(37, AnnexFieldNames.Length);
+        Assert.DoesNotContain("SuspectProductText", requestFieldNames);
         Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), requestFieldNames);
     }
 
@@ -550,7 +544,11 @@ public sealed class PvgServiceApiHostTests
                 (nameof(PvgCaseIntakeApiResponse.ReasonCode), typeof(string)),
                 (nameof(PvgCaseIntakeApiResponse.ValidationReasonCodes), typeof(IReadOnlyList<string>)),
                 (nameof(PvgCaseIntakeApiResponse.IntakeDraftId), typeof(string)),
-                (nameof(PvgCaseIntakeApiResponse.Items), typeof(IReadOnlyList<PvgIntakeDraftSummary>))
+                (nameof(PvgCaseIntakeApiResponse.Items), typeof(IReadOnlyList<PvgIntakeDraftSummary>)),
+                (nameof(PvgCaseIntakeApiResponse.Version), typeof(long?)),
+                (nameof(PvgCaseIntakeApiResponse.TotalCount), typeof(int?)),
+                (nameof(PvgCaseIntakeApiResponse.FilteredCount), typeof(int?)),
+                (nameof(PvgCaseIntakeApiResponse.Draft), typeof(PvgCaseIntakeDraftResponse))
             ],
             properties);
 
@@ -1302,7 +1300,7 @@ public sealed class PvgServiceApiHostTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "serious",
             "priority",
             ["evidence-ref"]);
@@ -1318,7 +1316,7 @@ public sealed class PvgServiceApiHostTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "serious",
             "priority",
             ["evidence-ref"]);
@@ -1487,6 +1485,12 @@ public sealed class PvgServiceApiHostTests
         public ValueTask<string> AddAsync(
             PvgPersistenceTenantScope tenantScope,
             SafetyCaseIntake intake,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public ValueTask<int> CountAsync(
+            PvgPersistenceTenantScope tenantScope,
+            PvgIntakeStatus? status,
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
