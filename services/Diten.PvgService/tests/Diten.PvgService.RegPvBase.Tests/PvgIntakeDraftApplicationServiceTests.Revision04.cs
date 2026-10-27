@@ -850,27 +850,91 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     }
 
     [Theory]
+    [InlineData("reversed-order", true)]
+    [InlineData("same-order", false)]
+    public async Task Update_audit_intent_names_product_lines_when_only_their_order_changes(string row, bool expectChanged)
+    {
+        var suspect = new PvgIntakeProductLine("Suspect", null, "suspect product", null, null);
+        var concomitant = new PvgIntakeProductLine("Concomitant", null, "concomitant product", null, null);
+        var fixture = FixtureUpdateRequest();
+        var (service, store) = AllowedServiceWithStore();
+        var intakeDraftId = await store.AddAsync(
+            Scope(),
+            new SafetyCaseIntake(
+                TenantContext().TenantId,
+                PvgIntakeStatus.IntakeCreated,
+                fixture.IntakeChannel!,
+                fixture.SourceType!,
+                FixtureReceivedAtUtc,
+                fixture.ReporterType!,
+                fixture.AdverseEventNarrative!,
+                fixture.Seriousness!,
+                fixture.IntakePriority!)
+            {
+                SourceReference = fixture.SourceReference,
+                ReporterContactSummary = fixture.ReporterContactSummary,
+                PatientSubjectCode = fixture.PatientSubjectCode,
+                EventOnsetDate = fixture.EventOnsetDate,
+                EvidenceLinkReferences = [],
+                ProductLines = [suspect, concomitant],
+                AwarenessAtUtc = FixtureReceivedAtUtc,
+                EventCountry = fixture.EventCountry!,
+                ReportType = fixture.ReportType!,
+                ReporterSource = PvgReporterSource.Manual,
+                ReporterSourceId = null,
+                ReporterCrmSearchState = PvgReporterCrmSearchState.Pending,
+                ReporterNameOrInitials = fixture.ReporterNameOrInitials,
+                ReporterProfession = fixture.ReporterProfession,
+                ReporterCountry = fixture.ReporterCountry
+            });
+        var before = await StoredAsync(store, intakeDraftId);
+        PvgIntakeProductLineRequest[] suspectFirst =
+        [
+            new("Suspect", null, "suspect product", null, null),
+            new("Concomitant", null, "concomitant product", null, null)
+        ];
+        var request = fixture with
+        {
+            ProductLines = row == "reversed-order" ? suspectFirst.Reverse().ToArray() : suspectFirst
+        };
+
+        var updated = await service.UpdateDraftAsync(UpdateCommand(intakeDraftId, request, before.Version));
+
+        Assert.True(updated.Result.IsSuccess);
+        var auditIntent = Assert.IsType<PvgAuditIntent>(updated.AuditIntent);
+        Assert.Equal(
+            expectChanged ? [PvgIntakeField.ProductLines] : Array.Empty<PvgIntakeField>(),
+            auditIntent.ChangedFields);
+    }
+
+    [Theory]
     [InlineData(PvgIntakeOperation.Create)]
     [InlineData(PvgIntakeOperation.Update)]
-    public async Task Legacy_shaped_request_is_invalid_before_permission_gate(PvgIntakeOperation operation)
+    [InlineData(PvgIntakeOperation.Triage)]
+    [InlineData(PvgIntakeOperation.Route)]
+    public async Task Legacy_shaped_request_from_unauthorized_caller_gets_permission_outcome_without_validation_codes(
+        PvgIntakeOperation operation)
     {
-        var callLog = new List<string>();
-        var service = NewService(
-            new RecordingFieldSecurityPolicy(callLog),
-            new RecordingWorkflowTransitionGate(callLog),
-            new RecordingEvidenceLinkPort(callLog),
-            new RecordingPermissionGate(callLog) { Decision = PvgPermissionDecision.Denied(PvgPermissionReasonCodes.PermissionDenied) });
+        // AC-7: the permission outcome comes first. Create / Update carry the shape the API mapping produced before
+        // DL-4 (slice 1 fields and one Suspect line, no revision 04 field); Triage / Route lack their required value.
+        var permissionKey = operation switch
+        {
+            PvgIntakeOperation.Create => "pvg.mod0230.intake.create",
+            PvgIntakeOperation.Update => "pvg.mod0230.intake.update",
+            PvgIntakeOperation.Triage => "pvg.mod0230.intake.triage",
+            _ => "pvg.mod0230.intake.route"
+        };
 
-        // The shape the API mapping produces until DL-4: slice 1 fields and one Suspect line, no revision 04 field.
-        var result = operation == PvgIntakeOperation.Create
-            ? await service.CreateDraftAsync(CreateCommand(ValidCreateRequest() with
+        async ValueTask<PvgIntakeDraftMutationResult> InvokeAsync(PvgIntakeDraftApplicationService service) => operation switch
+        {
+            PvgIntakeOperation.Create => await service.CreateDraftAsync(CreateCommand(ValidCreateRequest() with
             {
                 ProductLines = [SuspectLineRequest("suspect product")],
                 AwarenessAtUtc = null,
                 EventCountry = null,
                 ReportType = null
-            }))
-            : await service.UpdateDraftAsync(UpdateCommand(
+            })),
+            PvgIntakeOperation.Update => await service.UpdateDraftAsync(UpdateCommand(
                 "pvg-draft-legacy-shape",
                 ValidUpdateRequest() with
                 {
@@ -879,19 +943,64 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
                     EventCountry = null,
                     ReportType = null
                 },
-                1));
+                1)),
+            PvgIntakeOperation.Triage => await service.TriageDraftAsync(new TriageIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                "pvg-draft-legacy-shape",
+                new PvgTriageIntakeDraftRequest(null, null, null),
+                1)),
+            _ => await service.RouteDraftAsync(new RouteIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                "pvg-draft-legacy-shape",
+                new PvgRouteIntakeDraftRequest(null),
+                1))
+        };
 
-        Assert.Equal(PvgApplicationOutcome.Invalid, result.Result.Outcome);
-        Assert.Equal(
-            new[]
+        var deniedLog = new List<string>();
+        var deniedStore = new InMemoryPvgIntakeDraftRepository();
+        var denied = await InvokeAsync(NewService(
+            new RecordingFieldSecurityPolicy(deniedLog),
+            new RecordingWorkflowTransitionGate(deniedLog),
+            new RecordingEvidenceLinkPort(deniedLog),
+            new RecordingPermissionGate(deniedLog) { Decision = PvgPermissionDecision.Denied(PvgPermissionReasonCodes.PermissionDenied) },
+            deniedStore));
+
+        Assert.Equal(PvgApplicationOutcome.Blocked, denied.Result.Outcome);
+        Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, denied.Result.ReasonCode);
+        Assert.Empty(denied.Result.ValidationFailures);
+        Assert.Equal([$"permission:{operation}:{permissionKey}"], deniedLog);
+        await AssertNothingStoredAsync(deniedStore);
+        AssertSafe(denied);
+
+        // Validation still runs for an authorized caller.
+        var allowedLog = new List<string>();
+        var invalid = await InvokeAsync(NewService(
+            new RecordingFieldSecurityPolicy(allowedLog),
+            new RecordingWorkflowTransitionGate(allowedLog),
+            new RecordingEvidenceLinkPort(allowedLog),
+            new RecordingPermissionGate(allowedLog)));
+
+        Assert.Equal(PvgApplicationOutcome.Invalid, invalid.Result.Outcome);
+        var expectedFailures = operation switch
+        {
+            PvgIntakeOperation.Triage => new[] { new PvgValidationFailure(PvgIntakeField.TriageOutcome, PvgValidationReasonCodes.RequiredFieldMissing) },
+            PvgIntakeOperation.Route => new[] { new PvgValidationFailure(PvgIntakeField.RouteTargetQueue, PvgValidationReasonCodes.RequiredFieldMissing) },
+            _ => new[]
             {
                 new PvgValidationFailure(PvgIntakeField.AwarenessAtUtc, PvgValidationReasonCodes.RequiredFieldMissing),
                 new PvgValidationFailure(PvgIntakeField.EventCountry, PvgValidationReasonCodes.RequiredFieldMissing),
                 new PvgValidationFailure(PvgIntakeField.ReportType, PvgValidationReasonCodes.RequiredFieldMissing)
-            }.OrderBy(failure => failure.Field),
-            result.Result.ValidationFailures.OrderBy(failure => failure.Field));
-        Assert.Empty(callLog);
-        AssertSafe(result);
+            }
+        };
+        Assert.Equal(
+            expectedFailures.OrderBy(failure => failure.Field),
+            invalid.Result.ValidationFailures.OrderBy(failure => failure.Field));
+        Assert.Equal([$"permission:{operation}:{permissionKey}"], allowedLog);
+        AssertSafe(invalid);
     }
 
     [Theory]

@@ -246,6 +246,47 @@ public sealed class InvoiceMatchBackendTests
     }
 
     [Fact]
+    public async Task Capture_line_amount_other_than_quantity_times_unit_price_is_422()
+    {
+        // Contract 1.1.1: amounts are net (tax excluded); a VAT-inclusive line (100 × 10 + %20 = 1200) is refused.
+        var f = NewFixture();
+        await SeedSupplierAndPo(f);
+
+        var gross = await f.Capture().Handle(
+            NewCapture(lines: new List<InvoiceLineInput> { Line(quantity: "100", unitPrice: "10", lineAmount: "1200") }), default);
+        Assert.False(gross.IsSuccessful);
+        Assert.Equal(422, gross.StatusCode);
+        Assert.Contains("LINE_AMOUNT_MISMATCH", gross.Errors);
+        Assert.Empty(f.InvoiceStore);
+
+        var notDecimal = await f.Capture().Handle(
+            NewCapture(invoiceNumber: "INV-2026-2", lines: new List<InvoiceLineInput> { Line(lineAmount: "1e3") }), default);
+        Assert.Equal(422, notDecimal.StatusCode);
+        Assert.Contains("LINE_AMOUNT_MISMATCH", notDecimal.Errors);
+        Assert.Empty(f.InvoiceStore);
+
+        // Vacuity control: the same value at another scale is the net amount and is captured.
+        var ok = await f.Capture().Handle(
+            NewCapture(invoiceNumber: "INV-2026-3", lines: new List<InvoiceLineInput> { Line(lineAmount: "1000.0000") }), default);
+        Assert.Equal(201, ok.StatusCode);
+        Assert.Equal("1000.0000", ok.Data!.TotalAmount);
+    }
+
+    [Fact]
+    public async Task Capture_without_line_amount_totals_net_quantity_times_unit_price()
+    {
+        var f = NewFixture();
+        await SeedSupplierAndPo(f, poQty: "3", poPrice: "12.50");
+
+        var result = await f.Capture().Handle(
+            NewCapture(lines: new List<InvoiceLineInput> { Line(quantity: "3", unitPrice: "12.50", lineAmount: null) }), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.Equal("37.50", result.Data!.Lines.Single().LineAmount);
+        Assert.Equal("37.50", result.Data.TotalAmount);
+    }
+
+    [Fact]
     public async Task Capture_is_idempotent_no_duplicate()
     {
         var f = NewFixture();
