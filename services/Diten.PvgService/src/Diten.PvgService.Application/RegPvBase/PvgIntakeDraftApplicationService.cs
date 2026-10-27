@@ -41,14 +41,22 @@ public sealed class PvgIntakeDraftApplicationService
         _draftStore = draftStore;
     }
 
+    public ValueTask<PvgIntakeDraftMutationResult> CreateDraftAsync(
+        CreateIntakeDraftCommand command,
+        CancellationToken cancellationToken = default) =>
+        CreateDraftAsync(command, [], cancellationToken);
+
+    // Order (pack AC-7): tenant context, actor / correlation / permission, then field validation (request shape
+    // failures first), then the ports. An unauthorized caller therefore never sees validation reason codes.
     public async ValueTask<PvgIntakeDraftMutationResult> CreateDraftAsync(
         CreateIntakeDraftCommand command,
+        IReadOnlyList<PvgValidationFailure> requestShapeFailures,
         CancellationToken cancellationToken = default)
     {
-        var validation = PvgIntakeDraftValidator.ValidateCreate(command.TenantContext, command.Draft);
-        if (!validation.IsValid)
+        var tenantValidation = ValidateTenantContext(command.TenantContext);
+        if (!tenantValidation.IsValid)
         {
-            return InvalidMutation(validation);
+            return InvalidMutation(tenantValidation);
         }
 
         var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
@@ -61,6 +69,14 @@ public sealed class PvgIntakeDraftApplicationService
         if (guardrailDecision is not null)
         {
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
+        var validation = WithRequestShapeFailures(
+            requestShapeFailures,
+            PvgIntakeDraftValidator.ValidateCreate(command.TenantContext, command.Draft));
+        if (!validation.IsValid)
+        {
+            return InvalidMutation(validation);
         }
 
         var fieldDecision = await EnsureFieldSecurityAsync(
@@ -106,14 +122,20 @@ public sealed class PvgIntakeDraftApplicationService
             BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated, CreatePermission, []));
     }
 
+    public ValueTask<PvgIntakeDraftMutationResult> UpdateDraftAsync(
+        UpdateIntakeDraftCommand command,
+        CancellationToken cancellationToken = default) =>
+        UpdateDraftAsync(command, [], cancellationToken);
+
     public async ValueTask<PvgIntakeDraftMutationResult> UpdateDraftAsync(
         UpdateIntakeDraftCommand command,
+        IReadOnlyList<PvgValidationFailure> requestShapeFailures,
         CancellationToken cancellationToken = default)
     {
-        var validation = PvgIntakeDraftValidator.ValidateUpdate(command.TenantContext, command.Draft);
-        if (!validation.IsValid)
+        var tenantValidation = ValidateTenantContext(command.TenantContext);
+        if (!tenantValidation.IsValid)
         {
-            return InvalidMutation(validation);
+            return InvalidMutation(tenantValidation);
         }
 
         var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
@@ -126,6 +148,14 @@ public sealed class PvgIntakeDraftApplicationService
         if (guardrailDecision is not null)
         {
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
+        var validation = WithRequestShapeFailures(
+            requestShapeFailures,
+            PvgIntakeDraftValidator.ValidateUpdate(command.TenantContext, command.Draft));
+        if (!validation.IsValid)
+        {
+            return InvalidMutation(validation);
         }
 
         var stored = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
@@ -218,10 +248,10 @@ public sealed class PvgIntakeDraftApplicationService
         TriageIntakeDraftCommand command,
         CancellationToken cancellationToken = default)
     {
-        var validation = PvgIntakeDraftValidator.ValidateTriage(command.TenantContext, command.Draft);
-        if (!validation.IsValid)
+        var tenantValidation = ValidateTenantContext(command.TenantContext);
+        if (!tenantValidation.IsValid)
         {
-            return InvalidMutation(validation);
+            return InvalidMutation(tenantValidation);
         }
 
         var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
@@ -234,6 +264,12 @@ public sealed class PvgIntakeDraftApplicationService
         if (guardrailDecision is not null)
         {
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
+        var validation = PvgIntakeDraftValidator.ValidateTriage(command.TenantContext, command.Draft);
+        if (!validation.IsValid)
+        {
+            return InvalidMutation(validation);
         }
 
         var draft = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
@@ -307,10 +343,10 @@ public sealed class PvgIntakeDraftApplicationService
         RouteIntakeDraftCommand command,
         CancellationToken cancellationToken = default)
     {
-        var validation = PvgIntakeDraftValidator.ValidateRoute(command.TenantContext, command.Draft);
-        if (!validation.IsValid)
+        var tenantValidation = ValidateTenantContext(command.TenantContext);
+        if (!tenantValidation.IsValid)
         {
-            return InvalidMutation(validation);
+            return InvalidMutation(tenantValidation);
         }
 
         var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
@@ -323,6 +359,12 @@ public sealed class PvgIntakeDraftApplicationService
         if (guardrailDecision is not null)
         {
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
+        var validation = PvgIntakeDraftValidator.ValidateRoute(command.TenantContext, command.Draft);
+        if (!validation.IsValid)
+        {
+            return InvalidMutation(validation);
         }
 
         var draft = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
@@ -437,7 +479,8 @@ public sealed class PvgIntakeDraftApplicationService
 
         return new PvgIntakeDraftQueryResult(
             Succeeded(PvgIntakeOperation.GetById, persisted.Intake.Status),
-            [new PvgIntakeDraftSummary(persisted.IntakeDraftId, persisted.Intake.Status, persisted.Version)]);
+            [new PvgIntakeDraftSummary(persisted.IntakeDraftId, persisted.Intake.Status, persisted.Version)],
+            Intake: persisted.Intake);
     }
 
     public async ValueTask<PvgIntakeDraftQueryResult> ListDraftsAsync(
@@ -480,10 +523,17 @@ public sealed class PvgIntakeDraftApplicationService
         var items = persistedItems
             .Select(item => new PvgIntakeDraftSummary(item.IntakeDraftId, item.Intake.Status, item.Version))
             .ToArray();
+        var tenantScope = Scope(query.TenantContext);
+        var totalCount = await _draftStore.CountAsync(tenantScope, null, cancellationToken);
+        var filteredCount = query.Status is null
+            ? totalCount
+            : await _draftStore.CountAsync(tenantScope, query.Status, cancellationToken);
 
         return new PvgIntakeDraftQueryResult(
             Succeeded(PvgIntakeOperation.GetList, null),
-            items);
+            items,
+            totalCount,
+            filteredCount);
     }
 
     private async ValueTask<PvgApplicationResult?> EnsureFieldSecurityAsync(
@@ -566,6 +616,13 @@ public sealed class PvgIntakeDraftApplicationService
             ? new PvgValidationResult([new PvgValidationFailure(null, PvgValidationReasonCodes.TenantContextRequired)])
             : PvgValidationResult.Valid;
     }
+
+    private static PvgValidationResult WithRequestShapeFailures(
+        IReadOnlyList<PvgValidationFailure> requestShapeFailures,
+        PvgValidationResult validation) =>
+        requestShapeFailures.Count == 0
+            ? validation
+            : new PvgValidationResult([.. requestShapeFailures, .. validation.Failures]);
 
     private static PvgIntakeDraftMutationResult InvalidMutation(PvgValidationResult validation) =>
         new(PvgApplicationResult.Invalid(validation.Failures), null, null);
