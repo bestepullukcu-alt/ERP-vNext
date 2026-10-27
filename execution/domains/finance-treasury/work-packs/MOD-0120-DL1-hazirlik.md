@@ -56,7 +56,7 @@ DL-1'i bekletmez (D51/1).
 | DCP-011 `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı | bekletir |
 | Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6) | **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*` dosyalarında `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
 | Auth kayıt kodu | Ali | **yok** — `ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
-| S-2 bitiş / gözden geçirme koşulunun sahip tarafından yazılması (D27/2 bitiş koymadı) | K1 (Natig) | **açık** — `:1444-1445`; öneri: MOD-0169 pack'i `ready-for-dev` olunca gözden geçirme, en geç Treasury v1 sonu | bekletir |
+| S-2 bitiş / gözden geçirme koşulu (D27/2 bitiş koymamıştı) | K1 | **kapandı** — KARAR D52/2: MOD-0169 pack'i `ready-for-dev` olunca gözden geçirme, en geç Treasury v1 sonu (pack checklist'te `[x]`) | bekletmez |
 | Kod alma izni; port 5071; 0.3 / 0.5 / 0.6 / 0.7 | — | **kapandı** — D27/1–5 (`:1442-1446`, `:1451`), `AGENTS.md:84`, `.antigravity/rules/ports.md:29` (D30) | — |
 | **MOD-0126 DL-1 main'de** — iskelet, ortak yapı taşları, test projesi, defter + CT-DECISIONS + `PinnedCounts` (D35/4) | MOD-0126 DL-1 WP | `services/Diten.FinanceTreasuryService/` **yok**; `WP-0126-DL1` PLANNED (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:19@00d3f2b41`) | bekletir |
 | Platform `AuditCategory`'ye `Finance = 18` main'de (D35/3) — pack'te ayrı paket kapısı maddesi | Beste | **yok** — `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@00d3f2b41`, son değer `ESignature = 17` (`:26`) | bekletir (`:1454`) |
@@ -66,14 +66,14 @@ DL-1'i bekletmez (D51/1).
 | SEC-002 (O-14): tasarım + Auth'ta `read-tenant-wide` tanımı | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6); Auth tanımı **yok**. Kapsamı soran kod + AC-6 **DL-1 kabul kapısı** (D51/2; `:1457`) | bekletir — yalnız Auth paket metnindeki açık atama tanımı (D53/1); `ExplicitGrantOnlyPermissions.cs` kaydı DL-1 kabul kapısı (D53/2) |
 | O-6 RCS-001 servisi (BL-565) — önek `ARI` | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı hâlâ "CT"); önek **var** (`.antigravity/rules/record-coding-standard.md:65@00d3f2b41`) | bekletir (503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE`) |
 | Küsurat kaynağı — MOD-0048 `currency-minor-units` seed | Beste (Y-4/3) | **yok** — `services/Diten.Platform/**`'te 0; `ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@00d3f2b41`) listesinde yok | bekletir (503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`) |
-| Level-1 koşul 1 — kaynağın sınırlı denetim / çoklu yazma devrinin taşınmadığının sahip onayı | K1 | **açık** (`:1460`) | bekletir |
+| Level-1 koşul 1 — kaynağın sınırlı denetim / çoklu yazma devrinin taşınmadığının sahip onayı | K1 | **kapandı** — KARAR D52/3 (pack checklist'te `[x]`) | bekletmez |
 | MOD-0023 AR düzeltme şablonu; §17 maddeleri; O-7 / O-8; O-9 (D16) | Ali (şablon) / — | şablon **yok**; §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1464` işaretsiz (§5 bulgu 3); O-7, O-8, O-9 kapandı | DL-3 |
 | MOD-0031 davranış ölçümü (DL-3 Önkoşul metninde) | Treasury CT | ölçülmedi | DL-3 |
 | Gateway rotası; O-3 müşteri seçici | integration-agent | yok | DL-4 |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması (o da `Finance = 18`, BL-565, MOD-0048 seed'leri, TRM-14 ve Auth paket
-metnini bekliyor; Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir — D53/2). MOD-0120'ye özgü en uzak halka **MOD-0149 pack revizyonu (O-3)** — tarihi yok; ayrıca iki sahip (K1) maddesi (S-2
-bitiş, Level-1 koşul 1) CT'nin soru kutusuyla hemen kapatılabilir.
+metnini bekliyor; Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir — D53/2). MOD-0120'ye özgü en uzak halka **MOD-0149 pack revizyonu (O-3)** — tarihi yok. İki sahip (K1) maddesi (S-2 bitiş,
+Level-1 koşul 1) D52/2 ve D52/3 ile kapandı.
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -273,14 +273,14 @@ dalga sonunda tek PR (S-76, S-77). Rapor biçimi SOP §22.
 
 - Kaynak depo yalnız okundu (`git ls-tree`, `git archive`; 2026-10-26'da `git diff --name-only`); kaynak düzeltmesi yok.
   Kaynak testler ve Recovery testleri **çalıştırılmadı**; MOD-0149, MOD-0220, MOD-0048 uçları çağrılmadı.
-- S-2 bitişi, Level-1 koşul 1, MOD-0149 revizyonu, Auth, BL-565, seed ve `Finance = 18` tarihleri sahiplerden gelmedi.
+- MOD-0149 revizyonu, Auth, BL-565, seed ve `Finance = 18` tarihleri sahiplerden gelmedi.
 - Bu kayıt WP prompt'u değildir; prompt kapısına girmez, dağıtım izni vermez.
 
 **Pack'te bulunan tutarsızlıklar (pack değişmedi; `ready-for-dev` revizyonunda CT işi):**
 
 1. **MOD-0126 ortak tanımları sürümsüz:** "Kaynak ve kanıt" `:1475` "MOD-0126 pack @bu commit sha256 ZIP manifestine bakın" —
    somut sha yok (MOD-0124 `9121d9f2…` ile sabitliyor).
-2. **DL-1 Önkoşul metni paket kapısından eksik:** Checklist paket kapısında işaretsiz "Level-1 koşul 1" maddesi var (`:1460`;
+2. **(Kapandı — D52/3: madde `[x]`, DL-1 Önkoşul metninden düştü.) DL-1 Önkoşul metni paket kapısından eksik:** Checklist paket kapısında işaretsiz "Level-1 koşul 1" maddesi var (`:1460`;
    D51 revizyon notu `:37` da sayıyor), DL-1 Önkoşul listesinde (`:1686-1691`) yok. D51/1'e göre paket kapısı DL-1'i bekletir —
    metin hizalanmalı.
 3. **MOD-0023 §17 onayı checkbox'u eski:** dilim kapısı `:1464` işaretsiz; `approvals.tsv:16` onaylı (DL-3 maddesi).

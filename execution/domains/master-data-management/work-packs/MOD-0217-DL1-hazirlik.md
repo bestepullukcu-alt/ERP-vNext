@@ -55,7 +55,7 @@ Kaynak: pack "Ready-for-dev Checklist" paket kapısı (`:1257-1291@00d3f2b41`), 
 | CT-APR-01 sürüme bağlı onay (paketi yazmamış onaylayıcı) | Beste | `approvals.tsv`'de MOD-0217 satırı yok (grep 0) | bekletir |
 | MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; MOD-0217 yalnız **aday** (`:17` `candidate_modules: [MOD-0217]`, `:90`; dilim TRM-S4 `:150`) — üyelik DCP değişikliği ister | bekletir (`:1265`) |
 | MDM domain-config satırı + kimlik kaydı satırı main'de | CT (D38/2) | **main'de var (ölçüldü)** — `execution/domains/master-data-management/domain-config.md:49-53@00d3f2b41` (yerel commit'ler bu satırı değiştirmedi; diff yalnız MOD-0289 satırı), `execution/registries/module-id-registry.md:155@00d3f2b41` (`reserved / planned`). Pack checkbox'u `:1266` hâlâ "bugün çalışma ağacında, commit edilmemiş" diyor (§5 bulgu 1) | — (kapanmış sayılabilir; pack revizyonunda işaretlenmeli) |
-| Auth paket metni — MOD-0018 paketi (anahtarlar `mdm.contracts.*`, açık atama listesi `read-tenant-wide`, rol şablonları D46–D50) | Ali (Y-2, Y-6) | **yok** — `MOD-0018-*` dosyalarında `mdm.contracts` 0 | paket kapısı (D53/1) — DL-1'i bekletir (pack `:1270-1271`; checklist henüz D53'e göre bölünmedi, §5 bulgu 3) |
+| Auth paket metni — MOD-0018 paketi (anahtarlar `mdm.contracts.*`, açık atama listesi `read-tenant-wide`, rol şablonları D46–D50) | Ali (Y-2, Y-6) | **yok** — `MOD-0018-*` dosyalarında `mdm.contracts` 0 | paket kapısı (D53/1) — DL-1'i bekletir (pack checklist D53'e göre iki maddeye bölündü — kapandı) |
 | Auth kayıt kodu — `mdm.contracts.*` kaydı (MOD-0217 onayından sonra) | Ali | **yok** — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.*` 0; `services/**`'te `mdm.contracts` 0 (grep) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | RCS-001 §3 `CTR` satırı main'de | — | **main'de var (ölçüldü)** — `.antigravity/rules/record-coding-standard.md:70@00d3f2b41` (`.antigravity/**` yerel commit'lerde değişmedi; PR #246 birleşmiş). Pack checkbox'u `:1274` "PR #246 birleşince" işaretsiz (§5 bulgu 1) | — (kapanmış sayılabilir) |
 | RCS-001 ortak kod servisi (BL-565) | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı "CT", D44 ile uyumsuz); `services/**`'te kod servisi yok; MDM'deki `CodeReservation` ürün ailesinin (pack Dependencies `:487`) | bekletir (`:1275`; Create yazılamaz, 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`) |
@@ -325,6 +325,7 @@ konuşulacak — Y-2, TBD) dağıtımdan önce netleşmeli.
 3. **Auth kaydının zamanı — D53 ile kararlandı:** baş bloktaki Revizyon 9 (`:129`) "Auth kaydı MOD-0217 onayından sonra (Ali,
    2026-10-27)" diyor; D51/1 ve checklist `:1270` Auth kaydını bütünüyle paket kapısında sayıyordu. D53 ikiye ayırdı: Auth paket
    metni paket kapısında (D53/1); `mdm.contracts.*` kayıt kodu MOD-0217 onayından sonra, DL-1 kabulünden önce main'de (D53/2).
-   Açık kalan: pack checklist `:1270-1271` ve D51 revizyonu (`:150-156`) bu ayrımı henüz yazmıyor — pack revizyonu CT işidir.
+   **Kapandı:** pack checklist iki maddeye bölündü (paket metni D53/1, kayıt kodu D53/2 — DL-1 kabul kapısı) ve gerilim notu
+   "KARAR D53 ile çözüldü" oldu; D51 revizyon notu tarihçe olarak kalır.
 4. **Kaynak okunmadı beyanı:** "Kaynak kodu bu oturumda okunmadı" (`:1321`) — bu kayıt beş atıfı okuyarak doğruladı (§2);
    pack revizyonunda "atıflar 2026-10-27'de doğrulandı" notu eklenebilir.
