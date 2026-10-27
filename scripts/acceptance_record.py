@@ -439,6 +439,39 @@ def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
 
 
 # ------------------------------------------------------------------------------------------------ checks
+# UI CT 2026-10-27: a criterion text may hold '|' or '\\|' (grep pipes, regex escapes, "UIC-n | sonuç"). In the §6.2
+# table a backslash is written '\\\\' and a pipe '\\|'; the reader turns them back, keeps any other backslash literal
+# and splits only on a pipe no escape consumed. No §6.2 list was committed before this (measured 2026-10-27).
+def cell_escape(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("|", "\\|")
+
+
+def row_parts(line: str) -> list[str]:
+    """Every piece between unescaped pipes, borders included (a bordered row starts and ends with an empty piece)."""
+    parts, cur, k, s = [], [], 0, line.strip()
+    while k < len(s):
+        c = s[k]
+        if c == "\\" and k + 1 < len(s) and s[k + 1] in "\\|":
+            cur.append(s[k + 1]); k += 2; continue
+        if c == "|":
+            parts.append("".join(cur)); cur = []
+        else:
+            cur.append(c)
+        k += 1
+    parts.append("".join(cur))
+    return parts
+
+
+def table_cells(line: str) -> list[str]:
+    """The cells of one markdown table row, stripped and unescaped; the outer borders are dropped."""
+    parts = row_parts(line)
+    if parts and parts[0].strip() == "" and line.strip().startswith("|"):
+        parts = parts[1:]
+    if parts and parts[-1].strip() == "" and line.strip().endswith("|"):
+        parts = parts[:-1]
+    return [c.strip() for c in parts]
+
+
 def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = None) -> tuple[list[str], list[str], list[dict]]:
     """REP-001 §6.2 acceptance list: rows and problems. A mandatory criterion that failed or was not tried is returned
     in the rows (the caller decides), a malformed row is an ENGEL here. CT-FIX-05 (F3): with the run record's artifacts
@@ -449,7 +482,7 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
     if unfilled:
         eng.append(f"kabul listesi: {len(unfilled)} satırda doldurulmamış alan ({DRAFT_MARK} …) — satır "
                    f"{', '.join(map(str, unfilled[:10]))}{' …' if len(unfilled) > 10 else ''}")
-    head = [i for i, l in enumerate(lines) if [c.strip() for c in l.strip().strip("|").split("|")] == LIST_COLUMNS]
+    head = [i for i, l in enumerate(lines) if table_cells(l) == LIST_COLUMNS]
     if len(head) != 1:
         return [f"kabul listesi: §6.2 başlık satırı {len(head)} kez var, 1 olmalı ({' | '.join(LIST_COLUMNS)})"], info, rows
     h = head[0]
@@ -462,7 +495,7 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
         eng.append(f"kabul listesi: tablo dışında kalan satır var (satır {', '.join(map(str, outside[:5]))}) — hiçbir ölçüt kaybolmamalı")
     seen = set()
     for l in lines[h + 2:end]:
-        cells = [c.strip() for c in l.strip().strip("|").split("|")]
+        cells = table_cells(l)
         if len(cells) != len(LIST_COLUMNS):
             eng.append(f"kabul listesi: satır sütun sayısı {len(cells)}, beklenen {len(LIST_COLUMNS)}: '{l.strip()[:50]}'")
             continue
@@ -930,14 +963,15 @@ def draft_list(criteria: dict[int, tuple[bool, str]]) -> str:
     d = lambda what: f"{DRAFT_MARK}: {what}>>"
     out = ["| " + " | ".join(LIST_COLUMNS) + " |", "|" + "---|" * len(LIST_COLUMNS)]
     for n, (mandatory, text) in sorted(criteria.items()):
-        if "|" in text or text != text.strip():
-            raise Incomplete(f"AC-{n} ölçüt metni tabloya birebir taşınamaz ('|' ya da baş/son boşluk) — elle düzeltilmez")
+        if text != text.strip():
+            raise Incomplete(f"AC-{n} ölçüt metni tabloya birebir taşınamaz (baş/son boşluk) — elle düzeltilmez")
+        text = cell_escape(text)  # table_cells() reads it back exactly
         # a hint never holds '|': it is a table cell (Codex: 'evet | hayır' split the row into 11 cells)
         cells = [f"AC-{n}", text, d("neden"), d("nasıl"), d("beklenen sonuç"), d("evet veya hayır"),
                  "evet" if mandatory else "hayır", d("gerçek sonuç"), "denenmedi", d("yol@commit[:satır]")]
         out.append("| " + " | ".join(cells) + " |")
     for row in out:
-        if row.count("|") != len(LIST_COLUMNS) + 1:
+        if len(row_parts(row)) != len(LIST_COLUMNS) + 2:
             raise Incomplete(f"taslak satırı {len(LIST_COLUMNS)} hücreli değil — üretilmez: '{row[:60]}'")
     return "\n".join(out) + "\n"
 
@@ -1681,7 +1715,7 @@ def self_test() -> int:
     cases.append(("CT-FIX-03 U3 (Codex): every line of the list draft has exactly the §6.2 column count (no '|' inside a hint)",
                   all(l.count("|") == len(LIST_COLUMNS) + 1 for l in dl_text.split("\n") if l.strip())))
     def filled_row(r, ln):
-        c = [x.strip() for x in r.strip().strip("|").split("|")]
+        c = [cell_escape(x) for x in table_cells(r)]
         c[2:6] = [f"gerekçe {c[0]}", f"yöntem {c[0]}", f"beklenen {c[0]}", "hayır"]
         c[7:10] = ["gözlenen", "geçti", f"`{RUN}/stdout.txt@{C3}:{ln}`"]
         return "| " + " | ".join(c) + " |"
@@ -1702,8 +1736,24 @@ def self_test() -> int:
                   (lambda r: r[0] == 1 and any("doldurulmamış" in l for l in r[1]))(run(rec_d, fs=fs_d))))
     cases.append(("CT-FIX-03 U3 sabotage: a filled record with the list draft as printed -> ENGEL 'doldurulmamış'",
                   any("doldurulmamış" in e for e in eng(run(filled_rec, fs={**fs_d, (C1, "docs/records/audits/2026-10/x/kabul.md"): dl_text})))))
-    cases.append(("CT-FIX-03 U3: a criterion text holding '|' is refused, never altered",
-                  _refuses(lambda: draft_list({1: (True, "a | b")}))))
+    real = "`grep -oE '^\\| UIC-[0-9]+'` çıktısı 26 satır"
+    dl_real = [l for l in draft_list({1: (True, real)}).split("\n") if l.startswith("| AC-")]
+    cases.append(("UI 10-27: a criterion with a regex escape '\\|' (MOD-0286 AC-4 form) round-trips exactly",
+                  table_cells(dl_real[0])[:2] == ["AC-1", real]))
+    cases.append(("UI 10-27: a literal backslash at a cell's end does not eat the border",
+                  table_cells("| a\\\\ | b |") == ["a\\", "b"]))
+    dl_pipe = draft_list({1: (True, "grep a | wc -l"), 2: (True, "yetkisiz kullanıcı 403 alır")})
+    pipe_rows = [l for l in dl_pipe.split("\n") if l.startswith("| AC-")]
+    cases.append(("UI 10-27: '|' in a criterion is drafted as '\\|' and read back as the pack's text",
+                  "grep a \\| wc -l" in pipe_rows[0] and table_cells(pipe_rows[0])[:2] == ["AC-1", "grep a | wc -l"]))
+    pack_pipe = pack("- [ ] AC-1 (zorunlu) — grep a | wc -l\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n")
+    list_pipe = "\n".join(dl_pipe.split("\n")[:2] + [filled_row(r, i) for i, r in enumerate(pipe_rows, start=1)]) + "\n"
+    fs_pipe = {**files, (C1, PK): pack_pipe, (C1, "docs/records/audits/2026-10/x/kabul.md"): list_pipe}
+    cases.append(("UI 10-27: a filled list whose criterion holds an escaped '|' passes the ordinary check (exit 0)",
+                  run(filled_rec, fs=fs_pipe)[0] == 0))
+    list_raw = list_pipe.replace("grep a \\| wc -l", "grep a | wc -l")
+    cases.append(("UI 10-27 sabotage: the same list with an unescaped '|' -> ENGEL (column count), never an acceptance",
+                  any("sütun sayısı" in e for e in eng(run(filled_rec, fs={**fs_pipe, (C1, "docs/records/audits/2026-10/x/kabul.md"): list_raw})))))
 
     def pp(text, module="MOD-0151"):
         try:
