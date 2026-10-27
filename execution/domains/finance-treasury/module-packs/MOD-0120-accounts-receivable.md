@@ -22,7 +22,16 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > **Durum: `draft` (planlama belgesi).** Bu paket kod, servis iskeleti, port kaydı, gateway rotası ya da kaynak
 > projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02)
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; **MOD-0120 için** kod alma izni **verildi** (KARAR
-> D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
+> D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
+> dilimin önkoşulu — D51/1) ve "Açık kararlar".
+>
+> **Revizyon (2026-10-27, D51):** (1) Ready-for-dev Checklist ENGELLER ikiye ayrıldı (D51/1): **paket kapısı** (işaretsiz —
+> 0.3 / 0.5 / 0.6 / 0.7, S-2 bitiş teyidi, CT-APR-02/01, DCP-011 onayı, kod alma, port, MOD-0126 DL-1 iskeleti, `AuditCategory`
+> `Finance` main'de, MOD-0149 eki, TRM-14, SEC-002 tasarımı + Auth'ta `read-tenant-wide` tanımı, RCS-001 / BL-565 servisi, küsurat
+> kaynağı, Level-1 koşul 1) ve **dilim kapıları** ("— DL-n için" — MOD-0023 AR şablonu, §17 maddeleri, O-7 / O-8, O-9 (D16) DL-3).
+> Madde düşürülmedi, yalnız sınıflandırıldı; "Teslim dilimleri" Önkoşul metinleri ve Runtime Constraints'teki "Ready-for-dev
+> engeli" ifadesi buna çekildi. (2) SEC-002 "kapsamı soran kod + kanıt testi" (AC-6) DL-1 kabul kapısına taşındı; AC-6 DL-1
+> "Bitiş"te zaten vardı (D51/2); Dependencies SEC-002 satırı da buna çekildi. AC numaraları değişmedi. `status: draft`.
 >
 > **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-33'teki ek not zorunluluk parantezinin dışına alındı. Kapsam ve anlam değişmedi.
 >
@@ -625,7 +634,7 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | MOD-0021 / CentralAudit (K4) | yol `b` | var (`Diten.BuildingBlocks.CentralAudit`, SupplyChain/Inventory kullanıyor) | servis iskeletiyle gelir; AR yalnız bildirim ekler |
 | MOD-0048 para birimi | kod listesi + küsurat | kısmen — liste var, küsurat yok (MOD-0126 pack) | MOD-0126 **O-11** ile tek karar; yoksa yazma 503 |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack) | **engel**: modül kendi sayacını yazamaz; servis gelene kadar Create yazılamaz (O-6) |
-| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapı (kapsamı soran kod + kanıt testi) açık |
+| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + tüketim yolu tasarımı + Auth'ta `read-tenant-wide` tanımı olmadan `ready-for-dev` yok; kapsamı soran kod + kanıt testi (AC-6) DL-1 kabul kapısıdır (D51/2). Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapsamı soran kod + kanıt testi (AC-6) açık — DL-1 kabul kapısında (D51/2) |
 | MOD-0031 Evidence Linking | düzeltme kanıt kimliği | var (`api/v1/evidence`, MOD-0126 pack) | yalnız bağlantı kimliği doğrulanır (DL-3 başında davranış ölçülür) |
 | MOD-0289 Bank Account Registry | tahsilat hesabı referansı | kod yok (D20/1, TRM-S3); okuma sözleşmesi **taslak**: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | yalnız boş olmayan opak Guid; çözümleme sözleşme dondurulunca (Follow-up) |
 | MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (D16) |
@@ -791,7 +800,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        kalır (202 `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` / `RECEIVABLE_DECISION_OUTCOME_UNKNOWN`), talep, fatura
        kilidi, tahsilatlar ve makbuz değişmez. 404 / boş okumadaki anahtarlı yeniden yazma, MOD-0023 saklama + silmeme
        politikası (en az niyet ömrü boyunca; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma kapanana
-       kadar **kapalıdır** (kapanış tablosu, Ready-for-dev engeli).
+       kadar **kapalıdır** (kapanış tablosu; dilim kapısı — DL-3 için, D51/1).
      - **Uzak sonuç doğru denemeye bağlanır (gap 6/P1-b):** `instances/by-objects` bir nesnenin bütün silinmemiş
        örneklerini döndürür (`GetWorkflowInstancesByObjectsHandler.cs:50-69`). Okuma sonucu niyete yalnız **hepsi**
        eşleşirse bağlanır: kiracı; nesne (düzeltme talebi) kimliği — AR'de her talep kendi nesnesidir ve tek başlatma
@@ -1418,7 +1427,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Sayfa yardım metni anahtarları ve "tur yok"
 - [x] Acceptance criteria kimlikli ve test edilebilir
 
-**ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
+**ENGELLER — paket kapısı (D51/1).** Tek kural (MOD-0217 / MOD-0289 deseni): işaretsiz madde **paket düzeyidir** — bütün
+dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz. **"— DL-n için"** işaretli
+madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde o dilimin Önkoşul
+metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Yeni kodun testlerinin geçmesi
+iki kapının da maddesi değildir — o dilimin kabul kapısıdır ("Bitiş" AC'leri).
 - [x] Karar 0.3 (MOD-0003) — KARAR D27/1; S-1 sahip K1, bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (O-1a)
 - [x] Karar 0.5 (AR-BILLING-BUNDLE) — KARAR D27/2; S-2 kısıtlı yerel MVP, sahip K1 (O-1b)
 - [ ] S-2 bitiş / gözden geçirme koşulunun sahip tarafından yazılması — D27/2 bitiş koymadı (T32 "sahip + bitiş" ister);
@@ -1433,17 +1446,19 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] Platform `AuditCategory`'ye `Finance` (değer 18; Y-4/7) değeri main'de (D35/3; Platform sahibi, XMC-001) — MOD-0126 DL-1'in, dolayısıyla MOD-0120 DL-1'in önkoşulu
 - [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3: sahip payı KARAR D29/1; commercial-suite sahibinin teyidi ve eki açık, D9) — ek kabul edildi (Y-4/4b); MOD-0149 pack revizyonu gelene kadar önkoşul açık
 - [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak) — kural D14/4 ile kararlaştırıldı
-- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14) — yol Platform sahibi yanıtı Y-4/6 ile belirlendi; açık kalan: kapsamı soran kod + kanıt testi ve `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5)
+- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14) — tasarım: yol Platform sahibi yanıtı Y-4/6 ile belirlendi (servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MOD-0126 DL-1 yazar); açık kalan (paket kapısı): `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5). Kapsamı soran kod + kanıt testi (AC-6) bu kapının maddesi değildir — **DL-1 kabul kapısındadır** (D51/2; AC-6 DL-1 "Bitiş"te)
 - [ ] RCS-001 ortak kod servisi (önek `ARI` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30))
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak) — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed önkoşul açık
+- [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
+
+**Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8: K2 D14/3, muafiyet yok D31/1 — kapandı) — DL-3 için
-- [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (DL-3, O-9a → D15/1), ödeme referansı iş tekilliği,
-  mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41
+- [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (O-9a → D15/1), ödeme referansı iş tekilliği,
+  mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41 — DL-3 için
 - [ ] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17'de onaylı; silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13) — DL-3 için; AC-W1 (silmeme mimari testi) DL-3 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [ ] MOD-0023 okuma eşleme alanları (KARAR D21/3) §17'de onaylı — DL-3 için; kod MOD-0023 sahibinin WP'siyle gelir (D25/1), AC-W2/W3 uygulama kabul kapısındadır (gap 16/P2); yoksa okuma niyeti kapatmaz (gap 6/P1-b)
-- [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
 
 ## Implementation Notes
 
@@ -1660,12 +1675,15 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: `Features/ReceivableInvoice/` içinde Create/Update/Delete/BulkDelete + liste/detay/iz sorguları,
   Domain/Persistence, MOD-0149 bağdaştırıcısı (LE, para birimi, kod ve veri kapsamı bağdaştırıcıları servis ortaktır ve
-  MOD-0126 DL-1'indir), `accounts-receivable.openapi.yaml`. Önkoşul: Ready-for-dev engelleri (DCP, S-2 bitiş teyidi, **MOD-0126
-  DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, O-3, TRM-14, O-14, O-6, küsurat; 0.3 / 0.5 / 0.6 / 0.7 ve kod
-  alma D27/1–5 ile verildi).
+  MOD-0126 DL-1'indir), `accounts-receivable.openapi.yaml`. Önkoşul: yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER
+  maddeleri (CT-APR-02/01, DCP, S-2 bitiş teyidi, **MOD-0126
+  DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, `AuditCategory` `Finance` main'de, O-3, TRM-14, O-14 tasarımı + Auth'ta
+  `read-tenant-wide` tanımı, O-6 RCS-001 servisi, küsurat; 0.3 / 0.5 / 0.6 / 0.7 ve kod
+  alma D27/1–5 ile verildi); "— DL-n için" işaretli maddeler DL-1'i bekletmez (D51/1). Servis iskeleti bu dilimde değil,
+  MOD-0126 DL-1 WP'sinin ilk adımıdır (D51/3).
   Bitiş: AC-1, 2 (Create / Update / Delete / BulkDelete kısmı: dört komutta şirket uygun değilken 422 ve kayıt değişmez,
   MOD-0220 erişilemezken 503, liste ve detay okuması 200), 3, 5 (okuma ve Create / Update / Delete / BulkDelete kısmı: başka
-  kiracının ya da başka şirketin faturasına liste / detay / iz okuması ve bu dört yazma 404), 6, 17 (Create kısmı), 18 (tek
+  kiracının ya da başka şirketin faturasına liste / detay / iz okuması ve bu dört yazma 404), 6 (SEC-002 kapsamı soran kod + kanıt testi — DL-1 kabul kapısı, D51/2), 17 (Create kısmı), 18 (tek
   aşamalı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
   iki merkezi kayıt AUD-001 §8 sorgusuyla gösterilir ve on alan işaretlenir; açma kaydı DL-2'dedir), 32 (d) kısmı (aynı dış
   numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number` kaldırıldığında kırmızı — sabotaj),
@@ -1676,7 +1694,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   sorgusuyla, on alan işaretli — AC-31 bu dilimde kapanır), 35 (Issue, SetCollectionStage kısmı).
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
   (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-43, AC-2 (RequestAdjustment / Approve / Reject / RecordPayment kısmı ve açık niyetin Reconcile'ının şirket
   uygun değilken tamamlanması — AC-2 bu dilimde kapanır), AC-5 (düzeltme talebi, karar ve tahsilat kısmı — AC-5 bu dilimde
   kapanır), AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32 (a), (b), (c) kısmı ve (a), (b) sabotajı

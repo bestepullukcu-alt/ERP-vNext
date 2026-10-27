@@ -12,6 +12,14 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > bu sürüme CT-APR-02 ve CT-APR-01 satırı yok). 2026-10-26 sürümlerine (`684e89d6…`, `94d3ad93…`) yapılan "pack satır N" atıfları
 > geçersizdir; bu kayıt pack'e bölüm adıyla ya da `yol:satır@904dfd5c2` ile atıf yapar. Pack `ready-for-dev` revizyonunda yeniden
 > değişirse atıflar o sürümde yeniden doğrulanır (S-53).
+>
+> **D51 güncellemesi (2026-10-27).** Sahip kararı D51 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`)
+> bu kaydın açık bıraktığı üç noktayı kapattı ve pack çalışma ağacında (dal `chore/ct/treasury-intake-ct-05`, commit edilmedi)
+> buna göre revize edildi ("Revizyon (2026-10-27, D51)"): (D51/1) ENGELLER paket kapısı ↔ "— DL-n için" dilim kapısı olarak
+> ayrıldı — DL-1 yalnız paket kapısını bekler (Not 1 kapandı); (D51/2) SEC-002 kapsamı soran kod + kanıt testi (AC-32) DL-1 kabul
+> kapısında, Auth'ta `read-tenant-wide` tanımı paket kapısında (Not 2 kapandı); (D51/3) WP dalı `feature/fin/wp-0126-dl1`,
+> `/add-module` servis iskeleti DL-1 WP'sinin ilk adımı (§4 başlık satırları). Aşağıdaki `@904dfd5c2` satır atıfları eski sürüme
+> aittir; D51 revizyonu satırları kaydırdı — atıflar `ready-for-dev` sürümünde yeniden doğrulanır.
 
 # MOD-0126 DL-1 hazırlığı — servis iskeleti, parti çekirdeği ve denetim altyapısı
 
@@ -24,7 +32,8 @@ kapısından geçer.
 
 Kaynak: pack "Teslim dilimleri" DL-1 önkoşulu (`MOD-0126-payments-approvals.md:1557-1559@904dfd5c2`) ve "Ready-for-dev
 Checklist" işaretsiz maddeleri (`:1398-1420@904dfd5c2`). "DL-1'e etkisi" sütunu: **bekletir** = DL-1 kodu bu kapanmadan
-başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu.
+başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu. **D51/1 sonrası:** "bekletir" satırları pack'in paket kapısı
+(işaretsiz ENGELLER) ile birebirdir; "DL-2 / DL-3" satırları pack'te "— DL-n için" işaretli dilim kapısıdır ve DL-1'i bekletmez.
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
@@ -39,8 +48,8 @@ başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu.
 | Platform `AuditCategory`'ye `Finance = 18` (D35/3, Y-4/7) | Beste | **yok** — enum `Unknown = 0 … ESignature = 17` (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@904dfd5c2`); kopya `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditPlatformValues.cs` son değer `ESignature = 17` (`:29`), `Finance` yok | bekletir (pack: "DL-1 bu değer main'e girmeden başlamaz") |
 | O-11 MOD-0048 `currency-minor-units` seed + izin listesi | Beste (Y-4/3: başlangıç listesi kabul) | **yok** — `services/Diten.Platform/**`'te `currency-minor-units` geçmiyor; `BusinessReferenceData:ConsumableSets` listesinde yok (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104-…@904dfd5c2`) | bekletir (Create; yoksa 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE`) |
 | O-13 MOD-0048 `payment-method` kümesi seed + izin listesi | Beste (Y-4/3) | **yok** — aynı ölçüm, `payment-method` 0 | bekletir (Create; yoksa 503 `PAYMENT_METHOD_SOURCE_UNAVAILABLE`) |
-| O-19 SEC-002 tüketim yolu | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6: servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed). Açık: `read-tenant-wide`'ın Auth'ta açık atamalı tanımı — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` anahtarı yok (grep 0). "Kapsamı soran kod + kanıt testi" DL-1'in kendi işidir (AC-32) | bekletir (pack checklist maddesi); bkz. not 2 |
-| MOD-0018 Auth: rol şablonları (D46 + D47 + D49 + D50 matrisi) ve açık atamalı anahtarlar | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara ve tarih yok) | Treasury rolleri için MOD-0018 paketi depoda yok (`execution/domains/*/module-packs/MOD-0018-*` yalnız FU9…FU22); Auth'ta anahtar yok | DL-1 kodunu doğrudan bekletmez (izin anahtarları servis manifestinden kaydolur; testler izni token'a koyar — **çıkarım**, pack'te yazılı değil); `read-tenant-wide` maddesi O-19 satırındadır |
+| O-19 SEC-002 tüketim yolu | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6: servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed). Açık: `read-tenant-wide`'ın Auth'ta açık atamalı tanımı — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` anahtarı yok (grep 0). "Kapsamı soran kod + kanıt testi" DL-1'in kendi işidir (AC-32) | bekletir — yalnız Auth'ta `read-tenant-wide` tanımı (paket kapısı); kapsamı soran kod + AC-32 **DL-1 kabul kapısı** (D51/2); bkz. not 2 |
+| MOD-0018 Auth: rol şablonları (D46 + D47 + D49 + D50 matrisi) ve açık atamalı anahtarlar | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara ve tarih yok) | Treasury rolleri için MOD-0018 paketi depoda yok (`execution/domains/*/module-packs/MOD-0018-*` yalnız FU9…FU22); Auth'ta anahtar yok | DL-1 kodunu doğrudan bekletmez (izin anahtarları servis manifestinden kaydolur; testler izni token'a koyar — **çıkarım**, pack'te yazılı değil); `read-tenant-wide` maddesi O-19 satırındadır. D51/1 "Auth kaydı"nı paket kapısında sayar; pack checklist'inde Auth'a ait tek madde `read-tenant-wide` tanımıdır (rol şablonlarının Auth kaydı ayrı madde değil — CT'ye açık nokta) |
 | MOD-0023 şablon kodu (O-8) | Ali | Y-6: ödeme partisi şablonu **tek adım**; kod, iş paketi numarası ve tarih yok | DL-2 |
 | MOD-0023 §17 rev 2 onayı | Beste (onay verildi) | **kapandı** — `approvals.tsv:16` (`803fbaa5…`); AC-W1…W17 DL-2 kabul kapısında | DL-2 |
 | MOD-0031 dedupe ölçümü | Treasury CT (ölçüm) | ölçülmedi | DL-3 |
@@ -49,11 +58,14 @@ başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu.
 **Not 1 — ENGELLER başlığının kapsamı.** Pack "ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz)" listesi DL-2 / DL-3 maddelerini de
 içeriyor (MOD-0023 şablonu, §17 rev 2 maddeleri, MOD-0031 dedupe). Pack metnine göre `ready-for-dev` bunları da bekler; MOD-0289'daki
 "iki kapı" ayrımı (tasarım kapısı ↔ dilim kabul kapısı) MOD-0126'da yok. DL-1'in DL-2 maddelerini beklemesi isteniyor mu — CT /
-sahip kararı; bu kayıt karar vermez.
+sahip kararı; bu kayıt karar vermez. **Kapandı — D51/1:** pack ENGELLER'i paket kapısı (işaretsiz) ve dilim kapıları ("— DL-n
+için": MOD-0023 şablonu, §17 rev 2 maddeleri, O-4 → DL-2; MOD-0269 sözleşmesi, MOD-0031 dedupe → DL-3) olarak ayrıldı; DL-1
+yalnız paket kapısını bekler.
 
 **Not 2 — O-19 maddesinde kilitlenme.** Checklist maddesi "kapsamı soran kod + kanıt testi" ister; kod `ready-for-dev`'den önce
 yazılamaz. MOD-0289 gap 16/2'deki gibi bu kısım dilim kabul kapısına taşınmadıkça madde kapanamaz. Pack revizyonu CT işidir
-(öneri: Auth tanımı ready-for-dev maddesi, kod + AC-32 DL-1 kabul kapısı).
+(öneri: Auth tanımı ready-for-dev maddesi, kod + AC-32 DL-1 kabul kapısı). **Kapandı — D51/2:** öneri olduğu gibi uygulandı;
+AC-32 DL-1 "Bitiş"te zaten vardı.
 
 **DCP numarası:** DCP-011 atandı ve dosya adı değişti (Y-4/2, 2026-10-27). D32/8'in numarasız onay istisnası D34/2 ile kullanılmaz;
 pack checklist satırı ("DCP `approved` ve numarası atanmış") olduğu gibi kalır — açık kalan yalnız `approved`.
@@ -187,12 +199,12 @@ bu dalda 242ef03df).
 
 | Alan | Değer (taslak) | `ready-for-dev` günü doldurulacak |
 |---|---|---|
-| Ajan satırı | `@[.antigravity/agents/backend-architect.md]` | yeni servis iskeleti için `@orchestrator /add-module` adımı aynı WP'de mi ayrı mı — CT kararı |
+| Ajan satırı | `@[.antigravity/agents/backend-architect.md]`; **ilk adım** `@orchestrator /add-module` ile `Diten.FinanceTreasuryService` servis iskeleti — aynı WP'de, ayrı ön WP yok (D51/3) | — |
 | WP / Prompt | `WP-0126-DL1` · `TRM-WP-0126-DL1-P v1.0` | — |
-| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0126-dl1` (pack künyesinde `feature/fin/mod-0126-payments-approvals` — hangisi, CT kararı) | Expected HEAD = pack `ready-for-dev` onayının main'deki commit'i (S-53); worktree yolu |
+| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0126-dl1` — her WP kendi dalında (D51/3); pack künyesindeki `feature/fin/mod-0126-payments-approvals` paket dalıdır, WP dalı değil | Expected HEAD = pack `ready-for-dev` onayının main'deki commit'i (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, yetki, denetim, sözleşme, para | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
-| Kapsanan dilim | **yalnız DL-1** | — |
+| Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı (işaretsiz ENGELLER); "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-32 bu WP'nin kabul kapısında (D51/2) | — |
 
 **İzinli yollar** (pack Repo Scope, DL-1 satırları): `services/Diten.FinanceTreasuryService/**` (Api / Application / Domain /
 Persistence / Infrastructure + `tests/`; `Features/PaymentBatch/**`, `Domain/PaymentBatches/**`, `Persistence/PaymentBatches/**`,
@@ -239,7 +251,7 @@ kanıt sayılmaz (pack kapanış tablosu).
   aggregate / entity + alanlar (`PaymentBatch`, `PaymentInstruction`, `FinanceTreasuryCommandReceipt` — pack "Entity Fields");
   komut / sorgu listesi (Create, Update, Delete, BulkDelete, Validate; liste, detay, iz, istisna listesi); validator kuralları
   (`CreatePaymentBatchValidator`, `UpdatePaymentBatchValidator`, `GetPaymentBatchListValidator` — pack "Validation Rules"un alan kuralları); izin anahtarları (§2.6); `Response<T>` + `CustomBaseController`.
-- `/add-module` alanları (iskelet aynı WP'deyse): pack yolu + status, domain `finance-treasury`, servis `Diten.FinanceTreasuryService`,
+- `/add-module` alanları (iskelet bu WP'nin ilk adımı — D51/3): pack yolu + status, domain `finance-treasury`, servis `Diten.FinanceTreasuryService`,
   shell `tenant`, `golden_reference: compact`, `form_field_count: 16`, dal, alt ajan zinciri.
 - Yazma kapsamı denetimi: ajanın araçları İzinli yolları karşılamazsa `BLOCKED — agent/scope mismatch`.
 

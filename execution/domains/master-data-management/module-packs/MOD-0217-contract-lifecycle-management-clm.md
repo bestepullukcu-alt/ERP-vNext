@@ -146,6 +146,14 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > DL-2 CreateAmendment kısmı); AC-4 ve AC-21 metni ve işlem tablosundaki Create niyet sayısı buna göre düzeltildi. O-4 satırına
 > "D49/2 ile `value.write` eklendi" notu. Rol şablonu: sözleşme yöneticisi `value.write` taşır (rol matrisi D49 ile güncellendi,
 > `treasury-intake-owner-decisions-05.md`). Mevcut AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, D51):** D51/1 — paket kapısı ile dilim kapısı ayrımı bu pakette zaten tek kuraldı (Revizyon 2,
+> P2-c); Ready-for-dev Checklist'te "— DL-n için" maddeleri ayrı "Dilim kapıları" alt listesine toplandı ve kapanmış (`[x]`)
+> dilim maddeleri de işaretlendi: MOD-0262-FU01 sözleşme ölçümü ve O-13 → DL-2; O-8 imza modeli → DL-3. Paket kapısı
+> (işaretsiz): CT-APR-02/01, DCP onayı ve üyeliği, domain-config + kimlik kaydı satırı main'de, Auth kaydı, RCS-001 §3 `CTR`
+> satırı main'de + RCS-001 / BL-565 servisi, SEC-002 sağlayıcı ölçümü, kapanmış kararlar (O-1, O-4…O-15, `AuditCategory`
+> `MasterData`, `OTHER`, MOD-0048 tüketim yolu). DL-2 Önkoşul metnine MOD-0262-FU01 canlı doğrulama kaydı eklendi (checklist'te
+> "— DL-2 için" idi). Madde düşürülmedi; AC numaraları değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -1281,21 +1289,23 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
   `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi) — portu ilk tüketen dilim yazar
 - [x] O-2 D37'nin MOD-0028 kısmı — **KARAR D40 (2026-10-26): (b)** — sürüm MOD-0217'nin `ContractVersion` kaydı, dosya
   MOD-0262-FU01'de `ContentId` ile; v1'de MOD-0028 bağımlılığı yok, MOD-0028 yüzey ölçümü **gerekmez**; DL-2 önkoşulu değil
+
+**Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
 - [x] MOD-0262-FU01 sözleşmesi kodda ölçüldü (2026-10-27, @7c57e8466; openapi dosyası yok — kaynak paket + kod): uçlar
   `POST/GET api/v1/document-repository/objects…` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:59-119`);
   servis kimliği yok, çağıran kullanıcı token'ını iletir ve `platform.document-repository.read` / `.manage` izni gerekir
   (`DocumentRepositoryModels.cs:17,20`) — D41/10 ile tutarlı; `scope` `Documents` enum'da var (`IContentStorageGateway.cs:65-90`);
   meta `OwningItemId` / `OwningVersionId` döner (`DocumentRepositoryModels.cs:53-64`; `CompanyId` dönmez); boyut varsayılanı 256 MB
-  (`ContentStorageOptions.cs:17,25`); uzantı izin listesi var, medya türü listesi boş (`:27-30`)
+  (`ContentStorageOptions.cs:17,25`); uzantı izin listesi var, medya türü listesi boş (`:27-30`) — DL-2 için
 - [ ] MOD-0262-FU01 canlı doğrulama kaydı (dev ortamında yükle / indir / başka kiracı 404) — DL-2 için
 - [x] O-13 çağrı kimliği kararı — **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md)** — kullanıcı token'ı Gateway üzerinden, `scope` = `Documents`; DL-2 başındaki
-  ölçüm çürütürse sahibe ayrıca sorulur (DL-3'teki MOD-0023 çağrısı da buna bağlıdır)
+  ölçüm çürütürse sahibe ayrıca sorulur (DL-3'teki MOD-0023 çağrısı da buna bağlıdır) — DL-2 için
 - [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4; şablon kodları Ali'den, Y-3) ve örnek durum adları ölçüldü — DL-3 için
 - [ ] MOD-0023 §17 rev 2 (803fbaa5…, PR #235) onaylı (CT-APR-02/01): `by-objects` / `history` okuma alanları (`idempotencyKey`,
   `isDeleted`, `approvalTaskId`), `includeDeleted=true`, kapanış kaydı anlamı — DL-3 için. Kod MOD-0023 sahibinin WP'siyle gelir;
   okuma alanlarının main'de olması ve AC-W2 / AC-W12 / AC-W13'ün geçmesi DL-3 **dilim kabul kapısındadır**, önkoşulu değil
 - [ ] MOD-0023 başlatma hata gövdesi kodları (400, 403 izin / SoD, 404 şablon) okunarak ölçüldü (başlatma yanıtı sınıfları) — DL-3 için
-- [x] O-8 imza modeli sahip kararı — **KARAR D41/5 (2026-10-26; treasury-intake-owner-decisions-04.md)** — elle imza kaydı + imzalı kopya belgesi; sağlayıcı ve geri çağrı yok
+- [x] O-8 imza modeli sahip kararı — **KARAR D41/5 (2026-10-26; treasury-intake-owner-decisions-04.md)** — elle imza kaydı + imzalı kopya belgesi; sağlayıcı ve geri çağrı yok — DL-3 için
 - [ ] MDM domain-config frontend/gateway kapsam cümlesi — DL-4 için
 - [ ] Gateway rotaları (integration-agent) — DL-4 için
 
@@ -1475,7 +1485,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `GetContractDocumentContentQuery`, `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`,
   `Infrastructure/DocumentRepository/**`, belge uçları (MOD-0028 istemcisi yok — KARAR D40). **Neden ayrı:** MOD-0262-FU01
   dış bağımlılığına (D37 (yorum D40)) bağlıdır; DL-1'i bekletmesin. O-2 KARAR D40 ile kapandı, DL-2 onu beklemez (D40/2).
-  Önkoşul: DL-1 ve "— DL-2 için" maddeleri: MOD-0262-FU01 sözleşme ölçümü (meta sahiplik alanları ve O-13 KARAR D41/10'un çağrı kimliği / `scope` doğrulaması dahil). Bitiş: AC-5 (belge ve değişiklik uçları kısmı), AC-6 (belge ve
+  Önkoşul: DL-1 ve "— DL-2 için" maddeleri: MOD-0262-FU01 sözleşme ölçümü (meta sahiplik alanları ve O-13 KARAR D41/10'un çağrı kimliği / `scope` doğrulaması dahil) ve MOD-0262-FU01 canlı doğrulama kaydı. Bitiş: AC-5 (belge ve değişiklik uçları kısmı), AC-6 (belge ve
   değişiklik uçları kısmı), AC-7 (DL-2 yazmaları kısmı), AC-10 (DL-2 komutları kısmı), AC-11 (DL-2 yazmaları kısmı), AC-12
   (DL-2 defter satırları kısmı), AC-14 (DL-2 yazmaları kısmı), AC-15 (DL-2 uçları kısmı), AC-16 (DL-2 aksiyonları kısmı), AC-17
   (belge ve değişiklik alanları kısmı), AC-21 (DL-2 yazmaları kısmı), AC-22 (DL-2 yazmaları kısmı), AC-24…AC-31, AC-39, AC-42
@@ -1485,7 +1495,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `Rules/{WorkflowStartOutcomeClassifier,WorkflowAttemptMatcher}.cs`, `Infrastructure/Workflow/**`. **Neden ayrı:** MOD-0023
   şablonuna (O-3) bağlıdır. Önkoşul: DL-2 (imzalı kopya belgesi için) ve "— DL-3 için" maddeleri: O-3 şablonu ve MOD-0023
   durum adları ölçümü, MOD-0023 §17 rev 2 onayı (803fbaa5…, PR #235), MOD-0023 başlatma hata gövdesi kodları ölçümü
-  (O-8 KARAR D41/5, O-13 KARAR D41/10 ile kapandı). Bitiş (son arka uç dilimi — kesişen AC'ler burada tam kapanır): AC-5 (onay / imza / yaşam döngüsü uçları kısmı), AC-6
+  (O-8 imza modeli KARAR D41/5, O-13 KARAR D41/10 ile kapandı). Bitiş (son arka uç dilimi — kesişen AC'ler burada tam kapanır): AC-5 (onay / imza / yaşam döngüsü uçları kısmı), AC-6
   (onay / imza / yaşam döngüsü uçları kısmı), AC-7 (DL-3 yazmaları kısmı), AC-10 (DL-3 komutları kısmı), AC-11 (DL-3 yazmaları kısmı), AC-12 (DL-3 defter
   satırları kısmı), AC-14 (DL-3 yazmaları kısmı), AC-15 (DL-3 uçları kısmı), AC-16 (DL-3 aksiyonları kısmı), AC-17 (imza /
   yenileme / fesih alanları kısmı), AC-18 (ilk Submit sonrası değişmezlik kısmı), AC-21 (DL-3 yazmaları kısmı), AC-22 (DL-3
