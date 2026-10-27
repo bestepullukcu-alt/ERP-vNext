@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D54 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D55 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -498,6 +498,22 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT 
 `waive-sod` açık atamasının hedef ödeme partisini taşıması zorunludur: Auth ataması hedef parti kimliğini taşımıyorsa ya da okunamıyorsa
 muafiyetli onay 403 ile reddedilir (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok). Atamanın hedef partisi rotadaki partiyle eşleşmezse
 aynı ret. Auth (MOD-0018) paketi atamada hedef parti kimliğini taşır — Ali'ye iletilir. "Tek parti" kuralı süreç denetimine bırakılmaz.
+
+## D55 — MOD-0057 parktan çıkar (D19/2'yi değiştirir; soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); sahibin sözü
+"MOD-0057 Etiketleme parktan çıkarmamız lazım". Keşif: `verify_module_id.py --discover "Semantic Tagging"` @ec063fee9, çıkış 3, rapor
+sha256 `98cf6271…e980` (Blueprint 1 aday MOD-0057; registry 0; paket 0; görev 1 = TRM-18).
+
+1. **Park kalkar:** MOD-0057 Semantic Tagging & Taxonomy Management Treasury intake'e geri döner (D19/2'nin park maddesi kalkar;
+   level-1 kaydı `treasury-level1-acceptance-01/MOD-0057-v1.0.md` geçerli).
+2. **Yerleşim önerisi: `commercial-suite`** — konu taksonomisi sahipliği MOD-0162-FU01'de ve o paket MOD-0057'yi gelecek bağlantı
+   olarak anıyor. Yerleşim commercial-suite domain sahibinin onayına bağlıdır (XMC-001); onay gelene kadar pack taslağı yazılabilir,
+   domain-config / registry satırı yazılmaz.
+3. **v1 bağımsız:** taksonomi ve etiket yönetimi (sınıf ağaçları, etiketler, varlığa etiket bağlama); arama ve bilgi grafiği bağlantısı
+   MOD-0053 / MOD-0056 Recovery'ye gelince sonraki sürüm.
+4. **Kule:** Treasury CT yürütür (devir paketi ve level-1 kaydı burada); pack taslağı CT yazar, sahip ZIP denetimi + CT-APR-02.
+   Kod alma izni ayrı karardır (D1 deseni).
 
 ## Karar olmayanlar
 
