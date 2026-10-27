@@ -1726,7 +1726,8 @@ public sealed class PvgServiceApiHostTests
     [Fact]
     public void Program_environment_name_comes_only_from_aspnetcore_environment_variable()
     {
-        var expected = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? Environments.Production;
+        var rawEnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var expected = string.IsNullOrWhiteSpace(rawEnvironmentName) ? Environments.Production : rawEnvironmentName;
 
         var actual = Program.CreateWebHostBuilder([]).GetSetting(WebHostDefaults.EnvironmentKey);
 

@@ -38,7 +38,7 @@ public static class PvgServiceApiHost
             .UseKestrel()
             .UseContentRoot(AppContext.BaseDirectory)
             .UseConfiguration(configuration)
-            .UseEnvironment(environmentName ?? Environments.Production)
+            .UseEnvironment(ResolveEnvironmentName(environmentName))
             .UseUrls(urls)
             .ConfigureServices((context, services) =>
             {
@@ -116,6 +116,11 @@ public static class PvgServiceApiHost
         return endpoints;
     }
 
+    // Owner decision K3: an unset, empty, or whitespace-only environment name is "not given", which is Production.
+    // A non-blank name is passed through exactly as given (not trimmed).
+    private static string ResolveEnvironmentName(string? environmentName) =>
+        string.IsNullOrWhiteSpace(environmentName) ? Environments.Production : environmentName;
+
     private static void ThrowIfRequiredDependenciesMissing(
         IServiceCollection services,
         PvgServiceApiRuntimeOptions options)
@@ -150,6 +155,7 @@ public sealed record PvgServiceApiRuntimeOptions(
     public static PvgServiceApiRuntimeOptions From(IConfiguration configuration, string environmentName)
     {
         var isProductionLike =
+            string.IsNullOrWhiteSpace(environmentName) ||
             string.Equals(environmentName, Environments.Production, StringComparison.OrdinalIgnoreCase) ||
             configuration.GetValue("Pvg:Runtime:ProductionLike", false);
 
