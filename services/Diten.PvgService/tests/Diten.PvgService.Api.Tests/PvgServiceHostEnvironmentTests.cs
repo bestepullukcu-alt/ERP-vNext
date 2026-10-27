@@ -56,6 +56,7 @@ public sealed class PvgServiceHostEnvironmentTests
             ? new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
+                    ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-999",
                     ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true"
                 })
                 .Build()
