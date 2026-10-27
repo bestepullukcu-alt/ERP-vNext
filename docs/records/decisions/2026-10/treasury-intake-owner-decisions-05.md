@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D46 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D46a (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -71,11 +71,15 @@ Ali'nin sorusu (2026-10-27): `mdm.bank-accounts.read-tenant-wide` açık atamal�
 |---|---|
 | Banka verisi görüntüleyici | mdm.banks.read, mdm.bank-accounts.read, mdm.bank-account-purposes.read |
 | Banka verisi yöneticisi | görüntüleyici + mdm.banks.create, .update, mdm.bank-accounts.create, .update, mdm.bank-accounts.sensitive-reads.read |
-| Sözleşme görüntüleyici | mdm.contracts.read |
-| Sözleşme yöneticisi | görüntüleyici + mdm.contracts.create, .update, .amendments.create, .renewal-decisions.create, .submit-approval, .record-signature, .terminate, .archive, mdm.contracts.value.read |
+| Sözleşme görüntüleyici | mdm.contracts.read, platform.document-repository.read (D46a) |
+| Sözleşme yöneticisi | görüntüleyici + platform.document-repository.manage (D46a) + mdm.contracts.create, .update, .amendments.create, .renewal-decisions.create, .submit-approval, .record-signature, .terminate, .archive, mdm.contracts.value.read |
 
 Bağımlı servis okumaları (ör. hazine rollerinin MDM banka / şirket okuması) MOD-0119 O-20'ye göre şablona dahil edilir:
 Hazine ve AP/AR rollerine mdm.bank-accounts.read ve mdm.banks.read eklenir (maskeli).
+
+**D46a — ek (sahip onayı, 2026-10-27):** MOD-0217 belge yükleme / indirme çağrıları kullanıcı token'ıyla MOD-0262-FU01'e gider
+(D41/10; ölçüm 2026-10-27: `DocumentRepositoryModels.cs:17,20` @7c57e8466). Bu yüzden sözleşme görüntüleyiciye
+`platform.document-repository.read`, sözleşme yöneticisine ayrıca `platform.document-repository.manage` eklenir (tablo güncellendi).
 
 ## Karar olmayanlar
 
