@@ -98,6 +98,10 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > Aynı revizyonda sahip denetimi (gap listesi 21) ve hazırlık kaydı tutarsızlıkları kapatıldı: AC-27 banka kısmı DL-1, tam
 > kapanış DL-3; Gateway listesine `bank-account-purposes` rotaları; kaynak servis boyutu ve `Guid.Empty` atıfları; RCS §3 satır
 > durumu (D29/2, D30).
+>
+> **Revizyon 9 (2026-10-27, sahip kararları D45/D46):** MOD-0289 kod alma izni verildi (D45/3; D27/5 koşulları — kod yalnız
+> onaylı sürümle ve dilim sırasıyla). Rol şablonları (banka verisi görüntüleyici / yöneticisi) D46; `read-tenant-wide` ve
+> `read-unmasked` açık atamalı listede (D23/1, D23/4; Ali'ye iletildi). DCP dosya adı DCP-011. `status: draft`.
 
 ## Module Summary
 
@@ -1565,8 +1569,8 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
   paketi yazmamış, `high: evet` onaylayıcı
-- [ ] **Sahip MOD-0289 için kod alma iznini verdi (D1) — verilmedi:** D27/5 yalnız MOD-0126/0119/0120/0124 içindir; MOD-0289
-  için ayrı izin gerekir
+- [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
+  kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] MDM domain-config'e MOD-0289 satırı ve frontend/gateway kapsam cümlesi (bugün istisna yalnız MOD-0290-FU02)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
@@ -1689,7 +1693,7 @@ D24/5; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (D2
 
 | Karar | Seçim | Bu pakette | AC |
 |---|---|---|---|
-| D27/5 | dört Treasury modülüne kod alma izni | **MOD-0289'u kapsamaz** — Ready-for-dev engeli olarak kaldı | — |
+| D27/5 | dört Treasury modülüne kod alma izni | **MOD-0289'u kapsamaz** — izin ayrıca **D45/3** ile verildi (2026-10-27) | — |
 | D27/7 | BANK-DISPATCH FROZEN 0.1.0, `rail` yok | Dependencies satırı donmuş dosyaya işaret eder | — |
 | D27/9 (O-13) | hesap amaçları ekranı Compact | Açık kararlar, DL-4 önkoşulu | AC-58 |
 | D27/10 | sözlük kodları doğal anahtar, RCS kodu yok | Entity Fields → "Hesap amaçları"; Ready-for-dev maddesi kapandı | AC-54 |

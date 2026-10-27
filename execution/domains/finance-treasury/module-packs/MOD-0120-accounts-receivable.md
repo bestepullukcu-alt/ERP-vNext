@@ -26,6 +26,9 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 >
 > **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-33'teki ek not zorunluluk parantezinin dışına alındı. Kapsam ve anlam değişmedi.
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de"
 > maddesi açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-14, T-4; MOD-0126 O-19 ile tek karar);
@@ -1617,7 +1620,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | **KARAR D28 (2026-10-25): öneri kabul** — UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
 | O-13 | WriteOff kanıtı zorunlu mu | evet / hayır | **KARAR D28 (2026-10-25): öneri kabul** — evet, en az 1 MOD-0031 bağlantısı | sahip (K1) |
 | O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
-| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — MOD-0018 sahibiyle; `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
+| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — **KARAR D46** (2026-10-27; `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; Auth kaydı MOD-0018 sahibinde (Ali); `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
 
 ## Teslim dilimleri
 

@@ -123,6 +123,10 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > önerisidir (AC-59 deseni). (2) RCS-001 §3 `CTR` satırı yazıldı (`record-coding-standard.md:70` @ `82711f0ae`, PR #246);
 > eski "yazılmadı" ifadeleri ve checklist güncellendi; BL-565 servis engeli açık. (3) O-11 `OTHER` ve `AuditCategory`
 > açık kalır; `Finance = 18` MOD-0217'ye taşınmaz. `status: draft`.
+>
+> **Revizyon 9 (2026-10-27, sahip kararları D45/D46):** denetim kategorisi `AuditCategory.MasterData` (D45/1; Platform'da var,
+> yeni değer istenmez); O-11 `OTHER` kalır (D45/2); checklist'te iki madde kapandı. Rol şablonları (sözleşme görüntüleyici /
+> yöneticisi) D46 ile verildi; Auth kaydı MOD-0217 onayından sonra (Ali, 2026-10-27). DCP dosya adı DCP-011. `status: draft`.
 
 ## Module Summary
 
@@ -293,7 +297,7 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 |---|---|---|---|
 | Code | string | RCS-001 OTOMATİK; tür öneki **`CTR`** (O-5, KARAR D41/2; RCS-001 §3 satırı yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer); şirket öneki = yöneten şirketin kısa kodu (RCS-001 §5.4; kısa kodun `LegalEntity`'deki alanı **ölçülmedi**); istekte gelirse 400; silinen kaydın kodu yeniden kullanılmaz | kaynak `ContractNumber` (tekil `(TenantId, ContractNumber)`, paket §E) |
 | Title | string | zorunlu, trim, 1..200, kontrol karakteri yok | yeni ad |
-| ContractType | string | zorunlu; sabit çekirdek kod listesinden (O-11, KARAR D41/8: `SALES`, `SERVICE`, `NDA`, `LEASE`, `LICENSE`, `PARTNERSHIP`, `INTRA_GROUP`, `OTHER` — `OTHER` için sahip teyidi bekleniyor, Açık kararlar O-11); **`PURCHASE` yok (KARAR D39)** — satın alma / tedarik sözleşmesi MOD-0144'tedir, bu türle istek 400 (AC-59); etiket resx'te | kaynakta referans veriden ("contract types" lookup, paket §I) |
+| ContractType | string | zorunlu; sabit çekirdek kod listesinden (O-11, KARAR D41/8: `SALES`, `SERVICE`, `NDA`, `LEASE`, `LICENSE`, `PARTNERSHIP`, `INTRA_GROUP`, `OTHER` — `OTHER` kalır, **KARAR D45/2** (`treasury-intake-owner-decisions-05.md`)); **`PURCHASE` yok (KARAR D39)** — satın alma / tedarik sözleşmesi MOD-0144'tedir, bu türle istek 400 (AC-59); etiket resx'te | kaynakta referans veriden ("contract types" lookup, paket §I) |
 | GoverningLegalEntityId | Guid | zorunlu; aynı kiracıda MOD-0220 `LegalEntity`, Create'te `OperationalStatus = Active`; sürüm 1 bir kez onaya gönderildikten sonra **değişmez**; SEC-002 kapsamını taşır | kaynak `GoverningLegalEntityId` (yalnız süzgeç, paket §G) |
 | CounterpartyType | enum `LegalEntity`=1, `Supplier`=2, `External`=3 | zorunlu (O-7, KARAR D41/4; `Supplier` MOD-0140 sözleşmesi ölçülene kadar kapalı); kural GoverningLegalEntityId ile aynı (değişmezlik) | kaynak `ContractCounterpartyType` 6 değer (adlar paket metninde yok) |
 | CounterpartyLegalEntityId | Guid? | `LegalEntity` türünde zorunlu; aynı kiracı; yöneten şirketten farklı | — |
@@ -836,8 +840,8 @@ teslim deposu dokuz koleksiyon); genişletme yalnız eklemedir ama defter belirt
 deftere satır yazıldığını iddia etmez. Kaynağın `IMod0217AuditRelay` bağdaştırıcısı hiçbir komuttan çağrılmıyordu ve
 `Unavailable*` varsayılanları uygulama değildir (paket §D, §L.2) — taşınmaz, uyum sayılmaz.
 
-`SourceModule`: `MOD-0217`. `Category`: Platform `AuditCategory`'de sözleşme / hukuk değeri ölçülmedi — değer uydurulmaz
-(D41/3'ün dışında; denetim sahibiyle ayrıca — açık). **K2 (O-6, KARAR D41/3):** onay sonucunun yazılması, imza kaydı (değişikliğin
+`SourceModule`: `MOD-0217`. `Category`: **`AuditCategory.MasterData`** (Platform'da var, değer 14 — `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs@7c57e8466`;
+**KARAR D45/1**, `treasury-intake-owner-decisions-05.md`); yeni Platform değeri istenmez, `Finance = 18` uygulanmaz. **K2 (O-6, KARAR D41/3):** onay sonucunun yazılması, imza kaydı (değişikliğin
 yürürlüğe girmesi son imzayla olur) ve fesih hukuken bağlayıcı kayıttır; AUD-001 §4.3 listesinde açıkça sayılmaz, MOD-0289 D24/2
 deseniyle K2 sayılır. Diğer yazmalar aynı yoldan
 yazıldığı için pratikte kapalı-başarısızdır.
@@ -1174,12 +1178,12 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [ ] SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
   borç yok; CT-DECISIONS satırı kod aşamasında
-- [ ] `AuditCategory` değeri (D41/3'ün dışında; denetim sahibiyle)
+- [x] `AuditCategory` değeri — `MasterData` (14), **KARAR D45/1** (`treasury-intake-owner-decisions-05.md`)
 - [x] O-7 karşı taraf modeli — **KARAR D41/4 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `LegalEntity`, `Supplier` (MOD-0140 sözleşmesi ölçülene kadar kapalı), `External`;
   müşteri v1'de yok
 - [x] O-9, O-10, O-11, O-12, O-14, O-15 sahip kararı — **KARAR D41/6, D41/7, D41/8, D41/9, D41/11, D41/12 (2026-10-26;
   treasury-intake-owner-decisions-04.md)** — hepsi önerilen seçenek (Açık kararlar)
-- [ ] O-11 `ContractType` listesinde `OTHER` teyidi (D41/8 metni yedi türü sayar, `OTHER`'ı anmaz) — sahip (K1)
+- [x] O-11 `ContractType` listesinde `OTHER` teyidi — `OTHER` kalır, **KARAR D45/2** (`treasury-intake-owner-decisions-05.md`)
 - [ ] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü
 - [x] O-2 D37'nin MOD-0028 kısmı — **KARAR D40 (2026-10-26): (b)** — sürüm MOD-0217'nin `ContractVersion` kaydı, dosya
   MOD-0262-FU01'de `ContentId` ile; v1'de MOD-0028 bağımlılığı yok, MOD-0028 yüzey ölçümü **gerekmez**; DL-2 önkoşulu değil
@@ -1358,7 +1362,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
   domain-config + kayıt satırı, Auth kaydı (MOD-0018), RCS-001 §3 `CTR` satırı main'de (PR #246) + RCS-001 servisi (BL-565), SEC-002 sağlayıcı
-  ölçümü, `AuditCategory` değeri, O-11 `OTHER` teyidi, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41 ile kapandı);
+  ölçümü, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
   "— DL-1 için" işaretli madde yok — O-3 açıkken ilerler. Bitiş: AC-1,
   AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
   komutları kısmı), AC-11 (DL-1 yazmaları kısmı), AC-12 (DL-1 defter satırları kısmı), AC-13, AC-14 (DL-1 yazmaları kısmı),

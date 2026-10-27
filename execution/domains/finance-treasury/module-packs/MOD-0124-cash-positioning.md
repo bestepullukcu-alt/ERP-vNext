@@ -30,6 +30,10 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0124 için kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. MOD-0126 sabitlemesi `e87f57a4…`
+> (D46 revizyonu). `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) O-7: D43'ün yanına Platform sahibinin (Beste) yeniden teyidi eklendi — "v1'de kur çevrimi yok; pozisyonlar kendi para
 > birimlerinde gösterilir"; kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4); (2) Platform `AuditCategory` `Finance` değeri 18
@@ -1506,8 +1510,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `8eab5e3ca02fda16d20eaba660d0f1612f39c0d711b26d3f4fba47191b1812c9` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-03`; önceki sabitlemeler `3e900f84…` (Y-1…Y-4), `25065d5e…` (D42 + D44, dal `docs/ct/treasury-decisions-04`), `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
+  `e87f57a47b6dfacdde69888bd7f43702f1a049feb918c4f2c80a6312b7e2f248` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-04`; önceki sabitlemeler `8eab5e3c…` (AC biçimi, ct-03), `3e900f84…` (Y-1…Y-4), `25065d5e…` (D42 + D44, dal `docs/ct/treasury-decisions-04`), `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
   Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir.
@@ -1540,7 +1544,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 | Yuva | Recovery'de durum | Bu paketin isteği | Durum |
 |---|---|---|---|
-| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil) ve rol şablonu | açık |
+| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil); rol şablonu içeriği KARAR D46 | kayıt açık (Ali) |
 | LE (MOD-0220) | `lookup-validation` var; `ApprovalStatus` yok | TRM-14 + sözleşme belgesi | açık |
 | BANK-ACCOUNT (MOD-0289) | taslak: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | opak Guid; arama/doğrulama sözleşmesi (O-15) | açık — ertelendi (sözleşme dondurulunca) |
 | BANK-GATEWAY (MOD-0269) | yok, D5 kapalı | v1'de istek yok | v1 dışı |

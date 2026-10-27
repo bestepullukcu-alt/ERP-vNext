@@ -26,6 +26,9 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 >
 > **Revizyon (2026-10-27, AC biçimi):** module-pack-standard §7 biçimine uyum — AC-6a kimliği tam sayı olmadığı için AC-42 oldu (madde aynı yerde, DL-2 bitiş listesi güncellendi). Kapsam ve anlam değişmedi.
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) O-7 / O-10: D42'nin yanına MOD-0023 sahibinin (Ali) teyidi eklendi ("ikisi de uygun", Y-1); O-8 açık kalır (şablon kodu
 > ve adım sayısı iş akışı tarafındaki kule açılınca gelir, Y-3); (2) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de
@@ -1454,7 +1457,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-2 | PP-11 dispatch-once kalsın mı? | (a) düşür (b) İ3 komutu olarak tut | **KARAR D28 (2026-10-25): öneri kabul** — **(a) düşür** — iletim CentralAudit'in | sahip (K1) |
 | O-3 | Taslak düzenleme ve silme (kaynakta yok) | (a) Update + soft Delete/BulkDelete yalnız gönderilmemiş taslak (b) yalnız iptal | **KARAR D28 (2026-10-25): öneri kabul** — (a) — Golden Reference Compact seti; reddedilirse Edit/Delete çıkarılır, sapma kaydedilir | sahip (K1) |
 | O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | **KARAR (D11/1): kiracı ayarı, para birimli**; ayar yoksa her onay tier-2; farklı para birimi → tier-2. Kalan: politika sürüm adı ve ayar ekranı (Follow-up) | sahip (K1) |
-| O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | **KARAR (D11/4): `finance-treasury.*`**; rol şablonları MOD-0018 sahibiyle | sahip + MOD-0018 sahibi |
+| O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | **KARAR (D11/4): `finance-treasury.*`**; **KARAR D46** (2026-10-27; `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; Auth kaydı MOD-0018 sahibinde (Ali) | sahip + MOD-0018 sahibi |
 | O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **KARAR (D11/3): evet K2**; **KARAR D35/3 (2026-10-26, `treasury-intake-owner-decisions-02.md` D35, PR #235):** Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` (değer 18; Y-4/7) (`MasterData` ara çözümü seçilmedi); Platform sahibinin işi (XMC-001, D9); **DL-1 bu değer main'e girmeden başlamaz**. Defter izi D35/1–2: `finance-treasury-merkezi-iletim \| b \| işaret \| ICentralAuditDeclaration`, borç / istisna 0; defter + CT-DECISIONS satırı + `AuditTrailStandardTests` DL-1 değişikliğinde (D35/4) | CT + sahip; `Finance` değeri: Platform (Beste) |
 | O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi yerine sahip teyidi — KARAR D42 (2026-10-26)**; MOD-0023 sahibi (Ali) teyidi: "ikisi de uygun" (Y-1, 2026-10-27) — (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
 | O-8 | MOD-0023 şablon kodu, çok adımlı onay (PartiallyApproved) adım tanımı, HTTP zaman aşımı değeri | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn; **açık** — MOD-0023 sahibi şablon kodlarını ve adım sayılarını iş akışı tarafındaki kule açılınca gönderecek, iş paketi numarası ve zaman o zaman (Y-3) | MOD-0023 sahibi |
