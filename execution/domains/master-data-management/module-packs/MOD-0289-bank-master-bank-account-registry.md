@@ -580,7 +580,7 @@ satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MD
 | MOD-0126 / MOD-0119 / MOD-0120 / MOD-0124 | tüketici | taslak pack'ler opak Guid tutuyor (MOD-0126 `DefaultSourceBankAccountRef`, `DestinationReferenceId`; MOD-0120 `CollectionDestinationRef`; MOD-0124 `BankAccountRef`) | tüketici sözleşme testi o paketlerin işi; bu paket sözleşmeyi verir |
 | MOD-0269 Banks/SWIFT gateway | ileride tam tanımlayıcı tüketicisi | yok (D5, dağıtım kapalı); `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0, D27/7) §3 banka verisi taşımaz | v1'de tam tanımlayıcıyı okuyan sistem tüketicisi yok; açıldığında ayrı karar ve servis kimliği |
 | Port | servis | MDM 5059 (`AGENTS.md:75`, `.antigravity/rules/ports.md:25`) | yeni port yok (D20/1) |
-| DCP (`UNASSIGNED-finance-treasury-intake`) | dilim kapısı | taslak (MOD-0126 pack) — TRM-S3 | DCP `approved` olmadan `ready-for-dev` yok |
+| DCP (`DCP-011-finance-treasury-intake`) | dilim kapısı | taslak (MOD-0126 pack) — TRM-S3 | DCP `approved` olmadan `ready-for-dev` yok |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -1567,7 +1567,7 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
   paketi yazmamış, `high: evet` onaylayıcı
 - [ ] **Sahip MOD-0289 için kod alma iznini verdi (D1) — verilmedi:** D27/5 yalnız MOD-0126/0119/0120/0124 içindir; MOD-0289
   için ayrı izin gerekir
-- [ ] DCP (`UNASSIGNED-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı
+- [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] MDM domain-config'e MOD-0289 satırı ve frontend/gateway kapsam cümlesi (bugün istisna yalnız MOD-0290-FU02)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
 - [x] O-4, O-5, O-6 (sahip onayı), O-7, O-8, O-10, O-11, O-12 ve kiracısız hedef denetimi sahip kararıyla yazıldı (KARAR

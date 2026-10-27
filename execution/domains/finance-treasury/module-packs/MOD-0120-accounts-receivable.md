@@ -71,7 +71,7 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > `treasury-intake-owner-decisions-02.md`. D11/1, D12/1, D13 MOD-0126'ya özgüdür; bu pakette
 > **desen** olarak önerilir, MOD-0120 için ayrıca sahip teyidi ister (O-7, O-8 muafiyet kısmı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0120-v1.0.md` (koşul 1–5 → "Implementation Notes →
-> Level-1 koşulları"). DCP: `UNASSIGNED-finance-treasury-intake.md` (taslak; dilim TRM-S2).
+> Level-1 koşulları"). DCP: `DCP-011-finance-treasury-intake.md` (taslak; dilim TRM-S2).
 >
 > **Kimlik ön kontrolü (DCP-002), 2026-10-24, bu worktree (HEAD `3a1c32b9e`):**
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0120 --name "Accounts Receivable (AR)"` →
@@ -1404,7 +1404,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Karar 0.6 (ERP-FIN-BUNDLE) — KARAR D27/3; karar 0.7 (GL) — KARAR D27/4 (O-1c, O-1d)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
 - [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)

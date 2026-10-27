@@ -77,7 +77,7 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > pack'inde), D14/3 (Cash Positioning yayımı K2 değildir), D14/4 (nakit pozisyonu oluşturan/değiştiren her yazmada şirket
 > Active + Approved) — `treasury-intake-owner-decisions-02.md`. Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0124-v1.0.md` (koşul 1–4 bu pakette karşılanır, bkz.
-> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
+> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md`
 > (taslak; dilim **TRM-S2** — beklediği karar 0.3 D27/1 ile verildi; DCP metni aynı commit'te güncellendi).
 >
 > **Ortak kurallar MOD-0126 ile aynıdır.** `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`
@@ -647,7 +647,7 @@ MOD-0220 TRM-14 (MOD-0126 ile aynı ek); MOD-0023 iş akışı şablonu (nakit p
 | MOD-0126 Payments & Approvals | servis iskeleti + servis ortak yapı taşları; (isteğe bağlı) taahhütlü çıkış | **pack `draft`** (sahip tasarım PASS kaydı, `3a1c32b9e`); kod yok | **MOD-0126 DL-1, MOD-0124 DL-1'in önkoşuludur** (iskelet, makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — tek sahibi o dilim, gap 4/G5); onaylı partilerin pozisyonda gösterimi **O-6** (v1'de yok) |
 | MOD-0125 / MOD-0126 / MOD-0127 | yayım tüketicileri | hiçbiri onay vermedi (paket §P PUBLICATION yuvası) | v1'de olay yok; `GetCurrentCashPositionQuery` okuma sözleşmesi (O-14) |
 | Port 5071 | servis portu | sahip kararı D10/3; AGENTS.md §3 ve `ports.md` güncellendi (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (DCP-011-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -1478,7 +1478,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 **ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`)
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-23; platform-shared-services) — kapsamı soran kod ve AC-31 bu yola bağlı — yol Platform sahibi yanıtı Y-4/6 ile belirlendi; açık kalan: kapsamı soran kod + kanıt testi ve `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5)
 - [x] **Karar 0.3 (MOD-0003)** verildi — KARAR D27/1, süreli T32 sapması (O-2); bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
 - [x] **MOD-0037 kapısı** için sahip kararı (O-3): KARAR D29/1 (sahip payı verildi)

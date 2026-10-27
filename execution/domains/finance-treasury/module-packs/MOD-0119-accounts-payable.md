@@ -61,7 +61,7 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D12/1 ve D13 MOD-0126 içindir; bu pakette **emsal** olarak anılır, AP'ye uygulanması ayrıca "Açık kararlar"da sahibe
 > sorulur (D11/3'ün AP karşılığı D14/3 ile kararlaştırıldı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0119-v1.1.md` (koşul 1–4 bu pakette karşılanır, bkz.
-> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
+> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md`
 > (taslak; dilim **TRM-S2**, DCP §8 adım 5: "MOD-0003 kararından sonra" — bu karar D27/1 ile verildi; DCP metni aynı
 > commit'te güncellendi).
 >
@@ -531,7 +531,7 @@ korunan yol yamaları D30 ile 2026-10-25'te uygulandı; bu listede değildir.
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack ölçümü); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **ENGEL**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar Create yazılamaz (O-9) |
 | `Diten.FinanceTreasuryService` iskeleti + servis ortak yapı taşları | servis | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — O-21 kapandı, gap 4/G5); MOD-0126 DL-1, AP DL-1'in önkoşuludur; o olmadan AP DL-1 başlamaz |
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellendi** (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (DCP-011-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -1366,7 +1366,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Karar 0.7 — GL kapsamı (O-3): KARAR D27/4, kapsam dışı (pack değişmez)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi

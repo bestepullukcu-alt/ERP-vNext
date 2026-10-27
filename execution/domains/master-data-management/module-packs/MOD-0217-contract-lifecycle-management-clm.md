@@ -457,7 +457,7 @@ ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — i
 | MOD-0031 Evidence | kanıt | var (Platform) | v1'de kullanılmaz (O-9, KARAR D41/6) |
 | MOD-0003 Data Contract Registry | sözleşme kaydı | kayıt satırı `planned / missing` (`module-id-registry.md:61`) | v1'de sahip olunan sözleşme yok |
 | Port | servis | MDM 5059 (`AGENTS.md:75`) | yeni servis / port yok (D38/1); kaynak portu 5050 taşınmaz |
-| DCP | dilim kapısı | MOD-0217 için DCP numarası **yok**; Treasury paketleri `UNASSIGNED-finance-treasury-intake` taslağını kullanıyor | DCP numarası ve `approved` olmadan `ready-for-dev` yok |
+| DCP | dilim kapısı | MOD-0217 için DCP numarası **yok**; Treasury paketleri `DCP-011-finance-treasury-intake` taslağını kullanıyor | DCP numarası ve `approved` olmadan `ready-for-dev` yok |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 

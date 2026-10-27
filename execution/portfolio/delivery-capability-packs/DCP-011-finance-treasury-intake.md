@@ -1,22 +1,22 @@
 ---
-id: UNASSIGNED
+id: DCP-011
 slug: finance-treasury-intake
 name: Finance & Treasury — kaynak projeden doğrulayarak alma (Treasury intake)
 type: Delivery Capability Pack
 standard: CAP-001
 status: draft
-status_note: "draft — yalnız planlama; production implementation tetiklemez (CAP-001 §5). DCP numarası atanmadı: mevcut dosyalarda DCP-004/005/006 birden çok kez kullanılmış, numara tahsisi sahip/EA kararıdır; o zamana kadar UNASSIGNED. Onaydan önce bağımsız inceleme (CT-APR-02, SOP §20.4) ve sürüme bağlı onay (CT-APR-01) gerekir."
+status_note: "draft — yalnız planlama; production implementation tetiklemez (CAP-001 §5). DCP numarası DCP-011 (Platform sahibi Beste atadı, Y-4/2; dosya adı UNASSIGNED-finance-treasury-intake.md'den 2026-10-27'de değişti). Onaydan önce bağımsız inceleme (CT-APR-02, SOP §20.4) ve sürüme bağlı onay (CT-APR-01) gerekir."
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-10-25
+updated: 2026-10-27
 authoring_branch: chore/ct/treasury-intake-ct-01
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
 canonical_modules: [MOD-0126, MOD-0269, MOD-0119, MOD-0120, MOD-0124, MOD-0289]
 candidate_modules: [MOD-0217]
 parked_modules: [MOD-0057]
 runtime_code_allowed: false
-runtime_code_scope: "yok — üye pack'lerin hepsi draft; hiçbiri ready-for-dev değil. Kod alma izni (D27/5) MOD-0126/0119/0120/0124 için verildi, ama kod ancak pack ready-for-dev + DCP approved olunca ve dilim sırasıyla yazılır."
+runtime_code_scope: "yok — üye pack'lerin hepsi draft; hiçbiri ready-for-dev değil. Kod alma izni MOD-0126/0119/0120/0124 için (D27/5) ve MOD-0289 için (D45/3) verildi, ama kod ancak pack ready-for-dev + DCP approved olunca ve dilim sırasıyla yazılır."
 inputs:
   - "docs/records/decisions/2026-10/treasury-intake-owner-decisions-01.md (D0–D8)"
   - "docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md (D9–D29)"
@@ -36,7 +36,7 @@ inputs:
 
 ## 1. Identity and status
 
-- **Kimlik:** UNASSIGNED (numara bekliyor) · **durum:** `draft` · **standart:** CAP-001.
+- **Kimlik:** DCP-011 (numara 2026-10-27'de atandı; önceki dosya adı `UNASSIGNED-finance-treasury-intake.md`) · **durum:** `draft` · **standart:** CAP-001.
 - **Neden DCP (CAP-001 §2):** modüller bir bağımlılık sırasıyla teslim edilmek zorunda; domain'ler arası kararlar var
   (finance-treasury, master-data-management, platform-shared-services, procurement, commercial-suite); birden çok iş
   modülü ortak temele dayanıyor (servis ortak yapı taşları, MOD-0269 sözleşmesi, MOD-0023 §17, CentralAudit).

@@ -78,7 +78,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > (servis genelinde tek `FinanceTreasuryCommandReceipt`; tam tanımı bu pakettedir, MOD-0119/0120/0124 buna başvurur) —
 > `treasury-intake-owner-decisions-02.md`. Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0126-v1.2.md` (koşul 1–5 bu pakette karşılanır,
-> bkz. "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
+> bkz. "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md`
 > (taslak; dilim TRM-S1).
 >
 > **Kimlik ön kontrolü (DCP-002), 2026-10-24, bu worktree:**
@@ -520,7 +520,7 @@ eki `Finance` (değer 18; Y-4/7) (O-6, KARAR D35/3 — Platform sahibinin işi, 
 | RCS-001 ortak kod servisi (§5.12, BL-565) | parti kodu | **yok** (Building.Blocks'ta yok; MDM'de yalnız kendi `CodeReservation`'ı, `CodeReservation.cs:5`); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **engel**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar oluşturma yazılamaz (O-9) |
 | MOD-0140 Supplier (PayeeType = Supplier) | alacaklı doğrulaması | var — `POST /api/suppliers/validate` (MOD-0140 pack §3) | varlık doğrulaması O-14 (bu dilimde yalnız biçim) |
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellendi** (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft` | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (DCP-011-finance-treasury-intake) | dilim kapısı | `draft` | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu (gap P2, 2026-10-24)
 
@@ -1337,7 +1337,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 **ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok — inceleme künyesi `ready-for-dev` olan sürüme yazılır (S-49, KARAR D34/2 — `treasury-intake-owner-decisions-02.md` D34, PR #235)
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı. Satır künyesi `ready-for-dev` olan sürüme yazılır; `draft` sürüme yazılan satır yalnız uyarıyla kabul edilir ve kodu yetkilendirmez (S-49, D34)
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış — sıra (D34/2): önce numara atanır (dosya adı değişir), yeni sürüm CT-APR-02 incelemesinden geçer, sonra onaylanır; D32/8'deki "numarasız onay, numara sonra" istisnası artık kullanılmaz
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — sıra (D34/2): önce numara atanır (dosya adı değişir), yeni sürüm CT-APR-02 incelemesinden geçer, sonra onaylanır; D32/8'deki "numarasız onay, numara sonra" istisnası artık kullanılmaz — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-19; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı — yol Platform sahibi yanıtı Y-4/6 ile belirlendi; açık kalan: kapsamı soran kod + kanıt testi ve `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
 - [x] MOD-0269 arayüz sözleşmesi dondu — `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 (KARAR D27/7, D27/8; TRM-06 kapandı)
