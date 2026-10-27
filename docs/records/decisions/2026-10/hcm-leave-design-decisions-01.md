@@ -43,3 +43,28 @@
      (ör. İK'nın "diğer" kategorisinde sağlık çağrıştıran bir ad vermesi).
 - **Sonraya:** hastalık / rapor türleri, belge (rapor) yükleme ve açıklama alanı Dilim 2'de (HCM-LEAVE-07), MOD-0314
   kuralı ve hukuk onayından sonra.
+
+## D-3 — Bakiye ve onay yaşam döngüsü (F-05)
+
+- **Sahip kararı:** `bakiye-oneri` (2026-10-27, CT · İzin ve devamsızlık sohbeti) — aşağıdaki yedi kuralın tamamı.
+- **Karar (ilk dilim):**
+  1. **Bekleyen talep bakiyeyi ayırır:** kalan = hak − onaylı − bekleyen. Kalanı aşan talep gönderilemez (bakiyeden
+     düşmeyen türlerde bu kontrol yoktur).
+  2. **Çakışma:** aynı kişinin tarihleri çakışan ikinci talebi (bekleyen ya da onaylı biriyle) reddedilir. Aynı anda
+     iki gönderimde yalnız biri kaydedilir; kayıt sürüm (ETag) denetimiyle korunur.
+  3. **İptal:** başlamamış onaylı izni çalışan iptal edebilir ve günler bakiyeye geri döner. Başlamış izni yalnız İK
+     iptal eder. Kısmi iade (izinden erken dönüş) sonraki dilimdedir. Bekleyen talebin iptali MOD-0023 örneğini iptal eder.
+  4. **Karar tekilliği:** MOD-0023'ten gelen onay ya da ret kararı bir kez uygulanır; aynı karar yeniden gelirse etkisizdir.
+     Karar ile iptal yarışında önce kaydedilen geçerlidir (FU01 emsali `TimesheetApprovalService.cs:239–243`).
+  5. **Kural anlık görüntüsü:** talep, açıldığı andaki tür kuralını (kategori, bakiyeden düşer mi, onay gerekir mi)
+     kendi üzerinde saklar. Sonraki tür ya da hak değişikliği geçmiş ve onaylı talepleri değiştirmez; bekleyen talepler
+     ve yeni talepler yeni hakla hesaplanır.
+  6. **Yarım gün ve gün sayısı:** yarım gün yalnız tek günlük talepte (sabah ya da öğleden sonra). Gün sayısı MOD-0362
+     Working Calendar & Public Holidays'ten hesaplanır: hafta sonu ve resmi tatil düşülür, yarım tatil günü yarım sayılır
+     (FU01'in `IWorkingHoursProvider` yarım gün kuralıyla aynı).
+  7. **Yıl geçişi:** hak takvim yılına göre tutulur. Yıl sonunda kalan gün türün devir sınırına kadar yeni yıla taşınır,
+     fazlası yanar; İK elle düzeltebilir (denetim izli). İki yıla yayılan talep her yılın bakiyesinden kendi günleri
+     kadar düşer.
+- **Bilinen sınır:** Türkiye'de yıllık izin genellikle işe giriş yıldönümüne göre işler (CT'nin genel bilgisi; hukuk
+  kaynağıyla doğrulanmadı). İlk dilimde haklar elle girildiği için takvim yılı seçildi. Yıldönümü ve kıdem bazlı yasal
+  hesap, hukuk kaynağı ve çalışan sözleşmesindeki `hireDate` / `seniorityDate` geldikten sonraki dilimdedir.
