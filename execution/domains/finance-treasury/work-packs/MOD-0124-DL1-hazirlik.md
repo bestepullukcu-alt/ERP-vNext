@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 41f012e66f9a913bb9669f6f9e70736ce38c76c92690e2c70908b7aa06e659f9, dal chore/ct/treasury-intake-ct-05 @00d3f2b41; main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 9121d9f2… ile sabitli)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 757ae6c158a3eebb390ba61b339aeceaea0e114adc90dc88041e72d2255dfc79, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 0b58ae58ce7e63b422a1e4e85811d3b86781138a45fe6c459c75028568d78f59 ile sabitli — D52; önceki 9121d9f2…)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -20,6 +20,11 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > Reconcile / kanıt paketi DL-2; Submit / kararlar / Publish / `current` DL-3; ExportEvidence DL-4 — tam kapanış). (3) MOD-0126
 > sabitlemesi `9121d9f2…`'ye yenilendi — bu dalda MOD-0126 pack'inin çalışma ağacı sha'sıyla aynı (ölçüldü). 2026-10-26 kaydının
 > §6'daki yedi bulgusundan altısı pack'te kapandı (§5).
+>
+> **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" ile (sha256 `757ae6c1…fc79`): MOD-0126 ortak tanımları
+> **sha256 `0b58ae58…8f59`** ile yeniden sabitlendi (`9121d9f2…` önceki sabitleme olarak tarihte); küsurat kaynağı MOD-0048-FU01
+> §21; §17 onay maddeleri `[x]`; Dependencies MOD-0126 satırı güncel; DL-1 WP dalı KARAR D52/1. Aşağıdaki `9121d9f2…` ve
+> `@00d3f2b41` atıfları o sürümlere aittir; DL-1 prompt'u yeni sabitlemeyi okur.
 
 # MOD-0124 DL-1 hazırlığı — anlık görüntü çekirdeği, eşik politikası, makbuz ve denetim
 
@@ -214,7 +219,7 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 |---|---|---|
 | Ajan satırı | `@[.antigravity/agents/backend-architect.md]` — `/add-module` adımı **yok** (iskelet MOD-0126 DL-1'de, D51/3) | — |
 | WP / Prompt | `WP-0124-DL1` · `TRM-WP-0124-DL1-P v1.0` | kuyruk satırı |
-| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0124-dl1` — **öneri — D51/3 deseni, sahip teyidi gerekir**; pack künyesindeki `feature/fin/mod-0124-cash-positioning` (`:19`) paket dalıdır, WP dalı değil (2026-10-26 kaydındaki "WP başına mı pack başına mı" sorusunu D51/3 MOD-0126 / MOD-0289 için "her WP kendi dalında" diye yanıtladı) | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0124 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
+| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0124-dl1` — **KARAR D52/1**; pack künyesindeki `feature/fin/mod-0124-cash-positioning` (`:19`) paket dalıdır, WP dalı değil (2026-10-26 kaydındaki "WP başına mı pack başına mı" sorusunu D51/3 MOD-0126 / MOD-0289 için "her WP kendi dalında" diye yanıtladı) | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0124 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, veri kapsamı, denetim, sözleşme, para (decimal) | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-31'in **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2) | — |
@@ -238,7 +243,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 kod / `DataScope` bağdaştırıcıları, indeks barındırılan hizmeti); MOD-0126 / MOD-0119 / MOD-0120 paketleri ve yolları; `frontend/**`
 (DL-5); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack **sha256 `9121d9f2…` sürümü** (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
+**Önce oku:** pack, MOD-0126 pack **sha256 `0b58ae58…8f59` sürümü** (D52; önceki `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
 `:1549-1554`), AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design; karar kayıtları D1–D51, MOD-0126 DL-1 WP raporu, bu hazırlık kaydı.

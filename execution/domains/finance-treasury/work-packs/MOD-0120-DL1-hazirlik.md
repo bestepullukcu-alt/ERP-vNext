@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 051da4f22d0d81779c07a31da855c40480507d4a48acec47786545c0aa889ddb, dal chore/ct/treasury-intake-ct-05 @00d3f2b41; main @904dfd5c2 sürümü 08cee451…111d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 6b0d16b2337e8feaf8167bde67e99f58259ca754c628d04994e8d26c7e7608e1, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — 2026-10-26 `git diff --name-only` ölçümü)
 ---
 
@@ -19,6 +19,12 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > (MOD-0018 paketi ve kodu) paket kapısına girdi. (D51/2) SEC-002 kapsamı soran kod + kanıt testi (**AC-6**) DL-1 kabul kapısında;
 > AC-6 yalnız liste / detay uçlarını kapsadığı için bölünmedi (DL-1'de tam kapanır). (D51/3) iskelet MOD-0126 DL-1 WP'sinin ilk
 > adımıdır. 2026-10-26 kaydının "pack'te tutarsızlık" maddeleri gap listesi 21 ile işlenmişti; açık kalanlar §5'te.
+>
+> **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" ile (sha256 `6b0d16b2…08e1`): S-2 bitiş / gözden geçirme
+> koşulu KARAR D52/2, Level-1 koşul 1 KARAR D52/3 (ikisi de checklist'te `[x]`, DL-1 Önkoşul metninden düştü); MOD-0126 ortak
+> tanımları sha256 `0b58ae58…8f59` ile sabitlendi; §17 onay maddeleri `[x]`; DL-3 checklist'ine O-13 ve MOD-0031 ölçümü eklendi;
+> küsurat kaynağı MOD-0048-FU01 §21; RCS-001 sahibi Beste (D44); DL-1 WP dalı KARAR D52/1. Aşağıdaki `@00d3f2b41` satır atıfları
+> o sürüme aittir; D52 revizyonu satırları kaydırdı.
 
 # MOD-0120 DL-1 hazırlığı — fatura çekirdeği, müşteri/şirket doğrulaması, veri kapsamı ve denetim
 
@@ -204,7 +210,7 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 |---|---|---|
 | Ajan satırı | `@[.antigravity/agents/backend-architect.md]` — `/add-module` adımı **yok** (iskelet MOD-0126 DL-1'de, D51/3) | — |
 | WP / Prompt | `WP-0120-DL1` · `TRM-WP-0120-DL1-P v1.0` | kuyruk satırı |
-| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0120-dl1` — **öneri — D51/3 deseni, sahip teyidi gerekir**; pack künyesindeki `feature/fin/mod-0120-accounts-receivable` (`:13`) paket dalıdır, WP dalı değil | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0120 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
+| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0120-dl1` — **KARAR D52/1**; pack künyesindeki `feature/fin/mod-0120-accounts-receivable` (`:13`) paket dalıdır, WP dalı değil | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0120 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, yetki, denetim, sözleşme, para | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-6 bu WP'nin kabul kapısında (D51/2) | — |

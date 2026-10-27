@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 91090dd64f9103f3b559c0ecb321eb696a8be1404122b00d383428d3494713cc, main @904dfd5c2)
+pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 0b58ae58ce7e63b422a1e4e85811d3b86781138a45fe6c459c75028568d78f59, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -25,6 +25,10 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > `ready-for-dev`'den önce main'de olmalıdır — pack'e işaretsiz madde olarak eklendi; aşağıdaki MOD-0018 satırındaki eski
 > "DL-1'i bekletmez" çıkarımı kaldırıldı. AC-32 kısmi kapanır: DL-1 uçları DL-1'de, karar uçları DL-2'de, Release ve kalan
 > okumalar DL-3'te.
+>
+> **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" (sha256 `0b58ae58…8f59`): yalnız metin temizliği — §17 rev 2
+> onay maddeleri `[x]` (`approvals.tsv:16`), küsurat satırında MOD-0048-FU01 §21 adı. MOD-0119, MOD-0120 ve MOD-0124 ortak
+> tanımları bu sha ile sabitler.
 
 # MOD-0126 DL-1 hazırlığı — servis iskeleti, parti çekirdeği ve denetim altyapısı
 

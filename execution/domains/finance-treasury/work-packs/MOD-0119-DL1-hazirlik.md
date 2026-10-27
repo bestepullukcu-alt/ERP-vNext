@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 9262000ae02b675dde100610d00f85ba073ea2384c30ff1d8b363bbeaa6007c5, dal chore/ct/treasury-intake-ct-05 @00d3f2b41; main @904dfd5c2 sürümü b4d15bab…2c4d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 45c136f33b4cd092ac87bc8d35a6089b42f297d26709ce29e2fc00c2bf0e76c0, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (9262000a…07c5); main @904dfd5c2 sürümü b4d15bab…2c4d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — pack "Kaynak ve kanıt")
 ---
 
@@ -20,6 +20,11 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > testi (AC-32) **DL-1 kabul kapısında**; AC-32 kısmi kapanır (DL-1 uçları DL-1'de, iz ve karar uçları DL-2'de, bekletme / istisna /
 > kanıt uçları DL-3'te). (D51/3) MOD-0126 DL-1 WP'sinin ilk adımı servis iskeletidir; MOD-0119 iskeleti açmaz. 2026-10-26
 > kaydındaki "pack'te tutarsızlık" maddeleri gap listesi 21 ile pack'e işlenmişti; açık kalanlar §5'tedir.
+>
+> **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" ile (sha256 `45c136f3…76c0`): §5 bulgu 1 (MOD-0126 ortak
+> tanımları sha256 `0b58ae58…8f59` ile sabitlendi), 2 (`invoice-match.openapi.yaml` 1.1.1, `aa88132c…7370`), 3 (§17 onay maddeleri
+> `[x]`, `approvals.tsv:16`), 4 (RCS-001 sahibi Beste, D44) ve 5 (yinelenen `status: draft`) kapandı; DL-1 WP dalı KARAR D52/1.
+> Aşağıdaki `@00d3f2b41` satır atıfları o sürüme aittir; D52 revizyonu satırları kaydırdı.
 
 # MOD-0119 DL-1 hazırlığı — AP kaydı çekirdeği ve doğrulama
 
@@ -221,7 +226,7 @@ yalnız WP-0126-DL1 ve WP-0289-DL1; satır `ready-for-dev` turunda CT tarafında
 |---|---|---|
 | Ajan satırı | `@[.antigravity/agents/backend-architect.md]` — `/add-module` adımı **yok** (iskelet MOD-0126 DL-1 WP'sinin ilk adımı, D51/3) | — |
 | WP / Prompt | `WP-0119-DL1` · `TRM-WP-0119-DL1-P v1.0` | kuyruk satırı |
-| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0119-dl1` — **öneri — D51/3 deseni, sahip teyidi gerekir** (D51/3 yalnız MOD-0126 ve MOD-0289 dallarını adlandırıyor); pack künyesindeki `feature/fin/mod-0119-accounts-payable` (`:13`) paket dalıdır, WP dalı değil | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0119 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
+| Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0119-dl1` — **KARAR D52/1** (D51/3 yalnız MOD-0126 ve MOD-0289 dallarını adlandırıyor); pack künyesindeki `feature/fin/mod-0119-accounts-payable` (`:13`) paket dalıdır, WP dalı değil | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0119 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, yetki, denetim, sözleşme, para | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı (§1 "bekletir" satırları); "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-32'nin **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2) | — |

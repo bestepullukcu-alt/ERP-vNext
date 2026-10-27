@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 3fa635e69179a1b0a4c4b7ad217c698244a7382d091ce5f17e7e3e38c610f6a9, dal chore/ct/treasury-intake-ct-05 @00d3f2b41; main @904dfd5c2 sürümü b250d7a7…35e1)
+pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 2ed52107dbd49eb759700793e87bf09ada65d88478a1e936dc24db0450532ca0, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; yalnız başvuru malzemesi — KOD ALMA YOK, D38/3; pack "Kaynak ve kanıt")
 ---
 
@@ -24,6 +24,11 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > davranış / alan fikrinin yeniden yazılmasıdır. Bu kayıt §2'de **al-uyarla** kararı vermez; MOD-0289'un D45/3 izni MOD-0217'ye
 > uygulanmaz. Pack'e göre kaynak kodu pack yazılırken **okunmadı** — `Dosya.cs:satır@da4abb20` atıfları paket ve
 > CONTRACT-STATE'ten aktarılmıştır (`:59-61`); bu kayıt aşağıdaki 20 dosyanın sha'sını ölçtü ve beş atıfı okuyarak doğruladı.
+>
+> **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" ile (sha256 `2ed52107…2ca0`): domain-config + kimlik
+> kaydı (#242) ve RCS-001 §3 `CTR` satırı (#265) main'de → `[x]`; §17 rev 2 onay maddesi `[x]`; MOD-0048 satırı ölçümle hizalandı;
+> "Kaynak ve kanıt" bu kaydın okumasını anar (kod alma yok, D38/3); Auth sıralama gerilimi Implementation Notes'ta (CT önerisi,
+> sahip kararı gerekir); DL-1 WP dalı KARAR D52/1 (yukarıdaki "§4'teki dal adı öneridir" cümlesi buna göre geçersiz).
 
 # MOD-0217 DL-1 hazırlığı — sözleşme çekirdeği, denetim izi genişletmesi ve paket iskeleti
 
@@ -220,7 +225,7 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 |---|---|---|
 | Ajan satırı | `@[.antigravity/agents/backend-architect.md]` — yeni servis yok (MdmService, D38/1); `/add-module` servis iskeleti adımı **yok**; WP "paket iskeleti" (manifest sağlayıcısı + denetim izi genişletmesi) ile başlar | — |
 | WP / Prompt | `WP-0217-DL1` · `TRM-WP-0217-DL1-P v1.0` | kuyruk satırı |
-| Repository · Branch · Expected HEAD · Worktree | `feature/mdm/wp-0217-dl1` — **öneri — D51/3 deseni, sahip teyidi gerekir**; pack künyesindeki `feature/mdm/mod-0217-contract-lifecycle-management-clm` (`:14`) paket dalıdır, WP dalı değil | Expected HEAD = pack `ready-for-dev` onayının main'deki commit'i (S-53); MdmService commit SHA'sı DL-1 başında; MOD-0289 DL-1 aynı dalgadaysa sıra (§2.5); worktree yolu |
+| Repository · Branch · Expected HEAD · Worktree | `feature/mdm/wp-0217-dl1` — **KARAR D52/1**; pack künyesindeki `feature/mdm/mod-0217-contract-lifecycle-management-clm` (`:14`) paket dalıdır, WP dalı değil | Expected HEAD = pack `ready-for-dev` onayının main'deki commit'i (S-53); MdmService commit SHA'sı DL-1 başında; MOD-0289 DL-1 aynı dalgadaysa sıra (§2.5); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, veri kapsamı, denetim, kayıt kodu, yetki, işlem bütünlüğü | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kod alma | **yok (D38/3)** — §2 yalnız referans; WP raporunda "kaynaktan dosya alınmadı" beyanı ve okunan referans dosyaları `path@da4abb20 + sha256` | — |

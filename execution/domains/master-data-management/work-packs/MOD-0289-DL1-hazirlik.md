@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 1850f37cf829751edca48f9b55cc20734e234e6598d6fb2caa3368d59a21e8b3, main @904dfd5c2)
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 a2d8cb89ae1137736e518a3e806386d463f0c3027cbec5074ec7699f913190e6, dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla: kod yalnız onaylı paket sürümüyle ve dilim sırasıyla, sabit kiracı taşınmaz)
 ---
 
@@ -26,6 +26,10 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > **D51 denetimi (2026-10-27).** Paket kapısı D51/1'e göre: Auth izin / rol kaydı (MOD-0018 paketi ve kodu, Ali, Y-6)
 > `ready-for-dev`'den önce main'de olmalıdır — pack'e işaretsiz madde olarak eklendi; aşağıdaki MOD-0018 satırındaki eski
 > "DL-1 kodunu bekletmez" çıkarımı kaldırıldı. Açık atama eki DL-2'de kalır.
+>
+> **D52 sonrası (2026-10-27).** Pack D52'de değişmedi (eskimiş metin taraması: RCS-001 sahibi zaten Beste (D44), "PR #246"
+> ifadesi yok, §17 maddesi yok). Front-matter sha256 çalışma ağacındaki sürüme (`a2d8cb89…90e6`, D51 revizyonu) çekildi;
+> satır atıfları main @904dfd5c2 sürümündedir.
 
 # MOD-0289 DL-1 hazırlığı — banka ana verisi, denetim izi genişletmesi ve paket iskeleti
 
