@@ -1230,7 +1230,7 @@ field on an existing entity is **additive**: rows written before R1 deserialize 
 | Field | Type | Default for old rows | Slice | Rule |
 |---|---|---|---|---|
 | `MeetingCategoryId` | Guid? | null ("Unassigned") | S19 | Required on create and update from R1 on. Must resolve to a non-deleted category in the tenant. |
-| `TitleTemplate` | string? | null | S19 | max 200. Placeholders `{Letters}`. Unbalanced braces are refused. |
+| `TitleTemplate` | string? | null | S19 | max 200. Placeholders per §24.5 (letters, spaces, `/`). Unbalanced or nested braces are refused. |
 | `DefaultDurationMinutes` | int? | null | S19 | 5..1440 |
 | `DefaultRecurrenceFrequency` | `MeetingSeriesFrequency?` | null | S19 | null = one-off or event-based ("As needed", "Per release", "Before launch"…). `Daily` is accepted only after S21. |
 | `DefaultRecurrenceInterval` | int? | null | S19 | 1..52 when a frequency is set, otherwise null |
@@ -1275,7 +1275,7 @@ stored on the meeting side. `CreateMeetingRequest.OptionalAttendeeUserIds` (S27)
 | `MeetingCategory.Name` | Yes | trim, max 200, tenant-unique | unique index | `ExistsByNameAsync` → 409 `MEETING_CATEGORY_NAME_DUPLICATE` |
 | `MeetingCategory` delete / bulk delete | — | refused while any non-deleted subtype references it | — | 409 `MEETING_CATEGORY_IN_USE` (per row in bulk) |
 | `MeetingType.MeetingCategoryId` | Yes (write) | resolves in-tenant, not deleted | — | 400 `MEETING_CATEGORY_REQUIRED` / 400 `MEETING_CATEGORY_NOT_FOUND` |
-| `MeetingType.TitleTemplate` | No | max 200, balanced braces, `{[A-Za-z]+}` placeholders | — | 400 `MEETING_TYPE_TITLE_TEMPLATE_INVALID` |
+| `MeetingType.TitleTemplate` | No | max 200, balanced braces, no nested braces; placeholder pattern `\{[A-Za-z][A-Za-z /]{0,39}\}` (letters, spaces and `/`, so the catalogue's `{Team/Period}` and `{Budget Item}` are valid user placeholders; the six automatic ones are matched exactly). CT measured 2026-10-27: the narrower `\{[A-Za-z]+\}` refused 8 of the 46 catalogue titles. | — | 400 `MEETING_TYPE_TITLE_TEMPLATE_INVALID` |
 | `MeetingType.DefaultDurationMinutes` | No | 5..1440 | — | validator |
 | `MeetingType.DefaultRecurrence*` | No | interval 1..52 if frequency is set, null otherwise | — | validator |
 | `MeetingType.DefaultParticipantPositionIds` | No | ≤ 20, distinct, each a tenant position | — | 400 `MEETING_TYPE_POSITION_NOT_FOUND` |
@@ -2088,6 +2088,8 @@ integration-agent owned; R1 does not touch it.
   bound by S15-9.
 - Retention and immutability of quality-record minutes (§22 D5; work list 9.3). `MeetingCapabilities.RetentionRuleActive`
   stays `false` until then.
+- Fail-closed audit of publishing and correcting quality-record minutes (Q14 (d), AUD-001 §4.3 K2): today these two
+  commands are in known debt; they move to the in-transaction audit path once K1 is closed. Owner to schedule.
 
 ### 24.25 Open questions to the owner (R1)
 
@@ -2154,7 +2156,8 @@ approved.
 | Q10 | Yes — series attendees are a snapshot at series creation. |
 | Q11 | Yes — JSON; the CT converts the manager's Excel. |
 | Q12 | Yes — `MTY` (subtype) and `MTC` (main type), class İKİSİ DE. **The meeting-instance prefix is NOT `MTG`:** `MTG-` is already used in code (`frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js:9626`, guard `frontend/Diten.Web/tests/wcn-review-meeting-flow.test.js:53`, CT-measured 2026-10-27); a different prefix is chosen when the meeting number is built. Adding rows to RCS-001 §3 still needs separate owner approval (protected path). |
-| Q13, Q14 | CT decisions; recorded with sources before the independent review. |
+| Q13 | **CT decision (2026-10-27): append `AuditCategory.Meetings = 18`** to `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs` (never renumber; stored values stay). Reason: every module that writes audit rows in Platform has its own category (`PortfolioDelivery = 15`, `Tasks = 16`, `ESignature = 17`); putting meeting events under `PlatformConfiguration = 4` would hide them among platform settings in any per-category filter or export. The slice that first writes a meeting audit row (S25) adds the value and any category label it needs, in 7 languages if the label is user-facing. |
+| Q14 | **CT decision (2026-10-27), within AUD-001 §4.3–§4.4 and open item K10:** (a) `PublishMinutesCommand` and `CorrectPublishedMinutesCommand` are treated as **K2 class**, because for quality-record types the published minutes are a GxP record (AUD-001 §4.3 "GxP kaydı"; the command, not the row, carries the class). They stay in the ledger's known debt; **no R1 slice moves them to path `a`** (that would create new K2 debt, §4.4), even where S16, S17, S18 or S27 change their rules; they move only when the in-transaction path (K1) exists. (b) `SaveMinutesDraftCommand` is a working copy, **not K2**; it also stays in known debt in R1 (its change in S17 is a field addition) — moving it to path `a` is allowed and left to the slice. (c) Main-type, subtype and importer commands are **configuration, not K2** (path `a`, best effort, not silent). A change of a type's `IsQualityRecord` / `RequiresESignature` flag is configuration too, but it is QA-controlled; its audit row must carry the old and new value. (d) That GxP minutes publishing has no fail-closed audit today is recorded as a follow-up for the owner (§24.24); it is a real ISO 9001 / Annex 11 gap that R1 does not close. The K10 boundary itself remains an owner decision. |
 | Q15 | Yes — S13 (page help and tour) first. |
 | Q16 | Yes — templates are tenant data in one language per subtype. |
 | Q17 | Open — the QA process owner's name (blocks only the real catalogue import). |
