@@ -39,6 +39,11 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > rolünde. Banka okuma izni nakit pozisyonu rollerine verilmez (v1'de `BankAccountRef` opak, MOD-0289 okunmaz). Rol şablonu
 > göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`). AC numaraları değişmedi. `status: draft`.
 >
+> **Revizyon (2026-10-27, CT04b — KARAR D49/1):** hedef kullanıcılara modül bazında "nakit pozisyonu görüntüleyici" (okuma)
+> eklendi; nakit pozisyonu rolleri yalnız bunu miras alır, hazine yöneticisi ödeme + nakit pozisyonu görüntüleyicilerini alır;
+> dört modülün okumasını taşıyan "Hazine konsolide görüntüleyici" yalnız gerekçeyle atanır ve hiçbir rol onu miras almaz. Kod,
+> izin anahtarı ve AC değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) O-7: D43'ün yanına Platform sahibinin (Beste) yeniden teyidi eklendi — "v1'de kur çevrimi yok; pozisyonlar kendi para
 > birimlerinde gösterilir"; kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4); (2) Platform `AuditCategory` `Finance` değeri 18
@@ -117,7 +122,8 @@ Treasury & Cash; Blueprint bağımlılık kapısı "Data Contract Registry; Inte
 
 - **Hedef kullanıcı:** hazine operatörü (bakiyeleri girer, mutabakat çalıştırır, kanıt ekler, onaya gönderir), hazine
   onaylayıcısı (onaylar / reddeder, yayımlar), hazine yöneticisi (yalnız yapılandırma ve operasyonel destek: eşik politikasını
-  yönetir, taslakları toplu siler, belirsiz sonucu uzlaştırır — KARAR D47/1). Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`).
+  yönetir, taslakları toplu siler, belirsiz sonucu uzlaştırır — KARAR D47/1), nakit pozisyonu görüntüleyici (okuma — KARAR
+  D49/1). Rol şablonları D46 + D47 + D49 (rol matrisi `treasury-intake-owner-decisions-05.md`, "D47 rol matrisi (CT04a; D49 ile güncellendi)").
 - **v1 pozisyon kaynağı (banka beslemesi YOK):** kullanıcının elle girdiği **bilinen bakiyeler** (`BalanceSourceKind =
   ManualEntry`) — banka portalından, ekstreden ya da teyit yazısından okunan değer, her satırda "as-of" zamanı ve kaynak
   referansıyla; dayanak belge kanıt paketiyle (MOD-0031) bağlanır. Banka durumu ve ekstre girdileri MOD-0269'a bağlıdır

@@ -29,6 +29,12 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 >
 > **Revizyon (2026-10-27, CT04a — sahip denetimi):** rol şablonu göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) olarak
 > güncellendi (D47/4: AP v1'de banka verisi okumaz — banka okuma izni AP rollerine verilmez). AC numaraları değişmedi.
+>
+> **Revizyon (2026-10-27, CT04b — KARAR D49/1, D49/3):** birleşik "AP yöneticisi" kalktı; hedef kullanıcılar, sayfa yardımı
+> hedef kitlesi ve O-20 D49 rol adlarına çekildi — AP görüntüleyici (okuma; her AP rolü yalnız bunu miras alır), AP operatörü,
+> AP onaylayıcı, AP operasyon yöneticisi (hazırlama + bekletme / bekletmeyi kaldırma, istisna çözme / yeniden açma, toplu silme),
+> AP onay yöneticisi (karar + mutabakat). "Hazine konsolide görüntüleyici" yalnız gerekçeyle atanır. Kod, izin anahtarı ve AC
+> değişmedi. `status: draft`.
 > `status: draft`.
 >
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
@@ -91,7 +97,9 @@ girilmesi, doğrulanması, MOD-0023 iş akışıyla onaylanması, onay ayrılı�
 bağlantısı. Blueprint 8.8 W-3, Financial Management (paket §A).
 
 - **Hedef kullanıcı:** AP operatörü (kaydı girer, doğrular, onaya gönderir, istisna açar), AP onaylayıcısı (karar verir),
-  AP yöneticisi (bekletme, uzlaştırma).
+  AP operasyon yöneticisi (operatör eylemleri + bekletme / bekletmeyi kaldırma, istisna çözme / yeniden açma, toplu silme;
+  karar vermez), AP onay yöneticisi (karar + uzlaştırma; hazırlama yapmaz), AP görüntüleyici (okuma) — KARAR D49/1, D49/3;
+  rol matrisi `treasury-intake-owner-decisions-05.md`, "D47 rol matrisi (CT04a; D49 ile güncellendi)".
 - **Çekirdek:** borç kaydı tek ve doğru olmalı — mükerrer fatura tekil indeksle engellenir, tutarlar sunucuda satırlardan
   hesaplanır, PO'lu fatura yalnız MOD-0143'ün eşleşme sonucu uygunsa ilerler; kaydı giren, gönderen ve son güncelleyen
   kişi o faturada karar veremez.
@@ -1345,7 +1353,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 - Sayfa kodu `APINVOICES` (`Nav.Page.APINVOICES`); Create/Edit/Details aynı kodun alt sayfalarıdır.
 - Anahtarlar (kiracı 7 dil): `Help.APINVOICES.Purpose` (satıcı borcu kaydı, doğrulama ve onay; ödeme yapılmadığı açıkça
-  yazılır), `Help.APINVOICES.Audience` (AP operatörü, AP onaylayıcısı, AP yöneticisi), `Help.APINVOICES.Step1…Step5` +
+  yazılır), `Help.APINVOICES.Audience` (AP operatörü, AP onaylayıcısı, AP operasyon yöneticisi, AP onay yöneticisi — KARAR D49/3), `Help.APINVOICES.Step1…Step5` +
   `Step{n}Title` (Fatura kaydı · Satırlar ve tutarlar · Doğrula · Onaya gönder · Karar, bekletme ve istisna). `Immediate`
   yok (onaysız hemen geçerli işlem yok). İlgili sayfa: MOD-0143 fatura eşleştirme ekranı (varsa `PageHelpCatalog`
   satırında bağlantı; yoksa "yok").
@@ -1548,7 +1556,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-17 | Gönderme öncesi kanıt zorunluluğu | her belge / yalnız PO'suz / yok | **KARAR D28 (2026-10-25): öneri kabul** — her belge türünde en az 1 kanıt (fatura görüntüsü), yoksa 422 `AP_EVIDENCE_REQUIRED` | sahip (K1) |
 | O-18 | `AuditCategory` değeri (MOD-0126 O-6 ile ortak) | eklemeli `Finance` / başka | **KARAR D35/3 (2026-10-26; treasury-intake-owner-decisions-02.md D35 (PR #235)): eklemeli `Finance`** (değer 18; Y-4/7) — Platform `AuditCategory`'ye yalnız ekleme; Platform sahibinin işi (XMC-001, D9); MOD-0126 DL-1'den önce main'de olmalı (`MasterData` ara çözümü seçilmedi). Defter D35/1–2: iz `b` `ICentralAuditDeclaration`, borç / istisna sıfır. Kalan: `Finance` değerinin Platform'da main'e girmesi | CT + Platform sahibi |
 | O-19 | Fatura tarihi kuralı | ileri tarih serbest / yasak | **KARAR D28 (2026-10-25): öneri kabul** — `InvoiceDate ≤ bugün` (UTC); `DueDate ≥ InvoiceDate` (kaynak kuralı) | sahip (K1) |
-| O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; Auth kaydı MOD-0018 sahibinde (Ali) | sahip + MOD-0018 sahibi |
+| O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; **D49/1, D49/3:** AP görüntüleyici, AP operasyon yöneticisi ve AP onay yöneticisi (birleşik AP yöneticisi kalktı); Auth kaydı MOD-0018 sahibinde (Ali) | sahip + MOD-0018 sahibi |
 | O-21 | Servis iskeletini ve ortak yapı taşlarını hangi paket açar | MOD-0126 DL-1 / AP DL-1 | **KAPANDI (D14/2 ile tutarlı; gap 4/G5):** tek sahibi ve yazarı MOD-0126 DL-1 — iskelet, `FinanceTreasuryCommandReceipt` + indeksleri, `IFinanceTreasuryDataScopeSource`, ortak LE / para birimi / kod portları, CentralAudit kaydı; AP DL-1 onu bekler ve bunları yeniden tanımlamaz. "Hangi paket önce kodlanırsa" kuralı yoktur | sahip (K1) |
 | O-22 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 
