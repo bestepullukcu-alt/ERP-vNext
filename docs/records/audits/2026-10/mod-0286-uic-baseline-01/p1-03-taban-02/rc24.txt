@@ -1,0 +1,7 @@
+tr missing=0 equal=10 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+fr missing=35 equal=47 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+es missing=35 equal=39 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+zh missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+ar missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+ru missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+exit=0

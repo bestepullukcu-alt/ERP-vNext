@@ -10900,3 +10900,45 @@ bunlar başka ekiplerin modüllerinde olduğu için bilinen-borç listesiyle ba�
 **Ölçüm komutu:**
 
     git ls-tree -r --name-only HEAD tests/architecture | grep -E 'Tests\.cs$'
+
+### BL-662
+
+**Sahibe gelen geliştirici isteklerinin takibi — GitHub konusu mu, özel sayfa mı**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 ("bu backloga yaz") · KAYIT: 2026-10-27
+
+**Ne:** Diğer ekiplerin CT'leri sahibe (iş akışı MOD-0023, MDM, Auth MOD-0018 sahibi olarak) yazılı istek gönderiyor; bugün
+bunlar yalnız sohbetlerde ve masaüstündeki dosyalarda duruyor. İki yol önerildi: (a) her istek için GitHub konusu
+(issue), sahibe atanır, ilgili PR kapatır, Yönetici · Ofis "durum"da açık konuları sayar; (b) yalnız sahibin gördüğü
+claude.ai sayfası. 2026-10-26/27 istekleri: MOD-0178 onayı (#248), MOD-0126 O-7/O-10 teyidi, §17 rev 2 onay sırası
+(#243), Auth rol şablonları ve açık atamalı izinler, kişi verisi alan listesi, `isDeleted` sayımı, MDM tüketici testleri
+(AC-W3, AC-W17), iş akışı şablon kodları (O-8, O-11, O-20, MOD-0217 CLM), MOD-0289 / MOD-0217 MDM yerleşimi (itiraz yok).
+**Neden ertelendi:** sahip yöntemi daha sonra seçecek; bugünkü istekler sahibin elinde ve Yönetici · Ofis'in devir
+notunda.
+**Yapım tetikleyicisi:** sahibin `istek-konu` ya da `istek-sayfa` kararı, ya da bir isteğin unutulduğunun görülmesi.
+**Gelecek regresyon riski:** 🟡 — istekler sohbet geçmişinde kalırsa aylar sonra kaybolur; isteyen ekip cevap bekler.
+
+**Ölçüm komutu:**
+
+    gh issue list --repo bestepullukcu-alt/ERP-vNext --assignee GMG-ERP --state open
+
+### BL-663
+
+**AGENTS.md'nin kalıcı sadeleştirilmesi — boyut bütçesi her yeni kayıtla aşılıyor**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 (`agents-sikistir`: bugün yalnız yer açıldı) · KAYIT: 2026-10-27
+
+**Ne:** AGENTS.md'nin uyarı eşiği 22000 bayt (Antigravity 24000'de keser); `test_sync_adapters_budget` uyarıyı da hata
+sayar. 2026-10-25'te bir domain kaydı (ec53ec2d3) eşiği aştı ve phase1 kırmızı oldu; 2026-10-26'da tarihli notlar taşındı
+(#244, 31 bayt pay), 2026-10-27'de iki tekrar bölümü kural dosyalarına bağlantıyla kısaltıldı (≈350 bayt pay). Her yeni
+domain, port ya da dal kodu satırı payı yer. Kalıcı çözüm: kural haritası (§6.1) ve tabloları kural dosyalarına taşıyıp
+AGENTS.md'yi çekirdek + yetki sırası + bağlantılara indirmek; ya da eşiği gerekçesiyle yeniden ölçmek.
+**Neden ertelendi:** AGENTS.md'nin yapısını değiştiren bir karar; her ajan aracında yüklenen metni etkiler, ayrı bir
+tasarım ve Codex incelemesi ister.
+**Yapım tetikleyicisi:** pay 150 baytın altına düşünce ya da bir PR yalnız bu yüzden kırmızı olunca.
+**Gelecek regresyon riski:** 🟡 — yeni bir kayıt eşiği aşarsa phase1 kırmızı olur ve arkasındaki kapılar koşmaz (S-67).
+
+**Ölçüm komutu:**
+
+    git show origin/main:AGENTS.md | wc -c
+

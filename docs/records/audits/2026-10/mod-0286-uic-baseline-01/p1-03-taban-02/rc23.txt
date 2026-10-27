@@ -1,0 +1,46 @@
+1
+            ["USERS"] = [new("USERROLES", "bx-shield-quarter"), new("ROLES", "bx-id-card")],
+codes=USERROLES ROLES
+en USERROLES=1
+en ROLES=1
+en related_total=2
+en k=5 range_ok=yes
+en seq_diff=empty
+en title_diff=empty
+tr USERROLES=1
+tr ROLES=1
+tr related_total=2
+tr k=5 range_ok=yes
+tr seq_diff=empty
+tr title_diff=empty
+fr USERROLES=1
+fr ROLES=1
+fr related_total=2
+fr k=5 range_ok=yes
+fr seq_diff=empty
+fr title_diff=empty
+es USERROLES=1
+es ROLES=1
+es related_total=2
+es k=5 range_ok=yes
+es seq_diff=empty
+es title_diff=empty
+zh USERROLES=1
+zh ROLES=1
+zh related_total=2
+zh k=5 range_ok=yes
+zh seq_diff=empty
+zh title_diff=empty
+ar USERROLES=1
+ar ROLES=1
+ar related_total=2
+ar k=5 range_ok=yes
+ar seq_diff=empty
+ar title_diff=empty
+ru USERROLES=1
+ru ROLES=1
+ru related_total=2
+ru k=5 range_ok=yes
+ru seq_diff=empty
+ru title_diff=empty
+exit=0

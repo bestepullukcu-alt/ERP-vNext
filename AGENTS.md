@@ -142,14 +142,8 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 
 ### Golden Reference DataTable Kararı
 
-DataTable tabanlı yeni modüllerde resmi referans iki canlı DevEnablement modülüdür:
-
-| Form alan sayısı | Referans | UI surface |
-|---|---|---|
-| `8 ve altı` | `GoldenReferenceSlim` | Index içinde create/edit offcanvas |
-| `8'den fazla` | `GoldenReferenceCompact` | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
-
-Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit alanları ve DataTable checkbox/action kolonları sayılmaz.
+Yeni DataTable modülü iki canlı DevEnablement referansından birini kullanır: form alanı 8 ve altıysa `GoldenReferenceSlim`,
+8'den fazlaysa `GoldenReferenceCompact`. Ayrıntı ve alan sayımı: [frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md).
 
 ---
 
@@ -228,11 +222,8 @@ Salt-okunur denetim entry point'i: **`/read-only-audit`** ([read-only-audit.md](
 
 Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](.antigravity/rules/git-safety.md) kapılarına tabidir.
 
-Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
-1. `AGENTS.md` (bu dosya)
-2. İlgili `execution/domains/{domain}/domain-config.md`
-3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
-4. Görev tipine uygun `.antigravity/workflows/*.md`
+Orchestrator'ın okuduğu dosyalar: Aşama 0'da bu dosya, domain-config ve module pack; görev tipine uygun `.antigravity/workflows/*.md`
+"Kural Bekçiliği" maddesinde ([orchestrator.md](.antigravity/agents/orchestrator.md)).
 
 **Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
 
