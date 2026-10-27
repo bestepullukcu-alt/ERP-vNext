@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 629cd4ff9df1214014679bfdd501f099a502fff91ee18e4288fc288df6d559c3, dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 ef905628306fe2e001dc5638580af05a68f10da7062fd009e6bbcbb7286f158b, dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla: kod yalnız onaylı paket sürümüyle ve dilim sırasıyla, sabit kiracı taşınmaz)
 ---
 
@@ -26,6 +26,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > **D51 denetimi (2026-10-27).** Paket kapısı D51/1'e göre: Auth izin / rol kaydı (MOD-0018 paketi ve kodu, Ali, Y-6)
 > `ready-for-dev`'den önce main'de olmalıdır — pack'e işaretsiz madde olarak eklendi; aşağıdaki MOD-0018 satırındaki eski
 > "DL-1 kodunu bekletmez" çıkarımı kaldırıldı. Açık atama eki DL-2'de kalır.
+> D53 sonrası: Auth paket metni paket kapısı, kayıt kodu DL-1 kabul kapısı.
 >
 > **D52 sonrası (2026-10-27).** Pack D52'de değişmedi (eskimiş metin taraması: RCS-001 sahibi zaten Beste (D44), "PR #246"
 > ifadesi yok, §17 maddesi yok). Front-matter sha256 çalışma ağacındaki sürüme (`a2d8cb89…90e6`, D51 revizyonu) çekildi;
@@ -64,7 +65,8 @@ DL-4" satırları pack'te "— DL-n için" işaretli dilim kapısıdır ve DL-1'
 | Denetim defteri kararı | — | **verildi — D27/11** (yeni K2 satırları, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok); CT-DECISIONS satırı DL-1 kodu ile yazılır | — |
 | `AuditCategory` değeri | — | **kapandı — D48/1: `MasterData`** (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:19@904dfd5c2`, değer 14); MOD-0126'nın `Finance = 18` bağı kalktı | — |
 | MDM denetim niyeti yolunun DL-1 başındaki hâli | Treasury CT (ölçüm) | `AuditAggregateType` dokuz değer (`services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs:3-14@904dfd5c2`); işlem enum'u yalnız `ProductAuditOperation`; teslim deposu sabit dokuz koleksiyon (`…/Persistence/Repositories/AuditIntentDeliveryRepository.cs:15-23@904dfd5c2`) — pack ölçümüyle aynı. "MdmService commit SHA'sı DL-1 başında" (pack kapanış tablosu) dağıtım günü yazılır | — (dağıtım günü SHA) |
-| MOD-0018 / Auth: rol şablonları (D46 + D47 matrisi) | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara / tarih yok) | Treasury / banka rolleri için MOD-0018 paketi depoda yok | bekletir — paket kapısı (D51/1): Auth kaydı `ready-for-dev`'den önce main'de olmalı; pack checklist'inde işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi); açık atama eki ayrı madde (DL-2) |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6; numara / tarih yok) | **yok** — Treasury / banka rolleri için MOD-0018 paketi depoda yok | paket kapısı (D53/1) — DL-1'i bekletir: paket metni `ready-for-dev`'den önce main'de olmalı; pack checklist'indeki işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi) D53 ile ikiye ayrıldı (pack metni bu kayıtta değiştirilmedi); açık atama eki ayrı madde (DL-2) |
+| Auth kayıt kodu | Ali | **yok** — `services/Diten.AuthService/**`'te `mdm.bank` 0 (grep, 2026-10-27) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | Auth `ExplicitGrantOnlyPermissions`'a `read-unmasked`, `read-tenant-wide` | Ali | yok — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.bank*` 0 | DL-2 |
 | SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalışması | Treasury CT (ölçüm) / platform-shared-services | ölçülmedi | DL-2 |
 | MOD-0048 para birimi listesinin MDM'den okunması | Beste (Platform ucu) / DL-2 yazarı (port) | **ölçüldü (pack, @7c57e8466; bugün aynı):** MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:16-50@904dfd5c2` — `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi); Platform ucu `GET api/lookups/reference/currencies` | DL-2 (DL-1'in `Bank` / `BankBranch` alanlarında para birimi yok) |
@@ -82,7 +84,8 @@ pack ENGELLER'i paket kapısı ve "Dilim kapıları" alt listesi olarak ayrıld�
 
 **Üretici beklemeleri (DL-1 dışı, prompt'a "bu dilimde yok" olarak yazılır):** `supplier.openapi.yaml` 1.3.0 (Cihan) → DL-3;
 Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üreticiler **RCS-001 BL-565**
-(Beste, D44) ve paket kapısındaki **Auth izin / rol kaydı** (MOD-0018 paketi ve kodu, Ali, Y-6; D51/1)'dır.
+(Beste, D44) ve paket kapısındaki **Auth paket metni** (MOD-0018 paketi, Ali, Y-6; D53/1)'dir. Auth kayıt kodu başlamayı değil
+DL-1 kabulünü bekletir (D53/2).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -271,7 +274,7 @@ D33, D44, D45–D50 (`treasury-intake-owner-decisions-0{1..5}.md`), bu hazırlı
 **Gerekli testler — DL-1 dilim kabul kapısı** (pack "Dilim kabul kapısı", `:1864@904dfd5c2`): Bitiş AC'leri; **AC-2 ve AC-9'un gerçek
 replica set yarış testleri** (her takım kendi URI değişkenini okur, varsayılan porta düşmez, replica set `enableTestCommands` ile;
 bellek içi sahte depo bu AC'leri kapatmaz); `AuditTrailStandard` (AC-7); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/`
-Python testleri. Ayrıca birim: BIC (ISO 9362, ülke eşleşmesi, şube BIC'inin ilk 8'i), doğrulayıcılar, durum makinesi, RCS port sahtesiyle
+Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2). Ayrıca birim: BIC (ISO 9362, ülke eşleşmesi, şube BIC'inin ilk 8'i), doğrulayıcılar, durum makinesi, RCS port sahtesiyle
 kod biçimi; `Guid.Empty` taraması banka / şube yazımları için (AC-26'nın DL-1'e düşen kısmı — pack AC-26'yı DL-2 bitişine yazıyor;
 prompt'ta "erken uygulanır, kabulü DL-2" diye açık yazılmalı).
 

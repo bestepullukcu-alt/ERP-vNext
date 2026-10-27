@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 649d7e4f109065405692807de5428659dc961a70e35a5ddedc9ac68fb1565595, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
+pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 699b0708f0ae6fcbf65568d461daf07864dcba9a19ee770304599cbfa88f27cf, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -25,6 +25,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > `ready-for-dev`'den önce main'de olmalıdır — pack'e işaretsiz madde olarak eklendi; aşağıdaki MOD-0018 satırındaki eski
 > "DL-1'i bekletmez" çıkarımı kaldırıldı. AC-32 kısmi kapanır: DL-1 uçları DL-1'de, karar uçları DL-2'de, Release ve kalan
 > okumalar DL-3'te.
+> D53 sonrası: Auth paket metni paket kapısı, kayıt kodu DL-1 kabul kapısı.
 >
 > **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" (sha256 `0b58ae58…8f59`): yalnız metin temizliği — §17 rev 2
 > onay maddeleri `[x]` (`approvals.tsv:16`), küsurat satırında MOD-0048-FU01 §21 adı. MOD-0119, MOD-0120 ve MOD-0124 ortak
@@ -57,8 +58,9 @@ başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu. **D51/1 sonr
 | Platform `AuditCategory`'ye `Finance = 18` (D35/3, Y-4/7) | Beste | **yok** — enum `Unknown = 0 … ESignature = 17` (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@904dfd5c2`); kopya `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditPlatformValues.cs` son değer `ESignature = 17` (`:29`), `Finance` yok | bekletir (pack: "DL-1 bu değer main'e girmeden başlamaz") |
 | O-11 MOD-0048 `currency-minor-units` seed + izin listesi | Beste (Y-4/3: başlangıç listesi kabul) | **yok** — `services/Diten.Platform/**`'te `currency-minor-units` geçmiyor; `BusinessReferenceData:ConsumableSets` listesinde yok (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104-…@904dfd5c2`) | bekletir (Create; yoksa 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE`) |
 | O-13 MOD-0048 `payment-method` kümesi seed + izin listesi | Beste (Y-4/3) | **yok** — aynı ölçüm, `payment-method` 0 | bekletir (Create; yoksa 503 `PAYMENT_METHOD_SOURCE_UNAVAILABLE`) |
-| O-19 SEC-002 tüketim yolu | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6: servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed). Açık: `read-tenant-wide`'ın Auth'ta açık atamalı tanımı — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` anahtarı yok (grep 0). "Kapsamı soran kod + kanıt testi" DL-1'in kendi işidir (AC-32) | bekletir — yalnız Auth'ta `read-tenant-wide` tanımı (paket kapısı); kapsamı soran kod + AC-32 **DL-1 kabul kapısı** (D51/2); bkz. not 2 |
-| MOD-0018 Auth: rol şablonları (D46 + D47 + D49 + D50 matrisi) ve açık atamalı anahtarlar | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara ve tarih yok) | Treasury rolleri için MOD-0018 paketi depoda yok (`execution/domains/*/module-packs/MOD-0018-*` yalnız FU9…FU22); Auth'ta anahtar yok | bekletir — paket kapısı (D51/1): Auth kaydı `ready-for-dev`'den önce main'de olmalı; pack checklist'inde işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi); `read-tenant-wide` tanımı O-19 satırındadır |
+| O-19 SEC-002 tüketim yolu | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6: servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed). Açık: `read-tenant-wide`'ın Auth'ta açık atamalı tanımı — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` anahtarı yok (grep 0). "Kapsamı soran kod + kanıt testi" DL-1'in kendi işidir (AC-32) | bekletir — yalnız Auth paket metnindeki `read-tenant-wide` açık atama tanımı (paket kapısı, D53/1); `ExplicitGrantOnlyPermissions.cs` kaydı (D53/2) ve kapsamı soran kod + AC-32 **DL-1 kabul kapısı** (D51/2); bkz. not 2 |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6; numara ve tarih yok) | **yok** — Treasury rolleri için MOD-0018 paketi depoda yok (`execution/domains/*/module-packs/MOD-0018-*` yalnız FU9…FU22) | paket kapısı (D53/1) — DL-1'i bekletir: paket metni `ready-for-dev`'den önce main'de olmalı; pack checklist'indeki işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi) D53 ile ikiye ayrıldı (pack metni bu kayıtta değiştirilmedi); `read-tenant-wide` tanımı O-19 satırındadır |
+| Auth kayıt kodu | Ali | **yok** — Auth'ta anahtar yok (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | MOD-0023 şablon kodu (O-8) | Ali | Y-6: ödeme partisi şablonu **tek adım**; kod, iş paketi numarası ve tarih yok | DL-2 |
 | MOD-0023 §17 rev 2 onayı | Beste (onay verildi) | **kapandı** — `approvals.tsv:16` (`803fbaa5…`); AC-W1…W17 DL-2 kabul kapısında | DL-2 |
 | MOD-0031 dedupe ölçümü | Treasury CT (ölçüm) | ölçülmedi | DL-3 |
@@ -160,7 +162,8 @@ Pack "Authorization Convention" (`:1024-1088@904dfd5c2`) ve işleyen tek matris 
   `.create`, `.update`, `.delete`, `.bulk-delete` (T2), `.validate` (T3); DL-1'in "dört sorgu"su (pack "Backend File Convention":
   liste, detay, iz, istisna listesi — `:837-838@904dfd5c2`) için ayrıca `finance-treasury.payment-trace.read` ve
   `finance-treasury.payment-exceptions.read`. Kaynak `mod0126.*` anahtarları **alınmaz**.
-- **Rol şablonları kod değildir:** Auth kaydı Ali'nin MOD-0018 paketindedir (Y-6). DL-1 yalnız manifestte anahtarları kaydeder; hiçbir
+- **Rol şablonları kod değildir:** Auth paket metni Ali'nin MOD-0018 paketindedir (Y-6; paket kapısı, D53/1); Auth kayıt kodu DL-1
+  kabul kapısındadır (D53/2). DL-1 yalnız manifestte anahtarları kaydeder; hiçbir
   tohum / varsayılan rol yazmaz. Test kişileri matristen alınır: Ödeme hazırlayıcı (create / update / delete / validate), toplu silme
   için **Hazine yöneticisi** (`bulk-delete` yalnız onda — D47/1; hazırlayıcıda yok), okuma için Ödeme görüntüleyici (D49/1).
 - **`waive-sod` DL-1'de yok:** muafiyet kuralları (D47/1, D49/4; AC-9, AC-42, AC-43) DL-2'dedir. DL-1'in tek etkisi: manifest kaydı
@@ -213,7 +216,7 @@ bu dalda 242ef03df).
 | Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0126-dl1` — her WP kendi dalında (D51/3); pack künyesindeki `feature/fin/mod-0126-payments-approvals` paket dalıdır, WP dalı değil | Expected HEAD = pack `ready-for-dev` onayının main'deki commit'i (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, yetki, denetim, sözleşme, para | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
-| Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı (işaretsiz ENGELLER); "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-32'nin DL-1 uçları kısmı bu WP'nin kabul kapısında (D51/2) | — |
+| Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı (işaretsiz ENGELLER); "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-32'nin DL-1 uçları kısmı bu WP'nin kabul kapısında (D51/2); kabul kapısında ayrıca: Auth kayıt kodu main'de; testler gerçek izinle (D53/2) | — |
 
 **İzinli yollar** (pack Repo Scope, DL-1 satırları): `services/Diten.FinanceTreasuryService/**` (Api / Application / Domain /
 Persistence / Infrastructure + `tests/`; `Features/PaymentBatch/**`, `Domain/PaymentBatches/**`, `Persistence/PaymentBatches/**`,

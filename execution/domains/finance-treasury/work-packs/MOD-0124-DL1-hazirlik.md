@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 1b9158e7efc2c1ea57dbf88a8301beeb65834f72b392e6c3d547713e700bfa86, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 649d7e4f109065405692807de5428659dc961a70e35a5ddedc9ac68fb1565595 ile sabitli — D52; önceki 9121d9f2…)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 790e78ad3618830b6d49fdd145c5711f9131edd2a36f81eac76c0f76c46fdd57, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 699b0708f0ae6fcbf65568d461daf07864dcba9a19ee770304599cbfa88f27cf ile sabitli — D52; önceki 9121d9f2…)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -20,6 +20,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > Reconcile / kanıt paketi DL-2; Submit / kararlar / Publish / `current` DL-3; ExportEvidence DL-4 — tam kapanış). (3) MOD-0126
 > sabitlemesi `9121d9f2…`'ye yenilendi — bu dalda MOD-0126 pack'inin çalışma ağacı sha'sıyla aynı (ölçüldü). 2026-10-26 kaydının
 > §6'daki yedi bulgusundan altısı pack'te kapandı (§5).
+> D53 sonrası: Auth paket metni paket kapısı, kayıt kodu DL-1 kabul kapısı.
 >
 > **D52 sonrası (2026-10-27).** Pack "Revizyon (2026-10-27, D52)" ile (sha256 `757ae6c1…fc79`): MOD-0126 ortak tanımları
 > **sha256 `0b58ae58…8f59`** ile yeniden sabitlendi (`9121d9f2…` önceki sabitleme olarak tarihte); küsurat kaynağı MOD-0048-FU01
@@ -53,8 +54,9 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:17`); güncel sha `41f012e6…` için `reviews.tsv`'de satır yok (son MOD-0124 incelemesi `8df4dfc7…`, `execution/approvals/reviews.tsv:81`) | bekletir |
 | CT-APR-01 sürüme bağlı onay | Beste | `approvals.tsv`'de MOD-0124 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı | bekletir |
-| Auth izin / rol kaydı — MOD-0018 paketi ve kodu | Ali (Y-6) | Treasury rolleri için MOD-0018 paketi **yok** (`MOD-0018-*`'de `finance-treasury` 0); `ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | bekletir (D51/1) |
-| SEC-002 (O-23): tasarım + Auth'ta `read-tenant-wide` tanımı | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6); Auth tanımı **yok**. Kapsamı soran kod + AC-31 DL-1 uçları kısmı **DL-1 kabul kapısı** (`:1521`) | bekletir — yalnız Auth tanımı |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6) | **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*`'de `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
+| Auth kayıt kodu | Ali | **yok** — `ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
+| SEC-002 (O-23): tasarım + Auth'ta `read-tenant-wide` tanımı | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6); Auth tanımı **yok**. Kapsamı soran kod + AC-31 DL-1 uçları kısmı **DL-1 kabul kapısı** (`:1521`) | bekletir — yalnız Auth paket metnindeki açık atama tanımı (D53/1); `ExplicitGrantOnlyPermissions.cs` kaydı DL-1 kabul kapısı (D53/2) |
 | 0.3; O-3 (MOD-0037) ve teyidi; O-7 (FX); port 5071; kod alma | — | **kapandı** — D27/1, D29/1, D36/1, D43 + Y-4, D30, D27/5 (`:1522-1526`, `:1530`) | — |
 | **MOD-0126 DL-1 main'de** — iskelet, ortak yapı taşları, indeks barındırılan hizmeti, CentralAudit, servis defteri (D35) | MOD-0126 DL-1 WP | `services/Diten.FinanceTreasuryService/` **yok**; `WP-0126-DL1` PLANNED (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:19@00d3f2b41`) | bekletir (`:1527`) |
 | Platform `AuditCategory` `Finance = 18` main'de (D35/3) | Beste | **yok** — `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@00d3f2b41`, son `ESignature = 17` (`:26`) | bekletir (`:1528`) |
@@ -68,8 +70,8 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | MOD-0289 banka hesabı | — | DL-1 **bağlı değil** — `BankAccountRef` yalnız `Guid ≠ Empty` opak referans (pack Dependencies `:674`) | — |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması. MOD-0124'e özgü ek bir dış engel yok; bütün açık paket kapısı maddeleri
-(Auth, `Finance = 18`, TRM-14, BL-565, küsurat seed'i) MOD-0126 ile ortak. Zincirin tarihi olmayan halkaları **Auth / MOD-0018
-paketi (Ali)** ve **BL-565 (Beste)**.
+(Auth paket metni, `Finance = 18`, TRM-14, BL-565, küsurat seed'i) MOD-0126 ile ortak. Zincirin tarihi olmayan halkaları **Auth paket
+metni / MOD-0018 paketi (Ali)** ve **BL-565 (Beste)**. Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -222,7 +224,7 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 | Repository · Branch · Expected HEAD · Worktree | `feature/fin/wp-0124-dl1` — **KARAR D52/1**; pack künyesindeki `feature/fin/mod-0124-cash-positioning` (`:19`) paket dalıdır, WP dalı değil (2026-10-26 kaydındaki "WP başına mı pack başına mı" sorusunu D51/3 MOD-0126 / MOD-0289 için "her WP kendi dalında" diye yanıtladı) | Expected HEAD = MOD-0126 DL-1 merge'ü **ve** MOD-0124 `ready-for-dev` onayı main'deyken alınan commit (S-53); worktree yolu |
 | Risk | HIGH — §9.1 sinyalleri: kiracı, veri kapsamı, denetim, sözleşme, para (decimal) | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
-| Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-31'in **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2) | — |
+| Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-31'in **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2); kabul kapısında ayrıca: Auth kayıt kodu main'de; testler gerçek izinle (D53/2) | — |
 
 **DL-1 Bitiş AC'leri** (`MOD-0124-cash-positioning.md:1719-1721@00d3f2b41`): AC-1, 2, 3, 4, 5, 8, **16 (Create / Update / Delete
 kısmı)**, **17 (tek aşamalı kısım)**, 18, **19 (Create kısmı)**, 21, 22, 28, 29 (AUD-001 §8 dev kanıtı: oluşturma / güncelleme /
@@ -243,7 +245,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 kod / `DataScope` bağdaştırıcıları, indeks barındırılan hizmeti); MOD-0126 / MOD-0119 / MOD-0120 paketleri ve yolları; `frontend/**`
 (DL-5); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack **sha256 `649d7e4f…5595` sürümü** (D53; önceki `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
+**Önce oku:** pack, MOD-0126 pack **sha256 `699b0708…27cf` sürümü** (D53; önceki `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
 `:1549-1554`), AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design; karar kayıtları D1–D51, MOD-0126 DL-1 WP raporu, bu hazırlık kaydı.
