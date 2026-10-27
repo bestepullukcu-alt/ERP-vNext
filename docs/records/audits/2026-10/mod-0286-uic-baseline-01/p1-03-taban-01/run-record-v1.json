@@ -1,0 +1,606 @@
+{
+ "argv": [
+  "sh",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/uic-p1-03.sh",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01"
+ ],
+ "artifacts": [
+  {
+   "bytes": 247,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac1-basliklar.txt",
+   "sha256": "8c58c643b2a253cc1772d2c90707f079384ccd1bd81e2da7b9d06900ea14bd7d"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac12-3fbf891bb.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac12-HEAD.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac12-a0a4050b0.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac12-bb3464954.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac12-d3105a332.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac15-cl.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3287,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac15-pk.txt",
+   "sha256": "b2beb3b285f53c3e9eb0ba9a6ecefcf0d964e33c3dfa4998c186301ec2596a6a"
+  },
+  {
+   "bytes": 3316,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac15.diff",
+   "sha256": "262b9ccc886ff48d63e879a5f9133da22a41c8e261378c889e6fb294bc4b7ecd"
+  },
+  {
+   "bytes": 154,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac16-kapsam.txt",
+   "sha256": "7f57eca0133dad0e1e6746b1525ec0d62f88bb7a7812775a3b4bf82ad73db4c4"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac2-3fbf891bb.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac2-HEAD.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac2-a0a4050b0.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac2-bb3464954.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac2-d3105a332.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 561,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-1.txt",
+   "sha256": "6e798a0b92f50b39b685704ad6807d5ced7e24a0ee9bd1acfdfd6a37b8776c97"
+  },
+  {
+   "bytes": 761,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-2.txt",
+   "sha256": "420f8c2ea93b0ae32a3ccd628bf85597a528b60721ca32b3a69af2038deec72b"
+  },
+  {
+   "bytes": 410,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-3.txt",
+   "sha256": "d06fbc4f9afa3c69ea13434078c472cf0427083adb8911a0b5b60d5f16d490f5"
+  },
+  {
+   "bytes": 361,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-4.txt",
+   "sha256": "ec720de7a6871d5771036a7f5f74b5b2373a29e779e64a77d16c5c690a03669a"
+  },
+  {
+   "bytes": 239,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-5.txt",
+   "sha256": "bf132f76a393df377f3081d8f2d0070db56d8a954d71f7681569f645fcb39528"
+  },
+  {
+   "bytes": 2332,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac3-satirlar.txt",
+   "sha256": "5a3f696bf538ff338fac5d5d3e897e9e93821bb2e0fe85a92ef413d4f7d0942a"
+  },
+  {
+   "bytes": 14639,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-cl-rc.txt",
+   "sha256": "f7b737865327b54232a1a8f73bd8acdb4e6957b66287a9c7fee390e55ac55ce0"
+  },
+  {
+   "bytes": 15966,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-cl-uic.txt",
+   "sha256": "1f566ba379d694832e2a43f2520bad21f7d27c3be06b9cd3a12a59026a25f4fd"
+  },
+  {
+   "bytes": 14639,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-pk-rc.txt",
+   "sha256": "f7b737865327b54232a1a8f73bd8acdb4e6957b66287a9c7fee390e55ac55ce0"
+  },
+  {
+   "bytes": 16127,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-pk-uic.txt",
+   "sha256": "c910fe84c04bd6fd18c6ee6c9ba40d42759b5b578f202b55316a5087e34d1979"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-rc.diff",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 41,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-sutun.txt",
+   "sha256": "187d002be56a28b5a366aa44e0c798420e6ee8f4cb3c6fb36d72eb74ecca617a"
+  },
+  {
+   "bytes": 5293,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac4-uic.diff",
+   "sha256": "739336160ad34ad5e2128508629b89ef06b6baab671ce4bae65ccddbf54a5d7b"
+  },
+  {
+   "bytes": 6218,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac7-rc3.txt",
+   "sha256": "d0aceb68624fea57cea8ee1b19afc3127a024e92cd76a0d33bbc99db337fdf74"
+  },
+  {
+   "bytes": 31,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ac8-rc11.txt",
+   "sha256": "597c5d08f1686265cf63747fa45d37683ecd913cff1669ee7d76a8f62a290c70"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-equal-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/closed-missing-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 268,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ct1.txt",
+   "sha256": "d1f0f5c98f8ca9fc9c9b8557d4684bf2358e864d227a6532c18bf0a41cc6055c"
+  },
+  {
+   "bytes": 271,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/ct3.txt",
+   "sha256": "0dc407f546f81171dbaa0d497286edb450e87486bcaa0ade5f4e429ef9346132"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-ar.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 715,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-es.txt",
+   "sha256": "d6962c13fba8ade0fb0f305432cc68adc7c030d52f19ee7b19c1ee3d0912de67"
+  },
+  {
+   "bytes": 885,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-fr.txt",
+   "sha256": "6aae2b9c07429b498cca12c3955a6bc69a7eb0394eb043d63d5528b21f1f61d5"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-ru.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 139,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-tr.txt",
+   "sha256": "b7716a8795c93d53fbc589c619c135d9357937f1d7e12d5d80fcb6ea512e8ee5"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/equal-zh.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-ar.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13895,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-en.txt",
+   "sha256": "2d8dbfb040febf2ae6751008ef2a88264bdd8b474e87051fc2a679515d02c3fd"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-es.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-fr.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-ru.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13895,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-tr.txt",
+   "sha256": "2d8dbfb040febf2ae6751008ef2a88264bdd8b474e87051fc2a679515d02c3fd"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/keys-zh.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 34295,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-ar.txt",
+   "sha256": "484185fc3322ebe955a72e701cd87fa17cbeb6d7475d9f1ddd281f6f938505f7"
+  },
+  {
+   "bytes": 27922,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-en.txt",
+   "sha256": "06b10b6dc82659c07f4a4a11f96d1cd892454e0d84f97d9de81ad780af945d37"
+  },
+  {
+   "bytes": 28963,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-es.txt",
+   "sha256": "13b577730052797d5b80adcda9ad8198f3891902ffad649fa36e2cbe9bf788de"
+  },
+  {
+   "bytes": 29398,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-fr.txt",
+   "sha256": "1f6348b4bb8b78db5de224167223c004b615fc08be55bfc4bf92fab6a103e8f8"
+  },
+  {
+   "bytes": 37894,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-ru.txt",
+   "sha256": "1f02c3dcb92c6aec294443b9d53d7e57c2f78299e0fced41833705eddd8bd618"
+  },
+  {
+   "bytes": 29165,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-tr.txt",
+   "sha256": "d717c0e70056400c1976597c2786f907af9cdc01c7cd8e2a711aca20b8fc6576"
+  },
+  {
+   "bytes": 24104,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/kv-zh.txt",
+   "sha256": "82bce21897fd4b8dc0c0a06f0a690d91c4c25699d55a4dca75ceb1cc713e9b8c"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-ar.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-es.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-fr.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-ru.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/missing-zh.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 60,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/navkeys.out",
+   "sha256": "ae3581c5d7641d4c12c3e47d78d3cc8ec5e5c70def9a12484c869ccb4693f233"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-equal-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/new-missing-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 195,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/resx-platform.out",
+   "sha256": "ea064691254a232d1cb2c05df09166fc0becc07e1b4d55adc6a7a1be179c52fb"
+  },
+  {
+   "bytes": 6294,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/resx-tenant.out",
+   "sha256": "0a069c95525883d1b7cbcfbe02efc0d9114b3fabba820ba026ab667139b03c0a"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-en.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/seqdiff-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 374,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/sonuc.txt",
+   "sha256": "51fc8a16e713decba273cf5955524c547548d8af429b82ec0d9f7fea27447ae3"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 19933,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/stdout.txt",
+   "sha256": "799e91c738615a297bdc4de5f9eda0466cf5770e557828470ed27fe04a7a1b80"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-ar.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-en.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-es.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-fr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-ru.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-tr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/steps-zh.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-en.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titlediff-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-ar.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-en.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-es.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-fr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-ru.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-tr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/titles-zh.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10444,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01/uic-auto.out",
+   "sha256": "af2e5bc393eaaedaa70e721a71c1d679db0343b8bce83b65a0e59a8558ff2a68"
+  }
+ ],
+ "commit": "d3a32783a165f861a9239aaa58e8dd8ff7a38863",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-27T07:38:52Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/p1-03-taban-01",
+ "started_utc": "2026-10-27T07:38:50Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "e12ff1f65bdf986a692164c12a992e14f7f3cb9c"
+}
