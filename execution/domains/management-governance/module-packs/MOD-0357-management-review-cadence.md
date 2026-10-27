@@ -2159,6 +2159,10 @@ approved.
 | Q16 | Yes — templates are tenant data in one language per subtype. |
 | Q17 | Open — the QA process owner's name (blocks only the real catalogue import). |
 | Q18 | Answered by the CT: the manager's document arrived on 2026-10-27 as a hand-over note on central record coding (RCS-001 / BL-565). It is consistent with R1 (no module-local counter; code field deferred to the shared service). No conflict. |
+| Q19 | Yes (owner, "dort-evet", 2026-10-27) — with "attendance mandatory", only REQUIRED attendees must be marked before publishing; the organizer is always required. |
+| Q20 | Yes — "Preparation: x / y done" counts only tasks the reader may see, plus a neutral "k more you cannot open" line (a number, no titles). |
+| Q21 | Yes — the preparation reminder goes to the organizer only, about 24 hours before the start, once per start time. |
+| Q22 | Yes — adding preparation lines on the create form needs `platform.tasks.create` as well as `platform.meetings.create` (the existing two-key rule of "task from meeting"). |
 
 **New open questions from "ekle-uc" (2026-10-27), not yet answered:**
 
