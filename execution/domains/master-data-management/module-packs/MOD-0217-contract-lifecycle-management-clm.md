@@ -31,7 +31,7 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > yetkilendirir, o modül sahibinin cevabının yerine geçmez) ve **D19/1** (MOD-0217 → `master-data-management`; pack TRM-11
 > cevabından ve "Document Management" kapısı bir modüle çözüldükten sonra) —
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; D29/2 (RCS-001 önek yolu: önek önerisi + `.antigravity`
-> yaması sahibe gösterilir — bu paketin öneki `CTR` **KARAR D41/2** ile onaylandı, §3 yaması henüz yazılmadı, O-5); **D37 (yorum D40)** (Document Management kapısı =
+> yaması sahibe gösterilir — bu paketin öneki `CTR` **KARAR D41/2** ile onaylandı, §3 satırı yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer; O-5); **D37 (yorum D40)** (Document Management kapısı =
 > MOD-0262-FU01 dosya deposu; sözleşme belgesinin kaydı ve sürümleri MOD-0217'nin kendi `ContractVersion` kaydıdır; v1'de
 > MOD-0028'e bağımlılık yok; MOD-0217 MOD-0262-FU01'in yalnız tüketicisidir, orada değişiklik XMC-001 ile sorulur), **D39**
 > (O-1: satın alma / tedarik sözleşmeleri MOD-0144'te kalır; MOD-0217 satın alma dışı hukuki sözleşmeleri tutar; `PURCHASE`
@@ -112,10 +112,17 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > Auth kaydı (rol şablonları, açık atamalı izinler, yeni izin ad alanları) Ali'nin açacağı iş paketinde. **Y-3** — CLM iş akışı
 > şablon kodları (O-3) Ali'de açık; iş akışı tarafındaki kule açılınca gelecek. O-3 açık kalır; O-11'de `OTHER` türü D41/8
 > metninde anılmadığı için netleşmedi (sahip teyidi). Kalan `ready-for-dev` engelleri: CT-APR-02/01, DCP, domain-config ve
-> kimlik kaydı satırları main'de, Auth kaydı (MOD-0018, Ali), RCS-001 §3 `CTR` satırı (`.antigravity` yaması) ve BL-565 servisi,
+> kimlik kaydı satırları main'de, Auth kaydı (MOD-0018, Ali), RCS-001 §3 `CTR` satırının main'e girmesi (PR #246) ve BL-565 servisi,
 > SEC-002 sağlayıcı ölçümü, `AuditCategory` değeri, MOD-0048 tüketim yolu, O-11 `OTHER` teyidi; dilim önkoşulları: MOD-0262-FU01
 > ölçümü (DL-2), O-3 şablonu ve MOD-0023 ölçümleri / §17 rev 2 (DL-3), Gateway rotaları ve domain-config frontend cümlesi (DL-4).
 > AC numaraları değişmedi; bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **Revizyon 8 (2026-10-27, sahip denetimi KOŞULLU):** (1) Supplier kapalı ve iç sorumlu yalnız oluşturan kuralları
+> ret kodlarıyla yazıldı — `MDM_CONTRACT_COUNTERPARTY_TYPE_UNAVAILABLE` (AC-60), `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED`
+> (AC-61); Create'te kayıt yok, UpdateContract'ta kayıt değişmez, sabotaj testli; ikisi DL-1 bitişinde. Kod adları CT
+> önerisidir (AC-59 deseni). (2) RCS-001 §3 `CTR` satırı yazıldı (`record-coding-standard.md:70` @ `82711f0ae`, PR #246);
+> eski "yazılmadı" ifadeleri ve checklist güncellendi; BL-565 servis engeli açık. (3) O-11 `OTHER` ve `AuditCategory`
+> açık kalır; `Finance = 18` MOD-0217'ye taşınmaz. `status: draft`.
 
 ## Module Summary
 
@@ -284,7 +291,7 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 
 | Alan | Tip | Kural | Kaynak |
 |---|---|---|---|
-| Code | string | RCS-001 OTOMATİK; tür öneki **`CTR`** (O-5, KARAR D41/2; RCS-001 §3 satırı `.antigravity` yamasıyla ayrıca yazılır); şirket öneki = yöneten şirketin kısa kodu (RCS-001 §5.4; kısa kodun `LegalEntity`'deki alanı **ölçülmedi**); istekte gelirse 400; silinen kaydın kodu yeniden kullanılmaz | kaynak `ContractNumber` (tekil `(TenantId, ContractNumber)`, paket §E) |
+| Code | string | RCS-001 OTOMATİK; tür öneki **`CTR`** (O-5, KARAR D41/2; RCS-001 §3 satırı yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer); şirket öneki = yöneten şirketin kısa kodu (RCS-001 §5.4; kısa kodun `LegalEntity`'deki alanı **ölçülmedi**); istekte gelirse 400; silinen kaydın kodu yeniden kullanılmaz | kaynak `ContractNumber` (tekil `(TenantId, ContractNumber)`, paket §E) |
 | Title | string | zorunlu, trim, 1..200, kontrol karakteri yok | yeni ad |
 | ContractType | string | zorunlu; sabit çekirdek kod listesinden (O-11, KARAR D41/8: `SALES`, `SERVICE`, `NDA`, `LEASE`, `LICENSE`, `PARTNERSHIP`, `INTRA_GROUP`, `OTHER` — `OTHER` için sahip teyidi bekleniyor, Açık kararlar O-11); **`PURCHASE` yok (KARAR D39)** — satın alma / tedarik sözleşmesi MOD-0144'tedir, bu türle istek 400 (AC-59); etiket resx'te | kaynakta referans veriden ("contract types" lookup, paket §I) |
 | GoverningLegalEntityId | Guid | zorunlu; aynı kiracıda MOD-0220 `LegalEntity`, Create'te `OperationalStatus = Active`; sürüm 1 bir kez onaya gönderildikten sonra **değişmez**; SEC-002 kapsamını taşır | kaynak `GoverningLegalEntityId` (yalnız süzgeç, paket §G) |
@@ -412,13 +419,13 @@ Hepsi `ready-for-dev`'den sonra; kaynaktan kod alınmaz (D38/3). Dilim sütunu "
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9 / XMC-001; burada
 yazılmaz): `ocelot.json` rotaları (integration-agent); MOD-0262-FU01 `ContentStorageScope`'a eklemeli bir değer gerekirse (bugün `Documents`, `Templates`, `TaskAttachments`,
 `ContentMessagingArtifacts` … — `services/Diten.Platform/src/Diten.Platform.Application/Contracts/DocumentRepository/IContentStorageGateway.cs:65-80@31c448d5d`);
-MOD-0023'te MOD-0217 iş akışı şablonu (O-3, MOD-0023 sahibi); `.antigravity/rules/record-coding-standard.md` §3 `CTR` satırı (O-5 — sahip onayı KARAR D41/2; yama ayrı);
+MOD-0023'te MOD-0217 iş akışı şablonu (O-3, MOD-0023 sahibi); `.antigravity/rules/record-coding-standard.md` §3 `CTR` satırı (O-5 — sahip onayı KARAR D41/2; satır yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer);
 MOD-0018 / Auth izin kataloğu ve açık atama listesi (O-4, KARAR D41/1 — kaydı MOD-0018 sahibinin (Ali) iş paketi, Y-2); MDM domain-config ve kimlik kaydı satırları (CT, D38/2). MOD-0028'den
 ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — ikisi de bu listede değildir.
 
 ## Protected Paths
 
-- `.antigravity/**` (RCS-001 §3 `CTR` satırı dahil — satırın eklenmesi KARAR D41/2 ile onaylı; yama ayrı değişiklik, O-5)
+- `.antigravity/**` (RCS-001 §3 `CTR` satırı dahil — satır KARAR D41/2 onayıyla Treasury CT dalında yazıldı (PR #246); bu paketin işi değiştirmez, O-5)
 - `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız `integration-agent`
 - `services/Diten.Platform/**` (MOD-0021, MOD-0023, MOD-0028, MOD-0029, MOD-0031, MOD-0048, MOD-0262 — platform-shared-services),
   `services/Diten.ProcurementService/**` (MOD-0144, MOD-0140), `services/Diten.AuthService/**`, `services/Diten.Building.Blocks/**`,
@@ -443,7 +450,7 @@ ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — i
 | MOD-0220 Legal Entity | yöneten şirket, şirket karşı tarafı | **var, aynı servis** — `OperationalStatus`, `ApprovalStatus` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`), `IsReferenceable` (`:60`) | süreç içi depo okuması; LE kaydına yazılmaz |
 | MOD-0018 RBAC | `mdm.contracts.*` anahtarları | MDM manifest sağlayıcısıyla izin kaydı deseni var (`BrandProductMasterManifestProvider.cs:13`); `mdm.contracts` anahtarı kodda yok (`git grep` 0) | anahtar listesi KARAR D41/1 (O-4); Auth'ta kaydı ve açık atama listesi MOD-0018 sahibinin (Ali) işi — iş paketi açıyor (Y-2), Auth değişikliği (D9) |
 | SEC-002 veri kapsamı | yöneten şirkete göre görünürlük | MDM'de `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11`); `mdm.contracts.*` anahtarlarıyla çalıştığı **ölçülmedi** | sağlayıcı ölçülmeden `ready-for-dev` yok |
-| RCS-001 ortak kod servisi | sözleşme kodu | **yok** (BL-565, `.antigravity/rules/record-coding-standard.md:163`); §3 tablosunda sözleşme satırı **yok** (`:45-69`); MDM'deki `CodeReservation` ürün ailesinindir | engel: modül kendi sayacını yazamaz (RCS-001 §6); önek `CTR` (O-5, KARAR D41/2; §3 satırı yazılmadı); BL-565 sahibi Beste (D44), servis yok |
+| RCS-001 ortak kod servisi | sözleşme kodu | **yok** (BL-565, `.antigravity/rules/record-coding-standard.md:163`); §3 tablosunda sözleşme satırı `CTR` var (`.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer); MDM'deki `CodeReservation` ürün ailesinindir | engel: modül kendi sayacını yazamaz (RCS-001 §6); önek `CTR` (O-5, KARAR D41/2; §3 satırı yazıldı, PR #246); BL-565 sahibi Beste (D44), servis yok |
 | MOD-0048 para birimi | kod listesi | `GET /api/lookups/reference/currencies` Platform'da (MOD-0126 / MOD-0289 pack ölçümü — bu oturumda yeniden ölçülmedi); MDM'den tüketim yolu **ölçülmedi** | `ICurrencyReferencePort`; erişilemezse 503, sabit liste yok |
 | MOD-0140 Supplier | tedarikçi karşı tarafı | `supplier.openapi.yaml` (MOD-0289 pack ölçümü: 1.2.0, `validateSuppliers`); MOD-0217 için **ölçülmedi** | O-7, KARAR D41/4: `Supplier` türü MOD-0140 sözleşmesi ölçülene kadar kapalı; ölçüm türün açılmasının önkoşuludur (Follow-up) |
 | MOD-0144 Contracting & Clause Library | sınır | `ready-for-dev`, kod var (Ownership and Boundaries) | **KARAR D39 — engel değil:** satın alma / tedarik sözleşmeleri MOD-0144'te; MOD-0217'de `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz (AC-47); başvuru bağlantısı Follow-up |
@@ -460,7 +467,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | Bağımlılık | Sözleşme / sürüm | Sahibi | Hata davranışı (MOD-0217) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod) | master-data-management | yok / başka kiracı / silinmiş / `Active` değil → 422 `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` | birim + entegrasyon · — (aynı süreç) | DL-1 |
-| RCS-001 | **yok** (BL-565) | Beste (D44) servis; §3 `CTR` satırı `.antigravity` onayı (D41/2) | servis yoksa Create yazılamaz; erişilemezse 503 | sahte port · — | DL-1 önkoşulu |
+| RCS-001 | **yok** (BL-565) | Beste (D44) servis; §3 `CTR` satırı yazıldı (D41/2; PR #246) | servis yoksa Create yazılamaz; erişilemezse 503 | sahte port · — | DL-1 önkoşulu |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | platform-shared-services | erişilemez → 503; listede yok → 400 | sahte istemci · dev ortamında TRY / EUR | DL-1 |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` | platform-shared-services | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | master-data-management + CT | niyet yazılamazsa komut 503, iş verisi yok | AC-11 (sabotaj) · bir sözleşme oluşturmanın merkezi kaydı (AUD-001 §8) | DL-1 |
@@ -713,8 +720,8 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 | Title | Evet | trim, 1..200, kontrol karakteri yok | — | — |
 | ContractType | Evet | çekirdek kod listesinde (O-11, KARAR D41/8); büyük harf, sıralı karşılaştırma; **satın alma türü reddedilir (KARAR D39):** `PURCHASE` katalogda yoktur, Create ve UpdateContract'ta 400 `MDM_CONTRACT_VALIDATION_FAILED` + alan düzeyi resx iletisi (AC-59) | — | `ContractTypeCatalog` |
 | GoverningLegalEntityId | Evet | Guid ≠ Empty; aynı kiracı, `OperationalStatus = Active` (Create); kullanıcının veri kapsamında; ilk Submit'ten sonra değişmez (409) | — | `ILegalEntityRepository`, `IContractDataScopeSource` |
-| CounterpartyType + karşı taraf alanı | Evet | türüne göre tam bir alan dolu; LE: aynı kiracı, silinmemiş, yöneten şirketten farklı; Supplier: 1..64, tür MOD-0140 sözleşmesi ölçülene kadar kapalı (KARAR D41/4); External: ad 1..200; ilk Submit'ten sonra değişmez | — | `ILegalEntityRepository` (LE) |
-| InternalOwnerUserId | Evet | Guid ≠ Empty; v1'de oluşturan kullanıcı (KARAR D41/11); başka kullanıcı Auth kullanıcı araması ölçülünce | — | — |
+| CounterpartyType + karşı taraf alanı | Evet | türüne göre tam bir alan dolu; LE: aynı kiracı, silinmemiş, yöneten şirketten farklı; Supplier: 1..64, tür MOD-0140 sözleşmesi ölçülene kadar kapalı (KARAR D41/4) — v1'de `CounterpartyType = Supplier` Create ve UpdateContract'ta 400 `MDM_CONTRACT_COUNTERPARTY_TYPE_UNAVAILABLE` (AC-60); External: ad 1..200; ilk Submit'ten sonra değişmez | — | `ILegalEntityRepository` (LE) |
+| InternalOwnerUserId | Evet | Guid ≠ Empty; v1'de oluşturan kullanıcı (KARAR D41/11): Create'te çağıran kullanıcıdan, UpdateContract'ta kaydın `CreatedBy`'ından farklı değer 400 `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED` (AC-61); başka kullanıcı Auth kullanıcı araması ölçülünce | — | — |
 | EffectiveFrom / EffectiveTo | Evet / Hayır | ISO tarih; `EffectiveTo ≥ EffectiveFrom` | — | — |
 | NoticePeriodDays | Hayır | tam sayı 0..3650 | — | — |
 | ContractValue / CurrencyCode | Hayır / değer varsa Evet | değer ≥ 0, küsurat MOD-0048 (O-11, KARAR D41/8); `^[A-Z]{3}$`, MOD-0048 listesinde; `mdm.contracts.value.read` ister (403) | — | `ICurrencyReferencePort` |
@@ -731,7 +738,7 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 | `If-Match` | durum değiştiren her komutta Evet | sözleşme ya da sürüm `Version` | CAS süzgeci | — |
 
 **Durum kuralları:** UpdateContract — `Draft` ve `ApprovalAttempt = 0` iken bütün başlık alanları; diğer durumlarda yalnız
-`Title` ve `InternalOwnerUserId` (Terminated / Archived'da hiçbiri). UpdateContractVersion — yalnız `Draft` sürüm.
+`Title` ve `InternalOwnerUserId` (Terminated / Archived'da hiçbiri; v1'de `InternalOwnerUserId` yalnız `CreatedBy` değerini alabilir — AC-61). UpdateContractVersion — yalnız `Draft` sürüm.
 AddContractDocument — `Draft` sürümde her rol; `Approved` sürümde yalnız `SignedCopy`; diğer durumlarda 409.
 WithdrawContractDocument — `Draft` sürümde her rol; `Approved` sürümde yalnız imzaya bağlı olmayan `SignedCopy`; diğer
 durumlarda 409.
@@ -749,6 +756,10 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - **Eksik alan** (Title, ContractType, şirket, karşı taraf, EffectiveFrom) → 400 + alan düzeyi resx iletisi; kayıt yok.
 - **Satın alma sözleşmesi** (`ContractType = PURCHASE`, KARAR D39) → Create / UpdateContract 400
   `MDM_CONTRACT_VALIDATION_FAILED`; kayıt, kod ve niyet yok (AC-59).
+- **Kapalı karşı taraf türü** (`CounterpartyType = Supplier`, KARAR D41/4) → Create / UpdateContract 400
+  `MDM_CONTRACT_COUNTERPARTY_TYPE_UNAVAILABLE`; kayıt, kod ve niyet yok; güncellemede kayıt değişmez (AC-60).
+- **İç sorumlu oluşturan değil** (KARAR D41/11) → Create'te çağırandan, UpdateContract'ta `CreatedBy`'dan farklı
+  `InternalOwnerUserId` 400 `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED`; kayıt, kod ve niyet yok; güncellemede kayıt değişmez (AC-61).
 - **Başka kiracının kaydı** (okuma, güncelleme, silme, sürüm, belge, imza, onay, fesih, arşiv) → 404, varlık sızdırılmaz.
 - **Kapsam dışı şirketin sözleşmesi** → liste boş, detay / yazma 404; çözücü hatası → aynı; yalnız `read-tenant-wide` ile
   görünen sözleşmeye yazma → 404, okuma 200.
@@ -1064,6 +1075,16 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   sözleşme ve sürüm yazılmaz, RCS-001'den kod alınmaz, denetim niyeti yok; UpdateContract'ta kayıt değişmez. Birim test:
   `ContractTypeCatalog` O-11 listesiyle (KARAR D41/8) birebir ve `PURCHASE` içermez. Sabotaj: kataloğa `PURCHASE` eklendiğinde ya da
   doğrulayıcı katalog dışı kodu kabul ettiğinde test kırmızıya döner.
+- [ ] AC-60 (zorunlu) — **Kapalı karşı taraf türü reddi (KARAR D41/4):** `CounterpartyType = Supplier` ile Create ve
+  `Draft` + `ApprovalAttempt = 0` sözleşmede UpdateContract 400 `MDM_CONTRACT_COUNTERPARTY_TYPE_UNAVAILABLE` + alan düzeyi
+  resx anahtarı döner; Create'te sözleşme ve sürüm yazılmaz, RCS-001'den kod alınmaz, denetim niyeti yok; UpdateContract'ta
+  kayıt değişmez (`Version` aynı, alanlar aynı, niyet yok). Sabotaj: doğrulayıcıdan Supplier kapısı kaldırıldığında Create
+  kayıt yazar ve test kırmızıya döner.
+- [ ] AC-61 (zorunlu) — **İç sorumlu yalnız oluşturan (KARAR D41/11):** Create'te çağıran kullanıcıdan farklı
+  `InternalOwnerUserId` ve UpdateContract'ta (her izinli durumda) kaydın `CreatedBy`'ından farklı değer 400
+  `MDM_CONTRACT_INTERNAL_OWNER_NOT_ALLOWED` döner; Create'te kayıt, kod ve niyet yok; UpdateContract'ta kayıt değişmez
+  (`Version` aynı, alanlar aynı, niyet yok); aynı değerle güncelleme geçer. Sabotaj: kontrol kaldırıldığında başka
+  kullanıcıya atama yazılır ve test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1147,7 +1168,8 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [ ] Auth'ta `mdm.contracts.*` kaydı, açık atama anahtarları (`read-tenant-wide`) ve rol şablonları — MOD-0018 sahibi (Ali) iş
   paketi (Y-2), Auth değişikliği (D9)
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı
-- [ ] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yama ile yazıldı (D41/2 onayı var; korunan yol)
+- [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer)
+- [ ] RCS-001 §3 `CTR` satırı main'de (PR #246 birleşince) — servis (BL-565) ayrı madde, açık
 - [ ] RCS-001 ortak kod servisi (BL-565) var — sahibi Beste (D44)
 - [ ] SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
@@ -1295,7 +1317,7 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 | O-2 | D37'nin "MOD-0028 belge kaydı ve sürümleri" kısmının uygulanma yolu (ölçüm: MOD-0028'de iş belgesi kaydı yüzeyi yok; kayıt + sürüm uçları MOD-0029-FU01'de) | (a) MOD-0028 sahibine XMC-001 ile en küçük eklemeli "iş belgesi kaydı" yüzeyi önerisi; DL-2 cevaba kadar bekler (b) MOD-0217 yalnız `ContractVersion` (Blueprint SoR) + MOD-0262-FU01 işaretçisi; MOD-0028 bağı sonra — D37'nin yorumunu değiştirir (c) MOD-0029 denetimli belge — D37'de seçilmedi | **KARAR D40 (2026-10-26): (b)** — sözleşme sürümü MOD-0217'nin kendi kaydıdır (`ContractVersion`, Blueprint SoR); dosya MOD-0262-FU01'de, sürüm onu `ContentId` ile işaret eder. D37'nin "MOD-0028 kayıt ve sürümler" kısmı bu şekilde yorumlanır: v1'de MOD-0028 bağımlılığı yok, MOD-0028 bağı (gerekirse) Follow-up; D37'nin MOD-0262-FU01 kısmı aynen geçerli; MOD-0028'den ek istenmez, DL-2 O-2'yi beklemez | sahip (K1) — karar verildi |
 | O-3 | MOD-0023'te MOD-0217 onay iş akışı şablonu (şablon kodu, adımlar, onaylayıcı rolleri, inceleme adımı) | MOD-0023 sahibinin tasarımı | — (karar MOD-0023 sahibinin; D38/4; D41 dışında — şablon kodları iş akışı tarafındaki kule açılınca Ali'den, Y-3) | MOD-0023 sahibi (Ali) |
 | O-4 | İzin anahtarları | Authorization tablosundaki `mdm.contracts.*` listesi · başka ad alanı / ayrıntı | **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md): tablodaki liste** — Authorization Convention'daki `mdm.contracts.*` listesi; şirket geneli okuma (`read-tenant-wide`) yalnız açık atamayla; Auth tarafında kaydı MOD-0018 sahibinin (Ali) işi (Y-2: iş paketi açıyor) | sahip (K1, MDM sahibi rolü D38) — karar verildi; Auth kaydı MOD-0018 sahibi (Ali) |
-| O-5 | RCS-001 sözleşme kodu | (a) OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (b) İKİSİ DE (c) başka önek | **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) `CTR`** — OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (§3'te çakışmadığı ölçüldü; `CTP` nakit eşik politikasınındır); sahip RCS-001 §3'e `CTR` satırının eklenmesini onayladı — satır `.antigravity` yamasıyla ayrıca yazılır (henüz yazılmadı, Ready-for-dev engeli); ortak kod servisi BL-565'in sahibi Beste (D44), servis yok → engel | sahip (K1) — karar verildi; §3 yaması `.antigravity` onayıyla; BL-565 Beste (D44) |
+| O-5 | RCS-001 sözleşme kodu | (a) OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (b) İKİSİ DE (c) başka önek | **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) `CTR`** — OTOMATİK, tür öneki `CTR`, şirket öneki yöneten şirketin kısa kodu (§3'te çakışmadığı ölçüldü; `CTP` nakit eşik politikasınındır); sahip RCS-001 §3'e `CTR` satırının eklenmesini onayladı — satır `.antigravity` satırı yazıldı (`record-coding-standard.md:70` @ `82711f0ae`, PR #246 ile main'e girer — Ready-for-dev engeli main'e girene kadar); ortak kod servisi BL-565'in sahibi Beste (D44), servis yok → engel | sahip (K1) — karar verildi; §3 satırı yazıldı (PR #246); BL-565 Beste (D44) |
 | O-6 | Denetim defteri ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi, yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında (D27/11 deseni); K2 = onay sonucu, imza, fesih (b) yalnız defter satırı, K2 yok | **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — MDM güvenilir niyet izi (`mdm-guvenilir-kaynak-niyeti`, D27/11 deseni); K2 = onay sonucu, imza, fesih; borç yok; CT-DECISIONS satırı kod aşamasında. `AuditCategory` değeri D41'in dışında — denetim sahibiyle ayrıca | CT + sahip (K1) — karar verildi |
 | O-7 | Karşı taraf modeli | (a) türlü başvuru: `LegalEntity` (süreç içi), `Supplier` (MOD-0140 sözleşmesiyle), `External` (yalnız ad) (b) yalnız serbest ad (c) taraf ana verisi gelene kadar bekle | **KARAR D41/4 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — türlü başvuru: `LegalEntity` (süreç içi), `Supplier` (MOD-0140 sözleşmesi ölçülene kadar kapalı), `External` (yalnız ad); müşteri v1'de yok | sahip (K1) — karar verildi; MOD-0140 kullanımı procurement sahibi |
 | O-8 | İmza modeli v1 | (a) elle imza kaydı + imzalı kopya belgesi, sağlayıcı ve geri çağrı yok (b) e-imza sağlayıcısı + geri çağrı (c) imza kaydı yok | **KARAR D41/5 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — v1'de elle imza kaydı + imzalı kopya belgesi; e-imza sağlayıcısı ve geri çağrı yok | sahip (K1) — karar verildi |
@@ -1335,14 +1357,14 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS / MOD-0048 portları, denetim izi genişletmesi, defter +
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
-  domain-config + kayıt satırı, Auth kaydı (MOD-0018), RCS-001 §3 `CTR` satırı + RCS-001 servisi (BL-565), SEC-002 sağlayıcı
+  domain-config + kayıt satırı, Auth kaydı (MOD-0018), RCS-001 §3 `CTR` satırı main'de (PR #246) + RCS-001 servisi (BL-565), SEC-002 sağlayıcı
   ölçümü, `AuditCategory` değeri, O-11 `OTHER` teyidi, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41 ile kapandı);
   "— DL-1 için" işaretli madde yok — O-3 açıkken ilerler. Bitiş: AC-1,
   AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
   komutları kısmı), AC-11 (DL-1 yazmaları kısmı), AC-12 (DL-1 defter satırları kısmı), AC-13, AC-14 (DL-1 yazmaları kısmı),
   AC-15 (DL-1 uçları kısmı), AC-16 (DL-1 aksiyonları kısmı), AC-17 (DL-1 alanları kısmı), AC-18 (şirket uygunluğu kısmı), AC-19,
   AC-20, AC-21 (DL-1 okuma ve yazmaları kısmı), AC-22 (DL-1 yazmaları kısmı), AC-23, AC-32, AC-42 (DL-1 eylemleri kısmı),
-  AC-59.
+  AC-59, AC-60, AC-61.
 - **DL-2** — Yollar: `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `ReconcileContractDocumentCommand`,
   `GetContractDocumentContentQuery`, `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`,
   `Infrastructure/DocumentRepository/**`, belge uçları (MOD-0028 istemcisi yok — KARAR D40). **Neden ayrı:** MOD-0262-FU01
