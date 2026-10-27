@@ -455,8 +455,12 @@ Replanning = Closure
 
 Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** için gerekenleri hazırlar:
 
-1. **Girilecek veri listesi:** organizasyon, pozisyon, izin ve tür / katalog değerleri, e-posta ayarı, arka plan işleri —
-   modülün çalışması için canlıda olması gereken her şey, sırasıyla.
+1. **Girilecek veri listesi, iki ayrı bölümde:** organizasyon, pozisyon, izin ve tür / katalog değerleri, e-posta ayarı,
+   arka plan işleri — modülün çalışması için canlıda olması gereken her şey, sırasıyla:
+   - **(a) Başka modüllerden gelen veri:** tür ve katalog listeleri (referans veri), organizasyon, pozisyon, kullanıcı
+     ve rol gibi bu modülün **okuduğu** ama başka bir modülün ekranından girilen veriler. Her satırda hangi modül, hangi
+     ekran ve o verinin sahibi yazılır; bunlar önce girilir.
+   - **(b) Bu modülün kendi verisi:** yalnız bu modülün ekranından girilen kayıtlar; (a) tamamlandıktan sonra.
 2. **Sahibe sorular:** listeyi doldurmak için gereken iş sorularını CT kendisi çıkarır ve "Soru biçimi"yle **birer birer**
    sorar (ör. Tüzel Kişi: "Hangi şirketleriniz var? Hangisi hangisine bağlı? Merkez hangisi?").
 3. **Yardım ve tur:** ekranda "?" yardımı ve gerekiyorsa tanıtım turu (UXH-001) var mı, ölçer.
