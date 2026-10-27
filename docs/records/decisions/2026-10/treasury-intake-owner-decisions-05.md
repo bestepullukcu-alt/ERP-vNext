@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D55 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D56 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -514,6 +514,23 @@ sha256 `98cf6271…e980` (Blueprint 1 aday MOD-0057; registry 0; paket 0; görev
    MOD-0053 / MOD-0056 Recovery'ye gelince sonraki sürüm.
 4. **Kule:** Treasury CT yürütür (devir paketi ve level-1 kaydı burada); pack taslağı CT yazar, sahip ZIP denetimi + CT-APR-02.
    Kod alma izni ayrı karardır (D1 deseni).
+
+## D56 — DL-2 hazırlığında çıkan dört karar (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`40a1bcc91` (altı DL-2 hazırlık kaydı).
+
+1. **SEC-002 sağlayıcısı:** Platform'daki izin listesi ve MDM istemcisinin modül kodu, Ali'nin MOD-0018 Auth paketine "permission
+   onboarding" eki olarak girer. MOD-0289 ve MOD-0217 bunu paket kapısında bekler (paket metni D53/1 deseni; kodu DL-1 kabulünde).
+2. **Belge deposu erişimi (D41/10 ve D46a'yı değiştirir):** MOD-0217 belge deposunu (MOD-0262-FU01) kendi servis kimliğiyle çağırır;
+   kullanıcılara `platform.document-repository.read` / `.manage` verilmez (D46a geri alınır). Belge indirme yalnız sözleşme yönetimi
+   üzerinden (kapsam ve AC-62 indirme denetimiyle). Belge deposunda servis kimliği desteği gerekir — Platform (Beste); MOD-0217 DL-2
+   kapısı.
+3. **Muafiyet (MOD-0126):** Auth atama alanları (hedef parti, başlangıç / bitiş, onaylayan, gerekçe kodu) "— DL-2 için" kapısında —
+   Auth paket metninde tanımlı, kodu DL-2 kabulünde. Muafiyet adayları Auth'tan "bu partiye geçerli `waive-sod` ataması olanlar"
+   sorgusuyla okunur (Ali'den uç; MOD-0018).
+4. **SoD ayarı:** FinanceTreasuryService'te kiracı başına tek ayar kaydı (tek eşik + R1–R4 açık / kapalı), denetlenir; DL-2'de yazılır.
+   Follow-up'tan çıkar.
 
 ## Karar olmayanlar
 
