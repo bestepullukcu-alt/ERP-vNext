@@ -43,7 +43,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgApplicationOutcome.Invalid, invalid.Result.Outcome);
         Assert.Null(invalid.IntakeDraftId);
         Assert.Null(invalid.AuditIntent);
-        Assert.Equal(["permission:Create:pvg.mod0230.intake.create"], callLog);
+        Assert.Equal(["permission:Create:pvg.case-intake-triage.create"], callLog);
         AssertSafe(invalid);
     }
 
@@ -88,7 +88,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, blocked.Result.ReasonCode);
         Assert.Null(blocked.IntakeDraftId);
         Assert.Null(blocked.AuditIntent);
-        Assert.Equal(["permission:Create:pvg.mod0230.intake.create"], callLog);
+        Assert.Equal(["permission:Create:pvg.case-intake-triage.create"], callLog);
         AssertSafe(blocked);
     }
 
@@ -135,7 +135,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, result.Result.ReasonCode);
         Assert.Null(result.IntakeDraftId);
         Assert.Null(result.AuditIntent);
-        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
+        Assert.Equal("permission:Create:pvg.case-intake-triage.create", callLog[0]);
         Assert.StartsWith("field:", callLog[1], StringComparison.Ordinal);
         AssertSafe(result);
     }
@@ -157,10 +157,10 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.NotNull(created.IntakeDraftId);
         Assert.NotNull(created.AuditIntent);
         Assert.Equal(PvgIntakeOperation.Create, created.AuditIntent.Operation);
-        Assert.Equal("pvg.mod0230.intake.create", created.AuditIntent.RequiredPermission);
+        Assert.Equal("pvg.case-intake-triage.create", created.AuditIntent.RequiredPermission);
         Assert.Equal("HumanUser", created.AuditIntent.ActorKind);
         Assert.True(created.AuditIntent.HasCorrelation);
-        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
+        Assert.Equal("permission:Create:pvg.case-intake-triage.create", callLog[0]);
         Assert.Contains(callLog, entry => entry.StartsWith("field:", StringComparison.Ordinal));
         Assert.Contains(callLog, entry => entry == "evidence:Create");
 
@@ -208,10 +208,10 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     }
 
     [Theory]
-    [InlineData(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated, "pvg.mod0230.intake.create")]
-    [InlineData(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, "pvg.mod0230.intake.update")]
-    [InlineData(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, "pvg.mod0230.intake.triage")]
-    [InlineData(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, "pvg.mod0230.intake.route")]
+    [InlineData(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated, "pvg.case-intake-triage.create")]
+    [InlineData(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, "pvg.case-intake-triage.update")]
+    [InlineData(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, "pvg.case-intake-triage.triage")]
+    [InlineData(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, "pvg.case-intake-triage.route")]
     public async Task Successful_mutations_emit_safe_audit_intent_metadata_only(
         PvgIntakeOperation operation,
         PvgIntakeStatus expectedStatus,
@@ -420,12 +420,12 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
 
         Assert.Equal(
             [
-                (PvgIntakeOperation.Create, "pvg.mod0230.intake.create", "corr-secret-789"),
-                (PvgIntakeOperation.Update, "pvg.mod0230.intake.update", "corr-secret-789"),
-                (PvgIntakeOperation.GetById, "pvg.mod0230.intake.read", "corr-secret-789"),
-                (PvgIntakeOperation.GetList, "pvg.mod0230.intake.read", "corr-secret-789"),
-                (PvgIntakeOperation.Triage, "pvg.mod0230.intake.triage", "corr-secret-789"),
-                (PvgIntakeOperation.Route, "pvg.mod0230.intake.route", "corr-secret-789")
+                (PvgIntakeOperation.Create, "pvg.case-intake-triage.create", "corr-secret-789"),
+                (PvgIntakeOperation.Update, "pvg.case-intake-triage.update", "corr-secret-789"),
+                (PvgIntakeOperation.GetById, "pvg.case-intake-triage.read", "corr-secret-789"),
+                (PvgIntakeOperation.GetList, "pvg.case-intake-triage.read", "corr-secret-789"),
+                (PvgIntakeOperation.Triage, "pvg.case-intake-triage.triage", "corr-secret-789"),
+                (PvgIntakeOperation.Route, "pvg.case-intake-triage.route", "corr-secret-789")
             ],
             permissionGate.Requests
                 .Select(request => (request.Operation, request.RequiredPermission, request.CorrelationId))
@@ -510,13 +510,13 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.False(triaged.Result.IsSuccess);
         Assert.Equal(PvgSafeReasonCodes.WorkflowTransitionGateUnavailable, triaged.Result.ReasonCode);
         Assert.Null(triaged.AuditIntent);
-        Assert.Contains("permission:Triage:pvg.mod0230.intake.triage", callLog);
+        Assert.Contains("permission:Triage:pvg.case-intake-triage.triage", callLog);
         Assert.Contains(callLog, entry => entry.StartsWith("field:Triage:triage:", StringComparison.Ordinal));
         Assert.Contains("workflow:Triage", callLog);
         Assert.DoesNotContain("evidence:Triage", callLog);
         Assert.Equal(
             [
-                "permission:Triage:pvg.mod0230.intake.triage",
+                "permission:Triage:pvg.case-intake-triage.triage",
                 "field:Triage:triage:TriageOutcome",
                 "field:Triage:triage:TriageReason",
                 "workflow:Triage"
@@ -570,7 +570,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Null(routed.AuditIntent);
         Assert.Equal(
             [
-                "permission:Route:pvg.mod0230.intake.route",
+                "permission:Route:pvg.case-intake-triage.route",
                 "field:Route:route:RouteTargetQueue",
                 "workflow:Route"
             ],
@@ -632,7 +632,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Empty(blocked.Result.ValidationFailures);
         Assert.Null(blocked.IntakeDraftId);
         Assert.Null(blocked.AuditIntent);
-        Assert.Equal([$"permission:{operation}:pvg.mod0230.intake.{operation.ToString().ToLowerInvariant()}"], callLog);
+        Assert.Equal([$"permission:{operation}:pvg.case-intake-triage.{operation.ToString().ToLowerInvariant()}"], callLog);
         Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
         Assert.DoesNotContain($"workflow:{operation}", callLog);
         Assert.DoesNotContain($"evidence:{operation}", callLog);
@@ -668,7 +668,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         AssertEvidenceLinkBlocked(routed);
         Assert.Equal(
             [
-                "permission:Route:pvg.mod0230.intake.route",
+                "permission:Route:pvg.case-intake-triage.route",
                 "field:Route:route:RouteTargetQueue",
                 "workflow:Route",
                 "evidence:Route"
@@ -704,7 +704,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
 
         AssertEvidenceLinkBlocked(created);
-        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
+        Assert.Equal("permission:Create:pvg.case-intake-triage.create", callLog[0]);
         Assert.Contains(callLog, entry => entry.StartsWith("field:Create:create:", StringComparison.Ordinal));
         Assert.Equal("evidence:Create", callLog[^1]);
 
@@ -741,7 +741,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
                 ValidUpdateRequest()));
 
         AssertEvidenceLinkBlocked(updated);
-        Assert.Equal("permission:Update:pvg.mod0230.intake.update", callLog[0]);
+        Assert.Equal("permission:Update:pvg.case-intake-triage.update", callLog[0]);
         Assert.Contains(callLog, entry => entry.StartsWith("field:Update:update:", StringComparison.Ordinal));
         Assert.Equal("evidence:Update", callLog[^1]);
 
@@ -782,7 +782,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         AssertEvidenceLinkBlocked(triaged);
         Assert.Equal(
             [
-                "permission:Triage:pvg.mod0230.intake.triage",
+                "permission:Triage:pvg.case-intake-triage.triage",
                 "field:Triage:triage:TriageOutcome",
                 "field:Triage:triage:TriageReason",
                 "workflow:Triage",
@@ -855,7 +855,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Empty(blocked.Result.ValidationFailures);
         Assert.Null(blocked.IntakeDraftId);
         Assert.Null(blocked.AuditIntent);
-        Assert.Equal([$"permission:{operation}:pvg.mod0230.intake.{operation.ToString().ToLowerInvariant()}"], callLog);
+        Assert.Equal([$"permission:{operation}:pvg.case-intake-triage.{operation.ToString().ToLowerInvariant()}"], callLog);
         Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
         Assert.DoesNotContain($"workflow:{operation}", callLog);
         Assert.DoesNotContain($"evidence:{operation}", callLog);
@@ -1057,7 +1057,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, triaged.Result.ReasonCode);
         Assert.Null(triaged.IntakeDraftId);
         Assert.Null(triaged.AuditIntent);
-        Assert.Contains("permission:Triage:pvg.mod0230.intake.triage", callLog);
+        Assert.Contains("permission:Triage:pvg.case-intake-triage.triage", callLog);
         Assert.Contains("field:Triage:triage:TriageOutcome", callLog);
         Assert.DoesNotContain("workflow:Triage", callLog);
         Assert.DoesNotContain("evidence:Triage", callLog);
@@ -1141,8 +1141,8 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, deniedDetail.Result.ReasonCode);
         Assert.Equal(
             [
-                "permission:GetList:pvg.mod0230.intake.read",
-                "permission:GetById:pvg.mod0230.intake.read"
+                "permission:GetList:pvg.case-intake-triage.read",
+                "permission:GetById:pvg.case-intake-triage.read"
             ],
             callLog);
         Assert.Empty(deniedList.Items);
@@ -1211,12 +1211,12 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         AssertVersionConflict(staleRoute);
         Assert.Equal(
             [
-                "permission:Triage:pvg.mod0230.intake.triage",
+                "permission:Triage:pvg.case-intake-triage.triage",
                 "field:Triage:triage:TriageOutcome",
                 "field:Triage:triage:TriageReason",
                 "workflow:Triage",
                 "evidence:Triage",
-                "permission:Route:pvg.mod0230.intake.route",
+                "permission:Route:pvg.case-intake-triage.route",
                 "field:Route:route:RouteTargetQueue",
                 "workflow:Route",
                 "evidence:Route"
@@ -1547,10 +1547,10 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
             auditIntent.RequiredPermission,
             new[]
             {
-                "pvg.mod0230.intake.create",
-                "pvg.mod0230.intake.update",
-                "pvg.mod0230.intake.triage",
-                "pvg.mod0230.intake.route"
+                "pvg.case-intake-triage.create",
+                "pvg.case-intake-triage.update",
+                "pvg.case-intake-triage.triage",
+                "pvg.case-intake-triage.route"
             });
         Assert.Equal("HumanUser", auditIntent.ActorKind);
         Assert.True(auditIntent.HasCorrelation);
