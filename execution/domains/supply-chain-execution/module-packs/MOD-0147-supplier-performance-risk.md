@@ -22,7 +22,7 @@ form_field_count: 0
 > registry.
 >
 > **ready-for-dev (module owner, 2026-10-27):** runtime code only under §0.0 (start-on-mock conditions (1)–(5)); no
-> gateway, permission-registry or integration change before the §0.0 enabling gates.
+> enabling change (manifest provider, permission definition, Gateway route) before the §0.0 enabling gates.
 >
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0147 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
@@ -262,7 +262,7 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
 
 ### 0.4 v1 fixed metric set
 
-DECIDED (Natig, 2026-10-21) — revision draft.
+DECIDED (Natig, 2026-10-21); ready-for-dev 2026-10-27.
 
 > Source: `docs/records/decisions/2026-10/mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md`. Timing changed on
 > 2026-10-22 (`mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md`): v1 (this scorecard) starts now; only the risk
@@ -521,7 +521,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
 - [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built. Start-on-mock (§0.0): for DL-1 code only the frozen 1.3.0 contract is needed; the DC-02 endpoint (DL-3) is an **enabling** gate.
-- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) once this revision is approved.
+- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) with this ready-for-dev revision.
 - [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration — **out of v1** (§0.0, risk part after MOD-0216).
 - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
