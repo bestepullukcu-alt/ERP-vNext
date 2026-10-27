@@ -21,8 +21,8 @@ form_field_count: 0
 > returned `OK` on 2026-09-15 against Blueprint 8.1 and again on 2026-10-19 against Blueprint 8.8 and the module ID
 > registry.
 >
-> **Phase A only:** this draft records the proposed initial Phase B backend/contract slice. It does not authorize
-> runtime code, service scaffold, gateway, permission-registry or integration changes.
+> **ready-for-dev (module owner, 2026-10-27):** runtime code only under §0.0 (start-on-mock conditions (1)–(5)); no
+> gateway, permission-registry or integration change before the §0.0 enabling gates.
 >
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0147 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
@@ -30,10 +30,10 @@ form_field_count: 0
 
 ## 0.0 v1 scope — performance scorecard now and risk after TPRM
 
-Owner decision 2026-10-22 — revision draft.
+Owner decision 2026-10-22; ready-for-dev 2026-10-27.
 
-> `docs/records/decisions/2026-10/mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md` (Natig). **Draft revision —
-> not approved**; needs CT-APR-02 and a new CT-APR-01 row (high risk: first product code). Where this section and an older
+> `docs/records/decisions/2026-10/mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md` (Natig). **ready-for-dev;
+> CT-APR-01 row pending** (high risk: first product code). Where this section and an older
 > line below disagree about v1, this section wins.
 
 | Area | v1 (now) | Later |

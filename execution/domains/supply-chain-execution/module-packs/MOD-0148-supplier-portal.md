@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); the §0.0 code and enabling gates still bind; v1 scope revision 2026-10-22, D2 eligibility, service identity gate and RCS-001 added 2026-10-26 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-03 binding pack and build, DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); every gate in §0.0 "Still gates for v1 code" still binds (no start-on-mock path); v1 scope revision 2026-10-22, D2 eligibility, service identity gate and RCS-001 added 2026-10-26 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and every gate in §0.0 "Still gates for v1 code" is met (incl. DC-03 binding, MOD-0140 DL-3 with the live Gateway proof, service identity MOD-0140 1.4.0 DL-7 / BL-652, PR #198, permissions, replay receipt). Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0148-supplier-portal
 started: 2026-09-15
@@ -21,8 +21,8 @@ form_field_count: 0
 > returned `OK` on 2026-09-15 against Blueprint 8.1 and again on 2026-10-19 against Blueprint 8.8 and the module ID
 > registry.
 >
-> **Phase A only:** this draft records the proposed initial Phase B backend/contract slice. It does not authorize
-> runtime code, service scaffold, frontend, gateway, permission-registry or integration changes.
+> **ready-for-dev (module owner, 2026-10-27):** runtime code only after every gate in §0.0 "Still gates for v1 code";
+> MOD-0148 has no start-on-mock path.
 >
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0148 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
@@ -30,10 +30,10 @@ form_field_count: 0
 
 ## 0.0 v1 scope — the supplier's own submissions for internal use only
 
-Owner decision 2026-10-22 — revision draft.
+Owner decision 2026-10-22; ready-for-dev 2026-10-27.
 
 > `docs/records/decisions/2026-10/mvp6-mod0148-start-owner-decision-2026-10-22.md` (Natig): MOD-0148 starts now, which is
-> the D9 trigger for Beste's DC-03 binding. **Draft revision — not approved**; needs CT-APR-02 and a new CT-APR-01 row
+> the D9 trigger for Beste's DC-03 binding. **ready-for-dev; CT-APR-01 row pending**
 > (high risk: a new actor type, authentication path and product code). Where this section and an older line below
 > disagree about v1, this section wins.
 
@@ -431,7 +431,7 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 - [ ] Shared contract, replay receipt, own-record persistence, portal-source resolver (with MOD-0147), fixture — OPEN in
       `docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md`.
 - [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
-- [x] Module owner set `status: ready-for-dev` (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row must be written on the ready-for-dev version). This is not code authority on its own: code starts only when the §0.0 code conditions are met, and the module is enabled for users only after the §0.0 enabling gates.
+- [x] Module owner set `status: ready-for-dev` (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row must be written on the ready-for-dev version). This is not code authority on its own: code starts only when every gate in §0.0 "Still gates for v1 code" is met; MOD-0148 has no start-on-mock path.
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
 
 ## 19. Implementation Notes
