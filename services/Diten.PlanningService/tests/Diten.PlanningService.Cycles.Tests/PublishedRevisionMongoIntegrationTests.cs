@@ -21,7 +21,8 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     }
 
     private static (ManualDraftMongoStore Drafts, PublishedRevisionMongoStore Published,
-        DemandPlanningMongoContext Context) Open(PublishAuthorityEvidence? evidence = null)
+        DemandPlanningMongoContext Context) Open(PublishAuthorityEvidence? evidence = null,
+            string databaseName = "mod0188_tests")
     {
         var uri = Environment.GetEnvironmentVariable("MOD0188_TEST_MONGO_URI")
             ?? throw new InvalidOperationException("An explicit test Mongo URI is required.");
@@ -35,7 +36,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
             new Dictionary<string, string?>
             {
                 ["Mongo:ConnectionString"] = uri,
-                ["Mongo:SupplyChainDatabaseName"] = "mod0188_tests"
+                ["Mongo:SupplyChainDatabaseName"] = databaseName
             }).Build();
         var context = new DemandPlanningMongoContext(configuration);
         var drafts = new ManualDraftMongoStore(context);

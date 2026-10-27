@@ -11,7 +11,7 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // Internal only. The authoritative actor/scope adapter is intentionally fail-closed in production.
 public sealed class PublishedRevisionMongoStore(
     DemandPlanningMongoContext context, ManualDraftMongoStore drafts,
-    IInternalPublishAuthority authority) : IInternalPublishedRevisionStore
+    IInternalPublishAuthority authority, IOutboxCorrelationReader? correlation = null) : IInternalPublishedRevisionStore
 {
     private const int SafeDocumentBytes = 15_000_000;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
@@ -216,6 +216,7 @@ public sealed class PublishedRevisionMongoStore(
                 {
                     TenantId = tenantId, LegalEntityId = legalEntityId,
                     RevisionId = current.RevisionId, EventId = supersededEventId,
+                    CorrelationId = correlation?.CurrentId ?? Guid.Empty,
                     EventType = "demand.revision.superseded.v2",
                     StateVersion = oldSnapshot.Value.Manifest.StateVersion,
                     Payload = DemandRevisionOutboxPayload.Superseded(
@@ -296,6 +297,7 @@ public sealed class PublishedRevisionMongoStore(
             {
                 TenantId = tenantId, LegalEntityId = legalEntityId,
                 RevisionId = revisionId, EventId = eventId,
+                CorrelationId = correlation?.CurrentId ?? Guid.Empty,
                 EventType = "demand.revision.published.v2",
                 StateVersion = published.StateVersion,
                 Payload = DemandRevisionOutboxPayload.Published(published, eventId, occurredAt),
