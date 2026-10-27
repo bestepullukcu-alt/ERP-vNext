@@ -51,6 +51,11 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
   önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
   edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
+- **Cevap kelimesi kopyalanabilir kutuda (S-69, sahip kararı 2026-10-27 `kopya-blok`):** sahibin yazacağı her cevap
+  kelimesi, cümle içindeki geçişine ek olarak, **kendi kod bloğunda ve tek başına** verilir. Uygulama bloğa kopyala düğmesi
+  koyar; sahip kelimeyi elle seçmez. Bloğa açıklama yazılmaz; birden çok seçenek varsa her biri ayrı blokta durur. Başka
+  sohbete yazılacaksa sohbetin adı bloğun hemen üstünde yazar. Bloklar ❓ SORU kutusunun içinde, son satırlarında durur; SORU kutusu yine yanıtın son bloğudur. Tıklanınca kelimeyi kendisi gönderen düğme (HTML, widget)
+  kullanılmaz: onay sahibin kendi gönderdiği söz olarak kalır.
 - **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
@@ -122,6 +127,8 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
   yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
   (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
+- **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
+  `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
 - **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
 
 ```text
@@ -233,6 +240,9 @@ Kurallar:
      geri alır.
   6. İşçinin PR'ı merge olunca CT, işçiyi **arşivlemeyi sahibe önerir** ("Soru biçimi", cevap kelimesi `arsivle`; arşiv
      geri alınabilir); sahibin o işçi için yazdığı onay olmadan arşivlemez (§7: her seferinde sorulur).
+  7. **Yeni işçi klasörü ve güven penceresi (S-68, 2026-10-27):** yeni bir worktree'de ilk oturum açılırken uygulama sahibe
+     bir kez "bu klasöre güveniyor musunuz" diye sorar; sahip uzaktaysa pencere görünmez ve işçi açılmaz. CT işçiyi
+     başlatma onayını isterken "bilgisayarın başındayken yazın" der.
   Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
   (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
