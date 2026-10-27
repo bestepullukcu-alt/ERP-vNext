@@ -32,7 +32,9 @@ form_field_count: 11
 
 > **Revision R1 (2026-10-27): draft, not approved.** §24 to §26 add a revision: two-level meeting types,
 > create-form auto-fill, the manager's five "before the list loads" items, a one-off type-catalogue importer, the
-> deferred record codes, and page help with the Meetings tour. They are new slices **S13 to S24**. **Approval state of
+> deferred record codes, page help with the Meetings tour, and (owner "ekle-uc") three create-flow additions: agenda at
+> create, preparation tasks, and required / optional attendees with agenda presenter and time box. They are new slices
+> **S13 to S27**. **Approval state of
 > this revision: draft. It needs independent review (SOP §20.4) and owner approval before any code.** The frontmatter
 > `status: ready-for-dev` and the S1 to S12 rows in §19 are unchanged and keep their own approvals. Nothing in R1
 > authorizes code, a WP or a queue row. Known record inconsistencies are listed in §24.23 for the CT to reconcile;
@@ -1117,7 +1119,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 ## 24. Revision R1 (2026-10-27) — two-level meeting types and the pre-load items (DRAFT)
 
 > **Approval state of this revision: draft. It needs independent review (SOP §20.4) and owner approval before any
-> code.** Every slice in §24 (S13 to S24) is **draft / not approved**. No WP may cite one of them, `@orchestrator` may
+> code.** Every slice in §24 (S13 to S27) is **draft / not approved**. No WP may cite one of them, `@orchestrator` may
 > not run one of them, and no queue row may be opened for one of them until the owner approves this revision. The
 > existing `ready-for-dev` status of S1 to S12 (§19, §23) does not change. This file now has a new SHA-256, so any
 > approval row bound to the old version no longer covers it (CT-APR-01). The new version needs its own review row and
@@ -1128,6 +1130,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | Rev | Date | Change | Author · model · effort | Owner instruction |
 |---|---|---|---|---|
 | R1 | 2026-10-27 | Draft revision. Adds a header note under "Authority", §24 (slices S13 to S24, model decisions, record codes, record inconsistencies, open questions), §25 Audited Events (required by AUD-001 because R1 adds write commands and changes existing ones) and §26 Teslim dilimleri (CT-APR-02). §1 to §23 are not edited. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "paket-rev" (owner, 2026-10-27): draft the revision only. Do not commit, approve or write code. |
+| R1 (addition) | 2026-10-27 | Three create-flow additions on top of the CT's commit `53dc6a97f`. **S25** takes agenda at create out of S22 and uses today's `AgendaTemplate`. **S26** adds preparation tasks on the create form, which never block anything. **S27** adds required / optional attendees and an agenda presenter and time box. Also updated: §24.2, §24.3 (R1-D13, R1-D14), §24.4, §24.5, §24.6, §24.7 (order and total), S22 (agenda criteria moved to S25), §24.25 (new questions Q19 to Q22 only; the owner-answers block is unchanged), §24.26, §24.27, §25 and §26 (DL-25 to DL-27). | Same subagent and model as R1. | "ekle-uc" (owner, 2026-10-27), sent through CT · Toplantılar: draft only, this pack file only. |
 
 ### 24.1 Sources of the decisions (read; cited as path@commit)
 
@@ -1145,7 +1148,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 
 ### 24.2 Scope of R1
 
-**In scope (one revision, slices S13 to S24):**
+**In scope (one revision, slices S13 to S27):**
 
 - **A. Two-level meeting type.** A new tenant-scoped **main type** (`MeetingCategory`, collection
   `meeting_categories`). Today's `MeetingType` row becomes the **subtype** and gets a reference to its main type, plus
@@ -1153,7 +1156,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
   type picker on the create form.
 - **B. Create-form auto-fill.** Choosing a subtype fills title, type, place, end time, description, participants,
   the follow-up-of field and the agenda. The agenda is written **at create time** (`CreateMeetingRequest` gains
-  agenda items). A "Repeat" option creates the meeting through the existing path and then a series that takes that
+  agenda items); since "ekle-uc" this part is its own early slice, S25. A "Repeat" option creates the meeting through the existing path and then a series that takes that
   meeting as its first instance. This adds no third creation path (§19 S11).
 - **C. The manager's five pre-load items:** confidential meeting type, mandatory attendance, per-agenda-item note
   and outcome, honest display of the flags, and mandatory agenda items for quality-record types.
@@ -1161,6 +1164,13 @@ visibility, export retention), §23.13 raises the question rather than assuming 
   audited.
 - **E. Record codes (RCS-001).** These are recorded and deferred. No slice builds them (§24.20).
 - **F. Page help** for the seven meeting pages, and the Meetings tour.
+- **G. Create-flow additions (owner "ekle-uc", 2026-10-27):**
+  - **Agenda at create, early (S25).** It uses today's `MeetingType.AgendaTemplate`, so it does not wait for the
+    type model. The invitation then goes out with the agenda already saved.
+  - **Preparation tasks on the create form (S26).** Ordinary MOD-0024 tasks raised through the existing
+    meeting→task bridge, a "Preparation: x / y done" line on the detail page, and a reminder to the organizer.
+    They **never block** the meeting (R1-D13).
+  - **Required / optional attendees, agenda presenter and time box (S27).**
 
 **Out of scope of R1 (named so that no slice takes them in):**
 
@@ -1198,6 +1208,8 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | R1-D10 | **Honest flags through one server switch.** A single constant set (`MeetingCapabilities`) says which flag effects are active. The UI renders "not yet active" from it, and the slice that makes an effect active changes the constant. | The display cannot drift from the code. Pre-load item 4 can ship first (A4 in the work list). |
 | R1-D11 | **No new permission key.** Main-type CRUD, the importer and the positions lookup use `platform.meetings.types-manage`. The auto-fill lookups use `platform.meetings.create` / `.read`. Repeat uses `platform.meetings.series-manage` (Q9). | The brief says no new permission family. Every endpoint is mapped in §24.6. |
 | R1-D12 | **Audit.** New commands use path `a`. An existing **non-minutes** command that an R1 slice changes moves to path `a` in that same slice, and its line leaves the known-debt list, which only shrinks. The three minutes commands stay in known debt until the CT classifies them for K2 (Q14). Details in §25. | AUD-001 §10.1 transition rule and §4.4. |
+| R1-D13 | **Preparation never blocks (binding once this revision is approved).** Preparation tasks and their status **never block** creating, holding, rescheduling, cancelling or publishing a meeting, and never block anything on the task side. A failed preparation line never undoes the meeting (K12). Rescheduling a meeting **does not move** a preparation task's due date. The task owners are notified as K7 states (§16), and the task itself is not changed. | ADR-003 §4 "Bağ asla örtük engel değildir" (the one exception is the task type's `reviewMeetingPolicy`, which is not touched here). ADR-003 §5 "erteleme/iptal: bağlı görev sahiplerine bildirim, görev değişmez". |
+| R1-D14 | **Required is the default.** `MeetingAttendee.IsOptional = false` means required. Every row written before R1 is required. The organizer is always required. Optional only changes the label on screens and the `.ics` `ROLE`, plus the attendance-mandatory rule in Q19. It never changes who may see the meeting (D3). | RFC 5545 `ROLE=REQ-PARTICIPANT` / `OPT-PARTICIPANT` (the `.ics` default is REQ). An additive field leaves the existing rows unchanged. |
 
 ### 24.4 Entity and field additions (R1)
 
@@ -1245,6 +1257,16 @@ The existing fields (`Name`, `AgendaTemplate`, `DefaultActionTaskTypeId`, `IsQua
 | `MeetingSeries.TitleTemplate` | string? | null | S21 | max 200, automatic placeholders only |
 | `MeetingSeries.CreatedFromMeetingId` | Guid? | null | S23 | Sparse unique index `(TenantId, CreatedFromMeetingId)`, so one meeting can be adopted by at most one series. |
 | `MeetingSeriesFrequency.Daily` | enum value `= 4` | — | S21 | **Appended. Existing values are never renumbered** (stored as int). This supersedes the enum's own comment "No `Daily` value" by owner decision §5.7. |
+| `Meeting.PreparationReminderSentForStartAt` | DateTimeOffset? | null | S26 | Claim marker written under an expected-version write **before** the reminder is sent. It holds the start time it was sent for, so a rescheduled meeting gets one new reminder. It is never shown to users. |
+| `MeetingAttendee.IsOptional` | bool | false (required) | S27 | Set on create, add and the new role change. Always `false` for the organizer's own row. |
+| `AgendaItem.PresenterUserId` | Guid? | null | S27 | Must be an attendee of the same meeting when it is set. |
+| `AgendaItem.DurationMinutes` | int? | null | S27 | 1..480 |
+
+**Request-only additions (not stored on the meeting):** `CreateMeetingRequest.AgendaItems` (S25, R1-D6; with S27
+each line may carry a presenter and a duration). `CreateMeetingRequest.PreparationTasks` (S26): a list of
+`{ ClientLineKey, Title, AssigneeUserId?, DueAt?, Description? }`, at most 20. Each line becomes an ordinary MOD-0024
+task through the existing bridge (`CreateTaskFromMeetingCommand`); only the `RecordLink` (type `preparation`) is
+stored on the meeting side. `CreateMeetingRequest.OptionalAttendeeUserIds` (S27).
 
 ### 24.5 Validation rules for the R1 fields (§12 shape)
 
@@ -1267,6 +1289,14 @@ The existing fields (`Name`, `AgendaTemplate`, `DefaultActionTaskTypeId`, `IsQua
 | `MeetingSeries.TitleTemplate` | No | max 200, automatic placeholders only | — | 400 `MEETING_SERIES_TITLE_PLACEHOLDER_NOT_AUTO` |
 | Importer file | Yes | UTF-8 JSON, ≤ 1 MB, ≤ 200 rows, schema in S24 | — | 400 `MEETING_TYPE_IMPORT_FILE_INVALID` (row + field named) |
 | Importer commit | — | plan hash equals the preview's | — | 409 `MEETING_TYPE_IMPORT_PLAN_CHANGED` |
+| `CreateMeetingRequest.PreparationTasks[]` | No | ≤ 20 lines; Title trim, 1..200 (same limit as a task title); `ClientLineKey` non-empty and unique within the request; offered only when Start is in the future | — | validator. Assignment and scope refusals come from MOD-0024 **per line** (S26-3) and never fail the whole create. |
+| Preparation line, caller without `platform.tasks.create` | — | that line is refused; the meeting is still created | — | per-line `MEETING_PREPARATION_TASK_FORBIDDEN` |
+| Preparation line, Start already passed | — | that line is refused (the bridge would link it as `bornFromMeeting`) | — | per-line `MEETING_PREPARATION_START_PASSED` |
+| Preparation `DueAt` | No | default = meeting Start; a due date after Start is **allowed with a warning** | — | warning `MEETING_PREPARATION_DUE_AFTER_START` (UI and response, never 4xx) |
+| `MeetingAttendee.IsOptional` (organizer) | — | the organizer's row cannot be made optional | — | 409 `MEETING_ATTENDEE_ORGANIZER_REQUIRED` |
+| `AgendaItem.PresenterUserId` | No | must be an attendee of the meeting | — | 400 `MEETING_AGENDA_PRESENTER_NOT_ATTENDEE` |
+| `AgendaItem.DurationMinutes` | No | 1..480 | — | validator |
+| Sum of agenda durations | — | larger than the meeting duration is **allowed with a warning** | — | UI warning only (no reason code, no refusal) |
 
 Every new reason code is added to `MeetingReasonCodes` and to the frontend reason-code bridge, with text in all 7
 languages (`tests/meetings-reason-code-bridge.test.js` must stay green).
@@ -1291,6 +1321,9 @@ languages (`tests/meetings-reason-code-bridge.test.js` must stay green).
   | `GET lookups/type-default-attendees` | `platform.meetings.create` |
   | `GET lookups/previous-meeting` | `platform.meetings.read` |
   | `POST /` with `repeat` | `platform.meetings.create`; the series part also needs `platform.meetings.series-manage` (Q9) |
+  | `POST /` with `agendaItems` (S25) | `platform.meetings.create` (unchanged) |
+  | `POST /` with `preparationTasks` (S26) | `platform.meetings.create` + **`platform.tasks.create`** for the task lines (K9, the same two-key rule the bridge endpoint `POST /{id}/tasks` already has). Without `tasks.create`, the section is not rendered and the server refuses each line (the meeting is still created). |
+  | `PUT {id}/attendees/{userId}/role` (S27) | `platform.meetings.update` |
 
 - **Tenant isolation.** `TenantId` is resolved on the server and never accepted from the client. A category,
   position, task type, meeting or series id from another tenant behaves as not found (404 / 400 `…_NOT_FOUND`). The
@@ -1320,22 +1353,33 @@ Prompt counts are **estimates** (one prompt ≈ one development session). They a
 |---|---|---|---|---|---|
 | 1 | S13 | Page help and Meetings tour | 2 (estimate) | — | DL-13 |
 | 2 | S14 | Honest display of the type flags | 1 (estimate) | — | DL-14 |
-| 3 | S15 | Confidential meeting type | 2 (estimate) | — | DL-15 |
-| 4 | S16 | Mandatory attendance before publishing | 1 (estimate) | S14 (switch flip only) | DL-16 |
-| 5 | S17 | Note and outcome per agenda item | 2 (estimate) | — | DL-17 |
-| 6 | S18 | Mandatory agenda items for quality-record types | 1–2 (estimate) | S17 (for S18-5), S15 (type commands audited), S14 (switch flip) | DL-18 |
-| 7 | S19 | Main type and subtype default fields (backend) | 2 (estimate) | — | DL-19 |
-| 8 | S20 | Type screens and grouped type picker | 2 (estimate) | S19; S15 and S18 if their fields are to be shown | DL-20 |
-| 9 | S21 | Daily frequency and series title template | 1–2 (estimate) | — | DL-21 |
-| 10 | S22 | Create-form auto-fill and agenda at create | 2 (estimate) | S18, S19, S20, S21 (shared title renderer) | DL-22 |
-| 11 | S23 | Repeat on create | 2 (estimate) | S21, S22 | DL-23 |
-| 12 | S24 | One-off type catalogue importer | 1–2 (estimate) | S19, S20 (S15 and S18 for the flags it imports). The real import run also waits on the task-type catalogue load (MOD-0024, Dalga 2) and on the QA process owner's name (§5.7). | DL-24 |
+| 3 | S25 | Agenda at create (today's type template) | 1 (estimate) | — (S18's mandatory lines join whenever S18 lands; not a hard dependency) | DL-25 |
+| 4 | S15 | Confidential meeting type | 2 (estimate) | — | DL-15 |
+| 5 | S16 | Mandatory attendance before publishing | 1 (estimate) | S14 (switch flip only) | DL-16 |
+| 6 | S17 | Note and outcome per agenda item | 2 (estimate) | — | DL-17 |
+| 7 | S18 | Mandatory agenda items for quality-record types | 1–2 (estimate) | S17 (for S18-5), S15 (type commands audited), S14 (switch flip) | DL-18 |
+| 8 | S26 | Preparation tasks on the create form (never a block) | 2 (estimate) | S25 (same create block and form) | DL-26 |
+| 9 | S27 | Required and optional attendees with agenda presenter and time box | 1–2 (estimate) | S25 (agenda lines on the form); S16 if the Q19 rule is to be applied | DL-27 |
+| 10 | S19 | Main type and subtype default fields (backend) | 2 (estimate) | — | DL-19 |
+| 11 | S20 | Type screens and grouped type picker | 2 (estimate) | S19; S15 and S18 if their fields are to be shown | DL-20 |
+| 12 | S21 | Daily frequency and series title template | 1–2 (estimate) | — | DL-21 |
+| 13 | S22 | Create-form auto-fill of the other fields | 1–2 (estimate) | S25, S18, S19, S20, S21 (shared title renderer) | DL-22 |
+| 14 | S23 | Repeat on create | 2 (estimate) | S21, S22 | DL-23 |
+| 15 | S24 | One-off type catalogue importer | 1–2 (estimate) | S19, S20 (S15 and S18 for the flags it imports). The real import run also waits on the task-type catalogue load (MOD-0024, Dalga 2) and on the QA process owner's name (§5.7). | DL-24 |
 
-**Total: about 19 to 22 prompts (estimate).** Why this order differs from §5.7's order: S13 and S14 come first
-because the short list puts them **before use** (A7, A4), and S14's switch lets the honest text ship before the
-effects it describes. S15 to S18 are the five pre-load items in the manager's order. S19 to S24 follow "type model →
-auto-fill → catalogue load" from §5.7 rows 3 and 4. Inside that order, any slice whose "Depends on" cell is empty may
-be pulled forward.
+**Total: about 23 to 27 prompts (estimate)**, up from 19 to 22. The three new slices add about 4 to 5 prompts, and
+S22 is about 0 to 1 prompt smaller. Why this order differs from §5.7's order:
+- S13 and S14 come first because the short list puts them **before use** (A7, A4), and S14's switch lets the honest
+  text ship before the effects it describes.
+- S25 comes third (owner "ekle-uc"). Invitations already go out at create, and today they carry no agenda; S25 needs
+  nothing from the type model.
+- S15 to S18 are the five pre-load items in the manager's order.
+- S26 and S27 follow the pre-load items, so the manager's binding five are not delayed. The owner may move them
+  earlier.
+- S19 to S24 follow "type model → auto-fill → catalogue load" from §5.7 rows 3 and 4.
+
+Inside that order, any slice whose "Depends on" cell is empty may be pulled forward. The slice texts are §24.8 to
+§24.19 (S13 to S24) and §24.28 to §24.30 (S25 to S27).
 
 ### 24.8 S13 — Page help and Meetings tour
 
@@ -1465,9 +1509,10 @@ subtype name, not the meeting title.
 - `RecordLinks/MeetingRelatedRecordResolver.cs` (gains `ICurrentUserContext`).
 - `Infrastructure/Services/MeetingInviteMailer.cs` and `Services/MeetingIcsBuilder.cs` (title input).
 - Type create/update validators; type and meeting views and JS (checkbox; lock badge); resx in 7 languages.
-- Audit: `CreateMeetingTypeCommand`, `UpdateMeetingTypeCommand`, `CreateMeetingCommand` and `UpdateMeetingCommand`
-  move to path `a`. Each becomes its own file under `Commands/` if moving it out of the bundled file is needed to add
-  the interfaces. Their lines are removed from `tests/architecture/audit-ledger/Diten.Platform.md` (§25).
+- Audit: `CreateMeetingTypeCommand`, `UpdateMeetingTypeCommand` and `UpdateMeetingCommand` move to path `a`.
+  `CreateMeetingCommand` is already on path `a` from S25, and S15 adds the "no title when confidential" metadata
+  rule. Each command becomes its own file under `Commands/` if moving it out of the bundled file is needed to add the
+  interfaces. Their lines are removed from `tests/architecture/audit-ledger/Diten.Platform.md` (§25).
 
 **Acceptance criteria**
 - [ ] S15-1 — `MeetingType.IsConfidential` (default `false`) can be set through type create/update under
@@ -1764,9 +1809,11 @@ red. Remove the skip rule, then the working-day test is red. **L10n:** 7 languag
 **Tenant isolation:** unchanged (the sweep already runs inside each tenant's `TenantScope`). **Depends on:** nothing.
 **Estimate:** 1–2 prompts (2 if the working-calendar skip is approved).
 
-### 24.17 S22 — Create-form auto-fill and agenda at create
+### 24.17 S22 — Create-form auto-fill of the other fields
 
-**Status: draft / not approved.** Scope B. §5.5 question 1. §5.6 "Ekranda doldurma". Work list Dalga 4.2.
+**Status: draft / not approved.** Scope B. §5.5 question 1. §5.6 "Ekranda doldurma". Work list Dalga 4.2. **Revised
+by the owner's "ekle-uc" (2026-10-27):** agenda at create moved to its own early slice **S25** (§24.28). S22 keeps the
+auto-fill of every other field and builds on S25's agenda list.
 
 **What the user gets.** Choosing a subtype fills the form, following the manager's text:
 - Title = the title template.
@@ -1776,32 +1823,24 @@ red. Remove the skip rule, then the working-day test is red. **L10n:** 7 languag
 - Description = the description template.
 - Participants = the holders of the default positions.
 - Follow-up-of = according to the parent rule.
-- Agenda = the template lines, editable before saving.
-
-The agenda is saved together with the meeting.
+- Agenda = the template lines. These are already on the form since S25. S22 adds S18's mandatory lines as locked rows.
 
 **Files / areas.**
-- `MeetingModels.cs` (`CreateMeetingRequest.AgendaItems`).
 - `MeetingCommandHandlers.cs` (create), `Validators/MeetingValidators.cs` (placeholder rule on create and update).
 - New GR-named query files `GetMeetingTypeDefaultAttendeesQuery`, `GetPreviousMeetingSuggestionQuery` and their
   handlers.
 - `API/Controllers/MeetingsController.cs` and the Web proxy.
-- `Views/Meetings/_Form.cshtml`, `Create.cshtml`, `form.js` (remove `?prefillAgenda=1`), the detail-page script (the
-  prefill reader).
+- `Views/Meetings/_Form.cshtml`, `Create.cshtml`, `form.js`.
 - resx in 7 languages; the `MEETINGCREATE` help.
 
 **Acceptance criteria**
 - [ ] S22-1 — Choosing a subtype fills Title, Location, End (Start + `DefaultDurationMinutes`, recomputed when Start
-      changes unless End was edited by hand), Description, Attendees, Follow-up-of and Agenda. Automatic placeholders
-      re-render when Start changes. User placeholders are highlighted. If the user changes the subtype after editing
-      a field, the form asks before overwriting it (`showConfirm`).
-- [ ] S22-2 — `CreateMeetingRequest.AgendaItems` (≤ 50 × ≤ 500) follows R1-D6. The lines are written in the same
-      `isNew` block as the attendees and **before** the invite mail. Mandatory lines (S18) are always added by the
-      server.
-- [ ] S22-3 — The post-create `?prefillAgenda=1` path is removed, so the agenda is never applied twice. An old URL
-      that still carries the parameter changes nothing.
-- [ ] S22-4 — (Owner decides, Q7.) Follow-ups (S7) and series instances (S11) send `AgendaItems = null` and get the
-      type template after the carried lines. If the owner declines, they send `[]` and their behavior is unchanged.
+      changes unless End was edited by hand), Description, Attendees and Follow-up-of, and refreshes S25's agenda
+      list. Automatic placeholders re-render when Start changes. User placeholders are highlighted. If the user changes
+      the subtype after editing a field, the form asks before overwriting it (`showConfirm`).
+- [ ] S22-2 — *Moved to S25 (S25-2).*
+- [ ] S22-3 — *Moved to S25 (S25-4).*
+- [ ] S22-4 — *Moved to S25 (S25-5).*
 - [ ] S22-5 — `GET lookups/type-default-attendees?meetingTypeId=` (`create`) returns the **eligible current holders**
       of the subtype's positions, plus the positions nobody holds (shown as a warning, never a block; BL-356). It
       returns holders only for positions named on that subtype, so it cannot be used to enumerate arbitrary positions.
@@ -1809,21 +1848,20 @@ The agenda is saved together with the meeting.
       subtype before Start that the caller **can view** (`CanView`, including the S15 rule). It is used as the
       pre-selection for `PreviousInSeries`. The picker is shown for `UserSelects` and hidden for `None`.
 - [ ] S22-7 — A title with an unfilled `{Name}` → 400 `MEETING_TITLE_PLACEHOLDER_UNFILLED` on create and update.
-- [ ] S22-8 — A retried create (same server idempotency key) returns the same meeting, and its agenda is not
-      duplicated.
-- [ ] S22-9 — `ParticipantSelectionHint` is shown next to the attendee picker. The `MEETINGCREATE` help now says the
-      agenda is set on the form.
+- [ ] S22-8 — *Moved to S25 (S25-6).*
+- [ ] S22-9 — `ParticipantSelectionHint` is shown next to the attendee picker. The `MEETINGCREATE` help describes the
+      auto-filled fields.
+- [ ] S22-10 — S18's mandatory lines appear on the create form's agenda list as locked rows as soon as the subtype is
+      chosen. The server still adds them on its own (S18-2), so the form only previews them and is not the authority.
 
 **Failure paths.** A subtype without templates → nothing is filled and the form works as today. A position with no
-holder → a warning. No visible previous meeting → empty. More than 50 lines → 400. No `create` → 403 on the lookups
-and no Create button.
+holder → a warning. No visible previous meeting → empty. No `create` → 403 on the lookups and no Create button.
 
-**Tests.** Handler tests for `null`, `[]` and a list; a retry test; the lookup HTTP tests (tenant, permission,
-confidential); JS form tests. Sabotage: apply the template on the client again after create, then the
-double-application test is red. Let the server ignore `null`, then the follow-up/series template test is red.
-**L10n:** 7 languages. **Permissions:** `create` and `read` (no new key). **Tenant isolation:** the lookups use
-tenant-scoped repositories and the existing eligibility query. **Depends on:** S18, S19, S20, S21. **Estimate:** 2
-prompts.
+**Tests.** Lookup HTTP tests (tenant, permission, confidential); placeholder validator tests; JS form tests (the
+overwrite confirm, End recompute). Sabotage: let the previous-meeting lookup skip `CanView`, then the confidential
+lookup test is red. **L10n:** 7 languages. **Permissions:** `create` and `read` (no new key). **Tenant isolation:**
+the lookups use tenant-scoped repositories and the existing eligibility query. **Depends on:** S25, S18, S19, S20,
+S21. **Estimate:** 1–2 prompts (it was 2 before the agenda part moved to S25).
 
 ### 24.18 S23 — Repeat on create
 
@@ -1864,7 +1902,7 @@ guarantees one instance per occurrence.
 
 **Tests.** Handler and HTTP tests, a sweep-after-create test, and the source-scan guard. **L10n:** 7 languages.
 **Permissions:** `create` + `series-manage`. **Tenant isolation:** unchanged. **Audit:** `CreateMeetingCommand` is
-already path `a` (S15) and `CreateMeetingSeriesCommand` is path `a` (S21). **Depends on:** S21, S22. **Estimate:** 2
+already path `a` (S25) and `CreateMeetingSeriesCommand` is path `a` (S21). **Depends on:** S21, S22. **Estimate:** 2
 prompts.
 
 ### 24.19 S24 — One-off type catalogue importer
@@ -1975,7 +2013,8 @@ Decision: no gateway change needed.
 Measured in `gateway/Diten.ApiGateway/ocelot.json` (worktree at `2904f4029`): `/api/v1/meetings` (GET, POST,
 OPTIONS) and the catch-all `/api/v1/meetings/{everything}` (GET, POST, PUT, DELETE, OPTIONS) → `localhost:5057`
 already exist. Every R1 endpoint (`categories`, `categories/{id}`, `categories/bulk-delete`, `lookups/*`,
-`types/import/preview`, `types/import`) falls under the catch-all. The Web proxy has **no** catch-all, so every slice
+`types/import/preview`, `types/import`, and from "ekle-uc" `{id}/attendees/{userId}/role`) falls under the catch-all.
+S25 and S26 add no route: they extend `POST /`. The Web proxy has **no** catch-all, so every slice
 adds explicit actions to `frontend/Diten.Web/Controllers/MeetingsController.cs` (§24.6). `ocelot.json` stays
 integration-agent owned; R1 does not touch it.
 
@@ -2121,6 +2160,23 @@ approved.
 | Q17 | Open — the QA process owner's name (blocks only the real catalogue import). |
 | Q18 | Answered by the CT: the manager's document arrived on 2026-10-27 as a hand-over note on central record coding (RCS-001 / BL-565). It is consistent with R1 (no module-local counter; code field deferred to the shared service). No conflict. |
 
+**New open questions from "ekle-uc" (2026-10-27), not yet answered:**
+
+19. **Q19 — Optional attendees and mandatory attendance (S27, S16).** When a type has "Attendance mandatory", must
+    **only required** attendees be marked before publishing? Optional attendees could still be marked if someone
+    wants to. Recommended: yes, required only. The organizer is always required. Q5 (declined invitees are marked)
+    then applies to required attendees.
+20. **Q20 — What "Preparation: x / y done" counts (S26, BL-541).** Recommended: count only the preparation tasks the
+    reader may read under the task read rule. When there are others, add a neutral line "k more preparation
+    task(s) you cannot open", which shows a number but no title, assignee or date. The alternative is counting only
+    visible tasks and showing nothing about the rest. Which one?
+21. **Q21 — Who gets the preparation reminder (S26).** Recommended: the organizer only, about 24 hours before Start,
+    once per start time. Should the owners of the open preparation tasks also get it? They would be reminded by the
+    task's own due-date notices, if MOD-0024 sends those.
+22. **Q22 — Who may add preparation lines on the create form (S26).** Recommended: a creator who also holds
+    `platform.tasks.create`. This is the same two-key rule (K9) the existing "task from meeting" action uses, and no
+    key changes meaning. Is that accepted?
+
 ### 24.26 Live-use readiness (operating card §6.1, S-89)
 
 The data the R1 slices need in the live tenant. **The owner enters the data (shared data). The CT measures it after
@@ -2136,7 +2192,8 @@ entry**, and asks the business questions one at a time (card §6.1 item 2). Part
 | Users, roles, and the `platform.meetings.*` grants (including `types-manage`, `series-manage`, `read-all`) | MOD-0018 · `Views/Governance/Users`, `Roles`, `Permissions`, `UserRoleAssignments` | Tenant administrator | Every slice (permissions), confidentiality (S15) |
 | Task-type catalogue with the codes the meeting catalogue names (including `COM-ACTION`, `FIN-ACTION`, `ITG-ACTION`) | MOD-0024 · `/Tasks/TaskTypes` (and the catalogue load, work list Dalga 2) | Task-type catalogue owner (who loads it is still open, work list §6 Q3) | Default action task type in the importer (S24-7) |
 | Working calendar, holidays and the tenant time zone | MOD-0362 · `Views/WorkingCalendar` / `Platform/WorkingCalendars` | Tenant administrator | Title placeholders (S21, S22); Daily skip rule (S21-2, if Q8 is yes) |
-| E-mail (SMTP) settings and the background jobs switched on in live | Notifications (platform) · live environment settings (BL-536) | Owner (live configuration) | Invite mail (S15-6); series generation after Repeat (S23) |
+| E-mail (SMTP) settings and the background jobs switched on in live | Notifications (platform) · live environment settings (BL-536) | Owner (live configuration) | Invite mail (S15-6, S25); series generation after Repeat (S23); the preparation reminder (S26-6 sends nothing while jobs are off) |
+| `platform.tasks.create` for organizers, and positions for the people they assign preparation tasks to (assignment scope, BL-356) | MOD-0018 · `Views/Governance/Roles` · MOD-0299 · `Views/Organization/PositionAssignments` | Tenant administrator / HR | Preparation lines on the create form (S26) |
 
 **(b) This module's own data (entered after (a)):**
 
@@ -2159,8 +2216,14 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
 - Work list **§6 item 6a** exists only in the uncommitted worktree copy of
   `meetings-mod0357-work-list-2026-10-27.md`. It is not in `2904f4029`.
 - Whether `AuditBehavior` (path `a`) accepts a command sent with **no user** (the series sweep and the follow-up path
-  send `CreateMeetingCommand` with `Guid.Empty`). S15 must measure this before moving `CreateMeetingCommand` to path
-  `a`. If it does not accept it, the slice stops and reports to the CT.
+  send `CreateMeetingCommand` with `Guid.Empty`). **S25** (the first slice that changes `CreateMeetingCommand`) must
+  measure this before moving it to path `a`. The same question applies to S26's reminder job. If `AuditBehavior` does
+  not accept such a command, the slice stops and reports to the CT.
+- Whether K7 ("rescheduling or cancelling notifies every linked task's owner", §16) is implemented today. Its §16 box
+  is unticked, and S26-7 depends on the answer.
+- Whether the in-process call of `CreateTaskFromMeetingCommand` from the create handler gets the bridge's
+  idempotency (`ResolveForTaskBridge`) and refusal codes unchanged. This was read in the code, not run.
+- How mail clients (Outlook, Gmail) show `ROLE=OPT-PARTICIPANT` in the `.ics` (S27).
 - The server-side source of the tenant time zone for S21 and S22. `TimesheetWeekReader` reads it from working hours
   (`hours.TimeZone`); S21 confirms the same seam.
 - The working-calendar read that Daily's skip rule (S21-2) would use.
@@ -2173,6 +2236,219 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
   opened.
 - The help code of the minutes editor page (S13-7).
 - The prompt estimates are estimates, not measurements.
+
+### 24.28 S25 — Agenda at create (today's type template)
+
+**Status: draft / not approved.** Owner "ekle-uc" (2026-10-27). Plan §5.5 question 1 ("davet e-postası
+gündemsiz gidiyor"). R1-D6.
+
+**Measured today (@826150ef4).**
+- `CreateMeetingRequest` has no agenda field (`MeetingModels.cs:143-152`).
+- `form.js:196-198` redirects a new meeting to `/Meetings/{id}?prefillAgenda=1`. The detail page then posts the
+  type's `AgendaTemplate` lines one by one (`form.js:417-457`).
+- `CreateMeetingHandler` sends the invite mail **inside** the create call (`MeetingCommandHandlers.cs`, after the
+  attendee rows). So every invitation today goes out **before** any agenda line exists.
+
+**What the user gets.** The create form shows an **editable agenda list**, pre-filled from the selected type's
+current `AgendaTemplate`. The user can add, remove, edit and reorder lines before saving. The lines are saved together
+with the meeting, so the invitation is sent for a meeting that already has its agenda.
+
+**Files / areas.**
+- `MeetingModels.cs`: `CreateMeetingRequest.AgendaItems`, an additive and nullable list of strings. S27 later turns
+  each line into `{ Text, PresenterUserId?, DurationMinutes? }`.
+- `Commands/CreateMeetingCommand.cs`, moved to its own file if that is needed to add the audit interfaces.
+- `MeetingCommandHandlers.cs` (create), `Validators/MeetingValidators.cs`.
+- `Views/Meetings/_Form.cshtml`, `Create.cshtml`, `form.js` (agenda list; remove the `?prefillAgenda=1` redirect and
+  reader).
+- resx in 7 languages; the `MEETINGCREATE` and `MEETINGDETAIL` help.
+- `tests/architecture/audit-ledger/Diten.Platform.md` (remove `CreateMeetingCommand`, L76).
+
+**Acceptance criteria**
+- [ ] S25-1 — On Create, choosing a type fills an editable agenda list from that type's `AgendaTemplate` (the
+      existing `lookups/types` already returns it). If the user changes the type after editing the list, the form asks
+      before replacing it. On Edit, the list is not shown; the agenda keeps being edited on the detail page as today.
+- [ ] S25-2 — `CreateMeetingRequest.AgendaItems` (≤ 50 lines, each trimmed and ≤ 500) follows R1-D6: `null` means
+      the server applies the type's template, `[]` means none, a list means exactly those lines. Lines are written in
+      the same `isNew` block as the attendee rows and **before** `SendInviteAsync`. A test asserts the order of the
+      writes.
+- [ ] S25-3 — When S18 is present, its mandatory lines are added by the server on top of the client's list (S18-2).
+      Until S18 lands, S25 behaves without them. This is not a hard dependency.
+- [ ] S25-4 — The post-create `?prefillAgenda=1` path is removed, so the agenda is never applied twice. An old URL
+      that still carries the parameter changes nothing (JS test).
+- [ ] S25-5 — Follow-ups (S7) and series instances (S11) send `AgendaItems = null` and get the type template after the
+      carried-forward lines (owner answer Q7 = yes). The carried lines stay first (K6). Real-Mongo test through the
+      sweep and through `ScheduleFollowUpMeetingCommand`.
+- [ ] S25-6 — A retried create (same server idempotency key) returns the same meeting, and its agenda is **not**
+      duplicated.
+- [ ] S25-7 — `CreateMeetingCommand` moves to audit path `a`. Before that, the slice measures that `AuditBehavior`
+      accepts it when sent with no user (sweep and follow-up, §24.27). If it does not, the slice stops and reports.
+
+**Failure paths.** More than 50 lines or a line over 500 characters → 400, and nothing is written. A type with an
+empty template → an empty list, and the form works as today. If the invite mail fails, the meeting and its agenda
+stay (K12, existing). No `create` → no Create button (UAS-001).
+
+**Tests.** Handler tests for `null`, `[]` and a list; write-order test (agenda before the invite); retry test;
+follow-up and series template tests; JS tests (list editing, type-change confirm, no prefill parameter). Sabotage:
+move the agenda write after `SendInviteAsync`, then the order test is red. Re-add the client prefill after create,
+then the double-application test is red. **L10n:** 7 languages (list labels, confirm text, help). **Permissions:**
+`platform.meetings.create` (unchanged). **Tenant isolation:** agenda rows take the meeting's tenant on the server
+(`TenantRepository`). **Depends on:** nothing (it uses today's `AgendaTemplate`; S18 joins when it lands).
+**Estimate:** 1 prompt. **Evidence:** E4.
+
+### 24.29 S26 — Preparation tasks on the create form (never a block)
+
+**Status: draft / not approved.** Owner "ekle-uc" (2026-10-27). ADR-003 §1 ("toplantıdan **önce** … görev açmak"),
+§4, §5. R1-D13.
+
+**Measured today (@826150ef4).**
+- A preparation task can be raised only from the meeting detail page, after the meeting is saved, through
+  `POST /{id}/tasks` (`MeetingsController.cs:213-215`: `platform.meetings.update` + `platform.tasks.create`).
+- The bridge sets link type `preparation` when the task is created before `StartAt`, and `bornFromMeeting` otherwise
+  (`MeetingTaskBridgeCommandHandlers.cs:242-244`, `RecordLinkTypes.Preparation` in `RecordLink.cs:100`).
+- The due date is optional with no default (`task-from-meeting-dialog.js:44-79`).
+- No meeting page shows preparation readiness.
+
+**What the user gets.**
+- On the create form, a "Preparation tasks" section with lines (title, assignee, due date). Each line becomes an
+  ordinary MOD-0024 task, created right after the meeting and linked to it as preparation.
+- The due date defaults to the meeting start. A later due date gets a warning, not a refusal.
+- The meeting detail page shows "Preparation: x / y done".
+- About 24 hours before the start, the organizer gets a reminder if preparation is still open.
+- **Nothing about preparation ever blocks the meeting.**
+
+**Files / areas.**
+- `MeetingModels.cs`: `CreateMeetingRequest.PreparationTasks`, `MeetingDto.Preparation` (`Done`, `Total`,
+  `NotVisible` per Q20), and a per-line result list on the create response.
+- `MeetingCommandHandlers.cs` (create: one internal `CreateTaskFromMeetingCommand` per line, after the meeting rows
+  and before the invite).
+- `MeetingQueryHandlers.cs` (`GetMeetingById`: preparation counts through `IRecordLinkService` and the same
+  `TaskRelatedRecordResolver` read rule as the linked-task list).
+- New `BackgroundJobs/MeetingPreparationReminderJob.cs` and its args, on the existing Hangfire seam (with its own
+  `EnabledJobs` key, the S11 pattern).
+- New GR-named `Commands/SendDueMeetingPreparationRemindersCommand.cs` and its handler.
+- `Infrastructure/Services/MeetingInviteMailer.cs` (a reminder send). One additive template key in
+  `Infrastructure/Persistence/Configurations/NotificationTemplateSeed.cs`, in 7 languages.
+- `Meeting.cs` (`PreparationReminderSentForStartAt`).
+- `Views/Meetings/_Form.cshtml`, `form.js`, `Details.cshtml`; resx in 7 languages; the `MEETINGCREATE` and
+  `MEETINGDETAIL` help.
+- **No file in `Features/Tasks/**` changes, and `TaskItem` gets no field.**
+
+**Acceptance criteria**
+- [ ] S26-1 — The "Preparation tasks" section is rendered only for a creator who also holds `platform.tasks.create`
+      (Q22), and only while Start is in the future. Each line has a title (required), an assignee (from the task
+      assignment picker the detail dialog already uses), an optional description and a due date.
+- [ ] S26-2 — After the meeting is created (`isNew`), each line is sent **in-process** as the existing
+      `CreateTaskFromMeetingCommand`. It goes through `CreateTaskItemCommand`, `TaskAssignmentIntentRules` and
+      `ITaskAssignmentGuard` unchanged (K2), and is linked with `RecordLinkTypes.Preparation`. No second
+      task-creation path and no new link type. The server checks `platform.tasks.create` itself, because an
+      in-process send does not pass the controller's attributes (K9).
+- [ ] S26-3 — **Per-line result, never all-or-nothing (K12).** The create response is still 201 for the meeting and
+      lists each line as `created` (task id) or `failed` (reason code, for example the assignment-scope refusal or a
+      missing permission). The form names the failed lines and offers to retry them from the detail page. A test
+      with one in-scope and one out-of-scope assignee gives 1 created and 1 failed, and the meeting exists.
+- [ ] S26-4 — **Idempotent on retry.** Each line carries a `ClientLineKey`. The bridge key is
+      `ResolveForTaskBridge(meetingId, actor, ClientLineKey)`. Retrying the same create returns the same meeting and
+      the same task ids, with no second task and no second link.
+- [ ] S26-5 — Due date: if it is left empty, it is the meeting **start**. A due date after the start is accepted and
+      returns the warning `MEETING_PREPARATION_DUE_AFTER_START`, shown next to the line. This is never a 4xx.
+- [ ] S26-6 — The detail page shows "Preparation: x / y done". It counts `preparation` links whose task is `Done` out
+      of all `preparation` links, under the task read rule (Q20; BL-541). A task the reader may not read never shows
+      its title, assignee or due date. With no preparation links, the line is not shown.
+- [ ] S26-7 — **Binding rule R1-D13:** creating, holding, rescheduling, cancelling and publishing minutes are never
+      refused or delayed because of preparation status. Tests try each one with open preparation tasks and assert
+      success. Rescheduling does **not** change any preparation task's `DueAt` (test reads the task after a
+      reschedule). Task owners are notified only through K7. If K7 is not implemented today (§24.27), the slice
+      records the gap and does not build it.
+- [ ] S26-8 — Reminder: `SendDueMeetingPreparationRemindersCommand` is run by `MeetingPreparationReminderJob`
+      (hourly, tenant by tenant, like `MeetingSeriesSweepJob`). For each `Scheduled` meeting starting in the next 24
+      hours that has at least one open preparation task, it claims
+      `Meeting.PreparationReminderSentForStartAt = StartAt` under an expected-version write, **then** e-mails the
+      organizer (Q21) once. A second run sends nothing, and a rescheduled meeting gets one new reminder. Confidential
+      meetings follow S15-6: the subtype name, no title. The mail lists counts only, never task titles. **It does not
+      run while background jobs are off (BL-536).** The detail page says so next to the preparation line.
+- [ ] S26-9 — Help text in 7 languages explains preparation tasks, the never-a-block rule, and that the reminder
+      needs background jobs.
+
+**Failure paths.**
+- No `tasks.create` → no section, and a request that still carries lines gets each line refused with
+  `MEETING_PREPARATION_TASK_FORBIDDEN`. The meeting is still created.
+- Assignee out of scope → that line fails with MOD-0024's own reason code.
+- Start in the past → the section is hidden. A request that still carries lines gets them refused with
+  `MEETING_PREPARATION_START_PASSED`, because the bridge would otherwise link them as `bornFromMeeting`.
+- Mail failure in the reminder → logged, and the claim stays, so no retry storm. Same posture as K12.
+- Cross-tenant assignee → refused by the task guard (existing).
+
+**Tests.** The handler and HTTP per-line matrix with the **real** `ITaskAssignmentGuard`; the idempotency test; the
+never-a-block tests (S26-7); the reminder claim test (two runs, one mail; reschedule, one more); the read-rule count
+test. Sabotage: make one failed line abort the create, then S26-3 is red. Gate publish on open preparation, then
+S26-7 is red. Drop the claim, then the double-reminder test is red. **L10n:** 7 languages (section, warnings,
+reasons, reminder template, help). **Permissions:** `platform.meetings.create` + `platform.tasks.create` (no new
+key). **Tenant isolation:** tasks and links are created in the caller's tenant through the existing commands; the
+reminder job runs inside each tenant's `TenantScope`. **Audit:** `CreateTaskFromMeetingCommand` is called unchanged
+(known debt L85). The reminder command uses path `a` (§25). **Depends on:** S25 (same create block and form section
+order). **Estimate:** 2 prompts. **Evidence:** E5 (crosses into MOD-0024 task creation and runs a background job).
+
+### 24.30 S27 — Required and optional attendees with agenda presenter and time box
+
+**Status: draft / not approved.** Owner "ekle-uc" (2026-10-27). R1-D14.
+
+**Measured today (@826150ef4).**
+- `MeetingAttendee` has `MeetingId`, `UserId`, `InvitationResponse`, `AttendanceStatus` and `MailUndeliveredAt`. It
+  has no role.
+- `AgendaItem` has `MeetingId`, `Text`, `SortOrder`, `RecordLinkId` and `CarriedFromMeetingId`. It has no presenter
+  and no duration.
+- The `.ics` `ATTENDEE` line carries `CN`, `RSVP=TRUE` and `PARTSTAT` but no `ROLE` (`MeetingIcsBuilder.cs:98-102`).
+
+**What the user gets.** Each invitee is marked required or optional on the create and edit forms and on the detail
+page. Calendar invites say which one applies. Each agenda line can name a presenter (an attendee) and a time box in
+minutes. The form warns when the time boxes add up to more than the meeting length.
+
+**Files / areas.**
+- `MeetingAttendee.cs` (`IsOptional`), `AgendaItem.cs` (`PresenterUserId`, `DurationMinutes`).
+- `MeetingModels.cs`: `CreateMeetingRequest.OptionalAttendeeUserIds`, `AddMeetingAttendeesRequest` per-user
+  `IsOptional`, agenda line shape with presenter and duration, the new `SetMeetingAttendeeRoleRequest`, and DTOs.
+- The create and add-attendee handlers, `AgendaItemCommandHandlers.cs` (add and update).
+- New GR-named `Commands/SetMeetingAttendeeRoleCommand.cs` with its handler and validator.
+- `Services/MeetingIcsBuilder.cs` (`ROLE`).
+- `MinutesCommandHandlers.cs`: the S16 rule per Q19.
+- API and proxy actions; `_Form.cshtml`, `form.js`, `Details.cshtml`; resx in 7 languages; help.
+- The audit ledger (`AddMeetingAttendeesCommand` L57, `AddAgendaItemCommand` L55).
+
+**Acceptance criteria**
+- [ ] S27-1 — `MeetingAttendee.IsOptional` (default `false`) is set from `OptionalAttendeeUserIds` on create, from
+      the per-user flag on add, and through `PUT {id}/attendees/{userId}/role` (`platform.meetings.update`).
+      Attendee rows written before S27 read as required. The organizer's row can never be optional (409
+      `MEETING_ATTENDEE_ORGANIZER_REQUIRED`).
+- [ ] S27-2 — Invite, change and cancel `.ics` carry `ROLE=REQ-PARTICIPANT` or `ROLE=OPT-PARTICIPANT` on every
+      `ATTENDEE` line. The UID and SEQUENCE rules are unchanged (S5b). Golden-string test on the builder.
+- [ ] S27-3 — Q19 (recommended: yes): when S16's attendance-mandatory rule is active, publish and correct require a
+      mark for every **required** attendee only. An optional attendee may be marked but does not have to be. If the
+      owner answers no, S16's rule is unchanged.
+- [ ] S27-4 — `AgendaItem.PresenterUserId` must be an attendee of the same meeting (400
+      `MEETING_AGENDA_PRESENTER_NOT_ATTENDEE`) when it is set on create, add or update. If the presenter is later
+      removed as an attendee, the line keeps the value and the detail page labels it "no longer invited". It is not
+      cleared silently, and `RemoveMeetingAttendeeCommand` is not changed.
+- [ ] S27-5 — `AgendaItem.DurationMinutes` is 1..480 or null. On the create form and the detail agenda, when the sum
+      of durations is larger than End − Start, a warning is shown with both numbers. The meeting is never refused.
+- [ ] S27-6 — The list, detail page and minutes editor show "optional" next to optional attendees, and the presenter
+      and minutes next to each agenda line. The calendar feed is unchanged. Visibility (D3, S15) does not depend on
+      `IsOptional`.
+- [ ] S27-7 — Audit: `AddMeetingAttendeesCommand` and `AddAgendaItemCommand` move to path `a`, and
+      `SetMeetingAttendeeRoleCommand` is new on path `a` (§25). `UpdateAgendaItemCommand` is already on path `a` from
+      S18.
+
+**Failure paths.** Making the organizer optional → 409. A presenter who is not an attendee → 400. A duration out of
+range → 400. Without `update`, the role toggle is not rendered and the API answers 403. Changing the role of an
+attendee not on the meeting → 404 `MEETING_ATTENDEE_NOT_FOUND` (existing code). Cross-tenant → 404. Concurrent edit
+→ 409 (existing).
+
+**Tests.** Real-Mongo test that a pre-S27 attendee row reads as required; HTTP role change; the `.ics` golden
+strings; the Q19 publish test (one optional attendee left unmarked, then publish succeeds); presenter validation; JS
+sum-warning test. Sabotage: drop `ROLE` from the builder, then the golden test is red. Count optional attendees in
+the S16 check, then the Q19 test is red. **L10n:** 7 languages. **Permissions:** `create` (on the form), `update`
+(role change, agenda edits); no new key. **Tenant isolation:** unchanged (tenant-scoped repositories; attendee and
+presenter checks are within the meeting). **Depends on:** S25 (agenda lines on the create form); S16 for S27-3.
+**Estimate:** 1–2 prompts. **Evidence:** E4.
 
 ---
 
@@ -2188,24 +2464,24 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
 |---|---|---|---|---|---|
-| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S15** | After: Id, MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts; Title only when not confidential | — |
+| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S25** (S15, S26 and S27 then extend it) | After: Id, MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts; Title only when not confidential | — |
 | UpdateMeetingCommand | meetings.meeting.updated | Meeting | today known debt (L171) → **a in S15** | Before/after of the changed fields: MeetingTypeId, StartAt, EndAt, Location, Description, IsConfidential (Title rule as above) | — |
 | CancelMeetingCommand | — | Meeting | known debt (L69), unchanged in R1 | — | not an exception; R1 does not change the command |
 | ReassignMeetingOrganizerCommand | — | Meeting | known debt (L128), unchanged | — | not an exception; unchanged |
-| AddMeetingAttendeesCommand | — | MeetingAttendee | known debt (L57), unchanged | — | not an exception; unchanged |
+| AddMeetingAttendeesCommand | meetings.attendee.added | MeetingAttendee | today known debt (L57) → **a in S27** (gains `IsOptional`) | After: MeetingId, UserIds added, IsOptional each | — |
 | RemoveMeetingAttendeeCommand | — | MeetingAttendee | known debt (L135), unchanged | — | not an exception; unchanged |
-| AddAgendaItemCommand | — | AgendaItem | known debt (L55), unchanged | — | not an exception; unchanged |
-| UpdateAgendaItemCommand | meetings.agenda-item.updated | AgendaItem | today known debt (L168) → **a in S18** | Before/after: Text; MeetingId; IsMandatory | — |
+| AddAgendaItemCommand | meetings.agenda-item.added | AgendaItem | today known debt (L55) → **a in S27** (gains presenter and duration) | After: MeetingId, Text, PresenterUserId, DurationMinutes | — |
+| UpdateAgendaItemCommand | meetings.agenda-item.updated | AgendaItem | today known debt (L168) → **a in S18** (S27 extends it) | Before/after: Text, PresenterUserId, DurationMinutes; MeetingId; IsMandatory | — |
 | DeleteAgendaItemCommand | meetings.agenda-item.deleted | AgendaItem | today known debt (L95) → **a in S18** | Before: Text, IsMandatory; MeetingId | — |
 | ReorderAgendaCommand | — | AgendaItem | known debt (L137), unchanged | — | not an exception; unchanged |
-| CreateTaskFromMeetingCommand | — | RecordLink (+ MOD-0024 task) | known debt (L85), unchanged | — | not an exception; unchanged (the task itself has its own trace, `gorev-etkinlik-akisi`) |
+| CreateTaskFromMeetingCommand | — | RecordLink (+ MOD-0024 task) | known debt (L85), unchanged. S26 **calls** it in-process for each preparation line and does not change it. If S26 has to change it, it moves to **a in S26**. | — | not an exception; unchanged (the task itself has its own trace, `gorev-etkinlik-akisi`) |
 | LinkExistingTaskCommand | — | RecordLink | known debt (L124), unchanged | — | not an exception; unchanged |
 | ScheduleReviewMeetingForTaskCommand | — | Meeting + RecordLink | known debt (L157), unchanged | — | not an exception; unchanged |
 | RespondToInvitationCommand | — | MeetingAttendee | known debt (L141), unchanged | — | not an exception; unchanged |
 | SaveMinutesDraftCommand | — | MeetingMinutesVersion | known debt (L155); changed by S17, **stays in debt pending Q14** | — | not an exception; K2 classification is the CT's call (AUD-001 §4.4, §10 K10) |
 | PublishMinutesCommand | — | MeetingMinutesVersion | known debt (L126); changed by S16, S18, **stays pending Q14** | — | as above |
 | CorrectPublishedMinutesCommand | — | MeetingMinutesVersion | known debt (L72); changed by S16, S17, S18, **stays pending Q14** | — | as above |
-| ScheduleFollowUpMeetingCommand | — | Meeting | known debt (L156), unchanged (the meeting it creates is audited through `CreateMeetingCommand` from S15) | — | not an exception; unchanged |
+| ScheduleFollowUpMeetingCommand | — | Meeting | known debt (L156), unchanged (the meeting it creates is audited through `CreateMeetingCommand` from S25) | — | not an exception; unchanged |
 | CreateMeetingSeriesCommand | meetings.series.created | MeetingSeries | today known debt (L77) → **a in S21** | After: Name, MeetingTypeId, Frequency, Interval, StartsAt, EndsAt, OrganizerUserId, TitleTemplate, CreatedFromMeetingId | — |
 | UpdateMeetingSeriesCommand | meetings.series.updated | MeetingSeries | today known debt (L172) → **a in S21** | Before/after of the changed fields | — |
 | DeleteMeetingSeriesCommand | — | MeetingSeries | known debt (L97), unchanged | — | not an exception; unchanged |
@@ -2218,11 +2494,14 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
 | DeleteMeetingCategoryCommand | meetings.category.deleted | MeetingCategory | **a** (new, S19) | Before: Name | — |
 | BulkDeleteMeetingCategoryCommand | meetings.category.bulk-deleted | MeetingCategory | **a** (new, S19) | Deleted ids; refused ids with reason | — |
 | ImportMeetingTypeCatalogueCommand | meetings.type-catalogue.imported | MeetingCategory + MeetingType | **a** (new, S24) | File SHA-256; created, updated and unchanged counts; created ids; updated ids with changed field names | — |
+| SetMeetingAttendeeRoleCommand | meetings.attendee.role-changed | MeetingAttendee | **a** (new, S27) | Before/after: IsOptional; MeetingId, UserId | — |
+| SendDueMeetingPreparationRemindersCommand | meetings.preparation-reminder.sent | Meeting | **a** (new, S26) | After: MeetingId, PreparationReminderSentForStartAt, open count. No titles. It is job-triggered with no user, so the same no-user question as §24.27 applies. | — (not İ2: it writes the claim marker on `Meeting`) |
 
 Notes:
 - `PreviewMeetingTypeCatalogueImportQuery` is a **query** that writes nothing, so it is not a command row. If it is
   ever implemented as a command, its class is İ5 ("hiçbir kalıcı kaydı değiştirmez — önizleme").
-- **K2.** This draft reads the five new commands as configuration (not K2). The CT confirms this under Q14. No R1
+- **K2.** This draft reads the seven new commands as configuration or operational records, not K2 (S26's reminder
+  and S27's role change included). The CT confirms this under Q14. No R1
   command is written "best effort" into the K2 class.
 - `tests/architecture/audit-ledger/Diten.Platform.md` is in `tests/**`. Each slice that moves a command edits it
   (removing lines only), and `AuditTrailStandardTests` must be green in that slice.
@@ -2243,6 +2522,9 @@ Notes:
 | DL-19 | S19 main type backend | S19 — Main type and subtype default fields (backend), Audited Events | E4 |
 | DL-20 | S20 type screens | S20 — Type screens and grouped type picker | E4 |
 | DL-21 | S21 daily and series title | S21 — Daily frequency and series title template, Audited Events | E5 (Q8 answered yes: reads the working calendar) |
-| DL-22 | S22 create auto-fill | S22 — Create-form auto-fill and agenda at create | E5 (positions and people from the organization and task modules; follow-up and series paths) |
+| DL-22 | S22 create auto-fill | S22 — Create-form auto-fill of the other fields | E5 (positions and people from the organization and task modules) |
 | DL-23 | S23 repeat on create | S23 — Repeat on create | E4 (including a sweep run after create) |
 | DL-24 | S24 catalogue importer | S24 — One-off type catalogue importer, Audited Events | E5 (reads the MOD-0024 task-type catalogue and organization positions) |
+| DL-25 | S25 agenda at create | S25 — Agenda at create (today's type template), Audited Events | E4 (create, persistence, invite mail, follow-up and series paths) |
+| DL-26 | S26 preparation tasks | S26 — Preparation tasks on the create form (never a block), Audited Events | E5 (creates MOD-0024 tasks through the bridge under the real assignment guard; background reminder) |
+| DL-27 | S27 attendee roles and agenda time box | S27 — Required and optional attendees with agenda presenter and time box, Audited Events | E4 (persistence, RBAC and tenant, `.ics` content) |
