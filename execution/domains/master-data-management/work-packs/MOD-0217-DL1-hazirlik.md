@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 a83901f9962eeb8ca51d0ab698ef705bda0c3e19c6d06a123e2038b8cbf34fd4, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
+pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 76e502d6f6c43e08d61f29ffbab4dfad3f1ac9b4b3f06669e589b0684c76555b, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D45/2 — Codex F-1)"; önceki a83901f9…; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; yalnız başvuru malzemesi — KOD ALMA YOK, D38/3; pack "Kaynak ve kanıt")
 ---
 
