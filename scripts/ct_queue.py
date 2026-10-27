@@ -584,6 +584,15 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
             out["warnings"].append(f"satır {i} {row[id_i]}: tanımsız durum '{row[state_i]}' — dağıtılabilir ya da kapalı sayılmaz")
         if since_i is not None and not DATE.match(row[since_i].strip()):
             out["warnings"].append(f"satır {i} {row[id_i]}: since '{row[since_i]}' YYYY-MM-DD değil")
+        # S-72 (PVG 2026-10-27): a new or changed row's plain record path must exist; a typo passed with 0 errors.
+        # path@commit is checked by its own readers; only a plain repo path is looked up here.
+        rec_col = base.index("record")
+        rec = row[rec_col].strip() if rec_col is not None and rec_col < len(row) else ""
+        if rec and "@" not in rec and "/" in rec and re.fullmatch(r"[A-Za-z0-9_.\-/]+", rec) and ".." not in Path(rec).parts:
+            reader = (profile or {}).get("read_file")
+            found = reader(rec) is not None if reader else (ROOT / rec).is_file()
+            if not found:
+                out["warnings"].append(f"satır {i} {row[id_i]}: record yolu '{rec}' bu ağaçta yok (yazım hatası mı?)")
     return out
 
 
@@ -1532,6 +1541,11 @@ def self_test() -> int:
     errors, warnings = run(base_text + "Q9\tnew\tDELIVERED\tCT\t-\t-\t15.10.2026\t-\n")
     cases.append(("new row with undefined state and bad date -> UYARI, not HATA",
                   not errors and any("tanımsız durum 'DELIVERED'" in w for w in warnings) and any("since" in w for w in warnings)))
+    errors, warnings = run(base_text + "Q9\tnew\tREADY\tCT\t-\t-\t2026-10-15\tdocs/records/yok/PQG-Q9-v1.2.txt\n")
+    cases.append(("S-72 sabotage: a new row's record path that does not exist -> UYARI",
+                  not errors and any("record yolu 'docs/records/yok/PQG-Q9-v1.2.txt'" in w for w in warnings)))
+    errors, warnings = run(base_text + "Q9\tnew\tREADY\tCT\t-\t-\t2026-10-15\tscripts/ct_queue.py\n")
+    cases.append(("S-72: an existing record path -> no record warning", not errors and not any("record yolu" in w for w in warnings)))
 
     cur = Table(base_text + "Q9\tnew\tDELIVERED\tCT\t-\t-\t2026-10-15\t-\nQ10\tx\tDONE (CT ACCEPTED as DRAFT)\tCT\t-\t-\t2026-10-15\t-\n")
     expect = {("Q1", False): 0, ("Q2", False): 1, ("Q5", False): 1, ("Q6", False): 1, ("Q7", False): 1, ("Q9", False): 1,

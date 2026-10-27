@@ -1,6 +1,3 @@
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementApproval.Services;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
@@ -10,7 +7,13 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Settings;
 using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tenants;
@@ -37,7 +40,7 @@ public sealed class AuthInternalClientsRedirectTests
     [MemberData(nameof(Callers))]
     public async Task A_redirect_answer_is_never_followed_with_the_credential(string caller)
     {
-        using var server = new RedirectingServer();
+        await using var server = await RedirectingServer.StartAsync();
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddMemoryCache();
@@ -98,66 +101,71 @@ public sealed class AuthInternalClientsRedirectTests
         }
     }
 
-    /// <summary>Answers every request with a 302 to <c>/trap</c> on the same host, and counts both.</summary>
-    internal sealed class RedirectingServer : IDisposable
+    /// <summary>
+    /// Answers every request with a 302 to <c>/trap</c> on the same host, and counts both. TEST-HIZ-01: a real Kestrel
+    /// bound directly to 127.0.0.1:0, its port read after start. It used to be an HttpListener on a port found free
+    /// and released first, and stopped with Stop() then Close(): on Linux/macOS Close() binds that port again to remove
+    /// it, and when another socket had taken the port in between it threw "Address already in use" (CI, 2026-10-26);
+    /// the same window existed between the probe and Start(). Binding port 0 and stopping once leave no window.
+    /// </summary>
+    internal sealed class RedirectingServer : IAsyncDisposable
     {
-        private readonly HttpListener _listener = new();
+        private readonly WebApplication _app;
         private int _first;
         private int _trapped;
 
-        public RedirectingServer()
-        {
-            var probe = new TcpListener(IPAddress.Loopback, 0);
-            probe.Start();
-            var port = ((IPEndPoint)probe.LocalEndpoint).Port;
-            probe.Stop();
-            Url = $"http://127.0.0.1:{port}";
-            _listener.Prefixes.Add(Url + "/");
-            _listener.Start();
-            _ = Task.Run(LoopAsync);
-        }
+        private RedirectingServer(WebApplication app) => _app = app;
 
-        public string Url { get; }
+        public string Url { get; private set; } = "";
         public int First => Volatile.Read(ref _first);
         public int Trapped => Volatile.Read(ref _trapped);
 
-        private async Task LoopAsync()
+        public static async Task<RedirectingServer> StartAsync()
         {
-            while (_listener.IsListening)
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.WebHost.UseUrls("http://127.0.0.1:0");
+            builder.Logging.ClearProviders();
+            var app = builder.Build();
+            var server = new RedirectingServer(app);
+            app.Run(server.AnswerAsync);
+            try
             {
-                HttpListenerContext context;
-                try
-                {
-                    context = await _listener.GetContextAsync();
-                }
-                catch
-                {
-                    return;
-                }
-
-                if (context.Request.Url!.AbsolutePath.StartsWith("/trap", StringComparison.Ordinal))
-                {
-                    Interlocked.Increment(ref _trapped);
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    Interlocked.Increment(ref _first);
-                    context.Response.StatusCode = 302;
-                    context.Response.RedirectLocation = Url + "/trap";
-                }
-
-                var bytes = Encoding.UTF8.GetBytes("{}");
-                context.Response.ContentType = "application/json";
-                await context.Response.OutputStream.WriteAsync(bytes);
-                context.Response.Close();
+                await app.StartAsync();
+                server.Url = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses
+                    .FirstOrDefault()?.TrimEnd('/')
+                    ?? throw new InvalidOperationException("The redirecting server did not report a bound address.");
+                return server;
+            }
+            catch
+            {
+                await app.DisposeAsync();
+                throw;
             }
         }
 
-        public void Dispose()
+        private async Task AnswerAsync(HttpContext context)
         {
-            _listener.Stop();
-            _listener.Close();
+            if (context.Request.Path.StartsWithSegments("/trap"))
+            {
+                Interlocked.Increment(ref _trapped);
+                context.Response.StatusCode = 200;
+            }
+            else
+            {
+                Interlocked.Increment(ref _first);
+                context.Response.StatusCode = 302;
+                context.Response.Headers.Location = Url + "/trap";
+            }
+
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{}");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            await _app.StopAsync(stopping.Token);
+            await _app.DisposeAsync();
         }
     }
 
