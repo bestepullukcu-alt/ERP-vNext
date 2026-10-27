@@ -12,8 +12,8 @@ settings files. Configuration names:
 - `Mongo__ConnectionString`
 - `Mongo__SupplyChainDatabaseName` (non-secret; defaults to the approved `DitenERP` name)
 - `DemandPlanning__SnapshotCursorSigningKey`
-- `DemandPlanning__HistoryUnitMode` (non-secret; defaults to live `ProductMasterV1`;
-  `SingleUnitInterim` is an explicit legacy-only override)
+- `DemandPlanning__HistoryUnitMode` (non-secret; defaults to `SingleUnitInterim`;
+  `ProductMasterV1` remains an explicit opt-in pending live producer evidence)
 
 `JwtSettings__Issuer` and `JwtSettings__Audience` are non-secret and have the
 same values as the existing Auth/CRM configuration. No Gateway route is part of
