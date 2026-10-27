@@ -34,6 +34,11 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. MOD-0126 sabitlemesi `e87f57a4…`
 > (D46 revizyonu). `status: draft`.
 >
+> **Revizyon (2026-10-27, CT04a — sahip denetimi; KARAR D47/1, D47/4):** hedef kullanıcılar rol matrisiyle hizalandı — hazine
+> yöneticisi yalnız yapılandırma ve operasyonel destek (eşik politikaları, taslak toplu silme, uzlaştırma); yayım onaylayıcı
+> rolünde. Banka okuma izni nakit pozisyonu rollerine verilmez (v1'de `BankAccountRef` opak, MOD-0289 okunmaz). Rol şablonu
+> göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`). AC numaraları değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) O-7: D43'ün yanına Platform sahibinin (Beste) yeniden teyidi eklendi — "v1'de kur çevrimi yok; pozisyonlar kendi para
 > birimlerinde gösterilir"; kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4); (2) Platform `AuditCategory` `Finance` değeri 18
@@ -111,7 +116,8 @@ kanıt paketi, MOD-0023 iş akışıyla onay ve yayım (o gün/para birimi için
 Treasury & Cash; Blueprint bağımlılık kapısı "Data Contract Registry; Integration Monitoring & Reconciliation" (paket §A).
 
 - **Hedef kullanıcı:** hazine operatörü (bakiyeleri girer, mutabakat çalıştırır, kanıt ekler, onaya gönderir), hazine
-  onaylayıcısı (onaylar / reddeder), hazine yöneticisi (yayımlar, eşik politikasını yönetir, belirsiz sonucu uzlaştırır).
+  onaylayıcısı (onaylar / reddeder, yayımlar), hazine yöneticisi (yalnız yapılandırma ve operasyonel destek: eşik politikasını
+  yönetir, taslakları toplu siler, belirsiz sonucu uzlaştırır — KARAR D47/1). Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`).
 - **v1 pozisyon kaynağı (banka beslemesi YOK):** kullanıcının elle girdiği **bilinen bakiyeler** (`BalanceSourceKind =
   ManualEntry`) — banka portalından, ekstreden ya da teyit yazısından okunan değer, her satırda "as-of" zamanı ve kaynak
   referansıyla; dayanak belge kanıt paketiyle (MOD-0031) bağlanır. Banka durumu ve ekstre girdileri MOD-0269'a bağlıdır
@@ -1184,7 +1190,7 @@ yoktur (O-21).
 | `finance-treasury.cash-position-threshold-policies.bulk-delete` | T2 | DELETE bulk |
 
 - Kullanıcının MOD-0023 tarafında da `platform.workflow.instances.start` (gönderen) ve `platform.workflow.tasks.approve`
-  / `.reject` (onaylayıcı) izinleri olmalıdır; rol şablonu MOD-0018 sahibiyle (MOD-0126 O-5 ile ortak iş).
+  / `.reject` (onaylayıcı) izinleri olmalıdır; rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); Auth kaydı MOD-0018 sahibinde.
 - Tier-3 eylemler (`read-tenant-wide`, `reconcile`, `attach-evidence`, `submit`, `workflow-reconcile`, `publish`,
   `export-evidence`, `export-reconcile`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol
   şablonunda varsayılan değildir.
@@ -1544,7 +1550,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 | Yuva | Recovery'de durum | Bu paketin isteği | Durum |
 |---|---|---|---|
-| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil); rol şablonu içeriği KARAR D46 | kayıt açık (Ali) |
+| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil); rol şablonu içeriği KARAR D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) | kayıt açık (Ali) |
 | LE (MOD-0220) | `lookup-validation` var; `ApprovalStatus` yok | TRM-14 + sözleşme belgesi | açık |
 | BANK-ACCOUNT (MOD-0289) | taslak: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | opak Guid; arama/doğrulama sözleşmesi (O-15) | açık — ertelendi (sözleşme dondurulunca) |
 | BANK-GATEWAY (MOD-0269) | yok, D5 kapalı | v1'de istek yok | v1 dışı |

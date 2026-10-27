@@ -29,6 +29,10 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
 > Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. `status: draft`.
 >
+> **Revizyon (2026-10-27, CT04a — sahip denetimi):** rol şablonu göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) olarak
+> güncellendi (D47/4: AR v1'de tahsilat hesabını yalnız opak Guid taşır, MOD-0289'u okumaz — banka okuma izni AR rollerine
+> verilmez). AC numaraları değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
 > (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de"
 > maddesi açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-14, T-4; MOD-0126 O-19 ile tek karar);
@@ -1072,7 +1076,7 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   `receivable.*` / `ar.*` anahtarları (`AccountsReceivableSecurity.cs:26-55@218acaf5`, 30 anahtar + `receivable.edit` takma
   adı :58-70) **kopyalanmaz**; aşağıdaki eşleme yalnız izlenebilirlik içindir (kaynak anahtar hiç yayımlanmadığından takma ad
   gerekmez, PKS-001 §3). Kaynak 7 rol sabiti (`treasury_viewer` … `service_principal`, :110-116) taşınmaz; rol şablonları
-  MOD-0018 sahibiyle (O-15).
+  D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); Auth kaydı MOD-0018 sahibinde (O-15).
 - Aktör: `tenant_user`; `platform_admin` geçişi standarttır. Arka plan aktörü bu sürümde yok.
 
 | Recovery anahtarı | Katman | Uçlar | Kaynak anahtar |
@@ -1620,7 +1624,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | **KARAR D28 (2026-10-25): öneri kabul** — UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
 | O-13 | WriteOff kanıtı zorunlu mu | evet / hayır | **KARAR D28 (2026-10-25): öneri kabul** — evet, en az 1 MOD-0031 bağlantısı | sahip (K1) |
 | O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
-| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — **KARAR D46** (2026-10-27; `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; Auth kaydı MOD-0018 sahibinde (Ali); `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
+| O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; Auth kaydı MOD-0018 sahibinde (Ali); `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
 
 ## Teslim dilimleri
 

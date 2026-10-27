@@ -30,9 +30,9 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 
 > **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
 > rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev`
-> olduktan, bağımsız inceleme (CT-APR-02) ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten ve sahip MOD-0289 için
-> kod alma iznini ayrıca verdikten sonra yazılır (D1: kod alma izni modül modül verilir; bugün yalnız MOD-0126 ilk
-> adaydır). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
+> olduktan ve bağımsız inceleme (CT-APR-02) ile sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır.
+> Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene
+> kadar kapalı (D1: kod alma izni modül modül verilir). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D1 (doğrula, sonra uyarlayarak al), D7 (MDM yerleşim önerisi) —
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-01.md`; D9 (başka modüldeki en küçük eklemeli
@@ -102,6 +102,13 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > **Revizyon 9 (2026-10-27, sahip kararları D45/D46):** MOD-0289 kod alma izni verildi (D45/3; D27/5 koşulları — kod yalnız
 > onaylı sürümle ve dilim sırasıyla). Rol şablonları (banka verisi görüntüleyici / yöneticisi) D46; `read-tenant-wide` ve
 > `read-unmasked` açık atamalı listede (D23/1, D23/4; Ali'ye iletildi). DCP dosya adı DCP-011. `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04a — sahip denetimi):** baş blokta "kod alma izni ayrıca verilecek / bugün yalnız MOD-0126"
+> cümlesi güncel duruma çekildi (D45/3 ile verildi; uygulama DCP onayı, `ready-for-dev`, CT-APR-01 ve teslim sırasına kadar
+> kapalı). Authorization Convention'a rol şablonu göstergesi eklendi: D46 + D47 (rol matrisi
+> `treasury-intake-owner-decisions-05.md`; ayrı banka hesabı etkinleştirici, D47/2). Audited Events `Category` cümlesi
+> değişmedi (CT04a anında): MOD-0289 için `AuditCategory` kararı yoktu — sonra **D48/1** ile `MasterData` oldu (D35/3 `Finance` FinanceTreasuryService içindir, D45/1 `MasterData`
+> MOD-0217 içindir) — açık nokta olarak Control Tower'a bildirildi, karar uydurulmadı. AC numaraları değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -1155,6 +1162,10 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
   muafiyet, operasyon, kural anlık görüntüsü, doğrulama koşusu, pano anahtarları (v1 dışı ya da taşınmaz).
 - `read-unmasked` ve `read-tenant-wide` hiçbir rol şablonunda varsayılan değildir ve otomatik yoldan verilmez:
   `ExplicitGrantOnlyPermissions`'a eklenmeleri Auth değişikliğidir (D9; Auth sahibi) — Ready-for-dev engeli.
+- **Rol şablonları:** D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) — banka verisi görüntüleyici, banka
+  verisi yöneticisi (banka / şube / amaç yazmaları, hesap oluşturma / düzenleme / taslak silme, okuma kayıtları) ve ayrı
+  **banka hesabı etkinleştirici** (`mdm.bank-accounts.activate` / `.deactivate` + okuma; yöneticide yok — D47/2). İki rol
+  aynı kişide olsa da oluşturan / son güncelleyen kendi hesabını etkinleştiremez (dört göz, KARAR D23/2, çalışma anında).
 - Tier-3 eylemler (`read-tenant-wide`, `read-unmasked`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3); `sensitive-reads.read`
   dört parçalı anahtardır (PKS-001 ≥ 3 parça).
 
@@ -1179,8 +1190,8 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - Defterin "Pencere 🟡" notundaki (başlatmadan sonra yazılan niyet) durum bu modülde yoktur: uzak çağrı yapan yazma
   komutu yalnız tedarikçi kontrolüdür ve o çağrı **yazmadan önce** yapılan bir okumadır.
 
-`SourceModule`: `MOD-0289`. `Category`: Platform `AuditCategory`'de banka / finans değeri yok (MOD-0126 pack ölçümü,
-`AuditEnums.cs:3-27`); MOD-0126 O-6 ile ortak karar — değer uydurulmaz. K2: banka hesabı yazmaları ve maskesiz okuma
+`SourceModule`: `MOD-0289`. `Category`: **`AuditCategory.MasterData`** (14; `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs@7c57e8466`) —
+**KARAR D48/1** (`treasury-intake-owner-decisions-05.md`); MOD-0126 O-6 bağı kaldırıldı, `Finance = 18` beklenmez. K2: banka hesabı yazmaları ve maskesiz okuma
 **K2 (KARAR D24/2)** (ödeme yönlendirme verisi; AUD-001 §4.3 listesinde açıkça sayılmıyor, sahip bu modül için K2 saydı);
 işlem enum'u eklemeli genel `MasterDataAuditOperation`. Banka / şube / hesap amacı yazmaları K2 değil ama aynı yoldan
 yazıldığı için pratikte kapalı-başarısızdır.
@@ -1792,7 +1803,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-2 | Şirket hesabı için şirket Active **ve** Approved mı olmalı? | (a) Create ve Activate'te Active + Approved (b) Create'te Active, Activate'te Active + Approved (c) yalnız Active | **KARAR D23/3 (2026-10-25): (b)** — oluşturmada `Active`; etkinleştirmede ve lookup'ta `Active` + `Approved` (D10/1 ile aynı çizgi) | sahip (K1) |
 | O-3 | Maskesiz okuma izni kimde? | (a) `mdm.bank-accounts.read-unmasked`, Tier 3, yalnız açık atama, gerekçe kodu zorunlu (b) hesap oluşturma izniyle birlikte (c) maskesiz okuma yok | **KARAR D23/4 (2026-10-25): (a)** — yalnız açık atama (rol şablonunda varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı. Kalan (karar değil): gerekçe değer listesi önerisi `PAYMENT_INVESTIGATION`, `BANK_CONFIRMATION`, `AUDIT_REQUEST`, `DATA_CORRECTION`; ilk sahipler rol şablonu MOD-0018 sahibiyle | sahip (K1) + MOD-0018 / Auth sahibi (uygulama) |
 | O-4 | Tedarikçi hesabı aktivasyonunda doğrulama kanıtı | (a) kanıt yok (b) zorunlu doğrulama kodu + dört göz (c) MOD-0031 kanıt bağlantısı zorunlu | **KARAR D24/1 (2026-10-25): (b)** — etkinleştirmede zorunlu kod (`CALLBACK_CONFIRMED` / `BANK_LETTER_ON_FILE` / `SUPPLIER_PORTAL_CONFIRMED`) ve farklı kişi; MOD-0031 kanıt bağlantısı MOD-0269 gerçek gönderiminden önce zorunlu kapı (Follow-up) | sahip (K1) |
-| O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. Defter belirteci: **KARAR D27/11** (yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında). `AuditCategory` değeri MOD-0126 O-6 ile ortak | sahip (K1); defter: D27/11 |
+| O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. Defter belirteci: **KARAR D27/11** (yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında). `AuditCategory` değeri `MasterData` — **KARAR D48/1** (2026-10-27) | sahip (K1); defter: D27/11 |
 | O-6 | Tam tanımlayıcının saklanması | (a) uygulama düzeyi AES-GCM (b) MongoDB istemci tarafı şifreleme (c) dış kasa referansı (d) saklamama | **KARAR D24/3 (2026-10-25): (a) — yalnız sahip onayı.** Pack'teki tasarım (AES-256-GCM, rastgele 96 bit nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar kümesi çiti, onaylı hedef + revizyon). Gerçek Mongo testleri DL-2 dilim kabul kapısında. **Güvenlik onayı KARAR D33/1 (2026-10-26): verildi** | sahip (K1) — güvenlik onayı K1 (D33/1) |
 | O-7 | RCS-001 kayıt kodları | `BNK` / `BAC` OTOMATİK · başka | **KARAR D24/4 (2026-10-25):** banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki, tedarikçide grup öneki), OTOMATİK; şube kodu doğal anahtar. `.antigravity` RCS-001 §3 satırları D29/2 kararıyla D30'da uygulandı (`record-coding-standard.md:68-69`) | sahip (K1); `.antigravity`: ayrı onay |
 | O-8 | Ülke kodu kaynağı | (a) yalnız ISO biçimi (b) PSS-011 (c) MDM iş ülkesi referansı | **KARAR D24/5 (2026-10-25): (a)** — ISO 3166-1 alfa-2 biçimi; MDM iş ülkesi kaynağı gelince bağlanır | sahip (K1) |
