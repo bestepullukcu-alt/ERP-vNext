@@ -24,6 +24,17 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; **MOD-0120 için** kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
+> (1) Platform `AuditCategory` `Finance` değeri 18 (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de"
+> maddesi açık; (2) SEC-002 tüketim yolu Platform sahibi yanıtı Y-4/6 ile yazıldı (O-14, T-4; MOD-0126 O-19 ile tek karar);
+> (3) MOD-0149: `GET /api/crm/accounts/{id}/lookup-validation`, dış referans çözümleme ve sözleşme belgesi eki kabul edildi
+> (Y-4/4b; O-3) — MOD-0149 pack revizyonuyla gelene kadar önkoşul; `account-status` kümesi `active`, `inactive`, `draft`,
+> `suspended`, faturalanabilir yalnız `active` (Y-4/4c; O-4); doğru olan MOD-0149 pack'idir (`ready-for-dev`), kayıt satırı
+> Platform'ca hizalanıyor (Y-4/4a; TRM-09); (4) MOD-0048 `currency-minor-units` önerisi başlangıç listesi olarak kabul (Y-4/3;
+> MOD-0126 O-11 ile ortak) — seed önkoşul açık; (5) DCP numarası DCP-011 atandı (Y-4/2); dosya adı değişikliği ayrı adım —
+> paketteki `UNASSIGNED-finance-treasury-intake.md` yolu bu revizyonda değişmez.
+> Bu revizyon pack'i `ready-for-dev` yapmaz; künye `draft` kalır.
+>
 > **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** (`MOD-0120-DL1-hazirlik.md`) — AC-2, AC-5,
 > AC-31 ve AC-32 dilim bitişlerinde "(… kısmı)" ile bölündü (AC-31 açma kısmı DL-2'ye, AC-32 (d) DL-1'e); Audited Events
 > `Category` ve Repo Scope defter satırı **D35**'e (`treasury-intake-owner-decisions-02.md` D35 (PR #235)) göre yazıldı;
@@ -552,8 +563,8 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 MOD-0149 müşteri doğrulama + dış referans çözümleme eki (commercial-suite, O-3); MOD-0220 TRM-14 (MOD-0126 ile ortak);
 MOD-0023 AR düzeltme iş akışı şablonu; `ocelot.json` rotaları (integration-agent); Platform `AuditCategory`'ye yalnız
-ekleme olarak `Finance` değeri (Platform sahibinin işi, XMC-001; MOD-0126 DL-1'den önce main'de — D35/3, MOD-0126 O-6 ile
-ortak); FinanceTreasury servisinde veri kapsamı çözücüsü (SEC-002, O-14). **Uygulandı, açık değil (D30, 2026-10-25):**
+ekleme olarak `Finance` (değer 18; Y-4/7) değeri (Platform sahibinin işi, XMC-001; MOD-0126 DL-1'den önce main'de — D35/3, MOD-0126 O-6 ile
+ortak); FinanceTreasury servisinde veri kapsamı çözücüsü (SEC-002, O-14; yol Y-4/6 ile yanıtlandı). **Uygulandı, açık değil (D30, 2026-10-25):**
 AGENTS.md §2/§3/§9 ve `.antigravity/rules/ports.md` 5071 kaydı (TRM-03/04); `record-coding-standard.md` §3 `ARI` satırı.
 
 ## Protected Paths
@@ -584,13 +595,13 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | **AR-BILLING-BUNDLE** ("Billing integration surface") | faturalama sınırı | **üretici belirsiz** (düzeltme kaydı; sıra belgesi Amendment 3); MOD-0169 Billing & Invoicing `reserved / planned`, commercial-suite, "SoR boundary with Finance = EA-TBD" (`module-id-registry.md:289`); MOD-0169 pack **yok** (ölçüldü); sözleşme artefaktı iki depoda da yok | **KARAR D27/2:** kısıtlı yerel MVP, sapma S-2 (AR faturayı yerelde tutar, faturalama entegrasyonu yok, müşteriye göndermez, yasal / e-fatura numarası üretmez); MOD-0169 sonra bağlanır (Follow-up). Engel değil |
 | **ERP-FIN-BUNDLE** | ortak arayüz sepeti | yedi platform kaygısı Recovery'de var (Gateway, JWT, kimlikler, denetim, kanıt, korelasyon, hata modeli — sıra belgesi Amendment 3 §3, devralınmış), yalnız GL veri sözleşmeleri yok | **KARAR D27/3:** v1'de ERP-FIN-BUNDLE yok, modül sözleşmeleri; AR GL veri sözleşmesi istemez (D27/4). Engel değil |
 | MOD-0118 General Ledger | GL kaydı | kayıt satırı yok (ölçüldü) | **KARAR D27/4: kapsam dışı** → `PostingStatus` / GL alanları taşınmaz |
-| **MOD-0149 Customer 360** (müşteri SoR) | müşteri doğrulama + seçici + dış referans | **var, sözleşmesiz.** `GET /api/crm/accounts/{id}` izin `crm.account.read` (`services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/AccountController.cs:65-68`), liste `GET /api/crm/accounts` (:23-24); Gateway rotası `/api/crm/accounts` ve `/{everything}` (`ocelot.json:2951-2979`); `Account` kiracı geneli (LE alanı yok), `Status` MOD-0048 değer kodu (`Account.cs:24-25`); `AccountExternalReference` tekil (TenantId, SourceSystem, ExternalId) (`AccountExternalReference.cs:3-8`) ama **çözümleme ucu yok** — depo yalnız `ExistsBySourceExternalAsync` / `ListByAccountAsync` (`IAccountExternalReferenceRepository.cs:5-13`); `docs/analysis/contracts/` altında müşteri sözleşmesi **yok**; kayıt satırı `reserved / planned` iken pack `ready-for-dev` (TRM-09) | **O-3**: MOD-0149'a eklemeli `lookup-validation` + dış referans çözümleme ucu ve sözleşme belgesi (D9; commercial-suite sahibine sorulur, D9/3). O gelmeden müşteri doğrulaması yapılamaz → Create/Issue kapanır (fail-closed) |
+| **MOD-0149 Customer 360** (müşteri SoR) | müşteri doğrulama + seçici + dış referans | **var, sözleşmesiz.** `GET /api/crm/accounts/{id}` izin `crm.account.read` (`services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/AccountController.cs:65-68`), liste `GET /api/crm/accounts` (:23-24); Gateway rotası `/api/crm/accounts` ve `/{everything}` (`ocelot.json:2951-2979`); `Account` kiracı geneli (LE alanı yok), `Status` MOD-0048 değer kodu (`Account.cs:24-25`); `AccountExternalReference` tekil (TenantId, SourceSystem, ExternalId) (`AccountExternalReference.cs:3-8`) ama **çözümleme ucu yok** — depo yalnız `ExistsBySourceExternalAsync` / `ListByAccountAsync` (`IAccountExternalReferenceRepository.cs:5-13`); `docs/analysis/contracts/` altında müşteri sözleşmesi **yok**; kayıt satırı `reserved / planned` iken pack `ready-for-dev` (TRM-09) | **O-3**: MOD-0149'a eklemeli `lookup-validation` + dış referans çözümleme ucu ve sözleşme belgesi (D9; commercial-suite sahibine sorulur, D9/3). O gelmeden müşteri doğrulaması yapılamaz → Create/Issue kapanır (fail-closed) **Yanıt Y-4/4 (2026-10-27, Beste):** (a) doğru olan pack'tir (`ready-for-dev`), kayıt satırı hizalanıyor (TRM-09); (b) `GET /api/crm/accounts/{id}/lookup-validation`, dış referans çözümleme ve sözleşme belgesi eki kabul — MOD-0149 pack revizyonuyla gelecek; o gelene kadar önkoşul ve kural (fail-closed) aynı |
 | MOD-0220 LE `lookup-validation` | şirket uygunluğu (D10/1 deseni) | var; yanıtta `ApprovalStatus` yok (MOD-0126 pack Dependencies; `LegalEntitiesController.cs:48`, `LegalEntity.cs:49-50` yeniden ölçüldü) | **TRM-14** (MOD-0126 ile ortak). AR için "Active + Approved" kuralı D10/1'in uzantısıdır — **KARAR (D14/4)**: alacak oluşturan/değiştiren her yazmada; o gelmeden "onaylı" kontrolü yapılamaz → AR yazma komutları kapanır (fail-closed) |
 | MOD-0023 Workflow Designer | düzeltme onayı | var (başlatma idempotency, görev onay/ret, başlatanın onayı `SodViolation` — MOD-0126 pack Dependencies) | AR düzeltme **şablonu** (`templateCode` TBD) MOD-0023 sahibinin işi (D9); v1 kullanıcı token'ıyla genel uç (MOD-0126 O-7 ile aynı) |
 | MOD-0021 / CentralAudit (K4) | yol `b` | var (`Diten.BuildingBlocks.CentralAudit`, SupplyChain/Inventory kullanıyor) | servis iskeletiyle gelir; AR yalnız bildirim ekler |
 | MOD-0048 para birimi | kod listesi + küsurat | kısmen — liste var, küsurat yok (MOD-0126 pack) | MOD-0126 **O-11** ile tek karar; yoksa yazma 503 |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack) | **engel**: modül kendi sayacını yazamaz; servis gelene kadar Create yazılamaz (O-6) |
-| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** |
+| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapı (kapsamı soran kod + kanıt testi) açık |
 | MOD-0031 Evidence Linking | düzeltme kanıt kimliği | var (`api/v1/evidence`, MOD-0126 pack) | yalnız bağlantı kimliği doğrulanır (DL-3 başında davranış ölçülür) |
 | MOD-0289 Bank Account Registry | tahsilat hesabı referansı | kod yok (D20/1, TRM-S3); okuma sözleşmesi **taslak**: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | yalnız boş olmayan opak Guid; çözümleme sözleşme dondurulunca (Follow-up) |
 | MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (D16) |
@@ -609,11 +620,11 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | Bağımlılık | Sözleşme dosyası / sürüm | Hash | Sahibi | Hata davranışı (MOD-0120) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|---|
 | ACCOUNTS-RECEIVABLE (bu modül) | `docs/analysis/contracts/accounts-receivable.openapi.yaml` v1.0.0 — **yazılacak** | TBD (dondurulunca) | finance-treasury | — | sözleşme testi AC-30 · — | DL-1 |
-| MOD-0149 müşteri doğrulama + dış referans çözümleme | MOD-0149 sözleşme belgesi — **yazılacak** (O-3) | TBD | commercial-suite | bulunamadı 422 · uygun değil 422 · erişilemez 503 · geçiş yok | sahte müşteri istemcisi · dev ortamında uygun / uygun değil / başka kiracı üç hesap | DL-1 |
+| MOD-0149 müşteri doğrulama + dış referans çözümleme | MOD-0149 sözleşme belgesi — **yazılacak** (O-3; ek kabul Y-4/4b, MOD-0149 pack revizyonuyla gelecek) | TBD | commercial-suite | bulunamadı 422 · uygun değil 422 · erişilemez 503 · geçiş yok | sahte müşteri istemcisi · dev ortamında uygun / uygun değil / başka kiracı üç hesap | DL-1 |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management | 422 · 503 · geçiş yok | sahte LE · dev ortamında Active+Approved / Approved-değil | DL-1 |
-| MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat — **yok** (MOD-0126 O-11) | TBD | platform-shared-services | 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
+| MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat — **yok**; `currency-minor-units` başlangıç listesi kabul (Y-4/3), seed bekleniyor (MOD-0126 O-11) | TBD | platform-shared-services | 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-6) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
-| SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-14; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
+| SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — kodda **yok**; yol Platform sahibi yanıtı Y-4/6 (servis içi port + Platform çözücü bağdaştırıcısı, fail-closed) (O-14; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AR şablon kodu — **TBD** | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-3 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-3 |
@@ -635,7 +646,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   (yalnız açık atama — `ExplicitGrantOnlyPermissions`; tek üretici `FinanceTreasuryDataScope.TenantWideScope()`). Kapsam
   servis genelinde **tek yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0126/0119/0124 ile ortak; modül yalnız kendi
   `read-tenant-wide` anahtarını verir) çözülür; okumalar (liste, detay, iz) **okuma kapsamını**, her yazma **yazma
-  kapsamını** kullanır (aşağıda). Referans uygulama: `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Kaynaktaki
+  kapsamını** kullanır (aşağıda). Referans uygulama: `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Tüketim yolu (Platform sahibi yanıtı Y-4/6): `IFinanceTreasuryDataScopeSource` servisin kendi Application portudur; bağdaştırıcısı Platform `IDataScopeResolver`'ı çağırır; hata, boş liste ya da belirsizlik → erişim yok (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı doğrudan kullanılmaz; `read-tenant-wide` Auth'ta yalnız açık atamalı izindir. Kaynaktaki
   `ar_legal_entity_scope` talep (claim) kümesi ve boş kümede 400 davranışı taşınmaz.
 - **Okuma kapsamı ile yazma kapsamı ayrıdır (gap 4/G1; D14/1 ile tutarlı — `…read-tenant-wide` *görme* iznidir; tanım
   MOD-0126 pack Runtime Constraints, servis ortak):** okuma kapsamı = kullanıcının kendi şirket yetkileri ya da
@@ -928,7 +939,7 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
 |---|---|---|---|---|
 | X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (her yazmada, Reconcile'ın kayıt yolu hariç — D14/4, D15/2); okumada okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef faturanın şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
-| CustomerId | Evet | Guid ≠ Empty; MOD-0149'da var, aynı kiracı, faturalanabilir durum (O-4) | — | `ICustomerReferencePort` |
+| CustomerId | Evet | Guid ≠ Empty; MOD-0149'da var, aynı kiracı, faturalanabilir durum (O-4: yalnız `active`, Y-4/4c) | — | `ICustomerReferencePort` |
 | ExternalInvoiceNumber | Hayır | trim, ≤ 64, ASCII yazdırılabilir; şirket içinde tekil (O-5) | Unique kısmi (TenantId, LegalEntityId, ExternalInvoiceNumberKey) | — |
 | InvoiceDate | Evet | `DateOnly`, default değil | — | — |
 | DueDate | Evet | ≥ InvoiceDate; taksit varsa son taksit vadesine eşit | — | — |
@@ -1099,7 +1110,7 @@ ilk adımıdır (Dependencies). Kaynak denetim yolu (`IAccountsReceivableControl
 `FailClosedArControlAuditSink` her zaman `false`, `FailClosedAccountsReceivableReferenceValidators.cs:59-65@218acaf5`;
 paket §H, §L.2) **taşınmaz**.
 
-`Category`: `Finance` — **KARAR D35/3** (`treasury-intake-owner-decisions-02.md` D35 (PR #235)): Platform `AuditCategory`'ye
+`Category`: `Finance` (değer 18; Y-4/7) — **KARAR D35/3** (`treasury-intake-owner-decisions-02.md` D35 (PR #235)): Platform `AuditCategory`'ye
 yalnız ekleme olarak `Finance` değeri Platform sahibince eklenir (XMC-001; MOD-0126 O-6 kalanı); MOD-0126 DL-1 bu değer
 main'e girmeden başlamaz, MOD-0120 DL-1 de dolayısıyla bekler. Bugün Platform'da değer yok; değer main'e girmeden başka bir
 kategori (ör. `MasterData` ara çözümü — D35/3'te seçilmedi) kullanılmaz. Defter dosyası ve `CT-DECISIONS.md` satırı MOD-0126
@@ -1395,12 +1406,12 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
 - [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)
-- [ ] Platform `AuditCategory`'ye `Finance` değeri main'de (D35/3; Platform sahibi, XMC-001) — MOD-0126 DL-1'in, dolayısıyla MOD-0120 DL-1'in önkoşulu
-- [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3: sahip payı KARAR D29/1; commercial-suite sahibinin teyidi ve eki açık, D9)
+- [ ] Platform `AuditCategory`'ye `Finance` (değer 18; Y-4/7) değeri main'de (D35/3; Platform sahibi, XMC-001) — MOD-0126 DL-1'in, dolayısıyla MOD-0120 DL-1'in önkoşulu
+- [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3: sahip payı KARAR D29/1; commercial-suite sahibinin teyidi ve eki açık, D9) — ek kabul edildi (Y-4/4b); MOD-0149 pack revizyonu gelene kadar önkoşul açık
 - [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak) — kural D14/4 ile kararlaştırıldı
-- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14)
+- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14) — yol Platform sahibi yanıtı Y-4/6 ile belirlendi; açık kalan: kapsamı soran kod + kanıt testi ve `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5)
 - [ ] RCS-001 ortak kod servisi (önek `ARI` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30))
-- [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
+- [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak) — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed önkoşul açık
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8: K2 D14/3, muafiyet yok D31/1 — kapandı) — DL-3 için
@@ -1494,7 +1505,8 @@ taşınırsa ya da içe aktarma O-10 açılırsa kullanılır ve o işin önkoş
   koşmadı.
 - T-3: MOD-0149 uçları bu oturumda çağrılmadı; yalnız kod okundu. MOD-0149 kayıt satırı ile pack durumu çelişkisi (TRM-09)
   burada çözülmedi.
-- T-4: `IDataScopeResolver`'ın FinanceTreasury'den nasıl tüketileceği ölçülmedi (O-14).
+- T-4: `IDataScopeResolver`'ın FinanceTreasury'den nasıl tüketileceği ölçülmedi (O-14). Yol Platform sahibi yanıtıyla
+  belirlendi (Y-4/6: servis içi port + Platform çözücü bağdaştırıcısı, fail-closed); kodda ölçüm DL-1'de.
 - T-5: Mongo kısmi indeks ifadelerinin (`$type`, eşitlik) gerçek replika kümesindeki davranışı ölçülmedi (DL-1).
 - T-6: MOD-0169 Billing & Invoicing'in kapsamı ve AR integration contract'ı — pack yok, ölçülecek bir şey yok; yalnız kayıt
   satırı ve Blueprint notu (sıra belgesi Amendment 3 §2, devralınmış) okundu.
@@ -1590,8 +1602,8 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-1c | Karar 0.6 — ERP-FIN-BUNDLE | arayüz başına sahiplik | **KARAR D27/3 (2026-10-25): v1'de yok, modül sözleşmeleri** (sahip EA kararını verdi) | sahip (K1) |
 | O-1d | Karar 0.7 — GL | içeride / dışarıda | **KARAR D27/4 (2026-10-25): kapsam dışı** (AR GL alanı taşımaz) | sahip (K1) |
 | O-2 | AR'de şirket "Active + Approved" kuralı (D10/1 yalnız ödeyen şirket içindi) | aynı kural / yalnız Active | **KARAR (D14/4): aynı kural, yazma işlemlerinde** — alacak oluşturan/değiştiren her yazma komutu (Reconcile hariç); okumalar etkilenmez | sahip (K1) |
-| O-3 | MOD-0149 tüketim yolu | (a) MOD-0149'a eklemeli `GET /api/crm/accounts/{id}/lookup-validation` + `GET …/external-references/resolve` + sözleşme belgesi (D9) (b) mevcut `GET /api/crm/accounts/{id}`, AR kullanıcısına `crm.account.read` | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; commercial-suite sahibi teyidi açık** — **(a)** — sözleşme-önce; (b) AR kullanıcısına CRM okuma yetkisi verir ve sözleşmesizdir | sahip + commercial-suite sahibi |
-| O-4 | Faturalanabilir müşteri durum kodları (MOD-0048 `account-status`) | — | yalnız "aktif" anlamlı kod(lar); liste MOD-0149 sözleşmesinde yayımlanır, AR'de sabit tablo yok | commercial-suite sahibi |
+| O-3 | MOD-0149 tüketim yolu | (a) MOD-0149'a eklemeli `GET /api/crm/accounts/{id}/lookup-validation` + `GET …/external-references/resolve` + sözleşme belgesi (D9) (b) mevcut `GET /api/crm/accounts/{id}`, AR kullanıcısına `crm.account.read` | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; commercial-suite sahibi teyidi açık** — **(a)** — **yanıt Y-4/4b (2026-10-27): ek kabul edildi**, MOD-0149 pack revizyonuyla gelecek (o gelene kadar önkoşul) — sözleşme-önce; (b) AR kullanıcısına CRM okuma yetkisi verir ve sözleşmesizdir | sahip + commercial-suite sahibi |
+| O-4 | Faturalanabilir müşteri durum kodları (MOD-0048 `account-status`) | — | **Yanıt Y-4/4c (2026-10-27):** küme `active`, `inactive`, `draft`, `suspended`; faturalanabilir durum yalnız `active`; liste MOD-0149 sözleşmesinde yayımlanır, AR'de sabit tablo yok | commercial-suite sahibi |
 | O-5 | Dış fatura numarası tekilliği ve yasal numara | şirket içinde tekil / serbest | **KARAR D28 (2026-10-25): öneri kabul** — şirket içinde tekil (silinen/Void hariç); yasal numara üretimi faturalamanın | sahip (K1) |
 | O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **KARAR D28 (2026-10-25): öneri kabul** — **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
@@ -1602,7 +1614,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-11 | Satır vergisi | kullanıcı girdisi / vergi motoru | **KARAR D28 (2026-10-25): öneri kabul** — kullanıcı girdisi (motor faturalamanın) | sahip (K1) |
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | **KARAR D28 (2026-10-25): öneri kabul** — UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
 | O-13 | WriteOff kanıtı zorunlu mu | evet / hayır | **KARAR D28 (2026-10-25): öneri kabul** — evet, en az 1 MOD-0031 bağlantısı | sahip (K1) |
-| O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
+| O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 | O-15 | Rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — MOD-0018 sahibiyle; `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
 
 ## Teslim dilimleri
