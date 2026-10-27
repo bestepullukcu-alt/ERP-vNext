@@ -911,7 +911,9 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 > (`docs/records/reviews/MOD-0186/2026-10-26-0c63a1f3.md`): per-line states and what a command may change, Unknown and
 > Blocked lines, completion rule, `RETURN_LINE_NOT_UNPOSTABLE`, stored pre-WP-P1 distinguisher, duplicate YAML keys removed; **r6** (simpler, Natig): one key per request version `a{k}`, *sent* marker, Blocked only for
 > 400 `INVALID_REQUEST`, `stockIssued` as the pre-WP-P1 marker, per-operation examples (review `2026-10-26-5c7be454.md`);
-> **r7**: late writer compares its version `k` and reverses a superseded receipt, stored fields named (review `2026-10-27-e2b9d57d.md`). It changes §2, §7, §8 and the `InTransit → Received` row of the transition table above (the client's
+> **r7**: late writer compares its version `k` and reverses a superseded receipt, stored fields named (review `2026-10-27-e2b9d57d.md`);
+> **r8**: a key answered 422 is never resent; state-based late-writer rule; late REVERSAL dates, failure and append-only audit named
+> (review `2026-10-27-64b325a5.md`). It changes §2, §7, §8 and the `InTransit → Received` row of the transition table above (the client's
 > `inventoryTransactionReferenceId` is refused on `Received`). **Draft revision — not approved.** Needs a new CT-APR-02 round
 > (MVP-1 CT) and a CT-APR-01 row (high risk: integration and product code path) before any code.
 
@@ -961,17 +963,26 @@ Permissions (the BL-652 interim path), never through the default role template. 
     line as `NotPosted` would hide stock; it is investigated with the MOD-0173 owner (logged, audit record).
   A command with different values when **no line is Refused and none is Unknown** → 409 `RETURN_RECEIPT_IN_PROGRESS` with the stored values in
   `details`. A concurrent command while another holds the lease → the same 409.
-- **Late writer (r7, review F-1 on r6).** A writer whose lease expired and who gets a 201 it cannot record re-reads the
-  return and compares **its own request version `k`** with the line's stored `k`:
-  - **equal** → it does nothing but log: the lease holder resends that same key and body and gets the same `transactionId`
-    by replay;
-  - **stored `k` greater** (its version was superseded by a correction, so nobody will resend its key) → its
-    `CUSTOMER_RETURN` is a second, unrecorded receipt: it **reverses it** with a REVERSAL (body as MOD-0183 §23.4: `itemId`,
-    `skuId`, `skuLevel`, `quantity`, `uomId` equal to that request, `sourceModule` / `sourceType` `MOD-0173` / `REVERSAL`,
-    `sourceDocumentId` = that `transactionId`, no `lotId` / `serialIds` / `from*` / `to*`) under the unused key
-    `{returnId}:{shipmentLineNumber}:customer-return-reversal:a{k}`, writes the pair to the return's audit history and logs an
-    integrity fault. This is the only REVERSAL §34 sends; whether INVENTORY reverses a `CUSTOMER_RETURN` out of QUARANTINE
-    with this body is asked of the MVP-1 CT (R-1 extended).
+- **A key answered 422 is never sent again (r8, review F-1 on r7).** Once a line's key `a{k}` has a recorded 422, the
+  line is Refused and its next request — with corrected or with unchanged values — goes under `a{k+1}`.
+- **Late writer (r7, state-based in r8 — review F-1 on r7).** A writer whose lease expired and who gets a 201 it cannot
+  record re-reads the return and looks at **its own version `k`, the line's stored `k` and the line's state**, the same way
+  MOD-0183 §23.4 does for a dispatch:
+  - stored `k` **equal** and the line **Unknown**, or **Posted with this very `transactionId`** → it does nothing but log: the
+    lease holder resends that key and body and gets the same `transactionId` by replay (or already has it);
+  - stored `k` **greater**, or equal and the line **Refused, NotPosted or Blocked** (nobody will resend `a{k}`) → its
+    `CUSTOMER_RETURN` is a second, unrecorded receipt: it **reverses it** with a REVERSAL — `movementType = REVERSAL`;
+    `itemId`, `skuId`, `skuLevel`, `quantity`, `uomId` equal to that request; `sourceModule` / `sourceType` `MOD-0173` /
+    `REVERSAL`; `sourceDocumentId` = that `transactionId`; `documentGroupId` = the shipment id; `transactionDate` /
+    `postingDate` = the moment the late writer received its 201 (UTC), reused unchanged if the same process retries; no
+    `lotId` / `serialIds` / `from*` / `to*` — under the unused key `{returnId}:{shipmentLineNumber}:customer-return-reversal:a{k}`.
+  - It then **appends** the pair (receipt and reversal `transactionId`s) to the return's audit history — an append-only
+    write that needs no lease — and logs an integrity fault.
+  - **If that REVERSAL fails** (422, 503, crash): the receipt `transactionId` is still appended to the audit history and the
+    integrity-fault log, and the stock is corrected in Inventory by its owner. This, and the short window between the lease
+    holder's 422 and its record, is the stated **residual risk** (as MOD-0183 §23.4).
+  This is the only REVERSAL §34 sends; whether INVENTORY reverses a `CUSTOMER_RETURN` out of QUARANTINE with this body is
+  asked of the MVP-1 CT (R-1 extended).
 - **Permanent refusal (r4, review F-2).** When INVENTORY refuses a line with a code that no retry can change
   (`ITEM_NOT_ACTIVE`, `SKU_LEVEL_NOT_STOCKABLE`, `UNKNOWN_ITEM`), or the line is Blocked (above), a user holding `.receive`
   may receive that line **without stock posting** by naming it in the 3.4.0 field `TransitionReturnCommand.unpostedLines`
@@ -985,7 +996,7 @@ Permissions (the BL-652 interim path), never through the default role template. 
   `InventoryTransactionReferenceId` (set by the service; a client value on `Received` → 400 `INVALID_REQUEST`).
 - **Partial success (F-2).** A line refused by INVENTORY (any 422) leaves the return `InTransit` and answers **422
   `INVENTORY_REFUSED`** with `details.shipmentLineNumber` and `details.inventoryCode` (the MOD-0183 code; r4, review F-4). Lines already posted **stay posted** and their stored `transactionId` is never changed:
-  the goods are physically in quarantine and no REVERSAL is used. A retry resends every line with its stored request and key;
+  the goods are physically in quarantine and no REVERSAL is used. A retry resends every Unknown line with its stored request and key (a Refused line goes under `a{k+1}`, above);
   posted lines answer `idempotentReplay: true` (success, same `transactionId`), only the missing lines are posted.
 - INVENTORY unreachable / 5xx / timeout → 503 `DEPENDENCY_UNAVAILABLE`; no transition; posted lines stay posted. INVENTORY
   400 (`INVALID_REQUEST`, `IDEMPOTENCY_KEY_REUSED`) is an integrity fault: logged, the attempt is blocked for the line, the
@@ -1021,6 +1032,7 @@ Permissions (the BL-652 interim path), never through the default role template. 
 | R34-13 | **Unknown is not correctable:** line 2's post times out; a command with a new `toLocationId` first resends line 2's stored request unchanged (replay → Posted, or 422 → Refused); its new value applies only on a later command and only if line 2 became Refused |
 | R34-14 | **Blocked line exit:** INVENTORY answers 400 `INVALID_REQUEST` for a line → 500, line Blocked; `unpostedLines` with `INTEGRITY_FAULT` completes `Received`, audit carries the INVENTORY answer; `unpostedLines` for a Posted, Refused-but-fixable or `IDEMPOTENCY_KEY_REUSED` line → 422 `RETURN_LINE_NOT_UNPOSTABLE` |
 | R34-16 | **Late writer with a superseded version (r7):** A marks line 2 sent under `a1` and pauses; B resends `a1` → 422, line Refused; C corrects under `a2` → 201, line Posted; A wakes and sends `a1` → 201 → stored `k` (2) is greater → A reverses its movement with `…:customer-return-reversal:a1`; QUARANTINE net +quantity once. Sabotage: removing the `k` comparison makes the test red |
+| R34-17 | **Late writer, same version (r8):** A marks line 2 sent under `a1` and pauses; B resends `a1` → 422, line Refused (`k` = 1); A wakes, sends `a1` → 201 `C2`, sees `k` equal and the line Refused → reverses `C2` with `…:customer-return-reversal:a1`; C's correction goes under `a2` (never `a1`). Variant: B's 422 is `ITEM_NOT_ACTIVE`, the item is reactivated, A's 201 → reversed, the user's `unpostedLines` hides no stock. Sabotage: dropping the state condition makes the test red |
 | R34-15 | **Lost answer on a corrected line (review F-1):** line 2 Refused, corrected with `toLocationId` X under key `a2`; INVENTORY posts `C2`, the answer is lost (line Unknown); the next command with Y first resends `a2` with X → replay `C2`, line Posted at X — never a second posting, never `NotPosted`. Sabotage: removing the *sent* marker makes the test red |
 | R34-12 | **Permanent refusal:** line refused `ITEM_NOT_ACTIVE` → `unpostedLines` with a reason completes `Received`, line `NotPosted`, audit carries the code; the same field for a line refused `UNKNOWN_LOCATION` → 422 |
 | R34-7 | **Stored requests (F-1):** when no line is Refused and none is Unknown, a command with another `toLocationId` or `occurredAt` → 409 `RETURN_RECEIPT_IN_PROGRESS`; a command with the same values resends the stored requests byte-for-byte (dates included) |
@@ -1037,6 +1049,6 @@ read attempt a1's issue → the matching test is red). The full SupplyChain test
 | DL-1 | iade → karantina | Exact prospective DEV owned files and shared exception proposal, Customer return to Inventory, What is posted, Receipt attempt and failure behaviour, Return acceptance |
 | DL-2 | ret metinleri | Receipt attempt and failure behaviour, Return acceptance |
 
-DL-1 covers R34-1, R34-2, R34-4…R34-16 and the non-text part of R34-3; DL-2 covers the R34-3 texts. DL-1 is dispatchable only
+DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 covers the R34-3 texts. DL-1 is dispatchable only
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
