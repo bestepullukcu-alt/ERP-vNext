@@ -51,6 +51,11 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
   önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
   edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
+- **Cevap kelimesi kopyalanabilir kutuda (S-69, sahip kararı 2026-10-27 `kopya-blok`):** sahibin yazacağı her cevap
+  kelimesi, cümle içindeki geçişine ek olarak, **kendi kod bloğunda ve tek başına** verilir. Uygulama bloğa kopyala düğmesi
+  koyar; sahip kelimeyi elle seçmez. Bloğa açıklama yazılmaz; birden çok seçenek varsa her biri ayrı blokta durur. Başka
+  sohbete yazılacaksa sohbetin adı bloğun hemen üstünde yazar. Bloklar ❓ SORU kutusunun içinde, son satırlarında durur; SORU kutusu yine yanıtın son bloğudur. Tıklanınca kelimeyi kendisi gönderen düğme (HTML, widget)
+  kullanılmaz: onay sahibin kendi gönderdiği söz olarak kalır.
 - **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
@@ -75,9 +80,18 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
      sonraki push'larda PR'ın hâlâ açık olduğunu da ölçer (SOP §20.4/7).
   4. **Aktarılan onay yasağı değişmez:** işçi, CT'nin ilettiği bir onayla push yapmaz. CT de başka bir sohbette yazılmış
      bir onayla push yapmaz. Sahip açıkça işçinin göndermesini isterse onay o işçinin sohbetine yazılır.
+  5. **Dalga başına tek PR (S-76, 2026-10-27):** sahip "tek PR" seçtiyse CT işçinin bildirdiği sha'yı kendi CT dalına
+     birleştirir (merge commit, işçi dalı ikinci ebeveyn), birleşik hâlde testleri koşar ve onay sorusunda **CT dalının**
+     adını ve kısa sha'sını yazar. 3. adımın taraması, sha ile push ve uzak = sha ölçümü geçerlidir; yalnız dal denetimi
+     "işçinin dalı" yerine "CT dalı, main değil" olur.
 - **Paket onayı değişince prompt'lar (S-53):** bir paketin onayı (yeni revizyon) değişince, eski Expected HEAD'e bağlı
   dağıtılmamış prompt'ları dağıtım kapısı reddeder; bu bilinçli bir kuraldır. CT planına "tabanı yeni main'e al ve
   yeniden inceletmek" adımını koyar.
+- **Desenleri Codex'ten önce ölç (S-65, 2026-10-27):** pakette makineyle okunan bir desen (regex, glob, sayım kuralı)
+  varsa CT inceleme isteğinden önce her deseni derler ve paketin ölçüm betiğiyle aynı sonucu verdiğini ölçer; sonuç
+  isteğe yazılır (UI rev 11'de bir tur bu yüzden boşa gitti).
+- **Boş ortam değişkeni testi (S-75, 2026-10-27):** `ASPNETCORE_ENVIRONMENT= dotnet test` derleme yaptığında boş değeri test
+  sürecine iletmiyor (null oluyor); boş değer `--no-build` ya da `vstest` ile ölçülür.
 - **Bulgu dosyasında düz metin (S-59):** inceleme isteği ve bulgu dosyasında kapanmış bulgular düz metin olarak
   "Kapananlar (inceleme NN): F-19, F-20 …" biçiminde yazılır. Bulgu tablosunun dışında satır başında `F-` ve büyük harfle
   `ENGEL` kullanılmaz; ayrıştırıcı böyle bir satırı bozuk bulgu sayar.
@@ -122,6 +136,8 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
   yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
   (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
+- **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
+  `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
 - **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
 
 ```text
@@ -179,10 +195,14 @@ Kurallar:
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
 > için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
 
+- [ ] **Kartı ana daldan oku (S-74, 2026-10-27):** CT her oturum başında ve kart değişti haberi gelince önce `git fetch origin`
+  yapar, bu kartı ve `AGENTS.md`'yi `git show origin/main:<yol>` ile okur. Ana klasörün ya da worktree'nin yerel kopyası
+  eski bir dalda olabilir (başka bilgisayarda açılan iki CT, S-62 kuralını yerel kopyada bulamadı).
 - [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU ve bağımsız inceleme bulguları burada):** geliştirici
   oturumu her zaman ana klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Hedef doğrulanana kadar
   hiçbir dosya yazılmaz; ana klasördeki değişiklikler taşınmaz, stash yok, silme yok, `--force` ya da reset yok. "İlk
-  çağrı salt okunur" kuralının istisnaları bu adımdaki `git fetch` ve `git worktree add` ile oturum adı / grubudur (S-62); commit, push, merge ya
+  çağrı salt okunur" kuralının istisnaları bu adımdaki ve "Kartı ana daldan oku" adımındaki `git fetch`, `git worktree add` ile oturum adı / grubudur
+  (S-62, S-74); commit, push, merge ya
   da dağıtım izni değildir.
   1. **Kuyruğu bul.** `git fetch origin`, sonra kaydı `git show origin/main:execution/delivery/ct-queue-registry.tsv`
      ile oku (ana klasördeki kopya eski olabilir). `<q>` şu sırayla (büyük/küçük harf duyarsız): (i) çağrıdaki ad bir
@@ -233,6 +253,9 @@ Kurallar:
      geri alır.
   6. İşçinin PR'ı merge olunca CT, işçiyi **arşivlemeyi sahibe önerir** ("Soru biçimi", cevap kelimesi `arsivle`; arşiv
      geri alınabilir); sahibin o işçi için yazdığı onay olmadan arşivlemez (§7: her seferinde sorulur).
+  7. **Yeni işçi klasörü ve güven penceresi (S-68, 2026-10-27):** yeni bir worktree'de ilk oturum açılırken uygulama sahibe
+     bir kez "bu klasöre güveniyor musunuz" diye sorar; sahip uzaktaysa pencere görünmez ve işçi açılmaz. CT işçiyi
+     başlatma onayını isterken "bilgisayarın başındayken yazın" der.
   Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
   (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
@@ -240,6 +263,8 @@ Kurallar:
   günceller. Bağlantı SOP §22.2/8'deki yere yazılır. **Sayfa salt okunurdur (S-43):** işaretleme / silme düğmesi yok,
   veri yazma yalnız sayfa sahibine açık; oturum başında ve her main birleştirmesinden sonra CT, merge olmuş / kabul
   edilmiş işleri kanıtıyla kendiliğinden "bitti" yapar — sahip "bitti" demek zorunda değildir (SOP §22.2/4, /7).
+  **Tazelik (S-71, 2026-10-27):** CT sahibe her kısa haberden önce sayfanın son güncelleme tarihine bakar; son kabul, prompt
+  ya da karardan eskiyse önce sayfayı günceller (PVG sayfası 4 gün güncellenmemişti).
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt

@@ -353,7 +353,7 @@ class GitRepo:
 
     def symlinks(self, commit: str, prefix: str) -> list[str]:
         """CT-FIX-05 (C1): the symbolic links at `commit` on the way to `prefix` (every ancestor component, Codex:
-        docs/alias -> ../services under docs/alias/New.cs) and at or under it (git does not follow them)."""
+        docs/guides/alias -> ../services under docs/guides/alias/New.cs) and at or under it (git does not follow them)."""
         parts, found = prefix.split("/"), []
         for n in range(1, len(parts) + 1):            # each component itself, not recursively
             out = self._git(self.worktree, "ls-tree", "-z", commit, "--", "/".join(parts[:n])) or ""
@@ -1536,7 +1536,7 @@ Rapor formatı: §22
     cases.append(("dirty file in the allowed paths -> ENGEL; an unrelated one is only inventory",
                   sum("kirli" in e for e in eng(r)) == 1 and any("kapsam dışı 1 kirli" in l for l in r[1])))
     cases.append(("sabotage: a dirty source file -> ENGEL", any("docs/api.md" in e for e in eng(run(good, rp=FakeRepo(files, dirty=["docs/api.md"]))))))
-    globbed = good.replace("2. docs/api.md", "2. docs/api.md\n3. rules/*.md")
+    globbed = good.replace("2. docs/api.md", "2. docs/api.md" + "\n3. rules/*.md")
     cases.append(("sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL",
                   any("rules/a.md" in e for e in eng(run(globbed, rp=FakeRepo(files, dirty=["rules/a.md"]))))))
     cases.append(("sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL",
@@ -1841,12 +1841,12 @@ Rapor formatı: §22
     cases.append(("CT-FIX-05 C1: governance allowed paths into services/, frontend/, gateway/ (any case), a root-wide glob, "
                   "a brace glob, '..', './', '//', an absolute path -> ENGEL each",
                   all(gpaths([g]) for g in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "Services/x/**", "**", "*",
-                                            "{services,docs}/**", "docs/../services/**", "./docs/**", "docs//x", "/docs/**"))))
+                                            "{services,docs}/**", "docs/guides/../../services/**", "./docs/**", "docs//x", "/docs/**"))))
     cases.append(("CT-FIX-05 C1: a symbolic link at or under the prefix at Expected HEAD -> ENGEL; docs/** without one passes; "
                   "the product class is not limited by this rule",
-                  bool(gpaths(["docs/**"], links=("docs/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
-                  and bool(gpaths(["docs/alias/New.cs"], links=("docs/alias",)))
-                  and bool(gpaths(["docs/alias/sub/New.cs"], links=("docs/alias",)))
+                  bool(gpaths(["docs/**"], links=("docs/guides/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
+                  and bool(gpaths(["docs/guides/alias/New.cs"], links=("docs/guides/alias",)))
+                  and bool(gpaths(["docs/guides/alias/sub/New.cs"], links=("docs/guides/alias",)))
                   and not gpaths(["services/x/**"], cls="ürün")))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
