@@ -1,0 +1,1 @@
+ `frontend-standards.md:208` "manuel `Layout =` opsiyoneldir" ↔ `module-pack-standard.md:88` "layout ACIKCA yazilir" ve `views-organization.md:39` "layout açıkça seçilir" 
