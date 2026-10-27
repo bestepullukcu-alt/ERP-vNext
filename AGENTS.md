@@ -69,6 +69,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 |--------|------|------------|
 | Gateway (Ocelot) | 5000 | `gateway/Diten.ApiGateway` |
 | Frontend (Diten.Web) | 5001 | `frontend/Diten.Web` |
+| PVG Service | 5011 | `services/Diten.PvgService/src/Diten.PvgService.Api` |
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
@@ -83,7 +84,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 | FinanceTreasury Service (planlı — kod yok) | 5071 | `services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5011 (`PvgService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
+> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
