@@ -90,6 +90,11 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
 - **Desenleri Codex'ten önce ölç (S-65, 2026-10-27):** pakette makineyle okunan bir desen (regex, glob, sayım kuralı)
   varsa CT inceleme isteğinden önce her deseni derler ve paketin ölçüm betiğiyle aynı sonucu verdiğini ölçer; sonuç
   isteğe yazılır (UI rev 11'de bir tur bu yüzden boşa gitti).
+- **Kanıt betiğini CT yazar (S-83, 2026-10-27):** HIGH işlerde kabul kanıtını üreten betiği CT kendisi yazar, kırmızı
+  tabanını (iş yokken çalıştırma) kaydeder ve prompt'a yol + SHA-256 ile verir; işçiye düzyazıyla tarif edilen betik
+  inceleme turlarını yakıyor (UI P1-03'te 3 tur).
+- **Windows'ta satır sonu (S-87, 2026-10-27):** Windows'ta üretilen rapor ve kayıtlar LF ile yazılır; CRLF ile yazılan
+  keşif raporu `--check-report`'tan geçmedi. Yazmadan önce ölç: `git diff --check` ve dosyada `\r` yok.
 - **Boş ortam değişkeni testi (S-75, 2026-10-27):** `ASPNETCORE_ENVIRONMENT= dotnet test` derleme yaptığında boş değeri test
   sürecine iletmiyor (null oluyor); boş değer `--no-build` ya da `vstest` ile ölçülür.
 - **Bulgu dosyasında düz metin (S-59):** inceleme isteği ve bulgu dosyasında kapanmış bulgular düz metin olarak
@@ -138,6 +143,9 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
 - **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
   `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
+  - **Engel hâlâ geçerli mi (S-84, 2026-10-27):** CT bir işi "başkasını bekliyor" diye yazmadan ya da başkasına istek
+    hazırlamadan önce engelin bugün de geçerli olduğunu origin/main'de ölçer (yol@commit); beklenen kişinin sahibin
+    kendisi olup olmadığını da kayıttan bakar (PVG'nin "ortak iletici" engeli 4 gün önce kalkmıştı).
 - **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
 
 ```text
@@ -198,6 +206,15 @@ Kurallar:
 - [ ] **Kartı ana daldan oku (S-74, 2026-10-27):** CT her oturum başında ve kart değişti haberi gelince önce `git fetch origin`
   yapar, bu kartı ve `AGENTS.md`'yi `git show origin/main:<yol>` ile okur. Ana klasörün ya da worktree'nin yerel kopyası
   eski bir dalda olabilir (başka bilgisayarda açılan iki CT, S-62 kuralını yerel kopyada bulamadı).
+- [ ] **Her bilgisayarın ana klasörü main'de (S-79, 2026-10-27):** skill oturum başında ana klasördeki kopyadan
+  yüklenir; ana klasör eski bir daldaysa yeni CT eski kuralları görür (Windows'ta 931 commit geride bulundu). CT ilk
+  yanıtta ana klasörün dalını ve `origin/main`'e göre geri sayısını ölçer; main değilse ya da geride ise sahibe bildirir.
+  Güncelleme, "Yer" maddesinin (S-18: değişiklik taşınmaz) ve skill'in "ana klasörde dal değiştirme" kuralının **tek
+  istisnasıdır**: yalnız sahibin, işlemi yapacak oturuma kendi yazdığı sözle; değişik dosyalar önce yerel bir `backup/…`
+  dalına commit edilir, sonra `git merge --ff-only origin/main`; silme, reset ve `--force` yok. CT bunu kendiliğinden
+  yapmaz, yalnız ölçer ve önerir.
+- [ ] **Klasör güveni verilmezse (S-80, 2026-10-27):** sahip yeni worktree için uygulamanın güven penceresini onaylamazsa
+  ya da uzaktaysa işçi bir alt ajanla ve `EnterWorktree path` ile yürütülebilir; işçi kuralları (S-63) aynen geçerlidir.
 - [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU ve bağımsız inceleme bulguları burada):** geliştirici
   oturumu her zaman ana klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Hedef doğrulanana kadar
   hiçbir dosya yazılmaz; ana klasördeki değişiklikler taşınmaz, stash yok, silme yok, `--force` ya da reset yok. "İlk
@@ -390,6 +407,14 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 
 **Required level yoksa Agent PASS → CT ACCEPTED değildir.**
 
+- **Dilim başına gerekli seviye pakette (S-85, 2026-10-27):** her paket Teslim dilimleri tablosunda her dilim için
+  gerekli kanıt seviyesini (E1–E5) yazar; kabul aracı seviyeyi onaylı paket ya da WP satırından okur (SOP §23.1).
+  Seviyesi olmayan paket onaya gönderilmez (MOD-0286 rev 12'de yoktu, iş bittikten sonra rev 13 gerekti).
+- **Dağıtımdan sonra paket revizyonu (S-86, 2026-10-27):** kabul, main'deki **güncel** onaylı paket sürümüne bağlanır
+  (S-5; `acceptance_record.py` `s5_acceptance`: paketin main'deki ve kod commit'indeki baytları bağlanan sürüme eşit
+  olmalı). Dağıtımdan sonra paket revize edilirse yürüyen işin kanıtı yeni sürümü taşıyan commit'e yeniden bağlanır
+  (main CT dalına birleştirildiği için kod commit'i değişir, ürün kodu değişmez; kanıt koşusu yeniden yapılır). Bu yüzden revizyon gerekiyorsa dağıtımdan önce yapılır.
+
 ## 5. VERIFY
 
 - [ ] Runtime freshness: process start > binary timestamp.
@@ -409,6 +434,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] **Kabul kaydı (yeni Control Tower, CT-OPS-03):** ACCEPTED'ten önce
   `python3 scripts/acceptance_record.py check <kayıt>@<commit> --queue <kuyruk> --wp <WP> --module <modül>` çıkış 0;
   satırın `record` sütunu bu kaydı gösterir (REP-001 §6.1–6.2, SOP §29.5).
+  Kabul kaydı ve listesi `docs/records/audits/` altında durur; başka klasör (ör. `acceptance-reports/`) ENGEL verir (S-81).
 - [ ] **Rapor (yeni Control Tower, CT-OPS-04):** `python3 scripts/status_report.py --mode v2 --queue <kuyruk>`; yüzde
   yalnız onaylı efor tabanından, yoksa "Taban yok — hesaplanamadı" (REP-001 §7.1).
 - [ ] Dependency gates yeniden hesaplandı.
@@ -423,6 +449,17 @@ Agent PASS ≠ CT ACCEPTED
 Chat ≠ System of Record
 Replanning = Closure
 ```
+
+### 6.1 Canlı kullanım hazırlığı (S-89, sahip kararı 2026-10-27)
+
+Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** için gerekenleri hazırlar:
+
+1. **Girilecek veri listesi:** organizasyon, pozisyon, izin ve tür / katalog değerleri, e-posta ayarı, arka plan işleri —
+   modülün çalışması için canlıda olması gereken her şey, sırasıyla.
+2. **Sahibe sorular:** listeyi doldurmak için gereken iş sorularını CT kendisi çıkarır ve "Soru biçimi"yle **birer birer**
+   sorar (ör. Tüzel Kişi: "Hangi şirketleriniz var? Hangisi hangisine bağlı? Merkez hangisi?").
+3. **Yardım ve tur:** ekranda "?" yardımı ve gerekiyorsa tanıtım turu (UXH-001) var mı, ölçer.
+4. **Giriş adımları:** cevaplara göre sade dille, adım adım; veriyi **sahip girer** (ortak veri), CT girilen veriyi ölçer.
 
 ## 7. Kalıcı onaylar ve açık onay sınırları
 
@@ -467,6 +504,12 @@ READY gibi **iş satırları** için ayrı PR gerekmez: dağıtım kapısı iş 
 inceleme satırları main'den okunur ve HIGH onay ancak onaylayanın merge ettiği bir PR ile main'e girince geçerli olur
 (`pack_approval.py`). Bir onay PR'ında §7a madde 7 (paket başına tek onay satırı, onaylayan merge eder) geçerlidir; "hepsini
 topla" onu aşmaz. CT-Setup'ın kurulum işleri de bu kurala uyar.
+
+**Kayıt satırı PR'ı (S-82, 2026-10-27):** kuyruk kayıt satırı (`ct-queue-registry.tsv`) ekleyen ya da değiştiren PR,
+satırın gösterdiği kuyruk commit'ini (`baseline_commit`) aynen taşır (cherry-pick ya da rebase yok) ve yalnız **merge
+commit** ile birleşir. `check_registry` bu commit'in klonda var olmasını ister (`ct_queue.py` `check_registry`); squash
+ya da rebase sonrası commit main'den erişilemez olur ve dal silinince ya da yeni bir klonda kayıt bütünüyle geçersiz
+sayılır (`in_force_status`) — o zaman bütün CT'lerin dağıtımı durur. `baseline_commit` main'den erişilebilir kalmalıdır.
 
 ### 7a. Paralel Control Tower'lar ve paylaşılan dosyalar (S-38, sahip kararı 2026-10-22)
 
@@ -515,7 +558,7 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 | commercial-suite | Belirsiz — sahip ataması bekliyor | — |
 | developer-enablement | Belirsiz — sahip ataması bekliyor | — |
 | enterprise-strategy-business-performance | Belirsiz — sahip ataması bekliyor | `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir |
-| human-capital-management | Belirsiz — sahip ataması bekliyor | — |
+| human-capital-management | **kısmi** (S-88): CT · Çalışan kaydı → MOD-0251; CT · İzin ve devamsızlık → MOD-0280 izin/devamsızlık parçaları; CT · Time Entry → MOD-0280-FU01; diğer İK modülleri Belirsiz | `docs/records/decisions/2026-10/hcm-ct-ownership-01.md@f81aa251d` |
 | management-governance | Belirsiz — sahip ataması bekliyor | `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir |
 | portfolio-delivery | Belirsiz — sahip ataması bekliyor | — |
 | *(domain dışı)* altyapı, CI, test altyapısı, ortak ön yüz | Backlog'daki "CT"; bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (altyapı 12, ortak ön yüz 5, test altyapısı 2) |
