@@ -1,6 +1,6 @@
 # MOD-0147 v1 — DL-1 code may start on a mock of SUPPLIER 1.3.0 (owner decision, 2026-10-26)
 
-- owner: **Natig** (`ny@gmgroup.ch`, management) — decided in the MVP-6 Control Tower chat 2026-10-26 (question box), recorded by the CT
+- owner: **Natig** (K1, management) — decided in the MVP-6 Control Tower chat 2026-10-26 (question box), recorded by the CT
 - status: **ACCEPTED**
 - module: MOD-0147 Supplier Performance & Risk (pack §0.0, PR #236)
 

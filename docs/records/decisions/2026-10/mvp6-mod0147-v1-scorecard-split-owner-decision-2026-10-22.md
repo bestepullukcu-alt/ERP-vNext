@@ -1,6 +1,6 @@
 # MOD-0147 — v1 performance scorecard now, risk after TPRM (owner decision, 2026-10-22)
 
-- owner: **Natig** (`ny@gmgroup.ch`, management) — decided in the MVP-6 Control Tower chat 2026-10-22, recorded by the CT
+- owner: **Natig** (K1, management) — decided in the MVP-6 Control Tower chat 2026-10-22, recorded by the CT
 - status: **ACCEPTED**
 - module: MOD-0147 Supplier Performance & Risk (`execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md`, `status: draft`)
 - supersedes in part: the timing line of `mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md` ("MOD-0147 starts after

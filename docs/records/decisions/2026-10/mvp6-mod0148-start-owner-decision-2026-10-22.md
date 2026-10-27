@@ -1,6 +1,6 @@
 # MOD-0148 Supplier Portal — starts now (owner decision, 2026-10-22)
 
-- owner: **Natig** (`ny@gmgroup.ch`, management) — decided in the MVP-6 Control Tower chat 2026-10-22, recorded by the CT
+- owner: **Natig** (K1, management) — decided in the MVP-6 Control Tower chat 2026-10-22, recorded by the CT
 - status: **ACCEPTED**
 - module: MOD-0148 Supplier Portal (`execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md`, `status: draft`)
 - related: plan v10.0 C4 — DC-03 approved 2026-10-21 (separate portal subdomain, mandatory two-step verification for

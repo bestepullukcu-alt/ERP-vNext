@@ -6,8 +6,8 @@ service: Diten.SupplyChainService
 shell: none
 golden_reference: none
 entity_base: EntityBase
-status: draft
-status_note: "Review draft; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment, permission/composition single writer) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status: ready-for-dev
+status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); the §0.0 code and enabling gates still bind; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment, permission/composition single writer) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -526,7 +526,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
 - [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
-- [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev` — start-on-mock: when the §0.0 code conditions (1)–(5) are met (AGENTS Core 7).
+- [x] Module owner set `status: ready-for-dev` (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row must be written on the ready-for-dev version). This is not code authority on its own: code starts only when the §0.0 code conditions are met, and the module is enabled for users only after the §0.0 enabling gates.
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
 
 ## 19. Implementation Notes
