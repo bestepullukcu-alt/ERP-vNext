@@ -43,7 +43,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgApplicationOutcome.Invalid, invalid.Result.Outcome);
         Assert.Null(invalid.IntakeDraftId);
         Assert.Null(invalid.AuditIntent);
-        Assert.Empty(callLog);
+        Assert.Equal(["permission:Create:pvg.mod0230.intake.create"], callLog);
         AssertSafe(invalid);
     }
 
