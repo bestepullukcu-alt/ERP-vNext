@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D52 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D53 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -479,6 +479,16 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT 
    yazma modeliyle.
 4. **Paket metin temizliği:** hazırlıkta bulunan eskimiş metinler (checkbox'lar, "PR #246 ile main'e girer", TBD küsurat, RCS sahibi,
    sabitlemeler) anlam değiştirmeden Codex incelemesinden önce güncellenir.
+
+## D53 — Auth sıralaması iki parça (soru kutusu, önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`e4f9a78e9` (MOD-0217 "Auth kaydı sıralaması — gerilim").
+
+D51/1'in "Auth kaydı paket kapısında" maddesi altı pakette ikiye ayrılır (Ali'nin Y-6 sırasıyla uyumlu):
+1. **Paket kapısı:** Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (D46–D50).
+2. **DL-1 kabul kapısı:** Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (`mdm.contracts.*` kaydı MOD-0217 onayından
+   sonra, DL-1 kabulünden önce).
 
 ## Karar olmayanlar
 

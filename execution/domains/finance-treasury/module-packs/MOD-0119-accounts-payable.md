@@ -25,6 +25,8 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D53):** Auth kapısı ikiye ayrıldı — paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında (D53).
+>
 > **Revizyon (2026-10-27, D52):** metin temizliği (D52/4, anlam değişmedi) ve WP dalı (D52/1). (1) MOD-0126 ortak tanımları
 > "ZIP manifestine bakın" yerine sha256 ile sabitlendi ("Kaynak ve kanıt"). (2) `invoice-match.openapi.yaml` main'de 1.1.1
 > (#247, `2f1c18068`; sha256 `aa88132c…7370`) — Owned Objects, Dependencies ve sözleşme tablosu, test beklentisi; AP davranışı
@@ -1434,7 +1436,8 @@ kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth ka
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
-- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
+- [ ] Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (Ali, Y-6; rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
@@ -1463,7 +1466,7 @@ kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth ka
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `0b58ae58ce7e63b422a1e4e85811d3b86781138a45fe6c459c75028568d78f59` (bu revizyonla aynı commit, dal
+  `649d7e4f109065405692807de5428659dc961a70e35a5ddedc9ac68fb1565595` (bu revizyonla aynı commit, dal
   `chore/ct/treasury-intake-ct-05`; D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
@@ -1644,7 +1647,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `IFinanceTreasuryDataScopeSource`) ve bağdaştırıcıları MOD-0126 DL-1'indir; bu dilim onları yalnız **tüketir**, yazmaz
   (Owned Objects → Ortak tip kararı, Repo Scope, O-21).
   **Neden ilk:** borç kaydı ve mükerrer koruması modülün temelidir; onay akışı ona dayanır. Önkoşul: yalnız paket kapısı —
-  Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri (CT-APR-02/01, DCP, Auth izin / rol kaydı (MOD-0018, D51/1), **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port,
+  Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri (CT-APR-02/01, DCP, Auth paket metni (MOD-0018, D53/1; kayıt kodu DL-1 kabulünde, D53/2), **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port,
   TRM-14, MOD-0140 1.3.0, O-9 RCS-001 servisi, O-10, O-22 tasarımı + Auth'ta `read-tenant-wide` tanımı); "— DL-n için" işaretli
   maddeler DL-1'i bekletmez (D51/1). Servis iskeleti bu dilimde değil, MOD-0126 DL-1 WP'sinin ilk adımıdır (D51/3). **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır — `feature/fin/wp-0119-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
   Bitiş: AC-1…6, 15 (Create / Update / Delete / BulkDelete / Validate kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete / BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Validate kısmı), 40 (Validate kısmı).

@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 6b0d16b2337e8feaf8167bde67e99f58259ca754c628d04994e8d26c7e7608e1, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 cc8bacaad575ee0cc612a5574a225397afc04d6112995ef4a83b0831620a40cb, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — 2026-10-26 `git diff --name-only` ölçümü)
 ---
 

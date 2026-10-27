@@ -25,6 +25,8 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D53):** Auth kapısı ikiye ayrıldı — paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında (D53).
+>
 > **Revizyon (2026-10-27, D52):** (1) **S-2 bitiş / gözden geçirme koşulu — KARAR D52/2:** kısıtlı yerel AR MVP'si MOD-0169
 > paketi `ready-for-dev` olduğunda gözden geçirilir, en geç Treasury v1 sonu; checklist maddesi `[x]`, §S S-2 satırı, O-1b ve
 > Follow-up buna çekildi, DL-1 Önkoşul metninden "S-2 bitiş teyidi" düştü (kapandı). (2) **Level-1 koşul 1 — KARAR D52/3:**
@@ -1457,7 +1459,8 @@ kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth ka
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
-- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
+- [ ] Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (Ali, Y-6; rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
 - [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)
@@ -1485,7 +1488,7 @@ kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth ka
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `0b58ae58ce7e63b422a1e4e85811d3b86781138a45fe6c459c75028568d78f59` (bu revizyonla aynı commit, dal
+  `649d7e4f109065405692807de5428659dc961a70e35a5ddedc9ac68fb1565595` (bu revizyonla aynı commit, dal
   `chore/ct/treasury-intake-ct-05`; D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
@@ -1700,7 +1703,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-1** — Yollar: `Features/ReceivableInvoice/` içinde Create/Update/Delete/BulkDelete + liste/detay/iz sorguları,
   Domain/Persistence, MOD-0149 bağdaştırıcısı (LE, para birimi, kod ve veri kapsamı bağdaştırıcıları servis ortaktır ve
   MOD-0126 DL-1'indir), `accounts-receivable.openapi.yaml`. Önkoşul: yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER
-  maddeleri (CT-APR-02/01, DCP, Auth izin / rol kaydı (MOD-0018, D51/1), **MOD-0126
+  maddeleri (CT-APR-02/01, DCP, Auth paket metni (MOD-0018, D53/1; kayıt kodu DL-1 kabulünde, D53/2), **MOD-0126
   DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, `AuditCategory` `Finance` main'de, O-3, TRM-14, O-14 tasarımı + Auth'ta
   `read-tenant-wide` tanımı, O-6 RCS-001 servisi, küsurat; 0.3 / 0.5 / 0.6 / 0.7 ve kod
   alma D27/1–5 ile, S-2 bitiş / gözden geçirme koşulu D52/2 ile, Level-1 koşul 1 D52/3 ile verildi); "— DL-n için" işaretli maddeler DL-1'i bekletmez (D51/1). Servis iskeleti bu dilimde değil,

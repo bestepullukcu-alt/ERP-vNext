@@ -155,6 +155,8 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > `MasterData`, `OTHER`, MOD-0048 tüketim yolu). DL-2 Önkoşul metnine MOD-0262-FU01 canlı doğrulama kaydı eklendi (checklist'te
 > "— DL-2 için" idi). Madde düşürülmedi; AC numaraları değişmedi. `status: draft`.
 >
+> **Revizyon (2026-10-27, D53):** Auth kapısı ikiye ayrıldı — paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında (D53).
+>
 > **Revizyon (2026-10-27, D52):** metin temizliği (D52/4, anlam değişmedi) ve WP dalı (D52/1). (1) Main'de olanlar `[x]`:
 > MDM domain-config + kimlik kaydı satırı (#242), RCS-001 §3 `CTR` satırı (`record-coding-standard.md:70`, #265); "PR #246 ile
 > main'e girer" ifadeleri "main'de (#265)" oldu (revizyon notları tarih olarak korundu). (2) MOD-0023 §17 rev 2 onay maddesi `[x]`
@@ -1276,8 +1278,9 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [x] O-1 MOD-0144 sınırı karara bağlandı — **KARAR D39 (2026-10-26): (a)** — satın alma / tedarik sözleşmeleri MOD-0144'te;
   MOD-0217 satın alma dışı; `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz; procurement sahibine bilgi verilir (D39/3)
 - [x] O-4 `mdm.contracts.*` anahtar listesi — **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md)** — pack'teki liste; `read-tenant-wide` yalnız açık atama; D49/2 ile `mdm.contracts.value.write` eklendi
-- [ ] Auth'ta `mdm.contracts.*` kaydı, açık atama anahtarları (`read-tenant-wide`) ve rol şablonları — MOD-0018 sahibi (Ali) iş
-  paketi (Y-2), Auth değişikliği (D9); şablon içeriği D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`)
+- [ ] Auth paket metni main'de — MOD-0018 paketinde `mdm.contracts.*` anahtarları, açık atama anahtarları (`read-tenant-wide`) ve rol
+  şablonları (Ali, Y-2 / Y-6; D9; rol matrisi D46–D50; **KARAR D53/1**)
+- [ ] Auth kayıt kodu (`mdm.contracts.*` kaydı) main'de — MOD-0217 onayından sonra, DL-1 kabulünden önce; DL-1 testleri gerçek izinle (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
@@ -1404,7 +1407,7 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 15. Yalnız onay bildiren toplu eylemler (`bulk-actions/{action}`, paket §I).
 16. Kaynak test sayıları ve kaynak işlem testleri güvence olarak (TRM-11, paket §J.3, §N.3).
 
-### Auth kaydı sıralaması — gerilim (CT önerisi, sahip kararı gerekir)
+### Auth kaydı sıralaması — **KARAR D53** ile çözüldü (önceki gerilim notu tarihçedir)
 
 - **Gerilim:** D51/1 Auth kaydını paket kapısında sayar — `mdm.contracts.*` izinleri, açık atama anahtarları ve rol şablonları
   `ready-for-dev`'den önce main'de olmalıdır (Ready-for-dev Checklist, işaretsiz Auth maddesi). MOD-0018 sahibi (Ali) ise

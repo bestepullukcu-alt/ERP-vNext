@@ -25,6 +25,8 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D53):** Auth kapısı ikiye ayrıldı — paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında (D53).
+>
 > **Revizyon (2026-10-27, D52):** metin temizliği (D52/4, anlam değişmedi). MOD-0023 §17 rev 2 onay maddeleri `[x]`
 > (`approvals.tsv:16`, #243); kod / test maddeleri DL-2 kabul kapısında kalır. Dependencies sözleşme tablosunda küsurat kaynağı
 > MOD-0048-FU01 §21 olarak adlandırıldı. AC numaraları ve dilimler değişmedi. `status: draft`.
@@ -1426,7 +1428,8 @@ kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth ka
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok — inceleme künyesi `ready-for-dev` olan sürüme yazılır (S-49, KARAR D34/2 — `treasury-intake-owner-decisions-02.md` D34, PR #235)
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı. Satır künyesi `ready-for-dev` olan sürüme yazılır; `draft` sürüme yazılan satır yalnız uyarıyla kabul edilir ve kodu yetkilendirmez (S-49, D34)
 - [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27; D34/2 sırası); `approved` açık
-- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
+- [ ] Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (Ali, Y-6; rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-19; platform-shared-services) — tasarım: yol Platform sahibi yanıtı Y-4/6 ile belirlendi (servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed); açık kalan (paket kapısı): `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5). Kapsamı soran kod + kanıt testi (AC-32) bu kapının maddesi değildir — **DL-1 kabul kapısındadır** (D51/2; AC-32'nin DL-1 uçları kısmı DL-1 "Bitiş"te, karar uçları DL-2'de, Release ve kalan okumalar DL-3'te — tam kapanış)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
 - [x] Kapı kararları 0.3 / 0.6 / 0.7 (KARAR D27/1, D27/3, D27/4) — T32 sapması bitişi: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
@@ -1586,7 +1589,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
   sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri
-  (CT-APR-02/01, DCP, Auth izin / rol kaydı (MOD-0018, D51/1), TRM-14, O-9 RCS-001 servisi, O-11, O-13 kümesi, O-19 tasarımı + Auth'ta `read-tenant-wide` tanımı, Platform `AuditCategory`
+  (CT-APR-02/01, DCP, Auth paket metni (MOD-0018, D53/1; kayıt kodu DL-1 kabulünde, D53/2), TRM-14, O-9 RCS-001 servisi, O-11, O-13 kümesi, O-19 tasarımı + Auth'ta `read-tenant-wide` tanımı, Platform `AuditCategory`
   `Finance` main'de — D35/3; port D30 ile, CT defter kararı D35 ile, kod alma D27/5 ile verildi); "— DL-n için" işaretli maddeler
   DL-1'i bekletmez (D51/1). **WP dalı ve iskelet (D51/3):** DL-1 WP'si kendi dalında çalışır — `feature/fin/wp-0126-dl1`
   (künyedeki `branch` paket dalıdır; her WP kendi dalını açar); `/add-module` ile `Diten.FinanceTreasuryService` servis

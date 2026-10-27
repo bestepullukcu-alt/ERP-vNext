@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 757ae6c158a3eebb390ba61b339aeceaea0e114adc90dc88041e72d2255dfc79, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 0b58ae58ce7e63b422a1e4e85811d3b86781138a45fe6c459c75028568d78f59 ile sabitli — D52; önceki 9121d9f2…)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 1b9158e7efc2c1ea57dbf88a8301beeb65834f72b392e6c3d547713e700bfa86, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D52)"; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 649d7e4f109065405692807de5428659dc961a70e35a5ddedc9ac68fb1565595 ile sabitli — D52; önceki 9121d9f2…)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -243,7 +243,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 kod / `DataScope` bağdaştırıcıları, indeks barındırılan hizmeti); MOD-0126 / MOD-0119 / MOD-0120 paketleri ve yolları; `frontend/**`
 (DL-5); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack **sha256 `0b58ae58…8f59` sürümü** (D52; önceki `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
+**Önce oku:** pack, MOD-0126 pack **sha256 `649d7e4f…5595` sürümü** (D53; önceki `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
 `:1549-1554`), AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design; karar kayıtları D1–D51, MOD-0126 DL-1 WP raporu, bu hazırlık kaydı.

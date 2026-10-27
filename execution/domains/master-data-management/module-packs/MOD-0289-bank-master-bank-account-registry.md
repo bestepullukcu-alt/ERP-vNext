@@ -130,6 +130,8 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > eklendi: Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50) — D51/1 "Auth kaydı"nı paket
 > kapısında sayar; ENGELLER metni ve DL-1 Önkoşul metni buna çekildi. Auth açık atama eki (`ExplicitGrantOnlyPermissions`'a
 > iki anahtar) ayrı maddedir ve DL-2 dilim kapısında kalır. AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, D53):** Auth kapısı ikiye ayrıldı — paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında (D53).
 
 ## Module Summary
 
@@ -1626,7 +1628,8 @@ açık atama eki ayrı madde, DL-2 için.
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
-- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
+- [ ] Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (Ali, Y-6; rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [ ] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
   D45/3" cümlesi bu dalda D51/5 ile güncellendi, main'e girmedi)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
@@ -1889,7 +1892,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   küçük harf duyarsız, en çok 100 karakter (D51/4).
   **Neden önce:** banka ana verisi hassas veri içermez, denetim yolunu ve RCS bağını en düşük riskle kanıtlar. Önkoşul:
   yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri (CT-APR-02/01, kod alma izni (D1 → D45/3), DCP,
-  Auth izin / rol kaydı (MOD-0018, D51/1), MDM domain-config satırı, RCS-001 servisi, CT defter kararı (D24/2, D24/4, D24/7, D27/11 karar verildi), `AuditCategory`
+  Auth paket metni (MOD-0018, D53/1; kayıt kodu DL-1 kabulünde, D53/2), MDM domain-config satırı, RCS-001 servisi, CT defter kararı (D24/2, D24/4, D24/7, D27/11 karar verildi), `AuditCategory`
   `MasterData` (D48/1)); "— DL-n için" işaretli maddeler DL-1'i bekletmez (D51/1). **WP dalı (D51/3):** DL-1 WP'si kendi
   dalında çalışır — `feature/mdm/wp-0289-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Yeni servis yoktur
   (MdmService, D20/1); `/add-module` servis iskeleti adımı bu pakette yoktur — DL-1 WP'si "paket iskeleti" (manifest sağlayıcısı
