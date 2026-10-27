@@ -25,3 +25,21 @@
   6. **Kiracı sınırı:** kiracı yalnız sunucuda çözülür; başka kiracının kaydı 404 döner (varlık sızdırılmaz).
 - **Sonraya:** şirket (tüzel kişi) bazlı İK kapsamı sonraki dilime yazılır; çok şirketli kurulumda İK'nın bütün
   şirketleri görmesi ilk dilimin bilinen sınırıdır ve pakette yazılır.
+
+## D-2 — İlk dilimde hassas veri sınırı (F-04)
+
+- **Sahip kararı:** `hassas-kapali` (2026-10-27, CT · İzin ve devamsızlık sohbeti).
+- **Karar (ilk dilim):**
+  1. **Tür kategorisi zorunlu ve kapalı listeden:** İK yeni izin türü açarken bir kategori seçer: yıllık, mazeret,
+     ücretsiz ya da diğer. "Sağlık / hastalık" kategorisi sistemde tanımlıdır ama **kilitlidir**; yapılandırmayla,
+     yönetici ekranından ya da veri girişiyle açılamaz. Kilidi yalnız MOD-0314 HR Governance & Sensitive Access Controls
+     kuralı ve hukuk onayıyla gelen yeni bir paket sürümü kaldırır.
+  2. **Talep formunda serbest metin ve belge yok:** talep yalnız tür, başlangıç ve bitiş tarihi ve yarım gün seçiminden
+     oluşur. Açıklama alanı ve belge yükleme ilk dilimde yoktur; tür tanımında "belge gerekir" seçeneği de yoktur.
+  3. **Taşınan alanlar sınırlı:** onay görev kartı, bildirim e-postası ve denetim kaydı yalnız tür, tarih aralığı, gün
+     sayısı ve durumu taşır. Kişisel ya da serbest metin alanı taşınmaz.
+  4. **Tür adı denetimi bir güvence değildir:** "diğer" kategorisinde açılan bir türün adına bakarak sağlık bilgisi
+     ayıklanmaz. Güvence, serbest metin ve belgenin hiç olmamasıdır. Bu sınır pakette bilinen risk olarak yazılır
+     (ör. İK'nın "diğer" kategorisinde sağlık çağrıştıran bir ad vermesi).
+- **Sonraya:** hastalık / rapor türleri, belge (rapor) yükleme ve açıklama alanı Dilim 2'de (HCM-LEAVE-07), MOD-0314
+  kuralı ve hukuk onayından sonra.
