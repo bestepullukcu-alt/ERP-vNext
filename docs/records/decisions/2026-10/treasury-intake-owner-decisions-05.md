@@ -113,7 +113,7 @@ MOD-0126 `MOD-0126-payments-approvals.md`, MOD-0119 `MOD-0119-accounts-payable.m
 MOD-0124 `MOD-0124-cash-positioning.md`, MOD-0217 `MOD-0217-contract-lifecycle-management-clm.md`, MOD-0289
 `MOD-0289-bank-master-bank-account-registry.md` (dört finans paketi `execution/domains/finance-treasury/module-packs/`, MOD-0217 /
 MOD-0289 `execution/domains/master-data-management/module-packs/`; satır numaraları CT04b düzenlemesinden sonra kaydığı için
-yazılmadı — anahtar adıyla aranır). D46 + D46a + D47 + D49'u birleştirir; **D46 tablosunun yerine geçer** (D46 tablosu
+yazılmadı — anahtar adıyla aranır). D46 + D46a + D47 + D49 + D50'yi birleştirir; **D46 tablosunun yerine geçer** (D46 tablosu
 tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN", D49/5). Anahtar adları kısaltılmadan yazıldı. "Bağımlı" sütunu başka modülün
 anahtarlarıdır (kullanıcı token'ıyla yapılan çağrılar — MOD-0220, MOD-0023, MOD-0262); kaydı o modülün sahibindedir.
 `procurement.*`, `crm.*` ve MOD-0031 / MOD-0140 okuma izinleri (MOD-0119, MOD-0120 Authorization Convention) bu matrisin
@@ -170,19 +170,17 @@ karar veren rollerin ikisinde de bulunur, yöneticide yalnız okuyarak çözüm 
 | Rol şablonu | İzinler | Bağımlı (başka modül) |
 |---|---|---|
 | Borç (AP) operatörü | AP görüntüleyici + `finance-treasury.ap-invoices.create`, `.update`, `.delete`, `.validate`, `.submit`, `.reconcile`, `finance-treasury.ap-invoice-exceptions.create`, `finance-treasury.ap-invoice-evidence.link` | `mdm.legal-entities.read`, `platform.workflow.instances.start` (+ MOD-0140, MOD-0143, MOD-0031 okuma) |
-| Borç (AP) onaylayıcı | AP görüntüleyici + `finance-treasury.ap-invoices.approve`, `.reject`, `.request-info`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.tasks.approve`, `.reject`, `.request-info` |
-| AP operasyon yöneticisi (**D49/3** — hazırlama + operasyon) | AP operatörü + `finance-treasury.ap-invoices.hold`, `.release-hold`, `.bulk-delete`, `finance-treasury.ap-invoice-exceptions.resolve`, `.reopen`. **Yok:** `ap-invoices.approve`, `.reject`, `.request-info` | AP operatörüyle aynı |
-| AP onay yöneticisi (**D49/3** — karar + mutabakat) | AP onaylayıcı (`finance-treasury.ap-invoices.approve`, `.reject`, `.request-info`, `.reconcile`). **Yok:** create, update, delete, validate, submit, bulk-delete, hold, release-hold, istisna açma / çözme / yeniden açma, kanıt bağlama | AP onaylayıcıyla aynı |
+| Borç (AP) onaylayıcı (karar + mutabakat; **D50/1** — AP onay yöneticisi bununla birleşti) | AP görüntüleyici + `finance-treasury.ap-invoices.approve`, `.reject`, `.request-info`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.tasks.approve`, `.reject`, `.request-info` |
+| AP operasyon yöneticisi (**D49/3** — hazırlama + operasyon) | AP operatörü + `finance-treasury.ap-invoices.hold`, `.release-hold`, `.bulk-delete`, `finance-treasury.ap-invoice-exceptions.resolve`, `.reopen` (kendi açtığı istisnayı çözemez / yeniden açamaz — **D50/3**, MOD-0119 AC-42). **Yok:** `ap-invoices.approve`, `.reject`, `.request-info` | AP operatörüyle aynı |
 
 **Alacak (AR, MOD-0120):**
 
 | Rol şablonu | İzinler | Bağımlı (başka modül) |
 |---|---|---|
 | Alacak (AR) operatörü | AR görüntüleyici + `finance-treasury.receivable-invoices.create`, `.update`, `.delete`, `.issue`, `.collection-manage`, `finance-treasury.receivable-payments.record`, `finance-treasury.receivable-adjustments.request`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.instances.start` (+ müşteri okuma, MOD-0120 O-3) |
-| Alacak (AR) onaylayıcı | AR görüntüleyici + `finance-treasury.receivable-adjustments.approve`, `.reject`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.tasks.approve`, `.reject` |
+| Alacak (AR) onaylayıcı (karar + mutabakat; **D50/1** — AR onay yöneticisi bununla birleşti) | AR görüntüleyici + `finance-treasury.receivable-adjustments.approve`, `.reject`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.tasks.approve`, `.reject` |
 | AR operasyon yöneticisi (**D49/3**) | AR operatörü (tahsilat operasyonları `receivable-invoices.collection-manage` ve `receivable-payments.record` dahil) + `finance-treasury.receivable-invoices.bulk-delete`. **Yok:** `receivable-adjustments.approve`, `.reject`, `.tier2-approve` | AR operatörüyle aynı |
-| AR onay yöneticisi (**D49/3**) | AR onaylayıcı (`finance-treasury.receivable-adjustments.approve`, `.reject`, `.reconcile`). **Yok:** fatura yazmaları, `issue`, `collection-manage`, `receivable-payments.record`, `receivable-adjustments.request`, `bulk-delete` | AR onaylayıcıyla aynı |
-| AR 2. kademe düzeltme onaylayıcı (**D49/3**) | AR görüntüleyici + `finance-treasury.receivable-adjustments.tier2-approve` | — (karar ucu `receivable-adjustments.approve` ister; tier-2 izni yalnız handler içinde ek koşuldur — MOD-0120 A3, AC-13. Bu rol tek başına karar veremez: AR onaylayıcı ya da AR onay yöneticisiyle birlikte atanır; `platform.workflow.tasks.*` o rolden gelir) |
+| AR 2. kademe düzeltme onaylayıcı (**D49/3, D50/2** — tek başına atanır; ödeme 2. kademe deseni) | AR onaylayıcı + `finance-treasury.receivable-adjustments.tier2-approve` | AR onaylayıcıyla aynı |
 
 **Nakit pozisyonu (MOD-0124):**
 
@@ -233,7 +231,7 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `finance-treasury.payment-evidence.link` | Ödeme hazırlayıcı |
 | `finance-treasury.payment-evidence.read` | Ödeme görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
 | `finance-treasury.payment-exceptions.read` | Ödeme görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
-| `finance-treasury.ap-invoices.read` | AP görüntüleyici (+ miras: dört AP rolü), Hazine konsolide görüntüleyici |
+| `finance-treasury.ap-invoices.read` | AP görüntüleyici (+ miras: üç AP rolü), Hazine konsolide görüntüleyici |
 | `finance-treasury.ap-invoices.read-tenant-wide` | açık atama |
 | `finance-treasury.ap-invoices.create` | AP operatörü, AP operasyon yöneticisi |
 | `finance-treasury.ap-invoices.update` | AP operatörü, AP operasyon yöneticisi |
@@ -241,10 +239,10 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `finance-treasury.ap-invoices.bulk-delete` | AP operasyon yöneticisi |
 | `finance-treasury.ap-invoices.validate` | AP operatörü, AP operasyon yöneticisi |
 | `finance-treasury.ap-invoices.submit` | AP operatörü, AP operasyon yöneticisi |
-| `finance-treasury.ap-invoices.reconcile` | AP operatörü, AP onaylayıcı, AP operasyon yöneticisi, AP onay yöneticisi |
-| `finance-treasury.ap-invoices.approve` | AP onaylayıcı, AP onay yöneticisi |
-| `finance-treasury.ap-invoices.reject` | AP onaylayıcı, AP onay yöneticisi |
-| `finance-treasury.ap-invoices.request-info` | AP onaylayıcı, AP onay yöneticisi |
+| `finance-treasury.ap-invoices.reconcile` | AP operatörü, AP onaylayıcı, AP operasyon yöneticisi |
+| `finance-treasury.ap-invoices.approve` | AP onaylayıcı |
+| `finance-treasury.ap-invoices.reject` | AP onaylayıcı |
+| `finance-treasury.ap-invoices.request-info` | AP onaylayıcı |
 | `finance-treasury.ap-invoices.hold` | AP operasyon yöneticisi |
 | `finance-treasury.ap-invoices.release-hold` | AP operasyon yöneticisi |
 | `finance-treasury.ap-invoice-trace.read` | AP görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
@@ -252,7 +250,7 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `finance-treasury.ap-invoice-exceptions.resolve` | AP operasyon yöneticisi |
 | `finance-treasury.ap-invoice-exceptions.reopen` | AP operasyon yöneticisi |
 | `finance-treasury.ap-invoice-evidence.link` | AP operatörü, AP operasyon yöneticisi |
-| `finance-treasury.receivable-invoices.read` | AR görüntüleyici (+ miras: beş AR rolü), Hazine konsolide görüntüleyici |
+| `finance-treasury.receivable-invoices.read` | AR görüntüleyici (+ miras: dört AR rolü), Hazine konsolide görüntüleyici |
 | `finance-treasury.receivable-invoices.read-tenant-wide` | açık atama |
 | `finance-treasury.receivable-invoices.create` | AR operatörü, AR operasyon yöneticisi |
 | `finance-treasury.receivable-invoices.update` | AR operatörü, AR operasyon yöneticisi |
@@ -261,10 +259,10 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `finance-treasury.receivable-invoices.issue` | AR operatörü, AR operasyon yöneticisi |
 | `finance-treasury.receivable-invoices.collection-manage` | AR operatörü, AR operasyon yöneticisi |
 | `finance-treasury.receivable-adjustments.request` | AR operatörü, AR operasyon yöneticisi |
-| `finance-treasury.receivable-adjustments.approve` | AR onaylayıcı, AR onay yöneticisi |
+| `finance-treasury.receivable-adjustments.approve` | AR onaylayıcı, AR 2. kademe düzeltme onaylayıcı |
 | `finance-treasury.receivable-adjustments.tier2-approve` | AR 2. kademe düzeltme onaylayıcı |
-| `finance-treasury.receivable-adjustments.reject` | AR onaylayıcı, AR onay yöneticisi |
-| `finance-treasury.receivable-adjustments.reconcile` | AR operatörü, AR onaylayıcı, AR operasyon yöneticisi, AR onay yöneticisi |
+| `finance-treasury.receivable-adjustments.reject` | AR onaylayıcı, AR 2. kademe düzeltme onaylayıcı |
+| `finance-treasury.receivable-adjustments.reconcile` | AR operatörü, AR onaylayıcı, AR operasyon yöneticisi, AR 2. kademe düzeltme onaylayıcı |
 | `finance-treasury.receivable-payments.record` | AR operatörü, AR operasyon yöneticisi |
 | `finance-treasury.receivable-trace.read` | AR görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
 | `finance-treasury.cash-positions.read` | Nakit pozisyonu görüntüleyici (+ miras: iki nakit pozisyonu rolü, Hazine yöneticisi), Hazine konsolide görüntüleyici |
@@ -327,17 +325,17 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `mdm.contracts.renewal-decisions.create` | Sözleşme yöneticisi |
 | `mdm.contracts.terminate` | Sözleşme yöneticisi |
 | `mdm.contracts.archive` | Sözleşme yöneticisi |
-| `mdm.legal-entities.read` (bağımlı, MOD-0220) | dört finans paketinin hazırlayan / operatör / karar veren / serbest bırakan rolleri, AP / AR operasyon ve onay yöneticileri ve Hazine yöneticisi (görüntüleyicilerde ve AR 2. kademe düzeltme onaylayıcıda yok) |
+| `mdm.legal-entities.read` (bağımlı, MOD-0220) | dört finans paketinin hazırlayan / operatör / karar veren / serbest bırakan rolleri, AP / AR operasyon yöneticileri, AR 2. kademe düzeltme onaylayıcı ve Hazine yöneticisi (görüntüleyicilerde yok) |
 | `platform.workflow.instances.start` (bağımlı, MOD-0023) | Ödeme hazırlayıcı, AP operatörü, AP operasyon yöneticisi, AR operatörü, AR operasyon yöneticisi, Nakit pozisyonu hazırlayıcı, Sözleşme yöneticisi |
-| `platform.workflow.tasks.approve` / `.reject` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AP onay yöneticisi, AR onaylayıcı, AR onay yöneticisi, Nakit pozisyonu onaylayıcı; sözleşme onaylayıcısı MOD-0023 şablonuyla (O-3) |
-| `platform.workflow.tasks.request-info` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AP onay yöneticisi |
+| `platform.workflow.tasks.approve` / `.reject` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AR onaylayıcı (+ AR 2. kademe düzeltme onaylayıcı), Nakit pozisyonu onaylayıcı; sözleşme onaylayıcısı MOD-0023 şablonuyla (O-3) |
+| `platform.workflow.tasks.request-info` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı |
 | `platform.document-repository.read` (bağımlı, MOD-0262-FU01) | Sözleşme görüntüleyici, Sözleşme yöneticisi, Sözleşme imza kaydedici (D46a) |
 | `platform.document-repository.manage` (bağımlı, MOD-0262-FU01) | Sözleşme yöneticisi, Sözleşme imza kaydedici (D46a) |
 
 Sayım: 114 modül anahtarı (MOD-0126 20, MOD-0119 19, MOD-0120 15, MOD-0124 20, MOD-0289 23, MOD-0217 17 — `mdm.bank-account-purposes.*`
 altısı ve D49/2'nin `mdm.contracts.value.write`'ı dahil) + 7 bağımlı anahtar; hepsi en az bir role ya da açık atama listesine
-yerleşti. Açık atamalı sekiz anahtarın hiçbiri bir rolde değildir. Rol sayısı: 27 (finans 21 — beş görüntüleyici dahil; ana veri 6;
-AP / AR onaylayıcı ve operatör rolleri yöneticilerin miras tabanı olarak kalır).
+yerleşti. Açık atamalı sekiz anahtarın hiçbiri bir rolde değildir. Rol sayısı: 25 (finans 19 — beş görüntüleyici dahil; ana veri 6;
+D50/1 ile AP / AR onay yöneticisi onaylayıcılarla birleşti).
 
 ### (5) Banka okuma ölçümü (D47/4)
 
@@ -382,17 +380,21 @@ yöneticisi, banka hesabı etkinleştirici). `BANK-ACCOUNT-LOOKUP` 1.0.0 donduru
 10. **D49/4:** `waive-sod` açık atamasının kuralları (onaylayan, 24 saat, gerekçe kodları, tek parti, K1 incelemesi) bölüm 1'de;
     çalışma anı / Auth / süreç ayrımı MOD-0126 Authorization Convention'da.
 11. **D49/5:** D46 tablosu "YERİNE GEÇTİ — UYGULAMAYIN" olarak işaretlendi; işleyen tek matris bu bölümdür.
+12. **D50/1:** "AP onay yöneticisi" ve "AR onay yöneticisi" kalktı (anahtar kümeleri onaylayıcılarla birebir aynıydı); karar ve
+    mutabakat (`…reconcile`) Borç (AP) onaylayıcı ve Alacak (AR) onaylayıcıdadır (ölçüldü: ikisi de `reconcile` taşır).
+13. **D50/2:** AR 2. kademe düzeltme onaylayıcı AR onaylayıcıyı miras alır + `receivable-adjustments.tier2-approve`; tek başına
+    atanır (birlikte atama notu kalktı).
+14. **D50/3:** MOD-0119'a istisna ayrılığı: istisnayı açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz — 403
+    `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`, AC-42 (DL-3).
 
-**Aynı nesne türünde hazırlama + karar (D49/3 sonrası denetim):** hiçbir rol aynı nesne türünün hazırlama / oluşturma / gönderme
+**Aynı nesne türünde hazırlama + karar (D49/3 ve D50 sonrası denetim):** hiçbir rol aynı nesne türünün hazırlama / oluşturma / gönderme
 eylemiyle onay / ret eylemini birlikte taşımaz — ödeme partisi, AP faturası, AR düzeltmesi, nakit pozisyonu ve sözleşme sürümü
 için kontrol edildi (sözleşme kararı MDM rolünde değil, MOD-0023'te). Kalan ve işaretlenen örtüşmeler (onay / ret değil, ama
 karara yakın eylemler):
 
-- **AP operasyon yöneticisi — istisna açma + çözme** (`ap-invoice-exceptions.create` + `.resolve` / `.reopen`): D49/3 istisna
-  çözümünü bu role açıkça verdi. Engelleyici istisna (`IsBlocking`) açıkken Submit / Approve / ReleaseHold 409'dur; aynı kişi
-  istisnayı açıp çözerek faturayı gönderebilir hâle getirebilir. MOD-0119'da istisnayı açanın (`RaisedBy`) çözmesini engelleyen
-  çalışma anı kuralı **yok** (alanlar kayıtlı, kural yazılmamış). Fatura kararı yine MOD-0119 R1–R3 ile korunur (oluşturan,
-  gönderen, son güncelleyen karar veremez). Sahip "açan çözemez" kuralını isterse MOD-0119'a ayrı karar + AC gerekir — açık.
+- **AP operasyon yöneticisi — istisna açma + çözme** (`ap-invoice-exceptions.create` + `.resolve` / `.reopen`): rol iki izni de
+  taşır, ama aynı istisnada değil — **D50/3** çalışma anı kuralı: istisnayı açan (`RaisedBy`) onu çözemez ve yeniden açamaz
+  (MOD-0119, 403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`, AC-42). Açık madde kapandı.
 - **AP operasyon yöneticisi — gönderme + bekletme / bekletmeyi kaldırma** (`ap-invoices.submit` + `.hold` / `.release-hold`):
   bekletme onay değildir; `Approved` faturayı ödeme hattından geri tutar, kaldırma bekletme öncesi duruma döner. D49/3'ün
   operasyon tanımı; çalışma anı SoD kuralı yok.
@@ -400,9 +402,7 @@ karara yakın eylemler):
   `mdm.bank-account-purposes.create` + `.activate`): referans verisi; MOD-0289'un dört göz kuralı (D23/2) yalnız banka
   **hesabı** etkinleştirmesindedir. D47/2 ile değiştirilmedi; sahip isterse ayrı karar.
 
-**Anahtar kümesi aynı roller (sahip incelemesine):** "AP onay yöneticisi" ile "Borç (AP) onaylayıcı", "AR onay yöneticisi" ile
-"Alacak (AR) onaylayıcı" bugün aynı anahtar kümesini taşır (D49/3'ün "karar + mutabakat" tanımı onaylayıcıya zaten verilmişti).
-Ayrım atama düzeyi / organizasyon içindir; iki adın birleştirilmesi ya da yöneticiye ek anahtar verilmesi sahip kararıdır.
+**Anahtar kümesi aynı roller:** D50/1 ile kapandı — AP / AR onay yöneticisi onaylayıcılarla birleşti.
 
 ## D48 — MOD-0289 denetim kategorisi ve CT04a rol matrisi yorumları (soru kutusu, önerilen seçenek, 2026-10-27)
 
