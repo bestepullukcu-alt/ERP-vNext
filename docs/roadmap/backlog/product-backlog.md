@@ -10921,3 +10921,24 @@ notunda.
 **Ölçüm komutu:**
 
     gh issue list --repo bestepullukcu-alt/ERP-vNext --assignee GMG-ERP --state open
+
+### BL-663
+
+**AGENTS.md'nin kalıcı sadeleştirilmesi — boyut bütçesi her yeni kayıtla aşılıyor**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 (`agents-sikistir`: bugün yalnız yer açıldı) · KAYIT: 2026-10-27
+
+**Ne:** AGENTS.md'nin uyarı eşiği 22000 bayt (Antigravity 24000'de keser); `test_sync_adapters_budget` uyarıyı da hata
+sayar. 2026-10-25'te bir domain kaydı (ec53ec2d3) eşiği aştı ve phase1 kırmızı oldu; 2026-10-26'da tarihli notlar taşındı
+(#244, 31 bayt pay), 2026-10-27'de iki tekrar bölümü kural dosyalarına bağlantıyla kısaltıldı (≈350 bayt pay). Her yeni
+domain, port ya da dal kodu satırı payı yer. Kalıcı çözüm: kural haritası (§6.1) ve tabloları kural dosyalarına taşıyıp
+AGENTS.md'yi çekirdek + yetki sırası + bağlantılara indirmek; ya da eşiği gerekçesiyle yeniden ölçmek.
+**Neden ertelendi:** AGENTS.md'nin yapısını değiştiren bir karar; her ajan aracında yüklenen metni etkiler, ayrı bir
+tasarım ve Codex incelemesi ister.
+**Yapım tetikleyicisi:** pay 150 baytın altına düşünce ya da bir PR yalnız bu yüzden kırmızı olunca.
+**Gelecek regresyon riski:** 🟡 — yeni bir kayıt eşiği aşarsa phase1 kırmızı olur ve arkasındaki kapılar koşmaz (S-67).
+
+**Ölçüm komutu:**
+
+    git show origin/main:AGENTS.md | wc -c
+
