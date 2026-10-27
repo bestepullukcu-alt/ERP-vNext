@@ -58,6 +58,39 @@ hakları, izin talebi, bakiye, onay) **nerede** koşacak?
 - Blueprint yerleşiminden ("Domain App (HCM Time & Leave)") ve HcmService arka uç kararından sapma paketin sapma
   bölümünde kayıtlı olur.
 
+## Ek karar 1 — MOD-0003 ve MOD-0037 yokken ilk dilim (2026-10-27)
+
+> Sahip kararı `gecici-sozlesme` (2026-10-27, CT · İzin ve devamsızlık sohbeti). Kaynak: bağımsız tasarım denetimi 01,
+> bulgu F-02 (`docs/records/reviews/MOD-0280-FU02/2026-10-27-design-01.md`).
+
+**Soru.** Blueprint `Dependencies_Normalized` satır 522 ve 524, MOD-0280 için MOD-0003 Data Contract Registry ve
+MOD-0037 Integration Monitoring & Reconciliation'ı HARD bağımlılık sayıyor. MOD-0280-FU01 ilk dilimde bunları "gerekmez"
+saydı (paket C-13: servisler arası sözleşme yok, dış entegrasyon yok, UserId anahtarı). FU02 ise CT · Çalışan kaydı'nın
+HCM-CORE-BUNDLE sözleşmesiyle `Diten.HcmService`'ten veri okuyacak, yani FU01'in gerekçesi taşınamaz. İkisi de bugün
+yapılmamış (kimlik kaydında MOD-0003 `planned / missing`, MOD-0037 `review / planned`).
+
+**Karar (geçici, ilk dilim için).**
+
+1. **MOD-0003'ün yerine — sözleşme depoda ve testli.** FU02'nin tükettiği her sözleşme (HCM-CORE-BUNDLE okuma uçları ve
+   olayları) sürümlü bir sözleşme dosyası olarak depoda durur; sözleşmenin sahibi CT · Çalışan kaydı'dır. Hem üretici
+   (HcmService) hem tüketici (FU02) tarafında sözleşme testi bulunur. FU02 tükettiği sözleşme sürümünü kendi paketinde
+   ve yapılandırmasında açıkça yazar; bilinmeyen sürüm reddedilir.
+2. **MOD-0037'nin yerine — izleme ve uzlaştırma izin tarafında.** Çalışan verisini eşitleyen iş her koşuda sonucunu
+   (okunan, değişen, eşleşmeyen kayıt sayısı ve hata) denetim izi ile kaydeder; eşleşmeyen kayıtlar için uzlaştırma
+   raporu üretir. Sorumlu izin kulesidir (MOD-0280-FU02).
+3. **Çalışan servisine ulaşılamazsa (kapalı hata).** Yeni izin talebi açılamaz ve ekranda sade bir mesaj gösterilir.
+   Var olan izinler, bakiyeler ve onay görevleri okunmaya devam eder. Bekleyen onay kararları uygulanır, ama yeni bakiye
+   hesabı gerekiyorsa servis gelene kadar beklenir. Önbellekteki eski çalışan verisiyle yeni talep açılmaz.
+
+**Sonuçlar.**
+
+- Bu bir sapmadır ve paketin sapma bölümünde kayıtlı olur. Platform alanının MOD-0003 ve MOD-0037 sahiplerine bilgi
+  verilir; bu karar o modülleri yapmaz ve onlara yazmaz.
+- **Geri dönüş tetikleyicisi:** MOD-0003 ya da MOD-0037 `ready-for-dev` olunca FU02 o modüle bağlanır. Depodaki
+  sözleşme dosyası kayda taşınır, izin tarafındaki izleme MOD-0037'ye devredilir.
+- Gerçek çalışan verisiyle kabul, MOD-0251'in aktifleştirme dilimine bağlı kalır. Geliştirme ve test sahte çalışanla
+  yapılabilir; kabul kanıtı sahte veriyle verilmez.
+
 ## Yeniden ele alma tetikleyicisi
 
 Aşağıdakilerden biri gerçekleşince bu karar yeniden açılır ve FU01 + FU02 birlikte taşınır:
