@@ -327,6 +327,10 @@ tahmin edilmedi. Plan §5.6'nın "6–9 prompt" tahmini yalnız Dalga 4–5'i ka
 4. Bir iş akışı onay adımı toplantıda karara bağlanabilsin mi (6.4)?
 5. Çevrim içi toplantı: Google Meet, Teams ya da ikisi (10.1)?
 6. Dış katılımcı için saklanacak bilgi (10.3).
+6a. **Yöneticiden beklenen belge (sahip, 2026-10-27).** İçeriği henüz bilinmiyor; iş onu beklemeden sürer. Belge
+    gelince paket revizyonu (iki kademeli tür, kod alanı) ve bu listeyle karşılaştırılır; çelişen yer varsa sahibe
+    sorulur. Kod alanı notu: toplantı türü RCS-001'e göre İKİSİ DE sınıfı, önek `MTY`; ortak kod servisi (BL-565)
+    gelene kadar kodsuz (önerilen).
 7. Bu listede önerilen sıra: 0 → 1 → 3 → 6 → 7 → 4 → 2 / 5 → 8 → 9 → 10. Gerekçe: önce hatalar; sonra yöneticinin
    onayladığı 5 iş, çünkü gündem maddesi sonucu (3.3), onay toplantısı (Dalga 6) için şart; takvim bağlantısı
    (Dalga 7) bağımsız ve kullanıcı en çok onu görür. Katalog yükleme (Dalga 2 ve 5) başka sahiplerin verisini bekliyor.
