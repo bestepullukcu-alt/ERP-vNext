@@ -134,7 +134,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) + denetim kaydı davranışı (Platform: `AuditBehavior`; diğer servisler: ortak iletici, AUD-001 K4) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
 | Denetim kaydı | Kiracı ya da platform verisini değiştiren **her komut denetlenir** (kim · neyi · ne zaman). Denetlenmemek istisnadır ve gerekçesiyle bildirilir; yeni denetimsiz komutu ve deftere eklenen borç satırını mimari testi + CI reddeder; kimlik / yetki / GxP sınıfında kayıt yazılamazsa işlem durmalıdır (karar K2; bugün hiçbir yol bunu teslim etmiyor, eksikler defterde `## K2 borcu` olarak sayılı — AUD-001 §4.4) | [.antigravity/rules/audit-trail-standard.md](.antigravity/rules/audit-trail-standard.md) |
-| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. Ölçüldü 2026-09-07: `Views/Platform/*` 2 dosya, `Views/Organization/*` 7 dosya taşır. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
+| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 | Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
@@ -155,10 +155,10 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 46 kural dosyası var (2026-10-17, `git ls-tree` ile sayıldı). Kural dosyaları kendiliğinden
+`.antigravity/rules/` altındaki kural dosyaları kendiliğinden
 yüklenmez; `.antigravity/adapters.json`'da listelenenlerin üretilmiş kopyaları `.claude/rules/` (Claude Code) ve
-`.agents/rules/` (Antigravity) altına konur — bu denetimde yalnız `agents-core.md`'nin yüklenmesi ölçüldü. Codex ve
-Antigravity bu haritayı bu dosyayla birlikte yükler (bu denetimde canlı ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
+`.agents/rules/` (Antigravity) altına konur. Codex ve
+Antigravity haritayı bu dosyayla yükler (ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
 işe başlamadan bu haritanın açılmasını şart koşar.
 
 Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o

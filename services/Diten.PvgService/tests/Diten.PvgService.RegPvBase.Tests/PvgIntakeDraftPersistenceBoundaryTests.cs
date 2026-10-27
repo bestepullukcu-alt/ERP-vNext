@@ -134,6 +134,33 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
     }
 
     [Fact]
+    public async Task CountAsync_counts_the_tenants_drafts_with_and_without_status_filter()
+    {
+        var repository = new InMemoryPvgIntakeDraftRepository();
+        var tenantA = new PvgPersistenceTenantScope("tenant-a-secret");
+        var tenantB = new PvgPersistenceTenantScope("tenant-b-secret");
+        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeCreated));
+
+        Assert.Equal(3, await repository.CountAsync(tenantA, null));
+        Assert.Equal(2, await repository.CountAsync(tenantA, PvgIntakeStatus.IntakeCreated));
+        Assert.Equal(1, await repository.CountAsync(tenantA, PvgIntakeStatus.IntakeUpdated));
+        Assert.Equal(0, await repository.CountAsync(tenantA, PvgIntakeStatus.Triaged));
+        Assert.Equal(4, await repository.CountAsync(tenantB, null));
+        Assert.Equal(3, await repository.CountAsync(tenantB, PvgIntakeStatus.IntakeUpdated));
+        Assert.Equal(0, await repository.CountAsync(new PvgPersistenceTenantScope("tenant-empty-secret"), null));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await repository.CountAsync(new PvgPersistenceTenantScope(" "), null));
+        Assert.Equal("PVG_PERSISTENCE_TENANT_SCOPE_REQUIRED", exception.Message);
+    }
+
+    [Fact]
     public async Task Repository_rejects_tenant_mismatch_with_safe_reason_code_only()
     {
         var repository = new InMemoryPvgIntakeDraftRepository();
