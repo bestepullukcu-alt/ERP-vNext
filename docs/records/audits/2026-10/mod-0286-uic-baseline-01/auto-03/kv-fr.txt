@@ -1,0 +1,636 @@
+About	À propos
+AccessDenied	Accès refusé.
+AccessDeniedMessage	Demandez à votre administrateur de vous accorder l'accès à cette page.
+AccessDeniedTitle	Vous n'avez pas accès à {0}
+AccessGovernance	Access Governance
+AccessMatrix	Matrice d'accès
+AccountsMenu	Comptes
+Action	Actions
+Activate	Activer
+Active	Actif
+Address	Adresse
+Admin	Administrateur
+Apply	Appliquer
+AreYouSure	Êtes-vous sûr ?
+Attributes	Attributs
+Auth.Dialog.Ok	D'accord
+Auth.Error.AccountDeactivated	Votre compte a été désactivé par un administrateur. Contactez votre administrateur.
+Auth.Error.CurrentPasswordIncorrect	Votre mot de passe actuel est incorrect.
+Auth.Error.EmailLoginDisabled	La connexion par e-mail est désactivée pour cette organisation.
+Auth.Error.InvalidCredentials	L'adresse e-mail ou le mot de passe est incorrect, ou le compte est temporairement verrouillé. Veuillez réessayer plus tard.
+Auth.Error.InvalidVerificationCode	Le code de vérification est invalide ou a expiré.
+Auth.Error.LinkInvalid	Ce lien n'est plus valide. Demandez un nouveau lien à votre administrateur.
+Auth.Error.LoginFailed	Échec de la connexion. Veuillez réessayer.
+Auth.Error.LoginUnavailable	La connexion est temporairement indisponible. Veuillez réessayer dans un instant.
+Auth.Error.PasswordChangeFailed	Votre mot de passe n'a pas pu être modifié. Veuillez réessayer.
+Auth.Error.PasswordChangedMeanwhile	Votre mot de passe a été modifié entre-temps (par exemple par un administrateur). Veuillez vous reconnecter.
+Auth.Error.PlatformPrivilegesRequired	Ce compte ne dispose d'aucun rôle d'administration de la plateforme.
+Auth.Error.RequestInvalid	La demande est incomplète. Veuillez vérifier les champs et réessayer.
+Auth.Error.ServiceUnavailable	Le service de connexion est temporairement indisponible. Veuillez réessayer dans un instant.
+Auth.Error.SessionEnded	Votre session a pris fin. Veuillez vous reconnecter.
+Auth.Error.TemporaryPasswordExpired	Votre mot de passe temporaire a expiré. Veuillez réinitialiser votre mot de passe.
+Auth.Error.TenantMissing	Ce lien de connexion ne contient aucune information sur l'organisation. Veuillez réutiliser votre lien d'invitation.
+Auth.Error.TooManyRequests	Trop de demandes. Veuillez patienter quelques minutes puis réessayer.
+Auth.Error.VerificationChallengeRequired	L'étape de vérification a expiré. Veuillez vous reconnecter.
+Auth.Error.VerificationCodeRequired	Veuillez saisir le code de vérification.
+Auth.Error.VerificationFailed	La vérification n'a pas pu être effectuée. Veuillez réessayer.
+Auth.Mfa.CodeLabel	Code de vérification
+Auth.Mfa.Prompt	Saisissez le code de vérification envoyé à
+Auth.Mfa.Resend	Renvoyer le code
+Auth.Mfa.Resending	Envoi...
+Auth.Mfa.ResentMessage	Un nouveau code de vérification a été envoyé.
+Auth.Mfa.ResentTitle	Code envoyé
+Auth.Mfa.Title	Vérification en deux étapes
+Auth.Mfa.Verifying	Vérification...
+Back	Retour
+BackToList	Retour à la liste
+BackToLogin	Back to login
+BasicInfo	Informations de base
+BrandsMenu	Marques
+BulkDelete	Suppression en masse
+BulkDeleteConfirm	Voulez-vous vraiment supprimer les {0} enregistrements sélectionnés ?
+BulkDeleteSuccess	{0} enregistrements supprimés avec succès
+CalendarAllDay	Toute la journée
+CalendarDay	Jour
+CalendarMonth	Mois
+CalendarMore	+{0} de plus
+CalendarNext	Suivant
+CalendarNoEvents	Rien à afficher
+CalendarPrevious	Précédent
+CalendarToday	Aujourd’hui
+CalendarUnresolved	Aucun calendrier de travail n’est défini — les week-ends et les jours fériés ne peuvent pas être affichés.
+CalendarWeek	Semaine
+CampaignsMenu	Campagnes
+Cancel	Annuler
+CategoryManagement	Gestion des catégories
+ChangePassword.Subtitle	You must change your temporary password before continuing.
+ChangePassword.Title	Change Password
+ClearSelection	Effacer la sélection
+Close	Fermer
+CollapseAll	Tout réduire
+ColumnOrder	Ordre des colonnes
+ColumnVisibility	Visibilité des colonnes
+ComingSoon	Cette fonctionnalité sera bientôt ajoutée.
+CommercialSuite	Suite commerciale
+CompositionManagement	Gestion des compositions
+ConfirmAction	Voulez-vous vraiment continuer ?
+ConfirmPassword	Confirm Password
+ConsentPreferencesMenu	Consentement et préférences
+ContactPerson	Personne de contact
+ContactsMenu	Contacts
+ContentEngagementJourneysMenu	Parcours d'engagement de contenu
+ContractEditDraftOnly	Seuls les contrats en brouillon peuvent être mis à jour ; un contrat activé se gère via les actions de cycle de vie, pas par modification.
+ControlledCopy.CreatedAt	Créé le
+ControlledCopy.CreatedBy	Créé par
+ControlledCopy.Filters	Filtres
+ControlledCopy.None	Aucun
+ControlledCopy.Page	Page {0} sur {1}
+ControlledCopy.Report	Rapport
+ControlledCopy.Rows	Nombre de lignes
+ControlledCopy.Search	Recherche
+ControlledCopy.Sort	Tri
+ControlledCopy.SortAsc	croissant
+ControlledCopy.SortDesc	décroissant
+ControlledCopy.Tenant	Société
+ControlledCopy.Uncontrolled	Cette impression est une copie non contrôlée — {0}
+ControlledDocuments	Documents contrôlés
+Copied	Copié
+Copy	Copier
+CurrentPassword	Current Password
+CycleCapacitiesMenu	Capacité de cycle
+CyclePeriodsMenu	Périodes de cycle
+Dark	Sombre
+DateNotRecognized	Une date saisie n'a pas pu être lue ; elle n'a donc pas été enregistrée. Saisissez-la de nouveau au format du champ ou choisissez-la dans le calendrier.
+Deactivate	Désactiver
+DefaultTimeZone	Fuseau horaire par défaut
+Delete	Supprimer
+DeleteConfirmationSubText	Cette action est irréversible !
+DeleteConfirmationTitle	Êtes-vous sûr ?
+DeleteConfirmationYesBtn	Oui, supprimer
+Description	Descriptif
+DescriptionPlaceholder	Saisissez une description...
+Details	Détails
+DeveloperSandbox	Bac à sable développeur
+DocumentMasterRegister	Registre principal des documents
+DocumentationStructures	Structures de documentation
+DtEmptyTable	Aucune donnée disponible dans le tableau
+DtInfo	Affichage de _START_ à _END_ sur _TOTAL_ entrées
+DtInfoEmpty	Affichage de 0 à 0 sur 0 entrée
+DtInfoFiltered	(filtré à partir de _MAX_ entrées au total)
+DtLoadFailed	La liste n'a pas pu être chargée.
+DtLoadNoPermission	Vous n'avez pas l'autorisation de voir cette liste.
+DtNoRecords	Aucun enregistrement correspondant trouvé
+DtRetry	Réessayer
+DtZeroRecords	Aucun enregistrement correspondant trouvé
+Edit	Modifier
+EditRecord	Modifier l'enregistrement
+EmailAddress	Adresse e-mail
+EmployeeDraftsMenu	Brouillons employés
+Error	Erreur
+ErrorOccurred	Une erreur s'est produite lors du traitement de votre demande.
+ExpandAll	Tout développer
+Export	Exporter
+ExportTooLarge	Trop de lignes à exporter (plus de 50 000). Affinez le filtre et réessayez.
+FailedToLoadData	Échec du chargement des données. Veuillez réessayer plus tard.
+FieldRequired	Ce champ est obligatoire
+Filter	Filtrer
+ForgotPassword.SentMessage	If the email exists, reset instructions have been sent.
+ForgotPassword.SentTitle	Check your email
+ForgotPassword.Submit	Send reset link
+ForgotPassword.Subtitle	Enter your email and we will send reset instructions.
+ForgotPassword.Title	Forgot Password?
+GatewayError	Une erreur s'est produite lors de la communication avec le serveur.
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	La modification d'un BR n'est pas prise en charge ; une réception postée se corrige par un mouvement de contre-passation, pas par une modification.
+HumanCapitalManagement	Gestion du capital humain
+Import	Importer
+InvalidEmail	Adresse e-mail non valide
+InvalidFiscalYear	Format non valide (ex. : 01-01)
+InvalidPhone	Numéro de téléphone non valide
+InvalidUrl	Format d'URL non valide
+InviteAccept	Accepter
+InviteAcceptAnyway	Accepter Quand Même
+InviteCardType	Invitation à une réunion
+InviteDecline	Refuser
+InviteOverlapText	Elle chevauche votre bloc planifié « {0} » ({1}). Accepter quand même ?
+InviteOverlapTitle	Cette réunion chevauche votre planning
+InvoiceUpdateNotSupported	La mise à jour d'une facture n'est pas prise en charge ; corrigez-la en relançant le rapprochement à 3 voies ou en résolvant son exception, pas par une modification.
+ItemMaster	Référentiel des articles
+KnowledgeConceptsMenu	Concepts
+KnowledgeMenu	Connaissances
+KnowledgePathsMenu	Parcours de connaissances
+LegalEntities	Entités juridiques
+LegalEntity	Entité juridique
+LegalEntityNone	Ce locataire n'a aucune entité juridique active.
+LegalEntityRequired	Sélectionnez une entité juridique.
+LegalEntityUnavailable	La liste des entités juridiques est indisponible.
+LevelPrefix	Niveau
+Light	Clair
+Loading	Chargement...
+LogOut	Se déconnecter
+Login.Email	E-mail
+Login.EmailOrUsername	E-mail ou nom d'utilisateur
+Login.EmailRequired	Email is required.
+Login.Error	E-mail ou mot de passe non valide
+Login.ErrorRequired	L'e-mail et le mot de passe sont obligatoires
+Login.ErrorTitle	Erreur
+Login.ForgotPassword	Forgot Password?
+Login.Loading	Connexion en cours...
+Login.Password	Mot de passe
+Login.RememberMe	Se souvenir de moi
+Login.Submit	Se connecter
+Login.Subtitle	Veuillez vous connecter à votre compte
+Login.Title	Connexion
+MDM	MDM
+MarkAllAsRead	Tout marquer comme lu
+MasterData	Données maîtres
+ModuleCodeInUse	Ce code de module est déjà utilisé.
+MyProfile	Mon profil
+Nav.Domain.ADMINISTRATION	Administration
+Nav.Domain.DEVENABLEMENT	Activation développeur
+Nav.Domain.DOCUMENTMANAGEMENT	Gestion documentaire
+Nav.Domain.HUMANCAPITAL	Capital humain
+Nav.Domain.MANAGEMENTGOVERNANCE	Management et gouvernance
+Nav.Domain.MANUFACTURING	Fabrication
+Nav.Domain.MASTERDATAMANAGEMENT	Gestion des données de référence
+Nav.Domain.PLATFORMSHAREDSERVICES	Services partagés de la plateforme
+Nav.Domain.PORTFOLIODELIVERY	Exécution du portefeuille
+Nav.Domain.PROCUREMENT	Achats
+Nav.Domain.SALES	Ventes
+Nav.Domain.SUPPLYCHAINEXECUTION	Exécution de la chaîne d’approvisionnement
+Nav.Domain.TALENTECOSYSTEM	Écosystème de talents
+Nav.Domain.WORKSPACE	Espace de travail
+Nav.Module.ACCESSGOVERNANCE	Gouvernance des accès
+Nav.Module.ADMINISTRATORS	Administrateurs
+Nav.Module.AUDIT	Audit
+Nav.Module.BOMROUTINGS	Nomenclatures et gammes
+Nav.Module.BRANDPRODUCTMASTER	Référentiel Marque et Produit
+Nav.Module.CAPACITYPLANNING	Planification des capacités
+Nav.Module.CARRIERMANAGEMENT	Gestion des transporteurs
+Nav.Module.CLAIMSMANAGEMENT	Gestion des réclamations
+Nav.Module.CONTRACTS	Contrats
+Nav.Module.CRM	Gestion de la relation client
+Nav.Module.DEMANDPLANNING	Planification de la demande
+Nav.Module.DOCUMENTMANAGEMENT	Gestion documentaire
+Nav.Module.ESIGN	Signature électronique
+Nav.Module.EXPIRYFEFOMANAGEMENT	Péremption / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	Réception (BR)
+Nav.Module.HCMEMPLOYEEMASTER	Référentiel des employés
+Nav.Module.HUMANCAPITAL	Capital humain
+Nav.Module.INTERFACEREGISTRY	Registre des interfaces
+Nav.Module.INVENTORYLEDGER	Inventaire
+Nav.Module.INVOICEMATCH	Rapprochement de factures
+Nav.Module.LEGALENTITY	Entité juridique
+Nav.Module.LOOKUPS	Listes de référence
+Nav.Module.LOTSERIALTRACKING	Suivi des lots / séries
+Nav.Module.MEETINGS	Réunions
+Nav.Module.MODULECATALOG	Catalogue des modules
+Nav.Module.MODULEDOMAINS	Domaines de modules
+Nav.Module.MODULESERVICES	Services de modules
+Nav.Module.NOTIFICATIONS	Notifications
+Nav.Module.ORGANIZATION	Organisation
+Nav.Module.PERSON	Annuaire des personnes
+Nav.Module.PPM	Gestion de projets et de portefeuilles
+Nav.Module.PROCUREMENTSUPPLIERS	Fournisseurs
+Nav.Module.PRODUCTITEMSKUMASTER	Référentiel Produit / Article / SKU
+Nav.Module.PURCHASEORDERS	Bons de commande
+Nav.Module.QUARANTINEBLOCKEDSTOCK	Qualité
+Nav.Module.RECALLREADINESS	Préparation au rappel
+Nav.Module.REFERENCEDATA	Données de référence
+Nav.Module.REQUISITIONS	Demandes d'achat
+Nav.Module.REVERSELOGISTICS	Logistique inverse
+Nav.Module.ROUTINGLOADPLANNING	Itinéraires et planification des chargements
+Nav.Module.SHIPMENTTRACKINGPOD	Suivi des expéditions et preuve de livraison
+Nav.Module.SOPWORKFLOWSIGNOFFS	Flux S&amp;OP et validations
+Nav.Module.SOURCING	Sourcing
+Nav.Module.SUBSCRIPTIONFEATURES	Fonctionnalités d'abonnement
+Nav.Module.SUBSCRIPTIONPLANS	Formules d'abonnement
+Nav.Module.SUPPLIERS	Fournisseurs
+Nav.Module.TALENTECOSYSTEM	Écosystème de talents
+Nav.Module.TASKS	Paramètres des tâches
+Nav.Module.TENANTS	Locataires
+Nav.Module.TENANTSETTINGS	Paramètres du locataire
+Nav.Module.TIMEENTRY	Feuilles de temps
+Nav.Module.WORKAGGREGATION	Centre des tâches
+Nav.Module.WORKFLOW	Flux de travail
+Nav.Module.WORKINGCALENDAR	Calendrier de travail
+Nav.Module.WORKINGCALENDARIMPORT	Import de calendrier de travail
+Nav.Module.WORKREPORT	Rapport d'activité
+Nav.Page.ACCESSMATRIX	Matrice d'accès aux documents
+Nav.Page.ACCOUNT	Compte
+Nav.Page.ACCOUNTCONTACT	Contact du compte
+Nav.Page.ACCOUNTRELATIONSHIP	Relation de compte
+Nav.Page.ACCOUNTS	Comptes
+Nav.Page.APPLICANTINTAKE	Réception des candidatures
+Nav.Page.ASSOCIATIONMEMBERSHIPS	Adhésions aux associations
+Nav.Page.ASSOCIATIONOPERATIONS	Opérations des associations
+Nav.Page.ATTRIBUTE	Attribut
+Nav.Page.BENEFITCOMMITMENTS	Engagements de bénéfices
+Nav.Page.BLOCKEDSTOCK	Stock bloqué
+Nav.Page.BOMS	Nomenclatures
+Nav.Page.BRANDS	Marques
+Nav.Page.CAMPAIGN	Campagne
+Nav.Page.CAMPAIGNS	Campagnes
+Nav.Page.CAMPAIGNSNAPSHOT	Instantané de campagne
+Nav.Page.CAMPAIGNTARGET	Cible de campagne
+Nav.Page.CANDIDATECAREERPASSPORT	Passeport de carrière du candidat
+Nav.Page.CANDIDATEDISPUTES	Litiges des candidats
+Nav.Page.CANDIDATEPIPELINE	Pipeline de candidats
+Nav.Page.CANDIDATEPROFILES	Profils des candidats
+Nav.Page.CAPACITYPLANS	Plans de capacité
+Nav.Page.CARRIERS	Transporteurs
+Nav.Page.CLAIMS	Allégations
+Nav.Page.COMPENSATIONBENEFITS	Rémunération et avantages
+Nav.Page.COMPETENCYSKILLS	Compétences et aptitudes
+Nav.Page.COMPETITORPRODUCTS	Produits concurrents
+Nav.Page.CONSENT	Consentement
+Nav.Page.CONSENTPREFERENCES	Consentement et préférences
+Nav.Page.CONSENTVISIBILITYPOLICIES	Politiques de visibilité du consentement
+Nav.Page.CONTACT	Contact
+Nav.Page.CONTACTS	Contacts
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	Parcours d'engagement de contenu
+Nav.Page.CONTENTSETS	Ensembles de contenu
+Nav.Page.CONTRACTS	Contrats et bibliothèque de clauses
+Nav.Page.CONTROLLEDDOCUMENTS	Documents contrôlés
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	Seuils de potentiel
+Nav.Page.CUSTOMFIELDS	Champs personnalisés
+Nav.Page.CYCLECAPACITIES	Capacité de cycle
+Nav.Page.CYCLECAPACITY	Capacité de cycle
+Nav.Page.CYCLEPERIOD	Période de cycle
+Nav.Page.CYCLEPERIODS	Périodes de cycle
+Nav.Page.DATAQUALITY	Qualité des données
+Nav.Page.DEFINITIONS	Définitions de flux de travail
+Nav.Page.DEMANDPLANNING	Planification de la demande
+Nav.Page.DEVELOPMENTPLANS	Plans de développement
+Nav.Page.DOCUMENTLIST	Liste de documents
+Nav.Page.EARLYWARNINGSIGNALS	Signaux d'alerte précoce
+Nav.Page.ELIGIBILITYPOLICIES	Politiques d'éligibilité
+Nav.Page.EMPLOYEE	Employé
+Nav.Page.EMPLOYEEMASTER	Référentiel des employés
+Nav.Page.EMPLOYEEONBOARDING	Intégration des employés
+Nav.Page.EMPLOYEEPROJECTIONS	Projections d'effectifs
+Nav.Page.EMPLOYMENTCHANGES	Changements d'emploi
+Nav.Page.ESIGNAUDITEXPORT	Export d'audit
+Nav.Page.ESIGNMEANINGS	Significations de signature
+Nav.Page.ESIGNMYSIGNATURE	Ma signature
+Nav.Page.ESIGNPOLICY	Politique de signature
+Nav.Page.ESIGNREQUESTS	Demandes de signature
+Nav.Page.ESIGNSAMPLEAPPROVALS	Approbation des modèles
+Nav.Page.ESIGNVERIFICATION	Vérification des signatures
+Nav.Page.EXITREFERENCERECORDS	Dossiers de référence de départ
+Nav.Page.EXPIREDSTOCK	Stock périmé
+Nav.Page.EXPIRYAPPROACHING	Péremption proche
+Nav.Page.EXPIRYDASHBOARD	Tableau de bord FEFO
+Nav.Page.EXPIRYEVIDENCE	Dossier de preuves
+Nav.Page.EXPIRYEXCEPTIONDETAILS	Détail de l'exception
+Nav.Page.EXPIRYEXCEPTIONS	Boîte des exceptions
+Nav.Page.EXPIRYPOLICY	Règles de durée de vie et paramètres
+Nav.Page.FEFOORDER	Ordre FEFO
+Nav.Page.FIELDDEFINITIONS	Définitions de champs
+Nav.Page.FINISHEDGOODS	Produits finis
+Nav.Page.GLOBALPRODUCTS	Produits globaux
+Nav.Page.GRN	Réception (BR)
+Nav.Page.GSKUS	GSKU
+Nav.Page.HEADCOUNTBUDGET	Budget des effectifs
+Nav.Page.HIERARCHY	Hiérarchie
+Nav.Page.HIRINGRISKINDICATORS	Indicateurs de risque d'embauche
+Nav.Page.HRCASEMANAGEMENT	Gestion des dossiers RH
+Nav.Page.HRCOMPLIANCE	Conformité RH
+Nav.Page.HRDOCUMENTATION	Documentation RH
+Nav.Page.HRKPIANALYTICS	Analytique des KPI RH
+Nav.Page.INBOX	Boîte de réception
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	Réseau de connaissances sectorielles
+Nav.Page.INDUSTRYSKILLPASSPORT	Passeport de compétences sectorielles
+Nav.Page.INDUSTRYSUCCESSIONPOOL	Vivier de relève sectoriel
+Nav.Page.INDUSTRYTALENTPOOL	Vivier de talents sectoriel
+Nav.Page.INITIATIVES	Gestion des initiatives
+Nav.Page.INSTANCES	Instances de document
+Nav.Page.INVESTMENTCASES	Dossiers d’investissement
+Nav.Page.INVOICEMATCH	Saisie de factures et rapprochement à 3 voies
+Nav.Page.ITEMS	Articles
+Nav.Page.KNOWLEDGE	Connaissances
+Nav.Page.KNOWLEDGECONCEPT	Concept de connaissance
+Nav.Page.KNOWLEDGECONCEPTS	Concepts
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	Parcours d'engagement de contenu
+Nav.Page.KNOWLEDGEPATH	Parcours de connaissance
+Nav.Page.KNOWLEDGEPATHS	Parcours de connaissances
+Nav.Page.KNOWLEDGESUBJECT	Sujet de connaissance
+Nav.Page.LEARNINGTRAINING	Apprentissage et formation
+Nav.Page.LEGALENTITIES	Entités juridiques
+Nav.Page.LEGALPROFILES	Profils juridiques
+Nav.Page.LOADS	Chargements
+Nav.Page.LOCATIONTREE	Emplacements
+Nav.Page.LOTMIGRATION	Migration des lots saisis manuellement
+Nav.Page.LOTS	Explorateur de lots
+Nav.Page.LOTTRACE	Traçabilité
+Nav.Page.LSKUS	UGS locales
+Nav.Page.MASTERREGISTER	Registre principal des documents
+Nav.Page.MEETINGREPORT	Rapport de réunion
+Nav.Page.MEETINGS	Réunions
+Nav.Page.MEETINGSERIES	Séries de réunions
+Nav.Page.MEETINGTYPES	Types de réunion
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	Réseau de recommandation de mentorat
+Nav.Page.MENUSETTINGS	Paramètres du menu
+Nav.Page.MODEL	Modèle
+Nav.Page.MYTIMESHEET	Ma feuille de temps
+Nav.Page.NODE	Nœud
+Nav.Page.OBJECTIONRESPONSES	Bibliothèque des objections
+Nav.Page.OFFBOARDINGCASES	Dossiers de départ
+Nav.Page.OFFERMANAGEMENT	Gestion des offres
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	Définitions de champs
+Nav.Page.ORGANIZATIONUNITS	Unités organisationnelles
+Nav.Page.OVERRIDE	Dérogation
+Nav.Page.OVERVIEW	Vue d'ensemble
+Nav.Page.PAYBENCHMARKING	Analyse comparative des salaires
+Nav.Page.PERFORMANCEREVIEWS	Évaluations de performance
+Nav.Page.PLANNEDVISIT	Visite planifiée
+Nav.Page.PLANNEDVISITS	Visites planifiées
+Nav.Page.PORTFOLIOS	Portefeuilles
+Nav.Page.POSITIONASSIGNMENTS	Affectations de poste
+Nav.Page.POSITIONS	Postes
+Nav.Page.PREFERENCE	Préférence
+Nav.Page.PRODUCTABBREVIATIONS	Abréviations de produit
+Nav.Page.PRODUCTS	Produits
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	Registre de réputation professionnelle
+Nav.Page.PROGRAMS	Programmes
+Nav.Page.PROJECTS	Projets
+Nav.Page.PURCHASEORDERS	Bons de commande
+Nav.Page.QMSBASELINES	Références SMQ
+Nav.Page.QUARANTINEQUEUE	File de quarantaine
+Nav.Page.QUARANTINESETTINGS	Paramètres de quarantaine
+Nav.Page.RDSETS	Jeux de données de référence
+Nav.Page.RECALLCASEDETAILS	Dossier de rappel
+Nav.Page.RECALLCASES	Dossiers de rappel
+Nav.Page.RECALLDASHBOARD	Préparation au rappel
+Nav.Page.RECALLDRILLS	Planificateur d’exercices de rappel
+Nav.Page.RECALLEVIDENCE	Dossier de preuves de rappel
+Nav.Page.RECALLSETTINGS	Paramètres de rappel
+Nav.Page.RECALLTRACE	Traçabilité de rappel
+Nav.Page.RECORDS	Enregistrements
+Nav.Page.RECURRENCERULES	Règles de récurrence
+Nav.Page.REFERENCEEXCHANGE	Échange de références
+Nav.Page.REHIRERECOMMENDATIONS	Recommandations de réembauche
+Nav.Page.REPORTINGLINE	Ligne hiérarchique
+Nav.Page.REPORTS	Rapports
+Nav.Page.REPOSITORYASSESSMENT	Évaluations des référentiels
+Nav.Page.REQUISITIONS	Demandes d'achat
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	Registre d'intégrité restreint
+Nav.Page.RETESTQUEUE	File de recontrôle
+Nav.Page.RETURNS	Retours
+Nav.Page.REVIEWBOARD	Comité d'examen
+Nav.Page.ROLEPERMISSIONS	Autorisations des rôles
+Nav.Page.ROLES	Rôles
+Nav.Page.SAFETYTEXTS	Textes de sécurité
+Nav.Page.SANDOPPLANS	Plans S&amp;OP
+Nav.Page.SECTORMOBILITYINTELLIGENCE	Intelligence de mobilité sectorielle
+Nav.Page.SECTORTALENTTRENDS	Tendances des talents sectoriels
+Nav.Page.SECURITYSETTINGS	Paramètres de sécurité
+Nav.Page.SEGMENT	Segment
+Nav.Page.SEGMENTS	Segments
+Nav.Page.SELFSERVICE	Libre-service
+Nav.Page.SENSITIVEACCESS	Accès sensible
+Nav.Page.SERIALS	Explorateur de numéros de série
+Nav.Page.SHIPMENTCLAIMS	Réclamations de transport
+Nav.Page.SHIPMENTS	Expéditions
+Nav.Page.SKILLSGAPHEATMAP	Carte thermique des écarts de compétences
+Nav.Page.SOURCING	Sourcing
+Nav.Page.STOCKLEDGER	Registre des stocks
+Nav.Page.STRATEGYTEMPLATE	Modèle de stratégie
+Nav.Page.STRATEGYTEMPLATES	Modèles de stratégie
+Nav.Page.SUCCESSION	Relève
+Nav.Page.SUPPLIERS	Fournisseurs
+Nav.Page.TALENTDATAFOUNDATION	Socle de données sur les talents
+Nav.Page.TALENTDEVELOPMENTNETWORK	Réseau de développement des talents
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	Prévision de l'offre et de la demande de talents
+Nav.Page.TASKCHECKLISTTEMPLATES	Modèles de liste de contrôle
+Nav.Page.TASKCREATE	Nouvelle tâche
+Nav.Page.TASKDETAIL	Détail de la tâche
+Nav.Page.TASKDOCUMENTLIST	Documents contrôlés
+Nav.Page.TASKEDIT	Modifier la tâche
+Nav.Page.TASKFIELDDEFINITIONS	Définitions de champs
+Nav.Page.TASKRECURRENCERULES	Règles de tâches récurrentes
+Nav.Page.TASKS	Tâches
+Nav.Page.TASKTEMPLATES	Modèles de tâche
+Nav.Page.TASKTYPES	Types de tâche
+Nav.Page.TASKWORKREPORT	Rapport d'activité
+Nav.Page.TEMPLATEMASTERS	Modèles maîtres d'entreprise
+Nav.Page.TEMPLATEVARIANTS	Variantes de modèle
+Nav.Page.TENANTNAVIGATION	Paramètres de menu
+Nav.Page.TENANTSECURITY	Paramètres de sécurité
+Nav.Page.TERRITORY	Territoire
+Nav.Page.TERRITORYMANAGEMENT	Gestion des territoires
+Nav.Page.TERRITORYMODEL	Modèle de territoire
+Nav.Page.TERRITORYNODE	Nœud de territoire
+Nav.Page.TIMEAPPROVALS	Approbations des feuilles de temps
+Nav.Page.TIMEATTENDANCELEAVE	Temps, présence et congés
+Nav.Page.TIMECATEGORIES	Catégories de travail
+Nav.Page.TIMESETTINGS	Paramètres de saisie des temps
+Nav.Page.TRUSTLEVELS	Niveaux de confiance
+Nav.Page.USERROLES	Rôles des utilisateurs
+Nav.Page.USERS	Utilisateurs
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	Registre des certifications vérifiées
+Nav.Page.VERIFIEDPARTICIPANTS	Participants vérifiés
+Nav.Page.VISITEVIDENCESETTINGS	Preuves de visite
+Nav.Page.VISITEXECUTION	Exécution des visites
+Nav.Page.VISITFREQUENCYPOLICIES	Politiques de fréquence de visite
+Nav.Page.VISITPLANNING	Planification des visites
+Nav.Page.VISITWORKSPACE	Espace de visites
+Nav.Page.WORKCENTER	Centre des tâches
+Nav.Page.WORKFORCEANALYTICS	Analytique des effectifs
+Nav.Page.WORKFORCEPLANNING	Planification des effectifs
+Nav.Page.WORKINGCALENDARIMPORTS	Imports de calendrier de travail
+Nav.Page.WORKINGCALENDAROVERRIDES	Exceptions du calendrier
+Nav.Page.WORKINGCALENDARS	Calendrier de travail
+NavigationLoadFailed	Le menu n'a pas pu être chargé
+NavigationLoadFailedHint	Actualisez la page pour réessayer.
+NewNotifications	{0} nouveau
+NewPassword	New Password
+NoNotifications	Aucune notification
+NoRecords	Aucun enregistrement
+NoRecordsFound	Aucun sous-enregistrement pour le moment.
+NotAvailable	Non disponible
+Notification	Notification
+NumericOnly	Seuls les chiffres sont autorisés
+Organization	Organisation
+OrganizationUnits	Unités organisationnelles
+Overview	Vue d'ensemble
+PDF	PDF
+Passive	Inactif
+Password.Error.CurrentRequired	Le mot de passe actuel est obligatoire.
+Password.Error.NeedsSpecial	Le mot de passe doit contenir au moins un caractère spécial.
+Password.Error.NeedsUppercase	Le mot de passe doit contenir au moins une lettre majuscule.
+Password.Error.NewRequired	Le nouveau mot de passe est obligatoire.
+Password.Error.Required	Le mot de passe est obligatoire.
+Password.Error.ResetEmailRequired	L'adresse e-mail est obligatoire.
+Password.Error.ResetTokenRequired	Le jeton de réinitialisation est obligatoire.
+Password.Error.TooLong	Le mot de passe ne peut pas dépasser {0} caractères.
+Password.Error.TooShort	Le mot de passe doit contenir au moins {0} caractères.
+Perm.Entity.APPROVALS	Approbations
+Perm.Entity.CATEGORIES	Catégories
+Perm.Entity.CHECKLISTTEMPLATES	Modèles de liste de contrôle
+Perm.Entity.CONTENTSCOPE	Périmètre de contenu
+Perm.Entity.CONTENTSET	Ensemble de contenus
+Perm.Entity.ELIGIBILITY	Éligibilité
+Perm.Entity.SETTINGS	Paramètres
+Perm.Entity.TEMPLATES	Modèles
+Perm.Entity.TIMESHEETS	Feuilles de temps
+Perm.Entity.VISITFREQUENCYPOLICY	Politique de fréquence des visites
+Perm.Entity.WEEKS	Semaines
+Perm.Module.CRMACCOUNT	Comptes CRM
+Perm.Module.CRMCONTACT	Contacts CRM
+Perm.Module.CRMCONTENTCOMPOSITION	Composition de contenu CRM
+Perm.Module.CRMDOCTORINSIGHTS	Analyses des médecins CRM
+Perm.Module.CRMKNOWLEDGE	Connaissances CRM
+Perm.Module.CRMPLANNEDVISIT	Visites planifiées CRM
+Perm.Module.CRMTERRITORY	Territoires CRM
+Perm.Module.CRMVISITPLAN	Planification des visites CRM
+Perm.Module.CRMVISITREPORT	Rapports de visite CRM
+Perm.Module.MOD0251	Registre des employés (RH de base)
+Perm.Module.TASKS	Tâches
+PermissionsMenu	Permissions
+PhoneNumber	Numéro de téléphone
+PlannedVisitsMenu	Visites planifiées
+Platform	Plateforme
+PlatformAdministration	Administration de la plateforme
+PositionAssignments	Affectations de postes
+Positions	Postes
+PrimaryCurrency	Devise principale
+Print	Imprimer
+ProductMaster	Référentiel des produits
+ProductsMenu	Produits
+PurchaseOrderUpdateNotSupported	La modification d'un bon de commande n'est pas prise en charge ; créez un nouveau bon de commande ou approuvez celui-ci.
+QmsBaselines	Références QMS
+Reconciliation	Rapprochement
+RecordActivated	L'enregistrement a été activé.
+RecordCreated	L'enregistrement a été créé avec succès.
+RecordDeleted	L'enregistrement a été supprimé avec succès.
+RecordSaved	Les modifications ont été enregistrées avec succès.
+RecordUpdated	L'enregistrement a été mis à jour avec succès.
+ReferenceDataMenu	Données de référence
+RepositoryAssessments	Évaluations des référentiels
+RequiredProgress	Obligatoire : {{0}} / {{1}}
+RequiredStatus	Obligatoire : {0} / {1}
+RequisitionUpdateNotSupported	La modification d'une demande n'est pas prise en charge ; créez une nouvelle demande ou soumettez celle-ci pour approbation.
+Reset	Réinitialiser
+ResetPassword.Mismatch	Passwords do not match.
+ResetPassword.Required	All password fields are required.
+ResetPassword.Subtitle	Your new password must be different from previously used passwords.
+ResetPassword.SuccessMessage	Your password has been updated.
+ResetPassword.SuccessTitle	Password updated
+ResetPassword.Title	Reset Password
+RfxUpdateNotSupported	La modification d'un RFx n'est pas prise en charge ; créez un nouveau RFx ou gérez-le via la publication, l'offre et l'attribution.
+RoleName_Admin	Administrateur
+RoleName_ReadOnly	Lecture seule
+RoleName_SuperAdmin	Super administrateur
+RoleName_Viewer	Lecteur
+RolePermissionAssignmentMenu	Role Permissions
+RolesMenu	Roles
+SKUManagement	Gestion des SKU
+Sandbox	Bac à sable
+Save	Enregistrer
+SaveView	Enregistrer La Vue
+SavedNotActivated	Enregistré, mais l'activation a échoué.
+Saving	Enregistrement...
+Search	Rechercher..
+SearchFilter	Recherche et filtre
+Sector	Secteur
+SegmentsMenu	Segments
+SelectPlaceholder	Sélectionner...
+SelectedCount	enregistrements sélectionnés
+SelfAccessMenu	My Access
+SetNewPassword	Set new password
+Settings	Paramètres
+ShellSearchPlaceholder	Rechercher ({0})
+Shortcuts.Close	Fermer
+Shortcuts.DialogTitle	Raccourcis clavier
+Shortcuts.Key.Space	Espace
+Shortcuts.Scope.Global	Partout
+Shortcuts.Scope.TaskDetails	Détails de la tâche
+Shortcuts.Scope.WorkCenter	Centre des tâches
+Shortcuts.ShowList	Afficher cette liste
+Shortcuts.SilenceNote	Les raccourcis sont inactifs pendant la saisie dans un champ ou lorsqu'une boîte de dialogue ou un panneau latéral est ouvert.
+Shortcuts.Task.Back	Retour à la liste des tâches
+Shortcuts.Task.Edit	Modifier la tâche
+Shortcuts.Wcn.Accept	Accepter ou approuver l'élément sélectionné
+Shortcuts.Wcn.ClearSelection	Effacer la sélection
+Shortcuts.Wcn.Next	Sélectionner l'élément suivant
+Shortcuts.Wcn.Open	Ouvrir l'élément sélectionné
+Shortcuts.Wcn.OpenFocused	Ouvrir la ligne active
+Shortcuts.Wcn.Previous	Sélectionner l'élément précédent
+Shortcuts.Wcn.Reject	Rejeter ou renvoyer l'élément sélectionné
+Shortcuts.Wcn.Tabs	Passer d'un onglet à l'autre (sur un onglet actif)
+ShowAll	Tout afficher
+Status	Statut
+StrategyTemplatesMenu	Modèles de stratégie
+SubRecords	Sous-enregistrements
+SubscriptionPlans	Plans d'abonnement
+Success	Succès
+SystemTheme	Système
+TagsCount	{0} étiquettes
+TagsPlaceholder	Saisissez une étiquette et appuyez sur Entrée
+TagsRemove	Supprimer {0}
+TaxNumber	Numéro fiscal
+TemplateMasters	Modèles d'entreprise
+TemplateVariants	Variantes de modèle
+TerritoryManagementMenu	Gestion des territoires
+Title	Titre
+ToggleTheme	Changer de thème
+Unauthorized	Non autorisé
+Unknown	Inconnu
+Update	Mettre à jour
+User	Utilisateur
+UserRoleAssignmentMenu	User Roles
+UsersMenu	Users
+ValidationErrors	Erreurs : {0}
+ValidationFailed	Veuillez remplir les champs obligatoires.
+VariantManagement	Gestion des variantes
+Variants	Variantes
+ViewAllNotifications	Voir toutes les notifications
+ViewDetails	Voir les détails
+Website	Site web
+WorkCenterNextMenu	Centre de travail (Nouveau)
+WorkflowApprovalsMenu	Approbations de flux de travail
+Workspace	Espace de travail
