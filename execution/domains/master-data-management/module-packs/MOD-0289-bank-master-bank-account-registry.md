@@ -1591,9 +1591,16 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 - [ ] MOD-0140 1.3.0'da "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okumasının hangi işlemle verildiği ölçüldü
   (D23/1 liste süzgeci) — DL-3 için
 - [ ] Auth: `ExplicitGrantOnlyPermissions`'a iki anahtar (D9, Auth sahibi) — DL-2 için
-- [ ] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü — DL-2 için
+- [x] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü (2026-10-27, @7c57e8466): **bugün yok** — MdmService'te
+  para birimi listesi okuyan istemci yok; Platform ucu `GET api/lookups/reference/currencies` kiracı kullanıcısına açık
+  (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:18,37-38`); yol: mevcut
+  `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:18,30-31,40-50`:
+  `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi) — portu ilk tüketen dilim yazar — DL-2 için
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2) ve MdmService → MOD-0140 çağrı kimliği belirlendi — DL-3 için
-- [ ] MDM `ValidationBehavior`'ın 400 gövdesinde girilen değeri döndürüp döndürmediği ölçüldü — DL-2 için
+- [x] MDM `ValidationBehavior`'ın 400 gövdesinde girilen değeri döndürüp döndürmediği ölçüldü (2026-10-27, @7c57e8466): **döndürmüyor** —
+  gövde `Response<T>.Errors` yalnız doğrulayıcı mesajları (`services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ValidationBehavior.cs:26-31,46`;
+  `AttemptedValue` ve alan adı okunmaz); kalan koşul: MOD-0289 doğrulayıcı mesajlarında `{PropertyValue}` yer tutucusu kullanılmaz
+  (değer mesaja sızmasın) — DL-2 kod incelemesinde denetlenir — DL-2 için
 - [ ] Gateway rotaları (integration-agent) — DL-4 için
 
 **İsteğe bağlı teknik ön doğrulama (öneri — yapılması şart değil, sahip onayı ister):** iki dar soru `ready-for-dev`'den

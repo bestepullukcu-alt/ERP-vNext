@@ -1184,11 +1184,20 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [x] O-9, O-10, O-11, O-12, O-14, O-15 sahip kararı — **KARAR D41/6, D41/7, D41/8, D41/9, D41/11, D41/12 (2026-10-26;
   treasury-intake-owner-decisions-04.md)** — hepsi önerilen seçenek (Açık kararlar)
 - [x] O-11 `ContractType` listesinde `OTHER` teyidi — `OTHER` kalır, **KARAR D45/2** (`treasury-intake-owner-decisions-05.md`)
-- [ ] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü
+- [x] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü (2026-10-27, @7c57e8466): **bugün yok** — MdmService'te
+  para birimi listesi okuyan istemci yok; Platform ucu `GET api/lookups/reference/currencies` kiracı kullanıcısına açık
+  (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:18,37-38`); yol: mevcut
+  `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:18,30-31,40-50`:
+  `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi) — portu ilk tüketen dilim yazar
 - [x] O-2 D37'nin MOD-0028 kısmı — **KARAR D40 (2026-10-26): (b)** — sürüm MOD-0217'nin `ContractVersion` kaydı, dosya
   MOD-0262-FU01'de `ContentId` ile; v1'de MOD-0028 bağımlılığı yok, MOD-0028 yüzey ölçümü **gerekmez**; DL-2 önkoşulu değil
-- [ ] MOD-0262-FU01 sözleşmesi ölçüldü: çağrı kimliği ve `scope` değeri (O-13 KARAR D41/10'un doğrulaması), boyut üst sınırı, izin listesi, meta okumasında
-  `owningItemId` / `owningVersionId` alanları (Reconcile'ın sahiplik denetimi); canlı doğrulama kaydı (pack §19'da açık) — DL-2 için
+- [x] MOD-0262-FU01 sözleşmesi kodda ölçüldü (2026-10-27, @7c57e8466; openapi dosyası yok — kaynak paket + kod): uçlar
+  `POST/GET api/v1/document-repository/objects…` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:59-119`);
+  servis kimliği yok, çağıran kullanıcı token'ını iletir ve `platform.document-repository.read` / `.manage` izni gerekir
+  (`DocumentRepositoryModels.cs:17,20`) — D41/10 ile tutarlı; `scope` `Documents` enum'da var (`IContentStorageGateway.cs:65-90`);
+  meta `OwningItemId` / `OwningVersionId` döner (`DocumentRepositoryModels.cs:53-64`; `CompanyId` dönmez); boyut varsayılanı 256 MB
+  (`ContentStorageOptions.cs:17,25`); uzantı izin listesi var, medya türü listesi boş (`:27-30`)
+- [ ] MOD-0262-FU01 canlı doğrulama kaydı (dev ortamında yükle / indir / başka kiracı 404) — DL-2 için
 - [x] O-13 çağrı kimliği kararı — **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md)** — kullanıcı token'ı Gateway üzerinden, `scope` = `Documents`; DL-2 başındaki
   ölçüm çürütürse sahibe ayrıca sorulur (DL-3'teki MOD-0023 çağrısı da buna bağlıdır)
 - [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4; şablon kodları Ali'den, Y-3) ve örnek durum adları ölçüldü — DL-3 için
