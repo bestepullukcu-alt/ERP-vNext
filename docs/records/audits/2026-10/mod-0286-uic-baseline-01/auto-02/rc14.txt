@@ -1,0 +1,5 @@
+[shell] _DataTable.cshtml calls _ListShell — markers resolved from the model setup (TableId='dt-goldenreferenceslim', DataMode='client', HasSelection=true) and <KÖK>/frontend/Diten.Web/Views/Shared/Components/DataTable/_ListShell.cshtml
+[factory] index.js calls DitenDataTable.createList (dataMode='client') — 12/12 mechanics verified in <KÖK>/frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+[pack] execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md declares data_mode: client
+1) personalizationClient sends tenant header only for tenant users — Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: <KÖK>/frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+exit=1
