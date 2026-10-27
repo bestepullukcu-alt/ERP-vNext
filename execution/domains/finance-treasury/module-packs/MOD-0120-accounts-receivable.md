@@ -25,6 +25,12 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D51 denetimi):** sahip denetimi, dayanak D51 (yeni karar yok). Paket kapısına işaretsiz madde eklendi:
+> Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50) — D51/1 "Auth kaydı"nı paket kapısında
+> sayar; ENGELLER metni ve DL-1 Önkoşul metni buna çekildi. AC-6 (SEC-002 kanıt testi) denetlendi: yalnız liste ve detay
+> uçlarını kapsar (DL-1); sonraki dilimlerin uçları AC-5 / AC-35'te zaten kısmi — bölünmedi. AC numaraları değişmedi.
+> `status: draft`.
+>
 > **Revizyon (2026-10-27, D51):** (1) Ready-for-dev Checklist ENGELLER ikiye ayrıldı (D51/1): **paket kapısı** (işaretsiz —
 > 0.3 / 0.5 / 0.6 / 0.7, S-2 bitiş teyidi, CT-APR-02/01, DCP-011 onayı, kod alma, port, MOD-0126 DL-1 iskeleti, `AuditCategory`
 > `Finance` main'de, MOD-0149 eki, TRM-14, SEC-002 tasarımı + Auth'ta `read-tenant-wide` tanımı, RCS-001 / BL-565 servisi, küsurat
@@ -1431,7 +1437,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz. **"— DL-n için"** işaretli
 madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde o dilimin Önkoşul
 metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Yeni kodun testlerinin geçmesi
-iki kapının da maddesi değildir — o dilimin kabul kapısıdır ("Bitiş" AC'leri).
+iki kapının da maddesi değildir — o dilimin kabul kapısıdır ("Bitiş" AC'leri). Auth izin / rol kaydı (MOD-0018 paketi ve
+kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth kaydı"; D51 denetimi).
 - [x] Karar 0.3 (MOD-0003) — KARAR D27/1; S-1 sahip K1, bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (O-1a)
 - [x] Karar 0.5 (AR-BILLING-BUNDLE) — KARAR D27/2; S-2 kısıtlı yerel MVP, sahip K1 (O-1b)
 - [ ] S-2 bitiş / gözden geçirme koşulunun sahip tarafından yazılması — D27/2 bitiş koymadı (T32 "sahip + bitiş" ister);
@@ -1440,6 +1447,7 @@ iki kapının da maddesi değildir — o dilimin kabul kapısıdır ("Bitiş" AC
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
+- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
 - [x] Sahip **MOD-0120 için** kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [x] Port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04) — D30 ile uygulandı (2026-10-25)
 - [ ] Servis iskeleti ve servis ortak yapı taşları MOD-0126 DL-1 ile açıldı (tek sahibi o dilim — gap 4/G5); denetim defteri, `CT-DECISIONS.md` satırı ve `PinnedCounts` aynı değişiklikte (D35/4)
@@ -1676,7 +1684,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-1** — Yollar: `Features/ReceivableInvoice/` içinde Create/Update/Delete/BulkDelete + liste/detay/iz sorguları,
   Domain/Persistence, MOD-0149 bağdaştırıcısı (LE, para birimi, kod ve veri kapsamı bağdaştırıcıları servis ortaktır ve
   MOD-0126 DL-1'indir), `accounts-receivable.openapi.yaml`. Önkoşul: yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER
-  maddeleri (CT-APR-02/01, DCP, S-2 bitiş teyidi, **MOD-0126
+  maddeleri (CT-APR-02/01, DCP, Auth izin / rol kaydı (MOD-0018, D51/1), S-2 bitiş teyidi, **MOD-0126
   DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, `AuditCategory` `Finance` main'de, O-3, TRM-14, O-14 tasarımı + Auth'ta
   `read-tenant-wide` tanımı, O-6 RCS-001 servisi, küsurat; 0.3 / 0.5 / 0.6 / 0.7 ve kod
   alma D27/1–5 ile verildi); "— DL-n için" işaretli maddeler DL-1'i bekletmez (D51/1). Servis iskeleti bu dilimde değil,

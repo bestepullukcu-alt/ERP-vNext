@@ -16,12 +16,16 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 >
 > **D51 güncellemesi (2026-10-27).** Sahip kararı D51 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`)
 > bu kaydın açık sorularını ve yeni bulgularını kapattı; pack ve MDM domain-config çalışma ağacında (dal
-> `chore/ct/treasury-intake-ct-05`, commit edilmedi) revize edildi ("Revizyon (2026-10-27, D51)"): (D51/1) ENGELLER paket kapısı ↔
+> `chore/ct/treasury-intake-ct-05`; tarihçe: yazıldığı anda commit edilmemişti; commit 1c444a2c5) revize edildi ("Revizyon (2026-10-27, D51)"): (D51/1) ENGELLER paket kapısı ↔
 > "— DL-n için" dilim kapısı — DL-1 yalnız paket kapısını bekler (§1 notu kapandı); (D51/3) WP dalı `feature/mdm/wp-0289-dl1`;
 > (D51/4) banka araması `Regex.Escape` + büyük / küçük harf duyarsız + en çok 100 karakter (yeni AC-59, DL-1), `AuditAggregateType`'a
 > DL-1'de yalnız `Bank` ve `BankBranch`; (D51/5) domain-config "no code-take permission (D27/5)" cümlesi D45/3'e çekildi. Yeni
 > bulgular 1, 3, 4, 5 pack / domain-config'te düzeltildi (bkz. §5). Aşağıdaki `@904dfd5c2` satır atıfları eski sürüme aittir;
 > D51 revizyonu satırları kaydırdı — atıflar `ready-for-dev` sürümünde yeniden doğrulanır.
+>
+> **D51 denetimi (2026-10-27).** Paket kapısı D51/1'e göre: Auth izin / rol kaydı (MOD-0018 paketi ve kodu, Ali, Y-6)
+> `ready-for-dev`'den önce main'de olmalıdır — pack'e işaretsiz madde olarak eklendi; aşağıdaki MOD-0018 satırındaki eski
+> "DL-1 kodunu bekletmez" çıkarımı kaldırıldı. Açık atama eki DL-2'de kalır.
 
 # MOD-0289 DL-1 hazırlığı — banka ana verisi, denetim izi genişletmesi ve paket iskeleti
 
@@ -56,7 +60,7 @@ DL-4" satırları pack'te "— DL-n için" işaretli dilim kapısıdır ve DL-1'
 | Denetim defteri kararı | — | **verildi — D27/11** (yeni K2 satırları, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok); CT-DECISIONS satırı DL-1 kodu ile yazılır | — |
 | `AuditCategory` değeri | — | **kapandı — D48/1: `MasterData`** (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:19@904dfd5c2`, değer 14); MOD-0126'nın `Finance = 18` bağı kalktı | — |
 | MDM denetim niyeti yolunun DL-1 başındaki hâli | Treasury CT (ölçüm) | `AuditAggregateType` dokuz değer (`services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs:3-14@904dfd5c2`); işlem enum'u yalnız `ProductAuditOperation`; teslim deposu sabit dokuz koleksiyon (`…/Persistence/Repositories/AuditIntentDeliveryRepository.cs:15-23@904dfd5c2`) — pack ölçümüyle aynı. "MdmService commit SHA'sı DL-1 başında" (pack kapanış tablosu) dağıtım günü yazılır | — (dağıtım günü SHA) |
-| MOD-0018 / Auth: rol şablonları (D46 + D47 matrisi) | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara / tarih yok) | Treasury / banka rolleri için MOD-0018 paketi depoda yok | DL-1 kodunu bekletmez (anahtarlar MDM manifestinden kaydolur — **çıkarım**, Y-5/2'deki `mdm.contracts.*` cümlesine dayanır). D51/1 "Auth kaydı"nı paket kapısında sayar; pack checklist'inde rol şablonlarının Auth kaydı ayrı madde değil, Auth'a ait tek madde açık atama eki (DL-2) — CT'ye açık nokta |
+| MOD-0018 / Auth: rol şablonları (D46 + D47 matrisi) | Ali (Y-6: önce MOD-0018 paketi, sonra kod; numara / tarih yok) | Treasury / banka rolleri için MOD-0018 paketi depoda yok | bekletir — paket kapısı (D51/1): Auth kaydı `ready-for-dev`'den önce main'de olmalı; pack checklist'inde işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi); açık atama eki ayrı madde (DL-2) |
 | Auth `ExplicitGrantOnlyPermissions`'a `read-unmasked`, `read-tenant-wide` | Ali | yok — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.bank*` 0 | DL-2 |
 | SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalışması | Treasury CT (ölçüm) / platform-shared-services | ölçülmedi | DL-2 |
 | MOD-0048 para birimi listesinin MDM'den okunması | Beste (Platform ucu) / DL-2 yazarı (port) | **ölçüldü (pack, @7c57e8466; bugün aynı):** MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:16-50@904dfd5c2` — `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi); Platform ucu `GET api/lookups/reference/currencies` | DL-2 (DL-1'in `Bank` / `BankBranch` alanlarında para birimi yok) |
@@ -73,8 +77,8 @@ pack ENGELLER'i paket kapısı ve "Dilim kapıları" alt listesi olarak ayrıld�
 `ready-for-dev`'i bekletmez.
 
 **Üretici beklemeleri (DL-1 dışı, prompt'a "bu dilimde yok" olarak yazılır):** `supplier.openapi.yaml` 1.3.0 (Cihan) → DL-3;
-Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üretici yalnız **RCS-001 BL-565**'tir
-(Beste, D44).
+Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üreticiler **RCS-001 BL-565**
+(Beste, D44) ve paket kapısındaki **Auth izin / rol kaydı** (MOD-0018 paketi ve kodu, Ali, Y-6; D51/1)'dır.
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -310,7 +314,7 @@ Yeni bulgular (bu sürümde ölçüldü):
 5. **"Kaynak ve kanıt" eski cümleleri:** "Kaynak kodu bu oturumda okunmadı" (`:1631`) ve "izin verilirse alınan her dosya" (`:1635`) —
    D45/3 sonrası "izin verildi" olarak güncellenmeli.
 
-**D51 sonrası durum (2026-10-27, çalışma ağacı, commit edilmedi):** 1 → domain-config cümlesi D51/5 ile düzeltildi (MDM sahibi
+**D51 sonrası durum (2026-10-27, çalışma ağacı; tarihçe: yazıldığı anda commit edilmemişti; commit 1c444a2c5):** 1 → domain-config cümlesi D51/5 ile düzeltildi (MDM sahibi
 rolünde sahip, D38); 2 → D51/1 ile kapandı (§1 notu); 3 → Dependencies MOD-0048 satırı "ölçüldü — bugün okuyucu yok, yeni port
 `GatewayReferenceValueReader` deseniyle, DL-2"; SEC-002 satırı "dilim kapısı — DL-2 için" olarak checklist'le hizalandı; 4 → kapanış
 tablosunda RCS-001 sahibi "Beste (D44)"; BL-565 backlog satırındaki sahip ("CT") Beste'ye bildirilecek — backlog onun alanıdır, CT

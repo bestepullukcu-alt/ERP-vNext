@@ -125,6 +125,11 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > kaydının bulduğu eski satırlar düzeltildi: Dependencies MOD-0048 satırı (ölçüldü — bugün okuyucu yok, `GatewayReferenceValueReader`
 > deseniyle yeni port, DL-2), SEC-002 satırı checklist'le hizalandı (DL-2), kapanış tablosunda RCS-001 sahibi "Beste (D44)",
 > "Kaynak ve kanıt" cümleleri D45/3 sonrasına çekildi. Mevcut AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, D51 denetimi):** sahip denetimi, dayanak D51 (yeni karar yok). Paket kapısına işaretsiz madde
+> eklendi: Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50) — D51/1 "Auth kaydı"nı paket
+> kapısında sayar; ENGELLER metni ve DL-1 Önkoşul metni buna çekildi. Auth açık atama eki (`ExplicitGrantOnlyPermissions`'a
+> iki anahtar) ayrı maddedir ve DL-2 dilim kapısında kalır. AC numaraları değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -1612,13 +1617,16 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 **ENGELLER — tasarım / onay kapısı = paket kapısı (D51/1).** Tek kural (MOD-0217 ve Treasury paketlerinin deseni): işaretsiz
 madde **paket düzeyidir** — bütün dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz.
 **"— DL-n için"** işaretli madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde
-o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler.
+o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Auth izin / rol
+kaydı (MOD-0018 paketi ve kodu) paket kapısıdır: `ready-for-dev`'den önce main'de olur (D51/1 "Auth kaydı"; D51 denetimi);
+açık atama eki ayrı madde, DL-2 için.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
   paketi yazmamış, `high: evet` onaylayıcı
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
+- [ ] Auth izin / rol kaydı — MOD-0018 paketi ve kodu (Ali, Y-6; rol matrisi D47/D49/D50, `treasury-intake-owner-decisions-05.md`)
 - [ ] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
   D45/3" cümlesi bu dalda D51/5 ile güncellendi, main'e girmedi)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
@@ -1881,7 +1889,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   küçük harf duyarsız, en çok 100 karakter (D51/4).
   **Neden önce:** banka ana verisi hassas veri içermez, denetim yolunu ve RCS bağını en düşük riskle kanıtlar. Önkoşul:
   yalnız paket kapısı — Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri (CT-APR-02/01, kod alma izni (D1 → D45/3), DCP,
-  MDM domain-config satırı, RCS-001 servisi, CT defter kararı (D24/2, D24/4, D24/7, D27/11 karar verildi), `AuditCategory`
+  Auth izin / rol kaydı (MOD-0018, D51/1), MDM domain-config satırı, RCS-001 servisi, CT defter kararı (D24/2, D24/4, D24/7, D27/11 karar verildi), `AuditCategory`
   `MasterData` (D48/1)); "— DL-n için" işaretli maddeler DL-1'i bekletmez (D51/1). **WP dalı (D51/3):** DL-1 WP'si kendi
   dalında çalışır — `feature/mdm/wp-0289-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Yeni servis yoktur
   (MdmService, D20/1); `/add-module` servis iskeleti adımı bu pakette yoktur — DL-1 WP'si "paket iskeleti" (manifest sağlayıcısı
