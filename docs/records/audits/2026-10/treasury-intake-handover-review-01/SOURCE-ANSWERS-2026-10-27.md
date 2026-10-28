@@ -143,6 +143,14 @@ MOD-0220 §22 onaylı (sha `91248a47…`, 2026-10-26, UYGUN); kod origin/main'de
 `chore/ct/treasury-intake-ct-01`'de olduğu yazıldı; Treasury CT ölçümü — `CT-QUEUE.tsv` ve satır TRM-14 origin/main'de (#268 ile; 2026-10-28
 ölçüldü). Platform'daki `MdmLegalEntityReferenceValidatorTests` §22.4 AC-T4 listesinde yok; Platform sahibi getirir.
 
+## Y-14 — Ali / Auth, genel düzenleme bildirimi (2026-10-28)
+
+Auth'ta bir kerelik genel düzenleme: izinler, "yalnız açık atama" işaretleri ve rol şablonları modüllerin kendi tanımından okunacak. Bu
+girince Treasury anahtarlarını ve rol şablonlarını kendi modülünde yazar; Auth koduna dokunmak ya da Ali'den ayrıca iş istemek gerekmez.
+Süreli / partiye bağlı muafiyet ataması (D54) Auth'ta yeni yetenek; ayrı ele alınır, tarih kapsam netleşince. Etki (çıkarım, karar değil):
+D53 Auth paket metni kapısı ve D56'daki MOD-0018 "permission onboarding" eki bu düzenlemeyle değişebilir; ayrıntı (paket / numara, tanım
+biçimi, tarih) Ali'ye soruldu.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -176,3 +184,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-11 (kararlar main'de değil; waive-sod Auth karşılığı yok) | altı paket | D62/1 — #270 merge'ü beklenir; waive-sod tarihi Auth paketinde |
 | Y-12 (beş şablon kodu, tek adım) | MOD-0126, MOD-0119, MOD-0124, MOD-0120, MOD-0217 | işlenmedi — ready-for-dev revizyonunda O-8 / O-11 / O-20 / MOD-0120 / MOD-0217 O-3 satırlarına; D62/2 |
 | Y-13 (TRM-14; MOD-0126 onayı bekleniyor) | MOD-0126 (TRM-14) | işlenmedi — MOD-0126 onay satırı ready-for-dev PR'ında |
+| Y-14 (Auth: izin / rol şablonu modül tanımından; D54 ayrı) | altı paket | işlenmedi — ayrıntı Ali'den gelince Auth kapısı (D53) ve SEC-002 (D56) için sahip kararı |
