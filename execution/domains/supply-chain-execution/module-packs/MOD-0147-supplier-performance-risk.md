@@ -44,7 +44,7 @@ Owner decision 2026-10-22; ready-for-dev 2026-10-27.
 | Metric values | **entered by the evaluator** per metric (frozen v1 contract shape); server enforces codes, weights, ranges, 3-of-4 rule | **v1.1:** computed from Procurement facts (read contracts MOD-0141/0142/0143 + QC source; XMC-001); 5-receipt-line minimum applies from v1.1 |
 | Supplier (DC-02) | tenant-wide supplier from MOD-0140 1.3.0; eligibility per **DC-02 D2** (below) | — |
 | Permissions | `create` → `.evaluate`; `submit` → `.publish`; the four GETs → `.read`; one person may hold both `.evaluate` and `.publish` (no separation of duty in v1 — Natig, 2026-10-22) | `.risk-manage` |
-| Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
+| Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid: PR #198 merged 2026-10-23**, trail in the ledger on `main` | risk commands with the risk part |
 | UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
 
 **Start on mock (Natig, 2026-10-26):** DL-1 code may be **written, tested and merged** once (1) this revision's CT-APR-01 row
@@ -78,8 +78,9 @@ definitions and the Gateway route, after the gates below.
 (MOD-0140 Revision 2 DL-1) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
 proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
 (403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
-`main` (audit path b), this revision's CT-APR-02 + CT-APR-01, and for the eligibility read the evaluating role's `mdm.legal-entities.read`
-(MOD-0140 S-2, path (a), until the Procurement → MDM service identity of MOD-0140 DL-7).
+`main` (audit path b — met, PR #198 merged 2026-10-23), this revision's CT-APR-02 + CT-APR-01, **MOD-0140 DL-4 on `main`** (the MDM
+lookup behind `LEGAL_ENTITY_LOOKUP_FORBIDDEN` goes live there), and the evaluating role's `mdm.legal-entities.read` (SupplyChain's
+own company check and MOD-0140 S-2 path (a), until the service identities of BL-652 Option 2 / MOD-0140 DL-7).
 
 **Supplier eligibility — DC-02 D2 (Natig 2026-10-23 Q1/Q2, 2026-10-26 Q3/Q4; Cihan's MOD-0140 Revision 2,
 `origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`):**
@@ -95,8 +96,12 @@ proven by a live run through the Gateway that shows a real 200, a real 404 `UNKN
   the same caller token (MOD-0140 §7, C2). Without that permission MOD-0140 answers **403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`**
   (MOD-0140 Revision 5, `origin/feature/mvp2/supplier-tenant-02`, pack sha256 `b3259e40…`, PR #273; S-2 decided 2026-10-28; the MDM
   lookup — and so this 403 — is live only from MOD-0140 DL-4, which is an enabling gate here), which this pack answers as 403 `FORBIDDEN` like any Procurement 403; an MDM
-  401 or an unreachable MDM is MOD-0140's 503, answered here as 503 `SUPPLIER_BASE_UNAVAILABLE`. The permission requirement
-  ends when MOD-0140's Procurement → MDM service identity arrives (DL-7, BL-652 Option 2).
+  401 or an unreachable MDM is MOD-0140's 503, answered here as 503 `SUPPLIER_BASE_UNAVAILABLE`. **But SupplyChain checks the
+  company first, with the same caller token** (§0.5 stage 3b, `MdmLegalEntityScopeValidator.cs:55-58`): a role without
+  `mdm.legal-entities.read` is stopped there and answered **503 `DEPENDENCY_UNAVAILABLE`** (house rule: an MDM 403 is
+  Unavailable, not NotReferenceable), before Procurement is called. So the evaluating role needs the permission for
+  SupplyChain's own check until a SupplyChain → MDM service identity exists (BL-652 Option 2), independent of MOD-0140 DL-7;
+  the Procurement 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` row applies only when SupplyChain's check passed.
 - **How the endpoint answers "no":** MOD-0140 answers **404 with body `code = UNKNOWN_SUPPLIER`** when the supplier is
   unknown, belongs to another tenant or has no relationship with the caller's company; on a 200 `relationshipExists` is
   always `true` (MOD-0140 §3.1). **Only that 404** maps to **404** (declared for create; the same answer as a supplier of
@@ -129,10 +134,10 @@ documented exceptions that the contract successor declares:
 |---|---|---|
 | `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 409 `DUPLICATE_EVALUATION` (an active evaluation exists for the same Tenant + LE + canonical supplier + period, review F-3), 409 `IDEMPOTENCY_KEY_REUSED` (§0.5), 500, 503 `PERSISTENCE_UNAVAILABLE` / `DEPENDENCY_UNAVAILABLE` (§0.5) |
 | `submitSupplierEvaluation` | 200, 404, 409, 422 | 400 (malformed JSON, header syntax, `Idempotency-Key`, body schema — §0.5 stages 3–4), 401, 403, 409 `IDEMPOTENCY_KEY_REUSED` (§0.5), 500, 503 `PERSISTENCE_UNAVAILABLE` / `DEPENDENCY_UNAVAILABLE` (§0.5) |
-| `listSupplierEvaluations` | 200, 400 | 401, 403, 500 |
-| `getSupplierEvaluation` | 200, 404 | 401, 403, 500 |
-| `listSupplierScorecards` | 200 | 400 (invalid query value), 401, 403, 500 |
-| `getSupplierScorecard` | 200, 404 | 401, 403, 500 |
+| `listSupplierEvaluations` | 200, 400 | 401, 403, 404 `NOT_FOUND` (scope, §0.5 3a/3b), 500, 503 `DEPENDENCY_UNAVAILABLE` |
+| `getSupplierEvaluation` | 200, 404 | 400 (header / path syntax), 401, 403, 500, 503 `DEPENDENCY_UNAVAILABLE` |
+| `listSupplierScorecards` | 200 | 400 (invalid query value, header syntax), 401, 403, 404 `NOT_FOUND` (scope), 500, 503 `DEPENDENCY_UNAVAILABLE` |
+| `getSupplierScorecard` | 200, 404 | 400 (header / path syntax), 401, 403, 500, 503 `DEPENDENCY_UNAVAILABLE` |
 
 **Visible code (RCS-001, BL-565):** evaluations and scorecards are new record types, but the shared record-code service
 (BL-565) does not exist yet. v1 shows **no visible code** — only the frozen contract's opaque `evaluationId` /
@@ -186,7 +191,7 @@ when the folder's hash manifests are renewed with it): T-0147-V1-SCORE-01 (the t
 T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fifth metric, weight 25),
 T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping),
 T-0147-V1-ELIG-01 (D2: the Procurement mock answers **404** for no relationship → 404; a malformed 200, a null `status`
-and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 403 `FORBIDDEN` (MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`); a second create with the
+and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 503 `DEPENDENCY_UNAVAILABLE` at SupplyChain's own company check, no Procurement call; a Procurement 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` after that check passed → 403 `FORBIDDEN`; a second create with the
 master uuid of an already evaluated supplier and period → 409 `DUPLICATE_EVALUATION`; a legacy code → 422
 `SUPPLIER_CODE_NOT_CANONICAL` with no Procurement call; a 200 naming another (validly formatted) supplier → 503; a 404
 `UNKNOWN_LEGAL_ENTITY` and a 404 without a body → 503; OnHold, Blocked, Inactive and not-approved
@@ -366,6 +371,10 @@ revision that opens them.
   fingerprint. `submittedAt` is compared as the instant it denotes (parsed RFC 3339 `date-time`, so `…Z` and `…+00:00` for the
   same instant are equal); `comment` follows `notes` (absent = `null`; empty string distinct). Not included: correlation, auth
   headers, actor, time.
+- **Reads:** the four GETs run stages 1–3b and 4 the same way (no key, no receipt); their 404 / 400 / 503 are in the
+  undeclared-statuses table.
+- **404 bodies of stages 3a / 3b** are non-disclosing and reuse the operation's declared 404 object: create → `UnknownSupplier`,
+  get / submit → `UnknownEvaluation`, lists → 404 with code `NOT_FOUND` (house: one generic 404 for a scope mismatch).
 - **Legal entity (house pattern R-2, `LoadContextMiddleware.cs`):** the company comes only from `X-Legal-Entity-Id` (required in
   v1 though the frozen file does not declare the header); MDM validates it for the tenant (`ILegalEntityScopeValidator`). The
   token carries tenant, actor and permission, not the company.
@@ -376,10 +385,10 @@ revision that opens them.
   6 (new submit only) target in scope and not deleted → 404, `If-Match` → 409 `VERSION_CONFLICT`, lifecycle → 422; 7 (new create
   only) canonical code (422 `SUPPLIER_CODE_NOT_CANONICAL`), Procurement eligibility read (§0.0), 409 `DUPLICATE_EVALUATION`,
   policy rules 422; 8 one Mongo transaction (state + receipt + audit; + Pending outbox on submit only, §0.3) → 503
-  `PERSISTENCE_UNAVAILABLE` when the commit outcome is unknown, 500 otherwise. **Concurrency at stage 8:** a unique-index clash on
-  the receipt tuple re-runs stage 5 inside the transaction (equal fingerprint → replay 200, different → 409
-  `IDEMPOTENCY_KEY_REUSED`; Procurement is not called again); a clash on the active-period index (Tenant + LE + canonical
-  supplier + period) → 409 `DUPLICATE_EVALUATION`.
+  `PERSISTENCE_UNAVAILABLE` when the commit outcome is unknown, 500 otherwise. **Concurrency at stage 8:** on any unique-index clash
+  (receipt tuple or active period Tenant + LE + canonical supplier + period) the transaction is aborted and stage 5 runs again
+  first: a receipt with an equal fingerprint → replay 200; a receipt with another fingerprint → 409 `IDEMPOTENCY_KEY_REUSED`;
+  no receipt for this key → 409 `DUPLICATE_EVALUATION`. Procurement is not called again after a clash.
 - **A replay does not call Procurement** (stage 5 precedes stage 7; owner decision 2): the original success is returned even when
   Procurement is down, and a later change of eligibility does not change it.
 - **Storage:** a receipt is written only for a successful commit, in the same transaction; 400/401/403/404/409/422/500/503 write
@@ -405,9 +414,9 @@ revision that opens them.
 | T-0147-RP-04 | user whose permission was revoked, same key → 403; the receipt's existence is not revealed | look up the receipt before the permission check |
 | T-0147-RP-05 | other company / tenant, same key + body → a new request in its own scope | drop `LegalEntityId` from the tuple |
 | T-0147-RP-06 | a request answered 422 / 503, corrected under the same key → new request, 201 | write a receipt for a failed request |
-| T-0147-RP-07 | N concurrent identical creates released by a barrier → one 201, the rest 200; one entity | drop the unique index |
+| T-0147-RP-07 | N concurrent identical creates released by a barrier → one 201, the rest 200 (never 409); one entity | drop the unique index; map a period clash to 409 without re-reading the receipt |
 | T-0147-RP-08 | answer lost after commit → same key → 200 original; commit outcome unknown → 503, retry → replay if committed, else one new 201 | treat an unknown commit as rolled back and write again (second entity) |
-| T-0147-RP-10 | same key, different bodies, concurrent (barrier) → one 201, the other 409 `IDEMPOTENCY_KEY_REUSED`; no Procurement call for the loser | drop the receipt unique index |
+| T-0147-RP-10 | same key, different bodies, concurrent (barrier) → one 201, the other 409 `IDEMPOTENCY_KEY_REUSED`; no second Procurement call after the clash | drop the receipt unique index |
 | T-0147-RP-11 | different keys, same supplier + period, concurrent → one 201, the other 409 `DUPLICATE_EVALUATION` | drop the active-period index |
 | T-0147-RP-12 | key of only spaces / tabs / U+3000 → 400; keys of 1, 200 code points accepted, 201 → 400 | trim the key |
 | T-0147-RP-13 | replay with another `X-Correlation-Id` → original body, current correlation in the header | copy the stored correlation into the header |
@@ -608,7 +617,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) with this ready-for-dev revision.
 - [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration — **out of v1** (§0.0, risk part after MOD-0216).
 - [x] Replay receipt (decided, §0.5) and permission/composition writer (decided, D2 — writer only; definitions in the enabling change).
-- [ ] Shared contract successor (1.1.0, incl. 409 `IDEMPOTENCY_KEY_REUSED` and 503 `PERSISTENCE_UNAVAILABLE`), fixture, portal-source
+- [ ] Shared contract successor (1.1.0: 409 `IDEMPOTENCY_KEY_REUSED`, 503 `PERSISTENCE_UNAVAILABLE` and `DEPENDENCY_UNAVAILABLE`, the `X-Tenant-Id` / `X-Legal-Entity-Id` headers, 401 / 403 / 500 and the 404 / 400 rows of the undeclared-statuses table), fixture, portal-source
       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
 - [x] SupplyChain service audit trail accepted under AUD-001 (§21) — **met: PR #198 merged 2026-10-23** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
 - [x] Module owner set `status: ready-for-dev` (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row must be written on the ready-for-dev version). This is not code authority on its own: code starts only when the §0.0 code conditions are met, and the module is enabled for users only after the §0.0 enabling gates.
@@ -633,8 +642,8 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 ## 21. Audited Events
 
 AUD-001 (`audit-trail-standard.md`). The evaluation commands use **path b, trail `supplychain-merkezi-iletim`** (the
-service's central forwarder, ledger `tests/architecture/audit-ledger/Diten.SupplyChainService.md`), **valid from the moment
-PR #198 is on `main`**; until then it is a v1 gate (§0.0). The risk commands keep the dependency note until the risk part.
+service's central forwarder, ledger `tests/architecture/audit-ledger/Diten.SupplyChainService.md`), **valid: PR #198 merged
+2026-10-23** (§0.0 code condition (2) met). The risk commands keep the dependency note until the risk part.
 No command here is K2 class.
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
