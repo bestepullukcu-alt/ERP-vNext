@@ -442,11 +442,12 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
   yanıt verir (kod sözleşme dosyasında, K-A1) ve tüketici muafiyet adayı eklemez (MOD-0126 AC-42; muafiyet yolu kapalı — D54,
   D66/3). Başka anahtarda `paymentBatchId` → 400.
 - **Tüketicilerin anahtarları** (Bölüm 14.2 ile ölçüldü): MOD-0126 `finance-treasury.payment-batches.approve` (tier-2 partide
-  `finance-treasury.payment-batches.tier2-approve`, R4; muafiyette `waive-sod` + parti); MOD-0119
+  `approve` ∩ `finance-treasury.payment-batches.tier2-approve`, R4; muafiyette `waive-sod` + parti); MOD-0119
   `finance-treasury.ap-invoices.approve`; MOD-0120 `finance-treasury.receivable-adjustments.approve` (eşik üstü
-  `finance-treasury.receivable-adjustments.tier2-approve`); MOD-0124 `finance-treasury.cash-positions.approve`; MOD-0217
+  `approve` ∩ `finance-treasury.receivable-adjustments.tier2-approve`); MOD-0124 `finance-treasury.cash-positions.approve`; MOD-0217
   **açık** — matriste sözleşme onay anahtarı yok (D47 rol matrisi: "sözleşme onaylayıcısı MOD-0023 şablonuyla (O-3)"), MOD-0217
-  O-3 (b). Bağımlı `platform.workflow.tasks.approve`'un ayrıca aday şartı olup olmadığı **K-A4** (K-4'e bağlı).
+  O-3 (b). Sorgu tek anahtar alır; kesişimi (∩) tüketici servis iki ayrı çağrıyla alır (sahip denetimi 61466e504, P2) — tier-2
+  yetkisi tek başına aday yapmaz, çünkü karar ucu temel `approve`'u da ister. Bağımlı `platform.workflow.tasks.approve`'un ayrıca aday şartı olup olmadığı **K-A4** (K-4'e bağlı).
 - **Yanıt:** `permissionKey`, `principalIds` (Guid listesi, tekil, sıralı); ad, e-posta, rol adı ya da başka kişi verisi yok.
   Boş liste hata değildir (200). Alan adları ve hata kodları sürümlü sözleşme dosyasında dondurulur (K-A1; K-W6 deseni).
 - **Tüketici kuralı (sözleşme olarak):** her hata yanıtı ve okunamayan gövde "okunamaz"dır → gönderme kapalı-başarısız; Auth'un
