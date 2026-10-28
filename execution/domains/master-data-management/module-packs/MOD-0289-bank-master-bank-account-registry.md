@@ -145,6 +145,12 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > adlandırıldı (bulgu 6). Bulgu 3 (DL-2 kabul kapısındaki Treasury tüketici fikstür koşusu ↔ D47/4) sahip kararı ister —
 > değiştirilmedi. SEC-002 modül kodu **değeri** seçilmedi (ek paketinde). Yeni AC yok; AC numaraları ve dilimler değişmedi.
 > `status: draft`.
+>
+> **Revizyon (2026-10-28, D57):** **KARAR D57/1** — DL-2 dilim kabul kapısından "en az bir Treasury tüketicisinin fikstür
+> koşusu" şartı kaldırıldı (D47/4: v1'de MOD-0289'u okuyan finans akışı yok); `BANK-ACCOUNT-LOOKUP` kendi sözleşme testiyle
+> (AC-20, AC-42) doğrulanır; tüketici testi ilk gerçek tüketicinin dilimine taşındı (Follow-up). Kapanış tablosundaki
+> BANK-ACCOUNT-LOOKUP satırının kanıt sütunu buna çekildi. D56 revizyonundaki "bulgu 3 sahip kararı ister" maddesi bu kararla
+> kapandı. Yeni AC yok; AC numaraları ve dilimler değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -642,7 +648,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 
 | Bağımlılık | Sözleşme / sürüm | Hash | Sahibi | Hata davranışı (MOD-0289) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|---|
-| BANK-ACCOUNT-LOOKUP (bu modül) | `drafts/bank-account-lookup-validation-v1.0-proposal.md` 1.0.0 — **DRAFT yazıldı** (fikstürler F-E1…F-E9, F-503) | dondurulunca (DL-2) | master-data-management | — | AC-20 · dev ortamında bir tüketiciyle okuma | DL-2 |
+| BANK-ACCOUNT-LOOKUP (bu modül) | `drafts/bank-account-lookup-validation-v1.0-proposal.md` 1.0.0 — **DRAFT yazıldı** (fikstürler F-E1…F-E9, F-503) | dondurulunca (DL-2) | master-data-management | — | AC-20, AC-42 · sözleşmenin kendi testi (başvuru sınıflandırıcısı + fikstürler); tüketici koşusu ilk gerçek tüketicinin diliminde (KARAR D57/1) | DL-2 |
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod; sözleşme dosyası yok) | MdmService commit SHA'sı DL-2 başında | master-data-management | kayıt yok / başka kiracı → 404 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` sınıfı 422; uygun değil → 422 | birim + entegrasyon (Active+Approved / Active+Draft / Suspended / silinmiş) · — (aynı süreç) | DL-2 |
 | MOD-0140 `validateSuppliers` + ilişkili tedarikçi listesi | `supplier.openapi.yaml` **1.3.0** — yok (bugün 1.2.0); liste görünümü için "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okuması gerekir — 1.3.0'da hangi işlemle verileceği **ölçülmedi** (1.2.0'da `listSuppliers` durum süzgeçli, `supplier.openapi.yaml:26-54`) | main'e girince `shasum` | procurement (MVP-2) | known + Active → ilişkili; known + OnHold/Blocked/Inactive ya da known:false → ilişkisiz (D23/1: okumada 404, yazmada 422); geçersiz / çelişkili gövde, 401/403, 5xx, zaman aşımı → 503; yazma yok, hesap gösterilmez | sahte istemci (AC-24, AC-41) · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-3 |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | DL-2 başında | platform-shared-services | erişilemez → 503, listede yok → 400 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-2 |
@@ -1858,7 +1864,9 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 - Değişiklik talebi + MOD-0023 onay akışı (D23/2 ile v1 dışı; v2 ya da MOD-0269 gerçek dağıtımı öncesinde yeniden
   değerlendirilir).
 - Tüketici uyum testleri (`BANK-ACCOUNT-LOOKUP` negatif fikstürleri, AC-42) — sahipleri: MOD-0126, MOD-0119, MOD-0120,
-  MOD-0124 paketleri (finance-treasury); her biri E1…E9'u kendi kuralıyla uygular.
+  MOD-0124 paketleri (finance-treasury); her biri E1…E9'u kendi kuralıyla uygular. **KARAR D57/1:** tüketici fikstür koşusu
+  MOD-0289 DL-2 kabul kapısının şartı değildir (v1'de MOD-0289'u okuyan finans akışı yok — D47/4); MOD-0289'u gerçekten okuyan
+  **ilk tüketicinin dilimine** girer ve o dilimin kabul kapısında kendi sahibince kaydedilir.
 - Yurt içi doğrulama kaynakları (banka dizini, ülke hesap numarası kuralları) için sahip ve veri — MOD-0269 gerçek
   dağıtımından önce (gap 14/4).
 - IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi; sahibi referans veri) ve var olan `FormatAndChecksum` kayıtları
@@ -1955,7 +1963,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
 | DL-1 | "Bitiş" listesindeki AC'ler; AC-2 ve AC-9'un gerçek replica set yarış testleri; `AuditTrailStandard` (AC-7); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
-| DL-2 | "Bitiş" listesindeki AC'ler; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52) ve **AC-50 yük testi** yazılmış eşiğe göre; tüketici kanıtı: `BANK-ACCOUNT-LOOKUP` sözleşme testi (AC-20, AC-42) ve en az bir Treasury tüketicisinin fikstür koşusunun kendi sahibince kaydı (Follow-up tablosu); build |
+| DL-2 | "Bitiş" listesindeki AC'ler; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52) ve **AC-50 yük testi** yazılmış eşiğe göre; `BANK-ACCOUNT-LOOKUP` kendi sözleşme testiyle doğrulanır (AC-20, AC-42 — başvuru sınıflandırıcısı ve fikstürler); Treasury tüketici fikstür koşusu bu kapıda aranmaz — v1'de MOD-0289'u okuyan finans akışı yok (D47/4), tüketici testi ilk gerçek tüketicinin dilimine girer (KARAR D57/1, Follow-up); build |
 | DL-3 | "Bitiş" listesindeki AC'ler; MOD-0140 1.3.0'a karşı sözleşme testi; AC-27 dev ortamı denetim kanıtı; build |
 | DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı; RESX 7 dil parite; `Diten.Web` build |
 

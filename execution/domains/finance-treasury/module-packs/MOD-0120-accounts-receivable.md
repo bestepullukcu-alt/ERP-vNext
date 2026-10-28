@@ -25,6 +25,14 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, D57):** (1) MOD-0126 ortak tanımları sha256 `5f69139c…8a5d`'ya yeniden sabitlendi (MOD-0126 D57 revizyonu;
+> önceki `1baf8728…0916`). (2) **KARAR D57/2:** Audited Events'te Issue (fatura kesme) **K2**, SetCollectionStage (tahsilat
+> aşaması) **K1** — "evet (öneri)" kalktı; K2 maddesi, Owned Objects işlem satırları ve AC-18'e sınıf atfı (AC içeriği ve
+> dilim kısımları değişmedi). D56 revizyonundaki "bulgu 5 sahip kararı ister" maddesi bu kararla kapandı. (3) **KARAR D57/5:**
+> MOD-0023 HTTP istemcisi servis ortak yapı taşı, tek yazarı MOD-0126 DL-2; MOD-0120 DL-3 onu bekler; AR eşlemesi kendi
+> klasöründe (`Infrastructure/ArWorkflow/**`), ortak klasöre yazmaz. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi.
+> `status: draft`.
+>
 > **Revizyon (2026-10-28, D56 + DL-2 hazırlık bulguları):** (1) MOD-0126 ortak tanımları sha256 `1baf8728…0916`'ya yeniden sabitlendi (MOD-0126 D56 revizyonu; önceki `5101b1e8…c88a`). (2) DL-2 hazırlık kaydı §5 bulguları (mekanik): AC-17 / AC-18 DL-1'de "Create / Update / Delete / BulkDelete kısmı", DL-2'de "Issue / SetCollectionStage kısmı" (bulgu 1); SetCollectionStage'in "açık düzeltme yokken" koşulu ve yaşlandırmanın "en eski ödenmemiş taksit" kuralı için DL-2 notu (bulgu 2); Validation Rules'un DL-2'de yalnız aşama kuralları kısmıyla kanıtlandığı, DL-3 kabulünde tam kapandığı notu (bulgu 3); DL-2 AC-35 kısmına kapsam sabotajı (bulgu 4); AC-W listesi AC-W1…W17; MOD-0023 bağdaştırıcısı servis ortak yapı taşı (tek yazarı MOD-0126 DL-2), DL-3 Önkoşul'a MOD-0126 DL-2. Bulgu 5 (Issue / aşama K2 sınıfı) sahip kararı ister — değiştirilmedi. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. `status: draft`.
 >
 > **Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme):** MOD-0126 ortak tanımları sha256 `5101b1e8…c88a`'ya sabitlendi
@@ -244,8 +252,8 @@ yalnız `[Authorize]` (:16) ve denetleyici içi izin kontrolü (`EnsureAccess`, 
 | `UpdateReceivableInvoiceCommand` | `PUT /api/receivable-invoices/{id}` | Compact `Edit`; yalnız `Draft` |
 | `DeleteReceivableInvoiceCommand` | `DELETE /api/receivable-invoices/{id}` | Golden Reference silme; yalnız `Draft`, soft delete |
 | `BulkDeleteReceivableInvoiceCommand` | `DELETE /api/receivable-invoices/bulk` | Golden Reference zorunlu toplu silme; aynı kural |
-| `IssueReceivableInvoiceCommand` | `POST /api/receivable-invoices/{id}/issue` | `Draft → Open`; tutarlar ve müşteri anlık görüntüsü kilitlenir |
-| `SetReceivableInvoiceCollectionStageCommand` | `POST /api/receivable-invoices/{id}/collection-stage` | tahsilat aşaması geçişi (kaynak geçiş tablosundan uyarlanmış, `AccountsReceivableStateGuards.cs:48-106@218acaf5`) |
+| `IssueReceivableInvoiceCommand` | `POST /api/receivable-invoices/{id}/issue` | `Draft → Open`; tutarlar ve müşteri anlık görüntüsü kilitlenir (K2 — D57/2) |
+| `SetReceivableInvoiceCollectionStageCommand` | `POST /api/receivable-invoices/{id}/collection-stage` | tahsilat aşaması geçişi (kaynak geçiş tablosundan uyarlanmış, `AccountsReceivableStateGuards.cs:48-106@218acaf5`; K1 — D57/2) |
 | `RequestReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments` | Void / WriteOff talebi + MOD-0023 başlatma (iki aşamalı) |
 | `ApproveReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/approve` | karar (iki aşamalı, K2) |
 | `RejectReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/reject` | karar (iki aşamalı, K2) |
@@ -594,7 +602,8 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
     veri kapsamı (`DataScope`) bağdaştırıcıları servis ortaktır ve MOD-0126 DL-1'indir (tek kopya); iş akışı
     bağdaştırıcısı MOD-0126'nın MOD-0023 bağdaştırıcısıyla ortaktır — **servis ortak yapı taşı**
     (`Infrastructure/Workflow/**`), tek sahibi ve yazarı MOD-0126 DL-2 (MOD-0126 Repo Scope); AR onu tüketir, yalnız AR'ye
-    özgü şablon / nesne / durum eşlemesini yazar, ikinci MOD-0023 istemcisi açmaz (DL-3)
+    özgü şablon / nesne / durum eşlemesini kendi klasöründe (`Infrastructure/ArWorkflow/**`, `IReceivableWorkflowPort`) yazar,
+    `Infrastructure/Workflow/**`'a yazmaz, ikinci MOD-0023 istemcisi açmaz; MOD-0120 DL-3 MOD-0126 DL-2'yi bekler (KARAR D57/5) (DL-3)
   - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
     — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
     D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; burada yalnız kullanılır, yeniden tanımlanmaz
@@ -1183,8 +1192,8 @@ yok (D35/2).
 | UpdateReceivableInvoiceCommand | finance-treasury.receivable-invoice.updated | ReceivableInvoice | b | değişen alan **adları** (değer değil) | evet (öneri) | — |
 | DeleteReceivableInvoiceCommand | finance-treasury.receivable-invoice.deleted | ReceivableInvoice | b | BeforeState: InvoiceCode, Status | evet (öneri) | — |
 | BulkDeleteReceivableInvoiceCommand | finance-treasury.receivable-invoice.bulk-deleted | ReceivableInvoice | b | silinen kimlik sayısı; her kimlik için ayrı varlık kaydı (çoklu kimlik biçimi DL-1'de ölçülür, MOD-0126 ile aynı) | evet (öneri) | — |
-| IssueReceivableInvoiceCommand | finance-treasury.receivable-invoice.issued | ReceivableInvoice | b | Status Draft→Open, GrossTotal, CurrencyCode, CustomerId | evet (öneri) | — |
-| SetReceivableInvoiceCollectionStageCommand | finance-treasury.receivable-invoice.collection-stage-changed | ReceivableInvoice | b | CollectionStage önce→sonra, ReasonCode | evet (öneri) | — |
+| IssueReceivableInvoiceCommand | finance-treasury.receivable-invoice.issued | ReceivableInvoice | b | Status Draft→Open, GrossTotal, CurrencyCode, CustomerId | **evet — K2 (KARAR D57/2)** | — |
+| SetReceivableInvoiceCollectionStageCommand | finance-treasury.receivable-invoice.collection-stage-changed | ReceivableInvoice | b | CollectionStage önce→sonra, ReasonCode | **K1 (KARAR D57/2)** — K2 sınıfı değil; aynı yolla (`RequireEnlistment = true`) yazıldığı için pratikte kapalı-başarısız | — |
 | RequestReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-submitted (sonuç, tx2/Reconcile) | ReceivableAdjustmentRequest | b | AdjustmentType, Amount, CurrencyCode, IsTier2, PolicyVersion, Status Submitted→PendingApproval (tx1 deneme olayı `…adjustment-start-requested`) | **evet — K2 (D14/3)** | — |
 | ApproveReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-approved | ReceivableAdjustmentRequest | b | karar kimliği, SodResult, AdjustmentType, fatura Status / CollectionStage önce→sonra, OutstandingAmount önce→sonra; PaymentReversal'da ayrıca geri alınan tahsilat kimliği, karşı kayıt kimliği, PaidAmount önce→sonra (D16) | **evet — K2 (D14/3)** | — |
 | RejectReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-rejected | ReceivableAdjustmentRequest | b | karar kimliği, ReasonCode, CollectionStage geri dönüşü | **evet — K2 (D14/3)** | — |
@@ -1204,7 +1213,9 @@ yok (D35/2).
   `…adjustment-approved` / `…adjustment-rejected` …) `AdjustmentType = PaymentReversal` alanıyla yazar; karşı kayıt onay
   olayıyla aynı işlemdedir. Mükerrer tahsilat reddi (409) iş verisi yazmaz, olay da yazmaz (G-AUD-1).
 - **K2 — KARAR (sahip kararı D14/3):** alacağı etkileyen kararlar — iptal / silme talebi (Void / WriteOff), tahsilat geri
-  alma talebi (PaymentReversal, D16), onayı ve reddi — ve elle tahsilat kaydı K2'dir (fail-closed; denetim kaydı iş verisiyle aynı işlemde). AUD-001 §4.3 listesinde
+  alma talebi (PaymentReversal, D16), onayı ve reddi — ve elle tahsilat kaydı K2'dir (fail-closed; denetim kaydı iş verisiyle aynı işlemde).
+  **KARAR D57/2 (2026-10-28):** fatura kesme (`IssueReceivableInvoiceCommand`) **K2**; tahsilat aşaması
+  (`SetReceivableInvoiceCollectionStageCommand`) **K1**. AUD-001 §4.3 listesinde
   açıkça sayılmıyordu; sahip MOD-0126 D11/3 desenini AR'ye uyguladı. Uyulabilir yol bugün var
   (`RequireEnlistment = true`; SupplyChain kabulü, `CT-DECISIONS.md` 2026-10-21). Diğer komutlar aynı yolla yazıldığı için
   pratikte hepsi kapalı-başarısızdır.
@@ -1286,7 +1297,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   **deneme**, tx2'de (ya da Reconcile'da) bir **sonuç** olayı; idempotent tekrar yeni olay üretmez. Olay iş verisiyle aynı
   Mongo işleminde; outbox yazımı zorla başarısız edildiğinde komut başarısız ve iş verisi yazılmaz (sabotaj testi); uzak onay
   sonrası tx2 zorla başarısız edildiğinde fatura değişmez, niyet açık kalır ve Reconcile uzak çağrıyı tekrarlamadan etkiyi
-  ve sonuç olayını yazar (kurtarma testi).
+  ve sonuç olayını yazar (kurtarma testi). Komut sınıfları Audited Events tablosundadır (KARAR D57/2: Issue K2,
+  SetCollectionStage K1); outbox sabotajı ikisinde de koşulur (aynı yol).
 - [ ] AC-19 (zorunlu) — `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard`
   yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` boş (borç satırı eklenmemiş).
 - [ ] AC-20 (zorunlu) — Tutarlar `decimal`; hane aşan tutar 400 (yuvarlama yok); satır / taksit / tahsilat para birimi
@@ -1496,8 +1508,8 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `1baf87289a62a9a9e53ae1431d529358094dfcfca955369891758d5c4ba40916` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; D56 + DL-2 hazırlık bulguları; önceki `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `5f69139c43b2d19b1547ff01252bd944b68e0ded8dea28217812ee80c1108a5d` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5; önceki `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
@@ -1737,7 +1749,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   taksit" kuralı DL-2'de tahsilat kaydı olmadığından bütün taksitleri ödenmemiş sayar; tahsilat (RecordPayment) DL-3'te bağlanır.
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, AR'ye özgü MOD-0023
   eşlemesi (bağdaştırıcı servis ortak yapı taşıdır — tek yazarı MOD-0126 DL-2; zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı), O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı — tek yazarı o dilim; KARAR D57/5), O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-43, AC-2 (RequestAdjustment / Approve / Reject / RecordPayment kısmı ve açık niyetin Reconcile'ının şirket
   uygun değilken tamamlanması — AC-2 bu dilimde kapanır), AC-5 (düzeltme talebi, karar ve tahsilat kısmı — AC-5 bu dilimde
   kapanır), AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32 (a), (b), (c) kısmı ve (a), (b) sabotajı

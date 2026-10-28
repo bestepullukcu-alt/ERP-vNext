@@ -3,7 +3,7 @@ record_id: MOD-0120-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 db147bcc6409257f357ee901475ef9d059728eb8e63ab9fac3889461509a0f16 (pack D56 revizyonu, 2026-10-28; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 0e83cbc8d6dbf3849c80d663813077b9f361cbb1d1212f00f441d90e5b16d4a1 (pack D57 revizyonu, 2026-10-28; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 

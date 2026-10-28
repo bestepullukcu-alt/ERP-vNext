@@ -3,7 +3,7 @@ record_id: MOD-0119-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 126063f40c8cdf4a870d3b4a3e01943967f5f10613d2f7ee02432cfd0ebde2b2 (pack D56 revizyonu, 2026-10-28; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 1baf8728…0916 (D56; önceki 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:96; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 5a6f2bc296e4ebb4462ce50b4843471241db384b78254c061711010333a9f28d (pack D57 revizyonu, 2026-10-28; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 5f69139c…8a5d (D57; önceki 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:96; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 
@@ -182,7 +182,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 `Infrastructure/Workflow/**` dahil — XMC-001); `frontend/**`; `supplier.openapi.yaml`, `invoice-match.openapi.yaml`; `execution/**`;
 kaynak depo.
 
-**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `1baf8728…` — D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
+**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `5f69139c…8a5d` — D57; önceki `1baf8728…` D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
 raporu ve kabul kaydı, MOD-0023 pack §17 (`803fbaa5…`), AGENTS.md, domain-config, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style (S-56), audit-trail-standard, data-scope-enforcement,
 mongo-indexing, handler-design; karar kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D14, D21, D22, D25, D26, D28, D32,

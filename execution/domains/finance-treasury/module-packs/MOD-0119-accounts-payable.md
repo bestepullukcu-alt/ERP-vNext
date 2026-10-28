@@ -25,6 +25,11 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, D57):** (1) MOD-0126 ortak tanımları sha256 `5f69139c…8a5d`'ya yeniden sabitlendi (MOD-0126 D57 revizyonu —
+> SoD ayarı izinleri / ekranı / R1–R3 kapatılamaz D57/4, ortak MOD-0023 bağdaştırıcısı D57/5; önceki `1baf8728…0916`).
+> (2) **KARAR D57/5:** MOD-0023 HTTP istemcisi servis ortak yapı taşı, tek yazarı MOD-0126 DL-2; MOD-0119 DL-2 onu bekler —
+> Repo Scope ve DL-2 Önkoşul'da adıyla. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-28, D56 + DL-2 hazırlık bulguları):** (1) MOD-0126 ortak tanımları sha256 `1baf8728…0916`'ya yeniden sabitlendi (MOD-0126 D56 revizyonu — muafiyet Auth alanları ve aday sorgusu D56/3, SoD ayar kaydı D56/4, servis ortak MOD-0023 bağdaştırıcısı; önceki `5101b1e8…c88a`). (2) DL-2 hazırlık kaydı §5 bulguları (mekanik): AC-15 dilimlere bölündü — DL-2 "15 (Submit, kararlar, Reconcile kısmı)", DL-3 "15 (kalan — tam kapanış)" (bulgu 1); AC-W listesi MOD-0126 ile tek liste AC-W1…W17 (bulgu 2); AC-14'e ve O-11'e Y-6 "satıcı faturası şablonu tek adım" notu — çok adımlı dal sahte MOD-0023 ile (bulgu 3); MOD-0023 bağdaştırıcısı servis ortak yapı taşı (tek yazarı MOD-0126 DL-2), `ApWorkflow` yalnız AP portu; DL-2 Önkoşul'a MOD-0126 DL-2 (bulgu 4); DL-3'teki O-17 koşullu cümlesi karar diline çekildi (bulgu 5). Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. `status: draft`.
 >
 > **Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme):** MOD-0126 ortak tanımları sha256 `5101b1e8…c88a`'ya sabitlendi
@@ -528,7 +533,8 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
     bağdaştırıcıları); servis-ortak `LegalEntities`, `Currency`, `RecordCodes`, `DataScope` bağdaştırıcıları MOD-0126
     DL-1'indir, AP yalnız kullanır (DL-1). `ApWorkflow` yalnız AP'ye özgü `IApWorkflowPort` uygulamasıdır (şablon, nesne ve
     durum eşlemesi); MOD-0023 HTTP istemcisi **servis ortak yapı taşıdır** — `Infrastructure/Workflow/**`, tek sahibi ve yazarı
-    MOD-0126 DL-2 (MOD-0126 Repo Scope); AP onu tüketir, ikinci MOD-0023 istemcisi açmaz (DL-2)
+    MOD-0126 DL-2 (MOD-0126 Repo Scope); AP onu tüketir, ikinci MOD-0023 istemcisi açmaz; MOD-0119 DL-2 MOD-0126 DL-2'yi
+    bekler (KARAR D57/5) (DL-2)
   - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
     — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
     D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; AP yalnız kullanır, yeniden tanımlamaz (DL-1)
@@ -1476,8 +1482,8 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `1baf87289a62a9a9e53ae1431d529358094dfcfca955369891758d5c4ba40916` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; D56 + DL-2 hazırlık bulguları; önceki `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `5f69139c43b2d19b1547ff01252bd944b68e0ded8dea28217812ee80c1108a5d` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5; önceki `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
@@ -1665,7 +1671,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (`Infrastructure/ApWorkflow/**` — MOD-0126 DL-2'nin servis ortak MOD-0023 bağdaştırıcısı üzerinde; zaman aşımı ortak ayarda),
   trace sorgusu. **Neden ayrı:** SoD ve belirsiz sonuç en riskli kısımdır; bağımsız inceleme tek başına
   yapılabilsin. Alacak dekontu rezervasyonu (Submit), alacaklama (Approve) ve bırakma (Reject / ret / iptal) bu dilimdedir.
-  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-2 için" maddeleri, D51/1): DL-1, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı — tek yazarı o dilim), O-7, O-8 (K2), O-11, O-14, MOD-0023 şablonu ve WORKFLOW slotu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3) (K2 sınıfı D14/3 ile kararlaştırıldı), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş:
+  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-2 için" maddeleri, D51/1): DL-1, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı — tek yazarı o dilim; KARAR D57/5), O-7, O-8 (K2), O-11, O-14, MOD-0023 şablonu ve WORKFLOW slotu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3) (K2 sınıfı D14/3 ile kararlaştırıldı), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş:
   AC-41, AC-7…14, 15 (Submit, kararlar, Reconcile kısmı), 40 (Submit / Approve kısmı — AC-40 tam kapanışı), 17 (iki aşamalı), 30, 32 (iz ve karar uçları kısmı: trace, Submit, Approve / Reject / RequestInfo, Reconcile), 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36, 37, 38, 39.
 - **DL-3** — Yollar: Hold / ReleaseHold, istisna komutları ve sorgusu, LinkEvidence + MOD-0031 bağdaştırıcısı, Submit'e
   kanıt kuralı (O-17 **KARAR D28**: her belge türünde en az 1 kanıt, yoksa 422 `AP_EVIDENCE_REQUIRED` — bu dilimde eklenir; DL-2'de Submit kanıtsız çalışır ve bu fark DL-2 kaydına yazılır), Submit / Approve'daki

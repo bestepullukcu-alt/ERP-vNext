@@ -25,6 +25,17 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, D57):** (1) **KARAR D57/4** (D56/4 ayrıntıları): SoD ayarı izinleri
+> `finance-treasury.payment-sod-settings.read` (T1) / `.update` (T3) — Hazine yöneticisi (D47 rol matrisine eklendi); ayar ekranı
+> MOD-0126 ekran diliminde (DL-4: Repo Scope, Layout & Shell, Frontend File Contract "SoD ayar ekranı", Page Help, DL-4 Yollar /
+> Önkoşul / Bitiş); R1–R3 kapatılamaz — `PaymentSodSettings` yalnız eşik ve `R4Enabled` taşır, istekte R1–R3 anahtarı 400; kayıt
+> yoksa R1–R4 açık ve varsayılan eşik (D11/1: her onay tier-2), okuma ucu ve ekran varsayılanı gösterir. Owned Objects, Entity
+> Fields, Runtime Constraints, Validation Rules, Failure Path, Authorization Convention (iki satır + Tier-3 listesi), Audited
+> Events, AC-44 ((a)–(e) DL-2, (f) ekran DL-4 — AC-44 DL-4'te kapanır), Ready-for-dev Checklist (anahtar kararı kapandı; Auth
+> paket metni maddesi açık), O-4 (kalan yok). (2) **KARAR D57/5:** MOD-0023 bağdaştırıcısı servis ortak yapı taşı, tek yazarı
+> DL-2; MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3 onu bekler — Repo Scope ve DL-2 Yollar'da adıyla; tüketiciler
+> `Infrastructure/Workflow/**`'a yazmaz. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-28, D56 + DL-2 hazırlık bulguları):** (1) **KARAR D56/3:** `waive-sod` Auth atama alanları (hedef parti,
 > başlangıç / bitiş, onaylayan, gerekçe kodu) "— DL-2 için" dilim kapısına girdi (Auth paket metni tanımlar; kodu DL-2
 > kabulünde); muafiyet adayı kaynağı Auth'un "bu partiye geçerli `waive-sod` ataması olanlar" sorgusu (Ali, MOD-0018) —
@@ -206,7 +217,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | 8 | `PaymentOutboxAttemptLog` (:151-163) | **taşınmaz** | aynı neden; teslim denemelerini `CentralAuditDispatcher` tutar |
 | + | — | **yeni** `PaymentWorkflowStartIntent` | uzak başlatmadan önce yerel niyet (level-1 koşul 2) |
 | + | — | **yeni** `PaymentDispatchAttempt` | serbest bırakma denemesi; MOD-0269 "yapılandırılmamış" sonucu kaydı (D5) |
-| + | — | **yeni** `PaymentSodSettings` | kiracı başına **tek** SoD ayar kaydı (tek eşik + R1–R4 açık / kapalı), değişikliği denetlenir — **KARAR D56/4**; DL-2 yazar (Entity Fields) |
+| + | — | **yeni** `PaymentSodSettings` | kiracı başına **tek** SoD ayar kaydı (tek eşik + R4 açık / kapalı; R1–R3 kapatılamaz — **KARAR D57/4**), değişikliği denetlenir — **KARAR D56/4**; DL-2 yazar (Entity Fields), ekranı DL-4 (D57/4) |
 | + | — | **yeni** `FinanceTreasuryCommandReceipt` | **servis ortak** istemci idempotency makbuzu (D12/2, D14/2); `Pending`/`Completed` yaşam döngüsü — Entity Fields. Tek tanım bu pakettedir; MOD-0119, MOD-0120, MOD-0124 aynı tipi kullanır |
 
 ### Kaynak işlemleri (PP-01…PP-11, paket §C) → Recovery
@@ -235,7 +246,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | `ReconcilePaymentBatchWorkflowCommand` | `POST /api/payment-batches/{id}/workflow/reconcile` | belirsiz başlatma / karar sonucunu MOD-0023'ten okuyup kapatır |
 | `LinkPaymentBatchEvidenceCommand` | `POST /api/payment-batches/{id}/evidence-links` | kaynakta kanıt bağlama oluşturmanın içinde ve yerel kayıttan sonra, işlem dışında (`PaymentProposalService.cs:235-298@da4abb20`); Recovery'de ayrı, idempotent komut |
 | `ReleasePaymentBatchCommand` | `POST /api/payment-batches/{id}/release` | serbest bırakma denemesi → MOD-0269 portu → "yapılandırılmamış" + kayıt (D5) |
-| `UpdatePaymentSodSettingsCommand`, `GetPaymentSodSettingsQuery` | uç yolu ve izin anahtarı DL-2 prompt'undan önce yazılır (Authorization Convention → "SoD ayarı izinleri") | kiracının SoD ayar kaydını okur / değiştirir (**KARAR D56/4**; DL-2) |
+| `UpdatePaymentSodSettingsCommand`, `GetPaymentSodSettingsQuery` | uç yolu DL-2 prompt'undan önce `payment-batch.openapi.yaml`'a yazılır; izinler `finance-treasury.payment-sod-settings.update` / `.read` (**KARAR D57/4**, Authorization Convention → "SoD ayarı izinleri") | kiracının SoD ayar kaydını okur / değiştirir (**KARAR D56/4**; DL-2); kayıt yokken okuma varsayılanı döndürür (R1–R4 açık, varsayılan eşik — D57/4) |
 
 - **Sorgular:** `GetPaymentBatchListQuery`, `GetPaymentBatchByIdQuery`, `GetPaymentBatchTraceQuery`,
   `GetPaymentExceptionListQuery`.
@@ -246,7 +257,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
   `LegalEntityId` **yoktur**.
 - **Portlar (Application):** `ILegalEntityEligibilityPort` (MOD-0220), `IPaymentWorkflowPort` (MOD-0023),
   `IPaymentEvidencePort` (MOD-0031), `ICurrencyReferencePort` (MOD-0048), `IBankDispatchPort` (MOD-0269),
-  `IRecordCodePort` (RCS-001 ortak kod servisi), `IPaymentSodPolicyProvider` (tek eşik + R1–R4 anahtarları; kaynağı
+  `IRecordCodePort` (RCS-001 ortak kod servisi), `IPaymentSodPolicyProvider` (tek eşik + R4 anahtarı, R1–R3 her zaman açık — D57/4; kaynağı
   `PaymentSodSettings`, KARAR D56/4), `IPaymentSodWaiverAssignmentSource` (Auth `waive-sod` ataması alanları ve muafiyet adayı
   sorgusu — KARAR D54, D56/3; ad öneri),
   `IFinanceTreasuryDataScopeSource` (SEC-002 veri kapsamı, D14/1 — **servis ortak** tek çözüm noktası; MOD-0119/0120/0124
@@ -412,10 +423,12 @@ taşır). **Eklenen:** `State` (Requested/Recorded/Refused/Cancelled/Unknown —
 
 ### PaymentSodSettings (`payment_sod_settings`, yeni — KARAR D56/4)
 
-Kiracı başına **tek** SoD ayar kaydı (FinanceTreasuryService içinde): tek eşik + R1–R4 açık / kapalı. Kiracı düzeyi ayar
+Kiracı başına **tek** SoD ayar kaydı (FinanceTreasuryService içinde): tek eşik + R4 açık / kapalı. **KARAR D57/4:** R1–R3
+kapatılamaz — kayıtta anahtarları yoktur, her sürümde açıktır; yalnız eşik ve R4 ayarlanır. Kiracı düzeyi ayar
 olduğu için `LegalEntityId` taşımaz (yukarıdaki "Kapsam alanları" kuralının tek istisnası — D56/4 "kiracı başına"). Silinmez
-(soft delete yok); kayıt yoksa D11/1 varsayılanı geçerlidir (Runtime Constraints). Değişikliği denetlenir (Audited Events
-`finance-treasury.payment-sod-settings.updated`, AC-44). DL-2 yazar.
+(soft delete yok); kayıt yoksa R1–R4 açık ve varsayılan eşik geçerlidir — D11/1 güvenli varsayılanı: her onay tier-2, kodda
+tutar yok (KARAR D57/4; Runtime Constraints). Değişikliği denetlenir (Audited Events
+`finance-treasury.payment-sod-settings.updated`, AC-44). DL-2 yazar; ekranı DL-4'tedir (KARAR D57/4, Frontend File Contract).
 
 | Alan | Tip | Kural |
 |---|---|---|
@@ -423,7 +436,7 @@ olduğu için `LegalEntityId` taşımaz (yukarıdaki "Kapsam alanları" kuralın
 | PolicyVersion | int | sunucu yazar; her değişiklikte +1; gönderme anında partiye ve niyete sabitlenir (R6) |
 | Tier2ThresholdAmount | decimal | zorunlu, > 0; para biriminin küsurat hanesini aşamaz (MOD-0048; yuvarlanmaz) |
 | Tier2ThresholdCurrencyCode | string(3) | zorunlu; ISO 4217, MOD-0048 para birimi listesinde |
-| R1Enabled, R2Enabled, R3Enabled, R4Enabled | bool | zorunlu; R1–R4 açık / kapalı (D56/4); değerler `PolicyVersion` ile partiye sabitlenir |
+| R4Enabled | bool | zorunlu; R4 açık / kapalı (D56/4); değer `PolicyVersion` ile partiye sabitlenir. R1–R3 için alan **yoktur** — kapatılamaz, her zaman açık (KARAR D57/4) |
 | Version, CreatedAt / UpdatedAt, CreatedBy / UpdatedBy | `EntityBase` | `If-Match` + `Version` CAS |
 
 ### FinanceTreasuryCommandReceipt (`finance_treasury_command_receipts`) — servis ortak idempotency makbuzu (gap 2/G2–G3, D14/2)
@@ -557,12 +570,13 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
     servis defteri). MOD-0119, MOD-0120 ve MOD-0124 bunlara **bağımlıdır** (MOD-0126 DL-1, onların DL-1'inin önkoşuludur)
     ve bunları **hiçbir zaman yeniden tanımlamaz ya da açmaz** — başka bir paket önce `ready-for-dev` olsa bile MOD-0126
     DL-1'i bekler. Değişiklik dört paketin birlikte onayını ister.
-  - **MOD-0023 iş akışı bağdaştırıcısı servis ortak yapı taşıdır (DL-2 hazırlık bulgusu; MOD-0120 cümlesiyle hizalandı):**
+  - **MOD-0023 iş akışı bağdaştırıcısı servis ortak yapı taşıdır (KARAR D57/5; DL-2 hazırlık bulgusu, MOD-0120 cümlesiyle hizalandı):**
     `src/Diten.FinanceTreasuryService.Infrastructure/Workflow/**` — MOD-0023 HTTP istemcisi (zaman aşımı
     `FinanceTreasury:Workflow:TimeoutSeconds`, başlatma / geçiş / `by-objects` / `history` okuması, yanıt sınıflandırması) —
     tek sahibi ve tek yazarı **bu paketin DL-2'sidir**. MOD-0119, MOD-0120 ve MOD-0124 onu **tüketir**; modüle özgü portlarını
-    (ör. MOD-0119 `IApWorkflowPort`) bu ortak istemci üzerinde uygular ve ikinci bir MOD-0023 istemcisi açmaz; MOD-0023 kullanan
-    dilimleri MOD-0126 DL-2'yi bekler. Değişiklik dört paketin birlikte onayını ister (D14/2 deseni).
+    (ör. MOD-0119 `IApWorkflowPort`) bu ortak istemci üzerinde, kendi klasörlerinde uygular (`Infrastructure/Workflow/**`'a yazmaz)
+    ve ikinci bir MOD-0023 istemcisi açmaz; MOD-0023 kullanan dilimleri — **MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3** —
+    MOD-0126 DL-2'yi bekler (KARAR D57/5). Değişiklik dört paketin birlikte onayını ister (D14/2 deseni).
   - `src/Diten.FinanceTreasuryService.Api/Controllers/PaymentBatchesController.cs`, `PaymentExceptionsController.cs`
   - `src/Diten.FinanceTreasuryService.Api/CentralAudit/FinanceTreasuryCentralAuditScope.cs`
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — yeni defter (`## İzler` satırı
@@ -580,6 +594,11 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
   `frontend/Diten.Web/Controllers/FinanceTreasury/PaymentBatchesController.cs` (same-origin MVC proxy),
   `PageHelpResource.{7 dil}.resx` içinde `Help.PAYMENTBATCHES.*` ve `Services/Help/PageHelpCatalog.cs` satırı,
   menü/nav anahtarları `Nav.Domain.FINANCETREASURY`, `Nav.Module.PAYMENTSAPPROVALS`, `Nav.Page.PAYMENTBATCHES`. (DL-4)
+- SoD ayar ekranı (**KARAR D57/4**): `frontend/Diten.Web/Views/FinanceTreasury/PaymentSodSettings/**`,
+  `frontend/Diten.Web/wwwroot/assets/js/FinanceTreasury/PaymentSodSettings/**`,
+  `frontend/Diten.Web/Resources/Views/FinanceTreasury/PaymentSodSettings/PaymentSodSettingsIndex.{en,tr,fr,es,zh,ar,ru}.resx`,
+  `frontend/Diten.Web/Controllers/FinanceTreasury/PaymentSodSettingsController.cs` (same-origin MVC proxy),
+  `Help.PAYMENTSODSETTINGS.*` ve `PageHelpCatalog.cs` satırı, `Nav.Page.PAYMENTSODSETTINGS`. (DL-4)
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 MOD-0220 TRM-14; MOD-0023 iş akışı şablonu; `ocelot.json` rotaları (integration-agent); Platform `AuditCategory`
@@ -855,17 +874,18 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   5. HTTP istemcilerinde **açık zaman aşımı** yapılandırılır (kaynakta yok, paket §H.3 / §N.12); değer
      `FinanceTreasury:Workflow:TimeoutSeconds` — başlangıçta yoksa servis açılmaz (öneri 15 sn, O-8 içinde).
 - **SoD politikası tek kaynaktır ve kiracı ayarıdır (sahip kararı D11/1; kayıt yeri KARAR D56/4):** kiracı başına
-  PolicyVersion, Tier2Threshold.Amount, Tier2Threshold.CurrencyCode ve **R1–R4 açık / kapalı** anahtarları. Kodda varsayılan
+  PolicyVersion, Tier2Threshold.Amount, Tier2Threshold.CurrencyCode ve **R4 açık / kapalı** anahtarı (R1–R3 kapatılamaz, her
+  zaman açık — KARAR D57/4). Kodda varsayılan
   tutar yoktur; kiracının ayarı yoksa **her onay tier-2 sayılır** (güvenli varsayılan) ve parti para birimi eşik para biriminden
   farklıysa da tier-2 sayılır. Çözümleyici (gönderme) ve karar kontrolü **aynı** ayarı, partiye o anda sabitlenen sürümle
   kullanır. **Kayıt yeri (KARAR D56/4):** FinanceTreasuryService içinde kiracı başına **tek** ayar kaydı (`PaymentSodSettings`,
   `payment_sod_settings` — Entity Fields); değişikliği denetlenir (`finance-treasury.payment-sod-settings.updated`, AC-44); kayıt,
-  okuma ve yazma komutu DL-2'de yazılır. Her değişiklik `PolicyVersion`'ı bir artırır; gönderme anında sürüm, eşik ve R1–R4
-  anahtarları partiye sabitlenir (R6) — sonraki değişiklik gönderilmiş partiyi etkilemez. MOD-0023'ün kendi `SodViolation`
-  kontrolü (başlatan onaylayamaz — R2'nin MOD-0023 kısmı) ayar anahtarından etkilenmez. Ayar **ekranı** bu pakette tanımlı
-  değildir (Açık kararlar O-4).
-  - **İki durum ayrıdır:** (a) kiracının ayarı **yok** → bu bir hata değildir; her onay tier-2 sayılır, R1–R4 açık sayılır
-    (D11/1'in güvenli varsayılanı) ve partiye `SodPolicySource = DefaultAllTier2` olarak sabitlenir; (b) ayar deposu **erişilemiyor** (altyapı arızası) → Submit ve
+  okuma ve yazma komutu DL-2'de yazılır. Her değişiklik `PolicyVersion`'ı bir artırır; gönderme anında sürüm, eşik ve R4
+  anahtarı partiye sabitlenir (R6) — sonraki değişiklik gönderilmiş partiyi etkilemez. MOD-0023'ün kendi `SodViolation`
+  kontrolü (başlatan onaylayamaz — R2'nin MOD-0023 kısmı) ayar anahtarından etkilenmez. Ayar **ekranı** MOD-0126 ekran
+  dilimindedir (DL-4 — Frontend File Contract → "SoD ayar ekranı", KARAR D57/4).
+  - **İki durum ayrıdır:** (a) kiracının ayarı **yok** → bu bir hata değildir; R1–R4 açık ve varsayılan eşik — her onay tier-2 sayılır
+    (D11/1'in güvenli varsayılanı; KARAR D57/4) ve partiye `SodPolicySource = DefaultAllTier2` olarak sabitlenir; (b) ayar deposu **erişilemiyor** (altyapı arızası) → Submit ve
     kararlar 503 `PAYMENT_SOD_POLICY_UNAVAILABLE`, uzak çağrı yok, kayıt değişmez. Servisin açılışı ayara bağlı değildir.
 - **Bankaya dağıtım kapalı (D5):** `IBankDispatchPort`'un tek bağdaştırıcısı `NotConfiguredBankDispatchAdapter`'dır;
   her çağrı `NotConfigured` döner, `PaymentDispatchAttempt` yazılır, parti `Approved` kalır. Gerçek bağdaştırıcı ayrı
@@ -903,6 +923,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 - View klasörü: `Views/FinanceTreasury/PaymentBatches/` · Frontend rotası: `/FinanceTreasury/PaymentBatches`.
 - Yetkisiz kullanıcı (UAS-001): `IPermissionSnapshot` ile `finance-treasury.payment-batches.read` yoksa kabuk içinde
   `_AccessDenied` partial'ı; başlık, kart, boş tablo, buton çizilmez; yönlendirme yok; 401 tam sayfa.
+- SoD ayar ekranı (KARAR D57/4): `Views/FinanceTreasury/PaymentSodSettings/` · rota `/FinanceTreasury/PaymentSodSettings`; aynı
+  `_LayoutTenantShell` kuralı; yetki anahtarı `finance-treasury.payment-sod-settings.read`.
 
 ## Backend File Convention
 
@@ -969,6 +991,25 @@ Resources/Views/FinanceTreasury/PaymentBatches/    PaymentBatchesIndex.{en,tr,fr
 - Para birimi seçimi `GET /api/lookups/reference/currencies`'ten; sabit liste yok. Banka referansı alanları MOD-0289
   arama ucu gelene kadar opak referans girişi (O-15).
 
+**SoD ayar ekranı (KARAR D57/4; DL-4):** kiracı başına tek kaydın formu — liste / DataTable yoktur.
+
+```text
+Views/FinanceTreasury/PaymentSodSettings/
+├── Index.cshtml              (Layout = "_LayoutTenantShell"; tek form: eşik tutarı, eşik para birimi, R4 anahtarı; R1–R3 salt okunur "her zaman açık")
+├── _IndexL10n.cshtml
+└── PaymentSodSettingsIndex.cs (marker)
+wwwroot/assets/js/FinanceTreasury/PaymentSodSettings/  index.js · index.l10n.js
+Resources/Views/FinanceTreasury/PaymentSodSettings/    PaymentSodSettingsIndex.{en,tr,fr,es,zh,ar,ru}.resx
+```
+
+- `finance-treasury.payment-sod-settings.read` yoksa kabuk içinde `_AccessDenied` (UAS-001; başlık / form çizilmez,
+  yönlendirme yok); `.update` yoksa form salt okunur, kaydet düğmesi çizilmez — sunucu kontrolünün yerine geçmez.
+- Kayıt yoksa ekran varsayılanı gösterir (R1–R4 açık, eşik tanımsız — her onay tier-2) ve ilk kayıt bu formdan oluşturulur.
+  R1–R3 için düzenlenebilir alan yoktur. Kaydetme `If-Match` (kayıt varsa) ve `Idempotency-Key` ile; 409
+  `PAYMENT_SOD_SETTINGS_VERSION_CONFLICT` yerelleştirilmiş uyarıyla gösterilir (SweetAlert2, MOD-0013).
+- Para birimi `GET /api/lookups/reference/currencies`'ten; same-origin MVC proxy (`/FinanceTreasury/PaymentSodSettings/api/...`),
+  başlık kuralları PaymentBatches ile aynı.
+
 ## Validation Rules
 
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
@@ -1023,9 +1064,11 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 
 **SoD ayarı (KARAR D56/4):** `UpdatePaymentSodSettingsCommand` `If-Match` (kayıt varsa) ve `Idempotency-Key` ister (D12/2);
 `Tier2ThresholdAmount` > 0 ve para biriminin küsurat hanesini aşmaz; `Tier2ThresholdCurrencyCode` MOD-0048 listesinde (yoksa 400
-`PAYMENT_CURRENCY_CODE_INVALID`; liste okunamazsa 503 `PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`); R1–R4 anahtarlarının dördü de
-zorunlu. R1–R4 kurallarının bir partide uygulanıp uygulanmayacağı, partiye sabitlenen ayar sürümünün anahtarlarına göredir;
-R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez.
+`PAYMENT_CURRENCY_CODE_INVALID`; liste okunamazsa 503 `PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`); `R4Enabled` zorunlu. **KARAR D57/4:**
+R1–R3 kapatılamaz — istekte R1 / R2 / R3 anahtarı bulunursa 400 (bilinmeyen / sunucu alanı; kayıt ve olay yok); R1–R3 her
+partide uygulanır. R4'ün bir partide uygulanıp uygulanmayacağı partiye sabitlenen ayar sürümünün `R4Enabled` değerine göredir;
+R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez. Kayıt yokken okuma (`GetPaymentSodSettingsQuery`)
+hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier-2), `SodPolicySource = DefaultAllTier2`.
 
 ## Failure Path to Verify
 
@@ -1100,12 +1143,14 @@ R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez.
 - **Gönderilmiş partiyi silme/güncelleme** → 409 `PAYMENT_DECISION_STATUS_INVALID`.
 - **Denetim kaydı yazılamıyor** (K2 sınıfı komut, outbox yazımı başarısız) → işlem geri alınır, komut başarısız, iş verisi
   yazılmaz (O-6).
-- **Kiracının SoD ayarı yok** → hata değil: her onay tier-2 sayılır (D11/1), `SodPolicySource = DefaultAllTier2`.
+- **Kiracının SoD ayarı yok** → hata değil: R1–R4 açık ve varsayılan eşik — her onay tier-2 sayılır (D11/1, KARAR D57/4),
+  `SodPolicySource = DefaultAllTier2`; okuma ucu ve ekran bu varsayılanı gösterir.
 - **SoD ayar deposu erişilemiyor** → Submit/karar 503 `PAYMENT_SOD_POLICY_UNAVAILABLE`, uzak çağrı yok, kod varsayılanına
   düşülmez.
 - **SoD ayarı değişikliği (KARAR D56/4)** → bayat `If-Match` 409 `PAYMENT_SOD_SETTINGS_VERSION_CONFLICT`; geçersiz tutar /
-  para birimi 400; denetim olayı yazılamazsa komut başarısız, ayar değişmez; aynı kiracıda ikinci kayıt oluşmaz (tekil indeks);
-  gönderilmiş partiler sabitlenmiş eski sürümle karar görür (AC-44).
+  para birimi 400; R1 / R2 / R3'ü kapatma (ya da istekte göndermek) 400, kayıt ve olay yok (KARAR D57/4); denetim olayı
+  yazılamazsa komut başarısız, ayar değişmez; aynı kiracıda ikinci kayıt oluşmaz (tekil indeks); `.update` izni olmayan
+  kullanıcı 403 (ekranda kaydet düğmesi çizilmez); gönderilmiş partiler sabitlenmiş eski sürümle karar görür (AC-44).
 - **Muafiyet adayı sorgusu okunamıyor (KARAR D56/3)** → muafiyet adayı eklenmez, gönderme kapalı-başarısız; muafiyet
   ataması alanı okunamıyor → muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (AC-42, AC-43).
 - **Release** → 200, `dispatchOutcome = NotConfigured`, `PaymentDispatchAttempt` yazılı, parti `Approved` kalır; bankaya
@@ -1149,6 +1194,8 @@ R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez.
 | `finance-treasury.payment-evidence.link` | T3 (sözlükte var) | evidence-links | `mod0126.payment_evidence.link` |
 | `finance-treasury.payment-evidence.read` | T1 | detay sekmesi | `mod0126.payment_evidence.read` |
 | `finance-treasury.payment-exceptions.read` | T1 | GET payment-exceptions | (kaynakta `read` altında) |
+| `finance-treasury.payment-sod-settings.read` | T1 | GET SoD ayarı (ekran dahil) — **KARAR D57/4** | — (Recovery eki) |
+| `finance-treasury.payment-sod-settings.update` | T3 | PUT SoD ayarı — **KARAR D57/4** | — (Recovery eki) |
 
 - **Taşınmayan kaynak anahtarlar:** `mod0126.audit-outbox.dispatch` (PP-11), `mod0126.payment_batch.admin_direct_proxy`
   (PP-05), `mod0126.payment_evidence.unlink` (kaynakta bildirilmiş, kullanılmıyor — paket §E), `mod0126.payment_evidence.evaluate`
@@ -1156,7 +1203,7 @@ R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez.
 - Kullanıcının MOD-0023 tarafında da `platform.workflow.instances.start` (gönderen) ve `platform.workflow.tasks.approve` /
   `.reject` / `.request-info` (onaylayıcı) izinleri olmalıdır (`WorkflowModels.cs:14-19`); rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) (O-5).
 - Tier-3 eylemler (`read-tenant-wide`, `submit`, `reconcile`, `tier2-approve`, `waive-sod`, `request-evidence`,
-  `release`; `escalate` v1 dışı — D22/1) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol şablonunda varsayılan
+  `release`, `payment-sod-settings.update` — D57/4; `escalate` v1 dışı — D22/1) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol şablonunda varsayılan
   değildir (O-5).
 - **`waive-sod` yalnız açık atama (KARAR D47/1):** `finance-treasury.payment-batches.waive-sod` hiçbir rol şablonunda yer almaz
   (hazine yöneticisi dahil); `ExplicitGrantOnlyPermissions` listesindedir. Atama **süreli** (bitiş zamanı zorunlu), **gerekçe
@@ -1186,10 +1233,11 @@ R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez.
   Hedef parti kimliği Auth'ta taşınmadıkça muafiyetli onay kapalı kalır (D54); servis bu alanı kendi tarafında tutmaz (yeni
   servis varlığı açılmaz). **Muafiyet adayı kaynağı (KARAR D56/3):** gönderme çözümleyicisi muafiyet adaylarını (R4) Auth'un
   "bu partiye geçerli `waive-sod` ataması olanlar" sorgusundan okur (uç Ali'den, MOD-0018; aynı port).
-- **SoD ayarı izinleri (KARAR D56/4 — anahtar adları kararlaştırılmadı):** `PaymentSodSettings` okuma ve değiştirme
-  komutları `[HasPermission]` ister; anahtar adları ve rol yerleşimi (öneri: `finance-treasury.payment-sod-settings.read` /
-  `.update`, Hazine yöneticisi — D47/1 yapılandırma rolü) sahip + Auth (Ali) kararıyla Auth paket metnine girer — DL-2 için
-  (Ready-for-dev Checklist). Karar gelmeden uç yazılmaz; anahtar uydurulmaz.
+- **SoD ayarı izinleri (KARAR D56/4; anahtarlar KARAR D57/4):** `GetPaymentSodSettingsQuery` →
+  `finance-treasury.payment-sod-settings.read` (T1), `UpdatePaymentSodSettingsCommand` →
+  `finance-treasury.payment-sod-settings.update` (T3); ikisi de **Hazine yöneticisi** rol şablonunda (D47 rol matrisi, D57/4;
+  açık atama listesinde değil). Anahtarların Auth paket metnine girmesi Ali'nin işidir (MOD-0018) — DL-2 için (Ready-for-dev
+  Checklist). Ekranda (DL-4) `.read` yoksa kabuk içinde erişim açıklaması (UAS-001), `.update` yoksa salt okunur görünüm.
 
 ## Audited Events
 
@@ -1226,7 +1274,7 @@ seçilmedi). **MOD-0126 DL-1 bu değer main'e girmeden başlamaz**; o zamana kad
 | LinkPaymentBatchEvidenceCommand | finance-treasury.payment-batch.evidence-linked | PaymentBatch | b | bağlantı kimlikleri | evet (öneri) | — |
 | GeneratePaymentAttestationCommand | finance-treasury.payment-attestation.generated | PaymentAttestation | b | ContentHash, SchemaVersion | evet (öneri) | — |
 | ReleasePaymentBatchCommand | finance-treasury.payment-batch.release-attempted | PaymentBatch | b | DispatchAttempt kimliği, Outcome=NotConfigured | evet (öneri) | — |
-| UpdatePaymentSodSettingsCommand (**KARAR D56/4**) | finance-treasury.payment-sod-settings.updated | PaymentSodSettings (`EntityType`) | b | değişen alan **adları** (eşik tutarı / para birimi, R1–R4 anahtarları) ve `PolicyVersion` önce → sonra | evet (öneri) | — |
+| UpdatePaymentSodSettingsCommand (**KARAR D56/4**) | finance-treasury.payment-sod-settings.updated | PaymentSodSettings (`EntityType`) | b | değişen alan **adları** (eşik tutarı / para birimi, R4 anahtarı — R1–R3 kapatılamaz, D57/4) ve `PolicyVersion` önce → sonra | evet (öneri) | — |
 
 - **İki aşamalı komutların deneme olayları (Runtime Constraints 4a):** Submit → `finance-treasury.payment-batch.workflow-start-requested`
   (tx1) + sonuç `…submitted` ya da `…workflow-start-refused` (tx2 / Reconcile); Approve / ApproveWithSodWaiver / Reject /
@@ -1459,11 +1507,16 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   set); başka kiracının ayarı okunamaz / değiştirilemez (404); (b) her başarılı değişiklik `PolicyVersion`'ı tam bir artırır ve
   aynı Mongo işleminde tam **bir** `finance-treasury.payment-sod-settings.updated` olayı yazar (değişen alan adları, `PolicyVersion`
   önce → sonra); bayat `If-Match` 409 `PAYMENT_SOD_SETTINGS_VERSION_CONFLICT`, kayıt ve olay yok; tutar ≤ 0, fazla küsurat ya da
-  listede olmayan para birimi 400; (c) değişiklikten önce gönderilmiş partinin kararları sabitlenmiş eski sürümü, eşiği ve R1–R4
-  anahtarlarını kullanır (R6); değişiklikten sonra gönderilen parti yenisini; (d) bir kural kapatıldığında (`R{n}Enabled = false`)
-  yalnız o sürümle gönderilen partide o kural uygulanmaz; MOD-0023 `SodViolation` yine reddeder. Sabotaj: olay yazımı zorla
-  başarısız edildiğinde ayar değişmez (komut başarısız); olay yazımı kaldırıldığında, tekil indeks kaldırıldığında (ikinci kayıt
-  oluşur) ya da karar kontrolü sabitlenmiş sürüm yerine güncel ayarı okuduğunda test kırmızıya döner. DL-2'de kapanır.
+  listede olmayan para birimi 400; (c) değişiklikten önce gönderilmiş partinin kararları sabitlenmiş eski sürümü, eşiği ve R4
+  anahtarını kullanır (R6); değişiklikten sonra gönderilen parti yenisini; (d) R4 kapatıldığında (`R4Enabled = false`) yalnız o
+  sürümle gönderilen partide R4 uygulanmaz; R1–R3 kapatılamaz (**KARAR D57/4**) — istekte R1 / R2 / R3 anahtarı 400, kayıt ve
+  olay yok, R1–R3 her sürümde uygulanır; MOD-0023 `SodViolation` yine reddeder; (e) kiracıda kayıt yokken okuma hata değil,
+  varsayılanı döndürür (R1–R4 açık, her onay tier-2 — D11/1, D57/4); `.read` olmadan okuma, `.update` olmadan değiştirme 403;
+  (f) ekran (DL-4): ayar ekranı `.read` ile açılır, R1–R3 açık ve değiştirilemez gösterilir, yalnız eşik ve R4 düzenlenir;
+  `.read` yoksa kabuk içinde erişim açıklaması (UAS-001, canlı denendi), `.update` yoksa kaydet düğmesi çizilmez; resx 7 dil
+  parite. Sabotaj: olay yazımı zorla başarısız edildiğinde ayar değişmez (komut başarısız); olay yazımı kaldırıldığında, tekil
+  indeks kaldırıldığında (ikinci kayıt oluşur), R1–R3 kapatma isteği kabul edildiğinde ya da karar kontrolü sabitlenmiş sürüm
+  yerine güncel ayarı okuduğunda test kırmızıya döner. (a)–(e) DL-2'de; (f) DL-4'te kanıtlanır, AC-44 DL-4'te kapanır.
 
 ## Test Expectations
 
@@ -1498,6 +1551,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   onay ayrılığı). `Immediate` yok (sayfada onaysız hemen geçerli işlem yok). İlgili sayfa: yok (Görev Merkezi köprüsü bu
   dilimde yok; `PageHelpCatalog` satırı yalnız adım ikonları için).
 - **Tur:** gerekmez — beş akıştan biri değil → "tur yok".
+- SoD ayar ekranı (KARAR D57/4): sayfa kodu `PAYMENTSODSETTINGS`; `Help.PAYMENTSODSETTINGS.Purpose` (tier-2 eşiği ve R4;
+  R1–R3'ün kapatılamadığı açıkça yazılır), `.Audience` (hazine yöneticisi), `.Step1…Step3` + `Step{n}Title` (Eşiği gir ·
+  R4'ü seç · Kaydet), kiracı 7 dil; tur yok.
 
 ## Ready-for-dev Checklist
 
@@ -1544,10 +1600,12 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 - [ ] MOD-0018 Auth paket metninde `waive-sod` atama alanları — hedef parti, başlangıç / bitiş, onaylayan, gerekçe kodu (KARAR
   D54) — ve muafiyet adayı sorgusu ("bu partiye geçerli `waive-sod` ataması olanlar") tanımlı (Ali; **KARAR D56/3**) — DL-2 için
 - [ ] Bu alanların ve aday sorgusunun Auth kodu main'de (**KARAR D56/3**) — DL-2 için (kabul kapısı)
-- [x] SoD ayarının kayıt yeri — FinanceTreasuryService'te kiracı başına tek kayıt, tek eşik + R1–R4 açık / kapalı, denetlenir,
-  DL-2'de yazılır (**KARAR D56/4**) — DL-2 için
-- [ ] SoD ayarı izin anahtarları ve rol yerleşimi (Authorization Convention → "SoD ayarı izinleri"; sahip + Ali) Auth paket
-  metninde — DL-2 için
+- [x] SoD ayarının kayıt yeri — FinanceTreasuryService'te kiracı başına tek kayıt, tek eşik + R4 açık / kapalı (R1–R3
+  kapatılamaz; kayıt yoksa R1–R4 açık ve varsayılan eşik — **KARAR D57/4**), denetlenir, DL-2'de yazılır (**KARAR D56/4**); ekranı
+  DL-4 (D57/4) — DL-2 için
+- [x] SoD ayarı izin anahtarları ve rol yerleşimi kararı — `finance-treasury.payment-sod-settings.read` / `.update`, Hazine
+  yöneticisi (**KARAR D57/4**; Authorization Convention → "SoD ayarı izinleri")
+- [ ] Bu iki anahtar ve Hazine yöneticisi yerleşimi MOD-0018 Auth paket metninde (Ali) — DL-2 için
 - [x] MOD-0023 pack §17 (TRM-15) rev 2 **onaylandı** (sha256 `803fbaa5272373846d6c60507525cc9259220a64fab02cf8889f362136a05fb2`, PR #235; CT-APR-02/01 bu sürüme — `execution/approvals/approvals.tsv:16`, 2026-10-26, #243; yarış yanıtı politikası KARAR D21/4, D22/3; D32) — DL-2 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) — sahibi yazar, başka biri merge eder (D32/1) — ve DL-2 kabulünden önce main'de olmalıdır; AC-W1…W17 (§17.8 kapanışı) DL-2 uygulama kabul kapısındadır; AC-W5…W14 ve AC-W17 geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [x] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17 rev 2'de onaylı (`approvals.tsv:16`); silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13), tek silme işareti `IsDeleted` ve miras silme kapalı (D32/2; AC-W15), `includeDeleted` kiracı ve `instances.view` içinde (D32/6; AC-W16) — DL-2 için; AC-W1 (silmeme mimari testi) ve AC-W15 DL-2 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [x] MOD-0023 okuma eşleme alanları (KARAR D21/3) §17 rev 2'de onaylı (`approvals.tsv:16`) — DL-2 için; kod MOD-0023 sahibinin WP'siyle gelir (D25/1), AC-W2/W3 uygulama kabul kapısındadır (gap 16/P2); yoksa okuma niyeti kapatmaz (gap 6/P1-b)
@@ -1649,7 +1707,7 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 | O-1 | PP-05 AdminDirect kalsın mı? | (a) düşür (b) SoD ile koru | **KARAR: (a) düşür** — sahip D11/2 (2026-10-24) | sahip (K1) |
 | O-2 | PP-11 dispatch-once kalsın mı? | (a) düşür (b) İ3 komutu olarak tut | **KARAR D28 (2026-10-25): öneri kabul** — **(a) düşür** — iletim CentralAudit'in | sahip (K1) |
 | O-3 | Taslak düzenleme ve silme (kaynakta yok) | (a) Update + soft Delete/BulkDelete yalnız gönderilmemiş taslak (b) yalnız iptal | **KARAR D28 (2026-10-25): öneri kabul** — (a) — Golden Reference Compact seti; reddedilirse Edit/Delete çıkarılır, sapma kaydedilir | sahip (K1) |
-| O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | **KARAR (D11/1): kiracı ayarı, para birimli**; ayar yoksa her onay tier-2; farklı para birimi → tier-2. **Kayıt yeri KARAR D56/4 (2026-10-27):** FinanceTreasuryService'te kiracı başına tek ayar kaydı (tek eşik + R1–R4 açık / kapalı), denetlenir, DL-2'de yazılır (`PaymentSodSettings`, AC-44). Kalan: ayar ekranının dilimi ve SoD ayarı izin anahtarları (Authorization Convention) | sahip (K1) |
+| O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | **KARAR (D11/1): kiracı ayarı, para birimli**; ayar yoksa her onay tier-2; farklı para birimi → tier-2. **Kayıt yeri KARAR D56/4 (2026-10-27):** FinanceTreasuryService'te kiracı başına tek ayar kaydı (tek eşik + R1–R4 açık / kapalı), denetlenir, DL-2'de yazılır (`PaymentSodSettings`, AC-44). **Ayrıntılar KARAR D57/4 (2026-10-28):** izinler `finance-treasury.payment-sod-settings.read` / `.update` (Hazine yöneticisi); ayar ekranı MOD-0126 ekran diliminde (DL-4); R1–R3 kapatılamaz (yalnız eşik ve R4 ayarlanır); kayıt yoksa R1–R4 açık ve varsayılan eşik. Kalan: yok | sahip (K1) |
 | O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | **KARAR (D11/4): `finance-treasury.*`**; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; `waive-sod` yalnız açık atama (D47/1); **D49/1:** modül bazında görüntüleyici (ödeme görüntüleyici; Hazine konsolide görüntüleyici yalnız gerekçeyle); **D49/4:** muafiyet ataması kuralları (Authorization Convention); Auth kaydı MOD-0018 sahibinde (Ali) | sahip + MOD-0018 sahibi |
 | O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **KARAR (D11/3): evet K2**; **KARAR D35/3 (2026-10-26, `treasury-intake-owner-decisions-02.md` D35, PR #235):** Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` (değer 18; Y-4/7) (`MasterData` ara çözümü seçilmedi); Platform sahibinin işi (XMC-001, D9); **DL-1 bu değer main'e girmeden başlamaz**. Defter izi D35/1–2: `finance-treasury-merkezi-iletim \| b \| işaret \| ICentralAuditDeclaration`, borç / istisna 0; defter + CT-DECISIONS satırı + `AuditTrailStandardTests` DL-1 değişikliğinde (D35/4) | CT + sahip; `Finance` değeri: Platform (Beste) |
 | O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi yerine sahip teyidi — KARAR D42 (2026-10-26)**; MOD-0023 sahibi (Ali) teyidi: "ikisi de uygun" (Y-1, 2026-10-27) — (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
@@ -1701,17 +1759,18 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   servisi ve tek eşik yapılandırması — `PaymentSodSettings` varlığı, deposu ve `ux_payment_sod_settings_tenant` indeksi,
   `UpdatePaymentSodSettingsCommand` / `GetPaymentSodSettingsQuery` (KARAR D56/4), Auth muafiyet ataması / aday sorgusu portu ve
   bağdaştırıcısı (`IPaymentSodWaiverAssignmentSource`, `Infrastructure/SodWaivers/**` — KARAR D56/3), MOD-0023 bağdaştırıcısı
-  (zaman aşımlı; servis ortak yapı taşı — Repo Scope), `payment-batch.openapi.yaml`'a DL-2 uçları (eklemeli; sürüm 1.1.0). **Neden ayrı:** SoD ve belirsiz sonuç
+  (zaman aşımlı; servis ortak yapı taşı, tek yazarı bu dilim; MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3 bunu bekler — KARAR D57/5; Repo Scope), `payment-batch.openapi.yaml`'a DL-2 uçları (eklemeli; sürüm 1.1.0). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul (dilim kapısı — Ready-for-dev
   Checklist'te "— DL-2 için" maddeleri, D51/1): DL-1, O-4, O-7, O-8, MOD-0023
   şablonu, MOD-0018 Auth paket metninde muafiyet atama alanları ve aday sorgusu (D56/3; kodu DL-2 kabulünde), SoD ayarı izin
-  anahtarları (D56/4), MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) ve §17 rev 2'deki silmeme politikası (D21/1) ile okuma eşleme alanları (D21/3) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, AC-42, AC-43, AC-44, 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 32 (karar uçları kısmı), 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36. Validation Rules bu dilimde **R11 hariç** kapanır; R11 (Release) DL-3'te uygulanır ve DL-3 kabulünde kanıtlanır (AC-19).
+  anahtarlarının Auth paket metninde olması (D56/4; adlar KARAR D57/4), MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) ve §17 rev 2'deki silmeme politikası (D21/1) ile okuma eşleme alanları (D21/3) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, AC-42, AC-43, AC-44 ((a)–(e) arka uç kısmı — D57/4), 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 32 (karar uçları kısmı), 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36. Validation Rules bu dilimde **R11 hariç** kapanır; R11 (Release) DL-3'te uygulanır ve DL-3 kabulünde kanıtlanır (AC-19).
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul (dilim kapısı — "— DL-3 için" maddeleri, D51/1): DL-2, MOD-0269 BANK-DISPATCH 0.1.0 dondu (D27/7, TRM-06), MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
   kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 37, 38, 41 (d: Release kısmı — AC-41 tam kapanışı), 32 (Release ve kalan okumalar kısmı — tam kapanış), 33 (Release,
   kanıt, onay belgesi kısmı).
-- **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
+- **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, SoD ayar ekranı `Views/FinanceTreasury/PaymentSodSettings/**`
+  (KARAR D57/4), JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine
-  bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-1 (liste/oluşturma), DL-2 (karar düğmeleri), Gateway rotası, O-15.
-  Bitiş: AC-24…28.
+  bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-1 (liste/oluşturma), DL-2 (karar düğmeleri, SoD ayarı uçları), Gateway
+  rotası (SoD ayarı uç yolu dahil), O-15. Bitiş: AC-24…28, AC-44 ((f) ekran kısmı — AC-44 bu dilimde kapanır, D57/4).
