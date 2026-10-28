@@ -25,6 +25,72 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D76/3 — kullanıcının başlattığı Reconcile; MOD-0126 sabitlemesi):** `status: draft`
+> değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D76 (2026-10-28 ölçümünde karar
+> dosyasında yazılı, commit'lenmemiş; main'de değil; D75 yerel commit `da2aba808`, main'de değil). (1) **D76/3:** kullanıcının başlattığı Reconcile da yeniden denemedir — aday listesi Auth'tan yeniden hesaplanmaz,
+> niyetteki ilk liste kullanılır; rol değişikliği gerekiyorsa yeni gönderim yapılır. Metin D75 revizyonunda zaten böyleydi;
+> yalnız karar atfı eklendi (Runtime Constraints 3a (ii), Validation Rules "Aday tabanı", AC-34 (d) eki başlığı). Davranış değişmedi; AC genişletilmedi; yeni AC yok;
+> yeni hata kodu yok; AC numaraları ve dilim tablosu değişmedi.
+> (2) MOD-0126 ortak tanımları sha256 `674c73e9…79ea`'e yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D76 revizyonu — yalnız
+> D76/3 atfı); önceki `b5e749bd…732e` (D75).
+>
+> **Revizyon (2026-10-28, KARAR D75 — D73/1 teyidi, iç uç kimliği, yeniden denemede ilk aday listesi; MOD-0126 sabitlemesi):**
+> `status: draft` değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74/1 (yerel commit
+> `5d2655c72`, main'de değil) ve D75 (2026-10-28 ölçümünde karar dosyasında yazılı, commit'lenmemiş; main'de değil).
+> (1) **D75/3:** kod çevirmede tekil uç 404 `UNKNOWN_SUPPLIER` → 422 `AP_MATCH_REFERENCE_MISMATCH` (eşitlik kanıtlanamaz) —
+> D73/1 çıkarım notu "teyit — KARAR D75/3" oldu (Runtime Constraints (c), Failure Path, AC-5, O-23). (2) **D74/1 hizalaması:**
+> Auth aday sorgusu `X-Internal-Api-Key` ortak sırrı + iletilen kullanıcı token'ıyla çağrılır, kiracı token'dan, servis kimliği
+> kullanılmaz — "o paketin K-A1'i" (Validation Rules "Aday tabanı") ve "servis kimliğiyle" (Dependencies aday tabanı satırı)
+> atıfları düzeltildi. (3) **D75/2 (b):** aday listesi yalnız Submit'te hesaplanır; Reconcile'ın
+> yeniden başlatması niyetteki ilk listeyi (`ApWorkflowStartIntent.CandidatePrincipalIds`) aynen gönderir, Auth'u yeniden
+> çağırmaz. Ölçüm: önceki metin Runtime Constraints 3a (ii) ("R1–R3 aday dışlaması yeniden") ve Validation Rules "Aday tabanı"
+> ("Submit ve Reconcile'ın yeniden başlatması") ile D75/2 (b)'ye aykırıydı — düzeltildi; **AC-34 genişletildi**. (4) **D75/4
+> ölçümü:** bu paket v1'de BANK-ACCOUNT-LOOKUP'ı tüketmez (Dependencies / sözleşme tablosu "BANK (MOD-0289) — v1'de yok"); kural
+> yalnız Follow-up "AP → MOD-0126 ödeme dikişi" maddesine yazıldı, AC ve hata kodu eklenmedi. (5) MOD-0126 ortak tanımları
+> sha256 `b5e749bd…732e`'e yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D75 revizyonu — iç uç kimliği D74/1 atıfları,
+> Reconcile'da ilk aday listesi D75/2 (b), AC-34 genişletildi); önceki `fb581b3b…cce5` (D74/3). Yeni hata kodu yok; yeni AC yok;
+> AC numaraları ve dilim tablosu değişmedi. **AC-5 genişletildi** (D75/3 teyidi; davranış değişmedi).
+>
+> **Revizyon (2026-10-28, sabitleme — MOD-0126 KARAR D74/3):** `status: draft` değişmedi. MOD-0126 ortak tanımları sha256
+> `fb581b3b…cce5`'e yeniden sabitlendi ("Kaynak ve kanıt"); önceki `1b8f172a…8ddf` (D71). MOD-0126'daki değişiklik yalnız muafiyet atayanıdır
+> (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74/3 — Muafiyet yetkilisi rolü; 2026-10-28 ölçümünde
+> commit'lenmemiş, main'de değil); bu paketin kuralları, AC'leri ve dilim tablosu değişmedi; yeni AC yok.
+>
+> **Revizyon (2026-10-28, KARAR D73 — O-23 kapandı):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D73/1 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **O-23 → KARAR D73/1 (CT önerisi (a)):** PO'lu faturada MOD-0143 faturasının `supplierId`'si
+> eski kod olabilir; AP o kodu `getSupplierEligibility` ile kanonik koda çevirir ve saklı kanonik `SupplierId` ile **ordinal**
+> karşılaştırır — eski kodlu doğru fatura reddedilmez, farklı tedarikçi 422 `AP_MATCH_REFERENCE_MISMATCH`. Çevirme çağrısı
+> okunamazsa D72/2 sınıflaması: 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 401 / 503 `DEPENDENCY_UNAVAILABLE` / diğer 5xx /
+> zaman aşımı / okunamayan ya da kanonik `supplierId`'si eksik yanıt → 503 `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` →
+> 422 `AP_LEGAL_ENTITY_UNKNOWN`; geçiş yok, otomatik yeniden deneme yok. Yeni hata kodu yok. Değişen yerler: Dependencies (MOD-0143
+> satırı), Runtime Constraints (c), Validation Rules (MOD-0143 eşleşme kuralları), Failure Path, Test Expectations, Açık kararlar
+> (O-23 KAPANDI); **AC-5 genişletildi**. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, KARAR D72 — MOD-0140 Revizyon 5 hizalaması):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D72 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil) ve MOD-0140 paketi Revizyon 5 (`execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md`,
+> main'de `status: ready-for-dev`, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`, CT-APR-01
+> `execution/approvals/approvals.tsv:26`; §3.1–§3.3, S-1…S-6). Ölçüm (origin/main @ `72f183138`): `supplier.openapi.yaml` hâlâ
+> **1.2.0 FROZEN** (`:13-14`). (1) **Sözleşme zamanlaması:** 1.3.0 MOD-0140 **DL-1**'de sözleşme dosyası olarak dondurulur; uçlar
+> ve `validate` satırının yeni alanları MOD-0140 **DL-3**'te, C2 kodları (404 `UNKNOWN_LEGAL_ENTITY`, 403
+> `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`) **DL-4**'te üretilir; DL-3'e kadar AP bağdaştırıcısı yalnız sahte
+> istemci / Prism ile çalışır, canlı bağlantı yok (fail-closed). Eski "1.3.0 MVP-2 DL-2 ile yazılır / `origin/feature/mvp2/supplier-tenant-01`
+> dalında" ifadeleri düştü. (2) **D72/2 uygunluk:** uygun = `known` ∧ `eligibleForTransactions == true`; `status` yalnız gerekçe;
+> alan yok / null → uygun sayılmaz. Hata eşlemesi: MOD-0140 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 503
+> `DEPENDENCY_UNAVAILABLE` / okunamayan ya da alanı eksik yanıt → 503 `AP_SUPPLIER_UNAVAILABLE` (paketin mevcut adı; D72/2'nin
+> `*_SUPPLIER_DIRECTORY_UNAVAILABLE` karşılığı); 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` (**yeni hata kodu**);
+> kayıt yazılmaz, otomatik yeniden deneme yok. (3) **D72/1 kimlik:** `SupplierId` kanonik kod (`SUP-…`), eski kod
+> `getSupplierEligibility` ile kanonik koda çevrilip saklanır; **yeni alan `SupplierMasterId`** (uuid, ikincil). (4) **D72/4 ad:**
+> `SupplierNameSnapshot` `GET /api/suppliers/{supplierId}` (`procurement.suppliers.read`) ile. (5) **D72/3–4 izinler:**
+> `procurement.suppliers.eligibility.read`, `procurement.suppliers.read` ve (BL-652'ye kadar) `mdm.legal-entities.read` AP
+> rollerine çapraz modül bağımlılığı (MOD-0018 Treasury Auth eki, D70/1 deseni; MOD-0018 sahibinin teyidi). Değişen yerler:
+> Ownership and Boundaries (tüketilen sözleşmeler), Entity Fields (`SupplierId`, yeni `SupplierMasterId`, `SupplierNameSnapshot`,
+> form notu), Hata sözlüğü, Repo Scope bağımlı değişiklikler, Dependencies (MOD-0140 satırı + kapanış tablosu), Runtime
+> Constraints (b), Frontend seçim kaynakları, Validation Rules, Failure Path, Authorization Convention, Test Expectations,
+> Ready-for-dev Checklist, Kaynak ve kanıt, SUPPLIER slotu, Açık kararlar (yeni **O-23**), DL-1 Önkoşul / Bitiş; **AC-4
+> genişletildi**, **yeni AC-44** (DL-1). Mevcut AC numaraları ve dilim tablosu değişmedi.
+>
 > **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D71 (2026-10-28 ölçümünde main'de değil — yerel
 > dalda, main'de değil). Aday tabanı **`finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`**: servis
@@ -248,7 +314,9 @@ bağlantısı. Blueprint 8.8 W-3, Financial Management (paket §A).
   (KARAR D27/3): AP kendi `AP-INVOICE` sözleşmesini yayımlar.
 - **Tüketilen sözleşmeler:** MOD-0220 `lookup-validation` (+ TRM-14 `ApprovalStatus`), Platform veri kapsamı
   (`IDataScopeResolver`, SEC-002 — D14/1), `SUPPLIER`
-  (`supplier.openapi.yaml`, 1.3.0 hedefi — `validateSuppliers` şirket ilişkisi durumu), `INVOICE-MATCH`
+  (`supplier.openapi.yaml` 1.3.0 — MOD-0140 DL-1'de dondurulur, uçlar ve yeni alanlar MOD-0140 DL-3'te (KARAR D72);
+  `validateSuppliers` satırının uygunluk alanları — `known` ∧ `eligibleForTransactions == true` (D72/2), `getSupplierEligibility`
+  — kanonik kod + `supplierMasterId` (D72/1), `getSupplier` — görüntü adı (D72/4)), `INVOICE-MATCH`
   (`invoice-match.openapi.yaml` 1.1.1 FROZEN, main'de — `getInvoice`), MOD-0023 iş akışı başlatma ve görev geçişleri, MOD-0031 kanıt
   bağlantısı okuma, MOD-0048 para birimi. Başka servisin koleksiyonu doğrudan okunmaz (domain-config "Contract-first").
 
@@ -403,8 +471,9 @@ uygulanmaz). Saat dilimi: zaman damgaları UTC; `InvoiceDate` ve `DueDate` yaln�
 | InvoiceCode | string | RCS-001 OTOMATİK `{ŞİRKET}-{TÜR}-{SAYAÇ}`; tür öneki `APD` (KARAR D29/2, O-9; RCS-001 §3 satırı D30 ile uygulandı); kullanıcı giremez/değiştiremez; silinen kaydın kodu yeniden kullanılmaz | kaynakta iç kod yok |
 | DocumentType | enum `PoBackedInvoice`=0, `NonPoInvoice`=1, `CreditNote`=2 | zorunlu | `AccountsPayableEnums.cs:3-8@218acaf5` |
 | DocumentDirection | enum `PayableOutflow`=0, `CreditAdjustment`=1 | sunucu: `CreditNote` → `CreditAdjustment`, diğerleri `PayableOutflow`; istekten alınmaz | `:10-14` (kaynakta istekten alınıyordu) |
-| SupplierId | string | zorunlu; MOD-0140 `supplierId` (sözleşmede `type: string`, örn. `SUP-2001` — `supplier.openapi.yaml` `Supplier.supplierId`); çağıran şirketle **Active** ilişki | kaynak `Guid SupplierReferenceId` (`AccountsPayableEntities.cs:14`) — tip sözleşmeye uyarlanır |
-| SupplierNameSnapshot | string | **yalnız görüntü** için; sunucu MOD-0140 yanıtından yazar; uygunluk kararında kullanılmaz | `SupplierDisplayNameSnapshot` (:15; kaynakta istemciden) |
+| SupplierId | string | zorunlu; MOD-0140 **kanonik** tedarikçi kodu (`Supplier.SupplierId`, `SUP-…`; sözleşmede `type: string` — `supplier.openapi.yaml` `Supplier.supplierId`, 1.3.0 `SupplierEligibility.supplierId`) — **ana anahtar (KARAR D72/1)**. İstekte eski kod (çağıran şirketin `LegacySupplierCodes`'u) gelirse sunucu `GET /api/suppliers/{supplierId}/eligibility` yanıtındaki kanonik `supplierId`'yi saklar (MOD-0140 Revizyon 5 §3.1: uç eski kodla sorulsa da kanonik kod döner); karşılaştırma ordinal; çağıran şirketle uygun ilişki (`known` ∧ `eligibleForTransactions == true`, D72/2) | kaynak `Guid SupplierReferenceId` (`AccountsPayableEntities.cs:14`) — tip sözleşmeye uyarlanır |
+| SupplierMasterId | Guid | sunucu; MOD-0140 `supplierMasterId` (`Supplier.Id`, kiracı geneli uuid) — **ikincil alan (KARAR D72/1)**: `SupplierId` ile aynı `getSupplierEligibility` yanıtından, Create / Update'te yazılır; kimlik, mükerrer anahtarı, indeks ve eşleme `SupplierId`'dir; uygunluk kararında kullanılmaz; yanıtta `null` ya da uuid değilse yanıt okunamayan sayılır (503 `AP_SUPPLIER_UNAVAILABLE`, kayıt yazılmaz); istekte bulunursa 400 | yeni |
+| SupplierNameSnapshot | string | **yalnız görüntü** için; sunucu Create / Update'te kanonik kodla `GET /api/suppliers/{supplierId}` (`getSupplier`, `Supplier.name`; izin `procurement.suppliers.read` — **KARAR D72/4**) yanıtından yazar; ad okunamazsa (403, 404, 503, okunamayan gövde) 503 `AP_SUPPLIER_UNAVAILABLE`, kayıt yazılmaz; uygunluk kararında kullanılmaz | `SupplierDisplayNameSnapshot` (:15; kaynakta istemciden) |
 | InvoiceNumber | string | zorunlu, trim, 1..64 (öneri; kaynakta sınır yok) — tedarikçinin fatura numarası | :18 |
 | InvoiceNumberNormalized | string | sunucu: trim + büyük harf + iç boşluklar tekleştirilmiş; mükerrer anahtarı (O-6) | yeni |
 | InvoiceDate / DueDate | DateOnly / DateOnly | zorunlu; `DueDate ≥ InvoiceDate` (`AccountsPayableFoundationValidator.cs:35-40`); ileri tarih kuralı O-19 | :19-20 |
@@ -451,7 +520,7 @@ Güncellemede satırlar bütün olarak değiştirilir (aynı Mongo işleminde ba
 > **`form_field_count: 12` → `golden_reference: compact`.** Oluştur/düzenle formunda kullanıcının doldurduğu alanlar:
 > **başlık 9** — DocumentType, SupplierId, InvoiceNumber, InvoiceDate, DueDate, CurrencyCode, MatchInvoiceRef (koşullu),
 > CreditedApInvoiceId (koşullu), Notes; **satır 3** — Description, NetAmount, TaxAmount. **Sayılmayanlar:** InvoiceCode
-> (RCS-001 OTOMATİK), DocumentDirection (sunucu), SupplierNameSnapshot / MatchOutcomeSnapshot (sunucu), LegalEntityId
+> (RCS-001 OTOMATİK), DocumentDirection (sunucu), SupplierMasterId / SupplierNameSnapshot / MatchOutcomeSnapshot (sunucu), LegalEntityId
 > (oturum şirketi, `X-Legal-Entity-Id`), satır LineNumber / CurrencyCode / GrossAmount (sunucu), başlık tutarları (sunucu),
 > Idempotency-Key (başlık; yalnız `FinanceTreasuryCommandReceipt`'te saklanır) / CorrelationId (başlık), durum alanları. Kaynak istek
 > modelindeki 32 alan (`ApInvoiceImportRequest`, `AccountsPayableDtos.cs:16-52@218acaf5`) bir dış ERP yüküdür, form değildir;
@@ -566,8 +635,14 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   `MOD0119_INVALID_STATE_TRANSITION` → `AP_INVOICE_STATUS_INVALID` 409; `AP_SOD_BLOCKED` → `AP_SOD_DENIED` 403;
   `AP_RBAC_PERMISSION_MISSING` / `AP_PERMISSION_OR_SCOPE_DENIED` → `AP_PERMISSION_DENIED` 403.
 - **Yeni:** `AP_INVOICE_VERSION_CONFLICT` 409, `AP_IDEMPOTENCY_KEY_REQUIRED` 400, `AP_REQUEST_IN_PROGRESS` 202,
-  `AP_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `AP_LEGAL_ENTITY_UNAVAILABLE` 503, `AP_SUPPLIER_NOT_ELIGIBLE` 422 (ilişki yok ya da
-  Active değil), `AP_SUPPLIER_UNAVAILABLE` 503, `AP_MATCH_REFERENCE_REQUIRED` 400, `AP_MATCH_REFERENCE_NOT_ALLOWED` 400,
+  `AP_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `AP_LEGAL_ENTITY_UNAVAILABLE` 503, `AP_SUPPLIER_NOT_ELIGIBLE` 422 (MOD-0140 uygunluğu
+  yok: `known: false`, `eligibleForTransactions: false` ya da tekil uçta 404 `UNKNOWN_SUPPLIER` — KARAR D72/2; `status` yalnız
+  gerekçe), `AP_SUPPLIER_UNAVAILABLE` 503 (MOD-0140'tan uygunluk, kanonik kod ya da ad okunamadı: 403 — `LEGAL_ENTITY_LOOKUP_FORBIDDEN`
+  dahil —, 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, ayrıştırılamayan gövde, alanı eksik / `null` ya da çelişkili
+  yanıt; D72/2'nin `*_SUPPLIER_DIRECTORY_UNAVAILABLE` karşılığı — mevcut ad korundu; kayıt yazılmaz, otomatik yeniden deneme
+  yok), `AP_LEGAL_ENTITY_UNKNOWN` 422 (MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` — Procurement çağıran şirketi bu kiracıda tanımıyor,
+  `Active` saymıyor ya da referanslanamaz buluyor; MOD-0220 kontrolünden geçmiş isteğin bağımlılıktaki çelişkisi — **KARAR
+  D72/2**; kayıt yazılmaz, yeniden deneme yok), `AP_MATCH_REFERENCE_REQUIRED` 400, `AP_MATCH_REFERENCE_NOT_ALLOWED` 400,
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE` 422, `AP_MATCH_REFERENCE_MISMATCH` 422 (tedarikçi / para birimi / tutar farkı),
   `AP_MATCH_REFERENCE_ALREADY_USED` 409, `AP_MATCH_UNAVAILABLE` 503 (`AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` D26 ile kaldırıldı —
   taban net), `AP_CREDITED_INVOICE_INVALID` 422,
@@ -633,7 +708,11 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
   `Nav.Page.APINVOICES` (DL-4).
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
-MOD-0220 TRM-14 (MOD-0126 ile ortak); MOD-0140 `supplier.openapi.yaml` 1.3.0 (MVP-2 tek yazar — Treasury yazmaz, K15);
+MOD-0220 TRM-14 (MOD-0126 ile ortak); MOD-0140 `supplier.openapi.yaml` 1.3.0 (tek yazar MOD-0140, dosya MOD-0140 DL-1'de,
+uçlar DL-3'te — Treasury yazmaz, K15); MOD-0140 anahtarları `procurement.suppliers.eligibility.read` / `procurement.suppliers.read`'in
+Auth izin kataloğu / seed kaydı (MOD-0140 §18 "DL-3 canlı öncesi" maddesi, `MOD-0140-supplier-onboarding.md:534` — sahip
+Auth) ve AP rollerine bağımlı anahtar olarak verilmesi
+(MOD-0018 Treasury Auth eki, KARAR D72/3–4);
 MOD-0023 AP iş akışı şablonu `FT-AP-INVOICE-APPROVAL` (Y-12; kurulumu MOD-0023 sahibinin WP'si); MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; anahtarlar, açık atama listesi ve rol şablonları o paketin DL-1'i — Treasury yazar, MOD-0018 sahibi teyit eder, Y-15, Y-16); `ocelot.json` rotaları (integration-agent); Platform `AuditCategory`'ye `Finance` (değer 18; Y-4/7) eki
 (O-18, KARAR D35/3 — Platform sahibi, MOD-0126 DL-1'den önce); FinanceTreasury servisinden SEC-002 veri kapsamı çözücüsünün tüketim yolu (platform-shared-services, O-22; yol Y-4/6 ile yanıtlandı). Bkz.
 "Dependencies". AGENTS.md §2/§3/§9, `.antigravity/rules/ports.md` (5071) ve `record-coding-standard.md` §3 `APD` satırı
@@ -667,8 +746,8 @@ korunan yol yamaları D30 ile 2026-10-25'te uygulandı; bu listede değildir.
 | MOD-0023 Workflow Designer | başlatma + görev geçişleri | **var.** `POST /api/v1/workflow/instances` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs:87`); istekte `IdempotencyKey` ve aynı anahtar yeniden oynatılır (`…/Workflow/Handlers/CommandHandlers/StartWorkflowInstanceHandler.cs:76-85`); görev uçları `tasks/{taskId}/approve` (:196), `reject` (:221), `request-info` (:261); başlatanın onayı `SodViolation` ile reddedilir (`WorkflowTaskTransitionSupport.cs:133-140`, Guid karşılaştırması `:964-977`); uzlaştırma okuması `GET instances/by-objects` (:121); izinler `WorkflowModels.cs:16-20` | v1 kullanıcı token'ıyla genel uçlardan (MOD-0126 O-7 deseni). **Şablon kodu `FT-AP-INVOICE-APPROVAL`** (Y-12; MOD-0023 sahip kararları W-2, W-6 — `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, origin/main @ `28c68e7a6`, #277): tek aşama, tek onay adımı, atama yok; onaylayıcıları başlatma isteğinin `CandidatePrincipalIds` alanı belirler (`StartWorkflowInstanceRequest`, `WorkflowModels.cs:286-299@8a737a8e9`) — bu paketin aday çözümleyicisi (SoD R1–R3 dışlaması; aday tabanı MOD-0126 O-10 gerilimine bağlı, açık); boş liste 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`, hiçbir şey yazılmaz (`StartWorkflowInstanceHandler.cs:154-158@8a737a8e9`). Şablonu MOD-0023'te kuran kod MOD-0023 sahibinin ayrı WP'sidir — main'de **yok** (2026-10-28), WP numarası ve tarih gelmedi (D9). Not: MOD-0023 başlatanın **reddine** izin verir (`WorkflowTaskTransitionSupport.cs:445`); AP R2 daha sıkıdır ve yerelde uygulanır |
 | MOD-0021 Audit / CentralAudit (BL-501, K4) | yol `b` | **var** — `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/`; kullananlar Inventory, SupplyChain | servis kaydı MOD-0126 DL-1'de; kaynak NoOp kaydedici taşınmaz (level-1 koşul 2) |
 | MOD-0220 LE `lookup-validation` | borçlu şirket uygunluğu (D10/1 kuralı) | **var** — `GET /api/legal-entities/{id}/lookup-validation` (`services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs:48`); kayıtta `OperationalStatus` ve `ApprovalStatus` var (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`); yanıtta `ApprovalStatus` **henüz yok** | **TRM-14** (D10/2) MOD-0126 ile ortak; gelmeden "onaylı" kontrolü yapılamaz → AP yazma komutları kapanır (fail-closed) |
-| MOD-0140 Supplier (`SUPPLIER`) | tedarikçi kimliği + şirket ilişkisi durumu | **main'de 1.2.0 FROZEN**, `supplierId: string`, `POST /api/suppliers/validate` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/SuppliersController.cs:112`); **tedarikçi kiracıda tek + LE bazlı `SupplierCompanyRelationship` değişikliği `origin/feature/mvp2/supplier-tenant-01` dalında** (MOD-0140 pack `ready-for-dev`, 1.3.0 dosyası "bu pack'in onayından sonra, DL-2 ile yazılır"; `validate` yanıtındaki `status` = çağıran şirketin ilişki durumu; Blocked/OnHold yeni işleme kapalı, K-7; banka bilgisi MOD-0140'ta yok, K-8) | AP yalnız `supplierId` + çağıran şirketle **Active** ilişkiyi sözleşmeden tüketir; koleksiyon okuması yok. **1.3.0 main'e girmeden DL-1 başlamaz.** Treasury MOD-0140'a yazmaz (K15, D9/4) |
-| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.1 FROZEN (main'de, `2f1c18068`), `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). **Üretici değişikliği (KARAR D26/3) main'de (`2f1c18068`, procurement):** `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç + %20 KDV'li örnek; şema değişmedi) ve MOD-0143 kaydında `lineAmount ≠ quantity × unitPrice` → 422 `LINE_AMOUNT_MISMATCH` (`CaptureInvoiceHandler.cs`); AP davranışı değişmedi — AP kuralı yalnız iki durumla sınırlıdır, eşleştirme yapmaz (Validation Rules → MOD-0143 eşleşme kuralları) |
+| MOD-0140 Supplier (`SUPPLIER`) | tedarikçi kimliği + şirket ilişkisi uygunluğu + görüntü adı | **main'de 1.2.0 FROZEN** (`docs/analysis/contracts/supplier.openapi.yaml:13-14`, origin/main @ `72f183138`), `supplierId: string`, `POST /api/suppliers/validate` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/SuppliersController.cs:112`). **MOD-0140 paketi Revizyon 5 main'de** (`status: ready-for-dev`, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`, CT-APR-01 `execution/approvals/approvals.tsv:26`, PR #273): tedarikçi kiracıda tek + LE bazlı `SupplierCompanyRelationship`; 1.3.0 **MOD-0140 DL-1**'de sözleşme dosyası olarak dondurulur — yalnız uygunluk yüzeyi (`SupplierEligibility` §3.1, `validate` satır alanları §3.2, `getSupplierEligibility`, `listEligibleSuppliers`) + §3.3 hata kodları (S-6); uçlar ve satırın yeni alanları **MOD-0140 DL-3**'te sunulur (o zamana kadar `/validate` 1.2.0 şekliyle yanıt verir); C2 kodları (404 `UNKNOWN_LEGAL_ENTITY`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`) **MOD-0140 DL-4**'te üretilir ama 1.3.0'dan itibaren olası sayılır (MOD-0140 §2 "Sunum", :42-44); `x-front-loaded-for` listesine MOD-0119 eklenir (:41); `eligibleForTransactions` = ilişki var ∧ silinmemiş ∧ `Active` (S-1); `GET /eligible` servis token'ına kapalı (S-4); banka bilgisi MOD-0140'ta yok (K-8) | AP yalnız kanonik `supplierId` + uygunluk alanlarını + adı sözleşmeden tüketir; koleksiyon okuması yok. Uygunluk = `known` ∧ `eligibleForTransactions == true` (**KARAR D72/2**); kanonik kod `getSupplierEligibility`'den, `supplierMasterId` ikincil (**D72/1**); ad `getSupplier` (**D72/4**). **1.3.0 FROZEN dosyası main'e girmeden DL-1 başlamaz**; DL-1 1.3.0'a karşı sahte istemci / Prism ile yazılır; **MOD-0140 DL-3 birleşmeden canlı bağlantı açılmaz** (yeni alan yoksa uygun sayılmaz — fail-closed). Treasury MOD-0140'a yazmaz (K15, D9/4) |
+| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.1 FROZEN (main'de, `2f1c18068`), `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). **Üretici değişikliği (KARAR D26/3) main'de (`2f1c18068`, procurement):** `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç + %20 KDV'li örnek; şema değişmedi) ve MOD-0143 kaydında `lineAmount ≠ quantity × unitPrice` → 422 `LINE_AMOUNT_MISMATCH` (`CaptureInvoiceHandler.cs`); AP davranışı değişmedi — AP kuralı yalnız iki durumla sınırlıdır, eşleştirme yapmaz (Validation Rules → MOD-0143 eşleşme kuralları). **Tedarikçi karşılaştırması (KARAR D73/1):** MOD-0143 faturasının `supplierId`'si (1.1.1 kanonikleştirme yazmaz; eski kod olabilir) MOD-0140 `getSupplierEligibility` ile kanonik koda çevrilir ve saklı kanonik `SupplierId` ile ordinal karşılaştırılır; çevirme okunamazsa D72/2 sınıflaması (MOD-0140 satırı) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` var, küsurat hanesi yok (MOD-0126 pack Dependencies ölçümü) | küsurat kaynağı MOD-0048-FU01 §21 `currency-minor-units` — başlangıç listesi kabul (Y-4/3), seed henüz yok (O-10, MOD-0126 O-11 ile ortak); yoksa Create 503 `AP_CURRENCY_PRECISION_UNAVAILABLE` — sabit tablo uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı okuma | **var** — `GET /api/v1/evidence/links/{id}` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/EvidenceLinksController.cs:83-84`); bağlantı nesne referansı `EvidenceObjectRefDto(Module, ObjectType, ObjectId, ObjectVersion)` (`…/Features/EvidenceLinking/EvidenceLinkingModels.cs:67`) | AP bağlantıyı **oluşturmaz**, var olanın nesnesinin `(MOD-0119, ApInvoice, {id})` olduğunu doğrular (DL-3) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20 — D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`). **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil) — anahtarlar, rol şablonları ve açık atama o paketin DL-1'i; paket kapısı (D53/1) ve DL-1 kabul kapısı (D53/2) değişmedi. **Onaylayıcı aday tabanı — o paketin DL-6'sı (KARAR D66/1):** "bu izne sahip kullanıcılar" iç ucu, anahtar `finance-treasury.ap-invoices.approve` (kiracı, yalnız etkin kullanıcı; şirket kapsamı o paketin K-A2'si); servis R1–R3'ü uygular, sonucu `CandidatePrincipalIds` olarak gönderir; istemci servis ortak aday kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource` — **KARAR D67/3**); DL-6 paket metni DL-2 önkoşulu, kodu DL-2 kabul kapısı; MOD-0018 sahibinin teyidi gerekir (D66/1) |
@@ -690,7 +769,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0003 kararı | **KARAR D27/1** (T32 sapması, bitiş: MOD-0003 ya da Treasury v1 sonu) | — | sahip (K1) | — | karar kaydı — **kapandı** | — |
 | ERP-FIN-BUNDLE kararı | **KARAR D27/3** (v1'de yok, modül sözleşmeleri; sahip EA kararını verdi) | — | EA (sahip verdi) | — | karar kaydı — **kapandı** | — |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
-| MOD-0140 tedarikçi ilişkisi | `supplier.openapi.yaml` **1.3.0** — MVP-2 DL-2'de yazılacak (bugün main'de 1.2.0) | TBD (main'e girince) | procurement (MVP-2) | ilişki yok / Active değil → 422 · erişilemez → 503 · geçiş yok | sahte istemci · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-1 |
+| MOD-0140 tedarikçi uygunluğu, kanonik kod ve ad | `supplier.openapi.yaml` **1.3.0** — MOD-0140 **DL-1**'de sözleşme dosyası olarak dondurulur (bugün main'de 1.2.0 FROZEN); `validateSuppliers`, `getSupplierEligibility` ve satırın yeni alanları **MOD-0140 DL-3**'te sunulur; `getSupplier` 1.2.0'da var; C2 kodları MOD-0140 DL-4'te (MOD-0140 Revizyon 5 §3.1–§3.3, pack sha256 `b3259e40…ce5c2`) | 1.3.0 FROZEN dosyası main'e girince `shasum` (DL-1 başında) | procurement (MOD-0140) | uygun = `known` ∧ `eligibleForTransactions == true` (D72/2); değilse 422 `AP_SUPPLIER_NOT_ELIGIBLE` · 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 503 `DEPENDENCY_UNAVAILABLE` / okunamayan, alanı eksik ya da çelişkili yanıt → 503 `AP_SUPPLIER_UNAVAILABLE` · 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` · kayıt yazılmaz, otomatik yeniden deneme yok, geçiş yok | sözleşme testi: sahte istemci / Prism, 1.3.0 FROZEN dosyasına karşı (AC-4, AC-44) · canlı kanıt: MOD-0140 DL-3 birleştikten (C2 kodları için DL-4) ve AP rollerinde bağımlı izinler verildikten sonra dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi + eski kodlu bir tedarikçi; DL-3'ten önce canlı bağlantı yok | DL-1 (canlı kanıt MOD-0140 DL-3 sonrası) |
 | MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.1 FROZEN, main'de (1.1.0 → 1.1.1 yalnız açıklama + 422 `LINE_AMOUNT_MISMATCH`, D26/3); `totalAmount` **net** (üretici ölçümü, D26/1; vergi taşınmaz) | `aa88132c85b87e59c3f033c190f55bd3adb17b2ce74c0caa5c1984d4eaea7370` (1.1.1, 2026-10-27 ölçüldü; önceki 1.1.0 `41fe1f43…3d11`; DL-1 başında yeniden `shasum`) | procurement (MOD-0143 sahibi) | uygun değil → 422 · fark → 422 · erişilemez → 503 · `ClearedForPayment` / `Captured` / `Exception` / `Rejected` → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE` | sahte istemci · dev ortamında Matched / MatchedWithinTolerance / Exception / ClearedForPayment faturaları | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok**; `currency-minor-units` (MOD-0048-FU01 §21) başlangıç listesi kabul (Y-4/3), seed main'de bekleniyor (O-10) | TBD | platform-shared-services | hane yok → 503 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565, O-9) | TBD (6 Kasım'da kesinleşince) | Beste (D44) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `AP_RECORD_CODE_UNAVAILABLE`, kayıt yazılmaz; yedek kod yok | sahte allocator (AC-43, sabotajlı) · dev ortamında gerçek servisle `APD` kodu | DL-1 kabul kapısı (D59/1) |
@@ -698,7 +777,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0023 iş akışı başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AP şablon kodu **`FT-AP-INVOICE-APPROVAL`** (Y-12, O-11 — tek aşama, tek onay adımı, atamasız; adaylar `CandidatePrincipalIds` ile, boş liste 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`; şablonu kuran kod main'de değil) | Platform commit SHA'sı DL-2 başında yazılır | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + bilgi isteme + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-2 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-2 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-2 |
-| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar başına ayrı çağrı — `finance-treasury.ap-invoices.approve` ve `platform.workflow.tasks.approve` (**KARAR D71**), servis kesişimi alır | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; kesişim (D71), R1–R3 ve şirket kapsamı sonrası boş liste → yerelde 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → 502 `AP_WORKFLOW_START_FAILED`); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-10, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
+| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), `X-Internal-Api-Key` ortak sırrı + iletilen kullanıcı token'ı, kiracı token'dan, servis kimliği kullanılmaz (**KARAR D74/1**); yalnız kullanıcının başlattığı gönderimde çağrılır (**KARAR D75/2 (b)**); sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar başına ayrı çağrı — `finance-treasury.ap-invoices.approve` ve `platform.workflow.tasks.approve` (**KARAR D71**), servis kesişimi alır | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; kesişim (D71), R1–R3 ve şirket kapsamı sonrası boş liste → yerelde 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → 502 `AP_WORKFLOW_START_FAILED`); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-10, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
 | MOD-0031 kanıt okuma | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → bağlama yok, fatura değişmez · AP MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AP'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-29 | DL-1 |
 
@@ -740,12 +819,31 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   olan** örneğin / geçişin sonucunu kaydetme yolu içindir; okuma örnek / geçiş göstermezse aynı anahtarla yeniden yazma
   (yalnız MOD-0023 başlatma / geçiş) yeni uzak işlemdir ve şirket + SoD + izin + asıl aktör yeniden denetlenir (Runtime
   Constraints 3a, gap 4/G2, gap 5/G2). Okumalar uygunluk istemez (pasifleşmiş şirketin
-  geçmiş borcu okunabilir; kapsam kuralı yine geçerli). (b) MOD-0140 — Create, Update, Validate, Submit, Approve ve
-  ReleaseHold'da çağıran şirketle ilişki `Active` değilse `AP_SUPPLIER_NOT_ELIGIBLE` (422), yanıt yoksa
-  `AP_SUPPLIER_UNAVAILABLE` (503); (c) PO'lu faturada
+  geçmiş borcu okunabilir; kapsam kuralı yine geçerli). (b) MOD-0140 (**KARAR D72**) — Create, Update, Validate, Submit,
+  Approve ve ReleaseHold'da uygunluk = `known` ∧ `eligibleForTransactions == true` (`status` yalnız gerekçe; alan yok / `null`
+  → uygun sayılmaz). Create ve Update `GET /api/suppliers/{supplierId}/eligibility` (`getSupplierEligibility`) çağırır: 200 +
+  `eligibleForTransactions == true` uygundur (bu uçta 200 = ilişki var, `known: true` karşılığı; MOD-0140 §3.1), yanıttaki
+  kanonik `supplierId` ve `supplierMasterId` saklanır (D72/1), ardından ad `GET /api/suppliers/{kanonik kod}` ile okunur (D72/4);
+  Validate, Submit, Approve ve ReleaseHold saklı kanonik kodla `POST /api/suppliers/validate` çağırır ve satırın `known` ∧
+  `eligibleForTransactions == true`'sını ister (satırdaki `supplierId` istenen kodla aynı değilse çelişkili yanıttır). Uygun
+  değilse (`known: false`, `eligibleForTransactions: false`, tekil uçta 404 `UNKNOWN_SUPPLIER`) `AP_SUPPLIER_NOT_ELIGIBLE` (422);
+  403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, okunamayan / alanı eksik /
+  çelişkili yanıt `AP_SUPPLIER_UNAVAILABLE` (503); 404 `UNKNOWN_LEGAL_ENTITY` `AP_LEGAL_ENTITY_UNKNOWN` (422). Hiçbirinde kayıt
+  yazılmaz ve MOD-0140 otomatik yeniden denenmez (istek başına uç başına tek çağrı); çağrılar kullanıcı token'ıyla yapılır.
+  MOD-0140 DL-3 birleşene kadar bağdaştırıcı yalnız sahte istemci / Prism ile çalışır, canlı bağlantı açılmaz; (c) PO'lu faturada
   Validate, Submit ve Approve'da MOD-0143 — durum uygun küme dışında ise `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (422), tedarikçi /
   para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503); tutar kuralı
-  `Σ Net = totalAmount` (KARAR D26 — Validation Rules → MOD-0143). Hiçbirinde
+  `Σ Net = totalAmount` (KARAR D26 — Validation Rules → MOD-0143). **Tedarikçi karşılaştırması (KARAR D73/1):** MOD-0143
+  faturasının `supplierId`'si eski kod olabilir; AP onu `GET /api/suppliers/{supplierId}/eligibility` (`getSupplierEligibility`,
+  faturanın şirketiyle, kullanıcı token'ıyla) ile kanonik koda çevirir ve yanıttaki kanonik `supplierId`'yi saklı kanonik
+  `SupplierId` ile **ordinal** karşılaştırır; eşitse tedarikçi tutar, değilse `AP_MATCH_REFERENCE_MISMATCH` (422). Bu çağrıda
+  yalnız kanonik kod kullanılır — tedarikçinin uygunluğu (b)'deki `validateSuppliers` okumasıyla ayrıca denetlenir. Çevirme
+  çağrısı okunamazsa D72/2 sınıflaması (b) ile aynıdır: 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 401, 503
+  `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, okunamayan gövde ya da kanonik `supplierId`'si yok / `null` → 503
+  `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`; tekil uçta 404 `UNKNOWN_SUPPLIER` (kod
+  çağıran şirkette tanınmıyor) kanonik kod vermez, eşitlik kurulamaz → `AP_MATCH_REFERENCE_MISMATCH` (422; D73/1 çıkarımı —
+  **teyit — KARAR D75/3**: eşitlik kanıtlanamaz, eşleşme kabul edilmez). Otomatik yeniden deneme yok (istek başına uç başına tek
+  çağrı); MOD-0143 okunamazsa (`AP_MATCH_UNAVAILABLE`) çevirme çağrısı yapılmaz. Hiçbirinde
   geçiş yapılmaz. Bu **okumalar** uzak yan etki değildir ve tx1'den önce yapılır.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId + LegalEntityId). Okumalar `IsDeleted = false`.
 - **Idempotency (D12/2 kuralı — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate, Submit,
@@ -811,8 +909,10 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        (`StartWorkflowInstanceHandler.cs:76-85`), geçişler anahtarı zorunlu tutar (`ApproveWorkflowTaskValidator.cs:13`) ve
        `GetByTaskActionIdempotencyKeyAsync` ile yeniden oynatır (`RejectWorkflowTaskHandler.cs:79-80`,
        `WorkflowTerminalTransitionWriter.cs:402-407`). Yeniden yazmadan önce (i) şirket uygunluğu (D10/1, D14/4), (ii) SoD
-       (başlatmada aday tabanı `ap-invoices.approve ∩ platform.workflow.tasks.approve` — KARAR D71, Validation Rules → "Aday
-       tabanı" — ve R1–R3 aday dışlaması yeniden; kararda niyetteki karar verenle R1–R6, R8, R9), (iii) izin ve (iv) aktör:
+       (başlatmada aday listesi **yeniden hesaplanmaz** — **KARAR D75/2 (b)**; kullanıcının başlattığı Reconcile dahil — **KARAR D76/3**: yeniden başlatma niyetteki ilk listeyi
+       (`ApWorkflowStartIntent.CandidatePrincipalIds`, Submit'te `ap-invoices.approve ∩ platform.workflow.tasks.approve` — KARAR
+       D71 — ve R1–R3 aday dışlamasından sonra yazılmış) aynen gönderir, Auth aday sorgusu çağrılmaz (Validation Rules → "Aday
+       tabanı"); kararda niyetteki karar verenle R1–R6, R8, R9), (iii) izin ve (iv) aktör:
        Reconcile'ı çağıran asıl komutun aktörü (`SubmittedBy` / `DecidedBy`) değilse uzak yazma çağrısı yok (409
        `AP_RECONCILE_RESTART_ACTOR_MISMATCH`) — MOD-0023'teki başlatan / karar veren değişmez. Hepsi geçerse aynı uzak
        yazma **aynı deterministik uzak anahtarla bir kez** yapılır; en fazla bir örnek / geçişi MOD-0023'ün tekil indeksi
@@ -1013,7 +1113,8 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 - Karar düğmeleri (Onayla / Reddet / Bilgi iste) ve Bekletme / Bekletmeyi kaldır yalnız Details'ta ve yalnız sunucunun
   verdiği `allowedActions` listesine göre çizilir; SoD nedeniyle karar veremeyen kullanıcıya düğme gösterilmez, yerine
   yerelleştirilmiş açıklama çizilir — sunucu kontrolünün yerine geçmez.
-- **Seçim kaynakları (sabit liste yok):** tedarikçi `GET /api/suppliers` (çağıran şirketle ilişkili, sözleşme 1.3.0);
+- **Seçim kaynakları (sabit liste yok):** tedarikçi `GET /api/suppliers` (`listSuppliers`, çağıran şirketle ilişkili; izin
+  `procurement.suppliers.read` — KARAR D72/4; seçici yalnız öneridir, uygunluk ve kanonik kod sunucuda D72/1–2 ile);
   MOD-0143 faturası `GET /api/invoice-match/invoices?supplierId=…` (yalnız uygun durumlar gösterilir; son karar sunucuda);
   para birimi `GET /api/lookups/reference/currencies`; alacak dekontu için orijinal fatura `GET /api/ap-invoices`
   (aynı tedarikçi, `Approved`). Hepsi same-origin MVC proxy üzerinden.
@@ -1031,7 +1132,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 | X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (her yazmada, Reconcile'ın kayıt yolu hariç — D14/4, D15/2); okumada okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef faturanın şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
 | DocumentType | Evet | tanımlı enum | — | — |
-| SupplierId | Evet | trim, 1..64, MOD-0140 sözleşme biçimi; çağıran şirketle Active ilişki | — | `ISupplierEligibilityPort` |
+| SupplierId | Evet | trim, 1..64, MOD-0140 kodu (kanonik ya da çağıran şirketin eski kodu); sunucu `getSupplierEligibility` ile kanonik koda çevirir ve kanonik kodu saklar (KARAR D72/1); uygunluk `known` ∧ `eligibleForTransactions == true` (D72/2; alan yok / `null` uygun değil) | mükerrer anahtarında kanonik kod | `ISupplierEligibilityPort` |
 | InvoiceNumber | Evet | trim, 1..64 | Unique (TenantId, LegalEntityId, SupplierId, DocumentType, InvoiceNumberNormalized), silinmemiş | — |
 | InvoiceDate | Evet | `DateOnly`, default değil; ileri tarih kuralı O-19 | — | — |
 | DueDate | Evet | `DateOnly`; `≥ InvoiceDate` | — | — |
@@ -1043,7 +1144,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 | Line.Description | Evet | trim, 1..256 | — | — |
 | Line.NetAmount / Line.TaxAmount | Evet | ≥ 0; küsurat ≤ para birimi hanesi; ikisi birden 0 olamaz | — | `ICurrencyReferencePort` (hane) |
 | Line.CurrencyCode | — | gönderilirse faturanınkine eşit | — | — |
-| Başlık tutarları, DocumentDirection, InvoiceCode, SupplierNameSnapshot | — | istekte bulunursa 400 (sunucu alanı) | Unique (TenantId, InvoiceCode) | `IRecordCodeAllocator` |
+| Başlık tutarları, DocumentDirection, InvoiceCode, SupplierMasterId, SupplierNameSnapshot | — | istekte bulunursa 400 (sunucu alanı) | Unique (TenantId, InvoiceCode) | `IRecordCodeAllocator` |
 | Toplam | — | `GrossAmount > 0` (sıfır tutarlı belge reddedilir) | — | — |
 | Idempotency-Key | **Evet** (her yazma komutu) | 1..128 yazdırılabilir ASCII; yoksa 400 `AP_IDEMPOTENCY_KEY_REQUIRED` | Unique (TenantId, LegalEntityId, ActorId, Operation, TargetId, Key) | makbuz araması |
 | Karar ReasonCode | Reject / RequestInfo için Evet | trim, ≤ 64 | — | — |
@@ -1061,8 +1162,10 @@ ve `Received`/`Validated`. Hold yalnız `Validated`/`Approved`; ReleaseHold yaln
 
 **MOD-0143 eşleşme kuralları (PO'lu fatura; KARAR D26, O-5):** MOD-0143 faturası aynı kiracı + şirkette bulunur; `status ∈
 {Matched, MatchedWithinTolerance}` (D26/2 — `ClearedForPayment` tolerance-override ile gelmiş olabilir, `Captured` /
-`Exception` / `Rejected` doğrulanmamış tutar taşıyabilir; hepsi 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`); `supplierId` ve
-`currency` AP kaydıyla eşit; tutar kuralı **`Σ Line.NetAmount = totalAmount`** (D26/1; MOD-0143 `Decimal` string'i
+`Exception` / `Rejected` doğrulanmamış tutar taşıyabilir; hepsi 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`); `supplierId` —
+`getSupplierEligibility` ile kanonik koda çevrildikten sonra (**KARAR D73/1**; eski kodlu MOD-0143 faturası reddedilmez) — saklı
+kanonik `SupplierId`'ye ordinal eşit, `currency` AP kaydıyla eşit (çevirme okunamazsa 503 `AP_SUPPLIER_UNAVAILABLE`, 404
+`UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` — D72/2; Runtime Constraints (c)); tutar kuralı **`Σ Line.NetAmount = totalAmount`** (D26/1; MOD-0143 `Decimal` string'i
 `decimal`'a çevrilerek, yuvarlamasız), fark 422 `AP_MATCH_REFERENCE_MISMATCH`. AP eşleştirme yapmaz, tolerans uygulamaz.
 **Taban (üretici cevabı, `PRODUCER-ANSWER-MOD0143-01.md`, ölçüm origin/main @05f311784):** `totalAmount = Σ lineAmount`
 sunucuda hesaplanır (`CaptureInvoiceHandler.cs:138`, `InvoiceMatchValidationRules.cs:48`); `lineAmount` yoksa
@@ -1086,7 +1189,7 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
 | R8 | Approve, uygunluğu (LE, tedarikçi ilişkisi, PO'lu ise MOD-0143) **o anda** yeniden okur; uygun değilse karar uzak sisteme gitmez | karar | TP-001 T14 |
 | R9 | Engelleyici açık istisna ya da `OnHold` varken Approve 409 (`AP_BLOCKING_EXCEPTION_OPEN` / `AP_INVOICE_ON_HOLD`); Reject ve RequestInfo serbest | karar | yeni |
 
-**Aday tabanı (KARAR D66/1; iş akışı kesişimi KARAR D71):** gönderme çözümleyicisi (Submit ve Reconcile'ın yeniden başlatması) adayları MOD-0018 Treasury Auth
+**Aday tabanı (KARAR D66/1; iş akışı kesişimi KARAR D71):** gönderme çözümleyicisi (yalnız Submit — kullanıcının başlattığı gönderim; Reconcile'ın yeniden başlatması niyetteki ilk listeyi kullanır, Auth'u yeniden çağırmaz — **KARAR D75/2 (b)**; kullanıcının başlattığı Reconcile da yeniden denemedir, rol değişikliği gerekiyorsa yeni gönderim yapılır — **KARAR D76/3**) adayları MOD-0018 Treasury Auth
 ekinin DL-6 aday sorgusundan okur (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6); taban
 **`finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`**: servis sorguyu iki anahtar için ayrı ayrı çağırır
 (sorgu tek anahtar alır) ve iki listede de bulunan kişileri alır — onay anahtarı olup MOD-0023 görev kararının izni olmayan kişi
@@ -1098,7 +1201,8 @@ kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource` — **KA
 ya da kurallar sonrası) boş kalırsa Submit 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` döner; MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**, MOD-0126 D68
 deseni); MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır. Sorgu (iki çağrıdan herhangi biri)
 okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişmez, MOD-0023 çağrılmaz (yanıt sınıfı Auth uç sözleşmesiyle
-— o paketin K-A1'i). Ayrı dizin istemcisi taşınmaz.
+— o paketin K-A1'inin sözleşme dosyası kısmı; iç uç kimliği **KARAR D74/1**: `X-Internal-Api-Key` ortak sırrı + çağrıyı başlatan
+kullanıcının iletilen token'ı, kiracı token'dan, servis kimliği kullanılmaz; Auth'un 401'i de "okunamaz"dır). Ayrı dizin istemcisi taşınmaz.
 
 ## Failure Path to Verify
 
@@ -1123,8 +1227,25 @@ okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişme
 - **PO'lu faturada MOD-0143 sonucu uygun değil** (`Captured`, `Exception`, `Rejected`) → Validate/Submit/Approve 422
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tutar / tedarikçi / para birimi farkı → 422 `AP_MATCH_REFERENCE_MISMATCH`; MOD-0143
   erişilemez → 503 `AP_MATCH_UNAVAILABLE`, geçiş yok.
-- **Tedarikçi ilişkisi Active değil** (OnHold / Blocked / Inactive / ilişkisiz) → 422 `AP_SUPPLIER_NOT_ELIGIBLE`; MOD-0140
-  erişilemez → 503 `AP_SUPPLIER_UNAVAILABLE`.
+- **MOD-0143 faturası tedarikçinin eski koduyla** (KARAR D73/1) → kod `getSupplierEligibility` ile kanonik koda çevrilir; saklı
+  kanonik `SupplierId`'ye eşitse eşleşme sürer (eski kodlu doğru fatura reddedilmez), başka tedarikçinin koduysa (eski ya da
+  kanonik) ya da tekil uç 404 `UNKNOWN_SUPPLIER` dönerse 422 `AP_MATCH_REFERENCE_MISMATCH` (404 dalı **teyit — KARAR D75/3**); çevirme çağrısı okunamazsa (403
+  `LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil, 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, okunamayan gövde, kanonik
+  `supplierId` yok / `null`) 503 `AP_SUPPLIER_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` (D72/2);
+  hiçbirinde geçiş, makbuz ya da niyet yok, otomatik yeniden deneme yok.
+- **Tedarikçi uygun değil** (KARAR D72/2 — `known: false`, `eligibleForTransactions: false`; OnHold / Blocked / Inactive /
+  ilişkisiz; tekil uçta 404 `UNKNOWN_SUPPLIER`) → 422 `AP_SUPPLIER_NOT_ELIGIBLE`; `status: Active` ama `eligibleForTransactions:
+  false` da uygun değildir (`status` yalnız gerekçe).
+- **MOD-0140 okunamıyor** (KARAR D72/2) — 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` (çağıran rolde `mdm.legal-entities.read` yok,
+  MOD-0140 S-2) ya da başka 403, 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, ayrıştırılamayan gövde,
+  `eligibleForTransactions` ya da `known` yok / `null` (1.2.0 şeklindeki satır dahil), tekil uç yanıtında kanonik `supplierId`
+  ya da `supplierMasterId` yok / `null`, satırdaki
+  `supplierId` istenenle farklı, ad çağrısı başarısız → 503 `AP_SUPPLIER_UNAVAILABLE`; kayıt, makbuz ve niyet yazılmaz, geçiş yok,
+  MOD-0140 otomatik yeniden denenmez (istemci yeni istekle yeniden dener).
+- **MOD-0140 çağıran şirketi tanımıyor** — 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`; kayıt yazılmaz, yeniden
+  deneme yok (D72/2).
+- **Eski tedarikçi koduyla Create** → kayıt kanonik kodla yazılır; aynı faturanın kanonik kodla ikinci Create'i 409
+  `AP_INVOICE_DUPLICATE` (mükerrer anahtarı kanonik kodla, D72/1; AC-44).
 - **Şirket aktif değil ya da onaylı değil** → her yazma komutu (Reconcile hariç; D14/4) 422 `AP_LEGAL_ENTITY_NOT_ELIGIBLE`,
   kayıt değişmez; MOD-0220 erişilemez → 503; okumalar etkilenmez.
 - **Başka kiracı / başka şirket faturası** (okuma, güncelleme, silme, karar, bekletme, istisna) → 404 `AP_INVOICE_NOT_FOUND`.
@@ -1234,11 +1355,22 @@ okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişme
   `ap.payment_candidate.*`, `ap.policy.*`, `ap.import-failures.*`, `ap.external_event.record` (v1 dışı akışlar); eski
   `ap.import_failure.read` (kaynakta bilinçli kırılma, paket §B) zaten yok.
 - Kullanıcının bağımlı servislerde de okuma izni olmalıdır, çünkü çağrılar kullanıcı token'ıyla yapılır:
-  `mdm.legal-entities.read` (MOD-0220), MOD-0140 tedarikçi okuma izni (1.3.0'da adı ölçülür), `procurement.invoice-match.read`
+  `mdm.legal-entities.read` (MOD-0220), `procurement.invoice-match.read`
   (MOD-0143, `InvoiceMatchController.cs:53`), MOD-0031 kanıt okuma; MOD-0023'te `platform.workflow.instances.start`
   (gönderen) ve `platform.workflow.tasks.approve` / `.reject` / `.request-info` (onaylayıcı) (`WorkflowModels.cs:16-19`).
   Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) (O-20); `platform.workflow.tasks.approve` /
   `.reject` AP onaylayıcı rolüne rol şablonuyla gelir (**KARAR D70/1**).
+- **MOD-0140 izinleri (KARAR D72/3–4; MOD-0140 §14):** `procurement.suppliers.eligibility.read` (`POST /validate` ve
+  `GET /{supplierId}/eligibility` — `[HasAnyPermission]` ile `.read` de yeter) ve `procurement.suppliers.read` (`GET
+  /{supplierId}` görüntü adı ve form seçicisi `GET /api/suppliers`; `eligibility.read` bu uçları açmaz). İkisi de MOD-0140'ın
+  anahtarıdır; AP rollerine MOD-0018 Treasury Auth ekinde **çapraz modül bağımlılığı** olarak rol şablonuyla gelir (D70/1
+  deseni; MOD-0018 sahibinin teyidi) — MOD-0140'ı çağıran komutlara göre ölçüldü: `eligibility.read` → AP operatörü (Create,
+  Update, Validate, Submit), AP onaylayıcı (Approve), AP operasyon yöneticisi (+ ReleaseHold); `procurement.suppliers.read` →
+  AP operatörü ve AP operasyon yöneticisi (Create / Update ve seçici). AP görüntüleyici MOD-0140'ı çağırmaz (ad kayıtta
+  kopyadır), bu izinleri almaz. **`mdm.legal-entities.read`** bu rollerde zaten vardır (D47 matrisi); MOD-0140 S-2 gereği
+  Procurement çağrısı için de gerekir — yoksa MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` döner ve AP 503
+  `AP_SUPPLIER_UNAVAILABLE` verir; BL-652 Option 2 (Procurement → MDM servis kimliği, MOD-0140 DL-7) gelince bu gerekçe kalkar.
+  Servis token'ı v1'de kullanılmaz (MOD-0140 DL-7 / 1.5.0 sonrası ayrıca değerlendirilir).
 - **Onaylayıcı aday tabanı — iş akışı izni kesişimi (KARAR D71; MOD-0018 eki K-A4b KAPANDI — KARAR D71):** aday listesi
   `finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`'dur (DL-6 sorgusuna anahtar başına ayrı çağrı;
   kesişimi servis yapar, Auth sorgusu tek anahtar alır — MOD-0018 eki Bölüm 8.6). Onay anahtarı rol dışı elle verilmiş, iş akışı
@@ -1355,11 +1487,36 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] AC-4 (zorunlu) — Tedarikçinin çağıran şirketle ilişkisi `Active` değilse (OnHold / Blocked / Inactive / ilişkisiz)
   Create, Update, Validate, Submit ve Approve 422 `AP_SUPPLIER_NOT_ELIGIBLE` döner; dört durum ayrı test edilir; durum
   MOD-0140 sözleşmesinden okunur, AP'de tedarikçi koleksiyonu okuması yoktur (mimari testi: ProcurementService
-  koleksiyon adı ya da Mongo bağlantısı AP kodunda geçmez).
+  koleksiyon adı ya da Mongo bağlantısı AP kodunda geçmez). **Genişletme (KARAR D72/2; sahte istemci / Prism, 1.3.0 FROZEN
+  dosyasına karşı, her vaka ayrı test):** (a) uygunluk yalnız `known` ∧ `eligibleForTransactions == true`'dur — satır
+  `status: Active` ama `eligibleForTransactions: false` → 422 `AP_SUPPLIER_NOT_ELIGIBLE`; `status: Blocked` ama
+  `eligibleForTransactions: true` (sözleşmeye aykırı fikstür) kararı değiştirmez, alan esastır; (b) satırda
+  `eligibleForTransactions` yok (1.2.0 şeklindeki `{supplierId, known, status}` satırı) ya da `null` → uygun sayılmaz, 503
+  `AP_SUPPLIER_UNAVAILABLE`, kayıt / makbuz / niyet yazılmaz; (c) MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503
+  `DEPENDENCY_UNAVAILABLE`, ayrıştırılamayan gövde ve zaman aşımı → 503 `AP_SUPPLIER_UNAVAILABLE`, hiçbir şey yazılmaz ve sahte
+  istemci istek başına uç başına **tek** çağrı görür (otomatik yeniden deneme yok); (d) 404 `UNKNOWN_LEGAL_ENTITY` → 422
+  `AP_LEGAL_ENTITY_UNKNOWN`, hiçbir şey yazılmaz; (e) ReleaseHold aynı sınıflamayı kullanır (ReleaseHold DL-3'te gelir; o vaka
+  o dilimin testidir). **Sabotaj (üretim kodunda):**
+  uygunluk hesabı `status == Active`'e çevrilince (a) kırmızı; alan yokken "uygun say" yapılınca (b) kırmızı; bağdaştırıcıya
+  yeniden deneme eklenince (c)'nin çağrı sayısı testi kırmızı; 404 `UNKNOWN_LEGAL_ENTITY` `AP_SUPPLIER_NOT_ELIGIBLE`'a
+  eşlenince (d) kırmızıya döner.
 - [ ] AC-5 (zorunlu) — PO'lu faturada `MatchInvoiceRef` yoksa 400; MOD-0143 durumu uygun küme dışındaysa 422
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da net tutar farkı
   (`Σ Net ≠ totalAmount`, KARAR D26) varsa 422 `AP_MATCH_REFERENCE_MISMATCH`; `ClearedForPayment` 422
-  `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409.
+  `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409. **Genişletme (KARAR D73/1; sahte MOD-0143
+  + sahte MOD-0140 / Prism, 1.3.0 FROZEN dosyasına karşı, her vaka ayrı test; Validate'te — Submit ve Approve aynı kuralı
+  kullanır, DL-2'de gelir; o vakalar o dilimin testidir):** (a) AP kaydında
+  kanonik `SUP-…` saklı, MOD-0143 faturası aynı tedarikçinin çağıran şirketteki **eski koduyla** (`LegacySupplierCodes`
+  fikstürü) → `getSupplierEligibility` eski kodu aynı kanonik koda çevirir, eşleşme kabul edilir (Validate geçer); sahte MOD-0140
+  çevirme çağrısını MOD-0143 faturasındaki kodla, faturanın şirketi ve kullanıcının `Authorization` başlığıyla görür; (b) MOD-0143
+  faturası **farklı bir tedarikçinin** koduyla (eski ya da kanonik) → 422 `AP_MATCH_REFERENCE_MISMATCH`, geçiş yok; tekil uç 404
+  `UNKNOWN_SUPPLIER` → 422 `AP_MATCH_REFERENCE_MISMATCH` (**teyit — KARAR D75/3**; 503 ya da geçişe eşlenince test kırmızıya
+  döner); karşılaştırma ordinaldir (`SUP-2001` ≠ `sup-2001`); (c) çevirme çağrısı
+  403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, ayrıştırılamayan gövde, kanonik `supplierId` yok / `null` ve
+  zaman aşımı → 503 `AP_SUPPLIER_UNAVAILABLE`, sahte istemci tek çevirme çağrısı görür (otomatik yeniden deneme yok); 404
+  `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`; (b) ve (c) vakalarında geçiş, makbuz ve niyet yazılmaz. **Sabotaj
+  (üretim kodunda):** çevirme kaldırılıp MOD-0143 `supplierId`'si saklı kodla doğrudan karşılaştırılınca (a)'daki eski kodlu doğru
+  fatura 422 alır ve test kırmızıya döner; çevirme okunamazken "eşit say" yapılınca (c) kırmızıya döner.
 - [ ] AC-6 (zorunlu) — Mükerrer fatura (aynı şirket + tedarikçi + belge türü + normalize numara) 409 `AP_INVOICE_DUPLICATE`;
   eşzamanlı iki Create'te biri 201, diğeri 409 (gerçek replica set); tekil indeks kaldırıldığında test kırmızıya döner
   (sabotaj).
@@ -1481,7 +1638,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma örnek / geçiş göstermedi + gap 6/P1-a'nın
   iki koşulu kapalı (AC-37) + şirket uygun + SoD/izin geçer + asıl aktör → başlatma / geçiş aynı deterministik anahtarla yeniden yazılır ve MOD-0023'te tam **bir**
   örnek / geçiş vardır (ikinci Reconcile ikincisini üretmez; yinelenen anahtar hatası `Unknown` bırakır, asla `Refused`
-  değil); aktör farklıysa 409 `AP_RECONCILE_RESTART_ACTOR_MISMATCH`, uzak yazma/başlatma çağrısı yok; (e) MOD-0031'e
+  değil); aktör farklıysa 409 `AP_RECONCILE_RESTART_ACTOR_MISMATCH`, uzak yazma/başlatma çağrısı yok; **(d) eki — başlatmada
+  ilk aday listesi (KARAR D75/2 (b); kullanıcının başlattığı Reconcile dahil — KARAR D76/3):** yeniden başlatma isteğinin `CandidatePrincipalIds`'i niyetteki
+  `ApWorkflowStartIntent.CandidatePrincipalIds`'e birebir eşittir ve sahte Auth aday istemcisi Reconcile boyunca hiç çağrılmaz
+  (çağrı sayısı 0) — sahte Auth Submit'ten sonra farklı liste döndürse de; sabotaj: Reconcile aday çözümleyicisini yeniden
+  çağırınca test kırmızıya döner; (e) MOD-0031'e
   Reconcile ya da herhangi bir kurtarma yolu hiç yazma çağrısı yapmaz; belirsiz okumada niyet `Unknown` kalır (sahte
   MOD-0031 yazma çağrısı sayısı 0). Sabotaj: okuma atlanıp doğrudan yeniden yazıldığında, "bulunamadı" `Cancelled`'a
   bağlandığında, farklı anahtarla yeniden yazıldığında ya da MOD-0031'e yazıldığında test kırmızıya döner.
@@ -1537,6 +1698,17 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   döndürdüğünde Create 503 `AP_RECORD_CODE_UNAVAILABLE` ve fatura yazılmaz. **Sabotaj:** üretim kompozisyonunda port bağlı
   değilken (bağdaştırıcı kaydı kaldırılır) Create 503 döner ve koleksiyona yazma olmaz; fail-closed korunağı kaldırılıp
   kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: AP kodunda kendi sayaç / yedek kod üreticisi yok.
+- [ ] AC-44 (zorunlu) — **Kanonik tedarikçi kimliği, ikincil uuid ve görüntü adı (KARAR D72/1, D72/4; DL-1; sahte MOD-0140 /
+  Prism, 1.3.0 FROZEN dosyasına karşı):** çağıran şirketin eski koduyla (`LegacySupplierCodes` fikstürü) Create → kayıtta
+  `SupplierId` = `getSupplierEligibility` yanıtındaki kanonik kod (`SUP-…`), `SupplierMasterId` = yanıttaki uuid,
+  `SupplierNameSnapshot` = kanonik kodla çağrılan `getSupplier` yanıtının `name`'i; sonraki Validate / Submit / Approve
+  `validateSuppliers`'a kanonik kodu gönderir (sahte istemci istek gövdesini doğrular). Aynı şirket + belge türü + fatura
+  numarasıyla önce eski kodla, sonra kanonik kodla iki Create → ikincisi 409 `AP_INVOICE_DUPLICATE` (mükerrer anahtarı kanonik
+  kod). İstekte `supplierMasterId` ya da `supplierNameSnapshot` → 400. Tekil uç yanıtında `supplierMasterId` `null` / uuid
+  değil, ya da ad çağrısı 403 / 404 / 503 / okunamayan gövde → 503 `AP_SUPPLIER_UNAVAILABLE`, kayıt yok. Bağdaştırıcının
+  çağrıları kullanıcının `Authorization` başlığını taşır (servis token'ı yok). **Sabotaj:** kanonikleştirme kaldırılıp
+  istekteki kod saklanınca eski kod testi ve mükerrer testi kırmızıya döner; `SupplierMasterId` `null` iken yazmaya izin
+  verilince `null` testi kırmızıya döner.
 
 ## Test Expectations
 
@@ -1551,8 +1723,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   409; aynı anahtarla tekrar → tek örnek; karar geçişinde anahtar iletimi; "son adım değil" yanıtı (ara durum yok — AC-14, D66/4); iptal edilmiş örnek; silinmiş
   örnek / geçiş (AC-37) ve aynı faturanın eski örneği (AC-38).
 - **MOD-0220 / MOD-0140 / MOD-0143 / MOD-0031 sahteleri:** her biri için uygun / uygun değil / bulunamadı / erişilemez;
-  MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz; MOD-0143 için altı durum ve vergili fatura (AC-40); gerçek sözleşmeler geldiğinde
-  sözleşme testi (1.3.0, 1.1.1, TRM-14).
+  MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz, `status: Active` + `eligibleForTransactions: false`, alanı
+  eksik (1.2.0 şekli) / `null`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY`,
+  eski kod → kanonik kod (AC-4, AC-44); MOD-0143 için altı durum ve vergili fatura (AC-40); MOD-0143 faturasının
+  tedarikçi kodunun `getSupplierEligibility` ile kanonikleştirilmesi — eski kodlu doğru fatura, farklı tedarikçi, 404
+  `UNKNOWN_SUPPLIER`, çevirme okunamaz (403 / 503 / bozuk gövde / kanonik kod yok / zaman aşımı), 404 `UNKNOWN_LEGAL_ENTITY`,
+  çağrı sayısı ve sabotajı (AC-5, KARAR D73/1); sözleşme testi — MOD-0140
+  **1.3.0 FROZEN (MOD-0140 DL-1)** dosyasına karşı Prism / sahte istemci, MOD-0143 1.1.1, TRM-14. **MOD-0140 canlı
+  entegrasyonu MOD-0140 DL-3'ten sonra** (C2 kodları DL-4'ten sonra); o zamana kadar canlı çağrı yok.
 - **Auth aday sahtesi (KARAR D66/1, D71):** aday sorgusu (izinli liste / boş / okunamaz / 403); anahtar başına ayrı yanıt
   (`finance-treasury.ap-invoices.approve` ve `platform.workflow.tasks.approve` listeleri farklı kişilerle; yalnız biri okunamaz —
   iş akışı izni çağrısı dahil) — kesişim ve sabotajı AC-10'da.
@@ -1611,7 +1789,9 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
-- [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2)
+- [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de **FROZEN** (MOD-0140 DL-1; MOD-0140 paketi Revizyon 5 `ready-for-dev`, sha256
+  `b3259e40…ce5c2`, `approvals.tsv:26`) — 2026-10-28 ölçümünde main'de 1.2.0; DL-1 1.3.0'a karşı sahte istemci / Prism ile yazılır
+  (KARAR D72)
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-22; platform-shared-services) — tasarım: yol Platform sahibi yanıtı Y-4/6 ile belirlendi (servis içi `IFinanceTreasuryDataScopeSource` + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MOD-0126 DL-1 yazar); açık kalan (paket kapısı): `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı — MOD-0018 Treasury Auth ekinin DL-1'inde (Bölüm 14.1), ek main'de değil; FinanceTreasury'nin Platform kapsam ucuna bağlanması o ekin K-6 açık kararı. Kapsamı soran kod + kanıt testi (AC-32) bu kapının maddesi değildir — **DL-1 kabul kapısındadır** (D51/2; AC-32'nin DL-1 uçları kısmı DL-1 "Bitiş"te, iz ve karar uçları DL-2'de, bekletme / istisna / kanıt uçları DL-3'te — tam kapanış)
 - [x] O-4, O-6 (KARAR D28), O-5 (KARAR D26) yazıldı (DL-1 kapsamı, mükerrer anahtarı, MOD-0143 kuralı)
 - [x] O-12 kod alma kaynağı commit'i ve MOD-0119 kod alma izni (KARAR D27/5: kaynak S `da4abb20`)
@@ -1622,6 +1802,10 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [ ] Tüketici onayı slotları (paket §P → §U) "Implementation Notes"taki tabloya göre kapatıldı — DL-1'in kullandığı gerekli slotlar (AUTH, LE, SUPPLIER, AUDIT, DATA-CONTRACT); level 3'ten önce hepsi
 
 **Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
+- [ ] MOD-0140 canlı bağlantısı (KARAR D72): MOD-0140 DL-3 main'de (uçlar ve `validate` satırının yeni alanları; C2 kodları için
+  DL-4) + `procurement.suppliers.eligibility.read` / `procurement.suppliers.read` Auth kataloğunda (MOD-0140 §18 :534) ve AP
+  rollerinde bağımlı anahtar olarak (MOD-0018 Treasury Auth eki, D72/3–4) — DL-1 için (yalnız canlı bağlantı ve kapanış
+  tablosunun canlı kanıtı; DL-1 kodu sahte istemci / Prism ile bunu beklemez)
 - [x] O-7, O-14 (KARAR D28) yazıldı (onay kademesi, alacak dekontu onay kapsamı); O-8 K2 → D14/3 ile kapandı — DL-2 için
 - [x] O-13 (KARAR D28) yazıldı (istisna tek aktif kuralı) — DL-3 için
 - [ ] MOD-0023'te MOD-0119 iş akışı şablonu main'de — **kod geldi (Y-12):** `FT-AP-INVOICE-APPROVAL`, tek aşama / tek onay adımı /
@@ -1644,11 +1828,15 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `1b8f172a830957c123336b7e90516834e9364a1925f9bb85db6359fa240a8ddf` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; MOD-0126 D71 revizyonu — aday tabanı iş akışı izniyle de kesişir, K-A4b kapandı (D71); önceki `ec4943aa…e374` (D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları), `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `674c73e9c532702dc65376286e4a236e9c4ef784040709b86bc3a4cab00d79ea` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; MOD-0126 D76 revizyonu — yalnız KARAR D76/3 atfı (kullanıcının başlattığı Reconcile da ilk aday listesini kullanır), davranış değişmedi; önceki `b5e749bd…732e` — D75 revizyonu — iç uç kimliği atıfları KARAR D74/1'e çekildi, Reconcile'ın yeniden başlatması niyetteki ilk aday listesini kullanır (D75/2 (b)), AC-34 genişletildi; önceki `fb581b3b…cce5` — D74/3 revizyonu: muafiyet atayanı Muafiyet yetkilisi rolü (D49/4'teki "Hazine yöneticisi ya da K1" kalktı); önceki `1b8f172a…8ddf` (D71 revizyonu — aday tabanı iş akışı izniyle de kesişir, K-A4b kapandı (D71)), `ec4943aa…e374` (D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları), `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
+- Tedarikçi sözleşmesi tanımı (KARAR D72): `execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md`
+  Revizyon 5, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2` (origin/main'de aynı; CT-APR-01
+  `execution/approvals/approvals.tsv:26`); kullanılan yerler §2 "Sunum" (:42-44), §3.1–§3.3, §14 (:439-445). 1.3.0 sözleşme
+  dosyası MOD-0140 DL-1 ile main'e girince bu paketin sözleşme testi o dosyanın `shasum`'una bağlanır (kapanış tablosu).
 - Producer paketi: MOD-0119 v1.1 (TRM-B7-02), `source-batch7-v1.0/…/mod0119-transfer-packet-v1.1/`, `manifest.json`
   sha256 `f075aeafbdb17ffa3015e6dea248f0bd407bc0db0064ce94df10c37f581c1d31` (bu oturumda `shasum -a 256` ile ölçüldü);
   paket dosyası `MOD-0119-TRANSFER-PACKET-v1.1.md` sha256 `733db5135b67c4c0f05318b274d724c72b687592f322646d8c24fc6a64bb88b4`
@@ -1682,7 +1870,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 |---|---|---|
 | AUTH (MOD-0018) | **gerekli** — `finance-treasury.ap-*` anahtarları (`read-tenant-wide` açık atama dahil), rol şablonu | O-20; Auth paket metni MOD-0018 Treasury Auth eki DL-1 (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; FU numarası açık — K-1); kaynağın `ap_*_scope` talepleri taşınmaz, yerine SEC-002 veri kapsamı (D14/1, O-22) |
 | LE (MOD-0220) | **gerekli** | TRM-14 sözleşme belgesi |
-| SUPPLIER (MOD-0140) | **gerekli** — `supplierId` anlamı, ilişki durumu; görüntü kopyası | 1.3.0 + MOD-0140 sahibi onayı |
+| SUPPLIER (MOD-0140) | **gerekli** — kanonik `supplierId` + `supplierMasterId` (D72/1), uygunluk `known` ∧ `eligibleForTransactions` (D72/2); görüntü kopyası (D72/4) | MOD-0140 paketi Revizyon 5 onaylı (`approvals.tsv:26`); 1.3.0 FROZEN (MOD-0140 DL-1); canlı MOD-0140 DL-3 |
 | BANK (MOD-0289) | v1'de yok (banka referansı taşınmaz) | Follow-up |
 | PAYMENTS (MOD-0126) | v1'de yok | Follow-up (`ApLinked` dikişi) |
 | SETTLEMENT (MOD-0269) | v1'de yok | Follow-up |
@@ -1754,7 +1942,10 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - **AP → MOD-0126 ödeme dikişi:** `Approved` faturadan ödeme önerisi (kaynak `ApPaymentProposalCandidate`), MOD-0126'da
   `ApLinked` kaynak türünün açılması, `PaymentProposed` / `Closed` durumları, `OpenAmount` azaltımı. Her iki paketin
   değişikliği ve MOD-0289 banka referansı sözleşmesi gerekir (taslak: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`,
-  BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT); bu paket kapsamı değildir.
+  BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT); bu paket kapsamı değildir. **KARAR D75/4:** o sözleşmenin 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`
+  yanıtı tüketicide "hesap uygun değil"dir — tüketici kendi 422'sini döner (bu pakette bugün banka hesabı kodu yok; tüketim
+  açılınca paket önekiyle — `AP_` — hata sözlüğüne yazılır), kayıt yazılmaz, otomatik yeniden deneme yok; tüketimi açan AC bu
+  yanıtın 503'e eşlenmesini sabotajla kırmızıya çevirir.
 - Ödeme ve tahsilat durumu olayları (kaynak AP-16 MOD-0126, AP-17 MOD-0269) — üreticiler açılınca, sözleşmeli ve
   idempotent alım.
 - Dış ERP içe aktarma, içe aktarma hataları ve kaynak kontrol toplamı mutabakatı (AP-03…06, AP-09, AP-10) — kaynak sistem,
@@ -1802,6 +1993,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 | O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; **D49/1, D49/3, D50/1:** AP görüntüleyici, AP operatörü, AP onaylayıcı (karar + mutabakat) ve AP operasyon yöneticisi (birleşik AP yöneticisi ve AP onay yöneticisi kalktı); **D50/3:** istisnayı açan çözemez / yeniden açamaz (AC-42); Auth paket metni MOD-0018 Treasury Auth eki (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16) | sahip + MOD-0018 sahibi |
 | O-21 | Servis iskeletini ve ortak yapı taşlarını hangi paket açar | MOD-0126 DL-1 / AP DL-1 | **KAPANDI (D14/2 ile tutarlı; gap 4/G5):** tek sahibi ve yazarı MOD-0126 DL-1 — iskelet, `FinanceTreasuryCommandReceipt` + indeksleri, `IFinanceTreasuryDataScopeSource`, ortak LE / para birimi / kod portları, CentralAudit kaydı; AP DL-1 onu bekler ve bunları yeniden tanımlamaz. "Hangi paket önce kodlanırsa" kuralı yoktur | sahip (K1) |
 | O-22 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (MOD-0018 Treasury Auth eki DL-1 — Treasury yazar, MOD-0018 sahibi teyit eder, Y-15, Y-16; Platform kapsam ucunun FinanceTreasury'yi kabul etmesi o ekin K-6 açık kararı); servis ortak tek karar (MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
+| O-23 | MOD-0143 eşleşmesinde tedarikçi karşılaştırması kanonik kodla mı (KARAR D72/1 sonrası: AP kanonik kodu saklar; MOD-0143 faturasının `supplierId`'si eski kod olabilir — `invoice-match.openapi.yaml` 1.1.1 kanonikleştirme yazmaz) | (a) AP MOD-0143 faturasının `supplierId`'sini de `getSupplierEligibility` ile kanonik koda çevirip karşılaştırır (ek çağrı; okunamazsa 503 `AP_SUPPLIER_UNAVAILABLE`) · (b) olduğu gibi ordinal karşılaştırır (eski kodlu MOD-0143 faturası 422 `AP_MATCH_REFERENCE_MISMATCH` alır, MOD-0143 tarafı kanonikleşene kadar) | **KAPANDI — KARAR D73/1 (2026-10-28): (a)** — MOD-0143 eşleştirmesinden gelen `supplierId` `getSupplierEligibility` ile kanonik koda çevrilir ve saklı kanonik kodla ordinal karşılaştırılır (eski kodlu doğru fatura reddedilmez; farklı tedarikçi 422 `AP_MATCH_REFERENCE_MISMATCH`); çevirme okunamazsa D72/2 sınıflaması (503 `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`); tekil uç 404 `UNKNOWN_SUPPLIER` → 422 `AP_MATCH_REFERENCE_MISMATCH` (**teyit — KARAR D75/3**). Uygulama: Runtime Constraints (c), Validation Rules, Failure Path, AC-5 | sahip (K1) + MOD-0143 sahibi |
 
 ## Teslim dilimleri
 
@@ -1826,10 +2018,10 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (Owned Objects → Ortak tip kararı, Repo Scope, O-21).
   **Neden ilk:** borç kaydı ve mükerrer koruması modülün temelidir; onay akışı ona dayanır. Önkoşul: yalnız paket kapısı —
   Ready-for-dev Checklist'in işaretsiz ENGELLER maddeleri (CT-APR-02/01, DCP, Auth paket metni (MOD-0018, D53/1; kayıt kodu DL-1 kabulünde, D53/2), **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port,
-  TRM-14, MOD-0140 1.3.0, O-10, O-22 tasarımı + Auth'ta `read-tenant-wide` tanımı); "— DL-n için" işaretli
+  TRM-14, MOD-0140 1.3.0 FROZEN dosyası (MOD-0140 DL-1; uçlar MOD-0140 DL-3'e kadar sahte istemci / Prism — KARAR D72), O-10, O-22 tasarımı + Auth'ta `read-tenant-wide` tanımı); "— DL-n için" işaretli
   maddeler DL-1'i bekletmez (D51/1). RCS-001 / BL-565 servisi önkoşul değildir — DL-1 kabul kapısıdır (KARAR D59/1): kod
   `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır. Servis iskeleti bu dilimde değil, MOD-0126 DL-1 WP'sinin ilk adımıdır (D51/3). **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır — `feature/fin/wp-0119-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
-  Bitiş: AC-1…6, 15 (Create / Update / Delete / BulkDelete / Validate kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete / BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Validate kısmı), 40 (Validate kısmı), 43. **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `APD` kodu alındı (kapanış tablosu RCS-001 satırı).
+  Bitiş: AC-1…6, 15 (Create / Update / Delete / BulkDelete / Validate kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete / BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Validate kısmı), 40 (Validate kısmı), 43, 44 (KARAR D72). **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `APD` kodu alındı (kapanış tablosu RCS-001 satırı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve / Reject / RequestInfo, SoD politika servisi ve gönderme çözümleyicisi (aday
   tabanı servis ortak `IFinanceTreasuryApproverCandidateSource` üzerinden — MOD-0126 DL-2 yazar, KARAR D66/1), `IApWorkflowPort` uygulaması
   (`Infrastructure/ApWorkflow/**` — MOD-0126 DL-2'nin servis ortak MOD-0023 bağdaştırıcısı üzerinde; zaman aşımı ortak ayarda),
