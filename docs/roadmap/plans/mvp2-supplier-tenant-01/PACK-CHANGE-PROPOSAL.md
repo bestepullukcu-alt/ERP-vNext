@@ -222,3 +222,24 @@ birleştirme ve kod çakışması beklenmez.
 **Karantina uuid / kod uyuşmazlığı:** Inventory sahibinin işi; entegrasyonda Procurement ile Karantina bağlanırken
 ölçülüp düzeltilecek. Bu WP'de değişiklik yok.
 
+
+## 5b. Onaylayıcı kararları (2026-10-26) ve Revizyon 3 taslağı (2026-10-28)
+
+Kaynak: Beste (MVP-1 CT), 2026-10-26, sahip üzerinden iletildi. Paket karşılığı: MOD-0140 §19 2026-10-26 kaydı.
+
+| # | Karar |
+|---|---|
+| 1 | `supplier.openapi.yaml` 1.3.0 contract-first, ayrı ilk dilim (DL-1); yalnız ekleme, 1.2.0 FROZEN kalır |
+| 2 | `validate` ve uygunluk okuması çağıranın şirket ilişkisinden: `supplierMasterId`, `relationshipExists`, `status`, `onboardingStatus`, `purchasingEnabled`, `eligibleForTransactions` |
+| 3 | Dar izin `procurement.suppliers.eligibility.read` (PKS-001 uyumu pakette gösterilir) |
+| 4 | Hazine (MOD-0119, MOD-0289): çağıran şirketle aktif ilişkili tedarikçi listesi 1.3.0'da (`GET /api/suppliers/eligible`) |
+| 5 | Onboarding onayı gerçek MOD-0023 iş akışıyla (`GatewayWorkflowClient` kalıbı) |
+| 6 | Başlık LE'sinin MDM ile doğrulanması (C2, geçersizse 404); servis geneli — MOD-0141, MOD-0142, MOD-0143, MOD-0144, MOD-0145 sahiplerine bildirilir |
+| 7 | Yalnız `validate` için servis token'ı ayrı dilim (DL-7), BL-652 Seçenek 2'ye bağlı |
+
+**Bağımsız inceleme (Revizyon 2, `fda06b89…`):** KOŞULLU — `docs/records/reviews/MOD-0140/2026-10-26-fda06b89.md`, PR #249.
+
+**Revizyon 3 taslağı (2026-10-28, yerel dal `feature/mvp2/supplier-tenant-02`):** kararsız düzeltilebilen F-1, F-2, F-4,
+F-5, F-6, F-7 pakete işlendi; F-3 yalnız olgusal olarak düzeltildi (izolasyon iddiası "başlıkta seçilen / JWT'deki LE
+bağlamında") ve S-7 olarak karar listesine alındı. Karar bekleyen: S-1…S-7 (paket §20). Kararlar işlendikten sonra
+Revizyon 3 yeniden bağımsız incelemeye gider; push ve PR, PR #249 merge edildikten sonra.
