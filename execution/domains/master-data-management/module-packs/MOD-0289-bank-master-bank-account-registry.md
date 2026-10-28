@@ -709,8 +709,8 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
   seçmez. DL-1 kodu sahte allocator'la ilerler; bu iki kayıt türünde çağrının `legalEntityId` değeri tek bir çağrı
   noktasında üretilir ve karar gelene kadar belirlenmemiş sayılır — sahte allocator testi bu değer üzerinden "geçti" sayılmaz.
   Karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı (Dependencies kapanış tablosu),
-  bağdaştırıcı ve AC-60 kabul testi ona bağlanır. O-14 yalnız grup önekli bu iki türü kapsar; şirket hesabı (`BAC`, şirket
-  kısa kodu öneki — D24/4) hesabın sahibi şirketin `LegalEntityId`'siyle çağrılır. Bağdaştırıcı v0 sözleşmesini
+  bağdaştırıcı ve AC-60 kabul testi ona bağlanır. O-14 şirket hesabını da kapsar: şirket hesabında (`BAC`, şirket kısa kodu
+  öneki — D24/4) hesabın sahibi şirketin `LegalEntityId`'siyle çağrılması öneridir, sözleşme sahibince teyit edilir (D65/2). Bağdaştırıcı v0 sözleşmesini
   (`POST /api/internal/record-codes/allocate`) çağırır; 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
   `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE` ile başarısız
   kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı kayıtlı değil) banka ve hesap Create 503, kodsuz
@@ -1632,8 +1632,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   v0 sözleşmesinde yazılı değildir ve bu paket değer seçmez; O-14 kapanmadan bu iki kayıt türü için gerçek servisle kabul
   verilmez (sahte allocator testi bu değer üzerinden "geçti" sayılmaz); karar gelince v0 sözleşme satırı, bağdaştırıcı ve
   bu AC'nin kabul testi karara bağlanır — test, kararın verdiği `legalEntityId` değerinin çağrıda gittiğini doğrular ve
-  değer değiştirildiğinde kırmızıya döner (sabotaj). Şirket hesabı `BAC` çağrısı hesabın sahibi şirketin `LegalEntityId`'siyle
-  yapılır (şirket öneki, D24/4). Banka kısmı DL-1'de, şirket hesabı kısmı DL-2'de, tedarikçi hesabı kısmı DL-3'te (tam
+  değer değiştirildiğinde kırmızıya döner (sabotaj). Şirket hesabı `BAC` çağrısındaki değer de O-14 ile teyit edilir (öneri:
+  sahip şirketin `LegalEntityId`'si, D24/4; KARAR D65/2). Banka kısmı DL-1'de, şirket hesabı kısmı DL-2'de, tedarikçi hesabı kısmı DL-3'te (tam
   kapanış).
 
 ## Test Expectations
@@ -1969,7 +1969,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-11 | Banks ekranının şekli | Compact / Slim | **KARAR D24/7 (2026-10-25): Compact** — Details'ta şube alt tablosu | sahip (K1) |
 | O-12 | Para birimi küsurat hanesi kaynağı | MOD-0289 / MOD-0048 | **KARAR D24/8 (2026-10-25): MOD-0048** — MOD-0289 yalnız ISO kodu saklar ve MOD-0048 listesinde olduğunu doğrular | sahip (K1) |
 | O-13 | Hesap amaçları ekranının şekli (form 8 alan: Code + 7 etiket — tek başına Slim'e düşer) | Compact (pack'in tek `golden_reference` değeri) / Slim (sapma kaydıyla) | **KARAR D27/9 (2026-10-25): Compact** — pack tek `golden_reference` taşır (module-pack-standard `screens` yalnız `data_mode` taşır); Details'ta kullanan hesap sayısı | sahip (K1) |
-| O-14 | Grup önekli kayıtlarda (banka `BNK`, tedarikçi hesabı `BAC` — RCS-001 §5.3) allocator'a gönderilecek `legalEntityId` | v0 sözleşmesinde (KARAR D59/1) yazılı değil; seçenekleri sözleşme sahibi belirler — bu paket değer önermez | **açık** — Beste'ye soruldu, cevap yok (2026-10-28). **Kapı: DL-1 kabul kapısı** (tedarikçi `BAC` kısmı DL-3 kabulünde de aranır); karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı, bağdaştırıcı ve AC-60 kabul testi ona bağlanır. Paket kapısını bekletmez (DL-1 sahte allocator'la ilerler) | Beste (RCS-001 / BL-565, D44) |
+| O-14 | Grup önekli kayıtlarda (banka `BNK`, tedarikçi hesabı `BAC` — RCS-001 §5.3) allocator'a gönderilecek `legalEntityId`; ayrıca şirket hesabı `BAC` için sahip şirketin `LegalEntityId`'si önerisinin teyidi (D65/2) | v0 sözleşmesinde (KARAR D59/1) yazılı değil; seçenekleri sözleşme sahibi belirler — bu paket değer önermez | **açık** — Beste'ye soruldu, cevap yok (2026-10-28). **Kapı: DL-1 kabul kapısı** (tedarikçi `BAC` kısmı DL-3 kabulünde de aranır); karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı, bağdaştırıcı ve AC-60 kabul testi ona bağlanır. Paket kapısını bekletmez (DL-1 sahte allocator'la ilerler) | Beste (RCS-001 / BL-565, D44) |
 
 ## Teslim dilimleri
 
