@@ -102,6 +102,17 @@ eligibleForTransactions); imleçli, sayfa 50; izin `procurement.suppliers.eligib
 (MOD-0140 DL-3, 1.3.0'dan ~1,5–2 hafta sonra) sözleşmeye karşı sahte istemciyle kodlanır. Soru: MOD-0289 DL-3 için liste Active ilişkili
 mi, yalnız işlem yapılabilir mi? → D58: Active ilişkili hepsi.
 
+## Y-10 — Ali, yanıt 7 (2026-10-28; #268 ve istek listesi alındı)
+
+1. Auth (MOD-0018) paketi güncel matrise göre yazılır (D47, D49 ile güncel hâli; D54, D56, D57): 25 rol, 8 açık atamalı anahtar,
+   muafiyet atamasının parti bağı ve aday sorgu ucu, SEC-002 eki, iki yeni ayar anahtarı (a–f hepsi kapsamda). Sözleşme rollerine belge
+   deposu izni verilmez (D56/2 ile uyumlu). `mdm.contracts.*` kaydı MOD-0217 onayından sonra. Bu iş için ayrı bir Control Tower açılıyor;
+   paket numarası ve tarihi paket açılınca bildirilecek.
+2. MOD-0023 şablon kodları: iş akışı kulesi önerdiği beş adı Ali'ye onaylatıyor; onaydan sonra kodlar birlikte yazılacak.
+3. MOD-0220 `ApprovalStatus` alanı: ayrı bir kule açılıyor; numara ve tarih orada ölçülüp yazılacak.
+4. Numaralar ve tarihler: yukarıdakiler açılınca, ölçülmüş süreyle.
+5. commercial-suite: Ali'de kayıtlı sahip ataması yok (işletim kartı da "Belirsiz — sahip ataması bekliyor" diyor) → D61.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -130,3 +141,5 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-5/2 (rol listesi istendi; `mdm.bank-accounts.read-tenant-wide` sorusu) | altı paket | D46 / D46a / D47 (`treasury-intake-owner-decisions-05.md`); soru MOD-0289 D23/1 ile cevaplandı |
 | Y-5/3 (MOD-0220 §22 onaylı, LEGAL-ENTITY-LOOKUP 1.1.0 taslağı; kod MOD-0023 kulesinin sırasında) | dört Treasury paketi (TRM-14) | işlenmedi — TRM-14 checklist maddesi kod gelene kadar açık |
 | Y-6 (Auth: MOD-0018 paketi + kod; `mdm.contracts.*` MOD-0217 onayından sonra) | altı paket | işlenmedi — Auth checklist maddeleri açık kalır; Ali'ye D47 güncellemesi ayrıca gönderilir |
+| Y-10/1–4 (Auth kapsamı a–f teyit; şablon kodları ve MOD-0220 ayrı kulelerde; numara/tarih sonra) | altı paket | işlenmedi — Auth, TRM-14 ve şablon kodu checklist maddeleri açık kalır; numara gelince ready-for-dev revizyonunda |
+| Y-10/5 (commercial-suite sahibi kayıtlı değil) | MOD-0057 | D61 (`treasury-intake-owner-decisions-05.md`) |

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D60 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D61 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -598,6 +598,16 @@ Onay kanıtı: Beste'nin yazılı yanıtı (`Beste → Treasury CT`, 2026-10-28)
    `CHEQUE`, `CASH`). §21 başlığındaki "proposal, not approved" onay öncesinden kalmadır; onayı bozmamak için şimdi değişmez, bir sonraki
    MOD-0048-FU01 revizyonunda düzeltilir.
 5. **Tek PR:** seed dosyası, iki liste girdisi ve testler (AC-R1…R4; AC-R2 sabotaj kanıtıyla) aynı PR'da; Beste onaylar.
+
+## D61 — MOD-0057 yerleşim onayı (soru kutusu, önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-10/5.
+
+commercial-suite için kayıtlı domain sahibi yok (`docs/guides/operations/control-tower-operating-card.md:563` "Belirsiz — sahip ataması
+bekliyor"; Ali'nin yanıtı Y-10/5). Sahip atanana kadar **MOD-0057'nin commercial-suite'e yerleşimini K1 yönetim olarak onaylar** (D55
+önerisi). Bu yalnız yerleşim onayıdır: domain-config In-Scope satırı ve kimlik kaydı paket onay PR'ında önerilir; MOD-0162-FU01 sınırı ve
+servis/port (O-12 dahil açık kararlar) pakette açık kalır. Domain sahibi atandığında onay mesajı ona bilgi olarak gider; pack onayı,
+kod ya da commercial-suite sahipliği ataması değildir.
 
 ## Karar olmayanlar
 
