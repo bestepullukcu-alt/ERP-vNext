@@ -21,8 +21,10 @@
 ## Later notes (2026-10-28, recorded by the MVP-6 Control Tower)
 
 - **D3:** the MOD-0140 Revision 2 review (`fda06b89`, KOŞULLU) is carried by Cihan's own PR #249; this PR no longer adds that
-  review or an approval row. Cihan is preparing Revision 3 (closing the findings and the S-1…S-7 decisions of 2026-10-28), so
-  the D3 approval row is written on Revision 3's hash, after its independent review. Natig (K1) stays the approver.
+  review or an approval row. Revisions 3 and 4 followed (findings closed, S-1…S-7 decisions of 2026-10-28). The D3 approval row is
+  written on **Revision 4** (`771e8cc43dbeec7b8891f347b134515800eb3c1b1749f2c004a0cb0ef56fbadd`, PR #273) after its independent
+  review by the MVP-6 CT (`docs/records/reviews/MOD-0140/2026-10-28-771e8cc4.md`, KOŞULLU, no ENGEL). Natig (K1) confirmed
+  on 2026-10-28 that he approves Revision 4; he stays the approver.
 - **D4:** the G2–G4 direction stands; the detailed rules are in MOD-0183 §23 r6 and MOD-0186 §34 r8 on `main` (#262), which
   replace the per-line `…:dispatch:v1` keys and `DispatchPending` named above with per-attempt keys `…:a{n}`.
 - **D5:** the approval rows for MOD-0147 / MOD-0148 (ready-for-dev versions) and MOD-0183 / MOD-0186 are in PR #269
