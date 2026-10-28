@@ -3,7 +3,7 @@ record_id: MOD-0120-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 bb51d8778bfe1ee877b5a0985d34fc7e5cfe52bad1dc3b0e4cd94fdab21fe1f3 (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 38eaf632dcc7698c7d9ef6716623903c0f6904f236d7eec31cca831fe5e35e53 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — tier-2 aday kesişimi + MOD-0126 yeniden sabitleme; önceki sürüm `09ffc073…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `f61a93af…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 
@@ -42,7 +42,7 @@ listesindeki bütün maddeler "— DL-3 için"dir (`:1479-1490`). "DL-2'ye etkis
 | MOD-0220 `ApprovalStatus` (TRM-14) — AC-2'nin Issue / SetCollectionStage kısmı | Ali | yok (yukarıda) | DL-1 üzerinden |
 | O-12 "bugün"ün saat dilimi (yaşlandırma, `PromiseToPayDate ≥ bugün`) | — | **kapandı** — D28: UTC takvim günü (`:1685`) | — |
 | Auth kayıt kodu `finance-treasury.receivable-invoices.issue` / `.collection-manage` | Ali | yok (`ExplicitGrantOnlyPermissions.cs`'te ve Auth'ta `finance-treasury` 0; MOD-0018 Treasury paketi yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
-| MOD-0023 AR düzeltme şablonu; §17 kodu; O-7 / O-8 / O-9 / O-13; MOD-0031 ölçümü | Ali / CT | şablon **kararı da yok** — Y-6: "müşteri faturası düzeltmesi" şablonu henüz karara bağlanmadı (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok | **DL-3** — DL-2'yi bekletmez |
+| MOD-0023 AR düzeltme şablonu; §17 kodu; O-7 / O-8 / O-9 / O-13; MOD-0031 ölçümü | Ali / CT | **2026-10-28 (Y-12): karar ve kod geldi — `FT-AR-ADJUSTMENT-APPROVAL`** (Void / WriteOff / PaymentReversal tek şablon, tek adım, atamasız); şablonu kuran kod main'de değil. Ölçüm anında: şablon **kararı da yok** — Y-6: "müşteri faturası düzeltmesi" şablonu henüz karara bağlanmadı (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok | **DL-3** — DL-2'yi bekletmez |
 | MOD-0262 / MOD-0031 | — | DL-2'de çağrı yok (Issue / aşama / yaşlandırma belge ya da kanıt okumaz) | — |
 
 **DL-2'yi ilk bekleten:** MOD-0120 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,

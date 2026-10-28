@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f079bfa987175ed0ae4a800f65516d81871cd11c8e2230382e5210be80e867a (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 790e78ad…; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 05410477b16e645ab2cf927daa4ec51c3144700c896aa9065b64bfa60d30e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a) ile sabitli — D54; önceki 699b0708… (D53), 9121d9f2…)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f5344868f465524b24e3ce80d5d1b04da6aec6572f5814e621d72cc302379f5 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `ea31ff55…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `55b6d936…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `2f079bfa…` (D58/D59 revizyonu); D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 790e78ad…; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 05410477b16e645ab2cf927daa4ec51c3144700c896aa9065b64bfa60d30e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a) ile sabitli — D54; önceki 699b0708… (D53), 9121d9f2…)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -54,7 +54,7 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:17`); güncel sha `41f012e6…` için `reviews.tsv`'de satır yok (son MOD-0124 incelemesi `8df4dfc7…`, `execution/approvals/reviews.tsv:81`) | bekletir |
 | CT-APR-01 sürüme bağlı onay | Beste | `approvals.tsv`'de MOD-0124 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı | bekletir |
-| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6) | **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*`'de `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6) | **2026-10-28: taslak** `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1) bu dalda, main'de değil; ölçüm anında: **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*`'de `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
 | Auth kayıt kodu | Ali | **yok** — `ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | SEC-002 (O-23): tasarım + Auth'ta `read-tenant-wide` tanımı | Beste (yol), Ali (Auth) | yol **belli** (Y-4/6); Auth tanımı **yok**. Kapsamı soran kod + AC-31 DL-1 uçları kısmı **DL-1 kabul kapısı** (`:1521`) | bekletir — yalnız Auth paket metnindeki açık atama tanımı (D53/1); `ExplicitGrantOnlyPermissions.cs` kaydı DL-1 kabul kapısı (D53/2) |
 | 0.3; O-3 (MOD-0037) ve teyidi; O-7 (FX); port 5071; kod alma | — | **kapandı** — D27/1, D29/1, D36/1, D43 + Y-4, D30, D27/5 (`:1522-1526`, `:1530`) | — |
@@ -64,14 +64,14 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | O-9 RCS-001 servisi (BL-565) — önekler `CPS` / `CTP` | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı "CT"); önekler **var** (`.antigravity/rules/record-coding-standard.md:66-67@00d3f2b41`) | **DL-1 kabul kapısı (D59/1)** — başlamayı bekletmez; DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır, gerçek servis DL-1 kabulünden önce main'de (v0 sözleşmesi Y-8, 6 Kasım); üretimde port bağlı değilse 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` |
 | O-8 küsurat — MOD-0048 `currency-minor-units` seed | Beste (Y-4/3) | **yok** — `services/Diten.Platform/**`'te 0; `ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@00d3f2b41`) listesinde yok | bekletir (`:1532`; 503 `CASH_POSITION_CURRENCY_PRECISION_UNAVAILABLE`) |
 | O-4 onay yolu, O-14 tüketici teyidi | — | **kapandı** — D28, D36/3 | DL-3 |
-| MOD-0023 nakit pozisyonu şablonu (O-20); §17 maddeleri (onay, silmeme, okuma eşleme) | Ali (şablon) / — | şablon **yok**; §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1539` işaretsiz (§5 bulgu 2) | DL-3 |
+| MOD-0023 nakit pozisyonu şablonu (O-20); §17 maddeleri (onay, silmeme, okuma eşleme) | Ali (şablon) / — | şablon **yok** (2026-10-28, Y-12: kod `FT-CASH-POSITION-APPROVAL` geldi; kuran kod main'de değil, aday listesi kuralı pakette açık); §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1539` işaretsiz (§5 bulgu 2) | DL-3 |
 | O-17 teyidi; MOD-0031 `links/query` / dedupe ölçümü | Treasury CT | teyit kapandı (D36/2); ölçüm yapılmadı | DL-4 |
 | Gateway rotaları; O-15 | integration-agent | yok | DL-5 |
 | MOD-0289 banka hesabı | — | DL-1 **bağlı değil** — `BankAccountRef` yalnız `Guid ≠ Empty` opak referans (pack Dependencies `:674`) | — |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması. MOD-0124'e özgü ek bir dış engel yok; bütün açık paket kapısı maddeleri
 (Auth paket metni, `Finance = 18`, TRM-14, küsurat seed'i — MOD-0048; Treasury CT hazırlıyor, D59/2 + D60, Beste onaylar) MOD-0126 ile ortak.
-Zincirin tarihi olmayan halkası **Auth paket metni / MOD-0018 paketi (Ali)**. Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
+Zincirin tarihi olmayan halkası **Auth paket metni / MOD-0018 Treasury Auth eki (Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16)**. Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
 **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
 yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
@@ -247,7 +247,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 kod / `DataScope` bağdaştırıcıları, indeks barındırılan hizmeti); MOD-0126 / MOD-0119 / MOD-0120 paketleri ve yolları; `frontend/**`
 (DL-5); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack **sha256 `05410477…e42e` sürümü** (D58/D59; önceki `5f69139c…8a5d` D57, `1baf8728…0916` D56, `5101b1e8…` D54, `699b0708…` D53, `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
+**Önce oku:** pack, MOD-0126 pack **sha256 `5e1ea803…25a7` sürümü** (sahip denetimi 61466e504 — tier-2 aday kesişimi; önceki `f496790f…0b0c` ready-for-dev 1. tur eki D66, `81b9b505…161d` ready-for-dev 1. tur — Y-12, D62–D65, `05410477…e42e` D58/D59, `5f69139c…8a5d` D57, `1baf8728…0916` D56, `5101b1e8…` D54, `699b0708…` D53, `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
 `:1549-1554`), AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design; karar kayıtları D1–D51, MOD-0126 DL-1 WP raporu, bu hazırlık kaydı.

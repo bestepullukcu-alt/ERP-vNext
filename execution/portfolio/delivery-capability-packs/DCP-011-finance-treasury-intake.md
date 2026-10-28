@@ -59,6 +59,12 @@ inputs:
 > MOD-0120 AC-1…44, MOD-0124 AC-1…38, MOD-0289 AC-1…60, aday MOD-0217 AC-1…65 (yeni ölçütler: kayıt kodu portu ve sabotajı —
 > MOD-0126 AC-45, MOD-0119 AC-43, MOD-0120 AC-44, MOD-0124 AC-38, MOD-0289 AC-60; MOD-0217'de AC-20 genişletildi). Üyelik ve
 > dilimler değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-28, üye pack'ler ready-for-dev 1. tur: Y-12, D62–D65):** yalnız AC aralığı değişti — MOD-0126 AC-1…46
+> (yeni AC-46: `PartiallyApproved` v1'de kapalı, KARAR D62/2); diğer üyelerin aralığı aynı (MOD-0119 AC-1…43, MOD-0120
+> AC-1…44, MOD-0124 AC-1…38, MOD-0289 AC-1…60, aday MOD-0217 AC-1…65). Üye pack'lere MOD-0023 şablon kodları (Y-12), D64
+> (muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5) ve Auth paket metni dosyası (Y-16) işlendi — ayrıntı üye pack'lerin
+> revizyon notlarında. Üyelik ve dilimler değişmedi. `status: draft`.
 
 ## 1. Identity and status
 
@@ -97,7 +103,7 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 
 | modül | Blueprint (8.8) | Recovery durumu (kayıt · pack · kod) | rol |
 |---|---|---|---|
-| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…45; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54; AC-44 SoD ayar kaydı, D56/4; AC-45 kayıt kodu portu, D59/1) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
+| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…46; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54; AC-44 SoD ayar kaydı, D56/4; AC-45 kayıt kodu portu, D59/1; AC-46 `PartiallyApproved` v1'de kapalı, D62/2) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
 | MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] | W-1, External Provider | kayıt yok (dış sağlayıcı) · **pack yok, sözleşme `bank-dispatch.md` FROZEN 0.1.0** (D27/7) · 0 | üye — yalnız arayüz sözleşmesi + kapalı bağdaştırıcı; **MOD-0126 pack kapısından teslim** (§15) |
 | MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…43; AC-42 istisna ayrılığı — açan çözemez / yeniden açamaz, D50/3; AC-43 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
 | MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | `reserved / planned` · draft (AC-1…44; AC-44 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
@@ -170,7 +176,7 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
 
 | Slice | Kapsam | Not |
 |---|---|---|
-| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…45; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
+| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…46; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54; `PartiallyApproved` v1'de kapalı AC-46, D62/2); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
 | TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | draft pack'ler (MOD-0119 AC-1…43 — istisna ayrılığı AC-42; MOD-0120 AC-1…44; MOD-0124 AC-1…38); kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
 | TRM-S3 | MOD-0289 | MDM (D20/1); draft pack (AC-1…60; banka listesi araması AC-59, D51/4); MOD-0140 1.3.0; O-6 güvenlik onayı verildi (D33/1), gerçek Mongo şifreleme testleri DL-2 dilim kabul kapısında; Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
 | TRM-S4 | MOD-0217 | **planlı, bu DCP onayıyla dağıtılamaz** (§11: aday kapsam dışı) — yer MDM (D19/1, D38), taslak pack var; kapsama girmesi DCP değişikliği ister |

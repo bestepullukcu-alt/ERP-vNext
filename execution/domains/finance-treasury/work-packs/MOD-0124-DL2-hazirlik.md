@@ -3,7 +3,7 @@ record_id: MOD-0124-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f079bfa987175ed0ae4a800f65516d81871cd11c8e2230382e5210be80e867a (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f5344868f465524b24e3ce80d5d1b04da6aec6572f5814e621d72cc302379f5 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `ea31ff55…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `55b6d936…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `2f079bfa…` (D58/D59 revizyonu); D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; DL-1 kaydıyla aynı commit)
 ---
 
@@ -46,7 +46,7 @@ için" (O-4, O-14, MOD-0023 şablonu, §17) ve "— DL-4 için" (O-17, MOD-0031 
 | O-18 bakiye işaret kuralları | — | **kapandı** — D28 (`:1698`) | — |
 | MOD-0031 / MOD-0262 (kanıt paketi kalemleri `EvidenceRefs`) | — | DL-2 MOD-0031'i ve belge deposunu **çağırmaz**: kalem yalnız biçimle doğrulanır (`DocumentId` Guid ≠ Empty, `DocumentVersionId` Guid?, `Kind` tanımlı; Validation Rules `:1072`); pack'te MOD-0262 bağımlılığı yok (grep 0) | — (bkz. §5 bulgu 5) |
 | Auth kayıt kodu `finance-treasury.cash-positions.reconcile` / `.attach-evidence` / `.read` | Ali | yok (Auth'ta `finance-treasury` 0; MOD-0018 Treasury paketi yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
-| MOD-0023 nakit pozisyonu şablonu (O-20), §17 kodu, O-4 / O-14 | Ali / — | şablon **karar var, kod yok** — Y-6: nakit pozisyonu **tek adım** (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok (`WorkflowModels.cs:406-423`, `:451-465`) | **DL-3** — DL-2'yi bekletmez |
+| MOD-0023 nakit pozisyonu şablonu (O-20), §17 kodu, O-4 / O-14 | Ali / — | **2026-10-28 (Y-12): kod `FT-CASH-POSITION-APPROVAL` geldi** (tek aşama / tek onay adımı / atamasız; adaylar `CandidatePrincipalIds`); şablonu kuran kod main'de değil, WP / tarih yok. Ölçüm anında: şablon **karar var, kod yok** — Y-6: nakit pozisyonu **tek adım** (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok (`WorkflowModels.cs:406-423`, `:451-465`) | **DL-3** — DL-2'yi bekletmez |
 | MOD-0031 `links/query` ve dedupe ölçümü (O-17) | Treasury CT | ölçülmedi | **DL-4** |
 
 **DL-2'yi ilk bekleten:** MOD-0124 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
