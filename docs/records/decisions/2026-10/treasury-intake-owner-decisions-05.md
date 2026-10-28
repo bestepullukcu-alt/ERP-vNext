@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D50 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D63 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -114,8 +114,12 @@ MOD-0124 `MOD-0124-cash-positioning.md`, MOD-0217 `MOD-0217-contract-lifecycle-m
 `MOD-0289-bank-master-bank-account-registry.md` (dört finans paketi `execution/domains/finance-treasury/module-packs/`, MOD-0217 /
 MOD-0289 `execution/domains/master-data-management/module-packs/`; satır numaraları CT04b düzenlemesinden sonra kaydığı için
 yazılmadı — anahtar adıyla aranır). D46 + D46a + D47 + D49 + D50'yi birleştirir; **D46 tablosunun yerine geçer** (D46 tablosu
-tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN", D49/5). Anahtar adları kısaltılmadan yazıldı. "Bağımlı" sütunu başka modülün
-anahtarlarıdır (kullanıcı token'ıyla yapılan çağrılar — MOD-0220, MOD-0023, MOD-0262); kaydı o modülün sahibindedir.
+tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN", D49/5). **D57/4 eki (2026-10-28):** `finance-treasury.payment-sod-settings.read` /
+`.update` Hazine yöneticisine eklendi (bölüm 2 ve 4). Anahtar adları kısaltılmadan yazıldı. "Bağımlı" sütunu başka modülün
+anahtarlarıdır (kullanıcı token'ıyla yapılan çağrılar — MOD-0220, MOD-0023); kaydı o modülün sahibindedir.
+**D56/2: belge deposu izinleri kullanıcılara verilmez** — MOD-0217 belge deposunu (MOD-0262-FU01) kendi servis kimliğiyle çağırır;
+`platform.document-repository.read` / `.manage` hiçbir rol şablonunda yer almaz (D46a'nın bu matristeki etkisi geri alındı; D46 /
+D46a tarihçe bölümü değişmedi).
 `procurement.*`, `crm.*` ve MOD-0031 / MOD-0140 okuma izinleri (MOD-0119, MOD-0120 Authorization Convention) bu matrisin
 anahtar kapsamı dışındadır; ilgili operatör rolüne o modülün adıyla eklenir. Auth'ta kayıt MOD-0018 sahibinin (Ali) işidir (D9).
 Bu matris CT'nin D46 + D47 + D49 uygulamasıdır; sahibin yeni bir kararı değildir — D46'dan ayrıldığı yerler aşağıda "D46'dan farklar"da.
@@ -163,7 +167,7 @@ karar veren rollerin ikisinde de bulunur, yöneticide yalnız okuyarak çözüm 
 | Ödeme onaylayıcı | Ödeme görüntüleyici + `finance-treasury.payment-batches.approve`, `.reject`, `.request-evidence`, `.reconcile` | `mdm.legal-entities.read`, `platform.workflow.tasks.approve`, `.reject`, `.request-info` |
 | Ödeme onaylayıcı (2. kademe) | ödeme onaylayıcı + `finance-treasury.payment-batches.tier2-approve` | ödeme onaylayıcıyla aynı |
 | Ödeme serbest bırakıcı | Ödeme görüntüleyici + `finance-treasury.payment-batches.release`, `.reconcile` | `mdm.legal-entities.read` |
-| Hazine yöneticisi (**D47/1** — yalnız yapılandırma ve operasyonel destek) | Ödeme görüntüleyici + Nakit pozisyonu görüntüleyici + `finance-treasury.payment-batches.bulk-delete` (yalnız taslak), `finance-treasury.payment-batches.reconcile`, `finance-treasury.cash-position-threshold-policies.create`, `.update`, `.delete`, `.bulk-delete`, `finance-treasury.cash-positions.bulk-delete` (yalnız hiç gönderilmemiş taslak), `finance-treasury.cash-positions.workflow-reconcile`, `finance-treasury.cash-positions.export-reconcile`. **Yok:** approve, reject, request-evidence, release, tier2-approve, waive-sod, publish; AP / AR okuması | `mdm.legal-entities.read` |
+| Hazine yöneticisi (**D47/1** — yalnız yapılandırma ve operasyonel destek) | Ödeme görüntüleyici + Nakit pozisyonu görüntüleyici + `finance-treasury.payment-batches.bulk-delete` (yalnız taslak), `finance-treasury.payment-batches.reconcile`, `finance-treasury.cash-position-threshold-policies.create`, `.update`, `.delete`, `.bulk-delete`, `finance-treasury.cash-positions.bulk-delete` (yalnız hiç gönderilmemiş taslak), `finance-treasury.cash-positions.workflow-reconcile`, `finance-treasury.cash-positions.export-reconcile`, `finance-treasury.payment-sod-settings.read`, `finance-treasury.payment-sod-settings.update` (**D57/4** — SoD ayar kaydı ve ekranı; R1–R3 kapatılamaz, yalnız eşik ve R4). **Yok:** approve, reject, request-evidence, release, tier2-approve, waive-sod, publish; AP / AR okuması | `mdm.legal-entities.read` |
 
 **Borç (AP, MOD-0119):**
 
@@ -196,9 +200,9 @@ karar veren rollerin ikisinde de bulunur, yöneticide yalnız okuyarak çözüm 
 | Banka verisi görüntüleyici | `mdm.banks.read`, `mdm.bank-accounts.read`, `mdm.bank-account-purposes.read` | — |
 | Banka verisi yöneticisi | görüntüleyici + `mdm.banks.create`, `.update`, `.activate`, `.deactivate`, `.delete`, `.bulk-delete`, `mdm.bank-accounts.create`, `.update`, `.delete`, `.bulk-delete` (yalnız taslak), `mdm.bank-accounts.sensitive-reads.read`, `mdm.bank-account-purposes.create`, `.update`, `.delete`, `.activate`, `.deactivate`. **Yok:** `mdm.bank-accounts.activate` / `.deactivate` (D47/2) | (MOD-0140 tedarikçi okuma — MOD-0289 Dependencies) |
 | Banka hesabı etkinleştirici (**D47/2**) | görüntüleyici + `mdm.bank-accounts.activate`, `mdm.bank-accounts.deactivate` | — |
-| Sözleşme görüntüleyici | `mdm.contracts.read`, `mdm.contracts.documents.read` | `platform.document-repository.read` (D46a) |
-| Sözleşme yöneticisi | görüntüleyici + `mdm.contracts.create`, `.update`, `.delete`, `.bulk-delete` (yalnız taslak), `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.submit-approval`, `mdm.contracts.terminate`, `mdm.contracts.archive`, `mdm.contracts.value.read`, `mdm.contracts.value.write` (**D49/2**), `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`. **Yok:** `mdm.contracts.record-signature` (D47/5) | `platform.document-repository.read`, `.manage` (D46a), `platform.workflow.instances.start` |
-| Sözleşme imza kaydedici (**D47/5**) | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` (imzalı kopya) | `platform.document-repository.read`, `.manage` |
+| Sözleşme görüntüleyici | `mdm.contracts.read`, `mdm.contracts.documents.read` | — (belge deposu izni yok — D56/2) |
+| Sözleşme yöneticisi | görüntüleyici + `mdm.contracts.create`, `.update`, `.delete`, `.bulk-delete` (yalnız taslak), `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.submit-approval`, `mdm.contracts.terminate`, `mdm.contracts.archive`, `mdm.contracts.value.read`, `mdm.contracts.value.write` (**D49/2**), `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`. **Yok:** `mdm.contracts.record-signature` (D47/5) | `platform.workflow.instances.start` (belge deposu izni yok — D56/2) |
+| Sözleşme imza kaydedici (**D47/5**) | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` (imzalı kopya) | — (belge deposu izni yok — D56/2) |
 
 Sözleşme sürümünün onay **kararı** MDM rolünde değildir: onaylayıcı MOD-0023 görevinde karar verir (`platform.workflow.tasks.*`,
 şablon O-3 — Ali); onaylayıcıya sözleşmeyi görmek için "sözleşme görüntüleyici" verilir. `mdm.contracts.value.write` (D49/2)
@@ -231,6 +235,8 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `finance-treasury.payment-evidence.link` | Ödeme hazırlayıcı |
 | `finance-treasury.payment-evidence.read` | Ödeme görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
 | `finance-treasury.payment-exceptions.read` | Ödeme görüntüleyici (+ miras), Hazine konsolide görüntüleyici |
+| `finance-treasury.payment-sod-settings.read` | Hazine yöneticisi (**D57/4**) |
+| `finance-treasury.payment-sod-settings.update` | Hazine yöneticisi (**D57/4**) |
 | `finance-treasury.ap-invoices.read` | AP görüntüleyici (+ miras: üç AP rolü), Hazine konsolide görüntüleyici |
 | `finance-treasury.ap-invoices.read-tenant-wide` | açık atama |
 | `finance-treasury.ap-invoices.create` | AP operatörü, AP operasyon yöneticisi |
@@ -329,11 +335,12 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `platform.workflow.instances.start` (bağımlı, MOD-0023) | Ödeme hazırlayıcı, AP operatörü, AP operasyon yöneticisi, AR operatörü, AR operasyon yöneticisi, Nakit pozisyonu hazırlayıcı, Sözleşme yöneticisi |
 | `platform.workflow.tasks.approve` / `.reject` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AR onaylayıcı (+ AR 2. kademe düzeltme onaylayıcı), Nakit pozisyonu onaylayıcı; sözleşme onaylayıcısı MOD-0023 şablonuyla (O-3) |
 | `platform.workflow.tasks.request-info` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı |
-| `platform.document-repository.read` (bağımlı, MOD-0262-FU01) | Sözleşme görüntüleyici, Sözleşme yöneticisi, Sözleşme imza kaydedici (D46a) |
-| `platform.document-repository.manage` (bağımlı, MOD-0262-FU01) | Sözleşme yöneticisi, Sözleşme imza kaydedici (D46a) |
 
-Sayım: 114 modül anahtarı (MOD-0126 20, MOD-0119 19, MOD-0120 15, MOD-0124 20, MOD-0289 23, MOD-0217 17 — `mdm.bank-account-purposes.*`
-altısı ve D49/2'nin `mdm.contracts.value.write`'ı dahil) + 7 bağımlı anahtar; hepsi en az bir role ya da açık atama listesine
+**D56/2:** `platform.document-repository.read` / `.manage` (MOD-0262-FU01) bu tablodan çıktı — kullanıcılara verilmez; MOD-0217
+belge deposunu servis kimliğiyle çağırır.
+
+Sayım: 116 modül anahtarı (MOD-0126 22 — D57/4 ile iki SoD ayarı anahtarı eklendi, MOD-0119 19, MOD-0120 15, MOD-0124 20, MOD-0289 23, MOD-0217 17 — `mdm.bank-account-purposes.*`
+altısı ve D49/2'nin `mdm.contracts.value.write`'ı dahil) + 5 bağımlı anahtar (D56/2 ile iki belge deposu anahtarı çıktı); hepsi en az bir role ya da açık atama listesine
 yerleşti. Açık atamalı sekiz anahtarın hiçbiri bir rolde değildir. Rol sayısı: 25 (finans 19 — beş görüntüleyici dahil; ana veri 6;
 D50/1 ile AP / AR onay yöneticisi onaylayıcılarla birleşti).
 
@@ -448,9 +455,183 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT 
 3. **AP istisna ayrılığı:** MOD-0119'a çalışma anı kuralı — istisnayı açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz;
    hata kodu ve sabotajlı kabul ölçütüyle.
 
+## D51 — DL-1 hazırlığında çıkan tutarsızlıklar ve prompt soruları (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu
+`treasury-ct05-prep.zip` (`bc162f42e9e2043f7738f36a3f085be17adb4381da38211ea50506afd0b2a6e8`).
+
+1. **Paket kapısı ile dilim kapısı ayrılır:** altı pakette "ready-for-dev engelleri" yalnız bütün dilimleri ilgilendiren maddeleri
+   taşır (CT-APR-02/01, DCP-011 onayı, RCS-001 servisi, Auth kaydı, AuditCategory, DL-1'in kendi önkoşulları); DL-2/3/4'e özgü
+   önkoşullar "— DL-n için" işaretiyle o dilimin kapısına taşınır. İlk dilim yalnız kendi koşullarını bekler.
+2. **SEC-002:** tasarım (Y-4/6 yolu) ve Auth'ta `read-tenant-wide` tanımı hazırlık kapısında kalır; kapsamı soran kod ve kanıt testi
+   (MOD-0126 AC-32 ve diğer üç paketteki karşılıkları) DL-1 kabul kapısına taşınır.
+3. **WP dalı ve iskelet:** her WP kendi dalında — `feature/fin/wp-0126-dl1`, `feature/mdm/wp-0289-dl1`; `/add-module` servis iskeleti
+   DL-1 WP'sinin ilk adımıdır (ayrı ön WP yok).
+4. **MOD-0289 DL-1 ayrıntıları:** banka araması `Regex.Escape` ile kaçırılır, büyük / küçük harf duyarsız, en çok 100 karakter;
+   `AuditAggregateType`'a DL-1'de yalnız `Bank` ve `BankBranch` eklenir, diğerleri kendi diliminde.
+5. **Bağlı düzeltmeler (karar değil, D45/3 ve D44'ün sonucu):** MDM domain-config'teki "no code-take permission (D27/5)" cümlesi
+   D45/3'e göre güncellenir (sahip MDM sahibi rolünde, D38); BL-565 backlog satırındaki sahip ("CT") Beste'ye bildirilir — backlog
+   onun alanıdır, CT yazmaz.
+
+## D52 — DL-1 hazırlığı ikinci tur (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`984d93a0c` (dört DL-1 hazırlık kaydı).
+
+1. **WP dalları (D51/3'ün devamı):** `feature/fin/wp-0119-dl1`, `feature/fin/wp-0120-dl1`, `feature/fin/wp-0124-dl1`,
+   `feature/mdm/wp-0217-dl1`.
+2. **MOD-0120 S-2 bitiş / gözden geçirme koşulu:** kısıtlı yerel AR MVP'si MOD-0169 (faturalama) paketi `ready-for-dev` olduğunda
+   gözden geçirilir; en geç Treasury v1 sonunda (D27/2'yi tamamlar).
+3. **MOD-0120 Level-1 koşul 1:** kaynağın sınırlı denetim / çoklu yazma devri Recovery'ye taşınmaz; denetim D35 defter yoluyla, tek
+   yazma modeliyle.
+4. **Paket metin temizliği:** hazırlıkta bulunan eskimiş metinler (checkbox'lar, "PR #246 ile main'e girer", TBD küsurat, RCS sahibi,
+   sabitlemeler) anlam değiştirmeden Codex incelemesinden önce güncellenir.
+
+## D53 — Auth sıralaması iki parça (soru kutusu, önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`e4f9a78e9` (MOD-0217 "Auth kaydı sıralaması — gerilim").
+
+D51/1'in "Auth kaydı paket kapısında" maddesi altı pakette ikiye ayrılır (Ali'nin Y-6 sırasıyla uyumlu):
+1. **Paket kapısı:** Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (D46–D50).
+2. **DL-1 kabul kapısı:** Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (`mdm.contracts.*` kaydı MOD-0217 onayından
+   sonra, DL-1 kabulünden önce).
+
+## D54 — Muafiyet parti bağı (Codex ön incelemesi MOD-0126 F-1; soru kutusu, önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); bulgu
+`docs/records/reviews/MOD-0126/2026-10-27-699b0708.md` F-1.
+
+`waive-sod` açık atamasının hedef ödeme partisini taşıması zorunludur: Auth ataması hedef parti kimliğini taşımıyorsa ya da okunamıyorsa
+muafiyetli onay 403 ile reddedilir (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok). Atamanın hedef partisi rotadaki partiyle eşleşmezse
+aynı ret. Auth (MOD-0018) paketi atamada hedef parti kimliğini taşır — Ali'ye iletilir. "Tek parti" kuralı süreç denetimine bırakılmaz.
+
+## D55 — MOD-0057 parktan çıkar (D19/2'yi değiştirir; soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); sahibin sözü
+"MOD-0057 Etiketleme parktan çıkarmamız lazım". Keşif: `verify_module_id.py --discover "Semantic Tagging"` @ec063fee9, çıkış 3, rapor
+sha256 `98cf6271…e980` (Blueprint 1 aday MOD-0057; registry 0; paket 0; görev 1 = TRM-18).
+
+1. **Park kalkar:** MOD-0057 Semantic Tagging & Taxonomy Management Treasury intake'e geri döner (D19/2'nin park maddesi kalkar;
+   level-1 kaydı `treasury-level1-acceptance-01/MOD-0057-v1.0.md` geçerli).
+2. **Yerleşim önerisi: `commercial-suite`** — konu taksonomisi sahipliği MOD-0162-FU01'de ve o paket MOD-0057'yi gelecek bağlantı
+   olarak anıyor. Yerleşim commercial-suite domain sahibinin onayına bağlıdır (XMC-001); onay gelene kadar pack taslağı yazılabilir,
+   domain-config / registry satırı yazılmaz.
+3. **v1 bağımsız:** taksonomi ve etiket yönetimi (sınıf ağaçları, etiketler, varlığa etiket bağlama); arama ve bilgi grafiği bağlantısı
+   MOD-0053 / MOD-0056 Recovery'ye gelince sonraki sürüm.
+4. **Kule:** Treasury CT yürütür (devir paketi ve level-1 kaydı burada); pack taslağı CT yazar, sahip ZIP denetimi + CT-APR-02.
+   Kod alma izni ayrı karardır (D1 deseni).
+
+## D56 — DL-2 hazırlığında çıkan dört karar (soru kutusu, hepsi önerilen, 2026-10-27)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`40a1bcc91` (altı DL-2 hazırlık kaydı).
+
+1. **SEC-002 sağlayıcısı:** Platform'daki izin listesi ve MDM istemcisinin modül kodu, Ali'nin MOD-0018 Auth paketine "permission
+   onboarding" eki olarak girer. MOD-0289 ve MOD-0217 bunu paket kapısında bekler (paket metni D53/1 deseni; kodu DL-1 kabulünde).
+2. **Belge deposu erişimi (D41/10 ve D46a'yı değiştirir):** MOD-0217 belge deposunu (MOD-0262-FU01) kendi servis kimliğiyle çağırır;
+   kullanıcılara `platform.document-repository.read` / `.manage` verilmez (D46a geri alınır). Belge indirme yalnız sözleşme yönetimi
+   üzerinden (kapsam ve AC-62 indirme denetimiyle). Belge deposunda servis kimliği desteği gerekir — Platform (Beste); MOD-0217 DL-2
+   kapısı.
+3. **Muafiyet (MOD-0126):** Auth atama alanları (hedef parti, başlangıç / bitiş, onaylayan, gerekçe kodu) "— DL-2 için" kapısında —
+   Auth paket metninde tanımlı, kodu DL-2 kabulünde. Muafiyet adayları Auth'tan "bu partiye geçerli `waive-sod` ataması olanlar"
+   sorgusuyla okunur (Ali'den uç; MOD-0018).
+4. **SoD ayarı:** FinanceTreasuryService'te kiracı başına tek ayar kaydı (tek eşik + R1–R4 açık / kapalı), denetlenir; DL-2'de yazılır.
+   Follow-up'tan çıkar.
+
+## D57 — D56 düzeltme turunda kalan dört nokta (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`e5463096c`.
+
+1. **MOD-0289 DL-2 kabul kapısı:** "Treasury tüketici fikstür koşusu" şartı kalkar (D47/4: v1'de MOD-0289'u okuyan finans akışı yok);
+   BANK-ACCOUNT-LOOKUP sözleşmesi kendi testiyle doğrulanır; tüketici testi ilk gerçek tüketicinin dilimine girer.
+2. **MOD-0120 denetim sınıfı:** Issue (fatura kesme) K2; SetCollectionStage (tahsilat aşaması) K1.
+3. **MOD-0124 kanıt paketi:** DL-2'de yalnız biçim doğrulanır; kalemlerin varlığı MOD-0031 bağlantısıyla DL-4'te doğrulanır.
+4. **SoD ayar kaydı (D56/4 ayrıntıları):** izinler `finance-treasury.payment-sod-settings.read` / `.update` (Hazine yöneticisi rolü);
+   ayar ekranı MOD-0126 ekran diliminde; R1–R3 kapatılamaz (yalnız eşik ve R4 ayarlanır); kayıt yoksa R1–R4 açık ve varsayılan eşik.
+5. **Ortak MOD-0023 bağdaştırıcısı:** servis ortak yapı taşıdır; tek yazarı MOD-0126 DL-2. MOD-0119 DL-2, MOD-0120 DL-3 ve MOD-0124 DL-3
+   onu bekler (D14/2 deseni; dört paket için ortak karar).
+
+## D58 — MOD-0289 DL-3 tedarikçi listesi (Cihan'ın sorusu; buton, önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+MOD-0289 DL-3'te tedarikçi banka hesaplarının görünürlüğü için MOD-0140 1.3.0 `GET /api/suppliers/eligible` (`listEligibleSuppliers`)
+listesi **çağıran şirketle ilişkisi Active olan bütün tedarikçileri** döndürmelidir; `eligibleForTransactions = true` şartı aranmaz.
+Gerekçe: banka hesabı çoğunlukla onboarding sırasında kaydedilir; ödeme anı uygunluğu ödeme tarafında ayrıca denetlenir.
+Kaynak: Cihan'ın yanıtı (MOD-0140 sahibi, 2026-10-28) — 1.3.0, MOD-0140 kararlarından (S-1…S-6, F-3) yaklaşık 3 iş günü sonra main'de.
+
+## D59 — BL-565 kapısı ve MOD-0048 seed'leri (Beste'nin yanıtı Y-8 üzerine; soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); kaynak Y-8
+(`docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md`).
+
+1. **BL-565 / RCS-001 servisi paket kapısından DL-1 kabul kapısına taşınır** (altı paket; MOD-0057'de kod gerekmiyorsa uygulanmaz).
+   İlk dilim kodu uygulama katmanında `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey) → code` portuna
+   karşı yazılır; testlerde sahte uygulama; üretimde port bağlı değilse Create kapalı (fail-closed), kodsuz kayıt açılmaz; kendi sayaç
+   ya da yedek kod üretimi yasak (RCS-001). v0 çağrı sözleşmesi (Beste, 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):
+   `POST /api/internal/record-codes/allocate` — gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan),
+   200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı,
+   503 servis yok → Create başarısız. Gerçek servis DL-1 kabulünden önce main'de olmalıdır.
+2. **MOD-0048 seed'leri Treasury CT tarafından eklenir:** Platform'da yalnız seed JSON dosyaları ve `ConsumableSets` izin listesi
+   (Beste'nin izni, Y-8); değerler MOD-0048-FU01 §21 (#243 ile onaylı); ayrı dal ve PR, Beste onaylar; push / PR sahibe ayrıca sorulur.
+3. **Ara PR:** ct-05 dalı main'e ara PR olarak gider (kart S-77 (c): Beste D56/2'yi main'de görmek istiyor).
+
+## D60 — MOD-0048 seed izninin genişlemesi ve değerler (Beste, değerlerin ve Platform'un sahibi; 2026-10-28)
+
+Onay kanıtı: Beste'nin yazılı yanıtı (`Beste → Treasury CT`, 2026-10-28), sahip K1 (`gmg-10`) tarafından Treasury CT oturumuna
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`) aktarıldı. Doğrulama: main'deki `execution/approvals/approvals.tsv` satırı MOD-0048-FU01
+@ `8fc68be8…` (`whole_pack=TRM-17 — yalnız §21`) ve main'deki paket aynı hash'te (ölçüldü, 2026-10-28).
+
+1. **`DefaultConsumableSets` (kod):** `BusinessReferenceDataConsumableSetsOptions.cs` içindeki listeye yalnız `payment-method` ve
+   `currency-minor-units` eklenir; o dosyada başka değişiklik yok, test değişmez. §21'deki "kod yok" ifadesi bir ölçüm eksiğiydi
+   (izin listesinin kod kopyası `BusinessReferenceDataConsumableSetsTests` ile `appsettings.json`'a eşit tutuluyor). PR açıklamasında
+   belirtilir. D59/2'nin "yalnız seed JSON + ConsumableSets" sınırını bu kadar genişletir.
+2. **`RequiredSetCodes`:** `appsettings.Development.json`'a iki kod eklenir (§21.3 madde 2; izinli yollar `appsettings*.json`, iki liste
+   girdisi, bir catalog-load bloğu).
+3. **`currency-minor-units` değerleri:** ISO 4217'nin güncel baskısındaki bütün aktif kodlar; `catalog_version` o baskının yayın tarihi.
+   Değerlerin kararı Beste'de, Finance bilgi olarak görür. AC-R2 kontrolü sistemin döndürdüğü listede ISO'da olmayan eski bir kod
+   bulursa kod hane sayısıyla eklenir; kontrol kaldırılmaz. Kaynak: SIX Group'un yayımladığı ISO 4217 "List One" (K1 seçimi, soru kutusu,
+   önerilen, 2026-10-28).
+4. **§21 onaylı; `payment-method` altı değeri kesin** (`BANK_TRANSFER`, `SEPA_CREDIT_TRANSFER`, `SWIFT_TRANSFER`, `DOMESTIC_TRANSFER`,
+   `CHEQUE`, `CASH`). §21 başlığındaki "proposal, not approved" onay öncesinden kalmadır; onayı bozmamak için şimdi değişmez, bir sonraki
+   MOD-0048-FU01 revizyonunda düzeltilir.
+5. **Tek PR:** seed dosyası, iki liste girdisi ve testler (AC-R1…R4; AC-R2 sabotaj kanıtıyla) aynı PR'da; Beste onaylar.
+
+## D61 — MOD-0057 yerleşim onayı (soru kutusu, önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-10/5.
+
+commercial-suite için kayıtlı domain sahibi yok (`docs/guides/operations/control-tower-operating-card.md:563` "Belirsiz — sahip ataması
+bekliyor"; Ali'nin yanıtı Y-10/5). Sahip atanana kadar **MOD-0057'nin commercial-suite'e yerleşimini K1 yönetim olarak onaylar** (D55
+önerisi). Bu yalnız yerleşim onayıdır: domain-config In-Scope satırı ve kimlik kaydı paket onay PR'ında önerilir; MOD-0162-FU01 sınırı ve
+servis/port (O-12 dahil açık kararlar) pakette açık kalır. Domain sahibi atandığında onay mesajı ona bilgi olarak gider; pack onayı,
+kod ya da commercial-suite sahipliği ataması değildir.
+
+## D62 — Auth dayanağı ve v1'de kısmi onay (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-11, Y-12.
+
+1. **Auth paketi main'e dayanır:** D54 / D56 / D57 ara PR #270 ile main'e girer; Auth paketi main'deki karar dosyasına atıf yapar, daldaki
+   commit'e atıf yapılmaz (D53/1 korunur).
+2. **`PartiallyApproved` v1'de kapalı:** MOD-0023 şablonları tek adımlı olduğundan durum (kod 9 ve ad) saklanır, v1'de giriş yolu yoktur;
+   çok adımlı onay gelince açılır. MOD-0126 ve aynı durumu taşıyan paketlere ready-for-dev revizyonunda işlenir.
+
+## D63 — D62 ara PR, SEC-002 XMC-001 ve waive-sod yapısı (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-15.
+
+1. **Ara PR:** D62 ve Y-11…Y-15 küçük bir ara PR ile main'e gider (kart S-77 (c): Auth kulesi bekliyor).
+2. **SEC-002 eki için XMC-001 onayı Beste'den (Platform sahibi) istenir:** dokunulacak Platform dosyaları istekte listelenir; onay gelene
+   kadar o dosyalara dokunulmaz.
+3. **waive-sod parti bağı (D54) Auth'un ayrı işi kalır:** Treasury Auth veri yapısı yazmaz. Auth bu yeteneği getirene kadar MOD-0126'nın
+   muafiyet yolu kapalıdır (hedef partiyi taşıyan atama okunamaz → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`, D54); Treasury'nin diğer işleri bunu
+   beklemez. Pakete ready-for-dev revizyonunda işlenir.
+
 ## Karar olmayanlar
 
-BL-565 servisi ve çağrı sözleşmesi, `Finance = 18`'in main'e girmesi, MOD-0048 seed'leri, MOD-0149 pack revizyonu, DCP-011 onayı
+BL-565 servisi ve çağrı sözleşmesi, `Finance = 18`'in main'e girmesi, MOD-0149 pack revizyonu, DCP-011 onayı
 (Beste); Auth kaydı (rol şablonlarının içeriği D46 ile verildi), MOD-0023 şablon kodları (O-3 / O-8 / O-11 / O-20), MOD-0220 `ApprovalStatus`
 (Ali); supplier 1.3.0 (MVP-2).
 
