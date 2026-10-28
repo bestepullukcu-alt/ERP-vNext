@@ -18,7 +18,10 @@ public sealed class LateWriterPolicy(IShipmentRepository repository, IInventoryM
         var s = await repository.GetAsync(context.Scope, shipmentId, ct);
         if (s is null) return;
         var current = s.DispatchAttempt;
-        var ownAttemptOpen = current is not null && current.N == ownN && current.State is DispatchState.InProgress or DispatchState.Completed;
+        // A compensating attempt is closed to posting: its holder never resends a refused line, so a late issue there is the
+        // late writer's to reverse (review 3 F-3), with the same key and stored date the holder would use.
+        var ownAttemptOpen = current is not null && current.N == ownN
+            && (current.State == DispatchState.Completed || (current.State == DispatchState.InProgress && !current.IsCompensating()));
         var recorded = (current?.Lines ?? []).Concat(s.DispatchHistory.SelectMany(h => h.Lines)).Any(l => l.IssueTransactionId == issueTransactionId)
             || s.DispatchLateWrites.Any(w => w.IssueTransactionId == issueTransactionId);
         if (ownAttemptOpen || recorded)

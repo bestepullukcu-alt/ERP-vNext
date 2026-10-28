@@ -39,8 +39,9 @@ public sealed class DispatchAttempt
 }
 
 /// <summary>The refused line and the command's answer once every posted line is reversed (§23.4: 422 INVENTORY_REFUSED,
-/// or 500 for an INVENTORY 400).</summary>
-public sealed record DispatchRefusal(string LineNumber, int StatusCode, string ErrorCode, string? DetailsJson);
+/// or 500 for an INVENTORY 400), with the integrity faults known when compensation started, so a resumed compensation
+/// still writes them to its audit row (review 3 F-4).</summary>
+public sealed record DispatchRefusal(string LineNumber, int StatusCode, string ErrorCode, string? DetailsJson, string[] Faults);
 
 /// <summary>An INVENTORY movement a writer made after it lost the lease (§23.4 late writer), kept without the lease condition.</summary>
 public sealed record DispatchLateWrite(int N, string LineNumber, string IssueTransactionId, string? ReversalTransactionId, string Outcome, DateTimeOffset At);

@@ -373,7 +373,10 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         var r = await Dispatch(app, id, "dispatch-reuse");
         Assert.Equal((500, "INTERNAL_ERROR"), (r.Status, Code(r.Body)));
         Assert.Equal("CompensationFailed", (await Detail(app, id))["dispatchState"]!.GetValue<string>());
-        Assert.DoesNotContain(app.Inventory.Calls, c => c.MovementType == "REVERSAL");
+        // Review 3 F-1: line 1's recorded issue is reversed before the attempt blocks on line 2; line 2's key is never
+        // posted under other bytes again (its resend answers KEY_REUSED once more).
+        Assert.Equal($"{id}:1:reversal:a1", Assert.Single(app.Inventory.Calls, c => c.MovementType == "REVERSAL").Key);
+        Assert.Equal(-3m, app.Inventory.Net);
         Assert.Contains(await AttemptAudit(app, id), a => a["IntegrityFaults"].AsBsonArray.Any(f => f.AsString.StartsWith("IDEMPOTENCY_KEY_REUSED", StringComparison.Ordinal)));
         // Re-review R-2: the block stores the reversal date, so a late writer and the exit send the same REVERSAL bytes.
         Assert.NotNull((await Stored(app, id)).DispatchAttempt!.ReversalDate);
@@ -823,5 +826,91 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         Assert.Equal(("REVERSAL", 0m), (app.Inventory.Calls.Last().MovementType, app.Inventory.Net));
         Assert.Empty((await Stored(app, id)).DispatchLateWrites);
         Assert.DoesNotContain(await AttemptAudit(app, id), r => r["Outcome"].AsString.StartsWith("LateWriter", StringComparison.Ordinal));
+    }
+
+    // ---- review 3 fixes on 463d054b3 (MOD-0183-DL1-CODE-REVIEW-3.md) --------------------------------------------------
+    // F-1: a KEY_REUSED line blocks the attempt, but every recorded issue is reversed first — the block never keeps the
+    // stock we know of; each exit stays blocked on that one line only.
+    [Fact]
+    public async Task R3F1_AKeyReusedBlockStillReversesEveryRecordedIssue()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c => IsIssue(c, "2") ? Answer(FakeInventory.Error(400, "IDEMPOTENCY_KEY_REUSED")) : Default;
+        Assert.Equal((500, "INTERNAL_ERROR"), await StatusCode(Dispatch(app, id, "dispatch-a1")));
+        Assert.Equal((0m, 1), (app.Inventory.Net, app.Inventory.Calls.Count(c => c.MovementType == "REVERSAL")));
+        foreach (var exit in new[] { "Cancelled", "Dispatched" })
+        {
+            app.Clock.Advance(TimeSpan.FromMinutes(5));
+            var r = await Send(app, "POST", $"/{id}/transition", Transition(exit, "2026-10-28T10:00:00Z"), "exit-" + exit);
+            Assert.Equal((409, "DISPATCH_COMPENSATION_FAILED"), (r.Status, Code(r.Body)));
+        }
+        var stored = await Stored(app, id);
+        Assert.Equal((ShipmentStatus.Planned, DispatchState.CompensationFailed), (stored.Status, stored.DispatchAttempt!.State));
+        Assert.Equal((0m, 1), (app.Inventory.Net, app.Inventory.Calls.Count(c => c.MovementType == "REVERSAL")));
+    }
+
+    // F-2: a refused issue answered 400 without INVENTORY's envelope is not resent by the exit.
+    [Fact]
+    public async Task R3F2_TheExitDoesNotResendACodelessRefusedIssue()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        var failReversal = true;
+        app.Inventory.Script = c =>
+            IsIssue(c, "2") ? Answer(new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest))
+            : failReversal && c.MovementType == "REVERSAL" ? Answer(FakeInventory.Error(503, "INVENTORY_UNAVAILABLE"))
+            : Default;
+        Assert.Equal((409, "DISPATCH_COMPENSATION_FAILED"), await StatusCode(Dispatch(app, id, "dispatch-b1")));
+        failReversal = false;
+        app.Clock.Advance(TimeSpan.FromMinutes(5));
+        var exit = await Send(app, "POST", $"/{id}/transition", Transition("Cancelled", "2026-10-28T10:00:00Z"), "exit-b1");
+        Assert.Equal((200, "Cancelled"), (exit.Status, exit.Body["status"]!.GetValue<string>()));
+        Assert.Equal((0m, 1), (app.Inventory.Net, app.Inventory.Calls.Count(c => IsIssue(c, "2"))));
+    }
+
+    // F-3: a late 201 on the refused line of an attempt in compensation is reversed by the late writer (the holder never
+    // resends a refused line), with the holder's key and stored date.
+    [Fact]
+    public async Task R3F3_LateWriterReversesOnTheRefusedLineOfACompensatingAttempt()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        var gate = new TaskCompletionSource(); var line2 = 0;
+        app.Inventory.Script = async c =>
+        {
+            if (!IsIssue(c, "2")) return null;
+            if (Interlocked.Increment(ref line2) == 1) { await gate.Task; return app.Inventory.Answer(c); }
+            return FakeInventory.Error(422, "INSUFFICIENT_AVAILABLE");
+        };
+        var a = Dispatch(app, id, "dispatch-c-a");
+        await Until(() => line2 == 1);
+        app.Clock.Advance(PastLease);
+        (int Status, JsonObject Body)? paused = null;
+        app.Before(nameof(IShipmentRepository.SettleDispatchAttemptAsync), async () => { gate.SetResult(); paused = await a; });
+        Assert.Equal((422, "INVENTORY_REFUSED"), await StatusCode(Dispatch(app, id, "dispatch-c-b")));
+        Assert.Equal(409, paused!.Value.Status);
+        var stored = await Stored(app, id);
+        var late = Assert.Single(stored.DispatchLateWrites);
+        Assert.Equal(("2", "Reversed"), (late.LineNumber, late.Outcome));
+        Assert.Equal($"{id}:2:reversal:a1", app.Inventory.Calls.Last(c => c.MovementType == "REVERSAL" && c.Key.Contains(":2:", StringComparison.Ordinal)).Key);
+        Assert.Equal(0m, app.Inventory.Net);
+    }
+
+    // F-4: the integrity fault of the first INVENTORY 400 is stored with the refusal, so a resumed compensation writes it.
+    [Fact]
+    public async Task R3F4_AResumedCompensationKeepsTheFirst400IntegrityFault()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        var crash = true;
+        app.Inventory.Script = c =>
+        {
+            if (IsIssue(c, "2")) return Answer(FakeInventory.Error(400, "INVALID_REQUEST"));
+            if (crash && c.MovementType == "REVERSAL") { crash = false; app.Inventory.Answer(c); throw new InvalidOperationException("crash after REVERSAL posted"); }
+            return Default;
+        };
+        Assert.Equal(500, (await Dispatch(app, id, "dispatch-f4a")).Status);
+        app.Clock.Advance(PastLease);
+        Assert.Equal((500, "INTERNAL_ERROR"), await StatusCode(Dispatch(app, id, "dispatch-f4b")));
+        Assert.Contains(await AttemptAudit(app, id), r => r["Outcome"] == "Compensated"
+            && r["IntegrityFaults"].AsBsonArray.Any(f => f.AsString == "INVENTORY 400 INVALID_REQUEST issue line 2"));
+        Assert.Equal(0m, app.Inventory.Net);
     }
 }

@@ -78,7 +78,7 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         }
         // An attempt whose compensation had started is never posted or completed again: the resume finishes the
         // compensation and answers the stored refusal (re-review N-1).
-        if (next.IsCompensating()) return await FinishCompensationAsync(s, next, fingerprint, [], ct);
+        if (next.IsCompensating()) return await FinishCompensationAsync(s, next, fingerprint, ct);
         return await RunAsync(s, next, request, fingerprint, ct);
     }
 
@@ -107,11 +107,12 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
                     line.LastInventoryCode = result.InventoryCode;
                     return await CompensateAsync(s, a, request, fingerprint, line.LineNumber, result, ct);
                 case InventoryOutcome.Invalid when result.InventoryCode == KeyReused:
-                    // Never a reason to post again: the attempt is blocked like CompensationFailed (§23.4, S23-11).
+                    // Never a reason to post again: the attempt is blocked like CompensationFailed (§23.4, S23-11) — after the
+                    // lines it did record are reversed (review 3 F-1). The command answers 500 like any INVENTORY 400.
                     line.LastInventoryCode = KeyReused;
                     logger.LogError("MOD-0183 integrity fault: {Code} on issue of attempt {Attempt} line {Line}.", KeyReused, a.N, line.LineNumber);
-                    if (!await BlockAsync(s, a, [KeyReused + " issue line " + line.LineNumber], ct)) return InProgress(a.N);
-                    return Fail(ContractErrorCodes.InternalError, 500);
+                    var blocked = await CompensateAsync(s, a, request, fingerprint, line.LineNumber, result, ct);
+                    return blocked.ErrorCode == ContractErrorCodes.DispatchCompensationFailed ? Fail(ContractErrorCodes.InternalError, 500) : blocked;
                 case InventoryOutcome.Invalid:
                     line.LastInventoryCode = result.InventoryCode;
                     logger.LogError("MOD-0183 integrity fault: INVENTORY 400 {Code} on issue of attempt {Attempt} line {Line}.", result.InventoryCode, a.N, line.LineNumber);
@@ -160,18 +161,21 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         // Durable before the first REVERSAL (re-review N-1): the reversal date and the answer, so a holder that resumes
         // this attempt after a crash or a lost lease continues the compensation instead of posting the lines again.
         a.ReversalDate ??= clock.GetUtcNow();
-        a.Refusal = new DispatchRefusal(failedLine, status, code, details?.ToJsonString());
+        a.Refusal = new DispatchRefusal(failedLine, status, code, details?.ToJsonString(), [.. faults]);
         if (!await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
-        return await FinishCompensationAsync(s, a, fingerprint, faults, ct);
+        return await FinishCompensationAsync(s, a, fingerprint, ct);
     }
 
     /// <summary>C, from its start or from a resume: reverse every posted line, then close Compensated with the stored answer.</summary>
-    private async Task<Response<JsonObject>> FinishCompensationAsync(Shipment s, DispatchAttempt a, string fingerprint, List<string> faults, CancellationToken ct)
+    private async Task<Response<JsonObject>> FinishCompensationAsync(Shipment s, DispatchAttempt a, string fingerprint, CancellationToken ct)
     {
         // An attempt compensating without a stored answer (written by an earlier build) answers like an INVENTORY 400.
-        var refusal = a.Refusal ?? new DispatchRefusal("", 500, ContractErrorCodes.InternalError, null);
+        var refusal = a.Refusal ?? new DispatchRefusal("", 500, ContractErrorCodes.InternalError, null, []);
+        var faults = refusal.Faults.ToList();
         if (await ReverseAllAsync(s, a, refusal.LineNumber, faults, ct) is { } stopped) return stopped;
-        // Close, audit and receipt commit together (review F-3): no crash window in which the same key opens a{n+1}.
+        // Close, audit and the receipt of THIS command's key commit together (review F-3). A resumer stores its own key's
+        // receipt; the key that opened the attempt has none if that request died, and its retry opens a{n+1} on a fully
+        // reversed a{n} (review 3 F-5).
         var receipt = new DispatchOutcomeReceipt(Operation, context.IdempotencyKey, fingerprint, context.CorrelationId, refusal.StatusCode, refusal.ErrorCode, refusal.DetailsJson);
         if (!await SettleAsync(s, a, DispatchState.Compensated, faults, receipt, ct)) return InProgress(a.N);
         return FailWith(refusal.ErrorCode, refusal.StatusCode, refusal.DetailsJson is null ? null : JsonNode.Parse(refusal.DetailsJson)!.AsObject());
@@ -186,7 +190,7 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         var a = observed.Copy(); a.LeaseId = Guid.NewGuid(); a.LeaseUntil = now + options.Lease;
         if (!await repository.TryBeginOrResumeDispatchAsync(context.Scope, s.Id, observed, a, ct)) return InProgress(a.N);
         var faults = new List<string>();
-        if (await ReverseAllAsync(s, a, null, faults, ct) is { } stopped) return stopped;
+        if (await ReverseAllAsync(s, a, a.Refusal?.LineNumber, faults, ct) is { } stopped) return stopped;   // review 3 F-2
         return await SettleAsync(s, a, DispatchState.Compensated, faults, null, ct) ? null : InProgress(a.N);
     }
 
@@ -196,22 +200,27 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         a.ReversalDate ??= clock.GetUtcNow();
         // B′: a sent line without an issue and without a definite answer may have been posted by a crashed or paused
         // writer — learn its id first. A line INVENTORY refused (422) or found malformed (400) holds nothing. A line whose
-        // key answered KEY_REUSED may hold an unrecorded movement: it is resent and blocks again (re-review N-2).
-        foreach (var line in a.Lines.Where(l => l.Sent && l.IssueTransactionId is null && l.LineNumber != refusedLine && l.LastInventoryCode is null or KeyReused))
+        // key answered KEY_REUSED may hold an unrecorded movement: it is resent, and it stays unresolved (re-review N-2).
+        // An unresolved line no longer stops the reversals: every recorded issue is still reversed, and only then does the
+        // attempt block on the unresolved lines, so the stock we know of comes back (review 3 F-1).
+        var unresolved = new List<string>(); InventoryPostResult? unresolvedAnswer = null;
+        foreach (var line in a.Lines.Where(l => l.Sent && l.IssueTransactionId is null
+            && (l.LastInventoryCode is KeyReused || (l.LastInventoryCode is null && l.LineNumber != refusedLine))))
         {
             if (!await RenewAsync(s, a, ct)) return InProgress(a.N);
             var resent = await PostAsync(s, a.IssueKey(s.Id, line.LineNumber), line.RequestJson!, ct);
             if (resent.Outcome == InventoryOutcome.Posted) { line.IssueTransactionId = resent.TransactionId; line.LotId = resent.LotId ?? LotOf(line.RequestJson!); }
             else if (resent.Outcome == InventoryOutcome.Refused) line.LastInventoryCode = resent.InventoryCode;
-            else if (resent.Outcome == InventoryOutcome.Invalid && resent.InventoryCode == KeyReused)
+            else
             {
-                // §23.4: an integrity fault that blocks the attempt like CompensationFailed, never a reason to post again
-                // and never skipped — the key may hold a movement nobody recorded (re-review N-2).
-                line.LastInventoryCode = KeyReused; faults.Add(KeyReused + " resend line " + line.LineNumber);
-                logger.LogError("MOD-0183 integrity fault: {Code} on resend of attempt {Attempt} line {Line}.", KeyReused, a.N, line.LineNumber);
-                return await FailCompensationAsync(s, a, resent, faults, ct, "resend");
+                if (resent.Outcome == InventoryOutcome.Invalid && resent.InventoryCode == KeyReused)
+                {
+                    // §23.4: an integrity fault that blocks the attempt like CompensationFailed, never a reason to post again.
+                    line.LastInventoryCode = KeyReused; faults.Add(KeyReused + " resend line " + line.LineNumber);
+                    logger.LogError("MOD-0183 integrity fault: {Code} on resend of attempt {Attempt} line {Line}.", KeyReused, a.N, line.LineNumber);
+                }
+                unresolved.Add(line.LineNumber); unresolvedAnswer = resent;
             }
-            else return await FailCompensationAsync(s, a, resent, faults, ct, "resend");
         }
         foreach (var line in a.Lines.Where(l => l.IssueTransactionId is not null && !l.IsReversed()))
         {
@@ -239,6 +248,7 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
             }
             if (!await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
         }
+        if (unresolvedAnswer is not null) return await FailCompensationAsync(s, a, unresolvedAnswer, faults, ct, "resend");
         return null;
     }
 
