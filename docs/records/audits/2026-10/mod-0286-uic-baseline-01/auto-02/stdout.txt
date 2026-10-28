@@ -1,0 +1,480 @@
+UIC-AUTO
+RC-1
+exit=0
+RC-2
+1
+0
+exit=1
+RC-3
+[shell] _DataTable.cshtml calls _ListShell — markers resolved from the model setup (TableId='dt-goldenreferenceslim', DataMode='client', HasSelection=true) and /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/Views/Shared/Components/DataTable/_ListShell.cshtml
+[factory] index.js calls DitenDataTable.createList (dataMode='client') — 12/12 mechanics verified in /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+[pack] execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md declares data_mode: client
+
+Golden DataTable Verify Report
+================================
+Passed: 97
+Failed: 1
+
+[PASS] Index.cshtml exists
+[PASS] _Filter.cshtml exists
+[PASS] _DataTable.cshtml exists
+[PASS] _IndexL10n.cshtml exists
+[PASS] index.js exists
+[PASS] index.l10n.js exists
+[PASS] dt-defaults.js exists
+[PASS] backbone-custom.css exists
+[PASS] Slim reference has _CreateEditOffcanvas.cshtml
+[PASS] Data mode declared: client
+[PASS] Client mode: DataTables serverSide is off
+[PASS] No hard-coded page cap in the page's JS
+[PASS] Selection column ↔ bulk JS
+[PASS] Selection column ↔ bulk bar
+[PASS] Shaped placeholder: shared _TableSkeleton partial
+[PASS] List goes through the shared layer (createCrudTable / DtDefaults.create)
+[PASS] Index.cshtml includes <partial name="_Filter" />
+[PASS] Index.cshtml uses _LayoutTenantShell
+[PASS] Index.cshtml does NOT use legacy _LayoutBackbone
+[PASS] DataTable markup has #skeleton-loader
+[PASS] Index.cshtml has #offcanvasDetailsPreview
+[PASS] Slim _CreateEditOffcanvas.cshtml has #offcanvasCreateEdit
+[PASS] Optional numeric/date fields use nullable ViewModel types
+[PASS] Required label markers match ViewModel required metadata
+[PASS] Index.cshtml shows @Localizer["PageDescription"]
+[PASS] _Filter.cshtml has #inlineFilterHost
+[PASS] _Filter.cshtml has #inlineFilterCollapse
+[PASS] _Filter.cshtml uses pt-0 pb-3 wrapper
+[PASS] _Filter.cshtml does not use pt-2
+[PASS] index.js does not add mx-* to inlineFilterHost
+[PASS] Inline filter host aligns with px-3
+[PASS] index.js references #btnFilterApply
+[PASS] index.js references #btnFilterReset
+[PASS] Apply click updates Save View visibility
+[PASS] Save View payload has non-empty default name
+[FAIL] personalizationClient sends tenant header only for tenant users
+  - Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+[PASS] Reset click prevents native form reset
+[PASS] Reset click recalculates Save View dirty visibility
+[PASS] Reset baseline is factory table state
+[PASS] Reset click restores full factory table state
+[PASS] Filter control change does not toggle Save View
+[PASS] dt-defaults.js topStart rowClass matches golden toolbar contract
+[PASS] dt-defaults.js bottomStart rowClass matches golden toolbar contract
+[PASS] backbone-custom.css has MOD-0022 media query
+[PASS] Responsive toolbar reserves top safe-area (padding-top)
+[PASS] Export button height aligned (dt-export-collection-btn min-block-size)
+[PASS] backbone-custom.css has shared inline filter Select2 styling
+[PASS] Inline filter styling follows form-select-sm standard
+[PASS] Index.cshtml does not embed inline filter CSS in @section Styles
+[PASS] Index.cshtml does not embed toolbar CSS in @section Styles
+[PASS] Index.cshtml includes <partial name="_IndexL10n" />
+[PASS] Index.cshtml includes script: ~/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js
+[PASS] Index.cshtml does not inline-assign window.L10n keys
+[PASS] _IndexL10n.cshtml renders application/json payload
+[PASS] index.l10n.js parses payload JSON
+[PASS] index.l10n.js merges payload into window.L10n
+[PASS] _IndexL10n.cshtml provides Active
+[PASS] _IndexL10n.cshtml provides Passive
+[PASS] _IndexL10n.cshtml provides Unknown
+[PASS] _IndexL10n.cshtml provides Actions
+[PASS] _IndexL10n.cshtml provides Edit
+[PASS] _IndexL10n.cshtml provides ViewDetails
+[PASS] _IndexL10n.cshtml provides QuickView
+[PASS] _IndexL10n.cshtml provides BulkDelete
+[PASS] _IndexL10n.cshtml provides BulkDeleteConfirm
+[PASS] _IndexL10n.cshtml provides AreYouSure
+[PASS] _IndexL10n.cshtml provides Cancel
+[PASS] _IndexL10n.cshtml provides Search
+[PASS] _IndexL10n.cshtml provides Export
+[PASS] _IndexL10n.cshtml provides Import
+[PASS] _IndexL10n.cshtml provides Filter
+[PASS] _IndexL10n.cshtml provides Apply
+[PASS] _IndexL10n.cshtml provides Reset
+[PASS] _IndexL10n.cshtml provides ShowAll
+[PASS] _IndexL10n.cshtml provides SaveView
+[PASS] _IndexL10n.cshtml provides ColumnVisibility
+[PASS] _IndexL10n.cshtml provides Status
+[PASS] Index.cshtml has <table id="..." data-dt-standard="v2">
+[PASS] Index.cshtml includes script: ~/assets/js/DevEnablement/GoldenReferenceSlim/index.js
+[PASS] Index.cshtml has no inline onclick=
+[PASS] Index.cshtml does not define/call populateOffcanvas(...)
+[PASS] index.js uses DataTables v2 constructor (new DataTable(...))
+[PASS] index.js uses window.DtDefaults.create(...)
+[PASS] index.js uses DtDefaults.exportButtons(...)
+[PASS] index.js includes .js-quick-view selector
+[PASS] index.js uses event delegation (closest('.js-quick-view'))
+[PASS] index.js defines getAuthHeaders()
+[PASS] index.js uses getAuthHeaders() in fetch headers
+[PASS] index.js does not read HttpOnly auth cookies or build Bearer tokens
+[PASS] direct-gateway profile uses window.API service base
+[PASS] index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))
+[PASS] _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)
+[PASS] index.js declares bulk action config (bulkOptions / bulkBarSelector)
+[PASS] index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+[PASS] index.js calls bulk endpoint (.../bulk)
+[PASS] index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+[PASS] index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+[PASS] index.js wires clear-selection (clearSelectionSelector or clearSelection())
+
+Result: FAIL
+exit=1
+RC-4
+0
+1
+exit=0
+RC-5
+0
+1
+exit=0
+RC-6
+en ok
+6
+0
+12
+tr ok
+6
+0
+12
+fr ok
+6
+0
+12
+es ok
+6
+0
+12
+zh ok
+6
+0
+12
+ar ok
+6
+0
+12
+ru ok
+6
+0
+12
+marker ok
+en ok
+tr ok
+exit=0
+RC-7
+0
+exit=1
+RC-8
+2
+1
+exit=0
+RC-9
+frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json:2
+frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json:2
+exit=0
+RC-10
+exit=1
+RC-11
+rc=0
+0
+0
+       1
+exit=0
+RC-12
+[shell] _DataTable.cshtml calls _ListShell — markers resolved from the model setup (TableId='dt-goldenreferenceslim', DataMode='client', HasSelection=true) and /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/Views/Shared/Components/DataTable/_ListShell.cshtml
+[factory] index.js calls DitenDataTable.createList (dataMode='client') — 12/12 mechanics verified in /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+[pack] execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md declares data_mode: client
+1) personalizationClient sends tenant header only for tenant users — Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+exit=1
+RC-13
+1
+0
+2
+exit=0
+RC-14
+[shell] _DataTable.cshtml calls _ListShell — markers resolved from the model setup (TableId='dt-goldenreferenceslim', DataMode='client', HasSelection=true) and /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/Views/Shared/Components/DataTable/_ListShell.cshtml
+[factory] index.js calls DitenDataTable.createList (dataMode='client') — 12/12 mechanics verified in /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+[pack] execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md declares data_mode: client
+1) personalizationClient sends tenant header only for tenant users — Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-ui-p1-03/frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+exit=1
+RC-15
+6
+16:form_field_count: 6
+exit=0
+RC-16
+10
+5
+exit=0
+RC-17
+1
+1
+                attr: { title: l.Filter, 'aria-controls': collapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
+2
+exit=0
+RC-18
+frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml:88:        <button data-dt-primary="enter" type="button" id="btnSaveSlim" class="btn btn-primary">
+exit=0
+RC-19
+1
+0
+exit=1
+RC-20
+0
+exit=1
+RC-21
+2
+2
+2
+2
+2
+2
+2
+exit=0
+RC-22
+rc=1
+0
+6
+5
+rc=1
+0
+1
+0
+exit=1
+RC-23
+1
+            ["USERS"] = [new("USERROLES", "bx-shield-quarter"), new("ROLES", "bx-id-card")],
+codes=USERROLES ROLES
+en USERROLES=1
+en ROLES=1
+en related_total=2
+en k=5 range_ok=yes
+en seq_diff=empty
+en title_diff=empty
+tr USERROLES=1
+tr ROLES=1
+tr related_total=2
+tr k=5 range_ok=yes
+tr seq_diff=empty
+tr title_diff=empty
+fr USERROLES=1
+fr ROLES=1
+fr related_total=2
+fr k=5 range_ok=yes
+fr seq_diff=empty
+fr title_diff=empty
+es USERROLES=1
+es ROLES=1
+es related_total=2
+es k=5 range_ok=yes
+es seq_diff=empty
+es title_diff=empty
+zh USERROLES=1
+zh ROLES=1
+zh related_total=2
+zh k=5 range_ok=yes
+zh seq_diff=empty
+zh title_diff=empty
+ar USERROLES=1
+ar ROLES=1
+ar related_total=2
+ar k=5 range_ok=yes
+ar seq_diff=empty
+ar title_diff=empty
+ru USERROLES=1
+ru ROLES=1
+ru related_total=2
+ru k=5 range_ok=yes
+ru seq_diff=empty
+ru title_diff=empty
+exit=0
+RC-24
+tr missing=0 equal=10 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+fr missing=35 equal=47 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+es missing=35 equal=39 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+zh missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+ar missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+ru missing=35 equal=35 new_missing=0 new_equal=0 closed_missing=0 closed_equal=0
+exit=0
+uic-auto exit=0
+BASE=8b9a45ba9b9b9e6d74cdf48467678d080708ac44
+AC-1
+  ## başlık sayısı = 9 (beklenen 9)
+3	## 1. Sayfa arketipleri
+3	## 2. Bileşen standartları
+3	## 3. Kabuk ve yerleşim
+3	## 4. Görsel belirteçler
+2	## 5. Erişilebilirlik
+3	## 6. Dil
+4	## 7. Yetkisiz yüz, Ctrl+K kaydı, kayıt kodu
+3	## 8. API profili
+48	## 9. Çatışma kaydı
+  atıfsız başlık = 0 (beklenen 0)
+  .antigravity/rules/ satırı = 22 (>= 9)
+AC-1 sonuç=geçti (zorunlu)
+AC-2
+  a0a4050b0: git çıkış 0, değişen 0
+  3fbf891bb: git çıkış 0, değişen 0
+  bb3464954: git çıkış 0, değişen 0
+  d3105a332: git çıkış 0, değişen 0
+  51a8ced4c: git çıkış 0, değişen 0
+AC-2 sonuç=geçti (zorunlu)
+AC-12
+  paket FU-1 satırı = 1 (beklenen 1)
+AC-12 sonuç=geçti (zorunlu)
+AC-3
+  §9 satır sayısı (1-5) = 5 (beklenen 5)
+  satır 1 '|' sayısı (7 sütun) = 8 (beklenen 8)
+  satır 1 durum: karar: kuralın kendisinde düzeltilir (sahip 2026-10-26, karar kaydı pss-mod0286-daralt
+  satır 2 '|' sayısı (7 sütun) = 8 (beklenen 8)
+  satır 2 durum: karar: kuralın kendisinde düzeltilir (sahip 2026-10-26, karar kaydı pss-mod0286-daralt
+  satır 3 '|' sayısı (7 sütun) = 8 (beklenen 8)
+  satır 3 durum: karar: kuralın kendisinde düzeltilir (sahip 2026-10-26, karar kaydı pss-mod0286-daralt
+  satır 4 '|' sayısı (7 sütun) = 8 (beklenen 8)
+  satır 4 durum: karar bekliyor (D-5, FU-2) 
+  satır 5 '|' sayısı (7 sütun) = 8 (beklenen 8)
+  satır 5 durum: çözüldü (yapısal) 
+AC-3 sonuç=geçti (zorunlu)
+AC-4
+  UIC satırı = 32 (beklenen 32)
+  RC satırı = 24 (beklenen 24)
+  UIC tekrar = 0 (beklenen 0)
+  RC tekrar = 0 (beklenen 0)
+  UIC satırları paketle aynı
+  RC satırları paketle aynı
+  7 '|' olmayan UIC satırı = 0 (beklenen 0)
+AC-4 sonuç=geçti (zorunlu)
+AC-5
+  exit= satırı = 24 (beklenen 24)
+  RC-1 beklenenle aynı
+  RC-2 beklenenle aynı
+  RC-4 beklenenle aynı
+  RC-5 beklenenle aynı
+  RC-6 beklenenle aynı
+  RC-7 beklenenle aynı
+  RC-8 beklenenle aynı
+  RC-9 beklenenle aynı
+  RC-10 beklenenle aynı
+  RC-13 beklenenle aynı
+  RC-15 beklenenle aynı
+  RC-16 beklenenle aynı
+  RC-19 beklenenle aynı
+  RC-20 beklenenle aynı
+  RC-21 beklenenle aynı
+  RC-23 beklenenle aynı
+  RC-24 dil satırı = 6 (beklenen 6)
+  RC-24 new_missing=0 new_equal=0 satırı = 6 (beklenen 6)
+  RC-3 [PASS] = 97 (beklenen 97)
+  RC-3 [FAIL] = 1 (beklenen 1)
+  RC-3 exit = exit=1 (beklenen exit=1)
+  RC-12 numaralı açık = 1 (beklenen 1)
+  RC-12 exit = exit=1 (beklenen exit=1)
+  RC-14 numaralı açık = 1 (beklenen 1)
+  RC-14 exit = exit=1 (beklenen exit=1)
+  RC-17 satır 1 = 1 (beklenen 1)
+  RC-17 satır 2 = 1 (beklenen 1)
+  RC-17 satır 4 = 2 (beklenen 2)
+  RC-17 exit = exit=0 (beklenen exit=0)
+  RC-18 satır = 2 (beklenen 2)
+  RC-22 rc satırı (0|1) = 2 (beklenen 2)
+  RC-22 Title Case (tenant) = 0 (beklenen 0)
+  RC-22 Title Case (platform) = 0 (beklenen 0)
+  resx-tenant.out dolu
+  resx-platform.out dolu
+AC-5 sonuç=geçti (zorunlu)
+AC-7
+  RC-3 [FAIL] satırı FU-4 = 1 (beklenen 1)
+  RC-3 exit = exit=1 (beklenen exit=1)
+AC-7 sonuç=geçti (zorunlu)
+AC-6
+  UIC-8: uygun değil
+  UIC-9: ölçülmedi — çalışan uygulama ve 
+  UIC-10: ölçülmedi — çalışan uygulama ve 
+  UIC-11: ölçülmedi — çalışan uygulama ve 
+  UIC-12: ölçülmedi — çalışan uygulama ve 
+  UIC-15: kısmi
+  UIC-16: kısmi
+  UIC-18: uygun değil
+  UIC-23: uygun
+  UIC-28: ölçülmedi — çalışan uygulama ve 
+AC-6 sonuç=geçti (zorunlu)
+AC-8
+rc=0
+0
+0
+       1
+exit=0
+  (1) rc=0
+  (2) could not read = 0 (beklenen 0)
+  (3) MOD-0286 = 0 (beklenen 0)
+  (4) git ls-files = 1 (beklenen 1)
+AC-8 sonuç=geçti (zorunlu)
+AC-9
+OK  MOD-0286: proven against Blueprint/registry.
+exit=0
+AC-9 sonuç=geçti (zorunlu)
+AC-10
+  docs/ kökündeki dosya = 0 (beklenen 0)
+AC-10 sonuç=geçti (zorunlu)
+AC-11
+  yok: frontend/Diten.Web/Views/Platform/UiGovernance
+  yok: services/Diten.Platform/src/Diten.Platform.Application/Features/UiGovernance
+AC-11 sonuç=geçti (zorunlu)
+AC-13
+KOŞU KAYDI biçimi geçerli · commit 3fbf891bbdce · çıkış 0
+  verify exit=0
+AC-13 sonuç=geçti (isteğe-bağlı)
+AC-15
+  ## Kapsama tablosu başlığı = 1 (beklenen 1)
+  paket tablo satırı = 11 (beklenen 11)
+  tablo satırları paketle aynı
+  zorunlu frontend-standards.md = 15 (beklenen 15)
+  zorunlu frontend-datatable-template.md = 23 (beklenen 23)
+  zorunlu frontend-js-standard.md = 31 (beklenen 31)
+  zorunlu premium-modal-standard.md = 1 (beklenen 1)
+  zorunlu page-help-and-keyboard.md = 8 (beklenen 8)
+  zorunlu views-organization.md = 2 (beklenen 2)
+  zorunlu unauthorized-surface-standard.md = 1 (beklenen 1)
+  zorunlu localization-standard.md = 7 (beklenen 7)
+  zorunlu dynamic-localization-standard.md = 2 (beklenen 2)
+  zorunlu frontend-details-template.md = 2 (beklenen 2)
+  zorunlu frontend-form-template.md = 2 (beklenen 2)
+AC-15 sonuç=geçti (zorunlu)
+AC-16
+AC-16 sonuç=geçti (zorunlu)
+CT-1
+  eski ifade yok: docs/reference/modules/platform/ui-design-system-page-pattern-governance/spec.md
+  eski ifade yok: docs/reference/modules/platform/ui-design-system-page-pattern-governance/compliance-checklist.md
+paket:156-200
+paket:769-777
+  izinli dışı paket: atfı = 0 (beklenen 0)
+  paket:156-200 atfı = 1 (beklenen 1)
+  paket:769-777 atfı = 1 (beklenen 1)
+  D-4 demeyen P2 satırı = 0 (beklenen 0)
+CT-1 sonuç=geçti (zorunlu)
+CT-2
+  paket sha256 = 89333f90d886cdb11b499459dd12b4bc3da4a82efc8e5467be171fe2a2b35d44 (beklenen 89333f90d886cdb11b499459dd12b4bc3da4a82efc8e5467be171fe2a2b35d44)
+CT-2 sonuç=geçti (zorunlu)
+CT-3
+  BASE..HEAD commit = 1 (beklenen 1)
+docs/records/audits/2026-10/mod-0286-uic-baseline-01/README-p1-03.md
+docs/reference/modules/platform/ui-design-system-page-pattern-governance/compliance-checklist.md
+docs/reference/modules/platform/ui-design-system-page-pattern-governance/spec.md
+  değişen dosya = 3 (beklenen 3)
+CT-3 sonuç=geçti (zorunlu)
+ÖZET
+AC-1 zorunlu geçti
+AC-2 zorunlu geçti
+AC-12 zorunlu geçti
+AC-3 zorunlu geçti
+AC-4 zorunlu geçti
+AC-5 zorunlu geçti
+AC-7 zorunlu geçti
+AC-6 zorunlu geçti
+AC-8 zorunlu geçti
+AC-9 zorunlu geçti
+AC-10 zorunlu geçti
+AC-11 zorunlu geçti
+AC-13 isteğe-bağlı geçti
+AC-15 zorunlu geçti
+AC-16 zorunlu geçti
+CT-1 zorunlu geçti
+CT-2 zorunlu geçti
+CT-3 zorunlu geçti
+zorunlu geçti 17 / 17

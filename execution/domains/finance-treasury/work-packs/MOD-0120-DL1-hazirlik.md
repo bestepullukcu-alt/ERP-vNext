@@ -35,7 +35,7 @@ satır 1582-1586):
 | Koşul | Bugün | Kimden |
 |---|---|---|
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (S-49, D34/2) | `draft` (pack satır 11) | CT + Beste |
-| DCP (UNASSIGNED-finance-treasury-intake) numarası ve `approved` (pack satır 1354); D34/2: numara önce ve ayrıca istenir | `UNASSIGNED`, `draft` | Beste |
+| DCP (DCP-011-finance-treasury-intake) numarası ve `approved` (pack satır 1354); D34/2: numara önce ve ayrıca istenir | `DCP-011` (numara atandı 2026-10-27), `draft` | Beste |
 | **MOD-0126 DL-1 bitti:** iskelet, servis ortak yapı taşları, port 5071 (pack satır 1356) | MOD-0126 de `draft`; DL-1 hazırlığı ayrı kayıtta | MOD-0126 WP |
 | Platform `AuditCategory`'ye `Finance` değeri — D35/3: MOD-0126 DL-1 bu değer main'e girmeden başlamaz; MOD-0120 DL-1 dolaylı olarak bekler | yok | Platform sahibi |
 | S-2 bitiş / gözden geçirme koşulunun sahip tarafından yazılması (pack satır 1349-1350) | açık | sahip (K1) |

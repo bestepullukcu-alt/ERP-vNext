@@ -95,6 +95,20 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         return ValueTask.FromResult<IReadOnlyList<PvgPersistedIntakeDraft>>(items);
     }
 
+    public ValueTask<int> CountAsync(
+        PvgPersistenceTenantScope tenantScope,
+        PvgIntakeStatus? status,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureTenantScope(tenantScope);
+
+        var count = _drafts
+            .Values
+            .Count(entity => entity.TenantId == tenantScope.TenantId && (status is null || entity.Status == status));
+
+        return ValueTask.FromResult(count);
+    }
+
     private static void EnsureTenantScope(PvgPersistenceTenantScope tenantScope, SafetyCaseIntake? intake = null)
     {
         if (string.IsNullOrWhiteSpace(tenantScope.TenantId))

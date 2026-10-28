@@ -37,7 +37,7 @@ DL-1 prompt'u ancak bunlar kapanınca dağıtılabilir (pack "Ready-for-dev Chec
 |---|---|---|---|
 | **MOD-0289 için ayrı kod alma izni (D1)** | **verilmedi** (D27/5 kapsamaz) | sahip | pack satır 1562-1563, 1809 |
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (`high: evet`, yazmamış onaylayıcı) | `draft` / `not-approved`; revizyon 8 **incelenmedi** | CT + Beste | pack satır 19-20, 1559-1561; D34 (aşağıda) |
-| DCP (`UNASSIGNED-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı | `UNASSIGNED`, taslak | Beste | pack satır 580, 1564 |
+| DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı | `DCP-011` (numara atandı 2026-10-27), taslak | Beste | pack satır 580, 1564 |
 | MDM domain-config'e MOD-0289 satırı + frontend/gateway kapsam cümlesi | yok (domain-config'te `MOD-0289` geçmiyor — bu oturumda `grep -c` → 0) | MDM sahibi | pack satır 135-139, 1565 |
 | RCS-001 ortak kod servisi (BL-565) — `BNK` kodu için | **yok**; sahibi belirlenmedi | sahip ataması | pack satır 569, 593 ("DL-1 önkoşulu"), 1571 |
 | `BNK` / `BAC` önekleri RCS-001 §3'te | yazıldı | — | pack satır 542, 1571; `.antigravity/rules/record-coding-standard.md:68-69` (bu worktree) |
