@@ -22,21 +22,21 @@ uomId`, isteğe bağlı `inventoryReferenceId`.
 
 | alan | tür | anlamı |
 |---|---|---|
-| `skuLevel` | `[string, 'null']`, INVENTORY `SkuLevel` değerleri | Çıkış hareketinin zorunlu `skuLevel`'ı (INVENTORY `MovementRequest`, `inventory-bundle.openapi.yaml:347`). Verilmezse PRODUCT-MASTER'dan çözülür (G6 dondurulunca); verilirse onunla çapraz kontrol edilir |
+| `skuLevel` | `[string, 'null']`, INVENTORY `SkuLevel` değerleri | Çıkış hareketinin zorunlu `skuLevel`'ı (INVENTORY `MovementRequest`, `inventory-bundle.openapi.yaml:347`). **r5:** Dispatched'ta boşsa → 422 `SHIPMENT_LINE_STOCK_INCOMPLETE`, INVENTORY çağrılmaz (DL-1); PRODUCT-MASTER'dan çözülmesi sonraki revizyon |
 | `lotId` | `[string, 'null']` | Lot izli üründe çıkışın lotu. Depo modülü olmayan kiracıda kullanıcı girer; depo modülü olanda MVP-5 toplama sonucu doldurur (G10) |
 | `fromLocationId` | `[string, 'null']` | Çıkış lokasyonu; depo başlıkta (`warehouseReferenceId`) kalır |
 | `fefoBypassReason` | `[string, 'null']`, 10–1000 | FEFO'nun ilk uygun lotu dışındaki lot için gerekçe (INVENTORY 1.3.0 `fefoBypassReason`); aynen iletilir |
 
-Kural: dört alan da **Dispatched'a geçişte** okunur; `Draft` / `Planned`'da boş olabilir. Lot izli bir üründe `lotId` boşsa
-geçiş Inventory'ye gitmeden reddedilir (yeni 422 kodu `SHIPMENT_LINE_STOCK_INCOMPLETE`, `details.lineNumber`).
+Kural: dört alan da **Dispatched'a geçişte** okunur; `Draft` / `Planned`'da boş olabilir. **r4/r5:** boş `skuLevel` geçişi
+Inventory'ye gitmeden reddeder (422 `SHIPMENT_LINE_STOCK_INCOMPLETE`, `details.lineNumber`); lot izli satırda boş `lotId`
+INVENTORY'nin `LOT_REQUIRED` reddiyle `INVENTORY_REFUSED` olur (lot izli olduğunu bilmek PRODUCT-MASTER ister, MOD-0183 §23.1).
 
 ## 2. `INVENTORY_REFUSED` — Inventory reddi tek wire kodu (G7)
 
 - `Unprocessable` yanıtına yeni örnek: `{ error: { code: INVENTORY_REFUSED, message: …, details: { lineNumber, inventoryCode },
-  correlationId }, contractVersion: v1 }`. `inventoryCode` INVENTORY'nin kendi 422 kodudur (`LOT_UNDER_RECALL`, `LOT_RETEST_DUE`,
-  `INSUFFICIENT_STOCK`, `FEFO_BYPASS_REASON_REQUIRED`, `FEFO_ORDER_VIOLATION`, `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`,
-  `ITEM_NOT_ACTIVE`, `SKU_LEVEL_NOT_STOCKABLE`, `PRODUCT_MASTER_DATA_INCOMPLETE`); Inventory'nin `details`'i `details.inventory`
-  altında aynen taşınır.
+  correlationId }, contractVersion: v1 }`. `inventoryCode` INVENTORY'nin kendi 422 kodudur; **kapalı liste MOD-0183 §23.3'tedir**
+  (INVENTORY `InventoryErrorCodes.cs`'in 422 kodları, bugün 25 kod; liste dışı kod → genel metin anahtarı). Inventory'nin
+  `details`'i `details.inventory` altında aynen taşınır.
 - `Error.details` zaten açık (`additionalProperties: true`, `shipment-bundle.openapi.yaml:3481-3492`): şema değişmez, yalnız
   örnek ve açıklama eklenir.
 - Mevcut `INVENTORY_REFERENCE_INVALID` (aynı yanıtın `inventory` örneği) okuma doğrulaması için kalır; yazma reddi
@@ -59,7 +59,40 @@ olmayan satır için yeni 422 kodu `RETURN_SOURCE_MOVEMENT_MISSING` (`details.sh
 
 Not: `inventoryTransactionReferenceId` alanı istemciden gelmeye devam eder mi, yoksa sunucu mu yazar — bugünkü anlamı
 "Frozen INVENTORY movement reference". §34 ile sunucu yazar; istemcinin değeri yok sayılır mı reddedilir mi, sözleşme
-yazıcısının kararıdır (öneri: 3.4.0'da `deprecated: true`, sunucu değeri yazar, istemci değeri yok sayılır).
+yazıcısının kararıdır. **Karar (revizyon r2, 2026-10-26, MOD-0186 §34.2):** `Received` geçişinde istemci değeri 400
+`INVALID_REQUEST` ile **reddedilir** (sessizce yok sayılmaz); sunucu satır başına yazar. Diğer geçişlerde alan bugünkü gibidir.
+
+## 3a. `ShipmentDetail.dispatchState` ve 409 `DISPATCH_COMPENSATION_FAILED` (G4 koşul 4, 2026-10-23)
+
+MVP-1 CT'nin G4 koşulu: telafi REVERSAL'ı başarısızsa sevkiyat görünür bir hata durumunda kalır. Dondurulmuş yaşam döngüsünde
+`Planned → Exception` oku yok, bu yüzden `status` değişmez; yerine salt-okunur `dispatchState` (`None` / `InProgress` /
+`CompensationFailed`, isteğe bağlı) eklenir ve sonraki her geçiş 409 `DISPATCH_COMPENSATION_FAILED` (`details.lines`) alır.
+Yalnız ekleme; var olan istemciler etkilenmez.
+
+## 3b. CT-APR-02 incelemesinden gelen ekler (MVP-1 CT, 2026-10-23; revizyon r2, 2026-10-26)
+
+| Ek | Tür | Neden |
+|---|---|---|
+| `ShipmentLine.issueTransactionId` | `[string, 'null']`, salt-okunur | MOD-0186 F-5: iade, tamamlanmış sevk denemesinin çıkış hareketini sevkiyat seam'i üzerinden okur; create'te yok sayılır |
+| `dispatchState` açıklaması | yalnız metin | MOD-0183 F-2 / F-4: `InProgress` iken iptal ve POD 409 `DISPATCH_IN_PROGRESS`; `CompensationFailed`'dan çıkış `Dispatched` ya da `Cancelled` ile, önce REVERSAL'lar yeniden gönderilir |
+| 409 `DISPATCH_IN_PROGRESS` | yeni örnek kod | MOD-0183 F-2: sevkiyat başına tek aktif deneme |
+| 409 `RETURN_RECEIPT_IN_PROGRESS` | yeni örnek kod | MOD-0186 F-1: açık alım denemesi başka saklı değerlerle, ya da başka bir komut kilidi tutuyor |
+
+Hepsi ekleme; var olan istemciler etkilenmez. İki yeni kod `ContractErrorCodeParityTests` için DL-1 koduyla aynı değişiklikte
+sabit olarak eklenir.
+
+## 3c. r4 ekleri (2026-10-26, bağımsız r3 incelemesi + Natig kararları)
+
+| Ek | Tür | Neden |
+|---|---|---|
+| `responses.Forbidden` (403) ve `responses.InternalError` (500) | yeni paylaşılan yanıtlar | MOD-0183 r3 F-3: `transitionShipment` ve `transitionReturn` INVENTORY 403 → 403 ve INVENTORY 400 → 500 döndürüyor; artık bildirilmiş |
+| `transitionShipment` → `'403'`, `'500'` | eklemeli yanıt | aynı. **`transitionReturn` 3.3.0'da 403 (`INVALID_REQUEST`) ve 500 (`INTERNAL_ERROR`) zaten bildiriyor** — r5: yinelenen anahtar kaldırıldı (geçersiz YAML olurdu), mevcut 403'e yalnız `INVENTORY_FORBIDDEN` örneği eklendi |
+| `transitionReturn` açıklaması | metin | MOD-0186 r3 F-1: "No Inventory HTTP" yerine "tek Inventory çağrısı Received'deki CUSTOMER_RETURN"; DL-1 öncesi sevkiyat `NotPosted` / `PRE_WP_P1` |
+| `TransitionReturnCommand.unpostedLines` | eklemeli alan | MOD-0186 r3 F-2: kalıcı INVENTORY reddi (`ITEM_NOT_ACTIVE`, `SKU_LEVEL_NOT_STOCKABLE`, `UNKNOWN_ITEM`) ve `INTEGRITY_FAULT` bloğu için çıkış; uygun olmayan satır → 422 `RETURN_LINE_NOT_UNPOSTABLE` (r5, örnek eklendi) |
+| `ReturnResponse.lines[]` | eklemeli, salt-okunur | MOD-0186 r3 F-1: satır başına `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason` |
+
+`returns-semantics-v3.0.0.md` ("Inventory and Warehouse HTTP calls ZERO") 3.0.0 için tarihsel kalır; 3.4.0'ın normatif metni
+`transitionReturn` açıklaması ve MOD-0186 §34'tür. Yeni kodlar `ContractErrorCodeParityTests` için DL-1 koduyla aynı değişiklikte.
 
 ## 4. Değişmeyenler
 
@@ -70,3 +103,7 @@ zamanı bütün satırlar yazıldıktan sonra), bütün yollar ve güvenlik.
 
 Sözleşme tek yazıcısı (MOD-0183 Faz A) → CT-APR-02 bağımsız inceleme → yayın; DocsPathGuard karma bağlaması ayrı adım
 (Q26 / Q30 deseni). G2–G4 cevapları gelince çıkış çekirdeğine ait ekler (varsa) aynı sürüme ya da 3.5.0'a girer.
+
+r5 (2026-10-26): yama, katı yinelenen-anahtar denetimiyle (YAML yükleyici, `DUPLICATE` kontrolü) ölçüldü — yinelenen anahtar yok;
+`transitionReturn` açıklaması `returns-semantics-v3.0.0.md`'nin "Inventory and Warehouse HTTP calls ZERO" cümlesini Received için
+açıkça geçersiz kılar.
