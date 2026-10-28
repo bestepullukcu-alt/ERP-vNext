@@ -10,13 +10,24 @@ info:
     (B) MVP-2 producer yüzeyi (ADDITIVE, review-pending): supplier CRUD + onboarding case
         (KYC/sanctions/docs/approvals). (B), (A)'nın SUPERSET'idir; (A) daraltılmamıştır (K16, README §29).
     Tenant + Legal-Entity scoped; TenantId/LegalEntityId server-resolved (payload'da yok).
-  version: 1.2.0                    # 1.1.0 → 1.2.0: (B) producer additive delete/bulk-delete folded in (backward-compatible; (A) unchanged)
+
+    1.3.0 hata kodları (eklemeli). Procurement'ın her kiracı ucu, başlıktaki ya da JWT'deki legal entity bu kiracıda
+    yoksa, ACTIVE değilse ya da referanslanamazsa 404 döner; gövde Error şemasıdır, error.code = UNKNOWN_LEGAL_ENTITY.
+    1.2.0'da 404'ü UnknownSupplier olan işlemlerde yanıt nesnesi değişmez; tüketici iki durumu error.code ile ayırır.
+    Legal entity doğrulaması için MDM'e soran çağıranın rolünde mdm.legal-entities.read yoksa 403, error.code =
+    LEGAL_ENTITY_LOOKUP_FORBIDDEN (hiçbir şey okunmaz, yazılmaz; yeniden denemek sonucu değiştirmez).
+    MDM ya da MOD-0023'e ulaşılamazsa 503, error.code = DEPENDENCY_UNAVAILABLE (hiçbir şey okunmaz, yazılmaz).
+    409 DUPLICATE_SUPPLIER gövdesinde error.supplierId, kiracıda zaten var olan tedarikçinin kanonik kodudur.
+    Bilinen, 1.2.0'dan devralınan ve 1.3.0'da değişmeyen: 1.2.0 şemalarındaki "nullable: true" OpenAPI 3.0 anahtar
+    sözcüğüdür, 3.1'de etkisizdir; validateSuppliers satırındaki status null kabul etmez ama known: false satırında
+    sunucu null yazar. 1.3.0'da eklenen şemalar null'u JSON Schema 2020-12 biçimiyle yazar.
+  version: 1.3.0                    # 1.2.0 → 1.3.0: MOD-0140 Revizyon 5 DL-1 — uygunluk yüzeyi + hata kodları, yalnız eklemeli ((A) unchanged)
   x-status: FROZEN
   x-slice-status: FROZEN            # (A) consumer slice — şekil dondurulmuş, MVP-6 buna bağlı
-  x-producer-status: FROZEN         # (B) producer surface FROZEN 2026-09-23 (CT A2) — implementation-accurate; additive-only sonrası genişletilir
+  x-producer-status: FROZEN 2026-10-28  # 1.3.0 FROZEN (MOD-0140 DL-1); (B) 2026-09-23 (CT A2); sonrası yalnız eklemeli sürümle (1.4.0+)
   x-owner: MOD-0140
   x-authored-by: control-tower
-  x-front-loaded-for: [MOD-0147, MOD-0148]
+  x-front-loaded-for: [MOD-0147, MOD-0148, MOD-0119, MOD-0289]
   x-consumes: []
   x-min-contract: P2P-BUNDLE
 servers: [{ url: /api/suppliers }]
@@ -51,10 +62,14 @@ paths:
                     contacts: [{ type: primary, email: "satis@medipkim.example", phone: "+90 212 000 0000" }]
                 nextCursor: null
                 contractVersion: v1
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
     # ---- (B) producer additive: create supplier ----
     post:
       operationId: createSupplier
       summary: Yeni supplier oluştur (draft; onboarding case tetiklenebilir)
+      description: "409 DUPLICATE_SUPPLIER gövdesinde error.supplierId (1.3.0, isteğe bağlı alan) kiracıda aynı ülke ve normalize vergi no ile zaten var olan tedarikçinin kanonik kodudur; istemci bu kodla tedarikçiyi çağıran şirkete bağlamayı önerebilir. Yanıt nesnesi DuplicateSupplier'dır, değişmez."
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -72,10 +87,41 @@ paths:
           content: { application/json: { schema: { $ref: '#/components/schemas/Supplier' } } }
         '409': { $ref: '#/components/responses/DuplicateSupplier' }
         '422': { $ref: '#/components/responses/SupplierUnprocessable' }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
+  /eligible:
+    get:
+      operationId: listEligibleSuppliers
+      summary: Çağıran şirketle silinmemiş ve Active ilişkisi olan tedarikçiler (SupplierId sıralı, imleçli)
+      description: "Liste tam olarak eligibleForTransactions = true olan ilişkilerdir (silinmemiş ve Active); her öğede eligibleForTransactions = true. Onboarding onayı ve purchasingEnabled listeyi süzmez, öğede alan olarak döner; ek koşulları tüketici uygular. Sıralama yalnız kanonik SupplierId'ye göre (ordinal, artan). cursor = bir önceki sayfanın son SupplierId'si; sonraki sayfa SupplierId > cursor. Sayfa 50. listSuppliers'ın Name sıralamasını kullanmaz."
+      parameters:
+        - { name: cursor, in: query, required: false, schema: { type: string }, description: "bir önceki sayfanın son döndürülen SupplierId'si" }
+      responses:
+        '200':
+          description: Uygun tedarikçi sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, nextCursor, contractVersion]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/SupplierEligibility' } }
+                  nextCursor: { type: [string, "null"] }
+                  contractVersion: { type: string }
+              example:
+                items:
+                  - { supplierId: SUP-2001, supplierMasterId: 0b6f3c2e-6d1a-4c8e-9a51-2f4e7d9b1a10, relationshipExists: true, status: Active, onboardingStatus: Approved, purchasingEnabled: true, eligibleForTransactions: true }
+                nextCursor: null
+                contractVersion: v1
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /{supplierId}:
     get:
       operationId: getSupplier
       summary: Tek supplier (0147 performance / 0148 portal bunu okur)
+      description: "404 gövdesinde error.code iki değerden biridir: UNKNOWN_SUPPLIER (tedarikçi çağıran şirkette yok) ya da UNKNOWN_LEGAL_ENTITY (legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz; 1.3.0). Yanıt nesnesi UnknownSupplier'dır, değişmez."
       parameters:
         - { name: supplierId, in: path, required: true, schema: { type: string } }
       responses:
@@ -85,10 +131,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Supplier' }
         '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
     # ---- (B) producer additive: update supplier ----
     patch:
       operationId: updateSupplier
       summary: Supplier güncelle (optimistic concurrency; ETag/rowVersion)
+      description: "404 gövdesinde error.code iki değerden biridir: UNKNOWN_SUPPLIER (tedarikçi çağıran şirkette yok) ya da UNKNOWN_LEGAL_ENTITY (legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz; 1.3.0). Yanıt nesnesi UnknownSupplier'dır, değişmez."
       parameters:
         - { name: supplierId, in: path, required: true, schema: { type: string } }
         - { name: If-Match, in: header, required: false, schema: { type: string }, description: "rowVersion (concurrency)" }
@@ -100,15 +149,20 @@ paths:
         '404': { $ref: '#/components/responses/UnknownSupplier' }
         '409': { $ref: '#/components/responses/ConcurrencyConflict' }
         '422': { $ref: '#/components/responses/SupplierUnprocessable' }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
     # ---- (C) producer additive: soft delete (pack §14; v1.2.0 backward-compatible amendment) ----
     delete:
       operationId: deleteSupplier
       summary: "Soft delete (pack §14 procurement.suppliers.delete). Hard delete YOK."
+      description: "404 gövdesinde error.code iki değerden biridir: UNKNOWN_SUPPLIER (tedarikçi çağıran şirkette yok) ya da UNKNOWN_LEGAL_ENTITY (legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz; 1.3.0). Yanıt nesnesi UnknownSupplier'dır, değişmez."
       parameters: [{ name: supplierId, in: path, required: true, schema: { type: string } }]
       responses:
         '200': { description: Supplier soft-delete edildi }
         '404': { $ref: '#/components/responses/UnknownSupplier' }
         '409': { $ref: '#/components/responses/ConcurrencyConflict' }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /bulk:
     delete:
       operationId: bulkDeleteSuppliers
@@ -123,10 +177,14 @@ paths:
         '200':
           description: Silinen kayıt sayısı
           content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   /validate:
     post:
       operationId: validateSuppliers
       summary: Toplu supplier id doğrulama (fail-closed consumer için)
+      description: "Satır alanları 1.3.0'da eklemeli olarak genişler (SupplierEligibility ile aynı tip ve anlam). Bilinen 1.2.0 tutarsızlığı: satırdaki status şeması null kabul etmez, ama known: false satırında sunucu status: null yazar; 1.3.0 bu alanı değiştirmez, tüketici known: false satırında status'a bakmaz."
       requestBody:
         required: true
         content:
@@ -153,24 +211,36 @@ paths:
                         supplierId: { type: string }
                         known: { type: boolean }
                         status: { $ref: '#/components/schemas/SupplierStatus' }
+                        supplierMasterId: { type: [string, "null"], format: uuid, description: "kiracı geneli tedarikçi kimliği; ilişki yoksa null" }
+                        relationshipExists: { type: boolean, description: "çağıran şirketle silinmemiş ilişki var mı; known ile aynı" }
+                        onboardingStatus: { oneOf: [{ $ref: '#/components/schemas/OnboardingStatus' }, { type: "null" }], description: "çağıran şirketin onboarding/onay durumu; yoksa null" }
+                        purchasingEnabled: { type: [boolean, "null"], description: "çağıran şirketin satın alma ilişkisi; ilişki yoksa null" }
+                        eligibleForTransactions: { type: boolean, description: "relationshipExists && !IsDeleted && status == Active; başka koşul yok — onboarding onayı, purchasingEnabled ve kiracı düzeyi bloklar tüketici tarafında uygulanır" }
                   contractVersion: { type: string }
               example:
                 results:
-                  - { supplierId: SUP-2001, known: true, status: Active }
-                  - { supplierId: SUP-9999, known: false, status: null }
+                  - { supplierId: SUP-2001, known: true, status: Active, supplierMasterId: 0b6f3c2e-6d1a-4c8e-9a51-2f4e7d9b1a10, relationshipExists: true, onboardingStatus: Approved, purchasingEnabled: true, eligibleForTransactions: true }
+                  - { supplierId: SUP-9999, known: false, status: null, supplierMasterId: null, relationshipExists: false, onboardingStatus: null, purchasingEnabled: null, eligibleForTransactions: false }
                 contractVersion: v1
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
   # ---- (B) producer additive: onboarding case (KYC / sanctions / docs / approvals) ----
   /{supplierId}/onboarding:
     get:
       operationId: getOnboardingCase
       summary: Supplier onboarding case durumu (KYC + sanctions + docs + approval)
+      description: "404 gövdesinde error.code iki değerden biridir: UNKNOWN_SUPPLIER (tedarikçi çağıran şirkette yok) ya da UNKNOWN_LEGAL_ENTITY (legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz; 1.3.0). Yanıt nesnesi UnknownSupplier'dır, değişmez."
       parameters: [{ name: supplierId, in: path, required: true, schema: { type: string } }]
       responses:
         '200': { description: Onboarding case, content: { application/json: { schema: { $ref: '#/components/schemas/OnboardingCase' } } } }
         '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
     post:
       operationId: submitOnboardingCase
       summary: Onboarding case başlat/güncelle (KYC/sanctions çalıştır, doc ekle, onaya gönder)
+      description: "404 gövdesinde error.code iki değerden biridir: UNKNOWN_SUPPLIER (tedarikçi çağıran şirkette yok) ya da UNKNOWN_LEGAL_ENTITY (legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz; 1.3.0). Yanıt nesnesi UnknownSupplier'dır, değişmez. submitForApproval = true ise MOD-0023 örneği başlatılır: şablon yoksa 409, MOD-0023 reddederse 403, MOD-0023'e ulaşılamazsa 503; bu durumlarda onboarding InReview olmaz. 403 gövdesinde error.code iki değerden biridir: WORKFLOW_FORBIDDEN (MOD-0023 başlatmayı reddetti) ya da LEGAL_ENTITY_LOOKUP_FORBIDDEN (legal entity doğrulaması için çağıranın rolünde mdm.legal-entities.read yok; 1.3.0). Yanıt nesnesi OnboardingWorkflowForbidden'dır."
       parameters:
         - { name: supplierId, in: path, required: true, schema: { type: string } }
         - { $ref: '#/components/parameters/IdempotencyKey' }
@@ -189,6 +259,25 @@ paths:
           content: { application/json: { schema: { $ref: '#/components/schemas/OnboardingCase' } } }
         '404': { $ref: '#/components/responses/UnknownSupplier' }
         '422': { $ref: '#/components/responses/SupplierUnprocessable' }
+        '403': { $ref: '#/components/responses/OnboardingWorkflowForbidden' }
+        '409': { $ref: '#/components/responses/WorkflowTemplateMissing' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
+  /{supplierId}/eligibility:
+    get:
+      operationId: getSupplierEligibility
+      summary: Tek tedarikçinin çağıran şirketteki uygunluğu (kanonik kod, eski kod ya da supplierMasterId uuid)
+      parameters:
+        - { name: supplierId, in: path, required: true, schema: { type: string }, description: "kanonik kod, çağıran şirketin eski kodu ya da supplierMasterId (uuid)" }
+      responses:
+        '200':
+          description: Uygunluk (bu uçta relationshipExists her zaman true)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierEligibility' }
+              example: { supplierId: SUP-2001, supplierMasterId: 0b6f3c2e-6d1a-4c8e-9a51-2f4e7d9b1a10, relationshipExists: true, status: Blocked, onboardingStatus: Approved, purchasingEnabled: true, eligibleForTransactions: false, contractVersion: v1 }
+        '403': { $ref: '#/components/responses/LegalEntityLookupForbidden' }
+        '404': { $ref: '#/components/responses/UnknownSupplierOrLegalEntity' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
 components:
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
   parameters:
@@ -270,10 +359,22 @@ components:
             decidedBy: { type: string, nullable: true }
             decidedAt: { type: string, format: date-time, nullable: true }
         contractVersion: { type: string }
+    SupplierEligibility:
+      type: object
+      required: [supplierId, supplierMasterId, relationshipExists, status, onboardingStatus, purchasingEnabled, eligibleForTransactions]
+      properties:
+        supplierId: { type: string, description: "kanonik tedarikçi kodu (Supplier.SupplierId)" }
+        supplierMasterId: { type: [string, "null"], format: uuid, description: "kiracı geneli tedarikçi kimliği; ilişki yoksa null" }
+        relationshipExists: { type: boolean, description: "çağıran şirketle silinmemiş ilişki var mı" }
+        status: { oneOf: [{ $ref: '#/components/schemas/SupplierStatus' }, { type: "null" }], description: "çağıran şirketin ilişki durumu; ilişki yoksa null" }
+        onboardingStatus: { oneOf: [{ $ref: '#/components/schemas/OnboardingStatus' }, { type: "null" }], description: "çağıran şirketin onboarding/onay durumu; yoksa null" }
+        purchasingEnabled: { type: [boolean, "null"], description: "çağıran şirketin satın alma ilişkisi; ilişki yoksa null" }
+        eligibleForTransactions: { type: boolean, description: "relationshipExists && !IsDeleted && status == Active; başka koşul yok — onboarding onayı, purchasingEnabled ve kiracı düzeyi bloklar tüketici tarafında uygulanır" }
+        contractVersion: { type: string }
     Error:
       type: object
       properties:
-        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string }, supplierId: { type: string, description: "yalnız 409 DUPLICATE_SUPPLIER: kiracıda aynı ülke ve normalize vergi no ile zaten var olan tedarikçinin kanonik kodu (Supplier.SupplierId); isteğe bağlı, 1.3.0" } } }
         contractVersion: { type: string }
   responses:
     UnknownSupplier:
@@ -288,3 +389,26 @@ components:
     SupplierUnprocessable:
       description: İş kuralı/validation ihlali
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "name zorunlu", correlationId: req-4 }, contractVersion: v1 } } }
+    LegalEntityLookupForbidden:
+      description: "Legal entity doğrulaması yapılamadı: çağıranın rolünde mdm.legal-entities.read yok ve MDM 403 döndü (BL-652 ara çözümü; izin Roller → İzinler ile verilir). Hiçbir şey okunmadı/yazılmadı; yeniden denemek sonucu değiştirmez. Procurement'ın kendi izin reddi de 403'tür; gövde yalnız bu durumda garanti: LEGAL_ENTITY_LOOKUP_FORBIDDEN"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: LEGAL_ENTITY_LOOKUP_FORBIDDEN, message: "legal entity doğrulaması için yetki yok", correlationId: req-9 }, contractVersion: v1 } } }
+    UnknownLegalEntity:
+      description: "Legal entity bu kiracıda yok, ACTIVE değil ya da referanslanamaz (C2); varlık sızdırılmaz, hiçbir şey okunmaz/yazılmaz"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_LEGAL_ENTITY, message: "legal entity bulunamadı", correlationId: req-5 }, contractVersion: v1 } } }
+    UnknownSupplierOrLegalEntity:
+      description: "Tedarikçi çağıran şirkette bulunamadı (UNKNOWN_SUPPLIER) ya da legal entity geçersiz (UNKNOWN_LEGAL_ENTITY); yalnız 1.3.0'da eklenen uçlarda"
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            unknownSupplier: { value: { error: { code: UNKNOWN_SUPPLIER, message: "supplier bulunamadı", correlationId: req-1 }, contractVersion: v1 } }
+            unknownLegalEntity: { value: { error: { code: UNKNOWN_LEGAL_ENTITY, message: "legal entity bulunamadı", correlationId: req-5 }, contractVersion: v1 } }
+    DependencyUnavailable:
+      description: "MDM ya da MOD-0023'e ulaşılamadı (zaman aşımı, 5xx, ağ, bozuk yanıt; MDM 401); hiçbir şey okunmadı/yazılmadı (fail-closed). MDM 403 (izin eksik) bu kod değildir: LegalEntityLookupForbidden"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: DEPENDENCY_UNAVAILABLE, message: "bağımlı servis şu an yanıt vermiyor", correlationId: req-6 }, contractVersion: v1 } } }
+    WorkflowTemplateMissing:
+      description: "Yayımlanmış MOD-0023 onboarding şablonu yok; onaya gönderilmedi, ilişki değişmedi"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: WORKFLOW_TEMPLATE_MISSING, message: "onay şablonu yok", correlationId: req-7 }, contractVersion: v1 } } }
+    OnboardingWorkflowForbidden:
+      description: "Onaya gönderim reddedildi: çağıranın izni yok, MOD-0023 başlatmayı reddetti (WORKFLOW_FORBIDDEN) ya da legal entity doğrulaması için çağıranın rolünde mdm.legal-entities.read yok (LEGAL_ENTITY_LOOKUP_FORBIDDEN, 1.3.0); gövde yalnız bu iki durumda garanti; ilişki değişmedi"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: WORKFLOW_FORBIDDEN, message: "onaya gönderme yetkisi yok", correlationId: req-8 }, contractVersion: v1 } } }
