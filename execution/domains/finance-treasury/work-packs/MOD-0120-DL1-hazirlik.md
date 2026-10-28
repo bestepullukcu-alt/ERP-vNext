@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 bb51d8778bfe1ee877b5a0985d34fc7e5cfe52bad1dc3b0e4cd94fdab21fe1f3 (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 f61a93af91e8961fdea49b07ed2500a043aa49015184cf4b1e91d93fd6032df3 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — 2026-10-26 `git diff --name-only` ölçümü)
 ---
 
@@ -54,7 +54,7 @@ DL-1'i bekletmez (D51/1).
 | Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `051da4f2…` için `reviews.tsv`'de satır yok (son MOD-0120 incelemesi `7482ab82…`, `execution/approvals/reviews.tsv:80`) | bekletir |
 | CT-APR-01 sürüme bağlı onay | Beste | `approvals.tsv`'de MOD-0120 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı | bekletir |
-| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6) | **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*` dosyalarında `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6) | **2026-10-28: taslak** `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1) bu dalda, main'de değil; ölçüm anında: **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*` dosyalarında `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
 | Auth kayıt kodu | Ali | **yok** — `ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | S-2 bitiş / gözden geçirme koşulu (D27/2 bitiş koymamıştı) | K1 | **kapandı** — KARAR D52/2: MOD-0169 pack'i `ready-for-dev` olunca gözden geçirme, en geç Treasury v1 sonu (pack checklist'te `[x]`) | bekletmez |
 | Kod alma izni; port 5071; 0.3 / 0.5 / 0.6 / 0.7 | — | **kapandı** — D27/1–5 (`:1442-1446`, `:1451`), `AGENTS.md:84`, `.antigravity/rules/ports.md:29` (D30) | — |
@@ -67,7 +67,7 @@ DL-1'i bekletmez (D51/1).
 | O-6 RCS-001 servisi (BL-565) — önek `ARI` | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı hâlâ "CT"); önek **var** (`.antigravity/rules/record-coding-standard.md:65@00d3f2b41`) | **DL-1 kabul kapısı (D59/1)** — başlamayı bekletmez; DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır, gerçek servis DL-1 kabulünden önce main'de (v0 sözleşmesi Y-8, 6 Kasım); üretimde port bağlı değilse 503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE` |
 | Küsurat kaynağı — MOD-0048 `currency-minor-units` seed | Beste (Y-4/3) | **yok** — `services/Diten.Platform/**`'te 0; `ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@00d3f2b41`) listesinde yok | bekletir (503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`) |
 | Level-1 koşul 1 — kaynağın sınırlı denetim / çoklu yazma devrinin taşınmadığının sahip onayı | K1 | **kapandı** — KARAR D52/3 (pack checklist'te `[x]`) | bekletmez |
-| MOD-0023 AR düzeltme şablonu; §17 maddeleri; O-7 / O-8; O-9 (D16) | Ali (şablon) / — | şablon **yok**; §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1464` işaretsiz (§5 bulgu 3); O-7, O-8, O-9 kapandı | DL-3 |
+| MOD-0023 AR düzeltme şablonu; §17 maddeleri; O-7 / O-8; O-9 (D16) | Ali (şablon) / — | şablon **yok** (2026-10-28, Y-12: kod `FT-AR-ADJUSTMENT-APPROVAL` geldi; kuran kod main'de değil); §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1464` işaretsiz (§5 bulgu 3); O-7, O-8, O-9 kapandı | DL-3 |
 | MOD-0031 davranış ölçümü (DL-3 Önkoşul metninde) | Treasury CT | ölçülmedi | DL-3 |
 | Gateway rotası; O-3 müşteri seçici | integration-agent | yok | DL-4 |
 

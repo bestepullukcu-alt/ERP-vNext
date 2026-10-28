@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 bd554f82dcdd275662c4a35199ed1fcba1dec24e81a2d8be1b24dc15430cb81a (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki b634d6c3…; satır atıfları @00d3f2b41 sürümüne (9262000a…07c5); main @904dfd5c2 sürümü b4d15bab…2c4d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 567f59ba5bdf7d39fb498bf47e19f858760349880cfbd309abcb0c8eb0876d24 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki b634d6c3…; satır atıfları @00d3f2b41 sürümüne (9262000a…07c5); main @904dfd5c2 sürümü b4d15bab…2c4d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — pack "Kaynak ve kanıt")
 ---
 
@@ -56,7 +56,7 @@ metni (`:1634-1637`). "DL-1'e etkisi": **bekletir** = pack'in işaretsiz paket k
 | Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `9262000a…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0119 incelemesi `db55f09a…`, `reviews.tsv:79`) | bekletir |
 | CT-APR-01 sürüme bağlı onay (`high: evet`, paketi yazmamış onaylayıcı; D34/2) | Beste | `execution/approvals/approvals.tsv`'de MOD-0119 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı (Y-4/2) | bekletir |
-| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Ali (Y-6; numara / tarih yok) | **yok** — Treasury rolleri için MOD-0018 paketi yok; depoda yalnız `MOD-0018-rbac-abac-authorization.md` ve FU9…FU22; hiçbirinde `finance-treasury` geçmiyor (grep 0) | paket kapısı (D53/1) — DL-1'i bekletir |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6; numara / tarih yok) | **2026-10-28: taslak** `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1) bu dalda, main'de değil; ölçüm anında: **yok** — Treasury rolleri için MOD-0018 paketi yok; depoda yalnız `MOD-0018-rbac-abac-authorization.md` ve FU9…FU22; hiçbirinde `finance-treasury` geçmiyor (grep 0) | paket kapısı (D53/1) — DL-1'i bekletir |
 | Auth kayıt kodu | Ali | **yok** — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `finance-treasury.*` 0 | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
 | **MOD-0126 DL-1 main'de** — iskelet, servis ortak yapı taşları, CentralAudit kaydı, defter | MOD-0126 DL-1 WP | `services/Diten.FinanceTreasuryService/` **yok**; MOD-0126 pack `draft`; kuyrukta `WP-0126-DL1` PLANNED (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:19@00d3f2b41`) — MOD-0126 DL-1'in kendi paket kapısı (aşağıdaki üç satır + Auth paket metni + BL-565 + MOD-0048 seed'leri) açık | bekletir |
 | ↳ Platform `AuditCategory`'ye `Finance = 18` (D35/3, Y-4/7) — MOD-0126 DL-1 üzerinden | Beste | **yok** — enum `Unknown = 0 … ESignature = 17` (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@00d3f2b41`, son değer `:26`); kopya `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditPlatformValues.cs:29` son değer `ESignature = 17` | bekletir (dolaylı: "MOD-0126 DL-1 bu değer main'e girmeden başlamaz" — pack Audited Events `:1122-1126`) |
@@ -70,12 +70,12 @@ metni (`:1634-1637`). "DL-1'e etkisi": **bekletir** = pack'in işaretsiz paket k
 | O-10 küsurat hanesi — MOD-0048 `currency-minor-units` seed + izin listesi | Beste (Y-4/3: başlangıç listesi kabul) | **yok** — `services/Diten.Platform/**`'te `currency-minor-units` 0 (grep); `BusinessReferenceData:ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@00d3f2b41`) listesinde yok | bekletir (Create; 503 `AP_CURRENCY_PRECISION_UNAVAILABLE`) |
 | MOD-0143 `totalAmount` tabanı | — | **kapandı** (D26/1–3; `:1439-1440`). Bilgi: main'de `invoice-match.openapi.yaml` artık **1.1.1** (`docs/analysis/contracts/invoice-match.openapi.yaml:15@00d3f2b41`), sha256 `aa88132c85b87e59…7370` — pack'teki `41fe1f43…` (1.1.0) eskidi; pack "DL-1 başında yeniden `shasum`" diyor (§5 bulgu 2) | — (ölçüm DL-1 başında) |
 | Tüketici onayı slotları — DL-1'in kullandıkları (AUTH, LE, SUPPLIER, AUDIT, DATA-CONTRACT) | K1 + slot sahipleri | AUTH ↔ Auth paket metni (açık), LE ↔ TRM-14 (açık), SUPPLIER ↔ 1.3.0 (açık), AUDIT ↔ MOD-0126 DL-1 (açık), DATA-CONTRACT ↔ D27/1 (kapandı) — pack "Tüketici onayı slotları" `:1486-1501` | bekletir |
-| O-7, O-8 (K2), O-14; MOD-0023 AP şablonu (O-11); WORKFLOW slotu; §17 maddeleri (silmeme, okuma eşleme) | Ali (şablon) / — | O-7, O-8, O-14 kapandı (D28, D14/3); şablon **yok**; MOD-0023 §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…` — mevcut MOD-0023 sha'sıyla aynı); pack checkbox'u `:1447` hâlâ işaretsiz (§5 bulgu 3) | DL-2 |
+| O-7, O-8 (K2), O-14; MOD-0023 AP şablonu (O-11); WORKFLOW slotu; §17 maddeleri (silmeme, okuma eşleme) | Ali (şablon) / — | O-7, O-8, O-14 kapandı (D28, D14/3); şablon **yok** (2026-10-28, Y-12: kod `FT-AP-INVOICE-APPROVAL` geldi; kuran kod main'de değil); MOD-0023 §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…` — mevcut MOD-0023 sha'sıyla aynı); pack checkbox'u `:1447` hâlâ işaretsiz (§5 bulgu 3) | DL-2 |
 | O-13; EVIDENCE slotu (MOD-0031 ölçümü) | Treasury CT | O-13 kapandı (D28); MOD-0031 ölçümü yapılmadı | DL-3 |
 | Gateway rotası `/api/ap-invoices` | integration-agent | yok | DL-4 |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması — o da kendi paket kapısını bekliyor. Zincirin en dış, tarihi olmayan
-halkası: **Auth paket metni / MOD-0018 paketi (Ali)**; MOD-0119'a özgü ayrıca **supplier 1.3.0 (MVP-2)**.
+halkası: **Auth paket metni / MOD-0018 Treasury Auth eki (Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16)**; MOD-0119'a özgü ayrıca **supplier 1.3.0 (MVP-2)**.
 Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2). **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
 yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
@@ -187,7 +187,7 @@ D46 tablosu tarihçedir, uygulanmaz — D49/5).
 - **Test kişileri matristen** (`treasury-intake-owner-decisions-05.md:153`, `:172-174`): okuma → **AP görüntüleyici**; Create /
   Update / Delete / Validate → **Borç (AP) operatörü**; BulkDelete → yalnız **AP operasyon yöneticisi** (operatörde `bulk-delete`
   yok — D49/3). Bağımlı izinler: `mdm.legal-entities.read` + MOD-0140 / MOD-0143 okuma (operatör satırı). DL-1 hiçbir rol tohumu
-  yazmaz; Auth paket metni Ali'nin MOD-0018 paketindedir (paket kapısı, D53/1), Auth kayıt kodu DL-1 kabul kapısındadır (D53/2).
+  yazmaz; Auth paket metni MOD-0018 Treasury Auth ekindedir (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16; paket kapısı, D53/1), Auth kayıt kodu DL-1 kabul kapısındadır (D53/2).
 - **`read-tenant-wide`** hiçbir rol şablonunda yok — açık atama listesi (`treasury-intake-owner-decisions-05.md:139`); DL-1 manifesti
   onu hiçbir role varsayılan bağlamaz.
 - **D50:** D50/1 "AP onay yöneticisi"ni kaldırdı (karar + mutabakat AP onaylayıcıda) — DL-2'yi etkiler; D50/3 istisna ayrılığı
