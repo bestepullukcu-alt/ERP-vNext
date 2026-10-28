@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 4f12cb3089857c86025f8d2dbae15fd4ed719f690fcb133543da0aa1e14b0a38 (pack D70 revizyonu, 2026-10-28 — D70/2 boş aday listesi 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (AC-10), D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları, MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; önceki sürüm `eea3d461…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `f7ee03aa…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `567f59ba…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki b634d6c3…; satır atıfları @00d3f2b41 sürümüne (9262000a…07c5); main @904dfd5c2 sürümü b4d15bab…2c4d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 b38dcab6d1d4a4685bbdf26dbb57a8bb0cb63cdba8f59e37aaa472707360e4e9 (pack D71 revizyonu, 2026-10-28 — D71 aday tabanı `ap-invoices.approve ∩ platform.workflow.tasks.approve` (anahtar başına ayrı DL-6 çağrısı), K-A4b kapandı, AC-10 genişletildi, MOD-0126 `a92c4a49…2446`'a yeniden sabitlendi; önceki sürüm `4f12cb30…` (pack D70 revizyonu, 2026-10-28 — D70/2 boş aday listesi 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (AC-10), D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları, MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; önceki sürüm `eea3d461…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `f7ee03aa…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `567f59ba…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir)), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki b634d6c3…; satır atıfları @00d3f2b41 sürümüne (9262000a…07c5); main @904dfd5c2 sürümü b4d15bab…2c4d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — pack "Kaynak ve kanıt")
 ---
 
@@ -32,7 +32,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > (`AuditEnums.cs` son değer `ESignature = 17`).
 > - **MOD-0140 supplier 1.3.0** main'de değil (ölçüm: `supplier.openapi.yaml` `version: 1.2.0`) — DL-1 paket kapısı.
 > - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0119'un 19 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
-> pack "Kaynak ve kanıt"ta sha256 `ec4943aa…e374` ile sabitli (MOD-0126 D70 revizyonu; önceki `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
+> pack "Kaynak ve kanıt"ta sha256 `a92c4a49…2446` ile sabitli (MOD-0126 D71 revizyonu; önceki `ec4943aa…e374` — D70; daha önce `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
 >
 > **Güncel durum (2026-10-27).** Bu kayıt pack'in çalışma ağacındaki sürümüne bağlıdır: sha256 `9262000a…c5`, `status: draft`,
 > dal `chore/ct/treasury-intake-ct-05` @00d3f2b41 (= main @904dfd5c2 + beş yerel docs commit'i; `git diff --stat 904dfd5c2 HEAD`
@@ -79,7 +79,7 @@ metni (`:1634-1637`). "DL-1'e etkisi": **bekletir** = pack'in işaretsiz paket k
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `4f12cb30…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0119 incelemesi `db55f09a…`, `reviews.tsv:79`) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `b38dcab6…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0119 incelemesi `db55f09a…`, `reviews.tsv:79`) | bekletir |
 | CT-APR-01 sürüme bağlı onay (`high: evet`, paketi yazmamış onaylayıcı; D34/2) | Beste | `execution/approvals/approvals.tsv`'de MOD-0119 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı (Y-4/2) | bekletir |
 | Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6; numara / tarih yok) | **2026-10-28: taslak main'de** (#281; origin/main @ `027ca2e38`) — `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` `draft`, FU numarası açık (K-1), MOD-0018 sahibinin teyidi yok, pack checklist maddesi işaretsiz; Y-14 geçersiz (kullanılmadı); ölçüm anında: **yok** — Treasury rolleri için MOD-0018 paketi yok; depoda yalnız `MOD-0018-rbac-abac-authorization.md` ve FU9…FU22; hiçbirinde `finance-treasury` geçmiyor (grep 0) | paket kapısı (D53/1) — DL-1'i bekletir |
@@ -283,7 +283,7 @@ integration-agent; DL-4), `services/Diten.Platform/**`, `services/Diten.MdmServi
 `frontend/**` (DL-4); `supplier.openapi.yaml`, `invoice-match.openapi.yaml` ve diğer üretici sözleşmeleri; `execution/**`;
 kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar — pack "Kaynak ve kanıt" sabitlemesi sha256 `ec4943aa…e374`; §5 bulgu 1 D52 ile kapandı),
+**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar — pack "Kaynak ve kanıt" sabitlemesi sha256 `a92c4a49…2446`; §5 bulgu 1 D52 ile kapandı),
 AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style (S-56), audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design, module-self-registration-standard; karar kayıtları

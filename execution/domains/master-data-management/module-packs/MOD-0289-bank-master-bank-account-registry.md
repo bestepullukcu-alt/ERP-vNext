@@ -29,8 +29,8 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 # MOD-0289 — Bank Master & Bank Account Registry
 
 > **Revizyon (2026-10-28, KARAR D70/3 + ölçüm):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
-> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D70 (2026-10-28 ölçümünde main'de değil — çalışma
-> ağacında, commit edilmemiş). (1) **KARAR D70/3:** Auth paket metni kapısı (D53/1) = metin main'de + MOD-0018 sahibinin teyidi
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D70 (2026-10-28 ölçümünde main'de değil — yerel
+> dalda, main'de değil). (1) **KARAR D70/3:** Auth paket metni kapısı (D53/1) = metin main'de + MOD-0018 sahibinin teyidi
 > (Ready-for-dev Checklist ENGELLER; açık). D70/1 ve D70/2 bu pakete dokunmaz (onay iş akışı yok). (2) Ölçüm: "MDM domain-config'te
 > MOD-0289 satırı main'de, güncel cümleyle" maddesi kapandı — D51/5 cümlesi (`kod alma izni D45/3`) PR #270 ile main'de
 > (`git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0; `git diff origin/main HEAD -- execution/domains/master-data-management/domain-config.md`

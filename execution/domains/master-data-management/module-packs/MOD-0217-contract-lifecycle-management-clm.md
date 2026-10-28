@@ -27,9 +27,21 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > yazılır. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket düzeyi; "— DL-n için" maddeleri o dilimin
 > önkoşulu) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** `status: draft` ve `approval_status: not-approved`
+> değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D71 (2026-10-28 ölçümünde main'de
+> değil — yerel dal `chore/ct/treasury-intake-ct-05`, main'de değil). Aday tabanı **`mdm.contracts.versions.approve ∩ platform.workflow.tasks.approve`**:
+> MdmService DL-6 aday sorgusunu iki anahtar için ayrı ayrı çağırır ve kesişimi alır (finans paketlerinin tier-2 kesişimiyle
+> aynı desen) — karar veremeyecek kişi aday olmaz. Çağrılardan biri okunamazsa Submit kapalı-başarısızdır (sürüm durumu ve
+> `ApprovalAttempt` değişmez, MOD-0023 çağrılmaz); kesişim (hazırlayan dışlaması ve şirket kapsamından sonra) boşsa mevcut 422
+> `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` dalı (D70/2). MOD-0018 eki K-A4b **KAPANDI — KARAR D71**; D70/1 (sözleşme
+> onaylayıcı rolü iş akışı izinlerini rol şablonuyla taşır) değişmedi. Runtime Constraints (onaya gönderme), Dependencies
+> kapanış tablosu (aday tabanı satırı), Failure Path, Authorization Convention "Aday tabanı" ve rol şablonları, Test
+> Expectations, Ready-for-dev Checklist aday tabanı maddesi; **AC-33 genişletildi**. Yeni hata kodu yok; mevcut AC numaraları ve
+> dilim tablosu değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D70 + D67 atıfları):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D67, D70 (D67 PR #281 ile main'de; D70 2026-10-28
-> ölçümünde main'de değil — çalışma ağacında, commit edilmemiş). (1) **KARAR D70/2 (D68 bu pakete):** hazırlayan dışlaması ve
+> ölçümünde main'de değil — yerel dal `chore/ct/treasury-intake-ct-05`, main'de değil). (1) **KARAR D70/2 (D68 bu pakete):** hazırlayan dışlaması ve
 > şirket kapsamı sonrası aday listesi boşsa Submit yerelde 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (**yeni hata kodu**, MOD-0126 /
 > MOD-0120 deseni); MOD-0023 çağrılmaz, sürüm durumu ve `ApprovalAttempt` değişmez; MOD-0023'ün 400
 > `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (gelirse AC-53 kesin ret yolu, 422
@@ -37,7 +49,7 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > tabanı", Failure Path; **AC-33 genişletildi** (boş liste, sabotajlı). (2) **KARAR D70/1:** Sözleşme onaylayıcı rolü
 > `platform.workflow.tasks.approve` / `.reject`'i çapraz modül bağımlılığı olarak rol şablonuyla taşır (MOD-0018 eki K-4 (b));
 > iş akışı izni aday şartı değildir (K-A4 kapandı) — rol şablonu yoluyla tutarlı; elle atamada açık nokta (K-A4b, MOD-0018 eki
-> Açık kararlar). Authorization Convention rol şablonları. (3) **KARAR D70/3:** Auth paket metni kapısı = metin main'de + MOD-0018
+> Açık kararlar) — **KARAR D71 ile kapandı** (yukarıdaki D71 notu). Authorization Convention rol şablonları. (3) **KARAR D70/3:** Auth paket metni kapısı = metin main'de + MOD-0018
 > sahibinin teyidi (Ready-for-dev Checklist; açık). (4) **D67/1:** aday sorgusu FU DL-6, kodu DL-3 kabul kapısı. D66 PR #281 ile
 > main'de. Mevcut AC numaraları ve dilim tablosu değişmedi; yeni AC yok.
 >
@@ -110,7 +122,7 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > **Kimlik ön kontrolü (DCP-002), 2026-10-26, bu worktree (HEAD `31c448d5d`):**
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0217 --name "Contract Lifecycle Management (CLM)"` →
 > `OK  MOD-0217: proven against Blueprint/registry.` (çıkış 0). `--discover "Contract Lifecycle Management"`: Blueprint 1
-> aday (MOD-0217), kayıt 1 satır (`reserved / planned` — çalışma ağacında, commit edilmemiş; aşağıda), eski paket
+> aday (MOD-0217), kayıt 1 satır (`reserved / planned` — yerel dal `chore/ct/treasury-intake-ct-05`, main'de değil; aşağıda), eski paket
 > `MDM-070-contract-lifecycle-management-clm.md` yalnız 8 başka ref'te (HEAD ağacında yok), gateway `contracts` → 5065
 > (MOD-0144'ün rotası — "Ownership and Boundaries").
 >
@@ -315,7 +327,7 @@ sözleşme kodu `LEGAL-BUNDLE` (kaynakta eseri yok — paket §B "ABSENT").
   `/api/v1/workflow/instances` (O-3); MOD-0048 para birimi listesi; RCS-001 ortak kod servisi (BL-565); SEC-002 kapsam
   sağlayıcısı; MDM denetim izi `mdm-guvenilir-kaynak-niyeti`.
 - **Domain-config ile ilişki:** D38/2 ile MDM domain-config'e "In-Scope Reserved Modules (Treasury intake)" satırı CT
-  tarafından öneriliyor (çalışma ağacında, commit edilmemiş — ölçüldü); onaylanıp main'e girmeden `ready-for-dev` yok. Yetki
+  tarafından öneriliyor (yerel dalda, main'de değil — ölçüldü); onaylanıp main'e girmeden `ready-for-dev` yok. Yetki
   sırası gereği module pack domain-config'in üstündedir; bu paket domain-config'i kendisi değiştirmez.
 
 ## Owned Objects
@@ -625,7 +637,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | MOD-0262-FU01 | `/api/v1/document-repository/objects` (kod; sözleşme dosyası yok) + servis kimliği desteği (KARAR D56/2 — bugün yok) | platform-shared-services (servis kimliği desteği: Beste) | erişilemez / 5xx / zaman aşımı → 503, işaretçi yok; ret → 400 / 413; işaretçi yazımı kesin geri alındı → `compensate`; sonucu bilinmiyor → önce okuma, telafi yalnız bağsızlık kanıtlanınca; okuma yok → bilinmiyor, telafi yok | AC-24…AC-29, AC-49, AC-50 (sahte istemci) · dev ortamında yükle / indir / başka kiracı 404 | DL-2 |
 | MOD-0028 belge kaydı | **v1'de bağımlılık yok — D40**; bağlantı Follow-up | platform-shared-services | çağrı yok; hata davranışı yok | AC-29 (MOD-0028 çağrısı yok, sabotajlı mimari test) · — (canlı kanıt gerekmez) | kapandı (D40); dilim beklemez |
 | MOD-0023 | `/api/v1/workflow/instances` + `instances/by-objects` + `instances/{id}/history` (kod) + MOD-0023 §17 rev 2 okuma alanları (803fbaa5…, PR #235) + MOD-0217 şablonu `MDM-CONTRACT-VERSION-APPROVAL` (kod Y-12; şablonu kuran kod main'de **yok**; aday tabanı KARAR D66/1 — Auth aday sorgusu, anahtar `mdm.contracts.versions.approve` — KARAR D69) | platform-shared-services | başlatma: kesin ret → `Draft` + gerekçe kodu, 422; geçici → `InApproval` başlatma bekliyor, 503; bilinmiyor → aynı, 503 + uyarı; Sync yalnız güncel anahtar + örnek kimliğiyle eşleşen tek satırı kabul eder; birden çok / silinmiş / tanınmayan → 503, durum değişmez | AC-33…AC-36, AC-51…AC-55 · dev ortamında onay ve ret turu | DL-3 |
-| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), MdmService servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar `mdm.contracts.versions.approve` (**KARAR D69**) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → Submit kapalı-başarısız: sürüm değişmez, `ApprovalAttempt` artmaz, MOD-0023 çağrılmaz; hazırlayan ve şirket kapsamı sonrası boş liste → yerelde 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, sürüm durumu ve `ApprovalAttempt` değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → AC-53 kesin ret) | sahte Auth aday istemcisi (AC-33, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-3 (kodu DL-3 kabul kapısı) |
+| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), MdmService servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar `mdm.contracts.versions.approve` (**KARAR D69**) ve `platform.workflow.tasks.approve` (**KARAR D71**) — anahtar başına ayrı çağrı, servis kesişimi alır | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → Submit kapalı-başarısız: sürüm değişmez, `ApprovalAttempt` artmaz, MOD-0023 çağrılmaz; kesişim (D71), hazırlayan ve şirket kapsamı sonrası boş liste → yerelde 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, sürüm durumu ve `ApprovalAttempt` değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → AC-53 kesin ret) | sahte Auth aday istemcisi (AC-33, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-3 (kodu DL-3 kabul kapısı) |
 
 ## Runtime Constraints
 
@@ -710,7 +722,10 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   yazılamazsa işlem geri alınır, çit uygulanmamış sayılır ve telafi çağrılmaz (503, durum bilinmiyor). Kanıtlı telafi de başarısızsa yetim ikili MOD-0262-FU03 mutabakatına kalır ve
   uygulama günlüğüne (içerik olmadan) yazılır. Belge dosyası MdmService'te diske ya da geçici klasöre yazılmaz; istek bedeni
   ara belleğe tümüyle alınmaz.
-- **Onaya gönderme (MOD-0023):** (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`, yeni deneme
+- **Onaya gönderme (MOD-0023):** (0) aday tabanı çözülür — `mdm.contracts.versions.approve ∩ platform.workflow.tasks.approve`
+  (KARAR D69, **KARAR D71**; anahtar başına ayrı DL-6 çağrısı), hazırlayan ve şirket kapsamı dışındakiler çıkarılır
+  (Authorization Convention → "Aday tabanı"); sorgu okunamazsa ya da liste boşsa (1)'e geçilmez (Failure Path, AC-33);
+  (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`, yeni deneme
   anahtarı `WorkflowIdempotencyKey`, `WorkflowInstanceId = null`, `SubmittedAt` / `SubmittedBy` + niyet
   `mdm.contract-version.submitted`; (2) aynı anahtarla `POST /api/v1/workflow/instances`; (3) yanıt aşağıdaki tabloya göre
   işlenir. Başarı (200 / 201): dönen örnek kimliği koşullu yazılır + niyet `mdm.contract-version.workflow-start-confirmed`
@@ -962,12 +977,17 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - **Eski deneme / başka nesne / birden çok eşleşme** → Sync durumu değiştirmez (eski reddin sonucu yeni denemeyi `Draft`'a
   çekmez; başka nesnenin onayı bu sürümü `Approved` yapmaz).
 - **MOD-0023 tanınmayan durum** → Sync 503, sürüm değişmez.
-- **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok) → Submit
+- **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok — iki anahtar
+  çağrısından herhangi birinde, `platform.workflow.tasks.approve` çağrısı dahil, KARAR D71) → Submit
   kapalı-başarısız: sürüm durumu ve `ApprovalAttempt` değişmez, MOD-0023 çağrısı yok (AC-33).
+- **İş akışı izni kesişimi (KARAR D71; MOD-0018 eki K-A4b kapandı)** → `mdm.contracts.versions.approve` taşıyıp
+  `platform.workflow.tasks.approve` taşımayan kişi (onay anahtarı rol dışı elle verilmiş) aday olmaz; iş akışı izni çağrısı
+  okunamazsa yukarıdaki kapalı-başarısız dal; kesişim boşsa aşağıdaki boş liste dalı (422
+  `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`) (AC-33).
 - **Boş aday listesi (KARAR D70/2)** (hazırlayan dışlaması ve şirket kapsamı sonrası aday yok) → Submit 422
   `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`; sürüm durumu ve `ApprovalAttempt` değişmez, MOD-0023 çağrılmaz (AC-33).
   MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (gelirse AC-53 kesin ret yolu).
-- **Anahtarı olmayan kullanıcı / hazırlayan (KARAR D69)** → aday listesinde yok: sorgu yalnız `mdm.contracts.versions.approve` ile yapılır; hazırlayan
+- **Anahtarı olmayan kullanıcı / hazırlayan (KARAR D69)** → aday listesinde yok: modül onay anahtarı olarak sorgu yalnız `mdm.contracts.versions.approve` ile yapılır (iş akışı izni ayrı çağrı — KARAR D71); hazırlayan
   anahtarı tutsa da `CandidatePrincipalIds`'e girmez (AC-33).
 - **İmzada kullanılan belgeyi geri çekme** → 409 `MDM_CONTRACT_DOCUMENT_IN_USE`; geri çekme ile imza yarışında biri kazanır,
   hiçbir imza geri çekilmiş belgeyi göstermez.
@@ -1019,11 +1039,14 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   Şablon `MDM-CONTRACT-VERSION-APPROVAL` atamasız olduğu için onaylayıcı adaylarını MOD-0217 başlatmada `CandidatePrincipalIds` ile gönderir
   (Y-12, W-5: sözleşme onay yetkisi olanlar, sürümü hazırlayan hariç). **Aday tabanı (KARAR D66/1):** MOD-0018 Treasury Auth
   ekinin DL-6 aday sorgusu ("bu izne sahip kullanıcılar", `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; MdmService servis kimliğiyle — o paketin K-A1'i);
-  MOD-0217 sürümü hazırlayanı ve şirket kapsamı dışındakileri (`IContractDataScopeSource`; o paketin K-A2'si) çıkarır, kalanı
-  `CandidatePrincipalIds` olarak gönderir; sorgu okunamazsa Submit kapalı-başarısızdır (sürüm değişmez, MOD-0023 çağrısı yok).
+  taban **`mdm.contracts.versions.approve ∩ platform.workflow.tasks.approve`** (**KARAR D71**; MOD-0018 eki K-A4b **KAPANDI —
+  KARAR D71**): MdmService sorguyu iki anahtar için ayrı ayrı çağırır (sorgu tek anahtar alır) ve iki listede de bulunan kişileri
+  alır — onay anahtarı olup MOD-0023 görev kararının izni olmayan kişi karar veremez ve aday olmaz;
+  MOD-0217 kesişimden sürümü hazırlayanı ve şirket kapsamı dışındakileri (`IContractDataScopeSource`; o paketin K-A2'si) çıkarır, kalanı
+  `CandidatePrincipalIds` olarak gönderir; sorgu (iki çağrıdan herhangi biri) okunamazsa Submit kapalı-başarısızdır (sürüm değişmez, MOD-0023 çağrısı yok).
   **Liste boş kalırsa (KARAR D70/2)** Submit 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` döner; MOD-0023 çağrılmaz, sürüm durumu ve
   `ApprovalAttempt` değişmez; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır.
-  **Sorgunun anahtarı `mdm.contracts.versions.approve` (KARAR D69; O-3 (b) kapandı):** Auth'a yalnız bu anahtar sorulur; anahtarı olmayan kullanıcı
+  **Sorgunun anahtarı `mdm.contracts.versions.approve` (KARAR D69; O-3 (b) kapandı):** modül onay anahtarı olarak Auth'a yalnız bu anahtar sorulur (iş akışı izni `platform.workflow.tasks.approve` ayrı çağrıdır — KARAR D71); anahtarı olmayan kullanıcı
   (ör. yalnız `mdm.contracts.read` ya da `mdm.contracts.submit-approval` tutan) aday değildir; sürümü hazırlayan anahtarı tutsa da
   dışlanır (AC-33). Anahtar "Sözleşme onaylayıcı" rolündedir, açık atama değildir; MOD-0217'de bir ucu korumaz.
   Başlatanın kendi örneğini onaylaması MOD-0023'te `SodViolation` ile reddedilir (MOD-0126 pack ölçümü, D21) — bu paket
@@ -1041,11 +1064,12 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve`; belge deposu izni yok). `mdm.contracts.record-signature`
   ve `mdm.contracts.versions.approve` sözleşme yöneticisinde yoktur; sözleşme onaylayıcı `submit-approval` ve yazma anahtarı taşımaz. **Onaylayıcının işlem yetkisi
   (KARAR D70/1):** sözleşme onaylayıcı rolü MOD-0023 görev anahtarlarını (`platform.workflow.tasks.approve` / `.reject`) çapraz
-  modül bağımlılığı olarak rol şablonuyla taşır (MOD-0018 eki K-4 (b)); böylece aday olan karar verebilir. İş akışı izni **aday
-  şartı değildir** (MOD-0018 eki K-A4 kapandı): aday sorgusu yalnız `mdm.contracts.versions.approve` ile yapılır. Rol şablonu
-  yoluyla tutarlı; **elle atamada açık nokta (K-A4b):** `mdm.contracts.versions.approve` rol dışı elle verilmiş ve
-  `platform.workflow.tasks.approve` tutmayan kişi aday olur ama MOD-0023 görevinde karar veremez — iki seçenek MOD-0018 ekinin
-  Açık kararlar tablosunda (K-A4b); karar verilene kadar bu paket aday listesini iş akışı izniyle kesiştirmez.
+  modül bağımlılığı olarak rol şablonuyla taşır (MOD-0018 eki K-4 (b)); böylece aday olan karar verebilir (D70/1, değişmedi).
+  **Elle atama — iş akışı izni kesişimi (KARAR D71; MOD-0018 eki K-A4b KAPANDI — KARAR D71):** `mdm.contracts.versions.approve`
+  rol dışı elle verilmiş ve `platform.workflow.tasks.approve` tutmayan kişi MOD-0023 görevinde karar veremeyeceği için aday
+  olmaz: bu paket aday listesini iş akışı izniyle kesiştirir (DL-6 sorgusuna ayrı çağrı; kesişimi MdmService yapar, Auth sorgusu
+  tek anahtar alır — MOD-0018 eki Bölüm 8.6); çağrı okunamazsa Submit kapalı-başarısız, kesişim boşsa 422
+  `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (yukarıdaki "Aday tabanı").
 - **İmza kaydedici ayrılığı (KARAR D47/5) çalışma anında da denetlenir:** izin tek başına yetmez — sözleşmeyi oluşturan
   (`Contract.CreatedBy`) ya da sürümü onaya gönderen (`ContractVersion.SubmittedBy`) imza kaydedemez (403
   `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`, AC-64); imzalı kopya belgesi zorunludur (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`);
@@ -1232,6 +1256,14 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   bozuk gövde) sürüm durumu ve `ApprovalAttempt` değişmez ve MOD-0023 çağrılmaz (dört ayrı test). Sabotaj: hazırlayan dışlaması
   kaldırıldığında (hazırlayan aday olur), sorgu anahtarı başka bir `mdm.contracts.*` anahtarına (ör. `mdm.contracts.read`)
   çevrildiğinde (anahtarı olmayan kullanıcı aday olur) ya da aday listesi istekten çıkarıldığında test kırmızıya döner.
+  **İş akışı izni kesişimi (KARAR D71; sahte Auth anahtar başına ayrı yanıt):** istemcinin `platform.workflow.tasks.approve`
+  anahtarını da ayrı çağrıyla sorduğu doğrulanır (yukarıdaki dallarda sahte iş akışı yanıtı oradaki bütün kişileri içerir).
+  `mdm.contracts.versions.approve` için {D, E}, `platform.workflow.tasks.approve` için {E} → `CandidatePrincipalIds = {E}` (onay
+  anahtarı olup iş akışı izni olmayan D dışlanır, ikisini taşıyan E geçer); `mdm.contracts.versions.approve` çağrısı başarılı,
+  `platform.workflow.tasks.approve` çağrısı okunamaz (zaman aşımı, 5xx, 403, bozuk gövde) olduğunda sürüm durumu ve
+  `ApprovalAttempt` değişmez ve MOD-0023 çağrılmaz (kapalı-başarısız); `mdm.contracts.versions.approve` için {D},
+  `platform.workflow.tasks.approve` için {} → aşağıdaki boş liste dalı (422). Sabotaj: iş akışı kesişimi kaldırıldığında D aday
+  olur ve test kırmızıya döner.
   **Boş liste (KARAR D70/2):** sahte Auth yalnız hazırlayanı döndürdüğünde (dışlama sonrası liste boş) Submit 422
   `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, sahte MOD-0023'e hiç çağrı gitmez, sürüm durumu ve `ApprovalAttempt` değişmez;
   sabotaj: boş liste MOD-0023'e gönderildiğinde (çağrı sayısı 1) test kırmızıya döner.
@@ -1396,7 +1428,9 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   yok), MOD-0023 (başlatma 201 / tekrar / 400 / 403 izin / 403 SoD / 404 şablon / 409 `WORKFLOW_INSTANCE_START_CONFLICT` kapanış
   kayıtlı ve kayıtsız / 409 `WORKFLOW_TRANSITION_CONFLICT` / 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` / gönderimden sonra zaman
   aşımı; `by-objects` satırları: güncel ve önceki anahtar, başka nesne, iki eşleşme, `isDeleted`, boş anahtar; `history`
-  kapanış kaydı; örnek durumları; tanınmayan durum), MOD-0048, RCS-001, SEC-002 sağlayıcısı. Sahte istemci canlı kanıt değildir
+  kapanış kaydı; örnek durumları; tanınmayan durum), MOD-0048, RCS-001, SEC-002 sağlayıcısı, Auth aday sorgusu (KARAR D66/1,
+  D69, D71: izinli liste / boş / okunamaz / 403; anahtar başına ayrı yanıt — `mdm.contracts.versions.approve` ve
+  `platform.workflow.tasks.approve` listeleri farklı kişilerle, yalnız biri okunamaz; kesişim ve sabotajı AC-33'te). Sahte istemci canlı kanıt değildir
   (Dependencies → kapanış tablosu).
 - **Mimari:** her aksiyonda `[HasPermission]` (AC-16); onay / geri çağrı ucu yok (AC-36); MdmService'te dosya sistemi yazımı
   yok (AC-24); MOD-0028 portu / istemcisi ve çağrısı yok (AC-29, KARAR D40); `mod0217_` / `Mod0217` / `MOD0217_` adları yok; `AuditTrailStandard` yeşil (AC-12).
@@ -1507,7 +1541,8 @@ main'de olmalıdır.
   tek onay adımı / atamasız, ayrı hukuk adımı yok; **açık:** şablonu kuran kod (Platform şablon kataloğu +
   `--ensure-workflow-templates`; MOD-0023 sahibi, D38/4) main'de değil, WP numarası ve tarih gelmedi (2026-10-28); aday
   tabanı **KARAR D66/1** ile yazıldı (Auth aday sorgusu, hazırlayan hariç — Authorization Convention, AC-33); sorgunun anahtarı
-  `mdm.contracts.versions.approve` — **KARAR D69** (O-3 (b) kapandı); örnek durum adları ölçülmedi — DL-3 için
+  `mdm.contracts.versions.approve` — **KARAR D69** (O-3 (b) kapandı), iş akışı izniyle kesişim `∩ platform.workflow.tasks.approve`
+  — **KARAR D71** (MOD-0018 eki K-A4b kapandı); örnek durum adları ölçülmedi — DL-3 için
 - [ ] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
   sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1; D66 main'de, PR #281) — DL-3 için
 - [ ] O ekin DL-6 kodu main'de (**KARAR D66/1**, **D67/1** — aday sorgusu ekin DL-6'sı, kodu bu dilimin kabul kapısı; D53 / D56/3 deseni) — DL-3 için (kabul kapısı)

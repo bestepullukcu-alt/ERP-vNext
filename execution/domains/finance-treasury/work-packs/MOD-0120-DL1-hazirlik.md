@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 6064158a862fe155a8773a5863fdc2f850a84ac8ab3445b4b131ca66f653ee60 (pack D70 revizyonu, 2026-10-28 — D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları (D67/4), MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; boş liste 422 zaten vardı; önceki sürüm `38eaf632…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — tier-2 aday kesişimi + MOD-0126 yeniden sabitleme; önceki sürüm `09ffc073…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `f61a93af…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 2732616deb519a4c6c885b5b2a52f4d69be5a389265af53eca2e78dead74d3ae (pack D71 revizyonu, 2026-10-28 — D71 aday tabanı iş akışı izniyle de kesişir (`approve ∩ platform.workflow.tasks.approve`, tier-2 talepte `∩ tier2-approve`; anahtar başına ayrı DL-6 çağrısı), K-A4b kapandı, AC-9 genişletildi, MOD-0126 `a92c4a49…2446`'a yeniden sabitlendi; önceki sürüm `6064158a…` (pack D70 revizyonu, 2026-10-28 — D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları (D67/4), MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; boş liste 422 zaten vardı; önceki sürüm `38eaf632…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — tier-2 aday kesişimi + MOD-0126 yeniden sabitleme; önceki sürüm `09ffc073…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `f61a93af…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir)), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — 2026-10-26 `git diff --name-only` ölçümü)
 ---
 
@@ -33,7 +33,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
 > (`AuditEnums.cs` son değer `ESignature = 17`).
 > - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0120'nin 15 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
-> pack "Kaynak ve kanıt"ta sha256 `ec4943aa…e374` ile sabitli (MOD-0126 D70 revizyonu; önceki `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
+> pack "Kaynak ve kanıt"ta sha256 `a92c4a49…2446` ile sabitli (MOD-0126 D71 revizyonu; önceki `ec4943aa…e374` — D70; daha önce `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
 >
 > **Güncel durum (2026-10-27).** Bu kayıt pack'in çalışma ağacındaki sürümüne bağlıdır: sha256 `051da4f2…db`, `status: draft`,
 > dal `chore/ct/treasury-intake-ct-05` @00d3f2b41 (= main @904dfd5c2 + beş yerel docs commit'i; kod ve kural yolları main ile
@@ -78,7 +78,7 @@ DL-1'i bekletmez (D51/1).
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `6064158a…` için `reviews.tsv`'de satır yok (son MOD-0120 incelemesi `7482ab82…`, `execution/approvals/reviews.tsv:80`) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `status: draft` (`:11`); güncel sha `2732616d…` için `reviews.tsv`'de satır yok (son MOD-0120 incelemesi `7482ab82…`, `execution/approvals/reviews.tsv:80`) | bekletir |
 | CT-APR-01 sürüme bağlı onay | Beste | `approvals.tsv`'de MOD-0120 satırı yok (grep 0) | bekletir |
 | DCP-011 `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; numara atandı | bekletir |
 | Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6) | **2026-10-28: taslak main'de** (#281; origin/main @ `027ca2e38`) — `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` `draft`, FU numarası açık (K-1), MOD-0018 sahibinin teyidi yok, pack checklist maddesi işaretsiz; Y-14 geçersiz (kullanılmadı); ölçüm anında: **yok** — Treasury rolleri için MOD-0018 paketi yok (`MOD-0018-*` dosyalarında `finance-treasury` 0) | paket kapısı (D53/1) — DL-1'i bekletir |
@@ -264,7 +264,7 @@ DL-1'de açılır, MOD-0120 yeni test projesi açmaz); `docs/analysis/contracts/
 (`Application/Common/**`, `Persistence/Common/**`, LE / para birimi / kod / `DataScope` bağdaştırıcıları);
 `tests/architecture/audit-ledger/**`; `frontend/**` (DL-4); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack (ortak tanımlar — pack "Kaynak ve kanıt" sabitlemesi sha256 `ec4943aa…e374`; §5 bulgu 1 D52 ile kapandı), AGENTS.md,
+**Önce oku:** pack, MOD-0126 pack (ortak tanımlar — pack "Kaynak ve kanıt" sabitlemesi sha256 `a92c4a49…2446`; §5 bulgu 1 D52 ile kapandı), AGENTS.md,
 `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt, permission-key-standard,
 git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement, record-coding-standard,
 mongo-indexing, handler-design; karar kayıtları D9–D69 (`treasury-intake-owner-decisions-0{1..5}.md`), MOD-0018 Treasury Auth eki

@@ -25,15 +25,27 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D71 (2026-10-28 ölçümünde main'de değil — yerel
+> dalda, main'de değil). Aday tabanı **`finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`**: servis
+> DL-6 aday sorgusunu iki anahtar için ayrı ayrı çağırır ve kesişimi alır (MOD-0126 / MOD-0120 tier-2 kesişimiyle aynı desen) —
+> karar veremeyecek kişi aday olmaz. Çağrılardan biri okunamazsa Submit kapalı-başarısızdır (niyet yazılmaz, fatura değişmez,
+> MOD-0023 çağrılmaz); kesişim (R1–R3 ve şirket kapsamından sonra) boşsa mevcut 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`
+> dalı (D70/2). MOD-0018 eki K-A4b **KAPANDI — KARAR D71**; D70/1 (iş akışı izni rol şablonuyla gelir) değişmedi. Validation
+> Rules "Aday tabanı", Runtime Constraints (Reconcile yeniden başlatma), Dependencies kapanış tablosu (aday tabanı satırı), Failure
+> Path, Authorization Convention, Test Expectations; **AC-10 genişletildi**. Yeni hata kodu yok.
+> **Sabitleme:** MOD-0126 ortak tanımları sha256 `a92c4a49…2446`'a yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D71
+> revizyonu); önceki `ec4943aa…e374` (D70). Mevcut AC numaraları ve dilim tablosu değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D70 + D67 atıfları):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D67, D70 (D67 PR #281 ile main'de; D70 2026-10-28
-> ölçümünde main'de değil — çalışma ağacında, commit edilmemiş). (1) **KARAR D70/2 (D68 bu pakete):** R1–R3 ve şirket kapsamı sonrası aday listesi
+> ölçümünde main'de değil — yerel dal `chore/ct/treasury-intake-ct-05`, main'de değil). (1) **KARAR D70/2 (D68 bu pakete):** R1–R3 ve şirket kapsamı sonrası aday listesi
 > boşsa Submit yerelde 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (**yeni hata kodu**, MOD-0126 / MOD-0120 deseni); MOD-0023 çağrılmaz, niyet
 > yazılmaz, fatura değişmez; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (502
 > `AP_WORKFLOW_START_FAILED`). Hata sözlüğü, Dependencies kapanış tablosu (aday tabanı satırı), Validation Rules "Aday tabanı",
 > Failure Path; **AC-10 genişletildi** (boş liste, sabotajlı). (2) **KARAR D70/1:** `platform.workflow.tasks.approve` / `.reject`
 > AP onaylayıcı rolüne rol şablonuyla gelir; iş akışı izni aday şartı değildir (MOD-0018 eki K-A4 kapandı) — aday sorgusu tek
-> anahtar (`finance-treasury.ap-invoices.approve`). (3) **KARAR D70/3:** Auth paket metni kapısı = metin main'de + MOD-0018
+> anahtar (`finance-treasury.ap-invoices.approve`). **KARAR D71 ile değişti:** iş akışı izniyle kesişim eklendi, K-A4b kapandı (yukarıdaki D71 notu). (3) **KARAR D70/3:** Auth paket metni kapısı = metin main'de + MOD-0018
 > sahibinin teyidi (Ready-for-dev Checklist; açık). (4) **D67 atıfları:** aday sorgusu FU DL-6, kodu DL-2 kabul kapısı (D67/1);
 > ortak aday portu MOD-0126 DL-2'nin (D67/3). D66 PR #281 ile main'de (DL-2 dilim kapısı maddesine yazıldı).
 > **Sabitleme:** MOD-0126 ortak tanımları sha256 `ec4943aa…e374`'e yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D70
@@ -686,7 +698,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0023 iş akışı başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AP şablon kodu **`FT-AP-INVOICE-APPROVAL`** (Y-12, O-11 — tek aşama, tek onay adımı, atamasız; adaylar `CandidatePrincipalIds` ile, boş liste 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`; şablonu kuran kod main'de değil) | Platform commit SHA'sı DL-2 başında yazılır | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + bilgi isteme + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-2 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-2 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-2 |
-| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1) | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; R1–R3 ve şirket kapsamı sonrası boş liste → yerelde 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → 502 `AP_WORKFLOW_START_FAILED`); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-10, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
+| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar başına ayrı çağrı — `finance-treasury.ap-invoices.approve` ve `platform.workflow.tasks.approve` (**KARAR D71**), servis kesişimi alır | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; kesişim (D71), R1–R3 ve şirket kapsamı sonrası boş liste → yerelde 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**; MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır → 502 `AP_WORKFLOW_START_FAILED`); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-10, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
 | MOD-0031 kanıt okuma | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → bağlama yok, fatura değişmez · AP MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AP'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-29 | DL-1 |
 
@@ -799,7 +811,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        (`StartWorkflowInstanceHandler.cs:76-85`), geçişler anahtarı zorunlu tutar (`ApproveWorkflowTaskValidator.cs:13`) ve
        `GetByTaskActionIdempotencyKeyAsync` ile yeniden oynatır (`RejectWorkflowTaskHandler.cs:79-80`,
        `WorkflowTerminalTransitionWriter.cs:402-407`). Yeniden yazmadan önce (i) şirket uygunluğu (D10/1, D14/4), (ii) SoD
-       (başlatmada R1–R3 aday dışlaması yeniden; kararda niyetteki karar verenle R1–R6, R8, R9), (iii) izin ve (iv) aktör:
+       (başlatmada aday tabanı `ap-invoices.approve ∩ platform.workflow.tasks.approve` — KARAR D71, Validation Rules → "Aday
+       tabanı" — ve R1–R3 aday dışlaması yeniden; kararda niyetteki karar verenle R1–R6, R8, R9), (iii) izin ve (iv) aktör:
        Reconcile'ı çağıran asıl komutun aktörü (`SubmittedBy` / `DecidedBy`) değilse uzak yazma çağrısı yok (409
        `AP_RECONCILE_RESTART_ACTOR_MISMATCH`) — MOD-0023'teki başlatan / karar veren değişmez. Hepsi geçerse aynı uzak
        yazma **aynı deterministik uzak anahtarla bir kez** yapılır; en fazla bir örnek / geçişi MOD-0023'ün tekil indeksi
@@ -1073,14 +1086,17 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
 | R8 | Approve, uygunluğu (LE, tedarikçi ilişkisi, PO'lu ise MOD-0143) **o anda** yeniden okur; uygun değilse karar uzak sisteme gitmez | karar | TP-001 T14 |
 | R9 | Engelleyici açık istisna ya da `OnHold` varken Approve 409 (`AP_BLOCKING_EXCEPTION_OPEN` / `AP_INVOICE_ON_HOLD`); Reject ve RequestInfo serbest | karar | yeni |
 
-**Aday tabanı (KARAR D66/1):** gönderme çözümleyicisi (Submit ve Reconcile'ın yeniden başlatması) adayları MOD-0018 Treasury Auth
-ekinin DL-6 aday sorgusundan okur (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6), anahtar `finance-treasury.ap-invoices.approve`; istemci servis ortak aday
-kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource` — **KARAR D67/3**). Servis R1–R3 kişilerini ve şirket kapsamı dışındakileri
-(o paketin K-A2'si) çıkarır, kalanı niyete (`ApWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. Liste boş
-kalırsa Submit 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` döner; MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**, MOD-0126 D68
-deseni); MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır. İş akışı izni
-(`platform.workflow.tasks.approve`) aday şartı değildir — AP onaylayıcı rolüne rol şablonuyla gelir (**KARAR D70/1**); rol
-şablonu yoluyla tutarlı, elle atamada açık nokta (K-A4b, MOD-0018 eki Açık kararlar). Sorgu
+**Aday tabanı (KARAR D66/1; iş akışı kesişimi KARAR D71):** gönderme çözümleyicisi (Submit ve Reconcile'ın yeniden başlatması) adayları MOD-0018 Treasury Auth
+ekinin DL-6 aday sorgusundan okur (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6); taban
+**`finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`**: servis sorguyu iki anahtar için ayrı ayrı çağırır
+(sorgu tek anahtar alır) ve iki listede de bulunan kişileri alır — onay anahtarı olup MOD-0023 görev kararının izni olmayan kişi
+kararı uygulayamaz ve aday olmaz (karar veremeyecek kişi aday olmaz; MOD-0018 eki K-A4b **KAPANDI — KARAR D71**). İş akışı izni
+AP onaylayıcı rolüne rol şablonuyla gelir (**KARAR D70/1**, değişmedi); kesişim onay anahtarının rol dışı elle verildiği durumu
+kapatır. İstemci servis ortak aday
+kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource` — **KARAR D67/3**). Servis kesişimden R1–R3 kişilerini ve şirket kapsamı dışındakileri
+(o paketin K-A2'si) çıkarır, kalanı niyete (`ApWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. Liste (kesişim
+ya da kurallar sonrası) boş kalırsa Submit 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` döner; MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**, MOD-0126 D68
+deseni); MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır. Sorgu (iki çağrıdan herhangi biri)
 okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişmez, MOD-0023 çağrılmaz (yanıt sınıfı Auth uç sözleşmesiyle
 — o paketin K-A1'i). Ayrı dizin istemcisi taşınmaz.
 
@@ -1089,10 +1105,14 @@ okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişme
 - **Kaydı oluşturanın kararı** → 403 `AP_SOD_DENIED`, `FailedSelfApproval`; MOD-0023 çağrılmaz; fatura durumu değişmez.
 - **Gönderenin kararı (onay ya da ret)** → 403 `AP_SOD_DENIED`, `FailedSubmitterApproval`; MOD-0023 çağrılmaz.
 - **Son güncelleyenin kararı** → 403 `AP_SOD_DENIED`, `FailedUpdaterApproval`.
-- **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok) → Submit
+- **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok — iki anahtar
+  çağrısından herhangi birinde, `platform.workflow.tasks.approve` çağrısı dahil, KARAR D71) → Submit
   kapalı-başarısız: niyet yazılmaz, fatura değişmez, MOD-0023 çağrısı yok. R1–R3 ve şirket kapsamı sonrası boş liste → Submit
   422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`; MOD-0023 çağrılmaz, niyet yazılmaz, fatura değişmez (**KARAR D70/2**; AC-10). MOD-0023'ün 400
   `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (gelirse kesin başlatma reddi, 502 `AP_WORKFLOW_START_FAILED` — AC-13 kuralı).
+- **İş akışı izni kesişimi (KARAR D71; MOD-0018 eki K-A4b kapandı)** → `finance-treasury.ap-invoices.approve` taşıyıp
+  `platform.workflow.tasks.approve` taşımayan kişi (onay anahtarı rol dışı elle verilmiş) aday olmaz; iş akışı izni çağrısı
+  okunamazsa yukarıdaki kapalı-başarısız dal; kesişim boşsa yukarıdaki boş liste dalı (422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`) (AC-10).
 - **MOD-0023 "son adım değil" yanıtı (KARAR D66/2)** → v1'de beklenmez; gelirse karar `Recorded`, fatura `ApprovalPending` /
   `PendingDecision`'da kalır, onaylanmış sayılmaz; ara onay durumu yok (AC-14).
 - **Mükerrer fatura** (aynı şirket + tedarikçi + belge türü + normalize numara) → 409 `AP_INVOICE_DUPLICATE`, kayıt yok;
@@ -1217,7 +1237,13 @@ okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişme
   `mdm.legal-entities.read` (MOD-0220), MOD-0140 tedarikçi okuma izni (1.3.0'da adı ölçülür), `procurement.invoice-match.read`
   (MOD-0143, `InvoiceMatchController.cs:53`), MOD-0031 kanıt okuma; MOD-0023'te `platform.workflow.instances.start`
   (gönderen) ve `platform.workflow.tasks.approve` / `.reject` / `.request-info` (onaylayıcı) (`WorkflowModels.cs:16-19`).
-  Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) (O-20).
+  Rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) (O-20); `platform.workflow.tasks.approve` /
+  `.reject` AP onaylayıcı rolüne rol şablonuyla gelir (**KARAR D70/1**).
+- **Onaylayıcı aday tabanı — iş akışı izni kesişimi (KARAR D71; MOD-0018 eki K-A4b KAPANDI — KARAR D71):** aday listesi
+  `finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve`'dur (DL-6 sorgusuna anahtar başına ayrı çağrı;
+  kesişimi servis yapar, Auth sorgusu tek anahtar alır — MOD-0018 eki Bölüm 8.6). Onay anahtarı rol dışı elle verilmiş, iş akışı
+  izni olmayan kişi aday olmaz; çağrı okunamazsa Submit kapalı-başarısız; kesişim boşsa 422
+  `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (Validation Rules → "Aday tabanı").
 - **İstisna ayrılığı (KARAR D50/3) çalışma anında da denetlenir:** `ap-invoice-exceptions.resolve` / `.reopen` izni tek başına
   yetmez — istisnayı açan (`RaisedBy`) aynı istisnayı çözemez ve yeniden açamaz (403 `AP_EXCEPTION_RAISER_CANNOT_RESOLVE`,
   AC-42). Bir kişide AP operatörü + AP operasyon yöneticisi olsa da kural geçerlidir.
@@ -1353,7 +1379,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   Auth'un döndürdüğü kişilerden kaydı oluşturan, gönderen ve son güncelleyen ile şirket kapsamı dışındaki kişi (MOD-0018 eki
   K-A2) `CandidatePrincipalIds`'e girmez; sorgu okunamazsa (zaman aşımı, 5xx, 403, bozuk gövde) niyet yazılmaz, fatura değişmez
   ve MOD-0023 çağrılmaz (dört ayrı test). Sabotaj: çözümleyici Auth sonucunu atlayıp sabit / yapılandırma listesi kullandığında
-  ya da R1 dışlaması kaldırıldığında (oluşturan aday olur) test kırmızıya döner. **Boş liste (KARAR D70/2):** R1–R3 ve şirket
+  ya da R1 dışlaması kaldırıldığında (oluşturan aday olur) test kırmızıya döner. **İş akışı izni kesişimi (KARAR D71; sahte
+  Auth anahtar başına ayrı yanıt):** istemcinin `platform.workflow.tasks.approve` anahtarını da ayrı çağrıyla sorduğu doğrulanır
+  (yukarıdaki dallarda sahte iş akışı yanıtı oradaki bütün kişileri içerir). `ap-invoices.approve` için {D, E},
+  `platform.workflow.tasks.approve` için {E} → `CandidatePrincipalIds = {E}` (onay anahtarı olup iş akışı izni olmayan D dışlanır,
+  ikisini taşıyan E geçer); `ap-invoices.approve` çağrısı başarılı, `platform.workflow.tasks.approve` çağrısı okunamaz (zaman aşımı,
+  5xx, 403, bozuk gövde) olduğunda niyet yazılmaz, fatura değişmez ve MOD-0023 çağrılmaz (kapalı-başarısız); `ap-invoices.approve`
+  için {D}, `platform.workflow.tasks.approve` için {} → aşağıdaki boş liste dalı (422). Sabotaj: iş akışı kesişimi kaldırıldığında
+  D aday olur ve test kırmızıya döner. **Boş liste (KARAR D70/2):** R1–R3 ve şirket
   kapsamı sonrası aday kalmazsa Submit 422 `AP_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, sahte MOD-0023'e hiç çağrı gitmez, niyet yazılmaz, fatura
   `Validated` kalır; sabotaj: boş liste MOD-0023'e gönderildiğinde (çağrı sayısı 1) test kırmızıya döner.
 - [ ] AC-11 (zorunlu) — Başlatma zaman aşımı, bağlantı kopması ve boş/okunamayan 2xx yanıtı 202
@@ -1520,6 +1553,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - **MOD-0220 / MOD-0140 / MOD-0143 / MOD-0031 sahteleri:** her biri için uygun / uygun değil / bulunamadı / erişilemez;
   MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz; MOD-0143 için altı durum ve vergili fatura (AC-40); gerçek sözleşmeler geldiğinde
   sözleşme testi (1.3.0, 1.1.1, TRM-14).
+- **Auth aday sahtesi (KARAR D66/1, D71):** aday sorgusu (izinli liste / boş / okunamaz / 403); anahtar başına ayrı yanıt
+  (`finance-treasury.ap-invoices.approve` ve `platform.workflow.tasks.approve` listeleri farklı kişilerle; yalnız biri okunamaz —
+  iş akışı izni çağrısı dahil) — kesişim ve sabotajı AC-10'da.
 - **Mimari:** her aksiyonda `[HasPermission]`; banka verisi alan adı yasağı; `float`/`double` para alanı yok; muafiyet /
   break-glass tipi yok; başka servisin koleksiyon adı yok; `AuditTrailStandard` filtresi yeşil.
 - **Sözleşme:** `ap-invoice.openapi.yaml` ile uç şekli.
@@ -1597,7 +1633,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [x] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17'de onaylı (`approvals.tsv:16`); silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13) — DL-2 için; AC-W1 (silmeme mimari testi) DL-2 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [x] MOD-0023 okuma eşleme alanları (KARAR D21/3) §17'de onaylı (`approvals.tsv:16`) — DL-2 için; kod MOD-0023 sahibinin WP'siyle gelir (D25/1), AC-W2/W3 uygulama kabul kapısındadır (gap 16/P2); yoksa okuma niyeti kapatmaz (gap 6/P1-b)
 - [ ] Tüketici onayı slotu WORKFLOW (MOD-0023; şablon O-11 — kod `FT-AP-INVOICE-APPROVAL`, Y-12 — + MOD-0023 sahibi) "Implementation Notes"taki tabloya göre kapatıldı — DL-2 için
-- [x] Onaylayıcı aday tabanı kararı — **KARAR D66/1**: Auth aday sorgusu (`finance-treasury.ap-invoices.approve`), servis R1–R3'ü uygular, `CandidatePrincipalIds` — DL-2 için
+- [x] Onaylayıcı aday tabanı kararı — **KARAR D66/1**: Auth aday sorgusu (`finance-treasury.ap-invoices.approve ∩ platform.workflow.tasks.approve` — iş akışı kesişimi **KARAR D71**, MOD-0018 eki K-A4b kapandı), servis R1–R3'ü uygular, `CandidatePrincipalIds` — DL-2 için
 - [ ] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
   sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1; D66 main'de, PR #281) — DL-2 için
 - [ ] O ekin DL-6 kodu main'de (**KARAR D66/1**, **D67/1** — aday sorgusu ekin DL-6'sı, kodu bu dilimin kabul kapısı; D53 / D56/3 deseni) — DL-2 için (kabul kapısı)
@@ -1608,8 +1644,8 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `ec4943aa8f2eb995ef502ee81f710b6895f4b5e1b1b5d3b698f9415e7c0fe374` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; MOD-0126 D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları; önceki `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `a92c4a492137aee75f4050d1bcc657755441dd5e907eb92ba2c43bfb09e72446` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; MOD-0126 D71 revizyonu — aday tabanı iş akışı izniyle de kesişir, K-A4b kapandı (D71); önceki `ec4943aa…e374` (D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları), `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
