@@ -243,3 +243,16 @@ Kaynak: Beste (MVP-1 CT), 2026-10-26, sahip üzerinden iletildi. Paket karşıl�
 F-5, F-6, F-7 pakete işlendi; F-3 yalnız olgusal olarak düzeltildi (izolasyon iddiası "başlıkta seçilen / JWT'deki LE
 bağlamında") ve S-7 olarak karar listesine alındı. Karar bekleyen: S-1…S-7 (paket §20). Kararlar işlendikten sonra
 Revizyon 3 yeniden bağımsız incelemeye gider; push ve PR, PR #249 merge edildikten sonra.
+
+**Sahip kararları (Natig, 2026-10-28)** — MVP-6 CT üzerinden iletildi. Paket karşılığı: MOD-0140 §19 2026-10-28 kaydı ve
+§20 "Revizyon 3 — sahip kararları"; başlık notu "Revizyon 3 (2026-10-28)".
+
+| # | Karar | Durum |
+|---|---|---|
+| S-1 | `eligibleForTransactions` = ilişki var ∧ silinmemiş ∧ `Active`; ek koşul yok. Onboarding onayı, `purchasingEnabled` ve kiracı düzeyi bloklar tüketici tarafında (MOD-0147 / MOD-0148 bugün uygular, DC-02 D2). `GET /eligible` tam olarak `eligibleForTransactions = true` olan ilişkileri listeler | kapandı |
+| S-2 | Şimdi: çağıran role `mdm.legal-entities.read` (Roller → İzinler, BL-652 ara çözümü); izin yoksa Procurement 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` (503 değil), 503 yalnız MDM'e ulaşılamazken. Sonra: Procurement → MDM servis kimliği (BL-652 Seçenek 2, DL-7 ve sonrası) izin gereğini kaldırır. 1.3.0'a eklemeli `403` | kapandı |
+| S-4 | Servis token'ı `GET /eligible`'a kapalı; yalnız `POST /validate` ve tekil `GET /{supplierId}/eligibility`. Hazine bir pack ile yeniden sorabilir | kapandı |
+| S-6 | 1.3.0 yalnız Revizyon 2 uygunluk yüzeyi + 409 `DUPLICATE_SUPPLIER` gövdesinde `supplierId` (+ C2 ve onboarding hata kodları). İlişki uçları ve kiracı geneli vergi no araması 1.4.0'da, DL-3 ile; servis token'ı şeması 1.5.0 (DL-7) | kapandı |
+| S-7 | Kullanıcı → LE yetkisi MOD-0140 içinde çözülmez; başlıktan LE almak bütün servislerin ortak deseni. Bilinen sınır; "Platform / Auth güvenlik incelemesi — LE başlık deseni"ne gider; 1.3.0'ın dondurulmasını engellemez | kapandı (bilinen sınır) |
+| S-3 | MOD-0023 onboarding şablonu ve onaylayıcılar — MOD-0023 sahibi | açık; DL-4'ü bekletir |
+| S-5 | DL-7 audience adı ve `service_name` listesi — Auth sahibi | açık; DL-7'yi bekletir |
