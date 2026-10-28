@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D56 (2026-10-27) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D57 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -535,6 +535,18 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-27; oturum Treasury Intake CT 
    sorgusuyla okunur (Ali'den uç; MOD-0018).
 4. **SoD ayarı:** FinanceTreasuryService'te kiracı başına tek ayar kaydı (tek eşik + R1–R4 açık / kapalı), denetlenir; DL-2'de yazılır.
    Follow-up'tan çıkar.
+
+## D57 — D56 düzeltme turunda kalan dört nokta (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); konu commit
+`e5463096c`.
+
+1. **MOD-0289 DL-2 kabul kapısı:** "Treasury tüketici fikstür koşusu" şartı kalkar (D47/4: v1'de MOD-0289'u okuyan finans akışı yok);
+   BANK-ACCOUNT-LOOKUP sözleşmesi kendi testiyle doğrulanır; tüketici testi ilk gerçek tüketicinin dilimine girer.
+2. **MOD-0120 denetim sınıfı:** Issue (fatura kesme) K2; SetCollectionStage (tahsilat aşaması) K1.
+3. **MOD-0124 kanıt paketi:** DL-2'de yalnız biçim doğrulanır; kalemlerin varlığı MOD-0031 bağlantısıyla DL-4'te doğrulanır.
+4. **SoD ayar kaydı (D56/4 ayrıntıları):** izinler `finance-treasury.payment-sod-settings.read` / `.update` (Hazine yöneticisi rolü);
+   ayar ekranı MOD-0126 ekran diliminde; R1–R3 kapatılamaz (yalnız eşik ve R4 ayarlanır); kayıt yoksa R1–R4 açık ve varsayılan eşik.
 
 ## Karar olmayanlar
 
