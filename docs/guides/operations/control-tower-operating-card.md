@@ -491,6 +491,22 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | Canlı ortam müdahalesi | **Her seferinde açık onay** | Sahip kararı 2026-10-15 |
 | Ortak dosyada tek-yazar anlaşması | **Her seferinde**, etkin Control Tower ile | SOP §16.4, K15 |
 
+### 7c. Başka sahibin modülünde ek — isteyen yazar, sahip inceler (S-90, sahip kararı 2026-10-28)
+
+Bir CT'nin işi başka bir sahibin modülünde ek gerektiriyorsa (izin anahtarı, rol şablonu, okuma alanı, sözleşme satırı):
+
+1. **Önce XMC-001 sorusu:** modül sahibinin bu ek için açık "(a) bu işte yaz" cevabı kayda girmeden pakete de koda da
+   dokunulmaz; onay her ek için ayrıdır (çekirdek kural 6 ve 9, §7 "Başka modüle müdahale").
+2. **Onaydan sonra eki isteyen CT yazar:** önce o modülün paketine öneri (CT-APR-02 inceleme, CT-APR-01 onay), sonra kod;
+   yalnız en küçük ve eklemeli değişiklik; başka domain'in sahibine sorulur; aynı dosyayı başka bir CT yazıyorsa yazılmaz
+   (tek yazar, K15) — Treasury için kayıt D9.
+3. **Modülün sahibi inceler ve onaylar;** PR'ı sahip ya da sahibin CT'si inceler, merge başkasınındır. İsteyen CT sahibe
+   "şunu yap" diye iş vermez, "şunu yazdım, inceler misin" diye gelir.
+4. **Sahip yazmayı kendisi üstlenirse** bu bir karar kaydında açıkça yazılır (ör. MOD-0023 §17: D25/1, D32/1). Kayıtta
+   yazmıyorsa yazar isteyen CT'dir; "sahip teyidi" (ör. D29/1) yazma işi değil, onaydır.
+5. **Yeni yetenek gerekiyorsa** (sahibin modülünde bugün olmayan bir veri yapısı ya da akış; ör. süreli muafiyet ataması)
+   isteyen CT yazmaya başlamaz; önce sahiple tasarım konuşulur ve sahibin kararı kayda girer.
+
 ### 7b. PR yalnız zorunluysa (S-77, sahip kuralı 2026-10-27: "CT'ler sürekli PR açmasın, zorunlu olmadıkça PR olmasın")
 
 Varsayılan: iş CT dalında **yerel commit** olarak birikir; dalganın sonunda **tek PR** açılır (S-76). Ara PR yalnız şu
