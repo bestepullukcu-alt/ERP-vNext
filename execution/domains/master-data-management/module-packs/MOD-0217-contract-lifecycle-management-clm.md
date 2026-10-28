@@ -186,6 +186,17 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > `ContractDocumentRef.cs`, DL-2 Yollar'a sürüm alanları ve çit yazımı (bulgu 5); Test Expectations'taki eski `failCommand`
 > "ölçülmedi" cümlesi ölçümle değişti (bulgu 6). Bulgu 7 (MOD-0262-FU01 pack iç çelişkisi) başka domain — dokunulmadı. Yeni AC
 > yok; AC numaraları ve dilimler değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-28, D58/D59):** **KARAR D59/1** (kaynak Y-8, Beste) — RCS-001 / BL-565 servisi paket kapısından
+> **DL-1 kabul kapısına** taşındı: ENGELLER metni, Ready-for-dev Checklist maddesi ("— DL-1 için (kabul kapısı)"), Dependencies
+> ve kapanış tablosu RCS-001 satırları (v0 çağrı sözleşmesi `POST /api/internal/record-codes/allocate`, 200 / 422 / 409 / 404 /
+> 503, 6 Kasım'da kesinleşir), Runtime Constraints ve Failure Path (üretimde port bağlı değilse Create 503
+> `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, kodsuz kayıt yok, kendi sayaç / yedek kod yok; MDM'deki `CodeReservation`
+> kullanılmaz), Repo Scope (port `Application/Contracts/RecordCodes/` + bağdaştırıcı `Infrastructure/RecordCodes/`; MdmService'te
+> MOD-0289 ile tek tanım), DL-1 Önkoşul ve "Dilim kabul kapısı" DL-1 satırı. Port adı uzlaştırıldı: `IRecordCodePort` →
+> **`IRecordCodeAllocator`** (`AllocateAsync(legalEntityId, recordType, idempotencyKey)`). Tür öneki `CTR` değişmedi. Yeni AC
+> yok — **AC-20** genişletildi (sahte allocator + sabotaj: port bağlı değilken Create 503, yazma yok). D58 bu pakete dokunmaz
+> (MOD-0289). AC numaraları ve dilimler değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -299,7 +310,8 @@ Kaynak tabanı `api/contracts` ve `api/v1/contracts` (`services/DitenMdmService/
   `ContractTerminateRequest`. DTO'larda ve isteklerde `TenantId` **yoktur**. Ticari değer alanları (`contractValue`,
   `currencyCode`) yalnız `mdm.contracts.value.read` sahibine dolu döner; diğerlerine `null` + `valueMasked: true`. Değer
   alanını yazmak ayrıca `mdm.contracts.value.write` ister (KARAR D49/2; Runtime Constraints → "Ticari değer görünürlüğü").
-- **Portlar (Application):** `IRecordCodePort` (RCS-001), `ICurrencyReferencePort` (MOD-0048), `IDocumentBinaryStorePort`
+- **Portlar (Application):** `IRecordCodeAllocator` (RCS-001; `AllocateAsync(legalEntityId, recordType, idempotencyKey) → code`,
+  KARAR D59/1; tür öneki `CTR`), `ICurrencyReferencePort` (MOD-0048), `IDocumentBinaryStorePort`
   (MOD-0262-FU01: sakla, meta oku, akış oku, telafi), `IContractWorkflowPort` (MOD-0023: başlat, nesneye göre örnek oku `includeDeleted=true`, örnek geçmişi oku — MOD-0023 §17
   rev 2 alanlarıyla), `IContractDataScopeSource` (SEC-002). Şirket için port
   yok: `ILegalEntityRepository` süreç içi okunur (aynı servis). Tedarikçi karşı tarafı için port yok: `Supplier` türü MOD-0140 sözleşmesi ölçülene kadar kapalı (KARAR D41/4). MOD-0028 için
@@ -464,6 +476,10 @@ Hepsi `ready-for-dev`'den sonra; kaynaktan kod alınmaz (D38/3). Dilim sütunu "
   grubu deposu (`ContractAggregateStore.cs`, `MasterDataAtomicWrite` politikasıyla) (DL-1; DL-2 koşullu işaretçi ve çit yazımı ekler)
 - `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/{RecordCodes,Currency,DocumentRepository,Workflow}/**`
   (RCS-001 portu, MOD-0048, MOD-0262-FU01, MOD-0023 bağdaştırıcıları; MOD-0028 bağdaştırıcısı yok — KARAR D40) (DL-1 / DL-2 / DL-3)
+- **Kayıt kodu portu (KARAR D59/1) (DL-1):** port `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/RecordCodes/IRecordCodeAllocator.cs`
+  (MdmService `Application/Contracts/<alan>/` düzeni) ve v0 HTTP bağdaştırıcısı `Infrastructure/RecordCodes/**`. MdmService'te
+  MOD-0289 ile **tek** port ve tek bağdaştırıcı: iki paketten DL-1'e önce giren açar, diğeri tüketir; ikinci tanım, kendi sayaç,
+  yedek kod üreticisi ya da ürün ailesinin `CodeReservation`'ı kullanılmaz. Sahte allocator yalnız test projesindedir.
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ContractsController.cs` ve
   `Api/ModuleRegistration/ContractLifecycleManifestProvider.cs` (izin + sayfa manifesti,
   `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/BrandProductMasterManifestProvider.cs:13@31c448d5d` deseni) (DL-1…DL-3)
@@ -520,7 +536,7 @@ ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — i
 | MOD-0220 Legal Entity | yöneten şirket, şirket karşı tarafı | **var, aynı servis** — `OperationalStatus`, `ApprovalStatus` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`), `IsReferenceable` (`:60`) | süreç içi depo okuması; LE kaydına yazılmaz |
 | MOD-0018 RBAC | `mdm.contracts.*` anahtarları | MDM manifest sağlayıcısıyla izin kaydı deseni var (`BrandProductMasterManifestProvider.cs:13`); `mdm.contracts` anahtarı kodda yok (`git grep` 0) | anahtar listesi KARAR D41/1 (O-4); Auth'ta kaydı ve açık atama listesi MOD-0018 sahibinin (Ali) işi — iş paketi açıyor (Y-2), Auth değişikliği (D9) |
 | SEC-002 veri kapsamı | yöneten şirkete göre görünürlük | MDM'de `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11`). **Ölçüldü (2026-10-27, @ec063fee9 — DL-2 hazırlık kaydı §5 ve MOD-0289 DL-2 kaydı §1): `mdm.contracts.*` anahtarlarıyla bugün çalışmaz** — MDM istemcisi ve Platform doğrulayıcısı modül kodunu `product-item-sku-master`'a ve sabit izin listesine bağlıyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,163-171@ec063fee9`; `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:35-56,97-114@ec063fee9`) | **KARAR D56/1:** ölçüm değil kod değişikliği — Platform izin listesi + MDM istemcisinin modül kodu, Ali'nin MOD-0018 Auth paketine **"permission onboarding" eki** olarak girer (bu paketin Repo Scope'unda değil). Paket kapısı: ek paket metni main'de (D53/1 deseni); kodu main'de — DL-1 kabul kapısı |
-| RCS-001 ortak kod servisi | sözleşme kodu | **yok** (BL-565, `.antigravity/rules/record-coding-standard.md:163`); §3 tablosunda sözleşme satırı `CTR` var (`.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265)); MDM'deki `CodeReservation` ürün ailesinindir | engel: modül kendi sayacını yazamaz (RCS-001 §6); önek `CTR` (O-5, KARAR D41/2; §3 satırı main'de, #265); BL-565 sahibi Beste (D44), servis yok |
+| RCS-001 ortak kod servisi | sözleşme kodu | **yok** (BL-565, `.antigravity/rules/record-coding-standard.md:163`); §3 tablosunda sözleşme satırı `CTR` var (`.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265)); MDM'deki `CodeReservation` ürün ailesinindir | **DL-1 kabul kapısı (KARAR D59/1; paket kapısı değil):** modül kendi sayacını ya da yedek kodu yazamaz (RCS-001 §6); önek `CTR` (O-5, KARAR D41/2; §3 satırı main'de, #265); BL-565 sahibi Beste (D44), servis 6 Kasım'a kadar (Y-8). DL-1 kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden önce main'de olmalıdır. Üretimde port bağlı değilse Create 503, kodsuz kayıt yok |
 | MOD-0048 para birimi | kod listesi | `GET /api/lookups/reference/currencies` Platform'da (`TenantReferenceLookupsController.cs:18,37-38`); MDM'den tüketim yolu **ölçüldü (2026-10-27): bugün okuyucu yok** — MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (Ready-for-dev Checklist MOD-0048 maddesi) | `ICurrencyReferencePort`; erişilemezse 503, sabit liste yok |
 | MOD-0140 Supplier | tedarikçi karşı tarafı | `supplier.openapi.yaml` (MOD-0289 pack ölçümü: 1.2.0, `validateSuppliers`); MOD-0217 için **ölçülmedi** | O-7, KARAR D41/4: `Supplier` türü MOD-0140 sözleşmesi ölçülene kadar kapalı; ölçüm türün açılmasının önkoşuludur (Follow-up) |
 | MOD-0144 Contracting & Clause Library | sınır | `ready-for-dev`, kod var (Ownership and Boundaries) | **KARAR D39 — engel değil:** satın alma / tedarik sözleşmeleri MOD-0144'te; MOD-0217'de `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz (AC-47); başvuru bağlantısı Follow-up |
@@ -537,7 +553,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | Bağımlılık | Sözleşme / sürüm | Sahibi | Hata davranışı (MOD-0217) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod) | master-data-management | yok / başka kiracı / silinmiş / `Active` değil → 422 `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` | birim + entegrasyon · — (aynı süreç) | DL-1 |
-| RCS-001 | **yok** (BL-565) | Beste (D44) servis; §3 `CTR` satırı main'de (D41/2; #265) | servis yoksa Create yazılamaz; erişilemezse 503 | sahte port · — | DL-1 önkoşulu |
+| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565) | Beste (D44) servis; §3 `CTR` satırı main'de (D41/2; #265) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, sözleşme ve sürüm yazılmaz; yedek kod yok | sahte allocator (AC-20, sabotajlı) · dev ortamında gerçek servisle `CTR` kodu | DL-1 kabul kapısı (D59/1) |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | platform-shared-services | erişilemez → 503; listede yok → 400 | sahte istemci · dev ortamında TRY / EUR | DL-1 |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` + MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | Ali (MOD-0018 eki, D56/1); platform-shared-services (Platform ucu) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | master-data-management + CT | niyet yazılamazsa komut 503, iş verisi yok | AC-11 (sabotaj) · bir sözleşme oluşturmanın merkezi kaydı (AUD-001 §8) | DL-1 |
@@ -559,6 +575,13 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
   reddeder. `X-Tenant-Id` başlığı kiracıyı belirlemez (kaynaktaki başlık karşılaştırmalı koruma, `Mod0217VerifiedRequestContext.cs:31-51@da4abb20`, taşınmaz; MDM'nin standart kiracı çözümü kullanılır).
 - **Soft delete:** `IsDeleted` + `DeletedAt` (UTC); yalnız sürüm 1'i hiç onaya gönderilmemiş (`ApprovalAttempt = 0`) `Draft`
   sözleşme silinir; silme sözleşmeyi ve sürüm 1'i aynı işlemde işaretler. Belge ikilisi silinmez (MOD-0262 saklama).
+- **Kayıt kodu (RCS-001, KARAR D59/1):** `Contract.Code` yalnız `IRecordCodeAllocator.AllocateAsync(legalEntityId =
+  yöneten şirket, recordType = CTR, idempotencyKey)` portundan alınır; anahtar Create'in `Idempotency-Key`'inden türetilir,
+  aynı anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
+  200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503
+  `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı
+  kayıtlı değil) Create 503, kodsuz sözleşme açılmaz; kendi sayaç, yedek kod ya da `CodeReservation` ile kod üretimi yasak
+  (RCS-001 §6). Sahte allocator yalnız test projesinde kayıtlıdır.
 - **Eşzamanlılık:** her Update / Submit / Sync / RecordSignature / Amendment / Withdraw / Terminate / Archive `If-Match`
   (sözleşme ya da sürüm `Version`) ve durum CAS'ı taşır; bayat istek 409 `MDM_CONTRACT_VERSION_CONFLICT`; iki eşzamanlı
   geçişten biri 409.
@@ -801,7 +824,7 @@ Resources/Views/MasterData/Contracts/     ContractsIndex.{en,tr,fr,es,zh,ar,ru}.
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
 |---|---|---|---|---|
 | Gövde/sorguda `tenantId` | — | bulunursa 400 | — | — |
-| Contract.Code | — | istekte bulunursa 400 `MDM_CONTRACT_CODE_FORBIDDEN` (OTOMATİK) | Unique (TenantId, Code), kısmi değil | `IRecordCodePort` |
+| Contract.Code | — | istekte bulunursa 400 `MDM_CONTRACT_CODE_FORBIDDEN` (OTOMATİK) | Unique (TenantId, Code), kısmi değil | `IRecordCodeAllocator` |
 | `Idempotency-Key` (Create) | Evet | 1..100, `^[A-Za-z0-9._:-]+$` | Unique (TenantId, CreateIdempotencyKey) kısmi | — |
 | Title | Evet | trim, 1..200, kontrol karakteri yok | — | — |
 | ContractType | Evet | çekirdek kod listesinde (O-11, KARAR D41/8); büyük harf, sıralı karşılaştırma; **satın alma türü reddedilir (KARAR D39):** `PURCHASE` katalogda yoktur, Create ve UpdateContract'ta 400 `MDM_CONTRACT_VALIDATION_FAILED` + alan düzeyi resx iletisi (AC-59) | — | `ContractTypeCatalog` |
@@ -853,6 +876,8 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   (`value.read` olsa da) → 403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED`; kayıt, kod ve niyet yok; saklı değer değişmez (AC-65).
 - **Eşzamanlılık:** bayat `If-Match` → 409 `MDM_CONTRACT_VERSION_CONFLICT`; iki eşzamanlı Submit → biri 409, tek MOD-0023
   örneği; iki eşzamanlı son imza → biri 409, tek Effective sürüm.
+- **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1) → Create 503
+  `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`; sözleşme, sürüm ve denetim niyeti yazılmaz (kodsuz kayıt yok), yedek kod üretilmez (AC-20).
 - **Bağımlılık erişilemez vs geçersiz girdi:** RCS-001 / MOD-0048 / MOD-0262 / MOD-0023 erişilemez, 5xx, zaman aşımı,
   tanınmayan gövde → 503, kayıt değişmez; para birimi listede yok → 400; şirket aktif değil → 422; MOD-0262 dosyayı reddetti →
   400 / 413 (503 değil).
@@ -1060,7 +1085,12 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   `MDM_CONTRACT_CURRENCY_REFERENCE_UNAVAILABLE`; listede olmayan kod → 400 `MDM_CONTRACT_CURRENCY_UNKNOWN`. İki durumun
   sınıflandırması yer değiştirildiğinde test kırmızıya döner (sabotaj).
 - [ ] AC-20 (zorunlu) — RCS-001 portu erişilemezse Create 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, kayıt yok; eşzamanlı iki
-  Create farklı kod alır.
+  Create farklı kod alır. **Kayıt kodu portu (KARAR D59/1):** sahte `IRecordCodeAllocator` ile Create `Code`'u tek
+  `AllocateAsync(legalEntityId = yöneten şirket, recordType = CTR, idempotencyKey)` çağrısıyla alır; aynı `Idempotency-Key`'li
+  tekrar aynı kodu döner ve ikinci sözleşme açmaz; sahte allocator 422 / 409 / 404 / 503 ya da zaman aşımı döndürdüğünde Create
+  503 ve sözleşme / sürüm yazılmaz. **Sabotaj:** üretim kompozisyonunda port bağlı değilken (bağdaştırıcı kaydı kaldırılır)
+  Create 503 döner ve koleksiyonlara yazma olmaz; fail-closed korunağı kaldırılıp kodsuz sözleşme açılabildiğinde test
+  kırmızıya döner. Mimari testi: MOD-0217 kodunda kendi sayaç / yedek kod üreticisi ya da `CodeReservation` kullanımı yok.
 - [ ] AC-21 (zorunlu) — `mdm.contracts.value.read` olmayan kullanıcıya liste, detay ve sürüm yanıtlarında `contractValue` ve
   `currencyCode` `null`, `valueMasked = true`; `mdm.contracts.value.write` olmadan değer içeren yazma 403
   `MDM_CONTRACT_VALUE_WRITE_REQUIRED` (AC-65); denetim niyetinde
@@ -1313,7 +1343,9 @@ düzeyidir** — hepsi kapanmadan `ready-for-dev` olmaz ve dolayısıyla her dil
 maddeler paket düzeyinde engel **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde o dilimin
 Önkoşul satırında yazılıdır ve o dilim başlamadan kapanır; daha önceki dilimler o madde açıkken ilerler (ör. O-3 → DL-3
 önkoşulu; DL-1 ve DL-2 O-3 açıkken ilerler). Dilim önkoşulu "Dilim kabul kapısı"ndan ayrıdır: önkoşul karar / onay / okunarak ölçümdür,
-kabul kapısı yeni kodun testlerinin geçmesidir.
+kabul kapısı yeni kodun testlerinin geçmesidir. **RCS-001 / BL-565 servisi DL-1 kabul kapısıdır (KARAR D59/1), paket kapısı
+değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden önce
+main'de olmalıdır.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); paketi yazmamış onaylayıcı
 - [ ] MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` (bugün DCP-011'de aday modül, TRM-S4; üyeliği DCP değişikliği ister)
@@ -1327,7 +1359,7 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
-- [ ] RCS-001 ortak kod servisi (BL-565) var — sahibi Beste (D44)
+- [ ] RCS-001 ortak kod servisi (BL-565) main'de — sahibi Beste (D44); v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-20)
 - [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Auth paketinin **"permission onboarding" eki** (Ali): Platform izin
   listesine `mdm.contracts.*` anahtarları ve MDM istemcisinin modül kodu (bugün iki taraf `product-item-sku-master`'a sabit —
   Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir (eski "sağlayıcının `mdm.contracts.*`
@@ -1551,12 +1583,13 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: `Domain/Entities/{Contract,ContractVersion}.cs`, enum'lar, `Features/Contract/**` (Create, Update, Delete,
   BulkDelete, UpdateContractVersion, liste / detay / sürüm sorguları), depolar, indeksler, işlem grubu deposu,
-  `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS / MOD-0048 portları, denetim izi genişletmesi, defter +
+  `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS (`IRecordCodeAllocator`, KARAR D59/1) / MOD-0048 portları, denetim izi genişletmesi, defter +
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
-  domain-config + kayıt satırı, Auth paket metni (MOD-0018, D53/1), RCS-001 §3 `CTR` satırı main'de (#265; kapandı) + RCS-001 servisi (BL-565), SEC-002
+  domain-config + kayıt satırı, Auth paket metni (MOD-0018, D53/1), RCS-001 §3 `CTR` satırı main'de (#265; kapandı), SEC-002
   "permission onboarding" eki paket metni (MOD-0018, KARAR D56/1; kodu DL-1 kabulünde), MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
-  "— DL-1 için" işaretli madde yok — O-3 açıkken ilerler. **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır —
+  "— DL-1 için (kabul kapısı)" işaretli maddeler (Auth kayıt kodu D53/2, RCS-001 / BL-565 servisi KARAR D59/1) önkoşul
+  değildir — DL-1 kabulünden önce main'de olur; kod `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır. O-3 açıkken ilerler. **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır —
   `feature/mdm/wp-0217-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Bitiş: AC-1,
   AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
   komutları kısmı), AC-11 (DL-1 yazmaları kısmı), AC-12 (DL-1 defter satırları kısmı), AC-13, AC-14 (DL-1 yazmaları kısmı),
@@ -1599,7 +1632,7 @@ kapısındadır.
 
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
-| DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `CTR` kodu alındı (KARAR D59/1); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
 | DL-2 | "Bitiş" listesindeki AC'ler (kısımlarıyla); AC-26, AC-31, AC-49, AC-50 ve AC-58 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (servis kimliğiyle yükle, indir, başka kiracı 404, kesin geri almada telafi — KARAR D56/2); AC-29 mimari testi (MOD-0028 çağrısı yok, sabotajlı — KARAR D40); build |
 | DL-3 | "Bitiş" listesindeki AC'ler (kesişen AC'lerin tam kapanışı dahil); AC-33, AC-37 ve AC-57 gerçek replica set'te; MOD-0023 §17 rev 2 okuma alanları main'de ve MOD-0023 AC-W2 / AC-W12 / AC-W13 geçmiş (MOD-0023 sahibinin WP'si); MOD-0023'e karşı dev ortamı onay ve ret turu kaydı; build |
 | DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı (`verify_datatable_page.py`) ve `quality-gate-datatable` (AC-43); RESX 7 dil parite; nav anahtar denetimi; Gateway uçtan uca belge yükleme / indirme; `Diten.Web` build |

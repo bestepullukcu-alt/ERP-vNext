@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 869c04195583a3a839e3b6cb9fc09e5f9d631722dac72f6e8a8313cc3b621eca (pack D57 revizyonu, 2026-10-28; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 790e78ad…; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 5f69139c43b2d19b1547ff01252bd944b68e0ded8dea28217812ee80c1108a5d (D57; önceki 1baf8728…0916 D56, 5101b1e8…c88a) ile sabitli — D54; önceki 699b0708… (D53), 9121d9f2…)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f079bfa987175ed0ae4a800f65516d81871cd11c8e2230382e5210be80e867a (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 790e78ad…; satır atıfları @00d3f2b41 sürümüne (41f012e6…59f9); main @904dfd5c2 sürümü 83124295…6f4f6563; MOD-0126 ortak tanımları 05410477b16e645ab2cf927daa4ec51c3144700c896aa9065b64bfa60d30e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a) ile sabitli — D54; önceki 699b0708… (D53), 9121d9f2…)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -61,7 +61,7 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | **MOD-0126 DL-1 main'de** — iskelet, ortak yapı taşları, indeks barındırılan hizmeti, CentralAudit, servis defteri (D35) | MOD-0126 DL-1 WP | `services/Diten.FinanceTreasuryService/` **yok**; `WP-0126-DL1` PLANNED (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:19@00d3f2b41`) | bekletir (`:1527`) |
 | Platform `AuditCategory` `Finance = 18` main'de (D35/3) | Beste | **yok** — `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27@00d3f2b41`, son `ESignature = 17` (`:26`) | bekletir (`:1528`) |
 | TRM-14: MOD-0220 `ApprovalStatus` + sözleşme belgesi | Ali | **yok** — `LegalEntityModels.cs:100-106@00d3f2b41` (`services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/`) alanlarında `ApprovalStatus` yok | bekletir (`:1529`; AC-2) |
-| O-9 RCS-001 servisi (BL-565) — önekler `CPS` / `CTP` | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı "CT"); önekler **var** (`.antigravity/rules/record-coding-standard.md:66-67@00d3f2b41`) | bekletir (`:1531`; 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE`) |
+| O-9 RCS-001 servisi (BL-565) — önekler `CPS` / `CTP` | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı "CT"); önekler **var** (`.antigravity/rules/record-coding-standard.md:66-67@00d3f2b41`) | **DL-1 kabul kapısı (D59/1)** — başlamayı bekletmez; DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır, gerçek servis DL-1 kabulünden önce main'de (v0 sözleşmesi Y-8, 6 Kasım); üretimde port bağlı değilse 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` |
 | O-8 küsurat — MOD-0048 `currency-minor-units` seed | Beste (Y-4/3) | **yok** — `services/Diten.Platform/**`'te 0; `ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@00d3f2b41`) listesinde yok | bekletir (`:1532`; 503 `CASH_POSITION_CURRENCY_PRECISION_UNAVAILABLE`) |
 | O-4 onay yolu, O-14 tüketici teyidi | — | **kapandı** — D28, D36/3 | DL-3 |
 | MOD-0023 nakit pozisyonu şablonu (O-20); §17 maddeleri (onay, silmeme, okuma eşleme) | Ali (şablon) / — | şablon **yok**; §17 rev 2 **onaylı** (`approvals.tsv:16`, `803fbaa5…`) ama pack checkbox'u `:1539` işaretsiz (§5 bulgu 2) | DL-3 |
@@ -245,7 +245,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 kod / `DataScope` bağdaştırıcıları, indeks barındırılan hizmeti); MOD-0126 / MOD-0119 / MOD-0120 paketleri ve yolları; `frontend/**`
 (DL-5); diğer üretici sözleşmeleri; `execution/**`; kaynak depo ve handoff klasörü.
 
-**Önce oku:** pack, MOD-0126 pack **sha256 `5f69139c…8a5d` sürümü** (D57; önceki `1baf8728…0916` D56, `5101b1e8…` D54, `699b0708…` D53, `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
+**Önce oku:** pack, MOD-0126 pack **sha256 `05410477…e42e` sürümü** (D58/D59; önceki `5f69139c…8a5d` D57, `1baf8728…0916` D56, `5101b1e8…` D54, `699b0708…` D53, `0b58ae58…` D52, `9121d9f2…`) (ortak tanımlar; çelişkide bu sabitlenmiş sürüm bağlayıcı —
 `:1549-1554`), AGENTS.md, `execution/domains/finance-treasury/domain-config.md`, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard, data-scope-enforcement,
 record-coding-standard, mongo-indexing, handler-design; karar kayıtları D1–D51, MOD-0126 DL-1 WP raporu, bu hazırlık kaydı.

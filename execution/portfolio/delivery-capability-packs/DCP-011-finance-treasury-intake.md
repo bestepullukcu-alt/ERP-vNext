@@ -9,7 +9,7 @@ status_note: "draft — yalnız planlama; production implementation tetiklemez (
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-10-27
+updated: 2026-10-28
 authoring_branch: chore/ct/treasury-intake-ct-01
 current_revision_branch: chore/ct/treasury-intake-ct-04
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
@@ -49,6 +49,16 @@ inputs:
 > kaldırıldı (teslim MOD-0126 bağdaştırıcısı + FROZEN BANK-DISPATCH 0.1.0); MOD-0217 satırı taslak pack'e göre düzeltildi
 > (aday, onaylı üye değil); MOD-0126 AC aralığı (AC-6a → AC-42); rol şablonları D46 + D47 (rol matrisi
 > `treasury-intake-owner-decisions-05.md`); künyeye `current_revision_branch`. `status: draft`.
+>
+> **Revizyon (2026-10-28, D58/D59):** **KARAR D59/1** — RCS-001 ortak kod servisi (BL-565) üye pack'lerin paket kapısı
+> değil, her üyenin **DL-1 kabul kapısıdır**: DL-1 kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType,
+> idempotencyKey)` portuna karşı sahte uygulamayla yazılır; üretimde port bağlı değilse Create kapalı (fail-closed); v0 çağrı
+> sözleşmesi `POST /api/internal/record-codes/allocate` (Beste, 6 Kasım'da kesinleşir). §9 ve §6 buna çekildi. **KARAR D58** —
+> MOD-0289 DL-3 tedarikçi listesi MOD-0140 1.3.0 `GET /api/suppliers/eligible` (Active ilişkili bütün tedarikçiler); §5
+> MOD-0140 satırı. Üye AC aralıkları güncel pack'lerden yeniden ölçüldü (§5, §8.1): MOD-0126 AC-1…45, MOD-0119 AC-1…43,
+> MOD-0120 AC-1…44, MOD-0124 AC-1…38, MOD-0289 AC-1…60, aday MOD-0217 AC-1…65 (yeni ölçütler: kayıt kodu portu ve sabotajı —
+> MOD-0126 AC-45, MOD-0119 AC-43, MOD-0120 AC-44, MOD-0124 AC-38, MOD-0289 AC-60; MOD-0217'de AC-20 genişletildi). Üyelik ve
+> dilimler değişmedi. `status: draft`.
 
 ## 1. Identity and status
 
@@ -87,12 +97,12 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 
 | modül | Blueprint (8.8) | Recovery durumu (kayıt · pack · kod) | rol |
 |---|---|---|---|
-| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…43; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
+| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…45; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54; AC-44 SoD ayar kaydı, D56/4; AC-45 kayıt kodu portu, D59/1) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
 | MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] | W-1, External Provider | kayıt yok (dış sağlayıcı) · **pack yok, sözleşme `bank-dispatch.md` FROZEN 0.1.0** (D27/7) · 0 | üye — yalnız arayüz sözleşmesi + kapalı bağdaştırıcı; **MOD-0126 pack kapısından teslim** (§15) |
-| MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…42; AC-42 istisna ayrılığı — açan çözemez / yeniden açamaz, D50/3) · 0 | üye (TRM-S2); kod alma izni D27/5 |
-| MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | `reserved / planned` · draft (AC-1…43) · 0 | üye (TRM-S2); kod alma izni D27/5 |
-| MOD-0124 Cash Positioning | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…37) · 0 | üye (TRM-S2); kod alma izni D27/5 |
-| MOD-0289 Bank Master & Bank Account Registry | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…59, master-data-management; AC-59 banka listesi araması — kaçırılmış, harf duyarsız, uzunluk sınırlı, D51/4) · 0 | üye (TRM-S3) — MDM'de (D20/1). Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
+| MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…43; AC-42 istisna ayrılığı — açan çözemez / yeniden açamaz, D50/3; AC-43 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
+| MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | `reserved / planned` · draft (AC-1…44; AC-44 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
+| MOD-0124 Cash Positioning | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…38; AC-38 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
+| MOD-0289 Bank Master & Bank Account Registry | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…60, master-data-management; AC-59 banka listesi araması — kaçırılmış, harf duyarsız, uzunluk sınırlı, D51/4; AC-60 kayıt kodu portu, D59/1) · 0 | üye (TRM-S3) — MDM'de (D20/1). Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
 | MOD-0217 Contract Lifecycle Management (CLM) | Legal Governance | `reserved / planned` · draft (AC-1…65) · 0 | aday modül; taslak pack var (`execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md`); onaylı DCP üyesi değil — yer MDM (D19/1, D38) |
 | MOD-0057 Semantic Tagging & Taxonomy Management | W-4 | 0 · 0 · 0 | **park** (D19/2) — MOD-0053/0056 gelince yeniden açılır |
 
@@ -103,7 +113,7 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 | MOD-0220 Legal Entity (MDM) | §22 `approvalStatus` eki, LEGAL-ENTITY-LOOKUP 1.1.0 (TRM-14); LE↔LE ilişki modeli **gerekmez** (TRM-07) | belge PASS; §22 `proposed` |
 | MOD-0023 Workflow (platform-shared-services) | §17: silmeme politikası + guard, okuma alanları, fingerprint düzeltmesi, yarış testleri (TRM-15) | belge PASS; kod MOD-0023 sahibinin WP'siyle (D25/1) |
 | MOD-0143 Invoice Match (procurement) | `invoice-match` 1.1.1 "net" açıklaması + `lineAmount` kontrolü (D26/3) | procurement tarafında |
-| MOD-0140 Supplier (procurement) | `supplier.openapi.yaml` 1.3.0 (aktif şirket ilişkisi) — bugün 1.2.0 | MVP-2 main'e girince |
+| MOD-0140 Supplier (procurement) | `supplier.openapi.yaml` 1.3.0 (aktif şirket ilişkisi; MOD-0289 DL-3 listesi `GET /api/suppliers/eligible` — Active ilişkili bütün tedarikçiler, `eligibleForTransactions` süzgeci yok, KARAR D58) — bugün 1.2.0 | MVP-2 main'e girince; uç MOD-0140 DL-3'te (o zamana dek sahte istemci, D58) |
 | MOD-0149 Customer 360 (commercial-suite) | müşteri doğrulama + dış referans eki (AR O-3, D29/1 sahip payı); kayıt / pack durum çelişkisi (D27/12) | sahibine not |
 | MOD-0048 Reference Data (platform-shared-services) | para birimi küsurat hanesi; `payment-method` kümesi (MOD-0126 O-13, D28) | üretici bağımlılığı, açık |
 
@@ -119,6 +129,7 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 | Gateway rotaları | yalnız `integration-agent` |
 | ERP-FIN-BUNDLE | **KARAR D27/3**: v1'de yok, modül sözleşmeleri |
 | RCS-001 önekleri | `PAY` / `APD` / `ARI` / `CPS` / `CTP` / `BNK` / `BAC` (D29/2); RCS-001 §3 tablosuna yazıldı (D30) |
+| RCS-001 ortak kod servisi (BL-565) ve v0 çağrı sözleşmesi | Beste (D44); her üyenin DL-1 kabul kapısı (KARAR D59/1) |
 | Kaynak paket içeriği ve yeni sürümleri | kaynak Treasury Migration CT; karar sahibi K1 |
 
 ## 7. Dependency graph
@@ -159,9 +170,9 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
 
 | Slice | Kapsam | Not |
 |---|---|---|
-| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…43; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
-| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | draft pack'ler (MOD-0119 AC-1…42 — istisna ayrılığı AC-42; MOD-0120 AC-1…43; MOD-0124 AC-1…37); kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
-| TRM-S3 | MOD-0289 | MDM (D20/1); draft pack (AC-1…59; banka listesi araması AC-59, D51/4); MOD-0140 1.3.0; O-6 güvenlik onayı verildi (D33/1), gerçek Mongo şifreleme testleri DL-2 dilim kabul kapısında; Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
+| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…45; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
+| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | draft pack'ler (MOD-0119 AC-1…43 — istisna ayrılığı AC-42; MOD-0120 AC-1…44; MOD-0124 AC-1…38); kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
+| TRM-S3 | MOD-0289 | MDM (D20/1); draft pack (AC-1…60; banka listesi araması AC-59, D51/4); MOD-0140 1.3.0; O-6 güvenlik onayı verildi (D33/1), gerçek Mongo şifreleme testleri DL-2 dilim kabul kapısında; Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
 | TRM-S4 | MOD-0217 | **planlı, bu DCP onayıyla dağıtılamaz** (§11: aday kapsam dışı) — yer MDM (D19/1, D38), taslak pack var; kapsama girmesi DCP değişikliği ister |
 
 ## 9. Prerequisites
@@ -169,8 +180,11 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
 - Kaynak kod doğrulaması: bağlanan commit'te derleme ve test (kanıt `source-build-evidence-v1.0`: MOD-0126 510/510, 0124
   407/407, 0120 317/317, 0119 251/251; MOD-0289 ve MOD-0217 kırık — MOD-0289 testleri Recovery'de yeniden kurulur).
 - Recovery tarafında: MOD-0023 §17 WP'si (D25/1); CentralAudit ortak iletici (`services/Diten.Building.Blocks`); MOD-0220
-  §22; MOD-0048 küsurat hanesi ve `payment-method` kümesi; SEC-002 veri kapsamı tüketim yolu; RCS-001 ortak kod servisi
-  (BL-565).
+  §22; MOD-0048 küsurat hanesi ve `payment-method` kümesi; SEC-002 veri kapsamı tüketim yolu. RCS-001 ortak kod servisi
+  (BL-565, Beste — D44) üye pack'lerin paket kapısı **değildir**, her üyenin **DL-1 kabul kapısıdır** (KARAR D59/1): DL-1
+  kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portuna karşı sahte uygulamayla
+  yazılır; üretimde port bağlı değilse Create kapalı (fail-closed, kodsuz kayıt yok, kendi sayaç / yedek kod yok); v0 çağrı
+  sözleşmesi `POST /api/internal/record-codes/allocate` 6 Kasım'da kesinleşir; gerçek servis DL-1 kabulünden önce main'de olur.
 - Her modül için DCP-002 ön kontrolü ✓ ve kayıt satırı rezervasyonu ✓ (MOD-0126, 0119, 0120, 0124, 0289).
 
 ## 10. Architecture decisions

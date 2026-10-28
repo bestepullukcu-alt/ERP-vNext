@@ -3,7 +3,7 @@ record_id: MOD-0289-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 5af910d624e74afd2f6cf3a16544abb6a1c2e4ff5d644adc2f16c116f3db1c2d (pack D57 revizyonu, 2026-10-28; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), ölçüm dal chore/ct/treasury-intake-ct-05 @ec063fee9 — çalışma ağacı temiz, dosya HEAD ile aynı; satır atıfları bu sürüme `:N@ec063fee9`)
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 698e135e68f7343161450927b016c6045ba9ef6f5b79968042b440eeaad36bd9 (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), ölçüm dal chore/ct/treasury-intake-ct-05 @ec063fee9 — çalışma ağacı temiz, dosya HEAD ile aynı; satır atıfları bu sürüme `:N@ec063fee9`)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur — `git ls-tree` / `git archive`; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla; kaynak commit DL-1 hazırlık kaydıyla aynı)
 predecessor: execution/domains/master-data-management/work-packs/MOD-0289-DL1-hazirlik.md
 ---
@@ -35,7 +35,7 @@ başlamasını değil kabulünü bekletir; **—** = kapandı.
 
 | Koşul | Sahibi | Bugün | DL-2'ye etkisi |
 |---|---|---|---|
-| DL-1 kabul edildi (dilim kabul kapısı, `:1926`) | DL-1 WP + CT | DL-1 başlamadı: MdmService'te `Bank*` varlığı / `Features/BankMaster` yok (`ls`); DL-1'in paket kapısı açık — CT-APR-01 yok, DCP-011 `status: draft` (`execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7`), Auth paket metni (MOD-0018'de `mdm.bank*` 0), RCS-001 BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9477`), MDM domain-config cümlesi yalnız bu dalda (`domain-config.md:46-48`) | bekletir (ilk ve en uzun engel; ayrıntı DL-1 kaydı §1) |
+| DL-1 kabul edildi (dilim kabul kapısı, `:1926`) | DL-1 WP + CT | DL-1 başlamadı: MdmService'te `Bank*` varlığı / `Features/BankMaster` yok (`ls`); DL-1'in paket kapısı açık — CT-APR-01 yok, DCP-011 `status: draft` (`execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7`), Auth paket metni (MOD-0018'de `mdm.bank*` 0), RCS-001 BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9477`) — paket kapısı değil, DL-1 kabul kapısı (D59/1), MDM domain-config cümlesi yalnız bu dalda (`domain-config.md:46-48`) | bekletir (ilk ve en uzun engel; ayrıntı DL-1 kaydı §1) |
 | CT-APR-02 bu pack sürümüne | Treasury CT + bağımsız inceleyici | **var** — `reviews.tsv:91` (`ef905628…`, UYGUN, 0). DL-1 kaydının §1'indeki "satır yok" bugün eskidir | — (paket kapısı; `ready-for-dev` revizyonunda yenilenir) |
 | Şifreleme ve özet anahtarı kaynağı + döndürme (O-6) | sahip | **kapandı — D33/2–3** (`:1645-1646`); ürün adı ortam kurulumunda ölçülür | — (ortam ürünü kabul öncesi dev kaydına yazılır) |
 | Güvenlik onayı (O-6) | sahip (K1) | **kapandı — D33/1** (`:1647-1648`); gerçek Mongo testleri DL-2 kabul kapısında | — / kabul |
