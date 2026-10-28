@@ -3,7 +3,7 @@ record_id: MOD-0126-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 5101b1e839c4e05278ffa7cbd9aa5271db11a82ebdf05b47b293ce28ef92c88a, dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — Codex F-1)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:93; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 1baf87289a62a9a9e53ae1431d529358094dfcfca955369891758d5c4ba40916 (pack D56 revizyonu, 2026-10-28; bu kaydın ölçümleri ve satır atıfları önceki sürüm `5101b1e8…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — Codex F-1)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:93; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; DL-1 kaydıyla aynı commit)
 ---
 

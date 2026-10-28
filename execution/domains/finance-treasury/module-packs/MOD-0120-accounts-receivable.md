@@ -25,6 +25,8 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, D56 + DL-2 hazırlık bulguları):** (1) MOD-0126 ortak tanımları sha256 `1baf8728…0916`'ya yeniden sabitlendi (MOD-0126 D56 revizyonu; önceki `5101b1e8…c88a`). (2) DL-2 hazırlık kaydı §5 bulguları (mekanik): AC-17 / AC-18 DL-1'de "Create / Update / Delete / BulkDelete kısmı", DL-2'de "Issue / SetCollectionStage kısmı" (bulgu 1); SetCollectionStage'in "açık düzeltme yokken" koşulu ve yaşlandırmanın "en eski ödenmemiş taksit" kuralı için DL-2 notu (bulgu 2); Validation Rules'un DL-2'de yalnız aşama kuralları kısmıyla kanıtlandığı, DL-3 kabulünde tam kapandığı notu (bulgu 3); DL-2 AC-35 kısmına kapsam sabotajı (bulgu 4); AC-W listesi AC-W1…W17; MOD-0023 bağdaştırıcısı servis ortak yapı taşı (tek yazarı MOD-0126 DL-2), DL-3 Önkoşul'a MOD-0126 DL-2. Bulgu 5 (Issue / aşama K2 sınıfı) sahip kararı ister — değiştirilmedi. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. `status: draft`.
+>
 > **Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme):** MOD-0126 ortak tanımları sha256 `5101b1e8…c88a`'ya sabitlendi
 > (MOD-0126 D54 revizyonu — muafiyet ataması parti bağı, Codex F-1; önceki `699b0708…`). Bu pakette anlam, AC numaraları ve
 > dilimler değişmedi. `status: draft`.
@@ -590,7 +592,9 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
     `CentralAuditTransaction.EnlistAsync` çağırır)
   - `src/Diten.FinanceTreasuryService.Infrastructure/Customers/**` (yeni port bağdaştırıcısı); LE, para birimi, kod ve
     veri kapsamı (`DataScope`) bağdaştırıcıları servis ortaktır ve MOD-0126 DL-1'indir (tek kopya); iş akışı
-    bağdaştırıcısı MOD-0126'nın MOD-0023 bağdaştırıcısıyla ortaktır
+    bağdaştırıcısı MOD-0126'nın MOD-0023 bağdaştırıcısıyla ortaktır — **servis ortak yapı taşı**
+    (`Infrastructure/Workflow/**`), tek sahibi ve yazarı MOD-0126 DL-2 (MOD-0126 Repo Scope); AR onu tüketir, yalnız AR'ye
+    özgü şablon / nesne / durum eşlemesini yazar, ikinci MOD-0023 istemcisi açmaz (DL-3)
   - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
     — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
     D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; burada yalnız kullanılır, yeniden tanımlanmaz
@@ -839,14 +843,14 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        koşulundan saklama politikası **KARAR D21/1** ile verildi (hiç silinmez, TTL yok) ve MOD-0023 AC-W1 (mimari test) geçince
        kapanır; silinmiş kayıtlar ayrıca okunur (**D25/2**: `isDeleted`, `includeDeleted=true`) — politika + AC-W1 korunur; okumada
        silinmiş kayıt görülürse yeniden yazma yok. §17
-       onaylanıp AC-W1 geçince (ve AC-W5…W14 geçmişse, D22/2) 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
+       onaylanıp AC-W1 geçince (ve §17 rev 2 kapanışı AC-W1…W17 geçmişse, D22/2, §17.8) 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
        aktör (**KARAR D21/5**) ve şirket / SoD / izin yeniden kontrolüyle. Silinmiş kayıt yine de görülürse yeniden
        yazma yok, niyet `Unknown`. Eşleme alanları **KARAR D21/3** (§17.3/3) kodda olana kadar okuma niyeti kapatmaz.
      - **Aynı anahtarlı yarış yanıtı (KARAR D21/4, §17.3/4; DL-3 başı kanıt maddesi):** politika — eşzamanlı iki
        istekte son yanıtlar aynı kayıttır ve tek satır oluşur; ara 503 "aynı anahtarla tekrar" olabilir (→ `Unknown`,
        tekrar), 409 yalnız örnek Active'den çıktıysa. Kod okuması (@ef4f3a8bc) bu deseni gösteriyor
        (`StartWorkflowInstanceHandler.cs:300-330, 700-716`, `WorkflowTerminalTransitionWriter.cs:357-…`) ama eşzamanlı
-       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5…W14 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
+       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5…W14 ve AC-W17 (§17 rev 2 DL-2 bitişi: AC-W5…W12, W14, W17) geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
        **asla `Refused`** değildir. `Refused` yalnız tx2 tablosundaki kesin iş reddi kodlarıdır (**KARAR D21/7**).
        Hedef yanıtlar MOD-0023 pack §17.3/4 tablosundadır (D22/3): bütünleşmiş başlatmanın ya da kaydedilmiş geçişin
        tekrarı, örnek sonradan kapansa da **200** ve aynı kayıt — yeni ret sayılmaz; hiç bütünleşmemiş ve kurtarmanın
@@ -1478,7 +1482,7 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 
 **Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
-- [x] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01 — `execution/approvals/approvals.tsv:16`, pack sha256 `803fbaa5…05fb2`, 2026-10-26, #243; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
+- [x] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01 — `execution/approvals/approvals.tsv:16`, pack sha256 `803fbaa5…05fb2`, 2026-10-26, #243; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W1…W17 (§17.8 kapanışı — MOD-0126 ile tek liste) DL-3 uygulama kabul kapısındadır; AC-W5…W14 ve AC-W17 geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [x] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8: K2 D14/3, muafiyet yok D31/1 — kapandı) — DL-3 için
 - [x] O-13 (KARAR D28) yazıldı (WriteOff kanıtı zorunlu, en az 1 MOD-0031 bağlantısı) — DL-3 için
 - [ ] MOD-0031 kanıt bağlantısı davranış ölçümü (DL-3 başında; Dependencies MOD-0031 satırı — AR yalnız bağlantı kimliğini doğrular, MOD-0031'e yazmaz) — DL-3 için
@@ -1492,8 +1496,8 @@ parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den �
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `5101b1e839c4e05278ffa7cbd9aa5271db11a82ebdf05b47b293ce28ef92c88a` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; D54 — muafiyet parti bağı; önceki `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `1baf87289a62a9a9e53ae1431d529358094dfcfca955369891758d5c4ba40916` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; D56 + DL-2 hazırlık bulguları; önceki `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
@@ -1701,6 +1705,9 @@ Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dili
 kapanır; Validation Rules'un fatura alanları DL-1'de, aşama kuralları DL-2'de, SoD kuralları DL-3'te uygulanır). Ortak
 bölümler her dilimde aşağıdaki AC kimlikleriyle ölçülür. Birden çok dilimde "(… kısmı)" ile yazılan AC, o dilimde yalnız
 yazılan kısmıyla ölçülür ve onu sayan **son** dilimde kapanır (AC-2, AC-5, AC-17, AC-18, AC-31, AC-32, AC-35).
+**Validation Rules notu:** bölüm tabloda DL-2'de yazılıdır, ama DL-2'de yalnız **aşama kuralları kısmı** kanıtlanır; SoD A1–A7,
+düzeltme, `PaymentId` ve tahsilat satırları DL-3 komutlarına aittir ve DL-3 kabulünde kanıtlanır — kabul kaydı Validation
+Rules'u DL-3 kabulünde tam kapanmış sayar.
 
 Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
@@ -1715,18 +1722,22 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (künyedeki `branch` paket dalıdır; her WP kendi dalını açar).
   Bitiş: AC-1, 2 (Create / Update / Delete / BulkDelete kısmı: dört komutta şirket uygun değilken 422 ve kayıt değişmez,
   MOD-0220 erişilemezken 503, liste ve detay okuması 200), 3, 5 (okuma ve Create / Update / Delete / BulkDelete kısmı: başka
-  kiracının ya da başka şirketin faturasına liste / detay / iz okuması ve bu dört yazma 404), 6 (SEC-002 kapsamı soran kod + kanıt testi — DL-1 kabul kapısı, D51/2), 17 (Create kısmı), 18 (tek
-  aşamalı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
+  kiracının ya da başka şirketin faturasına liste / detay / iz okuması ve bu dört yazma 404), 6 (SEC-002 kapsamı soran kod + kanıt testi — DL-1 kabul kapısı, D51/2), 17 (Create / Update / Delete / BulkDelete kısmı), 18 (tek
+  aşamalı: Create / Update / Delete / BulkDelete kısmı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
   iki merkezi kayıt AUD-001 §8 sorgusuyla gösterilir ve on alan işaretlenir; açma kaydı DL-2'dedir), 32 (d) kısmı (aynı dış
   numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number` kaldırıldığında kırmızı — sabotaj),
   34, 35 (Create / Update / Delete kısmı).
 - **DL-2** — Yollar: Issue, SetCollectionStage, yaşlandırma türetme. **Neden ayrı:** fatura kilitlenmesi ve aşama tablosu
   bağımsız incelenebilir; DL-3'ün ön koşulu. Önkoşul: DL-1. Bitiş: AC-2 (Issue / SetCollectionStage kısmı), 4, 5 (Issue /
   SetCollectionStage kısmı), 7, 8, 28 (arka uç kısmı), 31 (açma kısmı: dev ortamında bir Issue, merkezi kaydı AUD-001 §8
-  sorgusuyla, on alan işaretli — AC-31 bu dilimde kapanır), 35 (Issue, SetCollectionStage kısmı).
-- **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
-  (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  sorgusuyla, on alan işaretli — AC-31 bu dilimde kapanır), 17 (Issue / SetCollectionStage kısmı), 18 (tek aşamalı:
+  Issue / SetCollectionStage kısmı), 35 (Issue, SetCollectionStage kısmı — kapsam süzgeci sabotajı bu iki uçta da koşulur).
+  **Durum kuralları notu:** SetCollectionStage'in "açık düzeltme yokken" koşulu DL-2'de boş geçer (düzeltme talebi DL-3'te
+  doğar); koşul DL-3'te RequestAdjustment ile bağlanır ve DL-3 kabulünde test edilir. Yaşlandırmanın "en eski ödenmemiş
+  taksit" kuralı DL-2'de tahsilat kaydı olmadığından bütün taksitleri ödenmemiş sayar; tahsilat (RecordPayment) DL-3'te bağlanır.
+- **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, AR'ye özgü MOD-0023
+  eşlemesi (bağdaştırıcı servis ortak yapı taşıdır — tek yazarı MOD-0126 DL-2; zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
+  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı), O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu, silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-43, AC-2 (RequestAdjustment / Approve / Reject / RecordPayment kısmı ve açık niyetin Reconcile'ının şirket
   uygun değilken tamamlanması — AC-2 bu dilimde kapanır), AC-5 (düzeltme talebi, karar ve tahsilat kısmı — AC-5 bu dilimde
   kapanır), AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32 (a), (b), (c) kısmı ve (a), (b) sabotajı

@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 51f5304203d235531ac9f5ce2b04941178f128515455e4e75bb71d4dab1b20b8, dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 db147bcc6409257f357ee901475ef9d059728eb8e63ab9fac3889461509a0f16 (pack D56 revizyonu, 2026-10-28; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; önceki 8a262735…; satır atıfları @00d3f2b41 sürümüne (051da4f2…9ddb); main @904dfd5c2 sürümü 08cee451…111d)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — 2026-10-26 `git diff --name-only` ölçümü)
 ---
 

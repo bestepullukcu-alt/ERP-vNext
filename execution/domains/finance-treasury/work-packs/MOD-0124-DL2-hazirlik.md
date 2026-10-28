@@ -3,7 +3,7 @@ record_id: MOD-0124-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 bb9e388a27b6788d5dce65de27a4ed0d8907a0974ba8a556888fb04b4a4217a0, dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 5101b1e8…c88a; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 f7debb3eeb8cdf60058b04f275f9d284d1d466b85e943b552c48abb52e127464 (pack D56 revizyonu, 2026-10-28; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 1baf8728…0916 (D56; önceki 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; DL-1 kaydıyla aynı commit)
 ---
 

@@ -169,6 +169,23 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > kaydında yalnız başvuru için okundu; kod alma yok (D38/3). (5) Implementation Notes'a Auth sıralama gerilimi eklendi (D51/1
 > ↔ Y-6) — CT önerisi, sahip kararı gerekir; Auth maddesi paket kapısında kalır. (6) DL-1 WP dalı `feature/mdm/wp-0217-dl1`
 > (D52/1). AC numaraları ve dilimler değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-28, D56 + DL-2 hazırlık bulguları):** (1) **KARAR D56/1:** SEC-002 maddesi ölçüm değil — MOD-0018
+> "permission onboarding" eki (Ali; Platform izin listesi + MDM istemcisinin modül kodu). Dependencies SEC-002 satırı ölçümle
+> (2026-10-27, @ec063fee9: bugün çalışmaz) ve karar diliyle güncellendi; kapanış tablosu, Ready-for-dev Checklist (ek paket metni —
+> paket kapısı, D53/1 deseni; ek kodu — DL-1 kabul kapısı), DL-1 Önkoşul ve DL-1 kabul kapısı buna çekildi. (2) **KARAR D56/2**
+> (D41/10'un MOD-0262 kısmının ve D46a'nın yerine): belge deposu MdmService **servis kimliğiyle** çağrılır; kullanıcılara
+> `platform.document-repository.*` verilmez; indirme yalnız MOD-0217 uçlarıyla (kapsam + AC-62). Runtime Constraints, "Uzak çağrı
+> sırası", Dependencies MOD-0262-FU01 satırı ve kapanış tablosu, Failure Path (servis kimliği reddi → 503), Authorization
+> Convention (rol şablonlarından `platform.document-repository.*` çıktı), Gateway notu, AC-24 ve AC-27 metni (servis kimliği,
+> kullanıcı token'ı iletilmez), O-13 satırı ("D56/2 ile değişti"), karar izleme tablosu; yeni "— DL-2 için" maddesi:
+> MOD-0262-FU01'de servis kimliği desteği (Platform — Beste); DL-2 Önkoşul buna çekildi. (3) DL-2 hazırlık kaydı §5 bulguları
+> (mekanik): bulgu 2 D56/2 ile kapandı; DL-2 kabul kapısının gerçek replica set listesine AC-26, AC-50, AC-58 ve Test
+> Expectations entegrasyon listesine AC-26, AC-50, AC-58 (bulgu 3); AC-24'e ölçülebilir akış koşulu (`IFormFile` /
+> `[FromForm]` yok, `MultipartReader`; bulgu 4); Repo Scope'ta varlık / depo dilim sütunu "DL-1 / DL-2" ve
+> `ContractDocumentRef.cs`, DL-2 Yollar'a sürüm alanları ve çit yazımı (bulgu 5); Test Expectations'taki eski `failCommand`
+> "ölçülmedi" cümlesi ölçümle değişti (bulgu 6). Bulgu 7 (MOD-0262-FU01 pack iç çelişkisi) başka domain — dokunulmadı. Yeni AC
+> yok; AC numaraları ve dilimler değişmedi. `status: draft`.
 
 ## Module Summary
 
@@ -438,12 +455,13 @@ anahtarıdır.
 
 Hepsi `ready-for-dev`'den sonra; kaynaktan kod alınmaz (D38/3). Dilim sütunu "Teslim dilimleri" ile eşleşir.
 
-- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/{Contract,ContractVersion}.cs`,
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/{Contract,ContractVersion}.cs` (DL-1; DL-2 sürüme
+  `Documents` / `AbandonedContentIds` ekler), `Domain/Entities/ContractDocumentRef.cs` (sürümün gömülü belge işaretçisi, DL-2),
   `Domain/Enums/{ContractStatus,ContractVersionStatus,ContractCounterpartyType,ContractVersionKind,ContractDocumentRole}.cs`,
-  `Domain/Repositories/I{Contract,ContractVersion}Repository.cs` (DL-1)
+  `Domain/Repositories/I{Contract,ContractVersion}Repository.cs` (DL-1 / DL-2)
 - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/Contract/**` (Golden Reference Compact düzeni) (DL-1…DL-3)
 - `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/{Contract,ContractVersion}Repository.cs` ve işlem
-  grubu deposu (`ContractAggregateStore.cs`, `MasterDataAtomicWrite` politikasıyla) (DL-1)
+  grubu deposu (`ContractAggregateStore.cs`, `MasterDataAtomicWrite` politikasıyla) (DL-1; DL-2 koşullu işaretçi ve çit yazımı ekler)
 - `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/{RecordCodes,Currency,DocumentRepository,Workflow}/**`
   (RCS-001 portu, MOD-0048, MOD-0262-FU01, MOD-0023 bağdaştırıcıları; MOD-0028 bağdaştırıcısı yok — KARAR D40) (DL-1 / DL-2 / DL-3)
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ContractsController.cs` ve
@@ -468,7 +486,10 @@ Hepsi `ready-for-dev`'den sonra; kaynaktan kod alınmaz (D38/3). Dilim sütunu "
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9 / XMC-001; burada
 yazılmaz): `ocelot.json` rotaları (integration-agent); MOD-0262-FU01 `ContentStorageScope`'a eklemeli bir değer gerekirse (bugün `Documents`, `Templates`, `TaskAttachments`,
 `ContentMessagingArtifacts` … — `services/Diten.Platform/src/Diten.Platform.Application/Contracts/DocumentRepository/IContentStorageGateway.cs:65-80@31c448d5d`);
-MOD-0023'te MOD-0217 iş akışı şablonu (O-3, MOD-0023 sahibi); `.antigravity/rules/record-coding-standard.md` §3 `CTR` satırı (O-5 — sahip onayı KARAR D41/2; satır yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265));
+MOD-0262-FU01'de servis kimliği desteği (KARAR D56/2 — Platform, Beste; DL-2 kapısı); SEC-002 sağlayıcısının Platform izin
+listesi (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`) ve MDM
+istemcisinin modül kodu (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs`)
+— MOD-0018 "permission onboarding" eki (Ali, KARAR D56/1); MOD-0023'te MOD-0217 iş akışı şablonu (O-3, MOD-0023 sahibi); `.antigravity/rules/record-coding-standard.md` §3 `CTR` satırı (O-5 — sahip onayı KARAR D41/2; satır yazıldı — `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265));
 MOD-0018 / Auth izin kataloğu ve açık atama listesi (O-4, KARAR D41/1 — kaydı MOD-0018 sahibinin (Ali) iş paketi, Y-2); MDM domain-config ve kimlik kaydı satırları (CT, D38/2). MOD-0028'den
 ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — ikisi de bu listede değildir.
 
@@ -493,12 +514,12 @@ ek istenmez (KARAR D40/2) ve MOD-0144'te değişiklik yoktur (KARAR D39/2) — i
 | Kapı / bağımlılık | Rol | Recovery durumu (ölçüm @31c448d5d) | Bu pakete etkisi |
 |---|---|---|---|
 | **Document Management — MOD-0028** (D37 (yorum D40)) | v1'de rolü yok — belge kaydı ve sürümleri MOD-0217'nin `ContractVersion`'ıdır (D40) | pack `approved` (`execution/domains/platform-shared-services/module-packs/MOD-0028-document-management.md:9`); sahip olunan nesneler koleksiyon / baz / şablon / `ContentRef` (`:128-145`); **kapsam dışı:** "Controlled document lifecycle; owned by MOD-0029" ve "Binary upload/download" (`:116-126`). Platform'daki belge kaydı + sürüm uçları (`api/v1/document-management/controlled-documents/{documentId}/versions`) kodda **MOD-0029-FU01** olarak işaretli (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentManagementControlledDocumentsController.cs:18,105-122`) | **v1'de bağımlılık yok — D40; bağlantı Follow-up.** Ölçüm (MOD-0028'de iş belgesi kaydı yüzeyi yok) D40'ın dayanağıdır; D37'nin "MOD-0028 kayıt ve sürümler" kısmı sürümün MOD-0217'nin `ContractVersion` kaydı olması biçiminde yorumlandı. MOD-0028'den ek istenmez (D40/2); DL-2 bunu beklemez |
-| **Document Management — MOD-0262-FU01** (D37 (yorum D40) — bu kısım aynen geçerli) | dosya ikilisi; sürüm onu `ContentId` ile işaret eder | pack `ready-for-dev`, `runtime_implementation: in-progress` (`MOD-0262-FU01-document-binary-store.md:10,20`); kod var: `POST /api/v1/document-repository/objects` (multipart: `file`, `owningItemId`, `owningVersionId`, `companyId`, `scope`), `GET objects/{contentId}`, `GET objects/{contentId}/content`, `POST objects/{contentId}/compensate` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:40,59-119`); izinler `platform.document-repository.read` / `.manage`; Gateway rotası var (`ocelot.json:1857-1885`); pack kapanışı "KISMİ", çalışma zamanı smoke koşulmadı (pack §19) | çağrı kimliği KARAR D41/10 (O-13): kullanıcı token'ı Gateway üzerinden, `scope` = var olan `Documents`; DL-2 başında ölçülür, ölçüm çürütürse sahibe ayrıca sorulur; canlı doğrulama kaydı yokken DL-2 kabul kapısı geçmez |
+| **Document Management — MOD-0262-FU01** (D37 (yorum D40) — bu kısım aynen geçerli) | dosya ikilisi; sürüm onu `ContentId` ile işaret eder | pack `ready-for-dev`, `runtime_implementation: in-progress` (`MOD-0262-FU01-document-binary-store.md:10,20`); kod var: `POST /api/v1/document-repository/objects` (multipart: `file`, `owningItemId`, `owningVersionId`, `companyId`, `scope`), `GET objects/{contentId}`, `GET objects/{contentId}/content`, `POST objects/{contentId}/compensate` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:40,59-119`); izinler `platform.document-repository.read` / `.manage`; Gateway rotası var (`ocelot.json:1857-1885`); pack kapanışı "KISMİ", çalışma zamanı smoke koşulmadı (pack §19); erişim politikası kullanıcı izinlerine bakar, servis kimliği yolu yok (`DocumentRepositoryAccessPolicy.cs:25-39@ec063fee9` — DL-2 hazırlık kaydı §5) | çağrı kimliği **KARAR D56/2** (D41/10'un MOD-0262 kısmının ve D46a'nın yerine geçer): MdmService belge deposunu **kendi servis kimliğiyle** çağırır; kullanıcılara `platform.document-repository.read` / `.manage` verilmez; `scope` = var olan `Documents` (D41/10'un bu kısmı geçerli). **Belge deposunda servis kimliği desteği gerekir — Platform (Beste); dilim kapısı — DL-2 için** (Ready-for-dev Checklist). Canlı doğrulama kaydı yokken DL-2 kabul kapısı geçmez |
 | MOD-0023 Workflow Designer | onay | pack `ready-for-dev` (`MOD-0023-workflow-config-approval-templates.md:8`); `POST /api/v1/workflow/instances` (`WorkflowDefinitionsController.cs:87@31c448d5d`), `GET instances/by-objects` (`:121`), görev uçları (`:196-277`); aynı `IdempotencyKey` sıralı tekrarda kayıtlı sonucu döner, eşzamanlı yarış **ölçülmedi** (D21/4) | MOD-0217 iş akışı şablonu yok — **O-3, MOD-0023 sahibi (Ali), D38/4**; örnek durum adları ve eşlemesi DL-3 başında ölçülür. Sync'in güncel denemeye bağlanması ve başlatma yanıtı sınıfları MOD-0023 §17 rev 2'ye (803fbaa5…, PR #235: `by-objects` / `history` `idempotencyKey`, `isDeleted`, `approvalTaskId`; `includeDeleted=true`; kapanış kaydı) dayanır — kodu MOD-0023 sahibinin WP'siyle gelir, bugün main'de **ölçülmedi** |
 | Audit Trail — MDM izi + MOD-0021 | yazma kaydı | `mdm-guvenilir-kaynak-niyeti` (yol `b`, CT kararı 2026-10-07) ve `mdm-merkezi-iletim` (yol `b`, en iyi çaba) defterde kabul edilmiş (`tests/architecture/audit-ledger/Diten.MdmService.md:10-14`) | **bugün var**; yeni koleksiyonlar için genişletme + defter belirteci KARAR D41/3 (O-6; CT-DECISIONS satırı kod aşamasında). Kaynağın röle bağdaştırıcısı taşınmaz (paket §D, §L.2) |
 | MOD-0220 Legal Entity | yöneten şirket, şirket karşı tarafı | **var, aynı servis** — `OperationalStatus`, `ApprovalStatus` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`), `IsReferenceable` (`:60`) | süreç içi depo okuması; LE kaydına yazılmaz |
 | MOD-0018 RBAC | `mdm.contracts.*` anahtarları | MDM manifest sağlayıcısıyla izin kaydı deseni var (`BrandProductMasterManifestProvider.cs:13`); `mdm.contracts` anahtarı kodda yok (`git grep` 0) | anahtar listesi KARAR D41/1 (O-4); Auth'ta kaydı ve açık atama listesi MOD-0018 sahibinin (Ali) işi — iş paketi açıyor (Y-2), Auth değişikliği (D9) |
-| SEC-002 veri kapsamı | yöneten şirkete göre görünürlük | MDM'de `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11`); `mdm.contracts.*` anahtarlarıyla çalıştığı **ölçülmedi** | sağlayıcı ölçülmeden `ready-for-dev` yok |
+| SEC-002 veri kapsamı | yöneten şirkete göre görünürlük | MDM'de `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11`). **Ölçüldü (2026-10-27, @ec063fee9 — DL-2 hazırlık kaydı §5 ve MOD-0289 DL-2 kaydı §1): `mdm.contracts.*` anahtarlarıyla bugün çalışmaz** — MDM istemcisi ve Platform doğrulayıcısı modül kodunu `product-item-sku-master`'a ve sabit izin listesine bağlıyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,163-171@ec063fee9`; `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:35-56,97-114@ec063fee9`) | **KARAR D56/1:** ölçüm değil kod değişikliği — Platform izin listesi + MDM istemcisinin modül kodu, Ali'nin MOD-0018 Auth paketine **"permission onboarding" eki** olarak girer (bu paketin Repo Scope'unda değil). Paket kapısı: ek paket metni main'de (D53/1 deseni); kodu main'de — DL-1 kabul kapısı |
 | RCS-001 ortak kod servisi | sözleşme kodu | **yok** (BL-565, `.antigravity/rules/record-coding-standard.md:163`); §3 tablosunda sözleşme satırı `CTR` var (`.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265)); MDM'deki `CodeReservation` ürün ailesinindir | engel: modül kendi sayacını yazamaz (RCS-001 §6); önek `CTR` (O-5, KARAR D41/2; §3 satırı main'de, #265); BL-565 sahibi Beste (D44), servis yok |
 | MOD-0048 para birimi | kod listesi | `GET /api/lookups/reference/currencies` Platform'da (`TenantReferenceLookupsController.cs:18,37-38`); MDM'den tüketim yolu **ölçüldü (2026-10-27): bugün okuyucu yok** — MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (Ready-for-dev Checklist MOD-0048 maddesi) | `ICurrencyReferencePort`; erişilemezse 503, sabit liste yok |
 | MOD-0140 Supplier | tedarikçi karşı tarafı | `supplier.openapi.yaml` (MOD-0289 pack ölçümü: 1.2.0, `validateSuppliers`); MOD-0217 için **ölçülmedi** | O-7, KARAR D41/4: `Supplier` türü MOD-0140 sözleşmesi ölçülene kadar kapalı; ölçüm türün açılmasının önkoşuludur (Follow-up) |
@@ -518,9 +539,9 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod) | master-data-management | yok / başka kiracı / silinmiş / `Active` değil → 422 `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` | birim + entegrasyon · — (aynı süreç) | DL-1 |
 | RCS-001 | **yok** (BL-565) | Beste (D44) servis; §3 `CTR` satırı main'de (D41/2; #265) | servis yoksa Create yazılamaz; erişilemezse 503 | sahte port · — | DL-1 önkoşulu |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | platform-shared-services | erişilemez → 503; listede yok → 400 | sahte istemci · dev ortamında TRY / EUR | DL-1 |
-| SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` | platform-shared-services | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
+| SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` + MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | Ali (MOD-0018 eki, D56/1); platform-shared-services (Platform ucu) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | master-data-management + CT | niyet yazılamazsa komut 503, iş verisi yok | AC-11 (sabotaj) · bir sözleşme oluşturmanın merkezi kaydı (AUD-001 §8) | DL-1 |
-| MOD-0262-FU01 | `/api/v1/document-repository/objects` (kod; sözleşme dosyası yok) | platform-shared-services | erişilemez / 5xx / zaman aşımı → 503, işaretçi yok; ret → 400 / 413; işaretçi yazımı kesin geri alındı → `compensate`; sonucu bilinmiyor → önce okuma, telafi yalnız bağsızlık kanıtlanınca; okuma yok → bilinmiyor, telafi yok | AC-24…AC-29, AC-49, AC-50 (sahte istemci) · dev ortamında yükle / indir / başka kiracı 404 | DL-2 |
+| MOD-0262-FU01 | `/api/v1/document-repository/objects` (kod; sözleşme dosyası yok) + servis kimliği desteği (KARAR D56/2 — bugün yok) | platform-shared-services (servis kimliği desteği: Beste) | erişilemez / 5xx / zaman aşımı → 503, işaretçi yok; ret → 400 / 413; işaretçi yazımı kesin geri alındı → `compensate`; sonucu bilinmiyor → önce okuma, telafi yalnız bağsızlık kanıtlanınca; okuma yok → bilinmiyor, telafi yok | AC-24…AC-29, AC-49, AC-50 (sahte istemci) · dev ortamında yükle / indir / başka kiracı 404 | DL-2 |
 | MOD-0028 belge kaydı | **v1'de bağımlılık yok — D40**; bağlantı Follow-up | platform-shared-services | çağrı yok; hata davranışı yok | AC-29 (MOD-0028 çağrısı yok, sabotajlı mimari test) · — (canlı kanıt gerekmez) | kapandı (D40); dilim beklemez |
 | MOD-0023 | `/api/v1/workflow/instances` + `instances/by-objects` + `instances/{id}/history` (kod) + MOD-0023 §17 rev 2 okuma alanları (803fbaa5…, PR #235) + MOD-0217 şablonu (**yok**, O-3) | platform-shared-services | başlatma: kesin ret → `Draft` + gerekçe kodu, 422; geçici → `InApproval` başlatma bekliyor, 503; bilinmiyor → aynı, 503 + uyarı; Sync yalnız güncel anahtar + örnek kimliğiyle eşleşen tek satırı kabul eder; birden çok / silinmiş / tanınmayan → 503, durum değişmez | AC-33…AC-36, AC-51…AC-55 · dev ortamında onay ve ret turu | DL-3 |
 
@@ -528,7 +549,10 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 
 - Servis `Diten.MdmService`, port 5059; yeni servis ya da port yok (D38/1). Tarayıcı ve `Diten.Web` yalnız Gateway (5000)
   üzerinden çağırır; tarayıcı JS 5059'a gitmez. MdmService'ten Platform'a (MOD-0262, MOD-0023, MOD-0048) çağrılar Gateway
-  üzerinden; adres yapılandırmadan gelir, yoksa servis açılmaz. Kaynak portu 5050 ve kaynak Gateway blokları
+  üzerinden; adres yapılandırmadan gelir, yoksa servis açılmaz. **Çağrı kimliği:** belge deposu (MOD-0262-FU01) çağrıları
+  MdmService'in **kendi servis kimliğiyle** yapılır, kullanıcı token'ı belge deposuna iletilmez (**KARAR D56/2** — D41/10'un
+  MOD-0262 kısmının yerine geçer); MOD-0023 ve MOD-0048 çağrıları kullanıcı token'ıyla kalır (D41/10, MOD-0048 ölçümü).
+  Servis kimliğinin biçimi ve belge deposundaki desteği Platform'un (Beste) işidir — DL-2 dilim kapısı. Kaynak portu 5050 ve kaynak Gateway blokları
   (`ocelot.json:1621-1660@da4abb20`, `AuthenticationOptions` yok) taşınmaz.
 - **Kiracı izolasyonu:** `TenantId` sunucuda; her sorgu `TenantFilter`'la; başka kiracının sözleşmesi, sürümü, belgesi
   **404**. Üretimde sabit / varsayılan kiracı yok. **Hiçbir belge `TenantId = Guid.Empty` ile yazılmaz**; depo boş kiracıyı
@@ -573,7 +597,7 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
 
 - **Belge ekleme (MOD-0262-FU01):** (1) sözleşme ve sürüm kapsam / durum kontrolü (Draft; `SignedCopy` için Approved da);
   (2) MOD-0262'ye akışla yükle (`owningItemId = ContractId`, `owningVersionId = ContractVersion.Id`, `companyId =
-  GoverningLegalEntityId`, `scope` = `Documents` — KARAR D41/10, DL-2 başında ölçülür); (3) dönen `ContentRef` işaretçisini sürüme koşullu yaz + niyet
+  GoverningLegalEntityId`, `scope` = `Documents` — KARAR D41/10; çağrı MdmService servis kimliğiyle — KARAR D56/2); (3) dönen `ContentRef` işaretçisini sürüme koşullu yaz + niyet
   (`Version` CAS; yazım sunucu tarafı süre sınırı taşır); (4) (3)'ün sonucu aşağıdaki üç sınıftan biridir. **Telafi
   (`POST objects/{contentId}/compensate`) yalnız yazımın uygulanmadığı kesinse ya da okunarak kanıtlanınca çağrılır;
   körlemesine telafi yasaktır** — yazım işlenmiş, yalnız yanıt kaybolmuş olabilir; o durumda telafi, sürümün gösterdiği
@@ -832,6 +856,10 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - **Bağımlılık erişilemez vs geçersiz girdi:** RCS-001 / MOD-0048 / MOD-0262 / MOD-0023 erişilemez, 5xx, zaman aşımı,
   tanınmayan gövde → 503, kayıt değişmez; para birimi listede yok → 400; şirket aktif değil → 422; MOD-0262 dosyayı reddetti →
   400 / 413 (503 değil).
+- **Belge deposu servis kimliği (KARAR D56/2):** MOD-0262 çağrısı kullanıcı token'ıyla değil MdmService servis kimliğiyle gider;
+  servis kimliği reddedildi (401 / 403) ya da yapılandırılmamış → 503 `MDM_CONTRACT_DOCUMENT_STORE_UNAVAILABLE`, işaretçi yok
+  (yanlış yapılandırma kullanıcı hatası değildir). `platform.document-repository.*` izni olmayan sözleşme görüntüleyici belgeyi
+  MOD-0217 ucundan indirir (kapsam + AC-62 niyetiyle); belge deposunu doğrudan çağırması reddedilir (kullanıcıda izin yok).
 - **Belge işaretçisi kesin yazılamadı** (CAS eşleşmedi / işlem iptal) → `compensate` tam bir kez, sürümde işaretçi yok,
   409 / 503; telafi de başarısız → yine 503, günlük kaydı (içerik yok).
 - **İşaretçi yazıldı, yanıt kayboldu** (yazım işlendi, sonra zaman aşımı) → mutabakat okuması işaretçiyi bulur; telafi **yok**,
@@ -891,13 +919,17 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
 - Onay **kararı** bu modülde yetkilendirilmez: onaylayıcı MOD-0023 görevinde karar verir (`platform.workflow.*` izinleri MOD-0023'ün).
   Başlatanın kendi örneğini onaylaması MOD-0023'te `SodViolation` ile reddedilir (MOD-0126 pack ölçümü, D21) — bu paket
   ayrıca onay ucu açmaz.
-- MdmService'in MOD-0262 / MOD-0023 çağrıları kullanıcı token'ıyla Gateway üzerinden gider (O-13, KARAR D41/10); kullanıcının
-  `platform.document-repository.*` ve `platform.workflow.*` izinleri de gerekir. DL-2 başındaki ölçüm bunu çürütürse sahibe ayrıca sorulur.
-- **Rol şablonları:** D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) — sözleşme görüntüleyici
-  (`mdm.contracts.read`, `mdm.contracts.documents.read`, `platform.document-repository.read`), sözleşme yöneticisi (yazma, belge
+- **Belge deposu çağrıları servis kimliğiyle (KARAR D56/2 — D41/10'un MOD-0262 kısmının ve D46a'nın yerine geçer):** MdmService
+  MOD-0262-FU01'i kendi servis kimliğiyle çağırır; kullanıcılara `platform.document-repository.read` / `.manage` **verilmez**
+  (hiçbir sözleşme rolünde yoktur). Belge yükleme ve indirme **yalnız** MOD-0217 uçları üzerinden yapılır — sözleşme kapsamı
+  (SEC-002, AC-27), `mdm.contracts.documents.*` izinleri ve indirme denetimi (AC-62, D47/3) bu uçlarda uygulanır; kullanıcının
+  belge deposunu doğrudan çağırması izin olmadığı için Platform'da reddedilir. MOD-0023 çağrıları kullanıcı token'ıyla Gateway
+  üzerinden kalır (O-13, KARAR D41/10); kullanıcının `platform.workflow.*` izinleri gerekir.
+- **Rol şablonları:** D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`; D56/2 ile belge deposu izinleri kalktı) —
+  sözleşme görüntüleyici (`mdm.contracts.read`, `mdm.contracts.documents.read`), sözleşme yöneticisi (yazma, belge
   ekleme / geri çekme, taslak silme, onaya gönderme, değer okuma `value.read` ve değer yazma `value.write` — KARAR D49/2) ve ayrı **sözleşme imza kaydedici** (KARAR D47/5:
-  `mdm.contracts.record-signature` + sözleşme okuma + imzalı kopya için belge okuma / ekleme + `platform.document-repository.read`
-  / `.manage`). `mdm.contracts.record-signature` sözleşme yöneticisinde yoktur.
+  `mdm.contracts.record-signature` + sözleşme okuma + imzalı kopya için belge okuma / ekleme). `mdm.contracts.record-signature`
+  sözleşme yöneticisinde yoktur.
 - **İmza kaydedici ayrılığı (KARAR D47/5) çalışma anında da denetlenir:** izin tek başına yetmez — sözleşmeyi oluşturan
   (`Contract.CreatedBy`) ya da sürümü onaya gönderen (`ContractVersion.SubmittedBy`) imza kaydedemez (403
   `MDM_CONTRACT_SIGNATURE_RECORDER_CONFLICT`, AC-64); imzalı kopya belgesi zorunludur (422 `MDM_CONTRACT_SIGNED_COPY_REQUIRED`);
@@ -972,6 +1004,8 @@ yazıldığı için pratikte kapalı-başarısızdır.
   kaynak Platform alıcısı `api/internal/audit/mod0217/r1` (`Mod0217AuditRelayController.cs:13-14@da4abb20`).
 - MdmService → Platform (`/api/v1/document-repository/*`, `/api/v1/workflow/*`, para birimi) rotaları Gateway'de var
   (`ocelot.json:1857-1885` belge deposu ölçüldü; iş akışı ve para birimi rotaları bu oturumda ölçülmedi — DL-3 / DL-1 başında).
+  Belge deposu çağrısı MdmService servis kimliğiyle yapılır (KARAR D56/2); kullanıcılara belge deposu izni verilmez, indirme
+  yalnız `/api/mdm/contracts/…/documents/…` uçları üzerinden.
 
 ## Acceptance Criteria
 
@@ -1038,15 +1072,20 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   testler kendi veritabanında çalışır (TRM-11 bulguları).
 - [ ] AC-24 (zorunlu) — Belge ekleme (DL-2): `Draft` sürüme yükleme MOD-0262-FU01'e akışla gider (`owningItemId`,
   `owningVersionId`, `companyId` doğru), dönen `ContentId` / `Checksum` / `ByteSize` sürüme ve niyete yazılır; MdmService diske ya
-  da geçici klasöre yazmaz (mimari test: `Path.GetTempPath` / `File.Create` kullanımı yok).
+  da geçici klasöre yazmaz (mimari test: `Path.GetTempPath` / `File.Create` kullanımı yok; MdmService'te `IFormFile` /
+  `[FromForm]` dosya bağlaması yok — yükleme `MultipartReader` ile akış, çerçevenin geçici dosyası da oluşmaz). MOD-0262 çağrısı
+  MdmService **servis kimliğiyle** yapılır, kullanıcı token'ı iletilmez (KARAR D56/2 — test HTTP işleyicisi `Authorization`
+  başlığını kaydeder ve kullanıcı token'ı olmadığını doğrular). Sabotaj: yüklemeye kullanıcı token'ı iletildiğinde ya da
+  `IFormFile` bağlaması eklendiğinde test kırmızıya döner.
 - [ ] AC-25 (zorunlu) — MOD-0262 erişilemez / 5xx / zaman aşımı → 503 `MDM_CONTRACT_DOCUMENT_STORE_UNAVAILABLE`, işaretçi yok;
   MOD-0262 ret (tür / boyut) → 400 / 413, 503 değil.
 - [ ] AC-26 (zorunlu) — **Kesin geri alma:** işaretçi yazımı kesinlikle uygulanmadan başarısız edildiğinde (CAS eşleşmedi; işlem
   commit'ten önce iptal) `compensate` tam bir kez çağrılır ve sürümde işaretçi yoktur; telafi çağrısı kaldırıldığında test
   kırmızıya döner (sabotaj).
 - [ ] AC-27 (zorunlu) — Belge içerik okuma önce sözleşme kapsamını ve `mdm.contracts.documents.read`'i denetler: kapsam dışı
-  sözleşmenin belgesi 404 ve MOD-0262'ye çağrı yapılmaz; başka kiracının `ContentId`'si 404. Kapsam denetimi kaldırıldığında
-  test kırmızıya döner (sabotaj).
+  sözleşmenin belgesi 404 ve MOD-0262'ye çağrı yapılmaz; başka kiracının `ContentId`'si 404. İçerik okuma MOD-0262'ye
+  MdmService servis kimliğiyle gider (KARAR D56/2); `platform.document-repository.*` izni olmayan, `mdm.contracts.documents.read`
+  sahibi kapsam içi kullanıcı belgeyi indirir. Kapsam denetimi kaldırıldığında test kırmızıya döner (sabotaj).
 - [ ] AC-28 (zorunlu) — `Approved` sürüme yalnız `SignedCopy` eklenir; `Effective` / `Superseded` sürüme her belge ekleme ve
   geri çekme 409.
 - [ ] AC-29 (zorunlu) — **Belgenin sürüm kaydı MOD-0217'de, dosya MOD-0262-FU01'de; v1'de MOD-0028 çağrısı yok (KARAR D40):**
@@ -1211,8 +1250,8 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   sınıflandırması (erişilemez → 503, ret → 400 / 413 / 422); ticari değer maskesi; çit yazımı karar tablosu (AC-58);
   `ContractTypeCatalog`'da `PURCHASE` yok ve satın alma türü reddi (AC-59, KARAR D39).
 - **Entegrasyon (gerçek Mongo replica set, işlem):** kiracı izolasyonu (AC-5), veri kapsamı (AC-6), soft delete, CAS 409,
-  tekil indeksler ve yarışlar (AC-4, AC-10, AC-31, AC-33, AC-37, AC-57), işlem bütünlüğü ve hata enjeksiyonu (AC-13, AC-37,
-  AC-49), niyetin iş
+  tekil indeksler ve yarışlar (AC-4, AC-10, AC-31, AC-33, AC-37, AC-57), işlem bütünlüğü ve hata enjeksiyonu (AC-13, AC-26,
+  AC-37, AC-49, AC-50, AC-58), niyetin iş
   belgesiyle yazılması ve sabotajı (AC-11), `Guid.Empty` taraması (AC-22).
 - **Mongo yalıtımı (TRM-11 dersleri, AC-23):** suite kendi URI değişkenini ister (ad DL-1'de belirlenir; varsayılan port ya
   da başka suite'in değişkenine düşmez); her test sınıfı benzersiz veritabanı adı açar (paylaşılan sabit veritabanı yok);
@@ -1220,7 +1259,7 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   yakalanır. Bellek içi sahte depo işlem / yarış AC'lerini kapatmaz.
 - **Hata enjeksiyonu:** depo / işlem sarmalayıcısı dikişiyle ikinci yazımı düşürme; **yazımı uygulayıp yanıtı düşürme**
   (yanıt kaybı, AC-49) ve yazımı uygulamadan düşürme (kesin geri alma, AC-26) ayrı dikiş durumlarıdır; mutabakat okumasını
-  düşürme (AC-50). Mongo `failCommand` kullanılacaksa kümenin buna izin verdiği ölçülür (bu oturumda ölçülmedi).
+  düşürme (AC-50). Mongo `failCommand` kullanılabilir: MDM test kümesi `enableTestCommands=1` ile başlıyor (`services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/MdmTestMongo.cs:156@ec063fee9` — DL-2 hazırlık kaydı §5; MOD-0217 suite'i kendi URI değişkeniyle aynı başlatmayı kullanır, AC-23).
 - **Sahte bağımlılıklar:** MOD-0262 (201, 400, 413, 500, zaman aşımı, telafi başarısız, meta okumasında sahiplik alanları var /
   yok), MOD-0023 (başlatma 201 / tekrar / 400 / 403 izin / 403 SoD / 404 şablon / 409 `WORKFLOW_INSTANCE_START_CONFLICT` kapanış
   kayıtlı ve kayıtsız / 409 `WORKFLOW_TRANSITION_CONFLICT` / 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` / gönderimden sonra zaman
@@ -1289,7 +1328,12 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
 - [ ] RCS-001 ortak kod servisi (BL-565) var — sahibi Beste (D44)
-- [ ] SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü
+- [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Auth paketinin **"permission onboarding" eki** (Ali): Platform izin
+  listesine `mdm.contracts.*` anahtarları ve MDM istemcisinin modül kodu (bugün iki taraf `product-item-sku-master`'a sabit —
+  Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir (eski "sağlayıcının `mdm.contracts.*`
+  anahtarlarıyla çalıştığı ölçüldü" maddesi 2026-10-27 ölçümüyle olumsuz kapandı ve bu maddeye dönüştü); kod değişikliği bu
+  paketin Repo Scope'unda değildir
+- [ ] SEC-002 sağlayıcısı eki kodu main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
   borç yok; CT-DECISIONS satırı kod aşamasında
 - [x] `AuditCategory` değeri — `MasterData` (14), **KARAR D45/1** (`treasury-intake-owner-decisions-05.md`)
@@ -1310,12 +1354,17 @@ kabul kapısı yeni kodun testlerinin geçmesidir.
 - [x] MOD-0262-FU01 sözleşmesi kodda ölçüldü (2026-10-27, @7c57e8466; openapi dosyası yok — kaynak paket + kod): uçlar
   `POST/GET api/v1/document-repository/objects…` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/DocumentRepositoryController.cs:59-119`);
   servis kimliği yok, çağıran kullanıcı token'ını iletir ve `platform.document-repository.read` / `.manage` izni gerekir
-  (`DocumentRepositoryModels.cs:17,20`) — D41/10 ile tutarlı; `scope` `Documents` enum'da var (`IContentStorageGateway.cs:65-90`);
+  (`DocumentRepositoryModels.cs:17,20`) — bu ölçüm D41/10 anındaydı; **KARAR D56/2** ile çağrı kimliği servis kimliği oldu (aşağıdaki
+  madde); `scope` `Documents` enum'da var (`IContentStorageGateway.cs:65-90`);
   meta `OwningItemId` / `OwningVersionId` döner (`DocumentRepositoryModels.cs:53-64`; `CompanyId` dönmez); boyut varsayılanı 256 MB
   (`ContentStorageOptions.cs:17,25`); uzantı izin listesi var, medya türü listesi boş (`:27-30`) — DL-2 için
-- [ ] MOD-0262-FU01 canlı doğrulama kaydı (dev ortamında yükle / indir / başka kiracı 404) — DL-2 için
-- [x] O-13 çağrı kimliği kararı — **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md)** — kullanıcı token'ı Gateway üzerinden, `scope` = `Documents`; DL-2 başındaki
-  ölçüm çürütürse sahibe ayrıca sorulur (DL-3'teki MOD-0023 çağrısı da buna bağlıdır) — DL-2 için
+- [ ] MOD-0262-FU01'de **servis kimliği desteği** main'de — MdmService'in kendi servis kimliğiyle yükleme / meta / içerik okuma /
+  telafi çağrıları; kullanıcıya `platform.document-repository.*` gerekmez (**KARAR D56/2**; Platform — Beste; `services/Diten.Platform/**`
+  korunan yol, XMC-001) — DL-2 için
+- [ ] MOD-0262-FU01 canlı doğrulama kaydı (dev ortamında servis kimliğiyle yükle / indir / başka kiracı 404) — DL-2 için
+- [x] O-13 çağrı kimliği kararı — **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md)**, MOD-0262 kısmı **KARAR D56/2
+  (2026-10-27; treasury-intake-owner-decisions-05.md) ile değişti:** belge deposu MdmService servis kimliğiyle, `scope` = `Documents`;
+  MOD-0023 çağrısı (DL-3) kullanıcı token'ıyla Gateway üzerinden (D41/10 bu kısımda geçerli) — DL-2 için
 - [ ] O-3 MOD-0023'te MOD-0217 iş akışı şablonu (MOD-0023 sahibi, D38/4; şablon kodları Ali'den, Y-3) ve örnek durum adları ölçüldü — DL-3 için
 - [x] MOD-0023 §17 rev 2 (803fbaa5…, PR #235) onaylı (CT-APR-02/01 — `execution/approvals/approvals.tsv:16`, 2026-10-26, #243): `by-objects` / `history` okuma alanları (`idempotencyKey`,
   `isDeleted`, `approvalTaskId`), `includeDeleted=true`, kapanış kaydı anlamı — DL-3 için. Kod MOD-0023 sahibinin WP'siyle gelir;
@@ -1378,6 +1427,7 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 | D41 (O-4…O-15) | hepsi önerilen seçenek: izin listesi (1), `CTR` öneki + §3 satırı onayı (2), MDM güvenilir niyet izi ve K2 (3), türlü karşı taraf, `Supplier` kapalı (4), elle imza (5), kanıt / gizlilik / risk v1 dışı (6), `Idempotency-Key` (7), kod listeleri ve durum modeli (8), değer izni (9), kullanıcı token'ı + `Documents` (10), iç sorumlu oluşturan (11), olay / ödeme bağı yok (12); O-3 açık; O-11 `OTHER` → `OTHER` kalır, KARAR D45/2 — kapandı (D41 anında teyit açıktı; tarihçe) | Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Frontend File Contract, Validation Rules, Authorization Convention, Audited Events, Ready-for-dev Checklist, Follow-up Items, Açık kararlar, Teslim dilimleri | AC-1…AC-4, AC-7, AC-11, AC-12, AC-16, AC-21, AC-59 |
 | D47/3, D47/5 (CT04a) | belge indirme ve ticari değer okuma denetimi v1'de (D41/6 ve D41/9'u daraltır); ayrı imza kaydedici rolü, kaydeden ≠ oluşturan / onaya gönderen, düzeltme yalnız yeni değişiklik sürümüyle | Runtime Constraints → "Ticari değer görünürlüğü", Hata sözlüğü, Validation Rules, Failure Path, Authorization Convention, Audited Events (iki okuma satırı), Follow-up, Açık kararlar O-9 / O-12 | AC-62, AC-63, AC-64 |
 | D49/2 (CT04b) | yeni izin `mdm.contracts.value.write`; `value.read` yalnız görüntüler; değer yazma ayrı denetim olayı | Owned Objects (DTO notu), Hata sözlüğü, Runtime Constraints → "Ticari değer görünürlüğü", Validation Rules, Failure Path, Authorization Convention, Audited Events, Açık kararlar O-4, Teslim dilimleri | AC-4, AC-21, AC-65 |
+| D56/1, D56/2 (DL-2 hazırlığı) | SEC-002 sağlayıcısı MOD-0018 "permission onboarding" eki (paket metni paket kapısında, kodu DL-1 kabulünde); belge deposu MdmService servis kimliğiyle, kullanıcıya `platform.document-repository.*` yok (D41/10'un MOD-0262 kısmı ve D46a'nın yerine) | Dependencies (+ kapanış tablosu), Runtime Constraints, Failure Path, Authorization Convention, Ready-for-dev Checklist, Açık kararlar O-13, Teslim dilimleri, Dilim kabul kapısı | AC-6, AC-24, AC-27, AC-62 |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1472,7 +1522,7 @@ kapanışları §U kaydında izlenir; bu paket hiçbir ACK oluşturmaz.
 | O-10 | Create idempotency | (a) `Idempotency-Key` zorunlu + belgede anahtar ve gövde özeti (b) idempotency yok (MOD-0289 gibi) | **KARAR D41/7 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — Create'te `Idempotency-Key` zorunlu; anahtar + gövde özeti saklanır (kaynağın bilinmeyen sonuç boşluğunu kapatır) | sahip (K1, MDM sahibi rolü D38) — karar verildi |
 | O-11 | Kod listeleri ve durum modeli | Durumlar tabloları, `ContractType` çekirdek listesi, yenileme kararı değerleri, küsurat MOD-0048 · başka | **KARAR D41/8 (2026-10-26; treasury-intake-owner-decisions-04.md): pack'teki öneriler** — Durumlar tabloları, çekirdek `ContractType` listesi, yenileme kararı değerleri (`RENEW` / `RENEGOTIATE` / `NOT_RENEW`), küsurat MOD-0048; kiracı ek türleri v1'de yok. **KARAR D45/2 (2026-10-27; `treasury-intake-owner-decisions-05.md`): `OTHER` kalır** (D41/8'in yedi türüne ek) — kapandı. *Tarihçe:* D41/8 metni çekirdek türleri yedi adla saymış, `OTHER`'ı anmamıştı; teyit D45/2 ile verildi | sahip (K1) — karar verildi (D41/8, D45/2); kapandı |
 | O-12 | Ticari değer görünürlüğü | (a) `mdm.contracts.value.read`, okuma denetimsiz (b) okuma denetimli (c) maskesiz | **KARAR D41/9 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — ayrı izin `mdm.contracts.value.read`; izni olmayana maskeli; okuma ayrıca denetlenmez. **D47/3 ile değişti (2026-10-27):** değer okuması v1'de denetlenir (AC-63) | sahip (K1) + MOD-0018 sahibi — karar verildi |
-| O-13 | MdmService → Platform (MOD-0262, MOD-0023) çağrı kimliği ve MOD-0262 `scope` değeri | (a) kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni) — kullanıcı `platform.*` izinlerine de ihtiyaç duyar (b) güvenilir servis kimliği (c) `scope`: var olan `Documents` · eklemeli yeni değer | **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) + var olan `Documents`** — kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni; kullanıcının `platform.*` izinleri de gerekir); MOD-0262 `scope` = var olan `Documents`. DL-2 başındaki ölçüm bunu çürütürse sahibe ayrıca sorulur; yeni değer gerekirse XMC-001 | sahip (K1) + platform-shared-services — karar verildi |
+| O-13 | MdmService → Platform (MOD-0262, MOD-0023) çağrı kimliği ve MOD-0262 `scope` değeri | (a) kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni) — kullanıcı `platform.*` izinlerine de ihtiyaç duyar (b) güvenilir servis kimliği (c) `scope`: var olan `Documents` · eklemeli yeni değer | **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) + var olan `Documents`** — kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni; kullanıcının `platform.*` izinleri de gerekir); MOD-0262 `scope` = var olan `Documents`. **D56/2 ile değişti (2026-10-27; treasury-intake-owner-decisions-05.md):** MOD-0262 çağrısı **(b) MdmService servis kimliğiyle**; kullanıcılara `platform.document-repository.*` verilmez (D46a geri alındı); indirme yalnız MOD-0217 üzerinden (kapsam + AC-62); belge deposunda servis kimliği desteği Platform'un (Beste) işi — DL-2 kapısı. MOD-0023 çağrısı (a) kullanıcı token'ıyla kalır; `scope` = `Documents` geçerli; yeni değer gerekirse XMC-001 | sahip (K1) + platform-shared-services — karar verildi (D41/10, D56/2) |
 | O-14 | İç sorumlu kullanıcı başvurusunun doğrulanması | (a) Auth kullanıcı aramasıyla (sözleşme ölçülmedi) (b) doğrulamasız Guid (c) yalnız oluşturan | **KARAR D41/11 (2026-10-26; treasury-intake-owner-decisions-04.md): (c) v1'de varsayılan + (a) ölçülünce atama** — v1'de iç sorumlu oluşturan kullanıcı; Auth kullanıcı araması ölçülünce başka kullanıcı atanabilir | sahip (K1) + MOD-0018 / Auth sahibi — karar verildi |
 | O-15 | Olaylar ve ödeme sırası (EVENTS, PAYMENTS slotları) | (a) v1'de olay ve ödeme bağı yok (b) outbox'lı olaylar | **KARAR D41/12 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — v1'de olay yayını ve ödeme bağı yok; kaynağın "0126 → 0217 → 0124" sırası benimsenmez | sahip (K1) — karar verildi |
 
@@ -1504,8 +1554,8 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS / MOD-0048 portları, denetim izi genişletmesi, defter +
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
-  domain-config + kayıt satırı, Auth kaydı (MOD-0018), RCS-001 §3 `CTR` satırı main'de (#265; kapandı) + RCS-001 servisi (BL-565), SEC-002 sağlayıcı
-  ölçümü, MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
+  domain-config + kayıt satırı, Auth paket metni (MOD-0018, D53/1), RCS-001 §3 `CTR` satırı main'de (#265; kapandı) + RCS-001 servisi (BL-565), SEC-002
+  "permission onboarding" eki paket metni (MOD-0018, KARAR D56/1; kodu DL-1 kabulünde), MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
   "— DL-1 için" işaretli madde yok — O-3 açıkken ilerler. **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır —
   `feature/mdm/wp-0217-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Bitiş: AC-1,
   AC-2, AC-3, AC-4, AC-5 (DL-1 uçları kısmı), AC-6 (DL-1 uçları kısmı), AC-7 (DL-1 yazmaları kısmı), AC-8, AC-9, AC-10 (DL-1
@@ -1515,9 +1565,11 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   AC-59, AC-60, AC-61, AC-63, AC-65 (DL-1 yazmaları kısmı: Create, UpdateContractVersion).
 - **DL-2** — Yollar: `AddContractDocumentCommand`, `WithdrawContractDocumentCommand`, `ReconcileContractDocumentCommand`,
   `GetContractDocumentContentQuery`, `CreateContractAmendmentCommand`, `WithdrawContractVersionCommand`,
-  `Infrastructure/DocumentRepository/**`, belge uçları (MOD-0028 istemcisi yok — KARAR D40). **Neden ayrı:** MOD-0262-FU01
+  `ContractVersion.Documents` / `AbandonedContentIds` alanları ve `Domain/Entities/ContractDocumentRef.cs` (DL-1'in varlık
+  dosyalarına ekleme), koşullu işaretçi / çit yazımı (sürüm deposu), `Infrastructure/DocumentRepository/**` (servis kimliğiyle
+  istemci — KARAR D56/2), belge uçları (MOD-0028 istemcisi yok — KARAR D40). **Neden ayrı:** MOD-0262-FU01
   dış bağımlılığına (D37 (yorum D40)) bağlıdır; DL-1'i bekletmesin. O-2 KARAR D40 ile kapandı, DL-2 onu beklemez (D40/2).
-  Önkoşul: DL-1 ve "— DL-2 için" maddeleri: MOD-0262-FU01 sözleşme ölçümü (meta sahiplik alanları ve O-13 KARAR D41/10'un çağrı kimliği / `scope` doğrulaması dahil) ve MOD-0262-FU01 canlı doğrulama kaydı. Bitiş: AC-5 (belge ve değişiklik uçları kısmı), AC-6 (belge ve
+  Önkoşul: DL-1 ve "— DL-2 için" maddeleri: MOD-0262-FU01 sözleşme ölçümü (meta sahiplik alanları ve `scope` doğrulaması dahil), MOD-0262-FU01'de servis kimliği desteği (KARAR D56/2 — Platform, Beste) ve MOD-0262-FU01 canlı doğrulama kaydı (servis kimliğiyle). Bitiş: AC-5 (belge ve değişiklik uçları kısmı), AC-6 (belge ve
   değişiklik uçları kısmı), AC-7 (DL-2 yazmaları kısmı), AC-10 (DL-2 komutları kısmı), AC-11 (DL-2 yazmaları kısmı), AC-12
   (DL-2 defter satırları kısmı), AC-14 (DL-2 yazmaları kısmı), AC-15 (DL-2 uçları kısmı), AC-16 (DL-2 aksiyonları kısmı), AC-17
   (belge ve değişiklik alanları kısmı), AC-21 (DL-2 yazmaları kısmı), AC-22 (DL-2 yazmaları kısmı), AC-24…AC-31, AC-39, AC-42
@@ -1547,8 +1599,8 @@ kapısındadır.
 
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
-| DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
-| DL-2 | "Bitiş" listesindeki AC'ler (kısımlarıyla); AC-31 ve AC-49 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (yükle, indir, başka kiracı 404, kesin geri almada telafi); AC-29 mimari testi (MOD-0028 çağrısı yok, sabotajlı — KARAR D40); build |
+| DL-1 | "Bitiş" listesindeki AC'ler (kısımlarıyla); gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14) kendi Mongo URI'li suite'te (AC-23); `AuditTrailStandard` (AC-12); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı, AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-2 | "Bitiş" listesindeki AC'ler (kısımlarıyla); AC-26, AC-31, AC-49, AC-50 ve AC-58 gerçek replica set'te; MOD-0262-FU01'e karşı dev ortamı kaydı (servis kimliğiyle yükle, indir, başka kiracı 404, kesin geri almada telafi — KARAR D56/2); AC-29 mimari testi (MOD-0028 çağrısı yok, sabotajlı — KARAR D40); build |
 | DL-3 | "Bitiş" listesindeki AC'ler (kesişen AC'lerin tam kapanışı dahil); AC-33, AC-37 ve AC-57 gerçek replica set'te; MOD-0023 §17 rev 2 okuma alanları main'de ve MOD-0023 AC-W2 / AC-W12 / AC-W13 geçmiş (MOD-0023 sahibinin WP'si); MOD-0023'e karşı dev ortamı onay ve ret turu kaydı; build |
 | DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı (`verify_datatable_page.py`) ve `quality-gate-datatable` (AC-43); RESX 7 dil parite; nav anahtar denetimi; Gateway uçtan uca belge yükleme / indirme; `Diten.Web` build |
 
