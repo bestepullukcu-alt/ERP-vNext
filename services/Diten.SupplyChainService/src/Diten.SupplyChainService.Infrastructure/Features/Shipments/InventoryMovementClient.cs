@@ -40,9 +40,11 @@ public sealed class InventoryMovementClient(HttpClient client, IConfiguration co
                 HttpStatusCode.Forbidden => new(InventoryOutcome.Forbidden, status, InventoryCode: code, Details: details),
                 // 409 may be INVENTORY still processing the same key; the next holder resends it.
                 HttpStatusCode.Conflict => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: true),
-                // Only INVENTORY's own 503 and a 401 certainly processed nothing. A 500, the Gateway's 502 / 504 or any other
-                // 5xx can arrive after INVENTORY committed (review F-1): the sent line stays sent and is resent with its key.
-                HttpStatusCode.ServiceUnavailable or HttpStatusCode.Unauthorized => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
+                // Only INVENTORY's own 503 (its error envelope, with its code) and a 401 certainly processed nothing. A 500, the
+                // Gateway's 502 / 504, a 503 without INVENTORY's envelope (the Gateway's own timeout, re-review R-1) or any
+                // other 5xx can arrive after INVENTORY committed (review F-1): the line stays sent and is resent with its key.
+                HttpStatusCode.ServiceUnavailable when code is not null => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
+                HttpStatusCode.Unauthorized => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
                 _ => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: status >= 500)
             };
         }

@@ -38,9 +38,9 @@ public sealed class LateWriterPolicy(IShipmentRepository repository, IInventoryM
             : result.Outcome == InventoryOutcome.Refused && result.InventoryCode == "ALREADY_REVERSED" ? "AlreadyReversed"
             : "ReversalFailed:" + (result.InventoryCode ?? result.HttpStatus.ToString(System.Globalization.CultureInfo.InvariantCulture));
         logger.LogError("MOD-0183 integrity fault: late writer of closed attempt {Attempt} line {Line} issue {Issue} → {Outcome}.", ownN, lineNumber, issueTransactionId, outcome);
-        await repository.AppendLateWriteAsync(context.Scope, shipmentId, new DispatchLateWrite(ownN, lineNumber, issueTransactionId,
-            result.Outcome == InventoryOutcome.Posted ? result.TransactionId : null, outcome, at), ct);
-        await repository.AppendDispatchAuditAsync(context.Scope, shipmentId, new DispatchAuditEntry(ownN, "LateWriter" + outcome, context.CorrelationId, at,
-            [issueTransactionId], result.Outcome == InventoryOutcome.Posted ? [result.TransactionId!] : [], ["LATE_WRITER line " + lineNumber]), ct);
+        await repository.RecordLateWriteAsync(context.Scope, shipmentId, new DispatchLateWrite(ownN, lineNumber, issueTransactionId,
+                result.Outcome == InventoryOutcome.Posted ? result.TransactionId : null, outcome, at),
+            new DispatchAuditEntry(ownN, "LateWriter" + outcome, context.CorrelationId, at,
+                [issueTransactionId], result.Outcome == InventoryOutcome.Posted ? [result.TransactionId!] : [], ["LATE_WRITER line " + lineNumber]), ct);
     }
 }

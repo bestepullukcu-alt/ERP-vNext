@@ -73,8 +73,12 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
             // Lost the race: to another dispatch (409) or to a transition that left Planned, e.g. Cancelled (422, review F-7).
             var current = await repository.GetAsync(context.Scope, s.Id, ct);
             if (current is null) return Fail(ContractErrorCodes.ShipmentNotFound, 404);
-            return ShipmentLifecycle.Allows(current.Status, ShipmentStatus.Dispatched) ? InProgress(next.N) : Fail(ContractErrorCodes.InvalidShipmentTransition, 422);
+            if (!ShipmentLifecycle.Allows(current.Status, ShipmentStatus.Dispatched)) return Fail(ContractErrorCodes.InvalidShipmentTransition, 422);
+            return current.DispatchAttempt?.State == DispatchState.CompensationFailed ? Blocked(current.DispatchAttempt) : InProgress(next.N);   // re-review R-3
         }
+        // An attempt whose compensation had started is never posted or completed again: the resume finishes the
+        // compensation and answers the stored refusal (re-review N-1).
+        if (next.IsCompensating()) return await FinishCompensationAsync(s, next, fingerprint, [], ct);
         return await RunAsync(s, next, request, fingerprint, ct);
     }
 
@@ -131,7 +135,9 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         {
             if (current is null) return ShipmentChange.Fail(ContractErrorCodes.ShipmentNotFound, 404);
             var held = current.DispatchAttempt;
-            if (held is null || held.N != a.N || held.LeaseId != a.LeaseId || held.State != DispatchState.InProgress || held.Lines.Any(l => l.IssueTransactionId is null))
+            // A compensating attempt (a reversal date, a stored refusal or a reversed line) never completes (re-review N-1).
+            if (held is null || held.N != a.N || held.LeaseId != a.LeaseId || held.State != DispatchState.InProgress || held.Lines.Any(l => l.IssueTransactionId is null)
+                || held.IsCompensating())
                 return ShipmentChange.Fail(ContractErrorCodes.DispatchInProgress, 409);
             if (!ShipmentLifecycle.Allows(current.Status, ShipmentStatus.Dispatched)) return ShipmentChange.Fail(ContractErrorCodes.InvalidShipmentTransition, 422);
             held.State = DispatchState.Completed;
@@ -147,15 +153,28 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     {
         var faults = new List<string>();
         if (failure.Outcome == InventoryOutcome.Invalid) faults.Add("INVENTORY 400 " + failure.InventoryCode + " issue line " + failedLine);
-        if (await ReverseAllAsync(s, a, failedLine, faults, ct) is { } stopped) return stopped;
         var (status, code, details) = failure.Outcome == InventoryOutcome.Invalid
             ? (500, ContractErrorCodes.InternalError, (JsonObject?)null)
             : (422, ContractErrorCodes.InventoryRefused, new JsonObject { ["lineNumber"] = failedLine, ["inventoryCode"] = failure.InventoryCode });
         if (details is not null && failure.Details is not null) details["inventory"] = failure.Details.DeepClone();
+        // Durable before the first REVERSAL (re-review N-1): the reversal date and the answer, so a holder that resumes
+        // this attempt after a crash or a lost lease continues the compensation instead of posting the lines again.
+        a.ReversalDate ??= clock.GetUtcNow();
+        a.Refusal = new DispatchRefusal(failedLine, status, code, details?.ToJsonString());
+        if (!await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
+        return await FinishCompensationAsync(s, a, fingerprint, faults, ct);
+    }
+
+    /// <summary>C, from its start or from a resume: reverse every posted line, then close Compensated with the stored answer.</summary>
+    private async Task<Response<JsonObject>> FinishCompensationAsync(Shipment s, DispatchAttempt a, string fingerprint, List<string> faults, CancellationToken ct)
+    {
+        // An attempt compensating without a stored answer (written by an earlier build) answers like an INVENTORY 400.
+        var refusal = a.Refusal ?? new DispatchRefusal("", 500, ContractErrorCodes.InternalError, null);
+        if (await ReverseAllAsync(s, a, refusal.LineNumber, faults, ct) is { } stopped) return stopped;
         // Close, audit and receipt commit together (review F-3): no crash window in which the same key opens a{n+1}.
-        var receipt = new DispatchOutcomeReceipt(Operation, context.IdempotencyKey, fingerprint, context.CorrelationId, status, code, details?.ToJsonString());
+        var receipt = new DispatchOutcomeReceipt(Operation, context.IdempotencyKey, fingerprint, context.CorrelationId, refusal.StatusCode, refusal.ErrorCode, refusal.DetailsJson);
         if (!await SettleAsync(s, a, DispatchState.Compensated, faults, receipt, ct)) return InProgress(a.N);
-        return FailWith(code, status, details);
+        return FailWith(refusal.ErrorCode, refusal.StatusCode, refusal.DetailsJson is null ? null : JsonNode.Parse(refusal.DetailsJson)!.AsObject());
     }
 
     /// <summary>The exit (F-4): resend the open reversals; all done → Compensated and null, else the 409 that blocks.</summary>
@@ -176,8 +195,9 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     {
         a.ReversalDate ??= clock.GetUtcNow();
         // B′: a sent line without an issue and without a definite answer may have been posted by a crashed or paused
-        // writer — learn its id first. A line INVENTORY refused (or answered KEY_REUSED) is known not to be ours to reverse.
-        foreach (var line in a.Lines.Where(l => l.Sent && l.IssueTransactionId is null && l.LineNumber != refusedLine && l.LastInventoryCode is null))
+        // writer — learn its id first. A line INVENTORY refused (422) or found malformed (400) holds nothing. A line whose
+        // key answered KEY_REUSED may hold an unrecorded movement: it is resent and blocks again (re-review N-2).
+        foreach (var line in a.Lines.Where(l => l.Sent && l.IssueTransactionId is null && l.LineNumber != refusedLine && l.LastInventoryCode is null or KeyReused))
         {
             if (!await RenewAsync(s, a, ct)) return InProgress(a.N);
             var resent = await PostAsync(s, a.IssueKey(s.Id, line.LineNumber), line.RequestJson!, ct);
@@ -185,11 +205,13 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
             else if (resent.Outcome == InventoryOutcome.Refused) line.LastInventoryCode = resent.InventoryCode;
             else if (resent.Outcome == InventoryOutcome.Invalid && resent.InventoryCode == KeyReused)
             {
-                // The key holds other bytes in INVENTORY: an integrity fault for an operator, never a reason to post again.
+                // §23.4: an integrity fault that blocks the attempt like CompensationFailed, never a reason to post again
+                // and never skipped — the key may hold a movement nobody recorded (re-review N-2).
                 line.LastInventoryCode = KeyReused; faults.Add(KeyReused + " resend line " + line.LineNumber);
                 logger.LogError("MOD-0183 integrity fault: {Code} on resend of attempt {Attempt} line {Line}.", KeyReused, a.N, line.LineNumber);
+                return await FailCompensationAsync(s, a, resent, faults, ct, "resend");
             }
-            else return await FailCompensationAsync(s, a, resent, faults, ct);
+            else return await FailCompensationAsync(s, a, resent, faults, ct, "resend");
         }
         foreach (var line in a.Lines.Where(l => l.IssueTransactionId is not null && !l.IsReversed()))
         {
@@ -221,17 +243,24 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     }
 
     /// <summary>A REVERSAL failed (5xx, timeout, 403, 400, other 422) → CompensationFailed, 409 with the lines not reversed.</summary>
-    private async Task<Response<JsonObject>> FailCompensationAsync(Shipment s, DispatchAttempt a, InventoryPostResult result, List<string> faults, CancellationToken ct)
+    private async Task<Response<JsonObject>> FailCompensationAsync(Shipment s, DispatchAttempt a, InventoryPostResult result, List<string> faults, CancellationToken ct,
+        string call = "REVERSAL")
     {
         logger.LogError("MOD-0183 compensation failed: attempt {Attempt}, INVENTORY {Status} {Code}.", a.N, result.HttpStatus, result.InventoryCode);
-        if (!await BlockAsync(s, a, faults.Append("REVERSAL " + (result.InventoryCode ?? result.HttpStatus.ToString(System.Globalization.CultureInfo.InvariantCulture))).ToList(), ct))
+        if (!await BlockAsync(s, a, faults.Append(call + " " + (result.InventoryCode ?? result.HttpStatus.ToString(System.Globalization.CultureInfo.InvariantCulture))).ToList(), ct))
             return InProgress(a.N);
-        var open = new JsonArray(a.Lines.Where(l => l.IssueTransactionId is not null && !l.IsReversed()).Select(l => (JsonNode)JsonValue.Create(l.LineNumber)!).ToArray());
-        return FailWith(ContractErrorCodes.DispatchCompensationFailed, 409, new JsonObject { ["lines"] = open });
+        return Blocked(a);
     }
+
+    private static Response<JsonObject> Blocked(DispatchAttempt a) => FailWith(ContractErrorCodes.DispatchCompensationFailed, 409, new JsonObject
+    {
+        ["lines"] = new JsonArray(a.Lines.Where(l => l.IssueTransactionId is not null && !l.IsReversed()).Select(l => (JsonNode)JsonValue.Create(l.LineNumber)!).ToArray())
+    });
 
     private async Task<bool> BlockAsync(Shipment s, DispatchAttempt a, List<string> faults, CancellationToken ct)
     {
+        // A blocked attempt always carries its reversal date, so a late writer and the exit send the same bytes (re-review R-2).
+        a.ReversalDate ??= clock.GetUtcNow();
         a.LeaseUntil = clock.GetUtcNow();
         return await SettleAsync(s, a, DispatchState.CompensationFailed, faults, null, ct);
     }

@@ -95,6 +95,9 @@ public sealed class InventoryMovementClientTests
         Assert.Equal((InventoryOutcome.Unavailable, true), await Outcome(client.PostAsync(Request(s, body, "k"), default)));
         fake.Script = _ => Task.FromResult<HttpResponseMessage?>(FakeInventory.Json(201, new JsonObject { ["idempotentReplay"] = false }));
         Assert.Equal((InventoryOutcome.Unavailable, true), await Outcome(client.PostAsync(Request(s, body, "k"), default)));
+        // Re-review R-1: a 503 without INVENTORY's error envelope (the Gateway's own timeout) may follow a commit.
+        fake.Script = _ => Task.FromResult<HttpResponseMessage?>(new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+        Assert.Equal((InventoryOutcome.Unavailable, true), await Outcome(client.PostAsync(Request(s, body, "k"), default)));
         var (unconfigured, none) = Client(baseUrl: null);
         Assert.Equal((InventoryOutcome.Unavailable, false), await Outcome(unconfigured.PostAsync(Request(s, body, "k"), default)));
         Assert.Empty(none.Calls);

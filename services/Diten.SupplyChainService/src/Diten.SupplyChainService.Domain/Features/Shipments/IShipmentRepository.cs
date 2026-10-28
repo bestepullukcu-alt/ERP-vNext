@@ -27,10 +27,9 @@ public interface IShipmentRepository
         DispatchOutcomeReceipt? receipt, CancellationToken ct);
     /// <summary>Removes a held attempt that posted nothing (an authorization or definite dependency refusal of its first line).</summary>
     Task<bool> DropUnpostedAttemptAsync(ShipmentScope scope, Guid shipmentId, int n, Guid heldLeaseId, CancellationToken ct);
-    /// <summary>Records a late writer's movement, without the lease condition (§23.4 late writer).</summary>
-    Task AppendLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, CancellationToken ct);
-    /// <summary>Writes an in-product audit row of a late writer's outcome (reversal ids, integrity faults).</summary>
-    Task AppendDispatchAuditAsync(ShipmentScope scope, Guid shipmentId, DispatchAuditEntry entry, CancellationToken ct);
+    /// <summary>Records a late writer's movement (without the lease condition, §23.4 late writer) and its in-product audit
+    /// row in one transaction (re-review R-4).</summary>
+    Task RecordLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, DispatchAuditEntry audit, CancellationToken ct);
 }
 
 public sealed record DispatchAuditEntry(int N, string Outcome, Guid CorrelationId, DateTimeOffset OccurredAt,

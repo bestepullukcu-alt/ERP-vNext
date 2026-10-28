@@ -16,6 +16,10 @@ public sealed class DispatchAttempt
     public Guid CorrelationId { get; set; }
     /// <summary>The moment compensation started (server UTC), set at the first reversal and resent unchanged.</summary>
     public DateTimeOffset? ReversalDate { get; set; }
+    /// <summary>The answer compensation will give, stored with <see cref="ReversalDate"/> before the first REVERSAL: an
+    /// attempt that has either is compensating, and whoever resumes it continues the compensation (re-review N-1).</summary>
+    public DispatchRefusal? Refusal { get; set; }
+    public bool IsCompensating() => ReversalDate is not null || Refusal is not null || Lines.Any(l => l.IsReversed());
     /// <summary>+1 on every stored write of the attempt; a lease takeover is conditional on it (review F-2).</summary>
     public long Rev { get; set; }
     public List<DispatchAttemptLine> Lines { get; set; } = [];
@@ -33,6 +37,10 @@ public sealed class DispatchAttempt
         return copy;
     }
 }
+
+/// <summary>The refused line and the command's answer once every posted line is reversed (§23.4: 422 INVENTORY_REFUSED,
+/// or 500 for an INVENTORY 400).</summary>
+public sealed record DispatchRefusal(string LineNumber, int StatusCode, string ErrorCode, string? DetailsJson);
 
 /// <summary>An INVENTORY movement a writer made after it lost the lease (§23.4 late writer), kept without the lease condition.</summary>
 public sealed record DispatchLateWrite(int N, string LineNumber, string IssueTransactionId, string? ReversalTransactionId, string Outcome, DateTimeOffset At);

@@ -92,8 +92,10 @@ public sealed class DispatchAttemptStorageTests
         Assert.Null(stored.DispatchAttempt); Assert.Single(stored.DispatchHistory);
         Assert.Equal((DispatchState.Compensated, "T1", "R1"), (stored.DispatchHistory[0].State, stored.DispatchHistory[0].Lines[0].IssueTransactionId, stored.DispatchHistory[0].Lines[0].ReversalTransactionId));
         Assert.Equal(2, stored.NextDispatchAttemptNumber()); Assert.False(stored.StockIssued()); Assert.Equal("None", stored.DispatchStateWire());
-        await repo.AppendLateWriteAsync(_scope, s.Id, new DispatchLateWrite(1, "1", "T9", "R9", "Reversed", DateTimeOffset.UtcNow), default);
+        await repo.RecordLateWriteAsync(_scope, s.Id, new DispatchLateWrite(1, "1", "T9", "R9", "Reversed", DateTimeOffset.UtcNow),
+            new DispatchAuditEntry(1, "LateWriterReversed", Guid.NewGuid(), DateTimeOffset.UtcNow, ["T9"], ["R9"], ["LATE_WRITER line 1"]), default);
         Assert.Equal("T9", (await repo.GetAsync(_scope, s.Id, default))!.DispatchLateWrites.Single().IssueTransactionId);
+        Assert.Equal(2L, await AuditRows(s.Id));
     }
 
     private Task<long> AuditRows(Guid shipmentId) => _db.GetCollection<BsonDocument>("sce_shipment_audit")

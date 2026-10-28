@@ -82,9 +82,9 @@ public sealed class CentralAuditDeclarationTests
                     failures.Add($"{name}: transaction #{i + 1} does not enlist the central-audit event before it commits");
             }
         }
-        // Carrier, Claim, Load, Return, S&OP: one each; Shipment: mutation and the MOD-0183 dispatch outcome (DL-1 review
-        // F-3); Capacity: plan, scenario, evaluation.
-        Assert.Equal(10, seen);
+        // Carrier, Claim, Load, Return, S&OP: one each; Shipment: mutation, the MOD-0183 dispatch outcome (DL-1 review F-3)
+        // and the late writer's record (re-review R-4); Capacity: plan, scenario, evaluation.
+        Assert.Equal(11, seen);
         Assert.Empty(failures);
     }
 

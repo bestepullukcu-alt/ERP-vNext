@@ -122,11 +122,20 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
     public async Task<bool> DropUnpostedAttemptAsync(ShipmentScope scope, Guid shipmentId, int n, Guid heldLeaseId, CancellationToken ct) =>
         (await _shipments.UpdateOneAsync(Held(scope, shipmentId, n, heldLeaseId) & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.State, DispatchState.InProgress),
             Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null), cancellationToken: ct)).MatchedCount == 1;
-    public async Task AppendLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, CancellationToken ct) =>
-        await _shipments.UpdateOneAsync(Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId),
-            Builders<Shipment>.Update.Push(x => x.DispatchLateWrites, write), cancellationToken: ct);
-    public async Task AppendDispatchAuditAsync(ShipmentScope scope, Guid shipmentId, DispatchAuditEntry entry, CancellationToken ct) =>
-        await db.GetCollection<BsonDocument>("sce_shipment_audit").InsertOneAsync(AuditRow(scope, shipmentId, entry), cancellationToken: ct);
+    public async Task RecordLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, DispatchAuditEntry audit, CancellationToken ct)
+    {
+        using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
+        await session.WithTransactionAsync(async (transaction, token) =>
+        {
+            await _shipments.UpdateOneAsync(transaction, Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId),
+                Builders<Shipment>.Update.Push(x => x.DispatchLateWrites, write), cancellationToken: token);
+            await db.GetCollection<BsonDocument>("sce_shipment_audit").InsertOneAsync(transaction, AuditRow(scope, shipmentId, audit), cancellationToken: token);
+            // The command that runs the late writer has failed (it lost its lease), so this row stays Abandoned (BL-501).
+            await CentralAuditTransaction.EnlistAsync(transaction, shipmentId, token);
+            await probe.BeforeCommitAsync(token);
+            return true;
+        }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), ct);
+    }
     private static BsonDocument AuditRow(ShipmentScope scope, Guid shipmentId, DispatchAuditEntry entry) => new() {
         {"_id",Guid.NewGuid().ToString()},{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
         {"ShipmentId",shipmentId.ToString()},{"Operation","dispatch-attempt"},{"Attempt",entry.N},{"Outcome",entry.Outcome},

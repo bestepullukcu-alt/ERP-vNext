@@ -16,13 +16,13 @@ public sealed class ManualClock : TimeProvider
     public void Advance(TimeSpan by) => Interlocked.Add(ref _ticks, by.Ticks);
 }
 
-/// <summary>The real repository with a hook run once just before the next attempt open or takeover — a race made
-/// deterministic (review F-7: a Cancelled that lands between the dispatch's read and its conditional begin).</summary>
+/// <summary>The real repository with a hook run once just before the next call of one method — a race made deterministic
+/// (review F-7: a Cancelled between the dispatch's read and its conditional begin; re-review N-1 / R-3).</summary>
 public class HookedShipmentRepository : DispatchProxy
 {
     private IShipmentRepository _inner = null!;
-    private Func<Func<Task>?> _takeHook = null!;
-    public static IShipmentRepository Wrap(IShipmentRepository inner, Func<Func<Task>?> takeHook)
+    private Func<string, Func<Task>?> _takeHook = null!;
+    public static IShipmentRepository Wrap(IShipmentRepository inner, Func<string, Func<Task>?> takeHook)
     {
         var proxy = Create<IShipmentRepository, HookedShipmentRepository>();
         var hooked = (HookedShipmentRepository)(object)proxy; hooked._inner = inner; hooked._takeHook = takeHook;
@@ -30,7 +30,7 @@ public class HookedShipmentRepository : DispatchProxy
     }
     protected override object? Invoke(MethodInfo? method, object?[]? args)
     {
-        if (method!.Name == nameof(IShipmentRepository.TryBeginOrResumeDispatchAsync) && _takeHook() is { } hook) hook().GetAwaiter().GetResult();
+        if (_takeHook(method!.Name) is { } hook) hook().GetAwaiter().GetResult();
         try { return method.Invoke(_inner, args); }
         catch (TargetInvocationException e) when (e.InnerException is not null) { ExceptionDispatchInfo.Capture(e.InnerException).Throw(); throw; }
     }
