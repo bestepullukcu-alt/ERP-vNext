@@ -158,7 +158,8 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
             ? (500, ContractErrorCodes.InternalError, (JsonObject?)null)
             : (422, ContractErrorCodes.InventoryRefused, new JsonObject { ["lineNumber"] = failedLine, ["inventoryCode"] = failure.InventoryCode });
         if (details is not null && failure.Details is not null) details["inventory"] = failure.Details.DeepClone();
-        // Durable before the first REVERSAL (re-review N-1): the reversal date and the answer, so a holder that resumes
+        // Durable before the first REVERSAL (re-review N-1) and the only place the reversal date is set (R-2): the date
+        // and the answer, so a holder that resumes
         // this attempt after a crash or a lost lease continues the compensation instead of posting the lines again.
         a.ReversalDate ??= clock.GetUtcNow();
         a.Refusal = new DispatchRefusal(failedLine, status, code, details?.ToJsonString(), [.. faults]);
@@ -197,7 +198,6 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     /// <summary>B′ then the REVERSALs in stored order; null when every posted line is reversed, else the stopping answer.</summary>
     private async Task<Response<JsonObject>?> ReverseAllAsync(Shipment s, DispatchAttempt a, string? refusedLine, List<string> faults, CancellationToken ct)
     {
-        a.ReversalDate ??= clock.GetUtcNow();
         // B′: a sent line without an issue and without a definite answer may have been posted by a crashed or paused
         // writer — learn its id first. A line INVENTORY refused (422) or found malformed (400) holds nothing. A line whose
         // key answered KEY_REUSED may hold an unrecorded movement: it is resent, and it stays unresolved (re-review N-2).
@@ -269,8 +269,8 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
 
     private async Task<bool> BlockAsync(Shipment s, DispatchAttempt a, List<string> faults, CancellationToken ct)
     {
-        // A blocked attempt always carries its reversal date, so a late writer and the exit send the same bytes (re-review R-2).
-        a.ReversalDate ??= clock.GetUtcNow();
+        // Every block comes through a compensation, which stored the reversal date before its first REVERSAL, so a late
+        // writer and the exit send the same bytes (re-review R-2).
         a.LeaseUntil = clock.GetUtcNow();
         return await SettleAsync(s, a, DispatchState.CompensationFailed, faults, null, ct);
     }
