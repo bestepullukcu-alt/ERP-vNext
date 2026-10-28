@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D63 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D64 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -625,9 +625,20 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT 
 1. **Ara PR:** D62 ve Y-11…Y-15 küçük bir ara PR ile main'e gider (kart S-77 (c): Auth kulesi bekliyor).
 2. **SEC-002 eki için XMC-001 onayı Beste'den (Platform sahibi) istenir:** dokunulacak Platform dosyaları istekte listelenir; onay gelene
    kadar o dosyalara dokunulmaz.
-3. **waive-sod parti bağı (D54) Auth'un ayrı işi kalır:** Treasury Auth veri yapısı yazmaz. Auth bu yeteneği getirene kadar MOD-0126'nın
+3. **waive-sod parti bağı (D54) Auth'un ayrı işi kalır** (D64 ile değişti): Treasury Auth veri yapısı yazmaz. Auth bu yeteneği getirene kadar MOD-0126'nın
    muafiyet yolu kapalıdır (hedef partiyi taşıyan atama okunamaz → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`, D54); Treasury'nin diğer işleri bunu
    beklemez. Pakete ready-for-dev revizyonunda işlenir.
+
+## D64 — waive-sod Auth veri yapısını Treasury yazar (D63/3'ün yerine; soru kutusu, önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-17
+(MOD-0018 sahibi Ali: D9 / XMC-001 "(a) bu işte düzelt").
+
+D63/3 geçersizdir. Partiye bağlı muafiyetin (D54) Auth tarafı — atama kaydı, yazma ucu, "bu parti için geçerli atamalar" sorgu ucu ve
+denetim — Treasury tarafından MOD-0018 Treasury Auth ekinde ayrı bir dilim olarak yazılır; MOD-0018 sahibi inceler ve teyit eder.
+Sahibin kabul şartları paket AC'si olur: kiracı izolasyonu (`TenantId`, kiracılar arası 404); hedef parti yok / okunamıyor / eşleşmiyor →
+403; atama en çok 24 saat; onaylayan ve gerekçe kodu zorunlu; denetim kaydı. Dokunulan Platform dosyaları Beste'ye giden XMC-001 isteğine
+eklenir (D63/2; o onayı MOD-0018 sahibi vermez). Yapı main'e girene kadar MOD-0126 muafiyet yolu 403 ile kapalı kalır (D54).
 
 ## Karar olmayanlar
 

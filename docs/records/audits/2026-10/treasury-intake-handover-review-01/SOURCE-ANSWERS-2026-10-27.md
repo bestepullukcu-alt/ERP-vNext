@@ -170,6 +170,12 @@ onboarding kalıbı (FU20 / FU22 örnek); (3) D53 paket metni kapısı ve D56 (S
 kaydedilir, DL-1 kabulü D53/2'ye göre "Auth kayıt kodu main'de" şartını bekler. Auth paketini ve MOD-0220 alanını Treasury yazar; yazınca
 inceleme isteği gider. D54 için tarih kapsam netleşince.
 
+## Y-17 — Ali, D54 Auth yapısı (2026-10-28)
+
+D54 Auth veri yapısını da Treasury yazar (D9 / XMC-001 "(a)"): atama kaydı, yazma ucu, parti için geçerli atamalar sorgusu, denetim;
+sahip inceler ve teyit eder; D63/3 düzeltilsin. Pakette açık olacaklar: kiracı izolasyonu (TenantId, kiracılar arası 404), hedef parti
+yok / okunamıyor / eşleşmiyor için 403, en çok 24 saat, onaylayan ve gerekçe kodu, denetim kaydı. Platform dosyaları için XMC-001 Beste'den.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -206,3 +212,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-14 (geçersiz — Y-16) | — | işlenmedi |
 | Y-15 (Auth eki ve MOD-0220 §22 Treasury yazar; XMC-001 sorusu) | altı paket; MOD-0126 (TRM-14) | D63 |
 | Y-16 (Y-14 düzeltmesi; D53 / D56 aynen; MOD-0018 FU20 / FU22 kalıbı) | altı paket | işlenmedi — paket metni değişmez; Auth eki FU20 / FU22 kalıbıyla yazılır |
+| Y-17 (D54 Auth yapısını Treasury yazar; beş kabul şartı) | MOD-0018 Treasury Auth eki; MOD-0126 | D64 |
