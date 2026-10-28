@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D58 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D59 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -561,6 +561,22 @@ MOD-0289 DL-3'te tedarikçi banka hesaplarının görünürlüğü için MOD-014
 listesi **çağıran şirketle ilişkisi Active olan bütün tedarikçileri** döndürmelidir; `eligibleForTransactions = true` şartı aranmaz.
 Gerekçe: banka hesabı çoğunlukla onboarding sırasında kaydedilir; ödeme anı uygunluğu ödeme tarafında ayrıca denetlenir.
 Kaynak: Cihan'ın yanıtı (MOD-0140 sahibi, 2026-10-28) — 1.3.0, MOD-0140 kararlarından (S-1…S-6, F-3) yaklaşık 3 iş günü sonra main'de.
+
+## D59 — BL-565 kapısı ve MOD-0048 seed'leri (Beste'nin yanıtı Y-8 üzerine; soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); kaynak Y-8
+(`docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md`).
+
+1. **BL-565 / RCS-001 servisi paket kapısından DL-1 kabul kapısına taşınır** (altı paket; MOD-0057'de kod gerekmiyorsa uygulanmaz).
+   İlk dilim kodu uygulama katmanında `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey) → code` portuna
+   karşı yazılır; testlerde sahte uygulama; üretimde port bağlı değilse Create kapalı (fail-closed), kodsuz kayıt açılmaz; kendi sayaç
+   ya da yedek kod üretimi yasak (RCS-001). v0 çağrı sözleşmesi (Beste, 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):
+   `POST /api/internal/record-codes/allocate` — gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan),
+   200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı,
+   503 servis yok → Create başarısız. Gerçek servis DL-1 kabulünden önce main'de olmalıdır.
+2. **MOD-0048 seed'leri Treasury CT tarafından eklenir:** Platform'da yalnız seed JSON dosyaları ve `ConsumableSets` izin listesi
+   (Beste'nin izni, Y-8); değerler MOD-0048-FU01 §21 (#243 ile onaylı); ayrı dal ve PR, Beste onaylar; push / PR sahibe ayrıca sorulur.
+3. **Ara PR:** ct-05 dalı main'e ara PR olarak gider (kart S-77 (c): Beste D56/2'yi main'de görmek istiyor).
 
 ## Karar olmayanlar
 

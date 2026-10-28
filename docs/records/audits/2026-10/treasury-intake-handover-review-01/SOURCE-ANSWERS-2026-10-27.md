@@ -68,6 +68,40 @@ dahil) MOD-0217 onaylandıktan sonra yapılır.
 (müşteri faturası düzeltmesi ve sözleşme onayı) bu hafta içinde bitecek; ardından şablon kodları, adım sayıları, iş paketi numaraları ve
 tarihleri birlikte yazacağız.
 
+## Y-7 — Ali, yanıt 6 (2026-10-27)
+
+Güncel rol listesini (D47/D48) aldık: açık atamalı 8 anahtar, yeni iki rol ve finans rollerinden banka okuma çıkarılması dahil. Auth
+paketini bu güncel listeye göre yazacağız. Tam matrisi (113 anahtar) treasury-intake-owner-decisions-05.md olarak ana dala koyabilir
+misiniz? Elimizde yalnızca mesaj var, kayıt yok.
+İş akışı şablonlarının beşi de tek adımlı olarak karara bağlandı. Şablon kodlarını, iş paketi numaralarını ve tarihleri kule son onayı
+alınca birlikte yazacağız. Auth paketinin numarası ve tarihi paketi açınca gelecek.
+
+## Y-8 — Beste, yanıt (2026-10-28)
+
+BL-565: sahibi Beste (D44), backlog satırı düzeltilecek; servis 6 Kasım'a kadar hazır. Bekleme yerine: uygulama katmanında
+`IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portu; testlerde sahte uygulama; üretimde kendi sayaç / yedek
+kod yok; port bağlı değilse Create kapalı (fail-closed). v0 sözleşme: `POST /api/internal/record-codes/allocate`, gövde
+`{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422
+`RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 → Create başarısız; 6 Kasım'da kesinleşir, değişiklik
+yalnız ekleme. Okuma ekranları ve kodsuz dilimler beklemez.
+Finance = 18: yapıldı (Platform enum + CentralAuditPlatformValues, sapma ve sabit testi); PR açılıyor, main'e girince haber verilecek.
+MOD-0048 seed'leri: `payment-method` ve `currency-minor-units` seed'lerini Treasury CT ekler; Platform'da yalnız seed JSON ve
+`ConsumableSets` izin listesine dokunma izni; PR'ı Treasury açar, Beste onaylar; önkoşul #243 (MOD-0048-FU01 onay satırı main'de).
+MOD-0149 eki: kabul; revizyon cumartesiye kadar, sonra bağımsız inceleme ve onay; faturalanabilir yalnız `active`.
+MOD-0262-FU01 servis kimliği: kabul; depo MDM'in servis kimliğiyle gelen çağrıyı dar bir izinle kabul eder, kiracı izolasyonu korunur,
+denetimde aktör `Service`, izni olmayan servis reddedilir; Platform pack revizyonu pazartesi (2 Kasım); MDM iç istemcisinin tanımı
+Auth tarafında (Ali). D56/2 kaydının yolu soruldu.
+supplier 1.3.0: Cihan'a doğrudan sorulmalı. DCP-011: onay satırı ready-for-dev PR'ında.
+
+## Y-9 — Cihan, yanıt (MOD-0140 sahibi, 2026-10-28)
+
+1.3.0, MOD-0140 kararlarından (S-1…S-6, F-3; yöneticide) yaklaşık 3 iş günü sonra main'de; önce sözleşme dosyası olarak dondurulur
+(DL-1). Aktif tedarikçi listesi `GET /api/suppliers/eligible` (`listEligibleSuppliers`): çağıranın şirketiyle silinmemiş ve Active
+ilişkisi olan tedarikçiler; öğe SupplierEligibility (supplierId, supplierMasterId, status, onboardingStatus, purchasingEnabled,
+eligibleForTransactions); imleçli, sayfa 50; izin `procurement.suppliers.eligibility.read` (ya da `.read`). Uç gerçekten çalışana kadar
+(MOD-0140 DL-3, 1.3.0'dan ~1,5–2 hafta sonra) sözleşmeye karşı sahte istemciyle kodlanır. Soru: MOD-0289 DL-3 için liste Active ilişkili
+mi, yalnız işlem yapılabilir mi? → D58: Active ilişkili hepsi.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
