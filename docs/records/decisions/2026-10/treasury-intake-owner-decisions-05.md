@@ -547,6 +547,8 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT 
 3. **MOD-0124 kanıt paketi:** DL-2'de yalnız biçim doğrulanır; kalemlerin varlığı MOD-0031 bağlantısıyla DL-4'te doğrulanır.
 4. **SoD ayar kaydı (D56/4 ayrıntıları):** izinler `finance-treasury.payment-sod-settings.read` / `.update` (Hazine yöneticisi rolü);
    ayar ekranı MOD-0126 ekran diliminde; R1–R3 kapatılamaz (yalnız eşik ve R4 ayarlanır); kayıt yoksa R1–R4 açık ve varsayılan eşik.
+5. **Ortak MOD-0023 bağdaştırıcısı:** servis ortak yapı taşıdır; tek yazarı MOD-0126 DL-2. MOD-0119 DL-2, MOD-0120 DL-3 ve MOD-0124 DL-3
+   onu bekler (D14/2 deseni; dört paket için ortak karar).
 
 ## Karar olmayanlar
 
