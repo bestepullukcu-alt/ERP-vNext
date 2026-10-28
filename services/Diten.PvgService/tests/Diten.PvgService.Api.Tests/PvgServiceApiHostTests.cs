@@ -306,15 +306,13 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActorContext.ReasonCode);
 
         var missingCorrelation = NewContextWithTenant();
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelation, "actor-reference", "safety-user");
         var missingCorrelationContext = PvgCaseIntakeRequestContext.From(missingCorrelation);
         Assert.False(missingCorrelationContext.IsValid);
         Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelationContext.ReasonCode);
 
         var invalidCorrelation = NewContextWithTenant();
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(invalidCorrelation, "actor-reference", "safety-user");
         invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation";
         var invalidCorrelationContext = PvgCaseIntakeRequestContext.From(invalidCorrelation);
         Assert.False(invalidCorrelationContext.IsValid);
@@ -357,8 +355,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
         var missingCorrelationResult = await PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
             request,
             missingCorrelationContext,
@@ -386,8 +383,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorDetailResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
 
         var missingCorrelationListResult = await PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
             missingCorrelationContext,
@@ -463,8 +459,7 @@ public sealed class PvgServiceApiHostTests
             AssertSafeBlockedResponse(missingActor, PvgPermissionReasonCodes.ActorContextRequired);
 
             var missingCorrelationContext = NewContextWithTenant();
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
             var missingCorrelation = await ResponseOfAsync(await endpoint.Invoke(missingCorrelationContext));
             AssertSafeBlockedResponse(missingCorrelation, PvgPermissionReasonCodes.CorrelationContextRequired);
         }
@@ -612,8 +607,7 @@ public sealed class PvgServiceApiHostTests
         foreach (var endpoint in endpoints)
         {
             var invalidCorrelationContext = NewContextWithTenant();
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(invalidCorrelationContext, "actor-reference", "safety-user");
             invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation value";
 
             var response = await ResponseOfAsync(await endpoint.Invoke(invalidCorrelationContext));
@@ -749,6 +743,7 @@ public sealed class PvgServiceApiHostTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-999",
                 ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true"
             })
             .Build();
@@ -928,6 +923,7 @@ public sealed class PvgServiceApiHostTests
         var builder = Program.CreateWebHostBuilder(
         [
             "--Pvg:Runtime:ProductionLike=true",
+            "--Pvg:Runtime:ApprovalReference=RTA-MOD0230-999",
             "--Pvg:Runtime:OperationalRuntimeAuthorized=true",
             "--Pvg:Runtime:UseNonProductionAdapters=false"
         ]);
@@ -1009,6 +1005,7 @@ public sealed class PvgServiceApiHostTests
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-999",
                 ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true"
             })
             .Build();
@@ -1260,15 +1257,14 @@ public sealed class PvgServiceApiHostTests
     private static DefaultHttpContext NewContextWithTenant()
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers[PvgCaseIntakeRequestContext.TenantContextHeader] = "server-tenant-context";
+        PvgTestIdentity.SetTenant(context, PvgTestIdentity.TenantA);
         return context;
     }
 
     private static DefaultHttpContext NewContextWithTenantActorAndCorrelation()
     {
         var context = NewContextWithTenant();
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(context, "actor-reference", "safety-user");
         context.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "correlation-reference";
         return context;
     }
@@ -1934,6 +1930,9 @@ public sealed class PvgServiceApiHostTests
     {
         public const string OperationalRule = "OperationalRuntimeAuthorized";
         public const string AdaptersRule = "NonProductionAdaptersInProductionLikeScope";
+        // AC-10 (WP-0230-DL3D): an ApprovalReference value that is not the runtime_approval_id of exactly one approved
+        // decision record (status: approved) below <root>/docs/records/decisions.
+        public const string ApprovalReferenceRule = "ApprovalReferenceWithoutApprovedRecord";
 
         public sealed record ScanViolation(string File, string Scope, string Rule);
 
@@ -1963,10 +1962,17 @@ public sealed class PvgServiceApiHostTests
             FlagReferenceByCulture.GetOrAdd(
                 CultureInfo.CurrentCulture.Name,
                 _ => new Regex(
-                    @"Pvg(?::|__)Runtime(?::|__)(?<name>OperationalRuntimeAuthorized|UseNonProductionAdapters|ProductionLike)",
+                    @"Pvg(?::|__)Runtime(?::|__)(?<name>OperationalRuntimeAuthorized|UseNonProductionAdapters|ProductionLike|ApprovalReference)",
                     RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
 
         public static RegexOptions FlagReferenceOptions => FlagReference.Options;
+
+        // RTA-01: the shape of a runtime_approval_id (whole value; [0-9], not \d; case-sensitive).
+        private static readonly Regex ApprovalIdShape = new(
+            @"^RTA-MOD0230-[0-9]{3}\z",
+            RegexOptions.CultureInvariant);
+
+        private const string DecisionRecordsDirectory = "docs/records/decisions";
 
         private static readonly Regex EnvironmentReference = new(
             @"(?<![A-Za-z0-9_-])ASPNETCORE_ENVIRONMENT(?![A-Za-z0-9_])",
@@ -2006,13 +2012,108 @@ public sealed class PvgServiceApiHostTests
             files.Sort(StringComparer.Ordinal);
 
             var scanned = files.Where(IsSelected).ToList();
+            var approvedReferences = ApprovedReferenceIds(root);
             var violations = new List<ScanViolation>();
             foreach (var relativePath in scanned)
             {
-                violations.AddRange(AnalyzeFile(relativePath, File.ReadAllText(Path.Combine(root, relativePath))));
+                violations.AddRange(AnalyzeFile(
+                    relativePath,
+                    File.ReadAllText(Path.Combine(root, relativePath)),
+                    approvedReferences));
             }
 
             return new ScanResult(scanned, violations);
+        }
+
+        // The runtime_approval_id values of the approved decision records (RTA-01): every *.md file below
+        // <root>/docs/records/decisions whose front matter (first "---" line to the next "---" line) holds exactly one
+        // "status: approved" and exactly one "runtime_approval_id: RTA-MOD0230-NNN". The body is never read for the
+        // id. An id carried by two or more files is dropped (ambiguous record, fail-closed). A missing directory or
+        // one without such records gives an empty set, which makes every committed reference a violation.
+        private static HashSet<string> ApprovedReferenceIds(string root)
+        {
+            var approved = new HashSet<string>(StringComparer.Ordinal);
+            var directory = new DirectoryInfo(Path.Combine(root, "docs", "records", "decisions"));
+            if (!directory.Exists || (directory.Attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                return approved;
+            }
+
+            var files = new List<string>();
+            Walk(directory, DecisionRecordsDirectory, files);
+            files.Sort(StringComparer.Ordinal);
+
+            var ambiguous = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var relativePath in files.Where(path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
+            {
+                string text;
+                try
+                {
+                    text = File.ReadAllText(Path.Combine(root, relativePath));
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    throw new InvalidOperationException(
+                        $"Decision record '{relativePath}' cannot be read: {exception.Message}",
+                        exception);
+                }
+
+                var id = ApprovedRuntimeApprovalId(text);
+                if (id is not null && !approved.Add(id))
+                {
+                    ambiguous.Add(id);
+                }
+            }
+
+            approved.ExceptWith(ambiguous);
+            return approved;
+        }
+
+        // The runtime_approval_id of one record when its front matter is approved and carries exactly one valid id.
+        private static string? ApprovedRuntimeApprovalId(string text)
+        {
+            var lines = text.Split('\n').Select(line => line.TrimEnd('\r')).ToArray();
+            if (lines.Length == 0 || lines[0].TrimStart('\uFEFF') != "---")
+            {
+                return null;
+            }
+
+            var statuses = new List<string>();
+            var ids = new List<string>();
+            var closed = false;
+            foreach (var line in lines.Skip(1))
+            {
+                if (string.Equals(line, "---", StringComparison.Ordinal))
+                {
+                    closed = true;
+                    break;
+                }
+
+                var separator = line.IndexOf(':');
+                if (separator <= 0)
+                {
+                    continue;
+                }
+
+                var key = line[..separator];
+                var value = line[(separator + 1)..].Trim();
+                if (string.Equals(key, "status", StringComparison.Ordinal))
+                {
+                    statuses.Add(value);
+                }
+                else if (string.Equals(key, "runtime_approval_id", StringComparison.Ordinal))
+                {
+                    ids.Add(value);
+                }
+            }
+
+            return closed &&
+                   statuses.Count == 1 &&
+                   string.Equals(statuses[0], "approved", StringComparison.Ordinal) &&
+                   ids.Count == 1 &&
+                   ApprovalIdShape.IsMatch(ids[0])
+                ? ids[0]
+                : null;
         }
 
         private static void Walk(DirectoryInfo directory, string relativePath, List<string> files)
@@ -2111,6 +2212,8 @@ public sealed class PvgServiceApiHostTests
 
             public List<string?> ProductionLikeValues { get; } = [];
 
+            public List<string?> ApprovalReferenceValues { get; } = [];
+
             public List<string?> EnvironmentValues { get; } = [];
 
             public void AddFlag(string flagName, string? value)
@@ -2123,14 +2226,21 @@ public sealed class PvgServiceApiHostTests
                 {
                     AdapterValues.Add(value);
                 }
-                else
+                else if (string.Equals(flagName, "ProductionLike", StringComparison.OrdinalIgnoreCase))
                 {
                     ProductionLikeValues.Add(value);
+                }
+                else if (string.Equals(flagName, "ApprovalReference", StringComparison.OrdinalIgnoreCase))
+                {
+                    ApprovalReferenceValues.Add(value);
                 }
             }
         }
 
-        private static IEnumerable<ScanViolation> AnalyzeFile(string relativePath, string text)
+        private static IEnumerable<ScanViolation> AnalyzeFile(
+            string relativePath,
+            string text,
+            HashSet<string> approvedReferences)
         {
             var name = relativePath[(relativePath.LastIndexOf('/') + 1)..];
             var scopes = new Dictionary<string, ScopeFacts>(StringComparer.Ordinal);
@@ -2182,6 +2292,13 @@ public sealed class PvgServiceApiHostTests
                 if (scope.AdapterValues.Count > 0 && IsProductionLike(scope))
                 {
                     violations.Add(new ScanViolation(relativePath, scope.Name, AdaptersRule));
+                }
+
+                // A value that cannot be determined (null), has the wrong shape, or names no approved record.
+                if (scope.ApprovalReferenceValues.Any(value =>
+                        value is null || !ApprovalIdShape.IsMatch(value) || !approvedReferences.Contains(value)))
+                {
+                    violations.Add(new ScanViolation(relativePath, scope.Name, ApprovalReferenceRule));
                 }
             }
 
@@ -2529,5 +2646,123 @@ public sealed class PvgServiceApiHostTests
             var productionLikeDisabled = scope.ProductionLikeValues.All(IsPlainFalse);
             return !(environmentGiven && productionLikeDisabled);
         }
+    }
+
+    // ---- WP-0230-DL3D (AC-10): Pvg:Runtime:ApprovalReference must resolve to an approved decision record ----
+
+    private const string ApprovalReferenceRule = PvgConfigurationScanner.ApprovalReferenceRule;
+    private const string ApprovedRecordsDirectory = "docs/records/decisions";
+    private const string ApprovedRecordPath = ApprovedRecordsDirectory + "/2026-10/rta.md";
+    private const string ApprovedRecordFor001 =
+        "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-001\n---\n# RTA\n";
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Configuration_scan_without_approval_reference_values_passes(bool decisionsDirectoryExistsButIsEmpty)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write("appsettings.json", "{\"Pvg\":{\"Runtime\":{\"OperationalRuntimeAuthorized\":false}}}");
+        fixture.Write(".env", OperationalFlagKey + "=false\n");
+        if (decisionsDirectoryExistsButIsEmpty)
+        {
+            Directory.CreateDirectory(Path.Combine(fixture.Root, "docs", "records", "decisions"));
+        }
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Contains("appsettings.json", result.ScannedFiles);
+        Assert.Contains(".env", result.ScannedFiles);
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void Configuration_scan_flags_approval_reference_when_decisions_directory_is_missing()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(
+            "appsettings.json",
+            "{\"Pvg\":{\"Runtime\":{\"ApprovalReference\":\"RTA-MOD0230-001\"}}}");
+
+        var violation = Assert.Single(PvgConfigurationScanner.Scan(fixture.Root).Violations);
+
+        Assert.Equal("appsettings.json", violation.File);
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
+    }
+
+    // Fixture notation: a single quote in the content stands for a double quote. Each row is one configuration
+    // value plus up to two decision records and differs from the accepted case (the next test) in one condition.
+    // Empty record path = no record. The expected result is one violation (file, scope, ApprovalReferenceRule).
+    [Theory]
+    [InlineData("no-record-json", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", "", "", "", "")]
+    [InlineData("no-record-env", ".env", "Pvg__Runtime__ApprovalReference=RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("no-record-workflow", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      Pvg__Runtime__ApprovalReference: RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("no-record-launch-settings", "Properties/launchSettings.json", "{'profiles':{'dev':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','Pvg__Runtime__ApprovalReference':'RTA-MOD0230-001'}}}}", "dev", "", "", "", "")]
+    [InlineData("no-record-dockerfile", "Dockerfile", "FROM scratch\nENV Pvg__Runtime__ApprovalReference RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("draft-record", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: draft\nruntime_approval_id: RTA-MOD0230-001\n---\n# RTA\n", "", "")]
+    [InlineData("other-id-record", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-002\n---\n# RTA\n", "", "")]
+    [InlineData("id-only-in-body", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\n---\n# RTA\nruntime_approval_id: RTA-MOD0230-001\n", "", "")]
+    [InlineData("record-outside-decisions", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", "docs/records/notes/rta.md", ApprovedRecordFor001, "", "")]
+    [InlineData("two-records-same-id", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordsDirectory + "/2026-10/rta-a.md", ApprovedRecordFor001, ApprovedRecordsDirectory + "/2026-11/rta-b.md", ApprovedRecordFor001)]
+    [InlineData("malformed-id", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-1'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-1\n---\n", "", "")]
+    [InlineData("text-value-not-in-set", ".env", "Pvg__Runtime__ApprovalReference=${{ secrets.PVG_REF }}\n", "file", ApprovedRecordPath, ApprovedRecordFor001, "", "")]
+    [InlineData("undeterminable-value", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeArgs':['run','--','--Pvg:Runtime:ApprovalReference']}]}", "pvg", ApprovedRecordPath, ApprovedRecordFor001, "", "")]
+    public void Configuration_scan_flags_approval_reference_without_approved_record(
+        string caseId,
+        string relativePath,
+        string content,
+        string expectedScope,
+        string recordPathA,
+        string recordA,
+        string recordPathB,
+        string recordB)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(relativePath, content.Replace('\'', '"'));
+        if (recordPathA.Length > 0)
+        {
+            fixture.Write(recordPathA, recordA);
+        }
+
+        if (recordPathB.Length > 0)
+        {
+            fixture.Write(recordPathB, recordB);
+        }
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.True(result.ScannedFiles.Contains(relativePath), $"{caseId}: {relativePath} was not scanned.");
+        var violation = Assert.Single(result.Violations);
+        Assert.Equal(relativePath, violation.File);
+        Assert.Equal(expectedScope, violation.Scope);
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
+    }
+
+    [Fact]
+    public void Configuration_scan_accepts_approval_reference_with_approved_record()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(
+            "appsettings.json",
+            "{\"Pvg\":{\"Runtime\":{\"ApprovalReference\":\"RTA-MOD0230-001\",\"OperationalRuntimeAuthorized\":false}}}");
+        fixture.Write(".env", "Pvg__Runtime__ApprovalReference=RTA-MOD0230-001\n" + OperationalFlagKey + "=false\n");
+        fixture.Write(ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-001\n---");
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Contains("appsettings.json", result.ScannedFiles);
+        Assert.Contains(".env", result.ScannedFiles);
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void Configuration_scan_matches_upper_case_approval_reference_key_under_turkish_culture()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(".env", "PVG__RUNTIME__APPROVALREFERENCE=RTA-MOD0230-001\n");
+
+        var violation = ScanUnderTurkishCulture(fixture.Root).Single();
+
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
     }
 }
