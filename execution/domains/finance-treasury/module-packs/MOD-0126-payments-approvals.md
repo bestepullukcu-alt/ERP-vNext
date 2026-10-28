@@ -1197,6 +1197,7 @@ kapandı):** `platform.workflow.tasks.approve` / `.reject` onaylayıcı rollere 
 kesişim, modül onay anahtarı rol dışı elle verilmiş ve iş akışı izni olmayan kişinin aday olmasını önler — karar veremeyecek
 kişi aday olmaz. Auth yalnız tabanı verir (kiracı, etkin kullanıcı, token'a giren izin); servis kesişime R1–R3'ü uygular, şirket kapsamı dışındakileri
 çıkarır (o paketin K-A2'si: CT önerisi servis `IFinanceTreasuryDataScopeSource` ile süzer), muafiyet adayını R4 kuralıyla ekler
+(muafiyet adayı da `platform.workflow.tasks.approve` ile kesişir — karar veremeyecek kişi aday olmaz, **KARAR D71**)
 ve kalanı niyete (`PaymentWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. Tier-2 partide kesişim boşsa (ya
 da R1–R3 ve kapsamdan sonra boş kalırsa) "tier-2 aday yok" sayılır: R4'ün muafiyet adayı kuralı (D13) işler. Liste (normal
 partide kesişim ve kurallardan sonra, tier-2 partide muafiyet adayı kuralından da sonra) boşsa boş liste
@@ -1530,7 +1531,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   ve karar `Waived` + kaldırılan kural kodu (`R4`) ile kaydedilir. R1/R2/R3 hatasında muafiyet istemi 403
   `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (D12/1); Release aynı modeli uygular (R11). Gerekçe kodu `ACIL-ODEME` / `TEK-YETKILI` /
   `DENETIM-ISTEGI` dışında bir değerse 400 `PAYMENT_SOD_WAIVER_REASON_REQUIRED` (KARAR D49/4; sabotaj: liste kontrolü
-  kaldırıldığında serbest metin gerekçeyle muafiyet kaydedilir ve test kırmızıya döner).
+  kaldırıldığında serbest metin gerekçeyle muafiyet kaydedilir ve test kırmızıya döner). **İş akışı izni (KARAR D71):** muafiyet adayı da
+  `platform.workflow.tasks.approve` ile kesişir: sahte Auth `waive-sod` + parti için {W, X}, iş akışı için {X} → yalnız X eklenir;
+  sabotaj: kesişim kaldırılınca W aday olur ve test kırmızıya döner.
 - [ ] AC-43 (zorunlu) — **Muafiyet ataması kullanım anı denetimi (KARAR D49/4):** `waive-sod` izni olan çağıranın atama
   kaydında (Auth'tan okunan alanlar — Auth paket metninde tanımlı, KARAR D56/3) (a) bitiş geçmişse, (b) başlangıç–bitiş aralığı 24 saati aşıyorsa, (c) atamayı onaylayan
   çağıranın kendisiyse, (d) atamayı onaylayan partiyi oluşturan / gönderen / son güncelleyen ise, (e) atamanın hedef partisi

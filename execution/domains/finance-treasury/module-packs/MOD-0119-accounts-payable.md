@@ -34,7 +34,7 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > dalı (D70/2). MOD-0018 eki K-A4b **KAPANDI — KARAR D71**; D70/1 (iş akışı izni rol şablonuyla gelir) değişmedi. Validation
 > Rules "Aday tabanı", Runtime Constraints (Reconcile yeniden başlatma), Dependencies kapanış tablosu (aday tabanı satırı), Failure
 > Path, Authorization Convention, Test Expectations; **AC-10 genişletildi**. Yeni hata kodu yok.
-> **Sabitleme:** MOD-0126 ortak tanımları sha256 `a92c4a49…2446`'a yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D71
+> **Sabitleme:** MOD-0126 ortak tanımları sha256 `1b8f172a…8ddf`'a yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0126 D71
 > revizyonu); önceki `ec4943aa…e374` (D70). Mevcut AC numaraları ve dilim tablosu değişmedi; yeni AC yok.
 >
 > **Revizyon (2026-10-28, KARAR D70 + D67 atıfları):** `status: draft` değişmedi. Kaynak:
@@ -1644,7 +1644,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `a92c4a492137aee75f4050d1bcc657755441dd5e907eb92ba2c43bfb09e72446` (bu revizyonla aynı commit, dal
+  `1b8f172a830957c123336b7e90516834e9364a1925f9bb85db6359fa240a8ddf` (bu revizyonla aynı commit, dal
   `chore/ct/treasury-intake-ct-05`; MOD-0126 D71 revizyonu — aday tabanı iş akışı izniyle de kesişir, K-A4b kapandı (D71); önceki `ec4943aa…e374` (D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları), `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
