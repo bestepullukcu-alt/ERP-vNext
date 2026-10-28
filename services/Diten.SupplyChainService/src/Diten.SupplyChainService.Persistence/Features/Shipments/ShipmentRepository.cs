@@ -62,6 +62,8 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
         if (result.Replay && result.ErrorCode is null) ShipmentTelemetry.IdempotentReplays.Add(1);
         return result;
     }
+    // A conditional write wins when its filter matched: a renewal at the same instant changes no byte (ModifiedCount 0)
+    // and is still the holder's write.
     private FilterDefinition<Shipment> Held(ShipmentScope scope, Guid shipmentId, int n, Guid leaseId) =>
         Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId)
         & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.N, n) & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.LeaseId, leaseId);
@@ -72,19 +74,19 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
             ? f.Eq(x => x.DispatchAttempt, null)
             : f.Eq(x => x.DispatchAttempt!.N, observed.N) & f.Eq(x => x.DispatchAttempt!.LeaseId, observed.LeaseId) & f.Eq(x => x.DispatchAttempt!.State, observed.State));
         var update = await _shipments.UpdateOneAsync(filter, Builders<Shipment>.Update.Set(x => x.DispatchAttempt, next), cancellationToken: ct);
-        return update.ModifiedCount == 1;
+        return update.MatchedCount == 1;
     }
     public async Task<bool> SaveDispatchAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, CancellationToken ct) =>
-        (await _shipments.UpdateOneAsync(Held(scope, shipmentId, attempt.N, heldLeaseId), Builders<Shipment>.Update.Set(x => x.DispatchAttempt, attempt), cancellationToken: ct)).ModifiedCount == 1;
+        (await _shipments.UpdateOneAsync(Held(scope, shipmentId, attempt.N, heldLeaseId), Builders<Shipment>.Update.Set(x => x.DispatchAttempt, attempt), cancellationToken: ct)).MatchedCount == 1;
     public async Task<bool> CloseCompensatedAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, CancellationToken ct)
     {
         var closed = attempt.Copy(); closed.State = DispatchState.Compensated;
         var update = Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null).Push(x => x.DispatchHistory, closed);
-        return (await _shipments.UpdateOneAsync(Held(scope, shipmentId, attempt.N, heldLeaseId), update, cancellationToken: ct)).ModifiedCount == 1;
+        return (await _shipments.UpdateOneAsync(Held(scope, shipmentId, attempt.N, heldLeaseId), update, cancellationToken: ct)).MatchedCount == 1;
     }
     public async Task<bool> DropUnpostedAttemptAsync(ShipmentScope scope, Guid shipmentId, int n, Guid heldLeaseId, CancellationToken ct) =>
         (await _shipments.UpdateOneAsync(Held(scope, shipmentId, n, heldLeaseId) & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.State, DispatchState.InProgress),
-            Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null), cancellationToken: ct)).ModifiedCount == 1;
+            Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null), cancellationToken: ct)).MatchedCount == 1;
     public async Task AppendLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, CancellationToken ct) =>
         await _shipments.UpdateOneAsync(Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId),
             Builders<Shipment>.Update.Push(x => x.DispatchLateWrites, write), cancellationToken: ct);
