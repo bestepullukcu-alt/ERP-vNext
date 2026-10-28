@@ -26,17 +26,34 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > **Yetki dayanağı.** MOD-0018 Auth eki Treasury tarafından yazılır; MOD-0018 sahibi inceler ve teyit eder (Y-15, Y-16;
 > `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md`). Y-14 geçersizdir ve bu pakete
 > işlenmedi. Modül tanımı biçimi değişmedi; bu paket mevcut MOD-0018 onboarding kalıbını (FU20 / FU22) izler (Y-16/2).
-> **D53** aynen geçerlidir: bu paketin metni main'de = altı tüketici paketin paket kapısı (D53/1); bu paketin kodu main'de =
-> tüketicilerin DL-1 kabul kapısı (D53/2). **D56** aynen geçerlidir.
+> **D53** geçerlidir, D53/1 **KARAR D70/3** ile sıkılaştı: bu paketin metni main'de **ve** MOD-0018 sahibinin teyidi (teyit karar
+> dosyasına kaynak olarak yazılır) = altı tüketici paketin paket kapısı (D53/1 + D70/3; metnin main'de olması tek başına yetmez);
+> bu paketin kodu main'de = tüketicilerin DL-1 kabul kapısı (D53/2). **D56** aynen geçerlidir.
 >
 > **Kaynak (tek doğruluk kaynağı, D62/1).** `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` — main'de
 > (`origin/main` @ `f81d34df7`, 2026-10-28 ölçümü): "D47 rol matrisi (CT04a; D49 ile güncellendi — işleyen tek matris)"
-> bölümü, D54, D56, D57, D62, D63. **D64** (D63/3'ün yerine; waive-sod Auth veri yapısı bu pakette, DL-5) karar dosyasına
-> yazıldı (tetik Y-17) ama 2026-10-28 ölçümünde **main'de değildir** (yalnız `chore/ct/treasury-intake-ct-05` dalında, yerel
-> commit `4d8a4050a`); D62/1
-> gereği DL-5'in paket kapısı D64'ün main'e girmesini bekler (Ready-for-dev Checklist). D46 tablosu tarihçedir
+> bölümü, D54, D56, D57, D62, D63. **D64** (D63/3'ün yerine; waive-sod Auth veri yapısı bu pakette, DL-5; tetik Y-17) **main'dedir**:
+> PR #276 (`3bb1ab838`; ölçüm 2026-10-28 `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0); D62/1 gereği DL-5'in paket
+> kapısı olan "D64 main'de" maddesi kapandı (Ready-for-dev Checklist). D66, D67 ve D68 PR #281 ile main'dedir (`c32cabe6b`);
+> D69 ve D70 main'de değildir (D69 yerel commit `db69732cb`; D70 çalışma ağacında, commit edilmemiş). D46 tablosu tarihçedir
 > ("YERİNE GEÇTİ — UYGULAMAYIN") ve kullanılmadı. Anahtar adları altı paketin Authorization Convention bölümleriyle
 > mekanik olarak karşılaştırıldı (Bölüm 19).
+>
+> **Revizyon (2026-10-28, KARAR D70 — onaylayıcı rollerin iş akışı izni ve Auth paket kapısı):** (1) **D70/1:** bütün onaylayıcı
+> rollere (7 `TreasuryPaymentApprover`, 8 `TreasuryPaymentTier2Approver`, 12 `TreasuryApApprover`, 15 `TreasuryArApprover`,
+> 17 `TreasuryArTier2AdjustmentApprover`, 19 `TreasuryCashPositionApprover`, 26 `ContractVersionApprover` — matristen ölçüldü:
+> `platform.workflow.tasks.approve` / `.reject` satırındaki roller + D70/1 ile Sözleşme onaylayıcı) `platform.workflow.tasks.approve`
+> ve `.reject` çapraz modül bağımlılığı olarak rol şablonuyla gelir: **K-4 (b) KAPANDI — KARAR D70/1**, **K-A4 KAPANDI — D70/1**
+> (iş akışı izni aday şartı değildir, rol şablonuyla gelir; aday sorgusu tek anahtar — modül onay anahtarı — alır). Rol şablonu
+> yoluyla tutarlı; elle atamada açık nokta — **yeni açık karar K-A4b** (iki seçenek, Açık kararlar). Bağımlı anahtar
+> olduğu için 117 modül anahtarı ve rol başına modül anahtarı sayıları değişmez. Değişen yerler: Bölüm 1 (a), 2, 8.6, 14.2
+> (bağımlı anahtar paragrafı), 16 (**AC-3 ve AC-18 genişletildi**), 17, 18, Teslim dilimleri, Açık kararlar K-4 / K-A4. Bağımlı
+> manifestin `platform.workflow.*` tohum sahipli anahtarlarla (`SeedOwnedTenantScopeKeys`, FU24/25) olası çatışması K-4'te ölçüm notu
+> olarak kalır. (2) **D70/3:** D53/1 Auth paket metni kapısı = metin main'de + MOD-0018 sahibinin teyidi (teyit karar dosyasına kaynak
+> olarak yazılır) — yukarıdaki D53 paragrafı ve Ready-for-dev Checklist; açık. (3) Ölçümle eskiyen ifadeler düzeltildi: D64 PR #276,
+> D66 PR #281 ile main'de (Kaynak paragrafı, Bölüm 7, Ready-for-dev Checklist). D70 2026-10-28 ölçümünde **main'de değil**
+> (çalışma ağacında, commit edilmemiş); D62/1 gereği K-4 / K-A4 kapanışının ve D70/3 kapısının paket kapısı D70'in main'e
+> girmesidir (Ready-for-dev Checklist). MOD-0018 sahibinin teyidi gerekir (D70/1). Mevcut AC numaraları değişmedi; yeni AC yok.
 >
 > **Revizyon (2026-10-28, KARAR D69 — sözleşme sürümü onay anahtarı):** işleyen matrise yeni anahtar `mdm.contracts.versions.approve` ve yeni rol
 > "Sözleşme onaylayıcı" (`mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve`; belge deposu izni yok — D56/2; açık atama
@@ -45,8 +62,8 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > tüketici anahtarı satırında MOD-0217 "açık" → `mdm.contracts.versions.approve` (D69; MOD-0217 O-3 (b) kapandı). Değişen yerler: Bölüm 1, 2, 3, 4, 5.1, 7,
 > 8.1, 8.2, 8.6, 11, 12, 13, 14.2, 16 (DL-3 başlığı; **AC-7, AC-18, AC-19 genişletildi**), 17, 18, 19 (mekanik uzlaştırma yeniden
 > koşuldu), Teslim dilimleri DL-3 satırı, K-2. Rolün bağımlı MOD-0023 görev anahtarlarını (`platform.workflow.tasks.approve` /
-> `.reject`) taşıyıp taşımayacağını D69 yazmadı — K-4'e eklendi (açık; K-A4 ona bağlı). D69 2026-10-28 ölçümünde **main'de değil**
-> (çalışma ağacında, commit edilmemiş); D62/1 gereği DL-3'ün paket kapısı D69'un main'e girmesini bekler (Ready-for-dev
+> `.reject`) taşıyıp taşımayacağını D69 yazmadı — K-4'e eklendi (K-A4 ona bağlıydı; ikisi D70/1 ile kapandı). D69 2026-10-28 ölçümünde **main'de değil**
+> (yerel commit `db69732cb`); D62/1 gereği DL-3'ün paket kapısı D69'un main'e girmesini bekler (Ready-for-dev
 > Checklist). MOD-0018 sahibinin teyidi Auth ekiyle birlikte (D69). Mevcut AC numaraları değişmedi; yeni AC yok.
 >
 > **Revizyon (2026-10-28, D66/1 — onaylayıcı aday sorgusu):** MOD-0023 şablonları atamasız olduğundan (Y-12) onaylayıcı aday
@@ -55,9 +72,9 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > tanım olarak kalmaz: DL-6 sorgusunun `waive-sod` + parti biçimidir (Bölüm 8.5, 8.6 — tek aday sorgusu). **Neden DL-1 değil:**
 > DL-1 kodu tüketicilerin DL-1 kabul kapısıdır (D53/2) ve iç uç servis kimliği kararını (K-A1 / K-W3) ister; DL-6 tüketicilerin
 > onay dilimlerinden (MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-0217 DL-3) önce main'de olmalıdır,
-> DL-1'i bekletmez. Kaynak: karar dosyası D66 (2026-10-28 ölçümünde **main'de değil** — yalnız `chore/ct/treasury-intake-ct-05`
-> dalında); D62/1 gereği DL-6'nın paket kapısı D66'nın main'e girmesini bekler. D66/1 MOD-0018 sahibinin teyidini ister
-> (Ready-for-dev Checklist). Açık kalanlar K-A1…K-A4. Mevcut AC numaraları değişmedi.
+> DL-1'i bekletmez. Kaynak: karar dosyası D66 — PR #281 ile main'de (`c32cabe6b`; ölçüm 2026-10-28 `git merge-base
+> --is-ancestor 3c98e7bfc c32cabe6b` → 0); D62/1 gereği DL-6'nın "D66 main'de" paket kapısı kapandı. D66/1 MOD-0018 sahibinin teyidini
+> ister (Ready-for-dev Checklist). Açık kalanlar K-A1…K-A3 (K-A4 D70/1 ile kapandı). Mevcut AC numaraları değişmedi.
 >
 > **DCP-002 kimlik durumu — FU numarası açık karar (K-1).** Ana kayıtta (`execution/registries/module-id-registry.md`) en
 > büyük kayıtlı numara MOD-0018-FU22'dir; ancak FU23–FU26 paket dosyaları arşiv dallarında vardır
@@ -82,7 +99,7 @@ sahibinin a–f listesidir (Y-10/1), D64 ile eklenen muafiyet ataması ve D66/1 
 
 | | Kapsam | Dilim |
 |---|---|---|
-| a | 26 rol şablonu (D47 rol matrisi, D49 ve D69 ile güncel) — ad ve anahtar ataması matristen birebir | DL-1, DL-2, DL-3 |
+| a | 26 rol şablonu (D47 rol matrisi, D49, D69 ve D70/1 ile güncel) — ad ve anahtar ataması matristen birebir; onaylayıcı rollerde `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı (D70/1) | DL-1, DL-2, DL-3 |
 | b | 117 modül izin anahtarı (D57/4 ve D69 sonrası) — sayıldı, matrisle uzlaştırıldı (Bölüm 19) | DL-1, DL-2, DL-3 |
 | c | 8 "yalnız açık atama" (`ExplicitGrantOnlyPermissions`) anahtarı, `waive-sod` dahil | DL-1, DL-2, DL-3 |
 | d | `waive-sod` atamasının parti bağı (D54) — **D64 ile bu paketin kapsamında**, ayrı dilim; muafiyet aday listesi (D56/3) D66/1 ile DL-6 aday sorgusunun `waive-sod` + parti biçimidir (parti bağını bu dilimin kaydı verir) | DL-5 |
@@ -139,8 +156,8 @@ partiyi hazırlayıp onaylama izinlerinin ikisini birden alır — ve finans / b
 - `platform.document-repository.*` hiçbir role verilmez (D56/2); belge deposu servis kimliği desteği MOD-0262-FU01 / Platform'un
   işidir (D56/2, Y-8).
 - Bağımlı anahtarların (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.approve`,
-  `.reject`, `.request-info`) kaydı — o modüllerin sahibindedir (D47 rol matrisi giriş paragrafı). Rollere nasıl ulaşacakları
-  açık karar K-4.
+  `.reject`, `.request-info`) kaydı — o modüllerin sahibindedir (D47 rol matrisi giriş paragrafı). Rollere ulaşma yolu
+  **K-4 (b) — KARAR D70/1:** Treasury manifestinde çapraz modül bağımlılığı olarak beyan edilir, profil verir (Bölüm 14.2).
 - `procurement.*`, `crm.*`, MOD-0031 / MOD-0140 okuma izinleri (matrisin anahtar kapsamı dışı).
 - Platform modül kataloğu / kiracı hakkı (entitlement) kayıtları, kiracı verisi, rol üyeliği ataması, token içeriği,
   Production / Staging işlemleri.
@@ -345,12 +362,13 @@ Golden Reference arka uç klasör düzeni (Bölüm 10); satır numaraları `chor
 | Platform modül kataloğu / kiracı hakkı kaydı (Treasury modül kodları) | yok | hak olmadan profil hiçbir hak vermez (beklenen) |
 | MOD-0217 onayı | `draft` | DL-3 kodu onaydan sonra (Y-6, Y-10/1) |
 | XMC-001 — Beste (Platform), MDM sahibi | istenmedi (D63/2) | DL-4 dosyalarına onaya kadar dokunulmaz |
-| D64 main'de | değil (ct-05 dalında yerel commit `4d8a4050a`) | DL-5 paket kapısı (D62/1) |
+| D64 main'de | **var** — PR #276 (`3bb1ab838`; `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0) | DL-5 paket kapısı (D62/1) — kapandı |
 | Auth K2 denetim yolu: önce-yaz `IAuthAuditService.WriteOnceAsync` | var (`IAuthAuditService.cs:18`; kullanım `IssueServiceIdentityTokenHandler.cs:123,151`) | DL-5 için uyulabilir yol |
 | Auth denetim defteri: `auth-gunlugu` izi | **`aday`** — okuyan uç yok (`tests/architecture/audit-ledger/Diten.AuthService.md` `## İzler`) | **DL-5 ENGELİ:** yeni K2 komutu kabul edilmiş ize yazılmalı; CT defter kararı ya da okuyan uç gerekir (K-W5) |
 | FinanceTreasuryService → Auth servis kimliği (DL-5 iç ucu) | servis yok; Auth'ta servis kimliği token ucu var (`Api/Controllers/Internal/InternalServiceIdentityTokensController.cs`) | K-W3 |
 | MOD-0126 tüketici sözleşmesi | paket metninde: port `IPaymentSodWaiverAssignmentSource`, okunan alanlar (bitiş, başlangıç, onaylayan, gerekçe kodu, hedef parti), aday sorgusu (MOD-0126 `:1253-1259`, AC-42, AC-43) | DL-5 yanıt biçimi bununla birebir uyumlu (Bölüm 8.5) |
-| D66 main'de | değil (karar dosyasında, yalnız `chore/ct/treasury-intake-ct-05` dalında; 2026-10-28) | DL-6 paket kapısı (D62/1) |
+| D66 main'de | **var** — PR #281 (`c32cabe6b`; `git merge-base --is-ancestor 3c98e7bfc c32cabe6b` → 0) | DL-6 paket kapısı (D62/1) — kapandı |
+| D70 main'de | değil (karar dosyasında, çalışma ağacında, commit edilmemiş; 2026-10-28) | K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı (D62/1) |
 | Aday sorgusu tüketicileri (D66/1): MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-0217 DL-3 | paket metinlerinde: aday tabanı bu paketin DL-6'sı, tüketici kendi kurallarını uygular, `CandidatePrincipalIds` (Y-12); izin anahtarları Bölüm 8.6 tablosu; MOD-0217 anahtarı `mdm.contracts.versions.approve` (KARAR D69; MOD-0217 O-3 (b) kapandı) | DL-6 kodu tüketici dilimlerinin kabul kapısı (Teslim dilimleri) |
 | FinanceTreasuryService ve MdmService → Auth servis kimliği (DL-6 iç ucu) | FinanceTreasury servisi yok; MdmService var; Auth'ta servis kimliği token ucu var (`Api/Controllers/Internal/InternalServiceIdentityTokensController.cs`) | K-A1 (K-W3 ile aynı karar) |
 | Kullanıcı → şirket kapsamı | Auth'ta yok (ölçüm: `services/Diten.AuthService/src`'de `LegalEntity` yalnız `EntitlementPermissionSyncService.cs` ve `ProductLegalEntityScopeEntitlementGrantProfile.cs`'te, ürün profili); Platform `IDataScopeResolver.ResolveAsync(tenantId, userId, moduleCode, featureCode, …)` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/IDataScopeResolver.cs:5-10`) | K-A2 |
@@ -457,7 +475,7 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
   `finance-treasury.ap-invoices.approve`; MOD-0120 `finance-treasury.receivable-adjustments.approve` (eşik üstü
   `approve` ∩ `finance-treasury.receivable-adjustments.tier2-approve`); MOD-0124 `finance-treasury.cash-positions.approve`; MOD-0217
   `mdm.contracts.versions.approve` (**KARAR D69**; rol "Sözleşme onaylayıcı", açık atama değil; MOD-0217 hazırlayanı dışlar — MOD-0217 AC-33). Sorgu tek anahtar alır; kesişimi (∩) tüketici servis iki ayrı çağrıyla alır (sahip denetimi 61466e504, P2) — tier-2
-  yetkisi tek başına aday yapmaz, çünkü karar ucu temel `approve`'u da ister. Bağımlı `platform.workflow.tasks.approve`'un ayrıca aday şartı olup olmadığı **K-A4** (K-4'e bağlı).
+  yetkisi tek başına aday yapmaz, çünkü karar ucu temel `approve`'u da ister. Bağımlı `platform.workflow.tasks.approve` aday şartı **değildir** — **K-A4 KAPANDI (KARAR D70/1)**: iş akışı izni rol şablonuyla gelir (Bölüm 14.2; onaylayıcı rollerin hepsinde), sorgu ikinci anahtar almaz. Rol şablonu yoluyla tutarlı; **elle atamada açık nokta (K-A4b):** modül onay anahtarı rol dışı elle (`GrantSource = Manual`) verilmiş ve `platform.workflow.tasks.approve` tutmayan kişi bu sorguda aday döner ama MOD-0023 görevinde karar veremez (Açık kararlar K-A4b).
 - **Yanıt:** `permissionKey`, `principalIds` (Guid listesi, tekil, sıralı); ad, e-posta, rol adı ya da başka kişi verisi yok.
   Boş liste hata değildir (200). Alan adları ve hata kodları sürümlü sözleşme dosyasında dondurulur (K-A1; K-W6 deseni).
 - **Tüketici kuralı (sözleşme olarak):** her hata yanıtı ve okunamayan gövde "okunamaz"dır → gönderme kapalı-başarısız; Auth'un
@@ -562,7 +580,8 @@ açıklamasıdır (Bölüm 14: en ve tr birlikte). Hata yanıtları sabit kod ta
 ### 14.2 Rol şablonları — 26 (D47 rol matrisi, D49 ve D69 ile güncel)
 
 `RoleName` sistem rol adıdır (CT önerisi, sahip teyidi K-7); `tr` adı matristeki addır. "(+X)" X'in bütün anahtarlarını
-miras alır (D49/1). Sayı = rolün tam anahtar sayısı (mekanik genişletme, Bölüm 19).
+miras alır (D49/1). Sayı = rolün tam modül anahtarı sayısı (mekanik genişletme, Bölüm 19); bağımlı anahtarlar sayıya girmez
+(tablonun altında).
 
 **Finans — 19 rol (DL-1):**
 
@@ -600,10 +619,12 @@ miras alır (D49/1). Sayı = rolün tam anahtar sayısı (mekanik genişletme, B
 | 25 | `ContractSignatureRecorder` | Contract Signature Recorder | Sözleşme imza kaydedici | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` | 4 |
 | 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme onaylayıcı | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` (**D69**; belge deposu izni yok — D56/2; açık atama değil). **Yok:** `mdm.contracts.submit-approval` ve yazma anahtarları | 3 |
 
-**Bağımlı anahtarlar (başka modülün; kayıt o sahipte — K-4):** `mdm.legal-entities.read` (MOD-0220): 6–19 arasındaki
+**Bağımlı anahtarlar (başka modülün; kayıt o sahipte; rollere Treasury manifestinde çapraz modül bağımlılığı olarak beyanla,
+profil verir — K-4 (b), KARAR D70/1):** `mdm.legal-entities.read` (MOD-0220): 6–19 arasındaki
 hazırlayan / operatör / karar veren / serbest bırakan rolleri, AP / AR operasyon yöneticileri, AR 2. kademe ve Hazine
 yöneticisi (görüntüleyicilerde yok); `platform.workflow.instances.start` (MOD-0023): 6, 11, 13, 14, 16, 18, 24;
-`platform.workflow.tasks.approve` / `.reject`: 7, 8, 12, 15, 17, 19 — 26 (Sözleşme onaylayıcı) için D69 yazmadı, açık (K-4 / K-A4);
+`platform.workflow.tasks.approve` / `.reject`: 7, 8, 12, 15, 17, 19, 26 — bütün onaylayıcı roller (**KARAR D70/1**; 26
+Sözleşme onaylayıcı D70/1 ile eklendi);
 `platform.workflow.tasks.request-info`: 7, 8, 12.
 
 ### 14.3 DL-5 Auth uçları ve izinleri
@@ -642,7 +663,10 @@ yöneticisi (görüntüleyicilerde yok); `platform.workflow.instances.start` (MO
   `EntitlementOnlyViewerPermissions`'tan çıkarılınca test kırmızı.
 - [ ] AC-3 (zorunlu) — Etkin hakla 19 finans rolü Bölüm 14.2'deki kümeyi birebir alır (rol başına küme eşitliği, sayılar
   4/2/2/2/10/12/8/9/6/17/10/6/15/10/5/11/6/11/6); kullanıcı-rol satırı sıfır. Sabotaj: profilde bir role bir anahtar eklenince
-  ya da çıkarılınca o rolün testi kırmızı.
+  ya da çıkarılınca o rolün testi kırmızı. **Rol şablonu testi (KARAR D70/1, K-4 (b)):** altı finans onaylayıcı rolünün (7, 8, 12,
+  15, 17, 19) her birinde `platform.workflow.tasks.approve` ve `.reject` bağımlı izinlerinin ikisi de vardır; onaylayıcı olmayan
+  rollerde (1–6, 9–11, 13, 14, 16, 18) yoktur. Sabotaj: profilde bir onaylayıcı rolünden iki bağımlı izinden biri kaldırılınca o
+  rolün testi kırmızıya döner.
 - [ ] AC-4 (zorunlu) — Görev ayrılığı yapı testi: hiçbir rol aynı nesne türünde hazırlama / oluşturma / gönderme eylemini onay /
   ret eylemiyle birlikte taşımaz (ödeme partisi, AP faturası, AR düzeltmesi, nakit pozisyonu); `TreasuryManager` approve,
   reject, request-evidence, release, tier2-approve, waive-sod, publish ve AP / AR okuması taşımaz. Sabotaj: `TreasuryManager`'a
@@ -681,6 +705,9 @@ yöneticisi (görüntüleyicilerde yok); `platform.workflow.instances.start` (MO
   açık atama listesinde değildir (D69: "açık atama değil"); `ContractVersionApprover` `mdm.contracts.submit-approval` ve yazma anahtarı
   taşımaz (aynı nesne türünde gönderme + onay yok — AC-4'ün yapı testi deseni, sözleşme sürümü için bu dilimde). Sabotaj: `ContractManager`'a
   `record-signature` ya da `mdm.contracts.versions.approve` eklenince, ya da `mdm.contracts.versions.approve` açık atama listesine konunca kırmızı.
+  **Rol şablonu testi (KARAR D70/1, K-4 (b)):** `ContractVersionApprover` `platform.workflow.tasks.approve` ve `.reject` bağımlı
+  izinlerinin ikisini de taşır; 23–25 taşımaz. Sabotaj: profilde `ContractVersionApprover`'dan iki bağımlı izinden biri kaldırılınca
+  test kırmızıya döner.
 - [ ] AC-19 (zorunlu) — 26 rolün hiçbiri (D69'un `ContractVersionApprover`'ı dahil) `platform.document-repository.read` ya da `.manage` taşımaz (D56/2); profil kümesinde
   `platform.document-repository.*` öneki yoktur. Sabotaj: `ContractViewer`'a `platform.document-repository.read` eklenince kırmızı.
 - [ ] AC-20 (zorunlu) — Üç `read` eylemli MOD-0217 anahtarı (`mdm.contracts.read`, `.value.read`, `.documents.read`) hak olmadan
@@ -762,7 +789,7 @@ yöneticisi (görüntüleyicilerde yok); `platform.workflow.instances.start` (MO
 
 | Alan | Gerekli kanıt |
 |---|---|
-| Profil birim | 117 anahtar, 26 rol, rol başına küme eşitliği, modül kodu başına tam küme, eksik / fazla / bilinmeyen eylem reddi |
+| Profil birim | 117 anahtar, 26 rol, rol başına küme eşitliği, modül kodu başına tam küme, eksik / fazla / bilinmeyen eylem reddi; yedi onaylayıcı rolde (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` bağımlı izinleri (D70/1; AC-3, AC-18) |
 | Taban | Hak olmadan Admin / Viewer'da sıfır Treasury anahtarı; 18 `read` anahtarı dışlama listesinde |
 | Açık atama | 8 anahtar × 3 otomatik yol (SuperAdmin, modül eşitlemesi, varsayılan rol) |
 | SoD yapı | Aynı nesne türünde hazırlama + karar birlikte yok; `TreasuryManager` yasak listesi |
@@ -788,19 +815,23 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [x] 117 anahtar, 26 rol ve 8 açık atama matrisle mekanik uzlaştırıldı (Bölüm 19; D69 sonrası yeniden koşuldu).
 - [ ] D69 main'de (D62/1) — DL-3 paket kapısı ({K} ve Sözleşme onaylayıcı).
 - [ ] FU numarası verildi; dosya adı, `id`, `branch` ve kayıt satırı yazıldı; `verify_module_id.py --check-id` geçti (K-1).
-- [ ] MOD-0018 sahibi incelemesi ve teyidi (Y-15/3, Y-16; D69'un anahtarı ve rolü dahil — D69).
+- [ ] MOD-0018 sahibi incelemesi ve teyidi (Y-15/3, Y-16; D69'un anahtarı ve rolü dahil — D69; onaylayıcı rollerdeki iki iş akışı
+  bağımlı izni dahil — D70/1).
+- [ ] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
+  tek başına yetmez, teyit karar dosyasına kaynak olarak yazılır) — altı tüketici paketin paket kapısı.
+- [ ] D70 main'de (D62/1) — K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı.
 - [ ] K-1b modül kodları (tüketici paket sahipleriyle) — DL-1/2/3 ve DL-4 için.
-- [ ] K-2 Admin / Viewer varsayılanı, K-4 bağımlı anahtarlar, K-7 rol adları — DL-1/2/3 için.
+- [ ] K-2 Admin / Viewer varsayılanı, K-7 rol adları — DL-1/2/3 için (K-4 bağımlı anahtarlar **KAPANDI — KARAR D70/1**, (b)).
 - [ ] Bağımsız inceleme (CT-APR-02) ve CT-APR-01 onay satırı main'de.
 - [ ] XMC-001 onayı: Beste (Platform dosyaları) ve MDM sahibi (MDM istemcisi); K-5 çift listesi — DL-4 için.
 - [ ] MOD-0217 `approved` / `ready-for-dev` — DL-3 kodu için.
-- [ ] D64 main'de (D62/1) — DL-5 paket kapısı.
+- [x] D64 main'de (D62/1) — DL-5 paket kapısı. Kaynak: PR #276 (`3bb1ab838`; `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0, 2026-10-28).
 - [ ] `auth-gunlugu` izinin K2 için kabulü ya da başka kabul edilmiş iz (CT defter kararı, K-W5) — DL-5 için.
 - [ ] K-W1 (atama onay izni), K-W2 (token), K-W3 (servis kimliği), K-W4 (yol), K-W6 (sözleşme dosyası) — DL-5 için.
-- [ ] D66 main'de (D62/1) — DL-6 paket kapısı.
+- [x] D66 main'de (D62/1) — DL-6 paket kapısı. Kaynak: PR #281 (`c32cabe6b`; `git merge-base --is-ancestor 3c98e7bfc c32cabe6b` → 0, 2026-10-28).
 - [ ] MOD-0018 sahibinin DL-6 teyidi (D66/1: "MOD-0018 sahibinin teyidi gerekir") — DL-6 için.
-- [ ] K-A1 (uç adı, servis kimliği, sözleşme dosyası), K-A2 (şirket kapsamı), K-A3 (etkin kullanıcı tanımının kalanı), K-A4
-  (bağımlı iş akışı anahtarı) — DL-6 için.
+- [ ] K-A1 (uç adı, servis kimliği, sözleşme dosyası), K-A2 (şirket kapsamı), K-A3 (etkin kullanıcı tanımının kalanı) — DL-6 için
+  (K-A4 bağımlı iş akışı anahtarı **KAPANDI — D70/1**); K-A4b (elle atamada iş akışı izni olmayan aday — açık nokta) — DL-6 için.
 - [ ] Ekran yok, tur yok, sayfa yardımı yok (UXH-001: sayfa sahiplenilmiyor).
 
 ## 19. Implementation Notes
@@ -868,6 +899,7 @@ K2 sınıfıdır (yetki değiştirir).
 | DL-5 | `waive-sod` parti bağlı atama — kayıt, yazma ucu, "bu parti için geçerli atamalar" sorgusu, K2 denetim (d; D54 + D64); AC-26…AC-34; ayrıntı: §4 yeni kayıt, §5.3, §8.5, §14.3 | Owned Objects, Entity Fields, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Audited Events |
 | DL-6 | onaylayıcı aday sorgusu — "bu izne sahip kullanıcılar" iç ucu (g; D66/1); D56/3 muafiyet aday listesi bunun `waive-sod` + parti biçimi; AC-35…AC-41; ayrıntı: §5.4, §8.6, §14.4 | Owned Objects, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria |
 
+Tüketici paket kapısı (D53/1, **KARAR D70/3**): bu paketin metni main'de + MOD-0018 sahibinin teyidi (karar dosyasında kaynak).
 Tüketici kapıları (D53/2): MOD-0126 / 0119 / 0120 / 0124 DL-1 kabulü → bu paketin DL-1 kodu main'de; MOD-0289 DL-1 → DL-2
 (+ DL-4, D56/1); MOD-0217 DL-1 → DL-3 (+ DL-4). MOD-0126 DL-2: DL-5 paket metni (muafiyet alanları, D56/3) dilim önkoşulu;
 DL-5 kodu DL-2 kabulünü **beklemez** — muafiyet yolu 403 ile kapalıyken DL-2 kabul edilir, muafiyet DL-5 main'e girince ayrı
@@ -884,7 +916,7 @@ kapısı — MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-021
 | K-1b | Treasury modül kodları (manifest `ModuleCode`) | paket başına bir kod · dört finans paketine tek kod + MDM'de paket başına | paket başına bir kod (kiracı modül bazında alır); değerler tüketici paketlerin manifest adımında | MOD-0126 DL-1 yazarı (finans), MDM sahibi (MOD-0289 / MOD-0217), MOD-0018 sahibi teyidi | DL-1 başlamadan |
 | K-2 | Modül hakkıyla Admin / Viewer Treasury varsayılanı | hiçbiri · yalnız görüntüleyici kümeleri · FU20 gibi `read` | hiçbiri (matris 117 anahtarın hepsini yerleştirdi) | MOD-0018 sahibi + K1 | DL-1 başlamadan |
 | K-3 | Varsayılan kiracı SuperAdmin tam katalog yolu Treasury anahtarlarını alsın mı | bugünkü davranış (açık atama dışı hepsi) · Treasury'yi dışla | bugünkü davranış (FU20 / FU22 deseni); varsayılan kiracı iş kiracısı değil | MOD-0018 sahibi | TBD |
-| K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil — D69 yazmadı) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | (b) — ama `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri | DL-1 başlamadan |
+| K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | **KAPANDI — KARAR D70/1: (b)**; bütün onaylayıcı rollere (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak (AC-3, AC-18). D70/1 iki görev anahtarını adlandırır; öteki üç bağımlı anahtarın (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.request-info`) aynı yolla gelmesi CT çıkarımıdır — MOD-0018 sahibinin D70/1 teyidiyle birlikte teyit edilir. **Ölçüm notu (açık):** `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); bağımlı manifestle kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri; teyit MOD-0018 sahibi (D70/1) | DL-1 başlamadan (teyit) |
 | K-5 | DL-4'te Platform izin listesine girecek (modül kodu, anahtar) çiftleri | MOD-0289 + MOD-0217'nin şirket kapsamı soran anahtarları (`read-tenant-wide` hariç) | hesap ve sözleşme anahtarları; banka / amaç (referans veri) kapsam sorar mı MOD-0289 sahibi söyler | MOD-0289 / MOD-0217 sahibi; Beste (Platform) | DL-4 başlamadan |
 | K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | hayır bu ekte (D56/1 yalnız MDM'yi adlandırır); ayrı karar | K1 + Beste | TBD |
 | K-7 | Rol adları ve Türkçe görünen ad | `RoleName` İngilizce PascalCase + `DisplayName` İngilizce (mevcut desen, tek dil) · tr ad için rol ekranında kod → kaynak eşlemesi | CT önerisi Bölüm 14.2; tr adın ekranda nasıl çıktığı ayrı karar — not: Rol ekranı kiracıya görünür ve çekirdek kural kiracı ekranı için 7 dil ister | MOD-0018 sahibi | DL-1 başlamadan |
@@ -897,4 +929,5 @@ kapısı — MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-021
 | K-A1 | DL-6 iç ucunun adı, kimliği ve sözleşme dosyası | uç `GET /internal/permission-candidates` · başka ad; kimlik K-W3 ile aynı (servis kimliği token'ı) · `X-Internal-Api-Key` (`InternalRolesController` deseni); sözleşme dosyası `docs/analysis/contracts/` altında sürümlü · yalnız pakette | `/internal/permission-candidates`; K-W3 ile aynı servis kimliği, izinli çağıranlar FinanceTreasuryService ve MdmService; sürümlü dosya (hata kodları dahil) | MOD-0018 sahibi + tüketici yazarları | DL-6 başlamadan |
 | K-A2 | Şirket kapsamı nerede uygulanır | (a) Auth sorguya `legalEntityId` alır ve Platform kapsam çözümünü sorar (Auth → Platform yeni bağımlılık; Platform tarafı XMC-001 Beste) · (b) Auth kiracı tabanını verir, tüketici kendi kapsam portuyla süzer | (b) — Auth'ta kullanıcı → şirket verisi yok; tüketicilerin kapsam portu zaten DL-1 kabul kapısında (D51/2) | K1 + MOD-0018 sahibi (+ Beste (a) ise) | DL-6 başlamadan |
 | K-A3 | "Etkin kullanıcı" tanımının kalanı | hizmet hesabı (`AccountKind = Service`) aday mı · geçici kilitli (`LockoutEnd` gelecekte) aday mı | hizmet hesabı aday değil; geçici kilit aday kalır (kilit geçicidir, onay görevi bekleyebilir) | MOD-0018 sahibi | DL-6 başlamadan |
-| K-A4 | Bağımlı `platform.workflow.tasks.approve` aday şartı mı | (a) yalnız modül onay anahtarı · (b) modül anahtarı + bağımlı MOD-0023 anahtarı birlikte (sorgu iki anahtar alır) | K-4 kararına bağlı: K-4 (b) ise rollerde birlikte bulunur, (a) yeter; K-4 (c) ise (b) | MOD-0018 sahibi + MOD-0023 sahibi | DL-6 başlamadan |
+| K-A4 | Bağımlı `platform.workflow.tasks.approve` aday şartı mı | (a) yalnız modül onay anahtarı · (b) modül anahtarı + bağımlı MOD-0023 anahtarı birlikte (sorgu iki anahtar alır) | **KAPANDI — D70/1 (iş akışı izni aday şartı değildir, rol şablonuyla gelir):** (a) — sorgu yalnız modül onay anahtarını alır; K-4 (b) ile iki görev anahtarı bütün onaylayıcı rollerde birlikte bulunur | MOD-0018 sahibi + MOD-0023 sahibi; teyit MOD-0018 sahibi (D70/1) | DL-6 başlamadan (teyit) |
+| K-A4b | Elle atama: modül onay anahtarı rol dışı elle verilmiş, `platform.workflow.tasks.approve` tutmayan kişi aday olsun mu (D70/1 rol şablonu yolunu kapatır, bu durumu yazmaz) | (a) tüketici aday listesini iş akışı izniyle de kesiştirir (DL-6 sorgusu `platform.workflow.tasks.approve` için ikinci çağrı; kesişim dışı kişi aday değil) · (b) kesiştirmez; onay anahtarının elle verilmesi iş akışı izninin de elle verilmesini gerektiren atama kuralı / denetim olur (rol şablonu yolu tek yol sayılır) | CT öneri vermez (D70/1 metninden karar çıkarılmadı); karar verilene kadar tüketiciler kesiştirmez (D70/1 metni) | MOD-0018 sahibi + K1 (+ MOD-0023 sahibi) | DL-6 başlamadan |

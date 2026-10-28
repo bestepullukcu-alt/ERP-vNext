@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 3a70398a41562011d660f2b9fd30b15a1ba609d4c38e36d2d49fd178705ae925 (pack D68 revizyonu + sahip denetimi d5b378e50 P2, 2026-10-28 — boş aday listesi yerel 422, MOD-0023 çağrılmaz; önceki sürüm `14b1bcc5…` (D68 revizyonu); daha önce `5e1ea803…` (sahip denetimi 61466e504 KOŞULLU revizyonu — tier-2 aday kesişimi); daha önce `f496790f…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `81b9b505…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `05410477…` (D58/D59 revizyonu); D57 sürümü `5f69139c…`; D56 sürümü `1baf8728…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `5101b1e8…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — Codex F-1)"; önceki 699b0708…; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
+pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 ec4943aa8f2eb995ef502ee81f710b6895f4b5e1b1b5d3b698f9415e7c0fe374 (pack D70 revizyonu, 2026-10-28 — D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları (ApproverCandidates D67/3), D64 / D66 main'de; önceki sürüm `3a70398a…` (pack D68 revizyonu + sahip denetimi d5b378e50 P2, 2026-10-28 — boş aday listesi yerel 422, MOD-0023 çağrılmaz; önceki sürüm `14b1bcc5…` (D68 revizyonu); daha önce `5e1ea803…` (sahip denetimi 61466e504 KOŞULLU revizyonu — tier-2 aday kesişimi); daha önce `f496790f…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `81b9b505…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `05410477…` (D58/D59 revizyonu); D57 sürümü `5f69139c…`; D56 sürümü `1baf8728…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `5101b1e8…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — Codex F-1)"; önceki 699b0708…; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 
@@ -77,7 +77,7 @@ başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu. **D51/1 sonr
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 (bağımsız inceleme) | Treasury CT + bağımsız inceleyici | `status: draft`; güncel sha `91090dd6…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0126 incelemesi `8eab5e3c…`, `reviews.tsv:82`) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 (bağımsız inceleme) | Treasury CT + bağımsız inceleyici | `status: draft`; güncel sha `ec4943aa…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0126 incelemesi `8eab5e3c…`, `reviews.tsv:82`) | bekletir |
 | CT-APR-01 sürüme bağlı onay satırı (`high: evet`, paketi yazmamış onaylayıcı; D34/2: taslak paketler tek turda) | Beste (onaylayıcı) | `execution/approvals/approvals.tsv`'de MOD-0126 satırı yok | bekletir |
 | DCP-011 `approved` | Beste | dosya `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md` var, `status: draft` (`:7`); numara atandı (Y-4/2), onay `ready-for-dev` turunda | bekletir |
 | TRM-14 (a) MOD-0220 §22 pack onayı | Beste (onay verildi) | **kapandı** — `approvals.tsv:17` (MOD-0220 `91248a47…`) | — |

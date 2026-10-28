@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 de6f15f99dd1e35712968702b3c6a80b6b867f653021c4561b1fed67837af42d (pack KARAR D69 revizyonu, 2026-10-28 — sözleşme sürümü onay anahtarı `mdm.contracts.versions.approve`, O-3 (b) kapandı; önceki sürüm `7e6b9520…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `4c4bf518…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir), ölçüm dal chore/ct/treasury-intake-ct-05 @ec063fee9 — çalışma ağacı temiz, dosya HEAD ile aynı; satır atıfları bu sürüme `:N@ec063fee9`)
+pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 7fb0eef9995c1528b340fe7bfdd36fae5e56fc0ab696c932eed9047e87427c91 (pack D70 revizyonu, 2026-10-28 — D70/2 boş aday listesi 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (AC-33), D70/1 sözleşme onaylayıcı iş akışı izinleri rol şablonuyla (K-A4 kapandı, K-A4b açık), D70/3 Auth paket kapısı; önceki sürüm `de6f15f9…` (pack KARAR D69 revizyonu, 2026-10-28 — sözleşme sürümü onay anahtarı `mdm.contracts.versions.approve`, O-3 (b) kapandı; önceki sürüm `7e6b9520…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `4c4bf518…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir), ölçüm dal chore/ct/treasury-intake-ct-05 @ec063fee9 — çalışma ağacı temiz, dosya HEAD ile aynı; satır atıfları bu sürüme `:N@ec063fee9`)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur — `git ls-tree` / `git archive`; yalnız başvuru malzemesi — KOD ALMA YOK, D38/3)
 predecessor: execution/domains/master-data-management/work-packs/MOD-0217-DL1-hazirlik.md
 ---
@@ -12,7 +12,7 @@ predecessor: execution/domains/master-data-management/work-packs/MOD-0217-DL1-ha
 > **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
 > tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
 > sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
-> MOD-0018 Treasury Auth eki taslağı ve MOD-0217'nin D66 sürümü dahil; bu pack sürümü (D69) ve D69 main'de **değil** — çalışma ağacında, commit edilmemiş).
+> MOD-0018 Treasury Auth eki taslağı ve MOD-0217'nin D66 sürümü dahil; bu pack sürümü (D69) ve D69 main'de **değil** — yerel commit `db69732cb`).
 > - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
 > Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
 > main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-3**'ü (`mdm.contracts.*` 18 anahtar, 4 rol, 1 açık atama — D69 dahil;
@@ -27,7 +27,7 @@ predecessor: execution/domains/master-data-management/work-packs/MOD-0217-DL1-ha
 > kapısı). **Sorgunun anahtarı `mdm.contracts.versions.approve` — KARAR D69** (O-3 (b) kapandı): yeni rol "Sözleşme onaylayıcı"
 > (`mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve`; açık atama değil); sürümü hazırlayan, şirket
 > kapsamı dışı ve anahtarı olmayan kullanıcı aday olmaz (AC-33 genişledi); boş liste MOD-0023'te 400 → kesin ret (AC-53). Rolün
-> MOD-0023 görev anahtarları D69'da yazılmadı — açık (ek K-4 / K-A4). D69 main'de değil (D62/1: ekin DL-3 paket metninin D69
+> MOD-0023 görev anahtarları D69'da yazılmadı — **D70/1 ile kapandı** (rol şablonuyla taşır; ek K-4 (b), K-A4 kapandı; elle atamada açık nokta K-A4b). D69 main'de değil (D62/1: ekin DL-3 paket metninin D69
 > kısmı onu bekler).
 > - **Belge deposu:** MdmService servis kimliğiyle (KARAR D56/2 — D41/10'un MOD-0262 kısmının ve D46a'nın yerine); kullanıcılara
 > `platform.document-repository.*` verilmez; MOD-0262-FU01'de servis kimliği desteği DL-2 dilim kapısı (Platform — Beste).

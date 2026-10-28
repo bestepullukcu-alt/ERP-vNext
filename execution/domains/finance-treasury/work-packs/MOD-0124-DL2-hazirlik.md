@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f5344868f465524b24e3ce80d5d1b04da6aec6572f5814e621d72cc302379f5 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `ea31ff55…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `55b6d936…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `2f079bfa…` (D58/D59 revizyonu); D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 5a4118963ef0327ec4cf3b6fa9a9defbc2d138d57b56e89f618b45fae61949b7 (pack D70 revizyonu, 2026-10-28 — D70/2 boş aday listesi 422 `CASH_POSITION_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (AC-10), D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları (D67/5), MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; önceki sürüm `2f534486…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `ea31ff55…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `55b6d936…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `2f079bfa…` (D58/D59 revizyonu); D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; DL-1 kaydıyla aynı commit)
 ---
 
@@ -31,7 +31,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
 > (`AuditEnums.cs` son değer `ESignature = 17`).
 > - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0124'ün 20 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
-> pack "Kaynak ve kanıt"ta sha256 `3a70398a…e925` ile sabitli.
+> pack "Kaynak ve kanıt"ta sha256 `ec4943aa…e374` ile sabitli (MOD-0126 D70 revizyonu; önceki `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
 >
 > **Güncel durum (2026-10-27).** Pack `status: draft`; bu sürüme CT-APR-02 kaydı var (`reviews.tsv:98`, UYGUN, açık ENGEL 0 —
 > dalda, main'de değil); CT-APR-01 yok. `services/Diten.FinanceTreasuryService/` yok — MOD-0126 DL-1 de MOD-0124 DL-1 de

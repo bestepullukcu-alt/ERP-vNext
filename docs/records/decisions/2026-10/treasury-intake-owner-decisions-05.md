@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D69 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D70 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -116,7 +116,10 @@ MOD-0289 `execution/domains/master-data-management/module-packs/`; satır numara
 yazılmadı — anahtar adıyla aranır). D46 + D46a + D47 + D49 + D50'yi birleştirir; **D46 tablosunun yerine geçer** (D46 tablosu
 tarihçedir — "YERİNE GEÇTİ — UYGULAMAYIN", D49/5). **D57/4 eki (2026-10-28):** `finance-treasury.payment-sod-settings.read` /
 `.update` Hazine yöneticisine eklendi (bölüm 2 ve 4). **D69 eki (2026-10-28):** yeni anahtar `mdm.contracts.versions.approve`
-ve yeni rol "Sözleşme onaylayıcı" (bölüm 3 ve 4; açık atama değil). Anahtar adları kısaltılmadan yazıldı. "Bağımlı" sütunu başka modülün
+ve yeni rol "Sözleşme onaylayıcı" (bölüm 3 ve 4; açık atama değil). **D70/1 eki (2026-10-28):** bütün onaylayıcı rollere (ödeme,
+AP, AR, nakit, sözleşme — ikinci kademe dahil) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak rol
+şablonuyla gelir (MOD-0018 eki K-4 (b)); matriste yeni olan yalnız Sözleşme onaylayıcı satırıdır (bölüm 3 ve 4), öteki onaylayıcılar
+bu iki anahtarı zaten taşıyordu. Bağımlı anahtar olduğu için modül anahtarı sayısı (117) değişmez. Anahtar adları kısaltılmadan yazıldı. "Bağımlı" sütunu başka modülün
 anahtarlarıdır (kullanıcı token'ıyla yapılan çağrılar — MOD-0220, MOD-0023); kaydı o modülün sahibindedir.
 **D56/2: belge deposu izinleri kullanıcılara verilmez** — MOD-0217 belge deposunu (MOD-0262-FU01) kendi servis kimliğiyle çağırır;
 `platform.document-repository.read` / `.manage` hiçbir rol şablonunda yer almaz (D46a'nın bu matristeki etkisi geri alındı; D46 /
@@ -205,13 +208,15 @@ karar veren rollerin ikisinde de bulunur, yöneticide yalnız okuyarak çözüm 
 | Sözleşme görüntüleyici | `mdm.contracts.read`, `mdm.contracts.documents.read` | — (belge deposu izni yok — D56/2) |
 | Sözleşme yöneticisi | görüntüleyici + `mdm.contracts.create`, `.update`, `.delete`, `.bulk-delete` (yalnız taslak), `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.submit-approval`, `mdm.contracts.terminate`, `mdm.contracts.archive`, `mdm.contracts.value.read`, `mdm.contracts.value.write` (**D49/2**), `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`. **Yok:** `mdm.contracts.record-signature` (D47/5) | `platform.workflow.instances.start` (belge deposu izni yok — D56/2) |
 | Sözleşme imza kaydedici (**D47/5**) | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` (imzalı kopya) | — (belge deposu izni yok — D56/2) |
-| Sözleşme onaylayıcı (**D69**) | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` | belge deposu izni yok (D56/2); MOD-0023 görev anahtarları D69'da yazılmadı — açık (aşağıdaki not) |
+| Sözleşme onaylayıcı (**D69**) | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` | `platform.workflow.tasks.approve`, `.reject` (**D70/1**); belge deposu izni yok (D56/2) |
 
 Sözleşme sürümünün onay **kararı** MOD-0023 görevinde verilir (şablon `MDM-CONTRACT-VERSION-APPROVAL`, O-3 — Ali); MOD-0217'de
 onay ucu yoktur. **D69:** onay yetkisi `mdm.contracts.versions.approve` anahtarıdır (Sözleşme onaylayıcı rolü; açık atama değil);
 `MDM-CONTRACT-VERSION-APPROVAL` adayları Auth aday sorgusuyla (D66/1, MOD-0018 Treasury Auth eki DL-6) bu anahtardan bulunur, sürümü
-hazırlayan hariç. Rolün MOD-0023 görev anahtarlarını (`platform.workflow.tasks.approve` / `.reject`) taşıyıp taşımayacağını D69
-yazmadı — açık (sahip; MOD-0018 eki K-4 / K-A4). `mdm.contracts.value.write` (D49/2)
+hazırlayan hariç. **D70/1:** rol MOD-0023 görev anahtarlarını (`platform.workflow.tasks.approve` / `.reject`) çapraz modül
+bağımlılığı olarak taşır (MOD-0018 eki K-4 (b)); iş akışı izni aday şartı değildir, rol şablonuyla gelir (K-A4 kapandı) —
+rol şablonu yoluyla tutarlı; elle atamada açık nokta (MOD-0018 eki K-A4b; karar değil).
+`mdm.contracts.value.write` (D49/2)
 ticari değeri yazmak için komutun kendi iznine (`create` / `update` / `amendments.create`) ek olarak gerekir; `value.read` yalnız
 görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 
@@ -340,7 +345,7 @@ görüntüler (MOD-0217 "Ticari değer görünürlüğü").
 | `mdm.contracts.archive` | Sözleşme yöneticisi |
 | `mdm.legal-entities.read` (bağımlı, MOD-0220) | dört finans paketinin hazırlayan / operatör / karar veren / serbest bırakan rolleri, AP / AR operasyon yöneticileri, AR 2. kademe düzeltme onaylayıcı ve Hazine yöneticisi (görüntüleyicilerde yok) |
 | `platform.workflow.instances.start` (bağımlı, MOD-0023) | Ödeme hazırlayıcı, AP operatörü, AP operasyon yöneticisi, AR operatörü, AR operasyon yöneticisi, Nakit pozisyonu hazırlayıcı, Sözleşme yöneticisi |
-| `platform.workflow.tasks.approve` / `.reject` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AR onaylayıcı (+ AR 2. kademe düzeltme onaylayıcı), Nakit pozisyonu onaylayıcı; Sözleşme onaylayıcı (D69) için açık — D69 yazmadı (MOD-0018 eki K-4 / K-A4) |
+| `platform.workflow.tasks.approve` / `.reject` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı, AR onaylayıcı (+ AR 2. kademe düzeltme onaylayıcı), Nakit pozisyonu onaylayıcı, Sözleşme onaylayıcı (**D70/1** — bütün onaylayıcı roller; MOD-0018 eki K-4 (b), K-A4 kapandı) |
 | `platform.workflow.tasks.request-info` (bağımlı, MOD-0023) | Ödeme onaylayıcı (+ 2. kademe), AP onaylayıcı |
 
 **D56/2:** `platform.document-repository.read` / `.manage` (MOD-0262-FU01) bu tablodan çıktı — kullanıcılara verilmez; MOD-0217
@@ -403,6 +408,9 @@ yöneticisi, banka hesabı etkinleştirici). `BANK-ACCOUNT-LOOKUP` 1.0.0 donduru
 15. **D69:** yeni anahtar `mdm.contracts.versions.approve` ve yeni rol "Sözleşme onaylayıcı" (`mdm.contracts.read`,
     `mdm.contracts.documents.read`, `mdm.contracts.versions.approve`; açık atama değil); MOD-0217 onay adayları bu anahtardan
     (Auth aday sorgusu D66/1, hazırlayan hariç). D46'da sözleşme onayı MDM rolünde değildi.
+16. **D70/1:** Sözleşme onaylayıcı `platform.workflow.tasks.approve` / `.reject` bağımlı anahtarlarını alır; böylece bütün onaylayıcı
+    roller (ödeme, AP, AR, nakit, sözleşme — ikinci kademe dahil) iki görev anahtarını rol şablonuyla taşır. Modül anahtarı
+    sayısı 117, bağımlı anahtar sayısı 5 kalır.
 
 **Aynı nesne türünde hazırlama + karar (D49/3 ve D50 sonrası denetim):** hiçbir rol aynı nesne türünün hazırlama / oluşturma / gönderme
 eylemiyle onay / ret eylemini birlikte taşımaz — ödeme partisi, AP faturası, AR düzeltmesi, nakit pozisyonu ve sözleşme sürümü
@@ -706,6 +714,19 @@ Yeni anahtar **`mdm.contracts.versions.approve`** ve yeni rol **Sözleşme onayl
 FU DL-6) bu anahtardan bulunur; hazırlayan hariç. Açık atama değildir. İşleyen matris (D47 / D49) buna göre güncellenir: **117 anahtar,
 26 rol** (MOD-0217: 18 anahtar, 4 rol). MOD-0217 O-3 (b) kapanır; Auth eki DL-3 ve DCP-011 sayıları güncellenir; MOD-0018 sahibinin teyidi
 Auth ekiyle birlikte.
+Düzeltme (2026-10-28, ölçüm): DCP-011'de anahtar / rol sayısı geçmiyor; "DCP-011 sayıları" ifadesi uygulanacak bir değişiklik doğurmaz.
+
+## D70 — Onaylayıcı rollerin iş akışı izni, boş aday listesi ve Auth paket kapısı (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **İş akışı izinleri rol şablonuna:** bütün onaylayıcı rollere (ödeme, AP, AR, nakit, sözleşme — ikinci kademe dahil)
+   `platform.workflow.tasks.approve` ve `.reject` çapraz modül bağımlılığı olarak eklenir (MOD-0018-FU-TBD K-4 (b)); aday olan karar
+   verebilir. K-A4 kapanır: iş akışı izni aday şartı değildir, rol şablonuyla birlikte gelir. MOD-0018 sahibinin teyidi gerekir.
+2. **D68 beş pakete:** MOD-0119, MOD-0124 ve MOD-0217'de de aday listesi boşsa yerelde 422 (paketin hata sözlüğü deseniyle "uygun
+   onaylayıcı yok" kodu), MOD-0023 çağrılmaz, kayıt değişmez; MOD-0023'ün 400'ü yalnız savunma hattıdır.
+3. **D53/1 Auth paket metni kapısı MOD-0018 sahibinin teyidiyle kapanır:** metin main'de olmak tek başına yetmez; teyit karar dosyasına
+   kaynak olarak yazılır.
 
 ## Karar olmayanlar
 

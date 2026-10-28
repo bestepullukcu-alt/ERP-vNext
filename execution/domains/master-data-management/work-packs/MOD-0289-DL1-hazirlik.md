@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 ff2c556f4e4ff076cea02a45d3d0f5d88adb995887baf90d031da1f606affd97 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `aab4187d…` (sahip denetimi 5cfd67813 düzeltmesi + D65); D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 0cabb98c91c56946649934591f93fa997a6d94bed7bf7dfae60f7b7448180933 (pack D70 revizyonu, 2026-10-28 — D70/3 Auth paket kapısı; domain-config maddesi ölçümle kapandı (PR #270); önceki sürüm `ff2c556f…` (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `aab4187d…` (sahip denetimi 5cfd67813 düzeltmesi + D65); D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla: kod yalnız onaylı paket sürümüyle ve dilim sırasıyla, sabit kiracı taşınmaz)
 ---
 
@@ -79,7 +79,7 @@ DL-4" satırları pack'te "— DL-n için" işaretli dilim kapısıdır ve DL-1'
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `1850f37c…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0289 incelemesi `785291d2…`, `reviews.tsv:43`) · **2026-10-28:** güncel sha `ff2c556f…` için satır yok; son satır `ef905628…` (UYGUN) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `0cabb98c…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0289 incelemesi `785291d2…`, `reviews.tsv:43`) · **2026-10-28:** güncel sha `0cabb98c…` için satır yok; son satır `ef905628…` (UYGUN) | bekletir |
 | CT-APR-01 sürüme bağlı onay (`high: evet`, paketi yazmamış onaylayıcı) | Beste (onaylayıcı) | `approvals.tsv`'de MOD-0289 satırı yok | bekletir |
 | Kod alma izni (D1) | sahip | **kapandı — D45/3** (2026-10-27) | — |
 | DCP-011 `approved`, TRM-S3 dilimi tanımlı | Beste | `DCP-011-finance-treasury-intake.md` `status: draft` (`:7`); numara atandı (Y-4/2) | bekletir |
