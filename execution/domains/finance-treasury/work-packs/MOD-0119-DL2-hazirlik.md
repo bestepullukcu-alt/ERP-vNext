@@ -2,11 +2,38 @@
 record_id: MOD-0119-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
 pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 eea3d46101436f2ba406226eeb9be6c2044354d4db2be49fb8554bbaa2a7c764 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `f7ee03aa…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `567f59ba…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:96; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve bu pack sürümü dahil; D69 main'de değil ve MOD-0119'a dokunmaz).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-1**'i; kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **MOD-0023 şablon kodu geldi:** `FT-AP-INVOICE-APPROVAL` (Y-12; W-2, W-6 — `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, #277 ile
+> main'de) — tek aşama, tek onay adımı, atamasız; adaylar `CandidatePrincipalIds`. Şablonu kuran MOD-0023 kodu main'de **değil**,
+> WP numarası ve tarih yok (DL-2 dilim kapısı). Çok adımlı dal v1'den çıktı: AC-14 "ara onay durumu yok" testi (D66/4, D62/2);
+> "son adım değil" gelirse fatura `ApprovalPending` / `PendingDecision`'da kalır (D66/2).
+> - **Onaylayıcı aday tabanı** = ekin **DL-6** aday sorgusu, anahtar `finance-treasury.ap-invoices.approve` (D66/1; D67/1 — DL-6
+> paket metni MOD-0119 DL-2 önkoşulu, kodu DL-2 kabul kapısı; DL-1 DL-6'yı beklemez). R1–R3 ve şirket kapsamı sonrası boş liste
+> → pack'e göre MOD-0023 400 → kesin başlatma reddi (AC-10; D68 MOD-0126 içindir).
+> - Aday kaynağı (`IFinanceTreasuryApproverCandidateSource`) ve MOD-0023 bağdaştırıcısı servis ortak yapı taşıdır; tek yazarı
+> MOD-0126 DL-2 (D67/3, D57/5); MOD-0119 DL-2 onu bekler.
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **MOD-0048 seed'leri** (`currency-minor-units`): Treasury CT ekler, Beste onaylar (D59/2, D60); ölçüm: main'de yok
+> (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
+> (`AuditEnums.cs` son değer `ESignature = 17`).
+> - **MOD-0140 supplier 1.3.0** main'de değil (ölçüm: `supplier.openapi.yaml` `version: 1.2.0`) — DL-1 paket kapısı (DL-2 DL-1 üzerinden bekler).
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0119'un 19 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
+> pack "Kaynak ve kanıt"ta sha256 `3a70398a…e925` ile sabitli.
+>
 > **Güncel durum (2026-10-27).** Pack `status: draft`; bu sürüme CT-APR-02 kaydı var (`reviews.tsv:96`, UYGUN, açık ENGEL 0 —
 > dalda, main'de değil); CT-APR-01 yok. `services/Diten.FinanceTreasuryService/` yok — MOD-0126 DL-1 de MOD-0119 DL-1 de
 > **başlamadı**. MOD-0119 DL-2 yalnız MOD-0119 DL-1 kabul edildikten sonra başlar. Satır atıfları `yol:satır@ec063fee9`;
@@ -37,17 +64,19 @@ Kaynak: DL-2 Önkoşul metni (`:1660-1661`), dilim kapıları "— DL-2 için" (
 | O-11 / MOD-0023'te AP (satıcı faturası) iş akışı şablonu — kod, adım sayısı, zaman aşımı | Ali (MOD-0023 sahibi) | **2026-10-28 (Y-12): kod `FT-AP-INVOICE-APPROVAL` geldi** (tek aşama / tek onay adımı / atamasız; adaylar `CandidatePrincipalIds`); şablonu kuran kod main'de değil, WP / tarih yok. Ölçüm anında: **karar var, kod yok** — Y-6: satıcı faturası şablonu **tek adım** (`docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:66-68`); kod, WP numarası, tarih yok; pack O-11 hâlâ "TBD" (`:1619`); Platform'da Treasury şablonu / tohumu 0 (grep); checklist işaretsiz (`:1461`) | **bekletir** (dilim kapısı) |
 | Tüketici onayı slotu WORKFLOW (MOD-0023; şablon O-11 + MOD-0023 sahibi) | K1 + Ali | **açık** — pack "Tüketici onayı slotları" WORKFLOW satırı (`:1516`); checklist işaretsiz (`:1465`) | **bekletir** (dilim kapısı) |
 | MOD-0023 pack §17 onayı (silmeme D21/1, okuma eşleme D21/3 dahil) | — | **kapandı** — `approvals.tsv:16`, `803fbaa5…05fb2` = bugünkü MOD-0023 pack sha'sı; checklist `[x]` (`:1462-1464`) | — |
-| §17 kodu MOD-0023 sahibinin WP'siyle main'de; AC-W1 / W2 / W5…W14 geçti | Ali yazar, başka biri merge eder (D32/1) | **yok** — `WorkflowInstanceDto` `IdempotencyKey` taşımıyor (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs:406-423`); `WorkflowInstanceHistoryEntryDto` `ApprovalTaskId` / `IdempotencyKey` taşımıyor (`:451-465`); `includeDeleted` 0; AC-W izi 0 | **kabul kapısı** — DL-2 başlar; kod yokken 404 / boş okumada anahtarlı yeniden yazma kapalı, niyet `Unknown` (AC-37, AC-38, AC-41 gerçek MOD-0023 kanıtı bu kodu ister) |
-| MOD-0023 HTTP zaman aşımı `FinanceTreasury:Workflow:TimeoutSeconds` (MOD-0126 ile aynı ayar) | Ali (O-11) | öneri 15 sn (`:798`); değer gelmedi | prompt değeri |
+| §17 kodu MOD-0023 sahibinin WP'siyle main'de; AC-W1…W17 geçti (pack D56 revizyonu: MOD-0126 ile tek liste; önceki metin AC-W1 / W2 / W5…W14) | Ali yazar, başka biri merge eder (D32/1) | **yok** — `WorkflowInstanceDto` `IdempotencyKey` taşımıyor (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs:406-423`); `WorkflowInstanceHistoryEntryDto` `ApprovalTaskId` / `IdempotencyKey` taşımıyor (`:451-465`); `includeDeleted` 0; AC-W izi 0 | **kabul kapısı** — DL-2 başlar; kod yokken 404 / boş okumada anahtarlı yeniden yazma kapalı, niyet `Unknown` (AC-37, AC-38, AC-41 gerçek MOD-0023 kanıtı bu kodu ister) |
+| MOD-0023 HTTP zaman aşımı `FinanceTreasury:Workflow:TimeoutSeconds` (MOD-0126 ile aynı ayar) | Ali (O-11) | öneri 15 sn (`:798`); değer gelmedi · **2026-10-28 (Y-12):** 15 sn tüketici ayarıdır (MOD-0126 ile aynı) | prompt değeri |
 | MOD-0023 kapanış tablosu "Platform commit SHA'sı DL-2 başında yazılır" (`:609`) | Treasury CT | ölçülecek | prompt günü ölçüm |
 | O-17 (Submit'te kanıt zorunlu) | — | **kapandı** — D28 (`:1625`); pack DL-3'e koyuyor: "DL-2'de Submit kanıtsız çalışır ve bu fark DL-2 kaydına yazılır" (`:1664-1665`) | DL-3 — fark aşağıda (§3) kayıtlıdır |
 | O-13; EVIDENCE slotu (MOD-0031 ölçümü) | Treasury CT | O-13 kapandı (D28); MOD-0031 ölçülmedi (`:1466`) | DL-3 |
-| MOD-0126 DL-2 (iş akışı deseni) | — | pack MOD-0119 DL-2'yi MOD-0126 DL-2'ye bağlamıyor; niyet / karar durum adları MOD-0126 **pack**'indeki tek geçiş matrisinden (kod değil) | — (bkz. §5 bulgu 4) |
+| **D66/1 — Auth aday sorgusu** (MOD-0018 Treasury Auth eki **DL-6**; D67/1) | Treasury yazar, MOD-0018 sahibi teyit eder | **2026-10-28:** DL-6 taslağı ve D66–D67 main'de (#281); ek `draft`, MOD-0018 sahibinin DL-6 teyidi yok; K-A1…K-A4 açık. Aday tabanı `finance-treasury.ap-invoices.approve`; R1–R3 ve şirket kapsamı sonrası boş liste → MOD-0023 400 → kesin başlatma reddi (pack AC-10, Failure Path) | paket metni **bekletir** (dilim kapısı); kodu **kabul kapısı** |
+| MOD-0126 DL-2 (iş akışı deseni; ortak MOD-0023 bağdaştırıcısı ve aday kaynağı) | MOD-0126 DL-2 WP | **2026-10-28:** pack DL-2 Önkoşul'unda MOD-0126 DL-2 var — MOD-0023 bağdaştırıcısı (D57/5) ve `IFinanceTreasuryApproverCandidateSource` (D67/3) servis ortak, tek yazarı MOD-0126 DL-2 (§5 bulgu 4 kapandı). Ölçüm anında: pack MOD-0119 DL-2'yi MOD-0126 DL-2'ye bağlamıyor; niyet / karar durum adları MOD-0126 **pack**'indeki tek geçiş matrisinden (kod değil) | **bekletir** (D57/5, D67/3) |
 
 **DL-2'yi ilk bekleten:** MOD-0119 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
 supplier 1.3.0). DL-2'ye özgü en erken engel **MOD-0023 AP şablon kodu (Ali, O-11)** ve ona bağlı **WORKFLOW slotu**:
 karar "tek adım" verildi, kod ve tarih yok (2026-10-28, Y-12: kod `FT-AP-INVOICE-APPROVAL` geldi; şablonu kuran kod ve
-tarih yok).
+tarih yok). Ayrıca **MOD-0126 DL-2** (ortak MOD-0023 bağdaştırıcısı ve aday kaynağı — D57/5, D67/3) ve **MOD-0018 Treasury Auth eki
+DL-6 paket metninin teyidi** (aday sorgusu — D66/1, D67/1); DL-6 kodu DL-2 kabul kapısı.
 **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
 yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
@@ -187,11 +216,12 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 `Infrastructure/Workflow/**` dahil — XMC-001); `frontend/**`; `supplier.openapi.yaml`, `invoice-match.openapi.yaml`; `execution/**`;
 kaynak depo.
 
-**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `5e1ea803…25a7` — sahip denetimi 61466e504, tier-2 aday kesişimi; önceki `f496790f…0b0c` ready-for-dev 1. tur eki D66, `81b9b505…161d` ready-for-dev 1. tur (Y-12, D62–D65), `05410477…e42e` D58/D59, `5f69139c…8a5d` D57, `1baf8728…` D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
+**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `3a70398a…e925` — MOD-0119 "Kaynak ve kanıt" sabitlemesi, D68 + sahip denetimi d5b378e50 P2; önceki `5e1ea803…25a7` sahip denetimi 61466e504, tier-2 aday kesişimi, `f496790f…0b0c` ready-for-dev 1. tur eki D66, `81b9b505…161d` ready-for-dev 1. tur (Y-12, D62–D65), `05410477…e42e` D58/D59, `5f69139c…8a5d` D57, `1baf8728…` D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
 raporu ve kabul kaydı, MOD-0023 pack §17 (`803fbaa5…`), AGENTS.md, domain-config, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style (S-56), audit-trail-standard, data-scope-enforcement,
 mongo-indexing, handler-design; karar kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D14, D21, D22, D25, D26, D28, D32,
-D47, D49, D50), bu hazırlık kaydı.
+D47, D49, D50, D57/5, D62/2, D66, D67), MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`, DL-6),
+MOD-0023 sahip kararları (`docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, W-2, W-6), bu hazırlık kaydı.
 
 **Sözleşme yüzeyleri:** API `ap-invoice.openapi.yaml` (DL-2 uçları); tüketilen MOD-0023 `WorkflowModels.cs` @ DL-2 başındaki
 Platform commit'i + AP şablon kodu; `supplier.openapi.yaml` 1.3.0, `invoice-match.openapi.yaml` 1.1.1 (sha DL-2 başında yeniden
@@ -231,10 +261,10 @@ DL-2 başladığı gün doldurulur (S-53); dalga sonunda tek PR (S-76, S-77). Ra
 
 1. **AC-15 DL-2'de kapanıyor ama DL-3 yazma komutları da onu ister.** DL-2 Bitiş "AC-7…15" (`:1662`) AC-15'i kısmisiz sayıyor; AC-15
    "her yazma komutu" der (`:1256`) ve Hold / ReleaseHold / istisna / LinkEvidence DL-3 yazma komutlarıdır. MOD-0126 aynı durumu
-   "16 (kararlar)" + DL-3 "AC-16 (kalan)" ile çözüyor. Öneri: DL-2 "15 (Submit, kararlar, Reconcile kısmı)", DL-3 "15 (kalan)".
+   "16 (kararlar)" + DL-3 "AC-16 (kalan)" ile çözüyor. Öneri: DL-2 "15 (Submit, kararlar, Reconcile kısmı)", DL-3 "15 (kalan)". **Kapandı** (pack D56 revizyonu, bulgu 1).
 2. **AC-W listesi tutarsız.** Dilim kapısı "AC-W5…W14 DL-2 uygulama kabul kapısında" (`:1462`), DL-2 Önkoşul "AC-W1/W2/W5…W14"
    (`:1661`); MOD-0126 "AC-W1…W17" diyor (D32'nin AC-W15 tek silme işareti, W16 `includeDeleted` kapsamı, W17 tüketici uyumu).
-   Aynı MOD-0023 koduna bağlı dört paket için tek liste gerekir.
+   Aynı MOD-0023 koduna bağlı dört paket için tek liste gerekir. **Kapandı** (pack D56 revizyonu: AC-W1…W17).
 3. **O-11 Y-6 ile güncellenmedi.** O-11 "çok adımlı onay adımları … TBD" (`:1619`); Y-6 satıcı faturası şablonunu **tek adım**
    olarak bildirdi (kaynak yanıtları tablosu bunu "kodlar gelince ready-for-dev revizyonunda" diye bekletiyor). AC-14'ün "çok adımlı
    akışta son adım olmayan onay" dalı (`:1253-1255`) tek adımlı şablonda test edilemez — prompt'ta "şablon tek adımsa bu dal sahte
@@ -242,6 +272,7 @@ DL-2 başladığı gün doldurulur (S-53); dalga sonunda tek PR (S-76, S-77). Ra
    AC-14'ten kalktı; AC-14 "v1'de ara onay durumu yok" testine yeniden yazıldı (numara aynı).
 4. **MOD-0023 bağdaştırıcısının sahipliği paketler arasında çelişik** (ayrıntı MOD-0126 DL-2 kaydı §5 bulgu 4): MOD-0119 ayrı
    `Infrastructure/ApWorkflow/**`, MOD-0120 "MOD-0126'nın bağdaştırıcısıyla ortak", MOD-0124 `Infrastructure/Workflow/**` içinde kendi
-   bağdaştırıcısı. MOD-0119 için çelişki yok, ama ortak karar verilirse bu DL-2'nin yolları değişir.
+   bağdaştırıcısı. MOD-0119 için çelişki yok, ama ortak karar verilirse bu DL-2'nin yolları değişir. **Kapandı — KARAR D57/5**
+   (servis ortak, tek yazarı MOD-0126 DL-2; `ApWorkflow` yalnız AP portu; DL-2 Önkoşul'a MOD-0126 DL-2).
 5. **DL-3 Önkoşul'da kararı verilmiş O-17 koşullu yazılmış:** "O-17 'evet' ise bu dilimde eklenir" (`:1664`) — O-17 D28 ile "evet"
-   (`:1625`). Anlam değişmez; metin karar diline çekilmeli.
+   (`:1625`). Anlam değişmez; metin karar diline çekilmeli. **Kapandı** (pack D56 revizyonu, bulgu 5).

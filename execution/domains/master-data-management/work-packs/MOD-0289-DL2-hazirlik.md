@@ -2,12 +2,37 @@
 record_id: MOD-0289-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
 pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 ff2c556f4e4ff076cea02a45d3d0f5d88adb995887baf90d031da1f606affd97 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `aab4187d…` (sahip denetimi 5cfd67813 düzeltmesi + D65); D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), ölçüm dal chore/ct/treasury-intake-ct-05 @ec063fee9 — çalışma ağacı temiz, dosya HEAD ile aynı; satır atıfları bu sürüme `:N@ec063fee9`)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur — `git ls-tree` / `git archive`; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla; kaynak commit DL-1 hazırlık kaydıyla aynı)
 predecessor: execution/domains/master-data-management/work-packs/MOD-0289-DL1-hazirlik.md
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve bu pack sürümü dahil; D69 main'de değil ve MOD-0289'a dokunmaz).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-2**'si (MOD-0289: 23 anahtar, 3 rol, 2 açık atama); kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **SEC-002:** ekin **DL-4**'ü (KARAR D56/1; Platform dosyaları için XMC-001 Beste — D63/2): paket metni paket kapısı, kodu
+> DL-1 kabul kapısı; modül kodu değeri ekin K-1b'si. 2026-10-27 ölçümü: bugün çalışmaz (iki tarafta `product-item-sku-master` sabit).
+> - **MOD-0023 yok** (D23/2; v1'de dört göz) — Y-12 şablon kodları bu pakete dokunmaz.
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **O-14** (grup önekli kayıtlarda — banka `BNK`, tedarikçi hesabı `BAC` — allocator'a gidecek `legalEntityId`; şirket hesabı
+> `BAC` için sahip şirketin `LegalEntityId`'si önerisinin teyidi, D65/2) **Beste'de, cevap yok** (2026-10-28): DL-1 kabul kapısı,
+> tedarikçi `BAC` kısmı DL-3 kabulünde; değer pakette seçilmez. AC-60 üç dilime bölündü (banka DL-1, şirket hesabı DL-2, tedarikçi
+> hesabı DL-3).
+> - **DL-2 kabul kapısı:** Treasury tüketici fikstür koşusu aranmaz (KARAR D57/1); `BANK-ACCOUNT-LOOKUP` kendi sözleşme testiyle
+> (AC-20, AC-42).
+> - **DL-3:** MOD-0140 1.3.0 `GET /api/suppliers/eligible` — Active ilişkili bütün tedarikçiler (KARAR D58); ölçüm: main'de
+> `supplier.openapi.yaml` hâlâ `version: 1.2.0`.
+> - **MDM domain-config** MOD-0289 cümlesi (D51/5) main'de (`domain-config.md:48`); pack'teki ilgili checklist maddesi henüz işaretsiz.
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0289'un 23 anahtarı ve 3 rolü değişmedi.
+>
 > **Durum (2026-10-27).** İlk DL-2 hazırlık kaydı. Pack sürümü DL-1 kaydının bağlandığı sürümle aynıdır (`ef905628…`); bu sürüme
 > CT-APR-02 satırı **var** (`execution/approvals/reviews.tsv:91` — UYGUN, 0 ENGEL), CT-APR-01 satırı **yok** (`approvals.tsv`'de
 > MOD-0289 0 satır). DL-2, DL-1'in **kabulünden** sonra başlar (pack "Teslim dilimleri" DL-2 Önkoşulu, `:1904@ec063fee9`); bu kayıt
@@ -35,15 +60,15 @@ başlamasını değil kabulünü bekletir; **—** = kapandı.
 
 | Koşul | Sahibi | Bugün | DL-2'ye etkisi |
 |---|---|---|---|
-| DL-1 kabul edildi (dilim kabul kapısı, `:1926`) | DL-1 WP + CT | DL-1 başlamadı: MdmService'te `Bank*` varlığı / `Features/BankMaster` yok (`ls`); DL-1'in paket kapısı açık — CT-APR-01 yok, DCP-011 `status: draft` (`execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7`), Auth paket metni (MOD-0018'de `mdm.bank*` 0), RCS-001 BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9477`) — paket kapısı değil, DL-1 kabul kapısı (D59/1), MDM domain-config cümlesi yalnız bu dalda (`domain-config.md:46-48`) | bekletir (ilk ve en uzun engel; ayrıntı DL-1 kaydı §1) |
+| DL-1 kabul edildi (dilim kabul kapısı, `:1926`) | DL-1 WP + CT | DL-1 başlamadı: MdmService'te `Bank*` varlığı / `Features/BankMaster` yok (`ls`); DL-1'in paket kapısı açık — CT-APR-01 yok, DCP-011 `status: draft` (`execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md:7`), Auth paket metni (MOD-0018 Treasury Auth eki taslağı #281 ile main'de, teyitsiz; ölçüm anında MOD-0018'de `mdm.bank*` 0), RCS-001 BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9477`) — paket kapısı değil, DL-1 kabul kapısı (D59/1), MDM domain-config cümlesi (2026-10-28 ölçümünde main'de; ölçüm anında yalnız bu dalda, `domain-config.md:46-48`), O-14 (Beste; DL-1 kabul kapısı) | bekletir (ilk ve en uzun engel; ayrıntı DL-1 kaydı §1) |
 | CT-APR-02 bu pack sürümüne | Treasury CT + bağımsız inceleyici | **var** — `reviews.tsv:91` (`ef905628…`, UYGUN, 0). DL-1 kaydının §1'indeki "satır yok" bugün eskidir | — (paket kapısı; `ready-for-dev` revizyonunda yenilenir) |
 | Şifreleme ve özet anahtarı kaynağı + döndürme (O-6) | sahip | **kapandı — D33/2–3** (`:1645-1646`); ürün adı ortam kurulumunda ölçülür | — (ortam ürünü kabul öncesi dev kaydına yazılır) |
 | Güvenlik onayı (O-6) | sahip (K1) | **kapandı — D33/1** (`:1647-1648`); gerçek Mongo testleri DL-2 kabul kapısında | — / kabul |
 | AC-50 çit yük testi eşiği | sahip | **kapandı — D33/4** (`:1649`, AC-50 `:1500-1505`: kayıp 0, çift 0, eski kümeli commit 0, yeniden deneme ≤ %5, p95 ≤ 500 ms, p99 ≤ 1,5 sn; makine yükü kayda — S-51) | kabul |
 | `ApprovalRevision` / `ApprovalRef` kaynağı | sahip | **kapandı — D33/3** (`:1650`) | — |
 | Hesap amacı kodu RCS-001 dışında (doğal anahtar) | sahip | **kapandı — D27/10** (`:1644`) | — |
-| SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalışması (`:1652`) | Treasury CT (ölçüm) · platform-shared-services (Platform ucu) · MDM yazarı (istemci) — **sahip adlandırılmadı (TBD)** | **ölçüldü 2026-10-27: bugün ÇALIŞMAZ.** MDM istemcisi modül kodunu sabitliyor: `ModuleCode = "product-item-sku-master"` ve başka modül kodunu 400 `LEGAL_ENTITY_SCOPE_REQUEST_INVALID` ile reddediyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,60-62,163-171@ec063fee9`). Platform ucu da yalnız aynı modül kodu + sabit `FirstConsumerPermissions` listesi (ürün / GSKU / LSKU / FG anahtarları) + yapılandırılmış `AllowedPairs` (en çok 38) kabul ediyor (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:15,35-56,97-101,103-114@ec063fee9`). `mdm.bank-accounts.*` hiçbir listede yok. Pack'in "hata → boş kapsam" kuralıyla bu, kiracı geneli izni olmayan her kullanıcının boş liste görmesi demektir; AC-17 geçemez. Platform tarafının çözümleme anlamı (izin → şirket listesi) okunmadı — **kısmi inceleme** | **bekletir** — Platform değişikliği (`services/Diten.Platform/**` korunan yol, platform-shared-services; MOD-0018-FU16/FU17 "permission onboarding" deseni) + MDM istemcisinde modül kodu değişikliği (`Infrastructure/Authorization/**` pack Repo Scope'unda yok — XMC-001 / D9 onayı). Modül kodu pack'te tanımsız (§5 bulgu 1) |
-| Auth: `ExplicitGrantOnlyPermissions`'a `mdm.bank-accounts.read-unmasked` ve `.read-tenant-wide` (`:1655`) | Ali (D9, Auth sahibi) | **yok** — dosyada `mdm` 0 (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`, 95 satır, grep 2026-10-27) | bekletir (pack: dilim kapısı); AC-16 DL-2 Bitiş'te → kabul de bekler |
+| SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalışması (`:1652`) | MOD-0018 Treasury Auth eki DL-4 (KARAR D56/1): Treasury yazar, MOD-0018 sahibi teyit eder; XMC-001 Beste (Platform, D63/2) + MDM sahibi (istemci) | **ölçüldü 2026-10-27: bugün ÇALIŞMAZ.** MDM istemcisi modül kodunu sabitliyor: `ModuleCode = "product-item-sku-master"` ve başka modül kodunu 400 `LEGAL_ENTITY_SCOPE_REQUEST_INVALID` ile reddediyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,60-62,163-171@ec063fee9`). Platform ucu da yalnız aynı modül kodu + sabit `FirstConsumerPermissions` listesi (ürün / GSKU / LSKU / FG anahtarları) + yapılandırılmış `AllowedPairs` (en çok 38) kabul ediyor (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:15,35-56,97-101,103-114@ec063fee9`). `mdm.bank-accounts.*` hiçbir listede yok. Pack'in "hata → boş kapsam" kuralıyla bu, kiracı geneli izni olmayan her kullanıcının boş liste görmesi demektir; AC-17 geçemez. Platform tarafının çözümleme anlamı (izin → şirket listesi) okunmadı — **kısmi inceleme** | **2026-10-28 (D56/1):** DL-2 dilim kapısı değil — ek DL-4 paket metni paket kapısı, kodu DL-1 kabul kapısı (DL-2 bunu DL-1 üzerinden bekler); modül kodu değeri ekin K-1b'si. Ölçüm anında: **bekletir** — Platform değişikliği (`services/Diten.Platform/**` korunan yol, platform-shared-services; MOD-0018-FU16/FU17 "permission onboarding" deseni) + MDM istemcisinde modül kodu değişikliği (`Infrastructure/Authorization/**` pack Repo Scope'unda yok — XMC-001 / D9 onayı). Modül kodu pack'te tanımsız (§5 bulgu 1) |
+| Auth: `ExplicitGrantOnlyPermissions`'a `mdm.bank-accounts.read-unmasked` ve `.read-tenant-wide` (`:1655`) | Treasury yazar (MOD-0018 Treasury Auth eki DL-2), MOD-0018 sahibi teyit eder (D9) | **yok** — dosyada `mdm` 0 (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`, 95 satır, grep 2026-10-27) | bekletir (pack: dilim kapısı); AC-16 DL-2 Bitiş'te → kabul de bekler |
 | MOD-0048 para birimi listesinin MDM'den tüketimi (`:1656-1660`) | DL-2 yazarı (port) · Beste (Platform ucu) | **ölçüldü, kapandı:** MdmService'te para birimi listesi okuyan istemci yok (`grep 'reference/currencies' services/Diten.MdmService` → 0); tek okuyucu `GatewayReferenceValueReader` (`…/Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:16,18,30,34-49@ec063fee9` — `Gateway:BaseUrl`, çağıranın `Authorization` + `X-Tenant-Id` başlıkları iletilir, yol `/api/lookups/reference-data/consumable-sets/{set}/published-values`). Yeni port `ICurrencyReferencePort` (`Infrastructure/Currency/**`) aynı desenle `GET /api/lookups/reference/currencies`'e gider | — (port DL-2'de yazılır; erişilemez → 503 `MDM_BANK_CURRENCY_REFERENCE_UNAVAILABLE`, sabit liste yok) |
 | MDM `ValidationBehavior` girilen değeri döndürüyor mu (`:1661-1665`) | — | **ölçüldü: döndürmüyor** — 400 gövdesi yalnız `error.ErrorMessage` listesi (`…/Application/Behaviors/ValidationBehavior.cs:25-31,46@ec063fee9`); `Response<T>` dışı yol da yalnız mesaj taşır (`:49`). Kalan koşul: doğrulayıcı mesajlarında `{PropertyValue}` yok (biçimlenmiş mesaj değeri taşırdı) | — / DL-2 kod incelemesi |
 | `System.Security.Cryptography.AesGcm` hedef çerçevede (S-2) | Treasury CT (ölçüm) | **kısmen ölçüldü:** MdmService'in beş projesi `net8.0` (`services/Diten.MdmService/src/*/…csproj:3`); `AesGcm` çerçevenin parçası. Çalışma ortamında `AesGcm.IsSupported` ve CI imajındaki sağlayıcı ölçülmedi | kabul (AC-37) — isteğe bağlı S-2 sahip onayı ister |
@@ -53,9 +78,12 @@ başlamasını değil kabulünü bekletir; **—** = kapandı.
 | `BANK-ACCOUNT-LOOKUP` 1.0.0 sözleşme dosyası | CT (taslak) · DL-2 (dondurma) | taslak var: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (`x-status: DRAFT`) | kabul (AC-20, AC-42) — dondurma `docs/analysis/contracts/**` yazımıdır (Protected Path; prompt'ta açık izin gerekir, §4) |
 | DL-2 kuyruk satırı | Treasury CT | **yok** — `CT-QUEUE.tsv`'de yalnız `WP-0289-DL1` (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:20`) | — (satır DL-1 kabulünden sonra CT turunda açılır; bu kayıt yazmaz) |
 
-**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — o da DL-1'in paket kapısındaki dış sahipli, tarihsiz maddeleri bekler (Auth paket metni — Ali; DCP-011 onayı — Beste; CT-APR-01). (2) DL-2'ye özgü ilk engel **SEC-002 sağlayıcısı**: bugünkü ölçümle
-yalnız ölçüm değil, **iki tarafta kod değişikliği** gerekiyor (Platform izin listesi + MDM istemcisinin modül kodu) ve sahibi
-adlandırılmadı. (3) **Auth açık atama eki** (Ali). Bu üç madde açıkken DL-2 başlayamaz; diğer dilim kapısı maddeleri kapalı.
+**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — o da DL-1'in paket kapısındaki dış sahipli, tarihsiz maddeleri bekler (Auth paket metni — MOD-0018 Treasury Auth eki, taslak main'de, MOD-0018 sahibinin teyidi bekleniyor; ekin DL-4 SEC-002 paket
+metni — D56/1; DCP-011 onayı — Beste; CT-APR-01; DL-1 kabulünde ayrıca BL-565, ek kodları ve O-14 — Beste). (2) **SEC-002 sağlayıcısı**
+artık DL-2 dilim kapısı değil: KARAR D56/1 ile ekin DL-4'ü — paket metni paket kapısı, kodu DL-1 kabul kapısı (iki tarafta kod
+değişikliği: Platform izin listesi + MDM istemcisinin modül kodu). (3) DL-2'ye özgü açık dilim kapısı: **Auth açık atama**
+(`read-unmasked`, `read-tenant-wide` — ekin DL-2'si; Treasury yazar, MOD-0018 sahibi teyit eder). DL-2 kabulünde Treasury tüketici
+fikstür koşusu aranmaz (KARAR D57/1).
 **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
 yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
@@ -209,9 +237,11 @@ AC-21, AC-22, **AC-26 (şirket hesabı kısmı)**, AC-33, AC-34, AC-35, AC-36, A
 AC-45, AC-46, AC-47, AC-48, AC-49, AC-50, AC-51, AC-52, AC-53, AC-54, AC-55, AC-56, AC-57. AC-27 (hesap / aktivasyon / maskesiz okuma
 kısmı) ve AC-41 DL-3'tedir. AC metinleri pack'ten tırnakla alıntılanır (AC-1…AC-59 `:1288-1551@ec063fee9`).
 
-**Dilim kabul kapısı — DL-2** (`:1927`): Bitiş AC'leri; gerçek replica set AC'leri (AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52)
+**Dilim kabul kapısı — DL-2** (`:1927`): Bitiş AC'leri; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 — pack D56 revizyonu,
+§5 bulgu 4 kapandı)
 ve **AC-50 yük testi** D33/4 eşiğine göre (`scripts/run_record.py` kaydı, makine yükü); tüketici kanıtı: `BANK-ACCOUNT-LOOKUP`
-sözleşme testi (AC-20, AC-42) ve "en az bir Treasury tüketicisinin fikstür koşusunun kendi sahibince kaydı" (bkz. §5 bulgu 3); build.
+sözleşme testi (AC-20, AC-42); "en az bir Treasury tüketicisinin fikstür koşusu" şartı **KARAR D57/1** ile kalktı (tüketici testi ilk
+gerçek tüketicinin dilimine girer — §5 bulgu 3 kapandı); build.
 
 **İzinli yollar** (pack Repo Scope + Backend File Convention, DL-2): `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/{BankAccount,BankAccountSensitiveRead,BankAccountPurpose,BankDataKeyFence,BankDataKeySetTarget}.cs`,
 `Domain/Enums/{BankAccountOwnerType,BankAccountIdentifierType,IdentifierCheckLevel}.cs`, `Domain/Repositories/I{BankAccount,BankAccountSensitiveRead,BankAccountPurpose}Repository.cs`,
@@ -224,7 +254,7 @@ dondurulmuş dosyası (tek dosya, yol prompt'ta). Hangi dosyanın hangi pack sat
 DL-2 "Yollar" farkı — §5 bulgu 2).
 
 **Korunan yollar:** `.antigravity/**`, `AGENTS.md`, `gateway/**` (`ocelot.json` yalnız integration-agent), `services/Diten.Platform/**`
-(SEC-002 sağlayıcısı dahil), `services/Diten.AuthService/**` (`ExplicitGrantOnlyPermissions` — Ali), `services/Diten.ProcurementService/**`,
+(SEC-002 sağlayıcısı dahil), `services/Diten.AuthService/**` (`ExplicitGrantOnlyPermissions` — MOD-0018 Treasury Auth eki DL-2; Treasury yazar, MOD-0018 sahibi teyit eder), `services/Diten.ProcurementService/**`,
 `services/Diten.Building.Blocks/**`, Treasury servisi ve diğer servisler; `services/Diten.MdmService/**` içinde İzinli yollar dışı her şey —
 özellikle `Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs` (SEC-002 istemcisi; değişikliği ayrı onay,
 XMC-001), MOD-0220 `LegalEntity` (yalnız okunur), MOD-0290 ürün ailesi, DL-1 banka / şube dosyaları (yalnız okunur; hata varsa dur ve
@@ -233,7 +263,8 @@ sor); `frontend/**` (DL-4); `docs/analysis/contracts/**` (lookup dosyası dış�
 **Önce oku:** pack (`ready-for-dev` sürümü), AGENTS.md, MDM domain-config, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, data-scope-enforcement, audit-trail-standard, record-coding-standard, mongo-indexing, handler-design,
 code-style, git-safety, cross-module-change-consent, module-self-registration-standard; karar kayıtları D1, D9, D20, D23, D24, D27,
-D33, D45–D51 (`treasury-intake-owner-decisions-0{1..5}.md`); DL-1 hazırlık kaydı ve DL-1 WP raporu; bu kayıt.
+D33, D45–D69 (`treasury-intake-owner-decisions-0{1..5}.md`; özellikle D56/1, D57/1, D59/1, D65/2), MOD-0018 Treasury Auth
+eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`, DL-2 ve DL-4); DL-1 hazırlık kaydı ve DL-1 WP raporu; bu kayıt.
 
 **Sözleşme yüzeyleri:** API `/api/mdm/bank-accounts` (+ `{id}`, `activate`, `deactivate`, `bulk`, `unmasked-reads`, `lookup-validation`,
 `sensitive-reads`), `/api/mdm/bank-account-purposes`; tüketilen MOD-0048 `GET /api/lookups/reference/currencies` (sahte istemci +
@@ -284,22 +315,27 @@ tüketicisi fikstür koşusu" v1'de okuyan akış yokken nasıl karşılanır (�
    modül kodunu `product-item-sku-master`'a ve sabit bir izin listesine bağlıyor. Gerekenler pack'te yok: (a) Platform değişikliği
    (korunan yol, platform-shared-services; muhtemelen bir MOD-0018 FU "permission onboarding" paketi — FU16 / FU17 deseni), (b) MDM
    istemcisinde modül kodu (Repo Scope'ta `Infrastructure/Authorization/**` yok), (c) MOD-0289'un **modül kodu** (izin atfı / kiracı
-   yetkisi / kapsam isteği için) pack'te tanımsız. Aynı bulgu MOD-0217 için de geçerlidir (paket kapısında).
+   yetkisi / kapsam isteği için) pack'te tanımsız. Aynı bulgu MOD-0217 için de geçerlidir (paket kapısında). **Kapandı — KARAR D56/1** (MOD-0018
+   Treasury Auth eki DL-4; modül kodu değeri ekin K-1b'si).
 2. **DL-2 "Yollar" listesi Repo Scope'tan dar:** `:1901-1902` yalnız `{BankAccount,BankAccountSensitiveRead}`, `Features/BankAccount/**`,
    `Rules/`, `Infrastructure/{BankData,Currency}/**`, `BankAccountsController` ve lookup dosyasını sayıyor; Repo Scope (`:574-578`) amaç
    arka ucunu (`Features/BankAccountPurpose/**`, `BankAccountPurpose.cs`, depo, denetleyici) "DL-2" diye yazıyor, AC-53…AC-57 DL-2 Bitiş'te;
    `BankAccountProtectionRotationWorker.cs` (`:553`) ve çit / hedef varlıkları (`BankDataKeyFence`, `BankDataKeySetTarget` — "Entity Fields"
    `:418-488`, Backend File Convention `:996-1000`) Repo Scope'un Domain listesinde yok; `IdentifierCheckLevel` enum'u (`:338`) Repo
-   Scope enum listesinde (`:546`) yok.
+   Scope enum listesinde (`:546`) yok. **Kapandı** (pack D56 revizyonu).
 3. **DL-2 kabul kapısı ile D47/4 arasında gerilim:** `:1927` "en az bir Treasury tüketicisinin fikstür koşusunun kendi sahibince kaydı"
    istiyor; D47/4 ölçümü (`treasury-intake-owner-decisions-05.md:340-356`) v1'de hiçbir finans akışının MOD-0289'u okumadığını, tüketici
    alanlarının opak Guid olduğunu yazıyor. Tüketici fikstür koşusunun hangi pakette, hangi WP'de yapılacağı tanımsız — DL-2 kabulü dış
-   sahibe bağlanmış oluyor (sahip kararı gerekir: kapıdan çıkarmak ya da tüketici WP'sini adlandırmak).
+   sahibe bağlanmış oluyor (sahip kararı gerekir: kapıdan çıkarmak ya da tüketici WP'sini adlandırmak). **Kapandı — KARAR D57/1**
+   (şart kapıdan çıktı; tüketici testi ilk gerçek tüketicinin diliminde).
 4. **Kabul kapısının gerçek replica set listesi Test Expectations'tan dar:** `:1927` AC-12'yi (aynı IBAN yarışı; Test Expectations
-   `:1560` "tekil indeksler ve yarış (AC-2, AC-9, AC-12)") ve AC-15'i ("aynı işlemde" okuma kaydı + niyet) saymıyor.
+   `:1560` "tekil indeksler ve yarış (AC-2, AC-9, AC-12)") ve AC-15'i ("aynı işlemde" okuma kaydı + niyet) saymıyor. **Kapandı** (pack D56 revizyonu).
 5. **Dependencies "Şifreleme altyapısı" satırı eskidi:** `:610` "`AesGcm` hedef çerçevede kullanılabilirliği ölçülmedi" — hedef
-   çerçeve bugün ölçüldü (`net8.0`, beş csproj); kalan yalnız çalışma ortamı desteği.
+   çerçeve bugün ölçüldü (`net8.0`, beş csproj); kalan yalnız çalışma ortamı desteği. **Kapandı** (pack D56
+   revizyonu).
 6. **Dört göz AC kimliği:** Validation Rules `:1093-1097` ve Failure Path `:1147` dört göz kuralını yazıyor; kuralın sabotajlı testi
    `:1345-1347` (AC-18 bloğunun içinde, D23/2) — DL-2 Bitiş'te AC-18 var, ama dört göz ayrı AC kimliği taşımıyor; prompt'ta AC-18'in
-   dört göz kolu açıkça adlandırılmalı.
-7. **DL-1 kaydı eskidi (pack değil):** `MOD-0289-DL1-hazirlik.md` §1 "CT-APR-02 … satır yok" diyor; bugün `reviews.tsv:91` UYGUN.
+   dört göz kolu açıkça adlandırılmalı. **Kapandı** (pack D56 revizyonu: DL-2 Bitiş'te
+   adlandırıldı).
+7. **DL-1 kaydı eskidi (pack değil):** `MOD-0289-DL1-hazirlik.md` §1 "CT-APR-02 … satır yok" diyor; bugün `reviews.tsv:91` UYGUN. **Kapandı** (DL-1 kaydı 2026-10-28'de
+   tazelendi).

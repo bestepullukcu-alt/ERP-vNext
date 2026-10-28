@@ -2,11 +2,37 @@
 record_id: MOD-0124-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
 pack: execution/domains/finance-treasury/module-packs/MOD-0124-cash-positioning.md (status draft, sha256 2f5344868f465524b24e3ce80d5d1b04da6aec6572f5814e621d72cc302379f5 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — MOD-0126 ortak tanımları yeniden sabitlendi; önceki sürüm `ea31ff55…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `55b6d936…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `2f079bfa…` (D58/D59 revizyonu); D57 sürümü `869c0419…`; D56 sürümü `f7debb3e…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `bb9e388a…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:98; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; DL-1 kaydıyla aynı commit)
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve bu pack sürümü dahil; D69 main'de değil ve MOD-0124'e dokunmaz).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-1**'i; kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **MOD-0023 şablon kodu geldi:** `FT-CASH-POSITION-APPROVAL` (Y-12; W-3, W-6 — `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, #277 ile
+> main'de) — tek aşama, tek onay adımı, atamasız; adaylar `CandidatePrincipalIds`. Şablonu kuran MOD-0023 kodu main'de **değil**,
+> WP numarası ve tarih yok (DL-3 dilim kapısı). "Son adım değil" gelirse pozisyon `PendingApproval`'da kalır (D66/2).
+> - **Onaylayıcı aday tabanı** = ekin **DL-6** aday sorgusu, anahtar `finance-treasury.cash-positions.approve` (D66/1; D67/1 — DL-6
+> paket metni MOD-0124 DL-3 önkoşulu, kodu DL-3 kabul kapısı; DL-1 / DL-2 DL-6'yı beklemez). Onay niyetinde `CandidatePrincipalIds`
+> / `ExcludedPrincipalIds` (D67/5). Kurallar sonrası boş liste → pack'e göre MOD-0023 400 → kesin ret (D68 MOD-0126 içindir).
+> - Aday kaynağı (`IFinanceTreasuryApproverCandidateSource`) ve MOD-0023 bağdaştırıcısı servis ortak yapı taşıdır; tek yazarı
+> MOD-0126 DL-2 (D67/3, D57/5); MOD-0124 DL-3 onu bekler.
+> - **Kanıt paketi:** DL-2'de kalemler yalnız biçimle doğrulanır; varlıkları MOD-0031 bağlantısıyla DL-4'te (D57/3).
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **MOD-0048 seed'leri** (`currency-minor-units`): Treasury CT ekler, Beste onaylar (D59/2, D60); ölçüm: main'de yok
+> (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
+> (`AuditEnums.cs` son değer `ESignature = 17`).
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0124'ün 20 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
+> pack "Kaynak ve kanıt"ta sha256 `3a70398a…e925` ile sabitli.
+>
 > **Güncel durum (2026-10-27).** Pack `status: draft`; bu sürüme CT-APR-02 kaydı var (`reviews.tsv:98`, UYGUN, açık ENGEL 0 —
 > dalda, main'de değil); CT-APR-01 yok. `services/Diten.FinanceTreasuryService/` yok — MOD-0126 DL-1 de MOD-0124 DL-1 de
 > **başlamadı**. MOD-0124 DL-2 yalnız MOD-0124 DL-1 kabul edildikten sonra başlar. Satır atıfları `yol:satır@ec063fee9`; pack
@@ -44,9 +70,9 @@ için" (O-4, O-14, MOD-0023 şablonu, §17) ve "— DL-4 için" (O-17, MOD-0031 
 | Eşik politikası (`CashPositionThresholdPolicy`, LE + para birimi zorunlu, O-12) — Reconcile'ın girdisi | MOD-0124 DL-1 | DL-1'de yazılır (AC-8) | DL-1 üzerinden; politika yoksa 422 `CASH_POSITION_THRESHOLD_POLICY_MISSING` (AC-6) |
 | O-13 engelleyici istisnanın atanması / muafiyeti | — | **kapandı** — D28: sonra; v1'de düzeltip yeniden mutabakat (`:1693`) | — |
 | O-18 bakiye işaret kuralları | — | **kapandı** — D28 (`:1698`) | — |
-| MOD-0031 / MOD-0262 (kanıt paketi kalemleri `EvidenceRefs`) | — | DL-2 MOD-0031'i ve belge deposunu **çağırmaz**: kalem yalnız biçimle doğrulanır (`DocumentId` Guid ≠ Empty, `DocumentVersionId` Guid?, `Kind` tanımlı; Validation Rules `:1072`); pack'te MOD-0262 bağımlılığı yok (grep 0) | — (bkz. §5 bulgu 5) |
-| Auth kayıt kodu `finance-treasury.cash-positions.reconcile` / `.attach-evidence` / `.read` | Ali | yok (Auth'ta `finance-treasury` 0; MOD-0018 Treasury paketi yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
-| MOD-0023 nakit pozisyonu şablonu (O-20), §17 kodu, O-4 / O-14 | Ali / — | **2026-10-28 (Y-12): kod `FT-CASH-POSITION-APPROVAL` geldi** (tek aşama / tek onay adımı / atamasız; adaylar `CandidatePrincipalIds`); şablonu kuran kod main'de değil, WP / tarih yok. Ölçüm anında: şablon **karar var, kod yok** — Y-6: nakit pozisyonu **tek adım** (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok (`WorkflowModels.cs:406-423`, `:451-465`) | **DL-3** — DL-2'yi bekletmez |
+| MOD-0031 / MOD-0262 (kanıt paketi kalemleri `EvidenceRefs`) | — | DL-2 MOD-0031'i ve belge deposunu **çağırmaz**: kalem yalnız biçimle doğrulanır (`DocumentId` Guid ≠ Empty, `DocumentVersionId` Guid?, `Kind` tanımlı; Validation Rules `:1072`); pack'te MOD-0262 bağımlılığı yok (grep 0) | — (D57/3: DL-2'de yalnız biçim, varlık DL-4'te; §5 bulgu 5 kapandı) |
+| Auth kayıt kodu `finance-treasury.cash-positions.reconcile` / `.attach-evidence` / `.read` | Treasury yazar (MOD-0018 eki DL-1 kodu), MOD-0018 sahibi teyit eder | yok (Auth'ta `finance-treasury` 0; MOD-0018 Treasury Auth eki taslağı #281 ile main'de, kodu yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
+| MOD-0023 nakit pozisyonu şablonu (O-20), §17 kodu, O-4 / O-14 | Ali / — | **2026-10-28 (Y-12): kod `FT-CASH-POSITION-APPROVAL` geldi** (tek aşama / tek onay adımı / atamasız; adaylar `CandidatePrincipalIds`); şablonu kuran kod main'de değil, WP / tarih yok; aday tabanı MOD-0018 Treasury Auth eki DL-6 (D66/1, D67/1 — DL-3 önkoşulu / kabul kapısı); ortak MOD-0023 bağdaştırıcısı ve aday kaynağı MOD-0126 DL-2'de (D57/5, D67/3). Ölçüm anında: şablon **karar var, kod yok** — Y-6: nakit pozisyonu **tek adım** (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok (`WorkflowModels.cs:406-423`, `:451-465`) | **DL-3** — DL-2'yi bekletmez |
 | MOD-0031 `links/query` ve dedupe ölçümü (O-17) | Treasury CT | ölçülmedi | **DL-4** |
 
 **DL-2'yi ilk bekleten:** MOD-0124 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
@@ -191,7 +217,7 @@ MOD-0126 / 0119 / 0120 feature yolları; `tests/architecture/audit-ledger/**` (y
 **Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar), MOD-0124 DL-1 WP raporu ve kabul kaydı, AGENTS.md,
 domain-config, `.antigravity/rules/` multi-tenancy, security-jwt, permission-key-standard, git-safety, cross-module-change-consent,
 code-style (S-56), audit-trail-standard, data-scope-enforcement, mongo-indexing, handler-design; karar kayıtları
-`treasury-intake-owner-decisions-0{1..5}.md` (D14, D28 O-12 / O-13 / O-18, D47, D49), bu kayıt.
+`treasury-intake-owner-decisions-0{1..5}.md` (D14, D28 O-12 / O-13 / O-18, D47, D49, D57/3, D59/1), bu kayıt.
 
 **Sözleşme yüzeyleri:** API `cash-position.openapi.yaml` (reconcile, evidence-packs, exceptions, trace; `Idempotency-Key`, `If-Match`);
 tüketilen MOD-0220 TRM-14. İzin §2.6.
@@ -233,19 +259,22 @@ başladığı gün doldurulur (S-53); dalga sonunda tek PR (S-76, S-77). Rapor b
    komutlarını anıyor; AC-16 (idempotency) DL-1'de "(Create/Update/Delete kısmı)", DL-3'te "(kararlar)", DL-4'te "(kalan)" — Reconcile ve
    kanıt paketi hiçbir dilimde adıyla yok; AC-17 (tek aşamalı denetim olayı) DL-1'de "(tek aşamalı kısım)" ve DL-4'te — DL-2'nin iki tek
    aşamalı komutu adıyla yok. Öneri: DL-2 Bitiş'e "2, 3, 16, 17 (Reconcile, kanıt paketi kısmı)"; DL-1'de AC-2 / AC-3 "(DL-1 komutları
-   kısmı)".
+   kısmı)". **Kapandı** (pack D56 revizyonu: AC-2 / AC-3 / AC-16 / AC-17 dilim kısımlarına bölündü — bulgu 1).
 2. **İki DL-2 AC'si DL-3 komutlarını gerektiriyor.** AC-9: "içerik değiştikten sonra eski paketle **Submit/Publish** 409
    `CASH_POSITION_EVIDENCE_REVISION_CONFLICT`" (`:1343-1345`) — Submit ve Publish DL-3'tedir. AC-7: "önceki kanıt paketi **ile onay**
    geçersiz olur" (`:1338-1340`) — onay DL-3'te doğar. Durum kuralları da "`Approved` iken Reconcile onayı düşürür" ve "yayım sonrası
    değişmezlik" diyor; DL-2'de `Approved` / `Published` kayıt oluşamaz. Öneri: AC-9 ve AC-7'yi "(paket / revizyon kısmı)" DL-2,
    "(Submit / Publish / onay kısmı)" DL-3 diye bölmek; prompt bu dalları DL-3'e bırakmalı, sahte durumla "geçti" saymamalı.
+   **Kapandı** (pack D56 revizyonu, bulgu 2).
 3. **Validation Rules DL-2'de "kapanıyor" ama SoD R1–R7 DL-3'te uygulanıyor** (`:1710`, `:1715-1718`; MOD-0120 ile aynı desen). Kabul
    kaydında Validation Rules DL-2'de kapandı sayılırsa R1–R7 açık kalır. Öneri: DL-2 "mutabakat ve kanıt kuralları kısmı" ya da bölümü DL-3'e
-   taşımak.
+   taşımak. **Kapandı** (pack D56 revizyonu: Validation Rules notu — bulgu 3).
 4. **İstisna listesi ucu kapsam AC'lerinde adıyla yok.** AC-31 DL-2 kısmı "iz, Reconcile ve kanıt paketi uçları" (`:1739`); AC-3 ve AC-31
    metni "detay, iz, `current` ve her yazma" sayıyor — `GET …/exceptions` hiçbirinde yok. Kaynakta istisna kuyruğu `ix_mod0124_exception_queue`
    şirket süzgeciyle okunuyordu; Recovery ucunun kapsam dışı şirkette 404 vermesi açıkça test edilmeli (prompt'a eklenir).
+   **Kapandı** (pack D56 revizyonu: istisna listesi ucu AC-3 / AC-31 metninde ve DL-2 kısmında — bulgu 4).
 5. **Kanıt paketi kalemlerinin kaynağı doğrulanmıyor.** `EvidenceRefs` "MOD-0031 / belge sürümü kimlikleri" (`:480`) ama Validation Rules
    yalnız biçim denetliyor (`:1072`); DL-2'de MOD-0031 / belge deposu çağrısı yok, DL-4 dışa aktarımı ise bu kimlikleri MOD-0031'e bağlar.
    Var olmayan belge kimliğiyle kilitli paket DL-4'e kadar fark edilmez. v1 için bilinçli ise pack'te "DL-2'de yalnız biçim, varlık DL-4'te"
-   diye yazılmalı; değilse DL-2'ye MOD-0031 okuma bağımlılığı (ve dilim kapısı) eklenmeli.
+   diye yazılmalı; değilse DL-2'ye MOD-0031 okuma bağımlılığı (ve dilim kapısı) eklenmeli. **Kapandı — KARAR D57/3:** DL-2'de
+   yalnız biçim; varlık MOD-0031 bağlantısıyla DL-4'te.
