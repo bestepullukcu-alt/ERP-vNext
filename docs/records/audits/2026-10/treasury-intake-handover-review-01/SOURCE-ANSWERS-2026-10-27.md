@@ -113,6 +113,63 @@ mi, yalnız işlem yapılabilir mi? → D58: Active ilişkili hepsi.
 4. Numaralar ve tarihler: yukarıdakiler açılınca, ölçülmüş süreyle.
 5. commercial-suite: Ali'de kayıtlı sahip ataması yok (işletim kartı da "Belirsiz — sahip ataması bekliyor" diyor) → D61.
 
+## Y-11 — Ali / Auth kulesi, ölçüm (2026-10-28)
+
+D54, D56 ve D57 main'de değil, yalnız `chore/ct/treasury-intake-ct-05`'te (main'deki karar dosyası D50'de bitiyor, sözleşme rollerinde eski
+belge deposu izinleri görünüyor); paket metni main'e dayanmalı (D53/1). Muafiyet atamasının (waive-sod) Auth'ta karşılığı yok: yeni veri
+yapısı, onboarding'den büyük iş; tarih paket netleşince. → D62/1: #270 merge'ü beklenir.
+
+## Y-12 — Ali / MOD-0023 kulesi, şablon kodları (2026-10-27/28)
+
+Kayıt `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md` (dal `chore/ct/pss-wf-ct-01` @ `c927047f1`, main'de
+değil). Kodlar, hepsi tek aşama / tek onay adımı / atamasız; onaylayıcıyı `StartWorkflowInstanceRequest.CandidatePrincipalIds` belirler
+(boş liste `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`):
+
+| Paket / madde | Şablon kodu | Onaylayıcı |
+|---|---|---|
+| MOD-0126 O-8 ödeme partisi | `FT-PAYMENT-BATCH-APPROVAL` | MOD-0126 aday çözümleyicisi (SoD R1–R4; eşik üstü tier2-approve) |
+| MOD-0119 O-11 AP faturası | `FT-AP-INVOICE-APPROVAL` | MOD-0119 aday çözümleyicisi (SoD R1–R3) |
+| MOD-0124 O-20 nakit pozisyonu | `FT-CASH-POSITION-APPROVAL` | MOD-0124 aday çözümleyicisi |
+| MOD-0120 AR düzeltme (Void, WriteOff, PaymentReversal; tek şablon) | `FT-AR-ADJUSTMENT-APPROVAL` | MOD-0120 aday çözümleyicisi; eşik üstü finans kontrolörü |
+| MOD-0217 O-3 sözleşme sürümü | `MDM-CONTRACT-VERSION-APPROVAL` | sözleşme onay yetkisi olanlar, hazırlayan hariç; ayrı hukuk adımı yok |
+
+v1'de çok adımlı / kademeli onay yok → `PartiallyApproved`'a giriş önerilmez (D62/2). 15 sn HTTP zaman aşımı tüketici ayarıdır. MOD-0217
+satırı MOD-0217 onayından sonra kullanılır. WP numaraları MOD-0023 kuyruğu açılınca; süre (§17 DL-1 ~1 gün, DL-2 2–3 gün) değişmedi.
+
+## Y-13 — Ali / MOD-0220 kulesi, TRM-14 durumu (2026-10-28)
+
+MOD-0220 §22 onaylı (sha `91248a47…`, 2026-10-26, UYGUN); kod origin/main'de yok (`LegalEntityLookupDto` 6 üye, `approvalStatus` yok).
+§22.5: kod MOD-0126 DL-1 ile aynı WP'de, ayrı commit. Engel: MOD-0126 `draft`, onay satırı yok. Ölçüm notu: TRM-14 satırının yalnız
+`chore/ct/treasury-intake-ct-01`'de olduğu yazıldı; Treasury CT ölçümü — `CT-QUEUE.tsv` ve satır TRM-14 origin/main'de (#268 ile; 2026-10-28
+ölçüldü). Platform'daki `MdmLegalEntityReferenceValidatorTests` §22.4 AC-T4 listesinde yok; Platform sahibi getirir.
+
+## Y-14 — Ali / Auth, genel düzenleme bildirimi (2026-10-28)
+
+> **Düzeltildi (Y-16):** Ali böyle bir düzenleme kararı, paketi ya da tarihi olmadığını yazdı; bildirimin kaynağı doğrulanamadı. Y-14
+> geçersizdir; hiçbir pakete ya da karara işlenmedi.
+
+Auth'ta bir kerelik genel düzenleme: izinler, "yalnız açık atama" işaretleri ve rol şablonları modüllerin kendi tanımından okunacak. Bu
+girince Treasury anahtarlarını ve rol şablonlarını kendi modülünde yazar; Auth koduna dokunmak ya da Ali'den ayrıca iş istemek gerekmez.
+Süreli / partiye bağlı muafiyet ataması (D54) Auth'ta yeni yetenek; ayrı ele alınır, tarih kapsam netleşince. Etki (çıkarım, karar değil):
+D53 Auth paket metni kapısı ve D56'daki MOD-0018 "permission onboarding" eki bu düzenlemeyle değişebilir; ayrıntı (paket / numara, tanım
+biçimi, tarih) Ali'ye soruldu.
+
+## Y-15 — Ali, yanıt 8 (2026-10-28)
+
+Sahip kararı (D9 / XMC-001 "(a) bu işte düzelt"; D29/1): MOD-0018 Auth eki (anahtarlar, açık atama listesi, rol şablonları) ve MOD-0220 §22
+alanı (`approvalStatus` + LEGAL-ENTITY-LOOKUP 1.1.0) Treasury tarafından yazılır; sahip inceler ve teyit eder. Auth paket metni main'deki
+karar dosyasına atıf yapar (D62/1). MOD-0023 §17 kodunu sahibi yazar (D25/1, D32/1); numara ve tarih kuleden. Sorular: (1) waive-sod Auth
+veri yapısı ve SEC-002 Platform dosyaları için XMC-001 onayı kimden — Ali vermez, alan sahibi verir → D63; (2) D62 kaynağı main'de ve ct-05
+uzak dalında yok — doğru, yalnız yerel commit `d101b3e55` idi → D63/1 ara PR; (3) paket yazılınca MOD-0018 sahibine inceleme isteği gider.
+
+## Y-16 — Ali, Y-14 düzeltmesi ve dört cevap (2026-10-28)
+
+Auth izinlerini modül tanımına taşıyan bir düzenleme kararı verilmedi; paket ya da tarih yok (Y-14 geçersiz). Sahip kararı: Auth tarafı
+yalnız Treasury için yazılır. Cevaplar: (1) düzenleme paketi / numara / tarih yok; (2) modül tanımı biçimi değişmedi — mevcut MOD-0018
+onboarding kalıbı (FU20 / FU22 örnek); (3) D53 paket metni kapısı ve D56 (SEC-002) eki aynen geçerli; (4) anahtarlar mevcut yolla
+kaydedilir, DL-1 kabulü D53/2'ye göre "Auth kayıt kodu main'de" şartını bekler. Auth paketini ve MOD-0220 alanını Treasury yazar; yazınca
+inceleme isteği gider. D54 için tarih kapsam netleşince.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -143,3 +200,9 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-6 (Auth: MOD-0018 paketi + kod; `mdm.contracts.*` MOD-0217 onayından sonra) | altı paket | işlenmedi — Auth checklist maddeleri açık kalır; Ali'ye D47 güncellemesi ayrıca gönderilir |
 | Y-10/1–4 (Auth kapsamı a–f teyit; şablon kodları ve MOD-0220 ayrı kulelerde; numara/tarih sonra) | altı paket | işlenmedi — Auth, TRM-14 ve şablon kodu checklist maddeleri açık kalır; numara gelince ready-for-dev revizyonunda |
 | Y-10/5 (commercial-suite sahibi kayıtlı değil) | MOD-0057 | D61 (`treasury-intake-owner-decisions-05.md`) |
+| Y-11 (kararlar main'de değil; waive-sod Auth karşılığı yok) | altı paket | D62/1 — #270 merge'ü beklenir; waive-sod tarihi Auth paketinde |
+| Y-12 (beş şablon kodu, tek adım) | MOD-0126, MOD-0119, MOD-0124, MOD-0120, MOD-0217 | işlenmedi — ready-for-dev revizyonunda O-8 / O-11 / O-20 / MOD-0120 / MOD-0217 O-3 satırlarına; D62/2 |
+| Y-13 (TRM-14; MOD-0126 onayı bekleniyor) | MOD-0126 (TRM-14) | işlenmedi — MOD-0126 onay satırı ready-for-dev PR'ında |
+| Y-14 (geçersiz — Y-16) | — | işlenmedi |
+| Y-15 (Auth eki ve MOD-0220 §22 Treasury yazar; XMC-001 sorusu) | altı paket; MOD-0126 (TRM-14) | D63 |
+| Y-16 (Y-14 düzeltmesi; D53 / D56 aynen; MOD-0018 FU20 / FU22 kalıbı) | altı paket | işlenmedi — paket metni değişmez; Auth eki FU20 / FU22 kalıbıyla yazılır |
