@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); the §0.0 code and enabling gates still bind; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment, permission/composition single writer) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
+status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); the §0.0 code and enabling gates still bind; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment — decided §0.5, permission/composition single writer — decided D2) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -51,7 +51,9 @@ Owner decision 2026-10-22; ready-for-dev 2026-10-27.
 is on `main`, (2) the PR #198 audit path is on `main`, (3) the SUPPLIER **1.3.0 contract is frozen on `main`** (MOD-0140
 Revision 2 DL-1), (4) the replay receipt amendment (Phase 1.5, §0 table) and (5) the permission/composition single writer
 (§14) are decided — DL-1's create is an idempotent command registered in `Program.cs`, so it is not written without them
-(review F-2). Tests use the frozen contract's **declared** answers plus **hand-written stubs** for every undeclared case of
+(review F-2). **(4) is decided** by §0.5 (Natig, 2026-10-28) and **(5) is decided** by owner decision D2 of 2026-10-26 (the
+MVP-6 CT is the single writer of `supplychain.supplier-performance.*` and the SupplyChain composition,
+`docs/records/decisions/2026-10/mvp6-owner-decisions-2026-10-26.md`); (1) and (3) remain. Tests use the frozen contract's **declared** answers plus **hand-written stubs** for every undeclared case of
 T-0147-V1-ELIG-01: a route 404 with a ProblemDetails body without `code`, a 404 without a body, a malformed or mismatched 200,
 Procurement 401 / 403 / 5xx / timeout (review F-3). It is safe to merge before MOD-0140 DL-3: until the endpoint exists
 Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILABLE` — create fails closed, nothing is written.
@@ -86,8 +88,10 @@ MOD-0140's S-2 decision (below).
   caller's token and `X-Legal-Entity-Id` = the evaluation's validated LE (XMC-001, read only; no copy of Procurement data).
   The evaluating role needs `procurement.suppliers.eligibility.read` in addition to `.evaluate`, granted through Roles →
   Permissions (the BL-652 interim path), **and `mdm.legal-entities.read`**: MOD-0140 validates the LE header with MDM using
-  the same caller token (MOD-0140 §7, C2) and answers 503 without that permission — unless MOD-0140's open question S-2
-  (a Procurement → MDM service identity) is decided otherwise (F-3).
+  the same caller token (MOD-0140 §7, C2). Without that permission MOD-0140 answers **403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`**
+  (MOD-0140 Revision 5, S-2 decided 2026-10-28), which this pack answers as 403 `FORBIDDEN` like any Procurement 403; an MDM
+  401 or an unreachable MDM is MOD-0140's 503, answered here as 503 `SUPPLIER_BASE_UNAVAILABLE`. The permission requirement
+  ends when MOD-0140's Procurement → MDM service identity arrives (DL-7, BL-652 Option 2).
 - **How the endpoint answers "no":** MOD-0140 answers **404 with body `code = UNKNOWN_SUPPLIER`** when the supplier is
   unknown, belongs to another tenant or has no relationship with the caller's company; on a 200 `relationshipExists` is
   always `true` (MOD-0140 §3.1). **Only that 404** maps to **404** (declared for create; the same answer as a supplier of
@@ -107,7 +111,8 @@ MOD-0140's S-2 decision (below).
   the `supplierId` filter of `listSupplierEvaluations` / `listSupplierScorecards` matches the stored canonical code exactly
   (a legacy code in the filter finds nothing and is not resolved — no Procurement call on reads).
 - Procurement unreachable / 5xx / timeout → 503 with code `SUPPLIER_BASE_UNAVAILABLE` (the declared create 503's own code,
-  chosen deliberately). Procurement 403 (the caller lacks `procurement.suppliers.eligibility.read`) → 403 `FORBIDDEN` (the
+  chosen deliberately). Procurement 403 (the caller lacks `procurement.suppliers.eligibility.read`, or `mdm.legal-entities.read` —
+  `LEGAL_ENTITY_LOOKUP_FORBIDDEN`) → 403 `FORBIDDEN` (the
   service's 403 code) — an authorization outcome, never hidden as 503; create declares no 403 (table below). No draft in any
   case (F-4).
 - Publish (`submitSupplierEvaluation`) does not re-read eligibility: the evaluation records a past period.
@@ -117,8 +122,8 @@ documented exceptions that the contract successor declares:
 
 | Operation | Declared (frozen v1) | Also returned in v1 (undeclared) |
 |---|---|---|
-| `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 409 `DUPLICATE_EVALUATION` (an active evaluation exists for the same Tenant + LE + canonical supplier + period, review F-3), 500 |
-| `submitSupplierEvaluation` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403, 500 |
+| `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 409 `DUPLICATE_EVALUATION` (an active evaluation exists for the same Tenant + LE + canonical supplier + period, review F-3), 409 `IDEMPOTENCY_KEY_REUSED` (§0.5), 500 |
+| `submitSupplierEvaluation` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403, 409 `IDEMPOTENCY_KEY_REUSED` (§0.5), 500 |
 | `listSupplierEvaluations` | 200, 400 | 401, 403, 500 |
 | `getSupplierEvaluation` | 200, 404 | 401, 403, 500 |
 | `listSupplierScorecards` | 200 | 400 (invalid query value), 401, 403, 500 |
@@ -176,7 +181,7 @@ when the folder's hash manifests are renewed with it): T-0147-V1-SCORE-01 (the t
 T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fifth metric, weight 25),
 T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping),
 T-0147-V1-ELIG-01 (D2: the Procurement mock answers **404** for no relationship → 404; a malformed 200, a null `status`
-and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 503 (MDM via MOD-0140); a second create with the
+and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 403 `FORBIDDEN` (MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`); a second create with the
 master uuid of an already evaluated supplier and period → 409 `DUPLICATE_EVALUATION`; a legacy code → 422
 `SUPPLIER_CODE_NOT_CANONICAL` with no Procurement call; a 200 naming another (validly formatted) supplier → 503; a 404
 `UNKNOWN_LEGAL_ENTITY` and a 404 without a body → 503; OnHold, Blocked, Inactive and not-approved
@@ -206,8 +211,8 @@ label wins**: the text is the target, not an approved rule.
 | `POST /risks/{id}/status` (changeSupplierRiskStatus) | ONAYLI | ÖNERİLEN — linear `OPEN→ACKNOWLEDGED→MITIGATED→CLOSED`; **BLOKE** — taxonomy snapshot (DC-05) | Risk Register owner | AC-23, AC-24 |
 | `GET /risks` | ONAYLI | ÖNERİLEN — Tenant+LE isolation | MOD-0147 owner | T-0147-ISO-01 |
 | Risk source `PORTAL_SUBMISSION` | ONAYLI enum | **BLOKE** — portal source resolution (with MOD-0148) | MOD-0148 owner; Risk owner | AC-25 |
-| Replay receipt tuple / error precedence (all four mutations) | not declared in v1 | **BLOKE** — MOD-0147 Phase 1.5 amendment; 409 `IDEMPOTENCY_KEY_REUSED` not in v1 | MOD-0147 owner; CT contract writer | — (Phase 1.5) |
-| Permissions, Program.cs composition | — | **BLOKE** — security/permission single writer | security owner, integration owner | — |
+| Replay receipt tuple / error precedence (all four mutations) | not declared in v1 | **ONAYLI** (Natig, 2026-10-28) — §0.5; 409 `IDEMPOTENCY_KEY_REUSED` declared by this pack, contract successor 1.1.0 | MOD-0147 owner; CT contract writer | T-0147-RP-01…T-0147-RP-09 |
+| Permissions, Program.cs composition | — | **ONAYLI** — single writer = MVP-6 CT (D2, 2026-10-26); keys registered only in the enabling change (§0.0) | MVP-6 CT | T-0147-V1-PERM-01 |
 | Placement / Supplier pointer / frozen contract hash | — | ONAYLI (DC-01) / pointer re-pinned to SUPPLIER v1.2.0 / hash guard | — | AC-01 (r2: CONCURRED), AC-02, AC-07 (hash only) |
 | Fixtures (`SIMULATED-ONLY`) | — | never evidence for a live producer | CT fixture coordinator | AC-06, AC-27 |
 
@@ -333,6 +338,59 @@ Acceptance examples of the decided rules (in addition to §0.1's):
   duplicate that the consumer ignores; a crash between commit and publish is recovered by the publisher from the Pending
   record.
 
+### 0.5 Replay receipt (Phase 1.5)
+
+Phase 1.5 amendment, decided by the module owner (Natig, 2026-10-28).
+
+
+Pattern: `docs/analysis/contracts/carrier-semantics-v1.1.0.md` §4, §6, §7 (house pattern on `main`), adapted to the frozen v1
+contract. Applies to `createSupplierEvaluation` (DL-1) and `submitSupplierEvaluation` (DL-2); the risk mutations take it in the
+revision that opens them.
+
+- **Tuple:** (validated TenantId, validated LegalEntityId, operationId, target, Idempotency-Key); target = `create` for create,
+  the path `evaluationId` for submit. Actor and `X-Correlation-Id` are not in the tuple; another user of the same tenant and
+  company with the same permission gets the replay (permission re-checked; the original actor stays in audit). Other tenants,
+  companies, operations or targets may reuse the key and never see this receipt.
+- **Key:** one header value, 1..200 Unicode code points; stored and compared as sent (ordinal); no trim, case-fold or Unicode
+  normalisation; a key of only whitespace → 400 (owner decision 1).
+- **Fingerprint:** the stored canonical representation of the schema-valid typed body (`"v1:" + JSON`, as
+  `CarrierRequestFingerprint.cs`); equality on the representation, never on a hash alone. Create: `supplierId` as sent (before
+  canonicalisation), `periodStart`, `periodEnd`, `metrics` (order and duplicates count; `metricCode`, `measuredValue`, `weight`
+  as text), `notes` (absent = `null`; empty string distinct). Submit: `submittedAt`, `comment`; `If-Match` is not in the
+  fingerprint. Not included: correlation, auth headers, actor, time.
+- **Precedence (first failing stage wins):** 1 token → 401; 2 tenant / company context and the operation's permission
+  (`.evaluate` / `.publish`) → 403; 3 header syntax (`X-Correlation-Id`, `X-Legal-Entity-Id`, `Idempotency-Key`) → 400; 4 path
+  and body schema → 400; **5 scoped receipt lookup + fingerprint: equal → replay, different → 409 `IDEMPOTENCY_KEY_REUSED`**;
+  6 (new submit only) target in scope and not deleted → 404, `If-Match` → 409 `VERSION_CONFLICT`, lifecycle → 422; 7 (new create
+  only) canonical code (422 `SUPPLIER_CODE_NOT_CANONICAL`), Procurement eligibility read (§0.0), 409 `DUPLICATE_EVALUATION`,
+  policy rules 422; 8 one Mongo transaction (state + receipt + audit + Pending outbox, §0.3) → 503 when the commit outcome is
+  unknown, 500 otherwise.
+- **A replay does not call Procurement** (stage 5 precedes stage 7; owner decision 2): the original success is returned even when
+  Procurement is down, and a later change of eligibility does not change it.
+- **Storage:** a receipt is written only for a successful commit, in the same transaction; 400/401/403/404/409/422/500/503 write
+  none and do not consume the key; a failed request never alters a committed receipt; no TTL. Collection
+  `supplier_performance_receipts` with a unique index on the tuple (concurrent identical requests: one new result, the rest replay).
+  The receipt keeps the original HTTP status, body snapshot, `contractVersion` and the original correlation / actor evidence.
+- **Replay answer (frozen v1):** create → **200** with the original `Evaluation` body (contract "Idempotent replay — özgün sonuç";
+  no `idempotentReplay` field in v1); submit → 200 with the original body. The response header carries the current request's
+  correlation id. A create replay returns the original DRAFT snapshot even after the evaluation moved on. Unknown commit → 503;
+  the client retries with the same key (committed → replay, not committed → new request). A replay adds no state, version,
+  event or audit record (§0.3).
+- **409 `IDEMPOTENCY_KEY_REUSED`** is not in the frozen v1 file; this pack declares it (undeclared statuses table, §0.0) and the
+  contract successor 1.1.0 (CT contract writer) adds it; the v1 file is not changed (owner decision 3).
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| T-0147-RP-01 | create, same key + body → first 201, second 200 with the same body; one evaluation, receipt, audit and outbox item | write the receipt outside the commit |
+| T-0147-RP-02 | same key, another schema-valid body → 409 `IDEMPOTENCY_KEY_REUSED`; entity, receipt and audit unchanged | fingerprint on `supplierId` only |
+| T-0147-RP-03 | replay while Procurement is down → 200 original body; zero Procurement calls | look up the receipt after the eligibility read |
+| T-0147-RP-04 | user whose permission was revoked, same key → 403; the receipt's existence is not revealed | look up the receipt before the permission check |
+| T-0147-RP-05 | other company / tenant, same key + body → a new request in its own scope | drop `LegalEntityId` from the tuple |
+| T-0147-RP-06 | a request answered 422 / 503, corrected under the same key → new request, 201 | write a receipt for a failed request |
+| T-0147-RP-07 | N concurrent identical creates → one 201, the rest 200; one entity | drop the unique index |
+| T-0147-RP-08 | answer lost after commit → same key → 200 original | — |
+| T-0147-RP-09 | submit replay → 200 original, no second publication or event; another body → 409 | skip the submit receipt |
+
 ## 1. Module Summary
 
 MOD-0147 owns tenant/legal-entity scoped supplier evaluations, published scorecards and supplier risk lifecycle.
@@ -457,7 +515,7 @@ golden reference and seven-language localization scope.
 
 | Field/Header | Required | Rule | Pre-check |
 |---|---|---|---|
-| `Idempotency-Key` | Mutations | 1..200 — normalisation (trim or reject) and receipt tuple **BLOKE** with the Phase 1.5 amendment (§0) | Receipt tuple per the Phase 1.5 amendment |
+| `Idempotency-Key` | Mutations | 1..200 Unicode code points, stored and compared as sent (no trim, case-fold or normalisation); a key of only whitespace → 400 (§0.5) | Receipt tuple per §0.5 |
 | `X-Correlation-Id` | All operations | UUID | Propagate to response/audit/event |
 | `SupplierId` | Create evaluation/risk | Non-empty opaque ID | SUPPLIER-BASE frozen mock; fail closed |
 | Period | Evaluation | v1: `periodStart` first day and `periodEnd` last day of the same calendar month, else 422 | Duplicate = same Supplier+period in DRAFT/PUBLISHED → 409 (§0.0) |
@@ -569,8 +627,8 @@ any module-local trail.)
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | değerlendirme çekirdeği ve okumalar | v1 scope — performance scorecard now and risk after TPRM, v1 fixed metric set, Owned Objects, SupplierEvaluation / SupplierScorecard, Validation Rules, Failure Path to Verify, Authorization Convention |
-| DL-2 | gönderim, yayın ve değişmezlik | Transaction outbox and delivery, Runtime Constraints, Failure Path to Verify, Audited Events |
+| DL-1 | değerlendirme çekirdeği ve okumalar | v1 scope — performance scorecard now and risk after TPRM, v1 fixed metric set, Owned Objects, SupplierEvaluation / SupplierScorecard, Validation Rules, Failure Path to Verify, Authorization Convention, Replay receipt (Phase 1.5) |
+| DL-2 | gönderim, yayın ve değişmezlik | Transaction outbox and delivery, Runtime Constraints, Failure Path to Verify, Audited Events, Replay receipt (Phase 1.5) |
 
 DL-1: oluşturma, dört GET, D2 uygunluk okuması (§0.0), v1 eşlemesi (§14). DL-2: gönderim (submit), yayın ve değişmezlik,
 değerlendirme komutlarının denetimi (§21).
