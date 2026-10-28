@@ -25,6 +25,15 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D74/3 — muafiyet atayanı):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). `waive-sod` atamasını onaylayan artık **Muafiyet yetkilisi** rolüdür — MOD-0018 Treasury Auth
+> ekinin 27. rolü (`PaymentSodWaiverAuthority`, ad önerisi), yalnız `auth.payment-sod-waivers.assign` / `.read`, açık atamayla;
+> D49/4'ün "Hazine yöneticisi ya da K1" kısmı kalktı. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (Auth'ta kendine
+> atama 403). Servis davranışı değişmedi: servis rol adını denetlemez; atamayı onaylayanın kimliğini okur ve R1–R3 kişileri ve
+> çağıranla karşılaştırır (AC-43 (c), (d)). Değişen yer: Authorization Convention "Muafiyet kuralları" tablosunun "Onaylayan"
+> satırı (CT04b revizyon notuna D74/3 işareti). Mevcut AC numaraları değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D71 (2026-10-28 ölçümünde main'de değil — yerel
 > dalda, main'de değil). Onaylayıcı aday tabanı iş akışı izniyle de kesişir: normal partide
@@ -184,7 +193,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > hedef kullanıcıları ve DCP checklist maddesi güncel duruma çekildi. AC numaraları değişmedi. `status: draft`.
 >
 > **Revizyon (2026-10-27, CT04b — KARAR D49/1, D49/4):** (1) `waive-sod` açık atamasının kuralları yazıldı — atamayı onaylayan
-> muafiyetten yararlanmayan Hazine yöneticisi ya da K1; süre en çok 24 saat, bitişte kendiliğinden düşer; gerekçe kodları
+> muafiyetten yararlanmayan Hazine yöneticisi ya da K1 (D74/3 ile Muafiyet yetkilisi rolü oldu); süre en çok 24 saat, bitişte kendiliğinden düşer; gerekçe kodları
 > `ACIL-ODEME`, `TEK-YETKILI`, `DENETIM-ISTEGI`; kapsam tek ödeme partisi; her kullanım 5 iş günü içinde K1 incelemesi; onaylayan
 > yararlanamaz. Authorization Convention'da hangisinin servis çalışma anında, hangisinin Auth (MOD-0018) / süreç denetimi olduğu
 > ayrıldı; Auth'un taşıması gereken atama alanları bağımlılık olarak yazıldı. Validation Rules (gerekçe kodu kapalı liste),
@@ -1382,7 +1391,7 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
 
   | D49/4 maddesi | Nerede denetlenir | Servisin yaptığı (çalışma anı, `ApprovePaymentBatchWithSodWaiverCommand`, MOD-0023 çağrısından önce) | Bağımlılık / süreç |
   |---|---|---|---|
-  | Onaylayan: muafiyetten yararlanmayan Hazine yöneticisi ya da K1 | **Auth (MOD-0018) — atama onayı** | atamayı onaylayanın aktör kimliğini okur ve çağıranla, partiyi oluşturan / gönderen / son güncelleyenle (R1–R3 kişileri) aynı olmadığını denetler (aşağıda "yararlanamaz") | kimin onaylayabileceği (Hazine yöneticisi ya da K1) Auth'un atama onayı akışıdır — servis rol adını denetlemez. "Hazine yöneticisi" rol şablonu `waive-sod` taşımaz ve atama onayı izni de değildir; bu onay izni MOD-0018 Treasury Auth ekinin DL-5'inde tanımlanır (o paketin K-W1 açık kararı; D9, D64) |
+  | Onaylayan: muafiyetten yararlanmayan, **Muafiyet yetkilisi** rolünü taşıyan kişi (**KARAR D74/3**; D49/4'teki "Hazine yöneticisi ya da K1" kalktı) | **Auth (MOD-0018) — atama onayı** | atamayı onaylayanın aktör kimliğini okur ve çağıranla, partiyi oluşturan / gönderen / son güncelleyenle (R1–R3 kişileri) aynı olmadığını denetler (aşağıda "yararlanamaz") | kimin onaylayabileceği Auth'un atama onayı akışıdır — servis rol adını denetlemez. Atama onayı izni `auth.payment-sod-waivers.assign`'dır (okuma `.read`); ikisi yalnız açık atamayla, yalnız Muafiyet yetkilisi rolü (MOD-0018 Treasury Auth eki DL-5, 27. rol; o paketin K-W1'i **KAPANDI — KARAR D74/2–3**; D9, D64); rolü taşımayan atayamaz (403), kendine atama 403. "Hazine yöneticisi" rol şablonu `waive-sod`'u da atama onayı iznini de taşımaz |
   | Süre en çok 24 saat; bitişte kendiliğinden düşer | **Auth + servis** | atamanın bitişi komut anında gelecekte olmalı ve başlangıçtan en çok 24 saat sonra olmalı; değilse ya da bitiş / başlangıç okunamıyorsa 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız) | 24 saat üst sınırı atama anında ve kendiliğinden düşme (bitişte iznin token'a girmemesi) Auth'undur; servis yalnız kullanım anında ikinci kontroldür |
   | Gerekçe kodları `ACIL-ODEME`, `TEK-YETKILI`, `DENETIM-ISTEGI` | **servis** (kullanım) + **Auth** (atama) | komutun `ReasonCode`'u kapalı listede olmalı; değilse 400 `PAYMENT_SOD_WAIVER_REASON_REQUIRED` (Validation Rules) | atamanın kendi gerekçe kodunun aynı listeden seçilmesi Auth'un atama formudur |
   | Kapsam yalnız ilgili tek ödeme partisi | **servis** (karar başına) + **Auth** (atamanın partiye bağlanması) | her muafiyet tek partide tek karardır (rota `{id}`); muafiyet saklanıp başka partiye taşınmaz. **KARAR D54:** servis atamanın hedef parti kimliğini okur ve rotadaki partiyle karşılaştırır; hedef parti yoksa, okunamıyorsa ya da farklıysa 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok) | atamanın tek partiye bağlanması (hedef parti kimliği alanı) Auth'undur ve zorunludur (D54) — **bağımlılık: MOD-0018 Treasury Auth eki DL-5 (KARAR D64)**; DL-5 main'e girene kadar muafiyetli onay 403 ile kapalıdır. "Tek parti" süreç denetimine bırakılmaz |
