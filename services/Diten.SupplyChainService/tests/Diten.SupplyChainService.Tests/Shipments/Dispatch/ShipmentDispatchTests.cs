@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Diten.SupplyChainService.Application.Common;
+using Diten.SupplyChainService.Application.Features.Shipments.Dispatch;
 using Diten.SupplyChainService.Domain.Features.Shipments;
 using Diten.SupplyChainService.Persistence.Features.Shipments;
 using Diten.SupplyChainService.Tests.Common;
@@ -44,6 +46,8 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         public readonly FakeInventory Inventory = new();
         public readonly ManualClock Clock = new();
         public readonly Probe Probe = new();
+        /// <summary>Runs once just before the next attempt open or takeover.</summary>
+        public Func<Task>? BeforeBegin;
         protected override IHost CreateHost(IHostBuilder builder)
         {
             builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(Settings()));
@@ -53,7 +57,9 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         {
             builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings()));
-            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(Probe)).StubLegalEntityValidation().UseFakeInventory(Inventory, Clock));
+            builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(Probe)).StubLegalEntityValidation().UseFakeInventory(Inventory, Clock)
+                .Replace(ServiceDescriptor.Scoped<IShipmentRepository>(sp => HookedShipmentRepository.Wrap(ActivatorUtilities.CreateInstance<ShipmentRepository>(sp),
+                    () => Interlocked.Exchange(ref BeforeBegin, null)))));
         }
         private static Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(TestSecret))
         {
@@ -407,8 +413,9 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
     public async Task S23_15_OneActiveAttemptPerShipment()
     {
         using var app = new Host(); var id = await Planned(app, [("1", "1", "Lsku")]);
-        var gate = new TaskCompletionSource();
-        app.Inventory.Script = async c => { if (IsIssue(c, "1")) await gate.Task; return null; };
+        var gate = new TaskCompletionSource(); var posts = 0;
+        // Only the first post waits: a second writer that wrongly takes the lease posts at once and the test fails, not hangs.
+        app.Inventory.Script = async c => { if (IsIssue(c, "1") && Interlocked.Increment(ref posts) == 1) await gate.Task; return null; };
         var a = Dispatch(app, id, "dispatch-a");
         await Until(() => app.Inventory.Calls.Count == 1);
         var b = await Dispatch(app, id, "dispatch-b");
@@ -561,5 +568,128 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         app.Clock.Advance(PastLease);
         Assert.Equal(200, (await Dispatch(app, id, "dispatch-commit")).Status);
         Assert.Single(app.Inventory.Calls); Assert.Equal(1, await Events(app, id, "ShipmentDispatched"));
+    }
+
+    // ---- review fixes on 2cdeb44f9 (MOD-0183-DL1-CODE-REVIEW-STEPS1-4.md) ----------------------------------------------
+    // F-1: a 500 / 502 / 504 may come after INVENTORY committed — the line stays sent, the attempt InProgress with the
+    // lease, and the next holder's resend replays the issue: one movement, never an unrecorded one.
+    [Theory]
+    [InlineData(500)]
+    [InlineData(502)]
+    [InlineData(504)]
+    public async Task F1_AGatewayErrorAfterInventoryCommittedKeepsTheLineSentAndTheRetryReplays(int status)
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "1", "Lsku")]);
+        var first = true;
+        app.Inventory.Script = c =>
+        {
+            if (!(first && IsIssue(c, "1"))) return Default;
+            first = false; app.Inventory.Answer(c);
+            return Answer(FakeInventory.Error(status, "UPSTREAM_ERROR"));
+        };
+        Assert.Equal((503, "DEPENDENCY_UNAVAILABLE"), await StatusCode(Dispatch(app, id, "dispatch-f1")));
+        var stored = await Stored(app, id);
+        Assert.Equal((DispatchState.InProgress, true), (stored.DispatchAttempt!.State, stored.DispatchAttempt.Lines[0].Sent));
+        Assert.Equal((409, "DISPATCH_IN_PROGRESS"), await StatusCode(Dispatch(app, id, "dispatch-f1-again")));
+        app.Clock.Advance(PastLease);
+        Assert.Equal(200, (await Dispatch(app, id, "dispatch-f1-retry")).Status);
+        var issues = app.Inventory.Calls.Where(c => IsIssue(c, "1")).ToArray();
+        Assert.Equal(2, issues.Length); Assert.Equal(issues[0].BodyJson, issues[1].BodyJson);
+        Assert.Equal((1, -1m), (app.Inventory.Stored, app.Inventory.Net));
+    }
+
+    // F-3: the compensation outcome (close, audit, receipt) is one transaction — a failure before its commit leaves the
+    // attempt open, and the same key later answers the stored refusal without opening a2 or posting anything new.
+    [Fact]
+    public async Task F3_CompensationOutcomeCommitsWithItsReceipt()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c => IsIssue(c, "2") ? Answer(FakeInventory.Error(422, "LOT_BLOCKED")) : Default;
+        app.Probe.Fail = 1;
+        Assert.Equal(500, (await Dispatch(app, id, "dispatch-f3")).Status);
+        var open = await Stored(app, id);
+        Assert.Empty(open.DispatchHistory); Assert.Equal((1, DispatchState.InProgress), (open.DispatchAttempt!.N, open.DispatchAttempt.State));
+        Assert.Empty(await AttemptAudit(app, id));
+        app.Clock.Advance(PastLease);
+        Assert.Equal((422, "INVENTORY_REFUSED"), await StatusCode(Dispatch(app, id, "dispatch-f3")));
+        var calls = app.Inventory.Calls.Count;
+        Assert.Equal((422, "INVENTORY_REFUSED"), await StatusCode(Dispatch(app, id, "dispatch-f3")));
+        Assert.Equal(calls, app.Inventory.Calls.Count);
+        Assert.DoesNotContain(app.Inventory.Calls, c => c.Key.EndsWith(":a2", StringComparison.Ordinal));
+        Assert.Equal(0m, app.Inventory.Net);
+        var stored = await Stored(app, id);
+        Assert.Null(stored.DispatchAttempt); Assert.Equal(DispatchState.Compensated, stored.DispatchHistory.Single().State);
+        Assert.Single(await AttemptAudit(app, id), a => a["Outcome"] == "Compensated");
+    }
+
+    // F-5: a late writer of a CompensationFailed attempt reverses with the attempt's stored reversal date (same key, same
+    // bytes as the holder's), and the exit takes that reversal's id instead of posting it again — no KEY_REUSED loop.
+    [Fact]
+    public async Task F5_LateWriterUsesTheStoredReversalDateAndTheExitTakesItsReversal()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "3", "Lsku")]);
+        var crashed = false;
+        app.Inventory.Script = c =>
+        {
+            if (crashed || !IsIssue(c, "1")) return Default;
+            crashed = true; app.Inventory.Answer(c);
+            throw new InvalidOperationException("writer crashed after INVENTORY posted line 1");
+        };
+        Assert.Equal(500, (await Dispatch(app, id, "dispatch-f5")).Status);
+        // A holder's compensation then stopped: CompensationFailed with its reversal date, line 1 sent without an id.
+        var t0 = new DateTimeOffset(2026, 10, 28, 9, 0, 0, TimeSpan.Zero);
+        await app.Services.GetRequiredService<IMongoDatabase>().GetCollection<Shipment>("sce_shipments").UpdateOneAsync(x => x.Id == id,
+            Builders<Shipment>.Update.Set(x => x.DispatchAttempt!.State, DispatchState.CompensationFailed).Set(x => x.DispatchAttempt!.ReversalDate, t0));
+        app.Clock.Advance(TimeSpan.FromHours(1));
+        var blocked = await Stored(app, id);
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<RequestContext>();
+            context.Scope = new ShipmentScope(_tenant, _le, _actor); context.CorrelationId = _correlation; context.Authorization = "Bearer " + Token(_tenant);
+            await scope.ServiceProvider.GetRequiredService<LateWriterPolicy>().HandleAsync(id, 1, "1", blocked.DispatchAttempt!.Lines[0].RequestJson!,
+                app.Inventory.IssueIds.Single(), default);
+        }
+        var late = Assert.Single(app.Inventory.Calls, c => c.MovementType == "REVERSAL");
+        Assert.Equal(($"{id}:1:reversal:a1", "2026-10-28T09:00:00.0000000Z"), (late.Key, late.Body["transactionDate"]!.GetValue<string>()));
+        Assert.Equal(0m, app.Inventory.Net);
+        var exited = await Send(app, "POST", $"/{id}/transition", Transition("Cancelled", "2026-10-28T10:00:00Z"), "exit-f5");
+        Assert.Equal((200, "Cancelled"), (exited.Status, exited.Body["status"]!.GetValue<string>()));
+        Assert.Single(app.Inventory.Calls, c => c.MovementType == "REVERSAL");
+        var stored = await Stored(app, id);
+        var reversal = stored.DispatchLateWrites.Single().ReversalTransactionId;
+        Assert.NotNull(reversal); Assert.Equal(reversal, stored.DispatchHistory.Single().Lines.Single().ReversalTransactionId);
+        Assert.Equal(0m, app.Inventory.Net);
+    }
+
+    // F-6: a 403 on a resent line keeps its sent marker but releases the lease — the next command needs no lease wait.
+    [Fact]
+    public async Task F6_A403OnAResendReleasesTheLease()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "1", "Lsku")]);
+        var call = 0;
+        app.Inventory.Script = c => Interlocked.Increment(ref call) switch
+        {
+            1 => throw new HttpRequestException("connection reset"),
+            2 => Answer(FakeInventory.Error(403, "FORBIDDEN")),
+            _ => Default
+        };
+        Assert.Equal((503, "DEPENDENCY_UNAVAILABLE"), await StatusCode(Dispatch(app, id, "dispatch-f6a")));
+        Assert.Equal((409, "DISPATCH_IN_PROGRESS"), await StatusCode(Dispatch(app, id, "dispatch-f6b")));   // ambiguous: lease kept
+        app.Clock.Advance(PastLease);
+        Assert.Equal((403, "INVALID_REQUEST"), await StatusCode(Dispatch(app, id, "dispatch-f6c")));
+        Assert.True((await Stored(app, id)).DispatchAttempt!.Lines[0].Sent);
+        Assert.Equal(200, (await Dispatch(app, id, "dispatch-f6d")).Status);
+        Assert.Equal(-1m, app.Inventory.Net);
+    }
+
+    // F-7: a dispatch whose conditional begin loses to a Cancelled answers the transition refusal, not "in progress".
+    [Fact]
+    public async Task F7_ADispatchThatLosesTheRaceToCancelAnswersInvalidTransition()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "1", "Lsku")]);
+        app.BeforeBegin = () => app.Services.GetRequiredService<IMongoDatabase>().GetCollection<Shipment>("sce_shipments")
+            .UpdateOneAsync(x => x.Id == id, Builders<Shipment>.Update.Set(x => x.Status, ShipmentStatus.Cancelled));
+        Assert.Equal((422, "INVALID_SHIPMENT_TRANSITION"), await StatusCode(Dispatch(app, id, "dispatch-f7")));
+        Assert.Empty(app.Inventory.Calls);
     }
 }

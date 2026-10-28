@@ -16,6 +16,8 @@ public sealed class DispatchAttempt
     public Guid CorrelationId { get; set; }
     /// <summary>The moment compensation started (server UTC), set at the first reversal and resent unchanged.</summary>
     public DateTimeOffset? ReversalDate { get; set; }
+    /// <summary>+1 on every stored write of the attempt; a lease takeover is conditional on it (review F-2).</summary>
+    public long Rev { get; set; }
     public List<DispatchAttemptLine> Lines { get; set; } = [];
 
     public string IssueKey(Guid shipmentId, string lineNumber) => $"{shipmentId}:{lineNumber}:dispatch:a{N}";

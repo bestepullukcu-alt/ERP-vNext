@@ -8,7 +8,8 @@ namespace Diten.SupplyChainService.Infrastructure.Features.Shipments;
 
 /// <summary>
 /// INVENTORY 1.5.0 postMovement through the Gateway (MOD-0183 §23): <c>{Inventory:ReferenceBaseUrl}api/inventory/movements</c>,
-/// the caller's token, <c>Idempotency-Key</c>, <c>X-Legal-Entity-Id</c> = the shipment's LE and the command's correlation id.
+/// the caller's token, <c>Idempotency-Key</c>, <c>X-Legal-Entity-Id</c> = the shipment's LE and the command's correlation id —
+/// the §23.1 headers only (no <c>X-Tenant-Id</c>: postMovement does not declare it, review F-8).
 /// Each status is its own outcome; an ambiguous failure (timeout, connection lost) is marked so the sent line is resent.
 /// </summary>
 public sealed class InventoryMovementClient(HttpClient client, IConfiguration configuration) : IInventoryMovementClient
@@ -23,7 +24,6 @@ public sealed class InventoryMovementClient(HttpClient client, IConfiguration co
         };
         message.Headers.TryAddWithoutValidation("Authorization", request.Authorization);
         message.Headers.Add("Idempotency-Key", request.IdempotencyKey);
-        message.Headers.Add("X-Tenant-Id", request.TenantId.ToString("D"));
         message.Headers.Add("X-Legal-Entity-Id", request.LegalEntityId.ToString("D"));
         message.Headers.Add("X-Correlation-Id", request.CorrelationId.ToString("D"));
         try
@@ -40,7 +40,10 @@ public sealed class InventoryMovementClient(HttpClient client, IConfiguration co
                 HttpStatusCode.Forbidden => new(InventoryOutcome.Forbidden, status, InventoryCode: code, Details: details),
                 // 409 may be INVENTORY still processing the same key; the next holder resends it.
                 HttpStatusCode.Conflict => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: true),
-                _ => new(InventoryOutcome.Unavailable, status, InventoryCode: code)
+                // Only INVENTORY's own 503 and a 401 certainly processed nothing. A 500, the Gateway's 502 / 504 or any other
+                // 5xx can arrive after INVENTORY committed (review F-1): the sent line stays sent and is resent with its key.
+                HttpStatusCode.ServiceUnavailable or HttpStatusCode.Unauthorized => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
+                _ => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: status >= 500)
             };
         }
         catch (HttpRequestException) { return new(InventoryOutcome.Unavailable, 0, Ambiguous: true); }

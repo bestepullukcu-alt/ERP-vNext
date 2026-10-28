@@ -12,22 +12,29 @@ public interface IShipmentRepository
 
     /// <summary>The stored answer of an earlier command with this key, or null. Same rules as the replay inside MutateAsync.</summary>
     Task<ShipmentMutationResult?> FindReceiptAsync(ShipmentScope scope, string operation, string key, string fingerprint, Guid correlationId, CancellationToken ct);
-    /// <summary>Opens or resumes (takes the lease of) an attempt on a Planned shipment whose current attempt is still <paramref name="observed"/>.</summary>
+    /// <summary>Opens an attempt on a Planned shipment with none, or takes over the lease of <paramref name="observed"/> if the
+    /// stored attempt is still exactly that observation (N, lease id, lease end, state and revision): only the lease fields
+    /// change, so nothing written since the observation is lost (review F-2).</summary>
     Task<bool> TryBeginOrResumeDispatchAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt? observed, DispatchAttempt next, CancellationToken ct);
     /// <summary>Writes the holder's attempt (sent marker, issue, reversal, lease renewal, CompensationFailed) if it still holds N and the lease.</summary>
     Task<bool> SaveDispatchAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, CancellationToken ct);
-    /// <summary>Moves the held attempt, closed as Compensated, to the append-only history; the next attempt gets N + 1.</summary>
-    Task<bool> CloseCompensatedAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, CancellationToken ct);
+    /// <summary>
+    /// The outcome of compensation in ONE transaction (review F-3): the held attempt closed as Compensated (moved to the
+    /// append-only history, so the next attempt gets N + 1) or stored as CompensationFailed, its in-product audit row, the
+    /// command's receipt when given, and the central-audit enlistment. False (nothing written) if N or the lease is lost.
+    /// </summary>
+    Task<bool> SettleDispatchAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, DispatchAuditEntry audit,
+        DispatchOutcomeReceipt? receipt, CancellationToken ct);
     /// <summary>Removes a held attempt that posted nothing (an authorization or definite dependency refusal of its first line).</summary>
     Task<bool> DropUnpostedAttemptAsync(ShipmentScope scope, Guid shipmentId, int n, Guid heldLeaseId, CancellationToken ct);
     /// <summary>Records a late writer's movement, without the lease condition (§23.4 late writer).</summary>
     Task AppendLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, CancellationToken ct);
-    /// <summary>Stores the outcome of a compensated attempt as the command's receipt, so a replay answers the same.</summary>
-    Task StoreOutcomeReceiptAsync(ShipmentScope scope, Guid shipmentId, string operation, string key, string fingerprint, Guid correlationId,
-     int statusCode, string errorCode, string? detailsJson, CancellationToken ct);
-    /// <summary>Writes an in-product audit row of a dispatch attempt outcome (reversal ids, integrity faults).</summary>
+    /// <summary>Writes an in-product audit row of a late writer's outcome (reversal ids, integrity faults).</summary>
     Task AppendDispatchAuditAsync(ShipmentScope scope, Guid shipmentId, DispatchAuditEntry entry, CancellationToken ct);
 }
 
 public sealed record DispatchAuditEntry(int N, string Outcome, Guid CorrelationId, DateTimeOffset OccurredAt,
     IReadOnlyList<string> IssueTransactionIds, IReadOnlyList<string> ReversalTransactionIds, IReadOnlyList<string> IntegrityFaults);
+
+/// <summary>The answer of a compensated dispatch, stored as the command's receipt so a replay answers the same.</summary>
+public sealed record DispatchOutcomeReceipt(string Operation, string Key, string Fingerprint, Guid CorrelationId, int StatusCode, string ErrorCode, string? DetailsJson);

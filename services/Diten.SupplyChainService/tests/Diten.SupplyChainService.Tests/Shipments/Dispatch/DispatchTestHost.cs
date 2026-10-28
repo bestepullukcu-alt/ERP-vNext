@@ -1,4 +1,7 @@
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Diten.SupplyChainService.Application.Features.Shipments.Dispatch;
+using Diten.SupplyChainService.Domain.Features.Shipments;
 using Diten.SupplyChainService.Infrastructure.Features.Shipments;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,6 +14,26 @@ public sealed class ManualClock : TimeProvider
     private long _ticks = DateTimeOffset.UtcNow.UtcTicks;
     public override DateTimeOffset GetUtcNow() => new(Interlocked.Read(ref _ticks), TimeSpan.Zero);
     public void Advance(TimeSpan by) => Interlocked.Add(ref _ticks, by.Ticks);
+}
+
+/// <summary>The real repository with a hook run once just before the next attempt open or takeover — a race made
+/// deterministic (review F-7: a Cancelled that lands between the dispatch's read and its conditional begin).</summary>
+public class HookedShipmentRepository : DispatchProxy
+{
+    private IShipmentRepository _inner = null!;
+    private Func<Func<Task>?> _takeHook = null!;
+    public static IShipmentRepository Wrap(IShipmentRepository inner, Func<Func<Task>?> takeHook)
+    {
+        var proxy = Create<IShipmentRepository, HookedShipmentRepository>();
+        var hooked = (HookedShipmentRepository)(object)proxy; hooked._inner = inner; hooked._takeHook = takeHook;
+        return proxy;
+    }
+    protected override object? Invoke(MethodInfo? method, object?[]? args)
+    {
+        if (method!.Name == nameof(IShipmentRepository.TryBeginOrResumeDispatchAsync) && _takeHook() is { } hook) hook().GetAwaiter().GetResult();
+        try { return method.Invoke(_inner, args); }
+        catch (TargetInvocationException e) when (e.InnerException is not null) { ExceptionDispatchInfo.Capture(e.InnerException).Throw(); throw; }
+    }
 }
 
 public static class DispatchTestHost

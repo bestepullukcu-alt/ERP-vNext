@@ -28,8 +28,11 @@ public sealed class LateWriterPolicy(IShipmentRepository repository, IInventoryM
             return;
         }
         var at = clock.GetUtcNow();
+        // Same key as the holder's REVERSAL of this line, so the same bytes (review F-5): the attempt's stored reversal date.
+        // An attempt closed by compensation always has one; the clock is only a fallback.
+        var own = current?.N == ownN ? current : s.DispatchHistory.FirstOrDefault(h => h.N == ownN);
         var key = $"{shipmentId}:{lineNumber}:reversal:a{ownN}";
-        var body = InventoryMovementMapper.Reversal(shipmentId, issueRequestJson, issueTransactionId, key, at);
+        var body = InventoryMovementMapper.Reversal(shipmentId, issueRequestJson, issueTransactionId, key, own?.ReversalDate ?? at);
         var result = await inventory.PostAsync(new InventoryPostRequest(key, body, context.Scope.TenantId, s.LegalEntityId, context.CorrelationId, context.Authorization), ct);
         var outcome = result.Outcome == InventoryOutcome.Posted ? "Reversed"
             : result.Outcome == InventoryOutcome.Refused && result.InventoryCode == "ALREADY_REVERSED" ? "AlreadyReversed"

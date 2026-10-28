@@ -42,6 +42,7 @@ public sealed class InventoryMovementClientTests
         Assert.Equal(InventoryOutcome.Posted, result.Outcome); Assert.False(result.Replay); Assert.Equal("lot-7", result.LotId);
         var call = Assert.Single(fake.Calls);
         Assert.Equal(key, call.Key); Assert.Equal(Le.ToString(), call.LegalEntity); Assert.Equal("Bearer caller-token", call.Authorization);
+        Assert.Null(call.Tenant);      // §23.1 headers only (review F-8)
         var expected = new Dictionary<string, string?>
         {
             ["idempotencyKey"] = key, ["documentGroupId"] = s.Id.ToString(), ["movementType"] = "GOODS_ISSUE_SALES",
@@ -59,7 +60,8 @@ public sealed class InventoryMovementClientTests
         Assert.Equal((InventoryOutcome.Posted, true, result.TransactionId), (replay.Outcome, replay.Replay, replay.TransactionId));
     }
 
-    // S23-4 / S23-5: every INVENTORY answer is its own outcome; a 403 is never "unavailable".
+    // S23-4 / S23-5: every INVENTORY answer is its own outcome; a 403 is never "unavailable". Only INVENTORY's own 503 and a
+    // 401 are definite; 500 / 502 / 504 may follow a commit and are ambiguous (review F-1).
     [Theory]
     [InlineData(422, "LOT_UNDER_RECALL", InventoryOutcome.Refused, false)]
     [InlineData(422, "LOT_REQUIRED", InventoryOutcome.Refused, false)]
@@ -68,7 +70,9 @@ public sealed class InventoryMovementClientTests
     [InlineData(403, "CROSS_LE_FORBIDDEN", InventoryOutcome.Forbidden, false)]
     [InlineData(403, "FORBIDDEN", InventoryOutcome.Forbidden, false)]
     [InlineData(503, "PRODUCT_MASTER_UNAVAILABLE", InventoryOutcome.Unavailable, false)]
-    [InlineData(500, "INTERNAL_ERROR", InventoryOutcome.Unavailable, false)]
+    [InlineData(500, "INTERNAL_ERROR", InventoryOutcome.Unavailable, true)]
+    [InlineData(502, "BAD_GATEWAY", InventoryOutcome.Unavailable, true)]
+    [InlineData(504, "GATEWAY_TIMEOUT", InventoryOutcome.Unavailable, true)]
     [InlineData(401, "UNAUTHENTICATED", InventoryOutcome.Unavailable, false)]
     [InlineData(409, "CONCURRENT", InventoryOutcome.Unavailable, true)]
     public async Task EachInventoryStatusIsItsOwnOutcome(int status, string code, InventoryOutcome expected, bool ambiguous)

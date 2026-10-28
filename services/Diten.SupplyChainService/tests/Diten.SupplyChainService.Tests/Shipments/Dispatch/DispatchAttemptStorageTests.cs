@@ -80,14 +80,43 @@ public sealed class DispatchAttemptStorageTests
         var repo = Repository(); var s = await Seed(); var a = Attempt();
         Assert.True(await repo.TryBeginOrResumeDispatchAsync(_scope, s.Id, null, a, default));
         a.Lines[0].IssueTransactionId = "T1"; a.Lines[0].ReversalTransactionId = "R1";
-        Assert.False(await repo.CloseCompensatedAttemptAsync(_scope, s.Id, a, Guid.NewGuid(), default));
-        Assert.True(await repo.CloseCompensatedAttemptAsync(_scope, s.Id, a, a.LeaseId, default));
+        var closed = a.Copy(); closed.State = DispatchState.Compensated;
+        var audit = new DispatchAuditEntry(1, "Compensated", Guid.NewGuid(), DateTimeOffset.UtcNow, ["T1"], ["R1"], ["ALREADY_REVERSED issue T0 line 1"]);
+        var receipt = new DispatchOutcomeReceipt("transition", "k-" + s.Id, "fp", Guid.NewGuid(), 422, "INVENTORY_REFUSED", "{\"lineNumber\":\"1\"}");
+        // A lost lease writes nothing at all — no close, no audit row, no receipt (review F-3: one transaction).
+        Assert.False(await repo.SettleDispatchAttemptAsync(_scope, s.Id, closed, Guid.NewGuid(), audit, receipt, default));
+        Assert.Equal((0L, 0L), (await AuditRows(s.Id), await Receipts(receipt.Key)));
+        Assert.True(await repo.SettleDispatchAttemptAsync(_scope, s.Id, closed, a.LeaseId, audit, receipt, default));
+        Assert.Equal((1L, 1L), (await AuditRows(s.Id), await Receipts(receipt.Key)));
         var stored = (await repo.GetAsync(_scope, s.Id, default))!;
         Assert.Null(stored.DispatchAttempt); Assert.Single(stored.DispatchHistory);
         Assert.Equal((DispatchState.Compensated, "T1", "R1"), (stored.DispatchHistory[0].State, stored.DispatchHistory[0].Lines[0].IssueTransactionId, stored.DispatchHistory[0].Lines[0].ReversalTransactionId));
         Assert.Equal(2, stored.NextDispatchAttemptNumber()); Assert.False(stored.StockIssued()); Assert.Equal("None", stored.DispatchStateWire());
         await repo.AppendLateWriteAsync(_scope, s.Id, new DispatchLateWrite(1, "1", "T9", "R9", "Reversed", DateTimeOffset.UtcNow), default);
         Assert.Equal("T9", (await repo.GetAsync(_scope, s.Id, default))!.DispatchLateWrites.Single().IssueTransactionId);
+    }
+
+    private Task<long> AuditRows(Guid shipmentId) => _db.GetCollection<BsonDocument>("sce_shipment_audit")
+        .CountDocumentsAsync(new BsonDocument { { "ShipmentId", shipmentId.ToString() }, { "Operation", "dispatch-attempt" } });
+    private Task<long> Receipts(string key) => _db.GetCollection<BsonDocument>("sce_shipment_receipts").CountDocumentsAsync(new BsonDocument("Key", key));
+
+    // Review F-2: a takeover is conditional on the exact observation (revision included) and writes only the lease fields.
+    [Fact]
+    public async Task TakeoverLosesToAWriteMadeAfterTheObservationAndChangesOnlyTheLease()
+    {
+        var repo = Repository(); var s = await Seed(); var a = Attempt();
+        Assert.True(await repo.TryBeginOrResumeDispatchAsync(_scope, s.Id, null, a, default));
+        var observed = (await repo.GetAsync(_scope, s.Id, default))!.DispatchAttempt!;          // B reads
+        a.Lines[0].Sent = true; a.Lines[0].RequestJson = "{\"k\":1}";
+        Assert.True(await repo.SaveDispatchAttemptAsync(_scope, s.Id, a, a.LeaseId, default));   // A writes after B's read: same lease id and end
+        var takeover = observed.Copy(); takeover.LeaseId = Guid.NewGuid(); takeover.LeaseUntil = observed.LeaseUntil.AddSeconds(40);
+        Assert.False(await repo.TryBeginOrResumeDispatchAsync(_scope, s.Id, observed, takeover, default));
+        var fresh = (await repo.GetAsync(_scope, s.Id, default))!.DispatchAttempt!;
+        var blank = fresh.Copy(); blank.LeaseId = Guid.NewGuid(); blank.LeaseUntil = fresh.LeaseUntil.AddSeconds(40);
+        blank.Lines[0].Sent = false; blank.Lines[0].RequestJson = null;                          // a copy that differs: never written
+        Assert.True(await repo.TryBeginOrResumeDispatchAsync(_scope, s.Id, fresh, blank, default));
+        var stored = (await repo.GetAsync(_scope, s.Id, default))!.DispatchAttempt!;
+        Assert.Equal((blank.LeaseId, blank.LeaseUntil, true, "{\"k\":1}"), (stored.LeaseId, stored.LeaseUntil, stored.Lines[0].Sent, stored.Lines[0].RequestJson));
     }
 
     [Fact]

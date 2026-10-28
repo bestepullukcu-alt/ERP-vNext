@@ -68,7 +68,13 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
             next = observed.Copy();      // resume after the lease: same n, same dates, same keys and bodies
         else return InProgress(observed.N);
         next.LeaseId = Guid.NewGuid(); next.LeaseUntil = now + options.Lease;
-        if (!await repository.TryBeginOrResumeDispatchAsync(context.Scope, s.Id, observed, next, ct)) return InProgress(next.N);
+        if (!await repository.TryBeginOrResumeDispatchAsync(context.Scope, s.Id, observed, next, ct))
+        {
+            // Lost the race: to another dispatch (409) or to a transition that left Planned, e.g. Cancelled (422, review F-7).
+            var current = await repository.GetAsync(context.Scope, s.Id, ct);
+            if (current is null) return Fail(ContractErrorCodes.ShipmentNotFound, 404);
+            return ShipmentLifecycle.Allows(current.Status, ShipmentStatus.Dispatched) ? InProgress(next.N) : Fail(ContractErrorCodes.InvalidShipmentTransition, 422);
+        }
         return await RunAsync(s, next, request, fingerprint, ct);
     }
 
@@ -108,10 +114,10 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
                     return await CompensateAsync(s, a, request, fingerprint, line.LineNumber, result, ct);
                 case InventoryOutcome.Forbidden:
                     logger.LogWarning("MOD-0183 dispatch: INVENTORY 403 {Code} on attempt {Attempt} line {Line}.", result.InventoryCode, a.N, line.LineNumber);
-                    await StopAsync(s, a, line, definite: !resend, ct);
+                    await StopAsync(s, a, line, result, resend, ct);
                     return FailWith(ContractErrorCodes.InvalidRequest, 403, new JsonObject { ["inventoryCode"] = result.InventoryCode });
                 default:
-                    await StopAsync(s, a, line, definite: !result.Ambiguous && !resend, ct);
+                    await StopAsync(s, a, line, result, resend, ct);
                     return Fail(ContractErrorCodes.DependencyUnavailable, 503);
             }
         }
@@ -142,14 +148,13 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         var faults = new List<string>();
         if (failure.Outcome == InventoryOutcome.Invalid) faults.Add("INVENTORY 400 " + failure.InventoryCode + " issue line " + failedLine);
         if (await ReverseAllAsync(s, a, failedLine, faults, ct) is { } stopped) return stopped;
-        if (!await repository.CloseCompensatedAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
-        await AuditAsync(s, a, "Compensated", faults, ct);
         var (status, code, details) = failure.Outcome == InventoryOutcome.Invalid
             ? (500, ContractErrorCodes.InternalError, (JsonObject?)null)
             : (422, ContractErrorCodes.InventoryRefused, new JsonObject { ["lineNumber"] = failedLine, ["inventoryCode"] = failure.InventoryCode });
         if (details is not null && failure.Details is not null) details["inventory"] = failure.Details.DeepClone();
-        await repository.StoreOutcomeReceiptAsync(context.Scope, s.Id, Operation, context.IdempotencyKey, fingerprint, context.CorrelationId, status, code,
-            details?.ToJsonString(), ct);
+        // Close, audit and receipt commit together (review F-3): no crash window in which the same key opens a{n+1}.
+        var receipt = new DispatchOutcomeReceipt(Operation, context.IdempotencyKey, fingerprint, context.CorrelationId, status, code, details?.ToJsonString());
+        if (!await SettleAsync(s, a, DispatchState.Compensated, faults, receipt, ct)) return InProgress(a.N);
         return FailWith(code, status, details);
     }
 
@@ -163,9 +168,7 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         if (!await repository.TryBeginOrResumeDispatchAsync(context.Scope, s.Id, observed, a, ct)) return InProgress(a.N);
         var faults = new List<string>();
         if (await ReverseAllAsync(s, a, null, faults, ct) is { } stopped) return stopped;
-        if (!await repository.CloseCompensatedAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
-        await AuditAsync(s, a, "Compensated", faults, ct);
-        return null;
+        return await SettleAsync(s, a, DispatchState.Compensated, faults, null, ct) ? null : InProgress(a.N);
     }
 
     /// <summary>B′ then the REVERSALs in stored order; null when every posted line is reversed, else the stopping answer.</summary>
@@ -190,6 +193,13 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
         }
         foreach (var line in a.Lines.Where(l => l.IssueTransactionId is not null && !l.IsReversed()))
         {
+            // A late writer already reversed this issue under the same key and stored date (review F-5): take its id.
+            if (s.DispatchLateWrites.FirstOrDefault(w => w.N == a.N && w.IssueTransactionId == line.IssueTransactionId && w.ReversalTransactionId is not null) is { } late)
+            {
+                line.ReversalTransactionId = late.ReversalTransactionId;
+                if (!await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return InProgress(a.N);
+                continue;
+            }
             if (!await RenewAsync(s, a, ct)) return InProgress(a.N);
             var key = a.ReversalKey(s.Id, line.LineNumber);
             var result = await PostAsync(s, key, InventoryMovementMapper.Reversal(s.Id, line.RequestJson!, line.IssueTransactionId!, key, a.ReversalDate.Value), ct);
@@ -222,25 +232,30 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
 
     private async Task<bool> BlockAsync(Shipment s, DispatchAttempt a, List<string> faults, CancellationToken ct)
     {
-        a.State = DispatchState.CompensationFailed; a.LeaseUntil = clock.GetUtcNow();
-        if (!await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct)) return false;
-        await AuditAsync(s, a, "CompensationFailed", faults, ct);
-        return true;
+        a.LeaseUntil = clock.GetUtcNow();
+        return await SettleAsync(s, a, DispatchState.CompensationFailed, faults, null, ct);
     }
 
-    /// <summary>403 / 503: the attempt stays InProgress; a line sent for the first time that INVENTORY certainly did not post
-    /// loses its sent marker, and an attempt that posted nothing at all is removed — "before the first post nothing changes"
-    /// (§23.2, §23.3). A resent line keeps its marker: an earlier send of it may have been posted.</summary>
-    private async Task StopAsync(Shipment s, DispatchAttempt a, DispatchAttemptLine line, bool definite, CancellationToken ct)
+    /// <summary>403 / 5xx / timeout: the attempt stays InProgress (§23.2, §23.3). An ambiguous answer (timeout, 409, 500, 502,
+    /// 504 — INVENTORY may have committed, review F-1) keeps the sent marker and the lease (request timeout + 30 s), so the
+    /// next holder resends the same key. A definite one (403, INVENTORY's own 503) releases the lease (review F-6); a line
+    /// sent for the first time then loses its marker, and an attempt that posted nothing at all is removed — "before the
+    /// first post nothing changes". A resent line keeps its marker: an earlier send of it may have been posted.</summary>
+    private async Task StopAsync(Shipment s, DispatchAttempt a, DispatchAttemptLine line, InventoryPostResult result, bool resend, CancellationToken ct)
     {
-        if (!definite) return;      // INVENTORY may still process it: keep the sent marker and the lease (request timeout + 30 s)
+        if (result.Ambiguous) return;
+        a.LeaseUntil = clock.GetUtcNow();
+        if (resend)
+        {
+            await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct);
+            return;
+        }
         line.Sent = false; line.RequestJson = null;
         if (a.Lines.All(l => !l.Sent && l.IssueTransactionId is null))
         {
             await repository.DropUnpostedAttemptAsync(context.Scope, s.Id, a.N, a.LeaseId, ct);
             return;
         }
-        a.LeaseUntil = clock.GetUtcNow();
         await repository.SaveDispatchAttemptAsync(context.Scope, s.Id, a, a.LeaseId, ct);
     }
 
@@ -253,10 +268,16 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     private Task<InventoryPostResult> PostAsync(Shipment s, string key, string body, CancellationToken ct) =>
         inventory.PostAsync(new InventoryPostRequest(key, body, context.Scope.TenantId, s.LegalEntityId, context.CorrelationId, context.Authorization), ct);
 
-    private Task AuditAsync(Shipment s, DispatchAttempt a, string outcome, IReadOnlyList<string> faults, CancellationToken ct) =>
-        repository.AppendDispatchAuditAsync(context.Scope, s.Id, new DispatchAuditEntry(a.N, outcome, context.CorrelationId, clock.GetUtcNow(),
+    private async Task<bool> SettleAsync(Shipment s, DispatchAttempt a, DispatchState outcome, IReadOnlyList<string> faults, DispatchOutcomeReceipt? receipt, CancellationToken ct)
+    {
+        var settled = a.Copy(); settled.State = outcome;
+        var audit = new DispatchAuditEntry(a.N, outcome.ToString(), context.CorrelationId, clock.GetUtcNow(),
             a.Lines.Where(l => l.IssueTransactionId is not null).Select(l => l.IssueTransactionId!).ToArray(),
-            a.Lines.Where(l => l.ReversalTransactionId is not null).Select(l => l.ReversalTransactionId!).ToArray(), faults), ct);
+            a.Lines.Where(l => l.ReversalTransactionId is not null).Select(l => l.ReversalTransactionId!).ToArray(), faults);
+        if (!await repository.SettleDispatchAttemptAsync(context.Scope, s.Id, settled, a.LeaseId, audit, receipt, ct)) return false;
+        a.State = outcome; a.Rev = settled.Rev;
+        return true;
+    }
 
     private static string? LotOf(string requestJson)
     {
