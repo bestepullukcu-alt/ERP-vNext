@@ -1169,8 +1169,8 @@ Bu kesişim yalnız modülün iki onay anahtarı içindir; bağımlı MOD-0023 a
 tabanı verir (kiracı, etkin kullanıcı, token'a giren izin); servis tabana (tier-2'de kesişime) R1–R3'ü uygular, şirket kapsamı dışındakileri
 çıkarır (o paketin K-A2'si: CT önerisi servis `IFinanceTreasuryDataScopeSource` ile süzer), muafiyet adayını R4 kuralıyla ekler
 ve kalanı niyete (`PaymentWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. Kesişim boşsa (ya da R1–R3 ve
-kapsamdan sonra boş kalırsa) "tier-2 aday yok" sayılır: R4'ün muafiyet adayı kuralı (D13) işler; liste yine boşsa mevcut boş liste
-dalı geçerlidir (Failure Path — yeni hata kodu yok). Sorgu okunamazsa (zaman aşımı,
+kapsamdan sonra boş kalırsa) "tier-2 aday yok" sayılır: R4'ün muafiyet adayı kuralı (D13) işler; liste yine boşsa boş liste
+dalı geçerlidir: 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz (KARAR D68; Failure Path). Sorgu okunamazsa (zaman aşımı,
 5xx, 401 / 403, bozuk gövde, uç yok) gönderme kapalı-başarısızdır: niyet yazılmaz, parti değişmez, MOD-0023 çağrılmaz (yanıt sınıfı
 Auth uç sözleşmesiyle — o paketin K-A1'i). Ayrı dizin istemcisi ya da yapılandırma listesi taşınmaz (O-10).
 
@@ -1271,12 +1271,13 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
   ile muafiyet adayı sorgusu DL-6 aday sorgusunun `waive-sod` + parti biçimidir; DL-5 yokken o biçim kapalı-başarısızdır ve
   DL-2 bu durumda kabul edilir (KARAR D66/3; AC-43 (h)).
 - **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok) → Submit
-  kapalı-başarısız: niyet yazılmaz, parti değişmez, MOD-0023 çağrısı yok. R1–R4 ve şirket kapsamı sonrası boş liste → MOD-0023
-  400 → kesin başlatma reddi (502 `PAYMENT_WORKFLOW_START_FAILED`, niyet `Refused`, parti önceki durumuna döner) (AC-11).
+  kapalı-başarısız: niyet yazılmaz, parti değişmez, MOD-0023 çağrısı yok. R1–R4 ve şirket kapsamı sonrası boş liste → Submit
+  422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`; MOD-0023 çağrılmaz, niyet yazılmaz, parti değişmez (KARAR D68; AC-11).
+  MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (gelirse 502 `PAYMENT_WORKFLOW_START_FAILED`).
 - **Tier-2 partide aday kesişimi (sahip denetimi 61466e504)** → yalnız `tier2-approve` (temel `approve` yok) ya da yalnız
   `approve` taşıyan kişi aday olmaz; iki anahtar çağrısından biri okunamazsa yukarıdaki kapalı-başarısız dal (niyet yok, parti
-  değişmez, MOD-0023 çağrısı yok); kesişim boşsa R4 muafiyet adayı kuralı, o da boşsa yukarıdaki boş liste dalı — yeni hata
-  kodu yok (AC-11).
+  değişmez, MOD-0023 çağrısı yok); kesişim boşsa R4 muafiyet adayı kuralı, o da boşsa yukarıdaki boş liste dalı (422, KARAR D68)
+  (AC-11).
 - **Release** → 200, `dispatchOutcome = NotConfigured`, `PaymentDispatchAttempt` yazılı, parti `Approved` kalır; bankaya
   ağ çağrısı yapılmaz.
 - **Port sözleşme ihlali** (sürüm, geçersiz istek, sözleşme dışı istisna) → 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`,
@@ -1520,7 +1521,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   (yalnız `tier2-approve` taşıyan A dışlanır, ikisini taşıyan B geçer, yalnız `approve` taşıyan C dışlanır); `approve` için {C},
   `tier2-approve` için {A} → kesişim boş, "tier-2 aday yok" sayılır ve AC-42'nin muafiyet adayı dalına girer; `tier2-approve`
   çağrısı başarılı, `approve` çağrısı okunamaz olduğunda niyet yazılmaz ve MOD-0023 çağrılmaz. Sabotaj: kesişim kaldırılıp
-  tier-2 partide yalnız `tier2-approve` sorgulandığında A aday olur ve test kırmızıya döner.
+  tier-2 partide yalnız `tier2-approve` sorgulandığında A aday olur ve test kırmızıya döner. **Boş liste (KARAR D68):** kurallar ve muafiyet
+  sonrası aday kalmazsa Submit 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 sahte istemcisine hiç çağrı gitmez,
+  niyet yazılmaz, parti `Draft` kalır; sabotaj: boş liste MOD-0023'e gönderildiğinde (çağrı sayısı 1) test kırmızıya döner.
 - [ ] AC-12 (zorunlu) — Başlatma zaman aşımı, bağlantı kopması ve boş/okunamayan 2xx yanıtı 202
   `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN` üretir; niyet `Unknown`, parti `Submitted`; ret istisnası yazılmaz.
 - [ ] AC-13 (zorunlu) — Açık niyet varken **aynı** anahtarla Submit makbuz kuralına uyar (makbuz `Completed` → kayıtlı yanıt,
