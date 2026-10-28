@@ -25,6 +25,19 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, ready-for-dev 1. tur eki: D66):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D66 (2026-10-28 ölçümünde main'de değil). (1) **KARAR
+> D66/1 — aday tabanı:** onaylayıcı adayları Auth aday sorgusundan gelir — MOD-0018 Treasury Auth ekinin **DL-6**'sı
+> (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6), anahtar `finance-treasury.receivable-adjustments.approve` (eşik üstü talepte `.tier2-approve`, A3); servis
+> A1–A3 ve A7 dışlamasını uygular ve sonucu `CandidatePrincipalIds` olarak gönderir; aday kaynağı servis ortak port (MOD-0126
+> DL-2). 1. turdaki "aday tabanı MOD-0126 O-10'daki Y-12 gerilimine bağlı" notu **kapandı**. Dependencies MOD-0018 satırı,
+> kapanış tablosuna yeni satır, Validation Rules "Aday tabanı", Failure Path, Ready-for-dev Checklist, DL-3 Yollar / Önkoşul;
+> **AC-9 genişletildi**. (2) **KARAR D66/2 (tutarlılık):** "son adım değil" yanıtı v1'de beklenmez; gelirse karar `Recorded`,
+> talep `PendingApproval`'da kalır, onaylanmış sayılmaz ve etki faturaya uygulanmaz — durum tablosu, Runtime Constraints 3;
+> **AC-14 genişletildi**. D66/3 ve D66/4 bu pakete dokunmaz. (3) MOD-0126 ortak tanımları sha256 `f496790f…0b0c`'ya yeniden
+> sabitlendi ("Kaynak ve kanıt"; MOD-0126 D66 revizyonu; önceki `81b9b505…161d`). Mevcut AC numaraları ve dilim tablosu
+> değişmedi.
+>
 > **Revizyon (2026-10-28, ready-for-dev 1. tur: Y-12, D62–D65):** Ali / Beste'yi beklemeyen maddeler; `status: draft` değişmedi.
 > Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` (D62–D65) ve
 > `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` (Y-12, Y-15, Y-16, Y-17).
@@ -36,7 +49,7 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > kararlar satırı yoktu; kod Dependencies MOD-0023 satırına, kapanış tablosuna, Runtime Constraints 5'e, Repo Scope bağımlı
 > değişikliklere, WORKFLOW yuvasına, Ready-for-dev Checklist şablon maddesine (şablonu kuran MOD-0023 kodu main'de değil, WP
 > numarası ve tarih gelmedi — madde **açık**) ve DL-3 Önkoşul'a yazıldı; **AC-9 genişletildi** (şablon kodu + aday listesi).
-> Aday tabanı MOD-0126 O-10'daki Y-12 gerilimine bağlıdır (açık). (2) **D62/2:** bu pakette `PartiallyApproved` durumu yok
+> Aday tabanı MOD-0126 O-10'daki Y-12 gerilimine bağlıdır (açık; **D66/1 ile kapandı** — yukarıdaki D66 notu). (2) **D62/2:** bu pakette `PartiallyApproved` durumu yok
 > (tarandı; `PartiallyPaid` tahsilat durumudur, onay durumu değil) — değişiklik yok. (3) **D53 / D56 Y-16 ile aynen geçerli:**
 > Auth paket metni `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (o paketin DL-1'i; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16);
 > Dependencies MOD-0018 ve SEC-002 satırları, Repo Scope, Authorization Convention, Ready-for-dev Checklist Auth / SEC-002
@@ -359,7 +372,7 @@ işi yok):
 | Durum | Değer | Anlamı | Çıkış |
 |---|---|---|---|
 | Submitted | 0 | yerel talep + başlatma niyeti yazıldı; MOD-0023 sonucu kesin değil | kesin başarı → PendingApproval; kesin ret → StartRefused; belirsiz → Reconcile |
-| PendingApproval | 1 | MOD-0023 örneği başladı | Approve → Approved; Reject → Rejected; Reconcile (örnek iptal) → Cancelled |
+| PendingApproval | 1 | MOD-0023 örneği başladı | Approve (son adım) → Approved; son adım olmayan onay → `PendingApproval` kalır, etki yok (v1'de beklenmez — KARAR D66/2); Reject → Rejected; Reconcile (örnek iptal) → Cancelled |
 | Approved | 2 | onaylandı ve **etki faturaya uygulandı** (aynı tx2) | — (terminal) |
 | Rejected | 3 | reddedildi; fatura aşaması geri döndü | — (terminal) |
 | StartRefused | 4 | MOD-0023 başlatmayı kesin reddetti; fatura aşaması geri döndü | — (terminal; yeni talep açılabilir) |
@@ -707,7 +720,7 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | MOD-0289 Bank Account Registry | tahsilat hesabı referansı | kod yok (D20/1, TRM-S3); okuma sözleşmesi **taslak**: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | yalnız boş olmayan opak Guid; çözümleme sözleşme dondurulunca (Follow-up) |
 | MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (D16) |
 | MOD-0125 Cash Forecasting | projeksiyon tüketicisi | aday, paketi yok (domain-config) | kullanılmaz; FORECAST tüketici yuvası açık (§U) |
-| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` (D11/4) altında yeni anahtarlar; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`). **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil) — anahtarlar, rol şablonları ve açık atama o paketin DL-1'i; paket kapısı (D53/1) ve DL-1 kabul kapısı (D53/2) değişmedi |
+| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` (D11/4) altında yeni anahtarlar; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`). **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil) — anahtarlar, rol şablonları ve açık atama o paketin DL-1'i; paket kapısı (D53/1) ve DL-1 kabul kapısı (D53/2) değişmedi. **Onaylayıcı aday tabanı — o paketin DL-6'sı (KARAR D66/1):** "bu izne sahip kullanıcılar" iç ucu, anahtar `finance-treasury.receivable-adjustments.approve` (eşik üstü talepte `.tier2-approve`, A3) (kiracı, yalnız etkin kullanıcı; şirket kapsamı o paketin K-A2'si); servis A1–A3 ve A7'yi uygular, sonucu `CandidatePrincipalIds` olarak gönderir; istemci servis ortak aday kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource`); DL-6 paket metni DL-3 önkoşulu, kodu DL-3 kabul kapısı; MOD-0018 sahibinin teyidi gerekir (D66/1) |
 | Servis iskeleti + servis ortak yapı taşları | `Diten.FinanceTreasuryService` | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — gap 4/G5); MOD-0120 DL-1'in önkoşulu |
 | Port 5071 | servis portu | D10/3; AGENTS §3 / `ports.md` güncellendi (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
 | DCP | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan `ready-for-dev` yok |
@@ -729,6 +742,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AR şablon kodu **`FT-AR-ADJUSTMENT-APPROVAL`** (Y-12 — Void / WriteOff / PaymentReversal tek şablon; tek aşama, tek onay adımı, atamasız; adaylar `CandidatePrincipalIds` ile, boş liste 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`; şablonu kuran kod main'de değil) | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-3 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-3 |
+| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1) | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; A1–A3, A7 ve şirket kapsamı sonrası aday kalmazsa 422 `RECEIVABLE_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (A3); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-9, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-3 (kodu DL-3 kabul kapısı) |
 | MOD-0031 kanıt bağlantısı | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → talep oluşmaz · AR MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AR'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 (oluşturma ve silme DL-1, açma DL-2) | DL-1 |
 
@@ -817,7 +831,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      Tekil kısmi indeks `ux_receivable_adjustment_open` + fatura `Version` CAS ile atomik.
   3. *Kararlar (Approve / Reject):* SoD ön kontrolü (A1–A7) → tx1 `ReceivableAdjustmentDecision(Requested)` + deneme olayı
      → MOD-0023 görev geçişi, `RemoteIdempotencyKey` ile → tx2: `Recorded` + talep `Approved` / `Rejected` + **etki aynı
-     işlemde**: Approve-Void → fatura `Status = Void`, `OutstandingAmount = 0`, taksit kalanları 0, `ExternalInvoiceNumberKey
+     işlemde** (Approve yalnız MOD-0023 son adım dediğinde; `WorkflowIsFinalStep = false` dönen onay — v1'de beklenmez, KARAR
+     D66/2 — `Recorded` olur, talep `PendingApproval`'da kalır, etki uygulanmaz): Approve-Void → fatura `Status = Void`, `OutstandingAmount = 0`, taksit kalanları 0, `ExternalInvoiceNumberKey
      = null`; Approve-WriteOff → `CollectionStage = WrittenOff`, `WrittenOffAmount = Amount`, `OutstandingAmount = 0`;
      **Approve-PaymentReversal (D16)** → yeni `ReceivablePayment(EntryType = Reversal, Amount = geri alınan tutar,
      ReversesPaymentId, AdjustmentRequestId)` **eklenir** (karşı kayıt, ekleme-yalnız), orijinal Receipt'e bir kez
@@ -1099,11 +1114,23 @@ modülde"):**
 
 Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çekemez; geri çekme Follow-up).
 
+**Aday tabanı (KARAR D66/1):** çözümleyici (RequestAdjustment ve Reconcile'ın yeniden başlatması) adayları MOD-0018 Treasury Auth
+ekinin DL-6 aday sorgusundan okur (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6), anahtar `finance-treasury.receivable-adjustments.approve`, `IsTier2` talepte
+`finance-treasury.receivable-adjustments.tier2-approve` (A3); istemci servis ortak aday kaynağıdır (MOD-0126 DL-2,
+`IFinanceTreasuryApproverCandidateSource`). Servis A1–A3 ve A7 kişilerini ve şirket kapsamı dışındakileri (o paketin K-A2'si)
+çıkarır, kalanı talebe (`CandidatePrincipalIds`) yazıp MOD-0023'e gönderir; aday kalmazsa A3'teki 422. Sorgu okunamazsa
+RequestAdjustment kapalı-başarısızdır: talep ve niyet yazılmaz, fatura kilitlenmez, MOD-0023 çağrılmaz (yanıt sınıfı Auth uç
+sözleşmesiyle — o paketin K-A1'i). Ayrı dizin istemcisi taşınmaz.
+
 ## Failure Path to Verify
 
 - **Kendi talebine karar (gönderen)** → 403 `RECEIVABLE_SOD_DENIED`, `FailedRequesterDecision`; MOD-0023 çağrılmaz.
 - **Faturayı oluşturan / açan kişinin kararı** → 403 `RECEIVABLE_SOD_DENIED` (`FailedInvoiceCreatorDecision` /
   `FailedInvoiceIssuerDecision`); MOD-0023 çağrılmaz.
+- **Onaylayıcı aday sorgusu okunamıyor (KARAR D66/1)** (zaman aşımı, 5xx, 401 / 403, bozuk gövde, DL-6 ucu yok) →
+  RequestAdjustment kapalı-başarısız: talep ve niyet yazılmaz, fatura kilitlenmez, MOD-0023 çağrısı yok (AC-9).
+- **MOD-0023 "son adım değil" yanıtı (KARAR D66/2)** → v1'de beklenmez; gelirse karar `Recorded`, talep `PendingApproval`'da
+  kalır, etki faturaya uygulanmaz (AC-14).
 - **Tier-2 talep, tier-2 izni olmayan onaylayıcı** → 403 `RECEIVABLE_TIER2_APPROVER_REQUIRED`, `FailedAmountTier`.
 - **Açık talep varken ikinci talep ya da tahsilat** → 409 `RECEIVABLE_ADJUSTMENT_PENDING`, uzak çağrı yok.
 - **Açık karar niyeti varken başka anahtar/aktörden karar** → 409 `RECEIVABLE_DECISION_PENDING`, MOD-0023 çağrılmaz.
@@ -1317,7 +1344,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   türünde de (Void, WriteOff, PaymentReversal) başlatma isteği `TemplateCode = FT-AR-ADJUSTMENT-APPROVAL` (Y-12, tek şablon) ve
   çözümleyicinin A1–A3 sonrası adaylarını (talepteki `CandidatePrincipalIds`) `CandidatePrincipalIds` olarak taşır; sahte
   MOD-0023 gelen isteği kaydeder ve iki alan ayrı ayrı doğrulanır. Sabotaj: tür başına farklı şablon kodu gönderildiğinde ya da
-  aday listesi istekten çıkarıldığında test kırmızıya döner.
+  aday listesi istekten çıkarıldığında test kırmızıya döner. **Aday tabanı (KARAR D66/1; sahte Auth aday istemcisi):** sorgu
+  `finance-treasury.receivable-adjustments.approve`, `IsTier2` talepte `.tier2-approve` anahtarıyla yapılır (istemcinin aldığı
+  anahtar doğrulanır); Auth'un döndürdüğü kişilerden talebi gönderen, faturayı oluşturan / açan, (PaymentReversal'da) tahsilatı
+  kaydeden ve şirket kapsamı dışındaki kişi (MOD-0018 eki K-A2) `CandidatePrincipalIds`'e girmez; sorgu okunamazsa (zaman aşımı,
+  5xx, 403, bozuk gövde) talep, niyet ve fatura kilidi yazılmaz ve MOD-0023 çağrılmaz (dört ayrı test). Sabotaj: çözümleyici Auth
+  sonucunu atlayıp sabit / yapılandırma listesi kullandığında ya da A1 dışlaması kaldırıldığında (gönderen aday olur) test
+  kırmızıya döner.
 - [ ] AC-10 (zorunlu) — Başlatma zaman aşımı, bağlantı kopması ve boş/okunamayan 2xx 202
   `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` üretir; niyet `Unknown`; ret yazılmaz; Reconcile aynı anahtarla ilerler ve
   MOD-0023'te ikinci örnek oluşmaz (sahte MOD-0023 anahtar başına tek örnek sayar).
@@ -1331,7 +1364,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   korunur.)
 - [ ] AC-14 (zorunlu) — Onaylı Void: fatura `Void`, `OutstandingAmount = 0`, dış numara anahtarı boşalır; onaylı WriteOff:
   `CollectionStage = WrittenOff`, `WrittenOffAmount` = talep tutarı, `OutstandingAmount = 0`, `Status` değişmez; Reject:
-  aşama `PreviousCollectionStage`'e döner. Etki karar sonucu (`Recorded`) ile **aynı işlemde** yazılır.
+  aşama `PreviousCollectionStage`'e döner. Etki karar sonucu (`Recorded`) ile **aynı işlemde** yazılır. **Son adım değil
+  (KARAR D66/2):** sahte MOD-0023 Approve için `WorkflowIsFinalStep = false` döndürdüğünde (v1'de beklenmez) karar `Recorded`
+  olur, talep `PendingApproval`'da kalır ve faturada hiçbir etki yazılmaz (Void / WriteOff / PaymentReversal için ayrı test).
+  Sabotaj: "son adım değil" dalında etki uygulandığında ya da talep `Approved` yapıldığında test kırmızıya döner.
 - [ ] AC-15 (zorunlu) — Açık düzeltme varken aynı faturaya ikinci talep ve tahsilat 409 `RECEIVABLE_ADJUSTMENT_PENDING`;
   açık karar niyeti varken başka anahtarla karar 409 `RECEIVABLE_DECISION_PENDING`, MOD-0023'e çağrı yok.
 - [ ] AC-16 (zorunlu) — Void yalnız `PaidAmount = 0` olan `Open` faturada; WriteOff yalnız ön koşul (Overdue ya da
@@ -1556,6 +1592,10 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
   numarası ve tarih gelmedi (2026-10-28) — DL-3 için
 - [x] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01 — `execution/approvals/approvals.tsv:16`, pack sha256 `803fbaa5…05fb2`, 2026-10-26, #243; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W1…W17 (§17.8 kapanışı — MOD-0126 ile tek liste) DL-3 uygulama kabul kapısındadır; AC-W5…W14 ve AC-W17 geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [x] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8: K2 D14/3, muafiyet yok D31/1 — kapandı) — DL-3 için
+- [x] Onaylayıcı aday tabanı kararı — **KARAR D66/1**: Auth aday sorgusu (`finance-treasury.receivable-adjustments.approve` / `.tier2-approve`), servis A1–A3 ve A7'yi uygular, `CandidatePrincipalIds` — DL-3 için
+- [ ] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
+  sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1) — DL-3 için
+- [ ] O ekin DL-6 kodu main'de (**KARAR D66/1**; D53 / D56/3 deseni) — DL-3 için (kabul kapısı)
 - [x] O-13 (KARAR D28) yazıldı (WriteOff kanıtı zorunlu, en az 1 MOD-0031 bağlantısı) — DL-3 için
 - [ ] MOD-0031 kanıt bağlantısı davranış ölçümü (DL-3 başında; Dependencies MOD-0031 satırı — AR yalnız bağlantı kimliğini doğrular, MOD-0031'e yazmaz) — DL-3 için
 - [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (O-9a → D15/1), ödeme referansı iş tekilliği,
@@ -1568,8 +1608,8 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `81b9b505cb303e6091cc5f31e198a7fa6fbab3f250e2c1445f39fae5f37f161d` (bu revizyonla aynı commit, dal
-  `chore/ct/treasury-intake-ct-05`; ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64); önceki `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
+  `f496790ffe17054628c7ef7707239eab2de7b3a953846bafda6c6c3632ff0b0c` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-05`; ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3); önceki `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir (MOD-0124 deseni).
@@ -1809,9 +1849,10 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   **Durum kuralları notu:** SetCollectionStage'in "açık düzeltme yokken" koşulu DL-2'de boş geçer (düzeltme talebi DL-3'te
   doğar); koşul DL-3'te RequestAdjustment ile bağlanır ve DL-3 kabulünde test edilir. Yaşlandırmanın "en eski ödenmemiş
   taksit" kuralı DL-2'de tahsilat kaydı olmadığından bütün taksitleri ödenmemiş sayar; tahsilat (RecordPayment) DL-3'te bağlanır.
-- **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, AR'ye özgü MOD-0023
+- **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, çözümleyici (aday tabanı
+  servis ortak `IFinanceTreasuryApproverCandidateSource` üzerinden — MOD-0126 DL-2 yazar, KARAR D66/1), AR'ye özgü MOD-0023
   eşlemesi (bağdaştırıcı servis ortak yapı taşıdır — tek yazarı MOD-0126 DL-2; zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı — tek yazarı o dilim; KARAR D57/5), O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu (kod `FT-AR-ADJUSTMENT-APPROVAL` geldi — Y-12; şablonu kuran kodun main'de olması), MOD-0126 O-10 aday tabanı (Y-12 gerilimi, açık), silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  Önkoşul (dilim kapısı — Ready-for-dev Checklist'te "— DL-3 için" maddeleri, D51/1): DL-2, **MOD-0126 DL-2** (servis ortak MOD-0023 bağdaştırıcısı — tek yazarı o dilim; KARAR D57/5), O-7, O-8, O-9 (D16), O-13, MOD-0023 AR şablonu (kod `FT-AR-ADJUSTMENT-APPROVAL` geldi — Y-12; şablonu kuran kodun main'de olması), aday tabanı (**KARAR D66/1** — MOD-0018 Treasury Auth ekinin DL-6 paket metni; MOD-0018 sahibinin teyidi; kodu DL-3 kabul kapısı), silmeme politikası (D21/1) ve okuma eşleme alanları (D21/3), MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1…W17 geçişi (§17.8 kapanışı — MOD-0126 ile tek liste) dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-43, AC-2 (RequestAdjustment / Approve / Reject / RecordPayment kısmı ve açık niyetin Reconcile'ının şirket
   uygun değilken tamamlanması — AC-2 bu dilimde kapanır), AC-5 (düzeltme talebi, karar ve tahsilat kısmı — AC-5 bu dilimde
   kapanır), AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32 (a), (b), (c) kısmı ve (a), (b) sabotajı

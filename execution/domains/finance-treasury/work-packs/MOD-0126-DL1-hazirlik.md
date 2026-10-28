@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 81b9b505cb303e6091cc5f31e198a7fa6fbab3f250e2c1445f39fae5f37f161d (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `05410477…` (D58/D59 revizyonu); D57 sürümü `5f69139c…`; D56 sürümü `1baf8728…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `5101b1e8…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — Codex F-1)"; önceki 699b0708…; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
+pack: execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md (status draft, sha256 f496790ffe17054628c7ef7707239eab2de7b3a953846bafda6c6c3632ff0b0c (pack ready-for-dev 1. tur eki D66 revizyonu, 2026-10-28 — D66; önceki sürüm `81b9b505…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `05410477…` (D58/D59 revizyonu); D57 sürümü `5f69139c…`; D56 sürümü `1baf8728…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `5101b1e8…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D54 — Codex F-1)"; önceki 699b0708…; satır atıfları main @904dfd5c2 sürümüne (91090dd6…13cc))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5)
 ---
 

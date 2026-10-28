@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 4c4bf51887604946a6d20a2c010e6c3603ca79b481e542bd70cd369aa2c6f3c9 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D45/2 — Codex F-1)"; önceki a83901f9…; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
+pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 7e6b9520b4e217efeadf0bd0d5d58d3d49ab2784e9191ab49ba3ef5bd1317d67 (pack ready-for-dev 1. tur eki D66 revizyonu, 2026-10-28 — D66; önceki sürüm `4c4bf518…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D45/2 — Codex F-1)"; önceki a83901f9…; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; yalnız başvuru malzemesi — KOD ALMA YOK, D38/3; pack "Kaynak ve kanıt")
 ---
 

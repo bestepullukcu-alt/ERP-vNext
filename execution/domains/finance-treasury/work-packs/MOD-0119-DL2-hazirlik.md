@@ -3,7 +3,7 @@ record_id: MOD-0119-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 567f59ba5bdf7d39fb498bf47e19f858760349880cfbd309abcb0c8eb0876d24 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:96; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0119-accounts-payable.md (status draft, sha256 f7ee03aa1425543293ebfd7074b7e456f695bae24380360feda012abe5d7c218 (pack ready-for-dev 1. tur eki D66 revizyonu, 2026-10-28 — D66; önceki sürüm `567f59ba…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bd554f82…` (D58/D59 revizyonu); D57 sürümü `5a6f2bc2…`; D56 sürümü `126063f4…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `faa95829…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; MOD-0126 ortak tanımları 05410477…e42e (D58/D59; önceki 5f69139c…8a5d D57, 1baf8728…0916 D56, 5101b1e8…c88a); CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:96; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AP dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 
@@ -141,7 +141,9 @@ Pack "Authorization Convention" (`:1076-1123`) ve işleyen tek matris "D47 rol m
   `:684-…`, MOD-0126 tek geçiş matrisi); belirsiz → 202 `AP_*_OUTCOME_UNKNOWN`, kesin ret → 502, 404 → `Unknown` (AC-41).
 - `ReconcileApInvoiceWorkflowCommand` — önce okur; eşleme alanı (uzak anahtar, görev kimliği) yoksa kapatmaz; yeniden yazma yalnız
   asıl aktöre ve gap 6/P1-a koşulları kapalıyken.
-- Gönderme çözümleyicisi (MOD-0023 şablon ataması + R1–R3 aday dışı) ve SoD politika servisi (tek kademe — O-7; eşik yok).
+- Gönderme çözümleyicisi (aday tabanı Auth aday sorgusu — **KARAR D66/1**, MOD-0018 Treasury Auth eki DL-6, servis ortak
+  `IFinanceTreasuryApproverCandidateSource`, anahtar `finance-treasury.ap-invoices.approve`; R1–R3 aday dışı — önceki "MOD-0023
+  şablon ataması" metni şablon atamasız olduğu için geçersiz, Y-12) ve SoD politika servisi (tek kademe — O-7; eşik yok).
 - Alacak dekontu: Submit rezervasyonu (`CreditReservedAmount`), Approve kesin alacaklama (`CreditedAmount`, `CreditStatus`), Reject /
   kesin ret / iptal bırakma — orijinal faturanın `Version` CAS'ıyla (`:801-…`; AC-35, AC-36, AC-39).
 - Approve anında uygunluğun yeniden okunması: LE (TRM-14), tedarikçi ilişkisi (MOD-0140 1.3.0), PO'lu faturada MOD-0143 (R8;
@@ -185,7 +187,7 @@ servis ortak yollar (`Application/Common/{CommandReceipts,DataScope}/**`, `Persi
 `Infrastructure/Workflow/**` dahil — XMC-001); `frontend/**`; `supplier.openapi.yaml`, `invoice-match.openapi.yaml`; `execution/**`;
 kaynak depo.
 
-**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `81b9b505…161d` — ready-for-dev 1. tur (Y-12, D62–D65); önceki `05410477…e42e` D58/D59, `5f69139c…8a5d` D57, `1baf8728…` D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
+**Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar, sha `f496790f…0b0c` — ready-for-dev 1. tur eki D66; önceki `81b9b505…161d` ready-for-dev 1. tur (Y-12, D62–D65), `05410477…e42e` D58/D59, `5f69139c…8a5d` D57, `1baf8728…` D56 — ya da o günkü sabit), MOD-0119 DL-1 WP
 raporu ve kabul kaydı, MOD-0023 pack §17 (`803fbaa5…`), AGENTS.md, domain-config, `.antigravity/rules/` multi-tenancy, security-jwt,
 permission-key-standard, git-safety, cross-module-change-consent, code-style (S-56), audit-trail-standard, data-scope-enforcement,
 mongo-indexing, handler-design; karar kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D14, D21, D22, D25, D26, D28, D32,
@@ -236,7 +238,8 @@ DL-2 başladığı gün doldurulur (S-53); dalga sonunda tek PR (S-76, S-77). Ra
 3. **O-11 Y-6 ile güncellenmedi.** O-11 "çok adımlı onay adımları … TBD" (`:1619`); Y-6 satıcı faturası şablonunu **tek adım**
    olarak bildirdi (kaynak yanıtları tablosu bunu "kodlar gelince ready-for-dev revizyonunda" diye bekletiyor). AC-14'ün "çok adımlı
    akışta son adım olmayan onay" dalı (`:1253-1255`) tek adımlı şablonda test edilemez — prompt'ta "şablon tek adımsa bu dal sahte
-   MOD-0023 ile koşulur" diye yazılmalı ya da pack revizyonunda daraltılmalı.
+   MOD-0023 ile koşulur" diye yazılmalı ya da pack revizyonunda daraltılmalı. **Kapandı (KARAR D66/4, D62/2):** çok adımlı dal
+   AC-14'ten kalktı; AC-14 "v1'de ara onay durumu yok" testine yeniden yazıldı (numara aynı).
 4. **MOD-0023 bağdaştırıcısının sahipliği paketler arasında çelişik** (ayrıntı MOD-0126 DL-2 kaydı §5 bulgu 4): MOD-0119 ayrı
    `Infrastructure/ApWorkflow/**`, MOD-0120 "MOD-0126'nın bağdaştırıcısıyla ortak", MOD-0124 `Infrastructure/Workflow/**` içinde kendi
    bağdaştırıcısı. MOD-0119 için çelişki yok, ama ortak karar verilirse bu DL-2'nin yolları değişir.
