@@ -8,7 +8,9 @@
                      ileride MOD-0269 gerçek gönderim
     x-decisions    : D20/1 (yerleşim), D23/1 (tedarikçi kapsamı), D23/3 (şirket Active + Approved), D24 (O-4…O-12),
                      D27/1 (MOD-0003 yok → T32 sapması: sözleşme bu klasörde dondurulur) —
-                     docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md
+                     docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md;
+                     D72/2, D73/2 (422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`) —
+                     docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md
     x-pattern      : LEGAL-ENTITY-LOOKUP 1.1.0 (docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md §1–§2)
     x-source       : MOD-0289 pack Runtime Constraints → "Okuma sözleşmesi — BANK-ACCOUNT-LOOKUP 1.0.0"
                      (execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md);
@@ -51,6 +53,10 @@ hesapta isteğin şirketiyle `Active` ilişki yok (D23/1).
 Gövde **IBAN, hesap numarası, son 4 hane dışındaki herhangi bir parça, BIC, banka adı, şube adı, hesap sahibi adı
 taşımaz.** Tedarikçi ilişkisi okunamazsa (MOD-0140 503 / geçersiz) MDM 200 dönmez: **503**
 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (varsayılan `ELIGIBLE` yok).
+
+Tedarikçi sahipli hesapta MOD-0140 isteğin şirketini tanımıyorsa (404 `UNKNOWN_LEGAL_ENTITY`) MDM 200 dönmez: **422**
+`MDM_BANK_LEGAL_ENTITY_UNKNOWN`; gövdede `data` yok (KARAR D72/2, D73/2 — `treasury-intake-owner-decisions-05.md`; yalnız ekleme,
+404 kararı genişlemez).
 
 Örnek (200):
 
@@ -124,3 +130,6 @@ bu dosya `docs/analysis/contracts/bank-account-lookup.md` olur ve MOD-0003 gelin
 ## 8. Değişiklik geçmişi
 
 - 1.0.0 (2026-10-25) — ilk yazılı sürüm; MOD-0289 pack tanımından (rev 6) çıkarıldı.
+- 1.0.0 (2026-10-28, taslak eki — KARAR D73/2) — §3'e 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` yanıtı eklendi (tedarikçi sahipli
+  hesapta MOD-0140 404 `UNKNOWN_LEGAL_ENTITY`); yalnız ekleme — mevcut yanıtlar, alanlar ve fikstürler değişmedi. Sözleşme
+  dondurulmadığı (DL-2) için sürüm 1.0.0 kaldı. Tüketici sınıflandırması (§5) ve fikstürler (§6) için satır D73/2'de verilmedi.

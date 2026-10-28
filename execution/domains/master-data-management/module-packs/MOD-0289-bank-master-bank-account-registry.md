@@ -28,6 +28,16 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 
 # MOD-0289 — Bank Master & Bank Account Registry
 
+> **Revizyon (2026-10-28, KARAR D73 — O-15 kapandı):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D73/2 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **O-15 → KARAR D73/2 (CT önerisi (a)):** `lookup-validation`'da MOD-0140 404
+> `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (yazma ve listeyle aynı eşleme, D72/2); BANK-ACCOUNT-LOOKUP taslak
+> sözleşmesine (`docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`, 1.0.0 DRAFT, Treasury'nin taslağı)
+> 422 yanıtı **yalnız ekleme** olarak yazıldı (sözleşme DL-2'de dondurulur, henüz dondurulmadığı için 1.0.0'a; sürüm notu §8); hata kodu adı paket öneki
+> `MDM_BANK_` ile. Kapı **DL-3**. Değişen yerler: Hata sözlüğü, Runtime Constraints (okuma sözleşmesi), Failure Path, Test Expectations, Ready-for-dev
+> Checklist (O-15 maddesi), Açık kararlar (O-15 KAPANDI), DL-3 Önkoşul; **AC-24 genişletildi**. Yeni AC yok; AC numaraları ve
+> dilim tablosu değişmedi.
+>
 > **Revizyon (2026-10-28, KARAR D72 — MOD-0140 Revizyon 5 hizalaması):** `status: draft` ve `approval_status: not-approved`
 > değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D72 (2026-10-28 ölçümünde karar
 > dosyasında yazılı, commit'lenmemiş; main'de değil) ve MOD-0140 paketi Revizyon 5
@@ -618,7 +628,8 @@ KARAR D72/2: 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ve öteki 403'ler, 401, 503 `DE
 ayrıştırılamayan, alanı eksik / `null` ya da çelişkili gövde; D72/2'nin `*_SUPPLIER_DIRECTORY_UNAVAILABLE` karşılığı — mevcut ad
 korundu; kayıt yazılmaz, otomatik yeniden deneme yok), `MDM_BANK_LEGAL_ENTITY_UNKNOWN` 422 (MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` —
 Procurement isteğin şirketini bu kiracıda tanımıyor, `Active` saymıyor ya da referanslanamaz buluyor; süreç içi LE kontrolünden
-geçmiş isteğin bağımlılıktaki çelişkisi — **KARAR D72/2**; kayıt yazılmaz, hesap gösterilmez, yeniden deneme yok),
+geçmiş isteğin bağımlılıktaki çelişkisi — **KARAR D72/2**; `lookup-validation` dahil — **KARAR D73/2**; kayıt yazılmaz, hesap
+gösterilmez, yeniden deneme yok),
 `MDM_BANK_INACTIVE` 422 (pasif banka/şubeye hesap), `MDM_BANK_ACCOUNT_FOUR_EYES_REQUIRED` 403,
 `MDM_BANK_ACCOUNT_REVEAL_REASON_REQUIRED` 400, `MDM_BANK_CURRENCY_UNKNOWN` 400, `MDM_BANK_CURRENCY_REFERENCE_UNAVAILABLE`
 503, `MDM_BANK_RECORD_CODE_UNAVAILABLE` 503, `MDM_BANK_AUDIT_UNAVAILABLE` 503 (denetim niyeti yazılamadı; iş verisi yok),
@@ -1048,9 +1059,11 @@ LEGAL-ENTITY-LOOKUP 1.1.0 deseni (`docs/analysis/contracts/drafts/legal-entity-l
   Gövde **IBAN, hesap numarası, son 4 hane dışındaki herhangi bir parça, BIC, banka adı, şube adı, hesap sahibi adı
   taşımaz.** Tedarikçi ilişkisi okunamazsa (MOD-0140 403 — `LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil — / 503 / geçersiz ya da
   alanı eksik yanıt, KARAR D72/2) MDM 200 dönmez, **503** `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` döner (hiçbir zaman varsayılan
-  `ELIGIBLE` yok). MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` (D72/2 → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`) bu sözleşmenin taslak yanıt
-  kümesinde (`drafts/bank-account-lookup-validation-v1.0-proposal.md` §2, :52, :88-91 — 200 / 400 / 404 / 503) **yoktur**;
-  lookup ucunda nasıl döneceği açık karar **O-15**'tir — taslak bu revizyonda değişmedi.
+  `ELIGIBLE` yok). Tedarikçi sahipli hesapta MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` dönerse MDM 200 dönmez, **422**
+  `MDM_BANK_LEGAL_ENTITY_UNKNOWN` döner (**KARAR D73/2**, O-15 kapandı; yazma ve listeyle aynı eşleme — D72/2); taslak sözleşmeye
+  yalnız ekleme olarak yazıldı (`drafts/bank-account-lookup-validation-v1.0-proposal.md` §3 ve §8 sürüm notu; 1.0.0 dondurulmadığı
+  için 1.0.0'a — 404 kararı genişlemez). Tüketici sınıflandırma tablosunda bu yanıtın satırı D73/2'de verilmedi; tablo
+  değişmedi — genel kural gereği tüketici bu yanıtı "uygun" saymaz.
 - **`referenceable` tek başına yeterli değildir (iyileştirme 1).** `referenceable = true` yalnız **hesap kaydının** aktif ve
   silinmemiş olduğunu söyler; banka / şube durumunu, sahibin uygunluğunu, para birimini ya da denetim düzeyini söylemez
   (ör. pasif bankadaki aktif hesap `referenceable = true` + `bankState = INACTIVE` döner). Tüketici aşağıdaki **uygunluk
@@ -1295,8 +1308,9 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
   (D23/1); `status: Active` ama `eligibleForTransactions: false` da uygun değildir (`status` yalnız gerekçe); **MOD-0140
   erişilemez, 401, 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, geçersiz
   gövde, `known` / `eligibleForTransactions` yok ya da `null` (1.2.0 şeklindeki satır dahil)** → 503
-  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; **404 `UNKNOWN_LEGAL_ENTITY`** → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (lookup ucunda O-15);
-  hiçbir şey yazılmaz, otomatik yeniden deneme yok; `lookup-validation` de 503 (asla varsayılan `ELIGIBLE`).
+  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; **404 `UNKNOWN_LEGAL_ENTITY`** → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (`lookup-validation`
+  dahil — KARAR D73/2);
+  hiçbir şey yazılmaz, otomatik yeniden deneme yok; okunamayan vakalarda `lookup-validation` de 503 (asla varsayılan `ELIGIBLE`).
 - **Eski tedarikçi koduyla hesap Create** → hesap kanonik kodla yazılır, `SupplierMasterId` dolu; aynı tedarikçi hesabı kanonik
   kodla listede ve lookup'ta bulunur (D72/1; AC-25).
 - **`/eligible` sayfasında `onboardingStatus = InReview` ya da `purchasingEnabled = false` olan Active ilişki** → listede
@@ -1557,10 +1571,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`, kayıt ve niyet yazılmaz; (c) MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ve 503
   `DEPENDENCY_UNAVAILABLE` → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`, hiçbir şey yazılmaz, sahte istemci istek başına uç başına
   **tek** çağrı görür (otomatik yeniden deneme yok); (d) 404 `UNKNOWN_LEGAL_ENTITY` → Create / Activate / Update / Deactivate /
-  Delete ve liste 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, hiçbir şey yazılmaz (`lookup-validation` vakası O-15 kararıyla eklenir).
-  Sabotaj: uygunluk hesabı `status == Active`'e çevrilince (a) kırmızı; alan yokken "uygun say" yapılınca (b) kırmızı;
+  Delete ve liste 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, hiçbir şey yazılmaz; (e) **`lookup-validation` (KARAR D73/2, O-15
+  kapandı):** tedarikçi sahipli Active hesapta sahte MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` döndürünce uç **422**
+  `MDM_BANK_LEGAL_ENTITY_UNKNOWN` döner — 200 değil, 404 değil, 503 değil; gövdede hesap alanı (`data`) yok, hiçbir şey
+  yazılmaz, sahte istemci tek çağrı görür; yanıt BANK-ACCOUNT-LOOKUP taslağındaki 422 tanımıyla (§3) eşleşir (sözleşme
+  testi). Sabotaj: uygunluk hesabı `status == Active`'e çevrilince (a) kırmızı; alan yokken "uygun say" yapılınca (b) kırmızı;
   bağdaştırıcıya yeniden deneme eklenince (c)'nin çağrı sayısı testi kırmızı; 404 `UNKNOWN_LEGAL_ENTITY` ilişkisiz sayılınca (d)
-  kırmızıya döner.
+  kırmızıya döner; `lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY` 404 (ilişki yok) ya da 503'e eşlenince (e) kırmızıya döner.
 - [ ] AC-25 (zorunlu) — Tedarikçi sahibi MOD-0140 `supplierId` dizgisi olarak olduğu gibi saklanır ve sıralı karşılaştırılır
   (`SUP-2001` ≠ `sup-2001`); tedarikçi sahipli hesabın `lookup-validation`'ı `X-Legal-Entity-Id` olmadan 400, kiracıya ait
   olmayan / aktif olmayan şirketle 404; aynı tedarikçi hesabı `Active` ilişkili şirketten 200, ilişkisiz şirketten 404 döner.
@@ -1789,7 +1806,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - **Sahte MOD-0140:** dört durum, `known: false`, geçersiz gövde, 401/403/500, zaman aşımı; ilişkili / ilişkisiz / kiracı
   geneli kullanıcı matrisi (AC-41); KARAR D72 vakaları — `status: Active` + `eligibleForTransactions: false`, alanı eksik (1.2.0
   şekli) / `null`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY`, çağrı sayısı
-  (yeniden deneme yok), eski kod → kanonik kod, kullanıcı token'ı başlığı (AC-23, AC-24, AC-25), çok sayfalı `/eligible` ve
+  (yeniden deneme yok), eski kod → kanonik kod, kullanıcı token'ı başlığı (AC-23, AC-24, AC-25), `lookup-validation`'da 404
+  `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` ve sabotajı (AC-24 (e), KARAR D73/2), çok sayfalı `/eligible` ve
   `onboardingStatus` / `purchasingEnabled` süzgeçsizliği (AC-61). Sözleşme testi **1.3.0 FROZEN (MOD-0140 DL-1)** dosyasına
   karşı Prism / sahte istemciyle; **canlı entegrasyon MOD-0140 DL-3'ten sonra** (C2 kodları DL-4'ten sonra) — o zamana kadar
   canlı çağrı yok.
@@ -1909,7 +1927,7 @@ Beste) aynı DL-1 kabul kapısındadır; kapanmadan gerçek servisle kabul veril
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de **FROZEN** (MOD-0140 DL-1; sözleşme dosyası — `GET /api/suppliers/eligible` dahil, D58; MOD-0140 paketi Revizyon 5 `ready-for-dev`, sha256 `b3259e40…ce5c2`, `approvals.tsv:26`; 2026-10-28 ölçümünde main'de 1.2.0) — DL-3 için. Uç MOD-0140 DL-3'te çalışana kadar DL-3 sözleşmeye karşı sahte istemci / Prism ile ilerler (D58, D72)
 - [x] MdmService → MOD-0140 çağrı kimliği belirlendi — **KARAR D72/3:** kullanıcı token'ı (MOD-0140 S-4 `/eligible`'ı servis token'ına kapatır); izinler `procurement.suppliers.eligibility.read` + (BL-652'ye kadar) `mdm.legal-entities.read`, banka rollerine bağımlı anahtar olarak (Authorization Convention) — DL-3 için
 - [ ] MOD-0140 canlı bağlantısı: MOD-0140 DL-3 main'de (uçlar; C2 kodları için DL-4) + `procurement.suppliers.eligibility.read` Auth kataloğunda (MOD-0140 §18 :534) ve banka rollerinde bağımlı anahtar olarak, `mdm.legal-entities.read` de (MOD-0018 Treasury Auth eki DL-2, D72/3) — DL-3 için (canlı bağlantı ve kapanış tablosunun canlı kanıtı; DL-3 kodu sahte istemci / Prism ile bunu beklemez)
-- [ ] O-15 (`lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY`) — DL-3 için
+- [x] O-15 (`lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY`) — **KARAR D73/2:** 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`; BANK-ACCOUNT-LOOKUP taslağına yalnız ekleme olarak yazıldı (§3, §8); AC-24 (e) — DL-3 için
 - [x] MDM `ValidationBehavior`'ın 400 gövdesinde girilen değeri döndürüp döndürmediği ölçüldü (2026-10-27, @7c57e8466): **döndürmüyor** —
   gövde `Response<T>.Errors` yalnız doğrulayıcı mesajları (`services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ValidationBehavior.cs:26-31,46`;
   `AttemptedValue` ve alan adı okunmaz); kalan koşul: MOD-0289 doğrulayıcı mesajlarında `{PropertyValue}` yer tutucusu kullanılmaz
@@ -2121,7 +2139,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-12 | Para birimi küsurat hanesi kaynağı | MOD-0289 / MOD-0048 | **KARAR D24/8 (2026-10-25): MOD-0048** — MOD-0289 yalnız ISO kodu saklar ve MOD-0048 listesinde olduğunu doğrular | sahip (K1) |
 | O-13 | Hesap amaçları ekranının şekli (form 8 alan: Code + 7 etiket — tek başına Slim'e düşer) | Compact (pack'in tek `golden_reference` değeri) / Slim (sapma kaydıyla) | **KARAR D27/9 (2026-10-25): Compact** — pack tek `golden_reference` taşır (module-pack-standard `screens` yalnız `data_mode` taşır); Details'ta kullanan hesap sayısı | sahip (K1) |
 | O-14 | Grup önekli kayıtlarda (banka `BNK`, tedarikçi hesabı `BAC` — RCS-001 §5.3) allocator'a gönderilecek `legalEntityId`; ayrıca şirket hesabı `BAC` için sahip şirketin `LegalEntityId`'si önerisinin teyidi (D65/2) | v0 sözleşmesinde (KARAR D59/1) yazılı değil; seçenekleri sözleşme sahibi belirler — bu paket değer önermez | **açık** — Beste'ye soruldu, cevap yok (2026-10-28). **Kapı: DL-1 kabul kapısı** (tedarikçi `BAC` kısmı DL-3 kabulünde de aranır); karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı, bağdaştırıcı ve AC-60 kabul testi ona bağlanır. Paket kapısını bekletmez (DL-1 sahte allocator'la ilerler) | Beste (RCS-001 / BL-565, D44) |
-| O-15 | `lookup-validation`'da MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` nasıl döner (KARAR D72/2 yazma ve listede 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` der; BANK-ACCOUNT-LOOKUP 1.0.0 taslağının üretici yanıtları 200 / 400 / 404 / 503'tür ve tüketici sınıflandırıcısı 422'yi tanımlamaz) | (a) taslağa 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` eklenir ve tüketici sınıflandırıcısına satır yazılır (DL-2 dondurmasından önce; fikstür eklenir) · (b) lookup ucunda 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (bağımlılık çelişkisi; taslak değişmez) · (c) 404 (D23/1 "ilişki yok" ile aynı gövde) | CT önerisi (a) — D72/2 ile tek eşleme; açık, değer seçilmedi. Kapı: DL-3 (tedarikçi sahipli hesabın lookup'ı DL-3'te gelir); karar DL-2 dondurmasından önce gelirse 1.0.0'a, sonra gelirse 1.x eklemeli sürümle (yeni yanıt kodu = ekleme) yazılır | sahip (K1) |
+| O-15 | `lookup-validation`'da MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` nasıl döner (KARAR D72/2 yazma ve listede 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` der; BANK-ACCOUNT-LOOKUP 1.0.0 taslağının üretici yanıtları 200 / 400 / 404 / 503'tür ve tüketici sınıflandırıcısı 422'yi tanımlamaz) | (a) taslağa 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` eklenir ve tüketici sınıflandırıcısına satır yazılır (DL-2 dondurmasından önce; fikstür eklenir) · (b) lookup ucunda 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (bağımlılık çelişkisi; taslak değişmez) · (c) 404 (D23/1 "ilişki yok" ile aynı gövde) | **KAPANDI — KARAR D73/2 (2026-10-28): (a)** — BANK-ACCOUNT-LOOKUP taslak sözleşmesine 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` eklendi (yalnız ekleme; taslak Treasury'nin; DL-2 dondurmasından önce geldiği için 1.0.0'a, §3 + §8 sürüm notu); hata kodu adı paket öneki `MDM_BANK_` ile (D72/2'deki `MDM_LEGAL_ENTITY_UNKNOWN` örnek adın yerine). Kapı: DL-3. Uygulama: Runtime Constraints (okuma sözleşmesi), Failure Path, AC-24 (e). D73/2 tüketici sınıflandırıcısı satırı ve fikstür vermedi — tablo değişmedi | sahip (K1) |
 
 ## Teslim dilimleri
 
@@ -2173,7 +2191,8 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (Create, Update, Activate, Deactivate, Delete, liste, detay, maskesiz okuma, `lookup-validation` — D23/1 ilişki kuralı),
   mimari test (koleksiyon okuması yok), dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0140 1.3.0'a bağlı; DL-2'yi
   bekletmesin. Önkoşul (dilim kapısı — "— DL-3 için" maddeleri, D51/1): DL-2, MOD-0140 1.3.0 sözleşme dosyası main'de FROZEN (MOD-0140 DL-1; ilişkili tedarikçi listesi işlemi dahil — **KARAR D58**, metni D72/5: `GET /api/suppliers/eligible` = `eligibleForTransactions = true` = silinmemiş ve Active ilişkili bütün tedarikçiler, `onboardingStatus` / `purchasingEnabled` süzgeci yok, izin `procurement.suppliers.eligibility.read`; uç MOD-0140 DL-3'te çalışana kadar sözleşmeye karşı sahte istemci / Prism ile kodlanır), MdmService → MOD-0140 çağrı
-  kimliği (**KARAR D72/3:** kullanıcı token'ı) ve Gateway rotasının ölçümü (D24/1 karar verildi; rota 2026-10-28'de var), O-15.
+  kimliği (**KARAR D72/3:** kullanıcı token'ı) ve Gateway rotasının ölçümü (D24/1 karar verildi; rota 2026-10-28'de var), O-15
+  (**KARAR D73/2** ile kapandı — `lookup-validation` 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, AC-24 (e)).
   Bitiş: AC-23, 24, 25, 26 (tedarikçi kısmı), 27, 41, 60 (tedarikçi hesabı `BAC` kısmı, grup öneki — O-14 kararına bağlı — tam
   kapanış), 61 (KARAR D72).
 - **DL-4** — Yollar: `Views/MasterData/{Banks,BankAccounts}/**`, JS, resx (7 dil), MVC vekilleri, sayfa yardımı, nav

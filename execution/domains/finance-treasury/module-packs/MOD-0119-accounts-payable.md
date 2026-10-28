@@ -25,6 +25,17 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D73 — O-23 kapandı):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D73/1 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **O-23 → KARAR D73/1 (CT önerisi (a)):** PO'lu faturada MOD-0143 faturasının `supplierId`'si
+> eski kod olabilir; AP o kodu `getSupplierEligibility` ile kanonik koda çevirir ve saklı kanonik `SupplierId` ile **ordinal**
+> karşılaştırır — eski kodlu doğru fatura reddedilmez, farklı tedarikçi 422 `AP_MATCH_REFERENCE_MISMATCH`. Çevirme çağrısı
+> okunamazsa D72/2 sınıflaması: 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 401 / 503 `DEPENDENCY_UNAVAILABLE` / diğer 5xx /
+> zaman aşımı / okunamayan ya da kanonik `supplierId`'si eksik yanıt → 503 `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` →
+> 422 `AP_LEGAL_ENTITY_UNKNOWN`; geçiş yok, otomatik yeniden deneme yok. Yeni hata kodu yok. Değişen yerler: Dependencies (MOD-0143
+> satırı), Runtime Constraints (c), Validation Rules (MOD-0143 eşleşme kuralları), Failure Path, Test Expectations, Açık kararlar
+> (O-23 KAPANDI); **AC-5 genişletildi**. Yeni AC yok; AC numaraları ve dilim tablosu değişmedi.
+>
 > **Revizyon (2026-10-28, KARAR D72 — MOD-0140 Revizyon 5 hizalaması):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D72 (2026-10-28 ölçümünde karar dosyasında yazılı,
 > commit'lenmemiş; main'de değil) ve MOD-0140 paketi Revizyon 5 (`execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md`,
@@ -705,7 +716,7 @@ korunan yol yamaları D30 ile 2026-10-25'te uygulandı; bu listede değildir.
 | MOD-0021 Audit / CentralAudit (BL-501, K4) | yol `b` | **var** — `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/`; kullananlar Inventory, SupplyChain | servis kaydı MOD-0126 DL-1'de; kaynak NoOp kaydedici taşınmaz (level-1 koşul 2) |
 | MOD-0220 LE `lookup-validation` | borçlu şirket uygunluğu (D10/1 kuralı) | **var** — `GET /api/legal-entities/{id}/lookup-validation` (`services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs:48`); kayıtta `OperationalStatus` ve `ApprovalStatus` var (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`); yanıtta `ApprovalStatus` **henüz yok** | **TRM-14** (D10/2) MOD-0126 ile ortak; gelmeden "onaylı" kontrolü yapılamaz → AP yazma komutları kapanır (fail-closed) |
 | MOD-0140 Supplier (`SUPPLIER`) | tedarikçi kimliği + şirket ilişkisi uygunluğu + görüntü adı | **main'de 1.2.0 FROZEN** (`docs/analysis/contracts/supplier.openapi.yaml:13-14`, origin/main @ `72f183138`), `supplierId: string`, `POST /api/suppliers/validate` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/SuppliersController.cs:112`). **MOD-0140 paketi Revizyon 5 main'de** (`status: ready-for-dev`, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`, CT-APR-01 `execution/approvals/approvals.tsv:26`, PR #273): tedarikçi kiracıda tek + LE bazlı `SupplierCompanyRelationship`; 1.3.0 **MOD-0140 DL-1**'de sözleşme dosyası olarak dondurulur — yalnız uygunluk yüzeyi (`SupplierEligibility` §3.1, `validate` satır alanları §3.2, `getSupplierEligibility`, `listEligibleSuppliers`) + §3.3 hata kodları (S-6); uçlar ve satırın yeni alanları **MOD-0140 DL-3**'te sunulur (o zamana kadar `/validate` 1.2.0 şekliyle yanıt verir); C2 kodları (404 `UNKNOWN_LEGAL_ENTITY`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`) **MOD-0140 DL-4**'te üretilir ama 1.3.0'dan itibaren olası sayılır (MOD-0140 §2 "Sunum", :42-44); `x-front-loaded-for` listesine MOD-0119 eklenir (:41); `eligibleForTransactions` = ilişki var ∧ silinmemiş ∧ `Active` (S-1); `GET /eligible` servis token'ına kapalı (S-4); banka bilgisi MOD-0140'ta yok (K-8) | AP yalnız kanonik `supplierId` + uygunluk alanlarını + adı sözleşmeden tüketir; koleksiyon okuması yok. Uygunluk = `known` ∧ `eligibleForTransactions == true` (**KARAR D72/2**); kanonik kod `getSupplierEligibility`'den, `supplierMasterId` ikincil (**D72/1**); ad `getSupplier` (**D72/4**). **1.3.0 FROZEN dosyası main'e girmeden DL-1 başlamaz**; DL-1 1.3.0'a karşı sahte istemci / Prism ile yazılır; **MOD-0140 DL-3 birleşmeden canlı bağlantı açılmaz** (yeni alan yoksa uygun sayılmaz — fail-closed). Treasury MOD-0140'a yazmaz (K15, D9/4) |
-| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.1 FROZEN (main'de, `2f1c18068`), `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). **Üretici değişikliği (KARAR D26/3) main'de (`2f1c18068`, procurement):** `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç + %20 KDV'li örnek; şema değişmedi) ve MOD-0143 kaydında `lineAmount ≠ quantity × unitPrice` → 422 `LINE_AMOUNT_MISMATCH` (`CaptureInvoiceHandler.cs`); AP davranışı değişmedi — AP kuralı yalnız iki durumla sınırlıdır, eşleştirme yapmaz (Validation Rules → MOD-0143 eşleşme kuralları) |
+| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.1 FROZEN (main'de, `2f1c18068`), `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). **Üretici değişikliği (KARAR D26/3) main'de (`2f1c18068`, procurement):** `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç + %20 KDV'li örnek; şema değişmedi) ve MOD-0143 kaydında `lineAmount ≠ quantity × unitPrice` → 422 `LINE_AMOUNT_MISMATCH` (`CaptureInvoiceHandler.cs`); AP davranışı değişmedi — AP kuralı yalnız iki durumla sınırlıdır, eşleştirme yapmaz (Validation Rules → MOD-0143 eşleşme kuralları). **Tedarikçi karşılaştırması (KARAR D73/1):** MOD-0143 faturasının `supplierId`'si (1.1.1 kanonikleştirme yazmaz; eski kod olabilir) MOD-0140 `getSupplierEligibility` ile kanonik koda çevrilir ve saklı kanonik `SupplierId` ile ordinal karşılaştırılır; çevirme okunamazsa D72/2 sınıflaması (MOD-0140 satırı) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` var, küsurat hanesi yok (MOD-0126 pack Dependencies ölçümü) | küsurat kaynağı MOD-0048-FU01 §21 `currency-minor-units` — başlangıç listesi kabul (Y-4/3), seed henüz yok (O-10, MOD-0126 O-11 ile ortak); yoksa Create 503 `AP_CURRENCY_PRECISION_UNAVAILABLE` — sabit tablo uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı okuma | **var** — `GET /api/v1/evidence/links/{id}` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/EvidenceLinksController.cs:83-84`); bağlantı nesne referansı `EvidenceObjectRefDto(Module, ObjectType, ObjectId, ObjectVersion)` (`…/Features/EvidenceLinking/EvidenceLinkingModels.cs:67`) | AP bağlantıyı **oluşturmaz**, var olanın nesnesinin `(MOD-0119, ApInvoice, {id})` olduğunu doğrular (DL-3) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20 — D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`). **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil) — anahtarlar, rol şablonları ve açık atama o paketin DL-1'i; paket kapısı (D53/1) ve DL-1 kabul kapısı (D53/2) değişmedi. **Onaylayıcı aday tabanı — o paketin DL-6'sı (KARAR D66/1):** "bu izne sahip kullanıcılar" iç ucu, anahtar `finance-treasury.ap-invoices.approve` (kiracı, yalnız etkin kullanıcı; şirket kapsamı o paketin K-A2'si); servis R1–R3'ü uygular, sonucu `CandidatePrincipalIds` olarak gönderir; istemci servis ortak aday kaynağıdır (MOD-0126 DL-2, `IFinanceTreasuryApproverCandidateSource` — **KARAR D67/3**); DL-6 paket metni DL-2 önkoşulu, kodu DL-2 kabul kapısı; MOD-0018 sahibinin teyidi gerekir (D66/1) |
@@ -791,7 +802,17 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   MOD-0140 DL-3 birleşene kadar bağdaştırıcı yalnız sahte istemci / Prism ile çalışır, canlı bağlantı açılmaz; (c) PO'lu faturada
   Validate, Submit ve Approve'da MOD-0143 — durum uygun küme dışında ise `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (422), tedarikçi /
   para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503); tutar kuralı
-  `Σ Net = totalAmount` (KARAR D26 — Validation Rules → MOD-0143). Hiçbirinde
+  `Σ Net = totalAmount` (KARAR D26 — Validation Rules → MOD-0143). **Tedarikçi karşılaştırması (KARAR D73/1):** MOD-0143
+  faturasının `supplierId`'si eski kod olabilir; AP onu `GET /api/suppliers/{supplierId}/eligibility` (`getSupplierEligibility`,
+  faturanın şirketiyle, kullanıcı token'ıyla) ile kanonik koda çevirir ve yanıttaki kanonik `supplierId`'yi saklı kanonik
+  `SupplierId` ile **ordinal** karşılaştırır; eşitse tedarikçi tutar, değilse `AP_MATCH_REFERENCE_MISMATCH` (422). Bu çağrıda
+  yalnız kanonik kod kullanılır — tedarikçinin uygunluğu (b)'deki `validateSuppliers` okumasıyla ayrıca denetlenir. Çevirme
+  çağrısı okunamazsa D72/2 sınıflaması (b) ile aynıdır: 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 401, 503
+  `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, okunamayan gövde ya da kanonik `supplierId`'si yok / `null` → 503
+  `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`; tekil uçta 404 `UNKNOWN_SUPPLIER` (kod
+  çağıran şirkette tanınmıyor) kanonik kod vermez, eşitlik kurulamaz → `AP_MATCH_REFERENCE_MISMATCH` (422; D73/1 bu vakayı
+  ayrıca adlandırmaz — eşitlik kanıtlanmadan eşleşme kabul edilmez). Otomatik yeniden deneme yok (istek başına uç başına tek
+  çağrı); MOD-0143 okunamazsa (`AP_MATCH_UNAVAILABLE`) çevirme çağrısı yapılmaz. Hiçbirinde
   geçiş yapılmaz. Bu **okumalar** uzak yan etki değildir ve tx1'den önce yapılır.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId + LegalEntityId). Okumalar `IsDeleted = false`.
 - **Idempotency (D12/2 kuralı — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate, Submit,
@@ -1108,8 +1129,10 @@ ve `Received`/`Validated`. Hold yalnız `Validated`/`Approved`; ReleaseHold yaln
 
 **MOD-0143 eşleşme kuralları (PO'lu fatura; KARAR D26, O-5):** MOD-0143 faturası aynı kiracı + şirkette bulunur; `status ∈
 {Matched, MatchedWithinTolerance}` (D26/2 — `ClearedForPayment` tolerance-override ile gelmiş olabilir, `Captured` /
-`Exception` / `Rejected` doğrulanmamış tutar taşıyabilir; hepsi 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`); `supplierId` ve
-`currency` AP kaydıyla eşit; tutar kuralı **`Σ Line.NetAmount = totalAmount`** (D26/1; MOD-0143 `Decimal` string'i
+`Exception` / `Rejected` doğrulanmamış tutar taşıyabilir; hepsi 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`); `supplierId` —
+`getSupplierEligibility` ile kanonik koda çevrildikten sonra (**KARAR D73/1**; eski kodlu MOD-0143 faturası reddedilmez) — saklı
+kanonik `SupplierId`'ye ordinal eşit, `currency` AP kaydıyla eşit (çevirme okunamazsa 503 `AP_SUPPLIER_UNAVAILABLE`, 404
+`UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` — D72/2; Runtime Constraints (c)); tutar kuralı **`Σ Line.NetAmount = totalAmount`** (D26/1; MOD-0143 `Decimal` string'i
 `decimal`'a çevrilerek, yuvarlamasız), fark 422 `AP_MATCH_REFERENCE_MISMATCH`. AP eşleştirme yapmaz, tolerans uygulamaz.
 **Taban (üretici cevabı, `PRODUCER-ANSWER-MOD0143-01.md`, ölçüm origin/main @05f311784):** `totalAmount = Σ lineAmount`
 sunucuda hesaplanır (`CaptureInvoiceHandler.cs:138`, `InvoiceMatchValidationRules.cs:48`); `lineAmount` yoksa
@@ -1170,6 +1193,12 @@ okunamazsa gönderme kapalı-başarısızdır: niyet yazılmaz, fatura değişme
 - **PO'lu faturada MOD-0143 sonucu uygun değil** (`Captured`, `Exception`, `Rejected`) → Validate/Submit/Approve 422
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tutar / tedarikçi / para birimi farkı → 422 `AP_MATCH_REFERENCE_MISMATCH`; MOD-0143
   erişilemez → 503 `AP_MATCH_UNAVAILABLE`, geçiş yok.
+- **MOD-0143 faturası tedarikçinin eski koduyla** (KARAR D73/1) → kod `getSupplierEligibility` ile kanonik koda çevrilir; saklı
+  kanonik `SupplierId`'ye eşitse eşleşme sürer (eski kodlu doğru fatura reddedilmez), başka tedarikçinin koduysa (eski ya da
+  kanonik) ya da tekil uç 404 `UNKNOWN_SUPPLIER` dönerse 422 `AP_MATCH_REFERENCE_MISMATCH`; çevirme çağrısı okunamazsa (403
+  `LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil, 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, okunamayan gövde, kanonik
+  `supplierId` yok / `null`) 503 `AP_SUPPLIER_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN` (D72/2);
+  hiçbirinde geçiş, makbuz ya da niyet yok, otomatik yeniden deneme yok.
 - **Tedarikçi uygun değil** (KARAR D72/2 — `known: false`, `eligibleForTransactions: false`; OnHold / Blocked / Inactive /
   ilişkisiz; tekil uçta 404 `UNKNOWN_SUPPLIER`) → 422 `AP_SUPPLIER_NOT_ELIGIBLE`; `status: Active` ama `eligibleForTransactions:
   false` da uygun değildir (`status` yalnız gerekçe).
@@ -1440,7 +1469,19 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] AC-5 (zorunlu) — PO'lu faturada `MatchInvoiceRef` yoksa 400; MOD-0143 durumu uygun küme dışındaysa 422
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da net tutar farkı
   (`Σ Net ≠ totalAmount`, KARAR D26) varsa 422 `AP_MATCH_REFERENCE_MISMATCH`; `ClearedForPayment` 422
-  `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409.
+  `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409. **Genişletme (KARAR D73/1; sahte MOD-0143
+  + sahte MOD-0140 / Prism, 1.3.0 FROZEN dosyasına karşı, her vaka ayrı test; Validate'te — Submit ve Approve aynı kuralı
+  kullanır, DL-2'de gelir; o vakalar o dilimin testidir):** (a) AP kaydında
+  kanonik `SUP-…` saklı, MOD-0143 faturası aynı tedarikçinin çağıran şirketteki **eski koduyla** (`LegacySupplierCodes`
+  fikstürü) → `getSupplierEligibility` eski kodu aynı kanonik koda çevirir, eşleşme kabul edilir (Validate geçer); sahte MOD-0140
+  çevirme çağrısını MOD-0143 faturasındaki kodla, faturanın şirketi ve kullanıcının `Authorization` başlığıyla görür; (b) MOD-0143
+  faturası **farklı bir tedarikçinin** koduyla (eski ya da kanonik) → 422 `AP_MATCH_REFERENCE_MISMATCH`, geçiş yok; tekil uç 404
+  `UNKNOWN_SUPPLIER` → 422 `AP_MATCH_REFERENCE_MISMATCH`; karşılaştırma ordinaldir (`SUP-2001` ≠ `sup-2001`); (c) çevirme çağrısı
+  403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, ayrıştırılamayan gövde, kanonik `supplierId` yok / `null` ve
+  zaman aşımı → 503 `AP_SUPPLIER_UNAVAILABLE`, sahte istemci tek çevirme çağrısı görür (otomatik yeniden deneme yok); 404
+  `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`; (b) ve (c) vakalarında geçiş, makbuz ve niyet yazılmaz. **Sabotaj
+  (üretim kodunda):** çevirme kaldırılıp MOD-0143 `supplierId`'si saklı kodla doğrudan karşılaştırılınca (a)'daki eski kodlu doğru
+  fatura 422 alır ve test kırmızıya döner; çevirme okunamazken "eşit say" yapılınca (c) kırmızıya döner.
 - [ ] AC-6 (zorunlu) — Mükerrer fatura (aynı şirket + tedarikçi + belge türü + normalize numara) 409 `AP_INVOICE_DUPLICATE`;
   eşzamanlı iki Create'te biri 201, diğeri 409 (gerçek replica set); tekil indeks kaldırıldığında test kırmızıya döner
   (sabotaj).
@@ -1645,7 +1686,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - **MOD-0220 / MOD-0140 / MOD-0143 / MOD-0031 sahteleri:** her biri için uygun / uygun değil / bulunamadı / erişilemez;
   MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz, `status: Active` + `eligibleForTransactions: false`, alanı
   eksik (1.2.0 şekli) / `null`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY`,
-  eski kod → kanonik kod (AC-4, AC-44); MOD-0143 için altı durum ve vergili fatura (AC-40); sözleşme testi — MOD-0140
+  eski kod → kanonik kod (AC-4, AC-44); MOD-0143 için altı durum ve vergili fatura (AC-40); MOD-0143 faturasının
+  tedarikçi kodunun `getSupplierEligibility` ile kanonikleştirilmesi — eski kodlu doğru fatura, farklı tedarikçi, 404
+  `UNKNOWN_SUPPLIER`, çevirme okunamaz (403 / 503 / bozuk gövde / kanonik kod yok / zaman aşımı), 404 `UNKNOWN_LEGAL_ENTITY`,
+  çağrı sayısı ve sabotajı (AC-5, KARAR D73/1); sözleşme testi — MOD-0140
   **1.3.0 FROZEN (MOD-0140 DL-1)** dosyasına karşı Prism / sahte istemci, MOD-0143 1.1.1, TRM-14. **MOD-0140 canlı
   entegrasyonu MOD-0140 DL-3'ten sonra** (C2 kodları DL-4'ten sonra); o zamana kadar canlı çağrı yok.
 - **Auth aday sahtesi (KARAR D66/1, D71):** aday sorgusu (izinli liste / boş / okunamaz / 403); anahtar başına ayrı yanıt
@@ -1907,7 +1951,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 | O-20 | AP rolleri ve rol şablonları | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0018 sahibi teyidi açık** — AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **KARAR D46 + D47** (2026-10-27; rol matrisi `treasury-intake-owner-decisions-05.md`) rol şablonları verildi; **D49/1, D49/3, D50/1:** AP görüntüleyici, AP operatörü, AP onaylayıcı (karar + mutabakat) ve AP operasyon yöneticisi (birleşik AP yöneticisi ve AP onay yöneticisi kalktı); **D50/3:** istisnayı açan çözemez / yeniden açamaz (AC-42); Auth paket metni MOD-0018 Treasury Auth eki (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16) | sahip + MOD-0018 sahibi |
 | O-21 | Servis iskeletini ve ortak yapı taşlarını hangi paket açar | MOD-0126 DL-1 / AP DL-1 | **KAPANDI (D14/2 ile tutarlı; gap 4/G5):** tek sahibi ve yazarı MOD-0126 DL-1 — iskelet, `FinanceTreasuryCommandReceipt` + indeksleri, `IFinanceTreasuryDataScopeSource`, ortak LE / para birimi / kod portları, CentralAudit kaydı; AP DL-1 onu bekler ve bunları yeniden tanımlamaz. "Hangi paket önce kodlanırsa" kuralı yoktur | sahip (K1) |
 | O-22 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (MOD-0018 Treasury Auth eki DL-1 — Treasury yazar, MOD-0018 sahibi teyit eder, Y-15, Y-16; Platform kapsam ucunun FinanceTreasury'yi kabul etmesi o ekin K-6 açık kararı); servis ortak tek karar (MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
-| O-23 | MOD-0143 eşleşmesinde tedarikçi karşılaştırması kanonik kodla mı (KARAR D72/1 sonrası: AP kanonik kodu saklar; MOD-0143 faturasının `supplierId`'si eski kod olabilir — `invoice-match.openapi.yaml` 1.1.1 kanonikleştirme yazmaz) | (a) AP MOD-0143 faturasının `supplierId`'sini de `getSupplierEligibility` ile kanonik koda çevirip karşılaştırır (ek çağrı; okunamazsa 503 `AP_SUPPLIER_UNAVAILABLE`) · (b) olduğu gibi ordinal karşılaştırır (eski kodlu MOD-0143 faturası 422 `AP_MATCH_REFERENCE_MISMATCH` alır, MOD-0143 tarafı kanonikleşene kadar) | CT önerisi (a) — yanlış ret yerine tek ek okuma; açık, değer seçilmedi | sahip (K1) + MOD-0143 sahibi |
+| O-23 | MOD-0143 eşleşmesinde tedarikçi karşılaştırması kanonik kodla mı (KARAR D72/1 sonrası: AP kanonik kodu saklar; MOD-0143 faturasının `supplierId`'si eski kod olabilir — `invoice-match.openapi.yaml` 1.1.1 kanonikleştirme yazmaz) | (a) AP MOD-0143 faturasının `supplierId`'sini de `getSupplierEligibility` ile kanonik koda çevirip karşılaştırır (ek çağrı; okunamazsa 503 `AP_SUPPLIER_UNAVAILABLE`) · (b) olduğu gibi ordinal karşılaştırır (eski kodlu MOD-0143 faturası 422 `AP_MATCH_REFERENCE_MISMATCH` alır, MOD-0143 tarafı kanonikleşene kadar) | **KAPANDI — KARAR D73/1 (2026-10-28): (a)** — MOD-0143 eşleştirmesinden gelen `supplierId` `getSupplierEligibility` ile kanonik koda çevrilir ve saklı kanonik kodla ordinal karşılaştırılır (eski kodlu doğru fatura reddedilmez; farklı tedarikçi 422 `AP_MATCH_REFERENCE_MISMATCH`); çevirme okunamazsa D72/2 sınıflaması (503 `AP_SUPPLIER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `AP_LEGAL_ENTITY_UNKNOWN`). Uygulama: Runtime Constraints (c), Validation Rules, Failure Path, AC-5 | sahip (K1) + MOD-0143 sahibi |
 
 ## Teslim dilimleri
 

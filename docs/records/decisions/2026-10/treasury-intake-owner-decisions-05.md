@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D72 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D73 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -755,6 +755,15 @@ DL-1'de dondurulur, uçlar DL-3'te sunulur).
 4. **AP tedarikçi adı:** `GET /api/suppliers/{id}` (`procurement.suppliers.read`) ile alınır; izin AP rollerine bağımlılık olarak eklenir.
 5. **D58 metin hizalaması:** liste = `eligibleForTransactions = true` = silinmemiş ve Active ilişki (MOD-0140 S-1);
    `onboardingStatus` / `purchasingEnabled` süzgeci yoktur. D58'in içeriği (Active ilişkili bütün tedarikçiler) değişmez.
+
+## D73 — MOD-0119 O-23 ve MOD-0289 O-15 (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik D72 uygulaması.
+
+1. **MOD-0119 O-23:** MOD-0143 eşleştirmesinden gelen `supplierId` eski kod olabilir; AP gelen kodu `getSupplierEligibility` ile kanonik
+   koda çevirip saklı kanonik kodla karşılaştırır (eski kodlu doğru fatura reddedilmez). Çevirme çağrısı okunamazsa D72/2 sınıflaması.
+2. **MOD-0289 O-15:** BANK-ACCOUNT-LOOKUP taslak sözleşmesine 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` yanıtı eklenir (yalnız ekleme; taslak
+   Treasury'nin); kapı MOD-0289 DL-3. Hata kodu adı paket öneki `MDM_BANK_` ile (D72/2'deki `MDM_LEGAL_ENTITY_UNKNOWN` örnek adın yerine).
 
 ## Karar olmayanlar
 
