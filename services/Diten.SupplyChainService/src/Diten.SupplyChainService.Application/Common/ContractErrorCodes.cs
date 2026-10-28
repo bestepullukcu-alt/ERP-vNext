@@ -5,7 +5,7 @@ namespace Diten.SupplyChainService.Application.Common;
 /// </summary>
 /// <remarks>
 /// Q262 (2026-10-03). MOD-0183 pack §22 ("Commands, queries, event/correlation behavior and error codes are
-/// frozen in the contract") makes <c>docs/analysis/contracts/shipment-bundle.openapi.yaml</c> the single source
+/// frozen in the contract") makes the SHIPMENT-BUNDLE contract, <c>shipment-bundle.openapi.yaml</c>, the single source
 /// of these strings, yet nothing in code referenced it: codes were written as literals at each emission site.
 /// C-02 showed the cost is not theoretical — a 500 was emitted carrying <c>INVALID_REQUEST</c>, a code the
 /// contract reserves for 400, and <c>SHIPMENT_ROOT_INVALID</c> was emitted although the contract declares it
@@ -14,14 +14,15 @@ namespace Diten.SupplyChainService.Application.Common;
 /// The 52 constants below were extracted from the contract, not authored. SHIPMENT-BUNDLE 3.4.0 (MOD-0183 DL-1, WP-P1)
 /// added seven, re-extracted with the same command: 59. To re-extract and compare:
 /// <code>
-/// python3 -c "import re;print(sorted({m.group(1) for m in (re.search(r'code:\s*([A-Z_]+)',l) for l in open('docs/analysis/contracts/shipment-bundle.openapi.yaml')) if m}))"
+/// python3 -c "import re;print(sorted({m.group(1) for m in (re.search(r'code:\s*([A-Z_]+)',l) for l in open('shipment-bundle.openapi.yaml')) if m}))"
 /// </code>
 /// Per K7 the command is kept here rather than only the count, because the count drifts and the command does not.
 /// </para>
 /// <para>
 /// A code absent from this type is absent from the contract and must not be emitted. Adding one here without
 /// adding it to the contract inverts the authority the pack sets, so the contract changes first.
-/// <c>docs/analysis/**</c> is deliberately read-only to this work package.
+/// The contract folder is read-only to this work package. Its path is pinned in <c>docs-path-authority.json</c> and
+/// not repeated in code (DocsPathGuardTests); the command above runs inside that folder.
 /// </para>
 /// </remarks>
 public static class ContractErrorCodes
