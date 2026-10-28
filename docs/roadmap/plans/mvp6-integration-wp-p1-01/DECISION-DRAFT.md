@@ -7,8 +7,8 @@ consumed: [INVENTORY-BUNDLE 1.5.0, PRODUCT-MASTER 1.1.0-draft.16, WAREHOUSE-OUTB
 measured_at: origin/main 1afd37843 (2026-10-22)
 ---
 
-DURUM: TASLAK — **kararlaştırıldı (Natig, yönetim): G1, G5–G10 2026-10-22; G2, G3, G4 2026-10-26 (§3a), öneriler gibi.**
-Paket yamaları G2–G4 için henüz güncellenmedi (§8).
+DURUM: TASLAK — **kısmen kararlaştırıldı (Natig, yönetim, 2026-10-22): G1, G5, G6, G7, G8, G9, G10 öneriler gibi kabul edildi
+(§3a).** G2, G3, G4 MVP-1 CT'nin cevabını bekliyor. Paket yamaları yalnız kararlaştırılmış kısımlar için yazıldı (§8).
 
 # WP-P1 — MOD-0183 / MOD-0186 paket revizyonu: Inventory'ye yazma (karar taslağı)
 
@@ -79,12 +79,60 @@ P3 W-4 ile çelişmez (API üzerinden yazma, ikinci bakiye yok); P1, P2, P4, P5 
 | G8 | İadede kalem / SKU / lot orijinal çıkış hareketinden okunur; varış deposu / lokasyonu iade alımında girilir (RETURNS sözleşmesine ekleme) |
 | G9 | `Dispatched` olayının biçimi değişmez; yalnız bütün satırlar yazıldıktan sonra yayımlanır |
 | G10 | G1 ile karşılanır (depo modülü olmayan kiracıda kullanıcı girer) |
-| G2 | (2026-10-26) **İlk dilim rezervasyonsuz** (c): çıkış yalnız `available` stoktan. Hedef (a): INVENTORY'ye `MovementRequest.reservationId` + aynı işlemde tüketim — MOD-0173 değişikliği, DL-6 ile ayrı iş; (b) (önce release) yarış açtığı için seçilmedi |
-| G3 | (2026-10-26) **(a):** MOD-0183 REVERSAL'ı `sourceModule = MOD-0173`, `sourceType = REVERSAL`, `sourceDocumentId` = orijinal hareketle gönderir; izlenebilirlik `documentGroupId = shipmentId`. Inventory ve sözleşme değişmez |
-| G4 | (2026-10-26) **(a):** satır başına deterministik anahtar `{shipmentId}:{lineNumber}:dispatch:v1`; iç durum `DispatchPending` (wire'da yok) → bütün satırlar 201/200 → `Dispatched`; bir satır reddedilirse yazılan satırlar REVERSAL (G3) ile geri alınır ve sevkiyat `Planned`'a döner; çökmeden sonra aynı anahtarlarla devam. Toplu uç (b) sonra |
 
-G2–G4 kararını Natig (K1, yönetim) verdi; MVP-1 CT'ye **bilgi** verilir (Inventory kuralları değişmiyor). Açık karar kalmadı;
-sıradaki adım §8 yamalarının G2–G4 ile güncellenmesi, sonra CT-APR-02 → CT-APR-01.
+Açık: **G2, G3, G4** (MVP-1 CT). DL-2 (çıkış çekirdeği) ve DL-6 (rezervasyon) bunlara bağlı.
+
+## 3b. MVP-1 Control Tower cevapları (2026-10-23, Natig iletti; kod ve sözleşme ölçümüne dayalı)
+
+| # | Cevap |
+|---|---|
+| G2 | INVENTORY değişikliği **gerekmiyor**: hareketin (`sourceModule`, `sourceDocumentId`, `sourceLineId`) üçlüsü aktif bir rezervasyonla aynıysa aynı işlemde tüketilir (`ReservationPositionOperations.cs:215-232`, ASSUMPTION-0173-15). `MovementRequest.reservationId` yalnız MVP-5 (MOD-0178) rezervasyonu için; MOD-0173 sahibi W-5 ile, MVP-5 S2'den önce ekler. "Önce release, sonra issue" önerilmiyor. |
+| G3 | **Onay.** REVERSAL `sourceModule=MOD-0173`, `sourceType=REVERSAL`, `sourceDocumentId`=orijinal `transactionId`, `documentGroupId`=`shipmentId`, anahtar `{shipmentId}:{lineNumber}:reversal:v1`. Geri alınan çıkışın tükettiği rezervasyon geri gelmez; stok AVAILABLE döner. |
+| G4 | İlk dilim için satır başına anahtar + REVERSAL telafisi **onay**; toplu/atomik uç gerekirse MOD-0173 FU'su. Dört koşul: (1) `transactionDate`/`postingDate` ilk denemede saklanıp her denemede aynen gönderilir (`RequestFingerprint.cs:42-43`); (2) yeniden denemede önce anahtarın işlenip işlenmediğine bakılır, `IDEMPOTENCY_KEY_REUSED` ret değil bütünlük hatası; (3) çökme sonrası devam kullanıcı eylemiyle (arka planda token yok), arka plan iş yalnız durum kontrolü; (4) telafi REVERSAL'ı da başarısızsa sevkiyat görünür hata durumunda kalır, sessizce Planned'a dönmez. |
+| Olay | `Dispatched` olayının biçimi değişmeden bütün satırlar yazıldıktan sonra yayımlanması uygun (MVP-5 outbound'u buna göre Shipped yapar). |
+| Bilgi 2 | MVP-1, CentralAudit outbox yarışı için ortak kodda FU açıyor; SupplyChain'deki ön-yaratma o gelene kadar uygun. |
+
+**Ek notlar (MVP-1 CT, 2026-10-23, kodda doğrulandı):** (1) rezervasyon eşleşmesi aynı SKU içinde birebir metin
+karşılaştırması; boş `sourceDocumentId` hiç eşleşmez; yalnız AVAILABLE'ı azaltan hareket tüketir. (2) süresi dolan
+rezervasyonlar tüketimden hemen önce aynı işlemde kapatılır (`InventoryLedgerRepository.cs:291-293`); sevkiyat rezervasyonunda
+`expiresAt` gönderilmez. (3) G4/1 REVERSAL için de geçerli: geri almanın tarihleri de saklanıp aynen gönderilir; aynı orijinale
+farklı anahtarla ikinci geri alma 422 `ALREADY_REVERSED`. (4) "Önce anahtara bak" = aynı isteği aynı anahtar ve tarihlerle
+yeniden göndermek; işlenmiş istek `idempotentReplay: true` döner (ret değil); reddedilmiş istek saklanmaz, yeniden gönderilince
+kurallar baştan çalışır.
+
+Pakete işlenişi: MOD-0183 §23.4 (karar), §23.1 anahtar, §23.5 S23-8…S23-12, teslim dilimleri DL-1 (3.4.0 + çekirdek) ve
+DL-2 (metinler); ürün doğrulaması ve MVP-5 rezervasyonu dilim değil. Koşul (4) için dondurulmuş yaşam döngüsünde
+`Planned → Exception` oku olmadığından görünür durum `ShipmentDetail.dispatchState` (3.4.0, ekleme) ve 409
+`DISPATCH_COMPENSATION_FAILED` ile verilir (CT önerisi). MOD-0186 §34: lot ve kalem, MOD-0183'ün satır başına sakladığı çıkış
+`transactionId`/`lotId`'den okunur; DL-1, MOD-0183 DL-1'den sonra.
+
+## 3c. MVP-1 CT CT-APR-02 incelemesi ve düzeltilmiş kural (2026-10-23, Natig iletti 2026-10-26)
+
+Sonuç: MOD-0183 **UYGUN DEĞİL** (1 ENGEL, 6 ORTA, 4 DÜŞÜK), MOD-0186 **KOŞULLU** (0 ENGEL, 4 ORTA, 2 DÜŞÜK); inceleme
+`d0366fa73`'te, paket özetleri `c0111bcb8`'de aynı. Bulgu dosyaları: `docs/records/reviews/MOD-0183/2026-10-23-febf6e35.md`,
+`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md` (commit `6c5cec410`, 2026-10-26). r3 (2026-10-26) bulgu dosyalarına göre kalan noktaları kapattı: MOD-0183 F-3 (REVERSAL alanları INVENTORY koduna göre: `lotId`/`serialIds`/`from*`/`to*` gönderilmez, 400 bütünlük hatası), F-4 (çıkışın izin/ekran/denetim), F-5 (403 kodu ayrı), F-6 (§5 DL-1 istisnası), F-7 (dilim tablosu başlık adlarıyla, `slices()` → DL-1, DL-2), F-8, F-9, F-10, F-11; MOD-0186 F-2 (§25 dosya listesi), F-3 (iki dilim), F-6.
+
+- **ENGEL (G3/G4 cevabından):** sabit anahtar telafiden sonra yeniden sevkte geri alınmış eski hareketi `idempotentReplay`
+  ile döndürür. **Düzeltilmiş kural (MVP-1 CT):** saklı deneme numarası `n`; anahtarlar `…:dispatch:a{n}` /
+  `…:reversal:a{n}`; `n` yalnız telafisi tamamlanmış deneme kapanınca artar; tarihler deneme başına saklanır. G3/G4'ün
+  diğer koşulları geçerli.
+- F-2 tek aktif deneme; F-3/F-4 REVERSAL gövdesi ve başarısız telafiden çıkış; F-5 / MOD-0186 F-4 `X-Legal-Entity-Id`
+  sevkiyatın / iadenin doğrulanmış LE'si, INVENTORY 403 → 403 (503 değil); F-10 `inventoryReferenceId` v1'de kullanılmaz.
+- MOD-0186: ilk denemede istek, tarih ve hedef lokasyon saklanır; kısmi başarı sonrası tamamlanan satırlar değişmez; seri
+  takipli iade v1'de yok; `issueTransactionId` önerisi F-5 ile uyumlu.
+- Ortak kabul senaryosu: kısmi sevk → telafi → yeniden sevk → kısmi iade → tekrar (MOD-0183 S23-16, MOD-0186 R34-8).
+
+İşlendiği yer: MOD-0183 §23 r2, MOD-0186 §34 r2, `SHIPMENT-BUNDLE-3.4.0.patch` + PROPOSAL §3b (2026-10-26). §8'deki
+`MOD-0183-section-23.patch` / `MOD-0186-section-34.patch` tarihseldir; güncel metin paketlerdedir.
+
+## 3d. Natig kararları (2026-10-26, soru kutusu) ve r4
+
+- r4 **şimdi** yazılır; girdisi bağımsız r3 incelemesi (oturum `local_e3703e4c`, `docs/records/reviews/MOD-018{3,6}/2026-10-26-{2acd1866,ec08008e}.md`)
+  ve `R4-PENDING-POINTS.md`'deki on nokta. MVP-1 CT r3'ü değil, **yalnız r4'ü** inceler (Inventory'ye dokunduğu için,
+  XMC-001).
+- DL-1 öncesi sevk edilmiş sevkiyatların iadeleri **eski yolla** alınır: INVENTORY çağrısı yok, `NotPosted`, sebep `PRE_WP_P1`,
+  denetim kaydında ve yanıtta işaretli (MOD-0186 §34.2).
+- MOD-0147/0148 CT-APR-01 satırları **Beste'de kalır**; DC-03 bağlaması **Beste'de kalır**.
 
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
@@ -145,3 +193,22 @@ inceleme** (MVP-1 CT; yazandan ayrı oturum) → **CT-APR-01** satırı: risk **
 | `MOD-0183-section-23.patch` | G1, G5, G7, G9, G10 + DL tablosu; DL-2 / DL-6 "G2–G4 bekliyor" olarak işaretli | G2–G4, sonra CT-APR-02 → CT-APR-01 |
 
 Yamalar `git apply --check` ile denendi; paket dosyaları bu dalda **değiştirilmedi** (tek paket yazıcısı kuralı).
+
+## 9. WP-B4 ölçümü ve DL-1 yaması (2026-10-22, `origin/main` `91a1d6031`)
+
+**WP-B4 — Inventory okuma istemcisi.** `IInventoryReadClient` / `InventoryReadClient` yalnız tanım olarak var
+(`Application/Features/SourceIntake/Contracts/SourceClients.cs:51`, `Infrastructure/SourceIntake/ReadOnlySourceClients.cs:22`);
+**hiçbir üretim kodu onu kullanmıyor** ve kararlaştırılmış hiçbir kural (G1–G10) bir Inventory okumasına ihtiyaç duymuyor:
+çıkış ve iade ret kararını Inventory'nin kendisi veriyor. Öneri: DI'a **kaydedilmez**; bir kural ya da ekran onu isteyince kaydedilir.
+
+**Bulgu (G8'i etkiler).** INVENTORY `getTransactions` yalnız `itemId, lotId, locationId, from, to` ile süzer
+(`inventory-bundle.openapi.yaml:178-190`); `sourceDocumentId` / `documentGroupId` ile arama yok. Bu yüzden iade, orijinal çıkış
+hareketini Inventory'den bulamaz. **DL-2 her satırın `transactionId`'sini (`MovementResponse.transactionId`) ve `lotId`'sini
+sevkiyatta saklamalıdır**; DL-3 bunları sevkiyattan okur. MOD-0183 §23.1'e DL-2 yamasında eklenir.
+
+**DL-1 yaması.** `SHIPMENT-BUNDLE-3.4.0.patch`: `version 3.3.0 → 3.4.0`; `ShipmentLine` + `skuLevel`, `lotId`, `fromLocationId`,
+`fefoBypassReason`; `TransitionReturnCommand` + `toWarehouseId`, `toLocationId`; `Unprocessable` örnekleri `INVENTORY_REFUSED`,
+`SHIPMENT_LINE_STOCK_INCOMPLETE`, `RETURN_SOURCE_MOVEMENT_MISSING`. Yalnız ekleme: kaldırılan tek satır sürüm numarası; YAML
+ayrıştırılıyor; `git apply --check` geçiyor. **Tek başına uygulanmaz:** `ContractErrorCodeParityTests` sözleşmedeki kodlarla
+koddaki `ContractErrorCodes`'u eşit tutar, yeni üç kod DL-2 koduyla aynı değişiklikte gelir. 3.3.0'daki gibi `SHA256SUMS` ve
+uygulama kaydı (`APPLIED.md`) da o değişiklikte güncellenir.

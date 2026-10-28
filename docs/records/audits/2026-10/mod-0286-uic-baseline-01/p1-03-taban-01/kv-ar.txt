@@ -1,0 +1,636 @@
+About	حول
+AccessDenied	تم رفض الوصول.
+AccessDeniedMessage	اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.
+AccessDeniedTitle	ليس لديك حق الوصول إلى {0}
+AccessGovernance	Access Governance
+AccessMatrix	مصفوفة الوصول
+AccountsMenu	الحسابات
+Action	إجراءات
+Activate	تفعيل
+Active	نشط
+Address	العنوان
+Admin	المسؤول
+Apply	تطبيق
+AreYouSure	هل أنت متأكد؟
+Attributes	السمات
+Auth.Dialog.Ok	حسناً
+Auth.Error.AccountDeactivated	قام مسؤول بتعطيل حسابك. يُرجى التواصل مع المسؤول.
+Auth.Error.CurrentPasswordIncorrect	كلمة المرور الحالية غير صحيحة.
+Auth.Error.EmailLoginDisabled	تسجيل الدخول بالبريد الإلكتروني معطّل لهذه المؤسسة.
+Auth.Error.InvalidCredentials	البريد الإلكتروني أو كلمة المرور غير صحيحة، أو أن الحساب مقفل مؤقتًا. يُرجى المحاولة مرة أخرى لاحقًا.
+Auth.Error.InvalidVerificationCode	رمز التحقق غير صالح أو منتهي الصلاحية.
+Auth.Error.LinkInvalid	لم يعد هذا الرابط صالحًا. اطلب رابطًا جديدًا من المسؤول.
+Auth.Error.LoginFailed	تعذّر تسجيل الدخول. يُرجى المحاولة مرة أخرى.
+Auth.Error.LoginUnavailable	تسجيل الدخول غير متاح مؤقتًا. يُرجى المحاولة مرة أخرى بعد قليل.
+Auth.Error.PasswordChangeFailed	تعذّر تغيير كلمة المرور. يُرجى المحاولة مرة أخرى.
+Auth.Error.PasswordChangedMeanwhile	تم تغيير كلمة المرور الخاصة بك في هذه الأثناء (من قِبل مسؤول مثلًا). يُرجى تسجيل الدخول مرة أخرى.
+Auth.Error.PlatformPrivilegesRequired	لا يملك هذا الحساب دور إدارة المنصة.
+Auth.Error.RequestInvalid	الطلب غير مكتمل. يُرجى التحقق من الحقول والمحاولة مرة أخرى.
+Auth.Error.ServiceUnavailable	خدمة تسجيل الدخول غير متاحة مؤقتًا. يُرجى المحاولة مرة أخرى بعد قليل.
+Auth.Error.SessionEnded	انتهت جلستك. يُرجى تسجيل الدخول مرة أخرى.
+Auth.Error.TemporaryPasswordExpired	انتهت صلاحية كلمة المرور المؤقتة. يُرجى إعادة تعيين كلمة المرور.
+Auth.Error.TenantMissing	لا يحتوي رابط تسجيل الدخول هذا على معلومات المؤسسة. يُرجى استخدام رابط الدعوة مرة أخرى.
+Auth.Error.TooManyRequests	عدد كبير جدًا من الطلبات. يُرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى.
+Auth.Error.VerificationChallengeRequired	انتهت صلاحية خطوة التحقق. يُرجى تسجيل الدخول مرة أخرى.
+Auth.Error.VerificationCodeRequired	يُرجى إدخال رمز التحقق.
+Auth.Error.VerificationFailed	تعذّر إكمال التحقق. يُرجى المحاولة مرة أخرى.
+Auth.Mfa.CodeLabel	رمز التحقق
+Auth.Mfa.Prompt	أدخل رمز التحقق المرسل إلى
+Auth.Mfa.Resend	إعادة إرسال الرمز
+Auth.Mfa.Resending	جارٍ الإرسال...
+Auth.Mfa.ResentMessage	تم إرسال رمز تحقق جديد.
+Auth.Mfa.ResentTitle	تم إرسال الرمز
+Auth.Mfa.Title	التحقق بخطوتين
+Auth.Mfa.Verifying	جارٍ التحقق...
+Back	رجوع
+BackToList	العودة إلى القائمة
+BackToLogin	Back to login
+BasicInfo	المعلومات الأساسية
+BrandsMenu	العلامات التجارية
+BulkDelete	حذف جماعي
+BulkDeleteConfirm	هل أنت متأكد من حذف {0} سجلات محددة؟
+BulkDeleteSuccess	تم حذف {0} سجلات بنجاح
+CalendarAllDay	طوال اليوم
+CalendarDay	يوم
+CalendarMonth	شهر
+CalendarMore	+{0} أخرى
+CalendarNext	التالي
+CalendarNoEvents	لا يوجد ما يُعرض
+CalendarPrevious	السابق
+CalendarToday	اليوم
+CalendarUnresolved	لم يتم تعريف تقويم العمل — لا يمكن عرض عطلات نهاية الأسبوع والعطلات الرسمية.
+CalendarWeek	أسبوع
+CampaignsMenu	الحملات
+Cancel	إلغاء
+CategoryManagement	إدارة الفئات
+ChangePassword.Subtitle	You must change your temporary password before continuing.
+ChangePassword.Title	Change Password
+ClearSelection	مسح التحديد
+Close	إغلاق
+CollapseAll	طي الكل
+ColumnOrder	ترتيب الأعمدة
+ColumnVisibility	رؤية الأعمدة
+ComingSoon	ستتم إضافة هذه الميزة قريبًا.
+CommercialSuite	الحزمة التجارية
+CompositionManagement	إدارة التركيبات
+ConfirmAction	هل أنت متأكد من المتابعة؟
+ConfirmPassword	Confirm Password
+ConsentPreferencesMenu	الموافقة والتفضيلات
+ContactPerson	جهة الاتصال
+ContactsMenu	جهات الاتصال
+ContentEngagementJourneysMenu	رحلات التفاعل مع المحتوى
+ContractEditDraftOnly	يمكن تحديث عقود المسودة فقط؛ تُدار العقود المفعّلة عبر إجراءات دورة الحياة وليس بالتعديل.
+ControlledCopy.CreatedAt	تاريخ الإنشاء
+ControlledCopy.CreatedBy	أنشأه
+ControlledCopy.Filters	عوامل التصفية
+ControlledCopy.None	لا يوجد
+ControlledCopy.Page	صفحة {0} من {1}
+ControlledCopy.Report	تقرير
+ControlledCopy.Rows	عدد الصفوف
+ControlledCopy.Search	البحث
+ControlledCopy.Sort	الترتيب
+ControlledCopy.SortAsc	تصاعدي
+ControlledCopy.SortDesc	تنازلي
+ControlledCopy.Tenant	الشركة
+ControlledCopy.Uncontrolled	هذه النسخة المطبوعة نسخة غير خاضعة للرقابة — {0}
+ControlledDocuments	المستندات المُدارة
+Copied	تم النسخ
+Copy	نسخ
+CurrentPassword	Current Password
+CycleCapacitiesMenu	سعة الدورة
+CyclePeriodsMenu	فترات الدورات
+Dark	داكن
+DateNotRecognized	تعذّرت قراءة تاريخ كتبته، لذلك لم يُحفظ. اكتبه مرة أخرى بتنسيق الحقل أو اختره من التقويم.
+Deactivate	إلغاء التفعيل
+DefaultTimeZone	المنطقة الزمنية الافتراضية
+Delete	حذف
+DeleteConfirmationSubText	لا يمكن التراجع عن هذا الإجراء!
+DeleteConfirmationTitle	هل أنت متأكد؟
+DeleteConfirmationYesBtn	نعم، احذف
+Description	الوصف
+DescriptionPlaceholder	أدخل وصفًا...
+Details	التفاصيل
+DeveloperSandbox	بيئة اختبار المطور
+DocumentMasterRegister	سجل الوثائق الرئيسي
+DocumentationStructures	هياكل التوثيق
+DtEmptyTable	لا توجد بيانات متاحة في الجدول
+DtInfo	عرض _START_ إلى _END_ من أصل _TOTAL_ إدخال
+DtInfoEmpty	عرض 0 إلى 0 من أصل 0 إدخال
+DtInfoFiltered	(تمت التصفية من إجمالي _MAX_ إدخال)
+DtLoadFailed	تعذّر تحميل القائمة.
+DtLoadNoPermission	ليس لديك صلاحية لعرض هذه القائمة.
+DtNoRecords	لم يتم العثور على سجلات مطابقة
+DtRetry	إعادة المحاولة
+DtZeroRecords	لم يتم العثور على سجلات مطابقة
+Edit	تعديل
+EditRecord	تعديل السجل
+EmailAddress	عنوان البريد الإلكتروني
+EmployeeDraftsMenu	مسودات الموظفين
+Error	خطأ
+ErrorOccurred	حدث خطأ أثناء معالجة طلبك.
+ExpandAll	توسيع الكل
+Export	تصدير
+ExportTooLarge	عدد الصفوف المراد تصديرها كبير جدًا (أكثر من 50,000). ضيّق عامل التصفية ثم حاول مرة أخرى.
+FailedToLoadData	تعذر تحميل البيانات. يرجى المحاولة لاحقًا.
+FieldRequired	هذا الحقل مطلوب
+Filter	تصفية
+ForgotPassword.SentMessage	If the email exists, reset instructions have been sent.
+ForgotPassword.SentTitle	Check your email
+ForgotPassword.Submit	Send reset link
+ForgotPassword.Subtitle	Enter your email and we will send reset instructions.
+ForgotPassword.Title	Forgot Password?
+GatewayError	حدث خطأ أثناء الاتصال بالخادم.
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.
+HumanCapitalManagement	إدارة رأس المال البشري
+Import	استيراد
+InvalidEmail	عنوان البريد الإلكتروني غير صالح
+InvalidFiscalYear	تنسيق غير صالح (مثال: 01-01)
+InvalidPhone	رقم الهاتف غير صالح
+InvalidUrl	تنسيق URL غير صالح
+InviteAccept	قبول
+InviteAcceptAnyway	القبول على أي حال
+InviteCardType	دعوة إلى اجتماع
+InviteDecline	رفض
+InviteOverlapText	يتداخل مع الفترة المخططة «{0}» ({1}). هل تريد القبول على أي حال؟
+InviteOverlapTitle	هذا الاجتماع يتعارض مع خطتك
+InvoiceUpdateNotSupported	تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.
+ItemMaster	سجل العناصر
+KnowledgeConceptsMenu	Concepts
+KnowledgeMenu	المعرفة
+KnowledgePathsMenu	مسارات المعرفة
+LegalEntities	الكيانات القانونية
+LegalEntity	الكيان القانوني
+LegalEntityNone	لا يوجد كيان قانوني نشط لهذا المستأجر.
+LegalEntityRequired	يجب اختيار كيان قانوني.
+LegalEntityUnavailable	قائمة الكيانات القانونية غير متاحة.
+LevelPrefix	المستوى
+Light	فاتح
+Loading	جارٍ التحميل...
+LogOut	تسجيل الخروج
+Login.Email	البريد الإلكتروني
+Login.EmailOrUsername	البريد الإلكتروني أو اسم المستخدم
+Login.EmailRequired	Email is required.
+Login.Error	البريد الإلكتروني أو كلمة المرور غير صالحة
+Login.ErrorRequired	البريد الإلكتروني وكلمة المرور مطلوبان
+Login.ErrorTitle	خطأ
+Login.ForgotPassword	Forgot Password?
+Login.Loading	جارٍ تسجيل الدخول...
+Login.Password	كلمة المرور
+Login.RememberMe	تذكرني
+Login.Submit	تسجيل الدخول
+Login.Subtitle	يرجى تسجيل الدخول إلى حسابك
+Login.Title	تسجيل الدخول
+MDM	MDM
+MarkAllAsRead	تمييز الكل كمقروء
+MasterData	البيانات الرئيسية
+ModuleCodeInUse	رمز الوحدة هذا مستخدم بالفعل.
+MyProfile	ملفي الشخصي
+Nav.Domain.ADMINISTRATION	الإدارة
+Nav.Domain.DEVENABLEMENT	تمكين المطورين
+Nav.Domain.DOCUMENTMANAGEMENT	إدارة المستندات
+Nav.Domain.HUMANCAPITAL	رأس المال البشري
+Nav.Domain.MANAGEMENTGOVERNANCE	الإدارة والحوكمة
+Nav.Domain.MANUFACTURING	التصنيع
+Nav.Domain.MASTERDATAMANAGEMENT	إدارة البيانات الرئيسية
+Nav.Domain.PLATFORMSHAREDSERVICES	الخدمات المشتركة للمنصة
+Nav.Domain.PORTFOLIODELIVERY	تنفيذ المحافظ
+Nav.Domain.PROCUREMENT	المشتريات
+Nav.Domain.SALES	المبيعات
+Nav.Domain.SUPPLYCHAINEXECUTION	تنفيذ سلسلة الإمداد
+Nav.Domain.TALENTECOSYSTEM	منظومة المواهب
+Nav.Domain.WORKSPACE	مساحة العمل
+Nav.Module.ACCESSGOVERNANCE	حوكمة الوصول
+Nav.Module.ADMINISTRATORS	المسؤولون
+Nav.Module.AUDIT	التدقيق
+Nav.Module.BOMROUTINGS	قوائم المواد والمسارات
+Nav.Module.BRANDPRODUCTMASTER	البيانات الرئيسية للعلامات التجارية والمنتجات
+Nav.Module.CAPACITYPLANNING	تخطيط القدرات
+Nav.Module.CARRIERMANAGEMENT	إدارة شركات النقل
+Nav.Module.CLAIMSMANAGEMENT	إدارة المطالبات
+Nav.Module.CONTRACTS	العقود
+Nav.Module.CRM	إدارة علاقات العملاء
+Nav.Module.DEMANDPLANNING	تخطيط الطلب
+Nav.Module.DOCUMENTMANAGEMENT	إدارة المستندات
+Nav.Module.ESIGN	التوقيع الإلكتروني
+Nav.Module.EXPIRYFEFOMANAGEMENT	انتهاء الصلاحية / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	الاستلام (GRN)
+Nav.Module.HCMEMPLOYEEMASTER	البيانات الرئيسية للموظفين
+Nav.Module.HUMANCAPITAL	رأس المال البشري
+Nav.Module.INTERFACEREGISTRY	سجل الواجهات
+Nav.Module.INVENTORYLEDGER	إدارة المخزون
+Nav.Module.INVOICEMATCH	مطابقة الفواتير
+Nav.Module.LEGALENTITY	كيان قانوني
+Nav.Module.LOOKUPS	قوائم المراجع
+Nav.Module.LOTSERIALTRACKING	تتبع التشغيلات / الأرقام التسلسلية
+Nav.Module.MEETINGS	الاجتماعات
+Nav.Module.MODULECATALOG	كتالوج الوحدات
+Nav.Module.MODULEDOMAINS	مجالات الوحدات
+Nav.Module.MODULESERVICES	خدمات الوحدات
+Nav.Module.NOTIFICATIONS	الإشعارات
+Nav.Module.ORGANIZATION	المؤسسة
+Nav.Module.PERSON	دليل الأشخاص
+Nav.Module.PPM	إدارة المشاريع والمحافظ
+Nav.Module.PROCUREMENTSUPPLIERS	الموردون
+Nav.Module.PRODUCTITEMSKUMASTER	البيانات الرئيسية للمنتج / الصنف / وحدة حفظ المخزون
+Nav.Module.PURCHASEORDERS	أوامر الشراء
+Nav.Module.QUARANTINEBLOCKEDSTOCK	الجودة
+Nav.Module.RECALLREADINESS	الاستعداد للاستدعاء
+Nav.Module.REFERENCEDATA	البيانات المرجعية
+Nav.Module.REQUISITIONS	طلبات الشراء
+Nav.Module.REVERSELOGISTICS	الخدمات اللوجستية العكسية
+Nav.Module.ROUTINGLOADPLANNING	التوجيه وتخطيط الحمولات
+Nav.Module.SHIPMENTTRACKINGPOD	تتبع الشحنات وإثبات التسليم
+Nav.Module.SOPWORKFLOWSIGNOFFS	سير عمل S&amp;OP والاعتمادات
+Nav.Module.SOURCING	التوريد
+Nav.Module.SUBSCRIPTIONFEATURES	ميزات الاشتراك
+Nav.Module.SUBSCRIPTIONPLANS	خطط الاشتراك
+Nav.Module.SUPPLIERS	الموردون
+Nav.Module.TALENTECOSYSTEM	منظومة المواهب
+Nav.Module.TASKS	إعدادات المهام
+Nav.Module.TENANTS	المستأجرون
+Nav.Module.TENANTSETTINGS	إعدادات المستأجر
+Nav.Module.TIMEENTRY	سجل ساعات العمل
+Nav.Module.WORKAGGREGATION	مركز المهام
+Nav.Module.WORKFLOW	سير العمل
+Nav.Module.WORKINGCALENDAR	تقويم العمل
+Nav.Module.WORKINGCALENDARIMPORT	استيراد تقويم العمل
+Nav.Module.WORKREPORT	تقرير العمل
+Nav.Page.ACCESSMATRIX	مصفوفة الوصول إلى المستندات
+Nav.Page.ACCOUNT	الحساب
+Nav.Page.ACCOUNTCONTACT	جهة اتصال الحساب
+Nav.Page.ACCOUNTRELATIONSHIP	علاقة الحساب
+Nav.Page.ACCOUNTS	الحسابات
+Nav.Page.APPLICANTINTAKE	استقبال المتقدمين
+Nav.Page.ASSOCIATIONMEMBERSHIPS	عضويات الجمعيات
+Nav.Page.ASSOCIATIONOPERATIONS	عمليات الجمعيات
+Nav.Page.ATTRIBUTE	السمة
+Nav.Page.BENEFITCOMMITMENTS	التزامات المنافع
+Nav.Page.BLOCKEDSTOCK	المخزون المحظور
+Nav.Page.BOMS	قوائم المواد
+Nav.Page.BRANDS	العلامات التجارية
+Nav.Page.CAMPAIGN	الحملة
+Nav.Page.CAMPAIGNS	الحملات
+Nav.Page.CAMPAIGNSNAPSHOT	لقطة الحملة
+Nav.Page.CAMPAIGNTARGET	هدف الحملة
+Nav.Page.CANDIDATECAREERPASSPORT	جواز المسار المهني للمرشح
+Nav.Page.CANDIDATEDISPUTES	نزاعات المرشحين
+Nav.Page.CANDIDATEPIPELINE	مسار المرشحين
+Nav.Page.CANDIDATEPROFILES	ملفات المرشحين
+Nav.Page.CAPACITYPLANS	خطط القدرات
+Nav.Page.CARRIERS	شركات النقل
+Nav.Page.CLAIMS	الادعاءات
+Nav.Page.COMPENSATIONBENEFITS	التعويضات والمزايا
+Nav.Page.COMPETENCYSKILLS	الكفاءات والمهارات
+Nav.Page.COMPETITORPRODUCTS	منتجات المنافسين
+Nav.Page.CONSENT	الموافقة
+Nav.Page.CONSENTPREFERENCES	الموافقة والتفضيلات
+Nav.Page.CONSENTVISIBILITYPOLICIES	سياسات ظهور الموافقة
+Nav.Page.CONTACT	جهة الاتصال
+Nav.Page.CONTACTS	جهات الاتصال
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	رحلات التفاعل مع المحتوى
+Nav.Page.CONTENTSETS	مجموعات المحتوى
+Nav.Page.CONTRACTS	العقود ومكتبة البنود
+Nav.Page.CONTROLLEDDOCUMENTS	المستندات الخاضعة للرقابة
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	حدود الإمكانات
+Nav.Page.CUSTOMFIELDS	الحقول المخصصة
+Nav.Page.CYCLECAPACITIES	سعة الدورة
+Nav.Page.CYCLECAPACITY	سعة الدورة
+Nav.Page.CYCLEPERIOD	فترة الدورة
+Nav.Page.CYCLEPERIODS	فترات الدورات
+Nav.Page.DATAQUALITY	جودة البيانات
+Nav.Page.DEFINITIONS	تعريفات سير العمل
+Nav.Page.DEMANDPLANNING	تخطيط الطلب
+Nav.Page.DEVELOPMENTPLANS	خطط التطوير
+Nav.Page.DOCUMENTLIST	قائمة المستندات
+Nav.Page.EARLYWARNINGSIGNALS	إشارات الإنذار المبكر
+Nav.Page.ELIGIBILITYPOLICIES	سياسات الأهلية
+Nav.Page.EMPLOYEE	الموظف
+Nav.Page.EMPLOYEEMASTER	البيانات الرئيسية للموظفين
+Nav.Page.EMPLOYEEONBOARDING	تأهيل الموظفين
+Nav.Page.EMPLOYEEPROJECTIONS	توقعات الموظفين
+Nav.Page.EMPLOYMENTCHANGES	تغييرات التوظيف
+Nav.Page.ESIGNAUDITEXPORT	تصدير التدقيق
+Nav.Page.ESIGNMEANINGS	معاني التوقيع
+Nav.Page.ESIGNMYSIGNATURE	توقيعي
+Nav.Page.ESIGNPOLICY	سياسة التوقيع
+Nav.Page.ESIGNREQUESTS	طلبات التوقيع
+Nav.Page.ESIGNSAMPLEAPPROVALS	موافقات نماذج التوقيع
+Nav.Page.ESIGNVERIFICATION	التحقق من التوقيع
+Nav.Page.EXITREFERENCERECORDS	سجلات مراجع المغادرة
+Nav.Page.EXPIREDSTOCK	مخزون منتهي الصلاحية
+Nav.Page.EXPIRYAPPROACHING	قرب انتهاء الصلاحية
+Nav.Page.EXPIRYDASHBOARD	لوحة FEFO
+Nav.Page.EXPIRYEVIDENCE	حزمة الأدلة
+Nav.Page.EXPIRYEXCEPTIONDETAILS	تفاصيل الاستثناء
+Nav.Page.EXPIRYEXCEPTIONS	صندوق الاستثناءات
+Nav.Page.EXPIRYPOLICY	قواعد مدة الصلاحية والإعدادات
+Nav.Page.FEFOORDER	ترتيب FEFO
+Nav.Page.FIELDDEFINITIONS	تعريفات الحقول
+Nav.Page.FINISHEDGOODS	السلع التامة
+Nav.Page.GLOBALPRODUCTS	المنتجات العالمية
+Nav.Page.GRN	الاستلام (GRN)
+Nav.Page.GSKUS	GSKU
+Nav.Page.HEADCOUNTBUDGET	موازنة القوى العاملة
+Nav.Page.HIERARCHY	التسلسل الهرمي
+Nav.Page.HIRINGRISKINDICATORS	مؤشرات مخاطر التوظيف
+Nav.Page.HRCASEMANAGEMENT	إدارة حالات الموارد البشرية
+Nav.Page.HRCOMPLIANCE	امتثال الموارد البشرية
+Nav.Page.HRDOCUMENTATION	توثيق الموارد البشرية
+Nav.Page.HRKPIANALYTICS	تحليلات مؤشرات أداء الموارد البشرية
+Nav.Page.INBOX	صندوق الوارد
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	شبكة المعرفة القطاعية
+Nav.Page.INDUSTRYSKILLPASSPORT	جواز المهارات القطاعية
+Nav.Page.INDUSTRYSUCCESSIONPOOL	مجمع التعاقب القطاعي
+Nav.Page.INDUSTRYTALENTPOOL	مجمع المواهب القطاعي
+Nav.Page.INITIATIVES	المبادرات
+Nav.Page.INSTANCES	نسخ المستندات
+Nav.Page.INVESTMENTCASES	حالات الاستثمار
+Nav.Page.INVOICEMATCH	التقاط الفواتير والمطابقة الثلاثية
+Nav.Page.ITEMS	الأصناف
+Nav.Page.KNOWLEDGE	المعرفة
+Nav.Page.KNOWLEDGECONCEPT	مفهوم المعرفة
+Nav.Page.KNOWLEDGECONCEPTS	Concepts
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	رحلة التفاعل مع المحتوى
+Nav.Page.KNOWLEDGEPATH	مسار المعرفة
+Nav.Page.KNOWLEDGEPATHS	مسارات المعرفة
+Nav.Page.KNOWLEDGESUBJECT	موضوع المعرفة
+Nav.Page.LEARNINGTRAINING	التعلم والتدريب
+Nav.Page.LEGALENTITIES	الكيانات القانونية
+Nav.Page.LEGALPROFILES	الملفات القانونية
+Nav.Page.LOADS	الحمولات
+Nav.Page.LOCATIONTREE	المواقع
+Nav.Page.LOTMIGRATION	ترحيل التشغيلات المُدخلة يدويًا
+Nav.Page.LOTS	مستكشف التشغيلات
+Nav.Page.LOTTRACE	التتبع
+Nav.Page.LSKUS	وحدات SKU المحلية
+Nav.Page.MASTERREGISTER	سجل الوثائق الرئيسي
+Nav.Page.MEETINGREPORT	تقرير الاجتماعات
+Nav.Page.MEETINGS	الاجتماعات
+Nav.Page.MEETINGSERIES	سلاسل الاجتماعات
+Nav.Page.MEETINGTYPES	أنواع الاجتماعات
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	شبكة توصيات الإرشاد
+Nav.Page.MENUSETTINGS	إعدادات القائمة
+Nav.Page.MODEL	النموذج
+Nav.Page.MYTIMESHEET	سجل ساعاتي
+Nav.Page.NODE	العقدة
+Nav.Page.OBJECTIONRESPONSES	مكتبة الاعتراضات
+Nav.Page.OFFBOARDINGCASES	حالات إنهاء الخدمة
+Nav.Page.OFFERMANAGEMENT	إدارة العروض
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	تعريفات الحقول
+Nav.Page.ORGANIZATIONUNITS	الوحدات التنظيمية
+Nav.Page.OVERRIDE	تجاوز
+Nav.Page.OVERVIEW	نظرة عامة
+Nav.Page.PAYBENCHMARKING	المقارنة المرجعية للأجور
+Nav.Page.PERFORMANCEREVIEWS	تقييمات الأداء
+Nav.Page.PLANNEDVISIT	الزيارة المخططة
+Nav.Page.PLANNEDVISITS	الزيارات المخططة
+Nav.Page.PORTFOLIOS	المحافظ
+Nav.Page.POSITIONASSIGNMENTS	تعيينات المناصب
+Nav.Page.POSITIONS	المناصب
+Nav.Page.PREFERENCE	التفضيل
+Nav.Page.PRODUCTABBREVIATIONS	اختصارات المنتج
+Nav.Page.PRODUCTS	المنتجات
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	سجل السمعة المهنية
+Nav.Page.PROGRAMS	البرامج
+Nav.Page.PROJECTS	المشاريع
+Nav.Page.PURCHASEORDERS	أوامر الشراء
+Nav.Page.QMSBASELINES	خطوط أساس نظام إدارة الجودة
+Nav.Page.QUARANTINEQUEUE	قائمة انتظار الحجر
+Nav.Page.QUARANTINESETTINGS	إعدادات الحجر
+Nav.Page.RDSETS	مجموعات البيانات المرجعية
+Nav.Page.RECALLCASEDETAILS	حالة الاستدعاء
+Nav.Page.RECALLCASES	حالات الاستدعاء
+Nav.Page.RECALLDASHBOARD	جاهزية الاستدعاء
+Nav.Page.RECALLDRILLS	مخطط تمارين الاستدعاء
+Nav.Page.RECALLEVIDENCE	حزمة أدلة الاستدعاء
+Nav.Page.RECALLSETTINGS	إعدادات الاستدعاء
+Nav.Page.RECALLTRACE	تتبّع الاستدعاء
+Nav.Page.RECORDS	السجلات
+Nav.Page.RECURRENCERULES	قواعد التكرار
+Nav.Page.REFERENCEEXCHANGE	تبادل المراجع
+Nav.Page.REHIRERECOMMENDATIONS	توصيات إعادة التوظيف
+Nav.Page.REPORTINGLINE	خط التقارير
+Nav.Page.REPORTS	التقارير
+Nav.Page.REPOSITORYASSESSMENT	تقييمات المستودعات
+Nav.Page.REQUISITIONS	طلبات الشراء
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	سجل النزاهة المقيد
+Nav.Page.RETESTQUEUE	قائمة إعادة الاختبار
+Nav.Page.RETURNS	المرتجعات
+Nav.Page.REVIEWBOARD	لجنة المراجعة
+Nav.Page.ROLEPERMISSIONS	أذونات الأدوار
+Nav.Page.ROLES	الأدوار
+Nav.Page.SAFETYTEXTS	نصوص السلامة
+Nav.Page.SANDOPPLANS	خطط S&amp;OP
+Nav.Page.SECTORMOBILITYINTELLIGENCE	معلومات التنقل القطاعي
+Nav.Page.SECTORTALENTTRENDS	اتجاهات المواهب القطاعية
+Nav.Page.SECURITYSETTINGS	إعدادات الأمان
+Nav.Page.SEGMENT	الشريحة
+Nav.Page.SEGMENTS	الشرائح
+Nav.Page.SELFSERVICE	الخدمة الذاتية
+Nav.Page.SENSITIVEACCESS	الوصول الحساس
+Nav.Page.SERIALS	مستكشف الأرقام التسلسلية
+Nav.Page.SHIPMENTCLAIMS	مطالبات الشحن
+Nav.Page.SHIPMENTS	الشحنات
+Nav.Page.SKILLSGAPHEATMAP	خريطة حرارية لفجوة المهارات
+Nav.Page.SOURCING	التوريد
+Nav.Page.STOCKLEDGER	دفتر المخزون
+Nav.Page.STRATEGYTEMPLATE	قالب الاستراتيجية
+Nav.Page.STRATEGYTEMPLATES	قوالب الاستراتيجية
+Nav.Page.SUCCESSION	التعاقب الوظيفي
+Nav.Page.SUPPLIERS	الموردون
+Nav.Page.TALENTDATAFOUNDATION	أساس بيانات المواهب
+Nav.Page.TALENTDEVELOPMENTNETWORK	شبكة تطوير المواهب
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	التنبؤ بعرض وطلب المواهب
+Nav.Page.TASKCHECKLISTTEMPLATES	قوالب قوائم التحقق
+Nav.Page.TASKCREATE	مهمة جديدة
+Nav.Page.TASKDETAIL	تفاصيل المهمة
+Nav.Page.TASKDOCUMENTLIST	الوثائق الخاضعة للرقابة
+Nav.Page.TASKEDIT	تحرير المهمة
+Nav.Page.TASKFIELDDEFINITIONS	تعريفات الحقول
+Nav.Page.TASKRECURRENCERULES	قواعد المهام المتكررة
+Nav.Page.TASKS	المهام
+Nav.Page.TASKTEMPLATES	قوالب المهام
+Nav.Page.TASKTYPES	أنواع المهام
+Nav.Page.TASKWORKREPORT	تقرير العمل
+Nav.Page.TEMPLATEMASTERS	القوالب الرئيسية للشركة
+Nav.Page.TEMPLATEVARIANTS	متغيرات القوالب
+Nav.Page.TENANTNAVIGATION	إعدادات القائمة
+Nav.Page.TENANTSECURITY	إعدادات الأمان
+Nav.Page.TERRITORY	المنطقة
+Nav.Page.TERRITORYMANAGEMENT	إدارة المناطق
+Nav.Page.TERRITORYMODEL	نموذج المنطقة
+Nav.Page.TERRITORYNODE	عقدة المنطقة
+Nav.Page.TIMEAPPROVALS	اعتماد سجلات الساعات
+Nav.Page.TIMEATTENDANCELEAVE	الوقت والحضور والإجازات
+Nav.Page.TIMECATEGORIES	فئات العمل
+Nav.Page.TIMESETTINGS	إعدادات تسجيل الوقت
+Nav.Page.TRUSTLEVELS	مستويات الثقة
+Nav.Page.USERROLES	أدوار المستخدمين
+Nav.Page.USERS	المستخدمون
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	سجل الشهادات الموثقة
+Nav.Page.VERIFIEDPARTICIPANTS	المشاركون الموثقون
+Nav.Page.VISITEVIDENCESETTINGS	إثبات الزيارة
+Nav.Page.VISITEXECUTION	تنفيذ الزيارات
+Nav.Page.VISITFREQUENCYPOLICIES	سياسات تكرار الزيارة
+Nav.Page.VISITPLANNING	تخطيط الزيارات
+Nav.Page.VISITWORKSPACE	مساحة عمل الزيارات
+Nav.Page.WORKCENTER	مركز المهام
+Nav.Page.WORKFORCEANALYTICS	تحليلات القوى العاملة
+Nav.Page.WORKFORCEPLANNING	تخطيط القوى العاملة
+Nav.Page.WORKINGCALENDARIMPORTS	استيرادات تقويم العمل
+Nav.Page.WORKINGCALENDAROVERRIDES	استثناءات تقويم العمل
+Nav.Page.WORKINGCALENDARS	تقويم العمل
+NavigationLoadFailed	تعذّر تحميل القائمة
+NavigationLoadFailedHint	حدّث الصفحة للمحاولة مرة أخرى.
+NewNotifications	{0} جديد
+NewPassword	New Password
+NoNotifications	لا توجد إشعارات
+NoRecords	لا توجد سجلات
+NoRecordsFound	لا توجد سجلات فرعية حتى الآن.
+NotAvailable	غير متاح
+Notification	إشعار
+NumericOnly	يسمح بالأرقام فقط
+Organization	المؤسسة
+OrganizationUnits	الوحدات التنظيمية
+Overview	نظرة عامة
+PDF	PDF
+Passive	غير نشط
+Password.Error.CurrentRequired	كلمة المرور الحالية مطلوبة.
+Password.Error.NeedsSpecial	يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل.
+Password.Error.NeedsUppercase	يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل.
+Password.Error.NewRequired	كلمة المرور الجديدة مطلوبة.
+Password.Error.Required	كلمة المرور مطلوبة.
+Password.Error.ResetEmailRequired	البريد الإلكتروني مطلوب.
+Password.Error.ResetTokenRequired	رمز إعادة التعيين مطلوب.
+Password.Error.TooLong	لا يمكن أن تتجاوز كلمة المرور {0} حرفًا.
+Password.Error.TooShort	يجب أن تتكون كلمة المرور من {0} أحرف على الأقل.
+Perm.Entity.APPROVALS	الموافقات
+Perm.Entity.CATEGORIES	الفئات
+Perm.Entity.CHECKLISTTEMPLATES	قوالب قوائم التحقق
+Perm.Entity.CONTENTSCOPE	نطاق المحتوى
+Perm.Entity.CONTENTSET	مجموعة المحتوى
+Perm.Entity.ELIGIBILITY	الأهلية
+Perm.Entity.SETTINGS	الإعدادات
+Perm.Entity.TEMPLATES	القوالب
+Perm.Entity.TIMESHEETS	سجلات الساعات
+Perm.Entity.VISITFREQUENCYPOLICY	سياسة تكرار الزيارات
+Perm.Entity.WEEKS	الأسابيع
+Perm.Module.CRMACCOUNT	حسابات العملاء في CRM
+Perm.Module.CRMCONTACT	جهات الاتصال في CRM
+Perm.Module.CRMCONTENTCOMPOSITION	تركيب المحتوى في CRM
+Perm.Module.CRMDOCTORINSIGHTS	رؤى الأطباء في CRM
+Perm.Module.CRMKNOWLEDGE	المعرفة في CRM
+Perm.Module.CRMPLANNEDVISIT	الزيارات المخططة في CRM
+Perm.Module.CRMTERRITORY	مناطق CRM
+Perm.Module.CRMVISITPLAN	تخطيط الزيارات في CRM
+Perm.Module.CRMVISITREPORT	تقارير الزيارات في CRM
+Perm.Module.MOD0251	سجل الموظفين (الموارد البشرية الأساسية)
+Perm.Module.TASKS	المهام
+PermissionsMenu	Permissions
+PhoneNumber	رقم الهاتف
+PlannedVisitsMenu	الزيارات المخططة
+Platform	المنصة
+PlatformAdministration	إدارة المنصة
+PositionAssignments	تعيينات المناصب
+Positions	المناصب
+PrimaryCurrency	العملة الرئيسية
+Print	طباعة
+ProductMaster	سجل المنتجات
+ProductsMenu	المنتجات
+PurchaseOrderUpdateNotSupported	تعديل أمر الشراء غير مدعوم؛ أنشئ أمر شراء جديدًا أو اعتمد هذا الأمر.
+QmsBaselines	خطوط أساس QMS
+Reconciliation	التسوية
+RecordActivated	تم تفعيل السجل.
+RecordCreated	تم إنشاء السجل بنجاح.
+RecordDeleted	تم حذف السجل بنجاح.
+RecordSaved	تم حفظ التغييرات بنجاح.
+RecordUpdated	تم تحديث السجل بنجاح.
+ReferenceDataMenu	البيانات المرجعية
+RepositoryAssessments	تقييمات المستودعات
+RequiredProgress	مطلوب: {{0}} / {{1}}
+RequiredStatus	مطلوب: {0} / {1}
+RequisitionUpdateNotSupported	تعديل الطلب غير مدعوم؛ أنشئ طلبًا جديدًا أو أرسل هذا الطلب للموافقة.
+Reset	إعادة تعيين
+ResetPassword.Mismatch	Passwords do not match.
+ResetPassword.Required	All password fields are required.
+ResetPassword.Subtitle	Your new password must be different from previously used passwords.
+ResetPassword.SuccessMessage	Your password has been updated.
+ResetPassword.SuccessTitle	Password updated
+ResetPassword.Title	Reset Password
+RfxUpdateNotSupported	تعديل RFx غير مدعوم؛ أنشئ RFx جديدًا أو أدِرْه عبر النشر والعرض والترسية.
+RoleName_Admin	مسؤول
+RoleName_ReadOnly	للقراءة فقط
+RoleName_SuperAdmin	مسؤول عام
+RoleName_Viewer	مشاهد
+RolePermissionAssignmentMenu	Role Permissions
+RolesMenu	Roles
+SKUManagement	إدارة SKU
+Sandbox	بيئة الاختبار
+Save	حفظ
+SaveView	حفظ العرض
+SavedNotActivated	تم الحفظ، لكن تعذّر التفعيل.
+Saving	جارٍ الحفظ...
+Search	بحث..
+SearchFilter	البحث والتصفية
+Sector	القطاع
+SegmentsMenu	الشرائح
+SelectPlaceholder	اختر...
+SelectedCount	سجلات محددة
+SelfAccessMenu	My Access
+SetNewPassword	Set new password
+Settings	الإعدادات
+ShellSearchPlaceholder	بحث ({0})
+Shortcuts.Close	إغلاق
+Shortcuts.DialogTitle	اختصارات لوحة المفاتيح
+Shortcuts.Key.Space	مسافة
+Shortcuts.Scope.Global	في كل مكان
+Shortcuts.Scope.TaskDetails	تفاصيل المهمة
+Shortcuts.Scope.WorkCenter	مركز المهام
+Shortcuts.ShowList	عرض هذه القائمة
+Shortcuts.SilenceNote	لا تعمل الاختصارات أثناء الكتابة في حقل أو عند فتح مربع حوار أو لوحة جانبية.
+Shortcuts.Task.Back	العودة إلى قائمة المهام
+Shortcuts.Task.Edit	تعديل المهمة
+Shortcuts.Wcn.Accept	قبول العنصر المحدد أو الموافقة عليه
+Shortcuts.Wcn.ClearSelection	مسح التحديد
+Shortcuts.Wcn.Next	تحديد العنصر التالي
+Shortcuts.Wcn.Open	فتح العنصر المحدد
+Shortcuts.Wcn.OpenFocused	فتح الصف الذي عليه التركيز
+Shortcuts.Wcn.Previous	تحديد العنصر السابق
+Shortcuts.Wcn.Reject	رفض العنصر المحدد أو إرجاعه
+Shortcuts.Wcn.Tabs	التنقل بين علامات التبويب (عند التركيز على علامة تبويب)
+ShowAll	عرض الكل
+Status	الحالة
+StrategyTemplatesMenu	قوالب الاستراتيجية
+SubRecords	السجلات الفرعية
+SubscriptionPlans	خطط الاشتراك
+Success	نجاح
+SystemTheme	النظام
+TagsCount	{0} وسم
+TagsPlaceholder	اكتب وسمًا ثم اضغط Enter
+TagsRemove	إزالة {0}
+TaxNumber	الرقم الضريبي
+TemplateMasters	قوالب الشركة الرئيسية
+TemplateVariants	متغيرات القالب
+TerritoryManagementMenu	إدارة المناطق
+Title	العنوان
+ToggleTheme	تبديل المظهر
+Unauthorized	غير مصرّح
+Unknown	غير معروف
+Update	تحديث
+User	مستخدم
+UserRoleAssignmentMenu	User Roles
+UsersMenu	Users
+ValidationErrors	الأخطاء: {0}
+ValidationFailed	يرجى ملء الحقول المطلوبة.
+VariantManagement	إدارة المتغيرات
+Variants	المتغيرات
+ViewAllNotifications	عرض كل الإشعارات
+ViewDetails	عرض التفاصيل
+Website	الموقع الإلكتروني
+WorkCenterNextMenu	مركز العمل (الجديد)
+WorkflowApprovalsMenu	اعتمادات سير العمل
+Workspace	مساحة العمل

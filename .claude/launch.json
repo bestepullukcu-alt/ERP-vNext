@@ -24,9 +24,9 @@
         "frontend/Diten.Web/Diten.Web.csproj",
         "--no-build",
         "--urls",
-        "http://localhost:5011"
+        "http://localhost:5002"
       ],
-      "port": 5011
+      "port": 5002
     },
     {
       "name": "gateway",

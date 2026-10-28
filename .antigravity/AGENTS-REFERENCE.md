@@ -224,3 +224,12 @@ sessizce görünmez oldu — dosyalar duruyordu, kimse okumuyordu.
 
 Bu dosya o boşluğu kapatır. Tek işi seni `AGENTS.md`'ye götürmek; büyümeye başlarsa
 amacını kaybeder.
+
+## AGENTS.md'den taşınan ölçüm notları (2026-10-26, boyut bütçesi)
+
+AGENTS.md uyarı eşiğini (22000 bayt) aşınca kural olmayan tarihli ölçüm notları buraya taşındı; kurallar değişmedi.
+
+- §6 Yerelleştirme satırı: ölçüldü 2026-09-07 — `Views/Platform/*` 2 dil dosyası, `Views/Organization/*` 7 dil dosyası taşır.
+- §6.1 kural sayısı: `.antigravity/rules/` altındaki 46 kural dosyası 2026-10-17'de `git ls-tree` ile sayıldı (sayı AGENTS.md'den kaldırıldı; güncel sayı için `git ls-tree` koşulur).
+- §6.1 yükleme: 2026-10-17 denetiminde yalnız `agents-core.md`'nin Claude Code'da yüklenmesi ölçüldü; Codex ve Antigravity'nin
+  haritayı bu dosyayla birlikte yüklemesi canlı ölçülmedi.

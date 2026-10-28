@@ -5,8 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     <ProjectReference Include="..\Diten.PvgService.Application\Diten.PvgService.Application.csproj" />
     <ProjectReference Include="..\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj" />
     <ProjectReference Include="..\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
   </ItemGroup>
 </Project>

@@ -90,7 +90,7 @@ Paket, kod, servis ve dal yok; WAREHOUSE-OUTBOUND 1.0.0 (sahibi MOD-0178) **donm
 |---|---|---|
 | W-1 | Yap mı / satın al mı (Blueprint "Buy/Partner" diyor, diğer belgeler "yap") | **karar: yap** |
 | W-2 | Servis yeri: `Diten.SupplyChainService` mi, yeni servis mi (port §3'ten) | domain-config SupplyChain diyor; yeni servis ise EA kararı |
-| W-3 | MOD-0179 dahil mi | ertelensin |
+| W-3 | MOD-0179 dahil mi | **karar: planda, ertelenmiş** (§4.1) |
 | W-4 | `GOODS_ISSUE_SALES`'i kim kaydeder: 0178 (toplama / paketleme) mı, 0183 (sevkiyat) mı | **karar: 0183, `Dispatched`'ta** |
 | W-5 | Lot / lokasyon rezervasyonu (INVENTORY eklemeli) | MVP-1 CT yapar (MOD-0173 sahibi), MVP-5 S2'den önce |
 | W-6 | WAREHOUSE-OUTBOUND'a `Item` seviyesi | sahip kararı |
@@ -108,11 +108,14 @@ Paket, kod, servis ve dal yok; WAREHOUSE-OUTBOUND 1.0.0 (sahibi MOD-0178) **donm
   sözleşmeler bunu varsayıyor (INVENTORY 1.4.0 "MVP-6 shipment issues", FEFO taslağı `sourceModule: MOD-0183`, WAREHOUSE-OUTBOUND
   "Shipped = terminal, MVP-6 yazmaz").
 - **W-10: MVP-5 Control Tower'ı biz (MVP-1 CT).** R8 görev kaynağı kaydı 2026-11-18'den önce bizim işimiz.
-- **Açık:** W-2 (servis yeri). CT önerisi: yeni servis (`Diten.WarehouseService`), çünkü `Diten.SupplyChainService` MVP-6'nın;
-  port §3'ten EA kararıyla.
+- **W-2: `Diten.InventoryService` (5067)** (sahip kararı 2026-10-21). Depo kodu serviste ayrı bir bölümde durur; stoğa
+  yalnız INVENTORY'nin olağan kayıt yolundan (aynı hareket komutu ve kuralları) yazar, ikinci bakiye tutmaz. DCP-009'daki
+  `Diten.SupplyChainService` notu (2026-09-11) bu kararla güncellenir. Gerekçe: servis MVP-1 CT'nin; MVP-6'nın koduna dokunulmaz.
+- **W-3: MOD-0179 (3PL) planda, ertelenmiş.** Dış depo firmasıyla (kendi WMS'i olan 3PL) çalışma ihtiyacı doğarsa açılır;
+  0178'in sözleşmesi buna kapı bırakır (görevler ve onaylar dış kaynaktan da gelebilir).
 
 **Sıra:**
-1. Kararlar (W-2) ve MVP-5 görev kaynağının kaydı (R8) ve MVP-5 görev kaynağının kaydı (R8).
+1. MVP-5 görev kaynağının kaydı (R8) ve MVP-5 görev kaynağının kaydı (R8).
 2. **P0:** MOD-0178 module pack (`supply-chain-execution`) + WMS-BUNDLE taslağı (WAREHOUSE-OUTBOUND 1.0.0'ı kapsar).
 3. **Paralel:**
    - INVENTORY lot / lokasyon rezervasyonu (W-5, MVP-1 CT);

@@ -1,0 +1,1 @@
+| 4 | "MOD-0013" etiketi `premium-modal-standard.md:1, :11`, `dynamic-localization-standard.md:2, :5, :181`, `AGENTS.md:139` ↔ Blueprint 8.8 MOD-0013 = Platform Standards Registry | evet (etiket) | MOD-0286 | kayıt satırı 70 UI-standart kavramını MOD-0286'ya bağlar; yalnız etiket, kod okumaz | sahip (`.antigravity/**`) | karar bekliyor (D-5, FU-2) |

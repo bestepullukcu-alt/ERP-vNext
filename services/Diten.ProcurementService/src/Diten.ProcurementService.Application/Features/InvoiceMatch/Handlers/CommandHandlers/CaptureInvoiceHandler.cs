@@ -15,7 +15,8 @@ namespace Diten.ProcurementService.Application.Features.InvoiceMatch.Handlers.Co
 /// (fail-closed): supplierId MOD-0140 (bilinmeyen → 404 UNKNOWN_REFERENCE), poId MOD-0141 (bilinmeyen → 404),
 /// line.itemId MOD-0290 (progressive seam, bilinmeyen → 404). Currency PO currency ile eşleşmeli (uyumsuz → 422
 /// CURRENCY_MISMATCH). (SupplierId+InvoiceNumber) duplicate → 409 DUPLICATE_INVOICE. ≥1 satır + Decimal/float → 422.
-/// lineAmount/totalAmount SERVER-COMPUTED (Decimal; float YASAK). Ödeme YÜRÜTMEZ — status=Captured yakalar.
+/// lineAmount/totalAmount SERVER-COMPUTED (Decimal; float YASAK); verilen lineAmount ≠ quantity × unitPrice → 422
+/// LINE_AMOUNT_MISMATCH (tutarlar net, vergi taşınmaz). Ödeme YÜRÜTMEZ — status=Captured yakalar.
 /// </summary>
 public sealed class CaptureInvoiceHandler : IRequestHandler<CaptureInvoiceCommand, Response<InvoiceDto>>
 {
@@ -67,6 +68,13 @@ public sealed class CaptureInvoiceHandler : IRequestHandler<CaptureInvoiceComman
                            || !InvoiceMatchValidationRules.IsNonNegativeDecimal(l.UnitPrice)))
         {
             return Response<InvoiceDto>.Fail("VALIDATION_FAILED", 422);
+        }
+
+        // ── lineAmount verildiyse quantity × unitPrice'a eşit olmalı (net tutar; vergi taşınmaz — pack §12,
+        //    contract 1.1.1). Uyumsuz → 422 LINE_AMOUNT_MISMATCH; böylece totalAmount = Σ net satır tutarı kalır ──
+        if (lines.Any(l => !InvoiceMatchValidationRules.LineAmountMatches(l.Quantity, l.UnitPrice, l.LineAmount)))
+        {
+            return Response<InvoiceDto>.Fail("LINE_AMOUNT_MISMATCH", 422);
         }
 
         var supplierId = request.SupplierId.Trim();

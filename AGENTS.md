@@ -69,6 +69,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 |--------|------|------------|
 | Gateway (Ocelot) | 5000 | `gateway/Diten.ApiGateway` |
 | Frontend (Diten.Web) | 5001 | `frontend/Diten.Web` |
+| PVG Service | 5011 | `services/Diten.PvgService/src/Diten.PvgService.Api` |
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
@@ -83,7 +84,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 | FinanceTreasury Service (planlı — kod yok) | 5071 | `services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5011 (`PvgService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
+> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar (EA kararı bekliyor): 5004 (`EnterpriseStrategyService`), 5062 (`PpmService` + `DataKnowledgeService`, çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
@@ -134,7 +135,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) + denetim kaydı davranışı (Platform: `AuditBehavior`; diğer servisler: ortak iletici, AUD-001 K4) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
 | Denetim kaydı | Kiracı ya da platform verisini değiştiren **her komut denetlenir** (kim · neyi · ne zaman). Denetlenmemek istisnadır ve gerekçesiyle bildirilir; yeni denetimsiz komutu ve deftere eklenen borç satırını mimari testi + CI reddeder; kimlik / yetki / GxP sınıfında kayıt yazılamazsa işlem durmalıdır (karar K2; bugün hiçbir yol bunu teslim etmiyor, eksikler defterde `## K2 borcu` olarak sayılı — AUD-001 §4.4) | [.antigravity/rules/audit-trail-standard.md](.antigravity/rules/audit-trail-standard.md) |
-| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. Ölçüldü 2026-09-07: `Views/Platform/*` 2 dosya, `Views/Organization/*` 7 dosya taşır. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
+| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 | Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
@@ -142,23 +143,17 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 
 ### Golden Reference DataTable Kararı
 
-DataTable tabanlı yeni modüllerde resmi referans iki canlı DevEnablement modülüdür:
-
-| Form alan sayısı | Referans | UI surface |
-|---|---|---|
-| `8 ve altı` | `GoldenReferenceSlim` | Index içinde create/edit offcanvas |
-| `8'den fazla` | `GoldenReferenceCompact` | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
-
-Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit alanları ve DataTable checkbox/action kolonları sayılmaz.
+Yeni DataTable modülü iki canlı DevEnablement referansından birini kullanır: form alanı 8 ve altıysa `GoldenReferenceSlim`,
+8'den fazlaysa `GoldenReferenceCompact`. Ayrıntı ve alan sayımı: [frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md).
 
 ---
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 46 kural dosyası var (2026-10-17, `git ls-tree` ile sayıldı). Kural dosyaları kendiliğinden
+`.antigravity/rules/` altındaki kural dosyaları kendiliğinden
 yüklenmez; `.antigravity/adapters.json`'da listelenenlerin üretilmiş kopyaları `.claude/rules/` (Claude Code) ve
-`.agents/rules/` (Antigravity) altına konur — bu denetimde yalnız `agents-core.md`'nin yüklenmesi ölçüldü. Codex ve
-Antigravity bu haritayı bu dosyayla birlikte yükler (bu denetimde canlı ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
+`.agents/rules/` (Antigravity) altına konur. Codex ve
+Antigravity haritayı bu dosyayla yükler (ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
 işe başlamadan bu haritanın açılmasını şart koşar.
 
 Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
@@ -228,11 +223,8 @@ Salt-okunur denetim entry point'i: **`/read-only-audit`** ([read-only-audit.md](
 
 Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](.antigravity/rules/git-safety.md) kapılarına tabidir.
 
-Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
-1. `AGENTS.md` (bu dosya)
-2. İlgili `execution/domains/{domain}/domain-config.md`
-3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
-4. Görev tipine uygun `.antigravity/workflows/*.md`
+Orchestrator'ın okuduğu dosyalar: Aşama 0'da bu dosya, domain-config ve module pack; görev tipine uygun `.antigravity/workflows/*.md`
+"Kural Bekçiliği" maddesinde ([orchestrator.md](.antigravity/agents/orchestrator.md)).
 
 **Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
 

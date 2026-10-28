@@ -1,6 +1,6 @@
 # MVP-6 — five owner decisions that remove outside questions (owner decision, 2026-10-26)
 
-- owner: **Natig** (`ny@gmgroup.ch`, `gmg-10`, person key **K1**, CEO / management), decided in chat 2026-10-26 and
+- owner: **Natig** (`gmg-10`, person key **K1**, CEO / management), decided in chat 2026-10-26 and
   recorded by the MVP-6 Control Tower
 - status: **ACCEPTED**
 - why: open MVP-6 work was waiting on questions to Beste, Ali and Cihan that were within K1's own authority. These
@@ -17,6 +17,16 @@
 | D3 | **MOD-0140 Revision 2 approval path:** the **MVP-6 CT runs the CT-APR-02 review** in a session separate from the author. **Natig (K1) is the CT-APR-01 approver** (K1 has `high: evet` and is not the author; the author is Cihan, K4). A person other than the one who adds the approval row merges it. This replaces the 2026-10-22 choice of Beste (K2) as approver (plan v10.0 §4a). | the review request to the MVP-1 CT; Beste as approver |
 | D4 | **WP-P1 G2, G3, G4** are decided as recommended: G2 (c) first slice without reservations, (a) later as DL-6; G3 (a) REVERSAL sent as `MOD-0173` / `REVERSAL`; G4 (a) per-line deterministic keys with `DispatchPending` and REVERSAL compensation. Recorded in `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a. The MVP-1 CT is informed: no Inventory rule or contract changes. | the question to the MVP-1 CT |
 | D5 | **Second-person steps on #236 and #237:** any available approver who is not the author (K2 Beste, K3 Ali, K4 Cihan) may add the CT-APR-01 rows / give the approving review. Natig may merge when he did not add the row. For #237, the pack owner's (MVP-1 CT) review is not required. | "Beste adds the rows"; "MVP-1 CT reviews #237" |
+
+## Later notes (2026-10-28, recorded by the MVP-6 Control Tower)
+
+- **D3:** the MOD-0140 Revision 2 review (`fda06b89`, KOŞULLU) is carried by Cihan's own PR #249; this PR no longer adds that
+  review or an approval row. Cihan is preparing Revision 3 (closing the findings and the S-1…S-7 decisions of 2026-10-28), so
+  the D3 approval row is written on Revision 3's hash, after its independent review. Natig (K1) stays the approver.
+- **D4:** the G2–G4 direction stands; the detailed rules are in MOD-0183 §23 r6 and MOD-0186 §34 r8 on `main` (#262), which
+  replace the per-line `…:dispatch:v1` keys and `DispatchPending` named above with per-attempt keys `…:a{n}`.
+- **D5:** the approval rows for MOD-0147 / MOD-0148 (ready-for-dev versions) and MOD-0183 / MOD-0186 are in PR #269
+  (added by gmg-10, approved and merged by Beste).
 
 ## Still with others (not changed here)
 

@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -27,25 +29,17 @@ namespace Diten.PvgService.Api.Tests;
 
 public sealed class PvgServiceApiHostTests
 {
+    // Revision 04 invariant (WP-0230-DL4A): every approved intake field name, plus the version a write carries and the
+    // two response-only fields a request may only send to be rejected. SuspectProductText no longer exists.
     private static readonly string[] AnnexFieldNames =
-    [
-        nameof(PvgIntakeField.IntakeChannel),
-        nameof(PvgIntakeField.SourceType),
-        nameof(PvgIntakeField.SourceReference),
-        nameof(PvgIntakeField.ReceivedAtUtc),
-        nameof(PvgIntakeField.ReporterType),
-        nameof(PvgIntakeField.ReporterContactSummary),
-        nameof(PvgIntakeField.PatientSubjectCode),
-        nameof(PvgIntakeField.EventOnsetDate),
-        nameof(PvgIntakeField.AdverseEventNarrative),
-        "SuspectProductText",
-        nameof(PvgIntakeField.Seriousness),
-        nameof(PvgIntakeField.IntakePriority),
-        nameof(PvgIntakeField.TriageOutcome),
-        nameof(PvgIntakeField.TriageReason),
-        nameof(PvgIntakeField.RouteTargetQueue),
-        nameof(PvgIntakeField.EvidenceLinkReferences)
-    ];
+        Enum.GetNames<PvgIntakeField>()
+            .Concat(
+            [
+                "ExpectedVersion",
+                "ValidityResult",
+                "ValidityMissingCriteria"
+            ])
+            .ToArray();
 
     [Fact]
     public void Development_host_wires_health_application_services_and_deny_adapters()
@@ -284,7 +278,8 @@ public sealed class PvgServiceApiHostTests
             typeof(PvgCaseIntakeCreateRequest),
             typeof(PvgCaseIntakeUpdateRequest),
             typeof(PvgCaseIntakeTriageRequest),
-            typeof(PvgCaseIntakeRouteRequest)
+            typeof(PvgCaseIntakeRouteRequest),
+            typeof(PvgIntakeProductLineRequest)
         }
         .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
         .Select(property => property.Name)
@@ -293,7 +288,8 @@ public sealed class PvgServiceApiHostTests
         .Order(StringComparer.Ordinal)
         .ToArray();
 
-        Assert.Equal(16, AnnexFieldNames.Length);
+        Assert.Equal(37, AnnexFieldNames.Length);
+        Assert.DoesNotContain("SuspectProductText", requestFieldNames);
         Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), requestFieldNames);
     }
 
@@ -310,15 +306,13 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActorContext.ReasonCode);
 
         var missingCorrelation = NewContextWithTenant();
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelation, "actor-reference", "safety-user");
         var missingCorrelationContext = PvgCaseIntakeRequestContext.From(missingCorrelation);
         Assert.False(missingCorrelationContext.IsValid);
         Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelationContext.ReasonCode);
 
         var invalidCorrelation = NewContextWithTenant();
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(invalidCorrelation, "actor-reference", "safety-user");
         invalidCorrelation.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation";
         var invalidCorrelationContext = PvgCaseIntakeRequestContext.From(invalidCorrelation);
         Assert.False(invalidCorrelationContext.IsValid);
@@ -361,8 +355,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
         var missingCorrelationResult = await PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
             request,
             missingCorrelationContext,
@@ -390,8 +383,7 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorDetailResult));
 
         var missingCorrelationContext = NewContextWithTenant();
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
 
         var missingCorrelationListResult = await PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
             missingCorrelationContext,
@@ -467,8 +459,7 @@ public sealed class PvgServiceApiHostTests
             AssertSafeBlockedResponse(missingActor, PvgPermissionReasonCodes.ActorContextRequired);
 
             var missingCorrelationContext = NewContextWithTenant();
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(missingCorrelationContext, "actor-reference", "safety-user");
             var missingCorrelation = await ResponseOfAsync(await endpoint.Invoke(missingCorrelationContext));
             AssertSafeBlockedResponse(missingCorrelation, PvgPermissionReasonCodes.CorrelationContextRequired);
         }
@@ -548,7 +539,11 @@ public sealed class PvgServiceApiHostTests
                 (nameof(PvgCaseIntakeApiResponse.ReasonCode), typeof(string)),
                 (nameof(PvgCaseIntakeApiResponse.ValidationReasonCodes), typeof(IReadOnlyList<string>)),
                 (nameof(PvgCaseIntakeApiResponse.IntakeDraftId), typeof(string)),
-                (nameof(PvgCaseIntakeApiResponse.Items), typeof(IReadOnlyList<PvgIntakeDraftSummary>))
+                (nameof(PvgCaseIntakeApiResponse.Items), typeof(IReadOnlyList<PvgIntakeDraftSummary>)),
+                (nameof(PvgCaseIntakeApiResponse.Version), typeof(long?)),
+                (nameof(PvgCaseIntakeApiResponse.TotalCount), typeof(int?)),
+                (nameof(PvgCaseIntakeApiResponse.FilteredCount), typeof(int?)),
+                (nameof(PvgCaseIntakeApiResponse.Draft), typeof(PvgCaseIntakeDraftResponse))
             ],
             properties);
 
@@ -612,8 +607,7 @@ public sealed class PvgServiceApiHostTests
         foreach (var endpoint in endpoints)
         {
             var invalidCorrelationContext = NewContextWithTenant();
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            PvgTestIdentity.SetActor(invalidCorrelationContext, "actor-reference", "safety-user");
             invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation value";
 
             var response = await ResponseOfAsync(await endpoint.Invoke(invalidCorrelationContext));
@@ -749,6 +743,7 @@ public sealed class PvgServiceApiHostTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-999",
                 ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true"
             })
             .Build();
@@ -928,6 +923,7 @@ public sealed class PvgServiceApiHostTests
         var builder = Program.CreateWebHostBuilder(
         [
             "--Pvg:Runtime:ProductionLike=true",
+            "--Pvg:Runtime:ApprovalReference=RTA-MOD0230-999",
             "--Pvg:Runtime:OperationalRuntimeAuthorized=true",
             "--Pvg:Runtime:UseNonProductionAdapters=false"
         ]);
@@ -1009,6 +1005,7 @@ public sealed class PvgServiceApiHostTests
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-999",
                 ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true"
             })
             .Build();
@@ -1260,15 +1257,14 @@ public sealed class PvgServiceApiHostTests
     private static DefaultHttpContext NewContextWithTenant()
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers[PvgCaseIntakeRequestContext.TenantContextHeader] = "server-tenant-context";
+        PvgTestIdentity.SetTenant(context, PvgTestIdentity.TenantA);
         return context;
     }
 
     private static DefaultHttpContext NewContextWithTenantActorAndCorrelation()
     {
         var context = NewContextWithTenant();
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
-        context.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+        PvgTestIdentity.SetActor(context, "actor-reference", "safety-user");
         context.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "correlation-reference";
         return context;
     }
@@ -1300,7 +1296,7 @@ public sealed class PvgServiceApiHostTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "serious",
             "priority",
             ["evidence-ref"]);
@@ -1316,7 +1312,7 @@ public sealed class PvgServiceApiHostTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product",
+            [new PvgIntakeProductLineRequest("Suspect", null, "suspect product", null, null)],
             "serious",
             "priority",
             ["evidence-ref"]);
@@ -1488,6 +1484,12 @@ public sealed class PvgServiceApiHostTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public ValueTask<int> CountAsync(
+            PvgPersistenceTenantScope tenantScope,
+            PvgIntakeStatus? status,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(
             PvgPersistenceTenantScope tenantScope,
             string intakeDraftId,
@@ -1506,5 +1508,1261 @@ public sealed class PvgServiceApiHostTests
             PvgPersistenceListScope listScope,
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+    }
+
+    // ---- WP-0230-DL3B (AC-9): static scan of configuration files for the Pvg:Runtime:* flags ----
+
+    private const string OperationalFlagKey = "Pvg__Runtime__OperationalRuntimeAuthorized";
+    private const string AdaptersFlagKey = "Pvg__Runtime__UseNonProductionAdapters";
+    private const string ProductionLikeFlagKey = "Pvg__Runtime__ProductionLike";
+
+    // The scan root is the worktree that holds this test source file (four levels above its directory); no .git lookup.
+    private static string FindRepositoryRoot([CallerFilePath] string testSourcePath = "") =>
+        Path.GetFullPath(Path.Combine(Path.GetDirectoryName(testSourcePath)!, "..", "..", "..", ".."));
+
+    private static string TestSourceDirectory([CallerFilePath] string testSourcePath = "") =>
+        Path.GetDirectoryName(testSourcePath)!;
+
+    [Fact]
+    public void Repository_configuration_files_never_enable_operational_runtime_or_production_non_production_adapters()
+    {
+        var result = PvgConfigurationScanner.Scan(FindRepositoryRoot());
+
+        Assert.NotEmpty(result.ScannedFiles);
+        Assert.True(
+            result.Violations.Count == 0,
+            "Configuration scan violations (file · scope · rule): " +
+            string.Join("; ", result.Violations.Select(violation =>
+                $"{violation.File} · {violation.Scope} · {violation.Rule}")));
+    }
+
+    [Fact]
+    public void Repository_configuration_scan_covers_committed_configuration_files_of_the_current_worktree()
+    {
+        var scanned = PvgConfigurationScanner.Scan(FindRepositoryRoot()).ScannedFiles;
+
+        Assert.Contains(".claude/launch.json", scanned);
+        Assert.Contains(".github/workflows/service-tests.yml", scanned);
+        Assert.Contains("gateway/Diten.ApiGateway/appsettings.json", scanned);
+        Assert.Contains("gateway/Diten.ApiGateway/Properties/launchSettings.json", scanned);
+        Assert.Contains("frontend/Diten.Web/appsettings.Development.json", scanned);
+        Assert.DoesNotContain(scanned, path => path.StartsWith(".claude/worktrees/", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(scanned, path => path.StartsWith("docs/records/", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(
+            scanned,
+            path => path.Split('/')[..^1].Any(part => part is "bin" or "obj" or "TestResults" or "node_modules" or ".git"));
+    }
+
+    [Fact]
+    public void Configuration_scan_root_is_the_current_worktree_root()
+    {
+        var root = FindRepositoryRoot();
+
+        Assert.Equal(Path.GetFullPath(TestSourceDirectory() + "/../../../.."), root);
+        Assert.True(File.Exists(Path.Combine(root, "AGENTS.md")));
+        Assert.True(Directory.Exists(Path.Combine(root, "services", "Diten.PvgService")));
+        Assert.True(
+            File.Exists(Path.Combine(root, ".git")) || Directory.Exists(Path.Combine(root, ".git")),
+            "The scan root must itself hold .git (a file in a worktree).");
+    }
+
+    [Theory]
+    [InlineData("appsettings.json", true)]
+    [InlineData("src/x/appsettings.Production.json", true)]
+    [InlineData("src/x/Properties/launchSettings.json", true)]
+    [InlineData(".claude/launch.json", true)]
+    [InlineData(".vscode/launch.json", true)]
+    [InlineData(".github/workflows/ci.yml", true)]
+    [InlineData(".github/workflows/ci.yaml", true)]
+    [InlineData("Dockerfile", true)]
+    [InlineData("src/x/Dockerfile.api", true)]
+    [InlineData("docker-compose.yml", true)]
+    [InlineData("docker-compose.override.yaml", true)]
+    [InlineData("compose.yaml", true)]
+    [InlineData("deploy/x.yml", true)]
+    [InlineData("deployment/x.yaml", true)]
+    [InlineData("k8s/x.yaml", true)]
+    [InlineData("helm/x/values.yaml", true)]
+    [InlineData("charts/x/values.yaml", true)]
+    [InlineData(".env", true)]
+    [InlineData("src/x/prod.env", true)]
+    [InlineData("bin/Debug/appsettings.json", false)]
+    [InlineData("src/x/obj/appsettings.json", false)]
+    [InlineData("TestResults/appsettings.json", false)]
+    [InlineData("node_modules/p/appsettings.json", false)]
+    [InlineData(".claude/worktrees/w/appsettings.json", false)]
+    [InlineData(".git/config", false)]
+    [InlineData(".git/appsettings.json", false)]
+    [InlineData("src/x/.git/appsettings.json", false)]
+    [InlineData("src/x/data.json", false)]
+    [InlineData("docs/x.yml", false)]
+    [InlineData(".github/x.yml", false)]
+    public void Configuration_scan_walks_and_selects_required_file_kinds(string relativePath, bool selected)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(relativePath, NeutralScanContent(relativePath));
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Equal(selected, result.ScannedFiles.Contains(relativePath));
+        Assert.Empty(result.Violations);
+    }
+
+    // Fixture notation: a single quote in the content stands for a double quote.
+    [Theory]
+    [InlineData("O1", "appsettings.Development.json", "{'Pvg':{'Runtime':{'OperationalRuntimeAuthorized':true}}}", true)]
+    [InlineData("O2", "appsettings.json", "{'Pvg:Runtime:OperationalRuntimeAuthorized':'true'}", true)]
+    [InlineData("O3", "appsettings.json", "{'pvg':{'runtime:operationalruntimeauthorized':'TRUE'}}", true)]
+    [InlineData("O4", "Properties/launchSettings.json", "{'profiles':{'dev':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','" + OperationalFlagKey + "':'true'}}}}", true)]
+    [InlineData("O5", "Properties/launchSettings.json", "{'profiles':{'dev':{'commandLineArgs':'--urls http://127.0.0.1:5011 --Pvg:Runtime:OperationalRuntimeAuthorized=true','environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development'}}}}", true)]
+    [InlineData("O6", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeExecutable':'dotnet','runtimeArgs':['run','--','--Pvg:Runtime:OperationalRuntimeAuthorized','true']}]}", true)]
+    [InlineData("O7", ".vscode/launch.json", "// yorum\n{'configurations':[{'name':'pvg','env':{'" + OperationalFlagKey + "':'true'}}]}", true)]
+    [InlineData("O8", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      " + OperationalFlagKey + ": true\n", true)]
+    [InlineData("O9", ".github/workflows/ci.yml", "jobs:\n  b:\n    steps:\n      - run: echo '" + OperationalFlagKey + "=true' >> '$GITHUB_ENV'\n", true)]
+    [InlineData("O10", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      " + OperationalFlagKey + ": ${{ vars.PVG_FLAG }}\n", true)]
+    [InlineData("O11", "docker-compose.yml", "services:\n  api:\n    environment:\n      - " + OperationalFlagKey + "=True\n", true)]
+    [InlineData("O12", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_" + OperationalFlagKey + "=true\n", true)]
+    [InlineData("O13", "k8s/deployment.yaml", "env:\n  - name: " + OperationalFlagKey + "\n    value: 'true'\n", true)]
+    [InlineData("O14", "Dockerfile", "FROM scratch\nENV " + OperationalFlagKey + " true\n", true)]
+    [InlineData("O15", "src/x/Dockerfile.api", "FROM scratch\nENTRYPOINT ['dotnet', 'Diten.PvgService.Api.dll', '--Pvg:Runtime:OperationalRuntimeAuthorized=true']\n", true)]
+    [InlineData("O16", ".env", OperationalFlagKey + " = 'true'\n", true)]
+    [InlineData("O17", "appsettings.json", "{'Pvg':{'Runtime':{'OperationalRuntimeAuthorized':false}}}", false)]
+    [InlineData("O18", "docker-compose.yml", "services:\n  api:\n    environment:\n      - " + OperationalFlagKey + "=false\n", false)]
+    [InlineData("O19", "Dockerfile", "FROM scratch\nENV " + OperationalFlagKey + " FALSE\n", false)]
+    [InlineData("O20", "appsettings.json", "{'Other':{'Runtime':{'OperationalRuntimeAuthorized':true}}}", false)]
+    [InlineData("O21", "k8s/deployment.yaml", "env:\n  - name: " + OperationalFlagKey + "\n    value: 'false'\n", false)]
+    [InlineData("O22", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeArgs':['run','--','--Pvg:Runtime:OperationalRuntimeAuthorized','false']}]}", false)]
+    public void Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(
+        string caseId,
+        string relativePath,
+        string content,
+        bool isViolation)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(relativePath, content.Replace('\'', '"'));
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.True(result.ScannedFiles.Contains(relativePath), $"{caseId}: {relativePath} was not scanned.");
+        if (isViolation)
+        {
+            var violation = Assert.Single(result.Violations);
+            Assert.Equal(relativePath, violation.File);
+            Assert.Equal("OperationalRuntimeAuthorized", violation.Rule);
+        }
+        else
+        {
+            Assert.Empty(result.Violations);
+        }
+    }
+
+    // Fixture notation: a single quote in the content stands for a double quote; scope null = not asserted.
+    [Theory]
+    [InlineData("U1", "appsettings.json", "{'Pvg':{'Runtime':{'UseNonProductionAdapters':true}}}", true, null)]
+    [InlineData("U2", "appsettings.Production.json", "{'Pvg:Runtime:UseNonProductionAdapters':false}", true, null)]
+    [InlineData("U3", "appsettings.Development.json", "{'Pvg':{'Runtime':{'ProductionLike':true,'UseNonProductionAdapters':true}}}", true, null)]
+    [InlineData("U4", "docker-compose.yml", "services:\n  api:\n    environment:\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U5", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=Production\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U6", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=Development\n      - " + ProductionLikeFlagKey + "=true\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U7", "docker-compose.yml", "services:\n  api:\n    environment:\n      - DOTNET_ENVIRONMENT=Development\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U8", "Dockerfile", "FROM scratch\nENV " + AdaptersFlagKey + " true\n", true, null)]
+    [InlineData("U9", "k8s/deployment.yaml", "env:\n  - name: " + AdaptersFlagKey + "\n    value: 'true'\n", true, null)]
+    [InlineData("U10", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      " + AdaptersFlagKey + ": true\n", true, null)]
+    [InlineData("U11", ".github/workflows/ci.yml", "jobs:\n  a:\n    env:\n      ASPNETCORE_ENVIRONMENT: Development\n      " + AdaptersFlagKey + ": true\n  b:\n    env:\n      ASPNETCORE_ENVIRONMENT: Production\n", true, null)]
+    [InlineData("U12", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      ASPNETCORE_ENVIRONMENT: ${{ vars.ENV_NAME }}\n      " + AdaptersFlagKey + ": true\n", true, null)]
+    [InlineData("U13", "Properties/launchSettings.json", "{'profiles':{'bare':{'environmentVariables':{'" + AdaptersFlagKey + "':'true'}}}}", true, null)]
+    [InlineData("U14", "Properties/launchSettings.json", "{'profiles':{'dev':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','" + AdaptersFlagKey + "':'true'}},'bare':{'environmentVariables':{'" + AdaptersFlagKey + "':'true'}}}}", true, "bare")]
+    [InlineData("U15", "Properties/launchSettings.json", "{'profiles':{'dotnet':{'environmentVariables':{'DOTNET_ENVIRONMENT':'Development','" + AdaptersFlagKey + "':'true'}}}}", true, null)]
+    [InlineData("U16", "Properties/launchSettings.json", "{'profiles':{'plike':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','" + ProductionLikeFlagKey + "':'true','" + AdaptersFlagKey + "':'true'}}}}", true, null)]
+    [InlineData("U17", ".vscode/launch.json", "{'configurations':[{'name':'pvg','env':{'" + AdaptersFlagKey + "':'true'}}]}", true, null)]
+    [InlineData("U18", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeArgs':['run','--','--Pvg:Runtime:UseNonProductionAdapters=true']}]}", true, null)]
+    [InlineData("U19", ".env", AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U20", "appsettings.Development.json", "{'Pvg':{'Runtime':{'UseNonProductionAdapters':true}}}", false, null)]
+    [InlineData("U21", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=Development\n      - " + AdaptersFlagKey + "=true\n", false, null)]
+    [InlineData("U22", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=Staging\n      - " + AdaptersFlagKey + "=true\n", false, null)]
+    [InlineData("U23", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=Development\n      - " + ProductionLikeFlagKey + "=false\n      - " + AdaptersFlagKey + "=true\n", false, null)]
+    [InlineData("U24", "Properties/launchSettings.json", "{'profiles':{'dev':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','" + AdaptersFlagKey + "':'true'}}}}", false, null)]
+    [InlineData("U25", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      ASPNETCORE_ENVIRONMENT: Development\n      " + AdaptersFlagKey + ": true\n", false, null)]
+    [InlineData("U26", ".claude/launch.json", "{'configurations':[{'name':'pvg','env':{'ASPNETCORE_ENVIRONMENT':'Development'},'runtimeArgs':['run','--','--Pvg:Runtime:UseNonProductionAdapters=true']}]}", false, null)]
+    [InlineData("U27", "Properties/launchSettings.json", "{'profiles':{'empty':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'','" + AdaptersFlagKey + "':'true'}}}}", true, "empty")]
+    [InlineData("U28", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      ASPNETCORE_ENVIRONMENT: ''\n      " + AdaptersFlagKey + ": true\n", true, null)]
+    [InlineData("U29", "docker-compose.yml", "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=production\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U30", "docker-compose.yml", "services:\n  api:\n    command: --ASPNETCORE_ENVIRONMENT=Development\n    environment:\n      - " + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U31", ".env", "# ASPNETCORE_ENVIRONMENT is Development\n" + AdaptersFlagKey + "=true\n", true, null)]
+    [InlineData("U32", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeArgs':['run','--','--ASPNETCORE_ENVIRONMENT=Development','--Pvg:Runtime:UseNonProductionAdapters=true']}]}", true, null)]
+    public void Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(
+        string caseId,
+        string relativePath,
+        string content,
+        bool isViolation,
+        string? expectedScope)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(relativePath, content.Replace('\'', '"'));
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.True(result.ScannedFiles.Contains(relativePath), $"{caseId}: {relativePath} was not scanned.");
+        if (isViolation)
+        {
+            var violation = Assert.Single(result.Violations);
+            Assert.Equal(relativePath, violation.File);
+            Assert.Equal("NonProductionAdaptersInProductionLikeScope", violation.Rule);
+            if (expectedScope is not null)
+            {
+                Assert.Equal(expectedScope, violation.Scope);
+            }
+        }
+        else
+        {
+            Assert.Empty(result.Violations);
+        }
+    }
+
+    [Fact]
+    public void Program_environment_name_comes_only_from_aspnetcore_environment_variable()
+    {
+        var rawEnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var expected = string.IsNullOrWhiteSpace(rawEnvironmentName) ? Environments.Production : rawEnvironmentName;
+
+        var actual = Program.CreateWebHostBuilder([]).GetSetting(WebHostDefaults.EnvironmentKey);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Program_source_reads_environment_name_only_from_aspnetcore_environment_variable_text()
+    {
+        var programPath = ProgramSourcePath();
+        Assert.True(File.Exists(programPath), $"Program source not found at '{programPath}'.");
+
+        var source = File.ReadAllText(programPath);
+
+        Assert.DoesNotContain("DOTNET_ENVIRONMENT", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(
+            1,
+            CountMatches(
+                source,
+                @"\bvar\s+environmentName\s*=\s*Environment\s*\.\s*GetEnvironmentVariable\s*\(\s*""ASPNETCORE_ENVIRONMENT""\s*\)\s*;"));
+        Assert.Equal(1, CountMatches(source, @"\bCreatePvgServiceWebHostBuilder\s*\(\s*environmentName\s*,"));
+    }
+
+    [Fact]
+    public void Configuration_scan_flag_pattern_is_culture_invariant()
+    {
+        Assert.True(PvgConfigurationScanner.FlagReferenceOptions.HasFlag(RegexOptions.CultureInvariant));
+        Assert.True(PvgConfigurationScanner.FlagReferenceOptions.HasFlag(RegexOptions.IgnoreCase));
+    }
+
+    [Fact]
+    public void Configuration_scan_matches_upper_case_flag_key_under_turkish_culture()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(".env", "PVG__RUNTIME__OPERATIONALRUNTIMEAUTHORIZED=true\n");
+        var previous = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+
+            var violation = Assert.Single(PvgConfigurationScanner.Scan(fixture.Root).Violations);
+
+            Assert.Equal("OperationalRuntimeAuthorized", violation.Rule);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
+    public void Configuration_scan_treats_upper_case_production_environment_name_as_production_under_turkish_culture()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(
+            "docker-compose.yml",
+            "services:\n  api:\n    environment:\n      - ASPNETCORE_ENVIRONMENT=PRODUCTION\n      - " +
+            AdaptersFlagKey + "=true\n");
+
+        var violation = ScanUnderTurkishCulture(fixture.Root).Single();
+
+        Assert.Equal("NonProductionAdaptersInProductionLikeScope", violation.Rule);
+    }
+
+    [Fact]
+    public void Configuration_scan_matches_upper_case_adapters_flag_name_under_turkish_culture()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(".env", "PVG__RUNTIME__USENONPRODUCTIONADAPTERS=true\n");
+
+        var violation = ScanUnderTurkishCulture(fixture.Root).Single();
+
+        Assert.Equal("NonProductionAdaptersInProductionLikeScope", violation.Rule);
+    }
+
+    // Runs the scan with the current culture set to tr-TR (dotted and dotless i) and restores it afterwards.
+    private static IReadOnlyList<PvgConfigurationScanner.ScanViolation> ScanUnderTurkishCulture(string root)
+    {
+        var previous = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+            return PvgConfigurationScanner.Scan(root).Violations;
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
+    public void Configuration_scan_excludes_docs_records_tree()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write("appsettings.json", "{}");
+        fixture.Write("docs/records/a/lane.env", OperationalFlagKey + "=true\n");
+        fixture.Write("docs/records/a/appsettings.json", "{\"Pvg\":{\"Runtime\":{\"OperationalRuntimeAuthorized\":true}}}");
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Equal(new[] { "appsettings.json" }, result.ScannedFiles);
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void Configuration_scan_fails_closed_on_unparseable_json()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write("src/x/appsettings.json", "{");
+
+        var exception = Assert.Throws<InvalidOperationException>(() => PvgConfigurationScanner.Scan(fixture.Root));
+
+        Assert.Contains("src/x/appsettings.json", exception.Message);
+    }
+
+    [Fact]
+    public void Configuration_scan_fails_closed_on_inaccessible_directory()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write("locked/appsettings.json", "{}");
+        var locked = Path.Combine(fixture.Root, "locked");
+
+        File.SetUnixFileMode(locked, UnixFileMode.None);
+        try
+        {
+            var precondition = Record.Exception(() => Directory.EnumerateFileSystemEntries(locked).ToArray());
+            Assert.True(
+                precondition is UnauthorizedAccessException,
+                "The runner ignores directory permissions (for example root); the inaccessible-directory scan cannot be measured here.");
+
+            Assert.ThrowsAny<Exception>(() => PvgConfigurationScanner.Scan(fixture.Root));
+        }
+        finally
+        {
+            File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
+    private static string NeutralScanContent(string relativePath)
+    {
+        var name = Path.GetFileName(relativePath);
+        if (name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return "{}";
+        }
+
+        if (name.EndsWith(".env", StringComparison.OrdinalIgnoreCase))
+        {
+            return "A=1";
+        }
+
+        if (name.Contains("Dockerfile", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FROM scratch";
+        }
+
+        return name.EndsWith(".yml", StringComparison.OrdinalIgnoreCase) ||
+               name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
+            ? "x: 1"
+            : "x";
+    }
+
+    // Writes scan inputs under a temp "pvg-dl3b-<guid>" directory; the scan root sits below a ".claude/worktrees"
+    // path so a root that itself lies under a worktrees directory is measured. Nothing is written to the repository.
+    private sealed class ScanFixture : IDisposable
+    {
+        private readonly string _directory =
+            Path.Combine(Path.GetTempPath(), "pvg-dl3b-" + Guid.NewGuid().ToString("N"));
+
+        public ScanFixture()
+        {
+            Root = Path.Combine(_directory, ".claude", "worktrees", "fixture-root");
+            Directory.CreateDirectory(Root);
+        }
+
+        public string Root { get; }
+
+        public void Write(string relativePath, string content)
+        {
+            var path = Path.Combine(Root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
+            catch (IOException)
+            {
+                // Best-effort cleanup of the temp directory.
+            }
+        }
+    }
+
+    // Scans configuration-like files below a root for two Pvg:Runtime:* flags and returns the files it looked at
+    // (root-relative, "/" separated, ordinal order) and the violations. Every test goes through Scan(root).
+    //   OperationalRuntimeAuthorized: any reference whose value is not a plain "false" is a violation (fail-closed).
+    //   NonProductionAdaptersInProductionLikeScope: UseNonProductionAdapters in a production-like scope, any value.
+    private static class PvgConfigurationScanner
+    {
+        public const string OperationalRule = "OperationalRuntimeAuthorized";
+        public const string AdaptersRule = "NonProductionAdaptersInProductionLikeScope";
+        // AC-10 (WP-0230-DL3D): an ApprovalReference value that is not the runtime_approval_id of exactly one approved
+        // decision record (status: approved) below <root>/docs/records/decisions.
+        public const string ApprovalReferenceRule = "ApprovalReferenceWithoutApprovedRecord";
+
+        public sealed record ScanViolation(string File, string Scope, string Rule);
+
+        public sealed record ScanResult(IReadOnlyList<string> ScannedFiles, IReadOnlyList<ScanViolation> Violations);
+
+        private static readonly HashSet<string> ExcludedDirectoryNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "bin", "obj", "TestResults", "node_modules", ".git"
+        };
+
+        // Compared on the root-relative path, never on the absolute path (the running worktree itself lies below
+        // a ".claude/worktrees" directory).
+        private static readonly string[] ExcludedRelativeDirectories = [".claude/worktrees", "docs/records"];
+
+        private static readonly string[] DeploymentDirectoryParts =
+            ["deploy", "deployment", "deployments", "k8s", "kubernetes", "helm", "charts"];
+
+        private const string Token =
+            @"(?:\$\{\{.*?\}\}|\$\{[^}\r\n]*\}|\$\([^)\r\n]*\)|""[^""\r\n]*""|'[^'\r\n]*'|[^\s,""'\]\}\)#;&|<>]+)";
+
+        // Key reference: the text "Pvg" + separator + "Runtime" + separator + name, whatever precedes it.
+        // A Regex fixes its case-insensitivity tables when it is constructed, so one instance is kept per current
+        // culture; CultureInvariant keeps the match independent of that culture (for example tr-TR dotted i).
+        private static readonly ConcurrentDictionary<string, Regex> FlagReferenceByCulture = new();
+
+        private static Regex FlagReference =>
+            FlagReferenceByCulture.GetOrAdd(
+                CultureInfo.CurrentCulture.Name,
+                _ => new Regex(
+                    @"Pvg(?::|__)Runtime(?::|__)(?<name>OperationalRuntimeAuthorized|UseNonProductionAdapters|ProductionLike|ApprovalReference)",
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+
+        public static RegexOptions FlagReferenceOptions => FlagReference.Options;
+
+        // RTA-01: the shape of a runtime_approval_id (whole value; [0-9], not \d; case-sensitive).
+        private static readonly Regex ApprovalIdShape = new(
+            @"^RTA-MOD0230-[0-9]{3}\z",
+            RegexOptions.CultureInvariant);
+
+        private const string DecisionRecordsDirectory = "docs/records/decisions";
+
+        private static readonly Regex EnvironmentReference = new(
+            @"(?<![A-Za-z0-9_-])ASPNETCORE_ENVIRONMENT(?![A-Za-z0-9_])",
+            RegexOptions.CultureInvariant);
+
+        // "key: v", "key=v", "key = v", "key, v" (a = separated), or "key v" (b = whitespace only).
+        private static readonly Regex ValueAfterKey = new(
+            @"\G[""']?(?:(?<a>[ \t]*[:=,][ \t]*)|(?<b>[ \t]+))(?<tok>" + Token + ")?",
+            RegexOptions.CultureInvariant);
+
+        private static readonly Regex KubernetesNamePrefix = new(
+            @"^(?<lead>[ \t]*(?:-[ \t]+)?)name[ \t]*:[ \t]*[""']?$",
+            RegexOptions.CultureInvariant);
+
+        private static readonly Regex KubernetesValueLine = new(
+            @"^value[ \t]*:[ \t]*(?<tok>" + Token + ")?",
+            RegexOptions.CultureInvariant);
+
+        private static readonly Regex PlainEnvironmentName = new(
+            @"^[A-Za-z0-9_.-]+$",
+            RegexOptions.CultureInvariant);
+
+        private static readonly EnumerationOptions WalkOptions = new()
+        {
+            // The .NET default is IgnoreInaccessible = true and AttributesToSkip = Hidden | System (which hides
+            // every dot-file and dot-directory on Unix); both must be set explicitly.
+            IgnoreInaccessible = false,
+            AttributesToSkip = 0,
+            RecurseSubdirectories = false,
+            ReturnSpecialDirectories = false
+        };
+
+        public static ScanResult Scan(string root)
+        {
+            var files = new List<string>();
+            Walk(new DirectoryInfo(root), string.Empty, files);
+            files.Sort(StringComparer.Ordinal);
+
+            var scanned = files.Where(IsSelected).ToList();
+            var approvedReferences = ApprovedReferenceIds(root);
+            var violations = new List<ScanViolation>();
+            foreach (var relativePath in scanned)
+            {
+                violations.AddRange(AnalyzeFile(
+                    relativePath,
+                    File.ReadAllText(Path.Combine(root, relativePath)),
+                    approvedReferences));
+            }
+
+            return new ScanResult(scanned, violations);
+        }
+
+        // The runtime_approval_id values of the approved decision records (RTA-01): every *.md file below
+        // <root>/docs/records/decisions whose front matter (first "---" line to the next "---" line) holds exactly one
+        // "status: approved" and exactly one "runtime_approval_id: RTA-MOD0230-NNN". The body is never read for the
+        // id. An id carried by two or more files is dropped (ambiguous record, fail-closed). A missing directory or
+        // one without such records gives an empty set, which makes every committed reference a violation.
+        private static HashSet<string> ApprovedReferenceIds(string root)
+        {
+            var approved = new HashSet<string>(StringComparer.Ordinal);
+            var directory = new DirectoryInfo(Path.Combine(root, "docs", "records", "decisions"));
+            if (!directory.Exists || (directory.Attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                return approved;
+            }
+
+            var files = new List<string>();
+            Walk(directory, DecisionRecordsDirectory, files);
+            files.Sort(StringComparer.Ordinal);
+
+            var ambiguous = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var relativePath in files.Where(path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
+            {
+                string text;
+                try
+                {
+                    text = File.ReadAllText(Path.Combine(root, relativePath));
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    throw new InvalidOperationException(
+                        $"Decision record '{relativePath}' cannot be read: {exception.Message}",
+                        exception);
+                }
+
+                var id = ApprovedRuntimeApprovalId(text);
+                if (id is not null && !approved.Add(id))
+                {
+                    ambiguous.Add(id);
+                }
+            }
+
+            approved.ExceptWith(ambiguous);
+            return approved;
+        }
+
+        // The runtime_approval_id of one record when its front matter is approved and carries exactly one valid id.
+        private static string? ApprovedRuntimeApprovalId(string text)
+        {
+            var lines = text.Split('\n').Select(line => line.TrimEnd('\r')).ToArray();
+            if (lines.Length == 0 || lines[0].TrimStart('\uFEFF') != "---")
+            {
+                return null;
+            }
+
+            var statuses = new List<string>();
+            var ids = new List<string>();
+            var closed = false;
+            foreach (var line in lines.Skip(1))
+            {
+                if (string.Equals(line, "---", StringComparison.Ordinal))
+                {
+                    closed = true;
+                    break;
+                }
+
+                var separator = line.IndexOf(':');
+                if (separator <= 0)
+                {
+                    continue;
+                }
+
+                var key = line[..separator];
+                var value = line[(separator + 1)..].Trim();
+                if (string.Equals(key, "status", StringComparison.Ordinal))
+                {
+                    statuses.Add(value);
+                }
+                else if (string.Equals(key, "runtime_approval_id", StringComparison.Ordinal))
+                {
+                    ids.Add(value);
+                }
+            }
+
+            return closed &&
+                   statuses.Count == 1 &&
+                   string.Equals(statuses[0], "approved", StringComparison.Ordinal) &&
+                   ids.Count == 1 &&
+                   ApprovalIdShape.IsMatch(ids[0])
+                ? ids[0]
+                : null;
+        }
+
+        private static void Walk(DirectoryInfo directory, string relativePath, List<string> files)
+        {
+            if (IsExcludedDirectory(directory, relativePath))
+            {
+                return;
+            }
+
+            foreach (var entry in directory.EnumerateFileSystemInfos("*", WalkOptions))
+            {
+                if ((entry.Attributes & FileAttributes.ReparsePoint) != 0)
+                {
+                    continue;
+                }
+
+                var entryPath = relativePath.Length == 0 ? entry.Name : relativePath + "/" + entry.Name;
+                if (entry is DirectoryInfo subdirectory)
+                {
+                    Walk(subdirectory, entryPath, files);
+                }
+                else if (!string.Equals(entry.Name, ".git", StringComparison.OrdinalIgnoreCase))
+                {
+                    files.Add(entryPath);
+                }
+            }
+        }
+
+        private static bool IsExcludedDirectory(DirectoryInfo directory, string relativePath) =>
+            (relativePath.Length > 0 && ExcludedDirectoryNames.Contains(directory.Name)) ||
+            ExcludedRelativeDirectories.Any(excluded =>
+                string.Equals(relativePath, excluded, StringComparison.OrdinalIgnoreCase));
+
+        // ---- selection ----
+
+        private static bool IsSelected(string relativePath)
+        {
+            var name = relativePath[(relativePath.LastIndexOf('/') + 1)..];
+            return IsAppSettingsFile(name) ||
+                   IsLaunchFile(relativePath, name) ||
+                   IsWorkflowFile(relativePath) ||
+                   IsDockerfile(name) ||
+                   IsComposeFile(name) ||
+                   IsEnvFile(name) ||
+                   IsDeploymentDirectoryFile(relativePath, name);
+        }
+
+        private static bool IsAppSettingsFile(string name) =>
+            name.StartsWith("appsettings", StringComparison.OrdinalIgnoreCase) &&
+            name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) &&
+            name.Length >= "appsettings.json".Length;
+
+        private static bool IsLaunchFile(string relativePath, string name) =>
+            string.Equals(name, "launchSettings.json", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.EndsWith(".claude/launch.json", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.EndsWith(".vscode/launch.json", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsWorkflowFile(string relativePath) =>
+            relativePath.StartsWith(".github/workflows/", StringComparison.OrdinalIgnoreCase) &&
+            IsYamlFile(relativePath);
+
+        private static bool IsDockerfile(string name) =>
+            string.Equals(name, "Dockerfile", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("Dockerfile.", StringComparison.OrdinalIgnoreCase) ||
+            name.EndsWith(".Dockerfile", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsComposeFile(string name) =>
+            (name.StartsWith("docker-compose", StringComparison.OrdinalIgnoreCase) && IsYamlFile(name)) ||
+            string.Equals(name, "compose.yml", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(name, "compose.yaml", StringComparison.OrdinalIgnoreCase) ||
+            (name.StartsWith("compose.", StringComparison.OrdinalIgnoreCase) && IsYamlFile(name));
+
+        private static bool IsEnvFile(string name) =>
+            string.Equals(name, ".env", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Path.GetExtension(name), ".env", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsDeploymentDirectoryFile(string relativePath, string name) =>
+            (IsYamlFile(name) || name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)) &&
+            relativePath.Split('/')[..^1].Any(part =>
+                DeploymentDirectoryParts.Contains(part, StringComparer.OrdinalIgnoreCase));
+
+        private static bool IsYamlFile(string name) =>
+            name.EndsWith(".yml", StringComparison.OrdinalIgnoreCase) ||
+            name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase);
+
+        // ---- analysis ----
+
+        // The values found for each flag in one scope; a null value means "present but not determinable".
+        private sealed class ScopeFacts(string name)
+        {
+            public string Name { get; } = name;
+
+            public List<string?> OperationalValues { get; } = [];
+
+            public List<string?> AdapterValues { get; } = [];
+
+            public List<string?> ProductionLikeValues { get; } = [];
+
+            public List<string?> ApprovalReferenceValues { get; } = [];
+
+            public List<string?> EnvironmentValues { get; } = [];
+
+            public void AddFlag(string flagName, string? value)
+            {
+                if (string.Equals(flagName, "OperationalRuntimeAuthorized", StringComparison.OrdinalIgnoreCase))
+                {
+                    OperationalValues.Add(value);
+                }
+                else if (string.Equals(flagName, "UseNonProductionAdapters", StringComparison.OrdinalIgnoreCase))
+                {
+                    AdapterValues.Add(value);
+                }
+                else if (string.Equals(flagName, "ProductionLike", StringComparison.OrdinalIgnoreCase))
+                {
+                    ProductionLikeValues.Add(value);
+                }
+                else if (string.Equals(flagName, "ApprovalReference", StringComparison.OrdinalIgnoreCase))
+                {
+                    ApprovalReferenceValues.Add(value);
+                }
+            }
+        }
+
+        private static IEnumerable<ScanViolation> AnalyzeFile(
+            string relativePath,
+            string text,
+            HashSet<string> approvedReferences)
+        {
+            var name = relativePath[(relativePath.LastIndexOf('/') + 1)..];
+            var scopes = new Dictionary<string, ScopeFacts>(StringComparer.Ordinal);
+
+            ScopeFacts ScopeOf(string scopeName)
+            {
+                if (!scopes.TryGetValue(scopeName, out var facts))
+                {
+                    scopes[scopeName] = facts = new ScopeFacts(scopeName);
+                }
+
+                return facts;
+            }
+
+            if (name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                var root = ParseJson(relativePath, text);
+                if (IsLaunchFile(relativePath, name))
+                {
+                    AnalyzeLaunchFile(root, name, ScopeOf);
+                }
+                else
+                {
+                    var facts = ScopeOf("file");
+                    AddJson(facts, root, readEnvironmentNames: !IsAppSettingsFile(name));
+                    if (IsAppSettingsFile(name))
+                    {
+                        var environmentName = AppSettingsEnvironmentName(name);
+                        if (environmentName is not null)
+                        {
+                            facts.EnvironmentValues.Add(environmentName);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                AddText(ScopeOf("file"), text, readEnvironmentNames: true);
+            }
+
+            var violations = new List<ScanViolation>();
+            foreach (var scope in scopes.Values)
+            {
+                if (scope.OperationalValues.Any(value => !IsPlainFalse(value)))
+                {
+                    violations.Add(new ScanViolation(relativePath, scope.Name, OperationalRule));
+                }
+
+                if (scope.AdapterValues.Count > 0 && IsProductionLike(scope))
+                {
+                    violations.Add(new ScanViolation(relativePath, scope.Name, AdaptersRule));
+                }
+
+                // A value that cannot be determined (null), has the wrong shape, or names no approved record.
+                if (scope.ApprovalReferenceValues.Any(value =>
+                        value is null || !ApprovalIdShape.IsMatch(value) || !approvedReferences.Contains(value)))
+                {
+                    violations.Add(new ScanViolation(relativePath, scope.Name, ApprovalReferenceRule));
+                }
+            }
+
+            return violations;
+        }
+
+        private static JsonElement ParseJson(string relativePath, string text)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(
+                    text,
+                    new JsonDocumentOptions
+                    {
+                        CommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true
+                    });
+                return document.RootElement.Clone();
+            }
+            catch (JsonException exception)
+            {
+                throw new InvalidOperationException(
+                    $"Configuration file '{relativePath}' is not parseable JSON: {exception.Message}",
+                    exception);
+            }
+        }
+
+        // launchSettings.json: every "profiles" property is a scope; .claude/launch.json and .vscode/launch.json:
+        // every "configurations" item is a scope (named by "name"). Anything else in the file is the "file" scope.
+        private static void AnalyzeLaunchFile(JsonElement root, string fileName, Func<string, ScopeFacts> scopeOf)
+        {
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                AddJson(scopeOf("file"), root, readEnvironmentNames: false);
+                return;
+            }
+
+            var isLaunchSettings = string.Equals(fileName, "launchSettings.json", StringComparison.OrdinalIgnoreCase);
+            var scopeProperty = isLaunchSettings ? "profiles" : "configurations";
+            var environmentProperty = isLaunchSettings ? "environmentVariables" : "env";
+
+            foreach (var property in root.EnumerateObject())
+            {
+                if (!string.Equals(property.Name, scopeProperty, StringComparison.OrdinalIgnoreCase))
+                {
+                    AddJson(scopeOf("file"), property.Value, readEnvironmentNames: false, property.Name);
+                    continue;
+                }
+
+                if (isLaunchSettings && property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var profile in property.Value.EnumerateObject())
+                    {
+                        AddLaunchScope(scopeOf(profile.Name), profile.Value, environmentProperty);
+                    }
+                }
+                else if (!isLaunchSettings && property.Value.ValueKind == JsonValueKind.Array)
+                {
+                    var index = 0;
+                    foreach (var configuration in property.Value.EnumerateArray())
+                    {
+                        var scopeName =
+                            configuration.ValueKind == JsonValueKind.Object &&
+                            TryGetProperty(configuration, "name", out var nameValue) &&
+                            nameValue.ValueKind == JsonValueKind.String
+                                ? nameValue.GetString()!
+                                : "configuration-" + index;
+                        AddLaunchScope(scopeOf(scopeName), configuration, environmentProperty);
+                        index++;
+                    }
+                }
+                else
+                {
+                    AddJson(scopeOf("file"), property.Value, readEnvironmentNames: false, property.Name);
+                }
+            }
+        }
+
+        private static void AddLaunchScope(ScopeFacts facts, JsonElement scope, string environmentProperty)
+        {
+            // Flag references anywhere in the scope; the environment name only from the environment object and
+            // the argument properties.
+            AddJson(facts, scope, readEnvironmentNames: false);
+
+            if (scope.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (TryGetProperty(scope, environmentProperty, out var environment) &&
+                environment.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var variable in environment.EnumerateObject())
+                {
+                    if (string.Equals(variable.Name, "ASPNETCORE_ENVIRONMENT", StringComparison.Ordinal))
+                    {
+                        facts.EnvironmentValues.Add(ScalarText(variable.Value));
+                    }
+                }
+            }
+
+            foreach (var argumentProperty in new[] { "commandLineArgs", "args", "runtimeArgs" })
+            {
+                if (TryGetProperty(scope, argumentProperty, out var arguments))
+                {
+                    var argumentText = arguments.ValueKind == JsonValueKind.Array
+                        ? JoinScalars(arguments)
+                        : ScalarText(arguments);
+                    if (argumentText is not null)
+                    {
+                        AddEnvironmentReferences(facts, argumentText);
+                    }
+                }
+            }
+        }
+
+        private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = property.Value;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
+        // Flattens the element ("a:b:0:c" paths, leaf values) and matches flag references both in the paths
+        // (JSON keys) and in the text of string values and primitive arrays (command-line style arguments).
+        private static void AddJson(
+            ScopeFacts facts,
+            JsonElement element,
+            bool readEnvironmentNames,
+            string path = "")
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        AddJson(
+                            facts,
+                            property.Value,
+                            readEnvironmentNames,
+                            path.Length == 0 ? property.Name : path + ":" + property.Name);
+                    }
+
+                    break;
+                case JsonValueKind.Array:
+                    var joined = JoinScalars(element);
+                    if (joined is not null)
+                    {
+                        AddText(facts, joined, readEnvironmentNames);
+                    }
+
+                    var index = 0;
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        // Primitive items are already covered by the joined text above.
+                        if (item.ValueKind is JsonValueKind.Object or JsonValueKind.Array)
+                        {
+                            AddJson(facts, item, readEnvironmentNames, path + ":" + index);
+                        }
+
+                        index++;
+                    }
+
+                    break;
+                default:
+                    var value = ScalarText(element);
+                    AddPath(facts, path, value);
+                    if (readEnvironmentNames &&
+                        string.Equals(path.Split(':')[^1], "ASPNETCORE_ENVIRONMENT", StringComparison.Ordinal))
+                    {
+                        facts.EnvironmentValues.Add(value);
+                    }
+
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        AddText(facts, value!, readEnvironmentNames);
+                    }
+
+                    break;
+            }
+        }
+
+        private static void AddPath(ScopeFacts facts, string path, string? value)
+        {
+            foreach (Match match in FlagReference.Matches(path))
+            {
+                facts.AddFlag(match.Groups["name"].Value, value);
+            }
+        }
+
+        private static string? ScalarText(JsonElement element) =>
+            element.ValueKind switch
+            {
+                JsonValueKind.String => element.GetString(),
+                JsonValueKind.True => "true",
+                JsonValueKind.False => "false",
+                JsonValueKind.Number => element.GetRawText(),
+                _ => null
+            };
+
+        // The primitive items of an array joined with single spaces (null when it holds none).
+        private static string? JoinScalars(JsonElement array)
+        {
+            var items = array.EnumerateArray()
+                .Select(ScalarText)
+                .Where(text => text is not null)
+                .ToArray();
+            return items.Length == 0 ? null : string.Join(" ", items);
+        }
+
+        private static string? AppSettingsEnvironmentName(string fileName)
+        {
+            // appsettings.json gives no name; appsettings.<X>[.more].json names X.
+            var inner = fileName["appsettings".Length..^".json".Length];
+            if (!inner.StartsWith('.'))
+            {
+                return null;
+            }
+
+            var first = inner[1..].Split('.')[0];
+            return first.Length == 0 ? null : first;
+        }
+
+        // Text mode: flag references and (when asked) ASPNETCORE_ENVIRONMENT assignments, each with its value.
+        private static void AddText(ScopeFacts facts, string text, bool readEnvironmentNames)
+        {
+            foreach (Match match in FlagReference.Matches(text))
+            {
+                facts.AddFlag(match.Groups["name"].Value, ReadValue(text, match.Index, match.Index + match.Length));
+            }
+
+            if (!readEnvironmentNames)
+            {
+                return;
+            }
+
+            AddEnvironmentReferences(facts, text);
+        }
+
+        // ASPNETCORE_ENVIRONMENT assignments in text. A commented-out mention (a "#" earlier on its line) is not an
+        // assignment, and the command-line spelling "--ASPNETCORE_ENVIRONMENT=x" is not matched because Program
+        // reads the name from the process environment only.
+        private static void AddEnvironmentReferences(ScopeFacts facts, string text)
+        {
+            foreach (Match match in EnvironmentReference.Matches(text))
+            {
+                var lineStart = match.Index == 0 ? 0 : text.LastIndexOf('\n', match.Index - 1) + 1;
+                if (text.IndexOf('#', lineStart, match.Index - lineStart) >= 0)
+                {
+                    continue;
+                }
+
+                facts.EnvironmentValues.Add(ReadValue(text, match.Index, match.Index + match.Length));
+            }
+        }
+
+        // The value of the key written at [keyStart, keyEnd): null when it cannot be determined, "" when it is empty.
+        private static string? ReadValue(string text, int keyStart, int keyEnd)
+        {
+            var lineStart = keyStart == 0 ? 0 : text.LastIndexOf('\n', keyStart - 1) + 1;
+            var named = KubernetesNamePrefix.Match(text.Substring(lineStart, keyStart - lineStart).TrimEnd('\r'));
+            if (named.Success)
+            {
+                return ReadKubernetesValue(text, keyEnd, named.Groups["lead"].Length);
+            }
+
+            var match = ValueAfterKey.Match(text, keyEnd);
+            if (match.Groups["a"].Success)
+            {
+                return match.Groups["tok"].Success ? Unquote(match.Groups["tok"].Value) : string.Empty;
+            }
+
+            return match.Groups["b"].Success && match.Groups["tok"].Success
+                ? Unquote(match.Groups["tok"].Value)
+                : null;
+        }
+
+        // Kubernetes env list item: "- name: K" followed by "value: v" at the same indentation.
+        private static string? ReadKubernetesValue(string text, int keyEnd, int nameIndent)
+        {
+            var lineEnd = text.IndexOf('\n', keyEnd);
+            if (lineEnd < 0)
+            {
+                return null;
+            }
+
+            foreach (var rawLine in text[(lineEnd + 1)..].Split('\n'))
+            {
+                var line = rawLine.TrimEnd('\r');
+                if (line.Trim().Length == 0)
+                {
+                    continue;
+                }
+
+                var indent = line.Length - line.TrimStart().Length;
+                if (indent < nameIndent)
+                {
+                    return null;
+                }
+
+                var valueLine = KubernetesValueLine.Match(line.TrimStart());
+                if (indent == nameIndent && valueLine.Success)
+                {
+                    return valueLine.Groups["tok"].Success ? Unquote(valueLine.Groups["tok"].Value) : string.Empty;
+                }
+            }
+
+            return null;
+        }
+
+        private static string Unquote(string token)
+        {
+            token = token.Trim();
+            return token.Length >= 2 &&
+                   ((token[0] == '"' && token[^1] == '"') || (token[0] == '\'' && token[^1] == '\''))
+                ? token[1..^1].Trim()
+                : token;
+        }
+
+        // ---- classification ----
+
+        private static bool IsPlainFalse(string? value) =>
+            value is not null && string.Equals(value.Trim(), "false", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsPlainNonProductionName(string? value) =>
+            value is not null &&
+            PlainEnvironmentName.IsMatch(value) &&
+            !string.Equals(value, "Production", StringComparison.OrdinalIgnoreCase);
+
+        // A scope is production-like unless (P1) every ASPNETCORE_ENVIRONMENT assignment in it is a plain,
+        // non-empty, non-Production name (and there is at least one) and (P2) ProductionLike is not enabled.
+        // DOTNET_ENVIRONMENT is never read: Program reads only ASPNETCORE_ENVIRONMENT.
+        private static bool IsProductionLike(ScopeFacts scope)
+        {
+            var environmentGiven =
+                scope.EnvironmentValues.Count > 0 && scope.EnvironmentValues.All(IsPlainNonProductionName);
+            var productionLikeDisabled = scope.ProductionLikeValues.All(IsPlainFalse);
+            return !(environmentGiven && productionLikeDisabled);
+        }
+    }
+
+    // ---- WP-0230-DL3D (AC-10): Pvg:Runtime:ApprovalReference must resolve to an approved decision record ----
+
+    private const string ApprovalReferenceRule = PvgConfigurationScanner.ApprovalReferenceRule;
+    private const string ApprovedRecordsDirectory = "docs/records/decisions";
+    private const string ApprovedRecordPath = ApprovedRecordsDirectory + "/2026-10/rta.md";
+    private const string ApprovedRecordFor001 =
+        "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-001\n---\n# RTA\n";
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Configuration_scan_without_approval_reference_values_passes(bool decisionsDirectoryExistsButIsEmpty)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write("appsettings.json", "{\"Pvg\":{\"Runtime\":{\"OperationalRuntimeAuthorized\":false}}}");
+        fixture.Write(".env", OperationalFlagKey + "=false\n");
+        if (decisionsDirectoryExistsButIsEmpty)
+        {
+            Directory.CreateDirectory(Path.Combine(fixture.Root, "docs", "records", "decisions"));
+        }
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Contains("appsettings.json", result.ScannedFiles);
+        Assert.Contains(".env", result.ScannedFiles);
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void Configuration_scan_flags_approval_reference_when_decisions_directory_is_missing()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(
+            "appsettings.json",
+            "{\"Pvg\":{\"Runtime\":{\"ApprovalReference\":\"RTA-MOD0230-001\"}}}");
+
+        var violation = Assert.Single(PvgConfigurationScanner.Scan(fixture.Root).Violations);
+
+        Assert.Equal("appsettings.json", violation.File);
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
+    }
+
+    // Fixture notation: a single quote in the content stands for a double quote. Each row is one configuration
+    // value plus up to two decision records and differs from the accepted case (the next test) in one condition.
+    // Empty record path = no record. The expected result is one violation (file, scope, ApprovalReferenceRule).
+    [Theory]
+    [InlineData("no-record-json", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", "", "", "", "")]
+    [InlineData("no-record-env", ".env", "Pvg__Runtime__ApprovalReference=RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("no-record-workflow", ".github/workflows/ci.yml", "jobs:\n  b:\n    env:\n      Pvg__Runtime__ApprovalReference: RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("no-record-launch-settings", "Properties/launchSettings.json", "{'profiles':{'dev':{'environmentVariables':{'ASPNETCORE_ENVIRONMENT':'Development','Pvg__Runtime__ApprovalReference':'RTA-MOD0230-001'}}}}", "dev", "", "", "", "")]
+    [InlineData("no-record-dockerfile", "Dockerfile", "FROM scratch\nENV Pvg__Runtime__ApprovalReference RTA-MOD0230-001\n", "file", "", "", "", "")]
+    [InlineData("draft-record", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: draft\nruntime_approval_id: RTA-MOD0230-001\n---\n# RTA\n", "", "")]
+    [InlineData("other-id-record", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-002\n---\n# RTA\n", "", "")]
+    [InlineData("id-only-in-body", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\n---\n# RTA\nruntime_approval_id: RTA-MOD0230-001\n", "", "")]
+    [InlineData("record-outside-decisions", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", "docs/records/notes/rta.md", ApprovedRecordFor001, "", "")]
+    [InlineData("two-records-same-id", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD0230-001'}}}", "file", ApprovedRecordsDirectory + "/2026-10/rta-a.md", ApprovedRecordFor001, ApprovedRecordsDirectory + "/2026-11/rta-b.md", ApprovedRecordFor001)]
+    [InlineData("malformed-id", "appsettings.json", "{'Pvg':{'Runtime':{'ApprovalReference':'RTA-1'}}}", "file", ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-1\n---\n", "", "")]
+    [InlineData("text-value-not-in-set", ".env", "Pvg__Runtime__ApprovalReference=${{ secrets.PVG_REF }}\n", "file", ApprovedRecordPath, ApprovedRecordFor001, "", "")]
+    [InlineData("undeterminable-value", ".claude/launch.json", "{'configurations':[{'name':'pvg','runtimeArgs':['run','--','--Pvg:Runtime:ApprovalReference']}]}", "pvg", ApprovedRecordPath, ApprovedRecordFor001, "", "")]
+    public void Configuration_scan_flags_approval_reference_without_approved_record(
+        string caseId,
+        string relativePath,
+        string content,
+        string expectedScope,
+        string recordPathA,
+        string recordA,
+        string recordPathB,
+        string recordB)
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(relativePath, content.Replace('\'', '"'));
+        if (recordPathA.Length > 0)
+        {
+            fixture.Write(recordPathA, recordA);
+        }
+
+        if (recordPathB.Length > 0)
+        {
+            fixture.Write(recordPathB, recordB);
+        }
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.True(result.ScannedFiles.Contains(relativePath), $"{caseId}: {relativePath} was not scanned.");
+        var violation = Assert.Single(result.Violations);
+        Assert.Equal(relativePath, violation.File);
+        Assert.Equal(expectedScope, violation.Scope);
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
+    }
+
+    [Fact]
+    public void Configuration_scan_accepts_approval_reference_with_approved_record()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(
+            "appsettings.json",
+            "{\"Pvg\":{\"Runtime\":{\"ApprovalReference\":\"RTA-MOD0230-001\",\"OperationalRuntimeAuthorized\":false}}}");
+        fixture.Write(".env", "Pvg__Runtime__ApprovalReference=RTA-MOD0230-001\n" + OperationalFlagKey + "=false\n");
+        fixture.Write(ApprovedRecordPath, "---\nstatus: approved\nruntime_approval_id: RTA-MOD0230-001\n---");
+
+        var result = PvgConfigurationScanner.Scan(fixture.Root);
+
+        Assert.Contains("appsettings.json", result.ScannedFiles);
+        Assert.Contains(".env", result.ScannedFiles);
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void Configuration_scan_matches_upper_case_approval_reference_key_under_turkish_culture()
+    {
+        using var fixture = new ScanFixture();
+        fixture.Write(".env", "PVG__RUNTIME__APPROVALREFERENCE=RTA-MOD0230-001\n");
+
+        var violation = ScanUnderTurkishCulture(fixture.Root).Single();
+
+        Assert.Equal(ApprovalReferenceRule, violation.Rule);
     }
 }

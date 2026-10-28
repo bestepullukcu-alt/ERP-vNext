@@ -1,0 +1,1 @@
+3:> **TASLAK** — hazırlık kopyası; dağıtım yok, kabul yok. Kaynak: `execution/domains/platform-shared-services/module-packs/MOD-0286-ui-design-system-page-pattern-governance.md` revizyon 06 (sha256 `7f6868d9`). **Kaynak pakettir; çelişkide paket kazanır.**

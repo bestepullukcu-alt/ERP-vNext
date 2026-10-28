@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D31 (D16–D31: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D35 (D16–D31: 2026-10-25, D32–D35: 2026-10-26) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -306,6 +306,78 @@ Sahibin mesajı: "Önce AGENTS/ports 5071 ve RCS-001 yamalarını uygula, sync_a
 4. **Başka sahiplerin işleri:** "Ek önerileri + mesajlar" (önerilen) — MOD-0048-FU01 §21 (TRM-17: `payment-method` ve
    `currency-minor-units` kümeleri) eki yazılır; Ali, procurement, commercial-suite, MOD-0018, BL-565 ve güvenlik için
    gönderilmeye hazır mesajlar hazırlanır.
+
+## D32 — MOD-0023 §17 sahibinin altı noktası ve onay turu (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Kaynak: MOD-0023 sahibinin §17 için altı noktası (sahip iletti, 2026-10-26). Pack'teki karşılığı: MOD-0023 §17.8 (rev 2).
+
+1. **Yazan ≠ merge eden:** MOD-0023 sahibi WP kodunu yazar, başka biri (K2 onaylayan) merge commit'iyle birleştirir
+   (sahibin kendi önerisi; kabul edildi).
+2. **`isDeleted` / `includeDeleted` anlamı:** yalnız savunma amaçlı; politika silmeyi yasaklar. Koddan ölçülen (okundu,
+   çalıştırılmadı): üç tip `TenantRepository<T>` üzerinden miras `RepositoryBase<T>.DeleteAsync` ile soft delete edilebilir (`IsDeleted` yazar, `DeletedAt`
+   yazmaz), `by-objects` ise `DeletedAt` ile süzer — tek silme işareti `IsDeleted` olur, miras silme üç repository'de override ile kapatılır; ortak taban sınıf
+   değişmez (AC-W15, §17.8/9).
+   Ortamlardaki silinmiş satır sayısını MOD-0023 sahibi ölçer.
+3. **KVKK / GDPR:** "Kayıt kalır, kişi alanı anonimleşir" — satır silinmez; silme talebinde kişiyi tanıtan alanlar yerinde
+   takma ad ile değiştirilir; anahtar, durum, sıra kalır. Kesin prosedür hukuk görüşüne bağlı açık madde **O-S17-1**
+   (sahip K1 + hukuk / veri koruma); dilimleri bloklamaz, ilk silme talebinden önce karara bağlanır.
+4. **DL-2 tüketici kontrolü:** kabul — AC-W17 (403 → 409, 200 → 409, `idempotentReplay`).
+5. **MDM testi:** "MDM sahibi test yazsın" — istisna yok; AC-W3 ve AC-W17 MDM testi olmadan geçmez.
+6. **`includeDeleted` yetkisi:** "Mevcut `instances.view` + kiracı testi" — yeni izin yok; AC-W16.
+7. **Onay turu:** "Onaydan çıkar, §17'yi düzelt" — MOD-0023 §17 `a8df05e7…` sürümü K2 onay turundan çıkarıldı (diğer sekiz
+   hedef sürer); rev 2 yeniden CT-APR-02 incelemesinden geçer, sonra ayrıca CT-APR-01 onayı istenir.
+8. **Beste onay notu (aynı gün, soru kutusu):** not dosya + SHA-256 ile iletilir (push yok); `whole_pack=TRM-14`
+   (MOD-0220 §22), `whole_pack=TRM-17` (MOD-0048-FU01 §21); DCP numarasız onaylanır, numara sonra (yol ve hash değişince yeni
+   inceleme + onay).
+
+## D33 — MOD-0289 güvenlik onayı (O-6), anahtar kaynağı, döndürme ve AC-50 eşiği (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Sahip (K1) güvenlik onayını kendisi verir. Pack'e işlenmesi **ertelendi** (madde 5).
+
+1. **O-6 güvenlik onayı:** "Onay, testler kapıda" — MOD-0289'daki tasarım (AES-256-GCM, CSPRNG 96-bit nonce, AAD = kiracı +
+   hesap + anahtar sürümü, ayrı sürümlü HMAC özet, `BankDataKeyFence`, `BankDataKeySetTarget` + artan `ApprovalRevision`,
+   maskesiz okuma için ayrı izin + gerekçe + değerden önce denetim) yazıldığı gibi onaylanır. Gerçek Mongo testleri ve AC-50
+   DL-2 dilim kabul kapısında kalır; geçmezlerse dilim kabul edilmez.
+2. **Anahtar kaynağı:** "Ortam gizli deposu" — şifreleme ve özet anahtarları her ortamın gizli deposundan / yapılandırmasından
+   gelir (yerelde user-secrets), depoya asla yazılmaz; kod yalnız `Mdm:BankData:*` anahtarlarını okur
+   (`docs/guides/operations/service-trust-chain-runbook.md` deseni). Harici KMS / Vault seçilmedi.
+3. **Döndürme ve `ApprovalRef`:** anahtarlar yılda bir ve sızıntı şüphesinde hemen döndürülür. `ApprovalRef` = yapılandırma
+   değişikliğini onaylayan PR ve merge commit'i; onaylayan K2, yazandan farklı.
+4. **AC-50 kabul eşiği** (8 paralel yazıcı, 10 dakika, aynı sürede bir çit ilerletmesi): kayıp ve çift yazım 0; ilerletmeden
+   sonra eski kümeli commit 0; yeniden deneme oranı ≤ %5; p95 ≤ 500 ms; p99 ≤ 1,5 sn.
+5. **Pack'e işleme zamanı:** MOD-0289 pack'i (`63896f93…`) K2 onay turunda; değiştirilirse onaylanacak sürüm eskir. D33/1–4,
+   K2 onay satırları main'e girdikten sonra **ayrı bir MOD-0289 revizyonuyla** işlenir (yeni CT-APR-02 + CT-APR-01). O zamana
+   kadar pack'teki ilgili `ready-for-dev` maddeleri (güvenlik onayı, anahtar kaynağı / döndürme, AC-50 eşiği,
+   `ApprovalRef` kaynağı) pack'te açık görünür; kararları bu kayıt taşır. (**D34/3 ile değişti.**)
+
+## D34 — Onay turu S-49'a göre daraltıldı (2026-10-26, soru kutusu; önerilen seçenek)
+
+Kaynak: main'e giren CT-APR-06 kuralı S-49 (`scripts/pack_approval.py` `DRAFT_WARNING`; kart): künyesi `status: draft` olan
+paketin onay satırı yalnız uyarıyla kabul edilir, kodu yetkilendirmez; onay satırı künyesi `ready-for-dev` olan sürüme yazılır.
+
+1. **Bu tur:** K2 yalnız künyesi `ready-for-dev` olan iki eki onaylar — MOD-0220 §22 (`91248a47…`, `whole_pack=TRM-14`) ve
+   MOD-0048-FU01 §21 (`8fc68be8…`, `whole_pack=TRM-17`). D32/8'deki sekiz hedefli tur bununla değişir.
+2. **Taslak paketler:** MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289 ve DCP, künyeleri `ready-for-dev` olunca tek seferde
+   onaya gelir (yeni CT-APR-02 + CT-APR-01). DCP numarası ayrıca ve önce istenir (yalnız numara).
+3. **D33/5 yerine:** MOD-0289 bu turda olmadığı için D33/1–4 K2 satırlarını beklemez; bir sonraki MOD-0289 revizyonunda işlenir
+   (yeni CT-APR-02).
+
+## D35 — Diten.FinanceTreasuryService denetim defteri: Control Tower kararı (2026-10-26, soru kutusu; hepsi önerilen seçenek)
+
+Kaynak: MOD-0126 "Repo Scope" ve "Ready-for-dev Checklist" ("Yeni servis defteri + CT-DECISIONS satırı için Control Tower
+kararı (yol b izi kabulü)"), AUD-001, `tests/architecture/audit-ledger/README.md`, emsal: SupplyChain E-2
+(`tests/architecture/audit-ledger/CT-DECISIONS.md` 2026-10-21 satırı, `Diten.SupplyChainService.md`).
+
+1. **İz:** `finance-treasury-merkezi-iletim | b | işaret | ICentralAuditDeclaration` — ortak iletici
+   (`Diten.BuildingBlocks.CentralAudit`, K4); `AddCentralAudit<FinanceTreasuryCentralAuditScope>(RequireEnlistment = true)`;
+   her yazma komutu işaretli, olay iş verisiyle aynı Mongo işleminde `CentralAuditTransaction.EnlistAsync` ile yazılır (K2).
+2. **Borç ve istisna sıfır:** `## Bilinen borç`, `## K2 borcu`, `## İstisnalar`, `## Dolaylı`, `## Yazan sorgular` boş başlar;
+   `PinnedCounts` sıfır. Sonradan satır eklemek ayrı Control Tower kararıdır.
+3. **Kategori:** Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` değeri (MOD-0126 O-6 kalanı, D9). Platform sahibinin
+   işidir (XMC-001); **MOD-0126 DL-1 bu değer main'e girmeden başlamaz**. `MasterData` ara çözümü seçilmedi.
+4. **Uygulama:** defter dosyası `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md`, `CT-DECISIONS.md` satırı
+   ("kararı veren": Natig, 2026-10-26 — Treasury CT önerisi, D35) ve `AuditTrailStandardTests.AcceptedTrails` / `PinnedCounts`
+   MOD-0126 DL-1 değişikliğinde birlikte yazılır (CI aynı değişikliği ister); bu kayıt yalnız kararı taşır.
 
 ## Karar olmayanlar
 

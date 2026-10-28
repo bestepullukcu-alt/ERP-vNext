@@ -30,6 +30,30 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0124 için kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-27, D46):** rol şablonlarının içeriği sahip kararıyla verildi (D46, `treasury-intake-owner-decisions-05.md`);
+> Auth'ta kayıt Ali'nin iş paketinde. DCP dosya adı `DCP-011-finance-treasury-intake.md`. MOD-0126 sabitlemesi `e87f57a4…`
+> (D46 revizyonu). `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04a — sahip denetimi; KARAR D47/1, D47/4):** hedef kullanıcılar rol matrisiyle hizalandı — hazine
+> yöneticisi yalnız yapılandırma ve operasyonel destek (eşik politikaları, taslak toplu silme, uzlaştırma); yayım onaylayıcı
+> rolünde. Banka okuma izni nakit pozisyonu rollerine verilmez (v1'de `BankAccountRef` opak, MOD-0289 okunmaz). Rol şablonu
+> göstergeleri D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`). AC numaraları değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, CT04b — KARAR D49/1):** hedef kullanıcılara modül bazında "nakit pozisyonu görüntüleyici" (okuma)
+> eklendi; nakit pozisyonu rolleri yalnız bunu miras alır, hazine yöneticisi ödeme + nakit pozisyonu görüntüleyicilerini alır;
+> dört modülün okumasını taşıyan "Hazine konsolide görüntüleyici" yalnız gerekçeyle atanır ve hiçbir rol onu miras almaz. Kod,
+> izin anahtarı ve AC değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-27, kaynak yanıtları Y-1…Y-4):** kaynak `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` —
+> (1) O-7: D43'ün yanına Platform sahibinin (Beste) yeniden teyidi eklendi — "v1'de kur çevrimi yok; pozisyonlar kendi para
+> birimlerinde gösterilir"; kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4); (2) Platform `AuditCategory` `Finance` değeri 18
+> (Y-4/7; 17 main'de ESignature / MOD-0022 için kullanılıyor); "değer main'de" maddesi açık; (3) SEC-002 tüketim yolu Platform
+> sahibi yanıtı Y-4/6 ile yazıldı (O-23; MOD-0126 O-19 ile tek karar); (4) MOD-0048 `currency-minor-units` önerisi başlangıç
+> listesi olarak kabul (Y-4/3; O-8, MOD-0126 O-11 ile ortak) — seed önkoşul açık; (5) MOD-0126 sabitlemesi bu revizyonun
+> MOD-0126 sürümüne (`8eab5e3c…`; AC biçimi düzeltmesiyle) çekildi; (6) DCP numarası DCP-011 atandı (Y-4/2); dosya adı değişikliği ayrı adım —
+> paketteki `UNASSIGNED-finance-treasury-intake.md` yolu bu revizyonda değişmez.
+> Bu revizyon pack'i `ready-for-dev` yapmaz; künye `draft` kalır.
+>
 > **D27 (2026-10-25, sahip) — kapı kararları verildi:** karar 0.3 → **KARAR D27/1** süreli T32 sapması: Treasury
 > sözleşmeleri `docs/analysis/contracts/` altında dondurulmuş dosya olarak tutulur ve MOD-0003 gelince oraya kaydedilir;
 > **bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (hangisi önce gelirse)**. Karar 0.5 → **KARAR D27/2** (AR kısıtlı
@@ -38,6 +62,23 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > `VoucherReference` yok). D1 kod alma → **KARAR D27/5** (MOD-0126, MOD-0119, MOD-0120, MOD-0124 için kaynak S `da4abb20`
 > doğrulanıp uyarlanarak alınabilir; kod yine yalnız pack `ready-for-dev` olunca ve dilim sırasıyla yazılır). Kayıt:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D27 (bu revizyonla aynı commit'te). Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **Revizyon (2026-10-26, D36 + D43):** D29/1'in diğer sahip teyitleri sahip teyidiyle kapandı — O-3 (D36/1), O-17 (D36/2),
+> O-14 (D36/3; `treasury-intake-owner-decisions-03.md`, PR #242) ve O-7 (D43; `treasury-intake-owner-decisions-04.md`); checklist
+> satırları kapandı. MOD-0126 sabitlemesi D42 + D44 revizyonuna (`25065d5e…`) çekildi. Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** (tarihçe — **D36 / D43 ile güncellendi**: aşağıdaki
+> "O-3 teyidi açık" ifadesi D36/1 ile kapandı, (6)'daki `684e89d6…` sabitlemesi yerini güncel MOD-0126 sabitlemesine bıraktı;
+> güncel durum üstteki D36 + D43 notunda ve Implementation Notes'tadır) — kaynak:
+> `execution/domains/finance-treasury/work-packs/MOD-0124-DL1-hazirlik.md` §6. (1) O-3: sahip payı verildi (D29/1),
+> platform-shared-services teyidi açık ve D29/1 gereği `ready-for-dev` engeli, dolayısıyla DL-1 önkoşulu — Dependencies,
+> Checklist ve Açık kararlar aynı dili kullanır; (2) D30 sonrası bayat liste: AGENTS §2/§3/§9, `ports.md` 5071 ve RCS-001
+> §3 `CPS`/`CTP` satırları uygulandı (D30, 2026-10-25), bekleyen iş listesinden çıkarıldı; (3) AC-29 (AUD-001 §8 dev
+> kanıtı: oluşturma / güncelleme / silme) DL-1 bitişine alındı, DL-4'ten çıkarıldı; (4) Audited Events `Category`:
+> `Finance` (D35/3), iz ve defter D35/1–2 — `treasury-intake-owner-decisions-02.md` D35 (PR #235); (5) indeks hizmeti tek
+> kural: barındırılan hizmet MOD-0126 DL-1 iskeletinindir, MOD-0124 yalnız kendi koleksiyonlarının indeks tanımlarını
+> yazar ve kaydeder; (6) MOD-0126 ortak tanımları sürüme sabitlendi (sha256 `684e89d6…`, main @ `f3fcd3b4d`). Bu revizyon
+> pack'i `ready-for-dev` yapmaz.
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D1 (doğrula, sonra uyarlayarak al), D2 (servis
 > `Diten.FinanceTreasuryService`), D3 (dal kısa kodu `fin`), D5 (MOD-0269 = önce sözleşme, dağıtım kapalı; dört kapalı
@@ -50,7 +91,7 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > pack'inde), D14/3 (Cash Positioning yayımı K2 değildir), D14/4 (nakit pozisyonu oluşturan/değiştiren her yazmada şirket
 > Active + Approved) — `treasury-intake-owner-decisions-02.md`. Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0124-v1.0.md` (koşul 1–4 bu pakette karşılanır, bkz.
-> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
+> "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md`
 > (taslak; dilim **TRM-S2** — beklediği karar 0.3 D27/1 ile verildi; DCP metni aynı commit'te güncellendi).
 >
 > **Ortak kurallar MOD-0126 ile aynıdır.** `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`
@@ -80,7 +121,9 @@ kanıt paketi, MOD-0023 iş akışıyla onay ve yayım (o gün/para birimi için
 Treasury & Cash; Blueprint bağımlılık kapısı "Data Contract Registry; Integration Monitoring & Reconciliation" (paket §A).
 
 - **Hedef kullanıcı:** hazine operatörü (bakiyeleri girer, mutabakat çalıştırır, kanıt ekler, onaya gönderir), hazine
-  onaylayıcısı (onaylar / reddeder), hazine yöneticisi (yayımlar, eşik politikasını yönetir, belirsiz sonucu uzlaştırır).
+  onaylayıcısı (onaylar / reddeder, yayımlar), hazine yöneticisi (yalnız yapılandırma ve operasyonel destek: eşik politikasını
+  yönetir, taslakları toplu siler, belirsiz sonucu uzlaştırır — KARAR D47/1), nakit pozisyonu görüntüleyici (okuma — KARAR
+  D49/1). Rol şablonları D46 + D47 + D49 (rol matrisi `treasury-intake-owner-decisions-05.md`, "D47 rol matrisi (CT04a; D49 ile güncellendi)").
 - **v1 pozisyon kaynağı (banka beslemesi YOK):** kullanıcının elle girdiği **bilinen bakiyeler** (`BalanceSourceKind =
   ManualEntry`) — banka portalından, ekstreden ya da teyit yazısından okunan değer, her satırda "as-of" zamanı ve kaynak
   referansıyla; dayanak belge kanıt paketiyle (MOD-0031) bağlanır. Banka durumu ve ekstre girdileri MOD-0269'a bağlıdır
@@ -281,7 +324,7 @@ makbuz) anlık görüntünün `LegalEntityId`'sini taşır ki her sorgu Tenant +
 
 | Alan | Tip | Kural | Kaynak |
 |---|---|---|---|
-| SnapshotCode | string | RCS-001 OTOMATİK `{ŞİRKET}-{TÜR}-{SAYAÇ}`; tür öneki önerisi `CPS` (O-9); kullanıcı giremez/değiştiremez; silinen kaydın kodu yeniden kullanılmaz | kaynak `CP-{yyyyMMdd}-{8hex}` (`CashPositionPersistenceService.cs:362@da4abb20`) — taşınmaz |
+| SnapshotCode | string | RCS-001 OTOMATİK `{ŞİRKET}-{TÜR}-{SAYAÇ}`; tür öneki `CPS` (KARAR D29/2, O-9); kullanıcı giremez/değiştiremez; silinen kaydın kodu yeniden kullanılmaz | kaynak `CP-{yyyyMMdd}-{8hex}` (`CashPositionPersistenceService.cs:362@da4abb20`) — taşınmaz |
 | BalanceSourceKind | enum `ManualEntry`=1 | sunucu sabitler | yeni |
 | ValueDate | DateOnly | zorunlu | `:9` |
 | PositionCurrencyCode | string(3) | zorunlu, ISO 4217 upper | `:10` |
@@ -494,8 +537,13 @@ tanımlıdır: **MOD-0126 pack Entity Fields — FinanceTreasuryCommandReceipt**
 MOD-0126 DL-1'dir (MOD-0126 pack Entity Fields → Mongo indeksleri); MOD-0124 yeniden bildirmez. Kaynağın içe aktarma
 tekrar indeksleri taşınmaz.
 
-Kaynağın içe aktarma, kaynak kaydı, banka bakiyesi, kategori, kural ve outbox indeksleri (8 ad) taşınmaz. İndeks kurulumu
-servis iskeletinin indeks barındırılan hizmetiyle yapılır (`mongo-indexing`); taşıma/geri doldurma yok (paket §L.13).
+Kaynağın içe aktarma, kaynak kaydı, banka bakiyesi, kategori, kural ve outbox indeksleri (8 ad) taşınmaz.
+
+**İndeks kurulumu — tek kural:** indeks barındırılan hizmeti (kurulumu çalıştıran hizmet) servis iskeletinin parçasıdır;
+sahibi ve yazarı **MOD-0126 DL-1**'dir (servis ortak yapı taşı). MOD-0124 ayrı bir barındırılan hizmet açmaz; yalnız
+**kendi koleksiyonlarının** indeks tanımlarını (yukarıdaki tablo) `Persistence/CashPositions/` altında yazar ve iskeletin
+indeks hizmetine kaydeder (`mongo-indexing`; kaynak `CashPositionIndexHostedService.cs` ayrı hizmet olarak alınmaz).
+Servis ortak koleksiyonların (makbuz) indeksleri MOD-0126 DL-1'indir. Taşıma/geri doldurma yok (paket §L.13).
 
 ### Hata sözlüğü (kaynak 52 `MOD0124_*`, `Application/Common/CashPositionErrorCodes.cs@da4abb20`; HTTP eşlemesi paket §E)
 
@@ -545,8 +593,9 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
   - `src/Diten.FinanceTreasuryService.Application/Features/CashPosition/**` ve `Features/CashPositionThresholdPolicy/**`
     (Golden Reference düzeni)
   - `src/Diten.FinanceTreasuryService.Domain/CashPositions/**`
-  - `src/Diten.FinanceTreasuryService.Persistence/CashPositions/**` (depolar, indeks hizmeti; her işlem geri çağrısı
-    `CentralAuditTransaction.EnlistAsync` çağırır)
+  - `src/Diten.FinanceTreasuryService.Persistence/CashPositions/**` (depolar; MOD-0124 koleksiyonlarının indeks tanımları
+    ve iskeletin indeks hizmetine kaydı — barındırılan hizmet MOD-0126 DL-1'indir, bkz. Entity Fields → Mongo indeksleri;
+    her işlem geri çağrısı `CentralAuditTransaction.EnlistAsync` çağırır)
   - `src/Diten.FinanceTreasuryService.Infrastructure/{Workflow,Evidence}/**` içinde MOD-0124 bağdaştırıcıları; LE,
     para birimi, kod portu ve veri kapsamı (`DataScope`) bağdaştırıcıları servis ortaktır ve MOD-0126 DL-1'indir (burada
     yazılmaz, yeniden tanımlanmaz)
@@ -572,9 +621,11 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 MOD-0220 TRM-14 (MOD-0126 ile aynı ek); MOD-0023 iş akışı şablonu (nakit pozisyonu onayı); `ocelot.json` rotaları
-(integration-agent); AGENTS.md §2/§3/§9 ve `.antigravity/rules/ports.md` (5071); `record-coding-standard.md` §3
-tablosuna `CPS` ve `CTP` satırları; Platform `AuditCategory` eki (MOD-0126 O-6 ile ortak); FinanceTreasury servisinden
-SEC-002 veri kapsamı çözücüsünün tüketim yolu (platform-shared-services, O-23). Bkz. "Dependencies".
+(integration-agent); Platform `AuditCategory`'ye `Finance` (değer 18; Y-4/7) eki (KARAR D35/3 — Platform sahibinin işi, MOD-0126 DL-1'den
+önce; MOD-0126 O-6 ile ortak); FinanceTreasury servisinden SEC-002 veri kapsamı çözücüsünün tüketim yolu
+(platform-shared-services, O-23; yol Y-4/6 ile yanıtlandı). Bkz. "Dependencies". **Artık bekleyen iş değil:** AGENTS.md §2/§3/§9,
+`.antigravity/rules/ports.md` (5071) ve `record-coding-standard.md` §3 `CPS` / `CTP` satırları D30 ile uygulandı
+(2026-10-25).
 
 ## Protected Paths
 
@@ -607,12 +658,12 @@ SEC-002 veri kapsamı çözücüsünün tüketim yolu (platform-shared-services,
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:37`); küsurat hanesi alanı yok (MOD-0126 Dependencies ölçümü) | küsurat kaynağı **TBD (O-8)**; yoksa yazma 503 |
 | MOD-0031 Evidence Linking | kanıt bağlantısı | **var** — `api/v1/evidence` (`EvidenceLinksController.cs:19`), `POST links` (`:32`), `POST links/query` (`:72`) | DL-4; bağlama ucunun idempotency (dedupe) davranışı ve `links/query` ile uzlaştırma DL-4 başında ölçülür (O-17); dedupe ölçülene kadar Reconcile MOD-0031'e yazma çağrısı yapmaz, yalnız `links/query` okur (gap 5/G2) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); MOD-0124 anahtarlarının kaydı; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
-| **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-23)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) |
+| **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-23)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapı (kapsamı soran kod + kanıt testi) açık |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | anlık görüntü ve politika kodu | **yok** (MOD-0126 Dependencies ölçümü); şirket kısa kodu (§5.4) LE'de ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **engel**: modül kendi sayacını yazamaz (RCS-001 §6); servis gelene kadar Create yazılamaz (O-9) |
 | MOD-0126 Payments & Approvals | servis iskeleti + servis ortak yapı taşları; (isteğe bağlı) taahhütlü çıkış | **pack `draft`** (sahip tasarım PASS kaydı, `3a1c32b9e`); kod yok | **MOD-0126 DL-1, MOD-0124 DL-1'in önkoşuludur** (iskelet, makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — tek sahibi o dilim, gap 4/G5); onaylı partilerin pozisyonda gösterimi **O-6** (v1'de yok) |
 | MOD-0125 / MOD-0126 / MOD-0127 | yayım tüketicileri | hiçbiri onay vermedi (paket §P PUBLICATION yuvası) | v1'de olay yok; `GetCurrentCashPositionQuery` okuma sözleşmesi (O-14) |
 | Port 5071 | servis portu | sahip kararı D10/3; AGENTS.md §3 ve `ports.md` güncellendi (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (DCP-011-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -624,12 +675,12 @@ ister.
 |---|---|---|---|---|---|---|
 | CASH-POSITION (bu modül) | `docs/analysis/contracts/cash-position.openapi.yaml` v1.0.0 — **yazılacak** | TBD (dondurulunca) | finance-treasury | — | sözleşme testi AC-28 · — | DL-1 (DL-3'te `current`) |
 | MOD-0003 kararı (0.3) | **KARAR D27/1** — T32 sapması (bitiş: MOD-0003 ya da Treasury v1 sonu) | — | sahip (K1) | — (çağrı yok) | karar kaydı — **kapandı** | — |
-| MOD-0037 kapı kararı | sahip kararı — **yok** (O-3) | — | sahip (K1) + platform-shared-services | — (çağrı yok) | karar kaydı · — | DL-1 önkoşulu |
+| MOD-0037 kapı kararı | **KARAR D29/1** (sahip payı, 2026-10-25: v1 MOD-0037'yi tüketmez, O-3); platform-shared-services teyidi yerine sahip teyidi **KARAR D36/1** (2026-10-26, PR #242) | — | sahip (K1) | — (çağrı yok) | karar kayıtları D29/1 · D36/1 | kapandı — önkoşul değil |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-8) | TBD | platform-shared-services | hane yok → 503 | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
-| RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
-| SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-23; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / `current` / yazma 404 | kapsam testi AC-31 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
-| CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-29 | DL-1 |
+| RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | servis sahibi **Beste — KARAR D44** (2026-10-26; `treasury-intake-owner-decisions-04.md`); önek CT + `.antigravity` onayı (D29/2, D30) | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
+| SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — kodda **yok**; yol Platform sahibi yanıtı Y-4/6 (servis içi port + Platform çözücü bağdaştırıcısı, fail-closed) (O-23; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / `current` / yazma 404 | kapsam testi AC-31 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
+| CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | AC-17 (tek aşamalı kısım DL-1; iki aşamalı + sabotaj DL-4) · AUD-001 §8 dev kanıtı AC-29 (DL-1: oluşturma / güncelleme / silme) | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + şablon kodu — **TBD** (O-20) | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-3 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-3 |
@@ -656,7 +707,7 @@ ister.
   yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0126/0119/0120 ile ortak; modül yalnız kendi `read-tenant-wide`
   anahtarını verir) çözülür; okumalar (liste, detay, iz, `current`, politika ekranı) **okuma kapsamını**, her yazma **yazma
   kapsamını** kullanır (aşağıda); sayfalama ve toplamlar daraltılmış kümeden hesaplanır. Referans uygulama:
-  `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Kapsam LE başınadır; grup görünümü O-5'tir.
+  `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Tüketim yolu (Platform sahibi yanıtı Y-4/6): `IFinanceTreasuryDataScopeSource` servisin kendi Application portudur; bağdaştırıcısı Platform `IDataScopeResolver`'ı çağırır; hata, boş liste ya da belirsizlik → erişim yok (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı doğrudan kullanılmaz; `read-tenant-wide` Auth'ta yalnız açık atamalı izindir. Kapsam LE başınadır; grup görünümü O-5'tir.
 - **Okuma kapsamı ile yazma kapsamı ayrıdır (gap 4/G1; D14/1 ile tutarlı — `…read-tenant-wide` *görme* iznidir; tanım
   MOD-0126 pack Runtime Constraints, servis ortak):** okuma kapsamı = kullanıcının kendi şirket yetkileri ya da
   `read-tenant-wide` varsa kiracıdaki tüm şirketler; **yazma kapsamı** = yalnız kendi şirket yetkileri (`TenantWideScope()`
@@ -1089,6 +1140,11 @@ yoktur (O-21).
 - **Karışık para birimi satırı** → 400 `CASH_POSITION_MIXED_CURRENCY`; **yinelenen satır anahtarı** → 400
   `CASH_POSITION_DUPLICATE_LINE_KEY`.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `CASH_POSITION_CURRENCY_PRECISION_UNAVAILABLE`.
+- **Para birimi listesi okunamıyor** (MOD-0048 çağrısında zaman aşımı, 5xx, ayrıştırılamayan gövde ya da küme / uç yok)
+  → 503 `CASH_POSITION_REFERENCE_UNAVAILABLE`, kayıt yok; bu bir bağımlılık hatasıdır, **geçersiz kullanıcı girdisi sayılmaz** — 400
+  `CASH_POSITION_INVALID_CURRENCY_CODE` yalnız liste başarıyla okunduğunda ve kod listede olmadığında döner. Test `CashPositionCurrencySourceUnavailableIsNotInvalidInputTests`: sahte
+  MOD-0048 istemcisi (a) 5xx, (b) zaman aşımı, (c) bozuk gövde döndürür → her biri 503, kayıt yok, asla 400; (d) liste
+  okunur, kod yok → 400. Sabotaj: okunamayan listeyi "kod yok" sayan eşleme (a)–(c)'yi kırmızıya çevirir.
 - **Kaynak referansında 8+ ardışık rakam** → 400 `CASH_POSITION_SENSITIVE_TEXT_REJECTED`; değer kayda ve loga yazılmaz.
 - **Politika yok** → Reconcile 422 `CASH_POSITION_THRESHOLD_POLICY_MISSING`; kodda varsayılan eşik yok.
 - **Çakışan politika aralığı / eşzamanlı iki politika yazımı** → 409 `CASH_POSITION_THRESHOLD_POLICY_OVERLAP` /
@@ -1140,7 +1196,7 @@ yoktur (O-21).
 | `finance-treasury.cash-position-threshold-policies.bulk-delete` | T2 | DELETE bulk |
 
 - Kullanıcının MOD-0023 tarafında da `platform.workflow.instances.start` (gönderen) ve `platform.workflow.tasks.approve`
-  / `.reject` (onaylayıcı) izinleri olmalıdır; rol şablonu MOD-0018 sahibiyle (MOD-0126 O-5 ile ortak iş).
+  / `.reject` (onaylayıcı) izinleri olmalıdır; rol şablonları D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`); Auth kaydı MOD-0018 sahibinde.
 - Tier-3 eylemler (`read-tenant-wide`, `reconcile`, `attach-evidence`, `submit`, `workflow-reconcile`, `publish`,
   `export-evidence`, `export-reconcile`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol
   şablonunda varsayılan değildir.
@@ -1151,12 +1207,19 @@ Yol `b`: `Diten.BuildingBlocks.CentralAudit` ortak ileticisi (AUD-001 §5 K4) �
 servis `AddCentralAudit<FinanceTreasuryCentralAuditScope>(…, RequireEnlistment = true)` kaydeder (MOD-0126 DL-1), her
 depo işlemi olayı **aynı Mongo işlemine** yazar (`CentralAuditTransaction.EnlistAsync`). **Servisin denetim altyapısı
 bugün yok** (servis yok; `tests/architecture/audit-ledger/` altında `Diten.FinanceTreasuryService.md` yok — ölçüldü):
-kurulum MOD-0126 DL-1'in ilk adımıdır, defter satırı CT kararı ister; o gelmeden MOD-0124 yazma komutu yazılamaz
-(Dependencies). Kaynaktaki yerel kayıttan **sonra**, en iyi çaba, hatayı yutan yayım (`CashPositionAuditEmitter.cs:9, :187-225@da4abb20`;
+kurulum MOD-0126 DL-1'in ilk adımıdır; defter için CT kararı verildi (KARAR D35/1–2, aşağıda), defter dosyası MOD-0126 DL-1
+değişikliğinde yazılır (D35/4); o gelmeden MOD-0124 yazma komutu yazılamaz (Dependencies). Kaynaktaki yerel kayıttan **sonra**, en iyi çaba, hatayı yutan yayım (`CashPositionAuditEmitter.cs:9, :187-225@da4abb20`;
 `AuditDispatch.Enabled=false`, istemci FailClosed — paket §H, §L.8) taşınmaz.
 
-`Category`: Platform `AuditCategory`'de finans değeri yok (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27`);
-MOD-0126 O-6 ile ortak eklemeli `Finance` önerisi — karar çıkana kadar değer uydurulmaz. `SourceModule`: `MOD-0124`.
+**Denetim defteri — KARAR D35** (`treasury-intake-owner-decisions-02.md` D35 (PR #235)): iz
+`finance-treasury-merkezi-iletim | b | işaret | ICentralAuditDeclaration` (D35/1; servis tek iz, MOD-0126 ile ortak);
+`## Bilinen borç`, `## K2 borcu`, `## İstisnalar`, `## Dolaylı`, `## Yazan sorgular` boş, `PinnedCounts` sıfır başlar —
+sonradan satır eklemek ayrı CT kararıdır (D35/2).
+
+`Category`: **`Finance`** (değer 18; Y-4/7) — KARAR D35/3: Platform `AuditCategory`'ye (bugün finans değeri yok —
+`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27`) yalnız ekleme olarak `Finance` değeri
+eklenir (MOD-0126 O-6 kalanı). Platform sahibinin işidir (XMC-001); MOD-0126 DL-1 bu değer main'e girmeden başlamaz, bu
+yüzden MOD-0124 DL-1 de onu bekler. `MasterData` ara çözümü seçilmedi; başka değer kullanılmaz. `SourceModule`: `MOD-0124`.
 `EntityType`: `CashPositionSnapshot` (aksi yazılmadıkça).
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | K2 (fail-closed) | İstisna sınıfı + gerekçe |
@@ -1208,7 +1271,7 @@ MOD-0126 O-6 ile ortak eklemeli `Finance` önerisi — karar çıkana kadar değ
   `/api/cash-position-threshold-policies`, `/api/cash-position-threshold-policies/{everything}` → `localhost:5071`;
   `UpstreamHttpMethod` GET, POST, PUT, PATCH, DELETE, **OPTIONS**; explicit rotalar catch-all'dan önce (`routes.md`);
   `/api/cash-positions/current` ve `/bulk` gibi sabit alt yollar `{id}` rotasından önce.
-- `ocelot.json` korunur: **integration-agent task'ı** olarak ayrı yürütülür; önkoşul AGENTS.md §3 / `ports.md` 5071 kaydı.
+- `ocelot.json` korunur: **integration-agent task'ı** olarak ayrı yürütülür; önkoşul AGENTS.md §3 / `ports.md` 5071 kaydı (yapıldı — D30).
   MOD-0126 rotalarıyla aynı task'ta açılabilir.
 - Kaynak rotaları (`/api/v1/mod0124`, `/api/v1/mod0124/{everything}` → 127.0.0.1:5058, kaynak `ocelot.json:1094-1126@da4abb20`,
   paket §A; `cash-positioning/*` takma adları gateway'de yönlendirilmiyor, paket §C) taşınmaz.
@@ -1431,17 +1494,22 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 **ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`)
-- [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
-- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-23; platform-shared-services) — kapsamı soran kod ve AC-31 bu yola bağlı
+- [ ] DCP (DCP-011-finance-treasury-intake) `approved` ve numarası atanmış — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
+- [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-23; platform-shared-services) — kapsamı soran kod ve AC-31 bu yola bağlı — yol Platform sahibi yanıtı Y-4/6 ile belirlendi; açık kalan: kapsamı soran kod + kanıt testi ve `read-tenant-wide`'ın Auth'ta açık atamalı izin olarak tanımı (Ali teyidi, Y-4/5)
 - [x] **Karar 0.3 (MOD-0003)** verildi — KARAR D27/1, süreli T32 sapması (O-2); bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
-- [x] **MOD-0037 kapısı** için sahip kararı (O-3): KARAR D29/1 (sahip payı); platform-shared-services teyidi açık
+- [x] **MOD-0037 kapısı** için sahip kararı (O-3): KARAR D29/1 (sahip payı verildi)
+- [x] O-3 platform-shared-services teyidi — sahip teyidi KARAR D36/1 (2026-10-26; `treasury-intake-owner-decisions-03.md`, PR #242)
+- [x] O-7 MOD-0048 sahibi teyidi (FX kaynağı; v1 kur çevrimi yok) — sahip teyidi KARAR D43 (2026-10-26; `treasury-intake-owner-decisions-04.md`); Beste yeniden teyidi (Y-4, 2026-10-27)
+- [x] O-14 tüketicilerin teyidi (v1 okuma ucu `current`; olay tüketici onayıyla) — sahip teyidi KARAR D36/3 (2026-10-26; PR #242)
+- [x] O-17 platform-shared-services teyidi (kanıt dışa aktarımı DL-4 ayrı komut, yayımı engellemez) — sahip teyidi KARAR D36/2 (2026-10-26; PR #242)
 - [x] **Onay yolu** kararı (O-4): KARAR D28 — MOD-0023
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 güncellendi (TRM-03/04)
-- [ ] Servis iskeleti + servis ortak yapı taşları + CentralAudit kurulumu + defter için CT kararı — **yalnız MOD-0126 DL-1** (tek sahibi o dilim; MOD-0124 DL-1'in önkoşulu — gap 4/G5)
+- [ ] Servis iskeleti + servis ortak yapı taşları (indeks barındırılan hizmeti dahil) + CentralAudit kurulumu + servis defteri — **yalnız MOD-0126 DL-1** (tek sahibi o dilim; MOD-0124 DL-1'in önkoşulu — gap 4/G5); defter için CT kararı **verildi** (KARAR D35, `treasury-intake-owner-decisions-02.md` D35 (PR #235))
+- [ ] Platform `AuditCategory` `Finance` (değer 18; Y-4/7) değeri main'de (KARAR D35/3; Platform sahibi; MOD-0126 DL-1'den önce)
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi (kuralın MOD-0124'e uygulanması D14/4 ile kararlaştırıldı)
 - [x] Sahip MOD-0124 için kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önekler `CPS` / `CTP` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30)) — yoksa Create yazılamaz
-- [ ] Para birimi küsurat hanesi kaynağı (O-8) — DL-1 için
+- [ ] Para birimi küsurat hanesi kaynağı (O-8) — DL-1 için — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed önkoşul açık
 - [ ] MOD-0023'te nakit pozisyonu onay şablonu (tek adım; O-20) — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17'de onaylı; silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13) — DL-3 için; AC-W1 (silmeme mimari testi) DL-3 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
@@ -1453,8 +1521,12 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 ### Kaynak ve kanıt (provenance)
 
-- Ortak tanımlar: MOD-0126 pack @bu commit sha256 ZIP manifestine bakın. (Makbuz, niyet durum sözlüğü, Reconcile 3a
-  kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse o sürüm bağlayıcıdır — gap 6/P2-c.)
+- Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
+  `e87f57a47b6dfacdde69888bd7f43702f1a049feb918c4f2c80a6312b7e2f248` (bu revizyonla aynı commit, dal
+  `chore/ct/treasury-intake-ct-04`; önceki sabitlemeler `8eab5e3c…` (AC biçimi, ct-03), `3e900f84…` (Y-1…Y-4), `25065d5e…` (D42 + D44, dal `docs/ct/treasury-decisions-04`), `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
+  Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
+  bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
+  incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir.
 - Producer paketi: MOD-0124 v1.0 (TRM-B5-01), `source-batch5-v1.0/…/mod0124-transfer-packet-v1.0/`, `manifest.json` sha256
   `b440aa2ab569dce78dfa66daf929c977afd5abf30a0be8ab422b44f449e10bcb`; paket dosyası `MOD-0124-TRANSFER-PACKET-v1.0.md`
   sha256 `2167b8c5f9f492a7891741efda9df36f0862c9680cd948bae45fc0e0d22401b3`, `CONTRACT-STATE.json` `0cf68b7f…8f07`,
@@ -1484,13 +1556,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 | Yuva | Recovery'de durum | Bu paketin isteği | Durum |
 |---|---|---|---|
-| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil) ve rol şablonu | açık |
+| AUTH (MOD-0018) | JWT + `[HasPermission]`; `finance-treasury.*` | 20 anahtarın kaydı (`read-tenant-wide` açık atama dahil); rol şablonu içeriği KARAR D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) | kayıt açık (Ali) |
 | LE (MOD-0220) | `lookup-validation` var; `ApprovalStatus` yok | TRM-14 + sözleşme belgesi | açık |
 | BANK-ACCOUNT (MOD-0289) | taslak: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT) | opak Guid; arama/doğrulama sözleşmesi (O-15) | açık — ertelendi (sözleşme dondurulunca) |
 | BANK-GATEWAY (MOD-0269) | yok, D5 kapalı | v1'de istek yok | v1 dışı |
 | BANK-RECON (MOD-0121) | yok, dış | v1'de istek yok | kapsam dışı |
 | PUBLICATION (MOD-0125, MOD-0126, MOD-0127) | tüketici yok | `current` okuma sözleşmesi; olay O-14 | açık |
-| AUDIT (MOD-0021) | CentralAudit yol b | servis defteri + CT kararı | açık |
+| AUDIT (MOD-0021) | CentralAudit yol b | servis defteri (CT kararı verildi — D35) + Platform `Finance` kategorisi (D35/3) | açık — defter MOD-0126 DL-1'de yazılınca kapanır |
 | WORKFLOW (MOD-0023) | var | onay şablonu (O-20) | açık |
 | EVIDENCE (MOD-0028/MOD-0031) | MOD-0031 var; MOD-0028 tüketilmez | bağlama + sorgu davranışı (O-17) | açık |
 
@@ -1569,27 +1641,27 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 |---|---|---|---|---|
 | O-1 | v1 pozisyon kaynağı | (a) elle bilinen bakiye (b) kapılar açılana kadar bekle | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — üç kapıdan bağımsız, kanıtla desteklenir | sahip (K1) |
 | O-2 | MOD-0003 (karar 0.3) | tam modül / süreli sapma (T32) + dondurulmuş sözleşme | **KARAR D27/1 (2026-10-25): süreli sapma (T32)**, `cash-position.openapi.yaml`; bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu | sahip (K1) |
-| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** — **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
+| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi yerine sahip teyidi — KARAR D36/1 (2026-10-26)** — **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
 | O-4 | Onay yolu | (a) MOD-0023 iş akışı (b) yerel maker-checker | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — domain-config SoD kuralı | sahip (K1) |
 | O-5 | Grup (çoklu LE) konsolidasyonu | v1 LE başına / LE↔LE modeli ile grup görünümü | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — **v1 LE başına**; model D9 gereği eklenmedi, kaynakta da yok | sahip (K1) + MDM |
 | O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
-| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi açık** — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
-| O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak, **TBD** | MOD-0048 sahibi |
+| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi yerine sahip teyidi — KARAR D43 (2026-10-26)**; Platform sahibi (Beste) yeniden teyidi: "v1'de kur çevrimi yok; pozisyonlar kendi para birimlerinde gösterilir", kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4, 2026-10-27) — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
+| O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak; **Y-4/3 (2026-10-27, Platform): başlangıç listesi olarak kabul** (Finance listeyi sonradan değiştirebilir); seed JSON ve `ConsumableSets` izin listesi Platform'da — seed main'e girene kadar önkoşul açık | MOD-0048 sahibi |
 | O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
 | O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **KARAR D28 (2026-10-25): öneri kabul** — **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |
 | O-12 | Eşik politikası kapsamı | kaynak (kiracı geneli, para birimsiz, `IsDefault`) / LE + para birimi zorunlu | **KARAR D28 (2026-10-25): öneri kabul** — **LE + para birimi zorunlu**, varsayılan politika yok | sahip (K1) |
 | O-13 | Engelleyici istisnanın atanması / muafiyeti | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — kaynakta da komut yok; v1'de düzeltip yeniden mutabakat | sahip (K1) |
-| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; tüketiciler teyidi açık** — **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
+| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; tüketiciler teyidi yerine sahip teyidi — KARAR D36/3 (2026-10-26)** — **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
 | O-15 | MOD-0289 gelene kadar banka referansı girişi | opak referans / DL-5'i beklet | **KARAR D28 (2026-10-25): öneri kabul** — opak referans alanı (MOD-0126 O-15 ile aynı) | sahip (K1) |
 | O-16 | D10/1 (Active + Approved) MOD-0124'e uygulanır mı | evet / yalnız Active | **KARAR (D14/4): evet, yazma işlemlerinde** — nakit pozisyonu oluşturan/değiştiren her yazma komutu (iki kurtarma komutu hariç); okumalar etkilenmez | sahip (K1) |
-| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** — **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
+| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi yerine sahip teyidi — KARAR D36/2 (2026-10-26)** — **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
 | O-18 | Bakiye işaret kuralları | — | **KARAR D28 (2026-10-25): öneri kabul** — Ledger/Available işaretli; Collected/Blocked/Restricted ≥ 0 | sahip (K1) |
 | O-19 | İdempotency makbuz tipi | modül önekli / servis geneli ortak | **KARAR (D14/2): servis geneli tek ortak tip** `FinanceTreasuryCommandReceipt` (tanım MOD-0126 pack Entity Fields); niyetler modül önekli, durum sözlüğü ortak | sahip + CT |
 | O-20 | MOD-0023 şablon kodu, adım sayısı, zaman aşımı | — | tek adımlı şablon; zaman aşımı 15 sn | MOD-0023 sahibi |
 | O-21 | Yayımlayana ek SoD | yok / oluşturan yayımlayamaz | **KARAR D28 (2026-10-25): öneri kabul** — **yok** — ayrılık onayda | sahip (K1) |
 | O-22 | Approve / Reject / Publish AUD-001 K2 mı | evet / hayır | **KARAR (D14/3): hayır** — Cash Positioning yayımı K2 değildir (para yetkisi değil); onay/ret de K2 sayılmaz; kayıt yine iş verisiyle aynı işlemde yazılır (`RequireEnlistment`) | CT + sahip |
-| O-23 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; servis ortak tek karar (MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
+| O-23 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | **Platform sahibi yanıtı Y-4/6 (2026-10-27):** FinanceTreasuryService kendi Application katmanında aynı desende bir port tanımlar (`IFinanceTreasuryDataScopeSource`; girdi kiracı + kullanıcı + modül + izin anahtarı, çıktı izinli `LegalEntityId` listesi); bağdaştırıcısı Platform'un kapsam çözümünü (`Diten.Platform.Common` içindeki `IDataScopeResolver`) çağırır; hata, boş liste ya da belirsizlikte erişim verilmez (fail-closed); MDM'nin `ITrustedLegalEntityScopeProvider`'ı (MDM'in kendi Application portu, ortak paket değil) doğrudan kullanılmaz; `read-tenant-wide` yalnız Auth'ta açık atamalı izin olarak tanımlanır (Auth sahibi Ali; teyit ve zaman ondan — Y-4/5); servis ortak tek karar (MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 
 ## Teslim dilimleri
 
@@ -1602,21 +1674,23 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 | DL-5 | iki kiracı ekranı | Layout & Shell Contract, Frontend File Contract, Page Help (UXH-001), Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Follow-up Items |
 
 Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dilimler o bölümün kendilerine düşen kısmını uygular
-(ör. Audited Events tablosunun ilk satırları DL-1'in ilk komutuyla gelir, bölüm DL-4'te son iki aşamalı komut, sabotaj
-testi ve AUD-001 §8 dev kanıtıyla kapanır; Validation Rules'un alan kuralları DL-1'de, mutabakat ve kanıt kuralları DL-2'de,
+(ör. Audited Events tablosunun ilk satırları DL-1'in ilk komutuyla gelir ve AUD-001 §8 dev kanıtı (AC-29: oluşturma /
+güncelleme / silme) DL-1'de alınır; bölüm DL-4'te son iki aşamalı komut ve sabotaj testiyle kapanır; Validation Rules'un alan kuralları DL-1'de, mutabakat ve kanıt kuralları DL-2'de,
 SoD kuralları DL-3'te uygulanır; Acceptance Criteria ve Test Expectations her dilimde aşağıdaki AC kimlikleriyle ölçülür).
 
 Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: `Features/CashPosition/` içinde Create/Update/Delete/BulkDelete + List/ById sorguları,
   `Features/CashPositionThresholdPolicy/` tam seti, Domain/Persistence, makbuz kullanımı (`FinanceTreasuryCommandReceipt`,
-  servis ortak — MOD-0126 DL-1), indeks hizmeti, MOD-0220 ve MOD-0048 bağdaştırıcılarının kullanımı (servis ortak,
+  servis ortak — MOD-0126 DL-1), MOD-0124 koleksiyonlarının indeks tanımları ve iskeletin indeks hizmetine kaydı
+  (barındırılan hizmet MOD-0126 DL-1'in), MOD-0220 ve MOD-0048 bağdaştırıcılarının kullanımı (servis ortak,
   MOD-0126 DL-1'in), RCS kod portu, `cash-position.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001
   K4 — ileticisi olmayan serviste yazma komutu yazılamaz. Önkoşul: Ready-for-dev engelleri (DCP, O-3, port,
   **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, TRM-14, O-9, O-8, O-23; 0.3 ve kod alma
   D27/1, D27/5 ile verildi).
-  Bitiş: AC-1, 2, 3, 4, 5, 8, 16 (Create/Update/Delete kısmı), 17 (tek aşamalı kısım), 18, 19 (Create), 21, 22, 28, 31,
-  32 (Create / Update / Delete / politika kısmı).
+  Bitiş: AC-1, 2, 3, 4, 5, 8, 16 (Create/Update/Delete kısmı), 17 (tek aşamalı kısım), 18, 19 (Create), 21, 22, 28, 29,
+  31, 32 (Create / Update / Delete / politika kısmı). AC-29 burada: AUD-001 §8 dev kanıtı DL-1'in oluşturma / güncelleme /
+  silme komutlarıyla alınır.
 - **DL-2** — Yollar: `ReconcileCashPositionCommand` + `CashPositionReconciler`, istisna sorgusu,
   `CreateCashPositionEvidencePackCommand`, trace sorgusu. **Neden ayrı:** kaynakla davranış eşitliği tablo güdümlü testle
   tek başına incelenebilsin. Önkoşul: DL-1. Bitiş: AC-6, 7, 9, 19 (mutabakat), 32 (Reconcile, kanıt paketi kısmı).
@@ -1626,9 +1700,9 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   AC-37, AC-10…15, 16 (kararlar), 19 (yayım, karar), 23, 30 (a–c), 32 (Submit, kararlar, Publish kısmı), 33 (Submit ve kararlar
   kısmı), 35, 36 (Submit ve kararlar kısmı).
 - **DL-4** — Yollar: `ExportCashPositionEvidenceCommand`, `ReconcileCashPositionEvidenceExportCommand`, MOD-0031
-  bağdaştırıcısı, K2-olmayan sabotaj testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0031 davranış ölçümüne bağlı;
+  bağdaştırıcısı, K2-olmayan sabotaj testi. **Neden ayrı:** MOD-0031 davranış ölçümüne bağlı;
   DL-3'ü bekletmesin. Önkoşul: DL-3, O-17 (`links/query` ölçümü; dedupe ölçülmezse kurtarmada yeniden çağrı kapalı
-  kalır, gap 5/G2). Bitiş: AC-16 (kalan), 17 (iki aşamalı + sabotaj), 20, 29, 30 (d),
+  kalır, gap 5/G2). Bitiş: AC-16 (kalan), 17 (iki aşamalı + sabotaj), 20, 30 (d),
   32 (ExportEvidence kısmı), 33 (ExportEvidence kısmı), 34, 36 (ExportEvidence kısmı).
 - **DL-5** — Yollar: `Views/FinanceTreasury/{CashPositions,CashPositionThresholdPolicies}/**`, JS, resx (7 dil), MVC proxy,
   sayfa yardımı, nav anahtarları; Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). Önkoşul: DL-1
