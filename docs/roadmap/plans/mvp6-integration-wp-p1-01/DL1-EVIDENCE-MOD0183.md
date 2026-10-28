@@ -18,24 +18,29 @@
 | 4c | `0420296a1` | central-audit guard counts the outcome transaction (9 → 10) |
 | 5 | `1bda485ee` | evidence note, first version |
 | 4d | `463d054b3` | re-review fixes N-1, N-2, R-1…R-4 (`MOD-0183-DL1-CODE-REVIEW-FIXES.md`); guard count 10 → 11 |
-| 5′ | this note | evidence, updated |
+| 5′ | `aa78bd798` | evidence for `463d054b3` |
+| 4e | `59f72d775` | review 3 fixes F-1…F-4, F-5 stated (`MOD-0183-DL1-CODE-REVIEW-3.md`) |
+| 4f | `199ee7f63` | the reversal date is set in one place (the R-2 sabotage on `BlockAsync` had stayed green after F-1) |
+| 5″ | this note | evidence, updated |
 
 ## Full suite (unfiltered)
 
 | HEAD | Lane | mongod | Result | Run folder |
 |---|---|---|---|---|
-| `463d054b3` | 6152, fresh replica set `rs-q500s`, shut down afterwards | 8.0.18 | **677 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, skipped by design), 3 m 21 s, exit 0 | `~/Projects/ERP-vNext-lanes/q500-dl1/run-20261028-190852` |
-| `0420296a1` (earlier) | 6152 | 8.0.18 | 672 passed, 0 failed, 1 skipped | `run-20261028-182912` |
+| `199ee7f63` | 6152, fresh replica set `rs-q500s`, shut down afterwards | 8.0.18 | **681 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, skipped by design), 3 m 5 s, exit 0 | `~/Projects/ERP-vNext-lanes/q500-dl1/run-20261028-195321` |
+| `59f72d775` | 6152 | 8.0.18 | 681 passed, 0 failed, 1 skipped | `run-20261028-193153` |
+| `463d054b3` | 6152 | 8.0.18 | 677 passed, 0 failed, 1 skipped | `run-20261028-190852` |
 
-`git status` was empty when the run started. `ContractErrorCodeParityTests` and the central-audit tests run inside the
-full suite; they were also run on their own (71/71 with the dispatch tests) on `463d054b3`.
+`git status` was empty when each run started. The parity and central-audit tests are inside the full suite.
 
-## Sabotage table (HEAD `463d054b3`, lane port 6151, mongod 8.0.18)
+## Sabotage table (HEAD `199ee7f63`, lane port 6151, mongod 8.0.18)
 
 Each row breaks the production code once. The guarding test run went red, the file was restored byte for byte (sha256
-compared), and the same tests then ran green. **41 of 41 rows went red, were restored and then went green**, and `git
+compared), and the same tests then ran green. **45 of 45 rows went red, were restored and then went green**, and `git
 status` was clean afterwards. Every earlier row was re-run on this HEAD. The harness is
-`~/Projects/ERP-vNext-lanes/q500-dl1/tools/sabotage3.py` and the raw table is `sabotage-463d054b3.tsv`.
+`~/Projects/ERP-vNext-lanes/q500-dl1/tools/sabotage5.py` and the raw table is `sabotage-199ee7f63.tsv`.
+In the run on `59f72d775`, R-2 stayed green: after F-1 the `BlockAsync` date line could never change anything. It was
+removed in `199ee7f63`, and R-2 now targets the only place the date is set.
 
 | Rule | Sabotage | File | Sabotaged run | Restored | Run after restore |
 |---|---|---|---|---|---|
@@ -74,12 +79,16 @@ status` was clean afterwards. Every earlier row was re-run on this HEAD. The har
 | N-1a | resume of a compensating attempt posts and completes (RunAsync) | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | N-1b | completion does not check for a compensating attempt | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | N-1c | refusal answer not stored with the compensation | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
-| N-2 | KEY_REUSED on the B′ resend skipped (attempt closed Compensated) | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | R-1 | a 503 without INVENTORY's envelope counted as definite | `InventoryMovementClient.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
-| R-2 | block without a stored reversal date | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| R-2 | reversal date not stored when compensation starts | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | R-3 | lost begin to CompensationFailed answered 409 DISPATCH_IN_PROGRESS | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | R-4 | late write recorded outside its transaction | `ShipmentRepository.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | audit2 | late-writer transaction without central-audit enlistment | `ShipmentRepository.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| R3-F1 | an unresolved B′ resend stops before the reversals | `ShipmentDispatchCoordinator.cs` | Failed failed=2 passed=0 | restored | Passed failed=0 passed=2 |
+| R3-F2 | exit without the stored refused line | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| R3-F3 | late writer leaves a compensating attempt to the holder | `LateWriterPolicy.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| R3-F4 | first-400 fault not stored with the refusal | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| N-2 | KEY_REUSED on the B′ resend does not block (attempt closed Compensated) | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 
 Notes:
 - S23-20 and parity turn only their own case red. S23-20 fails only the 403 case of its theory, and parity fails only
@@ -112,6 +121,12 @@ Notes:
 | R-3 | a begin lost to a CompensationFailed attempt answers 409 `DISPATCH_COMPENSATION_FAILED` | `R3_…` (hook) | R-3 |
 | R-4 | the late writer's record and its audit row are one transaction, which also enlists central audit (Abandoned, the command failed) | `R4_…`, storage test | R-4, audit2 |
 | R-5 | pack wording only, no code; see open point 2 | — | — |
+| **R3 F-1** | An unresolved B′ resend (KEY_REUSED or another failure) no longer stops the reversals: every recorded issue is reversed first, then the attempt blocks on the unresolved line. The issue-path KEY_REUSED runs the same compensation and still answers 500. | `R3F1_…` (the reviewer's REV3_A: 500, net 0, exits 409), `S23_11_…` | R3-F1 |
+| R3 F-2 | the exit passes the stored refused line, so a refused issue (also a 400 without INVENTORY's envelope) is not resent | `R3F2_…` (REV3_B: exit 200 `Cancelled`, net 0) | R3-F2 |
+| R3 F-3 | a late writer whose own attempt is compensating reverses its issue with the holder's key and stored date | `R3F3_…` (REV3_C: holder 422, late write `Reversed`, net 0) | R3-F3 |
+| R3 F-4 | the integrity faults known when compensation starts are stored with the refusal, so a resumed compensation writes them | `R3F4_…` | R3-F4 |
+| R3 F-5 | **stated, no code:** the receipt belongs to the command that settles. A resumer stores its own key's receipt; if the request that opened the attempt died, a retry with its key opens a{n+1} on a fully reversed a{n}. The stock stays consistent. | — | — |
+| R-2 (after F-1) | the reversal date is set in one place, `CompensateAsync`, durably before the first REVERSAL; every block goes through a compensation | `S23_11_…` | R-2 (re-anchored) |
 
 ## Open points
 
@@ -126,8 +141,10 @@ Notes:
    have received nothing changes; an ambiguous answer (a 5xx other than INVENTORY's own 503, a timeout) keeps the
    attempt `InProgress` under its lease". §23.4's late-writer rule should read: "reverses its **unrecorded** issue". The
    code already does both.
-3. **N-2 consequence:** a KEY_REUSED line keeps the shipment blocked, and every exit answers 409, until an operator
-   resolves it. §23.4 accepts that; making it automatic would need a pack change.
+3. **N-2 / R3 F-1 decision (MVP-1 CT or pack owner).** A KEY_REUSED line keeps the attempt `CompensationFailed`, and
+   every exit answers 409. Every recorded issue is reversed first, so only the unknown movement behind that key
+   remains. There is no operator path in the code or the pack, so the shipment is blocked for good. Question: should a
+   KEY_REUSED-blocked attempt be closed by an operator action, or should the §23.4 exit resend only the open REVERSALs?
 4. **R-1:** the Gateway's 503 envelope behaviour (Ocelot 24.1.0) comes from the library, not a measurement; it should be
    confirmed on the Gateway tour.
 5. **mongod 8.0.18** (Homebrew) was used instead of the CI-pinned 7.0.28: no pinned tarball was found on this Mac.
