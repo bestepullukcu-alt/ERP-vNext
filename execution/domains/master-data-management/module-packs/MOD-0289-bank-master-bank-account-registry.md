@@ -28,6 +28,14 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 
 # MOD-0289 — Bank Master & Bank Account Registry
 
+> **Revizyon (2026-10-28, KARAR D70/3 + ölçüm):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D70 (2026-10-28 ölçümünde main'de değil — yerel
+> dalda, main'de değil). (1) **KARAR D70/3:** Auth paket metni kapısı (D53/1) = metin main'de + MOD-0018 sahibinin teyidi
+> (Ready-for-dev Checklist ENGELLER; açık). D70/1 ve D70/2 bu pakete dokunmaz (onay iş akışı yok). (2) Ölçüm: "MDM domain-config'te
+> MOD-0289 satırı main'de, güncel cümleyle" maddesi kapandı — D51/5 cümlesi (`kod alma izni D45/3`) PR #270 ile main'de
+> (`git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0; `git diff origin/main HEAD -- execution/domains/master-data-management/domain-config.md`
+> boş). Mevcut AC numaraları ve dilim tablosu değişmedi.
+>
 > **Revizyon (2026-10-28, ready-for-dev 1. tur: Y-12, D62–D65):** Ali / Beste'yi beklemeyen maddeler; `status: draft` ve
 > `approval_status: not-approved` değişmedi.
 > Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` (D62–D65) ve
@@ -1722,7 +1730,7 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 madde **paket düzeyidir** — bütün dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz.
 **"— DL-n için"** işaretli madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde
 o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Auth (MOD-0018) iki
-parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de; kayıt kodu DL-1 kabul kapısıdır;
+parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de ve MOD-0018 sahibince teyitli (**KARAR D70/3**); kayıt kodu DL-1 kabul kapısıdır;
 açık atama eki ayrı madde, DL-2 için. SEC-002 sağlayıcısının "permission onboarding" eki de aynı desenle iki parçadır
 (KARAR D56/1): paket metni paket kapısında, kodu DL-1 kabul kapısında. **RCS-001 / BL-565 servisi DL-1 kabul kapısıdır
 (KARAR D59/1), paket kapısı değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek
@@ -1734,7 +1742,7 @@ Beste) aynı DL-1 kabul kapısındadır; kapanmadan gerçek servisle kabul veril
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
-- [ ] Auth paket metni main'de — MOD-0018 Treasury Auth eki `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16): o paketin DL-2'sinde anahtarlar, açık atama listesi ve rol şablonları (rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth paket metni main'de **ve MOD-0018 sahibinin teyidi** (**KARAR D70/3**: metnin main'de olması tek başına yetmez; teyit karar dosyasına kaynak olarak yazılır; açık) — MOD-0018 Treasury Auth eki `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16): o paketin DL-2'sinde anahtarlar, açık atama listesi ve rol şablonları (rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
 - [ ] Auth kayıt kodu (o ekin DL-2 kodu) main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
   eki)** (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform
@@ -1743,8 +1751,9 @@ Beste) aynı DL-1 kabul kapısındadır; kapanmadan gerçek servisle kabul veril
   sabit — Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir; kod değişikliği bu paketin
   Repo Scope'unda değildir
 - [ ] SEC-002 sağlayıcısı eki kodu (o ekin DL-4 kodu) main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
-- [ ] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
-  D45/3" cümlesi bu dalda D51/5 ile güncellendi, main'e girmedi)
+- [x] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
+  D45/3" cümlesi D51/5 ile güncellendi). Kaynak: PR #270 (`7495c4d27`; `git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0;
+  `origin/main` ile bu dalın domain-config farkı boş — ölçüm 2026-10-28)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
 - [x] O-4, O-5, O-6 (sahip onayı), O-7, O-8, O-10, O-11, O-12 ve kiracısız hedef denetimi sahip kararıyla yazıldı (KARAR
   D24/1–9)

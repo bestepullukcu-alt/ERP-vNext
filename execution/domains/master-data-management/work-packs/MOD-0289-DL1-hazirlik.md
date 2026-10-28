@@ -2,12 +2,36 @@
 record_id: MOD-0289-DL1-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
-refreshed_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 ff2c556f4e4ff076cea02a45d3d0f5d88adb995887baf90d031da1f606affd97 (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `aab4187d…` (sahip denetimi 5cfd67813 düzeltmesi + D65); D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 17baa2825f8f81fecc349ef338c8fcedf899d7059041047dee4ecad2662862a9 (pack D70 revizyonu, 2026-10-28 — D70/3 Auth paket kapısı; domain-config maddesi ölçümle kapandı (PR #270); önceki sürüm `ff2c556f…` (pack ready-for-dev 1. tur revizyonu, 2026-10-28 — Y-12, D62–D65; önceki sürüm `aab4187d…` (sahip denetimi 5cfd67813 düzeltmesi + D65); D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla: kod yalnız onaylı paket sürümüyle ve dilim sırasıyla, sabit kiracı taşınmaz)
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve bu pack sürümü dahil; D69 main'de değil ve MOD-0289'a dokunmaz).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-2**'si (MOD-0289: 23 anahtar, 3 rol, 2 açık atama); kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **SEC-002:** ekin **DL-4**'ü (KARAR D56/1; Platform dosyaları için XMC-001 Beste — D63/2): paket metni paket kapısı, kodu
+> DL-1 kabul kapısı; modül kodu değeri ekin K-1b'si. 2026-10-27 ölçümü: bugün çalışmaz (iki tarafta `product-item-sku-master` sabit).
+> - **MOD-0023 yok** (D23/2; v1'de dört göz) — Y-12 şablon kodları bu pakete dokunmaz.
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **O-14** (grup önekli kayıtlarda — banka `BNK`, tedarikçi hesabı `BAC` — allocator'a gidecek `legalEntityId`; şirket hesabı
+> `BAC` için sahip şirketin `LegalEntityId`'si önerisinin teyidi, D65/2) **Beste'de, cevap yok** (2026-10-28): DL-1 kabul kapısı,
+> tedarikçi `BAC` kısmı DL-3 kabulünde; değer pakette seçilmez. AC-60 üç dilime bölündü (banka DL-1, şirket hesabı DL-2, tedarikçi
+> hesabı DL-3).
+> - **DL-2 kabul kapısı:** Treasury tüketici fikstür koşusu aranmaz (KARAR D57/1); `BANK-ACCOUNT-LOOKUP` kendi sözleşme testiyle
+> (AC-20, AC-42).
+> - **DL-3:** MOD-0140 1.3.0 `GET /api/suppliers/eligible` — Active ilişkili bütün tedarikçiler (KARAR D58); ölçüm: main'de
+> `supplier.openapi.yaml` hâlâ `version: 1.2.0`.
+> - **MDM domain-config** MOD-0289 cümlesi (D51/5) main'de (`domain-config.md:48`); pack'teki ilgili checklist maddesi henüz işaretsiz.
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0289'un 23 anahtarı ve 3 rolü değişmedi.
+>
 > **Güncel durum (2026-10-27).** Bu kayıt pack'in main @904dfd5c2 sürümüne bağlıdır (sha256 `1850f37c…b3`, `status: draft`,
 > `approval_status: not-approved`; bu sürüme CT-APR-02 ve CT-APR-01 satırı yok). 2026-10-26 sürümlerine (`0746eeae…`, `785291d2…`)
 > yapılan "pack satır N" atıfları geçersizdir; bu kayıt pack'e bölüm adıyla ya da `yol:satır@904dfd5c2` ile atıf yapar. Bu
@@ -55,20 +79,20 @@ DL-4" satırları pack'te "— DL-n için" işaretli dilim kapısıdır ve DL-1'
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `1850f37c…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0289 incelemesi `785291d2…`, `reviews.tsv:43`) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `0cabb98c…` için `execution/approvals/reviews.tsv`'de satır yok (son MOD-0289 incelemesi `785291d2…`, `reviews.tsv:43`) · **2026-10-28:** güncel sha `0cabb98c…` için satır yok; son satır `ef905628…` (UYGUN) | bekletir |
 | CT-APR-01 sürüme bağlı onay (`high: evet`, paketi yazmamış onaylayıcı) | Beste (onaylayıcı) | `approvals.tsv`'de MOD-0289 satırı yok | bekletir |
 | Kod alma izni (D1) | sahip | **kapandı — D45/3** (2026-10-27) | — |
 | DCP-011 `approved`, TRM-S3 dilimi tanımlı | Beste | `DCP-011-finance-treasury-intake.md` `status: draft` (`:7`); numara atandı (Y-4/2) | bekletir |
-| MDM domain-config: MOD-0289 satırı + frontend/gateway kapsam cümlesi | MDM sahibi (Ali) | satır **var** ama eski: "no code-take permission (D27/5); not `ready-for-dev`" (`execution/domains/master-data-management/domain-config.md:46-48@904dfd5c2`) — D45/3 ile çelişiyordu; **D51/5 ile bu dalda düzeltildi** ("kod alma izni D45/3 (2026-10-27); kod yalnız onaylı paket ve dilim sırasıyla"), main'e girmedi; frontend/gateway istisnası yalnız MOD-0290-FU02 (`:57`) | satır: paket kapısı (main'de güncel cümleyle); frontend/gateway cümlesi: DL-4 (D51/1) |
+| MDM domain-config: MOD-0289 satırı + frontend/gateway kapsam cümlesi | MDM sahibi (Ali) | satır **var** ama eski: "no code-take permission (D27/5); not `ready-for-dev`" (`execution/domains/master-data-management/domain-config.md:46-48@904dfd5c2`) — D45/3 ile çelişiyordu; **D51/5 ile düzeltildi** ("kod alma izni D45/3 (2026-10-27); kod yalnız onaylı paket ve dilim sırasıyla") — 2026-10-28 ölçümünde main'de (`domain-config.md:48` @ `027ca2e38`), pack checklist maddesi henüz işaretsiz; frontend/gateway istisnası yalnız MOD-0290-FU02 (`:57`) | satır: paket kapısı (main'de güncel cümleyle); frontend/gateway cümlesi: DL-4 (D51/1) |
 | RCS-001 ortak kod servisi (BL-565) — `BNK` için | Beste (D44) | **yok** — `services/Diten.Building.Blocks/src/` altında kod servisi yok, `services/**`'te `IRecordCodePort` 0; BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@904dfd5c2`); çağrı sözleşmesi gelmedi (Y-4). Backlog sahibi alanı hâlâ "CT (Platform + MDM …)" — D44 ile uyumsuz | **DL-1 kabul kapısı (D59/1)** — başlamayı bekletmez; DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır, gerçek servis DL-1 kabulünden önce main'de (v0 sözleşmesi Y-8, 6 Kasım); üretimde port bağlı değilse 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE` |
 | `BNK` / `BAC` önekleri RCS-001 §3'te | — | **var** — `.antigravity/rules/record-coding-standard.md:68-69@904dfd5c2` (D29/2, D30) | — |
 | Denetim defteri kararı | — | **verildi — D27/11** (yeni K2 satırları, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok); CT-DECISIONS satırı DL-1 kodu ile yazılır | — |
 | `AuditCategory` değeri | — | **kapandı — D48/1: `MasterData`** (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:19@904dfd5c2`, değer 14); MOD-0126'nın `Finance = 18` bağı kalktı | — |
 | MDM denetim niyeti yolunun DL-1 başındaki hâli | Treasury CT (ölçüm) | `AuditAggregateType` dokuz değer (`services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs:3-14@904dfd5c2`); işlem enum'u yalnız `ProductAuditOperation`; teslim deposu sabit dokuz koleksiyon (`…/Persistence/Repositories/AuditIntentDeliveryRepository.cs:15-23@904dfd5c2`) — pack ölçümüyle aynı. "MdmService commit SHA'sı DL-1 başında" (pack kapanış tablosu) dağıtım günü yazılır | — (dağıtım günü SHA) |
-| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6; numara / tarih yok) | **2026-10-28: taslak** `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1) bu dalda, main'de değil; ölçüm anında: **yok** — Treasury / banka rolleri için MOD-0018 paketi depoda yok | paket kapısı (D53/1) — DL-1'i bekletir: paket metni `ready-for-dev`'den önce main'de olmalı; pack checklist'indeki işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi) D53 ile ikiye ayrıldı (pack metni bu kayıtta değiştirilmedi); açık atama eki ayrı madde (DL-2) |
-| Auth kayıt kodu | Ali | **yok** — `services/Diten.AuthService/**`'te `mdm.bank` 0 (grep, 2026-10-27) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
-| Auth `ExplicitGrantOnlyPermissions`'a `read-unmasked`, `read-tenant-wide` | Ali | yok — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.bank*` 0 | DL-2 |
-| SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalışması | Treasury CT (ölçüm) / platform-shared-services | ölçülmedi | DL-2 |
+| Auth paket metni — MOD-0018 paketi (anahtarlar, açık atama listesi, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-6; numara / tarih yok) | **2026-10-28: taslak main'de** (#281; origin/main @ `027ca2e38`) — `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` `draft`, FU numarası açık (K-1), MOD-0018 sahibinin teyidi yok, pack checklist maddesi işaretsiz; Y-14 geçersiz (kullanılmadı); ölçüm anında: **yok** — Treasury / banka rolleri için MOD-0018 paketi depoda yok | paket kapısı (D53/1) — DL-1'i bekletir: paket metni `ready-for-dev`'den önce main'de olmalı; pack checklist'indeki işaretsiz madde "Auth izin / rol kaydı — MOD-0018 paketi ve kodu" (D51 denetimi) D53 ile ikiye ayrıldı (pack metni bu kayıtta değiştirilmedi); açık atama eki ayrı madde (DL-2) |
+| Auth kayıt kodu (MOD-0018 Treasury Auth eki DL-2 kodu) | Treasury yazar, MOD-0018 sahibi teyit eder (Y-15, Y-16) | **yok** — `services/Diten.AuthService/**`'te `mdm.bank` 0 (grep, 2026-10-27) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
+| Auth `ExplicitGrantOnlyPermissions`'a `read-unmasked`, `read-tenant-wide` | Treasury yazar (MOD-0018 Treasury Auth eki DL-2), MOD-0018 sahibi teyit eder | yok — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.bank*` 0 | DL-2 |
+| SEC-002 kapsam sağlayıcısı (ilk sürümde: "MOD-0289 anahtarlarıyla çalışması") | MOD-0018 Treasury Auth eki DL-4 (KARAR D56/1): Treasury yazar, MOD-0018 sahibi teyit eder; XMC-001 Beste (Platform) + MDM sahibi | **2026-10-28 (D56/1):** ölçüm maddesi değil — ek DL-4 paket metni paket kapısı, ek kodu DL-1 kabul kapısı (pack checklist); 2026-10-27 ölçümü olumsuz (DL-2 kaydı §1). İlk ölçüm anında: ölçülmedi | paket kapısı (ek DL-4 paket metni) — DL-1'i bekletir; ek kodu DL-1 kabul kapısı |
 | MOD-0048 para birimi listesinin MDM'den okunması | Beste (Platform ucu) / DL-2 yazarı (port) | **ölçüldü (pack, @7c57e8466; bugün aynı):** MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:16-50@904dfd5c2` — `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi); Platform ucu `GET api/lookups/reference/currencies` | DL-2 (DL-1'in `Bank` / `BankBranch` alanlarında para birimi yok) |
 | MDM `ValidationBehavior` girilen değeri döndürüyor mu | — | **ölçüldü: döndürmüyor** — gövde yalnız `error.ErrorMessage` listesi (`services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ValidationBehavior.cs:26-31,46@904dfd5c2`). Kalan: MOD-0289 doğrulayıcı mesajlarında `{PropertyValue}` yer tutucusu kullanılmaz | DL-2 (öneri: DL-1 doğrulayıcılarına da aynı kural) |
 | MOD-0140 `supplier.openapi.yaml` 1.3.0 | Cihan (MVP-2) | main'de **1.2.0** (`docs/analysis/contracts/supplier.openapi.yaml:13@904dfd5c2`) | DL-3 |
@@ -83,10 +107,12 @@ pack ENGELLER'i paket kapısı ve "Dilim kapıları" alt listesi olarak ayrıld�
 `ready-for-dev`'i bekletmez.
 
 **Üretici beklemeleri (DL-1 dışı, prompt'a "bu dilimde yok" olarak yazılır):** `supplier.openapi.yaml` 1.3.0 (Cihan) → DL-3;
-Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üretici paket kapısındaki
-**Auth paket metni** (MOD-0018 Treasury Auth eki — Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16; D53/1)'dir. Auth kayıt kodu başlamayı değil
+Auth açık atama (MOD-0018 Treasury Auth eki DL-2; Treasury yazar, MOD-0018 sahibi teyit eder) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üretici paket kapısındaki
+**Auth paket metni** (MOD-0018 Treasury Auth eki DL-2 — taslak #281 ile main'de, teyitsiz; Treasury yazar, MOD-0018 sahibi teyit
+eder — Y-15, Y-16; D53/1) ve ekin DL-4 SEC-002 paket metnidir (D56/1). Auth kayıt kodu başlamayı değil
 DL-1 kabulünü bekletir (D53/2). **RCS-001 BL-565** (Beste, D44) paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu
-sahte allocator ile yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
+sahte allocator ile yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım). **O-14** (grup önekli kayıtlarda
+allocator'a gidecek `legalEntityId`; Beste, cevap yok) de DL-1 kabul kapısıdır (pack "Dilim kabul kapısı" DL-1).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -182,7 +208,7 @@ Pack "Authorization Convention" (`:1128-1170@904dfd5c2`) ve işleyen tek matris 
 
 - **DL-1 anahtarları:** `mdm.banks.read`, `.create`, `.update`, `.activate`, `.deactivate` (T2), `.delete`, `.bulk-delete` (T2) — banka
   **ve** şube için tek aile. Kaynak `MOD0289_*` literalleri alınmaz.
-- **Roller (kod değil, Auth'ta — Ali):** Banka verisi görüntüleyici (`mdm.banks.read`), Banka verisi yöneticisi (banka / şube
+- **Roller (kod değil, Auth'ta — MOD-0018 Treasury Auth eki DL-2; Treasury yazar, MOD-0018 sahibi teyit eder):** Banka verisi görüntüleyici (`mdm.banks.read`), Banka verisi yöneticisi (banka / şube
   yazmalarının hepsi, durum ve silme dahil). Banka hesabı etkinleştirici (D47/2) yalnız **hesap** etkinleştirmesidir → DL-2. Dört göz
   (D23/2) yalnız banka hesabındadır; banka / şube etkinleştirmesinde dört göz **yok** (matris "örtüşmeler" notu) — DL-1 testleri
   bunu beklememeli.
@@ -214,7 +240,7 @@ Yollar pack "Teslim dilimleri" DL-1 satırı (`:1833-1838@904dfd5c2`) ve "Repo S
   `mdm.bank.*`, `mdm.bank-branch.*` (pack "Audited Events"); `Category = MasterData` (D48/1).
 - `tests/architecture/audit-ledger/Diten.MdmService.md` yeni K2 satırları + aynı değişiklikte `CT-DECISIONS.md` satırı ve
   `AuditTrailStandardTests` sabitleri, borç satırı yok (D27/11; AC-7).
-- İzin anahtarları `mdm.banks.*` (§2.6) — manifest sağlayıcısında; rol şablonu Auth'ta (Ali).
+- İzin anahtarları `mdm.banks.*` (§2.6) — manifest sağlayıcısında; rol şablonu Auth'ta (MOD-0018 Treasury Auth eki DL-2).
 - Hata sözlüğü DL-1 alt kümesi (pack "Hata sözlüğü"): `MDM_BANK_NOT_FOUND`, `MDM_BANK_BRANCH_NOT_FOUND`, `MDM_BANK_VALIDATION_FAILED`,
   `MDM_BANK_CODE_FORBIDDEN`, `MDM_BANK_BIC_CONFLICT`, `MDM_BANK_NATIONAL_CODE_CONFLICT`, `MDM_BANK_BRANCH_CODE_CONFLICT`,
   `MDM_BANK_BRANCH_BANK_MISMATCH`, `MDM_BANK_VERSION_CONFLICT`, `MDM_BANK_STATE_INVALID`, `MDM_BANK_RECORD_CODE_UNAVAILABLE`,
@@ -237,7 +263,7 @@ TRM-16; bu dalda 242ef03df).
 | Risk | HIGH — §9.1 sinyalleri: kiracı, denetim, kayıt kodu, yetki | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kod alma | **al-uyarla** — §2'deki satırlar, D45/3; her dosya `path@da4abb20 + sha256` WP raporunda | — |
-| Kapsanan dilim | **yalnız DL-1** (hesap, hassas veri, amaçlar, çit, ekranlar, gateway **yok**) — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1) | — |
+| Kapsanan dilim | **yalnız DL-1** (hesap, hassas veri, amaçlar, çit, ekranlar, gateway **yok**) — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); kabul kapısında: Auth kayıt kodu ve SEC-002 eki kodu main'de (D53/2, D56/1), gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek `BNK` kodu (D59/1), O-14 kararı (Beste) | — |
 
 **İzinli yollar** (pack Repo Scope, DL-1): `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/{Bank,BankBranch}.cs`,
 `Domain/Enums/BankLifecycleStatus.cs`, `Domain/Repositories/I{Bank,BankBranch}Repository.cs`,
@@ -257,7 +283,8 @@ taslağı DL-2); `execution/**`; kaynak depo ve handoff klasörü.
 **Önce oku:** pack (`ready-for-dev` sürümü), AGENTS.md, `execution/domains/master-data-management/domain-config.md`, `.antigravity/rules/`
 multi-tenancy, security-jwt, permission-key-standard, git-safety, cross-module-change-consent, code-style, audit-trail-standard,
 record-coding-standard, mongo-indexing, handler-design, module-self-registration-standard; karar kayıtları D1, D20, D23, D24, D27,
-D33, D44, D45–D50 (`treasury-intake-owner-decisions-0{1..5}.md`), bu hazırlık kaydı.
+D33, D44, D45–D69 (`treasury-intake-owner-decisions-0{1..5}.md`; özellikle D51/4, D53, D56/1, D59/1, D65/2), MOD-0018
+Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`, DL-2 ve DL-4), bu hazırlık kaydı.
 
 **Sözleşme yüzeyleri:**
 - API: `/api/mdm/banks`, `/api/mdm/banks/{bankId}/branches`, `/api/mdm/bank-branches/{id}` (+ activate / deactivate / bulk) — DL-1 için

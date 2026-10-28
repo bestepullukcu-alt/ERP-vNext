@@ -2,11 +2,39 @@
 record_id: MOD-0120-DL2-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 38eaf632dcc7698c7d9ef6716623903c0f6904f236d7eec31cca831fe5e35e53 (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — tier-2 aday kesişimi + MOD-0126 yeniden sabitleme; önceki sürüm `09ffc073…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `f61a93af…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
+pack: execution/domains/finance-treasury/module-packs/MOD-0120-accounts-receivable.md (status draft, sha256 db51da6af2aa97ed711818e24ad1d962e48c8665107ed9695e46cda54860307f (pack D71 revizyonu, 2026-10-28 — D71 aday tabanı iş akışı izniyle de kesişir (`approve ∩ platform.workflow.tasks.approve`, tier-2 talepte `∩ tier2-approve`; anahtar başına ayrı DL-6 çağrısı), K-A4b kapandı, AC-9 genişletildi, MOD-0126 `1b8f172a…8ddf`'a yeniden sabitlendi; önceki sürüm `6064158a…` (pack D70 revizyonu, 2026-10-28 — D70/1 K-A4 kapandı (K-A4b açık), D70/3 Auth paket kapısı, D67 atıfları (D67/4), MOD-0126 `ec4943aa…e374`'e yeniden sabitlendi; boş liste 422 zaten vardı; önceki sürüm `38eaf632…` (pack sahip denetimi 61466e504 KOŞULLU revizyonu, 2026-10-28 — tier-2 aday kesişimi + MOD-0126 yeniden sabitleme; önceki sürüm `09ffc073…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `f61a93af…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `bb51d877…` (D58/D59 revizyonu); D57 sürümü `0e83cbc8…`; D56 sürümü `db147bcc…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `51f53042…` içindir)), dal chore/ct/treasury-intake-ct-05 @ec063fee9, "Revizyon (2026-10-27, D54 — MOD-0126 yeniden sabitleme)"; CT-APR-02 UYGUN, 0 ENGEL — execution/approvals/reviews.tsv:97; CT-APR-01 satırı yok)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; D1 doğrula ve uyarlayarak al, kod alma izni D27/5; pack atıfları @218acaf5, AR dosyaları iki commit'te eşit — DL-1 kaydıyla aynı)
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve bu pack sürümü dahil; D69 main'de değil ve MOD-0120'ye dokunmaz).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-1**'i; kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **MOD-0023 şablon kodu geldi:** `FT-AR-ADJUSTMENT-APPROVAL` (Y-12; W-4, W-6 — `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, #277 ile
+> main'de) — iptal / alacak silme / tahsilat geri alma tek şablon, tek adım, atamasız; adaylar `CandidatePrincipalIds`. Şablonu
+> kuran MOD-0023 kodu main'de **değil**, WP numarası ve tarih yok (DL-3 dilim kapısı). "Son adım değil" gelirse düzeltme talebi
+> `PendingApproval`'da kalır, etki uygulanmaz (D67/4).
+> - **Onaylayıcı aday tabanı** = ekin **DL-6** aday sorgusu (D66/1; D67/1 — DL-6 paket metni MOD-0120 DL-3 önkoşulu, kodu DL-3
+> kabul kapısı; DL-1 ve DL-2 DL-6'yı beklemez). Eşik üstü düzeltmede `finance-treasury.receivable-adjustments.approve ∩
+> .tier2-approve`; kurallar sonrası boş liste → 422 `RECEIVABLE_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (pack; D68 MOD-0126 için aynı
+> deseni yazar).
+> - Aday kaynağı (`IFinanceTreasuryApproverCandidateSource`) ve MOD-0023 bağdaştırıcısı servis ortak yapı taşıdır; tek yazarı
+> MOD-0126 DL-2 (D67/3, D57/5); MOD-0120 DL-3 onu bekler.
+> - **Denetim sınıfı:** Issue K2, SetCollectionStage K1 (D57/2).
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **MOD-0048 seed'leri** (`currency-minor-units`): Treasury CT ekler, Beste onaylar (D59/2, D60); ölçüm: main'de yok
+> (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
+> (`AuditEnums.cs` son değer `ESignature = 17`).
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol oldu; MOD-0120'nin 15 anahtarı ve rolleri değişmedi. MOD-0126 ortak tanımları
+> pack "Kaynak ve kanıt"ta sha256 `1b8f172a…8ddf` ile sabitli (MOD-0126 D71 revizyonu; önceki `ec4943aa…e374` — D70; daha önce `3a70398a…e925` — D68 + sahip denetimi d5b378e50).
+>
 > **Güncel durum (2026-10-27).** Pack `status: draft`; bu sürüme CT-APR-02 kaydı var (`reviews.tsv:97`, UYGUN, açık ENGEL 0 —
 > dalda, main'de değil); CT-APR-01 yok. `services/Diten.FinanceTreasuryService/` yok — MOD-0126 DL-1 de MOD-0120 DL-1 de
 > **başlamadı**. MOD-0120 DL-2 yalnız MOD-0120 DL-1 kabul edildikten sonra başlar. Satır atıfları `yol:satır@ec063fee9`; pack
@@ -41,8 +69,8 @@ listesindeki bütün maddeler "— DL-3 için"dir (`:1479-1490`). "DL-2'ye etkis
 | MOD-0149 müşteri doğrulaması **Issue anında** (Validation Rules "Issue yalnız `Draft` ve müşteri + LE uygun", `:1027-1028`; O-4: faturalanabilir yalnız `active`, Y-4/4c) | commercial-suite | DL-1 paket kapısıyla aynı madde (O-3); DL-1 kabul edildiyse bağdaştırıcı (`Infrastructure/Customers/`) vardır | DL-1 üzerinden — ayrı kapı değil |
 | MOD-0220 `ApprovalStatus` (TRM-14) — AC-2'nin Issue / SetCollectionStage kısmı | Ali | yok (yukarıda) | DL-1 üzerinden |
 | O-12 "bugün"ün saat dilimi (yaşlandırma, `PromiseToPayDate ≥ bugün`) | — | **kapandı** — D28: UTC takvim günü (`:1685`) | — |
-| Auth kayıt kodu `finance-treasury.receivable-invoices.issue` / `.collection-manage` | Ali | yok (`ExplicitGrantOnlyPermissions.cs`'te ve Auth'ta `finance-treasury` 0; MOD-0018 Treasury paketi yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
-| MOD-0023 AR düzeltme şablonu; §17 kodu; O-7 / O-8 / O-9 / O-13; MOD-0031 ölçümü | Ali / CT | **2026-10-28 (Y-12): karar ve kod geldi — `FT-AR-ADJUSTMENT-APPROVAL`** (Void / WriteOff / PaymentReversal tek şablon, tek adım, atamasız); şablonu kuran kod main'de değil. Ölçüm anında: şablon **kararı da yok** — Y-6: "müşteri faturası düzeltmesi" şablonu henüz karara bağlanmadı (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok | **DL-3** — DL-2'yi bekletmez |
+| Auth kayıt kodu `finance-treasury.receivable-invoices.issue` / `.collection-manage` | Treasury yazar (MOD-0018 eki DL-1 kodu), MOD-0018 sahibi teyit eder | yok (`ExplicitGrantOnlyPermissions.cs`'te ve Auth'ta `finance-treasury` 0; MOD-0018 Treasury Auth eki taslağı #281 ile main'de, kodu yok) | DL-1 kabul kapısı (D53/2) üzerinden; DL-2 testleri gerçek izinle |
+| MOD-0023 AR düzeltme şablonu; §17 kodu; O-7 / O-8 / O-9 / O-13; MOD-0031 ölçümü | Ali / CT | **2026-10-28 (Y-12): karar ve kod geldi — `FT-AR-ADJUSTMENT-APPROVAL`** (Void / WriteOff / PaymentReversal tek şablon, tek adım, atamasız); şablonu kuran kod main'de değil; aday tabanı MOD-0018 Treasury Auth eki DL-6 (D66/1, D67/1 — DL-3 önkoşulu / kabul kapısı); ortak MOD-0023 bağdaştırıcısı ve aday kaynağı MOD-0126 DL-2'de (D57/5, D67/3). Ölçüm anında: şablon **kararı da yok** — Y-6: "müşteri faturası düzeltmesi" şablonu henüz karara bağlanmadı (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok | **DL-3** — DL-2'yi bekletmez |
 | MOD-0262 / MOD-0031 | — | DL-2'de çağrı yok (Issue / aşama / yaşlandırma belge ya da kanıt okumaz) | — |
 
 **DL-2'yi ilk bekleten:** MOD-0120 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
@@ -182,7 +210,8 @@ iki davranışı yine de Issue / SetCollectionStage için test ettirmelidir (D12
 **Önce oku:** pack (`ready-for-dev` sürümü), MOD-0126 pack (ortak tanımlar — makbuz, veri kapsamı), MOD-0120 DL-1 WP raporu ve
 kabul kaydı, AGENTS.md, domain-config, `.antigravity/rules/` multi-tenancy, security-jwt, permission-key-standard, git-safety,
 cross-module-change-consent, code-style (S-56), audit-trail-standard, data-scope-enforcement, mongo-indexing, handler-design;
-karar kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D14/4, D27/2, D28 O-12, D29/1 O-3, D47, D49, D50, D52/2), bu kayıt.
+karar kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D14/4, D27/2, D28 O-12, D29/1 O-3, D47, D49, D50, D52/2, D57/2,
+D59/1), bu kayıt.
 
 **Sözleşme yüzeyleri:** API `accounts-receivable.openapi.yaml` (Issue, collection-stage; `Idempotency-Key`, `If-Match`); tüketilen
 MOD-0149 eki (lookup-validation, sözleşme belgesi) ve MOD-0220 TRM-14. İzin §2.6.
@@ -221,18 +250,22 @@ DL-2 başladığı gün doldurulur (S-53); dalga sonunda tek PR (S-76, S-77). Ra
    DL-1'de "(Create kısmı)", DL-3'te "(kararlar)" olarak geçiyor; AC-18 (tek aşamalı komut tam bir olay) DL-1'de "(tek aşamalı)",
    DL-3'te "(iki aşamalı + sabotaj + kurtarma)". Issue ve SetCollectionStage (DL-2'nin iki yazma komutu) ne AC-17 ne AC-18 kısmında
    anılıyor (`:1725-1726`). Ayrıca DL-1 AC-17'yi yalnız "Create kısmı" ile sınırlıyor — Update / Delete / BulkDelete idempotency'si de
-   adsız kalıyor. Öneri: DL-2 "17 (Issue / SetCollectionStage kısmı)", "18 (Issue / SetCollectionStage kısmı)".
+   adsız kalıyor. Öneri: DL-2 "17 (Issue / SetCollectionStage kısmı)", "18 (Issue / SetCollectionStage kısmı)". **Kapandı** (pack D56
+   revizyonu, bulgu 1).
 2. **"Açık düzeltme yokken" koşulu DL-2'de doğrulanamaz.** Validation Rules SetCollectionStage'i "açık düzeltme yokken" kısıtlıyor
    (`:1029`); düzeltme talebi DL-3'te doğar. Pack bunun DL-2'de nasıl yazılacağını söylemiyor (boş koşul mu, DL-3'te mi bağlanır).
-   Aynı şekilde yaşlandırmanın "en eski ödenmemiş taksit" kuralı tahsilatı (DL-3) varsayıyor.
+   Aynı şekilde yaşlandırmanın "en eski ödenmemiş taksit" kuralı tahsilatı (DL-3) varsayıyor. **Kapandı** (pack D56 revizyonu: DL-2
+   notu, bulgu 2).
 3. **Validation Rules DL-2'de "kapanıyor" ama satırlarının çoğu DL-3'te uygulanıyor.** "Her bölüm tabloda bir kez, **kapandığı**
    dilimde yazılıdır" (`:1699`) — Validation Rules DL-2'de (`:1695`), ama SoD A1–A7, düzeltme, `PaymentId`, tahsilat satırları DL-3
    komutlarına aittir; pack notu "SoD kuralları DL-3'te uygulanır" diyor. Kabul kaydında Validation Rules DL-2'de "kapandı" sayılırsa
    DL-3 kuralları kapanmamış kalır. Öneri: Validation Rules'u DL-3'e taşımak ya da DL-2'yi "aşama kuralları kısmı" olarak yazmak.
+   **Kapandı** (pack D56 revizyonu: DL-2'de yalnız aşama kuralları kısmı, tam kapanış DL-3 kabulünde — bulgu 3).
 4. **AC-2 / AC-5 / AC-35 DL-2 kısmı dışında AC-6 DL-1'de tam kapanıyor** — AC-6 (veri kapsamı kanıt testi) yalnız liste / detay
    anıyor; Issue / SetCollectionStage'in kapsam dışı şirkette 404 vermesi AC-35'ten geliyor. Çelişki yok, ama veri kapsamı sabotajının
    (kapsam süzgeci kaldırılınca kırmızı) DL-2 yazma uçlarında da koşulacağı yazılı değil; prompt AC-35 sabotajını Issue /
-   SetCollectionStage için açık istemeli.
+   SetCollectionStage için açık istemeli. **Kapandı** (pack D56 revizyonu: DL-2 AC-35 kısmına kapsam sabotajı — bulgu 4).
 5. **Küçük:** Audited Events'te Issue / SetCollectionStage için "K2 (fail-closed): evet (öneri)" (`:1182-1183`) — D14/3 AR'de K2'yi
    düzeltme talebi, onay, ret ve elle tahsilat için verdi; Issue / aşama için karar yok, "öneri" olarak kaldı. `RequireEnlistment`
-   ile davranış aynı (olay yazılamazsa komut başarısız), ama sınıf kararı prompt'tan önce netleşmeli.
+   ile davranış aynı (olay yazılamazsa komut başarısız), ama sınıf kararı prompt'tan önce netleşmeli. **Kapandı — KARAR D57/2:**
+   Issue K2, SetCollectionStage K1.

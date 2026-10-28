@@ -2,12 +2,38 @@
 record_id: MOD-0217-DL1-HAZIRLIK-01
 status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-27
-refreshed_at_local: 2026-10-27
+refreshed_at_local: 2026-10-28
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 7e6b9520b4e217efeadf0bd0d5d58d3d49ab2784e9191ab49ba3ef5bd1317d67 (pack ready-for-dev 1. tur eki D66 revizyonu, 2026-10-28 — D66; önceki sürüm `4c4bf518…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D45/2 — Codex F-1)"; önceki a83901f9…; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
+pack: execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md (status draft, approval_status not-approved, sha256 3bc065c5f0289279ba00280a471445a856fc891156f4e83a87be173d530fde91 (pack D71 revizyonu, 2026-10-28 — D71 aday tabanı `mdm.contracts.versions.approve ∩ platform.workflow.tasks.approve` (anahtar başına ayrı DL-6 çağrısı), K-A4b kapandı, AC-33 genişletildi; önceki sürüm `7fb0eef9…` (pack D70 revizyonu, 2026-10-28 — D70/2 boş aday listesi 422 `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` (AC-33), D70/1 sözleşme onaylayıcı iş akışı izinleri rol şablonuyla (K-A4 kapandı, K-A4b açık), D70/3 Auth paket kapısı; önceki sürüm `de6f15f9…` (pack KARAR D69 revizyonu, 2026-10-28 — sözleşme sürümü onay anahtarı `mdm.contracts.versions.approve`, O-3 (b) kapandı; önceki sürüm `7e6b9520…` (ready-for-dev 1. tur eki D66 revizyonu — D66); daha önce `4c4bf518…` (ready-for-dev 1. tur revizyonu — Y-12, D62–D65); daha önce `f5795529…` (D58/D59 revizyonu); D56 sürümü `647a7679…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `76e502d6…` içindir)), dal chore/ct/treasury-intake-ct-05, "Revizyon (2026-10-27, D45/2 — Codex F-1)"; önceki a83901f9…; satır atıfları @00d3f2b41 sürümüne (3fa635e6…f6a9); main @904dfd5c2 sürümü b250d7a7…35e1)
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; yalnız başvuru malzemesi — KOD ALMA YOK, D38/3; pack "Kaynak ve kanıt")
 ---
 
+> **Güncel durum (2026-10-28, D59–D69 sonrası — pack tek doğruluk kaynağı).** Bu blok kaydın güncel durumudur; aşağıdaki
+> tarihli bloklar ve `@904dfd5c2` / `@00d3f2b41` / `@ec063fee9` ölçüm atıfları kendi tarihlerinindir, değiştirilmedi. Pack
+> sürümü başlıktaki sha256'dır. Ölçüm (2026-10-28): origin/main @ `027ca2e38` — ct-05 dalı #281 ile main'de (karar dosyası D45–D68,
+> MOD-0018 Treasury Auth eki taslağı ve MOD-0217'nin D66 sürümü dahil; bu pack sürümü (D69) ve D69 main'de **değil** — yerel commit `db69732cb`).
+> - **Auth paket metni** = MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi
+> Ali teyit eder — Y-15, Y-16; FU numarası açık — K-1). Taslak main'de ama `draft` ve teyitsiz — pack'teki "Auth paket metni
+> main'de" maddesi işaretsiz, paket kapısı açık (D53/1). Bu paketin anahtarları, açık atamaları ve rolleri ekin **DL-3**'ü (`mdm.contracts.*` 18 anahtar, 4 rol, 1 açık atama — D69 dahil;
+> koşullu: MOD-0217 onayından sonra); kayıt
+> kodu DL-1 kabul kapısı (D53/2). D53 ve D56 aynen geçerli; Y-14 geçersiz (kullanılmadı).
+> - **SEC-002:** ekin **DL-4**'ü (KARAR D56/1; Platform dosyaları için XMC-001 Beste — D63/2): paket metni paket kapısı, kodu
+> DL-1 kabul kapısı. 2026-10-27 ölçümü: bugün çalışmaz (modül kodu iki tarafta `product-item-sku-master`'a sabit).
+> - **MOD-0023 şablon kodu geldi:** `MDM-CONTRACT-VERSION-APPROVAL` (Y-12; W-5, W-6 — `docs/records/decisions/2026-10/mod0023-workflow-template-owner-decisions-01.md`, #277 ile
+> main'de; MOD-0217 onayından sonra kullanılır) — tek aşama, tek onay adımı, atamasız, ayrı hukuk adımı yok. Şablonu kuran MOD-0023
+> kodu main'de **değil** (O-3 (a)); örnek durum adları DL-3 başında (O-3 (c)) — DL-3 dilim kapısı.
+> - **Onaylayıcı aday tabanı** = ekin **DL-6** aday sorgusu (D66/1; D67/1 — DL-6 paket metni DL-3 önkoşulu, kodu DL-3 kabul
+> kapısı). **Sorgunun anahtarı `mdm.contracts.versions.approve` — KARAR D69** (O-3 (b) kapandı): yeni rol "Sözleşme onaylayıcı"
+> (`mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve`; açık atama değil); sürümü hazırlayan, şirket
+> kapsamı dışı ve anahtarı olmayan kullanıcı aday olmaz (AC-33 genişledi); boş liste MOD-0023'te 400 → kesin ret (AC-53). Rolün
+> MOD-0023 görev anahtarları D69'da yazılmadı — **D70/1 ile kapandı** (rol şablonuyla taşır; ek K-4 (b), K-A4 kapandı; elle atamada açık nokta K-A4b — **KARAR D71 ile kapandı**: aday listesi `platform.workflow.tasks.approve` ile de kesiştirilir). D69 main'de değil (D62/1: ekin DL-3 paket metninin D69
+> kısmı onu bekler).
+> - **Belge deposu:** MdmService servis kimliğiyle (KARAR D56/2 — D41/10'un MOD-0262 kısmının ve D46a'nın yerine); kullanıcılara
+> `platform.document-repository.*` verilmez; MOD-0262-FU01'de servis kimliği desteği DL-2 dilim kapısı (Platform — Beste).
+> - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
+> önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **Rol matrisi** D69 ile 117 anahtar / 26 rol; MOD-0217 18 anahtar / 4 rol.
+>
 > **Güncel durum (2026-10-27).** İlk hazırlık kaydı. Pack'in çalışma ağacındaki sürümüne bağlıdır: sha256 `3fa635e6…a9`,
 > `status: draft`, `approval_status: not-approved` (`MOD-0217-contract-lifecycle-management-clm.md:11-12@00d3f2b41`), dal
 > `chore/ct/treasury-intake-ct-05` @00d3f2b41 (= main @904dfd5c2 + beş yerel docs commit'i; kod ve kural yolları main ile aynı).
@@ -51,29 +77,31 @@ Kaynak: pack "Ready-for-dev Checklist" paket kapısı (`:1257-1291@00d3f2b41`), 
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `3fa635e6…` için `reviews.tsv`'de satır yok (son MOD-0217 incelemesi `78657a26…`, `execution/approvals/reviews.tsv:83`) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 | Treasury CT + bağımsız inceleyici | `draft` / `not-approved`; güncel sha `3bc065c5…` için `reviews.tsv`'de satır yok (son MOD-0217 incelemesi `78657a26…`, `execution/approvals/reviews.tsv:83`) · **2026-10-28:** güncel sha `3bc065c5…` (D71) için satır yok; son satır `76e502d6…` | bekletir |
 | CT-APR-01 sürüme bağlı onay (paketi yazmamış onaylayıcı) | Beste | `approvals.tsv`'de MOD-0217 satırı yok (grep 0) | bekletir |
 | MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` | Beste | `DCP-011-finance-treasury-intake.md:7` `status: draft`; MOD-0217 yalnız **aday** (`:17` `candidate_modules: [MOD-0217]`, `:90`; dilim TRM-S4 `:150`) — üyelik DCP değişikliği ister | bekletir (`:1265`) |
-| MDM domain-config satırı + kimlik kaydı satırı main'de | CT (D38/2) | **main'de var (ölçüldü)** — `execution/domains/master-data-management/domain-config.md:49-53@00d3f2b41` (yerel commit'ler bu satırı değiştirmedi; diff yalnız MOD-0289 satırı), `execution/registries/module-id-registry.md:155@00d3f2b41` (`reserved / planned`). Pack checkbox'u `:1266` hâlâ "bugün çalışma ağacında, commit edilmemiş" diyor (§5 bulgu 1) | — (kapanmış sayılabilir; pack revizyonunda işaretlenmeli) |
-| Auth paket metni — MOD-0018 paketi (anahtarlar `mdm.contracts.*`, açık atama listesi `read-tenant-wide`, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-2, Y-6) | **2026-10-28: taslak** `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1) bu dalda, main'de değil; ölçüm anında: **yok** — `MOD-0018-*` dosyalarında `mdm.contracts` 0 | paket kapısı (D53/1) — DL-1'i bekletir (pack checklist D53'e göre iki maddeye bölündü — kapandı) |
-| Auth kayıt kodu — `mdm.contracts.*` kaydı (MOD-0217 onayından sonra) | Ali | **yok** — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.*` 0; `services/**`'te `mdm.contracts` 0 (grep) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
-| RCS-001 §3 `CTR` satırı main'de | — | **main'de var (ölçüldü)** — `.antigravity/rules/record-coding-standard.md:70@00d3f2b41` (`.antigravity/**` yerel commit'lerde değişmedi; PR #246 birleşmiş). Pack checkbox'u `:1274` "PR #246 birleşince" işaretsiz (§5 bulgu 1) | — (kapanmış sayılabilir) |
+| MDM domain-config satırı + kimlik kaydı satırı main'de | CT (D38/2) | **main'de var (ölçüldü)** — `execution/domains/master-data-management/domain-config.md:49-53@00d3f2b41` (yerel commit'ler bu satırı değiştirmedi; diff yalnız MOD-0289 satırı), `execution/registries/module-id-registry.md:155@00d3f2b41` (`reserved / planned`). Pack checkbox'u D52 ile `[x]` (§5 bulgu 1 kapandı) | — (kapandı) |
+| Auth paket metni — MOD-0018 paketi (anahtarlar `mdm.contracts.*`, açık atama listesi `read-tenant-wide`, rol şablonları D46–D50) | Treasury yazar, MOD-0018 sahibi (Ali) teyit eder (Y-15, Y-16; önceki: Y-2, Y-6) | **2026-10-28: taslak main'de** (#281; origin/main @ `027ca2e38`) — `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` `draft`, FU numarası açık (K-1), MOD-0018 sahibinin teyidi yok, pack checklist maddesi işaretsiz; Y-14 geçersiz (kullanılmadı); ölçüm anında: **yok** — `MOD-0018-*` dosyalarında `mdm.contracts` 0 | paket kapısı (D53/1) — DL-1'i bekletir (pack checklist D53'e göre iki maddeye bölündü — kapandı) |
+| Auth kayıt kodu — `mdm.contracts.*` kaydı (MOD-0217 onayından sonra; MOD-0018 Treasury Auth eki DL-3 kodu) | Treasury yazar, MOD-0018 sahibi teyit eder (Y-15, Y-16) | **yok** — `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`'te `mdm.*` 0; `services/**`'te `mdm.contracts` 0 (grep) | DL-1 kabul kapısı (D53/2) — DL-1 başlamasını bekletmez, kabulünü bekletir |
+| RCS-001 §3 `CTR` satırı main'de | — | **main'de var (ölçüldü)** — `.antigravity/rules/record-coding-standard.md:70@00d3f2b41` (`.antigravity/**` yerel commit'lerde değişmedi; PR #246 birleşmiş). Pack checkbox'u D52 ile `[x]` (§5 bulgu 1 kapandı) | — (kapandı) |
 | RCS-001 ortak kod servisi (BL-565) | Beste (D44) | **yok** — BL-565 `DURUM: AÇIK` (`docs/roadmap/backlog/product-backlog.md:9473-9477@00d3f2b41`; sahip alanı "CT", D44 ile uyumsuz); `services/**`'te kod servisi yok; MDM'deki `CodeReservation` ürün ailesinin (pack Dependencies `:487`) | **DL-1 kabul kapısı (D59/1)** — başlamayı bekletmez; DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır, gerçek servis DL-1 kabulünden önce main'de (v0 sözleşmesi Y-8, 6 Kasım); üretimde port bağlı değilse 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE` |
-| SEC-002 kapsam sağlayıcısının `mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü | Treasury CT (ölçüm) / platform-shared-services | **ölçülmedi.** Okunan: MDM portu `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11@00d3f2b41`), Platform istemcisiyle kayıtlı (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs:112@00d3f2b41`); Platform tarafının bu anahtarlar için ne döndürdüğü okunmadı — **kısmi inceleme** | bekletir (`:1276`) |
+| SEC-002 kapsam sağlayıcısı (ilk sürümde: "`mdm.contracts.*` anahtarlarıyla çalıştığı ölçüldü") | MOD-0018 Treasury Auth eki DL-4 (KARAR D56/1): Treasury yazar, MOD-0018 sahibi teyit eder; XMC-001 Beste (Platform, D63/2) + MDM sahibi | **2026-10-28 (D56/1):** ölçüm maddesi değil — ek DL-4 paket metni paket kapısı (D53/1 deseni), ek kodu DL-1 kabul kapısı; 2026-10-27 ölçümü olumsuz (bugün çalışmaz — DL-2 kaydı §1). İlk ölçüm anında: **ölçülmedi.** Okunan: MDM portu `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` (`services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-11@00d3f2b41`), Platform istemcisiyle kayıtlı (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs:112@00d3f2b41`); Platform tarafının bu anahtarlar için ne döndürdüğü okunmadı — **kısmi inceleme** | paket kapısı: ek DL-4 paket metni (D56/1) — DL-1'i bekletir; ek kodu DL-1 kabul kapısı |
 | `AuditCategory` değeri | — | **kapandı — D45/1: `MasterData`** (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:19@00d3f2b41`, değer 14; `treasury-intake-owner-decisions-05.md:18-21`); `Finance = 18` MOD-0217'ye uygulanmaz | — |
 | MOD-0048 para birimi listesinin MdmService'ten tüketim yolu | — | **kapandı (ölçüm)** — bugün okuyucu yok; yol `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:16,30,45-49@00d3f2b41` — `Gateway:BaseUrl`, `X-Tenant-Id` iletimi); portu ilk tüketen dilim (DL-1) yazar (`:1285-1289`) | — (portu DL-1 yazar) |
 | O-1 (D39), O-2 (D40), O-4…O-15 (D41), O-11 `OTHER` (D45/2), O-6 defter (D41/3) | — | **kapandı** (`:1267-1291`) | — |
 | MOD-0262-FU01 sözleşmesi kodda ölçüldü | — | **kapandı** — pack ölçümü @7c57e8466; bugün de uçlar `DocumentRepositoryController.cs:40,59,87,97,116@00d3f2b41` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/`), izinler `platform.document-repository.read` / `.manage`; pack `MOD-0262-FU01-document-binary-store.md:10` `ready-for-dev`, `:20` `runtime_implementation: in-progress` | DL-2 |
 | MOD-0262-FU01 canlı doğrulama kaydı (yükle / indir / başka kiracı 404) | Treasury CT | yok | DL-2 |
-| O-13 çağrı kimliği | — | kapandı (D41/10) | DL-2 |
-| O-3 MOD-0023 MOD-0217 şablonu + örnek durum adları | Ali (D38/4, Y-3) | **yok** (2026-10-28, Y-12: kod `MDM-CONTRACT-VERSION-APPROVAL` geldi, MOD-0217 onayından sonra kullanılır; kuran kod main'de değil, aday listesi kuralı ve durum adları açık) | DL-3 |
-| MOD-0023 §17 rev 2 onayı | — | **onaylı** — `execution/approvals/approvals.tsv:16` (`803fbaa5…` = MOD-0023 pack'in bugünkü sha'sı); pack checkbox'u `:1304` işaretsiz (§5 bulgu 1). Okuma alanlarının main'de olması ve AC-W2/W12/W13 DL-3 kabul kapısında | DL-3 |
+| O-13 çağrı kimliği | — | kapandı (D41/10); MOD-0262 kısmı **KARAR D56/2** ile servis kimliği — MOD-0262-FU01'de servis kimliği desteği DL-2 dilim kapısı (Beste) | DL-2 |
+| O-3 MOD-0023 MOD-0217 şablonu + örnek durum adları | Ali (D38/4, Y-3) | **yok** (2026-10-28, Y-12: kod `MDM-CONTRACT-VERSION-APPROVAL` geldi, MOD-0217 onayından sonra kullanılır; kuran kod main'de değil — O-3 (a); aday tabanı D66/1, anahtar `mdm.contracts.versions.approve` — **KARAR D69**, O-3 (b) kapandı; durum adları DL-3 başında — O-3 (c)) | DL-3 |
+| MOD-0023 §17 rev 2 onayı | — | **onaylı** — `execution/approvals/approvals.tsv:16` (`803fbaa5…` = MOD-0023 pack'in bugünkü sha'sı); pack checkbox'u D52 ile `[x]` (§5 bulgu 1 kapandı). Okuma alanlarının main'de olması ve AC-W2/W12/W13 DL-3 kabul kapısında | DL-3 |
 | MOD-0023 başlatma hata gövdesi kodları ölçümü; O-8 imza modeli | Treasury CT / — | ölçülmedi; O-8 kapandı (D41/5) | DL-3 |
 | MDM domain-config frontend / gateway kapsam cümlesi; Gateway rotaları | MDM sahibi / integration-agent | domain-config bugün yalnız MOD-0290-FU02 için istisna yazıyor (`domain-config.md:59-65`); rota yok | DL-4 |
 
-**DL-1'i ilk bekleten:** dış sahipli ve tarihsiz madde — **Auth paket metni / MOD-0018 Treasury Auth eki (Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16)**.
-Auth kayıt kodu (`mdm.contracts.*`, MOD-0217 onayından sonra) başlamayı değil DL-1 kabulünü bekletir (D53/2). CT'nin bugün kapatabileceği iki madde: **SEC-002 sağlayıcı ölçümü** (salt okunur) ve pack'te eskimiş iki checkbox'un
-(domain-config / kayıt satırı, `CTR`) işaretlenmesi; **DCP-011 üyeliği** ise Beste'nin DCP değişikliğini ister.
+**DL-1'i ilk bekleten:** dış sahipli ve tarihsiz madde — **MOD-0018 Treasury Auth ekinin MOD-0018 sahibince teyidi** (taslak #281 ile
+main'de; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16; FU numarası K-1): ekin DL-3'ü (`mdm.contracts.*`, 18 anahtar / 4 rol —
+D69 dahil) ve DL-4'ü (SEC-002, D56/1) bu paketin paket kapısıdır. Auth kayıt kodu (`mdm.contracts.*`, MOD-0217 onayından sonra) ve ek
+DL-4 kodu başlamayı değil DL-1 kabulünü bekletir (D53/2, D56/1). 2026-10-27'deki iki CT maddesi kapandı: SEC-002 ölçümü olumsuz çıktı
+ve D56/1 ile ek paketine taşındı; eskimiş checkbox'lar D52 ile `[x]`. **DCP-011 üyeliği** Beste'nin DCP değişikliğini ister.
 **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
 yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
@@ -170,7 +198,8 @@ matrisi (CT04a; D49 ile güncellendi — işleyen tek matris)" (`docs/records/de
   Kaynak `contract.*` anahtarları alınmaz.
 - **Test kişileri matristen** (`treasury-intake-owner-decisions-05.md:199-201`): okuma → **Sözleşme görüntüleyici** (`read`,
   `documents.read`; `value.read` **yok** → değer maskeli döner, AC-63'ün maskeli kolu); yazmalar ve değer → **Sözleşme
-  yöneticisi** (create / update / delete / bulk-delete, `value.read`, `value.write`). **Sözleşme imza kaydedici** DL-3'tür.
+  yöneticisi** (create / update / delete / bulk-delete, `value.read`, `value.write`). **Sözleşme imza kaydedici** ve **Sözleşme onaylayıcı** (D69: `read`, `documents.read`, `mdm.contracts.versions.approve`; AC-33 aday
+  testi) DL-3'tür.
   AC-65'in 403 `MDM_CONTRACT_VALUE_WRITE_REQUIRED` kolu için matriste hazır rol yok (update var, `value.write` yok) — test kişisi
   izin listesiyle kurulur (öneri; prompt'ta açık yazılır).
 - **`mdm.contracts.read-tenant-wide`** açık atama listesinde (`treasury-intake-owner-decisions-05.md:144`); hiçbir şablona
@@ -233,7 +262,7 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 | Risk | HIGH — §9.1 sinyalleri: kiracı, veri kapsamı, denetim, kayıt kodu, yetki, işlem bütünlüğü | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kod alma | **yok (D38/3)** — §2 yalnız referans; WP raporunda "kaynaktan dosya alınmadı" beyanı ve okunan referans dosyaları `path@da4abb20 + sha256` | — |
-| Kapsanan dilim | **yalnız DL-1** (belge, değişiklik, onay, imza, ekran, gateway **yok**) — başlama koşulu yalnız paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (O-3 açıkken ilerler, `:1478`) | — |
+| Kapsanan dilim | **yalnız DL-1** (belge, değişiklik, onay, imza, ekran, gateway **yok**) — başlama koşulu yalnız paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (O-3 (a) / (c) açıkken ilerler, `:1478`; O-3 (b) KARAR D69 ile kapandı) | — |
 
 **DL-1 Bitiş AC'leri** (`MOD-0217-contract-lifecycle-management-clm.md:1478-1483@00d3f2b41`): AC-1, AC-2, AC-3, AC-4, **AC-5 (DL-1
 uçları kısmı)**, **AC-6 (DL-1 uçları kısmı — SEC-002)**, **AC-7 (DL-1 yazmaları kısmı)**, AC-8, AC-9, **AC-10 (DL-1 komutları
@@ -246,7 +275,8 @@ AC-65 → DL-2. AC metinleri pack'ten tırnakla alıntılanır.
 
 **Dilim kabul kapısı — DL-1** (`:1518`): Bitiş AC'leri (kısımlarıyla); **gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14)
 kendi Mongo URI'li suite'te (AC-23)**; `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı,
-AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2).
+AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2); SEC-002 eki kodu (MOD-0018 Treasury
+Auth eki DL-4) main'de (D56/1); gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `CTR` kodu alındı (D59/1).
 
 **İzinli yollar** (pack "Repo Scope", DL-1 satırları `:426-445`): `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/{Contract,ContractVersion}.cs`,
 `Domain/Enums/{ContractStatus,ContractVersionStatus,ContractCounterpartyType,ContractVersionKind,ContractDocumentRole}.cs`,
@@ -269,7 +299,8 @@ ve `Views/Procurement/Contracts/**` MOD-0144'ün); `docs/analysis/contracts/**`;
 **Önce oku:** pack (`ready-for-dev` sürümü), AGENTS.md, `execution/domains/master-data-management/domain-config.md`,
 `.antigravity/rules/` multi-tenancy, security-jwt, permission-key-standard, git-safety, cross-module-change-consent, code-style,
 audit-trail-standard, data-scope-enforcement, record-coding-standard, mongo-indexing, handler-design,
-module-self-registration-standard; karar kayıtları D9, D19, D37–D41, D44–D51 (`treasury-intake-owner-decisions-0{2..5}.md`),
+module-self-registration-standard; karar kayıtları D9, D19, D37–D41, D44–D69 (`treasury-intake-owner-decisions-0{2..5}.md`; rol matrisi
+D47 / D49 / D69), MOD-0018 Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`, DL-3 ve DL-4),
 TRM-11 cevabı (`docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-TRM11-01.md`), bu hazırlık kaydı.
 
 **Sözleşme yüzeyleri:** API `/api/mdm/contracts`, `…/{id}`, `…/{id}/versions`, `…/{id}/versions/{versionNo}`, `DELETE …/bulk` —
