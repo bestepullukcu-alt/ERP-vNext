@@ -27,6 +27,17 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > yazılır. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket düzeyi; "— DL-n için" maddeleri o dilimin
 > önkoşulu) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D76/4 — O-16 kapandı: ilk aday listesi onay denemesinde):** `status: draft` ve
+> `approval_status: not-approved` değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D76
+> (2026-10-28 ölçümünde karar dosyasında yazılı, commit'lenmemiş; main'de değil; D75 yerel commit `da2aba808`, main'de değil).
+> **D76/4:** ilk aday listesi onay denemesi (`ApprovalAttempt`) kaydında deneme başına saklanır; Submit'in aynı anahtarla tekrarı
+> bu listeyi kullanır (MOD-0126 niyet deseni) — O-16 seçeneği (a). Entity Fields `ContractVersion`'a yeni alan
+> `CandidatePrincipalIds` (`List<Guid>`; güncel denemenin listesi, Submit'in (1) koşullu yazımında `ApprovalAttempt + 1` ve
+> `WorkflowIdempotencyKey` ile birlikte yazılır; form alanı değil — `form_field_count: 12` değişmedi). Değişen yerler: Entity
+> Fields (`CandidatePrincipalIds` yeni, `ApprovalAttempt` kuralı), Runtime Constraints "Onaya gönderme" (1) ve "Yeniden
+> başlatmadan önce yeniden denetim", Açık kararlar O-16 "KAPANDI — KARAR D76/4"; **AC-33 genişletildi** (tekrar Auth'u yeniden
+> çağırmaz, ilk liste gider; sabotajlı). Yeni hata kodu yok; mevcut AC numaraları değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D75 — Auth iç uç kimliği ve tekrarda ilk aday listesi):** `status: draft` ve `approval_status:
 > not-approved` değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74/1 (yerel commit
 > `5d2655c72`, main'de değil) ve D75/2 (2026-10-28 ölçümünde karar dosyasında yazılı, commit'lenmemiş; main'de değil).
@@ -497,7 +508,8 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 | AbandonedContentIds | `List<Guid>` | yalnız çit yazımı ekler (Runtime Constraints → "Uzak çağrı sırası" (4b)(iii)); listedeki `ContentId` bu sürüme hiçbir zaman bağlanamaz; API'de görünmez |
 | WorkflowIdempotencyKey | string? | **güncel onay denemesinin** anahtarı `mdm-contract:{ContractId}:v{VersionNo}:a{ApprovalAttempt}`; her Submit'te sunucu yeni denemeyle yazar (önceki denemenin anahtarı yeniden kullanılmaz) |
 | WorkflowInstanceId | Guid? | güncel denemenin MOD-0023 örneği; yalnız başlatma **doğrulandığında** yazılır (başlatma 200/201 yanıtı ya da Sync'te güncel anahtarla tek eşleşen satır); her Submit'te `null`'a döner |
-| ApprovalAttempt | int | her Submit'te +1; güncel deneme = (`ApprovalAttempt`, `WorkflowIdempotencyKey`, `WorkflowInstanceId`) üçlüsü |
+| ApprovalAttempt | int | her Submit'te +1; güncel deneme = (`ApprovalAttempt`, `WorkflowIdempotencyKey`, `WorkflowInstanceId`) üçlüsü; denemenin ilk aday listesi `CandidatePrincipalIds`'te (**KARAR D76/4**) |
+| CandidatePrincipalIds | `List<Guid>` | **güncel onay denemesinin ilk aday listesi (KARAR D76/4, O-16 kapandı):** Submit'in (0) adımında çözülen liste, (1) koşullu yazımında `ApprovalAttempt + 1` ve yeni `WorkflowIdempotencyKey` ile **aynı yazımda** yazılır; boş liste yazılmaz ((0) boşsa 422, (1)'e geçilmez); aynı anahtarla Submit tekrarı listeyi buradan okur ve MOD-0023'e aynen gönderir, Auth aday sorgusu yeniden çağrılmaz (MOD-0126 niyet deseni); yeni deneme (`a{n+1}`) kendi listesini yazar. Form alanı değil (`form_field_count` değişmez) |
 | SubmittedAt / SubmittedBy | DateTimeOffset? / Guid? | Submit (güncel deneme); aynı anahtarla tekrar yalnız `SubmittedBy` kullanıcısınca |
 | LastApprovalOutcome / LastApprovalOutcomeAt | enum `None`=0, `Approved`=1, `Rejected`=2, `Cancelled`=3, `StartRefused`=4 / DateTimeOffset? | Sync; `StartRefused` Submit'in kesin ret yolunda |
 | LastApprovalReasonCode | string? | yalnız `StartRefused`'da: `WORKFLOW_REQUEST_INVALID` \| `WORKFLOW_FORBIDDEN` \| `WORKFLOW_SOD_VIOLATION` \| `WORKFLOW_TEMPLATE_NOT_FOUND` \| `WORKFLOW_START_CLOSED` (öneri; MOD-0023 hata gövdesi kodları DL-3 başında ölçülür, izin ile SoD ayırt edilemezse ikisi de `WORKFLOW_FORBIDDEN`) |
@@ -741,7 +753,8 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   (KARAR D69, **KARAR D71**; anahtar başına ayrı DL-6 çağrısı), hazırlayan ve şirket kapsamı dışındakiler çıkarılır
   (Authorization Convention → "Aday tabanı"); sorgu okunamazsa ya da liste boşsa (1)'e geçilmez (Failure Path, AC-33);
   (1) tek koşullu yazımda sürüm `Draft → InApproval`, `ApprovalAttempt + 1`, yeni deneme
-  anahtarı `WorkflowIdempotencyKey`, `WorkflowInstanceId = null`, `SubmittedAt` / `SubmittedBy` + niyet
+  anahtarı `WorkflowIdempotencyKey`, (0)'ın listesi `CandidatePrincipalIds` (**KARAR D76/4**), `WorkflowInstanceId = null`,
+  `SubmittedAt` / `SubmittedBy` + niyet
   `mdm.contract-version.submitted`; (2) aynı anahtarla `POST /api/v1/workflow/instances`; (3) yanıt aşağıdaki tabloya göre
   işlenir. Başarı (200 / 201): dönen örnek kimliği koşullu yazılır + niyet `mdm.contract-version.workflow-start-confirmed`
   (başlatma doğrulandı). Sürüm `InApproval`'da donmuştur; içerik / anahtar uyuşmazlığı oluşamaz.
@@ -772,8 +785,8 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
     `MDM_CONTRACT_SUBMITTER_MISMATCH`; onaylayıcı SoD'si MOD-0023'te yeniden değerlendirilir (403 → kesin ret). Denetimlerden
     biri tutmazsa MOD-0023'e çağrı yapılmaz ve sürüm değişmez. **Aday listesi (KARAR D75/2 (b)):** (0) adımı yalnız kullanıcının
     başlattığı ilk gönderimde (yeni deneme anahtarıyla Submit) koşar; aynı anahtarla tekrar ilk gönderimin `CandidatePrincipalIds`
-    listesini aynen gönderir, Auth aday sorgusunu yeniden çağırmaz. İlk listenin saklandığı yer açık karar **O-16** (bugün Entity
-    Fields'te alan yok); O-16 kapanmadan DL-3 kabul edilmez.
+    listesini aynen gönderir, Auth aday sorgusunu yeniden çağırmaz. İlk liste sürümün `CandidatePrincipalIds` alanında deneme
+    başına saklanır ve tekrar onu okur (**KARAR D76/4**; O-16 kapandı; Entity Fields).
   - `SubmittedBy` artık tekrar edemiyorsa (ayrıldı, yetkisi alındı) başlatma bekleyen sürüm yalnız Sync ile çözülür; yönetici
     çözüm yolu Follow-up.
 - **Onay sonucu (Sync) — güncel denemeye bağlı:** MOD-0023 `GET instances/by-objects` `includeDeleted=true` ile okunur.
@@ -1287,6 +1300,13 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   **Boş liste (KARAR D70/2):** sahte Auth yalnız hazırlayanı döndürdüğünde (dışlama sonrası liste boş) Submit 422
   `MDM_CONTRACT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, sahte MOD-0023'e hiç çağrı gitmez, sürüm durumu ve `ApprovalAttempt` değişmez;
   sabotaj: boş liste MOD-0023'e gönderildiğinde (çağrı sayısı 1) test kırmızıya döner.
+  **Tekrarda ilk aday listesi (KARAR D75/2 (b), KARAR D76/4):** ilk Submit'ten sonra sürümün `CandidatePrincipalIds` alanı
+  (gerçek replica set) MOD-0023'e giden listeye eşittir ve `ApprovalAttempt` / `WorkflowIdempotencyKey` ile aynı yazımda
+  yazılmıştır; başlatma geçici ya da bilinmiyor sınıfında kalınca (503) aynı anahtarla Submit tekrarı sahte Auth aday istemcisini
+  hiç çağırmaz (çağrı sayısı 0) ve sahte MOD-0023'e giden `CandidatePrincipalIds` kayıttaki ilk listeye birebir eşittir — sahte
+  Auth ilk Submit'ten sonra farklı bir liste döndürecek şekilde ayarlansa da; kesin retten sonraki yeni Submit (`a{n+1}`) Auth'u
+  yeniden çağırır ve yeni listeyi yazar. Sabotaj: tekrarda aday listesi Auth'tan yeniden hesaplandığında (çağrı sayısı > 0 ve
+  giden liste ilk listeden farklı) test kırmızıya döner.
 - [ ] AC-34 (zorunlu) — MOD-0023 başlatma erişilemez → 503 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE`; sürüm `InApproval` + örnek
   kimliği boş; yeniden Submit aynı anahtarla başlatır ve tek örnek oluşur; geçersiz girdi hiçbir zaman 503 dönmez.
 - [ ] AC-35 (zorunlu) — Sync eşleme tablosu (DL-3 başında yazılır): terminal onay → `Approved`; ret / iptal → `Draft` +
@@ -1729,7 +1749,7 @@ aşağıdaki "Ali'nin WP'si" ifadesi tarihçedir. D53/1 ve D53/2 aynen geçerlid
 | O-13 | MdmService → Platform (MOD-0262, MOD-0023) çağrı kimliği ve MOD-0262 `scope` değeri | (a) kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni) — kullanıcı `platform.*` izinlerine de ihtiyaç duyar (b) güvenilir servis kimliği (c) `scope`: var olan `Documents` · eklemeli yeni değer | **KARAR D41/10 (2026-10-26; treasury-intake-owner-decisions-04.md): (a) + var olan `Documents`** — kullanıcı token'ı Gateway üzerinden (MOD-0126 O-7 deseni; kullanıcının `platform.*` izinleri de gerekir); MOD-0262 `scope` = var olan `Documents`. **D56/2 ile değişti (2026-10-27; treasury-intake-owner-decisions-05.md):** MOD-0262 çağrısı **(b) MdmService servis kimliğiyle**; kullanıcılara `platform.document-repository.*` verilmez (D46a geri alındı); indirme yalnız MOD-0217 üzerinden (kapsam + AC-62); belge deposunda servis kimliği desteği Platform'un (Beste) işi — DL-2 kapısı. MOD-0023 çağrısı (a) kullanıcı token'ıyla kalır; `scope` = `Documents` geçerli; yeni değer gerekirse XMC-001 | sahip (K1) + platform-shared-services — karar verildi (D41/10, D56/2) |
 | O-14 | İç sorumlu kullanıcı başvurusunun doğrulanması | (a) Auth kullanıcı aramasıyla (sözleşme ölçülmedi) (b) doğrulamasız Guid (c) yalnız oluşturan | **KARAR D41/11 (2026-10-26; treasury-intake-owner-decisions-04.md): (c) v1'de varsayılan + (a) ölçülünce atama** — v1'de iç sorumlu oluşturan kullanıcı; Auth kullanıcı araması ölçülünce başka kullanıcı atanabilir | sahip (K1) + MOD-0018 / Auth sahibi — karar verildi |
 | O-15 | Olaylar ve ödeme sırası (EVENTS, PAYMENTS slotları) | (a) v1'de olay ve ödeme bağı yok (b) outbox'lı olaylar | **KARAR D41/12 (2026-10-26; treasury-intake-owner-decisions-04.md): (a)** — v1'de olay yayını ve ödeme bağı yok; kaynağın "0126 → 0217 → 0124" sırası benimsenmez | sahip (K1) — karar verildi |
-| O-16 | Aynı anahtarla Submit tekrarının ilk aday listesini nereden alacağı (**KARAR D75/2 (b)**: yeniden deneme ilk listeyi kullanır, Auth'u yeniden çağırmaz; ölçüm 2026-10-28: Entity Fields'te liste alanı yok) | (a) `ContractVersion`'a deneme başına liste alanı — Submit'in (1) koşullu yazımında `ApprovalAttempt` / `WorkflowIdempotencyKey` ile birlikte yazılır, tekrar onu okur (b) başka yer (ayrı niyet kaydı) | (a) — finans paketlerinin niyetteki `CandidatePrincipalIds` deseni; AC-33'e "tekrarda Auth çağrı sayısı 0, liste ilk listeye eşit" testi eklenir | MOD-0217 yazarı (Treasury CT) + sahip (K1) — DL-3 başlamadan |
+| O-16 | Aynı anahtarla Submit tekrarının ilk aday listesini nereden alacağı (**KARAR D75/2 (b)**: yeniden deneme ilk listeyi kullanır, Auth'u yeniden çağırmaz; ölçüm 2026-10-28: Entity Fields'te liste alanı yok) | (a) `ContractVersion`'a deneme başına liste alanı — Submit'in (1) koşullu yazımında `ApprovalAttempt` / `WorkflowIdempotencyKey` ile birlikte yazılır, tekrar onu okur (b) başka yer (ayrı niyet kaydı) | **KAPANDI — KARAR D76/4: (a)** — ilk aday listesi onay denemesi (`ApprovalAttempt`) kaydında deneme başına saklanır: `ContractVersion.CandidatePrincipalIds` (`List<Guid>`, Entity Fields; form alanı değil), Submit'in (1) koşullu yazımında `ApprovalAttempt + 1` / `WorkflowIdempotencyKey` ile birlikte yazılır; aynı anahtarla tekrar bu listeyi kullanır (MOD-0126 niyet deseni); AC-33 genişletildi (tekrarda Auth çağrı sayısı 0, giden liste ilk listeye eşit; sabotajlı) | MOD-0217 yazarı (Treasury CT) + sahip (K1) — DL-3 başlamadan |
 
 ## Teslim dilimleri
 
