@@ -1,0 +1,27 @@
+# Push öncesi yeniden ölçüm — dal 56c155eaa (origin/main 0123bda72 merge edildi) ve origin/main 0123bda72, 2026-10-23T06:55:21Z, SDK 10.0.112
+# İki ayrı worktree, filtresiz; ana çalışma dizininde derleme yok; testler hiçbir Mongo'ya bağlanmadı.
+
+### branch
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+### main
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+Sonuç: dal ile main aynı — yeni kırmızı yok; 3 mimari kırmızı main'in kendisi, hiçbiri Procurement'tan değil.
+Paket MOD-0140 sha256: a8681ec8d3c2a5cff7491ef5760bf4bdfe59fad96192476c9a2dd3a8f89414ab
