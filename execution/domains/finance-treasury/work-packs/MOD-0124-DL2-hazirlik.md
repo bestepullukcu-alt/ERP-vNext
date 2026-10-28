@@ -49,9 +49,11 @@ için" (O-4, O-14, MOD-0023 şablonu, §17) ve "— DL-4 için" (O-17, MOD-0031 
 | MOD-0023 nakit pozisyonu şablonu (O-20), §17 kodu, O-4 / O-14 | Ali / — | şablon **karar var, kod yok** — Y-6: nakit pozisyonu **tek adım** (`SOURCE-ANSWERS-2026-10-27.md:66-68`); §17 kodu yok (`WorkflowModels.cs:406-423`, `:451-465`) | **DL-3** — DL-2'yi bekletmez |
 | MOD-0031 `links/query` ve dedupe ölçümü (O-17) | Treasury CT | ölçülmedi | **DL-4** |
 
-**DL-2'yi ilk bekleten:** MOD-0124 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni, BL-565,
+**DL-2'yi ilk bekleten:** MOD-0124 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
 `Finance = 18`, TRM-14). DL-2'nin **kendine özgü engeli yoktur**; DL-1 kabul edildiği gün başlayabilir. Ama bazı DL-2 AC'leri DL-3
 komutları olmadan tam test edilemez (§5 bulgu 2).
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2)
 

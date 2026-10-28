@@ -39,7 +39,7 @@ BulkDelete + liste / detay / iz sorguları, Domain / Persistence, MOD-0149 bağd
 `accounts-receivable.openapi.yaml`.
 
 **Servis ortak yapı taşları bu dilimde yazılmaz.** Servis iskeleti, `FinanceTreasuryCommandReceipt` (+ iki indeksi),
-`IFinanceTreasuryDataScopeSource`, `ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodePort`, `DataScope`
+`IFinanceTreasuryDataScopeSource`, `ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodeAllocator`, `DataScope`
 bağdaştırıcısı, CentralAudit kaydı ve **test projesi** yalnız MOD-0126 DL-1'de açılır; MOD-0120 bunları yeniden tanımlamaz, önce
 açmaz, yalnız kullanır (pack "Repo Scope", `:566-586@00d3f2b41`).
 
@@ -71,9 +71,11 @@ DL-1'i bekletmez (D51/1).
 | MOD-0031 davranış ölçümü (DL-3 Önkoşul metninde) | Treasury CT | ölçülmedi | DL-3 |
 | Gateway rotası; O-3 müşteri seçici | integration-agent | yok | DL-4 |
 
-**DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması (o da `Finance = 18`, BL-565, MOD-0048 seed'leri, TRM-14 ve Auth paket
+**DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması (o da `Finance = 18`, MOD-0048 seed'leri — Treasury CT hazırlıyor, D59/2 + D60, Beste onaylar —, TRM-14 ve Auth paket
 metnini bekliyor; Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir — D53/2). MOD-0120'ye özgü en uzak halka **MOD-0149 pack revizyonu (O-3)** — tarihi yok. İki sahip (K1) maddesi (S-2 bitiş,
 Level-1 koşul 1) D52/2 ve D52/3 ile kapandı.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 

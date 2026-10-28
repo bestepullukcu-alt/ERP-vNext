@@ -45,8 +45,10 @@ Kaynak: DL-2 Önkoşul metni (`:1660-1661`), dilim kapıları "— DL-2 için" (
 | MOD-0126 DL-2 (iş akışı deseni) | — | pack MOD-0119 DL-2'yi MOD-0126 DL-2'ye bağlamıyor; niyet / karar durum adları MOD-0126 **pack**'indeki tek geçiş matrisinden (kod değil) | — (bkz. §5 bulgu 4) |
 
 **DL-2'yi ilk bekleten:** MOD-0119 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
-BL-565, supplier 1.3.0). DL-2'ye özgü en erken engel **MOD-0023 AP şablon kodu (Ali, O-11)** ve ona bağlı **WORKFLOW slotu**:
+supplier 1.3.0). DL-2'ye özgü en erken engel **MOD-0023 AP şablon kodu (Ali, O-11)** ve ona bağlı **WORKFLOW slotu**:
 karar "tek adım" verildi, kod ve tarih yok.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2)
 

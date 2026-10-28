@@ -71,9 +71,11 @@ Kaynak: pack "Ready-for-dev Checklist" paket kapısı (`:1257-1291@00d3f2b41`), 
 | MOD-0023 başlatma hata gövdesi kodları ölçümü; O-8 imza modeli | Treasury CT / — | ölçülmedi; O-8 kapandı (D41/5) | DL-3 |
 | MDM domain-config frontend / gateway kapsam cümlesi; Gateway rotaları | MDM sahibi / integration-agent | domain-config bugün yalnız MOD-0290-FU02 için istisna yazıyor (`domain-config.md:59-65`); rota yok | DL-4 |
 
-**DL-1'i ilk bekleten:** dış sahipli ve tarihsiz iki madde — **Auth paket metni / MOD-0018 paketi (Ali)** ve **BL-565 servisi
-(Beste)**. Auth kayıt kodu (`mdm.contracts.*`, MOD-0217 onayından sonra) başlamayı değil DL-1 kabulünü bekletir (D53/2). CT'nin bugün kapatabileceği iki madde: **SEC-002 sağlayıcı ölçümü** (salt okunur) ve pack'te eskimiş iki checkbox'un
+**DL-1'i ilk bekleten:** dış sahipli ve tarihsiz madde — **Auth paket metni / MOD-0018 paketi (Ali)**.
+Auth kayıt kodu (`mdm.contracts.*`, MOD-0217 onayından sonra) başlamayı değil DL-1 kabulünü bekletir (D53/2). CT'nin bugün kapatabileceği iki madde: **SEC-002 sağlayıcı ölçümü** (salt okunur) ve pack'te eskimiş iki checkbox'un
 (domain-config / kayıt satırı, `CTR`) işaretlenmesi; **DCP-011 üyeliği** ise Beste'nin DCP değişikliğini ister.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1) — yalnız referans
 
@@ -192,7 +194,7 @@ altında.
   soft delete), `UpdateContractVersionCommand`; `GetContractListQuery` (+ `expiringWithinDays`, varsayılan 30, en çok 180),
   `GetContractByIdQuery` (+ `allowedActions`), `GetContractVersionListQuery`, `GetContractVersionByIdQuery`; doğrulayıcılar;
   `ContractModels.cs`.
-- Portlar: `IRecordCodePort` (`CTR`, şirket öneki yöneten şirketin kısa kodu — D41/2; `Infrastructure/RecordCodes/**`),
+- Portlar: `IRecordCodeAllocator` (`CTR`, şirket öneki yöneten şirketin kısa kodu — D41/2; `Infrastructure/RecordCodes/**`),
   `ICurrencyReferencePort` (MOD-0048, `GatewayReferenceValueReader` deseni; `Infrastructure/Currency/**`), `IContractDataScopeSource`
   (SEC-002). Şirket için port yok (`ILegalEntityRepository` süreç içi okunur; yok / başka kiracı / silinmiş / `Active` değil → 422
   `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE`).

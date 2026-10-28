@@ -108,7 +108,7 @@ Karar dili: **al-uyarla** = kaynaktan alınacak (doğrula, Recovery düzenine g�
 | Kaynak | Özet · satır | Karar | Recovery hedefi | Not |
 |---|---|---|---|---|
 | `…/Common/PaymentProposalErrorCodes.cs` | `ce3cc9e42e035587` · 57 | al-uyarla (DL-1'in kullandığı kodlar) | `Features/PaymentBatch/` hata sözlüğü | 52 kodun DL-1 alt kümesi + pack "Hata sözlüğü"nün DL-1'e düşen **yeni** kodları: `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`, `PAYMENT_REQUEST_IN_PROGRESS`, `PAYMENT_RECORD_CODE_UNAVAILABLE`, `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`, `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`, `PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`, `PAYMENT_CURRENCY_CODE_INVALID`, `PAYMENT_METHOD_NOT_ALLOWED`, `PAYMENT_METHOD_SOURCE_UNAVAILABLE`; `PAYMENT_TENANT_FORBIDDEN` kullanılmaz (404); serbest İngilizce ileti **alma** (madde 3) — ileti resx anahtarı |
-| `…/Commands/CreateManualPaymentBatchCommand.cs` | `ce2481db5037955c` · 25 | al-uyarla | `Commands/CreatePaymentBatchCommand.cs` + `Handlers/CommandHandlers/CreatePaymentBatchHandler.cs` | komut + handler aynı dosyada **alma** (:8-25); kullanıcıdan parti no ve `CountAsync()+1` **alma** (madde 9) → `IRecordCodePort` (`PAY`, RCS-001 §3) |
+| `…/Commands/CreateManualPaymentBatchCommand.cs` | `ce2481db5037955c` · 25 | al-uyarla | `Commands/CreatePaymentBatchCommand.cs` + `Handlers/CommandHandlers/CreatePaymentBatchHandler.cs` | komut + handler aynı dosyada **alma** (:8-25); kullanıcıdan parti no ve `CountAsync()+1` **alma** (madde 9) → `IRecordCodeAllocator` (`PAY`, RCS-001 §3) |
 | `…/Commands/ValidatePaymentBatchCommand.cs` | `7481d77d5ecd98fe` · 25 | al-uyarla | `Commands/ValidatePaymentBatchCommand.cs` + handler | idempotency makbuzu ile (AC-16) |
 | `…/Contracts/PaymentProposalContracts.cs` | `1e659de1d2867029` · 197 | al-uyarla | `PaymentBatchModels.cs` (tek dosya) | DTO'larda `TenantId` / `LegalEntityId` yok (AC-1); banka alanı adı yok (AC-20) |
 | `…/Contracts/CurrencyPrecisionContracts.cs` | `69adb336a829e8c5` · 8 | yalnız referans | `ICurrencyReferencePort` (servis ortak) | kaynak arayüz tenant + kod; Recovery portu MOD-0048 `currency-minor-units` kümesini okur |
@@ -182,7 +182,7 @@ Yollar pack "Repo Scope" (`:461-512@904dfd5c2`) ve "Teslim dilimleri" DL-1 satı
 - Servis ortak yapı taşları (tek sahibi MOD-0126 DL-1; MOD-0119/0120/0124 bunları yeniden tanımlamaz):
   `FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource` (okuma + yazma kapsamı; Y-4/6 yolu — Platform
   `IDataScopeResolver` bağdaştırıcısı, fail-closed, MDM `ITrustedLegalEntityScopeProvider` kullanılmaz), `ILegalEntityEligibilityPort`
-  (MOD-0220 + `ApprovalStatus`), `ICurrencyReferencePort` (MOD-0048 `currency-minor-units`), `IRecordCodePort` (RCS-001, `PAY`),
+  (MOD-0220 + `ApprovalStatus`), `ICurrencyReferencePort` (MOD-0048 `currency-minor-units`), `IRecordCodeAllocator` (RCS-001, `PAY`),
   `DataScope` bağdaştırıcısı (`NoOp` kaydı yasak), CentralAudit kaydı + `FinanceTreasuryCentralAuditScope`.
 - **Ödeme yöntemi kaynağı — artık pack'te:** `IPaymentMethodReferencePort` (`Features/PaymentBatch/**`) + MOD-0048 `payment-method`
   bağdaştırıcısı `Infrastructure/Currency/**` (zaman aşımlı `HttpClient`; uç `GET /api/lookups/reference-data/consumable-sets/payment-method/published-values`).
@@ -283,5 +283,5 @@ kararları (parent / child / yeni) — dağıtım günü koşulur.
 - Kaynak depo yalnız okundu (`git ls-tree`, `git show`); kaynak düzeltmesi yok. Kaynak testler **çalıştırılmadı**.
 - Recovery'de hiçbir test ya da build koşulmadı; ölçümler dosya okuma ve `grep` ile @904dfd5c2.
 - Rol şablonlarının Auth'taki karşılığı, MOD-0048 seed'lerinin zamanı, BL-565 çağrı sözleşmesi ve `Finance = 18` tarihi
-  sahiplerden gelmedi — ölçülemez.
+  sahiplerden gelmedi — ölçülemez. (2026-10-28 eki: BL-565 v0 sözleşmesi D59/1 ile geldi, kesin hali 6 Kasım; MOD-0048 seed'lerini Treasury CT hazırlıyor, D59/2 + D60.)
 - Bu kayıt WP prompt'u değildir; prompt kapısına girmez, dağıtım izni vermez.

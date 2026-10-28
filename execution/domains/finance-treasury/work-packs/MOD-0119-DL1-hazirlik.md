@@ -40,7 +40,7 @@ Create / Update / Delete / BulkDelete / Validate + liste / detay sorguları, Dom
 `ap-invoice.openapi.yaml`; alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı).
 
 **Servis ortak yapı taşları MOD-0119'un değildir.** `Diten.FinanceTreasuryService` iskeleti, `FinanceTreasuryCommandReceipt`
-+ iki indeksi, `IFinanceTreasuryDataScopeSource`, `ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodePort`,
++ iki indeksi, `IFinanceTreasuryDataScopeSource`, `ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodeAllocator`,
 bağdaştırıcıları (`LegalEntities`, `Currency`, `RecordCodes`, `DataScope`) ve CentralAudit kaydı **yalnız MOD-0126 DL-1'de**
 açılır (pack "Repo Scope", `:502-518@00d3f2b41`). MOD-0119 DL-1 bunları yeniden tanımlamaz, açmaz, değiştirmez; yalnız kullanır.
 Ortak tipte değişiklik dört Treasury paketinin onayını ister (pack "Protected Paths", `:546-549@00d3f2b41`).
@@ -75,8 +75,9 @@ metni (`:1634-1637`). "DL-1'e etkisi": **bekletir** = pack'in işaretsiz paket k
 | Gateway rotası `/api/ap-invoices` | integration-agent | yok | DL-4 |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması — o da kendi paket kapısını bekliyor. Zincirin en dış, tarihi olmayan
-halkaları: **Auth paket metni / MOD-0018 paketi (Ali)** ve **BL-565 servisi (Beste)**; MOD-0119'a özgü ayrıca **supplier 1.3.0 (MVP-2)**.
-Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
+halkası: **Auth paket metni / MOD-0018 paketi (Ali)**; MOD-0119'a özgü ayrıca **supplier 1.3.0 (MVP-2)**.
+Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2). **BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -153,7 +154,7 @@ Karar dili: **al-uyarla** (doğrula, Recovery düzenine göre yeniden yaz, iz ka
 |---|---|---|---|---|
 | `ILegalEntityEligibilityPort` (MOD-0220 + `ApprovalStatus`) | MOD-0126 DL-1 | Active + Approved değil → 422 `AP_LEGAL_ENTITY_NOT_ELIGIBLE`, kayıt değişmez; okuma etkilenmez | 503 `AP_LEGAL_ENTITY_UNAVAILABLE` | Dependencies `:566`, AC-2 |
 | `ICurrencyReferencePort` (MOD-0048 liste + küsurat) | MOD-0126 DL-1 | listede değil → 400 `AP_CURRENCY_CODE_INVALID`; hane aşımı → 400 (yuvarlama yok) | 503 `AP_CURRENCY_PRECISION_UNAVAILABLE`; sabit tablo uydurulmaz | Dependencies `:569`, AC-21 |
-| `IRecordCodePort` (RCS-001, `APD`) | MOD-0126 DL-1 | istekte kod → 400 | 503 `AP_RECORD_CODE_UNAVAILABLE` | Dependencies `:573`, AC-1 |
+| `IRecordCodeAllocator` (RCS-001, `APD`) | MOD-0126 DL-1 | istekte kod → 400 | 503 `AP_RECORD_CODE_UNAVAILABLE` | Dependencies `:573`, AC-1 |
 | `IFinanceTreasuryDataScopeSource` (SEC-002) | MOD-0126 DL-1 | kapsam dışı şirket → liste boş, detay / yazma 404; `read-tenant-wide` yazmayı genişletmez | çözücü hatası → boş kapsam; `NoOp` kaydı yasak | Dependencies `:572`, AC-32, AC-33 |
 | `ISupplierEligibilityPort` (MOD-0140 `POST /api/suppliers/validate`, **1.3.0**) | **MOD-0119 DL-1** (yeni) | ilişki yok / Active değil → 422 `AP_SUPPLIER_NOT_ELIGIBLE` | 503 `AP_SUPPLIER_UNAVAILABLE` | Dependencies `:567`, AC-4 |
 | `IInvoiceMatchPort` (MOD-0143 `GET /api/invoice-match/invoices/{invoiceId}`) | **MOD-0119 DL-1** (yeni) | durum `{Matched, MatchedWithinTolerance}` dışı → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; fark → 422 `AP_MATCH_REFERENCE_MISMATCH`; ikinci bağ → 409 | 503 `AP_MATCH_UNAVAILABLE` | Dependencies `:568`, AC-5, AC-40 |

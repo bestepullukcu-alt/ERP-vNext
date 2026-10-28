@@ -47,9 +47,11 @@ kapısı** = DL-2 başlar, ama "Bitiş" AC'leri bu kapanmadan kabul edilmez (pac
 | MOD-0031 dedupe ölçümü; MOD-0269 BANK-DISPATCH | Treasury CT / — | ölçülmedi / dondu (D27/7) | DL-3 |
 
 **DL-2'yi ilk bekleten:** DL-1'in kabul edilmemiş olması (servis yok) — o da DL-1'in paket kapısını bekliyor (Auth paket metni
-ve BL-565 en dış, tarihi olmayan halkalar; DL-1 kaydı §1). DL-2'ye özgü en erken engel **MOD-0023 ödeme partisi şablon kodu
+en dış, tarihi olmayan halka; DL-1 kaydı §1). DL-2'ye özgü en erken engel **MOD-0023 ödeme partisi şablon kodu
 (Ali, O-8)**: karar "tek adım" verildi, kod ve tarih yok. Kabul tarafında en ağır bağımlılık **D54 atama alanları (Auth, Ali)**:
 bugünkü Auth modelinde süreli / hedef nesneli kullanıcı ataması hiç yok.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2)
 

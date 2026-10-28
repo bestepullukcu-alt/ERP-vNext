@@ -83,9 +83,10 @@ pack ENGELLER'i paket kapısı ve "Dilim kapıları" alt listesi olarak ayrıld�
 `ready-for-dev`'i bekletmez.
 
 **Üretici beklemeleri (DL-1 dışı, prompt'a "bu dilimde yok" olarak yazılır):** `supplier.openapi.yaml` 1.3.0 (Cihan) → DL-3;
-Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üreticiler **RCS-001 BL-565**
-(Beste, D44) ve paket kapısındaki **Auth paket metni** (MOD-0018 paketi, Ali, Y-6; D53/1)'dir. Auth kayıt kodu başlamayı değil
-DL-1 kabulünü bekletir (D53/2).
+Auth açık atama (Ali) → DL-2; MOD-0048 para birimi portu → DL-2. DL-1'i doğrudan bekleten üretici paket kapısındaki
+**Auth paket metni** (MOD-0018 paketi, Ali, Y-6; D53/1)'dir. Auth kayıt kodu başlamayı değil
+DL-1 kabulünü bekletir (D53/2). **RCS-001 BL-565** (Beste, D44) paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu
+sahte allocator ile yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -204,8 +205,8 @@ Yollar pack "Teslim dilimleri" DL-1 satırı (`:1833-1838@904dfd5c2`) ve "Repo S
 - `Persistence/Repositories/{Bank,BankBranch}Repository.cs` + §2.3'teki dört tekil indeks; `If-Match` / `Version` CAS (AC-9).
 - `Api/Controllers/{BanksController,BankBranchesController}.cs`, `Api/ModuleRegistration/BankMasterManifestProvider.cs`
   (`BrandProductMasterManifestProvider.cs` deseni; ölçüldü, `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/`).
-- **RCS kod portu** (`IRecordCodePort`, `Infrastructure/RecordCodes/**`): `BNK`, grup öneki; servis erişilemezse 503
-  `MDM_BANK_RECORD_CODE_UNAVAILABLE`. BL-565 yokken port hedefsizdir — başlama koşulu §1.
+- **RCS kod portu** (`IRecordCodeAllocator`, `Infrastructure/RecordCodes/**`): `BNK`, grup öneki; servis erişilemezse 503
+  `MDM_BANK_RECORD_CODE_UNAVAILABLE`. BL-565 yokken port sahte uygulamaya bağlanır; gerçek servis DL-1 kabul kapısıdır (D59/1, §1).
 - **Denetim izi genişletmesi (yalnız ekleme):** `Domain/Enums/AuditAggregateType.cs` — DL-1'de **yalnız `Bank` ve `BankBranch`**;
   `BankAccount`, `BankAccountSensitiveRead` ve hesap tarafının diğer değerleri kendi dilimlerinde (DL-2) eklenir (D51/4; pack Repo
   Scope ve Audited Events buna çekildi), eklemeli genel
@@ -302,7 +303,7 @@ duyarsız + en çok 100 karakter (AC-59); DL-1'de yalnız `Bank` ve `BankBranch`
 
 - Kaynak depo yalnız okundu (`git ls-tree`, `git show`); kaynak düzeltmesi yok. Kaynak testler ve Recovery testleri **çalıştırılmadı**;
   Recovery'de yalnız dosya okuma ve `grep` (@904dfd5c2).
-- Rol şablonlarının Auth'taki karşılığı, BL-565 çağrı sözleşmesi ve zamanı, DCP-011 onay tarihi sahiplerden gelmedi — ölçülemez.
+- Rol şablonlarının Auth'taki karşılığı, BL-565 çağrı sözleşmesi ve zamanı, DCP-011 onay tarihi sahiplerden gelmedi — ölçülemez. (2026-10-28 eki: BL-565 v0 sözleşmesi D59/1 ile geldi, kesin hali 6 Kasım.)
 - Bu kayıt WP prompt'u değildir; prompt kapısına girmez, dağıtım izni vermez.
 
 ### Önceki çelişkilerin durumu ve yeni bulgular (CT'ye; pack değişikliği yeni inceleme ister)

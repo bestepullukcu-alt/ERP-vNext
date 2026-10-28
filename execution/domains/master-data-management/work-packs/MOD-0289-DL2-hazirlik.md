@@ -53,10 +53,11 @@ başlamasını değil kabulünü bekletir; **—** = kapandı.
 | `BANK-ACCOUNT-LOOKUP` 1.0.0 sözleşme dosyası | CT (taslak) · DL-2 (dondurma) | taslak var: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (`x-status: DRAFT`) | kabul (AC-20, AC-42) — dondurma `docs/analysis/contracts/**` yazımıdır (Protected Path; prompt'ta açık izin gerekir, §4) |
 | DL-2 kuyruk satırı | Treasury CT | **yok** — `CT-QUEUE.tsv`'de yalnız `WP-0289-DL1` (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv:20`) | — (satır DL-1 kabulünden sonra CT turunda açılır; bu kayıt yazmaz) |
 
-**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — o da DL-1'in paket kapısındaki dış sahipli, tarihsiz maddeleri bekler (BL-565 — Beste;
-Auth paket metni — Ali; DCP-011 onayı — Beste; CT-APR-01). (2) DL-2'ye özgü ilk engel **SEC-002 sağlayıcısı**: bugünkü ölçümle
+**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — o da DL-1'in paket kapısındaki dış sahipli, tarihsiz maddeleri bekler (Auth paket metni — Ali; DCP-011 onayı — Beste; CT-APR-01). (2) DL-2'ye özgü ilk engel **SEC-002 sağlayıcısı**: bugünkü ölçümle
 yalnız ölçüm değil, **iki tarafta kod değişikliği** gerekiyor (Platform izin listesi + MDM istemcisinin modül kodu) ve sahibi
 adlandırılmadı. (3) **Auth açık atama eki** (Ali). Bu üç madde açıkken DL-2 başlayamaz; diğer dilim kapısı maddeleri kapalı.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2)
 

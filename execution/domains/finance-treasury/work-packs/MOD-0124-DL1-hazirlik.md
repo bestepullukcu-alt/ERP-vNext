@@ -40,7 +40,7 @@ MOD-0124 koleksiyonlarının indeks tanımları ve iskeletin indeks hizmetine ka
 **kullanımı**, RCS kod portu, `cash-position.openapi.yaml`; AUD-001 §8 dev kanıtı (AC-29) bu dilimde.
 
 **Servis ortak yapı taşları MOD-0124'ün değildir.** `FinanceTreasuryCommandReceipt` (+ iki indeksi), `IFinanceTreasuryDataScopeSource`,
-`ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodePort`, `DataScope` bağdaştırıcısı, **indeks barındırılan
+`ILegalEntityEligibilityPort`, `ICurrencyReferencePort`, `IRecordCodeAllocator`, `DataScope` bağdaştırıcısı, **indeks barındırılan
 hizmeti** ve CentralAudit kaydı **yalnız MOD-0126 DL-1'de** açılır; MOD-0124 DL-1 bunları yeniden tanımlamaz, kopyalamaz,
 genişletmez (pack "Repo Scope" `:605-621@00d3f2b41`, "Mongo indeksleri" `:559-563`).
 
@@ -70,8 +70,10 @@ metni (`:1713-1718`). "DL-1'e etkisi": **bekletir** = işaretsiz paket kapısı 
 | MOD-0289 banka hesabı | — | DL-1 **bağlı değil** — `BankAccountRef` yalnız `Guid ≠ Empty` opak referans (pack Dependencies `:674`) | — |
 
 **DL-1'i ilk bekleten:** MOD-0126 DL-1'in main'de olmaması. MOD-0124'e özgü ek bir dış engel yok; bütün açık paket kapısı maddeleri
-(Auth paket metni, `Finance = 18`, TRM-14, BL-565, küsurat seed'i) MOD-0126 ile ortak. Zincirin tarihi olmayan halkaları **Auth paket
-metni / MOD-0018 paketi (Ali)** ve **BL-565 (Beste)**. Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
+(Auth paket metni, `Finance = 18`, TRM-14, küsurat seed'i — MOD-0048; Treasury CT hazırlıyor, D59/2 + D60, Beste onaylar) MOD-0126 ile ortak.
+Zincirin tarihi olmayan halkası **Auth paket metni / MOD-0018 paketi (Ali)**. Auth kayıt kodu başlamayı değil DL-1 kabulünü bekletir (D53/2).
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -106,7 +108,7 @@ pack "Taşınmayacaklar"), **sonraki dilim**.
 | Kaynak | Özet · satır | Karar | Recovery hedefi | Not |
 |---|---|---|---|---|
 | `…Application/Common/CashPositionErrorCodes.cs` | `483f3e4d2e9fb925` · 57 | al-uyarla (DL-1 alt kümesi) | `Features/CashPosition/` hata sözlüğü | 52 sabit; `MOD0124_*` öneki alma → `CASH_POSITION_*`, her kodun HTTP değeri açık (pack "Hata sözlüğü" `:565-599`). DL-1 alt kümesi (çıkarım): `VALIDATION_FAILED`, `SCOPE_INPUT_FORBIDDEN`, `NOT_FOUND`, `VERSION_CONFLICT`, `INVALID_CURRENCY_CODE` (400), `MIXED_CURRENCY`, `DUPLICATE_LINE_KEY`, `SENSITIVE_TEXT_REJECTED`, `THRESHOLD_POLICY_VALIDATION_FAILED` + yeni `PERMISSION_DENIED`, `IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_CONFLICT`, `REQUEST_IN_PROGRESS`, `LEGAL_ENTITY_NOT_ELIGIBLE`, `LEGAL_ENTITY_UNAVAILABLE`, `CURRENCY_PRECISION_UNAVAILABLE`, `REFERENCE_UNAVAILABLE`, `RECORD_CODE_UNAVAILABLE`, `THRESHOLD_POLICY_OVERLAP`, `COMMIT_OUTCOME_UNKNOWN`; ileti resx anahtarı |
-| `…Application/CashPositioning/Services/CashPositionPersistenceService.cs` | `ac1694b3479c1544` · 953 | al-uyarla (bölerek; yalnız `CreateDraftSnapshotAsync` :485 ve doğrulama kuralları) | `CreateCashPositionHandler` + `CreateCashPositionValidator` + domain | `SensitiveDigits = \d{8,}` :13 korunur; karışık para birimi :115-120 ve yinelenen satır :122-133 korunur (anahtardan para birimi çıkar); kaynak `OrdinalIgnoreCase` (:115) — Recovery upper-normalize sonrası karşılaştırır (S-56); `ReportingTimezoneMissing` :147-150 alma; MOD-0289 doğrulayıcı çağrısı :163-172 alma; `CP-{yyyyMMdd}-{8hex}` :362 ve `CPI-…` :387 alma → `IRecordCodePort` (`CPS`); `ImportAsync` :51 sonraki kapı |
+| `…Application/CashPositioning/Services/CashPositionPersistenceService.cs` | `ac1694b3479c1544` · 953 | al-uyarla (bölerek; yalnız `CreateDraftSnapshotAsync` :485 ve doğrulama kuralları) | `CreateCashPositionHandler` + `CreateCashPositionValidator` + domain | `SensitiveDigits = \d{8,}` :13 korunur; karışık para birimi :115-120 ve yinelenen satır :122-133 korunur (anahtardan para birimi çıkar); kaynak `OrdinalIgnoreCase` (:115) — Recovery upper-normalize sonrası karşılaştırır (S-56); `ReportingTimezoneMissing` :147-150 alma; MOD-0289 doğrulayıcı çağrısı :163-172 alma; `CP-{yyyyMMdd}-{8hex}` :362 ve `CPI-…` :387 alma → `IRecordCodeAllocator` (`CPS`); `ImportAsync` :51 sonraki kapı |
 | `…Application/CashPositioning/Services/CashPositionThresholdPolicyService.cs` | `01e30a1b7ef910dd` · 253 | al-uyarla (bölerek) | `Features/CashPositionThresholdPolicy/` Create / Update / Delete / BulkDelete handler'ları + validator'lar | Critical ≥ Warning, Blocking ≥ Warning, `EffectiveTo ≥ EffectiveFrom` korunur; kullanıcı girişli `PolicyCode` :179-187 alma → RCS `CTP`; `IsDefault` :88, `ApprovalStatus = Active` :89 alma; `CurrencyCode` zorunlu (O-12); Update / Delete / BulkDelete yeni |
 | `…Application/CashPositioning/Commands/CreateCashPositionThresholdPolicyCommand.cs` | `4267696c29205a16` · 25 | al-uyarla | `Commands/CreateCashPositionThresholdPolicyCommand.cs` + `Handlers/CommandHandlers/CreateCashPositionThresholdPolicyHandler.cs` | komut + handler aynı dosyada (:8, :11) alma |
 | `…Application/CashPositioning/Queries/CashPositionQueries.cs` | `63faa680dd25ad4a` · 77 | al-uyarla | `GetCashPositionListQuery.cs`, `GetCashPositionByIdQuery.cs`, `CashPositionListSort.cs` + handler'lar | `CursorPage` → DataTable sunucu tarafı; süzgeç Tenant + LE + `IFinanceTreasuryDataScopeSource` okuma kapsamı |
@@ -151,7 +153,7 @@ pack "Taşınmayacaklar"), **sonraki dilim**.
 | `ILegalEntityEligibilityPort` (MOD-0220 + TRM-14) | `Active` ve `Approved` değilse 422 `CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE`, kayıt değişmez | 503 `CASH_POSITION_LEGAL_ENTITY_UNAVAILABLE` | Dependencies `:672`, AC-2 |
 | `ICurrencyReferencePort` — kod listesi | listede değil → **400** `CASH_POSITION_INVALID_CURRENCY_CODE` | 503 `CASH_POSITION_REFERENCE_UNAVAILABLE` | Hata sözlüğü `:572`, `:584` |
 | `ICurrencyReferencePort` — küsurat (`currency-minor-units`) | fazla hane → 400, yuvarlama yok | 503 `CASH_POSITION_CURRENCY_PRECISION_UNAVAILABLE` | AC-4 |
-| `IRecordCodePort` (`CPS` / `CTP`) | istekte kod → 400 | 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` | Dependencies `:679`, AC-1 |
+| `IRecordCodeAllocator` (`CPS` / `CTP`) | istekte kod → 400 | 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` | Dependencies `:679`, AC-1 |
 | `IFinanceTreasuryDataScopeSource` | kapsam dışı → liste boş, detay / yazma 404 | çözücü hatası → boş kapsam | Dependencies `:678`, AC-31, AC-32 |
 | MOD-0289 banka hesabı | **port yok** — yalnız `Guid ≠ Empty` | — | Dependencies `:674` |
 

@@ -46,8 +46,10 @@ listesindeki bütün maddeler "— DL-3 için"dir (`:1479-1490`). "DL-2'ye etkis
 | MOD-0262 / MOD-0031 | — | DL-2'de çağrı yok (Issue / aşama / yaşlandırma belge ya da kanıt okumaz) | — |
 
 **DL-2'yi ilk bekleten:** MOD-0120 DL-1'in kabul edilmemiş olması — zincir MOD-0126 DL-1 → paket kapısı (Auth paket metni,
-BL-565, `Finance = 18`) ve MOD-0120'ye özgü **MOD-0149 eki (O-3, commercial-suite)**. DL-2'nin **kendine özgü engeli yoktur**;
+`Finance = 18`) ve MOD-0120'ye özgü **MOD-0149 eki (O-3, commercial-suite)**. DL-2'nin **kendine özgü engeli yoktur**;
 DL-1 kabul edildiği gün başlayabilir.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2)
 

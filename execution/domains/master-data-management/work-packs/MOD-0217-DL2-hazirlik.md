@@ -46,9 +46,11 @@ MOD-0262-FU01 satırı (`:523`). "DL-2'ye etkisi": **bekletir** / **kabul** / **
 | Gerçek replica set + hata enjeksiyonu altyapısı (AC-26, AC-31, AC-49, AC-50, AC-58) | — | **var:** `MdmTestMongo` tek düğümlü replica set + `enableTestCommands=1` (`services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/MdmTestMongo.cs:13,156,494@ec063fee9`) → `failCommand` kullanılabilir (pack Test Expectations `:1223` "ölçülmedi" — bugün ölçüldü) | — |
 | DL-2 kuyruk satırı | Treasury CT | **yok** — `CT-QUEUE.tsv:24` yalnız `WP-0217-DL1` | — (DL-1 kabulünden sonra CT açar) |
 
-**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — DL-1'in paket kapısında dış sahipli, tarihsiz maddeler (BL-565 — Beste; Auth paket metni
+**DL-2'yi ilk bekleten:** (1) **DL-1 kabulü** — DL-1'in paket kapısında dış sahipli, tarihsiz maddeler (Auth paket metni
 — Ali; DCP-011 üyeliği + onayı — Beste) ve bugün olumsuz ölçülen **SEC-002 sağlayıcısı** (kod değişikliği, sahip TBD). (2) DL-2'ye özgü tek
 açık madde **MOD-0262-FU01 canlı doğrulama kaydı** — Treasury CT'nin işi, dev ortamı gerekir.
+**BL-565 / RCS-001 kod servisi** paket kapısında değil, DL-1 kabul kapısında (D59/1): DL-1 kodu sahte allocator ile
+yazılabilir, kabulden önce gerçek servis main'de olmalı (Beste, 6 Kasım).
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-2) — yalnız referans
 
