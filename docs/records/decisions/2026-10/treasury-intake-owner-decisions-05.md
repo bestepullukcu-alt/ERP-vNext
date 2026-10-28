@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D77 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D78 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -825,6 +825,14 @@ bulgu kapanışı (MOD-0126 F-1).
    (aşılacak R4 kuralı yoktur; kullanıcı normal onayı kullanır).
 2. **Release'de R11 tier-2 şartı tutmazsa** → 403 `PAYMENT_TIER2_RELEASE_FORBIDDEN`; parti `Approved` kalır, `PaymentDispatchAttempt`
    yazılmaz.
+
+## D78 — R4 açık, tier-2 olmayan partide muafiyetli onay (Codex fark incelemesi MOD-0126 F-1; soru kutusu, önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik
+`docs/records/reviews/MOD-0126/2026-10-28-58976767.md` F-1.
+
+`R4Enabled = true` ama `IsTier2 = false` partide (R4 bu partiye uygulanmaz) muafiyetli onay komutu → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`;
+`Waived` kaydı oluşmaz, karar / niyet / makbuz yazılmaz, MOD-0023 çağrılmaz (D77/1 ile aynı mantık: aşılacak R4 kuralı yoktur).
 
 ## Karar olmayanlar
 
