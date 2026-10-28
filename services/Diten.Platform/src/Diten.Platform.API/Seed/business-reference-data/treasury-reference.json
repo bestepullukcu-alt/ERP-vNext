@@ -1,0 +1,22 @@
+{
+  "catalog_version": "2026.10.28-treasury-reference",
+  "module": "BusinessReferenceData",
+  "note": "MOD-0048-FU01 §21 (TRM-17): Treasury (FinanceTreasury) consumable sets; module stays BusinessReferenceData because the production loader accepts no other module (invalid_catalog_module). payment-method carries codes only; display_name = English, UI labels come from the consumer's PaymentMethod.{CODE} resx keys (7 tenant languages), not from this set. currency-minor-units (ISO 4217 minor units, attributes.minorUnits) is added once the ISO 4217 list is supplied; catalog_version then names the ISO edition.",
+  "sets": [
+    {
+      "set_code": "payment-method",
+      "set_name": "Payment Method",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Governed list of payment methods (MOD-0126 PaymentMethod, D28 / O-13). Platform wide; a published and active code is valid, any other code is refused by the Treasury consumer.",
+      "values": [
+        { "value_code": "BANK_TRANSFER", "display_name": "Bank transfer", "description": "Generic bank transfer.", "is_active": true, "sort_order": 10 },
+        { "value_code": "SEPA_CREDIT_TRANSFER", "display_name": "SEPA credit transfer", "description": "SEPA credit transfer in euro.", "is_active": true, "sort_order": 20 },
+        { "value_code": "SWIFT_TRANSFER", "display_name": "SWIFT transfer", "description": "Cross-border transfer over SWIFT.", "is_active": true, "sort_order": 30 },
+        { "value_code": "DOMESTIC_TRANSFER", "display_name": "Domestic transfer", "description": "Transfer within the domestic clearing system.", "is_active": true, "sort_order": 40 },
+        { "value_code": "CHEQUE", "display_name": "Cheque", "description": "Payment by cheque.", "is_active": true, "sort_order": 50 },
+        { "value_code": "CASH", "display_name": "Cash", "description": "Payment in cash.", "is_active": true, "sort_order": 60 }
+      ]
+    }
+  ]
+}
