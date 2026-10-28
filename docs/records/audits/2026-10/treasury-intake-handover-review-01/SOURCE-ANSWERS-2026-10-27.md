@@ -151,6 +151,14 @@ Süreli / partiye bağlı muafiyet ataması (D54) Auth'ta yeni yetenek; ayrı el
 D53 Auth paket metni kapısı ve D56'daki MOD-0018 "permission onboarding" eki bu düzenlemeyle değişebilir; ayrıntı (paket / numara, tanım
 biçimi, tarih) Ali'ye soruldu.
 
+## Y-15 — Ali, yanıt 8 (2026-10-28)
+
+Sahip kararı (D9 / XMC-001 "(a) bu işte düzelt"; D29/1): MOD-0018 Auth eki (anahtarlar, açık atama listesi, rol şablonları) ve MOD-0220 §22
+alanı (`approvalStatus` + LEGAL-ENTITY-LOOKUP 1.1.0) Treasury tarafından yazılır; sahip inceler ve teyit eder. Auth paket metni main'deki
+karar dosyasına atıf yapar (D62/1). MOD-0023 §17 kodunu sahibi yazar (D25/1, D32/1); numara ve tarih kuleden. Sorular: (1) waive-sod Auth
+veri yapısı ve SEC-002 Platform dosyaları için XMC-001 onayı kimden — Ali vermez, alan sahibi verir → D63; (2) D62 kaynağı main'de ve ct-05
+uzak dalında yok — doğru, yalnız yerel commit `d101b3e55` idi → D63/1 ara PR; (3) paket yazılınca MOD-0018 sahibine inceleme isteği gider.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -185,3 +193,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-12 (beş şablon kodu, tek adım) | MOD-0126, MOD-0119, MOD-0124, MOD-0120, MOD-0217 | işlenmedi — ready-for-dev revizyonunda O-8 / O-11 / O-20 / MOD-0120 / MOD-0217 O-3 satırlarına; D62/2 |
 | Y-13 (TRM-14; MOD-0126 onayı bekleniyor) | MOD-0126 (TRM-14) | işlenmedi — MOD-0126 onay satırı ready-for-dev PR'ında |
 | Y-14 (Auth: izin / rol şablonu modül tanımından; D54 ayrı) | altı paket | işlenmedi — ayrıntı Ali'den gelince Auth kapısı (D53) ve SEC-002 (D56) için sahip kararı |
+| Y-15 (Auth eki ve MOD-0220 §22 Treasury yazar; XMC-001 sorusu) | altı paket; MOD-0126 (TRM-14) | D63 |

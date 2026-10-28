@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D62 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D63 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -617,6 +617,17 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT 
    commit'e atıf yapılmaz (D53/1 korunur).
 2. **`PartiallyApproved` v1'de kapalı:** MOD-0023 şablonları tek adımlı olduğundan durum (kod 9 ve ad) saklanır, v1'de giriş yolu yoktur;
    çok adımlı onay gelince açılır. MOD-0126 ve aynı durumu taşıyan paketlere ready-for-dev revizyonunda işlenir.
+
+## D63 — D62 ara PR, SEC-002 XMC-001 ve waive-sod yapısı (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); tetik Y-15.
+
+1. **Ara PR:** D62 ve Y-11…Y-15 küçük bir ara PR ile main'e gider (kart S-77 (c): Auth kulesi bekliyor).
+2. **SEC-002 eki için XMC-001 onayı Beste'den (Platform sahibi) istenir:** dokunulacak Platform dosyaları istekte listelenir; onay gelene
+   kadar o dosyalara dokunulmaz.
+3. **waive-sod parti bağı (D54) Auth'un ayrı işi kalır:** Treasury Auth veri yapısı yazmaz. Auth bu yeteneği getirene kadar MOD-0126'nın
+   muafiyet yolu kapalıdır (hedef partiyi taşıyan atama okunamaz → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`, D54); Treasury'nin diğer işleri bunu
+   beklemez. Pakete ready-for-dev revizyonunda işlenir.
 
 ## Karar olmayanlar
 
