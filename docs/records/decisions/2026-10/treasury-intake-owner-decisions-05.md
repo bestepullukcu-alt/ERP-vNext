@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D71 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D72 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -736,6 +736,25 @@ Tüketici servisler (MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0217) onaylayı
 iznine sahip kullanıcılarla da kesiştirir (DL-6 aday sorgusuna ek çağrı; tier-2 kesişimiyle aynı desen): karar veremeyecek kişi aday olmaz.
 Çağrı okunamazsa kapalı-başarısız; kesişim boşsa paketin 422 "uygun onaylayıcı yok" dalı (D68 / D70/2). D70/1 (rol şablonu) değişmez;
 K-A4b kapanır. MOD-0018 sahibinin teyidi Auth ekiyle birlikte.
+
+## D72 — MOD-0140 Revizyon 5 sonrası tedarikçi tüketimi (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Tetik: MOD-0140
+Revizyon 5 main'de (`status: ready-for-dev`, onay satırı sha `b3259e40…`, 2026-10-28; sözleşme dosyası hâlâ 1.2.0 FROZEN — 1.3.0 MOD-0140
+DL-1'de dondurulur, uçlar DL-3'te sunulur).
+
+1. **Tedarikçi kimliği:** MOD-0119 ve MOD-0289 ana anahtar olarak kanonik `supplierId` kodunu (`SUP-…`) saklar; `supplierMasterId` (uuid)
+   ikincil alan; eski kod gelirse kanonik koda çevrilip saklanır.
+2. **MOD-0140 hata kodlarının karşılığı:** 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ve 503 `DEPENDENCY_UNAVAILABLE` (ve okunamayan / alanı
+   eksik yanıt) → Treasury'de 503 `*_SUPPLIER_DIRECTORY_UNAVAILABLE`, kayıt yazılmaz, otomatik yeniden deneme yok; 404 `UNKNOWN_LEGAL_ENTITY`
+   → 422 `*_LEGAL_ENTITY_UNKNOWN`. Uygunluk = `known` ∧ `eligibleForTransactions == true`; alan yoksa uygun değil (fail-closed).
+3. **Çağrı kimliği ve izinler:** MOD-0289 `/eligible` listesini kullanıcı token'ıyla çağırır (MOD-0140 S-4 servis token'ını kapatır);
+   `procurement.suppliers.eligibility.read` ve (BL-652'ye kadar) `mdm.legal-entities.read` ilgili Treasury ve MDM rollerine çapraz modül
+   bağımlılığı olarak eklenir (D70/1 deseni; MOD-0018 Treasury eki, MOD-0018 sahibinin teyidi). Servis token'ı MOD-0140 DL-7 / 1.5.0'dan
+   sonra ayrıca değerlendirilir.
+4. **AP tedarikçi adı:** `GET /api/suppliers/{id}` (`procurement.suppliers.read`) ile alınır; izin AP rollerine bağımlılık olarak eklenir.
+5. **D58 metin hizalaması:** liste = `eligibleForTransactions = true` = silinmemiş ve Active ilişki (MOD-0140 S-1);
+   `onboardingStatus` / `purchasingEnabled` süzgeci yoktur. D58'in içeriği (Active ilişkili bütün tedarikçiler) değişmez.
 
 ## Karar olmayanlar
 

@@ -40,6 +40,21 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > ("YERİNE GEÇTİ — UYGULAMAYIN") ve kullanılmadı. Anahtar adları altı paketin Authorization Convention bölümleriyle
 > mekanik olarak karşılaştırıldı (Bölüm 19).
 >
+> **Revizyon (2026-10-28, KARAR D72 — MOD-0140 Revizyon 5 hizalaması):** Kaynak: karar dosyası D72 (2026-10-28 ölçümünde
+> karar dosyasında yazılı, **commit'lenmemiş; main'de değil** — D62/1 gereği bu revizyonun paket kapısı D72'nin main'e girmesidir,
+> Bölüm 7, Ready-for-dev Checklist) ve MOD-0140 paketi Revizyon 5 (main'de `ready-for-dev`, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`;
+> §14, S-2, S-4). **D72/3–4:** MOD-0140'ın anahtarları `procurement.suppliers.eligibility.read` ve `procurement.suppliers.read`
+> ile MOD-0220'nin `mdm.legal-entities.read`'i (BL-652'ye kadar — MOD-0140 S-2) MOD-0140'ı çağıran Treasury ve MDM rollerine
+> **çapraz modül bağımlılığı** olarak rol şablonuyla gelir (D70/1 deseni, K-4 (b)); eski "`procurement.*` kapsam dışı" ifadesi
+> bu iki anahtar için kalktı. Roller paketlerden ölçüldü (MOD-0140'ı çağıran komutlar): `eligibility.read` → 11
+> `TreasuryApOperator`, 12 `TreasuryApApprover`, 13 `TreasuryApOperationsManager`, 20 `BankDataViewer`, 21 `BankDataManager`,
+> 22 `BankAccountActivator`; `procurement.suppliers.read` → 11, 13 (AP görüntü adı ve form seçicisi — D72/4);
+> `mdm.legal-entities.read` → 20, 21, 22'ye eklendi (11–13'te zaten vardı). MOD-0126 rolleri almaz — MOD-0126 v1 MOD-0140'ı
+> çağırmaz (MOD-0126 O-14, KARAR D28: alacaklı varlık doğrulaması v1'de yalnız biçim; ölçüldü `MOD-0126-payments-approvals.md:745,
+> 1964`). Bağımlı anahtar olduğu için **117 modül anahtarı, 26 rol ve rol başına modül anahtarı sayıları değişmez**; bağımlı
+> anahtar sayısı 5 → 7. Değişen yerler: Bölüm 1 (a), 2, 7, 14.2 (bağımlı anahtar paragrafı), 16 (**AC-3 ve AC-14 genişletildi**),
+> 17, 18, 19, Açık kararlar K-4. MOD-0018 sahibinin teyidi gerekir (D72/3). Mevcut AC numaraları değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** Kaynak: karar dosyası D71 (2026-10-28 ölçümünde
 > **main'de değil** — yerel dal `chore/ct/treasury-intake-ct-05`, main'de değil; D62/1 gereği K-A4b kapanışının paket kapısı D71'in main'e girmesidir —
 > Bölüm 7, Ready-for-dev Checklist). Tüketici servisler (MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0217) onaylayıcı aday
@@ -110,7 +125,7 @@ sahibinin a–f listesidir (Y-10/1), D64 ile eklenen muafiyet ataması ve D66/1 
 
 | | Kapsam | Dilim |
 |---|---|---|
-| a | 26 rol şablonu (D47 rol matrisi, D49, D69 ve D70/1 ile güncel) — ad ve anahtar ataması matristen birebir; onaylayıcı rollerde `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı (D70/1) | DL-1, DL-2, DL-3 |
+| a | 26 rol şablonu (D47 rol matrisi, D49, D69 ve D70/1 ile güncel) — ad ve anahtar ataması matristen birebir; onaylayıcı rollerde `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı (D70/1); MOD-0140'ı çağıran AP ve banka rollerinde `procurement.suppliers.eligibility.read` / `procurement.suppliers.read` ve banka rollerinde `mdm.legal-entities.read` çapraz modül bağımlılığı (D72/3–4) | DL-1, DL-2, DL-3 |
 | b | 117 modül izin anahtarı (D57/4 ve D69 sonrası) — sayıldı, matrisle uzlaştırıldı (Bölüm 19) | DL-1, DL-2, DL-3 |
 | c | 8 "yalnız açık atama" (`ExplicitGrantOnlyPermissions`) anahtarı, `waive-sod` dahil | DL-1, DL-2, DL-3 |
 | d | `waive-sod` atamasının parti bağı (D54) — **D64 ile bu paketin kapsamında**, ayrı dilim; muafiyet aday listesi (D56/3) D66/1 ile DL-6 aday sorgusunun `waive-sod` + parti biçimidir (parti bağını bu dilimin kaydı verir) | DL-5 |
@@ -167,9 +182,12 @@ partiyi hazırlayıp onaylama izinlerinin ikisini birden alır — ve finans / b
 - `platform.document-repository.*` hiçbir role verilmez (D56/2); belge deposu servis kimliği desteği MOD-0262-FU01 / Platform'un
   işidir (D56/2, Y-8).
 - Bağımlı anahtarların (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.approve`,
-  `.reject`, `.request-info`) kaydı — o modüllerin sahibindedir (D47 rol matrisi giriş paragrafı). Rollere ulaşma yolu
-  **K-4 (b) — KARAR D70/1:** Treasury manifestinde çapraz modül bağımlılığı olarak beyan edilir, profil verir (Bölüm 14.2).
-- `procurement.*`, `crm.*`, MOD-0031 / MOD-0140 okuma izinleri (matrisin anahtar kapsamı dışı).
+  `.reject`, `.request-info`; **KARAR D72/3–4** ile `procurement.suppliers.eligibility.read`, `procurement.suppliers.read`) kaydı
+  — o modüllerin sahibindedir (D47 rol matrisi giriş paragrafı; `procurement.suppliers.*` için MOD-0140, Auth katalog / seed
+  kaydı MOD-0140 §18 "DL-3 canlı öncesi" maddesi). Rollere ulaşma yolu **K-4 (b) — KARAR D70/1** (D72/3 aynı deseni ister):
+  Treasury manifestinde çapraz modül bağımlılığı olarak beyan edilir, profil verir (Bölüm 14.2).
+- `crm.*`, MOD-0031 okuma izinleri ve `procurement.*`'ın D72/3–4 dışındaki anahtarları (matrisin anahtar kapsamı dışı;
+  `procurement.suppliers.eligibility.read` / `procurement.suppliers.read` artık bağımlı anahtardır — yukarıdaki madde).
 - Platform modül kataloğu / kiracı hakkı (entitlement) kayıtları, kiracı verisi, rol üyeliği ataması, token içeriği,
   Production / Staging işlemleri.
 - `waive-sod` iznini token'da süreli yapmak (token düzenlemesi) — açık karar K-W2.
@@ -381,6 +399,8 @@ Golden Reference arka uç klasör düzeni (Bölüm 10); satır numaraları `chor
 | D66 main'de | **var** — PR #281 (`c32cabe6b`; `git merge-base --is-ancestor 3c98e7bfc c32cabe6b` → 0) | DL-6 paket kapısı (D62/1) — kapandı |
 | D70 main'de | değil (karar dosyasında, yerel dalda, main'de değil; 2026-10-28) | K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı (D62/1) |
 | D71 main'de | değil (karar dosyasında, yerel dalda, main'de değil; 2026-10-28) | K-A4b kapanışının (DL-6; tüketici aday kesişimi) paket kapısı (D62/1) |
+| D72 main'de | değil (karar dosyasında yazılı, commit'lenmemiş; main'de değil; 2026-10-28) | D72/3–4 bağımlı anahtarlarının (DL-1, DL-2) paket kapısı (D62/1) |
+| MOD-0140 anahtarları `procurement.suppliers.eligibility.read` / `procurement.suppliers.read` (D72/3–4) | `procurement.suppliers.read` Procurement manifestinde var (ölçüldü: `services/Diten.ProcurementService/src/Diten.ProcurementService.Api/ModuleRegistration/SupplierOnboardingManifestProvider.cs:30`); `eligibility.read` kodda yok (ölçüldü: `services/**` 0 eşleşme), MOD-0140 Revizyon 5 §14'te tanımlı (main'de `ready-for-dev`, sha256 `b3259e40…ce5c2`), Auth kataloğu / seed kaydı MOD-0140 §18 "DL-3 canlı öncesi" maddesinde (sahip Auth; açık) | bağımlı anahtar olarak beyan edilir, profil verir (K-4 (b)); katalogda henüz olmayan bağımlı anahtarın profilde nasıl davrandığı K-4 ölçüm notuyla birlikte ölçülür |
 | Aday sorgusu tüketicileri (D66/1): MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-0217 DL-3 | paket metinlerinde: aday tabanı bu paketin DL-6'sı, tüketici kendi kurallarını uygular, `CandidatePrincipalIds` (Y-12); izin anahtarları Bölüm 8.6 tablosu; MOD-0217 anahtarı `mdm.contracts.versions.approve` (KARAR D69; MOD-0217 O-3 (b) kapandı) | DL-6 kodu tüketici dilimlerinin kabul kapısı (Teslim dilimleri) |
 | FinanceTreasuryService ve MdmService → Auth servis kimliği (DL-6 iç ucu) | FinanceTreasury servisi yok; MdmService var; Auth'ta servis kimliği token ucu var (`Api/Controllers/Internal/InternalServiceIdentityTokensController.cs`) | K-A1 (K-W3 ile aynı karar) |
 | Kullanıcı → şirket kapsamı | Auth'ta yok (ölçüm: `services/Diten.AuthService/src`'de `LegalEntity` yalnız `EntitlementPermissionSyncService.cs` ve `ProductLegalEntityScopeEntitlementGrantProfile.cs`'te, ürün profili); Platform `IDataScopeResolver.ResolveAsync(tenantId, userId, moduleCode, featureCode, …)` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/IDataScopeResolver.cs:5-10`) | K-A2 |
@@ -638,6 +658,14 @@ yöneticisi (görüntüleyicilerde yok); `platform.workflow.instances.start` (MO
 `platform.workflow.tasks.approve` / `.reject`: 7, 8, 12, 15, 17, 19, 26 — bütün onaylayıcı roller (**KARAR D70/1**; 26
 Sözleşme onaylayıcı D70/1 ile eklendi);
 `platform.workflow.tasks.request-info`: 7, 8, 12.
+**KARAR D72/3–4 (MOD-0140'ı kullanıcı token'ıyla çağıran roller; MOD-0140 §14, S-2, S-4):**
+`procurement.suppliers.eligibility.read` (MOD-0140): 11, 12, 13 (AP: Create / Update / Validate / Submit, Approve, ReleaseHold —
+MOD-0119 Runtime Constraints (b)) ve 20, 21, 22 (banka: tedarikçi hesabı okumaları, yazmaları, etkinleştirme — MOD-0289
+Authorization Convention); `procurement.suppliers.read` (MOD-0140): 11, 13 (AP görüntü adı `GET /api/suppliers/{id}` ve form
+seçicisi — D72/4); `mdm.legal-entities.read` ayrıca 20, 21, 22 (BL-652 Option 2'ye kadar — MOD-0140 S-2; yoksa MOD-0140 403
+`LEGAL_ENTITY_LOOKUP_FORBIDDEN`). Roller 1–10 ve 14–19 (görüntüleyiciler, ödeme, Hazine yöneticisi, AR, nakit) ve 23–26
+(sözleşme) bu iki `procurement.*` anahtarını almaz — MOD-0140'ı çağırmazlar (AP görüntüleyici adı kayıttaki kopyadan okur;
+MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
 
 ### 14.3 DL-5 Auth uçları ve izinleri
 
@@ -678,6 +706,11 @@ Sözleşme onaylayıcı D70/1 ile eklendi);
   ya da çıkarılınca o rolün testi kırmızı. **Rol şablonu testi (KARAR D70/1, K-4 (b)):** altı finans onaylayıcı rolünün (7, 8, 12,
   15, 17, 19) her birinde `platform.workflow.tasks.approve` ve `.reject` bağımlı izinlerinin ikisi de vardır; onaylayıcı olmayan
   rollerde (1–6, 9–11, 13, 14, 16, 18) yoktur. Sabotaj: profilde bir onaylayıcı rolünden iki bağımlı izinden biri kaldırılınca o
+  rolün testi kırmızıya döner. **Tedarikçi bağımlı izinleri (KARAR D72/3–4):** 11, 12, 13'ün her birinde
+  `procurement.suppliers.eligibility.read` ve `mdm.legal-entities.read` vardır; `procurement.suppliers.read` yalnız 11 ve 13'tedir
+  (12'de yoktur); 1–10 ve 14–19 iki `procurement.*` anahtarından hiçbirini taşımaz. Bağımlı anahtarlar modül anahtarı
+  sayısına girmez (sayılar yukarıdaki gibi kalır; 117 değişmez). Sabotaj: profilde 11'den `procurement.suppliers.eligibility.read`
+  ya da 13'ten `procurement.suppliers.read` kaldırılınca, ya da 2'ye (AP görüntüleyici) `procurement.suppliers.read` eklenince o
   rolün testi kırmızıya döner.
 - [ ] AC-4 (zorunlu) — Görev ayrılığı yapı testi: hiçbir rol aynı nesne türünde hazırlama / oluşturma / gönderme eylemini onay /
   ret eylemiyle birlikte taşımaz (ödeme partisi, AP faturası, AR düzeltmesi, nakit pozisyonu); `TreasuryManager` approve,
@@ -705,6 +738,10 @@ Sözleşme onaylayıcı D70/1 ile eklendi);
   üç yol testi bu iki anahtar için. Sabotaj AC-1 gibi.
 - [ ] AC-14 (zorunlu) — Roller 20–22 Bölüm 14.2'deki kümeyi birebir alır (3/19/5); `BankDataManager`'da
   `mdm.bank-accounts.activate` / `.deactivate` yok (D47/2). Sabotaj: `BankDataManager`'a `activate` eklenince kırmızı.
+  **Tedarikçi bağımlı izinleri (KARAR D72/3):** 20, 21, 22'nin her birinde `procurement.suppliers.eligibility.read` ve
+  `mdm.legal-entities.read` bağımlı izinleri vardır; hiçbirinde `procurement.suppliers.read` yoktur; modül anahtarı sayıları
+  (3/19/5) değişmez. Sabotaj: profilde 20'den (`BankDataViewer`) `procurement.suppliers.eligibility.read` ya da
+  `mdm.legal-entities.read` kaldırılınca, ya da 21'e `procurement.suppliers.read` eklenince o rolün testi kırmızıya döner.
 - [ ] AC-15 (zorunlu) — Hiçbir finans rolü (1–19) `mdm.banks.read` ya da `mdm.bank-accounts.read` taşımaz (D47/4).
 - [ ] AC-16 (zorunlu) — Dört `read` eylemli MOD-0289 anahtarı (`mdm.banks.read`, `mdm.bank-accounts.read`,
   `mdm.bank-accounts.sensitive-reads.read`, `mdm.bank-account-purposes.read`) hak olmadan hiçbir Viewer'a gitmez. Sabotaj AC-2 gibi.
@@ -801,7 +838,7 @@ Sözleşme onaylayıcı D70/1 ile eklendi);
 
 | Alan | Gerekli kanıt |
 |---|---|
-| Profil birim | 117 anahtar, 26 rol, rol başına küme eşitliği, modül kodu başına tam küme, eksik / fazla / bilinmeyen eylem reddi; yedi onaylayıcı rolde (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` bağımlı izinleri (D70/1; AC-3, AC-18) |
+| Profil birim | 117 anahtar, 26 rol, rol başına küme eşitliği, modül kodu başına tam küme, eksik / fazla / bilinmeyen eylem reddi; yedi onaylayıcı rolde (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` bağımlı izinleri (D70/1; AC-3, AC-18); tedarikçi bağımlı izinleri — `procurement.suppliers.eligibility.read` 11, 12, 13, 20, 21, 22; `procurement.suppliers.read` yalnız 11, 13; `mdm.legal-entities.read` 20, 21, 22'de de (D72/3–4; AC-3, AC-14) |
 | Taban | Hak olmadan Admin / Viewer'da sıfır Treasury anahtarı; 18 `read` anahtarı dışlama listesinde |
 | Açık atama | 8 anahtar × 3 otomatik yol (SuperAdmin, modül eşitlemesi, varsayılan rol) |
 | SoD yapı | Aynı nesne türünde hazırlama + karar birlikte yok; `TreasuryManager` yasak listesi |
@@ -828,11 +865,13 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [ ] D69 main'de (D62/1) — DL-3 paket kapısı ({K} ve Sözleşme onaylayıcı).
 - [ ] FU numarası verildi; dosya adı, `id`, `branch` ve kayıt satırı yazıldı; `verify_module_id.py --check-id` geçti (K-1).
 - [ ] MOD-0018 sahibi incelemesi ve teyidi (Y-15/3, Y-16; D69'un anahtarı ve rolü dahil — D69; onaylayıcı rollerdeki iki iş akışı
-  bağımlı izni dahil — D70/1; tüketicinin iş akışı izni kesişimi dahil — D71).
+  bağımlı izni dahil — D70/1; tüketicinin iş akışı izni kesişimi dahil — D71; tedarikçi bağımlı izinleri dahil — D72/3–4).
 - [ ] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
   tek başına yetmez, teyit karar dosyasına kaynak olarak yazılır) — altı tüketici paketin paket kapısı.
 - [ ] D70 main'de (D62/1) — K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı.
 - [ ] D71 main'de (D62/1) — K-A4b kapanışının (DL-6; tüketici aday kesişimi) paket kapısı.
+- [ ] D72 main'de (D62/1) — D72/3–4 tedarikçi bağımlı anahtarlarının (DL-1 roller 11–13, DL-2 roller 20–22) paket kapısı;
+  MOD-0018 sahibinin teyidi bu anahtarları da kapsar (D72/3).
 - [ ] K-1b modül kodları (tüketici paket sahipleriyle) — DL-1/2/3 ve DL-4 için.
 - [ ] K-2 Admin / Viewer varsayılanı, K-7 rol adları — DL-1/2/3 için (K-4 bağımlı anahtarlar **KAPANDI — KARAR D70/1**, (b)).
 - [ ] Bağımsız inceleme (CT-APR-02) ve CT-APR-01 onay satırı main'de.
@@ -860,6 +899,10 @@ anahtarları tablonun dışında anahtar içermiyor (fazla görünenler olay adl
 `mdm.contracts.documents` bir önek anması). MOD-0289'un üç amaç anahtarı (`mdm.bank-account-purposes.update` / `.delete` /
 `.deactivate`) pakette yalnız kısaltılmış (`.update`) biçimde geçiyor — fark değil. Y-7'deki "113 anahtar" D47/D48 dönemine
 aittir; D49/2 (+1 `mdm.contracts.value.write`), D57/4 (+2 SoD ayar anahtarı) ve D69 (+1 `mdm.contracts.versions.approve`) ile 117.
+**D72/3–4 (2026-10-28):** karar dosyasının kapsama tablosu değişmedi (D72 tabloya satır eklemez); iki bağımlı anahtar
+(`procurement.suppliers.eligibility.read`, `procurement.suppliers.read`) D72 metninden ve tüketici paketlerin MOD-0140 çağrı
+yerlerinden (MOD-0119 Runtime Constraints (b), MOD-0289 Authorization Convention) ölçülerek Bölüm 14.2'ye yazıldı; bağımlı
+anahtar sayısı 5 → 7, modül anahtarı 117 ve rol 26 değişmedi.
 
 **Kod gerçeği (ölçüm).** `ExplicitGrantOnlyPermissions` bugün 10 anahtar taşır (`:89-94`), hiçbiri Treasury'nin değil. Viewer
 `read` kuralı ve dışlama listesi `DefaultRolePermissionTemplate.cs:120-168, 207-213`; genel modül seçimi
@@ -930,7 +973,7 @@ kapısı — MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-021
 | K-1b | Treasury modül kodları (manifest `ModuleCode`) | paket başına bir kod · dört finans paketine tek kod + MDM'de paket başına | paket başına bir kod (kiracı modül bazında alır); değerler tüketici paketlerin manifest adımında | MOD-0126 DL-1 yazarı (finans), MDM sahibi (MOD-0289 / MOD-0217), MOD-0018 sahibi teyidi | DL-1 başlamadan |
 | K-2 | Modül hakkıyla Admin / Viewer Treasury varsayılanı | hiçbiri · yalnız görüntüleyici kümeleri · FU20 gibi `read` | hiçbiri (matris 117 anahtarın hepsini yerleştirdi) | MOD-0018 sahibi + K1 | DL-1 başlamadan |
 | K-3 | Varsayılan kiracı SuperAdmin tam katalog yolu Treasury anahtarlarını alsın mı | bugünkü davranış (açık atama dışı hepsi) · Treasury'yi dışla | bugünkü davranış (FU20 / FU22 deseni); varsayılan kiracı iş kiracısı değil | MOD-0018 sahibi | TBD |
-| K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | **KAPANDI — KARAR D70/1: (b)**; bütün onaylayıcı rollere (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak (AC-3, AC-18). D70/1 iki görev anahtarını adlandırır; öteki üç bağımlı anahtarın (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.request-info`) aynı yolla gelmesi CT çıkarımıdır — MOD-0018 sahibinin D70/1 teyidiyle birlikte teyit edilir. **Ölçüm notu (açık):** `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); bağımlı manifestle kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri; teyit MOD-0018 sahibi (D70/1) | DL-1 başlamadan (teyit) |
+| K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | **KAPANDI — KARAR D70/1: (b)**; bütün onaylayıcı rollere (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak (AC-3, AC-18). D70/1 iki görev anahtarını adlandırır; öteki üç bağımlı anahtarın (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.request-info`) aynı yolla gelmesi CT çıkarımıdır — MOD-0018 sahibinin D70/1 teyidiyle birlikte teyit edilir. **KARAR D72/3–4:** `procurement.suppliers.eligibility.read` ve `procurement.suppliers.read` aynı yolla (b) gelir; `mdm.legal-entities.read` banka rollerine (20–22) de — bağımlı anahtar sayısı 7 (Bölüm 14.2). **Ölçüm notu (açık):** `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); bağımlı manifestle kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri; teyit MOD-0018 sahibi (D70/1) | DL-1 başlamadan (teyit) |
 | K-5 | DL-4'te Platform izin listesine girecek (modül kodu, anahtar) çiftleri | MOD-0289 + MOD-0217'nin şirket kapsamı soran anahtarları (`read-tenant-wide` hariç) | hesap ve sözleşme anahtarları; banka / amaç (referans veri) kapsam sorar mı MOD-0289 sahibi söyler | MOD-0289 / MOD-0217 sahibi; Beste (Platform) | DL-4 başlamadan |
 | K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | hayır bu ekte (D56/1 yalnız MDM'yi adlandırır); ayrı karar | K1 + Beste | TBD |
 | K-7 | Rol adları ve Türkçe görünen ad | `RoleName` İngilizce PascalCase + `DisplayName` İngilizce (mevcut desen, tek dil) · tr ad için rol ekranında kod → kaynak eşlemesi | CT önerisi Bölüm 14.2; tr adın ekranda nasıl çıktığı ayrı karar — not: Rol ekranı kiracıya görünür ve çekirdek kural kiracı ekranı için 7 dil ister | MOD-0018 sahibi | DL-1 başlamadan |
