@@ -4,11 +4,12 @@ using Diten.SupplyChainService.Domain.Features.Shipments;
 namespace Diten.SupplyChainService.Application.Features.Shipments.Dispatch;
 
 /// <summary>
-/// MOD-0183 §23.4 "Late writer": a writer whose lease expired and who got a 201 it cannot record. The only INVENTORY call
-/// made without the lease. Its own attempt still open (stored n equal, InProgress or Completed) → log only: the holder
-/// resends the same key and gets the same transactionId. Its attempt closed (stored n greater, or equal and Compensated /
-/// CompensationFailed) → nobody resends its key, so it reverses its issue with <c>…:reversal:a{own n}</c>. An issue the
-/// shipment already records (the holder's resend replayed it, CT-APR-02 r6 F-1) is never reversed here.
+/// MOD-0183 §23.4 (r7) "Late writer": a writer whose lease expired and who got a 201 it cannot record. The only INVENTORY
+/// call made without the lease. Its own attempt still open to posting (stored n equal and Completed, or InProgress and
+/// not compensating) → log only: the holder resends the same key and gets the same transactionId. Otherwise (stored n
+/// greater, or equal and compensating, Compensated or CompensationFailed) nobody resends its key, so it reverses its
+/// unrecorded issue with <c>…:reversal:a{own n}</c> and the attempt's stored reversal date. An issue the shipment already
+/// records (the holder's resend replayed it) is never reversed here.
 /// </summary>
 public sealed class LateWriterPolicy(IShipmentRepository repository, IInventoryMovementClient inventory, RequestContext context,
     TimeProvider clock, ILogger<LateWriterPolicy> logger)

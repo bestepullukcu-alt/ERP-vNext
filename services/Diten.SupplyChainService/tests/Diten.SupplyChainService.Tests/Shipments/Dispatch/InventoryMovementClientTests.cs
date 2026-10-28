@@ -102,6 +102,19 @@ public sealed class InventoryMovementClientTests
         Assert.Equal((InventoryOutcome.Unavailable, false), await Outcome(unconfigured.PostAsync(Request(s, body, "k"), default)));
         Assert.Empty(none.Calls);
     }
+    // Pack r7 §23.3 (r7 review F-5): a 2xx other than 200/201 without a readable transactionId (202, 204) and any 3xx
+    // may follow a stored request — ambiguous, so the sent line is resent with its key.
+    [Theory]
+    [InlineData(202, "{\"contractVersion\":\"v1\"}")]
+    [InlineData(204, "")]
+    [InlineData(302, "")]
+    [InlineData(307, "")]
+    public async Task OtherSuccessAndRedirectStatusesAreAmbiguous(int status, string body)
+    {
+        var s = Shipment(); var (client, fake) = Client();
+        fake.Script = _ => Task.FromResult<HttpResponseMessage?>(new HttpResponseMessage((System.Net.HttpStatusCode)status) { Content = new StringContent(body) });
+        Assert.Equal((InventoryOutcome.Unavailable, true), await Outcome(client.PostAsync(Request(s, InventoryMovementMapper.Issue(s, s.Lines[0], Attempt()), "k"), default)));
+    }
     private static async Task<(InventoryOutcome, bool)> Outcome(Task<InventoryPostResult> task) { var r = await task; return (r.Outcome, r.Ambiguous); }
 
     // S23-17: the REVERSAL carries only the §23.4 fields; INVENTORY accepts it, and the same body with lotId is 400.

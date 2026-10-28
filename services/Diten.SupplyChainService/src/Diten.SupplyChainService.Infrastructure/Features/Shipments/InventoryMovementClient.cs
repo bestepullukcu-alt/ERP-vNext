@@ -31,7 +31,9 @@ public sealed class InventoryMovementClient(HttpClient client, IConfiguration co
             using var response = await client.SendAsync(message, ct);
             var status = (int)response.StatusCode;
             var text = await response.Content.ReadAsStringAsync(ct);
-            if (response.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK) return Posted(status, text);
+            // Every 2xx goes to Posted: one that cannot be read or has no transactionId (a 202, a 204) is ambiguous there
+            // (pack r7 §23.3, r7 review F-5).
+            if (status is >= 200 and < 300) return Posted(status, text);
             var (code, details) = Error(text);
             return response.StatusCode switch
             {
@@ -45,7 +47,8 @@ public sealed class InventoryMovementClient(HttpClient client, IConfiguration co
                 // other 5xx can arrive after INVENTORY committed (review F-1): the line stays sent and is resent with its key.
                 HttpStatusCode.ServiceUnavailable when code is not null => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
                 HttpStatusCode.Unauthorized => new(InventoryOutcome.Unavailable, status, InventoryCode: code),
-                _ => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: status >= 500)
+                // A 3xx is not an answer of postMovement: whether INVENTORY stored the request is unknown (r7 review F-5).
+                _ => new(InventoryOutcome.Unavailable, status, InventoryCode: code, Ambiguous: status >= 500 || status is >= 300 and < 400)
             };
         }
         catch (HttpRequestException) { return new(InventoryOutcome.Unavailable, 0, Ambiguous: true); }

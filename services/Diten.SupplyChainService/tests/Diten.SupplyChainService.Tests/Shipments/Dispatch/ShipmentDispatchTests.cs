@@ -20,7 +20,7 @@ using Xunit.Abstractions;
 namespace Diten.SupplyChainService.Tests.Shipments.Dispatch;
 
 /// <summary>
-/// MOD-0183 §23.5, DL-1 slice (S23-1…S23-6, S23-8…S23-15, S23-17…S23-20): the real host, the real coordinator and
+/// MOD-0183 §23.5 (pack r7), DL-1 slice (S23-1…S23-6, S23-8…S23-15, S23-17…S23-21): the real host, the real coordinator and
 /// repository on the owned replica set, the real INVENTORY client over <see cref="FakeInventory"/>, and a test clock for
 /// the lease. Net stock is INVENTORY's own sum of what it stored (issue −q, reversal +q).
 /// </summary>
@@ -870,7 +870,7 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
     // F-3: a late 201 on the refused line of an attempt in compensation is reversed by the late writer (the holder never
     // resends a refused line), with the holder's key and stored date.
     [Fact]
-    public async Task R3F3_LateWriterReversesOnTheRefusedLineOfACompensatingAttempt()
+    public async Task S23_18f_LateWriterReversesOnTheRefusedLineOfACompensatingAttempt()
     {
         using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
         var gate = new TaskCompletionSource(); var line2 = 0;
@@ -892,6 +892,8 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         Assert.Equal(("2", "Reversed"), (late.LineNumber, late.Outcome));
         Assert.Equal($"{id}:2:reversal:a1", app.Inventory.Calls.Last(c => c.MovementType == "REVERSAL" && c.Key.Contains(":2:", StringComparison.Ordinal)).Key);
         Assert.Equal(0m, app.Inventory.Net);
+        // S23-21: the late-writer reversal writes its one audit row.
+        Assert.Single(await AttemptAudit(app, id), r => r["Outcome"] == "LateWriterReversed");
     }
 
     // F-4: the integrity fault of the first INVENTORY 400 is stored with the refusal, so a resumed compensation writes it.
@@ -911,6 +913,84 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         Assert.Equal((500, "INTERNAL_ERROR"), await StatusCode(Dispatch(app, id, "dispatch-f4b")));
         Assert.Contains(await AttemptAudit(app, id), r => r["Outcome"] == "Compensated"
             && r["IntegrityFaults"].AsBsonArray.Any(f => f.AsString == "INVENTORY 400 INVALID_REQUEST issue line 2"));
+        Assert.Equal(0m, app.Inventory.Net);
+    }
+
+    // ---- S23-21 (pack r7): each failed outcome writes ONE dispatch-attempt row to sce_shipment_audit, in the outcome's
+    // transaction (the transaction is measured by F3_… and R4_…; the sabotages "audit-tx" and "audit-drop" turn these red).
+    private async Task<BsonDocument> OneRow(Host app, Guid id, string outcome) => Assert.Single(await AttemptAudit(app, id), r => r["Outcome"] == outcome);
+
+    [Fact]
+    public async Task S23_21a_Compensated422WritesOneRowWithItsIds()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "2", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c => IsIssue(c, "2") ? Answer(FakeInventory.Error(422, "LOT_BLOCKED")) : Default;
+        Assert.Equal((422, "INVENTORY_REFUSED"), await StatusCode(Dispatch(app, id, "dispatch-21a")));
+        var row = await OneRow(app, id, "Compensated");
+        var line = (await Stored(app, id)).DispatchHistory.Single().Lines[0];
+        Assert.Equal((line.IssueTransactionId, line.ReversalTransactionId),
+            (row["IssueTransactionIds"].AsBsonArray.Single().AsString, row["ReversalTransactionIds"].AsBsonArray.Single().AsString));
+        Assert.Single(await AttemptAudit(app, id));
+    }
+
+    [Fact]
+    public async Task S23_21b_Compensated500WritesOneRowWithTheIntegrityFault()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "2", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c => IsIssue(c, "2") ? Answer(FakeInventory.Error(400, "INVALID_REQUEST")) : Default;
+        Assert.Equal((500, "INTERNAL_ERROR"), await StatusCode(Dispatch(app, id, "dispatch-21b")));
+        Assert.Contains("INVENTORY 400 INVALID_REQUEST issue line 2", (await OneRow(app, id, "Compensated"))["IntegrityFaults"].AsBsonArray.Select(f => f.AsString));
+        Assert.Single(await AttemptAudit(app, id));
+    }
+
+    [Fact]
+    public async Task S23_21c_CompensationFailedWritesOneRow()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "2", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c => IsIssue(c, "2") ? Answer(FakeInventory.Error(422, "LOT_BLOCKED"))
+            : c.MovementType == "REVERSAL" ? Answer(FakeInventory.Error(503, "INVENTORY_UNAVAILABLE")) : Default;
+        Assert.Equal((409, "DISPATCH_COMPENSATION_FAILED"), await StatusCode(Dispatch(app, id, "dispatch-21c")));
+        Assert.Contains("REVERSAL INVENTORY_UNAVAILABLE", (await OneRow(app, id, "CompensationFailed"))["IntegrityFaults"].AsBsonArray.Select(f => f.AsString));
+        Assert.Single(await AttemptAudit(app, id));
+    }
+
+    [Fact]
+    public async Task S23_21d_AlreadyReversedWritesOneRowWithTheOriginalTransactionId()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "5", "Lsku"), ("2", "1", "Lsku")]);
+        app.Inventory.Script = c =>
+        {
+            if (!IsIssue(c, "2")) return Default;
+            app.Inventory.ReverseExternally(app.Inventory.IssueIds.Single());
+            return Answer(FakeInventory.Error(422, "LOT_EXPIRED"));
+        };
+        Assert.Equal((422, "INVENTORY_REFUSED"), await StatusCode(Dispatch(app, id, "dispatch-21d")));
+        var original = (await Stored(app, id)).DispatchHistory.Single().Lines[0].IssueTransactionId;
+        Assert.Contains($"ALREADY_REVERSED issue {original} line 1", (await OneRow(app, id, "Compensated"))["IntegrityFaults"].AsBsonArray.Select(f => f.AsString));
+        Assert.Single(await AttemptAudit(app, id));
+    }
+
+    [Fact]
+    public async Task S23_21e_ALateWriterReversalWritesOneRow()
+    {
+        using var app = new Host(); var id = await Planned(app);
+        var gate = new TaskCompletionSource(); var line3 = 0;
+        app.Inventory.Script = async c =>
+        {
+            if (!IsIssue(c, "3")) return null;
+            if (Interlocked.Increment(ref line3) == 1) { await gate.Task; return app.Inventory.Answer(c); }
+            return FakeInventory.Error(422, "INSUFFICIENT_AVAILABLE");
+        };
+        var a = Dispatch(app, id, "dispatch-21e-a");
+        await Until(() => line3 == 1);
+        app.Clock.Advance(PastLease);
+        Assert.Equal(422, (await Dispatch(app, id, "dispatch-21e-b")).Status);
+        gate.SetResult();
+        Assert.Equal(409, (await a).Status);
+        var late = (await Stored(app, id)).DispatchLateWrites.Single();
+        var row = await OneRow(app, id, "LateWriterReversed");
+        Assert.Equal((late.IssueTransactionId, late.ReversalTransactionId),
+            (row["IssueTransactionIds"].AsBsonArray.Single().AsString, row["ReversalTransactionIds"].AsBsonArray.Single().AsString));
         Assert.Equal(0m, app.Inventory.Net);
     }
 }
