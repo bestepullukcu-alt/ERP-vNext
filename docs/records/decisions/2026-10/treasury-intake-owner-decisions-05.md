@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D59 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D60 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -578,9 +578,30 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT 
    (Beste'nin izni, Y-8); değerler MOD-0048-FU01 §21 (#243 ile onaylı); ayrı dal ve PR, Beste onaylar; push / PR sahibe ayrıca sorulur.
 3. **Ara PR:** ct-05 dalı main'e ara PR olarak gider (kart S-77 (c): Beste D56/2'yi main'de görmek istiyor).
 
+## D60 — MOD-0048 seed izninin genişlemesi ve değerler (Beste, değerlerin ve Platform'un sahibi; 2026-10-28)
+
+Onay kanıtı: Beste'nin yazılı yanıtı (`Beste → Treasury CT`, 2026-10-28), sahip K1 (`gmg-10`) tarafından Treasury CT oturumuna
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`) aktarıldı. Doğrulama: main'deki `execution/approvals/approvals.tsv` satırı MOD-0048-FU01
+@ `8fc68be8…` (`whole_pack=TRM-17 — yalnız §21`) ve main'deki paket aynı hash'te (ölçüldü, 2026-10-28).
+
+1. **`DefaultConsumableSets` (kod):** `BusinessReferenceDataConsumableSetsOptions.cs` içindeki listeye yalnız `payment-method` ve
+   `currency-minor-units` eklenir; o dosyada başka değişiklik yok, test değişmez. §21'deki "kod yok" ifadesi bir ölçüm eksiğiydi
+   (izin listesinin kod kopyası `BusinessReferenceDataConsumableSetsTests` ile `appsettings.json`'a eşit tutuluyor). PR açıklamasında
+   belirtilir. D59/2'nin "yalnız seed JSON + ConsumableSets" sınırını bu kadar genişletir.
+2. **`RequiredSetCodes`:** `appsettings.Development.json`'a iki kod eklenir (§21.3 madde 2; izinli yollar `appsettings*.json`, iki liste
+   girdisi, bir catalog-load bloğu).
+3. **`currency-minor-units` değerleri:** ISO 4217'nin güncel baskısındaki bütün aktif kodlar; `catalog_version` o baskının yayın tarihi.
+   Değerlerin kararı Beste'de, Finance bilgi olarak görür. AC-R2 kontrolü sistemin döndürdüğü listede ISO'da olmayan eski bir kod
+   bulursa kod hane sayısıyla eklenir; kontrol kaldırılmaz. Kaynak: SIX Group'un yayımladığı ISO 4217 "List One" (K1 seçimi, soru kutusu,
+   önerilen, 2026-10-28).
+4. **§21 onaylı; `payment-method` altı değeri kesin** (`BANK_TRANSFER`, `SEPA_CREDIT_TRANSFER`, `SWIFT_TRANSFER`, `DOMESTIC_TRANSFER`,
+   `CHEQUE`, `CASH`). §21 başlığındaki "proposal, not approved" onay öncesinden kalmadır; onayı bozmamak için şimdi değişmez, bir sonraki
+   MOD-0048-FU01 revizyonunda düzeltilir.
+5. **Tek PR:** seed dosyası, iki liste girdisi ve testler (AC-R1…R4; AC-R2 sabotaj kanıtıyla) aynı PR'da; Beste onaylar.
+
 ## Karar olmayanlar
 
-BL-565 servisi ve çağrı sözleşmesi, `Finance = 18`'in main'e girmesi, MOD-0048 seed'leri, MOD-0149 pack revizyonu, DCP-011 onayı
+BL-565 servisi ve çağrı sözleşmesi, `Finance = 18`'in main'e girmesi, MOD-0149 pack revizyonu, DCP-011 onayı
 (Beste); Auth kaydı (rol şablonlarının içeriği D46 ile verildi), MOD-0023 şablon kodları (O-3 / O-8 / O-11 / O-20), MOD-0220 `ApprovalStatus`
 (Ali); supplier 1.3.0 (MVP-2).
 
