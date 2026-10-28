@@ -21,9 +21,8 @@ public sealed class TreasuryReferenceCatalogTests
     internal const string PaymentMethod = "payment-method";
     internal const string CurrencyMinorUnits = "currency-minor-units";
 
-    // TRM-17: the ISO 4217 list (SIX list-one.xml) has not been supplied yet; the set is not in the catalog. Remove the
-    // Skip when the values are added — the assertions below are the AC-R2 gate.
-    private const string CurrencyValuesPending = "TRM-17: currency-minor-units values wait for the ISO 4217 list (SIX list-one.xml).";
+    // TRM-17 / D60: SIX ISO 4217 List One published 2026-09-17 — every code with numeric minor units (N.A. excluded).
+    private const string IsoEditionCatalogVersion = "ISO4217-2026-09-17";
 
     private static readonly string[] PaymentMethodCodes =
         ["BANK_TRANSFER", "SEPA_CREDIT_TRANSFER", "SWIFT_TRANSFER", "DOMESTIC_TRANSFER", "CHEQUE", "CASH"];
@@ -150,7 +149,7 @@ public sealed class TreasuryReferenceCatalogTests
 
     // ---- AC-R2 -------------------------------------------------------------------------------------------------
 
-    [Fact(Skip = CurrencyValuesPending)]
+    [Fact]
     public void Currency_minor_units_every_value_has_minor_units_0_to_4_and_no_duplicate_codes()
     {
         var set = Set(CurrencyMinorUnits);
@@ -163,10 +162,14 @@ public sealed class TreasuryReferenceCatalogTests
             Assert.Contains(units, MinorUnitValues);
         });
         Assert.Equal(set.Values.Count, set.Values.Select(v => v.ValueCode).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.Equal(IsoEditionCatalogVersion, Document().CatalogVersion);
+        Assert.Equal(set.Values.Select(v => v.ValueCode).OrderBy(x => x, StringComparer.Ordinal), set.Values.Select(v => v.ValueCode));
+        Assert.Equal(Enumerable.Range(1, set.Values.Count).Select(i => i * 10), set.Values.Select(v => v.SortOrder));
+        Assert.All(set.Values, v => Assert.True(v.IsActive));
         AssertAttributeContract(set);
     }
 
-    [Fact(Skip = CurrencyValuesPending)]
+    [Fact]
     public void Currency_minor_units_covers_every_code_the_currencies_lookup_returns()
     {
         // The production lookup (GET /api/lookups/reference/currencies) — not a copy of its RegionInfo walk.
