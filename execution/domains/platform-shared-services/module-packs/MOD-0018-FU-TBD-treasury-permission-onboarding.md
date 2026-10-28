@@ -699,11 +699,11 @@ K2 sınıfıdır (yetki değiştirir).
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | finans onboarding'i — 76 `finance-treasury.*` anahtarı, 19 rol, 5 açık atama, iki SoD ayar anahtarı (a, b, c, f) | 1, 3, 4, 5.1, 8.1–8.3, 12, 13, 14.1, 14.2 (1–19), AC-1…AC-12 |
-| DL-2 | banka onboarding'i — MOD-0289: 23 anahtar, 3 rol, 2 açık atama | 5.1, 8.1–8.3, 14.1, 14.2 (20–22), AC-13…AC-16 |
-| DL-3 | sözleşme onboarding'i — MOD-0217: 17 anahtar, 3 rol, 1 açık atama; **koşullu: MOD-0217 onayından sonra** (Y-6, Y-10/1) | 5.1, 8.1–8.3, 14.1, 14.2 (23–25), AC-17…AC-21 |
-| DL-4 | SEC-002 eki — Platform izin listesi + MDM istemcisinin modül kodu (e; D56/1); XMC-001 Beste + MDM sahibi | 5.2, 8.3, 8.4, AC-22…AC-25 |
-| DL-5 | `waive-sod` parti bağlı atama — kayıt, yazma ucu, "bu parti için geçerli atamalar" sorgusu, K2 denetim (d; D54 + D64) | 3, 4 (yeni kayıt), 5.3, 8.5, 10, 12, 13, 14.3, 15, 21, AC-26…AC-34 |
+| DL-1 | finans onboarding'i — 76 `finance-treasury.*` anahtarı, 19 rol, 5 açık atama, iki SoD ayar anahtarı (a, b, c, f); AC-1…AC-12; ayrıntı: §5.1, §8.1–8.3, §14.2 satır 1–19 | Module Summary, Owned Objects, Entity Fields, Repo Scope, Runtime Constraints, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria |
+| DL-2 | banka onboarding'i — MOD-0289: 23 anahtar, 3 rol, 2 açık atama; AC-13…AC-16; ayrıntı: §5.1, §8.1–8.3, §14.2 satır 20–22 | Repo Scope, Runtime Constraints, Authorization Convention, Acceptance Criteria |
+| DL-3 | sözleşme onboarding'i — MOD-0217: 17 anahtar, 3 rol, 1 açık atama; **koşullu: MOD-0217 onayından sonra** (Y-6, Y-10/1); AC-17…AC-21; ayrıntı: §5.1, §8.1–8.3, §14.2 satır 23–25 | Repo Scope, Runtime Constraints, Authorization Convention, Acceptance Criteria |
+| DL-4 | SEC-002 eki — Platform izin listesi + MDM istemcisinin modül kodu (e; D56/1); XMC-001 Beste + MDM sahibi; AC-22…AC-25; ayrıntı: §5.2, §8.3, §8.4 | Repo Scope, Runtime Constraints, Acceptance Criteria |
+| DL-5 | `waive-sod` parti bağlı atama — kayıt, yazma ucu, "bu parti için geçerli atamalar" sorgusu, K2 denetim (d; D54 + D64); AC-26…AC-34; ayrıntı: §4 yeni kayıt, §5.3, §8.5, §14.3 | Owned Objects, Entity Fields, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Audited Events |
 
 Tüketici kapıları (D53/2): MOD-0126 / 0119 / 0120 / 0124 DL-1 kabulü → bu paketin DL-1 kodu main'de; MOD-0289 DL-1 → DL-2
 (+ DL-4, D56/1); MOD-0217 DL-1 → DL-3 (+ DL-4); MOD-0126 DL-2 (muafiyet alanları ve aday sorgusu, D56/3) → DL-5.
