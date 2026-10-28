@@ -25,6 +25,72 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket kapısı; "— DL-n için" maddeleri o
 > dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
+> **Revizyon (2026-10-28, KARAR D78 — R4 açık, tier-2 olmayan partide muafiyet; CT-APR-02 Codex fark incelemesi F-1):**
+> `status: draft` değişmedi. Kaynak: `docs/records/reviews/MOD-0126/2026-10-28-58976767.md` F-1 ve
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D78 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **D78:** sabitlenmiş `R4Enabled = true` ama `IsTier2 = false` partide (R4 bu partiye
+> uygulanmaz) `ApprovePaymentBatchWithSodWaiverCommand` 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; `Waived` kaydı oluşmaz, karar,
+> niyet, makbuz yazılmaz, MOD-0023 çağrılmaz (D77/1 ile aynı mantık; D77'nin kapsamı genişletilmedi, ayrı karar). R4 satırı,
+> Failure Path; **AC-43 genişletildi** — (j) ve sabotajı, DL-2 Bitiş'e eklendi. Yeni AC yok; yeni hata kodu yok; AC numaraları
+> ve dilim tablosu değişmedi. Bu revizyon sha256'yı değiştirir; MOD-0119 / 0120 / 0124 yeniden sabitlendi.
+>
+> **Revizyon (2026-10-28, KARAR D77 — R4 kapalı partide muafiyet ve R11 hata kodu):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D77 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **D77/1:** sabitlenmiş `R4Enabled = false` partide `ApprovePaymentBatchWithSodWaiverCommand`
+> 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; karar, niyet, makbuz yazılmaz, MOD-0023 çağrılmaz (R4 satırı, Failure Path; **AC-43
+> genişletildi** — (i) ve sabotajı, DL-2 Bitiş'e eklendi). **D77/2:** Release'de R11 tier-2 şartı tutmazsa 403
+> `PAYMENT_TIER2_RELEASE_FORBIDDEN`; parti `Approved` kalır, `PaymentDispatchAttempt` yazılmaz (R11 satırı, Failure Path, hata
+> sözlüğü "Yeni"; **AC-19 genişletildi** — "Release reddedilir" bu koda çevrildi, R11 tier-2 reddi senaryosu ve sabotajı — DL-3).
+> **Yeni hata kodu:** `PAYMENT_TIER2_RELEASE_FORBIDDEN` (403). Yeni AC yok; AC numaraları ve dilim tablosu değişmedi. Bu revizyon
+> sha256'yı değiştirir; MOD-0119 / 0120 / 0124 yeniden sabitlendi.
+>
+> **Revizyon (2026-10-28, CT-APR-02 Codex b91d61325 KOŞULLU bulguları):** `status: draft` değişmedi. Kaynak:
+> `docs/records/reviews/MOD-0126/2026-10-28-674c73e9.md`. **F-1 (ORTA) — R4 kapalıyken aday seçimi ve Release:** R4'ün
+> uygulanma koşulu `IsTier2` ∧ partiye sabitlenen `R4Enabled = true` olarak R4 satırına yazıldı ve aday tabanı ("Aday tabanı"),
+> Approve kontrolü (R4, Failure Path, AC-6), muafiyet adayı kuralı ve Release R11 aynı koşula hizalandı: sabitlenmiş
+> `R4Enabled = false` partide `IsTier2` sabitlenir ama aday tabanı normal partininkidir, `tier2-approve` sorgulanmaz, muafiyet
+> adayı eklenmez, Approve `tier2-approve` istemez ve R11'in tier-2 şartı aranmaz (KARAR D56/4, D57/4 ile uyumlu — R4 ayarlanabilir;
+> R1–R3 değişmedi). **AC-44 (d) genişletildi** (R4 kapalı, yalnız `approve` + iş akışı izni olan, R1–R3 dışı adayla Submit →
+> Approve; R4 açık eş parti; koşulun kaldırılma / ters çevrilme sabotajı — DL-2), **AC-19 genişletildi** (aynı senaryonun
+> Release kısmı ve sabotajı — DL-3), **AC-6 netleştirildi** (R4 uygulanan parti). **F-2 (DÜŞÜK):** AC-41'in kapanış cümlesi
+> "DL-1'de kısmi; (d) Approve DL-2, Release DL-3 — tam kapanış DL-3" olarak dilim bitiş listeleriyle hizalandı. Yeni AC yok; yeni
+> hata kodu yok; AC numaraları ve dilim tablosu değişmedi. Bu revizyon sha256'yı değiştirir; MOD-0119 / 0120 / 0124 yeniden
+> sabitlendi.
+>
+> **Revizyon (2026-10-28, KARAR D76/3 — kullanıcının başlattığı Reconcile):** `status: draft` değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D76 (2026-10-28 ölçümünde karar
+> dosyasında yazılı, commit'lenmemiş; main'de değil; D75 yerel commit `da2aba808`, main'de değil).
+> **D76/3:** kullanıcının başlattığı Reconcile da yeniden denemedir — aday listesi Auth'tan yeniden hesaplanmaz,
+> niyetteki ilk liste kullanılır; rol değişikliği gerekiyorsa yeni gönderim yapılır. Metin D75 revizyonunda zaten böyleydi;
+> yalnız karar atfı eklendi (Runtime Constraints 3a (ii), Validation Rules "Aday tabanı", AC-34 (d) eki başlığı). Davranış değişmedi; AC genişletilmedi; yeni AC yok;
+> yeni hata kodu yok; AC numaraları ve dilim tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, KARAR D75 — iç uç kimliği atıfları ve yeniden denemede ilk aday listesi):** `status: draft`
+> değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74/1 (yerel commit `5d2655c72`,
+> main'de değil) ve D75 (2026-10-28 ölçümünde karar dosyasında yazılı, commit'lenmemiş; main'de değil). (1) **D74/1 hizalaması:**
+> Auth aday sorgusu (MOD-0018 Treasury Auth eki DL-6) ve muafiyet atama iç ucu (DL-5) Auth'un ortak sır desenini
+> (`X-Internal-Api-Key`) kullanır; kiracı çağrıyı başlatan kullanıcının iletilen token'ından alınır; **servis kimliği
+> kullanılmaz** — eski "servis kimliğiyle" / "servis kimliği FU K-A1" atıfları düzeltildi (o paketin K-A1'inin kimlik kısmı
+> KAPANDI — KARAR D74/1; uç adı ve sözleşme dosyası CT önerisi olarak açık). (2) **D75/2 (b):** aday listesi yalnız kullanıcının
+> başlattığı gönderimde (Submit) hesaplanır; Reconcile'ın aynı anahtarla yeniden başlatması niyetteki ilk listeyi
+> (`PaymentWorkflowStartIntent.CandidatePrincipalIds`) aynen gönderir, Auth aday sorgusunu yeniden çağırmaz. Ölçüm: önceki metin
+> Runtime Constraints 3a (ii) ve Validation Rules "Aday tabanı"nda Reconcile'da çözümleyiciyi **yeniden** çalıştırıyordu —
+> D75/2 (b)'ye aykırıydı, düzeltildi. (3) D75/1 (Auth tarafı: atayan izin + Muafiyet yetkilisi rol üyeliği) "Muafiyet kuralları"
+> "Onaylayan" satırına işlendi; servis davranışı değişmedi. Değişen yerler: Repo Scope (ApproverCandidates bağdaştırıcısı),
+> Dependencies (MOD-0018 RBAC ve aday tabanı satırları),
+> Runtime Constraints 3a (ii), Validation Rules "Aday tabanı", Authorization Convention "Muafiyet kuralları", D66 revizyon notu
+> (köşeli parantez); **AC-34 genişletildi**. Yeni hata kodu yok; mevcut AC numaraları değişmedi; yeni AC yok. D75/4 ölçümü:
+> bu paket v1'de BANK-ACCOUNT-LOOKUP'ı tüketmez (Dependencies MOD-0289 satırı: yalnız boş olmayan opak Guid) — kural yalnız
+> Follow-up maddesine yazıldı; AC ve hata kodu eklenmedi.
+>
+> **Revizyon (2026-10-28, KARAR D74/3 — muafiyet atayanı):** `status: draft` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D74 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). `waive-sod` atamasını onaylayan artık **Muafiyet yetkilisi** rolüdür — MOD-0018 Treasury Auth
+> ekinin 27. rolü (`PaymentSodWaiverAuthority`, ad önerisi), yalnız `auth.payment-sod-waivers.assign` / `.read`, açık atamayla;
+> D49/4'ün "Hazine yöneticisi ya da K1" kısmı kalktı. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (Auth'ta kendine
+> atama 403). Servis davranışı değişmedi: servis rol adını denetlemez; atamayı onaylayanın kimliğini okur ve R1–R3 kişileri ve
+> çağıranla karşılaştırır (AC-43 (c), (d)). Değişen yer: Authorization Convention "Muafiyet kuralları" tablosunun "Onaylayan"
+> satırı (CT04b revizyon notuna D74/3 işareti). Mevcut AC numaraları değişmedi; yeni AC yok.
+>
 > **Revizyon (2026-10-28, KARAR D71 — elle atamada iş akışı izni kesişimi):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D71 (2026-10-28 ölçümünde main'de değil — yerel
 > dalda, main'de değil). Onaylayıcı aday tabanı iş akışı izniyle de kesişir: normal partide
@@ -65,7 +131,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > **Revizyon (2026-10-28, ready-for-dev 1. tur eki: D66):** `status: draft` değişmedi. Kaynak:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D66 (yazıldığı anda main'de değildi; ölçüm 2026-10-28: PR #281 ile main'de). (1) **KARAR
 > D66/1 — aday tabanı:** onaylayıcı adayları Auth aday sorgusundan gelir — MOD-0018 Treasury Auth ekinin **DL-6**'sı
-> (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; "bu izne sahip kullanıcılar", iç uç, servis kimliğiyle); servis R1–R4'ü uygular ve sonucu
+> (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; "bu izne sahip kullanıcılar", iç uç, servis kimliğiyle [D75 revizyonu: kimlik KARAR D74/1 — `X-Internal-Api-Key` ortak sırrı + iletilen kullanıcı token'ı; servis kimliği kullanılmaz]); servis R1–R4'ü uygular ve sonucu
 > `CandidatePrincipalIds` olarak gönderir; ayrı dizin istemcisi taşınmaz. Muafiyet aday listesi (D56/3) aynı sorgunun
 > `waive-sod` + parti biçimidir (tek aday sorgusu). O-10 ve 1. turdaki "O-10 gerilimi" notu **kapandı**. Owned Objects portları,
 > hata sözlüğü, Repo Scope (servis ortak aday kaynağı — D57/5 deseni, CT önerisi), Dependencies MOD-0018 satırı, kapanış
@@ -184,7 +250,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > hedef kullanıcıları ve DCP checklist maddesi güncel duruma çekildi. AC numaraları değişmedi. `status: draft`.
 >
 > **Revizyon (2026-10-27, CT04b — KARAR D49/1, D49/4):** (1) `waive-sod` açık atamasının kuralları yazıldı — atamayı onaylayan
-> muafiyetten yararlanmayan Hazine yöneticisi ya da K1; süre en çok 24 saat, bitişte kendiliğinden düşer; gerekçe kodları
+> muafiyetten yararlanmayan Hazine yöneticisi ya da K1 (D74/3 ile Muafiyet yetkilisi rolü oldu); süre en çok 24 saat, bitişte kendiliğinden düşer; gerekçe kodları
 > `ACIL-ODEME`, `TEK-YETKILI`, `DENETIM-ISTEGI`; kapsam tek ödeme partisi; her kullanım 5 iş günü içinde K1 incelemesi; onaylayan
 > yararlanamaz. Authorization Convention'da hangisinin servis çalışma anında, hangisinin Auth (MOD-0018) / süreç denetimi olduğu
 > ayrıldı; Auth'un taşıması gereken atama alanları bağımlılık olarak yazıldı. Validation Rules (gerekçe kodu kapalı liste),
@@ -625,7 +691,8 @@ Treasury paketinde aynı 400), `PAYMENT_EVIDENCE_*`).
   (502 — `NotConfigured` dışı sonuç; deneme kaydedilir, parti kilitlenir, D17/2), `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` (409 —
   kilitli partide Release; port çağrılmaz), `PAYMENT_METHOD_NOT_ALLOWED` (422 — ödeme yöntemi MOD-0048 kümesinde yok ya da pasif), `PAYMENT_METHOD_SOURCE_UNAVAILABLE`
   (503 — küme okunamıyor), `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (409 — `ReleaseSequence` üst sınırda;
-  artırma ve port çağrısı yok). MOD-0269 eşlemesi: `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.
+  artırma ve port çağrısı yok), `PAYMENT_TIER2_RELEASE_FORBIDDEN` (403 — Release'de R11 tier-2 şartı tutmuyor; parti
+  `Approved` kalır, `PaymentDispatchAttempt` yazılmaz — KARAR D77/2). MOD-0269 eşlemesi: `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10: aday tabanı Auth aday sorgusu — KARAR D66/1; dizin istemcisi taşınmaz).
@@ -677,7 +744,7 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
     `src/Diten.FinanceTreasuryService.Application/Common/ApproverCandidates/**` (`IFinanceTreasuryApproverCandidateSource`;
     girdi izin anahtarı + isteğe bağlı parti, çıktı kullanıcı kimlikleri), bağdaştırıcı
     `src/Diten.FinanceTreasuryService.Infrastructure/ApproverCandidates/**` — MOD-0018 Treasury Auth eki DL-6 iç ucu
-    (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; servis kimliği FU K-A1; zaman aşımlı `HttpClient`; her hata "okunamaz"). Tek sahibi ve tek yazarı
+    (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; kimlik **KARAR D74/1** — `X-Internal-Api-Key` ortak sırrı + çağrıyı başlatan kullanıcının token'ı `Authorization` ile iletilir, kiracı Auth'ta token'dan okunur, servis kimliği kullanılmaz (o paketin Bölüm 8.7'si); zaman aşımlı `HttpClient`; her hata "okunamaz"; yalnız kullanıcının başlattığı Submit'te çağrılır — **KARAR D75/2 (b)**). Tek sahibi ve tek yazarı
     **bu paketin DL-2'sidir**; MOD-0119 DL-2, MOD-0120 DL-3 ve MOD-0124 DL-3 onu **tüketir** (kendi kurallarını kendi gönderme
     çözümleyicisinde uygular) ve ikinci bir Auth aday istemcisi açmaz. Değişiklik dört paketin birlikte onayını ister.
   - `src/Diten.FinanceTreasuryService.Api/Controllers/PaymentBatchesController.cs`, `PaymentExceptionsController.cs`
@@ -739,7 +806,7 @@ D54, D56/3, D64), onaylayıcı aday sorgusu DL-6'sı (KARAR D66/1). AGENTS.md §
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` (`TenantReferenceLookupsController.cs:18,37-41`), `LookupOptionDto` küsurat hanesi taşımıyor (`LookupModels.cs:3-9`; liste `CultureInfo`'dan, `PlatformLookupProvider.cs:358`) | küsurat hanesi kaynağı MOD-0048-FU01 §21 `currency-minor-units` — başlangıç listesi kabul (Y-4/3), seed henüz yok (O-11); yoksa oluşturma `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` ile durur — sabit tablo uydurulmaz |
 | MOD-0048 Reference Data (`payment-method` kümesi, D28 / O-13) | ödeme yöntemi kod listesi | **uç var, küme yok** — `GET /api/lookups/reference-data/consumable-sets/{setCode}/published-values` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/ConsumableReferenceDataController.cs:25, 43-44@b9df4e281`; öğe `Code`, `Label`, `IsActive`, `BusinessReferenceDataStewardshipModels.cs:159-165`); izin listesi `BusinessReferenceData:ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104`) `payment-method` içermiyor (ölçüldü @b9df4e281) | MOD-0048 sahibi kümeyi tanımlar, yayımlar ve izin listesine ekler (**açık üretici bağımlılığı**); gelene kadar Create 503 `PAYMENT_METHOD_SOURCE_UNAVAILABLE` — sabit liste uydurulmaz. Tüketici: `IPaymentMethodReferencePort` + `Infrastructure/Currency/` bağdaştırıcısı (Owned Objects → Portlar) **Y-4/3 (2026-10-27, Platform):** `payment-method` önerisi başlangıç listesi olarak kabul (Finance sonradan değiştirebilir); seed JSON ve `ConsumableSets` izin listesi Platform'da, iş başlayınca haber verilecek — seed main'e girene kadar önkoşul açık |
 | MOD-0031 Evidence Linking | kanıt bağlantısı | **var** — `api/v1/evidence` (`EvidenceLinksController.cs:19`) | DL-3; bağlama sözleşmesinin idempotency (dedupe) davranışı DL-3 başında ölçülür; ölçülene kadar hiçbir kurtarma yolu MOD-0031'i yeniden çağırmaz (gap 5/G2) |
-| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil). O paketin **DL-1**'i: yeni `finance-treasury.*` anahtarları (O-5), rol şablonları, `read-tenant-wide` ve `waive-sod` yalnız açık atama (`ExplicitGrantOnlyPermissions`), SoD ayarı anahtarları (D56/4, D57/4). Paket kapısı (D53/1: metin main'de) ve DL-1 kabul kapısı (D53/2: kodu main'de) değişmedi. **`waive-sod` parti bağı — o paketin DL-5'i (KARAR D64; D63/3'ün yerine):** atama kaydı (hedef parti, başlangıç / bitiş, onaylayan, gerekçe kodu — KARAR D54, D56/3), yazma ucu, "bu parti için geçerli atamalar" sorgu ucu (muafiyet aday listesi D66/1 ile DL-6 aday sorgusunun `waive-sod` + parti biçimi — D56/3) ve denetim; DL-5'in paket kapısı D64'ün main'e girmesini bekler (D62/1). **DL-5 kodu main'e girene kadar muafiyet yolu kapalıdır:** her muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok — D54 değişmedi); aday sorgusu okunamadığı için muafiyet adayı eklenmez, tier-2 adayı kalmayan partinin gönderimi kapalı-başarısızdır (AC-42); DL-2 bunu beklemez (**KARAR D66/3**). **Onaylayıcı aday tabanı — o paketin DL-6'sı (KARAR D66/1):** "bu izne sahip kullanıcılar" iç ucu (servis kimliği; kiracı, yalnız etkin kullanıcı, açık atama anahtarında yalnız açık atama; şirket kapsamı o paketin K-A2'si); servis R1–R4'ü uygular, sonucu `CandidatePrincipalIds` olarak gönderir; DL-6 paket metni DL-2 önkoşulu, kodu DL-2 kabul kapısı; MOD-0018 sahibinin teyidi gerekir (D66/1) |
+| MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | **Auth paket metni: MOD-0018 Treasury Auth eki** — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (`draft`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil). O paketin **DL-1**'i: yeni `finance-treasury.*` anahtarları (O-5), rol şablonları, `read-tenant-wide` ve `waive-sod` yalnız açık atama (`ExplicitGrantOnlyPermissions`), SoD ayarı anahtarları (D56/4, D57/4). Paket kapısı (D53/1: metin main'de) ve DL-1 kabul kapısı (D53/2: kodu main'de) değişmedi. **`waive-sod` parti bağı — o paketin DL-5'i (KARAR D64; D63/3'ün yerine):** atama kaydı (hedef parti, başlangıç / bitiş, onaylayan, gerekçe kodu — KARAR D54, D56/3), yazma ucu, "bu parti için geçerli atamalar" sorgu ucu (muafiyet aday listesi D66/1 ile DL-6 aday sorgusunun `waive-sod` + parti biçimi — D56/3) ve denetim; DL-5'in paket kapısı D64'ün main'e girmesini bekler (D62/1). **DL-5 kodu main'e girene kadar muafiyet yolu kapalıdır:** her muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok — D54 değişmedi); aday sorgusu okunamadığı için muafiyet adayı eklenmez, tier-2 adayı kalmayan partinin gönderimi kapalı-başarısızdır (AC-42); DL-2 bunu beklemez (**KARAR D66/3**). **Onaylayıcı aday tabanı — o paketin DL-6'sı (KARAR D66/1):** "bu izne sahip kullanıcılar" iç ucu (`X-Internal-Api-Key` + iletilen kullanıcı token'ı, servis kimliği yok — **KARAR D74/1**; kiracı token'dan, yalnız etkin kullanıcı, açık atama anahtarında yalnız açık atama; şirket kapsamı o paketin K-A2'si); servis R1–R4'ü uygular, sonucu `CandidatePrincipalIds` olarak gönderir; DL-6 paket metni DL-2 önkoşulu, kodu DL-2 kabul kapısı; MOD-0018 sahibinin teyidi gerekir (D66/1) |
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-19)**: SEC-002 §4 kapısı — kapsam cümlesi + tüketim yolu tasarımı + Auth'ta `read-tenant-wide` tanımı olmadan `ready-for-dev` yok; kapsamı soran kod + kanıt testi (AC-32) DL-1 kabul kapısıdır (D51/2). Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); dört Treasury paketi için tek karar (MOD-0120 O-14 ile aynı). `NoOp` kaydı yasak (kapsamı kapatır) — **Yol yanıtlandı (Platform sahibi yanıtı Y-4/6, 2026-10-27):** servis içi Application portu + Platform `IDataScopeResolver` bağdaştırıcısı, fail-closed; MDM `ITrustedLegalEntityScopeProvider` doğrudan kullanılmaz; kapsamı soran kod + kanıt testi (AC-32) açık — DL-1 kabul kapısında (D51/2). **Auth tarafı (Y-16; D53 / D56 aynen):** `read-tenant-wide`'ın yalnız açık atamalı izin tanımı MOD-0018 Treasury Auth ekinin DL-1'indedir (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 14.1; FU numarası açık — K-1). O ekin SEC-002 dilimi (DL-4, D56/1) yalnız MDM istemcisini kapsar; FinanceTreasury'nin Platform kapsam ucuna bağlanmasının o eke girip girmediği ekin açık kararı **K-6**'dır (CT önerisi: girmez, O-19'un işi) |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | parti kodu | **yok** (Building.Blocks'ta yok; MDM'de yalnız kendi `CodeReservation`'ı, `CodeReservation.cs:5`); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **DL-1 kabul kapısı (KARAR D59/1; paket kapısı değil):** modül kendi sayacını ya da yedek kodu yazamaz (RCS-001 §6). DL-1 kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portuna karşı sahte uygulamayla yazılır; servis Beste'den 6 Kasım'a kadar (Y-8); gerçek servis DL-1 kabulünden önce main'de olmalıdır. Üretimde port bağlı değilse Create 503, kodsuz kayıt yok (O-9) |
 | MOD-0140 Supplier (PayeeType = Supplier) | alacaklı doğrulaması | var — `POST /api/suppliers/validate` (MOD-0140 pack §3) | varlık doğrulaması O-14 (bu dilimde yalnız biçim) |
@@ -764,7 +831,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | RCS-001 ortak kod servisi | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565, O-9) | TBD (6 Kasım'da kesinleşince) | servis sahibi **Beste — KARAR D44** (2026-10-26; `treasury-intake-owner-decisions-04.md`); önek CT + `.antigravity` onayı (D29/2, D30) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `PAYMENT_RECORD_CODE_UNAVAILABLE`, parti yazılmaz; yedek kod yok | sahte allocator (AC-45, sabotajlı) · dev ortamında gerçek servisle `PAY` kodu | DL-1 kabul kapısı (D59/1) |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — kodda **yok**; yol Platform sahibi yanıtı Y-4/6 (servis içi port + Platform çözücü bağdaştırıcısı, fail-closed) (O-19; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-32 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0018 Treasury Auth eki — `waive-sod` parti bağlı atama (KARAR D54, D56/3, **D64**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-5** (`draft`; FU numarası açık — K-1): atama kaydı, yazma ucu, "bu parti için geçerli atamalar" sorgusu (yanıt alanları o paketin Bölüm 8.5'i), denetim; sorgu yanıtının sürümlü sözleşme dosyası o paketin K-W6 kararı — **yazılacak** | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi (Ali) inceler ve teyit eder (D64; Y-17); DL-5 paket kapısı D64'ün main'e girmesi (D62/1; D64 main'de, PR #276) | DL-5 kodu main'de değil, ya da yanıt yok / okunamıyor / alan eksik / hedef parti yok ya da eşleşmiyor → muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`, yazım ve MOD-0023 çağrısı yok (D54); aday sorgusu okunamıyor → aday eklenmez, gönderme kapalı-başarısız (AC-42) | sahte Auth istemcisi (AC-42, AC-43, sabotajlı) · dev ortamında gerçek DL-5 ucuyla A partisine bağlı geçerli atama (A'da geçer, B'de 403) | DL-2 (paket metni); kodu DL-2 kabulünü beklemez — muafiyet açılış kabulü (**KARAR D66/3**; D56/3'teki kabul kapısı kuralının yerine) |
-| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), servis kimliğiyle; sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar başına ayrı çağrı — `approve`, tier-2 partide `tier2-approve`, her partide `platform.workflow.tasks.approve` (**KARAR D71**), servis kesişimi alır | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; kesişim (iş akışı izni dahil, D71), R1–R4 ve şirket kapsamı sonrası boş liste yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` — MOD-0023 çağrılmaz, niyet yazılmaz, parti değişmez (**KARAR D68**; MOD-0023'ün 400'ü yalnız savunma hattı → 502); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-11, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
+| Onaylayıcı aday tabanı — Auth aday sorgusu (**KARAR D66/1**) | `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` **DL-6** (Bölüm 8.6; `draft`; FU numarası açık — K-1): iç uç `GET /internal/permission-candidates` (öneri, K-A1), `X-Internal-Api-Key` ortak sırrı + iletilen kullanıcı token'ı, kiracı token'dan, servis kimliği kullanılmaz (**KARAR D74/1**); yalnız kullanıcının başlattığı gönderimde çağrılır (**KARAR D75/2 (b)**); sürümlü sözleşme dosyası **yazılacak** (K-A1); anahtar başına ayrı çağrı — `approve`, tier-2 partide `tier2-approve`, her partide `platform.workflow.tasks.approve` (**KARAR D71**), servis kesişimi alır | TBD (dondurulunca) | Treasury yazar, MOD-0018 sahibi teyit eder (D66/1) | herhangi bir anahtar çağrısında yanıt yok / okunamıyor / zaman aşımı / 401 / 403 / bozuk gövde → gönderme kapalı-başarısız: niyet yazılmaz, MOD-0023 çağrılmaz; kesişim (iş akışı izni dahil, D71), R1–R4 ve şirket kapsamı sonrası boş liste yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` — MOD-0023 çağrılmaz, niyet yazılmaz, parti değişmez (**KARAR D68**; MOD-0023'ün 400'ü yalnız savunma hattı → 502); Auth'un hiçbir hatası "aday yok → kural atla" anlamına gelmez | sahte Auth aday istemcisi (AC-11, sabotajlı) · dev ortamında gerçek DL-6 ucuyla iki kullanıcı (izinli etkin / izinli pasif) | DL-2 (kodu DL-2 kabul kapısı) |
 | MOD-0031 kanıt bağlama | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → bağlama yok, parti değişmez · belirsiz → yeniden çağrı yok (yalnız okuma) | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** (aynı uzak anahtarın tekrarı tek bağlantı mı) — ölçülmeden kurtarmada yeniden çağrı açılmaz | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-30 | DL-1 |
 
@@ -883,10 +950,10 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        geçiş göstermediyse Reconcile **aynı** uzak yazmayı **aynı deterministik uzak anahtarla** (başlatmada
        `IdempotencyKey`, kararda `RemoteIdempotencyKey`) **bir kez** yeniden yapabilir; en fazla bir örnek / geçişi
        MOD-0023'ün tekil indeksi garanti eder. Yeniden yazmadan önce (i) şirket uygunluğu (`OperationalStatus = Active` ve
-       `ApprovalStatus = Approved`, D10/1, D14/4), (ii) SoD (başlatmada R1–R4 aday çözümleyicisi yeniden — aday tabanı yine
-       `approve ∩ platform.workflow.tasks.approve`, tier-2 partide `approve ∩ tier2-approve ∩ platform.workflow.tasks.approve`
-       kesişimidir (KARAR D71; anahtar başına ayrı çağrı), Validation Rules → "Aday tabanı"; kararda
-       niyetteki karar verenle R1–R10), (iii) izin ve (iv) asıl aktör yeniden denetlenir: yeniden yazma MOD-0023'teki
+       `ApprovalStatus = Approved`, D10/1, D14/4), (ii) SoD (başlatmada aday listesi **yeniden hesaplanmaz** — **KARAR D75/2 (b)**; kullanıcının başlattığı Reconcile dahil — **KARAR D76/3**:
+       yeniden başlatma niyetteki ilk listeyi (`PaymentWorkflowStartIntent.CandidatePrincipalIds`, Submit'te R1–R4 ve
+       `approve ∩ platform.workflow.tasks.approve` / tier-2 `∩ tier2-approve` kesişiminden sonra yazılmış) aynen gönderir, Auth
+       aday sorgusu çağrılmaz (Validation Rules → "Aday tabanı"); kararda niyetteki karar verenle R1–R10), (iii) izin ve (iv) asıl aktör yeniden denetlenir: yeniden yazma MOD-0023'teki
        başlatanı ya da karar vereni **değiştiremez**; Reconcile'ı çağıran, asıl komutun aktörü (`SubmittedBy` /
        `DecidedBy`) değilse uzak yazma çağrısı yapılmaz (409 `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`). Sonuç eşlemesi:
        başarı (yeni ya da yeniden oynatılmış) → niyet sonuçla kapanır (`Started` / `Recorded`, tx2 eşlemesiyle); **kesin
@@ -1176,19 +1243,19 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 | R1 | Partiyi oluşturan (`CreatedBy`) partide **hiçbir karar** veremez | gönderme çözümleyicisi (aday dışı) + karar kontrolü | `PaymentSodPolicyService.cs:38-44@da4abb20`; `ConfiguredApproverResolver.cs:117-121` |
 | R2 | Gönderen (`SubmittedBy` = MOD-0023 başlatanı) karar veremez | aynı + MOD-0023 `SodViolation` | `:46-56@da4abb20`; Recovery `WorkflowTaskTransitionSupport.cs:964-977` |
 | R3 | Gönderme anındaki son güncelleyen (`UpdatedByBeforeSubmit`) karar veremez | aynı | kaynakta yalnız çözümleyici dışlıyor (`ConfiguredApproverResolver.cs:117-121@da4abb20`), SoD servisi kontrol etmiyor — Recovery'de iki yerde tutarlı |
-| R4 | `IsTier2` parti için **Approve** `finance-treasury.payment-batches.tier2-approve` ister (uç izni `finance-treasury.payment-batches.approve`'a ek olarak); gönderme çözümleyicisi tier-2 adaylarını Auth aday sorgusundan (KARAR D66/1) **iki iznin kesişimi** olarak seçer (`approve ∩ tier2-approve`; iş akışı izni `platform.workflow.tasks.approve` ile de kesişir — KARAR D71; aşağıda "Aday tabanı"). **Muafiyet adayı (sahip kararı D13):** R1–R3 dışlamasından sonra kiracıda **hiç** tier-2 aday (kesişimden) kalmıyorsa, Auth'tan **"bu partiye geçerli `waive-sod` ataması olanlar"** sorgusuyla okunan kişiler (**KARAR D56/3**; D66/1 ile tek aday sorgusu — MOD-0018 Treasury Auth ekinin DL-6 aday sorgusunun `waive-sod` + parti biçimi, parti bağı DL-5 kaydından — KARAR D64; MOD-0023 ataması izin bilgisi taşımaz) `IsWaiverCandidate = true` ile aday eklenir; sorgu okunamazsa muafiyet adayı eklenmez ve gönderme kapalı-başarısızdır (yanıt sınıfı Auth uç sözleşmesiyle yazılır); bu adaylar yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile onaylayabilir (normal Approve 403 `PAYMENT_TIER2_APPROVER_REQUIRED`); tier-2 aday varken muafiyet adayı eklenmez. Normal onay yetkisi (R4) ve muafiyet yetkisi (R9) ayrı değerlendirilir | gönderme çözümleyicisi + karar | `PaymentSodPolicyService.cs:58-67@da4abb20`; `ConfiguredApproverResolver.cs:41-43`; kaynakta `WaiverApprovers` listesi tanımlı ama okunmuyordu (paket §E) |
+| R4 | **Uygulanma koşulu (CT-APR-02 Codex F-1; KARAR D56/4, D57/4):** R4 yalnız `IsTier2 = true` **ve** partiye sabitlenen ayar sürümünün `R4Enabled = true` olduğu partide uygulanır ("R4 uygulanan parti"); bu pakette R4, aday tabanı, muafiyet adayı ve R11 bağlamındaki "tier-2 parti" / "`IsTier2` parti" ifadeleri bu iki koşulu birlikte anlatır. Sabitlenmiş `R4Enabled = false` partide `IsTier2` yine hesaplanır ve sabitlenir (R5, R6) ama R4 uygulanmaz: aday tabanı normal partininkidir (`approve ∩ platform.workflow.tasks.approve`; `tier2-approve` sorgulanmaz), muafiyet adayı kuralı (D13) işlemez, Approve `tier2-approve` istemez ve R11'in tier-2 şartı aranmaz; R1–R3 ve R9'un R1–R3 yasağı aynen uygulanır (AC-44 (d), AC-19). **KARAR D77/1:** sabitlenmiş `R4Enabled = false` partide `ApprovePaymentBatchWithSodWaiverCommand` 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` ile reddedilir — karar, niyet, makbuz yazılmaz, MOD-0023 çağrılmaz, parti değişmez (aşılacak R4 kuralı yoktur; kullanıcı normal onayı kullanır; AC-43 (i)). **KARAR D78:** sabitlenmiş `R4Enabled = true` ama `IsTier2 = false` partide (R4 bu partiye uygulanmaz) de `ApprovePaymentBatchWithSodWaiverCommand` 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` ile reddedilir — `Waived` kaydı oluşmaz, karar, niyet, makbuz yazılmaz, MOD-0023 çağrılmaz, parti değişmez (D77/1 ile aynı mantık: aşılacak R4 kuralı yoktur; AC-43 (j)). R4 uygulanan parti için **Approve** `finance-treasury.payment-batches.tier2-approve` ister (uç izni `finance-treasury.payment-batches.approve`'a ek olarak); gönderme çözümleyicisi tier-2 adaylarını Auth aday sorgusundan (KARAR D66/1) **iki iznin kesişimi** olarak seçer (`approve ∩ tier2-approve`; iş akışı izni `platform.workflow.tasks.approve` ile de kesişir — KARAR D71; aşağıda "Aday tabanı"). **Muafiyet adayı (sahip kararı D13):** R1–R3 dışlamasından sonra kiracıda **hiç** tier-2 aday (kesişimden) kalmıyorsa, Auth'tan **"bu partiye geçerli `waive-sod` ataması olanlar"** sorgusuyla okunan kişiler (**KARAR D56/3**; D66/1 ile tek aday sorgusu — MOD-0018 Treasury Auth ekinin DL-6 aday sorgusunun `waive-sod` + parti biçimi, parti bağı DL-5 kaydından — KARAR D64; MOD-0023 ataması izin bilgisi taşımaz) `IsWaiverCandidate = true` ile aday eklenir; sorgu okunamazsa muafiyet adayı eklenmez ve gönderme kapalı-başarısızdır (yanıt sınıfı Auth uç sözleşmesiyle yazılır); bu adaylar yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile onaylayabilir (normal Approve 403 `PAYMENT_TIER2_APPROVER_REQUIRED`); tier-2 aday varken muafiyet adayı eklenmez. Normal onay yetkisi (R4) ve muafiyet yetkisi (R9) ayrı değerlendirilir | gönderme çözümleyicisi + karar | `PaymentSodPolicyService.cs:58-67@da4abb20`; `ConfiguredApproverResolver.cs:41-43`; kaynakta `WaiverApprovers` listesi tanımlı ama okunmuyordu (paket §E) |
 | R5 | `IsTier2` hesabı: `batch.CurrencyCode == Threshold.CurrencyCode && TotalAmount >= Threshold.Amount`; para birimi farklıysa **tier-2 sayılır** (kur çevrimi yok; önerilen ihtiyatlı kural, O-4) | gönderme (sabitlenir) | kaynakta iki ayrı, para birimsiz eşik: `SodPolicyContracts.cs:10@da4abb20` (50 000) ve `ApproverPolicyContracts.cs:13` (null) — ayrışabilir (paket §H.2 (3)); **taşınmaz** |
 | R6 | Eşik, para birimi ve politika sürümü gönderme anında partiye ve niyete yazılır; karar kontrolü yalnız sabitlenmiş değeri kullanır | karar | yeni (level-1 koşul 1) |
 | R7 | Aktör karşılaştırması token `sub`'ının **Guid** değeri üzerindendir; `sub` Guid değilse karar reddedilir (`FailedRoleConflict`) | her yer | kaynakta SoD ordinal, çözümleyici büyük/küçük harf duyarsız (paket §H.2 (3)) — **taşınmaz** |
 | R8 | İzin karar anında yeniden değerlendirilir (o anki token, `[HasPermission]` + handler içi tier-2/muafiyet izni) | karar | SoD değerlendirmesi Q3 "not established" — burada test edilir |
 | R9 | Muafiyet yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile: izin `waive-sod` + `ReasonCode` + en az 1 kanıt. **Yalnız R4'ü (tier-2 izni eksikliği) kaldırabilir** (sahip kararı D12/1). R1, R2, R3 muaf tutulamaz → 403 `PAYMENT_SOD_WAIVER_NOT_ALLOWED`; MOD-0023'ün başlatan ve atama kontrolleri de kaldırılamaz. Aday çözümleyici R1–R3 kişilerini dışlar (muafiyetle de aday olamazlar); muafiyet yalnız atanmış ama tier-2 izni olmayan onaylayıcı için anlamlıdır | karar | `PaymentSodPolicyService.cs:78-112@da4abb20` (izin, gerekçe, kanıt sırası korunur); kaynak R1/R3/R4 kaldırabiliyordu — **daraltıldı** |
 | R10 | Onaylayan, MOD-0023 görevinin atanmış aktörü olmalıdır (MOD-0023 `WorkflowActorDenied`) | MOD-0023 | SoD değerlendirmesi Q2 |
-| R11 | Release, karar zincirini **aynı muafiyet modeliyle** yeniden doğrular: her `Recorded` onayın aktörü R1–R3'e uyar (muafiyet yok); tier-2 partide en az bir onay ya `tier2-approve` izniyle ya da kayıtlı bir R4 muafiyetiyle verilmiştir; açık (`Requested`/`Unknown`) karar niyeti varsa Release 409 | Release | yeni — Görev Merkezi gibi başka yüzeyden verilmiş karara karşı ikinci kontrol (O-7) |
+| R11 | Release, karar zincirini **aynı muafiyet modeliyle** yeniden doğrular: her `Recorded` onayın aktörü R1–R3'e uyar (muafiyet yok); R4 uygulanan partide (`IsTier2` ∧ sabitlenmiş `R4Enabled = true`) en az bir onay ya `tier2-approve` izniyle ya da kayıtlı bir R4 muafiyetiyle verilmiştir — sabitlenmiş `R4Enabled = false` partide bu şart aranmaz (CT-APR-02 Codex F-1); **bu tier-2 şartı tutmazsa Release 403 `PAYMENT_TIER2_RELEASE_FORBIDDEN` (KARAR D77/2): parti `Approved` kalır, `PaymentDispatchAttempt` yazılmaz (AC-19)**; açık (`Requested`/`Unknown`) karar niyeti varsa Release 409 | Release | yeni — Görev Merkezi gibi başka yüzeyden verilmiş karara karşı ikinci kontrol (O-7) |
 
-**Aday tabanı (KARAR D66/1):** gönderme çözümleyicisi (Submit ve Reconcile'ın yeniden başlatması) adayları MOD-0018 Treasury Auth
+**Aday tabanı (KARAR D66/1):** gönderme çözümleyicisi (yalnız Submit — kullanıcının başlattığı gönderim; Reconcile'ın yeniden başlatması niyetteki ilk listeyi kullanır, Auth'u yeniden çağırmaz — **KARAR D75/2 (b)**; kullanıcının başlattığı Reconcile da yeniden denemedir, rol değişikliği gerekiyorsa yeni gönderim yapılır — **KARAR D76/3**; Auth iç uç kimliği **KARAR D74/1**: ortak sır + iletilen kullanıcı token'ı, servis kimliği yok) adayları MOD-0018 Treasury Auth
 ekinin DL-6 aday sorgusundan okur (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` Bölüm 8.6; port `IFinanceTreasuryApproverCandidateSource`): normal partide
-**`approve ∩ platform.workflow.tasks.approve`**; `IsTier2` partide **`approve ∩ tier2-approve ∩ platform.workflow.tasks.approve`**
-(R4; sahip denetimi 61466e504; **KARAR D71**): servis sorguyu `finance-treasury.payment-batches.approve`, tier-2 partide ayrıca
+(ve sabitlenmiş `R4Enabled = false` olan `IsTier2` partide — R4 uygulanmaz, CT-APR-02 Codex F-1) **`approve ∩ platform.workflow.tasks.approve`**; R4 uygulanan partide (`IsTier2` ∧ sabitlenmiş `R4Enabled = true`) **`approve ∩ tier2-approve ∩ platform.workflow.tasks.approve`**
+(R4; sahip denetimi 61466e504; **KARAR D71**): servis sorguyu `finance-treasury.payment-batches.approve`, R4 uygulanan partide ayrıca
 `finance-treasury.payment-batches.tier2-approve` ve her partide `platform.workflow.tasks.approve` için ayrı ayrı çağırır
 (sorgu tek anahtar alır) ve bütün listelerde bulunan kişileri alır — Approve ucu temel `approve`'u, işleyici `tier2-approve`'u,
 MOD-0023 görev kararı `platform.workflow.tasks.approve`'u istediği için bunlardan birini taşımayan kişi kararı uygulayamaz ve
@@ -1198,18 +1265,20 @@ kesişim, modül onay anahtarı rol dışı elle verilmiş ve iş akışı izni 
 kişi aday olmaz. Auth yalnız tabanı verir (kiracı, etkin kullanıcı, token'a giren izin); servis kesişime R1–R3'ü uygular, şirket kapsamı dışındakileri
 çıkarır (o paketin K-A2'si: CT önerisi servis `IFinanceTreasuryDataScopeSource` ile süzer), muafiyet adayını R4 kuralıyla ekler
 (muafiyet adayı da `platform.workflow.tasks.approve` ile kesişir — karar veremeyecek kişi aday olmaz, **KARAR D71**)
-ve kalanı niyete (`PaymentWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. Tier-2 partide kesişim boşsa (ya
+ve kalanı niyete (`PaymentWorkflowStartIntent.CandidatePrincipalIds`) yazıp MOD-0023'e gönderir. R4 uygulanan partide kesişim boşsa (ya
 da R1–R3 ve kapsamdan sonra boş kalırsa) "tier-2 aday yok" sayılır: R4'ün muafiyet adayı kuralı (D13) işler. Liste (normal
-partide kesişim ve kurallardan sonra, tier-2 partide muafiyet adayı kuralından da sonra) boşsa boş liste
+partide kesişim ve kurallardan sonra, R4 uygulanan partide muafiyet adayı kuralından da sonra) boşsa boş liste
 dalı geçerlidir: 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz (KARAR D68; Failure Path). Sorgu okunamazsa (zaman aşımı,
 5xx, 401 / 403, bozuk gövde, uç yok — herhangi bir anahtar çağrısında) gönderme kapalı-başarısızdır: niyet yazılmaz, parti değişmez, MOD-0023 çağrılmaz (yanıt sınıfı
-Auth uç sözleşmesiyle — o paketin K-A1'i). Ayrı dizin istemcisi ya da yapılandırma listesi taşınmaz (O-10).
+Auth uç sözleşmesiyle — o paketin K-A1'inin sözleşme dosyası kısmı; kimlik **KARAR D74/1**: `X-Internal-Api-Key` + iletilen kullanıcı
+token'ı, kiracı token'dan, servis kimliği kullanılmaz; Auth'un 401'i de "okunamaz"dır). Ayrı dizin istemcisi ya da yapılandırma listesi taşınmaz (O-10).
 
 **SoD ayarı (KARAR D56/4):** `UpdatePaymentSodSettingsCommand` `If-Match` (kayıt varsa) ve `Idempotency-Key` ister (D12/2);
 `Tier2ThresholdAmount` > 0 ve para biriminin küsurat hanesini aşmaz; `Tier2ThresholdCurrencyCode` MOD-0048 listesinde (yoksa 400
 `PAYMENT_CURRENCY_CODE_INVALID`; liste okunamazsa 503 `PAYMENT_CURRENCY_SOURCE_UNAVAILABLE`); `R4Enabled` zorunlu. **KARAR D57/4:**
 R1–R3 kapatılamaz — istekte R1 / R2 / R3 anahtarı bulunursa 400 (bilinmeyen / sunucu alanı; kayıt ve olay yok); R1–R3 her
-partide uygulanır. R4'ün bir partide uygulanıp uygulanmayacağı partiye sabitlenen ayar sürümünün `R4Enabled` değerine göredir;
+partide uygulanır. R4'ün bir partide uygulanıp uygulanmayacağı partiye sabitlenen ayar sürümünün `R4Enabled` değerine göredir (R4 satırındaki uygulanma
+koşulu `IsTier2` ∧ sabitlenmiş `R4Enabled = true`; aday tabanı, Approve kontrolü ve Release R11 aynı koşulu kullanır — AC-44 (d), AC-19);
 R9'un muafiyet modeli ve MOD-0023 `SodViolation` anahtardan etkilenmez. Kayıt yokken okuma (`GetPaymentSodSettingsQuery`)
 hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier-2), `SodPolicySource = DefaultAllTier2`.
 
@@ -1219,10 +1288,16 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
   istisna satırı; parti durumu değişmez.
 - **Gönderenin onayı** → 403 `PAYMENT_SOD_DENIED`, `FailedSubmitterApproval`; MOD-0023 çağrılmaz.
 - **Son güncelleyenin onayı** → 403 `PAYMENT_SOD_DENIED`, `FailedUpdaterApproval`.
-- **Tier-2 parti, tier-2 izni olmayan onaylayıcı** → 403 `PAYMENT_TIER2_APPROVER_REQUIRED`, `FailedAmountTier`.
+- **R4 uygulanan parti (`IsTier2` ∧ sabitlenmiş `R4Enabled = true`), tier-2 izni olmayan onaylayıcı** → 403 `PAYMENT_TIER2_APPROVER_REQUIRED`, `FailedAmountTier`.
 - **Muafiyet izni yok** → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; **gerekçe yok ya da listede değil** (D49/4) → 400
   `PAYMENT_SOD_WAIVER_REASON_REQUIRED`; **kanıt yok** → 422 `PAYMENT_SOD_WAIVER_REQUIRED`; **R1/R2/R3 için muafiyet istemi** →
   403 `PAYMENT_SOD_WAIVER_NOT_ALLOWED`.
+- **R4 kapalı partide muafiyetli onay** (sabitlenmiş `R4Enabled = false`; KARAR D77/1) → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`;
+  karar, niyet, makbuz yazılmaz, MOD-0023 çağrılmaz, parti değişmez — aşılacak R4 kuralı yoktur, kullanıcı normal onayı
+  kullanır (AC-43 (i)).
+- **R4 açık ama tier-2 olmayan partide muafiyetli onay** (sabitlenmiş `R4Enabled = true`, `IsTier2 = false`; KARAR D78) → 403
+  `PAYMENT_SOD_WAIVER_FORBIDDEN`; `Waived` kaydı oluşmaz, karar, niyet, makbuz yazılmaz, MOD-0023 çağrılmaz, parti değişmez — R4
+  bu partiye uygulanmaz, aşılacak R4 kuralı yoktur (AC-43 (j)).
 - **Muafiyet ataması geçersiz** (KARAR D49/4): bitişi geçmiş, başlangıç–bitiş aralığı 24 saati aşıyor, atamayı onaylayan çağıranın
   kendisi ya da partiyi oluşturan / gönderen / son güncelleyen, atama başka bir partiye bağlı, ya da atama kaydının bu alanlarından
   biri okunamıyor → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; karar, niyet ve MOD-0023 çağrısı yok (AC-43).
@@ -1306,7 +1381,7 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
   kapalı-başarısız: niyet yazılmaz, parti değişmez, MOD-0023 çağrısı yok. R1–R4 ve şirket kapsamı sonrası boş liste → Submit
   422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`; MOD-0023 çağrılmaz, niyet yazılmaz, parti değişmez (KARAR D68; AC-11).
   MOD-0023'ün 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`'ı yalnız savunma hattıdır (gelirse 502 `PAYMENT_WORKFLOW_START_FAILED`).
-- **Tier-2 partide aday kesişimi (sahip denetimi 61466e504)** → yalnız `tier2-approve` (temel `approve` yok) ya da yalnız
+- **R4 uygulanan partide aday kesişimi (sahip denetimi 61466e504)** → yalnız `tier2-approve` (temel `approve` yok) ya da yalnız
   `approve` taşıyan kişi aday olmaz; iki anahtar çağrısından biri okunamazsa yukarıdaki kapalı-başarısız dal (niyet yok, parti
   değişmez, MOD-0023 çağrısı yok); kesişim boşsa R4 muafiyet adayı kuralı, o da boşsa yukarıdaki boş liste dalı (422, KARAR D68)
   (AC-11).
@@ -1317,6 +1392,9 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
   dalı (422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, KARAR D68) (AC-11).
 - **Release** → 200, `dispatchOutcome = NotConfigured`, `PaymentDispatchAttempt` yazılı, parti `Approved` kalır; bankaya
   ağ çağrısı yapılmaz.
+- **Release'de R11 tier-2 şartı tutmuyor** (R4 uygulanan partide hiçbir onay `tier2-approve` izniyle ya da kayıtlı R4
+  muafiyetiyle verilmemiş — ör. başka yüzeyden verilmiş karar; KARAR D77/2) → 403 `PAYMENT_TIER2_RELEASE_FORBIDDEN`; parti
+  `Approved` kalır, `PaymentDispatchAttempt` yazılmaz (AC-19).
 - **Port sözleşme ihlali** (sürüm, geçersiz istek, sözleşme dışı istisna) → 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`,
   işlem geri alınır: deneme, sıra artışı, makbuz ve olay yok.
 - **Release sırasında iptal** → işlem geri alınır, kayıt yok; geri alınan deneme anahtar rezerve etmez.
@@ -1382,7 +1460,7 @@ hata değil, varsayılanı döndürür: R1–R4 açık, eşik yok (her onay tier
 
   | D49/4 maddesi | Nerede denetlenir | Servisin yaptığı (çalışma anı, `ApprovePaymentBatchWithSodWaiverCommand`, MOD-0023 çağrısından önce) | Bağımlılık / süreç |
   |---|---|---|---|
-  | Onaylayan: muafiyetten yararlanmayan Hazine yöneticisi ya da K1 | **Auth (MOD-0018) — atama onayı** | atamayı onaylayanın aktör kimliğini okur ve çağıranla, partiyi oluşturan / gönderen / son güncelleyenle (R1–R3 kişileri) aynı olmadığını denetler (aşağıda "yararlanamaz") | kimin onaylayabileceği (Hazine yöneticisi ya da K1) Auth'un atama onayı akışıdır — servis rol adını denetlemez. "Hazine yöneticisi" rol şablonu `waive-sod` taşımaz ve atama onayı izni de değildir; bu onay izni MOD-0018 Treasury Auth ekinin DL-5'inde tanımlanır (o paketin K-W1 açık kararı; D9, D64) |
+  | Onaylayan: muafiyetten yararlanmayan, **Muafiyet yetkilisi** rolünü taşıyan kişi (**KARAR D74/3**; D49/4'teki "Hazine yöneticisi ya da K1" kalktı) | **Auth (MOD-0018) — atama onayı** | atamayı onaylayanın aktör kimliğini okur ve çağıranla, partiyi oluşturan / gönderen / son güncelleyenle (R1–R3 kişileri) aynı olmadığını denetler (aşağıda "yararlanamaz") | kimin onaylayabileceği Auth'un atama onayı akışıdır — servis rol adını denetlemez. Atama onayı izni `auth.payment-sod-waivers.assign`'dır (okuma `.read`); ikisi yalnız açık atamayla, yalnız Muafiyet yetkilisi rolü (MOD-0018 Treasury Auth eki DL-5, 27. rol; o paketin K-W1'i **KAPANDI — KARAR D74/2–3**; D9, D64); rolü taşımayan atayamaz (403), kendine atama 403; atayan hem izni hem Muafiyet yetkilisi rol üyeliğini taşır — izin başka role elle bağlansa da rolsüz kişi atayamaz (**KARAR D75/1**, Auth tarafı). "Hazine yöneticisi" rol şablonu `waive-sod`'u da atama onayı iznini de taşımaz |
   | Süre en çok 24 saat; bitişte kendiliğinden düşer | **Auth + servis** | atamanın bitişi komut anında gelecekte olmalı ve başlangıçtan en çok 24 saat sonra olmalı; değilse ya da bitiş / başlangıç okunamıyorsa 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız) | 24 saat üst sınırı atama anında ve kendiliğinden düşme (bitişte iznin token'a girmemesi) Auth'undur; servis yalnız kullanım anında ikinci kontroldür |
   | Gerekçe kodları `ACIL-ODEME`, `TEK-YETKILI`, `DENETIM-ISTEGI` | **servis** (kullanım) + **Auth** (atama) | komutun `ReasonCode`'u kapalı listede olmalı; değilse 400 `PAYMENT_SOD_WAIVER_REASON_REQUIRED` (Validation Rules) | atamanın kendi gerekçe kodunun aynı listeden seçilmesi Auth'un atama formudur |
   | Kapsam yalnız ilgili tek ödeme partisi | **servis** (karar başına) + **Auth** (atamanın partiye bağlanması) | her muafiyet tek partide tek karardır (rota `{id}`); muafiyet saklanıp başka partiye taşınmaz. **KARAR D54:** servis atamanın hedef parti kimliğini okur ve rotadaki partiyle karşılaştırır; hedef parti yoksa, okunamıyorsa ya da farklıysa 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (kapalı-başarısız; yazım ve MOD-0023 çağrısı yok) | atamanın tek partiye bağlanması (hedef parti kimliği alanı) Auth'undur ve zorunludur (D54) — **bağımlılık: MOD-0018 Treasury Auth eki DL-5 (KARAR D64)**; DL-5 main'e girene kadar muafiyetli onay 403 ile kapalıdır. "Tek parti" süreç denetimine bırakılmaz |
@@ -1517,8 +1595,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   `waive-sod` + parti biçimidir (aynı port, istemcinin aldığı anahtar ve parti doğrulanır). **D66/3:** DL-2 kabulünde "sorgu
   okunamaz / DL-5 yok → aday eklenmez, gönderme kapalı-başarısız" dalı kanıtlanır; aday eklenen dallar muafiyet açılış kabulünde
   gerçek DL-5 ile koşulur.
-- [ ] AC-6 (zorunlu) — `IsTier2` partide `tier2-approve` izni olmayan onaylayıcı 403 `PAYMENT_TIER2_APPROVER_REQUIRED`
-  alır; izni olan geçer.
+- [ ] AC-6 (zorunlu) — R4 uygulanan partide (`IsTier2` ∧ sabitlenmiş `R4Enabled = true`) `tier2-approve` izni olmayan onaylayıcı 403 `PAYMENT_TIER2_APPROVER_REQUIRED`
+  alır; izni olan geçer. Sabitlenmiş `R4Enabled = false` partide aynı onaylayıcı bu kodu almaz (AC-44 (d)).
 - [ ] AC-7 (zorunlu) — Gönderme çözümleyicisi ile karar kontrolü **aynı** eşik nesnesini kullanır: kodda tek eşik tipi
   vardır (mimari testi: `Tier2` eşiği taşıyan ikinci bir yapılandırma tipi/özelliği yok), değer partiye ve niyete
   sabitlenir, politika sürümü her kararda kayıtlıdır. Kiracı ayarı yoksa her onay tier-2 sayılır
@@ -1548,7 +1626,19 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   (KARAR D66/3):** Auth atama bağdaştırıcısı DL-5 ucunu bulamadığında (404 / bağlantı reddi / bağdaştırıcı kayıtlı değil)
   muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` döner; karar, niyet, makbuz ve MOD-0023 çağrısı yoktur. DL-2 bu testle
   kabul edilir; (a)–(e) ve parti bağı sabotajı muafiyet açılış kabulünde gerçek DL-5 ile koşulur. Sabotaj: kapalı yolda
-  "atama okunamadı → izinle geç" dalı eklendiğinde (h) kırmızıya döner.
+  "atama okunamadı → izinle geç" dalı eklendiğinde (h) kırmızıya döner. **(i) R4 kapalı partide muafiyet (KARAR D77/1):**
+  sabitlenmiş `R4Enabled = false` sürümüyle gönderilmiş, eşiği aşan (`IsTier2 = true`) partide `waive-sod` izni, geçerli
+  gerekçe kodu, en az 1 kanıt ve sahte Auth atama kaynağından bu partiye bağlı geçerli atama olan, R1–R3 dışı çağıranın
+  `ApprovePaymentBatchWithSodWaiverCommand`'ı 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` alır; karar, niyet, makbuz ve denetim olayı
+  yazılmaz, MOD-0023 çağrılmaz, parti değişmez. Sabotaj: R4 kapalı kontrolü kaldırıldığında komut işlenir (karar `Waived`
+  kaydedilir ya da MOD-0023 çağrılır) ve test kırmızıya döner. Sahte atama kaynağıyla koşulduğu için DL-2'de kanıtlanır (DL-5
+  gerekmez). **(j) R4 açık, tier-2 olmayan partide muafiyet (KARAR D78):** sabitlenmiş `R4Enabled = true` sürümüyle gönderilmiş,
+  eşiğin altındaki (`IsTier2 = false`) partide `waive-sod` izni, geçerli gerekçe kodu, en az 1 kanıt ve sahte Auth atama
+  kaynağından bu partiye bağlı geçerli atama olan, atanmış ve R1–R3 dışı çağıranın `ApprovePaymentBatchWithSodWaiverCommand`'ı
+  403 `PAYMENT_SOD_WAIVER_FORBIDDEN` alır; `Waived` kaydı oluşmaz, karar, niyet, makbuz ve denetim olayı yazılmaz, MOD-0023
+  çağrılmaz, parti değişmez. Sabotaj: `IsTier2` denetimi kaldırıldığında (yalnız `R4Enabled` aranır) komut işlenir (karar
+  `Waived` kaydedilir ya da MOD-0023 çağrılır) ve test kırmızıya döner. Sahte atama kaynağıyla koşulduğu için DL-2'de kanıtlanır
+  (DL-5 gerekmez).
 - [ ] AC-10 (zorunlu) — Aktör karşılaştırması Guid üzerindendir: aynı kullanıcının büyük/küçük harf farklı yazılmış `sub`'ı
   aynı kişi sayılır; Guid olmayan `sub` ile karar reddedilir.
 - [ ] AC-11 (zorunlu) — Submit, MOD-0023'ü çağırmadan önce `PaymentWorkflowStartIntent(Pending)` ve parti `Submitted`'ı
@@ -1602,7 +1692,17 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` boş (borç satırı eklenmemiş).
 - [ ] AC-19 (zorunlu) — Release `Approved` partide 200 ve `dispatchOutcome = NotConfigured` döner, `PaymentDispatchAttempt`
   yazılır, parti `Approved` kalır, hiçbir dış ağ çağrısı yapılmaz; `Approved` olmayan partide 409. Release, karar zincirini
-  R1–R4'e göre yeniden doğrular.
+  R1–R3'e ve R4 uygulanan partide R4'e göre yeniden doğrular (R11). **R4 kapalı Release (CT-APR-02 Codex F-1; AC-44 (d)
+  senaryosunun DL-3 kısmı):** sabitlenmiş `R4Enabled = false` sürümüyle gönderilmiş, eşiği aşan (`IsTier2 = true`) ve yalnız
+  N'nin normal onayıyla (`tier2-approve` yok, muafiyet yok) `Approved` olan parti Release'te 200 ve `dispatchOutcome =
+  NotConfigured` alır — R11'in tier-2 şartı aranmaz; R1–R3 doğrulaması ve açık karar niyetinde 409 aynen uygulanır. Sabotaj:
+  R11'deki uygulanma koşulundan `R4Enabled` çıkarıldığında (yalnız `IsTier2`) ya da koşul ters çevrildiğinde bu Release
+  403 `PAYMENT_TIER2_RELEASE_FORBIDDEN` ile reddedilir ve test kırmızıya döner. **R11 tier-2 reddi (KARAR D77/2):** R4
+  uygulanan (`IsTier2` ∧ sabitlenmiş `R4Enabled = true`) ve yalnız `tier2-approve` izni olmayan, muafiyetsiz onayla `Approved`
+  olmuş parti (fikstür: karar kaydı doğrudan yazılır — başka yüzeyden verilmiş karar, O-7) Release'te 403
+  `PAYMENT_TIER2_RELEASE_FORBIDDEN` alır; parti `Approved` kalır, `PaymentDispatchAttempt` yazılmaz, `ReleaseSequence`
+  artmaz, dağıtım portu çağrılmaz. Aynı partide bir onay `tier2-approve` izniyle ya da kayıtlı R4 muafiyetiyle verilmişse
+  Release 200. Sabotaj: R11'in tier-2 şartı kaldırıldığında bu Release 200 alır ve test kırmızıya döner.
 - [ ] AC-20 (zorunlu) — Hiçbir varlık, DTO ya da denetim kaydı IBAN, hesap numarası, BIC/SWIFT ya da banka adı alanı taşımaz
   (alan adı taraması testi); banka referansları yalnız Guid.
 - [ ] AC-21 (zorunlu) — Her denetleyici aksiyonunda `[HasPermission]` vardır (mimari testi); izinsiz çağrı 403.
@@ -1658,6 +1758,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   deterministik anahtarla** yeniden yazılır ve MOD-0023'te tam **bir** örnek / geçiş vardır (sahte MOD-0023 anahtar
   başına tek örnek / geçiş sayar; ikinci Reconcile ikincisini üretmez; yinelenen anahtar hatası `Unknown` bırakır, asla
   `Refused` değil); aktör farklıysa 409 `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`, uzak yazma/başlatma çağrısı yok;
+  **(d) eki — başlatmada ilk aday listesi (KARAR D75/2 (b); kullanıcının başlattığı Reconcile dahil — KARAR D76/3):** yeniden başlatma isteğinin `CandidatePrincipalIds`'i niyetteki
+  `PaymentWorkflowStartIntent.CandidatePrincipalIds`'e birebir eşittir ve sahte Auth aday istemcisi Reconcile boyunca hiç
+  çağrılmaz (çağrı sayısı 0) — sahte Auth Submit'ten sonra farklı bir liste döndürecek şekilde ayarlansa da; sabotaj: Reconcile
+  aday çözümleyicisini yeniden çağırınca çağrı sayısı ve liste eşitliği testi kırmızıya döner;
   (e) MOD-0031 kanıt bağlama Reconcile ya da herhangi bir kurtarma yolu tarafından hiç yeniden çağrılmaz; belirsiz
   okumada sonuç belirsiz kalır (sahte MOD-0031 yazma çağrısı sayısı 1). Sabotaj: okuma adımı atlanıp doğrudan yeniden
   yazıldığında, "bulunamadı" `Cancelled`'a bağlandığında, farklı anahtarla yeniden yazıldığında ya da MOD-0031 yeniden
@@ -1713,7 +1817,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   kod sonradan pasifleşince Approve ve Release etkilenmez, Update 422 döner; (e) karşılaştırma büyük-küçük harfe duyarlı
   (`StringComparison.Ordinal`, S-56). Update için (b) ve (c) aynıdır. Okuma `IPaymentMethodReferencePort` üzerinden, zaman
   aşımı yapılandırılmış `HttpClient` ile yapılır. Sabotaj: küme kontrolü kaldırılıp serbest metin kabul edildiğinde (b),
-  `Ordinal` yerine harfe duyarsız karşılaştırma konduğunda (e) kırmızıya döner. DL-1'de kapanır ((d) DL-2 / DL-3).
+  `Ordinal` yerine harfe duyarsız karşılaştırma konduğunda (e) kırmızıya döner. DL-1'de kısmi kapanır ((a)–(c), (e); Create /
+  Update); (d) Approve kısmı DL-2'de, (d) Release kısmı DL-3'te — AC-41 tam kapanışı DL-3'tedir (Teslim dilimleri).
 - [ ] AC-44 (zorunlu) — **SoD ayar kaydı ve değişiklik denetimi (KARAR D56/4):** (a) kiracıda ayar yokken ilk yazma tek
   `PaymentSodSettings` kaydı oluşturur; aynı kiracıda ikinci kayıt `ux_payment_sod_settings_tenant` ile reddedilir (gerçek replica
   set); başka kiracının ayarı okunamaz / değiştirilemez (404); (b) her başarılı değişiklik `PolicyVersion`'ı tam bir artırır ve
@@ -1721,7 +1826,18 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   önce → sonra); bayat `If-Match` 409 `PAYMENT_SOD_SETTINGS_VERSION_CONFLICT`, kayıt ve olay yok; tutar ≤ 0, fazla küsurat ya da
   listede olmayan para birimi 400; (c) değişiklikten önce gönderilmiş partinin kararları sabitlenmiş eski sürümü, eşiği ve R4
   anahtarını kullanır (R6); değişiklikten sonra gönderilen parti yenisini; (d) R4 kapatıldığında (`R4Enabled = false`) yalnız o
-  sürümle gönderilen partide R4 uygulanmaz; R1–R3 kapatılamaz (**KARAR D57/4**) — istekte R1 / R2 / R3 anahtarı 400, kayıt ve
+  sürümle gönderilen partide R4 uygulanmaz. **R4 kapalı Submit → Approve (CT-APR-02 Codex F-1; R4 uygulanma koşulu `IsTier2` ∧
+  sabitlenmiş `R4Enabled = true`):** eşiği aşan (`IsTier2 = true`) ve `R4Enabled = false` sürümüyle gönderilen partide sahte
+  Auth `approve` ve `platform.workflow.tasks.approve` için {N}, `tier2-approve` için {} döndürür (N R1–R3 kapsamında değil,
+  `tier2-approve` ve `waive-sod` taşımaz) → Submit `tier2-approve` anahtarını ve muafiyet adayı sorgusunu çağırmaz (sahte Auth
+  çağrı kaydında yok), `CandidatePrincipalIds = {N}`, 422 dalı yok; N'nin normal Approve'u 403 almaz, karar `Recorded` olur ve sahte
+  MOD-0023'ün son adım yanıtıyla parti `Approved` olur (aynı partinin Release'i AC-19'da, DL-3). Aynı Auth fikstürüyle `R4Enabled = true` sürümünde gönderilen eş
+  partide kesişim boştur, muafiyet adayı sorgusu (sahte {}) boş döner ve Submit 422
+  `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` alır (AC-11, AC-42) — iki sürüm ayrı testtir; AC-6, AC-11 ve AC-42'nin
+  tier-2 dalları `R4Enabled = true` sürümüyle koşulur. Sabotaj (çözümleyicide ve Approve kontrolünde ayrı ayrı): uygulanma
+  koşulundan `R4Enabled` çıkarıldığında (yalnız `IsTier2`) R4 kapalı partide Submit 422 alır ya da N'nin Approve'u 403
+  `PAYMENT_TIER2_APPROVER_REQUIRED` alır; koşul ters çevrildiğinde (R4 yalnız `R4Enabled = false` iken uygulanır) R4 kapalı partide
+  aynı ret oluşur, R4 açık eş partide N aday olur — her durumda test kırmızıya döner. R1–R3 kapatılamaz (**KARAR D57/4**) — istekte R1 / R2 / R3 anahtarı 400, kayıt ve
   olay yok, R1–R3 her sürümde uygulanır; MOD-0023 `SodViolation` yine reddeder; (e) kiracıda kayıt yokken okuma hata değil,
   varsayılanı döndürür (R1–R4 açık, her onay tier-2 — D11/1, D57/4); `.read` olmadan okuma, `.update` olmadan değiştirme 403;
   (f) ekran (DL-4): ayar ekranı `.read` ile açılır, R1–R3 açık ve değiştirilemez gösterilir, yalnız eşik ve R4 düzenlenir;
@@ -1929,7 +2045,10 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
   süpürücüsü (İ2 tetikleyici; her değişiklik `ReconcilePaymentBatchWorkflowCommand` ile denetlenir).
 - MOD-0289 banka hesabı arama/çözümleme — sözleşme taslağı `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT); dondurulunca
   banka referansı seçimi, dağıtım anında çözümleme ve F-E1…F-E9 / F-503 fikstürlerinin bu modülün sınıflandırıcısına karşı
-  koşulması.
+  koşulması. **KARAR D75/4:** MDM'nin 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` yanıtı (taslak §3, §5) "hesap uygun değil"dir —
+  servis kendi 422'sini döner (paket öneki `PAYMENT_`; bu pakette bugün banka hesabı "uygun değil" kodu yok, kod adı tüketim
+  açıldığında hata sözlüğüne yazılır), kayıt yazılmaz, otomatik yeniden deneme yok; tüketimi açan AC bu yanıtın 503'e
+  eşlenmesini sabotajla kırmızıya çevirir.
 - MOD-0269 gerçek bağdaştırıcı, banka geri çağrısı, ekstre → ayrı karar ve paket (D5); o pakette Release iki aşamalı
   olur (`PaymentReleaseIntent`, belirsiz sonuç, Reconcile, sonuç olayı) ve gerçek dağıtım kapısı (hesap sahipliği,
   Tenant/LE, alacaklı eşleşmesi) kapanır.
@@ -2013,7 +2132,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   şablonunu kuran kodun main'de olması, MOD-0018 Treasury Auth ekinin DL-5 paket metninde muafiyet atama alanları (D56/3,
   **D64**; kodu DL-2 kabulünü beklemez — muafiyet yolu 403 ile kapalıyken DL-2 kabul edilir, D54 / **KARAR D66/3**) ve DL-6 paket
   metninde aday sorgusu (**KARAR D66/1**; MOD-0018 sahibinin teyidi; kodu DL-2 kabul kapısı), SoD ayarı izin
-  anahtarlarının Auth paket metninde (o ekin DL-1'i) olması (D56/4; adlar KARAR D57/4), MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) ve §17 rev 2'deki silmeme politikası (D21/1) ile okuma eşleme alanları (D21/3) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15 (AC-9 `Waived` dalı hariç — muafiyet açılışında), AC-42 (kapalı muafiyet dalı), AC-43 ((f), (g), (h) — kapalı yol; KARAR D66/3), AC-44 ((a)–(e) arka uç kısmı — D57/4), AC-46 (D62/2, D66/2), 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 32 (karar uçları kısmı), 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36. Validation Rules bu dilimde **R11 hariç** kapanır; R11 (Release) DL-3'te uygulanır ve DL-3 kabulünde kanıtlanır (AC-19).
+  anahtarlarının Auth paket metninde (o ekin DL-1'i) olması (D56/4; adlar KARAR D57/4), MOD-0023 pack §17 (TRM-15) rev 2 onayı (`803fbaa5…`, PR #235) ve §17 rev 2'deki silmeme politikası (D21/1) ile okuma eşleme alanları (D21/3) — kod MOD-0023 sahibinin WP'siyle gelir (D25/1), sahibi yazar, başka biri merge eder (D32/1); AC-W1…W17 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15 (AC-9 `Waived` dalı hariç — muafiyet açılışında), AC-42 (kapalı muafiyet dalı), AC-43 ((f), (g), (h) — kapalı yol; KARAR D66/3; (i) — R4 kapalı partide muafiyet, KARAR D77/1; (j) — R4 açık, tier-2 olmayan partide muafiyet, KARAR D78), AC-44 ((a)–(e) arka uç kısmı — D57/4), AC-46 (D62/2, D66/2), 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 32 (karar uçları kısmı), 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36. Validation Rules bu dilimde **R11 hariç** kapanır; R11 (Release) DL-3'te uygulanır ve DL-3 kabulünde kanıtlanır (AC-19).
   **Muafiyet açılış kabulü (KARAR D66/3; dilim değildir, tablo değişmez):** MOD-0018 Treasury Auth ekinin DL-5 kodu main'e
   girince ayrı kabul kaydı — AC-9 `Waived` dalı, AC-42 aday dalları, AC-43 (a)–(e) ve parti bağı sabotajı gerçek DL-5 ucuyla.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
