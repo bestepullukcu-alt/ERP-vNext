@@ -41,7 +41,7 @@ satır 1533-1535):
 | Koşul | Pack dayanağı | Bugün | Kimden |
 |---|---|---|---|
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (D34) | satır 1335-1336 | `draft` | CT + Beste |
-| DCP numarası ve `approved` | satır 1337, 515 | `UNASSIGNED`, `draft` | Beste |
+| DCP numarası ve `approved` | satır 1337, 515 | `DCP-011` (numara atandı 2026-10-27), `draft` | Beste |
 | **MOD-0126 DL-1** — iskelet, servis ortak yapı taşları, CentralAudit kaydı | satır 1338, 513, 1534 | yok; MOD-0126 pack'i de `draft` (hazırlık kaydı `MOD-0126-DL1-hazirlik.md`) | MOD-0126 WP |
 | D35 — denetim defteri yol `b`, borç / istisna 0; Platform `AuditCategory`'ye `Finance` (MOD-0126 DL-1'den önce) | pack O-18 satır 1510 ve satır 1049-1050 hâlâ **TBD** — pack D35'i anmıyor | karar verildi (D35); `Finance` değeri yok | Platform sahibi |
 | TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + sözleşme belgesi | satır 1340, 505, 528 | onay turu açık (D34/1) | Beste |

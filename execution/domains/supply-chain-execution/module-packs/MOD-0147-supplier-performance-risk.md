@@ -6,8 +6,8 @@ service: Diten.SupplyChainService
 shell: none
 golden_reference: none
 entity_base: EntityBase
-status: draft
-status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md."
+status: ready-for-dev
+status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); the §0.0 code and enabling gates still bind; v1 scope revision 2026-10-22, D2 eligibility and RCS-001 added 2026-10-26, start-on-mock 2026-10-26 (§0.0): v1 = supplier performance scorecard with evaluator-entered metric values, risk part after MOD-0216 TPRM. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 code conditions (start-on-mock: CT-APR-01 row, PR #198, frozen SUPPLIER 1.3.0, replay receipt amendment, permission/composition single writer) are met; enabling for users waits for the §0.0 enabling gates. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -21,12 +21,167 @@ form_field_count: 0
 > returned `OK` on 2026-09-15 against Blueprint 8.1 and again on 2026-10-19 against Blueprint 8.8 and the module ID
 > registry.
 >
-> **Phase A only:** this draft records the proposed initial Phase B backend/contract slice. It does not authorize
-> runtime code, service scaffold, gateway, permission-registry or integration changes.
+> **ready-for-dev (module owner, 2026-10-27):** runtime code only under §0.0 (start-on-mock conditions (1)–(5)); no
+> enabling change (manifest provider, permission definition, Gateway route) before the §0.0 enabling gates.
 >
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0147 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
 > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
+
+## 0.0 v1 scope — performance scorecard now and risk after TPRM
+
+Owner decision 2026-10-22; ready-for-dev 2026-10-27.
+
+> `docs/records/decisions/2026-10/mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md` (Natig). **ready-for-dev;
+> CT-APR-01 row pending** (high risk: first product code). Where this section and an older
+> line below disagree about v1, this section wins.
+
+| Area | v1 (now) | Later |
+|---|---|---|
+| Operations | `createSupplierEvaluation`, `submitSupplierEvaluation`, `GET /evaluations[/{id}]`, `GET /scorecards[/{id}]` | risk operations (`POST /risks`, `POST /risks/{id}/status`, `GET /risks`) — after MOD-0216 TPRM, reading TPRM's result |
+| Objects | `SupplierEvaluation`, `EvaluationMetricResult`, `SupplierScorecard` | `SupplierRisk` |
+| Metric policy (DC-04) | pack-held revision `supplier-score-policy/1` = §0.4 set | Metric Registry (MOD-0004) when it exists |
+| Metric values | **entered by the evaluator** per metric (frozen v1 contract shape); server enforces codes, weights, ranges, 3-of-4 rule | **v1.1:** computed from Procurement facts (read contracts MOD-0141/0142/0143 + QC source; XMC-001); 5-receipt-line minimum applies from v1.1 |
+| Supplier (DC-02) | tenant-wide supplier from MOD-0140 1.3.0; eligibility per **DC-02 D2** (below) | — |
+| Permissions | `create` → `.evaluate`; `submit` → `.publish`; the four GETs → `.read`; one person may hold both `.evaluate` and `.publish` (no separation of duty in v1 — Natig, 2026-10-22) | `.risk-manage` |
+| Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder) — **valid from the moment PR #198 is on `main`**; written so now, so the merge does not change this pack | risk commands with the risk part |
+| UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
+
+**Start on mock (Natig, 2026-10-26):** DL-1 code may be **written, tested and merged** once (1) this revision's CT-APR-01 row
+is on `main`, (2) the PR #198 audit path is on `main`, (3) the SUPPLIER **1.3.0 contract is frozen on `main`** (MOD-0140
+Revision 2 DL-1), (4) the replay receipt amendment (Phase 1.5, §0 table) and (5) the permission/composition single writer
+(§14) are decided — DL-1's create is an idempotent command registered in `Program.cs`, so it is not written without them
+(review F-2). Tests use the frozen contract's **declared** answers plus **hand-written stubs** for every undeclared case of
+T-0147-V1-ELIG-01: a route 404 with a ProblemDetails body without `code`, a 404 without a body, a malformed or mismatched 200,
+Procurement 401 / 403 / 5xx / timeout (review F-3). It is safe to merge before MOD-0140 DL-3: until the endpoint exists
+Procurement answers a route 404, which §0.0 maps to 503 `SUPPLIER_BASE_UNAVAILABLE` — create fails closed, nothing is written.
+
+**Nothing is switched on by the merge (review F-1).** Until the enabling gates below close, a DL-1 merge **adds no
+`/api/supplier-performance` route to `ocelot.json` and registers no `supplychain.supplier-performance.*` permission in the
+catalog** — DL-1 registers no `IModuleManifestProvider` for MOD-0147 in `Program.cs` and the module code is not added to
+`AdminModules`, so neither `FullCatalogPermissionGrantService` (SuperAdmin) nor `DefaultRolePermissionTemplate` (Viewer
+`read`) can grant it (the Q358 lesson). Tests put the permissions into their tokens directly. **CI guard (review F-1):**
+`EnforcedPermissionDeclarationGuardTests.Every_enforced_key_is_declared_by_its_module_provider` (runs in `supplychain-tests`)
+requires every enforced key to be declared; DL-1 meets it with a **`KnownWithoutProvider` entry** for area
+`supplier-performance` (ModuleCode of MOD-0147, reason "provider ships with the enabling change") — the path S&OP and
+Capacity used until 2026-10-18 — and not with a provider class, which would be one `AddSingleton` away from switching the
+permissions on. The **enabling change** removes that entry and adds the provider, its `AddSingleton`, the permission
+definitions and the Gateway route, after the gates below.
+
+**Still gates for enabling v1 (the enabling change: manifest provider, permission definition, Gateway route):** DC-02 — MOD-0140 1.3.0 contract **frozen on `main`**
+(MOD-0140 Revision 2 DL-1) **and the eligibility endpoint implemented on `main`** (MOD-0140 DL-3; until then the endpoint answers a route 404 — MOD-0140 §2, the 1.3.0 "Sunum" bullet, `MOD-0140-supplier-onboarding.md@7f937c812:38`),
+proven by a live run through the Gateway that shows a real 200, a real 404 `UNKNOWN_SUPPLIER` and a real permission refusal
+(403) for `GET /api/suppliers/{supplierId}/eligibility` (Natig P2, 2026-10-26) — a frozen contract alone is not enough; PR #198 on
+`main` (audit path b), this revision's CT-APR-02 + CT-APR-01, and for the eligibility read the evaluating role's `mdm.legal-entities.read` or
+MOD-0140's S-2 decision (below).
+
+**Supplier eligibility — DC-02 D2 (Natig 2026-10-23 Q1/Q2, 2026-10-26 Q3/Q4; Cihan's MOD-0140 Revision 2,
+`origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`):**
+
+- **Request identity (Natig P1, review F-2):** v1 accepts only a canonical `SUP-` code or the tenant-wide master uuid as the
+  request's `supplierId`; a legacy supplier code → 422 `BUSINESS_RULE_VIOLATION` with `details.code =
+  SUPPLIER_CODE_NOT_CANONICAL`, no Procurement call (there is no live supplier data, so no legacy code is in use; a legacy code
+  could not be matched against the answer).
+- At create, the service reads `GET /api/suppliers/{supplierId}/eligibility` (SUPPLIER 1.3.0) through the Gateway with the
+  caller's token and `X-Legal-Entity-Id` = the evaluation's validated LE (XMC-001, read only; no copy of Procurement data).
+  The evaluating role needs `procurement.suppliers.eligibility.read` in addition to `.evaluate`, granted through Roles →
+  Permissions (the BL-652 interim path), **and `mdm.legal-entities.read`**: MOD-0140 validates the LE header with MDM using
+  the same caller token (MOD-0140 §7, C2) and answers 503 without that permission — unless MOD-0140's open question S-2
+  (a Procurement → MDM service identity) is decided otherwise (F-3).
+- **How the endpoint answers "no":** MOD-0140 answers **404 with body `code = UNKNOWN_SUPPLIER`** when the supplier is
+  unknown, belongs to another tenant or has no relationship with the caller's company; on a 200 `relationshipExists` is
+  always `true` (MOD-0140 §3.1). **Only that 404** maps to **404** (declared for create; the same answer as a supplier of
+  another tenant or company, so nothing leaks), no draft. A 200 with `relationshipExists != true` is handled the same way
+  (defensive). Every other 404 — `UNKNOWN_LEGAL_ENTITY` from MOD-0140's LE check (C2), a route 404 before MOD-0140 DL-3, a 404
+  without a body or with another code — is a dependency failure → 503 `SUPPLIER_BASE_UNAVAILABLE` (review F-1).
+- **Malformed or mismatched answer (AC-04):** a 200 that does not match the `SupplierEligibility` schema, has a null
+  `status` or a null `supplierMasterId`, or **belongs to another supplier** — when the request names a `SUP-` code the
+  answer's `supplierId` must equal it, when it names a master uuid the answer's `supplierMasterId` must equal it (Natig P1,
+  review F-2) — and every other unexpected Procurement status (400, 401, …) → 503, no draft.
+- Any relationship `status` (Active, OnHold, Blocked, Inactive) and any `onboardingStatus` **may be evaluated** (Q1, Q2): a
+  block stops new purchasing (`eligibleForTransactions`), not the record of past performance. `eligibleForTransactions` is
+  not used by MOD-0147.
+- The evaluation stores the **canonical** `supplierId` returned by the answer (a master uuid in the request is resolved to
+  it), so one supplier never gets two evaluation series: the "one active evaluation per Tenant + LE + supplier +
+  period" key uses the canonical code; the idempotency fingerprint covers the request as sent (a replay is the same request);
+  the `supplierId` filter of `listSupplierEvaluations` / `listSupplierScorecards` matches the stored canonical code exactly
+  (a legacy code in the filter finds nothing and is not resolved — no Procurement call on reads).
+- Procurement unreachable / 5xx / timeout → 503 with code `SUPPLIER_BASE_UNAVAILABLE` (the declared create 503's own code,
+  chosen deliberately). Procurement 403 (the caller lacks `procurement.suppliers.eligibility.read`) → 403 `FORBIDDEN` (the
+  service's 403 code) — an authorization outcome, never hidden as 503; create declares no 403 (table below). No draft in any
+  case (F-4).
+- Publish (`submitSupplierEvaluation`) does not re-read eligibility: the evaluation records a past period.
+
+**Undeclared statuses (F-4):** the frozen wire declares no default response; v1 also returns these statuses, as
+documented exceptions that the contract successor declares:
+
+| Operation | Declared (frozen v1) | Also returned in v1 (undeclared) |
+|---|---|---|
+| `createSupplierEvaluation` | 201, 200, 400, 404, 422, 503 | 401, 403 (missing `.evaluate` or Procurement 403), 409 `DUPLICATE_EVALUATION` (an active evaluation exists for the same Tenant + LE + canonical supplier + period, review F-3), 500 |
+| `submitSupplierEvaluation` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403, 500 |
+| `listSupplierEvaluations` | 200, 400 | 401, 403, 500 |
+| `getSupplierEvaluation` | 200, 404 | 401, 403, 500 |
+| `listSupplierScorecards` | 200 | 400 (invalid query value), 401, 403, 500 |
+| `getSupplierScorecard` | 200, 404 | 401, 403, 500 |
+
+**Visible code (RCS-001, BL-565):** evaluations and scorecards are new record types, but the shared record-code service
+(BL-565) does not exist yet. v1 shows **no visible code** — only the frozen contract's opaque `evaluationId` /
+`scorecardId` — and never creates its own counter or format. When BL-565 exists, a later revision takes the visible code
+(`MG-…` form) from that service; the opaque ids stay the keys.
+
+**Rules that bind v1** (owner decisions 2026-10-21 and 2026-10-22; where §0.1 / §0.2 say ÖNERİLEN or BLOKE, this list wins
+for v1):
+
+- From §0.1: unique codes; `PERCENT`, `0..100`, `HIGHER_IS_BETTER`; at most four fractional digits; negative or excess
+  values → 422, no silent rounding; aggregate in exact decimal with no intermediate rounding; overall rounded **once** to
+  two decimals, round-half-even; band from the **unrounded** aggregate: `[90,100] LOW`, `[75,90) MEDIUM`, `[50,75) HIGH`,
+  `[0,50) CRITICAL` (bands decided by Natig 2026-10-22); the band never creates or changes a `SupplierRisk`.
+- **Missing metrics (decided rule, implementation confirmed by Natig 2026-10-22):** the client sends only the metrics that
+  have data, each with its policy weight `25`; `overallScore = Σ(measuredValue × weight) / Σ(weight)` over the sent metrics,
+  exact decimal — a re-scaled weight never enters the computation and the response `weight` is the policy weight (25); a
+  missing metric is shown by its absence from `metrics[]` (the v1 wire has no other marker). Fewer than **3** metrics, an
+  unknown code, a duplicated code, a fifth metric or a weight other than 25 → **422 `BUSINESS_RULE_VIOLATION`** at create,
+  and no `DRAFT` is created. This replaces §0.1's "total weight exactly 100" and "sum / 100" for v1.
+- **Exact computation (review round 2, F-1):** with three metrics the quotient need not be a finite decimal (e.g.
+  6025 / 75 = 80.3333…). So the band is decided **without dividing**: `Σ(value × 25) ≥ threshold × Σ(25)` against 90, 75 and
+  50; and `overallScore` is produced by **one** decimal division rounded half-even to two places
+  (`round_half_even(Σ(value × 25) / Σ(25), 2)`), never by dividing first at a chosen precision and rounding again.
+- Codes are exactly `OTD`, `QTY_ACC`, `QUAL_ACC`, `INV_MATCH`. The frozen contract's examples (`ON_TIME_DELIVERY`,
+  `QUALITY_ACCEPTANCE`) are not normative and answer 422 in v1; fixtures use the v1 codes. Likewise the contract's
+  `supplierId` example `sup-0140-8821` (`supplier-performance.openapi.yaml:51`, `:70`, `:83`) is not normative and answers
+  422 `SUPPLIER_CODE_NOT_CANONICAL` in v1; fixtures use canonical `SUP-` codes or master uuids.
+- **Period:** `periodStart` = the first day and `periodEnd` = the last day of the same calendar month (UTC dates), otherwise
+  422; the contract's quarterly example is a 422 in v1. From §0.2: at most one active evaluation per Tenant + LE + supplier +
+  period (`DRAFT`/`PUBLISHED`), second create → 409. There is no correction path (`CorrectionOf` is not in the v1 wire) and
+  no `CANCELLED` (no cancel operation).
+- Not applicable in v1: the live registry pointer, validity/withdrawal oracle and the 503 "metric authority unavailable"
+  path (AC-21) — the policy is pack-held.
+
+v1 acceptance examples (policy `supplier-score-policy/1`; §0.1's 60/40 and 100-weight examples are unit tests of the
+arithmetic only, not v1 inputs — under v1 they are 422):
+
+| v1 input | Result |
+|---|---|
+| OTD 90, QTY_ACC 80, QUAL_ACC 100, INV_MATCH 70 (each weight 25) | 85.00, MEDIUM |
+| OTD 90, QTY_ACC 80, INV_MATCH 70 (QUAL_ACC absent) | 240·25/75 = 80 → 80.00, MEDIUM |
+| OTD 90, QTY_ACC 90, INV_MATCH 90 (QUAL_ACC absent) | 90.00, **LOW** |
+| OTD 90, QTY_ACC 80, INV_MATCH 71 (QUAL_ACC absent) | 6025/75 = 80.3333… → 80.33, MEDIUM (band: 6025 ≥ 75 × 75 = 5625 and < 90 × 75 = 6750) |
+| OTD 89.995, QTY_ACC 89.995, QUAL_ACC 89.995, INV_MATCH 89.995 | 90.00, **MEDIUM** (band from the unrounded 89.995) |
+| two metrics | 422 `BUSINESS_RULE_VIOLATION`, no draft |
+| a weight of 33.3333 or 40 | 422 |
+| period 2026-07-01 … 2026-09-30 | 422 (not one calendar month) |
+
+v1 test IDs (added with this revision; the r2 test map stays unchanged and these IDs go into the next test-map revision, r3,
+when the folder's hash manifests are renewed with it): T-0147-V1-SCORE-01 (the table above),
+T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fifth metric, weight 25),
+T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping),
+T-0147-V1-ELIG-01 (D2: the Procurement mock answers **404** for no relationship → 404; a malformed 200, a null `status`
+and a Procurement 401 → 503; a role without `mdm.legal-entities.read` → 503 (MDM via MOD-0140); a second create with the
+master uuid of an already evaluated supplier and period → 409 `DUPLICATE_EVALUATION`; a legacy code → 422
+`SUPPLIER_CODE_NOT_CANONICAL` with no Procurement call; a 200 naming another (validly formatted) supplier → 503; a 404
+`UNKNOWN_LEGAL_ENTITY` and a 404 without a body → 503; OnHold, Blocked, Inactive and not-approved
+onboarding → 201; a master uuid stored as the canonical `supplierId`; Procurement 403 → 403, 503 → 503, no draft; sabotage:
+skipping the read makes the no-relationship case red).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 
@@ -43,8 +198,8 @@ label wins**: the text is the target, not an approved rule.
 
 | Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r2.tsv`) |
 |---|---|---|---|---|
-| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | **BLOKE** — Supplier eligibility (DC-02, MOD-0140), metric policy (DC-04, Metric Registry — deferred); score policy ÖNERİLEN (§0.1) | MOD-0140 owner; Metric Registry owner | AC-03, AC-04, AC-18…AC-22 |
-| `POST /evaluations/{id}/submit` (submitSupplierEvaluation) | ONAYLI | **BLOKE** — DC-04 snapshot; atomic publication ÖNERİLEN (§0.3) | Metric Registry owner | AC-18…AC-22 |
+| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | **BLOKE** — Supplier eligibility (DC-02, MOD-0140). v1: metric policy = pack-held `supplier-score-policy/1` and the v1 rules of §0.0 (DC-04 no longer blocks v1) | MOD-0140 owner | AC-04; **AC-03 does not apply in v1** (its "Active only" oracle is replaced by the D2 rule, Natig Q1/Q2 — r3 oracle = T-0147-V1-ELIG-01); v1: T-0147-V1-SCORE-01, -MISS-01, -CODE-01, -PER-01, -BAND-01; AC-18, AC-19, AC-22 as far as they agree with §0.0; **AC-20 and AC-21 do not apply in v1** |
+| `POST /evaluations/{id}/submit` (submitSupplierEvaluation) | ONAYLI | v1: snapshot of `supplier-score-policy/1` (DC-04 no longer blocks v1); atomic publication ÖNERİLEN (§0.3) | MOD-0147 owner | v1: T-0147-V1-SCORE-01, T-0147-V1-BAND-01; AC-22 (revision snapshot = `supplier-score-policy/1`) |
 | `GET /evaluations`, `GET /evaluations/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE isolation, 404 without leakage | MOD-0147 owner | T-0147-ISO-01 |
 | `GET /scorecards`, `GET /scorecards/{id}` | ONAYLI | ÖNERİLEN — immutable publication | MOD-0147 owner | AC-22 (revision snapshot), T-0147-ISO-01, T-0147-IMM-01 |
 | `POST /risks` (registerSupplierRisk) | ONAYLI | **BLOKE** — risk taxonomy (DC-05, Risk Register — deferred), DC-02; lifecycle ÖNERİLEN | Risk Register owner; MOD-0140 owner | AC-23…AC-26 |
@@ -87,9 +242,11 @@ The selected target, by reference — not merged:
   snapshot; a newer revision never rewrites them. Missing, stale or unverifiable authority → no evaluation, receipt, audit
   success record or outbox item.
 
-**Still for the Metric/Risk owners to decide (BLOKE):** the live registry pointer and immutable revision shape; scope, UoM,
-direction, validity and withdrawal oracle; `policy1` weights; band consent; a missing-metric rule (the target above has
-none: every policy metric is required — owner to confirm).
+**Decided 2026-10-21 (Natig, management; §0.4):** the v1 metric set, `policy1` weights (25 each), the period (calendar
+month), the missing-metric rule (replaces "every policy metric is required") and the minimum volume.
+**Still for the Metric/Risk owners to decide (BLOKE) — after v1:** the live registry pointer and immutable revision shape
+(until the Metric Registry — MOD-0004 — exists, the §0.4 set is the pack-held revision `supplier-score-policy/1`); validity
+and withdrawal oracle. Band consent for v1 is given (Natig, 2026-10-22, §0.0).
 
 Derived acceptance examples (from the proposed policy; they become acceptance examples only when it is approved):
 
@@ -103,6 +260,45 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
 | 60 × 60, 39.9999 × 40 | 51.99996 | 52.00 | HIGH (weights sum to 100 — a valid input, not a negative case) |
 | 50.12345 × 100 | — | — | 422 (five fractional digits) |
 
+### 0.4 v1 fixed metric set
+
+DECIDED (Natig, 2026-10-21); ready-for-dev 2026-10-27.
+
+> Source: `docs/records/decisions/2026-10/mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md`. Timing changed on
+> 2026-10-22 (`mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md`): v1 (this scorecard) starts now; only the risk
+> part waits for MOD-0216 TPRM. This section is the pack text of the metric decision and needs CT-APR-02 and a new CT-APR-01
+> row like any pack change. It authorizes no code by itself. In v1 the values are entered by the evaluator; the formula
+> column is what v1.1 computes (and what an evaluator follows when entering values).
+
+Scope per Tenant + LE + supplier + period; every metric `PERCENT`, `0..100`, `HIGHER_IS_BETTER` (§0.1).
+
+| code | metric | formula (period) | weight | source (read contract + XMC-001 needed) |
+|---|---|---|---|---|
+| `OTD` | On-time delivery rate | receipt lines received on or before the promised date — up to 3 days early counts as on time — ÷ receipt lines × 100 | 25 | MOD-0141 PO line promised date, MOD-0142 GRN receipt date |
+| `QTY_ACC` | Quantity accuracy | receipt lines whose received quantity is within ±2 % of the ordered quantity ÷ receipt lines × 100 | 25 | MOD-0141 ordered qty, MOD-0142 received qty |
+| `QUAL_ACC` | Quality acceptance rate (= 100 − reject rate) | accepted quantity ÷ inspected quantity × 100 | 25 | QC inspection result — **source module not yet identified** |
+| `INV_MATCH` | Invoice match rate (= 100 − mismatch rate) | invoices passing 3-way match without exception ÷ invoices × 100 | 25 | MOD-0143 Invoice Capture & 3-Way Match |
+
+- **Period:** calendar month (§0.2's duplicate-period rule applies to it).
+- **Missing data:** a metric with no data in the period is left out and the remaining metrics carry the score (the exact
+  v1 computation is in §0.0: Σ(value × 25) / Σ(25)); an evaluation needs **at least 3 of the 4** metrics, and the missing
+  metric is shown by its absence.
+- **Minimum volume (from v1.1):** fewer than **5 receipt lines** in the period → "insufficient data", no score, no band. The
+  v1 contract carries no receipt count, so v1 cannot enforce it.
+- Rounding and bands stay as in §0.1 (exact aggregate, two decimals round-half-even once, band from the unrounded value).
+- Changing weights, tolerances or the period later is a new policy revision; published scorecards are never rewritten.
+
+Acceptance examples of the decided rules (in addition to §0.1's):
+
+| Inputs | Result |
+|---|---|
+| OTD 90, QTY_ACC 80, QUAL_ACC 100, INV_MATCH 70 (each × 25) | aggregate 85 → 85.00, MEDIUM |
+| OTD 90, QTY_ACC 80, QUAL_ACC no data, INV_MATCH 70 | Σ(value × 25) / 75 = 80 → 80.00, MEDIUM; QUAL_ACC absent from `metrics[]` |
+| two of four metrics with data | 422 at create, no draft |
+| 4 receipt lines in the month (from v1.1) | "insufficient data", no score |
+| a line received 3 days before the promised date | on time; 4 days early → not on time |
+| ordered 100, received 102 / 103 | within ±2 % / outside |
+
 ### 0.2 Evaluation period, correction and CANCELLED — proposal of this review (not in SPEC-DELTA), MOD-0147 owner decides
 
 - Duplicate period (proposed): at most **one active** evaluation per `(TenantId, LegalEntityId, SupplierId, PeriodStart,
@@ -110,7 +306,7 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
   not in the key**, so a `DRAFT` and a `PUBLISHED` for one period cannot coexist — whose partial filter selects only active
   records (a server-maintained `IsActivePeriod` boolean, true for `DRAFT`/`PUBLISHED`; the exact filter form is verified when
   implemented). A second create — sequential or concurrent — gets 409 and nothing commits. `CorrectionOf` is `null` for an
-  original evaluation. Overlapping but non-identical periods are allowed (owner to confirm).
+  original evaluation. In v1 every period is one calendar month (§0.0), so periods never partly overlap.
 - `CANCELLED` (proposed): v1 has **no cancel operation**, so this slice never produces `CANCELLED`; the enum value stays
   unused until a cancel command is approved in a contract successor.
 - Correction (BLOKE): scorecards are immutable; a correction is a new evaluation and publication with `CorrectionOf` =
@@ -125,7 +321,9 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
     A foreign-scope target is reported as 422 without disclosing that it exists.
   - The field is not in v1 — contract successor (CT contract writer); until then no correction path exists.
 
-### 0.3 Transaction, outbox and delivery — ÖNERİLEN (SPEC-DELTA "Failure, isolation and atomicity targets")
+### 0.3 Transaction outbox and delivery
+
+ÖNERİLEN (SPEC-DELTA "Failure, isolation and atomicity targets").
 
 - One MongoDB multi-document transaction commits business state, idempotency receipt, audit record and Pending outbox
   item; no compensation path. Replay adds no state, version or event.
@@ -177,7 +375,7 @@ source procurement facts, gateway/shared permission seams or other services' per
 | `TenantId`, `LegalEntityId` | Required, server-resolved; never mutation payload |
 | `SupplierId` | Required opaque MOD-0140 reference; no Supplier fields copied |
 | `PeriodStart`, `PeriodEnd` | ISO dates; start must not exceed end |
-| `Metrics` | At least one registry code; unique per evaluation; decimal-string score/weight |
+| `Metrics` | v1: 3 or 4 of the four policy codes, each once, weight 25 — the full rule is §0.0 and §12; decimal-string score/weight |
 | `OverallScore` | Derived 0..100 decimal string; client cannot override |
 | `RiskLevel` | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
 | `Status` | `DRAFT`, `PUBLISHED`, `CANCELLED` |
@@ -262,8 +460,8 @@ golden reference and seven-language localization scope.
 | `Idempotency-Key` | Mutations | 1..200 — normalisation (trim or reject) and receipt tuple **BLOKE** with the Phase 1.5 amendment (§0) | Receipt tuple per the Phase 1.5 amendment |
 | `X-Correlation-Id` | All operations | UUID | Propagate to response/audit/event |
 | `SupplierId` | Create evaluation/risk | Non-empty opaque ID | SUPPLIER-BASE frozen mock; fail closed |
-| Period | Evaluation | Valid ISO dates; start <= end | Duplicate = same Supplier+period in DRAFT/PUBLISHED → 409 (proposed, §0.2) |
-| Metrics | Evaluation | 1+, unique codes, score/weight 0..100 | Metric Registry contract |
+| Period | Evaluation | v1: `periodStart` first day and `periodEnd` last day of the same calendar month, else 422 | Duplicate = same Supplier+period in DRAFT/PUBLISHED → 409 (§0.0) |
+| Metrics | Evaluation | v1: 3 or 4 of the codes `OTD`, `QTY_ACC`, `QUAL_ACC`, `INV_MATCH`, each once, weight exactly 25, value 0..100 with ≤ 4 fractional digits, else 422 | pack-held policy `supplier-score-policy/1` (§0.0, §0.4) |
 | `ExpectedVersion`/`If-Match` | Lifecycle mutation | Current positive version | Conditional update |
 | Risk transition | Status command | Frozen state matrix | Terminal state cannot reopen silently |
 
@@ -283,9 +481,12 @@ Actor type: tenant user/service actor. Proposed server-side permissions:
 - `supplychain.supplier-performance.read`
 - `supplychain.supplier-performance.evaluate`
 - `supplychain.supplier-performance.publish`
-- `supplychain.supplier-performance.risk-manage`
+- `supplychain.supplier-performance.risk-manage` (risk part, after TPRM)
 
-Permission definition/seed is a single-writer shared seam and is not authorized by this draft.
+v1 mapping: `createSupplierEvaluation` → `.evaluate`; `submitSupplierEvaluation` → `.publish`; `GET /evaluations[/{id}]` and
+`GET /scorecards[/{id}]` → `.read`. No separation of duty in v1 (one person may hold `.evaluate` and `.publish`; Natig,
+2026-10-22). Grants go through Roles → Permissions, never the default role template. Permission definition/seed is a
+single-writer shared seam and is not authorized by this draft.
 
 ## 15. Gateway / API Routing Decision
 
@@ -295,9 +496,9 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 ## 16. Acceptance Criteria
 
 - [ ] Implementation payloads and declared failures match `SUPPLIER-PERFORMANCE` v1 contract tests.
-- [ ] Evaluation creation derives a score from valid Metric Registry codes and persists one audit/outbox chain.
+- [ ] Evaluation creation derives a score from the v1 policy `supplier-score-policy/1` (§0.0) and persists one audit/outbox chain.
 - [ ] Submit publishes exactly one immutable scorecard and `SupplierEvaluationPublished` event.
-- [ ] Risk create/status commands follow the frozen lifecycle and preserve correlation.
+- [ ] **Later slice (risk, after TPRM):** risk create/status commands follow the frozen lifecycle and preserve correlation.
 - [ ] Idempotent replay and stale version paths have no duplicate or overwritten side effects.
 - [ ] Tenant/legal-entity isolation returns 404 and server-side permission denial returns 403.
 - [ ] SUPPLIER-BASE is consumed only through its central frozen mock; no Supplier master/schema is local.
@@ -319,13 +520,13 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [x] Backend-only proposed first slice, paths, objects, failures and acceptance are explicit.
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
-- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
-- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. Blocks deterministic evaluation/score.
-- [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration.
+- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built. Start-on-mock (§0.0): for DL-1 code only the frozen 1.3.0 contract is needed; the DC-02 endpoint (DL-3) is an **enabling** gate.
+- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) with this ready-for-dev revision.
+- [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration — **out of v1** (§0.0, risk part after MOD-0216).
 - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
-- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — the service has no audit-ledger file (BL-615).
-- [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
+- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
+- [x] Module owner set `status: ready-for-dev` (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row must be written on the ready-for-dev version). This is not code authority on its own: code starts only when the §0.0 code conditions are met, and the module is enabled for users only after the §0.0 enabling gates.
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
 
 ## 19. Implementation Notes
@@ -346,18 +547,33 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 
 ## 21. Audited Events
 
-AUD-001 (`audit-trail-standard.md`). `Diten.SupplyChainService` has **no accepted audit trail** today: there is no
-`tests/architecture/audit-ledger/Diten.SupplyChainService.md` (part of BL-615), and its module-local `*_audit`
-collections are not an accepted §5.c equivalent trail. Per §10.1 a service without accepted infrastructure gets no
-`a`/`b` path; the trail is a **dependency** and blocks `ready-for-dev`. No command here is K2 class.
+AUD-001 (`audit-trail-standard.md`). The evaluation commands use **path b, trail `supplychain-merkezi-iletim`** (the
+service's central forwarder, ledger `tests/architecture/audit-ledger/Diten.SupplyChainService.md`), **valid from the moment
+PR #198 is on `main`**; until then it is a v1 gate (§0.0). The risk commands keep the dependency note until the risk part.
+No command here is K2 class.
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
 |---|---|---|---|---|---|
-| CreateSupplierEvaluationCommand | supplier-evaluation.created | SupplierEvaluation | — (bagimlilik: SupplyChain izi) | AfterState: SupplierId, PeriodStart, PeriodEnd, Metrics, OverallScore, RiskLevel | — |
-| SubmitSupplierEvaluationCommand | supplier-evaluation.published | SupplierEvaluation → SupplierScorecard | — (bagimlilik: SupplyChain izi) | Before/After: Status; AfterState: ScorecardId, OverallScore | — |
+| CreateSupplierEvaluationCommand | supplier-evaluation.created | SupplierEvaluation | b — supplychain-merkezi-iletim (PR #198 main'de) | AfterState: SupplierId, PeriodStart, PeriodEnd, Metrics, OverallScore, RiskLevel | — |
+| SubmitSupplierEvaluationCommand | supplier-evaluation.published | SupplierEvaluation → SupplierScorecard | b — supplychain-merkezi-iletim (PR #198 main'de) | Before/After: Status; AfterState: ScorecardId, OverallScore | — |
 | RegisterSupplierRiskCommand | supplier-risk.registered | SupplierRisk | — (bagimlilik: SupplyChain izi) | AfterState: SupplierId, Category, Level, Status, SourceType, SourceId | — |
 | ChangeSupplierRiskStatusCommand | supplier-risk.status-changed | SupplierRisk | — (bagimlilik: SupplyChain izi) | Before/After: Status, Level, ResolvedAt | — |
 
-Not recorded: no credential or token is part of these commands. `Summary` (max 1000) and `resolutionNote` (max 2000) are
-free text and may carry personal or sensitive data: the audit record keeps their **length and SHA-256, not the text**
-(proposal of this review; the business record keeps the text under `supplychain.supplier-performance.read`). Owner to confirm.
+Not recorded: no credential or token is part of these commands. Free text may carry personal or sensitive data, so the
+audit record keeps its **length and SHA-256, not the text**: in v1 the evaluation `notes` (max 2000, create) and the submit
+`comment` (max 1000); with the risk part `Summary` (max 1000) and `resolutionNote` (max 2000). The business record keeps the
+text under `supplychain.supplier-performance.read`. (The central forwarder records no request body at all; this line binds
+any module-local trail.)
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | değerlendirme çekirdeği ve okumalar | v1 scope — performance scorecard now and risk after TPRM, v1 fixed metric set, Owned Objects, SupplierEvaluation / SupplierScorecard, Validation Rules, Failure Path to Verify, Authorization Convention |
+| DL-2 | gönderim, yayın ve değişmezlik | Transaction outbox and delivery, Runtime Constraints, Failure Path to Verify, Audited Events |
+
+DL-1: oluşturma, dört GET, D2 uygunluk okuması (§0.0), v1 eşlemesi (§14). DL-2: gönderim (submit), yayın ve değişmezlik,
+değerlendirme komutlarının denetimi (§21).
+
+v1 dışı işler (v1.1 hesaplanan metrikler — okuma sözleşmeleri ve XMC-001; risk kısmı — MOD-0216 TPRM ve DC-05) bu sürümde dilim
+**değildir**; ayrı bir paket revizyonu ve onayıyla gelir. CT-APR-01 satırının not alanı: "yalnız DL-1, DL-2".
