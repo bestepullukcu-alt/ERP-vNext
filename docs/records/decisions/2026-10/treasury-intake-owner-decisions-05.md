@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D74 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D75 (2026-10-28) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -791,6 +791,19 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT 
    atama anahtarı ekler; koddaki liste 10'dan 20'ye çıkar (sayım düzeltmesi).
 3. **Muafiyet atayan:** yeni rol **Muafiyet yetkilisi** — yalnız `auth.payment-sod-waivers.assign` ve `.read`; açık atamayla verilir;
    ödeme sürecinde rolü olan kişi kendine muafiyet veremez (kendine atama 403, D64). Rol sayısı 26 → 27. MOD-0018 sahibinin teyidi Auth ekiyle.
+
+## D75 — D73 / D74 uygulamasının açık noktaları (soru kutusu, hepsi önerilen, 2026-10-28)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-28; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **K-W7 Muafiyet yetkilisi rolü:** rolü Treasury profili izinsiz oluşturur, izinler açık atamayla verilir; atayan hem
+   `auth.payment-sod-waivers.assign` iznini hem Muafiyet yetkilisi rol üyeliğini taşımalıdır (izin başka role elle bağlansa da rolsüz kişi
+   atayamaz).
+2. **Ortak sırın iki sınırı kabul edilir ve kayda alınır:** (a) sırrı tutan her servis iç uçları çağırabilir (çağıran ayırt edilmez);
+   (b) kullanıcı token'ı olmayan arka plan işleri iç uçları çağıramaz — aday listesi yalnız kullanıcının başlattığı gönderimde hesaplanır,
+   yeniden deneme ilk listeyi kullanır. Servis kimliği ileride gelirse yeniden değerlendirilir.
+3. **MOD-0119 kod çevirmede 404 `UNKNOWN_SUPPLIER`** → 422 `AP_MATCH_REFERENCE_MISMATCH` (eşitlik kanıtlanamaz; D73/1 çıkarımı teyit).
+4. **MDM 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` tüketicide:** hesap uygun değil; tüketici kendi 422'sini döner, kayıt yazılmaz, yeniden deneme yok.
 
 ## Karar olmayanlar
 

@@ -9,7 +9,7 @@
     x-decisions    : D20/1 (yerleşim), D23/1 (tedarikçi kapsamı), D23/3 (şirket Active + Approved), D24 (O-4…O-12),
                      D27/1 (MOD-0003 yok → T32 sapması: sözleşme bu klasörde dondurulur) —
                      docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md;
-                     D72/2, D73/2 (422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`) —
+                     D72/2, D73/2 (422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`), D75/4 (tüketici sınıfı) —
                      docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md
     x-pattern      : LEGAL-ENTITY-LOOKUP 1.1.0 (docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md §1–§2)
     x-source       : MOD-0289 pack Runtime Constraints → "Okuma sözleşmesi — BANK-ACCOUNT-LOOKUP 1.0.0"
@@ -93,6 +93,7 @@ etmeden işleme devam etmez:
 | 200 ve E1…E9'un hepsi sağlanıyor | uygun | işlem sürer |
 | 200, tutarlı (E1–E3, E9 sağlanıyor, alanlar tanımlı değerlerde) ama E4–E8'den biri tüketicinin kuralını sağlamıyor | tanımlı, uygun değil | 422 |
 | 404 | tanımlı, kullanılamaz | 422 |
+| 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (§3; tedarikçi sahipli hesapta isteğin şirketi tanınmıyor) | tanımlı, uygun değil — hesap uygun değil (KARAR D75/4) | tüketicinin kendi 422'si (paketin "hesap uygun değil" kodu); kayıt yazılmaz; otomatik yeniden deneme yok |
 | 200 ama `bankAccountId` yok / farklı; `referenceable = false`; `lifecycleState ≠ ACTIVE`; `ownerType` bilinmeyen; `ownerType` ile sahip alanları çelişkili; `ownerState` / `bankState` / `identifierCheckLevel` yok, `null` ya da bilinmeyen; tür ile düzey uyuşmuyor; `contractVersion` yok ya da `1.` değil; gövde ayrıştırılamıyor | geçersiz / çelişkili | 503 |
 | 400, 401 / 403, 5xx (MDM 503 dahil), zaman aşımı, ulaşılamıyor | erişilemiyor | 503 |
 
@@ -133,3 +134,6 @@ bu dosya `docs/analysis/contracts/bank-account-lookup.md` olur ve MOD-0003 gelin
 - 1.0.0 (2026-10-28, taslak eki — KARAR D73/2) — §3'e 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` yanıtı eklendi (tedarikçi sahipli
   hesapta MOD-0140 404 `UNKNOWN_LEGAL_ENTITY`); yalnız ekleme — mevcut yanıtlar, alanlar ve fikstürler değişmedi. Sözleşme
   dondurulmadığı (DL-2) için sürüm 1.0.0 kaldı. Tüketici sınıflandırması (§5) ve fikstürler (§6) için satır D73/2'de verilmedi.
+- 1.0.0 (2026-10-28, taslak eki — KARAR D75/4) — §5'e 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` satırı eklendi: hesap uygun değil,
+  tüketici kendi 422'sini döner, kayıt yazılmaz, yeniden deneme yok (503'e eşlenmez); yalnız ekleme — mevcut satırlar, alanlar ve
+  fikstürler değişmedi. §6'ya bu yanıt için fikstür eklenmedi (D75/4 fikstür adı vermedi).
