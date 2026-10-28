@@ -11,7 +11,8 @@ namespace Diten.SupplyChainService.Application.Common;
 /// contract reserves for 400, and <c>SHIPMENT_ROOT_INVALID</c> was emitted although the contract declares it
 /// nowhere. The UI's lookup returned <c>undefined</c> and the user saw no message on a server failure.
 /// <para>
-/// The 52 constants below were extracted from the contract, not authored. To re-extract and compare:
+/// The 52 constants below were extracted from the contract, not authored. SHIPMENT-BUNDLE 3.4.0 (MOD-0183 DL-1, WP-P1)
+/// added seven, re-extracted with the same command: 59. To re-extract and compare:
 /// <code>
 /// python3 -c "import re;print(sorted({m.group(1) for m in (re.search(r'code:\s*([A-Z_]+)',l) for l in open('docs/analysis/contracts/shipment-bundle.openapi.yaml')) if m}))"
 /// </code>
@@ -50,6 +51,12 @@ public static class ContractErrorCodes
     public const string PodAlreadyCaptured = "POD_ALREADY_CAPTURED";
     public const string WarehouseShipmentTriggerUnavailable = "WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE";
 
+    // Stock issue at dispatch (3.4.0, MOD-0183 §23)
+    public const string InventoryRefused = "INVENTORY_REFUSED";
+    public const string ShipmentLineStockIncomplete = "SHIPMENT_LINE_STOCK_INCOMPLETE";
+    public const string DispatchInProgress = "DISPATCH_IN_PROGRESS";
+    public const string DispatchCompensationFailed = "DISPATCH_COMPENSATION_FAILED";
+
     // Carrier
     public const string CarrierNotFound = "CARRIER_NOT_FOUND";
     public const string CarrierCodeConflict = "CARRIER_CODE_CONFLICT";
@@ -72,6 +79,10 @@ public static class ContractErrorCodes
     public const string DispositionRequired = "DISPOSITION_REQUIRED";
     public const string ReturnShipmentRootInvalid = "RETURN_SHIPMENT_ROOT_INVALID";
     public const string ReturnShipmentRootUnavailable = "RETURN_SHIPMENT_ROOT_UNAVAILABLE";
+    // 3.4.0 (MOD-0186 §34) — declared now so the parity holds; MOD-0186 DL-1 emits them.
+    public const string ReturnReceiptInProgress = "RETURN_RECEIPT_IN_PROGRESS";
+    public const string ReturnLineNotUnpostable = "RETURN_LINE_NOT_UNPOSTABLE";
+    public const string ReturnSourceMovementMissing = "RETURN_SOURCE_MOVEMENT_MISSING";
 
     // Claim
     public const string ClaimNotFound = "CLAIM_NOT_FOUND";
@@ -98,11 +109,13 @@ public static class ContractErrorCodes
         IdempotencyKeyReuse, CorrelationRootMismatch, DependencyUnavailable, DependencyResponseInvalid,
         ReferenceStateUnavailable, ShipmentNotFound, ShipmentLineNotFound, InvalidShipmentTransition,
         DuplicateShipment, ShipmentNotEligible, ShipmentNotReturnable, ShipmentAlreadyAssigned,
-        ShipmentCarrierMismatch, PodAlreadyCaptured, WarehouseShipmentTriggerUnavailable, CarrierNotFound,
+        ShipmentCarrierMismatch, PodAlreadyCaptured, WarehouseShipmentTriggerUnavailable, InventoryRefused,
+        ShipmentLineStockIncomplete, DispatchInProgress, DispatchCompensationFailed, CarrierNotFound,
         CarrierCodeConflict, CarrierModeUnsupported, InvalidCarrierTransition, LoadNotFound,
         InvalidLoadTransition, InvalidLoadStops, ReturnNotFound, InvalidReturnTransition, InvalidReturnQuantity,
         ReturnQuantityExceeded, ReturnUomMismatch, ReturnSourceChanged, DuplicateReturnLine, DispositionRequired,
-        ReturnShipmentRootInvalid, ReturnShipmentRootUnavailable, ClaimNotFound, InvalidClaimTransition,
+        ReturnShipmentRootInvalid, ReturnShipmentRootUnavailable, ReturnReceiptInProgress, ReturnLineNotUnpostable,
+        ReturnSourceMovementMissing, ClaimNotFound, InvalidClaimTransition,
         ClaimAmountInvalid, ClaimApprovalAmountInvalid, ClaimApprovedAmountNotAllowed, ClaimCarrierMismatch,
         ClaimCorrelationMismatch, ClaimShipmentIneligible, ClaimReferenceInvalid, ClaimReferenceIncomplete,
         ClaimReferenceUnavailable, ClaimStorageUnavailable, InventoryUnavailable, InventoryReferenceInvalid,
