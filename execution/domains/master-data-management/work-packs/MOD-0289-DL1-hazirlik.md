@@ -4,7 +4,7 @@ status: hazırlık — dağıtım izni değil, WP prompt'u değil
 prepared_at_local: 2026-10-26
 refreshed_at_local: 2026-10-27
 prepared_by: Treasury Intake Control Tower
-pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 698e135e68f7343161450927b016c6045ba9ef6f5b79968042b440eeaad36bd9 (pack D58/D59 revizyonu, 2026-10-28; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
+pack: execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md (status draft, approval_status not-approved, sha256 8941bfaee566a29fbf1fe6acc56d390799bf05f5812ef356220fc8b49ec1152c (pack sahip denetimi 5cfd67813 düzeltmesi, 2026-10-28; D58/D59 sürümü `698e135e…`; D57 sürümü `5af910d6…`; D56 sürümü `5137e84f…`; bu kaydın ölçümleri ve satır atıfları önceki sürüm `ef905628…` içindir), dal chore/ct/treasury-intake-ct-05 @00d3f2b41 — D51 revizyonu, D52'de değişmedi; satır atıfları main @904dfd5c2 sürümüne (1850f37c…e8b3))
 source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc5d (salt okunur; MOD-0289 kod alma izni D45/3 — D27/5 koşullarıyla: kod yalnız onaylı paket sürümüyle ve dilim sırasıyla, sabit kiracı taşınmaz)
 ---
 

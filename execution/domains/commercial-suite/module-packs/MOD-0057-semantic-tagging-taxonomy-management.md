@@ -18,7 +18,7 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: not-approved
-owner: "Treasury Intake Control Tower (taslak) — domain sahibi onayı bekleniyor"
+owner: "Treasury Intake Control Tower (taslak) — commercial-suite domain sahibi atanmadı (yerleşim KARAR D61)"
 branch: feature/crm/mod-0057-semantic-tagging-taxonomy
 started: 2026-10-27
 target: 2027-06-30
@@ -28,10 +28,26 @@ slice: "TRM-18 — v1 bağımsız: taksonomi ağaçları + düz etiket kümeleri
 
 # MOD-0057 — Semantic Tagging & Taxonomy Management
 
+> **Revizyon (2026-10-28, sahip denetimi 5cfd67813 KOŞULLU):** (1) **P1 ağaç çiti:** kayıt bazındaki CAS iki kök terimin
+> eşzamanlı olarak birbirinin altına taşınmasını önlemiyordu (iki işlem farklı belgeye yazar, ikisi de commit olur → döngü).
+> Taksonomi düzeyinde ortak çit eklendi: `TagTaxonomy.HierarchyVersion` (Entity Fields); ağaç yapısını değiştiren terim
+> komutları sürümü işlem içinde okur ve aynı işlemde koşullu artırır, çakışma 409 `CRM_TAG_CONCURRENCY_CONFLICT`, otomatik
+> yeniden deneme yok (Runtime Constraints "Ağaç çiti", Validation Rules `ParentTermId`, Failure Path). **Yeni AC-42**
+> (gerçek replica set'te karşılıklı taşıma yarışı, sabotajlı; DL-1). (2) **P2 kesişen AC'ler:** "kesişen AC yok" cümlesi
+> yanlıştı; birden çok dilime uzanan AC'ler (AC-6, AC-11, AC-12, AC-13, AC-14, AC-15, AC-16, AC-18, AC-19, AC-24, AC-25,
+> AC-27, AC-28) dilim bitişlerinde "(… kısmı)" ile yazıldı, son ilgili dilimde tam kapanır; dilim tablosu değişmedi.
+> (3) **Yerleşim KARAR D61 ile onaylandı** (K1, commercial-suite sahibi atanana kadar); O-1 kapandı. Servis / port (O-2),
+> MOD-0162-FU01 sınırı (O-4), kapsam ve diğer açık kararlar açık kalır; commercial-suite domain sahibi ataması ayrı açık
+> nokta (O-13). Mevcut AC numaraları değişmedi. `status: draft`.
+>
 > **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
-> rotası, defter satırı ya da kaynak projeden kod alma izni vermez. **Yerleşim onay bekliyor:** `commercial-suite` yalnız
-> bir öneridir (KARAR D55/2); commercial-suite domain sahibinin onayı gelene kadar domain-config ve kimlik kaydı satırı
-> yazılmaz (XMC-001) — bu taslak onları değiştirmez. **Kod alma izni yok:** kaynak (`R@e4c93c29`) yalnız okunur,
+> rotası, defter satırı ya da kaynak projeden kod alma izni vermez. **Yerleşim onaylandı (KARAR D61,
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` "## D61"):** commercial-suite için kayıtlı domain
+> sahibi olmadığından K1, sahip atanana kadar MOD-0057'nin `commercial-suite`'e yerleşimini yönetim olarak onayladı (D55/2
+> önerisi). Bu yalnız yerleşim onayıdır: domain-config In-Scope satırı ve kimlik kaydı satırı paket onay PR'ında önerilir —
+> bu taslak onları değiştirmez (XMC-001); servis / port (O-2), MOD-0162-FU01 sınırı (O-4), kapsam ve diğer açık kararlar
+> açık kalır; commercial-suite domain sahibi ataması ayrı açık noktadır (O-13; atandığında D61 onayı ona bilgi olarak
+> gider). D61 paket onayı, kod izni ya da sahiplik ataması değildir. **Kod alma izni yok:** kaynak (`R@e4c93c29`) yalnız okunur,
 > başvuru malzemesidir; kod alma ayrı karardır (D55/4, D1 deseni; öneri O-9). Kod ancak paket `approved` /
 > `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02) ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra
 > yazılır. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket düzeyi; "— DL-n için" maddeleri o dilimin
@@ -41,7 +57,8 @@ slice: "TRM-18 — v1 bağımsız: taksonomi ağaçları + düz etiket kümeleri
 > — (1) park kalkar, level-1 kaydı geçerli; (2) yerleşim önerisi `commercial-suite`, domain sahibi onayına bağlı; (3) v1
 > bağımsız: taksonomi ve etiket yönetimi (sınıf ağaçları, etiketler, varlığa etiket bağlama), arama ve bilgi grafiği
 > bağlantısı MOD-0053 / MOD-0056 Recovery'ye gelince sonraki sürüm; (4) kuleyi Treasury CT yürütür, taslağı CT yazar, kod
-> alma ayrı karar. **D19/2** (`-02.md`) tarihçedir — "park et" kararı D55/1 ile kalktı. **D51/1** (paket kapısı ile dilim
+> alma ayrı karar. **D61** (`-05.md`) — D55/2 yerleşim önerisini K1, commercial-suite sahibi atanana kadar onayladı
+> (yalnız yerleşim). **D19/2** (`-02.md`) tarihçedir — "park et" kararı D55/1 ile kalktı. **D51/1** (paket kapısı ile dilim
 > kapısı ayrı) ve **D53** (Auth iki parça: paket metni paket kapısında, kayıt kodu DL-1 kabul kapısında) bu paketin
 > checklist biçimine uygulanır.
 >
@@ -121,8 +138,9 @@ tags, tagging rules, tag approvals", asgari sözleşme `TAXONOMY-BUNDLE` (kaynak
   `POST /api/internal/audit/append`; MOD-0018 Auth (JWT, izin talepleri); CrmService Mongo işlem altyapısı (replica set).
   MOD-0048, MOD-0023, MOD-0262 v1'de tüketilmez.
 - **Domain-config ile ilişki:** commercial-suite domain-config'te MOD-0057 satırı yok (`execution/domains/commercial-suite/domain-config.md:19-25`)
-  ve bu taslak yazmaz (D55/2). Yetki sırası gereği paket domain-config'in üstündedir; yine de yerleşim onayı ve
-  domain-config satırı main'e girmeden `ready-for-dev` yok (Ready-for-dev Checklist).
+  ve bu taslak yazmaz. Yerleşim KARAR D61 ile onaylıdır; domain-config In-Scope satırı ve kimlik kaydı satırı paket onay
+  PR'ında önerilir (D61). Yetki sırası gereği paket domain-config'in üstündedir; yine de domain-config satırı main'e
+  girmeden `ready-for-dev` yok (Ready-for-dev Checklist).
 
 ## Owned Objects
 
@@ -218,6 +236,7 @@ Authorization Convention tablosu (öneri, O-5).
 | `AllowedTargetTypes` | list<{`TargetModule`, `TargetType`}> | evet | 1–20 öğe, tekrarsız; biçim Validation Rules |
 | `MaxTermsPerTarget` | int? | hayır | boş = sınırsız; 1–50 |
 | `Status` | enum `Draft` / `Active` / `Retired` | evet | sunucu; yalnız geçiş komutlarıyla |
+| `HierarchyVersion` | long | evet | sunucu; 0'dan başlar; **ağaç çiti** — yalnız ağaç yapısını değiştiren terim komutlarının işleminde koşullu `$inc` (Runtime Constraints "Ağaç çiti"); `Version` CAS'ından ayrıdır; istek DTO'sunda yok |
 | `ActivatedAt` / `ActivatedBy` | DateTimeOffset? / Guid? | — | sunucu |
 | `RetiredAt` / `RetiredBy` | DateTimeOffset? / Guid? | — | sunucu |
 | `CreatedBy` / `UpdatedBy` / `DeletedBy` | Guid / Guid? / Guid? | — | yalnız JWT `sub` |
@@ -324,8 +343,8 @@ Kaynaktaki küçük harfli hata literalleri (`taxonomy_cycle_detected` …, pake
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml` (FROZEN), `Controllers/Archive/**`, `Views/Archive/**`;
   `frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` yalnız domain-config'in izin verdiği izinle korunan `<li>`.
 - `execution/domains/commercial-suite/domain-config.md`, `execution/registries/module-id-registry.md`,
-  `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md` — yerleşim onayına (O-1) ve DCP
-  kararına (O-10) kadar.
+  `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md` — paket onay PR'ına (domain-config ve
+  kimlik kaydı satırı orada önerilir, D61) ve DCP kararına (O-10) kadar.
 - Kaynak depo `/Users/natig/Projects/ERP-vNext` ve devir klasörü `/Users/natig/Projects/treasury-transfer-handoff/**` — salt-okunur.
 
 ## Dependencies
@@ -356,6 +375,7 @@ Kaynaktaki küçük harfli hata literalleri (`taxonomy_cycle_detected` …, pake
 - **Soft delete:** silme ve kaldırma yalnız `IsDeleted = true` + `DeletedAt` (UTC) + `DeletedBy`; filtrede `Id` + `TenantId`.
   Hard delete ucu yok. Silinmiş kayıt listelerde ve ayrıntıda görünmez (404).
 - **Eşzamanlılık:** taksonomi ve terim güncellemeleri `Version` CAS (`MatchedCount == 0` → 409); istemci `version` gönderir.
+  Ağaç yapısını değiştiren terim komutları buna ek olarak taksonomi düzeyindeki ağaç çitini alır (aşağıda "Ağaç çiti").
 - **İşlem bütünlüğü:** her yazma komutu iş verisini, gerekiyorsa `TagTargetSlot` sayacını ve merkezi denetim olayını
   (`CentralAuditRecorder.EnlistAsync`) **tek Mongo işleminde** yazar; biri başarısızsa hiçbiri kalmaz. Taksonomi silme
   terimleri aynı işlemde soft siler.
@@ -364,6 +384,19 @@ Kaynaktaki küçük harfli hata literalleri (`taxonomy_cycle_detected` …, pake
   Kaldırma aynı işlemde azaltır.
 - **Hiyerarşi:** derinlik ≤ 5; taşıma `Path` ve `Depth` değerlerini alt ağaçta aynı işlemde yeniden yazar; alt ağaç
   boyutu taşıma başına ≤ 1000 terim (aşan taşıma 400 — tek işlemde sınırsız yazım yok).
+- **Ağaç çiti (taksonomi düzeyinde ortak kontrol):** terim kaydının `Version` CAS'ı yalnız aynı terime yazan iki isteği
+  ayırır; A'yı B'nin altına ve B'yi A'nın altına taşıyan iki işlem farklı belgelere yazar, ikisi de taşımadan önceki ağacı
+  okur ve ikisi de commit olursa döngü oluşur. Bu yüzden ağaç yapısını değiştiren her terim komutu — terim oluşturma,
+  `ParentTermId` değiştiren `UpdateTagTerm` (taşıma), terim silme ve toplu silme — işlemin **ilk okuması** olarak
+  taksonominin `HierarchyVersion` değerini okur; ata zinciri, döngü, derinlik ve çocuk denetimleri bu okumadan sonra aynı
+  işlemde yapılır; iş yazımıyla aynı işlemde taksonomi belgesine `updateOne({Id, TenantId, IsDeleted: false,
+  HierarchyVersion: okunan}, {$inc: {HierarchyVersion: 1}})` uygulanır. `MatchedCount == 0` ya da Mongo yazma çakışması
+  (`WriteConflict`, kod 112) → işlem geri alınır, 409 `CRM_TAG_CONCURRENCY_CONFLICT`, hiçbir terim, alt ağaç ya da denetim
+  olayı kalmaz. Çitli komutlar sürücü tarafından **otomatik yeniden denenmez** (CrmService deseni açık
+  `session.StartTransaction()` / `CommitTransactionAsync` — `Persistence/Repositories/ConceptNodeWithRelationshipUnitOfWork.cs:38-43`);
+  istemci yeniden yükler. Çit yalnız aynı taksonomideki ağaç yazmalarını sıraya sokar; aynı taksonomi belgesine yazan
+  taksonomi komutları (güncelleme, etkinleştirme, emekliye ayırma) ile eşzamanlı çakışmada da 409 döner. Terim etiketi,
+  açıklaması, sırası ya da takma adı değişen (`ParentTermId` değişmeyen) güncelleme ve kullanımdan kaldırma çiti almaz.
 - **Sınırlar:** liste sayfası ≥ 1, boyut 1–200 (kaynak validator sınırı, paket §K); toplu silme ve `by-targets` ≤ 100
   kimlik; taksonomi başına ≤ 5000 terim (öneri; aşılırsa 409). İstek boyutu ve hız sınırı servis genelinden gelir.
 - **Hata sınıflandırması:** doğrulama 400 · durum / tekillik / eşzamanlılık 409 · izin 403 · kimlik 401 · bulunamadı /
@@ -485,7 +518,7 @@ Resources/Views/CRM/{Module}/    {Module}Index.{en,tr,fr,es,zh,ar,ru}.resx
 | Delete / BulkDelete (taksonomi) | — | yalnız `Draft` (aksi 409 `CRM_TAG_TAXONOMY_NOT_DRAFT`); toplu ≤ 100 kimlik, her kimlik ayrı değerlendirilir ve sonuç kimlik başına döner | — | — |
 | TagTerm.TermCode | oluştururken evet | `^[a-z0-9][a-z0-9-]{0,63}$`; güncellemede farklı değer 400 `CRM_TAG_TERM_CODE_IMMUTABLE` | `ux_crm_tag_term_code` (kısmi değil) | kod var mı (silinmiş dahil) |
 | TagTerm.Label | evet | trim, 1–200; kardeşler arasında normalize tekil | `ux_crm_tag_term_sibling_label` | — |
-| TagTerm.ParentTermId | hayır | `Flat` taksonomide dolu → 400 `CRM_TAG_FLAT_NO_PARENT`; aynı taksonominin silinmemiş terimi (aksi 400); kendisi ya da alt ağacı → 400 `CRM_TAG_TERM_CYCLE`; sonuç derinlik > 5 → 400 `CRM_TAG_TERM_DEPTH_EXCEEDED` | — | ata zinciri okunur |
+| TagTerm.ParentTermId | hayır | `Flat` taksonomide dolu → 400 `CRM_TAG_FLAT_NO_PARENT`; aynı taksonominin silinmemiş terimi (aksi 400); kendisi ya da alt ağacı → 400 `CRM_TAG_TERM_CYCLE`; sonuç derinlik > 5 → 400 `CRM_TAG_TERM_DEPTH_EXCEEDED`; eşzamanlı ağaç yazmasıyla çakışma → 409 `CRM_TAG_CONCURRENCY_CONFLICT` (ağaç çiti) | `HierarchyVersion` koşullu `$inc` | `HierarchyVersion` okunduktan sonra ata zinciri aynı işlemde okunur |
 | TagTerm.SortOrder | hayır | 0–9999 | — | — |
 | TagTerm.Aliases | hayır | ≤ 10, her biri trim 1–200, normalize tekrarsız | — | — |
 | Retired taksonomide terim yazımı | — | 409 `CRM_TAG_TAXONOMY_STATE` | — | — |
@@ -508,6 +541,9 @@ Resources/Views/CRM/{Module}/    {Module}Index.{en,tr,fr,es,zh,ar,ru}.resx
 - **Mükerrer bağ** — Beklenen: 409 `CRM_TAG_ASSIGNMENT_DUPLICATE`; eşzamanlı 20 istekte tek bağ, tek denetim olayı.
 - **Eksik ad / etiket / hedef** — Beklenen: 400 + doğrulayıcı mesajı (resx) + kaydetme engellenir.
 - **Döngü ya da derinlik aşımı** — Beklenen: 400 `CRM_TAG_TERM_CYCLE` / `CRM_TAG_TERM_DEPTH_EXCEEDED`; ağaç değişmez.
+- **Eşzamanlı karşılıklı taşıma (A → B altı ve B → A altı)** — Beklenen: biri 200, diğeri 409 `CRM_TAG_CONCURRENCY_CONFLICT`
+  (ağaç çiti); ağaçta döngü yok, kaybeden isteğin hiçbir yazımı ve denetim olayı kalmaz; ekranda "veri değişti, yeniden
+  yükleyin" (AC-42).
 - **Hedef sınırı dolu** — Beklenen: 409 `CRM_TAG_TARGET_LIMIT_REACHED`; eşzamanlı isteklerde sınır aşılmaz.
 - **Eşzamanlılık çakışması** — Beklenen: 409 `CRM_TAG_CONCURRENCY_CONFLICT` + ekranda "veri değişti, yeniden yükleyin";
   sessiz üzerine yazma yok.
@@ -659,13 +695,15 @@ AC durumu kabul kaydında (`scripts/acceptance_record.py`) izlenir; bu paketteki
 - [ ] AC-39 (zorunlu) — `TAGTAXONOMIES`, `TAGTAXONOMYTERMS`, `TAGASSIGNMENTS` için `Help.{KOD}.Purpose`, `Help.{KOD}.Audience`, `Help.{KOD}.Step1…Step3` ve `Step{n}Title` 7 dilde vardır; `python3 scripts/check_pack_nav_keys.py` geçer.
 - [ ] AC-40 (zorunlu) — Silme, toplu silme, emekliye ayırma, kullanımdan kaldırma ve bağ kaldırma Premium SweetAlert2 (MOD-0013) onayı ister; eylem düğmeleri yalnız sunucunun `allowedActions` listesindekilerdir.
 - [ ] AC-41 (isteğe bağlı) — Terim ekranında etiket sütunu `Path` derinliğine göre girintili gösterilir; ayrı ağaç bileşeni yoktur.
+- [ ] AC-42 (zorunlu) — **Ağaç çiti (taksonomi düzeyinde ortak kontrol):** gerçek replica set'te aynı `Hierarchical` taksonominin iki kök terimi A ve B için "A'yı B'nin altına taşı" ve "B'yi A'nın altına taşı" istekleri, test kancasıyla iki işlem de `HierarchyVersion` ve ata zincirini okuduktan sonra ve ikisi de commit etmeden önce buluşturularak eşzamanlı koşulur (en az 50 tur); her turda tam biri 200, diğeri 409 `CRM_TAG_CONCURRENCY_CONFLICT`; tur sonunda ağaçta döngü yoktur (her terimin ebeveyn zinciri en çok 5 adımda köke ulaşır, `Path` ve `Depth` ebeveyn zinciriyle tutarlıdır), `HierarchyVersion` tam bir artmıştır, kaybeden isteğin hiçbir terim yazımı ve denetim olayı kalmamıştır. Aynı çit, derinliği 4 olan bir terimin altına çocuk ekleme ile o terimin ebeveynini bir düzey derinleştiren taşımanın eşzamanlı yarışında derinliği 5'i aşan terim bırakmaz ve bir terimi silme ile altına çocuk ekleme yarışında ebeveyni silinmiş etkin terim bırakmaz. **Sabotaj:** terim kaydının `Version` CAS'ı yerinde bırakılıp yalnız çitin koşullu `$inc` adımı kaldırıldığında karşılıklı taşıma testi kırmızıya döner (iki istek de 200, döngü oluşur); bellek içi sahte depo bu AC'yi kapatmaz (AC-18).
 
 ## Test Expectations
 
 - **Birim:** doğrulayıcılar (her alan); `TagTermHierarchy` (döngü, derinlik, yol üretimi, alt ağaç sınırı); `TagTargetReference`
   (desenler, `TargetKey`); durum geçişleri ve `allowedActions`; hata kodu → HTTP eşlemesi.
 - **Entegrasyon (gerçek Mongo replica set, işlem):** kiracı izolasyonu (AC-4, AC-25), veri kapsamı (AC-26), soft delete
-  (AC-5, AC-24), CAS (AC-7), tekil indeks yarışları (AC-2, AC-3, AC-22), sayaç yarışı (AC-23), işlem bütünlüğü ve denetim
+  (AC-5, AC-24), CAS (AC-7), ağaç çiti ve karşılıklı taşıma yarışı (AC-42), tekil indeks yarışları (AC-2, AC-3, AC-22),
+  sayaç yarışı (AC-23), işlem bütünlüğü ve denetim
   olayı hata enjeksiyonu (AC-11), aktör ve joker (AC-14, AC-15).
 - **Mongo yalıtımı (AC-18):** suite'in kendi URI değişkeni (ad DL-1'de belirlenir); test sınıfı başına benzersiz veritabanı;
   indeks testleri kendi veritabanında. Bellek içi sahte depo işlem / yarış AC'lerini kapatmaz.
@@ -714,14 +752,18 @@ onaylar ve yalnız var olan kodun okunarak ölçülmesi; (b) **dilim kabul kapı
 maddeleri paket düzeyinde engel değildir; yalnız o dilimin (ve sonrakilerin) önkoşuludur.
 
 **ENGELLER — paket kapısı:**
-- [ ] O-1 yerleşim: commercial-suite domain sahibinin onayı (D55/2, XMC-001) — sahibi adlandırılmadı (TBD)
-- [ ] commercial-suite domain-config satırı ve kimlik kaydı satırı main'de (O-1 onayından sonra; bu taslak yazmaz)
+- [x] O-1 yerleşim: `commercial-suite` — **KARAR D61** (2026-10-28; K1, commercial-suite domain sahibi atanana kadar; yalnız yerleşim onayı)
+- [ ] commercial-suite domain-config In-Scope satırı ve kimlik kaydı satırı main'de (paket onay PR'ında önerilir — D61; bu taslak yazmaz)
 - [ ] O-2 servis ve port, O-3 RCS-001, O-4 MOD-0162-FU01 sınırı, O-5 izin ad alanı ve rol şablonları, O-6 denetim yolu ve kategori, O-7 veri kapsamı, O-9 kod alma, O-10 DCP, O-11 etiket modeli, O-12 MOD-0053 Blueprint bağımlılığı sahip kararı
 - [ ] O-6 Control Tower kararı: CrmService defterine `crm-merkezi-iletim | b | işaret | ICentralAuditDeclaration` iz satırı (borç ve istisna eklenmez); dosya yazımı DL-1'de
 - [ ] Auth paket metni main'de — MOD-0018 paketinde `crm.tag-*` anahtarları, açık atama anahtarı (`read-tenant-wide`) ve rol şablonları (KARAR D53/1 deseni; MOD-0018 sahibi)
 - [ ] O-4 kararından sonra MOD-0162 sahibine sınır bilgisi verildi (XMC-001; itiraz hakkı)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi, açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı; paketi yazmamış onaylayıcı (ilk onay yüksek risk)
+
+**Ayrı açık nokta (yerleşimi yeniden açmaz):** commercial-suite domain sahibi ataması (O-13; TBD). D61 yerleşimi sahip
+atanana kadar K1 onayıyla kapattı; atamanın paket kapısını bekletip bekletmediği K1'in kararıdır — bu revizyon onu ENGELLER'e
+eklemez, açık nokta olarak taşır.
 
 **Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
 - [ ] Auth kayıt kodu (`crm.tag-*` kaydı) main'de — MOD-0057 onayından sonra, DL-1 kabulünden önce; DL-1 testleri gerçek izinle (KARAR D53/2 deseni) — DL-1 için (kabul kapısı)
@@ -836,16 +878,17 @@ kayıttan aktarılmıştır (kısmi). Örtüşme riskleri ve bu paketteki önlem
 - Merkezi ret kaydı (`Outcome = Denied`) — denetim sahibine.
 - Olay yayını (`crm.tag-assignment.*`) kalıcı yolla (outbox) — tüketici adlandırılınca.
 - `execution/registries/module-implementation-status.md` satırı ilk kodla açılır.
-- Kimlik kaydında MOD-0057 satırı ve DCP-011 park satırının güncellenmesi (O-1, O-10 kararlarından sonra, sahipleri yazar).
+- Kimlik kaydında MOD-0057 satırı (paket onay PR'ında önerilir — D61) ve DCP-011 park satırının güncellenmesi (O-10
+  kararından sonra); sahipleri yazar.
 
 ## Açık kararlar
 
 | # | Karar | Seçenekler | Öneri | Sahibi |
 |---|---|---|---|---|
-| O-1 | Yerleşim (domain) | (a) `commercial-suite` (D55/2 önerisi; MOD-0162-FU01 MOD-0057'yi gelecek seam olarak anıyor) (b) `platform-shared-services` (kaynak yerleşimi; Blueprint Placement "Data Governance Service" Recovery'de yok) (c) yeni Data & Knowledge domain'i / servisi (EA kararı; port yok) | **(a)** — Recovery'de var olan bir domain ve servis; kaynak Platform yerleşimi ve "Data Governance Service" bugün karşılıksız. Blueprint'teki domain ("2) Data, Knowledge & Intelligence") ile fark Implementation Notes'ta açık kalır; yatay yeteneğe taşıma ileride kimlik değiştirmeden yapılabilir (MOD-0162-FU01 F1 deseni) | commercial-suite domain sahibi (TBD) — D55/2 |
-| O-2 | Servis ve port | (a) `Diten.CrmService`, port 5061 (AGENTS.md §3; domain-config'in servisi; kod ve CRM Gateway rotaları var) (b) `Diten.Platform` 5057 (domain dışı — O-1 (b) gerektirir) (c) yeni servis — port EA kararı, burada önerilmez | **(a)** — yeni port ve servis yok; CRM'in işlem altyapısı ve vekil deseni hazır | O-1 ile birlikte; EA yalnız (c) seçilirse |
+| O-1 | Yerleşim (domain) | (a) `commercial-suite` (D55/2 önerisi; MOD-0162-FU01 MOD-0057'yi gelecek seam olarak anıyor) (b) `platform-shared-services` (kaynak yerleşimi; Blueprint Placement "Data Governance Service" Recovery'de yok) (c) yeni Data & Knowledge domain'i / servisi (EA kararı; port yok) | **(a)** — Recovery'de var olan bir domain ve servis; kaynak Platform yerleşimi ve "Data Governance Service" bugün karşılıksız. Blueprint'teki domain ("2) Data, Knowledge & Intelligence") ile fark Implementation Notes'ta açık kalır; yatay yeteneğe taşıma ileride kimlik değiştirmeden yapılabilir (MOD-0162-FU01 F1 deseni). **KAPANDI — KARAR D61 (2026-10-28): (a)** — commercial-suite sahibi atanana kadar K1 yönetim onayı; yalnız yerleşim (O-2, O-4 ve diğerleri açık; sahip ataması O-13) | K1 (D61) — sahip atanınca bilgi olarak ona gider |
+| O-2 | Servis ve port | (a) `Diten.CrmService`, port 5061 (AGENTS.md §3; domain-config'in servisi; kod ve CRM Gateway rotaları var) (b) `Diten.Platform` 5057 (domain dışı — O-1 (b) gerektirir) (c) yeni servis — port EA kararı, burada önerilmez | **(a)** — yeni port ve servis yok; CRM'in işlem altyapısı ve vekil deseni hazır | sahip (K1) — açık; D61 yerleşimi kapattı, servis / portu kapatmadı; EA yalnız (c) seçilirse |
 | O-3 | RCS-001 kayıt kodu | (a) Taksonomiye görünen kayıt kodu yok (ad + kimlik); `TermCode` kullanıcı tanımlı, değişmez sözlük anahtarı — RCS dışı, gerekçe: tüketicinin makine anahtarı, iş referansı değil (MOD-0048 referans kodları ve MOD-0162 Topic kodları gibi); bağın görünen kodu yok (b) Taksonomi OTOMATİK, tür öneki önerisi `TXY` (§3'te çakışma yok — ölçüldü; `TAX` vergiyle karışmasın diye seçilmedi), grup öneki (kiracı geneli kayıt, §5.3) — BL-565 ortak kod servisine bağımlı (c) terimler de RCS-001'e | **(a)** — taksonomi küçük bir yapılandırma kümesidir, kod değer katmaz ve BL-565 (servis yok) engelini doğurmaz; RCS-001 §5.6 varsayılanından ayrılış sahip onayı ister. (b) seçilirse §3 satırı ayrı `.antigravity` değişikliğidir, bu paket yazmaz | sahip (K1) |
-| O-4 | MOD-0162-FU01 ile sınır | (a) MOD-0162 Subject / Topic / AudienceProfile'ın SoR'u kalır; MOD-0057 modüller arası genel taksonomi ve etiketleme; MOD-0057 o nesneleri kopyalamaz / eşitlemez; `KnowledgeContent.Tags[]` v1'de değişmez (geçiş Follow-up); Knowledge içeriği MOD-0057'ye hedef olabilir ama yalnız MOD-0162 sahibinin onayıyla (b) MOD-0057 bütün taksonomilerin SoR'u, Subject / Topic taşınır (c) MOD-0057 yalnız düz etiket, hiyerarşi modüllerde kalır | **(a)** — MOD-0162-FU01 `approved` ve kodda canlı; (b) onaylı bir paketi ve çalışan kodu bozar; (c) D55/3'ün "sınıf ağaçları" kapsamını düşürür. **Çakışmalar (açık):** (1) `KnowledgeContent.Tags[]` serbest etiketi ile MOD-0057 etiketleri iki ayrı "etiket" kavramı; (2) kiracı MOD-0057'de Subject / Topic'e benzeyen bir taksonomi kurabilir — v1'de teknik engel yok, sayfa yardımı yönlendirir; (3) MOD-0162-FU01 F9 seam sahibi "Data & Knowledge Plane" diyor, bu paket commercial-suite diyor (O-1) | sahip (K1) + MOD-0162 sahibi (XMC-001) |
+| O-4 | MOD-0162-FU01 ile sınır | (a) MOD-0162 Subject / Topic / AudienceProfile'ın SoR'u kalır; MOD-0057 modüller arası genel taksonomi ve etiketleme; MOD-0057 o nesneleri kopyalamaz / eşitlemez; `KnowledgeContent.Tags[]` v1'de değişmez (geçiş Follow-up); Knowledge içeriği MOD-0057'ye hedef olabilir ama yalnız MOD-0162 sahibinin onayıyla (b) MOD-0057 bütün taksonomilerin SoR'u, Subject / Topic taşınır (c) MOD-0057 yalnız düz etiket, hiyerarşi modüllerde kalır | **(a)** — MOD-0162-FU01 `approved` ve kodda canlı; (b) onaylı bir paketi ve çalışan kodu bozar; (c) D55/3'ün "sınıf ağaçları" kapsamını düşürür. **Çakışmalar (açık):** (1) `KnowledgeContent.Tags[]` serbest etiketi ile MOD-0057 etiketleri iki ayrı "etiket" kavramı; (2) kiracı MOD-0057'de Subject / Topic'e benzeyen bir taksonomi kurabilir — v1'de teknik engel yok, sayfa yardımı yönlendirir; (3) MOD-0162-FU01 F9 seam sahibi "Data & Knowledge Plane" diyor, bu paket commercial-suite diyor (O-1, yerleşim D61 ile onaylı; sınır bu kararla kapanmaz) | sahip (K1) + MOD-0162 sahibi (XMC-001) |
 | O-5 | İzin ad alanı ve rol şablonları | (a) `crm.tag-taxonomies.*`, `crm.tag-assignments.*` (Authorization Convention tablosu; PKS-001 §4 `crm.*` CrmService'e ait) (b) `commercial.*` (domain-config'te EA onayına tabi rezervasyon) (c) yeni `taxonomy.*` ad alanı (PKS-001 §4'e `.antigravity` satırı gerekir) | **(a)** + üç rol şablonu (okuyucu, etiketleyici, taksonomi yöneticisi); `read-tenant-wide` yalnız açık atama. Yatay servise taşınırsa takma ad kuralı (PKS-001 §3) uygulanır | sahip (K1) + MOD-0018 sahibi (kayıt) |
 | O-6 | Denetim yolu ve kategori | (a) CentralAudit ortak iletici, yol `b`, işlem içi `EnlistAsync`; CrmService defterine yeni iz `crm-merkezi-iletim`, borç / istisna eklenmez; `Category = ReferenceData` (5) (b) aynı yol, `Category = MasterData` (14) (c) Platform'a yeni `Commercial` kategorisi (Platform sahibi, XMC-001) | **(a)** — ortak iletici var ve SupplyChain'de kabul edildi; taksonomi sözlük / referans verisidir; Platform değişikliği gerekmez. İz satırı Control Tower kararıdır (D35 deseni) | Control Tower + sahip (K1) |
 | O-7 | Veri kapsamı (SEC-002) — bağlar | (a) Runtime Constraints'teki kapsam cümlesi: taksonomi / terim sözlük verisi (istisna cümlesi); yönetim bağ listesi yalnız kendi bağları, kiracı geneli `read-tenant-wide` ile; hedef okuması tek hedef anahtar okuması; ters arama yok (b) bağ okumasında hedef modülün kapsamı sorulur (her hedef modülle sözleşme gerekir) (c) bütün bağlar `crm.tag-assignments.read` ile kiracı geneli | **(a)** — örgütsel kapsam alanı olmayan veride en dar güvenli yol; (b) v1'de tüketici sözleşmesi olmadan yapılamaz; (c) SEC-002 §3'e aykırı | sahip (K1) |
@@ -854,6 +897,7 @@ kayıttan aktarılmıştır (kısmi). Örtüşme riskleri ve bu paketteki önlem
 | O-10 | DCP üyeliği | (a) MOD-0057 tek modül paketi, DCP üyesi değil; DCP-011'in `parked_modules` satırını DCP sahibi günceller (b) DCP-011'e aday üye (c) yeni DCP | **(a)** — tek modül, finans dilimlerine bağımlılığı yok; DCP-011 finance-treasury intake'tir | sahip (K1) + DCP-011 sahibi |
 | O-11 | Etiket modeli | (a) etiket = düz taksonominin (`Kind = Flat`) terimi; tek terim / tek bağ modeli (b) ayrı `Tag` varlığı ve ayrı bağ türü | **(a)** — tek kod yolu, tek okuma sözleşmesi; düz ve hiyerarşik kümeler aynı kurallarla yönetilir | sahip (K1) |
 | O-12 | Blueprint HARD bağımlılığı (MOD-0057 → MOD-0053) ile D55 bağımsız v1 | (a) v1 bağımsız: iş terimleri, eşanlamlılar ve terim onayı MOD-0053'ün; MOD-0057 v1 etiketi iş terimine bağlamaz; bağlantı Follow-up (b) MOD-0053 (ve onun HARD kapısı MOD-0052) Recovery'ye gelene kadar MOD-0057 bekler (c) MOD-0057 v1 kendi eşanlamlı / terim modelini kurar | **v1 bağımsız (D55); Blueprint bağımlılığı MOD-0053 geldiğinde bağlantıyla karşılanır.** (b) D55/1'i fiilen geri alır (MOD-0052 de yok); (c) MOD-0053'ün SoR'unu çoğaltır. Örtüşme riskleri (eşanlamlı ↔ takma ad, iki onay akışı, terim–etiket bağı) Implementation Notes → "MOD-0053 sınırı"nda | sahip (K1) + EA (Blueprint bağımlılık sapması) |
+| O-13 | commercial-suite domain sahibi ataması | — (atama kararı; bu paket aday önermez) | — açık; yerleşimi yeniden açmaz (D61 sahip atanana kadar K1 onayıyla kapattı); paket kapısını bekletip bekletmediği K1'in kararıdır — bu revizyon ENGELLER'e eklemez. Atanınca D61 onayı ona bilgi olarak gider | K1 (yönetim) |
 
 ## Teslim dilimleri
 
@@ -868,7 +912,10 @@ Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dili
 (ör. Audited Events'in taksonomi ve terim satırları, Runtime Constraints'in kiracı / aktör / işlem kuralları ve
 Authorization Convention'ın `crm.tag-taxonomies.*` anahtarları DL-1'de gelir; bölümler DL-2'de bağ satırlarıyla kapanır).
 Ortak bölümler (Acceptance Criteria, Test Expectations, Ready-for-dev Checklist, Follow-up Items) her dilimde aşağıdaki AC
-kimlikleriyle ölçülür. Bu pakette kesişen AC yoktur: her AC tek dilimde tam kapanır.
+kimlikleriyle ölçülür. **Kesişen AC'ler:** bazı AC'ler birden çok dilimin koduna uzanır (bütün yazmalar, bütün uçlar, hedef
+okuması). Birden çok dilimde "(… kısmı)" ile yazılan AC, o dilimde yalnız yazılan kısmıyla ölçülür ve onu sayan **son**
+dilimde tam kapanır: AC-6, AC-11, AC-12, AC-15, AC-18 ve AC-19 DL-2'de; AC-13, AC-14, AC-24, AC-25, AC-27 ve AC-28 DL-3'te;
+AC-16 DL-4'te. Kısmı geçen AC kabul kaydında "kapandı" sayılmaz; tek dilimde geçen diğer AC'ler o dilimde tam kapanır.
 
 Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
@@ -876,16 +923,31 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `RegisterClassMaps`, iki controller, CentralAudit kaydı, defter + `CT-DECISIONS.md` satırı + `AuditTrailStandardTests`.
   **Neden önce:** sözlüğü, kiracı / aktör / izin / işlem kurallarını ve denetim yolunu dış bağımlılık olmadan kanıtlar.
   Önkoşul: paket düzeyi ENGELLER'in tümü ve "— DL-1 için" ölçüm maddesi. WP dalı `feature/crm/wp-0057-dl1` (D51/3 deseni).
-  Bitiş: AC-1…AC-19.
+  Bitiş: AC-1, 2, 3, 4, 5, 6 (terim silme kuralı kısmı: `HasEverBeenAssigned = false` ve silinmemiş çocuk denetimi; bayrak
+  bu dilimde yalnız sunucu alanıdır), 7, 8, 9, 10, 11 (taksonomi ve terim komutları kısmı — 11 komut), 12 (taksonomi ve
+  terim komutları kısmı), 13 (taksonomi ve terim uçları kısmı), 14 (taksonomi ve terim uçları kısmı), 15 (taksonomi ve
+  terim yazmaları kısmı), 16 (DL-1 arka uç kodu kısmı), 17, 18 (suite kurulumu ve DL-1 yarışları kısmı: AC-2, AC-3, AC-7,
+  AC-11, AC-42), 19 (`crm.tag-taxonomies.*` kısmı), 42.
 - **DL-2** — Yollar: `Features/TagAssignments/**` (oluştur, kaldır, toplu kaldır, yönetim listesi, ayrıntı),
   `TagTargetSlot` deposu, `TagAssignmentsController` (bu aksiyonlar). **Neden ayrı:** bağlama yarışları ve SEC-002 kapsamı
-  kendi kanıtını ister; DL-1'i bekletmesin. Önkoşul: DL-1. Bitiş: AC-20…AC-28.
+  kendi kanıtını ister; DL-1'i bekletmesin. Önkoşul: DL-1. Bitiş: AC-6 (ilk bağın `HasEverBeenAssigned` değerini aynı
+  işlemde `true` yapması kısmı — tam kapanış), 11 (bağ komutları kısmı: Create / Delete / BulkDelete TagAssignment — tam
+  kapanış), 12 (bağ komutları kısmı — tam kapanış), 13 (bağ yazma, yönetim listesi ve ayrıntı uçları kısmı), 14 (aynı uçlar
+  kısmı), 15 (bağ yazmaları kısmı — tam kapanış), 16 (DL-2 arka uç kodu kısmı), 18 (AC-22, AC-23 yarışları kısmı — tam
+  kapanış), 19 (`crm.tag-assignments.*` kısmı — tam kapanış), 20, 21, 22, 23, 24 (soft delete, sayaç azalması ve yeniden
+  bağlama kısmı; yönetim listesi ve ayrıntıyla ölçülür), 25 (bağ oluşturma, yönetim okuması ve kaldırma kısmı), 26, 27
+  (yeni bağ reddi kısmı), 28 (bağ yazma izinleri ve taksonomi / bağ izin ayrımı kısmı).
 - **DL-3** — Yollar: `GetTagAssignmentsByTarget` / `ByTargets` sorguları, okuma sözleşmesi testi; Gateway rotaları
   integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** tüketiciye açılan sözleşme ve Gateway başka
-  sahiplere dokunur. Önkoşul: DL-2 ve "— DL-3 için" maddeleri. Bitiş: AC-29…AC-32.
+  sahiplere dokunur. Önkoşul: DL-2 ve "— DL-3 için" maddeleri. Bitiş: AC-13 (`by-target` / `by-targets` uçları kısmı —
+  tam kapanış), 14 (aynı uçlar kısmı — tam kapanış), 16 (DL-3 arka uç kodu kısmı), 24 (kaldırılan bağın hedef okumasında
+  dönmemesi kısmı — tam kapanış), 25 (başka kiracının aynı `TargetId` bağlarının hedef okumasında görünmemesi kısmı — tam
+  kapanış), 27 (mevcut bağların hedef okumasında `taxonomyStatus` / `termStatus` ile okunması kısmı — tam kapanış), 28
+  (`.read` olmadan hedef okuması 403 kısmı — tam kapanış), 29, 30, 31, 32.
 - **DL-4** — Yollar: üç `Views/CRM/Tag*/**` klasörü, JS, resx (7 dil), MVC vekilleri, sayfa yardımı, nav anahtarları,
   menü girdisi. **Neden ayrı:** ekran API'ye ve Gateway'e bağlıdır. Önkoşul: DL-3 ve "— DL-4 için" maddesi. Bitiş:
-  AC-33…AC-41.
+  AC-16 (MVC vekilleri ve görünümlerin sabit / varsayılan kiracı taraması kısmı — tam kapanış), 33, 34, 35, 36, 37, 38,
+  39, 40, 41.
 
 ## Dilim kabul kapısı
 
@@ -894,7 +956,7 @@ o dilimin yeni kodunun testlerinin geçmesidir (çalıştırmak geçmek değildi
 
 | Dilim | Geçmesi gerekenler |
 |---|---|
-| DL-1 | Bitiş listesindeki AC'ler; gerçek replica set AC'leri (AC-2, AC-3, AC-7, AC-11) kendi Mongo URI'li suite'te (AC-18); `AuditTrailStandard` (AC-12); Auth kayıt kodu main'de ve testler gerçek izinle (AC-19); dev ortamında bir oluşturma / güncelleme / silme için merkezi denetim kaydı (AUD-001 §8); `Diten.CrmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
-| DL-2 | Bitiş listesindeki AC'ler; AC-22 ve AC-23 gerçek replica set'te; SEC-002 kanıt testi (AC-26); bağ komutlarının merkezi denetim kaydı (dev ortamı); build |
-| DL-3 | Bitiş listesindeki AC'ler; sözleşme anlık görüntü testi (AC-30); Gateway uçtan uca 401 / 404 / OPTIONS (AC-31); build |
-| DL-4 | Bitiş listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; `verify_datatable_page.py` ve `quality-gate-datatable` (AC-34); RESX 7 dil parite; nav anahtar denetimi; `Diten.Web` build |
+| DL-1 | Bitiş listesindeki AC'ler (kesişen AC'lerin yalnız DL-1 kısmı); gerçek replica set AC'leri (AC-2, AC-3, AC-7, AC-11, AC-42 karşılıklı taşıma yarışı ve çit sabotajı) kendi Mongo URI'li suite'te (AC-18); `AuditTrailStandard` (AC-12); Auth kayıt kodu main'de ve testler gerçek izinle (AC-19); dev ortamında bir oluşturma / güncelleme / silme için merkezi denetim kaydı (AUD-001 §8); `Diten.CrmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-2 | Bitiş listesindeki AC'ler — AC-6, AC-11, AC-12, AC-15, AC-18 ve AC-19'un tam kapanışı dahil (AC-11 hata enjeksiyonu ve `EnlistAsync` sabotajı bağ komutlarında da koşulur; AC-12 `AuditTrailStandard` bağ komutlarıyla yeşil); AC-22 ve AC-23 gerçek replica set'te; SEC-002 kanıt testi (AC-26); bağ komutlarının merkezi denetim kaydı (dev ortamı); build |
+| DL-3 | Bitiş listesindeki AC'ler — AC-13, AC-14, AC-24, AC-25, AC-27 ve AC-28'in tam kapanışı dahil (AC-25 depo süzgeci sabotajı hedef okumasında da koşulur); sözleşme anlık görüntü testi (AC-30); Gateway uçtan uca 401 / 404 / OPTIONS (AC-31); build |
+| DL-4 | Bitiş listesindeki AC'ler — AC-16'nın tam kapanışı dahil; tarayıcı smoke ve UAS-001 canlı denemesi; `verify_datatable_page.py` ve `quality-gate-datatable` (AC-34); RESX 7 dil parite; nav anahtar denetimi; `Diten.Web` build |
