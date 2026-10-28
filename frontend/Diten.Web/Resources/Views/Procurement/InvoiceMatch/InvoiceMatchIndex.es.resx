@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>ID de excepción</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>Sí</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>La solicitud está incompleta o contiene valores no válidos. Revise los campos e inténtelo de nuevo.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>El importe de una línea no es igual a cantidad × precio unitario. Los importes de línea son netos (sin impuestos).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>No se encontró el proveedor, la orden de compra o el artículo.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>La moneda de la factura no coincide con la de la orden de compra.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>Ya existe una factura con este número para este proveedor.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>Esta acción no está permitida en el estado actual de la factura.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>No se encontró la factura o la excepción.</value></data>
 </root>
