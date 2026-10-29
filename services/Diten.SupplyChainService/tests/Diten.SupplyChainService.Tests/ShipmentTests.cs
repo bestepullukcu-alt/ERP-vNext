@@ -20,6 +20,7 @@ using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
 using Diten.SupplyChainService.Tests.Common;
+using Diten.SupplyChainService.Tests.Shipments.Dispatch;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -56,19 +57,22 @@ public sealed class ShipmentTests(ITestOutputHelper output)
             builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings()));
             builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe))
-                .StubLegalEntityValidation());
+                .StubLegalEntityValidation().UseFakeInventory(Inventory));
         }
+        // MOD-0183 DL-1: Dispatched now issues the stock in INVENTORY; these lifecycle tests run against the fake INVENTORY.
+        public readonly FakeInventory Inventory = new();
         private static Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(TestSecret))
         {
             ["Mongo:ConnectionString"] = Connection,
-            ["Mongo:DatabaseName"] = Database
+            ["Mongo:DatabaseName"] = Database,
+            ["Inventory:ReferenceBaseUrl"] = DispatchTestHost.InventoryBaseUrl
         };
     }
     private static JsonObject CreateBody() => JsonNode.Parse("""
  {"sourceModule":"MOD-0141","sourceType":"SALES_ORDER","sourceDocumentId":"SO-900","warehouseReferenceId":"wh-01",
  "shipToReference":"CUST-100/ADDR-2","plannedShipAt":"2026-09-20T08:00:00Z","plannedDeliverAt":"2026-09-21T16:00:00Z",
  "lines":[{"lineNumber":"1","itemId":"b1f2c3d4-0000-0000-0000-000000000001","skuId":"c3d4e5f6-0000-0000-0000-000000000002",
- "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001"}]}
+ "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001","skuLevel":"Lsku"}]}
  """)!.AsObject();
     private static JsonObject Transition(string status) => new() { ["targetStatus"] = status, ["occurredAt"] = "2026-09-20T08:15:00Z" };
     private static JsonObject Pod() => new()
@@ -201,7 +205,9 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "planned")).Status);
         var race = await Task.WhenAll(Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "dispatch-a"),
          Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "dispatch-b"));
-        Assert.Equal(new[] { 200, 422 }, race.Select(x => x.Status).Order().ToArray());
+        // DL-1: the loser meets the winner's dispatch attempt (409 DISPATCH_IN_PROGRESS) or its finished Dispatched (422).
+        Assert.Single(race, x => x.Status == 200); Assert.Single(race, x => x.Status is 409 or 422);
+        Assert.Single(app.Inventory.IssueIds);
         Assert.Equal(1, await Count(app, "sce_shipments")); Assert.Equal(3, await Count(app, "sce_shipment_history")); Assert.Equal(3, await Count(app, "sce_shipment_outbox"));
         var otherLe = await Send(c, "POST", "", CreateBody(), "race-create", le: Guid.NewGuid()); Assert.Equal(201, otherLe.Status);
         Assert.NotEqual(id.ToString(), otherLe.Body["shipmentId"]!.GetValue<string>());
