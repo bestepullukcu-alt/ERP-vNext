@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D80 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D81 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -863,6 +863,16 @@ Kaynak: Y-19 (MOD-0018 sahibi Ali, 2026-10-29). Bu kayıt onay satırı ya da re
    kişiye rol verme) denetim borcu. D79'dan sonraki değişiklikler (7 dil tablosu vb.) sahip teyidine ayrıca gider.
 3. **K-7 ve DL-6:** sahip D79/9'u (sabit kod + 7 dil kaynak) ve D67/1'i (aday sorgusu DL-6) teyit etti.
 4. **Açık (sahipte):** K-W5, K-A1, K-A2, K-A3; D79'daki önerileri kabul listesi (K-1b, K-2, K-3, K-W2, K-W4, K-W6) ve K-5; K-W7, K-A4b teyidi.
+
+## D81 — `Finance = 18` PR'ını Treasury açar (K1 izni, 2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); K1'in sözü: "benim
+iznim … bir risk yoksa biz başlatalım".
+
+Platform sahibinin (Beste) hazır dalı `feat/ct/audit-category-finance-01` (`b21afdc24` + main birleştirmesi; 3 dosya: `AuditEnums.cs` `Finance = 18`,
+`CentralAuditPlatformValues.cs`, `CentralAuditDispatcherTests.cs`) içeriği değiştirilmeden Treasury'nin yeni dalına (`feat/ct/treasury-audit-category-finance-01`)
+alınır, main birleştirilir, testler koşulur ve PR'ı Treasury açar; Beste'nin dalına yazılmaz; **onay ve merge Platform sahibinde (Beste)**.
+Risk değerlendirmesi: değişiklik küçük (17 satır), içerik sahibin kendi kodu; Beste aynı değişiklik için ayrı PR açarsa biri kapatılır.
 
 ## Karar olmayanlar
 
