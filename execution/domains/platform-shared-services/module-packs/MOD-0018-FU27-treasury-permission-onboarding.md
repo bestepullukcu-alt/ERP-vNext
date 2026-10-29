@@ -1501,6 +1501,7 @@ K2 sınıfıdır (yetki değiştirir).
 |---|---|---|---|---|---|
 | CreatePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.created | PaymentSodWaiverAssignment | c — yeni iz `auth-sod-muafiyet-gecmisi`, önce-yaz `IPaymentSodWaiverAuditWriter.WriteCreatedAsync` (KARAR D97/2, D98; okuma ucu + Roller ekranı "Geçmiş" — yol `c`'nin beş koşulu, AC-44…AC-47) | AfterState: GranteeUserId, TargetPaymentBatchId, StartsAtUtc, ExpiresAtUtc, ApprovedByUserId, ReasonCode | — |
 | RevokePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.revoked | PaymentSodWaiverAssignment | c — aynı iz, `IPaymentSodWaiverAuditWriter.WriteRevokedAsync` (D98) | Before/After: RevokedAtUtc, RevokedByUserId (+ atamanın kimliği ve hedef partisi) | — |
+| GetPaymentSodWaiverAssignmentHistoryQuery (**okuma satırı** — audit-trail-standard §7, denetim günlüğünün kendisi okunur; KARAR D102/1) | auth.sod-waiver-assignment.history.read | PaymentSodWaiverAssignment (okunan atamanın kimliği) | b — merkezi günlüğe meta-denetim satırı (`IsMetaAudit = true`), Auth iletici üzerinden teslim teyitli (`TryForwardAsync`, D99/1); teslim yoksa okuma yok, 503 (AC-46). Eşdeğer iz okuma için kullanılmaz | — (okuma; değişen alan yok — satır okuyan kullanıcı, kiracı, atama kimliği ve zamanı taşır) | — |
 
 - **K2 (kapalı-başarısız):** iki komut da denetim kaydını iş yazımından önce yazar; yazılamazsa komut başarısız olur, atama
   yazılmaz (AC-30). "En iyi çaba" yoktur. İz kabul edilmeden komut yazılamaz (audit-trail-standard §4.4: kabul edilmiş K2 yolu
@@ -1511,7 +1512,7 @@ K2 sınıfıdır (yetki değiştirir).
   değişiklikleri) bugün `aday`; bu borcun hangi yolla kapanacağı bu pakette seçilmedi. İkisi de DL-1'i bekletmez.
 - **Kayda yazılmayan:** token, istek başlıkları, kullanıcının kişi verisi (yalnız kimlikler).
 - **Okuma denetimi:** iç sorgu, kiracı listesi ve DL-6 aday sorgusu okumadır; ayrıca denetlenmez — **istisna:** geçmiş okuması
-  denetim kaydının okunmasıdır, meta-denetim satırı yazar (§7; AC-46) (muafiyetin **kullanımı** MOD-0126'nın K2
+  denetim kaydının okunmasıdır, meta-denetim satırı yazar (§7; AC-46) — tabloda ayrı okuma satırı (KARAR D102/1) (muafiyetin **kullanımı** MOD-0126'nın K2
   olayıdır, `…approved-with-sod-waiver`).
 
 ## Teslim dilimleri

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D101 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D102 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1240,6 +1240,16 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak sahip denetimi `f60522198`; 
 1. **D101/1 — sayfalama sabit:** varsayılan `page = 1`, `pageSize = 20` (Auth deseni `GetAllUsersQuery.cs:15`), üst sınır 100; sınır dışı
    → 400 `SOD_WAIVER_PAGING_INVALID` (kırpma yok); yanıt `PaginatedResult`; AC-45'e sayısal beklenen sonuç (21 atama → 20 öğe +
    `TotalCount = 21`; `pageSize = 101` → 400) eklendi.
+
+## D102 — FU27 Audited Events okuma satırı (Codex CT-APR-02 `7f7b2923`, F-1 ORTA) (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak Codex bulgu dosyası `docs/records/reviews/MOD-0018-FU27/2026-10-30-7f7b2923.md`
+(oturum `01a189e9-32d1-78a0-9d82-69a5311111c1`); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D102/1 — okuma satırı:** audit-trail-standard §7 ("Bu üç sınıftan birine giren ekranı yazan paket, okuma denetimini `Audited Events`
+   tablosuna okuma satırı olarak yazar"; yol `a` / `b`, eşdeğer iz okuma için kullanılamaz) gereği FU27 Bölüm 21 tablosuna
+   `GetPaymentSodWaiverAssignmentHistoryQuery` → `auth.sod-waiver-assignment.history.read`, nesne `PaymentSodWaiverAssignment`, yol `b`
+   (merkezi meta-denetim, teslim teyitli — D99/1, AC-46) satırı eklendi.
 
 ## Karar olmayanlar
 
