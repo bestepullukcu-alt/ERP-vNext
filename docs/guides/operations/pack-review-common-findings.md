@@ -21,9 +21,12 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 ## 3. Ölçülemeyen kabul ölçütü
 
 - "Kayıt tamamlanınca", "gerektiğinde" gibi tetikleyiciler; ne zaman ve hangi olayla olduğu yazmalı. (MOD-0230 2026-10-22-31f02845)
-- Sınır değerler (sayfa boyutu üst sınırı, "bilinmiyor" değeri, boş liste) ve birlikte kabul edilmesi gereken iki
-  davranış ayrı ayrı ölçütte. (MOD-0230 2026-10-22-23c49893, 2026-10-22-94cbb2d5, 2026-10-27-a51f2349)
-- Denetim (audit) kaydı yalnız bazı yazma komutlarını kapsıyor; her yazma işlemi listelenmeli. (MOD-0230 2026-10-21-b48500cf)
+- Özel ve sınır değerlerin kuralı yok ya da iki anlamlı: "bilinmiyor" değeri, liste geldikten sonraki doğrulama,
+  sayfa boyutu üst sınırı ve sayfa eşlemesi. (MOD-0230 2026-10-22-23c49893 F-2/F-3, 2026-10-27-a51f2349)
+- Birlikte çalışması gereken iki davranış (ör. bağı kaldırma + otomatik eşleştirme) için ortak kabul ölçütü yok.
+  (MOD-0230 2026-10-22-94cbb2d5)
+- Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
+  (`audit-trail-standard` §7). (MOD-0230 2026-10-21-b48500cf)
 
 ## 4. Araç biçimi
 
