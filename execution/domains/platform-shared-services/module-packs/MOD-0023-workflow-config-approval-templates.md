@@ -787,8 +787,8 @@ permission, no module id, no route path and no index.
    `Repositories.cs:35-46@4c08fc75a`) never reaches it. §17.8/2's "would not be hidden — the two deletion markers
    disagree" holds **only for fake / in-memory repositories** that do not reproduce `ExecutionFilter`. Consequences:
    (a) the §17.8/3 rule "one marker, `IsDeleted`" stands; the default hide comes from `ExecutionFilter`, the dead handler
-   filter may be removed; (b) `includeDeleted=true` cannot be served by any existing repository member — it needs new read
-   members (item 2); (c) AC-W13 and AC-W15 (deleted fixture hidden by default, returned flagged under `includeDeleted=true`)
+   filter may be removed; (b) `includeDeleted=true` cannot be served by any existing repository member — it needs one new read
+   member (item 2); (c) AC-W13 and AC-W15 (deleted fixture hidden by default, returned flagged under `includeDeleted=true`)
    are evidenced against the real repositories on Mongo; a fake store's result is not evidence for them; (d) AC-W15's
    sabotage "reverting the filter to `DeletedAt is null`" is read as: the `includeDeleted` branch reading through
    `ExecutionFilter` (flag silently ignored), or the default branch reading without it, turns the test red. The
@@ -800,6 +800,15 @@ permission, no module id, no route path and no index.
      deleted rows (the deleted-including twin of `ListByObjectIdsAsync`, `:161@4c08fc75a`). It keeps the tenant condition
      and drops only `IsDeleted == false`. `IApprovalTaskRepository` and `IWorkflowTransitionLogRepository` gain no member.
      **Still no delete member** on any interface (AC-W15 unchanged).
+     **Default interface body (proposal; the WP keeps it or justifies another choice):** the new member gets a default
+     body that throws `NotSupportedException`, as the transactional `GetByIdAsync` does (`IWorkflowRepositories.cs:53-57@4c08fc75a`),
+     and only `WorkflowInstanceRepository` (`WorkflowRepositories.cs:141@4c08fc75a`) overrides it. Not a filtering default
+     like `ListByObjectIdsAsync` (`IWorkflowRepositories.cs:161-167@4c08fc75a`): that default reads through
+     `GetAllForTenantAsync`, which on Mongo applies `ExecutionFilter` (`WorkflowRepositories.cs:349-352@4c08fc75a`), so an
+     implementation without an override would silently return no deleted row — the "flag silently ignored" failure of
+     item 1(d). Not abstract either: test doubles implement the interface (e.g.
+     `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs:1783-1784@4c08fc75a`, `AllReservedBarrier`)
+     and would all have to change. A throwing default fails loudly; AC-W13/W15 run on the real repository anyway (item 1(c)).
    - Its implementation in
      `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs`.
    - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstancesByObjectsHandler.cs`
@@ -891,8 +900,10 @@ permission, no module id, no route path and no index.
    Fact for it: a replay that repeats a stale `expectedVersion` gets 409 `WORKFLOW_TRANSITION_CONFLICT` again; the
    definite refusal comes from a replay without it, or from a read.
 10. **AC-W6 / AC-W7 restated (INSPECTION.md DL-2/4, DL-2/7; timing cases rewritten for review F-2):** identical
-    transitions (same task, action, key, actor and body) → exactly one transition row in every case. Separate measured
-    cases, each forced by the test (lines in `WorkflowTaskTransitionSupport.cs@4c08fc75a` unless named):
+    transitions (same task, action, key, actor and body) → exactly one transition row in every case. AC-W6 is Approve,
+    AC-W7 is Reject and RequestInfo (§17.4); Delegate is in neither and gets no case here. Separate measured cases, each
+    forced by the test (lines in `WorkflowTaskTransitionSupport.cs@4c08fc75a` unless named).
+    **Approve and Reject** (`TransitionAsync`; the check order `:61-65` / `:67-75` / `:77-80` / `:82-89` is theirs only):
     - **(a) replay found on the first read** — the test awaits the first call's committed answer, then repeats it: the
       lookup `:61-65` finds the row and answers through the actor-bound replay `:1018-1030` → 200 `isIdempotent = true`,
       same transition (`:1054-1084`). No task, version or decidable check runs, so a stale `expectedVersion` does not
@@ -914,6 +925,43 @@ permission, no module id, no route path and no index.
       conflict or 200 Replayed with the winner's transition id; the 200-Replayed and 503 branches are each forced
       deterministically by an injected "unavailable" executor (pattern
       `WorkflowStartRecoveryMongoTests.cs:1856-1865@4c08fc75a`).
+    - **Reject's extra reads move the case-(b) hold.** When the comment is blank and a template-version repository is
+      wired, `RejectWorkflowTaskHandler` runs its own replay lookup and task read before `TransitionAsync`
+      (`.../Handlers/CommandHandlers/RejectWorkflowTaskHandler.cs:41, 50, 74-86@4c08fc75a`; lookup `:79-80`, task read
+      `:86`, then instance and version reads `:92, 99`). A wrapper that holds the first task read would hold at `:86`,
+      before the support's lookup `:61-65`, and produce case (a), not (b). For Reject the hold sits on the second task
+      read (`:67`), or the test sends a non-blank comment / wires no version repository so the pre-check does not run;
+      the WP states which.
+
+    **RequestInfo** (`RequestInfoAsync`, `:524`) has its own order: replay lookup `:539-547`, then
+    `LoadTransitionContextAsync` `:549` (task read `:732`, instance, assignment snapshot), stale `expectedVersion` → 409
+    `WORKFLOW_TRANSITION_CONFLICT` (`:558-561`), not decidable → 409 `WORKFLOW_TASK_INVALID_STATE` (`:562-565`), then the
+    candidate and start checks and the non-terminal write (`PersistAndLogAsync` `:593` →
+    `WorkflowTerminalTransitionWriter.CommitTransitionAsync`, `WorkflowTerminalTransitionWriter.cs:273@4c08fc75a`).
+    RequestInfo leaves the task decidable: it sets `WaitingEvidence` (`:579`) and `IsDecidable` includes
+    `WaitingEvidence` (`:846-858`).
+    - **(a)** — as for Approve/Reject: the lookup `:539-547` finds the row and answers through the actor-bound replay
+      (`:546`) → 200 `isIdempotent = true`.
+    - **(b) late arrival** — held between the lookup `:539-547` and the task read `:732` until the twin has committed.
+      With a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:558-561`). Without `expectedVersion` the
+      late call meets a still-decidable task, so `:562-565` does not refuse it and it reaches the write with a second log
+      under the same (task, `RequestInfo`, key). **Its answer and row count are to be measured by the WP, not asserted
+      here:** a refusal by the unique index `ux_workflow_transition_logs_task_action_idempotency_active`
+      (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.WorkflowWorkCenter.cs:212-220@4c08fc75a`)
+      is possible but not measured, nor is what the writer then answers. AC-W7's target (one row; the identical twin
+      answered 200 `isIdempotent = true`) stays the target; a measured second row or another answer is a DL-2 finding
+      the WP fixes or raises.
+    - **(c) in-transaction overlap** — both calls past `:539-547` and `:562-565` before either commits: the loser's
+      version-guarded update fails inside `CommitTransitionAsync` → Conflict
+      (`WorkflowTerminalTransitionWriter.cs:318-322, 333-336@4c08fc75a`); transaction-unavailable goes to the same
+      re-read (`:337-340`) as Approve/Reject (c). Read, not run; the WP measures it as in Approve/Reject (c).
+
+    **Test helpers.** The case-(b) holds wrap the task repository: in
+    `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.cs@4c08fc75a`
+    only `ApproveAsync` takes `tasks:` (`:518-520`); `RejectAsync` (`:528-535`) and `RequestInfoAsync` (`:537-542`) do
+    not. The WP extends both (tests are an allowed path, item 14). `RejectAsync` sends a non-blank comment and wires no
+    version repository, so the Reject pre-check above does not run there.
+
     After any case, a replay of the same key is case (a). No existing test covers AC-W6/W7 or AC-W9/W10 (note DL-2/7);
     the WP writes them.
 11. **AC-W5 — what it requires (INSPECTION.md DL-2/7):** the existing test
@@ -945,11 +993,6 @@ permission, no module id, no route path and no index.
     needed the thin per-action handlers `Handlers/CommandHandlers/ApproveWorkflowTaskHandler.cs`,
     `DelegateWorkflowTaskHandler.cs`, `RequestInfoWorkflowTaskHandler.cs`, `CancelWorkflowTaskHandler.cs`; plus
     `services/Diten.Platform/tests/**` and `tests/architecture/**` (new rules only). Nothing else.
-
-**Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş
-akışı chat, 2026-10-29).** F-2 is closed by items 9 and 10 above, the CT note by item 2; F-3 (review input) needs no pack
-change.
-
 15. **AC-W16 restated (DL-1; review F-1) — replaces the AC-W16 text of §17.8.** Code (read, not run, @4c08fc75a):
     `by-objects` answers every requested object id; an id with no instance in the caller's tenant gets an entry with an
     empty `instances` list and the call is 200
@@ -969,6 +1012,10 @@ change.
     - A caller without `instances.view` → refused as today, on all three actions.
     - Sabotage: dropping the tenant condition on the `includeDeleted` branch (the new read member of item 2) turns it red.
 
+**Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş
+akışı chat, 2026-10-29).** F-2 is closed by items 9 and 10 above, the CT note by item 2; F-3 (review input) needs no pack
+change.
+
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here; O-S17-2 decided before DL-1's
 WP prompt; the rest of the §17.8 closure unchanged.
 
@@ -976,8 +1023,8 @@ WP prompt; the rest of the §17.8 closure unchanged.
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | seviye gerekçesi |
 |---|---|---|---|---|
-| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Revision 3 — code inspection 01 findings (2026-10-29) — supersedes §17.1–17.8 where they conflict, Delivery | E4 | silinmiş satır okuması gerçek Mongo deposunda (sahte depo kanıt değil, §17.9/1), kiracı sınırı ve `instances.view` (AC-W16), 404 hata yolu: kartın E4 satırı "persistence/RBAC/tenant/failure paths" |
-| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Revision 3 — code inspection 01 findings (2026-10-29) — supersedes §17.1–17.8 where they conflict, Delivery | E4 | yazma yolu değişikliği: gerçek Mongo replika kümesinde yarış ve tekrar, 403/409/503 hata yolları, tek satır kalıcılığı (AC-W5…W12, W14, W18): kartın E4 satırı "persistence/failure paths" |
+| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Revision 3 — code inspection 01 findings (2026-10-29) — supersedes §17.1–17.8 where they conflict, Delivery | E4 | silinmiş satır okuması gerçek Mongo deposunda (sahte depo kanıt değil, §17.9/1), kiracı sınırı ve `instances.view` (AC-W16), 404 hata yolu: kartın E4 satırı "persistence/RBAC/tenant/failure paths" |
+| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Acceptance criteria (defined; not implemented or run), Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Producer review points and owner decisions D32 (2026-10-26) — supersedes §17.1–17.7 where they conflict, Revision 3 — code inspection 01 findings (2026-10-29) — supersedes §17.1–17.8 where they conflict, Delivery | E4 | yazma yolu değişikliği: gerçek Mongo replika kümesinde yarış ve tekrar, 403/409/503 hata yolları, tek satır kalıcılığı (AC-W5…W12, W14, W18): kartın E4 satırı "persistence/failure paths" |
 
 Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
 durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu sahibi yazar, başka biri merge eder (D32/1).
