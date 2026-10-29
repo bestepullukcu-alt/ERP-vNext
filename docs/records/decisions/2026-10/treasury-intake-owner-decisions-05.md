@@ -1168,8 +1168,8 @@ Onay kanıtı: kaynak Y-26 (Ali, K1 aktardı); kayıt K1 / gmg-10, oturum Treasu
    **7 dil**. FU27'nin K-W5 satırı, D80/2 (a) maddesi, Dependencies satırı ve "ekran yok" maddesine not düşüldü; **DL-5 paket metni
    revizyonu (repo kapsamı, kurallar, AC'ler, testler, defter) açık** — revizyon CT-APR-02'den geçince D80/2 (a) işaretlenir.
 3. **D97/3 — MOD-0057 Auth kaydı ayrı MOD-0018 ekinde** (#311 05): FU27'ye eklenmez; kimlik `verify_module_id.py` ön kontrolüyle açılır
-   — aday `MOD-0018-FU28` (`--check-id` OK, 2026-10-30; kayıt satırı ve ek paket taslağı açık). Rol adlarına `Tag` öneki önerildi (adlar
-   açık; öneri kutusuyla K1'e sorulacak). Açık atama anahtarı sayısı bu kayıtla 21'e çıkar (20 + `crm.tag-assignments.read-tenant-wide`).
+   — aday `MOD-0018-FU28` (`--check-id` OK, 2026-10-30; kayıt satırı ve ek paket taslağı açık). Rol adlarına `Tag` öneki önerildi; **K1 seçimi (soru kutusu, 2026-10-30, "TagReader/Assigner/TaxonomyMgr (Önerilen)"):**
+   `TagReader`, `TagAssigner`, `TagTaxonomyManager` (önceki öneri `TagReader` / `Tagger` / `TaxonomyManager`; Ali teyidine gider). Açık atama anahtarı sayısı bu kayıtla 21'e çıkar (20 + `crm.tag-assignments.read-tenant-wide`).
    MOD-0057 O-5 satırına işlendi.
 4. **D97/4 — MOD-0262-FU01 Auth tarafı (bilgi):** MDM servisi için istemci kaydı ve hedef kitle; yeni kullanıcı izni yok; kapsamı Auth
    kulesi yazar; tahmini (ölçülmedi): paket metni 3 Kasım, kod onaydan 1–2 gün sonra. MOD-0217 DL-2 kapısı (D56/2) bu tarihe bağlı.
