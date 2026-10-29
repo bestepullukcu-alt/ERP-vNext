@@ -933,20 +933,37 @@ permission, no module id, no route path and no index.
      only the body case).
    - **(b)** late arrival (lookup before the twin commits): today 409 `WORKFLOW_TRANSITION_CONFLICT` with a stale
      `expectedVersion` (`StaleVersion`, `:77-80`, `:1011-1016`; RequestInfo `:558-561`) or 409
-     `WORKFLOW_TASK_INVALID_STATE` (`:82-89`), before any actor check. Under O-S17-3 (i) the added re-read ((i-a); for
-     RequestInfo without `expectedVersion` the (i-b) duplicate-key mapping) routes it to the actor-bound replay → 403.
-     Under (ii) today's 409s stay; the consumer maps both to `Unknown` (§17.7/6 for `WORKFLOW_TRANSITION_CONFLICT`,
-     item 17 (ii) for `WORKFLOW_TASK_INVALID_STATE` after a same-key send).
+     `WORKFLOW_TASK_INVALID_STATE` (`:82-89`), before any actor check. **Approve/Reject:** under O-S17-3 (i) the added
+     re-read routes it to the actor-bound replay → 403; under (ii) today's 409s stay and the consumer maps both to
+     `Unknown` (§17.7/6 for `WORKFLOW_TRANSITION_CONFLICT`, item 17 (ii) for `WORKFLOW_TASK_INVALID_STATE` after a
+     same-key send). **RequestInfo** (not part of O-S17-3; interim check 06 F-1): without `expectedVersion` → 403 under
+     both options — at the candidate check (`:567-570`) if the other actor is no candidate, otherwise through the
+     duplicate-key mapping (DL-2 base scope, item 17); with a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT`
+     (`:558-561`) under both options, `Unknown` (§17.7/6).
    - **(c)** in-transaction overlap: the loser gets 409 `WORKFLOW_TRANSITION_CONFLICT`
      (`WorkflowTerminalTransitionWriter.cs:108-110`; on the unavailable path `:370-376`, the version moved without a row
      of this actor) or 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`),
      before any actor check. O-S17-3 (i) as written (item 17) adds no re-read on these paths for Approve/Reject, so the
      answer stays 409/503 under both options and is `Unknown` (§17.7/6); a replay of the key then meets case (a) → 403.
-     A RequestInfo loser whose log meets the unique index goes through (i-b) → 403 under (i); the WP measures which
-     RequestInfo path the race takes (item 10 (c)).
-   Same actor, different body (reason code, comment, evidence
-   ref) → 409, sequential and concurrent, no new row. The code is named in the WP (proposal: not
-   `WORKFLOW_TRANSITION_CONFLICT`, which §17.7/6 treats as retryable `Unknown`).
+     A RequestInfo loser whose log meets the unique index goes through the duplicate-key mapping (item 17) → 403 under
+     both options; the WP measures which RequestInfo path the race takes (item 10 (c)).
+   **Same actor, different body** (reason code, comment, evidence ref; restated for interim check 06 F-2; read, not run,
+   @4c08fc75a) — no new row in any case:
+   - **Sequential path only** — case (a) (the actor-bound replay, which after the fix compares the body as `SamePayload`
+     does) and case (b) where the late call reaches that replay (Approve/Reject under O-S17-3 (i) through the re-read;
+     RequestInfo without `expectedVersion` through the duplicate-key mapping, item 17, under both options) → 409 with a
+     distinct code, named in the WP (proposal: not `WORKFLOW_TRANSITION_CONFLICT`, which §17.7/6 treats as retryable
+     `Unknown`). Under O-S17-3 (ii) Approve/Reject case (b) keeps today's 409s; RequestInfo with a stale
+     `expectedVersion` keeps 409 `WORKFLOW_TRANSITION_CONFLICT` (`:558-561`) under both options.
+   - **Concurrent path (case (c))** — the version fence cannot tell bodies apart: the loser gets 409
+     `WORKFLOW_TRANSITION_CONFLICT` (`WorkflowTerminalTransitionWriter.cs:108-110`, mapped at
+     `WorkflowTaskTransitionSupport.cs:839-843`), `Unknown` for the consumer (§17.7/6), whatever its body. Only the
+     transaction-unavailable re-read tells bodies apart (`MyCommittedLogAsync` / `SamePayload`,
+     `WorkflowTerminalTransitionWriter.cs:399-438`): same actor and body → 200 Replayed; same actor, different body → not
+     its own commit, so with the version moved → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:370-376`), 503
+     `WORKFLOW_TRANSACTION_UNAVAILABLE` if nothing moved (`:390`). The existing tests that pin this —
+     `WorkflowCandidateDecisionMongoTests.D2.cs:265-276` and `WorkflowCandidateDecisionMongoTests.D2Fix1.cs:368-378`,
+     both asserting `WorkflowTransitionConflict` — stay unchanged.
 8. **Cancel replay is not actor-bound — new AC-W18 (INSPECTION.md DL-2/2):** the cancel path answers a same-key replay
    directly (`WorkflowTaskTransitionSupport.cs:622-630@4c08fc75a`, `BuildIdempotentResponseAsync` without the actor check),
    so another actor's replay gets 200. **AC-W18 (proposal for the target answer):** same (task, `Cancel`, key) with a
@@ -990,7 +1007,8 @@ permission, no module id, no route path and no index.
    **intermediate** step, and the case-(b) replay of the loser's own key. Consumer rule §17.7/6:
    the 409 conflict is `Unknown`. Fact for it: a replay that repeats a stale `expectedVersion` gets 409
    `WORKFLOW_TRANSITION_CONFLICT` again. **AC-W8's asserted answers do not depend on O-S17-3** (no row exists under the
-   loser's key under (i) or (ii), item 17); **only the consumer rule's definite refusal does:** under (i) it comes from
+   loser's key under (i) or (ii), item 17) nor on the RequestInfo duplicate-key mapping (item 17; the loser's key differs,
+   so no duplicate key arises); **only the consumer rule's definite refusal does:** under (i) it comes from
    409 `WORKFLOW_TASK_INVALID_STATE` (first send or replay without the stale version) or from a read; under (ii) a
    `WORKFLOW_TASK_INVALID_STATE` after a same-key retry is `Unknown`, and the refusal comes only from a first send's
    `WORKFLOW_TASK_INVALID_STATE` or from a `history` read (the other decision recorded, no row under the loser's key).
@@ -1014,7 +1032,7 @@ permission, no module id, no route path and no index.
     - **(b) late arrival** — a call whose lookup `:61-65` ran before the twin committed and whose task read `:67` ran
       after it. **Today:** without `expectedVersion` → 409 `WORKFLOW_TASK_INVALID_STATE` (`:82-89`); with a stale
       `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:77-80`) — although its own transition is recorded.
-      **Asserted answer per O-S17-3:** under (i) — part (i-a) — 200 `isIdempotent = true` with the twin's transition, with or without a
+      **Asserted answer per O-S17-3:** under (i) 200 `isIdempotent = true` with the twin's transition, with or without a
       stale `expectedVersion` (a different actor → 403, item 7; sabotage: removing the added re-read turns it red);
       under (ii) today's two answers, and the AC-W17 / Treasury consumer check shows each mapped to `Unknown` and
       resolved by a `history` read. Forced by holding the late call between the two reads while the twin runs and
@@ -1077,23 +1095,20 @@ permission, no module id, no route path and no index.
     - **(a)** — as for Approve/Reject: the lookup `:539-547` finds the row and answers through the actor-bound replay
       (`:546`) → 200 `isIdempotent = true`.
     - **(b) late arrival** — held between the lookup `:539-547` and the task read `:732` until the twin has committed
-      (same hold pattern as Approve/Reject (b)). With a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT`
-      (`:558-561`) today; under O-S17-3 (i) the added re-read also precedes this answer, so the asserted answer is 200
-      `isIdempotent = true` (actor-bound; O-S17-3 (i-a)); under (ii) the 409 stays and is `Unknown` (§17.7/6). No
+      (same hold pattern as Approve/Reject (b)). RequestInfo case (b) is **not** part of O-S17-3 (interim check 06 F-1);
+      its answers below hold under both options. With a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT`
+      (`:558-561`), as today: `Unknown` (§17.7/6), and a replay of the key is then case (a) → 200. No
       `WORKFLOW_TASK_INVALID_STATE` arises here (the task stays decidable). Without `expectedVersion` the
       late call meets a still-decidable task, so `:562-565` does not refuse it and it reaches the write with a second log
       under the same (task, `RequestInfo`, key). **Today** the unique index
       `ux_workflow_transition_logs_task_action_idempotency_active`
       (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.WorkflowWorkCenter.cs:212-220@4c08fc75a`)
       may refuse that log; the writer catches only `TerminalConflictException` and `PlatformTransactionUnavailableException`
-      (`WorkflowTerminalTransitionWriter.cs:333-340`), so the answer is not defined by the code read here (not measured).
-      **Asserted answer per O-S17-3 (interim check 03 F-3):** under (i) — part (i-b), item 17 — the writer maps that
-      duplicate-key refusal to the actor-bound replay read: one row for (task, `RequestInfo`, key), 200
-      `isIdempotent = true` with the twin's transition, a different actor → 403 (item 7), a different body → the AC-W14
-      409; sabotage: removing the mapping turns it red. Under (ii) the WP measures the answer and the row count; AC-W7's
-      target (one row, the identical twin 200 `isIdempotent = true`) stays, and a second row or another answer is a DL-2
-      finding whose fix (in the writer) lies outside DL-2's allowed paths under (ii) — §17 then stays blocked (§17 status
-      paragraph).
+      (`WorkflowTerminalTransitionWriter.cs:333-340`), so today's answer is not defined by the code read here (not
+      measured). **AC-W7 asserts (DL-2 base scope, item 17 — the duplicate-key mapping):** one row for (task,
+      `RequestInfo`, key); the identical twin gets 200 `isIdempotent = true` with the twin's transition; a different
+      actor → 403 (item 7); the same actor with a different body → the sequential AC-W14 409 (item 7). Sabotage: removing
+      the mapping turns it red.
     - **(c) in-transaction overlap** — both calls past `:539-547` and `:562-565` before either commits: the loser's
       version-guarded update fails inside `CommitTransitionAsync` → Conflict
       (`WorkflowTerminalTransitionWriter.cs:318-322, 333-336@4c08fc75a`); transaction-unavailable goes to the same
@@ -1176,8 +1191,8 @@ permission, no module id, no route path and no index.
 14. **DL-2 allowed paths — replaces §17.8/9 DL-2 bullet (INSPECTION.md DL-2/8):** under
     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/`:
     `Handlers/CommandHandlers/StartWorkflowInstanceHandler.cs`, `Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs`,
-    `Handlers/CommandHandlers/WorkflowTerminalTransitionWriter.cs` (if `SamePayload` is shared, **or** under O-S17-3 (i)
-    for the (i-b) duplicate-key mapping only, item 17 — interim check 03 F-3),
+    `Handlers/CommandHandlers/WorkflowTerminalTransitionWriter.cs` (under both O-S17-3 options, for the RequestInfo
+    duplicate-key mapping of item 17 — DL-2 base scope, interim check 06 F-1 — and for sharing `SamePayload`),
     `WorkflowModels.cs`, `Handlers/CommandHandlers/RejectWorkflowTaskHandler.cs` (replay lookup `:79-80`), and only if
     needed the thin per-action handlers `Handlers/CommandHandlers/ApproveWorkflowTaskHandler.cs`,
     `DelegateWorkflowTaskHandler.cs`, `RequestInfoWorkflowTaskHandler.cs`, `CancelWorkflowTaskHandler.cs`; plus
@@ -1213,45 +1228,47 @@ permission, no module id, no route path and no index.
       no row of another tenant appears.
     `instances/{id}` + `idempotencyKey` stays optional (§17.7/4) and is not asserted. The `includeDeleted` variant is
     AC-W16 (item 15).
-17. **Owner decision O-S17-3 — an identical late same-key retry answered 409 `WORKFLOW_TASK_INVALID_STATE` (DL-2;
-    interim check 02 F-2) — open.** In Approve/Reject case (b) (item 10) an identical retry whose own transition is
-    already recorded gets 409 `WORKFLOW_TASK_INVALID_STATE` (`WorkflowTaskTransitionSupport.cs:82-89@4c08fc75a`), or 409
-    `WORKFLOW_TRANSITION_CONFLICT` with a stale `expectedVersion` (`:77-80`). §17.7/6 calls the first a definite refusal,
-    so a consumer would record `Refused` for a transition that was recorded.
-    - **(i) DL-2 target, in two parts (rewritten for interim check 03 F-3):**
-      - **(i-a) Approve/Reject (and RequestInfo's refusals):** before answering `WORKFLOW_TASK_INVALID_STATE` (`:82-89`;
-        RequestInfo `:562-565`) and before `StaleVersion` (`:77-80`; RequestInfo `:558-561`), the handler re-reads the
-        (task, action, key) log (`GetByTaskActionIdempotencyKeyAsync`, as at `:61`, `:539`); a recorded twin answers 200
-        `isIdempotent = true` through the actor-bound replay (`:1018-1030`; another actor → 403, item 7). This alone makes
-        the identical-retry answer timing-independent **for Approve and Reject only**: their late twin always meets a
-        refusal, because the decided task is no longer decidable. File: `WorkflowTaskTransitionSupport.cs`.
-      - **(i-b) RequestInfo:** a late identical twin without `expectedVersion` is not refused — the task stays decidable
-        (`WorkflowTaskTransitionSupport.cs:846-858`) — and reaches the write (`:593` → `CommitTransitionAsync`); its log
-        may meet the unique index `ux_workflow_transition_logs_task_action_idempotency_active`
-        (`PlatformSchemaManifest.WorkflowWorkCenter.cs:212-220@4c08fc75a`), and the writer catches only
-        `TerminalConflictException` and `PlatformTransactionUnavailableException`
-        (`WorkflowTerminalTransitionWriter.cs:333-340@4c08fc75a`). Under (i) the writer maps a duplicate-key refusal on
-        **that index** to a replay read of the (task, action, key) row: same actor and payload (as `MyCommittedLogAsync`
-        compares them, `:399-438`) → Replayed (200 `isIdempotent = true`); another actor → 403 (item 7; the unavailable
-        path's own re-read would answer 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` here, not 409 — `MyCommittedLogAsync`
-        finds no row of this actor, the task version does not move and after `LostRaceReadAttempts` the writer returns
-        `TransactionUnavailable`, `WorkflowTerminalTransitionWriter.cs:357-390`, mapped at
-        `WorkflowTaskTransitionSupport.cs:834-838`; interim check 04 F-1 — so the WP routes this case to the actor-bound
-        replay `WorkflowTaskTransitionSupport.cs:1018-1030` and states how); another body → the AC-W14 409. Any other write
-        error is unchanged. This makes
-        `WorkflowTerminalTransitionWriter.cs` a DL-2 allowed path under (i) (item 14), not only "if `SamePayload` is
-        shared".
-      AC-W6/W7 case (b) assert 200 (item 10, RequestInfo (b) through (i-b)); AC-W14's different-actor case (b) asserts
-      403 (item 7). AC-W8 does not depend on O-S17-3 (no row under the loser's key, item 9).
+17. **RequestInfo duplicate-key mapping (DL-2 base scope) and owner decision O-S17-3 — an identical late same-key retry
+    answered 409 `WORKFLOW_TASK_INVALID_STATE` (DL-2; interim check 02 F-2, interim check 06 F-1) — O-S17-3 open.**
+    - **RequestInfo duplicate-key mapping — DL-2 base scope under both O-S17-3 options (proposal; the owner approves it
+      with this pack; formerly (i-b), moved out of O-S17-3 for interim check 06 F-1):** a late identical RequestInfo twin
+      without `expectedVersion` is not refused — the task stays decidable (`WorkflowTaskTransitionSupport.cs:846-858`) —
+      and reaches the write (`:593` → `CommitTransitionAsync`); its log may meet the unique index
+      `ux_workflow_transition_logs_task_action_idempotency_active`
+      (`PlatformSchemaManifest.WorkflowWorkCenter.cs:212-220@4c08fc75a`), and the writer catches only
+      `TerminalConflictException` and `PlatformTransactionUnavailableException`
+      (`WorkflowTerminalTransitionWriter.cs:333-340@4c08fc75a`). The writer maps a duplicate-key refusal on **that index**
+      for (task, `RequestInfo`, key) to an actor-bound replay read of that row: same actor and same payload (as
+      `MyCommittedLogAsync` compares them, `:399-438`) → 200 `isIdempotent = true`; another actor → 403
+      `WORKFLOW_ACTOR_DENIED` (item 7); same actor, different payload → the sequential different-body answer (AC-W14,
+      item 7). The unavailable path's own re-read cannot serve the actor case: it would answer 503
+      `WORKFLOW_TRANSACTION_UNAVAILABLE` here, not 403 — `MyCommittedLogAsync` finds no row of this actor, the task version
+      does not move and after `LostRaceReadAttempts` the writer returns `TransactionUnavailable`,
+      `WorkflowTerminalTransitionWriter.cs:357-390`, mapped at `WorkflowTaskTransitionSupport.cs:834-838` (interim check
+      04 F-1) — so the WP routes this case to the actor-bound replay `WorkflowTaskTransitionSupport.cs:1018-1030` and
+      states how. Any other write error is unchanged. This makes `WorkflowTerminalTransitionWriter.cs` a DL-2 allowed
+      path unconditionally (item 14). AC-W7's RequestInfo case (b) asserts it (item 10).
+    - **O-S17-3 covers only Approve/Reject case (b).** There (item 10) an identical retry whose own transition is
+      already recorded gets 409 `WORKFLOW_TASK_INVALID_STATE` (`WorkflowTaskTransitionSupport.cs:82-89@4c08fc75a`), or
+      409 `WORKFLOW_TRANSITION_CONFLICT` with a stale `expectedVersion` (`:77-80`). §17.7/6 calls the first a definite
+      refusal, so a consumer would record `Refused` for a transition that was recorded. RequestInfo's stale-version 409
+      (`:558-561`) is not part of it: it stays `WORKFLOW_TRANSITION_CONFLICT`, `Unknown` under §17.7/6 (item 10).
+    - **(i) re-read before refusal (DL-2 target):** before answering `WORKFLOW_TASK_INVALID_STATE` (`:82-89`) and before
+      `StaleVersion` (`:77-80`), the handler re-reads the (task, action, key) log (`GetByTaskActionIdempotencyKeyAsync`,
+      as at `:61`); a recorded twin answers through the actor-bound replay (`:1018-1030`): same actor and body → 200
+      `isIdempotent = true`; another actor → 403 (item 7); same actor, different body → the sequential AC-W14 409. This
+      makes the identical-retry answer timing-independent for Approve and Reject: their late twin always meets a refusal,
+      because the decided task is no longer decidable. File: `WorkflowTaskTransitionSupport.cs`. AC-W6/W7 case (b) for
+      Approve/Reject assert 200 (item 10); AC-W14's Approve/Reject case (b) asserts 403 / the sequential 409 (item 7).
     - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
-      is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No producer
-      change; AC-W6/W7 case (b) and AC-W14's different-actor case (b) (item 7) assert today's answers (AC-W8 as under (i)); §17.7/6 is amended this way, and every AC-W17 consumer and
-      Treasury records the rule.
-    - **Öneri — sahip kararı:** (i). The answer is fixed once in the producer instead of in every consumer (Treasury,
-      Tasks, Timesheet, WorkCenter, Web), for all three actions of AC-W6/W7. Cost: (i-a) adds one indexed read before
-      each of the two refusal answers; (i-b) adds a duplicate-key mapping and a replay read in the writer, and a second
-      file (`WorkflowTerminalTransitionWriter.cs`) to DL-2's write-path change. Under (ii) the RequestInfo late twin keeps
-      an answer the code does not define today (item 10), and its fix would lie outside DL-2's allowed paths.
+      is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No change to
+      the Approve/Reject refusal path; AC-W6/W7 case (b) for Approve/Reject and AC-W14's Approve/Reject case (b) (item 7)
+      assert today's answers; §17.7/6 is amended this way, and every AC-W17 consumer and Treasury records the rule.
+    - Under both options: the RequestInfo mapping above and its AC-W7 / AC-W14 assertions hold; AC-W8 does not depend on
+      O-S17-3 (no row under the loser's key, item 9).
+    - **Öneri — sahip kararı:** (i). The Approve/Reject late-retry answer is fixed once in the producer with one indexed
+      read before each of the two refusals, instead of a rule in every consumer (Treasury, Tasks, Timesheet, WorkCenter,
+      Web).
     - **Gate:** the DL-2 WP prompt is not written before O-S17-3 is decided; DL-1 does not depend on it.
 
 **Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (formal review; UYGUN DEĞİL; MOD-0023 owner
@@ -1262,7 +1279,7 @@ the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.
 the same §17 headings.
 
 Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
-"interim check 05 F-n" in the items; they are not the
+"interim check 05 F-n" / "interim check 06 F-n" in the items; they are not the
 formal review's F-n above.
 
 **Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
@@ -1290,8 +1307,18 @@ review; KOŞULLU, no blocker; both findings accepted by the CT; owner `duzelt`).
 actor case by timing case), item 17, the interim check 04 paragraph, the closure and the DL-2 finish list (AC-W14's
 different-actor case (b) depends on O-S17-3); F-2 → item 4 (boundary of the list, inherited fields).
 
+**Interim check 06 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-06.md` (sub-agent, not a formal
+review; KOŞULLU, no blocker; both findings accepted with CT direction; owner `duzelt`).** Interim check 06 F-1 → item 17
+(the former (i-b) RequestInfo duplicate-key mapping is DL-2 base scope under both options; O-S17-3 covers only
+Approve/Reject case (b); recommendation reason), items 7, 9, 10 (RequestInfo (b) as an AC-W7 assertion), 14 (writer path
+unconditional), the closure and the DL-2 finish list; F-2 → item 7 (AC-W14's distinct different-body code on the
+sequential path only; concurrent path `WORKFLOW_TRANSITION_CONFLICT`, existing tests unchanged), the closure and the DL-2
+finish list. The "(i-a)" / "(i-b)" names in the interim check 03 and 04 paragraphs are historical.
+
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6/W7
-by items 10 and 17, AC-W14 by items 7 and 17 — its different-actor case (b) depends on O-S17-3 —, AC-W8 by item 9 —
+by items 10 and 17 — their Approve/Reject case (b) depends on O-S17-3; RequestInfo case (b) is asserted through the
+duplicate-key mapping, DL-2 base scope under both options —, AC-W14 by items 7 and 17 — its Approve/Reject case (b)
+depends on O-S17-3; its distinct different-body code applies on the sequential path only —, AC-W8 by item 9 —
 AC-W8 does not depend on O-S17-3); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
 S17-2) and no longer a gate; **O-S17-3 is open and must be decided before the DL-2 WP prompt**; the rest of the §17.8
 closure unchanged.
@@ -1308,6 +1335,8 @@ durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
 (AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
 artık kapı değil).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7, AC-W14'ün farklı aktör (b) vakası ve tüketici kuralı
-O-S17-3 kararına bağlı, §17.9/7 ve §17.9/17; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7'nin ve AC-W14'ün Approve/Reject (b) vakası ve tüketici kuralı
+O-S17-3 kararına bağlı, §17.9/7 ve §17.9/17; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
+kapsamı, AC-W7 onu doğrular, §17.9/17; AC-W14'ün ayrı farklı-gövde 409 kodu yalnız sıralı yolda, eşzamanlı yolda
+`WORKFLOW_TRANSITION_CONFLICT`, §17.9/7; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
