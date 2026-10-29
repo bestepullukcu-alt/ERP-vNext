@@ -1150,6 +1150,10 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
 7. **D96/7 — kısmi AC kapanış atıfları (sahip denetimi `d35aec408`, 1 ORTA + 1 DÜŞÜK):** hazırlık kayıtlarında sonraki
    dilimlerin Bitiş atıfları (8) güncel dilim Bitiş satırlarına eşlendi (dilim haritası: her `- **DL-n** —` bloğunun `Bitiş:`
    satırı); WP-0126 v0.2 P-2 en son eski incelemeyi `caf551b0` KOŞULLU, ondan öncekini `be2b3ffa` UYGUN olarak gösterir.
+8. **D96/8 — MOD-0126 sabitleme açıklamaları (Codex CT-APR-02 `d35aec408`, 0119 / 0120 / 0124 F-2 DÜŞÜK):** üç paketin DL-1 / DL-2
+   hazırlık kayıtlarında güncel `40140c6e…` sabitlemesinin açıklaması D92–D96 zinciriyle (`22dbef85` → `be2b3ffa` → `caf551b0` → güncel)
+   düzeltildi; tarihsel D80 kaydındaki sabitleme o sürümün gerçek özetine (`d86c2a56…`) geri alındı (özet zinciri betiği eski özeti
+   güncelle değiştirmişti). 15 yer; paketler değişmedi.
 
 ## D97 — Ali Y-26: #311 kararları (MDM XMC-001, K-W5 okuma yolu, MOD-0057 Auth eki), MOD-0262-FU01 Auth tarafı, MOD-0220 §22 (2026-10-30)
 
