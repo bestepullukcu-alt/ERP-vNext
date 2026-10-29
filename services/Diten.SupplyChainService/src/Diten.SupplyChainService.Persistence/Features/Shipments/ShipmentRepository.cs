@@ -37,11 +37,116 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
         var items = await _shipments.Find(filter).SortBy(x => x.Id).Skip(checked((page - 1) * pageSize)).Limit(pageSize).ToListAsync(ct);
         return (items, count);
     }
+    private static FilterDefinition<BsonDocument> ReceiptFilter(ShipmentScope scope, string operation, string key) =>
+        new BsonDocument { { "TenantId", scope.TenantId.ToString() }, { "LegalEntityId", scope.LegalEntityId.ToString() }, { "Operation", operation }, { "Key", key } };
+    private async Task<ShipmentMutationResult> ReplayAsync(IClientSessionHandle? session, FilterDefinition<Shipment> scopeFilter, BsonDocument receipt,
+     string operation, string fingerprint, Guid correlationId, CancellationToken ct)
+    {
+        if (receipt["Fingerprint"].AsString != fingerprint) return new ShipmentMutationResult(null, false, 409, "IDEMPOTENCY_KEY_REUSED");
+        if (receipt["CorrelationId"].AsString != correlationId.ToString()) return new ShipmentMutationResult(null, false, 400, "INVALID_REQUEST");
+        var shipmentFilter = scopeFilter & Builders<Shipment>.Filter.Eq(x => x.Id, Guid.Parse(receipt["ShipmentId"].AsString));
+        var visible = session is null ? await _shipments.Find(shipmentFilter).AnyAsync(ct) : await _shipments.Find(session, shipmentFilter).AnyAsync(ct);
+        if (!visible) return new ShipmentMutationResult(null, false, 404, "SHIPMENT_NOT_FOUND");
+        // MOD-0183 §23.4: a compensated dispatch stores its refusal as the receipt, so the same command answers the same.
+        if (receipt.TryGetValue("ErrorCode", out var error) && error.IsString)
+            return new ShipmentMutationResult(null, true, receipt["StatusCode"].AsInt32, error.AsString,
+                receipt.TryGetValue("DetailsJson", out var details) && details.IsString ? details.AsString : null);
+        var snapshot = JsonSerializer.Deserialize<Shipment>(receipt["Snapshot"].AsString)!;
+        return new ShipmentMutationResult(snapshot, true, operation == "create" ? 200 : receipt["StatusCode"].AsInt32, null);
+    }
+    public async Task<ShipmentMutationResult?> FindReceiptAsync(ShipmentScope scope, string operation, string key, string fingerprint, Guid correlationId, CancellationToken ct)
+    {
+        var receipt = await _receipts.Find(ReceiptFilter(scope, operation, key)).FirstOrDefaultAsync(ct);
+        if (receipt is null) return null;
+        var result = await ReplayAsync(null, Scoped(scope), receipt, operation, fingerprint, correlationId, ct);
+        if (result.Replay && result.ErrorCode is null) ShipmentTelemetry.IdempotentReplays.Add(1);
+        return result;
+    }
+    // A conditional write wins when its filter matched: a renewal at the same instant changes no byte (ModifiedCount 0)
+    // and is still the holder's write.
+    private FilterDefinition<Shipment> Held(ShipmentScope scope, Guid shipmentId, int n, Guid leaseId) =>
+        Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId)
+        & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.N, n) & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.LeaseId, leaseId);
+    public async Task<bool> TryBeginOrResumeDispatchAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt? observed, DispatchAttempt next, CancellationToken ct)
+    {
+        var f = Builders<Shipment>.Filter;
+        var filter = Scoped(scope) & f.Eq(x => x.Id, shipmentId) & f.Eq(x => x.Status, ShipmentStatus.Planned);
+        if (observed is null)
+        {
+            next.Rev = 0;
+            return (await _shipments.UpdateOneAsync(filter & f.Eq(x => x.DispatchAttempt, null), Builders<Shipment>.Update.Set(x => x.DispatchAttempt, next), cancellationToken: ct)).MatchedCount == 1;
+        }
+        // Takeover (review F-2): the stored attempt must still be the observation the caller found expired — same N, lease
+        // id, lease end, state and revision — and only the lease fields change, so a renewal, sent marker or issue the old
+        // holder wrote after the observation is never overwritten from a stale copy.
+        filter &= f.Eq(x => x.DispatchAttempt!.N, observed.N) & f.Eq(x => x.DispatchAttempt!.LeaseId, observed.LeaseId)
+            & f.Eq(x => x.DispatchAttempt!.LeaseUntil, observed.LeaseUntil) & f.Eq(x => x.DispatchAttempt!.State, observed.State)
+            & f.Eq(x => x.DispatchAttempt!.Rev, observed.Rev);
+        next.Rev = observed.Rev + 1;
+        var update = Builders<Shipment>.Update.Set(x => x.DispatchAttempt!.LeaseId, next.LeaseId).Set(x => x.DispatchAttempt!.LeaseUntil, next.LeaseUntil)
+            .Set(x => x.DispatchAttempt!.Rev, next.Rev);
+        return (await _shipments.UpdateOneAsync(filter, update, cancellationToken: ct)).MatchedCount == 1;
+    }
+    public async Task<bool> SaveDispatchAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, CancellationToken ct)
+    {
+        attempt.Rev++;
+        return (await _shipments.UpdateOneAsync(Held(scope, shipmentId, attempt.N, heldLeaseId), Builders<Shipment>.Update.Set(x => x.DispatchAttempt, attempt), cancellationToken: ct)).MatchedCount == 1;
+    }
+    public async Task<bool> SettleDispatchAttemptAsync(ShipmentScope scope, Guid shipmentId, DispatchAttempt attempt, Guid heldLeaseId, DispatchAuditEntry audit,
+        DispatchOutcomeReceipt? receipt, CancellationToken ct)
+    {
+        using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
+        return await session.WithTransactionAsync(async (transaction, token) =>
+        {
+            var stored = attempt.Copy(); stored.Rev = attempt.Rev + 1;
+            var update = stored.State == DispatchState.Compensated
+                ? Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null).Push(x => x.DispatchHistory, stored)
+                : Builders<Shipment>.Update.Set(x => x.DispatchAttempt, stored);
+            // First, so a lost lease leaves the transaction empty: nothing else is written.
+            if ((await _shipments.UpdateOneAsync(transaction, Held(scope, shipmentId, attempt.N, heldLeaseId), update, cancellationToken: token)).MatchedCount != 1) return false;
+            await db.GetCollection<BsonDocument>("sce_shipment_audit").InsertOneAsync(transaction, AuditRow(scope, shipmentId, audit), cancellationToken: token);
+            if (receipt is not null && await _receipts.Find(transaction, ReceiptFilter(scope, receipt.Operation, receipt.Key)).AnyAsync(token) is false)
+                await _receipts.InsertOneAsync(transaction, new BsonDocument {
+                    {"_id",Guid.NewGuid().ToString()},{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
+                    {"Operation",receipt.Operation},{"Key",receipt.Key},{"Fingerprint",receipt.Fingerprint},{"CorrelationId",receipt.CorrelationId.ToString()},
+                    {"ShipmentId",shipmentId.ToString()},{"StatusCode",receipt.StatusCode},{"ErrorCode",receipt.ErrorCode},
+                    {"DetailsJson",receipt.DetailsJson is null ? BsonNull.Value : receipt.DetailsJson},{"CommandId",Guid.NewGuid().ToString()}}, cancellationToken: token);
+            // AUD-001: the running command's central record commits with the outcome. A failed command's row stays
+            // Abandoned by design (BL-501); the reversal ids live in the in-product row above (open point F-4).
+            await CentralAuditTransaction.EnlistAsync(transaction, shipmentId, token);
+            await probe.BeforeCommitAsync(token);
+            attempt.Rev = stored.Rev;
+            return true;
+        }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), ct);
+    }
+    public async Task<bool> DropUnpostedAttemptAsync(ShipmentScope scope, Guid shipmentId, int n, Guid heldLeaseId, CancellationToken ct) =>
+        (await _shipments.UpdateOneAsync(Held(scope, shipmentId, n, heldLeaseId) & Builders<Shipment>.Filter.Eq(x => x.DispatchAttempt!.State, DispatchState.InProgress),
+            Builders<Shipment>.Update.Set(x => x.DispatchAttempt, null), cancellationToken: ct)).MatchedCount == 1;
+    public async Task RecordLateWriteAsync(ShipmentScope scope, Guid shipmentId, DispatchLateWrite write, DispatchAuditEntry audit, CancellationToken ct)
+    {
+        using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
+        await session.WithTransactionAsync(async (transaction, token) =>
+        {
+            await _shipments.UpdateOneAsync(transaction, Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId),
+                Builders<Shipment>.Update.Push(x => x.DispatchLateWrites, write), cancellationToken: token);
+            await db.GetCollection<BsonDocument>("sce_shipment_audit").InsertOneAsync(transaction, AuditRow(scope, shipmentId, audit), cancellationToken: token);
+            // The command that runs the late writer has failed (it lost its lease), so this row stays Abandoned (BL-501).
+            await CentralAuditTransaction.EnlistAsync(transaction, shipmentId, token);
+            await probe.BeforeCommitAsync(token);
+            return true;
+        }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), ct);
+    }
+    private static BsonDocument AuditRow(ShipmentScope scope, Guid shipmentId, DispatchAuditEntry entry) => new() {
+        {"_id",Guid.NewGuid().ToString()},{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
+        {"ShipmentId",shipmentId.ToString()},{"Operation","dispatch-attempt"},{"Attempt",entry.N},{"Outcome",entry.Outcome},
+        {"OccurredAt",entry.OccurredAt.UtcDateTime},{"ActorId",scope.ActorId.ToString()},{"CorrelationId",entry.CorrelationId.ToString()},
+        {"IssueTransactionIds",new BsonArray(entry.IssueTransactionIds)},{"ReversalTransactionIds",new BsonArray(entry.ReversalTransactionIds)},
+        {"IntegrityFaults",new BsonArray(entry.IntegrityFaults)}};
     public async Task<ShipmentMutationResult> MutateAsync(ShipmentScope scope, Guid? shipmentId, string operation, string key, string fingerprint,
      Guid correlationId, Func<Shipment?, ShipmentChange> decide, CancellationToken ct, Diten.SupplyChainService.Domain.Features.SourceIntake.SourceIntent? source = null)
     {
         var scopeFilter = Scoped(scope);
-        var receiptFilter = new BsonDocument { { "TenantId", scope.TenantId.ToString() }, { "LegalEntityId", scope.LegalEntityId.ToString() }, { "Operation", operation }, { "Key", key } };
+        var receiptFilter = ReceiptFilter(scope, operation, key);
         for (var attempt = 0; ; attempt++)
         {
             using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
@@ -65,15 +170,7 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
                         }
                     }
                     var receipt = await _receipts.Find(transaction, receiptFilter).FirstOrDefaultAsync(token);
-                    if (receipt is not null)
-                    {
-                        if (receipt["Fingerprint"].AsString != fingerprint) return new ShipmentMutationResult(null, false, 409, "IDEMPOTENCY_KEY_REUSED");
-                        if (receipt["CorrelationId"].AsString != correlationId.ToString()) return new ShipmentMutationResult(null, false, 400, "INVALID_REQUEST");
-                        var snapshot = JsonSerializer.Deserialize<Shipment>(receipt["Snapshot"].AsString)!;
-                        var visible = await _shipments.Find(transaction, scopeFilter & Builders<Shipment>.Filter.Eq(x => x.Id, snapshot.Id)).AnyAsync(token);
-                        if (!visible) return new ShipmentMutationResult(null, false, 404, "SHIPMENT_NOT_FOUND");
-                        return new ShipmentMutationResult(snapshot, true, operation == "create" ? 200 : receipt["StatusCode"].AsInt32, null);
-                    }
+                    if (receipt is not null) return await ReplayAsync(transaction, scopeFilter, receipt, operation, fingerprint, correlationId, token);
                     Shipment? current = shipmentId is null ? null : await _shipments.Find(transaction, scopeFilter & Builders<Shipment>.Filter.Eq(x => x.Id, shipmentId.Value)).FirstOrDefaultAsync(token);
                     if (shipmentId is not null && current is null) return new ShipmentMutationResult(null, false, 404, "SHIPMENT_NOT_FOUND");
                     var oldStatus = current?.Status.ToString(); var oldVersion = current?.Version;
