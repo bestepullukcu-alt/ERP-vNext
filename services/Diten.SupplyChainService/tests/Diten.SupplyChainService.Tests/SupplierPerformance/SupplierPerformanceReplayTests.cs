@@ -132,6 +132,26 @@ public sealed class SupplierPerformanceReplayTests
         Assert.Single(await h.AuditRecords());
     }
 
+    // T-0147-RP-07, deterministic: an identical request commits between this request's stage 5 and its active-period check.
+    // §0.5: a clash re-runs stage 5 first, so the late request is a replay (200), never 409 DUPLICATE_EVALUATION.
+    [Fact]
+    public async Task RP07_IdenticalRequestCommittedAfterStage5_ShouldStillBeAReplay()
+    {
+        await using var h = new SupplierPerformanceHost();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        h.Procurement.Gate = n => n == 1 ? release.Task : Task.CompletedTask;
+
+        var late = Task.Run(() => h.Create());
+        while (h.Procurement.Calls.IsEmpty) await Task.Delay(10);
+        var winner = await h.Create();
+        release.SetResult();
+        var replay = await late;
+
+        Assert.Equal((HttpStatusCode.Created, HttpStatusCode.OK), (winner.Status, replay.Status));
+        Assert.Equal(Text(winner.Body), Text(replay.Body));
+        Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
+    }
+
     // T-0147-RP-08: the answer lost after commit → replay; commit outcome unknown → 503, then replay if committed, else one new 201.
     [Theory]
     [InlineData("afterCommit", HttpStatusCode.OK)]

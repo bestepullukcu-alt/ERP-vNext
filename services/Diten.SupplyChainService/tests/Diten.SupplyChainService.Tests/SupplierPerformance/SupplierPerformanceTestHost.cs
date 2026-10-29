@@ -26,7 +26,8 @@ namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 internal sealed class SupplierPerformanceFactory(FakeProcurement procurement, StubLegalEntityScopeValidator legalEntities, SupplierPerformanceProbe probe, string appName)
     : WebApplicationFactory<Program>
 {
-    public const string DatabaseName = "diten_mod0147_tests";
+    // One database per host, dropped on dispose: the schema gate then builds every index fresh, so an index sabotage is measured.
+    public readonly string DatabaseName = "diten_mod0147_" + Guid.NewGuid().ToString("N")[..12];
     public static readonly string Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     private Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(Secret))
     {
@@ -127,6 +128,7 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Client.Dispose();
+        await Db.Client.DropDatabaseAsync(App.DatabaseName);
         await App.DisposeAsync();
     }
 }

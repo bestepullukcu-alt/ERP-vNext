@@ -23,6 +23,9 @@ internal sealed class FakeProcurement : HttpMessageHandler
     public Func<string, (HttpStatusCode Status, string? Body)> Answer { get; set; } = _ => (HttpStatusCode.OK, Eligibility().ToJsonString());
     public Exception? Throw { get; set; }
     public TimeSpan Delay { get; set; } = TimeSpan.Zero;
+    /// <summary>Awaited before answering call number N (1-based): lets a test hold one request between two stages.</summary>
+    public Func<int, Task>? Gate { get; set; }
+    private int _count;
 
     // The 1.3.0 example of getSupplierEligibility (status Blocked, eligibleForTransactions false) — evaluable under Q1/Q2.
     public static JsonObject Eligibility(string supplierId = Code, string? masterId = MasterId, string? status = "Blocked", string? onboarding = "Approved",
@@ -40,6 +43,8 @@ internal sealed class FakeProcurement : HttpMessageHandler
         string? One(string name) => request.Headers.TryGetValues(name, out var v) ? string.Join(",", v) : null;
         var path = request.RequestUri!.AbsolutePath;
         Calls.Enqueue(new(path, One("Authorization"), One("X-Tenant-Id"), One("X-Legal-Entity-Id"), One("X-Correlation-Id")));
+        var number = Interlocked.Increment(ref _count);
+        if (Gate is not null) await Gate(number);
         if (Delay > TimeSpan.Zero) await Task.Delay(Delay, ct);
         if (Throw is not null) throw Throw;
         const string prefix = "/api/suppliers/", suffix = "/eligibility";
