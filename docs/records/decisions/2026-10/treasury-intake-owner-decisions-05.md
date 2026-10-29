@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D79 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D80 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -851,6 +851,18 @@ yazar, MOD-0018 sahibi teyit eder (Y-15); bu kararlar sahip teyidine Auth ekiyle
    Çekirdek kural 4). 27 rolün 7 dilli adlarını Treasury yazar, MOD-0018 sahibi teyit eder.
 
 Açık kalan (MOD-0018 sahibinde): Auth ekinin teyidi, K-1 FU numarası, K-W5 K2 denetim izi, K-A1 uç adı / sözleşme dosyası, K-5 (Beste ile).
+
+## D80 — Ali'nin şartlı teyidi ve FU27'nin işlenmesi (Y-19; MOD-0018 sahibinin kararı, K1 kayda alır, 2026-10-29)
+
+Kaynak: Y-19 (MOD-0018 sahibi Ali, 2026-10-29). Bu kayıt onay satırı ya da ready-for-dev onayı değildir.
+
+1. **Kimlik:** Treasury Auth eki **MOD-0018-FU27** olur; dosya adı ve `id` FU27'ye çevrilir, `execution/registries/module-id-registry.md`'ye
+   kayıt satırı paketle birlikte yazılır; bütün atıflar FU27'ye çekilir.
+2. **Auth paket kapısı (D70/3) şartlı kapanır:** MOD-0018 sahibi D69–D78 sürümünü şartla teyit etti. **DL-1 için kapı kapalı değildir**
+   (bekletmez). **DL-5 kodundan önce** iki şart kapanmalı: (a) K-W5 denetim izi için defter kararı; (b) rol atama adımlarının (rola izin bağlama,
+   kişiye rol verme) denetim borcu. D79'dan sonraki değişiklikler (7 dil tablosu vb.) sahip teyidine ayrıca gider.
+3. **K-7 ve DL-6:** sahip D79/9'u (sabit kod + 7 dil kaynak) ve D67/1'i (aday sorgusu DL-6) teyit etti.
+4. **Açık (sahipte):** K-W5, K-A1, K-A2, K-A3; D79'daki önerileri kabul listesi (K-1b, K-2, K-3, K-W2, K-W4, K-W6) ve K-5; K-W7, K-A4b teyidi.
 
 ## Karar olmayanlar
 
