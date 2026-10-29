@@ -2,11 +2,11 @@ namespace Diten.SupplyChainService.Domain.Features.Returns;
 public interface IReturnRepository
 {
  Task<IReadOnlyList<ReturnOrder>> QueryAsync(ReturnScope scope, ReturnStatus? status, Guid? shipmentId, CancellationToken ct);
- /// <param name="receipt">MOD-0186 §34.2 step D: only with <paramref name="target"/> Received; commits only while the lease is held and the attempt is complete.</param>
+ /// <param name="completion">MOD-0186 §34.2 step D: only with <paramref name="target"/> Received; commits only while the lease is held and the attempt is complete.</param>
  Task<ReturnMutationResult> MutateAsync(ReturnScope scope, Guid? id, string key, string fingerprint, Guid root,
  ReturnOrder? create, ReturnStatus? target, string? occurredAt, string? inventoryReference, string? dispositionCode,
  Func<ReturnOrder,CancellationToken,Task<ReturnReferenceSnapshot>> observe, CancellationToken ct, string? rawCreateJson = null,
- ReturnReceiptCompletion? receipt = null);
+ ReturnReceiptCompletion? completion = null);
  // MOD-0186 §34.2 receipt attempt. Every method is filtered on tenant, legal entity and IsDeleted = false.
  Task<ReturnOrder?> GetAsync(ReturnScope scope, Guid id, CancellationToken ct);
  /// <summary>The stored answer of a transition key, or null when the key has none.</summary>

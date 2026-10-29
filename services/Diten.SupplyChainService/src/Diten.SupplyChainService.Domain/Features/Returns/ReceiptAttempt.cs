@@ -28,6 +28,8 @@ public sealed class ReceiptAttempt
 public sealed class ReceiptAttemptLine
 {
     public string ShipmentLineNumber { get; set; } = "";
+    /// <summary>The completed dispatch attempt's GOODS_ISSUE_SALES the request was built from (null for PRE_WP_P1).</summary>
+    public string? IssueTransactionId { get; set; }
     /// <summary>The request version: 1 for the first request, +1 each time a Refused line's request is corrected.</summary>
     public int K { get; set; } = 1;
     /// <summary>The full §34.1 CUSTOMER_RETURN body of version <see cref="K"/>; every send of that key uses these bytes.</summary>
