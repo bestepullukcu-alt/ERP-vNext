@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D94 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D95 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1092,6 +1092,25 @@ Onay kanıtı: kaynak Y-25 (Beste, K1 aktardı); K1 soru kutusu cevabı "AGR kab
 4. **D94/4 — sınıflandırılmamış kod üreticileri:** RCS-001 v1 bunlara dokunmaz; envanter gönderildiğinde her biri için KALSIN ya da RCS-001'e
    geçiş kararını Beste tek tek verir; o zamana kadar hepsi kendi düzeninde kalır.
 5. **D94/5 — AC-32:** dört finans paketinin AC-32'si SEC-002 C yoluna göre yeniden yazılabilir (Beste, Y-24/Y-25 teyidi; D93/3) — açık iş.
+
+## D95 — RCS kayıt kodu portu tek imza (`prefixScope`); sahip denetimi düzeltmeleri (2026-10-29)
+
+Onay kanıtı: K1 / gmg-10 (CT teknik hizalaması, D93/1'in uygulanması; yeni ürün kararı değil); kaynak sahip denetimi `61cc13df7`
+(KOŞULLU, 4 ORTA + 1 DÜŞÜK); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D95/1 — tek port imzası:** MdmService'te MOD-0289 ve MOD-0217'nin ortak `IRecordCodeAllocator` portu
+   `AllocateAsync(prefixScope, legalEntityId, recordType, idempotencyKey) → code` biçimindedir; `prefixScope` ∈ `LegalEntity` / `Group` /
+   `Platform` (D93/1), `legalEntityId` `Group` ve `Platform`'da boş. MOD-0289: banka `Group`; şirket hesabı `LegalEntity` + sahip şirket;
+   tedarikçi hesabı `Group`. MOD-0217: `LegalEntity` + yöneten şirket, `AGR` (D94/1). Bağdaştırıcı v0 sözleşmesinin eklemeli `prefixScope`
+   alanını gönderir. İki paketin port satırları, Code / allocator kuralları, AC-60 ve AC-20 bu imzayla hizalandı; revizyon notlarındaki eski
+   imza tarihçedir.
+2. **D95/2 — `AGR` tamamlama:** MOD-0217 port tanımı ve DL-1 kabul kapısı (gerçek servisle `AGR` kodu) `AGR`'ye çevrildi.
+3. **D95/3 — sürüme bağlı inceleme anlatımı:** WP-0126 v0.2 P-2 ve WP-0289 v0.3 P-2, eski sürümlerin (`d86c2a56`, `e32bbb89`) Codex
+   satırlarının güncel sürümleri (`22dbef85…`, `ae09a0c8…`) kapsamadığını açıkça yazar; güncel sürüm için CT-APR-02 açıktır.
+4. **D95/4 — MOD-0289 DL-1 hazırlık notu:** O-14 "cevap yok" → D93/1 ile kapandı.
+5. **D95/5 — Beste'ye öneri dosyası (repo dışı, `.ct-teslim/`):** Platform dosya listesine
+   `ITrustedLegalEntityScopeCredentialAuthenticator.cs` (sonuç tüketiciyi taşımıyor; `AllowsPair` tüketiciden bağımsız) ve aday kimliği
+   gövdeden alınırsa `TrustedLegalEntityScopeResolveRequest.cs` / `…RequestParser.cs` eklendi; sorgu ve doğrulayıcı değişmez (ölçüm `63acdf2ec`).
 
 ## Karar olmayanlar
 
