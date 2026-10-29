@@ -403,7 +403,9 @@ sonra yazılır. MDM tarafı (`PlatformTrustedLegalEntityScopeProviderClient.cs`
 | `docs/guides/operations/post-deploy-steps.md` | yeni adım (desen `:297-320`, BL-592 §7) | — | sıra, geri alma ve kontrol |
 
 **Koşullu (K-6 "evet" ise — finans tüketicisi Platform kapsam ucunu kullanacaksa) — GEREKMİYOR: K-6 "hayır" (Platform sahibi,
-Y-22 / KARAR D88/2); aşağıdaki tablo yalnız tarihçedir, bu dosyalara dokunulmaz:**
+Y-22 / KARAR D88/2); aşağıdaki tablo yalnız tarihçedir: finans tüketicisi için **ikinci kimlik bilgisi bağlama** değişiklikleri
+yapılmaz. `TrustedLegalEntityScopeCredentialAuthenticator.cs` yukarıdaki XMC-001 kapsamında (izin listesi, tavan, modül kodu kümesi)
+değişir; tablodaki satırları (`:11`, `:27`, `:76-81` — tüketici kimliği / `Mdm` bağlaması) ise değişmez:**
 
 | Dosya | Satır | Bugün |
 |---|---|---|
@@ -1278,7 +1280,7 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   verildi — Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`; şartlar DL-5 kodundan önce, aşağıdaki iki D80/2 maddesi);
   K-7 ve DL-6 teyitli (D80/3). **Sahipteki liste (D80/4) Y-21 / KARAR D84/1 ile kapandı:** K-1b, K-2, K-3, K-W2, K-W4, K-W6,
   K-W7, K-A1, K-A2, K-A3, K-A4b. Açık kalan: D79'dan sonraki değişikliklerin ayrı teyidi (27 rolün 7 dil tablosu vb., D80/2; sahip
-  kontrol ediyor — Y-21), K-W5 CT defter kararı (yöntem teyitli — D84/2; D86 geri alındı — D87, açık) ve K-5 anahtar listesi (yalnız yöntem teyitli — D84/3).
+  kontrol ediyor — Y-21), K-W5 CT defter kararı (yöntem teyitli — D84/2; D86 geri alındı — D87, açık) ve K-5 anahtar listesinin Platform sahibince kontrolü (yöntem teyitli — D84/3; liste K1 kararı — D88/1; Beste'nin kontrolü bekliyor — Y-22).
 - [x] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
   tablosunun paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması

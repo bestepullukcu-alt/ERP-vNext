@@ -231,6 +231,52 @@ uyumlu. Excel ve kısa kod listesi en geç 2 Kasım'da Beste'de olmalı.
 (6) MOD-0262-FU01 servis kimliği: Platform pack revizyonu 2 Kasım'da hazır; Auth tarafı (MDM için iç istemci ve izin) Ali'nin
 alanı — kapsam ve tarih Ali ile; revizyon onaylanınca Platform kodunun tarihi bildirilecek. → D88.
 
+**Özgün metin (K1'in 2026-10-29'da Treasury CT oturumuna yapıştırdığı haliyle, değiştirilmeden):**
+
+> Beste → Treasury CT (gmg-10)
+> Merhaba,
+>
+> * #304: sırada #299’dan başlayan PR’lar var. Onlar alındıktan sonra #304’ü inceleyip merge edeceğim. Lütfen bu arada dalı güncellemeyin, yoksa onay düşüyor.
+> * DCP-011 approved: kabul.
+> * Bugünkü sürümün (`4cb9e99a…`) UYGUN incelemesi main’de, ama onay satırı yok.
+> * Durumu `draft` → `approved` yapın. Yalnız durum değiştiği için yeni sürüme kısa bir doğrulama incelemesi yeterli.
+> * Durum değişikliğini, inceleme satırını ve onay satırını (yazan gmg-10, onaylayan bestepullukcu-alt) tek PR’da hazırlayın. PR’ı siz açın, ben onaylayıp merge ederim.
+> * K-6: kabul, cevabım “hayır”.
+> * FinanceTreasuryService Platform kapsam ucunu doğrudan kullanmayacak. Dört finans paketi kendi kapsam yolunu yazar (O-19 / O-22 / O-14 / O-23).
+> * Soranın kimliği yalnız MDM (`DITENMDMSERVICE`) olarak kalır. FU27 §5.2'deki koşullu Platform dosyaları gerekmiyor.
+> * SEC-002 eki (FU27 DL-4):
+> * Platform tarafı, XMC-001 izni veriyorum. Kapsamı yalnız şu dosyalar:
+> * services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:
+> * izin listesine K-5'teki `mdm.bank-accounts.*` ve `mdm.contracts.*` anahtarları;
+> * `MaxAllowedPairs` tavanının eklenen çift sayısı kadar artırılması;
+> * `AllowsPair` ve `IsValidConfiguration` içindeki tek modül kodunun ürün, MOD-0289 ve MOD-0217 kodlarından oluşan bir kümeye çevrilmesi.
+>
+> Her izin kendi modül koduyla eşleşmeli: bir banka izni ürün modülü adına sorulamaz. `DITENMDMSERVICE` kimlik kontrolü değişmez.
+>
+> * services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs:
+> * yeni tavan ve yeni çiftler;
+> * yanlış modül koduyla gelen çiftin reddi;
+> * bilinmeyen çiftin 403 alması.
+>
+> Sabotaj kanıtıyla.
+>
+> * docs/guides/operations/post-deploy-steps.md: ortam ayarı `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` için yeni adım; sıra, geri alma ve kontrol.
+>
+> Başka Platform dosyasına dokunulmaz. Kapalı-başarısız davranış korunur: hata, boş liste ya da belirsizlik “erişim yok” demek. K-5 anahtar listesini ilettiğinizde kontrol edeceğim. Kod FU27 onaylandıktan sonra yazılır.
+>
+> * MDM tarafı: `PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri MDM sahibinin alanı. Lütfen XMC-001 iznini ve sırayı Ali ile netleştirin.
+> * Sıra (FU27 §8): Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+> * BL-565 (RCS-001 ortak kod servisi):
+> * v1 kapsamı: ayırma (allocate) endpoint’i, atomik sayaç, tür önekleri ve şirket kısa kodları.
+> * Kesin sözleşme 3 Kasım’da sizde olacak, servis v1'in 6 Kasım’da main’de olmasını hedefliyoruz.
+> * “İKİSİ DE” türleri ve mevcut modüllerin taşınması sonraki dilimde.
+> * Port ve sahte istemci yolunuz (D59/1) bu planla uyumlu.
+> * Excel’in ve kısa kod listesinin en geç 2 Kasım’da elimde olması gerekiyor.
+> * MOD-0262-FU01 servis kimliği:
+> * Platform tarafındaki pack revizyonu 2 Kasım’da hazır olacak.
+> * Auth tarafı (MDM için iç istemci ve izin) Ali’nin alanı. Lütfen kapsamı ve tarihi doğrudan Ali ile netleştirin.
+> * Revizyon onaylanınca Platform kodunun tarihini bildireceğim.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
