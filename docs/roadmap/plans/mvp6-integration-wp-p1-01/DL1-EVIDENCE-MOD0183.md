@@ -1,7 +1,9 @@
 # MOD-0183 DL-1 — evidence (Q500, steps 1–5)
 
 - Branch `feature/sce/mod0183-dl1-01`, base `6be3d0ae1`. Local commits only; nothing pushed.
-- Pack `MOD-0183-shipment-tracking-pod.md` sha256 `07152235c49640c6…` (r6 §23). Plan: `DL1-IMPLEMENTATION-PLAN.md` r3.
+- Pack `MOD-0183-shipment-tracking-pod.md` **r7**, sha256 `22fe550daa31…` (branch `docs/sce/mod0183-r7-01`; owner decisions
+  `docs/records/decisions/2026-10/mvp6-mod0183-dl1-review-owner-decisions-2026-10-28.md`). The code was first written to r6
+  (`07152235c49640c6…`). Plan: `DL1-IMPLEMENTATION-PLAN.md` r3. DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-21.
 - Evidence level: E3. That means an owned replica set, plus the real host, repository and INVENTORY client, talking to a
   fake INVENTORY handler. It is not E4: there was no Gateway tour and no real INVENTORY.
 - My PASS does not close the work (K13); the CT verifies.
@@ -21,26 +23,29 @@
 | 5′ | `aa78bd798` | evidence for `463d054b3` |
 | 4e | `59f72d775` | review 3 fixes F-1…F-4, F-5 stated (`MOD-0183-DL1-CODE-REVIEW-3.md`) |
 | 4f | `199ee7f63` | the reversal date is set in one place (the R-2 sabotage on `BlockAsync` had stayed green after F-1) |
-| 5″ | this note | evidence, updated |
+| 5″ | `b010c4b3a` | evidence for `199ee7f63` |
+| 4g | `89cf68153` | pack r7 review F-5…F-7 (`docs/records/reviews/MOD-0183/2026-10-28-22fe550d.md`) |
+| 4h | `8a482c66c` | `ContractErrorCodes.cs` names the contract without a `docs/analysis` path (DocsPathGuardTests) |
+| 5‴ | this note | evidence for pack r7 |
 
 ## Full suite (unfiltered)
 
 | HEAD | Lane | mongod | Result | Run folder |
 |---|---|---|---|---|
-| `199ee7f63` | 6152, fresh replica set `rs-q500s`, shut down afterwards | 8.0.18 | **681 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, skipped by design), 3 m 5 s, exit 0 | `~/Projects/ERP-vNext-lanes/q500-dl1/run-20261028-195321` |
-| `59f72d775` | 6152 | 8.0.18 | 681 passed, 0 failed, 1 skipped | `run-20261028-193153` |
-| `463d054b3` | 6152 | 8.0.18 | 677 passed, 0 failed, 1 skipped | `run-20261028-190852` |
+| `8a482c66c` | 6152, fresh replica set `rs-q500s`, shut down afterwards | 8.0.18 | **690 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, skipped by design), 3 m 31 s, exit 0 | `~/Projects/ERP-vNext-lanes/q500-dl1/run-20261028-225029` |
+| `89cf68153` | 6152 | 8.0.18 | 690 passed, 0 failed, 1 skipped | `run-20261028-214832` |
+| `199ee7f63` | 6152 | 8.0.18 | 681 passed, 0 failed, 1 skipped | `run-20261028-195321` |
 
 `git status` was empty when each run started. The parity and central-audit tests are inside the full suite.
 
-## Sabotage table (HEAD `199ee7f63`, lane port 6151, mongod 8.0.18)
+## Sabotage table (HEAD `89cf68153`, lane port 6151, mongod 8.0.18)
 
 Each row breaks the production code once. The guarding test run went red, the file was restored byte for byte (sha256
-compared), and the same tests then ran green. **45 of 45 rows went red, were restored and then went green**, and `git
+compared), and the same tests then ran green. **50 of 50 rows went red, were restored and then went green**, and `git
 status` was clean afterwards. Every earlier row was re-run on this HEAD. The harness is
-`~/Projects/ERP-vNext-lanes/q500-dl1/tools/sabotage5.py` and the raw table is `sabotage-199ee7f63.tsv`.
-In the run on `59f72d775`, R-2 stayed green: after F-1 the `BlockAsync` date line could never change anything. It was
-removed in `199ee7f63`, and R-2 now targets the only place the date is set.
+`~/Projects/ERP-vNext-lanes/q500-dl1/tools/sabotage6.py` and the raw table is `sabotage-89cf68153.tsv`. `8a482c66c`
+changes only comment text in `ContractErrorCodes.cs`, so this table still holds there; the full suite was re-run on it.
+The rows for pack r7 are r7-F5a, r7-F5b, S23-21tx, S23-21drop and S23-21late. R3-F3 is the S23-18 (f) sabotage.
 
 | Rule | Sabotage | File | Sabotaged run | Restored | Run after restore |
 |---|---|---|---|---|---|
@@ -89,6 +94,11 @@ removed in `199ee7f63`, and R-2 now targets the only place the date is set.
 | R3-F3 | late writer leaves a compensating attempt to the holder | `LateWriterPolicy.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | R3-F4 | first-400 fault not stored with the refusal | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
 | N-2 | KEY_REUSED on the B′ resend does not block (attempt closed Compensated) | `ShipmentDispatchCoordinator.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| r7-F5a | only 200/201 go to Posted (202/204 definite) | `InventoryMovementClient.cs` | Failed failed=2 passed=2 | restored | Passed failed=0 passed=4 |
+| r7-F5b | 3xx counted as definite | `InventoryMovementClient.cs` | Failed failed=2 passed=2 | restored | Passed failed=0 passed=4 |
+| S23-21tx | outcome audit row written outside the outcome transaction | `ShipmentRepository.cs` | Failed failed=1 passed=0 | restored | Passed failed=0 passed=1 |
+| S23-21drop | outcome audit row dropped | `ShipmentRepository.cs` | Failed failed=4 passed=1 | restored | Passed failed=0 passed=5 |
+| S23-21late | late-writer audit row dropped | `ShipmentRepository.cs` | Failed failed=2 passed=0 | restored | Passed failed=0 passed=2 |
 
 Notes:
 - S23-20 and parity turn only their own case red. S23-20 fails only the 403 case of its theory, and parity fails only
@@ -126,6 +136,10 @@ Notes:
 | R3 F-3 | a late writer whose own attempt is compensating reverses its issue with the holder's key and stored date | `R3F3_…` (REV3_C: holder 422, late write `Reversed`, net 0) | R3-F3 |
 | R3 F-4 | the integrity faults known when compensation starts are stored with the refusal, so a resumed compensation writes them | `R3F4_…` | R3-F4 |
 | R3 F-5 | **stated, no code:** the receipt belongs to the command that settles. A resumer stores its own key's receipt; if the request that opened the attempt died, a retry with its key opens a{n+1} on a fully reversed a{n}. The stock stays consistent. | — | — |
+| **r7 F-5** | Every 2xx goes to Posted, where a 202 or 204 without a readable transactionId is ambiguous; a 3xx is ambiguous. The sent marker is kept. | `OtherSuccessAndRedirectStatusesAreAmbiguous` (202, 204, 302, 307) | r7-F5a, r7-F5b |
+| **r7 F-6 / S23-21** | each failed outcome writes **one** `dispatch-attempt` row in the outcome's transaction: (a) Compensated 422 with the issue and reversal ids, (b) Compensated 500 with the 400 fault, (c) CompensationFailed 409, (d) ALREADY_REVERSED with the original transactionId, (e) a late-writer reversal | `S23_21a…e`; the transaction itself: `F3_…` (outcome) and `R4_…` (late writer) | S23-21tx, S23-21drop, S23-21late, R-4 |
+| r7 S23-18 (f) | a late 201 while the attempt is InProgress and compensating is reversed, net stock unchanged, and one `LateWriterReversed` row is written | `S23_18f_…` | R3-F3 (dropping the compensating condition) |
+| r7 F-7 | the `LateWriterPolicy` summary states the r7 rule | — (comment) | — |
 | R-2 (after F-1) | the reversal date is set in one place, `CompensateAsync`, durably before the first REVERSAL; every block goes through a compensation | `S23_11_…` | R-2 (re-anchored) |
 
 ## Open points
@@ -152,3 +166,23 @@ Notes:
    tour, `inventory.movements.create` must be granted per role (BL-652 interim).
 7. **Out of scope, as briefed:** S23-16, the DL-2 texts and resx, and `reservationId`. MOD-0186 still has to emit the
    RETURN_* codes. Plan open point 3 (the pack header text) is unchanged.
+
+## Architecture guards (CT request, 2026-10-28)
+
+The two guards are `DocsPathGuardTests` and `CiServiceTestsGuardTests` in `tests/architecture/TenantArchitecture.ArchitectureTests`.
+Main was measured on an extracted copy of `origin/main` `4c08fc75a`
+(`~/Projects/ERP-vNext-lanes/q500-dl1/main-4c08fc75a-221701`); `tests/architecture` there is identical to our branch.
+
+| Where | Red | Cause |
+|---|---|---|
+| main `4c08fc75a` | `CiServiceTestsGuardTests.Only_the_named_workflow_files_exist` | `ui-compliance.yml` is not in the guard's `NamedWorkflows`. This is a `tests/**` edit, not ours. |
+| main `4c08fc75a` | `DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders` | 42 code lines point into `docs/analysis` (and a few into other `docs/` folders): Inventory, Manufacturing, Web, scripts, `.antigravity`, SupplyChain `ContractErrorCodes.cs:8,16,23`, and SupplyChain test files that read the contract by path. |
+| our branch, before `8a482c66c` | `NoCodeFilePointsIntoDocsOutsideTheFiveFolders` and the 4 `AuthorityFixture` rows (5 in total); `CiServiceTestsGuardTests` is green | The authority pins shipment-bundle 3.3.0 (`c59bb480…`), but our 3.4.0 file is `84d804f6…`, so the pinned read fails before the scan. |
+| main copy with the `8a482c66c` wording | still red, 39 lines | `ContractErrorCodes.cs` is gone from the list. The 3 SupplyChain lines left are in test files that must name the path to read the contract (`ShipmentBundleContract.cs:9,17`, `ContractErrorCodeParityTests.cs:12`). |
+
+**Open, needs a decision:** re-pinning shipment-bundle to 3.4.0 (`84d804f6bbcb0ebc…`) in
+`docs/reference/architecture/docs-path-authority.json`. The guard requires a new `DOCS_PATH_OWNER_DECISION` record
+(`approvedBy`, `payloadSha256`). The 3.3.0 precedent is `40df6861c` with
+`mod0183-docs-path-shipment-bundle-330-repin-owner-decision-01.json`. The r7 owner decisions do not cover the re-pin,
+so it is not done. Even with the pin, `NoCodeFilePointsIntoDocsOutsideTheFiveFolders` stays red on main and on our
+branch because of other files (plan v9.9 4c).
