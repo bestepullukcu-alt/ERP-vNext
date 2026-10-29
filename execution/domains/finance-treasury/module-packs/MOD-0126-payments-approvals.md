@@ -1746,12 +1746,16 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   kimlik bilgisiyle (`DITENFINANCETREASURYSERVICE`, kendi gizli anahtarı) ve her istekte bu paketin modül kodu
   `payments-approvals` (D92/2) + izin anahtarıyla çağırır; kapsamı kendisi hesaplamaz, Platform veritabanını okumaz, MDM'i ya da
   token alanını kullanmaz (SEC-002 §6). Bağdaştırıcı testi (sahte Platform ucu): 200 dışı her yanıt (401 / 403 / 409 / 503), zaman
-  aşımı ya da bozuk gövde → boş kapsam (liste boş, detay ve yazma 404); çift listesi dışı anahtar ya da başka paketin modül kodu →
-  Platform 403 → boş kapsam; kimlik bilgisi yapılandırılmamışsa kapsam boş (kapalı-başarısız). Sabotaj: bağdaştırıcı hata
-  yanıtında tüm şirketleri ya da `read-tenant-wide` kapsamını dönecek şekilde değiştirildiğinde test kırmızıya döner. Gerçek uçla
-  kanıt (dev ortamı, bu paketin 19 çiftinden biriyle bir kapsam çağrısı) Platform'un finans tüketicisini kabul eden kodu
-  main'deyken alınır (FU27 §5.2; XMC-001 Beste) — AC'nin ilk kapandığı dilimin kabul kapısıdır. Onay adaylarının şirket kapsamı bu
-  AC'nin konusu değildir (aday modu önerisi, D92/3, açık).
+  aşımı ya da bozuk gövde → boş kapsam (liste boş, detay ve yazma 404); çift listesi dışı anahtar → Platform 403 → boş kapsam.
+  **Modül kodu bağdaştırıcıda sabittir** (`payments-approvals`; çağırandan ya da istekten alınmaz): finans kimliğinin çift listesi
+  dört finans paketinin geçerli çiftlerini birlikte taşır, bu yüzden Platform başka paketin geçerli çiftini reddetmez — ayrımı bu
+  sabit kod sağlar. Bağdaştırıcı testi gönderilen modül kodunun her çağrıda `payments-approvals` olduğunu doğrular; bu paketin
+  anahtarı başka paketin modül koduyla → Platform 403 (çift listede yok) → boş kapsam; sabotaj: modül kodu dışarıdan alınacak
+  şekilde değiştirildiğinde test kırmızıya döner (KARAR D96/5); kimlik bilgisi yapılandırılmamışsa kapsam boş (kapalı-başarısız).
+  Sabotaj: bağdaştırıcı hata yanıtında tüm şirketleri ya da `read-tenant-wide` kapsamını dönecek şekilde değiştirildiğinde test
+  kırmızıya döner. Gerçek uçla kanıt (dev ortamı, bu paketin 19 çiftinden biriyle bir kapsam çağrısı) Platform'un finans
+  tüketicisini kabul eden kodu main'deyken alınır (FU27 §5.2; XMC-001 Beste) — AC'nin ilk kapandığı dilimin kabul kapısıdır. Onay
+  adaylarının şirket kapsamı bu AC'nin konusu değildir (aday modu önerisi, D92/3, açık).
 - [ ] AC-33 (zorunlu) — Okuma kapsamı yazma kapsamını genişletmez (gap 4/G1): `payment-batches.read-tenant-wide` + bütün
   yazma izinlerine sahip ama LE-B'de **kendi şirket yetkisi olmayan** kullanıcı LE-B partilerini listede ve detayda görür
   (200), ama LE-B partisinde Create (`X-Legal-Entity-Id = LE-B`), Update, Delete, Submit, Approve, Reject, Reconcile ve

@@ -1454,12 +1454,16 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   kimlik bilgisiyle (`DITENFINANCETREASURYSERVICE`, kendi gizli anahtarı) ve her istekte bu paketin modül kodu
   `accounts-receivable` (D92/2) + izin anahtarıyla çağırır; kapsamı kendisi hesaplamaz, Platform veritabanını okumaz, MDM'i ya da
   token alanını kullanmaz (SEC-002 §6). Bağdaştırıcı testi (sahte Platform ucu): 200 dışı her yanıt (401 / 403 / 409 / 503), zaman
-  aşımı ya da bozuk gövde → boş kapsam (liste boş, detay ve yazma 404); çift listesi dışı anahtar ya da başka paketin modül kodu →
-  Platform 403 → boş kapsam; kimlik bilgisi yapılandırılmamışsa kapsam boş (kapalı-başarısız). Sabotaj: bağdaştırıcı hata
-  yanıtında tüm şirketleri ya da `read-tenant-wide` kapsamını dönecek şekilde değiştirildiğinde test kırmızıya döner. Gerçek uçla
-  kanıt (dev ortamı, bu paketin 14 çiftinden biriyle bir kapsam çağrısı) Platform'un finans tüketicisini kabul eden kodu
-  main'deyken alınır (FU27 §5.2; XMC-001 Beste) — AC'nin ilk kapandığı dilimin kabul kapısıdır. Onay adaylarının şirket kapsamı bu
-  AC'nin konusu değildir (aday modu önerisi, D92/3, açık).
+  aşımı ya da bozuk gövde → boş kapsam (liste boş, detay ve yazma 404); çift listesi dışı anahtar → Platform 403 → boş kapsam.
+  **Modül kodu bağdaştırıcıda sabittir** (`accounts-receivable`; çağırandan ya da istekten alınmaz): finans kimliğinin çift
+  listesi dört finans paketinin geçerli çiftlerini birlikte taşır, bu yüzden Platform başka paketin geçerli çiftini reddetmez —
+  ayrımı bu sabit kod sağlar. Bağdaştırıcı testi gönderilen modül kodunun her çağrıda `accounts-receivable` olduğunu doğrular; bu
+  paketin anahtarı başka paketin modül koduyla → Platform 403 (çift listede yok) → boş kapsam; sabotaj: modül kodu dışarıdan
+  alınacak şekilde değiştirildiğinde test kırmızıya döner (KARAR D96/5); kimlik bilgisi yapılandırılmamışsa kapsam boş
+  (kapalı-başarısız). Sabotaj: bağdaştırıcı hata yanıtında tüm şirketleri ya da `read-tenant-wide` kapsamını dönecek şekilde
+  değiştirildiğinde test kırmızıya döner. Gerçek uçla kanıt (dev ortamı, bu paketin 14 çiftinden biriyle bir kapsam çağrısı)
+  Platform'un finans tüketicisini kabul eden kodu main'deyken alınır (FU27 §5.2; XMC-001 Beste) — AC'nin ilk kapandığı dilimin
+  kabul kapısıdır. Onay adaylarının şirket kapsamı bu AC'nin konusu değildir (aday modu önerisi, D92/3, açık).
 - [ ] AC-7 (zorunlu) — Tahsilat aşaması geçişleri tablodaki izinlerle birebir; tablo dışı geçiş 409
   `RECEIVABLE_COLLECTION_TRANSITION_INVALID`; `WriteOffProposed` / `WrittenOff` elle girilemez; her geçiş
   `CollectionStageHistory`'ye ve merkezi denetime yazılır.
@@ -1754,7 +1758,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `caf551b0d2bd6c8f632ae2286653dbd2b9d7c82e2d89c168741b030b171d99ad` (bu revizyonla aynı commit, dal
+  `40140c6ed1d8e91a1a7769f048e976cc25d891a25336c2f7452876f04ebb817e` (bu revizyonla aynı commit, dal
   `chore/ct/treasury-intake-ct-05`; MOD-0126 D80 / FU27 atıf revizyonu — Auth eki atıfları FU27'ye, Auth paket kapısı maddesi şartlı teyide (KARAR D80/1–2); kural, AC ve satır numarası değişikliği yok; önceki `37d7f682…99af` — MOD-0126 KARAR D78 revizyonu — R4 açık ama tier-2 olmayan (`IsTier2 = false`) partide muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (D78, AC-43 (j)); yeni AC yok, yeni hata kodu yok; önceki `58976767…b76e` — MOD-0126 KARAR D77 revizyonu — R4 kapalı partide muafiyetli onay 403 `PAYMENT_SOD_WAIVER_FORBIDDEN` (D77/1, AC-43 (i)), Release'de R11 tier-2 şartı tutmazsa 403 `PAYMENT_TIER2_RELEASE_FORBIDDEN` (D77/2, AC-19; yeni hata kodu); yeni AC yok; önceki `8127b3cd…e84c` — MOD-0126 CT-APR-02 Codex b91d61325 KOŞULLU bulguları revizyonu — R4 uygulanma koşulu `IsTier2` ∧ sabitlenmiş `R4Enabled = true` (aday tabanı, Approve kontrolü ve Release R11 hizalandı; AC-44 (d) ve AC-19 genişletildi, AC-6 netleşti), AC-41 kapanış cümlesi dilim listeleriyle hizalandı; yeni AC yok; önceki `674c73e9…79ea` — D76 revizyonu — yalnız KARAR D76/3 atfı (kullanıcının başlattığı Reconcile da ilk aday listesini kullanır), davranış değişmedi; önceki `b5e749bd…732e` — D75 revizyonu — iç uç kimliği atıfları KARAR D74/1'e çekildi, Reconcile'ın yeniden başlatması niyetteki ilk aday listesini kullanır (D75/2 (b)), AC-34 genişletildi; önceki `fb581b3b…cce5` — D74/3 revizyonu: muafiyet atayanı Muafiyet yetkilisi rolü (D49/4'teki "Hazine yöneticisi ya da K1" kalktı); önceki `1b8f172a…8ddf` (D71 revizyonu — aday tabanı iş akışı izniyle de kesişir, K-A4b kapandı (D71)), `ec4943aa…e374` (D70 revizyonu — K-A4 kapandı (D70/1), Auth paket kapısı metin + MOD-0018 sahibinin teyidi (D70/3), D67 atıfları), `3a70398a…e925` (D68 + sahip denetimi d5b378e50 P2 — boş aday listesi yerelde 422 `PAYMENT_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER`, MOD-0023 çağrılmaz), `5e1ea803…25a7` (sahip denetimi 61466e504 KOŞULLU — tier-2 aday tabanı `approve ∩ tier2-approve` (R4, AC-11)), `f496790f…0b0c` (ready-for-dev 1. tur eki D66 — aday tabanı Auth aday sorgusu MOD-0018 Treasury Auth eki DL-6 (D66/1), "son adım değil" (D66/2), DL-2 muafiyeti beklemez (D66/3)), `81b9b505…161d` (ready-for-dev 1. tur — şablon kodu `FT-PAYMENT-BATCH-APPROVAL` (Y-12), `PartiallyApproved` v1'de kapalı (D62/2), muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5 (D64)), `05410477…e42e` (D58/D59 — kayıt kodu portu `IRecordCodeAllocator`, RCS-001 / BL-565 DL-1 kabul kapısı D59/1), `5f69139c…8a5d` (D57 — SoD ayarı ayrıntıları D57/4, ortak MOD-0023 bağdaştırıcısı D57/5), `1baf8728…0916` (D56 + DL-2 hazırlık bulguları), `5101b1e8…` (D54 — muafiyet parti bağı), `699b0708…` (D53); D52; önceki gösterim "@bu commit sha256 ZIP manifestine bakın" sürümsüzdü). (Makbuz, niyet
   durum sözlüğü, Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden

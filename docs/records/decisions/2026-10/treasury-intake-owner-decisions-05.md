@@ -1138,6 +1138,11 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
    da güncel sürüme eşlendi (WP-0289 19, WP-0126 4); WP-0289 v0.3 P-2 güncel sürümün Codex satırının dalda olduğunu (`b358da78a`), main'e
    girişin ve `ready-for-dev` sürümü incelemesinin ayrı açık olduğunu yazar; P-5 K-6 "evet" (D92/1) ve K-5 kontrolü yapıldı (D92/4) ile
    güncellendi, açık kalanlar ayrı yazıldı.
+5. **D96/5 — sabit modül kodu (Codex CT-APR-02 `46dd1e813`, dört pakette F-1 ORTA):** finans kimliğinin çift listesi dört paketin geçerli
+   çiftlerini birlikte taşıdığından Platform başka finans paketinin geçerli çiftini reddetmez; D96/1'deki "başka paketin modül kodu →
+   Platform 403" ifadesi düzeltildi: ayrımı bağdaştırıcıdaki sabit modül kodu sağlar (çağırandan alınmaz); test her çağrıda paketin
+   slug'ını doğrular, bu paketin anahtarı başka slug'la 403; sabotaj: modül kodu dışarıdan alınınca kırmızı. Hazırlık kayıtlarının
+   `pack:` sürüm açıklamaları D92–D96 ile güncellendi (F-2 DÜŞÜK).
 
 ## Karar olmayanlar
 
