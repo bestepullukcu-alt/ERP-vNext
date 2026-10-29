@@ -20,6 +20,8 @@ public sealed class ScorePolicyTests
     [InlineData("OTD:75,QTY_ACC:75,QUAL_ACC:75", "75.00", "MEDIUM")]
     [InlineData("OTD:50,QTY_ACC:50,QUAL_ACC:50", "50.00", "HIGH")]
     [InlineData("OTD:49.9999,QTY_ACC:50,QUAL_ACC:50", "50.00", "CRITICAL")]
+    // 241.004 / 3 = 80.334666…: one rounding gives 80.33; rounding to three places first (80.335) and then half-even would give 80.34.
+    [InlineData("OTD:80.001,QTY_ACC:80.001,QUAL_ACC:81.002", "80.33", "MEDIUM")]
     public void Score_WhenV1InputsAreValid_ShouldMatchThePackTable(string input, string overall, string band)
     {
         var metrics = input.Split(',').Select(x => x.Split(':')).Select(x => M(x[0], x[1])).ToList();

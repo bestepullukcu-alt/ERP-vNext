@@ -7,7 +7,7 @@ namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 /// <summary>
 /// A stand-in for Procurement's <c>GET /api/suppliers/{supplierId}/eligibility</c>, written from the SUPPLIER 1.3.0 draft that
 /// MOD-0140 DL-1 froze on its own branch (<c>origin/feature/mvp2/supplier-dl1-contract-130</c> @ cfd917df3,
-/// <c>docs/analysis/contracts/supplier.openapi.yaml</c>, sha256 7204e6d4d795218ce1560d6e6a41ee51b709c69830831606c59fc7730bfd7035;
+/// <c>supplier.openapi.yaml</c>, sha256 7204e6d4d795218ce1560d6e6a41ee51b709c69830831606c59fc7730bfd7035;
 /// not on main yet, not copied here). Declared answers: 200 SupplierEligibility, 403 LegalEntityLookupForbidden,
 /// 404 UnknownSupplierOrLegalEntity, 503 DependencyUnavailable. Every other answer in <see cref="Answer"/> is a hand-written
 /// stub for an undeclared case of T-0147-V1-ELIG-01 (MOD-0147 §0.0, review F-3). Records each call.

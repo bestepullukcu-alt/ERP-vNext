@@ -206,7 +206,9 @@ public sealed class SupplierPerformanceReplayTests
         Assert.Equal(HttpStatusCode.OK, (await h.Create(key: max)).Status);
         Assert.Equal(HttpStatusCode.BadRequest, (await h.Create(Body(start: "2026-08-01", end: "2026-08-31"), key: max + "x")).Status);
         Assert.Equal(HttpStatusCode.BadRequest, (await h.Create(Body(start: "2026-08-01", end: "2026-08-31"), key: "")).Status);
-        // " k " and "k" are different keys: no trim.
+        // " k " and "k" are different keys: no trim — the second is a new request, not a reuse of the first.
+        Assert.Equal(HttpStatusCode.Created, (await h.Create(Body(start: "2026-09-01", end: "2026-09-30"), key: "k")).Status);
+        Assert.Equal(HttpStatusCode.Created, (await h.Create(Body(start: "2026-10-01", end: "2026-10-31"), key: " k ")).Status);
         Assert.Equal(HttpStatusCode.Created, (await h.Create(Body(start: "2026-08-01", end: "2026-08-31"), key: " " + max[..2])).Status);
     }
 

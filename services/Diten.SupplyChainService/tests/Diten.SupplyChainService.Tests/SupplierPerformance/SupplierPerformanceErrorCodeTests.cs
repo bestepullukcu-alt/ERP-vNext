@@ -20,9 +20,12 @@ public sealed class SupplierPerformanceErrorCodeTests
     [Fact]
     public void EveryEmittedCode_IsDeclaredByTheContractOrThePack()
     {
-        var contract = Regex.Matches(File.ReadAllText(RepositoryFile.Locate("docs/analysis/contracts/supplier-performance.openapi.yaml")), @"\bcode:\s*([A-Z][A-Z0-9_]*)\b")
-            .Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var pack = File.ReadAllText(RepositoryFile.Locate("execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md"));
+        // The pack names its frozen contract (§0 "ONAYLI" row); the test follows that pointer instead of repeating the path.
+        var contractPath = Regex.Match(pack, @"`(?<path>[^`]*/supplier-performance\.openapi\.yaml)`").Groups["path"].Value;
+        Assert.NotEmpty(contractPath);
+        var contract = Regex.Matches(File.ReadAllText(RepositoryFile.Locate(contractPath)), @"\bcode:\s*([A-Z][A-Z0-9_]*)\b")
+            .Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
 
         var undeclared = Constants().Where(c => !contract.Contains(c) && !pack.Contains("`" + c + "`", StringComparison.Ordinal) && !HouseCodes.Contains(c)).ToArray();
 
