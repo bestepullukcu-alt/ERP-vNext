@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D98 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D99 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1205,6 +1205,22 @@ Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
 6. **Açık kalan:** D80/2 (b) — rol atama adımlarının denetim borcu (`auth-rbac-gunlugu`, `aday`) bu metnin kapsamında değil; DL-5
    kodundan önce ayrıca kapanır. D80/2 (a) işareti bu metin CT-APR-02'den geçince ve MOD-0018 sahibi D79 sonrası değişiklikleri
    teyit edince konur.
+
+## D99 — FU27 DL-5 sahip denetimi düzeltmeleri (`4d9f4b9d8`, 2 ORTA + 2 DÜŞÜK) (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi; D99/1 K1 önerisidir, MOD-0018 sahibinin teyidine gider); kaynak sahip denetimi `4d9f4b9d8`;
+oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D99/1 — meta-denetim teslim teyidi (F-1 ORTA; K1 önerisi, Ali teyidine):** mevcut `ForwardAsync` en iyi çabadır, Platform ve
+   bağlantı hatalarını uyarıyla yutar (`PlatformAuditForwarder.cs:111-138`); anahtarın dolu olması satırın kaydedildiğini kanıtlamaz.
+   Geçmiş okuması sonucu dönen ayrı bir iletici üyesi (`TryForwardAsync`, yalnız ekleme; mevcut çağıranlar değişmez) kullanır ve satır
+   teslim edilmedikçe veri döndürmez (503). AC-46 gerçek iletici + Platform sözleşmesine uyan saplamayla 2xx / anahtar boş / 500-401 /
+   bağlantı reddi-zaman aşımı vakalarını ve dev ortamı kaydını ister.
+2. **D99/2 — D80/2 (a) iki koşul (F-2 ORTA):** işaret CT-APR-02 **ve** MOD-0018 sahibinin D79 sonrası teyidi (D98/6) ile konur;
+   Ready-for-dev maddesi, Dependencies satırı ve Bölüm 21 aynı iki koşulu yazar.
+3. **D99/3 — K-W5 satırı (F-3 DÜŞÜK):** paket metninin yazıldığı; inceleme ve sahip teyidinin açık olduğu.
+4. **D99/4 — tek liste ucu (F-4 DÜŞÜK):** `GET /api/roles/sod-waiver-assignments` tek satırda: `paymentBatchId` verilirse bugünkü parti
+   biçimi (sözleşme aynen), verilmezse Roller ekranı için sayfalı tam liste.
 
 ## Karar olmayanlar
 
