@@ -11,8 +11,14 @@
 #      list endpoint's for the same request (the Gateway refuses these itself, so they are measured on the service)
 #   5. Gateway PUT .../options with a valid token and body -> 404 (reserved segment)
 # then stops ONLY the two processes it started (by PID) and checks that both ports are free again.
-# Exit 0 = every check passed. Red baseline (before WP-0230-DL4D): check 2 fails (GET options is read as an
-# intake draft id -> 404), so the script exits 1.
+# Exit 0 = every check passed; 1 = a check failed; 3 = setup failed (port busy, build failed).
+# Red baseline (before WP-0230-DL4D): check 2 fails - GET options is read as an intake draft id, goes to
+# GetDraftByIdAsync and answers 409 (Blocked or PVG_INTAKE_DRAFT_NOT_FOUND; ToHttpResult maps everything but
+# Succeeded / Invalid to 409), not 200; the Gateway route only maps path and method and passes the status through.
+# Check 5 also fails (options is not yet a reserved segment). So the script exits 1.
+# Hardening (interim review 02 F-5): build exit codes are checked, every curl has --max-time, the bearer token is
+# passed to curl from a header file (-H @file), never as an argument, and the secret / token files are removed on
+# every exit by the EXIT trap.
 set -u
 
 PVG_PORT=5011
@@ -38,7 +44,11 @@ stop_own() {
     fi
   done
 }
-trap stop_own EXIT
+cleanup() {
+  stop_own
+  rm -f "$T/secret" "$T/token_a" "$T/auth_a"
+}
+trap cleanup EXIT
 
 check() { # name, condition result (0 = pass)
   if [ "$2" = "0" ]; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi
@@ -73,14 +83,24 @@ def token(tenant):
 (d / "tenant_a").write_text(tenant_a)
 (d / "tenant_b").write_text(tenant_b)
 (d / "token_a").write_text(token(tenant_a))
+(d / "auth_a").write_text("Authorization: Bearer " + token(tenant_a) + "\n")
+for f in ("secret", "token_a", "auth_a"):
+    (d / f).chmod(0o600)
 print("identity ready: two random tenants, one HS256 token, secret length", len(secret))
 PY
 TENANT_A=$(cat "$T/tenant_a")
 TENANT_B=$(cat "$T/tenant_b")
 
 echo "== build"
-dotnet build services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj -c Debug -nologo -v q 2>&1 | tail -3
-dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug -nologo -v q 2>&1 | tail -3
+build() { # project path; the exit code is not swallowed by a pipe
+  local log="$T/build-$(basename "$1").log"
+  dotnet build "$1" -c Debug -nologo -v q > "$log" 2>&1
+  local rc=$?
+  tail -3 "$log"
+  if [ "$rc" -ne 0 ]; then echo "FAIL: build $1 exit $rc"; exit 3; fi
+}
+build services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj
+build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj
 
 pvg_dll=$(ls services/Diten.PvgService/src/Diten.PvgService.Api/bin/Debug/net8.0/Diten.PvgService.Api.dll)
 
@@ -109,10 +129,10 @@ wait_port $GW_PORT || fail=1
 
 GW="http://localhost:$GW_PORT/api/pv-case-intake-triage"
 SVC="http://127.0.0.1:$PVG_PORT/api/v1/pv-case-intake-triage"
-AUTH_A="Authorization: Bearer $(cat "$T/token_a")"
+AUTH_A="@$T/auth_a"   # curl reads the header from the file; the token never appears in an argument list
 
 # curl_to <out-body> <args...> -> prints the status code
-curl_to() { local out=$1; shift; curl -s -o "$out" -w '%{http_code}' "$@"; }
+curl_to() { local out=$1; shift; curl -s --max-time 20 -o "$out" -w '%{http_code}' "$@"; }
 
 echo "== 1. Gateway GET options without a token"
 s1=$(curl_to "$T/b1" "$GW/options")
@@ -160,15 +180,15 @@ for case in missing different; do
   so=$(curl_to "$T/o-$case" -H "$AUTH_A" -H "X-Correlation-Id: dl4d-smoke-4" ${hdr[@]+"${hdr[@]}"} "$SVC/options")
   sl=$(curl_to "$T/l-$case" -H "$AUTH_A" -H "X-Correlation-Id: dl4d-smoke-4" ${hdr[@]+"${hdr[@]}"} "$SVC")
   ro=$(python3 -I -c 'import json,sys
-try: print(json.load(open(sys.argv[1])).get("reasonCode"))
-except Exception: print("none")' "$T/o-$case")
+try: print(json.load(open(sys.argv[1])).get("reasonCode") or "")
+except Exception: print("")' "$T/o-$case")
   rl=$(python3 -I -c 'import json,sys
-try: print(json.load(open(sys.argv[1])).get("reasonCode"))
-except Exception: print("none")' "$T/l-$case")
+try: print(json.load(open(sys.argv[1])).get("reasonCode") or "")
+except Exception: print("")' "$T/l-$case")
   echo "tenant $case: options $so $ro | list $sl $rl"
   codes=$(grep -cE '"(Spontaneous|Study|Literature|Solicited|Other|Suspect|Concomitant)"' "$T/o-$case")
   check "4 tenant $case -> refused like the list endpoint, no codes" \
-    "$([ "$so" = "$sl" ] && [ "$ro" = "$rl" ] && [ "$ro" != "None" ] && [ "$so" != "200" ] && [ "$codes" = "0" ]; echo $?)"
+    "$([ "$so" = "$sl" ] && [ "$ro" = "$rl" ] && [ -n "$ro" ] && [ "$so" != "200" ] && [ "$codes" = "0" ]; echo $?)"
 done
 
 echo "== 5. Gateway PUT options (reserved segment)"
@@ -180,13 +200,12 @@ check "5 PUT options -> 404" "$([ "$s5" = "404" ]; echo $?)"
 echo "== gateway log lines for the route"
 grep -E "pv-case-intake-triage|5011" "$T"/gw.log | sed -E 's/[0-9a-f]{8}-[0-9a-f-]{27}/<id>/g' | head -10
 
-stop_own
+cleanup
 trap - EXIT
 echo "== post-check: ports must be free"
 for p in $PVG_PORT $GW_PORT; do
   if lsof -nP -iTCP:$p -sTCP:LISTEN >/dev/null 2>&1; then echo "FAIL: port $p still in use"; fail=1; else echo "port $p free"; fi
 done
-rm -f "$T/secret" "$T/token_a"
 
 echo "== exit $fail"
 exit $fail
