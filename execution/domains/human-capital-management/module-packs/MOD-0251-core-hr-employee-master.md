@@ -17,14 +17,29 @@ form_field_count: 18
 
 # MOD-0251 - Core HR / Employee Master
 
-> **Revision 5 (draft, 2026-10-29) - not approved.** It changes the front matter: the second approval field
+> **Revision 5 (draft, 2026-10-29) - not approved.** Changes: (1) front matter: the second approval field
 > `approval_status` (the conditional approval of the P2 draft / reference-validation slice) is removed, because the
 > dispatch gate (`scripts/prompt_gate.py`, CT-FIX-04) does not dispatch a pack whose `approval_status` is not
-> `approved`. It also corrects the one acceptance line that stated that field as a current fact. The conditional P2
-> approval stays as history in the body text ("Conditional Promotion Decision" and related sections); where a history
-> note says the front matter carries `approval_status`, this note is the current statement. The rest of the Revision 4
-> body is unchanged. Like Revision 4, this revision needs its own independent review of this exact version and an
-> approval row.
+> `approved`; (2) this note; (3) the one acceptance line that stated that field as a current fact; (4) a "Revision 5
+> (testable)" acceptance item and Revision 5 items in the "Ready-for-dev Checklist"; (5) short Revision 5 markers on
+> four current-scope sentences ("Module Summary", "Authoritative Baseline After Containment", "Approval Readiness",
+> "Teslim dilimleri"). The rest of the Revision 4 body is unchanged.
+>
+> **What an approval of this version makes dispatchable (pre-review F-27).** Without `approval_status` the pack has no
+> machine-readable scope limit: an approval row binds the whole file by its sha, and the gate checks a prompt's
+> "Kapsanan dilim" only against the rows of "Teslim dilimleri" (CT-APR-02), not the slice's prerequisite. The limit is
+> this rule: a slice DL-1 to DL-7 is dispatchable only when its own prerequisite in "Slice details" is met and
+> recorded - DL-1: none; DL-2: the recorded owner decision on permission breadth (F-13); DL-3: the owner decision F-5;
+> DL-4 to DL-7: the prerequisites their "Slice details" entry names (earlier slices accepted, contracts, decisions) and
+> every decision of "Open Decisions (Owner)" whose "Blocks" column names that slice. A slice whose prerequisite is not
+> recorded is not dispatchable even with the approval row; the dispatching CT checks the record and the prompt cites it.
+>
+> **How older statements are read.** Sentences that say the approved scope is only the P2 draft / reference-validation
+> slice, that nothing added is approved or executable, that the pack is conditionally approved, or that the front
+> matter carries `approval_status` (the Revision 2, 3 and 4 notes below, "Revision 2 Review Reconciliation",
+> "Conditional Promotion Decision", "Approval Readiness") describe the scope of Revisions 1 to 4. They are kept as
+> history and this note supersedes them. The conditional P2 approval stays as history in the body text. Like Revision
+> 4, this revision needs its own independent review of this exact version and an approval row.
 
 > **Revision 4 (draft, 2026-10-29) - not approved.** Draft revision written under the owner word `ayri-dilim`
 > (2026-10-29). It follows independent review 03 (`docs/records/reviews/MOD-0251/2026-10-29-03d9e80f.md`, verdict
@@ -84,7 +99,7 @@ Identity gate: `python3 .antigravity/scripts/verify_module_id.py . --check-id MO
 
 `MOD-0251 Core HR / Employee Master` is the internal authoritative employee and employment master for the HCM Foundation MVP. It owns employee legal profile, employment record, employment status, and the employee-side job assignment / employment assignment snapshot needed by downstream HCM modules.
 
-This pack is conditionally approved only for the reduced draft/reference-validation slice. That P2 slice is implemented in code for create draft, save/update with ETag, reload, person/organization-unit/position/legal-entity reference validation, and non-submit review. The earlier "browser-validated" claim is narrative; no recorded evidence in the repository refs examined (review 01, F-7). Review 01 also found code defects inside that slice (see "Known Defects in the Approved P2 Slice (Review 01)"). Employee list/detail read APIs, pages and a menu entry exist in code outside the approved scope (review 01, F-5); their existence is not approval. The HCM service scaffold exists under `services/Diten.HcmService`, but this pack does not authorize submit/approval/activation, full MOD-0251 lifecycle implementation, employee registry/detail lifecycle surfaces, evidence upload/link, export/status/Data Quality Queue, government identifier capture/tokenization, or employee Active-state APIs.
+This pack was conditionally approved only for the reduced draft/reference-validation slice *(Revisions 1 to 4; Revision 5: the scope statement of the Revision 5 note at the top replaces this paragraph's approval and authorization sentences)*. That P2 slice is implemented in code for create draft, save/update with ETag, reload, person/organization-unit/position/legal-entity reference validation, and non-submit review. The earlier "browser-validated" claim is narrative; no recorded evidence in the repository refs examined (review 01, F-7). Review 01 also found code defects inside that slice (see "Known Defects in the Approved P2 Slice (Review 01)"). Employee list/detail read APIs, pages and a menu entry exist in code outside the approved scope (review 01, F-5); their existence is not approval. The HCM service scaffold exists under `services/Diten.HcmService`, but this pack does not authorize submit/approval/activation, full MOD-0251 lifecycle implementation, employee registry/detail lifecycle surfaces, evidence upload/link, export/status/Data Quality Queue, government identifier capture/tokenization, or employee Active-state APIs.
 
 ## Authoritative Baseline After Containment
 
@@ -97,7 +112,7 @@ Authority decision:
 - Standalone v1.4 spec status: not present as a separate governing file in the current repository; v1.4 is superseded lineage recorded in the active spec changelog.
 - Implementation evidence named earlier: `docs/records/acceptance-reports/MOD-0251-scope-containment-rework-2026-06-21.md` - **missing**: not present in any repository ref examined by review 01 (F-7); the name appears only in a commit message. No acceptance record for P2 exists in the repository today.
 
-Current approved runtime scope remains the contained P2 draft/reference-validation baseline:
+Current approved runtime scope remains the contained P2 draft/reference-validation baseline *(Revisions 1 to 4; Revision 5: what an approval of this version makes dispatchable is stated in the Revision 5 note)*:
 
 - Draft create.
 - Draft save/update with ETag.
@@ -1238,7 +1253,7 @@ Approval gate interpretation:
 
 ## Approval Readiness
 
-This pack is conditionally approved for a draft/reference-validation slice only. The P1 draft/reference-validation API, DTO, validation, persistence, audit, fail-closed, and future contract-test plan are closed in this pack. It cannot be marked `ready-for-dev` until remaining approval caveats are resolved or explicitly accepted.
+This pack was conditionally approved for a draft/reference-validation slice only *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*. The P1 draft/reference-validation API, DTO, validation, persistence, audit, fail-closed, and future contract-test plan are closed in this pack. It cannot be marked `ready-for-dev` until remaining approval caveats are resolved or explicitly accepted.
 
 Approval requires closure or formal fail-closed deferral of every blocker recorded in P0, GC-01/02/03, and P1 topology contract. At minimum, approval remains blocked until:
 
@@ -1681,6 +1696,8 @@ part DL-7)".
   - DL-7 acceptance (audit parts of GWT-A01, GWT-A02, GWT-A08, GWT-A10, GWT-A11, GWT-A13), E5: the central records of `CreateEmployeeDraftCommand` and `PatchEmployeeDraftCommand` (RequestType) carry actor and correlation id and nothing outside the safe content; the reloaded draft's `draftSessionId` finds its records in the central log by EntityId (the "safe audit reference"); an idempotent replay adds no second record ("Fail-Closed Behavior"; with `RequireEnlistment = true` a success that enlisted nothing files none). GWT-A11 read half: no audit row by rule (`audit-trail-standard.md` §7; "Audited Events", AK-30) - DL-7 measures that draft review returns no special-category or HR-confidential field, so no read row is required; this rests on the DL-2 F-3 masking result and is measured after DL-2 is accepted or on the combined AK-31 run (AK-40). Denial and conflict (`employee.access_denied` for GWT-A10 and the GWT-A11 denial half, `employee.conflict` for GWT-A13): measured only after AE-2 decides that refused commands are recorded and the forwarder change named in "Audited Events" (AK-34; other module, operating card §7c) exists; each is then visible in the Platform central log under its own RequestType (mapping table) with tenant, actor, correlation id, a refused outcome and no PII - a reason code only if AE-3 adds a field for it. If the AE-2 decision (Control Tower with Building Blocks owner) records the gap as accepted, the DL-7 acceptance record names that gap instead of measuring them; the same rule applies to AE-3 ("entity + operation only" accepted: event name and changed-field names named as a gap).
   - P2 closure is claimed only when both DL-2 (E4) and DL-7 (E5) are accepted on the same pack version; DL-2 alone does not close GWT-A12, nor the audit parts of GWT-A01, GWT-A02, GWT-A08, GWT-A10, GWT-A11 and GWT-A13 (for the denial and conflict records: unless AE-2 records an accepted gap; for event name and changed fields: unless AE-3 does, as above).
   - Order of DL-2 and DL-7 (AK-31): both change the draft create/patch write path (DL-2 F-16 atomic create with a unique index; DL-7 Mongo transactions in `EmployeeDraftSessionRepository`). Whichever slice lands second reruns the first slice's acceptance tests on its own commit, and P2 closure rests on one combined DL-2 + DL-7 acceptance run on the commit carrying this pack version (cf. operating card S-86: evidence binds to the commit carrying the current pack version).
+- Revision 5 (testable):
+  - The front matter carries no `approval_status` line, and the dispatch gate's approval-limit check (`scripts/prompt_gate.py` `check_approval_limit`, CT-FIX-04, through the shared reader `scripts/ct_queue.py` `pack_approval_limit`) reports no limit for this version: `pack_approval_limit` returns `(None, None)` and `pack_approval_decision(text, "dispatch")` returns `ok`.
 
 ## Test Expectations
 
@@ -1761,6 +1778,10 @@ Current and future implementation expectations:
 - [ ] Revision 4: DL-7 row present at E5 and DL-2 free of the draft-write central audit (written; not yet reviewed).
 - [ ] Revision 4: independent review 04 of this exact version with result UYGUN and no open ENGEL.
 - [ ] Revision 4: approval row for this version (`scripts/pack_approval.py`).
+- [ ] Revision 5: front matter has no `approval_status` line (written; not yet reviewed).
+- [ ] Revision 5: independent review of this exact version with result UYGUN and no open ENGEL.
+- [ ] Revision 5: approval row for this version (`scripts/pack_approval.py`).
+- [ ] Revision 5: each slice's prerequisite ("Slice details" and "Open Decisions (Owner)") recorded before that slice's dispatch; the dispatching prompt cites the record.
 - [ ] DL-2: P2 defects F-1, F-2, F-3, F-14, F-15, F-16 and the F-6 fixture boundary fixed and proven at the DL-2 level (E4). *(Revision 4, F-26: GWT-A12 draft-write central audit moved to DL-7.)*
 - [ ] DL-2: owner decision record on permission breadth (F-13) - required whether the seed is kept or narrowed.
 - [ ] DL-7: AUD-001 K4 lift confirmed for `Diten.HcmService` by the rule owner (AE-1); AE-2, AE-3, AE-4, AE-5 decided. *(Revision 4: was a DL-2 item.)*
@@ -1984,7 +2005,8 @@ extension for AE-3 must keep this list.
 
 `gerekli kanıt seviyesi` is the minimum evidence level (SOP §23.1) the acceptance record of a work package of that
 slice must reach; the acceptance record cites this table row as `required_evidence_source`. Slices are a proposal from
-review 01 (F-8) adopted in this draft; this table is not approval. Writing slices are at least E4 and cross-module
+review 01 (F-8) adopted in this draft; this table is not approval by itself
+(Revision 5: what an approval row of this version makes dispatchable is stated in the Revision 5 note). Writing slices are at least E4 and cross-module
 integration slices E5. Revision 3: DL-2 stays E4 although it now carries the draft-write central audit, because SOP
 §23.1 E4 already covers persistence + audit + failure paths, and the HCM side of path `b` (the outbox row committed in
 the draft write's own transaction, no write without it) is local, while delivery to Platform is the shared forwarder's
