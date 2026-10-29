@@ -34,7 +34,7 @@ Model · Effort: kullandığın modeli, effort'u ve oturum kimliğini yanıtın 
 Görev: <ne incelenecek>. ZIP'te eksik girdi varsa (atıf verilen ama ZIP'te olmayan dosya) bunu ayrı bir bulgu olarak yaz.
 [Yalnız ön incelemede: Ek: sık bulgu türleri — docs/guides/operations/pack-review-common-findings.md; en azından bunlara bak, yalnız bunlara bakma.]
 Çıktı: ilk satır `hedef: <paket yolu> @ <sha>`; her bulgu tek satırda `F-n | ENGEL|ORTA|DÜŞÜK | <metin> | açık | <K…> | <tarih>`;
-son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL.
+son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL. [Ön incelemede bulgu öneki `P-n`.]
 ZIP'in yeri: <mutlak yol>
 ZIP sha256: <64 hex>
 ```

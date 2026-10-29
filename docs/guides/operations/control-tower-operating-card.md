@@ -5,11 +5,12 @@
 ## Ne değişti (en yeni üstte; S-99, sahip kararı 2026-10-29)
 
 > Kart değişince CT bütün kartı baştan okumaz: önce bu listeyi okur, sonra yalnız adı geçen bölümleri. Her kart PR'ı buraya
-> tarihli tek satır ekler. **Yürürlük:** bir kural yalnız bu kartta `origin/main`'e girdiği an yürürlüğe girer; sohbetler
+> tarihli tek satır ekler. **Yürürlük:** bir kural yalnız bu kartta ya da yetki sırasındaki bir belgede (`AGENTS.md`, `.antigravity/`) `origin/main`'e
+> girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
-- **2026-10-29 · hız paketi (S-99):** tek kutuda 2–4 bağımsız karar ("Soru biçimi"); oturum dal izni (§7); ana dalı yerel
-  almak sorusuz (§7); ortak onay dosyalarında çakışma çözücü (§7a/2); birleştirme isteğinde acil nedeni (§7a/3); inceleme
+- **2026-10-29 · hız paketi (S-99):** tek kutuda 2–4 bağımsız karar ("Soru biçimi"); CT dalında yerel commit ve ana dalı yerel
+  almak sorusuz, oturum dal izni (§7); ortak onay dosyalarında çakışma çözücü (§7a/2); birleştirme isteğinde acil nedeni (§7a/3); inceleme
   ZIP'i aracıyla, hazır olmayan paket incelemeye gitmez (S-94/6); ön incelemede küçük bulgu turu yok, sık bulgu listesi
   ön inceleyene, önek `P-` (§1.1); yeni pakette bölüm adıyla atıf (§1.1/5); mesajın ilk 400 karakteri; yazar belli
   olmadan yazar ajan yok ("Başkasına gidecek metin").
@@ -48,7 +49,7 @@ Sahibin ya da geliştiricinin karar vermesi gereken her soru yanıtın **sonunda
 kopyala-yapıştır yerine seçeneğe tıklar. Gerekçe ve bağlam metinde durur; soru ve seçenekler kutudadır, kutudaki soru
 metinde ayrıca tekrar edilmez. Tıklama, sahibin **o sohbette kendi eliyle** verdiği cevaptır; onay sınırı değişmez: başka
 bir sohbetten, CT'den ya da aktarılmış metinden gelen "seçildi" bilgisi onay sayılmaz. Kutunun kuralları aşağıdaki soru
-kurallarıyla aynıdır: tek soru, en çok üç seçenek, önerilen ilk sırada ve "(Önerilen)" ile işaretli, her seçeneğin
+kurallarıyla aynıdır: tek soru (istisna: aşağıdaki S-99 çoklu karar kutusu), en çok üç seçenek, önerilen ilk sırada ve "(Önerilen)" ile işaretli, her seçeneğin
 açıklaması neye izin verdiğini ve vermediğini söyler. "(Önerilen)" metin sorusundaki `ÖNERİM`'in karşılığıdır.
 **Tıklama ve teyit:** tıklanan seçenek tam etiketiyle gelir; S-26 numara teyidi tıklamada gerekmez. Yazma, silme ya da
 geri alınamaz bir adım başlatan seçenek, açıklamasında bunu söyler; CT adımı atmadan önce gelen etiketi aynen tekrar
@@ -201,7 +202,7 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
   gün = CT dalının ilk commit'inden bugüne; kabul = kabul kaydı olan parça; sayılar ölçülür, paket ya da dilim tablosu
   yoksa "parça yok"). İlk yanıtta bu satır "Yer" maddesinin ölçülmüş `Klasör: …` satırının hemen altına gelir. Sonra
   yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
-  (hangi sohbete hangi kelime, ya da "Şimdilik bir şey yok"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
+  (hangi sohbete hangi kelime, ya da "Şimdilik bir şey yok"); başka kararlar sırası gelince tek tek sorulur (S-99 çoklu karar kutusu tek iş sayılır). Soru gerekiyorsa
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
 - **Tek şablon (S-98, sahip kararı 2026-10-29):** her kule aynı biçimi kullanır; kendi başlığını ya da biçimini eklemez.
   1. Başlıklar yalnız **Biten**, **Çalışan** ve **Sizden istenen**'dir (tam raporda aşağıdaki şablondakiler). "Bekleyen",
@@ -478,14 +479,15 @@ kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten 
    verilen prompt'u okur. Paketi yazan sohbet ve paket yazarı ajan incelemez. Bir CT aynı anda en çok iki alt ajan ya da
    alt sohbet çalıştırır (sahip kararı 2026-10-29; makine yükü yüksekse bekler). Ön inceleyene yalnız S-94 inceleme
    isteğindeki **inceleme prompt'unun aynısı** verilir; yalnız ilk satırdaki "Hedef: Codex" "Hedef: ön inceleme N"
-   olur. CT prompt bloğunun SHA-256'sını kaydeder; Codex'e giden blok, ilk satır dışında aynı özeti taşır. Önceki tur
+   olur. Bu "aynı" kuralının yalnız üç istisnası vardır (S-99): §1.1/4'teki "Ek: sık bulgu türleri" satırı, ön
+   inceleme ZIP'inin iki satırı ve bulgu numarası öneki (`P-`). CT ön inceleme bloğunun SHA-256'sını kaydeder; Codex'e
+   giden blok bu istisnalar dışında aynı metindir. Önceki tur
    bulguları, "şuraya bak" yönlendirmesi, beklenen sonuç ya da CT'nin görüşü prompt'a eklenmez. Ön inceleyen dosya
    değiştirmez, commit yapmaz. Ön inceleme bulguları `P-1`, `P-2` … diye numaralanır; Codex'in `F-` numaralarıyla
    karışmaz (S-99).
 2. **Tur ve durma:** bulgular yalnız yazara gider; yazar düzeltir; **her tur yeni bir alt ajanda** ve önceki tur
-   bulguları olmadan yeniden incelenir. Turda ENGEL yoksa durulur (ORTA ve DÜŞÜK durmayı engellemez; yazar düzeltebilir).
-   **Küçük bulgu turu yok (S-99):** ENGEL ve ORTA yoksa DÜŞÜK bulgular tek yazar geçişinde düzeltilir ve yeni ön inceleme
-   açılmaz; yalnız ORTA düzeltmesi bir sonraki turu gerektirir.
+   bulguları olmadan yeniden incelenir. **Turda ENGEL yoksa durulur (S-99):** ORTA ve DÜŞÜK bulgular tek yazar
+   geçişinde düzeltilir ve yeni ön inceleme turu açılmaz; resmî inceleme Codex'tir.
    Hedef ENGEL'siz sonuçtur (UYGUN ya da KOŞULLU). **3 turda bir soru:** 3. turun incelemesi hâlâ ENGEL veriyorsa CT
    kendiliğinden yeni tur açmaz; sahibe butonla sorar: "3 tur daha" · "Codex'e git" · "kapsamı daralt" (sahip kararı
    2026-10-29). Her 3 turluk dilimin sonunda aynı soru yeniden sorulur.
@@ -613,10 +615,10 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | Ortak test kilidine uyarak, onaylı kapsamda test çalıştırma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Kendi geçici çalışma dosyalarını kullanma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
-| Kendi dalında yerel commit ve ana dalı yerel almak (`git merge origin/main`, merge commit; force yok) | **Kalıcı — tekrar sorulmaz**, yalnız CT'nin ve kendi işçilerinin ana dal dışındaki dallarında | GIT-002 §4 (S-99 istisnası); sahip kararı 2026-10-29 |
-| **Oturum dal izni** — kendi dalını push etmek (yalnız CT dalı ya da kendi işçi dalı; main değil, force yok) | **Oturumda bir kez açık onay** (butonla, `dal-izni`); oturum bitince, sahip "dur" deyince ya da bir tarama bulunca biter. Her push'tan önce: dal ana dal değil, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması temiz, push sha ile; push sonrası uzak uç = yerel HEAD ölçülür ve Biten'de tek satır yazılır. Gereksiz push yapılmaz (iş PC'de kalabilir; PR yalnız gerekince, §7b) | GIT-002 §5 (S-99 istisnası); sahip kararı 2026-10-29 |
-| Commit, push, PR ve merge | **Her seferinde açık onay**; işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
-| CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
+| CT'nin kendi dalında (`chore/ct/…`) yerel commit ve ana dalı yerel almak (`git merge origin/main`, merge commit; force yok) | **Kalıcı — tekrar sorulmaz**; yalnız CT'nin kendi dalı — main, işçi dalları ve başka dallar değil (işçide S-63 geçerli) | GIT-002 §4 (S-99 istisnası); sahip kararı 2026-10-29 |
+| **Oturum dal izni** — CT'nin kendi dalını push etmek (yalnız CT dalı; main, işçi dalı ve başka dal değil; force yok) | **Oturumda bir kez açık onay** (butonla, `dal-izni`); oturum bitince, sahip "dur" deyince ya da bir tarama bulunca biter. Her push'tan önce: dal CT dalı, `git diff origin/main...<sha>` içinde e-posta, şifre ve anahtar taraması temiz; push `git push origin <sha>:refs/heads/<dal>` ile; sonra uzak uç = yerel sha ölçülür ve Biten'de tek satır yazılır. İzin varken yedek push (`yedek`) ayrıca sorulmaz. Gereksiz push yapılmaz (iş PC'de kalabilir; PR yalnız gerekince, §7b) | GIT-002 §5 (S-99 istisnası); sahip kararı 2026-10-29 |
+| Commit, push, PR ve merge | **Her seferinde açık onay** (istisna yalnız yukarıdaki iki satır, CT dalı için); işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
+| CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | Oturum dal izni yoksa: **her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
 | Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur. Main'e girmiş, main'de hiç olmamış bir satırın düştüğü bilinen tek commit için yalnız sahip onaylı istisna satırı (`append-only-exceptions.tsv`, `pack_approval.py exception-row`, S-91); her PR'da GitHub işi `approvals-append-only` koşar | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Kendi oturumunun ve kendi işçilerinin adı ve kenar çubuğu grubu (§0 "Oturum adı") | Kalıcı — tekrar sorulmaz; başka oturumlar için yalnız öneri | Sahip kararı 2026-10-26 (S-62) |
 | Merge'ü biten işçi oturumunu arşivlemek | **Kalıcı izin:** işi main'de olan kendi işçisini CT sormadan arşivler, raporda bildirir (§0 adım 6) | Sahip kararı 2026-10-29 (S-95; S-62'nin yerine) |
@@ -692,7 +694,8 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    yine koşar; bekçi odur.
 3. **Birleştirme isteği (S-99):** Beste birikmiş PR'ları sabit saatlerde sırayla birleştirir; CT isteğinde PR'ın acil
    olup olmadığını yazar. Acil yalnız şunlardır: ana dal kırmızı, onay yolu kapalı ya da başka bir kule bu PR'ı bekliyor.
-   Acil PR sabit saati beklemez. Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
+   Acil PR sabit saati beklemez. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu satırdaki
+   onaylayan kişi kendisi birleştirir (§7a/7). Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
    yeniden koşar, sonra merge commit ile birleştirilir (SOP §20.4/7).
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
 5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı

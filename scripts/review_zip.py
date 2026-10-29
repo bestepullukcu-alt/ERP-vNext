@@ -75,6 +75,8 @@ SECRET_NAME = re.compile(r"(?i)(^|/)(\.env(\.[^/]*)?|[^/]*\.(pem|key|pfx|p12)|id
 APPSETTINGS = re.compile(r"(?i)(^|/)appsettings\.[^/]+\.json$")
 # High-precision patterns only (k08_redact_scan.py's set minus the ones the repository's tests use as placeholders:
 # password=, mongodb://user:pass@ — measured 2026-10-29: 9 test files carry such URIs, 0 carry the patterns below)
+# High-precision patterns only (keys and tokens). `password=` and mongodb URIs are deliberately not matched: test
+# files use placeholders. The repository is public, so a file the pack names is already public; this is a last check.
 SECRET_PATTERNS = {
     "private-key": re.compile(r"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----"),
     "aws-access-key": re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"),
@@ -785,10 +787,17 @@ def main(argv: list[str]) -> int:
     b.add_argument("--expand", action="append", default=[], help=f"dosyaları ZIP'e girecek dizin (en çok {DIR_CAP})")
     a = ap.parse_args(argv[1:])
     root = os.path.dirname(HERE)
+    out = os.path.realpath(a.out)
+    if out == os.path.realpath(root) or out.startswith(os.path.realpath(root) + os.sep):
+        print(f"--out depo içinde ({a.out}) — ZIP depoya girmez; depo dışında bir klasör verin", file=sys.stderr)
+        return 2
     code, lines = build(root, a.pack, a.ref, a.out, a.extra, a.since, a.allow_missing, a.expand)
     print("\n".join(lines), file=sys.stdout if code == 0 else sys.stderr)
     return code
 
 
 if __name__ == "__main__":
+    for stream in (sys.stdout, sys.stderr):  # Windows: a cp1252 pipe must not crash after the ZIP is written
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     sys.exit(main(sys.argv))

@@ -5,7 +5,8 @@ approvals.tsv, reviews.tsv and append-only-exceptions.tsv only ever grow at the 
 origin/main into its branch, both sides appended rows after the common base and git reports a conflict on the last
 line. The standing rule (feedback: "main first, then ours") resolves it by hand every time; this driver does the same:
 
-    result = base + rows main added (main's order) + the other side's rows + our rows   (each new row once)
+    merging origin/main in:   result = main's file + our new rows          (main stays a prefix, as on main)
+    any other merge:          result = our file + their new rows           (the first parent stays a prefix)
 
 It refuses (exit 1, git leaves the normal conflict) when the base is not a prefix of both sides: a side that changed or
 dropped an old row is not an append and must stay a visible conflict. `pack_approval.py history` stays the guard.
@@ -25,10 +26,15 @@ import sys
 import tempfile
 
 
+def _lines(text: str) -> list[str]:
+    """Rows split on \\n only — the same way pack_approval.py reads them (CRLF folded, a final newline is no row)."""
+    rows = text.replace("\r\n", "\n").split("\n")
+    return rows[:-1] if rows and rows[-1] == "" else rows
+
+
 def _read(path: str) -> list[str]:
     with open(path, encoding="utf-8", newline="") as f:
-        text = f.read()
-    return text.splitlines(keepends=False)
+        return _lines(f.read())
 
 
 def _main_lines(path_in_repo: str) -> list[str] | None:
@@ -37,29 +43,21 @@ def _main_lines(path_in_repo: str) -> list[str] | None:
         out = subprocess.run(["git", "show", f"origin/main:{path_in_repo}"], capture_output=True, check=True)
     except (OSError, subprocess.CalledProcessError):
         return None
-    return out.stdout.decode("utf-8").splitlines()
+    return _lines(out.stdout.decode("utf-8"))
 
 
 def merge(base: list[str], ours: list[str], theirs: list[str], main: list[str] | None) -> list[str] | None:
-    """The merged rows, or None when either side is not base + appended rows."""
+    """The merged rows, or None when either side is not base + appended rows.
+
+    When `theirs` is origin/main's file, main's rows come first (they are already on main and must stay its prefix);
+    otherwise our side is the first parent and stays the prefix. A row both sides added identically appears once.
+    """
     n = len(base)
     if ours[:n] != base or theirs[:n] != base:
         return None
-    ours_new, theirs_new = ours[n:], theirs[n:]
-    seen: set[str] = set()
-    result = list(base)
-
-    def add(rows: list[str]) -> None:
-        for row in rows:
-            if row not in seen and row.strip():
-                seen.add(row)
-                result.append(row)
-
-    if main is not None and main[:n] == base:
-        add([row for row in main[n:] if row in ours_new or row in theirs_new])
-    add(theirs_new)
-    add(ours_new)
-    return result
+    first, second = (theirs, ours) if main is not None and theirs == main else (ours, theirs)
+    added = set(first[n:])
+    return first + [row for row in second[n:] if row not in added]
 
 
 def _write(path: str, rows: list[str]) -> None:
@@ -86,18 +84,20 @@ def self_test() -> int:
             raise AssertionError(f"{name}: {got!r} != {want!r}")
 
     base = ["h", "r1"]
-    # main added m1, we added o1 → main first, then ours.
-    check("main önce", merge(base, base + ["o1"], base + ["m1"], base + ["m1"]), base + ["m1", "o1"])
-    # Merging a branch that already holds main's rows: main's rows still come first even if they sit on our side.
-    check("main satırı bizdeyse de önce", merge(base, base + ["o1", "m1"], base + ["w1"], base + ["m1"]),
-          base + ["m1", "w1", "o1"])
+    # Merging origin/main in: main's file first, then our rows (sabotage: drop the main branch and this turns wrong).
+    check("main alınırken main önce", merge(base, base + ["o1"], base + ["m1"], base + ["m1"]), base + ["m1", "o1"])
+    # Merging a worker branch (not main): our side stays the prefix, the worker's rows follow (review ORTA-1).
+    check("main dışı birleştirmede bizim taraf önek", merge(base, base + ["o1"], base + ["w1"], base + ["m1"]),
+          base + ["o1", "w1"])
     # The same new row on both sides (both merged main) appears once.
     check("aynı satır bir kez", merge(base, base + ["m1", "o1"], base + ["m1"], base + ["m1"]), base + ["m1", "o1"])
+    # Rows split on \n only, like pack_approval.py: a vertical tab inside a row does not split it.
+    check("yalnız \\n ile bölünür", _lines("h\nr1\x0bx\nr2\n"), ["h", "r1\x0bx", "r2"])
     # A changed or dropped old row is refused (sabotage: remove the prefix check and these turn wrong).
     check("değişen eski satır reddedilir", merge(base, ["h", "r1x", "o1"], base + ["m1"], None), None)
     check("silinen eski satır reddedilir", merge(base, ["h"], base + ["m1"], None), None)
     # No main available: theirs then ours.
-    check("main yoksa öbür taraf önce", merge(base, base + ["o1"], base + ["t1"], None), base + ["t1", "o1"])
+    check("main yoksa bizim taraf önek", merge(base, base + ["o1"], base + ["t1"], None), base + ["o1", "t1"])
 
     # End to end through git: a real conflict resolved by the driver, rows in the expected order.
     with tempfile.TemporaryDirectory() as tmp:
