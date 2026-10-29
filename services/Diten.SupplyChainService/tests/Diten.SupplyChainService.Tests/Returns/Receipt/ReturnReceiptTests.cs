@@ -270,6 +270,17 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
         Assert.Equal(1, await s.Events(id, "ReturnReceived"));
     }
 
+    [Fact]
+    public void R34_10_TheReceiptReadsTheShipmentOnlyOverTheSeam_NeverMod0183sStore()
+    {
+        // §34.2: stockIssued and the issue come over SHIPMENT-BUNDLE 3.4.0; no receipt type may take MOD-0183's repository or Mongo.
+        var forbidden = new[] { typeof(Diten.SupplyChainService.Domain.Features.Shipments.IShipmentRepository), typeof(IMongoDatabase), typeof(IMongoClient) };
+        foreach (var type in new[] { typeof(Diten.SupplyChainService.Application.Features.Returns.Receipt.ReturnReceiptCoordinator),
+                     typeof(Diten.SupplyChainService.Application.Features.Returns.Receipt.ReturnLateWriterPolicy),
+                     typeof(Diten.SupplyChainService.Infrastructure.Features.Returns.ReturnReferenceReader) })
+            Assert.DoesNotContain(type.GetConstructors().SelectMany(c => c.GetParameters()), p => forbidden.Contains(p.ParameterType));
+    }
+
     // ---- R34-11 ------------------------------------------------------------------------------------------------------
     [Fact]
     public async Task R34_11_CorrectingARefusedLine_PostsItUnderA2WithTheNewLocation_Line1ReplaysUnchanged()
