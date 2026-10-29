@@ -1143,6 +1143,10 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
    Platform 403" ifadesi düzeltildi: ayrımı bağdaştırıcıdaki sabit modül kodu sağlar (çağırandan alınmaz); test her çağrıda paketin
    slug'ını doğrular, bu paketin anahtarı başka slug'la 403; sabotaj: modül kodu dışarıdan alınınca kırmızı. Hazırlık kayıtlarının
    `pack:` sürüm açıklamaları D92–D96 ile güncellendi (F-2 DÜŞÜK).
+6. **D96/6 — sabitleme ve atıf hizalaması (sahip denetimi `460041621`, 1 ORTA + 2 DÜŞÜK):** hazırlık kayıtlarında "paket @ güncel"
+   etiketli dilim Bitiş atıfları (12) güncel paket satırlarına düzeltildi (etiketi özet zinciri yeniliyor, satırı yenilemiyordu);
+   WP-0126 v0.2 atıfları D96/5'in kaydırdığı satırlara eşlendi (14); 0119 / 0120 / 0124'ün MOD-0126 sabitleme açıklaması ve 0124
+   bağımlılık satırı D92–D96 zinciriyle güncellendi; MOD-0126 DL-1 hazırlık kaydı en son eski inceleme satırlarını gösterir.
 
 ## Karar olmayanlar
 

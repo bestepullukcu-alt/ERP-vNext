@@ -77,7 +77,7 @@ başlamaz; **DL-2/DL-3** = pack'e göre sonraki dilimin önkoşulu. **D51/1 sonr
 
 | Koşul | Sahibi | Bugün | DL-1'e etkisi |
 |---|---|---|---|
-| Pack `ready-for-dev` + o sürüme CT-APR-02 (bağımsız inceleme) | Treasury CT + bağımsız inceleyici | `status: draft`; **2026-10-29:** güncel sha `40140c6e…817e` (D80 / FU27 atıf revizyonu) için `reviews.tsv`'de satır yok (son satır `37d7f682…99af`, `reviews.tsv:136`, UYGUN) · önceki ölçüm: güncel sha `37d7f682…` (KARAR D78 revizyonu; önceki `58976767…` D77 — Codex fark incelemesi KOŞULLU, `reviews.tsv:129`; önceki `8127b3cd…` CT-APR-02 Codex b91d61325 KOŞULLU bulguları revizyonu; önceki `674c73e9…` D76 — Codex tam incelemesi KOŞULLU, `reviews.tsv:120`; `b5e749bd…` D75, `fb581b3b…` D74/3) için `execution/approvals/reviews.tsv`'de satır yok (ölçüm 2026-10-28) | bekletir |
+| Pack `ready-for-dev` + o sürüme CT-APR-02 (bağımsız inceleme) | Treasury CT + bağımsız inceleyici | `status: draft`; **2026-10-29:** güncel sha `40140c6e…817e` (D92–D96 revizyonu) için `reviews.tsv`'de satır yok — en son eski sürüm satırları: `caf551b0…` KOŞULLU (`reviews.tsv:173`, Codex `01a18993…`; D96/5 ile kapandı) ve `be2b3ffa…` UYGUN (`reviews.tsv:166`, Codex `01a18974…`); daha önce `37d7f682…99af` UYGUN (`reviews.tsv:136`) · önceki ölçüm: güncel sha `37d7f682…` (KARAR D78 revizyonu; önceki `58976767…` D77 — Codex fark incelemesi KOŞULLU, `reviews.tsv:129`; önceki `8127b3cd…` CT-APR-02 Codex b91d61325 KOŞULLU bulguları revizyonu; önceki `674c73e9…` D76 — Codex tam incelemesi KOŞULLU, `reviews.tsv:120`; `b5e749bd…` D75, `fb581b3b…` D74/3) için `execution/approvals/reviews.tsv`'de satır yok (ölçüm 2026-10-28) | bekletir |
 | CT-APR-01 sürüme bağlı onay satırı (`high: evet`, paketi yazmamış onaylayıcı; D34/2: taslak paketler tek turda) | Beste (onaylayıcı) | `execution/approvals/approvals.tsv`'de MOD-0126 satırı yok | bekletir |
 | DCP-011 `approved` | Beste | dosya `execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md` var, `status: draft` (`:7`); numara atandı (Y-4/2), onay `ready-for-dev` turunda | bekletir |
 | TRM-14 (a) MOD-0220 §22 pack onayı | Beste (onay verildi) | **kapandı** — `approvals.tsv:17` (MOD-0220 `91248a47…`) | — |
@@ -271,10 +271,10 @@ kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D1–D69; rol matrisi 
 **Sözleşme yüzeyleri:**
 - API: `payment-batch.openapi.yaml` v1.0.0 (AC-29) — uçlar ve hata kodları pack "Hata sözlüğü"nden alıntıyla.
 - İzin: §2.6'daki DL-1 anahtarları; her aksiyonda `[HasPermission]` (AC-21).
-- Test — **DL-1 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2120-2122` · paket @ `40140c6e…817e`): AC-1, 2, 3, 39 (Create
+- Test — **DL-1 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2135-2137` · paket @ `40140c6e…817e`): AC-1, 2, 3, 39 (Create
   kısmı), 41 (a–c, e; Create / Update), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32 (DL-1 uçları kısmı: liste, detay, Create /
   Update / Delete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Delete /
-  Validate kısmı), 45. Kısmi AC'lerin kalanı (paket @ `40140c6e…817e`, `:2135`, `:2141-2142`): AC-39 Reconcile, AC-41 (d) Approve,
+  Validate kısmı), 45. Kısmi AC'lerin kalanı (paket @ `40140c6e…817e`, `:2150-2152`, `:2156-2157`): AC-39 Reconcile, AC-41 (d) Approve,
   AC-16 kararlar, AC-32 karar uçları, AC-33 Submit / kararlar / Reconcile → DL-2; AC-41 (d) Release (tam kapanış), AC-16 kalan,
   AC-32 Release ve kalan okumalar (tam kapanış), AC-33 Release / kanıt / onay belgesi → DL-3. AC metinleri prompt'a pack'ten tırnakla
   alıntılanır. Not: AC-17 DL-3 bitişinde de "17 (sabotaj)" olarak geçiyor; DL-1'de tek aşamalı komutların tek olayı + outbox

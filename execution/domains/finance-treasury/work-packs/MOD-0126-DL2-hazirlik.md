@@ -236,7 +236,7 @@ Kuyrukta `WP-0126-DL2` satırı **yok** — DL-1 kabulünden sonra CT açar; bu 
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-2** — başlama koşulu: DL-1 kabul edildi + "— DL-2 için" dilim kapıları (MOD-0023 ödeme şablonu kodu O-8; O-4, O-7 kapandı); §17 kodu ve AC-W1…W17 **kabul kapısı**; D54 Auth atama alanları — **KARAR D66/3 ile kabul kapısı değil** (muafiyet yolu 403 ile kapalıyken DL-2 kabul edilir; AC-9 Waived dalı, AC-42 aday dalları, AC-43 geçerli atama dalı muafiyet açılış kabulünde); D66/1 aday sorgusu (MOD-0018 eki DL-6) paket metni dilim kapısı, kodu **kabul kapısı** | — |
 
-**DL-2 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2135` · paket @ `40140c6e…817e`): AC-40, **AC-4…15 (AC-9 `Waived` dalı
+**DL-2 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2150-2152` · paket @ `40140c6e…817e`): AC-40, **AC-4…15 (AC-9 `Waived` dalı
 hariç — muafiyet açılışında)**, **AC-42 (kapalı muafiyet dalı)**, **AC-43 ((f), (g), (h) — kapalı yol; KARAR D66/3; (i) — R4 kapalı
 partide muafiyet, KARAR D77/1; (j) — R4 açık, tier-2 olmayan partide muafiyet, KARAR D78)**, **AC-44 ((a)–(e) arka uç kısmı —
 D57/4)**, AC-46 (D62/2, D66/2), **41 (d: Approve kısmı)**, **39 (Reconcile kısmı)**, **16 (kararlar)**, 31, **32 (karar uçları
