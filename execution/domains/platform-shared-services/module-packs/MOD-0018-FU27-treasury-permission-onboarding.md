@@ -1160,7 +1160,7 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   istek B" testi kırmızı; `tenant_id` yokken varsayılan / istek kiracısına düşülünce "kiracısız token → 401" testi kırmızıya döner.
 - [ ] AC-33 (zorunlu) — Gerçek Mongo testi (`diten_auth_sodwaiver_itest`, `MONGO_TEST_URI`, 27017 değil): iki dizin, A / B kiracı,
   A→B parti, süre dolumu, geri alma.
-- [ ] AC-34 (zorunlu — **KARAR D79/6**, K-W6 kapandı; önceden isteğe bağlıydı) — Yanıt biçimi `docs/analysis/contracts/` altında
+- [ ] AC-34 (zorunlu) — **KARAR D79/6** (K-W6 kapandı; önceden isteğe bağlıydı). Yanıt biçimi `docs/analysis/contracts/` altında
   sürümlü sözleşme dosyasıyla dondurulur (Bölüm 5.3) ve MOD-0126 sahte istemcisi o dosyaya karşı yazılır; Auth sözleşme testi
   (`PaymentSodWaiverAssignmentContractTests`) yanıtı aynı dosyaya karşı denetler. Sabotaj: yanıttan bir alan (ör. `reasonCode`)
   çıkarılınca ya da adı değişince sözleşme testi kırmızıya döner.
