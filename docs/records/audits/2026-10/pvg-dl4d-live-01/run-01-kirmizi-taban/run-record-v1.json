@@ -1,0 +1,30 @@
+{
+ "argv": [
+  "bash",
+  "execution/domains/pharmacovigilance/work-packs/scripts/dl4d_options_smoke.sh"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/pvg-dl4d-live-01/run-01-kirmizi-taban/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 8504,
+   "path": "docs/records/audits/2026-10/pvg-dl4d-live-01/run-01-kirmizi-taban/stdout.txt",
+   "sha256": "6b9cc79d2500e585f7801971fbaabfd722c0eaab071ad3f021c746f2552e55a4"
+  }
+ ],
+ "commit": "9cf3140b98bcadb365f4359ba3c80e79845b1e2e",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-29T10:54:03Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/pvg-dl4d-live-01/run-01-kirmizi-taban",
+ "started_utc": "2026-10-29T10:53:50Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "0dd026d22befa8a247c3ee5d6496a6e6e4063913"
+}
