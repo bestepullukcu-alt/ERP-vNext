@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: compact
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated."
+status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated. §23 (WP-P1, Inventory stock issue at dispatch): r6 approved (CT-APR-01 #269, 2026-10-28); r7 is a text revision from the DL-1 code reviews and awaits CT-APR-02 and a CT-APR-01 row."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -47,6 +47,9 @@ implementation. Central consumer contracts are present. Unresolved compatibility
 - Proof of delivery, including delivery time, receiver, evidence references and exception note.
 - Shipment lifecycle event payloads in `SHIPMENT-BUNDLE`.
 - Correlation and causation propagation for its own HTTP commands and events.
+- **The sales stock issue request (W-4, owner decision 2026-10-21; revision §23):** MOD-0183 is the single writer of
+  `GOODS_ISSUE_SALES`, posted through the frozen INVENTORY `postMovement` when a shipment becomes `Dispatched`, and keeps the
+  resulting movement references. Inventory remains the balance owner (below).
 
 **Consumes:**
 
@@ -134,6 +137,17 @@ Phase B may write only:
 The frozen file `docs/analysis/contracts/shipment-bundle.openapi.yaml` is implementation authority. Phase B must not
 edit it; any additive contract revision is a separately versioned, single-writer Phase A change.
 
+**§23 DL-1 exception (WP-P1 r3, MOD-0183 review F-6).** The 3.4.0 contract change and its code must land in one change,
+because `ContractErrorCodeParityTests` pins the contract's codes to `ContractErrorCodes`. DL-1 therefore also writes, and
+only these: `docs/analysis/contracts/shipment-bundle.openapi.yaml` (3.3.0 → 3.4.0, exactly
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.4.0.patch` as approved; single writer: the MOD-0183 contract
+writer, MVP-6 CT), `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/ContractErrorCodes.cs`,
+`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ContractErrorCodeParityTests.cs`,
+`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`, and the return
+reader's line whitelist `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs`
+with its test under `services/Diten.SupplyChainService/tests/**/Returns/**` (accepting the 3.4.0 line fields only; no MOD-0186
+behaviour change). Inventory's `ShipmentBundleHttpReader` does not read lines and needs no change.
+
 ## 6. Protected Paths
 
 - `.antigravity/**`.
@@ -149,7 +163,8 @@ edit it; any additive contract revision is a separately versioned, single-writer
 | Dependency | State for Phase B | Rule |
 |---|---|---|
 | `SHIPMENT-BUNDLE` v1 | SATISFIED when Phase A validation passes | Owned frozen contract |
-| `INVENTORY-BUNDLE` v1 | SATISFIED | Consume via generated/manual contract client or mock; reads only in this slice |
+| `INVENTORY-BUNDLE` v1 | SATISFIED (1.5.0) | Consume via contract client or mock; reads, and — §23 only — `postMovement` (`GOODS_ISSUE_SALES`; `REVERSAL` per §23.4, decided in WP-P1 r3) |
+| `PRODUCT-MASTER` 1.1 | DRAFT (`1.1.0-draft.16`) | a later MOD-0183 revision after the contract is frozen (G6); not a slice of this version |
 | Event Bus | SATISFIED as platform foundation | Use outbox/event envelope; preserve correlation UUID |
 | Location/Product contracts | SATISFIED | Opaque IDs; validation through frozen mock where invoked |
 | `WAREHOUSE-OUTBOUND` v1 | PRESENT / FROZEN; compatibility PARTIAL | GET list/detail + ready event; mapping and GAP-0183-01/02/03 in readiness record |
@@ -578,3 +593,247 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 3. The details action bar is a page-level bar; `Toolbar` is the nearest supported placement.
 4. `supplychain.shipments.read` is also a UI prerequisite of Returns/Claims create and transition (G-SHIPREAD); the single-key action model cannot express that conjunction.
 5. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 23. Inventory stock issue at dispatch
+
+> W-4 — WP-P1 r7 (r6 approved). Owner decisions: W-4, E-1, E-6, E-7 (Beste, 2026-10-21, integration plan §2.1 / §4.1) and G1, G5, G6, G7, G9, G10 (Natig,
+> 2026-10-22, `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a) and the MVP-1 Control Tower's answers
+> to G2, G3 and G4 (2026-10-23, DECISION-DRAFT §3b), **corrected by the MVP-1 CT's CT-APR-02 review of 2026-10-23**
+> (`docs/records/reviews/MOD-0183/2026-10-23-febf6e35.md`, UYGUN DEĞİL): per-attempt keys replace the fixed keys (F-1),
+> one active attempt per shipment (F-2), the REVERSAL body and the exit from a failed compensation are written out (F-3,
+> F-4), the company header comes from the shipment (F-5), `inventoryReferenceId` is unused in v1 (F-10); r3 closes F-3
+> (REVERSAL fields as INVENTORY's code requires), F-6 (§5 scope), F-7 (slice table), F-8, F-9, F-10, F-11; **r4** (2026-10-26)
+> closes the independent r3 review (`docs/records/reviews/MOD-0183/2026-10-26-2acd1866.md`, KOŞULLU): fencing F-1, external
+> reversal F-2, closed code list and declared statuses F-3, `skuLevel` / lot check F-4, text and order F-5; **r5** closes the
+> review of r4 (`docs/records/reviews/MOD-0183/2026-10-26-85e1bd04.md`): late writer reverses only a closed attempt's
+> unrecorded issue, 403 during compensation, patch texts; **r6** (simpler, Natig) replaces the reconciliation job with a *sent*
+> marker and resend-before-compensate, compares attempt numbers for a late writer, keeps attempt history, adds
+> `ShipmentDetail.stockIssued` (review `2026-10-26-c9976f3f.md`); r6 was approved (CT-APR-01 #269, 2026-10-28). **r7**
+> (2026-10-28, owner Natig, `docs/records/decisions/2026-10/mvp6-mod0183-dl1-review-owner-decisions-2026-10-28.md`; text only,
+> it describes the Q500 code on `feature/sce/mod0183-dl1-01` @ `b010c4b3a`): an ambiguous
+> answer keeps the attempt `InProgress`; the late writer reverses only an **unrecorded** issue; v1 central-audit interim for
+> failed outcomes; a `IDEMPOTENCY_KEY_REUSED`-blocked attempt stays blocked in v1. Needs CT-APR-02 and a CT-APR-01 row.
+
+### 23.1 What is posted
+
+| Field (INVENTORY 1.5.0 `MovementRequest`) | Value |
+|---|---|
+| `movementType` | `GOODS_ISSUE_SALES` |
+| `itemId`, `skuId`, `quantity`, `uomId` | the shipment line (the whole line quantity; no partial issue of a line) |
+| `skuLevel`, `lotId`, `fromLocationId`, `fefoBypassReason` | the shipment line's SHIPMENT-BUNDLE 3.4.0 fields (G1); `fromWarehouseId` = `WarehouseReferenceId` |
+| `serialIds` | not sent in v1. A serial-tracked SKU is therefore refused by INVENTORY (`SERIAL_COUNT_MISMATCH`, shown as `INVENTORY_REFUSED`); serial-tracked shipments are out of v1 |
+| `fromStockStatus` | `AVAILABLE` |
+| `sourceModule` / `sourceType` | `MOD-0183` / `SHIPMENT` |
+| `sourceDocumentId` / `sourceLineId` / `documentGroupId` | shipment id / line number / shipment id |
+| `transactionDate` / `postingDate` | the validated `occurredAt` of the dispatch command that **opened the attempt**; posting day = UTC day (E-6); stored with the attempt and never changed |
+| `idempotencyKey` (body) and `Idempotency-Key` (header) | per line and attempt: `{shipmentId}:{lineNumber}:dispatch:a{n}` (F-1), `n` = the shipment's stored attempt number |
+| `X-Legal-Entity-Id` | the shipment's stored, validated `LegalEntityId` — always sent, because INVENTORY requires it when the token has no `legal_entity_id` claim (F-5) |
+| `X-Correlation-Id` | the current dispatch command's correlation id, forwarded (E-1) |
+
+The legacy line field `inventoryReferenceId` is **not used in v1** — it is neither sent nor read for the issue (F-10);
+consuming an MVP-5 reservation needs `MovementRequest.reservationId`, which the MOD-0173 owner adds (W-5).
+
+Sources of the line stock fields (G1, G10): in a tenant **without** a warehouse module the user enters them on the shipment;
+in a tenant with one, MVP-5 picking (WAREHOUSE-OUTBOUND `ReadyToShip`) fills them — that mapping is written when MOD-0178
+exists. **Before INVENTORY is called (r4, review F-4):** a line without `skuLevel` → 422 `SHIPMENT_LINE_STOCK_INCOMPLETE`
+(`details.lineNumber`), nothing posted — INVENTORY requires `skuLevel`. Whether a line is lot-tracked is **not** decided here
+(that needs PRODUCT-MASTER, not frozen): a lot-tracked line without `lotId` is refused by INVENTORY (`LOT_REQUIRED`) and shown
+as `INVENTORY_REFUSED` (§23.3), which compensates like any refusal.
+
+### 23.2 Authorization
+
+The caller's token is forwarded. The dispatching role needs `inventory.movements.create` in addition to
+`supplychain.shipments.dispatch`, granted through Roles → Permissions (the BL-652 interim path), never through the default
+role template. **An INVENTORY 403 is an authorization outcome and is answered as 403 `INVALID_REQUEST`** (the pattern of the
+return reader, Q420), never as 503; the log line keeps INVENTORY's code, so `CROSS_LE_FORBIDDEN` (wrong or missing
+`X-Legal-Entity-Id`) is told apart from a missing permission: before the first post of an attempt nothing changes; during an attempt the attempt stays
+`InProgress` (§23.4) and the shipment stays `Planned`. During a **compensation**, an INVENTORY 403 on a REVERSAL makes the
+attempt `CompensationFailed` (§23.4), like any failed REVERSAL; the user exit resends it (r5, review F-2). A service identity comes with BL-652 Option 2.
+
+### 23.3 Refusals and events
+
+- Any INVENTORY 422 → 422 `INVENTORY_REFUSED` with `details.lineNumber` and `details.inventoryCode` (SHIPMENT-BUNDLE 3.4.0);
+  the shipment does **not** become `Dispatched`. The Shipments screen shows a localized text per `inventoryCode` (7 languages:
+  `Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, already in §5 Repo Scope).
+- **Closed `inventoryCode` list (r4, review F-3):** the 422 codes of INVENTORY's `InventoryErrorCodes.cs` (at `origin/main`
+  when DL-1 starts; today `FEFO_BYPASS_REASON_REQUIRED`, `FEFO_ORDER_VIOLATION`, `INSUFFICIENT_AVAILABLE`,
+  `INSUFFICIENT_STOCK`, `ITEM_NOT_ACTIVE`, `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`, `LOT_BLOCKED`, `LOT_EXPIRED`,
+  `LOT_NOT_ALLOWED`, `LOT_REQUIRED`, `LOT_RETEST_DUE`, `LOT_SKU_MISMATCH`, `LOT_UNDER_RECALL`, `PRODUCT_MASTER_DATA_INCOMPLETE`,
+  `RESERVATION_CONFLICT`, `SERIAL_ALREADY_EXISTS`, `SERIAL_COUNT_MISMATCH`, `SERIAL_LOT_MISMATCH`, `SERIAL_NOT_AVAILABLE`,
+  `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT_STOCKABLE`, `UNKNOWN_ITEM`, `UNKNOWN_LOCATION`, `UNKNOWN_LOT`,
+  `UOM_CONVERSION_MISSING`); each has a text, and a code outside the list shows the generic text key
+  `ShipmentsIndex.InventoryRefused.Unknown` with the code itself — never the generic `validationError` text.
+- INVENTORY unreachable / 5xx / timeout → 503 `DEPENDENCY_UNAVAILABLE`. A **definite** answer means INVENTORY certainly
+  stored nothing: INVENTORY's own 503 (with its error envelope), 401, any other 4xx that is not 409 (e.g. 404, 405, 415),
+  and a client that is not configured (nothing is sent); on a first post it leaves nothing changed. An **ambiguous** answer
+  — 500 / 502 / 504, a 503 without INVENTORY's envelope (a Gateway error), 409, a timeout, a connection error, a 2xx that
+  cannot be read or has no `transactionId` — means INVENTORY may have posted:
+  the line stays *sent* and the attempt stays `InProgress` under its lease, even on the first post (r7); the next holder
+  resends the same key (§23.4). During an attempt the lines already posted stay posted (a later user retry resumes it).
+- **Declared statuses (r4, review F-3):** `transitionShipment` declares 200 / 404 / 409 / 422 / 503 in 3.3.0. §23 also answers
+  403 (INVENTORY 403, §23.2) and 500 (INVENTORY 400, §23.4); SHIPMENT-BUNDLE 3.4.0 **adds 403 and 500 to
+  `transitionShipment`** (additive), so no status of §23 is undeclared.
+- The `ShipmentDispatched` event keeps its frozen shape; it is written only after every line's movement exists (G9). MVP-5
+  will use it to mark its outbound record `Shipped`; any later change of its shape is announced to the MVP-1 CT first.
+
+### 23.4 Reservations attempts and compensation
+
+**G2 — reservations.** No INVENTORY change is needed for this slice: INVENTORY consumes an active reservation in the same
+posting transaction when the movement's (`sourceModule`, `sourceDocumentId`, `sourceLineId`) equals the reservation's
+(MOD-0173, ASSUMPTION-0173-15). MOD-0183 opens no reservation in v1, so its issue consumes none. Matching is an **exact text
+comparison within the same SKU** (`"1"` does not match `"001"`), a reservation with an empty `sourceDocumentId` is never
+matched, and only a movement that reduces `AVAILABLE` consumes one. A shipment reservation, if MOD-0183 ever opens one,
+carries **no `expiresAt`**. Consuming an MVP-5 (MOD-0178) reservation needs `MovementRequest.reservationId` (W-5, MOD-0173
+owner). "Release first, then issue" is not used.
+
+**The dispatch attempt (F-1, F-2).** The shipment stores one `DispatchAttempt` at a time:
+
+| Stored | Meaning |
+|---|---|
+| `n` | attempt number, 1 for the first attempt; it increases **only** when an attempt is closed as `Compensated` (all its posted lines reversed). A completed (`Dispatched`) attempt ends the dispatch; an `InProgress` or `CompensationFailed` attempt keeps its `n` |
+| `state` | `InProgress` / `CompensationFailed` / `Compensated` / `Completed`; the wire shows it as `ShipmentDetail.dispatchState` (`None` when there is no open attempt, 3.4.0) |
+| `occurredAt`, `transactionDate`, `postingDate` | from the command that opened the attempt; sent unchanged on every retry within the attempt |
+| per line | the *sent* marker (r6), the full §23.1 request body as first sent, the issue `transactionId` and `lotId` when INVENTORY answered, the reversal dates and reversal `transactionId` when compensated |
+| `leaseUntil` | the attempt's single-writer lease (request timeout + 30 s), renewed before each INVENTORY call |
+
+- **One active attempt (F-2).** Opening or resuming an attempt is a conditional update on the shipment (`dispatchState` and
+  `leaseUntil` checked in the filter). A dispatch command while another holds the lease → 409 `DISPATCH_IN_PROGRESS`
+  (3.4.0); `Planned → Cancelled` and POD capture while an attempt is `InProgress` → 409 `DISPATCH_IN_PROGRESS`; any
+  transition while `CompensationFailed` other than the exit below → 409 `DISPATCH_COMPENSATION_FAILED`.
+- **Posting.** Each line is posted with its attempt key and the stored body. **A retry within the attempt resends the same
+  request** (same key, same body, same dates): INVENTORY answers an already-processed request with
+  `idempotentReplay: true`, which is success. A refused request is not stored by INVENTORY, so resending it re-runs its rules.
+  `IDEMPOTENCY_KEY_REUSED` is an integrity fault (logged; the attempt is blocked like `CompensationFailed`), never a reason to
+  post again. The command that meets it answers 500 `INTERNAL_ERROR` (like an INVENTORY 400). Every issue the attempt has
+  recorded is still reversed; only the line behind that key stays open. **In v1 such
+  an attempt stays blocked** (owner decision 2026-10-28): every exit answers 409 `DISPATCH_COMPENSATION_FAILED`, and the
+  movement behind the key is investigated with the INVENTORY (MOD-0173) owner; an operator close action is a later revision.
+- **Completion.** When every line has an issue `transactionId`, the shipment becomes `Dispatched`, the attempt `Completed`,
+  the read-only `ShipmentDetail.stockIssued` becomes `true` (SHIPMENT-BUNDLE 3.4.0; `null` on a shipment with no dispatch
+  attempt — e.g. one dispatched before DL-1 — which MOD-0186 uses as its pre-WP-P1 marker, r6),
+  and the frozen `ShipmentDispatched` event is written in the same transaction (with receipt and central audit). MOD-0186
+  reads the per-line issue of the **completed** attempt only.
+- **Refusal → compensation (G3, F-3).** If a line is refused (422), every posted line of the attempt is reversed. The
+  REVERSAL body is fixed:
+
+  | Field | Value |
+  |---|---|
+  | `movementType` | `REVERSAL` |
+  | `itemId`, `skuId`, `skuLevel`, `quantity`, `uomId` | equal to the original issue (stored request of that line) — INVENTORY checks the equality (`ReversalRules.cs:37-56`) |
+  | `sourceModule` / `sourceType` | `MOD-0173` / `REVERSAL` |
+  | `sourceDocumentId` | the original issue `transactionId` (a UUID) |
+  | `documentGroupId` | shipment id |
+  | `transactionDate` / `postingDate` | the moment compensation starts (server UTC), stored at the first reversal attempt and resent unchanged |
+  | `idempotencyKey` / `Idempotency-Key` | `{shipmentId}:{lineNumber}:reversal:a{n}` |
+  | `X-Legal-Entity-Id`, `X-Correlation-Id` | as §23.1 |
+  | **not sent** | `lotId`, `serialIds` (`MovementRequestParser.cs:125-126`), every `from*` / `to*` field including the stock statuses (`MovementDirectionRules.cs:109-112`), `fefoBypassReason`, `sourceLineId` — INVENTORY derives lot, location and direction from the original |
+
+  **An INVENTORY 400 (`INVALID_REQUEST`) is never a business refusal (F-3):** it means our request is malformed. On an issue
+  post the attempt is compensated as for a refusal and the command answers 500 with the correlation id; on a REVERSAL the
+  attempt becomes `CompensationFailed`. Both are logged as integrity faults. A reversed issue does not restore a reservation
+  it consumed. When all reversals are done → attempt `Compensated`, `n` increases, `dispatchState = None`, the shipment stays
+  `Planned`, and the command answers 422 `INVENTORY_REFUSED` (§23.3).
+- **Issue reversed by someone else (r4, review F-2).** Anyone holding `inventory.movements.create` can reverse our issue in
+  INVENTORY under another key; our REVERSAL then answers 422 `ALREADY_REVERSED`. That line **counts as reversed** (the stock
+  is already back); it is logged as an integrity fault and written to the shipment's audit record with the original
+  `transactionId` (v1 central-audit interim, below). When the other lines are reversed, the attempt is `Compensated` — no `CompensationFailed` loop.
+  During a dispatch (not a compensation) a line whose issue was reversed externally is still a posted line; the attempt is
+  completed or compensated as usual.
+- **Sent marker and fencing (r6, simpler — review F-1 / F-2 on r5).** The lease carries an id. Every call a **lease
+  holder** makes to INVENTORY and every result it writes is conditional on the shipment still holding **this attempt `n` and
+  this lease id**; the only call made without the lease is the late writer's REVERSAL below (review F-3). Before each post,
+  the holder marks the line **sent** in the attempt (key and body), with that same condition. Consequences:
+  - **Resend before compensating or completing.** Whoever holds the lease treats a *sent* line without a `transactionId`
+    first: it resends the stored request with the same key — a replay returns the issue that a crashed or paused writer
+    made, a 422 means nothing was posted. Only then does it complete the attempt or compensate it. So a crash after a 201
+    leaves no unrecorded issue behind, and **no reconciliation job and no INVENTORY query are needed** (the r5 job and R-3
+    are dropped).
+  - **Late writer.** A writer whose lease expired and who got a 201 it cannot record re-reads the shipment and compares
+    **its own attempt number** with the stored `n`: stored `n` equal and the attempt `Completed`, or `InProgress` and **not
+    compensating** (no stored refusal, no reversal date, no reversed line) → it does nothing but log (the holder resends the same key and gets the same `transactionId`); stored `n` **greater**, or equal and
+    `Compensated` / `CompensationFailed`, or `InProgress` and compensating (nobody resends its key) → it reverses its **unrecorded**
+    issue (an issue the shipment already records is never reversed by a late writer, r7) with the
+    §23.4 REVERSAL body and key `{shipmentId}:{lineNumber}:reversal:a{own n}` and logs an integrity fault.
+  - **History.** The shipment keeps, per closed attempt, each line's issue and reversal `transactionId`s (an append-only
+    list beside the current attempt), and the late writer's movements in a separate append-only late-write list, so an audit
+    can trace every movement of the shipment; MOD-0186 reads only the
+    `Completed` attempt.
+  - **Residual risk, stated:** INVENTORY may still process a request after the writer's own HTTP timeout. The lease is
+    longer than that timeout (request timeout + 30 s), and the holder's resend with the same key turns such a late post into a
+    replay, so the window is the gap between INVENTORY's own processing and the lease; it is logged, not reconciled.
+- **Order (r4, review F-5).** Lines are posted, and reversed, in the order they are stored on the shipment (create order),
+  never sorted by `lineNumber` text.
+- **Failed compensation and the exit (F-4).** If a REVERSAL itself fails, the attempt becomes `CompensationFailed`, the
+  wire `status` stays `Planned` (the frozen lifecycle has no `Planned → Exception` arrow) and the command answers 409
+  `DISPATCH_COMPENSATION_FAILED` with the affected lines. **Exit:** a user sends a transition to `Dispatched` or `Cancelled`.
+  The service first resends the sent issues without a `transactionId` (same keys), then the attempt's open reversals (same
+  keys, same stored reversal dates). If all succeed, the attempt
+  is `Compensated`, `n` increases, and only then is the requested transition carried out — `Cancelled` cancels; `Dispatched`
+  opens attempt `n + 1` with this command's `occurredAt`. If a reversal fails again, nothing else happens and the answer is
+  409 `DISPATCH_COMPENSATION_FAILED`. The exit is therefore the existing transition command, with no new endpoint (F-4):
+  permission `supplychain.shipments.dispatch` for `Dispatched` and `supplychain.shipments.cancel` for `Cancelled`, both plus
+  `inventory.movements.create` for the reversals; the Shipments screen shows the `CompensationFailed` label and the two
+  existing actions only to a user who holds the permission (UAS-001); the reversal `transactionId`s and the outcome are
+  written to the shipment's audit record (v1 central-audit interim, below).
+- **Central audit of failed outcomes — v1 interim (owner decision 2026-10-28, r7).** The shared central-audit behaviour
+  (BuildingBlocks BL-501, AUD-001) records only successful commands and has no details field, so the outcomes of a
+  compensation (`Compensated` → 422 / 500, `CompensationFailed` → 409), `ALREADY_REVERSED` with the original
+  `transactionId`, the exit's reversal ids and the late writer's reversals are written, **in the same Mongo transaction as the
+  outcome**, to the shipment's in-product audit (`sce_shipment_audit`, operation `dispatch-attempt`) and to the shipment record
+  (closed attempts in the attempt history, the open or blocked attempt in place, the late writer's movements in the late-write
+  list). A successful completion (`Dispatched`) is in the central audit as before. Recording failed outcomes
+  centrally needs a BuildingBlocks / Platform change owned elsewhere (XMC-001); it is requested separately and is not a v1
+  gate.
+- **After `Dispatched` (F-11).** `Dispatched → Exception → Cancelled` and every later transition post nothing and reverse
+  nothing: the stock issue stands, and goods that come back return through MOD-0186 (§34, `CUSTOMER_RETURN` into
+  quarantine).
+- **MVP-5 reservations (F-10).** When MVP-5 S2 opens MOD-0178 reservations, the issue must name them
+  (`MovementRequest.reservationId`, added by the MOD-0173 owner, W-5); that is a new MOD-0183 revision and a **dependency of
+  MVP-5 S2 going live** — until then an MVP-5 reservation stays open and may make the issue fail the AVAILABLE − Reserved
+  check.
+- **Crash and resume.** Resume happens only on a user action (the caller's token is needed): a dispatch command after the
+  lease expired takes the lease and resumes the same attempt. A background job may only flag attempts whose lease expired; it
+  posts and reverses nothing.
+
+### 23.5 Acceptance
+
+| AC | Measurable acceptance |
+|---|---|
+| S23-1 | One-line shipment dispatched → one `GOODS_ISSUE_SALES` with the §23.1 fields and `X-Legal-Entity-Id` = the shipment's LE; AVAILABLE falls by the quantity (MVP-1 live tour "Dispatched → stok düştü") |
+| S23-2 | Lot under recall → 422 `INVENTORY_REFUSED` / `LOT_UNDER_RECALL`, shipment not `Dispatched`, no event (live tour "recall altındaki lot → sevkiyat reddedildi") |
+| S23-3 | Replaying the dispatch command (same `Idempotency-Key`) posts no second movement and no second event |
+| S23-4 | INVENTORY unavailable (its own 503, definite) → 503, no state change before the first post; an ambiguous answer on the first post (a 503 without INVENTORY's envelope, 500, 502, 504, a timeout) → 503, line *sent*, attempt `InProgress`, while INVENTORY's enveloped 503 and 401 leave no attempt (r7; sabotage: counting the envelope-less 503 as definite turns it red); INVENTORY 403 → 403 `INVALID_REQUEST`, never 503; sabotage: dropping `X-Legal-Entity-Id` makes the test red (INVENTORY `CROSS_LE_FORBIDDEN`) |
+| S23-5 | A line without `skuLevel` → 422 `SHIPMENT_LINE_STOCK_INCOMPLETE`, INVENTORY not called; a lot-tracked line without `lotId` → INVENTORY `LOT_REQUIRED` → 422 `INVENTORY_REFUSED`, posted lines compensated |
+| S23-6 | Cross-tenant / cross-LE shipment id → 404, no movement |
+| S23-7 | Every `inventoryCode`, the module codes `INVENTORY_REFUSED`, `SHIPMENT_LINE_STOCK_INCOMPLETE`, `DISPATCH_IN_PROGRESS`, `DISPATCH_COMPENSATION_FAILED`, `DEPENDENCY_UNAVAILABLE`, and the `dispatchState` labels (`InProgress`, `CompensationFailed`) have a non-empty text in all 7 languages of `ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (parity measured by MATCH count); the screen never falls back to the generic `validationError` text for them (F-9) |
+| S23-8 | Three-line dispatch, line 2 refused → line 1 reversed with key `…:1:reversal:a1` and the §23.4 body; attempt `Compensated`, `n = 2`; shipment `Planned`; no event |
+| S23-9 | Crash between line 1 and line 2, user retry after the lease → line 1 resent with key `…:dispatch:a1` and the stored body answers `idempotentReplay: true`, line 2 posted, `Dispatched` once |
+| S23-20 | **403 during compensation (r5 rule, review F-3):** an INVENTORY 403 on a REVERSAL → attempt `CompensationFailed`, the command answers 409 `DISPATCH_COMPENSATION_FAILED` (not 403) |
+| S23-10 | Compensating REVERSAL fails → `CompensationFailed`, transitions and POD 409 `DISPATCH_COMPENSATION_FAILED`; exit by `Cancelled` and by `Dispatched` both resend the reversals first; `Dispatched` then opens attempt 2 with keys `…:a2` |
+| S23-11 | Stored dates are resent within an attempt; a forced date change in a test shows `IDEMPOTENCY_KEY_REUSED` handled as an integrity fault: the command answers 500, every recorded issue is reversed, the attempt stays `CompensationFailed` and every exit answers 409 (r7) |
+| S23-21 | **Failed outcomes audited (r7):** each of `Compensated` (422 / 500), `CompensationFailed` (409), `ALREADY_REVERSED` and a late-writer reversal writes one `dispatch-attempt` row to `sce_shipment_audit` in the same transaction as the outcome; sabotage: moving the write out of the transaction, or dropping it, turns the test red |
+| S23-12 | A background job never posts or reverses; it only flags an expired lease |
+| S23-18 | **Fencing (review F-1, r6; (f) r7):** (f) a late 201 arrives while its attempt is `InProgress` and compensating → the late writer reverses it, net stock unchanged (sabotage: dropping the compensating condition turns it red). (d) a1 compensated, a2 `Dispatched`, then A wakes with an a1 201 for line 2 → stored `n` (2) is greater → A reverses it with `…:2:reversal:a1`; net stock −(sum of lines). (e) A crashes after a 201 while a1 is `InProgress` → B, holding the lease, resends the *sent* line → replay, recorded. Earlier cases:  (a) A gets 201 `T2` for line 2 and pauses; B takes the lease, resends `…:2:dispatch:a1` → replay `T2`, records it, completes `Dispatched`; A wakes → **does not reverse**, AVAILABLE net −(sum of lines). (b) A's attempt was compensated while it paused → A reverses its unrecorded issue with `…:3:reversal:a1`, net stock unchanged. (c) A crashes after its 201 → B resends the *sent* line before compensating. Sabotage: reversing in case (a), or dropping the lease-id condition, makes the test red |
+| S23-19 | **External reversal (review F-2):** line 1's issue is reversed in INVENTORY by a user, then line 2 is refused → our REVERSAL of line 1 answers `ALREADY_REVERSED`, counted as reversed, attempt `Compensated`, no `CompensationFailed` loop |
+| S23-17 | REVERSAL body: only the §23.4 fields are sent; sabotage: adding `lotId` or a `from*` field makes the compensation test red (INVENTORY 400), and a 400 is handled as an integrity fault |
+| S23-13 | Compensation retried after a crash → each REVERSAL resent with its `…:reversal:a{n}` key and stored dates → `idempotentReplay: true`, no `ALREADY_REVERSED`, no second reversal |
+| S23-14 | **Re-dispatch after compensation (F-1):** after S23-8 the cause is removed and the shipment is dispatched again → three new issues with keys `…:a2`, three new `transactionId`s different from attempt 1, AVAILABLE net −(sum of lines); none answered by replay |
+| S23-15 | **One active attempt (F-2):** two concurrent dispatch commands → one proceeds, the other 409 `DISPATCH_IN_PROGRESS`; `Cancelled` and POD during `InProgress` → 409 `DISPATCH_IN_PROGRESS`; never two attempts |
+| S23-16 | **Joint scenario with MOD-0186 (R34-8):** partial dispatch → compensation → re-dispatch → partial return → retry, with the movement ids and net stock checked after each step (MOD-0186 §34.3) |
+
+Each rule gets a sabotage proof; the full SupplyChain test assembly runs unfiltered; MDM and INVENTORY consumer tests and the
+MVP-1 CT's live tours are the acceptance.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance |
+| DL-2 | ret ve durum metinleri | Refusals and events, Acceptance |
+
+DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-21; the 3.4.0 contract patch ships in the same change
+(`ContractErrorCodeParityTests`) together with the return reader's acceptance of the 3.4.0 line fields (Repo Scope, §23 DL-1
+exception). DL-2 covers the screen texts and labels of S23-7. S23-16 is measured when MOD-0186 DL-1 lands (it needs both
+modules). Not slices of this version: the product check (Dependencies, PRODUCT-MASTER row — dispatchable only after
+PRODUCT-MASTER is frozen, by a new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work, a
+later MOD-0183 revision). CT-APR-01 note: "only DL-1, DL-2".
