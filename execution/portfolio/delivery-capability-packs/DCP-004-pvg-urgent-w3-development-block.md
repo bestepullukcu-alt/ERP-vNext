@@ -219,6 +219,7 @@ required and not completed.
 2. **MOD-0231 signal-minimum slice contract and module pack** - canonical module name is Case Processing; delivery slice is **Signal Minimum Scope**. Define only the safety-case fields, lifecycle states, assessments, and trace outputs needed by downstream signal work. Build/test gate is open for non-operational class-library contracts/tests only; operational runtime remains closed.
 3. **MOD-0232 terminology/coding contract and module pack** - define MedDRA version binding, coded-term assignment model, coding audit trail, diff/export contract, and dictionary-source governance. Build/test gate is open for non-operational class-library contracts/tests only; operational runtime remains closed.
 4. **MOD-0234 Signal MVP contract, workflow, object model, and interface gates** - define signal hypothesis/evaluation/review-decision objects, data-product and metric interface gates, workflow handoff, evidence links, and telemetry contract. This step does **not** create a runtime shell, UI, service, or gateway route.
+5. **MOD-0230 persistence before audit (added 2026-10-30)** - inside MOD-0230 the build/test Mongo store (pack slice DL-10) is delivered and accepted before the audit write (pack slice DL-5); DL-5 then writes the audit record in the same Mongo transaction as the intake data (DEPO-01 KD-3). The open audit decisions listed in §10 "Audit trail gate" are not decided by this order.
 
 ## 8.1 Delivery slices
 
@@ -294,6 +295,26 @@ Detailed port contract material remains a pending support package and is not nor
 
 This waives nothing. The `PVG-MOD0230-FieldSecurity-Contract v1`, `PVG-MOD0230-WorkflowTransitionGate-v1`, and
 `PVG-MOD0230-EvidenceLink-v1` evidence rows remain **unapproved** and continue to block operational runtime.
+
+### Audit trail gate (CAP-001 §7.1, AUD-001; added 2026-10-30)
+
+All four members run in one service, `Diten.PvgService`.
+
+1. **Audit infrastructure today: none.** `tests/architecture/audit-ledger/Diten.PvgService.md` records no audit trace
+   and lists the service's 13 write commands (the `*Command` types of MOD-0230, MOD-0231, MOD-0232, and MOD-0234) as
+   known debt; `PvgAuditIntent` is an in-memory record that is never stored. The shared forwarder
+   `Diten.BuildingBlocks.CentralAudit` (AUD-001 K4) exists in the repository but is not connected to PvgService: it
+   runs as a MediatR pipeline behaviour, PvgService has no MediatR, and its same-transaction write needs a Mongo session
+   that PvgService does not have yet.
+2. **Path.** MOD-0230: path `b` (central log through the shared forwarder), recorded in the MOD-0230 pack (OD-PVG-9,
+   "Audited Events"). MOD-0231, MOD-0232, MOD-0234: no path is recorded in their packs (measured 2026-10-30); each
+   records one in its own pack before any of its write commands is delivered.
+3. **Work that builds it, and its order (§8).** MOD-0230: pack slice DL-10 (build/test Mongo store) first, then pack
+   slice DL-5 (audit write); DL-5 waits for DL-10's acceptance (DEPO-01 KD-3). How PvgService enters the forwarder and
+   the related audit decisions stay open - DEPO-01 open items D-1, D-2, D-4, D-5, D-6, and D-7 (DEPO-03 S-10) - and this
+   DCP does not decide them. Until DL-5 is accepted no MOD-0230 mutation succeeds outside tests (deny-all permission
+   gate, MOD-0230 pack). MOD-0231, MOD-0232, MOD-0234: the delivering work is not named yet; no member is delivered
+   without audit (CAP-001 §7.1).
 
 ## 11. Scope
 
@@ -559,4 +580,7 @@ policy tests, and no forbidden path changes.
   decisions DEPO-01 `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md` and DEPO-03 `-03.md`; approver
   DEPO-02 `-02.md`). Scope: the MOD-0230 build/test gate only. The operational runtime gate, MOD-0231 / MOD-0232 /
   MOD-0234, seeds, permission seeds, and jobs are unchanged.
+- 2026-10-30: Codex review 15 (`docs/records/reviews/DCP-004/2026-10-30-b8d838f6.md` F-1): §10 "Audit trail gate"
+  (CAP-001 §7.1) and §8 item 5 (DL-10 before DL-5) added. No audit decision is taken; D-1, D-2, D-4, D-5, D-6, and D-7
+  stay open.
 - Reconciliation: implementation-phase results will be added here as member module packs are executed.
