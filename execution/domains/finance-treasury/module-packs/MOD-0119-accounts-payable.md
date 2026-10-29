@@ -1834,9 +1834,9 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [x] Para birimi küsurat hanesi kaynağı (O-10) — DL-1 Create'in kendi önkoşulu — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed main'de — **MOD-0048-FU01 seed'i PR #297 ile main'de** (`aaa3381df`; `treasury-reference.json`, `ConsumableSets` izin listesi; main'de olmak ortamda yüklenip yayımlandığının canlı kanıtı değildir — yükleme/yayım kanıtı DL-1 kabulünde)
 - [x] MOD-0143 `totalAmount` tabanı — üretici ölçümü net (`PRODUCER-ANSWER-MOD0143-01.md`), KARAR D26/1; kabul durumları D26/2.
   Sözleşme 1.1.1 açıklaması + kayıt tutarlılık kontrolü procurement tarafında (D26/3) — ready-for-dev engeli değildir; main'de (`2f1c18068`)
-- [ ] Tüketici onayı slotları (paket §P → §U) "Implementation Notes"taki tabloya göre kapatıldı — DL-1'in kullandığı gerekli slotlar (AUTH, LE, SUPPLIER, AUDIT, DATA-CONTRACT); level 3'ten önce hepsi
 
 **Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
+- [ ] Tüketici onayı slotları (paket §P → §U) "Implementation Notes"taki tabloya göre kapatıldı — DL-1'in kullandığı gerekli slotlar (AUTH, LE, SUPPLIER, AUDIT, DATA-CONTRACT); level 3'ten önce hepsi — DL-1 için (KARAR D85/1: paket kapısından dilim kapısına taşındı — AUDIT MOD-0126 DL-1 koduyla, LE TRM-14 ile kapanır; SUPPLIER için 1.3.0 FROZEN ayrı paket kapısıdır)
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı) — DL-1 için (KARAR D82/2: paket kapısından dilim kapısına taşındı)
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi — DL-1 için (KARAR D82/2: paket kapısından dilim kapısına taşındı)
 - [ ] MOD-0140 canlı bağlantısı (KARAR D72): MOD-0140 DL-3 main'de (uçlar ve `validate` satırının yeni alanları; C2 kodları için
@@ -1858,7 +1858,7 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [x] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
   sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1; D66 main'de, PR #281) — DL-2 için — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D82/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [ ] O ekin DL-6 kodu main'de (**KARAR D66/1**, **D67/1** — aday sorgusu ekin DL-6'sı, kodu bu dilimin kabul kapısı; D53 / D56/3 deseni) — DL-2 için (kabul kapısı)
-- [ ] Tüketici onayı slotu EVIDENCE (MOD-0028/0031; DL-3 başında ölçüm) "Implementation Notes"taki tabloya göre kapatıldı — DL-3 için
+- [x] Tüketici onayı slotu EVIDENCE (MOD-0028/0031; DL-3 başında ölçüm) "Implementation Notes"taki tabloya göre kapatıldı — **ölçüldü (KARAR D85/2 → D83/2):** `docs/records/audits/2026-10/treasury-intake-handover-review-01/MOD-0031-DEDUPE-OLCUMU-01.md`; EvidenceLinking testleri 51 geçti / 0 kaldı; AP yalnız okur, MOD-0031'e yazmaz; kurtarmada yeniden çağrı kapalı kalır (kural değişmedi) — DL-3 için
 
 ## Implementation Notes
 
@@ -1905,17 +1905,17 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 
 | Slot | v1 ilgisi | Kapanış yolu |
 |---|---|---|
-| AUTH (MOD-0018) | **gerekli** — `finance-treasury.ap-*` anahtarları (`read-tenant-wide` açık atama dahil), rol şablonu | O-20; Auth paket metni MOD-0018 Treasury Auth eki DL-1 (`…/MOD-0018-FU27-treasury-permission-onboarding.md`; FU27 — K-1 kapandı, Y-19 / D80/1); kaynağın `ap_*_scope` talepleri taşınmaz, yerine SEC-002 veri kapsamı (D14/1, O-22) |
-| LE (MOD-0220) | **gerekli** | TRM-14 sözleşme belgesi |
-| SUPPLIER (MOD-0140) | **gerekli** — kanonik `supplierId` + `supplierMasterId` (D72/1), uygunluk `known` ∧ `eligibleForTransactions` (D72/2); görüntü kopyası (D72/4) | MOD-0140 paketi Revizyon 5 onaylı (`approvals.tsv:26`); 1.3.0 FROZEN (MOD-0140 DL-1); canlı MOD-0140 DL-3 |
+| AUTH (MOD-0018) | **gerekli** — `finance-treasury.ap-*` anahtarları (`read-tenant-wide` açık atama dahil), rol şablonu | O-20; Auth paket metni MOD-0018 Treasury Auth eki DL-1 (`…/MOD-0018-FU27-treasury-permission-onboarding.md`; FU27 — K-1 kapandı, Y-19 / D80/1); kaynağın `ap_*_scope` talepleri taşınmaz, yerine SEC-002 veri kapsamı (D14/1, O-22) · **durum (D85/3):** Auth metni main'de, şartlı teyit (D82/1) |
+| LE (MOD-0220) | **gerekli** | TRM-14 sözleşme belgesi · **durum (D85/3):** açık — TRM-14, DL-1 için (D82/2); MOD-0220 yeniden onayı Ali'ye soruldu (Y-21) |
+| SUPPLIER (MOD-0140) | **gerekli** — kanonik `supplierId` + `supplierMasterId` (D72/1), uygunluk `known` ∧ `eligibleForTransactions` (D72/2); görüntü kopyası (D72/4) | MOD-0140 paketi Revizyon 5 onaylı (`approvals.tsv:26`); 1.3.0 FROZEN (MOD-0140 DL-1); canlı MOD-0140 DL-3 · **durum (D85/3):** açık — 1.3.0 FROZEN paket kapısı (Cihan) |
 | BANK (MOD-0289) | v1'de yok (banka referansı taşınmaz) | Follow-up |
 | PAYMENTS (MOD-0126) | v1'de yok | Follow-up (`ApLinked` dikişi) |
 | SETTLEMENT (MOD-0269) | v1'de yok | Follow-up |
 | FORECAST (MOD-0125) | v1'de yok | Follow-up |
-| WORKFLOW (MOD-0023) | **gerekli** | şablon `FT-AP-INVOICE-APPROVAL` (O-11, Y-12; kuran kod main'de değil) + MOD-0023 sahibi |
-| AUDIT (MOD-0021) | **gerekli** — CentralAudit; "canlıyken NoOp mu" sorusu Recovery'de veri taşınmadığı için kaynak tarafında kalır | MOD-0126 DL-1 + AC-17/29 |
-| EVIDENCE (MOD-0028/0031) | **gerekli** (yalnız okuma) | DL-3 başında ölçüm |
-| DATA-CONTRACT (MOD-0003) | **gerekli** | KARAR D27/1 — T32 sapması (dondurulmuş sözleşme) |
+| WORKFLOW (MOD-0023) | **gerekli** | şablon `FT-AP-INVOICE-APPROVAL` (O-11, Y-12; kuran kod main'de değil) + MOD-0023 sahibi · **durum (D85/3):** açık — DL-2 için |
+| AUDIT (MOD-0021) | **gerekli** — CentralAudit; "canlıyken NoOp mu" sorusu Recovery'de veri taşınmadığı için kaynak tarafında kalır | MOD-0126 DL-1 + AC-17/29 · **durum (D85/3):** `Finance = 18` main'de (#298); CentralAudit kaydı MOD-0126 DL-1 kodunda |
+| EVIDENCE (MOD-0028/0031) | **gerekli** (yalnız okuma) | DL-3 başında ölçüm · **durum (D85/3):** ölçüldü (D83/2, D85/2) |
+| DATA-CONTRACT (MOD-0003) | **gerekli** | KARAR D27/1 — T32 sapması (dondurulmuş sözleşme) · **durum (D85/3):** karar verildi (D27/1), sapma bitişi MOD-0003 çıkana kadar |
 | FIN-BUNDLE | v1'de yok | KARAR D27/3 |
 
 ### Taşınmayacaklar (do-not-carry)

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D84 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D85 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -914,6 +914,17 @@ cevapları: "Kaydet ve kapat (Önerilen)" ve MOD-0220 için "Ali'ye sor". Kaynak
 4. **D84/4 — açık kalanlar:** §14.2 27 rolün 7 dilli ad tablosu (Ali kontrol ediyor); MOD-0220 yeniden onayı ve Ali'nin "§22 alanı
    netleşene kadar ready-for-dev yok" notu — Ali'ye soruldu; cevap gelene kadar D82/2 değişmez, ama hiçbir paket `ready-for-dev`'e
    alınmaz.
+
+## D85 — MOD-0119 DL-1 slot maddesi dilim kapısına; EVIDENCE slotu ölçümle kapanır (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: "DL-1 kapısına taşı (Önerilen)", "Kapat (Önerilen)".
+
+1. **D85/1:** MOD-0119'daki "Tüketici onayı slotları — DL-1'in kullandığı gerekli slotlar" maddesi paket kapısından "— DL-1 için"
+   dilim kapısına taşınır (D51/1, D82/2 deseni): AUDIT slotu MOD-0126 DL-1 koduyla, LE slotu TRM-14 ile kapanır; ikisi de
+   ready-for-dev'den önce kapanamaz. SUPPLIER için "MOD-0140 1.3.0 main'de FROZEN" ayrı paket kapısı olarak kalır.
+2. **D85/2:** MOD-0119 EVIDENCE slotu (DL-3) MOD-0031 ölçümüyle kapanır (D83/2 ile aynı kanıt ve sonuç; kural değişmez).
+3. **D85/3:** MOD-0119 slot tablosuna satır başına durum notu yazılır (karar değil, durum).
 
 ## Karar olmayanlar
 
