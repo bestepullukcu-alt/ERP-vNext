@@ -44,6 +44,30 @@ public sealed class ShipmentDispatchTextTests
         foreach (var (code, key) in map) AssertTextInAllLanguages(key, code);
     }
 
+    // Review F-1: each code must reach ITS key — a swap of two keys keeps every count and text check green.
+    // Expected keys are derived here (closed list: "InventoryRefused" + PascalCase of the code) or written out by hand.
+    [Fact]
+    public void EachCodeAndStateIsMappedToItsOwnKey()
+    {
+        var map = Dictionary("inventoryCodes");
+        foreach (var code in ClosedList)
+        {
+            var expected = "InventoryRefused" + string.Concat(code.Split('_').Select(w => w[..1] + w[1..].ToLowerInvariant()));
+            Assert.Equal(expected, map[code]);
+        }
+        var properties = new Dictionary<string, string>
+        {
+            ["inventoryRefused"] = "ErrInventoryRefused", ["lineStockIncomplete"] = "ErrShipmentLineStockIncomplete",
+            ["dispatchInProgress"] = "ErrDispatchInProgress", ["dispatchCompensationFailed"] = "ErrDispatchCompensationFailed",
+            ["dependencyUnavailable"] = "ErrDependencyUnavailable", ["inventoryCodeUnknown"] = "InventoryRefusedUnknown",
+            ["accessDenied"] = "ErrForbidden", ["validationError"] = "ErrInvalidRequest"
+        };
+        foreach (var (property, key) in properties) Assert.Equal(key, Property(property));
+        var states = Dictionary("dispatchStates");
+        Assert.Equal("DispatchStateInProgress", states["InProgress"]);
+        Assert.Equal("DispatchStateCompensationFailed", states["CompensationFailed"]);
+    }
+
     [Fact]
     public void TheModuleCodeTextsAndTheDispatchStateLabelsHaveATextInAllSevenLanguages()
     {

@@ -57,7 +57,8 @@ const ShipmentDetails = (function () {
     // list shows itself in the generic reason text. Own-property lookups only, so a code such as "constructor" is unknown.
     // errorText touches no DOM; it is returned for the Node mapping test.
     const own = (map, key) => (map && typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined);
-    const fill = (template, value) => String(template || '').replace('{0}', value || L.unknown);
+    // The replacer is a function so a value such as "$&" is inserted as written; only a missing or empty value is unknown.
+    const fill = (template, value) => String(template || '').replace('{0}', () => (value === undefined || value === null || value === '' ? L.unknown : String(value)));
     const errorText = (status, body) => {
         const code = body?.error?.code || ''; const details = body?.error?.details || {};
         if (code === 'INVENTORY_REFUSED') return `${fill(L.inventoryRefused, details.lineNumber)} ${own(L.inventoryCodes, details.inventoryCode) || fill(L.inventoryCodeUnknown, details.inventoryCode)}`;

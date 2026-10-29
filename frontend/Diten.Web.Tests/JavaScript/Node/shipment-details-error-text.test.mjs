@@ -52,6 +52,10 @@ test('an inventoryCode outside the list shows the generic reason with the code i
             `inventoryRefused[1] inventoryCodeUnknown[${code}]`, code);
     }
     assert.equal(errorText(422, body('INVENTORY_REFUSED', {})), 'inventoryRefused[unknown] inventoryCodeUnknown[unknown]');
+    // Review F-2: replacement patterns are inserted literally, and line 0 is a line, not "unknown".
+    assert.equal(errorText(422, body('INVENTORY_REFUSED', { lineNumber: 0, inventoryCode: "$&$'" })),
+        "inventoryRefused[0] inventoryCodeUnknown[$&$']");
+    assert.equal(errorText(422, body('SHIPMENT_LINE_STOCK_INCOMPLETE', { lineNumber: '$&' })), 'lineStockIncomplete[$&]');
 });
 
 test('the module codes have their own text and never the validation text', () => {
