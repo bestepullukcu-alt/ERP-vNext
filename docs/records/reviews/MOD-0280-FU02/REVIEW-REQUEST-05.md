@@ -1,5 +1,8 @@
 # MOD-0280-FU02 — bağımsız paket incelemesi isteği 05 (SOP §20.4 / CT-APR-02; revizyon 05, ilk onay)
 
+> **Durum: yanıtlandı, kapandı.** Codex dal ucunu eedb4a456 (paket 948f931b) olarak ölçtü: KOŞULLU, F-21 (kayıt
+> `2026-10-29-948f931b.md`). Bu istek yeniden gönderilmez; yerine `REVIEW-REQUEST-06.md` geçer.
+
 - Hedef: `execution/domains/human-capital-management/module-packs/MOD-0280-FU02-leave-absence-management.md` @ sha256 `3635b1baad64920eee926bbee91cf6d49e4c5fda8b3994b6f4049bd05535e171` (revizyon 05, `status: draft`)
 - Kaynak commit: 84e8d718519b1162e29bdba97a9c7faefb5bcfc7 (dal `chore/ct/hcm-leave-ct-01`; bu istek bir sonraki commit'te eklenir; GitHub'a sahibin `yeniden-oynat` ve `rev05-duzelt` sözleriyle gönderilir)
 - Önceki: inceleme 01 (`ea61e8c6`), 02 (`47df0fc4`), 03 (`436bc38b`), 04 (`5fb4d1bb`, revizyon 04 commit 3ce09edac) — dördü de **UYGUN DEĞİL**. Revizyon 05 yalnız inceleme 04'ün tek bulgusunu (F-20) karşılar.
