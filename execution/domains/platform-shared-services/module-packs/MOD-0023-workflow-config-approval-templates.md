@@ -794,22 +794,25 @@ permission, no module id, no route path and no index.
    `ExecutionFilter` (flag silently ignored), or the default branch reading without it, turns the test red. The
    `DeleteAsync` override of AC-W15 is unchanged — the inherited delete path still exists.
 2. **Allowed paths for DL-1 — extends §17.8/9 (INSPECTION.md DL-1/2):**
-   - `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs` — only new **read**
-     members that include deleted rows, on `IWorkflowInstanceRepository` (`:41`), `IApprovalTaskRepository` (`:191`) and
-     `IWorkflowTransitionLogRepository` (`:371`) (@4c08fc75a). They keep the tenant condition and drop only
-     `IsDeleted == false`; only the members the chosen O-S17-2 option needs are added. **Still no delete member** on any
-     interface (AC-W15 unchanged).
-   - Their implementations in
+   *(Made consistent with O-S17-2 = (b), item 3 — review round `2026-10-29-3e802d2f`, CT note.)*
+   - `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs` — only **one** new
+     **read** member on `IWorkflowInstanceRepository` (`:41@4c08fc75a`): the instance read by object ids that includes
+     deleted rows (the deleted-including twin of `ListByObjectIdsAsync`, `:161@4c08fc75a`). It keeps the tenant condition
+     and drops only `IsDeleted == false`. `IApprovalTaskRepository` and `IWorkflowTransitionLogRepository` gain no member.
+     **Still no delete member** on any interface (AC-W15 unchanged).
+   - Its implementation in
      `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs`.
-   - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstanceHistoryHandler.cs`
-     — the `includeDeleted` branch (instance lookup `:51`, transition logs `:61`, tasks `:65` @4c08fc75a) and the `isDeleted`
-     mapping, as O-S17-2 decides; `GetWorkflowInstancesByObjectsHandler.cs` (same folder) for its `includeDeleted` branch.
-   - Binding the optional query parameter (pack author's addition under DL-1/2, not named in the note): today neither
-     action takes it (`services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs:104-110,
-     121-129@4c08fc75a`). Allowed: that controller file (one optional `includeDeleted` query parameter, default `false`, on
-     those two actions only; path, verb and `[HasPermission]` unchanged) and the two query records
+   - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstancesByObjectsHandler.cs`
+     — its `includeDeleted` branch and the `isDeleted` mapping.
+   - `.../Handlers/QueryHandlers/GetWorkflowInstanceHistoryHandler.cs` (same folder) — **only** the additive read fields
+     of item 3; no `includeDeleted` branch and no deleted-including read.
+   - Binding the optional query parameter (pack author's addition under DL-1/2, not named in the note): today the action
+     does not take it (`services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs:121-131@4c08fc75a`).
+     Allowed: that controller file (one optional `includeDeleted` query parameter, default `false`, on the `by-objects`
+     action only; path, verb and `[HasPermission]` unchanged) and the query record
      `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetWorkflowInstancesByObjectsQuery.cs`
-     and `.../Queries/GetWorkflowInstanceHistoryQuery.cs` (one optional trailing member).
+     (one optional trailing member). The `history` action (`WorkflowDefinitionsController.cs:104-110@4c08fc75a`) and
+     `.../Queries/GetWorkflowInstanceHistoryQuery.cs` stay unchanged.
    - `services/Diten.Platform.Common/**` stays untouched (§17.8/9 unchanged).
 3. **Owner decision O-S17-2 — history of a soft-deleted instance (INSPECTION.md DL-1/2) — decided (b), below.** Today `history` of a
    soft-deleted instance answers **404** (`GetWorkflowInstanceHistoryHandler.cs:51-59@4c08fc75a`), with or without the flag.
@@ -864,25 +867,55 @@ permission, no module id, no route path and no index.
    different actor → the same answer the other transitions give after the fix (403 `WORKFLOW_ACTOR_DENIED`); with the same
    actor and a different body → the AC-W14 409; same actor and body → 200 `isIdempotent = true`. Sabotage: restoring the
    direct replay call turns it red.
-9. **AC-W8 restated (INSPECTION.md DL-2/3):** two different decisions on one pending task (e.g. approve vs reject,
-   different keys): exactly one terminal decision, no second terminal row; the **race loser** gets **409
-   `WORKFLOW_TRANSITION_CONFLICT`** (existing tests for two concurrent approves by two candidates:
-   `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.cs:118-130,
-   142-154@4c08fc75a`); **409 `WORKFLOW_TASK_INVALID_STATE`** only for a **late arrival** that reads the task after the
-   decision committed (`WorkflowTaskTransitionSupport.cs:82-89@4c08fc75a`), which is also the answer to a later replay of the
-   loser's own key (no row under it, `:61-65`). Never 200 for the loser. The WP adds the approve-vs-reject case (the existing
-   tests are approve-vs-approve). Consumer rule §17.7/6 unchanged: the 409 conflict is `Unknown`, the replay yields the
-   definite refusal.
-10. **AC-W6 / AC-W7 restated (INSPECTION.md DL-2/4, DL-2/7):** concurrent identical transitions (same task, action, key,
-    actor and body) → exactly one transition row; the loser's answer is **usually 409 `WORKFLOW_TRANSITION_CONFLICT`**
-    (in-transaction conflict, `WorkflowTerminalTransitionWriter.cs:108-110@4c08fc75a`); **200 `isIdempotent = true`** only
-    after the "transaction unavailable" re-read finds the twin's row (`:112-114, 357-376, 441-442`); **503
-    `WORKFLOW_TRANSACTION_UNAVAILABLE`** when nothing moved in the wait (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`).
-    After the race, a replay of the same key returns 200 `isIdempotent = true` and the same transition
-    (`WorkflowTaskTransitionSupport.cs:1054-1084`). The 200-after-re-read branch is exercised at least once by an injected
-    "unavailable" executor (the pattern of
-    `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs:1856-1865@4c08fc75a`).
-    No existing test covers AC-W6/W7 or AC-W9/W10 (note DL-2/7); the WP writes them.
+9. **AC-W8 restated (INSPECTION.md DL-2/3; timing cases rewritten for review F-2, `2026-10-29-3e802d2f`):** two
+   different decisions on one pending task (e.g. approve vs reject, different keys): exactly one terminal decision, no
+   second terminal row, never 200 for the loser. The loser's answer depends on when it reads. Order of checks
+   (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs@4c08fc75a`):
+   replay lookup by (task, action, key) `:61-65` (no row under the loser's key), task lookup `:67-75`, `expectedVersion`
+   mismatch → 409 `WORKFLOW_TRANSITION_CONFLICT` (`StaleVersion`, `:77-80, 1011-1016`), not decidable → 409
+   `WORKFLOW_TASK_INVALID_STATE` (`:82-89`), then the in-transaction write. Separate measured cases, each forced by the test:
+   - **(b) late arrival** — the test awaits the winner's committed answer, then sends the loser. Without `expectedVersion`
+     → 409 `WORKFLOW_TASK_INVALID_STATE`; with the version read before the winner (now stale) → 409
+     `WORKFLOW_TRANSITION_CONFLICT`. A later replay of the loser's own key gets the same answer as its late arrival.
+   - **(c) in-transaction overlap** — forced by a barrier around the real executor (pattern: `TwoCallerBarrier` around
+     `PlatformTransactionExecutor`,
+     `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.cs:121, 602@4c08fc75a`),
+     so both calls pass `:82-89` before either commits. Loser → 409 `WORKFLOW_TRANSITION_CONFLICT`
+     (`WorkflowTerminalTransitionWriter.cs:108-110@4c08fc75a` → `WorkflowTaskTransitionSupport.cs:839-843`), also when the
+     executor reports transaction-unavailable and the re-read sees the version moved without a row of its own
+     (`WorkflowTerminalTransitionWriter.cs:370-376`); 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` only when nothing moved in the
+     wait (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`), forced by an injected "unavailable" executor.
+   - Case (a) (a recorded row found on the first read) does not apply: no row exists under the loser's key.
+   The existing tests (`WorkflowCandidateDecisionMongoTests.cs:118-130, 142-154@4c08fc75a`) are approve-vs-approve in case
+   (c); the WP adds approve-vs-reject in (b) and (c). Consumer rule §17.7/6 unchanged: the 409 conflict is `Unknown`.
+   Fact for it: a replay that repeats a stale `expectedVersion` gets 409 `WORKFLOW_TRANSITION_CONFLICT` again; the
+   definite refusal comes from a replay without it, or from a read.
+10. **AC-W6 / AC-W7 restated (INSPECTION.md DL-2/4, DL-2/7; timing cases rewritten for review F-2):** identical
+    transitions (same task, action, key, actor and body) → exactly one transition row in every case. Separate measured
+    cases, each forced by the test (lines in `WorkflowTaskTransitionSupport.cs@4c08fc75a` unless named):
+    - **(a) replay found on the first read** — the test awaits the first call's committed answer, then repeats it: the
+      lookup `:61-65` finds the row and answers through the actor-bound replay `:1018-1030` → 200 `isIdempotent = true`,
+      same transition (`:1054-1084`). No task, version or decidable check runs, so a stale `expectedVersion` does not
+      change it; a different actor → 403 (item 7).
+    - **(b) late arrival** — a call whose lookup `:61-65` ran before the twin committed and whose task read `:67` ran
+      after it: without `expectedVersion` → 409 `WORKFLOW_TASK_INVALID_STATE` (`:82-89`); with a stale `expectedVersion`
+      → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:77-80`). Forced by a wrapper that holds the call between the two reads
+      until the twin has committed (pattern: `AllReservedBarrier`,
+      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs:1783@4c08fc75a`).
+    - **(c) in-transaction overlap** — barrier around the real executor as in item 9 (c), both calls past `:61-65` and
+      `:82-89` before either commits. Loser → 409 `WORKFLOW_TRANSITION_CONFLICT`
+      (`WorkflowTerminalTransitionWriter.cs:108-110@4c08fc75a`); on the transaction-unavailable path the re-read finds
+      the twin's row with the same actor and payload → 200 `isIdempotent = true` (Replayed;
+      `WorkflowTerminalTransitionWriter.cs:112-114, 357-368, 441-442`; `:820-833`), or 503
+      `WORKFLOW_TRANSACTION_UNAVAILABLE` when nothing moved (`WorkflowTerminalTransitionWriter.cs:390`; `:834-838`).
+      The transaction-unavailable path is not only injected: the writer's own comment records real Mongo reaching it
+      after the executor's write-conflict retries (`WorkflowTerminalTransitionWriter.cs:350-353@4c08fc75a`; measured
+      2026-10-02 per the comment, not re-measured here). So the barrier test asserts one row and accepts the loser as 409
+      conflict or 200 Replayed with the winner's transition id; the 200-Replayed and 503 branches are each forced
+      deterministically by an injected "unavailable" executor (pattern
+      `WorkflowStartRecoveryMongoTests.cs:1856-1865@4c08fc75a`).
+    After any case, a replay of the same key is case (a). No existing test covers AC-W6/W7 or AC-W9/W10 (note DL-2/7);
+    the WP writes them.
 11. **AC-W5 — what it requires (INSPECTION.md DL-2/7):** the existing test
     (`WorkflowStartRecoveryMongoTests.cs:1821-1845@4c08fc75a`) runs six in-process handler calls held by a barrier
     (`AllReservedBarrier`) until all have reserved — forced overlap, not independent requests. AC-W5 needs **both**: that
@@ -913,6 +946,29 @@ permission, no module id, no route path and no index.
     `DelegateWorkflowTaskHandler.cs`, `RequestInfoWorkflowTaskHandler.cs`, `CancelWorkflowTaskHandler.cs`; plus
     `services/Diten.Platform/tests/**` and `tests/architecture/**` (new rules only). Nothing else.
 
+**Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş
+akışı chat, 2026-10-29).** F-2 is closed by items 9 and 10 above, the CT note by item 2; F-3 (review input) needs no pack
+change.
+
+15. **AC-W16 restated (DL-1; review F-1) — replaces the AC-W16 text of §17.8.** Code (read, not run, @4c08fc75a):
+    `by-objects` answers every requested object id; an id with no instance in the caller's tenant gets an entry with an
+    empty `instances` list and the call is 200
+    (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstancesByObjectsHandler.cs:55-72@4c08fc75a`;
+    tenant from `ExecutionFilter` in `ListByObjectIdsAsync`,
+    `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs:181-185@4c08fc75a`).
+    `history` and `instances/{id}` answer 404 `NotFoundNonLeakage` for an instance not found in the tenant
+    (`.../QueryHandlers/GetWorkflowInstanceHistoryHandler.cs:51-59@4c08fc75a`,
+    `.../QueryHandlers/GetWorkflowInstanceByIdHandler.cs:20-28@4c08fc75a`). All three actions require `instances.view`
+    (`services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs:96, 105, 122@4c08fc75a`).
+    **AC-W16 — `includeDeleted` stays inside the tenant and the permission (DL-1):**
+    - `by-objects`, with or without `includeDeleted=true`: another tenant's object id (fixture: that tenant holds a live and
+      a soft-deleted instance for it) → its entry has an empty `instances` list, 200; no row of another tenant appears in
+      any entry.
+    - `history` and `instances/{id}` for another tenant's instance id → 404 `NotFoundNonLeakage`, as today (`history`
+      takes no `includeDeleted`, item 3).
+    - A caller without `instances.view` → refused as today, on all three actions.
+    - Sabotage: dropping the tenant condition on the `includeDeleted` branch (the new read member of item 2) turns it red.
+
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here; O-S17-2 decided before DL-1's
 WP prompt; the rest of the §17.8 closure unchanged.
 
@@ -926,6 +982,6 @@ WP prompt; the rest of the §17.8 closure unchanged.
 Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
 durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu sahibi yazar, başka biri merge eder (D32/1).
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
-(AC-W3, W13, W15 §17.9'daki haliyle; DL-1 prompt'u O-S17-2 kararından önce yazılmaz).
+(AC-W3, W13, W15, W16 §17.9'daki haliyle; DL-1 prompt'u O-S17-2 kararından önce yazılmaz).
 **DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17 §17.9'daki haliyle) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
