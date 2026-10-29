@@ -1,0 +1,15 @@
+# Başlangıç ölçüsü — origin/main a00538e17, 2026-10-21T07:34:10Z, SDK 10.0.112
+# Ayrı worktree'de koşuldu (ana çalışma dizininde derleme yok). Testler hiçbir Mongo'ya bağlanmadı (Procurement testleri Mongo kullanmıyor; kapta Mongo çalışmıyor).
+
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147
+## architecture
+Failed!  - Failed:     3, Passed:   141, Skipped:     0, Total:   144
+  red: Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders 
+  red: Failed TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt 
+  red: Failed TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous 
+## gateway
+Passed!  - Failed:     0, Passed:   259, Skipped:     0, Total:   259
+
+Procurement test projesi: tek proje (services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests). Filtresiz koşu.
+Mimari kırmızıların hiçbiri Procurement kodundan değil: DocsPathGuard listesinde Procurement'a yakın tek giriş supplier-performance.openapi.yaml:12 (docs/analysis yolu); AuditTrailStandard x2 main'in kendi borcu.

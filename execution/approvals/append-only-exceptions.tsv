@@ -1,0 +1,3 @@
+commit	path	lost_sha256	reason	author	approver	approved_at
+0e818e3c155cfba992e5b59ff597d52e89488d67	execution/approvals/approvals.tsv	dc25b70024a62f09c58bcb8344283eafd4869d6280f06b71dc77714fbaefe293	S-91: PR #241 merge (gmg-10, 10-28) kaynağında dalın MOD-0140 Revizyon 2 satırı düştü; satır main'e hiç girmedi, yerini Revizyon 5 aldı; sahip kararı onay-istisna 2026-10-29	GMG-ERP	bestepullukcu-alt	2026-10-29
+0e818e3c155cfba992e5b59ff597d52e89488d67	execution/approvals/reviews.tsv	ab6028991ad307fb8284c1fe00ce5d697e2a690e15d0ebbdb240b40a49b47390	S-91: PR #241 merge (gmg-10, 10-28) kaynağında dalın MOD-0140 Revizyon 2 satırı düştü; satır main'e hiç girmedi, yerini Revizyon 5 aldı; sahip kararı onay-istisna 2026-10-29	GMG-ERP	bestepullukcu-alt	2026-10-29
