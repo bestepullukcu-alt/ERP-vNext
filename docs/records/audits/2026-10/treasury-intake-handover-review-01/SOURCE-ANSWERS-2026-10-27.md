@@ -300,6 +300,15 @@ kabul, iki ekle** — `prefixScope` LegalEntity / Group / Platform; tür başın
 CTP, CTR LegalEntity); 422 `RECORD_CODE_SCOPE_INVALID`; 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür); şirket BAC'ta sahip şirket teyit.
 MOD-0289 onaylayıcısı kabul (K2). MDM tarafı (#311 03): uygun; bu izin Ali'nin kararı; diğer iki dosya (04, 05) da. → D93.
 
+## Y-25 — Beste, dört nota cevap: kimlik, O-14, `CTR` çakışması, sınıflandırılmamış üreticiler (2026-10-29; K1 aktardı)
+
+Kimlik: MOD-0040-FU01 kayıt dosyasında eski takma ad (`module-id-registry.md:137`); RCS-001 kimliği **MOD-0040-FU02 "Record Code Service"**
+(repoda geçmiyor, ön kontrolden geçti); kayıt satırına "parent = Blueprint MOD-0040 (Canonical ID & Correlation Standard), repodaki MOD-0040
+takma adı değil" notu; ön kontrol aracının açığı ayrı iş. O-14: `prefixScope` (Y-24 3. madde). **`CTR` çakışması:** MOD-0144 bugün `CTR-` + 8
+karakter üretiyor; MOD-0217'nin kodu olmadığı için MOD-0217'nin öneki değişsin, öneri **`AGR`** (kural tablosunda ve kodda yok); uygunsa D41/2
+güncellensin, RCS-001 §3 satırını Beste değiştirir; MOD-0144 ile MOD-0217 kapsam çakışması Cihan ile netleştirilsin. Sınıflandırılmamış
+üreticiler: v1 dokunmuyor, mevcut kodlar değişmez; envanter gelince her biri için KALSIN / RCS-001'e geçiş kararı tek tek. → D94.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -344,3 +353,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-22 (#304 sırası; DCP-011 onay yolu; K-6 "hayır"; Platform XMC-001 dosya kapsamı; BL-565 ve MOD-0262-FU01 tarihleri) | DCP-011; FU27 DL-4; dört finans paketi SEC-002; RCS-001 | D88 |
 | Y-23 (K-5 kontrolü; `versions.approve` sorusu; **K-6 "evet"** — finans ikinci tüketici; XMC-001 koşulları) | FU27 §5.2; dört finans paketi SEC-002; MOD-0217 aday süzmesi | D92 |
 | Y-24 (SEC-002 C teyidi; O-14 `prefixScope` kabulü; MOD-0289 onaylayıcılığı; D Ali ile) | MOD-0289 AC-60; RCS-001 v0 sözleşmesi; dört finans paketi | D93 |
+| Y-25 (RCS-001 kimliği MOD-0040-FU02; MOD-0217 öneki `AGR`; MOD-0144 / MOD-0217 kapsamı Cihan'a; sınıflandırılmamış üreticiler) | MOD-0217 O-5 / Code; DL-1 hazırlık; RCS-001 §3 | D94 |

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D93 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D94 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1073,6 +1073,25 @@ Onay kanıtı: kaynak Y-24 (Beste, K1 aktardı); kayıt K1 / gmg-10, oturum Trea
    şirket listesi) uzun vadeli ortak çözüm — Ali ile ayrıca planlanır.
 4. **D93/4 — #311 dosyaları:** Beste 03 (MDM XMC-001 talebi) metnini uygun buldu; 03, 04, 05 Ali'nin kararıdır.
 5. Açık: `versions.approve` sorusu (D92/3 aday modu önerisi Beste'ye gönderilecek); AC-32'nin dört pakette C yoluna göre yeniden yazımı.
+
+## D94 — Beste Y-25: MOD-0217 öneki `AGR`; RCS-001 kimliği MOD-0040-FU02; sınıflandırılmamış üreticiler (2026-10-29)
+
+Onay kanıtı: kaynak Y-25 (Beste, K1 aktardı); K1 soru kutusu cevabı "AGR kabul (Önerilen)"; kayıt K1 / gmg-10, oturum Treasury Intake CT
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D94/1 — MOD-0217 tür öneki `CTR` → `AGR` (D41/2'yi bu noktada değiştirir):** `CTR-` + 8 karakteri bugün MOD-0144 (Procurement
+   sözleşmeleri) üretiyor; RCS-001 gereği mevcut kod değişmez, MOD-0217'nin henüz kodu yok. `AGR` RCS-001 §3 tablosunda ve kodda kullanılmıyor
+   (Beste ölçümü; K1 ölçümü: depoda `AGR` yalnız QMS belge türü listesinde ve PV belge kimliklerinde geçiyor — kayıt kodu değil). D41/2'nin
+   diğer kısımları (OTOMATİK, şirket öneki yöneten şirketin kısa kodu) aynen. RCS-001 §3 satırını Beste değiştirir (`.antigravity/**`, satır
+   sahibi). D93/1'in `LegalEntity` listesindeki `CTR` bu karar ile `AGR` okunur. MOD-0217 paketi ve DL-1 hazırlık notu işlendi.
+2. **D94/2 — RCS-001 servis kimliği MOD-0040-FU02 "Record Code Service"** (Beste; MOD-0040-FU01 eski takma ad çakışması nedeniyle):
+   kayıt satırına "parent = Blueprint MOD-0040 (Canonical ID & Correlation Standard), repodaki MOD-0040 takma adı değil" notu yazılır (Beste).
+   Ön kontrol aracının farklı adla yeniden kullanımı yakalamaması ayrı iş (Beste). BL-565 ile aynı iştir.
+3. **D94/3 — açık (K1 → Cihan):** MOD-0144 (Procurement sözleşmeleri) ile MOD-0217 (sözleşme yaşam döngüsü) kapsamları çakışıyor mu —
+   Beste'nin isteği; Treasury CT soruyu hazırlar, cevap gelene kadar MOD-0217 kapsamı değişmez.
+4. **D94/4 — sınıflandırılmamış kod üreticileri:** RCS-001 v1 bunlara dokunmaz; envanter gönderildiğinde her biri için KALSIN ya da RCS-001'e
+   geçiş kararını Beste tek tek verir; o zamana kadar hepsi kendi düzeninde kalır.
+5. **D94/5 — AC-32:** dört finans paketinin AC-32'si SEC-002 C yoluna göre yeniden yazılabilir (Beste, Y-24/Y-25 teyidi; D93/3) — açık iş.
 
 ## Karar olmayanlar
 
