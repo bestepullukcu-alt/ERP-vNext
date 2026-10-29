@@ -1429,6 +1429,36 @@ permission, no module id, no route path and no index.
       read before each of the two refusals, instead of a rule in every consumer (Treasury, Tasks, Timesheet, WorkCenter,
       Web).
     - **Gate:** the DL-2 WP prompt is not written before O-S17-3 is decided; DL-1 does not depend on it.
+18. **AC-W9 restated — replaces the AC-W9 text of §17.4 (Codex review 3 F-1, `2026-10-30-d8a191fe`; owner decision
+    S17-5; read, not run, @4c08fc75a).** Code: §17.4's case "closed by the abandoned-start recovery *after* it was whole"
+    cannot be reached. The recovery refuses a generic instance that is not `Active`, moved too recently or has any task
+    listed, with 409 `WORKFLOW_START_NOT_ABANDONED`
+    (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/CloseAbandonedWorkflowStartHandler.cs:80-91@4c08fc75a`);
+    its trusted branch refuses an instance that is not `Pending` or whose checkpoint is `Completed` (`:172-177`). The
+    reachable terminal state `TimedOut` (`WorkflowModels.cs:134, 142@4c08fc75a`) was missing: the SLA sweep sets it
+    when the step's rule has a due timeout
+    (`.../Handlers/CommandHandlers/RunWorkflowEscalationsHandler.cs:241-243, 286-293@4c08fc75a`; its clock is the injected
+    `TimeProvider`, `:47, 100`). A whole start's replay answers 200 whatever the instance has become
+    (`StartWorkflowInstanceHandler.cs:81-84, 385-391@4c08fc75a`; the answer carries `instance.Status`, `:785`).
+    **AC-W9 — replay after a whole start, instance since closed:**
+    - Fixture: a generic `POST instances` start with key K that is whole (task, snapshot and start log written), brought
+      in turn to each reachable terminal state: **Approved** (its candidate approves), **Rejected**, **Cancelled** by the
+      user (the public task cancel) and **TimedOut** (the SLA sweep). Replay K with the same facts and the same
+      authenticated starter → **200**, the same instance id, its current status; no second instance, no second task and
+      no new transition-log row (counts read before and after the replay); no business refusal.
+    - How `TimedOut` is forced — the existing Mongo pattern "timed-out"
+      (`services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.TerminalEvidence.cs:785-790, 822-825@4c08fc75a`):
+      the start task is already overdue, an SLA rule on its step has `TimeoutAfterMinutes`, then one
+      `RunWorkflowEscalationsHandler` run. That helper starts through the trusted coordinator; the WP applies the same
+      three steps to the generic start (a past `DueAt` in the start request, `StartWorkflowInstanceHandler.cs:192`, or the
+      task's `DueAt` moved through the task repository as `MoveDueAsync` does, `TerminalEvidence.cs:747-754`) and asserts
+      the instance is `TimedOut` before the replay (non-vacuity).
+    - Separately: **the recovery refuses a whole start** — `CloseAbandonedWorkflowStart` on a whole, aged generic start →
+      409 `WORKFLOW_START_NOT_ABANDONED`, the instance stays `Active`. Evidence: the existing test
+      `WorkflowStartRecoveryMongoTests.cs:267-288@4c08fc75a` (whole start aged, the sweep leaves it `Active`, the direct
+      close answers that 409, `:279, 283-287`), reused as it is.
+    - The never-whole start closed by the recovery stays in AC-W12 (unchanged).
+    - Sabotage: answering a non-`Active` instance (any of the four states) with 409 turns it red.
 
 **Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (formal review; UYGUN DEĞİL; MOD-0023 owner
 `duzelt`, CT · İş akışı chat, 2026-10-29).** Review 3e802d2f F-1 → item 15 (AC-W16 restated); review 3e802d2f F-2 →
@@ -1452,6 +1482,11 @@ per path, legacy-row AC per path, collision sabotage by direction with a handler
 F-2 → item 11 (counts = N exactly, release by arrival, hold timeout, early-returning caller named) and the DL-2 finish
 list; F-3 → item 10 (commit point per path for the first write after a zero-row 503); F-4 → item 11 heading, this
 paragraph, the interim check 08 paragraph.
+**Codex review 3 (2026-10-30-d8a191fe)** — `docs/records/reviews/MOD-0023/2026-10-30-d8a191fe.md` (formal review;
+KOŞULLU; MOD-0023 owner «Düzelt», CT · İş akışı chat, 2026-10-30, recorded as S17-5 in
+`docs/records/decisions/2026-10/mod0023-s17-owner-decisions-03.md`): F-1 → item 18 (AC-W9 restated: the four reachable
+terminal states incl. `TimedOut`; the recovery's refusal of a whole start asserted separately), the closure and the DL-2
+finish list.
 
 Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
 "interim check 05 F-n" / "interim check 06 F-n" / "interim check 07 F-n" / "interim check 08 F-n" / "interim check 09 F-n"
@@ -1510,7 +1545,7 @@ options —, AC-W14 by items 7 and 17 — its distinct different-body code appli
 is part of the compared body (öneri, item 7), and so is RequestInfo `TargetPrincipalId` as its own log field — on a legacy
 row (field `null`) the target is compared only through `Comment`, on each of the three paths (öneri, item 7) —, AC-W5
 by item 11 (counts = N exactly, release by arrival),
-AC-W8 by item 9; AC-W11's transition sentence by item 7; Delegate's same-key replay unchanged and outside AC-W14/AC-W17,
+AC-W8 by item 9; AC-W9 by item 18; AC-W11's transition sentence by item 7; Delegate's same-key replay unchanged and outside AC-W14/AC-W17,
 öneri, item 7). Items that depend on O-S17-3 (the same list as items 9
 and 17 and the DL-2 finish list): AC-W6 and AC-W7 case (b) for Approve/Reject; AC-W14 case (b) for Approve/Reject
 (different actor; same actor, different body); the §17.7/6 consumer rule; under (ii) only, the AC-W17 consumer and
@@ -1532,10 +1567,10 @@ durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
 (AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
 artık kapı değil).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; O-S17-3 kararına bağlı
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W9, W14, W17, W18 §17.9'daki haliyle; O-S17-3 kararına bağlı
 olanlar — §17.9/9, §17.9/17 ve kapanıştaki listeyle aynı: AC-W6 ve AC-W7'nin Approve/Reject (b) vakası; AC-W14'ün
 Approve/Reject (b) vakası (farklı aktör; aynı aktör, farklı gövde); §17.7/6 tüketici kuralı; yalnız (ii)'de AC-W17
-tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (yeni ayrı log alanı `WorkflowTransitionLog.TargetPrincipalId`, `Comment` biçimi değişmez; eski satırda (alan `null`) hedef ayrıca karşılaştırılmaz, yalnız `Comment` üzerinden karşılaştırılır — üç yolun her birinde, öneri; hedef karşılaştırması ve eski satır kabulü sıralı, yinelenen anahtar ve kullanılamaz yeniden okuma (`SamePayload`) yollarında ayrı ayrı test edilir; `null` yazma sabotajında ikiz satır işleyicinin yazdığı satırdan alınır) girer, §17.9/7, §17.9/14; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar ve aynı anahtarla sonraki deneme ilk yazmadır (`isIdempotent = false`; son adım, ara adım ve RequestInfo için ayrı ayrı), §17.9/9–10; AC-W5 zorlanan yarışta en az iki çağıranın anahtar okumasını kaçırıp rezervasyon yarışına girdiğini ölçer — tek zorlama biçimi: bekletme anahtar okumasından sonra, `ReserveTrustedStartAsync` sarmalayıcısında; `null` okuyan ve bekletmeye giren çağıran sayısı tam N, bırakma zaman aşımıyla değil varışla; bekletmenin zaman aşımı var, erken dönen çağıran adıyla testi düşürür —, mevcut test yalnız destekleyici kanıttır, §17.9/11; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
+tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (yeni ayrı log alanı `WorkflowTransitionLog.TargetPrincipalId`, `Comment` biçimi değişmez; eski satırda (alan `null`) hedef ayrıca karşılaştırılmaz, yalnız `Comment` üzerinden karşılaştırılır — üç yolun her birinde, öneri; hedef karşılaştırması ve eski satır kabulü sıralı, yinelenen anahtar ve kullanılamaz yeniden okuma (`SamePayload`) yollarında ayrı ayrı test edilir; `null` yazma sabotajında ikiz satır işleyicinin yazdığı satırdan alınır) girer, §17.9/7, §17.9/14; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar ve aynı anahtarla sonraki deneme ilk yazmadır (`isIdempotent = false`; son adım, ara adım ve RequestInfo için ayrı ayrı), §17.9/9–10; AC-W5 zorlanan yarışta en az iki çağıranın anahtar okumasını kaçırıp rezervasyon yarışına girdiğini ölçer — tek zorlama biçimi: bekletme anahtar okumasından sonra, `ReserveTrustedStartAsync` sarmalayıcısında; `null` okuyan ve bekletmeye giren çağıran sayısı tam N, bırakma zaman aşımıyla değil varışla; bekletmenin zaman aşımı var, erken dönen çağıran adıyla testi düşürür —, mevcut test yalnız destekleyici kanıttır, §17.9/11; AC-W9 bütün başlangıçtan sonra dört ulaşılabilir terminal durumda (Approved, Rejected, kullanıcı Cancelled, TimedOut — SLA taramasıyla zorlanır) aynı anahtar tekrarına 200, aynı örnek, ikinci örnek/görev/log yok; kurtarmanın bütün başlangıcı 409 `WORKFLOW_START_NOT_ABANDONED` ile reddi ayrıca doğrulanır (mevcut test kanıt); hiç bütünleşmemiş başlangıç AC-W12'de, §17.9/18; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
 kapsamı, AC-W7 onu doğrular, §17.9/17; AC-W14'ün ayrı farklı-gövde 409 kodu yalnız sıralı yolda, eşzamanlı yolda
 `WORKFLOW_TRANSITION_CONFLICT`, §17.9/7; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
