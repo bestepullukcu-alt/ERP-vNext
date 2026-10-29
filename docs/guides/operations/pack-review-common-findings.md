@@ -11,6 +11,8 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   söylemeli. (MOD-0230 2026-10-21-f1b56737)
 - Ortam iddiaları (yerel / dev / CI, Gateway, UI çalışıyor) paketin farklı bölümlerinde farklı. (MOD-0230 2026-10-21-f1b56737)
 - Alan ya da yüzey sayısı başlıktaki hesapla tutmuyor. (MOD-0230 2026-10-22-23c49893)
+- Geçici bir durum için yazılan kabul ölçütü (ör. "kaynak yokken yalnız X") koşulsuz yazılmış ve kaynak gelince geçerli
+  olacak kuralla çelişiyor. Geçici ölçüt, kural tablosundaki o duruma ("yok" satırı) bağlanır. (MOD-0230 2026-10-29-2d3f1177 F-2)
 
 ## 2. Kodla tutmayan iddia
 
@@ -23,6 +25,9 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 - "Kayıt tamamlanınca", "gerektiğinde" gibi tetikleyiciler; ne zaman ve hangi olayla olduğu yazmalı. (MOD-0230 2026-10-22-31f02845)
 - Özel ve sınır değerlerin kuralı yok ya da iki anlamlı: "bilinmiyor" değeri, liste geldikten sonraki doğrulama,
   sayfa boyutu üst sınırı ve sayfa eşlemesi. (MOD-0230 2026-10-22-23c49893 F-2/F-3, 2026-10-27-a51f2349)
+- Bir yasak ("kopya yok", "sabit değer yok") değerleri bütün dosyalarda arıyor; aynı değerleri meşru olarak kullanan
+  başka bir alan ya da eşleme kırmızı olur. Yasak, uygulandığı girdi kaynağına bağlanır ve meşru kullanımlar adıyla dışarıda
+  bırakılır. (MOD-0230 2026-10-29-2d3f1177 F-1)
 - Birlikte çalışması gereken iki davranış (ör. bağı kaldırma + otomatik eşleştirme) için ortak kabul ölçütü yok.
   (MOD-0230 2026-10-22-94cbb2d5)
 - Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
