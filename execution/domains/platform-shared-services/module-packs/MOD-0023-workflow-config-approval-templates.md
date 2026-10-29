@@ -979,9 +979,16 @@ permission, no module id, no route path and no index.
      real Mongo, same actor and key — first (target `P`, comment `not`), then (no target, comment `not target:P`) → the
      sequential different-body 409, one row holding target `P`; and the reverse order → the same 409; an identical
      retry → 200 `isIdempotent = true`; the same pair through the duplicate-key mapping (case (b), item 10) → the same
-     answers; a crafted legacy row (field unset) with an identical composed retry → 200. Sabotage: dropping
-     `TargetPrincipalId` from the comparison, or writing `null` instead of `""` for a request without a target, turns
-     the collision test red.
+     answers; a crafted legacy row (field unset) with an identical composed retry → 200. **Unavailable re-read path
+     (interim check 09 F-B):** a forced "transaction unavailable" with a colliding twin committed meanwhile — same actor
+     and key, twin (target `P`, comment `not`) vs the call (no target, comment `not target:P`), and the reverse — is
+     answered **not** 200 Replayed by `SamePayload` in `AfterUnavailableAsync`
+     (`WorkflowTerminalTransitionWriter.cs:399-438`): 409 `WORKFLOW_TRANSITION_CONFLICT` if the version moved, 503
+     `WORKFLOW_TRANSACTION_UNAVAILABLE` if nothing moved (per the path, item 7 (c)); pattern
+     `WorkflowCandidateDecisionMongoTests.D2Fix1.cs:509-543@4c08fc75a` (crafted twin inside `ReportsUnavailableAfter`).
+     Sabotage: dropping `TargetPrincipalId` from the comparison, or writing `null` instead of `""` for a request without
+     a target, turns the collision tests red — the sequential one, the duplicate-key one and the unavailable re-read
+     one.
    - **`SignatureId` (interim check 07 F-3):** the Approve request carries it (`WorkflowModels.cs:467-475`), the decision
      log stores it for Approve only (`WorkflowTaskTransitionSupport.cs:270, 288`; Reject and RequestInfo store none), but
      `SamePayload` does not compare it (`WorkflowTerminalTransitionWriter.cs:433-438`) and today's actor-bound replay
@@ -1203,7 +1210,9 @@ permission, no module id, no route path and no index.
     without it; the request records take it as the optional trailing `ExpectedVersion`,
     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs:473, 483, 512@4c08fc75a`):
     the WP adds an `expectedVersion` parameter to `ApproveAsync`, `RejectAsync` and `RequestInfoAsync`
-    (`WorkflowCandidateDecisionMongoTests.cs:518-542`) for the stale-version cases.
+    (`WorkflowCandidateDecisionMongoTests.cs:518-542`) for the stale-version cases. `RequestInfoAsync` (`:537-542`) also
+    gains `target` and `comment` parameters — today it sends target `null` and comment `"please add"` fixed — for the
+    `TargetPrincipalId` collision tests of item 7 (interim check 09 F-B).
 
     **Replay after each case (review 5512cbca F-2; read, not run, @4c08fc75a):** a replay of the same key is case (a)
     only after a branch that recorded a row under (task, action, key) — (a), (b), the barrier race and the injected
@@ -1232,12 +1241,17 @@ permission, no module id, no route path and no index.
     (`StartWorkflowInstanceHandler.cs:82-85`). Its non-vacuity assertion (`:1835`) proves only that all callers reached
     the barrier, so the test does not exclude a sequential execution: it is **supporting evidence only**. AC-W5 needs
     **both**: (1) a forced-overlap test on a real Mongo replica set that **measures** that at least two callers missed the
-    key read and entered the reservation race — the wrapper counts the callers whose inner `GetByIdempotencyKeyAsync`
-    returned `null` and the callers that reached `ReserveTrustedStartAsync` (`StartWorkflowInstanceHandler.cs:291`), and
-    the test asserts both counts ≥ 2 and at least one reservation with `Created == false` (`:292-295`), next to the
-    existing assertions; a barrier placed after the key read (before the reservation) is an accepted alternative, with
-    the same counts asserted; sabotage: moving the hold back before the key read (or serialising the calls) turns the
-    count assertion red; **and** (2) N ≥ 2 independent concurrent `POST instances` requests without a barrier, repeated
+    key read and entered the reservation race. **The only forcing form (interim check 09 F-A):** the hold sits **after**
+    the idempotency-key read, in a wrapper of `IWorkflowInstanceRepository.ReserveTrustedStartAsync`
+    (`StartWorkflowInstanceHandler.cs:291`); it is released when all callers have read the key and got `null`, so every
+    caller then reserves and the unique index makes the losers' reservations return `Created == false`
+    (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs:262-279@4c08fc75a`).
+    In that form the wrapper counts the callers whose inner `GetByIdempotencyKeyAsync` returned `null` and the callers
+    that reached `ReserveTrustedStartAsync`, and the test asserts both counts ≥ 2 and at least one reservation with
+    `Created == false` (`:292-295`), next to the existing assertions. `AllReservedBarrier` (hold before the key read,
+    `WorkflowStartRecoveryMongoTests.cs:1790-1803`) stays supporting evidence only. Sabotage: moving the hold back
+    before the key read, or removing it, lets callers find the winner's instance on the key read, so the counts fail;
+    **and** (2) N ≥ 2 independent concurrent `POST instances` requests without a barrier, repeated
     (count stated in the WP), with the same end-state assertions. Neither replaces the other.
 12. **Trusted coordinators out of DL-2 scope, unchanged (INSPECTION.md DL-2/5):**
     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/WorkflowInstanceStartCoordinator.cs`
@@ -1392,9 +1406,13 @@ the same §17 headings.
 UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş akışı chat, 2026-10-30): review 5512cbca F-1 → item 7 (`TargetPrincipalId`
 field, legacy rule öneri, AC and test), items 4, 14 and 17, the closure and the DL-2 finish list; F-2 → items 7 (c),
 10 (replay after each case) and 17 (i), the DL-2 finish list; F-3 → item 11 and the DL-2 finish list.
+**Interim check 09** (sub-agent, not a formal review; two low findings, accepted by the CT; owner `duzelt`, 2026-10-30):
+F-A → item 11 (hold after the key read, in a `ReserveTrustedStartAsync` wrapper, is the only forcing form) and the DL-2
+finish list; F-B → item 7 (`TargetPrincipalId` on the unavailable re-read path), item 10 (test helpers) and the DL-2
+finish list.
 
 Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
-"interim check 05 F-n" / "interim check 06 F-n" / "interim check 07 F-n" / "interim check 08 F-n" in the items; they are not the
+"interim check 05 F-n" / "interim check 06 F-n" / "interim check 07 F-n" / "interim check 08 F-n" / "interim check 09 F-A, F-B" in the items; they are not the
 formal review's F-n above.
 
 **Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
@@ -1473,7 +1491,7 @@ artık kapı değil).
 **DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; O-S17-3 kararına bağlı
 olanlar — §17.9/9, §17.9/17 ve kapanıştaki listeyle aynı: AC-W6 ve AC-W7'nin Approve/Reject (b) vakası; AC-W14'ün
 Approve/Reject (b) vakası (farklı aktör; aynı aktör, farklı gövde); §17.7/6 tüketici kuralı; yalnız (ii)'de AC-W17
-tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (yeni ayrı log alanı `WorkflowTransitionLog.TargetPrincipalId`, `Comment` biçimi değişmez; eski satırlar `Comment` ile karşılaştırılır, öneri) girer, §17.9/7, §17.9/14; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar ve aynı anahtarla sonraki deneme ilk yazmadır (`isIdempotent = false`), §17.9/9–10; AC-W5 zorlanan yarışta en az iki çağıranın anahtar okumasını kaçırıp rezervasyon yarışına girdiğini ölçer, mevcut test yalnız destekleyici kanıttır, §17.9/11; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
+tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (yeni ayrı log alanı `WorkflowTransitionLog.TargetPrincipalId`, `Comment` biçimi değişmez; eski satırlar `Comment` ile karşılaştırılır, öneri; hedef karşılaştırması sıralı, yinelenen anahtar ve kullanılamaz yeniden okuma (`SamePayload`) yollarında test edilir) girer, §17.9/7, §17.9/14; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar ve aynı anahtarla sonraki deneme ilk yazmadır (`isIdempotent = false`), §17.9/9–10; AC-W5 zorlanan yarışta en az iki çağıranın anahtar okumasını kaçırıp rezervasyon yarışına girdiğini ölçer — tek zorlama biçimi: bekletme anahtar okumasından sonra, `ReserveTrustedStartAsync` sarmalayıcısında —, mevcut test yalnız destekleyici kanıttır, §17.9/11; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
 kapsamı, AC-W7 onu doğrular, §17.9/17; AC-W14'ün ayrı farklı-gövde 409 kodu yalnız sıralı yolda, eşzamanlı yolda
 `WORKFLOW_TRANSITION_CONFLICT`, §17.9/7; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
