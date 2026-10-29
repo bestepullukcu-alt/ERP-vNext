@@ -11,14 +11,15 @@
 #      list endpoint's for the same request (the Gateway refuses these itself, so they are measured on the service)
 #   5. Gateway PUT .../options with a valid token and body -> 404 (reserved segment)
 # then stops ONLY the two processes it started (by PID) and checks that both ports are free again.
-# Exit 0 = every check passed; 1 = a check failed; 3 = setup failed (port busy, build failed).
+# Exit 0 = every check passed; 1 = a check failed; 3 = setup failed (port busy, build failed, a started process
+# never listened on its port - interim review 03 F-3, so a broken setup is never read as the red baseline).
 # Red baseline (before WP-0230-DL4D): check 2 fails - GET options is read as an intake draft id, goes to
 # GetDraftByIdAsync and answers 409 (Blocked or PVG_INTAKE_DRAFT_NOT_FOUND; ToHttpResult maps everything but
 # Succeeded / Invalid to 409), not 200; the Gateway route only maps path and method and passes the status through.
 # Check 5 also fails (options is not yet a reserved segment). So the script exits 1.
 # Hardening (interim review 02 F-5): build exit codes are checked, every curl has --max-time, the bearer token is
 # passed to curl from a header file (-H @file), never as an argument, and the secret / token files are removed on
-# every exit by the EXIT trap.
+# every exit by the EXIT trap, which removes the whole mktemp directory (interim review 03 F-3).
 set -u
 
 PVG_PORT=5011
@@ -46,7 +47,7 @@ stop_own() {
 }
 cleanup() {
   stop_own
-  rm -f "$T/secret" "$T/token_a" "$T/auth_a"
+  if [ -n "$T" ] && [ -d "$T" ]; then rm -rf -- "$T"; fi
 }
 trap cleanup EXIT
 
@@ -124,8 +125,8 @@ wait_port() {
   done
   echo "FAIL: port $1 not listening after 60s"; return 1
 }
-wait_port $PVG_PORT || fail=1
-wait_port $GW_PORT || fail=1
+wait_port $PVG_PORT || exit 3
+wait_port $GW_PORT || exit 3
 
 GW="http://localhost:$GW_PORT/api/pv-case-intake-triage"
 SVC="http://127.0.0.1:$PVG_PORT/api/v1/pv-case-intake-triage"
