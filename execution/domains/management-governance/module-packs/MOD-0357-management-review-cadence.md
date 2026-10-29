@@ -1148,6 +1148,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | R1 fix round 3 (review 03) | 2026-10-29 | Fixes all seven findings of independent review 03 (`docs/records/reviews/MOD-0357/2026-10-29-289f88b3.md`, KOŞULLU, 0 ENGEL). The CT accepted every finding. See the "Review 03 disposition" table below. S28-11 gains the unchained fallback (a series whose organizer cannot view the chain source keeps generating). S28-10 gains the general up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, which replaces S26-10's own code) and the follow-up completion exception. S28-1, S28-2, S28-6, S28-8, the S28 tests and the estimate are tightened. S23-8 gains an HTTP test and its own adoption code. R1-D15, §24.5, §24.7, §24.27, S26-10, §25 and §26 DL-28 follow. One wording change outside §24 to §26: the §16 K11 box (F-19). New open question Q25. The owner-answers block in §24.25 is unchanged. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "Evet, düzelt" ("duzelt-3", owner GMG-ERP, K3, 2026-10-29), sent through CT · Toplantılar: fix all seven findings; draft only, this pack file only. |
 | R1 fix round 4 (review 04 + Q25) | 2026-10-29 | Fixes all four findings of independent review 04 (`docs/records/reviews/MOD-0357/2026-10-29-6207d58c.md`, KOŞULLU, 0 ENGEL, four DÜŞÜK) and writes in the owner's answer to Q25 ("devam-katilimci", 2026-10-29, work list §6 item 6b). The CT accepted every finding, and also the eight corrections of the CT's interim check of the first draft of this round. See the "Review 04 disposition" table below. S28-10 gains the binding Q25 rule (a follow-up scheduler who is a party of the source but not the new organizer is added as an `Accepted` attendee, through a command-only `PreAcceptedUserId` parameter on `CreateMeetingCommand`) and the completion's lifecycle rule (scheduled meetings only). The creator rule is marked defensive (direct API callers only), and S26-10's form hint is dropped. S28 names the sweep unit test that changes, with two new unit rows. S21-6 lists the four sweep outcomes of §25, and S21 now depends on S28. R1-D12 states the deferral that keeps S28's write changes off path `a` until S21 and S25, and S25-7 tests the deferred field. S28-11 narrows "no case stops a series" to visibility and names the recovery. §24.5, §24.7, §24.10 (S15-10), §24.27, §24.28 (S25-7), §24.29 (S26-10), §24.31 and §25 follow. One wording change outside §24 to §26: the §16 K11 box (F-25). In §24.25 only Q25 changes (the question is marked answered, and the owner-answers block gains a Q25 row). | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "duzelt-4" (owner, 2026-10-29), sent through CT · Toplantılar: fix all four findings; draft only, this pack file only. Q25: "devam-katilimci" (owner, 2026-10-29). |
 | R1 fix round 5 (reviews 05 + 06) | 2026-10-29 | Fixes the four findings of independent review 05 (`docs/records/reviews/MOD-0357/2026-10-29-5383fd43.md`, KOŞULLU, 0 ENGEL, four DÜŞÜK: F-29 to F-32) and the five findings of independent review 06 (`docs/records/reviews/MOD-0357/2026-10-29-5383fd43-codex.md`, Codex, KOŞULLU, 0 ENGEL, five ORTA: F-33 to F-37), and writes in the owner's two decisions for F-34 and F-37. The CT accepted every finding. See the "Review 05 disposition" and "Review 06 disposition" tables below. S23's adoption index becomes a **partial** unique index on a real id (F-33). R1-D5 gains the type stamp: a type made confidential stamps its existing meetings, in one Platform transaction (S15-11, F-34). The follow-up's own idempotency link checks the target (S28-10, F-35). S27 keeps one required organizer row through a reassignment, and `ReassignMeetingOrganizerCommand` moves to path `a` in S27 (S27-8, F-36). A confidential meeting is an HR-confidential record, and its single opens write a central read-audit record, fail-closed (S15-12, §25 read rows, F-37). The follow-up path applies the creator rule to a non-party scheduler (F-29). S25 builds a post-handler audit carrier and measures it (F-30). S28-10 gains the `PreAcceptedUserId` body and reflection tests and a written scan rule (F-31), and S28-8 gains the missing rows (F-32). §24.3 (R1-D5, R1-D12, R1-D14, R1-D15), §24.4, §24.5, §24.7 (estimates and total), §24.10, §24.16 (S21-6), §24.18, §24.27, §24.28, §24.30, §24.31, §25 and §26 follow. In §24.25, the owner-answers block gains two owner-decision rows (F-34, F-37), and new open question Q26 (shared read-audit writer, XMC-001) is added. Nothing outside §24 to §26 changes. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "Evet, düzelt" ("duzelt-5", owner, 2026-10-29), sent through CT · Toplantılar, accepting this button text verbatim: "duzelt-5: F-29…F-37 tek turda düzeltilsin; F-34 için tür gizli yapılınca eski toplantılar kalıcı gizli işaretlensin, F-37 için gizli toplantı İK-gizli sayılsın ve tekil açılışı denetlensin." Two owner decisions: (1) F-34, a type made confidential marks its existing meetings confidential for good; (2) F-37, a confidential meeting counts as HR-confidential and its single open is audited. Draft only, this pack file only. |
+| R1 fix round 6 (pre-review 1) | 2026-10-29 | Handles the eight findings of pre-review 1 (S-93), F-38 to F-45: six (F-38, F-39, F-40, F-42, F-43 and F-45) are written in, F-41 becomes the open question **Q27** (not decided here), and F-44 is disputed by the CT and not applied. A pre-review is not a formal review and has no `reviews.tsv` row. See the "Pre-review 1 disposition" table below. A write response of a confidential meeting never returns stored content the request did not carry, and the report masks the decision text of confidential meetings (S15-12, F-38). The importer calls the type stamp in its own transaction (S24-6, S24-9, F-39). Rows that touch a confidential meeting carry field names only, and a content value is never written when the carrier is red (S15-7, S25-7, §25, F-40). The stamp also runs when a type stops being confidential, which closes the race with a concurrent create or type change (S15-11, R1-D5, F-43). A create event's `EntityId` comes from an id generated on the command, and S25-7 measures it (F-42). The follow-up dialog does not offer confidential subtypes to a scheduler who is not a party of the source (S15-10, S28-10, F-45). §24.3 (R1-D5, R1-D12), §24.4, §24.5 (creator row), §24.7 (S15 estimate, Q27 dependency, total), §24.10, §24.13 (S18 audit), §24.19, §24.25 (Q27), §24.27, §24.28, §24.30 (S27-7), §24.31 (S28-10, failure paths), §25 and §26 (DL-15, DL-24) follow. Nothing outside §24 to §26 changes. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "Önce düzelt (Önerilen)" (owner, 2026-10-29), sent through CT · Toplantılar, with this button text: "Yazar alt ajanı F-38…F-45'i pakete yazar (F-44 hariç; F-41 için size soru getirir), commit edilir, ipucusuz ön inceleme 2 yapılır." Draft only, this pack file only. |
 
 **Review 01 disposition** (findings at SHA `bd7b82ce…`; all accepted by the CT, none disputed):
 
@@ -1216,6 +1217,20 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | F-35 | ORTA | **S28-10.** The follow-up's own idempotency link (`MeetingFollowUpCommandHandlers.cs:68-77`) loads its **target** through `MeetingWriteAccess` before it reads the target's agenda. A caller who cannot view the target gets the fixed 409 `MEETING_CREATE_CONFLICT` body, the answer the follow-up path already gives when its create replay lands on a meeting the caller cannot view, so the caller cannot tell which replay path answered. HTTP test (source still visible, target access removed) and a sabotage. | §24.3 R1-D15; §24.5; §24.31 (S28-1, S28-10, S28-8, failure paths, tests) |
 | F-36 | ORTA | **S27-8.** `ReassignMeetingOrganizerHandler` makes sure the new organizer has exactly one attendee row, required and `Accepted`, creating it when they were not an attendee, in one Platform transaction with the organizer change. The previous organizer's row stays an ordinary required attendee row. `ReassignMeetingOrganizerCommand` therefore moves to path `a` in S27 (R1-D12), and its ledger line L128 is removed there. Tests for an optional attendee, a non-attendee and the attendance-mandatory publish, with a sabotage. | §24.3 R1-D14; §24.30 (files, S27-7, S27-8, failure paths, tests, estimate); §24.7; §25; §26 DL-27 |
 | F-37 | ORTA | **Owner decision (duzelt-5): a confidential meeting counts as an HR-confidential record** (AUD-001 §7, third class). Every single open of its content (`GET /{id}`, `GET /{id}/minutes`, `GET /{id}/tasks`; there is no single-meeting export or print in the code) writes a central read-audit record before the content is returned, and refuses with 503 `MEETING_CONFIDENTIAL_READ_NOT_RECORDED` when it cannot (fail-closed, the `IDataExportAuditWriter` posture). The shared writer is another owner's area, so its shape is recommended in new question **Q26** (XMC-001), with a module-local fallback. Read rows in §25, a real audit-record test and a sabotage. | §24.10 (files, S15-12, failure paths, tests, L10n, depends, estimate); §24.25 (Q26, owner-decision row); §24.7; §25; §26 DL-15 |
+
+**Pre-review 1 disposition** (pre-review 1 (S-93) F-38 to F-45, at SHA `f561c04e…`; not a formal review and not in
+`reviews.tsv`; owner "Önce düzelt (Önerilen)"; every claim was checked against the code before it was written in):
+
+| Finding | Severity | What changed | Where |
+|---|---|---|---|
+| F-38 | ORTA | **Accepted, all three paths measured.** (a) `PublishMinutesRequest` carries only `ExpectedVersion` (`MeetingModels.cs:409`), and `PublishMinutesHandler` returns the stored draft (`MinutesCommandHandlers.cs:245-307`). (b) The report screen puts the decision text `d.Text` of published minutes into its rows (`MeetingReportQueryHandlers.cs:93-97`). (c) The create replay returns the existing meeting's description and location (`MeetingCommandHandlers.cs:151-152, 194-203`). **Chosen: exclusion by withholding, not a read record.** On a confidential meeting, the three minutes write responses and the create replay carry `ContentWithheld = true` and no stored content the request did not carry, and the report and export show the placeholder `MEETING_CONFIDENTIAL_CONTENT` in place of the decision text. Why: the screens do not use these bodies (the minutes editor reloads after save, publish and correct, `minutes-editor.js:294-300, 307-313, 339-346`; the create form reads only `data.id`, `form.js:194`), so the content is opened only through the audited `GET` calls; a fail-closed record on a write response would answer 503 after the write committed; and a record per confidential meeting on every report load would fail the whole report when one record fails. The "Not covered" reasoning of S15-12 is corrected. Each path has a test on the real outbox (no read record from that call, no content in the body) and a sabotage. **Needs owner approval with this revision.** | §24.10 (files, S15-12, tests, L10n) |
+| F-39 | ORTA | **Accepted.** S24-6 lets a file change an existing subtype's `isConfidential`, and the stamp was bound only to `UpdateMeetingTypeHandler` (`MeetingTypeCommandHandlers.cs:57-93`). **Chosen: the importer calls the same stamp in its S24-9 transaction**, for every subtype whose flag changes (in either direction, F-43), not a refusal: the catalogue is the bulk path for the HR one-to-one flag. One shared stamp method serves both handlers. Test: three imports false → true → false, and a sabotage. The §25 import row carries the stamp count. | §24.3 R1-D5; §24.4; §24.10 (S15-11); §24.19 (files, S24-6, S24-9, tests); §25 |
+| F-40 | ORTA | **Accepted.** On every §25 row that touches a meeting whose effective flag is true, changed content fields are written **by name only**; no value of `Title`, `Description`, `Location` or agenda `Text` is written, before or after. A content value reaches a record only through the carrier, filled by a handler that read the effective flag as false; a command never puts one in its own metadata. So when the S25-7 carrier measurement is red, no content value is written for any meeting. Real-record tests and sabotages in S15 (meeting rows), S18 and S27 (agenda rows). | §24.10 (S15-7, tests); §24.28 (S25-7); §25 (header, rows 3807-3815 at `f561c04e`) |
+| F-41 | ORTA | **Not decided here (CT instruction).** New open question **Q27**: the K2 class of writes on a confidential meeting, with three options and a recommendation. S15 does not start until Q27 is answered. The §25 K2 note no longer asserts an answer. | §24.25 (Q27); §24.7; §24.10 (depends); §25 (notes) |
+| F-42 | DÜŞÜK | **Accepted.** `AuditRequestMetadata.EntityId` is a `Guid?` fixed when the plan is built (`AuditRequestMetadata.cs:9`; `AuditBehavior.cs:47, 143, 168-187`), so the carrier cannot fill it. A command that creates a record carries a server-only id generated when the command is built (`NewMeetingId` on `CreateMeetingCommand` and `ScheduleFollowUpMeetingCommand`, which passes its own to the create), and the handler writes the new row with it. The sweep is one command over up to 200 series (`GenerateDueMeetingSeriesHandler.cs:30, 48, 59`), so its record is a batch record with `EntityId` null, as Platform's bulk commands write today; each occurrence has its own create record. S25-7 measures `EntityId` too. | §24.28 (S25-7, tests); §24.31 (S28-10 reflection test); §25 (header, rows) |
+| F-43 | DÜŞÜK | **Accepted, with a different fix than the two named.** A re-read of the type before the insert leaves a window, and under MongoDB snapshot isolation the stamp's `UpdateMany` does not see an insert that commits after its transaction started, so no create-side check alone closes it. **Chosen: the closing stamp.** The same `UpdateMany` also runs when a type's flag goes true → false, before the flag is lowered, in the same transaction. While the type is confidential, a meeting written `false` by the race is still hidden by the effective flag (R1-D5), and the lowering write is the only way the type can stop protecting it. This also covers `UpdateMeeting` moving a meeting into a type that was just made confidential. Race test with a forced interleaving and a sabotage. | §24.3 R1-D5; §24.4; §24.10 (S15-11, tests); §25 |
+| F-44 | DÜŞÜK | **Disputed by the CT, not applied:** the test exists at `services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/CentralAuditDispatcherTests.cs:155` (`The_platform_enum_mirror_matches_AuditEnums_cs`); the pre-reviewer's ZIP lacked the test file. The author checked the line at `a846b746a`: the method is at line 155, with `[Fact]` at line 154. | — |
+| F-45 | DÜŞÜK | **Accepted.** From S15, a `read-all` scheduler who is not a party of the source can reach 400 `MEETING_CREATOR_CANNOT_VIEW` from the follow-up dialog, which lists every type (`follow-up-dialog.js:55-59`) and has no attendee field (`:91-93`). **Chosen:** the detail response gains a server-computed `CallerIsParty`, and the dialog does not offer confidential subtypes when it is false; the code's message no longer says only "add yourself as an attendee". The S28-10 sentence "No screen can trigger it today" is corrected. JS test and a sabotage. | §24.10 (files, S15-10, tests, L10n); §24.31 (S28-10) |
 
 ### 24.1 Sources of the decisions (read; cited as path@commit)
 
@@ -1295,14 +1310,14 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | R1-D2 | **Migration and backfill: none.** `MeetingType.MeetingCategoryId` is stored as nullable. Existing rows keep `null` and are **never rewritten or deleted at deploy**. Wherever a row with `null` is listed (type screen, type picker, report filter), it appears under an **"Unassigned"** group (localized, sorted last). From R1 on, every create and every update of a subtype **requires** a main type. An admin assigns one to a legacy row by editing it, or in bulk through the importer (S24-5). Existing meetings of an unassigned subtype keep working unchanged. | Two alternatives were rejected. (a) A seeded "General" main type with a backfill invents tenant data and writes to every existing row, and a wrong group would then look intentional. (b) Refusing to create meetings with unassigned subtypes would break the module for every tenant on the day of deploy. "Unassigned" is honest, it is visible, and it disappears on its own once the catalogue is loaded. |
 | R1-D3 | **Subtype names stay tenant-unique.** The existing unique index `ux_meeting_types_tenant_name` `(TenantId, Name, IsDeleted)` (`PlatformSchemaManifest.Meetings.cs`) is **not changed**, so the same subtype name cannot exist under two main types. | No index migration is needed. Picker, report and export show the subtype name alone without ambiguity. The importer reports a name clash as a conflict and never moves a row (S24-5). |
 | R1-D4 | The catalogue **does not store start or end times**. It stores a default duration. End = Start + default duration. | §5.6 "Ekranda doldurma" and the work list "Toplantı türleri" block. |
-| R1-D5 | **Confidentiality ratchet.** A meeting copies `IsConfidential` from its subtype when it is created. The **effective** value is `Meeting.IsConfidential OR (current subtype).IsConfidential`. No R1 command ever lowers `Meeting.IsConfidential`: when the type changes on update, the new value is the old value OR the new type's flag. **Type stamp (owner decision "duzelt-5", review 06 F-34):** when `UpdateMeetingType` turns a type's `IsConfidential` from false to true, the same call sets `Meeting.IsConfidential = true` on every existing meeting of that type, in one Platform transaction with the type update (S15-11). | Switching a type to confidential protects that type's past meetings at once, through the effective value and, permanently, through the stamp. Switching it off later does not expose them, because their stored value is already true. Without the stamp, a meeting created under a non-confidential type would be hidden only while the type stays confidential (review 06 F-34). |
+| R1-D5 | **Confidentiality ratchet.** A meeting copies `IsConfidential` from its subtype when it is created. The **effective** value is `Meeting.IsConfidential OR (current subtype).IsConfidential`. No R1 command ever lowers `Meeting.IsConfidential`: when the type changes on update, the new value is the old value OR the new type's flag. **Type stamp (owner decision "duzelt-5", review 06 F-34):** when `UpdateMeetingType` turns a type's `IsConfidential` from false to true, the same call sets `Meeting.IsConfidential = true` on every existing meeting of that type, in one Platform transaction with the type update (S15-11). **Closing stamp (pre-review 1 F-43):** the same stamp also runs when the flag goes from true to false, before the flag is lowered, in the same transaction. **Importer (pre-review 1 F-39):** the catalogue importer calls the same stamp, in its own transaction, for every subtype whose flag it changes (S24-9). | Switching a type to confidential protects that type's past meetings at once, through the effective value and, permanently, through the stamp. Switching it off later does not expose them, because their stored value is already true. Without the stamp, a meeting created under a non-confidential type would be hidden only while the type stays confidential (review 06 F-34). A create or a type change that read the type just before it was made confidential can still write `false` after the stamp ran (F-43). The effective value hides such a meeting while the type stays confidential, and the closing stamp marks it before the type can stop hiding it. |
 | R1-D6 | **Agenda at create.** `CreateMeetingRequest.AgendaItems`: `null` means the server applies the subtype's agenda template; `[]` means no template lines; a list means exactly those lines. Mandatory lines (S18) are always added by the server. | The UI sends the edited list. Callers without a UI (series sweep, follow-up) send `null` and get the standard agenda (Q7). |
 | R1-D7 | **Repeat without a third creation path.** The meeting is created by `CreateMeetingCommand`. The same handler then sends the existing `CreateMeetingSeriesCommand` with `CreatedFromMeetingId`. The series **adopts** that meeting as occurrence 0, so the sweep never generates it again. | §19 S11: "No third creation path". The adopted meeting is a normal meeting, and later instances go through S7 or S11 exactly as today. |
 | R1-D8 | **Title placeholders.** The automatic ones are `{Period}`, `{Week}`, `{Month}`, `{Quarter}`, `{Year}` and `{Date}`. They are rendered in **invariant ASCII** formats in the **tenant time zone**: `{Date}` = `2026-10-27`, `{Week}` = `W44` (ISO 8601), `{Month}` = `2026-10`, `{Quarter}` = `Q4`, `{Year}` = `2026`. `{Period}` follows the recurrence: weekly → `2026-W44`, monthly → `2026-10`, quarterly → `2026-Q4`, yearly → `2026`, daily or none → the date. Any other `{Name}` (such as `{Manager}` or `{Initiative}`) is filled by the user before saving. | The text does not depend on language for a 7-language tenant. Each series instance gets its own value (§5.6 item 6). |
 | R1-D9 | **Participants by position.** The subtype stores position ids. The create form resolves them to the **current holders** through the attendee eligibility the module already uses (`MeetingEligibility.EligibleUserIdsAsync` → `GetTaskAssignmentPersonLookupQuery(Decision)`, whose rows carry `PositionId`). No new directory seam is added. Person-dependent roles ("Line Manager / Employee") are not stored as rules. The subtype carries a free-text `ParticipantSelectionHint` that is shown next to the picker. A series created by Repeat stores the resolved people (a snapshot, as `MeetingSeries.AttendeeUserIds` does today). | §5.6 item 2 and §5.7 "Davet pozisyon bazlı". Re-resolving positions for each series instance is follow-up Q10. |
 | R1-D10 | **Honest flags through one server switch.** A single constant set (`MeetingCapabilities`) says which flag effects are active. The UI renders "not yet active" from it, and the slice that makes an effect active changes the constant. | The display cannot drift from the code. Pre-load item 4 can ship first (A4 in the work list). |
 | R1-D11 | **No new permission key.** Main-type CRUD, the importer and the positions lookup use `platform.meetings.types-manage`. The auto-fill lookups use `platform.meetings.create` / `.read`. Repeat uses `platform.meetings.series-manage` (Q9). | The brief says no new permission family. Every endpoint is mapped in §24.6. |
-| R1-D12 | **Audit.** New commands use path `a`. An existing **non-minutes** command that an R1 slice changes **in what it writes or records** moves to path `a` in that same slice, and its line leaves the known-debt list, which only shrinks. **Access-check-only rule (review 01, F-2):** a change that only adds a refusal (S28's visibility check) and changes neither the data the command writes nor what its event would carry does **not** trigger the move. Such a command stays where it is, and §25 names the slice that adds the check. **Stated deferral (review 04 F-28 b; R1 fix round 4).** S28 also makes three changes that are **not** access-check-only, because they write differently: the sweep's unchained fallback in `GenerateDueMeetingSeriesCommand` (S28-11: a different write in the same call; the pointer moves to a meeting made by the first-instance create); the follow-up completion in `ScheduleFollowUpMeetingCommand` (S28-10, review 03 F-24); and the scheduler added as an `Accepted` attendee (S28-10, owner answer Q25), which `ScheduleFollowUpMeetingCommand` asks for and `CreateMeetingCommand` writes through its command-only `PreAcceptedUserId` parameter. None of the three commands moves in S28, because all three of these conditions hold. (1) The command has no event in S28, because no meeting audit row can be written before S25 (category Q13, shared mirror Q23). (2) A named later R1 slice moves it to path `a`, and its event then records the change: `GenerateDueMeetingSeriesCommand` in S21 with the outcome `created-unchained`; `ScheduleFollowUpMeetingCommand` in S25 with `SchedulerAddedAsAttendee`, and `CreateMeetingCommand` in S25 with `PreAcceptedUserId` (§25; tested in S25-7). **How the event gets these values (review 05 F-30).** `AuditBehavior` asks the command for its metadata before the handler runs (`AuditBehavior.cs:47, 143`), so a fact only the handler knows (the outcome, `SchedulerAddedAsAttendee`, a new meeting id) cannot come from the command's own fields. It comes from S25's post-handler carrier `MeetingAuditFacts`, which the handler fills and `AuditBehavior` reads when it builds the record after the handler (`:74-80`, `:179-180`, `:268-290`). S25-7 measures this through the real `AuditBehavior` before any command relies on it. `PreAcceptedUserId` needs no carrier: it is a field of the `CreateMeetingCommand` the follow-up handler sends. If the S25-7 measurement fails, the slice stops and reports. The carried facts then leave the events (§25 says which), and this deferral rests on conditions (1) and (3) alone: the commands are still moved and audited, but the event no longer says which branch ran. (3) By today's code, the change writes no new kind of data. The fallback writes the claim and the pointer that the sweep writes today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line. The completion writes the follow-up link and the carried lines that a follow-up writes today. The scheduler's row is an attendee row, which `CreateMeetingCommand` writes today for any attendee a follow-up request names (`MeetingFollowUpCommandHandlers.cs:90`), with the `Accepted` response it already writes for the organizer's row (`MeetingCommandHandlers.cs:157-167`). A change that fails any of the three conditions moves its command in its own slice. The publish and correct minutes commands are K2 class and stay in known debt (Q14). Details in §25. | AUD-001 §10.1 transition rule and §4.4. AUD-001 only requires the debt list not to grow. This rule keeps the security slice S28 small and still moves every command whose recorded content changes, at the latest in the slice that §25 names for it. The stated deferral adds no debt line: the three commands are already on the list (L118, L156, L76), and they leave it in S21 and S25. |
+| R1-D12 | **Audit.** New commands use path `a`. An existing **non-minutes** command that an R1 slice changes **in what it writes or records** moves to path `a` in that same slice, and its line leaves the known-debt list, which only shrinks. **Access-check-only rule (review 01, F-2):** a change that only adds a refusal (S28's visibility check) and changes neither the data the command writes nor what its event would carry does **not** trigger the move. Such a command stays where it is, and §25 names the slice that adds the check. **Stated deferral (review 04 F-28 b; R1 fix round 4).** S28 also makes three changes that are **not** access-check-only, because they write differently: the sweep's unchained fallback in `GenerateDueMeetingSeriesCommand` (S28-11: a different write in the same call; the pointer moves to a meeting made by the first-instance create); the follow-up completion in `ScheduleFollowUpMeetingCommand` (S28-10, review 03 F-24); and the scheduler added as an `Accepted` attendee (S28-10, owner answer Q25), which `ScheduleFollowUpMeetingCommand` asks for and `CreateMeetingCommand` writes through its command-only `PreAcceptedUserId` parameter. None of the three commands moves in S28, because all three of these conditions hold. (1) The command has no event in S28, because no meeting audit row can be written before S25 (category Q13, shared mirror Q23). (2) A named later R1 slice moves it to path `a`, and its event then records the change: `GenerateDueMeetingSeriesCommand` in S21 with the outcome `created-unchained`; `ScheduleFollowUpMeetingCommand` in S25 with `SchedulerAddedAsAttendee`, and `CreateMeetingCommand` in S25 with `PreAcceptedUserId` (§25; tested in S25-7). **How the event gets these values (review 05 F-30).** `AuditBehavior` asks the command for its metadata before the handler runs (`AuditBehavior.cs:47, 143`), so a fact only the handler knows (the outcome, `SchedulerAddedAsAttendee`, the id of the meeting that answered) cannot come from the command's own fields. The new meeting's id is the exception: it is generated on the command, because the record's `EntityId` is fixed with the plan (S25-7, pre-review 1 F-42). It comes from S25's post-handler carrier `MeetingAuditFacts`, which the handler fills and `AuditBehavior` reads when it builds the record after the handler (`:74-80`, `:179-180`, `:268-290`). S25-7 measures this through the real `AuditBehavior` before any command relies on it. `PreAcceptedUserId` needs no carrier: it is a field of the `CreateMeetingCommand` the follow-up handler sends. If the S25-7 measurement fails, the slice stops and reports. The carried facts then leave the events (§25 says which), and this deferral rests on conditions (1) and (3) alone: the commands are still moved and audited, but the event no longer says which branch ran. (3) By today's code, the change writes no new kind of data. The fallback writes the claim and the pointer that the sweep writes today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line. The completion writes the follow-up link and the carried lines that a follow-up writes today. The scheduler's row is an attendee row, which `CreateMeetingCommand` writes today for any attendee a follow-up request names (`MeetingFollowUpCommandHandlers.cs:90`), with the `Accepted` response it already writes for the organizer's row (`MeetingCommandHandlers.cs:157-167`). A change that fails any of the three conditions moves its command in its own slice. The publish and correct minutes commands are K2 class and stay in known debt (Q14). Details in §25. | AUD-001 §10.1 transition rule and §4.4. AUD-001 only requires the debt list not to grow. This rule keeps the security slice S28 small and still moves every command whose recorded content changes, at the latest in the slice that §25 names for it. The stated deferral adds no debt line: the three commands are already on the list (L118, L156, L76), and they leave it in S21 and S25. |
 | R1-D13 | **Preparation never blocks (binding once this revision is approved).** Preparation tasks and their status **never block** creating, holding, rescheduling, cancelling or publishing a meeting, and never block anything on the task side. A failed preparation line never undoes the meeting (K12). Rescheduling a meeting **does not move** a preparation task's due date. The task owners are notified as K7 states (§16), and the task itself is not changed. | ADR-003 §4 "Bağ asla örtük engel değildir" (the one exception is the task type's `reviewMeetingPolicy`, which is not touched here). ADR-003 §5 "erteleme/iptal: bağlı görev sahiplerine bildirim, görev değişmez". |
 | R1-D14 | **Required is the default.** `MeetingAttendee.IsOptional = false` means required. Every row written before R1 is required. The organizer is always required, also after a reassignment: the new organizer then has exactly one required, `Accepted` row (S27-8, review 06 F-36). Optional only changes the label on screens and the `.ics` `ROLE`, plus the attendance-mandatory rule in Q19. It never changes who may see the meeting (D3). | RFC 5545 `ROLE=REQ-PARTICIPANT` / `OPT-PARTICIPANT` (the `.ics` default is REQ). An additive field leaves the existing rows unchanged. |
 | R1-D15 | **Writes follow reads (S28).** A caller may change an existing meeting only if `MeetingEligibility.CanView` admits them: organizer, attendee or `read-all` holder, and from S15, never a non-participant of a confidential meeting. On an existing meeting named by id, everyone else gets **that handler's own not-found answer (404)**, the same answer it gives for a missing meeting, with no metadata (S28-1). On the create path, where no existing meeting is named, a caller the create replay or a follow-up collision must not reach gets **409 `MEETING_CREATE_CONFLICT`** with one fixed body instead (S28-10; review 03 F-22). One helper does the check for every write handler. The same rule covers a meeting reached **indirectly**: the create path's idempotent replay, a follow-up that lands on an existing meeting, the target of a follow-up's own idempotency link (review 06 F-35), the `FollowUpOfMeetingId` of a new meeting, and the meeting a series adopts (S28-10, S28-11). There is **no bypass** (review 02 F-13). The series sweep, which has no user, carries an explicit system-origin marker that names an **acting identity**, the series organizer. `CanView` is applied with that identity (organizer or attendee only, no `read-all`). The marker is never inferred from an empty user id, and a source-scan test lists the one file that creates it. When the series organizer cannot view the chain source, the sweep still makes the occurrence, as a plain **unchained** meeting that carries nothing from the source, and moves its chain pointer on, so a legitimate organizer hand-over never stops a series (S28-11; review 03 F-18). The existing permission keys still apply on top. | Review 01 F-1, measured: `CanView` is defined at `MeetingCommandHandlers.cs:63-64` and called only by query handlers. `AddMeetingAttendeesHandler` (`:429-503`) and `ReassignMeetingOrganizerHandler` (`:359-426`) check only existence and editability, so a non-participant with `update` can add themselves to any meeting by id and then read it. Review 02 F-11 and F-13, measured: the create key has no caller (`MeetingIdempotencyKeyResolver.cs:9-22`), and a series edit rewrites its organizer and attendees with no relation check (`MeetingSeriesCommandHandlers.cs:167-181`). |
@@ -1347,7 +1362,7 @@ The existing fields (`Name`, `AgendaTemplate`, `DefaultActionTaskTypeId`, `IsQua
 
 | Entity · field | Type | Default for old rows | Slice | Rule |
 |---|---|---|---|---|
-| `Meeting.IsConfidential` | bool | false | S15 | Set from the subtype on create. Never lowered (R1-D5). Set to true on every meeting of a type when that type is made confidential (S15-11, review 06 F-34). |
+| `Meeting.IsConfidential` | bool | false | S15 | Set from the subtype on create. Never lowered (R1-D5). Set to true on every meeting of a type when that type is made confidential (S15-11, review 06 F-34), and on every meeting of the type still stored `false` when the type stops being confidential (closing stamp, pre-review 1 F-43), whether through the type screen or the importer (F-39). |
 | `AgendaItem.IsMandatory` | bool | false | S18 | Set only by the server from `MandatoryAgendaItems`. |
 | `MeetingMinutesVersion.AgendaNotes` | List\<`MinutesAgendaNote`\> (embedded) | [] | S17 | `{ AgendaItemId, AgendaTextSnapshot, Note ≤ 4000, Outcome ≤ 1000 }`, ≤ 100 rows |
 | `MeetingSeries.TitleTemplate` | string? | null | S21 | max 200, automatic placeholders only |
@@ -1395,7 +1410,7 @@ stored on the meeting side. `CreateMeetingRequest.OptionalAttendeeUserIds` (S27)
 | Sum of agenda durations | — | larger than the meeting duration is **allowed with a warning** | — | UI warning only (no reason code, no refusal) |
 | Create replay or follow-up collision (S28-10) | — | the five key values match an existing meeting the caller cannot view (on a create, or on the create a follow-up sends); or the follow-up's own idempotency link points to a meeting the caller cannot view (review 06 F-35) | — | 409 `MEETING_CREATE_CONFLICT` (one fixed body, no id and no field) |
 | Follow-up collision, caller can view the existing meeting (S28-10; review 03 F-24, review 04 F-26) | — | the existing meeting's `FollowUpOfMeetingId` is not the source; or it is the source, the follow-up link is missing and the meeting is cancelled or completed | — | 409 `MEETING_FOLLOW_UP_CONFLICT` (its `data` carries only the existing meeting's id) when it is not a follow-up of the source; 409 `MEETING_CANCELLED` / 409 `MEETING_COMPLETED` (existing codes, `UpdateMeetingHandler.CheckEditable`) when it is a cancelled or completed follow-up of the source. Nothing is written. When `FollowUpOfMeetingId` is the source and the meeting is scheduled, the follow-up is completed instead (200) |
-| Create by a creator who would not be able to view the meeting (S28-10; replaces S26-10's own code, review 03 F-19; defensive, review 04 F-25) | — | the creator is neither the requested organizer nor a requested (eligible) attendee and does not hold `read-all` (from S15, the request is also refused for a confidential subtype unless the creator is a participant). Only a direct API caller who names another organizer can reach it, because the create form and the Task Center make the caller the organizer. On the create a follow-up sends, it is applied only to a scheduler who is **not a party** of the source (review 05 F-29): such a caller passed the source check through `read-all`, which still passes the rule for a non-confidential new meeting, so in practice the refusal comes only when the new meeting would be confidential (from S15). A party of the source is added as an `Accepted` attendee instead (S28-10, Q25) | — | 400 `MEETING_CREATOR_CANNOT_VIEW`; nothing is written |
+| Create by a creator who would not be able to view the meeting (S28-10; replaces S26-10's own code, review 03 F-19; defensive, review 04 F-25) | — | the creator is neither the requested organizer nor a requested (eligible) attendee and does not hold `read-all` (from S15, the request is also refused for a confidential subtype unless the creator is a participant). Only a direct API caller who names another organizer can reach it, because the create form and the Task Center make the caller the organizer. On the create a follow-up sends, it is applied only to a scheduler who is **not a party** of the source (review 05 F-29): such a caller passed the source check through `read-all`, which still passes the rule for a non-confidential new meeting, so in practice the refusal comes only when the new meeting would be confidential (from S15). The follow-up dialog does not offer confidential subtypes to such a caller (S15-10, pre-review 1 F-45), so on that path only a direct API call, or a type made confidential while the dialog was open, reaches it. A party of the source is added as an `Accepted` attendee instead (S28-10, Q25) | — | 400 `MEETING_CREATOR_CANNOT_VIEW`; nothing is written |
 | Single open of a confidential meeting whose read-audit record cannot be written (S15-12; review 06 F-37) | — | `GET /{id}`, `/{id}/minutes` or `/{id}/tasks` by a caller who may view the meeting, when the central record is not queued | — | 503 `MEETING_CONFIDENTIAL_READ_NOT_RECORDED`; no meeting data in the body |
 | Repeat adoption refused (S23-8; review 03 F-23) | — | the creator can no longer view the meeting just written when the series adopts it (only possible through a concurrent change) | — | partial success `series: { created: false, reasonCode: "MEETING_SERIES_ADOPTION_REFUSED" }`; the meeting stays, no series |
 
@@ -1467,7 +1482,7 @@ Prompt counts are **estimates** (one prompt ≈ one development session). They a
 | 2 | S13 | Page help and Meetings tour | 2 (estimate) | — | DL-13 |
 | 3 | S14 | Honest display of the type flags | 1 (estimate) | — | DL-14 |
 | 4 | S25 | Agenda at create (today's type template) | 1 (estimate) | S25 does not start until Q23 is answered; yes → the shared mirror gets `["Meetings"] = 18` (written by this CT after the owner's explicit XMC-001 answer, reviewed by the library owner, per card S-90 §7c); no → `PlatformConfiguration` is used and Q13 is reopened. S28 (S25-6's retry rule is S28-10). S18's mandatory lines join whenever S18 lands (not a hard dependency). | DL-25 |
-| 5 | S15 | Confidential meeting type | 3 (estimate; 2 before fix round 5, which adds the type stamp in a Platform transaction, review 06 F-34, and the confidential read audit, F-37) | S28 (the write guard it extends); S25 (`CreateMeetingCommand` already on path `a`; the audit carrier); S15-12 does not start until Q26 is answered (yes → the shared read-audit writer; no → the module-local writer, §24.25 Q26) | DL-15 |
+| 5 | S15 | Confidential meeting type | 3–4 (estimate; 2 before fix round 5, which adds the type stamp in a Platform transaction, review 06 F-34, and the confidential read audit, F-37; fix round 6 adds the closing stamp and its race test, the withheld write responses and the report placeholder, the names-only audit rows and the dialog filter, pre-review 1 F-38, F-40, F-43 and F-45) | S28 (the write guard it extends); S25 (`CreateMeetingCommand` already on path `a`; the audit carrier); S15 does not start until Q27 is answered (the K2 class of writes on a confidential meeting; A → as written; B → a slice that moves the meeting content commands to the in-transaction path comes first; C → S15 waits for that path, §24.25 Q27); S15-12 does not start until Q26 is answered (yes → the shared read-audit writer; no → the module-local writer, §24.25 Q26) | DL-15 |
 | 6 | S16 | Mandatory attendance before publishing | 1 (estimate) | S14 (switch flip only); S28 (its failure path's 404 for a caller who cannot view the meeting) | DL-16 |
 | 7 | S17 | Note and outcome per agenda item | 2 (estimate) | S28 (its failure path's 404 for a caller who cannot view the meeting) | DL-17 |
 | 8 | S18 | Mandatory agenda items for quality-record types | 1–2 (estimate) | S17 (for S18-5), S15 (type commands audited), S14 (switch flip), S25 (agenda ordering on create and follow-up) | DL-18 |
@@ -1480,7 +1495,10 @@ Prompt counts are **estimates** (one prompt ≈ one development session). They a
 | 15 | S23 | Repeat on create | 2 (estimate) | S21, S22; S28 (adoption applies `MeetingWriteAccess`, S23-8) | DL-23 |
 | 16 | S24 | One-off type catalogue importer | 1–2 (estimate) | S19, S20 (S15 and S18 for the flags it imports). The real import run also waits on the task-type catalogue load (MOD-0024, Dalga 2) and on the QA process owner's name (§5.7). | DL-24 |
 
-**Total: about 27 to 32 prompts (estimate)**; it was 25 to 30 before fix round 5, and 23 to 27 after "ekle-uc". S28
+**Total: about 27 to 33 prompts (estimate)**; it was 27 to 32 before fix round 6, 25 to 30 before fix round 5, and 23
+to 27 after "ekle-uc". **After fix round 6** the total is again the exact sum of the cells: S15 goes from 3 to 3–4
+(+1 at the high end, pre-review 1 F-38, F-40, F-43 and F-45). The importer's stamp call (F-39) fits in S24's 1–2 and
+the command-generated id (F-42) in S25's 1. If Q27 is answered B, one more slice of about 3 to 4 prompts is added. S28
 adds about 3 prompts. After review 03 the total was the sum of the cells above, 25 at the low end and 30 at the high end: S28 is now 3 rather than
 2–3, and the earlier low end of 25 was one more than its cells added up to. **After fix round 5 the total is about
 27 to 32 prompts (estimate)**, again the exact sum of the cells: S15 goes from 2 to 3 (+1 at both ends), S27 from 1–2
@@ -1637,13 +1655,24 @@ subtype name, not the meeting title.
   `IPlatformTransactionExecutor` and `IMeetingRepository`); `Domain/Repositories/IMeetingRepositories.cs` and
   `Infrastructure/Persistence/Repositories/MeetingRepositories.cs`: a session overload of
   `IMeetingTypeRepository.UpdateAsync` and a new `IMeetingRepository.MarkConfidentialByMeetingTypeIdAsync(session,
-  meetingTypeId)` (one `UpdateMany`, see S15-11).
+  meetingTypeId)` (one `UpdateMany`, see S15-11). The stamp is one new shared method,
+  `Features/Meetings/Services/MeetingTypeConfidentialityStamp.cs` (to be written), which `UpdateMeetingTypeHandler`
+  and the S24 importer both call inside their transaction (pre-review 1 F-39).
 - **Confidential read audit (S15-12, review 06 F-37):** `MeetingQueryHandlers.cs` (`GetMeetingByIdHandler`,
   `GetMeetingMinutesHandler`, `GetLinkedTasksHandler`), the read-audit writer that Q26 decides, `MeetingModels.cs`
   (reason code `MEETING_CONFIDENTIAL_READ_NOT_RECORDED`), the reason-code bridge in 7 languages.
+- **Withheld content (S15-12, pre-review 1 F-38):** `MinutesCommandHandlers.cs` (`SaveMinutesDraftHandler`,
+  `PublishMinutesHandler`, `CorrectPublishedMinutesHandler`), the replay branch of `CreateMeetingHandler`,
+  `MeetingModels.cs` (`ContentWithheld` on `MeetingDto` and `MeetingMinutesVersionDto`), `MeetingReportQueryHandlers.cs`
+  and S28-6's `Services/MeetingReportExportPlaceholders.cs` (the new placeholder `MEETING_CONFIDENTIAL_CONTENT` in 7
+  languages).
+- **Follow-up dialog (S15-10, pre-review 1 F-45):** `MeetingModels.cs` (`MeetingDto.CallerIsParty`, set by
+  `GetMeetingByIdHandler`; `MeetingTypeLookupItemDto` gains `IsConfidential`, today it carries only `Id`, `Name` and
+  `AgendaTemplate`, `MeetingModels.cs:325`), `wwwroot/assets/js/Meetings/follow-up-dialog.js` and
+  `frontend/Diten.Web/tests/meetings-follow-up.test.js`.
 - Audit: `CreateMeetingTypeCommand`, `UpdateMeetingTypeCommand` and `UpdateMeetingCommand` move to path `a`.
-  `CreateMeetingCommand` is already on path `a` from S25, and S15 adds the "no title when confidential" metadata
-  rule. Each command becomes its own file under `Commands/` if moving it out of the bundled file is needed to add the
+  `CreateMeetingCommand` is already on path `a` from S25, and S15 adds the names-only rule for confidential meetings
+  (S15-7, pre-review 1 F-40). Each command becomes its own file under `Commands/` if moving it out of the bundled file is needed to add the
   interfaces. Their lines are removed from `tests/architecture/audit-ledger/Diten.Platform.md` (§25).
 
 **Acceptance criteria**
@@ -1676,9 +1705,25 @@ subtype name, not the meeting title.
       F-6). Each of the five is tested.
       Description and agenda are not sent today and stay unsent. `LOCATION` is kept (Q3). This is measured on the
       stored dispatch row, not on the template.
-- [ ] S15-7 — The audit metadata of `CreateMeetingCommand` and `UpdateMeetingCommand` carries no `Title` when the
-      meeting is confidential. Confidentiality is a stored fact the command does not carry, so the handler decides and
-      writes `Title` (or leaves it out) through S25's carrier `MeetingAuditFacts` (review 05 F-30).
+- [ ] S15-7 — **Names only on a confidential meeting (review 05 F-30; pre-review 1 F-40; AUD-001 §3 "a changed
+      field's name is written, not its value").** On every §25 row that touches a meeting whose effective flag (S15-3)
+      is true when the handler runs, a changed content field is written by **name only**: the record holds no value,
+      before or after, of the meeting's `Title`, `Description` or `Location`, or of an agenda line's `Text`. It keeps
+      the ids (`EntityId`, `MeetingId`, `AgendaItemId`, the user ids the command names), the counts, the
+      `IsConfidential` value and the list of changed field names. This covers `CreateMeetingCommand`,
+      `UpdateMeetingCommand` and `ScheduleFollowUpMeetingCommand` (S15), `UpdateAgendaItemCommand` and
+      `DeleteAgendaItemCommand` (S18), and `AddAgendaItemCommand` (S27); each of those slices applies the rule to its
+      own row. **How.** Confidentiality is a stored fact the command does not carry, so a content value reaches a
+      record **only** through S25's carrier `MeetingAuditFacts`, written by a handler that has read the effective flag
+      as false. A command never puts a content value into its own `GetAuditMetadata()`. A refused command (404, 409) and
+      a command whose handler throws before it reads the flag therefore write no content value either. **Carrier
+      fallback.** If the S25-7 measurement is red, no meeting row writes a content value for any meeting, confidential
+      or not; the rows keep the ids and the changed field names (§25).
+      Tests (through the real `AuditBehavior` and a recording `IAuditService`): `UpdateMeeting` on a confidential
+      meeting changes `Description` and `Location`, and the serialized record contains `Description` and `Location`
+      as names and neither the old nor the new text; `CreateMeeting` of a confidential subtype writes no `Title`
+      value; the same update on a non-confidential meeting writes the before and after values. Sabotage: put
+      `Description` into the command's own metadata, then the confidential row is red.
 - [ ] S15-8 — Participants see everything as today, plus a localized "Confidential" lock badge on the list, detail
       page and calendar event. The personal calendar feed (`CalendarMeetingReader`, own meetings only) is unchanged.
 - [ ] S15-9 — Binding rule for later surfaces (availability, another person's calendar; Dalga 8): a confidential
@@ -1707,8 +1752,20 @@ subtype name, not the meeting title.
       anything is written, unless the caller names themself as organizer or attendee. HTTP test: such a request gets
       400, and no meeting, attendee row, link or carried line exists; the same request naming a non-confidential
       subtype gets 201 and the caller opens the new meeting through `read-all` (200).
+      **The dialog does not offer what it cannot do (pre-review 1 F-45).** The follow-up dialog has no attendee or
+      organizer field (`follow-up-dialog.js:91-93`), so the 400's advice cannot be followed there. `GET /{id}` returns
+      a server-computed `CallerIsParty` (the caller is the meeting's organizer or has an attendee row on it), and
+      `lookups/types` returns each type's `IsConfidential`. When `CallerIsParty` is false, the dialog leaves
+      confidential types out of its type list (`follow-up-dialog.js:55-59`). If the source's own type is confidential,
+      the caller is a participant (S15-3), so `CallerIsParty` is true and the list is complete. The text of
+      `MEETING_CREATOR_CANNOT_VIEW` says what works on every path: "You would not be able to see this meeting, so it
+      was not created. Name yourself as organizer or attendee, or choose a type that is not confidential." (7
+      languages), so a type made confidential while the dialog was open still gets usable advice. JS test
+      (`meetings-follow-up.test.js`): with `CallerIsParty` false the confidential type is not an option and the others
+      are; with `CallerIsParty` true every type is an option. Sabotage: drop the filter, then the first row is red.
 - [ ] S15-11 — **Type stamp (owner decision "duzelt-5"; review 06 F-34; R1-D5).** When `UpdateMeetingTypeHandler`
-      changes a type's stored `IsConfidential` from `false` to `true`, the same call writes, in **one Platform
+      changes a type's stored `IsConfidential` from `false` to `true` (and, through the closing stamp below, from
+      `true` to `false`; pre-review 1 F-43), the same call writes, in **one Platform
       transaction** (`IPlatformTransactionExecutor.ExecuteAsync`, the BL-533 path `PublishMinutesHandler` uses,
       `MinutesCommandHandlers.cs:286`):
       1. the type itself, under the request's `ExpectedVersion` (a new session overload of
@@ -1735,14 +1792,30 @@ subtype name, not the meeting title.
         `PlatformTransactionUnavailableException` (`IPlatformTransactionSession.cs:19-22`), and nothing is written.
         The body is retry-safe when the executor runs it again: the `UpdateMany` filter skips stamped rows, and the
         type's read version is put back first (`ReadVersionSnapshot`, as `PublishMinutesHandler` does).
-      - **Only false → true stamps.** A type created confidential has no meetings, and a meeting created later copies
-        the flag (S15-2). True → true and true → false write no meeting row, and true → false lowers nothing that was
-        stamped.
+      - **Every change of the flag runs the stamp; no change runs none (pre-review 1 F-43).** False → true stamps the
+        type's meetings as above. **True → false runs the same `UpdateMany` first (the closing stamp) and lowers the
+        type's flag after it, in the same transaction.** Why: `CreateMeetingHandler` reads the type at the start
+        (`MeetingCommandHandlers.cs:108`) and inserts later (`:136-151`), and `UpdateMeeting` reads the new type
+        before it writes. If a raise commits in between, that write stores `false` for a meeting of the now
+        confidential type. A re-read of the type just before the insert would leave a smaller window, and the raise's
+        `UpdateMany` cannot see an insert that commits after its transaction began (MongoDB snapshot isolation), so no
+        check on the create side closes the race. The effective flag hides such a meeting while the type stays
+        confidential, and lowering the flag is the only way the type stops hiding it, so the closing stamp marks it
+        at that moment. In normal operation the closing stamp modifies no row: every meeting of a confidential type
+        is already stored `true` (stamped on the raise, copied on create, or raised on a type change, S15-2). A type
+        created confidential has no meetings. True → true and false → false write no meeting row. True → false still
+        lowers nothing that was stamped, and does not lower any meeting.
+      - **One stamp, two callers (pre-review 1 F-39).** The stamp is one shared method,
+        `MeetingTypeConfidentialityStamp.ApplyAsync(session, meetingTypeId, storedFlag, newFlag)`, which runs the
+        `UpdateMany` when the two flags differ and returns the modified count. `UpdateMeetingTypeHandler` and the S24
+        importer (S24-9) call it inside their own transaction. No other code writes `Meeting.IsConfidential` for a
+        type change.
       - The stamp reads no meeting content, returns none and sends no mail.
       - **Audit.** `UpdateMeetingTypeCommand` is on path `a` from this slice (§25). Its record carries the stored
-        and the requested `IsConfidential` and `ConfidentialStampedMeetingCount` (the `UpdateMany` modified count),
-        through S25's carrier `MeetingAuditFacts`. The record is written after the transaction commits (path `a`, best
-        effort, configuration; Q14 (c)).
+        and the requested `IsConfidential` and `ConfidentialStampedMeetingCount` (the `UpdateMany` modified count, on
+        a raise or a lowering), through S25's carrier `MeetingAuditFacts`. The record is written after the
+        transaction commits (path `a`, best effort, configuration; Q14 (c); the K2 class of the meeting rows the stamp
+        writes is part of Q27).
 
       Tests (real Mongo, matrix false → true → false): type T is non-confidential and has a scheduled, a cancelled, a
       completed (with published minutes) and a soft-deleted meeting; another type has one meeting. T is made
@@ -1752,6 +1825,13 @@ subtype name, not the meeting title.
       give 404 or exclusion. Stale edit: `UpdateMeeting` with the version read before the stamp gets 409, and the
       stored flag stays `true`. Fault row: the `UpdateMany` fails inside the transaction, and afterwards the type is
       still non-confidential and no meeting is stamped. The audit row carries `ConfidentialStampedMeetingCount` = 4.
+      **Race rows (pre-review 1 F-43; handler level, real Mongo, forced interleaving).** A type repository wrapper
+      lets T be raised to confidential right after `CreateMeetingHandler` has read T and before it inserts. The new
+      meeting is stored `false`; a `read-all` non-participant gets 404 on it (effective flag). T is then lowered: in
+      the same transaction the meeting is stored `true` with `Version` + 1, the lowering's audit row carries
+      `ConfidentialStampedMeetingCount` = 1, and the `read-all` non-participant still gets 404. The same rows run
+      with `UpdateMeetingHandler` moving a meeting from another type into T. Sabotage: run the `UpdateMany` only on
+      false → true, then the lowering row is red (200 after the lowering).
 - [ ] S15-12 — **Read audit of a confidential meeting (owner decision "duzelt-5": a confidential meeting counts as an
       HR-confidential record, AUD-001 §7 third class; review 06 F-37).** A meeting is in this class when its effective
       flag (S15-3) is true. Every **single open** of its content writes one central read-audit record:
@@ -1760,10 +1840,38 @@ subtype name, not the meeting title.
         and `GET /{id}/minutes` (`GetMeetingMinutesHandler`, `:336`; controller `:160-161`). Measured: there is no
         single-meeting export, print or download (the Meetings views and JS have none); the only export is the
         report's, which is a bulk export already recorded by `IDataExportAuditWriter`.
-      - **Not covered, with the reason:** the list, the calendar views and the report screen (lists, not a single
-        open; they carry no description, agenda or minutes); write responses (create 201 or replay 200, publish,
-        correct), whose content the caller wrote or keyed in that same call, and whose call is its own §25 row; the
-        Task Center invitation card and related-record row (title only, participants only, S15-5).
+      - **Not covered, with the reason (corrected by pre-review 1 F-38):** the list and the calendar views (lists,
+        not a single open; they carry titles and times, and no description, location, agenda or minutes); the Task
+        Center invitation card and related-record row (title only, participants only, S15-5); and the paths below,
+        which are **made content-free** for a confidential meeting instead of recorded, so that the only way to read
+        its stored content is one of the three recorded opens. The earlier reason, "content the caller wrote", was
+        wrong for three paths, and the report did carry minutes text:
+        - **Minutes write responses.** `PublishMinutesRequest` carries only `ExpectedVersion` (`MeetingModels.cs:409`),
+          and `PublishMinutesHandler` returns the stored draft, which someone else may have written
+          (`MinutesCommandHandlers.cs:245-307`). For a confidential meeting, the responses of save draft, publish and
+          correct carry the version's id, number, status, `Version` and publish or correction stamp, with
+          `ContentWithheld = true` and empty `Attendance`, `Decisions` and `ActionReferences` lists
+          (`MeetingMinutesVersionDto`, `MeetingModels.cs:428-440`; from S17 also `AgendaNotes`). Save draft and correct are
+          included because their responses also hold stored values the request did not carry (display names and, from
+          S17, the agenda text snapshot). The minutes editor already reloads through the recorded
+          `GET /{id}/minutes` after each of the three (`minutes-editor.js:294-300, 307-313, 339-346`).
+        - **Create replay.** The 200 replay returns the existing meeting's stored description, location, attendees and
+          agenda (`MeetingCommandHandlers.cs:151-152, 194-203`). For a confidential meeting, the replay answer
+          carries the id, the five key values the request carried, `Lifecycle`, `FollowUpOfMeetingId`, `Version` and
+          this call's own results (preparation lines, series), with `ContentWithheld = true` and no description,
+          location, attendee list or agenda. The create form reads only `data.id` (`form.js:194`), and the follow-up
+          and repeat paths read only the id, the lifecycle and `FollowUpOfMeetingId` (S28-10, S23-8). A new meeting
+          (201) is unchanged: its content is what the request carried or the type template.
+        - **Report and export decision text.** The report puts the decision text of published minutes into its rows
+          (`MeetingReportQueryHandlers.cs:93-97`). For a decision row of a confidential meeting the reader can view,
+          the text is the placeholder `MEETING_CONFIDENTIAL_CONTENT` (rendered in 7 languages in the export through
+          S28-6's `MeetingReportExportPlaceholders.cs`, and through the reason-code bridge on screen); the code and the
+          meeting link stay, so the reader opens the meeting to read it (a recorded open). Screen rows still equal
+          export rows (BL-346). A read record per confidential meeting on every report load was rejected: one failed
+          record would fail the whole report, and a cadence report is not where an HR one-to-one is read.
+        These three are a behaviour change for participants of a confidential meeting and **need owner approval with
+        this revision**. Write responses of a non-confidential meeting and the report rows of non-confidential
+        meetings are unchanged.
       - **When.** After the access check passes and before the response is built. A caller who cannot view the
         meeting gets the existing 404, and no read record is written: they opened nothing.
       - **Where and what.** The central log (`IAuditService` → `audit_outbox` → `audit_events`), never an equivalent
@@ -1793,6 +1901,14 @@ subtype name, not the meeting title.
       `false`) is recorded too. The same three calls on a non-confidential meeting write no record. A `read-all`
       non-participant gets 404 and no record. With an `IAuditService` that answers "not queued", each of the three
       calls gives 503 `MEETING_CONFIDENTIAL_READ_NOT_RECORDED` and the body has no meeting field.
+      **Content-free paths (pre-review 1 F-38; HTTP, real Mongo, real `IAuditService`).** On a confidential meeting
+      whose draft another participant wrote: publish answers 200 with `ContentWithheld = true`, and the body holds none
+      of the draft's decision texts or attendee names; save draft and correct answer the same way. A create replay by a
+      participant answers 200 with `ContentWithheld = true` and without the stored description and location. A
+      participant's report and export show `MEETING_CONFIDENTIAL_CONTENT` for that meeting's decision row and the real
+      text for a non-confidential meeting's row. For each of these calls the outbox holds no read record from it, and a
+      following `GET /{id}/minutes` writes one. Sabotages: return the stored DTO from `PublishMinutesHandler`; return the
+      stored meeting on the replay branch; put `d.Text` back into the report row. Each turns its row red.
 
 **Failure paths.**
 - A `read-all` non-participant → 404 with no metadata (not 403).
@@ -1803,8 +1919,8 @@ subtype name, not the meeting title.
   matters more).
 - A `read-all` non-party who schedules a follow-up with a confidential subtype → 400 `MEETING_CREATOR_CANNOT_VIEW`,
   nothing written (S15-10; review 05 F-29).
-- Making a type confidential with a stale version, or with no Platform transaction available → 409 or 503, and
-  neither the type nor any meeting changes (S15-11).
+- Making a type confidential, or no longer confidential (the closing stamp, pre-review 1 F-43), with a stale version
+  or with no Platform transaction available → 409 or 503, and neither the type nor any meeting changes (S15-11).
 - An edit of a meeting loaded before its type was made confidential → 409 `MEETING_CONCURRENCY_CONFLICT` (S15-11).
 - A single open of a confidential meeting whose read-audit record cannot be written → 503
   `MEETING_CONFIDENTIAL_READ_NOT_RECORDED`, no meeting data (S15-12).
@@ -1821,15 +1937,20 @@ open). Drop the stamp from `UpdateMeetingTypeHandler`, then the false → true �
 non-participant gets 200 after the type is turned off). Drop the `Version` increment from the stamp, then the
 stale-edit row is red (the edit writes `false` back). Remove the read-audit call from `GetMeetingByIdHandler`, then
 the detail record row is red. Ignore the writer's "not queued" answer, then the 503 rows are red (200 with data).
-Restore each one and it goes green.
+Fix round 6 adds (pre-review 1): the names-only rows and their sabotage (S15-7, F-40); the race rows and the
+closing-stamp sabotage (S15-11, F-43); the content-free rows and their three sabotages (S15-12, F-38); and the
+dialog JS test and its sabotage (S15-10, F-45). Restore each one and it goes green.
 
-**L10n.** 7 languages: checkbox, help text and badge, and `MEETING_CONFIDENTIAL_READ_NOT_RECORDED` in the reason-code
-bridge. **Permissions:** `types-manage` sets the flag; no new key. **Tenant isolation:** unchanged predicates,
-tenant-scoped repositories; the stamp's `UpdateMany` filters by the tenant. **Depends on:** S28 (the write guard and
-resolver caller context it extends) and S25 (`CreateMeetingCommand` already on path `a`; review 01 F-5; the audit
-carrier the stamp count uses). S15-12 does not start until Q26 is answered (yes → the shared read-audit writer; no →
-the module-local writer). **Estimate:** 3 prompts (backend and matrix; type stamp and read audit; UI, mail and
-l10n).
+**L10n.** 7 languages: checkbox, help text and badge, `MEETING_CONFIDENTIAL_READ_NOT_RECORDED` in the reason-code
+bridge, the placeholder `MEETING_CONFIDENTIAL_CONTENT` (export placeholders and reason-code bridge, F-38), and the
+reworded text of `MEETING_CREATOR_CANNOT_VIEW` (F-45). **Permissions:** `types-manage` sets the flag; no new key.
+**Tenant isolation:** unchanged predicates, tenant-scoped repositories; the stamp's `UpdateMany` filters by the tenant.
+**Depends on:** S28 (the write guard and resolver caller context it extends) and S25 (`CreateMeetingCommand` already
+on path `a`; review 01 F-5; the audit carrier the stamp count uses). S15 does not start until Q27 is answered (A → as
+written; B → the slice that moves the meeting content commands to the in-transaction path comes first; C → S15 waits
+for that path; §24.25 Q27). S15-12 does not start until Q26 is answered (yes → the shared read-audit writer; no → the
+module-local writer). **Estimate:** 3–4 prompts (backend and matrix; type stamp, closing stamp and read audit; the
+content-free paths and the names-only rows; UI, dialog, mail and l10n).
 
 ### 24.11 S16 — Mandatory attendance before publishing
 
@@ -1920,7 +2041,9 @@ each one (Q6).
 `MinutesCommandHandlers.cs` (S18-5), the type form (list editor shown only when "Quality record" is ticked), the
 detail agenda (lock), resx in 7 languages, `MeetingCapabilities.MandatoryAgendaEnforced = true`, and the
 `MEETINGTYPES` / `MEETINGDETAIL` help. Audit: `UpdateAgendaItemCommand` and `DeleteAgendaItemCommand` move to path
-`a` (§25).
+`a` (§25), and their rows follow S15-7's names-only rule on a confidential meeting (pre-review 1 F-40): test through
+the real `AuditBehavior` that an update and a delete of a line on a confidential meeting record `Text` as a name and
+not its text, with the sabotage of S15-7.
 
 **Acceptance criteria**
 - [ ] S18-1 — `MandatoryAgendaItems` (≤ 20 × ≤ 200) is accepted only when `IsQualityRecord = true` (400
@@ -2272,7 +2395,11 @@ with their handlers and validators. Controller and proxy actions.
       is the bulk path for legacy rows (R1-D2).
 - [ ] S24-6 — The QA flags (`isQualityRecord`, `requiresESignature`, `attendanceMandatory`, `isConfidential`,
       `mandatoryAgendaItems`) change only when the file states them explicitly, and the preview lists them in a
-      separate "flag changes" block.
+      separate "flag changes" block. **A change of an existing subtype's `isConfidential` runs the type stamp
+      (pre-review 1 F-39; R1-D5; S15-11):** the commit calls `MeetingTypeConfidentialityStamp.ApplyAsync` for that
+      subtype inside the S24-9 transaction, so false → true stamps its meetings and true → false runs the closing
+      stamp before the flag is lowered, exactly as `UpdateMeetingTypeHandler` does. The importer has no other path to
+      `Meeting.IsConfidential`.
 - [ ] S24-7 — `defaultActionTaskTypeCode` is resolved against the tenant's active task types through
       `GetActiveTaskTypesQuery` (read-only). An unknown code, or a dual value such as `A / B`, leaves the field
       **empty** on create or **unchanged** on update, and is reported. No task-type data (MOD-0024) is ever written.
@@ -2281,9 +2408,11 @@ with their handlers and validators. Controller and proxy actions.
 - [ ] S24-9 — `POST types/import` recomputes the plan and refuses with 409 `MEETING_TYPE_IMPORT_PLAN_CHANGED` if its
       hash differs from the preview's. It writes main types first and then subtypes, in **one transaction** using the
       same Mongo session mechanism as `PublishMinutesHandler`. If that is not available for these repositories, the
-      slice stops and reports to the CT instead of writing row by row.
+      slice stops and reports to the CT instead of writing row by row. The S24-6 stamp writes are part of that one
+      transaction: a failed stamp aborts the whole import, and no subtype flag and no meeting changes.
 - [ ] S24-10 — Audited path `a`: one event `meetings.type-catalogue.imported` with the file SHA-256, the counts, the
-      created ids and the updated ids with their changed field names (§25).
+      created ids and the updated ids with their changed field names, and for each subtype whose `isConfidential`
+      changed, its id and `ConfidentialStampedMeetingCount` (§25).
 - [ ] S24-11 — No catalogue data file is added to the repository by this slice.
 
 **Failure paths.** File too large or too many rows → 400. Plan changed between preview and commit → 409. No
@@ -2291,8 +2420,14 @@ with their handlers and validators. Controller and proxy actions.
 and written.
 
 **Tests.** Preview has no side effects; second-run idempotency; the conflict and legacy-assignment cases; code
-resolution; the plan-hash 409. Sabotage: match on subtype name only (ignoring the main type), then the conflict test
-is red. Remove the hash check, then the 409 test is red. **L10n:** 7 languages. **Permissions:** `types-manage`.
+resolution; the plan-hash 409. **Stamp through the importer (pre-review 1 F-39; real Mongo):** subtype T is
+non-confidential and has a scheduled, a completed and a soft-deleted meeting. A file sets `isConfidential: true` for
+T: the three meetings store `true` with `Version` + 1, the audit record names T with a stamp count of 3, and a
+`read-all` non-participant gets 404 on each live one. A second file sets it `false`: the meetings still store `true`,
+and the non-participant still gets 404. A third file sets it `true` again: nothing is stamped (count 0). A fault in
+the stamp aborts the import, and T and its meetings are unchanged. Sabotage: skip the stamp call in the importer,
+then the second file's rows are red (200 after the lowering). Remove the hash check, then the 409 test is red.
+Sabotage: match on subtype name only (ignoring the main type), then the conflict test is red. **L10n:** 7 languages. **Permissions:** `types-manage`.
 **Tenant isolation:** as stated. **Depends on:** S19 and S20 (S15 and S18 for their flags). **Data dependencies for
 the real run:** the task-type catalogue load including `COM-ACTION`, `FIN-ACTION` and `ITG-ACTION` (MOD-0024,
 §5.7), the position mapping (HR), the agenda texts (business owners), the flags (QA), and the QA process owner's name
@@ -2594,6 +2729,60 @@ Q25 row of the table above): alternative (a), built in S28 (S28-10). The text be
     public `IAuditService.AppendAsync` (the call `DataExportAuditWriter` itself makes), and a later shared writer
     replaces it. S15-12 does not start until Q26 is answered; the rest of S15 does not wait.
 
+**Question from pre-review 1 (S-93) F-41 (2026-10-29, fix round 6). Open; the author does not decide it (CT
+instruction):**
+
+27. **Q27 — Are writes on a confidential meeting K2 class? (owner, with the CT: AUD-001 §10 K10 is the K2 boundary in
+    Platform; §4.3, §4.4, §7.)** The owner decision on F-37 made a confidential meeting an HR-confidential record.
+    AUD-001 puts HR-confidential records in **§7** (single opens are read-audited, which S15-12 does fail-closed). Its
+    **§4.3** K2 class (fail-closed writes: "kayıt ile iş verisi BİRLİKTE yazılır") names identity, role/permission,
+    tenant state, GxP records and **KVKK special-category data**, not HR-confidential records as such. A confidential
+    meeting may still hold special-category data in its free text (an HR one-to-one about health). The commands that
+    write such a meeting's content or people are `CreateMeeting`, `UpdateMeeting`, `ReassignMeetingOrganizer`,
+    `AddMeetingAttendees`, `RemoveMeetingAttendee`, the four agenda commands, `ScheduleFollowUpMeeting`,
+    `SaveMinutesDraft`, `PublishMinutes`, `CorrectPublishedMinutes`, and the stamp rows of `UpdateMeetingType` and the
+    importer. Path `a` writes their record after the handler, best effort (`AuditBehavior.cs:233-249`; AUD-001 §4.2).
+    AUD-001 §4.4: "K1 kapanana kadar yeni K2 sınıfı Platform komutu = engelli", and the ledger accepts no new K2 debt.
+    **Measured record inconsistency for the CT:** AUD-001 §4.4 and §10 K1 still call the in-transaction path `aday`,
+    but the Platform ledger lists it as accepted path-`a` traces (`platform-islem-ici`, evidence 2026-10-02,
+    WP-PLATFORM-AUDIT-INTX-01; `esign-islem-ici-denetim`, CT decision 2026-10-14), through
+    `ITransactionalAuditOutboxWriter.TryEnqueueAsync(session, …)` and the 25-name list
+    `TransactionOwnedAuditCommands.Authorized` (adding a name is a CT decision).
+    - **(A) Not K2. Recommended.** Writes on a confidential meeting are "other business records" (AUD-001 §4.3 third
+      row): path `a`, best effort with a warning log, and from pre-review 1 F-40 their rows carry field names only.
+      Single opens stay fail-closed (S15-12). **S15, S18, S25, S27:** as written. **S28:** unaffected (it writes no
+      audit row, and no meeting is confidential before S15). **Estimate:** no change (27 to 33).
+    - **(B) K2, delivered in R1 through the in-transaction path.** Every command listed above writes its record in the
+      same Platform transaction as its business write (`ITransactionalAuditOutboxWriter`, the `platform-islem-ici`
+      pattern) and fails with 503 when the record is not queued. A command's path is fixed by its type, not by the
+      meeting it touches (a per-meeting switch would write two records or none), so this applies to **every**
+      meeting. Needs: the CT's decision to add the command names to `TransactionOwnedAuditCommands.Authorized`, the
+      CT reconciling the K1 text above, and a transaction in handlers that have none today. **S25:** its path-`a` move
+      of `CreateMeeting` and `ScheduleFollowUpMeeting` is replaced by the in-transaction move (the carrier stays for
+      the handler facts). **S15, S18, S27:** their moves become in-transaction moves, and `PublishMinutes` and
+      `CorrectPublishedMinutes` leave the K2 debt (Q14 (a)). **S28:** unaffected. **Estimate:** one more slice before
+      S15, about 3 to 4 prompts (30 to 37). **Stated consequence:** while the audit store is down, no meeting can be
+      changed.
+    - **(C) K2, not delivered in R1.** The commands are K2 when they touch a confidential meeting, and §4.4 blocks them.
+      S15 does not start until the CT accepts the in-transaction path for these commands (then (B) is built), and the
+      slices that depend on S15 directly or through another slice (S18, S19, S20, S22, S23, S24 and S27; §24.7) wait
+      with it. The block is then
+      recorded in §24.24 and with the CT. **S25, S28:** unaffected. **Estimate:** no change in prompts; HR one-to-one meetings, the reason S15
+      exists, cannot be used until then.
+
+    **Recommendation: (A).** (1) AUD-001 maps the owner's "HR-confidential" to §7, whose fail-closed read S15-12
+    already delivers; the §4.3 K2 write class names special-category data, for which the module has no field.
+    (2) The K2 boundary in Platform is the open decision K10, and the ledger says that widening K2 adds lines to
+    `## K2 borcu` and raises its fixed count; (A) adds none. (3) After F-40, a confidential write's record carries no
+    content, so a lost record loses "who changed which field when", and path `a` logs every lost record as a warning
+    (§4.3 "best effort, not silent"). (4) (B) puts every meeting write handler, most of them delivered in S1 to S12,
+    into a transaction during a revision, and stops every meeting edit when the audit store is down. (C) blocks the
+    HR one-to-one use S15 exists for. **Residual risk of (A), stated:** special-category text in a confidential
+    meeting is written best effort, as it is in any free-text field of a non-K2 module, and the published minutes stay
+    in K2 debt (Q14 (a)) under (A) and (C). If the owner wants that closed, (B) is the way, as its own slice.
+    **S15 does not start until Q27 is answered** (A → as written; B → the in-transaction slice comes first; C → S15
+    waits for that path). S18 and S27 follow the answer through S15. S25 and S28 do not wait.
+
 ### 24.26 Live-use readiness (operating card §6.1, S-89)
 
 The data the R1 slices need in the live tenant. **The owner enters the data (shared data). The CT measures it after
@@ -2678,6 +2867,12 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
   number of meetings one type can have (S15-11; one statement, no loop); how the detail page shows a 503 on one of
   its three calls (S15-12; the reason-code bridge text is required, the layout is the slice's choice). The
   attendance-mandatory gap between S16 and S27 for a reassigned organizer without a row is stated in S27-8.
+- **Added in fix round 6 (pre-review 1).** Not run, read or reasoned only: that the raise's `UpdateMany` inside a
+  Platform transaction does not see a meeting inserted after the transaction began (MongoDB snapshot isolation; the
+  S15-11 race rows prove the closing stamp, not this premise); that no client other than the Meetings screens reads
+  the stored content of a minutes write response or a create replay (the Meetings JS was read, `minutes-editor.js`,
+  `form.js`, `follow-up-dialog.js`; other callers of the API were not searched); and which AUD-001 text governs the in-transaction path, §4.4 / §10 K1
+  (`aday`) or the Platform ledger (accepted, 2026-10-02 and 2026-10-14) (Q27).
 
 ### 24.28 S25 — Agenda at create (today's type template)
 
@@ -2750,8 +2945,9 @@ with the meeting, so the invitation is sent for a meeting that already has its a
       `PreAcceptedUserId`; a follow-up scheduled by the source organizer gives `false` and no `PreAcceptedUserId`.
       **Post-handler carrier (review 05 F-30).** `AuditBehavior` takes the command's `AuditRequestMetadata` before the
       handler runs (`AuditBehavior.cs:47, 143`), so a command's own fields cannot hold `SchedulerAddedAsAttendee`, the
-      new `MeetingId`, the carried line count, the effective confidentiality (the `Title` rule, S15-7) or, later, a
-      stored before-value. It does read the metadata's dictionaries only when it builds the record, after the handler
+      id of an existing meeting that answered a replay, the carried line count, the effective confidentiality (the
+      names-only rule, S15-7) or, later, a stored before-value. (The new meeting's own id is generated on the command
+      instead; see `EntityId` below.) It does read the metadata's dictionaries only when it builds the record, after the handler
       (`:74-80`; `AfterState` and `Metadata` at `:179-180`; `MergeMetadata` enumerates at `:268-290`). S25 therefore
       adds `MeetingAuditFacts`: a command that needs handler facts holds one instance (created with the command,
       never bound from HTTP, the same rule as the S28-4 marker), hands its `Before` and `After` dictionaries to
@@ -2761,8 +2957,23 @@ with the meeting, so the invitation is sent for a meeting that already has its a
       handler wrote after the plan was built is in the appended record. Sabotage: make `GetAuditMetadata()` copy the
       dictionaries (a snapshot), then the measurement is red. If the measurement is red on the real code, the slice
       stops and reports to the CT; then every carried field leaves §25 and R1-D12's deferral rests on its conditions
-      (1) and (3). The carrier depends on how a shared behaviour reads its input, so this test is what keeps a later
-      change of `AuditBehavior` from dropping the fields silently.
+      (1) and (3), and no meeting row writes a content value (`Title`, `Description`, `Location`, agenda `Text`) for
+      any meeting, because such a value is written only through the carrier (S15-7, pre-review 1 F-40). The carrier
+      depends on how a shared behaviour reads its input, so this test is what keeps a later change of `AuditBehavior`
+      from dropping the fields silently.
+      **`EntityId` of a create comes from the command (pre-review 1 F-42).** `AuditRequestMetadata.EntityId` is a
+      `Guid?` value fixed when the plan is built (`AuditRequestMetadata.cs:9`; `AuditBehavior.cs:143, 168-187`), so the
+      carrier cannot set it. `CreateMeetingCommand` and `ScheduleFollowUpMeetingCommand` therefore carry a server-only
+      `NewMeetingId`, generated when the command is built (an `init` property defaulting to a new id; never on an HTTP
+      request model, held by the S28-10 reflection test). `CreateMeetingHandler` writes the new meeting with that id,
+      and `GetAuditMetadata()` returns it as `EntityId`. `ScheduleFollowUpMeetingHandler` passes its own `NewMeetingId`
+      to the `CreateMeetingCommand` it sends, so both records name the same meeting. On a replay (`isNew = false`) or a
+      refusal, `EntityId` names an id that was never written; the carrier then records `ReplayOfMeetingId` (the
+      existing meeting) for a replay, and a refusal has `Outcome = Failed`. Every other §25 row that creates a record
+      follows the same rule in its own slice (§25 header). **Measurement:** the same carrier test asserts that the
+      record's `EntityId` equals the stored new meeting's id, for a create over HTTP and for a follow-up (both
+      records). Sabotage: let the handler keep the candidate's own new id instead of `NewMeetingId`, then the
+      `EntityId` rows are red.
 - [ ] S25-8 — **Follow-up ordering (review 01 F-2).** After `ScheduleFollowUpMeetingHandler` writes the carried
       lines, it re-sequences the whole agenda of the new meeting in one pass: carried lines first (K6, in their
       carry order), then mandatory lines (S18, once present), then template lines, numbered 0..n−1 with no duplicate
@@ -2965,7 +3176,9 @@ minutes. The form warns when the time boxes add up to more than the meeting leng
       `IsOptional`.
 - [ ] S27-7 — Audit: `AddMeetingAttendeesCommand`, `AddAgendaItemCommand` and `ReassignMeetingOrganizerCommand`
       (S27-8) move to path `a`, and `SetMeetingAttendeeRoleCommand` is new on path `a` (§25). `UpdateAgendaItemCommand`
-      is already on path `a` from S18.
+      is already on path `a` from S18. The `AddAgendaItemCommand` row follows S15-7's names-only rule on a confidential
+      meeting (pre-review 1 F-40): test through the real `AuditBehavior` that adding a line to a confidential meeting
+      records `Text` as a name and not its text, with the sabotage of S15-7.
 - [ ] S27-8 — **The organizer stays required after a reassignment (review 06 F-36).** Today
       `ReassignMeetingOrganizerHandler` changes only `Meeting.OrganizerUserId` and `PreviousOrganizerUserId`
       (`MeetingCommandHandlers.cs:407-408`) and touches no attendee row. From S27, after its existing checks, it writes
@@ -3425,7 +3638,9 @@ stops showing the titles of meetings the reader may not see.
         pass the eligibility filter (`MeetingCommandHandlers.cs:178-181`), the creator's `read-all` (a platform actor
         counts, S28-5), and from S15 the chosen subtype's confidential flag. A creator who would not be able to view
         it is refused with **400 `MEETING_CREATOR_CANNOT_VIEW`** and a localized message ("You would not be able to
-        see this meeting. Add yourself as an attendee."), and nothing is written. This replaces S26-10's own code.
+        see this meeting, so it was not created. Name yourself as organizer or attendee." in S28; from S15, which adds
+        confidential types, it ends "…, or choose a type that is not confidential.", S15-10, pre-review 1 F-45), and
+        nothing is written. This replaces S26-10's own code.
         - **Where it applies.** Every `CreateMeetingCommand` sent for a user: the create endpoint (with or without
           Repeat or preparation lines) and `ScheduleReviewMeetingForTaskHandler` (where it always passes, because
           the caller is the requested organizer). Under the system-origin marker the acting identity is the series
@@ -3447,7 +3662,10 @@ stops showing the titles of meetings the reader may not see.
           `CreateMeetingCommand` is reached. A source-scan test asserts that exactly one file,
           `MeetingFollowUpCommandHandlers.cs`, passes `RequireCreatorCanView` at all.
         - **Why this choice, rather than accepting the 409.** The rule is **defensive** (review 04 F-25). No screen
-          can trigger it today. The create form always sends `organizerUserId: null` (`form.js:174`;
+          can trigger it today, and from S15 the follow-up dialog does not offer a confidential subtype to a
+          scheduler who is not a party of the source (S15-10, pre-review 1 F-45), so the only screen path left is a
+          type made confidential while that dialog was open, which gets the S15 text above. The create form always
+          sends `organizerUserId: null` (`form.js:174`;
           `Views/Meetings/_Form.cshtml` has no organizer field), so the organizer is the caller
           (`MeetingCommandHandlers.cs:115`), and the Task Center's review meeting also names the caller as organizer
           (`MeetingTaskBridgeCommandHandlers.cs:457-468`). No R1 slice adds an organizer field to the form. Only a
@@ -3571,7 +3789,9 @@ stops showing the titles of meetings the reader may not see.
              (when Q25 adds it) is `Accepted`.
           2. **Reflection test**: no public property or constructor parameter named `PreAcceptedUserId`, compared
              case-insensitively as ASP.NET Core binds, exists on any type in `Features.Meetings` whose name ends with
-             `Request` (the HTTP request models, `MeetingModels.cs`).
+             `Request` (the HTTP request models, `MeetingModels.cs`). S25 adds the name `NewMeetingId` to the same
+             test, when it puts that command-generated id on `CreateMeetingCommand` and
+             `ScheduleFollowUpMeetingCommand` (S25-7, pre-review 1 F-42).
           3. **What the source scan counts** (Roslyn syntax tree, the S28-2 package, over every `.cs` file under
              `services/Diten.Platform/src/`): a file counts when it contains (a) an argument named
              `PreAcceptedUserId:`, (b) an assignment to a member named `PreAcceptedUserId` in an object initializer or
@@ -3681,7 +3901,8 @@ stops showing the titles of meetings the reader may not see.
 - A meeting deleted while the request runs → 404.
 - A creator who would not be able to view the meeting they ask for → 400 `MEETING_CREATOR_CANNOT_VIEW`, nothing
   written (S28-10). This is defensive: only a direct API caller who names another organizer reaches it (review 04
-  F-25).
+  F-25). From S15 a follow-up scheduler who is not a party of the source also reaches it with a confidential
+  subtype, through the API or a type made confidential while the dialog was open (S15-10, pre-review 1 F-45).
 - Create replay or follow-up collision by a caller who cannot view the existing meeting → 409
   `MEETING_CREATE_CONFLICT`, fixed body (S28-10).
 - Follow-up collision with a meeting the caller can view that is not a follow-up of the source → 409
@@ -3788,31 +4009,42 @@ It crosses the MOD-0024 read rule and the Task Center projection.
 > A slice that moves a command to path `a` removes its line in the same commit. **No R1 command may be added to the
 > debt list.** "Known debt" below is the measured status today. It is **not** an exception class. Yol `a` = Platform
 > `IAuditableCommand` + `IAuditMetadataProvider` (the `platform-merkezi` trace, best effort with a warning log, AUD-001
-> §4.2). The audit category is Q13 (with Q23 for the shared mirror). Confidential meetings: no `Title`, description or
-> agenda text in the metadata. **S28 adds only an access check to many rows** (R1-D12 access-check-only rule),
+> §4.2). The audit category is Q13 (with Q23 for the shared mirror). **Confidential meetings: names only (S15-7,
+> pre-review 1 F-40).** On every row below that touches a meeting whose effective flag is true, a changed content
+> field is written by name only: no value, before or after, of `Title`, `Description`, `Location` or agenda `Text`.
+> The ids, counts, `IsConfidential` and the changed field names stay. Where a row below lists one of those four
+> fields, it is a value only for a non-confidential meeting, and only through the carrier. **`EntityId` (pre-review 1
+> F-42).** A row whose command creates a record takes its `EntityId` from a server-only id generated on the command
+> (`NewMeetingId` for `CreateMeetingCommand` and `ScheduleFollowUpMeetingCommand`, S25-7; the same rule for the series,
+> type, category and agenda-line creates in their slices), because `AuditBehavior` fixes `EntityId` when it builds the
+> plan. A row whose one command writes several records (the sweep, a bulk delete, the import, the reminder job,
+> attendee adds) is a batch record with `EntityId` null, as Platform's bulk commands write today
+> (`BulkDeleteDocumentAccessPolicyCommand.cs:11-17`), and names its ids in the record. **S28 adds only an access
+> check to many rows** (R1-D12 access-check-only rule),
 > **except the three stated deferred write changes** of R1-D12 (the sweep's unchained fallback, the follow-up
 > completion, and the scheduler's `Accepted` attendee row; review 04 F-28 b, Q25), which the
 > `GenerateDueMeetingSeriesCommand`, `ScheduleFollowUpMeetingCommand` and `CreateMeetingCommand` rows name. The
 > access-check rows say "S28: access check" and stay where they are unless another slice changes what they write.
 > **Handler facts (review 05 F-30).** `AuditBehavior` takes a command's metadata before its handler runs, so every
-> field below that only the handler knows (a generated id, a written count, an outcome, a stored before-value, the
-> effective confidentiality that decides the `Title` rule, the stamp count) is written through S25's post-handler
-> carrier `MeetingAuditFacts`, whose recording S25-7 measures first. If that measurement fails, those fields leave
-> the rows and only command fields stay (R1-D12). **Read rows (review 06 F-37).** The last three rows are **reads**:
+> field below that only the handler knows (a written count, an outcome, a stored before-value, the effective
+> confidentiality that decides the names-only rule, a content value, the stamp count) is written through S25's
+> post-handler carrier `MeetingAuditFacts`, whose recording S25-7 measures first. If that measurement fails, those
+> fields leave the rows and only command fields stay (R1-D12), and no content value is written for any meeting
+> (S15-7). **Read rows (review 06 F-37).** The last three rows are **reads**:
 > single opens of a confidential meeting, an HR-confidential record by owner decision (AUD-001 §7). They go to the
 > central log through the writer Q26 decides, never to an equivalent trail.
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
 |---|---|---|---|---|---|
-| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S25** (S15, S26 and S27 then extend it). S28 (before S25): `CanView` on `FollowUpOfMeetingId` and on the replay branch, 200 or 409 on a replay, the up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, review 03 F-19) and the system-origin marker (S28-4, S28-10); those are refusals and access checks only. S28 also adds the command-only `PreAcceptedUserId` parameter (owner answer Q25), set only by `ScheduleFollowUpMeetingHandler`: the row of that one user is written `Accepted`. This is a write change, which does not move the command in S28 under R1-D12's stated deferral (no event in S28; S25 moves it and S25-7 tests the field; an `Accepted` attendee row is written today for the organizer) | After: Id, MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts, PreAcceptedUserId when set; Title only when not confidential. `PreAcceptedUserId`, `MeetingTypeId`, `StartAt`, `EndAt` are command fields; Id, the effective organizer, `IsConfidential`, the written counts and the `Title` decision go through the S25 carrier (review 05 F-30) | — |
-| UpdateMeetingCommand | meetings.meeting.updated | Meeting | today known debt (L171) → **a in S15** (S28: access check first) | Before/after of the changed fields: MeetingTypeId, StartAt, EndAt, Location, Description, IsConfidential (Title rule as above) | — |
+| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S25** (S15, S26 and S27 then extend it). S28 (before S25): `CanView` on `FollowUpOfMeetingId` and on the replay branch, 200 or 409 on a replay, the up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, review 03 F-19) and the system-origin marker (S28-4, S28-10); those are refusals and access checks only. S28 also adds the command-only `PreAcceptedUserId` parameter (owner answer Q25), set only by `ScheduleFollowUpMeetingHandler`: the row of that one user is written `Accepted`. This is a write change, which does not move the command in S28 under R1-D12's stated deferral (no event in S28; S25 moves it and S25-7 tests the field; an `Accepted` attendee row is written today for the organizer) | EntityId = the command's `NewMeetingId` (pre-review 1 F-42). After: MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts, PreAcceptedUserId when set; a `Title` value only when not confidential, otherwise the name only (S15-7, F-40); on a replay `ReplayOfMeetingId`. `NewMeetingId`, `PreAcceptedUserId`, `MeetingTypeId`, `StartAt`, `EndAt` are command fields; the effective organizer, `IsConfidential`, the written counts, `ReplayOfMeetingId` and the `Title` value go through the S25 carrier (review 05 F-30) | — |
+| UpdateMeetingCommand | meetings.meeting.updated | Meeting | today known debt (L171) → **a in S15** (S28: access check first) | Before/after of the changed fields: MeetingTypeId, StartAt, EndAt, Location, Description, IsConfidential; on a confidential meeting `Title`, `Location` and `Description` by name only (S15-7, pre-review 1 F-40) | — |
 | CancelMeetingCommand | — | Meeting | known debt (L69). S28: access check only (R1-D12), so it stays | — | not an exception; what it writes does not change in R1 |
 | ReassignMeetingOrganizerCommand | meetings.meeting.organizer-reassigned | Meeting (+ MeetingAttendee) | today known debt (L128) → **a in S27**, which changes what it writes: the new organizer's attendee row is made or created required and `Accepted` in the same Platform transaction (S27-8; review 06 F-36). S28: access check before that | After: MeetingId, NewOrganizerUserId (command fields); through the carrier, the previous OrganizerUserId and the organizer-row action (created, made-required-and-accepted or unchanged) | — |
 | AddMeetingAttendeesCommand | meetings.attendee.added | MeetingAttendee | today known debt (L57) → **a in S27** (gains `IsOptional`). S28: access check before that | After: MeetingId, UserIds added, IsOptional each | — |
 | RemoveMeetingAttendeeCommand | — | MeetingAttendee | known debt (L135). S28: access check only, so it stays | — | not an exception; what it writes does not change in R1 |
-| AddAgendaItemCommand | meetings.agenda-item.added | AgendaItem | today known debt (L55) → **a in S27** (gains presenter and duration). S28: access check before that | After: MeetingId, Text, PresenterUserId, DurationMinutes | — |
-| UpdateAgendaItemCommand | meetings.agenda-item.updated | AgendaItem | today known debt (L168) → **a in S18** (S27 extends it). S28: access check before that | Before/after: Text, PresenterUserId, DurationMinutes; MeetingId; IsMandatory | — |
-| DeleteAgendaItemCommand | meetings.agenda-item.deleted | AgendaItem | today known debt (L95) → **a in S18**. S28: access check before that | Before: Text, IsMandatory; MeetingId | — |
+| AddAgendaItemCommand | meetings.agenda-item.added | AgendaItem | today known debt (L55) → **a in S27** (gains presenter and duration). S28: access check before that | After: MeetingId, Text, PresenterUserId, DurationMinutes; on a confidential meeting `Text` by name only (S15-7, pre-review 1 F-40); EntityId = a command-generated id (F-42) | — |
+| UpdateAgendaItemCommand | meetings.agenda-item.updated | AgendaItem | today known debt (L168) → **a in S18** (S27 extends it). S28: access check before that | Before/after: Text, PresenterUserId, DurationMinutes; MeetingId; IsMandatory; on a confidential meeting `Text` by name only (S15-7, pre-review 1 F-40) | — |
+| DeleteAgendaItemCommand | meetings.agenda-item.deleted | AgendaItem | today known debt (L95) → **a in S18**. S28: access check before that | Before: Text, IsMandatory; MeetingId; on a confidential meeting `Text` by name only (S15-7, pre-review 1 F-40) | — |
 | ReorderAgendaCommand | — | AgendaItem | known debt (L137). S28: access check only, so it stays | — | not an exception; what it writes does not change in R1 |
 | CreateTaskFromMeetingCommand | — | RecordLink (+ MOD-0024 task) | known debt (L85). S28: access check only. S26 **calls** it in-process for each preparation line and does not change what it writes. If S26 has to change it, it moves to **a in S26**. | — | not an exception (the task itself has its own trace, `gorev-etkinlik-akisi`) |
 | LinkExistingTaskCommand | — | RecordLink | known debt (L124). S28: access check only, so it stays | — | not an exception; what it writes does not change in R1 |
@@ -3821,19 +4053,19 @@ It crosses the MOD-0024 read rule and the Task Center projection.
 | SaveMinutesDraftCommand | — | MeetingMinutesVersion | known debt (L155); S28 access check; S17 adds a field. It **stays in debt** under CT decision Q14 (b) (not K2; moving it to path `a` is allowed and left to S17) | — | not an exception; Q14 (b) |
 | PublishMinutesCommand | — | MeetingMinutesVersion | known debt (L126); S28 access check; changed by S16, S18 and S27. **Stays in debt**: K2 class (CT decision Q14 (a)), no path `a` until the in-transaction path (K1) exists | — | not an exception; K2 debt rule, AUD-001 §4.4 |
 | CorrectPublishedMinutesCommand | — | MeetingMinutesVersion | known debt (L72); S28 access check; changed by S16, S17, S18 and S27. **Stays in debt**: K2 class (Q14 (a)) | — | as above |
-| ScheduleFollowUpMeetingCommand | meetings.meeting.follow-up-scheduled | Meeting (+ AgendaItem, RecordLink) | today known debt (L156) → **a in S25**, which changes how its agenda is ordered (S25-8; review 01 F-2). S28: source access check, the system-origin marker forwarded, `RequireCreatorCanView: false` on the create it sends, and the rule for a meeting that was not newly written: the fixed 409 for a caller who cannot view it, 409 `MEETING_FOLLOW_UP_CONFLICT` when it is not a follow-up of the source, and the idempotent completion when it is and the meeting is scheduled; a cancelled or completed one gets its lifecycle 409 (S28-10; review 03 F-24, review 04 F-26). S28 also adds the scheduler as an `Accepted` attendee of the create it sends (`PreAcceptedUserId`) when the scheduler is a party of the source and not the new organizer (owner answer Q25). The completion and the scheduler row are write changes, not access checks. They do not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b): there is no event in S28, S25 moves the command (S25-7 tests the new field), and both changes write only kinds of rows a follow-up writes today (a link and carried lines; an attendee row through `CreateMeetingCommand`). S15: inherited confidentiality (S15-10) | After: SourceMeetingId, new MeetingId, carried line count, SchedulerAddedAsAttendee (true when S28-10's Q25 rule added the caller), IsConfidential. Title only when not confidential. `SourceMeetingId` is a command field; the rest are handler facts and go through the S25 carrier (review 05 F-30) | — |
+| ScheduleFollowUpMeetingCommand | meetings.meeting.follow-up-scheduled | Meeting (+ AgendaItem, RecordLink) | today known debt (L156) → **a in S25**, which changes how its agenda is ordered (S25-8; review 01 F-2). S28: source access check, the system-origin marker forwarded, `RequireCreatorCanView: false` on the create it sends, and the rule for a meeting that was not newly written: the fixed 409 for a caller who cannot view it, 409 `MEETING_FOLLOW_UP_CONFLICT` when it is not a follow-up of the source, and the idempotent completion when it is and the meeting is scheduled; a cancelled or completed one gets its lifecycle 409 (S28-10; review 03 F-24, review 04 F-26). S28 also adds the scheduler as an `Accepted` attendee of the create it sends (`PreAcceptedUserId`) when the scheduler is a party of the source and not the new organizer (owner answer Q25). The completion and the scheduler row are write changes, not access checks. They do not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b): there is no event in S28, S25 moves the command (S25-7 tests the new field), and both changes write only kinds of rows a follow-up writes today (a link and carried lines; an attendee row through `CreateMeetingCommand`). S15: inherited confidentiality (S15-10) | EntityId = the command's `NewMeetingId`, which it passes to the create it sends (pre-review 1 F-42). After: SourceMeetingId, carried line count, SchedulerAddedAsAttendee (true when S28-10's Q25 rule added the caller), IsConfidential, `ReplayOfMeetingId` when an existing meeting answered; a `Title` value only when not confidential, otherwise the name only (S15-7, F-40). `NewMeetingId` and `SourceMeetingId` are command fields; the rest are handler facts and go through the S25 carrier (review 05 F-30) | — |
 | CreateMeetingSeriesCommand | meetings.series.created | MeetingSeries | today known debt (L77) → **a in S21**. S23 adds the server-only `CreatedFromMeetingId` and the adoption's `CanView` (S23-8) | After: Name, MeetingTypeId, Frequency, Interval, StartsAt, EndsAt, OrganizerUserId, TitleTemplate, CreatedFromMeetingId | — |
 | UpdateMeetingSeriesCommand | meetings.series.updated | MeetingSeries | today known debt (L172) → **a in S21** | Before/after of the changed fields | — |
 | DeleteMeetingSeriesCommand | — | MeetingSeries | known debt (L97), unchanged | — | not an exception; unchanged |
-| GenerateDueMeetingSeriesCommand | meetings.series.occurrence-processed | MeetingSeries | today known debt (L118) → **a in S21**, which changes what the sweep writes (titles from the template, the claim advanced on skipped days; review 01 F-2). S28 (before S21): creates the system-origin marker with the series organizer, checks the chain source with it, and falls back to an unchained create with a `meetings.series.chain_broken` warning log when the organizer cannot view the source (S28-4, S28-11; review 03 F-18). The fallback is not an access-check-only change: it is a different write in the same call. It does not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b). The command has no event in S28 (no meeting audit row before S25, Q13 and Q23). S21 moves it, and its event records `created-unchained`. The fallback writes no new kind of data: it writes the claim and the pointer as today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line | After: SeriesId, occurrence id, outcome (created, created-unchained, skipped or failed), created MeetingId, and for created-unchained the previous MeetingId. All are handler facts (the command carries `NowUtc`, `MaxSeries` and the correlation id) and go through the S25 carrier (review 05 F-30) | — (not İ2: it writes the claim `LastProcessInstanceId` on `MeetingSeries`) |
+| GenerateDueMeetingSeriesCommand | meetings.series.occurrence-processed | MeetingSeries | today known debt (L118) → **a in S21**, which changes what the sweep writes (titles from the template, the claim advanced on skipped days; review 01 F-2). S28 (before S21): creates the system-origin marker with the series organizer, checks the chain source with it, and falls back to an unchained create with a `meetings.series.chain_broken` warning log when the organizer cannot view the source (S28-4, S28-11; review 03 F-18). The fallback is not an access-check-only change: it is a different write in the same call. It does not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b). The command has no event in S28 (no meeting audit row before S25, Q13 and Q23). S21 moves it, and its event records `created-unchained`. The fallback writes no new kind of data: it writes the claim and the pointer as today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line | One batch record per sweep run, `EntityId` null: the command processes up to 200 series (`GenerateDueMeetingSeriesHandler.cs:30, 48, 59`), and each occurrence's meeting has its own create or follow-up record with its own `EntityId` (pre-review 1 F-42). After, per processed series: SeriesId, occurrence id, outcome (created, created-unchained, skipped or failed), created MeetingId, and for created-unchained the previous MeetingId. All are handler facts (the command carries `NowUtc`, `MaxSeries` and the correlation id) and go through the S25 carrier (review 05 F-30) | — (not İ2: it writes the claim `LastProcessInstanceId` on `MeetingSeries`) |
 | CreateMeetingTypeCommand | meetings.type.created | MeetingType | today known debt (L78) → **a in S15** | After: every type field including the QA flags and MeetingCategoryId | — |
-| UpdateMeetingTypeCommand | meetings.type.updated | MeetingType (+ Meeting, the type stamp) | today known debt (L173) → **a in S15**, which also adds the type stamp: a false → true change of `IsConfidential` sets `Meeting.IsConfidential = true` on every meeting of the type in the same Platform transaction (S15-11; owner decision, review 06 F-34) | Before/after of the changed fields; QA flags named separately; `IsConfidential` before and after and `ConfidentialStampedMeetingCount` (the stored values and the count are handler facts, through the S25 carrier) | — |
+| UpdateMeetingTypeCommand | meetings.type.updated | MeetingType (+ Meeting, the type stamp) | today known debt (L173) → **a in S15**, which also adds the type stamp: a false → true change of `IsConfidential` sets `Meeting.IsConfidential = true` on every meeting of the type in the same Platform transaction (S15-11; owner decision, review 06 F-34), and a true → false change runs the same stamp before the flag is lowered (the closing stamp, pre-review 1 F-43) | Before/after of the changed fields; QA flags named separately; `IsConfidential` before and after and `ConfidentialStampedMeetingCount` on a raise or a lowering (the stored values and the count are handler facts, through the S25 carrier) | — |
 | DeleteMeetingTypeCommand | meetings.type.deleted | MeetingType | today known debt (L98) → **a in S19** | Before: Name, MeetingCategoryId | — |
 | CreateMeetingCategoryCommand | meetings.category.created | MeetingCategory | **a** (new, S19) | After: Name, Description, SortOrder | — |
 | UpdateMeetingCategoryCommand | meetings.category.updated | MeetingCategory | **a** (new, S19) | Before/after: Name, Description, SortOrder | — |
 | DeleteMeetingCategoryCommand | meetings.category.deleted | MeetingCategory | **a** (new, S19) | Before: Name | — |
 | BulkDeleteMeetingCategoryCommand | meetings.category.bulk-deleted | MeetingCategory | **a** (new, S19) | Deleted ids; refused ids with reason | — |
-| ImportMeetingTypeCatalogueCommand | meetings.type-catalogue.imported | MeetingCategory + MeetingType | **a** (new, S24) | File SHA-256; created, updated and unchanged counts; created ids; updated ids with changed field names | — |
+| ImportMeetingTypeCatalogueCommand | meetings.type-catalogue.imported | MeetingCategory + MeetingType (+ Meeting, the type stamp) | **a** (new, S24) | Batch record, `EntityId` null (F-42). File SHA-256; created, updated and unchanged counts; created ids; updated ids with changed field names; for each subtype whose `isConfidential` changed, its id and `ConfidentialStampedMeetingCount` (the type stamp in the import's transaction, S24-6, pre-review 1 F-39) | — |
 | SetMeetingAttendeeRoleCommand | meetings.attendee.role-changed | MeetingAttendee | **a** (new, S27) | Before/after: IsOptional; MeetingId, UserId | — |
 | SendDueMeetingPreparationRemindersCommand | meetings.preparation-reminder.sent | Meeting | **a** (new, S26) | After: MeetingId, PreparationReminderSentForStartAt, open count. No titles. It is job-triggered with no user, so the same no-user question as §24.27 applies. | — (not İ2: it writes the claim marker on `Meeting`) |
 | GetMeetingByIdQuery (**read**; confidential meeting only) | meetings.meeting.confidential-opened (surface `detail`) | Meeting | **read audit, new in S15** (S15-12): central log through the Q26 writer, written after the access check and before the response; **fail-closed** (503 `MEETING_CONFIDENTIAL_READ_NOT_RECORDED`). Owner decision: a confidential meeting is an HR-confidential record (AUD-001 §7; review 06 F-37) | Actor (from the token), tenant, EntityId = MeetingId, SourceModule `MOD-0357`, surface, request correlation id. No title, description, location, agenda or minutes text | — (a read row, AUD-001 §7; not a write command) |
@@ -3845,7 +4077,11 @@ Notes:
   ever implemented as a command, its class is İ5 ("hiçbir kalıcı kaydı değiştirmez — önizleme").
 - **K2.** This draft reads the seven new commands as configuration or operational records, not K2 (S26's reminder
   and S27's role change included). The CT confirmed this for the type, main-type and import commands under Q14 (c).
-  No R1 command is written "best effort" into the K2 class.
+  **Writes on a confidential meeting are not classified yet: Q27 (pre-review 1 F-41), open.** The F-37 owner decision
+  made a confidential meeting an HR-confidential record (AUD-001 §7), and whether its writes are also K2 (§4.3, §4.4)
+  is Q27's question; this table does not answer it. Until Q27 is answered, the rows above that touch a meeting are
+  written as path `a` for the meetings that exist before S15 (none is confidential), and S15 does not start. If the
+  answer is (B) or (C), the rows of the commands Q27 lists change in the slice the answer names.
 - **The first audit row and the shared mirror.** S25 is the first slice that writes a meeting audit row. Its category
   follows Q13 and Q23. S25 does not start until Q23 is answered; yes → the shared mirror gets `["Meetings"] = 18`
   (written by this CT after the owner's explicit XMC-001 answer, reviewed by the library owner, per card S-90 §7c), and
@@ -3853,7 +4089,10 @@ Notes:
   used and Q13 is reopened.
 - **Read audit (review 06 F-37).** Only the three single opens above are read-audited. The list, calendar and
   report screen are not single opens; the report's bulk export is already recorded by `IDataExportAuditWriter`; no
-  single-meeting export or print exists. A non-confidential meeting writes no read record. A refused open (404) writes
+  single-meeting export or print exists. **Content-free instead of recorded (pre-review 1 F-38):** for a confidential
+  meeting, the minutes write responses and the create replay withhold stored content (`ContentWithheld`), and the
+  report and export show `MEETING_CONFIDENTIAL_CONTENT` in place of its decision text (S15-12), so these paths write
+  no read row. A non-confidential meeting writes no read record. A refused open (404) writes
   none either, because nothing was opened. `AuditBehavior` skips queries (`AuditBehavior.cs:109-118`), so the read rows
   never use path `a`'s pipeline; they use the central writer that Q26 decides.
 - **No-user commands.** `CreateMeetingCommand`, `ScheduleFollowUpMeetingCommand`, `GenerateDueMeetingSeriesCommand`
@@ -3871,7 +4110,7 @@ Notes:
 | DL-1 | Corrections inside the delivered S1 to S12 that stay within this module (for example the subtype index fix in §24.24). A correction that crosses a module seam is not DL-1: it needs its own WP row at E5. | Implementation Notes | E4 |
 | DL-13 | S13 page help and tour | S13 — Page help and Meetings tour | E3 |
 | DL-14 | S14 honest flags | S14 — Honest display of the type flags | E3 |
-| DL-15 | S15 confidential type | S15 — Confidential meeting type, Audited Events | E5 (crosses the Task Center projection, notifications, the report and the central audit log; the type stamp and the confidential read audit run on real Mongo) |
+| DL-15 | S15 confidential type | S15 — Confidential meeting type, Audited Events | E5 (crosses the Task Center projection, notifications, the report and the central audit log; the type stamp with its closing-stamp race rows and the confidential read audit run on real Mongo) |
 | DL-16 | S16 mandatory attendance | S16 — Mandatory attendance before publishing | E4 + persistence L3 (quality-record minutes; SOP §23.1 "Compliance/financial persistent record: L3") |
 | DL-17 | S17 agenda note and outcome | S17 — Note and outcome per agenda item | E4 + persistence L3 (quality-record minutes) |
 | DL-18 | S18 mandatory agenda items | S18 — Mandatory agenda items for quality-record types, Audited Events | E4 + persistence L3 (quality-record minutes) |
@@ -3880,7 +4119,7 @@ Notes:
 | DL-21 | S21 daily and series title | S21 — Daily frequency and series title template, Audited Events | E5 (Q8 answered yes: reads the working calendar) |
 | DL-22 | S22 create auto-fill | S22 — Create-form auto-fill of the other fields | E5 (positions and people from the organization and task modules) |
 | DL-23 | S23 repeat on create | S23 — Repeat on create | E4 (including a sweep run after create and the real-Mongo partial index test) |
-| DL-24 | S24 catalogue importer | S24 — One-off type catalogue importer, Audited Events | E5 (reads the MOD-0024 task-type catalogue and organization positions) |
+| DL-24 | S24 catalogue importer | S24 — One-off type catalogue importer, Audited Events | E5 (reads the MOD-0024 task-type catalogue and organization positions; the type stamp it calls runs on real Mongo, pre-review 1 F-39) |
 | DL-25 | S25 agenda at create | S25 — Agenda at create (today's type template), Audited Events | E4 (create, persistence, invite mail, follow-up and series paths) |
 | DL-26 | S26 preparation tasks | S26 — Preparation tasks on the create form (never a block), Audited Events | E5 (creates MOD-0024 tasks through the bridge under the real assignment guard; background reminder) |
 | DL-27 | S27 attendee roles and agenda time box | S27 — Required and optional attendees with agenda presenter and time box, Audited Events | E4 (persistence, RBAC and tenant, `.ics` content, the organizer row on reassignment) |
