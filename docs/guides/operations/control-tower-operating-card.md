@@ -294,8 +294,11 @@ Kurallar:
   5. Sahip bir CT'yi duraklatınca CT kendi adına `(duraklatıldı)` ekler; kendini ve çalışmayan işçilerini **"Beklemede"**
      grubuna taşır (uygulamanın gerçek "Arşivlenenler" listesiyle karışmasın diye adı "Arşiv" değildir). Devam edince
      geri alır.
-  6. İşçinin PR'ı merge olunca CT, işçiyi **arşivlemeyi sahibe önerir** ("Soru biçimi", cevap kelimesi `arsivle`; arşiv
-     geri alınabilir); sahibin o işçi için yazdığı onay olmadan arşivlemez (§7: her seferinde sorulur).
+  6. **İşçiyi CT kendisi arşivler (S-95, sahip kararı 2026-10-29; S-62'nin yerine geçer):** işçinin commit'i main'e
+     girince (PR merge oldu, `git merge-base --is-ancestor <işçi HEAD> origin/main` ölçüldü) CT o işçiyi sormadan arşivler
+     ve bir sonraki raporun "Biten" kısmında bir satırla bildirir ("<işçi adı> arşivlendi — işi main'de"). Yalnız **kendi**
+     işçilerini arşivler; başka CT'nin, Yönetici'nin ya da CT · Setup'ın sohbetine dokunmaz. İşi yalnız CT dalındaysa ya
+     da worktree'de commit edilmemiş değişiklik varsa arşivlemez. Arşiv geri alınabilir; silme yine sahibin işidir.
   7. **Yeni işçi klasörü ve güven penceresi (S-68, 2026-10-27):** yeni bir worktree'de ilk oturum açılırken uygulama sahibe
      bir kez "bu klasöre güveniyor musunuz" diye sorar; sahip uzaktaysa pencere görünmez ve işçi açılmaz. CT işçiyi
      başlatma onayını isterken "bilgisayarın başındayken yazın" der.
@@ -531,7 +534,7 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
 | Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur. Main'e girmiş, main'de hiç olmamış bir satırın düştüğü bilinen tek commit için yalnız sahip onaylı istisna satırı (`append-only-exceptions.tsv`, `pack_approval.py exception-row`, S-91); her PR'da GitHub işi `approvals-append-only` koşar | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Kendi oturumunun ve kendi işçilerinin adı ve kenar çubuğu grubu (§0 "Oturum adı") | Kalıcı — tekrar sorulmaz; başka oturumlar için yalnız öneri | Sahip kararı 2026-10-26 (S-62) |
-| Merge'ü biten işçi oturumunu arşivlemek | **Her seferinde açık onay, tek kelime** `arsivle` — CT kendisi önerir | Sahip kararı 2026-10-26 (S-62) |
+| Merge'ü biten işçi oturumunu arşivlemek | **Kalıcı izin:** işi main'de olan kendi işçisini CT sormadan arşivler, raporda bildirir (§0 adım 6) | Sahip kararı 2026-10-29 (S-95; S-62'nin yerine) |
 | Ortak bellek (`~/.claude/projects/<depo>/memory/`) | **Yalnız kendi dosyası** — bütün Claude oturumları aynı bellek klasörünü paylaşır. CT yalnız kendi `project_<kuyruk>_…` dosyasını ekler ya da günceller ve `MEMORY.md` dizinine kendi tek satırını yazar; başka oturumların dosyalarına ve dizin satırlarına dokunmaz, kısaltmaz, birleştirmez. Dizin sınırı aşılırsa sahibe sorar (S-37) | Sahip kararı 2026-10-22 |
 | Yıkıcı Git işlemleri | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §6 |
 | `.antigravity/**` değişiklikleri | **Her seferinde açık onay** | [AGENTS.md](../../../AGENTS.md) §4 |
