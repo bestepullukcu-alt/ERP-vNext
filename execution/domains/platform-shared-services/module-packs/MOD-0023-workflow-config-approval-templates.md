@@ -491,11 +491,14 @@ and CT-APR-01. Revisions 1–2 were authored by the Treasury Intake Control Towe
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
 questions sent to the platform code owner); revision 3 is drafted on the MOD-0023 owner's instruction `rev3-yaz`
 (2026-10-29). It does **not** change this pack's frontmatter/status and authorizes no code
-until it passes CT-APR-02 and CT-APR-01. **Read §17.9, then §17.8, then §17.7 first: revision 3's code-inspection findings, then the producer's review points and D32, then the producer answer and D25, supersede earlier text where they conflict** (revision 2, 2026-10-26; revision 3, 2026-10-29). TRM-15 is closed only when §17 is approved, AC-W1…W14 have **passed** (running
-a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
-consumer owner's evidence. **If AC-W5…W12 fail against today's write path, §17 stays blocked**: §17 authorizes no
-write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
-and the Treasury re-issue gate stays closed until then. Queue: `treasury-intake` TRM-15. The policy decisions
+until it passes CT-APR-02 and CT-APR-01. **Read §17.9, then §17.8, then §17.7 first: revision 3's code-inspection findings, then the producer's review points and D32, then the producer answer and D25, supersede earlier text where they conflict** (revision 2, 2026-10-26; revision 3, 2026-10-29). TRM-15 is closed only when §17 is approved and the §17.9 closure holds:
+AC-W1…W18 have **passed** as restated in §17.9 (running a test is not passing it), the Diten.Platform build is green,
+every AC-W3 / AC-W17 consumer result is bound to that consumer owner's evidence (MDM included) and each slice is merged
+by someone other than its author. **Write path:** a write-path change is allowed only in DL-2, in the MOD-0023 owner's
+WP under D25/1 (§17.7/1; files §17.9/14); DL-1's only write-side change is the refusing `DeleteAsync` override
+(§17.8/9). The earlier rule "§17 authorizes no write-path change" (D22/2) no longer applies to DL-2. **If an AC fails
+and its fix lies outside DL-2's allowed paths, §17 stays blocked**: that fix is scoped in a separate §17 revision with
+its own approval, and the Treasury re-issue gate stays closed until then. Queue: `treasury-intake` TRM-15. The policy decisions
 below do not prove that today's code behaves this way; the ACs do.
 
 ### 17.1 Why
@@ -793,8 +796,10 @@ permission, no module id, no route path and no index.
    sabotage "reverting the filter to `DeletedAt is null`" is read as: the `includeDeleted` branch reading through
    `ExecutionFilter` (flag silently ignored), or the default branch reading without it, turns the test red. The
    `DeleteAsync` override of AC-W15 is unchanged — the inherited delete path still exists.
-2. **Allowed paths for DL-1 — extends §17.8/9 (INSPECTION.md DL-1/2):**
-   *(Made consistent with O-S17-2 = (b), item 3 — review round `2026-10-29-3e802d2f`, CT note.)*
+2. **Allowed paths for DL-1 — replaces §17.8/9's DL-1 list (INSPECTION.md DL-1/2):**
+   *(Made consistent with O-S17-2 = (b), item 3 — review round `2026-10-29-3e802d2f`, CT note.)* §17.8/9's permission
+   for an `includeDeleted` branch in the `history` read handler is **removed**; the `WorkflowRepositories.cs` override of
+   §17.8/9 stays (second bullet below). The list:
    - `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs` — only **one** new
      **read** member on `IWorkflowInstanceRepository` (`:41@4c08fc75a`): the instance read by object ids that includes
      deleted rows (the deleted-including twin of `ListByObjectIdsAsync`, `:161@4c08fc75a`). It keeps the tenant condition
@@ -809,8 +814,9 @@ permission, no module id, no route path and no index.
      item 1(d). Not abstract either: test doubles implement the interface (e.g.
      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs:1783-1784@4c08fc75a`, `AllReservedBarrier`)
      and would all have to change. A throwing default fails loudly; AC-W13/W15 run on the real repository anyway (item 1(c)).
-   - Its implementation in
-     `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs`.
+   - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs` —
+     the refusing `DeleteAsync` override in the three repositories (§17.8/9, AC-W15) and the new read member's
+     implementation (the default `IsDeleted` hide already comes from `ExecutionFilter`, item 1(a)).
    - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstancesByObjectsHandler.cs`
      — its `includeDeleted` branch and the `isDeleted` mapping.
    - `.../Handlers/QueryHandlers/GetWorkflowInstanceHistoryHandler.cs` (same folder) — **only** the additive read fields
@@ -833,7 +839,8 @@ permission, no module id, no route path and no index.
      `Unknown` transition intent under a deleted instance stays `Unknown` with an alert.
    - **Öneri — sahip kararı:** (b). The policy is that nothing is deleted (§17.7/2) and the flag is defensive (§17.8/3);
      (b) already stops a re-issue, needs fewer new repository members and keeps `history`'s answer unchanged.
-   - **Decided (MOD-0023 owner, `gecmis-404`, CT · İş akışı chat, 2026-10-29): (b).** Consequences for item 2: `history`
+   - **Decided (MOD-0023 owner, `gecmis-404`, CT · İş akışı chat, 2026-10-29): (b)** — record
+     `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`, row S17-2. O-S17-2 is no longer a gate. Consequences for item 2: `history`
      takes no `includeDeleted` parameter and gets no deleted-including read; `GetWorkflowInstanceHistoryQuery.cs` and the
      `history` action stay unchanged; the `history` handler changes only for the additive read fields (`approvalTaskId`,
      `idempotencyKey`, `isDeleted` of each returned row — always `false` there, since deleted rows are filtered). The only
@@ -844,16 +851,43 @@ permission, no module id, no route path and no index.
    (`.../Entities/Workflow/WorkflowInstance.cs:23, 66@4c08fc75a`). `EvidenceRef` is compared by the terminal writer's
    `SamePayload` (`.../Handlers/CommandHandlers/WorkflowTerminalTransitionWriter.cs:433-438@4c08fc75a`) and holds the trusted
    cancel fingerprint (`.../Services/TrustedWorkflowCancellationCoordinator.cs:288@4c08fc75a`); pseudonymising it must keep
-   those comparisons meaningful, like `StartedByUserId`. The WP **measures `RuntimeAssignmentSnapshot`** (by name:
-   `ResolvedPrincipalId`, `CandidatePrincipalIds`, `TieBreakExplanation`,
-   `.../Entities/Workflow/RuntimeAssignmentSnapshot.cs:10-13@4c08fc75a`; not measured by the note) and records whether it
-   holds personal data and how O-S17-1 would treat it. The list stays a candidate list; the owner confirms it in the WP.
+   those comparisons meaningful, like `StartedByUserId`. **Further candidates (review round 3, interim check 02 F-6;
+   read, not run, @4c08fc75a):**
+   - `RuntimeAssignmentSnapshot.ResolvedPrincipalId`, `CandidatePrincipalIds` (principal ids,
+     `.../Entities/Workflow/RuntimeAssignmentSnapshot.cs:10-11`); the WP still measures `TieBreakExplanation` (`:13`).
+   - `WorkflowInstance.StartRequestFingerprint` (`.../Entities/Workflow/WorkflowInstance.cs:33`): a SHA-256 over, among
+     others, the maker id, object ref and candidate ids
+     (`.../Features/Workflow/Services/WorkflowInstanceStartCoordinator.cs:761-790`), compared on a same-key trusted start
+     at `:228-255` — with `DelegatedMakerUserId` and `ObjectRef` also compared directly (`MatchesReservation`, `:598-615`)
+     and the legacy fingerprint recomputed from the stored snapshot (`:228-238`). Pseudonymising those inputs must not
+     turn a genuine same-key replay into 409 `WORKFLOW_START_IDEMPOTENCY_CONFLICT`.
+   - The trusted cancel evidence read parses `log.ActorId` as a `Guid`
+     (`.../Services/TrustedWorkflowCancellationCoordinator.cs:289`; failure → Conflict `:293`): a pseudonym of
+     `ActorId` must stay Guid-shaped.
+   - `RequestInfo` writes `target:{principal}` into the log `Comment` even when the user wrote none
+     (`.../Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs:587-591`).
+   - A caller-chosen `IdempotencyKey` may be free text (Diten.Web inputs, item 13); D32/3 keeps the key unchanged, so
+     a key holding personal data is a question for O-S17-1.
+   The list stays a candidate list; the owner confirms it in the WP. O-S17-1 stays open.
 5. **AC-W3 consumer list — extends §17.4 (INSPECTION.md DL-1/4):** add Platform's own `by-objects` tests
    (`services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCrossServiceTests.cs:437-482@4c08fc75a`:
    batch read, limits, route and permission), which must pass against the new fields. Diten.Web has **no history-body test**:
    `frontend/Diten.Web.Tests/Controllers/ClaimsV2ProxyTests.cs:154@4c08fc75a` asserts only the proxy route of
    `frontend/Diten.Web/Controllers/CRM/ClaimsController.V2.cs:280`; the Web owner names or writes one (status until then:
    not tested). MDM (D32/5) and Treasury (no code on main) are unchanged.
+   **Further AC-W3 rows (interim check 02 F-5, F-7; read, not run, @4c08fc75a):**
+   - Platform's own `history` tests (`WorkflowCrossServiceTests.cs:551-634`: sequence, step names, actor display,
+     other-tenant 404, route and permission) must pass against the new fields.
+   - `instances/{id}`: Diten.Web `getInstance`
+     (`frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/workflow.api.js:125-126`; no caller found by `grep` under
+     `assets/js/Platform/Workflow`), and `listInstances` (`:125`, `GET instances`), which returns the same
+     `WorkflowInstanceDto` (`.../Handlers/QueryHandlers/GetWorkflowInstanceListHandler.cs:18-23`; callers
+     `.../Platform/Workflow/index.js:925, 956`, `tasks.js:434`) — consumers if the optional `idempotencyKey` (§17.7/4) is
+     added; the Web owner records the result. This corrects §17.4 AC-W3's "no consumer outside Platform".
+   - Inventory: the body evidence is `QuarantineWorkflowTests` through `FakeWorkflowGateway`
+     (`services/Diten.InventoryService/tests/Diten.InventoryService.Tests/TestInfrastructure/FakeWorkflowGateway.cs:47`);
+     `QuarantineArchitectureTests` checks only the approval-port registration (`QuarantineArchitectureTests.cs:165-183`)
+     and reads no body.
 6. **Schema manifest path (INSPECTION.md DL-1/5):** §17.2 and AC-W1 mean
    `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.WorkflowWorkCenter.cs`
    (index names at `:125`, `:220` @4c08fc75a).
@@ -875,17 +909,23 @@ permission, no module id, no route path and no index.
    so another actor's replay gets 200. **AC-W18 (proposal for the target answer):** same (task, `Cancel`, key) with a
    different actor → the same answer the other transitions give after the fix (403 `WORKFLOW_ACTOR_DENIED`); with the same
    actor and a different body → the AC-W14 409; same actor and body → 200 `isIdempotent = true`. Sabotage: restoring the
-   direct replay call turns it red.
+   direct replay call turns it red. The changed cancel answer (another actor's replay: 200 today → 403) is part of the
+   AC-W17 consumer check: Timesheet withdraw and Diten.Web `cancelTask` (item 13) record their result; AC-W18 does not
+   pass without it.
 9. **AC-W8 restated (INSPECTION.md DL-2/3; timing cases rewritten for review F-2, `2026-10-29-3e802d2f`):** two
-   different decisions on one pending task (e.g. approve vs reject, different keys): exactly one terminal decision, no
-   second terminal row, never 200 for the loser. The loser's answer depends on when it reads. Order of checks
+   different decisions on one pending task (e.g. approve vs reject, different keys): exactly one decision is recorded —
+   one row for (task, winner's action, winner's key), none under the loser's key — and never 200 for the loser. At the
+   final step that is one terminal decision (pattern `WorkflowCandidateDecisionMongoTests.cs:118@4c08fc75a`); at an
+   intermediate step an Approve winner also writes exactly one next task and one `{key}:next:{nextTaskId}` Start row
+   (item 10, F-4 paragraph; pattern `:142`). AC-W8 covers both steps. The loser's answer depends on when it reads. Order of checks
    (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs@4c08fc75a`):
    replay lookup by (task, action, key) `:61-65` (no row under the loser's key), task lookup `:67-75`, `expectedVersion`
    mismatch → 409 `WORKFLOW_TRANSITION_CONFLICT` (`StaleVersion`, `:77-80, 1011-1016`), not decidable → 409
    `WORKFLOW_TASK_INVALID_STATE` (`:82-89`), then the in-transaction write. Separate measured cases, each forced by the test:
    - **(b) late arrival** — the test awaits the winner's committed answer, then sends the loser. Without `expectedVersion`
      → 409 `WORKFLOW_TASK_INVALID_STATE`; with the version read before the winner (now stale) → 409
-     `WORKFLOW_TRANSITION_CONFLICT`. A later replay of the loser's own key gets the same answer as its late arrival.
+     `WORKFLOW_TRANSITION_CONFLICT`. A later replay of the loser's own key gets the same answer as its late arrival
+     (under O-S17-3 (i) too: the added re-read finds no row under the loser's key, item 17).
    - **(c) in-transaction overlap** — forced by a barrier around the real executor (pattern: `TwoCallerBarrier` around
      `PlatformTransactionExecutor`,
      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.cs:121, 602@4c08fc75a`),
@@ -896,23 +936,44 @@ permission, no module id, no route path and no index.
      wait (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`), forced by an injected "unavailable" executor.
    - Case (a) (a recorded row found on the first read) does not apply: no row exists under the loser's key.
    The existing tests (`WorkflowCandidateDecisionMongoTests.cs:118-130, 142-154@4c08fc75a`) are approve-vs-approve in case
-   (c); the WP adds approve-vs-reject in (b) and (c). Consumer rule §17.7/6 unchanged: the 409 conflict is `Unknown`.
-   Fact for it: a replay that repeats a stale `expectedVersion` gets 409 `WORKFLOW_TRANSITION_CONFLICT` again; the
-   definite refusal comes from a replay without it, or from a read.
+   (c); the WP adds approve-vs-reject in (b) and (c), at the final and the intermediate step. Consumer rule §17.7/6:
+   the 409 conflict is `Unknown`. Fact for it: a replay that repeats a stale `expectedVersion` gets 409
+   `WORKFLOW_TRANSITION_CONFLICT` again. **The definite refusal depends on O-S17-3 (item 17):** under (i) it comes from
+   409 `WORKFLOW_TASK_INVALID_STATE` (first send or replay without the stale version) or from a read; under (ii) a
+   `WORKFLOW_TASK_INVALID_STATE` after a same-key retry is `Unknown`, and the refusal comes only from a first send's
+   `WORKFLOW_TASK_INVALID_STATE` or from a `history` read (the other decision recorded, no row under the loser's key).
 10. **AC-W6 / AC-W7 restated (INSPECTION.md DL-2/4, DL-2/7; timing cases rewritten for review F-2):** identical
-    transitions (same task, action, key, actor and body) → exactly one transition row in every case. AC-W6 is Approve,
-    AC-W7 is Reject and RequestInfo (§17.4); Delegate is in neither and gets no case here. Separate measured cases, each
-    forced by the test (lines in `WorkflowTaskTransitionSupport.cs@4c08fc75a` unless named).
+    transitions (same task, action, key, actor and body) → exactly **one row for (task, action, key)** in every case.
+    AC-W6 is Approve, AC-W7 is Reject and RequestInfo (§17.4); Delegate is in neither and gets no case here. Separate
+    measured cases, each forced by the test (lines in `WorkflowTaskTransitionSupport.cs@4c08fc75a` unless named).
+    **Final and intermediate step (interim check 02 F-4):** an intermediate Approve is not written by `CommitAsync` but
+    by `CommitStepAsync` (`:284-308`; `WorkflowTerminalTransitionWriter.cs:197-259@4c08fc75a`), in one transaction with
+    two log rows: the decision (task, `Approve`, key) and the next task's `Start` row under `{key}:next:{nextTaskId}`
+    (`:289-306`). Its conflict is `WorkflowTerminalTransitionWriter.cs:251-253` and its transaction-unavailable path
+    `:255-257` (the same `AfterUnavailableAsync` as the final step, `:357`). So AC-W6 and AC-W8 assert one row for
+    (task, `Approve`, key) and, at the intermediate step, exactly one next task and one next-`Start` row — not one log
+    row in total — and each covers both the final step (pattern `WorkflowCandidateDecisionMongoTests.cs:118`) and the
+    intermediate step (`:142`). **Case (b) of Approve/Reject depends on owner decision O-S17-3 (item 17).**
     **Approve and Reject** (`TransitionAsync`; the check order `:61-65` / `:67-75` / `:77-80` / `:82-89` is theirs only):
     - **(a) replay found on the first read** — the test awaits the first call's committed answer, then repeats it: the
       lookup `:61-65` finds the row and answers through the actor-bound replay `:1018-1030` → 200 `isIdempotent = true`,
       same transition (`:1054-1084`). No task, version or decidable check runs, so a stale `expectedVersion` does not
       change it; a different actor → 403 (item 7).
     - **(b) late arrival** — a call whose lookup `:61-65` ran before the twin committed and whose task read `:67` ran
-      after it: without `expectedVersion` → 409 `WORKFLOW_TASK_INVALID_STATE` (`:82-89`); with a stale `expectedVersion`
-      → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:77-80`). Forced by a wrapper that holds the call between the two reads
-      until the twin has committed (pattern: `AllReservedBarrier`,
-      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs:1783@4c08fc75a`).
+      after it. **Today:** without `expectedVersion` → 409 `WORKFLOW_TASK_INVALID_STATE` (`:82-89`); with a stale
+      `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:77-80`) — although its own transition is recorded.
+      **Asserted answer per O-S17-3:** under (i) 200 `isIdempotent = true` with the twin's transition, with or without a
+      stale `expectedVersion` (a different actor → 403, item 7; sabotage: removing the added re-read turns it red);
+      under (ii) today's two answers, and the AC-W17 / Treasury consumer check shows each mapped to `Unknown` and
+      resolved by a `history` read. Forced by holding the late call between the two reads while the twin runs and
+      commits — the loser-held / winner-runs pattern of
+      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowStartRecoveryMongoTests.cs@4c08fc75a`:
+      `Hold` (`:2718`, holds the first call of a read until released), a repository wrapper that calls `Hold.PassAsync()`
+      around the held read (`HoldAfterReserveRepository`, `:2448-2463`), and the test shape `:1870-1889` (start the held
+      call, await `ReachedAsync`, run the winner to its committed answer, `Release`, assert). Here the wrapper wraps the
+      late call's task repository only (the winner gets the unwrapped one, as `:1878` does) and passes the hold
+      **before** the inner `GetByIdAsync` (`:67`), so that read sees the committed twin. `AllReservedBarrier` (`:1783`) is not this pattern: it holds
+      every caller at the key lookup until all arrive (AC-W5, item 11).
     - **(c) in-transaction overlap** — barrier around the real executor as in item 9 (c), both calls past `:61-65` and
       `:82-89` before either commits. Loser → 409 `WORKFLOW_TRANSITION_CONFLICT`
       (`WorkflowTerminalTransitionWriter.cs:108-110@4c08fc75a`); on the transaction-unavailable path the re-read finds
@@ -942,8 +1003,11 @@ permission, no module id, no route path and no index.
     `WaitingEvidence` (`:846-858`).
     - **(a)** — as for Approve/Reject: the lookup `:539-547` finds the row and answers through the actor-bound replay
       (`:546`) → 200 `isIdempotent = true`.
-    - **(b) late arrival** — held between the lookup `:539-547` and the task read `:732` until the twin has committed.
-      With a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT` (`:558-561`). Without `expectedVersion` the
+    - **(b) late arrival** — held between the lookup `:539-547` and the task read `:732` until the twin has committed
+      (same hold pattern as Approve/Reject (b)). With a stale `expectedVersion` → 409 `WORKFLOW_TRANSITION_CONFLICT`
+      (`:558-561`) today; under O-S17-3 (i) the added re-read also precedes this answer, so the asserted answer is 200
+      `isIdempotent = true` (actor-bound); under (ii) the 409 stays and is `Unknown` (§17.7/6). No
+      `WORKFLOW_TASK_INVALID_STATE` arises here (the task stays decidable). Without `expectedVersion` the
       late call meets a still-decidable task, so `:562-565` does not refuse it and it reaches the write with a second log
       under the same (task, `RequestInfo`, key). **Its answer and row count are to be measured by the WP, not asserted
       here:** a refusal by the unique index `ux_workflow_transition_logs_task_action_idempotency_active`
@@ -960,7 +1024,12 @@ permission, no module id, no route path and no index.
     `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCandidateDecisionMongoTests.cs@4c08fc75a`
     only `ApproveAsync` takes `tasks:` (`:518-520`); `RejectAsync` (`:528-535`) and `RequestInfoAsync` (`:537-542`) do
     not. The WP extends both (tests are an allowed path, item 14). `RejectAsync` sends a non-blank comment and wires no
-    version repository, so the Reject pre-check above does not run there.
+    version repository, so the Reject pre-check above does not run there. **None of the three helpers passes
+    `expectedVersion`** (`ApproveAsync` `:526`, `RejectAsync` `:535`, `RequestInfoAsync` `:542` build the request
+    without it; the request records take it as the optional trailing `ExpectedVersion`,
+    `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs:473, 483, 512@4c08fc75a`):
+    the WP adds an `expectedVersion` parameter to `ApproveAsync`, `RejectAsync` and `RequestInfoAsync`
+    (`WorkflowCandidateDecisionMongoTests.cs:518-542`) for the stale-version cases.
 
     After any case, a replay of the same key is case (a). No existing test covers AC-W6/W7 or AC-W9/W10 (note DL-2/7);
     the WP writes them.
@@ -982,8 +1051,13 @@ permission, no module id, no route path and no index.
     refuses a closed instance at `:188-197`; a new 409 would reach its failure branch `:181-186`) and the WorkCenter
     dispatcher (`.../Features/WorkAggregation/Providers/WorkflowApprovalWorkItemActionDispatcher.cs`); and Diten.Web,
     whose key is user-editable (`frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/workflow.api.js:127-136`,
-    inputs `frontend/Diten.Web/Views/Platform/Workflow/Index.cshtml:313, 333`) (all @4c08fc75a). Each owner records its
-    result as AC-W17 says. These callers are **not** DL-2 allowed paths: if one must change, stop and ask its owner
+    inputs `frontend/Diten.Web/Views/Platform/Workflow/Index.cshtml:313, 333`) (all @4c08fc75a). **Cancel callers, for
+    the AC-W18 change (interim check 02 F-5):** Timesheet withdraw cancels each open task through MOD-0023's
+    `CancelWorkflowTaskCommand` with key `timesheet-withdraw:{approvalTaskId}` and the withdrawing user as actor, and
+    returns `false` on any non-success answer (`TimesheetApprovalService.cs:256-270`); Diten.Web `cancelTask`
+    (`workflow.api.js:136`; callers `.../Platform/Workflow/index.js:1004`, `tasks.js:380`) sends a user-editable key.
+    After AC-W18 another actor's replay of the same cancel key gets 403 instead of today's 200; each owner records
+    whether its caller can send that case. Each owner records its result as AC-W17 says. These callers are **not** DL-2 allowed paths: if one must change, stop and ask its owner
     (XMC-001).
 14. **DL-2 allowed paths — replaces §17.8/9 DL-2 bullet (INSPECTION.md DL-2/8):** under
     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/`:
@@ -1011,13 +1085,53 @@ permission, no module id, no route path and no index.
       takes no `includeDeleted`, item 3).
     - A caller without `instances.view` → refused as today, on all three actions.
     - Sabotage: dropping the tenant condition on the `includeDeleted` branch (the new read member of item 2) turns it red.
+16. **AC-W2 restated (DL-1; interim check 02 F-1) — replaces the tenant clause of §17.4 AC-W2 and §17.3/3's "same
+    404".** §17.4's "other-tenant id → 404 unchanged" is wrong for `by-objects`, which never answers 404 for a foreign
+    object (item 15). **AC-W2:** `by-objects` and `history` return the stored `idempotencyKey` (and `approvalTaskId` on
+    `history`) for keyed writes and `null` for unkeyed ones. Tenant clause, unchanged from today:
+    - `history` and `instances/{id}` for another tenant's instance id → 404 `NotFoundNonLeakage`
+      (`GetWorkflowInstanceHistoryHandler.cs:51-59@4c08fc75a`, `GetWorkflowInstanceByIdHandler.cs:20-28@4c08fc75a`;
+      existing test `WorkflowCrossServiceTests.cs:616-625@4c08fc75a`);
+    - `by-objects` for another tenant's object → 200, that object's entry with an empty `instances` list
+      (`GetWorkflowInstancesByObjectsHandler.cs:55-72@4c08fc75a`; existing assertion
+      `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCrossServiceTests.cs:456-457@4c08fc75a`);
+      no row of another tenant appears.
+    `instances/{id}` + `idempotencyKey` stays optional (§17.7/4) and is not asserted. The `includeDeleted` variant is
+    AC-W16 (item 15).
+17. **Owner decision O-S17-3 — an identical late same-key retry answered 409 `WORKFLOW_TASK_INVALID_STATE` (DL-2;
+    interim check 02 F-2) — open.** In Approve/Reject case (b) (item 10) an identical retry whose own transition is
+    already recorded gets 409 `WORKFLOW_TASK_INVALID_STATE` (`WorkflowTaskTransitionSupport.cs:82-89@4c08fc75a`), or 409
+    `WORKFLOW_TRANSITION_CONFLICT` with a stale `expectedVersion` (`:77-80`). §17.7/6 calls the first a definite refusal,
+    so a consumer would record `Refused` for a transition that was recorded.
+    - **(i) DL-2 target:** before answering `WORKFLOW_TASK_INVALID_STATE` (`:82-89`; RequestInfo `:562-565`) and before
+      `StaleVersion` (`:77-80`; RequestInfo `:558-561`), the handler re-reads the (task, action, key) log
+      (`GetByTaskActionIdempotencyKeyAsync`, as at `:61`, `:539`); a recorded twin answers 200 `isIdempotent = true`
+      through the actor-bound replay (`:1018-1030`; another actor → 403, item 7). The answer to an identical retry no
+      longer depends on timing; §17.7/6 stays as written. File: `WorkflowTaskTransitionSupport.cs` (item 14).
+      AC-W6/W7 case (b) assert 200 (item 10); AC-W8 unchanged (no row under the loser's key, item 9).
+    - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
+      is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No producer
+      change; AC-W6/W7 case (b) assert today's answers; §17.7/6 is amended this way, and every AC-W17 consumer and
+      Treasury records the rule.
+    - **Öneri — sahip kararı:** (i). The answer is fixed once in the producer instead of in every consumer (Treasury,
+      Tasks, Timesheet, WorkCenter, Web), at the cost of one indexed read on the refusal path only.
+    - **Gate:** the DL-2 WP prompt is not written before O-S17-3 is decided; DL-1 does not depend on it.
 
 **Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş
 akışı chat, 2026-10-29).** F-2 is closed by items 9 and 10 above, the CT note by item 2; F-3 (review input) needs no pack
-change.
+change. In revision 3 the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.4 heading (DL-2), so
+both slices now list the same §17 headings.
 
-**Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here; O-S17-2 decided before DL-1's
-WP prompt; the rest of the §17.8 closure unchanged.
+**Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
+review; all findings accepted by the CT; owner `duzelt`).** F-1 → item 16 and the DL-1 finish list; F-2 → item 17
+(O-S17-3, open) and items 9, 10; F-3 → item 10 (b) and the test-helper paragraph; F-4 → items 9, 10; F-5 → items 5, 8,
+13; F-6 → item 4; F-7 → item 5 (Inventory test cite), other cites re-checked, no change; F-8 → this paragraph, the §17
+status paragraph, items 2, 3 and the closure.
+
+**Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6…W8
+by items 9, 10 and 17); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
+S17-2) and no longer a gate; **O-S17-3 is open and must be decided before the DL-2 WP prompt**; the rest of the §17.8
+closure unchanged.
 
 ## Teslim dilimleri
 
@@ -1029,6 +1143,8 @@ WP prompt; the rest of the §17.8 closure unchanged.
 Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
 durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu sahibi yazar, başka biri merge eder (D32/1).
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
-(AC-W3, W13, W15, W16 §17.9'daki haliyle; DL-1 prompt'u O-S17-2 kararından önce yazılmaz).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17 §17.9'daki haliyle) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
+(AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
+artık kapı değil).
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6…W8 O-S17-3 kararına
+bağlı, §17.9/17; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
