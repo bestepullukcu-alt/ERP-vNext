@@ -331,6 +331,29 @@ tahmin edilmedi. Plan §5.6'nın "6–9 prompt" tahmini yalnız Dalga 4–5'i ka
     açınca kendiliğinden katılımcı olarak eklenir. Pakete düzeltme turu 4'te işlendi (S28-10, "Scheduler as
     attendee"; sahip `duzelt-4`, 2026-10-29). CT'nin iki okuması sahip onayını bekliyor: ekleme "kabul etti" durumuyla
     yapılır; yalnız kaynak toplantının tarafı (düzenleyen ya da katılımcı) eklenir, her şeyi görebilen yönetici eklenmez.
+    İki okuma 6c'deki toplu kararla kabul edildi (sahip, 2026-10-29).
+6c. **Paket R1 açık soruları ve davranış değişiklikleri — sahip kararı (2026-10-29).** Sahip bu sohbette butonla
+    «Hepsi önerilenle (Önerilen)» seçeneğini seçti. Seçeneğin metni: "Q17 ertelenir; Q23 evet; Q26 evet; Q27 A;
+    Q28 C; F-35 409; dilim sırası ve 29–36 kabul; 9 davranış değişikliği kabul. Cevaplar iş listesine yazılıp commit
+    edilir; paket değişmez. Onay satırı, push, PR yok." Hedef sürüm: paket `ee542bf9…` (commit `ed75290c4`;
+    inceleme 11, Codex, KOŞULLU, açık engel yok). Paket metni bu cevaplarla değiştirilmedi; yeni bir inceleme
+    gerekmesin diye cevaplar burada ve onay satırının notunda durur.
+    - **Q17** (QA süreç sahibinin adı): ertelendi; yalnız gerçek katalog yüklemesini bekletir, kodu bekletmez.
+    - **Q23** (ortak denetim aynasına `["Meetings"] = 18`): evet (XMC-001). Satırı bu CT, S25'te yazar; kütüphane sahibi
+      inceler (kart S-90 §7c).
+    - **Q26** (İK-gizli tekil okuma için ortak yazıcı): evet (XMC-001). `ISensitiveRecordReadAuditWriter`, paketteki
+      önerilen biçimle, `Features/Audit/Services` altına; Audit alanının sahibi inceler.
+    - **Q27** (gizli toplantı yazmaları K2 mi): (A) K2 değil — yol `a`, en iyi çaba, yalnız alan adı; tekil okuma
+      kapalı-başarısız kalır.
+    - **Q28** (gizli olmayan toplantının denetim satırları): (C) `Description` yalnız alan adı; `Title`, `Location`
+      ve gündem `Text` önce/sonra değer.
+    - **F-35** (görünmeyen hedefe tekrar): 409 `MEETING_CREATE_CONFLICT` (yazarın seçimi kabul).
+    - **Dilim sırası ve tahmin** (§24.7): kabul; S28 ilk, toplam 29–36 prompt (tahmin).
+    - **§24.22'deki 9 davranış değişikliği:** hepsi kabul (gizli içerik saklama, kapanış damgası, tür yazma belirteci,
+      kaybeden eşzamanlı oluşturmaya 409, devam taşıma sırası, katılımcı değişikliği ve yayın, gizli tür serileri,
+      inceleme toplantısı gündemi, devam başlığı).
+    - **Açık koşullar:** inceleme 11'in F-65, F-66, F-67 bulguları (ORTA, sahip CT) S25, S15 ve S18 kodlanırken
+      testleriyle kapatılır.
 6a. **Yöneticiden beklenen belge (sahip, 2026-10-27).** İçeriği henüz bilinmiyor; iş onu beklemeden sürer. Belge
     gelince paket revizyonu (iki kademeli tür, kod alanı) ve bu listeyle karşılaştırılır; çelişen yer varsa sahibe
     sorulur. Kod alanı notu: toplantı türü RCS-001'e göre İKİSİ DE sınıfı, önek `MTY`; ortak kod servisi (BL-565)
