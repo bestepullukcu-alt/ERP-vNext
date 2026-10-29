@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json.Nodes;
 using Diten.SupplyChainService.Application.Features.Returns;
 using Diten.SupplyChainService.Infrastructure.Features.Returns;
+using Diten.SupplyChainService.Persistence.Features.Returns;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Diten.SupplyChainService.Tests.Common;
 using Diten.SupplyChainService.Tests.Shipments.Dispatch;
 using Microsoft.AspNetCore.Hosting;
@@ -48,6 +50,15 @@ public sealed class ReturnReceiptHost : WebApplicationFactory<Program>
     public readonly FakeInventory Inventory = new();
     public readonly FakeShipmentDetail Shipments = new();
     public readonly ManualClock Clock = new();
+    /// <summary>Fails the Returns write stage named by <see cref="FailingProbe.FailAt"/> once (e.g. step D's outbox insert).</summary>
+    public readonly FailingProbe Probe = new();
+    public sealed class FailingProbe : IReturnCommitProbe
+    {
+        public string? FailAt;
+        public Task AtAsync(string boundary, CancellationToken ct) =>
+            Interlocked.CompareExchange(ref FailAt, null, boundary) == boundary ? throw new TimeoutException("Injected Returns write-stage fault") : Task.CompletedTask;
+        public Guid NewId() => Guid.NewGuid();
+    }
     private static string Connection => Environment.GetEnvironmentVariable("RETURNS_MONGO_URI")
         ?? throw new InvalidOperationException("RETURNS_MONGO_URI must point to an isolated replica set; there is no fallback port.");
     protected override IHost CreateHost(IHostBuilder builder)
@@ -61,7 +72,7 @@ public sealed class ReturnReceiptHost : WebApplicationFactory<Program>
         builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings()));
         builder.ConfigureServices(s =>
         {
-            s.StubLegalEntityValidation().UseFakeInventory(Inventory, Clock);
+            s.StubLegalEntityValidation().UseFakeInventory(Inventory, Clock).Replace(ServiceDescriptor.Singleton<IReturnCommitProbe>(Probe));
             s.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>().ConfigurePrimaryHttpMessageHandler(() => Shipments);
         });
     }

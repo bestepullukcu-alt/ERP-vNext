@@ -247,7 +247,8 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
             // Append-only and without the lease: whatever state the return is in, the pair is kept.
             await Orders.UpdateOneAsync(transaction, Identified(scope, id), Builders<ReturnOrder>.Update.Push(x => x.ReceiptAuditHistory, entry), cancellationToken: token);
             var row = Scope(scope); row.Add("_id", Guid.NewGuid().ToString()); row.Add("ReturnId", id.ToString()); row.Add("ActorId", scope.ActorId.ToString());
-            row.Add("Kind", "ReceiptLateWriter"); row.Add("CommittedAt", DateTimeOffset.UtcNow.ToString("O"));
+            // Review 01 F-2: a posted resend answered with another movement is recorded the same way, under its own kind.
+            row.Add("Kind", entry.Outcome.StartsWith("ResendTransactionMismatch", StringComparison.Ordinal) ? "ReceiptIntegrityFault" : "ReceiptLateWriter"); row.Add("CommittedAt", DateTimeOffset.UtcNow.ToString("O"));
             row.Add("LateWriter", BsonDocument.Parse(JsonSerializer.Serialize(entry)));
             await database.GetCollection<BsonDocument>("returns_audit").InsertOneAsync(transaction, row, cancellationToken: token);
             // The command that runs the late writer has lost its lease and fails, so this row stays Abandoned (BL-501).

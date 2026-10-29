@@ -10,6 +10,14 @@ public sealed class ReceiptAttempt
     public DateTimeOffset LeaseUntil { get; set; }
     /// <summary>+1 on every stored write of the attempt.</summary>
     public long Rev { get; set; }
+    /// <summary>
+    /// The values of the last accepted command (review 01 F-1, Natig 2026-10-29): a new command is compared with these, not
+    /// with each line — after a correction the lines may hold different values. Set when the attempt opens and on every
+    /// accepted command; Posted lines keep their own request.
+    /// </summary>
+    public string? CurrentWarehouseId { get; set; }
+    public string? CurrentLocationId { get; set; }
+    public string? CurrentOccurredAt { get; set; }
     public List<ReceiptAttemptLine> Lines { get; set; } = [];
 
     public static string ReceiptKey(Guid returnId, string lineNumber, int k) => $"{returnId}:{lineNumber}:customer-return:a{k}";

@@ -281,6 +281,102 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
             Assert.DoesNotContain(type.GetConstructors().SelectMany(c => c.GetParameters()), p => forbidden.Contains(p.ParameterType));
     }
 
+    [Fact]
+    public void R34_10_NoReturnsSourceReachesMod0183sStoreOrTheServiceProvider()
+    {
+        // Review 01 F-7: an assembly-wide text scan of every Returns feature folder (comments stripped), so a read through
+        // IServiceProvider, a static helper or MOD-0183's repository type is caught, not only a constructor parameter.
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
+        var src = Path.Combine(root!.FullName, "services", "Diten.SupplyChainService", "src");
+        var files = Directory.GetDirectories(src, "Returns", SearchOption.AllDirectories)
+            .Where(d => d.EndsWith(Path.Combine("Features", "Returns"), StringComparison.Ordinal))
+            .SelectMany(d => Directory.GetFiles(d, "*.cs", SearchOption.AllDirectories)).ToArray();
+        Assert.True(files.Length >= 20, "Returns sources not found: " + files.Length);
+        var forbidden = new[] { "IShipmentRepository", "ShipmentRepository", "IServiceProvider", "GetService", "GetRequiredService", "sce_shipment", "IMongoClient" };
+        foreach (var file in files)
+        {
+            var text = System.Text.RegularExpressions.Regex.Replace(File.ReadAllText(file), @"//[^\n]*", string.Empty);
+            foreach (var token in forbidden) Assert.False(text.Contains(token, StringComparison.Ordinal), $"{Path.GetFileName(file)} references {token}");
+        }
+    }
+
+    // ---- review 01 F-1: compare with the last accepted values ---------------------------------------------------------
+    [Fact]
+    public async Task F1_CorrectionThenBlockedLine_TheUnpostedExitWithTheLastAcceptedValuesCompletes()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"), ("2", "3"), ("3", "2"));
+        app.Inventory.Script = c =>
+            IsReceipt(c, "2") && c.Body["toLocationId"]!.GetValue<string>() == "loc-q1" ? Answer(FakeInventory.Error(422, "UNKNOWN_LOCATION"))
+            : IsReceipt(c, "3") ? Answer(FakeInventory.Error(400, "INVALID_REQUEST")) : Default;
+        Assert.Equal(422, (await s.Receive(id, "receive-1")).Status);                                   // line 1 Posted at loc-q1, line 2 Refused
+        Assert.Equal(500, (await s.Receive(id, "receive-2", Received(location: "loc-q2"))).Status);     // line 2 Posted at loc-q2, line 3 Blocked
+
+        var old = await s.Receive(id, "receive-3", Received(location: "loc-q1", unposted: Unposted("3", "INTEGRITY_FAULT")));
+        Assert.Equal((409, "RETURN_RECEIPT_IN_PROGRESS"), (old.Status, Code(old.Body)));
+        Assert.Equal("loc-q2", Details(old.Body)!["toLocationId"]!.GetValue<string>());
+        var exit = await s.Receive(id, "receive-4", Received(location: "loc-q2", unposted: Unposted("3", "INTEGRITY_FAULT")));
+
+        Assert.Equal(200, exit.Status);
+        Assert.Equal(("Posted", "Posted", "NotPosted"), (Line(exit.Body, "1")["inventoryPosting"]!.GetValue<string>(),
+            Line(exit.Body, "2")["inventoryPosting"]!.GetValue<string>(), Line(exit.Body, "3")["inventoryPosting"]!.GetValue<string>()));
+        Assert.Equal("loc-q1", Receipts(app, "1")[^1].Body["toLocationId"]!.GetValue<string>());     // Posted lines keep their request
+        Assert.Equal(7m, app.Inventory.Quarantine);
+    }
+
+    [Fact]
+    public async Task F1_CorrectionThenStepDFails_TheRetryWithTheLastAcceptedValuesCompletes()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"), ("2", "3"));
+        app.Inventory.Script = c => IsReceipt(c, "2") && c.Body["toLocationId"]!.GetValue<string>() == "loc-q1" ? Answer(FakeInventory.Error(422, "UNKNOWN_LOCATION")) : Default;
+        Assert.Equal(422, (await s.Receive(id, "receive-1")).Status);
+        app.Probe.FailAt = "outbox";
+        var failed = await s.Receive(id, "receive-2", Received(location: "loc-q2"));
+        Assert.Equal((503, "PERSISTENCE_UNAVAILABLE"), (failed.Status, Code(failed.Body)));
+        Assert.Equal("InTransit", (await s.Stored(id))["Status"].AsString);
+
+        // No clock advance: the failed commit released the lease (review 01 F-4).
+        var old = await s.Receive(id, "receive-3");
+        Assert.Equal(409, old.Status);
+        var retry = await s.Receive(id, "receive-4", Received(location: "loc-q2"));
+
+        Assert.Equal(200, retry.Status);
+        Assert.Equal(1, await s.Events(id, "ReturnReceived"));
+        Assert.Equal(7m, app.Inventory.Quarantine);
+    }
+
+    // ---- review 01 F-2: a posted resend answered with another movement ------------------------------------------------
+    [Fact]
+    public async Task F2_PostedResendAnsweredWithAnotherTransaction_IsAnIntegrityFault_LineUnknown_NoReversal()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"), ("2", "3"));
+        var phase = 0;
+        app.Inventory.Script = c =>
+            phase == 0 && IsReceipt(c, "2") ? Answer(FakeInventory.Error(422, "UNKNOWN_LOCATION"))
+            : phase == 1 && IsReceipt(c, "1") ? Answer(FakeInventory.Json(200, new JsonObject { ["transactionId"] = "tx-other", ["idempotentReplay"] = false, ["contractVersion"] = "v1" }))
+            : Default;
+        Assert.Equal(422, (await s.Receive(id, "receive-1")).Status);
+        var posted = (await s.Stored(id))["ReceiptAttempt"]["Lines"][0]["TransactionId"].AsString;
+        phase = 1;
+
+        var r = await s.Receive(id, "receive-2");
+
+        Assert.Equal((500, "INTERNAL_ERROR"), (r.Status, Code(r.Body)));
+        var stored = await s.Stored(id);
+        Assert.Equal(("InTransit", "Unknown"), (stored["Status"].AsString, stored["ReceiptAttempt"]["Lines"][0]["State"].AsString));
+        var entry = Assert.Single(stored["ReceiptAuditHistory"].AsBsonArray);
+        Assert.Equal(("tx-other", "ResendTransactionMismatch:" + posted), (entry["ReceiptTransactionId"].AsString, entry["Outcome"].AsString));
+        Assert.Equal(1, await app.Db.GetCollection<BsonDocument>("returns_audit").CountDocumentsAsync(new BsonDocument { { "ReturnId", id.ToString() }, { "Kind", "ReceiptIntegrityFault" } }));
+        Assert.DoesNotContain(app.Inventory.Calls, c => c.MovementType == "REVERSAL");
+        Assert.DoesNotContain(Receipts(app, "2"), c => c.Key.EndsWith(":a2", StringComparison.Ordinal));   // the command stopped at line 1
+    }
+
     // ---- R34-11 ------------------------------------------------------------------------------------------------------
     [Fact]
     public async Task R34_11_CorrectingARefusedLine_PostsItUnderA2WithTheNewLocation_Line1ReplaysUnchanged()

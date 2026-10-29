@@ -59,12 +59,14 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
             else
             {
                 next = observed.Copy();
-                // F-1: a command may change only a Refused line. With none Refused and none Unknown, other values are a
-                // conflict that shows the stored ones; an Unknown line keeps its request and is resent first (R34-13).
+                // §34.2 F-1: a command may change only a Refused line. With none Refused and none Unknown, values other than
+                // the last accepted command's are a conflict that shows those values (review 01 F-1: never each line's, which
+                // differ after a correction); an Unknown line keeps its request and is resent first (R34-13).
                 if (!next.Lines.Any(l => l.State is ReceiptLineState.Refused or ReceiptLineState.Unknown)
-                    && next.Lines.FirstOrDefault(l => l.ToWarehouseId != warehouse || l.ToLocationId != location || l.OccurredAt != occurredAt) is { } stored)
-                    return FailWith(ContractErrorCodes.ReturnReceiptInProgress, 409, Stored(stored));
+                    && (Current(next).Warehouse != warehouse || Current(next).Location != location || Current(next).OccurredAt != occurredAt))
+                    return FailWith(ContractErrorCodes.ReturnReceiptInProgress, 409, Stored(next));
             }
+            next.CurrentWarehouseId = warehouse; next.CurrentLocationId = location; next.CurrentOccurredAt = occurredAt;
             if (Unpost(next, unposted) is { } refused) return refused;
             if (observed is not null) Correct(order, next, warehouse!, location, occurredAt, at);
             next.LeaseId = Guid.NewGuid(); next.LeaseUntil = now + options.Lease;
@@ -168,7 +170,18 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
             var answeredAt = clock.GetUtcNow();
             if (line.State == ReceiptLineState.Posted)
             {
-                if (result.Outcome != InventoryOutcome.Posted || result.TransactionId != line.TransactionId)
+                if (result.Outcome == InventoryOutcome.Posted && result.TransactionId != line.TransactionId)
+                {
+                    // Review 01 F-2 (Natig 2026-10-29): INVENTORY answered the stored key with another movement — an integrity
+                    // fault. The line becomes Unknown, the command stops, the pair is recorded; no automatic REVERSAL.
+                    logger.LogError("MOD-0186 integrity fault: resend of posted return {Return} line {Line} a{K} answered {Other}, stored {Receipt}.",
+                        order.Id, line.ShipmentLineNumber, line.K, result.TransactionId, line.TransactionId);
+                    await repository.AppendReceiptAuditAsync(context.Scope, order.Id, new ReceiptAuditEntry(line.ShipmentLineNumber, line.K, result.TransactionId!, null,
+                        "ResendTransactionMismatch:" + line.TransactionId, answeredAt, context.CorrelationId), ct);
+                    line.State = ReceiptLineState.Unknown; line.LastHttpStatus = result.HttpStatus;
+                    return await StopAsync(order, a, Fail(ContractErrorCodes.InternalError, 500), ct);
+                }
+                if (result.Outcome != InventoryOutcome.Posted)
                     logger.LogWarning("MOD-0186 receipt: resend of posted return {Return} line {Line} a{K} answered {Status} {Code}; stored {Receipt} kept.",
                         order.Id, line.ShipmentLineNumber, line.K, result.HttpStatus, result.InventoryCode, line.TransactionId);
                 continue;
@@ -220,7 +233,9 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         });
         var result = await repository.MutateAsync(context.Scope, order.Id, context.IdempotencyKey, fingerprint, context.CorrelationId, null, ReturnStatus.Received,
             occurredAt, null, null, (_, _) => throw new InvalidOperationException("Received reads the shipment only in step A."), ct, completion: new ReturnReceiptCompletion(a.LeaseId, lines, detail));
-        return result.ErrorCode == ContractErrorCodes.ReturnReceiptInProgress ? InProgress(a) : Answer(result);
+        if (result.ErrorCode == ContractErrorCodes.ReturnReceiptInProgress) return InProgress(a);
+        // Review 01 F-4: a failed commit (e.g. 503 PERSISTENCE_UNAVAILABLE) also releases the lease for the user's retry.
+        return result.ErrorCode is null ? Answer(result) : await StopAsync(order, a, Answer(result), ct);
     }
 
     /// <summary>Every stop records the line's answer and releases the lease, so the user's retry may start at once.</summary>
@@ -230,16 +245,24 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         return await repository.SaveReceiptAttemptAsync(context.Scope, order.Id, a, a.LeaseId, ct) ? answer : InProgress(a);
     }
 
+    /// <summary>The last accepted values; an attempt stored before they existed falls back to its first line's.</summary>
+    private static (string? Warehouse, string? Location, string? OccurredAt) Current(ReceiptAttempt a) => a.CurrentWarehouseId is not null
+        ? (a.CurrentWarehouseId, a.CurrentLocationId, a.CurrentOccurredAt)
+        : a.Lines.Count == 0 ? (null, null, null) : (a.Lines[0].ToWarehouseId, a.Lines[0].ToLocationId, a.Lines[0].OccurredAt);
+
     private async Task<bool> RenewAsync(ReturnOrder order, ReceiptAttempt a, CancellationToken ct)
     {
         a.LeaseUntil = clock.GetUtcNow() + options.Lease;
         return await repository.SaveReceiptAttemptAsync(context.Scope, order.Id, a, a.LeaseId, ct);
     }
 
-    private static JsonObject Stored(ReceiptAttemptLine line) =>
-        new() { ["toWarehouseId"] = line.ToWarehouseId, ["toLocationId"] = line.ToLocationId, ["occurredAt"] = line.OccurredAt };
+    private static JsonObject Stored(ReceiptAttempt a)
+    {
+        var (warehouse, location, occurredAt) = Current(a);
+        return new() { ["toWarehouseId"] = warehouse, ["toLocationId"] = location, ["occurredAt"] = occurredAt };
+    }
     private static Response<ReturnResponse> InProgress(ReceiptAttempt a) =>
-        FailWith(ContractErrorCodes.ReturnReceiptInProgress, 409, a.Lines.Count == 0 ? null : Stored(a.Lines[0]));
+        FailWith(ContractErrorCodes.ReturnReceiptInProgress, 409, a.Lines.Count == 0 ? null : Stored(a));
     private static Response<ReturnResponse> Fail(string code, int status) => Response<ReturnResponse>.Fail(code, status);
     private static Response<ReturnResponse> FailWith(string code, int status, JsonObject? details) => Response<ReturnResponse>.FailWith(code, status, details);
     private static Response<ReturnResponse> Answer(ReturnMutationResult r) => r.ErrorCode is null
