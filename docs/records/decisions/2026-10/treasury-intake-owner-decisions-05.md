@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D85 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D86 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -925,6 +925,26 @@ cevapları: "DL-1 kapısına taşı (Önerilen)", "Kapat (Önerilen)".
    ready-for-dev'den önce kapanamaz. SUPPLIER için "MOD-0140 1.3.0 main'de FROZEN" ayrı paket kapısı olarak kalır.
 2. **D85/2:** MOD-0119 EVIDENCE slotu (DL-3) MOD-0031 ölçümüyle kapanır (D83/2 ile aynı kanıt ve sonuç; kural değişmez).
 3. **D85/3:** MOD-0119 slot tablosuna satır başına durum notu yazılır (karar değil, durum).
+
+## D86 — K-W5 CT defter kararı: DL-5'in iki K2 komutu "K2 borcu" olarak yazılır (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevabı: "K2 borcu olarak yaz (Önerilen)". Yöntem MOD-0018 sahibince teyitli (Y-21: "`auth-gunlugu` + önce-yaz, CT defter kararı").
+
+1. **Durum:** FU27 DL-5'in iki komutu (`CreatePaymentSodWaiverAssignmentCommand`, `RevokePaymentSodWaiverAssignmentCommand`) K2'dir
+   ve `auth-gunlugu`'na önce-yaz ile yazar. `auth-gunlugu` `aday`dır: okuma ucu yok, FU27'nin ekranı yok → yol `c`'nin 3. koşulu
+   sağlanmaz (audit-trail-standard §5.c-3); CT kararı bir izi `aday`dan `c`'ye çeviremez (kural §5.c, `AcceptedTrails_ArePinned`).
+2. **Karar:** iki komut kapalı-başarısızdır (önce-yaz, `IAuthAuditService.WriteOnceAsync` — kural §4.4'ün Auth için gösterdiği
+   K2 yolu); eksik olan yalnız izin kabulüdür (§5.c-3). Deftere satır eklemenin kurallı yolu CT kararıdır (kural §1.3; emsal
+   `CT-DECISIONS.md` 2026-10-14 ESign K2 borcu satırları): DL-5 değişikliği `tests/architecture/audit-ledger/Diten.AuthService.md`
+   `## K2 borcu` listesine iki satır, `CT-DECISIONS.md`'ye bu karara atıflı satır ekler ve `AuditTrailStandardTests.PinnedCounts`'u
+   aynı değişiklikte yükseltir. Gerekçe satırı açıkça yazar: borç "en iyi çaba" değil, iz okunabilirliğidir (§4.4'ün "yeni K2
+   borcu kabul edilmez" cümlesi kapalı-başarısız olmayan komutlar içindir). Önce-yaz kapalı-başarısız kalır (AC-30). **Ölçüm:**
+   `WriteOnceAsync` main'de var (`services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IAuthAuditService.cs`,
+   main `317a48b13`; kullanan: `IssueServiceIdentityTokenHandler`) — kuralın "bu dalda henüz yok" cümlesi eskidi.
+3. **Kapanış:** D80/2 (a) karar olarak kapanır. Defter dosyaları bugün değişmez (Auth defteri MOD-0018 alanı; kod yokken satır
+   eklenmez). D80/2 (b) (rol atama denetim borcu, `auth-rbac-gunlugu`) bu kararın kapsamında değildir; açık kalır.
+4. **İleride:** `auth-gunlugu` için izinli okuma ucu gelirse (defter K7) iz `c` olur ve iki satır borçtan çıkar.
 
 ## Karar olmayanlar
 
