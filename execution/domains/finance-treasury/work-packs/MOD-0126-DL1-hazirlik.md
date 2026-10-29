@@ -274,7 +274,7 @@ kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D1–D69; rol matrisi 
 - Test — **DL-1 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2135-2137` · paket @ `40140c6e…817e`): AC-1, 2, 3, 39 (Create
   kısmı), 41 (a–c, e; Create / Update), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32 (DL-1 uçları kısmı: liste, detay, Create /
   Update / Delete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Delete /
-  Validate kısmı), 45. Kısmi AC'lerin kalanı (paket @ `40140c6e…817e`, `:2150-2152`, `:2156-2157`): AC-39 Reconcile, AC-41 (d) Approve,
+  Validate kısmı), 45. Kısmi AC'lerin kalanı (paket @ `40140c6e…817e`, `:2150`, `:2156-2157`): AC-39 Reconcile, AC-41 (d) Approve,
   AC-16 kararlar, AC-32 karar uçları, AC-33 Submit / kararlar / Reconcile → DL-2; AC-41 (d) Release (tam kapanış), AC-16 kalan,
   AC-32 Release ve kalan okumalar (tam kapanış), AC-33 Release / kanıt / onay belgesi → DL-3. AC metinleri prompt'a pack'ten tırnakla
   alıntılanır. Not: AC-17 DL-3 bitişinde de "17 (sabotaj)" olarak geçiyor; DL-1'de tek aşamalı komutların tek olayı + outbox

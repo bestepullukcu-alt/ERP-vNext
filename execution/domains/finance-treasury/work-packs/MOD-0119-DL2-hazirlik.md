@@ -203,7 +203,7 @@ Kuyrukta `WP-0119-DL2` satırı **yok** — bu kayıt kuyruğa yazmaz.
 kısmı)**, **AC-5 (Submit / Approve kısmı — AC-5 tam kapanışı)**, AC-7…14, **15 (Submit, kararlar, Reconcile kısmı)**, **40 (Submit /
 Approve kısmı — AC-40 tam kapanışı)**, **17 (iki aşamalı)**, 30, **32 (iz ve karar uçları kısmı: trace, Submit, Approve / Reject /
 RequestInfo, Reconcile)**, **33 (Submit, kararlar, Reconcile kısmı)**, 34, 35, 36, 37, 38, 39. AC metinleri pack'ten tırnakla
-alıntılanır. Kısmi AC'lerin kalanı (`:2073`): AC-4 ReleaseHold (tam kapanış), AC-15 kalan (Hold, ReleaseHold, istisna komutları,
+alıntılanır. Kısmi AC'lerin kalanı (`:2088`): AC-4 ReleaseHold (tam kapanış), AC-15 kalan (Hold, ReleaseHold, istisna komutları,
 LinkEvidence — tam kapanış), AC-17 sabotaj, AC-32 bekletme / istisna / kanıt uçları (tam kapanış), AC-33 Hold / istisna / kanıt → DL-3.
 
 **İzinli yollar** (pack Repo Scope `:516-528`): `services/Diten.FinanceTreasuryService/src/…Application/Features/ApInvoice/**`,

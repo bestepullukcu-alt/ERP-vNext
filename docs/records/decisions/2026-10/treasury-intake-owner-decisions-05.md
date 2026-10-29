@@ -1147,6 +1147,9 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
    etiketli dilim Bitiş atıfları (12) güncel paket satırlarına düzeltildi (etiketi özet zinciri yeniliyor, satırı yenilemiyordu);
    WP-0126 v0.2 atıfları D96/5'in kaydırdığı satırlara eşlendi (14); 0119 / 0120 / 0124'ün MOD-0126 sabitleme açıklaması ve 0124
    bağımlılık satırı D92–D96 zinciriyle güncellendi; MOD-0126 DL-1 hazırlık kaydı en son eski inceleme satırlarını gösterir.
+7. **D96/7 — kısmi AC kapanış atıfları (sahip denetimi `d35aec408`, 1 ORTA + 1 DÜŞÜK):** hazırlık kayıtlarında sonraki
+   dilimlerin Bitiş atıfları (8) güncel dilim Bitiş satırlarına eşlendi (dilim haritası: her `- **DL-n** —` bloğunun `Bitiş:`
+   satırı); WP-0126 v0.2 P-2 en son eski incelemeyi `caf551b0` KOŞULLU, ondan öncekini `be2b3ffa` UYGUN olarak gösterir.
 
 ## Karar olmayanlar
 

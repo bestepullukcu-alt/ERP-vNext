@@ -204,7 +204,7 @@ revizyonuna bağ, tek geçerli paket; kalem biçimi kısmı — D57/3)**, **16 (
 Reconcile, kanıt paketi)**, **19 (mutabakat)**, **31 (iz, istisna listesi, Reconcile ve kanıt paketi uçları kısmı)**, **32 (Reconcile,
 kanıt paketi kısmı)**. Pakette aynı madde: AC-7'nin onay geçersizliği ve AC-9'un Submit / Publish 409 dalları DL-2'de **koşulmaz**
 (`Approved` / `Published` kayıt DL-2'de oluşamaz); sahte durumla "geçti" sayılmaz — DL-3'te kanıtlanır. AC metinleri pack'ten tırnakla
-alıntılanır. Kısmi AC'lerin kalanı (`:2002-2005`, `:2009-2010`): AC-2 Submit / Approve / Reject / Publish, AC-3 karar / yayım /
+alıntılanır. Kısmi AC'lerin kalanı (`:2016-2020`, `:2024-2025`): AC-2 Submit / Approve / Reject / Publish, AC-3 karar / yayım /
 `current` (AC-3 orada kapanır), AC-7 onay geçersizliği (orada kapanır), AC-9 Submit / Publish, AC-16 kararlar, AC-19 yayım / karar,
 AC-31 / 32 Submit / kararlar / Publish → DL-3; AC-2 ExportEvidence (kapanır), AC-9 kalem varlığı (kapanır), AC-16 kalan, AC-17 iki
 aşamalı + sabotaj, AC-31 ExportEvidence (tam kapanış), AC-32 ExportEvidence → DL-4. (§5 bulgu 1 ve 2 kapandı.)

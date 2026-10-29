@@ -195,7 +195,7 @@ merkezi kaydı AUD-001 §8 sorgusuyla, on alan işaretli — AC-31 bu dilimde ka
 **18 (tek aşamalı: Issue / SetCollectionStage kısmı)**, **35 (Issue, SetCollectionStage kısmı — kapsam süzgeci sabotajı bu iki uçta
 da koşulur)**. AC-28 arka uç kısmı hazırlık notu: enum değerleri 5 / 7 / 3 birebir; rozet ve süzgeç ekranı DL-4. AC metinleri pack'ten
 tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-2, AC-5, AC-17 (kararlar), AC-18 (iki aşamalı + sabotaj + kurtarma), AC-35 → DL-3
-(AC-2 ve AC-5 orada kapanır; `:1991-1995`). AC-17 / AC-18'in Issue / SetCollectionStage kısmı pakette DL-2 Bitiş'te (§5 bulgu 1 kapandı).
+(AC-2 ve AC-5 orada kapanır; `:2006-2012`). AC-17 / AC-18'in Issue / SetCollectionStage kısmı pakette DL-2 Bitiş'te (§5 bulgu 1 kapandı).
 
 **İzinli yollar** (pack Repo Scope `:582-597`): `services/Diten.FinanceTreasuryService/src/…Application/Features/ReceivableInvoice/**`,
 `…Domain/ReceivableInvoices/**`, `…Persistence/ReceivableInvoices/**`, `…Api/Controllers/ReceivableInvoicesController.cs`,

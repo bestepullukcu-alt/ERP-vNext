@@ -254,7 +254,7 @@ Update / Delete / BulkDelete kısmı)**, **18 (tek aşamalı: Create / Update / 
 **31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete, iki merkezi kayıt AUD-001 §8 sorgusuyla, on alan işaretli;
 açma kaydı DL-2'dedir)**, **32 (d) kısmı** (aynı dış numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number`
 kaldırıldığında kırmızı — sabotaj), 34, **35 (Create / Update / Delete kısmı)**, 44. Kısmi AC'ler onları sayan **son** dilimde
-kapanır (paket @ `69eb7813…fa5c`, `:1968-1969`): AC-31 → DL-2; AC-2, 5, 17, 18, 32, 35 → DL-3 (AC-17 / 18 / 35'in Issue /
+kapanır (paket @ `69eb7813…fa5c`, `:1995-2001`, `:2006-2012`): AC-31 → DL-2; AC-2, 5, 17, 18, 32, 35 → DL-3 (AC-17 / 18 / 35'in Issue /
 SetCollectionStage kısmı DL-2'de). AC metinleri pack'ten tırnakla alıntılanır.
 
 **İzinli yollar** (pack "Repo Scope" `:571-593`): `…Application/Features/ReceivableInvoice/**`, `…Domain/ReceivableInvoices/**`,
