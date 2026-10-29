@@ -20,26 +20,31 @@ form_field_count: 18
 > **Revision 5 (draft, 2026-10-29) - not approved.** Changes: (1) front matter: the second approval field
 > `approval_status` (the conditional approval of the P2 draft / reference-validation slice) is removed, because the
 > dispatch gate (`scripts/prompt_gate.py`, CT-FIX-04) does not dispatch a pack whose `approval_status` is not
-> `approved`; (2) this note; (3) the one acceptance line that stated that field as a current fact; (4) a "Revision 5
-> (testable)" acceptance item and Revision 5 items in the "Ready-for-dev Checklist"; (5) short Revision 5 markers on
-> four current-scope sentences ("Module Summary", "Authoritative Baseline After Containment", "Approval Readiness",
-> "Teslim dilimleri"). The rest of the Revision 4 body is unchanged.
+> `approved`; (2) this note; (3) the one acceptance line that stated that field as a current fact; (4) two "Revision 5
+> (testable)" acceptance items and Revision 5 items in the "Ready-for-dev Checklist"; (5) a short Revision 5 marker on
+> each present-tense sentence outside the dated notes that states the Revision 1 to 4 scope ("Module Summary",
+> "Authoritative Baseline After Containment", "Ownership and Boundaries", "Runtime Constraints", "Layout & Shell
+> Contract", "P0 Inspection Findings", "Approval Readiness", "P2 Conditional Closure / Handback", "Acceptance
+> Criteria", "Follow-up Items", "Teslim dilimleri"). The rest of the Revision 4 body is unchanged.
 >
 > **What an approval of this version makes dispatchable (pre-review F-27).** Without `approval_status` the pack has no
-> machine-readable scope limit: an approval row binds the whole file by its sha, and the gate checks a prompt's
-> "Kapsanan dilim" only against the rows of "Teslim dilimleri" (CT-APR-02), not the slice's prerequisite. The limit is
-> this rule: a slice DL-1 to DL-7 is dispatchable only when its own prerequisite in "Slice details" is met and
-> recorded - DL-1: none; DL-2: the recorded owner decision on permission breadth (F-13); DL-3: the owner decision F-5;
-> DL-4 to DL-7: the prerequisites their "Slice details" entry names (earlier slices accepted, contracts, decisions) and
-> every decision of "Open Decisions (Owner)" whose "Blocks" column names that slice. A slice whose prerequisite is not
-> recorded is not dispatchable even with the approval row; the dispatching CT checks the record and the prompt cites it.
+> machine-readable scope limit: an approval row binds the whole file by its sha. The dispatch gate does not check
+> slice prerequisites: `scripts/prompt_gate.py` `slice_problems` compares a prompt's "Kapsanan dilim" only with the
+> rows of "Teslim dilimleri" and `whole_pack` (CT-APR-02), and `check_approval_limit` looks for no prerequisite. The
+> limit is this rule, and the check belongs to the dispatching Control Tower: a slice DL-1 to DL-7 is dispatchable
+> only when its own prerequisite in "Slice details" is met and recorded - DL-1: none; DL-2: the recorded owner
+> decision on permission breadth (F-13); DL-3: the owner decision F-5; DL-4 to DL-7: the prerequisites their "Slice
+> details" entry names (earlier slices accepted, contracts, decisions) and every decision of "Open Decisions (Owner)"
+> whose "Blocks" column names that slice. Every dispatch prompt of a slice DL-2 to DL-7 cites its prerequisite record
+> as `path@commit` on its `NEDEN:` line; a prompt without that citation is not dispatched, even with the approval row.
 >
-> **How older statements are read.** Sentences that say the approved scope is only the P2 draft / reference-validation
-> slice, that nothing added is approved or executable, that the pack is conditionally approved, or that the front
-> matter carries `approval_status` (the Revision 2, 3 and 4 notes below, "Revision 2 Review Reconciliation",
-> "Conditional Promotion Decision", "Approval Readiness") describe the scope of Revisions 1 to 4. They are kept as
-> history and this note supersedes them. The conditional P2 approval stays as history in the body text. Like Revision
-> 4, this revision needs its own independent review of this exact version and an approval row.
+> **How older statements are read.** Every statement of the Revision 1 to 4 scope in this pack - wherever it stands,
+> marked or not - is history: that the approved scope is only the P2 draft / reference-validation slice, that nothing
+> added is approved or executable, that the pack is (conditionally) approved only for that slice, that work outside
+> it waits for a later pack update, or that the front matter carries `approval_status`. This includes the Revision 2,
+> 3 and 4 notes below and sections such as "Revision 2 Review Reconciliation" and "Conditional Promotion Decision";
+> the list is not closed. This note supersedes all of them; the conditional P2 approval stays as history in the body
+> text. Like Revision 4, this revision needs its own independent review of this exact version and an approval row.
 
 > **Revision 4 (draft, 2026-10-29) - not approved.** Draft revision written under the owner word `ayri-dilim`
 > (2026-10-29). It follows independent review 03 (`docs/records/reviews/MOD-0251/2026-10-29-03d9e80f.md`, verdict
@@ -252,7 +257,7 @@ proposal - not approved). Decided already, not reopened: `bag-kisi` (User → Pe
 
 ## Ownership and Boundaries
 
-The following ownership lists describe MOD-0251 product ownership and future SoR responsibility. They do not broaden the current approved runtime scope beyond the contained P2 draft/reference-validation baseline above.
+The following ownership lists describe MOD-0251 product ownership and future SoR responsibility. They do not broaden the current approved runtime scope beyond the contained P2 draft/reference-validation baseline above *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 
 ### In Scope
 
@@ -387,7 +392,7 @@ Completed P2 runtime scope is limited to the draft/reference-validation slice. A
 
 ## Runtime Constraints
 
-- First approved runtime slice is draft/reference-validation only: Create Employee Draft -> Save Draft Steps -> Validate Person/Organization/Position/Legal-Entity References -> Review Draft -> Reload Persisted Draft.
+- First approved runtime slice is draft/reference-validation only: Create Employee Draft -> Save Draft Steps -> Validate Person/Organization/Position/Legal-Entity References -> Review Draft -> Reload Persisted Draft *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 - Submit for approval, MOD-0023 approval decision processing, Active transition, `employee.created` event/outbox behavior, and approval audit events are excluded from the first approved slice.
 - Evidence integration, termination/status changes, Data Quality Queue, and export are later sequences.
 - No shell UI is allowed: UI pages must be backed by real API, persistence, RBAC, audit, validation, and failure handling.
@@ -401,7 +406,7 @@ Completed P2 runtime scope is limited to the draft/reference-validation slice. A
 - `shell: tenant`.
 - Frontend route planning from the spec: `/HCM/Employees`, `/HCM/Employees/Create`, `/HCM/Employees/{employeeId}`.
 - Razor layout for future frontend pages: `Layout = "_LayoutTenantShell";`.
-- Frontend expansion beyond the approved P2 draft wizard/proxy slice is blocked until a later approved scope confirms the route, service/API, and UI contracts.
+- Frontend expansion beyond the approved P2 draft wizard/proxy slice is blocked until a later approved scope confirms the route, service/API, and UI contracts *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 
 ## Backend File Convention
 
@@ -686,7 +691,7 @@ This section closes MOD-0251 audit payload planning only. It does not wire `IAud
 
 P0 read-only inspection verdict: `BLOCKED` for approval/implementation.
 
-Inspection evidence recorded that no implementation occurred and no files were changed during the inspection. The pack was later conditionally promoted for the draft/reference-validation slice only; runtime work outside that approved slice remains blocked until topology, service ownership, gateway, frontend, RBAC, audit, workflow, evidence, masking, tokenization, and dependency contracts are explicitly closed.
+Inspection evidence recorded that no implementation occurred and no files were changed during the inspection. The pack was later conditionally promoted for the draft/reference-validation slice only; runtime work outside that approved slice remains blocked until topology, service ownership, gateway, frontend, RBAC, audit, workflow, evidence, masking, tokenization, and dependency contracts are explicitly closed *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 
 Key inspection findings:
 
@@ -1368,7 +1373,7 @@ Prompt ID: `MOD0251-P2-CONDITIONAL-HANDBACK-M1`; final browser evidence reconcil
 
 Final P2 verdict: `PASS`. *(Historical. Revision 2: narrative; no recorded evidence in the repository refs examined (review 01, F-7). Review 01 also found code defects in the slice (F-1, F-2, F-3, F-15, F-16). P2 is not closed; its correction and re-proof is DL-2.)*
 
-The MOD-0251 P2 draft/reference-validation implementation slice is closed as PASS for the approved slice only. The pack remains approved only for the draft/reference-validation scope: draft create, draft save/update, draft reload, person/organization-unit/position/legal-entity reference validation, and non-submit review. This handback does not approve submit, MOD-0023 workflow start, approval/rejection processing, Active transition, `employee.created` event/outbox behavior, evidence upload/link, export, status change, Data Quality Queue behavior, or government identifier capture.
+The MOD-0251 P2 draft/reference-validation implementation slice is closed as PASS for the approved slice only. The pack remains approved only for the draft/reference-validation scope *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*: draft create, draft save/update, draft reload, person/organization-unit/position/legal-entity reference validation, and non-submit review. This handback does not approve submit, MOD-0023 workflow start, approval/rejection processing, Active transition, `employee.created` event/outbox behavior, evidence upload/link, export, status change, Data Quality Queue behavior, or government identifier capture.
 
 ### Closed P2 Evidence
 
@@ -1673,7 +1678,7 @@ part DL-7)".
 - MOD-0251 SoR ownership is explicit for Employee, Employment Record, and Job Assignment / Employment Assignment Snapshot.
 - MOD-0299 and MOD-0288 boundaries are explicit.
 - Dependencies are split into Blueprint Dependency Gate and Additional Implementation Dependencies.
-- First approved runtime slice is draft/reference-validation only; submit, approval, Active transition, and employee-created event/outbox behavior are deferred.
+- First approved runtime slice is draft/reference-validation only; submit, approval, Active transition, and employee-created event/outbox behavior are deferred *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 - Gateway and frontend service-port constraints are documented.
 - Sensitive/tokenization fail-closed rules are documented.
 - Given/When/Then acceptance criteria cover first approved draft/reference-validation slice, governance blockers, and deferred R1/activation sequences.
@@ -1698,6 +1703,7 @@ part DL-7)".
   - Order of DL-2 and DL-7 (AK-31): both change the draft create/patch write path (DL-2 F-16 atomic create with a unique index; DL-7 Mongo transactions in `EmployeeDraftSessionRepository`). Whichever slice lands second reruns the first slice's acceptance tests on its own commit, and P2 closure rests on one combined DL-2 + DL-7 acceptance run on the commit carrying this pack version (cf. operating card S-86: evidence binds to the commit carrying the current pack version).
 - Revision 5 (testable):
   - The front matter carries no `approval_status` line, and the dispatch gate's approval-limit check (`scripts/prompt_gate.py` `check_approval_limit`, CT-FIX-04, through the shared reader `scripts/ct_queue.py` `pack_approval_limit`) reports no limit for this version: `pack_approval_limit` returns `(None, None)` and `pack_approval_decision(text, "dispatch")` returns `ok`.
+  - Each dispatched work-package prompt of DL-2 to DL-7 names its slice's prerequisite record ("Slice details" and the "Open Decisions (Owner)" rows whose "Blocks" column names the slice) as `path@commit` on its `NEDEN:` line, and that commit holds the record; DL-1 needs none. The dispatch gate does not check this (`scripts/prompt_gate.py` `slice_problems`, `check_approval_limit`); the dispatching Control Tower checks it before dispatch, and a prompt without the citation is not dispatched.
 
 ## Test Expectations
 
@@ -1781,7 +1787,7 @@ Current and future implementation expectations:
 - [ ] Revision 5: front matter has no `approval_status` line (written; not yet reviewed).
 - [ ] Revision 5: independent review of this exact version with result UYGUN and no open ENGEL.
 - [ ] Revision 5: approval row for this version (`scripts/pack_approval.py`).
-- [ ] Revision 5: each slice's prerequisite ("Slice details" and "Open Decisions (Owner)") recorded before that slice's dispatch; the dispatching prompt cites the record.
+- [ ] Revision 5: each slice's prerequisite ("Slice details" and "Open Decisions (Owner)") recorded before that slice's dispatch; the dispatching prompt cites the record as `path@commit` on its `NEDEN:` line (Control Tower check, not a gate check; see the second "Revision 5 (testable)" item in "Acceptance Criteria").
 - [ ] DL-2: P2 defects F-1, F-2, F-3, F-14, F-15, F-16 and the F-6 fixture boundary fixed and proven at the DL-2 level (E4). *(Revision 4, F-26: GWT-A12 draft-write central audit moved to DL-7.)*
 - [ ] DL-2: owner decision record on permission breadth (F-13) - required whether the seed is kept or narrowed.
 - [ ] DL-7: AUD-001 K4 lift confirmed for `Diten.HcmService` by the rule owner (AE-1); AE-2, AE-3, AE-4, AE-5 decided. *(Revision 4: was a DL-2 item.)*
@@ -1824,7 +1830,7 @@ Development control plan:
 - P11 export.
 - P12 closure.
 
-Do not start any follow-up outside the approved draft/reference-validation boundary until a later pack update explicitly approves that scope.
+Do not start any follow-up outside the approved draft/reference-validation boundary until a later pack update explicitly approves that scope *(Revisions 1 to 4; Revision 5: see the Revision 5 note)*.
 
 ## Audited Events
 
