@@ -1111,6 +1111,9 @@ Onay kanıtı: K1 / gmg-10 (CT teknik hizalaması, D93/1'in uygulanması; yeni �
 5. **D95/5 — Beste'ye öneri dosyası (repo dışı, `.ct-teslim/`):** Platform dosya listesine
    `ITrustedLegalEntityScopeCredentialAuthenticator.cs` (sonuç tüketiciyi taşımıyor; `AllowsPair` tüketiciden bağımsız) ve aday kimliği
    gövdeden alınırsa `TrustedLegalEntityScopeResolveRequest.cs` / `…RequestParser.cs` eklendi; sorgu ve doğrulayıcı değişmez (ölçüm `63acdf2ec`).
+6. **D95/6 — Dependencies tabloları (sahip denetimi `e914abcba`, KOŞULLU 1 ORTA + 1 DÜŞÜK):** iki paketin RCS-001 v0 sözleşme satırı
+   gövdesi `{prefixScope, legalEntityId, recordType, idempotencyKey}`; MOD-0217 gerçek servisle `AGR` (`LegalEntity`); MOD-0289 kapanış
+   satırında O-14 "açık" → D93/1 ile kapandı, gerçek servisle kabul şartı korundu.
 
 ## Karar olmayanlar
 
