@@ -332,6 +332,12 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
        appears on HR's reconciliation list; MOD-0023 unreachable → 503, nothing released.
      After **closed**, no later write can open a task under that key: a paused older start either finds the closed instance
      (never reopened) or loses its task claim, which needs an `Active` instance (:620–659).
+     **Order and proof are part of the contract (MOD-0023 tower's condition, 2026-10-29):** (1) replay first, cancel second
+     — never cancel on the strength of an earlier answer; (2) **closed** needs either the replay's "incomplete" answer on an
+     instance that a re-read shows not `Active`, or a whole start whose task MOD-0023 cancelled successfully **and** a
+     re-read of the instance showing `Cancelled`; (3) a cancel that finds no task, a "true" from a task-less `Active`
+     instance (FU01 `CancelAsync` :230–262), a failed cancel command or a re-read still `Active` is **never** success —
+     the result is **unsettled** and nothing is released. FU01's `CancelAsync` and `RetireSubmissionAsync` are not used.
    - Cancel of a **pending** request (the employee): settle; **closed** → request `Cancelled` and reserved days released in
      one transaction with the lock; **decided** → the decision is applied and the cancel is refused (FU01 F13);
      **unsettled** → nothing released.
@@ -586,7 +592,7 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 - [ ] AC-36 (zorunlu) — Cancelling an approved, not-started leave (employee) or a started leave (HR, reason code) leaves the MOD-0023 instance approved and untouched, sets the request `Cancelled` and returns its taken days in one transaction.
 - [ ] AC-37 (zorunlu) — A resubmit starts a new submission only after the settle of the current one answered closed; decided → the decision is applied and nothing new starts; a refused replay (facts conflict) → 409 `LEAVE_APPROVAL_NEEDS_RECONCILIATION`, nothing released, the request on HR's reconciliation list.
 - [ ] AC-38 (zorunlu) — Every leave audit record carries the AUD-001 §3 actor envelope with a masked display and only the closed technical fields of §Audited Events; no free text appears in either.
-- [ ] AC-39 (zorunlu) — Settle replays `StartAsync` with the stored `StartFacts` byte-for-byte (same fingerprint inputs) as the submitting employee; every replay result maps to exactly one of closed, decided, unsettled; days are released only on closed.
+- [ ] AC-39 (zorunlu) — Settle replays `StartAsync` with the stored `StartFacts` byte-for-byte (same fingerprint inputs) as the submitting employee, always before any cancel; every replay result maps to exactly one of closed, decided, unsettled; closed is reported only when a re-read shows the instance not `Active` (incomplete answer) or `Cancelled` after a successful task cancel; a task-less `Active` instance, a failed cancel or a re-read still `Active` yields unsettled (sabotage evidence: a task-less `Active` instance must not release days); days are released only on closed.
 - [ ] AC-40 (zorunlu) — The start lease is never a precondition for a release: with the lease forcibly expired during a paused start, the settle still prevents a second task and a release before the instance is closed.
 
 ## Test Expectations
@@ -689,6 +695,8 @@ acceptance waits as written:
   reassessment addendum 2): F-20 answered without a new MOD-0023 capability — settle by replaying the start with stored
   facts (§Runtime Constraints 9; `StartFacts`, `NeedsReconciliation`); the lease is a courtesy only. AC-34 and AC-37 texts
   changed (numbers kept); AC-39, AC-40 added. MOD-0023 design request 01 stays open as an improvement, not a gate.
+  Before review 05 (owner's word `rev05-duzelt`): the MOD-0023 tower's condition is written into the settle contract —
+  replay before cancel, closed only on a re-read proof, a task-less "true" never counts (§Runtime Constraints 9, AC-39).
 
 ## Follow-up Items
 
