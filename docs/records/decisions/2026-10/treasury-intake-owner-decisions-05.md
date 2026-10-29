@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D97 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D98 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1181,6 +1181,30 @@ Onay kanıtı: kaynak Y-26 (Ali, K1 aktardı); kayıt K1 / gmg-10, oturum Treasu
    (bestepullukcu-alt, 26 Ekim); satırı ekleyenle birleştirenin ayrı olup olmadığını Yönetici doğruluyor. Başlık değiştirilmez. TRM-14
    DL-1 dilim kapısı olarak kalır; ready-for-dev tutuşunun (D84/4) sonucu bu doğrulamaya bağlı — Ali ayrıca cevaplayacak. 7 dilli rol
    adı tablosunun (FU27 §5.5) sonucu da ayrıca gelecek. WP-0126 v0.2 ve WP-0289 v0.3 P-0'a not düşüldü.
+
+## D98 — FU27 DL-5 paket metni K-W5 okuma yoluna göre (D97/2'nin uygulanması) (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 ("Evet, DL-5", 2026-10-30); kaynak D97/2 (Ali, Y-26 — `Y-26-ALI-VERBATIM-2026-10-30.md`); ölçüm ct-05
+`264863e80` (Auth denetim servisi, defter, mimari test, iletici, Roller ekranı; alt ajan ölçümü, satırlar pakette); oturum Treasury
+Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D98/1 — iz ve yazıcı:** yeni iz `auth-sod-muafiyet-gecmisi` (yol `c`, tür yazıcı), belirteç
+   `IPaymentSodWaiverAuditWriter.WriteCreatedAsync/IPaymentSodWaiverAuditWriter.WriteRevokedAsync` — iki komut için ayrı yazıcı tipi
+   (D97/2 (a)); `IAuthAuditService` değişmez, İ5 istisnası kaymaz; `auth-gunlugu` `aday` kalır; `PinnedCounts` değişmez.
+2. **D98/2 — nesne alanı ve okuma:** `AuthAuditLog` `EntityType` / `EntityId` (yalnız ekleme) + dizin; yalnız okuma arayüzü
+   `IPaymentSodWaiverAuditReader`; `GET /api/roles/sod-waiver-assignments/{id}/history` ve sayfalı liste ucu, izin
+   `auth.payment-sod-waivers.read` (yeni anahtar yok; açık atama sayısı FU27'de değişmez).
+3. **D98/3 — meta-denetim ve yapılandırma şartı:** `PlatformAuditEvent.IsMetaAudit` (Auth tarafı, yalnız ekleme; Platform değişmez);
+   iletici anahtarı (`PlatformService:InternalApiKey`) boşken geçmiş ucu okumaz, 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE` (D97/2 (b)
+   — ölçüm: bugün iletici boş anahtarda yalnız uyarı yazıp döner, `PlatformAuditForwarder.cs:55-59`).
+4. **D98/4 — ekran:** mevcut Roller sayfasında (`_LayoutTenantShell`, kiracı tarafı) salt-okunur atama listesi + "Geçmiş"; yalnız izinle
+   çizilir; metin 7 dil `RolesIndex.{lang}.resx` (D97/2 (c)); yazma yok.
+5. **D98/5 — AC ve dilim:** yeni AC-44 (iz + defter + `AcceptedTrails`), AC-45 (geçmiş ucu), AC-46 (meta-denetim + anahtar şartı),
+   AC-47 (ekran + 7 dil); AC-30 yazıcı tipine çekildi; DL-5 dilimine eklendi; Bölüm 5.3, 8.5, 9, 11, 14.3, 15, 17, 18, 21 güncellendi.
+   AC sayısı 43 → 47.
+6. **Açık kalan:** D80/2 (b) — rol atama adımlarının denetim borcu (`auth-rbac-gunlugu`, `aday`) bu metnin kapsamında değil; DL-5
+   kodundan önce ayrıca kapanır. D80/2 (a) işareti bu metin CT-APR-02'den geçince ve MOD-0018 sahibi D79 sonrası değişiklikleri
+   teyit edince konur.
 
 ## Karar olmayanlar
 
