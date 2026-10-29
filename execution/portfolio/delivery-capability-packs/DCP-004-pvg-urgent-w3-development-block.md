@@ -308,13 +308,15 @@ All four members run in one service, `Diten.PvgService`.
    that PvgService does not have yet.
 2. **Path.** MOD-0230: path `b` (central log through the shared forwarder), recorded in the MOD-0230 pack (OD-PVG-9,
    "Audited Events"). MOD-0231, MOD-0232, MOD-0234: no path is recorded in their packs (measured 2026-10-30); each
-   records one in its own pack before any of its write commands is delivered.
+   records one in its own pack before any of its write commands enters operational runtime.
 3. **Work that builds it, and its order (§8).** MOD-0230: pack slice DL-10 (build/test Mongo store) first, then pack
    slice DL-5 (audit write); DL-5 waits for DL-10's acceptance (DEPO-01 KD-3). How PvgService enters the forwarder and
    the related audit decisions stay open - DEPO-01 open items D-1, D-2, D-4, D-5, D-6, and D-7 (DEPO-03 S-10) - and this
    DCP does not decide them. Until DL-5 is accepted no MOD-0230 mutation succeeds outside tests (deny-all permission
-   gate, MOD-0230 pack). MOD-0231, MOD-0232, MOD-0234: the delivering work is not named yet; no member is delivered
-   without audit (CAP-001 §7.1).
+   gate, MOD-0230 pack). MOD-0231, MOD-0232, MOD-0234: the delivering work is not named yet; no member enters
+   operational runtime without audit (CAP-001 §7.1, read here as operational delivery - CT reading 2026-10-30).
+   This section adds no build/test prerequisite: the build/test gates in the gate table above and the existing
+   known-debt write commands of MOD-0231, MOD-0232, and MOD-0234 do not change.
 
 ## 11. Scope
 
