@@ -28,6 +28,76 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 
 # MOD-0289 — Bank Master & Bank Account Registry
 
+> **Revizyon (2026-10-28, KARAR D73 — O-15 kapandı):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D73/2 (2026-10-28 ölçümünde karar dosyasında yazılı,
+> commit'lenmemiş; main'de değil). **O-15 → KARAR D73/2 (CT önerisi (a)):** `lookup-validation`'da MOD-0140 404
+> `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (yazma ve listeyle aynı eşleme, D72/2); BANK-ACCOUNT-LOOKUP taslak
+> sözleşmesine (`docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`, 1.0.0 DRAFT, Treasury'nin taslağı)
+> 422 yanıtı **yalnız ekleme** olarak yazıldı (sözleşme DL-2'de dondurulur, henüz dondurulmadığı için 1.0.0'a; sürüm notu §8); hata kodu adı paket öneki
+> `MDM_BANK_` ile. Kapı **DL-3**. Değişen yerler: Hata sözlüğü, Runtime Constraints (okuma sözleşmesi), Failure Path, Test Expectations, Ready-for-dev
+> Checklist (O-15 maddesi), Açık kararlar (O-15 KAPANDI), DL-3 Önkoşul; **AC-24 genişletildi**. Yeni AC yok; AC numaraları ve
+> dilim tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, KARAR D72 — MOD-0140 Revizyon 5 hizalaması):** `status: draft` ve `approval_status: not-approved`
+> değişmedi. Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D72 (2026-10-28 ölçümünde karar
+> dosyasında yazılı, commit'lenmemiş; main'de değil) ve MOD-0140 paketi Revizyon 5
+> (`execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md`, main'de `status: ready-for-dev`, sha256
+> `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`, CT-APR-01 `execution/approvals/approvals.tsv:26`; §3.1–§3.3,
+> S-1…S-6). Ölçüm (origin/main @ `72f183138`): `supplier.openapi.yaml` hâlâ **1.2.0 FROZEN**; 1.3.0 dosyası yok — MOD-0140
+> **DL-1**'de dondurulur, uçlar MOD-0140 **DL-3**'te sunulur, C2 kodları **DL-4**'te üretilir. (1) **D72/5 — D58 metin
+> hizalaması:** liste = `eligibleForTransactions = true` = silinmemiş ve `Active` ilişki (MOD-0140 S-1); `onboardingStatus` /
+> `purchasingEnabled` süzgeci yoktur; D58'in içeriği (Active ilişkili bütün tedarikçiler) değişmedi. D58 metni S-1'den önce
+> yazıldı ("`eligibleForTransactions = true` şartı aranmaz"); S-1 tanımıyla "silinmemiş Active ilişki" ile
+> `eligibleForTransactions = true` aynı kümedir — paketteki D58 ifadeleri buna çekildi. (2) **D72/2 uygunluk ve hata eşlemesi:** uygun = `known` ∧
+> `eligibleForTransactions == true` (`status` yalnız gerekçe; alan yok / `null` → uygun sayılmaz); MOD-0140 403
+> (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 503 `DEPENDENCY_UNAVAILABLE` / okunamayan ya da alanı eksik yanıt → 503
+> `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (paketin mevcut adı; D72/2'nin `*_SUPPLIER_DIRECTORY_UNAVAILABLE` karşılığı); 404
+> `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (**yeni hata kodu**; paketin `MDM_BANK_` öneki); kayıt yazılmaz,
+> otomatik yeniden deneme yok. (3) **D72/1 kimlik:** `SupplierId` kanonik kod (`SUP-…`), eski kod `getSupplierEligibility` ile
+> çevrilip saklanır; **yeni alan `SupplierMasterId`** (uuid, ikincil); liste süzgeci kanonik kodlarla ordinal karşılaştırır.
+> (4) **D72/3 çağrı kimliği ve izinler:** `/eligible` (ve öteki MOD-0140 çağrıları) **kullanıcı token'ıyla** (MOD-0140 S-4);
+> `procurement.suppliers.eligibility.read` + (BL-652'ye kadar) `mdm.legal-entities.read` MDM banka rollerine çapraz modül
+> bağımlılığı (MOD-0018 Treasury Auth eki DL-2, D70/1 deseni; MOD-0018 sahibinin teyidi); servis token'ı MOD-0140 DL-7 / 1.5.0
+> sonrası ayrıca değerlendirilir. (5) "1.3.0'ın `status` anlamı ölçülmedi" cümlesi kalktı — anlam MOD-0140 pakette yazılı; kalan iş
+> DL-3 başında 1.3.0 FROZEN dosyasına karşı doğrulama. Değişen yerler: Ownership and Boundaries (tüketilen sözleşmeler), Entity
+> Fields (`SupplierId`, yeni `SupplierMasterId`, form notu), Hata sözlüğü, Dependencies (MOD-0140 satırı + kapanış tablosu),
+> Runtime Constraints (sahiplik kuralları, tedarikçi kapsamı, okuma sözleşmesi 503 cümlesi), Validation Rules, Failure Path,
+> Authorization Convention, Gateway / API Routing Decision, Test Expectations, Ready-for-dev Checklist, Açık kararlar (yeni
+> **O-15** — `lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY`'nin karşılığı; BANK-ACCOUNT-LOOKUP taslağı bu revizyonda
+> değişmedi), DL-3 Önkoşul / Bitiş; **AC-23, AC-24, AC-25 genişletildi**, **yeni AC-61** (DL-3). Mevcut AC numaraları ve dilim
+> tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, KARAR D70/3 + ölçüm):** `status: draft` ve `approval_status: not-approved` değişmedi. Kaynak:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D70 (2026-10-28 ölçümünde main'de değil — yerel
+> dalda, main'de değil). (1) **KARAR D70/3:** Auth paket metni kapısı (D53/1) = metin main'de + MOD-0018 sahibinin teyidi
+> (Ready-for-dev Checklist ENGELLER; açık). D70/1 ve D70/2 bu pakete dokunmaz (onay iş akışı yok). (2) Ölçüm: "MDM domain-config'te
+> MOD-0289 satırı main'de, güncel cümleyle" maddesi kapandı — D51/5 cümlesi (`kod alma izni D45/3`) PR #270 ile main'de
+> (`git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0; `git diff origin/main HEAD -- execution/domains/master-data-management/domain-config.md`
+> boş). Mevcut AC numaraları ve dilim tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, ready-for-dev 1. tur: Y-12, D62–D65):** Ali / Beste'yi beklemeyen maddeler; `status: draft` ve
+> `approval_status: not-approved` değişmedi.
+> Kaynak: `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` (D62–D65) ve
+> `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md` (Y-12, Y-15, Y-16, Y-17).
+> (1) **Y-12:** bu paket v1'de MOD-0023 kullanmaz (D23/2) — şablon kodu yok, değişiklik yok. (2) **D62/2:** `PartiallyApproved`
+> durumu yok (tarandı) — değişiklik yok. (3) **D53 / D56 Y-16 ile aynen geçerli:** Auth paket metni `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık —
+> K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16): `mdm.banks.*` / `mdm.bank-accounts.*` anahtarları, rol
+> şablonları ve iki açık atama anahtarı o paketin **DL-2**'si, SEC-002 "permission onboarding" eki o paketin **DL-4**'ü
+> (Platform dosyaları için XMC-001 Beste — D63/2). Dependencies SEC-002 ve MOD-0018 / Auth explicit-grant satırları, kapanış
+> tablosu SEC-002 satırı, Repo Scope, Authorization Convention ve Ready-for-dev Checklist Auth / SEC-002 maddeleri buna çekildi
+> ("Ali'nin MOD-0018 paketi" ifadeleri kalktı); paket kapısı (D53/1) ve DL-1 kabul kapısı (D53/2) değişmedi. (4) **D65/2**
+> (AC-60 üç dilime bölündü; şirket `BAC` için sahip şirketin `LegalEntityId`'si öneri, O-14'te Beste'ye soruldu) bu pakete önceki
+> revizyonda işlendi — değişiklik yok. D64 bu pakete dokunmaz. Mevcut AC numaraları ve dilim tablosu değişmedi.
+>
+> **Revizyon (2026-10-28, sahip denetimi 5cfd67813 KOŞULLU):** grup önekli kayıtlarda — banka (`BNK`) ve tedarikçi hesabı
+> (`BAC`, RCS-001 §5.3) — allocator'a gönderilecek `legalEntityId` değeri v0 sözleşmesinde yazılı değil; Beste'ye soruldu,
+> cevap yok. Bu, **açık karar O-14** (sahibi Beste, D44; kapı **DL-1 kabul kapısı**) olarak yazıldı; değer seçilmedi.
+> AC-60 genişletildi: karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı, bağdaştırıcı ve kabul
+> testi ona bağlanır. Runtime Constraints, Dependencies, kapanış tablosu, Ready-for-dev Checklist RCS-001 maddesi ve "Dilim
+> kabul kapısı" DL-1 / DL-3 satırları buna çekildi. Tedarikçi hesabı Create DL-3'te yazıldığı hâlde AC-60'ın hesap kısmı
+> DL-2'de "tam kapanış" sayılıyordu; AC-60 bitişi bölündü: banka DL-1, şirket hesabı DL-2, tedarikçi hesabı DL-3 (tam
+> kapanış). Yeni AC yok; AC numaraları, AC aralığı (AC-1…60) ve dilim tablosu değişmedi. `status: draft`.
+>
 > **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
 > rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev`
 > olduktan ve bağımsız inceleme (CT-APR-02) ile sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır.
@@ -200,7 +270,9 @@ suppliers while payment execution remains with treasury/payment gateway capabili
   dosya `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` — 1.0.0 **DRAFT**, CT tarafından
   bu paketin tanımından yazıldı; dondurma DL-2'de (AC-20). Kaynakta resmi sözleşme yoktur (paket §B "ABSENT").
 - **Tüketilen sözleşmeler / yapılar:** MOD-0220 `LegalEntity` (aynı servis — depo üzerinden süreç içi okuma; HTTP
-  değil); MOD-0140 `SUPPLIER` `validateSuppliers` (1.3.0 hedefi — bugün yok, Dependencies); MOD-0048 para birimi listesi;
+  değil); MOD-0140 `SUPPLIER` 1.3.0 — `validateSuppliers` (uygunluk alanları), `getSupplierEligibility` (kanonik kod +
+  `supplierMasterId`), `listEligibleSuppliers` (liste süzgeci); dosya MOD-0140 DL-1'de dondurulur, uçlar MOD-0140 DL-3'te
+  (KARAR D72; Dependencies); MOD-0048 para birimi listesi;
   RCS-001 ortak kod servisi; SEC-002 veri kapsamı (MDM'de var olan `ITrustedLegalEntityScopeProvider` adayı); MDM'nin
   denetim izi (`mdm-guvenilir-kaynak-niyeti`, Audited Events).
 - **Domain-config ile ilişki:** MDM domain-config'te MOD-0289 "In-Scope Reserved Module" listesinde yok ve frontend /
@@ -360,7 +432,8 @@ iyimser eşzamanlılık sağlamaz. Bu modül `LegalEntityRepository.UpdateEditab
 | Code | string | RCS-001 OTOMATİK; tür öneki `BAC` (KARAR D24/4); şirket hesabında şirket kısa kodu öneki, tedarikçi hesabında grup öneki | yeni |
 | OwnerType | enum `LegalEntity`=1, `Supplier`=2 | zorunlu; **oluşturulduktan sonra değişmez** | kaynakta iki ayrı tip + `OwnerType` string (`:236,308`) |
 | LegalEntityId | Guid? | `OwnerType = LegalEntity` ise zorunlu, değilse boş; değişmez | `LegalEntityId` (:41) |
-| SupplierId | string? | `OwnerType = Supplier` ise zorunlu, değilse boş; MOD-0140 sözleşmesindeki `supplierId` **olduğu gibi** (string, sıralı karşılaştırma; ölçüldü: `validateSuppliers` kimlikleri string ve `StringComparer.Ordinal` ile eşler, `services/Diten.ProcurementService/src/Diten.ProcurementService.Application/Features/Supplier/Handlers/QueryHandlers/ValidateSuppliersHandler.cs:22-29@158e0dc93`); trim, 1..64; değişmez | kaynak `SupplierId : Guid` (:265) — sözleşme string'dir |
+| SupplierId | string? | `OwnerType = Supplier` ise zorunlu, değilse boş; MOD-0140 **kanonik** tedarikçi kodu (`Supplier.SupplierId`, `SUP-…`) — **ana anahtar (KARAR D72/1)**. İstekte eski kod (çağıran şirketin `LegacySupplierCodes`'u) gelirse sunucu Create'te `GET /api/suppliers/{supplierId}/eligibility` yanıtındaki kanonik `supplierId`'yi saklar (MOD-0140 Revizyon 5 §3.1: uç eski kodla sorulsa da kanonik kod döner); string, sıralı karşılaştırma (ölçüldü: `validateSuppliers` kimlikleri string ve `StringComparer.Ordinal` ile eşler, `services/Diten.ProcurementService/src/Diten.ProcurementService.Application/Features/Supplier/Handlers/QueryHandlers/ValidateSuppliersHandler.cs:22-29@158e0dc93`); trim, 1..64; değişmez | kaynak `SupplierId : Guid` (:265) — sözleşme string'dir |
+| SupplierMasterId | Guid? | `OwnerType = Supplier` ise sunucu yazar, değilse boş; MOD-0140 `supplierMasterId` (`Supplier.Id`, kiracı geneli uuid) — **ikincil alan (KARAR D72/1)**: `SupplierId` ile aynı `getSupplierEligibility` yanıtından Create'te yazılır, değişmez; kimlik, tekillik, liste süzgeci ve `lookup-validation` `SupplierId` iledir; yanıtta `null` ya da uuid değilse yanıt okunamayan sayılır (503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`, kayıt yok); istekte bulunursa 400 | yeni |
 | BankId / BranchId | Guid / Guid? | aynı kiracıda; şube verilmişse o bankaya ait; `Domestic` hesapta bankanın `DomesticKeyIncludesBranch = true` ise şube zorunlu | `BankId`, `BranchId` |
 | CurrencyCode | string(3) | zorunlu, `^[A-Z]{3}$`, MOD-0048 listesinde; Active hesapta değişmez | `CurrencyCode` |
 | AccountIdentifierType | enum `Iban`=1, `Domestic`=2 | zorunlu | yeni |
@@ -391,7 +464,7 @@ matris C11), `PaymentEligibilityStatus`, `ApprovalStatus`, `ValidationState`, `L
 > OwnerType, LegalEntityId ya da SupplierId (tek alan, türüne göre seçici), BankId, BranchId, CurrencyCode,
 > AccountIdentifierType, AccountIdentifier (yalnız oluştururken; düz metin istek alanı, saklanmaz), AccountHolderName,
 > AccountPurpose, PaymentUsage, DisplayName = 11. **Sayılmayanlar:** Code (RCS-001 OTOMATİK), AccountLast4 /
-> MaskedDisplay / UniquenessKeyDigests / AccountIdentifierEnvelope / IdentifierCheckLevel (sunucu), Status, ActivationVerificationCode (Activate diyaloğunda, form alanı değil),
+> MaskedDisplay / UniquenessKeyDigests / AccountIdentifierEnvelope / IdentifierCheckLevel / SupplierMasterId (sunucu), Status, ActivationVerificationCode (Activate diyaloğunda, form alanı değil),
 > TenantId. 11 > 8 → Compact (ayrı Create / Edit / Details).
 >
 > **Banks ekranı:** Bank formunda 5 kullanıcı alanı var (Name, CountryCode, Bic, NationalBankCode, DomesticKeyIncludesBranch) — tek başına Slim'e
@@ -550,7 +623,13 @@ kapsamı ve silinmiş dahil — varlık sızdırılmaz), `MDM_BANK_VALIDATION_FA
 kod), `MDM_BANK_BIC_CONFLICT` 409, `MDM_BANK_NATIONAL_CODE_CONFLICT` 409, `MDM_BANK_BRANCH_CODE_CONFLICT` 409,
 `MDM_BANK_BRANCH_BANK_MISMATCH` 400, `MDM_BANK_ACCOUNT_DUPLICATE` 409 (diğer sahibi ifşa etmez),
 `MDM_BANK_VERSION_CONFLICT` 409, `MDM_BANK_STATE_INVALID` 409, `MDM_BANK_ACCOUNT_IMMUTABLE_FIELD` 409,
-`MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` 422, `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` 503 (MOD-0140 erişilemez / geçersiz yanıt),
+`MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` 422, `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` 503 (MOD-0140 erişilemez / geçersiz yanıt —
+KARAR D72/2: 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ve öteki 403'ler, 401, 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı,
+ayrıştırılamayan, alanı eksik / `null` ya da çelişkili gövde; D72/2'nin `*_SUPPLIER_DIRECTORY_UNAVAILABLE` karşılığı — mevcut ad
+korundu; kayıt yazılmaz, otomatik yeniden deneme yok), `MDM_BANK_LEGAL_ENTITY_UNKNOWN` 422 (MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` —
+Procurement isteğin şirketini bu kiracıda tanımıyor, `Active` saymıyor ya da referanslanamaz buluyor; süreç içi LE kontrolünden
+geçmiş isteğin bağımlılıktaki çelişkisi — **KARAR D72/2**; `lookup-validation` dahil — **KARAR D73/2**; kayıt yazılmaz, hesap
+gösterilmez, yeniden deneme yok),
 `MDM_BANK_INACTIVE` 422 (pasif banka/şubeye hesap), `MDM_BANK_ACCOUNT_FOUR_EYES_REQUIRED` 403,
 `MDM_BANK_ACCOUNT_REVEAL_REASON_REQUIRED` 400, `MDM_BANK_CURRENCY_UNKNOWN` 400, `MDM_BANK_CURRENCY_REFERENCE_UNAVAILABLE`
 503, `MDM_BANK_RECORD_CODE_UNAVAILABLE` 503, `MDM_BANK_AUDIT_UNAVAILABLE` 503 (denetim niyeti yazılamadı; iş verisi yok),
@@ -617,10 +696,10 @@ Hepsi kod alma izninden (D1) ve `ready-for-dev`'den sonra; dilim sütunu "Teslim
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 `ocelot.json` rotaları (integration-agent); `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`
-(iki yeni anahtar — Auth sahibi); SEC-002 sağlayıcısının Platform izin listesi
+(iki yeni anahtar — MOD-0018 Treasury Auth ekinin DL-2'si; Treasury yazar, MOD-0018 sahibi teyit eder); SEC-002 sağlayıcısının Platform izin listesi
 (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`) ve MDM istemcisinin
 modül kodu (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs`)
-— MOD-0018 "permission onboarding" eki (Ali, **KARAR D56/1**; bu paketin Repo Scope'unda değildir); `.antigravity/rules/record-coding-standard.md` §3 `BNK` / `BAC` satırları (**yazıldı, D30**); MOD-0140 `supplier.openapi.yaml` 1.3.0 (MVP-2 tek yazar, K15); MDM domain-config'e MOD-0289
+— MOD-0018 Treasury Auth ekinin SEC-002 dilimi (DL-4, "permission onboarding" eki; `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform dosyaları için XMC-001 Beste — D63/2; **KARAR D56/1**; bu paketin Repo Scope'unda değildir); `.antigravity/rules/record-coding-standard.md` §3 `BNK` / `BAC` satırları (**yazıldı, D30**); MOD-0140 `supplier.openapi.yaml` 1.3.0 (MVP-2 tek yazar, K15); MDM domain-config'e MOD-0289
 satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MDM'den tüketim yolu.
 
 ## Protected Paths
@@ -645,13 +724,13 @@ satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MD
 | Kapı / bağımlılık | Rol | Recovery durumu (ölçüm @158e0dc93) | Bu pakete etkisi |
 |---|---|---|---|
 | MOD-0220 Legal Entity | şirket sahibi; uygunluk | **var, aynı servis** — `LegalEntity.OperationalStatus` ve `ApprovalStatus` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`), `IsReferenceable` (`:60`); `lookup-validation` yalnız `Active` için 200 (`…/Features/LegalEntity/Handlers/QueryHandlers/ValidateLegalEntityReferenceHandler.cs:19-25`) | süreç içi depo okuması; TRM-14'e **gerek yok** (onay durumu kayıtta okunur). Kural **KARAR D23/3** |
-| MOD-0140 Supplier (`SUPPLIER`) | tedarikçi sahibi; ilişki durumu | sözleşme bu depoda **1.2.0** (`docs/analysis/contracts/supplier.openapi.yaml:13`); `validateSuppliers` 200 gövdesi `{supplierId, known, status}` + `contractVersion` (`:126-162`), `SupplierStatus` `Active/OnHold/Blocked/Inactive` (`:197`); kimlik string, kod Tenant + LE süzgeçli (`ValidateSuppliersHandler.cs:22-29`, yorum `:27`). **1.3.0 hiçbir dalda bu depoda yok** (`git log --all -- docs/analysis/contracts/supplier.openapi.yaml` → son değişiklik `780f8368a`, 1.2.0); MOD-0119 pack'i 1.3.0'ın `origin/feature/mvp2/supplier-tenant-01` dalında MVP-2 DL-2 ile yazılacağını kaydediyor (MOD-0119 pack Dependencies) — bu oturumda o dal ölçülmedi | **DL-3 engeli:** 1.3.0 main'e girmeden tedarikçi hesabı yazılamaz. Koleksiyon okuması yok (level-1 koşul 3). **KARAR D58 (Cihan yanıtı Y-9):** liste görünümü için 1.3.0 `GET /api/suppliers/eligible` (`listEligibleSuppliers`) — çağıranın şirketiyle silinmemiş ve **Active** ilişkisi olan bütün tedarikçiler; öğe `SupplierEligibility` (`supplierId`, `supplierMasterId`, `status`, `onboardingStatus`, `purchasingEnabled`, `eligibleForTransactions`); imleçli, sayfa 50; izin `procurement.suppliers.eligibility.read`. `eligibleForTransactions = true` şartı **aranmaz** (banka hesabı çoğunlukla onboarding sırasında kaydedilir; ödeme anı uygunluğu ödeme tarafında). 1.3.0, MOD-0140 kararlarından ~3 iş günü sonra main'de; uç MOD-0140 DL-3'te çalışır (1.3.0'dan ~1,5–2 hafta sonra) — o zamana dek MOD-0289 sözleşmeye karşı **sahte istemciyle** kodlanır |
+| MOD-0140 Supplier (`SUPPLIER`) | tedarikçi sahibi; ilişki durumu | sözleşme bu depoda **1.2.0** (`docs/analysis/contracts/supplier.openapi.yaml:13`); `validateSuppliers` 200 gövdesi `{supplierId, known, status}` + `contractVersion` (`:126-162`), `SupplierStatus` `Active/OnHold/Blocked/Inactive` (`:197`); kimlik string, kod Tenant + LE süzgeçli (`ValidateSuppliersHandler.cs:22-29`, yorum `:27`). **1.3.0 dosyası yok** (origin/main @ `72f183138`: `supplier.openapi.yaml:13-14` 1.2.0 FROZEN). **Kaynak artık MOD-0140 paketi Revizyon 5** (`execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md`, main'de `status: ready-for-dev`, sha256 `b3259e40c33c47200516710dfd50f7676494d848978787f8726ac636527ce5c2`, CT-APR-01 `execution/approvals/approvals.tsv:26`): `SupplierEligibility` §3.1 (`supplierId` her zaman kanonik kod; `status` = çağıran şirketin ilişki durumu; `eligibleForTransactions` = ilişki var ∧ silinmemiş ∧ `Active`, ek koşul yok — S-1), `validate` satır alanları §3.2 (`known == relationshipExists`), hata kodları ve YAML §3.3; 1.3.0 **MOD-0140 DL-1**'de dondurulur, uçlar ve satırın yeni alanları **MOD-0140 DL-3**'te sunulur (o zamana kadar `/validate` 1.2.0 şekliyle yanıt verir, `/eligible` ve `/{id}/eligibility` çalışmaz — MOD-0140 §2 "Sunum" :42), C2 kodları (404 `UNKNOWN_LEGAL_ENTITY`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`) **MOD-0140 DL-4**'te üretilir ama 1.3.0'dan itibaren olası sayılır (:44); `x-front-loaded-for` listesine MOD-0289 eklenir (:41); `GET /eligible` servis token'ına kapalı (S-4) | **DL-3 engeli:** 1.3.0 FROZEN dosyası main'e girmeden tedarikçi hesabı kodlanmaz; MOD-0140 DL-3 birleşmeden canlı bağlantı açılmaz (yeni alan yoksa uygun sayılmaz — fail-closed). Koleksiyon okuması yok (level-1 koşul 3). Uygunluk = `known` ∧ `eligibleForTransactions == true` (**KARAR D72/2**); kanonik kod `getSupplierEligibility`'den, `supplierMasterId` ikincil (**D72/1**). **KARAR D58 (Cihan yanıtı Y-9), metni D72/5 ile hizalı:** liste görünümü için 1.3.0 `GET /api/suppliers/eligible` (`listEligibleSuppliers`) — çağıranın şirketiyle silinmemiş ve **Active** ilişkisi olan bütün tedarikçiler = tam olarak `eligibleForTransactions = true` olan ilişkiler (MOD-0140 S-1); `onboardingStatus` / `purchasingEnabled` süzgeci **yoktur** (banka hesabı çoğunlukla onboarding sırasında kaydedilir; ödeme anı uygunluğu ödeme tarafında); öğe `SupplierEligibility`; imleçli, sayfa 50, kanonik `SupplierId` sıralı; izin `procurement.suppliers.eligibility.read`; çağrı **kullanıcı token'ıyla** (D72/3). Uç MOD-0140 DL-3'te çalışana kadar MOD-0289 sözleşmeye karşı **sahte istemci / Prism** ile kodlanır |
 | MOD-0048 para birimi | kod listesi | `GET /api/lookups/reference/currencies` Platform'da, kiracı kullanıcısına açık (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:18,37-38@7c57e8466`); MDM'den tüketim yolu **ölçüldü (2026-10-27, @7c57e8466): bugün okuyucu yok** — MdmService'te para birimi listesi okuyan istemci yok; yol: mevcut `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:18,30-31,40-50`; `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id`) | `ICurrencyReferencePort` (yeni port, DL-2 yazar); erişilemezse Create 503, sabit liste yok |
-| RCS-001 ortak kod servisi | `BNK` / `BAC` kodları | **yok** (BL-565); MDM'de yalnız ürün ailesine ait `CodeReservation` (`…/Domain/Entities/CodeReservation.cs:5-27`) | **DL-1 kabul kapısı (KARAR D59/1; paket kapısı değil):** modül kendi sayacını ya da yedek kodu yazamaz (RCS-001 §6). DL-1 kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portuna karşı sahte uygulamayla yazılır; servis Beste'den 6 Kasım'a kadar (Y-8); gerçek servis DL-1 kabulünden önce main'de olmalıdır. Üretimde port bağlı değilse Create 503, kodsuz kayıt yok (O-7) |
-| SEC-002 veri kapsamı | şirket hesaplarında görünürlük | MDM'de Platform'a giden güvenilir sağlayıcı **var**: `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`…/Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-22`), bugün ürün kapsamında kullanılıyor (`ProductLegalEntityScopeCandidateFacade.cs`). **Ölçüldü (2026-10-27, @ec063fee9 — DL-2 hazırlık kaydı §1): MOD-0289 anahtarlarıyla bugün çalışmaz** — MDM istemcisi modül kodunu `product-item-sku-master`'a sabitliyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,60-62,163-171@ec063fee9`), Platform doğrulayıcısı yalnız aynı modül kodunu ve sabit izin listesini kabul ediyor (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:15,35-56,97-114@ec063fee9`); `mdm.bank-accounts.*` hiçbir listede yok | kapsam kuralı **KARAR D23/1**. **KARAR D56/1:** gereken değişiklik ölçüm değil kod değişikliğidir ve bu paketin işi değildir — Platform izin listesi + MDM istemcisinin modül kodu, Ali'nin MOD-0018 Auth paketine **"permission onboarding" eki** olarak girer. Paket kapısı: ekin paket metni main'de (D53/1 deseni); kodu main'de — DL-1 kabul kapısı (Ready-for-dev Checklist) |
+| RCS-001 ortak kod servisi | `BNK` / `BAC` kodları | **yok** (BL-565); MDM'de yalnız ürün ailesine ait `CodeReservation` (`…/Domain/Entities/CodeReservation.cs:5-27`) | **DL-1 kabul kapısı (KARAR D59/1; paket kapısı değil):** modül kendi sayacını ya da yedek kodu yazamaz (RCS-001 §6). DL-1 kodu `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portuna karşı sahte uygulamayla yazılır; servis Beste'den 6 Kasım'a kadar (Y-8); gerçek servis DL-1 kabulünden önce main'de olmalıdır. Grup önekli `BNK` ve tedarikçi `BAC` için gönderilecek `legalEntityId` **açık karar O-14** (sahibi Beste) — DL-1 kabul kapısı; karar kapanmadan gerçek servisle kabul yok (AC-60). Üretimde port bağlı değilse Create 503, kodsuz kayıt yok (O-7) |
+| SEC-002 veri kapsamı | şirket hesaplarında görünürlük | MDM'de Platform'a giden güvenilir sağlayıcı **var**: `ITrustedLegalEntityScopeProvider.ResolveAsync(tenant, subject, moduleCode, permissionKey)` → `LegalEntityIds` (`…/Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:3-22`), bugün ürün kapsamında kullanılıyor (`ProductLegalEntityScopeCandidateFacade.cs`). **Ölçüldü (2026-10-27, @ec063fee9 — DL-2 hazırlık kaydı §1): MOD-0289 anahtarlarıyla bugün çalışmaz** — MDM istemcisi modül kodunu `product-item-sku-master`'a sabitliyor (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:18,60-62,163-171@ec063fee9`), Platform doğrulayıcısı yalnız aynı modül kodunu ve sabit izin listesini kabul ediyor (`services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:15,35-56,97-114@ec063fee9`); `mdm.bank-accounts.*` hiçbir listede yok | kapsam kuralı **KARAR D23/1**. **KARAR D56/1:** gereken değişiklik ölçüm değil kod değişikliğidir ve bu paketin işi değildir — Platform izin listesi + MDM istemcisinin modül kodu, MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding" eki)** olarak girer — `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (Treasury yazar, MOD-0018 sahibi teyit eder; Platform dosyaları için XMC-001 Beste — D63/2). Paket kapısı: ekin paket metni main'de (D53/1 deseni); kodu main'de — DL-1 kabul kapısı (Ready-for-dev Checklist) |
 | MDM denetim izi | yazma ve maskesiz okuma kaydı | `mdm-guvenilir-kaynak-niyeti` (yol `b`, CT kararı 2026-10-07) ve `mdm-merkezi-iletim` (yol `b`, en iyi çaba) defterde kabul edilmiş (`tests/architecture/audit-ledger/Diten.MdmService.md` `## İzler`) | **bugün var**; yol KARAR D24/2 ile seçildi; yeni koleksiyonlar için genişletme + defter belirteci ayrı CT kararı ister (Audited Events) |
 | Şifreleme altyapısı | tam tanımlayıcı | servislerde alan şifreleme yok (`git grep` `IDataProtector|AddDataProtection|ClientEncryption|AesGcm|AutoEncryption` `services/*.cs` → 0) | **engel**: O-6 — sahip onayı D24/3, güvenlik onayı D33/1 verildi; **gerçek Mongo testleri açık** (DL-2 kabul kapısı) + anahtar yönetimi (kaynak D33/2); anahtar yoksa servis açılmaz. `System.Security.Cryptography.AesGcm` ve `RandomNumberGenerator` .NET'in parçasıdır; MdmService'in hedef çerçevesinde kullanılabilirliği: hedef çerçeve **ölçüldü** — MdmService'in beş projesi `net8.0` (`services/Diten.MdmService/src/*/…csproj:3@ec063fee9`, DL-2 hazırlık kaydı §1); kalan yalnız çalışma ortamı desteği (`AesGcm.IsSupported`, CI imajı) — DL-2 kabul kapısında (AC-37) |
-| MOD-0018 / Auth explicit-grant | maskesiz okuma ve kiracı geneli izinleri | `ExplicitGrantOnlyPermissions` Auth'ta (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs:8-29`) | iki anahtar eklenmesi Auth değişikliği (D9, Auth sahibi) |
+| MOD-0018 / Auth explicit-grant | maskesiz okuma ve kiracı geneli izinleri | `ExplicitGrantOnlyPermissions` Auth'ta (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs:8-29`) | iki anahtar eklenmesi Auth değişikliği (D9) — MOD-0018 Treasury Auth ekinin DL-2'si (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi inceler ve teyit eder — Y-15, Y-16; 2026-10-28 ölçümünde main'de değil) |
 | MOD-0003 Data Contract Registry | sözleşme kaydı | kayıt satırı planned / missing; uygulama 0 dosya (paket §D, Recovery düzeltmesi) | v1'de kullanılmaz; sözleşme dosyası `docs/analysis/contracts/` altında |
 | MOD-0023 Workflow | hesap onay akışı | var (Platform) | v1'de kullanılmaz (**KARAR D23/2**) |
 | MOD-0031 Evidence | tedarikçi hesabı doğrulama kanıtı | var (Platform) | v1'de kullanılmaz (KARAR D24/1); MOD-0269 gerçek dağıtımından önce zorunlu kapı (Follow-up) |
@@ -669,10 +748,10 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 |---|---|---|---|---|---|---|
 | BANK-ACCOUNT-LOOKUP (bu modül) | `drafts/bank-account-lookup-validation-v1.0-proposal.md` 1.0.0 — **DRAFT yazıldı** (fikstürler F-E1…F-E9, F-503) | dondurulunca (DL-2) | master-data-management | — | AC-20, AC-42 · sözleşmenin kendi testi (başvuru sınıflandırıcısı + fikstürler); tüketici koşusu ilk gerçek tüketicinin diliminde (KARAR D57/1) | DL-2 |
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod; sözleşme dosyası yok) | MdmService commit SHA'sı DL-2 başında | master-data-management | kayıt yok / başka kiracı → 404 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` sınıfı 422; uygun değil → 422 | birim + entegrasyon (Active+Approved / Active+Draft / Suspended / silinmiş) · — (aynı süreç) | DL-2 |
-| MOD-0140 `validateSuppliers` + ilişkili tedarikçi listesi | `supplier.openapi.yaml` **1.3.0** — yok (bugün 1.2.0); liste görünümü için "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okuması: **KARAR D58** — `GET /api/suppliers/eligible` (`listEligibleSuppliers`), Active ilişkili bütün tedarikçiler, `eligibleForTransactions` süzgeci yok, imleçli (sayfa 50), izin `procurement.suppliers.eligibility.read` (Cihan yanıtı Y-9; sözleşme dosyasında ölçüm 1.3.0 main'e girince) | main'e girince `shasum` | procurement (MVP-2) | known + Active → ilişkili; known + OnHold/Blocked/Inactive ya da known:false → ilişkisiz (D23/1: okumada 404, yazmada 422); geçersiz / çelişkili gövde, 401/403, 5xx, zaman aşımı → 503; yazma yok, hesap gösterilmez | sahte istemci (AC-24, AC-41; `eligible` listesi sözleşmeye karşı sahte istemciyle — uç MOD-0140 DL-3'e kadar yok, D58) · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-3 |
+| MOD-0140 `validateSuppliers` + `getSupplierEligibility` + ilişkili tedarikçi listesi | `supplier.openapi.yaml` **1.3.0** — yok (bugün main'de 1.2.0 FROZEN); MOD-0140 **DL-1**'de sözleşme dosyası olarak dondurulur, uçlar **MOD-0140 DL-3**'te, C2 kodları DL-4'te; tanım MOD-0140 Revizyon 5 §3.1–§3.3 (pack sha256 `b3259e40…ce5c2`). Liste: **KARAR D58** (metni D72/5) — `GET /api/suppliers/eligible` (`listEligibleSuppliers`) = `eligibleForTransactions = true` = silinmemiş ve Active ilişkili bütün tedarikçiler, `onboardingStatus` / `purchasingEnabled` süzgeci yok, imleçli (sayfa 50), izin `procurement.suppliers.eligibility.read`, kullanıcı token'ı (D72/3) | 1.3.0 FROZEN dosyası main'e girince `shasum` (DL-3 başında) | procurement (MOD-0140) | uygun (ilişkili) = `known` ∧ `eligibleForTransactions == true` (D72/2); `known: false` ya da `eligibleForTransactions: false` → ilişkisiz (D23/1: okumada 404, yazmada 422); 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 401, 503 `DEPENDENCY_UNAVAILABLE`, 5xx, zaman aşımı, geçersiz / alanı eksik / çelişkili gövde → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`; yazma yok, hesap gösterilmez, otomatik yeniden deneme yok | sözleşme testi: sahte istemci / Prism, 1.3.0 FROZEN dosyasına karşı (AC-24, AC-25, AC-41, AC-61) · canlı kanıt: MOD-0140 DL-3 (C2 için DL-4) birleştikten ve MDM rollerinde bağımlı izinler verildikten sonra dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi + eski kodlu bir tedarikçi; DL-3'ten önce canlı bağlantı yok | DL-3 |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | DL-2 başında | platform-shared-services | erişilemez → 503, listede yok → 400 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-2 |
-| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565) | TBD (6 Kasım'da kesinleşince) | Beste (D44) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`, kayıt yazılmaz; yedek kod yok | sahte allocator (AC-60, sabotajlı) · dev ortamında gerçek servisle `BNK` (DL-1) ve `BAC` (DL-2) kodu | DL-1 kabul kapısı (D59/1) |
-| SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` (MDM kodu) + Platform sağlayıcı ucu; MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | ek kodu main'e girince (DL-1 kabulünden önce) | Ali (MOD-0018 eki, D56/1); platform-shared-services (Platform ucu) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-17 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) · AC-17 DL-2 |
+| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565). **Grup önekli kayıtlarda (`BNK`, tedarikçi `BAC`) `legalEntityId` değeri sözleşmede yazılı değil — açık karar O-14 (Beste; soruldu, cevap yok)** | TBD (6 Kasım'da kesinleşince) | Beste (D44) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`, kayıt yazılmaz; yedek kod yok | sahte allocator (AC-60, sabotajlı) · dev ortamında gerçek servisle `BNK` (DL-1), şirket `BAC` (DL-2) ve tedarikçi `BAC` (DL-3) kodu — grup önekli ikisi O-14 kararına bağlı kabul testiyle | DL-1 kabul kapısı (D59/1; O-14) |
+| SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` (MDM kodu) + Platform sağlayıcı ucu; MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | ek kodu main'e girince (DL-1 kabulünden önce) | Treasury yazar, MOD-0018 sahibi teyit eder (MOD-0018 Treasury Auth eki DL-4, D56/1 — `…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`); platform-shared-services (Platform ucu; XMC-001 Beste) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-17 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) · AC-17 DL-2 |
 | Şifreleme ve özet anahtarları | O-6 (D24/3 sahip onayı; **güvenlik onayı D33/1**) — `Mdm:BankData:EncryptionKeys` / `Mdm:BankData:HashKeys` (sürümlü); kaynak her ortamın gizli deposu, yerelde user-secrets (D33/2); hangi ürün olduğu ortam kurulumunda **ölçülür** | — | sahip + güvenlik | eksik / hatalı anahtar → servis açılmaz; kayıttaki sürüm yok → 503; doğrulama hatası → 500, değer yok | AC-13, AC-35, AC-37…AC-39 · dev ortamı anahtar döndürme denemesi | DL-2 |
 | IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi) | **yok**; sahibi referans veri (MOD-0048 / REF slotu) | — | MOD-0048 sahibi | kapı kapalı (v1) → `FormatAndChecksum`; kapı açık + kaynak yok / erişilemez → 503 | AC-40 (sahte kaynak) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
 | Banka dizini + yurt içi hesap kuralı kaynakları (`IBankDirectorySource`, `IDomesticAccountRuleSource`) | **yok**; sahibi adlandırılmadı (referans veri / bankacılık sahibi) | — | TBD (sahip) | kapı kapalı (v1) → `DomesticFormat`; kapı açık + kaynak yok / erişilemez → 503 | AC-47 (sahte kaynaklar) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
@@ -694,9 +773,14 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `Bank.Code` (`BNK`) ve `BankAccount.Code` (`BAC`) yalnız
   `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portundan alınır. Bu pakette istemci
   idempotency makbuzu yoktur (aşağıda); anahtar sunucuda Create denemesi başına üretilir, aynı denemenin yeniden çağrısı aynı
-  kodu alır; başarısız Create'te alınmış kod yeniden kullanılmaz (RCS-001 §6). Grup önekli kayıtlarda (banka, tedarikçi
-  hesabı — RCS-001 §5.3) `legalEntityId` alanına ne gönderileceği v0 sözleşmesinde yazılı değildir — 6 Kasım kesinleşmesinde
-  Beste'ye sorulur (açık nokta; DL-1 sahte allocator'la ilerler). Bağdaştırıcı v0 sözleşmesini
+  kodu alır; başarısız Create'te alınmış kod yeniden kullanılmaz (RCS-001 §6). **Grup önekli kayıtlar — açık karar O-14
+  (sahibi Beste, D44; DL-1 kabul kapısı):** banka (`BNK`) ve tedarikçi hesabı (`BAC`, RCS-001 §5.3) için `legalEntityId`
+  alanına ne gönderileceği v0 sözleşmesinde yazılı değildir; Beste'ye soruldu, cevap yok (2026-10-28). Bu paket değer
+  seçmez. DL-1 kodu sahte allocator'la ilerler; bu iki kayıt türünde çağrının `legalEntityId` değeri tek bir çağrı
+  noktasında üretilir ve karar gelene kadar belirlenmemiş sayılır — sahte allocator testi bu değer üzerinden "geçti" sayılmaz.
+  Karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı (Dependencies kapanış tablosu),
+  bağdaştırıcı ve AC-60 kabul testi ona bağlanır. O-14 şirket hesabını da kapsar: şirket hesabında (`BAC`, şirket kısa kodu
+  öneki — D24/4) hesabın sahibi şirketin `LegalEntityId`'siyle çağrılması öneridir, sözleşme sahibince teyit edilir (D65/2). Bağdaştırıcı v0 sözleşmesini
   (`POST /api/internal/record-codes/allocate`) çağırır; 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
   `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE` ile başarısız
   kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı kayıtlı değil) banka ve hesap Create 503, kodsuz
@@ -876,16 +960,25 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
   `OperationalStatus = Active` olmalıdır; Activate'te ayrıca `ApprovalStatus = Approved` (**KARAR D23/3**, D10/1 ile aynı çizgi).
   Değilse 422 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE`. Kullanıcının o şirket üzerinde **yazma kapsamı** olmalıdır; yoksa 404.
 - **Tedarikçi sahibi (MOD-0140 sözleşmesi, Gateway):** Create, Update, Activate, Deactivate ve Delete'te (ve D23/1 gereği her
-  okumada, aşağıda) `ISupplierEligibilityPort` `validateSuppliers`
-  çağırır; çağrı isteğin `X-Legal-Entity-Id`'siyle yapılır çünkü tedarikçi ana kaydı kiracı genelinde ama ilişki durumu
-  şirket başınadır (sahip cevabı 2026-10-21, `docs/roadmap/plans/mvp6-development-plan-v10.0.md` C1). `known = true` ve
-  `status = Active` değilse yazma 422 (Create, Activate) ya da 404 (var olan hesapta Update / Deactivate / Delete — ilişkisiz
-  kullanıcı hesabı görmez, D23/1); geçersiz / çelişkili yanıt (sonuçta istenen `supplierId` yok ya da farklı, `known`
-  boolean değil, `status` dört değerin dışında, gövde ayrıştırılamıyor) ya da 401/403/5xx/zaman aşımı → 503
-  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; ikisinde de hiçbir şey yazılmaz. `mod0140_suppliers` koleksiyonu ya da
-  ProcurementService derlemesi **hiçbir zaman** okunmaz (level-1 koşul 3). 1.3.0'ın `status` alanının "çağıran şirketin
-  ilişki durumu" anlamı MOD-0119 pack kaydından alınmıştır — dosya yazılmadığı için **ölçülmedi**; DL-3 başında dosyaya
-  karşı yeniden doğrulanır.
+  okumada, aşağıda) `ISupplierEligibilityPort` MOD-0140'ı çağırır (**KARAR D72**): Create'te `GET
+  /api/suppliers/{supplierId}/eligibility` (`getSupplierEligibility`) — istekteki kod (kanonik ya da çağıran şirketin eski kodu)
+  kanonik `supplierId`'ye çevrilir ve o saklanır, `supplierMasterId` ikincil alan olarak yazılır (D72/1; bu uçta 200 = ilişki var,
+  `known: true` karşılığı, 404 `UNKNOWN_SUPPLIER` = ilişkisiz); var olan hesapta (Update, Activate, Deactivate, Delete ve
+  okumalar) saklı kanonik kodla `POST /api/suppliers/validate` (`validateSuppliers`). Çağrı isteğin `X-Legal-Entity-Id`'siyle
+  ve **kullanıcı token'ıyla** yapılır (D72/3) çünkü tedarikçi ana kaydı kiracı genelinde ama ilişki durumu şirket başınadır
+  (sahip cevabı 2026-10-21, `docs/roadmap/plans/mvp6-development-plan-v10.0.md` C1). **Uygunluk = `known` ∧
+  `eligibleForTransactions == true` (D72/2)**; `status` yalnız gerekçedir. Uygun değilse yazma 422
+  `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` (Create, Activate) ya da 404 (var olan hesapta Update / Deactivate / Delete — ilişkisiz
+  kullanıcı hesabı görmez, D23/1); geçersiz / çelişkili yanıt (sonuçta istenen `supplierId` yok ya da farklı, `known` ya da
+  `eligibleForTransactions` yok / `null` / boolean değil — 1.2.0 şeklindeki satır dahil —, `status` dört değerin ve `null`'un
+  dışında, tekil uçta kanonik `supplierId` ya da `supplierMasterId` yok / `null`, gövde ayrıştırılamıyor) ya da 401 / 403 (403
+  `LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil — çağıran rolde `mdm.legal-entities.read` yok, MOD-0140 S-2) / 503
+  `DEPENDENCY_UNAVAILABLE` / diğer 5xx / zaman aşımı → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422
+  `MDM_BANK_LEGAL_ENTITY_UNKNOWN`. Hiçbirinde bir şey yazılmaz ve MOD-0140 otomatik yeniden denenmez (istek başına uç başına
+  tek çağrı). `mod0140_suppliers` koleksiyonu ya da ProcurementService derlemesi **hiçbir zaman** okunmaz (level-1 koşul 3).
+  `status` ve `eligibleForTransactions` anlamı MOD-0140 Revizyon 5 §3.1'de yazılıdır (S-1); kalan iş **DL-3 başında 1.3.0 FROZEN
+  dosyasına karşı doğrulama**dır (sözleşme testi). MOD-0140 DL-3 birleşene kadar bağdaştırıcı yalnız sahte istemci / Prism ile
+  çalışır, canlı bağlantı açılmaz.
 - **`X-Legal-Entity-Id` MDM'de yeni:** bugün MdmService bu başlığı okumuyor (`git grep X-Legal-Entity-Id services/Diten.MdmService/src` → 0).
   Bu modülde başlık yalnız (a) tedarikçi sahibinin ilişki kontrolü ve (b) şirket hesabı Create'inde gövdedeki
   `LegalEntityId` ile tutarlılık için kullanılır; başlıktaki şirket kiracıya ait ve `Active` olmalıdır (süreç içi
@@ -919,11 +1012,17 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
     görür; ilişkisi yoksa maskesiz okuma **403** `MDM_BANK_ACCOUNT_RELATIONSHIP_REQUIRED` (hesap görünür olduğu için 404
     değil), yazma ve `lookup-validation` 404 (lookup bir şirketin kullanım uygunluğudur).
   - Liste: ilişkili tedarikçi kimlikleri MOD-0140 1.3.0 `GET /api/suppliers/eligible` (`listEligibleSuppliers`) ile okunur
-    ve süzgece konur — **KARAR D58:** çağıranın şirketiyle **Active** ilişkili bütün tedarikçiler; `eligibleForTransactions`
-    süzgeci uygulanmaz; imleçli sayfalar (50) sonuna kadar okunur; çağrı izni `procurement.suppliers.eligibility.read`. Uç
-    MOD-0140 DL-3'te çalışana kadar bu kural sözleşmeye karşı sahte istemciyle kodlanır ve test edilir; MOD-0140 erişilemez / geçersiz yanıt →
-    tedarikçi hesabı içeren liste isteği 503 (hesaplar "ilişki bilinmiyor" diye gösterilmez); kiracı geneli izinle
-    maskeli liste MOD-0140'a gitmez.
+    ve süzgece konur — **KARAR D58, metni D72/5 ile hizalı:** liste = `eligibleForTransactions = true` = çağıranın şirketiyle
+    silinmemiş ve **Active** ilişkili bütün tedarikçiler (MOD-0140 S-1); `onboardingStatus` / `purchasingEnabled` süzgeci
+    **uygulanmaz** (öğede alan olarak döner, MDM bakmaz); imleçli sayfalar (50) sonuna kadar okunur; süzgeç öğelerin kanonik
+    `supplierId`'leriyle `BankAccount.SupplierId`'yi **ordinal** karşılaştırır (D72/1); çağrı izni
+    `procurement.suppliers.eligibility.read`, çağrı **kullanıcı token'ıyla** (D72/3 — MOD-0140 S-4 `/eligible`'ı servis
+    token'ına kapatır). Uç MOD-0140 DL-3'te çalışana kadar bu kural sözleşmeye karşı sahte istemci / Prism ile kodlanır ve test
+    edilir. MOD-0140 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil) / 503 / okunamayan, alanı eksik ya da çelişkili sayfa (bir öğede
+    `eligibleForTransactions ≠ true` dahil — S-1 değişmezi) → tedarikçi hesabı içeren liste isteği 503
+    `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (hesaplar "ilişki bilinmiyor" diye gösterilmez, kısmi sayfa birleştirilmez); 404
+    `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`; otomatik yeniden deneme yok. Kiracı geneli izinle maskeli liste
+    MOD-0140'a gitmez.
   - **D23/1 sonucu (not):** kiracı genelinde tedarikçi hesaplarını **yazan** bir ana veri sorumlusu rolü yoktur; yazma her
     zaman ilişkili bir şirket üzerinden yapılır.
 - **Banka ve şube:** kiracı içinde herkese açık referans verisi (`mdm.banks.read` izni olan herkes görür); SEC-002 §3
@@ -958,8 +1057,13 @@ LEGAL-ENTITY-LOOKUP 1.1.0 deseni (`docs/analysis/contracts/drafts/legal-entity-l
 | `contractVersion` | string | `bank-account-lookup/1.0` |
 
   Gövde **IBAN, hesap numarası, son 4 hane dışındaki herhangi bir parça, BIC, banka adı, şube adı, hesap sahibi adı
-  taşımaz.** Tedarikçi ilişkisi okunamazsa (MOD-0140 503 / geçersiz) MDM 200 dönmez, **503**
-  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` döner (hiçbir zaman varsayılan `ELIGIBLE` yok).
+  taşımaz.** Tedarikçi ilişkisi okunamazsa (MOD-0140 403 — `LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil — / 503 / geçersiz ya da
+  alanı eksik yanıt, KARAR D72/2) MDM 200 dönmez, **503** `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` döner (hiçbir zaman varsayılan
+  `ELIGIBLE` yok). Tedarikçi sahipli hesapta MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` dönerse MDM 200 dönmez, **422**
+  `MDM_BANK_LEGAL_ENTITY_UNKNOWN` döner (**KARAR D73/2**, O-15 kapandı; yazma ve listeyle aynı eşleme — D72/2); taslak sözleşmeye
+  yalnız ekleme olarak yazıldı (`drafts/bank-account-lookup-validation-v1.0-proposal.md` §3 ve §8 sürüm notu; 1.0.0 dondurulmadığı
+  için 1.0.0'a — 404 kararı genişlemez). Tüketici sınıflandırma tablosunda bu yanıtın satırı D73/2'de verilmedi; tablo
+  değişmedi — genel kural gereği tüketici bu yanıtı "uygun" saymaz.
 - **`referenceable` tek başına yeterli değildir (iyileştirme 1).** `referenceable = true` yalnız **hesap kaydının** aktif ve
   silinmemiş olduğunu söyler; banka / şube durumunu, sahibin uygunluğunu, para birimini ya da denetim düzeyini söylemez
   (ör. pasif bankadaki aktif hesap `referenceable = true` + `bankState = INACTIVE` döner). Tüketici aşağıdaki **uygunluk
@@ -1131,7 +1235,8 @@ Resources/Views/MasterData/{Banks,BankAccounts,BankAccountPurposes}/   {…}Inde
 | BankBranch.BranchCode | Evet | normalize (trim, boşluk/tire at, büyük harf), 1..35; şubede yurt içi hesap varken değişmez (409) | Unique (TenantId, BankId, BranchCode) kısmi | — |
 | BankBranch.Bic | Hayır | 11 karakter ISO 9362; ilk 8 = banka BIC'i (varsa) | — | — |
 | BankAccount.OwnerType | Evet | tanımlı enum; değişmez | — | — |
-| BankAccount.LegalEntityId / SupplierId | Koşullu (tam biri) | türüne göre tam biri dolu; LE: Guid ≠ Empty, aynı kiracı, `Active`; tedarikçi: 1..64, `validateSuppliers` | — | `ILegalEntityRepository` / `ISupplierEligibilityPort` |
+| BankAccount.LegalEntityId / SupplierId | Koşullu (tam biri) | türüne göre tam biri dolu; LE: Guid ≠ Empty, aynı kiracı, `Active`; tedarikçi: 1..64, MOD-0140 kodu (kanonik ya da çağıran şirketin eski kodu) — Create'te `getSupplierEligibility` ile kanonik koda çevrilip saklanır (KARAR D72/1), uygunluk `known` ∧ `eligibleForTransactions == true` (D72/2; alan yok / `null` uygun değil) | — | `ILegalEntityRepository` / `ISupplierEligibilityPort` |
+| BankAccount.SupplierMasterId | — | istekte bulunursa 400 (sunucu alanı, D72/1) | — | — |
 | BankAccount.BankId / BranchId | Evet / Hayır | aynı kiracı; şube o bankaya ait (400 `MDM_BANK_BRANCH_BANK_MISMATCH`); banka/şube `Active` değilse 422 | — | depo |
 | BankAccount.CurrencyCode | Evet | `^[A-Z]{3}$`, MOD-0048 listesinde | — | `ICurrencyReferencePort` |
 | AccountIdentifier (IBAN) | Evet | normalize: yalnız boşluk atılır (başka ayırıcı 400), büyük harf; `^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$` (15..34); ISO 7064 MOD 97-10 sağlaması = 1; ilk iki harf = bankanın `CountryCode`'u → **"biçim + sağlama geçerli"** (`FormatAndChecksum`). **"Ülke biçimi geçerli"** (ülke uzunluğu + BBAN yapısı) v1'de yapılmaz; kapı `On` iken `IIbanCountryFormatSource` ile (Runtime Constraints, gap 13 P2) | Unique (TenantId, UniquenessKeyDigests) kısmi | `IbanRules` |
@@ -1198,9 +1303,18 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **Şirket aktif değil ya da onaylı değil** (Activate) → 422 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE`; kayıt değişmez.
 - **Şirket hesap açıldıktan sonra askıya alındı** → hesap değişmez; `lookup-validation` 200 + `ownerState = NOT_ELIGIBLE`
   + `ownerStateReason = LEGAL_ENTITY_NOT_ACTIVE`.
-- **Tedarikçi bilinmiyor / ilişki Active değil** → Create / Activate 422, var olan hesapta okuma ve diğer yazmalar 404
-  (D23/1); **MOD-0140 erişilemez, 401/403, 5xx, zaman aşımı, geçersiz gövde** → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`;
-  hiçbir şey yazılmaz; `lookup-validation` de 503 (asla varsayılan `ELIGIBLE`).
+- **Tedarikçi uygun değil** (KARAR D72/2 — `known: false` ya da `eligibleForTransactions: false`; ilişki yok / OnHold /
+  Blocked / Inactive; tekil uçta 404 `UNKNOWN_SUPPLIER`) → Create / Activate 422, var olan hesapta okuma ve diğer yazmalar 404
+  (D23/1); `status: Active` ama `eligibleForTransactions: false` da uygun değildir (`status` yalnız gerekçe); **MOD-0140
+  erişilemez, 401, 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 503 `DEPENDENCY_UNAVAILABLE`, diğer 5xx, zaman aşımı, geçersiz
+  gövde, `known` / `eligibleForTransactions` yok ya da `null` (1.2.0 şeklindeki satır dahil)** → 503
+  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; **404 `UNKNOWN_LEGAL_ENTITY`** → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (`lookup-validation`
+  dahil — KARAR D73/2);
+  hiçbir şey yazılmaz, otomatik yeniden deneme yok; okunamayan vakalarda `lookup-validation` de 503 (asla varsayılan `ELIGIBLE`).
+- **Eski tedarikçi koduyla hesap Create** → hesap kanonik kodla yazılır, `SupplierMasterId` dolu; aynı tedarikçi hesabı kanonik
+  kodla listede ve lookup'ta bulunur (D72/1; AC-25).
+- **`/eligible` sayfasında `onboardingStatus = InReview` ya da `purchasingEnabled = false` olan Active ilişki** → listede
+  görünür; MDM bu alanlarla süzmez (D58, D72/5; AC-61).
 - **Dört göz ihlali** (oluşturan / son güncelleyen aktive ediyor) → 403 `MDM_BANK_ACCOUNT_FOUR_EYES_REQUIRED`.
 - **Pasif bankaya hesap** → 422 `MDM_BANK_INACTIVE`.
 - **Hesap amacı:** çekirdek kodla çakışan kiracı kodu → 409 `MDM_BANK_ACCOUNT_PURPOSE_CODE_RESERVED`; aynı kiracı kodu ikinci
@@ -1248,7 +1362,8 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **Taşınmayan kaynak anahtarlar:** token, değişiklik talebi, varsayılan atama, kanıt, istisna, içe aktarma, vekâlet,
   muafiyet, operasyon, kural anlık görüntüsü, doğrulama koşusu, pano anahtarları (v1 dışı ya da taşınmaz).
 - `read-unmasked` ve `read-tenant-wide` hiçbir rol şablonunda varsayılan değildir ve otomatik yoldan verilmez:
-  `ExplicitGrantOnlyPermissions`'a eklenmeleri Auth değişikliğidir (D9; Auth sahibi) — dilim kapısı, DL-2 için (D51/1; iki
+  `ExplicitGrantOnlyPermissions`'a eklenmeleri Auth değişikliğidir (D9; MOD-0018 Treasury Auth ekinin DL-2'si — Treasury
+  yazar, MOD-0018 sahibi teyit eder) — dilim kapısı, DL-2 için (D51/1; iki
   anahtar da hesap tarafındadır, DL-1'in `mdm.banks.*` anahtarlarını etkilemez).
 - **Rol şablonları:** D46 + D47 (rol matrisi `treasury-intake-owner-decisions-05.md`) — banka verisi görüntüleyici, banka
   verisi yöneticisi (banka / şube / amaç yazmaları, hesap oluşturma / düzenleme / taslak silme, okuma kayıtları) ve ayrı
@@ -1256,6 +1371,17 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
   aynı kişide olsa da oluşturan / son güncelleyen kendi hesabını etkinleştiremez (dört göz, KARAR D23/2, çalışma anında).
 - Tier-3 eylemler (`read-tenant-wide`, `read-unmasked`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3); `sensitive-reads.read`
   dört parçalı anahtardır (PKS-001 ≥ 3 parça).
+- **MOD-0140 çağrısının izinleri (KARAR D72/3; MOD-0140 §14, S-2, S-4):** MDM, MOD-0140'ı (`validate`, `/{supplierId}/eligibility`,
+  `/eligible`) **kullanıcı token'ıyla** çağırır; çağıranın rolünde `procurement.suppliers.eligibility.read` (MOD-0140'ın dar
+  anahtarı; üç uygunluk ucunu açar, tam tedarikçi kaydını açmaz) ve — BL-652'ye kadar — `mdm.legal-entities.read` (MOD-0220;
+  MOD-0140 S-2: yoksa Procurement 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` döner, MDM 503 verir) bulunmalıdır. İkisi bu paketin
+  anahtarı değildir; banka rollerine MOD-0018 Treasury Auth ekinin DL-2'sinde **çapraz modül bağımlılığı** olarak rol
+  şablonuyla gelir (D70/1 deseni; MOD-0018 sahibinin teyidi). Ölçüm — MOD-0140'ı çağıran yollar: tedarikçi hesabı liste /
+  detay / `lookup-validation` okumaları (`mdm.bank-accounts.read`), Create / Update / Delete, Activate / Deactivate → üç banka
+  rolünün üçü de (banka verisi görüntüleyici, banka verisi yöneticisi, banka hesabı etkinleştirici) iki bağımlı anahtarı alır.
+  `procurement.suppliers.read` gerekmez (MDM tedarikçi adı okumaz; ekranda tedarikçi kodu gösterilir). Yalnız
+  `read-tenant-wide` ile yapılan maskeli liste MOD-0140'a gitmez. Servis token'ı v1'de yok (MOD-0140 S-4 `/eligible`'ı kapatır);
+  MOD-0140 DL-7 / 1.5.0'dan sonra ayrıca değerlendirilir (D72/3).
 
 ## Audited Events
 
@@ -1341,8 +1467,11 @@ deposu koleksiyon listesi de aynı sırayla genişler.
 - `ocelot.json` korunur: **integration-agent task'ı** olarak ayrı yürütülür.
 - Kaynak rotaları (`/api/v1/mod0289`, `/api/v1/mod0289/{everything}` — kaynak `ocelot.json:998-1022@da4abb20`, paket §C)
   taşınmaz.
-- MdmService → MOD-0140 çağrısı Gateway'in `/api/suppliers/validate` rotası üzerinden; rotanın Gateway'de var olduğu ve
-  çağrının hangi kimlikle yapılacağı (kullanıcı token'ı mı, servis kimliği mi) DL-3 başında ölçülür — **ölçülmedi**.
+- MdmService → MOD-0140 çağrıları (`POST /api/suppliers/validate`, `GET /api/suppliers/{supplierId}/eligibility`, `GET
+  /api/suppliers/eligible`) Gateway'in `/api/suppliers/{everything}` rotası üzerinden — rota var (ölçüldü 2026-10-28:
+  `gateway/Diten.ApiGateway/ocelot.json:582-590`, aşağı akış 5065, GET / POST dahil; MOD-0140 §15: gateway değişikliği
+  gerekmez). Çağrı kimliği **kullanıcı token'ı** (**KARAR D72/3**; MOD-0140 S-4 `GET /eligible`'ı servis token'ına kapatır);
+  servis token'ı MOD-0140 DL-7 / 1.5.0 sonrası ayrıca değerlendirilir. Rota DL-3 başında yeniden ölçülür.
 
 ## Acceptance Criteria
 
@@ -1422,16 +1551,43 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - [ ] AC-23 (zorunlu) — Tedarikçi durumu yalnız MOD-0140 sözleşmesinden okunur: mimari testi MdmService'te
   `mod0140_suppliers` dizgisinin ve ProcurementService derleme / ad alanı başvurusunun olmadığını doğrular; bağdaştırıcı
   yalnız `POST /api/suppliers/validate`'i çağırır. Koleksiyon okuması eklendiğinde test kırmızıya döner (sabotaj).
+  **Genişletme (KARAR D58, D72/1, D72/3):** bağdaştırıcı yalnız MOD-0140 1.3.0'ın üç uygunluk ucunu çağırır —
+  `POST /api/suppliers/validate`, `GET /api/suppliers/{supplierId}/eligibility` (Create'te kanonikleştirme) ve
+  `GET /api/suppliers/eligible` (liste); başka `/api/suppliers` ucu yoktur (sahte istemci beklenmeyen yolu reddeder). Her çağrı
+  isteği yapan kullanıcının `Authorization` başlığını ve isteğin `X-Legal-Entity-Id`'sini taşır; servis token'ı üretilmez
+  (sahte istemci başlığı doğrular). Sabotaj: `/eligible` çağrısına servis token'ı konunca ya da kullanıcı token'ı
+  düşürülünce test kırmızıya döner.
 - [ ] AC-24 (zorunlu) — Tedarikçi yanıtı sınıflandırması (sahte MOD-0140, her vaka ayrı): `known: true` + `Active` →
   Create / Activate sürer; `OnHold` / `Blocked` / `Inactive` ve `known: false` → Create / Activate 422, var olan hesapta
   okuma ve diğer yazmalar 404 (D23/1); sonuçta istenen kimlik yok ya da
   farklı, `known` boolean değil, `status` dört değerin dışında (`"active"` küçük harf dahil), ayrıştırılamayan gövde, 401,
   403, 500 ve zaman aşımı → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; 422 ve 503 vakalarında kayıt ve niyet yazılmaz.
   `lookup-validation` ilişki `Active` ise 200 + `ownerState = ELIGIBLE`, değilse 404, geçersiz / erişilemez ise 503 döner. Sabotaj: "yanıt okunamazsa uygun say"
-  yapıldığında test kırmızıya döner.
+  yapıldığında test kırmızıya döner. **Genişletme (KARAR D72/2; sahte istemci / Prism, 1.3.0 FROZEN dosyasına karşı, her
+  vaka ayrı test):** (a) uygunluk yalnız `known` ∧ `eligibleForTransactions == true`'dur — `known: true` + `status: Active` +
+  `eligibleForTransactions: false` → ilişkisiz (Create / Activate 422, var olan hesapta 404); `status: Blocked` +
+  `eligibleForTransactions: true` (sözleşmeye aykırı fikstür) kararı değiştirmez, alan esastır; (b) satırda
+  `eligibleForTransactions` yok (1.2.0 şeklindeki `{supplierId, known, status}` satırı) ya da `null` → uygun sayılmaz, 503
+  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`, kayıt ve niyet yazılmaz; (c) MOD-0140 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ve 503
+  `DEPENDENCY_UNAVAILABLE` → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`, hiçbir şey yazılmaz, sahte istemci istek başına uç başına
+  **tek** çağrı görür (otomatik yeniden deneme yok); (d) 404 `UNKNOWN_LEGAL_ENTITY` → Create / Activate / Update / Deactivate /
+  Delete ve liste 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, hiçbir şey yazılmaz; (e) **`lookup-validation` (KARAR D73/2, O-15
+  kapandı):** tedarikçi sahipli Active hesapta sahte MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` döndürünce uç **422**
+  `MDM_BANK_LEGAL_ENTITY_UNKNOWN` döner — 200 değil, 404 değil, 503 değil; gövdede hesap alanı (`data`) yok, hiçbir şey
+  yazılmaz, sahte istemci tek çağrı görür; yanıt BANK-ACCOUNT-LOOKUP taslağındaki 422 tanımıyla (§3) eşleşir (sözleşme
+  testi). Sabotaj: uygunluk hesabı `status == Active`'e çevrilince (a) kırmızı; alan yokken "uygun say" yapılınca (b) kırmızı;
+  bağdaştırıcıya yeniden deneme eklenince (c)'nin çağrı sayısı testi kırmızı; 404 `UNKNOWN_LEGAL_ENTITY` ilişkisiz sayılınca (d)
+  kırmızıya döner; `lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY` 404 (ilişki yok) ya da 503'e eşlenince (e) kırmızıya döner.
 - [ ] AC-25 (zorunlu) — Tedarikçi sahibi MOD-0140 `supplierId` dizgisi olarak olduğu gibi saklanır ve sıralı karşılaştırılır
   (`SUP-2001` ≠ `sup-2001`); tedarikçi sahipli hesabın `lookup-validation`'ı `X-Legal-Entity-Id` olmadan 400, kiracıya ait
   olmayan / aktif olmayan şirketle 404; aynı tedarikçi hesabı `Active` ilişkili şirketten 200, ilişkisiz şirketten 404 döner.
+  **Genişletme (KARAR D72/1):** saklanan `SupplierId` **kanonik koddur** — çağıran şirketin eski koduyla (`LegacySupplierCodes`
+  fikstürü) Create → hesapta `SupplierId` = `getSupplierEligibility` yanıtındaki kanonik kod, `SupplierMasterId` = yanıttaki
+  uuid; aynı tedarikçi için biri eski kodla, biri kanonik kodla açılan iki hesabın ikisinde de `SupplierId` aynı kanonik koddur
+  ve ikisi de kanonik kodla süzülen listede görünür; istekte `supplierMasterId` → 400; tekil uç yanıtında `supplierMasterId` `null` / uuid değil → 503, kayıt yok. Liste
+  süzgeci `/eligible` öğelerinin kanonik `supplierId`'leriyle **ordinal** karşılaştırır (`SUP-2001` öğesi `sup-2001` saklı
+  hesabı eşlemez). Sabotaj: kanonikleştirme kaldırılıp istekteki kod saklanınca eski kod testi; süzgeç büyük / küçük harf
+  duyarsız yapılınca ordinal testi kırmızıya döner.
 - [ ] AC-26 (zorunlu) — Bu modülün yazdığı hiçbir belge `TenantId = Guid.Empty` taşımaz: entegrasyon testi her yazma
   komutundan sonra modülün bütün koleksiyonlarını tarar; depo boş kiracıyla yazmayı reddeder. Bir yazma yolunda kiracı
   `Guid.Empty`'ye sabitlendiğinde test kırmızıya döner (sabotaj).
@@ -1613,7 +1769,27 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   da zaman aşımı döndürdüğünde Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`; kayıt ve denetim niyeti yazılmaz. **Sabotaj:**
   üretim kompozisyonunda port bağlı değilken (bağdaştırıcı kaydı kaldırılır) Create 503 döner ve koleksiyona yazma olmaz;
   fail-closed korunağı kaldırılıp kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: MOD-0289 kodunda kendi
-  sayaç / yedek kod üreticisi ya da `CodeReservation` kullanımı yok. Banka kısmı DL-1'de, hesap kısmı DL-2'de (tam kapanış).
+  sayaç / yedek kod üreticisi ya da `CodeReservation` kullanımı yok. **Grup önekli `legalEntityId` (açık karar O-14, sahibi
+  Beste — DL-1 kabul kapısı):** banka (`BNK`) ve tedarikçi hesabı (`BAC`) çağrısında gönderilecek `legalEntityId` değeri
+  v0 sözleşmesinde yazılı değildir ve bu paket değer seçmez; O-14 kapanmadan bu iki kayıt türü için gerçek servisle kabul
+  verilmez (sahte allocator testi bu değer üzerinden "geçti" sayılmaz); karar gelince v0 sözleşme satırı, bağdaştırıcı ve
+  bu AC'nin kabul testi karara bağlanır — test, kararın verdiği `legalEntityId` değerinin çağrıda gittiğini doğrular ve
+  değer değiştirildiğinde kırmızıya döner (sabotaj). Şirket hesabı `BAC` çağrısındaki değer de O-14 ile teyit edilir (öneri:
+  sahip şirketin `LegalEntityId`'si, D24/4; KARAR D65/2). Banka kısmı DL-1'de, şirket hesabı kısmı DL-2'de, tedarikçi hesabı kısmı DL-3'te (tam
+  kapanış).
+- [ ] AC-61 (zorunlu) — **İlişkili tedarikçi listesi (KARAR D58, metni D72/5; D72/3; DL-3; sahte MOD-0140 / Prism, 1.3.0 FROZEN
+  dosyasına karşı):** ilişkili şirket kullanıcısının tedarikçi hesabı listesi `GET /api/suppliers/eligible`'ın bütün sayfalarını
+  (`nextCursor` `null` olana kadar, 50'lik sayfalar; en az üç sayfalık fikstür) okur ve listeyi yalnız öğelerin kanonik
+  `supplierId`'leriyle süzer. Fikstürde `eligibleForTransactions = true` olan ama `onboardingStatus = InReview`,
+  `onboardingStatus = Rejected` ve `purchasingEnabled = false` taşıyan öğelerin tedarikçi hesapları listede **görünür** (MDM
+  `onboardingStatus` / `purchasingEnabled` ile süzmez). Bir sayfada `eligibleForTransactions ≠ true` öğe (S-1 değişmezine aykırı),
+  okunamayan sayfa, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` ya da 503 → tedarikçi hesabı içeren liste isteği 503
+  `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` ve kısmi liste dönmez; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`;
+  sahte istemci her sayfayı bir kez görür (yeniden deneme yok). `/eligible` çağrısı kullanıcı token'ını taşır. Yalnız
+  `read-tenant-wide` ile yapılan maskeli liste `/eligible`'ı çağırmaz. **Sabotaj (üretim kodunda):** süzgece
+  `onboardingStatus == Approved` ya da `purchasingEnabled == true` koşulu eklenince InReview / Rejected / `purchasingEnabled =
+  false` vakaları kırmızı; imleç takibi kaldırılıp yalnız ilk sayfa okununca üçüncü sayfadaki tedarikçinin hesabı kaybolur ve
+  test kırmızı; kısmi sayfa birleştirilince 503 testi kırmızıya döner.
 
 ## Test Expectations
 
@@ -1628,7 +1804,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   (AC-26).
 - **Günlük yakalama:** test günlükçüsüyle Create / Update / hata / istisna yollarında tanımlayıcı yokluğu (AC-14).
 - **Sahte MOD-0140:** dört durum, `known: false`, geçersiz gövde, 401/403/500, zaman aşımı; ilişkili / ilişkisiz / kiracı
-  geneli kullanıcı matrisi (AC-41); 1.3.0 main'e girince gerçek sözleşmeye karşı sözleşme testi.
+  geneli kullanıcı matrisi (AC-41); KARAR D72 vakaları — `status: Active` + `eligibleForTransactions: false`, alanı eksik (1.2.0
+  şekli) / `null`, 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN`, 503 `DEPENDENCY_UNAVAILABLE`, 404 `UNKNOWN_LEGAL_ENTITY`, çağrı sayısı
+  (yeniden deneme yok), eski kod → kanonik kod, kullanıcı token'ı başlığı (AC-23, AC-24, AC-25), `lookup-validation`'da 404
+  `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` ve sabotajı (AC-24 (e), KARAR D73/2), çok sayfalı `/eligible` ve
+  `onboardingStatus` / `purchasingEnabled` süzgeçsizliği (AC-61). Sözleşme testi **1.3.0 FROZEN (MOD-0140 DL-1)** dosyasına
+  karşı Prism / sahte istemciyle; **canlı entegrasyon MOD-0140 DL-3'ten sonra** (C2 kodları DL-4'ten sonra) — o zamana kadar
+  canlı çağrı yok.
 - **Anahtar döndürme:** iki örnek, iki yapılandırma (h1 / h1+h2) ile eşzamanlı oluşturma (AC-35); kesintili iş (AC-36,
   AC-39); başlangıç doğrulaması (AC-38); eski / yeni örnekli kademeli dağıtım ve çit (AC-43, AC-44); atlama koşulu (AC-46).
 - **Yarış:** yurt içi hesap oluşturma ile banka / şube anahtar alanı değişikliği, 100 tekrar (AC-45).
@@ -1686,30 +1868,35 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 madde **paket düzeyidir** — bütün dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz.
 **"— DL-n için"** işaretli madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde
 o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Auth (MOD-0018) iki
-parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de; kayıt kodu DL-1 kabul kapısıdır;
+parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de ve MOD-0018 sahibince teyitli (**KARAR D70/3**); kayıt kodu DL-1 kabul kapısıdır;
 açık atama eki ayrı madde, DL-2 için. SEC-002 sağlayıcısının "permission onboarding" eki de aynı desenle iki parçadır
 (KARAR D56/1): paket metni paket kapısında, kodu DL-1 kabul kapısında. **RCS-001 / BL-565 servisi DL-1 kabul kapısıdır
 (KARAR D59/1), paket kapısı değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek
-servis DL-1 kabulünden önce main'de olmalıdır.
+servis DL-1 kabulünden önce main'de olmalıdır. Grup önekli kayıtlarda gönderilecek `legalEntityId` kararı (O-14, sahibi
+Beste) aynı DL-1 kabul kapısındadır; kapanmadan gerçek servisle kabul verilmez.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
   paketi yazmamış, `high: evet` onaylayıcı
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [ ] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` açık
-- [ ] Auth paket metni main'de — MOD-0018 paketinde anahtarlar, açık atama listesi ve rol şablonları (Ali, Y-6; rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
-- [ ] Auth kayıt kodu main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
-- [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Auth paketinin **"permission onboarding" eki** (Ali): Platform izin
+- [ ] Auth paket metni main'de **ve MOD-0018 sahibinin teyidi** (**KARAR D70/3**: metnin main'de olması tek başına yetmez; teyit karar dosyasına kaynak olarak yazılır; açık) — MOD-0018 Treasury Auth eki `execution/domains/platform-shared-services/module-packs/MOD-0018-FU-TBD-treasury-permission-onboarding.md` (FU numarası açık — K-1; Treasury yazar, MOD-0018 sahibi teyit eder — Y-15, Y-16): o paketin DL-2'sinde anahtarlar, açık atama listesi ve rol şablonları (rol matrisi D46–D50, `treasury-intake-owner-decisions-05.md`; **KARAR D53/1**)
+- [ ] Auth kayıt kodu (o ekin DL-2 kodu) main'de; DL-1 testleri gerçek izinle koşar (**KARAR D53/2**) — DL-1 için (kabul kapısı)
+- [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
+  eki)** (`…/MOD-0018-FU-TBD-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform
+  dosyaları için XMC-001 Beste — D63/2): Platform izin
   listesine `mdm.bank-accounts.*` anahtarları ve MDM istemcisinin modül kodu (bugün iki taraf `product-item-sku-master`'a
   sabit — Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir; kod değişikliği bu paketin
   Repo Scope'unda değildir
-- [ ] SEC-002 sağlayıcısı eki kodu main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
-- [ ] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
-  D45/3" cümlesi bu dalda D51/5 ile güncellendi, main'e girmedi)
+- [ ] SEC-002 sağlayıcısı eki kodu (o ekin DL-4 kodu) main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
+- [x] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
+  D45/3" cümlesi D51/5 ile güncellendi). Kaynak: PR #270 (`7495c4d27`; `git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0;
+  `origin/main` ile bu dalın domain-config farkı boş — ölçüm 2026-10-28)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
 - [x] O-4, O-5, O-6 (sahip onayı), O-7, O-8, O-10, O-11, O-12 ve kiracısız hedef denetimi sahip kararıyla yazıldı (KARAR
   D24/1–9)
 - [ ] RCS-001 ortak kod servisi (BL-565; sahibi Beste, D44) main'de; v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti; `BNK` / `BAC` önekleri RCS-001 §3'e yazıldı (D24/4, D30) — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-60)
+- [ ] **O-14 kararı (sahibi Beste, D44):** grup önekli kayıtlarda — banka `BNK` ve tedarikçi hesabı `BAC` (RCS-001 §5.3) — allocator'a gönderilecek `legalEntityId` değeri yazılı; v0 sözleşme satırı, bağdaştırıcı ve AC-60 kabul testi karara bağlandı (Beste'ye soruldu, cevap yok — 2026-10-28; değer bu pakette seçilmez) — DL-1 için (kabul kapısı); tedarikçi `BAC` kısmı DL-3 kabulünde de aranır
 - [x] Denetim defteri — KARAR D27/11 (yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS
   satırı kod aşamasında yazılır)
 - [x] Denetim kategorisi `AuditCategory.MasterData` (14) — KARAR D48/1 (Audited Events)
@@ -1727,15 +1914,20 @@ servis DL-1 kabulünden önce main'de olmalıdır.
   **KARAR D56/1** ile paket kapısındaki "permission onboarding" eki maddelerine dönüştü (yukarıda) — DL-2'yi bekletmez
 - [x] MOD-0140 1.3.0'da "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okumasının hangi işlemle verildiği
   belirlendi (D23/1 liste süzgeci) — **KARAR D58** (Cihan yanıtı Y-9; sahip yanıtıdır, dosya ölçümü değil):
-  `GET /api/suppliers/eligible` (`listEligibleSuppliers`), Active ilişkili bütün tedarikçiler, `eligibleForTransactions`
-  süzgeci yok, izin `procurement.suppliers.eligibility.read`; dosyaya karşı doğrulama 1.3.0 main'e girince (aşağıdaki madde) — DL-3 için
-- [ ] Auth: `ExplicitGrantOnlyPermissions`'a iki anahtar (D9, Auth sahibi) — DL-2 için
+  `GET /api/suppliers/eligible` (`listEligibleSuppliers`), Active ilişkili bütün tedarikçiler = `eligibleForTransactions = true`
+  (MOD-0140 S-1; metin **KARAR D72/5** ile hizalandı — `onboardingStatus` / `purchasingEnabled` süzgeci yok), izin
+  `procurement.suppliers.eligibility.read`, kullanıcı token'ı (D72/3); dosyaya karşı doğrulama 1.3.0 FROZEN main'e girince
+  (aşağıdaki madde) — DL-3 için
+- [ ] Auth: `ExplicitGrantOnlyPermissions`'a iki anahtar (D9; MOD-0018 Treasury Auth ekinin DL-2'si — Treasury yazar, MOD-0018 sahibi teyit eder) — DL-2 için
 - [x] MOD-0048 para birimi listesinin MdmService'ten tüketim yolu ölçüldü (2026-10-27, @7c57e8466): **bugün yok** — MdmService'te
   para birimi listesi okuyan istemci yok; Platform ucu `GET api/lookups/reference/currencies` kiracı kullanıcısına açık
   (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TenantReferenceLookupsController.cs:18,37-38`); yol: mevcut
   `GatewayReferenceValueReader` deseniyle yeni port (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/GatewayReferenceValueReader.cs:18,30-31,40-50`:
   `Gateway:BaseUrl`, kullanıcı token'ı + `X-Tenant-Id` iletimi) — portu ilk tüketen dilim yazar — DL-2 için
-- [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2; sözleşme dosyası — `GET /api/suppliers/eligible` dahil, D58) ve MdmService → MOD-0140 çağrı kimliği belirlendi (izin `procurement.suppliers.eligibility.read`) — DL-3 için. Uç MOD-0140 DL-3'te çalışana kadar DL-3 sözleşmeye karşı sahte istemciyle ilerler (D58)
+- [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de **FROZEN** (MOD-0140 DL-1; sözleşme dosyası — `GET /api/suppliers/eligible` dahil, D58; MOD-0140 paketi Revizyon 5 `ready-for-dev`, sha256 `b3259e40…ce5c2`, `approvals.tsv:26`; 2026-10-28 ölçümünde main'de 1.2.0) — DL-3 için. Uç MOD-0140 DL-3'te çalışana kadar DL-3 sözleşmeye karşı sahte istemci / Prism ile ilerler (D58, D72)
+- [x] MdmService → MOD-0140 çağrı kimliği belirlendi — **KARAR D72/3:** kullanıcı token'ı (MOD-0140 S-4 `/eligible`'ı servis token'ına kapatır); izinler `procurement.suppliers.eligibility.read` + (BL-652'ye kadar) `mdm.legal-entities.read`, banka rollerine bağımlı anahtar olarak (Authorization Convention) — DL-3 için
+- [ ] MOD-0140 canlı bağlantısı: MOD-0140 DL-3 main'de (uçlar; C2 kodları için DL-4) + `procurement.suppliers.eligibility.read` Auth kataloğunda (MOD-0140 §18 :534) ve banka rollerinde bağımlı anahtar olarak, `mdm.legal-entities.read` de (MOD-0018 Treasury Auth eki DL-2, D72/3) — DL-3 için (canlı bağlantı ve kapanış tablosunun canlı kanıtı; DL-3 kodu sahte istemci / Prism ile bunu beklemez)
+- [x] O-15 (`lookup-validation`'da 404 `UNKNOWN_LEGAL_ENTITY`) — **KARAR D73/2:** 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`; BANK-ACCOUNT-LOOKUP taslağına yalnız ekleme olarak yazıldı (§3, §8); AC-24 (e) — DL-3 için
 - [x] MDM `ValidationBehavior`'ın 400 gövdesinde girilen değeri döndürüp döndürmediği ölçüldü (2026-10-27, @7c57e8466): **döndürmüyor** —
   gövde `Response<T>.Errors` yalnız doğrulayıcı mesajları (`services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ValidationBehavior.cs:26-31,46`;
   `AttemptedValue` ve alan adı okunmaz); kalan koşul: MOD-0289 doğrulayıcı mesajlarında `{PropertyValue}` yer tutucusu kullanılmaz
@@ -1774,8 +1966,8 @@ bu paketin revizyonuyla değişir.
 1. F02/PAIR işlem güvenceleri alıntılanmaz, testler yeniden kurulur → Test Expectations son madde; F02 uçları taşınmaz;
    hesap + bağ tek belgede (PAIR gerekmez); AC-6, AC-9, AC-13, AC-15 Recovery testleri.
 2. Outbox `TenantId = Guid.Empty` taşınmaz → outbox ve iş çalıştırma varlıkları taşınmaz; AC-26.
-3. Tedarikçi durumu MOD-0140 sözleşmesinden (1.3.0, aktif şirket ilişkisi) → `ISupplierEligibilityPort`, AC-23…25; 1.3.0
-   bugün yok → DL-3 engeli.
+3. Tedarikçi durumu MOD-0140 sözleşmesinden (1.3.0, aktif şirket ilişkisi — uygunluk `known` ∧ `eligibleForTransactions`,
+   KARAR D72/2) → `ISupplierEligibilityPort`, AC-23…25, AC-61; 1.3.0 bugün yok (MOD-0140 DL-1'de dondurulur) → DL-3 engeli.
 4. Yerleşim MDM → D20/1 ile karar verildi; bu paket MDM düzenine eşler (EntityBase, `RepositoryBase` + `TenantFilter`,
    `mdm.*` izinleri, MDM denetim izi, MDM rotaları).
 
@@ -1946,6 +2138,8 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-11 | Banks ekranının şekli | Compact / Slim | **KARAR D24/7 (2026-10-25): Compact** — Details'ta şube alt tablosu | sahip (K1) |
 | O-12 | Para birimi küsurat hanesi kaynağı | MOD-0289 / MOD-0048 | **KARAR D24/8 (2026-10-25): MOD-0048** — MOD-0289 yalnız ISO kodu saklar ve MOD-0048 listesinde olduğunu doğrular | sahip (K1) |
 | O-13 | Hesap amaçları ekranının şekli (form 8 alan: Code + 7 etiket — tek başına Slim'e düşer) | Compact (pack'in tek `golden_reference` değeri) / Slim (sapma kaydıyla) | **KARAR D27/9 (2026-10-25): Compact** — pack tek `golden_reference` taşır (module-pack-standard `screens` yalnız `data_mode` taşır); Details'ta kullanan hesap sayısı | sahip (K1) |
+| O-14 | Grup önekli kayıtlarda (banka `BNK`, tedarikçi hesabı `BAC` — RCS-001 §5.3) allocator'a gönderilecek `legalEntityId`; ayrıca şirket hesabı `BAC` için sahip şirketin `LegalEntityId`'si önerisinin teyidi (D65/2) | v0 sözleşmesinde (KARAR D59/1) yazılı değil; seçenekleri sözleşme sahibi belirler — bu paket değer önermez | **açık** — Beste'ye soruldu, cevap yok (2026-10-28). **Kapı: DL-1 kabul kapısı** (tedarikçi `BAC` kısmı DL-3 kabulünde de aranır); karar kapanmadan gerçek servisle kabul verilmez; karar gelince v0 sözleşme satırı, bağdaştırıcı ve AC-60 kabul testi ona bağlanır. Paket kapısını bekletmez (DL-1 sahte allocator'la ilerler) | Beste (RCS-001 / BL-565, D44) |
+| O-15 | `lookup-validation`'da MOD-0140 404 `UNKNOWN_LEGAL_ENTITY` nasıl döner (KARAR D72/2 yazma ve listede 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` der; BANK-ACCOUNT-LOOKUP 1.0.0 taslağının üretici yanıtları 200 / 400 / 404 / 503'tür ve tüketici sınıflandırıcısı 422'yi tanımlamaz) | (a) taslağa 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` eklenir ve tüketici sınıflandırıcısına satır yazılır (DL-2 dondurmasından önce; fikstür eklenir) · (b) lookup ucunda 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE` (bağımlılık çelişkisi; taslak değişmez) · (c) 404 (D23/1 "ilişki yok" ile aynı gövde) | **KAPANDI — KARAR D73/2 (2026-10-28): (a)** — BANK-ACCOUNT-LOOKUP taslak sözleşmesine 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` eklendi (yalnız ekleme; taslak Treasury'nin; DL-2 dondurmasından önce geldiği için 1.0.0'a, §3 + §8 sürüm notu); hata kodu adı paket öneki `MDM_BANK_` ile (D72/2'deki `MDM_LEGAL_ENTITY_UNKNOWN` örnek adın yerine). Kapı: DL-3. Uygulama: Runtime Constraints (okuma sözleşmesi), Failure Path, AC-24 (e). D73/2 tüketici sınıflandırıcısı satırı ve fikstür vermedi — tablo değişmedi | sahip (K1) |
 
 ## Teslim dilimleri
 
@@ -1991,13 +2185,16 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   sağlayıcısı bu dilimin önkoşulu değildir: paket kapısı (ek paket metni) ve DL-1 kabul kapısıdır (ek kodu) — KARAR D56/1.
   Bitiş: AC-3 (hesap kısmı), 4 (hesap kısmı), 5 (hesap kısmı), 6 (hesap kısmı), 8 (hesap kısmı), 9 (hesap kısmı), 10, 11,
   12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26 (şirket hesabı kısmı), 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46,
-  47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60 (hesap kısmı — tam kapanış). AC-18'in **dört göz kolu** (oluşturan / son güncelleyen etkinleştiremez — D23/2;
+  47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60 (şirket hesabı kısmı). AC-18'in **dört göz kolu** (oluşturan / son güncelleyen etkinleştiremez — D23/2;
   Validation Rules, Failure Path) ayrı AC kimliği taşımaz; bu dilimde AC-18 içinde adıyla ve sabotajıyla kanıtlanır.
 - **DL-3** — Yollar: `Infrastructure/Suppliers/**` (`ISupplierEligibilityPort` bağdaştırıcısı), tedarikçi sahibi dalları
   (Create, Update, Activate, Deactivate, Delete, liste, detay, maskesiz okuma, `lookup-validation` — D23/1 ilişki kuralı),
   mimari test (koleksiyon okuması yok), dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0140 1.3.0'a bağlı; DL-2'yi
-  bekletmesin. Önkoşul (dilim kapısı — "— DL-3 için" maddeleri, D51/1): DL-2, MOD-0140 1.3.0 sözleşme dosyası main'de (ilişkili tedarikçi listesi işlemi dahil — **KARAR D58:** `GET /api/suppliers/eligible`, Active ilişkili bütün tedarikçiler, `eligibleForTransactions` süzgeci yok, izin `procurement.suppliers.eligibility.read`; uç MOD-0140 DL-3'te çalışana kadar sözleşmeye karşı sahte istemciyle kodlanır), MdmService → MOD-0140 çağrı
-  kimliği ve Gateway rotasının ölçümü (D24/1 karar verildi). Bitiş: AC-23, 24, 25, 26 (tedarikçi kısmı), 27, 41.
+  bekletmesin. Önkoşul (dilim kapısı — "— DL-3 için" maddeleri, D51/1): DL-2, MOD-0140 1.3.0 sözleşme dosyası main'de FROZEN (MOD-0140 DL-1; ilişkili tedarikçi listesi işlemi dahil — **KARAR D58**, metni D72/5: `GET /api/suppliers/eligible` = `eligibleForTransactions = true` = silinmemiş ve Active ilişkili bütün tedarikçiler, `onboardingStatus` / `purchasingEnabled` süzgeci yok, izin `procurement.suppliers.eligibility.read`; uç MOD-0140 DL-3'te çalışana kadar sözleşmeye karşı sahte istemci / Prism ile kodlanır), MdmService → MOD-0140 çağrı
+  kimliği (**KARAR D72/3:** kullanıcı token'ı) ve Gateway rotasının ölçümü (D24/1 karar verildi; rota 2026-10-28'de var), O-15
+  (**KARAR D73/2** ile kapandı — `lookup-validation` 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, AC-24 (e)).
+  Bitiş: AC-23, 24, 25, 26 (tedarikçi kısmı), 27, 41, 60 (tedarikçi hesabı `BAC` kısmı, grup öneki — O-14 kararına bağlı — tam
+  kapanış), 61 (KARAR D72).
 - **DL-4** — Yollar: `Views/MasterData/{Banks,BankAccounts}/**`, JS, resx (7 dil), MVC vekilleri, sayfa yardımı, nav
   anahtarları; Gateway rotaları integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API
   sözleşmesine bağlıdır, arka uç değişmeden ilerler. Önkoşul (dilim kapısı — "— DL-4 için" maddeleri, D51/1): DL-2 (hesap ekranı), DL-3 (tedarikçi sahibi seçimi), Gateway
@@ -2009,9 +2206,9 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
-| DL-1 | "Bitiş" listesindeki AC'ler; AC-2 ve AC-9'un gerçek replica set yarış testleri; `AuditTrailStandard` (AC-7); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `BNK` kodu alındı (KARAR D59/1); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-1 | "Bitiş" listesindeki AC'ler; AC-2 ve AC-9'un gerçek replica set yarış testleri; `AuditTrailStandard` (AC-7); Auth kayıt kodu (D53/2) ve SEC-002 "permission onboarding" eki kodu (D56/1) main'de; gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `BNK` kodu alındı (KARAR D59/1); **O-14 kapandı** (grup önekli `legalEntityId`, sahibi Beste) ve AC-60 banka kabul testi o karara bağlı — karar kapanmadan gerçek servisle kabul verilmez; `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
 | DL-2 | "Bitiş" listesindeki AC'ler; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52) ve **AC-50 yük testi** yazılmış eşiğe göre; `BANK-ACCOUNT-LOOKUP` kendi sözleşme testiyle doğrulanır (AC-20, AC-42 — başvuru sınıflandırıcısı ve fikstürler); Treasury tüketici fikstür koşusu bu kapıda aranmaz — v1'de MOD-0289'u okuyan finans akışı yok (D47/4), tüketici testi ilk gerçek tüketicinin dilimine girer (KARAR D57/1, Follow-up); build |
-| DL-3 | "Bitiş" listesindeki AC'ler; MOD-0140 1.3.0'a karşı sözleşme testi; AC-27 dev ortamı denetim kanıtı; build |
+| DL-3 | "Bitiş" listesindeki AC'ler; MOD-0140 1.3.0 FROZEN dosyasına karşı sözleşme testi (canlı kanıt MOD-0140 DL-3 birleştikten sonra — KARAR D72); AC-27 dev ortamı denetim kanıtı; AC-60 tedarikçi hesabı kısmı O-14 kararına bağlı kabul testiyle ve dev ortamında gerçek servisle tedarikçi `BAC` kodu; build |
 | DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı; RESX 7 dil parite; `Diten.Web` build |
 
 AC durumu kabul kaydında (`scripts/acceptance_record.py`) izlenir; bu pakette her AC yalnız "tanımlı"dır.

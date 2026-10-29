@@ -480,7 +480,7 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
 | Commit, push, PR ve merge | **Her seferinde açık onay**; işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
 | CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
-| Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
+| Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur. Main'e girmiş, main'de hiç olmamış bir satırın düştüğü bilinen tek commit için yalnız sahip onaylı istisna satırı (`append-only-exceptions.tsv`, `pack_approval.py exception-row`, S-91); her PR'da GitHub işi `approvals-append-only` koşar | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Kendi oturumunun ve kendi işçilerinin adı ve kenar çubuğu grubu (§0 "Oturum adı") | Kalıcı — tekrar sorulmaz; başka oturumlar için yalnız öneri | Sahip kararı 2026-10-26 (S-62) |
 | Merge'ü biten işçi oturumunu arşivlemek | **Her seferinde açık onay, tek kelime** `arsivle` — CT kendisi önerir | Sahip kararı 2026-10-26 (S-62) |
 | Ortak bellek (`~/.claude/projects/<depo>/memory/`) | **Yalnız kendi dosyası** — bütün Claude oturumları aynı bellek klasörünü paylaşır. CT yalnız kendi `project_<kuyruk>_…` dosyasını ekler ya da günceller ve `MEMORY.md` dizinine kendi tek satırını yazar; başka oturumların dosyalarına ve dizin satırlarına dokunmaz, kısaltmaz, birleştirmez. Dizin sınırı aşılırsa sahibe sorar (S-37) | Sahip kararı 2026-10-22 |
@@ -490,6 +490,22 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | Mimari veya kapsam değişikliği | **Her seferinde açık onay** | SOP §4.1, §19.4 |
 | Canlı ortam müdahalesi | **Her seferinde açık onay** | Sahip kararı 2026-10-15 |
 | Ortak dosyada tek-yazar anlaşması | **Her seferinde**, etkin Control Tower ile | SOP §16.4, K15 |
+
+### 7c. Başka sahibin modülünde ek — isteyen yazar, sahip inceler (S-90, sahip kararı 2026-10-28)
+
+Bir CT'nin işi başka bir sahibin modülünde ek gerektiriyorsa (izin anahtarı, rol şablonu, okuma alanı, sözleşme satırı):
+
+1. **Önce XMC-001 sorusu:** modül sahibinin bu ek için açık "(a) bu işte yaz" cevabı kayda girmeden pakete de koda da
+   dokunulmaz; onay her ek için ayrıdır (çekirdek kural 6 ve 9, §7 "Başka modüle müdahale").
+2. **Onaydan sonra eki isteyen CT yazar:** önce o modülün paketine öneri (CT-APR-02 inceleme, CT-APR-01 onay), sonra kod;
+   yalnız en küçük ve eklemeli değişiklik; başka domain'in sahibine sorulur; aynı dosyayı başka bir CT yazıyorsa yazılmaz
+   (tek yazar, K15) — Treasury için kayıt D9.
+3. **Modülün sahibi inceler ve onaylar;** PR'ı sahip ya da sahibin CT'si inceler, merge başkasınındır. İsteyen CT sahibe
+   "şunu yap" diye iş vermez, "şunu yazdım, inceler misin" diye gelir.
+4. **Sahip yazmayı kendisi üstlenirse** bu bir karar kaydında açıkça yazılır (ör. MOD-0023 §17: D25/1, D32/1). Kayıtta
+   yazmıyorsa yazar isteyen CT'dir; "sahip teyidi" (ör. D29/1) yazma işi değil, onaydır.
+5. **Yeni yetenek gerekiyorsa** (sahibin modülünde bugün olmayan bir veri yapısı ya da akış; ör. süreli muafiyet ataması)
+   isteyen CT yazmaya başlamaz; önce sahiple tasarım konuşulur ve sahibin kararı kayda girer.
 
 ### 7b. PR yalnız zorunluysa (S-77, sahip kuralı 2026-10-27: "CT'ler sürekli PR açmasın, zorunlu olmadıkça PR olmasın")
 

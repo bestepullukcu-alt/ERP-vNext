@@ -1,0 +1,9 @@
+3	## 1. Sayfa arketipleri
+3	## 2. Bileşen standartları
+3	## 3. Kabuk ve yerleşim
+3	## 4. Görsel belirteçler
+2	## 5. Erişilebilirlik
+3	## 6. Dil
+4	## 7. Yetkisiz yüz, Ctrl+K kaydı, kayıt kodu
+3	## 8. API profili
+48	## 9. Çatışma kaydı
