@@ -219,6 +219,8 @@ Consider:
 
 ## 6. Dark Mode Principles
 
+> Diten kuralı: `.antigravity/rules/frontend-standards.md` §4.2 "Açık ve koyu tema" (renk yalnız tema değişkenlerinden). Aşağıdaki ilkeler yalnız kuralın boş bıraktığı yerde geçerlidir.
+
 ### Key Rules (No Fixed Codes)
 
 1. **Never pure black** → Use very dark gray with slight hue
@@ -250,6 +252,8 @@ Layer 3 (popups)  → Lightest dark
 ## 7. Accessibility Guidelines
 
 ### Contrast Requirements (WCAG)
+
+> Diten kuralı: `.antigravity/rules/frontend-standards.md` §4.4 (AA zorunlu).
 
 | Level | Normal Text | Large Text |
 |-------|-------------|------------|
