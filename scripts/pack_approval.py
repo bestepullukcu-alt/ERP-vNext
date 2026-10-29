@@ -79,6 +79,9 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 # CT-APR-02 — independent review before approval, and sliced delivery (design: docs/roadmap/plans/ct-apr-02-pack-review/)
 REVIEWS = "execution/approvals/reviews.tsv"
+# S-91: a known, owner-approved break of append-only — one commit, one file, the exact rows it lost (never on main)
+EXCEPTIONS = "execution/approvals/append-only-exceptions.tsv"
+EXCEPTION_COLUMNS = ["commit", "path", "lost_sha256", "reason", "author", "approver", "approved_at"]
 REVIEW_POLICY = "execution/approvals/POLICY-REVIEW-START.md"
 REVIEW_COLUMNS = ["target", "target_sha256", "findings", "findings_sha256", "verdict", "blockers_open", "reviewer", "model",
                   "effort", "reviewer_session", "author", "author_session", "requested_by", "reviewed_at"]
@@ -487,12 +490,117 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     `main` is the caller's measured main (independent review F-3); else it is read here. Only the git part is cached;
     GitHub is asked again on every call (Codex F-3)."""
     problems = []
-    for c, why in _append_only(root, commit, path, main or main_line(root)):
+    main = main or main_line(root)
+    for c, why in _append_only(root, commit, path, main):
+        excepted, ewhy = exception_why(root, main, c, path)
+        if excepted:
+            continue
         if why is None:
             why = _pr_merge_why(root, c)
         if why is not None:
-            problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti){why}")
+            problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti){why}{ewhy}")
     return problems
+
+
+def _lines_at(root: str, c: str, path: str) -> list[str]:
+    data = read(root, c, path)
+    return content_lines(data.decode("utf-8", errors="replace")) if data else []
+
+
+def lost_rows(root: str, c: str, path: str) -> list[str]:
+    """The rows of `path` that some parent of `c` has and `c` does not, in parent order, each once."""
+    new = set(_lines_at(root, c, path))
+    out: list[str] = []
+    for p in git(root, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]:
+        out += [l for l in _lines_at(root, p, path) if l not in new and l not in out]
+    return out
+
+
+def lost_digest(lines: list[str]) -> str:
+    return sha256(("\n".join(lines) + "\n").encode("utf-8"))
+
+
+def _only_loss(root: str, c: str, path: str, main: str, lost: list[str]) -> bool:
+    """With the lost rows taken out of every parent, `c` is append only (same base rule as _append_only): the loss is
+    the whole break — no row of main moved or changed."""
+    parents = git(root, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]
+    on_line = _main_line_set(root, main)
+    from_main = [p for p in parents if p in on_line]
+    if not parents or len(from_main) > 1:
+        return False
+    base, new, gone = (from_main[0] if from_main else parents[0]), _lines_at(root, c, path), set(lost)
+    for p in parents:
+        old = [l for l in _lines_at(root, p, path) if l not in gone]
+        if p == base:
+            if new[:len(old)] != old:
+                return False
+        else:
+            it = iter(new)
+            if not all(l in it for l in old):
+                return False
+    return True
+
+
+def _ever_on_main(root: str, main: str, path: str, lines: list[str]) -> bool:
+    want = set(lines)
+    versions = [main] + git(root, "log", "--first-parent", "--format=%H", main, "--", path).decode().split()
+    return any(want & set(_lines_at(root, v, path)) for v in versions)
+
+
+def _positive_row(path: str, line: str) -> bool:
+    """Independent review F-1: only a lost POSITIVE row can be excused — an approval row's action is approve; a review
+    row's verdict is UYGUN or KOŞULLU with no open ENGEL. A lost revoke or negative review would turn a stop into a pass."""
+    cells = line.split("\t")
+    if path == APPROVALS:
+        return len(cells) == len(APPROVAL_COLUMNS) and cells[2] == "approve"
+    return len(cells) == len(REVIEW_COLUMNS) and cells[4] in ("UYGUN", "KOŞULLU") and cells[5] == "0"
+
+
+def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
+    """S-91: (True, "") when main's EXCEPTIONS file holds a row for exactly this commit and file, and: the rows `c`
+    lost hash to its lost_sha256; nothing but that loss breaks append-only; none of the lost rows was ever in main's
+    file (a row that never reached main never carried an approval there); the row reached main by another person's
+    pull request merge, merged by its approver (high=evet, not the author's person). Read from MAIN only — a branch
+    cannot excuse itself. Else (False, why) — why is "" when there is no row."""
+    raw = read(root, main, EXCEPTIONS)
+    if not raw:
+        return False, ""
+    rows = parse_tsv(raw.decode("utf-8"), EXCEPTION_COLUMNS, EXCEPTIONS)
+    for r in rows:
+        if not re.fullmatch(r"[0-9a-f]{40}", r["commit"]) or r["path"] not in (APPROVALS, REVIEWS) \
+                or not HEX64.match(r["lost_sha256"]):
+            raise Unreadable(f"{EXCEPTIONS} satır {r['_n']}: commit (40 hex), path ya da lost_sha256 biçimi geçersiz")
+    mine = [r for r in rows if r["commit"] == c and r["path"] == path]
+    if not mine:
+        return False, ""
+    r, no = mine[-1], " — istisna satırı geçmez: "
+    lost = lost_rows(root, c, path)
+    if not lost or lost_digest(lost) != r["lost_sha256"]:
+        return False, no + "düşen satırlar kayıttaki özetle eşleşmiyor"
+    if any(not _positive_row(path, l) for l in lost):
+        return False, no + "düşen satırlardan biri olumsuz (iptal, UYGUN DEĞİL ya da açık ENGEL) — olumsuz satır affedilmez"
+    if not _only_loss(root, c, path, main, lost):
+        return False, no + "satır düşmesinin yanında sıra ya da içerik de değişmiş"
+    if _ever_on_main(root, main, path, lost):
+        return False, no + "düşen satırlardan biri bir zaman main'deydi"
+    added = row_commit(root, main, r["_n"], EXCEPTIONS)
+    merge, why = main_merge(root, main, added)
+    if merge is None:
+        return False, no + why
+    ok, why = other_merger(root, added, merge)
+    if ok:
+        ok, why = pr_person_check(root, merge, approver=r["approver"])
+    if not ok:
+        return False, no + why
+    listed = approvers_at(root, f"{merge}^1")
+    w = listed.get(r["approver"].lower())
+    if w is None or w["high"] != "evet":
+        return False, no + f"onaylayan {r['approver']} listede yok ya da yüksek riskli işi onaylayamaz"
+    if person_of(listed, r["author"]) is None:
+        return False, no + f"yazan {r['author']} onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez"
+    if person_of(listed, r["approver"]) == person_of(listed, r["author"]):
+        return False, no + "yazan ve onaylayan aynı kişi"
+    return True, ""
 
 
 @cached(1)
@@ -1717,11 +1825,219 @@ def self_test() -> int:
                   pack_risk("# A\n## Notes\n- see ocelot.json\n", "# A\n## Notes\n- ok\n")[0] == "HIGH"))
     tmp.cleanup()
     self_test_review(cases)
+    self_test_exception(cases)
     for label, ok in cases:
         print(("PASS " if ok else "FAIL ") + label)
     passed = sum(1 for _, ok in cases if ok)
     print(f"self-test: {passed}/{len(cases)} passed")
     return 0 if passed == len(cases) else 1
+
+
+def self_test_exception(cases: list) -> None:
+    """S-91: a known append-only break is excused only by a row on main, merged by its approver, for rows never on main."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    DEV, LEAD, JUN = ("dev", "dev@x.invalid"), ("lead", "lead@x.invalid"), ("jun", "jun@x.invalid")
+
+    def g(*args, who=DEV):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, text):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def rows(rel):
+        with open(os.path.join(root, rel), encoding="utf-8") as f:
+            return [l for l in f.read().split("\n") if l.strip()]
+
+    def commit(msg, who=DEV):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+
+    def via_branch(name, change, author=DEV, merger=LEAD):
+        g("checkout", "-q", "main")
+        g("checkout", "-q", "-b", name)
+        change()
+        commit(name, who=author)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=merger)
+
+    def red():
+        return history(root, "main")[0] == 1
+
+    def ar(name, action="approve"):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, action, "HIGH", "r", "dev", "lead",
+                          "2026-10-29", "0" * 64, "n"])
+    A0, B1, M1 = ar("A0"), ar("B1"), ar("M1")
+
+    g("init", "-q", "-b", "main")
+    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\nlead-alt\tK1\tkıdemli\tevet\n"
+                   "dev\tK4\tgeliştirici\tevet\njun\tK3\tjunior\thayır\n")
+    put(APPROVALS, "\n".join(["header", A0]) + "\n")
+    put(REVIEWS, "header\n")
+    commit("start", who=LEAD)
+    g("checkout", "-q", "-b", "feat")
+    put(APPROVALS, "\n".join(["header", A0, B1]) + "\n")
+    commit("branch row")
+    via_branch("m1", lambda: put(APPROVALS, "\n".join(["header", A0, M1]) + "\n"))
+    g("checkout", "-q", "feat")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(["header", A0, M1]) + "\n")           # the conflict taken as main's file: B1 lost
+    commit("sync main, B1 lost")
+    bad = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge feat", "feat", who=LEAD)
+    start = g("rev-parse", "HEAD").strip()
+    cases.append(("S-91 baseline: a merge that lost a branch-only row -> history red", red()))
+    digest = lost_digest([B1])
+
+    n = [0]
+
+    def excuse(row, author=DEV, merger=LEAD):
+        g("reset", "-q", "--hard", start)
+        n[0] += 1
+        via_branch(f"exc-{n[0]}", lambda: put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(row) + "\n"),
+                   author=author, merger=merger)
+    excuse([bad, APPROVALS, digest, "test", "dev", "lead", "2026-10-29"])
+    cases.append(("S-91 positive control: the exception row merged by its approver -> history green", not red()))
+    after = g("rev-parse", "HEAD").strip()
+    via_branch("later", lambda: put("y.txt", "x\n"))
+    cases.append(("S-91: a later commit on top of the excused main stays green", not red()))
+    excuse([bad, APPROVALS, "0" * 64, "test", "dev", "lead", "2026-10-29"])
+    cases.append(("sabotage S-91: a wrong lost_sha256 -> still red, says the digest does not match",
+                  red() and "eşleşmiyor" in "\n".join(history(root, "main")[1])))
+    excuse([bad, APPROVALS, digest, "test", "dev", "dev", "2026-10-29"], merger=DEV)
+    cases.append(("sabotage S-91: the exception merged by its own author -> still red", red()))
+    excuse([bad, APPROVALS, digest, "test", "dev", "lead", "2026-10-29"])
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "self-excuse")
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join([bad, APPROVALS, digest, "t", "dev", "lead", "d"]) + "\n")
+    commit("exception only on a branch")
+    cases.append(("sabotage S-91: an exception row only on the branch (not on main) excuses nothing",
+                  history(root, "self-excuse")[0] == 1))
+    g("checkout", "-q", "main")
+    # a lost row that WAS on main: the digest matches, but a main row can never be excused
+    g("reset", "-q", "--hard", after)
+    g("checkout", "-q", "-b", "drop-main")
+    put(APPROVALS, "\n".join(r for r in rows(APPROVALS) if r != M1) + "\n")
+    commit("drop M1")
+    drop = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge drop-main", "drop-main", who=LEAD)
+    cases.append(("S-91 baseline: dropping a main row -> red", red()))
+    via_branch("exc-drop", lambda: put(EXCEPTIONS, "\n".join(rows(EXCEPTIONS)) + "\n" + "\t".join(
+        [drop, APPROVALS, lost_digest([M1]), "t", "dev", "lead", "d"]) + "\n"))
+    cases.append(("sabotage S-91: an exception for a row that was on main -> still red, says it was on main",
+                  red() and "main'deydi" in "\n".join(history(root, "main")[1])))
+    # --base: a pull request is red only for a break it brings
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "pr-clean")
+    put("z.txt", "x\n")
+    commit("unrelated")
+    cases.append(("S-91 --base: an unrelated PR on a main that already has a break -> green",
+                  history(root, "pr-clean", "main")[0] == 0))
+    put(APPROVALS, "\n".join(["header", M1]) + "\n")
+    commit("drop A0")
+    cases.append(("sabotage S-91 --base: the PR drops a row itself -> red", history(root, "pr-clean", "main")[0] == 1))
+    g("checkout", "-q", "main")
+    # loss plus a reorder of main's rows is more than the excused loss
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "feat2", bad + "^1")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(["header", M1, A0]) + "\n")
+    commit("sync main, B1 lost, A0 moved")
+    bad2 = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge feat2", "feat2", who=LEAD)
+    via_branch("exc-order", lambda: put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(
+        [bad2, APPROVALS, digest, "t", "dev", "lead", "d"]) + "\n"))
+    cases.append(("sabotage S-91: the loss comes with a reorder of main's rows -> still red", red()))
+    cases.append(("sabotage S-91 (review F-2): that reorder commit alone is refused by the loss-only rule",
+                  "sıra" in exception_why(root, g("rev-parse", "main").strip(), bad2, APPROVALS)[1]))
+
+    def exc(row, row_by=DEV, tip_by=None, merger=LEAD, base=None):
+        """The exception row committed by `row_by` on a branch from `base` (default start), optionally one more commit
+        by `tip_by` (the pull request's opener in the GitHub stand-in), merged into main by `merger`."""
+        g("checkout", "-q", "main")
+        g("reset", "-q", "--hard", base or start)
+        n[0] += 1
+        g("checkout", "-q", "-b", f"exc-{n[0]}")
+        put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(row) + "\n")
+        commit("exception row", who=row_by)
+        if tip_by:
+            put(f"tip-{n[0]}.txt", "x\n")
+            commit("tip", who=tip_by)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge exc-{n[0]}", f"exc-{n[0]}", who=merger)
+        return "\n".join(history(root, "main")[1])
+    ok_row = lambda **kw: [kw.get("commit", bad), APPROVALS, kw.get("digest", digest), "t", kw.get("author", "dev"),
+                           kw.get("approver", "lead"), "2026-10-29"]
+    out = exc(ok_row(approver="jun"), merger=JUN)
+    cases.append(("sabotage S-91 (review F-2): approver without high-risk right (high=hayır) -> red",
+                  "yüksek riskli" in out))
+    out = exc(ok_row(author="lead-alt"))
+    cases.append(("sabotage S-91 (review F-2): author and approver are one person under two logins -> red",
+                  "aynı kişi" in out))
+    out = exc(ok_row(author="ghost"))
+    cases.append(("sabotage S-91 (review F-4): an author not on the approver list -> red", "listesinde yok" in out))
+    out = exc(ok_row(), row_by=LEAD, tip_by=DEV)
+    cases.append(("sabotage S-91 (review F-2): the row's commit author merged it himself (git) -> red",
+                  "istisna satırı geçmez" in out and "aynı yazar" in out))
+    out = exc(ok_row(), row_by=DEV, tip_by=LEAD)
+    cases.append(("sabotage S-91 (review F-2): the pull request opened and merged by one person (GitHub) -> red",
+                  "istisna satırı geçmez" in out and "açan ve merge eden aynı" in out))
+    g("reset", "-q", "--hard", start)
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(ok_row()) + "\n")
+    commit("exception row straight on main", who=LEAD)
+    cases.append(("sabotage S-91 (review F-2): the exception row written straight on main (no merge) -> red",
+                  "doğrudan" in "\n".join(history(root, "main")[1])))
+    # review F-3: a side line that merged the exception row in is not main — only main's file counts
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "side", start)
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(ok_row()) + "\n")
+    commit("exception row on a side branch")
+    g("checkout", "-q", "-b", "side2", start)
+    g("merge", "-q", "--no-ff", "-m", "Merge side", "side", who=LEAD)
+    cases.append(("sabotage S-91 (review F-3): the exception merged on a side line, not on main -> red",
+                  history(root, "side2")[0] == 1))
+    g("checkout", "-q", "main")
+    # review F-1: a lost revoke (never on main) would turn a stop into a pass — never excused
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "rv", start)
+    rv = ar("A0", "revoke")
+    put(APPROVALS, "\n".join(rows(APPROVALS) + [rv]) + "\n")
+    commit("revoke on a branch")
+    put(APPROVALS, "\n".join(r for r in rows(APPROVALS) if r != rv) + "\n")
+    commit("revoke dropped")
+    rv_drop = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge rv", "rv", who=LEAD)
+    out = exc(ok_row(commit=rv_drop, digest=lost_digest([rv])), base=g("rev-parse", "HEAD").strip())
+    cases.append(("sabotage S-91 (review F-1): an exception for a lost revoke row -> red, negative rows are never excused",
+                  "olumsuz" in out))
+    cases.append(("S-91 (review F-1): a negative review row (UYGUN DEĞİL / open ENGEL) is not positive",
+                  not _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "UYGUN DEĞİL", "0"] + ["x"] * 8))
+                  and not _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "KOŞULLU", "1"] + ["x"] * 8))
+                  and _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "KOŞULLU", "0"] + ["x"] * 8))))
+    # review F-5: the exception list itself is append only
+    exc(ok_row())
+    g("checkout", "-q", "-b", "edit-exc")
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n")
+    commit("exception row removed")
+    cases.append(("sabotage S-91 (review F-5): a pull request that deletes an exception row -> red with --base",
+                  history(root, "edit-exc", "main")[0] == 1))
+    g("checkout", "-q", "main")
+    tmp.cleanup()
 
 
 def self_test_review(cases: list) -> None:
@@ -2505,6 +2821,28 @@ def self_test_review(cases: list) -> None:
     tmp.cleanup()
 
 
+def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
+    """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
+    already a problem at `base` (a pull request is red only for a break it brings)."""
+    main = main_line(root)
+    c = commit_of(root, ref)
+    if c is None:
+        raise Unreadable(f"ref '{ref[:40]}' çözülemedi")
+    files = (APPROVALS, REVIEWS, EXCEPTIONS)                 # F-5: the exception list itself is append only too
+    now = [(p, x) for p in files for x in append_only_problems(root, c, p, main)]
+    if base is not None:
+        b = commit_of(root, base)
+        if b is None:
+            raise Unreadable(f"base '{base[:40]}' çözülemedi")
+        key = lambda x: x.split(" ")[1][:12] if " " in x else x
+        old = {(p, key(x)) for p in files for x in append_only_problems(root, b, p, main)}
+        now = [(p, x) for p, x in now if (p, key(x)) not in old]
+    head = [f"APPEND-ONLY — {ref}" + (f" (yalnız {base}'e göre yeni)" if base else "")]
+    if now:
+        return 1, head + [x for _, x in now] + ["çıkış: 1"]
+    return 0, head + ["yalnız ekleme — bozulma yok", "çıkış: 0"]
+
+
 def main(argv: list[str]) -> int:
     import argparse
     import datetime
@@ -2534,8 +2872,30 @@ def main(argv: list[str]) -> int:
     for opt in ("--model", "--effort", "--reviewer-session", "--author", "--author-session", "--requested-by"):
         v.add_argument(opt, required=True)
     v.add_argument("--date", default=datetime.date.today().isoformat())
+    h = sub.add_parser("history", help="S-91: onay ve inceleme dosyası yalnız ekleme mi; --base verilirse yalnız yeni "
+                       "bozulmalar (0 temiz · 1 bozulma · 2 okunamadı)")
+    h.add_argument("--ref", default="HEAD"); h.add_argument("--base")
+    x = sub.add_parser("exception-row", help="S-91: bilinen bir bozulma için istisna satırını basar (dosyaya yazmaz)")
+    x.add_argument("commit"); x.add_argument("--path", default=APPROVALS, choices=[APPROVALS, REVIEWS])
+    x.add_argument("--reason", required=True); x.add_argument("--author", required=True)
+    x.add_argument("--approver", required=True); x.add_argument("--date", default=datetime.date.today().isoformat())
     a = ap.parse_args(argv[1:])
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if a.cmd == "history":
+        try:
+            code, out = history(root, a.ref, a.base)
+        except Unreadable as e:
+            code, out = 2, [f"okunamadı — {e}"]
+        print("\n".join(out))
+        return code
+    if a.cmd == "exception-row":
+        c = commit_of(root, a.commit)
+        lost = lost_rows(root, c, a.path) if c else []
+        if not lost or any("\t" in v or "\n" in v for v in (a.reason, a.author, a.approver, a.date)):
+            print("commit çözülemedi, düşen satır yok ya da bir alanda sekme var")
+            return 2
+        print("\t".join([c, a.path, lost_digest(lost), a.reason, a.author, a.approver, a.date]))
+        return 0
     if a.cmd == "check":
         code, out = evaluate(root, a.ref, a.pack)
         print("\n".join(out))
