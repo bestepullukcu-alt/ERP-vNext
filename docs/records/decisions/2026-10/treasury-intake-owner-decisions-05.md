@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D90 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D91 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1013,6 +1013,27 @@ paketinin "Açık kararlar" tablosu (her satırda CT önerisi (a)). K1, commerci
    DCP üyesi değil — DCP-011 sahibi (Beste; `parked_modules` satırını DCP sahibi günceller).
 4. Paket kapısında açık kalanlar: commercial-suite domain-config + kimlik satırı (paket onay PR'ında), Auth paket metni (`crm.tag-*`),
    O-4 sonrası MOD-0162 sahibine bilgi, CT-APR-02 (yeni sürüm), CT-APR-01. Kod yok.
+
+## D91 — ERP şirket kısa kodları: kaynak MOD-0220 `LegalEntity.Code`, değerler LOG-0006 ORG sayfasının Active kodları (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); K1'in sözü:
+"butun moduller 220 ala bilir gereken bilgileri" ve "oneri ile devam". Kaynak belge: GMG-QMS-LOG-0006 v0.23 DRAFT 2026-10-04 (Coding
+Register, ORG sayfası; K1 paylaştı, ZIP sha256 `2346eb53…e441e353` paket içi beyanı) — belge QMS taslağıdır, ERP'de bağlayıcı olan bu karardır.
+
+1. **D91/1 — tek kaynak:** RCS-001 §5.4'teki şirket kısa kodu MOD-0220 tüzel kişilik kaydının `Code` alanıdır
+   (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:11`; kiracıda tekil — `ux_mdm_legal_entities_tenant_code`;
+   `lookup-validation` yanıtında döner). Bütün modüller ve RCS-001 servisi (BL-565) kısa kodu buradan okur; ayrı liste tutulmaz.
+2. **D91/2 — değerler:** `MYG` (Miquel y Garriga, S.L.), `GPL` (Grand Medical Poland Sp. z o.o.), `GMT` (GMG Grand Medical İlaçları Ltd);
+   grup öneki `GMG` (Beste teyidi, Y-22). `SET` (Setonda S.L.) LOG-0006'da "Proposed" — QA onayına kadar ERP'de kullanılmaz. Listede
+   olmayan bir tüzel kişilik ERP'de kayıt açacaksa kodu yeni bir kararla verilir.
+3. **D91/3 — bağımsızlık:** LOG-0006 sonradan değişse de ERP kısa kodu bu kararla sabittir; bir kez bir kayıt koduna girdikten sonra
+   değişmez (RCS-001 §5.4). Değişiklik yalnız yeni sahip kararıyla.
+4. **D91/4 — açık işler (sahip MDM / Ali, XMC-001):** (a) her ortamda üç tüzel kişiliğin `Code` alanına değerin girilmesi (mevcut değer
+   farklıysa İKİSİ DE değişikliği — gerekçe zorunlu); (b) MOD-0220 eki: `Code` biçimi `^[A-Z]{2,5}$` (bugün yalnız boş değil + en çok 64 —
+   `LegalEntityWriteRequestValidator.cs:12`) ve "bir kayıt kodunda kullanıldıktan sonra kilit" kuralı — RCS-001 servisinden önce.
+5. **D91/5 — Karar Notu:** "Kodlama Standardı — Karar Notu v1.0" (2026-09-04) dosyası depoda ve git geçmişinde yok; içeriği RCS-001
+   §1–§4'e geçirilmiş (commit `20854e63b`, 2026-10-07; BL-565: "sahibin paylaştığı yönetim karar notu"). Dosyanın kendisi aranıyor;
+   kısa kod girdisi bu karara bağlı değildir.
 
 ## Karar olmayanlar
 
