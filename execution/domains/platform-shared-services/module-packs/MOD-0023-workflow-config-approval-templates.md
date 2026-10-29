@@ -883,6 +883,9 @@ permission, no module id, no route path and no index.
      pseudonymising it must keep that comparison meaningful, like `EvidenceRef`.
    - `RequestInfo` writes `target:{principal}` into the log `Comment` even when the user wrote none
      (`.../Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs:587-591`).
+   - `WorkflowTransitionLog.TargetPrincipalId` (new in DL-2, item 7; review 5512cbca F-1): a principal id. Its
+     pseudonym stays Guid-shaped, like `ActorId`, keeps `""` (no target) as is and must change together with the
+     `target:` part of `Comment`, so the body comparison stays meaningful.
    - A caller-chosen `IdempotencyKey` may be free text (Diten.Web inputs, item 13); D32/3 keeps the key unchanged, so
      a key holding personal data is a question for O-S17-1.
    - **Boundary of the list (interim check 05 F-2; read, not run, @4c08fc75a):** the list covers the three retained
@@ -946,18 +949,39 @@ permission, no module id, no route path and no index.
      (`WorkflowTerminalTransitionWriter.cs:108-110`; on the unavailable path `:370-376`, the version moved without a row
      of this actor) or 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`),
      before any actor check. O-S17-3 (i) as written (item 17) adds no re-read on these paths for Approve/Reject, so the
-     answer stays 409/503 under both options and is `Unknown` (§17.7/6); a replay of the key then meets case (a) → 403.
+     answer stays 409/503 under both options and is `Unknown` (§17.7/6); a replay of the key then meets case (a) → 403
+     once a row under the key is recorded (review 5512cbca F-2; with no row it is a first write, item 10).
      A RequestInfo loser whose log meets the unique index goes through the duplicate-key mapping (item 17) → 403 under
      both options; the WP measures which RequestInfo path the race takes (item 10 (c)).
    **Same actor, different body** (reason code, comment, evidence ref, — for Approve — `SignatureId` and — for
    RequestInfo — `TargetPrincipalId`; restated for interim check 06 F-2, interim check 07 F-3 and interim check 08 F-3;
    read, not run, @4c08fc75a) — no new row in any case:
-   - **`TargetPrincipalId` (interim check 08 F-3):** the RequestInfo request carries it (`WorkflowModels.cs:505-512`) and
-     the support writes it into the log `Comment` as `target:{principal}` (`WorkflowTaskTransitionSupport.cs:587-591`),
-     which `SamePayload` compares (`WorkflowTerminalTransitionWriter.cs:437`). The sequential path's body comparison
-     (the actor-bound replay after the fix) compares it the same way — the composed log `Comment`, as `SamePayload`
-     does — so the sequential path and the duplicate-key mapping (item 17) give one answer: a same-key, same-actor
-     RequestInfo retry with another target gets the sequential different-body 409 below.
+   - **`TargetPrincipalId` (interim check 08 F-3; rewritten for review 5512cbca F-1; read, not run, @4c08fc75a):** the
+     RequestInfo request carries it (`WorkflowModels.cs:505-512`, `string?`, not parsed) and the support writes it only
+     into the log `Comment` (`WorkflowTaskTransitionSupport.cs:587-591`: target only → `target:P`; comment and target →
+     `{comment} target:P`); `WorkflowTransitionLog` has no target field (`.../Entities/Workflow/WorkflowTransitionLog.cs:9-33`).
+     So (target `P`, comment `not`) and (no target, comment `not target:P`) store the same `Comment`, and a comparison
+     through `Comment` / `SamePayload` (`WorkflowTerminalTransitionWriter.cs:433-438`) would take the second for a replay
+     of the first. **Representation (proposal; the owner approves it with this pack):** DL-2 adds one additive nullable
+     property `TargetPrincipalId` (`string?`) to `WorkflowTransitionLog`. Every new RequestInfo row stores it: the trimmed
+     target, or `""` when the request has none — so `null` means only "written before the field existed" (a missing
+     BSON field reads as `null`); other actions leave it `null`. The stored `Comment` format is unchanged, so no reader
+     (`history`, Diten.Web, Timesheet) changes, and the field is added to no read DTO. The body comparison — the
+     sequential path (the actor-bound replay after the fix), `SamePayload` (unavailable re-read) and the duplicate-key
+     mapping (item 17) — compares `Comment` **and** `TargetPrincipalId` separately (ordinal). With the target compared
+     on its own, equal `Comment`s mean equal (trimmed) user comments, so the two collision bodies differ.
+     **Legacy rows (RequestInfo row, field `null`) — öneri:** a same-key retry against such a row is compared as today:
+     the retry's composed `Comment` against the stored one, target not compared separately. The collision above stays
+     undetected for those rows only; accepted, because they exist only for keys sent before DL-2 is deployed and a
+     genuine retry must not get 409. (Rejected: actor-only replay for legacy rows — it would drop the reason, comment
+     and evidence comparison too.) No index and no schema-manifest change: the manifest declares indexes only
+     (`PlatformSchemaManifest.WorkflowWorkCenter.cs:195-227`), and the field joins none. **AC (AC-W14, RequestInfo):** on
+     real Mongo, same actor and key — first (target `P`, comment `not`), then (no target, comment `not target:P`) → the
+     sequential different-body 409, one row holding target `P`; and the reverse order → the same 409; an identical
+     retry → 200 `isIdempotent = true`; the same pair through the duplicate-key mapping (case (b), item 10) → the same
+     answers; a crafted legacy row (field unset) with an identical composed retry → 200. Sabotage: dropping
+     `TargetPrincipalId` from the comparison, or writing `null` instead of `""` for a request without a target, turns
+     the collision test red.
    - **`SignatureId` (interim check 07 F-3):** the Approve request carries it (`WorkflowModels.cs:467-475`), the decision
      log stores it for Approve only (`WorkflowTaskTransitionSupport.cs:270, 288`; Reject and RequestInfo store none), but
      `SamePayload` does not compare it (`WorkflowTerminalTransitionWriter.cs:433-438`) and today's actor-bound replay
@@ -1181,7 +1205,13 @@ permission, no module id, no route path and no index.
     the WP adds an `expectedVersion` parameter to `ApproveAsync`, `RejectAsync` and `RequestInfoAsync`
     (`WorkflowCandidateDecisionMongoTests.cs:518-542`) for the stale-version cases.
 
-    After any case, a replay of the same key is case (a).
+    **Replay after each case (review 5512cbca F-2; read, not run, @4c08fc75a):** a replay of the same key is case (a)
+    only after a branch that recorded a row under (task, action, key) — (a), (b), the barrier race and the injected
+    200-Replayed branch of (c), and a 409 whose twin committed. After the injected 503 "nothing moved" branch of (c) no
+    row exists (zero rows, above): the next attempt with the same key is a **first write** — the lookup (`:61-65`;
+    RequestInfo `:539-547`) finds nothing, the full check order runs and, if it commits, the answer is 200
+    `isIdempotent = false` (`WorkflowTerminalTransitionWriter.cs:331`, `Replayed` unset; mapped at `:830`). The WP asserts
+    that flag on the retry after the zero-row branch.
 
     **Existing coverage and what the WP adds (replaces "no existing test covers AC-W6/W7 or AC-W9/W10", note DL-2/7;
     interim check 03 F-1; read, not run, @4c08fc75a).** Reused as evidence: the case-(c) tests and the
@@ -1194,11 +1224,21 @@ permission, no module id, no route path and no index.
     intermediate step (item 9). **AC-W9 / AC-W10: not measured** — the in-memory replays above repeat a decision after
     its task closed, but no Mongo test was found by this read that replays after a next step (AC-W10) or replays a start
     after each terminal state (AC-W9); the WP measures, names any existing test it reuses, and writes the rest.
-11. **AC-W5 — what it requires (INSPECTION.md DL-2/7):** the existing test
-    (`WorkflowStartRecoveryMongoTests.cs:1821-1845@4c08fc75a`) runs six in-process handler calls held by a barrier
-    (`AllReservedBarrier`) until all have reserved — forced overlap, not independent requests. AC-W5 needs **both**: that
-    forced-overlap test on a real Mongo replica set, **and** N ≥ 2 independent concurrent `POST instances` requests without
-    a barrier, repeated (count stated in the WP), with the same assertions. Neither replaces the other.
+11. **AC-W5 — what it requires (INSPECTION.md DL-2/7; restated for review 5512cbca F-3; read, not run, @4c08fc75a):**
+    the existing test (`WorkflowStartRecoveryMongoTests.cs:1821-1845@4c08fc75a`) runs six in-process handler calls through
+    `AllReservedBarrier` (`:1783-1819`). That barrier holds each caller only **before** its first idempotency-key read
+    (`:1790-1801`; the read itself `:1803`, i.e. `StartWorkflowInstanceHandler.cs:81`); after release one call can
+    reserve and finish before another reads the key, which then finds the instance and answers as the replay
+    (`StartWorkflowInstanceHandler.cs:82-85`). Its non-vacuity assertion (`:1835`) proves only that all callers reached
+    the barrier, so the test does not exclude a sequential execution: it is **supporting evidence only**. AC-W5 needs
+    **both**: (1) a forced-overlap test on a real Mongo replica set that **measures** that at least two callers missed the
+    key read and entered the reservation race — the wrapper counts the callers whose inner `GetByIdempotencyKeyAsync`
+    returned `null` and the callers that reached `ReserveTrustedStartAsync` (`StartWorkflowInstanceHandler.cs:291`), and
+    the test asserts both counts ≥ 2 and at least one reservation with `Created == false` (`:292-295`), next to the
+    existing assertions; a barrier placed after the key read (before the reservation) is an accepted alternative, with
+    the same counts asserted; sabotage: moving the hold back before the key read (or serialising the calls) turns the
+    count assertion red; **and** (2) N ≥ 2 independent concurrent `POST instances` requests without a barrier, repeated
+    (count stated in the WP), with the same end-state assertions. Neither replaces the other.
 12. **Trusted coordinators out of DL-2 scope, unchanged (INSPECTION.md DL-2/5):**
     `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/WorkflowInstanceStartCoordinator.cs`
     already compares the start fingerprint (`:228-255@4c08fc75a`, 409 `WORKFLOW_START_IDEMPOTENCY_CONFLICT`);
@@ -1252,7 +1292,10 @@ permission, no module id, no route path and no index.
     `WorkflowModels.cs`, `Handlers/CommandHandlers/RejectWorkflowTaskHandler.cs` (replay lookup `:79-80`), and only if
     needed the thin per-action handlers `Handlers/CommandHandlers/ApproveWorkflowTaskHandler.cs`,
     `DelegateWorkflowTaskHandler.cs`, `RequestInfoWorkflowTaskHandler.cs`, `CancelWorkflowTaskHandler.cs`; plus
-    `services/Diten.Platform/tests/**` and `tests/architecture/**` (new rules only). Nothing else.
+    `services/Diten.Platform/tests/**` and `tests/architecture/**` (new rules only); and
+    `services/Diten.Platform/src/Diten.Platform.Domain/Entities/Workflow/WorkflowTransitionLog.cs` — only the additive
+    nullable `TargetPrincipalId` property of item 7 (review 5512cbca F-1; no index, no schema-manifest change). Nothing
+    else.
 15. **AC-W16 restated (DL-1; review F-1) — replaces the AC-W16 text of §17.8.** Code (read, not run, @4c08fc75a):
     `by-objects` answers every requested object id; an id with no instance in the caller's tenant gets an entry with an
     empty `instances` list and the call is 200
@@ -1295,7 +1338,7 @@ permission, no module id, no route path and no index.
       `TerminalConflictException` and `PlatformTransactionUnavailableException`
       (`WorkflowTerminalTransitionWriter.cs:333-340@4c08fc75a`). The writer maps a duplicate-key refusal on **that index**
       for (task, `RequestInfo`, key) to an actor-bound replay read of that row: same actor and same payload (as
-      `MyCommittedLogAsync` compares them, `:399-438`) → 200 `isIdempotent = true`; another actor → 403
+      `MyCommittedLogAsync` compares them, `:399-438`, plus `TargetPrincipalId`, item 7) → 200 `isIdempotent = true`; another actor → 403
       `WORKFLOW_ACTOR_DENIED` (item 7); same actor, different payload → the sequential different-body answer (AC-W14,
       item 7). The unavailable path's own re-read cannot serve the actor case: it would answer 503
       `WORKFLOW_TRANSACTION_UNAVAILABLE` here, not 403 — `MyCommittedLogAsync` finds no row of this actor, the task version
@@ -1320,7 +1363,8 @@ permission, no module id, no route path and no index.
       `WorkflowTaskTransitionSupport.cs:839-843`), or on the transaction-unavailable path 409 / 503
       `WORKFLOW_TRANSACTION_UNAVAILABLE` when its re-read does not find the twin's row (`WorkflowTerminalTransitionWriter.cs:370-376,
       390`; otherwise 200 Replayed, item 10 (c)) — under both options, `Unknown` (§17.7/6) — and its replay then gets
-      case (a). File: `WorkflowTaskTransitionSupport.cs`. AC-W6/W7 case (b) for Approve/Reject assert 200 (item 10);
+      case (a) once a row under the key is recorded; after a zero-row 503 it is a first write (item 10, review 5512cbca
+      F-2). File: `WorkflowTaskTransitionSupport.cs`. AC-W6/W7 case (b) for Approve/Reject assert 200 (item 10);
       AC-W14's Approve/Reject case (b) asserts 403 / the sequential 409 (item 7); §17.7/6 stays as written
       (`WORKFLOW_TASK_INVALID_STATE` a definite refusal) and no consumer records a new rule.
     - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
@@ -1344,6 +1388,10 @@ items 9 and 10; the CT's note in `docs/records/reviews/MOD-0023/REVIEW-REQUEST-r
 (`ARA-KONTROL-02.md`) → item 2; review 3e802d2f F-3 (review input) needs no pack change. In revision 3
 the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.4 heading (DL-2), so both slices now list
 the same §17 headings.
+**Codex review 2 (2026-10-30-5512cbca)** — `docs/records/reviews/MOD-0023/2026-10-30-5512cbca.md` (formal review;
+UYGUN DEĞİL; MOD-0023 owner `duzelt`, CT · İş akışı chat, 2026-10-30): review 5512cbca F-1 → item 7 (`TargetPrincipalId`
+field, legacy rule öneri, AC and test), items 4, 14 and 17, the closure and the DL-2 finish list; F-2 → items 7 (c),
+10 (replay after each case) and 17 (i), the DL-2 finish list; F-3 → item 11 and the DL-2 finish list.
 
 Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
 "interim check 05 F-n" / "interim check 06 F-n" / "interim check 07 F-n" / "interim check 08 F-n" in the items; they are not the
@@ -1398,7 +1446,8 @@ closure and the DL-2 finish list; F-4 → item 7 (Delegate's replay unchanged, �
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6/W7
 by items 10 and 17 — RequestInfo case (b) is asserted through the duplicate-key mapping, DL-2 base scope under both
 options —, AC-W14 by items 7 and 17 — its distinct different-body code applies on the sequential path only; `SignatureId`
-is part of the compared body (öneri, item 7), and so is RequestInfo `TargetPrincipalId` through the log `Comment` —,
+is part of the compared body (öneri, item 7), and so is RequestInfo `TargetPrincipalId` as its own log field, legacy
+rows compared through `Comment` (öneri, item 7) —, AC-W5 by item 11,
 AC-W8 by item 9; AC-W11's transition sentence by item 7; Delegate's same-key replay unchanged and outside AC-W14/AC-W17,
 öneri, item 7). Items that depend on O-S17-3 (the same list as items 9
 and 17 and the DL-2 finish list): AC-W6 and AC-W7 case (b) for Approve/Reject; AC-W14 case (b) for Approve/Reject
@@ -1424,7 +1473,7 @@ artık kapı değil).
 **DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; O-S17-3 kararına bağlı
 olanlar — §17.9/9, §17.9/17 ve kapanıştaki listeyle aynı: AC-W6 ve AC-W7'nin Approve/Reject (b) vakası; AC-W14'ün
 Approve/Reject (b) vakası (farklı aktör; aynı aktör, farklı gövde); §17.7/6 tüketici kuralı; yalnız (ii)'de AC-W17
-tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (log `Comment` üzerinden) girer, §17.9/7; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar, §17.9/9–10; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
+tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` (öneri) ve RequestInfo `TargetPrincipalId` (yeni ayrı log alanı `WorkflowTransitionLog.TargetPrincipalId`, `Comment` biçimi değişmez; eski satırlar `Comment` ile karşılaştırılır, öneri) girer, §17.9/7, §17.9/14; Delegate'in aynı anahtar tekrarı değişmez, AC-W14/AC-W17 dışında (öneri, §17.9/7); zorlanan 503 "hiçbir şey değişmedi" dalı sıfır satır yazar ve aynı anahtarla sonraki deneme ilk yazmadır (`isIdempotent = false`), §17.9/9–10; AC-W5 zorlanan yarışta en az iki çağıranın anahtar okumasını kaçırıp rezervasyon yarışına girdiğini ölçer, mevcut test yalnız destekleyici kanıttır, §17.9/11; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
 kapsamı, AC-W7 onu doğrular, §17.9/17; AC-W14'ün ayrı farklı-gövde 409 kodu yalnız sıralı yolda, eşzamanlı yolda
 `WORKFLOW_TRANSITION_CONFLICT`, §17.9/7; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
