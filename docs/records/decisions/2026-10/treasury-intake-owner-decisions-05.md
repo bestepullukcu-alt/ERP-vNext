@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D95 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D96 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1117,6 +1117,21 @@ Onay kanıtı: K1 / gmg-10 (CT teknik hizalaması, D93/1'in uygulanması; yeni �
 7. **D95/7 — K-6 durum ifadesi (Codex CT-APR-02 ara bulgusu, b3101330b; 0126 / 0119 / 0120 / 0124 F-1 ORTA):** dört finans paketinin SEC-002
    maddesinde ve O-satırında kalan "o ekin K-6 açık kararı" ifadesi "K-6 kararıydı — kapandı: 'evet' (D92/1)" olarak düzeltildi; açık kalan
    Platform kodu + XMC-001 (Beste) korundu. Kural, AC ve dilim metni değişmedi.
+
+## D96 — Dört finans paketinin kapsam kanıt AC'si C yoluna göre (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 ("Evet, AC-32", 2026-10-30); kaynak Y-23 / Y-24 (Beste: "Dört paketin SEC-002 maddesini ve AC-32'yi bu yola göre
+yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D96/1 — kapsam kanıt AC'si:** Beste'nin "AC-32" dediği, her paketin SEC-002 §4 kanıt testidir: MOD-0126 AC-32, MOD-0119 AC-32, MOD-0120
+   **AC-6**, MOD-0124 **AC-31** (MOD-0120 AC-32 yarış testleri, MOD-0124 AC-32 okuma/yazma kapsamı ayrımıdır — değişmedi). Dördüne "Kapsam
+   kaynağı — C yolu" bölümü eklendi: üretim bağdaştırıcısı Platform güvenilir kapsam ucunu (`POST /api/internal/v1/access-governance/legal-entity-scope/resolve`) finans kimliğiyle
+   (`DITENFINANCETREASURYSERVICE`) ve paketin modül koduyla (D92/2) çağırır; kapsamı kendisi hesaplamaz (SEC-002 §6); 200 dışı yanıt, zaman
+   aşımı, bozuk gövde, çift listesi dışı anahtar, eksik kimlik bilgisi → boş kapsam (kapalı-başarısız); sabotajlı; gerçek uçla kanıt Platform
+   finans tüketici kodu main'deyken (FU27 §5.2, XMC-001 Beste) — AC'nin ilk kapandığı dilimin kabul kapısı. Var olan kabul maddeleri
+   aynen; AC kimlikleri ve sayısı değişmedi. Onay adaylarının kapsamı bu AC'lerin konusu değil (D92/3 açık).
+2. **D96/2 — O-satırları:** dört paketin SEC-002 O-satırına bağdaştırıcının hedefi (Platform güvenilir kapsam ucu, Y-23) notu eklendi;
+   Y-4/6'daki "Platform kapsam çözümünü çağırır" ifadesinin somut karşılığıdır.
 
 ## Karar olmayanlar
 
