@@ -9,6 +9,8 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-10-29 · PR yükü (S-100):** kule başına günde en çok bir kayıt PR'ı, gün sonunda; kule başına ve onaylayan başına
+  günde bir onay PR'ı; kural değişiklikleri haftada bir pencereden; kod PR'ı dilim başına (§7b "Günlük sınır", §7a/3).
 - **2026-10-29 · hız paketi (S-99):** tek kutuda 2–4 bağımsız karar ("Soru biçimi"); CT dalında yerel commit ve ana dalı yerel
   almak sorusuz, oturum dal izni (§7); ortak onay dosyalarında çakışma çözücü (§7a/2); birleştirme isteğinde acil nedeni (§7a/3); inceleme
   ZIP'i aracıyla, hazır olmayan paket incelemeye gitmez (S-94/6); ön incelemede küçük bulgu turu yok, sık bulgu listesi
@@ -665,6 +667,20 @@ inceleme satırları main'den okunur ve HIGH onay ancak onaylayanın merge etti�
 (`pack_approval.py`). Bir onay PR'ında §7a madde 7 (paket başına tek onay satırı, onaylayan merge eder) geçerlidir; "hepsini
 topla" onu aşmaz. CT-Setup'ın kurulum işleri de bu kurala uyar.
 
+**Günlük sınır (S-100, sahip kararı 2026-10-29; Beste'nin PR yükü ölçümü: 26–29 Ekim'de birleşen 62 PR'ın 15'i kod):**
+
+1. **Kayıt PR'ı:** bir kule günde en çok bir kayıt PR'ı açar, gün sonunda; günün kayıtlarının hepsi o PR'dadır. Gün
+   içinde yalnız (c) ya da (d) için ara PR açılır.
+2. **Onay PR'ı:** bir kule günün onay ve inceleme satırlarını tek PR'da toplar; farklı paketlerin satırları aynı PR'a
+   girebilir (§7a/7: paket başına tek satır). Onaylayan PR'ı kendisi birleştirdiği için satırların onaylayanı farklıysa
+   her onaylayana bir PR açılır. Kuleler arası ortak onay PR'ı yoktur (10-29 denemesi çift satır riskiyle iptal edildi);
+   onay yine sahibin o kulenin sohbetindeki kendi sözüdür.
+3. **Kural penceresi:** kartı, SOP'u, `AGENTS.md`'yi, `.antigravity/`'yi ya da bir skill'i değiştiren işler CT-Setup'ın
+   tek dalında birikir ve haftada bir, sabit günde tek PR ile girer. Kule kural PR'ı açmaz; isteğini CT-Setup'a yazar.
+   İstisna yalnız güvenlik açığı, kırmızı ana dal ve kapalı onay yolu; istisna PR'ı nedenini ilk satırda yazar. Yürürlük
+   kuralı değişmez: pencere birleşene kadar eski kural geçerlidir.
+4. **Kod PR'ı** dilim başına kalır; bu sınır kodu kapsamaz.
+
 **Kayıt satırı PR'ı (S-82, 2026-10-27):** kuyruk kayıt satırı (`ct-queue-registry.tsv`) ekleyen ya da değiştiren PR,
 satırın gösterdiği kuyruk commit'ini (`baseline_commit`) aynen taşır (cherry-pick ya da rebase yok) ve yalnız **merge
 commit** ile birleşir. `check_registry` bu commit'in klonda var olmasını ister (`ct_queue.py` `check_registry`); squash
@@ -694,7 +710,8 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    yine koşar; bekçi odur.
 3. **Birleştirme isteği (S-99):** Beste birikmiş PR'ları sabit saatlerde sırayla birleştirir; CT isteğinde PR'ın acil
    olup olmadığını yazar. Acil yalnız şunlardır: ana dal kırmızı, onay yolu kapalı ya da başka bir kule bu PR'ı bekliyor.
-   Acil PR sabit saati beklemez. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu satırdaki
+   Acil PR sabit saati beklemez. Kayıt PR'ları gün sonunda birleştirilir (§7b "Günlük sınır"); gün içi "Update branch"
+   ve düşen onay döngüsü böylece azalır. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu satırdaki
    onaylayan kişi kendisi birleştirir (§7a/7). Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
    yeniden koşar, sonra merge commit ile birleştirilir (SOP §20.4/7).
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
