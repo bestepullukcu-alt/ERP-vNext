@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D89 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D90 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -992,6 +992,27 @@ cevabı: "K2 — Beste (Önerilen)".
 MOD-0289'u K1 yazdı; yüksek riskli onay, paketi yazmamış ve `execution/approvals/approvers.tsv`'de `high: evet` olan biri tarafından
 verilir (POLICY-START). Onaylayıcı K2 — hesap `bestepullukcu-alt`. Ready-for-dev PR'ı (D84/4 tutuşu kalkınca) CT-APR-01 satırını
 bu hesapla yazar; merge onaylayıcıda (merge commit). Beste'ye ayrıca sorulur; kabul etmezse karar yeniden açılır.
+
+## D90 — MOD-0057 açık kararları (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: K1 kararları "O-2, O-3, O-7, O-11"; ortak kararlar "O-6, O-9, O-8, O-12"; O-4/5/10 "Evet, payımı ver (Önerilen)". Kaynak: MOD-0057
+paketinin "Açık kararlar" tablosu (her satırda CT önerisi (a)). K1, commercial-suite sahibi atanana kadar MOD-0057 kararlarını verir (D61, D65/1).
+
+1. **D90/1 — K1 kararları (CT önerisi (a)):** O-2 `Diten.CrmService`, port 5061 (yeni servis / port yok; EA'ya bilgi); O-3 taksonomiye
+   görünen kayıt kodu yok, `TermCode` kullanıcı tanımlı değişmez sözlük anahtarı (RCS-001 dışı); O-7 en dar kapsam (sözlük verisi
+   istisna; bağ listesi yalnız kendi bağları, kiracı geneli `read-tenant-wide` ile; ters arama yok); O-11 etiket = düz taksonominin
+   terimi (ayrı `Tag` varlığı yok).
+2. **D90/2 — K1 + CT / EA kararları (CT önerisi):** O-6 CentralAudit ortak iletici, yol `b`, işlem içi; CrmService defterine
+   `crm-merkezi-iletim` izi (borç / istisna eklenmez), `Category = ReferenceData` (5) — defter ve `CT-DECISIONS.md` satırı DL-1
+   değişikliğinde; O-9 kod alma yok (MOD-0217 D38/3 deseni); O-8 v1'de adlandırılmış tüketici yok, `taxonomy-tagging-read.v1`
+   yayımlanır, her tüketici kendi kararı ve XMC-001 ile bağlanır; O-12 v1 bağımsız (MOD-0053 bağı Follow-up) — Blueprint HARD
+   bağımlılık sapması EA'ya bildirilir.
+3. **D90/3 — K1 payı verildi, diğer sahibin teyidi açık:** O-4 (a) MOD-0162 Subject / Topic / AudienceProfile'ın SoR'u kalır — MOD-0162
+   sahibi (XMC-001); O-5 (a) `crm.tag-taxonomies.*`, `crm.tag-assignments.*` + üç rol şablonu — MOD-0018 sahibi (kayıt); O-10 (a) MOD-0057
+   DCP üyesi değil — DCP-011 sahibi (Beste; `parked_modules` satırını DCP sahibi günceller).
+4. Paket kapısında açık kalanlar: commercial-suite domain-config + kimlik satırı (paket onay PR'ında), Auth paket metni (`crm.tag-*`),
+   O-4 sonrası MOD-0162 sahibine bilgi, CT-APR-02 (yeni sürüm), CT-APR-01. Kod yok.
 
 ## Karar olmayanlar
 
