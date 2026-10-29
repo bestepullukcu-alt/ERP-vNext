@@ -1537,13 +1537,13 @@ main'de olmalıdır.
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
 - [ ] RCS-001 ortak kod servisi (BL-565) main'de — sahibi Beste (D44); v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-20)
-- [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
+- [x] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
   eki)** (`…/MOD-0018-FU27-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform
   dosyaları için XMC-001 Beste — D63/2): Platform izin
   listesine `mdm.contracts.*` anahtarları ve MDM istemcisinin modül kodu (bugün iki taraf `product-item-sku-master`'a sabit —
   Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir (eski "sağlayıcının `mdm.contracts.*`
   anahtarlarıyla çalıştığı ölçüldü" maddesi 2026-10-27 ölçümüyle olumsuz kapandı ve bu maddeye dönüştü); kod değişikliği bu
-  paketin Repo Scope'unda değildir
+  paketin Repo Scope'unda değildir — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D83/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [ ] SEC-002 sağlayıcısı eki kodu (o ekin DL-4 kodu) main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
   borç yok; CT-DECISIONS satırı kod aşamasında

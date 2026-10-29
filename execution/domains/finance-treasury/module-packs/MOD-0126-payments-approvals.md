@@ -1970,8 +1970,8 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [x] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17 rev 2'de onaylı (`approvals.tsv:16`); silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13), tek silme işareti `IsDeleted` ve miras silme kapalı (D32/2; AC-W15), `includeDeleted` kiracı ve `instances.view` içinde (D32/6; AC-W16) — DL-2 için; AC-W1 (silmeme mimari testi) ve AC-W15 DL-2 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [x] MOD-0023 okuma eşleme alanları (KARAR D21/3) §17 rev 2'de onaylı (`approvals.tsv:16`) — DL-2 için; kod MOD-0023 sahibinin WP'siyle gelir (D25/1), AC-W2/W3 uygulama kabul kapısındadır (gap 16/P2); yoksa okuma niyeti kapatmaz (gap 6/P1-b)
 - [x] MOD-0269 arayüz sözleşmesi dondu — `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 (KARAR D27/7, D27/8; TRM-06 kapandı) — DL-3 için
-- [ ] MOD-0031 kanıt bağlama dedupe ölçümü — kurtarmada yeniden çağrıyı açmak için önkoşul (ölçülmezse yeniden
-  çağrı kapalı kalır, gap 5/G2) — DL-3 için
+- [x] MOD-0031 kanıt bağlama dedupe ölçümü — kurtarmada yeniden çağrıyı açmak için önkoşul (ölçülmezse yeniden
+  çağrı kapalı kalır, gap 5/G2) — **ölçüldü (KARAR D83/2):** `docs/records/audits/2026-10/treasury-intake-handover-review-01/MOD-0031-DEDUPE-OLCUMU-01.md` — içerik tabanlı tekillik (aktif bağlantıda kısmi UNIQUE indeks), tekrar 409 `duplicate_link`, çağıranın uzak anahtarı yok, 409 bağlantı kimliği taşımaz (kimlik `links/query` ile okunur); EvidenceLinking testleri 51 geçti / 0 kaldı (ct-05 @ 29b6f2a51 = main 317a48b13 kodu). İçerik tekilliği uzak anahtarla idempotency değildir → **kurtarmada yeniden çağrı kapalı kalır** (kural değişmedi; açmak ayrı paket değişikliği ister) — DL-3 için
 
 ## Implementation Notes
 

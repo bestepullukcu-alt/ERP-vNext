@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D82 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D83 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -886,6 +886,20 @@ cevapları: "Şartlı olarak işaretle (Önerilen)", "Dilim kapısına taşı (�
 2. **D82/2 — DL-1 dilim kapısı (D51/1):** TRM-14 (MOD-0220 `ApprovalStatus` + sözleşme belgesi; MOD-0126, MOD-0119, MOD-0120,
    MOD-0124) ve "servis iskeleti MOD-0126 DL-1 ile açıldı" (MOD-0119, MOD-0120, MOD-0124) maddeleri paket kapısından "— DL-1 için"
    dilim kapısına taşınır: DL-1 başlamadan kapanır, paketi `ready-for-dev`'den alıkoymaz.
+
+## D83 — Şartlı teyitle üç madde daha; MOD-0031 ölçüm maddeleri işaretlenir (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: "Şartlı işaretle (Önerilen)", "Test et ve işaretle (Önerilen)".
+
+1. **D83/1 — şartlı teyit (D82/1 deseni):** Ali'nin Y-19 şartlı teyidi Auth ekinin tamamını (main `4c08fc75a`, D69–D78) kapsar. Bu
+   gerekçeyle MOD-0217 ve MOD-0289'daki "SEC-002 sağlayıcısı paket metni main'de" maddesi ve FU27'deki "D53/1 tüketici paket kapısı"
+   maddesi şartlı olarak işaretlenir. Şart düşmez: K-W5 defteri ve rol atama denetimi DL-5 kodundan önce (FU27 D80/2 (a)(b) açık).
+   Teyit D69–D78 sürümünü kapsar; D79'dan sonraki değişiklikler (ör. FU27 Bölüm 14.2 beş dil adları) ayrıca teyide gider
+   (FU27 ilgili maddeler açık). Kod tarafı (SEC-002 eki DL-4 kodu, XMC-001 Beste) DL-1 kabul kapısında kalır.
+2. **D83/2 — MOD-0031 ölçümü:** `docs/records/audits/2026-10/treasury-intake-handover-review-01/MOD-0031-DEDUPE-OLCUMU-01.md` kaydı ve EvidenceLinking testleri (51 geçti / 0 kaldı (ct-05 @ 29b6f2a51 = main 317a48b13 kodu)) ile MOD-0126 (DL-3), MOD-0120 (DL-3) ve MOD-0124
+   (DL-4) ölçüm maddeleri işaretlenir. Sonuç: içerik tekilliği var, uzak anahtarla idempotency yok → kurtarmada yeniden çağrı
+   kapalı kalır; paket kuralı değişmez.
 
 ## Karar olmayanlar
 

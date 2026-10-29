@@ -1273,10 +1273,10 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   liste (D80/4): K-W5, K-A1, K-A2, K-A3; D79 önerilerinin kabulü (K-1b, K-2, K-3, K-W2, K-W4, K-W6) ve K-5; K-W7 ve K-A4b teyidi.
 - [x] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
   tablosunun paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
-- [ ] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
+- [x] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
   tek başına yetmez, teyit karar dosyasına kaynak olarak yazılır) — altı tüketici paketin paket kapısı. **Şartlı teyit — Y-19 /
   KARAR D80/2:** D69–D78 sürümü (main `4c08fc75a`) teyitli; kapı tüketicilerin **DL-1'ini bekletmez**; şartlar bu paketin DL-5
-  kodundan önce kapanır (aşağıdaki iki D80/2 maddesi); D79'dan sonraki değişiklikler ayrıca teyide gider; D80 main'de değil (D62/1).
+  kodundan önce kapanır (aşağıdaki iki D80/2 maddesi); D79'dan sonraki değişiklikler ayrıca teyide gider; D80 main'de (`317a48b13`) — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D83/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [x] D70 main'de (D62/1) — K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] D71 main'de (D62/1) — K-A4b kapanışının (DL-6; tüketici aday kesişimi) paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] D80 main'de (D62/1) — K-1 kapanışının (FU27, D80/1), Auth paket kapısı şartlı teyidinin (D80/2) ve K-7 / DL-6 teyidinin

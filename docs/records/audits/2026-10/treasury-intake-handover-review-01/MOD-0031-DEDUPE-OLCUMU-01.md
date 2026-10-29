@@ -29,6 +29,12 @@ Yollar `services/Diten.Platform/src/Diten.Platform.` altındadır.
 7. **503:** işlem açılamazsa "hiçbir şey yazılmadı" (`EvidenceLinkingHandlers.cs:312-315`) — kesin sonuç, belirsiz değil.
 8. İzinler: yazma `platform.evidence.links.manage`, okuma `platform.evidence.links.read` (`EvidenceLinkingModels.cs:10-11`).
 
+## Çalışma testi (ek, 2026-10-29)
+
+`dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~EvidenceLinking"`,
+ct-05 @ `29b6f2a51` (main `317a48b13` birleşik; MOD-0031 kodu main ile aynı): **51 geçti / 0 kaldı / 0 atlandı**. Bu, yukarıdaki
+409 ve depo düzeyi yarış testlerini (`:384-414`) kapsar. Sabotaj yapılmadı; testler var olan koruma testleridir.
+
 ## Çıkarım (karar değil)
 
 - Paketlerin sorusunun yanıtı **koşullu evet**: bağdaştırıcı her denemede aynı nesne, belge, sürüm, sayfa ve alıntıyı
