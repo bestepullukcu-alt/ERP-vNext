@@ -1,5 +1,8 @@
 # MOD-0280-FU02 — bağımsız inceleme isteği 08 (SOP §20.4 / CT-APR-02)
 
+> **Durum: yanıtlandı, kapandı.** Codex ZIP'i (51158f97…) ve hedefi 775ce53c olarak ölçtü: KOŞULLU, F-76 orta, F-77
+> düşük (kayıt `2026-10-29-775ce53c.md`). Bu istek yeniden gönderilmez; yerine `REVIEW-REQUEST-09.md` geçer.
+
 - **Hedef:** `execution/domains/human-capital-management/module-packs/MOD-0280-FU02-leave-absence-management.md` @ sha256 `775ce53c3a22bc36072d54262871c15e3b681aef1c986b7aad72f807e24436ea` (revizyon 08, `status: ready-for-dev`)
 - **Kaynak commit:** bu istekle aynı commit · dal `chore/ct/hcm-leave-ct-01` (sahibin sözüyle commit edilir; ZIP'teki dosyalar o commit'teki dosyalarla bayt bayt aynıdır, CT commit'ten sonra MANIFEST'i yeniden ölçer)
 - **Risk:** HIGH (ilk onay) — onay satırı bu sürüme yazılacağı için bu sürümün kendi incelemesi gerekli (kart S-49: onay satırı künyesi `ready-for-dev` olan sürüme yazılır; künye değişikliği muaf değildir)

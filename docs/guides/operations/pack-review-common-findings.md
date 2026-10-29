@@ -46,6 +46,9 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   (MOD-0230 2026-10-22-94cbb2d5)
 - Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
   (`audit-trail-standard` §7). (MOD-0230 2026-10-21-b48500cf)
+- Bir alan "sabit kod listesi" ya da "kapalı enum" diye anılıyor ama değerleri pakette sayılmamış; doğrulama yalnız
+  alanın dolu olmasını istiyor. Değerler, üyelik doğrulaması ve geçersiz kodun yanıtı yazılmalı; lookup kararı ile alan
+  tanımı aynı listeyi göstermeli. (MOD-0280-FU02 2026-10-29-775ce53c F-76)
 - Bir sayı (eşleşmeyen kayıt, hata) raporlanıyor ama hangi kaydın düzeltileceğini gösteren okuma yüzeyi yok.
   (MOD-0280-FU02 2026-10-29-ea61e8c6 F-07)
 - Bir dilimin gerekli kanıt seviyesi işin riskinden düşük (ör. izin anahtarı ve gateway rotası yalnız smoke ile).

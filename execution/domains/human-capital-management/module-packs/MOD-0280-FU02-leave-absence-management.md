@@ -74,8 +74,9 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > (`docs/records/reviews/MOD-0280-FU02/2026-10-29-0517be85.md`, UYGUN): status `ready-for-dev`; the Ready-for-dev Checklist
 > is filled in and names which items are slice gates (§Teslim dilimleri) rather than conditions of this status; the
 > XMC-001 gate covers every slice that writes code in `Diten.Platform`; validation rows, two failure paths, the lookup
-> decision and two recorded deviations are added; no runtime rule changed, of the AC texts only AC-55 (§Implementation
-> Notes "Revision 08").
+> decision and two recorded deviations are added; after review 08 the two reason-code lists and the page-help contract
+> are written; no runtime rule changed, of the AC texts only AC-11, AC-13, AC-19 and AC-55 (§Implementation Notes
+> "Revision 08").
 >
 > **Scope of this revision: delivery block 1 only** — leave types, leave entitlements entered by HR, and the employee's own
 > leave requests with balance and cancellation; approval through MOD-0023 in the Task Center. Absence records, sickness,
@@ -254,7 +255,7 @@ carry-over: entitled 5, carried 5, taken 8, reserved 0 → valid (10 ≥ 8); ent
 | `StartLeaseId`, `StartLeaseUntilUtc` | uuid, instant | user-experience guard only (revision 05): while a start call of this request is running, cancel and resubmit answer 409 `LEAVE_APPROVAL_STARTING` instead of waiting. Correctness does **not** depend on it (§Runtime Constraints 9). The first start's lease is written in the submit or resubmit transaction; a settle writes its lease and `PendingIntent` in one conditional write, and the `Version` that write produces is the one the settle's final write is conditional on. The final write clears the lease in the same transaction; a lease is never released by a separate write (an expired one is ignored) |
 | `StartFacts` | object | the exact facts of the first start of the current submission — every input of MOD-0023's start fingerprint (`StartWorkflowInstanceHandler.cs:750–769`): definition id, object type / id / ref, candidate approver user ids, reason code, comment-required, evidence-required and due-at — plus the submission key. Leave sends constants for reason code (none), comment-required (false — a reject-only comment rule is the definition's own option, not a start fact), evidence-required (false) and **no due-at**, as FU01 does (`TimesheetApprovalService.cs:166–178`); all are stored in the submit transaction and replayed verbatim (reassessment addendum 2; revision 06) |
 | `WorkflowInstanceId`, `ApproverResolution` | | as FU01 (line manager / chain / pool) |
-| `DecisionAppliedAtUtc`, `CancelledByUserId`, `CancelReason` | | `CancelReason` is a fixed code list, not free text |
+| `DecisionAppliedAtUtc`, `CancelledByUserId`, `CancelReason` | | `CancelReason` is a closed code list, never free text: `ENTERED_IN_ERROR` (the leave was recorded by mistake) · `NOT_TAKEN` (the employee did not take the leave) · `HR_DECISION` (cancelled by an HR decision). Required only on HR's cancel of a started leave; an employee's cancel stores none |
 
 ### `LeaveBalance`
 
@@ -284,6 +285,10 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
 - `services/Diten.Platform/tests/**/Leave/**`
 - `frontend/Diten.Web/Controllers/LeaveController.cs`, `frontend/Diten.Web/Views/Leave/**`,
   `frontend/Diten.Web/wwwroot/assets/js/Leave/**`, `frontend/Diten.Web/Resources/Views/Leave/**` (7 languages)
+- `frontend/Diten.Web/Services/Help/PageHelpCatalog.cs` — only the entries of `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS`;
+  `frontend/Diten.Web/Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` — only `Help.MYLEAVE.*`,
+  `Help.LEAVETYPES.*`, `Help.LEAVEENTITLEMENTS.*`; `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`
+  — only `Nav.Page.MYLEAVE`, `Nav.Page.LEAVETYPES`, `Nav.Page.LEAVEENTITLEMENTS` (shared files: added keys only, card S-38)
 - `execution/domains/human-capital-management/**` (this pack, domain-config line for FU02)
 - Gateway pair: separate integration-agent task (§Gateway / API Routing Decision)
 
@@ -510,6 +515,20 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
 - `MYLEAVE` visible in navigation; `LEAVETYPES` and `LEAVEENTITLEMENTS` reached from an HR settings entry.
 - UAS-001: a user without the page permission gets the single explanation panel, no skeleton, no redirect.
 
+### Page Help (UXH-001)
+
+Keys per page: `Help.{KOD}.Purpose`, `Help.{KOD}.Audience`, `Help.{KOD}.Step{n}` and `Help.{KOD}.Step{n}Title`,
+`Help.{KOD}.Immediate`, and `Help.{KOD}.Related.{KOD}` for each related page written in `PageHelpCatalog`
+(`Services/Help/PageHelpCatalog.cs`, with the step icons); 7 languages (tenant module); tour: none.
+
+| Page code | Purpose | Audience | Steps (titles) | Immediate | Related (`PageHelpCatalog`) |
+|---|---|---|---|---|---|
+| `MYLEAVE` | ask for leave, see the balance per type and follow each request | every employee; HR also sees the "All requests" tab | 1 See your balance · 2 Send a request · 3 Follow the approval · 4 Cancel or send again · 5 HR: reconcile, re-check and cancel a started leave with a reason | yes — a request of a type that needs no approval and cancelling an approved, not-yet-started leave take effect at once; cancelling a pending request first checks the approval and may answer that it was already decided or needs reconciliation | none (the HR pages need HR keys) |
+| `LEAVETYPES` | define the tenant's leave types and their balance and approval rules | HR | 1 Create a leave type · 2 Set balance and approval · 3 Deactivate instead of delete | yes — saving, activating and deactivating apply at once | `LEAVEENTITLEMENTS` |
+| `LEAVEENTITLEMENTS` | enter each employee's yearly entitlement and close the year | HR | 1 Enter entitlements · 2 Run the year-end carry-over · 3 Correct flagged rows with a reason | yes — saving an entitlement, the carry-over run and an adjust apply at once | `LEAVETYPES` |
+
+The help ledger guard `frontend/Diten.Web/tests/page-help-ledger.test.js` (UXH-001) measures the keys with `resx-check`.
+
 ## Backend File Convention
 
 ```text
@@ -539,14 +558,16 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
   No delete; activate / deactivate. The category select never offers `health`.
 - **LeaveEntitlements** — Slim, server mode; filter by year and leave type; create/edit offcanvas (employee, year, type, days);
   year-end carry-over action with confirmation; a "Carry-over correction needed" filter lists balance rows flagged after
-  the run, with the adjust action.
+  the run, with the adjust action (days and a reason select over the closed adjust-reason list).
 - **Leave** — Slim, server mode: balance cards per type (entitled, carried in, carried out, reserved, taken, remaining — numbers, not
   percentages), request list, "New request" offcanvas (type, start, end, half-day part) with a live preview of working days
   and "remaining → after approval"; cancel action. A request in `Unconfirmed` or `NeedsReconciliation` shows its approval
   link state as a label ("approval not confirmed" · "needs reconciliation") and a "Send again" action
   (`POST /requests/{id}/resubmit`) next to cancel. HR tab with the same list for the whole tenant and a "To reconcile"
   filter (`GET /admin/requests?workflowStartState=…`, oldest first, showing state and age) with a "Re-check" action
-  (`POST /admin/requests/{id}/recheck`, shown only with `leave.admin-requests.reconcile`). All labels from resx, 7 languages.
+  (`POST /admin/requests/{id}/recheck`, shown only with `leave.admin-requests.reconcile`), and on a started approved
+  leave a "Cancel" action (`POST /admin/requests/{id}/cancel`, shown only with `leave.admin-requests.cancel`) whose
+  confirmation requires a reason select over the closed `CancelReason` list. All labels from resx, 7 languages.
 
 ## Validation Rules
 
@@ -571,8 +592,8 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 | HR re-check | request `Pending` and `Unconfirmed` or `NeedsReconciliation` | handler | `LEAVE_RECHECK_NOT_APPLICABLE` |
 | resubmit (own) | request `Pending` and `Unconfirmed` or `NeedsReconciliation` | handler | `LEAVE_RESUBMIT_NOT_APPLICABLE` |
 | cancel / resubmit after a decision | the settle's re-read status maps to decided | `LeaveApprovalService.SettleAsync` | `LEAVE_ALREADY_DECIDED` |
-| cancel (HR) | `Approved`, started; reason code required | validator | `LEAVE_CANCEL_REASON_REQUIRED` |
-| carry-over | year closed once per (tenant, year), only after 31 Dec of that year; adjust needs reason code | handler + index | `LEAVE_CARRY_OVER_ALREADY_RUN` / `LEAVE_CARRY_OVER_TOO_EARLY` / `LEAVE_CARRY_OVER_REASON_REQUIRED` |
+| cancel (HR) | `Approved`, started; `CancelReason` required and one of `ENTERED_IN_ERROR` · `NOT_TAKEN` · `HR_DECISION` | validator | `LEAVE_CANCEL_REASON_REQUIRED` / `LEAVE_CANCEL_REASON_INVALID` |
+| carry-over | year closed once per (tenant, year), only after 31 Dec of that year; adjust needs a reason code, one of `RELEASE_AFTER_CARRY_OVER` (days returned to the closed year, the flagged case) · `ENTRY_ERROR` · `HR_DECISION` | handler + index | `LEAVE_CARRY_OVER_ALREADY_RUN` / `LEAVE_CARRY_OVER_TOO_EARLY` / `LEAVE_CARRY_OVER_REASON_REQUIRED` / `LEAVE_CARRY_OVER_REASON_INVALID` |
 | carry-over adjust | the move keeps the type's carry-over limit, the closing year's remaining ≥ 0 and the next year's reduction floor | handler inside the balance transaction | `LEAVE_CARRY_OVER_LIMIT_EXCEEDED` / `LEAVE_CARRY_OVER_BELOW_REMAINING` / `LEAVE_ENTITLEMENT_BELOW_USED` |
 | submit — closed year | no new allocation to a year that has a `LeaveCarryOverMark` (a resubmit allocates nothing — it keeps the reservation the run already counted as used) | handler inside the balance transaction | `LEAVE_YEAR_CARRIED_OVER` |
 | every write | `expectedVersion` | conditional write | `LEAVE_CONCURRENCY_CONFLICT` |
@@ -642,6 +663,9 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 - **Health category through the API or an import** → 400 `LEAVE_TYPE_CATEGORY_LOCKED`.
 - **Missing required field** (a leave type without `LabelText` and `LabelResourceKey`, a submit without dates) → 400
   with the field's reason code (`LEAVE_TYPE_LABEL_REQUIRED`, `LEAVE_DATES_INVALID`); nothing is written.
+- **Code outside a closed list** — HR's cancel with a `CancelReason` not in the list, a carry-over adjust with an unknown
+  reason code → 400 `LEAVE_CANCEL_REASON_INVALID` / `LEAVE_CARRY_OVER_REASON_INVALID`; nothing is written, nothing
+  released.
 - **Duplicate** — a second leave type with an existing `Code` in the tenant → 409 `LEAVE_TYPE_CODE_DUPLICATE`, nothing
   written (unique index); a repeated "Send" with the same `SubmissionKey` → the stored request, nothing reserved again.
 - **Request across 31 Dec** → two year allocations; each year's balance reduced by its own days.
@@ -760,15 +784,15 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 - [ ] AC-8 (zorunlu) — An overlapping request of the same employee returns 409 `LEAVE_REQUEST_OVERLAP`.
 - [ ] AC-9 (zorunlu) — Approval runs through MOD-0023 with the FU01 approver rules (line manager, next seat, pool, never self); no approver → 409 `LEAVE_NO_APPROVER`; never auto-approved when the type requires approval.
 - [ ] AC-10 (zorunlu) — A decision is applied exactly once, by the sweep job or at read time; decision and cancellation races leave exactly one outcome.
-- [ ] AC-11 (zorunlu) — Cancelling a pending or not-yet-started approved request refunds its days; a started request can be cancelled only by HR with a reason code.
+- [ ] AC-11 (zorunlu) — Cancelling a pending or not-yet-started approved request refunds its days; a started request can be cancelled only by HR with a `CancelReason` from the closed list (`ENTERED_IN_ERROR` · `NOT_TAKEN` · `HR_DECISION`); a missing code → 400 `LEAVE_CANCEL_REASON_REQUIRED`, a code outside the list → 400 `LEAVE_CANCEL_REASON_INVALID`, and in both cases nothing is written and no day is released.
 - [ ] AC-12 (zorunlu) — A request stores its type snapshot; later changes to the type or the entitlement do not change approved or past requests.
-- [ ] AC-13 (zorunlu) — A request crossing 31 December is split into two year allocations; year-end carry-over moves remaining days up to the type limit and runs once per year; adjustments need a reason code.
+- [ ] AC-13 (zorunlu) — A request crossing 31 December is split into two year allocations; year-end carry-over moves remaining days up to the type limit and runs once per year; adjustments need a reason code from the closed list (`RELEASE_AFTER_CARRY_OVER` · `ENTRY_ERROR` · `HR_DECISION`); a missing code → 400 `LEAVE_CARRY_OVER_REASON_REQUIRED`, a code outside the list → 400 `LEAVE_CARRY_OVER_REASON_INVALID`, nothing written.
 - [ ] AC-14 (zorunlu) — When the employee service is unreachable, submit returns 503 `LEAVE_EMPLOYEE_SERVICE_UNAVAILABLE` and writes nothing; existing requests and balances still load.
 - [ ] AC-15 (zorunlu) — The employee adapter is tested against the frozen HCM-CORE-BUNDLE version with a contract test on both producer and consumer side; an unknown contract version is refused.
 - [ ] AC-16 (zorunlu) — Every sync run writes a `LeaveSyncRun` with read / changed / unmatched counts and is visible to `leave.sync-runs.read`.
 - [ ] AC-17 (zorunlu) — Every write command in §Audited Events emits its audit event exactly once with the listed fields; for cancel, resubmit, re-check and finalize the event is the one §Runtime Constraints 9's path table names for the result (a re-check with no change writes none).
 - [ ] AC-18 (zorunlu) — `LeaveTypes`, `LeaveEntitlements` and `Leave` pages pass `verify_datatable_page.py` with the pack's `data_mode`; every `.cshtml` writes `Layout = "_LayoutTenantShell"` explicitly.
-- [ ] AC-19 (zorunlu) — All user-visible text exists in 7 languages (en, tr, fr, es, zh, ar, ru); `resx-check` reports no missing key; page help keys `Help.MYLEAVE.*`, `Help.LEAVETYPES.*`, `Help.LEAVEENTITLEMENTS.*` exist (UXH-001).
+- [ ] AC-19 (zorunlu) — All user-visible text exists in 7 languages (en, tr, fr, es, zh, ar, ru); `resx-check` reports no missing key; page help keys of §Page Help exist for each of `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS` — Purpose, Audience, every Step{n} and Step{n}Title of the table, Immediate, and Related for each `PageHelpCatalog` entry; `page-help-ledger.test.js` passes (UXH-001).
 - [ ] AC-20 (zorunlu) — A user without the page permission sees the single explanation panel, no skeleton and no redirect (UAS-001).
 - [ ] AC-21 (zorunlu) — Pages, actions, permissions and notification events come from `LeaveManifestProvider`; nothing is hand-seeded.
 - [ ] AC-22 (zorunlu) — The gateway pair `/api/v1/leave` and `/api/v1/leave/{everything}` → 5057 exists before DL-5 is accepted.
@@ -818,6 +842,7 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
   CT · Çalışan kaydı's (ADR-005 addendum 1/1).
 - Cross-module: MOD-0023 start / approve / reject / cancel with the Task Center card; MOD-0362 holiday read.
 - Frontend: smoke of the three pages; `verify_datatable_page.py` and the `quality-gate-datatable` workflow for each screen;
+  `page-help-ledger.test.js` for the three page codes;
   `resx-check` 7 languages; UAS-001 panel.
 - Transactions: injected failure after the first balance write (rollback); start answer lost after commit (`Unconfirmed`,
   settle on resubmit or cancel, re-check); settle claim lost to an older start that is then decided (decided, not closed);
@@ -884,14 +909,15 @@ Conditions of `ready-for-dev` (revision 08):
 - [x] Gateway routing decision written (§Gateway / API Routing Decision); the integration-agent task is a DL-7 gate below
 - [x] Acceptance criteria testable; Test Expectations cover build, verifier, resx and smoke
 - [x] Audited Events covers every write command once
-- [x] Page help keys for `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS` named (§Layout & Shell Contract); tour: none (leave is not one of the five tour flows); their 7-language texts are a DL-5 deliverable checked by `resx-check`
+- [x] Page help per page code — Purpose, Audience, steps with titles, Immediate and Related — written in §Page Help, measured by `page-help-ledger.test.js` (UXH-001); tour: none (leave is not one of the five tour flows); the 7-language texts are a DL-5 deliverable checked by `resx-check` and AC-19
 - [x] Every slice carries a required evidence level (card S-85) and its gates are written (§Teslim dilimleri)
 - [x] Tenant-zone day boundary recorded as the owner-decided default (`rev03-gonder`) — K-9 changes it only by revision
 - [x] HCM-CORE-BUNDLE freeze is **not** a ready-for-dev condition; it gates only DL-4 acceptance (§Teslim dilimleri)
 - [x] HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation (revision 08)
 - [x] Lookup & Reference Data Decision (module-pack-standard §13.1): no `/api/lookups/{key}` and no new Platform lookup
-  key. `Category`, `HalfDayPart` and `CancelReason` are module-owned closed enums whose values carry rules (`health`
-  locked, half-day only for one day, cancel reasons audited), labelled from resx; leave types come from the module's own
+  key. `Category`, `HalfDayPart`, `CancelReason` and the carry-over adjust reason are module-owned closed enums whose
+  values are listed in §Entity Fields and §Validation Rules and carry rules (`health` locked, half-day only for one day,
+  reason codes audited), labelled from resx; leave types come from the module's own
   `GET /types`; employees from the employee adapter; no MDM reference data
 - [ ] Independent pack review (SOP §20.4) UYGUN on this exact version and an approval row by an approver with `high: evet`
   who did not write the pack — not shown by this text; measured by `scripts/pack_approval.py check` on origin/main
@@ -1023,6 +1049,13 @@ dispatched or accepted:
   Data Decision; Recorded Deviations R-5 (`entity_base`) and R-6 (folder layout) follow the MOD-0280-FU01 precedent.
   HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation. No runtime rule changed; of the AC texts only AC-55
   changed (its refusals now carry codes).
+  After review 08 (`docs/records/reviews/MOD-0280-FU02/2026-10-29-775ce53c.md`, KOŞULLU; owner's choice "Şimdi düzelt"):
+  F-76 `CancelReason` and the carry-over adjust reason are listed closed code lists with membership validation, an
+  invalid-code answer and a failure path; F-77 §Page Help fixes the help keys, steps, Immediate and Related per page and
+  AC-19 measures them. Then: Repo Scope names the help catalog, help resx and nav-key files (added keys only); the help
+  table has a purpose per page, an Immediate text that matches the cancel rules and an HR step; the Frontend File
+  Contract shows HR's cancel with a reason select and the adjust reason select; AC-11 and AC-13 measure the closed
+  reason lists; AC-19 and Test Expectations name the help ledger guard. Of the AC texts AC-11, AC-13 and AC-19 changed.
 
 ## Follow-up Items
 
