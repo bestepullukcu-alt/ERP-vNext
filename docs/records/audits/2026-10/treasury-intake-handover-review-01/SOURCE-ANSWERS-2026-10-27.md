@@ -311,6 +311,9 @@ güncellensin, RCS-001 §3 satırını Beste değiştirir; MOD-0144 ile MOD-0217
 
 ## Y-26 — Ali, PR #311 kararları + MOD-0262-FU01 + MOD-0220 §22 (2026-10-30; K1 aktardı)
 
+Özgün metin (kelimesi kelimesine, Teams; iki parça): `Y-26-ALI-VERBATIM-2026-10-30.md` (bu klasörde). PR #311'de Ali'nin yorumu yok.
+Aşağıdaki özet o metne dayanır.
+
 **3 (XMC-001):** izin var — MDM istemcisi (`PlatformTrustedLegalEntityScopeProviderClient` + testleri). Sıra: Auth izinleri → Platform
 kodu → Platform ortam ayarı → MDM istemcisi; yalnız o dosya ve testleri. **4 (K-W5 okuma yolu):** 1, 2, 3, 5, 6 kabul. 4. madde (ekran):
 evet, Roller ekranında salt-okunur atama listesi + "Geçmiş" bölümü. Düzeltmeler: (a) iz belirteci iki komut için ayrı bir yazıcı tipinin
