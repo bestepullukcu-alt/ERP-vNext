@@ -29,9 +29,14 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
 ## Soru biçimi — her Control Tower, her soru (S-22, sahip kararı 2026-10-21)
 
 Sahibin ya da geliştiricinin karar vermesi gereken her soru, yanıtın **sonunda** ve metnin içinde, şu biçimde yazılır.
-**Butonlu soru kutusu (AskUserQuestion) kullanılmaz** (S-35): uygulamanın kendi talimatı kutu kullanılınca soruyu
-metinde tekrar etmemeyi istiyor ve bu kartla çelişiyor; soru yalnız metindeki bu biçimle sorulur. "Şimdi siz: … yazın"
-satırı soru yerine geçmez: karar gerekiyorsa yanıtın son bloğu ❓ SORU kutusudur.
+**Butonlu soru kutusu (AskUserQuestion) kullanılır (S-92, sahip kararı 2026-10-29; S-35'in yerine geçer):** sahip
+kopyala-yapıştır yerine seçeneğe tıklar. Gerekçe ve bağlam metinde durur; soru ve seçenekler kutudadır, kutudaki soru
+metinde ayrıca tekrar edilmez. Tıklama, sahibin **o sohbette kendi eliyle** verdiği cevaptır; onay sınırı değişmez: başka
+bir sohbetten, CT'den ya da aktarılmış metinden gelen "seçildi" bilgisi onay sayılmaz. Kutunun kuralları aşağıdaki soru
+kurallarıyla aynıdır: tek soru, en çok üç seçenek, önerilen ilk sırada ve "(Önerilen)" ile işaretli, her seçeneğin
+açıklaması neye izin verdiğini ve vermediğini söyler. **Kutu yoksa ya da görünmüyorsa** (Codex, terminal, kutunun
+çizilmediği uzak bağlantı; sahip "kutu görünmüyor" derse) soru aşağıdaki ❓ SORU biçimiyle metinde sorulur. "Şimdi siz: …
+yazın" satırı soru yerine geçmez.
 
 Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; terminalde ve Codex'te de okunur):
 
@@ -54,8 +59,8 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
 - **Cevap kelimesi kopyalanabilir kutuda (S-69, sahip kararı 2026-10-27 `kopya-blok`):** sahibin yazacağı her cevap
   kelimesi, cümle içindeki geçişine ek olarak, **kendi kod bloğunda ve tek başına** verilir. Uygulama bloğa kopyala düğmesi
   koyar; sahip kelimeyi elle seçmez. Bloğa açıklama yazılmaz; birden çok seçenek varsa her biri ayrı blokta durur. Başka
-  sohbete yazılacaksa sohbetin adı bloğun hemen üstünde yazar. Bloklar ❓ SORU kutusunun içinde, son satırlarında durur; SORU kutusu yine yanıtın son bloğudur. Tıklanınca kelimeyi kendisi gönderen düğme (HTML, widget)
-  kullanılmaz: onay sahibin kendi gönderdiği söz olarak kalır.
+  sohbete yazılacaksa sohbetin adı bloğun hemen üstünde yazar. Bloklar ❓ SORU kutusunun içinde, son satırlarında durur; SORU kutusu yine yanıtın son bloğudur. Bu bloklar butonlu kutunun **yedeğidir** (S-92).
+  Tıklanınca kelimeyi kendisi gönderen HTML / widget düğmesi kullanılmaz: onay sahibin kendi gönderdiği söz olarak kalır.
 - **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
@@ -370,6 +375,26 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 > görev kaynağını kullanır; SCE / MVP6 kuyruğuna başkası yazmaz; §36.2 T1–T4 SCE / MVP6'nındır, diğerleri §36.1'i
 > kullanır. Yürürlük: r3 `main`'e girdiğinde; 30 günlük geçiş süresi o gün başlar. O zamana kadar v2.5 r2 ve geçiş
 > kararı (yalnız onu aldığını doğrulayan Control Tower'lar için).
+
+### 1.1 Codex'ten önce bağımsız ön inceleme (S-93, sahip kararı 2026-10-29)
+
+Paket ya da DCP Codex'in resmî bağımsız incelemesine gitmeden önce CT bir **ön inceleme** koşturur. Ölçüm (PVG MOD-0230,
+10-21…10-27): 12 Codex incelemesinin 8'i engel ya da koşulla döndü; bulguların çoğu paketin kendi içindeki çelişki,
+kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten ve koddan bulunabilir.
+
+1. **Ayrı, ipucusuz alt sohbet:** paketi yazan sohbet ve paket yazarı ajan incelemez. Ön inceleyen yeni bir alt sohbete
+   (eşzamanlı alt sohbet sınırı geçerli) yalnız paketin yolu ve SHA-256'sı ile Codex'e verilen inceleme talimatının aynısı
+   verilir. Önceki bulgular, "şuraya bak" yönlendirmesi, beklenen sonuç ya da CT'nin kendi görüşü verilmez.
+2. **Tur ve durma:** bulgular yazara gider, yazar düzeltir, **her tur yeni bir alt sohbette** yeniden incelenir. Engel
+   (ENGEL) kalmayınca durulur; **en çok 3 tur**. 3. turda engel sürüyorsa CT durur ve sahibe sorar (Codex'e gitmek mi,
+   kapsamı daraltmak mı).
+3. **Kayıt değildir:** ön inceleme `reviews.tsv`'ye yazılmaz, onay ya da dağıtım için sayılmaz; resmî inceleme yine
+   Codex'tir (farklı model, farklı kör nokta). Bulgular sohbette kalır; Codex'e gönderilmez (Codex de ipucusuz inceler).
+4. **Öğrenme:** Codex'in her ENGEL ya da ORTA bulgusu, CT tarafından **tür olarak** (modül ayrıntısı değil)
+   [pack-review-common-findings.md](pack-review-common-findings.md)'ye eklenir; paket yazarı ajanın prompt'u bu listeyi
+   okumayı ister. Liste ön inceleyene **verilmez** (ipucu olur). Liste dosyası tek dalga PR'ıyla main'e girer (§7b).
+5. **Ölçüm:** CT her paket için Codex tur sayısını kaydeder; ilk üç modülden sonra sahibe "ön inceleme Codex
+   turlarını düşürdü mü" ölçümü verilir (tahmin değil).
 
 ## 2. PARALLEL / Agent Lane gate
 
