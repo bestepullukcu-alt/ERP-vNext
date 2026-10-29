@@ -38,7 +38,10 @@ Dil verileri (çeviriler) kullanım sıklığına göre KESİN bir ayrıma tabid
 
 **A. SharedResource (Tekrar Eden / Ortak Metinler):**
 Birden fazla sayfada kullanılan genel ifadeler ASLA View (sayfa) dil dosyalarına eklenmez. Bunlar her zaman `SharedResource.{lang}.resx` dosyasından okunmalıdır.
-*Örnekler:* "Save" (Kaydet), "Delete" (Sil), "Cancel" (İptal), "Yes/No", "Active/Passive", "Are you sure?", "Actions", DataTable standart metinleri ("No records found" vb.).
+*Örnekler:* "Save" (Kaydet), "Delete" (Sil), "Cancel" (İptal), "Yes/No", "Active/Passive", "Are you sure?", DataTable standart metinleri ("No records found" vb.).
+
+> **İstisna (Golden DataTable Standardı):** DataTable liste sayfasının tablo eylem anahtarları `Actions`, `EditBtn`, `QuickView` ve yeni kayıt düğmesi (`AddNew[ModuleName]`, §2) modülün kendi `.resx`'inde tutulur ve `@Localizer["Key"]` ile okunur (`frontend-datatable-template.md` şablonu ve `.antigravity/workflows/quality-gate-datatable.md` böyle).
+> Ölçüm (2026-10-29, `en`): `GoldenReferenceSlimIndex.en.resx` ve `GoldenReferenceCompactIndex.en.resx` içinde `Actions`, `QuickView`, `AddNew` var, `EditBtn` yok (Compact detay sayfası düzenle metnini `SharedLocalizer["Edit"]` ile okur); `SharedResource.en.resx` içinde `Actions` yok. Slim'de `AddNewGoldenReferenceSlim` yerine `AddNew` kullanılması MOD-0286 FU-12'de kayıtlı; Compact için ayrı kayıt yok.
 
 **B. View-Specific Resource (Sayfaya Özel Metinler):**
 SADECE o sayfaya ve modüle ait olan, başka sayfalarda kullanılmayacak metinler, §1'deki marker yoluna (`Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`) eklenmelidir.
@@ -56,3 +59,13 @@ DataTable liste sayfalarında toolbar ve filter UI için kullanılan temel kelim
 **Kritik kural (fallback yasak):**
 - Toolbar/action metinlerinde “hardcoded fallback” (`|| 'Export'`) yaklaşımı **yasaktır**.
 - Eksik L10n key varsa teslim durur; key modül türüne göre tüm zorunlu dillere (Platform için 2 dil, Tenant için 7 dil) eklenmeden feature bitmiş sayılmaz.
+
+---
+
+## 5. Sağdan Sola (RTL) Diller
+
+- `ar` kiracı dilidir. Kabuklar `ar` kültüründe sayfa yönünü `rtl` yapar (`_LayoutTenantShell.cshtml`; platform kabuğunda da aynı ayar var, platform modüllerinde `ar` yoktur).
+- Yeni kodda (ortak CSS dahil) yöne bağlı boşluk ve hizalama mantıksal yazılır:
+  - Bootstrap 5 sınıfları: `ms-*`, `me-*`, `ps-*`, `pe-*`, `text-start`, `text-end`, `float-start`, `float-end`;
+  - CSS'te `margin-inline-start`, `padding-inline-end` gibi mantıksal özellikler. `margin-left`, `padding-right` gibi fiziksel özellikler yazılmaz.
+- Bu madde yeni kodu bağlar. Ölçülmedi (2026-10-29): var olan sayfaların RTL'de doğru görünüp görünmediği ve `backbone-custom.css` içindeki fiziksel `margin` / `padding` kullanımlarının RTL'de sorun çıkarıp çıkarmadığı.
