@@ -1,0 +1,6 @@
+M	frontend/Diten.Web/Views/CRM/VisitReport/Index.cshtml
+M	frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/Index.cshtml
+R100	frontend/Diten.Web/Views/DevEnablement/GoldenReferenceCompact/_IndexL10n.cshtml	frontend/Diten.Web/Views/DevEnablement/UicAra/_IndexL10n.cshtml
+D	frontend/Diten.Web/Views/Meetings/Report/_Filter.cshtml
+M	frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+M	frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json
