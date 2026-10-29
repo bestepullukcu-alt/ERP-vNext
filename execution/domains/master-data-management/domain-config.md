@@ -44,8 +44,8 @@ by Platform Shared Services and tenant business modules.
 ## In-Scope Reserved Modules (Treasury intake — owner decisions D20/1, D38; proposal with the packs)
 
 - `MOD-0289 Bank Master & Bank Account Registry` — placement D20/1 (`treasury-intake-owner-decisions-02.md`); draft pack
-  [MOD-0289](module-packs/MOD-0289-bank-master-bank-account-registry.md); `Diten.MdmService`, no new service or port; no
-  code-take permission (D27/5); not `ready-for-dev`.
+  [MOD-0289](module-packs/MOD-0289-bank-master-bank-account-registry.md); `Diten.MdmService`, no new service or port;
+  kod alma izni D45/3 (2026-10-27); kod yalnız onaylı paket ve dilim sırasıyla; not `ready-for-dev`.
 - `MOD-0217 Contract Lifecycle Management (CLM)` — placement D19/1 + D38 (`treasury-intake-owner-decisions-03.md`; the
   repository owner decided on the MDM owner's behalf); draft pack
   [MOD-0217](module-packs/MOD-0217-contract-lifecycle-management-clm.md); `Diten.MdmService`; contract versions are MOD-0217's own

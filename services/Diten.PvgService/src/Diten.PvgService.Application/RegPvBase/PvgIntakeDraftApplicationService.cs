@@ -4,11 +4,11 @@ namespace Diten.PvgService.Application.RegPvBase;
 
 public sealed class PvgIntakeDraftApplicationService
 {
-    private const string CreatePermission = "pvg.mod0230.intake.create";
-    private const string UpdatePermission = "pvg.mod0230.intake.update";
-    private const string ReadPermission = "pvg.mod0230.intake.read";
-    private const string TriagePermission = "pvg.mod0230.intake.triage";
-    private const string RoutePermission = "pvg.mod0230.intake.route";
+    private const string CreatePermission = "pvg.case-intake-triage.create";
+    private const string UpdatePermission = "pvg.case-intake-triage.update";
+    private const string ReadPermission = "pvg.case-intake-triage.read";
+    private const string TriagePermission = "pvg.case-intake-triage.triage";
+    private const string RoutePermission = "pvg.case-intake-triage.route";
 
     private static readonly PvgIntakeField[] FieldSecurityControlledFields = PvgIntakeFieldDefinition
         .ApprovedFields

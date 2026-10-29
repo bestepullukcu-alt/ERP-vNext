@@ -1,0 +1,237 @@
+{
+ "argv": [
+  "sh",
+  "docs/records/audits/2026-10/mod-0286-uic-ci-01/uic-dl3-kanit-04.sh",
+  "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01",
+  "a37ae998891e454343d2df1e04f4f2663d8d019a"
+ ],
+ "artifacts": [
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac17a-ara.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 12749,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac17a-ara.out",
+   "sha256": "8aefe389322b702c7585a12cc46381b4cba9dd6feaa83989dd71d1db9b345dd7"
+  },
+  {
+   "bytes": 460,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac17a-commit.txt",
+   "sha256": "11ab7d3bfee3521d6a4d8817b59eaeebf18c5b0e599a1220d2b252069f6df5f4"
+  },
+  {
+   "bytes": 5313,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac17a-selftest.txt",
+   "sha256": "d1ceb2a879c1ab1cbc8a26636b660bf0645dd0b73c02a78e84071047c0c06eb1"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18a-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 3862,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18a-geri.out",
+   "sha256": "d83d5a078cde0421305b48a197760f445d688f19fc98682f245aed30e163743a"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18a-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 4003,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18a-sabotaj.out",
+   "sha256": "c4f91d291493a9aee85c1409d2b0d0829fa97126035c9ca1e3467c42de372214"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b1-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 1700,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b1-geri.out",
+   "sha256": "9e0aac2369efd77fc7fc2100ecd0b8136fcf565129483444cdfa72b14f06ee06"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b1-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 1705,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b1-sabotaj.out",
+   "sha256": "d6454a96531923b3b75c43c1ecf3cc412c135d3ff544519a2605a78396c09927"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 1700,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-geri.out",
+   "sha256": "9e0aac2369efd77fc7fc2100ecd0b8136fcf565129483444cdfa72b14f06ee06"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-hazirlik.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 1700,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-hazirlik.out",
+   "sha256": "330956808b19ec080615fcd9994a151e64c80a802907197b70c5401b22bc5d31"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 1705,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18b2-sabotaj.out",
+   "sha256": "871a17ac18e613810c941e112f0f4394ed2fdf7f8d5ac3cfde37e6cfd951694d"
+  },
+  {
+   "bytes": 231,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18c-ci3.txt",
+   "sha256": "450e1d9edb5e1a4327d7d2248d57c70f7b5f41a7c51c19cb5d938a9fc5b64fb7"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18c-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 3862,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18c-geri.out",
+   "sha256": "d83d5a078cde0421305b48a197760f445d688f19fc98682f245aed30e163743a"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18c-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 3667,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18c-sabotaj.out",
+   "sha256": "6c4861662cfdc057c996b81efaa00daba3d89ad4a6f49bb6031006fe730c3f2e"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18d-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 117,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18d-geri.out",
+   "sha256": "a15d5729e8ef7c7936b0325b023e4d79f3cba3d4250963a122bf91f8973d000d"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18d-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 130,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18d-sabotaj.out",
+   "sha256": "66a4b9767a6b68a868f64f315a46a75eb037b2cf268ce23a836a2cc36d4d9ad4"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18e-geri.exit",
+   "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+   "bytes": 117,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18e-geri.out",
+   "sha256": "a15d5729e8ef7c7936b0325b023e4d79f3cba3d4250963a122bf91f8973d000d"
+  },
+  {
+   "bytes": 2,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18e-sabotaj.exit",
+   "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+   "bytes": 130,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac18e-sabotaj.out",
+   "sha256": "66a4b9767a6b68a868f64f315a46a75eb037b2cf268ce23a836a2cc36d4d9ad4"
+  },
+  {
+   "bytes": 526,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19-check.txt",
+   "sha256": "942ac597be7b26b6d5d0fefebfd7186358fcef96f55a5bb71ae4da82513b383e"
+  },
+  {
+   "bytes": 14,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19-draft.err",
+   "sha256": "25160efb2da571d90c8c651d8659b3a2a830fdfbee560df04486a7424b3db1a9"
+  },
+  {
+   "bytes": 344878,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19-draft.tsv",
+   "sha256": "a8a616d6cc25eb3c90c64dfd7d332eeb582ad3b8600630b1a3800fa6fb6e4b6c"
+  },
+  {
+   "bytes": 163893,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19-taban-anahtar.txt",
+   "sha256": "610809dcae1cb415f35570ee4cb4068e24ed6f25ea24e1a16eb7cfbf586be97e"
+  },
+  {
+   "bytes": 163893,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19-taslak-anahtar.txt",
+   "sha256": "610809dcae1cb415f35570ee4cb4068e24ed6f25ea24e1a16eb7cfbf586be97e"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ac19.diff",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ct3-sonra.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 62,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/ct3.txt",
+   "sha256": "4d59f111668d8b2db30f225a2cf334d8a7725d427cc525a2c51f76d95ce0fcc3"
+  },
+  {
+   "bytes": 1353,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/klon.txt",
+   "sha256": "073c89bccabccc30b0e42bc2bc971d3e34d4c9523470b40b187bf4fec98e5d81"
+  },
+  {
+   "bytes": 281,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/sonuc.txt",
+   "sha256": "e8ee5c83848b9340dd6b0df7ff7903fe049587b0fb85efe074b57ed3feac6a6f"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5407,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01/stdout.txt",
+   "sha256": "95e23aca63d3c7958f0b54032373e06888c128fe051a1e18921d2ed0b84b709d"
+  }
+ ],
+ "commit": "a37ae998891e454343d2df1e04f4f2663d8d019a",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-27T14:51:56Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-01",
+ "started_utc": "2026-10-27T14:51:17Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "8b8398c6d572c4d7adb641e35f73e10a4f03ed42"
+}

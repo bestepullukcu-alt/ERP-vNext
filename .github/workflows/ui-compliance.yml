@@ -1,0 +1,64 @@
+name: ui-compliance
+
+# MOD-0286 DL-3 (pack rev 14 §"Separate CI job", AC-17 / AC-20): the UI compliance selector on the pages a pull request
+# touches. Its own job, not a phase1 step: a red phase1 does not stop it and it does not read phase1's result. Same rule as
+# phase1-gates.yml — read-only token, no secret, actions pinned to a COMMIT SHA. No .NET, no service. A pull request that
+# changes only the selector, the baseline or this file still starts the job; deletions and renames match the path filter.
+on:
+  pull_request:
+    paths:
+      - 'frontend/Diten.Web/Views/**'
+      - 'frontend/Diten.Web/wwwroot/assets/js/**'
+      - 'frontend/Diten.Web/Resources/**'
+      - 'frontend/Diten.Web/Services/Help/PageHelpCatalog.cs'
+      - 'frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json'
+      - 'frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json'
+      - 'scripts/uic_changed_pages.py'
+      - 'tests/ui-compliance-baseline.tsv'
+      - '.github/workflows/ui-compliance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ui-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0   # <base>...HEAD needs both sides' history
+
+      - name: Changed-page selector
+        id: selector
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          start=$(date +%s)
+          set +e
+          python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt
+          code=$?
+          set -e
+          cat uic-selector-stdout.txt
+          echo "SHA-256 (stdout): $(sha256sum uic-selector-stdout.txt | cut -d' ' -f1)"
+          echo "Süre: $(( $(date +%s) - start )) s (yalnız değişen sayfalar; CI'da tüm-sayfa kipi yok)"
+          echo "Seçici çıkışı: $code"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the selector output
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: uic-selector-stdout
+          path: uic-selector-stdout.txt
+          if-no-files-found: error
+
+      - name: Fail only on selector exit 1 or 2
+        env:
+          CODE: ${{ steps.selector.outputs.code }}
+        run: |
+          if [ "$CODE" = "1" ] || [ "$CODE" = "2" ]; then
+            echo "Seçici çıkışı $CODE: kırmızı (1 = yeni kırmızı, 2 = araç ya da taban hatası)."
+            exit 1
+          fi
+          echo "Seçici çıkışı $CODE: yeşil."
