@@ -5,22 +5,24 @@ namespace Diten.SupplyChainService.Application.Common;
 /// </summary>
 /// <remarks>
 /// Q262 (2026-10-03). MOD-0183 pack §22 ("Commands, queries, event/correlation behavior and error codes are
-/// frozen in the contract") makes <c>docs/analysis/contracts/shipment-bundle.openapi.yaml</c> the single source
+/// frozen in the contract") makes the SHIPMENT-BUNDLE contract, <c>shipment-bundle.openapi.yaml</c>, the single source
 /// of these strings, yet nothing in code referenced it: codes were written as literals at each emission site.
 /// C-02 showed the cost is not theoretical — a 500 was emitted carrying <c>INVALID_REQUEST</c>, a code the
 /// contract reserves for 400, and <c>SHIPMENT_ROOT_INVALID</c> was emitted although the contract declares it
 /// nowhere. The UI's lookup returned <c>undefined</c> and the user saw no message on a server failure.
 /// <para>
-/// The 52 constants below were extracted from the contract, not authored. To re-extract and compare:
+/// The 52 constants below were extracted from the contract, not authored. SHIPMENT-BUNDLE 3.4.0 (MOD-0183 DL-1, WP-P1)
+/// added seven, re-extracted with the same command: 59. To re-extract and compare:
 /// <code>
-/// python3 -c "import re;print(sorted({m.group(1) for m in (re.search(r'code:\s*([A-Z_]+)',l) for l in open('docs/analysis/contracts/shipment-bundle.openapi.yaml')) if m}))"
+/// python3 -c "import re;print(sorted({m.group(1) for m in (re.search(r'code:\s*([A-Z_]+)',l) for l in open('shipment-bundle.openapi.yaml')) if m}))"
 /// </code>
 /// Per K7 the command is kept here rather than only the count, because the count drifts and the command does not.
 /// </para>
 /// <para>
 /// A code absent from this type is absent from the contract and must not be emitted. Adding one here without
 /// adding it to the contract inverts the authority the pack sets, so the contract changes first.
-/// <c>docs/analysis/**</c> is deliberately read-only to this work package.
+/// The contract folder is read-only to this work package. Its path is pinned in <c>docs-path-authority.json</c> and
+/// not repeated in code (DocsPathGuardTests); the command above runs inside that folder.
 /// </para>
 /// </remarks>
 public static class ContractErrorCodes
@@ -50,6 +52,12 @@ public static class ContractErrorCodes
     public const string PodAlreadyCaptured = "POD_ALREADY_CAPTURED";
     public const string WarehouseShipmentTriggerUnavailable = "WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE";
 
+    // Stock issue at dispatch (3.4.0, MOD-0183 §23)
+    public const string InventoryRefused = "INVENTORY_REFUSED";
+    public const string ShipmentLineStockIncomplete = "SHIPMENT_LINE_STOCK_INCOMPLETE";
+    public const string DispatchInProgress = "DISPATCH_IN_PROGRESS";
+    public const string DispatchCompensationFailed = "DISPATCH_COMPENSATION_FAILED";
+
     // Carrier
     public const string CarrierNotFound = "CARRIER_NOT_FOUND";
     public const string CarrierCodeConflict = "CARRIER_CODE_CONFLICT";
@@ -72,6 +80,10 @@ public static class ContractErrorCodes
     public const string DispositionRequired = "DISPOSITION_REQUIRED";
     public const string ReturnShipmentRootInvalid = "RETURN_SHIPMENT_ROOT_INVALID";
     public const string ReturnShipmentRootUnavailable = "RETURN_SHIPMENT_ROOT_UNAVAILABLE";
+    // 3.4.0 (MOD-0186 §34) — declared now so the parity holds; MOD-0186 DL-1 emits them.
+    public const string ReturnReceiptInProgress = "RETURN_RECEIPT_IN_PROGRESS";
+    public const string ReturnLineNotUnpostable = "RETURN_LINE_NOT_UNPOSTABLE";
+    public const string ReturnSourceMovementMissing = "RETURN_SOURCE_MOVEMENT_MISSING";
 
     // Claim
     public const string ClaimNotFound = "CLAIM_NOT_FOUND";
@@ -98,11 +110,13 @@ public static class ContractErrorCodes
         IdempotencyKeyReuse, CorrelationRootMismatch, DependencyUnavailable, DependencyResponseInvalid,
         ReferenceStateUnavailable, ShipmentNotFound, ShipmentLineNotFound, InvalidShipmentTransition,
         DuplicateShipment, ShipmentNotEligible, ShipmentNotReturnable, ShipmentAlreadyAssigned,
-        ShipmentCarrierMismatch, PodAlreadyCaptured, WarehouseShipmentTriggerUnavailable, CarrierNotFound,
+        ShipmentCarrierMismatch, PodAlreadyCaptured, WarehouseShipmentTriggerUnavailable, InventoryRefused,
+        ShipmentLineStockIncomplete, DispatchInProgress, DispatchCompensationFailed, CarrierNotFound,
         CarrierCodeConflict, CarrierModeUnsupported, InvalidCarrierTransition, LoadNotFound,
         InvalidLoadTransition, InvalidLoadStops, ReturnNotFound, InvalidReturnTransition, InvalidReturnQuantity,
         ReturnQuantityExceeded, ReturnUomMismatch, ReturnSourceChanged, DuplicateReturnLine, DispositionRequired,
-        ReturnShipmentRootInvalid, ReturnShipmentRootUnavailable, ClaimNotFound, InvalidClaimTransition,
+        ReturnShipmentRootInvalid, ReturnShipmentRootUnavailable, ReturnReceiptInProgress, ReturnLineNotUnpostable,
+        ReturnSourceMovementMissing, ClaimNotFound, InvalidClaimTransition,
         ClaimAmountInvalid, ClaimApprovalAmountInvalid, ClaimApprovedAmountNotAllowed, ClaimCarrierMismatch,
         ClaimCorrelationMismatch, ClaimShipmentIneligible, ClaimReferenceInvalid, ClaimReferenceIncomplete,
         ClaimReferenceUnavailable, ClaimStorageUnavailable, InventoryUnavailable, InventoryReferenceInvalid,
