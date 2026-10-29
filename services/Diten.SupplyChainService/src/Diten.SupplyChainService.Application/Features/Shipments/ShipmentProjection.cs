@@ -21,8 +21,15 @@ public static class ShipmentProjection
         var data = Summary(s);
         data["sourceModule"] = s.SourceModule; data["sourceType"] = s.SourceType;
         data["warehouseReferenceId"] = s.WarehouseReferenceId; data["shipToReference"] = s.ShipToReference;
-        data["lines"] = JsonSerializer.SerializeToNode(s.Lines, Options);
+        // 3.4.0: the line stock fields, and each line's issue of the completed dispatch attempt (null until Dispatched).
+        var issued = s.DispatchAttempt?.State == DispatchState.Completed ? s.DispatchAttempt.Lines : [];
+        data["lines"] = JsonSerializer.SerializeToNode(s.Lines.Select(l => new
+        {
+            l.LineNumber, l.ItemId, l.SkuId, l.Quantity, l.UomId, l.InventoryReferenceId, l.SkuLevel, l.LotId, l.FromLocationId, l.FefoBypassReason,
+            issueTransactionId = issued.FirstOrDefault(x => x.LineNumber == l.LineNumber)?.IssueTransactionId
+        }), Options);
         data["pod"] = s.Pod is null ? null : JsonSerializer.SerializeToNode(new { s.Pod.RecipientName, s.Pod.ReceivedAt, s.Pod.EvidenceReferenceIds, s.Pod.Note }, Options);
+        data["stockIssued"] = s.StockIssued(); data["dispatchState"] = s.DispatchStateWire();
         data["contractVersion"] = "v1"; return data;
     }
     public static JsonObject Detail(ShipmentDetailReadResult result)

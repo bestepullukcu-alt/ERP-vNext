@@ -45,6 +45,7 @@ public sealed class ShipmentContextMiddleware(RequestDelegate next)
         { await Error(http, 400, "Scope is not accepted from the query.", correlationId); return; }
         context.Scope = new ShipmentScope(tenant, entity, actor);
         context.Permissions = http.User.FindAll("permission").Select(c => c.Value).ToHashSet(StringComparer.Ordinal);
+        context.Authorization = http.Request.Headers.Authorization.ToString();
         if (HttpMethods.IsPost(http.Request.Method))
         {
             var key = http.Request.Headers["Idempotency-Key"];
