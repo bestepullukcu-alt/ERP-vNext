@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D86 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D87 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -926,7 +926,7 @@ cevapları: "DL-1 kapısına taşı (Önerilen)", "Kapat (Önerilen)".
 2. **D85/2:** MOD-0119 EVIDENCE slotu (DL-3) MOD-0031 ölçümüyle kapanır (D83/2 ile aynı kanıt ve sonuç; kural değişmez).
 3. **D85/3:** MOD-0119 slot tablosuna satır başına durum notu yazılır (karar değil, durum).
 
-## D86 — K-W5 CT defter kararı: DL-5'in iki K2 komutu "K2 borcu" olarak yazılır (2026-10-29)
+## D86 — **GERİ ALINDI (KARAR D87)** — K-W5 CT defter kararı: DL-5'in iki K2 komutu "K2 borcu" olarak yazılır (2026-10-29)
 
 Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
 cevabı: "K2 borcu olarak yaz (Önerilen)". Yöntem MOD-0018 sahibince teyitli (Y-21: "`auth-gunlugu` + önce-yaz, CT defter kararı").
@@ -945,6 +945,22 @@ cevabı: "K2 borcu olarak yaz (Önerilen)". Yöntem MOD-0018 sahibince teyitli (
 3. **Kapanış:** D80/2 (a) karar olarak kapanır. Defter dosyaları bugün değişmez (Auth defteri MOD-0018 alanı; kod yokken satır
    eklenmez). D80/2 (b) (rol atama denetim borcu, `auth-rbac-gunlugu`) bu kararın kapsamında değildir; açık kalır.
 4. **İleride:** `auth-gunlugu` için izinli okuma ucu gelirse (defter K7) iz `c` olur ve iki satır borçtan çıkar.
+
+## D87 — D86 geri alınır; K-W5 açık, DL-5 kodu için engel; okuma yolu MOD-0018 sahibine önerilir (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevabı: "D86'yı geri al, okuma yolunu öner (Önerilen)". Kaynak: sahip denetimi `8ad42e9b0` — UYGUN DEĞİL, 1 ENGEL.
+
+1. **Neden:** D86'nın yolu üretim testini geçmez. `AuditTrailStandardTests.cs:610-619` K2 borcundaki her komut için `IsAudited`
+   ister; `IsAudited` yalnız kabul edilmiş ize yazan komutta doğrudur. `auth-gunlugu` `aday`dır (okuma yok, §5.c-3); önce-yaz
+   (§4.4) ile okunabilirlik (§5.c-3) ayrı koşullardır, biri ötekini sağlamaz. 2026-10-14 ESign emsali farklıdır (komutlar kabul
+   edilmiş merkezi iletimle denetleniyordu; eksik yalnız kapalı-başarısızlıktı). CT'nin hatası: §1.3 usulünü kabul şartının yerine
+   koydu.
+2. **Karar:** D86 geri alınır; D80/2 (a) yeniden açılır; K-W5 DL-5 kodu için engel kalır (DL-1…DL-4 ve DL-6'yı bekletmez).
+3. **Öneri (karar MOD-0018 sahibinin):** DL-5 kapsamına `auth-gunlugu` için kiracı + izin denetimli okuma yolu ve kaydın ekranından
+   erişilebilir geçmiş; yol `c`'nin beş koşulunun kanıtı; iz / çağrı belirtecinin `Diten.AuthService.md` `## İzler`'e ve kabul
+   listesine işlenmesi; günlük okumasının meta-denetimi (kural §7); önce-yaz korunur. FU27'de ekran yok (UXH-001) — geçmişin hangi
+   ekranda okunacağı sahibin kararıdır. Yalnız API ucu yetmez.
 
 ## Karar olmayanlar
 
