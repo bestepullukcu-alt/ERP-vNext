@@ -27,28 +27,34 @@ Her CT, Codex'e (ve S-93 ön incelemesine) giden her paket incelemesini bu biçi
 ```text
 Hedef: Codex — <MOD> module pack bağımsız incelemesi <NN> (SOP §20.4 / CT-APR-02). İnceleyensin; paketi yazan oturum değilsin.
 Depoya erişimin yok: yalnız ekteki ZIP'i oku. Dosya düzenleme, kod yazma, commit yok. Tek çıktın aşağıdaki bulgu metnidir.
-Kaynak: ZIP <ad> · sha256 <…> · önce `shasum -a 256 -c MANIFEST.sha256` ile doğrula.
+Kaynak: ekteki ZIP (yeri ve sha256'sı son satırlarda) — önce ZIP'in sha256'sını hesaplayıp son satırla karşılaştır, sonra `shasum -a 256 -c MANIFEST.sha256` ile doğrula.
 Hedef belge: <paket yolu> @ sha256 <…> — tutmuyorsa dur ve bildir.
 Model · Effort: kullandığın modeli, effort'u ve oturum kimliğini yanıtın başına yaz; veremiyorsan "verilemiyor" yaz.
 [Yeniden incelemede: Ne değişti — <liste>. Kapandı iddiasındaki önceki bulgular — <F-n listesi>. Her iddiayı kendin ölç.]
 Görev: <ne incelenecek>
 Çıktı: ilk satır `hedef: <paket yolu> @ <sha>`; her bulgu tek satırda `F-n | ENGEL|ORTA|DÜŞÜK | <metin> | açık | <K…> | <tarih>`;
 son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL.
+ZIP'in yeri: <mutlak yol>
+ZIP sha256: <64 hex>
 ```
 ````
 
-## 2. Sohbette sahibe (dört blok, bu sırayla)
+## 2. Sohbette sahibe (tek kopya, S-98)
 
-1. Tek cümle: "Codex'te **yeni** bir oturum açın, aşağıdaki metni ve ZIP'i verin."
-2. Prompt'un tamamı, tek ```text bloğunda (dosyadaki blokla aynı; özeti blok altında yazılır).
-3. ZIP'in mutlak yolu, kendi kod bloğunda.
-4. ZIP'in SHA-256'sı, kendi kod bloğunda.
+1. Tek cümle: "Codex'te **yeni** bir oturum açın, aşağıdaki metni yapıştırın ve açılan klasördeki ZIP'i sürükleyin (klasör açılmadıysa
+   son satırdaki yoldan)"
+2. Prompt'un tamamı, tek ```text bloğunda (dosyadaki blokla aynı). ZIP'in yeri ve sha256'sı bu bloğun son iki satırıdır;
+   ayrı kutu açılmaz. Bloğun özeti altında düz metinle yazılır.
+3. CT ZIP'i Finder'da (Windows'ta Dosya Gezgini'nde) seçili gösterir; gösteremiyorsa bunu tek cümleyle söyler.
 
-Son satır: "Codex'in cevabını olduğu gibi bu sohbete yapıştırın."
+Son satır: "Codex'in cevabını olduğu gibi bu sohbete yapıştırın." (teslimde soru varsa bu cümle sorudan önce gelir)
+
+ZIP inceleme isteği dosyasını içermez; sıra ZIP → prompt → kayıt. ZIP yeniden kurulursa yeni istek numarası açılır.
 
 ## 3. Yapılmaz
 
 - Prompt yerine yalnız dosya yolu vermek ("dosyadan kopyalayın").
+- ZIP yolunu ya da sha256'sını ayrı kutuya koymak (sahip iki üç kez kopyalar).
 - Prompt'u kod bloğu dışında, markdown olarak yazmak (başlıklar ve `|` satırları bozulur).
 - İlk incelemede CT'nin görüşünü, beklenen sonucu ya da "şuraya bakma" yönlendirmesini yazmak.
 - Ön inceleme (S-93) bulgularını Codex prompt'una eklemek.

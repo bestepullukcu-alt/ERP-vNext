@@ -28,6 +28,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 
 1. **Encapsulation:** Tüm değişkenler ve fonksiyonlar `const {{ModuleName}} = (function () { ... })();` içinde olmalıdır.
 2. **`DtDefaults.create()` ZORUNLU:** Ham `DataTable({...})` çağrısı KESİNLİKLE YASAKTIR. Her DataTable sayfası `window.DtDefaults.create({...})` ile başlatılır. Bu wrapper otomatik olarak skeleton, stateSave, responsive class fix ve hover'ı devreye alır.
+   - Tablo kurulurken ve her çizimde yapılan DataTable DOM müdahaleleri `initComplete` veya `drawCallback` içinde yapılır. Kullanıcı etkileşimine bağlı güncellemeler (örnek: sütun görünürlüğü ya da sırası değişince Save View düğmesini göstermek) aşağıdaki şablondaki gibi DataTables olay dinleyicileriyle (`column-visibility.dt`, `column-reorder.dt` vb.) yapılır.
 3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.  
    - **Responsive UI guard:** `DtDefaults` içindeki Export (collection) butonu `dt-export-collection-btn` class’ını taşır; `backbone-custom.css` bu class ile Export’u mobil toolbar’da `.btn-icon` yüksekliğiyle hizalar. Bu class kaldırılmaz/değiştirilmez.
 4. **Personalization Client ZORUNLU:** Save View / kullanıcı tercihleri için raw `fetch('/api/personalization/...')` veya localStorage helper yazılmaz. Her zaman shared `window.personalizationClient` kullanılır.
