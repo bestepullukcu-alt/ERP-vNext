@@ -24,7 +24,7 @@ info:
   version: 1.3.0                    # 1.2.0 → 1.3.0: MOD-0140 Revizyon 5 DL-1 — uygunluk yüzeyi + hata kodları, yalnız eklemeli ((A) unchanged)
   x-status: FROZEN
   x-slice-status: FROZEN            # (A) consumer slice — şekil dondurulmuş, MVP-6 buna bağlı
-  x-producer-status: FROZEN 2026-10-28  # 1.3.0 FROZEN (MOD-0140 DL-1); (B) 2026-09-23 (CT A2); sonrası yalnız eklemeli sürümle (1.4.0+)
+  x-producer-status: FROZEN 2026-10-29  # 1.3.0 FROZEN (MOD-0140 DL-1); (B) 2026-09-23 (CT A2); sonrası yalnız eklemeli sürümle (1.4.0+)
   x-owner: MOD-0140
   x-authored-by: control-tower
   x-front-loaded-for: [MOD-0147, MOD-0148, MOD-0119, MOD-0289]
