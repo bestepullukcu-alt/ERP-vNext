@@ -41,6 +41,16 @@ decision_records: "pending support package - not normative until committed"
 > and MOD-0234 operational runtime remain blocked until MOD-0230 runtime handoff evidence and their own downstream
 > gates are approved.
 
+> **2026-10-29 MOD-0230 build/test persistence exception (owner decisions DEPO-01 and DEPO-03; approver DEPO-02):** for
+> **MOD-0230 only**, the build/test gate (local / dev / CI) authorizes one Mongo store for Case Intake & Triage
+> intake drafts: its collection, tenant-first indexes, and the startup schema bootstrap that creates them, as scoped by
+> the MOD-0230 pack (revision 14, slice DL-10). The operational runtime gate and its conditions are unchanged.
+> Nothing changes for MOD-0231, MOD-0232, and MOD-0234: the Mongo / collections / migrations exclusions above and the
+> MOD-0232 / MOD-0234 sentences of §11 stay as written for them, and §11's closing sentence stays word for word for
+> every member; the one sentence added after it names this exception only. Seed data, permission seed or grant, background jobs, and operational use stay
+> unauthorized for every member. Records: `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md`,
+> `-02.md`, `-03.md`. See §10 "Build gate vs operational runtime gate".
+
 > **User constraint:** This draft does **not** develop Urgent foundation remediation W-3A0, does **not**
 > include next-stage W-4/W-5 modules outside the requested urgent slices, and does **not** start
 > MOD-0234 runtime implementation as a shell. W-3A0 dependencies are recorded as external prerequisites
@@ -210,6 +220,15 @@ required and not completed.
 3. **MOD-0232 terminology/coding contract and module pack** - define MedDRA version binding, coded-term assignment model, coding audit trail, diff/export contract, and dictionary-source governance. Build/test gate is open for non-operational class-library contracts/tests only; operational runtime remains closed.
 4. **MOD-0234 Signal MVP contract, workflow, object model, and interface gates** - define signal hypothesis/evaluation/review-decision objects, data-product and metric interface gates, workflow handoff, evidence links, and telemetry contract. This step does **not** create a runtime shell, UI, service, or gateway route.
 
+## 8.1 Delivery slices
+
+| Slice | Kapsam | Not |
+|---|---|---|
+| PVG-W3A | MOD-0230 | Case Intake & Triage; build/test gate open (2026-08-09); build/test Mongo store exception since 2026-10-29 (§10, DEPO-01); operational runtime closed |
+| PVG-W3B | MOD-0231 | Signal Minimum Scope only; build/test gate open for non-operational class-library contracts/tests; no Mongo, collection, or migration |
+| PVG-W3C | MOD-0232 | MedDRA Coding; build/test gate open for non-operational class-library contracts/tests; no Mongo, collection, migration, or dictionary data |
+| PVG-W3D | MOD-0234 | Signal MVP contracts/gates only; no shell; no Mongo, collection, or migration |
+
 ## 9. Prerequisites
 
 1. This Delivery Capability Pack is `approved` / `ready-for-execution` by explicit user approval.
@@ -227,8 +246,11 @@ required and not completed.
   MOD-0230, MOD-0231, MOD-0232, and MOD-0234 have build/test gates; operational runtime remains unauthorized for
   every member.
 - **Runtime creation guard:** The MOD-0230 build/test gate is local/dev/CI only. No operational runtime, production
-  deployment, supplier qualification, validation, collection, seed, job, permission seed, archive/void, export,
-  delete, bulk-delete, or AI implementation is authorized.
+  deployment, supplier qualification, validation, seed, job, permission seed, archive/void, export, delete,
+  bulk-delete, or AI implementation is authorized. No collection is authorized, with one exception (2026-10-29,
+  DEPO-01): under the MOD-0230 build/test gate only, MOD-0230 may persist its intake drafts in one Mongo store -
+  collection, tenant-first indexes, and the startup schema bootstrap - as scoped by the MOD-0230 pack (slice DL-10);
+  see "Build gate vs operational runtime gate". No other member gains a collection.
 - **Canonical naming:** MOD-0230, MOD-0231, MOD-0232, and MOD-0234 use Blueprint names exactly. Delivery-stage labels and slices are planning metadata only.
 - **Security baseline:** REG-PV-BASE is mandatory for any runtime member because these modules handle regulated safety data and PHI/PII-sensitive records.
 - **Case lifecycle:** MOD-0231 Signal Minimum Scope may define only the minimum lifecycle states and trace outputs required by MOD-0234; full W-4 Case Processing remains out of scope.
@@ -249,6 +271,14 @@ runtime, not production use, not supplier qualification, not validation approval
 |---|---|---|---|
 | **Build / test gate** | DCP-004 `approved` + member pack `approved` / `ready-for-dev` | Local / dev / CI build-test work only, constrained by each member pack | **Open for MOD-0230** as of 2026-08-09; **open for MOD-0231** as of 2026-08-10 for non-operational class-library contracts/tests only; **open for MOD-0232** as of 2026-08-11 for non-operational class-library contracts/tests only; **open for MOD-0234** as of 2026-08-11 for no-shell non-operational class-library contracts/tests only |
 | **Operational runtime gate** | Build gate + real MOD-0019, MOD-0023, MOD-0031 + named retention / legal-hold owner | Production, supplier qualification, validation | **Closed for every member** - unchanged |
+
+**MOD-0230 build/test persistence exception (added 2026-10-29; DEPO-01, DEPO-02, DEPO-03).** Under the build/test gate
+only, MOD-0230 may persist intake drafts in one Mongo store: its collection, tenant-first indexes, and the startup
+schema bootstrap that creates them, as scoped by the MOD-0230 pack (revision 14, slice DL-10). The store opens only on a
+host that is not production-like; a production-like start that selects it is refused. It is not operational runtime
+and does not move the operational runtime gate. MOD-0231, MOD-0232, and MOD-0234 gain nothing from it: their Mongo,
+collection, and migration exclusions (§11) stand. Seed data, permission seed or grant, and background jobs stay
+unauthorized for every member.
 
 ### W-3A0-Lite consumption ports (added 2026-08-09, per OD-2)
 
@@ -284,7 +314,9 @@ non-operational class-library contracts/tests; shell, placeholder dashboard, fak
 data-product stub, Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner
 integration, AI, export, delete, and bulk-delete remain blocked. Operational
 runtime, database, seed, appsettings, jobs, menu, module-catalog, production, supplier qualification, and validation
-remain unauthorized.
+remain unauthorized. The one build/test exception is the MOD-0230 intake-draft Mongo store of §10 (2026-10-29,
+DEPO-01): it is not an operational database, it opens no seed, appsettings, job, menu, or module-catalog work, and it
+grants nothing to MOD-0231, MOD-0232, or MOD-0234.
 
 ## 12. Explicit exclusions
 
@@ -422,7 +454,8 @@ and no permissive fallback.
 Forbidden until separately approved: `frontend/**`, `gateway/**`, seeds, fixtures, sample PHI/PII, jobs, collections,
 migrations, repositories, Mongo, persistence, partner integration, AI, archive, void, export, delete, bulk-delete,
 MOD-0231 runtime, MOD-0232 runtime, MOD-0234 runtime, production use, supplier qualification, CSV validation, and
-deployment.
+deployment. This list governs the operational runtime slice; the MOD-0230 build/test Mongo store of §10 (2026-10-29)
+does not carry into operational runtime and needs this packet's approval like any other path.
 
 Validation expectations for any later authorized runtime slice include `git diff --check`, focused
 `Diten.PvgService` build/tests, API startup fail-closed tests, no client `TenantId`, cross-tenant denial, missing
@@ -522,4 +555,8 @@ policy tests, and no forbidden path changes.
   runtime, shell, placeholder dashboard, fake signal, fake metric, fake cohort, data-product stub, API host,
   Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner integration, AI, export,
   delete, and bulk-delete remain closed.
+- 2026-10-29: MOD-0230 build/test persistence exception recorded in the header note, §8.1, §10, and §11 (owner
+  decisions DEPO-01 `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md` and DEPO-03 `-03.md`; approver
+  DEPO-02 `-02.md`). Scope: the MOD-0230 build/test gate only. The operational runtime gate, MOD-0231 / MOD-0232 /
+  MOD-0234, seeds, permission seeds, and jobs are unchanged.
 - Reconciliation: implementation-phase results will be added here as member module packs are executed.
