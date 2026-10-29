@@ -662,7 +662,10 @@ MOD-0024's own equivalent gap was.
       SAME meeting id, no duplicate row. *(Narrowed by R1 fix round 3, review 03 F-19; binding once R1 is approved:
       from S28 on, the replay answers 200, a caller who cannot view the existing meeting gets 409
       `MEETING_CREATE_CONFLICT`, and a creator who would not be able to view the meeting they ask for is refused up
-      front with 400 `MEETING_CREATOR_CANNOT_VIEW`, so their own retry never reaches the 409; S28-10.)*
+      front with 400 `MEETING_CREATOR_CANNOT_VIEW`, so their own retry never reaches the 409; S28-10. The up-front
+      rule is defensive (R1 fix round 4, review 04 F-25): no screen can trigger it, because the create form and the
+      Task Center always make the caller the organizer; only a direct API caller who names another organizer and is
+      not an attendee reaches it.)*
 - [ ] A meeting→task create retried the same way returns the same task id and the same `RecordLink` id.
 
 ### K12 — partial success is visible
@@ -1143,6 +1146,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | R1 fix round 1 (review 01) | 2026-10-27 | Fixes all ten findings of independent review 01 (`docs/records/reviews/MOD-0357/2026-10-27-bd7b82ce.md`, KOŞULLU, 1 ENGEL). The CT accepted every finding. See the disposition table below. Adds slice **S28** (meeting access security for writes, and the meetings side of BL-541), placed **first**. Refines R1-D12. Adds R1-D15. Adds Q23 and Q24. The owner-answers block in §24.25 is unchanged. | Same subagent and model as R1 (requested Opus · high; used `claude-opus-5-5`). | "duzelt" (owner, 2026-10-27), sent through CT · Toplantılar: fix all ten findings; draft only, this pack file only. |
 | R1 fix round 2 (review 02) | 2026-10-29 | Fixes all seven findings of independent review 02 (`docs/records/reviews/MOD-0357/2026-10-27-ab321ce2.md`, KOŞULLU, 0 ENGEL). The CT accepted every finding. See the "Review 02 disposition" table below. S28 gains S28-10 (the create replay and the follow-up "not new" refusal) and S28-11 (series), and S28-1, S28-2, S28-4, S28-6 and S28-8 are tightened. S23 gains S23-8. S26 gains S26-10. Q24 is answered ("drop"), and Q23 has one wording everywhere. The owner-answers block in §24.25 is unchanged except for the new Q24 row. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "duzelt-2" (owner, 2026-10-27/28), sent through CT · Toplantılar: fix all seven findings, and take the default for Q24 ("drop"); draft only, this pack file only. |
 | R1 fix round 3 (review 03) | 2026-10-29 | Fixes all seven findings of independent review 03 (`docs/records/reviews/MOD-0357/2026-10-29-289f88b3.md`, KOŞULLU, 0 ENGEL). The CT accepted every finding. See the "Review 03 disposition" table below. S28-11 gains the unchained fallback (a series whose organizer cannot view the chain source keeps generating). S28-10 gains the general up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, which replaces S26-10's own code) and the follow-up completion exception. S28-1, S28-2, S28-6, S28-8, the S28 tests and the estimate are tightened. S23-8 gains an HTTP test and its own adoption code. R1-D15, §24.5, §24.7, §24.27, S26-10, §25 and §26 DL-28 follow. One wording change outside §24 to §26: the §16 K11 box (F-19). New open question Q25. The owner-answers block in §24.25 is unchanged. | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "Evet, düzelt" ("duzelt-3", owner GMG-ERP, K3, 2026-10-29), sent through CT · Toplantılar: fix all seven findings; draft only, this pack file only. |
+| R1 fix round 4 (review 04 + Q25) | 2026-10-29 | Fixes all four findings of independent review 04 (`docs/records/reviews/MOD-0357/2026-10-29-6207d58c.md`, KOŞULLU, 0 ENGEL, four DÜŞÜK) and writes in the owner's answer to Q25 ("devam-katilimci", 2026-10-29, work list §6 item 6b). The CT accepted every finding, and also the eight corrections of the CT's interim check of the first draft of this round. See the "Review 04 disposition" table below. S28-10 gains the binding Q25 rule (a follow-up scheduler who is a party of the source but not the new organizer is added as an `Accepted` attendee, through a command-only `PreAcceptedUserId` parameter on `CreateMeetingCommand`) and the completion's lifecycle rule (scheduled meetings only). The creator rule is marked defensive (direct API callers only), and S26-10's form hint is dropped. S28 names the sweep unit test that changes, with two new unit rows. S21-6 lists the four sweep outcomes of §25, and S21 now depends on S28. R1-D12 states the deferral that keeps S28's write changes off path `a` until S21 and S25, and S25-7 tests the deferred field. S28-11 narrows "no case stops a series" to visibility and names the recovery. §24.5, §24.7, §24.10 (S15-10), §24.27, §24.28 (S25-7), §24.29 (S26-10), §24.31 and §25 follow. One wording change outside §24 to §26: the §16 K11 box (F-25). In §24.25 only Q25 changes (the question is marked answered, and the owner-answers block gains a Q25 row). | `module-pack-author` subagent working for CT · Toplantılar. **Model · effort requested (SOP §17.1 r5): Opus · high.** Used: `claude-opus-5-5`. The effort level is set by the dispatcher and cannot be measured from inside the session. | "duzelt-4" (owner, 2026-10-29), sent through CT · Toplantılar: fix all four findings; draft only, this pack file only. Q25: "devam-katilimci" (owner, 2026-10-29). |
 
 **Review 01 disposition** (findings at SHA `bd7b82ce…`; all accepted by the CT, none disputed):
 
@@ -1182,6 +1186,16 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | F-22 | DÜŞÜK | (a) `MeetingCommandHandlers.cs` holds seven handler classes and the static `MeetingEligibility`. (b) S28-1 lists every handler by class name, and the exception list is exactly five classes: `RespondToInvitationHandler`, `UpdateMeetingSeriesHandler`, `DeleteMeetingSeriesHandler`, `UpdateMeetingTypeHandler`, `DeleteMeetingTypeHandler`, each with its reason. (c) The S28-2 scan uses reflection for scope and the Roslyn syntax tree per class for the call, so a call in another class of the same file does not count (new test-only package `Microsoft.CodeAnalysis.CSharp`). (d) The series rows of S28-8 run at handler level with real Mongo, not over HTTP (DL-28 says so too). (e) R1-D15 no longer says "everyone gets 404"; the review-meeting replay sentence and the `form.js` sentence are corrected. | §24.3 R1-D15; §24.31 (measured, S28-1, S28-2, S28-8, S28-10); §26 DL-28 |
 | F-23 | DÜŞÜK | **S23-8.** An HTTP test posts extra body fields (`createdFromMeetingId` and other names) to the series create endpoint and asserts that nothing is adopted; sabotage binds the field. A refused adoption is normally impossible after S28-10's up-front rule; the remaining concurrent case reports its own code `MEETING_SERIES_ADOPTION_REFUSED`, never `MEETING_NOT_FOUND`. | §24.18 (S23-8, tests); §24.5 |
 | F-24 | DÜŞÜK | **S28-10, follow-up.** A caller who can view the existing meeting gets the narrow completion when its `FollowUpOfMeetingId` is the source and the follow-up link is missing (the link and the open lines are written idempotently, 200), 200 with nothing written when the link exists, and 409 `MEETING_FOLLOW_UP_CONFLICT` with only that meeting's id otherwise. The fixed body stays only for a caller who cannot view it. Behaviour change written down: the sweep no longer chains onto a manually created meeting with the same five values; that occurrence fails, and the next one chains again. | §24.31 (S28-10, S28-8, failure paths, tests); §24.5; §25 |
+
+**Review 04 disposition** (findings at SHA `6207d58c…`; all accepted by the CT, none disputed; owner "duzelt-4"; and the owner's Q25 answer "devam-katilimci"):
+
+| Finding | Severity | What changed | Where |
+|---|---|---|---|
+| F-25 | DÜŞÜK | The creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`) is marked **defensive**. The create form always sends `organizerUserId: null` (`form.js:174`; `Views/Meetings/_Form.cshtml` has no organizer field), so the organizer is the caller (`MeetingCommandHandlers.cs:115`), and the Task Center's review meeting also names the caller as organizer (`MeetingTaskBridgeCommandHandlers.cs:457-468`). Only a direct API caller who names another organizer reaches the rule. The behaviour-change sentence now says "direct API caller". S26-10's form hint is dropped, so there is no dead text in 7 languages. The reason-code bridge text stays, because the bridge guard requires every `MeetingReasonCodes` value. The K11 box says the rule is defensive. The review 03 F-19 row above is kept as history, and this row replaces its "assistant … form" reasoning. | §16 K11; §24.5; §24.29 (S26-10, failure paths); §24.31 (S28-10, S28-8, failure paths) |
+| F-26 | DÜŞÜK | The follow-up completion runs only on a **scheduled** meeting. A cancelled or completed follow-up of the source that has no link gets the existing lifecycle 409 (`MEETING_CANCELLED` / `MEETING_COMPLETED`, `UpdateMeetingHandler.CheckEditable`, the answer every agenda write gives), and nothing is written. There are matrix rows for both cases and a sabotage proof. | §24.5; §24.31 (S28-10, S28-8, failure paths, tests); §25 |
+| F-27 | DÜŞÜK | `GenerateDueMeetingSeriesHandlerTests.cs` is named among the tests that change (the hand-built constructor at `:47`; the chain test at `:71-88` seeds its source). There are two new unit rows: when the source is visible, `ScheduleFollowUpMeetingCommand` is sent; when it is not, `CreateMeetingCommand` is sent and the pointer moves on. S28 stays at 3 prompts. | §24.31 (files, S28-8, tests, estimate); §24.7 |
+| F-28 | DÜŞÜK | (a) S21-6 lists the four outcomes of §25 (created, created-unchained, skipped, failed). (b) R1-D12 states why S28's three write changes (the unchained fallback, the follow-up completion and the scheduler attendee) do not move their commands in S28: no event exists in S28, S21 and S25 move the commands, and none of the changes writes a new kind of data. The S28 audit paragraph and §25 follow. (c) S28-11 now says that no **visibility** rule stops a series. An organizer who is no longer an active tenant user still fails every occurrence, as today (`MeetingCommandHandlers.cs:116-121`), and the recovery is to change the organizer, to an active tenant user, through `UpdateMeetingSeries`. The review 03 F-18 row above ("so no case stops a series for good") is kept as history and is superseded by this row. Because S21-6 now tests `created-unchained`, S21 depends on S28 (no cycle: S28 depends on nothing). | §24.3 R1-D12; §24.7; §24.16 (S21-6, depends); §24.28 (S25-7); §24.31 (S28-11, audit); §25 |
+| Q25 | owner answer | **S28-10, binding:** when the scheduler of a follow-up is a **party of the source** (its organizer, or a user with an attendee row on it) and not the new meeting's organizer, `ScheduleFollowUpMeetingHandler` adds the scheduler to the attendees of the create it sends, as **`Accepted`** through a command-only `PreAcceptedUserId` parameter on `CreateMeetingCommand` (never on the HTTP request model). `Accepted` is the CT's default, because the owner said "added as attendee" without a response status: a `Pending` row would put an invite card for their own follow-up on the scheduler's Task Center (`MeetingWorkItemProvider.cs:61, 78-82, 123-127, 161`), count it as pending in their work calendar (`GetMyWorkCalendarHandler.cs:132, 138`) and leave it out of time planning (`MeetingGatewayAdapter.cs:27-28`), which is why the organizer's own row is `Accepted` (`MeetingCommandHandlers.cs:157-167`). A `read-all` holder or platform operator who is not a party is **not** added, so the report's invited count (`MeetingReportQueryHandlers.cs:73-77`) and S16's mandatory attendance are not skewed. User calls only, never the sweep. `CreateMeetingHandler`'s eligibility filter and its new-meeting-only rule apply unchanged. The scheduler gets no invite mail and no `.ics` ATTENDEE line (actor exclusion). A confidential follow-up keeps the scheduler (S15-10). `RequireCreatorCanView: false` stays. Tests and sabotage proofs are added, and S25-7 tests the deferred event field. | §24.25 (Q25, answers table); §24.31 (files, S28-10, S28-8, tests, audit); §24.10 (S15-10); §24.28 (S25-7); §24.3 R1-D12; §24.27; §25 |
 
 ### 24.1 Sources of the decisions (read; cited as path@commit)
 
@@ -1268,7 +1282,7 @@ visibility, export retention), §23.13 raises the question rather than assuming 
 | R1-D9 | **Participants by position.** The subtype stores position ids. The create form resolves them to the **current holders** through the attendee eligibility the module already uses (`MeetingEligibility.EligibleUserIdsAsync` → `GetTaskAssignmentPersonLookupQuery(Decision)`, whose rows carry `PositionId`). No new directory seam is added. Person-dependent roles ("Line Manager / Employee") are not stored as rules. The subtype carries a free-text `ParticipantSelectionHint` that is shown next to the picker. A series created by Repeat stores the resolved people (a snapshot, as `MeetingSeries.AttendeeUserIds` does today). | §5.6 item 2 and §5.7 "Davet pozisyon bazlı". Re-resolving positions for each series instance is follow-up Q10. |
 | R1-D10 | **Honest flags through one server switch.** A single constant set (`MeetingCapabilities`) says which flag effects are active. The UI renders "not yet active" from it, and the slice that makes an effect active changes the constant. | The display cannot drift from the code. Pre-load item 4 can ship first (A4 in the work list). |
 | R1-D11 | **No new permission key.** Main-type CRUD, the importer and the positions lookup use `platform.meetings.types-manage`. The auto-fill lookups use `platform.meetings.create` / `.read`. Repeat uses `platform.meetings.series-manage` (Q9). | The brief says no new permission family. Every endpoint is mapped in §24.6. |
-| R1-D12 | **Audit.** New commands use path `a`. An existing **non-minutes** command that an R1 slice changes **in what it writes or records** moves to path `a` in that same slice, and its line leaves the known-debt list, which only shrinks. **Access-check-only rule (review 01, F-2):** a change that only adds a refusal (S28's visibility check) and changes neither the data the command writes nor what its event would carry does **not** trigger the move. Such a command stays where it is, and §25 names the slice that adds the check. The publish and correct minutes commands are K2 class and stay in known debt (Q14). Details in §25. | AUD-001 §10.1 transition rule and §4.4. AUD-001 only requires the debt list not to grow; this rule keeps the security slice S28 small and still moves every command whose recorded content changes. |
+| R1-D12 | **Audit.** New commands use path `a`. An existing **non-minutes** command that an R1 slice changes **in what it writes or records** moves to path `a` in that same slice, and its line leaves the known-debt list, which only shrinks. **Access-check-only rule (review 01, F-2):** a change that only adds a refusal (S28's visibility check) and changes neither the data the command writes nor what its event would carry does **not** trigger the move. Such a command stays where it is, and §25 names the slice that adds the check. **Stated deferral (review 04 F-28 b; R1 fix round 4).** S28 also makes three changes that are **not** access-check-only, because they write differently: the sweep's unchained fallback in `GenerateDueMeetingSeriesCommand` (S28-11: a different write in the same call; the pointer moves to a meeting made by the first-instance create); the follow-up completion in `ScheduleFollowUpMeetingCommand` (S28-10, review 03 F-24); and the scheduler added as an `Accepted` attendee (S28-10, owner answer Q25), which `ScheduleFollowUpMeetingCommand` asks for and `CreateMeetingCommand` writes through its command-only `PreAcceptedUserId` parameter. None of the three commands moves in S28, because all three of these conditions hold. (1) The command has no event in S28, because no meeting audit row can be written before S25 (category Q13, shared mirror Q23). (2) A named later R1 slice moves it to path `a`, and its event then records the change: `GenerateDueMeetingSeriesCommand` in S21 with the outcome `created-unchained`; `ScheduleFollowUpMeetingCommand` in S25 with `SchedulerAddedAsAttendee`, and `CreateMeetingCommand` in S25 with `PreAcceptedUserId` (§25; tested in S25-7). (3) By today's code, the change writes no new kind of data. The fallback writes the claim and the pointer that the sweep writes today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line. The completion writes the follow-up link and the carried lines that a follow-up writes today. The scheduler's row is an attendee row, which `CreateMeetingCommand` writes today for any attendee a follow-up request names (`MeetingFollowUpCommandHandlers.cs:90`), with the `Accepted` response it already writes for the organizer's row (`MeetingCommandHandlers.cs:157-167`). A change that fails any of the three conditions moves its command in its own slice. The publish and correct minutes commands are K2 class and stay in known debt (Q14). Details in §25. | AUD-001 §10.1 transition rule and §4.4. AUD-001 only requires the debt list not to grow. This rule keeps the security slice S28 small and still moves every command whose recorded content changes, at the latest in the slice that §25 names for it. The stated deferral adds no debt line: the three commands are already on the list (L118, L156, L76), and they leave it in S21 and S25. |
 | R1-D13 | **Preparation never blocks (binding once this revision is approved).** Preparation tasks and their status **never block** creating, holding, rescheduling, cancelling or publishing a meeting, and never block anything on the task side. A failed preparation line never undoes the meeting (K12). Rescheduling a meeting **does not move** a preparation task's due date. The task owners are notified as K7 states (§16), and the task itself is not changed. | ADR-003 §4 "Bağ asla örtük engel değildir" (the one exception is the task type's `reviewMeetingPolicy`, which is not touched here). ADR-003 §5 "erteleme/iptal: bağlı görev sahiplerine bildirim, görev değişmez". |
 | R1-D14 | **Required is the default.** `MeetingAttendee.IsOptional = false` means required. Every row written before R1 is required. The organizer is always required. Optional only changes the label on screens and the `.ics` `ROLE`, plus the attendance-mandatory rule in Q19. It never changes who may see the meeting (D3). | RFC 5545 `ROLE=REQ-PARTICIPANT` / `OPT-PARTICIPANT` (the `.ics` default is REQ). An additive field leaves the existing rows unchanged. |
 | R1-D15 | **Writes follow reads (S28).** A caller may change an existing meeting only if `MeetingEligibility.CanView` admits them: organizer, attendee or `read-all` holder, and from S15, never a non-participant of a confidential meeting. On an existing meeting named by id, everyone else gets **that handler's own not-found answer (404)**, the same answer it gives for a missing meeting, with no metadata (S28-1). On the create path, where no existing meeting is named, a caller the create replay or a follow-up collision must not reach gets **409 `MEETING_CREATE_CONFLICT`** with one fixed body instead (S28-10; review 03 F-22). One helper does the check for every write handler. The same rule covers a meeting reached **indirectly**: the create path's idempotent replay, a follow-up that lands on an existing meeting, the `FollowUpOfMeetingId` of a new meeting, and the meeting a series adopts (S28-10, S28-11). There is **no bypass** (review 02 F-13). The series sweep, which has no user, carries an explicit system-origin marker that names an **acting identity**, the series organizer. `CanView` is applied with that identity (organizer or attendee only, no `read-all`). The marker is never inferred from an empty user id, and a source-scan test lists the one file that creates it. When the series organizer cannot view the chain source, the sweep still makes the occurrence, as a plain **unchained** meeting that carries nothing from the source, and moves its chain pointer on, so a legitimate organizer hand-over never stops a series (S28-11; review 03 F-18). The existing permission keys still apply on top. | Review 01 F-1, measured: `CanView` is defined at `MeetingCommandHandlers.cs:63-64` and called only by query handlers. `AddMeetingAttendeesHandler` (`:429-503`) and `ReassignMeetingOrganizerHandler` (`:359-426`) check only existence and editability, so a non-participant with `update` can add themselves to any meeting by id and then read it. Review 02 F-11 and F-13, measured: the create key has no caller (`MeetingIdempotencyKeyResolver.cs:9-22`), and a series edit rewrites its organizer and attendees with no relation check (`MeetingSeriesCommandHandlers.cs:167-181`). |
@@ -1360,8 +1374,8 @@ stored on the meeting side. `CreateMeetingRequest.OptionalAttendeeUserIds` (S27)
 | `AgendaItem.DurationMinutes` | No | 1..480 | — | validator |
 | Sum of agenda durations | — | larger than the meeting duration is **allowed with a warning** | — | UI warning only (no reason code, no refusal) |
 | Create replay or follow-up collision (S28-10) | — | the five key values match an existing meeting the caller cannot view (on a create, or on the create a follow-up sends) | — | 409 `MEETING_CREATE_CONFLICT` (one fixed body, no id and no field) |
-| Follow-up collision, caller can view the existing meeting (S28-10; review 03 F-24) | — | the existing meeting's `FollowUpOfMeetingId` is not the source | — | 409 `MEETING_FOLLOW_UP_CONFLICT` (its `data` carries only the existing meeting's id); nothing is written. When `FollowUpOfMeetingId` is the source, the follow-up is completed instead (200) |
-| Create by a creator who would not be able to view the meeting (S28-10; replaces S26-10's own code, review 03 F-19) | — | the creator is neither the requested organizer nor a requested (eligible) attendee and does not hold `read-all` (from S15, also refused for a confidential subtype unless a participant). Not applied to the create a follow-up sends (S28-10) | — | 400 `MEETING_CREATOR_CANNOT_VIEW`; nothing is written |
+| Follow-up collision, caller can view the existing meeting (S28-10; review 03 F-24, review 04 F-26) | — | the existing meeting's `FollowUpOfMeetingId` is not the source; or it is the source, the follow-up link is missing and the meeting is cancelled or completed | — | 409 `MEETING_FOLLOW_UP_CONFLICT` (its `data` carries only the existing meeting's id) when it is not a follow-up of the source; 409 `MEETING_CANCELLED` / 409 `MEETING_COMPLETED` (existing codes, `UpdateMeetingHandler.CheckEditable`) when it is a cancelled or completed follow-up of the source. Nothing is written. When `FollowUpOfMeetingId` is the source and the meeting is scheduled, the follow-up is completed instead (200) |
+| Create by a creator who would not be able to view the meeting (S28-10; replaces S26-10's own code, review 03 F-19; defensive, review 04 F-25) | — | the creator is neither the requested organizer nor a requested (eligible) attendee and does not hold `read-all` (from S15, the request is also refused for a confidential subtype unless the creator is a participant). Only a direct API caller who names another organizer can reach it, because the create form and the Task Center make the caller the organizer. Not applied to the create a follow-up sends: the follow-up adds its scheduler, when a party of the source, as an `Accepted` attendee instead (S28-10, Q25) | — | 400 `MEETING_CREATOR_CANNOT_VIEW`; nothing is written |
 | Repeat adoption refused (S23-8; review 03 F-23) | — | the creator can no longer view the meeting just written when the series adopts it (only possible through a concurrent change) | — | partial success `series: { created: false, reasonCode: "MEETING_SERIES_ADOPTION_REFUSED" }`; the meeting stays, no series |
 
 Every new reason code is added to `MeetingReasonCodes` and to the frontend reason-code bridge, with text in all 7
@@ -1428,7 +1442,7 @@ Prompt counts are **estimates** (one prompt ≈ one development session). They a
 
 | Order | Slice | Title | Estimate (prompts) | Depends on | DL (evidence level in §26) |
 |---|---|---|---|---|---|
-| 1 | S28 | Meeting access security (writes and BL-541) | 3 (estimate; review 03 F-20: 14 existing test files build a guarded handler by hand, about 40 constructions, and the series fallback, the creator rule and the follow-up completion are added) | — | DL-28 |
+| 1 | S28 | Meeting access security (writes and BL-541) | 3 (estimate; review 03 F-20: 14 existing test files build a guarded handler by hand, about 40 constructions, and the series fallback, the creator rule and the follow-up completion are added; review 04 F-27, F-26 and Q25 add the sweep unit test file with two rows, the completion's two lifecycle rows and the scheduler-attendee rows, which fit in the same 3) | — | DL-28 |
 | 2 | S13 | Page help and Meetings tour | 2 (estimate) | — | DL-13 |
 | 3 | S14 | Honest display of the type flags | 1 (estimate) | — | DL-14 |
 | 4 | S25 | Agenda at create (today's type template) | 1 (estimate) | S25 does not start until Q23 is answered; yes → the shared mirror gets `["Meetings"] = 18` (written by this CT after the owner's explicit XMC-001 answer, reviewed by the library owner, per card S-90 §7c); no → `PlatformConfiguration` is used and Q13 is reopened. S28 (S25-6's retry rule is S28-10). S18's mandatory lines join whenever S18 lands (not a hard dependency). | DL-25 |
@@ -1440,7 +1454,7 @@ Prompt counts are **estimates** (one prompt ≈ one development session). They a
 | 10 | S27 | Required and optional attendees with agenda presenter and time box | 1–2 (estimate) | S25 (agenda lines on the form); S16 (S27-3, Q19); S18 (`UpdateAgendaItemCommand` already on path `a`); S28 (write guard for the new role change) | DL-27 |
 | 11 | S19 | Main type and subtype default fields (backend) | 2 (estimate) | S15 (type create/update already on path `a`) | DL-19 |
 | 12 | S20 | Type screens and grouped type picker | 2 (estimate) | S19; S15 and S18 if their fields are to be shown | DL-20 |
-| 13 | S21 | Daily frequency and series title template | 1–2 (estimate) | S25 (follow-up command on path `a`; the sweep calls it) | DL-21 |
+| 13 | S21 | Daily frequency and series title template | 1–2 (estimate) | S25 (follow-up command on path `a`; the sweep calls it); S28 (S21-6's `created-unchained` outcome comes from S28-11's fallback) | DL-21 |
 | 14 | S22 | Create-form auto-fill of the other fields | 1–2 (estimate) | S25, S18, S19, S20, S21 (shared title renderer) | DL-22 |
 | 15 | S23 | Repeat on create | 2 (estimate) | S21, S22; S28 (adoption applies `MeetingWriteAccess`, S23-8) | DL-23 |
 | 16 | S24 | One-off type catalogue importer | 1–2 (estimate) | S19, S20 (S15 and S18 for the flags it imports). The real import run also waits on the task-type catalogue load (MOD-0024, Dalga 2) and on the QA process owner's name (§5.7). | DL-24 |
@@ -1647,6 +1661,12 @@ subtype name, not the meeting title.
       follow-up becomes confidential too (`Meeting.IsConfidential = true`), whatever type the request names. Its title
       is **not** copied from the source: the default is the source's subtype name plus " (devam)" instead of
       "{source title} (devam)" (`MeetingFollowUpCommandHandlers.cs:79`). The series sweep follows the same rule.
+      The scheduler that S28-10 adds as an `Accepted` attendee (owner answer Q25) stays on a confidential follow-up.
+      S28-10 adds only a scheduler who is a party of the source (its organizer or a user with an attendee row on it),
+      so this gives nobody new access: that scheduler already took part in the meeting the follow-up continues. A
+      `read-all` holder is never added, and from S15 cannot schedule a follow-up of a confidential source anyway
+      (S28-1, S15-3). Test: a source attendee who is not the organizer schedules a follow-up of a confidential source;
+      the follow-up is confidential, the scheduler opens it (200), and a `read-all` non-participant gets 404.
 
 **Failure paths.**
 - A `read-all` non-participant → 404 with no metadata (not 403).
@@ -1917,8 +1937,11 @@ and the claim advanced on skipped days (review 01 F-2).
       edges, a tenant zone different from UTC).
 - [ ] S21-5 — The series form offers Daily and the title template. 7 languages. The help is updated.
 - [ ] S21-6 — `GenerateDueMeetingSeriesCommand` writes an audit row on path `a`: series id, occurrence, outcome
-      (created, skipped or failed) and no titles of confidential meetings. Before this, the slice measures that
-      `AuditBehavior` accepts a command sent with no user (§24.27). If it does not, the slice stops and reports.
+      (created, created-unchained, skipped or failed: the four values of §25; `created-unchained` comes from S28-11's
+      unchained fallback), the created meeting id, the previous meeting id for `created-unchained`, and no titles of
+      confidential meetings. A test asserts each of the four outcome values (review 04 F-28 a). Before this, the
+      slice measures that `AuditBehavior` accepts a command sent with no user (§24.27). If it does not, the slice
+      stops and reports.
 
 **Failure paths.** Interval < 1 → 400 (existing). A user placeholder in a series template → 400. A sweep with the job
 disabled → nothing generated, as today (BL-536, a configuration question).
@@ -1926,7 +1949,8 @@ disabled → nothing generated, as today (BL-536, a configuration question).
 **Tests.** Schedule unit tests; the fixture parity test. Sabotage: change `{Week}` in JS only, then the parity test is
 red. Remove the skip rule, then the working-day test is red. **L10n:** 7 languages. **Permissions:** `series-manage`.
 **Tenant isolation:** unchanged (the sweep already runs inside each tenant's `TenantScope`). **Depends on:** S25 (the
-follow-up command the sweep calls is already on path `a`). **Estimate:** 1–2 prompts (2 with the working-calendar skip,
+follow-up command the sweep calls is already on path `a`) and S28 (S21-6's `created-unchained` outcome comes from
+S28-11's unchained fallback; review 04 F-28 a). **Estimate:** 1–2 prompts (2 with the working-calendar skip,
 which the owner approved).
 
 ### 24.17 S22 — Create-form auto-fill of the other fields
@@ -2325,6 +2349,7 @@ approved.
 | Q21 | Yes — the preparation reminder goes to the organizer only, about 24 hours before the start, once per start time. |
 | Q22 | Yes — adding preparation lines on the create form needs `platform.tasks.create` as well as `platform.meetings.create` (the existing two-key rule of "task from meeting"). |
 | Q24 | Drop (owner, "duzelt-2", 2026-10-27/28; the default was taken) — a task reader who cannot view the linked meeting does not see that meeting row at all (S28-7). No MOD-0024 change. |
+| Q25 | Yes — add the scheduler as attendee (owner, "devam-katilimci", 2026-10-29): when an attendee who is not the organizer schedules a follow-up, the scheduler is added automatically as an attendee of the new meeting. This is alternative (a) of Q25, not the recommendation the question carried ("leave the path as it is today"). It is built in S28 (S28-10, "Scheduler as attendee"). **Two CT readings, not said by the owner:** (1) `Accepted` is taken as the default response, because the owner said "added as attendee" without a response status, and a `Pending` row would show the scheduler an invite for their own follow-up (S28-10); (2) only a party of the source (its organizer or an attendee) is added, not a `read-all` holder or platform operator who schedules a follow-up. A confidential follow-up keeps the scheduler (S15-10). |
 
 **Questions from "ekle-uc" (2026-10-27). All four were answered yes by the owner ("dort-evet", 2026-10-27); see
 the Q19 to Q22 rows of the table above. The text below is kept as asked:**
@@ -2373,10 +2398,11 @@ Q23 is still open. The text below is kept as asked:**
     unreadable tasks. That needs the Task Center renderer (`WorkCenterNext/app.js`, MOD-0024 frontend) to show the
     new code in 7 languages, which is an XMC-001 change in another module. Is dropping accepted?
 
-**Question from review 03 (2026-10-29, fix round 3). Open; S28 builds the recommended answer unless the owner says
-otherwise:**
+**Question from review 03 (2026-10-29, fix round 3). Answered by the owner ("devam-katilimci", 2026-10-29; see the
+Q25 row of the table above): alternative (a), built in S28 (S28-10). The text below is kept as asked:**
 
-25. **Q25 — A follow-up scheduled by someone who is not on it (S28-10).** S28-10 refuses a create up front when the
+25. **Q25 — A follow-up scheduled by someone who is not on it (S28-10).** *(Answered: (a), the follow-up adds its
+    scheduler as an attendee; S28-10.)* S28-10 refuses a create up front when the
     creator would not be able to view the new meeting (400 `MEETING_CREATOR_CANNOT_VIEW`), but not on the follow-up
     path. The follow-up dialog sends no attendees and no organizer (`follow-up-dialog.js:91-93`), so when an attendee
     of a meeting who is not its organizer schedules a follow-up, the new meeting has only the source organizer on it.
@@ -2454,6 +2480,14 @@ Help and tour on these screens are measured by the CT (S13; S20 and S24 for the 
 - **Added in fix round 3 (review 03).** Not checked: whether a test package already brings `Microsoft.CodeAnalysis`
   in transitively (only direct references were searched; S28-2), and how the S28-8 completion test injects its fault
   after `CreateMeetingCommand` (a failing link service or a hand-built dispatcher; the slice chooses).
+- **Added in fix round 4 (review 04 and Q25).** Not checked: whether any real caller of the follow-up endpoint
+  falls outside the eligibility filter. This is the reason `RequireCreatorCanView: false` stays (S28-10); S28
+  measures it. **Known wording gap, no new code:** when a follow-up retry meets a cancelled or completed follow-up
+  of the source (S28-10, review 04 F-26), the dialog shows the existing lifecycle text through the reason-code
+  bridge (`follow-up-dialog.js:85-97`), "This meeting is cancelled." / "This meeting is completed."
+  (`MeetingsIndex.en.resx:86-87`). The dialog is opened from the source meeting's page, so the text may read as
+  if the **source** were cancelled or completed. R1 accepts this, because the case needs a cut-off first call and
+  a later cancel or completion; a distinct code would add 7-language text for it.
 
 ### 24.28 S25 — Agenda at create (today's type template)
 
@@ -2517,6 +2551,11 @@ with the meeting, so the invitation is sent for a meeting that already has its a
       answered; yes → the shared mirror gets `["Meetings"] = 18` (written by this CT after the owner's explicit
       XMC-001 answer, reviewed by the library owner, per card S-90 §7c); no → `PlatformConfiguration` is used and Q13
       is reopened. `AuditTrailStandardTests` and the Building.Blocks drift test are both green.
+      **Deferred S28 changes are recorded (R1-D12 stated deferral; review 04 F-28 b, Q25).** The
+      `ScheduleFollowUpMeetingCommand` event carries `SchedulerAddedAsAttendee`, and the `CreateMeetingCommand` event
+      carries `PreAcceptedUserId` when it is set. Test: a follow-up scheduled by a source attendee who is not the
+      organizer gives `SchedulerAddedAsAttendee = true` and a `CreateMeetingCommand` event naming that scheduler as
+      `PreAcceptedUserId`; a follow-up scheduled by the source organizer gives `false` and no `PreAcceptedUserId`.
 - [ ] S25-8 — **Follow-up ordering (review 01 F-2).** After `ScheduleFollowUpMeetingHandler` writes the carried
       lines, it re-sequences the whole agenda of the new meeting in one pass: carried lines first (K6, in their
       carry order), then mandatory lines (S18, once present), then template lines, numbered 0..n−1 with no duplicate
@@ -2622,24 +2661,26 @@ second. **Evidence:** E4.
       needs background jobs.
 - [ ] S26-10 — **A creator who could not view the meeting (review 02 F-16).** Each line goes through
       `CreateTaskFromMeetingCommand`, which S28-1 guards with the **creator** as the actor. If the creator is neither
-      the organizer (the API accepts another organizer, `MeetingCommandHandlers.cs:115`) nor an attendee, every line
-      would be refused with 404. **Since review 03 (F-19) this is covered by S28-10's general up-front rule**, which
-      S28 builds for every create from the create endpoint, with or without preparation lines: the handler applies
-      the same `CanView` predicate to the meeting **about to be created** (the requested organizer, the requested
-      attendees that pass the eligibility filter, `:178-181`, the creator's `read-all`, and from S15 the chosen
-      subtype's confidential flag), and a creator who would not be able to view it is refused **before anything is
-      written** with 400 `MEETING_CREATOR_CANNOT_VIEW`. The earlier S26-only code
-      `MEETING_PREPARATION_CREATOR_CANNOT_VIEW` is dropped; it was never built. S26 adds only the form side: the
-      section shows a localized hint before submit, "Add yourself as an attendee to create this meeting." (removing
-      the preparation lines no longer helps, because the rule applies to every create), and S26 tests the rule with
-      preparation lines.
+      the organizer nor an attendee, every line would be refused with 404. No screen sends such a request. The create
+      form always sends `organizerUserId: null` (`form.js:174`; `Views/Meetings/_Form.cshtml` has no organizer
+      field), so the organizer is the creator (`MeetingCommandHandlers.cs:115`), and no R1 slice adds an organizer
+      field. Only a direct API caller who names another organizer can send it. **Since review 03 (F-19) this is
+      covered by S28-10's general up-front rule**, which S28 builds for every create from the create endpoint, with
+      or without preparation lines. The handler applies the same `CanView` predicate to the meeting **about to be
+      created**: the requested organizer, the requested attendees that pass the eligibility filter (`:178-181`), the
+      creator's `read-all`, and, from S15, the chosen subtype's confidential flag. A creator who would not be able to
+      view it is refused **before anything is written** with 400 `MEETING_CREATOR_CANNOT_VIEW`. The earlier
+      S26-only code `MEETING_PREPARATION_CREATOR_CANNOT_VIEW` is dropped; it was never built. **S26 adds no form
+      text for this rule** (review 04 F-25). The form cannot trigger the rule, so a hint there would be dead text in
+      7 languages. The rule is defensive, and S26 tests it with preparation lines through the API.
       **Why this choice.** Creating the meeting and failing every line (K12 partial success) was rejected: the
       failure is certain before anything is written, and S26-3's recovery ("retry from the detail page") is not
-      available to a creator who cannot open the meeting. "The organizer must be the creator" was rejected because it
-      forbids an assistant who books a meeting for someone else and adds themself as an attendee. This refusal is
-      input validation on the request, not preparation status, so R1-D13 ("never a block") is not affected. Test: an
-      organizer-other, creator-not-attendee request with one line gives 400, and no meeting, attendee, task or mail
-      exists. The same request with the creator added as an attendee gives 201 and the task.
+      available to a creator who cannot open the meeting. "The organizer must be the creator" was rejected because
+      the API accepts another organizer today (`:115`), and S28 narrows what the API accepts only by visibility.
+      This refusal is input validation on the request, not preparation status, so R1-D13 ("never a block") is not
+      affected. Test (a direct API request): an organizer-other, creator-not-attendee request with one line gives
+      400, and no meeting, attendee, task or mail exists. The same request with the creator added as an attendee
+      gives 201 and the task.
 
 **Failure paths.**
 - No `tasks.create` → no section, and a request that still carries lines gets each line refused with
@@ -2650,7 +2691,7 @@ second. **Evidence:** E4.
 - Mail failure in the reminder → logged, and the claim stays, so no retry storm. Same posture as K12.
 - Cross-tenant assignee → refused by the task guard (existing).
 - A creator who could not view the meeting → 400 `MEETING_CREATOR_CANNOT_VIEW` before anything is written
-  (S28-10's general rule; S26-10).
+  (S28-10's general rule; S26-10). Only a direct API request can reach it; the create form cannot.
 - A retry by a caller who cannot view the existing meeting → S28-10's fixed 409, and no line is sent (S26-4).
 
 **Tests.** The handler and HTTP per-line matrix with the **real** `ITaskAssignmentGuard`; the idempotency test; the
@@ -2822,8 +2863,9 @@ stops showing the titles of meetings the reader may not see.
 - Every write handler listed in S28-1 and S28-10: `MeetingCommandHandlers.cs`, `AgendaItemCommandHandlers.cs`,
   `MinutesCommandHandlers.cs`, `MeetingFollowUpCommandHandlers.cs`, `MeetingTaskBridgeCommandHandlers.cs`.
 - `Commands/MeetingCommands.cs`: the marker parameter on `CreateMeetingCommand` and `ScheduleFollowUpMeetingCommand`,
-  and the `RequireCreatorCanView` parameter on `CreateMeetingCommand` (S28-10). Both are optional trailing
-  parameters, so no existing caller changes.
+  and the `RequireCreatorCanView` and `PreAcceptedUserId` parameters on `CreateMeetingCommand` (S28-10; the second
+  from owner answer Q25). All are optional trailing **command** parameters, never on an HTTP request model, so no
+  existing caller changes and no client can set them.
 - `GenerateDueMeetingSeriesHandler.cs`: creates the system-origin marker with the series organizer, checks the chain
   source through `MeetingWriteAccess` and falls back to an unchained create (S28-4, S28-11).
 - `Handlers/QueryHandlers/MeetingReportQueryHandlers.cs`, `MeetingReportModels.cs` (the `MEETING_NOT_ACCESSIBLE`
@@ -2838,6 +2880,24 @@ stops showing the titles of meetings the reader may not see.
   construction of a guarded handler changes with that handler's constructor, which gains `MeetingWriteAccess` (the
   14 files measured above, including the hand-built dispatchers in `MeetingHttpTests.cs:222-236` and
   `MeetingSeriesSweepEndToEndMongoTests.cs:206-218`).
+- **The sweep unit test also changes (review 04 F-27):** `GenerateDueMeetingSeriesHandlerTests.cs`. Its `Build`
+  helper constructs `GenerateDueMeetingSeriesHandler` by hand with three arguments (`:47`). The handler gains
+  `MeetingWriteAccess` (S28-11), so `Build` also creates one over the existing `FakeMeetingRepository` and
+  `FakeMeetingAttendeeRepository` (`MeetingS2TestDoubles.cs:20, 91`). Its chain test (`:71-88`, assertions at
+  `:85-87`) passes a random source id that is in no repository. Under S28-11 that source is "not visible", so the
+  sweep would send `CreateMeetingCommand`, and the test's expectations (`CreateMeetingWasSent` false,
+  `ScheduleFollowUpWasSent` true) would fail; its `RecordingMediator` answers only those two commands
+  (`:230-264`). The slice seeds that source with the series organizer as its organizer, so the test keeps its
+  meaning, and adds two unit rows:
+  - **source visible** → `ScheduleFollowUpMeetingCommand` is sent with that source, and `CreateMeetingCommand` is
+    not;
+  - **source not visible** (another organizer, and no attendee row for the series organizer) →
+    `CreateMeetingCommand` is sent with `FollowUpOfMeetingId` null and the series' own values,
+    `ScheduleFollowUpMeetingCommand` is not sent, `MeetingsGenerated` is 1, `Failed` is 0, and
+    `LastGeneratedMeetingId` is the new meeting.
+
+  The plain-create test with `ChainAsFollowUp` false (`:90-102`) does not change: nothing is chained, so no source
+  is checked.
 - `RecordLinks/MeetingRelatedRecordResolver.cs` (S28-7).
 - `wwwroot/assets/js/Meetings/Report/index.js` and its l10n; the Report resx set in 7 languages (the masked task
   title and the masked current-meeting title).
@@ -2989,7 +3049,8 @@ stops showing the titles of meetings the reader may not see.
       (`MeetingSeriesSweepJob.cs:81`) through `GenerateDueMeetingSeriesHandler`. **Existing tests that change (review
       03 F-20):** `MeetingInvitationTests.cs:119-120` and `MeetingTwoUserFlowMongoTests.cs:119-120` now expect 404
       `MEETING_NOT_FOUND` for a caller without an attendee row (S28-1); every hand-built construction of a guarded
-      handler follows its new constructor (Files). **Rows added in fix round 2 (review 02):**
+      handler follows its new constructor, and the sweep unit test `GenerateDueMeetingSeriesHandlerTests.cs` changes
+      and gains two rows as Files states (review 04 F-27). **Rows added in fix round 2 (review 02):**
       - every S28-1 handler on a **cancelled** and on a **completed** meeting: a non-viewer gets 404, never the 409
         state answer;
       - `SaveMinutesDraft` naming a non-attendee in `Attendance`: a non-viewer gets 404, never the 400 that reveals
@@ -3007,12 +3068,14 @@ stops showing the titles of meetings the reader may not see.
         byte-identical to an id that does not exist, and nothing is written.
 
       **Rows added or changed in fix round 3 (review 03):**
-      - **creator rule** (S28-10, F-19), over HTTP: a creator who names another organizer and is not among the
-        attendees (no `read-all`) gets 400 `MEETING_CREATOR_CANNOT_VIEW`, and no meeting, attendee row or mail
-        dispatch exists. The same request with the creator added as an attendee gives 201, and its retry gives 200
-        with the same id (K11). A `read-all` creator who is not on the meeting gets 201. A source attendee who is not
-        the organizer schedules a follow-up through the follow-up endpoint with no attendees and gets 201 (the rule is
-        not applied there; Q25);
+      - **creator rule** (S28-10, F-19), over HTTP, sent directly to the API (no screen sends this request; review
+        04 F-25): a creator who names another organizer and is not among the attendees (no `read-all`) gets 400
+        `MEETING_CREATOR_CANNOT_VIEW`, and no meeting, attendee row or mail dispatch exists. The same request with
+        the creator added as an attendee gives 201, and its retry gives 200 with the same id (K11). A `read-all`
+        creator who is not on the meeting gets 201. A create with `organizerUserId: null`, as the create form sends
+        it (`form.js:174`), always passes. A source attendee who is not the organizer schedules a follow-up through
+        the follow-up endpoint with no attendees and gets 201 (the rule is not applied there; the Q25 rows below
+        check the scheduler's attendee row);
       - **follow-up collision** (S28-10, F-24), over HTTP, a caller who can view the source, a follow-up whose five
         values match an existing meeting:
         - the caller **cannot view** the existing meeting: 409 with the fixed `MEETING_CREATE_CONFLICT` body. On the
@@ -3039,6 +3102,33 @@ stops showing the titles of meetings the reader may not see.
         - **collision** (behaviour change, F-24): a manually created meeting has the occurrence's five values and
           `FollowUpOfMeetingId` null. The occurrence counts `failed`, nothing is written onto the manual meeting, the
           pointer stays, and the sweep for the next occurrence chains from the same source again.
+
+      **Rows added in fix round 4 (review 04 and Q25):**
+      - **completion on a cancelled or completed meeting** (S28-10, F-26), over HTTP. The setup is the completion
+        row above, but the existing follow-up of the source is cancelled (and, in a second row, completed) before
+        the retry. The answer is 409 `MEETING_CANCELLED` (in the second row, 409 `MEETING_COMPLETED`). No follow-up
+        link, no carried agenda line and no agenda link is written onto that meeting, and the source's links are
+        unchanged;
+      - **scheduler as attendee** (S28-10, Q25), over HTTP with real Mongo:
+        - a source attendee who is not the organizer schedules a follow-up through the follow-up endpoint with no
+          attendees: 201. The new meeting has exactly two attendee rows, the source organizer's and the
+          scheduler's, both `Accepted`. The scheduler's `GET /{id}` of it answers 200. No invite dispatch is
+          addressed to the scheduler, and the scheduler gets **no Task Center invite item** for it (the
+          `MeetingWorkItemProviderTests.cs` shape: the provider returns nothing for that meeting);
+        - the source organizer schedules the same: one attendee row (the organizer's), as today;
+        - a `read-all` holder who is **not a party** of the source (neither its organizer nor an attendee) schedules
+          a follow-up: 201, and **no** row is added for them; the new meeting has only the source organizer's row;
+        - a request that already names the scheduler in `attendeeUserIds`: exactly one scheduler row, `Accepted`;
+        - a retry with the same idempotency key: 200 with the same id from the follow-up's own link (`:68-77`), and
+          no second scheduler row;
+      - **scheduler under the marker** (S28-10, Q25), handler level with a recording mediator: a
+        `ScheduleFollowUpMeetingCommand` sent with the system-origin marker forwards exactly the request's
+        `AttendeeUserIds`, with no caller id and no empty id, and no `PreAcceptedUserId`. The series "true
+        organizer" row above also asserts that the chained occurrence has no attendee row beyond the organizer and
+        the series attendees;
+      - **pre-accepted only for that user** (S28-10, Q25), handler level: a `CreateMeetingCommand` with
+        `PreAcceptedUserId` = U and attendees U and V writes U `Accepted` and V `Pending`; with `PreAcceptedUserId`
+        null, every non-organizer row is `Pending`, as today.
 - [ ] S28-9 — The work list rows A3 and Dalga 1.1 (BL-541) are closed **for the meetings side**. Updating the BL-541
       backlog row is the CT's record step and is not part of this pack.
 - [ ] S28-10 — **Meetings reached through the create path (review 02 F-11; F-14 item 4; review 03 F-19, F-24).**
@@ -3054,20 +3144,29 @@ stops showing the titles of meetings the reader may not see.
           the caller is the requested organizer). Under the system-origin marker the acting identity is the series
           organizer, who is the requested organizer, so the sweep always passes. It is **not** applied to the
           `CreateMeetingCommand` that `ScheduleFollowUpMeetingHandler` sends: that handler passes the optional
-          trailing parameter `RequireCreatorCanView: false` (default `true`), because the follow-up dialog sends no
-          attendees (`follow-up-dialog.js:91-93`), and the rule would refuse every follow-up a source attendee who
-          is not the organizer schedules today. That path's retries are answered by its own idempotency link
-          (`MeetingFollowUpCommandHandlers.cs:68-77`) before `CreateMeetingCommand` is reached. Whether the follow-up
-          should add its scheduler as an attendee is owner question Q25. A source-scan test asserts that exactly one
-          file, `MeetingFollowUpCommandHandlers.cs`, passes `false`.
-        - **Why this choice, rather than accepting the 409.** Without the rule, an assistant who books a meeting for
-          someone else gets 201 with the whole meeting, and their own double-click or client retry then gets 409 for
-          a meeting their own call wrote; the form would also send them to a page they cannot open (`form.js:194`).
-          With the rule, the refusal comes before anything is written, and a creator's retry reaches the replay
-          branch only for a meeting they could view, so it answers 200 unless the meeting's people changed between
-          the calls (then 409 is right). The rule only adds a refusal (R1-D12). **Behaviour change, stated:** a
-          creator who is neither the organizer nor an attendee and has no `read-all` can no longer create a meeting
-          from the create form; they add themselves as an attendee.
+          trailing parameter `RequireCreatorCanView: false` (default `true`). The follow-up dialog sends no
+          attendees (`follow-up-dialog.js:91-93`). Instead, the follow-up adds a scheduler who is a party of the
+          source as an `Accepted` attendee (owner answer Q25, the "Scheduler as attendee" bullet below), so such a
+          scheduler can open the new meeting when eligible, and the rule stays off so that no follow-up that works
+          today is refused. That path's retries are answered
+          by its own idempotency link (`MeetingFollowUpCommandHandlers.cs:68-77`) before `CreateMeetingCommand` is
+          reached. A source-scan test asserts that exactly one file, `MeetingFollowUpCommandHandlers.cs`, passes
+          `false`.
+        - **Why this choice, rather than accepting the 409.** The rule is **defensive** (review 04 F-25). No screen
+          can trigger it today. The create form always sends `organizerUserId: null` (`form.js:174`;
+          `Views/Meetings/_Form.cshtml` has no organizer field), so the organizer is the caller
+          (`MeetingCommandHandlers.cs:115`), and the Task Center's review meeting also names the caller as organizer
+          (`MeetingTaskBridgeCommandHandlers.cs:457-468`). No R1 slice adds an organizer field to the form. Only a
+          direct API caller who names another organizer and is not among the attendees reaches the rule. Without
+          it, that caller would get 201 with the whole meeting, and their own retry would then get 409 for a meeting
+          their own call wrote. With it, the refusal comes before anything is written, and a creator's retry reaches
+          the replay branch only for a meeting they could view, so it answers 200 unless the meeting's people
+          changed between the calls (then 409 is right). The rule only adds a refusal (R1-D12). The reason-code
+          bridge carries its text in 7 languages, because the bridge guard requires every `MeetingReasonCodes`
+          value (`tests/meetings-reason-code-bridge.test.js`); no form shows a hint for it (S26-10). **Behaviour
+          change, stated:** a **direct API caller** who names another organizer, is not an attendee and has no
+          `read-all` can no longer create that meeting; they add themselves as an attendee. The create form, the
+          Task Center and the follow-up dialog are not affected.
       - **Replay branch.** When `FindOrCreateAsync` returns an existing meeting (`isNew = false`,
         `MeetingCommandHandlers.cs:151-152`), `CreateMeetingHandler` applies `MeetingWriteAccess` to that meeting
         before it reads its attendees or builds any response. A caller who passes gets the meeting with **200** (a
@@ -3094,13 +3193,20 @@ stops showing the titles of meetings the reader may not see.
         - a **409** from `CreateMeetingCommand` (the caller cannot view the existing meeting) is passed on as the same
           fixed `MEETING_CREATE_CONFLICT` body, and nothing is written;
         - a **200** replay (which `CreateMeetingCommand` returns only to a caller who can view the existing meeting):
-          - its `FollowUpOfMeetingId` is the source and no follow-up link from the source to it exists yet →
-            **completion**: the handler writes the follow-up link with this call's idempotency key, then carries the
-            source's open lines with the same method as a new follow-up, skipping every task that already has a line
-            with `CarriedFromMeetingId` = the source on that meeting. It answers 200 with the meeting id and the
-            number of lines carried from the source on that meeting;
+          - its `FollowUpOfMeetingId` is the source, no follow-up link from the source to it exists yet, and it is
+            **Scheduled** → **completion**: the handler writes the follow-up link with this call's idempotency key,
+            then carries the source's open lines with the same method as a new follow-up, skipping every task that
+            already has a line with `CarriedFromMeetingId` = the source on that meeting. It answers 200 with the
+            meeting id and the number of lines carried from the source on that meeting;
+          - its `FollowUpOfMeetingId` is the source, no follow-up link exists yet, and it is **Cancelled** or
+            **Completed** (review 04 F-26) → the existing lifecycle conflict that every agenda write gives on such a
+            meeting (`UpdateMeetingHandler.CheckEditable`, `MeetingCommandHandlers.cs:285-292`, used by the agenda
+            handlers at `AgendaItemCommandHandlers.cs:38, 83, 126, 162`): 409 `MEETING_CANCELLED` or 409
+            `MEETING_COMPLETED`. No follow-up link and no carried line is written. The replay itself does not look
+            at the lifecycle (`FindByIdempotencyKeyAsync` and `FindOrCreateAsync`, `MeetingRepositories.cs:150-165`),
+            so this check is the completion's own, made before its first write;
           - its `FollowUpOfMeetingId` is the source and the follow-up link already exists (written by another call)
-            → 200 with the same id and count, and nothing is written;
+            → 200 with the same id and count, and nothing is written, whatever the meeting's lifecycle;
           - its `FollowUpOfMeetingId` is not the source (null, or another meeting) → **409
             `MEETING_FOLLOW_UP_CONFLICT`** ("A meeting with these details already exists and is not a follow-up of
             this meeting."), whose `data` carries only that meeting's id. Nothing is written.
@@ -3110,20 +3216,82 @@ stops showing the titles of meetings the reader may not see.
           (`MeetingFollowUpCommandHandlers.cs:102-108`), so a meeting whose value is the source already declares
           itself that source's follow-up, and carrying writes no task title (a carried line holds a code,
           `:223-229`). The fixed body stays only for a caller who cannot view the existing meeting.
+          The completion also writes only onto a **scheduled** meeting, the same lifecycle rule the agenda handlers
+          apply, so it never writes a line that agenda editing would refuse (review 04 F-26).
         - The cycle check (`MeetingFollowUpCommandHandlers.cs:109-113`) stays as defence in depth. A first follow-up
           call cut off after the meeting was written and before its link is now completed by a retry from a caller who
-          can view that meeting. A retry by a scheduler who cannot view it (possible, because the creator rule is not
-          applied on this path) still gets the fixed 409; the meeting stays a normal meeting that shows its source
-          through `FollowUpOfMeetingId`, and anyone who can view both meetings completes it by scheduling the same
-          follow-up again. A retry that comes after the link was written is still answered by the follow-up's own
-          idempotency link (`:68-77`). Two truly simultaneous completions keep today's window (the line-level skip
-          narrows it, and nothing widens it). From S25 on, S25-8's re-sequencing also runs after a completion,
-          because it runs on whatever meeting the handler carries lines onto.
+          can view that meeting, while the meeting is scheduled. A retry by a scheduler who cannot view it still gets
+          the fixed 409. Since Q25, a scheduler who is a party of the source is an attendee of the meeting their
+          first call wrote, and a non-party scheduler can view through `read-all`, so this happens only when that
+          call was cut off between the meeting insert and the scheduler's attendee row, or when the scheduler is
+          outside the eligibility filter (the creator rule is not applied on this path). The
+          meeting then stays a normal meeting that shows its source through `FollowUpOfMeetingId`, and anyone who can
+          view both meetings completes it by scheduling the same follow-up again while it is scheduled. A retry that
+          comes after the link was written is still answered by the follow-up's own idempotency link (`:68-77`). Two
+          truly simultaneous completions keep today's window (the line-level skip narrows it, and nothing widens it).
+          From S25 on, S25-8's re-sequencing also runs after a completion, because it runs on whatever meeting the
+          handler carries lines onto.
         - **Behaviour change, stated (sweep).** Today the sweep chains onto any existing meeting with the same five
           values, a manually created one included, and writes the link and the carried lines onto it. From S28 on,
           it chains onto such a meeting only when that meeting's `FollowUpOfMeetingId` is the source. Otherwise the
           occurrence counts `failed` (409 `MEETING_FOLLOW_UP_CONFLICT`), the pointer stays, and the next occurrence
           chains from the same source again: one occurrence is missed, and the series does not stop.
+          The same holds for a colliding follow-up of the source that is cancelled or completed and has no link:
+          its lifecycle 409 counts `failed` (review 04 F-26).
+      - **Scheduler as attendee (owner answer Q25, "devam-katilimci", 2026-10-29; binding once R1 is approved).**
+        When an attendee who is not the organizer schedules a follow-up, the scheduler is added automatically as an
+        attendee of the new meeting. `ScheduleFollowUpMeetingHandler` builds the `AttendeeUserIds` of the
+        `CreateMeetingRequest` it sends (`MeetingFollowUpCommandHandlers.cs:81-90`) as the request's own list plus
+        the caller, when both of these hold:
+        - the caller is a **party of the source**: its organizer, or a user with an attendee row on it (any
+          response). The attendee ids come from the same load `MeetingWriteAccess` makes for the source check
+          (S28-1). A caller who passed the source check only through `read-all` (a `read-all` holder or a platform
+          operator) is **not** added: they can open the new meeting through `read-all` anyway, and an extra row
+          would inflate the report's invited count (`MeetingReportQueryHandlers.cs:73-77`) and, from S16, add a row
+          that mandatory attendance requires to be marked;
+        - the caller is not the new meeting's organizer (`request.OrganizerUserId ?? source.OrganizerUserId`,
+          `:87`).
+
+        Further rules:
+        - **`Accepted`, not `Pending`.** The handler also passes the caller as `PreAcceptedUserId`, an optional
+          trailing **command** parameter on `CreateMeetingCommand` (default null; never on `CreateMeetingRequest`
+          or any HTTP request model, like the S28-4 marker). `CreateMeetingHandler` writes the row of that one user
+          with `InvitationResponse.Accepted`, and every other non-organizer row as today (`Pending`). The reason is
+          the same one that makes the organizer's own row `Accepted` (`MeetingCommandHandlers.cs:157-167`). A
+          `Pending` row would put an accept/decline card for their own follow-up on the scheduler's Task Center
+          (`MeetingWorkItemProvider.cs:61, 78-82, 123-127, 161`), show it as pending in their work calendar
+          (`GetMyWorkCalendarHandler.cs:132, 138`), and leave it out of their time planning, which counts only
+          `Accepted` rows (`MeetingGatewayAdapter.cs:27-28`). The owner said "added as attendee" without a response
+          status; `Accepted` is the CT's default (Q25 row in §24.25). A source-scan test asserts that exactly one
+          file, `MeetingFollowUpCommandHandlers.cs`, sets `PreAcceptedUserId`.
+        - **User calls only.** Under the system-origin marker (the series sweep), nothing is added and no
+          `PreAcceptedUserId` is set: the acting identity is the series organizer, who is already the organizer,
+          and an empty user id is never put on the list.
+        - **`CreateMeetingHandler`'s other rules apply unchanged**, because the id only joins the request's list.
+          It is written only for a new meeting (`isNew`, `MeetingCommandHandlers.cs:155`), only once (`Distinct()`
+          and the organizer skip, `:171-176`), and only if it passes the eligibility filter (`:178-181`). A
+          scheduler outside the filter is skipped like any attendee today (K12), and the follow-up is still created.
+        - **No mail and no `.ics` line for the scheduler** (accepted behaviour). The mailer leaves out the acting
+          user before it resolves recipients (`MeetingInviteMailer.cs:131-134`) and builds the `.ics` from those
+          resolved recipients only (`:166`; ATTENDEE lines at `MeetingIcsBuilder.cs:77`), so the scheduler gets
+          neither an invite e-mail nor an ATTENDEE line in the `.ics` others receive. The source organizer still
+          gets the organizer's "added to your calendar" mail, as today.
+        - **Replays write no attendee row.** The follow-up's own idempotency link (`:68-77`), the "link already
+          exists" answer and the completion write no attendee row: the row belongs to the first call, which wrote
+          the meeting.
+        - **`RequireCreatorCanView: false` stays** on this path. With the scheduler on the list, the creator rule
+          would pass for every eligible scheduler anyway. It stays off so that a scheduler outside the filter is
+          not refused where the follow-up works today, and the S28-10 source-scan guard still names this one file.
+        - **Confidential source (S15-10).** The follow-up inherits confidentiality, and the scheduler stays on it.
+          This gives nobody new access: only a party of the source is added, so the scheduler already took part in
+          the meeting the follow-up continues.
+        - **Why.** Today the dialog sends the scheduler to the new meeting's page (`follow-up-dialog.js:106`), which
+          they cannot open when they are only an attendee of the source and hold no `read-all` (measured above). The
+          owner chose to add them (Q25 (a)) rather than leave the path as it is or refuse it. **Audit:** the
+          `Accepted` attendee row is written by `CreateMeetingCommand`, which writes attendee rows today for any
+          attendee a follow-up request names, and an `Accepted` row for the organizer. Neither
+          `ScheduleFollowUpMeetingCommand` nor `CreateMeetingCommand` moves in S28 (R1-D12, stated deferral). S25's
+          events record `SchedulerAddedAsAttendee` and `PreAcceptedUserId` (§25), and S25-7 tests them.
       - **`FollowUpOfMeetingId`.** `CreateMeetingHandler` loads that meeting and applies `MeetingWriteAccess` right
         after the load. A caller who cannot view it gets the handler's own not-found body for it (404
         `MEETING_FOLLOW_UP_NOT_FOUND`, "The meeting this follows up on does not exist.", `:128-129`), and nothing is
@@ -3146,8 +3314,16 @@ stops showing the titles of meetings the reader may not see.
           CorrelationId={CorrelationId}` (no title), so an operator can see that a chain was broken.
         - If that plain create fails (for example S28-10's 409 for a colliding meeting the organizer cannot view),
           the occurrence counts `failed` on the existing path (`GenerateDueMeetingSeriesHandler.cs:93-103`), the
-          pointer stays, and the next occurrence, with a different start, tries again. No case stops the series for
-          good.
+          pointer stays, and the next occurrence, with a different start, tries again. **No visibility rule stops
+          the series for good** (narrowed in fix round 4, review 04 F-28 c). One case outside visibility still does,
+          as today: when the series organizer is no longer an active tenant user, `CreateMeetingHandler` refuses
+          every occurrence with 400 `MEETING_ORGANIZER_INVALID` (`MeetingCommandHandlers.cs:116-121`), on the
+          chained and the unchained path alike. **Recovery:** a `series-manage` holder changes the series organizer
+          through `UpdateMeetingSeries` (`MeetingSeriesCommandHandlers.cs:175`) to an **active tenant user**.
+          `UpdateMeetingSeriesHandler` does not check eligibility (it refuses only an empty id,
+          `MeetingSeriesCommandHandlers.cs:38-40`), so a recovery to another inactive user keeps failing. The next
+          occurrence is then created, unchained if the new organizer cannot view the last generated meeting. S28 adds
+          no automatic recovery.
         - **Why.** A failed occurrence never moves the pointer (`:93-103`, `:107`), and every later occurrence
           chains from it (`:147`), so refusing the source would stop the series for good after a legitimate
           organizer hand-over, with no manual way out (measured above). The fallback leaks nothing: the new meeting
@@ -3171,17 +3347,23 @@ stops showing the titles of meetings the reader may not see.
 - Cross-tenant → 404.
 - A meeting deleted while the request runs → 404.
 - A creator who would not be able to view the meeting they ask for → 400 `MEETING_CREATOR_CANNOT_VIEW`, nothing
-  written (S28-10).
+  written (S28-10). This is defensive: only a direct API caller who names another organizer reaches it (review 04
+  F-25).
 - Create replay or follow-up collision by a caller who cannot view the existing meeting → 409
   `MEETING_CREATE_CONFLICT`, fixed body (S28-10).
 - Follow-up collision with a meeting the caller can view that is not a follow-up of the source → 409
   `MEETING_FOLLOW_UP_CONFLICT` with only that meeting's id (S28-10).
+- Follow-up completion onto a cancelled or completed follow-up of the source → 409 `MEETING_CANCELLED` / 409
+  `MEETING_COMPLETED`, nothing written (S28-10; review 04 F-26).
+- A follow-up scheduler outside the eligibility filter, or not a party of the source (a `read-all` holder or
+  platform operator) → no scheduler row; the follow-up is still created, as today (S28-10, Q25).
 - A sweep without the marker → 404 for the follow-up. This is a defect, and the S28-4 test catches it.
 - A sweep whose series organizer cannot view the source meeting → an unchained occurrence, the pointer moves on, and
   a `meetings.series.chain_broken` warning is logged; nothing is written onto the source (S28-11).
 
-**Tests.** The S28-8 matrix, the source-scan guards (S28-2, S28-4, and the S28-10 `RequireCreatorCanView` guard),
-the report and export masking tests, and the resolver drop test. Sabotage:
+**Tests.** The S28-8 matrix, the source-scan guards (S28-2, S28-4, and the S28-10 `RequireCreatorCanView` and
+`PreAcceptedUserId` guards), the report and export masking tests, the resolver drop test, the two sweep unit rows in
+`GenerateDueMeetingSeriesHandlerTests.cs` (review 04 F-27), and the Q25 marker and pre-accepted unit rows. Sabotage:
 - remove the helper call from `AddMeetingAttendeesHandler` only (`UpdateMeetingHandler` in the same file still calls
   it) → the matrix row and the class-level S28-2 guard go red;
 - move the access check after `CheckEditable` in `UpdateMeetingHandler` → the cancelled-meeting row goes red;
@@ -3193,12 +3375,25 @@ the report and export masking tests, and the resolver drop test. Sabotage:
 - drop the `FollowUpOfMeetingId` = source condition from the completion → the "can view, not a follow-up" row goes
   red (a link and lines are written onto that meeting);
 - drop the line-level skip in the completion → the second-retry row goes red (lines carried twice);
+- drop the lifecycle check from the completion → the cancelled and completed completion rows go red (a link and
+  lines are written onto a cancelled or completed meeting);
+- drop the scheduler from the attendee list the follow-up sends → the Q25 row goes red (the scheduler gets 404 on
+  the new meeting);
+- drop `PreAcceptedUserId` (the scheduler's row is written `Pending`) → the Q25 row goes red (a Task Center invite
+  item for their own follow-up, and a `Pending` row);
+- add every caller who passed the source check, not only a party of the source → the `read-all` non-party row goes
+  red (a row is added for them);
+- add the caller to that list under the system-origin marker as well → the Q25 marker unit row goes red (the
+  forwarded list differs from the request's);
+- set `PreAcceptedUserId` in a second file → the `PreAcceptedUserId` source-scan guard goes red;
 - skip `CanView` on `FollowUpOfMeetingId` → its row goes red;
 - create the marker in a second file → the S28-4 guard goes red;
 - give the marker an unconditional pass again → the series attack row goes red (lines carried onto the new
   meeting);
 - count a source the organizer cannot view as `failed` again (the fix round 2 rule) → the hand-over row goes red
   (no meeting, the pointer stuck);
+- skip the chain-source check in the sweep → the "source not visible" sweep unit row goes red
+  (`ScheduleFollowUpMeetingCommand` is sent);
 - let the unchained fallback set `FollowUpOfMeetingId` or carry lines → the series attack row goes red;
 - remove the report task mask → S28-6 goes red;
 - build the current-meeting title from all meetings again → the S28-6 current-meeting test goes red;
@@ -3212,13 +3407,18 @@ Restore each one and it goes green.
 and in the export (`MeetingReportExportPlaceholders`), and the `MEETING_CREATE_CONFLICT`,
 `MEETING_CREATOR_CANNOT_VIEW` and `MEETING_FOLLOW_UP_CONFLICT` texts in the reason-code bridge (the task code is
 already rendered on the meeting detail page). **Permissions:** unchanged keys; this slice
-only adds the visibility rule (R1-D15). **Tenant isolation:** unchanged and re-tested (S28-8). **Audit:** an
-access-check-only change, so no command moves (R1-D12). The replay's 200 and 409, the creator rule's 400 and the
-reordered `RespondToInvitation` checks change answers, not what any command writes. The follow-up completion writes
-the same kinds of rows a follow-up writes today, onto a narrower set of meetings. The sweep's fallback changes which
-existing command it sends; the sweep itself still writes only the claim and the pointer, and the meeting is written
-by `CreateMeetingCommand`, which has its own row. §25 names S28 on each affected row.
-**Depends on:** nothing. **Estimate:** 3 prompts (review 03 F-20: the test load measured above). **Evidence:** E5.
+only adds the visibility rule (R1-D15). **Tenant isolation:** unchanged and re-tested (S28-8). **Audit:** the
+access checks are access-check-only (R1-D12), so no command moves because of them. The replay's 200 and 409, the
+creator rule's 400, the completion's lifecycle 409 and the reordered `RespondToInvitation` checks change answers,
+not what any command writes. Three changes do write differently and are **not** access-check-only (review 04 F-28
+b): the sweep's unchained fallback (S28-11), the follow-up completion and the scheduler's `Accepted` attendee row
+(S28-10, Q25). They fall under R1-D12's stated deferral. None of `GenerateDueMeetingSeriesCommand`,
+`ScheduleFollowUpMeetingCommand` and `CreateMeetingCommand` has an event in S28 (no meeting audit row can be written
+before S25, Q13 and Q23). S21 and S25 move them to path `a`, and their events record the change (§25; S25-7 tests
+`SchedulerAddedAsAttendee` and `PreAcceptedUserId`). None of the three changes writes a new kind of data. §25 names
+S28 on each affected row.
+**Depends on:** nothing. **Estimate:** 3 prompts (review 03 F-20: the test load measured above; review 04 F-27, F-26
+and Q25 add one unit test file and about nine rows, which fit in the same estimate). **Evidence:** E5.
 It crosses the MOD-0024 read rule and the Task Center projection.
 
 ---
@@ -3232,12 +3432,15 @@ It crosses the MOD-0024 read rule and the Task Center projection.
 > debt list.** "Known debt" below is the measured status today. It is **not** an exception class. Yol `a` = Platform
 > `IAuditableCommand` + `IAuditMetadataProvider` (the `platform-merkezi` trace, best effort with a warning log, AUD-001
 > §4.2). The audit category is Q13 (with Q23 for the shared mirror). Confidential meetings: no `Title`, description or
-> agenda text in the metadata. **S28 adds only an access check to many rows** (R1-D12 access-check-only rule). Those
-> rows say "S28: access check" and stay where they are unless another slice changes what they write.
+> agenda text in the metadata. **S28 adds only an access check to many rows** (R1-D12 access-check-only rule),
+> **except the three stated deferred write changes** of R1-D12 (the sweep's unchained fallback, the follow-up
+> completion, and the scheduler's `Accepted` attendee row; review 04 F-28 b, Q25), which the
+> `GenerateDueMeetingSeriesCommand`, `ScheduleFollowUpMeetingCommand` and `CreateMeetingCommand` rows name. The
+> access-check rows say "S28: access check" and stay where they are unless another slice changes what they write.
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
 |---|---|---|---|---|---|
-| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S25** (S15, S26 and S27 then extend it). S28 (before S25): `CanView` on `FollowUpOfMeetingId` and on the replay branch, 200 or 409 on a replay, the up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, review 03 F-19) and the system-origin marker (S28-4, S28-10); refusals and access checks only, so it does not move in S28 | After: Id, MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts; Title only when not confidential | — |
+| CreateMeetingCommand | meetings.meeting.created | Meeting | today known debt (L76) → **a in S25** (S15, S26 and S27 then extend it). S28 (before S25): `CanView` on `FollowUpOfMeetingId` and on the replay branch, 200 or 409 on a replay, the up-front creator rule (400 `MEETING_CREATOR_CANNOT_VIEW`, review 03 F-19) and the system-origin marker (S28-4, S28-10); those are refusals and access checks only. S28 also adds the command-only `PreAcceptedUserId` parameter (owner answer Q25), set only by `ScheduleFollowUpMeetingHandler`: the row of that one user is written `Accepted`. This is a write change, which does not move the command in S28 under R1-D12's stated deferral (no event in S28; S25 moves it and S25-7 tests the field; an `Accepted` attendee row is written today for the organizer) | After: Id, MeetingTypeId, StartAt, EndAt, OrganizerUserId, IsConfidential, attendee and agenda counts, PreAcceptedUserId when set; Title only when not confidential | — |
 | UpdateMeetingCommand | meetings.meeting.updated | Meeting | today known debt (L171) → **a in S15** (S28: access check first) | Before/after of the changed fields: MeetingTypeId, StartAt, EndAt, Location, Description, IsConfidential (Title rule as above) | — |
 | CancelMeetingCommand | — | Meeting | known debt (L69). S28: access check only (R1-D12), so it stays | — | not an exception; what it writes does not change in R1 |
 | ReassignMeetingOrganizerCommand | — | Meeting | known debt (L128). S28: access check only, so it stays | — | not an exception; what it writes does not change in R1 |
@@ -3254,11 +3457,11 @@ It crosses the MOD-0024 read rule and the Task Center projection.
 | SaveMinutesDraftCommand | — | MeetingMinutesVersion | known debt (L155); S28 access check; S17 adds a field. It **stays in debt** under CT decision Q14 (b) (not K2; moving it to path `a` is allowed and left to S17) | — | not an exception; Q14 (b) |
 | PublishMinutesCommand | — | MeetingMinutesVersion | known debt (L126); S28 access check; changed by S16, S18 and S27. **Stays in debt**: K2 class (CT decision Q14 (a)), no path `a` until the in-transaction path (K1) exists | — | not an exception; K2 debt rule, AUD-001 §4.4 |
 | CorrectPublishedMinutesCommand | — | MeetingMinutesVersion | known debt (L72); S28 access check; changed by S16, S17, S18 and S27. **Stays in debt**: K2 class (Q14 (a)) | — | as above |
-| ScheduleFollowUpMeetingCommand | meetings.meeting.follow-up-scheduled | Meeting (+ AgendaItem, RecordLink) | today known debt (L156) → **a in S25**, which changes how its agenda is ordered (S25-8; review 01 F-2). S28: source access check, the system-origin marker forwarded, `RequireCreatorCanView: false` on the create it sends, and the rule for a meeting that was not newly written: the fixed 409 for a caller who cannot view it, 409 `MEETING_FOLLOW_UP_CONFLICT` when it is not a follow-up of the source, and the idempotent completion when it is (S28-10; review 03 F-24). The completion writes the same kinds of rows a follow-up writes today, onto a narrower set of meetings, so it does not move in S28. S15: inherited confidentiality (S15-10) | After: SourceMeetingId, new MeetingId, carried line count, IsConfidential. Title only when not confidential | — |
+| ScheduleFollowUpMeetingCommand | meetings.meeting.follow-up-scheduled | Meeting (+ AgendaItem, RecordLink) | today known debt (L156) → **a in S25**, which changes how its agenda is ordered (S25-8; review 01 F-2). S28: source access check, the system-origin marker forwarded, `RequireCreatorCanView: false` on the create it sends, and the rule for a meeting that was not newly written: the fixed 409 for a caller who cannot view it, 409 `MEETING_FOLLOW_UP_CONFLICT` when it is not a follow-up of the source, and the idempotent completion when it is and the meeting is scheduled; a cancelled or completed one gets its lifecycle 409 (S28-10; review 03 F-24, review 04 F-26). S28 also adds the scheduler as an `Accepted` attendee of the create it sends (`PreAcceptedUserId`) when the scheduler is a party of the source and not the new organizer (owner answer Q25). The completion and the scheduler row are write changes, not access checks. They do not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b): there is no event in S28, S25 moves the command (S25-7 tests the new field), and both changes write only kinds of rows a follow-up writes today (a link and carried lines; an attendee row through `CreateMeetingCommand`). S15: inherited confidentiality (S15-10) | After: SourceMeetingId, new MeetingId, carried line count, SchedulerAddedAsAttendee (true when S28-10's Q25 rule added the caller), IsConfidential. Title only when not confidential | — |
 | CreateMeetingSeriesCommand | meetings.series.created | MeetingSeries | today known debt (L77) → **a in S21**. S23 adds the server-only `CreatedFromMeetingId` and the adoption's `CanView` (S23-8) | After: Name, MeetingTypeId, Frequency, Interval, StartsAt, EndsAt, OrganizerUserId, TitleTemplate, CreatedFromMeetingId | — |
 | UpdateMeetingSeriesCommand | meetings.series.updated | MeetingSeries | today known debt (L172) → **a in S21** | Before/after of the changed fields | — |
 | DeleteMeetingSeriesCommand | — | MeetingSeries | known debt (L97), unchanged | — | not an exception; unchanged |
-| GenerateDueMeetingSeriesCommand | meetings.series.occurrence-processed | MeetingSeries | today known debt (L118) → **a in S21**, which changes what the sweep writes (titles from the template, the claim advanced on skipped days; review 01 F-2). S28 (before S21): creates the system-origin marker with the series organizer, checks the chain source with it, and falls back to an unchained create with a `meetings.series.chain_broken` warning log when the organizer cannot view the source (S28-4, S28-11; review 03 F-18). The sweep's own writes stay the claim and the pointer, and the meeting is written by `CreateMeetingCommand`, so it does not move in S28 | After: SeriesId, occurrence id, outcome (created, created-unchained, skipped or failed), created MeetingId, and for created-unchained the previous MeetingId | — (not İ2: it writes the claim `LastProcessInstanceId` on `MeetingSeries`) |
+| GenerateDueMeetingSeriesCommand | meetings.series.occurrence-processed | MeetingSeries | today known debt (L118) → **a in S21**, which changes what the sweep writes (titles from the template, the claim advanced on skipped days; review 01 F-2). S28 (before S21): creates the system-origin marker with the series organizer, checks the chain source with it, and falls back to an unchained create with a `meetings.series.chain_broken` warning log when the organizer cannot view the source (S28-4, S28-11; review 03 F-18). The fallback is not an access-check-only change: it is a different write in the same call. It does not move the command in S28, under R1-D12's stated deferral (review 04 F-28 b). The command has no event in S28 (no meeting audit row before S25, Q13 and Q23). S21 moves it, and its event records `created-unchained`. The fallback writes no new kind of data: it writes the claim and the pointer as today, and it creates the meeting through `CreateMeetingCommand` as a first instance does, with no link and no carried line | After: SeriesId, occurrence id, outcome (created, created-unchained, skipped or failed), created MeetingId, and for created-unchained the previous MeetingId | — (not İ2: it writes the claim `LastProcessInstanceId` on `MeetingSeries`) |
 | CreateMeetingTypeCommand | meetings.type.created | MeetingType | today known debt (L78) → **a in S15** | After: every type field including the QA flags and MeetingCategoryId | — |
 | UpdateMeetingTypeCommand | meetings.type.updated | MeetingType | today known debt (L173) → **a in S15** | Before/after of the changed fields; QA flags named separately | — |
 | DeleteMeetingTypeCommand | meetings.type.deleted | MeetingType | today known debt (L98) → **a in S19** | Before: Name, MeetingCategoryId | — |

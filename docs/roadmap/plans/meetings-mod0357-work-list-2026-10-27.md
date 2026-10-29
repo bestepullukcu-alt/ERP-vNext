@@ -327,6 +327,10 @@ tahmin edilmedi. Plan §5.6'nın "6–9 prompt" tahmini yalnız Dalga 4–5'i ka
 4. Bir iş akışı onay adımı toplantıda karara bağlanabilsin mi (6.4)?
 5. Çevrim içi toplantı: Google Meet, Teams ya da ikisi (10.1)?
 6. Dış katılımcı için saklanacak bilgi (10.3).
+6b. **Paket Q25 — sahip cevabı (2026-10-29, `devam-katilimci`):** düzenleyen olmayan bir katılımcı devam toplantısı
+    açınca kendiliğinden katılımcı olarak eklenir. Pakete düzeltme turu 4'te işlendi (S28-10, "Scheduler as
+    attendee"; sahip `duzelt-4`, 2026-10-29). CT'nin iki okuması sahip onayını bekliyor: ekleme "kabul etti" durumuyla
+    yapılır; yalnız kaynak toplantının tarafı (düzenleyen ya da katılımcı) eklenir, her şeyi görebilen yönetici eklenmez.
 6a. **Yöneticiden beklenen belge (sahip, 2026-10-27).** İçeriği henüz bilinmiyor; iş onu beklemeden sürer. Belge
     gelince paket revizyonu (iki kademeli tür, kod alanı) ve bu listeyle karşılaştırılır; çelişen yer varsa sahibe
     sorulur. Kod alanı notu: toplantı türü RCS-001'e göre İKİSİ DE sınıfı, önek `MTY`; ortak kod servisi (BL-565)
