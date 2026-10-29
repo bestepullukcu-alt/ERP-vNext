@@ -81,19 +81,20 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   1. **Kayıt:** `docs/records/reviews/<MOD>/REVIEW-REQUEST-<NN>.md` commit edilir. Künye maddeleri şablondaki sırayla
      yazılır; inceleme prompt'u dosyada **tek bir ```text bloğunda** durur.
   2. **Sohbette sahibe tek kopya (S-98, sahip isteği 2026-10-29 — eski dört blok yerine):** (a) düz metinde sohbetin adı
-     ("Codex'te yeni oturum açın") ve tek cümle ne istendiği; (b) **tek ```text bloğu**: prompt'un tamamı ("dosyaya bakın"
+     ("Codex'te yeni oturum açın") ve tek cümle ne istendiği (S-45 özetinin "Kime" satırıdır, ayrıca yazılmaz); (b) **tek ```text bloğu**: prompt'un tamamı ("dosyaya bakın"
      ya da yalnız dosya yolu yok), son satırlarında `ZIP'in yeri: <mutlak yol>` ve `ZIP sha256: <64 hex>`; (c) ZIP
      Finder'da / Dosya Gezgini'nde gösterilir. Sahip tek bir kutu kopyalar. Ardından: "Codex'in cevabını olduğu gibi bu
-     sohbete yapıştırın."
+     sohbete yapıştırın." Teslimde ayrıca bir soru varsa bu cümle sorudan önce gelir.
   3. **Prompt kısa, ayrıntı ZIP'te:** prompt hedefi, doğrulamayı, görevi ve çıktı biçimini taşır; uzun kanıt, karar
      kaydı ve kesitler ZIP'e girer. Böylece prompt sohbete sığar; S-52'deki dosya yolu istisnası yalnız işçiler içindir.
   4. **İpucu sınırı:** ilk inceleme prompt'u değişiklik listesi ve CT'nin "doğru" görüşünü taşımaz. Yeniden incelemede
      yalnız "ne değişti" ve "hangi önceki bulgu kapandı iddiasında" yazılır; inceleyen her iddiayı kendisi ölçer.
   5. **Kontrol:** CT göndermeden önce dosyadaki prompt bloğunun ve sohbetteki bloğun SHA-256'sının aynı olduğunu ölçer
      ve özeti kutunun altında düz metinde yazar (kopyalanmaz). ZIP satırları prompt'un parçasıdır; dosyadaki blokta da
-     durur.
+     durur. ZIP inceleme isteği dosyasını içermez; sıra ZIP → prompt → kayıttır. ZIP yeniden kurulursa sha'sı değişir;
+     commit edilmiş kayıt düzenlenmez, yeni istek numarası açılır.
 - **Uzun prompt işçiye dosyayla (S-52, sahip kararı 2026-10-26):** işçi oturumuna verilen prompt yaklaşık 10 bin
-  token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
+  token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı aynı kutuda verilir. İşçi işe başlamadan dosyanın
   özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
   metnin birebir aynısıdır. Sahibe gidecek prompt'lar yine kod bloğunda verilir (S-28).
 - **İşçi push ve PR açmaz; onay tek yere yazılır (S-63, sahip kararı 2026-10-26 `tek-onay`):**
@@ -196,7 +197,7 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
      yalnız aşağıdaki "Kurallar" 1'e göre, sade anlamından sonra parantez içinde yazılır; bu istisna sha ve yolu kapsamaz.
      PR numarası yalnız bağlantı olarak (bağlantının görünen metni sade iş adıdır) ya da kopyalanacak mesajın içinde yazılır. Yasağın dışında kalanlar: ilk yanıtın
      ölçülmüş `Klasör: … | Dal: … | HEAD: …` satırı ("Yer" maddesi); onay sorusundaki dal adı ve kısa sha (S-63, onay
-     yalnız o sha içindir); "Yer" 6. adımın klasör ya da komut satırı; soru seçeneğinde gereken kod, kimlik ya da yol (S-25); madde 4'teki kopyalanacak kutular; sahibin
+     yalnız o sha içindir); S-94/5 prompt bloğu özeti (kutunun altında düz metin); "Yer" 6. adımın klasör ya da komut satırı; soru seçeneğinde gereken kod, kimlik ya da yol (S-25); madde 4'teki kopyalanacak kutular; sahibin
      açıkça istediği teknik ayrıntı. Diğer teknik ayrıntı CT-Setup'a giden 5 satırlık özette ve kayıtlarda durur.
 - **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
   `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
