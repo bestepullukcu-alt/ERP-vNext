@@ -70,22 +70,26 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
 - **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
-  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında **mutlak yolu** (`/Users/…` ile başlayan, kısa `.ct-teslim/…` değil)
-  ve SHA-256'sı **ayrı bir kod bloğunda** yazılır, kopyalanabilsin (S-36); araç izin veriyorsa dosya Finder'da gösterilir.
+  çözülmez). Ek dosya (ZIP) varsa **mutlak yolu** (`/Users/…` ya da `C:\…` ile başlayan, kısa `.ct-teslim/…` değil) ve
+  SHA-256'sı aynı kod bloğunun **son satırlarında** yazılır; sahip tek kopyalamayla her şeyi alır (S-36, S-98 tek kopya,
+  sahip isteği 2026-10-29). CT ayrıca dosyayı Finder'da (Windows'ta Dosya Gezgini'nde) seçili olarak gösterir, sahip onu
+  sürükleyip bırakır; gösteremiyorsa bunu tek cümleyle söyler.
 - **Bağımsız inceleme teslimi — her CT aynı biçim (S-94, sahip kararı 2026-10-29):** Codex'e (ve S-93 ön incelemesine)
   giden her paket incelemesi şablona göre hazırlanır: [review-request-template.md](review-request-template.md).
   1. **Kayıt:** `docs/records/reviews/<MOD>/REVIEW-REQUEST-<NN>.md` commit edilir. Künye maddeleri şablondaki sırayla
      yazılır; inceleme prompt'u dosyada **tek bir ```text bloğunda** durur.
-  2. **Sohbette sahibe dört blok, bu sırayla:** (a) sohbetin adı ("Codex'te yeni oturum açın") ve tek cümle ne
-     istendiği; (b) **prompt'un tamamı tek ```text bloğunda** ("dosyaya bakın" ya da yalnız dosya yolu yok); (c) ZIP'in
-     mutlak yolu ayrı blokta; (d) ZIP'in SHA-256'sı ayrı blokta. Ardından: "Codex'in cevabını olduğu gibi bu sohbete
-     yapıştırın."
+  2. **Sohbette sahibe tek kopya (S-98, sahip isteği 2026-10-29 — eski dört blok yerine):** (a) düz metinde sohbetin adı
+     ("Codex'te yeni oturum açın") ve tek cümle ne istendiği; (b) **tek ```text bloğu**: prompt'un tamamı ("dosyaya bakın"
+     ya da yalnız dosya yolu yok), son satırlarında `ZIP'in yeri: <mutlak yol>` ve `ZIP sha256: <64 hex>`; (c) ZIP
+     Finder'da / Dosya Gezgini'nde gösterilir. Sahip tek bir kutu kopyalar. Ardından: "Codex'in cevabını olduğu gibi bu
+     sohbete yapıştırın."
   3. **Prompt kısa, ayrıntı ZIP'te:** prompt hedefi, doğrulamayı, görevi ve çıktı biçimini taşır; uzun kanıt, karar
      kaydı ve kesitler ZIP'e girer. Böylece prompt sohbete sığar; S-52'deki dosya yolu istisnası yalnız işçiler içindir.
   4. **İpucu sınırı:** ilk inceleme prompt'u değişiklik listesi ve CT'nin "doğru" görüşünü taşımaz. Yeniden incelemede
      yalnız "ne değişti" ve "hangi önceki bulgu kapandı iddiasında" yazılır; inceleyen her iddiayı kendisi ölçer.
   5. **Kontrol:** CT göndermeden önce dosyadaki prompt bloğunun ve sohbetteki bloğun SHA-256'sının aynı olduğunu ölçer
-     ve özeti sohbette yazar.
+     ve özeti kutunun altında düz metinde yazar (kopyalanmaz). ZIP satırları prompt'un parçasıdır; dosyadaki blokta da
+     durur.
 - **Uzun prompt işçiye dosyayla (S-52, sahip kararı 2026-10-26):** işçi oturumuna verilen prompt yaklaşık 10 bin
   token'ı aşıyorsa metin yapıştırılmaz; işçiye prompt dosyasının yolu ve SHA-256'sı verilir. İşçi işe başlamadan dosyanın
   özetini hesaplar; tutmazsa hiçbir şey yapmadan durur ve CT'ye bildirir. Böylece okunan metin, prompt kapısından geçen
@@ -161,7 +165,8 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
 
 - **Kısa haber** (her mesaj): en üstte **tek satırlık ilerleme** (S-61b, sahip kararı `tek-satir`), örn.
   **Vaka girişi · 7. gün** ▓▓▓░░░░░░░ 3/9 parça bitti · 0 kabul — satır ters tırnaksız, sohbette görüneceği gibi
-  yazılır; çubuk her zaman 10 hücredir, dolu hücre = round(10 · bitti / toplam) (parça = onaylı paketin teslim dilimi, bitti = main'de;
+  yazılır; çubuk her zaman 10 hücredir, dolu hücre = 10 · bitti / toplam, yarım yukarı yuvarlanır (tam rapordaki Katmanlar
+  çubukları da aynı kuralla) (parça = onaylı paketin teslim dilimi, bitti = main'de;
   gün = CT dalının ilk commit'inden bugüne; kabul = kabul kaydı olan parça; sayılar ölçülür, paket ya da dilim tablosu
   yoksa "parça yok"). İlk yanıtta bu satır "Yer" maddesinin ölçülmüş `Klasör: …` satırının hemen altına gelir. Sonra
   yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
@@ -170,21 +175,24 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
 - **Tek şablon (S-98, sahip kararı 2026-10-29):** her kule aynı biçimi kullanır; kendi başlığını ya da biçimini eklemez.
   1. Başlıklar yalnız **Biten**, **Çalışan** ve **Sizden istenen**'dir (tam raporda aşağıdaki şablondakiler). "Bekleyen",
      "İşler bitti mi?" ya da benzeri başlık açılmaz. Başlık kalın bir satırdır (`**Biten**`; `###` kullanılmaz), altındaki
-     her iş `- ` ile başlayan bir maddedir. Boş başlığın altına "Yok." yazılır; başlık atlanmaz.
+     her iş `- ` ile başlayan bir maddedir. Boş başlığın altına `- Yok.` yazılır; başlık atlanmaz.
   2. **Çalışan** yalnız şu an yürüyen ya da sahip dışında birini bekleyen işi yazar. Başkasını bekleyen işin satırı
      `Bekliyor: <kim> — <ne>` diye başlar. Sahibin yapacağı iş Çalışan'a ve Sıradaki'ye yazılmaz; o **Sizden istenen**'dir.
-  3. **Sizden istenen** tek maddedir; iş yoksa "Şimdilik bir şey yok" yazılır. İkinci bir istek sonraki mesaja kalır. O tek
-     işin parçaları aynı maddenin altında şu sırayla durur: S-45 özeti → kopyalanacak kutular (madde 4) → soru (S-69/S-92;
-     yanıtın son bloğu).
+  3. **Sizden istenen** tek maddedir; iş yoksa `- Şimdilik bir şey yok.` yazılır. İkinci bir istek sonraki mesaja kalır.
+     O tek işin parçaları `- <tek iş>` satırından sonra, girintisiz ve aralarında boş satırla şu sırayla gelir: S-45 özeti
+     (kendi `- ` listesi) → kopyalanacak kutular (madde 4) → soru (S-69/S-92; yanıtın son bloğu). Parçalar tablosundaki
+     "Kimi bekliyor" sütununda "sahip" görünebilir; istek yine yalnız bu tek maddedir.
   4. Mesaj kod kutusuna konmaz; düz markdown yazılır ve tablo varsa markdown tablosudur. Kod kutusu yalnız sahibin
      kopyalayacağı metin içindir: S-28 ve S-94'teki kopyalanacak metinler (Beste'ye, Codex'e, bir geliştiriciye ya da başka
-     kuleye gidecek metin, ZIP yolu ve SHA-256, S-94/5 prompt bloğu özeti) ve S-69 cevap kelimeleri. Bu kutular Sizden
+     kuleye gidecek metin; ZIP yolu ve SHA-256 aynı kutunun son satırlarındadır), S-69 cevap kelimeleri ve "Yer" 6. adımda
+     sahibe verilen klasör ya da komut. Bir iş için
+     sahip bir kez kopyalar: aynı alıcıya giden şeyler ayrı kutulara bölünmez. S-94/5 prompt özeti düz metindir. Bu kutular Sizden
      istenen başlığının altına gelir.
   5. Commit numarası, sha, madde numarası (S-…, F-…) ve dosya yolu sahibe giden metinde yazılmaz. İş ya da modül kodu
      yalnız aşağıdaki "Kurallar" 1'e göre, sade anlamından sonra parantez içinde yazılır; bu istisna sha ve yolu kapsamaz.
-     PR numarası yalnız bağlantı olarak ya da kopyalanacak mesajın içinde yazılır. Yasağın dışında kalanlar: ilk yanıtın
+     PR numarası yalnız bağlantı olarak (bağlantının görünen metni sade iş adıdır) ya da kopyalanacak mesajın içinde yazılır. Yasağın dışında kalanlar: ilk yanıtın
      ölçülmüş `Klasör: … | Dal: … | HEAD: …` satırı ("Yer" maddesi); onay sorusundaki dal adı ve kısa sha (S-63, onay
-     yalnız o sha içindir); soru seçeneğinde gereken kod, kimlik ya da yol (S-25); madde 4'teki kopyalanacak kutular; sahibin
+     yalnız o sha içindir); "Yer" 6. adımın klasör ya da komut satırı; soru seçeneğinde gereken kod, kimlik ya da yol (S-25); madde 4'teki kopyalanacak kutular; sahibin
      açıkça istediği teknik ayrıntı. Diğer teknik ayrıntı CT-Setup'a giden 5 satırlık özette ve kayıtlarda durur.
 - **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
   `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
@@ -194,6 +202,7 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
 - **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır. Aşağıdaki kutu, raporun ham markdown'unu
   yalnız göstermek içindir; rapor kutuya konmaz, sohbete bu markdown olarak yazılır (kutunun içindeki tablo sohbette çizgi
   yığını olarak görünür; S-98). Bölüm adları kalın satırdır, katmanlar liste maddesidir, Parçalar markdown tablosudur.
+  Tam raporda ayrı bir ilerleme satırı (S-61b) yazılmaz; raporun ilk satırı şablonun kalın başlığıdır.
 
 ```markdown
 **<Control Tower> — <modülün sade adı> · <kaçıncı gün>**
@@ -234,7 +243,7 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
 ```
 
 Kurallar:
-1. **Kod ve kısaltma yok** (WP-…, AC-…, DL…, UIC-…, E3, rev 10, F-22 gibi); gerekiyorsa önce sade anlamı, kod en sonda
+1. **Kod ve kısaltma yok** (WP-…, AC-…, DL…, UIC-…, E3, rev 10 gibi; madde ve bulgu numaraları S-…, F-… hiç yazılmaz); gerekiyorsa önce sade anlamı, kod en sonda
    parantez içinde. Her iş "önce / şimdi" ya da "kullanıcı için" cümlesiyle anlatılır; kullanıcı, işten etkilenen kişidir
    (ekranı kullanan ya da geliştirici).
 2. **Parçalar** paketin teslim dilimleridir (modülün tamamı); "Tür" Belge · Arka uç · API · Gateway · Ekran · Yapılandırma

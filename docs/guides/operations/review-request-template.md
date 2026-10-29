@@ -34,21 +34,24 @@ Model · Effort: kullandığın modeli, effort'u ve oturum kimliğini yanıtın 
 Görev: <ne incelenecek>
 Çıktı: ilk satır `hedef: <paket yolu> @ <sha>`; her bulgu tek satırda `F-n | ENGEL|ORTA|DÜŞÜK | <metin> | açık | <K…> | <tarih>`;
 son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL.
+ZIP'in yeri: <mutlak yol>
+ZIP sha256: <64 hex>
 ```
 ````
 
-## 2. Sohbette sahibe (dört blok, bu sırayla)
+## 2. Sohbette sahibe (tek kopya, S-98)
 
-1. Tek cümle: "Codex'te **yeni** bir oturum açın, aşağıdaki metni ve ZIP'i verin."
-2. Prompt'un tamamı, tek ```text bloğunda (dosyadaki blokla aynı; özeti blok altında yazılır).
-3. ZIP'in mutlak yolu, kendi kod bloğunda.
-4. ZIP'in SHA-256'sı, kendi kod bloğunda.
+1. Tek cümle: "Codex'te **yeni** bir oturum açın, aşağıdaki metni yapıştırın ve açılan klasördeki ZIP'i sürükleyin."
+2. Prompt'un tamamı, tek ```text bloğunda (dosyadaki blokla aynı). ZIP'in yeri ve sha256'sı bu bloğun son iki satırıdır;
+   ayrı kutu açılmaz. Bloğun özeti altında düz metinle yazılır.
+3. CT ZIP'i Finder'da (Windows'ta Dosya Gezgini'nde) seçili gösterir; gösteremiyorsa bunu tek cümleyle söyler.
 
 Son satır: "Codex'in cevabını olduğu gibi bu sohbete yapıştırın."
 
 ## 3. Yapılmaz
 
 - Prompt yerine yalnız dosya yolu vermek ("dosyadan kopyalayın").
+- ZIP yolunu ya da sha256'sını ayrı kutuya koymak (sahip iki üç kez kopyalar).
 - Prompt'u kod bloğu dışında, markdown olarak yazmak (başlıklar ve `|` satırları bozulur).
 - İlk incelemede CT'nin görüşünü, beklenen sonucu ya da "şuraya bakma" yönlendirmesini yazmak.
 - Ön inceleme (S-93) bulgularını Codex prompt'una eklemek.
