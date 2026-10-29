@@ -845,7 +845,9 @@ permission, no module id, no route path and no index.
    - **Öneri — sahip kararı:** (b). The policy is that nothing is deleted (§17.7/2) and the flag is defensive (§17.8/3);
      (b) already stops a re-issue, needs fewer new repository members and keeps `history`'s answer unchanged.
    - **Decided (MOD-0023 owner, `gecmis-404`, CT · İş akışı chat, 2026-10-29): (b)** — record
-     `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`, row S17-2. O-S17-2 is no longer a gate. Consequences for item 2: `history`
+     `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`, row S17-2. That record numbers its rows
+     S17-1…S17-3 as decisions taken (`rev3-yaz`, `gecmis-404`, `duzelt`); only S17-2 decides an open item (O-S17-2); rows
+     S17-1 and S17-3 do not decide O-S17-1 or O-S17-3, which stay open (interim check 07 F-4). O-S17-2 is no longer a gate. Consequences for item 2: `history`
      takes no `includeDeleted` parameter and gets no deleted-including read; `GetWorkflowInstanceHistoryQuery.cs` and the
      `history` action stay unchanged; the `history` handler changes only for the additive read fields (`approvalTaskId`,
      `idempotencyKey`, `isDeleted` of each returned row — always `false` there, since deleted rows are filtered). The only
@@ -947,8 +949,21 @@ permission, no module id, no route path and no index.
      answer stays 409/503 under both options and is `Unknown` (§17.7/6); a replay of the key then meets case (a) → 403.
      A RequestInfo loser whose log meets the unique index goes through the duplicate-key mapping (item 17) → 403 under
      both options; the WP measures which RequestInfo path the race takes (item 10 (c)).
-   **Same actor, different body** (reason code, comment, evidence ref; restated for interim check 06 F-2; read, not run,
-   @4c08fc75a) — no new row in any case:
+   **Same actor, different body** (reason code, comment, evidence ref and — for Approve — `SignatureId`; restated for
+   interim check 06 F-2 and interim check 07 F-3; read, not run, @4c08fc75a) — no new row in any case:
+   - **`SignatureId` (interim check 07 F-3):** the Approve request carries it (`WorkflowModels.cs:467-475`), the decision
+     log stores it for Approve only (`WorkflowTaskTransitionSupport.cs:270, 288`; Reject and RequestInfo store none), but
+     `SamePayload` does not compare it (`WorkflowTerminalTransitionWriter.cs:433-438`) and today's actor-bound replay
+     compares no body (`WorkflowTaskTransitionSupport.cs:1018-1030`), so the answer to a same-key, same-actor Approve
+     retry with a different `SignatureId` is not defined by the target. **Öneri — the owner approves it with this
+     pack:** `SignatureId` is part of the compared body on the sequential path (the actor-bound replay after the fix) and
+     in `SamePayload`; such a retry gets the sequential different-body 409 below. Test the WP adds: on a
+     signature-required step (fixture `Definition(signatureRequired: true)`,
+     `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ESignature/WorkflowESignatureGateTests.cs:52-57@4c08fc75a`;
+     real Mongo replica set, `:23-26`), approve with signature A, then repeat the same key and actor with signature B →
+     the different-body 409, one row for (task, `Approve`, key) holding A; sabotage: dropping `SignatureId` from the
+     comparison turns it red. The replay lookup (`WorkflowTaskTransitionSupport.cs:61-65`) runs before the signature
+     gate (`:146-167`), so the retry is answered by the replay, not by the gate.
    - **Sequential path only** — case (a) (the actor-bound replay, which after the fix compares the body as `SamePayload`
      does) and case (b) where the late call reaches that replay (Approve/Reject under O-S17-3 (i) through the re-read;
      RequestInfo without `expectedVersion` through the duplicate-key mapping, item 17, under both options) → 409 with a
@@ -1012,6 +1027,10 @@ permission, no module id, no route path and no index.
    409 `WORKFLOW_TASK_INVALID_STATE` (first send or replay without the stale version) or from a read; under (ii) a
    `WORKFLOW_TASK_INVALID_STATE` after a same-key retry is `Unknown`, and the refusal comes only from a first send's
    `WORKFLOW_TASK_INVALID_STATE` or from a `history` read (the other decision recorded, no row under the loser's key).
+   Items that depend on O-S17-3 (the same list as item 17, the closure and the DL-2 finish list; interim check 07 F-2):
+   AC-W6 and AC-W7 case (b) for Approve/Reject; AC-W14 case (b) for Approve/Reject (different actor; same actor,
+   different body); the §17.7/6 consumer rule; under (ii) only, the AC-W17 consumer and Treasury recording of that rule.
+   AC-W8 does not depend on O-S17-3.
 10. **AC-W6 / AC-W7 restated (INSPECTION.md DL-2/4, DL-2/7; timing cases rewritten for review F-2):** identical
     transitions (same task, action, key, actor and body) → exactly **one row for (task, action, key)** in every case.
     AC-W6 is Approve, AC-W7 is Reject and RequestInfo (§17.4); Delegate is in neither and gets no case here. Separate
@@ -1257,13 +1276,24 @@ permission, no module id, no route path and no index.
       `StaleVersion` (`:77-80`), the handler re-reads the (task, action, key) log (`GetByTaskActionIdempotencyKeyAsync`,
       as at `:61`); a recorded twin answers through the actor-bound replay (`:1018-1030`): same actor and body → 200
       `isIdempotent = true`; another actor → 403 (item 7); same actor, different body → the sequential AC-W14 409. This
-      makes the identical-retry answer timing-independent for Approve and Reject: their late twin always meets a refusal,
-      because the decided task is no longer decidable. File: `WorkflowTaskTransitionSupport.cs`. AC-W6/W7 case (b) for
-      Approve/Reject assert 200 (item 10); AC-W14's Approve/Reject case (b) asserts 403 / the sequential 409 (item 7).
+      fixes the answer of the late identical twin (case (b)) for Approve and Reject: it always meets one of the two
+      refusals, because the decided task is no longer decidable, and the re-read turns it into the replay. It does not
+      make the answer timing-independent (interim check 07 F-1): in case (c) the identical twin still gets 409
+      `WORKFLOW_TRANSITION_CONFLICT` from the version fence (`WorkflowTerminalTransitionWriter.cs:108-110`, mapped at
+      `WorkflowTaskTransitionSupport.cs:839-843`), or on the transaction-unavailable path 409 / 503
+      `WORKFLOW_TRANSACTION_UNAVAILABLE` when its re-read does not find the twin's row (`WorkflowTerminalTransitionWriter.cs:370-376,
+      390`; otherwise 200 Replayed, item 10 (c)) — under both options, `Unknown` (§17.7/6) — and its replay then gets
+      case (a). File: `WorkflowTaskTransitionSupport.cs`. AC-W6/W7 case (b) for Approve/Reject assert 200 (item 10);
+      AC-W14's Approve/Reject case (b) asserts 403 / the sequential 409 (item 7); §17.7/6 stays as written
+      (`WORKFLOW_TASK_INVALID_STATE` a definite refusal) and no consumer records a new rule.
     - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
       is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No change to
       the Approve/Reject refusal path; AC-W6/W7 case (b) for Approve/Reject and AC-W14's Approve/Reject case (b) (item 7)
       assert today's answers; §17.7/6 is amended this way, and every AC-W17 consumer and Treasury records the rule.
+    - **Items that depend on O-S17-3** (the same list in item 9, this item, the closure and the DL-2 finish list;
+      interim check 07 F-2): AC-W6 and AC-W7 case (b) for Approve/Reject; AC-W14 case (b) for Approve/Reject (different
+      actor; same actor, different body); the §17.7/6 consumer rule; under (ii) only, the AC-W17 consumer and Treasury
+      recording of that rule. AC-W8 does not depend on O-S17-3.
     - Under both options: the RequestInfo mapping above and its AC-W7 / AC-W14 assertions hold; AC-W8 does not depend on
       O-S17-3 (no row under the loser's key, item 9).
     - **Öneri — sahip kararı:** (i). The Approve/Reject late-retry answer is fixed once in the producer with one indexed
@@ -1279,7 +1309,7 @@ the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.
 the same §17 headings.
 
 Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
-"interim check 05 F-n" / "interim check 06 F-n" in the items; they are not the
+"interim check 05 F-n" / "interim check 06 F-n" / "interim check 07 F-n" in the items; they are not the
 formal review's F-n above.
 
 **Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
@@ -1315,13 +1345,24 @@ unconditional), the closure and the DL-2 finish list; F-2 → item 7 (AC-W14's d
 sequential path only; concurrent path `WORKFLOW_TRANSITION_CONFLICT`, existing tests unchanged), the closure and the DL-2
 finish list. The "(i-a)" / "(i-b)" names in the interim check 03 and 04 paragraphs are historical.
 
+**Interim check 07 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-07.md` (sub-agent, not a formal
+review; KOŞULLU, low findings only; all four accepted by the CT; owner `duzelt`).** Interim check 07 F-1 → item 17 (i)
+(timing-independent only for the late identical twin, case (b); case (c) stays 409/503 under both options); F-2 → items
+9 and 17, the closure and the DL-2 finish list (one list of O-S17-3-dependent items); F-3 → item 7 (`SignatureId` in
+the AC-W14 body, öneri and test); F-4 → item 3 and the closure (decision record rows S17-1…S17-3 vs open items
+O-S17-1 / O-S17-3).
+
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6/W7
-by items 10 and 17 — their Approve/Reject case (b) depends on O-S17-3; RequestInfo case (b) is asserted through the
-duplicate-key mapping, DL-2 base scope under both options —, AC-W14 by items 7 and 17 — its Approve/Reject case (b)
-depends on O-S17-3; its distinct different-body code applies on the sequential path only —, AC-W8 by item 9 —
-AC-W8 does not depend on O-S17-3); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
-S17-2) and no longer a gate; **O-S17-3 is open and must be decided before the DL-2 WP prompt**; the rest of the §17.8
-closure unchanged.
+by items 10 and 17 — RequestInfo case (b) is asserted through the duplicate-key mapping, DL-2 base scope under both
+options —, AC-W14 by items 7 and 17 — its distinct different-body code applies on the sequential path only; `SignatureId`
+is part of the compared body (öneri, item 7) —, AC-W8 by item 9). Items that depend on O-S17-3 (the same list as items 9
+and 17 and the DL-2 finish list): AC-W6 and AC-W7 case (b) for Approve/Reject; AC-W14 case (b) for Approve/Reject
+(different actor; same actor, different body); the §17.7/6 consumer rule; under (ii) only, the AC-W17 consumer and
+Treasury recording of that rule. AC-W8 does not depend on O-S17-3. O-S17-2 is decided (b) (record
+`docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`, S17-2) and no longer a gate. That record numbers its
+rows S17-1…S17-3 as decisions taken (`rev3-yaz`, `gecmis-404`, `duzelt`); only S17-2 decides an open item (O-S17-2);
+rows S17-1 and S17-3 do not decide O-S17-1 or O-S17-3, which stay open. **O-S17-3 is open and must be decided before
+the DL-2 WP prompt**; the rest of the §17.8 closure unchanged.
 
 ## Teslim dilimleri
 
@@ -1335,8 +1376,10 @@ durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
 (AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
 artık kapı değil).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7'nin ve AC-W14'ün Approve/Reject (b) vakası ve tüketici kuralı
-O-S17-3 kararına bağlı, §17.9/7 ve §17.9/17; RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; O-S17-3 kararına bağlı
+olanlar — §17.9/9, §17.9/17 ve kapanıştaki listeyle aynı: AC-W6 ve AC-W7'nin Approve/Reject (b) vakası; AC-W14'ün
+Approve/Reject (b) vakası (farklı aktör; aynı aktör, farklı gövde); §17.7/6 tüketici kuralı; yalnız (ii)'de AC-W17
+tüketicilerinin ve Treasury'nin bu kuralı kaydetmesi; AC-W14 gövdesine `SignatureId` girer (öneri, §17.9/7); RequestInfo yinelenen anahtar eşlemesi her iki seçenekte DL-2 temel
 kapsamı, AC-W7 onu doğrular, §17.9/17; AC-W14'ün ayrı farklı-gövde 409 kodu yalnız sıralı yolda, eşzamanlı yolda
 `WORKFLOW_TRANSITION_CONFLICT`, §17.9/7; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
