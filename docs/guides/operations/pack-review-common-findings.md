@@ -58,6 +58,12 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   (MOD-0280-FU02 2026-10-29-ea61e8c6 F-07)
 - Bir dilimin gerekli kanıt seviyesi işin riskinden düşük (ör. izin anahtarı ve gateway rotası yalnız smoke ile).
   (MOD-0280-FU02 2026-10-29-ea61e8c6 F-04)
+- Bir koruma birden çok alanı ya da yolu kapsıyor (ör. iki alan, ekleme ve güncelleme), ama olumsuz fixture ya da
+  sabotaj yalnız birini ölçüyor; öteki bozulunca test yeşil kalır. Her alan ve her yazma yolu için ayrı fixture ya da
+  senaryo yazılmalı. Değişikliği gösterecek değer (ör. farklı iki aktör) testte zorunlu olmalı.
+  (MOD-0230 2026-10-30-985e5755 F-1, F-2)
+- Bir DCP, üye modülün yeni dilim sırasını (ör. kalıcı depo → denetim) ve kural standardının zorunlu tuttuğu bölümü
+  (servis bazlı denetim altyapısı ve yolu) göstermiyor; modül paketinde yazılı olması yetmez. (DCP-004 2026-10-30-b8d838f6 F-1)
 
 ## 5. Dış sistemle yarış, kesinti ve bırakma
 
