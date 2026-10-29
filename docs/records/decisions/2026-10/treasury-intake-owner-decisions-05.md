@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D92 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D93 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1056,6 +1056,23 @@ Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT 
    Beste kabul etmezse alternatif: karar anında kontrol (MOD-0023 geri çağrısı — Ali).
 4. **D92/4 — K-5 (Beste kontrolü):** 23 anahtar paketlerle tutarlı, tavan 38 → 61; MDM tarafı XMC-001'i (3 dosya) geçerli. `versions.approve`
    D92/3'e bağlı olarak eklenir.
+
+## D93 — Beste Y-24: O-14 kapandı (`prefixScope`); MOD-0289 onaylayıcılığı kabul; SEC-002 C teyidi; D Ali ile (2026-10-29)
+
+Onay kanıtı: kaynak Y-24 (Beste, K1 aktardı); kayıt K1 / gmg-10, oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D93/1 — O-14 (sahibi Beste) kapandı:** RCS-001 v0 sözleşmesine (3 Kasım) eklemeli `prefixScope` — `"LegalEntity"` (varsayılan;
+   `legalEntityId` zorunlu; önek şirket kısa kodu, ör. `MYG-PAY-000017`), `"Group"` (`legalEntityId` boş; önek kiracının grup öneki, bugün
+   `GMG`, ör. `GMG-BNK-000003`), `"Platform"` (`legalEntityId` boş; önek yok, ör. `PLN-000001`). Tür başına izinli kapsamı servis belirler
+   (RCS-001 §3'te tür başına): `BNK` yalnız `Group`; `BAC` `LegalEntity` (şirket hesabı) ve `Group` (tedarikçi hesabı); `PAY`, `APD`, `ARI`,
+   `CPS`, `CTP`, `CTR` yalnız `LegalEntity`. Uyumsuz istek → 422 `RECORD_CODE_SCOPE_INVALID`; grup öneki tanımsız → 409 `GROUP_PREFIX_MISSING`;
+   sayaç (kiracı, önek, tür) başına. Şirket `BAC`'ta `legalEntityId` = hesabın sahibi şirket (D65/2) teyitli. MOD-0289 (Dependencies, Runtime
+   Constraints, AC-60, Ready-for-dev, Açık kararlar, DL-3 Bitiş) işlendi.
+2. **D93/2 — MOD-0289 CT-APR-01 onaylayıcısı:** Beste kabul etti (K2, `bestepullukcu-alt`; D89 teyitli). PR'ı Treasury açar, Beste onaylayıp merge eder.
+3. **D93/3 — SEC-002:** C (= K-6 "evet", D92/1) teyit edildi; dört paketin SEC-002 maddesi ve AC-32 bu yola göre yazılabilir. D (token'a
+   şirket listesi) uzun vadeli ortak çözüm — Ali ile ayrıca planlanır.
+4. **D93/4 — #311 dosyaları:** Beste 03 (MDM XMC-001 talebi) metnini uygun buldu; 03, 04, 05 Ali'nin kararıdır.
+5. Açık: `versions.approve` sorusu (D92/3 aday modu önerisi Beste'ye gönderilecek); AC-32'nin dört pakette C yoluna göre yeniden yazımı.
 
 ## Karar olmayanlar
 

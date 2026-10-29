@@ -290,6 +290,16 @@ MDM bağlaması değişmez). FU27 §5.2 koşullu Platform dosyaları için XMC-0
 değişecek dosya ve satırların tam listesi; sabotajlı testler (MDM kimliği finans çiftlerini soramaz, finans kimliği MDM çiftlerini soramaz,
 bilinmeyen tüketici reddedilir). Dört finans paketinin SEC-002 maddesi bu yola göre yazılabilir. → D92.
 
+## Y-24 — Beste, SEC-002 C, K-5, O-14 kabulü, MOD-0289 onaylayıcılığı (2026-10-29; K1 aktardı)
+
+SEC-002 kapsam yolu C (= K-6 "evet"): finans servisi kendi portuyla Platform güvenilir kapsam ucuna ikinci tüketici (`DITENFINANCETREASURYSERVICE`,
+kendi gizli anahtarı, kendi çift listesi); her izin kendi modül koduyla; kapalı-başarısız; MDM bağlaması değişmez. XMC-001 koşulları Y-23 ile aynı
+(çift listesi, dosya-satır listesi, sabotajlı testler). Dört paketin SEC-002 maddesi ve AC-32 bu yola göre yazılabilir. D (token'a şirket listesi)
+uzun vadeli — Ali ile planlansın. K-5 tekrar teyit (23, tavan 61); `versions.approve` sorusu tekrar. MDM XMC-001 (3 dosya) geçerli. **O-14: öneri
+kabul, iki ekle** — `prefixScope` LegalEntity / Group / Platform; tür başına izinli kapsam (BNK Group; BAC LegalEntity + Group; PAY, APD, ARI, CPS,
+CTP, CTR LegalEntity); 422 `RECORD_CODE_SCOPE_INVALID`; 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür); şirket BAC'ta sahip şirket teyit.
+MOD-0289 onaylayıcısı kabul (K2). MDM tarafı (#311 03): uygun; bu izin Ali'nin kararı; diğer iki dosya (04, 05) da. → D93.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -333,3 +343,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-21 (Auth eki açık maddeleri paket önerisiyle; K-W5 yöntem, K-5 yalnız yöntem; MOD-0220 / §22 notu) | MOD-0018 Treasury Auth eki; ready-for-dev tutuşu | D84 |
 | Y-22 (#304 sırası; DCP-011 onay yolu; K-6 "hayır"; Platform XMC-001 dosya kapsamı; BL-565 ve MOD-0262-FU01 tarihleri) | DCP-011; FU27 DL-4; dört finans paketi SEC-002; RCS-001 | D88 |
 | Y-23 (K-5 kontrolü; `versions.approve` sorusu; **K-6 "evet"** — finans ikinci tüketici; XMC-001 koşulları) | FU27 §5.2; dört finans paketi SEC-002; MOD-0217 aday süzmesi | D92 |
+| Y-24 (SEC-002 C teyidi; O-14 `prefixScope` kabulü; MOD-0289 onaylayıcılığı; D Ali ile) | MOD-0289 AC-60; RCS-001 v0 sözleşmesi; dört finans paketi | D93 |
