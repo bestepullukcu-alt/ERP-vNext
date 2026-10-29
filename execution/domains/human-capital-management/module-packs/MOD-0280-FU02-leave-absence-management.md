@@ -36,6 +36,13 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > and compensated after commit; resumable year-end carry-over; a type read key and an endpoint scope table; the module
 > registration slice split from the gateway slice; an entitlement reduction floor; open decisions bound to slice gates; an
 > unmatched-records report; target date and the DataTable / gateway gates (§Implementation Notes "Revision 02").
+> **Revision 03** (owner's word `rev03-gonder`, 2026-10-29) answers pack review 02
+> (`docs/records/reviews/MOD-0280-FU02/2026-10-29-47df0fc4.md`, UYGUN DEĞİL, 8 findings accepted). The request ↔ approval
+> link no longer uses a new protocol: it copies MOD-0280-FU01's live one (`TimesheetApprovalService`) — start in the
+> employee's own request, numbered submissions, retire an orphan before a new submission, read the decision before a
+> cancel, approver read by MOD-0023's may-decide rule; plus a unique submission key for an unknown commit result, one
+> transaction per carry-over row, a per-event allowed-field table, three read branches with a new approvals key, the
+> corrected reduction floor and one meaning for the gates (§Implementation Notes "Revision 03").
 >
 > **Scope of this revision: delivery block 1 only** — leave types, leave entitlements entered by HR, and the employee's own
 > leave requests with balance and cancellation; approval through MOD-0023 in the Task Center. Absence records, sickness,
@@ -110,7 +117,8 @@ consent from the platform-shared-services owner — **open** (§Open Questions).
 | `LeaveEmployeeLock` | `leave_employee_locks` | One per (tenant, employee): `Version` bumped in every submit and cancel transaction, so two submits of one person never interleave — for every type, including types that do not reduce the balance (review 01 F-02) |
 | `LeaveSyncRun` | `leave_sync_runs` | One per sync run: read / changed / unmatched counts, error, duration (ADR-005 addendum 1/2) |
 | `LeaveSyncUnmatched` | `leave_sync_unmatched` | One per (run, employee) that could not be reconciled: `employeeId`, reason code, first-seen and last-seen run — no other personal field (ADR-005 addendum 1/2, review 01 F-07) |
-| `LeaveCarryOverRun` | `leave_carry_over_runs` | One per (tenant, closing year): status `Running` / `Completed`, counts; each entitlement row carries the run id it was applied by, so a stopped run resumes without applying a row twice (review 01 F-02) |
+| `LeaveCarryOverRun` | `leave_carry_over_runs` | One per (tenant, closing year): status `Running` / `Completed`, counts — monitoring only |
+| `LeaveCarryOverMark` | `leave_carry_over_marks` | One per (tenant, employee, closing year, leave type), unique index: written in the **same transaction** as the next year's `CarriedOverDays` and both `LeaveBalance` rows, so a resumed run never skips or repeats a row (review 02 F-12) |
 
 ### CQRS (Golden Reference convention; one Feature folder `Features/Leave/`)
 
@@ -118,8 +126,8 @@ consent from the platform-shared-services owner — **open** (§Open Questions).
 - Commands (entitlements): `SetLeaveEntitlement` (create or update one row), `RunLeaveYearEndCarryOver` (HR, one year at a
   time), `AdjustLeaveCarryOver` (HR, with reason code).
 - Commands (requests): `SubmitLeaveRequest`, `CancelLeaveRequest` (own; pending or not yet started),
-  `CancelStartedLeaveRequest` (HR), `FinalizeLeaveDecision` (system — applies MOD-0023's outcome once),
-  `WithdrawLeaveRequestAfterStartFailure` (system — compensation after 5 failed workflow starts).
+  `CancelStartedLeaveRequest` (HR), `ResubmitLeaveRequest` (own — retires the previous submission's orphan instance and
+  starts the next submission, FU01 F1), `FinalizeLeaveDecision` (system or read path — applies MOD-0023's outcome once).
 - Commands (system): `SyncLeaveEmployeeSnapshots`.
 - Queries: `GetMyLeaveRequests`, `GetMyLeaveBalance`, `GetLeaveRequestById`, `GetLeaveRequestList` (HR),
   `PreviewLeaveDayCount`, `GetLeaveTypeList`, `GetLeaveTypeById`, `GetLeaveEntitlementList`, `GetLeaveSyncRunList`.
@@ -133,8 +141,8 @@ Nothing is hard-deleted: types are deactivated, requests are cancelled, entitlem
 | `ILeaveEmployeeGateway` | `Features/Leave` (port) + `Adapters/` | HCM-CORE-BUNDLE: `/me/employment-summary?asOf`, `/{employeeId}/employment-summary?asOf`, `/employment-summaries?updatedSince`. Fake adapter for development and tests; the HTTP adapter is written against the frozen contract version only |
 | `ILeaveOrgGateway` | same pattern | Primary seat → `ReportsToPositionId` chain → holders; approver pool (FU01 pattern) |
 | `LeaveApproverResolver` | `Features/Leave/Services` | FU01 `ApproverResolver` rules: line manager, next seat up, pool; never the person; null → submit refused |
-| `LeaveApprovalService` | `Features/Leave/Services` | Ensures the leave approval definition; starts the instance **after** the submit transaction commits (idempotency key `leave-request:{tenant}:{requestId}`); retries a failed start; cancels through MOD-0023's own cancel command |
-| `LeaveRequestWriter` | `Features/Leave/Services` | The one place a request changes state together with balances: request row, every affected `LeaveBalance` row and the `LeaveEmployeeLock` row are written in **one** `IPlatformTransactionExecutor` transaction (the executor MOD-0023's own start path uses); any failure rolls back all of them |
+| `LeaveApprovalService` | `Features/Leave/Services` | **Same shape as FU01 `TimesheetApprovalService`** (`ITimesheetApprovalService`: `StartAsync`, `CancelAsync`, `RetireSubmissionAsync`, `ReadDecisionAsync`, `DecidableInstanceIdsAsync`). Starts the instance inside the **employee's own** submit or resubmit request, after the submit transaction commits, so the starter is the employee (MOD-0023 `SameStarter`); key `leave-request:{tenant}:{requestId}:{submissionNumber}`. **No system job starts or retries a start** (review 02 F-11). Cancels only through MOD-0023's own cancel command and returns "decided first" when the decision won (FU01 F13) |
+| `LeaveRequestWriter` | `Features/Leave/Services` | The one place a request changes state together with balances: request row, every affected `LeaveBalance` row and the `LeaveEmployeeLock` row are written in **one** `IPlatformTransactionExecutor` transaction. A failure inside the body rolls back; an **unknown commit result** (`PlatformTransactionUnavailableException`, executor :70–90) is answered 503 `LEAVE_SUBMIT_OUTCOME_UNKNOWN` and resolved by the client retrying with the same `SubmissionKey` (review 02 F-16) |
 | `LeaveApprovalSourceResolver : IApprovalSourceResolver` | `Features/Leave/Providers` | Task Center card title: "Leave · {type label} · {from}–{to} · {days}" and a deep link; object type `leave-request`. The requester is shown by MOD-0023's own requester field, never in the title. Only the allowed fields of §Runtime Constraints 6 (D-2/3, review 01 F-01) |
 | `LeaveDayCounter` | `Features/Leave/Services` | Working-day count over `IWorkingHoursProvider`; splits by calendar year (D-3/6, D-3/7) |
 | `LeaveBalanceLedger` | `Features/Leave/Services` | The single writer of `LeaveBalance`; conditional writes on `Version` |
@@ -144,7 +152,7 @@ Nothing is hard-deleted: types are deactivated, requests are cancelled, entitlem
 ### API (`api/v1/leave`)
 
 `GET /me/requests` · `GET /me/balance?year` · `POST /requests/preview` · `POST /requests` · `GET /requests/{id}` ·
-`POST /requests/{id}/cancel` · `GET /admin/requests` · `POST /admin/requests/{id}/cancel` ·
+`POST /requests/{id}/resubmit` · `POST /requests/{id}/cancel` · `GET /admin/requests` · `POST /admin/requests/{id}/cancel` ·
 `GET /types` · `GET /types/{id}` · `POST /types` · `PUT /types/{id}` · `POST /types/{id}/activate` ·
 `POST /types/{id}/deactivate` · `GET /entitlements?year` · `PUT /entitlements` · `POST /entitlements/year-end` ·
 `POST /entitlements/{id}/carry-over` · `GET /admin/sync-runs` · `GET /admin/sync-runs/{id}/unmatched`.
@@ -179,15 +187,16 @@ No "document required" field and no description field (D-2/2).
 | `LeaveTypeId` | uuid | yes | active, `ReducesBalance = true` |
 | `EntitledDays` | decimal(5,1) | yes | 0–365, step 0.5 |
 | `CarriedOverDays` | decimal(5,1) | system | written by `RunLeaveYearEndCarryOver` / `AdjustLeaveCarryOver` only |
-| `CarryOverAppliedRunId` | uuid | system | the `LeaveCarryOverRun` that wrote `CarriedOverDays`; a resumed run skips rows already carrying its id |
+| — | | | a carried-over row is identified by its `LeaveCarryOverMark` (same transaction), not by a field on this row |
 
 Unique index (`TenantId`, `EmployeeId`, `Year`, `LeaveTypeId`).
 
-**Reduction floor (review 01 F-05; refines D-3/5):** `EntitledDays + CarriedOverDays` may not be set below `TakenDays +
-ReservedDays` of the same balance row; the attempt returns 409 `LEAVE_ENTITLEMENT_BELOW_USED` with the pending requests
-listed, and HR settles them first (approve, reject or cancel). A balance therefore never goes negative and an approved
-request is never re-evaluated. Example: entitled 14, taken 5, reserved 3 → the lowest allowed value is 8; HR may set 8
-or more; to set 6, HR first resolves the 3 reserved days.
+**Reduction floor (review 01 F-05, review 02 F-14; refines D-3/5):** after the change, `EntitledDays + CarriedOverDays`
+must stay ≥ `TakenDays + ReservedDays` of the same balance row; otherwise 409 `LEAVE_ENTITLEMENT_BELOW_USED` with the
+pending requests listed. A balance therefore never goes negative and an approved request is never re-evaluated.
+Example: entitled 14, carried 0, taken 5, reserved 3 → total may not go below 8. Approving the 3 reserved days moves them
+to taken and the floor **stays** 8; to reach 6, HR must reject or cancel at least 2 reserved days first. Example with
+carry-over: entitled 5, carried 5, taken 8, reserved 0 → valid (10 ≥ 8); entitled may go down to 3, not to 2.
 
 ### `LeaveRequest`
 
@@ -201,7 +210,9 @@ or more; to set 6, HR first resolves the 3 reserved days.
 | `DayCount` | decimal(5,1) | computed by `LeaveDayCounter`, never sent by the browser |
 | `YearAllocations` | list | `{Year, Days}` — a request crossing 31 Dec is split (D-3/7) |
 | `Status` | enum | `Pending` · `Approved` · `Rejected` · `Cancelled` · `Withdrawn` (auto-approved types go straight to `Approved`) |
-| `WorkflowStartState`, `WorkflowStartAttempts` | enum, int | `NotNeeded` · `Pending` · `Started` · `Failed`; a `Pending` start is retried by the sweep job and at read time; after 5 failed attempts the request is withdrawn and its days released in one transaction (compensation, review 01 F-02) |
+| `SubmissionKey` | uuid | sent by the browser once per "Send" click; unique per tenant; a retry with the same key returns the stored request and reserves nothing again (review 02 F-16) |
+| `SubmissionNumber` | int | 1 on submit; +1 on each resubmit; part of the MOD-0023 idempotency key (FU01 pattern) |
+| `WorkflowStartState` | enum | `NotNeeded` (type needs no approval) · `Unconfirmed` (start failed or its answer was lost) · `Started` (instance id recorded). An `Unconfirmed` request keeps its days reserved; it is never released or retried by a job (review 02 F-10, F-11) |
 | `WorkflowInstanceId`, `ApproverResolution` | | as FU01 (line manager / chain / pool) |
 | `DecisionAppliedAtUtc`, `CancelledByUserId`, `CancelReason` | | `CancelReason` is a fixed code list, not free text |
 
@@ -270,7 +281,8 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
    request.
 4. **Correctness never depends on a scheduler**: a pending request whose MOD-0023 instance is decided is finalized on the
    next read as well as by the sweep job.
-5. **Idempotency**: approval start keyed by `leave-request:{tenant}:{requestId}`; finalization keyed per (instance, outcome);
+5. **Idempotency**: submit keyed by `SubmissionKey` (unique); approval start keyed by
+   `leave-request:{tenant}:{requestId}:{submissionNumber}`; finalization keyed per (instance, outcome);
    sync keyed by (`employeeId`, `version`).
 6. **Data minimisation (D-2) — one allowed-field list (review 01 F-01).** For everything about a person's request — Task
    Center card, notification e-mail, request audit events, notification payload — the only fields are: leave type
@@ -282,10 +294,27 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
    labels are visible to managers.
 7. Browser → `/Leave/api/*` → Gateway 5000 → Platform 5057. 7-language l10n (tenant). No inline CSS.
 8. Every page, action and permission comes from the manifest; nothing hand-seeded.
-9. **Atomic state change (review 01 F-02).** `LeaveRequestWriter` writes the request, every affected balance row (both
-   years for a request across 31 Dec) and the employee lock in one transaction. The MOD-0023 start runs after commit; a
-   failed start leaves `WorkflowStartState = Pending` and is retried; after 5 failures the request is withdrawn and the
-   days released in one transaction, audited. Year-end carry-over marks each row with its run id and can be resumed.
+9. **State change and the approval link (review 01 F-02, review 02 F-10, F-11, F-12, F-16) — FU01 protocol.**
+   - Submit: one transaction writes the request (`SubmissionKey` unique), every affected balance row (both years across
+     31 Dec) and the employee lock. Unknown commit result → 503 `LEAVE_SUBMIT_OUTCOME_UNKNOWN`; the browser retries with
+     the same key and gets exactly one request and one reservation.
+   - Start: after commit, in the same employee request, `LeaveApprovalService.StartAsync` (starter = the employee). Success
+     records the instance id (`Started`). Failure or lost answer → `Unconfirmed`; the page shows "approval not started —
+     send again"; the days stay reserved; nothing retries on its own.
+   - Resubmit (the employee): first `RetireSubmissionAsync` for the previous submission number — looks the instance up by
+     its key; an open, unrecorded instance is cancelled with MOD-0023's own command; if it was already **decided**, the
+     decision is applied (finalize) and no new start happens; then `SubmissionNumber + 1` and start.
+   - Cancel (the employee, pending or not started): look the instance up by the current key; `CancelAsync`; if the decision
+     came first, the cancel is refused and the decision applied (FU01 F13). Days are released **only** after MOD-0023
+     confirms no open task and no decision, in one transaction with the request and lock. MOD-0023 unreachable → 503,
+     nothing released.
+   - Late instance after a cancel (a start finished after the cancel's lookup): the employee's next read of their requests
+     retires it (open tasks cancelled as the employee); if it was decided in that window the request stays `Cancelled`, the
+     days stay released and the case is written to audit for HR (`leave.request.late-decision-ignored`).
+   - Decisions are only **read** by the sweep job and the read path (finalize once); neither starts nor cancels.
+   - Year-end carry-over: per (employee, closing year, type) one transaction writes the `LeaveCarryOverMark` (unique), the
+     next year's `CarriedOverDays` and both balance rows; a duplicate mark aborts that row's transaction, so a resumed run
+     applies every row exactly once.
 
 ## Layout & Shell Contract
 
@@ -354,12 +383,17 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 - **Two submits at the same instant** for overlapping dates or for the last remaining days → exactly one request stored;
   the other gets 409 (`LEAVE_REQUEST_OVERLAP` or `LEAVE_BALANCE_INSUFFICIENT`); the balance is never negative. The same
   holds for two overlapping requests of a type that does not reduce the balance (the employee lock serialises them).
-- **Failure between writes** (second year's balance row or the lock write fails) → the transaction rolls back; no request,
-  no reservation; 503 or 409 with the reason code.
-- **Workflow start fails after commit** → request stays `Pending` with `WorkflowStartState = Pending`; the next sweep or
-  read retries with the same idempotency key; after 5 failures the request is `Withdrawn` and its days released, audited.
-- **Year-end carry-over stops halfway** → `LeaveCarryOverRun` stays `Running`; running it again applies only rows without
-  that run id; no row is carried twice.
+- **Failure inside the transaction body** (second year's balance row or the lock write fails) → rollback; no request, no
+  reservation; 409 or 503 with the reason code.
+- **Commit answer lost** (`PlatformTransactionUnavailableException`) → 503 `LEAVE_SUBMIT_OUTCOME_UNKNOWN`; retry with the
+  same `SubmissionKey` returns the one stored request, or stores it once if the first commit did not happen.
+- **Workflow start fails or its answer is lost** → request `Pending`, `Unconfirmed`, days reserved; "send again" retires the
+  previous submission's instance by key (cancel if open, apply if decided) before starting the next one.
+- **Cancel while a start is in flight** (two tabs) → cancel looks the instance up by key; if none yet, the request is
+  cancelled and the late instance is retired on the employee's next read; a decision in that window is ignored and logged.
+- **Cancel when the decision came first** → cancel refused (FU01 F13); the decision is applied.
+- **Year-end carry-over stops halfway** → rows with a mark are skipped by the unique index inside their own transaction;
+  every row applied exactly once.
 - **Entitlement reduced below taken + reserved** → 409 `LEAVE_ENTITLEMENT_BELOW_USED`, nothing written.
 - **Decision and cancellation race** → whichever is recorded first wins (FU01 `TimesheetApprovalService.cs:239–243`
   pattern); the balance reflects exactly one outcome.
@@ -382,6 +416,7 @@ Permissions (PKS-001, 3 segments, namespace leave owned by MOD-0280-FU02):
   leave.requests.read            own requests and own balance
   leave.requests.create          submit own request
   leave.requests.cancel          cancel own request (pending, or approved and not started)
+  leave.approvals.read           manager: requests whose MOD-0023 approval they may decide (FU01 time-entry.approvals.read)
   leave.admin-requests.read      HR: every request in the tenant (D-1/3)
   leave.admin-requests.cancel    HR: cancel a started request, with reason code
   leave.types.read               every employee who may request leave: active types (needed by the request form)
@@ -403,7 +438,10 @@ another tenant's row is 404.
 |---|---|---|
 | `GET /me/requests`, `GET /me/balance` | `leave.requests.read` | the caller's own employee only (resolved by `/me`) |
 | `POST /requests/preview`, `POST /requests` | `leave.requests.create` | the caller's own employee only |
-| `GET /requests/{id}` | `leave.requests.read` **or** MOD-0023 assignment | own request; or a request whose MOD-0023 instance is assigned to the caller (assignment snapshot, FU01 `TimesheetApprovalService.cs:391–435`); otherwise 404 |
+| `GET /requests/{id}` — own branch | `leave.requests.read` | the caller's own request |
+| `GET /requests/{id}` — approver branch | `leave.approvals.read` | a request whose MOD-0023 instance has an open task the caller may decide, or whose newest task the caller decided (MOD-0023 `MayDecide` over the assignment snapshot — FU01 `DecidableInstanceIdsAsync`, `TimesheetApprovalService.cs:64–77`) |
+| `GET /requests/{id}` — HR branch | `leave.admin-requests.read` | any request of the tenant (D-1/3) |
+| `POST /requests/{id}/resubmit` | `leave.requests.create` | own request, `Pending` and `Unconfirmed` |
 | `POST /requests/{id}/cancel` | `leave.requests.cancel` | own request, `Pending` or not started |
 | `GET /admin/requests` | `leave.admin-requests.read` | every request of the tenant (D-1/3) |
 | `POST /admin/requests/{id}/cancel` | `leave.admin-requests.cancel` | any request of the tenant, started, with reason code |
@@ -412,9 +450,12 @@ another tenant's row is 404.
 | `GET /entitlements` | `leave.entitlements.read` | every entitlement of the tenant |
 | `PUT /entitlements`, `POST /entitlements/year-end`, `POST /entitlements/{id}/carry-over` | `leave.entitlements.manage` | entitlements of the tenant |
 | `GET /admin/sync-runs`, `GET /admin/sync-runs/{id}/unmatched` | `leave.sync-runs.read` | runs and unmatched rows of the tenant |
+
+A request outside every branch the caller holds is 404. The three branches are checked independently; none implies another.
+
 - Read and write keys are separate (D-1/4). Scope: tenant-wide for HR in block 1 (D-1/3); legal-entity scope is a follow-up.
-- The approver sees only requests routed to them through the MOD-0023 assignment snapshot (D-1/2, FU01
-  `TimesheetApprovalService.cs:391–435`).
+- The approver sees only requests they may decide or have decided, by MOD-0023's own rule (D-1/2); `leave.approvals.read`
+  is granted with the manager role template, as FU01's `time-entry.approvals.read`.
 - Notification events (manifest-declared; event key rule `^[a-z0-9]+(\.[a-z0-9]+)*$`): `leave.request.submitted`,
   `leave.request.approved`, `leave.request.rejected`, `leave.request.cancelled`. Payload: only the allowed fields of
   §Runtime Constraints 6.
@@ -430,15 +471,18 @@ another tenant's row is 404.
 | SetLeaveEntitlementCommand | leave.entitlement.set | LeaveEntitlement | a | Before/After: EntitledDays (EmployeeId, Year, LeaveTypeId) | — |
 | RunLeaveYearEndCarryOverCommand | leave.entitlement.carried-over | LeaveEntitlement | a | per row Before/After: CarriedOverDays; run totals | — |
 | AdjustLeaveCarryOverCommand | leave.entitlement.carry-over-adjusted | LeaveEntitlement | a | Before/After: CarriedOverDays; reason code | — |
-| SubmitLeaveRequestCommand | leave.request.submitted | LeaveRequest | a | AfterState: type, dates, DayCount, Status | — |
-| CancelLeaveRequestCommand | leave.request.cancelled | LeaveRequest | a | Before/After: Status; refunded days | — |
-| CancelStartedLeaveRequestCommand | leave.request.cancelled-by-hr | LeaveRequest | a | Before/After: Status; reason code | — |
-| FinalizeLeaveDecisionCommand | leave.request.decided | LeaveRequest | a | Before/After: Status; workflow outcome | — |
-| WithdrawLeaveRequestAfterStartFailureCommand | leave.request.withdrawn-start-failed | LeaveRequest | a | Before/After: Status, WorkflowStartState; released days | — |
+| SubmitLeaveRequestCommand | leave.request.submitted | LeaveRequest | a | business: type, dates, half-day part, DayCount, Status · envelope: request id, SubmissionNumber, WorkflowStartState | — |
+| ResubmitLeaveRequestCommand | leave.request.resubmitted | LeaveRequest | a | business: Status · envelope: request id, SubmissionNumber before/after, retired instance outcome code, WorkflowStartState | — |
+| CancelLeaveRequestCommand | leave.request.cancelled | LeaveRequest | a | business: Status before/after, released DayCount · envelope: request id, workflow outcome code | — |
+| CancelStartedLeaveRequestCommand | leave.request.cancelled-by-hr | LeaveRequest | a | business: Status before/after, released DayCount · envelope: request id, cancel reason code | — |
+| FinalizeLeaveDecisionCommand | leave.request.decided | LeaveRequest | a | business: Status before/after · envelope: request id, workflow outcome code, late-decision-ignored flag | — |
 | SyncLeaveEmployeeSnapshotsCommand | leave.employee-sync.completed | LeaveSyncRun | a | run counts; no personal fields | — |
 
-- Request audit events carry only the allowed fields of §Runtime Constraints 6; no person name, no free text, no document,
-  no health or contact data. Type catalogue events carry the label (catalogue data).
+- **Per-event allowed fields (review 02 F-09).** The *business* part of a request event is the allowed-field list of
+  §Runtime Constraints 6 (type, dates, half-day part, day count, status). The *envelope* part carries only identifiers and
+  closed code lists: request id, submission number, workflow start state, workflow outcome code, cancel reason code — no
+  free text. AC-5 governs the business part; AC-17 checks both parts against this table. No person name, no document, no
+  health or contact data anywhere. Type catalogue events carry the label (catalogue data).
 - No command is K2 class in block 1 (no identity, permission, tenant-state, GxP or special-category personal data);
   sickness (special category) arrives only with block 2 and is K2 there.
 
@@ -481,15 +525,18 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 - [ ] AC-21 (zorunlu) — Pages, actions, permissions and notification events come from `LeaveManifestProvider`; nothing is hand-seeded.
 - [ ] AC-22 (zorunlu) — The gateway pair `/api/v1/leave` and `/api/v1/leave/{everything}` → 5057 exists before DL-5 is accepted.
 - [ ] AC-23 (zorunlu) — A submit writes the request, every affected balance row and the employee lock in one transaction; a failure injected after the first balance write leaves no request and no reservation (sabotage evidence).
-- [ ] AC-24 (zorunlu) — A workflow start that fails after commit is retried with the same idempotency key; after 5 failures the request is withdrawn and its days released in one audited transaction.
+- [ ] AC-24 (zorunlu) — A workflow start that fails or whose answer is lost leaves the request `Pending`/`Unconfirmed` with its days reserved and nothing retries on its own; the employee's resubmit retires the previous submission's instance by key (cancelled if open, applied if decided) before starting the next; days are released only after MOD-0023 confirms no open task and no decision.
 - [ ] AC-25 (zorunlu) — Two concurrent overlapping submits of one employee for a type that does not reduce the balance store exactly one request.
-- [ ] AC-26 (zorunlu) — A year-end carry-over run stopped halfway and run again applies every row exactly once.
-- [ ] AC-27 (zorunlu) — Setting an entitlement below taken + reserved days returns 409 `LEAVE_ENTITLEMENT_BELOW_USED` and writes nothing; approved requests are never re-evaluated.
+- [ ] AC-26 (zorunlu) — A year-end carry-over run stopped halfway and run again applies every row exactly once: mark, next year's carried days and both balance rows are written in one transaction per row.
+- [ ] AC-27 (zorunlu) — A change that would leave `EntitledDays + CarriedOverDays` below `TakenDays + ReservedDays` returns 409 `LEAVE_ENTITLEMENT_BELOW_USED` and writes nothing (entitled 5 + carried 5 with taken 8 is accepted; entitled 2 is refused); approving reserved days does not lower the floor; approved requests are never re-evaluated.
 - [ ] AC-28 (zorunlu) — An employee holding only the baseline employee keys can list active leave types through `leave.types.read` and cannot reach any `leave.types.manage` endpoint (403).
-- [ ] AC-29 (zorunlu) — Every endpoint enforces the row scope of the §Authorization Convention table; a manager reads a request only while its MOD-0023 instance is assigned to them, otherwise 404.
+- [ ] AC-29 (zorunlu) — Every endpoint enforces the row scope of the §Authorization Convention table; `GET /requests/{id}` serves the own, approver and HR branches independently; a manager with `leave.approvals.read` reads only requests they may decide or have decided, otherwise 404; HR with `leave.admin-requests.read` reads any request of the tenant.
 - [ ] AC-30 (zorunlu) — A sync run with unmatched employees writes one `LeaveSyncUnmatched` row per employee with a reason code and no other personal field; `GET /admin/sync-runs/{id}/unmatched` returns them only to `leave.sync-runs.read`.
 - [ ] AC-31 (zorunlu) — Every DataTable screen passes the `quality-gate-datatable` workflow in addition to `verify_datatable_page.py`.
 - [ ] AC-32 (zorunlu) — Platform, Web and Gateway build; a request through Gateway 5000 reaches `api/v1/leave` on Platform 5057 with the caller's tenant and permissions (end-to-end, DL-7).
+- [ ] AC-33 (zorunlu) — A submit whose commit answer is lost returns 503 `LEAVE_SUBMIT_OUTCOME_UNKNOWN`; retrying with the same `SubmissionKey` yields exactly one request and one reservation whether or not the first commit happened (fault-probe evidence on the executor's commit).
+- [ ] AC-34 (zorunlu) — A cancel racing an in-flight start leaves the request `Cancelled` with its days released once; the late MOD-0023 instance is retired on the employee's next read; a decision that slipped in is ignored and logged as `leave.request.late-decision-ignored`.
+- [ ] AC-35 (zorunlu) — Every MOD-0023 start and cancel for a leave request runs as the employee who submitted it (or as HR for an HR cancel); no background job starts, retries or cancels an instance (MOD-0023 `SameStarter` honoured).
 
 ## Test Expectations
 
@@ -526,11 +573,13 @@ must reach; the acceptance record cites this table row as `required_evidence_sou
 Gates per slice (review 01 F-06) — development with the fake employee adapter is allowed before a gate opens; dispatch or
 acceptance waits as written:
 
-- DL-1, DL-2, DL-3: dispatch after this pack is approved and the registry rows are in force on origin/main. DL-2
-  acceptance also needs the K-9 day-boundary decision (until then the tenant time zone, FU01 R3, is the recorded default
-  and the acceptance record says so). DL-3 dispatch needs the coordination note with the MOD-0023 tower (card S-90).
-- DL-4: acceptance with real data needs HCM-CORE-BUNDLE frozen at a named version, MOD-0251's activation slice, the K-1
-  user ↔ person link and the K-4 service identity; until then only fake-adapter evidence, which is not acceptance.
+- DL-1, DL-2, DL-3: dispatch after this pack is approved and the registry rows are in force on origin/main. Day boundary
+  (K-9): the tenant time zone (FU01 R3) is the **owner-decided default** (`rev03-gonder`, 2026-10-29); DL-2 is accepted with
+  it; a later K-9 decision changes it only through a pack revision. DL-3 dispatch needs the coordination note with the
+  MOD-0023 tower (card S-90).
+- DL-4: development and DL-1…DL-3 use the fake adapter and are **not** gated by the contract. Only DL-4 **acceptance** with
+  real data needs HCM-CORE-BUNDLE frozen at a named version, MOD-0251's activation slice, the K-1 user ↔ person link and the
+  K-4 service identity; until then only fake-adapter evidence, which is not acceptance.
 - DL-5: the `LeaveTypes` and `LeaveEntitlements` screens are dispatched only after Master has decided the Blueprint MCR
   (`docs/records/decisions/2026-10/hcm-leave-mcr-draft-01.md`) or the owner records an exception; the `Leave` screen
   ("Leave Request", already in Blueprint) is not gated by the MCR.
@@ -553,9 +602,9 @@ acceptance waits as written:
 - [ ] Page help keys for `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS` in 7 languages; tour: none (leave is not one of the five tour flows)
 - [ ] Every slice carries a required evidence level (card S-85) and its gates are written (§Teslim dilimleri)
 - [ ] Coordination note with the MOD-0023 tower recorded before DL-3 (card S-90)
-- [ ] K-9 day-boundary decision or the recorded tenant-zone default before DL-2 acceptance
+- [ ] Tenant-zone day boundary recorded as the owner-decided default (`rev03-gonder`) — K-9 changes it only by revision
 - [ ] Master decision on the Blueprint MCR, or an owner exception, before the LeaveTypes / LeaveEntitlements screens
-- [ ] HCM-CORE-BUNDLE frozen at a named version; the pack cites it
+- [ ] HCM-CORE-BUNDLE freeze is **not** a ready-for-dev condition; it gates only DL-4 acceptance (§Teslim dilimleri)
 - [ ] XMC-001 consent for code in `Diten.Platform` from the platform-shared-services owner recorded
 - [ ] HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation
 - [ ] Independent pack review (SOP §20.4) UYGUN and an approval row by an approver with `high: evet` who did not write the pack
@@ -572,6 +621,13 @@ acceptance waits as written:
   §Failure Path to Verify, AC-23…AC-26); F-03 `leave.types.read` and the endpoint scope table (AC-28, AC-29); F-04 slice
   split: DL-6 E4, DL-7 E5; F-05 reduction floor (AC-27); F-06 gates per slice; F-07 unmatched report (AC-30); F-08 target
   2026-12-15, `quality-gate-datatable`, Gateway build (AC-31, AC-32). AC-1…AC-22 keep their numbers; AC-5 text widened.
+- **Revision 03** (2026-10-29, owner's word `rev03-gonder`; review `docs/records/reviews/MOD-0280-FU02/2026-10-29-47df0fc4.md`):
+  root cause of F-02/F-10/F-11/F-12/F-16 was a new start/compensation protocol; it is replaced by FU01's live protocol
+  (§Runtime Constraints 9). F-09 per-event allowed fields (§Audited Events); F-10 no automatic release, release only after
+  MOD-0023 confirms, orphan retired on resubmit (AC-24, AC-34); F-11 starts and cancels only as the employee (AC-35); F-12
+  carry-over mark in the row's transaction (AC-26); F-13 three read branches and `leave.approvals.read` (AC-29); F-14 floor
+  examples and AC-27; F-15 contract freeze gates only DL-4 acceptance, tenant-zone default owner-decided; F-16 unique
+  `SubmissionKey` and AC-33. AC-24, AC-26, AC-27, AC-29 texts changed, numbers kept; AC-33…AC-35 added.
 
 ## Follow-up Items
 
