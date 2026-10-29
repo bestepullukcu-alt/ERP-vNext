@@ -31,6 +31,6 @@ Platform (yönetim) modülü için `--context platform` kullan: yalnız `en` ve 
 
 - Çıkış kodu `0` ve `[OK]` satırı → **PASS**.
 - Çıkış kodu `1` → **FAIL**. `[X]` satırlarını aynen aktar. FAIL sonucunu asla PASS diye özetleme.
-- **Bilinen borç (ölçüm 2026-10-14, main):** kiracı bağlamında `fr`, `es`, `zh`, `ar`, `ru` dillerinde 33'er anahtar eksik; dil başına 31–43 değer İngilizceyle aynı; `tr`'de 5 değer İngilizceyle aynı. Bu yüzden betik bugün main'de FAIL verir.
-  Bu sayıları senin değişikliğinin hatası sayma. Değişikliğinin eklediği anahtarları `git diff` ile bul ve yalnız onların bütün gerekli dillerde olup olmadığını ayrıca belirt.
+- **Bilinen borç:** main'de eksik ya da İngilizceyle aynı bırakılmış ortak çeviriler olabilir; betik bu yüzden main'de FAIL verebilir. Bunu ölç, sayıyı ezberden yazma.
+  Main'den gelen bulguları senin değişikliğinin hatası sayma. Değişikliğinin eklediği anahtarları `git diff` ile bul ve yalnız onların bütün gerekli dillerde olup olmadığını ayrıca belirt.
 - Bu skill dosya değiştirmez, çeviri yazmaz ve yayın kapısı değildir. Eksik çeviriyi tamamlamak `l10n-agent`'ın işidir.
