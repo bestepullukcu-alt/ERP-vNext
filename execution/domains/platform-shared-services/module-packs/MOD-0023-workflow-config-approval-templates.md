@@ -811,7 +811,7 @@ permission, no module id, no route path and no index.
      `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetWorkflowInstancesByObjectsQuery.cs`
      and `.../Queries/GetWorkflowInstanceHistoryQuery.cs` (one optional trailing member).
    - `services/Diten.Platform.Common/**` stays untouched (§17.8/9 unchanged).
-3. **Open owner decision O-S17-2 — history of a soft-deleted instance (INSPECTION.md DL-1/2).** Today `history` of a
+3. **Owner decision O-S17-2 — history of a soft-deleted instance (INSPECTION.md DL-1/2) — decided (b), below.** Today `history` of a
    soft-deleted instance answers **404** (`GetWorkflowInstanceHistoryHandler.cs:51-59@4c08fc75a`), with or without the flag.
    - **(a)** `history` also takes `includeDeleted=true`: the deleted instance is found and its transition rows are
      returned, each flagged `isDeleted`; without the flag the answer stays 404. Needs deleted-including reads for instance
@@ -820,8 +820,12 @@ permission, no module id, no route path and no index.
      `by-objects?includeDeleted=true` (`isDeleted = true` on the instance row ⇒ do not re-issue, D21/2 consumer rule); an
      `Unknown` transition intent under a deleted instance stays `Unknown` with an alert.
    - **Öneri — sahip kararı:** (b). The policy is that nothing is deleted (§17.7/2) and the flag is defensive (§17.8/3);
-     (b) already stops a re-issue, needs fewer new repository members and keeps `history`'s answer unchanged. Not decided
-     here. DL-1's WP prompt is not written before O-S17-2 is decided.
+     (b) already stops a re-issue, needs fewer new repository members and keeps `history`'s answer unchanged.
+   - **Decided (MOD-0023 owner, `gecmis-404`, CT · İş akışı chat, 2026-10-29): (b).** Consequences for item 2: `history`
+     takes no `includeDeleted` parameter and gets no deleted-including read; `GetWorkflowInstanceHistoryQuery.cs` and the
+     `history` action stay unchanged; the `history` handler changes only for the additive read fields (`approvalTaskId`,
+     `idempotencyKey`, `isDeleted` of each returned row — always `false` there, since deleted rows are filtered). The only
+     new deleted-including read member is the instance read by object ids used by `by-objects?includeDeleted=true`.
 4. **Person-field list — extends §17.8/4 (INSPECTION.md DL-1/3):** add `WorkflowTransitionLog.EvidenceRef`,
    `SignatureId` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Workflow/WorkflowTransitionLog.cs:24, 27@4c08fc75a`)
    and `WorkflowInstance.ObjectRef`, `DisplayContext` (free-text snapshot)
