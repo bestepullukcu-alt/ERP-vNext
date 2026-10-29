@@ -59,3 +59,10 @@ cevaplanamıyor. Revizyon 03'ün dayandığı MOD-0280-FU01 yöntemi bu boşluğ
 
 Paket revizyon 04 bu kararla yazılır (`execution/domains/human-capital-management/module-packs/MOD-0280-FU02-leave-absence-management.md`).
 Revizyon 04 de bu kökte bağımsız incelemeden geçemezse yol 2 (MOD-0023 korumalı başlatma) MOD-0023 kulesiyle açılır.
+
+## Ek — yol 2 açıldı (2026-10-29)
+
+Bağımsız inceleme 04 (`docs/records/reviews/MOD-0280-FU02/2026-10-29-5fb4d1bb.md`) F-20 ile UYGUN DEĞİL döndü: süreli kilit,
+MOD-0023'ün örneği ayırma ile görev yazmayı iki ayrı işlemde yapması yüzünden kesin değil. Sahip sözü `mod0023-gorus`:
+yol 2 açıldı. Tasarım isteği `docs/records/decisions/2026-10/hcm-leave-mod0023-design-request-01.md` ("başlatmayı
+anahtarla kapat"). Paket revizyon 05, MOD-0023 sahibinin kararı kayda girene kadar yazılmaz.
