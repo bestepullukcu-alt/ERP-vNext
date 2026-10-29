@@ -309,6 +309,21 @@ karakter üretiyor; MOD-0217'nin kodu olmadığı için MOD-0217'nin öneki değ
 güncellensin, RCS-001 §3 satırını Beste değiştirir; MOD-0144 ile MOD-0217 kapsam çakışması Cihan ile netleştirilsin. Sınıflandırılmamış
 üreticiler: v1 dokunmuyor, mevcut kodlar değişmez; envanter gelince her biri için KALSIN / RCS-001'e geçiş kararı tek tek. → D94.
 
+## Y-26 — Ali, PR #311 kararları + MOD-0262-FU01 + MOD-0220 §22 (2026-10-30; K1 aktardı)
+
+**3 (XMC-001):** izin var — MDM istemcisi (`PlatformTrustedLegalEntityScopeProviderClient` + testleri). Sıra: Auth izinleri → Platform
+kodu → Platform ortam ayarı → MDM istemcisi; yalnız o dosya ve testleri. **4 (K-W5 okuma yolu):** 1, 2, 3, 5, 6 kabul. 4. madde (ekran):
+evet, Roller ekranında salt-okunur atama listesi + "Geçmiş" bölümü. Düzeltmeler: (a) iz belirteci iki komut için ayrı bir yazıcı tipinin
+metodu olsun; "WriteOnceAsync + komut adı" biçimi tanımsız ve servis kimliği işleyicisinin istisnasını kaydırır. (b) Auth'un iletici
+anahtarı boşsa okuma satırı sessizce kaybolur; kabul ölçütüne yapılandırma şartı yazılsın. (c) Ekran kiracı tarafındaysa 7 dil.
+**5 (MOD-0057):** ayrı MOD-0018 eki, FU27'ye eklenmez. Kimlik verify_module_id.py ön kontrolüyle açılır. Rol adlarına "Tag" öneki
+önerilir. Açık atama anahtarı sayısı bu kayıtla 21'e çıkar. **MOD-0262-FU01 Auth tarafı:** MDM servisi için istemci kaydı ve hedef
+kitle; yeni kullanıcı izni yok. Kapsamı Auth kulesi yazacak. Tahmini tarih (ölçülmedi): paket metni 3 Kasım, kod onaydan 1–2 gün sonra.
+**MOD-0220 §22:** "§22 alanı" = MOD-0220 paketinin §22'si (TRM-14), FU27 değil. Onay satırı main'de (bestepullukcu-alt, 26 Ekim) ama
+satırı ekleyenle birleştirenin ayrı olup olmadığını Yönetici doğruluyor. Başlığı siz değiştirmeyin. TRM-14'ün DL-1 dilim kapısı olarak
+kalması yeter; ready-for-dev'i bekletme kararı bu doğrulamanın sonucuna bağlı, cevabı ayrıca vereceğim. 7 dilli rol adı tablosunun
+sonucu da ayrıca gelecek. → D97.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -354,3 +369,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-23 (K-5 kontrolü; `versions.approve` sorusu; **K-6 "evet"** — finans ikinci tüketici; XMC-001 koşulları) | FU27 §5.2; dört finans paketi SEC-002; MOD-0217 aday süzmesi | D92 |
 | Y-24 (SEC-002 C teyidi; O-14 `prefixScope` kabulü; MOD-0289 onaylayıcılığı; D Ali ile) | MOD-0289 AC-60; RCS-001 v0 sözleşmesi; dört finans paketi | D93 |
 | Y-25 (RCS-001 kimliği MOD-0040-FU02; MOD-0217 öneki `AGR`; MOD-0144 / MOD-0217 kapsamı Cihan'a; sınıflandırılmamış üreticiler) | MOD-0217 O-5 / Code; DL-1 hazırlık; RCS-001 §3 | D94 |
+| Y-26 (Ali: MDM XMC-001; K-W5 okuma yolu + ekran; MOD-0057 ayrı Auth eki; MOD-0262-FU01 Auth tarafı; MOD-0220 §22) | FU27 §5.2 / DL-5 / K-W5; MOD-0057 O-5; WP-0126 / WP-0289 P-0 | D97 |

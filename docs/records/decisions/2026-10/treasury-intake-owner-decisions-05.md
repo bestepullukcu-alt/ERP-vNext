@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D96 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D97 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1150,6 +1150,33 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
 7. **D96/7 — kısmi AC kapanış atıfları (sahip denetimi `d35aec408`, 1 ORTA + 1 DÜŞÜK):** hazırlık kayıtlarında sonraki
    dilimlerin Bitiş atıfları (8) güncel dilim Bitiş satırlarına eşlendi (dilim haritası: her `- **DL-n** —` bloğunun `Bitiş:`
    satırı); WP-0126 v0.2 P-2 en son eski incelemeyi `caf551b0` KOŞULLU, ondan öncekini `be2b3ffa` UYGUN olarak gösterir.
+
+## D97 — Ali Y-26: #311 kararları (MDM XMC-001, K-W5 okuma yolu, MOD-0057 Auth eki), MOD-0262-FU01 Auth tarafı, MOD-0220 §22 (2026-10-30)
+
+Onay kanıtı: kaynak Y-26 (Ali, K1 aktardı); kayıt K1 / gmg-10, oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D97/1 — FU27 DL-4 MDM tarafı XMC-001 verildi** (#311 03): yalnız `PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri
+   (`…ProviderClientTests.cs`, `…ProviderContractTests.cs`); sıra Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+   FU27 §5.2 MDM başlığı, Dependencies XMC satırı ve Ready-for-dev XMC maddesi işlendi (madde `[ ]`: finans tüketicisi Platform
+   dosyaları için Beste'nin XMC-001'i açık, D92/1).
+2. **D97/2 — K-W5 okuma yolu kabul** (#311 04; D87 önerisi): öneri 1 (yeni dar iz `auth-sod-muafiyet-gecmisi`, `auth-gunlugu` `aday`
+   kalır), 2 (`AuthAuditLog` `EntityType` / `EntityId`), 3 (`GET /api/roles/sod-waiver-assignments/{id}/history`, kaydın okuma izni),
+   5 (meta-denetim okuma satırı), 6 (defter ve testler) kabul; 4 (ekran) **evet** — Roller ekranında salt-okunur muafiyet atamaları
+   listesi + "Geçmiş" bölümü. Düzeltmeler: (a) iz belirteci iki komut için **ayrı bir yazıcı tipinin metodu** (önerideki
+   "`WriteOnceAsync` + komut adı" biçimi tanımsız ve `IssueServiceIdentityTokenHandler`'ın istisnasını kaydırır); (b) Auth'un merkezi
+   iletici anahtarı boşsa okuma satırı sessizce kaybolur — **kabul ölçütüne yapılandırma şartı** yazılır; (c) ekran kiracı tarafındaysa
+   **7 dil**. FU27'nin K-W5 satırı, D80/2 (a) maddesi, Dependencies satırı ve "ekran yok" maddesine not düşüldü; **DL-5 paket metni
+   revizyonu (repo kapsamı, kurallar, AC'ler, testler, defter) açık** — revizyon CT-APR-02'den geçince D80/2 (a) işaretlenir.
+3. **D97/3 — MOD-0057 Auth kaydı ayrı MOD-0018 ekinde** (#311 05): FU27'ye eklenmez; kimlik `verify_module_id.py` ön kontrolüyle açılır
+   — aday `MOD-0018-FU28` (`--check-id` OK, 2026-10-30; kayıt satırı ve ek paket taslağı açık). Rol adlarına `Tag` öneki önerildi (adlar
+   açık; öneri kutusuyla K1'e sorulacak). Açık atama anahtarı sayısı bu kayıtla 21'e çıkar (20 + `crm.tag-assignments.read-tenant-wide`).
+   MOD-0057 O-5 satırına işlendi.
+4. **D97/4 — MOD-0262-FU01 Auth tarafı (bilgi):** MDM servisi için istemci kaydı ve hedef kitle; yeni kullanıcı izni yok; kapsamı Auth
+   kulesi yazar; tahmini (ölçülmedi): paket metni 3 Kasım, kod onaydan 1–2 gün sonra. MOD-0217 DL-2 kapısı (D56/2) bu tarihe bağlı.
+5. **D97/5 — MOD-0220 §22 (D84/4 tutuşu):** "§22" = MOD-0220 paketinin §22'si (TRM-14), FU27 değil. Onay satırı main'de
+   (bestepullukcu-alt, 26 Ekim); satırı ekleyenle birleştirenin ayrı olup olmadığını Yönetici doğruluyor. Başlık değiştirilmez. TRM-14
+   DL-1 dilim kapısı olarak kalır; ready-for-dev tutuşunun (D84/4) sonucu bu doğrulamaya bağlı — Ali ayrıca cevaplayacak. 7 dilli rol
+   adı tablosunun (FU27 §5.5) sonucu da ayrıca gelecek. WP-0126 v0.2 ve WP-0289 v0.3 P-0'a not düşüldü.
 
 ## Karar olmayanlar
 
