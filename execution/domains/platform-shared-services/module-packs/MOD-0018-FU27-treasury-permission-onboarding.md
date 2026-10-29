@@ -1313,7 +1313,10 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   süzgeci kaldırılınca başka kiracı testi kırmızıya döner.
   **Liste ucunun iki biçimi (KARAR D99/4, D100/1) — sözleşme testleri:** (i) `paymentBatchId` var, `page` / `pageSize` yok →
   parti biçimi, yalnız geçerli atamalar, yanıt D79/6 sözleşme dosyasıyla aynı; (ii) `paymentBatchId` yok → sayfalı tam liste
-  (geçerli, süresi dolmuş, geri alınmış; durum alanı), varsayılan sayfa boyutu ve üst sınırı uygulanır, en yeni önce;
+  (geçerli, süresi dolmuş, geri alınmış; durum alanı), sayfalama paketle sabit (KARAR D101/1): varsayılan `page = 1`, `pageSize = 20` (Auth deseni
+  `Features/Users/Queries/GetAllUsersQuery.cs:15`), üst sınır `pageSize = 100`; `page < 1`, `pageSize < 1` ya da `pageSize > 100`
+  → 400 `SOD_WAIVER_PAGING_INVALID` (kırpma yok); yanıt `DTOs/PaginatedResult.cs` biçiminde; 21 atamalı kiracıda varsayılan istek
+  20 öğe + `TotalCount = 21` döner, `pageSize = 101` → 400; en yeni önce;
   (iii) `paymentBatchId` + `page` ya da `pageSize` birlikte → 400 (iki biçim karıştırılmaz); (iv) iki biçimde de başka kiracının
   ataması dönmez. Sabotaj: denetleyici biçim seçimini kaldırıp hep tam listeyi döndürünce (i) kırmızıya döner.
 - [ ] AC-46 (zorunlu) — **Meta-denetim teslimi ve yapılandırma şartı (öneri 5, KARAR D97/2 (b), D99/1):** geçmiş okuması

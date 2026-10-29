@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D100 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D101 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1232,6 +1232,14 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak sahip denetimi `68f6f076a`; 
    parametresiyle → 400. AC-45'e dört sözleşme testi + sabotaj eklendi (var / yok / birlikte / kiracı).
 2. **D100/2 — FU28 kimlik taraması (D97/3'e ek ölçüm):** 479 ref (main + bütün uzak dallar) tarandı — `MOD-0018-FU28` hiçbirinde yok;
    `MOD-0018-FU24` main'de, `FU25` / `FU26` yalnız arşiv dallarında; aday FU28 çakışmasız (kayıt satırı açık).
+
+## D101 — FU27 liste ucu sayfalama değerleri (sahip denetimi `f60522198`, 1 DÜŞÜK) (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak sahip denetimi `f60522198`; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D101/1 — sayfalama sabit:** varsayılan `page = 1`, `pageSize = 20` (Auth deseni `GetAllUsersQuery.cs:15`), üst sınır 100; sınır dışı
+   → 400 `SOD_WAIVER_PAGING_INVALID` (kırpma yok); yanıt `PaginatedResult`; AC-45'e sayısal beklenen sonuç (21 atama → 20 öğe +
+   `TotalCount = 21`; `pageSize = 101` → 400) eklendi.
 
 ## Karar olmayanlar
 
