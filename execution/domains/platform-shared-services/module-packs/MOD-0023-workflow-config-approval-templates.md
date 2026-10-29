@@ -883,6 +883,17 @@ permission, no module id, no route path and no index.
      (`.../Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs:587-591`).
    - A caller-chosen `IdempotencyKey` may be free text (Diten.Web inputs, item 13); D32/3 keeps the key unchanged, so
      a key holding personal data is a question for O-S17-1.
+   - **Boundary of the list (interim check 05 F-2; read, not run, @4c08fc75a):** the list covers the three retained
+     types (`WorkflowInstance`, `ApprovalTask`, `WorkflowTransitionLog`, §17.7/2) plus `RuntimeAssignmentSnapshot`. All
+     four derive from `TenantScopedEntity`, which adds only `TenantId`
+     (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/EntityVariations.cs:8-11`); its base adds the
+     inherited person fields `CreatedBy` and `UpdatedBy`
+     (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/BaseEntity.cs:7, 10`), which join the list
+     (no assignment of either found by `grep` under `.../Features/Workflow/` or in `WorkflowRepositories.cs`; the WP
+     measures stored rows). `WorkflowTemplateVersion.PublishedBy` (`.../Entities/Workflow/WorkflowTemplateVersion.cs:16`)
+     and `SlaEscalationRule.EscalationPrincipalIds` (`.../Entities/Workflow/SlaEscalationRule.cs:14`) are **outside §17
+     retention**: they are configuration (a published template version, an SLA rule), not runtime records of a decision;
+     §17.7/2 does not cover them and O-S17-1 does not decide them.
    The list stays a candidate list; the owner confirms it in the WP. O-S17-1 stays open.
 5. **AC-W3 consumer list — extends §17.4 (INSPECTION.md DL-1/4):** add Platform's own `by-objects` tests
    (`services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCrossServiceTests.cs:437-482@4c08fc75a`:
@@ -915,8 +926,25 @@ permission, no module id, no route path and no index.
    1018-1028@4c08fc75a`). `WORKFLOW_ACTOR_MISMATCH` is a different case — the request body names an actor other than the
    signed-in caller (`.../Features/Workflow/WorkflowActorBinding.cs:42-52`,
    `.../Controllers/WorkflowDefinitionsController.cs:316-326` @4c08fc75a) — and DL-2 does not change it. **AC-W14
-   restated:** same (task, action, key), different actor → 403 `WORKFLOW_ACTOR_DENIED` before and after the fix
-   (proposal: D25/3 is read as changing only the body case); same actor, different body (reason code, comment, evidence
+   restated:** same (task, action, key), different actor — by the item-10 timing cases (interim check 05 F-1; read, not
+   run, @4c08fc75a; the actor check runs only in the replay `WorkflowTaskTransitionSupport.cs:1018-1030`):
+   - **(a)** the twin's row is found by the first lookup (`:61-65`; RequestInfo `:539-547`) → 403
+     `WORKFLOW_ACTOR_DENIED` before and after the fix, under both O-S17-3 options (proposal: D25/3 is read as changing
+     only the body case).
+   - **(b)** late arrival (lookup before the twin commits): today 409 `WORKFLOW_TRANSITION_CONFLICT` with a stale
+     `expectedVersion` (`StaleVersion`, `:77-80`, `:1011-1016`; RequestInfo `:558-561`) or 409
+     `WORKFLOW_TASK_INVALID_STATE` (`:82-89`), before any actor check. Under O-S17-3 (i) the added re-read ((i-a); for
+     RequestInfo without `expectedVersion` the (i-b) duplicate-key mapping) routes it to the actor-bound replay → 403.
+     Under (ii) today's 409s stay; the consumer maps both to `Unknown` (§17.7/6 for `WORKFLOW_TRANSITION_CONFLICT`,
+     item 17 (ii) for `WORKFLOW_TASK_INVALID_STATE` after a same-key send).
+   - **(c)** in-transaction overlap: the loser gets 409 `WORKFLOW_TRANSITION_CONFLICT`
+     (`WorkflowTerminalTransitionWriter.cs:108-110`; on the unavailable path `:370-376`, the version moved without a row
+     of this actor) or 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` (`:390`; `WorkflowTaskTransitionSupport.cs:834-838`),
+     before any actor check. O-S17-3 (i) as written (item 17) adds no re-read on these paths for Approve/Reject, so the
+     answer stays 409/503 under both options and is `Unknown` (§17.7/6); a replay of the key then meets case (a) → 403.
+     A RequestInfo loser whose log meets the unique index goes through (i-b) → 403 under (i); the WP measures which
+     RequestInfo path the race takes (item 10 (c)).
+   Same actor, different body (reason code, comment, evidence
    ref) → 409, sequential and concurrent, no new row. The code is named in the WP (proposal: not
    `WORKFLOW_TRANSITION_CONFLICT`, which §17.7/6 treats as retryable `Unknown`).
 8. **Cancel replay is not actor-bound — new AC-W18 (INSPECTION.md DL-2/2):** the cancel path answers a same-key replay
@@ -1213,11 +1241,11 @@ permission, no module id, no route path and no index.
         error is unchanged. This makes
         `WorkflowTerminalTransitionWriter.cs` a DL-2 allowed path under (i) (item 14), not only "if `SamePayload` is
         shared".
-      AC-W6/W7 case (b) assert 200 (item 10, RequestInfo (b) through (i-b)). AC-W8 does not depend on O-S17-3 (no row
-      under the loser's key, item 9).
+      AC-W6/W7 case (b) assert 200 (item 10, RequestInfo (b) through (i-b)); AC-W14's different-actor case (b) asserts
+      403 (item 7). AC-W8 does not depend on O-S17-3 (no row under the loser's key, item 9).
     - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
       is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No producer
-      change; AC-W6/W7 case (b) assert today's answers (AC-W8 as under (i)); §17.7/6 is amended this way, and every AC-W17 consumer and
+      change; AC-W6/W7 case (b) and AC-W14's different-actor case (b) (item 7) assert today's answers (AC-W8 as under (i)); §17.7/6 is amended this way, and every AC-W17 consumer and
       Treasury records the rule.
     - **Öneri — sahip kararı:** (i). The answer is fixed once in the producer instead of in every consumer (Treasury,
       Tasks, Timesheet, WorkCenter, Web), for all three actions of AC-W6/W7. Cost: (i-a) adds one indexed read before
@@ -1233,8 +1261,8 @@ items 9 and 10; the CT's note in `docs/records/reviews/MOD-0023/REVIEW-REQUEST-r
 the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.4 heading (DL-2), so both slices now list
 the same §17 headings.
 
-Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" in the
-items; they are not the
+Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" /
+"interim check 05 F-n" in the items; they are not the
 formal review's F-n above.
 
 **Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
@@ -1254,11 +1282,17 @@ wrappers, Reject call-counting hold); F-5 → item 4 (`ObjectId`); F-6 → this 
 **Interim check 04 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-04.md` (sub-agent, not a formal
 review; KOŞULLU, no blocker; all findings accepted by the CT; owner `duzelt`).** Interim check 04 F-1 → item 17 ((i-b):
 503, not 409); F-2 → items 9, 17, the closure and the DL-2 finish list (AC-W8 does not depend on O-S17-3; only AC-W6/W7
-and the consumer rule do); F-3 → the §17 status paragraph (approval row, #241), item 2 and the review-round paragraph
+and the consumer rule do — and AC-W14's different-actor case (b), added by interim check 05 F-1); F-3 → the §17 status paragraph (approval row, #241), item 2 and the review-round paragraph
 (source of the item-2 note); F-4 → item 4 (`ReasonCode`, Timesheet's Guid parsing).
 
+**Interim check 05 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-05.md` (sub-agent, not a formal
+review; KOŞULLU, no blocker; both findings accepted by the CT; owner `duzelt`).** Interim check 05 F-1 → item 7 (AC-W14
+actor case by timing case), item 17, the interim check 04 paragraph, the closure and the DL-2 finish list (AC-W14's
+different-actor case (b) depends on O-S17-3); F-2 → item 4 (boundary of the list, inherited fields).
+
 **Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6/W7
-by items 10 and 17, AC-W8 by item 9 — AC-W8 does not depend on O-S17-3); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
+by items 10 and 17, AC-W14 by items 7 and 17 — its different-actor case (b) depends on O-S17-3 —, AC-W8 by item 9 —
+AC-W8 does not depend on O-S17-3); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
 S17-2) and no longer a gate; **O-S17-3 is open and must be decided before the DL-2 WP prompt**; the rest of the §17.8
 closure unchanged.
 
@@ -1274,6 +1308,6 @@ durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
 (AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
 artık kapı değil).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7 ve tüketici kuralı
-O-S17-3 kararına bağlı, §17.9/17; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7, AC-W14'ün farklı aktör (b) vakası ve tüketici kuralı
+O-S17-3 kararına bağlı, §17.9/7 ve §17.9/17; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
