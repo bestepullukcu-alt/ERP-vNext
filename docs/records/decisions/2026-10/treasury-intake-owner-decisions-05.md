@@ -1134,6 +1134,10 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
    Y-4/6'daki "Platform kapsam çözümünü çağırır" ifadesinin somut karşılığıdır.
 3. **D96/3 — WP satır atıfları (sahip denetimi `46dd1e813`, F-1 ORTA):** WP-0126 v0.2'deki MOD-0126 satır atıfları (10) ve WP-0289 v0.3'teki
    MOD-0289 satır atıfları (23) güncel paket sürümlerine göre yeniden ölçüldü (eski sürümle satır eşlemesi; içerik değişmedi).
+4. **D96/4 — WP durum ifadeleri (sahip denetimi `79af1ad40`, 3 ORTA):** iki WP'de tam dosya adlı ve kısaltılmış (`:N`) paket satır atıfları
+   da güncel sürüme eşlendi (WP-0289 19, WP-0126 4); WP-0289 v0.3 P-2 güncel sürümün Codex satırının dalda olduğunu (`b358da78a`), main'e
+   girişin ve `ready-for-dev` sürümü incelemesinin ayrı açık olduğunu yazar; P-5 K-6 "evet" (D92/1) ve K-5 kontrolü yapıldı (D92/4) ile
+   güncellendi, açık kalanlar ayrı yazıldı.
 
 ## Karar olmayanlar
 
