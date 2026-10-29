@@ -1106,7 +1106,7 @@ Onay kanıtı: K1 / gmg-10 (CT teknik hizalaması, D93/1'in uygulanması; yeni �
    imza tarihçedir.
 2. **D95/2 — `AGR` tamamlama:** MOD-0217 port tanımı ve DL-1 kabul kapısı (gerçek servisle `AGR` kodu) `AGR`'ye çevrildi.
 3. **D95/3 — sürüme bağlı inceleme anlatımı:** WP-0126 v0.2 P-2 ve WP-0289 v0.3 P-2, eski sürümlerin (`d86c2a56`, `e32bbb89`) Codex
-   satırlarının güncel sürümleri (`22dbef85…`, `ae09a0c8…`) kapsamadığını açıkça yazar; güncel sürüm için CT-APR-02 açıktır.
+   satırlarının güncel sürümleri (`22dbef85…`, `01af5189…` — D95/6 sonrası) kapsamadığını açıkça yazar; güncel sürüm için CT-APR-02 açıktır.
 4. **D95/4 — MOD-0289 DL-1 hazırlık notu:** O-14 "cevap yok" → D93/1 ile kapandı.
 5. **D95/5 — Beste'ye öneri dosyası (repo dışı, `.ct-teslim/`):** Platform dosya listesine
    `ITrustedLegalEntityScopeCredentialAuthenticator.cs` (sonuç tüketiciyi taşımıyor; `AllowsPair` tüketiciden bağımsız) ve aday kimliği
