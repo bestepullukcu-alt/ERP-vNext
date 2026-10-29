@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D81 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D82 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -873,6 +873,19 @@ Platform sahibinin (Beste) hazır dalı `feat/ct/audit-category-finance-01` (`b2
 `CentralAuditPlatformValues.cs`, `CentralAuditDispatcherTests.cs`) içeriği değiştirilmeden Treasury'nin yeni dalına (`feat/ct/treasury-audit-category-finance-01`)
 alınır, main birleştirilir, testler koşulur ve PR'ı Treasury açar; Beste'nin dalına yazılmaz; **onay ve merge Platform sahibinde (Beste)**.
 Risk değerlendirmesi: değişiklik küçük (17 satır), içerik sahibin kendi kodu; Beste aynı değişiklik için ayrı PR açarsa biri kapatılır.
+
+## D82 — Şartlı teyitli maddeler işaretlenir; yalnız DL-1'i bekleten maddeler dilim kapısına taşınır (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: "Şartlı olarak işaretle (Önerilen)", "Dilim kapısına taşı (Önerilen)".
+
+1. **D82/1 — şartlı teyit:** altı paketteki "Auth paket metni main'de + MOD-0018 sahibinin teyidi" maddesi (MOD-0126, MOD-0119,
+   MOD-0120, MOD-0124, MOD-0289, MOD-0217) ve beş paketteki "Aday sorgusu DL-6 metni main'de" maddesi (MOD-0126, MOD-0119, MOD-0120,
+   MOD-0124, MOD-0217) Ali'nin şartlı teyidiyle (Y-19 / D80/2) işaretlenir. Şart düşmez: K-W5 defteri ve rol atama denetimi
+   MOD-0018 Treasury Auth ekinin DL-5 kodundan önce kapanır; FU27'deki D80/2 (a)(b) maddeleri açık kalır.
+2. **D82/2 — DL-1 dilim kapısı (D51/1):** TRM-14 (MOD-0220 `ApprovalStatus` + sözleşme belgesi; MOD-0126, MOD-0119, MOD-0120,
+   MOD-0124) ve "servis iskeleti MOD-0126 DL-1 ile açıldı" (MOD-0119, MOD-0120, MOD-0124) maddeleri paket kapısından "— DL-1 için"
+   dilim kapısına taşınır: DL-1 başlamadan kapanır, paketi `ready-for-dev`'den alıkoymaz.
 
 ## Karar olmayanlar
 
