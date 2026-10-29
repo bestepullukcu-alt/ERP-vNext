@@ -5,6 +5,7 @@ domain: human-capital-management
 service: Diten.HcmService
 shell: tenant
 golden_reference: compact
+data_mode: server
 entity_base: EntityBase
 status: approved
 approval_status: conditionally-approved-for-draft-reference-validation-slice
@@ -16,6 +17,16 @@ form_field_count: 18
 ---
 
 # MOD-0251 - Core HR / Employee Master
+
+> **Revision 3 (draft, 2026-10-29) - not approved.** Draft revision written under the owner word `kayit-ve-revizyon3`
+> (2026-10-29). It follows independent review 02 (`docs/records/reviews/MOD-0251/2026-10-29-47968562.md`, verdict
+> UYGUN DEĞİL, open F-18 to F-25) and its CT comparison (`docs/records/audits/2026-10/hcm-emp-03-review-02/CT-COMPARISON.md`).
+> It adds `## Audited Events` (F-18), front-matter `data_mode: server` (F-19), detail-read acceptance in DL-3 (F-20),
+> the DL-6 → DL-5 dependency (F-21), draft-write central audit in DL-2 (F-22), one meaning for GWT-B07 and the D03 test
+> (F-23), the split MOD-0299 checklist item (F-24) and the DL-2 permission-breadth decision record (F-25). The approved
+> runtime scope is still **only** the P2 draft/reference-validation slice; nothing added here is approved or executable.
+> Approval of this revision needs a new independent review of this exact version and an approval row. Revision 2 text
+> below is kept; where it disagrees with a "Revision 3" note, the Revision 3 note is the current statement.
 
 > **Revision 2 (draft, 2026-10-27) - not approved.** Draft revision written under the owner word `paket-revizyon`
 > (2026-10-27). It follows independent review 01 (`docs/records/reviews/MOD-0251/2026-10-27-edb2c321.md`, verdict
@@ -119,6 +130,12 @@ runtime scope stays the P2 draft/reference-validation slice. Sources: review 01 
   that those actions are open. Keep or narrow: open decision.
 - **Audit (F-4):** draft writes use a log-only `DraftAuditService`; `GovernedHcmAuditAppendClient` is registered but no
   production handler calls it; actor and correlation are sent as null. GWT-A12 is not met.
+  *Revision 3 (review 02 F-22):* the central audit of the existing draft writes moves to DL-2. Target is path `b`
+  through the shared forwarder `Diten.BuildingBlocks.CentralAudit` (on `main`: 528cd415d, 2026-10-14, BL-501; last
+  111c60c46, 2026-10-23), used today by InventoryService and SupplyChainService (`AddCentralAudit<…>(…, RequireEnlistment
+  = true)` in their `Program.cs`). `Diten.HcmService` does not register it and has no Mongo transaction today; the HCM
+  ledger (`tests/architecture/audit-ledger/Diten.HcmService.md`) lists its trail as `aday` and all eight commands as
+  known debt. Whether AUD-001 K4 is lifted for HCM is an open decision (AE-1). See "Audited Events".
 - **Gateway (F-6, F-17):** four HCM routes exist (`ocelot.json:2788-2847`). The general `/employees/{everything}` route
   passes GET/POST/PATCH/DELETE. A broad route does not mean those lifecycle operations exist. Gateway changes are
   `integration-agent` only.
@@ -159,8 +176,8 @@ approval). Paths are under `services/Diten.HcmService/src/` unless shown in full
 | F-15 | Unauthorized users get the page skeleton (title, start button, form cards; list filter and table) - UAS-001 violation; client-side disabling and API 403 do not close it. | `frontend/Diten.Web/Views/HCM/Employees/Create.cshtml:10`; `frontend/Diten.Web/Views/HCM/Employees/Index.cshtml:13` | GWT-A10 |
 | F-16 | Create idempotency is find-then-insert with no unique index on `TenantId` + `CreateIdempotencyKeyHash`; two concurrent requests with one key can create two drafts and two audit records. | `.../Handlers/CreateEmployeeDraftHandler.cs:33`; `Diten.HcmService.Persistence/Repositories/EmployeeDraftSessionRepository.cs:37` | GWT-A01 |
 
-Related findings outside the five: F-4 (log-only audit; DL-4), F-6 (smoke-fixture boundary; DL-2), F-14
-(workflow-decisions authorization; DL-2).
+Related findings outside the five: F-4 (log-only audit; DL-4 in Revision 2, DL-2 since Revision 3 / F-22), F-6
+(smoke-fixture boundary; DL-2), F-14 (workflow-decisions authorization; DL-2).
 
 ## Open Decisions (Owner)
 
@@ -182,7 +199,11 @@ proposal - not approved). Decided already, not reopened: `bag-kisi` (User → Pe
 | K-9 | `asOf` default and day boundary: tenant time zone or legal-entity time zone. | HCM pack owner | DL-5 |
 | F-5 | Employee list/detail read code (API, pages, menu entry) outside P2: retro-approve as DL-3 scope or close it (code work, separate WP). | HCM pack owner (repository owner) | DL-3 |
 | F-12 | Boundary with MOD-0298 Employee Profile Workspace and the `EmployeeProfileProjection` in `Diten.HumanCapitalService` (HRIS source id, external employee reference): source mapping, update authority, feed contract from MOD-0251. Changes to another service need separate scope approval. | HCM data owner with MOD-0298 owner (MOD-0298 has no owner today) | DL-5 |
-| F-13 | Permission breadth: keep the 14 seeded `mod0251.*` keys or narrow the seed to the approved slices. | HCM pack owner with RBAC owner | DL-2 |
+| F-13 | Permission breadth: keep the 14 seeded `mod0251.*` keys or narrow the seed to the approved slices. Revision 3 (F-25): either choice needs a recorded owner decision before DL-2 starts; keeping the seed is not a default. | HCM pack owner with RBAC owner | DL-2 |
+| AE-1 | AUD-001 K4: the rule text (`audit-trail-standard.md` §5 K4, and `module-pack-standard.md` §10.1) still says new write commands in HCM are blocked "until the shared forwarder arrives", although the forwarder `Diten.BuildingBlocks.CentralAudit` is on `main` (528cd415d, 111c60c46). Confirm that K4 is lifted for `Diten.HcmService`. This pack does not claim it is lifted. | AUD-001 rule owner (Control Tower) | DL-2 (central audit), DL-4, DL-6 |
+| AE-2 | The shared forwarder records only commands that succeed (`CentralAuditBehavior`: a failed envelope or exception leaves no record), and a `[HasPermission]` 403 never reaches MediatR. AUD-001 §3 wants refused commands recorded (`Outcome = Failed / Denied`); this pack's catalog has `employee.access_denied` and `employee.conflict`. Decide how denials and conflicts are recorded (forwarder change, other path) or accept the gap. | Control Tower with Building Blocks owner (other module; XMC-001) | DL-2 (GWT-A10, GWT-A13 audit part) |
+| AE-3 | The forwarder record (`CentralAuditOutboxRecord`) has no before/after or changed-field-names field; AUD-001 §3 item 10 asks for one of them on a change. Decide: extend the shared record, or accept entity + operation only for HCM. | Control Tower with Building Blocks owner (other module; XMC-001) | DL-2, DL-4 |
+| AE-4 | Platform `AuditCategory` (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs`) has no HCM category; proposed: `MasterData` (proposed, not decided). The `SourceModule` code must be the one the HCM manifest registers with Platform (not verified). | HCM pack owner with Platform audit owner | DL-2 |
 | OWN | Pack owner: front matter says `HCM / HR data owner TBD`; a role label is needed (front-matter change needs an approval row). | Repository owner | approval of this revision |
 | HRF | Identity clash: `origin/hr-future` carries `platform-shared-services/module-packs/MOD-0251-hris-external-sor.md` ("HRIS External SoR", `Diten.Platform`) with the same number and a different meaning; it does not block `main`, but a merge of that branch makes the clash real. This queue does not write to that branch (XMC-001). | Owner of the `hr-future` branch with Enterprise Architect | merge of `hr-future`; none of DL-1 to DL-6 |
 
@@ -319,6 +340,7 @@ Completed P2 runtime scope is limited to the draft/reference-validation slice. A
 | `MOD-0288 Organization, Person & Position Directory` | Person, organization, position references | Missing person reference blocks employee creation; missing company/legal-entity SoR blocks employment record validation. |
 | `MOD-0314 HR Governance & Sensitive Access Controls` | HR-sensitive masking and visibility policy | Missing masking hook blocks sensitive response shaping. |
 | Tokenization/security service | Government identifier token/hash capture | Missing tokenization contract blocks government identifier capture. |
+| Shared central-audit forwarder `Diten.BuildingBlocks.CentralAudit` (BL-501; Revision 3) | Path `b` for every MOD-0251 write command ("Audited Events") | Blocker today: the HCM ledger (`tests/architecture/audit-ledger/Diten.HcmService.md`) has no accepted trail (only `hcm-taslak-denetimi`, path `aday`, log-only) and lists all eight commands as known debt. No new write command is coded until DL-2 registers the forwarder, Control Tower accepts the HCM trail, and AE-1 confirms K4 for HCM. |
 
 ## Runtime Constraints
 
@@ -876,6 +898,11 @@ Auth convention:
 - Organization-unit, position, and legal-entity provider/ingress decisions are planning-closed, but unresolved, inactive, non-referenceable, tenant-mismatched, stale/deprecated, archived/deleted, or unavailable provider responses still block employment validation.
 - Position assignment workflow remains deferred until MOD-0299 reconciliation or explicit de-scope.
 
+*Revision 3 (review 02 F-23): in this section, in "Validation Rules" and in GWT-B07, "employee creation" means the
+employee record that activation creates, not the draft session. A draft session MAY be created and saved with missing
+or not-yet-validated references; Review Draft and Submit REQUIRE a valid same-tenant person and valid
+organization-unit, position and legal-entity references (see GWT-B07).*
+
 ## Service Topology Blocker
 
 The HCM backend service scaffold exists at `services/Diten.HcmService`. MOD-0251 must not be placed in `Diten.Platform`, `Diten.AuthService`, `Diten.MdmService`, `Diten.DevEnablementService`, or `Diten.EnterpriseStrategyService`, because those services do not own native HCM employee master SoR data.
@@ -919,7 +946,7 @@ Frontend planning remains:
 - RBAC infrastructure exists and the MOD-0251 permission catalog, role-permission matrix, protected action map, and fail-closed rules are now closed for planning.
 - MOD-0251 permission seed implementation, policy registration, controller attributes, and endpoint enforcement remain blocked until this pack is promoted and a separate approved implementation prompt authorizes them. *(Historical. Revision 2, review 01 F-13: the seed is implemented in Auth `DataSeeder` with all 14 keys, wider than P2; keep or narrow is an open decision.)*
 - Audit infrastructure exists and the MOD-0251 audit event catalog, safe payload matrix, and fail-closed rules are now closed for planning.
-- MOD-0251 audit behavior wiring, event emitters, critical category registration, and implementation tests remain blocked until this pack is promoted and a separate approved implementation prompt authorizes them. *(Revision 2, review 01 F-4: today draft writes use a log-only audit service; the governed append client exists but is not called. Real wiring is DL-4.)*
+- MOD-0251 audit behavior wiring, event emitters, critical category registration, and implementation tests remain blocked until this pack is promoted and a separate approved implementation prompt authorizes them. *(Revision 2, review 01 F-4: today draft writes use a log-only audit service; the governed append client exists but is not called. Real wiring is DL-4. Revision 3, F-22: draft-write wiring moves to DL-2 (path `b`, shared forwarder); DL-4 wires only its own new commands - see "Audited Events".)*
 - Critical writes, sensitive reads, exports, workflow decisions, and access denials must remain blocked or fail-closed until the implementation wiring exists.
 
 ## MOD-0299 Defer / Reconcile Decision
@@ -1179,7 +1206,7 @@ Approval requires closure or formal fail-closed deferral of every blocker record
 - Given/When/Then acceptance criteria are added in this draft pack.
 - MOD-0251 RBAC/audit contract closure planning is complete in this draft pack.
 - MOD-0251 permission seed implementation remains pending after pack promotion and implementation approval. *(Historical. Revision 2, F-13: implemented in Auth `DataSeeder`, 14 keys, wider than P2; not pending.)*
-- MOD-0251 audit wiring implementation remains pending after pack promotion and implementation approval. *(Revision 2, F-4: still not wired - log-only; DL-4.)*
+- MOD-0251 audit wiring implementation remains pending after pack promotion and implementation approval. *(Revision 2, F-4: still not wired - log-only; DL-4. Revision 3, F-22: draft writes move to DL-2.)*
 - *Revision 2 approval gate: approval of this revision additionally needs a new independent review of this version with
   no open ENGEL, an approval row, and the open decisions each slice depends on (see "Open Decisions (Owner)").*
 - Submit/approval/activation contracts remain deferred and must not be implemented until executable MOD-0023 workflow contract exists.
@@ -1439,6 +1466,38 @@ Required UI contract:
 - Gateway route test only if gateway scope is approved in the implementation prompt.
 - No lifecycle, activation, export, or Employee Detail dependency.
 
+### Detail Read Acceptance (DL-3)
+
+Revision 3 (review 02 F-20). Detail read stays in DL-3 (not a separate slice) and is accepted at E4 with the criteria
+below; DL-3 is not accepted on REG-GWT-01 to REG-GWT-08 alone. This applies only if owner decision F-5 retro-approves
+the read code; if F-5 closes it, the detail API and page are removed with their own E4 negative run.
+
+Target API: `GET /api/v1/hcm/employees/{employeeId}` (permission `mod0251.employee.view`); target UI: the detail page
+under `/HCM/Employees/{employeeId}` with `Layout = "_LayoutTenantShell";`.
+
+Detail projection (this is the pack's detail DTO; the response carries these keys and no others):
+
+| Group | Fields | Rule in DL-3 |
+|---|---|---|
+| Employee | `employeeId`, `employeeNumber`, `personId`, `employeeStatus`, `sensitivityLevel`, `version`, `etag`, `updatedAt` | Returned. |
+| Legal profile | `legalFirstName`, `legalMiddleName`, `legalLastName`, `preferredName` | Returned. |
+| Legal profile, sensitive | `dateOfBirth`, `personalEmail`, `phone` | Always `null`, also for a user with `mod0251.employee.view_sensitive`. |
+| Legal profile, policy-governed | `nationalityCode`, `workEmail` | `null` while MOD-0314 HR Governance & Sensitive Access Controls is not executable (today). |
+| Masking flag | `sensitiveFieldsMasked` | `true` whenever any field above is `null` by rule. |
+| Employment records | `employmentRecordId`, `legalEntityId`, `organizationUnitId`, `positionId`, `startDate`, `endDate`, `contractType`, `probationStatus`, `probationEndDate`, `employmentStatus`, `approvalStatus`, `version`, `etag` | Returned. |
+| Never present | government identifier (raw, token, hash, presence flag), evidence ids, audit payload, status history, private notes, `actions.canEditLegal`, `actions.canEditEmployment`, `actions.canChangeStatus`, `actions.canAttachEvidence`, `actions.canExport` | Absent. |
+
+| ID | Given | When | Then |
+|---|---|---|---|
+| DET-GWT-01 | A user has `mod0251.employee.view` and a registry-safe employee exists in the user's tenant. | The user requests the detail through the Gateway. | 200 with a `Response<T>` envelope whose data keys equal the detail projection above (no extra key, none missing). |
+| DET-GWT-02 | A user lacks `mod0251.employee.view`. | The user calls the API or opens the page. | API returns 403 with no employee data; the page shows an in-place access explanation and no page skeleton (UAS-001). |
+| DET-GWT-03 | An employee exists in tenant A. | A tenant B user requests its id. | 404, the same response as for an id that does not exist; no tenant A data, id echo or count. |
+| DET-GWT-04 | An employee has date of birth, personal email, phone, nationality and work email stored. | Any user, including one with `mod0251.employee.view_sensitive`, requests the detail. | Those five fields are `null`, `sensitiveFieldsMasked` is `true`, and no government identifier field appears. |
+| DET-GWT-05 | The detail page renders for a user who holds every `mod0251.*` key. | The user inspects the page and the response. | No edit, status-change, evidence, export or audit control, link or hidden form is present; the response has no edit/status/evidence/export action flag. |
+| DET-GWT-06 | A draft session id, a soft-deleted employee id or a non-registry-safe record id is used. | The detail is requested. | 404; draft sessions and soft-deleted rows never surface through detail. |
+
+Required level: E4 (HTTP through the HCM API on a real store with real permission claims, plus the UI denial check).
+
 ## Given / When / Then Acceptance Criteria
 
 These scenarios are acceptance-contract closure only. They do not create MOD-0251 behavior tests, employee implementation, gateway routes, migrations, or approval to develop. Every scenario is aligned to one of: `First approved draft/reference-validation slice`, `Deferred R1 / activation sequence`, or `Governance blocker`.
@@ -1471,7 +1530,7 @@ These scenarios are acceptance-contract closure only. They do not create MOD-025
 | GWT-B04 | Missing MOD-0314 masking contract | MOD-0314 masking/sensitive access policy contract is unavailable. | A user requests sensitive registry/detail fields. | Sensitive reads are denied or non-sensitive-only shapes are returned; no inferred masking policy is implemented. |
 | GWT-B05 | Missing tokenization/security contract | Tokenization/security service ownership or API is unavailable. | A user attempts to capture government identifier data. | Government identifier capture is disabled; raw government identifiers are not stored, logged, audited, or returned. |
 | GWT-B06 | Unresolved MOD-0299 identity conflict | MOD-0299 registry/Blueprint reconciliation remains unresolved. | MOD-0251 needs assignment workflow/orchestration dependency. | Assignment workflow dependency is deferred; MOD-0251 may store only its employee-side assignment snapshot and must not bind to executable MOD-0299 contracts. |
-| GWT-B07 | Missing or unavailable MOD-0288 person validation path | Same-tenant person reference lookup-validation, Gateway route, or frontend proxy/picker validation is unavailable or ambiguous. | A user tries to create or submit an employee draft requiring `PersonId`. | Employee creation/submission is blocked with controlled validation/dependency error; MOD-0251 does not create or own person directory records and never accepts Auth `UserId` as a substitute. |
+| GWT-B07 | Missing or unavailable MOD-0288 person validation path | Same-tenant person reference lookup-validation, Gateway route, or frontend proxy/picker validation is unavailable or ambiguous, or the draft has no `PersonId`. | A user creates or saves a draft, then requests Review Draft or Submit. | Create and save succeed and keep the reference visibly unvalidated; Review Draft and Submit are refused with a controlled validation/dependency error until a valid same-tenant person (and valid organization-unit, position and legal-entity references) is confirmed; MOD-0251 does not create or own person directory records and never accepts Auth `UserId` as a substitute. *(Revision 3, F-23: one meaning, matching "Protected Action / Endpoint Map" and "Validation Contract".)* |
 
 ### Deferred R1 Sequence Scenarios
 
@@ -1515,18 +1574,18 @@ exists for that criterion. The 2026-10-27 run (60/60) is build/test evidence onl
 | GWT-A09 | implemented | `EmployeeDraftBackendTests.cs:168` (handler); `EmployeeDraftSessionRepositoryMongoTests.cs:15` (Mongo tenant) | E4 | DL-2 | Unit level only; no HTTP/runtime cross-tenant evidence. |
 | GWT-A10 | partial | none for draft endpoints | E4 | DL-2 | No real HTTP permission-denial test; page skeleton drawn for unauthorized users (F-15); no `employee.access_denied` audit. |
 | GWT-A11 | partial | `EmployeeDraftBackendTests.cs:61` (government identifier in `StepPayload` only) | E4 | DL-2 | F-3: no recursive masking, `personal_email`/`phone` unmasked, `ClientValidationState` unchecked; no persistence/response negative test. |
-| GWT-A12 | missing | none for draft writes (`GovernedHcmAuditAppendClientTests.cs`, `EmployeeAuditAdapterContractTests.cs` test the adapter, not the draft write path) | E5 | DL-4 | Log-only audit (F-4). The P2 slice cannot be accepted against A12 before DL-4. |
-| GWT-A13 | partial | `EmployeeDraftBackendTests.cs:43` | E4 | DL-2 | Stale write rejected; no `employee.conflict` audit (depends on DL-4 audit wiring). |
+| GWT-A12 | missing | none for draft writes (`GovernedHcmAuditAppendClientTests.cs`, `EmployeeAuditAdapterContractTests.cs` test the adapter, not the draft write path) | E4 | DL-2 | Log-only audit (F-4). Revision 3 (F-22): moved from DL-4 to DL-2 - central record through the shared forwarder (path `b`), enlisted in the draft write's own Mongo transaction, actor and correlation set, no draft change when the record cannot be written (see "Audited Events"). Open: AE-1 (K4), AE-3 (changed fields), AE-4 (category). |
+| GWT-A13 | partial | `EmployeeDraftBackendTests.cs:43` | E4 | DL-2 | Stale write rejected. `employee.conflict` audit: the shared forwarder records no failed command, so this part depends on open decision AE-2 (Revision 3; was "DL-4 audit wiring"). |
 | GWT-B01 | missing | none | E4 | DL-3 | Violated by code scope: list/detail API, pages, menu entry, broad Gateway route, wide seed (F-5, F-6, F-13). |
 | GWT-B02 | partial | `EmployeeDraftBackendTests.cs:113`; `EmployeeMasterContractTests.cs:201`; `GatewayWorkflowStartClientTests.cs:11` | E5 | DL-4 | Blocked state proven by handler/route tests only. |
 | GWT-B03 | missing | none | not set (later evidence slice) | later, not numbered | Evidence step absent; no acceptance test of the blocked state. |
 | GWT-B04 | partial | `EmployeeRegistrySearchTests.cs:20`, `:122` (safe projections of out-of-scope list/detail) | E4 | DL-3 | `WorkEmail` and `NationalityCode` returned unmasked in detail (inspection note item 12). |
 | GWT-B05 | partial | `EmployeeDraftBackendTests.cs:61` | E4 | DL-2 | `ClientValidationState` not checked (F-3). |
 | GWT-B06 | implemented | none | E1 | DL-1 | Documentation criterion; no MOD-0299 Position & Organization Assignment binding exists in code. Identity conflict closed (F-11). |
-| GWT-B07 | partial | `GatewayReferenceValidationClientTests.cs:52` (missing `PersonId` blocks without provider call) | E4 | DL-2 | F-1 breaks the "unavailable/ambiguous" path. Contradiction: B07 says draft **creation** is blocked without a valid person, while "Protected Action / Endpoint Map" (draft create/update row) and "Validation Contract" allow creating a draft session with incomplete references and block only review readiness. DL-1 must reword B07 to "review readiness and submit" or change the create contract; not changed in this revision. |
+| GWT-B07 | partial | `GatewayReferenceValidationClientTests.cs:52` (missing `PersonId` blocks without provider call) | E4 | DL-2 | F-1 breaks the "unavailable/ambiguous" path. Revision 3 (F-23): contradiction resolved - B07 now says create/save MAY proceed with missing or unvalidated references and Review Draft / Submit REQUIRE a valid same-tenant person and the other references, as in "Protected Action / Endpoint Map" and "Validation Contract". Missing tests: create/save succeeds without `PersonId`; review refused without a validated person; submit is 409 today regardless. |
 | GWT-D01 | deferred | none | not set (later evidence slice) | later, not numbered | Evidence upload/link. |
 | GWT-D02 | deferred | none | E5 | DL-4 | Termination enters DL-4; suspension/rehire/other status changes stay in a later status-change slice. |
-| GWT-D03 | deferred | none | not set (later export slice) | later, not numbered | Export affordance removed from registry; endpoint absent. |
+| GWT-D03 | deferred | partial static: `frontend/Diten.Web/tests/hcm-employee-registry.test.js:105-111` (registry `index.js` configures no export buttons / export columns; not run 2026-10-27) | not set (later export slice) | later, not numbered | Export affordance removed from registry; endpoint absent. No runtime evidence (Revision 3, F-23: "none" corrected). |
 | GWT-D04 | deferred | none | not set (later Data Quality Queue slice) | later, not numbered | Duplicate warning only. |
 | GWT-D05 | deferred | none | not set (later self-service slice) | later, not numbered | Self-service edit stays out; `/me` read of the employment summary is DL-5 (K-3). |
 | GWT-D06 | deferred | `EmployeeDraftBackendTests.cs:113`; `EmployeeMasterContractTests.cs:201`; `GatewayWorkflowStartClientTests.cs:11` | E5 | DL-4 | Blocked state partly proven (submit returns 409, no workflow start client). |
@@ -1555,6 +1614,11 @@ exists for that criterion. The 2026-10-27 run (60/60) is build/test evidence onl
   - Each open decision in "Open Decisions (Owner)" names an owner role and the slice it blocks; no person name or e-mail appears.
   - DL-2 acceptance: for each of F-1, F-2, F-3, F-14, F-15, F-16 and the F-6 fixture boundary, a negative test fails on the unfixed code and passes on the fix (sabotage evidence), and an E4 run on the same commit as this pack version is recorded.
   - Layout for every HCM employee page stays `Layout = "_LayoutTenantShell";`, and an unauthorized user receives only an in-place access explanation, no page skeleton (UAS-001).
+- Revision 3 (testable):
+  - `## Audited Events` lists every write command of "Owned Objects" and every write command in `services/Diten.HcmService/src/Diten.HcmService.Application/Features/CoreHrEmployeeMaster/Commands/` exactly once, each with a path or an `İ` class and a reason.
+  - DL-2 acceptance for GWT-A12: each of `CreateEmployeeDraftCommand`, `PatchEmployeeDraftCommand`, `ValidateDraftReferencesCommand`, `ReviewEmployeeDraftCommand` leaves exactly one central-audit outbox row with tenant, actor, correlation id and entity id set, committed in the same Mongo transaction as the draft change; a forced outbox-insert failure leaves the draft unchanged and returns a controlled failure; removing the enlistment call makes that test fail (sabotage evidence).
+  - Front matter carries `data_mode: server`; the pack covers one list screen (Employee Registry, `Views/HCM/Employees/Index.cshtml`).
+  - DL-3 is accepted only with DET-GWT-01 to DET-GWT-06 at E4 in addition to REG-GWT-01 to REG-GWT-08 (or the recorded removal under F-5).
 
 ## Test Expectations
 
@@ -1564,7 +1628,8 @@ Current and future implementation expectations:
 
 - P2 focused backend/frontend tests and browser replay are the only completed runtime evidence for this approved slice. *(Historical. Revision 2: no runtime evidence is recorded in the repository (F-7). Current: 52 test methods / 60 cases (2026-10-27 run 60/60, build 0 warnings), E2 only; per-criterion coverage in "Acceptance Criteria → Test → Evidence Map".)*
 - DL-2 tests (Revision 2): provider HTTP-200 negative/missing/malformed bodies (F-1); validation bound to draft ids and version, invalidated by a patch (F-2); recursive PII guard incl. `personal_email`, `phone` and `ClientValidationState`, persistence and response negatives (F-3); concurrent create with one idempotency key on a real Mongo store with a unique index (F-16); HTTP 403 for each draft endpoint and for workflow-decisions without permission (F-14, GWT-A10); server-rendered access explanation with no skeleton for unauthorized users (F-15); smoke-fixture refusal outside the fixture boundary and no revival of soft-deleted rows (F-6).
-- DL-4 tests: real governed audit append on each draft write with actor and correlation; audit failure leaves no business write (F-4).
+- DL-2 audit tests (Revision 3, F-22, GWT-A12): on a real Mongo store with the shared forwarder registered (`RequireEnlistment = true`), one outbox row per successful draft write (create, patch, validate-references, review) with tenant, actor, correlation and entity id; forced outbox failure → no draft change, controlled failure; idempotent replay → no second row; failed command → no deliverable row; no forbidden field (see "Audited Events") in the row; smoke-fixture writes covered the same way. Sabotage: drop the enlistment call and the failure test must go red.
+- DL-4 tests (Revision 3: own new commands only): the same audit tests for submit, workflow decision, activation, termination, hire-date change and employment change; the draft-write audit is DL-2's.
 - DL-5 tests: consumer and producer contract tests against the versioned contract file; producer-side contract test in `Diten.HcmService`.
 - Frontend DataTable verifier applies only after registry/list pages are approved.
 - Runtime smoke only after the approved implementation slice exists; activation smoke remains deferred until MOD-0023 activation is approved.
@@ -1579,7 +1644,8 @@ Current and future implementation expectations:
 - [x] HCM service scaffold created at `services/Diten.HcmService`; no MOD-0251 employee business implementation was created.
 - [x] Future HCM port `5060` accepted as the approved local downstream port for `Diten.HcmService`.
 - [x] MOD-0299 assignment workflow/orchestration explicitly de-scoped from the MOD-0251 first approved draft/reference-validation slice.
-- [ ] MOD-0299 registry conflict reconciled by Enterprise Architect approval. *(Revision 2: `module-id-registry.md:199` already records canonical MOD-0299 Position & Organization Assignment; left open until the Enterprise Architect confirms - not verified here.)*
+- [x] MOD-0299 identity reconciled (`module-id-registry.md:199`). *(Revision 3, F-24: row 199 keeps "SaaS Billing & Invoicing" only as a non-executable deprecated alias whose legacy meaning migrates to MOD-0364, and states canonical MOD-0299 stays Position & Organization Assignment; re-read 2026-10-29 in this worktree. No identity conflict remains.)*
+- [ ] MOD-0299 Position & Organization Assignment workflow scope approval (assignment workflow/orchestration binding for MOD-0251; out of scope for P2 and DL-2 to DL-6; needs its own scope approval before any binding). *(Revision 3, F-24: separated from the identity item above.)*
 - [x] MOD-0288 person/reference contract confirmed for same-tenant employee creation through backend + Gateway + frontend proxy/picker, with frontend Vitest execution caveat.
 - [x] Organization-unit provider decision approved for MOD-0251 employment validation: MOD-0288 / Platform organization-unit runtime.
 - [x] Position provider decision approved for MOD-0251 assignment snapshot validation: MOD-0288 / Platform position runtime.
@@ -1607,7 +1673,7 @@ Current and future implementation expectations:
 - [x] MOD-0251 role-permission matrix added.
 - [x] MOD-0251 audit payload contract added.
 - [ ] MOD-0251 permission seed implementation completed after HCM service scaffold approval. *(Revision 2: seed code exists with 14 keys, wider than P2 (F-13); not accepted until the breadth decision.)*
-- [ ] MOD-0251 audit wiring implementation completed after HCM service scaffold approval. *(Revision 2: log-only today (F-4); DL-4.)*
+- [ ] MOD-0251 audit wiring implementation completed after HCM service scaffold approval. *(Revision 2: log-only today (F-4); DL-4. Revision 3: draft writes DL-2, F-22.)*
 - [x] G/W/T acceptance criteria added.
 - [ ] HCM domain is added to any required global registries/AGENTS updates in a separate governance prompt if needed.
 - [ ] P0 inspection confirms route, service, persistence, migration, test, frontend, RBAC, audit, workflow, evidence, masking, and tokenization contracts.
@@ -1625,12 +1691,17 @@ Current and future implementation expectations:
 - [ ] Government identifier capture remains disabled until tokenization/security contract is confirmed.
 - [ ] Revision 2: "Teslim dilimleri" table present with one evidence level per slice (written; not yet reviewed).
 - [ ] Revision 2: acceptance-criteria map present for GWT-A01 to GWT-D07 (written; not yet reviewed).
-- [ ] Revision 2: independent review 02 of this exact version with result UYGUN and no open ENGEL.
+- [ ] Revision 2: independent review 02 of this exact version with result UYGUN and no open ENGEL. *(Revision 3: review 02 recorded UYGUN DEĞİL against revision 2; superseded by the review 03 item below.)*
 - [ ] Revision 2: approval row for this version (`scripts/pack_approval.py`).
-- [ ] DL-2: P2 defects F-1, F-2, F-3, F-14, F-15, F-16 and the F-6 fixture boundary fixed and proven at the DL-2 level.
+- [ ] Revision 3: `## Audited Events` present with every write command once (written; not yet reviewed).
+- [ ] Revision 3: independent review 03 of this exact version with result UYGUN and no open ENGEL.
+- [ ] Revision 3: approval row for this version (`scripts/pack_approval.py`).
+- [ ] DL-2: P2 defects F-1, F-2, F-3, F-14, F-15, F-16, the F-6 fixture boundary and GWT-A12 draft-write central audit fixed and proven at the DL-2 level.
+- [ ] DL-2: owner decision record on permission breadth (F-13) - required whether the seed is kept or narrowed.
+- [ ] DL-2: AUD-001 K4 lift confirmed for `Diten.HcmService` by the rule owner (AE-1); AE-2, AE-3, AE-4 decided.
 - [ ] DL-3: owner decision F-5 recorded (retro-approve or close list/detail read).
 - [ ] DL-4 to DL-6: open decisions K-1 to K-9 closed for the slice in question.
-- [ ] `data_mode` (and `data_mode_max_rows` if client mode) set for the registry DataTable before DL-3 can be ready-for-dev.
+- [ ] `data_mode` (and `data_mode_max_rows` if client mode) set for the registry DataTable before DL-3 can be ready-for-dev. *(Revision 3, F-19: front matter now carries `data_mode: server`; left unchecked until review 03.)*
 
 ## Implementation Notes
 
@@ -1642,7 +1713,7 @@ Current and future implementation expectations:
 - Registry currently does not contain an active `MOD-0251` row, but the validator proves the ID/name from the Blueprint workbook and no active collision was detected. Row addition goes in the joint registry PR (discovery record).
 - Registry row 197 likewise keeps MOD-0298 "Tenant Module Entitlements" only as a deprecated alias; canonical MOD-0298 is Employee Profile Workspace (relevant to F-12).
 - Contract handling (owner decision `gecici-sozlesme`, relayed by the leave CT; no decision record found in this worktree): the HCM-CORE-BUNDLE contract stays a versioned file in the repository and both sides carry contract tests (DL-5).
-- Missing pack sections against `module-pack-standard.md` were not reconciled in Revision 2 (for example a dedicated "Audited Events" section, AUD-001, and `data_mode`); review 02 should check them.
+- Missing pack sections against `module-pack-standard.md` were not reconciled in Revision 2 (for example a dedicated "Audited Events" section, AUD-001, and `data_mode`); review 02 should check them. *(Revision 3: both added - "Audited Events" (F-18) and `data_mode: server` (F-19). Other sections of `module-pack-standard.md` were not re-checked in this revision.)*
 
 ## Follow-up Items
 
@@ -1666,47 +1737,144 @@ Development control plan:
 
 Do not start any follow-up outside the approved draft/reference-validation boundary until a later pack update explicitly approves that scope.
 
+## Audited Events
+
+Revision 3 (review 02 F-18; `module-pack-standard.md` §10.1, AUD-001; `audit-trail-standard.md` §3-§6). One row per
+write command, each exactly once: the eight commands in
+`services/Diten.HcmService/src/Diten.HcmService.Application/Features/CoreHrEmployeeMaster/Commands/` today, the
+commands of DL-4 to DL-6, and the remaining write commands of "Owned Objects" (later slices). Event names come from
+"Audit Event Catalog" and "Audit Contract For This Slice"; a name marked *proposed* is not in the catalog and is not
+decided. Command names marked *proposed* do not exist in code. This table is not approval to code any row.
+
+Path today: none. The HCM ledger lists one trail, `hcm-taslak-denetimi`, path `aday` (`IDraftAuditService.EmitAsync`,
+application log only), and all eight current commands under "Bilinen borç". Target path for every audited row: `b`,
+the shared forwarder `Diten.BuildingBlocks.CentralAudit` (BL-501; on `main`: 528cd415d, 2026-10-14; 111c60c46,
+2026-10-23). How it works (read from `CentralAuditBehavior.cs`, `CentralAuditRecorder.cs`,
+`CentralAuditServiceCollectionExtensions.cs`): the command carries `ICentralAuditDeclaration`; `CentralAuditBehavior`
+opens one event per marked command; the repository writes it into the service's own outbox inside the command's Mongo
+transaction (`CentralAuditTransaction.EnlistAsync`); `CentralAuditDispatcher` delivers it to Platform
+`POST /api/internal/audit/append`. A failed command leaves no deliverable record. InventoryService and
+SupplyChainService register it with `AddCentralAudit<…>(…, options => options.RequireEnlistment = true)` in their
+`Program.cs`. `Diten.HcmService` does not register it and has no Mongo transaction today (DL-2 work).
+
+**Open decision AE-1 (not resolved here):** `audit-trail-standard.md` §5 K4 and `module-pack-standard.md` §10.1 still say
+that new write commands in HCM are blocked "until the shared forwarder arrives", although the forwarder exists on `main`.
+The rule owner must confirm that K4 is lifted for `Diten.HcmService`. This pack does not claim it is lifted; until it is
+confirmed, no row below is coded - neither DL-2's wiring of the eight existing commands nor any new command of DL-4 or
+later.
+
+| Komut | Olay adı | Nesne | Yol | Önceki/sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
+|---|---|---|---|---|---|
+| CreateEmployeeDraftCommand (exists; DL-2) | `employee_draft.created` | EmployeeDraftSession | b | AfterState: `draftSchemaVersion`, `currentStep`, `version`; idempotency key as hash only | — |
+| PatchEmployeeDraftCommand (exists; DL-2) | `employee_draft.updated` | EmployeeDraftSession | b | `stepCode` and the names of the changed step fields; `version` before/after; no field values | — |
+| ValidateDraftReferencesCommand (exists; DL-2) | `employee_draft.references_validated` | EmployeeDraftSession | b | Reference types checked, aggregate result, reason codes, `version` before/after | — (not İ5: it persists the validation summary on the draft) |
+| ReviewEmployeeDraftCommand (exists; DL-2) | `employee_draft.reviewed` | EmployeeDraftSession | b | Before/After: `reviewState`; blocking reason codes; `version` | — |
+| SubmitEmployeeDraftCommand (exists, blocked: 409 today; marker in DL-2, behaviour in DL-4) | `employee.submitted_for_approval` | EmployeeDraftSession / Employee | b | Before/After: draft and employee status; workflow reference id | — (today it changes nothing and fails, so no record is filed) |
+| ConsumeWorkflowDecisionCommand (exists, blocked: 409 today; marker in DL-2, behaviour in DL-4) | `employee.approved` or `employee.rejected` (by decision) | Employee / EmployeeDraftSession | b | Before/After: approval status, employee status; workflow reference id, decision code | — (today it changes nothing and fails, so no record is filed) |
+| EnsureEmployeeSmokeFixtureCommand (exists; DL-2, F-6 boundary) | `employee_smoke_fixture.ensured` *(proposed)* | Employee (fixture) | b | AfterState: `employeeId`, `employeeNumber`; revived-from-soft-delete flag | — (if F-6 removes the endpoint, the row goes with the command) |
+| CleanupEmployeeSmokeFixtureCommand (exists; DL-2, F-6 boundary) | `employee_smoke_fixture.cleaned_up` *(proposed)* | Employee (fixture) | b | BeforeState: `employeeId`, `employeeNumber`; deleted flag | — (as above) |
+| ActivateEmployeeCommand *(proposed name; DL-4)* | `employee.status.changed` | Employee, EmploymentRecord | b | Before/After: employee status (Pending Approval → Active); `employmentRecordId`; workflow reference id | — |
+| TerminateEmployeeCommand *(proposed name; DL-4)* | `employee.status.changed` | Employee, EmploymentRecord | b | Before/After: employee status; changed field names `terminationDate`, `endDate` | — |
+| ChangeEmployeeHireDateCommand *(proposed name; DL-4)* | `employee.employment_record.updated` | Employee / EmploymentRecord (where `hireDate` lives is decided in DL-4) | b | Changed field name `hireDate`; `version` before/after | — |
+| UpdateEmploymentRecordCommand *(proposed name; DL-4 "change employment"; Owned Objects "Update employment record")* | `employee.employment_record.updated` | EmploymentRecord | b | Changed field names (for example `legalEntityId`, `organizationUnitId`, `positionId`, `contractType`, `seniorityDate`, `ftePercent`, `workLocationId`); `version` before/after | — |
+| UpdateEmployeeProfileCommand *(proposed name; later slice; Owned Objects "Update employee profile")* | `employee.profile.updated` | Employee | b | Changed field names only; no values | — |
+| RequestEmployeeStatusChangeCommand *(proposed name; later status-change slice; Owned Objects "Request status change")* | `employee.status.changed` | Employee | b | Before/After: employee status; reason category code | — |
+| LinkEmployeeEvidenceCommand *(proposed name; later evidence slice; Owned Objects "Link employee evidence")* | `employee.evidence_linked` | EmployeeDocumentLink | b | AfterState: `evidenceLinkId`, document type code | — |
+| ExportEmployeeListCommand *(proposed name; later export slice; Owned Objects "Export employee list")* | `employee.export.requested`, `employee.export.completed` | Employee export | b | Format, filter hash, bounded row count | — (bulk personal-data export: no record, no file - `audit-trail-standard.md` §4.3) |
+| PublishEmployeeEventsCommand *(proposed name; DL-6 outbox publisher, only if built as a command)* | — | — | — | — | İ2 - a scheduled technical trigger that only delivers integration events already committed by audited commands; it changes no employee record itself. |
+
+DL-5 adds no write command: the employment-summary endpoints and the `updatedSince` read are reads, and the user-person
+link is written by its owning module (K-1). No read row is needed today: AUD-001 §7 sensitive single reads apply only
+when sensitive fields are returned, and DL-3 returns none (DET-GWT-04); enabling `view_sensitive` adds a read row first.
+`mod0251.data_quality.resolve` has no command in "Owned Objects"; when one is added it gets a row here first.
+
+K2 class (identity / tenant / special-category personal data; `audit-trail-standard.md` §4.3-§4.4) and fail-closed:
+
+| Komut | K2 | Why | Fail-closed path | Test |
+|---|---|---|---|---|
+| ConsumeWorkflowDecisionCommand | yes (from DL-4) | An approved decision creates an employee of record (worker identity used by the user-person link and access). | Enlisted in the command's local Mongo transaction; outbox insert fails → transaction aborts → no status change, controlled failure. | Forced outbox failure → employee and draft unchanged; sabotage: remove enlistment → test red. |
+| ActivateEmployeeCommand | yes | Creates the employee of record. | Same. | Same, plus no `hcm.employee.activated.v1` outbox event without the audit row (DL-6). |
+| TerminateEmployeeCommand | yes | Ends the employment that identity and access depend on. | Same. | Same. |
+| RequestEmployeeStatusChangeCommand | yes | Suspension / rehire change the employee of record. | Same. | Same. |
+| EnsureEmployeeSmokeFixtureCommand, CleanupEmployeeSmokeFixtureCommand | yes | They create, revive or delete an Employee record of the same type as activation. | Same. | Same (DL-2). |
+| All other rows | no | Draft session, business employment data or evidence metadata; no KVKK special-category field is captured (government identifier is rejected, F-3). A later special-category field makes the command K2. | The same enlisted path: GWT-A12 asks every critical draft write to fail closed, K2 or not. | DL-2 / DL-4 audit tests in "Test Expectations". |
+
+Conditions on path `b` that this pack depends on (read from code; not runtime-verified):
+
+- A command whose write is not enlisted gets its record written after it succeeds; a crash in between loses the record
+  (the "gap" named in `CentralAuditRecorder.CompleteAsync`). No MOD-0251 command may use `ICentralAuditOutsideTransaction`;
+  submit and workflow decision enlist in their local state-change transaction.
+- `Diten.HcmService` has no Mongo transaction today; DL-2 adds them to the draft and fixture repositories (Mongo
+  transactions need a replica set; the HCM test store was not checked).
+- If the caller scope is not resolved, the forwarder files no record and lets the command run; HCM handlers must refuse
+  the write without tenant and actor (tenant check exists, `EmployeeDraftHandlerHelpers.TryGetTenantId`; actor check is
+  DL-2 work).
+- Platform address or key unset: rows accumulate in the outbox, a warning is logged and the health check is Degraded;
+  the command is not stopped. Delivery is asynchronous.
+- Refused commands (403, 409, validation) leave no central record (AE-2); the record carries no changed-field field
+  (AE-3); Platform has no HCM audit category (AE-4).
+- The ledger change (HCM `## İzler` row for path `b`, Control Tower acceptance, removal of the eight "Bilinen borç"
+  lines) is DL-2 work under `tests/architecture/audit-ledger/`, as done for SupplyChainService
+  (`CT-DECISIONS.md`, 2026-10-21).
+
+Never written to the audit record (any row): date of birth; government identifier (raw, token or hash); personal email;
+phone; work email; legal names; nationality; address; bank or tax values; JWT, S2S key (`X-Internal-Api-Key`) or any
+other token or secret; raw idempotency key (hash only); draft payload or step payload; provider response bodies; free
+text; exported row data. A changed field is written by name, never by value. The shared forwarder copies no request
+body into the record (`ICentralAuditDeclaration`: "the declaration names the entity, not its data"); a future
+extension for AE-3 must keep this list.
+
 ## Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi |
 |---|---|---|---|
 | DL-1 | Scope, evidence and identity reconciliation (documentation) | Revision 2 Review Reconciliation, Corrected Current State, Open Decisions (Owner), Authoritative Baseline After Containment, MOD-0299 Defer / Reconcile Decision, Governance Blocker Scenarios, Implementation Notes, Follow-up Items | E1 |
-| DL-2 | P2 correction (reference validation, draft binding, PII guard, UAS-001, atomic idempotency, callback authorization, smoke-fixture boundary) | Known Defects in the Approved P2 Slice (Review 01), P1 Draft / Reference Validation Contract, Validation Contract, Persistence Contract, Fail-Closed Behavior, Protected Action / Endpoint Map, RBAC Fail-Closed Rules, Gateway / API Routing Decision, Layout & Shell Contract, First Approved Draft / Reference-Validation Slice, Acceptance Criteria → Test → Evidence Map | E4 |
-| DL-3 | Employee registry and detail read (owner decision F-5 first, then implementation) | P4 Employee Registry Read-Only Scope Contract, Registry Purpose and Boundary, Allowed Records, API Boundary, UI Boundary, P4 Acceptance Criteria, P4 Test Expectations, Frontend File Contract | E4 |
-| DL-4 | Activation and termination (submit, MOD-0023 decision, Active, governed audit, new employment fields) | Entity Fields, Workflow First-Slice De-scope Decision, MOD-0251 Audit Contract, Audit Fail-Closed Rules, Audit Contract For This Slice, Deferred R1 Sequence Scenarios | E5 |
+| DL-2 | P2 correction (reference validation, draft binding, PII guard, UAS-001, atomic idempotency, callback authorization, smoke-fixture boundary, draft-write central audit) | Known Defects in the Approved P2 Slice (Review 01), P1 Draft / Reference Validation Contract, Validation Contract, Persistence Contract, Audit Contract For This Slice, Fail-Closed Behavior, Protected Action / Endpoint Map, RBAC Fail-Closed Rules, Gateway / API Routing Decision, Layout & Shell Contract, First Approved Draft / Reference-Validation Slice, Acceptance Criteria → Test → Evidence Map, Audited Events | E4 |
+| DL-3 | Employee registry and detail read (owner decision F-5 first, then implementation) | P4 Employee Registry Read-Only Scope Contract, Registry Purpose and Boundary, Allowed Records, API Boundary, UI Boundary, P4 Acceptance Criteria, P4 Test Expectations, Detail Read Acceptance (DL-3), Frontend File Contract | E4 |
+| DL-4 | Activation and termination (submit, MOD-0023 decision, Active, audit of its own new commands, new employment fields) | Entity Fields, Workflow First-Slice De-scope Decision, MOD-0251 Audit Contract, Audit Fail-Closed Rules, Audited Events, Deferred R1 Sequence Scenarios | E5 |
 | DL-5 | User-person link consumption and employment-summary reads | Open Decisions (Owner), Ownership and Boundaries, API / Interface Registry Stubs, Dependencies | E5 |
 | DL-6 | Employee events, outbox and incremental sync | API / Interface Registry Stubs, Audit Event List and Safe Payload Policy, Next-Sequence Decision Table | E5 |
 
 `gerekli kanıt seviyesi` is the minimum evidence level (SOP §23.1) the acceptance record of a work package of that
 slice must reach; the acceptance record cites this table row as `required_evidence_source`. Slices are a proposal from
 review 01 (F-8) adopted in this draft; this table is not approval. Writing slices are at least E4 and cross-module
-integration slices E5.
+integration slices E5. Revision 3: DL-2 stays E4 although it now carries the draft-write central audit, because SOP
+§23.1 E4 already covers persistence + audit + failure paths, and the HCM side of path `b` (the outbox row committed in
+the draft write's own transaction, no write without it) is local, while delivery to Platform is the shared forwarder's
+own accepted behaviour (BL-501).
 
 Slice details (prerequisite · in scope · out of scope · exit condition):
 
 - **DL-1** - prerequisite: none. In scope: this pack's text only - current-state corrections, open decisions, the
   acceptance map, the GWT-B07 wording fix. Out of scope: any code, `domain-config.md` (separate change). Exit: review 02
   of this version records no open ENGEL against DL-1 items.
-- **DL-2** - prerequisite: approval of this revision; F-13 permission-breadth decision if the seed is narrowed. In
-  scope: F-1 (read the provider envelope and `referenceable`, match the requested ids; HTTP-200 negative, missing and
+- **DL-2** - prerequisite: approval of this revision; a recorded owner decision on permission breadth (F-13) whether
+  the seed is kept or narrowed (Revision 3, F-25); AE-1 confirmed by the rule owner and AE-2, AE-3, AE-4 decided (Revision
+  3). In scope: F-1 (read the provider envelope and `referenceable`, match the requested ids; HTTP-200 negative, missing and
   malformed bodies fail closed); F-2 (bind the validation result to the draft's ids and version, invalidate it on any
   reference change); F-3 (field allowlist, recursive PII guard including `personal_email`, `phone` and
   `ClientValidationState`); F-15 (no page skeleton for unauthorized users, UAS-001); F-16 (atomic create idempotency with
   a unique index on `TenantId` + `CreateIdempotencyKeyHash`, duplicate-key returns the original result); F-14
   (`[HasPermission]` or an approved service-actor authorization on `workflow-decisions`); F-6 smoke-fixture boundary
   (access, data and audit limits; no rewrite of an existing employee number, no revival of soft-deleted rows; Gateway
-  narrowing only by `integration-agent`). Out of scope: activation, audit wiring (DL-4), registry/detail (DL-3). Exit:
-  each item has a negative test that fails on the old code, and an E4 run on the commit carrying this pack version.
+  narrowing only by `integration-agent`); GWT-A12 draft-write central audit (Revision 3, F-22: register the shared
+  forwarder with `RequireEnlistment = true`, mark the eight existing commands, enlist each write in its own Mongo
+  transaction, actor and correlation set, fail-closed: no draft or fixture change without the outbox row; HCM ledger
+  trail accepted by Control Tower and the eight "Bilinen borç" lines removed). Out of scope: activation and the audit of
+  DL-4's new commands (DL-4), registry/detail (DL-3). Exit: each item has a negative test that fails on the old code, the
+  GWT-A12 tests of "Test Expectations" pass (with sabotage evidence), and an E4 run on the commit carrying this pack
+  version; DL-2 exit covers GWT-A12.
 - **DL-3** - prerequisite: owner decision F-5 (retro-approve or close). If closed: remove list/detail API, pages and
   menu entry (code work). If retro-approved: implement "P4 Employee Registry Read-Only Scope Contract" (approved-record /
   fixture separation, masking of `WorkEmail` / `NationalityCode` per MOD-0314 HR Governance & Sensitive Access Controls
-  policy or omission, `data_mode` set). Out of scope: export, status, evidence, lifecycle actions. Exit: E4 run of
-  REG-GWT-01 to REG-GWT-08 or a recorded removal with its own E4 negative run.
+  policy or omission, `data_mode: server` per front matter) and "Detail Read Acceptance (DL-3)". Out of scope: export,
+  status, evidence, lifecycle actions. Exit: E4 run of REG-GWT-01 to REG-GWT-08 and DET-GWT-01 to DET-GWT-06 (Revision
+  3, F-20), or a recorded removal with its own E4 negative run.
 - **DL-4** - prerequisite: DL-2 accepted; executable MOD-0023 Workflow Designer contract (source authentication,
   replay/idempotency, tenant validation); K-2, K-5, K-6, K-7 and K-8 decided. In scope: submit → MOD-0023 decision →
-  Active, termination (`terminationDate` = last working day, inclusive), governed audit wiring (real MOD-0021 Audit Trail
-  Service append on every draft and lifecycle write, actor and correlation set, fail-closed: no business write without an
-  accepted audit), new fields `seniorityDate`, `ftePercent`, `workLocationId`. Out of scope: suspension, rehire and other
+  Active, termination (`terminationDate` = last working day, inclusive), central audit of DL-4's own new commands only
+  (submit, workflow decision, activation, termination, hire-date change, employment change; same path `b` as DL-2, actor
+  and correlation set, fail-closed; the draft-write audit is DL-2's since Revision 3, F-22), new fields `seniorityDate`, `ftePercent`, `workLocationId`. Out of scope: suspension, rehire and other
   status changes, evidence. Exit: E5 integrated run with MOD-0023 and MOD-0021, including audit-failure and
   workflow-unavailable negatives.
 - **DL-5** - prerequisite: DL-4 accepted; `bag-kisi` (decided); K-1, K-3, K-4, K-8, K-9 decided; the module that holds
@@ -1717,7 +1885,8 @@ Slice details (prerequisite · in scope · out of scope · exit condition):
   producer-side contract test in `Diten.HcmService`. Out of scope: writing the link (owned by the other module), display
   name (read from MOD-0288). Exit: E5 run with the consuming module (MOD-0280 Time, Attendance & Leave Management) and
   both contract tests green on the same contract version.
-- **DL-6** - prerequisite: DL-4 accepted; K-2 and K-4 decided. In scope: outbox in `Diten.HcmService` (at-least-once),
+- **DL-6** - prerequisite: DL-4 and DL-5 accepted (Revision 3, F-21: the `updatedSince` read that sync recovery uses
+  is delivered in DL-5); K-2 and K-4 decided. In scope: outbox in `Diten.HcmService` (at-least-once),
   events `hcm.employee.activated.v1`, `hcm.employee.terminated.v1`, `hcm.employee.hire-date-changed.v1`,
   `hcm.employee.employment-changed.v1` (names open, K-2) with the v0.3 §3 envelope; `updatedSince` incremental sync as the
   mandatory fallback. Out of scope: forbidden fields of v0.3 §2 in any payload. Exit: E5 run proving delivery, consumer
