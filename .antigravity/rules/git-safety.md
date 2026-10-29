@@ -38,6 +38,7 @@ Bu kural, repoda yapılan her git operasyonunun güvenlik sınırlarını tanım
 ## 4. Commit Kapısı
 
 - Commit **yalnızca açık kullanıcı onayından sonra** atılır.
+- **İstisna (S-99, sahip kararı 2026-10-29):** Control Tower kendi dalında ve kendi işçilerinin ana dal dışındaki dallarında yerel commit atar ve `git merge origin/main` ile ana dalı yerel alır; sorulmaz (kart §7). Main'e commit, force ve yıkıcı komutlar bu istisnaya girmez.
 - Kullanıcı açıkça "commit" istemeden commit oluşturulmaz.
 - Hook atlama (`--no-verify`) veya imza atlama açık kullanıcı talebi olmadan kullanılmaz.
 - Mevcut commit'i ezmek (`--amend`) varsayılan değildir; varsayılan yeni commit oluşturmaktır.
@@ -45,6 +46,7 @@ Bu kural, repoda yapılan her git operasyonunun güvenlik sınırlarını tanım
 ## 5. Push Kapısı
 
 - Push **yalnızca açık kullanıcı onayından sonra** yapılır.
+- **Oturum dal izni (S-99, sahip kararı 2026-10-29):** sahip bir Control Tower sohbetinde oturum başına bir kez açıkça onay verirse (`dal-izni`), CT o oturum boyunca yalnız kendi dalını ya da kendi işçi dalını, her seferinde gizli bilgi taramasından sonra ve sha ile push eder (kart §7). Main, force push, PR ve merge bu izne girmez; her biri ayrıca onay ister.
 - `main`'e doğrudan push yapılmaz (bkz. §1).
 - Push hedefi (remote + branch) handoff raporunda açıkça belirtilir.
 
