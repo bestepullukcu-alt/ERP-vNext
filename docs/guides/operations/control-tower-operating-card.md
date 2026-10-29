@@ -160,50 +160,76 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
 5 satırlık özette yer alır.
 
 - **Kısa haber** (her mesaj): en üstte **tek satırlık ilerleme** (S-61b, sahip kararı `tek-satir`), örn.
-  `**Vaka girişi · 7. gün** ▓▓▓░░░░░░ 3/9 parça bitti · 0 kabul` (parça = onaylı paketin teslim dilimi, bitti = main'de;
+  **Vaka girişi · 7. gün** ▓▓▓░░░░░░░ 3/9 parça bitti · 0 kabul — satır ters tırnaksız, sohbette görüneceği gibi
+  yazılır; çubuk her zaman 10 hücredir, dolu hücre = round(10 · bitti / toplam) (parça = onaylı paketin teslim dilimi, bitti = main'de;
   gün = CT dalının ilk commit'inden bugüne; kabul = kabul kaydı olan parça; sayılar ölçülür, paket ya da dilim tablosu
-  yoksa `parça yok`). İlk yanıtta bu satır "Yer" maddesinin ölçülmüş `Klasör: …` satırının hemen altına gelir. Sonra
+  yoksa "parça yok"). İlk yanıtta bu satır "Yer" maddesinin ölçülmüş `Klasör: …` satırının hemen altına gelir. Sonra
   yalnız üç başlık — **Biten · Çalışan · Sizden istenen**. "Sizden istenen" altında **tek iş**
-  (hangi sohbete hangi kelime, ya da "bir şey gerekmiyor"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
+  (hangi sohbete hangi kelime, ya da "Şimdilik bir şey yok"); başka kararlar sırası gelince tek tek sorulur. Soru gerekiyorsa
   "Soru biçimi" kutusu bu başlığın içinde kullanılır.
+- **Tek şablon (S-98, sahip kararı 2026-10-29):** her kule aynı biçimi kullanır; kendi başlığını ya da biçimini eklemez.
+  1. Başlıklar yalnız **Biten**, **Çalışan** ve **Sizden istenen**'dir (tam raporda aşağıdaki şablondakiler). "Bekleyen",
+     "İşler bitti mi?" ya da benzeri başlık açılmaz. Başlık kalın bir satırdır (`**Biten**`; `###` kullanılmaz), altındaki
+     her iş `- ` ile başlayan bir maddedir. Boş başlığın altına "Yok." yazılır; başlık atlanmaz.
+  2. **Çalışan** yalnız şu an yürüyen ya da sahip dışında birini bekleyen işi yazar. Başkasını bekleyen işin satırı
+     `Bekliyor: <kim> — <ne>` diye başlar. Sahibin yapacağı iş Çalışan'a ve Sıradaki'ye yazılmaz; o **Sizden istenen**'dir.
+  3. **Sizden istenen** tek maddedir; iş yoksa "Şimdilik bir şey yok" yazılır. İkinci bir istek sonraki mesaja kalır. O tek
+     işin parçaları aynı maddenin altında şu sırayla durur: S-45 özeti → kopyalanacak kutular (madde 4) → soru (S-69/S-92;
+     yanıtın son bloğu).
+  4. Mesaj kod kutusuna konmaz; düz markdown yazılır ve tablo varsa markdown tablosudur. Kod kutusu yalnız sahibin
+     kopyalayacağı metin içindir: S-28 ve S-94'teki kopyalanacak metinler (Beste'ye, Codex'e, bir geliştiriciye ya da başka
+     kuleye gidecek metin, ZIP yolu ve SHA-256, S-94/5 prompt bloğu özeti) ve S-69 cevap kelimeleri. Bu kutular Sizden
+     istenen başlığının altına gelir.
+  5. Commit numarası, sha, madde numarası (S-…, F-…) ve dosya yolu sahibe giden metinde yazılmaz. İş ya da modül kodu
+     yalnız aşağıdaki "Kurallar" 1'e göre, sade anlamından sonra parantez içinde yazılır; bu istisna sha ve yolu kapsamaz.
+     PR numarası yalnız bağlantı olarak ya da kopyalanacak mesajın içinde yazılır. Yasağın dışında kalanlar: ilk yanıtın
+     ölçülmüş `Klasör: … | Dal: … | HEAD: …` satırı ("Yer" maddesi); onay sorusundaki dal adı ve kısa sha (S-63, onay
+     yalnız o sha içindir); soru seçeneğinde gereken kod, kimlik ya da yol (S-25); madde 4'teki kopyalanacak kutular; sahibin
+     açıkça istediği teknik ayrıntı. Diğer teknik ayrıntı CT-Setup'a giden 5 satırlık özette ve kayıtlarda durur.
 - **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
   `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
   - **Engel hâlâ geçerli mi (S-84, 2026-10-27):** CT bir işi "başkasını bekliyor" diye yazmadan ya da başkasına istek
     hazırlamadan önce engelin bugün de geçerli olduğunu origin/main'de ölçer (yol@commit); beklenen kişinin sahibin
     kendisi olup olmadığını da kayıttan bakar (PVG'nin "ortak iletici" engeli 4 gün önce kalkmıştı).
-- **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır:
+- **Tam rapor** (sahip "rapor" deyince ya da bir kilometre taşında) şu şablondadır. Aşağıdaki kutu, raporun ham markdown'unu
+  yalnız göstermek içindir; rapor kutuya konmaz, sohbete bu markdown olarak yazılır (kutunun içindeki tablo sohbette çizgi
+  yığını olarak görünür; S-98). Bölüm adları kalın satırdır, katmanlar liste maddesidir, Parçalar markdown tablosudur.
 
-```text
-### <Control Tower> — <modülün sade adı> · <kaçıncı gün>
+```markdown
+**<Control Tower> — <modülün sade adı> · <kaçıncı gün>**
 
-Katmanlara göre
-  Belge        ▓▓▓▓░░░░░░  x / y  <tek satır açıklama>
-  Arka uç      …
-  API          …
-  Gateway      …
-  Ekran        …
-  Canlı ortam  …
-  Kabul edilen: x / y  (<neden henüz değil>)
+**Katmanlara göre**
+- Belge: ▓▓▓▓░░░░░░ x / y — <tek satır açıklama>
+- Arka uç: …
+- API: …
+- Gateway: …
+- Ekran: …
+- Canlı ortam: …
+- Kabul edilen: x / y (<neden henüz değil>)
 
-Parçalar
+**Parçalar**
+
 | Parça | Ne için | Tür | Durum | Kalan prompt (tahmin) | Kimi bekliyor |
+|---|---|---|---|---|---|
+| <Kayıt ekranı> | <kullanıcı kaydı açar> | Ekran | <Çalışıyor> | 1–2 | — |
 
-Kalan iş: yaklaşık N prompt (tahmin) — X'i şimdi yapılabilir, Y'si bekliyor
-  Türlerine göre: …
-  Ekranda ne zaman görürsünüz: …
+**Kalan iş:** yaklaşık N prompt (tahmin) — X'i şimdi yapılabilir, Y'si bekliyor
+- Türlerine göre: …
+- Ekranda ne zaman görürsünüz: …
 
-Biten
+**Biten**
 - <iş>: önce …, şimdi …
 
-Çalışan
+**Çalışan**
 - <iş>
   - Ne yapılıyor: …
   - Kullanıcı için: …
+- Bekliyor: <kim> — <ne>
 
-Sıradaki
-- <iş> — Kullanıcı için: …
+**Sıradaki**
+- <iş> — Kullanıcı için: … (sahibin işi buraya yazılmaz)
 
-Sizden istenen
+**Sizden istenen**
 - <tek iş>
 ```
 
@@ -281,7 +307,7 @@ Kurallar:
 - [ ] **Oturum adı ve kenar çubuğu grubu (S-62, sahip kararı 2026-10-26):** Control Tower'ı kullanan kişi geliştirici
   olmayabilir ve birden çok oturum açıktır; hangisinin ne olduğu adından anlaşılmalı. CT bunu kendisi kurar, kimse elle
   yapmaz. CT yalnız **kendi oturumuna ve kendi açtığı işçilere** dokunur; başka oturumların (başka CT'ler ve işçileri,
-  `İş · …`, sahibin yönetici sohbeti) adı ya da grubu için yalnız öneri yazar. Bu madde, 15 Ekim notundan bağımsız olarak
+  `İş · …`, sahibin kendi sohbetleri) adı ya da grubu için yalnız öneri yazar. Bu madde, 15 Ekim notundan bağımsız olarak
   **açık CT'ler için de** geçerlidir: açık CT 1–3. adımları kartı yeniden okuduğunda (§7a/6) bir kez uygular.
   1. "Yer" maddesinin 1. adımı modülü bulduktan (ya da 3. adımda geçildikten) sonra kendi oturumunun adını
      `CT · <modülün sade adı>` yapar (ör. `CT · PVG`, `CT · UI Design System`). Ad ve grup değişikliği dosya yazmaz;
@@ -290,14 +316,14 @@ Kurallar:
      görünür; Mac'te bunu grup sağlar).
   3. Açtığı her **işçi oturumunun** adı `<CT kısa adı> › <sade iş adı> (işçi)` olur (CT kısa adı = `CT · `'den sonraki
      kısım; ör. `PVG › Ayar taraması (işçi)`) ve aynı gruba girer. Başlıkta MOD, WP, DL, AC gibi kodlar olmaz.
-  4. Önerilecek diğer adlar: tek seferlik iş `İş · <sade ad>`; sahibin kendi yönetici sohbeti `Yönetici · <bilgisayar>`.
+  4. Önerilecek diğer ad: tek seferlik iş `İş · <sade ad>`.
   5. Sahip bir CT'yi duraklatınca CT kendi adına `(duraklatıldı)` ekler; kendini ve çalışmayan işçilerini **"Beklemede"**
      grubuna taşır (uygulamanın gerçek "Arşivlenenler" listesiyle karışmasın diye adı "Arşiv" değildir). Devam edince
      geri alır.
   6. **İşçiyi CT kendisi arşivler (S-95, sahip kararı 2026-10-29; S-62'nin yerine geçer):** işçinin commit'i main'e
      girince (PR merge oldu, `git merge-base --is-ancestor <işçi HEAD> origin/main` ölçüldü) CT o işçiyi sormadan arşivler
      ve bir sonraki raporun "Biten" kısmında bir satırla bildirir ("<işçi adı> arşivlendi — işi main'de"). Yalnız **kendi**
-     işçilerini arşivler; başka CT'nin, Yönetici'nin ya da CT · Setup'ın sohbetine dokunmaz. İşi yalnız CT dalındaysa ya
+     işçilerini arşivler; başka CT'nin, CT · Setup'ın ya da sahibin kendi sohbetlerine dokunmaz. İşi yalnız CT dalındaysa ya
      da worktree'de commit edilmemiş değişiklik varsa arşivlemez. Arşiv geri alınabilir; silme yine sahibin işidir.
   7. **Yeni işçi klasörü ve güven penceresi (S-68, 2026-10-27):** yeni bir worktree'de ilk oturum açılırken uygulama sahibe
      bir kez "bu klasöre güveniyor musunuz" diye sorar; sahip uzaktaysa pencere görünmez ve işçi açılmaz. CT işçiyi
