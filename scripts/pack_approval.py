@@ -625,7 +625,7 @@ def no_pr_proven(root: str, merge: str) -> bool:
                              "kimliği değil)")                                            # Codex F-4
         if x["merge_commit_sha"] == merge:
             return False
-    return True
+    return _pr_by_message(root, merge) is None          # S-97: GitHub's commit→PR index may be empty for a real merge
 
 
 def _pr_merge_why(root: str, c: str) -> str | None:
@@ -766,6 +766,24 @@ def _test_pr(root: str, merge: str) -> dict | None:
     return {"number": 0, "opener": who(f"{merge}^2"), "merger": who(merge), "base": "main", "base_repo": TRUSTED_REPO}
 
 
+MERGE_SUBJECT = re.compile(r"^Merge pull request #(\d{1,7}) from \S+$")
+
+
+def _pr_by_message(root: str, merge: str) -> dict | None:
+    """S-97: GitHub's commits/{sha}/pulls answered [] for two real merges made a minute apart (#290 496ab5659, #291
+    46f3e0ab9, measured 2026-10-29). The merge commit's subject only NAMES a candidate pull request; GitHub's own
+    pulls/{n} record decides: it must be an object whose merge_commit_sha is exactly `merge` and that has merged_at. A
+    forged subject on a direct push fails that match. None when the subject names no pull request or the record does
+    not match; raises when GitHub is not measurable."""
+    m = MERGE_SUBJECT.match(git(root, "log", "-1", "--format=%s", merge).decode().strip())
+    if not m:
+        return None
+    pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(m.group(1))}")
+    if not isinstance(pr, dict):
+        raise Unreadable("GitHub PR cevabı bir nesne değil")
+    return pr if pr.get("merge_commit_sha") == merge and pr.get("merged_at") else None
+
+
 def pr_of_merge(root: str, merge: str) -> dict | None:
     """{number, opener, merger, base, base_repo} of the merged pull request of TRUSTED_REPO whose merge commit is
     `merge` (GitHub, all pages), or None when `merge` is no such merge. Raises when not measurable. Only a positive read
@@ -779,9 +797,12 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
         raise Unreadable("GitHub cevabı bir liste değil")
     pulls = [x for page in pages for x in (page if isinstance(page, list) else [page])]
     hits = [x for x in pulls if isinstance(x, dict) and x.get("merge_commit_sha") == merge and x.get("merged_at")]
-    if not hits:
-        return None
-    pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(hits[0]['number'])}")
+    if hits:
+        pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(hits[0]['number'])}")
+    else:
+        pr = _pr_by_message(root, merge)               # S-97
+        if pr is None:
+            return None
     if not isinstance(pr, dict):
         raise Unreadable("GitHub PR cevabı bir nesne değil")
     if not (pr.get("merged_at") and pr.get("merge_commit_sha") == merge):
@@ -1745,6 +1766,40 @@ def self_test() -> int:
                          ("a shortened merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha[:8])]]),
                          ("an upper-case merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha.upper())]])):
         cases.append((f"sabotage S-42 (Codex F-1): {label} -> not measurable, never 'no PR'", proven(pages) == "unreadable"))
+    # S-97: GitHub's commit→PR index is empty for a real merge; the subject names the candidate, pulls/{n} decides
+    msg_sha = g("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "Merge pull request #7 from x/s97").strip()
+
+    def by_message(record, subject_sha=None):
+        _PR_CACHE.clear()
+        answers.clear()
+        answers[f"repos/{TRUSTED_REPO}/commits/{subject_sha or msg_sha}/pulls"] = [[]]
+        answers[f"repos/{TRUSTED_REPO}/pulls/7"] = record
+        return pr_person_check(root, subject_sha or msg_sha, approver="lead")
+    ok, why = by_message(pr(merge_commit_sha=msg_sha))
+    cases.append(("S-97: commit→PR index empty, subject names #7 and pulls/7 has this merge commit -> human step", ok))
+    ok, why = by_message(pr(merge_commit_sha="0" * 40))
+    cases.append(("sabotage S-97: a subject naming #7 whose pulls/7 merge commit is another one (forged subject) -> "
+                  "no human step", not ok and "merge commit'i değil" in why))
+    ok, why = by_message(pr(merge_commit_sha=msg_sha, merged_at=None))
+    cases.append(("sabotage S-97: pulls/7 not merged -> no human step", not ok and "merge commit'i değil" in why))
+    ok, why = by_message(pr(), subject_sha=pr_merge_sha)
+    cases.append(("sabotage S-97: index empty and the subject names no pull request -> no human step",
+                  not ok and "merge commit'i değil" in why))
+    answers.clear()
+    answers[f"repos/{TRUSTED_REPO}/commits/{msg_sha}/pulls"] = [[]]
+    answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha)
+    cases.append(("S-97 (no_pr_proven): index empty but pulls/7 matches -> it IS a pull request's merge, never 'no PR'",
+                  no_pr_proven(root, msg_sha) is False))
+    answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha="0" * 40)
+    cases.append(("S-97 (no_pr_proven): index empty and pulls/7 is another merge -> 'no PR' proven",
+                  no_pr_proven(root, msg_sha) is True))
+    del answers[f"repos/{TRUSTED_REPO}/pulls/7"]
+    try:
+        no_pr_proven(root, msg_sha)
+        unreach = False
+    except Unreadable:
+        unreach = True
+    cases.append(("sabotage S-97 (no_pr_proven): pulls/7 not measurable -> raises, never 'no PR'", unreach))
     globals()["_gh_json"] = saved
     globals()["_PR_SOURCE"] = _test_pr
     _PR_CACHE.clear()
