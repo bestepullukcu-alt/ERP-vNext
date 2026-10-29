@@ -3,6 +3,7 @@ using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Api.Expiry;
 using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Api.Recall;
+using Diten.InventoryService.Api.Warehouse;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using MediatR;
@@ -32,7 +33,8 @@ public sealed class CentralAuditDeclarationTests
         // 58 measured 2026-10-14 (AuditTrailStandardTests inventory row); 59 after the MVP-1 merge (R4 PrepareRecallSettingsChangeCommand,
         // CT HOLD 2026-10-14). A new command fails here AND in the architecture test.
         // 66 after WP-0177-R5 (7 drill commands, CT decision 2026-10-14). 67 after WP-0177-R7b (CreateRecallEvidenceExportCommand).
-        Assert.Equal(67, WriteCommands.Length);
+        // 71 after MOD-0178 DL-1 (the 4 location-role commands, pack §5 fifth seam); 82 after DL-2 (the 11 task commands).
+        Assert.Equal(71, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
@@ -45,7 +47,8 @@ public sealed class CentralAuditDeclarationTests
             new LotSerialTrackingManifestProvider(),
             new QuarantineBlockedStockManifestProvider(),
             new ExpiryFefoManifestProvider(),
-            new RecallReadinessManifestProvider()
+            new RecallReadinessManifestProvider(),
+            new PutawayPickingPackingManifestProvider() // MOD-0178 (pack §14.4)
         }.Select(p => p.GetManifest().ModuleCode).ToHashSet(StringComparer.Ordinal);
 
         foreach (var type in WriteCommands)
@@ -104,7 +107,7 @@ public sealed class CentralAuditDeclarationTests
             }
         }
 
-        Assert.Equal(10, seen); // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5)
+        Assert.Equal(11, seen); // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
         Assert.Empty(failures);
     }
 }

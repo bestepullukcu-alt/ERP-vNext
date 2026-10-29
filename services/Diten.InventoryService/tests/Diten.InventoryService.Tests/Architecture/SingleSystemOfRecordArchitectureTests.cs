@@ -64,6 +64,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         Assert.Equal(["recall_drill_events", "recall_drill_plans", "recall_drill_runs"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5.OrderBy(x => x).ToList());
         // MOD-0177 (WP-0177-R7b) — the evidence export log and the stored file bytes (pack §4.13, insert-only); not stock
         Assert.Equal(["recall_evidence_exports", "recall_evidence_files"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b.OrderBy(x => x).ToList());
+        // MOD-0178 (DL-1, XMC-001 decision Beste 2026-10-29) — location roles, their insert-only history and the temporary RCS counter, prefix
+        // wms_ (pack §3). None is stock (no OnHand / Available / Reserved — Only_the_ledger_and_its_projection_carry_quantities).
+        Assert.Equal(["wms_location_role_events", "wms_location_roles", "wms_number_counters"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -79,11 +83,13 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5) // MOD-0177 (WP-0177-R5)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b) // MOD-0177 (WP-0177-R7b)
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
-            .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
+            .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All).ToList(); // MOD-0178 (DL-1)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
                         || n.StartsWith("recall_", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+                        || n.StartsWith("wms_", StringComparison.Ordinal) // MOD-0178 (DL-1)
                         || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.StartsWith("expiry_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
@@ -97,6 +103,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
         Assert.All(getCollectionCalls, arg => Assert.True(
             arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
             || arg.StartsWith("RecallCollections.", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+            || arg.StartsWith("WarehouseCollections.", StringComparison.Ordinal) // MOD-0178 (DL-1)
             || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }
