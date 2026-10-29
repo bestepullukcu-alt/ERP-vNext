@@ -4,12 +4,12 @@ slug: finance-treasury-intake
 name: Finance & Treasury — kaynak projeden doğrulayarak alma (Treasury intake)
 type: Delivery Capability Pack
 standard: CAP-001
-status: draft
-status_note: "draft — yalnız planlama; production implementation tetiklemez (CAP-001 §5). DCP numarası DCP-011 (Platform sahibi Beste atadı, Y-4/2; dosya adı UNASSIGNED-finance-treasury-intake.md'den 2026-10-27'de değişti). Onaydan önce bağımsız inceleme (CT-APR-02, SOP §20.4) ve sürüme bağlı onay (CT-APR-01) gerekir."
+status: approved
+status_note: "approved — Platform sahibi (Beste) 2026-10-29 kabul etti (Treasury kaynak cevabı Y-22); onaylanan içerik 4cb9e99a sürümüyle aynıdır, yalnız durum alanları değişti (CT-APR-02 4cb9e99a UYGUN + bu sürüm için kısa doğrulama incelemesi). DCP onayı üye pack'lerin ready-for-dev'i değildir ve kod izni vermez (CAP-001 §5): runtime_code_allowed false kalır."
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-10-28
+updated: 2026-10-29
 authoring_branch: chore/ct/treasury-intake-ct-01
 current_revision_branch: chore/ct/treasury-intake-ct-04
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
