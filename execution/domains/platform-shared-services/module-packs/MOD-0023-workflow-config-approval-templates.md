@@ -485,7 +485,9 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
 ## 17. TRM-15 — retention policy, additive reconciliation read fields, same-key race answer (proposal, not approved)
 
 **Status of this amendment:** revision 2 (§17.1–17.8) was **approved** at pack sha256 `803fbaa5…`
-(`execution/approvals/approvals.tsv`, 2026-10-26, §17 only); **revision 3 (§17.9, 2026-10-29) is `proposed` and not
+(`execution/approvals/approvals.tsv`, 2026-10-26, §17 only). That row is `execution/approvals/approvals.tsv:16` on
+origin/main, but `pack_approval.py check` currently reports the file untrusted (#241), so the approval card computes "no
+previous approved version" (`docs/records/reviews/MOD-0023/REVIEW-REQUEST-rev3-01.md:8-9`). **Revision 3 (§17.9, 2026-10-29) is `proposed` and not
 approved** — the file no longer has the approved bytes, so no §17 slice is dispatched until revision 3 passes CT-APR-02
 and CT-APR-01. Revisions 1–2 were authored by the Treasury Intake Control Tower under owner decisions D9 and
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
@@ -799,7 +801,8 @@ permission, no module id, no route path and no index.
    `ExecutionFilter` (flag silently ignored), or the default branch reading without it, turns the test red. The
    `DeleteAsync` override of AC-W15 is unchanged — the inherited delete path still exists.
 2. **Allowed paths for DL-1 — replaces §17.8/9's DL-1 list (INSPECTION.md DL-1/2):**
-   *(Made consistent with O-S17-2 = (b), item 3 — review round `2026-10-29-3e802d2f`, CT note.)* §17.8/9's permission
+   *(Made consistent with O-S17-2 = (b), item 3 — the CT's note in `docs/records/reviews/MOD-0023/REVIEW-REQUEST-rev3-01.md:44` and interim check 02 F-8,
+   `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md:25-26`.)* §17.8/9's permission
    for an `includeDeleted` branch in the `history` read handler is **removed**; the `WorkflowRepositories.cs` override of
    §17.8/9 stays (second bullet below). The list:
    - `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs` — only **one** new
@@ -869,7 +872,13 @@ permission, no module id, no route path and no index.
      whether any consumer sends one. If pseudonymised, it must change together with `ObjectRef` and the fingerprint input.
    - The trusted cancel evidence read parses `log.ActorId` as a `Guid`
      (`.../Services/TrustedWorkflowCancellationCoordinator.cs:289`; failure → Conflict `:293`): a pseudonym of
-     `ActorId` must stay Guid-shaped.
+     `ActorId` must stay Guid-shaped. So must a pseudonym of `ApprovalTask.AssigneeRef` and of a decision log's
+     `ActorId`: Timesheet parses both as a `Guid`
+     (`.../Features/TimeEntry/Services/TimesheetApprovalService.cs:202, 297`; interim check 04 F-4).
+   - Free-text `WorkflowTransitionLog.ReasonCode` (`.../Entities/Workflow/WorkflowTransitionLog.cs:21`) and
+     `ApprovalTask.ReasonCode` / `ActionReasonCode` (`.../Entities/Workflow/ApprovalTask.cs:21, 51`; interim check 04
+     F-4). The log's `ReasonCode` is compared by `SamePayload` (`WorkflowTerminalTransitionWriter.cs:436`), so
+     pseudonymising it must keep that comparison meaningful, like `EvidenceRef`.
    - `RequestInfo` writes `target:{principal}` into the log `Comment` even when the user wrote none
      (`.../Handlers/CommandHandlers/WorkflowTaskTransitionSupport.cs:587-591`).
    - A caller-chosen `IdempotencyKey` may be free text (Diten.Web inputs, item 13); D32/3 keeps the key unchanged, so
@@ -952,7 +961,8 @@ permission, no module id, no route path and no index.
    The WP adds only what is missing: approve-vs-reject in case (b) at both steps, approve-vs-reject in case (c) at the
    **intermediate** step, and the case-(b) replay of the loser's own key. Consumer rule §17.7/6:
    the 409 conflict is `Unknown`. Fact for it: a replay that repeats a stale `expectedVersion` gets 409
-   `WORKFLOW_TRANSITION_CONFLICT` again. **The definite refusal depends on O-S17-3 (item 17):** under (i) it comes from
+   `WORKFLOW_TRANSITION_CONFLICT` again. **AC-W8's asserted answers do not depend on O-S17-3** (no row exists under the
+   loser's key under (i) or (ii), item 17); **only the consumer rule's definite refusal does:** under (i) it comes from
    409 `WORKFLOW_TASK_INVALID_STATE` (first send or replay without the stale version) or from a read; under (ii) a
    `WORKFLOW_TASK_INVALID_STATE` after a same-key retry is `Unknown`, and the refusal comes only from a first send's
    `WORKFLOW_TASK_INVALID_STATE` or from a `history` read (the other decision recorded, no row under the loser's key).
@@ -1195,16 +1205,19 @@ permission, no module id, no route path and no index.
         (`WorkflowTerminalTransitionWriter.cs:333-340@4c08fc75a`). Under (i) the writer maps a duplicate-key refusal on
         **that index** to a replay read of the (task, action, key) row: same actor and payload (as `MyCommittedLogAsync`
         compares them, `:399-438`) → Replayed (200 `isIdempotent = true`); another actor → 403 (item 7; the unavailable
-        path's own re-read would answer 409 here, so the WP routes this case to the actor-bound replay
-        `WorkflowTaskTransitionSupport.cs:1018-1030` and states how); another body → the AC-W14 409. Any other write
+        path's own re-read would answer 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` here, not 409 — `MyCommittedLogAsync`
+        finds no row of this actor, the task version does not move and after `LostRaceReadAttempts` the writer returns
+        `TransactionUnavailable`, `WorkflowTerminalTransitionWriter.cs:357-390`, mapped at
+        `WorkflowTaskTransitionSupport.cs:834-838`; interim check 04 F-1 — so the WP routes this case to the actor-bound
+        replay `WorkflowTaskTransitionSupport.cs:1018-1030` and states how); another body → the AC-W14 409. Any other write
         error is unchanged. This makes
         `WorkflowTerminalTransitionWriter.cs` a DL-2 allowed path under (i) (item 14), not only "if `SamePayload` is
         shared".
-      AC-W6/W7 case (b) assert 200 (item 10, RequestInfo (b) through (i-b)); AC-W8 unchanged (no row under the loser's
-      key, item 9).
+      AC-W6/W7 case (b) assert 200 (item 10, RequestInfo (b) through (i-b)). AC-W8 does not depend on O-S17-3 (no row
+      under the loser's key, item 9).
     - **(ii) consumer rule:** after a same-key retry (any send of a key already sent once), `WORKFLOW_TASK_INVALID_STATE`
       is not a definite refusal → intent `Unknown`, read `history` and match by (task, action, key) (AC-W2). No producer
-      change; AC-W6/W7 case (b) assert today's answers; §17.7/6 is amended this way, and every AC-W17 consumer and
+      change; AC-W6/W7 case (b) assert today's answers (AC-W8 as under (i)); §17.7/6 is amended this way, and every AC-W17 consumer and
       Treasury records the rule.
     - **Öneri — sahip kararı:** (i). The answer is fixed once in the producer instead of in every consumer (Treasury,
       Tasks, Timesheet, WorkCenter, Web), for all three actions of AC-W6/W7. Cost: (i-a) adds one indexed read before
@@ -1215,11 +1228,13 @@ permission, no module id, no route path and no index.
 
 **Review round — `docs/records/reviews/MOD-0023/2026-10-29-3e802d2f.md` (formal review; UYGUN DEĞİL; MOD-0023 owner
 `duzelt`, CT · İş akışı chat, 2026-10-29).** Review 3e802d2f F-1 → item 15 (AC-W16 restated); review 3e802d2f F-2 →
-items 9 and 10; the review's CT note → item 2; review 3e802d2f F-3 (review input) needs no pack change. In revision 3
+items 9 and 10; the CT's note in `docs/records/reviews/MOD-0023/REVIEW-REQUEST-rev3-01.md:44` and interim check 02 F-8
+(`ARA-KONTROL-02.md`) → item 2; review 3e802d2f F-3 (review input) needs no pack change. In revision 3
 the "Teslim dilimleri" cells also gained the §17.7 heading (DL-1) and the §17.4 heading (DL-2), so both slices now list
 the same §17 headings.
 
-Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" in the items; they are not the
+Interim-check findings below are named "interim check 02 F-n" / "interim check 03 F-n" / "interim check 04 F-n" in the
+items; they are not the
 formal review's F-n above.
 
 **Interim check 02 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-02.md` (sub-agent, not a formal
@@ -1236,8 +1251,14 @@ covers AC-W6/W7 or AC-W9/W10"); F-2 → item 13 (further cancel callers, AC-W17 
 wrappers, Reject call-counting hold); F-5 → item 4 (`ObjectId`); F-6 → this paragraph; F-7 → item 1(c); F-8 → the
 "seviye gerekçesi" cells of "Teslim dilimleri" (MDM test contents: the CT adds them to the review input; no pack change).
 
-**Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6…W8
-by items 9, 10 and 17); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
+**Interim check 04 — `docs/records/audits/2026-10/mod0023-s17-inspection-01/ARA-KONTROL-04.md` (sub-agent, not a formal
+review; KOŞULLU, no blocker; all findings accepted by the CT; owner `duzelt`).** Interim check 04 F-1 → item 17 ((i-b):
+503, not 409); F-2 → items 9, 17, the closure and the DL-2 finish list (AC-W8 does not depend on O-S17-3; only AC-W6/W7
+and the consumer rule do); F-3 → the §17 status paragraph (approval row, #241), item 2 and the review-round paragraph
+(source of the item-2 note); F-4 → item 4 (`ReasonCode`, Timesheet's Guid parsing).
+
+**Closure (replaces the §17.8 closure where they conflict):** AC-W1…W18 as restated here (AC-W2 by item 16, AC-W6/W7
+by items 10 and 17, AC-W8 by item 9 — AC-W8 does not depend on O-S17-3); O-S17-2 is decided (b) (record `docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md`,
 S17-2) and no longer a gate; **O-S17-3 is open and must be decided before the DL-2 WP prompt**; the rest of the §17.8
 closure unchanged.
 
@@ -1253,6 +1274,6 @@ durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1); kodu
 Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3 (tüketici sahiplerinin kanıtıyla, MDM dahil), AC-W4, AC-W13, AC-W15, AC-W16
 (AC-W2, W3, W13, W15, W16 §17.9'daki haliyle; O-S17-2 kararı verildi — (b), `mod0023-s17-owner-decisions-01.md` S17-2 —
 artık kapı değil).
-**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6…W8 O-S17-3 kararına
-bağlı, §17.9/17; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
+**DL-2:** AC-W5…AC-W12, AC-W14, AC-W17, AC-W18 (AC-W5…W8, W14, W17, W18 §17.9'daki haliyle; AC-W6/W7 ve tüketici kuralı
+O-S17-3 kararına bağlı, §17.9/17; AC-W8 bağlı değil, §17.9/9; DL-2 prompt'u O-S17-3 kararından önce yazılmaz) (fingerprint düzeltmesi bir yazma yolu değişikliğidir ve yalnız bu dilimde, sahibin
 onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve** DL-2 main'e girmeden kabul edilmez.
