@@ -1375,11 +1375,11 @@ def self_test() -> int:
     def put(rel, text):
         p = os.path.join(root, rel)
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        with open(p, "w", encoding="utf-8") as f:
+        with open(p, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
     def get(rel):
-        with open(os.path.join(root, rel), encoding="utf-8") as f:
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
             return f.read()
 
     def commit(msg, who=DEV):
@@ -1847,11 +1847,11 @@ def self_test_exception(cases: list) -> None:
     def put(rel, text):
         full = os.path.join(root, rel)
         os.makedirs(os.path.dirname(full), exist_ok=True)
-        with open(full, "w", encoding="utf-8") as f:
+        with open(full, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
     def rows(rel):
-        with open(os.path.join(root, rel), encoding="utf-8") as f:
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
             return [l for l in f.read().split("\n") if l.strip()]
 
     def commit(msg, who=DEV):
@@ -2054,11 +2054,11 @@ def self_test_review(cases: list) -> None:
     def put(rel, text):
         full = os.path.join(root, rel)
         os.makedirs(os.path.dirname(full), exist_ok=True)
-        with open(full, "w", encoding="utf-8") as f:
+        with open(full, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
     def get(rel):
-        with open(os.path.join(root, rel), encoding="utf-8") as f:
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
             return f.read()
 
     def append(rel, line):

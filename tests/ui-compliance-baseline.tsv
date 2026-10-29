@@ -769,11 +769,6 @@ PPM/Shared	CI-3	_IndexL10n.cshtml exists	-	sahip kararı pss-mod0286-taban-01 (i
 PPM/Shared	CI-3	index.js exists	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	portfolio-delivery
 PPM/Shared	CI-3	index.l10n.js exists	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	portfolio-delivery
 PPM/Shared	CI-9	wwwroot/assets/js/PPM/Shared/index.js:yok:savedView	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	portfolio-delivery
-Pharmacovigilance/CaseIntakeTriage	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	Form ViewModel source file is discoverable	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	Index.cshtml includes <partial name="_Filter" />	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	Index.cshtml includes <partial name="_IndexL10n" />	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	Shaped placeholder: shared _TableSkeleton partial	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides AreYouSure	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides BulkDelete	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
@@ -783,12 +778,11 @@ Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides Import	-	sahi
 Pharmacovigilance/CaseIntakeTriage	CI-3	direct-gateway profile uses window.API service base	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	index.js calls bulk endpoint (.../bulk)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	index.js uses DtDefaults.exportButtons(...)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
 Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
-Pharmacovigilance/CaseIntakeTriage	CI-9	wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js:yok:savedView	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	pharmacovigilance
+Pharmacovigilance/CaseIntakeTriage	CI-3	Server mode: export declared server-side (BL-452	-	sahip kararı taban-pvg (2026-10-29): MOD-0230 DL7A sunucu sayfalaması; dışa aktarma dilim 1 kapsamı dışında ve ekranda kapalı (paket OD-PVG-10, AC-14)	FU-14	pharmacovigilance
+Pharmacovigilance/CaseIntakeTriage	CI-3	personalizationClient sends tenant header only for tenant users	-	sahip kararı taban-pvg (2026-10-29): ortak personalizationClient borcu, diğer sayfalarla aynı FU-4 satırı (MOD-0230 DL7A ile ölçülmeye başladı)	FU-4	developer-enablement
 Platform/Administrators	CI-2	Views/Platform/Administrators/Index.cshtml	2	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	platform-shared-services
 Platform/Administrators	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	platform-shared-services
 Platform/Administrators	CI-3	Selection column ↔ bulk JS	-	sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)	FU-14	platform-shared-services
