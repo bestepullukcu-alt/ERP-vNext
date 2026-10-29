@@ -55,7 +55,7 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > code makes the outcome final (one task per key, a closed instance is never reopened, a task cancel closes the instance,
 > a late task write needs an `Active` instance). The start lease stays only as a user-experience guard and carries no
 > correctness claim (§Implementation Notes "Revision 05").
-> **Revision 06** (prepared 2026-10-29 for the morning review; not yet committed on the owner's word) answers review 05
+> **Revision 06** (2026-10-29, owner's word `rev06-gonder`) answers review 05
 > (`docs/records/reviews/MOD-0280-FU02/2026-10-29-948f931b.md`, KOŞULLU, F-21) and the liveness points of an interim
 > sub-agent check: the definition-version limit is stated as MOD-0023 really behaves, the full fingerprint inputs are fixed,
 > the settle cancel allows an escalated task with a fixed cancel key, and every settle or re-check maps the **re-read
@@ -65,6 +65,9 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > request, settle / re-check / start-result races are version-guarded, only a `Pending` request is ever re-checked or
 > finalized (leaving `Pending` sets `WorkflowStartState = Closed`), every path has one audit event, HR has a
 > reconciliation list and the cases that can still stay reserved are named (§Implementation Notes "Revision 06").
+> **Revision 07** (2026-10-29) answers review 06 (`docs/records/reviews/MOD-0280-FU02/2026-10-29-878a24f0.md`, KOŞULLU,
+> F-67): a closed instance found by the re-check of an `Unconfirmed` request ends `Cancelled` when the stored intent is
+> `cancel`, everywhere the rule is written (§Implementation Notes "Revision 07").
 >
 > **Scope of this revision: delivery block 1 only** — leave types, leave entitlements entered by HR, and the employee's own
 > leave requests with balance and cancellation; approval through MOD-0023 in the Task Center. Absence records, sickness,
@@ -396,9 +399,9 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
      |---|---|---|
      | `Unconfirmed` | `Active` or `Escalated` with an open task | **adopted**: instance id recorded, `Started` (the first start worked, its answer was lost); from here `FinalizeLeaveDecision` owns it |
      | `Unconfirmed` | decided (`Completed`, `Approved`, `Rejected`) | the decision is applied |
-     | `Unconfirmed` | closed (`Cancelled`, `TimedOut`) | **withdrawn**: `Withdrawn` (`Cancelled` when `PendingIntent = cancel`), days released once — a closed instance under the current key is final (never reopened, `StartWorkflowInstanceHandler.cs:393–398`; no task claim without `Active`, `WorkflowRepositories.cs:431–442`); the same rule `FinalizeLeaveDecision` applies to a `Started` request; the employee sends a new request |
+     | `Unconfirmed` | closed (`Cancelled`, `TimedOut`) | with `PendingIntent = none` **withdrawn**: `Withdrawn`, recheck result code `withdrawn`; with a stored intent the intent completes instead (code `intent-completed`): `cancel` → `Cancelled`, `resubmit` → `Withdrawn`; days released once — a closed instance under the current key is final (never reopened, `StartWorkflowInstanceHandler.cs:393–398`; no task claim without `Active`, `WorkflowRepositories.cs:431–442`); the same rule `FinalizeLeaveDecision` applies to a `Started` request; after `Withdrawn` the employee may send a new request |
      | `Unconfirmed` | no instance, or an incomplete `Active` start | no change; stays `Unconfirmed`, so the employee's resubmit or cancel can settle it |
-     | `NeedsReconciliation` | closed | `PendingIntent` completes: `cancel` → `Cancelled`, days released; `resubmit` → `Withdrawn`, days released (a re-check cannot start a submission — only the employee can be the starter; the employee sends a new request) |
+     | `NeedsReconciliation` | closed | `PendingIntent` completes (recheck result code `intent-completed`): `cancel` → `Cancelled`, days released; `resubmit` → `Withdrawn`, days released (a re-check cannot start a submission — only the employee can be the starter; after `Withdrawn` the employee may send a new request) |
      | `NeedsReconciliation` | decided | the decision is applied |
      | `NeedsReconciliation` | unsettled | no change; the employee may repeat the cancel or resubmit — the settle is idempotent (same start key, fixed cancel key) |
 
@@ -440,7 +443,7 @@ Only after `ready-for-dev` and XMC-001 consent (§Open Questions):
      when the paused first call writes its task after all (an `Unconfirmed` request is adopted by the re-check; a
      `NeedsReconciliation` one waits for the decision, which the re-check applies, or for the employee's next settle), or
      when MOD-0023's abandoned-start recovery closes it — **off by default** (§Dependencies) — after which the re-check
-     withdraws the request or completes the intent. (b) No instance at all: the first start never
+     withdraws the request or completes the intent (`cancel` → `Cancelled`). (b) No instance at all: the first start never
      allocated one and every replay fails (no approver, or no active definition version — a new start needs one). The recovery cannot help — it closes only task-less `Active`
      instances (`CloseAbandonedWorkflowStartHandler.cs:80–85`); it leaves only through the employee's own resubmit or cancel
      once the cause is fixed. (c) Either case when the employee can no longer act (left the company, user link removed,
@@ -584,9 +587,13 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
   released once.
 - **Start call pauses after MOD-0023 created the instance; the employee resubmits; the old call wakes** → its result write
   is conditional on the old `Version` and writes nothing; the request stays on the new submission's instance.
-- **Start never confirmed, instance closed by MOD-0023's recovery** → the re-check withdraws the request and releases its
-  days once; the employee sends a new request.
-- **Instance times out** → re-read `TimedOut` → closed; a pending request becomes `Withdrawn` and its days are released.
+- **Start never confirmed, instance closed by MOD-0023's recovery** → the re-check withdraws the request (or cancels it
+  when `PendingIntent = cancel`) and releases its days once; after `Withdrawn` the employee may send a new request.
+- **Cancel settle stops after MOD-0023 closed the instance, before the final leave write** → the request stays
+  `Unconfirmed` (or `Started`) with `PendingIntent = cancel`; the re-check (or `FinalizeLeaveDecision`) re-reads closed
+  and sets `Cancelled`, days released once (AC-46, AC-52).
+- **Instance times out** → re-read `TimedOut` → closed; a pending request becomes `Withdrawn` (`Cancelled` when
+  `PendingIntent = cancel`) and its days are released once.
 - **Cancel or resubmit while a start is in flight** (two tabs) → 409 `LEAVE_APPROVAL_STARTING`; nothing changes.
 - **Older start paused before allocation, then resumes after a cancel** → the cancel's settle already created and closed
   the one instance for that key; the resumed start finds it closed and writes no task (review 04 F-20).
@@ -773,12 +780,12 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 - [ ] AC-44 (zorunlu) — Race evidence: a settle whose claim is lost to an older start that an approver then approves (or rejects) ends decided — the decision is applied, the cancel is refused, no days are released by the cancel and no second submission starts.
 - [ ] AC-45 (zorunlu) — A request in `NeedsReconciliation` leaves it through the read-only re-check (sweep job, every read of the request — employee, HR list and detail, approver — and HR's `POST /admin/requests/{id}/recheck` with `leave.admin-requests.reconcile`) once MOD-0023 reaches a final status; the re-check never writes to MOD-0023 and completes the recorded intent exactly once.
 - [ ] AC-46 (zorunlu) — Finalization maps MOD-0023 statuses as §Runtime Constraints 9 says: `Completed`/`Approved` → `Approved`; `Rejected` → `Rejected` with days released; `TimedOut` or `Cancelled` → `Cancelled` when `PendingIntent = cancel`, otherwise `Withdrawn`, days released once — every `Cancelled` instance under the current key is mapped, whoever cancelled it.
-- [ ] AC-47 (zorunlu) — Re-check of an `Unconfirmed` request: an open task under the key → `Started` with the instance id recorded; a decided instance → the decision applied; a closed instance (`Cancelled`, `TimedOut`) → `Withdrawn`, days released once (AC-52); no instance or an incomplete start → no change and the employee's resubmit stays allowed (evidence: start answer dropped after MOD-0023 wrote the task; one re-check adopts it, no second instance or task exists).
+- [ ] AC-47 (zorunlu) — Re-check of an `Unconfirmed` request: an open task under the key → `Started` with the instance id recorded; a decided instance → the decision applied; a closed instance (`Cancelled`, `TimedOut`) → `Cancelled` when `PendingIntent = cancel`, otherwise `Withdrawn`, days released once (AC-52); no instance or an incomplete start → no change and the employee's resubmit stays allowed (evidence: start answer dropped after MOD-0023 wrote the task; one re-check adopts it, no second instance or task exists).
 - [ ] AC-48 (zorunlu) — The settle cancels the instance's currently open task whatever step it is on: on a two-step definition with step 1 approved, a cancel closes the instance and releases the days once; it never ends unsettled for that reason.
 - [ ] AC-49 (zorunlu) — `PendingIntent` is stored by the settle's lease write before any MOD-0023 call (it survives a lost final write or a crash), the latest employee action overwrites it, and a re-check that re-reads closed completes exactly that intent once (`cancel` → `Cancelled`, `resubmit` → `Withdrawn`); `FinalizeLeaveDecision` handles only `Pending` + `Started` requests and the re-check only `Pending` requests in `Unconfirmed` / `NeedsReconciliation`; an adoption or completed intent writes `leave.request.rechecked`, an applied decision `leave.request.decided`, each once.
 - [ ] AC-50 (zorunlu) — Each (command, result) pair of the path table in §Runtime Constraints 9 writes exactly the named event and answers the named status: cancel or resubmit decided → only `leave.request.decided` and 409 `LEAVE_ALREADY_DECIDED`; unsettled → `leave.request.reconciliation-needed` on a change, nothing on an identical repeat; a decision applied by both the re-check and the finalize writes `leave.request.decided` once.
 - [ ] AC-51 (zorunlu) — Sweep re-check and the employee's cancel or resubmit run on the same request at the same time: exactly one final write succeeds (conditional on the request `Version` read before the MOD-0023 call), the other writes nothing and answers the winner's state, the days are released once and at most one new submission starts; including a re-check that adopts the start while the employee's settle cancels it (the request ends `Cancelled` through finalize, days released once).
-- [ ] AC-52 (zorunlu) — Re-check of an `Unconfirmed` request whose instance is `Cancelled` or `TimedOut` sets `Withdrawn` and releases the days once; a `NeedsReconciliation` request with intent `resubmit` and a closed instance becomes `Withdrawn`; requests in the named cases that stay reserved (task-less `Active` start, no instance) appear in `GET /admin/requests?workflowStartState=…` with state and age, and the Leave page shows the approval-link label and the "Send again" action for them.
+- [ ] AC-52 (zorunlu) — Re-check of an `Unconfirmed` request whose instance is `Cancelled` or `TimedOut` sets `Cancelled` when `PendingIntent = cancel`, otherwise `Withdrawn`, and releases the days once (evidence: the employee's cancel settle on an `Unconfirmed` request stops after MOD-0023 closed the instance and before the final leave write, so the request stays `Unconfirmed` with intent `cancel`; the next re-check sets `Cancelled`, releases the days once and writes `leave.request.rechecked` once with result code `intent-completed`; a cancel by the employee afterwards is refused by the existing validation rule — the request is no longer `Pending` — with 409 `LEAVE_CANCEL_TOO_LATE` and releases nothing; set up as AC-53 with a second `Pending` reservation on the same balance row at least as large as the released days, so a double release stays visible under the never-negative rule); a `NeedsReconciliation` request with intent `resubmit` and a closed instance becomes `Withdrawn`; requests in the named cases that stay reserved (task-less `Active` start, no instance) appear in `GET /admin/requests?workflowStartState=…` with state and age, and the Leave page shows the approval-link label and the "Send again" action for them.
 - [ ] AC-53 (zorunlu) — Every transition out of `Pending` sets `WorkflowStartState = Closed` in the same transaction; a cancelled, withdrawn, approved or rejected request is never re-checked, finalized or listed for reconciliation again (sabotage evidence, set up with the cancelled request in `Unconfirmed` or `NeedsReconciliation` — the states the re-check selects — and a second `Pending` reservation on the same balance row at least as large as the released days, so a double release stays visible under the never-negative rule; both guards named: with the `Closed` write **and** the re-check selector's `Status = Pending` condition removed, a cancel followed by a sweep re-check releases the days twice — red; with either guard alone restored, once — green; each guard is shown on its own).
 - [ ] AC-54 (zorunlu) — The start result write is conditional on the `Version` written by its submit or resubmit transaction: a start call paused after MOD-0023 created the instance, overtaken by a resubmit (lease expired), writes nothing when it wakes; the request keeps the new submission's instance, finalize never reads the old one, and no days are released while the new instance is open.
 - [ ] AC-55 (zorunlu) — Every release of days to a year after its carry-over ran (cancelled, withdrawn or rejected pending request, approved leave cancelled by HR) sets `CarryOverCorrectionNeeded` on that year's balance row in the release transaction, and `AdjustLeaveCarryOver` clears it in the transaction that moves the returned days (closing year's `CarriedOutDays` and next year's `CarriedOverDays` change by the same amount; a move beyond the carry-over limit or below the next year's floor is refused); the row appears under the entitlements page's "Carry-over correction needed" filter; the carry-over run reports the number of rows with pending requests; nothing is moved to the next year automatically.
@@ -800,7 +807,9 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
   settle on resubmit or cancel, re-check); settle claim lost to an older start that is then decided (decided, not closed);
   settle cancel answer lost (fixed key, released once); start answer lost then adopted by re-check; cancel on a
   two-step definition after step 1 approved; settle step 4 against a paused first call; re-check adopting while the
-  employee's settle cancels; carry-over stopped halfway (resume once); release into a carried-over year (flagged).
+  employee's settle cancels; cancel settle stopped after MOD-0023 closed the instance and before the final leave write
+  (`Cancelled` by the re-check, released once); carry-over stopped halfway (resume once); release into a carried-over
+  year (flagged).
 - Build: Platform, Web and Gateway; known-failures comparison (`scripts/known_failures.py`) on the closing run.
 - Sabotage evidence per guard: health category, balance check, overlap check and tenant filter each shown red with the guard
   removed and green with it (CT writes the evidence script for HIGH work, card S-83).
@@ -943,6 +952,17 @@ acceptance waits as written:
   four low notes applied: F-63 the re-check list of triggers matches every read (AC-45); F-64 AC-24 separates a
   cancel's release from a rejection's; F-65 AC-56 applies only after the MOD-0023 tower's confirmation; F-66
   `LeaveDecisionFinalizer` and `LeaveRequestWriter` listed in both the component table and the folder tree.
+- **Revision 07** (2026-10-29; review `docs/records/reviews/MOD-0280-FU02/2026-10-29-878a24f0.md` KOŞULLU, F-67; F-21
+  closed): a closed instance re-read for an `Unconfirmed` request maps the stored intent as the runtime table already
+  said — `Cancelled` when `PendingIntent = cancel`, otherwise `Withdrawn` — in AC-47, AC-52 and two failure paths; the
+  stop between MOD-0023's close and the final leave write is a failure path and the evidence of AC-52. AC numbers kept;
+  only AC-47 and AC-52 texts changed. Interim sub-agent check (fresh context, not a formal review; KOŞULLU, no blocker):
+  F-68 AC-52 names the answer of a later cancel (`LEAVE_CANCEL_TOO_LATE`, existing rule) instead of an undefined one;
+  F-69 AC-52 uses AC-53's second-reservation set-up; F-70 the re-check result code of that exit is `intent-completed`;
+  F-71 case (a) names `cancel` → `Cancelled`; F-72 the revision 06 header now records the owner's word `rev06-gonder`.
+  Second interim sub-agent check (fresh context, not a formal review): **UYGUN**; its three low notes applied: F-73 one
+  recheck result code per result (`withdrawn` only without an intent, `intent-completed` for any completed intent);
+  F-74 the stopped cancel settle is in the transaction test list; F-75 "send a new request" follows `Withdrawn` only.
 
 ## Follow-up Items
 

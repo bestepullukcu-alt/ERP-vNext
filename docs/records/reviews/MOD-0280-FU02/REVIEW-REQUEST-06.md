@@ -1,5 +1,8 @@
 # MOD-0280-FU02 — bağımsız paket incelemesi isteği 06 (SOP §20.4 / CT-APR-02; revizyon 06, ilk onay)
 
+> **Durum: yanıtlandı, kapandı.** Codex dal ucunu a4abfca03 (paket 878a24f0) olarak ölçtü: KOŞULLU, F-67; F-21 kapandı
+> (kayıt `2026-10-29-878a24f0.md`). Bu istek yeniden gönderilmez; yerine `REVIEW-REQUEST-07.md` geçer.
+
 - Hedef: `execution/domains/human-capital-management/module-packs/MOD-0280-FU02-leave-absence-management.md` @ sha256 `878a24f03267eaf9eaf08e21815b1cd6bdb9f42992c0aa0d8c3910649d010d93` (revizyon 06, `status: draft`)
 - Kaynak commit: bu istekle aynı commit (dal `chore/ct/hcm-leave-ct-01`); GitHub'a sahibin sözüyle gönderilir. Uç sha'sı Codex'e mesajda verilir.
 - Önceki: inceleme 01 (`ea61e8c6`), 02 (`47df0fc4`), 03 (`436bc38b`), 04 (`5fb4d1bb`) — dördü **UYGUN DEĞİL**; inceleme 05 (`948f931b`) **KOŞULLU**, tek bulgu F-21 (CT değerlendirmesi kayıtta: kabul).
