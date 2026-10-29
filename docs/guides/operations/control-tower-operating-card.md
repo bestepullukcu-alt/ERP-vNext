@@ -413,8 +413,9 @@ kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten 
    değiştirmez, commit yapmaz.
 2. **Tur ve durma:** bulgular yalnız yazara gider; yazar düzeltir; **her tur yeni bir alt sohbette** ve önceki tur
    bulguları olmadan yeniden incelenir. Turda ENGEL yoksa durulur (ORTA ve DÜŞÜK durmayı engellemez; yazar düzeltebilir).
-   **En çok 3 tur:** 3. turun incelemesi hâlâ ENGEL veriyorsa düzeltme turu açılmaz; CT sahibe sorar (Codex'e gitmek mi,
-   kapsamı daraltmak mı).
+   Hedef ENGEL'siz sonuçtur (UYGUN ya da KOŞULLU). **3 turda bir soru:** 3. turun incelemesi hâlâ ENGEL veriyorsa CT
+   kendiliğinden yeni tur açmaz; sahibe butonla sorar: "3 tur daha" · "Codex'e git" · "kapsamı daralt" (sahip kararı
+   2026-10-29). Her 3 turluk dilimin sonunda aynı soru yeniden sorulur.
 3. **Kayıt değildir:** ön inceleme `reviews.tsv`'ye yazılmaz, onay ya da dağıtım için sayılmaz; resmî inceleme yine
    Codex'tir (farklı model, farklı kör nokta). Bulgular sohbette kalır; Codex'e gönderilmez (Codex de ipucusuz inceler).
 4. **Öğrenme:** Codex'in her ENGEL ya da ORTA bulgusu, CT tarafından **tür olarak** (modül ayrıntısı değil)
