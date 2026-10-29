@@ -1262,15 +1262,16 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [x] FU numarası verildi; dosya adı, `id`, `branch` ve kayıt satırı yazıldı; `verify_module_id.py --check-id` geçti (K-1) —
   **K-1 KAPANDI — MOD-0018 sahibi kararı (Y-19 / D80/1): MOD-0018-FU27**; `verify_module_id.py . --check-id MOD-0018-FU27 --name
   "Treasury Permission Onboarding" --parent MOD-0018` → `OK  MOD-0018-FU27: proven against Blueprint/registry.` (çıkış 0,
-  2026-10-29); kayıt satırı `execution/registries/module-id-registry.md` (D80 main'e girene kadar D62/1 maddesi ayrı).
+  2026-10-29); kayıt satırı `execution/registries/module-id-registry.md` (D80 main'de, `317a48b13`).
 - [ ] MOD-0018 sahibi incelemesi ve teyidi (Y-15/3, Y-16; D69'un anahtarı ve rolü dahil — D69; onaylayıcı rollerdeki iki iş akışı
   bağımlı izni dahil — D70/1; tüketicinin iş akışı izni kesişimi dahil — D71; tedarikçi bağımlı izinleri dahil — D72/3–4;
   iç uç kimliği, iki Auth anahtarı ve Muafiyet yetkilisi rolü dahil — D74; rolün oluşturulma yolu, atayanın izin + rol
   üyeliği denetimi dahil — D75; geri alma ucuna aynı denetimin uygulanması, okuma ucunun yalnız `.read` istemesi ve denetim
   sırası dahil — KARAR D76/1–2; D79'un dokuz kararı ve 27 rolün 7 dilli görünen adları dahil — KARAR D79). **Şartlı teyit
   verildi — Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`; şartlar DL-5 kodundan önce, aşağıdaki iki D80/2 maddesi);
-  K-7 ve DL-6 teyitli (D80/3). Açık kalan: D79'dan sonraki değişikliklerin ayrı teyidi (7 dil tablosu vb., D80/2) ve sahipteki
-  liste (D80/4): K-W5, K-A1, K-A2, K-A3; D79 önerilerinin kabulü (K-1b, K-2, K-3, K-W2, K-W4, K-W6) ve K-5; K-W7 ve K-A4b teyidi.
+  K-7 ve DL-6 teyitli (D80/3). **Sahipteki liste (D80/4) Y-21 / KARAR D84/1 ile kapandı:** K-1b, K-2, K-3, K-W2, K-W4, K-W6,
+  K-W7, K-A1, K-A2, K-A3, K-A4b. Açık kalan: D79'dan sonraki değişikliklerin ayrı teyidi (27 rolün 7 dil tablosu vb., D80/2; sahip
+  kontrol ediyor — Y-21), K-W5 CT defter kararı (yöntem teyitli — D84/2) ve K-5 anahtar listesi (yalnız yöntem teyitli — D84/3).
 - [x] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
   tablosunun paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
@@ -1288,7 +1289,7 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [x] K-2 Admin / Viewer varsayılanı — **KAPANDI — KARAR D79/2** (hiçbiri); K-3 SuperAdmin tam katalog — **KAPANDI — KARAR
   D79/3** (bugünkü davranış); K-7 rol adları — **KAPANDI — KARAR D79/9** (sabit kod + 7 dilli görünen ad; Bölüm 5.5, 14.2) —
   üçü de MOD-0018 sahibinin teyidine Auth ekiyle gider (K-4 bağımlı anahtarlar **KAPANDI — KARAR D70/1**, (b)). **K-7 sahip
-  teyitli — KARAR D80/3** (Y-19); K-1b, K-2, K-3 teyidi açık (D80/4).
+  teyitli — KARAR D80/3** (Y-19); **K-1b, K-2, K-3 sahip teyitli — Y-21 / KARAR D84/1.**
 - [ ] Bağımsız inceleme (CT-APR-02) ve CT-APR-01 onay satırı main'de.
 - [ ] XMC-001 onayı: Beste (Platform dosyaları) ve MDM sahibi (MDM istemcisi); K-5 çift listesi — DL-4 için.
 - [ ] MOD-0217 `approved` / `ready-for-dev` — DL-3 kodu için.
@@ -1301,15 +1302,17 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [x] K-W2 (token) **KAPANDI — KARAR D79/4**, K-W4 (yol) **KAPANDI — KARAR D79/5**, K-W6 (sözleşme dosyası) **KAPANDI — KARAR
   D79/6** — DL-5 için; MOD-0018 sahibinin teyidine Auth ekiyle gider
   (K-W1 atama onay izni **KAPANDI — KARAR D74/2–3**; K-W3 iç uç kimliği **KAPANDI — KARAR D74/1**; K-W7 Muafiyet yetkilisi
-  rolünün oluşturulma yolu ve atayan denetimi **KAPANDI — KARAR D75/1**).
+  rolünün oluşturulma yolu ve atayan denetimi **KAPANDI — KARAR D75/1**). **K-W2, K-W4, K-W6, K-W7 sahip teyitli — Y-21 / KARAR
+  D84/1.**
 - [x] D66 main'de (D62/1) — DL-6 paket kapısı. Kaynak: PR #281 (`c32cabe6b`; `git merge-base --is-ancestor 3c98e7bfc c32cabe6b` → 0, 2026-10-28).
 - [x] MOD-0018 sahibinin DL-6 teyidi (D66/1: "MOD-0018 sahibinin teyidi gerekir") — DL-6 için. **KARAR D80/3** (Y-19): sahip D67/1'i
-  (aday sorgusu DL-6 ayrı dilim) teyit etti; DL-6'nın kalan açıkları K-A1 / K-A2 / K-A3 teyidi (D80/4, aşağıdaki madde) ve D80'in
-  main'e girmesi (D62/1).
-- [ ] K-A1'in kalanı (uç adı ve sözleşme dosyası — CT önerisi, MOD-0018 sahibinin teyidi; kimlik **KAPANDI — KARAR D74/1**) — DL-6
+  (aday sorgusu DL-6 ayrı dilim) teyit etti; DL-6'nın kalan açıkları K-A1 / K-A2 / K-A3 teyidi — **Y-21 / KARAR D84/1 ile kapandı** — ve D80'in
+  main'e girmesi — **main'de** (`317a48b13`).
+- [x] K-A1'in kalanı (uç adı ve sözleşme dosyası — CT önerisi, MOD-0018 sahibinin teyidi; kimlik **KAPANDI — KARAR D74/1**) — DL-6
   için (K-A2 şirket kapsamı **KAPANDI — KARAR D79/7** (b); K-A3 etkin kullanıcı tanımının kalanı **KAPANDI — KARAR D79/8**; ikisi
   MOD-0018 sahibinin teyidine Auth ekiyle gider; K-A4 bağımlı iş akışı anahtarı **KAPANDI — D70/1**; K-A4b elle atamada iş akışı izni olmayan aday **KAPANDI — KARAR D71**:
-  tüketici kesiştirir).
+  tüketici kesiştirir) — **sahip teyitli: Y-21 / KARAR D84/1** (uç `/internal/permission-candidates` + sürümlü sözleşme dosyası;
+  K-A2 (b), K-A3, K-A4b teyitli).
 - [ ] Ekran yok, tur yok, sayfa yardımı yok (UXH-001: sayfa sahiplenilmiyor); Bölüm 5.5 yalnız mevcut rol ekranlarına görünen ad
   kaynağı ekler (KARAR D79/9).
 - [ ] 27 rolün fr / es / zh / ar / ru görünen adları MOD-0018 sahibince teyit edildi (KARAR D79/9: "Treasury yazar, MOD-0018
