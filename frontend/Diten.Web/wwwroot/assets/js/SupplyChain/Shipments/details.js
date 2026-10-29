@@ -52,13 +52,30 @@ const ShipmentDetails = (function () {
         setDetailSurfaceVisible(false);
         showError(message);
     };
+    // MOD-0183 DL-2 (S23-7): the dispatch codes of SHIPMENT-BUNDLE 3.4.0 have their own texts and never fall back to the
+    // validation text. A refusal names the line and INVENTORY's reason (details.inventoryCode); a code outside the closed
+    // list shows itself in the generic reason text. Own-property lookups only, so a code such as "constructor" is unknown.
+    // errorText touches no DOM; it is returned for the Node mapping test.
+    const own = (map, key) => (map && typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined);
+    const fill = (template, value) => String(template || '').replace('{0}', value || L.unknown);
+    const errorText = (status, body) => {
+        const code = body?.error?.code || ''; const details = body?.error?.details || {};
+        if (code === 'INVENTORY_REFUSED') return `${fill(L.inventoryRefused, details.lineNumber)} ${own(L.inventoryCodes, details.inventoryCode) || fill(L.inventoryCodeUnknown, details.inventoryCode)}`;
+        if (code === 'SHIPMENT_LINE_STOCK_INCOMPLETE') return fill(L.lineStockIncomplete, details.lineNumber);
+        return own({ SHIPMENT_NOT_FOUND: L.notFound, INVALID_SHIPMENT_TRANSITION: L.invalidTransition,
+            POD_ALREADY_CAPTURED: L.podAlreadyCaptured, IDEMPOTENCY_KEY_REUSED: L.idempotencyKeyReused,
+            PERSISTENCE_UNAVAILABLE: L.persistenceUnavailable, INTERNAL_ERROR: L.internalError,
+            DISPATCH_IN_PROGRESS: L.dispatchInProgress, DISPATCH_COMPENSATION_FAILED: L.dispatchCompensationFailed,
+            DEPENDENCY_UNAVAILABLE: L.dependencyUnavailable }, code)
+            || (status === 404 ? L.notFound : status === 403 ? L.accessDenied : L.validationError);
+    };
+    // 3.4.0 dispatchState: an open attempt is shown beside the status; None / null / an unknown value adds nothing.
+    const statusText = (status, dispatchState) => { const state = own(L.dispatchStates, dispatchState);
+        return state ? `${statusLabel(status)} · ${state}` : statusLabel(status); };
     const error = async (response, alertId) => {
         let body = null; try { body = await response.json(); } catch (_) { }
         const code = body?.error?.code || '';
-        const message = ({ SHIPMENT_NOT_FOUND: L.notFound, INVALID_SHIPMENT_TRANSITION: L.invalidTransition,
-            POD_ALREADY_CAPTURED: L.podAlreadyCaptured, IDEMPOTENCY_KEY_REUSED: L.idempotencyKeyReused,
-            PERSISTENCE_UNAVAILABLE: L.persistenceUnavailable, INTERNAL_ERROR: L.internalError })[code]
-            || (response.status === 404 ? L.notFound : response.status === 403 ? L.accessDenied : L.validationError);
+        const message = errorText(response.status, body);
         const correlation = body?.error?.correlationId || response.headers.get('X-Correlation-Id');
         showError(`${message}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`, alertId);
         return code;
@@ -126,7 +143,7 @@ const ShipmentDetails = (function () {
     const render = (data) => {
         hideSkeleton(); setDetailSurfaceVisible(true);
         document.getElementById('detailsAlert')?.classList.add('d-none');
-        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusLabel(data.status));
+        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusText(data.status, data.dispatchState));
         text('detailSource', data.sourceDocumentId); text('detailWarehouse', data.warehouseReferenceId); text('detailShipTo', data.shipToReference);
         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();
@@ -191,6 +208,7 @@ const ShipmentDetails = (function () {
         load();
     };
     document.addEventListener('DOMContentLoaded', init);
-    // localInputValue and parseLocalInput touch no DOM; they are returned for the Node date tests (Q382), nothing else uses them.
-    return { init, allowedTargets, localInputValue, parseLocalInput };
+    // localInputValue, parseLocalInput, errorText and statusText touch no DOM; they are returned for the Node tests (Q382,
+    // MOD-0183 DL-2), nothing else uses them.
+    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText };
 })();
