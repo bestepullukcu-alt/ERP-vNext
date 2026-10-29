@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D87 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D88 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -961,6 +961,28 @@ cevabı: "D86'yı geri al, okuma yolunu öner (Önerilen)". Kaynak: sahip deneti
    erişilebilir geçmiş; yol `c`'nin beş koşulunun kanıtı; iz / çağrı belirtecinin `Diten.AuthService.md` `## İzler`'e ve kabul
    listesine işlenmesi; günlük okumasının meta-denetimi (kural §7); önce-yaz korunur. FU27'de ekran yok (UXH-001) — geçmişin hangi
    ekranda okunacağı sahibin kararıdır. Yalnız API ucu yetmez.
+
+## D88 — Beste'nin Y-22 cevabı; K-5 listesi; DCP-011 onay PR'ı (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: DCP-011 PR "Evet, hazırla (Önerilen)"; K-5 "CT önersin, K1 onaylasın (Önerilen)" + liste "Onaylıyorum (Önerilen)"; SEC-002
+yolu "Beste'ye sor (Önerilen)". Kaynak: Y-22.
+
+1. **D88/1 — K-5 listesi (K1, MOD-0289 / MOD-0217 için sahip kararı — D19, D20/1):** MOD-0289 (9): `mdm.bank-accounts.read`, `mdm.bank-accounts.create`, `mdm.bank-accounts.update`, `mdm.bank-accounts.activate`, `mdm.bank-accounts.deactivate`, `mdm.bank-accounts.delete`, `mdm.bank-accounts.bulk-delete`, `mdm.bank-accounts.read-unmasked`, `mdm.bank-accounts.sensitive-reads.read`. MOD-0217 (14): `mdm.contracts.read`, `mdm.contracts.create`, `mdm.contracts.update`, `mdm.contracts.delete`, `mdm.contracts.bulk-delete`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`, `mdm.contracts.submit-approval`, `mdm.contracts.record-signature`, `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.terminate`, `mdm.contracts.archive`.
+   Listede yok: `*.read-tenant-wide`, `mdm.banks.*`, `mdm.bank-account-purposes.*`, `mdm.contracts.versions.approve`,
+   `mdm.contracts.value.read` / `.value.write`. Her anahtar yalnız kendi paketinin modül koduyla eşleşir (D79/1). Beste kontrol eder.
+2. **D88/2 — K-6 "hayır" (Beste):** FU27 K-6 kapanır; §5.2 koşullu Platform dosyaları gerekmez; finans servisi Platform kapsam ucunu
+   doğrudan kullanmaz.
+3. **D88/3 — Platform XMC-001 (Beste):** FU27 DL-4 için üç dosya + ortam ayarı adımı, Y-22 (4)'teki kapsamla; kod FU27 onaylandıktan
+   sonra; MDM tarafının XMC-001'i ve sıra Ali ile netleşir.
+4. **D88/4 — SEC-002 tüketim yolu açık soru:** Y-4/6 "servis içi port + Platform `IDataScopeResolver` bağdaştırıcısı" diyordu;
+   `OrgDataScopeResolver` yalnız Platform sürecinde kayıtlı. Y-22 "Platform kapsam ucunu doğrudan kullanmaz". Finans servisinin
+   kullanıcının şirket kapsamını nereden okuyacağı Beste'ye soruldu; dört paketteki SEC-002 tüketim yolu maddeleri cevaba kadar açık.
+5. **D88/5 — DCP-011:** onay PR'ı Treasury açar: yeni dal `chore/ct/treasury-dcp011-approval-01` (main'den; #304'e dokunulmaz),
+   durum `draft` → `approved`, kısa Codex doğrulama incelemesi, inceleme satırı, CT-APR-01 satırı (yazan gmg-10, onaylayan
+   bestepullukcu-alt); merge Beste. DCP onayı üye pack'lerin ready-for-dev'i değildir.
+6. **D88/6 — tarihler (kayıt):** RCS-001 sözleşmesi 3 Kasım, servis v1 6 Kasım; Excel + kısa kod listesi en geç 2 Kasım (K1);
+   MOD-0262-FU01 Platform revizyonu 2 Kasım; Auth tarafı Ali'de. #304 dalı Beste merge edene kadar güncellenmez.
 
 ## Karar olmayanlar
 

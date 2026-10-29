@@ -386,7 +386,11 @@ sınırlıdır ("yeni" yazılmayan dosya mevcuttur; satır numaraları `chore/ct
 
 ### 5.2 Platform ve MDM — DL-4 (SEC-002 eki, D56/1) — **"Dokunulacak dosyalar" (XMC-001 isteği, D63/2)**
 
-**Platform (sahibi Beste — XMC-001 onayı Beste'den; MOD-0018 sahibi bu onayı vermez):**
+**Platform (sahibi Beste — XMC-001 onayı Beste'den; MOD-0018 sahibi bu onayı vermez) — XMC-001 VERİLDİ (Y-22 / KARAR D88/3):**
+yalnız aşağıdaki üç dosya (doğrulayıcı, testleri, `post-deploy-steps.md`) + ortam ayarı adımı; başka Platform dosyasına dokunulmaz;
+her izin yalnız kendi modül koduyla eşleşir (banka izni ürün modülü adına sorulamaz); `DITENMDMSERVICE` kimlik kontrolü değişmez;
+testler: yeni tavan ve çiftler, yanlış modül kodlu çiftin reddi, bilinmeyen çiftin 403'ü — sabotaj kanıtıyla; kod FU27 onaylandıktan
+sonra yazılır. MDM tarafı (`PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri) MDM sahibinin XMC-001'ine bağlı.
 
 | Dosya | Satır (ölçüm) | Bugün | Değişiklik |
 |---|---|---|---|
@@ -398,7 +402,8 @@ sınırlıdır ("yeni" yazılmayan dosya mevcuttur; satır numaraları `chore/ct
 | Ortam yapılandırması `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` | depoda yok (her ortam verir) | 38 çift | yeni çiftler (sıra Bölüm 8) |
 | `docs/guides/operations/post-deploy-steps.md` | yeni adım (desen `:297-320`, BL-592 §7) | — | sıra, geri alma ve kontrol |
 
-**Koşullu (K-6 "evet" ise — finans tüketicisi Platform kapsam ucunu kullanacaksa):**
+**Koşullu (K-6 "evet" ise — finans tüketicisi Platform kapsam ucunu kullanacaksa) — GEREKMİYOR: K-6 "hayır" (Platform sahibi,
+Y-22 / KARAR D88/2); aşağıdaki tablo yalnız tarihçedir, bu dosyalara dokunulmaz:**
 
 | Dosya | Satır | Bugün |
 |---|---|---|
@@ -624,7 +629,9 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
   hata / boş liste / belirsizlik → erişim yok (Y-4/6).
 - Finans servisinin kapsam yolu (`IFinanceTreasuryDataScopeSource`, Y-4/6) bugün Platform'da tüketici olarak yok; Platform
   ucu yalnız MDM kimlik bilgisini kabul eder (`TrustedLegalEntityScopeCredentialAuthenticator.cs:11`,
-  `TrustedLegalEntityScopeCredentialOptions.cs:7`). Bu ekin kapsamına girip girmediği K-6.
+  `TrustedLegalEntityScopeCredentialOptions.cs:7`). **K-6 kapandı — "hayır" (Y-22 / KARAR D88/2):** finans servisi Platform
+  kapsam ucunu doğrudan kullanmaz; soranın kimliği yalnız MDM (`DITENMDMSERVICE`); dört finans paketi kendi kapsam yolunu yazar
+  (O-19 / O-22 / O-14 / O-23 — yolun ayrıntısı Platform sahibine soruldu, D88/4).
 
 ### 8.5 `waive-sod` parti bağlı atama (DL-5, D54 + D64)
 
@@ -1291,7 +1298,8 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   üçü de MOD-0018 sahibinin teyidine Auth ekiyle gider (K-4 bağımlı anahtarlar **KAPANDI — KARAR D70/1**, (b)). **K-7 sahip
   teyitli — KARAR D80/3** (Y-19); **K-1b, K-2, K-3 sahip teyitli — Y-21 / KARAR D84/1.**
 - [ ] Bağımsız inceleme (CT-APR-02) ve CT-APR-01 onay satırı main'de.
-- [ ] XMC-001 onayı: Beste (Platform dosyaları) ve MDM sahibi (MDM istemcisi); K-5 çift listesi — DL-4 için.
+- [ ] XMC-001 onayı: Beste (Platform dosyaları) ve MDM sahibi (MDM istemcisi); K-5 çift listesi — DL-4 için. **Beste: verildi,
+  dosya kapsamıyla (Y-22 / D88/3); K-5 listesi K1 kararı (D88/1); MDM sahibinin XMC-001'i açık.**
 - [ ] MOD-0217 `approved` / `ready-for-dev` — DL-3 kodu için.
 - [x] D64 main'de (D62/1) — DL-5 paket kapısı. Kaynak: PR #276 (`3bb1ab838`; `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0, 2026-10-28).
 - [ ] **KARAR D80/2 (a) — sahip şartı (Y-19):** K-W5 denetim izi için defter kararı — `auth-gunlugu` izinin K2 için kabulü ya da
@@ -1429,8 +1437,8 @@ kapısı — MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-021
 | K-2 | Modül hakkıyla Admin / Viewer Treasury varsayılanı | hiçbiri · yalnız görüntüleyici kümeleri · FU20 gibi `read` | **KAPANDI — KARAR D79/2 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** hiçbiri (matris 117 anahtarın hepsini yerleştirdi) **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi + K1; teyit MOD-0018 sahibi (D79) | DL-1 başlamadan (teyit) |
 | K-3 | Varsayılan kiracı SuperAdmin tam katalog yolu Treasury anahtarlarını alsın mı | bugünkü davranış (açık atama dışı hepsi) · Treasury'yi dışla | **KAPANDI — KARAR D79/3 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** bugünkü davranış (açık atama dışı hepsi; FU20 / FU22 deseni); varsayılan kiracı iş kiracısı değil **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D79) | DL-1 başlamadan (teyit) |
 | K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | **KAPANDI — KARAR D70/1: (b)**; bütün onaylayıcı rollere (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak (AC-3, AC-18). D70/1 iki görev anahtarını adlandırır; öteki üç bağımlı anahtarın (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.request-info`) aynı yolla gelmesi CT çıkarımıdır — MOD-0018 sahibinin D70/1 teyidiyle birlikte teyit edilir. **KARAR D72/3–4:** `procurement.suppliers.eligibility.read` ve `procurement.suppliers.read` aynı yolla (b) gelir; `mdm.legal-entities.read` banka rollerine (20–22) de — bağımlı anahtar sayısı 7 (Bölüm 14.2). **Ölçüm notu (açık):** `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); bağımlı manifestle kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri; teyit MOD-0018 sahibi (D70/1) | DL-1 başlamadan (teyit) |
-| K-5 | DL-4'te Platform izin listesine girecek (modül kodu, anahtar) çiftleri | MOD-0289 + MOD-0217'nin şirket kapsamı soran anahtarları (`read-tenant-wide` hariç) | hesap ve sözleşme anahtarları; banka / amaç (referans veri) kapsam sorar mı MOD-0289 sahibi söyler **Yalnız yöntem sahip teyitli — Y-21 / KARAR D84/3:** banka / amaç anahtarlarının kapsam sorup sormadığını MOD-0289 / MOD-0217 sahibi söyler; Platform dosyaları Beste'den (XMC-001). Anahtar listesi **açık**. | MOD-0289 / MOD-0217 sahibi; Beste (Platform) | DL-4 başlamadan |
-| K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | hayır bu ekte (D56/1 yalnız MDM'yi adlandırır); ayrı karar | K1 + Beste | TBD |
+| K-5 | DL-4'te Platform izin listesine girecek (modül kodu, anahtar) çiftleri | MOD-0289 + MOD-0217'nin şirket kapsamı soran anahtarları (`read-tenant-wide` hariç) | hesap ve sözleşme anahtarları; banka / amaç (referans veri) kapsam sorar mı MOD-0289 sahibi söyler **Yalnız yöntem sahip teyitli — Y-21 / KARAR D84/3:** banka / amaç anahtarlarının kapsam sorup sormadığını MOD-0289 / MOD-0217 sahibi söyler; Platform dosyaları Beste'den (XMC-001). **KAPANDI — liste KARAR D88/1 (K1, MOD-0289 / MOD-0217 için sahip kararı — D19, D20/1):** MOD-0289 (9): `mdm.bank-accounts.read`, `mdm.bank-accounts.create`, `mdm.bank-accounts.update`, `mdm.bank-accounts.activate`, `mdm.bank-accounts.deactivate`, `mdm.bank-accounts.delete`, `mdm.bank-accounts.bulk-delete`, `mdm.bank-accounts.read-unmasked`, `mdm.bank-accounts.sensitive-reads.read`; MOD-0217 (14): `mdm.contracts.read`, `mdm.contracts.create`, `mdm.contracts.update`, `mdm.contracts.delete`, `mdm.contracts.bulk-delete`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`, `mdm.contracts.submit-approval`, `mdm.contracts.record-signature`, `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.terminate`, `mdm.contracts.archive`. Listede yok: `*.read-tenant-wide` (kapsamı atlar), `mdm.banks.*` ve `mdm.bank-account-purposes.*` (kiracı geneli referans), `mdm.contracts.versions.approve` (MDM'de uç yok; DL-6), `mdm.contracts.value.read` / `.value.write` (alan düzeyi). Beste kontrol eder (Y-22). | MOD-0289 / MOD-0217 sahibi; Beste (Platform) | DL-4 başlamadan |
+| K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | **KAPANDI — "hayır" (Beste, Y-22 / KARAR D88/2):** finans servisi Platform kapsam ucunu doğrudan kullanmaz; dört finans paketi kendi kapsam yolunu yazar; Bölüm 5.2 koşullu Platform dosyaları gerekmez | K1 + Beste | kapandı (2026-10-29) |
 | K-7 | Rol adları ve Türkçe görünen ad | `RoleName` İngilizce PascalCase + `DisplayName` İngilizce (mevcut desen, tek dil) · tr ad için rol ekranında kod → kaynak eşlemesi | **KAPANDI — KARAR D79/9 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** `RoleName` İngilizce PascalCase sabit kod; görünen ad rol ekranlarında kod → kaynak eşlemesiyle (`SharedResource` `RoleName_{RoleName}` + `RoleNames` köprüsü, Bölüm 5.5, 11) **7 dilde** (en, tr, fr, es, zh, ar, ru; Çekirdek kural 4); 27 rolün 7 dilli adlarını Treasury yazdı (Bölüm 14.2 "Görünen adlar"), MOD-0018 sahibi teyit eder; AC-7 guard testi. **Not (karar değil):** rol açıklaması (`Role.Description`, Roller ekranı hızlı görünümü) D79/9'un kapsamında değildir — açıklama yazılacaksa aynı 7 dil kuralına girer; MOD-0018 sahibinin teyidinde sorulur **D80/3: sahip teyit etti (Y-19)** — 27 rolün 7 dilli ad tablosu D79'dan sonraki değişiklik olarak sahip teyidine ayrıca gider (D80/2) | MOD-0018 sahibi; teyit Auth ekiyle (D79/9) | DL-1 başlamadan (teyit) |
 | K-W1 | Atamayı onaylama izni | yeni Auth anahtarı (öneri `auth.payment-sod-waivers.assign`, `.read`; yalnız açık atama) · başka yol | **KAPANDI — KARAR D74/2–3:** iki yeni Auth anahtarı `auth.payment-sod-waivers.assign` ve `.read`, yalnız açık atama (liste 10 → 20); yalnız yeni 27. rol **Muafiyet yetkilisi** (`PaymentSodWaiverAuthority`) üzerinden; atayan bu rolü taşır, taşımayan 403, kendine atama 403. Önceki öneri "Hazine yöneticisi kişilerine / K1'e elle" kalktı | MOD-0018 sahibi + K1; teyit MOD-0018 sahibi (D74/3) | DL-5 başlamadan (teyit) |
 | K-W2 | `waive-sod` izninin token'da süreli olması | (a) izin açık atamayla süresiz, kullanım ayrıca geçerli atama ister (b) atama izni token'a koyar ve bitişte düşürür (token üretimi değişir; FU11) | **KAPANDI — KARAR D79/4 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** (a) — izin açık atamayla süresiz; her kullanım ayrıca geçerli atama ister (MOD-0126 her kullanımda atamayı okur); token üretimine dokunulmaz **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D79) | DL-5 başlamadan (teyit) |
