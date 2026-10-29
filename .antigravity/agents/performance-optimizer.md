@@ -29,7 +29,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 - **Projections:** Mongo sürücüsünde `.Project(x => new { ... })` kullanarak gereksiz alanların network üzerinden taşınmasını engelle.
 
 ### 3. Frontend & UI (Sneat PRO & DataTables v2)
-- **DataTables v2 Server-Side:** Tüm tablolar `serverSide: true` modunda çalışmalıdır. İstemciye (client) asla 500+ kayıt gönderme.
+- **DataTables v2 Veri Modu:** Mod pack'teki `data_mode` kararıdır: kiracının sınırsız ekleyebildiği varlıklar `server` (varsayılan), tasarımda sınırlı kümeler `client` (üst sınır pack'te, öneri ≤ 200 satır; URL'de `pageSize=` yasak). Sayfa `serverSide` yazmaz; modu ortak liste fabrikasına `dataMode` ile beyan eder. Kaynak: `.antigravity/rules/frontend-datatable-template.md` `data_mode` tablosu ve "Sunucu modu sözleşmesi".
 - **Deferred Rendering:** Tablo satırlarının render edilmesi için `deferRender: true` kullanarak DOM yükünü hafiflet.
 - **L10n Bridge:** Dil dosyalarını (`.resx`) her istekte sunucudan çekmek yerine, sayfa yüklendiğinde `window.L10n` objesine bir kez yükle.
 
@@ -55,7 +55,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 - [ ] **Projection:** Handler'da `Select` kullanıldı mı?
 - [ ] **Index:** Sorgu `TenantId` ile başlayan bir index'e sahip mi?
-- [ ] **DataTables:** Tablo `serverSide: true` mu?
+- [ ] **DataTables:** Sayfanın beyan ettiği `dataMode` pack'teki `data_mode` ile aynı mı (sınırsız büyüyen liste `server`)?
 - [ ] **Loops:** `O(n²)` karmaşıklığında iç içe döngü var mı?
 - [ ] **Payload:** DTO içinde kullanılmayan "heavy" alanlar temizlendi mi?
 

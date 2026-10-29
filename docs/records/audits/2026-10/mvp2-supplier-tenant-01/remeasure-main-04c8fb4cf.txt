@@ -1,0 +1,26 @@
+# Push öncesi yeniden ölçüm (Revizyon 2) — dal 1b2a2e5a4 (origin/main 04c8fb4cf merge edildi) ve origin/main 04c8fb4cf, 2026-10-26T15:14:28Z, SDK 10.0.112
+# İki ayrı worktree, filtresiz; ana çalışma dizininde derleme yok; testler hiçbir Mongo'ya bağlanmadı.
+
+### branch
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+### main
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+Paket MOD-0140 sha256: fda06b89ff76ca525e40484b4ed105b92865d89a0b19082a74f99f7368dfd684

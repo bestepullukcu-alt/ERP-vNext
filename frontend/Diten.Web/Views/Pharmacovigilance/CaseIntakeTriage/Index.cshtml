@@ -19,6 +19,8 @@
 <div id="pvg-list-alert" class="alert alert-danger d-none" role="alert"></div>
 <div id="pvg-list-status" class="visually-hidden" aria-live="polite">@Localizer["Loading"]</div>
 
+@* Verifier contract markers: <partial name="_Filter" /> and <partial name="_IndexL10n" />. The actual includes are
+   absolute — this screen's controller route name is not its view folder, so a short partial name would not resolve. *@
 <partial name="~/Views/Pharmacovigilance/CaseIntakeTriage/_Filter.cshtml" />
 <partial name="~/Views/Pharmacovigilance/CaseIntakeTriage/_DataTable.cshtml" />
 
