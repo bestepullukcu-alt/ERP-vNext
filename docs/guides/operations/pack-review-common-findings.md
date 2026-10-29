@@ -1,7 +1,8 @@
 # Paket incelemesinde sık bulgular — paket yazarı için kontrol listesi (S-93)
 
-Bu liste **paket yazarı** içindir: paketi incelemeye göndermeden önce her maddeyi kendi paketinde arayın. Ön inceleyene
-ve Codex'e **verilmez** (bağımsız incelemede ipucu olur). Yeni madde yalnız Codex'in ENGEL ya da ORTA bulgusundan, **tür
+Bu liste **paket yazarı** içindir: paketi incelemeye göndermeden önce her maddeyi kendi paketinde arayın. Ön inceleyen
+alt ajana "en azından bunlara bak; yalnız bunlara bakma" satırıyla verilir (S-99, kart §1.1/4); Codex'e **verilmez**
+(resmî inceleme ipucusuz kalır). Yeni madde yalnız Codex'in ENGEL ya da ORTA bulgusundan, **tür
 olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 
 ## 1. Paket kendisiyle çelişiyor
@@ -17,6 +18,11 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 - İzin anahtarı ailesi, sınıf, metot ya da uç nokta adı gerçek koddakiyle aynı değil; "var" denen metot yok ya da
   farklı davranıyor. Her ad `grep` ile kodda ölçülür; ölçülemiyorsa "yazılacak" denir. (MOD-0230 2026-10-21-f1b56737, 2026-10-21-b48500cf)
 - Yetkilendirilen yollar (Repo Scope) ile işin dokunacağı yollar tutmuyor. (MOD-0230 2026-10-21-f1b56737)
+- Veritabanı kısıtının ya da indeksinin (tekil, seyrek, kısmi) kapsamı gerçek davranışla ölçülmemiş: sürücünün yazdığı
+  `null` "alan yok" sayılmaz; "yalnız değeri olanlar" için gerçek değere bakan bir süzgeç gerekir. (MOD-0357
+  2026-10-29-5383fd43 F-33)
+- Bir kayda (denetim satırı, olay) yazılacak kimlik ya da değer, onu üreten adımdan önce sabitleniyor; sonradan bulunan
+  değer (tekrar çağrısı, yeni kayıt) oraya yazılamaz. (MOD-0357 2026-10-29-0e730d97 F-55)
 
 ## 3. Ölçülemeyen kabul ölçütü
 
@@ -26,7 +32,21 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 - Birlikte çalışması gereken iki davranış (ör. bağı kaldırma + otomatik eşleştirme) için ortak kabul ölçütü yok.
   (MOD-0230 2026-10-22-94cbb2d5)
 - Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
-  (`audit-trail-standard` §7). (MOD-0230 2026-10-21-b48500cf)
+  (`audit-trail-standard` §7). (MOD-0230 2026-10-21-b48500cf; MOD-0357 2026-10-29-5383fd43 F-37)
+
+## 3a. Eşzamanlılık, tekrar ve yarıda kalan iş
+
+- Bir değişmez ("hiç geri inmez", "düzenleyen hep katılımcı") yalnız bazı yazma yollarında korunuyor ya da değişebilen
+  bir kayıttan türetiliyor: onu bozabilecek her yol (kaynağın geri dönmesi, devir, rol değişimi) sayılmalı. (MOD-0357
+  2026-10-29-5383fd43 F-34, F-36)
+- Erişim denetimi, kararın verildiği andaki güncel duruma göre yapılmıyor: tekrar (idempotency) erken dönüşü ilk çağrının
+  denetimini atlıyor ya da işlemden önceki denetim işlem içinde her denemede yinelenmiyor. (MOD-0357 2026-10-29-5383fd43
+  F-35; 2026-10-29-ee542bf9 F-66)
+- Eşzamanlı yazımı kaçıran kapı ya da toplu düzeltme: iki yol ortak bir belgeye (sürüm, sayaç) yazmıyorsa çakışma
+  görünmez; anlık görüntüden sonra gelen ekleme ve üst kaydın sürümünü artırmayan alt yazım kaçar. (MOD-0357
+  2026-10-29-0e730d97 F-54, F-57)
+- Çok adımlı yazımda "tamamlandı" işareti (bağ, durum) ilk yazılıyor: yarıda kalan iş kalıcı eksik kalır. İşaret en son
+  yazılır; kesinti testi her ara noktada koşar. (MOD-0357 2026-10-29-0e730d97 F-56; 2026-10-29-ee542bf9 F-65, F-67)
 
 ## 4. Araç biçimi
 
