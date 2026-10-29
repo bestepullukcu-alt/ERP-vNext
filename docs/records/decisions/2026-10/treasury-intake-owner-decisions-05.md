@@ -1132,6 +1132,8 @@ yazabilirsiniz"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875
    aynen; AC kimlikleri ve sayısı değişmedi. Onay adaylarının kapsamı bu AC'lerin konusu değil (D92/3 açık).
 2. **D96/2 — O-satırları:** dört paketin SEC-002 O-satırına bağdaştırıcının hedefi (Platform güvenilir kapsam ucu, Y-23) notu eklendi;
    Y-4/6'daki "Platform kapsam çözümünü çağırır" ifadesinin somut karşılığıdır.
+3. **D96/3 — WP satır atıfları (sahip denetimi `46dd1e813`, F-1 ORTA):** WP-0126 v0.2'deki MOD-0126 satır atıfları (10) ve WP-0289 v0.3'teki
+   MOD-0289 satır atıfları (23) güncel paket sürümlerine göre yeniden ölçüldü (eski sürümle satır eşlemesi; içerik değişmedi).
 
 ## Karar olmayanlar
 
