@@ -193,6 +193,12 @@ bağımsız inceleme revizyondan sonra, onay satırından önce.
 kapanmalı; **DL-1'i bunlar bekletmez**. Henüz vermediği: K-W5, K-A1, K-A2, K-A3 ve "önerileri kabul" listesi (K-1b, K-2, K-3, K-5, K-W2,
 K-W4, K-W6); K-W7 ve K-A4b teyidi ayrıca. → D80.
 
+## Y-20 — Beste, MOD-0048 XMC-001 izni (2026-10-29; K1 aktardı)
+
+K1'in aktarımı (2026-10-29): "48 izin alındı" — Beste, MOD-0048 seed PR'ı için B1 (a) yolunu kabul etti: `PlatformLookupProvider.BuildCurrencyOptions`
+yalnız geçerli üç harfli ISO kodlarını döndürür (`¤¤` gibi ICU yer tutucuları elenir) + test; Treasury yazar, PR'ı Beste onaylar. Yazılı metin
+bu kayda alınmadı (sahip aktarımı). `module: BusinessReferenceData` sapması ve O-14 için ayrı cevap gelmedi.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -232,3 +238,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-17 (D54 Auth yapısını Treasury yazar; beş kabul şartı) | MOD-0018 Treasury Auth eki; MOD-0126 | D64 |
 | Y-18 (iç uç kimliği, açık atama sayısı, muafiyet atayan) | MOD-0018 Treasury Auth eki | D74 |
 | Y-19 (FU27, K-7, DL-6; şartlı teyit — K-W5 + rol atama denetimi DL-5 kodundan önce) | MOD-0018 Treasury Auth eki; altı paket | D80 |
+| Y-20 (MOD-0048 B1 izni: currencies lookup alpha-3 filtresi) | seed dalı `feature/pss/mod0048-fu01-treasury-seeds`; MOD-0126 / 0119 / 0120 / 0124 seed önkoşulu | seed PR'ında |
