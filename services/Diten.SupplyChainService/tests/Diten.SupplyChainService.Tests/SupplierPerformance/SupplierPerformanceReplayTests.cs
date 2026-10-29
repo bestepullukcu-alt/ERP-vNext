@@ -119,7 +119,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP07_IdenticalConcurrentCreates_ShouldAnswerOne201AndTheRest200()
     {
-        await using var h = new SupplierPerformanceHost();
+        await using var h = new SupplierPerformanceHost(ownDatabase: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         using var barrier = new Barrier(8);
 
@@ -137,7 +137,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP07_IdenticalRequestCommittedAfterStage5_ShouldStillBeAReplay()
     {
-        await using var h = new SupplierPerformanceHost();
+        await using var h = new SupplierPerformanceHost(ownDatabase: true);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         h.Procurement.Gate = n => n == 1 ? release.Task : Task.CompletedTask;
 
@@ -174,7 +174,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP10_SameKeyDifferentBodiesConcurrently_ShouldAnswerOne201AndOne409()
     {
-        await using var h = new SupplierPerformanceHost();
+        await using var h = new SupplierPerformanceHost(ownDatabase: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         using var barrier = new Barrier(2);
         var bodies = new[] { Body(), Body(start: "2026-08-01", end: "2026-08-31") };
@@ -191,7 +191,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP11_DifferentKeysSamePeriodConcurrently_ShouldAnswerOne201AndOne409Duplicate()
     {
-        await using var h = new SupplierPerformanceHost();
+        await using var h = new SupplierPerformanceHost(ownDatabase: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         using var barrier = new Barrier(2);
 

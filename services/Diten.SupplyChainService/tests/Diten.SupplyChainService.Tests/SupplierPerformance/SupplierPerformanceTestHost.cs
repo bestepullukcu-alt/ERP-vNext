@@ -23,11 +23,11 @@ namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 /// Mongo transactions on the owned replica set). Only three seams are replaced: Procurement (<see cref="FakeProcurement"/>
 /// behind the typed client's primary handler), MDM (<see cref="StubLegalEntityScopeValidator"/>, settable) and the commit probe.
 /// </summary>
-internal sealed class SupplierPerformanceFactory(FakeProcurement procurement, StubLegalEntityScopeValidator legalEntities, SupplierPerformanceProbe probe, string appName)
+internal sealed class SupplierPerformanceFactory(FakeProcurement procurement, StubLegalEntityScopeValidator legalEntities, SupplierPerformanceProbe probe, string appName, string databaseName)
     : WebApplicationFactory<Program>
 {
-    // One database per host, dropped on dispose: the schema gate then builds every index fresh, so an index sabotage is measured.
-    public readonly string DatabaseName = "diten_mod0147_" + Guid.NewGuid().ToString("N")[..12];
+    public const string SharedDatabaseName = "diten_mod0147_tests";
+    public readonly string DatabaseName = databaseName;
     public static readonly string Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     private Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(Secret))
     {
@@ -63,9 +63,16 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public readonly IMongoDatabase Db;
     public string Correlation = Guid.NewGuid().ToString();
 
-    public SupplierPerformanceHost()
+    private readonly bool _ownDatabase;
+
+    /// <param name="ownDatabase">A fresh database (dropped on dispose) whose indexes the schema gate builds now — for the tests that
+    /// prove a unique index, so an index sabotage is not masked by an index an earlier host built. The other hosts share one
+    /// database (fresh tenant and LE per host): a database per host exhausted mongod's open files in the full suite.</param>
+    public SupplierPerformanceHost(bool ownDatabase = false)
     {
-        App = new SupplierPerformanceFactory(Procurement, LegalEntities, Probe, "mod0147-" + Guid.NewGuid());
+        _ownDatabase = ownDatabase;
+        App = new SupplierPerformanceFactory(Procurement, LegalEntities, Probe, "mod0147-" + Guid.NewGuid(),
+            ownDatabase ? "diten_mod0147_" + Guid.NewGuid().ToString("N")[..12] : SupplierPerformanceFactory.SharedDatabaseName);
         Client = App.CreateClient();
         Db = App.Services.GetRequiredService<IMongoDatabase>();
     }
@@ -128,7 +135,7 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Client.Dispose();
-        await Db.Client.DropDatabaseAsync(App.DatabaseName);
+        if (_ownDatabase) await Db.Client.DropDatabaseAsync(App.DatabaseName);
         await App.DisposeAsync();
     }
 }
