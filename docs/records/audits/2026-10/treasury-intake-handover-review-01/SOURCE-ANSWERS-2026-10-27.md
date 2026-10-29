@@ -277,6 +277,19 @@ alanı — kapsam ve tarih Ali ile; revizyon onaylanınca Platform kodunun tarih
 > * Auth tarafı (MDM için iç istemci ve izin) Ali’nin alanı. Lütfen kapsamı ve tarihi doğrudan Ali ile netleştirin.
 > * Revizyon onaylanınca Platform kodunun tarihini bildireceğim.
 
+## Y-23 — Beste, K-5 kontrolü ve K-6 düzeltmesi (2026-10-29; K1 aktardı)
+
+#304 ve DCP-011 anlaşıldı (DCP-011 PR'ını onaylayıp merge edecek). K-5: paketlerle tutuyor — MOD-0289 9, MOD-0217 14, toplam 23; tavan
+38 → 61; `read-tenant-wide`, `mdm.banks.*`, `mdm.bank-account-purposes.*`, `mdm.contracts.value.*` dışarıda kalabilir. Soru:
+`mdm.contracts.versions.approve` kapsam sormuyorsa onaylayanın yalnız kendi şirketinin sözleşmesini onaylamasını ne sağlıyor; gerekçe
+pakete yazılsın, yoksa listeye eklensin (tavan 62). MDM XMC-001 (3 dosya) aynen geçerli. **K-6 düzeltildi: "evet".** `OrgDataScopeResolver`
+yalnız Platform'da; SEC-002 §6 başka servisin kapsamı kendi hesaplamasına ve Platform veritabanını okumasına izin vermez; MDM ya da token
+alanı yolu doğru değil. Doğru yol Y-4/6: finans servisinde port + Platform güvenilir kapsam ucunu çağıran bağdaştırıcı; Platform ucu
+FinanceTreasuryService'i ikinci tüketici olarak kabul eder (kendi kimliği, gizli anahtarı, izinli çift listesi; kapalı-başarısız aynen;
+MDM bağlaması değişmez). FU27 §5.2 koşullu Platform dosyaları için XMC-001'i şunları gördükten sonra verecek: finans izinli çift listesi;
+değişecek dosya ve satırların tam listesi; sabotajlı testler (MDM kimliği finans çiftlerini soramaz, finans kimliği MDM çiftlerini soramaz,
+bilinmeyen tüketici reddedilir). Dört finans paketinin SEC-002 maddesi bu yola göre yazılabilir. → D92.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -319,3 +332,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-20 (MOD-0048 B1 izni: currencies lookup alpha-3 filtresi) | seed dalı `feature/pss/mod0048-fu01-treasury-seeds`; MOD-0126 / 0119 / 0120 / 0124 seed önkoşulu | seed PR'ında |
 | Y-21 (Auth eki açık maddeleri paket önerisiyle; K-W5 yöntem, K-5 yalnız yöntem; MOD-0220 / §22 notu) | MOD-0018 Treasury Auth eki; ready-for-dev tutuşu | D84 |
 | Y-22 (#304 sırası; DCP-011 onay yolu; K-6 "hayır"; Platform XMC-001 dosya kapsamı; BL-565 ve MOD-0262-FU01 tarihleri) | DCP-011; FU27 DL-4; dört finans paketi SEC-002; RCS-001 | D88 |
+| Y-23 (K-5 kontrolü; `versions.approve` sorusu; **K-6 "evet"** — finans ikinci tüketici; XMC-001 koşulları) | FU27 §5.2; dört finans paketi SEC-002; MOD-0217 aday süzmesi | D92 |

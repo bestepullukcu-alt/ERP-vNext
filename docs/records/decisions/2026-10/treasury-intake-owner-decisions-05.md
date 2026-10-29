@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D91 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D92 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1034,6 +1034,28 @@ Register, ORG sayfası; K1 paylaştı, ZIP sha256 `2346eb53…e441e353` paket i�
 5. **D91/5 — Karar Notu:** "Kodlama Standardı — Karar Notu v1.0" (2026-09-04) dosyası depoda ve git geçmişinde yok; içeriği RCS-001
    §1–§4'e geçirilmiş (commit `20854e63b`, 2026-10-07; BL-565: "sahibin paylaştığı yönetim karar notu"). Dosyanın kendisi aranıyor;
    kısa kod girdisi bu karara bağlı değildir.
+
+## D92 — K-6 "evet" (Y-23): finans servisi ikinci kapsam tüketicisi; modül kodları; aday modu önerisi (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); kaynak Y-23
+(Beste); K1 soru kutusu cevapları: "Kayıt slug'ı (Önerilen)", "Platform'a aday modu (Önerilen)"; K1: "Evet, devam".
+
+1. **D92/1 — K-6 "evet" (Platform sahibi; D88/2'yi düzeltir):** FinanceTreasuryService, Platform güvenilir kapsam ucunun ikinci tüketicisidir —
+   kendi kimliği (`DITENFINANCETREASURYSERVICE`), gizli anahtarı, izinli çift listesi; kapalı-başarısız davranış aynen; MDM bağlaması değişmez.
+   SEC-002 §6 başka servisin kapsamı kendi hesaplamasına ve Platform veritabanını okumasına izin vermez; MDM ya da token alanı yolu yok.
+   Dört finans paketinin SEC-002 tüketim yolu Y-4/6'daki gibidir (servis içi port + Platform bağdaştırıcısı). FU27 §5.2 koşullu Platform
+   dosyaları gerekir; XMC-001'i Beste, finans çift listesi + dosya-satır listesi + sabotajlı testleri gördükten sonra verir (gönderildi).
+2. **D92/2 — modül kodları (K1; K-1b değerleri):** izin çiftlerinin modül kodu `module-id-registry.md` slug'ıdır: `payments-approvals`
+   (MOD-0126), `accounts-payable` (MOD-0119), `accounts-receivable` (MOD-0120), `cash-positioning` (MOD-0124),
+   `bank-master-bank-account-registry` (MOD-0289), `contract-lifecycle-management-clm` (MOD-0217). Finans çiftleri 70
+   (19 / 18 / 14 / 19); dışarıda `*.read-tenant-wide` ve `finance-treasury.payment-sod-settings.*` (kiracı geneli ayar, D11/1).
+3. **D92/3 — onay adaylarının şirket kapsamı (K1 önerisi; karar Platform sahibinin):** Platform ucu kapsamı yalnız token sahibi için
+   çözer (`TrustedLegalEntityScopeJwtContext.cs:26-35`); MOD-0217 ve dört finans paketinin aday süzmesi (K-A2 (b), D79/7) bugünkü uçla
+   yapılamaz. Öneri: Platform'a **aday modu** — güvenilir tüketici yalnız aday-modu çiftlerinde aday kullanıcı kimliği verip o kullanıcının
+   kapsamını sorar; aday-modu çiftleri `mdm.contracts.versions.approve` (MDM 23 → 24, tavan 61 → 62) ve finans onay anahtarları.
+   Beste kabul etmezse alternatif: karar anında kontrol (MOD-0023 geri çağrısı — Ali).
+4. **D92/4 — K-5 (Beste kontrolü):** 23 anahtar paketlerle tutarlı, tavan 38 → 61; MDM tarafı XMC-001'i (3 dosya) geçerli. `versions.approve`
+   D92/3'e bağlı olarak eklenir.
 
 ## Karar olmayanlar
 
