@@ -183,6 +183,16 @@ servis kimliği token'ı doğrulayan şema yok; taslağın yolu yeni doğrulama 
 değil, kiracı token'dan alınmalı. (2) K-W1 — iki yeni Auth anahtarı da açık atama olduğundan koddaki sayı 18 değil 20; paket 8 sayıyor.
 (3) Muafiyeti atayacak kişi: pakette "Hazine yöneticisi ya da K1" yazıyor ama rolde izin yok. → D74.
 
+## Y-19 — Ali, Auth eki ilk kararlar ve şartlı teyit (2026-10-29; onay satırı / ready-for-dev onayı değildir)
+
+(a) İlk üç karar: K-1 **FU27** (kayıt satırı paketle birlikte yazılır); K-7 sabit rol kodu, görünen ad çevirisi kaynak dosyada, kiracı yöneticisi
+7 dilde görür; aday sorgusu **DL-6 ayrı dilim** kalır. Kalan kararlar (K-W5, K-W3, K-W1, K-A2/A3/A4) bulgulara göre revizyondan sonra konuşulur;
+bağımsız inceleme revizyondan sonra, onay satırından önce.
+(b) 04:25 mesajı: Treasury Auth ekini (main 4c08fc75a, D69–D78) **şartla teyit** ediyor; Auth CT kiracı yalıtımını kontrol etti, kapanıyor.
+Şartlar: K-W5 denetim izi için defter kararı ve rol atama adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu **DL-5 kodundan önce**
+kapanmalı; **DL-1'i bunlar bekletmez**. Henüz vermediği: K-W5, K-A1, K-A2, K-A3 ve "önerileri kabul" listesi (K-1b, K-2, K-3, K-5, K-W2,
+K-W4, K-W6); K-W7 ve K-A4b teyidi ayrıca. → D80.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -221,3 +231,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-16 (Y-14 düzeltmesi; D53 / D56 aynen; MOD-0018 FU20 / FU22 kalıbı) | altı paket | işlenmedi — paket metni değişmez; Auth eki FU20 / FU22 kalıbıyla yazılır |
 | Y-17 (D54 Auth yapısını Treasury yazar; beş kabul şartı) | MOD-0018 Treasury Auth eki; MOD-0126 | D64 |
 | Y-18 (iç uç kimliği, açık atama sayısı, muafiyet atayan) | MOD-0018 Treasury Auth eki | D74 |
+| Y-19 (FU27, K-7, DL-6; şartlı teyit — K-W5 + rol atama denetimi DL-5 kodundan önce) | MOD-0018 Treasury Auth eki; altı paket | D80 |

@@ -18,12 +18,16 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
     private static void Property(JsonElement e, string name, Func<JsonElement, bool> test)
     { if (e.TryGetProperty(name, out var value) && !test(value)) Invalid(); }
     private static bool PositiveQuantity(JsonElement e) => Text(e) && Regex.IsMatch(e.GetString()!, @"\A[0-9]+(?:\.[0-9]+)?\z") && e.GetString()!.Any(c => c is >= '1' and <= '9');
+    // SHIPMENT-BUNDLE 3.4.0 (MOD-0183 DL-1) adds five optional nullable text fields to a shipment line; the strict check
+    // answered 502 to every return read of a 3.4.0 shipment without them. Any other unknown name stays refused.
+    private static readonly string[] OptionalLineTexts = ["inventoryReferenceId", "skuLevel", "lotId", "fromLocationId", "fefoBypassReason", "issueTransactionId"];
     private static bool Line(JsonElement e)
     {
         string[] required = ["lineNumber", "itemId", "skuId", "quantity", "uomId"];
         if (e.ValueKind != JsonValueKind.Object || required.Any(n => !e.TryGetProperty(n, out _))) return false;
-        if (e.EnumerateObject().Any(p => !required.Contains(p.Name) && p.Name != "inventoryReferenceId") || e.EnumerateObject().Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != e.EnumerateObject().Count()) return false;
-        return Text(e.GetProperty("lineNumber")) && Uuid(e.GetProperty("itemId")) && Uuid(e.GetProperty("skuId")) && PositiveQuantity(e.GetProperty("quantity")) && Text(e.GetProperty("uomId")) && (!e.TryGetProperty("inventoryReferenceId", out var reference) || Nullable(reference, Text));
+        if (e.EnumerateObject().Any(p => !required.Contains(p.Name) && !OptionalLineTexts.Contains(p.Name)) || e.EnumerateObject().Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != e.EnumerateObject().Count()) return false;
+        return Text(e.GetProperty("lineNumber")) && Uuid(e.GetProperty("itemId")) && Uuid(e.GetProperty("skuId")) && PositiveQuantity(e.GetProperty("quantity")) && Text(e.GetProperty("uomId"))
+            && OptionalLineTexts.All(n => !e.TryGetProperty(n, out var value) || Nullable(value, Text));
     }
     private static bool Pod(JsonElement e)
     {
