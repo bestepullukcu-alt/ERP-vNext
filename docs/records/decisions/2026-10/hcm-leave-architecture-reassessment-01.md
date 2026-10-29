@@ -66,3 +66,21 @@ Bağımsız inceleme 04 (`docs/records/reviews/MOD-0280-FU02/2026-10-29-5fb4d1bb
 MOD-0023'ün örneği ayırma ile görev yazmayı iki ayrı işlemde yapması yüzünden kesin değil. Sahip sözü `mod0023-gorus`:
 yol 2 açıldı. Tasarım isteği `docs/records/decisions/2026-10/hcm-leave-mod0023-design-request-01.md` ("başlatmayı
 anahtarla kapat"). Paket revizyon 05, MOD-0023 sahibinin kararı kayda girene kadar yazılmaz.
+
+## Ek 2 — yol 1b: mevcut başlatmayı yeniden oynatarak kapatma (2026-10-29)
+
+Sahip sözü `yeniden-oynat` (2026-10-29). MOD-0023'ün bugünkü kodu, yeni bir yetenek gerekmeden kesin bir kapanış veriyor
+(CT ölçümü, origin/main ile aynı kod):
+
+1. Aynı anahtar ve aynı olgularla tekrar başlatma, aynı başlatanın tamamlamasıdır ve tek görev üretir
+   (`StartWorkflowInstanceHandler.cs:372–411`, `CompleteStartAsync`: "One task, however many replays run at once";
+   `SameStarter` ve olgu parmak izi denetimi :432–438).
+2. Kapanmış bir örnek bir daha açılmaz; tamamlanmamış ve kapanmış örnek "incomplete" çatışmasıyla döner (:393–398).
+3. Görevin iptali örneği `Cancelled` yapar (`WorkflowTaskTransitionSupport.cs:670`); görev yazan geç adım yalnız örnek
+   `Active` iken talep alabilir (:620–659), dolayısıyla geç kalan başlatma görev açamaz.
+
+Karar: izin talebi, iade ya da yeni gönderimden önce başlatmayı **gönderen çalışanın kendi isteğinde, saklanan ilk
+olgularla yeniden oynatır**; sonuç kesindir (tek görevli açık örnek → MOD-0023 iptali ile kapatılır; kapalı; ya da karar
+verilmiş). İade ve yeni gönderim yalnız bu kesin sonuçtan sonra. Yeniden oynatma olgu çatışmasıyla dönerse hiçbir şey
+iade edilmez, talep İK uzlaştırma listesine düşer. Başlatma kilidi yalnız kullanıcı deneyimi içindir, doğruluk iddiası
+taşımaz. MOD-0023 tasarım isteği 01 engel olmaktan çıkar, iyileştirme olarak açık kalır. Paket revizyon 05 bu kararla yazılır.
