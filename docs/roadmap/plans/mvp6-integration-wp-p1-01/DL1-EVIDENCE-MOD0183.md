@@ -186,3 +186,18 @@ Main was measured on an extracted copy of `origin/main` `4c08fc75a`
 `mod0183-docs-path-shipment-bundle-330-repin-owner-decision-01.json`. The r7 owner decisions do not cover the re-pin,
 so it is not done. Even with the pin, `NoCodeFilePointsIntoDocsOutsideTheFiveFolders` stays red on main and on our
 branch because of other files (plan v9.9 4c).
+
+## Architecture guards and the 3.4.0 docs-path re-pin (CT, 2026-10-29, HEAD 0f86c090b)
+
+- Re-pin: `docs/reference/architecture/docs-path-authority.json` now pins `docs/analysis/contracts/shipment-bundle.openapi.yaml`
+  at `84d804f6bbcb0ebc14c2046d44a72585c482e014a4ca9e295e15757648f59562` (3.4.0), bound to owner decision
+  `MOD0183-DOCS-PATH-SHIPMENT-BUNDLE-340-REPIN-01` (Natig, 2026-10-29;
+  `docs/records/decisions/2026-10/mod0183-docs-path-shipment-bundle-340-repin-owner-decision-01.{json,md}`), payload sha256
+  `04539ed5…`, decision record sha256 `54f8e59f…`. Carrier target and every seal unchanged. Applied by the owner with
+  `git apply` in his Terminal (the session's permission check refuses writing an approval record), committed 0f86c090b.
+- `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter DocsPathGuardTests|CiServiceTestsGuardTests` on
+  0f86c090b: **88 passed, 1 failed** — the failure is `NoCodeFilePointsIntoDocsOutsideTheFiveFolders`, red on `main` too; every
+  flagged line exists on `main` unchanged (other domains, `scripts/tests`, `docs/records` tools, and the SupplyChain test files
+  `ContractErrorCodeParityTests.cs:12` / `ShipmentBundleContract.cs:9,17` that read the contract by path). `ContractErrorCodes.cs`
+  no longer appears (8a482c66c). No offender is introduced by this branch. `CiServiceTestsGuardTests` is green here.
+- The C# code is unchanged since the last full-suite run (8a482c66c and 0f86c090b touch comments and docs only).
