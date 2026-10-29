@@ -9,6 +9,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 > **Philosophy:** Every pixel has purpose. Restraint is luxury. User psychology drives decisions.
 > **Core Principle:** THINK, don't memorize. ASK, don't assume.
 
+> **⚠️ Diten ERP vNext önceliği (ZORUNLU):** Bu depoda ekran işi bu skill'in serbest tasarım önerileriyle değil,
+> `.antigravity/rules/*` ve MOD-0286 tasarım sistemi şartnamesiyle
+> (`docs/reference/modules/platform/ui-design-system-page-pattern-governance/spec.md`) yapılır; çelişkide kural kazanır.
+> Bu skill yalnız genel ilke kaynağıdır. Özellikle:
+> - Kodda sabit renk yazılmaz; Sneat / Bootstrap sınıfları ve `var(--bs-*)` değişkenleri kullanılır
+>   (`frontend-standards.md` "Bootstrap Önceliği" ve "No Hardcoded Colors", `GEMINI.md` §5); paylaşılan stil
+>   `backbone-custom.css`'tedir.
+> - Yeni sayfada yükleme göstergesi `spinner-border` ve "Loading" metni değil, iskelettir (`views-organization.md` iskelet
+>   bölümü).
+> - Şablon ve Golden referans dışında yeni yerleşim uydurulmaz (`frontend-ui-ux` ajanı "inisiyatif almaz").
+> Aşağıdaki "ASK BEFORE ASSUMING" ve "ANTI-SAFE HARBOR" bölümleri ile bu skill'in bütün dosyalarındaki renk, yazı tipi,
+> efekt ve yükleme göstergesi önerileri bu depoda yalnız kuralın ve şablonun bırakmadığı boşluk için geçerlidir.
+
 ---
 
 ## 🎯 Selective Reading Rule (MANDATORY)
