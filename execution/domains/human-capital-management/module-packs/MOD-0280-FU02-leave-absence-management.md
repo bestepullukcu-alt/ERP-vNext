@@ -73,7 +73,8 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > **Revision 08** (2026-10-29, owner's word `rev08-hazir`) after review 07
 > (`docs/records/reviews/MOD-0280-FU02/2026-10-29-0517be85.md`, UYGUN): status `ready-for-dev`; the Ready-for-dev Checklist
 > is filled in and names which items are slice gates (§Teslim dilimleri) rather than conditions of this status; the
-> XMC-001 gate covers every slice that writes code in `Diten.Platform`; no runtime rule or AC changed (§Implementation
+> XMC-001 gate covers every slice that writes code in `Diten.Platform`; validation rows, two failure paths, the lookup
+> decision and two recorded deviations are added; no runtime rule changed, of the AC texts only AC-55 (§Implementation
 > Notes "Revision 08").
 >
 > **Scope of this revision: delivery block 1 only** — leave types, leave entitlements entered by HR, and the employee's own
@@ -554,8 +555,11 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 | `LeaveType.Code` | pattern, tenant-unique, immutable | validator + unique index | `LEAVE_TYPE_CODE_DUPLICATE` / `LEAVE_TYPE_CODE_IMMUTABLE` |
 | `LeaveType.Category` | in the open list; `health` refused | validator | `LEAVE_TYPE_CATEGORY_LOCKED` |
 | `LeaveType` label | `LabelText` or `LabelResourceKey` | validator | `LEAVE_TYPE_LABEL_REQUIRED` |
+| `LeaveType.ReducesBalance` | false when `Category = unpaid` | validator | `LEAVE_TYPE_UNPAID_REDUCES_BALANCE` |
+| `LeaveType.CarryOverLimitDays` | empty, or 0–365 in steps of 0.5 and only when `ReducesBalance` | validator | `LEAVE_TYPE_CARRY_OVER_LIMIT_INVALID` |
 | `LeaveEntitlement` | type active and reduces balance; days 0–365 step 0.5; employee known | validator + gateway | `LEAVE_ENTITLEMENT_TYPE_INVALID` / `LEAVE_ENTITLEMENT_DAYS_INVALID` / `LEAVE_EMPLOYEE_NOT_FOUND` |
 | `LeaveEntitlement` reduction | entitled + carried ≥ taken + reserved + carried out | handler in the balance transaction | `LEAVE_ENTITLEMENT_BELOW_USED` |
+| submit — type | `LeaveTypeId` names a type of the caller's tenant (unknown or another tenant's id → 404) that is active | handler | `LEAVE_TYPE_NOT_ACTIVE` |
 | submit — employee | `/me` resolves an employee active on `StartDate` and on `EndDate` | gateway (`asOf`) | `LEAVE_EMPLOYEE_NOT_LINKED` / `LEAVE_EMPLOYEE_NOT_ACTIVE` |
 | submit — dates | `StartDate ≤ EndDate`; ≥ 1 working day; half day only for one day | validator + `LeaveDayCounter` | `LEAVE_DATES_INVALID` / `LEAVE_NO_WORKING_DAY` / `LEAVE_HALF_DAY_INVALID` |
 | submit — overlap | no pending or approved request of the same employee overlaps | handler inside the transaction that bumps `LeaveEmployeeLock.Version`; a concurrent submit of the same person fails its lock write and is retried once, then 409 | `LEAVE_REQUEST_OVERLAP` |
@@ -569,6 +573,7 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 | cancel / resubmit after a decision | the settle's re-read status maps to decided | `LeaveApprovalService.SettleAsync` | `LEAVE_ALREADY_DECIDED` |
 | cancel (HR) | `Approved`, started; reason code required | validator | `LEAVE_CANCEL_REASON_REQUIRED` |
 | carry-over | year closed once per (tenant, year), only after 31 Dec of that year; adjust needs reason code | handler + index | `LEAVE_CARRY_OVER_ALREADY_RUN` / `LEAVE_CARRY_OVER_TOO_EARLY` / `LEAVE_CARRY_OVER_REASON_REQUIRED` |
+| carry-over adjust | the move keeps the type's carry-over limit, the closing year's remaining ≥ 0 and the next year's reduction floor | handler inside the balance transaction | `LEAVE_CARRY_OVER_LIMIT_EXCEEDED` / `LEAVE_CARRY_OVER_BELOW_REMAINING` / `LEAVE_ENTITLEMENT_BELOW_USED` |
 | submit — closed year | no new allocation to a year that has a `LeaveCarryOverMark` (a resubmit allocates nothing — it keeps the reservation the run already counted as used) | handler inside the balance transaction | `LEAVE_YEAR_CARRIED_OVER` |
 | every write | `expectedVersion` | conditional write | `LEAVE_CONCURRENCY_CONFLICT` |
 
@@ -635,6 +640,10 @@ or job infrastructure. MOD-0023, MOD-0288 and MOD-0362 types appear only in `Ada
 - **Resolved approver is the person** → walked past; MOD-0023 itself refuses a starter's approval and a delegation to the
   starter (`WorkflowTaskTransitionSupport.cs:134`, :464), so no leave-side state is needed.
 - **Health category through the API or an import** → 400 `LEAVE_TYPE_CATEGORY_LOCKED`.
+- **Missing required field** (a leave type without `LabelText` and `LabelResourceKey`, a submit without dates) → 400
+  with the field's reason code (`LEAVE_TYPE_LABEL_REQUIRED`, `LEAVE_DATES_INVALID`); nothing is written.
+- **Duplicate** — a second leave type with an existing `Code` in the tenant → 409 `LEAVE_TYPE_CODE_DUPLICATE`, nothing
+  written (unique index); a repeated "Send" with the same `SubmissionKey` → the stored request, nothing reserved again.
 - **Request across 31 Dec** → two year allocations; each year's balance reduced by its own days.
 - **Concurrency** (two edits of one type or entitlement) → 409 "the record changed meanwhile; reload and retry".
 - **Unauthorized** — missing key → 403; an approver opens a request not routed to them → 404; another tenant → 404, no
@@ -795,7 +804,7 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 - [ ] AC-52 (zorunlu) — Re-check of an `Unconfirmed` request whose instance is `Cancelled` or `TimedOut` sets `Cancelled` when `PendingIntent = cancel`, otherwise `Withdrawn`, and releases the days once (evidence: the employee's cancel settle on an `Unconfirmed` request stops after MOD-0023 closed the instance and before the final leave write, so the request stays `Unconfirmed` with intent `cancel`; the next re-check sets `Cancelled`, releases the days once and writes `leave.request.rechecked` once with result code `intent-completed`; a cancel by the employee afterwards is refused by the existing validation rule — the request is no longer `Pending` — with 409 `LEAVE_CANCEL_TOO_LATE` and releases nothing; set up as AC-53 with a second `Pending` reservation on the same balance row at least as large as the released days, so a double release stays visible under the never-negative rule); a `NeedsReconciliation` request with intent `resubmit` and a closed instance becomes `Withdrawn`; requests in the named cases that stay reserved (task-less `Active` start, no instance) appear in `GET /admin/requests?workflowStartState=…` with state and age, and the Leave page shows the approval-link label and the "Send again" action for them.
 - [ ] AC-53 (zorunlu) — Every transition out of `Pending` sets `WorkflowStartState = Closed` in the same transaction; a cancelled, withdrawn, approved or rejected request is never re-checked, finalized or listed for reconciliation again (sabotage evidence, set up with the cancelled request in `Unconfirmed` or `NeedsReconciliation` — the states the re-check selects — and a second `Pending` reservation on the same balance row at least as large as the released days, so a double release stays visible under the never-negative rule; both guards named: with the `Closed` write **and** the re-check selector's `Status = Pending` condition removed, a cancel followed by a sweep re-check releases the days twice — red; with either guard alone restored, once — green; each guard is shown on its own).
 - [ ] AC-54 (zorunlu) — The start result write is conditional on the `Version` written by its submit or resubmit transaction: a start call paused after MOD-0023 created the instance, overtaken by a resubmit (lease expired), writes nothing when it wakes; the request keeps the new submission's instance, finalize never reads the old one, and no days are released while the new instance is open.
-- [ ] AC-55 (zorunlu) — Every release of days to a year after its carry-over ran (cancelled, withdrawn or rejected pending request, approved leave cancelled by HR) sets `CarryOverCorrectionNeeded` on that year's balance row in the release transaction, and `AdjustLeaveCarryOver` clears it in the transaction that moves the returned days (closing year's `CarriedOutDays` and next year's `CarriedOverDays` change by the same amount; a move beyond the carry-over limit or below the next year's floor is refused); the row appears under the entitlements page's "Carry-over correction needed" filter; the carry-over run reports the number of rows with pending requests; nothing is moved to the next year automatically.
+- [ ] AC-55 (zorunlu) — Every release of days to a year after its carry-over ran (cancelled, withdrawn or rejected pending request, approved leave cancelled by HR) sets `CarryOverCorrectionNeeded` on that year's balance row in the release transaction, and `AdjustLeaveCarryOver` clears it in the transaction that moves the returned days (closing year's `CarriedOutDays` and next year's `CarriedOverDays` change by the same amount; a move beyond the carry-over limit, below the closing year's zero remaining or below the next year's floor is refused with `LEAVE_CARRY_OVER_LIMIT_EXCEEDED`, `LEAVE_CARRY_OVER_BELOW_REMAINING` or `LEAVE_ENTITLEMENT_BELOW_USED` and writes nothing); the row appears under the entitlements page's "Carry-over correction needed" filter; the carry-over run reports the number of rows with pending requests; nothing is moved to the next year automatically.
 - [ ] AC-56 (zorunlu; applies only once the MOD-0023 tower confirms under card S-90 — otherwise it is not applicable and the evidence is the "left out" branch of AC-37 and AC-39) — Settle step 4: a refused or incomplete replay that leaves a task-less `Active` instance is closed by `SupersedeWorkflowHalfStartCommand` and the days are released once; an instance with any task is refused by MOD-0023 and the settle decides by the re-read; racing a paused first call leaves no open task under a closed instance (evidence: the first call paused before its claim; the supersede wins; the resumed call writes nothing).
 - [ ] AC-57 (zorunlu) — The carry-over run writes `CarriedOutDays` on the closing year's row (remaining drops by the same amount); a run before 31 Dec of that year answers 409 `LEAVE_CARRY_OVER_TOO_EARLY`; a submit allocating days to a year with a carry-over mark answers 409 `LEAVE_YEAR_CARRIED_OVER` and reserves nothing, while a resubmit of a pending request of that year keeps its reservation and allocates nothing new; no day is usable in both years.
 
@@ -836,8 +845,12 @@ One prefix on purpose: on extraction (ADR-005) the pair is re-pointed and nothin
 `gerekli kanıt` is the minimum evidence level (SOP §23.1, card S-85) an acceptance record of a work package of that slice
 must reach; the acceptance record cites this table row as `required_evidence_source`.
 
-Gates per slice (review 01 F-06) — development with the fake employee adapter is allowed before a gate opens; dispatch or
-acceptance waits as written:
+Gates per slice (review 01 F-06) — development with the fake employee adapter is allowed before the DL-4 contract gate
+opens; no code is written in `Diten.Platform` before the XMC-001 gate opens (§Repo Scope); every other dispatch or
+acceptance gate waits as written:
+
+- Every slice: dispatch only after this exact version's approval row is in force on origin/main (CT-APR-01,
+  module-pack-standard §16).
 
 - Every slice that writes code in `Diten.Platform` (DL-1, DL-2, DL-3, DL-4, DL-6, DL-7): dispatch only after the XMC-001
   consent of the platform-shared-services owner is recorded (card S-90; §Repo Scope; ADR-005 "Platform'da kod yazan her
@@ -876,6 +889,10 @@ Conditions of `ready-for-dev` (revision 08):
 - [x] Tenant-zone day boundary recorded as the owner-decided default (`rev03-gonder`) — K-9 changes it only by revision
 - [x] HCM-CORE-BUNDLE freeze is **not** a ready-for-dev condition; it gates only DL-4 acceptance (§Teslim dilimleri)
 - [x] HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation (revision 08)
+- [x] Lookup & Reference Data Decision (module-pack-standard §13.1): no `/api/lookups/{key}` and no new Platform lookup
+  key. `Category`, `HalfDayPart` and `CancelReason` are module-owned closed enums whose values carry rules (`health`
+  locked, half-day only for one day, cancel reasons audited), labelled from resx; leave types come from the module's own
+  `GET /types`; employees from the employee adapter; no MDM reference data
 - [ ] Independent pack review (SOP §20.4) UYGUN on this exact version and an approval row by an approver with `high: evet`
   who did not write the pack — not shown by this text; measured by `scripts/pack_approval.py check` on origin/main
 
@@ -884,7 +901,8 @@ dispatched or accepted:
 
 - [ ] DL-1, DL-2, DL-3, DL-4, DL-6, DL-7 (code in `Diten.Platform`): XMC-001 consent of the platform-shared-services owner
   recorded (card S-90; Open Question 1)
-- [ ] DL-1, DL-2, DL-3: this version's approval row and the registry rows in force on origin/main
+- [ ] Every slice: this version's approval row in force on origin/main (CT-APR-01); DL-1, DL-2, DL-3 also the registry
+  rows
 - [ ] DL-3: the MOD-0023 tower's consent under card S-90 recorded — the leave approval definition, start and task cancel,
   and its answer on settle step 4 (`SupersedeWorkflowHalfStartCommand`; without it step 4 is left out, AC-56)
 - [ ] DL-4 acceptance with real data: HCM-CORE-BUNDLE frozen at a named version, MOD-0251's activation slice, the K-1
@@ -998,7 +1016,13 @@ dispatched or accepted:
   the review-and-approval item stays unchecked and is measured by `pack_approval.py check`. §Teslim dilimleri: the
   XMC-001 gate now covers every slice that writes code in `Diten.Platform` (DL-1…DL-4, DL-6, DL-7), as §Repo Scope and
   ADR-005 already required; the DL-3 MOD-0023 gate names what the tower consents to; the gateway route is needed before
-  DL-5 goes live. HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation. No runtime rule or AC changed.
+  DL-5 goes live; every slice waits for this version's approval row; fake-adapter development is limited to the DL-4
+  gate. Validation Rules gained the rows the entity fields already implied (`LEAVE_TYPE_UNPAID_REDUCES_BALANCE`,
+  `LEAVE_TYPE_CARRY_OVER_LIMIT_INVALID`, `LEAVE_TYPE_NOT_ACTIVE`, the carry-over adjust codes) and AC-55 names the adjust
+  codes; Failure Path to Verify gained the missing-field and duplicate cases; the checklist gained the Lookup & Reference
+  Data Decision; Recorded Deviations R-5 (`entity_base`) and R-6 (folder layout) follow the MOD-0280-FU01 precedent.
+  HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation. No runtime rule changed; of the AC texts only AC-55
+  changed (its refusals now carry codes).
 
 ## Follow-up Items
 
@@ -1028,3 +1052,5 @@ dispatched or accepted:
 | R-2 | Blueprint HARD dependencies MOD-0003, MOD-0037 | interim contract-in-repo and leave-side monitoring | ADR-005 addendum 1 |
 | R-3 | Blueprint placement "Domain App (HCM Time & Leave)" | Platform module, extraction path | ADR-005 |
 | R-4 | Blueprint Module Pages for MOD-0280 (stale external pages) | native pages used; Leave Types / Leave Entitlements not yet in Master | MCR draft (HCM-LEAVE-03) |
+| R-5 | module-pack-standard §2 `entity_base` list | `TenantScopedEntity`, Platform's live tenant-owned base (the standard's "BaseEntity" is the older name) | MOD-0280-FU01 precedent (künye) |
+| R-6 | module-pack-standard §4 `Features/{Module}/` without extra sub-folders | one `Features/Leave/` for three screens with `Services/`, `Adapters/`, `Providers/`, `BackgroundJobs/`, `SelfRegistration/` (§Backend File Convention) | MOD-0280-FU01 precedent (`Features/TimeEntry/` with `Services/`, `Adapters/`) |
