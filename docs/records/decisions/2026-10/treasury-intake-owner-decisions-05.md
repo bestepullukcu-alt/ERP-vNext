@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D99 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D100 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1221,6 +1221,17 @@ oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
 3. **D99/3 — K-W5 satırı (F-3 DÜŞÜK):** paket metninin yazıldığı; inceleme ve sahip teyidinin açık olduğu.
 4. **D99/4 — tek liste ucu (F-4 DÜŞÜK):** `GET /api/roles/sod-waiver-assignments` tek satırda: `paymentBatchId` verilirse bugünkü parti
    biçimi (sözleşme aynen), verilmezse Roller ekranı için sayfalı tam liste.
+
+## D100 — FU27 liste ucu iki biçim hizalaması (sahip denetimi `68f6f076a`, 1 ORTA) (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak sahip denetimi `68f6f076a`; oturum Treasury Intake CT
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D100/1 — §5.3 ile §14.3 hizalandı:** yeni `GetPaymentSodWaiverAssignmentsQuery` yalnız `paymentBatchId`siz biçimdir (sayfalı tam
+   liste); `paymentBatchId` verilince parti biçimi mevcut `GetPaymentSodWaiverAssignmentsForBatchQuery`'dir; ikisi birlikte sayfalama
+   parametresiyle → 400. AC-45'e dört sözleşme testi + sabotaj eklendi (var / yok / birlikte / kiracı).
+2. **D100/2 — FU28 kimlik taraması (D97/3'e ek ölçüm):** 479 ref (main + bütün uzak dallar) tarandı — `MOD-0018-FU28` hiçbirinde yok;
+   `MOD-0018-FU24` main'de, `FU25` / `FU26` yalnız arşiv dallarında; aday FU28 çakışmasız (kayıt satırı açık).
 
 ## Karar olmayanlar
 

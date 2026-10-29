@@ -504,7 +504,8 @@ bu dosyaya karşı yazılır (AC-34).
 - **Geçmiş sorgusu ve uç:** `…/Features/PaymentSodWaiverAssignments/Queries/GetPaymentSodWaiverAssignmentHistoryQuery.cs`,
   `…/Handlers/QueryHandlers/GetPaymentSodWaiverAssignmentHistoryHandler.cs` — **yeni**; liste ucu için
   `…/Queries/GetPaymentSodWaiverAssignmentsQuery.cs` + `…/Handlers/QueryHandlers/GetPaymentSodWaiverAssignmentsHandler.cs` —
-  **yeni** (sayfalı, en yeni önce; `paymentBatchId` isteğe bağlı süzgeç). Uçlar `PaymentSodWaiverAssignmentsController.cs`'te
+  **yeni** (`paymentBatchId`siz biçim: kiracının bütün atamaları, sayfalı, en yeni önce; `paymentBatchId` almaz — parti biçimi
+  mevcut `GetPaymentSodWaiverAssignmentsForBatchQuery`'dir, KARAR D99/4, D100/1). Uçlar `PaymentSodWaiverAssignmentsController.cs`'te
   (Bölüm 14.3).
 - **Meta-denetim (öneri 5, D97/2 (b)):** `Application/Common/Interfaces/IPlatformAuditForwarder.cs` (`:9-21`) `PlatformAuditEvent`'e
   yalnız ekleme `bool IsMetaAudit = false`; `Infrastructure/Services/PlatformAuditForwarder.cs` (`:77-100`) yükte
@@ -1310,6 +1311,11 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   yaratma ve geri alma satırları alıcı, hedef parti, süre, onaylayan, gerekçe kodu, geri alan ve zamanı taşır. Okuma arayüzünde
   güncelleme / silme üyesi yoktur (mimari test) ve gerçek Mongo'da geçmiş satırları uç üzerinden değiştirilemez. Sabotaj: kiracı
   süzgeci kaldırılınca başka kiracı testi kırmızıya döner.
+  **Liste ucunun iki biçimi (KARAR D99/4, D100/1) — sözleşme testleri:** (i) `paymentBatchId` var, `page` / `pageSize` yok →
+  parti biçimi, yalnız geçerli atamalar, yanıt D79/6 sözleşme dosyasıyla aynı; (ii) `paymentBatchId` yok → sayfalı tam liste
+  (geçerli, süresi dolmuş, geri alınmış; durum alanı), varsayılan sayfa boyutu ve üst sınırı uygulanır, en yeni önce;
+  (iii) `paymentBatchId` + `page` ya da `pageSize` birlikte → 400 (iki biçim karıştırılmaz); (iv) iki biçimde de başka kiracının
+  ataması dönmez. Sabotaj: denetleyici biçim seçimini kaldırıp hep tam listeyi döndürünce (i) kırmızıya döner.
 - [ ] AC-46 (zorunlu) — **Meta-denetim teslimi ve yapılandırma şartı (öneri 5, KARAR D97/2 (b), D99/1):** geçmiş okuması
   `IsMetaAudit = true` okuma satırını sonucu dönen iletici üyesiyle gönderir ve **yalnız teslim teyidi gelince** veri döndürür.
   HTTP testleri gerçek `PlatformAuditForwarder` ile, Platform iç ucunun sözleşmesine (`POST /api/internal/audit/append`,
