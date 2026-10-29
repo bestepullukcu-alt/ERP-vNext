@@ -163,6 +163,16 @@ public sealed class CentralAuditDispatcherTests
         Assert.Equal(CentralAuditPlatformValues.OutcomeUnconfirmed, Members(source, "AuditOutcome").Single(p => p.Key == "Unconfirmed").Value);
     }
 
+    /// <summary>Finance &amp; Treasury (DCP-011) is promised 18; the drift test above would pass if both sides moved together.</summary>
+    [Fact]
+    public void The_finance_category_is_18()
+    {
+        var source = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.Platform", "src", "Diten.Platform.Domain", "Enums", "AuditEnums.cs"));
+
+        Assert.Equal(18, CentralAuditPlatformValues.Categories["Finance"]);
+        Assert.Equal(18, Members(source, "AuditCategory").Single(p => p.Key == "Finance").Value);
+    }
+
     private static List<KeyValuePair<string, int>> Members(string source, string enumName)
     {
         var body = Regex.Match(source, @"enum\s+" + enumName + @"\s*\{(?<body>[^}]*)\}").Groups["body"].Value;
