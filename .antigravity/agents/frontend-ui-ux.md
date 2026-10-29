@@ -24,7 +24,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
    - Compact (`8'den fazla` form alanı): create/edit formunu Index içine offcanvas/modal olarak gömmek YASAKTIR; ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` kullanılır.
 3. **Ham Metin Yasak:** Ekranda `{{ModuleName}}Title` gibi ham çeviri anahtarları veya İngilizce varsayılan metinler bırakmak YASAKTIR.
 4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: SampleModuleIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
-   - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Altın Referanslar: `GoldenReferenceSlim`, `GoldenReferenceCompact`)
+   - **İstisna (Golden DataTable Standardı):** `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` modül `.resx`'inde tutulur. Kaynak: `.antigravity/rules/localization-standard.md` §3 "İstisna".
 5. **Personalization Kuralı:** Save View / kullanıcı görünüm tercihleri localStorage’da tutulmaz. Daima gateway üzerinden `/api/personalization/*` çağıran shared `window.personalizationClient` kullanılır. Bu yetenek MDM/Auth içine gömülmez.
 6. **Klavye ve Sayfa Yardımı (UXH-001, 2026-10-12):** Her yeni sayfa ve yan panel `.antigravity/rules/page-help-and-keyboard.md`'ye uyar: "?" yardım panelinde sayfanın metni (ya da borç defterinde adı); alanı olan her yan panelde `enter` / `chord` işareti; geri alınamaz işlem yalnız Ctrl / Cmd + Enter; kısayol ortak katmana (`DitenShortcuts`) kaydedilir, sayfaya özel `keydown` dinleyicisi YASAK. FROZEN `_Layout` kullanan görünümler bu katmanı almaz; yeni sayfa FROZEN `_Layout`'a düşmez.
 
@@ -42,7 +42,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 - **🖼️ Detay Görünüm Stratejisi (Hybrid View):** Standart dışı, çok karmaşık detay sayfaları yapman istenirse:
     1. **Offcanvas (Hızlı Bakış):** Şablonda sağdan açılan panel standarttır.
     2. **Full Page / Tabs:** `Details.cshtml` içinde tablarla ayrılmış geniş içerikler gerektiğinde kullanılır. Details tabları düz `nav-tabs` ile yapılmaz; WorkCenter referansındaki card-header `nav-pills` navbar standardı uygulanır (`card mb-4` + `card-header p-3` + `nav nav-pills d-inline-flex gap-2 flex-wrap` + `wc-tab-compact` + ikonlu responsive tab butonları).
-- **İkincil Referans:** `frontend/_Reference/Theme/full-version/html/` dizini genel bileşenler için yardımcı rehberdir.
+- **İkincil Referans:** `.antigravity/rules/frontend-standards.md` §4.3 "Bileşen Referansı".
 
 ## 🌍 Localization & Dil Stratejisi
 - **Sıfır Hard-Code:** View dosyalarında asla ham metin bırakamazsın. Hepsini `@Localizer["Key"]` veya `@SharedLocalizer["Key"]` formatına çevirmelisin.
@@ -60,15 +60,15 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
    - Backend validator, Web ViewModel, Razor `required` attribute'u, label yıldızı ve required-fields tracker aynı required alan listesini üretmelidir.
    - Opsiyonel numeric/date alanlar Web ViewModel'de non-nullable value type olamaz; `int`, `decimal`, `DateTime` gibi tipler Razor'da otomatik `data-val-required` üretip tracker'ı bozar. Opsiyonel alanlar `int?`, `decimal?`, `DateTime?` vb. olmalıdır.
    - Form ilk açılış required progress değeri bilinçli açıklanmalıdır: örneğin `2/7` yalnızca default dolu required alanlardan (`Status`, `Version` gibi) gelebilir; opsiyonel default `0` değerleri sayaçta dolu required olarak görünemez.
-7. **Layout & Asset Koruma:** `_Layout.cshtml` içindeki `helpers.js`, `template-customizer.js` ve `config.js` sıralaması asla değiştirilmemelidir.
-8. **Tema Senkronizasyonu:** Üst bar tema butonu ile sağdaki Customizer paneli senkronize çalışmalı ve `localStorage` ile kalıcı olmalıdır.
-9. **DataTables DOM Manipülasyonu:** DOM müdahaleleri `initComplete` veya `drawCallback` içinde yapılmalıdır.
-   - **Toolbar Padding Standardı:** DataTable toolbar row class'ı `row px-3 ...` standardında kalır (px-6 yapılmaz). Inline filter host padding standardı da `px-3`’tür. Kaynak: `wwwroot/assets/js/dt-defaults.js` (`buildLayout().topStart.rowClass`) + `.antigravity/rules/frontend-standards.md`.
+7. *(Kaldırıldı, 2026-10-29.)* `_Layout.cshtml` donuktur: `AGENTS.md` §4. Madde numaraları başka dosyalarda geçtiği için korunur.
+8. *(Kaldırıldı, 2026-10-29.)* Tema paneli (Customizer) için kaldırma isteği BL-337'de açık.
+9. **DataTables DOM Manipülasyonu:** `.antigravity/rules/frontend-js-standard.md` madde 2.
+   - **Inline Filter Hizası:** Inline filter host'u `px-3` alır (`mx-*` değil). Kaynak: `.antigravity/rules/frontend-js-standard.md` "JavaScript Master Template" inline filter yerleştirme kodu.
    - **Shared CSS Standardı:** DataTable toolbar, inline filter, Select2 chip, badge clipping ve benzeri tekrar kullanılabilir stiller sayfa içi `@section Styles` bloğunda değil `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 10. **Geniş Form Tasarımı:** 10'dan fazla input içeren formlar mutlaka `col-md-6` grid yapısı ve mantıksal `card` blokları ile gruplandırılmalıdır.
    - Compact DataTable modüllerinde kart gruplaması `Details.cshtml` ile birebir mantıksal paritede olmalıdır. Details'taki `Identity`, `Description`, `Classification`, `Status/Lifecycle` gibi section'lar `_Form.cshtml` içinde de ayrı card olarak korunur.
    - Dependent select senaryolarında `disabled="False"` gibi boolean HTML attribute hataları üretilmemelidir; Razor tarafında attribute yalnızca gerçekten gerektiğinde render edilmelidir.
-11. **TempData & Toast Senkronizasyonu:** Başarılı POST sonrası `TempData["SuccessMessage"]` atanmalı ve Index sayfasında toast tetiklenmelidir.
+11. **TempData & Toast Senkronizasyonu:** `.antigravity/rules/frontend-form-template.md` "Kayıt sonrası başarı bildirimi".
 12. **Delete Toast Parity:** Tek satır silme success akışı create/bulk delete success baseline'ı ile aynı lifecycle'ı kullanmalıdır. `row.remove().draw()` sonrası hemen toast basmak yerine tablo `dt.ajax.reload(..., false)` ile yenilenmeli, sonra success toast gösterilmelidir.
     - Silme endpoint'i yalnızca aktif modülün endpoint'i olmalıdır (`/api/{module}` ve `/api/{module}/bulk`). Başka modül endpoint'i kullanmak kritik hatadır.
     - Bulk delete confirm, tekil delete ile aynı confirm standardını (`window.showConfirm` wrapper) kullanmalıdır.
@@ -78,8 +78,8 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
     - Backbone/Sneat desktop layout'ta sol menü açıkken modal açılınca header/navbar kaymamalıdır. Bu durum için global `scrollbarPadding`, `heightAuto`, `scrollbar-gutter` veya genel `swal2-shown` body/html hack'i eklenmez; doğrulanmış çözüm `backbone-custom.css` içinde açık sidebar + `html.swal2-shown` navbar offset override'ıdır.
 14. **DataTables Button Group:** Save View butonunun görünürlüğü değiştiğinde buton grubu köşeleri paylaşılan `window.DtDefaults.refreshButtonGroupRadii()` çağrısıyla düzeltilir (`.antigravity/rules/frontend-js-standard.md` madde 13 "Radius Fix"). Yeni kodda markup'ta `style="…"` ya da JS'te statik stil için `element.style.setProperty()` yazmak FG-003 ihlalidir (`docs/roadmap/backlog/product-backlog.md` FG-003; `frontend-standards.md` UI-001). `dt-defaults.js` içindeki mevcut `setProperty` kullanımı bilinen eski koddur, örnek alınmaz.
 15. **DataTable Bulk Action:** Toplu işlem barındaki silme butonu her zaman `btn-label-danger` olmalıdır.
-16. **Seçim Estetiği:** Seçili satırların arka planı `rgba(var(--bs-primary-rgb), 0.08)` olmalıdır.
-17. **Inset Shadow Temizliği:** `tr.selected` hücrelerindeki agresif `box-shadow` değerleri CSS ile `none !important` yapılarak sıfırlanmalıdır.
+16. **Seçim Estetiği:** Seçili satır rengi paylaşılan `wwwroot/assets/css/backbone-custom.css` içindedir; sayfada yeniden yazılmaz.
+17. **Inset Shadow Temizliği:** `tr.selected` gölge sıfırlaması da aynı paylaşılan dosyadadır; sayfada yeniden yazılmaz.
 18. **Dışa Aktarma (sunucu modunda dosya = ekran):** Sunucu modundaki liste (`data_mode: server`) `export: { mode: 'server', url }` beyan eder (beyan yoksa doğrulayıcı sapma sayar); CSV/Excel dosyası görünen sütunları (sırasıyla), uygulanan filtre + arama + sıralamayı ve eşleşen TÜM satırları taşır (en çok 50 000; fazlası 413, kesilmiş dosya yok); PDF ve Yazdır da satırları aynı uç noktadan alır. Kopyala düğmesi değişmez. Diğer listelerde DataTables'ın kendi düğmeleri bugünkü `exportOptions` ile çalışır (görünen sütunlar; seçili satır varsa yalnız onlar — `dt-defaults.js`). Kaynak: `.antigravity/rules/frontend-datatable-template.md` "Dışa aktarma — dosya = ekran" (BL-452).
 19. **Kolon Genişlik Dengesi (cell-fit):** Checkbox ve Actions gibi sabit kolonlar için mutlaka `cell-fit` sınıfı kullanılmalıdır.
 20. **Build & Run:** Değişiklik sonrası yeniden derleme ve başlatma Anayasa madde 1'deki protokolle yapılır (`dynamic-localization-standard.md` "Yeniden Derleme Protokolü" adım 3); `run_all.sh` toplu `kill -9` / `killall dotnet` çalıştırdığı için bu protokolde kullanılmaz.
@@ -91,7 +91,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 26. **Details Tab/Navbar Standardı:** Details sayfasında tab gerekiyorsa WorkCenter tab bar görsel dili zorunludur. `nav-tabs`, underline tab, card dışı çıplak tab listesi veya büyük marketing-style tab başlıkları kullanılmaz. Her tab butonu küçük, border'lı, ikonlu ve responsive olmalıdır; mobilde metin gizlenir, ikon kalır.
 
 ## 📐 Layout & View Architecture Rule
-- **Layout Sadakati:** Shell tipi module pack/domain kararından açık seçilmelidir. Platform/admin modülleri `Views/Platform/{ModuleName}/` altında `_LayoutPlatformAdmin.cshtml` kullanır. Tenant modülleri `Views/{ModuleName}/` veya tenant domain klasörü altında `_LayoutTenantShell.cshtml` kullanır. Eski `_Layout.cshtml` ve `_LayoutBackbone.cshtml` KESİNLİKLE KULLANILMAZ.
+- **Layout Sadakati:** Shell tipi module pack/domain kararından açık seçilmelidir. Platform/admin modülleri `Views/Platform/{ModuleName}/` altında `_LayoutPlatformAdmin.cshtml` kullanır. Tenant modülleri `Views/{ModuleName}/` veya tenant domain klasörü altında `_LayoutTenantShell.cshtml` kullanır. Eski `_Layout.cshtml` KESİNLİKLE KULLANILMAZ.
 - **Section Yönetimi:** Sayfaya özel JS için `@section Scripts` kullanılır. `@section Styles` yalnızca gerçekten tek sayfaya özgü stiller için kullanılabilir; tekrar kullanılabilir toolbar/filter/DataTable stilleri `backbone-custom.css` içine alınmalıdır.
 
 ## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
