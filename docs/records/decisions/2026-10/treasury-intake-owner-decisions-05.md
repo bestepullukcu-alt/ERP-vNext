@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D83 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D84 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -900,6 +900,20 @@ cevapları: "Şartlı işaretle (Önerilen)", "Test et ve işaretle (Önerilen)"
 2. **D83/2 — MOD-0031 ölçümü:** `docs/records/audits/2026-10/treasury-intake-handover-review-01/MOD-0031-DEDUPE-OLCUMU-01.md` kaydı ve EvidenceLinking testleri (51 geçti / 0 kaldı (ct-05 @ 29b6f2a51 = main 317a48b13 kodu)) ile MOD-0126 (DL-3), MOD-0120 (DL-3) ve MOD-0124
    (DL-4) ölçüm maddeleri işaretlenir. Sonuç: içerik tekilliği var, uzak anahtarla idempotency yok → kurtarmada yeniden çağrı
    kapalı kalır; paket kuralı değişmez.
+
+## D84 — Ali'nin Y-21 cevapları kaydedilir; FU27 açık kararları kapanır (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevapları: "Kaydet ve kapat (Önerilen)" ve MOD-0220 için "Ali'ye sor". Kaynak: Y-21.
+
+1. **D84/1 — kapanan satırlar (sahip teyidi, paket önerisiyle):** K-1b, K-2, K-3, K-W2, K-W4, K-W6, K-W7, K-A1 (uç adı + sürümlü
+   sözleşme), K-A2 (b), K-A3, K-A4b. D80/4'teki "sahip teyidi / kararı açık" notları bu satırlarda kapanır.
+2. **D84/2 — K-W5:** yöntem teyitli (`auth-gunlugu` + önce-yaz); CT defter kararı açık, DL-5 kodundan önce (D80/2 (a) açık kalır).
+   D80/2 (b) (rol atama denetim borcu) Y-21'de geçmiyor; açık kalır.
+3. **D84/3 — K-5:** yalnız yöntem teyitli; anahtar listesi MOD-0289 / MOD-0217 sahibinden, Platform dosyaları Beste'den — açık.
+4. **D84/4 — açık kalanlar:** §14.2 27 rolün 7 dilli ad tablosu (Ali kontrol ediyor); MOD-0220 yeniden onayı ve Ali'nin "§22 alanı
+   netleşene kadar ready-for-dev yok" notu — Ali'ye soruldu; cevap gelene kadar D82/2 değişmez, ama hiçbir paket `ready-for-dev`'e
+   alınmaz.
 
 ## Karar olmayanlar
 

@@ -199,6 +199,16 @@ K1'in aktarımı (2026-10-29): "48 izin alındı" — Beste, MOD-0048 seed PR'ı
 yalnız geçerli üç harfli ISO kodlarını döndürür (`¤¤` gibi ICU yer tutucuları elenir) + test; Treasury yazar, PR'ı Beste onaylar. Yazılı metin
 bu kayda alınmadı (sahip aktarımı). `module: BusinessReferenceData` sapması ve O-14 için ayrı cevap gelmedi.
 
+## Y-21 — Ali, Auth eki açık maddeleri (2026-10-29; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+#293'ü gördü. D79/D80 kayıtlarındaki açık maddeleri 29 Ekim'de verdi, hepsi paketin önerisiyle: K-1b paket başına kod · K-2 hiçbiri ·
+K-3 bugünkü davranış · K-W2 (a) · K-W4 `/api/roles/…` · K-W6 sürümlü dosya · K-A1 `/internal/permission-candidates` + sürümlü
+sözleşme · K-A2 (b) tüketici süzer · K-A3 hizmet hesabı aday değil, geçici kilitli aday · K-W5 `auth-gunlugu` + önce-yaz, CT defter
+kararı (DL-5 kodundan önce kapanmalı) · K-W7 ve K-A4b teyit · K-5'te yalnız yöntem kabul: banka / amaç anahtarlarını MOD-0289 /
+MOD-0217 sahibi söyler, Platform dosyaları Beste'den (XMC-001). 7 dilli rol adı tablosu (§14.2) kontrol ediliyor, sonucu ayrıca
+yazacak. "MOD-0220 yeniden onayı açık, §22 alanınız o netleşene kadar ready-for-dev'e geçemez" (hangi paketin §22'si olduğu ve
+D82/2 dilim kapısıyla ilişkisi Ali'ye soruldu — K1 kararı 2026-10-29). → D84.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -239,3 +249,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-18 (iç uç kimliği, açık atama sayısı, muafiyet atayan) | MOD-0018 Treasury Auth eki | D74 |
 | Y-19 (FU27, K-7, DL-6; şartlı teyit — K-W5 + rol atama denetimi DL-5 kodundan önce) | MOD-0018 Treasury Auth eki; altı paket | D80 |
 | Y-20 (MOD-0048 B1 izni: currencies lookup alpha-3 filtresi) | seed dalı `feature/pss/mod0048-fu01-treasury-seeds`; MOD-0126 / 0119 / 0120 / 0124 seed önkoşulu | seed PR'ında |
+| Y-21 (Auth eki açık maddeleri paket önerisiyle; K-W5 yöntem, K-5 yalnız yöntem; MOD-0220 / §22 notu) | MOD-0018 Treasury Auth eki; ready-for-dev tutuşu | D84 |
