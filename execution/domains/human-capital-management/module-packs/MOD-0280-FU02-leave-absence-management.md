@@ -18,7 +18,7 @@ screens:
   - module: Leave
     data_mode: server
 entity_base: TenantScopedEntity   # Platform's live tenant-owned base, as MOD-0280-FU01
-status: draft
+status: ready-for-dev
 owner: ali.tufanoglu
 branch: feature/hcm/mod-0280-fu02-leave-absence-management
 started: 2026-10-27
@@ -28,8 +28,10 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 
 # MOD-0280-FU02 — Leave & Absence Management
 
-> **Status: draft — for owner review and independent review only. No code may be written from this pack** (module-pack-standard
-> §16). Revision 01, written by CT · İzin ve devamsızlık on the owner's word `paket-taslak` (2026-10-27).
+> **Status: ready-for-dev (revision 08).** Code is written only slice by slice, after this exact version's approval row
+> is in force on origin/main and the slice's gates in §Teslim dilimleri are open — among them XMC-001 consent for every
+> slice that writes code in `Diten.Platform` (module-pack-standard §16). Revision 01, written by CT · İzin ve devamsızlık
+> on the owner's word `paket-taslak` (2026-10-27).
 > **Revision 02** (owner's word `rev02-oneri`, 2026-10-29) answers independent pack review 01
 > (`docs/records/reviews/MOD-0280-FU02/2026-10-29-ea61e8c6.md`, UYGUN DEĞİL, 8 findings accepted): one allowed-field list
 > for card, e-mail and audit; one transaction for request, balances and a per-employee lock, with workflow start retried
@@ -68,6 +70,11 @@ form_field_count: 7               # largest form: Leave Type (§Entity Fields)
 > **Revision 07** (2026-10-29) answers review 06 (`docs/records/reviews/MOD-0280-FU02/2026-10-29-878a24f0.md`, KOŞULLU,
 > F-67): a closed instance found by the re-check of an `Unconfirmed` request ends `Cancelled` when the stored intent is
 > `cancel`, everywhere the rule is written (§Implementation Notes "Revision 07").
+> **Revision 08** (2026-10-29, owner's word `rev08-hazir`) after review 07
+> (`docs/records/reviews/MOD-0280-FU02/2026-10-29-0517be85.md`, UYGUN): status `ready-for-dev`; the Ready-for-dev Checklist
+> is filled in and names which items are slice gates (§Teslim dilimleri) rather than conditions of this status; the
+> XMC-001 gate covers every slice that writes code in `Diten.Platform`; no runtime rule or AC changed (§Implementation
+> Notes "Revision 08").
 >
 > **Scope of this revision: delivery block 1 only** — leave types, leave entitlements entered by HR, and the employee's own
 > leave requests with balance and cancellation; approval through MOD-0023 in the Task Center. Absence records, sickness,
@@ -832,41 +839,59 @@ must reach; the acceptance record cites this table row as `required_evidence_sou
 Gates per slice (review 01 F-06) — development with the fake employee adapter is allowed before a gate opens; dispatch or
 acceptance waits as written:
 
+- Every slice that writes code in `Diten.Platform` (DL-1, DL-2, DL-3, DL-4, DL-6, DL-7): dispatch only after the XMC-001
+  consent of the platform-shared-services owner is recorded (card S-90; §Repo Scope; ADR-005 "Platform'da kod yazan her
+  iş paketi XMC-001 onayını ayrıca ister"); who signs is Open Question 1.
 - DL-1, DL-2, DL-3: dispatch after this pack is approved and the registry rows are in force on origin/main. Day boundary
   (K-9): the tenant time zone (FU01 R3) is the **owner-decided default** (`rev03-gonder`, 2026-10-29); DL-2 is accepted with
-  it; a later K-9 decision changes it only through a pack revision. DL-3 dispatch needs the coordination note with the
-  MOD-0023 tower (card S-90).
+  it; a later K-9 decision changes it only through a pack revision. DL-3 dispatch needs the MOD-0023 tower's recorded
+  consent under card S-90 for leave's use of MOD-0023 (the leave approval definition, start and task cancel, and its
+  answer on settle step 4, `SupersedeWorkflowHalfStartCommand`; without that answer step 4 is left out, AC-56).
 - DL-4: development and DL-1…DL-3 use the fake adapter and are **not** gated by the contract. Only DL-4 **acceptance** with
   real data needs HCM-CORE-BUNDLE frozen at a named version, MOD-0251's activation slice, the K-1 user ↔ person link and the
   K-4 service identity; until then only fake-adapter evidence, which is not acceptance.
 - DL-5: the `LeaveTypes` and `LeaveEntitlements` screens are dispatched only after Master has decided the Blueprint MCR
   (`docs/records/decisions/2026-10/hcm-leave-mcr-draft-01.md`) or the owner records an exception; the `Leave` screen
   ("Leave Request", already in Blueprint) is not gated by the MCR.
-- DL-6, DL-7: XMC-001 consent for code in `Diten.Platform` (platform-shared-services owner, card S-90); DL-7 also needs
-  the integration-agent task for `ocelot.json`.
+- DL-7: the integration-agent task for `ocelot.json`; the gateway route is needed before DL-5 goes live (§Gateway / API
+  Routing Decision).
 
 ## Ready-for-dev Checklist
 
-- [ ] Golden Reference Slim read
-- [ ] Frontmatter complete (service, shell, golden_reference, screens, entity_base)
-- [ ] Layout & Shell Contract writes the Razor layout explicitly
-- [ ] Backend File Convention matches the Golden Reference
-- [ ] Frontend File Contract lists the Slim files per screen
-- [ ] Validation Rules cover every field and action
-- [ ] Failure Path to Verify has duplicate, missing, unauthorized and concurrency cases
-- [ ] Authorization Convention lists permissions, policy and actor scope
-- [ ] Gateway routing decision written; integration-agent task opened
-- [ ] Acceptance criteria testable; Test Expectations cover build, verifier, resx and smoke
-- [ ] Audited Events covers every write command once
-- [ ] Page help keys for `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS` in 7 languages; tour: none (leave is not one of the five tour flows)
-- [ ] Every slice carries a required evidence level (card S-85) and its gates are written (§Teslim dilimleri)
-- [ ] Coordination note with the MOD-0023 tower recorded before DL-3 (card S-90)
-- [ ] Tenant-zone day boundary recorded as the owner-decided default (`rev03-gonder`) — K-9 changes it only by revision
-- [ ] Master decision on the Blueprint MCR, or an owner exception, before the LeaveTypes / LeaveEntitlements screens
-- [ ] HCM-CORE-BUNDLE freeze is **not** a ready-for-dev condition; it gates only DL-4 acceptance (§Teslim dilimleri)
-- [ ] XMC-001 consent for code in `Diten.Platform` from the platform-shared-services owner recorded
-- [ ] HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation
-- [ ] Independent pack review (SOP §20.4) UYGUN and an approval row by an approver with `high: evet` who did not write the pack
+Conditions of `ready-for-dev` (revision 08):
+
+- [x] Golden Reference Slim read (`golden_reference: slim`; §Frontend File Contract follows it file for file)
+- [x] Frontmatter complete (service, shell, golden_reference, screens, entity_base)
+- [x] Layout & Shell Contract writes the Razor layout explicitly (`_LayoutTenantShell`)
+- [x] Backend File Convention matches the Golden Reference
+- [x] Frontend File Contract lists the Slim files per screen
+- [x] Validation Rules cover every field and action
+- [x] Failure Path to Verify has duplicate, missing, unauthorized and concurrency cases
+- [x] Authorization Convention lists permissions, policy and actor scope
+- [x] Gateway routing decision written (§Gateway / API Routing Decision); the integration-agent task is a DL-7 gate below
+- [x] Acceptance criteria testable; Test Expectations cover build, verifier, resx and smoke
+- [x] Audited Events covers every write command once
+- [x] Page help keys for `MYLEAVE`, `LEAVETYPES`, `LEAVEENTITLEMENTS` named (§Layout & Shell Contract); tour: none (leave is not one of the five tour flows); their 7-language texts are a DL-5 deliverable checked by `resx-check`
+- [x] Every slice carries a required evidence level (card S-85) and its gates are written (§Teslim dilimleri)
+- [x] Tenant-zone day boundary recorded as the owner-decided default (`rev03-gonder`) — K-9 changes it only by revision
+- [x] HCM-CORE-BUNDLE freeze is **not** a ready-for-dev condition; it gates only DL-4 acceptance (§Teslim dilimleri)
+- [x] HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation (revision 08)
+- [ ] Independent pack review (SOP §20.4) UYGUN on this exact version and an approval row by an approver with `high: evet`
+  who did not write the pack — not shown by this text; measured by `scripts/pack_approval.py check` on origin/main
+
+Slice gates — not conditions of this status; all of §Teslim dilimleri's gates, each opening before the named slice is
+dispatched or accepted:
+
+- [ ] DL-1, DL-2, DL-3, DL-4, DL-6, DL-7 (code in `Diten.Platform`): XMC-001 consent of the platform-shared-services owner
+  recorded (card S-90; Open Question 1)
+- [ ] DL-1, DL-2, DL-3: this version's approval row and the registry rows in force on origin/main
+- [ ] DL-3: the MOD-0023 tower's consent under card S-90 recorded — the leave approval definition, start and task cancel,
+  and its answer on settle step 4 (`SupersedeWorkflowHalfStartCommand`; without it step 4 is left out, AC-56)
+- [ ] DL-4 acceptance with real data: HCM-CORE-BUNDLE frozen at a named version, MOD-0251's activation slice, the K-1
+  user ↔ person link and the K-4 service identity
+- [ ] DL-5: Master decision on the Blueprint MCR, or an owner exception, before the LeaveTypes / LeaveEntitlements screens;
+  the gateway route (DL-7) before DL-5 goes live
+- [ ] DL-7: integration-agent task for `ocelot.json` opened
 
 ## Implementation Notes
 
@@ -963,6 +988,17 @@ acceptance waits as written:
   Second interim sub-agent check (fresh context, not a formal review): **UYGUN**; its three low notes applied: F-73 one
   recheck result code per result (`withdrawn` only without an intent, `intent-completed` for any completed intent);
   F-74 the stopped cancel settle is in the transaction test list; F-75 "send a new request" follows `Withdrawn` only.
+- **Revision 08** (2026-10-29, owner's word `rev08-hazir`; review `docs/records/reviews/MOD-0280-FU02/2026-10-29-0517be85.md`
+  UYGUN, F-67 closed): `status: ready-for-dev` — an approval row authorizes code only on a ready-for-dev version
+  (`scripts/pack_approval.py` `DRAFT_WARNING`, setup finding S-49 in
+  `docs/records/audits/2026-10/ct-setup-test-01/FINDINGS.md`). The opening status warning now says ready-for-dev. The
+  Ready-for-dev Checklist is split into the conditions of this status (met, with where each is shown) and the slice gates
+  of §Teslim dilimleri, which stay open. Item texts changed: the gateway item keeps the decision and moves the
+  integration-agent task to the DL-7 gate; the help-key item names the keys and leaves their 7-language texts to DL-5;
+  the review-and-approval item stays unchecked and is measured by `pack_approval.py check`. §Teslim dilimleri: the
+  XMC-001 gate now covers every slice that writes code in `Diten.Platform` (DL-1…DL-4, DL-6, DL-7), as §Repo Scope and
+  ADR-005 already required; the DL-3 MOD-0023 gate names what the tower consents to; the gateway route is needed before
+  DL-5 goes live. HCM domain-config lists MOD-0280-FU02 with the ADR-005 deviation. No runtime rule or AC changed.
 
 ## Follow-up Items
 

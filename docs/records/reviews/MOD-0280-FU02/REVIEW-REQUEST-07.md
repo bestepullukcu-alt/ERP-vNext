@@ -1,5 +1,9 @@
 # MOD-0280-FU02 — bağımsız paket incelemesi isteği 07 (SOP §20.4 / CT-APR-02; revizyon 07, ilk onay)
 
+> **Durum: yanıtlandı, kapandı.** Codex dal ucunu 4f5a9ee97 (paket 0517be85) olarak ölçtü: UYGUN, F-67 kapandı (kayıt
+> `2026-10-29-0517be85.md`). Bu istek yeniden gönderilmez; yerine `REVIEW-REQUEST-08.md` geçer (S-49: onay satırı
+> `ready-for-dev` sürüme yazılır).
+
 - Hedef: `execution/domains/human-capital-management/module-packs/MOD-0280-FU02-leave-absence-management.md` @ sha256 `0517be855f30835cb773ba71c3911ded3105a99707fea451292793174d3b608f` (revizyon 07, `status: draft`)
 - Kaynak commit: bu istekle aynı commit (dal `chore/ct/hcm-leave-ct-01`); GitHub'a sahibin sözüyle gönderilir. Uç sha'sı Codex'e mesajda verilir.
 - Önceki: inceleme 01 (`ea61e8c6`), 02 (`47df0fc4`), 03 (`436bc38b`), 04 (`5fb4d1bb`) — dördü **UYGUN DEĞİL**; inceleme 05 (`948f931b`) **KOŞULLU**, F-21; inceleme 06 (`878a24f0`) **KOŞULLU**, tek bulgu F-67, F-21 kapandı (CT değerlendirmesi kayıtta: kabul).
