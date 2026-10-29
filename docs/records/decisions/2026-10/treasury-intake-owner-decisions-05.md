@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D88 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D89 (2026-10-29) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -983,6 +983,15 @@ yolu "Beste'ye sor (Önerilen)". Kaynak: Y-22.
    bestepullukcu-alt); merge Beste. DCP onayı üye pack'lerin ready-for-dev'i değildir.
 6. **D88/6 — tarihler (kayıt):** RCS-001 sözleşmesi 3 Kasım, servis v1 6 Kasım; Excel + kısa kod listesi en geç 2 Kasım (K1);
    MOD-0262-FU01 Platform revizyonu 2 Kasım; Auth tarafı Ali'de. #304 dalı Beste merge edene kadar güncellenmez.
+
+## D89 — MOD-0289 CT-APR-01 onaylayıcısı: K2 (Beste) (2026-10-29)
+
+Onay kanıtı: hesap `gmg-10` (K1); zaman 2026-10-29; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`); soru kutusu
+cevabı: "K2 — Beste (Önerilen)".
+
+MOD-0289'u K1 yazdı; yüksek riskli onay, paketi yazmamış ve `execution/approvals/approvers.tsv`'de `high: evet` olan biri tarafından
+verilir (POLICY-START). Onaylayıcı K2 — hesap `bestepullukcu-alt`. Ready-for-dev PR'ı (D84/4 tutuşu kalkınca) CT-APR-01 satırını
+bu hesapla yazar; merge onaylayıcıda (merge commit). Beste'ye ayrıca sorulur; kabul etmezse karar yeniden açılır.
 
 ## Karar olmayanlar
 
