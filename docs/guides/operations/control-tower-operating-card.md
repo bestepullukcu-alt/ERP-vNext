@@ -445,13 +445,15 @@ Paket ya da DCP Codex'in resmî bağımsız incelemesine gitmeden önce CT bir *
 10-21…10-27): 12 Codex incelemesinin 8'i engel ya da koşulla döndü; bulguların çoğu paketin kendi içindeki çelişki,
 kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten ve koddan bulunabilir.
 
-1. **Ayrı, ipucusuz, salt-okunur alt sohbet:** paketi yazan sohbet ve paket yazarı ajan incelemez. Bir CT aynı anda en
-   çok iki alt sohbet çalıştırır (sahip kararı 2026-10-29; makine yükü yüksekse bekler). Ön inceleyene yalnız S-94 inceleme
+1. **Ayrı, ipucusuz, salt-okunur alt ajan:** ön incelemeyi CT'nin kendi içinden açtığı bir alt ajan yapar (Agent aracı;
+   kenar çubuğunda ayrı sohbet açılmaz — sahip kararı 2026-10-29, S-98). Alt ajan CT'nin sohbet geçmişini görmez, yalnız
+   verilen prompt'u okur. Paketi yazan sohbet ve paket yazarı ajan incelemez. Bir CT aynı anda en çok iki alt ajan ya da
+   alt sohbet çalıştırır (sahip kararı 2026-10-29; makine yükü yüksekse bekler). Ön inceleyene yalnız S-94 inceleme
    isteğindeki **inceleme prompt'unun aynısı** verilir; yalnız ilk satırdaki "Hedef: Codex" "Hedef: ön inceleme N"
    olur. CT prompt bloğunun SHA-256'sını kaydeder; Codex'e giden blok, ilk satır dışında aynı özeti taşır. Önceki tur
    bulguları, "şuraya bak" yönlendirmesi, beklenen sonuç ya da CT'nin görüşü prompt'a eklenmez. Ön inceleyen dosya
    değiştirmez, commit yapmaz.
-2. **Tur ve durma:** bulgular yalnız yazara gider; yazar düzeltir; **her tur yeni bir alt sohbette** ve önceki tur
+2. **Tur ve durma:** bulgular yalnız yazara gider; yazar düzeltir; **her tur yeni bir alt ajanda** ve önceki tur
    bulguları olmadan yeniden incelenir. Turda ENGEL yoksa durulur (ORTA ve DÜŞÜK durmayı engellemez; yazar düzeltebilir).
    Hedef ENGEL'siz sonuçtur (UYGUN ya da KOŞULLU). **3 turda bir soru:** 3. turun incelemesi hâlâ ENGEL veriyorsa CT
    kendiliğinden yeni tur açmaz; sahibe butonla sorar: "3 tur daha" · "Codex'e git" · "kapsamı daralt" (sahip kararı
