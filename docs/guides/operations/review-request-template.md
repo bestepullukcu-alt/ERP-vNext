@@ -41,7 +41,8 @@ ZIP sha256: <64 hex>
 ````
 
 ZIP elle toplanmaz: `python3 scripts/review_zip.py build --pack <paket> --ref <commit> --out <dizin>` (S-99). Araç son
-iki satırı (`ZIP'in yeri`, `ZIP sha256`) basar; paket geliştirmeye hazır değilse ZIP kurmaz.
+iki satırı (`ZIP'in yeri`, `ZIP sha256`) basar; paket geliştirmeye hazır değilse ZIP kurmaz. AGENTS.md, kart ve SOP her
+ZIP'te vardır; prompt bunlardaki bir kurala atıf verebilir.
 
 ## 2. Sohbette sahibe (tek kopya, S-98)
 

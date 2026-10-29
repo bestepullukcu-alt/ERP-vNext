@@ -118,7 +118,7 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
      commit edilmiş kayıt düzenlenmez, yeni istek numarası açılır.
   6. **ZIP aracı ve hazırlık kapısı (S-99, sahip kararı 2026-10-29):** ZIP elle toplanmaz:
      `python3 scripts/review_zip.py build --pack <paket> --ref <commit> --out <dizin>` paketi, atıf verdiği dosyaları,
-     bunlara değen testleri, kartı ve `MANIFEST.sha256`'yı commit'ten toplar ve prompt'un son iki satırını basar.
+     bunlara değen testleri, kartı, SOP'u (prompt'un andığı §20.4 / CT-APR-02 gibi kurallar için) ve `MANIFEST.sha256`'yı commit'ten toplar ve prompt'un son iki satırını basar.
      Atıf verilen bir dosya yoksa araç ZIP kurmaz (çıkış 2); paket künyesi geliştirmeye hazır değilse **ENGEL**dir ve
      ZIP kurulmaz (çıkış 3) — paket önce hazır işaretlenir, sonra incelemeye gider. Eksik kalan dosya `--extra` ile eklenir.
      Codex prompt'u "ZIP'te eksik girdi varsa bulgu yaz" der.

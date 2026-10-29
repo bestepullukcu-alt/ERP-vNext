@@ -10,7 +10,7 @@ pack's folder, `path:line` / `path#Ln` / `path@commit` forms with the suffix str
 NOT expanded by default — DIRECTORIES.txt lists its tracked paths at --ref — and --expand <dir> (or an --extra
 directory) adds its files, at most DIR_CAP; for each referenced source file the test files (only under tests/ or
 */tests/*) that name its base name as a word at --ref, at most TESTS_PER_NAME per name and TESTS_TOTAL in all (a test
-the pack or a flag names is always in, outside the caps); AGENTS.md; the CT operating card; with --since a
+the pack or a flag names is always in, outside the caps); AGENTS.md; the CT operating card; the CT SOP (§20.4 / CT-APR-02 and the other rules review prompts cite); with --since a
 CHANGES.diff of the pack between --since and --ref; every --extra path; last MANIFEST.sha256 (`shasum -a 256 -c`).
 
 Fail closed (no ZIP is written on any refusal):
@@ -53,6 +53,7 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 AGENTS = "AGENTS.md"
 CT_CARD = "docs/guides/operations/control-tower-operating-card.md"
+CT_SOP = "docs/guides/operations/control-tower-sop.md"
 CHANGES = "CHANGES.diff"
 MANIFEST = "MANIFEST.sha256"
 DIRECTORIES = "DIRECTORIES.txt"
@@ -412,7 +413,7 @@ def _build(root, pack, ref, out_dir, extras, since, allow, expand) -> list[str]:
     for d in sorted(expand):
         if not t.under(d) and d not in allow:
             missing.append((d, 0, False))
-    for p in (AGENTS, CT_CARD):
+    for p in (AGENTS, CT_CARD, CT_SOP):
         if p in t.entries:
             found.setdefault(p, "sabit")
         else:
@@ -576,6 +577,7 @@ def self_test() -> int:
     g("config", "core.autocrlf", "false")
     put(AGENTS, "# agents\n")
     put(CT_CARD, "# card\n")
+    put(CT_SOP, "# sop\n")
     put("execution/domains/x/domain-config.md", "# dc\n")
     put("services/Diten.X/src/Widget.cs", "class Widget {}\n")
     put("services/Diten.X/appsettings.Production.json", "{}\n")
@@ -601,8 +603,9 @@ def self_test() -> int:
     cases.append(("ready pack builds (exit 0) and prints the two prompt lines last",
                   code == 0 and lines[-2].startswith("ZIP'in yeri: /") and re.fullmatch(r"ZIP sha256: [0-9a-f]{64}",
                                                                                       lines[-1]) is not None))
-    cases.append(("pack, path:line reference (suffix stripped), markdown link, AGENTS.md and CT card are included",
-                  {PACK, "services/Diten.X/src/Widget.cs", "execution/domains/x/domain-config.md", AGENTS, CT_CARD} <= got))
+    cases.append(("pack, path:line reference (suffix stripped), markdown link, AGENTS.md, CT card and CT SOP are included",
+                  {PACK, "services/Diten.X/src/Widget.cs", "execution/domains/x/domain-config.md", AGENTS, CT_CARD,
+                   CT_SOP} <= got))
     cases.append(("a root-relative markdown link (reported) and a backtick path with a space are included",
                   {"docs/root-linked.md", "docs/My File.md"} <= got and any("depo kökünden bulundu" in l for l in lines)))
     cases.append(("sabotage: test files naming a referenced source's base name are included (tests/ and */tests/*)",
