@@ -1,0 +1,3 @@
+frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json:2
+frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json:2
+exit=0

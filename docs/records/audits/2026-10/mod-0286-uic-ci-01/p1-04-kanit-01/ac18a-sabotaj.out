@@ -1,0 +1,38 @@
+PASS DevEnablement/GoldenReferenceSlim CI-1 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+YENİ KIRMIZI DevEnablement/GoldenReferenceSlim CI-3 index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))
+TABAN FU-4 DevEnablement/GoldenReferenceSlim CI-3 personalizationClient sends tenant header only for tenant users
+PASS DevEnablement/GoldenReferenceSlim CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+YENİ KIRMIZI DevEnablement/GoldenReferenceSlim CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 1 +1
+PASS DevEnablement/GoldenReferenceSlim CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+bilgi: RC-6 AddNewGoldenReferenceSlim DevEnablement/GoldenReferenceSlim FU-12 developer-enablement
+süre: 0.3 s
