@@ -1935,10 +1935,10 @@ portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden ön
 - [x] Sahip MOD-0126 için kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [ ] RCS-001 ortak kod servisi (BL-565, Beste — D44) ve şirket kısa kodu kaynağı main'de; v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti (önek `PAY` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30)) — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-45)
 - [x] Yeni servis defteri + CT-DECISIONS satırı için Control Tower kararı (yol b izi kabulü) — **verildi: KARAR D35** (`treasury-intake-owner-decisions-02.md` D35, PR #235): iz `finance-treasury-merkezi-iletim | b | işaret | ICentralAuditDeclaration`, borç / istisna 0; defter dosyası + CT-DECISIONS satırı + `AuditTrailStandardTests` DL-1 değişikliğinde birlikte (D35/4)
-- [ ] Platform `AuditCategory`'ye eklemeli `Finance` (değer 18; Y-4/7) değeri main'de (KARAR D35/3, O-6; sahibi Platform / Beste, XMC-001) — **DL-1 bu değer main'e girmeden başlamaz**
+- [x] Platform `AuditCategory`'ye eklemeli `Finance` (değer 18; Y-4/7) değeri main'de (KARAR D35/3, O-6; sahibi Platform / Beste, XMC-001) — **DL-1 bu değer main'e girmeden başlamaz** — **main'de: PR #298** (`AuditEnums.cs:29`, `CentralAuditPlatformValues.cs:30` @ `317a48b13`)
 - [x] İzin ad alanı `finance-treasury.*` onayı (O-5 → D11/4)
-- [ ] Para birimi küsurat hanesi kaynağı (O-11) — DL-1 Create'in kendi önkoşulu — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed önkoşul açık
-- [ ] MOD-0048 `payment-method` kümesi tanımlı, yayımlanmış ve `ConsumableSets` izin listesinde (D28 / O-13; MOD-0048 sahibi) — DL-1 Create'in kendi önkoşulu — öneri başlangıç listesi olarak kabul (Y-4/3); seed önkoşul açık
+- [x] Para birimi küsurat hanesi kaynağı (O-11) — DL-1 Create'in kendi önkoşulu — `currency-minor-units` başlangıç listesi olarak kabul (Y-4/3); seed main'de — **MOD-0048-FU01 seed'i PR #297 ile main'de** (`aaa3381df`; `treasury-reference.json`, `ConsumableSets` izin listesi)
+- [x] MOD-0048 `payment-method` kümesi tanımlı, yayımlanmış ve `ConsumableSets` izin listesinde (D28 / O-13; MOD-0048 sahibi) — DL-1 Create'in kendi önkoşulu — öneri başlangıç listesi olarak kabul (Y-4/3); seed main'de — **MOD-0048-FU01 seed'i PR #297 ile main'de** (`aaa3381df`; `treasury-reference.json`, `ConsumableSets` izin listesi)
 
 **Dilim kapıları ("— DL-n için"; paketi `ready-for-dev`'den alıkoymaz, yalnız o dilimi bekletir — D51/1):**
 - [x] SoD eşiği modeli sahip kararıyla yazıldı (O-4 → D11/1: kiracı ayarı, para birimli; ayar yoksa tier-2) — DL-2 için

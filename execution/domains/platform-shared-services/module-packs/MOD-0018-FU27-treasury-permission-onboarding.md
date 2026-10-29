@@ -1253,12 +1253,12 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [x] 117 anahtar, 26 rol ve 8 açık atama matrisle mekanik uzlaştırıldı (Bölüm 19; D69 sonrası yeniden koşuldu). D74 eki
   (2 Auth anahtarı, açık atama toplamı 10, 27. rol) karar dosyasının matris bölümüne yazıldı; Treasury modül sayıları değişmedi
   (Bölüm 19).
-- [ ] D74 main'de (D62/1) — K-W1 / K-W3 / K-A1 kapanışının, 27. rolün ve 10 açık atama sayımının paket kapısı.
-- [ ] D75 main'de (D62/1) — K-W7 kapanışının (rolün izinsiz oluşturulması, atayanın izin + rol üyeliği denetimi) ve Bölüm 8.7
-  sınır kabulünün (D75/2) paket kapısı.
-- [ ] D76 main'de (D62/1) — geri alma ucundaki üyelik denetiminin, okuma ucunun yalnız `.read` istemesinin (D76/1) ve denetim
-  sırasının (D76/2) paket kapısı (DL-5).
-- [ ] D69 main'de (D62/1) — DL-3 paket kapısı ({K} ve Sözleşme onaylayıcı).
+- [x] D74 main'de (D62/1) — K-W1 / K-W3 / K-A1 kapanışının, 27. rolün ve 10 açık atama sayımının paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D75 main'de (D62/1) — K-W7 kapanışının (rolün izinsiz oluşturulması, atayanın izin + rol üyeliği denetimi) ve Bölüm 8.7
+  sınır kabulünün (D75/2) paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D76 main'de (D62/1) — geri alma ucundaki üyelik denetiminin, okuma ucunun yalnız `.read` istemesinin (D76/1) ve denetim
+  sırasının (D76/2) paket kapısı (DL-5) — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D69 main'de (D62/1) — DL-3 paket kapısı ({K} ve Sözleşme onaylayıcı) — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] FU numarası verildi; dosya adı, `id`, `branch` ve kayıt satırı yazıldı; `verify_module_id.py --check-id` geçti (K-1) —
   **K-1 KAPANDI — MOD-0018 sahibi kararı (Y-19 / D80/1): MOD-0018-FU27**; `verify_module_id.py . --check-id MOD-0018-FU27 --name
   "Treasury Permission Onboarding" --parent MOD-0018` → `OK  MOD-0018-FU27: proven against Blueprint/registry.` (çıkış 0,
@@ -1271,18 +1271,18 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   verildi — Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`; şartlar DL-5 kodundan önce, aşağıdaki iki D80/2 maddesi);
   K-7 ve DL-6 teyitli (D80/3). Açık kalan: D79'dan sonraki değişikliklerin ayrı teyidi (7 dil tablosu vb., D80/2) ve sahipteki
   liste (D80/4): K-W5, K-A1, K-A2, K-A3; D79 önerilerinin kabulü (K-1b, K-2, K-3, K-W2, K-W4, K-W6) ve K-5; K-W7 ve K-A4b teyidi.
-- [ ] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
-  tablosunun paket kapısı.
+- [x] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
+  tablosunun paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [ ] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
   tek başına yetmez, teyit karar dosyasına kaynak olarak yazılır) — altı tüketici paketin paket kapısı. **Şartlı teyit — Y-19 /
   KARAR D80/2:** D69–D78 sürümü (main `4c08fc75a`) teyitli; kapı tüketicilerin **DL-1'ini bekletmez**; şartlar bu paketin DL-5
   kodundan önce kapanır (aşağıdaki iki D80/2 maddesi); D79'dan sonraki değişiklikler ayrıca teyide gider; D80 main'de değil (D62/1).
-- [ ] D70 main'de (D62/1) — K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı.
-- [ ] D71 main'de (D62/1) — K-A4b kapanışının (DL-6; tüketici aday kesişimi) paket kapısı.
-- [ ] D80 main'de (D62/1) — K-1 kapanışının (FU27, D80/1), Auth paket kapısı şartlı teyidinin (D80/2) ve K-7 / DL-6 teyidinin
-  (D80/3) paket kapısı.
-- [ ] D72 main'de (D62/1) — D72/3–4 tedarikçi bağımlı anahtarlarının (DL-1 roller 11–13, DL-2 roller 20–22) paket kapısı;
-  MOD-0018 sahibinin teyidi bu anahtarları da kapsar (D72/3).
+- [x] D70 main'de (D62/1) — K-4 / K-A4 kapanışının (DL-1, DL-3, DL-6) ve D70/3 kapısının paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D71 main'de (D62/1) — K-A4b kapanışının (DL-6; tüketici aday kesişimi) paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D80 main'de (D62/1) — K-1 kapanışının (FU27, D80/1), Auth paket kapısı şartlı teyidinin (D80/2) ve K-7 / DL-6 teyidinin
+  (D80/3) paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
+- [x] D72 main'de (D62/1) — D72/3–4 tedarikçi bağımlı anahtarlarının (DL-1 roller 11–13, DL-2 roller 20–22) paket kapısı;
+  MOD-0018 sahibinin teyidi bu anahtarları da kapsar (D72/3) — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] K-1b modül kodu yapısı — **KAPANDI — KARAR D79/1** (paket başına bir kod; MOD-0018 sahibinin teyidine Auth ekiyle gider).
   Kod **değerleri** tüketici paketlerin manifest adımında yazılır — DL-1/2/3 ve DL-4 bunlara bağlıdır (Bölüm 7).
 - [x] K-2 Admin / Viewer varsayılanı — **KAPANDI — KARAR D79/2** (hiçbiri); K-3 SuperAdmin tam katalog — **KAPANDI — KARAR
