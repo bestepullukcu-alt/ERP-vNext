@@ -158,5 +158,12 @@ Found in this work:
    host's producer always writes the field.
 10. **Pack authority text (review 01 F-8):** besides §34's "Draft revision — not approved" (point 3), the pack header says
    "runtime implementation is not authorized" while `status` is `ready-for-dev`. Document-only; the pack is not touched.
+11. **Açık nokta: paket/sözleşme uyuşmazlığı — `toLocationId` (CT Q503-P3, 2026-10-30): code unchanged.** Pack r8 §34.1
+   (line 929) says `toWarehouseId` and `toLocationId` are "required when `targetStatus = Received`". SHIPMENT-BUNDLE 3.4.0
+   (`docs/analysis/contracts/shipment-bundle.openapi.yaml`, `origin/main` `63acdf2ec`, identical on this branch) calls
+   `toLocationId` an "optional receiving location"; only `toWarehouseId` is required by the business rule. The code follows
+   the contract: missing `toWarehouseId` on Received → 400 `INVALID_REQUEST`; missing `toLocationId` is accepted, and the
+   CUSTOMER_RETURN body then leaves the field out. One of the two documents must change (owner decision). If the pack wins,
+   the contract changes first (3.4.x), then the code gets the 400 rule, a test and a sabotage row.
 7. **Gateway tour and MVP-1 live tour "iade → karantina"** (plan §3 / §4 step 5) not run; acceptance needs them.
 8. **R34-3 texts** are DL-2 (resx, 7 languages).
