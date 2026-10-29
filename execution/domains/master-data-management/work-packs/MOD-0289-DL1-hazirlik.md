@@ -290,19 +290,24 @@ Treasury Auth eki (`execution/domains/platform-shared-services/module-packs/MOD-
 - API: `/api/mdm/banks`, `/api/mdm/banks/{bankId}/branches`, `/api/mdm/bank-branches/{id}` (+ activate / deactivate / bulk) — DL-1 için
   sözleşme dosyası pack'te yok (BANK-ACCOUNT-LOOKUP DL-2).
 - İzin: `mdm.banks.*` (§2.6); her aksiyonda `[HasPermission]`.
-- Test — **DL-1 Bitiş AC'leri** (`:1837-1838@904dfd5c2`): AC-1, 2, 3 (banka ve şube kısmı), 4 (banka kısmı), 5 (banka ve şube
-  kısmı), 6 (banka kısmı), 7, 8 (banka kısmı), 9 (banka kısmı), 27 (banka kısmı), **59** (banka araması — D51/4 ile eklendi). AC
-  metinleri pack'ten tırnakla alıntılanır (AC-1…AC-9 `:1259-1281`, AC-27 `:1345-1348` — `@904dfd5c2`; AC-59 D51 revizyonunda,
-  Acceptance Criteria sonu). AC-27 banka kısmı dev ortamı kanıtıdır (bir banka oluşturmanın merkezi kaydı, AUD-001 §8).
+- Test — **DL-1 Bitiş AC'leri** (`MOD-0289-bank-master-bank-account-registry.md:2174-2175` · paket @ `b9d07bec…0160`): AC-1, 2,
+  3 (banka ve şube kısmı), 4 (banka kısmı), 5 (banka ve şube kısmı), 6 (banka kısmı), 7, 8 (banka kısmı), 9 (banka kısmı), 27 (banka
+  kısmı), **59** (banka araması — D51/4), **60 (banka kısmı)** (kayıt kodu portu `BNK` — KARAR D59/1; grup önekli `legalEntityId`
+  O-14'e bağlı). AC metinleri pack'ten tırnakla alıntılanır (paket @ `b9d07bec…0160`: AC-1…AC-9 `:1481-1503`, AC-27 `:1594-1597`,
+  AC-59 `:1760`, AC-60 `:1766-1779`). Kısmi AC'lerin kalanı (`:2186-2189`, `:2196-2197`): AC-3 / 4 / 5 / 6 / 8 / 9 hesap kısmı → DL-2;
+  AC-27 → DL-3 (işaretsiz, orada tam); AC-60 şirket hesabı kısmı → DL-2, tedarikçi hesabı `BAC` kısmı → DL-3 (tam kapanış, O-14
+  kararına bağlı). AC-27 banka kısmı dev ortamı kanıtıdır (bir banka oluşturmanın merkezi kaydı, AUD-001 §8).
 - Sabotaj: AC-2 (tekil indeks kaldırılınca), AC-3 (`TenantFilter` kaldırılınca), AC-6 (niyet yazımı zorla başarısız → 503, iş verisi
   yok; teslim listesinden koleksiyon çıkarılınca), AC-9 (`Version` süzgeci kaldırılınca), `ux_mdm_bank_code` (`IsDeleted=false` süzgeci
   eklenince), AC-59 (`Regex.Escape` kaldırılınca `.*` vakası, harf duyarsızlığı kaldırılınca büyük harf vakası, 100 karakter kuralı
   kaldırılınca 101 karakter vakası kırmızı).
 
-**Gerekli testler — DL-1 dilim kabul kapısı** (pack "Dilim kabul kapısı", `:1864@904dfd5c2`): Bitiş AC'leri; **AC-2 ve AC-9'un gerçek
+**Gerekli testler — DL-1 dilim kabul kapısı** (pack "Dilim kabul kapısı", `:2209` · paket @ `b9d07bec…0160`): Bitiş AC'leri; **AC-2 ve AC-9'un gerçek
 replica set yarış testleri** (her takım kendi URI değişkenini okur, varsayılan porta düşmez, replica set `enableTestCommands` ile;
 bellek içi sahte depo bu AC'leri kapatmaz); `AuditTrailStandard` (AC-7); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/`
-Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2). Ayrıca birim: BIC (ISO 9362, ülke eşleşmesi, şube BIC'inin ilk 8'i), doğrulayıcılar, durum makinesi, RCS port sahtesiyle
+Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2); SEC-002 "permission onboarding" eki kodu main'de (D56/1);
+gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `BNK` kodu alındı (KARAR D59/1); **O-14 kapandı** (grup önekli
+`legalEntityId`, sahibi Beste) ve AC-60 banka kabul testi o karara bağlı — karar kapanmadan gerçek servisle kabul verilmez. Ayrıca birim: BIC (ISO 9362, ülke eşleşmesi, şube BIC'inin ilk 8'i), doğrulayıcılar, durum makinesi, RCS port sahtesiyle
 kod biçimi; `Guid.Empty` taraması banka / şube yazımları için (AC-26'nın DL-1'e düşen kısmı — pack AC-26'yı DL-2 bitişine yazıyor;
 prompt'ta "erken uygulanır, kabulü DL-2" diye açık yazılmalı).
 

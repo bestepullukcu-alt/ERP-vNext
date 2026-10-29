@@ -189,11 +189,13 @@ Kuyrukta `WP-0120-DL2` satırı **yok** — bu kayıt kuyruğa yazmaz.
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı; MOD-0126 ortak tanımları sha ile sabit | sha |
 | Kapsanan dilim | **yalnız DL-2** (açma ve tahsilat aşaması) — başlama koşulu yalnız DL-1 kabulü; pack'te "— DL-2 için" dilim kapısı yok; MOD-0023 / SoD / düzeltme / elle tahsilat **DL-3** — bu WP'ye girmez | — |
 
-**DL-2 Bitiş AC'leri** (`:1725-1726`): **AC-2 (Issue / SetCollectionStage kısmı)**, 4, **5 (Issue / SetCollectionStage kısmı)**, 7, 8,
-**28 (arka uç kısmı** — enum değerleri 5 / 7 / 3 birebir; rozet ve süzgeç ekranı DL-4), **31 (açma kısmı — AC-31 bu dilimde
-kapanır)**, **35 (Issue, SetCollectionStage kısmı)**. AC metinleri pack'ten tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-2, AC-5,
-AC-35 → DL-3 (orada kapanır). Idempotency (AC-17) ve tek aşamalı denetim olayı (AC-18) DL-2 listesinde yok — §5 bulgu 1; prompt bu
-iki davranışı yine de Issue / SetCollectionStage için test ettirmelidir (D12/2, AUD-001).
+**DL-2 Bitiş AC'leri** (`MOD-0120-accounts-receivable.md:1980-1983` · paket @ `eb0e52e5…3735`): **AC-2 (Issue / SetCollectionStage
+kısmı)**, 4, **5 (Issue / SetCollectionStage kısmı)**, 7, 8, **28 (arka uç kısmı)**, **31 (açma kısmı: dev ortamında bir Issue,
+merkezi kaydı AUD-001 §8 sorgusuyla, on alan işaretli — AC-31 bu dilimde kapanır)**, **17 (Issue / SetCollectionStage kısmı)**,
+**18 (tek aşamalı: Issue / SetCollectionStage kısmı)**, **35 (Issue, SetCollectionStage kısmı — kapsam süzgeci sabotajı bu iki uçta
+da koşulur)**. AC-28 arka uç kısmı hazırlık notu: enum değerleri 5 / 7 / 3 birebir; rozet ve süzgeç ekranı DL-4. AC metinleri pack'ten
+tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-2, AC-5, AC-17 (kararlar), AC-18 (iki aşamalı + sabotaj + kurtarma), AC-35 → DL-3
+(AC-2 ve AC-5 orada kapanır; `:1991-1995`). AC-17 / AC-18'in Issue / SetCollectionStage kısmı pakette DL-2 Bitiş'te (§5 bulgu 1 kapandı).
 
 **İzinli yollar** (pack Repo Scope `:582-597`): `services/Diten.FinanceTreasuryService/src/…Application/Features/ReceivableInvoice/**`,
 `…Domain/ReceivableInvoices/**`, `…Persistence/ReceivableInvoices/**`, `…Api/Controllers/ReceivableInvoicesController.cs`,

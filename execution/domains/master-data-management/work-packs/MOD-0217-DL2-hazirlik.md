@@ -187,15 +187,15 @@ Bu bölüm prompt değildir. Biçim örneği `execution/domains/pharmacovigilanc
 | Kod alma | **yok (D38/3)** — WP raporunda "kaynaktan dosya alınmadı" beyanı; okunan referanslar `path@da4abb20 + sha256` | — |
 | Kapsanan dilim | **yalnız DL-2** (onay, imza kaydı, yenileme, fesih, ekran, Gateway **yok**) | — |
 
-**DL-2 Bitiş AC'leri** (`:1520-1523@ec063fee9`): **AC-5 (belge ve değişiklik uçları kısmı)**, **AC-6 (belge ve değişiklik uçları
+**DL-2 Bitiş AC'leri** (`MOD-0217-contract-lifecycle-management-clm.md:1798-1802` · paket @ `c689f8c2…b9d4`): **AC-5 (belge ve değişiklik uçları kısmı)**, **AC-6 (belge ve değişiklik uçları
 kısmı)**, **AC-7 (DL-2 yazmaları kısmı)**, **AC-10 (DL-2 komutları kısmı)**, **AC-11 (DL-2 yazmaları kısmı)**, **AC-12 (DL-2 defter
 satırları kısmı)**, **AC-14 (DL-2 yazmaları kısmı)**, **AC-15 (DL-2 uçları kısmı)**, **AC-16 (DL-2 aksiyonları kısmı)**, **AC-17
 (belge ve değişiklik alanları kısmı)**, **AC-21 (DL-2 yazmaları kısmı)**, **AC-22 (DL-2 yazmaları kısmı)**, AC-24, AC-25, AC-26,
 AC-27, AC-28, AC-29, AC-30, AC-31, AC-39, **AC-42 (belge ve değişiklik eylemleri kısmı)**, AC-49, AC-50, AC-58, AC-62, **AC-65
-(CreateAmendment kısmı)**. Kesişen AC kuralı (`:1494-1497`): "kısmı" işaretli AC'ler DL-3'te tam kapanır; **AC-65 DL-2'de tam
-kapanır** (onu listeleyen son dilim). AC metinleri pack'ten tırnakla alıntılanır (AC-24 `:1039` … AC-65 `:1195`).
+(CreateAmendment kısmı)**. Kesişen AC kuralı (`:1769-1772`): "kısmı" işaretli AC'ler DL-3'te tam kapanır; **AC-65 DL-2'de tam
+kapanır** (onu listeleyen son dilim). AC metinleri pack'ten tırnakla alıntılanır (AC-24 `:1251` … AC-65 `:1438`, paket @ `c689f8c2…b9d4`).
 
-**Dilim kabul kapısı — DL-2** (`:1551`): Bitiş AC'leri (kısımlarıyla); AC-26, AC-31, AC-49, AC-50 ve AC-58 gerçek replica set'te (pack D56
+**Dilim kabul kapısı — DL-2** (`:1829` · paket @ `c689f8c2…b9d4`): Bitiş AC'leri (kısımlarıyla); AC-26, AC-31, AC-49, AC-50 ve AC-58 gerçek replica set'te (pack D56
 revizyonu — §5 bulgu 3 kapandı); MOD-0262-FU01'e karşı dev ortamı kaydı (servis kimliğiyle — D56/2; yükle, indir, başka kiracı 404, kesin geri almada telafi); AC-29 mimari testi
 (MOD-0028 çağrısı yok, sabotajlı — D40); build.
 

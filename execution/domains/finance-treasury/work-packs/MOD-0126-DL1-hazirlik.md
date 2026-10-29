@@ -271,8 +271,12 @@ kayıtları `treasury-intake-owner-decisions-0{1..5}.md` (D1–D69; rol matrisi 
 **Sözleşme yüzeyleri:**
 - API: `payment-batch.openapi.yaml` v1.0.0 (AC-29) — uçlar ve hata kodları pack "Hata sözlüğü"nden alıntıyla.
 - İzin: §2.6'daki DL-1 anahtarları; her aksiyonda `[HasPermission]` (AC-21).
-- Test — **DL-1 Bitiş AC'leri** (`:1559-1560@904dfd5c2`): AC-1, 2, 3, 39 (Create kısmı), 41 (a–c, e; Create / Update), 16 (Create
-  kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete / Validate kısmı). AC metinleri prompt'a pack'ten tırnakla
+- Test — **DL-1 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2120-2122` · paket @ `37d7f682…99af`): AC-1, 2, 3, 39 (Create
+  kısmı), 41 (a–c, e; Create / Update), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32 (DL-1 uçları kısmı: liste, detay, Create /
+  Update / Delete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Delete /
+  Validate kısmı), 45. Kısmi AC'lerin kalanı (paket @ `37d7f682…99af`, `:2135`, `:2141-2142`): AC-39 Reconcile, AC-41 (d) Approve,
+  AC-16 kararlar, AC-32 karar uçları, AC-33 Submit / kararlar / Reconcile → DL-2; AC-41 (d) Release (tam kapanış), AC-16 kalan,
+  AC-32 Release ve kalan okumalar (tam kapanış), AC-33 Release / kanıt / onay belgesi → DL-3. AC metinleri prompt'a pack'ten tırnakla
   alıntılanır. Not: AC-17 DL-3 bitişinde de "17 (sabotaj)" olarak geçiyor; DL-1'de tek aşamalı komutların tek olayı + outbox
   sabotajı (Test Expectations), K2 sabotajı DL-3 — prompt bu ayrımı açık yazmalı.
 - Sabotaj: AC-17 (outbox yazımı zorla başarısız → iş verisi yok), AC-23 (`IsDeleted=false` kısmi filtresi), AC-32 (kapsam süzgeci

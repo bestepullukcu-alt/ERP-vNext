@@ -262,11 +262,15 @@ yalnız WP-0126-DL1 ve WP-0289-DL1; satır `ready-for-dev` turunda CT tarafında
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı (§1 "bekletir" satırları); "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-32'nin **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2); kabul kapısında ayrıca: Auth kayıt kodu main'de; testler gerçek izinle (D53/2); gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek kod alındı (D59/1) | — |
 
-**DL-1 Bitiş AC'leri** (`MOD-0119-accounts-payable.md:1638@00d3f2b41`): AC-1…6, **15 (Create / Update / Delete / BulkDelete /
-Validate kısmı)**, **17 (tek aşamalı kısmı)**, 18…22, 28, 31, **32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete /
-BulkDelete / Validate — SEC-002 kanıt testi, DL-1 kabul kapısı)**, **33 (Create / Update / Validate kısmı)**, **40 (Validate
-kısmı)**. AC metinleri prompt'a pack'ten tırnakla alıntılanır. Kısmi AC'ler sonraki dilimlerde kapanır: AC-15 / 17 / 32 / 33 /
-40 → DL-2; AC-17 sabotaj, AC-32 tam kapanış → DL-3.
+**DL-1 Bitiş AC'leri** (`MOD-0119-accounts-payable.md:2061` · paket @ `252d084c…bf55`): AC-1…3, **4 (Create / Update / Validate
+kısmı — KARAR D72)**, **5 (Create / Update / Validate kısmı — KARAR D73)**, 6, **15 (Create / Update / Delete / BulkDelete /
+Validate kısmı)**, **17 (tek aşamalı)**, 18…22, 28, 31, **32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete /
+BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2)**, **33 (Create / Update / Validate
+kısmı)**, **40 (Validate kısmı)**, 43, 44 (KARAR D72). AC metinleri prompt'a pack'ten tırnakla alıntılanır. Kısmi AC'lerin kalanı
+(paket @ `252d084c…bf55`, `:2067-2068`, `:2073`): AC-4 Submit / Approve, AC-5 Submit / Approve (AC-5 tam kapanışı), AC-15 Submit /
+kararlar / Reconcile, AC-17 iki aşamalı, AC-32 iz ve karar uçları, AC-33 Submit / kararlar / Reconcile, AC-40 Submit / Approve
+(AC-40 tam kapanışı) → DL-2; AC-4 ReleaseHold (tam kapanış), AC-15 kalan (tam kapanış), AC-17 sabotaj, AC-32 bekletme / istisna /
+kanıt (tam kapanış), AC-33 Hold / istisna / kanıt → DL-3.
 
 **İzinli yollar** (pack "Repo Scope" DL-1 satırları, `:507-523`): `services/Diten.FinanceTreasuryService/src/…Application/Features/ApInvoice/**`,
 `…Domain/ApInvoices/**`, `…Persistence/ApInvoices/**`, `…Infrastructure/{Suppliers,InvoiceMatch}/**`,

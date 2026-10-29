@@ -231,13 +231,16 @@ DL-1 kabulünden sonra açar — bu kayıt kuyruğa yazmaz).
 | Kod alma | **al-uyarla** — §2 satırları, D45/3; her dosya `path@da4abb20 + sha256` WP raporunda | — |
 | Kapsanan dilim | **yalnız DL-2** (tedarikçi hesabı, MOD-0140, ekranlar, Gateway **yok**) | — |
 
-**DL-2 Bitiş AC'leri** (pack `:1906-1908@ec063fee9`): AC-3 (hesap kısmı), AC-4 (hesap kısmı), AC-5 (hesap kısmı), AC-6 (hesap
-kısmı), AC-8 (hesap kısmı), AC-9 (hesap kısmı), AC-10, AC-11, AC-12, AC-13, AC-14, AC-15, AC-16, AC-17, AC-18, AC-19, AC-20,
-AC-21, AC-22, **AC-26 (şirket hesabı kısmı)**, AC-33, AC-34, AC-35, AC-36, AC-37, AC-38, AC-39, AC-40, AC-42, AC-43, AC-44,
-AC-45, AC-46, AC-47, AC-48, AC-49, AC-50, AC-51, AC-52, AC-53, AC-54, AC-55, AC-56, AC-57. AC-27 (hesap / aktivasyon / maskesiz okuma
-kısmı) ve AC-41 DL-3'tedir. AC metinleri pack'ten tırnakla alıntılanır (AC-1…AC-59 `:1288-1551@ec063fee9`).
+**DL-2 Bitiş AC'leri** (`MOD-0289-bank-master-bank-account-registry.md:2186-2189` · paket @ `b9d07bec…0160`): AC-3 (hesap kısmı),
+AC-4 (hesap kısmı), AC-5 (hesap kısmı), AC-6 (hesap kısmı), AC-8 (hesap kısmı), AC-9 (hesap kısmı), AC-10, AC-11, AC-12, AC-13,
+AC-14, AC-15, AC-16, AC-17, AC-18, AC-19, AC-20, AC-21, AC-22, **AC-26 (şirket hesabı kısmı)**, AC-33, AC-34, AC-35, AC-36, AC-37,
+AC-38, AC-39, AC-40, AC-42, AC-43, AC-44, AC-45, AC-46, AC-47, AC-48, AC-49, AC-50, AC-51, AC-52, AC-53, AC-54, AC-55, AC-56, AC-57,
+**AC-60 (şirket hesabı kısmı)**. Pakette aynı madde: AC-18'in **dört göz kolu** (oluşturan / son güncelleyen etkinleştiremez — D23/2)
+ayrı AC kimliği taşımaz; bu dilimde AC-18 içinde adıyla ve sabotajıyla kanıtlanır. Kalan (`:2196-2197`): AC-26 tedarikçi kısmı,
+AC-27, AC-41, AC-60 tedarikçi hesabı `BAC` kısmı (tam kapanış, O-14 kararına bağlı) DL-3'tedir. AC metinleri pack'ten tırnakla
+alıntılanır (AC-1…AC-60 `:1481-1779`, paket @ `b9d07bec…0160`).
 
-**Dilim kabul kapısı — DL-2** (`:1927`): Bitiş AC'leri; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 — pack D56 revizyonu,
+**Dilim kabul kapısı — DL-2** (`:2210` · paket @ `b9d07bec…0160`): Bitiş AC'leri; gerçek replica set AC'leri (AC-12, AC-13, AC-15, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 — pack D56 revizyonu,
 §5 bulgu 4 kapandı)
 ve **AC-50 yük testi** D33/4 eşiğine göre (`scripts/run_record.py` kaydı, makine yükü); tüketici kanıtı: `BANK-ACCOUNT-LOOKUP`
 sözleşme testi (AC-20, AC-42); "en az bir Treasury tüketicisinin fikstür koşusu" şartı **KARAR D57/1** ile kalktı (tüketici testi ilk

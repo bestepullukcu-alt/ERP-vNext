@@ -262,18 +262,18 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 | Risk | HIGH — §9.1 sinyalleri: kiracı, veri kapsamı, denetim, kayıt kodu, yetki, işlem bütünlüğü | — |
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kod alma | **yok (D38/3)** — §2 yalnız referans; WP raporunda "kaynaktan dosya alınmadı" beyanı ve okunan referans dosyaları `path@da4abb20 + sha256` | — |
-| Kapsanan dilim | **yalnız DL-1** (belge, değişiklik, onay, imza, ekran, gateway **yok**) — başlama koşulu yalnız paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (O-3 (a) / (c) açıkken ilerler, `:1478`; O-3 (b) KARAR D69 ile kapandı) | — |
+| Kapsanan dilim | **yalnız DL-1** (belge, değişiklik, onay, imza, ekran, gateway **yok**) — başlama koşulu yalnız paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (O-3 (a) / (c) açıkken ilerler, paket @ `c689f8c2…b9d4` `:1785`; O-3 (b) KARAR D69 ile kapandı) | — |
 
-**DL-1 Bitiş AC'leri** (`MOD-0217-contract-lifecycle-management-clm.md:1478-1483@00d3f2b41`): AC-1, AC-2, AC-3, AC-4, **AC-5 (DL-1
-uçları kısmı)**, **AC-6 (DL-1 uçları kısmı — SEC-002)**, **AC-7 (DL-1 yazmaları kısmı)**, AC-8, AC-9, **AC-10 (DL-1 komutları
+**DL-1 Bitiş AC'leri** (`MOD-0217-contract-lifecycle-management-clm.md:1786-1791` · paket @ `c689f8c2…b9d4`): AC-1, AC-2, AC-3,
+AC-4, **AC-5 (DL-1 uçları kısmı)**, **AC-6 (DL-1 uçları kısmı)**, **AC-7 (DL-1 yazmaları kısmı)**, AC-8, AC-9, **AC-10 (DL-1 komutları
 kısmı)**, **AC-11 (DL-1 yazmaları kısmı)**, **AC-12 (DL-1 defter satırları kısmı)**, AC-13, **AC-14 (DL-1 yazmaları kısmı)**,
 **AC-15 (DL-1 uçları kısmı)**, **AC-16 (DL-1 aksiyonları kısmı)**, **AC-17 (DL-1 alanları kısmı)**, **AC-18 (şirket uygunluğu
 kısmı)**, AC-19, AC-20, **AC-21 (DL-1 okuma ve yazmaları kısmı)**, **AC-22 (DL-1 yazmaları kısmı)**, AC-23, AC-32, **AC-42 (DL-1
 eylemleri kısmı)**, AC-59, AC-60, AC-61, AC-63, **AC-65 (DL-1 yazmaları kısmı: Create, UpdateContractVersion)**. "Kısmı" ile
-işaretli AC onu listeleyen son dilimde tam kapanır (`:1463-1466`): AC-5/6/7/10/11/12/14/15/16/17/21/22/42 → DL-3; AC-18 → DL-3;
+işaretli AC onu listeleyen son dilimde tam kapanır (paket @ `c689f8c2…b9d4`, `:1769-1772`): AC-5/6/7/10/11/12/14/15/16/17/21/22/42 → DL-3; AC-18 → DL-3;
 AC-65 → DL-2. AC metinleri pack'ten tırnakla alıntılanır.
 
-**Dilim kabul kapısı — DL-1** (`:1518`): Bitiş AC'leri (kısımlarıyla); **gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14)
+**Dilim kabul kapısı — DL-1** (`:1828` · paket @ `c689f8c2…b9d4`): Bitiş AC'leri (kısımlarıyla); **gerçek replica set AC'leri (AC-4, AC-10, AC-13, AC-14)
 kendi Mongo URI'li suite'te (AC-23)**; `AuditTrailStandard` (AC-12); bir sözleşme oluşturmanın merkezi denetim kaydı (dev ortamı,
 AUD-001 §8); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri; Auth kayıt kodu main'de; testler gerçek izinle (D53/2); SEC-002 eki kodu (MOD-0018 Treasury
 Auth eki DL-4) main'de (D56/1); gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `CTR` kodu alındı (D59/1).

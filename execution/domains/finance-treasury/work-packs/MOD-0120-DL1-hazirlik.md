@@ -246,11 +246,16 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-6 bu WP'nin kabul kapısında (D51/2); kabul kapısında ayrıca: Auth kayıt kodu main'de; testler gerçek izinle (D53/2); gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek kod alındı (D59/1) | — |
 
-**DL-1 Bitiş AC'leri** (`MOD-0120-accounts-receivable.md:1692-1698@00d3f2b41`): AC-1, **2 (Create / Update / Delete / BulkDelete
-kısmı)**, 3, **5 (okuma ve Create / Update / Delete / BulkDelete kısmı)**, 6 (SEC-002 kanıt testi — DL-1 kabul kapısı, tam),
-**17 (Create kısmı)**, **18 (tek aşamalı kısmı)**, 19, 20, 21, 22, 23, 24, 30, **31 (oluşturma ve silme kısmı — dev ortamı AUD-001
-§8)**, **32 (d) kısmı** (dış numara yarışı + sabotaj), 34, **35 (Create / Update / Delete kısmı)**. Kısmi AC'ler onları sayan son
-dilimde kapanır (pack `:1679-1680`): AC-31 → DL-2; AC-2, 5, 17, 18, 32, 35 → DL-3. AC metinleri pack'ten tırnakla alıntılanır.
+**DL-1 Bitiş AC'leri** (`MOD-0120-accounts-receivable.md:1971-1978` · paket @ `eb0e52e5…3735`): AC-1, **2 (Create / Update /
+Delete / BulkDelete kısmı: dört komutta şirket uygun değilken 422 ve kayıt değişmez, MOD-0220 erişilemezken 503, liste ve detay
+okuması 200)**, 3, **5 (okuma ve Create / Update / Delete / BulkDelete kısmı: başka kiracının ya da başka şirketin faturasına liste /
+detay / iz okuması ve bu dört yazma 404)**, 6 (SEC-002 kapsamı soran kod + kanıt testi — DL-1 kabul kapısı, D51/2), **17 (Create /
+Update / Delete / BulkDelete kısmı)**, **18 (tek aşamalı: Create / Update / Delete / BulkDelete kısmı)**, 19, 20, 21, 22, 23, 24, 30,
+**31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete, iki merkezi kayıt AUD-001 §8 sorgusuyla, on alan işaretli;
+açma kaydı DL-2'dedir)**, **32 (d) kısmı** (aynı dış numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number`
+kaldırıldığında kırmızı — sabotaj), 34, **35 (Create / Update / Delete kısmı)**, 44. Kısmi AC'ler onları sayan **son** dilimde
+kapanır (paket @ `eb0e52e5…3735`, `:1955-1956`): AC-31 → DL-2; AC-2, 5, 17, 18, 32, 35 → DL-3 (AC-17 / 18 / 35'in Issue /
+SetCollectionStage kısmı DL-2'de). AC metinleri pack'ten tırnakla alıntılanır.
 
 **İzinli yollar** (pack "Repo Scope" `:571-593`): `…Application/Features/ReceivableInvoice/**`, `…Domain/ReceivableInvoices/**`,
 `…Persistence/ReceivableInvoices/**`, `…Infrastructure/Customers/**`, `…Api/Controllers/ReceivableInvoicesController.cs`;

@@ -236,10 +236,15 @@ Kuyrukta `WP-0126-DL2` satırı **yok** — DL-1 kabulünden sonra CT açar; bu 
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-2** — başlama koşulu: DL-1 kabul edildi + "— DL-2 için" dilim kapıları (MOD-0023 ödeme şablonu kodu O-8; O-4, O-7 kapandı); §17 kodu ve AC-W1…W17 **kabul kapısı**; D54 Auth atama alanları — **KARAR D66/3 ile kabul kapısı değil** (muafiyet yolu 403 ile kapalıyken DL-2 kabul edilir; AC-9 Waived dalı, AC-42 aday dalları, AC-43 geçerli atama dalı muafiyet açılış kabulünde); D66/1 aday sorgusu (MOD-0018 eki DL-6) paket metni dilim kapısı, kodu **kabul kapısı** | — |
 
-**DL-2 Bitiş AC'leri** (`:1617`): AC-40, AC-4…15, AC-42, AC-43, **41 (d: Approve kısmı)**, **39 (Reconcile kısmı)**,
-**16 (kararlar)**, 31, **32 (karar uçları kısmı)**, **33 (Submit, kararlar, Reconcile kısmı)**, 34, 35, 36. AC metinleri pack'ten
-tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-16 kalan, AC-32 Release / kalan okumalar, AC-33 Release / kanıt / onay belgesi,
-AC-41 (d) Release → DL-3. AC-43 yedi dal + parti bağı sabotajı (A partisine bağlı atama B'de 403, yazım ve MOD-0023 çağrısı yok).
+**DL-2 Bitiş AC'leri** (`MOD-0126-payments-approvals.md:2135` · paket @ `37d7f682…99af`): AC-40, **AC-4…15 (AC-9 `Waived` dalı
+hariç — muafiyet açılışında)**, **AC-42 (kapalı muafiyet dalı)**, **AC-43 ((f), (g), (h) — kapalı yol; KARAR D66/3; (i) — R4 kapalı
+partide muafiyet, KARAR D77/1; (j) — R4 açık, tier-2 olmayan partide muafiyet, KARAR D78)**, **AC-44 ((a)–(e) arka uç kısmı —
+D57/4)**, AC-46 (D62/2, D66/2), **41 (d: Approve kısmı)**, **39 (Reconcile kısmı)**, **16 (kararlar)**, 31, **32 (karar uçları
+kısmı)**, **33 (Submit, kararlar, Reconcile kısmı)**, 34, 35, 36. Validation Rules bu dilimde **R11 hariç** kapanır; R11 (Release)
+DL-3'te (AC-19). AC metinleri pack'ten tırnakla alıntılanır. Kısmi AC'lerin kalanı (`:2141-2142`, `:2147`): AC-16 kalan, AC-32
+Release ve kalan okumalar (tam kapanış), AC-33 Release / kanıt / onay belgesi, AC-41 (d) Release (tam kapanış) → DL-3; AC-44 (f)
+ekran kısmı → DL-4 (orada kapanır). **Muafiyet açılış kabulü** (dilim değil, `:2136-2137`): AC-9 `Waived` dalı, AC-42 aday dalları,
+AC-43 (a)–(e) ve parti bağı sabotajı gerçek DL-5 ucuyla.
 
 **İzinli yollar** (pack Repo Scope `:497-520`, DL-2 Yollar `:1613-1614`):
 `services/Diten.FinanceTreasuryService/src/…Application/Features/PaymentBatch/**`, `…Domain/PaymentBatches/**`,

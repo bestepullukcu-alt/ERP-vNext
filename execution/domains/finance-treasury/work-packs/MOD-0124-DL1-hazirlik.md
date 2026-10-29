@@ -254,11 +254,17 @@ Bu bölüm prompt değildir; prompt'un içermesi gerekenlerin listesidir. Biçim
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı (`pack_approval.py check` çıkış 0) | sha |
 | Kapsanan dilim | **yalnız DL-1** — başlama koşulu yalnız pack'in paket kapısı; "— DL-n için" maddeleri bu WP'yi bekletmez (D51/1); SEC-002 kapsamı soran kod + AC-31'in **DL-1 uçları kısmı** bu WP'nin kabul kapısında (D51/2); kabul kapısında ayrıca: Auth kayıt kodu main'de; testler gerçek izinle (D53/2); gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek kod alındı (D59/1) | — |
 
-**DL-1 Bitiş AC'leri** (`MOD-0124-cash-positioning.md:1719-1721@00d3f2b41`): AC-1, 2, 3, 4, 5, 8, **16 (Create / Update / Delete
-kısmı)**, **17 (tek aşamalı kısım)**, 18, **19 (Create kısmı)**, 21, 22, 28, 29 (AUD-001 §8 dev kanıtı: oluşturma / güncelleme /
-silme), **31 (DL-1 uçları kısmı: anlık görüntü ve politika listesi, detay, Create / Update / Delete / BulkDelete ve politika
-yazmaları)**, **32 (Create / Update / Delete / politika kısmı)**. Kısmi AC'lerin kalanları: AC-19, 31, 32 → DL-2 / DL-3; AC-16, 17,
-31 (tam), 32 → DL-4. AC metinleri pack'ten tırnakla alıntılanır.
+**DL-1 Bitiş AC'leri** (`MOD-0124-cash-positioning.md:1981-1985` · paket @ `5548a2a1…51e1`): AC-1, **2 (DL-1 komutları kısmı:
+Create / Update / Delete / BulkDelete, eşik politikası yazmaları ve okumalar)**, **3 (DL-1 uçları kısmı: okuma, güncelleme, silme,
+politika)**, 4, 5, 8, **16 (Create/Update/Delete kısmı)**, **17 (tek aşamalı kısım: DL-1 komutları)**, 18, **19 (Create)**, 21, 22,
+28, 29, **31 (DL-1 uçları kısmı: anlık görüntü ve politika listesi, detay, Create / Update / Delete / BulkDelete ve politika
+yazmaları — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2)**, **32 (Create / Update / Delete / politika kısmı)**,
+38. AC-29 burada: AUD-001 §8 dev kanıtı DL-1'in oluşturma / güncelleme / silme komutlarıyla alınır. Kısmi AC'lerin kalanları
+(paket @ `5548a2a1…51e1`, `:1988-1995`, `:2002-2005`, `:2009-2010`): AC-2 Reconcile / kanıt paketi → DL-2, Submit / Approve / Reject /
+Publish → DL-3, ExportEvidence → DL-4 (orada kapanır); AC-3 mutabakat / istisna listesi / iz / kanıt paketi → DL-2, karar / yayım /
+`current` → DL-3 (orada kapanır); AC-16 Reconcile / kanıt paketi → DL-2, kararlar → DL-3, kalan → DL-4; AC-17 Reconcile / kanıt paketi
+→ DL-2, iki aşamalı + sabotaj → DL-4; AC-19 mutabakat → DL-2, yayım / karar → DL-3; AC-31 ve AC-32 → DL-2 / DL-3 / DL-4 (AC-31
+ExportEvidence kısmında tam kapanış). AC metinleri pack'ten tırnakla alıntılanır.
 
 **İzinli yollar** (pack "Repo Scope" `:610-628`): `…Application/Features/{CashPosition,CashPositionThresholdPolicy}/**`,
 `…Domain/CashPositions/**`, `…Persistence/CashPositions/**` (indeks tanımları ve iskeletin indeks hizmetine kayıt dahil),

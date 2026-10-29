@@ -197,11 +197,17 @@ Kuyrukta `WP-0124-DL2` satırı **yok** — bu kayıt kuyruğa yazmaz.
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı; MOD-0126 ortak tanımları sha ile sabit | sha |
 | Kapsanan dilim | **yalnız DL-2** (mutabakat, istisna, kanıt paketi) — başlama koşulu yalnız DL-1 kabulü; pack'te "— DL-2 için" dilim kapısı yok; MOD-0023 / SoD / yayım DL-3, MOD-0031 dışa aktarma DL-4 — bu WP'ye girmez | — |
 
-**DL-2 Bitiş AC'leri** (`:1739`): AC-6, 7, 9, **19 (mutabakat)**, **31 (iz, Reconcile ve kanıt paketi uçları kısmı)**, **32 (Reconcile,
-kanıt paketi kısmı)**. AC metinleri pack'ten tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-19 yayım / karar, AC-31 / 32 Submit,
-kararlar, Publish → DL-3; AC-31 ExportEvidence → DL-4 (tam kapanış). AC-2, AC-3, AC-16, AC-17'nin DL-2 komutlarına düşen kısmı pack'te
-DL-2 listesinde yok (§5 bulgu 1); prompt bu davranışları Reconcile ve kanıt paketi için yine de test ettirmelidir (D14/4, D12/2,
-AUD-001). AC-7 ve AC-9'un DL-3 komutlarına bağlı dalları için §5 bulgu 2.
+**DL-2 Bitiş AC'leri** (`MOD-0124-cash-positioning.md:1988-1995` · paket @ `5548a2a1…51e1`): **AC-2 (Reconcile, kanıt paketi
+kısmı)**, **3 (mutabakat, istisna listesi `GET …/{id}/exceptions`, iz ve kanıt paketi kısmı)**, 6, **7 (paket / revizyon kısmı:
+ikinci açık istisna yok, `Resolved`, `ContentRevision` artışı, önceki paketin geçersizliği)**, **9 (paket / revizyon kısmı: sunucu
+revizyonuna bağ, tek geçerli paket; kalem biçimi kısmı — D57/3)**, **16 (Reconcile, kanıt paketi kısmı)**, **17 (tek aşamalı kısım:
+Reconcile, kanıt paketi)**, **19 (mutabakat)**, **31 (iz, istisna listesi, Reconcile ve kanıt paketi uçları kısmı)**, **32 (Reconcile,
+kanıt paketi kısmı)**. Pakette aynı madde: AC-7'nin onay geçersizliği ve AC-9'un Submit / Publish 409 dalları DL-2'de **koşulmaz**
+(`Approved` / `Published` kayıt DL-2'de oluşamaz); sahte durumla "geçti" sayılmaz — DL-3'te kanıtlanır. AC metinleri pack'ten tırnakla
+alıntılanır. Kısmi AC'lerin kalanı (`:2002-2005`, `:2009-2010`): AC-2 Submit / Approve / Reject / Publish, AC-3 karar / yayım /
+`current` (AC-3 orada kapanır), AC-7 onay geçersizliği (orada kapanır), AC-9 Submit / Publish, AC-16 kararlar, AC-19 yayım / karar,
+AC-31 / 32 Submit / kararlar / Publish → DL-3; AC-2 ExportEvidence (kapanır), AC-9 kalem varlığı (kapanır), AC-16 kalan, AC-17 iki
+aşamalı + sabotaj, AC-31 ExportEvidence (tam kapanış), AC-32 ExportEvidence → DL-4. (§5 bulgu 1 ve 2 kapandı.)
 
 **İzinli yollar** (pack Repo Scope `:618-640`): `services/Diten.FinanceTreasuryService/src/…Application/Features/CashPosition/**`,
 `…Domain/CashPositions/**`, `…Persistence/CashPositions/**`, `…Api/Controllers/CashPositionsController.cs`,

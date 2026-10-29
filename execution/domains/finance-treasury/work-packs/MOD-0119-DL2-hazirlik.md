@@ -199,10 +199,12 @@ Kuyrukta `WP-0119-DL2` satırı **yok** — bu kayıt kuyruğa yazmaz.
 | Görev sınıfı · Paket | ürün · pack yolu + `ready-for-dev` sürümünün sha256'sı; MOD-0126 ortak tanımları sha ile sabit | sha |
 | Kapsanan dilim | **yalnız DL-2** — başlama koşulu: DL-1 kabul edildi + "— DL-2 için" dilim kapıları (MOD-0023 AP şablonu O-11, WORKFLOW slotu; O-7 / O-8 / O-14 kapandı); §17 kodu ve AC-W **kabul kapısı** | — |
 
-**DL-2 Bitiş AC'leri** (`:1661-1662`): AC-41, AC-7…15, **40 (Submit / Approve kısmı — AC-40 tam kapanışı)**, **17 (iki aşamalı)**,
-30, **32 (iz ve karar uçları kısmı: trace, Submit, Approve / Reject / RequestInfo, Reconcile)**, **33 (Submit, kararlar, Reconcile
-kısmı)**, 34, 35, 36, 37, 38, 39. AC metinleri pack'ten tırnakla alıntılanır. Kısmi AC'lerin kalanı: AC-17 sabotaj, AC-32 tam
-kapanış, AC-33 Hold / istisna / kanıt → DL-3. AC-15'in DL-3 komutları kısmı için §5 bulgu 1.
+**DL-2 Bitiş AC'leri** (`MOD-0119-accounts-payable.md:2067-2068` · paket @ `252d084c…bf55`): AC-41, **AC-4 (Submit / Approve
+kısmı)**, **AC-5 (Submit / Approve kısmı — AC-5 tam kapanışı)**, AC-7…14, **15 (Submit, kararlar, Reconcile kısmı)**, **40 (Submit /
+Approve kısmı — AC-40 tam kapanışı)**, **17 (iki aşamalı)**, 30, **32 (iz ve karar uçları kısmı: trace, Submit, Approve / Reject /
+RequestInfo, Reconcile)**, **33 (Submit, kararlar, Reconcile kısmı)**, 34, 35, 36, 37, 38, 39. AC metinleri pack'ten tırnakla
+alıntılanır. Kısmi AC'lerin kalanı (`:2073`): AC-4 ReleaseHold (tam kapanış), AC-15 kalan (Hold, ReleaseHold, istisna komutları,
+LinkEvidence — tam kapanış), AC-17 sabotaj, AC-32 bekletme / istisna / kanıt uçları (tam kapanış), AC-33 Hold / istisna / kanıt → DL-3.
 
 **İzinli yollar** (pack Repo Scope `:516-528`): `services/Diten.FinanceTreasuryService/src/…Application/Features/ApInvoice/**`,
 `…Domain/ApInvoices/**`, `…Persistence/ApInvoices/**`, `…Infrastructure/ApWorkflow/**`, `…Api/Controllers/ApInvoicesController.cs`,
