@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D102 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D103 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1250,6 +1250,23 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak Codex bulgu dosyası `docs/r
    tablosuna okuma satırı olarak yazar"; yol `a` / `b`, eşdeğer iz okuma için kullanılamaz) gereği FU27 Bölüm 21 tablosuna
    `GetPaymentSodWaiverAssignmentHistoryQuery` → `auth.sod-waiver-assignment.history.read`, nesne `PaymentSodWaiverAssignment`, yol `b`
    (merkezi meta-denetim, teslim teyitli — D99/1, AC-46) satırı eklendi.
+
+## D103 — Ali Y-27 ve Y-28: FU27 7 dilli rol adları düzeltmeleri (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-27, Y-28 (`SOURCE-ANSWERS-2026-10-27.md`); oturum Treasury Intake CT
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Y-28'in göndereni metinde yazmıyor; içerikten Ali olduğu çıkarıldı (bkz. kaynak satırı).
+
+1. **D103/1 — `tr` adları:** rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi" (FU27 Bölüm 14.2 matris ve görünen ad
+   tabloları). Karar kayıtlarındaki kısa adlar değişmez.
+2. **D103/2 — "Manager" tek terim:** fr Gestionnaire (rol 10, 13, 16), es Gestor (10, 13, 16), zh 经理 (21, 24), ru Менеджер (10, 13, 16).
+   Terim seçimi Treasury'nindir: fr "Responsable" Manager olmayan rollerde de geçtiği için, zh 管理员 "yönetici hesabı" anlamına kayabildiği için
+   seçilmedi. ar ve tr zaten tek tipti.
+3. **D103/3 — güven notu:** ar, ru, zh için anadil kontrolü yapılmadı (sahip notu); tablo bunu yazar.
+4. **D103/4 — yedi kaynak dosya:** sahip "tablo + 7 kaynak dosya" istedi. `SharedResource.{lang}.resx` bugün yalnız 4 `RoleName_` satırı taşıyor;
+   27 satır FU27 kod dilimiyle gelir ve paket taslak olduğu için bu kayıt onları yazmaz (Çekirdek 7). K1'e soruldu.
+5. **D103/5 — açık kalanlar:** D80/2 (a) için FU27 son hâli teyidi, D99/1, Tag rol adları (Y-27: kontrol sürüyor); D80/2 (b) cevabı (Y-28: not metni
+   bekleniyor); MOD-0220 §22 tutuşu #313 merge'üne bağlı (Y-27). #313: yeni onay satırı, açık, merge Beste'de.
+6. **D103/6 — sürüm:** FU27 sha değişti; CT-APR-02 yeni sürüm için tekrar gerekir.
 
 ## Karar olmayanlar
 

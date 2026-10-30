@@ -327,6 +327,20 @@ satırı ekleyenle birleştirenin ayrı olup olmadığını Yönetici doğruluyo
 kalması yeter; ready-for-dev'i bekletme kararı bu doğrulamanın sonucuna bağlı, cevabı ayrıca vereceğim. 7 dilli rol adı tablosunun
 sonucu da ayrıca gelecek. → D97.
 
+## Y-27 — Ali, cevap durumu + MOD-0220 §22 (2026-10-30; K1 aktardı)
+
+Özgün metin:
+
+> Ali → Treasury: #311 kararlarını PR'a yorum olarak yazdım. Meta-denetim teslimi, FU27 son hâli ve Tag rol adları için kontrol sürüyor, cevabı bugün göndereceğim. Rol atama borcu notunu bekliyorum. MOD-0220 §22: yeni onay satırı PR #313'te, Beste birleştirince kalkar.
+
+Ölçüm: #311 yorumu ve #313 tarayıcıda okundu (#313 açık, yalnız `approvals.tsv`'ye 1 satır). #311 yorumu GMG-ERP hesabından "Ali (K1)" imzalı; kayıtlarda K1 = Natig (gmg-10), Ali = MOD-0018 sahibi.
+
+## Y-28 — FU27 §14.2 rol adları teyidi (2026-10-30; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+Gönderen metinde yazmıyor; içerikten (FU27 teyit sahibi, D80/2 (b) notunun alıcısı) Ali olduğu çıkarıldı. Özgün metin:
+
+> FU27 §14.2 rol adları (7 dil): düzeltmelerle teyit. tr: rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi". "Manager" çevirisi satırlar arasında tek tipe getirilsin (ru/zh/es/fr). Düzeltmeyi tablo + 7 kaynak dosya olarak siz yazın. ar/ru/zh için anadil kontrolü yapılmadı (düşük güven). D80/2 (b): notun ekine ulaşamadım, lütfen metni mesaj olarak yapıştırın; cevabı o zaman vereceğim.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -373,3 +387,5 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-24 (SEC-002 C teyidi; O-14 `prefixScope` kabulü; MOD-0289 onaylayıcılığı; D Ali ile) | MOD-0289 AC-60; RCS-001 v0 sözleşmesi; dört finans paketi | D93 |
 | Y-25 (RCS-001 kimliği MOD-0040-FU02; MOD-0217 öneki `AGR`; MOD-0144 / MOD-0217 kapsamı Cihan'a; sınıflandırılmamış üreticiler) | MOD-0217 O-5 / Code; DL-1 hazırlık; RCS-001 §3 | D94 |
 | Y-26 (Ali: MDM XMC-001; K-W5 okuma yolu + ekran; MOD-0057 ayrı Auth eki; MOD-0262-FU01 Auth tarafı; MOD-0220 §22) | FU27 §5.2 / DL-5 / K-W5; MOD-0057 O-5; WP-0126 / WP-0289 P-0 | D97 |
+| Y-27 (cevap durumu; MOD-0220 §22 yeni satır #313) | MOD-0220; FU27 | D103/5 |
+| Y-28 (FU27 §14.2 rol adları düzeltmeli teyit; D80/2 (b) not metni istendi) | FU27 §14.2 | D103 |

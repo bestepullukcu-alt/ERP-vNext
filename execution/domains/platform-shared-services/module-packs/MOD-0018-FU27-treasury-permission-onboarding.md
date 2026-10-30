@@ -23,6 +23,10 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > `approved` / `ready-for-dev` olduktan ve CT-APR-01 onay satırı main'e girdikten sonra, Bölüm 5'teki tam yol listesiyle ve
 > dilim sırasıyla yazılır. Platform ve MDM yollarına dokunmak ayrıca XMC-001 onayı ister (Bölüm 5, D63/2).
 >
+> **KARAR D103 (kaynak Y-28, 2026-10-30):** Bölüm 14.2 "Görünen adlar" tablosu MOD-0018 sahibinin düzeltmeleriyle güncellendi (rol 26 ve 27
+> `tr`; "Manager" fr, es, zh, ru tek terim). ar, ru, zh anadil kontrolsüz. Yedi `SharedResource` dosyası DL koduyla yazılır; bu revizyon
+> kod değildir. D80/2 (a) ve (b) değişmedi: FU27 son hâli teyidi bu teyide dahil değildir.
+>
 > **Yetki dayanağı.** MOD-0018 Auth eki Treasury tarafından yazılır; MOD-0018 sahibi inceler ve teyit eder (Y-15, Y-16;
 > `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md`). Y-14 geçersizdir ve bu pakete
 > işlenmedi. Modül tanımı biçimi değişmedi; bu paket mevcut MOD-0018 onboarding kalıbını (FU20 / FU22) izler (Y-16/2).
@@ -997,13 +1001,13 @@ miras alır (D49/1). Sayı = rolün tam modül anahtarı sayısı (mekanik geni�
 | 23 | `ContractViewer` | Contract Viewer | Sözleşme görüntüleyici | `mdm.contracts.read`, `mdm.contracts.documents.read` (belge deposu izni yok — D56/2) | 2 |
 | 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | (+23) + `mdm.contracts.create`, `.update`, `.delete`, `.bulk-delete`, `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.submit-approval`, `mdm.contracts.terminate`, `mdm.contracts.archive`, `mdm.contracts.value.read`, `mdm.contracts.value.write` (D49/2), `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`. **Yok:** `mdm.contracts.record-signature` (D47/5) | 15 |
 | 25 | `ContractSignatureRecorder` | Contract Signature Recorder | Sözleşme imza kaydedici | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` | 4 |
-| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme onaylayıcı | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` (**D69**; belge deposu izni yok — D56/2; açık atama değil). **Yok:** `mdm.contracts.submit-approval` ve yazma anahtarları | 3 |
+| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme sürümü onaylayıcı | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` (**D69**; belge deposu izni yok — D56/2; açık atama değil). **Yok:** `mdm.contracts.submit-approval` ve yazma anahtarları | 3 |
 
 **Auth — 1 rol (DL-5, KARAR D74/3):**
 
 | # | RoleName | en | tr | Anahtarlar | Sayı |
 |---|---|---|---|---|---|
-| 27 | `PaymentSodWaiverAuthority` (KARAR D79/9) | Payment SoD Waiver Authority | Muafiyet yetkilisi | `auth.payment-sod-waivers.assign`, `auth.payment-sod-waivers.read` — ikisi de yalnız açık atama (Bölüm 14.1): rol hiçbir otomatik yoldan dolmaz, anahtarlar role açık (`Manual`) rol-izin atamasıyla bağlanır; rol kullanıcıya açık atamayla verilir. **Yok:** hiçbir `finance-treasury.*` / `mdm.*` anahtarı, `waive-sod`, bağımlı anahtar. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (kendine atama 403, D64 / D74/3). Rolü Treasury hak profili izinsiz oluşturur; atayan izin + bu rolün üyeliğini taşır (**KARAR D75/1**) | 0 (+ 2 Auth) |
+| 27 | `PaymentSodWaiverAuthority` (KARAR D79/9) | Payment SoD Waiver Authority | Muafiyet atama yetkilisi | `auth.payment-sod-waivers.assign`, `auth.payment-sod-waivers.read` — ikisi de yalnız açık atama (Bölüm 14.1): rol hiçbir otomatik yoldan dolmaz, anahtarlar role açık (`Manual`) rol-izin atamasıyla bağlanır; rol kullanıcıya açık atamayla verilir. **Yok:** hiçbir `finance-treasury.*` / `mdm.*` anahtarı, `waive-sod`, bağımlı anahtar. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (kendine atama 403, D64 / D74/3). Rolü Treasury hak profili izinsiz oluşturur; atayan izin + bu rolün üyeliğini taşır (**KARAR D75/1**) | 0 (+ 2 Auth) |
 
 Sayı sütunu Treasury modül anahtarı sayısıdır; iki Auth anahtarı 117'ye girmez (karar dosyası matris sayım kuralı: modül
 anahtarı = altı Treasury paketinin anahtarları). Toplam: 117 modül anahtarı + 2 Auth anahtarı; 27 rol.
@@ -1024,28 +1028,31 @@ yedi kaynak dosyaya birlikte yazılır).
 | 7 | `TreasuryPaymentApprover` | Payment Approver | Ödeme onaylayıcı | Approbateur des paiements | Aprobador de pagos | 付款审批人 | معتمد المدفوعات | Утверждающий платежи |
 | 8 | `TreasuryPaymentTier2Approver` | Payment Approver (Tier 2) | Ödeme onaylayıcı (2. kademe) | Approbateur des paiements (niveau 2) | Aprobador de pagos (nivel 2) | 付款审批人（二级） | معتمد المدفوعات (المستوى 2) | Утверждающий платежи (уровень 2) |
 | 9 | `TreasuryPaymentReleaser` | Payment Releaser | Ödeme serbest bırakıcı | Responsable de la libération des paiements | Liberador de pagos | 付款放行人 | مسؤول الإفراج عن المدفوعات | Ответственный за выпуск платежей |
-| 10 | `TreasuryManager` | Treasury Manager | Hazine yöneticisi | Responsable de la trésorerie | Gerente de tesorería | 资金经理 | مدير الخزينة | Руководитель казначейства |
+| 10 | `TreasuryManager` | Treasury Manager | Hazine yöneticisi | Gestionnaire de la trésorerie | Gestor de tesorería | 资金经理 | مدير الخزينة | Менеджер казначейства |
 | 11 | `TreasuryApOperator` | AP Operator | Borç (AP) operatörü | Opérateur comptes fournisseurs | Operador de cuentas por pagar | 应付账款操作员 | مشغل الحسابات الدائنة | Оператор кредиторской задолженности |
 | 12 | `TreasuryApApprover` | AP Approver | Borç (AP) onaylayıcı | Approbateur comptes fournisseurs | Aprobador de cuentas por pagar | 应付账款审批人 | معتمد الحسابات الدائنة | Утверждающий по кредиторской задолженности |
-| 13 | `TreasuryApOperationsManager` | AP Operations Manager | AP operasyon yöneticisi | Responsable des opérations fournisseurs | Gerente de operaciones de cuentas por pagar | 应付账款运营经理 | مدير عمليات الحسابات الدائنة | Руководитель операций по кредиторской задолженности |
+| 13 | `TreasuryApOperationsManager` | AP Operations Manager | AP operasyon yöneticisi | Gestionnaire des opérations fournisseurs | Gestor de operaciones de cuentas por pagar | 应付账款运营经理 | مدير عمليات الحسابات الدائنة | Менеджер операций по кредиторской задолженности |
 | 14 | `TreasuryArOperator` | AR Operator | Alacak (AR) operatörü | Opérateur comptes clients | Operador de cuentas por cobrar | 应收账款操作员 | مشغل الحسابات المدينة | Оператор дебиторской задолженности |
 | 15 | `TreasuryArApprover` | AR Approver | Alacak (AR) onaylayıcı | Approbateur comptes clients | Aprobador de cuentas por cobrar | 应收账款审批人 | معتمد الحسابات المدينة | Утверждающий по дебиторской задолженности |
-| 16 | `TreasuryArOperationsManager` | AR Operations Manager | AR operasyon yöneticisi | Responsable des opérations clients | Gerente de operaciones de cuentas por cobrar | 应收账款运营经理 | مدير عمليات الحسابات المدينة | Руководитель операций по дебиторской задолженности |
+| 16 | `TreasuryArOperationsManager` | AR Operations Manager | AR operasyon yöneticisi | Gestionnaire des opérations clients | Gestor de operaciones de cuentas por cobrar | 应收账款运营经理 | مدير عمليات الحسابات المدينة | Менеджер операций по дебиторской задолженности |
 | 17 | `TreasuryArTier2AdjustmentApprover` | AR Tier-2 Adjustment Approver | AR 2. kademe düzeltme onaylayıcı | Approbateur des ajustements clients (niveau 2) | Aprobador de ajustes de cuentas por cobrar (nivel 2) | 应收账款调整审批人（二级） | معتمد تسويات الحسابات المدينة (المستوى 2) | Утверждающий корректировки дебиторской задолженности (уровень 2) |
 | 18 | `TreasuryCashPositionPreparer` | Cash Position Preparer | Nakit pozisyonu hazırlayıcı | Préparateur de la position de trésorerie | Preparador de posición de caja | 现金头寸编制人 | معد المركز النقدي | Составитель денежной позиции |
 | 19 | `TreasuryCashPositionApprover` | Cash Position Approver | Nakit pozisyonu onaylayıcı | Approbateur de la position de trésorerie | Aprobador de posición de caja | 现金头寸审批人 | معتمد المركز النقدي | Утверждающий денежную позицию |
 | 20 | `BankDataViewer` | Bank Data Viewer | Banka verisi görüntüleyici | Lecteur des données bancaires | Visualizador de datos bancarios | 银行数据查看者 | مشاهد البيانات المصرفية | Наблюдатель банковских данных |
-| 21 | `BankDataManager` | Bank Data Manager | Banka verisi yöneticisi | Gestionnaire des données bancaires | Gestor de datos bancarios | 银行数据管理员 | مدير البيانات المصرفية | Менеджер банковских данных |
+| 21 | `BankDataManager` | Bank Data Manager | Banka verisi yöneticisi | Gestionnaire des données bancaires | Gestor de datos bancarios | 银行数据经理 | مدير البيانات المصرفية | Менеджер банковских данных |
 | 22 | `BankAccountActivator` | Bank Account Activator | Banka hesabı etkinleştirici | Responsable de l'activation des comptes bancaires | Activador de cuentas bancarias | 银行账户激活人 | مسؤول تفعيل الحسابات المصرفية | Ответственный за активацию банковских счетов |
 | 23 | `ContractViewer` | Contract Viewer | Sözleşme görüntüleyici | Lecteur des contrats | Visualizador de contratos | 合同查看者 | مشاهد العقود | Наблюдатель контрактов |
-| 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | Gestionnaire des contrats | Gestor de contratos | 合同管理员 | مدير العقود | Менеджер контрактов |
+| 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | Gestionnaire des contrats | Gestor de contratos | 合同经理 | مدير العقود | Менеджер контрактов |
 | 25 | `ContractSignatureRecorder` | Contract Signature Recorder | Sözleşme imza kaydedici | Responsable de l'enregistrement des signatures de contrats | Registrador de firmas de contratos | 合同签署登记人 | مسجل توقيعات العقود | Регистратор подписей контрактов |
-| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme onaylayıcı | Approbateur des versions de contrat | Aprobador de versiones de contrato | 合同版本审批人 | معتمد إصدارات العقود | Утверждающий версии контрактов |
-| 27 | `PaymentSodWaiverAuthority` | Payment SoD Waiver Authority | Muafiyet yetkilisi | Responsable des dérogations SoD (paiements) | Responsable de exenciones SoD (pagos) | 付款职责分离豁免授权人 | مسؤول إعفاءات فصل المهام (المدفوعات) | Уполномоченный по исключениям SoD (платежи) |
+| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme sürümü onaylayıcı | Approbateur des versions de contrat | Aprobador de versiones de contrato | 合同版本审批人 | معتمد إصدارات العقود | Утверждающий версии контрактов |
+| 27 | `PaymentSodWaiverAuthority` | Payment SoD Waiver Authority | Muafiyet atama yetkilisi | Responsable des dérogations SoD (paiements) | Responsable de exenciones SoD (pagos) | 付款职责分离豁免授权人 | مسؤول إعفاءات فصل المهام (المدفوعات) | Уполномоченный по исключениям SoD (платежи) |
 
 Satır sayısı 27 = Bölüm 14.2 rol sayısı; kod sütunu yukarıdaki üç tablonun `RoleName` sütunuyla birebir aynıdır. "SoD" fr, es
-ve ru'da kısaltma olarak kalır (ürün terimi; en ile aynı olan tek parça budur, değerin tamamı değil). Rol 26'nın `tr` adı
-matristeki gibi "Sözleşme onaylayıcı"dır, öteki dillerde "sürüm" sözcüğü `en` adını izler — sahip teyidinde hizalanabilir.
+ve ru'da kısaltma olarak kalır (ürün terimi; en ile aynı olan tek parça budur, değerin tamamı değil). **KARAR D103 (Y-28):** MOD-0018 sahibi
+tabloyu düzeltmelerle teyit etti. `tr`: rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi"; "Manager" her dilde
+tek terim (tr yöneticisi, fr Gestionnaire, es Gestor, zh 经理, ar مدير, ru Менеджер). Paket metnindeki kısa adlar ("Sözleşme onaylayıcı",
+"Muafiyet yetkilisi") karar kayıtlarının adıdır; görünen ad bu tablodur. **ar, ru ve zh için anadil kontrolü yapılmadı (düşük güven,
+sahip notu);** kontrol yapılınca düzeltme bu tabloya ve yedi kaynak dosyaya birlikte yazılır.
 
 **Bağımlı anahtarlar (başka modülün; kayıt o sahipte; rollere Treasury manifestinde çapraz modül bağımlılığı olarak beyanla,
 profil verir — K-4 (b), KARAR D70/1):** `mdm.legal-entities.read` (MOD-0220): 6–19 arasındaki
