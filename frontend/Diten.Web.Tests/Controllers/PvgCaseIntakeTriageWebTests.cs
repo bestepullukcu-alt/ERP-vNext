@@ -33,6 +33,8 @@ namespace Diten.Web.Tests.Controllers;
 /// MOD-0230 WP-0230-DL7B: W8/W9/W10 — the revision 04 fields travel with the API's names, the response-only fields never
 /// do, and a link removal never comes with a selection; W11 — the option codes pass through unchanged behind the read key;
 /// W12 — the form as the real view draws it, through the real MVC model binder and antiforgery check.
+/// MOD-0230 WP-0230-DL7B-R1: W13 — the real view draws the bridge with the camelCase keys its loader turns to PascalCase;
+/// W14 — the read proxy paths (Options, Detail) carry the verified identity, and without a tenant claim make no call.
 /// </summary>
 public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -570,17 +572,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     {
         var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var wire = new Wire(ListAnswer);
-        using var host = factory.WithWebHostBuilder(builder =>
-        {
-            builder.UseEnvironment("Development");
-            builder.UseSetting("JwtSettings:Secret", signingKey);
-            builder.UseSetting("JwtSettings:Issuer", "pvg-web-test");
-            builder.UseSetting("JwtSettings:Audience", "pvg-web-test");
-            builder.UseSetting("GatewayUrl", "http://127.0.0.1:9");
-            builder.UseSetting("PlatformServiceUrl", "http://127.0.0.1:9");
-            builder.ConfigureTestServices(services =>
-                services.AddTransient(_ => new HttpClient(wire, disposeHandler: false)));
-        });
+        using var host = HostOver(wire, signingKey);
         using var client = host.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false });
 
         var createForm = await DrawnFormAsync(client, "/Pharmacovigilance/CaseIntakeTriage/Create", Token(signingKey, Create));
@@ -675,6 +667,76 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             Assert.False(body.RootElement.TryGetProperty("ReporterSelectionId", out _));
         }
     }
+
+    // ------------------------------------------------------------------------------------------------ W13
+
+    [Fact]
+    public async Task The_form_bridge_is_drawn_with_the_camelCase_keys_the_loader_expects()
+    {
+        var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        using var host = HostOver(new Wire(ListAnswer), signingKey);
+        using var client = host.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false });
+
+        using var page = await GetAsync(client, "/Pharmacovigilance/CaseIntakeTriage/Create", Token(signingKey, Create));
+        var html = await page.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+
+        var payload = Regex.Match(html, "<script id=\"pvg-case-intake-triage-l10n\" type=\"application/json\">([\\s\\S]*?)</script>");
+        Assert.True(payload.Success, "the page drew no bridge");
+        using var bridge = JsonDocument.Parse(payload.Groups[1].Value);
+        var root = bridge.RootElement;
+
+        Assert.True(root.TryGetProperty("reportTypeSpontaneous", out _));
+        Assert.True(root.TryGetProperty("productRoleSuspect", out _));
+        Assert.True(root.TryGetProperty("countryUnknown", out _));
+        Assert.False(root.TryGetProperty("ReportTypeSpontaneous", out _));
+        Assert.NotEmpty(root.EnumerateObject());
+        Assert.All(root.EnumerateObject(), key => Assert.True(char.IsLower(key.Name[0]), key.Name));
+    }
+
+    // ------------------------------------------------------------------------------------------------ W14
+
+    [Theory]
+    [InlineData("Options")]
+    [InlineData("Detail")]
+    public async Task The_read_proxy_paths_carry_the_verified_identity_and_are_401_without_a_tenant(string action)
+    {
+        var (_, key, _, call) = Actions.Single(entry => entry.Action == action);
+        var wire = new Wire(ListAnswer);
+
+        await call(Controller(wire, key));
+
+        var request = Assert.Single(wire.Requests);
+        Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+        Assert.Equal("synthetic-pvg-dl7a", request.Headers.Authorization?.Parameter);
+        Assert.Equal(TenantId, Assert.Single(request.Headers.GetValues("X-Tenant-Id")));
+        Assert.Equal("trace-pvg-dl7a", Assert.Single(request.Headers.GetValues("X-Correlation-Id")));
+        Assert.DoesNotContain(request.Headers, header => header.Key.StartsWith("X-Diten-", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(request.Headers, header => header.Key.Contains("Actor", StringComparison.OrdinalIgnoreCase));
+
+        // An UNSIGNED token that names a tenant: nothing in the proxy may read it back (it is not verified).
+        var unsigned = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
+            claims: [new Claim("tenant_id", TenantId), new Claim("sub", "someone")]));
+        var refusedWire = new Wire(ListAnswer);
+
+        var refused = await call(ControllerFor(refusedWire, [key], withTenantClaim: false, cookieToken: unsigned));
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, Assert.IsType<ContentResult>(refused).StatusCode);
+        Assert.Empty(refusedWire.Requests);
+    }
+
+    private WebApplicationFactory<Program> HostOver(Wire wire, string signingKey) =>
+        factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("JwtSettings:Secret", signingKey);
+            builder.UseSetting("JwtSettings:Issuer", "pvg-web-test");
+            builder.UseSetting("JwtSettings:Audience", "pvg-web-test");
+            builder.UseSetting("GatewayUrl", "http://127.0.0.1:9");
+            builder.UseSetting("PlatformServiceUrl", "http://127.0.0.1:9");
+            builder.ConfigureTestServices(services =>
+                services.AddTransient(_ => new HttpClient(wire, disposeHandler: false)));
+        });
 
     /// <summary>The field names of the form as the real view drew it, with the antiforgery pair of that page. Nothing here
     /// lists a field by hand: a name the view gets wrong is the name the test posts.</summary>
