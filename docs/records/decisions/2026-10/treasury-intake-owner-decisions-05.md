@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D107 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D108 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1310,6 +1310,15 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-33; oturum Treasury Intake CT (`
 2. **D107/2 — K-W9:** (a) komut başarılı döner, satır "sonuçlanmadı" okunur.
 3. **D107/3 — RCS-001 §3:** satırı Treasury hazırlar, Ali'nin yazılı onayıyla gider; sahiplik değişmez. D104/4 güncellenir.
 4. **D107/4 — FU29:** kimlik açılmaz; açma kararı Ali'nin. Önce Ali'ye yazılır.
+
+## D108 — Codex CT-APR-02 `c37628ae` bulguları (UYGUN DEĞİL: 2 ENGEL, 2 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-c37628ae.md`; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D108/1 — F-2 kapandı:** yetki geçmişi ucu, okuma satırı, Roller ekranı, AC-51 yazıldı. Uç adı CT önerisidir.
+2. **D108/2 — F-3 kapandı:** eski önkoşul ve teyit metinleri D106'ya hizalandı.
+3. **D108/3 — F-4 kapandı:** AC-50'de sahip şartı ile CT yorumu ayrıldı.
+4. **D108/4 — F-1 açık:** Y-33 (a) ile audit-trail-standard §4.3 uzlaşmıyor; karar MOD-0018 sahibinde ve kural sahibinde. Yeni Codex turu bu karardan sonra.
 
 ## Karar olmayanlar
 

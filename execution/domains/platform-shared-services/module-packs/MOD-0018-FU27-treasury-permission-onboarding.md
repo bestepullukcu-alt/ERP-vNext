@@ -524,6 +524,7 @@ bu dosyaya karşı yazılır (AC-34).
   edilmedikçe (anahtar `PlatformService:InternalApiKey` boş — `Infrastructure/Settings/PlatformServiceOptions.cs:9` —, 2xx dışı,
   bağlantı hatası, zaman aşımı) 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE` döner, veri dönmez (AC-46). Üretimde anahtar zaten başlangıçta zorunludur (`Infrastructure/DependencyInjection.cs:226`, `:27`);
   kural yine de uçta sınanır (geliştirme / test ortamı ve yanlış yapılandırma).
+- **Yetki geçmişi (F-2, D108/1):** `IPaymentSodWaiverAuditReader`'a `GetAuthorityHistoryAsync(tenantId, userId, ct)`; `…/Queries/GetPaymentSodWaiverAuthorityHistoryQuery.cs` + işleyici — **yeni**; `_SodWaiverAssignments.cshtml`, `sod-waivers.js`, Web `RolesController` GET vekili ve yedi `RolesIndex` kaynağı bu bölümü de taşır.
 - **Dar yol dosyaları (KARAR D106/2):** `…/Features/PaymentSodWaiverAssignments/Commands/GrantPaymentSodWaiverAuthorityCommand.cs`, `RevokePaymentSodWaiverAuthorityCommand.cs` ve işleyicileri — **yeni**; uçlar `PaymentSodWaiverAssignmentsController.cs`'te (Bölüm 14.3); `IPaymentSodWaiverAuditWriter`'a `WriteAuthorityGrantedAsync` / `WriteAuthorityRevokedAsync`; red denetimi `AssignRoleCommandHandler.cs`, `RevokeRoleCommandHandler.cs`, `AssignPermissionCommandHandler.cs`, `RevokePermissionCommandHandler.cs` (dört dosya **değişir**, başka davranış değişmez). Klasör adı DL-5 başında ölçülür.
 - **Defter ve mimari test (öneri 6):** `tests/architecture/audit-ledger/Diten.AuthService.md` `## İzler`'e yeni satır
   `auth-sod-muafiyet-gecmisi | c | yazıcı | IPaymentSodWaiverAuditWriter.WriteCreatedAsync/IPaymentSodWaiverAuditWriter.WriteRevokedAsync/IPaymentSodWaiverAuditWriter.WriteAuthorityGrantedAsync/IPaymentSodWaiverAuditWriter.WriteAuthorityRevokedAsync` + beş koşul kanıt notu; `auth-gunlugu` (`:13`) `aday` kalır;
@@ -738,7 +739,7 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
 - **Muafiyet yetkisi verme / alma — dar yol (KARAR D106/2, Y-32):** Muafiyet yetkilisi rolüne kişi ekleme / çıkarma ve iki anahtarı role bağlama ayrı komutlarla yapılır:
   `GrantPaymentSodWaiverAuthorityCommand`, `RevokePaymentSodWaiverAuthorityCommand`. Genel komutlar (`AssignRole`, `RevokeRole`, `AssignPermission`, `RevokePermission`) rol
   `PaymentSodWaiverAuthority` ya da anahtarlar `auth.payment-sod-waivers.assign` / `.read` için reddeder → 403 `SOD_WAIVER_AUTHORITY_DEDICATED_PATH_REQUIRED`; yazım ve sürüm artışı yok.
-  İki komut mevcut `auth.users.assign-role` iznini ister, yeni anahtar yok; iki anahtar role ilk vermede bağlanır (K-W8, KARAR D107/1). Kişi yetkiyi kendine veremez → 403 `SOD_WAIVER_AUTHORITY_SELF_GRANT_FORBIDDEN` (AC-50). Kayıt iş yazımından önce yazılır; yazılamazsa komut başarısız olur. Geçmiş K-W5 yoluna eklenir (`EntityType = PaymentSodWaiverAuthority`, `EntityId` = kullanıcı).
+  İki komut mevcut `auth.users.assign-role` iznini ister, yeni anahtar yok; iki anahtar role ilk vermede bağlanır (K-W8, KARAR D107/1). Kendine verme testi sahip şartıdır; "veremez" (403 `SOD_WAIVER_AUTHORITY_SELF_GRANT_FORBIDDEN`) CT yorumudur (AC-50). Kayıt iş yazımından önce yazılır; yazılamazsa komut başarısız olur. Geçmiş K-W5 yoluna eklenir (`EntityType = PaymentSodWaiverAuthority`, `EntityId` = kullanıcı): `GET /api/roles/sod-waiver-authority/{userId}/history`, izin `auth.payment-sod-waivers.read`, kiracı JWT'den, başka kiracı 404, yalnız bu kullanıcının yetki satırları, en eskiden yeniye; her okuma atama geçmişiyle aynı meta-denetim satırını teslim teyidiyle iletir, teslim yoksa 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE`. Kaydın ekranı Roller ekranındaki Muafiyet yetkilisi satırının "Geçmiş"idir (AC-51; yazma düğmesi yok). Sonuç satırı olmayan deneme "sonuçlanmadı" görünür.
 - **Deneme + sonuç satırı (KARAR D106/3):** DL-5'in dört K2 komutunda önce deneme satırı, iş yazımından sonra sonuç satırı yazılır. Geçmiş ucu sonuç satırı olmayan denemeyi
   "sonuçlanmadı" olarak gösterir. Deneme yazılamazsa komut başarısız olur; sonuç satırı yazılamazsa komut başarılı döner ve satır "sonuçlanmadı" okunur (K-W9, KARAR D107/2).
 - **Denetim izi ve geçmiş (K-W5 — KARAR D97/2, D98):** iki komut denetimi yeni iz `auth-sod-muafiyet-gecmisi`'ye yazar
@@ -1091,6 +1092,7 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
 | `GET /api/roles/sod-waiver-assignments/{id}/history` (**KARAR D97/2, D98**) | `[Authorize]` | `auth.payment-sod-waivers.read`; başka kiracı / yok → 404; iletici anahtarı boş → 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE`; her okuma bir meta-denetim satırı |
 | `POST /api/roles/sod-waiver-authority/{userId}` (**KARAR D106/2, D107/1**) | `[Authorize]` | `auth.users.assign-role`; yeni anahtar yok; ilk vermede iki `auth.payment-sod-waivers.*` anahtarı role bağlanır; kendine verme 403 `SOD_WAIVER_AUTHORITY_SELF_GRANT_FORBIDDEN` (AC-50); başka kiracının kullanıcısı 404; `/api/roles/{everything}` altında, Gateway değişmez |
 | `DELETE /api/roles/sod-waiver-authority/{userId}` (**KARAR D106/2, D107/1**) | `[Authorize]` | `auth.users.assign-role`; rol üyeliği kalkar; başka kiracının kullanıcısı 404 |
+| `GET /api/roles/sod-waiver-authority/{userId}/history` (**KARAR D106/2, D108/1**) | `[Authorize]` | `auth.payment-sod-waivers.read`; başka kiracı 404; teslim teyidi yok → 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE`; her okuma bir meta-denetim satırı |
 | `GET /internal/sod-waiver-assignments/payment-batches/{batchId}[?granteeUserId=]` | `X-Internal-Api-Key` + iletilen kullanıcı token'ı (**KARAR D74/1**, Bölüm 8.7); `[HasPermission]` yok (iç uç) | ortak sırrı tutan servis (amaçlanan çağıran FinanceTreasuryService; sır çağıranı ayırt etmez); kiracı token'dan |
 
 ### 14.4 DL-6 iç uç (D66/1)
@@ -1359,7 +1361,8 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   başarılı. AC-29'un başka role elle bağlama kurulumu depo düzeyinde yapılır. Sabotaj: dört işleyiciden birinde red kaldırılınca o komutun testi kırmızı.
 - [ ] AC-49 (zorunlu) — **Deneme + sonuç (KARAR D106/3):** dört DL-5 komutu önce deneme satırı yazar; deneme yazılamazsa iş yazımı yok, komut başarısız. İş yazımı düşerse deneme kalır ve geçmiş ucu
   "sonuçlanmadı" gösterir. Sonuç satırı yazılamazsa komut başarılı döner, geçmiş "sonuçlanmadı" gösterir (K-W9). Sabotaj: sıra iş yazımı → kayıt çevrilince "deneme yazılamadı" testi kırmızı.
-- [ ] AC-50 (zorunlu) — **Kendine verme yok (KARAR D107/1, sahip şartı):** `auth.users.assign-role` taşıyan çağıran kendini alıcı yazarsa `Grant` → 403 `SOD_WAIVER_AUTHORITY_SELF_GRANT_FORBIDDEN`, rol üyeliği, anahtar bağlama ve denetim sonucu yok; başka kullanıcıya verme başarılı. Genel komutlarla dolanma da kapalıdır (AC-48). Sabotaj: kendine verme denetimi kaldırılınca bu test kırmızı. Auth kulesi kodda doğrular.
+- [ ] AC-50 (zorunlu) — **Kendine verme (KARAR D107/1):** sahip şartı bu durumun test edilmesidir; "veremez" davranışı ve hata kodu CT yorumudur, Auth kulesi kodda doğrular. `auth.users.assign-role` taşıyan çağıran kendini alıcı yazarsa `Grant` → 403 `SOD_WAIVER_AUTHORITY_SELF_GRANT_FORBIDDEN`, rol üyeliği, anahtar bağlama ve denetim sonucu yok; başka kullanıcıya verme başarılı. Genel komutlarla dolanma da kapalıdır (AC-48). Sabotaj: kendine verme denetimi kaldırılınca bu test kırmızı.
+- [ ] AC-51 (zorunlu) — **Yetki geçmişi (D108/1):** `GET /api/roles/sod-waiver-authority/{userId}/history` deneme ve sonuç satırlarını en eskiden yeniye döndürür; sonuçsuz deneme "sonuçlanmadı"; izinsiz 403, başka kiracı 404; teslim teyidi yoksa 503 ve veri yok; Roller ekranında salt-okunur "Geçmiş", izinsize çizilmez, yedi dil. Sabotaj: kiracı süzgeci ya da teslim teyidi kaldırılınca ilgili test kırmızı.
 
 ## 17. Test Expectations
 
@@ -1409,8 +1412,7 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   sırası dahil — KARAR D76/1–2; D79'un dokuz kararı ve 27 rolün 7 dilli görünen adları dahil — KARAR D79). **Şartlı teyit
   verildi — Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`; şartlar DL-5 kodundan önce, aşağıdaki iki D80/2 maddesi);
   K-7 ve DL-6 teyitli (D80/3). **Sahipteki liste (D80/4) Y-21 / KARAR D84/1 ile kapandı:** K-1b, K-2, K-3, K-W2, K-W4, K-W6,
-  K-W7, K-A1, K-A2, K-A3, K-A4b. Açık kalan: D79'dan sonraki değişikliklerin ayrı teyidi (27 rolün 7 dil tablosu vb., D80/2; sahip
-  kontrol ediyor — Y-21), K-W5 CT defter kararı (yöntem teyitli — D84/2; D86 geri alındı — D87, açık) ve K-5 anahtar listesinin Platform sahibince kontrolü (yöntem teyitli — D84/3; liste K1 kararı — D88/1; Beste'nin kontrolü bekliyor — Y-22).
+  K-W7, K-A1, K-A2, K-A3, K-A4b. D79'dan sonraki değişiklikler ve 7 dil tablosu teyit edildi (Y-32 / D106/1, D106/4); K-W5 kapandı (D97/2, D98, D106/1). Açık kalan: K-5 anahtar listesinin Platform sahibince kontrolü (yöntem teyitli — D84/3; liste K1 kararı — D88/1; Beste'nin kontrolü bekliyor — Y-22).
 - [x] D79 main'de (D62/1) — K-1b, K-2, K-3, K-7, K-W2, K-W4, K-W6, K-A2, K-A3 kapanışlarının ve Bölüm 5.5 / 14.2 görünen ad
   tablosunun paket kapısı — **main'de** (`treasury-intake-owner-decisions-05.md` @ `317a48b13`).
 - [x] D53/1 tüketici paket kapısı: bu paketin metni main'de **+ MOD-0018 sahibinin teyidi** (**KARAR D70/3**; metnin main'de olması
@@ -1460,9 +1462,8 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
 - [ ] Yeni sayfa yok, tur yok (UXH-001: sayfa sahiplenilmiyor); Bölüm 5.5 yalnız mevcut rol ekranlarına görünen ad kaynağı ekler
   (KARAR D79/9); **DL-5 (KARAR D97/2, D98):** mevcut Roller sayfasına salt-okunur muafiyet atamaları bölümü + "Geçmiş" (izinle
   çizilir, 7 dil, AC-47; sayfa yardımı varsa bir paragraf) — DL-5 için.
-- [ ] 27 rolün fr / es / zh / ar / ru görünen adları MOD-0018 sahibince teyit edildi (KARAR D79/9: "Treasury yazar, MOD-0018
-  sahibi teyit eder") — DL-1 / DL-2 / DL-3 / DL-5 rol adı satırları için. D79'dan sonraki değişiklik olduğu için Y-19'un şartlı
-  teyidine girmez; sahip teyidine **ayrıca** gider (KARAR D80/2) — teyit yok.
+- [x] 27 rolün fr / es / zh / ar / ru görünen adları MOD-0018 sahibince teyit edildi (KARAR D79/9: "Treasury yazar, MOD-0018
+  sahibi teyit eder") — DL-1 / DL-2 / DL-3 / DL-5 rol adı satırları için. **Teyit: Y-28 (düzeltmelerle), Y-32 / D106/4;** ar, ru, zh anadil kontrolsüz (düşük güven, sahip notu).
 
 ## 19. Implementation Notes
 
@@ -1529,6 +1530,7 @@ K2 sınıfıdır (yetki değiştirir).
 | GrantPaymentSodWaiverAuthorityCommand | auth.sod-waiver-authority.granted | PaymentSodWaiverAuthority | c — aynı iz, `IPaymentSodWaiverAuditWriter.WriteAuthorityGrantedAsync` (KARAR D106/2); önce deneme, sonra sonuç satırı (D106/3) | Before/After: rol üyeliği; kullanıcı kimliği (kişi verisi yok) | K2: deneme yazılamazsa komut durur; sonuç satırı hatasında başarılı (D107/2) |
 | RevokePaymentSodWaiverAuthorityCommand | auth.sod-waiver-authority.revoked | PaymentSodWaiverAuthority | c — aynı iz, `IPaymentSodWaiverAuditWriter.WriteAuthorityRevokedAsync` (KARAR D106/2); önce deneme, sonra sonuç satırı (D106/3) | Before/After: rol üyeliği; kullanıcı kimliği (kişi verisi yok) | K2: deneme yazılamazsa komut durur; sonuç satırı hatasında başarılı (D107/2) |
 | GetPaymentSodWaiverAssignmentHistoryQuery (**okuma satırı** — audit-trail-standard §7, denetim günlüğünün kendisi okunur; KARAR D102/1) | auth.sod-waiver-assignment.history.read | PaymentSodWaiverAssignment (okunan atamanın kimliği) | b — merkezi günlüğe meta-denetim satırı (`IsMetaAudit = true`), Auth iletici üzerinden teslim teyitli (`TryForwardAsync`, D99/1); teslim yoksa okuma yok, 503 (AC-46). Eşdeğer iz okuma için kullanılmaz | — (okuma; değişen alan yok — satır okuyan kullanıcı, kiracı, atama kimliği ve zamanı taşır) | — |
+| GetPaymentSodWaiverAuthorityHistoryQuery (**okuma satırı** — audit-trail-standard §7, denetim günlüğünün kendisi okunur; KARAR D102/1) | auth.sod-waiver-authority.history.read | PaymentSodWaiverAuthority (okunan atamanın kimliği) | b — merkezi günlüğe meta-denetim satırı (`IsMetaAudit = true`), Auth iletici üzerinden teslim teyitli (`TryForwardAsync`, D99/1); teslim yoksa okuma yok, 503 (AC-46). Eşdeğer iz okuma için kullanılmaz | — (okuma; değişen alan yok — satır okuyan kullanıcı, kiracı, atama kimliği ve zamanı taşır) | — |
 
 - **K2 (kapalı-başarısız):** iki komut da denetim kaydını iş yazımından önce yazar; yazılamazsa komut başarısız olur, atama
   yazılmaz (AC-30). "En iyi çaba" yoktur. İz kabul edilmeden komut yazılamaz (audit-trail-standard §4.4: kabul edilmiş K2 yolu
@@ -1555,8 +1557,7 @@ K2 sınıfıdır (yetki değiştirir).
 Tüketici paket kapısı (D53/1, **KARAR D70/3**): bu paketin metni main'de + MOD-0018 sahibinin teyidi (karar dosyasında kaynak) —
 **şartlı teyit, Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`): tüketicilerin DL-1'ini bekletmez; D79'dan sonraki
 değişiklikler (7 dil tablosu vb.) sahip teyidine ayrıca gider.
-**DL-5 önkoşulu (KARAR D80/2, sahip şartı):** DL-5 kodundan önce (a) K-W5 denetim izi için defter kararı, (b) rol atama
-adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu kapanır (Ready-for-dev Checklist, Bölüm 7, 21); DL-1'i bekletmez.
+**DL-5 önkoşulu (KARAR D80/2, D106, sahip şartı):** (a) K-W5 kapandı; (b) D106/2 ile daraldı: DL-5 kodundan önce muafiyet adımının korunması (dar yol, AC-48…AC-51) paket metninde kapanır; kalan RBAC borcu ayrı MOD-0018 ekinin konusudur (Ready-for-dev Checklist, Bölüm 7, 21); DL-1'i bekletmez.
 Tüketici kapıları (D53/2): MOD-0126 / 0119 / 0120 / 0124 DL-1 kabulü → bu paketin DL-1 kodu main'de; MOD-0289 DL-1 → DL-2
 (+ DL-4, D56/1); MOD-0217 DL-1 → DL-3 (+ DL-4). MOD-0126 DL-2: DL-5 paket metni (muafiyet alanları, D56/3) dilim önkoşulu;
 DL-5 kodu DL-2 kabulünü **beklemez** — muafiyet yolu 403 ile kapalıyken DL-2 kabul edilir, muafiyet DL-5 main'e girince ayrı
