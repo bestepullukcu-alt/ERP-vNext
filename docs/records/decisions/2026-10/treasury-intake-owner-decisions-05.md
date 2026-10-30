@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D108 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D109 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1319,6 +1319,13 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-00
 2. **D108/2 — F-3 kapandı:** eski önkoşul ve teyit metinleri D106'ya hizalandı.
 3. **D108/3 — F-4 kapandı:** AC-50'de sahip şartı ile CT yorumu ayrıldı.
 4. **D108/4 — F-1 açık:** Y-33 (a) ile audit-trail-standard §4.3 uzlaşmıyor; karar MOD-0018 sahibinde ve kural sahibinde. Yeni Codex turu bu karardan sonra.
+
+## D109 — Ali Y-34: K-W9 (b), aynı işlem (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-34; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D109/1 — K-W9 (b):** iş yazımı ve sonuç satırı aynı işlemde, hata olursa ikisi de geri alınır. D107/2 geri alındı. Kural sahibi Ali; K2 kararı (2 Ekim) geçerli. Codex `c37628ae` F-1 bu kararla kapanır.
+2. **D109/2 — yapılabilirlik (kod okuması; çalışma testi yok):** yapılabilir. Depolar oturum almaz (`UserRoleRepository.cs:43-54`, `RolePermissionRepository.cs:43-47`), ama Auth'ta emsal var: `EntitlementReconciliationOperationStore.cs:110-145` aynı oturumda `rolePermissions`, `auth_role_assignment_versions`, `refreshTokens` yazıyor. FU27 yeni store dosyalarıyla aynı deseni kullanır; outbox gerekmez. Dev / test ortamının replica set şartı ve `authAuditLogs`'un aynı işleme alınması kod başında sınanır.
 
 ## Karar olmayanlar
 

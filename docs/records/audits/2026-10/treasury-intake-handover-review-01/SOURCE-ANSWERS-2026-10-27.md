@@ -384,6 +384,12 @@ Madde 1, 7, 8 Y-26 ve Y-27 ile aynı. Özgün metin (madde 2–6, 9, 10):
 > 3. RCS-001 §3 CTR → AGR: Siz hazırlayın; benim yazılı onayımla gider. Sahiplik değişmez, satırı ben değiştirmiyorum.
 > MOD-0018-FU29 (dört ortak komut + Create/Update/DeleteRole): kimlik açmadan önce bana yazın; açma kararı benim.
 
+## Y-34 — Ali, K-W9 (b) (2026-10-31; K1 aktardı)
+
+> K-W9: (b) seçildi — iş yazımı ve sonuç satırı aynı işlemde yazılır, hata olursa ikisi de geri alınır. Önceki "(a) başarılı döner" cevabım geri alındı; kural sahibi benim, K2 kararım (2 Ekim) geçerli.
+> Rol depolarında tek işlemin yapılabilirliğini ölçün. Mümkün değilse kendiniz (a) ya da (c)'ye geçmeyin: aynı işlem içinde outbox gibi K2'nin kabul ettiği yolu da yazıp bana dönün. (a) ve (c) K2'ye uymuyor.
+> FU27 ve Codex ENGEL'i bu karara göre güncellensin.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -436,3 +442,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-30 (Procurement CT raporu: 1.3.0 tarihleri, MOD-0144 / MOD-0217 sınırı) | MOD-0217; MOD-0119; MOD-0289 | D104/6 |
 | Y-32 (FU27 teyidi, D99/1, D80/2 (b) daraltması, Tag adları, MOD-0144 yönlendirmesi) | FU27; FU28; D104/6 | D106 |
 | Y-33 (K-W8, K-W9, AGR hazırlığı, FU29 kararı) | FU27; RCS-001 | D107 |
+| Y-34 (K-W9 (b), aynı işlem; D107/2 geri alındı) | FU27 | D109 |
