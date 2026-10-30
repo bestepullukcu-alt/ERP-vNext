@@ -390,6 +390,11 @@ Madde 1, 7, 8 Y-26 ve Y-27 ile aynı. Özgün metin (madde 2–6, 9, 10):
 > Rol depolarında tek işlemin yapılabilirliğini ölçün. Mümkün değilse kendiniz (a) ya da (c)'ye geçmeyin: aynı işlem içinde outbox gibi K2'nin kabul ettiği yolu da yazıp bana dönün. (a) ve (c) K2'ye uymuyor.
 > FU27 ve Codex ENGEL'i bu karara göre güncellensin.
 
+## Y-35 — Ali, FU27 ekleri (2026-10-31; K1 aktardı)
+
+> FU27 ekleri onaylandı: (1) unresolved-attempts ucu, (2) yetki geçmişi ucu + Roller ekranında salt-okunur bölüm, (3) belirsiz commit kuralı (503 / 409). Kapsam büyümesini kabul ediyorum; yeni izin anahtarı ve yeni kural dosyası eklenmesin.
+> RCS-001 §3 CTR → AGR satırı için önceki mesajınızdaki metin bana ulaşmadı. Lütfen değişecek satırı (eski → yeni) ve gerekçeyi bir mesajda, tek başına gönderin. Metni görmeden yazılı onay vermem.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -443,3 +448,4 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-32 (FU27 teyidi, D99/1, D80/2 (b) daraltması, Tag adları, MOD-0144 yönlendirmesi) | FU27; FU28; D104/6 | D106 |
 | Y-33 (K-W8, K-W9, AGR hazırlığı, FU29 kararı) | FU27; RCS-001 | D107 |
 | Y-34 (K-W9 (b), aynı işlem; D107/2 geri alındı) | FU27 | D109 |
+| Y-35 (FU27 ekleri onayı; AGR metni yeniden istendi) | FU27; RCS-001 | D113 |

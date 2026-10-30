@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D112 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1346,6 +1346,13 @@ Onay kanıtı: K1 / gmg-10 (soru kutusu "Evet, ertele", 2026-10-30); kaynak Y-31
 1. **D112/1 — para birimi:** dört finans paketinin ekran ve Dependencies metni `currency-minor-units`'e çevrildi, "sette olmayan kod reddedilir" AC'lere eklendi (D105/3; Beste teyidi açık). MOD-0217 ve MOD-0289 değişmedi; Beste'nin cevabı açık.
 2. **D112/2 — MOD-0120:** MOD-0149 `external-references/resolve` ucu O-10'a ertelendi; v1'de çağıran yok, `lookup-validation` kalır. 409 için önerilen 422 `RECEIVABLE_CUSTOMER_AMBIGUOUS` O-10 kapsamındadır.
 3. **D112/3 — kapı işaretleri:** DCP-011 `approved` (#309) beş pakette, SUPPLIER 1.3.0 FROZEN (#289) MOD-0119 ve MOD-0289'da işaretlendi; main `819cc642a`'da ölçüldü.
+
+## D113 — Ali Y-35: FU27 ekleri onaylandı (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-35; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D113/1:** `unresolved-attempts` ucu, yetki geçmişi ucu + Roller salt-okunur bölümü, belirsiz commit kuralı (503 / 409) sahip onaylı (D108/1, D110). Kapsam büyümesi kabul; yeni izin anahtarı ve yeni kural dosyası yok. Paket buna uyuyor: uçlar mevcut `auth.payment-sod-waivers.read` ve `auth.users.assign-role` ile çalışır.
+2. **D113/2:** RCS-001 §3 metni Ali'ye ulaşmadı; yazılı onay yok, satır tek başına yeniden gönderilir.
 
 ## Karar olmayanlar
 
