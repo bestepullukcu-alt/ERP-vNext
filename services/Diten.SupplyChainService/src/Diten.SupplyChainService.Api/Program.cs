@@ -8,6 +8,10 @@ using Diten.SupplyChainService.Api.Features.Carriers;
 using Diten.SupplyChainService.Api.Features.Returns;
 using Diten.SupplyChainService.Api.Features.Claims;
 using Diten.SupplyChainService.Api.Features.CapacityPlans;
+using Diten.SupplyChainService.Api.Features.SupplierPerformance;
+using Diten.SupplyChainService.Application.Features.SupplierPerformance;
+using Diten.SupplyChainService.Persistence.Features.SupplierPerformance;
+using Diten.SupplyChainService.Infrastructure.Features.SupplierPerformance;
 using Diten.SupplyChainService.Application.Features.Carriers;
 using Diten.SupplyChainService.Persistence.Features.Carriers;
 // Q271/Q272 (2026-10-03): composing Returns (MOD-0186) and Claims (MOD-0187).
@@ -95,6 +99,12 @@ builder.Services.AddReturnPersistence();
 builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
 builder.Services.AddClaimPersistence();
 builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+// MOD-0147 DL-1 (owner decision D2, 2026-10-26: the MVP-6 CT is the single writer of this composition). Supplier evaluations
+// read Procurement's eligibility (SUPPLIER 1.3.0) through the Gateway with the caller's token (SupplierPerformance:SupplierBaseUrl,
+// the reference-base-URL pattern, no new port). No manifest provider, no catalog permission and no Gateway route here: they ship
+// with the enabling change (pack §0.0, F-1); EnforcedPermissionDeclarationGuardTests carries the KnownWithoutProvider entry.
+builder.Services.AddSupplierPerformancePersistence();
+builder.Services.AddHttpClient<ISupplierEligibilityReader, SupplierEligibilityReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
 // R-2 (PR #134): one validator for all five modules. LegalEntityId now arrives on the request, so every
 // *ContextMiddleware asks MDM whether it is the token tenant's and Active before the request reaches a handler.
 builder.Services.AddHttpClient<ILegalEntityScopeValidator, MdmLegalEntityScopeValidator>(client => client.Timeout = TimeSpan.FromSeconds(5));
@@ -166,6 +176,8 @@ builder.Services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseF
 {
     if (LoadContextMiddleware.IsLoadPath(c.HttpContext))
         return new BadRequestObjectResult(LoadContractError.Create("INVALID_REQUEST", 400, c.HttpContext.RequestServices.GetRequiredService<LoadRequestContext>().CorrelationId));
+    if (SupplierPerformanceContextMiddleware.IsSupplierPerformancePath(c.HttpContext))
+        return new BadRequestObjectResult(SupplierPerformanceContractError.Create(SupplierPerformanceErrorCodes.InvalidRequest, 400, c.HttpContext.RequestServices.GetRequiredService<SupplierPerformanceRequestContext>().CorrelationId));
     if (CarrierContextMiddleware.IsCarrierPath(c.HttpContext))
         return new BadRequestObjectResult(CarrierContractError.Create("INVALID_REQUEST", 400, c.HttpContext.RequestServices.GetRequiredService<CarrierRequestContext>().CorrelationId));
     var context = c.HttpContext.RequestServices.GetRequiredService<RequestContext>();
@@ -188,6 +200,7 @@ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<Loa
 // UUIDs." from the Shipment middleware; with this branch wired it returns 200 and the handler runs.
 app.UseWhen(ReturnContextMiddleware.IsReturnPath, branch => branch.UseMiddleware<ReturnContextMiddleware>());
 app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
+app.UseWhen(SupplierPerformanceContextMiddleware.IsSupplierPerformancePath, branch => branch.UseMiddleware<SupplierPerformanceContextMiddleware>());
 // Q484 (owner decision 2026-10-18, Option 2'): the Capacity context middleware is composed ONLY in the test
 // host — gated to the "Testing" environment — never in the production runtime, so the §22 uptake gate (Q292)
 // keeps it out of production until the gate opens. A non-Testing host does not compose Capacity; its controller
@@ -201,7 +214,8 @@ if (demandSeed is not null || string.Equals(app.Environment.EnvironmentName, "Te
     app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
 app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context)
     && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context)
-    && !CapacityContextMiddleware.IsCapacityPath(context) && !SandopContextMiddleware.IsSandopPath(context),
+    && !CapacityContextMiddleware.IsCapacityPath(context) && !SandopContextMiddleware.IsSandopPath(context)
+    && !SupplierPerformanceContextMiddleware.IsSupplierPerformancePath(context),
     branch => branch.UseMiddleware<ShipmentContextMiddleware>());
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();

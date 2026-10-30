@@ -25,6 +25,8 @@ public static class SupplyChainCentralAudit
     public const string ClaimModule = "claims-management";
     public const string CapacityModule = "capacity-planning";
     public const string SandopModule = "sop-workflow-signoffs";
+    // MOD-0147 DL-1: no manifest provider yet (pack §0.0, F-1) — the code is the KnownWithoutProvider entry's ModuleCode.
+    public const string SupplierPerformanceModule = "supplier-performance-risk";
 
     public const string Create = "Create";
     public const string Update = "Update";
