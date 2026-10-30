@@ -7,36 +7,44 @@ namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 
 internal sealed class SupplierPerformanceProbe : ISupplierPerformanceCommitProbe
 {
-    public string? FailAt;
+    public string? FailAt, FailAlsoAt;
+    public Func<string, Task>? At;
     public Exception Failure = new IOException("Injected supplier-performance write boundary failure.");
-    public Task AtAsync(string boundary, CancellationToken ct)
+    private bool Take(ref string? slot, string boundary)
     {
-        var expected = Volatile.Read(ref FailAt);
-        if (string.Equals(expected, boundary, StringComparison.Ordinal) && ReferenceEquals(Interlocked.CompareExchange(ref FailAt, null, expected), expected))
-            throw Failure;
-        return Task.CompletedTask;
+        var expected = Volatile.Read(ref slot);
+        return string.Equals(expected, boundary, StringComparison.Ordinal) && ReferenceEquals(Interlocked.CompareExchange(ref slot, null, expected), expected);
     }
+    public async Task AtAsync(string boundary, CancellationToken ct)
+    {
+        if (At is { } at) await at(boundary);
+        if (Take(ref FailAt, boundary) || Take(ref FailAlsoAt, boundary)) throw Failure;
+    }
+}
+
+/// <summary>DB-010: one fixed database for the class, dropped once before it, so the schema gate builds its unique indexes in this run.</summary>
+public sealed class EvaluationStorageDatabase : IAsyncLifetime
+{
+    public readonly MongoClient Client = new(SupplierPerformanceMongo.Connection);
+    public IMongoDatabase Db => Client.GetDatabase(SupplierPerformanceMongo.StorageDatabase);
+    public async Task InitializeAsync()
+    {
+        await Client.DropDatabaseAsync(SupplierPerformanceMongo.StorageDatabase);
+        await new SupplierPerformanceSchema(Db).StartAsync(CancellationToken.None);
+    }
+    public Task DisposeAsync() => Task.CompletedTask;
 }
 
 /// <summary>
 /// MOD-0147 DL-1 storage on a real replica set: the two unique indexes behind §0.5 (receipt tuple) and §0.2 (one active
 /// evaluation per Tenant + LE + canonical supplier + period), scope isolation and the commit boundaries.
 /// </summary>
-public sealed class EvaluationStorageTests : IAsyncLifetime
+public sealed class EvaluationStorageTests(EvaluationStorageDatabase database) : IClassFixture<EvaluationStorageDatabase>
 {
-    private readonly MongoClient _client = new(SupplierPerformanceMongo.Connection);
-    private readonly string _name = "sce_mod0147_storage_" + Guid.NewGuid().ToString("N")[..12];
-    private IMongoDatabase _db = null!;
+    private readonly IMongoDatabase _db = database.Db;
     private readonly SupplierPerformanceProbe _probe = new();
+    // A new tenant per test (xUnit makes one instance per test): the isolation is the tenant, as in production.
     private readonly SupplierPerformanceScope _scope = new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
-
-    public async Task InitializeAsync()
-    {
-        _db = _client.GetDatabase(_name);
-        await new SupplierPerformanceSchema(_db).StartAsync(CancellationToken.None);
-    }
-
-    public Task DisposeAsync() => _client.DropDatabaseAsync(_name);
 
     private EvaluationRepository Repository => new(_db, _probe);
 
@@ -47,7 +55,8 @@ public sealed class EvaluationStorageTests : IAsyncLifetime
         RiskLevel = "LOW", Status = EvaluationStatus.DRAFT, IsActivePeriod = true, PolicyRevision = ScorePolicy.Revision, CorrelationId = Guid.NewGuid()
     };
 
-    private Task<long> Count(string collection) => _db.GetCollection<BsonDocument>(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
+    private Task<long> Count(string collection, Guid? tenant = null) =>
+        _db.GetCollection<BsonDocument>(collection).CountDocumentsAsync(new BsonDocument("TenantId", (tenant ?? _scope.TenantId).ToString()));
 
     [Fact]
     public async Task Schema_ShouldCreateTheReceiptTupleAndTheActivePeriodUniqueIndexes()
@@ -119,7 +128,8 @@ public sealed class EvaluationStorageTests : IAsyncLifetime
         foreach (var scope in new[] { _scope, otherCompany, otherTenant })
             Assert.Equal(EvaluationCommitOutcome.Committed, await Repository.CreateAsync(scope, "shared", "v1:a", Evaluation(scope), "{}", CancellationToken.None));
 
-        Assert.Equal(3, await Count(SupplierPerformanceSchema.Receipts));
+        Assert.Equal(2, await Count(SupplierPerformanceSchema.Receipts));
+        Assert.Equal(1, await Count(SupplierPerformanceSchema.Receipts, otherTenant.TenantId));
         Assert.Null(await Repository.FindCreateReceiptAsync(_scope with { LegalEntityId = Guid.NewGuid() }, "shared", CancellationToken.None));
     }
 
@@ -162,17 +172,65 @@ public sealed class EvaluationStorageTests : IAsyncLifetime
         Assert.Equal(0, await Count(SupplierPerformanceSchema.Receipts));
     }
 
-    // T-0147-RP-08 (storage half): an unknown commit is reported, never written a second time.
+    // T-0147-RP-08 (storage half): nothing is written twice; the receipt decides what a lost answer was.
     [Theory]
-    [InlineData("commit", 0)] [InlineData("afterCommit", 1)]
-    public async Task Create_WhenTheCommitOutcomeIsUnknown_ShouldReportUnknownAndWriteAtMostOnce(string boundary, int expected)
+    [InlineData("commit", null, EvaluationCommitOutcome.Unknown, 0)]
+    [InlineData("afterCommit", null, EvaluationCommitOutcome.Committed, 1)]
+    [InlineData("afterCommit", "resolve", EvaluationCommitOutcome.Unknown, 1)]
+    public async Task Create_WhenTheCommitAnswerIsLost_ShouldResolveFromTheReceiptAndWriteAtMostOnce(string boundary, string? alsoAt, EvaluationCommitOutcome outcome, int expected)
     {
-        _probe.FailAt = boundary;
+        _probe.FailAt = boundary; _probe.FailAlsoAt = alsoAt;
 
-        Assert.Equal(EvaluationCommitOutcome.Unknown, await Repository.CreateAsync(_scope, "k", "v1:a", Evaluation(_scope), "{}", CancellationToken.None));
+        Assert.Equal(outcome, await Repository.CreateAsync(_scope, "k", "v1:a", Evaluation(_scope), "{}", CancellationToken.None));
 
         Assert.Equal(expected, await Count(SupplierPerformanceSchema.Evaluations));
         Assert.Equal(expected, await Count(SupplierPerformanceSchema.Receipts));
+    }
+
+    // F-3: a receipt of the same key written by another evaluation does not prove this commit.
+    [Fact]
+    public async Task Create_WhenTheReceiptBelongsToAnotherEvaluation_ShouldStayUnknown()
+    {
+        // This request's commit did not happen; another request takes the key before the read-back.
+        _probe.FailAt = "commit";
+        _probe.At = boundary => boundary == "resolve"
+            ? new EvaluationRepository(_db, new NoOpSupplierPerformanceCommitProbe()).CreateAsync(_scope, "k", "v1:a", Evaluation(_scope), "{}", CancellationToken.None)
+            : Task.CompletedTask;
+
+        Assert.Equal(EvaluationCommitOutcome.Unknown, await Repository.CreateAsync(_scope, "k", "v1:a", Evaluation(_scope, "SUP-2002"), "{}", CancellationToken.None));
+        Assert.Equal(1, await Count(SupplierPerformanceSchema.Evaluations));
+    }
+
+    // F-3: the commit does not depend on the caller's token.
+    [Fact]
+    public async Task Create_WhenTheCallerHangsUpAtTheCommit_ShouldStillCommit()
+    {
+        using var hangUp = new CancellationTokenSource();
+        _probe.At = boundary => { if (boundary == "commit") hangUp.Cancel(); return Task.CompletedTask; };
+
+        Assert.Equal(EvaluationCommitOutcome.Committed, await Repository.CreateAsync(_scope, "k", "v1:a", Evaluation(_scope), "{}", hangUp.Token));
+
+        Assert.Equal(1, await Count(SupplierPerformanceSchema.Evaluations));
+    }
+
+    // F-2: stage 5 reads majority, the re-read after a clash reads what raised the clash. Measured on the command the driver sends.
+    [Fact]
+    public async Task FindReceipt_ShouldSendMajorityByDefaultAndLocalAfterAClash()
+    {
+        var levels = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        var settings = MongoClientSettings.FromConnectionString(SupplierPerformanceMongo.Connection);
+        settings.ClusterConfigurator = c => c.Subscribe<MongoDB.Driver.Core.Events.CommandStartedEvent>(e =>
+        {
+            if (e.CommandName == "find" && e.Command.GetValue("find", "").AsString == SupplierPerformanceSchema.Receipts)
+                levels.Enqueue(e.Command.TryGetValue("readConcern", out var rc) ? rc["level"].AsString : "none");
+        });
+        var client = new MongoClient(settings);
+        var repository = new EvaluationRepository(client.GetDatabase(SupplierPerformanceMongo.StorageDatabase), _probe);
+
+        await repository.FindCreateReceiptAsync(_scope, "k", CancellationToken.None);
+        await repository.FindCreateReceiptAsync(_scope, "k", CancellationToken.None, afterClash: true);
+
+        Assert.Equal(["majority", "local"], levels.ToArray());
     }
 
     // T-0147-ISO-01 (storage half): every read is Tenant + LE scoped and hides soft-deleted rows.

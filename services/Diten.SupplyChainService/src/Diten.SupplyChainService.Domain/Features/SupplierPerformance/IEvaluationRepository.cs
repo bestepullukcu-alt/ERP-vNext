@@ -10,7 +10,7 @@ public interface IEvaluationRepository
     /// the majority snapshot shows its receipt.</param>
     Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct, bool afterClash = false);
     Task<bool> ActivePeriodExistsAsync(SupplierPerformanceScope scope, string supplierId, string periodStart, string periodEnd, CancellationToken ct);
-    /// <summary>§0.5 stage 8: evaluation + receipt + central audit in one transaction. Clash = a unique index refused it.</summary>
+    /// <summary>§0.5 stage 8: evaluation + receipt + central audit in one transaction. Clash = a unique index refused it; Unknown = the commit could not be proven either way.</summary>
     Task<EvaluationCommitOutcome> CreateAsync(SupplierPerformanceScope scope, string key, string fingerprint, SupplierEvaluation evaluation, string responseBody, CancellationToken ct);
     Task<SupplierEvaluation?> GetAsync(SupplierPerformanceScope scope, Guid evaluationId, CancellationToken ct);
     Task<(IReadOnlyList<SupplierEvaluation> Items, long Total)> ListAsync(SupplierPerformanceScope scope, EvaluationFilter filter, int page, int pageSize, CancellationToken ct);

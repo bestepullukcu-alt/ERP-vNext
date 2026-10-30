@@ -26,7 +26,6 @@ namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 internal sealed class SupplierPerformanceFactory(FakeProcurement procurement, StubLegalEntityScopeValidator legalEntities, SupplierPerformanceProbe probe, string appName, string databaseName)
     : WebApplicationFactory<Program>
 {
-    public const string SharedDatabaseName = "diten_mod0147_tests";
     public readonly string DatabaseName = databaseName;
     public static readonly string Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     private Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(Secret))
@@ -63,16 +62,14 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public readonly IMongoDatabase Db;
     public string Correlation = Guid.NewGuid().ToString();
 
-    private readonly bool _ownDatabase;
-
-    /// <param name="ownDatabase">A fresh database (dropped on dispose) whose indexes the schema gate builds now — for the tests that
-    /// prove a unique index, so an index sabotage is not masked by an index an earlier host built. The other hosts share one
-    /// database (fresh tenant and LE per host): a database per host exhausted mongod's open files in the full suite.</param>
-    public SupplierPerformanceHost(bool ownDatabase = false)
+    /// <param name="rebuildIndexes">Drops the fixed unique-index database first, so the schema gate builds its indexes now and an index
+    /// sabotage is not masked by an earlier host's index. Only for the race tests; every other host shares one database (DB-010:
+    /// a database per host exhausted mongod's open files in the full suite).</param>
+    public SupplierPerformanceHost(bool rebuildIndexes = false)
     {
-        _ownDatabase = ownDatabase;
+        if (rebuildIndexes) new MongoClient(SupplierPerformanceMongo.Connection).DropDatabase(SupplierPerformanceMongo.UniqueIndexDatabase);
         App = new SupplierPerformanceFactory(Procurement, LegalEntities, Probe, "mod0147-" + Guid.NewGuid(),
-            ownDatabase ? "diten_mod0147_" + Guid.NewGuid().ToString("N")[..12] : SupplierPerformanceFactory.SharedDatabaseName);
+            rebuildIndexes ? SupplierPerformanceMongo.UniqueIndexDatabase : SupplierPerformanceMongo.SharedDatabase);
         Client = App.CreateClient();
         Db = App.Services.GetRequiredService<IMongoDatabase>();
     }
@@ -96,7 +93,7 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
 
     public async Task<Answer> Send(HttpMethod method, string path, JsonNode? body = null, string? key = "key-1", string? correlation = null,
         Guid? tenant = null, Guid? le = null, Guid? headerTenant = null, string[]? permissions = null, string? token = null, string? rawBody = null,
-        string contentType = "application/json", Action<HttpRequestMessage>? edit = null)
+        string contentType = "application/json", Action<HttpRequestMessage>? edit = null, CancellationToken cancel = default)
     {
         using var request = new HttpRequestMessage(method, path);
         var t = tenant ?? Tenant;
@@ -107,8 +104,8 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
         if (method == HttpMethod.Post && key is not null) request.Headers.TryAddWithoutValidation("Idempotency-Key", key);
         if (rawBody is not null || body is not null) request.Content = new StringContent(rawBody ?? body!.ToJsonString(), Encoding.UTF8, contentType);
         edit?.Invoke(request);
-        var response = await Client.SendAsync(request);
-        var text = await response.Content.ReadAsStringAsync();
+        var response = await Client.SendAsync(request, cancel);
+        var text = await response.Content.ReadAsStringAsync(cancel);
         return new(response.StatusCode, string.IsNullOrWhiteSpace(text) ? null : JsonNode.Parse(text), response);
     }
 
@@ -135,7 +132,6 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Client.Dispose();
-        if (_ownDatabase) await Db.Client.DropDatabaseAsync(App.DatabaseName);
         await App.DisposeAsync();
     }
 }

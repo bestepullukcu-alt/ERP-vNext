@@ -22,7 +22,7 @@ public sealed class SupplierPerformanceSchema(IMongoDatabase db) : IHostedServic
         await Index(Evaluations, ActivePeriodIndex, true, new BsonDocument("IsActivePeriod", true), ct, "SupplierId", "PeriodStart", "PeriodEnd");
         await Index(Evaluations, "supplier_scorecard", false, null, ct, "ScorecardId");
         await Index(Receipts, ReceiptIndex, true, null, ct, "Operation", "TargetId", "IdempotencyKey");
-        // Create both collections outside a transaction before the first command's transaction would create them implicitly.
+        // The indexes above created both collections; this read proves a transaction can open on the replica set at start-up.
         using var session = await db.Client.StartSessionAsync(cancellationToken: ct); session.StartTransaction();
         try { await db.GetCollection<BsonDocument>(Evaluations).Find(session, new BsonDocument { { "TenantId", Guid.Empty.ToString() }, { "LegalEntityId", Guid.Empty.ToString() } }).FirstOrDefaultAsync(ct); }
         finally { await session.AbortTransactionAsync(ct); }

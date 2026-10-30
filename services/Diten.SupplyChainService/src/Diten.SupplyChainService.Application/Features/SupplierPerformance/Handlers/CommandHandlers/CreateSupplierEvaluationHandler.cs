@@ -56,7 +56,7 @@ public sealed class CreateSupplierEvaluationHandler(IEvaluationRepository reposi
                 case EvaluationCommitOutcome.Clash:
                     return await Clash(scope, fingerprint, ct);
                 default:
-                    // Commit outcome unknown: never write again here; the client retries with the same key.
+                    // The repository could not prove the commit: never write again here; the client retries with the same key.
                     return Response<EvaluationResponse>.Fail(SupplierPerformanceErrorCodes.PersistenceUnavailable, 503);
             }
         }

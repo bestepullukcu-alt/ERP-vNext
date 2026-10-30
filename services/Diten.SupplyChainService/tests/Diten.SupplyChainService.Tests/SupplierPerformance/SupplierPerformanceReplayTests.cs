@@ -119,7 +119,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP07_IdenticalConcurrentCreates_ShouldAnswerOne201AndTheRest200()
     {
-        await using var h = new SupplierPerformanceHost(ownDatabase: true);
+        await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         // Four rounds (one month each): the clash window is a race, so one round alone can miss it.
         foreach (var month in new[] { "07", "08", "09", "10" })
@@ -142,7 +142,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP07_IdenticalRequestCommittedAfterStage5_ShouldStillBeAReplay()
     {
-        await using var h = new SupplierPerformanceHost(ownDatabase: true);
+        await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         h.Procurement.Gate = n => n == 1 ? release.Task : Task.CompletedTask;
 
@@ -157,29 +157,83 @@ public sealed class SupplierPerformanceReplayTests
         Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
     }
 
-    // T-0147-RP-08: the answer lost after commit → replay; commit outcome unknown → 503, then replay if committed, else one new 201.
-    [Theory]
-    [InlineData("afterCommit", HttpStatusCode.OK)]
-    [InlineData("commit", HttpStatusCode.Created)]
-    public async Task RP08_UnknownCommitOutcome_ShouldAnswer503AndLetTheSameKeyResolveIt(string boundary, HttpStatusCode retry)
+    // T-0147-RP-08: the answer lost after commit is resolved from this request's own receipt (201, and the central record stays
+    // deliverable); a commit that never happened is 503 and a retry is a new 201; a commit that cannot be proven is 503, then a replay.
+    [Fact]
+    public async Task RP08_CommitWhoseAnswerWasLost_ShouldReadItsReceiptAndSucceed()
     {
         await using var h = new SupplierPerformanceHost();
-        h.Probe.FailAt = boundary;
+        h.Probe.FailAt = "afterCommit";
+
+        var created = await h.Create();
+        var replay = await h.Create();
+
+        Assert.Equal((HttpStatusCode.Created, HttpStatusCode.OK), (created.Status, replay.Status));
+        Assert.Equal(Text(created.Body), Text(replay.Body));
+        Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
+        Assert.NotEqual("Abandoned", Assert.Single(await h.AuditRecords())["Status"].AsString);
+        Assert.Single(h.Procurement.Calls);
+    }
+
+    [Fact]
+    public async Task RP08_CommitThatDidNotHappen_ShouldAnswer503AndLetTheSameKeyCreate()
+    {
+        await using var h = new SupplierPerformanceHost();
+        h.Probe.FailAt = "commit";
 
         var unknown = await h.Create();
         var again = await h.Create();
 
         Assert.Equal((HttpStatusCode.ServiceUnavailable, "PERSISTENCE_UNAVAILABLE"), (unknown.Status, unknown.Code));
-        Assert.Equal(retry, again.Status);
+        Assert.Equal(HttpStatusCode.Created, again.Status);
         Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
-        Assert.Equal(boundary == "commit" ? 2 : 1, h.Procurement.Calls.Count);
+        Assert.Equal(2, h.Procurement.Calls.Count);
+    }
+
+    [Fact]
+    public async Task RP08_CommitThatCannotBeProven_ShouldAnswer503AndReplayOnTheSameKey()
+    {
+        await using var h = new SupplierPerformanceHost();
+        h.Probe.FailAt = "afterCommit"; h.Probe.FailAlsoAt = "resolve";
+
+        var unknown = await h.Create();
+        var replay = await h.Create();
+
+        Assert.Equal((HttpStatusCode.ServiceUnavailable, "PERSISTENCE_UNAVAILABLE"), (unknown.Status, unknown.Code));
+        Assert.Equal(HttpStatusCode.OK, replay.Status);
+        Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
+    }
+
+    // F-3: a client that hangs up at the commit does not abandon the central record of a committed evaluation.
+    [Fact]
+    public async Task RP08_ClientHangsUpAtTheCommit_ShouldCommitAndKeepTheCentralRecordDeliverable()
+    {
+        await using var h = new SupplierPerformanceHost();
+        using var hangUp = new CancellationTokenSource();
+        h.Probe.At = boundary => { if (boundary == "commit") { hangUp.Cancel(); return Task.Delay(100); } return Task.CompletedTask; };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => h.Send(HttpMethod.Post, Base + "/evaluations", Body(), cancel: hangUp.Token));
+
+        for (var i = 0; i < 100 && await h.Evaluations() == 0; i++) await Task.Delay(50);
+        Assert.Equal(1, await h.Evaluations());
+        var row = await h.Db.GetCollection<BsonDocument>(Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName)
+            .Find(new BsonDocument("TenantId", h.Tenant.ToString())).FirstOrDefaultAsync();
+        for (var i = 0; i < 100 && (row is null || row["Status"].AsString == "AwaitingCommand"); i++)
+        {
+            await Task.Delay(50);
+            row = await h.Db.GetCollection<BsonDocument>(Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName)
+                .Find(new BsonDocument("TenantId", h.Tenant.ToString())).FirstOrDefaultAsync();
+        }
+        Assert.NotNull(row);
+        Assert.NotEqual("Abandoned", row["Status"].AsString);
+        Assert.NotEqual("AwaitingCommand", row["Status"].AsString);
     }
 
     // T-0147-RP-10: one key, two bodies, concurrent → one 201 and one 409 IDEMPOTENCY_KEY_REUSED; Procurement is not called after the clash.
     [Fact]
     public async Task RP10_SameKeyDifferentBodiesConcurrently_ShouldAnswerOne201AndOne409()
     {
-        await using var h = new SupplierPerformanceHost(ownDatabase: true);
+        await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         using var barrier = new Barrier(2);
         var bodies = new[] { Body(), Body(start: "2026-08-01", end: "2026-08-31") };
@@ -196,7 +250,7 @@ public sealed class SupplierPerformanceReplayTests
     [Fact]
     public async Task RP11_DifferentKeysSamePeriodConcurrently_ShouldAnswerOne201AndOne409Duplicate()
     {
-        await using var h = new SupplierPerformanceHost(ownDatabase: true);
+        await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
         using var barrier = new Barrier(2);
 

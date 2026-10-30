@@ -7,7 +7,8 @@ namespace Diten.SupplyChainService.Persistence.Features.SupplierPerformance;
 /// <summary>
 /// MOD-0147 DL-1 storage. Every query is scoped by Tenant + LE and hides soft-deleted rows. Create (§0.5 stage 8) writes the
 /// evaluation, its receipt and the central-audit event in one transaction; a unique-index refusal is reported as a Clash so the
-/// handler re-runs stage 5, and a failure after the commit was attempted is Unknown — never written a second time here.
+/// handler re-runs stage 5. After the commit was attempted nothing is written again: the receipt is read back once, and only a
+/// commit that cannot be proven either way is Unknown.
 /// </summary>
 public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformanceCommitProbe probe) : IEvaluationRepository
 {
@@ -61,23 +62,38 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
                     await probe.AtAsync("commit", ct);
                     for (var commit = 0; ; commit++)
                     {
-                        try { await session.CommitTransactionAsync(ct); break; }
+                        // Not ct: a client that hangs up must not leave a committed evaluation whose central record is abandoned.
+                        try { await session.CommitTransactionAsync(CancellationToken.None); break; }
                         catch (MongoException ex) when (ex.HasErrorLabel("UnknownTransactionCommitResult") && commit < 2) { }
                     }
-                    await probe.AtAsync("afterCommit", ct);
+                    await probe.AtAsync("afterCommit", CancellationToken.None);
                     return EvaluationCommitOutcome.Committed;
                 }
                 catch { if (!commitAttempted && session.IsInTransaction) try { await session.AbortTransactionAsync(CancellationToken.None); } catch (MongoException) { } throw; }
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (OperationCanceledException) when (!commitAttempted && ct.IsCancellationRequested) { throw; }
             // A receipt tuple or an active period already committed by another request.
             catch (MongoWriteException ex) when (!commitAttempted && ex.WriteError.Category == ServerErrorCategory.DuplicateKey) { return EvaluationCommitOutcome.Clash; }
             // The other request has not committed yet: try the same write again (Procurement is not asked again).
             catch (MongoException ex) when (!commitAttempted && ex.HasErrorLabel("TransientTransactionError")) { await Task.Delay(10 * (attempt + 1), ct); }
-            catch (Exception) when (commitAttempted) { return EvaluationCommitOutcome.Unknown; }
+            catch (Exception) when (commitAttempted) { return await ResolveCommitAsync(scope, key, evaluation.Id); }
             catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }
         }
         return EvaluationCommitOutcome.Unknown;
+    }
+
+    // A commit whose answer was lost: this request's own receipt proves it committed, so the request succeeds and the shared
+    // forwarder confirms its enlisted row. Bounded and independent of the caller's token; any failure here stays Unknown (503).
+    private async Task<EvaluationCommitOutcome> ResolveCommitAsync(SupplierPerformanceScope scope, string key, Guid evaluationId)
+    {
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await probe.AtAsync("resolve", timeout.Token);
+            var r = await Receipts.WithReadConcern(ReadConcern.Local).Find(Identity(scope, key), new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(timeout.Token);
+            return r is not null && r["EvaluationId"].AsString == evaluationId.ToString() ? EvaluationCommitOutcome.Committed : EvaluationCommitOutcome.Unknown;
+        }
+        catch (Exception) { return EvaluationCommitOutcome.Unknown; }
     }
 
     public async Task<SupplierEvaluation?> GetAsync(SupplierPerformanceScope scope, Guid evaluationId, CancellationToken ct)
