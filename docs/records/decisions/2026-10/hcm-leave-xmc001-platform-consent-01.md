@@ -40,3 +40,5 @@ Kapsamaz:
   (çalışan sözleşmesi), DL-5 iki ekranı (Blueprint MCR), DL-7 (integration-agent görevi).
 - Paketteki açık soru 1 bu kayıtla cevaplanır; paket revizyon 09 bu kayda bağlanır. İzin, onaylı paket sürümüyle birlikte
   geçerlidir: revizyon 09'un onay satırı origin/main'de geçerli olmadan kod dağıtılmaz.
+- Not (2026-10-31): revizyon 09 onaylanmadı, yerine revizyon 10 geldi (sahip seçimi "Yalnız açık izin"). Bu izindeki yollar değişmedi;
+  izin onaylanacak sürüm için geçerlidir ve o sürümün onay satırı origin/main'de geçerli olmadan kod dağıtılmaz.
