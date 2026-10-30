@@ -21,4 +21,11 @@ public sealed class SupplierEvaluation : EntityBase
     // Set by submit (DL-2); a scorecard is the published view of its evaluation.
     public Guid? ScorecardId { get; set; }
     public DateTimeOffset? PublishedAt { get; set; }
+    public Guid? PublishedBy { get; set; }
+    /// <summary>The submit request's own correlation; CorrelationId stays the create request's.</summary>
+    public Guid? PublishCorrelationId { get; set; }
+    /// <summary>The client's submittedAt, as declared; PublishedAt is the server's clock.</summary>
+    public DateTimeOffset? SubmittedAt { get; set; }
+    /// <summary>Kept on the business record under .read; never in the audit record (pack §21).</summary>
+    public string? SubmitComment { get; set; }
 }

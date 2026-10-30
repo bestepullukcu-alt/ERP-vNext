@@ -11,7 +11,7 @@ using Diten.SupplyChainService.Infrastructure.Features.SupplierPerformance;
 namespace Diten.SupplyChainService.Api.Features.SupplierPerformance;
 
 /// <summary>
-/// SUPPLIER-PERFORMANCE v1 (frozen), DL-1 operations of MOD-0147. No Gateway route and no catalog permission yet: both ship
+/// SUPPLIER-PERFORMANCE v1 (frozen), the evaluation and scorecard operations of MOD-0147. No Gateway route and no catalog permission yet: both ship
 /// with the enabling change (pack §0.0, F-1). The context middleware runs §0.5 stages 1–3b before any action.
 /// </summary>
 [Authorize, Route("api/supplier-performance")]
@@ -29,6 +29,10 @@ public sealed class SupplierPerformanceController(ISender sender, SupplierPerfor
     [HttpGet("evaluations/{evaluationId}"), SupplierPerformancePermission(SupplierPerformancePermissions.Read, ScopeNotFoundCode = SupplierPerformanceErrorCodes.UnknownEvaluation)]
     public async Task<IActionResult> GetEvaluation(string evaluationId, CancellationToken ct) =>
         Answer("getSupplierEvaluation", await sender.Send(new GetSupplierEvaluationQuery(Guid.Parse(evaluationId)), ct));
+
+    [HttpPost("evaluations/{evaluationId}/submit"), SupplierPerformancePermission(SupplierPerformancePermissions.Publish, ScopeNotFoundCode = SupplierPerformanceErrorCodes.UnknownEvaluation)]
+    public async Task<IActionResult> SubmitEvaluation(string evaluationId, [FromBody] JsonElement body, CancellationToken ct) =>
+        Answer("submitSupplierEvaluation", await sender.Send(new SubmitSupplierEvaluationCommand(Guid.Parse(evaluationId), body), ct));
 
     [HttpGet("scorecards"), SupplierPerformancePermission(SupplierPerformancePermissions.Read)]
     public async Task<IActionResult> ListScorecards([FromQuery] string? supplierId, [FromQuery] string? periodFrom, [FromQuery] string? periodTo,

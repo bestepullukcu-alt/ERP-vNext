@@ -12,6 +12,7 @@ public static class SupplierPerformanceErrorCodes
     public const string UnknownEvaluation = "UNKNOWN_EVALUATION";
     public const string UnknownScorecard = "UNKNOWN_SCORECARD";
     public const string BusinessRuleViolation = "BUSINESS_RULE_VIOLATION";
+    public const string VersionConflict = "VERSION_CONFLICT";
     public const string SupplierBaseUnavailable = "SUPPLIER_BASE_UNAVAILABLE";
     // Declared by the pack (§0.0 undeclared statuses, §0.5), carried by the contract successor 1.1.0.
     public const string Unauthenticated = "UNAUTHENTICATED";

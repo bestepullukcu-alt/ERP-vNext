@@ -8,7 +8,7 @@ namespace Diten.SupplyChainService.Api.Features.SupplierPerformance;
 /// <summary>
 /// MOD-0147 §0.5 stages 1–3b and the header / path / query part of stage 4, first failing stage wins, on the house R-2 pattern
 /// (LoadContextMiddleware): 1 token → 401; 2 signed tenant_id, sub and the operation's permission → 403; 3 header syntax
-/// (X-Correlation-Id, X-Tenant-Id, X-Legal-Entity-Id, Idempotency-Key on create) → 400; 3a X-Tenant-Id ≠ signed tenant → 404,
+/// (X-Correlation-Id, X-Tenant-Id, X-Legal-Entity-Id, Idempotency-Key on commands, If-Match on submit) → 400; 3a X-Tenant-Id ≠ signed tenant → 404,
 /// no lookup; 3b MDM: company not referenceable → 404, MDM unreachable or MDM 403 → 503 DEPENDENCY_UNAVAILABLE. The 404s
 /// do not disclose: the operation's declared 404 object, NOT_FOUND for lists. The response header and the error body carry
 /// the same correlation id: the valid one sent, or one generated UUID.
@@ -81,6 +81,12 @@ public sealed class SupplierPerformanceContextMiddleware(RequestDelegate next, I
             var keys = http.Request.Headers["Idempotency-Key"];
             if (keys.Count != 1 || !ValidIdempotencyKey(keys[0])) { await Error(400, SupplierPerformanceErrorCodes.InvalidRequest); return; }
             context.IdempotencyKey = keys[0]!;
+            if (http.Request.RouteValues.ContainsKey("evaluationId"))
+            {
+                var ifMatch = http.Request.Headers.IfMatch;
+                if (ifMatch.Count != 1 || !SupplierPerformanceWire.IfMatch(ifMatch[0], out var expectedVersion)) { await Error(400, SupplierPerformanceErrorCodes.InvalidRequest); return; }
+                context.ExpectedVersion = expectedVersion;
+            }
         }
         // 3a
         if (tenant != headerTenant) { await Error(404, permission.ScopeNotFoundCode); return; }

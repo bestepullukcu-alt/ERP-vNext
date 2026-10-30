@@ -28,11 +28,11 @@ public sealed class SupplierPerformanceCompositionTests(Diten.SupplyChainService
     }
 
     [Fact]
-    public void ProductionHost_ShouldMapTheFiveOperationsAndRegisterNoManifestForMod0147()
+    public void ProductionHost_ShouldMapTheSixOperationsAndRegisterNoManifestForMod0147()
     {
         var routes = host.Services.GetServices<EndpointDataSource>().SelectMany(d => d.Endpoints).OfType<RouteEndpoint>()
             .Select(e => e.RoutePattern.RawText).Where(r => r is not null && r.StartsWith("api/supplier-performance", StringComparison.Ordinal)).Distinct().Order().ToArray();
-        Assert.Equal(["api/supplier-performance/evaluations", "api/supplier-performance/evaluations/{evaluationId}", "api/supplier-performance/scorecards",
+        Assert.Equal(["api/supplier-performance/evaluations", "api/supplier-performance/evaluations/{evaluationId}", "api/supplier-performance/evaluations/{evaluationId}/submit", "api/supplier-performance/scorecards",
             "api/supplier-performance/scorecards/{scorecardId}"], routes);
         Assert.DoesNotContain(host.Services.GetServices<IModuleManifestProvider>(), p => p.GetManifest().ModuleCode == "supplier-performance-risk");
         Assert.DoesNotContain(typeof(IModuleManifestProvider).Assembly.GetTypes(), t => typeof(IModuleManifestProvider).IsAssignableFrom(t) && t.Name.Contains("SupplierPerformance", StringComparison.Ordinal));

@@ -5,16 +5,18 @@ using Diten.SupplyChainService.Domain.Features.SupplierPerformance;
 namespace Diten.SupplyChainService.Persistence.Features.SupplierPerformance;
 
 /// <summary>
-/// MOD-0147 DL-1 storage. Every query is scoped by Tenant + LE and hides soft-deleted rows. Create (§0.5 stage 8) writes the
-/// evaluation, its receipt and the central-audit event in one transaction; a unique-index refusal is reported as a Clash so the
-/// handler re-runs stage 5. After the commit was attempted nothing is written again: the receipt is read back once, and only a
+/// MOD-0147 storage. Every query is scoped by Tenant + LE and hides soft-deleted rows. Create and submit (§0.5 stage 8) write their
+/// state, receipt and central-audit event in one transaction, submit also its Pending event; a unique-index refusal is reported as a
+/// Clash so the handler re-runs stage 5. After the commit was attempted nothing is written again: the receipt is read back once, and only a
 /// commit that cannot be proven either way is Unknown.
 /// </summary>
 public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformanceCommitProbe probe) : IEvaluationRepository
 {
     public const string CreateOperation = "createSupplierEvaluation";
     public const string CreateTarget = "create";
+    public const string SubmitOperation = "submitSupplierEvaluation";
     private IMongoCollection<SupplierEvaluation> Evaluations => db.GetCollection<SupplierEvaluation>(SupplierPerformanceSchema.Evaluations);
+    private IMongoCollection<BsonDocument> Outbox => db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Outbox);
     private IMongoCollection<BsonDocument> Receipts => db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Receipts).WithReadConcern(ReadConcern.Majority);
     private static BsonDocument Scope(SupplierPerformanceScope s) { s.EnsureTrusted(); return new() { { "TenantId", s.TenantId.ToString() }, { "LegalEntityId", s.LegalEntityId.ToString() } }; }
     private static BsonDocument Visible(SupplierPerformanceScope s) { var f = Scope(s); f.Add("IsDeleted", false); return f; }
@@ -24,6 +26,9 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
 
     public Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct, bool afterClash = false) =>
         FindReceiptAsync(Identity(scope, CreateOperation, CreateTarget, key), afterClash, ct);
+
+    public Task<EvaluationReceipt?> FindSubmitReceiptAsync(SupplierPerformanceScope scope, Guid evaluationId, string key, CancellationToken ct, bool afterClash = false) =>
+        FindReceiptAsync(Identity(scope, SubmitOperation, evaluationId.ToString(), key), afterClash, ct);
 
     private async Task<EvaluationReceipt?> FindReceiptAsync(BsonDocument identity, bool afterClash, CancellationToken ct)
     {
@@ -47,6 +52,23 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
         CommitAsync(scope, Identity(scope, CreateOperation, CreateTarget, key), 201, fingerprint, responseBody, evaluation.Id, evaluation.Id.ToString(), evaluation.CorrelationId, async session =>
         {
             await Evaluations.InsertOneAsync(session, evaluation, cancellationToken: ct); await probe.AtAsync("entity", ct);
+            return true;
+        }, ct);
+
+    public Task<EvaluationCommitOutcome> SubmitAsync(SupplierPerformanceScope scope, string key, string fingerprint, EvaluationSubmission s, string responseBody, CancellationToken ct) =>
+        CommitAsync(scope, Identity(scope, SubmitOperation, s.EvaluationId.ToString(), key), 200, fingerprint, responseBody, s.EvaluationId, s.ScorecardId.ToString(), s.CorrelationId, async session =>
+        {
+            var draft = Visible(scope); draft.Add("_id", s.EvaluationId.ToString()); draft.Add("Status", nameof(EvaluationStatus.DRAFT)); draft.Add("Version", s.ExpectedVersion);
+            var update = Builders<SupplierEvaluation>.Update.Set(x => x.Status, EvaluationStatus.PUBLISHED).Set(x => x.Version, s.ExpectedVersion + 1)
+                .Set(x => x.ScorecardId, s.ScorecardId).Set(x => x.PublishedAt, s.PublishedAt).Set(x => x.PublishedBy, scope.ActorId).Set(x => x.PublishCorrelationId, s.CorrelationId)
+                .Set(x => x.SubmittedAt, s.SubmittedAt).Set(x => x.SubmitComment, s.Comment).Set(x => x.UpdatedBy, scope.ActorId).Set(x => x.UpdatedAt, s.PublishedAt);
+            var changed = await Evaluations.UpdateOneAsync(session, draft, update, cancellationToken: ct);
+            if (changed.ModifiedCount != 1) return false;
+            await probe.AtAsync("entity", ct);
+            var pending = Scope(scope); pending.Add("_id", s.EventId.ToString()); pending.Add("EvaluationId", s.EvaluationId.ToString()); pending.Add("EventName", SupplierPerformanceOutboxStore.EventName);
+            pending.Add("Status", "Pending"); pending.Add("AttemptCount", 0); pending.Add("OccurredAt", s.PublishedAt.UtcDateTime); pending.Add("NextAttemptAt", s.PublishedAt.UtcDateTime);
+            pending.Add("CorrelationId", s.CorrelationId.ToString()); pending.Add("CausationId", s.EvaluationId.ToString()); pending.Add("PayloadJson", s.EventPayload);
+            await Outbox.InsertOneAsync(session, pending, cancellationToken: ct); await probe.AtAsync("outbox", ct);
             return true;
         }, ct);
 

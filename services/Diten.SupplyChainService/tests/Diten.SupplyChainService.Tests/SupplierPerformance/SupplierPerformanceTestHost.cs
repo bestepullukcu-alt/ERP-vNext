@@ -52,7 +52,7 @@ internal sealed class SupplierPerformanceFactory(FakeProcurement procurement, St
 internal sealed class SupplierPerformanceHost : IAsyncDisposable
 {
     public const string Base = "/api/supplier-performance";
-    public const string Evaluate = SupplierPerformancePermissions.Evaluate, Read = SupplierPerformancePermissions.Read;
+    public const string Evaluate = SupplierPerformancePermissions.Evaluate, Read = SupplierPerformancePermissions.Read, Publish = SupplierPerformancePermissions.Publish;
     public readonly Guid Tenant = Guid.NewGuid(), LegalEntity = Guid.NewGuid(), Actor = Guid.NewGuid();
     public readonly FakeProcurement Procurement = new();
     public readonly StubLegalEntityScopeValidator LegalEntities = StubLegalEntityScopeValidator.Valid;
@@ -112,18 +112,26 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     public Task<Answer> Create(JsonNode? body = null, string? key = "key-1", Guid? tenant = null, Guid? le = null, string[]? permissions = null, string? correlation = null) =>
         Send(HttpMethod.Post, Base + "/evaluations", body ?? Body(), key, correlation, tenant, le, permissions: permissions);
 
+    public static JsonObject SubmitBody(string submittedAt = "2026-10-02T09:00:00Z") => new() { ["submittedAt"] = submittedAt };
+
+    public Task<Answer> Submit(string id, JsonNode? body = null, string? key = "submit-1", string? ifMatch = "1", Guid? tenant = null, Guid? le = null, string[]? permissions = null,
+        string? correlation = null, string? rawBody = null) =>
+        Send(HttpMethod.Post, Base + "/evaluations/" + id + "/submit", rawBody is null ? body ?? SubmitBody() : null, key, correlation, tenant, le, permissions: permissions ?? [Publish, Read], rawBody: rawBody,
+            edit: r => { if (ifMatch is not null) r.Headers.TryAddWithoutValidation("If-Match", ifMatch); });
+
     public Task<Answer> Get(string path, Guid? tenant = null, Guid? le = null, string[]? permissions = null) =>
         Send(HttpMethod.Get, Base + path, null, null, null, tenant, le, permissions: permissions);
 
     private BsonDocument Scope(Guid? tenant, Guid? le) => new() { { "TenantId", (tenant ?? Tenant).ToString() }, { "LegalEntityId", (le ?? LegalEntity).ToString() } };
     public Task<long> Evaluations(Guid? tenant = null, Guid? le = null) => Db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Evaluations).CountDocumentsAsync(Scope(tenant, le));
     public Task<long> Receipts(Guid? tenant = null, Guid? le = null) => Db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Receipts).CountDocumentsAsync(Scope(tenant, le));
+    public Task<List<BsonDocument>> OutboxRows(Guid? tenant = null, Guid? le = null) => Db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Outbox).Find(Scope(tenant, le)).ToListAsync();
     public Task<List<BsonDocument>> AuditRecords(Guid? tenant = null) =>
         Db.GetCollection<BsonDocument>(CentralAuditOutboxRecord.CollectionName).Find(new BsonDocument { { "TenantId", (tenant ?? Tenant).ToString() }, { "EntityType", "SupplierEvaluation" } }).ToListAsync();
     public async Task<BsonDocument[]> Snapshot()
     {
         var all = new List<BsonDocument>();
-        foreach (var name in new[] { SupplierPerformanceSchema.Evaluations, SupplierPerformanceSchema.Receipts })
+        foreach (var name in new[] { SupplierPerformanceSchema.Evaluations, SupplierPerformanceSchema.Receipts, SupplierPerformanceSchema.Outbox })
             all.AddRange(await Db.GetCollection<BsonDocument>(name).Find(Scope(null, null)).Sort(new BsonDocument("_id", 1)).ToListAsync());
         // Central-audit rows are counted separately: the dispatcher updates their delivery fields in the background.
         return all.ToArray();
