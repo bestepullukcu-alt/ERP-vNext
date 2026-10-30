@@ -94,6 +94,10 @@ taşımaz. Değişmez kural: `isBillable = true` ⇔ `status = "active"`; ikisi 
 
 ## 3. U-2 — `external-references/resolve`
 
+> **ERTELENDİ (K-7, MOD-0120 sahibi 2026-10-30):** bu sürümde tüketicisi yok; MOD-0120 O-10 (içe aktarma / eski kayıt
+> taşıma) ile etkinleşir (MOD-0149 pack §31 DL-2). Tanım burada kalır ve 1.x içinde değişmeden uygulanır;
+> `sourceSystem` değerleri O-10'da belirlenir, büyük/küçük harf kuralı (§3.1) bağlayıcıdır.
+
 ### 3.1 Girdi ve normalizasyon (koddan ölçüldü, yazma yoluyla aynı)
 
 - `sourceSystem` ve `externalId` zorunlu; ikisi de yalnız `Trim()` edilir. Büyük/küçük harf **korunur**; eşleşme
@@ -250,10 +254,12 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
 | K-2 | `archived` sözleşmede yayımlanır mı | commercial-suite (Beste) | **KAPANDI 2026-10-30:** evet, `isBillable = false` |
 | K-3 | U-2 409 karşısında tüketici davranışı | kural: commercial-suite (Beste); kod adı: MOD-0120 sahibi | **ÜRETİCİ KURALI 2026-10-30:** tahmin yok, işlem durur, kalıcı hata → öneri 422 ayrı kod (503 değil) |
 | K-4 | Gateway: mevcut joker rota yeterli mi (§8) | integration-agent | **KAPANDI (sahip) 2026-10-30:** yeterli; integration-agent teyidi yalnız not |
-| K-7 | U-2'nin MOD-0120'deki kullanım yeri (bu sürümde içe aktarma yok, O-10) | MOD-0120 sahibi | **AÇIK — soru gönderildi.** Çağıran yoksa U-2 (pack DL-2) içe aktarma gelene kadar ertelenir; U-1 (DL-1) bağımsız |
+| K-7 | U-2'nin MOD-0120'deki kullanım yeri | MOD-0120 sahibi | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 ## 12. Değişiklik geçmişi
 
 - 1.0.0 (2026-10-30) — ilk yazılı sürüm; MOD-0120 O-3 / O-4 ve Y-4/4b, Y-4/4c'den; MOD-0149 pack eki ile birlikte.
 - 1.0.0 (2026-10-30, aynı gün, taslak düzeltmesi) — sahip kararları: K-1 anahtar, K-2 `archived`, K-3 üretici kuralı
   (409 → tahmin yok, kalıcı hata); K-7 MOD-0120 sahibine soru.
+- 1.0.0 (2026-10-30, MOD-0120 sahibi yanıtı) — K-7 kapandı: U-2 MOD-0120 O-10'a kadar ertelendi; U-1 ve bu belge bu
+  sürümün önkoşulu.

@@ -615,6 +615,9 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md)
 (taslak; çelişkide bu pack kazanır).
 
+> **U-2 ertelendi (K-7, MOD-0120 sahibi 2026-10-30):** bu sürümde tüketicisi yok; MOD-0120 O-10 (içe aktarma / eski
+> kayıt taşıma) ile etkinleşir. Tanımı burada ve sözleşmede kalır; bu sürümün işi yalnız DL-1 (U-1).
+
 | Uç | Yanıt | Dosyalar (Golden Compact düzeni, §13) |
 |---|---|---|
 | `GET /api/crm/accounts/{accountId:guid}/lookup-validation` | 200 `accountId`, `code`, `name`, `status`, `isBillable`, `contractVersion` · 404 (yok / silinmiş / başka kiracı — aynı gövde) · 503 | `Queries/GetAccountLookupValidationQuery.cs` · `Handlers/QueryHandlers/GetAccountLookupValidationHandler.cs` |
@@ -689,11 +692,11 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-4 | Gateway joker rotası | **KAPANDI** (Beste, 2026-10-30): yeterli; integration-agent teyidi yalnız not (§30.4) |
 | K-5 | `runtime_code_scope` künyesi | **KAPANDI** (Beste, 2026-10-30): değişmez — "external-ref surface" U-2'yi, "Account/WorkPlace master + 360" okuma yüzeyi U-1'i kapsar; yeni nesne / alan / komut yok |
 | K-6 | Teslim dilimleri tablosu | **KAPANDI** (Beste, 2026-10-30): yalnız bu ek için tablo (§31); §1–§29'un mevcut, teslim edilmiş işi geriye dönük dilimlere bölünmez |
-| K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **AÇIK — MOD-0120 sahibine soru.** MOD-0120 bu sürümde içe aktarmayı taşımıyor (O-10; pack ~297, ~340, ~344). U-2 hangi akışta, hangi sürümde çağrılacak? Bu sürümde çağıran yoksa DL-2 içe aktarma (O-10) gelene kadar ertelenir; DL-1 bağımsız teslim edilir. |
+| K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 ## 31. Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
 | DL-1 | Treasury AR müşteri doğrulama ucu (U-1 lookup-validation) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
-| DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve; K-7 cevabına bağlı) | Uçlar ve sözleşme, Gateway, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
+| DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve) — ERTELENDİ: MOD-0120 O-10 ile (K-7) | Uçlar ve sözleşme, Gateway, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
