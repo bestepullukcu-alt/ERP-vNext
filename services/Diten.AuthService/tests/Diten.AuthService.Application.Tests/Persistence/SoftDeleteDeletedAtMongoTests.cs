@@ -11,6 +11,7 @@ namespace Diten.AuthService.Application.Tests.Persistence;
 /// (no backfill). Owned replica set only.
 /// </summary>
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class SoftDeleteDeletedAtMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private IMongoDatabase Db => ownedMongo.Database;

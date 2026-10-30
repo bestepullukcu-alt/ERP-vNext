@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:e4b8f3bb797d` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:5a4053ecbdfe` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -11,9 +11,9 @@ description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçl
 `@.antigravity/skills/control-tower/SKILL.md <modül adı>`. Modül adını çağrının kendi metninden oku; ad yoksa yalnız
 onu sor.
 
-Bu skill yeni yetki yaratmaz. Kurallar `AGENTS.md`, CONTROL TOWER SOP ve işletim kartındadır
-(`docs/guides/operations/control-tower-operating-card.md`). Komutlar kartın "Bugün hangi komut" tablosunda ve §0'dadır;
-burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dışında salt okunurdur.
+Bu skill yeni yetki yaratmaz. Kurallar `AGENTS.md`, CT SOP ve işletim kartındadır; kartı `git fetch` sonra
+`git show origin/main:docs/guides/operations/control-tower-operating-card.md` ile oku. Komutlar kartın "Bugün
+hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartın §0 "Yer" adımı dışında salt okunurdur.
 
 ## 1. Başlangıç ve kimlik
 
@@ -22,8 +22,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
 - Önce yeri ölç (ilk satır, §6). Paylaşılan ana klasörde ya da `origin/main` gerisindeki ağaçta
   hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme: kartın
   §0 "Yer" adımıyla modülün worktree ve dalına kendin geç; worktree açmak commit/push izni değildir.
-- Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış gibi
-  davranma, yerine kendi kontrolünü uydurma.
+- Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış
+  gibi davranma, kontrol uydurma.
 - Görev kaynağını ve kaydını oku (kartın §0'ı): kuyruk ve kayıt satırı var mı, `main`'de yürürlükte mi. Yürürlükte
   değilse yalnız hazırlık önerilir (`--prepare` sınırı). Kayıt, sahiplik ya da onay uydurma.
 

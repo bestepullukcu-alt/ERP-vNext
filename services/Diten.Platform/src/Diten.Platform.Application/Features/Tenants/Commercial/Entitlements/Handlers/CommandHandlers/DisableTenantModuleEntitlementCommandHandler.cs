@@ -132,7 +132,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
     private async Task<Response<NoContent>> SuspendPlanLineAsync(
         DisableTenantModuleEntitlementCommand request, string moduleCode, CancellationToken ct)
     {
-        var refusal = await TenantModuleEntitlementActionGate.RefuseProjectionDisableAsync(
+        var (refusal, rows) = await TenantModuleEntitlementActionGate.RefuseProjectionDisableAsync(
             _moduleRepository, _repository, _subscriptions, _plans, request.TenantId, moduleCode, ct);
         if (refusal is not null)
         {
@@ -149,8 +149,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
          * Its expiry is CLEARED, not rewritten: this action suspends with no end date, and a past date kept on the
          * row would leave the new suspension expired the moment it is written — skipped, and the plan's access back.
          */
-        var existingOverride = (await _repository.GetByTenantAndModuleAsync(request.TenantId, moduleCode, ct))
-            .FirstOrDefault(row => row.Source == EntitlementSource.ManualOverride);
+        var existingOverride = rows.FirstOrDefault(row => row.Source == EntitlementSource.ManualOverride);
         if (existingOverride is not null)
         {
             return await SuspendThroughExistingOverrideAsync(request, moduleCode, existingOverride, ct);

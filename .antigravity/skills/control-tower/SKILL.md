@@ -9,9 +9,9 @@ description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçl
 `@.antigravity/skills/control-tower/SKILL.md <modül adı>`. Modül adını çağrının kendi metninden oku; ad yoksa yalnız
 onu sor.
 
-Bu skill yeni yetki yaratmaz. Kurallar `AGENTS.md`, CONTROL TOWER SOP ve işletim kartındadır
-(`docs/guides/operations/control-tower-operating-card.md`). Komutlar kartın "Bugün hangi komut" tablosunda ve §0'dadır;
-burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dışında salt okunurdur.
+Bu skill yeni yetki yaratmaz. Kurallar `AGENTS.md`, CT SOP ve işletim kartındadır; kartı `git fetch` sonra
+`git show origin/main:docs/guides/operations/control-tower-operating-card.md` ile oku. Komutlar kartın "Bugün
+hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartın §0 "Yer" adımı dışında salt okunurdur.
 
 ## 1. Başlangıç ve kimlik
 
@@ -20,8 +20,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
 - Önce yeri ölç (ilk satır, §6). Paylaşılan ana klasörde ya da `origin/main` gerisindeki ağaçta
   hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme: kartın
   §0 "Yer" adımıyla modülün worktree ve dalına kendin geç; worktree açmak commit/push izni değildir.
-- Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış gibi
-  davranma, yerine kendi kontrolünü uydurma.
+- Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış
+  gibi davranma, kontrol uydurma.
 - Görev kaynağını ve kaydını oku (kartın §0'ı): kuyruk ve kayıt satırı var mı, `main`'de yürürlükte mi. Yürürlükte
   değilse yalnız hazırlık önerilir (`--prepare` sınırı). Kayıt, sahiplik ya da onay uydurma.
 

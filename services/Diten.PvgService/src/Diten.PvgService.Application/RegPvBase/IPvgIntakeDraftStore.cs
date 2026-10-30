@@ -24,6 +24,11 @@ public interface IPvgIntakeDraftStore
     ValueTask<IReadOnlyList<PvgPersistedIntakeDraft>> ListAsync(
         PvgPersistenceListScope listScope,
         CancellationToken cancellationToken = default);
+
+    ValueTask<int> CountAsync(
+        PvgPersistenceTenantScope tenantScope,
+        PvgIntakeStatus? status,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record PvgPersistenceTenantScope(string TenantId);

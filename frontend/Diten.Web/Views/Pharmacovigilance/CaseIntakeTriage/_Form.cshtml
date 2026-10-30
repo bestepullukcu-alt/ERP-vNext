@@ -1,11 +1,12 @@
 @using Diten.Web.Views.Pharmacovigilance.CaseIntakeTriage
+@using Diten.Web.Models.CaseIntakeTriage
 @using Microsoft.AspNetCore.Mvc.Localization
-@model object?
+@model PvgCaseIntakeFormViewModel
 @inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
 @{
     var mode = (ViewData["FormMode"] as string) ?? "create";
     var isEdit = string.Equals(mode, "edit", StringComparison.OrdinalIgnoreCase);
-    var intakeDraftId = ViewData["IntakeDraftId"] as string;
+    var intakeDraftId = Model?.IntakeDraftId ?? ViewData["IntakeDraftId"] as string;
     var title = isEdit ? Localizer["EditTitle"] : Localizer["CreateTitle"];
 }
 
@@ -35,6 +36,7 @@
 
 <form id="pvg-case-intake-form" class="needs-validation" novalidate data-mode="@mode" data-intake-draft-id="@intakeDraftId">
     @Html.AntiForgeryToken()
+    <input type="hidden" name="ExpectedVersion" id="ExpectedVersion" />
     <div class="row g-4">
         <div class="col-12 col-xl-8">
             <section class="card mb-4">

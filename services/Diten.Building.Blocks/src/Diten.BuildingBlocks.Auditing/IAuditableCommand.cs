@@ -50,7 +50,9 @@ public enum AuditCategory
     PortfolioDelivery = 15,
     Tasks = 16,
     ESignature = 17,
-    Crm = 18
+    Finance = 18,
+    // main-sync 2026-10-30 — Platform AuditModule: Finance took 18 on main; Crm is 19.
+    Crm = 19
 }
 
 public enum AuditOperation

@@ -95,6 +95,20 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         return ValueTask.FromResult<IReadOnlyList<PvgPersistedIntakeDraft>>(items);
     }
 
+    public ValueTask<int> CountAsync(
+        PvgPersistenceTenantScope tenantScope,
+        PvgIntakeStatus? status,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureTenantScope(tenantScope);
+
+        var count = _drafts
+            .Values
+            .Count(entity => entity.TenantId == tenantScope.TenantId && (status is null || entity.Status == status));
+
+        return ValueTask.FromResult(count);
+    }
+
     private static void EnsureTenantScope(PvgPersistenceTenantScope tenantScope, SafetyCaseIntake? intake = null)
     {
         if (string.IsNullOrWhiteSpace(tenantScope.TenantId))
@@ -126,13 +140,23 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         string? PatientSubjectCode,
         DateOnly? EventOnsetDate,
         string AdverseEventNarrative,
-        string? SuspectProductText,
         string Seriousness,
         string IntakePriority,
         PvgTriageOutcome? TriageOutcome,
         string? TriageReason,
         string? RouteTargetQueue,
-        IReadOnlyList<string> EvidenceLinkReferences)
+        IReadOnlyList<string> EvidenceLinkReferences,
+        IReadOnlyList<PvgIntakeProductLine> ProductLines,
+        DateTimeOffset AwarenessAtUtc,
+        string? CompanyRecipientPersonId,
+        string EventCountry,
+        string ReportType,
+        PvgReporterSource ReporterSource,
+        string? ReporterSourceId,
+        PvgReporterCrmSearchState ReporterCrmSearchState,
+        string? ReporterNameOrInitials,
+        string? ReporterProfession,
+        string? ReporterCountry)
     {
         public static PvgIntakeDraftEntity FromDomain(
             string tenantId,
@@ -153,13 +177,23 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
                 intake.PatientSubjectCode,
                 intake.EventOnsetDate,
                 intake.AdverseEventNarrative,
-                intake.SuspectProductText,
                 intake.Seriousness,
                 intake.IntakePriority,
                 intake.TriageOutcome,
                 intake.TriageReason,
                 intake.RouteTargetQueue,
-                intake.EvidenceLinkReferences.ToArray());
+                intake.EvidenceLinkReferences.ToArray(),
+                intake.ProductLines.ToArray(),
+                intake.AwarenessAtUtc,
+                intake.CompanyRecipientPersonId,
+                intake.EventCountry,
+                intake.ReportType,
+                intake.ReporterSource,
+                intake.ReporterSourceId,
+                intake.ReporterCrmSearchState,
+                intake.ReporterNameOrInitials,
+                intake.ReporterProfession,
+                intake.ReporterCountry);
 
         public PvgPersistedIntakeDraft ToPersistedDraft() =>
             new(
@@ -182,8 +216,18 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
                     ReporterContactSummary = ReporterContactSummary,
                     PatientSubjectCode = PatientSubjectCode,
                     EventOnsetDate = EventOnsetDate,
-                    SuspectProductText = SuspectProductText,
-                    EvidenceLinkReferences = EvidenceLinkReferences.ToArray()
+                    EvidenceLinkReferences = EvidenceLinkReferences.ToArray(),
+                    ProductLines = ProductLines.ToArray(),
+                    AwarenessAtUtc = AwarenessAtUtc,
+                    CompanyRecipientPersonId = CompanyRecipientPersonId,
+                    EventCountry = EventCountry,
+                    ReportType = ReportType,
+                    ReporterSource = ReporterSource,
+                    ReporterSourceId = ReporterSourceId,
+                    ReporterCrmSearchState = ReporterCrmSearchState,
+                    ReporterNameOrInitials = ReporterNameOrInitials,
+                    ReporterProfession = ReporterProfession,
+                    ReporterCountry = ReporterCountry
                 },
                 Version);
     }

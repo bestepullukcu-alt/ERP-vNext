@@ -7,7 +7,11 @@
     const L = window.PvgCaseIntakeTriageL10n || {};
     const t = key => L[key] || key;
     const alertEl = document.getElementById('pvg-form-alert');
-    const submitButton = form.querySelector('button[type="submit"]');
+    // The Save button sits in the page header, outside the form, and points at it through its form attribute.
+    const submitButton = document.querySelector('button[type="submit"][form="pvg-case-intake-form"]') || form.querySelector('button[type="submit"]');
+    const isEdit = (form.dataset.mode || 'create') === 'edit';
+    const versionEl = document.getElementById('ExpectedVersion');
+    let versionReady = !isEdit;
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
     const ajaxHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const safeProxyUrl = path => {
@@ -18,6 +22,13 @@
         return path;
     };
 
+    // Edit: the record version read now travels back with the save (the service answers 409 when the record moved on).
+    // Without a version there is nothing safe to save, so Save stays off.
+    if (isEdit) {
+        setSubmitting(false);
+        loadVersion();
+    }
+
     form.addEventListener('submit', async event => {
         event.preventDefault();
         event.stopPropagation();
@@ -27,9 +38,9 @@
             return;
         }
 
-        const mode = form.dataset.mode || 'create';
+        if (!versionReady) return;
         const id = encodeURIComponent(form.dataset.intakeDraftId || '');
-        const url = mode === 'edit' ? safeProxyUrl(`${endpoint}/update/${id}`) : safeProxyUrl(`${endpoint}/create`);
+        const url = isEdit ? safeProxyUrl(`${endpoint}/update/${id}`) : safeProxyUrl(`${endpoint}/create`);
         setSubmitting(true);
         const result = await postForm(url, new FormData(form));
         setSubmitting(false);
@@ -43,6 +54,33 @@
             ? `/Pharmacovigilance/CaseIntakeTriage/Details/${encodeURIComponent(intakeDraftId)}`
             : '/Pharmacovigilance/CaseIntakeTriage');
     });
+
+    async function loadVersion() {
+        try {
+            const response = await fetch(safeProxyUrl(`${endpoint}/detail/${encodeURIComponent(form.dataset.intakeDraftId || '')}`), {
+                credentials: 'same-origin',
+                headers: ajaxHeaders()
+            });
+            const body = await responseJson(response);
+            const version = versionOf(body);
+            if (!response.ok || isBlocked(body) || version === null) {
+                showAlert(safeMessage(body, response.status));
+                return;
+            }
+            if (versionEl) versionEl.value = String(version);
+            versionReady = true;
+            setSubmitting(false);
+        } catch (error) {
+            showAlert(error?.message === 'Invalid same-origin PVG proxy endpoint.' ? t('InvalidProxyEndpoint') : t('ErrorOccurred'));
+        }
+    }
+
+    function versionOf(body) {
+        const items = body?.items || body?.Items || body?.data?.items || body?.Data?.Items || [];
+        const item = Array.isArray(items) ? items[0] : null;
+        const value = item?.version ?? item?.Version ?? body?.draft?.version ?? body?.Draft?.Version ?? body?.version ?? body?.Version;
+        return Number.isInteger(Number(value)) && value !== null && value !== undefined && value !== '' ? Number(value) : null;
+    }
 
     async function postForm(url, formData) {
         try {
@@ -91,6 +129,9 @@
         const codes = Array.isArray(validation) && validation.length
             ? validation.map(safeCode).filter(Boolean).join(', ')
             : reason;
+        if (status === 409 && [reason, ...(Array.isArray(validation) ? validation.map(safeCode) : [])].includes('PVG_INTAKE_DRAFT_VERSION_CONFLICT')) {
+            return t('VersionConflict');
+        }
         if (status === 409) {
             return `${t('ControlledBlock')}: ${codes || reason || t('ReasonCode')}`;
         }
@@ -110,7 +151,7 @@
 
     function setSubmitting(isSubmitting) {
         if (!submitButton) return;
-        submitButton.disabled = isSubmitting;
+        submitButton.disabled = isSubmitting || !versionReady;
         submitButton.setAttribute('aria-busy', isSubmitting ? 'true' : 'false');
     }
 })();

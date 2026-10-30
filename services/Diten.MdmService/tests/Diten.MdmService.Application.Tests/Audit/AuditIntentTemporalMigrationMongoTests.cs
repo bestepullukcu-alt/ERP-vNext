@@ -904,6 +904,8 @@ public sealed class AuditIntentTemporalMongoFixture : IAsyncLifetime
                     start.ArgumentList.Add(argument);
                 if (setName is not null) { start.ArgumentList.Add("--replSet"); start.ArgumentList.Add(setName); }
                 start.ArgumentList.Add("--quiet");
+                // TEST-HIZ-01: failCommand fail points on this throwaway mongod (the shared MdmTestMongo already allows them).
+                start.ArgumentList.Add("--setParameter"); start.ArgumentList.Add("enableTestCommands=1");
                 owned._process = new Process { StartInfo = start, EnableRaisingEvents = true };
                 owned._process.OutputDataReceived += (_, args) => owned.Capture(args.Data);
                 owned._process.ErrorDataReceived += (_, args) => owned.Capture(args.Data);

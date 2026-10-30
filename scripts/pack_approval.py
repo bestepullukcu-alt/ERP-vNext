@@ -79,6 +79,9 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 # CT-APR-02 — independent review before approval, and sliced delivery (design: docs/roadmap/plans/ct-apr-02-pack-review/)
 REVIEWS = "execution/approvals/reviews.tsv"
+# S-91: a known, owner-approved break of append-only — one commit, one file, the exact rows it lost (never on main)
+EXCEPTIONS = "execution/approvals/append-only-exceptions.tsv"
+EXCEPTION_COLUMNS = ["commit", "path", "lost_sha256", "reason", "author", "approver", "approved_at"]
 REVIEW_POLICY = "execution/approvals/POLICY-REVIEW-START.md"
 REVIEW_COLUMNS = ["target", "target_sha256", "findings", "findings_sha256", "verdict", "blockers_open", "reviewer", "model",
                   "effort", "reviewer_session", "author", "author_session", "requested_by", "reviewed_at"]
@@ -487,12 +490,117 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     `main` is the caller's measured main (independent review F-3); else it is read here. Only the git part is cached;
     GitHub is asked again on every call (Codex F-3)."""
     problems = []
-    for c, why in _append_only(root, commit, path, main or main_line(root)):
+    main = main or main_line(root)
+    for c, why in _append_only(root, commit, path, main):
+        excepted, ewhy = exception_why(root, main, c, path)
+        if excepted:
+            continue
         if why is None:
             why = _pr_merge_why(root, c)
         if why is not None:
-            problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti){why}")
+            problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti){why}{ewhy}")
     return problems
+
+
+def _lines_at(root: str, c: str, path: str) -> list[str]:
+    data = read(root, c, path)
+    return content_lines(data.decode("utf-8", errors="replace")) if data else []
+
+
+def lost_rows(root: str, c: str, path: str) -> list[str]:
+    """The rows of `path` that some parent of `c` has and `c` does not, in parent order, each once."""
+    new = set(_lines_at(root, c, path))
+    out: list[str] = []
+    for p in git(root, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]:
+        out += [l for l in _lines_at(root, p, path) if l not in new and l not in out]
+    return out
+
+
+def lost_digest(lines: list[str]) -> str:
+    return sha256(("\n".join(lines) + "\n").encode("utf-8"))
+
+
+def _only_loss(root: str, c: str, path: str, main: str, lost: list[str]) -> bool:
+    """With the lost rows taken out of every parent, `c` is append only (same base rule as _append_only): the loss is
+    the whole break — no row of main moved or changed."""
+    parents = git(root, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]
+    on_line = _main_line_set(root, main)
+    from_main = [p for p in parents if p in on_line]
+    if not parents or len(from_main) > 1:
+        return False
+    base, new, gone = (from_main[0] if from_main else parents[0]), _lines_at(root, c, path), set(lost)
+    for p in parents:
+        old = [l for l in _lines_at(root, p, path) if l not in gone]
+        if p == base:
+            if new[:len(old)] != old:
+                return False
+        else:
+            it = iter(new)
+            if not all(l in it for l in old):
+                return False
+    return True
+
+
+def _ever_on_main(root: str, main: str, path: str, lines: list[str]) -> bool:
+    want = set(lines)
+    versions = [main] + git(root, "log", "--first-parent", "--format=%H", main, "--", path).decode().split()
+    return any(want & set(_lines_at(root, v, path)) for v in versions)
+
+
+def _positive_row(path: str, line: str) -> bool:
+    """Independent review F-1: only a lost POSITIVE row can be excused — an approval row's action is approve; a review
+    row's verdict is UYGUN or KOŞULLU with no open ENGEL. A lost revoke or negative review would turn a stop into a pass."""
+    cells = line.split("\t")
+    if path == APPROVALS:
+        return len(cells) == len(APPROVAL_COLUMNS) and cells[2] == "approve"
+    return len(cells) == len(REVIEW_COLUMNS) and cells[4] in ("UYGUN", "KOŞULLU") and cells[5] == "0"
+
+
+def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
+    """S-91: (True, "") when main's EXCEPTIONS file holds a row for exactly this commit and file, and: the rows `c`
+    lost hash to its lost_sha256; nothing but that loss breaks append-only; none of the lost rows was ever in main's
+    file (a row that never reached main never carried an approval there); the row reached main by another person's
+    pull request merge, merged by its approver (high=evet, not the author's person). Read from MAIN only — a branch
+    cannot excuse itself. Else (False, why) — why is "" when there is no row."""
+    raw = read(root, main, EXCEPTIONS)
+    if not raw:
+        return False, ""
+    rows = parse_tsv(raw.decode("utf-8"), EXCEPTION_COLUMNS, EXCEPTIONS)
+    for r in rows:
+        if not re.fullmatch(r"[0-9a-f]{40}", r["commit"]) or r["path"] not in (APPROVALS, REVIEWS) \
+                or not HEX64.match(r["lost_sha256"]):
+            raise Unreadable(f"{EXCEPTIONS} satır {r['_n']}: commit (40 hex), path ya da lost_sha256 biçimi geçersiz")
+    mine = [r for r in rows if r["commit"] == c and r["path"] == path]
+    if not mine:
+        return False, ""
+    r, no = mine[-1], " — istisna satırı geçmez: "
+    lost = lost_rows(root, c, path)
+    if not lost or lost_digest(lost) != r["lost_sha256"]:
+        return False, no + "düşen satırlar kayıttaki özetle eşleşmiyor"
+    if any(not _positive_row(path, l) for l in lost):
+        return False, no + "düşen satırlardan biri olumsuz (iptal, UYGUN DEĞİL ya da açık ENGEL) — olumsuz satır affedilmez"
+    if not _only_loss(root, c, path, main, lost):
+        return False, no + "satır düşmesinin yanında sıra ya da içerik de değişmiş"
+    if _ever_on_main(root, main, path, lost):
+        return False, no + "düşen satırlardan biri bir zaman main'deydi"
+    added = row_commit(root, main, r["_n"], EXCEPTIONS)
+    merge, why = main_merge(root, main, added)
+    if merge is None:
+        return False, no + why
+    ok, why = other_merger(root, added, merge)
+    if ok:
+        ok, why = pr_person_check(root, merge, approver=r["approver"])
+    if not ok:
+        return False, no + why
+    listed = approvers_at(root, f"{merge}^1")
+    w = listed.get(r["approver"].lower())
+    if w is None or w["high"] != "evet":
+        return False, no + f"onaylayan {r['approver']} listede yok ya da yüksek riskli işi onaylayamaz"
+    if person_of(listed, r["author"]) is None:
+        return False, no + f"yazan {r['author']} onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez"
+    if person_of(listed, r["approver"]) == person_of(listed, r["author"]):
+        return False, no + "yazan ve onaylayan aynı kişi"
+    return True, ""
 
 
 @cached(1)
@@ -517,7 +625,7 @@ def no_pr_proven(root: str, merge: str) -> bool:
                              "kimliği değil)")                                            # Codex F-4
         if x["merge_commit_sha"] == merge:
             return False
-    return True
+    return _pr_by_message(root, merge) is None          # S-97: GitHub's commit→PR index may be empty for a real merge
 
 
 def _pr_merge_why(root: str, c: str) -> str | None:
@@ -658,6 +766,29 @@ def _test_pr(root: str, merge: str) -> dict | None:
     return {"number": 0, "opener": who(f"{merge}^2"), "merger": who(merge), "base": "main", "base_repo": TRUSTED_REPO}
 
 
+MERGE_SUBJECT = re.compile(r"^Merge pull request #(\d{1,7}) from \S+$")
+
+
+def _pr_by_message(root: str, merge: str) -> dict | None:
+    """S-97: GitHub's commits/{sha}/pulls answered [] for two real merges made a minute apart (#290 496ab5659, #291
+    46f3e0ab9, measured 2026-10-29). The merge commit's subject only NAMES a candidate pull request; GitHub's own
+    pulls/{n} record decides: it must be an object whose merge_commit_sha is exactly `merge` and that has merged_at. A
+    forged subject on a direct push fails that match. The record is returned when its merge_commit_sha is `merge`, merged
+    or not (no_pr_proven: a listed PR counts as one, like the index path; pr_of_merge then requires merged_at). None when
+    the subject names no pull request or the record is another merge; raises when GitHub is not measurable or the record
+    is malformed (independent review F-1: the Codex F-4 rule — a broken answer never proves "no PR")."""
+    m = MERGE_SUBJECT.match(git(root, "log", "-1", "--format=%s", merge).decode().strip())
+    if not m:
+        return None
+    pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(m.group(1))}")
+    if not isinstance(pr, dict) or "merge_commit_sha" not in pr or "merged_at" not in pr \
+            or not (pr["merge_commit_sha"] is None or (isinstance(pr["merge_commit_sha"], str)
+                                                       and FULL_COMMIT.fullmatch(pr["merge_commit_sha"]))):
+        raise Unreadable("GitHub PR cevabı bozuk (nesne değil, merge_commit_sha tam bir commit kimliği değil ya da "
+                         "merged_at yok)")
+    return pr if pr["merge_commit_sha"] == merge else None
+
+
 def pr_of_merge(root: str, merge: str) -> dict | None:
     """{number, opener, merger, base, base_repo} of the merged pull request of TRUSTED_REPO whose merge commit is
     `merge` (GitHub, all pages), or None when `merge` is no such merge. Raises when not measurable. Only a positive read
@@ -671,9 +802,12 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
         raise Unreadable("GitHub cevabı bir liste değil")
     pulls = [x for page in pages for x in (page if isinstance(page, list) else [page])]
     hits = [x for x in pulls if isinstance(x, dict) and x.get("merge_commit_sha") == merge and x.get("merged_at")]
-    if not hits:
-        return None
-    pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(hits[0]['number'])}")
+    if hits:
+        pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(hits[0]['number'])}")
+    else:
+        pr = _pr_by_message(root, merge)               # S-97
+        if pr is None:
+            return None
     if not isinstance(pr, dict):
         raise Unreadable("GitHub PR cevabı bir nesne değil")
     if not (pr.get("merged_at") and pr.get("merge_commit_sha") == merge):
@@ -1111,6 +1245,44 @@ def slice_rule(root: str, ref: str, path: str) -> tuple[bool, list[str] | None, 
 
 
 
+DRAFT_WARNING = ("UYARI (S-49): paket künyesi `status: draft` — onay satırı kodu yetkilendirmez; prompt kapısı "
+                 "`ready-for-dev` ister. Onay satırını künyesi ready-for-dev olan sürüme yazın")
+
+
+def branch_line_warnings(ctx: "Ctx", data: bytes) -> list[str]:
+    """S-48: on a branch, every row of this decision that is not on main yet (the last approval row, this version's
+    review rows) must lie on the checked ref's OWN first-parent line. The pull request's merge brings the branch tip in
+    as its second parent and main_merge counts a row only on that parent's first-parent line (S-40, F-2); a row behind
+    a reversed merge (main as the first parent) or a nested merge would be refused only after the merge — say it now."""
+    root, ref = ctx.root, ctx.commit
+    if ref in _main_line_set(root, ctx.main):
+        return []
+    line = set(git(root, "rev-list", "--first-parent", ref).decode().split())
+    digest = sha256(data)
+    rows = ([("onay satırı", row_commit(root, ref, ctx.rows[-1]["_n"]))] if ctx.rows else []) + [
+        (f"inceleme satır {r['_n']}", row_commit(root, ref, r["_n"], REVIEWS))
+        for r in review_rows(root, ref) if r["target"] == ctx.path and r["target_sha256"] == digest]
+    out = []
+    for label, c in rows:
+        if c in line or git(root, "merge-base", "--is-ancestor", c, ctx.main, ok_fail=True) is not None:
+            continue
+        out.append(f"UYARI (S-48): {label} ({c[:12]}) bu dalın kendi çizgisinde değil — main'i birinci ebeveyn yapan bir "
+                   "ters merge ya da iç içe merge'ün arkasında; PR main'e girince insan adımı sayılmaz. Dalda "
+                   "`git merge origin/main` kullanın (dal birinci ebeveyn kalır), ters merge yapmayın (kart §7a-1)")
+    return out
+
+
+def safe_warnings(ctx: "Ctx", data: bytes, text: str) -> list[str]:
+    """S-48/S-49 warnings, computed once before any decision and shown on every result (Codex F-2). They never change
+    the decision: anything they cannot read becomes one warning line, not an exit code (Codex F-1)."""
+    out = [DRAFT_WARNING] if kunye(text).get("status") == "draft" else []
+    try:
+        out += branch_line_warnings(ctx, data)
+    except (Unreadable, UnicodeDecodeError, IndexError, KeyError, ValueError, OSError) as e:
+        out.append(f"UYARI (S-48): dal çizgisi ölçülemedi — {str(e)[:160]} (karar bundan etkilenmez)")
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ the decision
 def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
     head = [f"PACK-APPROVAL v1 — {path} @ {ref}"]
@@ -1131,6 +1303,7 @@ def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
             raise Unreadable(f"paket {path} bu ref'te yok")
         text = data.decode("utf-8", errors="replace")
         ctx = Ctx(root, commit, path)
+        head = head + safe_warnings(ctx, data, text)       # S-48/S-49: before every decision below, never part of it
         if is_dcp(path) and ctx.rstart is None:
             return 0, head + ["DCP onay kuralı yürürlükte değil (POLICY-REVIEW-START hiç eklenmedi)", "çıkış: 0"]
         last_change = git(root, "log", "-1", "--format=%H", commit, "--", path).decode().strip()
@@ -1228,11 +1401,11 @@ def self_test() -> int:
     def put(rel, text):
         p = os.path.join(root, rel)
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        with open(p, "w", encoding="utf-8") as f:
+        with open(p, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
     def get(rel):
-        with open(os.path.join(root, rel), encoding="utf-8") as f:
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
             return f.read()
 
     def commit(msg, who=DEV):
@@ -1447,6 +1620,72 @@ def self_test() -> int:
     cases.append(("sabotage S-40/Codex F-6: a row straight on main carried by another person's pull-merge and a "
                   "fast-forward -> not a pull request's merge (GitHub), exit 1",
                   code == 1 and any("PR'ın merge commit'i değil" in l for l in out)))
+    # S-48: a row behind a reversed merge (main as the first parent) is named on the branch, before the pull request
+    g("checkout", "-q", "main")
+    s48_start = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "-b", "s48", s48_start)
+    put(PACK, get(PACK) + "- s48\n")
+    commit("pack change s48")
+    add_row("dev", "lead", "HIGH", "2026-10-26")
+    commit("s48 approval row")
+    g("checkout", "-q", "main")
+    put("z48.txt", "main moves\n")
+    commit("main moves (s48)", who=LEAD)
+    g("checkout", "-q", "--detach", "main")
+    g("merge", "-q", "--no-ff", "-m", "merge s48 with main as the first parent", "s48", who=DEV)
+    g("branch", "-f", "s48rev", "HEAD")
+    code, out = check("s48rev")
+    cases.append(("sabotage S-48: on a branch whose row sits behind a reversed merge (main first parent) -> the approval "
+                  "row is named with a warning before the PR", any("UYARI (S-48)" in l and "onay satırı" in l for l in out)))
+    # Codex F-2: an early return (the pack changed after its approval) still shows the S-48 warning
+    g("checkout", "-q", "s48rev")
+    put(PACK, get(PACK) + "- s48 later\n")
+    commit("pack changed after the reversed merge")
+    code, out = check("s48rev")
+    cases.append(("S-48 (Codex F-2): the pack changed after its approval (early return) -> the S-48 warning is still shown",
+                  code == 1 and any("yeniden onay" in l for l in out) and any("UYARI (S-48)" in l for l in out)))
+    g("checkout", "-q", "s48")
+    g("merge", "-q", "--no-ff", "-m", "merge main into s48", "main", who=DEV)
+    code, out = check("s48")
+    cases.append(("S-48: the same branch taking main in the normal way (branch first parent) -> no warning",
+                  not any("UYARI (S-48)" in l for l in out)))
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s48", "s48", who=LEAD)
+    g("checkout", "-q", "-b", "s48after", "main")
+    put("z48b.txt", "later work\n")
+    commit("later work on a new branch")
+    code, out = check("s48after")
+    cases.append(("S-48: a new branch from main whose approval row reached main through a PR (second parent) -> no "
+                  "warning (already on main)", not any("UYARI (S-48)" in l for l in out) and any("sonuç" in l for l in out)))
+    # Codex F-1: a warning that cannot be read never changes the decision
+    saved_blw = globals()["branch_line_warnings"]
+    plain = check("s48")
+
+    def unreadable_warnings(ctx_, data_):
+        raise Unreadable("bozuk inceleme dosyası (test)")
+    globals()["branch_line_warnings"] = unreadable_warnings
+    broken = check("s48")
+    globals()["branch_line_warnings"] = saved_blw
+    cases.append(("sabotage S-48 (Codex F-1): the warning's own read fails -> same exit code, one 'ölçülemedi' warning",
+                  broken[0] == plain[0] and any("ölçülemedi" in l for l in broken[1])))
+    # S-49: an approval row for a pack whose künye says status: draft carries a warning
+    g("checkout", "-q", "-b", "s49", "main")
+    put(PACK, get(PACK).replace("status: approved", "status: draft", 1))
+    commit("pack back to draft")
+    add_row("dev", "lead", "HIGH", "2026-10-26")
+    commit("s49 approval row")
+    code, out = check("s49")
+    cases.append(("S-49: an approval row for a status: draft pack -> warning", any("UYARI (S-49)" in l for l in out)))
+    code, out = check("s48")
+    cases.append(("S-49: a status: approved pack -> no draft warning", not any("UYARI (S-49)" in l for l in out)))
+    g("checkout", "-q", "s49")
+    put(PACK, get(PACK) + "- s49 later\n")
+    commit("draft pack changed after its approval")
+    code, out = check("s49")
+    cases.append(("S-49 (Codex F-2): a draft pack whose approval is for an older version (early return) -> still warned",
+                  code == 1 and any("UYARI (S-49)" in l for l in out)))
+    g("checkout", "-q", "main")
+    g("reset", "-q", "--hard", s48_start)
     # the real GitHub path, driven by a fake GitHub (independent review F-2, Codex F-7…F-13)
     saved = globals()["_gh_json"]
     globals()["_PR_SOURCE"] = None
@@ -1532,6 +1771,54 @@ def self_test() -> int:
                          ("a shortened merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha[:8])]]),
                          ("an upper-case merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha.upper())]])):
         cases.append((f"sabotage S-42 (Codex F-1): {label} -> not measurable, never 'no PR'", proven(pages) == "unreadable"))
+    # S-97: GitHub's commit→PR index is empty for a real merge; the subject names the candidate, pulls/{n} decides
+    msg_sha = g("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "Merge pull request #7 from x/s97").strip()
+
+    def by_message(record, subject_sha=None):
+        _PR_CACHE.clear()
+        answers.clear()
+        answers[f"repos/{TRUSTED_REPO}/commits/{subject_sha or msg_sha}/pulls"] = [[]]
+        answers[f"repos/{TRUSTED_REPO}/pulls/7"] = record
+        return pr_person_check(root, subject_sha or msg_sha, approver="lead")
+    ok, why = by_message(pr(merge_commit_sha=msg_sha))
+    cases.append(("S-97: commit→PR index empty, subject names #7 and pulls/7 has this merge commit -> human step", ok))
+    ok, why = by_message(pr(merge_commit_sha="0" * 40))
+    cases.append(("sabotage S-97: a subject naming #7 whose pulls/7 merge commit is another one (forged subject) -> "
+                  "no human step", not ok and "merge commit'i değil" in why))
+    ok, why = by_message(pr(merge_commit_sha=msg_sha, merged_at=None))
+    cases.append(("sabotage S-97: pulls/7 not merged -> no human step", not ok and "merge commit'i değil" in why))
+    ok, why = by_message(pr(), subject_sha=pr_merge_sha)
+    cases.append(("sabotage S-97: index empty and the subject names no pull request -> no human step",
+                  not ok and "merge commit'i değil" in why))
+    answers.clear()
+    answers[f"repos/{TRUSTED_REPO}/commits/{msg_sha}/pulls"] = [[]]
+    answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha)
+    cases.append(("S-97 (no_pr_proven): index empty but pulls/7 matches -> it IS a pull request's merge, never 'no PR'",
+                  no_pr_proven(root, msg_sha) is False))
+    answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha="0" * 40)
+    cases.append(("S-97 (no_pr_proven): index empty and pulls/7 is another merge -> 'no PR' proven",
+                  no_pr_proven(root, msg_sha) is True))
+    answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha, merged_at=None)
+    cases.append(("S-97 (review F-2, no_pr_proven): pulls/7 has this merge commit but is not merged -> still a PR, "
+                  "never 'no PR'", no_pr_proven(root, msg_sha) is False))
+
+    def raises(record):
+        if record is None:
+            answers.pop(f"repos/{TRUSTED_REPO}/pulls/7", None)
+        else:
+            answers[f"repos/{TRUSTED_REPO}/pulls/7"] = record
+        try:
+            no_pr_proven(root, msg_sha)
+            return False
+        except Unreadable:
+            return True
+    bad = pr(merge_commit_sha=msg_sha)
+    del bad["merged_at"]
+    for label, record in (("not measurable", None), ("no merge_commit_sha", {k: v for k, v in pr().items() if k != "merge_commit_sha"}),
+                          ("an upper-case merge_commit_sha", pr(merge_commit_sha=msg_sha.upper())),
+                          ("a shortened merge_commit_sha", pr(merge_commit_sha=msg_sha[:8])),
+                          ("no merged_at", bad), ("an answer that is no object", [pr()])):
+        cases.append((f"sabotage S-97 (review F-1, no_pr_proven): pulls/7 {label} -> raises, never 'no PR'", raises(record)))
     globals()["_gh_json"] = saved
     globals()["_PR_SOURCE"] = _test_pr
     _PR_CACHE.clear()
@@ -1612,11 +1899,219 @@ def self_test() -> int:
                   pack_risk("# A\n## Notes\n- see ocelot.json\n", "# A\n## Notes\n- ok\n")[0] == "HIGH"))
     tmp.cleanup()
     self_test_review(cases)
+    self_test_exception(cases)
     for label, ok in cases:
         print(("PASS " if ok else "FAIL ") + label)
     passed = sum(1 for _, ok in cases if ok)
     print(f"self-test: {passed}/{len(cases)} passed")
     return 0 if passed == len(cases) else 1
+
+
+def self_test_exception(cases: list) -> None:
+    """S-91: a known append-only break is excused only by a row on main, merged by its approver, for rows never on main."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    DEV, LEAD, JUN = ("dev", "dev@x.invalid"), ("lead", "lead@x.invalid"), ("jun", "jun@x.invalid")
+
+    def g(*args, who=DEV):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, text):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def rows(rel):
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
+            return [l for l in f.read().split("\n") if l.strip()]
+
+    def commit(msg, who=DEV):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+
+    def via_branch(name, change, author=DEV, merger=LEAD):
+        g("checkout", "-q", "main")
+        g("checkout", "-q", "-b", name)
+        change()
+        commit(name, who=author)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=merger)
+
+    def red():
+        return history(root, "main")[0] == 1
+
+    def ar(name, action="approve"):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, action, "HIGH", "r", "dev", "lead",
+                          "2026-10-29", "0" * 64, "n"])
+    A0, B1, M1 = ar("A0"), ar("B1"), ar("M1")
+
+    g("init", "-q", "-b", "main")
+    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\nlead-alt\tK1\tkıdemli\tevet\n"
+                   "dev\tK4\tgeliştirici\tevet\njun\tK3\tjunior\thayır\n")
+    put(APPROVALS, "\n".join(["header", A0]) + "\n")
+    put(REVIEWS, "header\n")
+    commit("start", who=LEAD)
+    g("checkout", "-q", "-b", "feat")
+    put(APPROVALS, "\n".join(["header", A0, B1]) + "\n")
+    commit("branch row")
+    via_branch("m1", lambda: put(APPROVALS, "\n".join(["header", A0, M1]) + "\n"))
+    g("checkout", "-q", "feat")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(["header", A0, M1]) + "\n")           # the conflict taken as main's file: B1 lost
+    commit("sync main, B1 lost")
+    bad = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge feat", "feat", who=LEAD)
+    start = g("rev-parse", "HEAD").strip()
+    cases.append(("S-91 baseline: a merge that lost a branch-only row -> history red", red()))
+    digest = lost_digest([B1])
+
+    n = [0]
+
+    def excuse(row, author=DEV, merger=LEAD):
+        g("reset", "-q", "--hard", start)
+        n[0] += 1
+        via_branch(f"exc-{n[0]}", lambda: put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(row) + "\n"),
+                   author=author, merger=merger)
+    excuse([bad, APPROVALS, digest, "test", "dev", "lead", "2026-10-29"])
+    cases.append(("S-91 positive control: the exception row merged by its approver -> history green", not red()))
+    after = g("rev-parse", "HEAD").strip()
+    via_branch("later", lambda: put("y.txt", "x\n"))
+    cases.append(("S-91: a later commit on top of the excused main stays green", not red()))
+    excuse([bad, APPROVALS, "0" * 64, "test", "dev", "lead", "2026-10-29"])
+    cases.append(("sabotage S-91: a wrong lost_sha256 -> still red, says the digest does not match",
+                  red() and "eşleşmiyor" in "\n".join(history(root, "main")[1])))
+    excuse([bad, APPROVALS, digest, "test", "dev", "dev", "2026-10-29"], merger=DEV)
+    cases.append(("sabotage S-91: the exception merged by its own author -> still red", red()))
+    excuse([bad, APPROVALS, digest, "test", "dev", "lead", "2026-10-29"])
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "self-excuse")
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join([bad, APPROVALS, digest, "t", "dev", "lead", "d"]) + "\n")
+    commit("exception only on a branch")
+    cases.append(("sabotage S-91: an exception row only on the branch (not on main) excuses nothing",
+                  history(root, "self-excuse")[0] == 1))
+    g("checkout", "-q", "main")
+    # a lost row that WAS on main: the digest matches, but a main row can never be excused
+    g("reset", "-q", "--hard", after)
+    g("checkout", "-q", "-b", "drop-main")
+    put(APPROVALS, "\n".join(r for r in rows(APPROVALS) if r != M1) + "\n")
+    commit("drop M1")
+    drop = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge drop-main", "drop-main", who=LEAD)
+    cases.append(("S-91 baseline: dropping a main row -> red", red()))
+    via_branch("exc-drop", lambda: put(EXCEPTIONS, "\n".join(rows(EXCEPTIONS)) + "\n" + "\t".join(
+        [drop, APPROVALS, lost_digest([M1]), "t", "dev", "lead", "d"]) + "\n"))
+    cases.append(("sabotage S-91: an exception for a row that was on main -> still red, says it was on main",
+                  red() and "main'deydi" in "\n".join(history(root, "main")[1])))
+    # --base: a pull request is red only for a break it brings
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "pr-clean")
+    put("z.txt", "x\n")
+    commit("unrelated")
+    cases.append(("S-91 --base: an unrelated PR on a main that already has a break -> green",
+                  history(root, "pr-clean", "main")[0] == 0))
+    put(APPROVALS, "\n".join(["header", M1]) + "\n")
+    commit("drop A0")
+    cases.append(("sabotage S-91 --base: the PR drops a row itself -> red", history(root, "pr-clean", "main")[0] == 1))
+    g("checkout", "-q", "main")
+    # loss plus a reorder of main's rows is more than the excused loss
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "feat2", bad + "^1")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(["header", M1, A0]) + "\n")
+    commit("sync main, B1 lost, A0 moved")
+    bad2 = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge feat2", "feat2", who=LEAD)
+    via_branch("exc-order", lambda: put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(
+        [bad2, APPROVALS, digest, "t", "dev", "lead", "d"]) + "\n"))
+    cases.append(("sabotage S-91: the loss comes with a reorder of main's rows -> still red", red()))
+    cases.append(("sabotage S-91 (review F-2): that reorder commit alone is refused by the loss-only rule",
+                  "sıra" in exception_why(root, g("rev-parse", "main").strip(), bad2, APPROVALS)[1]))
+
+    def exc(row, row_by=DEV, tip_by=None, merger=LEAD, base=None):
+        """The exception row committed by `row_by` on a branch from `base` (default start), optionally one more commit
+        by `tip_by` (the pull request's opener in the GitHub stand-in), merged into main by `merger`."""
+        g("checkout", "-q", "main")
+        g("reset", "-q", "--hard", base or start)
+        n[0] += 1
+        g("checkout", "-q", "-b", f"exc-{n[0]}")
+        put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(row) + "\n")
+        commit("exception row", who=row_by)
+        if tip_by:
+            put(f"tip-{n[0]}.txt", "x\n")
+            commit("tip", who=tip_by)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge exc-{n[0]}", f"exc-{n[0]}", who=merger)
+        return "\n".join(history(root, "main")[1])
+    ok_row = lambda **kw: [kw.get("commit", bad), APPROVALS, kw.get("digest", digest), "t", kw.get("author", "dev"),
+                           kw.get("approver", "lead"), "2026-10-29"]
+    out = exc(ok_row(approver="jun"), merger=JUN)
+    cases.append(("sabotage S-91 (review F-2): approver without high-risk right (high=hayır) -> red",
+                  "yüksek riskli" in out))
+    out = exc(ok_row(author="lead-alt"))
+    cases.append(("sabotage S-91 (review F-2): author and approver are one person under two logins -> red",
+                  "aynı kişi" in out))
+    out = exc(ok_row(author="ghost"))
+    cases.append(("sabotage S-91 (review F-4): an author not on the approver list -> red", "listesinde yok" in out))
+    out = exc(ok_row(), row_by=LEAD, tip_by=DEV)
+    cases.append(("sabotage S-91 (review F-2): the row's commit author merged it himself (git) -> red",
+                  "istisna satırı geçmez" in out and "aynı yazar" in out))
+    out = exc(ok_row(), row_by=DEV, tip_by=LEAD)
+    cases.append(("sabotage S-91 (review F-2): the pull request opened and merged by one person (GitHub) -> red",
+                  "istisna satırı geçmez" in out and "açan ve merge eden aynı" in out))
+    g("reset", "-q", "--hard", start)
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(ok_row()) + "\n")
+    commit("exception row straight on main", who=LEAD)
+    cases.append(("sabotage S-91 (review F-2): the exception row written straight on main (no merge) -> red",
+                  "doğrudan" in "\n".join(history(root, "main")[1])))
+    # review F-3: a side line that merged the exception row in is not main — only main's file counts
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "side", start)
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n" + "\t".join(ok_row()) + "\n")
+    commit("exception row on a side branch")
+    g("checkout", "-q", "-b", "side2", start)
+    g("merge", "-q", "--no-ff", "-m", "Merge side", "side", who=LEAD)
+    cases.append(("sabotage S-91 (review F-3): the exception merged on a side line, not on main -> red",
+                  history(root, "side2")[0] == 1))
+    g("checkout", "-q", "main")
+    # review F-1: a lost revoke (never on main) would turn a stop into a pass — never excused
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", "rv", start)
+    rv = ar("A0", "revoke")
+    put(APPROVALS, "\n".join(rows(APPROVALS) + [rv]) + "\n")
+    commit("revoke on a branch")
+    put(APPROVALS, "\n".join(r for r in rows(APPROVALS) if r != rv) + "\n")
+    commit("revoke dropped")
+    rv_drop = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge rv", "rv", who=LEAD)
+    out = exc(ok_row(commit=rv_drop, digest=lost_digest([rv])), base=g("rev-parse", "HEAD").strip())
+    cases.append(("sabotage S-91 (review F-1): an exception for a lost revoke row -> red, negative rows are never excused",
+                  "olumsuz" in out))
+    cases.append(("S-91 (review F-1): a negative review row (UYGUN DEĞİL / open ENGEL) is not positive",
+                  not _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "UYGUN DEĞİL", "0"] + ["x"] * 8))
+                  and not _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "KOŞULLU", "1"] + ["x"] * 8))
+                  and _positive_row(REVIEWS, "\t".join(["t", "0" * 64, "f", "0" * 64, "KOŞULLU", "0"] + ["x"] * 8))))
+    # review F-5: the exception list itself is append only
+    exc(ok_row())
+    g("checkout", "-q", "-b", "edit-exc")
+    put(EXCEPTIONS, "\t".join(EXCEPTION_COLUMNS) + "\n")
+    commit("exception row removed")
+    cases.append(("sabotage S-91 (review F-5): a pull request that deletes an exception row -> red with --base",
+                  history(root, "edit-exc", "main")[0] == 1))
+    g("checkout", "-q", "main")
+    tmp.cleanup()
 
 
 def self_test_review(cases: list) -> None:
@@ -1633,11 +2128,11 @@ def self_test_review(cases: list) -> None:
     def put(rel, text):
         full = os.path.join(root, rel)
         os.makedirs(os.path.dirname(full), exist_ok=True)
-        with open(full, "w", encoding="utf-8") as f:
+        with open(full, "w", encoding="utf-8", newline="") as f:
             f.write(text)
 
     def get(rel):
-        with open(os.path.join(root, rel), encoding="utf-8") as f:
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
             return f.read()
 
     def append(rel, line):
@@ -2400,6 +2895,28 @@ def self_test_review(cases: list) -> None:
     tmp.cleanup()
 
 
+def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
+    """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
+    already a problem at `base` (a pull request is red only for a break it brings)."""
+    main = main_line(root)
+    c = commit_of(root, ref)
+    if c is None:
+        raise Unreadable(f"ref '{ref[:40]}' çözülemedi")
+    files = (APPROVALS, REVIEWS, EXCEPTIONS)                 # F-5: the exception list itself is append only too
+    now = [(p, x) for p in files for x in append_only_problems(root, c, p, main)]
+    if base is not None:
+        b = commit_of(root, base)
+        if b is None:
+            raise Unreadable(f"base '{base[:40]}' çözülemedi")
+        key = lambda x: x.split(" ")[1][:12] if " " in x else x
+        old = {(p, key(x)) for p in files for x in append_only_problems(root, b, p, main)}
+        now = [(p, x) for p, x in now if (p, key(x)) not in old]
+    head = [f"APPEND-ONLY — {ref}" + (f" (yalnız {base}'e göre yeni)" if base else "")]
+    if now:
+        return 1, head + [x for _, x in now] + ["çıkış: 1"]
+    return 0, head + ["yalnız ekleme — bozulma yok", "çıkış: 0"]
+
+
 def main(argv: list[str]) -> int:
     import argparse
     import datetime
@@ -2429,8 +2946,30 @@ def main(argv: list[str]) -> int:
     for opt in ("--model", "--effort", "--reviewer-session", "--author", "--author-session", "--requested-by"):
         v.add_argument(opt, required=True)
     v.add_argument("--date", default=datetime.date.today().isoformat())
+    h = sub.add_parser("history", help="S-91: onay ve inceleme dosyası yalnız ekleme mi; --base verilirse yalnız yeni "
+                       "bozulmalar (0 temiz · 1 bozulma · 2 okunamadı)")
+    h.add_argument("--ref", default="HEAD"); h.add_argument("--base")
+    x = sub.add_parser("exception-row", help="S-91: bilinen bir bozulma için istisna satırını basar (dosyaya yazmaz)")
+    x.add_argument("commit"); x.add_argument("--path", default=APPROVALS, choices=[APPROVALS, REVIEWS])
+    x.add_argument("--reason", required=True); x.add_argument("--author", required=True)
+    x.add_argument("--approver", required=True); x.add_argument("--date", default=datetime.date.today().isoformat())
     a = ap.parse_args(argv[1:])
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if a.cmd == "history":
+        try:
+            code, out = history(root, a.ref, a.base)
+        except Unreadable as e:
+            code, out = 2, [f"okunamadı — {e}"]
+        print("\n".join(out))
+        return code
+    if a.cmd == "exception-row":
+        c = commit_of(root, a.commit)
+        lost = lost_rows(root, c, a.path) if c else []
+        if not lost or any("\t" in v or "\n" in v for v in (a.reason, a.author, a.approver, a.date)):
+            print("commit çözülemedi, düşen satır yok ya da bir alanda sekme var")
+            return 2
+        print("\t".join([c, a.path, lost_digest(lost), a.reason, a.author, a.approver, a.date]))
+        return 0
     if a.cmd == "check":
         code, out = evaluate(root, a.ref, a.pack)
         print("\n".join(out))
@@ -2453,7 +2992,11 @@ def main(argv: list[str]) -> int:
             print(make_review_row(root, a.ref, a.pack, a.findings, a.verdict, a.reviewer, a.model, a.effort,
                                   a.reviewer_session, a.author, a.author_session, a.requested_by, a.date))
             return 0
-        print(make_row(root, a.ref, a.pack, a.author, a.approver, a.risk, a.reason, a.date, a.note))
+        row = make_row(root, a.ref, a.pack, a.author, a.approver, a.risk, a.reason, a.date, a.note)
+        pack_text = (read(root, commit_of(root, a.ref) or a.ref, a.pack) or b"").decode("utf-8", errors="replace")
+        if kunye(pack_text).get("status") == "draft":
+            print(DRAFT_WARNING, file=sys.stderr)
+        print(row)
         return 0
     except Unreadable as e:
         print(f"okunamadı — {e}")

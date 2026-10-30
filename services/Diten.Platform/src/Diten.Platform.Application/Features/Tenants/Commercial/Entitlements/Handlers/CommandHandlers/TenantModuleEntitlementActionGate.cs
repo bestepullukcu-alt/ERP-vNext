@@ -26,11 +26,13 @@ internal static class TenantModuleEntitlementActionGate
     }
 
     /// <summary>
-    /// Null when the plan's own line for <paramref name="moduleCode"/> offers Disable; otherwise the refusal. A module
-    /// the tenant's plan does not include has no plan line: unknown to the catalogue it is not found, known it offers
-    /// nothing here.
+    /// <c>Refusal</c> is null when the plan's own line for <paramref name="moduleCode"/> offers Disable; otherwise the
+    /// refusal. A module the tenant's plan does not include has no plan line: unknown to the catalogue it is not found,
+    /// known it offers nothing here. <c>Rows</c> are the module's stored rows the decision was made on: the caller writes
+    /// against these, never against a second read (TEST-HIZ-01: a second suspend whose read came after the first one's
+    /// commit took over that fresh override and answered 204 — two successes, a double audit and event).
     /// </summary>
-    public static async Task<Response<NoContent>?> RefuseProjectionDisableAsync(
+    public static async Task<(Response<NoContent>? Refusal, IReadOnlyList<TenantModuleEntitlement> Rows)> RefuseProjectionDisableAsync(
         IModuleCatalogRepository modules,
         ITenantModuleEntitlementRepository entitlements,
         ITenantSubscriptionRepository subscriptions,
@@ -43,9 +45,10 @@ internal static class TenantModuleEntitlementActionGate
         var planModuleCodes = await PlanModuleCodesAsync(subscriptions, plans, tenantId, ct);
         if (!planModuleCodes.Contains(moduleCode, StringComparer.OrdinalIgnoreCase))
         {
-            return module is null
+            return (module is null
                 ? Response<NoContent>.Fail("Module was not found.", 404, TenantModuleEntitlementRefusalCodes.ModuleNotFound)
-                : Response<NoContent>.Fail("This module has no plan line to suspend.", 409, TenantModuleEntitlementRefusalCodes.ActionNotOffered);
+                : Response<NoContent>.Fail("This module has no plan line to suspend.", 409, TenantModuleEntitlementRefusalCodes.ActionNotOffered),
+                Array.Empty<TenantModuleEntitlement>());
         }
 
         var rows = await entitlements.GetByTenantAndModuleAsync(tenantId, moduleCode, ct);
@@ -53,7 +56,7 @@ internal static class TenantModuleEntitlementActionGate
             tenantId, moduleCode, module?.DisplayName ?? moduleCode, hasPlanAccess: true, module?.IsCoreModule == true, rows, DateTimeOffset.UtcNow);
         var refusal = TenantModuleEntitlementRowActions.Refuse(
             TenantModuleEntitlementRowActions.Disable, TenantModuleEntitlementRowFacts.Projection(access, module));
-        return refusal is null ? null : Response<NoContent>.Fail(refusal.Message, refusal.StatusCode, refusal.Code);
+        return (refusal is null ? null : Response<NoContent>.Fail(refusal.Message, refusal.StatusCode, refusal.Code), rows);
     }
 
     /// <summary>The module codes the tenant's current plan includes — the list query reads them the same way.</summary>

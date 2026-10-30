@@ -14,6 +14,21 @@ public sealed record MrpApprovedLeadTime(Guid TenantId, Guid LegalEntityId,
     Guid SkuId, Guid WarehouseId, string RevisionId, int Days,
     DateOnly EffectiveFrom, DateOnly? EffectiveUntil);
 
+public enum MrpSafetyStockStatus { Found, NotFound, Unavailable }
+
+public sealed record MrpApprovedSafetyStock(decimal Quantity, string BaseUomId,
+    Guid PolicyRevisionId, DateOnly EffectiveFrom, DateOnly EffectiveUntil,
+    long RecordVersion, string Source);
+
+public sealed record MrpSafetyStockRead(MrpSafetyStockStatus Status,
+    MrpApprovedSafetyStock? Value = null);
+
+public interface IMrpApprovedSafetyStockReader
+{
+    Task<MrpSafetyStockRead> ReadAsync(Guid tenantId, Guid legalEntityId,
+        Guid skuId, Guid warehouseId, DateOnly asOf, CancellationToken cancellationToken);
+}
+
 public interface IMrpPublishedDemandReader
 {
     Task<MrpPublishedDemand?> ReadAsync(Guid tenantId, Guid legalEntityId,

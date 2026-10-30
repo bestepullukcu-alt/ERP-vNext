@@ -99,6 +99,7 @@ Each **namespace** (first segment) is owned by **exactly one** module/service. T
 | `strategy.*` | `Diten.EnterpriseStrategyService` | Enterprise Strategy |
 | `time-entry.*` | `Diten.Platform` — MOD-0280-FU01 Time Entry & Weekly Timesheet (placement: ADR-004; the namespace moves with the module if it is extracted to the HCM service) | MOD-0280 (Time, Attendance & Leave) |
 | `commercial.*` | `Diten.CrmService` — commercial-suite CPQ / O2C / Service / BizDev (e.g. `commercial.pre-orders.*`, `commercial.price-lists.*`, `commercial.pricing-rules.*`, `commercial.fx-rates.*`); distinct from `crm.*` (user decision 2026-10-19, WP-VW-W6 K-O2) | MOD-0156…0163, MOD-0168…0172, MOD-0282…0284 |
+| `pvg.*` | `Diten.PvgService` — Pharmacovigilance (e.g. `pvg.case-intake-triage.*`; owner decision 2026-10-27, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`) | Pharmacovigilance (MOD-0230 family) |
 | *(future business domains)* `crm.*`, `hr.*`, `ppm.*`, … | the respective business-domain module | Blueprint-selected (per AG-STEP-022) |
 
 **Legacy prefixes pending remap (AG-STEP-004B):**
