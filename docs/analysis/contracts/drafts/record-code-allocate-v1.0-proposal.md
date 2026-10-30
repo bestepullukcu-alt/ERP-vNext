@@ -2,7 +2,7 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 2 — bağımsız inceleme 01 UYGUN DEĞİL bulguları ve sahip kararları K-8r, K-9…K-12 işlendi) —
+    x-status       : DRAFT (rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
                      öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
                      dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
@@ -14,11 +14,13 @@
     x-rule         : RCS-001 (.antigravity/rules/record-coding-standard.md) §1, §3, §5.1–§5.12
     x-measured-at  : origin/main @ 6d49f5823 (2026-10-30)
 
-**Uyumluluk kuralı (F-5 ile düzeltildi).** v0'a göre **istek gövdesi ve hata kodlarında değişiklik yalnız eklemedir**
-(D59/1, K-3): v0 gövdesi (`legalEntityId`, `recordType`, `idempotencyKey`) v1'de aynı anlamı taşır (`prefixScope` yoksa
-`LegalEntity`), v0'ın dört hata kodu aynen kalır. **Yanıt biçimi v0'da bağlayıcı değildi**: v0 metni "200 `{code,
-sequence}`" yazıyordu ama zarfı tanımlamıyordu. 1.0.0 yanıtı Platform `Response<T>` zarfının `data` alanında dondurulur
-(`data` içeriği v0 ile aynı); bu Treasury CT teyidine bağlıdır (§12 N-2, son tarih 2026-11-02). Tablo §9'da.
+**Uyumluluk kuralı.** v0'a göre **istek gövdesi ve hata kodlarında değişiklik yalnız eklemedir** (D59/1, K-3): v0 gövdesi
+(`legalEntityId`, `recordType`, `idempotencyKey`) v1'de aynı anlamı taşır (`prefixScope` yoksa `LegalEntity`), v0'ın dört
+hata kodu aynen kalır. **Yanıt biçimi — ÖNERİ, karar değil (inceleme 02 F-10):** D59/1 ve Y-8 değişikliğin "yalnız ekleme"
+olduğunu yanıt dahil söyler; v0 metni "200 `{code, sequence}`" yazıyordu ve zarfı tanımlamıyordu. Bu taslağın **önerisi**,
+v0 yanıt biçiminin bağlayıcı olmadığını kabul edip 1.0.0 yanıtını Platform `Response<T>` zarfının `data` alanında
+dondurmaktır (`data` içeriği v0 ile aynı). Öneri **Treasury CT teyidi** gelmeden karar sayılmaz (§12 N-2, son tarih
+2026-11-02); teyit gelmezse yanıt biçimi dondurma adımında yeniden ele alınır. Tablo §9'da.
 
 ## 1. Uç ve kimlik
 
@@ -60,7 +62,9 @@ sequence}`" yazıyordu ama zarfı tanımlamıyordu. 1.0.0 yanıtı Platform `Res
 
 - LegalEntity kapsamında Platform, kullanıcı token'ını MDM lookup-validation'a iletir; kullanıcı `mdm.legal-entities.read`
   taşımalıdır (yoksa MDM 403 → bu uçta 503).
-- Hız sınırı: kimlik bilgisi tanımlayıcısı başına sabit pencere; aşımda 429 (değer §12 N-9).
+- Hız sınırı: kimlik bilgisi ve token doğrulandıktan sonra (tüketici servis, kiracı) bölümlü sabit pencere; aşımda 429
+  `RECORD_CODE_RATE_LIMITED` (bu uçun kendi kodu; Platform'un genel `RATE_LIMITED`'i değil); değer §12 N-9.
+- Varsayılan / tohum kiracı `00000000-0000-0000-0000-000000000001` normal bir iş kiracısıdır ve kod alır.
 - Kimlik bilgisi değerleri bu belgede ve depoda **yoktur**; ortam gizli bilgisinden sağlanır.
 
 ## 2. İstek gövdesi
@@ -70,14 +74,14 @@ JSON nesnesi, ≤ 4 KB (aşarsa 413). **Bilinmeyen üye 400** (ör. `tenantId`, 
 | Alan (JSON) | Tip | Zorunlu | Kural |
 |---|---|---|---|
 | `recordType` | string | evet | `^[A-Z]{3}$`, büyük/küçük harfe duyarlı, normalleştirme yok. Biçimsiz → 400; katalog dışı → 422 `RECORD_TYPE_UNKNOWN` |
-| `prefixScope` | string | hayır | `LegalEntity` \| `Group` \| `Platform` (tam yazım); yoksa `LegalEntity`; başka değer → 400. **`Platform` 1.0.0'da tanımlıdır ama DL-4'e kadar her istekte 422 `RECORD_CODE_SCOPE_INVALID` alır** (K-11) |
+| `prefixScope` | string | hayır | `LegalEntity` \| `Group` \| `Platform` (tam yazım); yoksa `LegalEntity`; başka değer → 400. **`Platform` 1.0.0'da tanımlıdır ama DL-4'e kadar, tür izni adımını geçmiş her istekte 422 `RECORD_CODE_SCOPE_INVALID` alır** (K-11); izinli çağıranı olmayan tür (`PLN`) önce 403 alır (§5) |
 | `legalEntityId` | string (UUID) \| null | kapsama bağlı | `LegalEntity`: zorunlu, boş olmayan UUID. `Group` / `Platform`: yok ya da `null`. UUID değil → 400; kapsamla uyumsuz → 422 `RECORD_CODE_SCOPE_INVALID` |
 | `idempotencyKey` | string | evet | 1–200 karakter, yazdırılabilir ASCII (`!`…`~`, boşluk yok) — §12 N-3. Çağıran, Create'inin kendi idempotency anahtarından türetir |
 
 ## 3. Cevap 200
 
-Platform `Response<T>` zarfı (`services/Diten.Platform/src/Diten.Platform.Application/Common/Response.cs:7-16`); zarf
-kararı §12 N-2:
+Platform `Response<T>` zarfı (`services/Diten.Platform/src/Diten.Platform.Application/Common/Response.cs:7-16`) — **öneri**,
+Treasury CT teyidi bekleniyor (§12 N-2):
 
 ```json
 { "data": { "code": "MYG-PAY-000042", "sequence": 42 },
@@ -109,12 +113,13 @@ tanılama metni (**tüketici ekranında gösterilmez**; tüketici `reason_code`'
 | 404 | `LEGAL_ENTITY_NOT_FOUND` | şirket yok, silinmiş, **başka kiracının**, ya da aktif değil (tek gövde, sızıntısız) | Create 422/404 (tüketicinin kodu) |
 | 409 | `LEGAL_ENTITY_SHORT_CODE_MISSING` | şirketin MDM `code`'u `^[A-Z]{2,5}$`'e birebir uymuyor | Create yapılmaz; "şirket kısa kodunu düzeltin" (tüketicinin metni) |
 | 409 | `GROUP_PREFIX_MISSING` | `Group` istendi, kiracının grup öneki ayarı yok | Create yapılmaz |
-| 409 | `GROUP_PREFIX_MISMATCH` | kiracının grup öneki ayarı belge `OrgPrefix`'inden farklı (iki kaynak ayrışmış) | Create yapılmaz; Platform yöneticisine bildirim |
+| 409 | `GROUP_PREFIX_MISMATCH` | kiracının kilitli grup öneki ayarı etkin belge `OrgPrefix`'inden farklı (belge önekinin yapılandırması kilitten sonra değişmiş) | Create yapılmaz; Platform yöneticisine bildirim (kurtarma: `OrgPrefix` kilitli değere geri alınır) |
+| 409 | `LEGAL_ENTITY_SHORT_CODE_CHANGED` | şirketin MDM kısa kodu, kodu verilmiş bir önekten sonra değişmiş ya da bu kısa kod daha önce **başka** bir şirketin kodlarında kullanılmış (RCS-001 §5.4 ara dönem kilidi) | Create yapılmaz; "şirket kısa kodu değişmiş, MDM yöneticisine başvurun" (tüketicinin metni) |
 | 413 | `RECORD_CODE_REQUEST_TOO_LARGE` | gövde 4 KB üstü | hata |
 | 422 | `RECORD_TYPE_UNKNOWN` | tür katalogda yok (KALSIN, İKİSİ DE, `CTR`, henüz kaydı olmayan türler) | hata |
-| 422 | `RECORD_CODE_SCOPE_INVALID` | tür bu kapsama izin vermiyor; `Group` + dolu `legalEntityId`; `LegalEntity` + boş `legalEntityId`; **`Platform` (DL-4'e kadar her zaman)** | hata |
-| 422 | `LEGAL_ENTITY_NOT_ELIGIBLE` | MDM yanıtı `approvalStatus` taşıyor ve `APPROVED` değil | Create yapılmaz |
-| 429 | `RECORD_CODE_RATE_LIMITED` | kimlik bilgisi başına hız sınırı aşıldı | geri çekilip **aynı anahtarla** yeniden dener |
+| 422 | `RECORD_CODE_SCOPE_INVALID` | tür bu kapsama izin vermiyor; `Group` + dolu `legalEntityId`; `LegalEntity` + boş `legalEntityId`; **`Platform` (DL-4'e kadar, tür izni geçtiyse)** | hata |
+| 422 | `LEGAL_ENTITY_NOT_ELIGIBLE` | MDM yanıtı `approvalStatus` taşıyor ve `APPROVED` değil (lookup-validation v1.1'den itibaren; bugün 1.0.0'da alan yok — §7) | Create yapılmaz |
+| 429 | `RECORD_CODE_RATE_LIMITED` | (tüketici servis, kiracı) başına hız sınırı aşıldı | geri çekilip **aynı anahtarla** yeniden dener |
 | 503 | `LEGAL_ENTITY_SOURCE_UNAVAILABLE` | MDM erişilemez, 5xx, 3 s aşımı, 400/401/403, ya da çelişkili/ayrıştırılamaz yanıt | **Create yapılmaz** (fail-closed); aynı anahtarla yeniden denenebilir |
 | 503 | `RECORD_CODE_UNAVAILABLE` | Platform deposu gerçekten erişilemez, işlem yeniden denemeleri tükendi ya da istek bütçesi (5 s) doldu | **Create yapılmaz**; aynı anahtarla yeniden denenebilir |
 
@@ -123,14 +128,16 @@ açılmaz, yedek kod ya da kendi sayacı üretilmez (RCS-001 §6).
 
 ## 5. Değerlendirme sırası
 
-1. 429 hız sınırı → 2. 413 boyut → 3. 401 / 403 kimlik bilgisi, kullanıcı token'ı, `X-Tenant-Id` → 4. 403 kiracı aktif değil →
+1. 413 boyut → 2. 401 / 403 kimlik bilgisi, kullanıcı token'ı, `X-Tenant-Id` → 3. 429 hız sınırı → 4. 403 kiracı aktif değil →
 5. 400 gövde → 6. 422 `RECORD_TYPE_UNKNOWN` → 7. 403 tür kimlik bilgisine izinsiz → 8. 403 kullanıcı izni yok →
 9. idempotency: kayıt varsa parmak izi eşit → **200 tekrar**, değil → 400 `IDEMPOTENCY_KEY_REUSED` →
 10. 422 `RECORD_CODE_SCOPE_INVALID` → 11. önek: `Group` → 409 `GROUP_PREFIX_MISSING` / `GROUP_PREFIX_MISMATCH`;
-`LegalEntity` → MDM (404 / 422 `LEGAL_ENTITY_NOT_ELIGIBLE` / 409 / 503) → 12. sayaç (503) → 13. defter + denetim (+ grup
+`LegalEntity` → MDM (404 / 422 `LEGAL_ENTITY_NOT_ELIGIBLE` / 409 / 503), ardından kısa kod kullanım denetimi (409
+`LEGAL_ENTITY_SHORT_CODE_CHANGED`) → 12. sayaç (503) → 13. defter + denetim (+ grup
 öneki kilidi) tek işlemde (503) → 200.
 
-Yetki (7–8) idempotency'den (9) önce gelir: izinsiz kullanıcı tekrarla kod okuyamaz. MDM, kapsam, tür ya da yetki
+Yetki (7–8) idempotency'den (9) önce gelir: izinsiz kullanıcı tekrarla kod okuyamaz. Tür izni (7) kapsamdan (10) önce
+gelir: `PLN` + `Platform` → 403, `PAY` + `Platform` → 422. MDM, kapsam, tür ya da yetki
 hatasında sayaç ilerlemez. Sayaç ilerledikten sonra (12–13) düşen istekte numara bir boşluk olarak kalır (§5.8); kod hiçbir
 zaman iki kez verilmez.
 
@@ -139,7 +146,7 @@ zaman iki kez verilmez.
 | `prefixScope` | `legalEntityId` | Önek | Sayaç anahtarı | 1.0.0'da |
 |---|---|---|---|---|
 | `LegalEntity` (varsayılan) | zorunlu | MDM MOD-0220 `LegalEntity.Code` (lookup-validation; kiracı + aktif; onaylı — §7) | (kiracı, kısa kod, tür) | etkin |
-| `Group` | boş | kiracının grup öneki ayarı (bugün `GMG`; belge `OrgPrefix` ile eşit olmalı) | (kiracı, grup öneki, tür) | etkin |
+| `Group` | boş | kiracının grup öneki ayarı — değerin **tek kaynağı belge `OrgPrefix`'i** (bugün `GMG`); ayar Platform yöneticisinin hizalamasıyla alınır, ilk kullanımda kilitlenir | (kiracı, grup öneki, tür) | etkin |
 | `Platform` | boş | yok (öneksiz) | DL-4'te belirlenir | **tanımlı, DL-4'te açılır**; o güne kadar 422 |
 
 | `recordType` | Kayıt türü | İzinli kapsam | İzinli çağıran |
@@ -167,10 +174,17 @@ satırının `AGR`'ye çevrilmesi Ali (`.antigravity`) + Treasury PR'ıyla ayrı
 - Sayaç en az 6 hane sıfır dolgulu; `999999`'dan sonra `1000000`; sıfıra dönmez, sıfırlanmaz (§1, §5.7). Tüketici sabit
   uzunluk varsaymaz.
 - Yalnız ASCII `A–Z`, `0–9`, `-` (§5.10). Önek, MDM değeri olduğu gibi kalıba uyuyorsa kullanılır; normalleştirme yok.
-- **Tüzel kişilik uygunluğu:** kod yalnız **aktif VE onaylı** şirkete verilir. Aktiflik her zaman denetlenir. Onay:
-  MDM yanıtında `approvalStatus` varsa `APPROVED` olmalıdır; alan yoksa (bugünkü lookup-validation 1.0.0) Platform onayı
-  denetleyemez ve **tüketicinin ön kontrolü zorunludur** (lookup-validation v1.1 main'e girene kadar).
-- Önek koda **bir kez** yazılır (§5.2). Grup öneki kullanılana kadar düzeltilebilir, kullanıldıktan sonra kilitlidir (§5.4 dili).
+- **Tüzel kişilik uygunluğu (inceleme 02 F-8):** hedef kural kodun yalnız **aktif VE onaylı** şirkete verilmesidir. MDM
+  main'deki lookup-validation **1.0.0**'da `approvalStatus` alanı yoktur; v1.1 taslaktır. **v1.1 yayınlanana kadar** servis
+  yalnız **aktifliği** denetler ve onay denetimi **tüketicinin zorunlu ön kontrolüdür**; yanıtta alan görünürse
+  `APPROVED` dışı 422, tanımsız değer 503. **v1.1 yayınlandığında** alan yoksa yanıt geçersizdir → 503
+  (`legal-entity-lookup-validation-v1.1-proposal.md:69`); bu Platform'da bir kod değişikliğidir ve MOD-0220 sahibinin v1.1
+  yayınına açık bağımlılıktır (§12 N-11).
+- Önek koda **bir kez** yazılır (§5.2). Grup öneki: değer belge `OrgPrefix`'inden hizalanır; hiç kullanılmadıysa
+  `OrgPrefix` değiştirilip yeniden hizalanabilir, kullanıldıktan sonra kilitlidir (§5.4 dili).
+- **Kısa kod kullanım kilidi — ara dönem (RCS-001 §5.4):** MDM kısa kodu bugün değiştirilebilir; bir şirketin kodları
+  verildikten sonra kısa kodu değişirse ya da serbest kalan kısa kod başka bir şirkete verilirse yeni ayırma 409
+  `LEGAL_ENTITY_SHORT_CODE_CHANGED` alır (kod verilmez). MDM tarafındaki kalıcı kilit §12 N-12.
 - Ardışıklık garanti değildir; tekillik garantidir: kod kiracıda tekildir.
 - **Şirket öneki biçimi** RCS-001 §1'e göredir; K1'in 2026-11-02'ye kadar vereceği karar bu bölümü değiştirebilir — gelmezse
   bu biçimle dondurulur (§12 N-7).
@@ -191,9 +205,9 @@ satırının `AGR`'ye çevrilmesi Ali (`.antigravity`) + Treasury PR'ıyla ayrı
 | Konu | v0 (D59/1) | v1.0.0 | Tür |
 |---|---|---|---|
 | Gövde | `{legalEntityId, recordType, idempotencyKey}` | aynı + isteğe bağlı `prefixScope` (yoksa `LegalEntity`); `Group`'ta `legalEntityId` boş | ekleme |
-| 200 | `{code, sequence}`, zarf tanımsız | aynı alanlar `Response<T>` zarfının `data`'sında | **v0'da bağlayıcı değildi; zarfla dondurulur — Treasury CT teyidi (§12 N-2)** |
+| 200 | `{code, sequence}`, zarf tanımsız | aynı alanlar `Response<T>` zarfının `data`'sında | **öneri:** v0'da bağlayıcı değildi kabulüyle zarfla dondurmak — Treasury CT teyidi bekleniyor (§12 N-2) |
 | 422 | `RECORD_TYPE_UNKNOWN` | aynı + `RECORD_CODE_SCOPE_INVALID`, `LEGAL_ENTITY_NOT_ELIGIBLE` | ekleme |
-| 409 | `LEGAL_ENTITY_SHORT_CODE_MISSING` | aynı + `GROUP_PREFIX_MISSING`, `GROUP_PREFIX_MISMATCH` | ekleme |
+| 409 | `LEGAL_ENTITY_SHORT_CODE_MISSING` | aynı + `GROUP_PREFIX_MISSING`, `GROUP_PREFIX_MISMATCH`, `LEGAL_ENTITY_SHORT_CODE_CHANGED` | ekleme |
 | 404 | başka kiracı | aynı; `reason_code` `LEGAL_ENTITY_NOT_FOUND` (yok / aktif değil de aynı gövde) | ekleme |
 | 503 | servis yok → Create başarısız | aynı; neden kodları `LEGAL_ENTITY_SOURCE_UNAVAILABLE`, `RECORD_CODE_UNAVAILABLE` | ekleme |
 | 400 / 401 / 403 / 413 / 429 | — | §4'teki kodlar | ekleme |
@@ -261,14 +275,18 @@ Hatalar:
   - **kaynak servis** `SourceService` = §1 kapalı listesindeki servis adı (ör. `Diten.FinanceTreasuryService`) — yalnız
     doğrulanmış kimlik bilgisinden; gövde ya da başlıktan asla;
   - `TenantId` = token kiracısı; varlık `RecordCodeAllocation`; işlem `Create`; sonuç `Succeeded`; metadata `recordType`,
-    `prefixScope`, `legalEntityId`, `prefix`, `code`, `sequence`, `idempotencyKey`.
+    `prefixScope`, `legalEntityId`, `prefix`, `code`, `sequence`, `idempotencyKey`;
+  - **denetim kutusu anahtarı istemci anahtarı değildir (inceleme 02 F-2):** başarılı ayırmada ayırma defteri kaydının
+    kimliğinden türetilir (`record-code:allocated:{allocationId}`), ret kaydında her ret için yeni bir Guid'dir. Böylece iki
+    kiracının aynı istemci anahtarı ya da önce reddedilip sonra başarılı olan aynı anahtar çakışmaz. Aynı ayırmanın kutu
+    satırı zaten yazılmışsa (commit sonucu bilinmeyen tekrar) servis 503 değil, 200 ve aynı kodu döner.
 - **Ret kaydı:** ret bir iş işlemi olmadığından kayıt **ayrı kısa bir işlemle** yazılır ve hiçbir zaman kod üretmez:
 
 | Cevap | Kayıt | Outcome |
 |---|---|---|
 | 429, 413, 401, kiracı çözülmeden verilen 403 (yapılandırma, hedef kitle, `X-Tenant-Id`, eksik token iddiası), 400 `RECORD_CODE_REQUEST_INVALID` | yazılmaz (yalnız Platform logu) | — |
 | 403 `RECORD_CODE_TENANT_NOT_ACTIVE`, 403 `RECORD_CODE_FORBIDDEN` (tür izinsiz), 403 `RECORD_CODE_PERMISSION_MISSING`, 404, 422 `RECORD_CODE_SCOPE_INVALID` | yazılır | `Denied` |
-| 400 `IDEMPOTENCY_KEY_REUSED`, 409 (üç kod), 422 `RECORD_TYPE_UNKNOWN`, 422 `LEGAL_ENTITY_NOT_ELIGIBLE`, 503 | yazılır (503'te en iyi çaba) | `Failed` |
+| 400 `IDEMPOTENCY_KEY_REUSED`, 409 (dört kod), 422 `RECORD_TYPE_UNKNOWN`, 422 `LEGAL_ENTITY_NOT_ELIGIBLE`, 503 | yazılır (503'te en iyi çaba) | `Failed` |
 
   Gerekçe: kimliksiz bir istek ne kiracı ne kişi adlandırabilir; onu yazmak herkesin bir kiracının günlüğünü doldurmasına
   izin verir. Kimliği doğrulanmış ve kiracısı bilinen her ret iz bırakır.
@@ -281,20 +299,23 @@ Hatalar:
 | # | Nokta | Öneri | Sahip | Son tarih |
 |---|---|---|---|---|
 | N-1 | İç uç kimlik deseni | **KAPANDI — K-12 (e)**: P2 + azaltıcılar; arka plan çağıranı paket DL-9 | Beste | 2026-10-30 |
-| N-2 | `Response<T>` zarfı — v0 "200 {code, sequence}" yazıyordu, zarfı tanımlamıyordu | zarf (Platform uçlarının hepsi gibi); `data` içeriği v0 ile aynı | **Treasury CT** (teyit) | 2026-11-02 |
+| N-2 | `Response<T>` zarfı — v0 "200 {code, sequence}" yazıyordu, zarfı tanımlamıyordu; D59/1 ve Y-8 yanıt dahil "yalnız ekleme" der | **öneri:** zarf (Platform uçlarının hepsi gibi), `data` içeriği v0 ile aynı; "v0 yanıt biçimi bağlayıcı değildi" bir öneridir | **Treasury CT** (teyit) | 2026-11-02 |
 | N-3 | `idempotencyKey` biçimi (1–200 yazdırılabilir ASCII) | taslaktaki gibi | Beste + Treasury CT | 2026-11-03 |
 | N-4 | Tüketici portuna `prefixScope` (BNK, BAC); MDM bağdaştırıcısının `BAC` eşlemesi (şirket hesabı → LegalEntity, tedarikçi hesabı → Group) | port imzasına isteğe bağlı parametre; tüketici AC'si | Treasury CT + MDM sahibi | 2026-11-03 |
 | N-5 | `Platform` kapsamı | **KAPANDI — K-11**: tanımlı, DL-4'te açılır, o güne kadar 422 | Beste | 2026-10-30 |
 | N-6 | `PLN` katalogda mı | **KAPANDI — K-12 (d)**: katalogda, bağlanması DL-4; HTTP'den 403 | Beste | 2026-10-30 |
 | N-7 | Şirket öneki biçimi (K-6) | karar yoksa RCS-001 §1 | K1 (`gmg-10`) | 2026-11-02 |
 | N-8 | `CTR` → `AGR` RCS-001 §3 satırı; MOD-0144 / MOD-0217 kapsam çakışması | `AGR` sözleşmede kalır (K-12 a) | Ali (`.antigravity`) + Treasury PR'ı; Cihan + Treasury | 2026-11-03 (§3); TBD (çakışma) |
-| N-9 | Hız sınırı değeri ve eski sırrın geçerlilik penceresi | 600 istek/dakika/kimlik bilgisi; pencere en çok 24 saat | Beste | 2026-11-03 |
+| N-9 | Hız sınırı değeri (bölüm: tüketici servis + kiracı) ve eski sırrın geçerlilik penceresi | 600 istek/dakika/bölüm; pencere en çok 24 saat | Beste | 2026-11-03 |
 | N-10 | §1 kullanıcı izni adlarının teyidi (MOD-0018-FU27 taslağı; `APD` alacak dekontu dahil) | tablodaki gibi | Beste + Treasury CT + MDM sahibi | 2026-11-03 |
+| N-11 | MDM lookup-validation v1.1 (`approvalStatus`) yayını; o sürümde Platform okuyucusunun "alan yok → 503" kuralına geçmesi (kod değişikliği) | v1.1'e kadar tüketici onay ön kontrolü zorunlu | MOD-0220 sahibi + Beste | TBD |
+| N-12 | RCS-001 §5.4 kısa kod kalıcı kullanım kilidi (MDM tarafı); o güne kadar `LEGAL_ENTITY_SHORT_CODE_CHANGED` ara dönem kilidi | MDM'de kilit | MDM sahibi (Ali) + Beste | 2026-11-06 |
 
 ## 13. Sürüm kuralı
 
 - 1.0.0 istek gövdesi ve hata kodlarında v0'a göre yalnız ekleme; v0 gövdesiyle yazılmış tüketici değişmeden çalışır. Yanıt
-  zarfı v0'da bağlayıcı değildi ve 1.0.0'da ilk kez dondurulur (§9).
+  zarfı için **öneri**: v0'da bağlayıcı değildi kabulüyle 1.0.0'da ilk kez zarfla dondurulur — Treasury CT teyidi
+  bekleniyor (§9, §12 N-2).
 - Bundan sonraki her değişiklik yalnız ekleme olur (yeni tür, yeni isteğe bağlı alan, yeni neden kodu, `Platform`
   kapsamının DL-4'te açılması). Bir alanın kaldırılması, anlamının değişmesi, kod kalıbının (§7) değişmesi ya da var olan
   bir durum kodunun anlamının değişmesi **büyük sürüm** sayılır.
@@ -302,6 +323,12 @@ Hatalar:
 
 ## 14. Değişiklik geçmişi
 
+- 1.0.0 rev 3 (2026-10-30) — bağımsız inceleme 02 (KOŞULLU): denetim kutusu anahtarı ayırma kimliğinden / ret başına yeni
+  Guid, aynı ayırmanın tekrarında 200 (§11); `approvalStatus` için v1.1 bağımlılığı doğru yazıldı (§7, N-11); kısa kod
+  ara dönem kilidi ve `LEGAL_ENTITY_SHORT_CODE_CHANGED` (§4, §7, N-12); grup önekinin tek kaynağı belge `OrgPrefix`'i (§6);
+  hız sınırı bölümü (tüketici servis, kiracı) ve sırası (§1, §4, §5); `Platform` için "tür izni geçtiyse 422" (§2, §4, §5);
+  v0 yanıt biçiminin bağlayıcı olmadığı **öneri** olarak yazıldı, Treasury CT teyidi bekleniyor (başlık, §3, §9, N-2);
+  varsayılan / tohum kiracı normal iş kiracısıdır (§1).
 - 1.0.0 rev 2 (2026-10-30) — bağımsız inceleme 01 (UYGUN DEĞİL) ve sahip kararları K-8r, K-9…K-12: denetim aktörü kullanıcı,
   kaynak servis kapalı listeden (§1, §11); ret kaydı tablosu (§11); `Platform` tanımlı ama DL-4'e kadar 422 (§2, §6);
   401/403 eşlemesi MOD-0018-FU21 ile birebir, iptal edilmiş kimlik bilgisi 401 (§1, §4); kullanıcı izni, kiracı Active,
