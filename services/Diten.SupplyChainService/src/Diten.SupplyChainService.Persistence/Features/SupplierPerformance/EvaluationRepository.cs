@@ -21,11 +21,12 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
     { var f = Scope(s); f.Add("Operation", CreateOperation); f.Add("TargetId", CreateTarget); f.Add("IdempotencyKey", key); return f; }
     private static SupplierPerformanceFailure Unavailable() => new(503, "PERSISTENCE_UNAVAILABLE");
 
-    public async Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct)
+    public async Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct, bool afterClash = false)
     {
         try
         {
-            var r = await Receipts.Find(Identity(scope, key), new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(ct);
+            var receipts = afterClash ? Receipts.WithReadConcern(ReadConcern.Local) : Receipts;
+            var r = await receipts.Find(Identity(scope, key), new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(ct);
             return r is null ? null : new(r["Fingerprint"].AsString, r["StatusCode"].AsInt32, r["Body"].AsString);
         }
         catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }

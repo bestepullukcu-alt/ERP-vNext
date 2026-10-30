@@ -70,7 +70,7 @@ public sealed class CreateSupplierEvaluationHandler(IEvaluationRepository reposi
 
     // §0.5 concurrency: on a clash run stage 5 again first — equal receipt → replay, other receipt → 409 reused, none → 409 duplicate.
     private async Task<Response<EvaluationResponse>> Clash(SupplierPerformanceScope scope, string fingerprint, CancellationToken ct) =>
-        await repository.FindCreateReceiptAsync(scope, context.IdempotencyKey, ct) is { } winner
+        await repository.FindCreateReceiptAsync(scope, context.IdempotencyKey, ct, afterClash: true) is { } winner
             ? Replay(winner, fingerprint)
             : Response<EvaluationResponse>.Fail(SupplierPerformanceErrorCodes.DuplicateEvaluation, 409);
 

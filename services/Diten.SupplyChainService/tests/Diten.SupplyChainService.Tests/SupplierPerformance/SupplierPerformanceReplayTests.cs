@@ -121,15 +121,20 @@ public sealed class SupplierPerformanceReplayTests
     {
         await using var h = new SupplierPerformanceHost(ownDatabase: true);
         h.Procurement.Delay = TimeSpan.FromMilliseconds(50);
-        using var barrier = new Barrier(8);
+        // Four rounds (one month each): the clash window is a race, so one round alone can miss it.
+        foreach (var month in new[] { "07", "08", "09", "10" })
+        {
+            var body = Body(start: $"2026-{month}-01", end: $"2026-{month}-{(month is "09" ? "30" : "31")}");
+            using var barrier = new Barrier(8);
 
-        var answers = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(async () => { barrier.SignalAndWait(); return await h.Create(); })));
+            var answers = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(async () => { barrier.SignalAndWait(); return await h.Create(body, "race-" + month); })));
 
-        Assert.Equal(1, answers.Count(a => a.Status == HttpStatusCode.Created));
-        Assert.Equal(7, answers.Count(a => a.Status == HttpStatusCode.OK));
-        Assert.Single(answers.Select(a => a.Body!["evaluationId"]!.GetValue<string>()).Distinct());
-        Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
-        Assert.Single(await h.AuditRecords());
+            var seen = string.Join(", ", answers.Select(a => (int)a.Status + " " + a.Code));
+            Assert.True(answers.Count(a => a.Status == HttpStatusCode.Created) == 1 && answers.Count(a => a.Status == HttpStatusCode.OK) == 7, month + ": " + seen);
+            Assert.Single(answers.Select(a => a.Body!["evaluationId"]!.GetValue<string>()).Distinct());
+        }
+        Assert.Equal((4, 4), (await h.Evaluations(), await h.Receipts()));
+        Assert.Equal(4, (await h.AuditRecords()).Count);
     }
 
     // T-0147-RP-07, deterministic: an identical request commits between this request's stage 5 and its active-period check.
