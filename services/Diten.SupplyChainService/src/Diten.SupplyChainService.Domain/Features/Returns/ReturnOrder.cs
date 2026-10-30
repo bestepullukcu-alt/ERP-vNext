@@ -15,4 +15,8 @@ public sealed class ReturnOrder : EntityBase
  public Guid LastEventId { get; set; }
  public string? InventoryTransactionReferenceId { get; set; }
  public string? DispositionCode { get; set; }
+ /// <summary>MOD-0186 §34.2: the open (or completed) receipt attempt behind InTransit → Received.</summary>
+ public ReceiptAttempt? ReceiptAttempt { get; set; }
+ /// <summary>§34.2 late-writer pairs; append-only.</summary>
+ public List<ReceiptAuditEntry> ReceiptAuditHistory { get; set; } = [];
 }

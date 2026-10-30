@@ -25,7 +25,10 @@ public sealed class FakeInventory : HttpMessageHandler
     private readonly Dictionary<string, (string Body, string Tx)> _byKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, decimal> _issues = new(StringComparer.Ordinal);       // issue tx → quantity
     private readonly HashSet<string> _reversed = new(StringComparer.Ordinal);                // issue tx reversed
+    // MOD-0186 §34: CUSTOMER_RETURN tx → (quantity, toStockStatus); a REVERSAL of one takes the quantity out again.
+    private readonly Dictionary<string, (decimal Quantity, string Status)> _returns = new(StringComparer.Ordinal);
     private decimal _net;
+    private decimal _quarantine;
 
     /// <summary>Return a response to override the default for this call, or null to let INVENTORY answer.</summary>
     public Func<Call, Task<HttpResponseMessage?>>? Script { get; set; }
@@ -35,6 +38,8 @@ public sealed class FakeInventory : HttpMessageHandler
     public decimal Net { get { lock (_sync) return _net; } }
     public int Stored { get { lock (_sync) return _byKey.Count; } }
     public IReadOnlyCollection<string> IssueIds { get { lock (_sync) return _issues.Keys.ToArray(); } }
+    /// <summary>Net QUARANTINE change (CUSTOMER_RETURN into QUARANTINE +q, its REVERSAL −q).</summary>
+    public decimal Quarantine { get { lock (_sync) return _quarantine; } }
 
     /// <summary>Someone else reverses our issue in INVENTORY under another key (§23.4 external reversal).</summary>
     public void ReverseExternally(string issueTx)
@@ -77,9 +82,23 @@ public sealed class FakeInventory : HttpMessageHandler
             if (reversal)
             {
                 var original = body["sourceDocumentId"]!.GetValue<string>();
-                if (!_issues.ContainsKey(original)) return Error(422, "UNKNOWN_ITEM");
-                if (!_reversed.Add(original)) return Error(422, "ALREADY_REVERSED");
-                _net += _issues[original];
+                if (_returns.TryGetValue(original, out var received))
+                {
+                    if (!_reversed.Add(original)) return Error(422, "ALREADY_REVERSED");
+                    if (received.Status == "QUARANTINE") _quarantine -= received.Quantity; else _net -= received.Quantity;
+                }
+                else
+                {
+                    if (!_issues.ContainsKey(original)) return Error(422, "UNKNOWN_ITEM");
+                    if (!_reversed.Add(original)) return Error(422, "ALREADY_REVERSED");
+                    _net += _issues[original];
+                }
+            }
+            else if (call.MovementType == "CUSTOMER_RETURN")
+            {
+                var status = body["toStockStatus"]?.GetValue<string>() ?? "AVAILABLE";
+                _returns[tx] = (quantity, status);
+                if (status == "QUARANTINE") _quarantine += quantity; else _net += quantity;
             }
             else
             {
