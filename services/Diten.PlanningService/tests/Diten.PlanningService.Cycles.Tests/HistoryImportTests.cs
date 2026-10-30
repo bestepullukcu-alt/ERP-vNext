@@ -104,6 +104,69 @@ public sealed class HistoryImportTests
     }
 
     [Fact]
+    public async Task Create_NonTerminatingRatio_RoundsOnlyBaseQuantityToFourPlaces()
+    {
+        var store = new MemoryStore();
+        var reference = new FakeReferences(overrideResult: new HistoryReferenceResult(
+            HistoryReferenceState.Verified, "EA", 1m / 3m, "PRODUCT-MASTER-BUNDLE/getSkuUom/test",
+            "v1.1", ConversionNumerator: 1m, ConversionDenominator: 3m));
+
+        var result = await Handler(store, references: reference).Handle(
+            Command(Header + "\n" + Row(quantity: "1")), default);
+
+        Assert.Equal(201, result.StatusCode);
+        var row = Assert.Single(Assert.Single(store.Batches).Rows);
+        Assert.Equal(0.3333m, row.BaseQuantity);
+        Assert.Equal(1m, row.ConversionNumerator);
+        Assert.Equal(3m, row.ConversionDenominator);
+        Assert.Equal(1m, row.OriginalQuantity);
+        Assert.Equal("BOX", row.OriginalUomId);
+    }
+
+    [Fact]
+    public async Task Create_AlreadyInBaseUnit_PreservesOriginalPrecision()
+    {
+        var store = new MemoryStore();
+        var reference = new FakeReferences(overrideResult: new HistoryReferenceResult(
+            HistoryReferenceState.Verified, "EA", 1m, "PRODUCT-MASTER-BUNDLE/getSkuUom",
+            "v1.1", ConversionNumerator: 1m, ConversionDenominator: 1m));
+
+        var result = await Handler(store, references: reference).Handle(
+            Command(Header + "\n" + Row(quantity: "1.23456", uom: "EA"),
+                coverage: Coverage(unit: "EA")), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.Equal(1.23456m, Assert.Single(Assert.Single(store.Batches).Rows).BaseQuantity);
+    }
+
+    [Theory]
+    [InlineData("BOX", false, null)]
+    [InlineData("EA", true, "DifferentFromCurrentBase")]
+    public async Task LegacyAcceptedUnit_ReadProjectionPreservesOriginalAndShowsMismatch(
+        string currentBase, bool warning, string? warningCode)
+    {
+        var row = new AcceptedDemandHistoryRow
+        {
+            TenantId = Tenant, LegalEntityId = LegalEntity, SkuId = Sku,
+            SkuLevel = "Lsku", WarehouseId = "wh-01", OriginalUomId = "BOX",
+            AcceptedUomId = "BOX", OriginalQuantity = 2m, AcceptedQuantity = 2m,
+            UnitVerificationPending = true, OccurredOn = new DateOnly(2026, 9, 15)
+        };
+        var view = new AcceptedDemandHistoryView(row, new DemandHistoryAcceptanceAudit());
+        var checker = new FakeReferences(overrideResult: new HistoryReferenceResult(
+            HistoryReferenceState.Verified, currentBase, currentBase == "BOX" ? 1m : 2m,
+            "PRODUCT-MASTER-BUNDLE/getSkuUom", "v1.1"));
+
+        var projected = await AcceptedHistoryUnitProjection.ResolveAsync(view, checker, default);
+
+        Assert.Equal(warning, projected.EffectiveUnitVerificationPending);
+        Assert.Equal(warningCode, projected.UnitWarning);
+        Assert.True(row.UnitVerificationPending);
+        Assert.Equal("BOX", row.AcceptedUomId);
+        Assert.Equal(2m, row.AcceptedQuantity);
+    }
+
+    [Fact]
     public async Task Create_RequiresCoverageFile()
     {
         var store = new MemoryStore();
@@ -189,7 +252,7 @@ public sealed class HistoryImportTests
     }
 
     [Fact]
-    public async Task Create_UnitDifferentFromAcceptedHistory_QuarantinesRow()
+    public async Task Create_DifferentOriginalUnitWithSameVerifiedBase_IsAllowed()
     {
         var store = new MemoryStore();
         store.AcceptedUnits.Add("EA");
@@ -197,6 +260,20 @@ public sealed class HistoryImportTests
         var result = await Handler(store).Handle(Command(Header + "\n" + Row()), default);
 
         Assert.Equal(201, result.StatusCode);
+        Assert.Equal(0, result.Data!.QuarantineCount);
+        var row = Assert.Single(Assert.Single(store.Batches).Rows);
+        Assert.Equal("EA", row.BaseUomId);
+        Assert.Equal(4m, row.BaseQuantity);
+    }
+
+    [Fact]
+    public async Task Create_UnverifiedLegacyUnitDifferentFromBase_QuarantinesRow()
+    {
+        var store = new MemoryStore();
+        store.AcceptedUnits.Add("BOX");
+
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row()), default);
+
         Assert.Equal(1, result.Data!.QuarantineCount);
         Assert.Contains(Assert.Single(Assert.Single(store.Batches).Rows).Issues,
             issue => issue.Code == "UnitConflictsWithAcceptedHistory" &&

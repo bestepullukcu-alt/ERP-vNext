@@ -7,10 +7,11 @@ public sealed class ListAcceptedDemandHistoryHandler :
 {
     private readonly IAcceptedDemandHistoryStore _store;
     private readonly IHistoryImportScopeAuthority _authority;
+    private readonly IHistoryRowReferenceChecker _references;
 
     public ListAcceptedDemandHistoryHandler(IAcceptedDemandHistoryStore store,
-        IHistoryImportScopeAuthority authority)
-    { _store = store; _authority = authority; }
+        IHistoryImportScopeAuthority authority, IHistoryRowReferenceChecker references)
+    { _store = store; _authority = authority; _references = references; }
 
     public async Task<Response<IReadOnlyList<AcceptedDemandHistoryView>>> Handle(
         ListAcceptedDemandHistoryQuery query, CancellationToken cancellationToken)
@@ -46,7 +47,11 @@ public sealed class ListAcceptedDemandHistoryHandler :
                     return Response<IReadOnlyList<AcceptedDemandHistoryView>>.Fail(
                         "Accepted history was not found.", 404);
             }
-            return Response<IReadOnlyList<AcceptedDemandHistoryView>>.Success(rows);
+            var projected = new List<AcceptedDemandHistoryView>(rows.Count);
+            foreach (var row in rows)
+                projected.Add(await AcceptedHistoryUnitProjection.ResolveAsync(row, _references,
+                    cancellationToken));
+            return Response<IReadOnlyList<AcceptedDemandHistoryView>>.Success(projected);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         { return Response<IReadOnlyList<AcceptedDemandHistoryView>>.Fail(

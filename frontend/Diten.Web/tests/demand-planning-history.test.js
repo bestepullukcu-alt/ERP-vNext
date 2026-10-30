@@ -19,7 +19,8 @@ function mount(fetchMock) {
              "HistorySelectCompany":"Select company","HistorySku":"SKU","HistoryWarehouse":"Warehouse",
              "HistoryDate":"Date","HistoryQuantity":"Quantity","HistoryUnit":"Unit",
              "HistoryBatch":"Batch","HistoryDecision":"Decision","HistoryActor":"Actor",
-             "HistoryAt":"At","HistoryUnitPending":"Unit not verified by MOD-0290"}
+             "HistoryAt":"At","HistoryUnitPending":"Unit not verified by MOD-0290",
+             "HistoryUnitMismatch":"Accepted unit differs from the current base unit"}
         </script>`;
     vi.stubGlobal('fetch', fetchMock);
     new Function(read('wwwroot/assets/js/SupplyChain/demand-planning-history.js'))();
@@ -29,6 +30,50 @@ describe('MOD-0188 accepted history view', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
         document.body.innerHTML = '';
+    });
+
+    it('shows a base-unit mismatch without changing the accepted quantity or audit', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [
+                { legalEntityId: 'company-a', displayName: 'Company A' }
+            ] }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{
+                row: { sourceRecordKey: 'SHIP-1', skuId: 'sku-a', warehouseId: 'wh-a',
+                    acceptedQuantity: 3, acceptedUomId: 'BOX', unitVerificationPending: true },
+                effectiveUnitVerificationPending: true,
+                unitWarning: 'DifferentFromCurrentBase',
+                audit: { batchId: 'batch-a', action: 'RowAccepted', actorId: 'actor-a',
+                    occurredAt: '2026-10-13T10:00:00Z' }
+            }] }) });
+        mount(fetchMock);
+        await flush();
+        await flush();
+
+        const text = document.getElementById('demandHistoryRows').textContent;
+        expect(text).toContain('Accepted unit differs from the current base unit');
+        expect(text).toContain('BOX');
+        expect(text).toContain('3');
+        expect(text).toContain('actor-a');
+    });
+
+    it('clears the effective warning when the current base matches the immutable accepted unit', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [
+                { legalEntityId: 'company-a', displayName: 'Company A' }
+            ] }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{
+                row: { sourceRecordKey: 'SHIP-1', skuId: 'sku-a', warehouseId: 'wh-a',
+                    acceptedQuantity: 3, acceptedUomId: 'BOX', unitVerificationPending: true },
+                effectiveUnitVerificationPending: false,
+                audit: { batchId: 'batch-a', action: 'RowAccepted', actorId: 'actor-a',
+                    occurredAt: '2026-10-13T10:00:00Z' }
+            }] }) });
+        mount(fetchMock);
+        await flush();
+        await flush();
+
+        expect(document.querySelector('.dp-history-unit-pending')).toBeNull();
+        expect(document.getElementById('demandHistoryRows').textContent).toContain('BOX');
     });
 
     it('reads live scoped rows and shows the accepted unit, pending flag and audit', async () => {
