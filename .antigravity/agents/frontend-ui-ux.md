@@ -68,7 +68,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 12. **Delete Toast Parity:** tekil ve toplu silme, endpoint sahipliği: `frontend-js-standard.md` madde 7.
     - Bulk/action bağlama ve action kolonu: `frontend-js-standard.md` madde 7.1.
 13. **SweetAlert / Modal Tema:** `premium-modal-standard.md` §1.
-    - Sol menü açıkken modal açılınca navbar kaymasın diye sayfaya global body/html override yazılmaz: `frontend-datatable-template.md` UI-019 (paylaşılan düzeltme `backbone-custom.css` içindedir).
+    - Sol menü açıkken modal açılınca navbar kaymasın diye global `scrollbarPadding`, `heightAuto`, `scrollbar-gutter` ya da genel `swal2-shown` body/html hack'i eklenmez: `frontend-datatable-template.md` UI-019 (paylaşılan düzeltme `backbone-custom.css` içindedir).
 14. **DataTables Button Group:** Save View butonunun görünürlüğü değiştiğinde buton grubu köşeleri paylaşılan `window.DtDefaults.refreshButtonGroupRadii()` çağrısıyla düzeltilir (`.antigravity/rules/frontend-js-standard.md` madde 13 "Radius Fix"). Yeni kodda markup'ta `style="…"` ya da JS'te statik stil için `element.style.setProperty()` yazmak FG-003 ihlalidir (`docs/roadmap/backlog/product-backlog.md` FG-003; `frontend-standards.md` UI-001). `dt-defaults.js` içindeki mevcut `setProperty` kullanımı bilinen eski koddur, örnek alınmaz.
 15. **DataTable Bulk Action:** Toplu işlem barındaki silme butonu her zaman `btn-label-danger` olmalıdır.
 16. **Seçim Estetiği:** Seçili satır rengi paylaşılan `wwwroot/assets/css/backbone-custom.css` içindedir; sayfada yeniden yazılmaz.
@@ -80,7 +80,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 22. **Column Reorder Standardı:** `frontend-js-standard.md` madde 11. Custom sortable header yaklaşımı YASAKTIR.
 23. **Save View CTA Standardı:** `frontend-js-standard.md` madde 10.1.
 24. **Inline Filter Select2 Contractı:** `frontend-js-standard.md` madde 12 "Inline Filter Select2 — Zorunlu Init Paterni".
-25. **Inline Filter Field Type:** `frontend-js-standard.md` madde 12 "Filtre alan tipi kararı" ve madde 13 (çoklu seçim özeti); `frontend-datatable-template.md` "`_Filter.cshtml` Minimum Şablonu".
+25. **Inline Filter Field Type:** `frontend-js-standard.md` madde 12 "Filtre alan tipi kararı" ve madde 13 (çoklu seçim özeti); `frontend-datatable-template.md` "`_Filter.cshtml` Minimum Şablonu". Sunucu modunda çoklu değer tekrarlı parametredir: `frontend-datatable-template.md` "Sunucu modu sözleşmesi".
 26. **Details Tab/Navbar Standardı:** `frontend-details-template.md` MANDATES.
 
 ## 📐 Layout & View Architecture Rule

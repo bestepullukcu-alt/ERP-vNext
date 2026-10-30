@@ -27,7 +27,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **Personalization:** `frontend-js-standard.md` madde 4. MDM/Auth servisi kullanılmaz; backend sahibi `Diten.Platform` servisidir.
     - **[RULE] No-ViewModel:** `frontend-standards.md` §1.
     - **[RULE] Save View:** düğme `frontend-js-standard.md` madde 10.1; kaydedilen alanlar madde 10; yükleme `frontend-datatable-template.md` "Persistence Kararları"; boş ad madde 10.0.0; Reset madde 10.0.1; çift modlu uç madde 4; gerçek kayıt ve yeniden açılışta geri yükleme `.antigravity/workflows/quality-gate-datatable.md` "Save View — real persistence" ve "Save View — reload restore".
-    - **[RULE]** Sınırlı değer kümesi olan filtrelerin tipi: `.antigravity/rules/frontend-js-standard.md` madde 12 "Filtre alan tipi kararı".
+    - **[RULE]** Sınırlı değer kümesi olan filtrelerin tipi: `.antigravity/rules/frontend-js-standard.md` madde 12 "Filtre alan tipi kararı". Sunucu modunda çoklu değer tekrarlı parametredir: `.antigravity/rules/frontend-datatable-template.md` "Sunucu modu sözleşmesi".
     - **[RULE]** Inline filter Select2 kurulumu ve çoklu seçim özeti: `.antigravity/rules/frontend-js-standard.md` madde 12 ve 13.
     - **[RULE] Create/Edit yüzeyi:** `frontend-datatable-template.md` "Create/Edit Surface Rule"; `frontend-js-standard.md` madde 16 (Compact "Add New").
     - **[RULE] Compact bölüm paritesi:** `frontend-standards.md` UI-024.
