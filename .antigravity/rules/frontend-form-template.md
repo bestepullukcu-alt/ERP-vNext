@@ -245,7 +245,6 @@ const {{ModuleName}}FormManager = (function () {
     const rebuildDependentSelect = (parentEl, childEl) => {
         if (!parentEl || !childEl) return;
 
-        const selectedParent = parentEl.value || '';
         const placeholder = childEl.querySelector('option[value=\"\"]')?.textContent || '';
         const allOptions = Array.from(childEl.options)
             .filter((option) => option.value)
@@ -256,6 +255,7 @@ const {{ModuleName}}FormManager = (function () {
             }));
 
         const syncChild = () => {
+            const selectedParent = parentEl.value || '';
             const currentValue = childEl.value;
             const filtered = allOptions.filter((option) => option.parent === selectedParent);
 
