@@ -59,7 +59,7 @@ public sealed class PlatformAuditForwarderTests
         Assert.Equal((int)AuditActorType.TenantUser, body.GetProperty("actorType").GetInt32());
         Assert.Equal(Actor, body.GetProperty("actorId").GetGuid());
         Assert.Equal(Tenant, body.GetProperty("targetTenantId").GetGuid());
-        Assert.Equal(18, body.GetProperty("category").GetInt32());
+        Assert.Equal(19, body.GetProperty("category").GetInt32()); // AuditModule.Crm — 19 since main-sync 2026-10-30 (Finance = 18)
         Assert.Equal((int)AuditOperation.Create, body.GetProperty("operation").GetInt32());
         Assert.Equal((int)AuditOutcome.Succeeded, body.GetProperty("outcome").GetInt32());
         Assert.Equal("AccountVisitQr", body.GetProperty("entityType").GetString());
