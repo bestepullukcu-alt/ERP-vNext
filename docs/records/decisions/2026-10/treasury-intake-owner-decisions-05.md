@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D110 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D111 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1334,6 +1334,10 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-00
 1. **D110/1 — F-5:** oluşturulamayan atama denemesi `…/unresolved-attempts` ile okunur; uç adı ve okuma satırı CT önerisidir (MOD-0018 sahibinin teyidine). AC-52.
 2. **D110/2 — F-8:** belirsiz commit emsaldeki gibi çoğunluk okumasıyla çözülür; kanıt yoksa 503 `SOD_WAIVER_OUTCOME_UNKNOWN` ve elle uzlaştırma (hata kodu CT önerisi).
 3. **D110/3 — F-3, F-6, F-7:** metin hizalandı.
+
+## D111 — Codex `10e38d61` bulguları (UYGUN DEĞİL: 0 ENGEL, 3 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-10e38d61.md`; oturum Treasury Intake CT. F-3, F-6, F-8 kapatıldı: K-7 metni, okuma satırı alanları, istek özeti + belirsizlikte mutasyon yasağı. `RequestSha256` ve 409 kodu CT önerisidir.
 
 ## Karar olmayanlar
 
