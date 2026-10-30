@@ -58,6 +58,46 @@ public sealed class EvaluationStorageTests(EvaluationStorageDatabase database) :
     private Task<long> Count(string collection, Guid? tenant = null) =>
         _db.GetCollection<BsonDocument>(collection).CountDocumentsAsync(new BsonDocument("TenantId", (tenant ?? _scope.TenantId).ToString()));
 
+    private static EvaluationSubmission Submission(SupplierEvaluation e) =>
+        new(e.Id, e.Version, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null, Guid.NewGuid(), Guid.NewGuid(), "{}");
+
+    // The handler's stage 6 already refuses this; the update must refuse it on its own.
+    [Fact]
+    public async Task Submit_ShouldNotTouchAnotherCompanysEvaluation()
+    {
+        var evaluation = Evaluation(_scope);
+        Assert.Equal(EvaluationCommitOutcome.Committed, await Repository.CreateAsync(_scope, "create", "fp", evaluation, "{}", CancellationToken.None));
+        var otherCompany = new SupplierPerformanceScope(_scope.TenantId, Guid.NewGuid(), _scope.ActorId);
+
+        var outcome = await Repository.SubmitAsync(otherCompany, "submit", "fp", Submission(evaluation), "{}", CancellationToken.None);
+
+        Assert.Equal(EvaluationCommitOutcome.Conflict, outcome);
+        Assert.Equal(EvaluationStatus.DRAFT, (await Repository.GetAsync(_scope, evaluation.Id, CancellationToken.None))!.Status);
+        Assert.Equal(0, await Count(SupplierPerformanceSchema.Outbox));
+    }
+
+    [Fact]
+    public async Task Submit_WhenTheVersionMoved_ShouldReportAConflictAndWriteNothing()
+    {
+        var evaluation = Evaluation(_scope);
+        await Repository.CreateAsync(_scope, "create", "fp", evaluation, "{}", CancellationToken.None);
+
+        var outcome = await Repository.SubmitAsync(_scope, "submit", "fp", Submission(evaluation) with { ExpectedVersion = 5 }, "{}", CancellationToken.None);
+
+        Assert.Equal(EvaluationCommitOutcome.Conflict, outcome);
+        Assert.Equal(1, await Count(SupplierPerformanceSchema.Receipts));
+        Assert.Equal(0, await Count(SupplierPerformanceSchema.Outbox));
+    }
+
+    [Fact]
+    public async Task Schema_ShouldCreateTheOutboxClaimAndTheScorecardIndexes()
+    {
+        var outbox = await (await _db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Outbox).Indexes.ListAsync()).ToListAsync();
+        Assert.Contains(outbox, x => x["name"] == "supplier_outbox_claim");
+        var evaluations = await (await _db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Evaluations).Indexes.ListAsync()).ToListAsync();
+        Assert.Equal(["TenantId", "LegalEntityId", "SupplierId", "PeriodEnd"], Assert.Single(evaluations, x => x["name"] == "supplier_scorecard_supplier")["key"].AsBsonDocument.Names);
+    }
+
     [Fact]
     public async Task Schema_ShouldCreateTheReceiptTupleAndTheActivePeriodUniqueIndexes()
     {
