@@ -3,6 +3,7 @@ using Diten.ProcurementService.Application.Common;
 using Diten.ProcurementService.Application.Interfaces;
 using Diten.ProcurementService.Domain.Repositories;
 using Diten.ProcurementService.Persistence.Repositories;
+using Diten.ProcurementService.Persistence.Suppliers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +38,9 @@ public static class DependencyInjection
         var client = new MongoClient(clientSettings);
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
+
+        // MOD-0140 DL-2: okuma anahtarı Suppliers:Model (varsayılan PerLegalEntity; tanınmayan değer açılışı durdurur).
+        services.AddSingleton(SupplierModelSwitch.FromConfiguration(configuration));
 
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IRfxRepository, RfxRepository>();
