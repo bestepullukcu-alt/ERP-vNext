@@ -121,6 +121,8 @@ locales/
 
 ## 7. RTL Support
 
+> Diten kuralı: `.antigravity/rules/localization-standard.md` §5 "Sağdan Sola (RTL) Diller". Aşağıdaki örnek yalnız açıklamadır.
+
 ```css
 /* CSS Logical Properties */
 .container {
