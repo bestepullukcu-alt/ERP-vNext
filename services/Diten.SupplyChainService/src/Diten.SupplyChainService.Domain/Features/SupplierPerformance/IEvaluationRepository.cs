@@ -1,6 +1,6 @@
 namespace Diten.SupplyChainService.Domain.Features.SupplierPerformance;
 public sealed record EvaluationReceipt(string Fingerprint, int StatusCode, string Body);
-public enum EvaluationCommitOutcome { Committed, Clash, Unknown }
+public enum EvaluationCommitOutcome { Committed, Clash, Conflict, Unknown }
 public sealed record EvaluationFilter(string? SupplierId, EvaluationStatus? Status, string? PeriodFrom, string? PeriodTo);
 public sealed record ScorecardFilter(string? SupplierId, string? PeriodFrom, string? PeriodTo, string? RiskLevel);
 public interface IEvaluationRepository
