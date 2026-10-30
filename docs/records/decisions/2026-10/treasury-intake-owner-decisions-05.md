@@ -1283,8 +1283,8 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-29, Y-30 (`SOURCE-ANSWERS-2026-1
    "Beste, satır sahibi" yazıyor; D94/1 metni ile birlikte düzeltilecek).
 5. **D104/5 — MOD-0289 onay PR'ı:** Beste "hazırsa açın" dedi; hazır değil: paketin güncel sürümü #314'te, DCP-011 `approved` değil.
 6. **D104/6 — MOD-0144 / MOD-0217 (D94/3):** Y-30'a göre iki modül aynı kaydı tutmuyor, D39 sınırı v1 için yeterli; üç kenar boşluğu var (SERVICE / LEASE / LICENSE alım
-   yönü; Supplier karşı taraf türü; madde kütüphanesi MOD-0218). Y-30 başka CT'nin raporudur, sahip kararı değildir; MOD-0217 metni değişmedi. "İtiraz yok" yetkisinin
-   kimde olduğu açık.
+   yönü; Supplier karşı taraf türü; madde kütüphanesi MOD-0218). Y-30 başka CT'nin raporudur, sahip kararı değildir; MOD-0217 metni değişmedi. **K1 kararı (soru kutusu,
+   2026-10-30, "Ali teyit etsin"):** Procurement adına "itiraz yok" teyidi Ali'den istenir; o gelene kadar açık.
 
 ## Karar olmayanlar
 
