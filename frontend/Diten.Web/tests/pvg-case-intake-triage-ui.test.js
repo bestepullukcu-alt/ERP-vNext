@@ -352,7 +352,7 @@ describe("PVG case intake list on the list component (real DataTables, fake netw
   const item = number => ({ intakeDraftId: `draft-${String(number).padStart(3, "0")}`, status: "IntakeCreated", version: 1 });
   const envelope = (items, total, filteredTotal) => JSON.stringify({ data: { items, total, filteredTotal } });
 
-  async function mount(respond) {
+  async function mount(respond, l10n) {
     requests.length = 0;
     handle = null;
     answer = respond;
@@ -366,7 +366,7 @@ describe("PVG case intake list on the list component (real DataTables, fake netw
       <div class="card"><div id="skeleton-loader"></div><div class="card-datatable">
         <table id="dt-pvg-case-intake-triage" class="datatables-pvg-case-intake-triage"><thead><tr><th></th><th>Id</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
       </div></div>`;
-    window.PvgCaseIntakeTriageL10n = { Loading: "Loading", NoRecords: "No records", Details: "Details", Edit: "Edit", ErrorOccurred: "Error" };
+    window.PvgCaseIntakeTriageL10n = l10n ?? { Loading: "Loading", NoRecords: "No records", Details: "Details", Edit: "Edit", ErrorOccurred: "Error" };
     vm.runInContext(read("wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js"), ctx, { filename: "index.js" });
     await until(() => handle !== null && handle.lastResponse !== undefined && requests.length >= 1);
     return handle;
@@ -435,6 +435,21 @@ describe("PVG case intake list on the list component (real DataTables, fake netw
     expect(infoText).toContain("240");
     expect(infoText).not.toMatch(/\b25 entries\b/);
     expect(info.pages).toBe(Math.ceil(37 / info.length));
+  });
+
+  it("pvg list screen takes its labels from the bridge", async () => {
+    // Values unlike their keys: a t() that hands the key back cannot pass here.
+    const said = { Loading: "bridge loading", NoRecords: "bridge no records", Details: "bridge details", Edit: "bridge edit", ErrorOccurred: "bridge error" };
+
+    const list = await mount(() => envelope([item(1)], 1, 1), said);
+    await until(() => drawn(list).length === 1, 8000);
+    const body = document.querySelector("#dt-pvg-case-intake-triage tbody");
+    expect(body.querySelector(".js-edit-item").textContent).toBe(said.Edit);
+    expect(body.querySelector(".js-quick-view").getAttribute("title")).toBe(said.Details);
+
+    await mount(() => envelope([], 0, 0), said);
+    await until(() => document.getElementById("pvg-list-status").textContent === said.NoRecords, 8000);
+    expect(document.getElementById("pvg-list-status").textContent).not.toBe("NoRecords");
   });
 
   it("sends the applied status filter through the factory's own Apply, still as start and length", async () => {
@@ -1219,5 +1234,21 @@ describe("PVG case intake form fields and option source (executed against the re
     for (const key of browserL10nReferences()) {
       expect(l10n[key], key).toBe(said(key));
     }
+  });
+
+  it("pvg loader keeps the keys the shell put on window L10n", () => {
+    const said = key => `bridge value of ${key}`;
+    const bridgeKeys = [...l10nBridgeKeys()];
+    expect(bridgeKeys).toContain("RecordSaved");
+    const serverPayload = Object.fromEntries(bridgeKeys.map(key => [key.charAt(0).toLowerCase() + key.slice(1), said(key)]));
+    document.body.innerHTML = `<script id="pvg-case-intake-triage-l10n" type="application/json">${JSON.stringify(serverPayload)}</script>`;
+    const shellWindow = { L10n: { ShellOnlyKey: "shell value" } };
+
+    vm.runInNewContext(read(`${moduleJsDirectory}/index.l10n.js`), { window: shellWindow, document, JSON, Object, console });
+
+    expect(shellWindow.L10n.ShellOnlyKey).toBe("shell value");
+    expect(shellWindow.L10n.RecordSaved).toBe(said("RecordSaved"));
+    expect(shellWindow.L10n.ReportTypeSpontaneous).toBe(said("ReportTypeSpontaneous"));
+    expect({ ...shellWindow.PvgCaseIntakeTriageL10n }).toEqual({ ...shellWindow.L10n });
   });
 });
