@@ -4,92 +4,115 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Case Intake &amp; Triage</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Tenant case intake drafts for local build-test review.</value></data>
-  <data name="CreateAction" xml:space="preserve"><value>Create Draft</value></data>
-  <data name="CreateTitle" xml:space="preserve"><value>Create Intake Draft</value></data>
-  <data name="EditTitle" xml:space="preserve"><value>Update Intake Draft</value></data>
-  <data name="DetailTitle" xml:space="preserve"><value>Intake Draft Details</value></data>
-  <data name="BackToList" xml:space="preserve"><value>Back to List</value></data>
-  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
-  <data name="UpdateDraft" xml:space="preserve"><value>Update Draft</value></data>
-  <data name="SourceSection" xml:space="preserve"><value>Source</value></data>
-  <data name="SubjectEventSection" xml:space="preserve"><value>Subject &amp; Event</value></data>
-  <data name="WorkflowSection" xml:space="preserve"><value>Workflow</value></data>
-  <data name="EvidenceSection" xml:space="preserve"><value>Evidence</value></data>
-  <data name="DetailSummary" xml:space="preserve"><value>Draft Summary</value></data>
-  <data name="IntakeDraftId" xml:space="preserve"><value>Intake Draft ID</value></data>
-  <data name="Status" xml:space="preserve"><value>Status</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="Details" xml:space="preserve"><value>Details</value></data>
-  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
-  <data name="ShowAll" xml:space="preserve"><value>Show All</value></data>
-  <data name="Loading" xml:space="preserve"><value>Loading</value></data>
-  <data name="NoRecords" xml:space="preserve"><value>No intake drafts found.</value></data>
-  <data name="Blocked" xml:space="preserve"><value>Blocked</value></data>
-  <data name="ControlledBlock" xml:space="preserve"><value>Request blocked by PVG guardrails.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>استقبال الحالات والفرز</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>مسودات استقبال الحالات الخاصة بالمستأجر للمراجعة المحلية للبناء والاختبار.</value></data>
+  <data name="CreateAction" xml:space="preserve"><value>إنشاء مسودة</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>إنشاء مسودة استقبال</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>تحديث مسودة الاستقبال</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>تفاصيل مسودة الاستقبال</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="UpdateDraft" xml:space="preserve"><value>تحديث المسودة</value></data>
+  <data name="SourceSection" xml:space="preserve"><value>المصدر</value></data>
+  <data name="SubjectEventSection" xml:space="preserve"><value>المريض والحدث</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>سير العمل</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="DetailSummary" xml:space="preserve"><value>ملخص المسودة</value></data>
+  <data name="IntakeDraftId" xml:space="preserve"><value>معرّف مسودة الاستقبال</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>لم يتم العثور على مسودات استقبال.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="ControlledBlock" xml:space="preserve"><value>تم حظر الطلب بواسطة قواعد حماية PVG.</value></data>
   <data name="VersionConflict" xml:space="preserve"><value>تم تغيير هذا السجل بعد أن قرأته. حدّث الصفحة وأعد المحاولة.</value></data>
-  <data name="SessionExpired" xml:space="preserve"><value>Your session expired. Sign in again and retry.</value></data>
-  <data name="NotAuthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
-  <data name="Forbidden" xml:space="preserve"><value>This operation is not available.</value></data>
-  <data name="InvalidProxyEndpoint" xml:space="preserve"><value>The PVG proxy endpoint is not allowed.</value></data>
-  <data name="ReasonCode" xml:space="preserve"><value>Reason code</value></data>
-  <data name="Saved" xml:space="preserve"><value>Saved</value></data>
-  <data name="Updated" xml:space="preserve"><value>Updated</value></data>
-  <data name="Triaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="Routed" xml:space="preserve"><value>Routed</value></data>
-  <data name="SelectPlaceholder" xml:space="preserve"><value>Select...</value></data>
-  <data name="IntakeChannel" xml:space="preserve"><value>Intake Channel</value></data>
-  <data name="SourceType" xml:space="preserve"><value>Source Type</value></data>
-  <data name="SourceReference" xml:space="preserve"><value>Source Reference</value></data>
-  <data name="ReceivedAtUtc" xml:space="preserve"><value>Received At UTC</value></data>
-  <data name="ReporterType" xml:space="preserve"><value>Reporter Type</value></data>
-  <data name="ReporterContactSummary" xml:space="preserve"><value>Reporter Contact Summary</value></data>
-  <data name="PatientSubjectCode" xml:space="preserve"><value>Patient Subject Code</value></data>
-  <data name="EventOnsetDate" xml:space="preserve"><value>Event Onset Date</value></data>
-  <data name="AdverseEventNarrative" xml:space="preserve"><value>Adverse Event Narrative</value></data>
-  <data name="SuspectProductText" xml:space="preserve"><value>Suspect Product Text</value></data>
-  <data name="Seriousness" xml:space="preserve"><value>Seriousness</value></data>
-  <data name="IntakePriority" xml:space="preserve"><value>Intake Priority</value></data>
-  <data name="EvidenceLinkReferences" xml:space="preserve"><value>Evidence Link References</value></data>
-  <data name="EvidenceHelp" xml:space="preserve"><value>Use one approved evidence reference per line or comma-separated.</value></data>
-  <data name="ChannelPortal" xml:space="preserve"><value>Portal</value></data>
-  <data name="ChannelEmail" xml:space="preserve"><value>Email</value></data>
-  <data name="ChannelPhone" xml:space="preserve"><value>Phone</value></data>
-  <data name="ChannelPartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="SourceSpontaneous" xml:space="preserve"><value>Spontaneous</value></data>
-  <data name="SourceLiterature" xml:space="preserve"><value>Literature</value></data>
-  <data name="SourceStudy" xml:space="preserve"><value>Study</value></data>
-  <data name="SourcePartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="ReporterConsumer" xml:space="preserve"><value>Consumer</value></data>
-  <data name="ReporterHealthcareProfessional" xml:space="preserve"><value>Healthcare Professional</value></data>
-  <data name="ReporterRegulator" xml:space="preserve"><value>Regulator</value></data>
-  <data name="ReporterPartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="SeriousnessNonSerious" xml:space="preserve"><value>Non-serious</value></data>
-  <data name="SeriousnessSerious" xml:space="preserve"><value>Serious</value></data>
-  <data name="SeriousnessUnknown" xml:space="preserve"><value>Unknown</value></data>
-  <data name="PriorityRoutine" xml:space="preserve"><value>Routine</value></data>
-  <data name="PriorityExpedited" xml:space="preserve"><value>Expedited</value></data>
-  <data name="PriorityCritical" xml:space="preserve"><value>Critical</value></data>
-  <data name="StatusIntakeCreated" xml:space="preserve"><value>Intake Created</value></data>
-  <data name="StatusIntakeUpdated" xml:space="preserve"><value>Intake Updated</value></data>
-  <data name="StatusTriaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="StatusRoutePending" xml:space="preserve"><value>Route Pending</value></data>
-  <data name="StatusRouted" xml:space="preserve"><value>Routed</value></data>
-  <data name="TriageTitle" xml:space="preserve"><value>Triage</value></data>
-  <data name="TriageOutcome" xml:space="preserve"><value>Triage Outcome</value></data>
-  <data name="TriageReasonCode" xml:space="preserve"><value>Triage Reason Code</value></data>
-  <data name="TriageReason" xml:space="preserve"><value>Triage Reason</value></data>
-  <data name="OutcomeTriaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="OutcomeRejected" xml:space="preserve"><value>Rejected</value></data>
-  <data name="OutcomeDuplicate" xml:space="preserve"><value>Duplicate</value></data>
-  <data name="SubmitTriage" xml:space="preserve"><value>Submit Triage</value></data>
-  <data name="RouteTitle" xml:space="preserve"><value>Route</value></data>
-  <data name="RouteTargetQueue" xml:space="preserve"><value>Route Target Queue</value></data>
-  <data name="QueueSafetyReview" xml:space="preserve"><value>PV Safety Review</value></data>
-  <data name="QueueMedicalReview" xml:space="preserve"><value>PV Medical Review</value></data>
-  <data name="QueueIntakeFollowup" xml:space="preserve"><value>PV Intake Follow-up</value></data>
-  <data name="SubmitRoute" xml:space="preserve"><value>Submit Route</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>انتهت صلاحية جلستك. سجّل الدخول مرة أخرى وأعد المحاولة.</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>غير مصرح لك بتنفيذ هذا الإجراء.</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>هذه العملية غير متاحة.</value></data>
+  <data name="InvalidProxyEndpoint" xml:space="preserve"><value>نقطة نهاية وكيل PVG غير مسموح بها.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>رمز السبب</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="Triaged" xml:space="preserve"><value>تم الفرز</value></data>
+  <data name="Routed" xml:space="preserve"><value>تم التوجيه</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>اختر...</value></data>
+  <data name="IntakeChannel" xml:space="preserve"><value>قناة الاستقبال</value></data>
+  <data name="SourceType" xml:space="preserve"><value>نوع المصدر</value></data>
+  <data name="SourceReference" xml:space="preserve"><value>مرجع المصدر</value></data>
+  <data name="ReceivedAtUtc" xml:space="preserve"><value>وقت الاستلام (UTC)</value></data>
+  <data name="ReporterType" xml:space="preserve"><value>نوع المبلِّغ</value></data>
+  <data name="ReporterContactSummary" xml:space="preserve"><value>ملخص بيانات اتصال المبلِّغ</value></data>
+  <data name="PatientSubjectCode" xml:space="preserve"><value>رمز المريض</value></data>
+  <data name="EventOnsetDate" xml:space="preserve"><value>تاريخ بدء الحدث</value></data>
+  <data name="AdverseEventNarrative" xml:space="preserve"><value>وصف الحدث الضائر</value></data>
+  <data name="Seriousness" xml:space="preserve"><value>الخطورة</value></data>
+  <data name="IntakePriority" xml:space="preserve"><value>أولوية الاستقبال</value></data>
+  <data name="EvidenceLinkReferences" xml:space="preserve"><value>مراجع روابط الأدلة</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>أدخل مرجع دليل معتمدًا واحدًا في كل سطر أو افصل بينها بفواصل.</value></data>
+  <data name="ChannelPortal" xml:space="preserve"><value>البوابة</value></data>
+  <data name="ChannelEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="ChannelPhone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="ChannelPartner" xml:space="preserve"><value>الشريك</value></data>
+  <data name="SourceSpontaneous" xml:space="preserve"><value>عفوي</value></data>
+  <data name="SourceLiterature" xml:space="preserve"><value>الأدبيات</value></data>
+  <data name="SourceStudy" xml:space="preserve"><value>دراسة</value></data>
+  <data name="SourcePartner" xml:space="preserve"><value>الشريك</value></data>
+  <data name="ReporterConsumer" xml:space="preserve"><value>المستهلك</value></data>
+  <data name="ReporterHealthcareProfessional" xml:space="preserve"><value>أخصائي رعاية صحية</value></data>
+  <data name="ReporterRegulator" xml:space="preserve"><value>الجهة التنظيمية</value></data>
+  <data name="ReporterPartner" xml:space="preserve"><value>الشريك</value></data>
+  <data name="SeriousnessNonSerious" xml:space="preserve"><value>غير خطير</value></data>
+  <data name="SeriousnessSerious" xml:space="preserve"><value>خطير</value></data>
+  <data name="SeriousnessUnknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="PriorityRoutine" xml:space="preserve"><value>روتيني</value></data>
+  <data name="PriorityExpedited" xml:space="preserve"><value>مُعجَّل</value></data>
+  <data name="PriorityCritical" xml:space="preserve"><value>حرج</value></data>
+  <data name="StatusIntakeCreated" xml:space="preserve"><value>تم إنشاء الاستقبال</value></data>
+  <data name="StatusIntakeUpdated" xml:space="preserve"><value>تم تحديث الاستقبال</value></data>
+  <data name="StatusTriaged" xml:space="preserve"><value>تم الفرز</value></data>
+  <data name="StatusRoutePending" xml:space="preserve"><value>التوجيه قيد الانتظار</value></data>
+  <data name="StatusRouted" xml:space="preserve"><value>تم التوجيه</value></data>
+  <data name="TriageTitle" xml:space="preserve"><value>الفرز</value></data>
+  <data name="TriageOutcome" xml:space="preserve"><value>نتيجة الفرز</value></data>
+  <data name="TriageReasonCode" xml:space="preserve"><value>رمز سبب الفرز</value></data>
+  <data name="TriageReason" xml:space="preserve"><value>سبب الفرز</value></data>
+  <data name="OutcomeTriaged" xml:space="preserve"><value>تم الفرز</value></data>
+  <data name="OutcomeRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="OutcomeDuplicate" xml:space="preserve"><value>مكرر</value></data>
+  <data name="SubmitTriage" xml:space="preserve"><value>إرسال الفرز</value></data>
+  <data name="RouteTitle" xml:space="preserve"><value>التوجيه</value></data>
+  <data name="RouteTargetQueue" xml:space="preserve"><value>قائمة انتظار وجهة التوجيه</value></data>
+  <data name="QueueSafetyReview" xml:space="preserve"><value>مراجعة سلامة اليقظة الدوائية</value></data>
+  <data name="QueueMedicalReview" xml:space="preserve"><value>المراجعة الطبية لليقظة الدوائية</value></data>
+  <data name="QueueIntakeFollowup" xml:space="preserve"><value>متابعة استقبال اليقظة الدوائية</value></data>
+  <data name="SubmitRoute" xml:space="preserve"><value>إرسال التوجيه</value></data>
+  <data name="ReportType" xml:space="preserve"><value>نوع التقرير</value></data>
+  <data name="ReportTypeSpontaneous" xml:space="preserve"><value>عفوي</value></data>
+  <data name="ReportTypeStudy" xml:space="preserve"><value>دراسة</value></data>
+  <data name="ReportTypeLiterature" xml:space="preserve"><value>الأدبيات</value></data>
+  <data name="ReportTypeSolicited" xml:space="preserve"><value>مُلتمَس</value></data>
+  <data name="ReportTypeOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="ProductLines" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="ProductRole" xml:space="preserve"><value>دور المنتج</value></data>
+  <data name="ProductRoleSuspect" xml:space="preserve"><value>مشتبه به</value></data>
+  <data name="ProductRoleConcomitant" xml:space="preserve"><value>مصاحب</value></data>
+  <data name="ProductNameAsReported" xml:space="preserve"><value>اسم المنتج كما ورد في البلاغ</value></data>
+  <data name="LotNumber" xml:space="preserve"><value>رقم التشغيلة</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>إضافة منتج</value></data>
+  <data name="RemoveProductLine" xml:space="preserve"><value>إزالة المنتج</value></data>
+  <data name="AwarenessAtUtc" xml:space="preserve"><value>وقت العلم (UTC)</value></data>
+  <data name="EventCountry" xml:space="preserve"><value>بلد الحدث</value></data>
+  <data name="CountryUnknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="ReporterNameOrInitials" xml:space="preserve"><value>اسم المبلِّغ أو الأحرف الأولى</value></data>
+  <data name="ReporterProfession" xml:space="preserve"><value>المهنة</value></data>
+  <data name="ReporterCountry" xml:space="preserve"><value>بلد المبلِّغ</value></data>
+  <data name="ReporterLinked" xml:space="preserve"><value>هذا المبلِّغ مرتبط بسجل في الدليل.</value></data>
+  <data name="RemoveReporterLink" xml:space="preserve"><value>إزالة الارتباط</value></data>
+  <data name="ReporterLinkRemovalNote" xml:space="preserve"><value>ستتم إزالة الارتباط عند الحفظ.</value></data>
+  <data name="OptionsLoadFailed" xml:space="preserve"><value>تعذرت قراءة قوائم الخيارات. الحفظ غير متاح.</value></data>
 </root>

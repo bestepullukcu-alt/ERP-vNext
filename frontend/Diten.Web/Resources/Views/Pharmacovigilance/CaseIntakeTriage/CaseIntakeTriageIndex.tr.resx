@@ -4,92 +4,115 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Case Intake &amp; Triage</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Tenant case intake drafts for local build-test review.</value></data>
-  <data name="CreateAction" xml:space="preserve"><value>Create Draft</value></data>
-  <data name="CreateTitle" xml:space="preserve"><value>Create Intake Draft</value></data>
-  <data name="EditTitle" xml:space="preserve"><value>Update Intake Draft</value></data>
-  <data name="DetailTitle" xml:space="preserve"><value>Intake Draft Details</value></data>
-  <data name="BackToList" xml:space="preserve"><value>Back to List</value></data>
-  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
-  <data name="UpdateDraft" xml:space="preserve"><value>Update Draft</value></data>
-  <data name="SourceSection" xml:space="preserve"><value>Source</value></data>
-  <data name="SubjectEventSection" xml:space="preserve"><value>Subject &amp; Event</value></data>
-  <data name="WorkflowSection" xml:space="preserve"><value>Workflow</value></data>
-  <data name="EvidenceSection" xml:space="preserve"><value>Evidence</value></data>
-  <data name="DetailSummary" xml:space="preserve"><value>Draft Summary</value></data>
-  <data name="IntakeDraftId" xml:space="preserve"><value>Intake Draft ID</value></data>
-  <data name="Status" xml:space="preserve"><value>Status</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="Details" xml:space="preserve"><value>Details</value></data>
-  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
-  <data name="ShowAll" xml:space="preserve"><value>Show All</value></data>
-  <data name="Loading" xml:space="preserve"><value>Loading</value></data>
-  <data name="NoRecords" xml:space="preserve"><value>No intake drafts found.</value></data>
-  <data name="Blocked" xml:space="preserve"><value>Blocked</value></data>
-  <data name="ControlledBlock" xml:space="preserve"><value>Request blocked by PVG guardrails.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Vaka Girişi ve Triyaj</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yerel derleme ve test incelemesi için kiracı vaka girişi taslakları.</value></data>
+  <data name="CreateAction" xml:space="preserve"><value>Taslak Oluştur</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Giriş Taslağı Oluştur</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Giriş Taslağını Güncelle</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Giriş Taslağı Ayrıntıları</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye Dön</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı Kaydet</value></data>
+  <data name="UpdateDraft" xml:space="preserve"><value>Taslağı Güncelle</value></data>
+  <data name="SourceSection" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="SubjectEventSection" xml:space="preserve"><value>Hasta ve Olay</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>İş Akışı</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="DetailSummary" xml:space="preserve"><value>Taslak Özeti</value></data>
+  <data name="IntakeDraftId" xml:space="preserve"><value>Giriş Taslağı Kimliği</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Details" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>Giriş taslağı bulunamadı.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="ControlledBlock" xml:space="preserve"><value>İstek PVG koruma kuralları tarafından engellendi.</value></data>
   <data name="VersionConflict" xml:space="preserve"><value>Bu kayıt siz okuduktan sonra değişti. Sayfayı yenileyip yeniden deneyin.</value></data>
-  <data name="SessionExpired" xml:space="preserve"><value>Your session expired. Sign in again and retry.</value></data>
-  <data name="NotAuthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
-  <data name="Forbidden" xml:space="preserve"><value>This operation is not available.</value></data>
-  <data name="InvalidProxyEndpoint" xml:space="preserve"><value>The PVG proxy endpoint is not allowed.</value></data>
-  <data name="ReasonCode" xml:space="preserve"><value>Reason code</value></data>
-  <data name="Saved" xml:space="preserve"><value>Saved</value></data>
-  <data name="Updated" xml:space="preserve"><value>Updated</value></data>
-  <data name="Triaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="Routed" xml:space="preserve"><value>Routed</value></data>
-  <data name="SelectPlaceholder" xml:space="preserve"><value>Select...</value></data>
-  <data name="IntakeChannel" xml:space="preserve"><value>Intake Channel</value></data>
-  <data name="SourceType" xml:space="preserve"><value>Source Type</value></data>
-  <data name="SourceReference" xml:space="preserve"><value>Source Reference</value></data>
-  <data name="ReceivedAtUtc" xml:space="preserve"><value>Received At UTC</value></data>
-  <data name="ReporterType" xml:space="preserve"><value>Reporter Type</value></data>
-  <data name="ReporterContactSummary" xml:space="preserve"><value>Reporter Contact Summary</value></data>
-  <data name="PatientSubjectCode" xml:space="preserve"><value>Patient Subject Code</value></data>
-  <data name="EventOnsetDate" xml:space="preserve"><value>Event Onset Date</value></data>
-  <data name="AdverseEventNarrative" xml:space="preserve"><value>Adverse Event Narrative</value></data>
-  <data name="SuspectProductText" xml:space="preserve"><value>Suspect Product Text</value></data>
-  <data name="Seriousness" xml:space="preserve"><value>Seriousness</value></data>
-  <data name="IntakePriority" xml:space="preserve"><value>Intake Priority</value></data>
-  <data name="EvidenceLinkReferences" xml:space="preserve"><value>Evidence Link References</value></data>
-  <data name="EvidenceHelp" xml:space="preserve"><value>Use one approved evidence reference per line or comma-separated.</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>Oturumunuzun süresi doldu. Yeniden oturum açıp tekrar deneyin.</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>Bu işlemi yapmaya yetkiniz yok.</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>Bu işlem kullanılamıyor.</value></data>
+  <data name="InvalidProxyEndpoint" xml:space="preserve"><value>PVG vekil uç noktasına izin verilmiyor.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Neden kodu</value></data>
+  <data name="Saved" xml:space="preserve"><value>Kaydedildi</value></data>
+  <data name="Updated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="Triaged" xml:space="preserve"><value>Triyaj Yapıldı</value></data>
+  <data name="Routed" xml:space="preserve"><value>Yönlendirildi</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seçiniz...</value></data>
+  <data name="IntakeChannel" xml:space="preserve"><value>Giriş Kanalı</value></data>
+  <data name="SourceType" xml:space="preserve"><value>Kaynak Türü</value></data>
+  <data name="SourceReference" xml:space="preserve"><value>Kaynak Referansı</value></data>
+  <data name="ReceivedAtUtc" xml:space="preserve"><value>Alınma Anı (UTC)</value></data>
+  <data name="ReporterType" xml:space="preserve"><value>Bildiren Türü</value></data>
+  <data name="ReporterContactSummary" xml:space="preserve"><value>Bildiren İletişim Özeti</value></data>
+  <data name="PatientSubjectCode" xml:space="preserve"><value>Hasta Kodu</value></data>
+  <data name="EventOnsetDate" xml:space="preserve"><value>Olay Başlangıç Tarihi</value></data>
+  <data name="AdverseEventNarrative" xml:space="preserve"><value>Advers Olay Anlatımı</value></data>
+  <data name="Seriousness" xml:space="preserve"><value>Ciddiyet</value></data>
+  <data name="IntakePriority" xml:space="preserve"><value>Giriş Önceliği</value></data>
+  <data name="EvidenceLinkReferences" xml:space="preserve"><value>Kanıt Bağlantı Referansları</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Onaylı kanıt referanslarını satır başına bir tane ya da virgülle ayrılmış olarak girin.</value></data>
   <data name="ChannelPortal" xml:space="preserve"><value>Portal</value></data>
-  <data name="ChannelEmail" xml:space="preserve"><value>Email</value></data>
-  <data name="ChannelPhone" xml:space="preserve"><value>Phone</value></data>
-  <data name="ChannelPartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="SourceSpontaneous" xml:space="preserve"><value>Spontaneous</value></data>
-  <data name="SourceLiterature" xml:space="preserve"><value>Literature</value></data>
-  <data name="SourceStudy" xml:space="preserve"><value>Study</value></data>
-  <data name="SourcePartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="ReporterConsumer" xml:space="preserve"><value>Consumer</value></data>
-  <data name="ReporterHealthcareProfessional" xml:space="preserve"><value>Healthcare Professional</value></data>
-  <data name="ReporterRegulator" xml:space="preserve"><value>Regulator</value></data>
-  <data name="ReporterPartner" xml:space="preserve"><value>Partner</value></data>
-  <data name="SeriousnessNonSerious" xml:space="preserve"><value>Non-serious</value></data>
-  <data name="SeriousnessSerious" xml:space="preserve"><value>Serious</value></data>
-  <data name="SeriousnessUnknown" xml:space="preserve"><value>Unknown</value></data>
-  <data name="PriorityRoutine" xml:space="preserve"><value>Routine</value></data>
-  <data name="PriorityExpedited" xml:space="preserve"><value>Expedited</value></data>
-  <data name="PriorityCritical" xml:space="preserve"><value>Critical</value></data>
-  <data name="StatusIntakeCreated" xml:space="preserve"><value>Intake Created</value></data>
-  <data name="StatusIntakeUpdated" xml:space="preserve"><value>Intake Updated</value></data>
-  <data name="StatusTriaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="StatusRoutePending" xml:space="preserve"><value>Route Pending</value></data>
-  <data name="StatusRouted" xml:space="preserve"><value>Routed</value></data>
-  <data name="TriageTitle" xml:space="preserve"><value>Triage</value></data>
-  <data name="TriageOutcome" xml:space="preserve"><value>Triage Outcome</value></data>
-  <data name="TriageReasonCode" xml:space="preserve"><value>Triage Reason Code</value></data>
-  <data name="TriageReason" xml:space="preserve"><value>Triage Reason</value></data>
-  <data name="OutcomeTriaged" xml:space="preserve"><value>Triaged</value></data>
-  <data name="OutcomeRejected" xml:space="preserve"><value>Rejected</value></data>
-  <data name="OutcomeDuplicate" xml:space="preserve"><value>Duplicate</value></data>
-  <data name="SubmitTriage" xml:space="preserve"><value>Submit Triage</value></data>
-  <data name="RouteTitle" xml:space="preserve"><value>Route</value></data>
-  <data name="RouteTargetQueue" xml:space="preserve"><value>Route Target Queue</value></data>
-  <data name="QueueSafetyReview" xml:space="preserve"><value>PV Safety Review</value></data>
-  <data name="QueueMedicalReview" xml:space="preserve"><value>PV Medical Review</value></data>
-  <data name="QueueIntakeFollowup" xml:space="preserve"><value>PV Intake Follow-up</value></data>
-  <data name="SubmitRoute" xml:space="preserve"><value>Submit Route</value></data>
+  <data name="ChannelEmail" xml:space="preserve"><value>E-posta</value></data>
+  <data name="ChannelPhone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="ChannelPartner" xml:space="preserve"><value>İş Ortağı</value></data>
+  <data name="SourceSpontaneous" xml:space="preserve"><value>Spontan</value></data>
+  <data name="SourceLiterature" xml:space="preserve"><value>Literatür</value></data>
+  <data name="SourceStudy" xml:space="preserve"><value>Çalışma</value></data>
+  <data name="SourcePartner" xml:space="preserve"><value>İş Ortağı</value></data>
+  <data name="ReporterConsumer" xml:space="preserve"><value>Tüketici</value></data>
+  <data name="ReporterHealthcareProfessional" xml:space="preserve"><value>Sağlık Mesleği Mensubu</value></data>
+  <data name="ReporterRegulator" xml:space="preserve"><value>Düzenleyici Otorite</value></data>
+  <data name="ReporterPartner" xml:space="preserve"><value>İş Ortağı</value></data>
+  <data name="SeriousnessNonSerious" xml:space="preserve"><value>Ciddi Olmayan</value></data>
+  <data name="SeriousnessSerious" xml:space="preserve"><value>Ciddi</value></data>
+  <data name="SeriousnessUnknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="PriorityRoutine" xml:space="preserve"><value>Rutin</value></data>
+  <data name="PriorityExpedited" xml:space="preserve"><value>Hızlandırılmış</value></data>
+  <data name="PriorityCritical" xml:space="preserve"><value>Kritik</value></data>
+  <data name="StatusIntakeCreated" xml:space="preserve"><value>Giriş Oluşturuldu</value></data>
+  <data name="StatusIntakeUpdated" xml:space="preserve"><value>Giriş Güncellendi</value></data>
+  <data name="StatusTriaged" xml:space="preserve"><value>Triyaj Yapıldı</value></data>
+  <data name="StatusRoutePending" xml:space="preserve"><value>Yönlendirme Bekliyor</value></data>
+  <data name="StatusRouted" xml:space="preserve"><value>Yönlendirildi</value></data>
+  <data name="TriageTitle" xml:space="preserve"><value>Triyaj</value></data>
+  <data name="TriageOutcome" xml:space="preserve"><value>Triyaj Sonucu</value></data>
+  <data name="TriageReasonCode" xml:space="preserve"><value>Triyaj Neden Kodu</value></data>
+  <data name="TriageReason" xml:space="preserve"><value>Triyaj Nedeni</value></data>
+  <data name="OutcomeTriaged" xml:space="preserve"><value>Triyaj Yapıldı</value></data>
+  <data name="OutcomeRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="OutcomeDuplicate" xml:space="preserve"><value>Mükerrer</value></data>
+  <data name="SubmitTriage" xml:space="preserve"><value>Triyajı Gönder</value></data>
+  <data name="RouteTitle" xml:space="preserve"><value>Yönlendirme</value></data>
+  <data name="RouteTargetQueue" xml:space="preserve"><value>Yönlendirme Hedef Kuyruğu</value></data>
+  <data name="QueueSafetyReview" xml:space="preserve"><value>FV Güvenlilik İncelemesi</value></data>
+  <data name="QueueMedicalReview" xml:space="preserve"><value>FV Tıbbi İnceleme</value></data>
+  <data name="QueueIntakeFollowup" xml:space="preserve"><value>FV Giriş Takibi</value></data>
+  <data name="SubmitRoute" xml:space="preserve"><value>Yönlendirmeyi Gönder</value></data>
+  <data name="ReportType" xml:space="preserve"><value>Rapor Türü</value></data>
+  <data name="ReportTypeSpontaneous" xml:space="preserve"><value>Spontan</value></data>
+  <data name="ReportTypeStudy" xml:space="preserve"><value>Çalışma</value></data>
+  <data name="ReportTypeLiterature" xml:space="preserve"><value>Literatür</value></data>
+  <data name="ReportTypeSolicited" xml:space="preserve"><value>Talep Üzerine</value></data>
+  <data name="ReportTypeOther" xml:space="preserve"><value>Diğer</value></data>
+  <data name="ProductLines" xml:space="preserve"><value>Ürünler</value></data>
+  <data name="ProductRole" xml:space="preserve"><value>Ürün Rolü</value></data>
+  <data name="ProductRoleSuspect" xml:space="preserve"><value>Şüpheli</value></data>
+  <data name="ProductRoleConcomitant" xml:space="preserve"><value>Birlikte Kullanılan</value></data>
+  <data name="ProductNameAsReported" xml:space="preserve"><value>Bildirildiği Gibi Ürün Adı</value></data>
+  <data name="LotNumber" xml:space="preserve"><value>Lot Numarası</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>Ürün Ekle</value></data>
+  <data name="RemoveProductLine" xml:space="preserve"><value>Ürünü Kaldır</value></data>
+  <data name="AwarenessAtUtc" xml:space="preserve"><value>Farkına Varma Anı (UTC)</value></data>
+  <data name="EventCountry" xml:space="preserve"><value>Olay Ülkesi</value></data>
+  <data name="CountryUnknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="ReporterNameOrInitials" xml:space="preserve"><value>Bildiren Adı veya Baş Harfleri</value></data>
+  <data name="ReporterProfession" xml:space="preserve"><value>Meslek</value></data>
+  <data name="ReporterCountry" xml:space="preserve"><value>Bildiren Ülkesi</value></data>
+  <data name="ReporterLinked" xml:space="preserve"><value>Bu bildiren bir dizin kaydına bağlı.</value></data>
+  <data name="RemoveReporterLink" xml:space="preserve"><value>Bağı Kaldır</value></data>
+  <data name="ReporterLinkRemovalNote" xml:space="preserve"><value>Kaydettiğinizde bağ kaldırılacak.</value></data>
+  <data name="OptionsLoadFailed" xml:space="preserve"><value>Seçenek listeleri okunamadı. Kaydetme kullanılamıyor.</value></data>
 </root>
