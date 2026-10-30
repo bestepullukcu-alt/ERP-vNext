@@ -25,6 +25,6 @@ public sealed class ReturnsController(ISender sender, ReturnRequestContext conte
     {
         logger.LogInformation("Return outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",
             operation, response.StatusCode, response.ErrorCode, response.Data is ReturnResponse result && result.IdempotentReplay);
-        return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId));
+        return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId, response.StatusCode == 500 ? null : response.Details));
     }
 }
