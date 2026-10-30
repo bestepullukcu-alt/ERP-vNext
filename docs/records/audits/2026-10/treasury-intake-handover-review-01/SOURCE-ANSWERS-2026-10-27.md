@@ -341,6 +341,26 @@ Gönderen metinde yazmıyor; içerikten (FU27 teyit sahibi, D80/2 (b) notunun al
 
 > FU27 §14.2 rol adları (7 dil): düzeltmelerle teyit. tr: rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi". "Manager" çevirisi satırlar arasında tek tipe getirilsin (ru/zh/es/fr). Düzeltmeyi tablo + 7 kaynak dosya olarak siz yazın. ar/ru/zh için anadil kontrolü yapılmadı (düşük güven). D80/2 (b): notun ekine ulaşamadım, lütfen metni mesaj olarak yapıştırın; cevabı o zaman vereceğim.
 
+## Y-29 — Beste, #314 sırası, XMC-001, aday modu, AGR, MOD-0289 PR'ı (2026-10-30; K1 aktardı; XMC-001 ya da onay değildir)
+
+Özgün metin:
+
+> Beste → Treasury CT (gmg-10). Teşekkürler.
+> #314: PR'ları sırayla onaylıyoruz. #305 onaylandıktan sonra sırası gelince #314'ü inceleyip onaylayacağım. Hazır dedikten sonra lütfen dalı güncellemeyin, yoksa onay düşüyor.
+> Platform XMC-001 (finans ikinci tüketici): öneri dosyası bana ulaşmadı, lütfen yeniden gönderin. Dosyayı aldıktan sonra bakacağım: finans çift listesi (70 çift), dosya ve satır listesi, sabotajlı test planı.
+> Aday modu (D92/3): prensipte olumlu bakıyorum. Platform'da kapsam motoru herhangi bir kullanıcı için hesaplayabiliyor; eksik olan yalnız bunu servislere açan dar bir yol. Öneri dosyasıyla birlikte değerlendireceğim. Şu sınırları öneri dosyasına ekleyin: yalnız aday-modu çiftleri (`mdm.contracts.versions.approve` ve finans onay anahtarları); yalnız aynı kiracının kullanıcıları; cevap adayın bütün şirket listesi değil, istenen şirket için yalnız "yetkili / değil"; her aday sorgusu denetim kaydına yazılır; kapalı-başarısız davranış aynen.
+> Sabotajlı testler: aday-modu dışındaki çiftte aday kimliği reddedilir; başka kiracının kullanıcısı 404; cevapta şirket listesi dönmez.
+> AGR satırı (D94): `.antigravity` kural dosyaları Ali'nin sorumluluğunda. RCS-001 §3'teki MOD-0217 satırının `CTR` → `AGR` değişikliğini lütfen Ali ile netleştirin.
+> MOD-0289 onay PR'ı: PR hazırsa açın, onaylayıp merge edebilirim.
+
+## Y-30 — Procurement tarafı CT raporu, MOD-0144 / MOD-0217 ve SUPPLIER 1.3.0 (2026-10-30; K1 aktardı; sahip kararı değildir)
+
+Gönderen metinde yazmıyor; içerikten Procurement tarafı CT oturumu olduğu çıkarıldı. Özet (özgün metin K1'in mesajında):
+
+- SUPPLIER 1.3.0: PR #289 açık, merge bekliyor. `/eligible` (DL-3): DL-1 merge'ünden 1,5–2 hafta sonra, tahmin. `eligibility.read` Auth kataloğuna DL-3 ile aynı gün.
+- MOD-0144 / MOD-0217: aynı kaydı tutmuyor; D39 sınırı var; rota, izin ve ekran çakışması yok. Üç kenar boşluğu: SERVICE / LEASE / LICENSE alım yönü; Supplier karşı taraf türü; madde kütüphanesi Blueprint'te MOD-0218. Öneri: D39 v1 için kalsın, MOD-0217'ye iki netleştirme, MOD-0144'e dokunulmasın.
+- Açık karar: Procurement adına "itiraz yok" demek kimin yetkisinde. Rapor kısmi inceleme olduğunu yazıyor.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -389,3 +409,5 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-26 (Ali: MDM XMC-001; K-W5 okuma yolu + ekran; MOD-0057 ayrı Auth eki; MOD-0262-FU01 Auth tarafı; MOD-0220 §22) | FU27 §5.2 / DL-5 / K-W5; MOD-0057 O-5; WP-0126 / WP-0289 P-0 | D97 |
 | Y-27 (cevap durumu; MOD-0220 §22 yeni satır #313) | MOD-0220; FU27 | D103/5 |
 | Y-28 (FU27 §14.2 rol adları düzeltmeli teyit; D80/2 (b) not metni istendi) | FU27 §14.2 | D103 |
+| Y-29 (#314 sırası; XMC-001 dosya; aday modu sınırları; AGR Ali'ye; MOD-0289 PR) | öneri dosyası; RCS-001; MOD-0289 | D104 |
+| Y-30 (Procurement CT raporu: 1.3.0 tarihleri, MOD-0144 / MOD-0217 sınırı) | MOD-0217; MOD-0119; MOD-0289 | D104/6 |

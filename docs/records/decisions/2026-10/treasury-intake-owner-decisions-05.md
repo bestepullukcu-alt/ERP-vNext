@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D103 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D104 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1267,6 +1267,24 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-27, Y-28 (`SOURCE-ANSWERS-2026-1
 5. **D103/5 — açık kalanlar:** D80/2 (a) için FU27 son hâli teyidi, D99/1, Tag rol adları (Y-27: kontrol sürüyor); D80/2 (b) cevabı (Y-28: not metni
    bekleniyor); MOD-0220 §22 tutuşu #313 merge'üne bağlı (Y-27). #313: yeni onay satırı, açık, merge Beste'de.
 6. **D103/6 — sürüm:** FU27 sha değişti; CT-APR-02 yeni sürüm için tekrar gerekir.
+
+## D104 — Beste Y-29 ve Procurement tarafı raporu Y-30 (2026-10-30)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-29, Y-30 (`SOURCE-ANSWERS-2026-10-27.md`); oturum Treasury Intake CT
+(`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Bu kayıt onay satırı, XMC-001 izni ya da ready-for-dev onayı değildir.
+
+1. **D104/1 — #314 sırası:** Beste #305'ten sonra inceler; "hazır" dedikten sonra dal güncellenmez. Bu yüzden #314, FU27 son hâli (Ali) ve CT-APR-02
+   tamamlanmadan "hazır" denmez.
+2. **D104/2 — Platform XMC-001:** verilmedi; öneri dosyası Beste'ye ulaşmamış, yeniden gönderilir.
+3. **D104/3 — aday modu:** Beste prensipte olumlu; **karar değil**, öneri dosyasıyla değerlendirecek. Beş sınır ve üç sabotaj testi öneri dosyasına eklendi:
+   yalnız aday-modu çiftleri; yalnız aynı kiracı; cevap yalnız "yetkili / değil"; her sorgu denetim kaydında; kapalı-başarısız. Cevap biçimi değiştiği için öneri
+   ayrı uç önerir. Denetim yazma yolu ölçülmedi. Paket metinleri Beste'nin kararına kadar değişmez.
+4. **D104/4 — RCS-001 §3 AGR:** `.antigravity` kural dosyaları Ali'nin sorumluluğunda; `CTR` → `AGR` değişikliği Ali ile netleştirilir (MOD-0217 Ready-for-dev maddesinde
+   "Beste, satır sahibi" yazıyor; D94/1 metni ile birlikte düzeltilecek).
+5. **D104/5 — MOD-0289 onay PR'ı:** Beste "hazırsa açın" dedi; hazır değil: paketin güncel sürümü #314'te, DCP-011 `approved` değil.
+6. **D104/6 — MOD-0144 / MOD-0217 (D94/3):** Y-30'a göre iki modül aynı kaydı tutmuyor, D39 sınırı v1 için yeterli; üç kenar boşluğu var (SERVICE / LEASE / LICENSE alım
+   yönü; Supplier karşı taraf türü; madde kütüphanesi MOD-0218). Y-30 başka CT'nin raporudur, sahip kararı değildir; MOD-0217 metni değişmedi. "İtiraz yok" yetkisinin
+   kimde olduğu açık.
 
 ## Karar olmayanlar
 
