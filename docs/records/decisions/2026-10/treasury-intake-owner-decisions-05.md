@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D106 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D107 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1301,6 +1301,15 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-32 (`SOURCE-ANSWERS-2026-10-27.m
 5. **D106/5 — açık:** K-W8 (yeni komutların izni), K-W9 (sonuç satırı hatası). Komut, uç ve hata kodu adları CT önerisidir.
 6. **D106/6 — MOD-0144:** Ali Procurement adına teyit vermedi; "itiraz yok" Procurement sahibinden istenir (D104/6 kararı değişti). MVP-6 sorusu bu kaydın konusu değil.
 7. **D106/7 — MOD-0262-FU01:** Auth paket metni Auth kulesinde, tahmini 3 Kasım (ölçülmedi).
+
+## D107 — Ali Y-33: K-W8, K-W9, AGR, FU29 (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-33; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D107/1 — K-W8:** mevcut `auth.users.assign-role`, yeni anahtar yok; iki anahtar role ilk vermede bağlanır. Sahip şartı: kişinin yetkiyi kendine verip veremediği test edilir. AC-50 "veremez" diye yazıldı; hata kodu ve "veremez" yorumu CT'nindir, Auth kulesi kodda doğrular.
+2. **D107/2 — K-W9:** (a) komut başarılı döner, satır "sonuçlanmadı" okunur.
+3. **D107/3 — RCS-001 §3:** satırı Treasury hazırlar, Ali'nin yazılı onayıyla gider; sahiplik değişmez. D104/4 güncellenir.
+4. **D107/4 — FU29:** kimlik açılmaz; açma kararı Ali'nin. Önce Ali'ye yazılır.
 
 ## Karar olmayanlar
 
