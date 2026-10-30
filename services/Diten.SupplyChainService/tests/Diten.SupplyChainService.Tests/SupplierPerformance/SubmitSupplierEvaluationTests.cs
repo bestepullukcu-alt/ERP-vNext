@@ -192,6 +192,20 @@ public sealed class SubmitSupplierEvaluationTests
         Assert.Equal((HttpStatusCode.OK, Text(first.Body)), (replay.Status, Text(replay.Body)));
     }
 
+    // Stage 5 precedes stage 6: only a target that is gone tells them apart, the late re-read at stage 6 covers every other replay.
+    [Fact]
+    public async Task Replay_WhenTheEvaluationIsGone_ShouldStillAnswerTheOriginal()
+    {
+        await using var h = new SupplierPerformanceHost();
+        var id = await Draft(h);
+        var first = await h.Submit(id);
+        await Stored(h).UpdateOneAsync(new BsonDocument("_id", id), new BsonDocument("$set", new BsonDocument("IsDeleted", true)));
+
+        var replay = await h.Submit(id);
+
+        Assert.Equal((HttpStatusCode.OK, Text(first.Body)), (replay.Status, Text(replay.Body)));
+    }
+
     [Fact]
     public async Task Stage6_ShouldHideForeignAndDeletedTargetsBehindOne404()
     {
@@ -324,26 +338,26 @@ public sealed class SubmitSupplierEvaluationTests
         Assert.Single(await h.OutboxRows());
     }
 
-    // Two requests of one key share the evaluation id, so only the per-request CommitId tells whose receipt it is.
+    // Two requests of one key share the evaluation id, so only the per-request CommitId tells whose receipt it is. The rival runs for
+    // real: a request that took the rival's receipt for its own would answer a scorecard id that was never stored.
     [Fact]
     public async Task RP08_WhenTheReceiptIsAnotherRequests_ShouldNotClaimItsCommit()
     {
         await using var h = new SupplierPerformanceHost();
         var id = await Draft(h);
+        Answer? rival = null;
         h.Probe.FailAt = "commit";
         h.Probe.At = async boundary =>
         {
-            if (boundary != "resolve") return;
-            await h.Db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Receipts).InsertOneAsync(new BsonDocument
-            {
-                { "_id", Guid.NewGuid().ToString() }, { "TenantId", h.Tenant.ToString() }, { "LegalEntityId", h.LegalEntity.ToString() }, { "Operation", EvaluationRepository.SubmitOperation },
-                { "TargetId", id }, { "IdempotencyKey", "submit-1" }, { "CommitId", Guid.NewGuid().ToString() }, { "EvaluationId", id }
-            });
+            if (boundary != "resolve" || rival is not null) return;
+            rival = await h.Submit(id);
         };
 
         var answer = await h.Submit(id);
 
         Assert.Equal((HttpStatusCode.ServiceUnavailable, "PERSISTENCE_UNAVAILABLE"), Refusal(answer));
+        Assert.Equal(HttpStatusCode.OK, rival!.Status);
+        Assert.Single(await h.OutboxRows());
     }
 
     // Review F-2: the three races of §0.5 stage 8 on the unique receipt index and the version condition.
