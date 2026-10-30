@@ -30,7 +30,6 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 ### 3. Frontend & UI (Sneat PRO & DataTables v2)
 - **DataTables v2 Veri Modu:** Mod pack'teki `data_mode` kararıdır: kiracının sınırsız ekleyebildiği varlıklar `server` (varsayılan), tasarımda sınırlı kümeler `client` (üst sınır pack'te, öneri ≤ 200 satır; URL'de `pageSize=` yasak). Sayfa `serverSide` yazmaz; modu ortak liste fabrikasına `dataMode` ile beyan eder. Kaynak: `.antigravity/rules/frontend-datatable-template.md` `data_mode` tablosu ve "Sunucu modu sözleşmesi".
-- **Deferred Rendering:** Tablo satırlarının render edilmesi için `deferRender: true` kullanarak DOM yükünü hafiflet.
 - **L10n Bridge:** Dil dosyalarını (`.resx`) her istekte sunucudan çekmek yerine, sayfa yüklendiğinde `window.L10n` objesine bir kez yükle.
 
 ### 4. Gateway & Network
