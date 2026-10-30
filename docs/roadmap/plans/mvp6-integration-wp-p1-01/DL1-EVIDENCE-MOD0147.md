@@ -28,30 +28,40 @@
 | 5b | `dd4b0975f` | deterministic RP-07 (late identical request is a replay); one database per test host |
 | 5c | `cad08fd3e` | own database only for the unique-index race tests. RP07 was red at this commit |
 | 4b | `113c6e628` | fix: the receipt re-read after a clash reads locally; RP-07 runs four rounds |
-| 5d | this note | evidence |
+| 5d | `471f7b971` | evidence, first version |
+| 4c | `833ed685e` | review 01: F-3 lost commit answer, F-2 deterministic RP-07c, F-4 DB-010, comment and ledger fixes |
+| 5e | this note | evidence for `833ed685e` |
 
 ## Full suite (unfiltered)
 
 | HEAD | Lane | mongod | Result | Run folder |
 |---|---|---|---|---|
-| `113c6e628` | 6154, fresh replica set `rs-q502s`, shut down afterwards | 8.0.18 | **880 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, by design), 3 m 42 s, exit 0 | `~/Projects/ERP-vNext-lanes/mod0147v1/run-20261030-140432` |
+| `833ed685e` | 6154, fresh replica set `rs-q502s`, shut down afterwards | 8.0.18 | **890 passed, 0 failed, 1 skipped** (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, by design), 3 m 29 s, exit 0 | `~/Projects/ERP-vNext-lanes/mod0147v1/run-20261030-150813` |
+| `113c6e628` | 6154 | 8.0.18 | 880 passed, 0 failed, 1 skipped | `run-20261030-140432` |
 | `dd4b0975f` | 6154 | 8.0.18 | 833 passed, **47 failed**, 1 skipped: mongod down, see the sabotage notes | `run-20261029-223814` |
 | `d4b5ad7a5` | 6154, fresh replica set `rs-q502s`, shut down afterwards | 8.0.18 | 878 passed, 0 failed, 1 skipped (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, by design), 12 m 40 s, exit 0 | `~/Projects/ERP-vNext-lanes/mod0147v1/run-20261029-212714` |
 
 `git status` was empty when each run started. `ContractErrorCodeParityTests` (shipment-bundle) and the central-audit guards are
-inside the suite and unchanged in meaning. Other gates: phase1 `python3 -m unittest discover -s scripts/tests` — **220 tests OK**.
-The phase1 run was on `d4b5ad7a5`, not re-run on later commits (they touch only SupplyChain C#). Architecture filter
-(`AuditTrailStandard`, `DocsPathGuard`) on `113c6e628`: 3 red. `AuditTrailStandardTests` (2) lists only `Diten.CrmService` commands and
-`Diten.Platform` duplicate names; `DocsPathGuardTests` (1) lists no SupplierPerformance file. The CRM file checked and the listed
-files are outside this branch's diff, but I did not run the tests on `63acdf2ec` itself. Reported, not fixed (XMC-001).
+inside the suite and unchanged in meaning. Phase1 `python3 -m unittest discover -s scripts/tests` on `833ed685e`: **220 tests OK**.
 
-## Sabotage table (HEAD `113c6e628`, lane 6154, mongod 8.0.18)
+Architecture filter (`AuditTrailStandard`, `DocsPathGuard`, `MongoTestDatabaseGuard`), raw output in `~/Projects/ERP-vNext-lanes/mod0147v1/round2-833ed685e/`:
+
+| Tree | Result | Raw |
+|---|---|---|
+| HEAD `833ed685e` | 64 passed, 3 failed | `arch-head.txt` |
+| base `63acdf2ec` (detached worktree `mod0147v1/base-63acdf2ec`) | 64 passed, 3 failed | `arch-base.txt` |
+
+The same three tests fail on both trees (`DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders`,
+`AuditTrailStandardTests.EveryWriteCommand_IsAudited…`, `…EveryServiceWithWriteCommands_HasALedger…`). Their 76 listed lines are
+identical in both files: none only on HEAD, none only on base. So this branch adds no architecture red. They are other
+modules' reds, not fixed here (XMC-001). `MongoTestDatabaseGuardTests` is green.
+
+## Sabotage table (HEAD `833ed685e`, lane 6154, mongod 8.0.18)
 
 Each row changes one production (or guard) line, runs the guarding tests, writes the original bytes back and checks
-`git diff --quiet` on the file. **32 of 33 rows went red on every run and were restored clean; RP-07c is a race and went red in
-6 of 8 tries.** The restored code is the committed code, and the full suite ran green on it after the table. There is no per-row
-green run after restore. Harness `~/Projects/ERP-vNext-lanes/mod0147v1/sabotage.py` (sha256 `d6c13c4cd8730604…`), raw results
-`sabotage-113c6e628.json`, `sabotage-rp07c-try1…8.json`.
+`git diff --quiet` on the file. **39 of 39 rows went red in this run and were restored clean.** The restored code is the committed
+code, and the full suite ran green on it after the table. There is no per-row green run after restore. Harness
+`~/Projects/ERP-vNext-lanes/mod0147v1/sabotage.py` (sha256 `714f69658fc8e371…`), raw results `round2-833ed685e/sabotage.json`.
 
 | Row | Rule | Sabotage | File | Sabotaged run | Restore |
 |---|---|---|---|---|---|
@@ -67,7 +77,7 @@ green run after restore. Harness `~/Projects/ERP-vNext-lanes/mod0147v1/sabotage.
 | CANON | §0.0 D2 P1: legacy code → 422, no Procurement call | canonical-code check removed | `CreateSupplierEvaluationHandler.cs` | red: failed=4 passed=0 | restored |
 | MDM | §0.5 3b: MDM refusal before Procurement | MDM Unavailable lets the request through | `SupplierPerformanceContextMiddleware.cs` | red: failed=1 passed=1 | restored |
 | ISO | T-0147-ISO-01: Tenant + LE filter | LE filter removed from the read scope | `EvaluationRepository.cs` | red: failed=2 passed=0 | restored |
-| RP-01 | T-0147-RP-01: receipt inside the commit | receipt not written in the transaction | `EvaluationRepository.cs` | red: failed=7 passed=8 | restored |
+| RP-01 | T-0147-RP-01: receipt inside the commit | receipt not written in the transaction | `EvaluationRepository.cs` | red: failed=8 passed=11 | restored |
 | RP-02 | T-0147-RP-02: fingerprint covers the whole body | fingerprint on supplierId only | `SupplierPerformanceRequestFingerprint.cs` | red: failed=1 passed=0 | restored |
 | RP-03 | T-0147-RP-03: receipt before the eligibility read | receipt looked up after the eligibility read | `CreateSupplierEvaluationHandler.cs` | red: failed=1 passed=0 | restored |
 | RP-04 | T-0147-RP-04: permission before the receipt | permission skipped when a key is sent | `SupplierPerformanceContextMiddleware.cs` | red: failed=1 passed=0 | restored |
@@ -75,8 +85,14 @@ green run after restore. Harness `~/Projects/ERP-vNext-lanes/mod0147v1/sabotage.
 | RP-06 | T-0147-RP-06: no receipt for a failed request | a receipt written for a 422 | `CreateSupplierEvaluationHandler.cs` | red: failed=1 passed=0 | restored |
 | RP-07a | T-0147-RP-07: a period clash re-reads the receipt | period clash answered 409 without re-reading the receipt | `CreateSupplierEvaluationHandler.cs` | red: failed=2 passed=0 | restored |
 | RP-07b | T-0147-RP-07 / RP-10: receipt unique index | receipt unique index dropped | `SupplierPerformanceSchema.cs` | red: failed=2 passed=2 | restored |
-| RP-07c | T-0147-RP-07: the clash re-read sees the winner's commit | clash re-read at majority instead of local | `CreateSupplierEvaluationHandler.cs` | **race: red in 6 of 8 tries** (failed=1 passed=14); green in the table run with the narrower filter | restored |
-| RP-08 | T-0147-RP-08: unknown commit is not rolled back and rewritten | unknown commit retried as a new write | `EvaluationRepository.cs` | red: failed=4 passed=0 | restored |
+| RP-07c | T-0147-RP-07: the clash re-read sees the winner's commit (handler) | handler re-read without `afterClash` | `CreateSupplierEvaluationHandler.cs` | red: failed=2 passed=2 | restored |
+| RP-07d | T-0147-RP-07: afterClash reads local (repository) | repository ignores `afterClash` | `EvaluationRepository.cs` | red: failed=1 passed=0 | restored |
+| RP-07e | T-0147-RP-07: stage 5 stays majority (repository) | stage 5 reads local too | `EvaluationRepository.cs` | red: failed=1 passed=0 | restored |
+| RP-08 | T-0147-RP-08: unknown commit is not rewritten | lost answer retried as a new write | `EvaluationRepository.cs` | red: failed=6 passed=1 | restored |
+| F3-read | F-3: a lost answer is resolved from the receipt | no read-back, always Unknown | `EvaluationRepository.cs` | red: failed=2 passed=5 | restored |
+| F3-owner | F-3: only this request's receipt proves the commit | any receipt counts as proof | `EvaluationRepository.cs` | red: failed=1 passed=0 | restored |
+| F3-fail | F-3: a failed read-back stays 503 | failed read-back counts as committed | `EvaluationRepository.cs` | red: failed=2 passed=5 | restored |
+| F3-commit | F-3: the commit does not depend on the caller's token | commit takes the request token | `EvaluationRepository.cs` | red: failed=2 passed=0 | restored |
 | RP-11 | T-0147-RP-11: active-period unique index | active-period unique index dropped | `SupplierPerformanceSchema.cs` | red: failed=2 passed=0 | restored |
 | RP-12 | T-0147-RP-12: the key is not trimmed | key trimmed | `SupplierPerformanceContextMiddleware.cs` | red: failed=1 passed=6 | restored |
 | RP-12ws | T-0147-RP-12: White_Space-only key → 400 | White_Space-only key accepted | `SupplierPerformanceContextMiddleware.cs` | red: failed=4 passed=3 | restored |
@@ -90,14 +106,15 @@ green run after restore. Harness `~/Projects/ERP-vNext-lanes/mod0147v1/sabotage.
 | COMP | D2 composition: production wires the real reader | typed eligibility client not registered | `Program.cs` | red: failed=7 passed=0 | restored |
 
 Notes:
-- **RP-07c is not a deterministic guard.** It needs a commit visible locally before the majority snapshot shows it. The bug it
-  guards was found by RP-07 itself: 409 `DUPLICATE_EVALUATION` among identical concurrent creates. Fixed in `113c6e628`.
-- First harness run: RP-07a stayed green because the barrier race missed the window between stage 5 and the active-period
-  check. `dd4b0975f` adds a gate that holds one request there, and the row is red on every run since.
-- RP-07b and RP-11 were first red only in the storage tests: the host tests shared a database whose earlier unique indexes
-  survived the sabotage. RP-07, RP-10 and RP-11 now have their own database and also go red at the host.
+- **RP-07c is deterministic since `833ed685e`** (review F-2). Before, it hung on a race and was red in 6 of 8 tries. A fake repository
+  now holds "local ahead of majority" for both clash paths, and a `CommandStartedEvent` test measures `readConcern.level`: `majority`
+  by default, `local` after a clash (RP-07d, RP-07e). `RP07_IdenticalConcurrentCreates` stays as a stress test.
+- The bug RP-07 found: 409 `DUPLICATE_EVALUATION` among identical concurrent creates, fixed in `113c6e628`.
 - `dd4b0975f` gave every host its own database. That exhausted mongod's open files ("Too many open files"): mongod went down and
-  47 tests of other modules failed (`run-20261029-223814`). `cad08fd3e` limits own databases to those race tests.
+  47 tests of other modules failed (`run-20261029-223814`). `cad08fd3e` narrowed it, and `833ed685e` removed GUID names altogether
+  (DB-010): shared fixed databases with a new tenant per test; `diten_mod0147_unique` is dropped before each of the four race hosts,
+  `diten_mod0147_storage` once per class, so index rows RP-07b and RP-11 still rebuild their indexes. No "Too many open files" in the
+  final run's `mongod.log`.
 - RP-12 has two rows: trimming (pack sabotage) and accepting a White_Space-only key.
 - RP-14's sabotage changes the replayed status to the current one instead of reading the entity. RP-16's makes the validator
   accept any object, so the test goes red on the missing schema check rather than through an early receipt lookup. RP-06's
@@ -131,10 +148,21 @@ Notes:
    The contract successor 1.1.0 should name them (CT contract writer).
 5. **Test Mongo variable:** the DL-1 tests use the suite's existing `MOD0183_TEST_MONGO` (set by `supplychain-ci-mongo.sh`) with
    their own databases, so no CI script changed. A separate variable would need a CI-script change (not in this slice).
-6. **Unknown commit and the central record:** when the commit succeeded but the answer was lost (RP-08 `afterCommit`), the
-   command reports 503, so the shared forwarder marks the enlisted row Abandoned; the evaluation exists without a delivered
-   central record. Shared-forwarder behavior (BuildingBlocks), not changed here; CT to decide.
-7. **RP-07c** is a race (6 of 8); see the sabotage notes.
+6. **Lost commit answer and the central record (F-3, Natig 2026-10-30):** the repository now reads this request's own receipt back,
+   so a lost answer is a success and the row is confirmed; the commit no longer takes the request token, so a client hang-up
+   cannot abandon the record (`RP08_ClientHangsUp…`). This reads the pack's "commit outcome unknown → 503" as: known once the receipt
+   is read. **Still open:** when the read-back also fails the answer is 503, the shared forwarder marks the enlisted row Abandoned,
+   and a later replay enlists nothing, so the evaluation stays without a delivered central record. That path is in BuildingBlocks,
+   not touched here. Whether health counts Abandoned rows was not measured. Load and Carrier still commit with the request token.
+7. **Review 01 lows, code changes left open:** F-5 the canonical pattern needs a one-line confirmation from the MOD-0140 owner; F-6 a lone surrogate (`"notes":"\ud800"`) may answer 500 instead of 400 (inferred, not run); F-7 a Mongo failure before the commit answers 503 where the pack says 500 (safe to retry); F-11 no `(TenantId, LegalEntityId, SupplierId, PeriodEnd)` scorecard index, `ListPublishedAsync` unbounded, `"-0"` accepted as zero.
 8. Plan §5.2 (five low findings of the pack review, due 2026-10-30) and §5.3 (`mdm.legal-entities.read` and
    `procurement.suppliers.eligibility.read` on the evaluating role for the tour) stay open; neither changes DL-1 code.
 9. `AuditTrailStandardTests` red on `main` for CRM / Platform (above) — another module (XMC-001), not touched.
+10. **§21 audit content (F-8):** the table asks `AfterState` (SupplierId, period, metrics, score, level), but `CentralAuditOutboxRecord` has
+    no Before/After field and the forwarder records no body (pack `:659`). Known gap (AUD-001 §3, §8). The event name
+    `supplier-evaluation.created` is carried as `Operation=Create` + `EntityType=SupplierEvaluation`. Notes do not leak (test).
+11. **Scope beyond `Features/SupplierPerformance/**` (F-10):** `Program.cs` (middleware branch, 400 envelope, Shipment exclusion),
+    `SupplyChainCentralAudit.cs` (module code), `appsettings.Development.json` (URL), plus the guard counts and ledger note. All needed
+    for the feature to run; no protected path.
+12. `~/Projects/ERP-vNext-lanes/mod0147v1/base-63acdf2ec` is a detached git worktree kept for the base measurement; it can be removed
+    with `git worktree remove` when no longer wanted.
