@@ -12,6 +12,18 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   söylemeli. (MOD-0230 2026-10-21-f1b56737)
 - Ortam iddiaları (yerel / dev / CI, Gateway, UI çalışıyor) paketin farklı bölümlerinde farklı. (MOD-0230 2026-10-21-f1b56737)
 - Alan ya da yüzey sayısı başlıktaki hesapla tutmuyor. (MOD-0230 2026-10-22-23c49893)
+- Durum tablosu ile kabul ölçütü aynı (durum, olay) çifti için farklı sonuç veriyor; bir tablo satırına istisna
+  eklenince ("niyet iptal ise …") o durumu anan her AC ve başarısızlık yolu da güncellenmeli. (MOD-0280-FU02
+  2026-10-29-878a24f0)
+- Denetim yükü kuralı ile denetim tablosu çelişiyor: kayıt "yalnız şu alanlar" derken başka satır o listede olmayan
+  alanları zorunlu kılıyor; iş alanları ile teknik zarf (kimlik, durum kodu) ayrı tanımlanmalı. (MOD-0280-FU02
+  2026-10-29-ea61e8c6 F-01, 2026-10-29-47df0fc4 F-09, 2026-10-29-436bc38b F-18)
+- Bir kural (ör. "karar varsa iptal reddedilir") genel yazılmış, oysa yalnız bir yol için geçerli; başka bir AC'nin izin
+  verdiği yolu (ör. onaylı izni iptal) kapatıyor. (MOD-0280-FU02 2026-10-29-436bc38b F-19)
+- Bir taban kuralı (ör. hak + devir ≥ kullanılan + ayrılan) ile AC farklı eşik kullanıyor; AC'de sayısal bir örnek
+  yazılmalı. (MOD-0280-FU02 2026-10-29-47df0fc4 F-14)
+- Hazırlık listesi bir koşulu ready-for-dev önkoşulu sayarken dilim tablosu aynı koşulu yalnız bir dilimin kabul kapısı
+  sayıyor. (MOD-0280-FU02 2026-10-29-ea61e8c6 F-06, 2026-10-29-47df0fc4 F-15)
 
 ## 2. Kodla tutmayan iddia
 
@@ -23,6 +35,13 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   2026-10-29-5383fd43 F-33)
 - Bir kayda (denetim satırı, olay) yazılacak kimlik ya da değer, onu üreten adımdan önce sabitleniyor; sonradan bulunan
   değer (tekrar çağrısı, yeni kayıt) oraya yazılamaz. (MOD-0357 2026-10-29-0e730d97 F-55)
+- Bağımlı modülün davranışı hakkında bir sınır iddiası ("X değişince reddeder", "Y'yi garanti eder") o modülün kodunda
+  ölçülmemiş; iddia dosya ve satırla yazılır, ölçülemiyorsa "bilinmiyor" denir. (MOD-0280-FU02 2026-10-29-948f931b F-21,
+  2026-10-29-47df0fc4 F-16)
+- Yeniden deneme ya da arka plan işi, bağımlı modülün kullanıcı kimliği istediği bir komutu çağırıyor; işin hangi
+  kimlikle çalışacağı yazılmamış. (MOD-0280-FU02 2026-10-29-47df0fc4 F-11)
+- Bir yetki "satır kapsamı" (atama, sahiplik) ile sağlanmış gösteriliyor; eylem için izin anahtarı ayrıca adlandırılmalı,
+  okuma için ayrı anahtar olmalı. (MOD-0280-FU02 2026-10-29-ea61e8c6 F-03, 2026-10-29-47df0fc4 F-13)
 
 ## 3. Ölçülemeyen kabul ölçütü
 
@@ -33,6 +52,13 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   (MOD-0230 2026-10-22-94cbb2d5)
 - Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
   (`audit-trail-standard` §7). (MOD-0230 2026-10-21-b48500cf; MOD-0357 2026-10-29-5383fd43 F-37)
+- Bir alan "sabit kod listesi" ya da "kapalı enum" diye anılıyor ama değerleri pakette sayılmamış; doğrulama yalnız
+  alanın dolu olmasını istiyor. Değerler, üyelik doğrulaması ve geçersiz kodun yanıtı yazılmalı; lookup kararı ile alan
+  tanımı aynı listeyi göstermeli. (MOD-0280-FU02 2026-10-29-775ce53c F-76)
+- Bir sayı (eşleşmeyen kayıt, hata) raporlanıyor ama hangi kaydın düzeltileceğini gösteren okuma yüzeyi yok.
+  (MOD-0280-FU02 2026-10-29-ea61e8c6 F-07)
+- Bir dilimin gerekli kanıt seviyesi işin riskinden düşük (ör. izin anahtarı ve gateway rotası yalnız smoke ile).
+  (MOD-0280-FU02 2026-10-29-ea61e8c6 F-04)
 
 ## 3a. Eşzamanlılık, tekrar ve yarıda kalan iş
 
@@ -47,6 +73,19 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   2026-10-29-0e730d97 F-54, F-57)
 - Çok adımlı yazımda "tamamlandı" işareti (bağ, durum) ilk yazılıyor: yarıda kalan iş kalıcı eksik kalır. İşaret en son
   yazılır; kesinti testi her ara noktada koşar. (MOD-0357 2026-10-29-0e730d97 F-56; 2026-10-29-ee542bf9 F-65, F-67)
+
+## 5. Dış sistemle yarış, kesinti ve bırakma
+
+- Başka bir modüle yapılan çağrının başarısız yanıtı ya da süreli kilidin dolması "o iş olmadı" kanıtı sayılıyor; yanıt
+  kaybolmuş, iş tamamlanmış olabilir. Bırakma (gün iadesi, yeni gönderim) yalnız karşı sistemin yeniden okunan son
+  durumuyla yapılır. (MOD-0280-FU02 2026-10-29-ea61e8c6 F-02, 2026-10-29-47df0fc4 F-10, 2026-10-29-436bc38b F-17,
+  2026-10-29-5fb4d1bb F-20)
+- Birden çok kayda dokunan yazım için işlem bütünlüğü ya da kalıcı telafi tanımlı değil; "her hata geri alınır" iddiası
+  kullanılan işlem aracının belirsiz commit sonucunu hesaba katmıyor. (MOD-0280-FU02 2026-10-29-ea61e8c6 F-02, 2026-10-29-47df0fc4 F-16)
+- Bir işaret (ör. "yıl devredildi") ile değiştirdiği değerler aynı işlemde yazılmıyor; yarıda kalan koşu tekrarlanınca
+  eksik ya da çift iş yapar. (MOD-0280-FU02 2026-10-29-47df0fc4 F-12)
+- Değer azaltılınca (hak, kota) mevcut ayrılmış ve kullanılmış miktarla uzlaştırma kuralı yok. (MOD-0280-FU02
+  2026-10-29-ea61e8c6 F-05)
 
 ## 4. Araç biçimi
 

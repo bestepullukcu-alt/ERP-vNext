@@ -56,6 +56,15 @@ API bağlantılarında hardcoded port veya domain kullanımından kaçınılmal�
 *   **Bootstrap Önceliği:** Stil düzenlemelerinde öncelikle Bootstrap utility sınıfları (`d-flex`, `text-center`, `mb-4`) kullanılmalıdır.
 *   **Semantic Badge Classes:** Durum ve etiket gösterimlerinde Sneat/Bootstrap label sınıfları (`bg-label-primary`, `bg-label-success`) standarttır.
 *   **No Hardcoded Colors:** Tüm renkler CSS değişkenleri (`var(--bs-*)`) üzerinden yönetilmelidir.
+*   **Açık ve koyu tema:** Sayfa açık ve koyu temada okunur kalır; renkler yalnız tema değişkenlerinden (`var(--bs-*)`) gelir. Ölçüm (2026-10-29): kabukların üst barında açık / koyu / sistem tema düğmesi var.
+
+### 4.3 Bileşen Referansı
+*   Kural dosyaları ve altın referans önce gelir. Şablonda karşılığı olmayan bir bileşen için ikincil referans Sneat tema örnekleridir: `frontend/_Reference/Theme/full-version/html/`.
+
+### 4.4 Erişilebilirlik
+*   **Kontrast (WCAG AA):** Normal metin ile zemini arasında en az 4.5:1, büyük metinde en az 3:1.
+*   **Hareket azaltma:** Kullanıcı `prefers-reduced-motion: reduce` seçtiyse animasyon ve geçişler kapatılır ya da kısaltılır.
+*   Bu bölüm yeni kodu bağlar. Ölçülmedi (2026-10-29): var olan sayfaların kontrastı; `backbone-custom.css`'te genel bir hareket azaltma kuralı yok, yalnız yerel bloklar var (diğer CSS dosyaları ölçülmedi).
 
 ---
 
