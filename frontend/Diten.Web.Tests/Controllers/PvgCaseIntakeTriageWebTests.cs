@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Diten.Web.Controllers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -23,12 +24,15 @@ namespace Diten.Web.Tests.Controllers;
 
 /// <summary>
 /// MOD-0230 WP-0230-DL7A on the real MVC proxy (and, for the unauthorized face, the real web tier with its layout):
-/// W1/W3 — every one of the ten actions checks its pvg.case-intake-triage.* key FIRST (page actions: bare 403 that the
+/// W1/W3 — every one of the eleven actions checks its pvg.case-intake-triage.* key FIRST (page actions: bare 403 that the
 /// status-code pages re-execute to the shared /Home/Status/403; JSON actions: 403 with a message body in the reader's
 /// language) and the Gateway is not called; W2 — UAS-001: without the read key the page is the shared 403 page and
 /// nothing of the screen; W4 — Bearer, tenant and correlation come only from the verified principal (no X-Diten-*
 /// header, no unverified cookie token); W5 — the record version travels to the API; W6/W7 — the list component's
 /// start/length become the API's pageNumber/pageSize (at most 100) and the API's counts become the component's envelope.
+/// MOD-0230 WP-0230-DL7B: W8/W9/W10 — the revision 04 fields travel with the API's names, the response-only fields never
+/// do, and a link removal never comes with a selection; W11 — the option codes pass through unchanged behind the read key;
+/// W12 — the form as the real view draws it, through the real MVC model binder and antiforgery check.
 /// </summary>
 public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -47,17 +51,30 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         "{\"outcome\":\"Succeeded\",\"items\":[{\"intakeDraftId\":\"d1\",\"status\":\"IntakeCreated\",\"version\":3}],\"totalCount\":101,\"filteredCount\":101}";
 
     private static readonly CaseIntake FormInput = new(
-        "Portal", "Spontaneous", "REF-1", "2026-10-20T10:00", "Consumer", null, "SUBJ-1", null, "narrative", "product",
-        "Serious", "Routine", "E-1, E-2");
+        "Portal", "Spontaneous", "REF-1", "2026-10-20T10:00", "Consumer", null, "SUBJ-1", null, "narrative",
+        [
+            new("Suspect", "synthetic-product", "synthetic-lot"),
+            new("Concomitant", "synthetic-other-product", null)
+        ],
+        "Serious", "Routine", "E-1, E-2", "2026-10-20T10:00", "unknown", "Spontaneous", "S.Y.", "synthetic-profession", "unknown");
 
     private sealed record CaseIntake(
         string IntakeChannel, string SourceType, string SourceReference, string ReceivedAtUtc, string ReporterType,
         string? ReporterContactSummary, string PatientSubjectCode, string? EventOnsetDate, string AdverseEventNarrative,
-        string SuspectProductText, string Seriousness, string IntakePriority, string EvidenceLinkReferencesRaw);
+        PharmacovigilanceCaseIntakeTriageController.ProductLineFormInput[] ProductLines, string Seriousness, string IntakePriority,
+        string EvidenceLinkReferencesRaw, string AwarenessAtUtc, string EventCountry, string ReportType,
+        string ReporterNameOrInitials, string ReporterProfession, string ReporterCountry);
+
+    /// <summary>The eight fields the screen and the proxy never send (prompt NE (4)).</summary>
+    private static readonly string[] NeverSent =
+    [
+        "ReporterSource", "ReporterSourceId", "ReporterCrmSearchState", "ValidityResult", "ValidityMissingCriteria",
+        "GlobalProductId", "PresentationGskuId", "CompanyRecipientPersonId"
+    ];
 
     // ------------------------------------------------------------------------------------------------ W1
 
-    /// <summary>The ten actions, each with the key it needs (NASIL, AC-2) and how to call it.</summary>
+    /// <summary>The eleven actions, each with the key it needs (NASIL, AC-2) and how to call it.</summary>
     private static readonly (string Action, string Key, bool IsPage, Func<PharmacovigilanceCaseIntakeTriageController, Task<IActionResult>> Call)[] Actions =
     [
         ("Index", Read, true, c => Task.FromResult(c.Index())),
@@ -66,6 +83,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         ("Edit", Update, true, c => Task.FromResult(c.Edit(DraftId))),
         ("List", Read, false, c => c.List(CancellationToken.None)),
         ("Detail", Read, false, c => c.Detail(DraftId, CancellationToken.None)),
+        ("Options", Read, false, c => c.Options(CancellationToken.None)),
         ("CreateDraft", Create, false, c => c.CreateDraft(Input(), CancellationToken.None)),
         ("UpdateDraft", Update, false, c => c.UpdateDraft(DraftId, Input(), CancellationToken.None)),
         ("TriageDraft", Triage, false, c => c.TriageDraft(DraftId, new("Triaged", null, null), CancellationToken.None)),
@@ -73,7 +91,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     ];
 
     [Fact]
-    public void The_controller_has_exactly_the_ten_actions_this_test_maps_to_a_key()
+    public void The_controller_has_exactly_the_actions_this_test_maps_to_a_key()
     {
         var actions = typeof(PharmacovigilanceCaseIntakeTriageController)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
@@ -192,6 +210,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     [Theory]
     [InlineData("List")]
     [InlineData("Detail")]
+    [InlineData("Options")]
     [InlineData("CreateDraft")]
     [InlineData("UpdateDraft")]
     [InlineData("TriageDraft")]
@@ -371,13 +390,389 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         }
     }
 
+    // ------------------------------------------------------------------------------------------------ W8
+
+    [Fact]
+    public async Task Form_inputs_carry_the_revision04_fields_with_api_names()
+    {
+        var wire = new Wire(ListAnswer);
+        // Two real lines, a line of nothing and a line of spaces: only the two real ones travel.
+        var lines = FormInput.ProductLines.Concat([new(null, null, null), new("  ", " ", "   ")]).ToArray();
+
+        await Controller(wire, Create).CreateDraft(Input(lines: lines), CancellationToken.None);
+        await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 2, lines: lines), CancellationToken.None);
+
+        Assert.Equal(2, wire.Requests.Count);
+        foreach (var sent in wire.Bodies)
+        {
+            using var body = JsonDocument.Parse(sent);
+            var root = body.RootElement;
+            Assert.Equal("Spontaneous", root.GetProperty("ReportType").GetString());
+            Assert.Equal("unknown", root.GetProperty("EventCountry").GetString());
+            Assert.Equal("S.Y.", root.GetProperty("ReporterNameOrInitials").GetString());
+            Assert.Equal("synthetic-profession", root.GetProperty("ReporterProfession").GetString());
+            Assert.Equal("unknown", root.GetProperty("ReporterCountry").GetString());
+            Assert.False(root.TryGetProperty("SuspectProductText", out _));
+            Assert.Equal("2026-10-20T10:00:00Z", root.GetProperty("AwarenessAtUtc").GetString());
+            Assert.Equal("2026-10-20T10:00:00Z", root.GetProperty("ReceivedAtUtc").GetString());
+
+            var productLines = root.GetProperty("ProductLines");
+            Assert.Equal(2, productLines.GetArrayLength());
+            Assert.Equal("Suspect", LineValue(productLines[0], "ProductRole"));
+            Assert.Equal("synthetic-product", LineValue(productLines[0], "ProductNameAsReported"));
+            Assert.Equal("synthetic-lot", LineValue(productLines[0], "LotNumber"));
+            Assert.Equal("Concomitant", LineValue(productLines[1], "ProductRole"));
+            Assert.Equal("synthetic-other-product", LineValue(productLines[1], "ProductNameAsReported"));
+        }
+
+        // Seconds survive: the regulatory day-0 moment does not move when a record is saved.
+        var withSeconds = new Wire(ListAnswer);
+        await Controller(withSeconds, Create).CreateDraft(Input() with { AwarenessAtUtc = "2026-10-20T07:00:30" }, CancellationToken.None);
+        using var secondsBody = JsonDocument.Parse(Assert.Single(withSeconds.Bodies));
+        Assert.Equal("2026-10-20T07:00:30Z", secondsBody.RootElement.GetProperty("AwarenessAtUtc").GetString());
+
+        // A date that cannot be read stops at the proxy, for either field, and its value is not repeated back.
+        const string unreadable = "2026-13-40T99:99";
+        var refusedWire = new Wire(ListAnswer);
+        foreach (var input in new[] { Input(version: 2) with { AwarenessAtUtc = unreadable }, Input(version: 2) with { ReceivedAtUtc = unreadable } })
+        {
+            foreach (var result in new[]
+            {
+                await Controller(refusedWire, Create).CreateDraft(input, CancellationToken.None),
+                await Controller(refusedWire, Update).UpdateDraft(DraftId, input, CancellationToken.None)
+            })
+            {
+                var content = Assert.IsType<ContentResult>(result);
+                Assert.Equal(StatusCodes.Status400BadRequest, content.StatusCode);
+                using var body = JsonDocument.Parse(content.Content!);
+                Assert.Equal("VALIDATION_FAILED", body.RootElement.GetProperty("reason_code").GetString());
+                Assert.DoesNotContain(unreadable, content.Content!, StringComparison.Ordinal);
+            }
+        }
+
+        Assert.Empty(refusedWire.Requests);
+    }
+
+    private static string? LineValue(JsonElement line, string name)
+    {
+        // The proxy serializes with JsonSerializerDefaults.Web, so a nested key may carry either case.
+        var property = line.EnumerateObject().Single(candidate => string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase));
+        return property.Value.GetString();
+    }
+
+    // ------------------------------------------------------------------------------------------------ W9
+
+    [Fact]
+    public async Task Proxy_never_sends_response_only_or_unverifiable_fields()
+    {
+        var wire = new Wire(ListAnswer);
+
+        await Controller(wire, Create).CreateDraft(Input(), CancellationToken.None);
+        await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 2), CancellationToken.None);
+
+        Assert.Equal(2, wire.Bodies.Count);
+        foreach (var sent in wire.Bodies)
+        {
+            using var body = JsonDocument.Parse(sent);
+            foreach (var field in NeverSent)
+            {
+                // A null value is a sent key too.
+                Assert.False(body.RootElement.TryGetProperty(field, out _), field);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------ W10
+
+    [Fact]
+    public async Task Remove_link_with_a_selection_pair_is_refused_without_a_gateway_call()
+    {
+        var refused = new Wire(ListAnswer);
+        foreach (var input in new[]
+        {
+            Input(version: 2) with { RemoveReporterLink = true, ReporterSelectionDirectory = "Crm", ReporterSelectionId = "synthetic-c" },
+            Input(version: 2) with { RemoveReporterLink = true, ReporterSelectionId = "synthetic-c" },
+            Input(version: 2) with { RemoveReporterLink = true, ReporterSelectionDirectory = "Crm" }
+        })
+        {
+            var content = Assert.IsType<ContentResult>(await Controller(refused, Update).UpdateDraft(DraftId, input, CancellationToken.None));
+            Assert.Equal(StatusCodes.Status400BadRequest, content.StatusCode);
+            using var body = JsonDocument.Parse(content.Content!);
+            Assert.Equal("PVG_REPORTER_LINK_REMOVAL_WITH_SELECTION", body.RootElement.GetProperty("reason_code").GetString());
+            Assert.DoesNotContain("synthetic-c", content.Content!, StringComparison.Ordinal);
+        }
+
+        Assert.Empty(refused.Requests);
+
+        // The marker alone travels, and no key of the pair travels with it.
+        var removal = new Wire(ListAnswer);
+        await Controller(removal, Update).UpdateDraft(DraftId, Input(version: 2) with { RemoveReporterLink = true }, CancellationToken.None);
+        using (var body = JsonDocument.Parse(Assert.Single(removal.Bodies)))
+        {
+            Assert.True(body.RootElement.GetProperty("RemoveReporterLink").GetBoolean());
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionDirectory", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionId", out _));
+        }
+
+        // An update without the marker has no such key at all.
+        var plain = new Wire(ListAnswer);
+        await Controller(plain, Update).UpdateDraft(DraftId, Input(version: 2), CancellationToken.None);
+        using (var body = JsonDocument.Parse(Assert.Single(plain.Bodies)))
+        {
+            Assert.False(body.RootElement.TryGetProperty("RemoveReporterLink", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionDirectory", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionId", out _));
+        }
+
+        // A create has no link to keep or remove, even if the form posted them.
+        var create = new Wire(ListAnswer);
+        await Controller(create, Create).CreateDraft(
+            Input() with { RemoveReporterLink = true, ReporterSelectionDirectory = "Crm", ReporterSelectionId = "synthetic-c" }, CancellationToken.None);
+        using (var body = JsonDocument.Parse(Assert.Single(create.Bodies)))
+        {
+            Assert.False(body.RootElement.TryGetProperty("RemoveReporterLink", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionDirectory", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionId", out _));
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------ W11
+
+    [Fact]
+    public async Task Options_action_checks_the_read_key_first_and_passes_only_codes()
+    {
+        // Deliberately not in alphabetical order: the order is the service's, and the proxy keeps it.
+        const string serviceAnswer = "{\"reportTypes\":[\"Study\",\"Other\",\"Spontaneous\"],\"productRoles\":[\"Suspect\",\"Concomitant\"],\"unknownCountry\":\"unknown\"}";
+
+        var deniedWire = new Wire(serviceAnswer);
+        var denied = Assert.IsType<ContentResult>(await Controller(deniedWire, Create, Update, Triage, Route).Options(CancellationToken.None));
+        Assert.Equal(StatusCodes.Status403Forbidden, denied.StatusCode);
+        Assert.Empty(deniedWire.Requests);
+
+        var wire = new Wire(serviceAnswer);
+        var allowed = Assert.IsType<ContentResult>(await Controller(wire, Read).Options(CancellationToken.None));
+
+        Assert.Equal(StatusCodes.Status200OK, allowed.StatusCode);
+        var request = Assert.Single(wire.Requests);
+        Assert.Equal(HttpMethod.Get, request.Method);
+        Assert.Equal("/api/pv-case-intake-triage/options", request.RequestUri!.AbsolutePath);
+        using var body = JsonDocument.Parse(allowed.Content!);
+        Assert.Equal(["Study", "Other", "Spontaneous"], body.RootElement.GetProperty("reportTypes").EnumerateArray().Select(code => code.GetString()!));
+        Assert.Equal(["Suspect", "Concomitant"], body.RootElement.GetProperty("productRoles").EnumerateArray().Select(code => code.GetString()!));
+        Assert.Equal("unknown", body.RootElement.GetProperty("unknownCountry").GetString());
+        Assert.Equal(3, body.RootElement.EnumerateObject().Count());
+    }
+
+    // ------------------------------------------------------------------------------------------------ W12
+
+    [Fact]
+    public async Task Create_form_post_binds_the_product_lines_through_the_mvc_model_binder()
+    {
+        var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var wire = new Wire(ListAnswer);
+        using var host = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("JwtSettings:Secret", signingKey);
+            builder.UseSetting("JwtSettings:Issuer", "pvg-web-test");
+            builder.UseSetting("JwtSettings:Audience", "pvg-web-test");
+            builder.UseSetting("GatewayUrl", "http://127.0.0.1:9");
+            builder.UseSetting("PlatformServiceUrl", "http://127.0.0.1:9");
+            builder.ConfigureTestServices(services =>
+                services.AddTransient(_ => new HttpClient(wire, disposeHandler: false)));
+        });
+        using var client = host.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false });
+
+        var createForm = await DrawnFormAsync(client, "/Pharmacovigilance/CaseIntakeTriage/Create", Token(signingKey, Create));
+        var createToken = Token(signingKey, Create);
+
+        // (a) Every field the view draws, two product lines, and the fields no form may set, on both levels.
+        var lineExtras = new[] { ("ProductLines[0].GlobalProductId", "synthetic-gp"), ("ProductLines[0].PresentationGskuId", "synthetic-gsku") };
+        var topExtras = new[] { ("ReporterSource", "Crm"), ("ReporterSourceId", "synthetic-rs"), ("CompanyRecipientPersonId", "synthetic-p"), ("ValidityResult", "Valid") };
+        var fields = createForm.Fields([0, 1]).Concat(lineExtras).Concat(topExtras).ToArray();
+        using (var posted = await PostFormAsync(client, "/Pharmacovigilance/CaseIntakeTriage/api/create", createToken, createForm, fields))
+        {
+            Assert.Equal(HttpStatusCode.OK, posted.StatusCode);
+        }
+
+        using (var body = JsonDocument.Parse(SentBody(wire, HttpMethod.Post, "/api/pv-case-intake-triage")))
+        {
+            var root = body.RootElement;
+            var lines = root.GetProperty("ProductLines");
+            Assert.Equal(2, lines.GetArrayLength());
+            foreach (var line in lines.EnumerateArray())
+            {
+                Assert.Equal(
+                    new[] { "LOTNUMBER", "PRODUCTNAMEASREPORTED", "PRODUCTROLE" },
+                    line.EnumerateObject().Select(property => property.Name.ToUpperInvariant()).Order(StringComparer.Ordinal));
+            }
+
+            Assert.Equal("synthetic-ProductLines[0].ProductNameAsReported", LineValue(lines[0], "ProductNameAsReported"));
+            Assert.Equal("synthetic-ProductLines[1].LotNumber", LineValue(lines[1], "LotNumber"));
+            foreach (var field in new[] { "EventCountry", "ReportType", "ReporterNameOrInitials", "ReporterProfession", "ReporterCountry" })
+            {
+                Assert.Equal($"synthetic-{field}", root.GetProperty(field).GetString());
+            }
+
+            Assert.Equal("2026-10-20T10:00:00Z", root.GetProperty("AwarenessAtUtc").GetString());
+            foreach (var extra in lineExtras.Select(extra => extra.Item1["ProductLines[0].".Length..]).Concat(topExtras.Select(extra => extra.Item1)))
+            {
+                Assert.False(CarriesKey(root, extra), extra);
+            }
+        }
+
+        // (b) A gap in the numbers: the binder stops at it. This is why the form numbers its lines without a gap.
+        wire.Requests.Clear();
+        wire.Bodies.Clear();
+        using (var gapped = await PostFormAsync(client, "/Pharmacovigilance/CaseIntakeTriage/api/create", createToken, createForm, createForm.Fields([0, 2]).ToArray()))
+        {
+            Assert.Equal(HttpStatusCode.OK, gapped.StatusCode);
+        }
+
+        using (var body = JsonDocument.Parse(SentBody(wire, HttpMethod.Post, "/api/pv-case-intake-triage")))
+        {
+            Assert.Equal(1, body.RootElement.GetProperty("ProductLines").GetArrayLength());
+        }
+
+        // (c) The update path: the stored pair travels together, and the removal marker travels alone.
+        var updateToken = Token(signingKey, Update);
+        var editForm = await DrawnFormAsync(client, $"/Pharmacovigilance/CaseIntakeTriage/Edit/{DraftId}", updateToken);
+        var updateUrl = $"/Pharmacovigilance/CaseIntakeTriage/api/update/{DraftId}";
+        var updatePath = $"/api/pv-case-intake-triage/{DraftId}";
+        var version = editForm.Hidden("ExpectedVersion", "7");
+
+        wire.Requests.Clear();
+        wire.Bodies.Clear();
+        var withPair = editForm.Fields([0]).Append(version)
+            .Append(editForm.Hidden("ReporterSelectionDirectory", "Crm"))
+            .Append(editForm.Hidden("ReporterSelectionId", "synthetic-c"))
+            .ToArray();
+        using (var posted = await PostFormAsync(client, updateUrl, updateToken, editForm, withPair))
+        {
+            Assert.Equal(HttpStatusCode.OK, posted.StatusCode);
+        }
+
+        using (var body = JsonDocument.Parse(SentBody(wire, HttpMethod.Put, updatePath)))
+        {
+            Assert.Equal("Crm", body.RootElement.GetProperty("ReporterSelectionDirectory").GetString());
+            Assert.Equal("synthetic-c", body.RootElement.GetProperty("ReporterSelectionId").GetString());
+            Assert.Equal(7, body.RootElement.GetProperty("ExpectedVersion").GetInt64());
+            Assert.False(body.RootElement.TryGetProperty("RemoveReporterLink", out _));
+        }
+
+        wire.Requests.Clear();
+        wire.Bodies.Clear();
+        var withRemoval = editForm.Fields([0]).Append(version).Append(editForm.Hidden("RemoveReporterLink", "true")).ToArray();
+        using (var posted = await PostFormAsync(client, updateUrl, updateToken, editForm, withRemoval))
+        {
+            Assert.Equal(HttpStatusCode.OK, posted.StatusCode);
+        }
+
+        using (var body = JsonDocument.Parse(SentBody(wire, HttpMethod.Put, updatePath)))
+        {
+            Assert.True(body.RootElement.GetProperty("RemoveReporterLink").GetBoolean());
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionDirectory", out _));
+            Assert.False(body.RootElement.TryGetProperty("ReporterSelectionId", out _));
+        }
+    }
+
+    /// <summary>The field names of the form as the real view drew it, with the antiforgery pair of that page. Nothing here
+    /// lists a field by hand: a name the view gets wrong is the name the test posts.</summary>
+    private sealed record DrawnForm(string Cookie, string FormToken, IReadOnlyList<(string Name, string Type)> Inputs)
+    {
+        public IEnumerable<(string Name, string Value)> Fields(int[] lineIndexes)
+        {
+            foreach (var (name, type) in Inputs.Where(input => input.Type != "hidden"))
+            {
+                if (name.Contains("__index__", StringComparison.Ordinal))
+                {
+                    foreach (var index in lineIndexes)
+                    {
+                        var line = name.Replace("__index__", index.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);
+                        yield return (line, $"synthetic-{line}");
+                    }
+
+                    continue;
+                }
+
+                yield return (name, type switch
+                {
+                    "datetime-local" => "2026-10-20T10:00",
+                    "date" => "2026-10-20",
+                    _ => $"synthetic-{name}"
+                });
+            }
+        }
+
+        public (string Name, string Value) Hidden(string name, string value)
+        {
+            Assert.Contains(Inputs, input => input.Name == name && input.Type == "hidden");
+            return (name, value);
+        }
+    }
+
+    private static async Task<DrawnForm> DrawnFormAsync(HttpClient client, string url, string token)
+    {
+        using var page = await GetAsync(client, url, token);
+        var html = await page.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+
+        var formToken = Regex.Match(html, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+        var cookie = page.Headers.GetValues("Set-Cookie")
+            .Select(value => value.Split(';')[0])
+            .Single(value => value.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal));
+        Assert.False(string.IsNullOrEmpty(formToken), "the page drew no antiforgery token");
+
+        var form = Regex.Match(html, "<form id=\"pvg-case-intake-form\"[\\s\\S]*?</form>").Value;
+        var inputs = Regex.Matches(form, "<(?:input|select|textarea)\\b[^>]*\\bname=\"([^\"]+)\"[^>]*>")
+            .Select(match =>
+            {
+                var type = Regex.Match(match.Value, "\\btype=\"([^\"]+)\"").Groups[1].Value;
+                return (Name: match.Groups[1].Value, Type: type);
+            })
+            .Where(input => input.Name != "__RequestVerificationToken")
+            .ToArray();
+        Assert.NotEmpty(inputs);
+        return new DrawnForm(cookie, formToken, inputs);
+    }
+
+    private static async Task<HttpResponseMessage> PostFormAsync(
+        HttpClient client, string url, string token, DrawnForm form, IEnumerable<(string Name, string Value)> fields)
+    {
+        var content = fields.Select(field => new KeyValuePair<string, string>(field.Name, field.Value))
+            .Append(new("__RequestVerificationToken", form.FormToken));
+        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(content) };
+        request.Headers.Add("Cookie", $"access_token={token}; {form.Cookie}");
+        request.Headers.Add("Accept", "application/json");
+        return await client.SendAsync(request);
+    }
+
+    /// <summary>Drawing a page can reach the same handler: the body read is the one of this method and path.</summary>
+    private static string SentBody(Wire wire, HttpMethod method, string path)
+    {
+        var index = wire.Requests.FindIndex(request =>
+            request.Method == method && request.RequestUri!.AbsolutePath.EndsWith(path, StringComparison.Ordinal));
+        Assert.True(index >= 0, $"{method} {path} never reached the handler");
+        return wire.Bodies[index];
+    }
+
+    private static bool CarriesKey(JsonElement element, string key) => element.ValueKind switch
+    {
+        JsonValueKind.Object => element.EnumerateObject().Any(property =>
+            string.Equals(property.Name, key, StringComparison.OrdinalIgnoreCase) || CarriesKey(property.Value, key)),
+        JsonValueKind.Array => element.EnumerateArray().Any(item => CarriesKey(item, key)),
+        _ => false
+    };
+
     // ------------------------------------------------------------------------------------------------ helpers
 
-    private static PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput Input(long? version = null) =>
+    private static PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput Input(
+        long? version = null, PharmacovigilanceCaseIntakeTriageController.ProductLineFormInput[]? lines = null) =>
         new(FormInput.IntakeChannel, FormInput.SourceType, FormInput.SourceReference, FormInput.ReceivedAtUtc,
             FormInput.ReporterType, FormInput.ReporterContactSummary, FormInput.PatientSubjectCode, FormInput.EventOnsetDate,
-            FormInput.AdverseEventNarrative, FormInput.SuspectProductText, FormInput.Seriousness, FormInput.IntakePriority,
-            FormInput.EvidenceLinkReferencesRaw, version);
+            FormInput.AdverseEventNarrative, lines ?? FormInput.ProductLines, FormInput.Seriousness, FormInput.IntakePriority,
+            FormInput.EvidenceLinkReferencesRaw, FormInput.AwarenessAtUtc, FormInput.EventCountry, FormInput.ReportType,
+            FormInput.ReporterNameOrInitials, FormInput.ReporterProfession, FormInput.ReporterCountry, ExpectedVersion: version);
 
     private static PharmacovigilanceCaseIntakeTriageController Controller(Wire wire, params string[] permissions) =>
         ControllerFor(wire, permissions);

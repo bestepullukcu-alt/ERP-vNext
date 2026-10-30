@@ -37,6 +37,9 @@
 <form id="pvg-case-intake-form" class="needs-validation" novalidate data-mode="@mode" data-intake-draft-id="@intakeDraftId">
     @Html.AntiForgeryToken()
     <input type="hidden" name="ExpectedVersion" id="ExpectedVersion" />
+    <input type="hidden" name="ReporterSelectionDirectory" id="ReporterSelectionDirectory" />
+    <input type="hidden" name="ReporterSelectionId" id="ReporterSelectionId" />
+    <input type="hidden" name="RemoveReporterLink" id="RemoveReporterLink" />
     <div class="row g-4">
         <div class="col-12 col-xl-8">
             <section class="card mb-4">
@@ -71,6 +74,16 @@
                             <label class="form-label" for="ReceivedAtUtc">@Localizer["ReceivedAtUtc"] <span class="text-danger">*</span></label>
                             <input class="form-control" id="ReceivedAtUtc" name="ReceivedAtUtc" type="datetime-local" required />
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="AwarenessAtUtc">@Localizer["AwarenessAtUtc"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="AwarenessAtUtc" name="AwarenessAtUtc" type="datetime-local" step="1" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ReportType">@Localizer["ReportType"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ReportType" name="ReportType" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -98,8 +111,37 @@
                             <textarea class="form-control" id="ReporterContactSummary" name="ReporterContactSummary" rows="3" maxlength="1000"></textarea>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="ReporterNameOrInitials">@Localizer["ReporterNameOrInitials"]</label>
+                            <input class="form-control" id="ReporterNameOrInitials" name="ReporterNameOrInitials" maxlength="128" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ReporterProfession">@Localizer["ReporterProfession"]</label>
+                            <input class="form-control" id="ReporterProfession" name="ReporterProfession" maxlength="128" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ReporterCountry">@Localizer["ReporterCountry"]</label>
+                            <select class="form-select" id="ReporterCountry" name="ReporterCountry">
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-none" id="pvg-reporter-link">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="form-text mt-0">@Localizer["ReporterLinked"]</span>
+                                <button type="button" class="btn btn-sm btn-label-secondary" id="pvg-remove-reporter-link" data-action="remove-reporter-link">@Localizer["RemoveReporterLink"]</button>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="pvg-reporter-link-removal-note">
+                            <div class="form-text mt-0">@Localizer["ReporterLinkRemovalNote"]</div>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="EventOnsetDate">@Localizer["EventOnsetDate"]</label>
                             <input class="form-control" id="EventOnsetDate" name="EventOnsetDate" type="date" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="EventCountry">@Localizer["EventCountry"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="EventCountry" name="EventCountry" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="AdverseEventNarrative">@Localizer["AdverseEventNarrative"] <span class="text-danger">*</span></label>
@@ -116,8 +158,35 @@
                     <h6 class="mb-3">@Localizer["WorkflowSection"]</h6>
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label" for="SuspectProductText">@Localizer["SuspectProductText"] <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="SuspectProductText" name="SuspectProductText" rows="3" maxlength="1000" required></textarea>
+                            <div class="form-label">@Localizer["ProductLines"]</div>
+                            <div id="pvg-product-lines"></div>
+                            <button type="button" class="btn btn-sm btn-label-primary" id="pvg-add-product-line" data-action="add-product-line" aria-label="@Localizer["AddProductLine"]">
+                                <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddProductLine"]
+                            </button>
+                            <template id="pvg-product-line-template">
+                                <div class="border rounded p-3 mb-3" data-product-line>
+                                    <div class="mb-2">
+                                        <label class="form-label w-100">@Localizer["ProductRole"] <span class="text-danger">*</span>
+                                            <select class="form-select mt-1" name="ProductLines[__index__].ProductRole" required>
+                                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label w-100">@Localizer["ProductNameAsReported"] <span class="text-danger">*</span>
+                                            <input class="form-control mt-1" name="ProductLines[__index__].ProductNameAsReported" maxlength="512" required />
+                                        </label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label w-100">@Localizer["LotNumber"]
+                                            <input class="form-control mt-1" name="ProductLines[__index__].LotNumber" maxlength="64" />
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-label-secondary" data-action="remove-product-line" aria-label="@Localizer["RemoveProductLine"]">
+                                        <i class="icon-base bx bx-x me-1"></i>@Localizer["RemoveProductLine"]
+                                    </button>
+                                </div>
+                            </template>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="Seriousness">@Localizer["Seriousness"] <span class="text-danger">*</span></label>
