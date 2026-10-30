@@ -1184,4 +1184,40 @@ describe("PVG case intake form fields and option source (executed against the re
       expect(view, name).not.toMatch(new RegExp(`<(?:input|textarea)\\b[^>]*name="${name}"`));
     }
   });
+
+  it("pvg bridge from the server's camelCase payload reaches the screen translated", async () => {
+    // The server's shape (W13 measures it on the real view): every key with a lower-case first letter, each value its own.
+    const said = key => `bridge value of ${key}`;
+    const serverPayload = Object.fromEntries(
+      [...l10nBridgeKeys()].map(key => [key.charAt(0).toLowerCase() + key.slice(1), said(key)])
+    );
+    document.body.innerHTML = `<script id="pvg-case-intake-triage-l10n" type="application/json">${JSON.stringify(serverPayload)}</script>`;
+    const loaded = {};
+    vm.runInNewContext(read(`${moduleJsDirectory}/index.l10n.js`), { window: loaded, document, JSON, Object, console });
+    const l10n = loaded.PvgCaseIntakeTriageL10n;
+
+    // Through the real form: the names the reader sees are the bridge's, and a code without one stays itself.
+    mount({
+      replies: [answer(200, { reportTypes: ["Spontaneous", "SyntheticType"], productRoles: ["Suspect"], unknownCountry: "unknown" })],
+      l10n
+    });
+    await ready();
+    const shown = (select, value) => [...select.options].find(option => option.value === value)?.textContent;
+    expect(shown(byId("ReportType"), "Spontaneous")).toBe(said("ReportTypeSpontaneous"));
+    expect(shown(byId("ReportType"), "SyntheticType")).toBe("SyntheticType");
+    expect(shown(lineInput(addLine(), "ProductRole"), "Suspect")).toBe(said("ProductRoleSuspect"));
+    expect(shown(byId("EventCountry"), "unknown")).toBe(said("CountryUnknown"));
+    expect(shown(byId("ReporterCountry"), "unknown")).toBe(said("CountryUnknown"));
+
+    // A failed read is a sentence, not the name of a key.
+    mount({ replies: [answer(500, {})], l10n });
+    await until(() => alertShown());
+    expect(alertBox().textContent).toBe(said("OptionsLoadFailed"));
+    expect(alertBox().textContent).not.toBe("OptionsLoadFailed");
+
+    // Every key the module's three scripts read (form.js, index.js, details.js) comes out of the loader.
+    for (const key of browserL10nReferences()) {
+      expect(l10n[key], key).toBe(said(key));
+    }
+  });
 });
