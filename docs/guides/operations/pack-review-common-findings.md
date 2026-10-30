@@ -74,6 +74,12 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 - Çok adımlı yazımda "tamamlandı" işareti (bağ, durum) ilk yazılıyor: yarıda kalan iş kalıcı eksik kalır. İşaret en son
   yazılır; kesinti testi her ara noktada koşar. (MOD-0357 2026-10-29-0e730d97 F-56; 2026-10-29-ee542bf9 F-65, F-67)
 
+- Durum × komut tablosu yok: her durumda her komutun sonucu yazılmamış; deneme, kira ve yeniden gönderim akışları koda
+  bırakılmış. (MOD-0183 2026-10-23-febf6e35 F-1; MOD-0186 2026-10-26-5c7be454 F-1; 3 ENGEL kod incelemesinde çıktı, MVP-6
+  değerlendirmesi 2026-10-30)
+- Paket, sözleşme ve ekran aynı alanı farklı anlatıyor; onaydan önce üçü karşılaştırılmalı. (`toLocationId`, MVP-6
+  değerlendirmesi 2026-10-30)
+
 ## 5. Dış sistemle yarış, kesinti ve bırakma
 
 - Başka bir modüle yapılan çağrının başarısız yanıtı ya da süreli kilidin dolması "o iş olmadı" kanıtı sayılıyor; yanıt

@@ -9,6 +9,8 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-10-30 · geliştirici değerlendirmeleri (S-101):** Codex turunda durma (§1.1/7); "Update branch" yalnız onay satırlı ve
+  üst üste PR'da, yedek onaylayıcı, kişi-hesap tablosu (§7a/3); iki yeni sık bulgu türü.
 - **2026-10-29 · PR yükü (S-100):** kule başına günde en çok bir kayıt PR'ı, gün sonunda; kule başına ve onaylayan başına
   günde bir onay PR'ı; kural değişiklikleri haftada bir pencereden; kod PR'ı dilim başına (§7b "Günlük sınır", §7a/3).
 - **2026-10-29 · hız paketi (S-99):** tek kutuda 2–4 bağımsız karar ("Soru biçimi"); CT dalında yerel commit ve ana dalı yerel
@@ -509,6 +511,11 @@ kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten 
    paketler bunun için açılmaz.
 6. **Ölçüm:** CT her paket için Codex tur sayısını kaydeder; ilk üç modülden sonra sahibe "ön inceleme Codex
    turlarını düşürdü mü" ölçümü verilir (tahmin değil).
+7. **Codex turunda durma (S-101, sahip kararı 2026-10-30):** ENGEL içermeyen sonuçta (UYGUN ya da KOŞULLU) DÜŞÜK bulgu
+   paketi değiştirmez ve yeni tur açmaz: paket değişirse inceleme bayatlar (SOP §20.4/4). DÜŞÜK bulgu CT kaydında kalır,
+   paketin bir sonraki revizyonunda ele alınır. ORTA bulgular tek geçişte düzeltilir ve o sürüm için bir Codex turu daha
+   alınır. O turda yine ENGEL yoksa CT kendiliğinden yeni tur açmaz; kalan ORTA varsa sahibe butonla sorar: "düzelt, bir
+   tur daha" · "açık ORTA ile onaya git". ENGEL ve `UYGUN DEĞİL` kuralı değişmez; yalnız fark incelemesi yoktur.
 
 ## 2. PARALLEL / Agent Lane gate
 
@@ -712,8 +719,14 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    olup olmadığını yazar. Acil yalnız şunlardır: ana dal kırmızı, onay yolu kapalı ya da başka bir kule bu PR'ı bekliyor.
    Acil PR sabit saati beklemez. Kayıt PR'ları gün sonunda birleştirilir (§7b "Günlük sınır"); gün içi "Update branch"
    ve düşen onay döngüsü böylece azalır. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu satırdaki
-   onaylayan kişi kendisi birleştirir (§7a/7). Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
-   yeniden koşar, sonra merge commit ile birleştirilir (SOP §20.4/7).
+   onaylayan kişi kendisi birleştirir (§7a/7). Bu dosyalara dokunan PR'lar tek tek merge edilir.
+   **"Update branch" (S-101):** yalnız bu dosyalara dokunan ya da başka bir PR'ın üstüne açılmış PR'da yapılır: önce Update
+   branch, kontroller yeşil, sonra onay ve hemen merge commit (SOP §20.4/7). Diğer PR'larda GitHub çakışma göstermiyorsa
+   basılmaz; basmak onayı düşürür ve kontrolleri yeniden koşturur.
+   **Yedek onaylayıcı (S-101, sahip kararı 2026-10-30):** ana onaylayıcı yoksa ya da PR aynı gün kalıyorsa K3 yedektir. PR'ı
+   açan kendi PR'ını birleştiremez; K3 hesabıyla açılan PR K2'de kalır. Onay satırını satırdaki onaylayan birleştirir: K3
+   birleştirecekse satır baştan onun adıyla ve onun kendi sözüyle yazılır. Kişi, hesap ve rol tablosu:
+   `execution/approvals/approvers.tsv`.
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
 5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı
    geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
