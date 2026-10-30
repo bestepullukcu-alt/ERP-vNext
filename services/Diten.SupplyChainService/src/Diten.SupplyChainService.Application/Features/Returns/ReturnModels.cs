@@ -1,8 +1,16 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Diten.SupplyChainService.Domain.Features.Returns;
 namespace Diten.SupplyChainService.Application.Features.Returns;
-public sealed record ReturnResponse(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status,bool IdempotentReplay,string ContractVersion="v1");
+public sealed record ReturnResponse(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status,bool IdempotentReplay,string ContractVersion="v1")
+{
+ /// <summary>SHIPMENT-BUNDLE 3.4.0 (MOD-0186 §34.2): each line's Inventory result of Received; absent before Received.</summary>
+ [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList<ReturnLineResult>? Lines {get;init;}
+ public static ReturnResponse From(ReturnMutationResult r)=>new(r.ReturnId,r.RmaNumber,r.ShipmentId,r.Status,r.IdempotentReplay)
+ {Lines=r.Lines?.Select(l=>new ReturnLineResult(l.ShipmentLineNumber,l.InventoryTransactionReferenceId,l.InventoryPosting!,l.InventoryPostingReason)).ToArray()};
+}
+public sealed record ReturnLineResult(string ShipmentLineNumber,string? InventoryTransactionReferenceId,string InventoryPosting,string? InventoryPostingReason);
 public sealed record ReturnSummary(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status);
 public sealed record ReturnListResponse(IReadOnlyList<ReturnSummary> Items,int Total,string ContractVersion="v1");
 public static class ReturnWire
@@ -20,7 +28,11 @@ public static class ReturnWire
   b.GetProperty("lines").EnumerateArray().All(l=>Object(l,["shipmentLineNumber","quantity","uomId"],["shipmentLineNumber","quantity","uomId"])&&Text(l.GetProperty("shipmentLineNumber"))&&Text(l.GetProperty("uomId"))&&Text(l.GetProperty("quantity"))&&ReturnQuantity.TryParse(l.GetProperty("quantity").GetString(),out _))&&
   (!b.TryGetProperty("evidenceReferenceIds",out var e)||(e.ValueKind==JsonValueKind.Array&&e.EnumerateArray().All(Text)));
  }
- public static bool TransitionValid(JsonElement b)=>Object(b,["targetStatus","occurredAt"],["targetStatus","occurredAt","inventoryTransactionReferenceId","dispositionCode"])&&Text(b.GetProperty("targetStatus"))&&Enum.GetNames<ReturnStatus>().Contains(b.GetProperty("targetStatus").GetString())&&Text(b.GetProperty("occurredAt"))&&Instant(b.GetProperty("occurredAt").GetString())&&NullableText(b,"inventoryTransactionReferenceId")&&NullableText(b,"dispositionCode");
+ public static bool TransitionValid(JsonElement b)=>Object(b,["targetStatus","occurredAt"],["targetStatus","occurredAt","inventoryTransactionReferenceId","dispositionCode","toWarehouseId","toLocationId","unpostedLines"])&&Text(b.GetProperty("targetStatus"))&&Enum.GetNames<ReturnStatus>().Contains(b.GetProperty("targetStatus").GetString())&&Text(b.GetProperty("occurredAt"))&&Instant(b.GetProperty("occurredAt").GetString())&&NullableText(b,"inventoryTransactionReferenceId")&&NullableText(b,"dispositionCode")&&NullableText(b,"toWarehouseId")&&NullableText(b,"toLocationId")&&UnpostedValid(b);
+ // 3.4.0 TransitionReturnCommand.unpostedLines (MOD-0186 §34.2): null, or objects with exactly a line number and one of four reasons.
+ public static readonly string[] UnpostedReasons=["ITEM_NOT_ACTIVE","SKU_LEVEL_NOT_STOCKABLE","UNKNOWN_ITEM","INTEGRITY_FAULT"];
+ private static bool UnpostedValid(JsonElement b)=>!b.TryGetProperty("unpostedLines",out var v)||v.ValueKind==JsonValueKind.Null||(v.ValueKind==JsonValueKind.Array&&v.EnumerateArray().All(l=>Object(l,["shipmentLineNumber","reasonCode"],["shipmentLineNumber","reasonCode"])&&Text(l.GetProperty("shipmentLineNumber"))&&Text(l.GetProperty("reasonCode"))&&UnpostedReasons.Contains(l.GetProperty("reasonCode").GetString())));
+ public static IReadOnlyList<(string ShipmentLineNumber,string ReasonCode)> UnpostedLines(JsonElement b)=>b.TryGetProperty("unpostedLines",out var v)&&v.ValueKind==JsonValueKind.Array?v.EnumerateArray().Select(l=>(l.GetProperty("shipmentLineNumber").GetString()!,l.GetProperty("reasonCode").GetString()!)).ToArray():[];
  public static bool NullableText(JsonElement b,string key)=>!b.TryGetProperty(key,out var v)||v.ValueKind is JsonValueKind.Null or JsonValueKind.String;
  public static string? OptionalText(JsonElement b,string key)=>b.TryGetProperty(key,out var v)?v.GetString():null;
  public static ReturnOrder Plan(JsonElement b)=>new() {ShipmentId=Guid.Parse(b.GetProperty("shipmentId").GetString()!),ReasonCode=b.GetProperty("reasonCode").GetString()!,Lines=b.GetProperty("lines").EnumerateArray().Select(l=>new ReturnLine(l.GetProperty("shipmentLineNumber").GetString()!,l.GetProperty("quantity").GetString()!,l.GetProperty("uomId").GetString()!)).ToList(),EvidenceReferenceIds=b.TryGetProperty("evidenceReferenceIds",out var e)?e.EnumerateArray().Select(v=>v.GetString()!).ToList():[]};
