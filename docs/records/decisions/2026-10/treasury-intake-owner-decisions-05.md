@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D104 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D106 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1285,6 +1285,22 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-29, Y-30 (`SOURCE-ANSWERS-2026-1
 6. **D104/6 — MOD-0144 / MOD-0217 (D94/3):** Y-30'a göre iki modül aynı kaydı tutmuyor, D39 sınırı v1 için yeterli; üç kenar boşluğu var (SERVICE / LEASE / LICENSE alım
    yönü; Supplier karşı taraf türü; madde kütüphanesi MOD-0218). Y-30 başka CT'nin raporudur, sahip kararı değildir; MOD-0217 metni değişmedi. **K1 kararı (soru kutusu,
    2026-10-30, "Ali teyit etsin"):** Procurement adına "itiraz yok" teyidi Ali'den istenir; o gelene kadar açık.
+
+## D105 — ayrı dosyada
+
+`treasury-intake-owner-decisions-06.md` (MOD-0048-FU01 §21 PR'ı).
+
+## D106 — Ali Y-32: FU27 teyidi, D99/1, D80/2 daraltması, Tag adları (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-32 (`SOURCE-ANSWERS-2026-10-27.md`); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D106/1 — teyit:** FU27 D79 sonrası sürüm (#314) teyit edildi; D80/2 (a) işaretlendi. D99/1 kabul; `ForwardAsync` `TryForwardAsync`'i çağırıp sonucu yok sayar.
+2. **D106/2 — D80/2 (b) daraldı:** FU27 DL-5'te muafiyet yetkisi ayrı önce-yaz komutlarıyla verilir / alınır; genel dört komut bu rol ve iki anahtar için reddeder. Dört ortak komut, `CreateRole` / `UpdateRole` / `DeleteRole` ile ayrı MOD-0018 ekine gider (aday `MOD-0018-FU29`, `--check-id` OK 2026-10-31; ek açılmadı). Sahip notu: "18→16, 11→9" sayıları yalnız izin komutlarının yeni yazıcısı kabul edilmiş ize bağlanırsa doğrudur; Revoke'ta kapalı-başarısız mı acil kaldırma mı ayrı ekte karara bağlanır.
+3. **D106/3 — yetim kayıt:** önce deneme satırı, sonra sonuç satırı; sonuç yoksa "sonuçlanmadı". CT yorumu: DL-5'in dört K2 komutuna da uygulanır.
+4. **D106/4 — adlar:** Tag rol adları uygun; D103 terimlerine itiraz yok, yedi dosya kod diliminde.
+5. **D106/5 — açık:** K-W8 (yeni komutların izni), K-W9 (sonuç satırı hatası). Komut, uç ve hata kodu adları CT önerisidir.
+6. **D106/6 — MOD-0144:** Ali Procurement adına teyit vermedi; "itiraz yok" Procurement sahibinden istenir (D104/6 kararı değişti). MVP-6 sorusu bu kaydın konusu değil.
+7. **D106/7 — MOD-0262-FU01:** Auth paket metni Auth kulesinde, tahmini 3 Kasım (ölçülmedi).
 
 ## Karar olmayanlar
 
