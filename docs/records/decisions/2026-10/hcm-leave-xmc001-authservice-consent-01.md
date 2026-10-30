@@ -29,7 +29,7 @@ giderdi. Kod yazılmadığı için hiçbir veri açığa çıkmadı.
 - `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs` — üç sabit ve
   `Keys` kümesine üç öğe; yalnız satır ekleme (`Keys`'in son öğesine virgül ekleme sayılır).
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs` — kümeyi birebir sayan testin
-  adı, sayısı ve üç yeni satırı.
+  adı, yorumları, sayısı ve üç yeni satırı.
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/LeaveExplicitGrantPermissionTests.cs` — yeni test.
 
 Kapsamaz: rol şablonu (`DefaultRolePermissionTemplate.cs`), AuthService'in başka kodu, seed, başka anahtar, `leave.requests.create`
@@ -37,10 +37,10 @@ gibi çalışan anahtarlarının varsayılan verilmesi. Gerekirse iş durur ve y
 
 ## MOD-0018 paketi
 
-Kart §7c/2 eki önce o modülün paketine öneri ister. Ölçüm: açık izin listesini sayan bir MOD-0018 ana paketi yok (yalnız
-`MOD-0018-FU27` kendi anahtarlarını anar); liste koddadır ve MOD-0280-FU01 eki de pakete yazılmadan bu dosyaya girmiştir
+Kart §7c/2 eki önce o modülün paketine öneri ister. Ölçüm: `MOD-0018-rbac-abac-authorization.md` açık izin listesini anmıyor
+(yalnız `MOD-0018-FU27` kendi anahtarlarını anar); liste koddadır ve MOD-0280-FU01 eki de pakete yazılmadan bu dosyaya girmiştir
 (`79547b4e3`). Bu yüzden öneri MOD-0280-FU02 paketinin revizyon 10'undadır (§Repo Scope, §Authorization Convention,
-§Teslim dilimleri DL-0, AC-58); o sürüm Codex'ten geçer ve onaylanır.
+§Teslim dilimleri DL-0, AC-58, §Recorded Deviations R-7); o sürüm Codex'ten geçer ve onaylanır.
 
 ## Etkisi
 
