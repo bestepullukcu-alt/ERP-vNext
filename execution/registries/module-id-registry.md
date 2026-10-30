@@ -273,7 +273,7 @@ All 27 IDs Blueprint-canonical (`Blueprint_Data`, Suite = "Commercial Suite (CRM
 
 | Canonical ID | Canonical Module Name | Slug | Type | Status | Deprecated Alias | Replacement ID | Owner Domain | Notes |
 |---|---|---|---|---|---|---|---|---|
-| MOD-0149 | Customer 360 / Account Hierarchy | customer-360-account-hierarchy | Module | reserved / planned |  |  | commercial-suite | Blueprint W-1 (CRM Core). DCP-002 gate OK 2026-07-14. Next candidate for `/prepare-module-pack`. |
+| MOD-0149 | Customer 360 / Account Hierarchy | customer-360-account-hierarchy | Module | ready-for-dev |  |  | commercial-suite | Blueprint W-1 (CRM Core). DCP-002 gate OK 2026-07-14. Pack ready-for-dev 2026-07-14 (user status gate): `execution/domains/commercial-suite/module-packs/MOD-0149-customer-360-account-hierarchy.md`; its service-scaffold prerequisite `MOD-0149-PREREQ-diten-crm-service-scaffold.md` carries the same ID as a producer–prerequisite pair, not a separate module. `ready-for-dev` = build gate; runtime status lives in module-implementation-status.md. |
 | MOD-0150 | Contact & Relationship Management | contact-relationship-management | Module | reserved / planned |  |  | commercial-suite | Blueprint W-3 (CRM Core). DCP-002 gate OK 2026-07-14. Consent NOT owned here → MOD-0164. |
 | MOD-0151 | Territory Management | territory-management | Module | reserved / planned |  |  | commercial-suite | Blueprint W-4 (CRM Core). DCP-002 gate OK 2026-07-14. Owns MicroZone definition; MOD-0155 consumes. Data scope depends on MOD-0018-FU15. |
 | MOD-0152 | Lead Management | lead-management | Module | reserved / planned |  |  | commercial-suite | Blueprint W-3 (Sales). DCP-002 gate OK 2026-07-14. Generic CRM core (greenfield). |

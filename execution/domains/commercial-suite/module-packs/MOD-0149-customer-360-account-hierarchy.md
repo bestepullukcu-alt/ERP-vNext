@@ -592,3 +592,108 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 - MOD-0150 (Contact) pack'i ile Account↔Contact ilişki yüzeyi hizalanır.
 - MOD-0155 legacy preservation design pack'i ile WorkPlace profil alanları paylaşımı doğrulanır (SoR sızıntısı olmadan).
 - `commercial.*` namespace kararı MOD-0149'u etkilemez (`crm.*` yeterli).
+
+## 30. Treasury AR tüketimi (MOD-0120) — ek (2026-10-30)
+
+> **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§29, mevcut AC'ler (§21), kapsam guard'ı ve
+> `status` değişmedi. Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`)
+> ve CT-APR-01 onay satırı (`execution/approvals/approvals.tsv`) gerekir. Kaynak: commercial-suite sahibi yanıtları
+> Y-4/4b ve Y-4/4c (2026-10-27, `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35`);
+> MOD-0120 O-3 (KARAR D29/1, seçenek (a)) ve O-4.
+
+### 30.1 Kapsam
+
+- MOD-0120 Accounts Receivable müşteri kimliğini (`CustomerId` = `Account.Id`) bu modülden **yalnız sözleşmeyle** doğrular;
+  AR hesap kaydını okumaz, yazmaz, `accounts` / `account_external_references` koleksiyonlarına doğrudan erişmez.
+- Bu ek iki **salt-okuma** ucu ve sözleşme belgesini ekler. Account modeline alan, yeni koleksiyon, yeni yazma komutu ya da
+  yeni denetim olayı eklenmez (§23 değişmez; okuma AUD-001 dışında).
+- Kapsam dışı: AR'nin kendi port / sınıflandırıcı kodu (MOD-0120), Auth katalog kaydı ve rol ataması (MOD-0018),
+  `ocelot.json` (integration-agent), müşteri seçici UI (MOD-0120 same-origin proxy).
+
+### 30.2 Uçlar ve sözleşme
+
+Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md)
+(taslak; çelişkide bu pack kazanır).
+
+| Uç | Yanıt | Dosyalar (Golden Compact düzeni, §13) |
+|---|---|---|
+| `GET /api/crm/accounts/{accountId:guid}/lookup-validation` | 200 `accountId`, `code`, `name`, `status`, `isBillable`, `contractVersion` · 404 (yok / silinmiş / başka kiracı — aynı gövde) · 503 | `Queries/GetAccountLookupValidationQuery.cs` · `Handlers/QueryHandlers/GetAccountLookupValidationHandler.cs` |
+| `GET /api/crm/accounts/external-references/resolve?sourceSystem=&externalId=` | 200 (aynı alanlar + `sourceSystem`, `externalId`) · 400 (boş girdi) · 404 (eşleşme yok / hesap geçersiz) · 409 (çoklu eşleşme, savunma) · 503 | `Queries/GetAccountByExternalReferenceQuery.cs` · `Handlers/QueryHandlers/GetAccountByExternalReferenceHandler.cs` |
+
+- DTO: `AccountLookupValidationDto` `AccountModels.cs` içinde (tek dosya kuralı). Depo: `IAccountExternalReferenceRepository`'ye
+  çözümleme sorgusu eklenir (kiracı + `IsDeleted = false` + tam eşitlik; en çok 2 satır okur, 2 satır = 409).
+- `isBillable = (Status == "active")`, sıradan karşılaştırma; faturalanabilirlik kuralı yalnız CRM'dedir.
+- `sourceSystem` / `externalId`: yazma yoluyla aynı normalizasyon — yalnız `Trim()`, büyük/küçük harf korunur
+  (`CreateAccountHandler.cs:62-73`); çözümleme `"default"` kaynağını varsaymaz.
+- `account-status` kümesi sözleşmede yayımlanır: `active` (faturalanabilir), `inactive`, `draft`, `suspended` (Y-4/4c);
+  `archived` **açık karar** (§30.8 K-2). AR tarafında sabit durum tablosu olmaz.
+
+### 30.3 İzin — açık karar
+
+- Hedef: AR kullanıcısı `crm.account.read` **almaz**; iki uç tek ve dar bir okuma anahtarıyla korunur (`[HasPermission]`),
+  `crm.account.read` bu uçlara yetmez.
+- Aday `crm.account.lookup` (PKS-001 §5'te `lookup` eylemi yok → Tier-3 eylem olarak bu pack'e kaydedilmeli) ya da
+  `crm.account.lookup-validation` (Tier-3 sözlükte var; emsal `auth.users.lookup-validation`). **Kesinleşmedi —
+  sahibi: commercial-suite (Beste).** Seçilen anahtar §16 tablosuna ayrı bir revizyonla eklenir (bu ek §16'yı değiştirmez).
+- Ayrı işler: Auth katalog kaydı (MOD-0018), AR rollerine atama (MOD-0018-FU27 ya da sahibin seçtiği yer).
+
+### 30.4 Gateway
+
+Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelot.json:2970-2989`, GET dahil, port 5061)
+iki ucu taşır; yeni rota gerekmez, `ocelot.json` değişmez. Teyit integration-agent'ındır (yalnız not; §17 değişmez).
+
+### 30.5 Kabul ölçütleri (AC-AR)
+
+- [ ] **AC-AR-1** U-1 kendi kiracısındaki `active` hesap için 200, `isBillable = true`, alanlar sözleşme §2.2 ile birebir; gövdede adres / sorumlu kişi / dış referans / öznitelik **yok**.
+- [ ] **AC-AR-2** `inactive`, `draft`, `suspended`, `archived` ve kümede olmayan bir kod için 200, `isBillable = false`.
+- [ ] **AC-AR-3** Başka kiracının hesabı, silinmiş hesap ve olmayan kimlik → 404; üç gövde bayt bayt aynı.
+- [ ] **AC-AR-4** U-2 tam eşleşmede 200 ve U-1 ile aynı doğrulama alanları; eşleşme yok → 404; harf farkı (`oldcrm` / `OldCRM`) eşleşmez → 404; başka kiracıdaki eşleşme → 404.
+- [ ] **AC-AR-5** U-2 iki etkin aday satırda 409; hiçbir hesap döndürülmez.
+- [ ] **AC-AR-6** U-2 boş / yalnız boşluk `sourceSystem` ya da `externalId` → 400.
+- [ ] **AC-AR-7** Depo okunamazsa (Mongo istisnası / zaman aşımı) iki uç da 503; 500, 200 ya da 404 dönmez.
+- [ ] **AC-AR-8** Seçilen dar anahtar olmadan 403; yalnız `crm.account.read` sahibi kullanıcı 403 alır; anahtar sahibi `crm.account.read` olmadan 200 alır.
+- [ ] **AC-AR-9** Sözleşme §9 fikstürleri CrmService testlerinde bir başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
+- [ ] **AC-AR-10** `dotnet build` (CrmService) PASS; mevcut Account testleri tabandaki sonuçla aynı.
+
+### 30.6 Sabotaj beklentileri
+
+Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koşar; sabotaj kanıtı olmayan guard sayılmaz):
+
+| Sabotaj | Kırmızıya dönmesi gereken |
+|---|---|
+| U-1 depo çağrısından kiracı filtresini kaldır | AC-AR-3 (başka kiracı 200 döner) |
+| `IsDeleted` filtresini kaldır | AC-AR-3 (silinmiş hesap 200 döner) |
+| `isBillable`'ı `Status != "inactive"` yap | AC-AR-2 (`draft` / `suspended` / `archived` faturalanabilir olur) |
+| Çözümlemede `ToLowerInvariant()` ekle | AC-AR-4 (harf farkı eşleşir) |
+| Çoklu adayda ilk satırı döndür | AC-AR-5 |
+| `[HasPermission]`'ı `crm.account.read` yap | AC-AR-8 |
+| Mongo istisnasını yakalama / 404'e çevir | AC-AR-7 |
+| Gövdeye `AddressLine` ekle | AC-AR-1 |
+
+### 30.7 Test beklentileri
+
+- **xUnit (Application):** iki işleyici için kiracı, silme, durum tablosu, normalizasyon, çoklu eşleşme, boş girdi ve
+  depo hatası (sahte depo istisna atar) vakaları.
+- **xUnit (Api / yetki):** iki uç için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
+- **Sözleşme fikstürleri:** sözleşme §9 tablosu başvuru sınıflandırıcısıyla (AC-AR-9).
+- **Build:** `dotnet build services/Diten.CrmService/...Api.csproj -c Debug`.
+- Canlı veri ölçümü (indeksin canlı veritabanındaki varlığı) bu ekin parçası değildir; ayrı operatör adımıdır.
+
+### 30.8 Teslim satırı ve açık kararlar
+
+Bu pack'te `## Teslim dilimleri` (DL-n) tablosu **yok**; bu ek tablo uydurmaz. Ek tek bir teslim satırıdır:
+
+| teslim | ad | kapsadığı bölüm |
+|---|---|---|
+| AR-EK-1 | Treasury AR doğrulama + dış referans çözümleme | §30 (30.1–30.7) |
+
+Açık kararlar (sahip: commercial-suite, Beste, aksi yazılmadıkça):
+
+| # | Karar | CT önerisi |
+|---|---|---|
+| K-1 | İzin anahtarı (`crm.account.lookup` ya da `crm.account.lookup-validation`) | sahibin seçimi |
+| K-2 | `archived` sözleşmede yayımlanır mı | evet, faturalanamaz |
+| K-3 | U-2 409'un AR eşlemesi (MOD-0120 sahibi) | 503 |
+| K-4 | Gateway joker rotası yeterli mi (integration-agent) | yeterli |
+| K-5 | `runtime_code_scope` künyesi | değişmez: "external-ref surface" çözümleme ucunu, "Account/WorkPlace master + 360" okuma yüzeyi doğrulama ucunu kapsar; yeni nesne / alan / komut yok |
+| K-6 | `## Teslim dilimleri` tablosu (CT-APR-02 onay aracı tablo ister) | sahip karar verir |
