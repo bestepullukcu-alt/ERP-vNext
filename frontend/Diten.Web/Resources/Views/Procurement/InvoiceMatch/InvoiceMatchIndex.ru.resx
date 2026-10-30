@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>ID исключения</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>Да</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>Запрос неполный или содержит недопустимые значения. Проверьте поля и повторите попытку.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>Сумма строки не равна количеству × цене за единицу. Суммы строк указываются без налога (нетто).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>Поставщик, заказ на закупку или позиция не найдены.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>Валюта счёта не совпадает с валютой заказа на закупку.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>Счёт с таким номером уже существует для этого поставщика.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>Это действие недоступно в текущем статусе счёта.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>Счёт или исключение не найдены.</value></data>
 </root>
