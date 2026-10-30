@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>رفض</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>وضع علامة قيد النقل</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>إلغاء المرتجع</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>استلام (إقرار يدوي)</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>استلام</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>التصرف</value></data>
   <data name="ActionClose" xml:space="preserve"><value>إغلاق</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>مُستلم (إقرار يدوي)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>الاستلام مجرد إقرار يدوي. ليس استلامًا مستودعيًا ولا يسجّل أي حركة مخزون.</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>مُستلم</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>وقت الحدوث</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>التاريخ والوقت المحليان لديك. يُرسلان بتوقيت UTC.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,50 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>بيانات الشحنة التي أعادها النظام المصدر غير صالحة. يُرجى التواصل مع الدعم.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير مكتملة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>حالة الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>تعذّر الوصول إلى خدمة مطلوبة حاليًا. أعد محاولة الطلب نفسه بعد قليل.</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>المرتجعات غير متاحة مؤقتًا. لم يتم تأكيد النتيجة؛ أعد محاولة الطلب نفسه.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>حدث خطأ غير متوقع. يمكنك إعادة محاولة الإجراء نفسه.</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>يلزم ذكر سبب لتجاوز الدفعة الأقرب انتهاءً.</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>هذه الدفعة تخالف ترتيب الأقرب انتهاءً يُصرف أولاً.</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>لا يوجد مخزون متاح كافٍ لهذا البند.</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>لا يوجد مخزون كافٍ لهذا البند.</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>الصنف غير نشط.</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>العمر المتبقي للدفعة أقل من الحد الأدنى.</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>الدفعة محظورة.</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>انتهت صلاحية الدفعة.</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>لا يمكن تحديد دفعة لهذا الصنف.</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>يلزم تحديد دفعة لهذا الصنف.</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>الدفعة مستحقة لإعادة الفحص.</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>الدفعة لا تخص SKU هذا.</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>الدفعة قيد الاستدعاء.</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>البيانات الرئيسية للمنتج غير مكتملة.</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>المخزون محجوز لمستند آخر.</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>الرقم التسلسلي موجود بالفعل.</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>لا يمكن إرجاع الأصناف المتتبعة بالرقم التسلسلي في هذا الإصدار.</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>الرقم التسلسلي لا يخص هذه الدفعة.</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>الرقم التسلسلي غير متاح.</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>SKU لا يخص هذا الصنف.</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>لا يمكن الاحتفاظ بمخزون على مستوى SKU هذا.</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>الصنف غير معروف.</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>الموقع غير معروف.</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>الدفعة غير معروفة.</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>لا يوجد تحويل وحدات معرّف لهذا البند.</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>سبب غير معروف (الرمز: {0}).</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>رفض المخزون استلام البند {0}.</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>لا يوجد صرف مخزون مسجّل لبند الشحنة {0}، لذا يتعذّر استلام المرتجع. لم يتم ترحيل أي شيء.</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>توجد عملية استلام قيد التنفيذ لهذا المرتجع أو بدأت بقيم مختلفة. أعد الإرسال بالقيم المحفوظة المعروضة، أو حاول مرة أخرى بعد قليل.</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>القيم المحفوظة: المستودع {0}، الموقع {1}، وقت الحدوث {2}.</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>لا يمكن استلام البند {0} دون ترحيل المخزون.</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>تبقى البنود المرحّلة بالفعل كما هي. صحّح البند المرفوض ثم أرسل مرة أخرى.</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>مرحّل</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>غير مرحّل</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>ترحيل المخزون</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>السبب</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>استُلم دون ترحيل المخزون — شُحن قبل تكامل المخزون</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>خطأ في السلامة</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>يرحّل الاستلام كل بند إلى حجر المخزون؛ ولا يُعاد ترحيل البنود المرحّلة بالفعل. الشحنة المرسلة قبل تكامل المخزون تُستلم دون ترحيل المخزون.</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>مستودع الاستلام</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>موقع الاستلام</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>استلام دون ترحيل المخزون</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>هل تريد استلام البند {0} دون ترحيل المخزون؟ رفضه المخزون لسبب لا تغيّره إعادة المحاولة؛ ويجب بعد ذلك تصحيح المخزون في وحدة المخزون.</value></data>
 </root>
