@@ -393,10 +393,11 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
             .Where(t => t.GetConstructors(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Any(c => c.GetParameters().Any(p => p.ParameterType == client)))
             .Select(t => t.Name).Order(StringComparer.Ordinal).ToArray();
-        Assert.Equal(new[] { "LateWriterPolicy", "ShipmentDispatchCoordinator" }, users);
+        // MOD-0186 DL-1 (§34): the return receipt coordinator and its late-writer policy post the CUSTOMER_RETURN / REVERSAL.
+        Assert.Equal(new[] { "LateWriterPolicy", "ReturnLateWriterPolicy", "ReturnReceiptCoordinator", "ShipmentDispatchCoordinator" }, users);
         var hosted = assemblies.Distinct().SelectMany(a => a.GetTypes()).Where(t => typeof(IHostedService).IsAssignableFrom(t));
         Assert.All(hosted, h => Assert.DoesNotContain(h.GetConstructors().SelectMany(c => c.GetParameters()), p =>
-            p.ParameterType == client || p.ParameterType.Name is "ShipmentDispatchCoordinator" or "LateWriterPolicy"));
+            p.ParameterType == client || p.ParameterType.Name is "ShipmentDispatchCoordinator" or "LateWriterPolicy" or "ReturnReceiptCoordinator" or "ReturnLateWriterPolicy"));
     }
 
     // ---- S23-13 ------------------------------------------------------------------------------------------------------
