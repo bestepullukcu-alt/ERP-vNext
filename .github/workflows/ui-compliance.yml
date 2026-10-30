@@ -35,10 +35,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           start=$(date +%s)
-          set +e
-          python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt
-          code=$?
-          set -e
+          if python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt; then code=0; else code=$?; fi
           cat uic-selector-stdout.txt
           echo "SHA-256 (stdout): $(sha256sum uic-selector-stdout.txt | cut -d' ' -f1)"
           echo "Süre: $(( $(date +%s) - start )) s (yalnız değişen sayfalar; CI'da tüm-sayfa kipi yok)"
@@ -57,7 +54,8 @@ jobs:
         env:
           CODE: ${{ steps.selector.outputs.code }}
         run: |
-          if [ "$CODE" = "1" ] || [ "$CODE" = "2" ]; then
+          case "$CODE" in 1|2) failed=1 ;; *) failed=0 ;; esac
+          if [ "$failed" = "1" ]; then
             echo "Seçici çıkışı $CODE: kırmızı (1 = yeni kırmızı, 2 = araç ya da taban hatası)."
             exit 1
           fi

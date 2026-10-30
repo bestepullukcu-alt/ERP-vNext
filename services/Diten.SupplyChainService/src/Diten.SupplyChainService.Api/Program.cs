@@ -85,6 +85,12 @@ builder.Services.AddHttpClient<ILoadReferenceReader, LoadReferenceReader>(client
 // Shipments, Carriers and Loads down with it (Q217, Q232, Q236). Their persistence registrations
 // already registered everything except the reference reader, which lives in Infrastructure and so
 // cannot be registered from Persistence (Q220). These four lines follow the Loads pattern above.
+// MOD-0183 DL-1 (§23): the dispatch issue posts to INVENTORY through the Gateway (Inventory:ReferenceBaseUrl, the existing
+// reference-base-URL pattern, no new port) with the caller's token; the lease is the request timeout + 30 s.
+var inventoryTimeout = TimeSpan.FromSeconds(int.TryParse(builder.Configuration["Inventory:RequestTimeoutSeconds"], out var inventorySeconds) && inventorySeconds > 0 ? inventorySeconds : 10);
+builder.Services.AddSingleton(new Diten.SupplyChainService.Application.Features.Shipments.Dispatch.DispatchOptions(inventoryTimeout));
+builder.Services.AddHttpClient<Diten.SupplyChainService.Application.Features.Shipments.Dispatch.IInventoryMovementClient,
+    Diten.SupplyChainService.Infrastructure.Features.Shipments.InventoryMovementClient>(client => client.Timeout = inventoryTimeout);
 builder.Services.AddReturnPersistence();
 builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
 builder.Services.AddClaimPersistence();

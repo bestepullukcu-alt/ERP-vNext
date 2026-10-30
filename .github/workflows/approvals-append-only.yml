@@ -1,0 +1,29 @@
+name: approvals-append-only
+
+# S-91: a pull request that drops, changes or moves a row of approvals.tsv / reviews.tsv is red. Only breaks the
+# pull request brings count (--base); a known, owner-approved break is excused by append-only-exceptions.tsv on main.
+on:
+  pull_request:
+    paths:
+      - "execution/approvals/**"
+      - "scripts/pack_approval.py"
+      - ".github/workflows/approvals-append-only.yml"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  append-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Fetch main
+        run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
+      - name: Append-only check (new breaks only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"

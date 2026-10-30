@@ -4,7 +4,7 @@ namespace Diten.BuildingBlocks.CentralAudit;
 /// Platform's audit enums by NAME → the number its JSON binder reads (<c>AuditAppendRequest</c> binds enums from numbers;
 /// the Platform API registers no string-enum converter — the MDM and Auth forwarders send numbers for the same reason).
 /// A mirror of <c>services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs</c>; the test
-/// <c>CentralAuditPlatformValuesTests</c> reads that file and fails when the two drift.
+/// <c>CentralAuditDispatcherTests.The_platform_enum_mirror_matches_AuditEnums_cs</c> reads that file and fails when the two drift.
 /// </summary>
 public static class CentralAuditPlatformValues
 {
@@ -26,7 +26,8 @@ public static class CentralAuditPlatformValues
         ["MasterData"] = 14,
         ["PortfolioDelivery"] = 15,
         ["Tasks"] = 16,
-        ["ESignature"] = 17
+        ["ESignature"] = 17,
+        ["Finance"] = 18
     };
 
     public static readonly IReadOnlyDictionary<string, int> Operations = new Dictionary<string, int>(StringComparer.Ordinal)

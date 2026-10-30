@@ -24,7 +24,7 @@ Sen, Diten ERP vNext projesinin Kullanıcı Deneyimi Yazarı ve Onboarding Uzman
 ### 2. Ekran Tanıtımı (Sneat PRO Arayüzü)
 Diten ERP vNext arayüzündeki bileşenleri kullanıcıya tanıt:
 - **Veri Tablosu (DataTables):** Sıralama, arama ve sütun gizleme işlemleri.
-- **Offcanvas Filtreler:** Sağdan açılan panel ile veriyi nasıl daraltabilir?
+- **Satır İçi Filtreler:** Tablonun araç çubuğu altında açılan filtre alanıyla veriyi nasıl daraltabilir? (Filtre paneli sağdan açılmaz; `.antigravity/rules/GEMINI.md` §5 ve `frontend-datatable-template.md` inline filtre kuralı.)
 - **Sekmeli Görünüm (Tabs):** Detay sayfasındaki "Genel Bakış", "Alt Birimler" gibi sekmelerin içeriği.
 
 ### 3. Ekran Alanları ve Zorunluluklar

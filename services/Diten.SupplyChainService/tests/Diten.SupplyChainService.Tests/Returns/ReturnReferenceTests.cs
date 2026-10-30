@@ -18,6 +18,13 @@ public sealed class ReturnReferenceTests
  public void Root_Unusable_ExactFailure(string value,int status,string code){var n=Good();if(value=="missing")n.Remove("lifecycleCorrelationId");else n["lifecycleCorrelationId"]=value=="null"?null:value;var ex=Assert.Throws<ReturnFailureException>(()=>Read(n));Assert.Equal(status,ex.Status);Assert.Equal(code,ex.Code);}
  [Theory][InlineData("sourceModule",502)][InlineData("shipmentId",503)][InlineData("status",503)]
  public void Reference_Omission_RequiredVersusOptionalDecisionField(string key,int status){var n=Good();n.Remove(key);Assert.Equal(status,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
+ // MOD-0183 DL-1 (SHIPMENT-BUNDLE 3.4.0): a shipment detail whose lines carry the new stock fields is still a valid
+ // return source; an unknown line property and a non-text value of a new field stay 502.
+ [Fact] public void Reference_ShipmentBundle340LineFields_AreAccepted()
+ {var n=Good();var line=n["lines"]![0]!.AsObject();line["skuLevel"]="Lsku";line["lotId"]="lot-1";line["fromLocationId"]=null;line["fefoBypassReason"]=null;line["issueTransactionId"]="9b7c0d1e-0000-4000-8000-000000000001";n["stockIssued"]=true;n["dispatchState"]="None";
+  Assert.Single(Read(n).Lines);
+  n=Good();n["lines"]![0]!["unknownField"]="x";Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);
+  n=Good();n["lines"]![0]!["skuLevel"]=5;Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
  [Fact] public void Reference_DuplicateOrNonpositiveLines_RejectsMalformed()
  {var n=Good();n["lines"]!.AsArray().Add(n["lines"]![0]!.DeepClone());Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);n=Good();n["lines"]![0]!["quantity"]="0";Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
  [Fact] public async Task Reference_MockedTransport_OnlyShipmentGetAndTrustedScope()
