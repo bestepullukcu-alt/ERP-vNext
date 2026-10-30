@@ -55,10 +55,6 @@ Sen kodun estetiğinden sorumlusun ancak projenin mimari anayasasını değişti
 
 ## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
 
-Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
-`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
-(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
-*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
-test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa `.antigravity/rules/frontend-datatable-template.md` "Dokunma protokolü" uygulanır.
 
-Denetimde: dokunulan liste ekranı için `--format gaps` çıktısı rapora eklenir; boşsa 'sapma yok' satırı yazılır.
+Denetimde: dokunulan liste ekranı için `verify_datatable_page.py --format gaps` çıktısı rapora eklenir; boşsa 'sapma yok' satırı yazılır.

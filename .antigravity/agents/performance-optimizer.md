@@ -29,7 +29,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 - **Projections:** Mongo sürücüsünde `.Project(x => new { ... })` kullanarak gereksiz alanların network üzerinden taşınmasını engelle.
 
 ### 3. Frontend & UI (Sneat PRO & DataTables v2)
-- **DataTables v2 Veri Modu:** Mod pack'teki `data_mode` kararıdır: kiracının sınırsız ekleyebildiği varlıklar `server` (varsayılan), tasarımda sınırlı kümeler `client` (üst sınır pack'te, öneri ≤ 200 satır; URL'de `pageSize=` yasak). Sayfa `serverSide` yazmaz; modu ortak liste fabrikasına `dataMode` ile beyan eder. Kaynak: `.antigravity/rules/frontend-datatable-template.md` `data_mode` tablosu ve "Sunucu modu sözleşmesi".
+- **DataTables v2 Veri Modu:** `.antigravity/rules/frontend-datatable-template.md` "Veri modeli (`data_mode`)" ve "Sunucu modu sözleşmesi".
 - **L10n Bridge:** Dil dosyalarını (`.resx`) her istekte sunucudan çekmek yerine, sayfa yüklendiğinde `window.L10n` objesine bir kez yükle.
 
 ### 4. Gateway & Network
@@ -54,7 +54,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 - [ ] **Projection:** Handler'da `Select` kullanıldı mı?
 - [ ] **Index:** Sorgu `TenantId` ile başlayan bir index'e sahip mi?
-- [ ] **DataTables:** Sayfanın beyan ettiği `dataMode` pack'teki `data_mode` ile aynı mı (sınırsız büyüyen liste `server`)?
+- [ ] **DataTables:** `frontend-datatable-template.md` "Veri modeli (`data_mode`)" ile uyumlu mu?
 - [ ] **Loops:** `O(n²)` karmaşıklığında iç içe döngü var mı?
 - [ ] **Payload:** DTO içinde kullanılmayan "heavy" alanlar temizlendi mi?
 
@@ -69,10 +69,6 @@ Diten ERP vNext Performance Standard - 2024
 
 ## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
 
-Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
-`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
-(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
-*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
-test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa `.antigravity/rules/frontend-datatable-template.md` "Dokunma protokolü" uygulanır.
 
 'Client-Side Filter' anti-pattern'inin ölçülebilir hâli: `data_mode: server` olması gereken bir listede `ext.search.push` ya da sabit `pageSize=` bulmak.

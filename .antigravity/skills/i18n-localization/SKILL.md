@@ -91,7 +91,7 @@ locales/
 
 - Use translation keys, not raw text
 - Namespace translations by feature
-- Server-rendered sayfalarda JS'e çevri taşırken JSON payload partial + loader JS pattern’ini tercih et
+- Server-rendered sayfalarda JS'e çeviri: `dynamic-localization-standard.md` "Zorunlu Pattern"
 - Support pluralization
 - Handle date/number formats per locale
 - Plan for RTL from the start
@@ -143,7 +143,7 @@ Before shipping:
 
 - [ ] All user-facing strings use translation keys
 - [ ] Locale files exist for all supported languages
-- [ ] Server-rendered JS localization bridge uses payload partial + loader JS where needed
+- [ ] Server-rendered JS localization bridge: `dynamic-localization-standard.md` "Zorunlu Pattern"
 - [ ] Date/number formatting uses Intl API
 - [ ] RTL layout tested (if applicable)
 - [ ] Fallback language configured
