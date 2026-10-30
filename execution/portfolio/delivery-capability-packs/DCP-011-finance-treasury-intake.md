@@ -4,12 +4,12 @@ slug: finance-treasury-intake
 name: Finance & Treasury — kaynak projeden doğrulayarak alma (Treasury intake)
 type: Delivery Capability Pack
 standard: CAP-001
-status: draft
-status_note: "draft — yalnız planlama; production implementation tetiklemez (CAP-001 §5). DCP numarası DCP-011 (Platform sahibi Beste atadı, Y-4/2; dosya adı UNASSIGNED-finance-treasury-intake.md'den 2026-10-27'de değişti). Onaydan önce bağımsız inceleme (CT-APR-02, SOP §20.4) ve sürüme bağlı onay (CT-APR-01) gerekir."
+status: approved
+status_note: "approved — Platform sahibi (Beste) 2026-10-29 kabul etti (kanıt `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`; Treasury kaydı Y-22 / D88/5); onaylanan içerik 4cb9e99a sürümüyle aynıdır, yalnız durum alanları değişti (CT-APR-02 4cb9e99a UYGUN + bu sürüm için kısa doğrulama incelemesi). DCP onayı üye pack'lerin ready-for-dev'i değildir ve kod izni vermez (CAP-001 §5): runtime_code_allowed false kalır."
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-10-28
+updated: 2026-10-29
 authoring_branch: chore/ct/treasury-intake-ct-01
 current_revision_branch: chore/ct/treasury-intake-ct-04
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
@@ -31,7 +31,7 @@ inputs:
   - "depo dışı: /Users/natig/Projects/treasury-transfer-handoff/ (11 producer paketi + kaynak kanıtları; SHA256SUMS doğrulandı)"
 ---
 
-# Finance & Treasury — Treasury intake (Delivery Capability Pack, TASLAK)
+# Finance & Treasury — Treasury intake (Delivery Capability Pack)
 
 > **Revizyon (2026-10-28, sahip denetimi f2aacc517 KOŞULLU — D72 hizalaması):** üye AC aralıkları güncel pack'lerden: MOD-0119
 > AC-1…44 (yeni AC-44), MOD-0289 AC-1…61 (yeni AC-61); MOD-0140 satırı D72/5'e hizalandı (liste = silinmemiş Active ilişki =
@@ -72,7 +72,7 @@ inputs:
 
 ## 1. Identity and status
 
-- **Kimlik:** DCP-011 (numara 2026-10-27'de atandı; önceki dosya adı `UNASSIGNED-finance-treasury-intake.md`) · **durum:** `draft` · **standart:** CAP-001.
+- **Kimlik:** DCP-011 (numara 2026-10-27'de atandı; önceki dosya adı `UNASSIGNED-finance-treasury-intake.md`) · **durum:** `approved` (Platform sahibi kabulü 2026-10-29 — `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`; CT-APR-02 bu sürüm için ve CT-APR-01 satırı bu değişiklikle birlikte; merge ile yürürlükte) · **standart:** CAP-001.
 - **Neden DCP (CAP-001 §2):** modüller bir bağımlılık sırasıyla teslim edilmek zorunda; domain'ler arası kararlar var
   (finance-treasury, master-data-management, platform-shared-services, procurement, commercial-suite); birden çok iş
   modülü ortak temele dayanıyor (servis ortak yapı taşları, MOD-0269 sözleşmesi, MOD-0023 §17, CentralAudit).
@@ -289,7 +289,8 @@ MOD-0057 (D19), bankacılık sahibi (D27/8), kod alma izni dört Treasury modül
 bağdaştırıcısı (`IBankDispatchPort` / `NotConfiguredBankDispatchAdapter`, MOD-0126 DL-3) ve FROZEN BANK-DISPATCH 0.1.0
 sözleşmesiyle, MOD-0126 pack kapısından.
 
-**Açık:** DCP onayı; ortak sahipli kararlarda diğer sahiplerin teyidi (D29/1); CT-APR-02 / CT-APR-01.
+**Açık:** ortak sahipli kararlarda diğer sahiplerin teyidi (D29/1). **DCP onayı:** Platform sahibi kabul etti (2026-10-29, `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`);
+CT-APR-02 (bu sürüm) ve CT-APR-01 satırı (onaylayan bestepullukcu-alt) bu değişiklikle birlikte; üye pack'lerin CT-APR-01'i ayrıdır.
 
 ## 19. Future follow-ups
 
@@ -299,6 +300,6 @@ TP-001'in `.antigravity/rules/`'a alınması.
 
 ## 20. Audit and reconciliation notes
 
-Taslak; implementasyon başlamadı. İlk ölçüm tabanı origin/main 96bedc893; ilk yazım dalı `chore/ct/treasury-intake-ct-01`
+Onaylı DCP (2026-10-29); implementasyon başlamadı. İlk ölçüm tabanı origin/main 96bedc893; ilk yazım dalı `chore/ct/treasury-intake-ct-01`
 (2026-10-25); güncel revizyon dalı `chore/ct/treasury-intake-ct-04` (2026-10-27, CT04a — sahip denetimi). Kaynak bütünlüğü, içerik incelemesi ve gap listeleri:
 `docs/records/audits/2026-10/treasury-intake-handover-review-01/`.
