@@ -287,7 +287,7 @@ public sealed class SupplyChainReturnsControllerTests
     [Theory]
     [InlineData(422, "INVENTORY_REFUSED", "{\"shipmentLineNumber\":\"2\",\"inventoryCode\":\"LOT_UNDER_RECALL\",\"inventory\":{\"recallCaseNumber\":\"RC-SECRET\"}}", "{\"shipmentLineNumber\":\"2\",\"inventoryCode\":\"LOT_UNDER_RECALL\"}")]
     [InlineData(422, "RETURN_SOURCE_MOVEMENT_MISSING", "{\"shipmentLineNumber\":\"1\",\"other\":\"RC-SECRET\"}", "{\"shipmentLineNumber\":\"1\"}")]
-    [InlineData(422, "RETURN_LINE_NOT_UNPOSTABLE", "{\"shipmentLineNumber\":\"3\",\"lastInventoryCode\":\"UNKNOWN_LOCATION\",\"other\":\"RC-SECRET\"}", "{\"shipmentLineNumber\":\"3\",\"lastInventoryCode\":\"UNKNOWN_LOCATION\"}")]
+    [InlineData(422, "RETURN_LINE_NOT_UNPOSTABLE", "{\"shipmentLineNumber\":\"3\",\"lastInventoryCode\":\"RC-SECRET\"}", "{\"shipmentLineNumber\":\"3\"}")]
     [InlineData(409, "RETURN_RECEIPT_IN_PROGRESS", "{\"toWarehouseId\":\"wh-01\",\"toLocationId\":null,\"occurredAt\":\"2026-10-26T08:00:00Z\",\"other\":\"RC-SECRET\"}", "{\"toWarehouseId\":\"wh-01\",\"occurredAt\":\"2026-10-26T08:00:00Z\"}")]
     public async Task Transition_relays_receipt_codes_with_status_and_filtered_details(int status, string code, string details, string expected)
     {
@@ -302,6 +302,24 @@ public sealed class SupplyChainReturnsControllerTests
         var json = AssertFailure(await ReceiptFailure(503, "DEPENDENCY_UNAVAILABLE", "{\"shipmentLineNumber\":\"1\"}"),
             StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE");
         Assert.DoesNotContain("details", json);
+    }
+
+    [Fact]
+    public async Task Transition_keeps_an_unrecognized_422_as_a_refusal_with_its_code_and_no_details()
+    {
+        var json = AssertFailure(await ReceiptFailure(422, "NEW_RECEIPT_RULE", "{\"shipmentLineNumber\":\"RC-SECRET\"}"),
+            StatusCodes.Status422UnprocessableEntity, "NEW_RECEIPT_RULE");
+        Assert.DoesNotContain("details", json);
+        Assert.DoesNotContain("RC-SECRET", json);
+    }
+
+    [Theory]
+    [InlineData("<b>raw text</b>")]
+    [InlineData("lower_case")]
+    public async Task Transition_never_relays_a_422_code_that_is_not_code_shaped(string code)
+    {
+        var json = AssertFailure(await ReceiptFailure(422, code, "{}"), StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+        Assert.DoesNotContain(code, json);
     }
 
     private static Task<IActionResult> ReceiptFailure(int status, string code, string details)

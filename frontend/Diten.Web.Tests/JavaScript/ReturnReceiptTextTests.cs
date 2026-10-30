@@ -79,21 +79,23 @@ public sealed class ReturnReceiptTextTests
         }
     }
 
-    [Fact]
-    public async Task IndexJsMapsEveryCodeToItsOwnTextUnderNode()
+    [Theory]
+    [InlineData("return-receipt-text.test.mjs", 8)]
+    [InlineData("return-receipt-flow.test.mjs", 7)]
+    public async Task IndexJsPassesItsNodeFile(string file, int cases)
     {
         var start = new ProcessStartInfo("node") { WorkingDirectory = Root(), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         start.ArgumentList.Add("--test");
         start.ArgumentList.Add("--test-reporter=tap");
-        start.ArgumentList.Add(Path.Combine("frontend", "Diten.Web.Tests", "JavaScript", "Node", "return-receipt-text.test.mjs"));
+        start.ArgumentList.Add(Path.Combine("frontend", "Diten.Web.Tests", "JavaScript", "Node", file));
         using var node = Process.Start(start)!;
         var error = node.StandardError.ReadToEndAsync();
         var output = await node.StandardOutput.ReadToEndAsync();
         await node.WaitForExitAsync();
         var report = $"{output}\n{await error}";
         Assert.True(node.ExitCode == 0, report);
-        // A run that found no tests also exits 0; require the eight cases the file defines.
-        Assert.Matches(new Regex(@"^# pass 8$", RegexOptions.Multiline), output);
+        // A run that found no tests also exits 0; require the cases the file defines.
+        Assert.Matches(new Regex($@"^# pass {cases}$", RegexOptions.Multiline), output);
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 

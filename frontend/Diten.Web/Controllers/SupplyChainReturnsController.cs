@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Diten.Web.Models.SupplyChain.Returns;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -43,7 +44,8 @@ public sealed class SupplyChainReturnsController : Controller
     private const string ShipmentsPath = "/api/shipment-bundle/shipments";
 
     // The published Returns codes (shipment-bundle.openapi.yaml 3.4.0, operations queryReturns/createReturn/
-    // transitionReturn). The adapter never originates or relays a code outside this set.
+    // transitionReturn). The adapter never originates a code outside this set; the only one it relays is a
+    // code-shaped 422 refusal (Q504), so a new refusal reaches the page as a refusal, never as a validation text.
     private static readonly HashSet<string> PublishedCodes = new(StringComparer.Ordinal)
     {
         "INVALID_REQUEST", "RETURN_NOT_FOUND", "SHIPMENT_NOT_FOUND", "SHIPMENT_LINE_NOT_FOUND",
@@ -57,11 +59,13 @@ public sealed class SupplyChainReturnsController : Controller
 
     // MOD-0186 DL-2 (Q504): the only error details that reach the browser, per code, and only the fields a screen text
     // needs. details.inventory (lot, recall case) stays server-side; every other code carries no details.
+    private static readonly Regex RefusalCodeShape = new("^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
     private static readonly Dictionary<string, string[]> RelayedDetails = new(StringComparer.Ordinal)
     {
         ["INVENTORY_REFUSED"] = ["shipmentLineNumber", "inventoryCode"],
         ["RETURN_SOURCE_MOVEMENT_MISSING"] = ["shipmentLineNumber"],
-        ["RETURN_LINE_NOT_UNPOSTABLE"] = ["shipmentLineNumber", "lastInventoryCode"],
+        ["RETURN_LINE_NOT_UNPOSTABLE"] = ["shipmentLineNumber"],
         ["RETURN_RECEIPT_IN_PROGRESS"] = ["toWarehouseId", "toLocationId", "occurredAt"]
     };
 
@@ -355,7 +359,8 @@ public sealed class SupplyChainReturnsController : Controller
         var status = (int)response.StatusCode;
         var text = await response.Content.ReadAsStringAsync(cancellationToken);
         var code = ErrorCodeOf(text);
-        if (code is null || !PublishedCodes.Contains(code))
+        var unpublishedRefusal = status == StatusCodes.Status422UnprocessableEntity && code is not null && RefusalCodeShape.IsMatch(code);
+        if (!unpublishedRefusal && (code is null || !PublishedCodes.Contains(code)))
         {
             (status, code) = status switch
             {

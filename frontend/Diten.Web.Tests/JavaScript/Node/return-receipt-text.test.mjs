@@ -66,12 +66,15 @@ test('an unrecognized 422 code shows the generic reason, never the validation te
 });
 
 test('the module codes have their own text and never the validation text', async () => {
+    const when = new Date('2026-10-26T08:00:00Z');
+    const pad = (n) => String(n).padStart(2, '0');
+    const localStored = `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())} ${pad(when.getHours())}:${pad(when.getMinutes())}:00`;
     assert.equal(await text(422, 'RETURN_SOURCE_MOVEMENT_MISSING', { shipmentLineNumber: '3' }), 'ErrReturnSourceMovementMissing[3]');
     assert.equal(await text(422, 'RETURN_LINE_NOT_UNPOSTABLE', { shipmentLineNumber: '4', lastInventoryCode: 'UNKNOWN_LOCATION' }), 'ErrReturnLineNotUnpostable[4]');
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS', { toWarehouseId: 'wh-01', toLocationId: 'loc-q1', occurredAt: '2026-10-26T08:00:00Z' }),
-        'ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|loc-q1|2026-10-26T08:00:00Z]');
+        `ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|loc-q1|${localStored}]`);
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS', { toWarehouseId: 'wh-01', toLocationId: null, occurredAt: '2026-10-26T08:00:00Z' }),
-        'ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|NotProvided|2026-10-26T08:00:00Z]');
+        `ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|NotProvided|${localStored}]`);
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS'), 'ErrReturnReceiptInProgress');
 });
 
