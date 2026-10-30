@@ -101,5 +101,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace", newline="\n")  # card S-87: LF on Windows too
     sys.exit(main())
