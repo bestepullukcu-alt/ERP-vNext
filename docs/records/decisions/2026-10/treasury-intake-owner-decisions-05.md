@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D109 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D110 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1326,6 +1326,14 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-34; oturum Treasury Intake CT (`
 
 1. **D109/1 — K-W9 (b):** iş yazımı ve sonuç satırı aynı işlemde, hata olursa ikisi de geri alınır. D107/2 geri alındı. Kural sahibi Ali; K2 kararı (2 Ekim) geçerli. Codex `c37628ae` F-1 bu kararla kapanır.
 2. **D109/2 — yapılabilirlik (kod okuması; çalışma testi yok):** yapılabilir. Depolar oturum almaz (`UserRoleRepository.cs:43-54`, `RolePermissionRepository.cs:43-47`), ama Auth'ta emsal var: `EntitlementReconciliationOperationStore.cs:110-145` aynı oturumda `rolePermissions`, `auth_role_assignment_versions`, `refreshTokens` yazıyor. FU27 yeni store dosyalarıyla aynı deseni kullanır; outbox gerekmez. Dev / test ortamının replica set şartı ve `authAuditLogs`'un aynı işleme alınması kod başında sınanır.
+
+## D110 — Codex `c098f372` bulguları (UYGUN DEĞİL: 1 ENGEL, 4 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-c098f372.md`; oturum Treasury Intake CT. D109/1 F-1'i kapattı (Codex teyitli).
+
+1. **D110/1 — F-5:** oluşturulamayan atama denemesi `…/unresolved-attempts` ile okunur; uç adı ve okuma satırı CT önerisidir (MOD-0018 sahibinin teyidine). AC-52.
+2. **D110/2 — F-8:** belirsiz commit emsaldeki gibi çoğunluk okumasıyla çözülür; kanıt yoksa 503 `SOD_WAIVER_OUTCOME_UNKNOWN` ve elle uzlaştırma (hata kodu CT önerisi).
+3. **D110/3 — F-3, F-6, F-7:** metin hizalandı.
 
 ## Karar olmayanlar
 
