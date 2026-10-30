@@ -89,6 +89,22 @@ public sealed class EvaluationStorageTests(EvaluationStorageDatabase database) :
         Assert.Equal(0, await Count(SupplierPerformanceSchema.Outbox));
     }
 
+    // The version alone would pass here: a future cancel changes the status, and only the Status condition keeps it unpublished.
+    [Fact]
+    public async Task Submit_WhenTheStatusIsNotDraftAtTheExpectedVersion_ShouldReportAConflictAndWriteNothing()
+    {
+        var evaluation = Evaluation(_scope);
+        evaluation.Status = EvaluationStatus.CANCELLED;
+        await Repository.CreateAsync(_scope, "create", "fp", evaluation, "{}", CancellationToken.None);
+
+        var outcome = await Repository.SubmitAsync(_scope, "submit", "fp", Submission(evaluation), "{}", CancellationToken.None);
+
+        Assert.Equal(EvaluationCommitOutcome.Conflict, outcome);
+        var stored = await Repository.GetAsync(_scope, evaluation.Id, CancellationToken.None);
+        Assert.Equal((EvaluationStatus.CANCELLED, 1, null), (stored!.Status, stored.Version, stored.ScorecardId));
+        Assert.Equal(0, await Count(SupplierPerformanceSchema.Outbox));
+    }
+
     [Fact]
     public async Task Schema_ShouldCreateTheOutboxClaimAndTheScorecardIndexes()
     {

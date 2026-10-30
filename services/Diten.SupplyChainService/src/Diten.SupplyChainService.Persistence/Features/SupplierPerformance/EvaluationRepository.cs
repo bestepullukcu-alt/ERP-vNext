@@ -58,6 +58,7 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
     public Task<EvaluationCommitOutcome> SubmitAsync(SupplierPerformanceScope scope, string key, string fingerprint, EvaluationSubmission s, string responseBody, CancellationToken ct) =>
         CommitAsync(scope, Identity(scope, SubmitOperation, s.EvaluationId.ToString(), key), 200, fingerprint, responseBody, s.EvaluationId, s.ScorecardId.ToString(), s.CorrelationId, async session =>
         {
+            await probe.AtAsync("submit", ct);
             var draft = Visible(scope); draft.Add("_id", s.EvaluationId.ToString()); draft.Add("Status", nameof(EvaluationStatus.DRAFT)); draft.Add("Version", s.ExpectedVersion);
             var update = Builders<SupplierEvaluation>.Update.Set(x => x.Status, EvaluationStatus.PUBLISHED).Set(x => x.Version, s.ExpectedVersion + 1)
                 .Set(x => x.ScorecardId, s.ScorecardId).Set(x => x.PublishedAt, s.PublishedAt).Set(x => x.PublishedBy, scope.ActorId).Set(x => x.PublishCorrelationId, s.CorrelationId)

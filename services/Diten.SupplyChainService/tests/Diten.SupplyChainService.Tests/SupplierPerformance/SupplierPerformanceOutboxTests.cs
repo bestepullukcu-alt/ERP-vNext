@@ -60,6 +60,27 @@ public sealed class SupplierPerformanceOutboxTests(OutboxDatabase database) : IC
     private Task<BsonDocument> Row(Guid id) => _db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Outbox).Find(new BsonDocument("_id", id.ToString())).SingleAsync();
     private Task Publish(Transport transport) => new EventOutboxPublisherProcessor(Store, transport, Fast).PublishPendingAsync();
 
+    // Review 01 F-3: the row SubmitAsync really writes, claimed by the real store. A row the store cannot match would stay Pending for ever.
+    [Fact]
+    public async Task TXN03_TheRowSubmitWrites_ShouldBeClaimedAndPublishedByTheRealStore()
+    {
+        await using var h = new SupplierPerformanceHost(database: SupplierPerformanceMongo.OutboxDatabase);
+        var id = (await h.Create()).Body!["evaluationId"]!.GetValue<string>();
+        var correlation = Guid.NewGuid();
+        await h.Submit(id, correlation: correlation.ToString());
+        var row = Assert.Single(await h.OutboxRows());
+        var eventId = Guid.Parse(row["_id"].AsString);
+        var transport = new Transport();
+
+        await new EventOutboxPublisherProcessor(new SupplierPerformanceOutboxStore(h.Db), transport, Fast).PublishPendingAsync();
+
+        var sent = Assert.Single(transport.Sent, m => m.EventId == eventId);
+        Assert.Equal((SupplierPerformanceOutboxStore.EventName, correlation, (Guid?)Guid.Parse(id), (Guid?)h.Tenant, "Diten.SupplyChainService"), (sent.EventName, sent.CorrelationId, sent.CausationId, sent.TenantId, sent.Producer));
+        Assert.Equal(row["PayloadJson"].AsString, Encoding.UTF8.GetString(sent.CanonicalPayloadUtf8.Span));
+        Assert.Equal(new DateTimeOffset(row["OccurredAt"].ToUniversalTime()), sent.OccurredAtUtc);
+        Assert.Equal("Published", Assert.Single(await h.OutboxRows())["Status"].AsString);
+    }
+
     // T-0147-TXN-02
     [Fact]
     public async Task TXN02_ARetry_ShouldCarryTheSameEventIdSoAConsumerCanIgnoreTheDuplicate()

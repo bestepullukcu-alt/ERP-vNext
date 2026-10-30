@@ -65,11 +65,12 @@ internal sealed class SupplierPerformanceHost : IAsyncDisposable
     /// <param name="rebuildIndexes">Drops the fixed unique-index database first, so the schema gate builds its indexes now and an index
     /// sabotage is not masked by an earlier host's index. Only for the race tests; every other host shares one database (DB-010:
     /// a database per host exhausted mongod's open files in the full suite).</param>
-    public SupplierPerformanceHost(bool rebuildIndexes = false)
+    /// <param name="database">A fixed database of the caller's own, for a test that claims across tenants (the outbox publisher).</param>
+    public SupplierPerformanceHost(bool rebuildIndexes = false, string? database = null)
     {
         if (rebuildIndexes) new MongoClient(SupplierPerformanceMongo.Connection).DropDatabase(SupplierPerformanceMongo.UniqueIndexDatabase);
         App = new SupplierPerformanceFactory(Procurement, LegalEntities, Probe, "mod0147-" + Guid.NewGuid(),
-            rebuildIndexes ? SupplierPerformanceMongo.UniqueIndexDatabase : SupplierPerformanceMongo.SharedDatabase);
+            database ?? (rebuildIndexes ? SupplierPerformanceMongo.UniqueIndexDatabase : SupplierPerformanceMongo.SharedDatabase));
         Client = App.CreateClient();
         Db = App.Services.GetRequiredService<IMongoDatabase>();
     }

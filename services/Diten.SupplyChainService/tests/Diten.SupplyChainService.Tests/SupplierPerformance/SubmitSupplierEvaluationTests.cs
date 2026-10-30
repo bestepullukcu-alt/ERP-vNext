@@ -241,6 +241,10 @@ public sealed class SubmitSupplierEvaluationTests
         Assert.Equal((HttpStatusCode.OK, otherId), (sameKeyOtherTarget.Status, sameKeyOtherTarget.Body!["evaluationId"]!.GetValue<string>()));
         Assert.Equal((HttpStatusCode.OK, foreignId), (sameKeyOtherCompany.Status, sameKeyOtherCompany.Body!["evaluationId"]!.GetValue<string>()));
         Assert.Equal(2, (await h.OutboxRows()).Count);
+
+        // The company is in the tuple: its own key must not reach another company's receipt.
+        var foreignReplay = await h.Submit(id, le: otherCompany);
+        Assert.Equal((HttpStatusCode.NotFound, "UNKNOWN_EVALUATION"), Refusal(foreignReplay));
     }
 
     [Fact]
@@ -360,14 +364,31 @@ public sealed class SubmitSupplierEvaluationTests
         Assert.Single(await h.OutboxRows());
     }
 
-    // Review F-2: the three races of §0.5 stage 8 on the unique receipt index and the version condition.
+    // Review 01 F-2: the barrier stands at stage 8, so every request has passed stages 5 and 6 and the overlap is certain, not likely.
+    private static void HoldAtStage8(SupplierPerformanceHost h, int requests)
+    {
+        var arrived = 0;
+        var open = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        h.Probe.At = boundary =>
+        {
+            if (boundary != "submit") return Task.CompletedTask;
+            var turn = Interlocked.Increment(ref arrived);
+            if (turn > requests) return Task.CompletedTask; // a transient retry
+            if (turn == requests) open.TrySetResult();
+            return open.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        };
+    }
+
+    // The three races of §0.5 stage 8, each on the version condition and the re-run of stage 5.
     [Fact]
     public async Task Race_SameKeyAndBody_ShouldAnswer200ToAllAndPublishOnce()
     {
         await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         var id = await Draft(h);
 
-        var answers = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => h.Submit(id)));
+        HoldAtStage8(h, 6);
+
+        var answers = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => Task.Run(() => h.Submit(id))));
 
         Assert.All(answers, a => Assert.Equal(HttpStatusCode.OK, a.Status));
         Assert.Single(answers.Select(a => Text(a.Body)).Distinct());
@@ -381,7 +402,9 @@ public sealed class SubmitSupplierEvaluationTests
         await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         var id = await Draft(h);
 
-        var answers = await Task.WhenAll(h.Submit(id), h.Submit(id, SubmitBody("2026-10-03T09:00:00Z")));
+        HoldAtStage8(h, 2);
+
+        var answers = await Task.WhenAll(Task.Run(() => h.Submit(id)), Task.Run(() => h.Submit(id, SubmitBody("2026-10-03T09:00:00Z"))));
 
         Assert.Single(answers, a => a.Status == HttpStatusCode.OK);
         Assert.Single(answers, a => a.Code == "IDEMPOTENCY_KEY_REUSED");
@@ -394,7 +417,9 @@ public sealed class SubmitSupplierEvaluationTests
         await using var h = new SupplierPerformanceHost(rebuildIndexes: true);
         var id = await Draft(h);
 
-        var answers = await Task.WhenAll(h.Submit(id, key: "a"), h.Submit(id, key: "b"));
+        HoldAtStage8(h, 2);
+
+        var answers = await Task.WhenAll(Task.Run(() => h.Submit(id, key: "a")), Task.Run(() => h.Submit(id, key: "b")));
 
         Assert.Single(answers, a => a.Status == HttpStatusCode.OK);
         Assert.Single(answers, a => a.Code == "VERSION_CONFLICT");
