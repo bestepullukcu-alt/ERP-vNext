@@ -35,6 +35,8 @@ namespace Diten.Web.Tests.Controllers;
 /// W12 — the form as the real view draws it, through the real MVC model binder and antiforgery check.
 /// MOD-0230 WP-0230-DL7B-R1: W13 — the real view draws the bridge with the camelCase keys its loader turns to PascalCase;
 /// W14 — the read proxy paths (Options, Detail) carry the verified identity, and without a tenant claim make no call.
+/// MOD-0230 WP-0230-DL7C: W15 — every screen draws the bridge, the loader and its own script, once each and in that order;
+/// W16 — the bridge carries the shared RecordSaved text; W17 — both date inputs of the form accept seconds.
 /// </summary>
 public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -723,6 +725,75 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
 
         Assert.Equal(StatusCodes.Status401Unauthorized, Assert.IsType<ContentResult>(refused).StatusCode);
         Assert.Empty(refusedWire.Requests);
+    }
+
+    // ------------------------------------------------------------------------------------------------ W15
+
+    [Theory]
+    [InlineData("Create", Create, "form.js")]
+    [InlineData("Edit", Update, "form.js")]
+    [InlineData("Details", Read, "details.js")]
+    [InlineData("Index", Read, "index.js")]
+    public async Task Every_screen_draws_the_bridge_then_the_loader_then_its_own_script(string page, string key, string script)
+    {
+        var path = page switch
+        {
+            "Index" => string.Empty,
+            "Create" => "/Create",
+            _ => $"/{page}/{DraftId}"
+        };
+
+        var html = await DrawnHtmlAsync($"/Pharmacovigilance/CaseIntakeTriage{path}", key);
+
+        var inOrder = new[] { "id=\"pvg-case-intake-triage-l10n\"", "CaseIntakeTriage/index.l10n.js", $"CaseIntakeTriage/{script}" };
+        foreach (var marker in inOrder)
+        {
+            Assert.True(Regex.Matches(html, Regex.Escape(marker)).Count == 1, $"{page}: {marker} is not drawn exactly once");
+        }
+
+        var positions = inOrder.Select(marker => html.IndexOf(marker, StringComparison.Ordinal)).ToArray();
+        Assert.True(positions[0] < positions[1] && positions[1] < positions[2], $"{page}: {string.Join(", ", positions)}");
+    }
+
+    // ------------------------------------------------------------------------------------------------ W16
+
+    [Fact]
+    public async Task The_bridge_carries_the_shared_RecordSaved_text()
+    {
+        var html = await DrawnHtmlAsync("/Pharmacovigilance/CaseIntakeTriage/Create", Create);
+
+        var payload = Regex.Match(html, "<script id=\"pvg-case-intake-triage-l10n\" type=\"application/json\">([\\s\\S]*?)</script>");
+        Assert.True(payload.Success, "the page drew no bridge");
+        using var bridge = JsonDocument.Parse(payload.Groups[1].Value);
+        Assert.True(bridge.RootElement.TryGetProperty("recordSaved", out var saved), "the bridge has no recordSaved");
+        Assert.False(string.IsNullOrWhiteSpace(saved.GetString()));
+        Assert.NotEqual("RecordSaved", saved.GetString());
+    }
+
+    // ------------------------------------------------------------------------------------------------ W17
+
+    [Theory]
+    [InlineData("ReceivedAtUtc")]
+    [InlineData("AwarenessAtUtc")]
+    public async Task Both_date_inputs_of_the_form_accept_seconds(string field)
+    {
+        var html = await DrawnHtmlAsync("/Pharmacovigilance/CaseIntakeTriage/Create", Create);
+
+        // The input's own tag: an attribute of the other input cannot answer for this one.
+        var input = Regex.Match(html, $"<input\\b[^>]*\\bname=\"{field}\"[^>]*>");
+        Assert.True(input.Success, $"{field} is not drawn");
+        Assert.Contains("type=\"datetime-local\"", input.Value, StringComparison.Ordinal);
+        Assert.Contains("step=\"1\"", input.Value, StringComparison.Ordinal);
+    }
+
+    private async Task<string> DrawnHtmlAsync(string url, string key)
+    {
+        var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        using var host = HostOver(new Wire(ListAnswer), signingKey);
+        using var client = host.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false });
+        using var page = await GetAsync(client, url, Token(signingKey, key));
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+        return await page.Content.ReadAsStringAsync();
     }
 
     private WebApplicationFactory<Program> HostOver(Wire wire, string signingKey) =>
