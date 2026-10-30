@@ -3,12 +3,12 @@
     contract       : CRM-ACCOUNT-LOOKUP
     version        : 1.0.0
     x-status       : DRAFT — öneri; MOD-0149 pack "Treasury AR tüketimi (MOD-0120)" eki CT-APR-02 / CT-APR-01'den geçmeden
-                     ve eki teslim satırı (AR-EK-1) kabul edilmeden dondurulmaz
+                     ve eki teslim dilimleri (pack §31 DL-1, DL-2) kabul edilmeden dondurulmaz
     x-owner        : MOD-0149 Customer 360 / Account Hierarchy (commercial-suite, Diten.CrmService, port 5061)
     x-consumers    : MOD-0120 Accounts Receivable (`ICustomerReferencePort`); ileride başka Treasury / O2C tüketicileri
     x-decisions    : Y-4/4b (uçlar + sözleşme eki kabul), Y-4/4c (`account-status` kümesi, faturalanabilir yalnız `active`)
                      — docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35;
-                     MOD-0120 O-3 (KARAR D29/1, seçenek (a)), O-4
+                     MOD-0120 O-3 (KARAR D29/1, seçenek (a)), O-4; K-1, K-2, K-3 (commercial-suite sahibi Beste, 2026-10-30)
     x-pattern      : LEGAL-ENTITY-LOOKUP 1.1.0 ve BANK-ACCOUNT-LOOKUP 1.0.0
                      (docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md,
                      docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md)
@@ -141,9 +141,9 @@ Küme MOD-0048 `account-status` setidir (kiracı kapsamlı); CRM değeri sakland
 | `inactive` | `false` | Y-4/4c |
 | `draft` | `false` | Y-4/4c |
 | `suspended` | `false` | Y-4/4c |
-| `archived` | `false` | **AÇIK KARAR (Beste)** — referans verisi şablonunda var (`docs/records/audits/2026-08/mod-0149-crm-reference-data-authoring-template.json`, `account-status` 5. değer), Y-4/4c'de yok |
+| `archived` | `false` | **K-2** (Beste, 2026-10-30) — referans verisi şablonunda var (`docs/records/audits/2026-08/mod-0149-crm-reference-data-authoring-template.json`, `account-status` 5. değer) |
 
-- **CT önerisi (`archived` için):** beş değerin hepsi yayımlanır, faturalanabilir yalnız `active`. Gerekçe: yazma yolu
+- **Karar K-2 (`archived`):** beş değerin hepsi yayımlanır, faturalanabilir yalnız `active`. Gerekçe: yazma yolu
   MOD-0048'de yayımlanmış her kodu kabul eder (`AccountReferenceValidation.cs:25`); şablon yayımlandıysa `archived`
   hesap vardır ve tüketici sözleşmede adı geçmeyen bir kod görmemelidir.
 - Kümede olmayan bir kod (ileride MOD-0048'e eklenen değer, eski veri) da `isBillable = false` döner; CRM 200'ü
@@ -160,7 +160,7 @@ geçiş yok"; Runtime Constraints "Müşteri uygunluğu güncel durumdur"):
 | 200; `accountId` istenen (U-2'de: dolu, UUID) ; `contractVersion` `crm-account-lookup/1.` ile başlar; `isBillable = true`; `status = "active"` | uygun | işlem sürer |
 | 200, tutarlı; `isBillable = false` (herhangi bir `status`) | tanımlı, uygun değil | 422 `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE` |
 | 404 (U-1 ya da U-2) | bulunamadı (yok / silinmiş / başka kiracı / eşleşmeyen dış referans) | 422 `RECEIVABLE_CUSTOMER_NOT_FOUND` |
-| 409 (U-2, çoklu eşleşme) | veri bozulması — hesap belirlenemez | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` (CT önerisi; tahmin yapılmaz) |
+| 409 (U-2, çoklu eşleşme) | belirsiz — veri bozulması, hesap belirlenemez | **Üretici kuralı K-3:** tahmin yok, hesap seçilmez, işlem durur; kalıcı hata (tekrar denemek çözmez) → öneri 422 ayrı kod (ör. `RECEIVABLE_CUSTOMER_AMBIGUOUS`), 503 değil; kod adı MOD-0120 sahibinin |
 | 200 ama `accountId` yok / farklı; `isBillable` yok / `null`; `isBillable = true` iken `status ≠ "active"`; `status` / `code` / `name` yok ya da boş; `contractVersion` yok ya da `1.` değil; gövde ayrıştırılamıyor / `data` yok | geçersiz / çelişkili | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` |
 | 400, 401 / 403 (izin ataması eksik dahil), 5xx (CRM 503 dahil), zaman aşımı, ulaşılamıyor | erişilemiyor | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` |
 
@@ -169,16 +169,20 @@ sayılmaz ve hiçbirinde AR kaydı yazılmaz (geçiş yok). Karşılaştırmalar
 `code` / `name`'i yalnız anlık görüntü alanlarına yazar (MOD-0120 `CustomerCodeSnapshot` / `CustomerNameSnapshot`);
 anlık görüntü uygunluk yerine geçmez.
 
-## 6. İzin — AÇIK KARAR (commercial-suite sahibi, Beste)
+**K-3 (üretici kuralı, Beste 2026-10-30):** 409'da tüketici adaylardan birini seçmez; "ilk satır" ya da "en yeni" gibi
+bir kural uygulamaz. 503 "geçici, sonra tekrar dene" anlamına geldiği için kullanılmaz: hata kalıcıdır ve kullanıcıya
+"bu dış numara birden çok müşteriye bağlı; CRM'de düzeltilmeli" türünden bir gerekçe gösterilir. Düzeltme CRM'de
+mükerrer `AccountExternalReference` satırının temizlenmesidir.
+
+## 6. İzin — KARAR K-1 (commercial-suite sahibi, Beste, 2026-10-30)
 
 - Amaç: AR kullanıcısına `crm.account.read` **vermemek** (MOD-0120 O-3 (b) reddedildi: CRM okuma yetkisi + sözleşmesiz).
   İki uç ayrı, dar bir okuma anahtarıyla korunur; anahtar yalnız bu doğrulama yanıtını açar, hesap kaydını açmaz.
-- **Aday:** `crm.account.lookup`. PKS-001 (`.antigravity/rules/permission-key-standard.md`) ölçümü: biçim geçerli
-  (3 segment, `^[a-z][a-z0-9-]*$`, §1), ama son segment `lookup` §5 eylem sözlüğünde yok (Tier-1/Tier-2 değil, Tier-3
-  örneklerinde yok) → kullanılırsa MOD-0149 pack'inde Tier-3 eylem olarak kaydedilmelidir (§5 Tier-3 kuralı).
-- **Alternatif (sözlükte var):** `crm.account.lookup-validation` — Tier-3 örneklerinde `lookup-validation` var; emsal
-  anahtar `auth.users.lookup-validation` (§8.3).
-- Anahtar bu sözleşmede **kesinleşmez**. Ayrı işler (bu sözleşmenin dışında): Auth katalog kaydı (MOD-0018), AR
+- **Anahtar: `crm.account.lookup-validation`** (K-1). PKS-001 (`.antigravity/rules/permission-key-standard.md`):
+  3 segment, `^[a-z][a-z0-9-]*$` (§1); `lookup-validation` Tier-3 eylem sözlüğünde var; emsal
+  `auth.users.lookup-validation` (§8.3). Değerlendirilip seçilmeyen aday: `crm.account.lookup` (sözlükte yok).
+- `crm.account.read` bu uçlara yetmez; tek başına `crm.account.read` sahibi 403 alır.
+- Ayrı işler (bu sözleşmenin dışında): Auth katalog kaydı (MOD-0018), AR
   rollerine atanması (MOD-0018-FU27 Treasury Auth eki ya da sahibinin seçtiği yer), CRM rol eşlemesi (MOD-0149 §16
   tablosu). Anahtar atanmamış kullanıcıyla çağrı 403 → tüketici 503 (§5).
 - Veri kapsamı: MVP kiracı kapsamı (MOD-0149 §16). Bölge / temsilci kapsamı (MOD-0018-FU15) ileride `crm.account.read`'e
@@ -222,7 +226,7 @@ aynı fikstürleri kendi `ICustomerReferencePort` sınıflandırıcısına karş
 | F-UNK | `status = closed` (kümede yok), `isBillable = false` | 422 NOT_ELIGIBLE |
 | F-404 | yok / silinmiş / başka kiracı (üç fikstür, gövdeleri bayt bayt aynı) | 422 NOT_FOUND |
 | F-R404 | U-2 eşleşme yok; `oldcrm` ile `OldCRM` kaydı (harf farkı) | 422 NOT_FOUND |
-| F-R409 | U-2 iki etkin aday satır | 503 |
+| F-R409 | U-2 iki etkin aday satır | 422 belirsiz (K-3; kod adı MOD-0120'nin) |
 | F-C1 | `isBillable = true` + `status = suspended` | 503 |
 | F-C2 | `accountId` farklı | 503 |
 | F-C3 | `isBillable` yok | 503 |
@@ -242,11 +246,14 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
 
 | # | Karar | Sahip | CT önerisi |
 |---|---|---|---|
-| K-1 | İzin anahtarı: `crm.account.lookup` (Tier-3 kaydı ister) ya da `crm.account.lookup-validation` (sözlükte var) | commercial-suite (Beste) | sahibin seçimi; anahtar seçilince Auth katalog + AR rol ataması ayrı iş |
-| K-2 | `archived` sözleşmede yayımlanır mı | commercial-suite (Beste) | evet, `isBillable = false` |
-| K-3 | U-2 409'un tüketici eşlemesi (503) | MOD-0120 sahibi | 503 (tahmin yok) |
-| K-4 | Gateway: mevcut joker rota yeterli mi (§8) | integration-agent | yeterli; yalnız teyit |
+| K-1 | İzin anahtarı | commercial-suite (Beste) | **KAPANDI 2026-10-30:** `crm.account.lookup-validation`; Auth katalog + AR rol ataması ayrı iş |
+| K-2 | `archived` sözleşmede yayımlanır mı | commercial-suite (Beste) | **KAPANDI 2026-10-30:** evet, `isBillable = false` |
+| K-3 | U-2 409 karşısında tüketici davranışı | kural: commercial-suite (Beste); kod adı: MOD-0120 sahibi | **ÜRETİCİ KURALI 2026-10-30:** tahmin yok, işlem durur, kalıcı hata → öneri 422 ayrı kod (503 değil) |
+| K-4 | Gateway: mevcut joker rota yeterli mi (§8) | integration-agent | **KAPANDI (sahip) 2026-10-30:** yeterli; integration-agent teyidi yalnız not |
+| K-7 | U-2'nin MOD-0120'deki kullanım yeri (bu sürümde içe aktarma yok, O-10) | MOD-0120 sahibi | **AÇIK — soru gönderildi.** Çağıran yoksa U-2 (pack DL-2) içe aktarma gelene kadar ertelenir; U-1 (DL-1) bağımsız |
 
 ## 12. Değişiklik geçmişi
 
 - 1.0.0 (2026-10-30) — ilk yazılı sürüm; MOD-0120 O-3 / O-4 ve Y-4/4b, Y-4/4c'den; MOD-0149 pack eki ile birlikte.
+- 1.0.0 (2026-10-30, aynı gün, taslak düzeltmesi) — sahip kararları: K-1 anahtar, K-2 `archived`, K-3 üretici kuralı
+  (409 → tahmin yok, kalıcı hata); K-7 MOD-0120 sahibine soru.
