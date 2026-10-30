@@ -61,14 +61,14 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 9. **DataTables DOM Manipülasyonu:** `.antigravity/rules/frontend-js-standard.md` madde 2.
    - **Inline Filter Hizası:** Inline filter host'u `px-3` alır (`mx-*` değil). Kaynak: `.antigravity/rules/frontend-js-standard.md` "JavaScript Master Template" inline filter yerleştirme kodu.
    - **Shared CSS Standardı:** `frontend-datatable-template.md` MANDATES "Shared CSS Placement".
-10. **Geniş Form Tasarımı:** 10'dan fazla input içeren formlar mutlaka `col-md-6` grid yapısı ve mantıksal `card` blokları ile gruplandırılmalıdır.
+10. **Geniş Form Tasarımı:** Alan sayısına göre Slim ya da Compact: `frontend-datatable-template.md` başlangıcı. Compact form düzeni: aynı dosya "Compact Form/Details Section Contract"; örnek `Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml`.
    - Compact kart paritesi: `frontend-standards.md` UI-024.
    - Boolean HTML attribute: `frontend-form-template.md` MANDATES.
 11. **TempData & Toast Senkronizasyonu:** `.antigravity/rules/frontend-form-template.md` "Kayıt sonrası başarı bildirimi".
 12. **Delete Toast Parity:** tekil ve toplu silme, endpoint sahipliği: `frontend-js-standard.md` madde 7.
     - Bulk/action bağlama ve action kolonu: `frontend-js-standard.md` madde 7.1.
 13. **SweetAlert / Modal Tema:** `premium-modal-standard.md` §1.
-    - Backbone/Sneat desktop layout'ta sol menü açıkken modal açılınca header/navbar kaymamalıdır. Bu durum için global `scrollbarPadding`, `heightAuto`, `scrollbar-gutter` veya genel `swal2-shown` body/html hack'i eklenmez; doğrulanmış çözüm `backbone-custom.css` içinde açık sidebar + `html.swal2-shown` navbar offset override'ıdır.
+    - Sol menü açıkken modal açılınca navbar kaymasın diye sayfaya global body/html override yazılmaz: `frontend-datatable-template.md` UI-019 (paylaşılan düzeltme `backbone-custom.css` içindedir).
 14. **DataTables Button Group:** Save View butonunun görünürlüğü değiştiğinde buton grubu köşeleri paylaşılan `window.DtDefaults.refreshButtonGroupRadii()` çağrısıyla düzeltilir (`.antigravity/rules/frontend-js-standard.md` madde 13 "Radius Fix"). Yeni kodda markup'ta `style="…"` ya da JS'te statik stil için `element.style.setProperty()` yazmak FG-003 ihlalidir (`docs/roadmap/backlog/product-backlog.md` FG-003; `frontend-standards.md` UI-001). `dt-defaults.js` içindeki mevcut `setProperty` kullanımı bilinen eski koddur, örnek alınmaz.
 15. **DataTable Bulk Action:** Toplu işlem barındaki silme butonu her zaman `btn-label-danger` olmalıdır.
 16. **Seçim Estetiği:** Seçili satır rengi paylaşılan `wwwroot/assets/css/backbone-custom.css` içindedir; sayfada yeniden yazılmaz.
@@ -79,8 +79,8 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 21. **API Çağrıları:** `frontend-js-standard.md` madde 4 ve "Yasak Pratikler".
 22. **Column Reorder Standardı:** `frontend-js-standard.md` madde 11. Custom sortable header yaklaşımı YASAKTIR.
 23. **Save View CTA Standardı:** `frontend-js-standard.md` madde 10.1.
-24. **Inline Filter Select2 Contractı:** Inline filter Select2 kurulumunda `dropdownParent: $(document.body)`, `dropdownCssClass: 'dt-inline-filter-dropdown'`, `width: 'element'` zorunludur. `dropdownParent: $select.parent()` ve `width:'100%'` kullanımı yasaktır.
-25. **Inline Filter Field Type:** Domain, Service, Category, Type, Owner, Status gibi sınırlı değer kümesi olan filtreler text search input olarak tasarlanmaz. GoldenReference gibi `filter-chip` içinde Select2 kullanılır; çoklu seçim gerekiyorsa `multiple="multiple"` ve `syncMultiSelectSummary` ile label/count/clear davranışı zorunludur. Single select filtrelerde boş `ShowAll` option korunur.
+24. **Inline Filter Select2 Contractı:** `frontend-js-standard.md` madde 12 "Inline Filter Select2 — Zorunlu Init Paterni".
+25. **Inline Filter Field Type:** `frontend-js-standard.md` madde 12 "Filtre alan tipi kararı" ve madde 13 (çoklu seçim özeti); `frontend-datatable-template.md` "`_Filter.cshtml` Minimum Şablonu".
 26. **Details Tab/Navbar Standardı:** `frontend-details-template.md` MANDATES.
 
 ## 📐 Layout & View Architecture Rule

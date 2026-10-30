@@ -21,7 +21,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 - **Projection (Zorunlu):** Handler içinde asla `Entity` sınıfının tamamını dönme. Sadece ihtiyaç duyulan alanları içeren `Dto` sınıflarına `Select` (Projection) yap.
 - **Salt-okunur sorgular:** Proje MongoDB sürücüsünü kullanır; Entity Framework'teki `.AsNoTracking()` burada yoktur. Okuma (Query) işlemlerinde yalnız gereken alanları projection ile getir (`erp-architecture.md` → Tracking).
 - **Dictionary Lookup:** İç içe `foreach` veya `FirstOrDefault` döngüleri yerine, eşleştirme işlemleri için `ToDictionary` kullan.
-- **Pagination:** 50'den fazla kayıt dönecek tüm listelerde `Skip` ve `Take` (Server-side) zorunludur.
+- **Pagination:** Listenin sunucu mu istemci mi olacağı: `.antigravity/rules/frontend-datatable-template.md` "Veri modeli (`data_mode`)". Sunucu modunda handler `Skip` ve `Take` uygular.
 
 ### 2. MongoDB & Data Layer
 - **Tenant-Aware Indexing:** Tüm sorgular `TenantId` içerdiği için index'ler mutlaka `{ TenantId: 1, ... }` şeklinde bileşik (compound) olmalıdır.
