@@ -1263,7 +1263,7 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-27, Y-28 (`SOURCE-ANSWERS-2026-1
    seçilmedi. ar ve tr zaten tek tipti.
 3. **D103/3 — güven notu:** ar, ru, zh için anadil kontrolü yapılmadı (sahip notu); tablo bunu yazar.
 4. **D103/4 — yedi kaynak dosya:** sahip "tablo + 7 kaynak dosya" istedi. `SharedResource.{lang}.resx` bugün yalnız 4 `RoleName_` satırı taşıyor;
-   27 satır FU27 kod dilimiyle gelir ve paket taslak olduğu için bu kayıt onları yazmaz (Çekirdek 7). K1'e soruldu.
+   27 satır FU27 kod dilimiyle gelir ve paket taslak olduğu için bu kayıt onları yazmaz (Çekirdek 7). **K1 kararı (soru kutusu, 2026-10-30, "Kod dilimiyle"):** yedi dosya FU27 kod diliminde yazılır; o güne kadar tek kaynak Bölüm 14.2 tablosudur. Ali'ye bildirilir.
 5. **D103/5 — açık kalanlar:** D80/2 (a) için FU27 son hâli teyidi, D99/1, Tag rol adları (Y-27: kontrol sürüyor); D80/2 (b) cevabı (Y-28: not metni
    bekleniyor); MOD-0220 §22 tutuşu #313 merge'üne bağlı (Y-27). #313: yeni onay satırı, açık, merge Beste'de.
 6. **D103/6 — sürüm:** FU27 sha değişti; CT-APR-02 yeni sürüm için tekrar gerekir.
