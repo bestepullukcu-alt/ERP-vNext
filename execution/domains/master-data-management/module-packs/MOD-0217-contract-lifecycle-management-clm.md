@@ -1529,21 +1529,21 @@ main'de olmalıdır.
 - [x] O-1 MOD-0144 sınırı karara bağlandı — **KARAR D39 (2026-10-26): (a)** — satın alma / tedarik sözleşmeleri MOD-0144'te;
   MOD-0217 satın alma dışı; `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz; procurement sahibine bilgi verilir (D39/3)
 - [x] O-4 `mdm.contracts.*` anahtar listesi — **KARAR D41/1 (2026-10-26; treasury-intake-owner-decisions-04.md)** — pack'teki liste; `read-tenant-wide` yalnız açık atama; D49/2 ile `mdm.contracts.value.write` eklendi
-- [ ] Auth paket metni main'de **ve MOD-0018 sahibinin teyidi** (**KARAR D70/3**: metnin main'de olması tek başına yetmez; teyit karar dosyasına kaynak olarak yazılır) — **şartlı teyit, Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`): bu paketin DL-1'ini bekletmez; iki şart (K-W5 denetim izi için defter kararı; rol atama adımlarının — rola izin bağlama, kişiye rol verme — denetim borcu) Auth ekinin DL-5 kodundan önce kapanır; D79'dan sonraki değişiklikler (7 dil tablosu vb.) sahip teyidine ayrıca gider; açık kalan: o ayrı teyit ve D80'in main'e girmesi (D62/1) — MOD-0018 Treasury Auth eki `execution/domains/platform-shared-services/module-packs/MOD-0018-FU27-treasury-permission-onboarding.md` (FU27 — K-1 kapandı, Y-19 / D80/1; Treasury yazar, MOD-0018
+- [x] Auth paket metni main'de **ve MOD-0018 sahibinin teyidi** (**KARAR D70/3**: metnin main'de olması tek başına yetmez; teyit karar dosyasına kaynak olarak yazılır) — **şartlı teyit, Y-19 / KARAR D80/2** (D69–D78 sürümü, main `4c08fc75a`): bu paketin DL-1'ini bekletmez; iki şart (K-W5 denetim izi için defter kararı; rol atama adımlarının — rola izin bağlama, kişiye rol verme — denetim borcu) Auth ekinin DL-5 kodundan önce kapanır; D79'dan sonraki değişiklikler (7 dil tablosu vb.) sahip teyidine ayrıca gider; açık kalan: o ayrı teyit ve D80'in main'e girmesi (D62/1) — MOD-0018 Treasury Auth eki `execution/domains/platform-shared-services/module-packs/MOD-0018-FU27-treasury-permission-onboarding.md` (FU27 — K-1 kapandı, Y-19 / D80/1; Treasury yazar, MOD-0018
   sahibi teyit eder — Y-15, Y-16): o paketin DL-3'ünde `mdm.contracts.*` anahtarları (18 — `mdm.contracts.versions.approve` dahil, KARAR D69), açık atama anahtarları
-  (`read-tenant-wide`) ve rol şablonları (4 — sözleşme onaylayıcı dahil; D9; rol matrisi D46–D50, D69; **KARAR D53/1**)
+  (`read-tenant-wide`) ve rol şablonları (4 — sözleşme onaylayıcı dahil; D9; rol matrisi D46–D50, D69; **KARAR D53/1**) — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D82/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [ ] Auth kayıt kodu (`mdm.contracts.*` kaydı — o ekin DL-3 kodu) main'de — MOD-0217 onayından sonra, DL-1 kabulünden önce; DL-1 testleri gerçek izinle (**KARAR D53/2**) — DL-1 için (kabul kapısı)
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
 - [ ] RCS-001 ortak kod servisi (BL-565) main'de — sahibi Beste (D44); v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-20)
-- [ ] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
+- [x] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
   eki)** (`…/MOD-0018-FU27-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform
   dosyaları için XMC-001 Beste — D63/2): Platform izin
   listesine `mdm.contracts.*` anahtarları ve MDM istemcisinin modül kodu (bugün iki taraf `product-item-sku-master`'a sabit —
   Dependencies SEC-002 satırı) (**KARAR D56/1**; D53/1 deseni). Ölçüm maddesi değildir (eski "sağlayıcının `mdm.contracts.*`
   anahtarlarıyla çalıştığı ölçüldü" maddesi 2026-10-27 ölçümüyle olumsuz kapandı ve bu maddeye dönüştü); kod değişikliği bu
-  paketin Repo Scope'unda değildir
+  paketin Repo Scope'unda değildir — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D83/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [ ] SEC-002 sağlayıcısı eki kodu (o ekin DL-4 kodu) main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
 - [x] O-6 denetim defteri ve K2 — **KARAR D41/3 (2026-10-26; treasury-intake-owner-decisions-04.md)** — `mdm-guvenilir-kaynak-niyeti` genişletmesi; K2 = onay sonucu, imza, fesih;
   borç yok; CT-DECISIONS satırı kod aşamasında
@@ -1583,8 +1583,8 @@ main'de olmalıdır.
   tabanı **KARAR D66/1** ile yazıldı (Auth aday sorgusu, hazırlayan hariç — Authorization Convention, AC-33); sorgunun anahtarı
   `mdm.contracts.versions.approve` — **KARAR D69** (O-3 (b) kapandı), iş akışı izniyle kesişim `∩ platform.workflow.tasks.approve`
   — **KARAR D71** (MOD-0018 eki K-A4b kapandı); örnek durum adları ölçülmedi — DL-3 için
-- [ ] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
-  sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1; D66 main'de, PR #281) — DL-3 için
+- [x] Aday sorgusu MOD-0018 Treasury Auth ekinin **DL-6** paket metninde tanımlı ve main'de (Bölüm 8.6; Treasury yazar, MOD-0018
+  sahibi teyit eder — **KARAR D66/1**; DL-6 paket kapısı D66'nın main'e girmesi — D62/1; D66 main'de, PR #281) — DL-3 için — **işaretlendi: şartlı teyit (Y-19 / KARAR D80/2 → KARAR D82/1);** şart — K-W5 defteri ve rol atama denetimi MOD-0018 Treasury Auth ekinin DL-5 kodundan önce (FU27, D80/2 (a)(b) maddeleri açık).
 - [ ] O ekin DL-6 kodu main'de (**KARAR D66/1**, **D67/1** — aday sorgusu ekin DL-6'sı, kodu bu dilimin kabul kapısı; D53 / D56/3 deseni) — DL-3 için (kabul kapısı)
 - [x] MOD-0023 §17 rev 2 (803fbaa5…, PR #235) onaylı (CT-APR-02/01 — `execution/approvals/approvals.tsv:16`, 2026-10-26, #243): `by-objects` / `history` okuma alanları (`idempotencyKey`,
   `isDeleted`, `approvalTaskId`), `includeDeleted=true`, kapanış kaydı anlamı — DL-3 için. Kod MOD-0023 sahibinin WP'siyle gelir;
