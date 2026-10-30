@@ -324,10 +324,10 @@ public class CiServiceTestsGuardTests
         Assert.Equal(reference, Regex.IsMatch(line, SecretReference));
     }
 
-    private static void AssertReadOnlyAndPinned(string workflow)
+    private static void AssertReadOnlyAndPinned(string workflow, string? name = null)
     {
-        var code = Code(workflow);
-        AssertOneReadOnlyToken(code);
+        var code = WithoutTokenGrant(Code(workflow), name);
+        AssertOneReadOnlyToken(code, name);
         Assert.DoesNotMatch(SecretReference, code);
 
         var uses = Uses(workflow);
@@ -356,7 +356,10 @@ public class CiServiceTestsGuardTests
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
     // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
-    private static readonly string[] NamedWorkflows = ["agent-adapters.yml", "phase1-gates.yml", "service-tests.yml"];
+    // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
+    // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
+    private static readonly string[] NamedWorkflows =
+        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -380,7 +383,7 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(KeyCount(code, "permissions") == 1, $"{name}: {KeyCount(code, "permissions")} permissions keys (block or flow, any case)");
-            AssertOneReadOnlyToken(code);
+            AssertOneReadOnlyToken(code, name);
         }
     }
 
@@ -392,7 +395,7 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
-            Assert.True(!Regex.IsMatch(code, SecretReference), $"{name}: reads a secret");
+            Assert.True(!Regex.IsMatch(WithoutTokenGrant(code, name), SecretReference), $"{name}: reads a secret");
             Assert.True(KeyCount(code, "on") == 1, $"{name}: {KeyCount(code, "on")} on: keys");
         }
     }
@@ -406,7 +409,7 @@ public class CiServiceTestsGuardTests
     [Fact]
     public void Every_action_in_every_workflow_is_at_its_one_recorded_commit()
     {
-        foreach (var name in NamedWorkflows) AssertReadOnlyAndPinned(WorkflowText(name));
+        foreach (var name in NamedWorkflows) AssertReadOnlyAndPinned(WorkflowText(name), name);
         Assert.Equal(ActionPins.Keys.Order(StringComparer.Ordinal),
             NamedWorkflows.SelectMany(name => Uses(WorkflowText(name))).Select(action => action[..action.IndexOf('@')])
                 .Distinct().Order(StringComparer.Ordinal));
@@ -419,7 +422,9 @@ public class CiServiceTestsGuardTests
     private static readonly Dictionary<string, string[]> ExpectedIfs = new(StringComparer.Ordinal)
     {
         ["agent-adapters.yml"] = [],
+        ["approvals-append-only.yml"] = [],
         ["phase1-gates.yml"] = [],
+        ["ui-compliance.yml"] = ["always()"],
         ["service-tests.yml"] =
         [
             "matrix.suite == 'mdm-app'",
@@ -446,7 +451,9 @@ public class CiServiceTestsGuardTests
     private static readonly Dictionary<string, int> ExpectedGithubEnvWrites = new(StringComparer.Ordinal)
     {
         ["agent-adapters.yml"] = 0,
+        ["approvals-append-only.yml"] = 0,
         ["phase1-gates.yml"] = 0,
+        ["ui-compliance.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its
@@ -743,7 +750,7 @@ public class CiServiceTestsGuardTests
 
     /// <summary>The single top-level token: `permissions:` at column 0 whose block is exactly `  contents: read`, blank lines
     /// included in the block (a key after a blank line still belongs to it).</summary>
-    private static void AssertOneReadOnlyToken(string code)
+    private static void AssertOneReadOnlyToken(string code, string? name = null)
     {
         Assert.True(!Regex.IsMatch(code, @"(?i)\b(?:write-all|read-all)\b"), "write-all / read-all");
         var lines = code.Split('\n');
@@ -751,7 +758,27 @@ public class CiServiceTestsGuardTests
         Assert.True(at >= 0, "no top-level `permissions:` block");
         var block = lines.Skip(at + 1).TakeWhile(line => line.Length == 0 || char.IsWhiteSpace(line[0]))
             .Where(line => line.Trim().Length > 0).ToArray();
-        Assert.Equal(["  contents: read"], block);
+        Assert.Equal(name is not null && TokenGrants.TryGetValue(name, out var grant)
+            ? ["  contents: read", grant.Permission] : ["  contents: read"], block);
+    }
+
+    /// <summary>
+    /// S-91 (owner-approved 2026-10-29, item 20 of the speed review): the ONE workflow that may read the job's own
+    /// GitHub token, read-only, to ask GitHub who merged an approval-exception row (pack_approval.py `history`).
+    /// Exactly one extra permission line and exactly one token line, both written here; no other secret, no write.
+    /// </summary>
+    private static readonly Dictionary<string, (string Permission, string TokenLine)> TokenGrants = new(StringComparer.Ordinal)
+    {
+        ["approvals-append-only.yml"] = ("  pull-requests: read", "          GH_TOKEN: ${{ github.token }}")
+    };
+
+    /// <summary>The code with its granted token line removed — the line must be there exactly once, verbatim.</summary>
+    private static string WithoutTokenGrant(string code, string? name)
+    {
+        if (name is null || !TokenGrants.TryGetValue(name, out var grant)) return code;
+        var lines = code.Split('\n');
+        Assert.True(lines.Count(line => line == grant.TokenLine) == 1, $"{name}: the granted token line must appear exactly once, verbatim");
+        return string.Join('\n', lines.Where(line => line != grant.TokenLine));
     }
 
     /// <summary>The trigger names under the top-level `on:` (to the next column-0 key; full-line comments already gone).</summary>

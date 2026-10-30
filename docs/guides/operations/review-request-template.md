@@ -31,13 +31,18 @@ Kaynak: ekteki ZIP (yeri ve sha256'sı son satırlarda) — önce ZIP'in sha256'
 Hedef belge: <paket yolu> @ sha256 <…> — tutmuyorsa dur ve bildir.
 Model · Effort: kullandığın modeli, effort'u ve oturum kimliğini yanıtın başına yaz; veremiyorsan "verilemiyor" yaz.
 [Yeniden incelemede: Ne değişti — <liste>. Kapandı iddiasındaki önceki bulgular — <F-n listesi>. Her iddiayı kendin ölç.]
-Görev: <ne incelenecek>
+Görev: <ne incelenecek>. ZIP'te eksik girdi varsa (atıf verilen ama ZIP'te olmayan dosya) bunu ayrı bir bulgu olarak yaz.
+[Yalnız ön incelemede: Ek: sık bulgu türleri — docs/guides/operations/pack-review-common-findings.md; en azından bunlara bak, yalnız bunlara bakma.]
 Çıktı: ilk satır `hedef: <paket yolu> @ <sha>`; her bulgu tek satırda `F-n | ENGEL|ORTA|DÜŞÜK | <metin> | açık | <K…> | <tarih>`;
-son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL.
+son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL. [Ön incelemede bulgu öneki `P-n`.]
 ZIP'in yeri: <mutlak yol>
 ZIP sha256: <64 hex>
 ```
 ````
+
+ZIP elle toplanmaz: `python3 scripts/review_zip.py build --pack <paket> --ref <commit> --out <dizin>` (S-99). Araç son
+iki satırı (`ZIP'in yeri`, `ZIP sha256`) basar; paket geliştirmeye hazır değilse ZIP kurmaz. AGENTS.md, kart ve SOP her
+ZIP'te vardır; prompt bunlardaki bir kurala atıf verebilir.
 
 ## 2. Sohbette sahibe (tek kopya, S-98)
 
