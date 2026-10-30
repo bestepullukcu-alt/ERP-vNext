@@ -15,6 +15,17 @@ settings files. Configuration names:
 - `DemandPlanning__HistoryUnitMode` (non-secret; `SingleUnitInterim` until MOD-0290 is live,
   then `ProductMasterV1` after the producer route is verified)
 
+Demand v2 DRAFT event delivery is disabled by default and cannot be enabled in
+Production. Development or IntegrationTest may opt in with
+`EventTransport__Enabled=true`, `EventTransport__RabbitMqHost`,
+`EventTransport__RabbitMqPort`, `EventTransport__RabbitMqVirtualHost`,
+`EventTransport__RabbitMqUsername` and `EventTransport__RabbitMqPassword`.
+The worker claims already committed revision outbox intents and records retry or
+delivery state. Delivery is at least once; consumers must deduplicate by event ID.
+The local Mongo/fake-transport tests do not prove RabbitMQ delivery or authorize
+live Demand v2 consumers. Superseded content remains closed until MOD-0189
+provides an approved server-verifiable bound-run contract.
+
 `JwtSettings__Issuer` and `JwtSettings__Audience` are non-secret and have the
 same values as the existing Auth/CRM configuration. No Gateway route is part of
 this service-owned setup.

@@ -31,6 +31,24 @@ internal static class DemandRevisionOutboxPayload
             integritySummary = IntegritySummary(manifest)
         });
 
+    public static string Superseded(PublishedRevisionManifest manifest, Guid eventId,
+        DateTimeOffset occurredAt) => JsonSerializer.Serialize(new
+        {
+            eventId,
+            eventVersion = DraftEventVersion,
+            eventType = "DemandRevisionSuperseded",
+            revisionId = manifest.RevisionId,
+            tenantId = manifest.TenantId,
+            legalEntityId = manifest.LegalEntityId,
+            planningCycleId = manifest.PlanningCycleId,
+            planningPeriodKey = manifest.PlanningPeriodKey,
+            newState = "Superseded",
+            stateVersion = manifest.StateVersion,
+            occurredAt,
+            scopeSummary = ScopeSummary(manifest),
+            integritySummary = IntegritySummary(manifest)
+        });
+
     public static string Invalidated(PublishedRevisionManifest manifest, Guid eventId,
         DateTimeOffset occurredAt, InvalidationImpactCode impactCode, string reason,
         string businessImpact, string evidenceReference, Guid actorId) =>

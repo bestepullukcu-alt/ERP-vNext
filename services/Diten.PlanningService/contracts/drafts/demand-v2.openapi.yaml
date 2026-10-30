@@ -23,6 +23,15 @@ x-scope-rules:
   - Draft routes currently use X-Legal-Entity-Id as an untrusted hint; central transport and live Platform/MDM authority contract remain open.
   - Every API response, cursor and event is bound to resolved Tenant, LegalEntity and data scope.
 x-retention-policy: Published, Superseded and Invalidated revisions are not auto-deleted until enterprise retention policy is set.
+x-row-pagination: >-
+  Published rows are ordered by lowercase SKU UUID (ordinal), warehouseId
+  (ordinal), then ascending weekNumber. The current service issues an opaque,
+  signed cursor bound to Tenant, LegalEntity, revisionId, checksum, contentVersion,
+  stateVersion, pageSize and the preceding row key; its lifetime is 30 minutes.
+  Clients must not parse or reuse the cursor across a revision, scope, page-size
+  or state change. Every page repeats authorization and full snapshot integrity
+  verification; expiry and changed state require a new read. Cursor encoding is
+  not a public compatibility contract while Demand v2 remains DRAFT.
 x-checksum-canonicalization: >-
   MOD0188-CANONICAL-1/SHA-256 remains byte-for-byte unchanged for all-manual
   snapshots. A snapshot containing any Method row uses
@@ -62,16 +71,16 @@ x-checksum-canonicalization: >-
 x-implementation-gaps:
   - Current-Published-by-period lookup is implemented only with fixture authority; live Platform/data-scope authority is unconfigured and fails closed.
   - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
-  - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
-  - Full external checksum recomputation from HTTP still needs independent consumer verification against every manifest and row field; this DRAFT is not frozen.
-  - Current publish transaction persists a Superseded state/audit but only a Published outbox record; separate Superseded outbox intent remains to be implemented and tested.
+  - Superseded content reading awaits the separately approved MOD-0189 persistent run-to-revision scope binding; status reading alone does not grant content access.
+  - Independent CANONICAL-1 and CANONICAL-2 recomputation from persisted Mongo documents and PlanningService HTTP manifest/rows is tested without producer checksum helpers; MOD-0189 still needs its own consumer verification against every manifest and row field. This DRAFT is not frozen.
+  - The publish transaction persists separate Published and, when replacing a baseline, Superseded outbox intents with both state changes and audit. An opt-in Development/IntegrationTest publisher can claim and retry committed intents; actual RabbitMQ delivery and live consumer compatibility remain unproven. Production delivery is disabled.
 x-open-design-decisions:
-  - Stable row ordering definition and opaque cursor encoding and expiry.
+  - Cursor expiry/encoding compatibility policy for a future frozen contract; current runtime behavior is recorded in x-row-pagination.
   - Atomic persistence, outbox and monotonic status fencing mechanism.
   - Idempotency retention and exact replay transport semantics.
   - Live LegalEntity selection, Platform assignment/exclusion and MDM company-reference contracts.
-  - Evidence that an MRP run is already bound to a Superseded revision.
-  - Event transport, topic and retry timing; no duration target is fixed here.
+  - MOD-0189-owned persistent runId, revisionId, Tenant, LegalEntity and cycle binding with an authorized server-side proof reader; until it exists Superseded content stays closed.
+  - Production event transport, topic and retry timing; no duration target is fixed here. The opt-in test publisher is not a freeze decision.
 paths:
   /forecast-runs/evaluation:
     get:
@@ -387,7 +396,7 @@ paths:
         - { $ref: '#/components/parameters/RevisionId' }
         - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
         - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 200 } }
-        - { name: cursor, in: query, required: false, schema: { type: string }, description: Opaque format remains open. }
+        - { name: cursor, in: query, required: false, schema: { type: string }, description: "Opaque signed cursor; scope, revision, checksum, content/state versions and page size are bound as described in x-row-pagination." }
       responses:
         '200': { description: Verified page in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionRowPageEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
