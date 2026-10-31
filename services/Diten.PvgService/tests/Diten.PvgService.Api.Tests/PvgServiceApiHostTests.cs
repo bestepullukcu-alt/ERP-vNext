@@ -106,6 +106,7 @@ public sealed class PvgServiceApiHostTests
             new[]
             {
                 "GET /api/v1/pv-case-intake-triage",
+                "GET /api/v1/pv-case-intake-triage/options",
                 "GET /api/v1/pv-case-intake-triage/{intakeDraftId}",
                 "GET /health/live",
                 "GET /health/ready",
@@ -142,6 +143,7 @@ public sealed class PvgServiceApiHostTests
             new[]
             {
                 PvgCaseIntakeTriageEndpoints.RoutePrefix,
+                $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/options",
                 $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}",
                 $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/route",
                 $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/triage"
@@ -149,6 +151,7 @@ public sealed class PvgServiceApiHostTests
             routeMethods.Keys.Order(StringComparer.Ordinal).ToArray());
 
         Assert.Equal(["GET", "POST"], routeMethods[PvgCaseIntakeTriageEndpoints.RoutePrefix].Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["GET"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/options"].Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(["GET", "PUT"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}"].Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(["POST"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/route"].Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(["POST"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/triage"].Order(StringComparer.Ordinal).ToArray());
@@ -900,6 +903,7 @@ public sealed class PvgServiceApiHostTests
             new[]
             {
                 "GET /api/v1/pv-case-intake-triage",
+                "GET /api/v1/pv-case-intake-triage/options",
                 "GET /api/v1/pv-case-intake-triage/{intakeDraftId}",
                 "GET /health/live",
                 "GET /health/ready",

@@ -17,7 +17,8 @@ public static class PvgCaseIntakeTriageEndpoints
         "void",
         "bulk",
         "bulk-delete",
-        "delete"
+        "delete",
+        "options"
     };
 
     public static IEndpointRouteBuilder MapPvgCaseIntakeTriageEndpoints(this IEndpointRouteBuilder endpoints)
@@ -25,6 +26,7 @@ public static class PvgCaseIntakeTriageEndpoints
         endpoints.MapPost(RoutePrefix, CreateDraftAsync).WithName("PvgCaseIntakeTriageCreateDraft").RequireAuthorization();
         endpoints.MapPut($"{RoutePrefix}/{{intakeDraftId}}", UpdateDraftAsync).WithName("PvgCaseIntakeTriageUpdateDraft").RequireAuthorization();
         endpoints.MapGet(RoutePrefix, ListDraftsAsync).WithName("PvgCaseIntakeTriageListDrafts").RequireAuthorization();
+        endpoints.MapGet($"{RoutePrefix}/options", GetOptions).WithName("PvgCaseIntakeTriageGetOptions").RequireAuthorization();
         endpoints.MapGet($"{RoutePrefix}/{{intakeDraftId}}", GetDraftByIdAsync).WithName("PvgCaseIntakeTriageGetDraftById").RequireAuthorization();
         endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/triage", TriageDraftAsync).WithName("PvgCaseIntakeTriageTriageDraft").RequireAuthorization();
         endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/route", RouteDraftAsync).WithName("PvgCaseIntakeTriageRouteDraft").RequireAuthorization();
@@ -141,6 +143,23 @@ public static class PvgCaseIntakeTriageEndpoints
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
+    }
+
+    // AC-34: the option sets come only from PvgIntakeOptionSets. The endpoint returns no tenant data and no record, so it
+    // checks the tenant context like the list endpoint but needs no actor or correlation, and reads no store, port, or
+    // permission gate.
+    public static IResult GetOptions(HttpContext httpContext)
+    {
+        var context = PvgCaseIntakeRequestContext.From(httpContext, requireActor: false, requireCorrelation: false);
+        if (!context.IsValid)
+        {
+            return ToHttpResult(PvgCaseIntakeApiResponse.Blocked(context.ReasonCode));
+        }
+
+        return Results.Ok(new PvgCaseIntakeOptionsResponse(
+            PvgIntakeOptionSets.ReportTypes.OrderBy(code => code, StringComparer.Ordinal).ToArray(),
+            PvgIntakeOptionSets.ProductRoles.OrderBy(code => code, StringComparer.Ordinal).ToArray(),
+            PvgIntakeOptionSets.UnknownCountry));
     }
 
     public static async ValueTask<IResult> TriageDraftAsync(
@@ -491,6 +510,11 @@ public sealed record PvgCaseIntakeApiResponse(
                 ? PvgCaseIntakeDraftResponse.From(result.Items[0], intake)
                 : null);
 }
+
+public sealed record PvgCaseIntakeOptionsResponse(
+    IReadOnlyList<string> ReportTypes,
+    IReadOnlyList<string> ProductRoles,
+    string UnknownCountry);
 
 public sealed record PvgCaseIntakeRequestContext(
     bool IsValid,

@@ -12,7 +12,8 @@
 #   5. Gateway PUT .../options with a valid token and body -> 404 (reserved segment)
 # then stops ONLY the two processes it started (by PID) and checks that both ports are free again.
 # Exit 0 = every check passed; 1 = a check failed; 3 = setup failed (port busy, build failed, a started process
-# never listened on its port - interim review 03 F-3, so a broken setup is never read as the red baseline).
+# never listened on its port - interim review 03 F-3, or a request got no HTTP answer at all, status 000 - interim
+# review 04 F-3: a started process that stops answering is a setup failure, never read as the red baseline).
 # Red baseline (before WP-0230-DL4D): check 2 fails - GET options is read as an intake draft id, goes to
 # GetDraftByIdAsync and answers 409 (Blocked or PVG_INTAKE_DRAFT_NOT_FOUND; ToHttpResult maps everything but
 # Succeeded / Invalid to 409), not 200; the Gateway route only maps path and method and passes the status through.
@@ -25,6 +26,7 @@ set -u
 PVG_PORT=5011
 GW_PORT=5000
 fail=0
+conn_fail=0
 pvg_pid=""
 gw_pid=""
 T=$(mktemp -d)
@@ -83,9 +85,8 @@ def token(tenant):
 (d / "aud").write_text(aud)
 (d / "tenant_a").write_text(tenant_a)
 (d / "tenant_b").write_text(tenant_b)
-(d / "token_a").write_text(token(tenant_a))
 (d / "auth_a").write_text("Authorization: Bearer " + token(tenant_a) + "\n")
-for f in ("secret", "token_a", "auth_a"):
+for f in ("secret", "auth_a"):
     (d / f).chmod(0o600)
 print("identity ready: two random tenants, one HS256 token, secret length", len(secret))
 PY
@@ -133,7 +134,13 @@ SVC="http://127.0.0.1:$PVG_PORT/api/v1/pv-case-intake-triage"
 AUTH_A="@$T/auth_a"   # curl reads the header from the file; the token never appears in an argument list
 
 # curl_to <out-body> <args...> -> prints the status code
-curl_to() { local out=$1; shift; curl -s --max-time 20 -o "$out" -w '%{http_code}' "$@"; }
+curl_to() {
+  local out=$1; shift
+  local s
+  s=$(curl -s --max-time 20 -o "$out" -w '%{http_code}' "$@")
+  echo "$s" >> "$T/statuses"
+  printf '%s' "$s"
+}
 
 echo "== 1. Gateway GET options without a token"
 s1=$(curl_to "$T/b1" "$GW/options")
@@ -197,6 +204,10 @@ s5=$(curl_to "$T/b5" -X PUT -H "$AUTH_A" -H "Content-Type: application/json" \
   -d '{"expectedVersion":1,"intakeChannel":"Email","sourceType":"Spontaneous","reportType":"Spontaneous"}' "$GW/options")
 echo "status $s5"
 check "5 PUT options -> 404" "$([ "$s5" = "404" ]; echo $?)"
+if grep -qx "000" "$T/statuses"; then
+  conn_fail=1
+  echo "SETUP FAIL: a request got no HTTP answer (status 000) - a started process stopped answering"
+fi
 
 echo "== gateway log lines for the route"
 grep -E "pv-case-intake-triage|5011" "$T"/gw.log | sed -E 's/[0-9a-f]{8}-[0-9a-f-]{27}/<id>/g' | head -10
@@ -208,5 +219,6 @@ for p in $PVG_PORT $GW_PORT; do
   if lsof -nP -iTCP:$p -sTCP:LISTEN >/dev/null 2>&1; then echo "FAIL: port $p still in use"; fail=1; else echo "port $p free"; fi
 done
 
+if [ "$conn_fail" = "1" ]; then echo "== exit 3"; exit 3; fi
 echo "== exit $fail"
 exit $fail

@@ -12,6 +12,8 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   söylemeli. (MOD-0230 2026-10-21-f1b56737)
 - Ortam iddiaları (yerel / dev / CI, Gateway, UI çalışıyor) paketin farklı bölümlerinde farklı. (MOD-0230 2026-10-21-f1b56737)
 - Alan ya da yüzey sayısı başlıktaki hesapla tutmuyor. (MOD-0230 2026-10-22-23c49893)
+- Geçici bir durum için yazılan kabul ölçütü (ör. "kaynak yokken yalnız X") koşulsuz yazılmış ve kaynak gelince geçerli
+  olacak kuralla çelişiyor. Geçici ölçüt, kural tablosundaki o duruma ("yok" satırı) bağlanır. (MOD-0230 2026-10-29-2d3f1177 F-2)
 - Durum tablosu ile kabul ölçütü aynı (durum, olay) çifti için farklı sonuç veriyor; bir tablo satırına istisna
   eklenince ("niyet iptal ise …") o durumu anan her AC ve başarısızlık yolu da güncellenmeli. (MOD-0280-FU02
   2026-10-29-878a24f0)
@@ -54,6 +56,9 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
 - "Kayıt tamamlanınca", "gerektiğinde" gibi tetikleyiciler; ne zaman ve hangi olayla olduğu yazmalı. (MOD-0230 2026-10-22-31f02845)
 - Özel ve sınır değerlerin kuralı yok ya da iki anlamlı: "bilinmiyor" değeri, liste geldikten sonraki doğrulama,
   sayfa boyutu üst sınırı ve sayfa eşlemesi. (MOD-0230 2026-10-22-23c49893 F-2/F-3, 2026-10-27-a51f2349)
+- Bir yasak ("kopya yok", "sabit değer yok") değerleri bütün dosyalarda arıyor; aynı değerleri meşru olarak kullanan
+  başka bir alan ya da eşleme kırmızı olur. Yasak, uygulandığı girdi kaynağına bağlanır ve meşru kullanımlar adıyla dışarıda
+  bırakılır. (MOD-0230 2026-10-29-2d3f1177 F-1)
 - Birlikte çalışması gereken iki davranış (ör. bağı kaldırma + otomatik eşleştirme) için ortak kabul ölçütü yok.
   (MOD-0230 2026-10-22-94cbb2d5)
 - Denetim (audit) tablosunda zorunlu okuma denetimi eksik: hassas bir kaydın tekil açılması da denetlenir
@@ -73,6 +78,12 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   (MOD-0280-FU02 2026-10-29-ea61e8c6 F-07)
 - Bir dilimin gerekli kanıt seviyesi işin riskinden düşük (ör. izin anahtarı ve gateway rotası yalnız smoke ile).
   (MOD-0280-FU02 2026-10-29-ea61e8c6 F-04)
+- Bir koruma birden çok alanı ya da yolu kapsıyor (ör. iki alan, ekleme ve güncelleme), ama olumsuz fixture ya da
+  sabotaj yalnız birini ölçüyor; öteki bozulunca test yeşil kalır. Her alan ve her yazma yolu için ayrı fixture ya da
+  senaryo yazılmalı. Değişikliği gösterecek değer (ör. farklı iki aktör) testte zorunlu olmalı.
+  (MOD-0230 2026-10-30-985e5755 F-1, F-2)
+- Bir DCP, üye modülün yeni dilim sırasını (ör. kalıcı depo → denetim) ve kural standardının zorunlu tuttuğu bölümü
+  (servis bazlı denetim altyapısı ve yolu) göstermiyor; modül paketinde yazılı olması yetmez. (DCP-004 2026-10-30-b8d838f6 F-1)
 
 ## 3a. Eşzamanlılık, tekrar ve yarıda kalan iş
 
