@@ -3,7 +3,7 @@ id: WP-0230-08
 title: Module manifest and catalog registration
 module: MOD-0230
 service: Diten.PvgService
-depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10]  # queue state: WP-0230-DL10 INTEGRATED; the others INTEGRATED or ACCEPTED
+depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10-R1]  # queue state: WP-0230-DL10-R1 INTEGRATED; the others INTEGRATED or ACCEPTED
 gate: pack revision 15 approved on main
 status: blocked
 estimate: 0.5 d
@@ -28,7 +28,7 @@ owner sees that reading when approving pack revision 15 (record, "CT okumaları"
 
 **Gate:** pack revision 15 approved on main. It is not approved yet, so this pack stays `blocked` and nothing here may be
 started. The kept-for-history sections below are not the contract. The contract is the pack's "Closed Catalog
-Registration" section and slice DL-11 (AC-36, AC-37, AC-38), whose prerequisites are in `depends_on` above (WP-0230-DL10 `INTEGRATED` first, KK-5, KK-7).
+Registration" section and slice DL-11 (AC-36, AC-37, AC-38), whose prerequisites are in `depends_on` above (WP-0230-DL10-R1 `INTEGRATED` first; KK-7, KK-12, `docs/records/decisions/2026-11/pvg-mod0230-kapali-kayit-05.md`).
 
 ## Do not start this pack
 
@@ -82,8 +82,8 @@ see "Decision (2026-10-31)" for why option A no longer holds.
 
 ## What is needed before this pack can move to `ready`
 
-Since 2026-10-31 the conditions are the gate above and `depends_on`: WP-0230-DL10 `INTEGRATED`, each other WP `INTEGRATED` or
-`ACCEPTED`. The list below is kept as history.
+Since 2026-10-31 the conditions are the gate above and `depends_on`: WP-0230-DL10-R1 `INTEGRATED` (WP-0230-DL10 went to `REWORK`
+on 2026-11-01), each other WP `INTEGRATED` or `ACCEPTED`. The list below is kept as history.
 
 - [x] You choose A, B, or C. Done 2026-10-31: B, narrowed ("Evet, sürsün").
 - [ ] If **A**: the carve-out is written into either `.antigravity/rules/module-self-registration-standard.md` (protected - needs your approval) or as a scoped, time-boxed exception recorded in the MOD-0230 pack and DCP-004 §20.
