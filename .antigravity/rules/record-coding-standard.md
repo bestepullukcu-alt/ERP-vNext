@@ -67,7 +67,7 @@ Notta adı geçen türler (bağlayıcı) + yeni türler için önerilen önekler
 | Nakit Eşik Politikası (MOD-0124) | OTOMATİK | `CTP` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
 | Banka (MOD-0289) | OTOMATİK | `BNK` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); kiracı geneli kayıt — şirket öneki yerine grup öneki |
 | Banka Hesabı (MOD-0289) | OTOMATİK | `BAC` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); şirket hesabında şirket öneki, tedarikçi hesabında grup öneki |
-| Sözleşme (MOD-0217) | OTOMATİK | `CTR` | yok — **yeni** (Treasury intake, sahip kararı D41/2, 2026-10-26; kod yok); şirket öneki yöneten şirketin kısa kodu |
+| Sözleşme (MOD-0217) | OTOMATİK | `AGR` | yok — **yeni** (Treasury intake, sahip kararı D41/2, 2026-10-26; önek D94/1, 2026-10-29: `CTR` MOD-0144 Procurement sözleşmelerinin kodu; kod yok); şirket öneki yöneten şirketin kısa kodu |
 
 ## 4. Ürün kimliği ailesi (KALSIN'ın kapsamı)
 
