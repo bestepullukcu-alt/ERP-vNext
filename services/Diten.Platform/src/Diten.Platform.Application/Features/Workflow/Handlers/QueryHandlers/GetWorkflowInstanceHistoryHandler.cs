@@ -114,7 +114,10 @@ public sealed class GetWorkflowInstanceHistoryHandler
                 log.Action == WorkflowTransitionAction.Start ? null : log.Comment,
                 log.ReasonCode,
                 log.CreatedAt,
-                log.SignatureId));
+                log.SignatureId,
+                log.ApprovalTaskId,
+                log.IdempotencyKey,
+                log.IsDeleted));
         }
 
         return Response<IReadOnlyList<WorkflowInstanceHistoryEntryDto>>.Success(rows, correlationId: request.CorrelationId);

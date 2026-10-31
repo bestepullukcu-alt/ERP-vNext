@@ -481,6 +481,102 @@ public sealed class WorkflowCrossServiceTests
         Assert.Equal(WorkflowPermissions.InstancesView, method.GetCustomAttribute<HasPermissionAttribute>()!.Permission);
     }
 
+    // ============================================================ MOD-0023 §17 DL-1
+
+    [Theory]
+    [InlineData(nameof(WorkflowDefinitionsController.GetInstancesByObjects))]
+    [InlineData(nameof(WorkflowDefinitionsController.GetInstanceHistory))]
+    [InlineData(nameof(WorkflowDefinitionsController.GetInstanceById))]
+    public void AC_W16_the_three_reads_require_exactly_instances_view(string action)
+    {
+        var method = typeof(WorkflowDefinitionsController).GetMethod(action)!;
+        var permission = Assert.Single(method.GetCustomAttributes<HasPermissionAttribute>());
+        Assert.Equal(WorkflowPermissions.InstancesView, permission.Permission);
+        Assert.Empty(permission.AlternativePermissions);
+    }
+
+    [Fact]
+    public void AC_W16_includeDeleted_is_an_optional_query_parameter_of_by_objects_alone_default_false()
+    {
+        var parameter = typeof(WorkflowDefinitionsController)
+            .GetMethod(nameof(WorkflowDefinitionsController.GetInstancesByObjects))!
+            .GetParameters().Single(x => x.Name == "includeDeleted");
+        Assert.Equal(typeof(bool), parameter.ParameterType);
+        Assert.True(parameter.HasDefaultValue);
+        Assert.Equal(false, parameter.DefaultValue);
+        Assert.NotNull(parameter.GetCustomAttribute<FromQueryAttribute>());
+        Assert.False(new GetWorkflowInstancesByObjectsQuery("crm.claim", ["c1"], Correlation).IncludeDeleted);
+
+        // O-S17-2 = (b): history takes no includeDeleted, and neither does the single read.
+        foreach (var action in new[] { nameof(WorkflowDefinitionsController.GetInstanceHistory), nameof(WorkflowDefinitionsController.GetInstanceById) })
+        {
+            Assert.DoesNotContain(typeof(WorkflowDefinitionsController).GetMethod(action)!.GetParameters(), x => x.Name == "includeDeleted");
+        }
+
+        Assert.Null(typeof(GetWorkflowInstanceHistoryQuery).GetProperty("IncludeDeleted"));
+    }
+
+    [Fact]
+    public async Task AC_W13_a_repository_without_the_all_rows_read_fails_loudly_instead_of_ignoring_the_flag()
+    {
+        var f = new Fx(TenantA);
+        f.Store.Instances.Add(InstanceRow(TenantA, "c1", WorkflowInstanceStatus.Active, DateTimeOffset.UtcNow, null));
+        var handler = new GetWorkflowInstancesByObjectsHandler(f.InstanceRepo);
+
+        await Assert.ThrowsAsync<NotSupportedException>(() => handler.Handle(
+            new GetWorkflowInstancesByObjectsQuery("crm.claim", ["c1"], Correlation, IncludeDeleted: true), default));
+        Assert.True((await handler.Handle(new GetWorkflowInstancesByObjectsQuery("crm.claim", ["c1"], Correlation), default)).IsSuccessful);
+    }
+
+    [Fact]
+    public async Task AC_W2_real_keyed_and_unkeyed_starts_read_back_their_keys_through_by_objects_and_history()
+    {
+        var f = new Fx(TenantA);
+        var template = f.SeedTemplateJson("T-KEYS",
+            "{\"stages\":[{\"code\":\"s\",\"steps\":[{\"code\":\"r\",\"name\":\"Review\","
+            + "\"assignment\":{\"candidatePrincipalIds\":[\"user:" + Guid.NewGuid() + "\"]}}]}]}");
+        var keyedRequest = StartRequest(template.Id, []) with { ObjectId = "keyed", ObjectRef = "crm|crm.claim|keyed", IdempotencyKey = "start-key" };
+        var unkeyedRequest = StartRequest(template.Id, []) with { ObjectId = "unkeyed", ObjectRef = "crm|crm.claim|unkeyed" };
+
+        var keyed = await f.Start().Handle(new StartWorkflowInstanceCommand(keyedRequest, Correlation), default);
+        var unkeyed = await f.Start().Handle(new StartWorkflowInstanceCommand(unkeyedRequest, Correlation), default);
+        Assert.True(keyed.IsSuccessful, string.Join(",", keyed.Errors));
+        Assert.True(unkeyed.IsSuccessful, string.Join(",", unkeyed.Errors));
+
+        var read = await new GetWorkflowInstancesByObjectsHandler(f.InstanceRepo).Handle(
+            new GetWorkflowInstancesByObjectsQuery("crm.claim", ["keyed", "unkeyed"], Correlation), default);
+        var rows = read.Data!.ToDictionary(x => x.ObjectId);
+        Assert.Equal("start-key", Assert.Single(rows["keyed"].Instances).IdempotencyKey);
+        Assert.Null(Assert.Single(rows["unkeyed"].Instances).IdempotencyKey);
+        Assert.False(Assert.Single(rows["keyed"].Instances).IsDeleted);
+
+        var keyedHistory = Assert.Single((await f.History().Handle(
+            new GetWorkflowInstanceHistoryQuery(keyed.Data!.WorkflowInstanceId, Correlation), default)).Data!);
+        Assert.Equal("start-key", keyedHistory.IdempotencyKey);
+        Assert.Equal(f.Store.Tasks.Single(t => t.WorkflowInstanceId == keyed.Data.WorkflowInstanceId).Id, keyedHistory.ApprovalTaskId);
+        Assert.False(keyedHistory.IsDeleted);
+
+        var unkeyedHistory = Assert.Single((await f.History().Handle(
+            new GetWorkflowInstanceHistoryQuery(unkeyed.Data!.WorkflowInstanceId, Correlation), default)).Data!);
+        Assert.Null(unkeyedHistory.IdempotencyKey);
+        Assert.Equal(f.Store.Tasks.Single(t => t.WorkflowInstanceId == unkeyed.Data.WorkflowInstanceId).Id, unkeyedHistory.ApprovalTaskId);
+    }
+
+    [Fact]
+    public async Task AC_W2_a_real_transition_reads_back_its_task_and_key_through_history()
+    {
+        var f = new Fx(TenantA);
+        var run = f.SeedRuntime();
+        Assert.True((await f.Approve().Handle(ApproveCmd(run.Task.Id), default)).IsSuccessful);
+
+        var rows = (await f.History().Handle(new GetWorkflowInstanceHistoryQuery(run.Instance.Id, Correlation), default)).Data!;
+
+        var approve = Assert.Single(rows, x => x.Action == "approve");
+        Assert.Equal("approve-1", approve.IdempotencyKey);
+        Assert.Equal(run.Task.Id, approve.ApprovalTaskId);
+        Assert.False(approve.IsDeleted);
+    }
+
     // ============================================================ WP-CL-BE-3a — empty request candidates
 
     [Fact]

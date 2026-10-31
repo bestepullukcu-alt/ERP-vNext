@@ -10,7 +10,9 @@ namespace Diten.Platform.Application.Features.Workflow.Queries;
 public sealed record GetWorkflowInstancesByObjectsQuery(
     string? ObjectType,
     IReadOnlyList<string>? ObjectIds,
-    string CorrelationId) : IRequest<Response<IReadOnlyList<WorkflowObjectInstancesDto>>>
+    string CorrelationId,
+    // MOD-0023 §17.7/3 — soft-deleted rows are hidden unless asked for; then they come back flagged. Trailing, optional.
+    bool IncludeDeleted = false) : IRequest<Response<IReadOnlyList<WorkflowObjectInstancesDto>>>
 {
     public const int MaxObjectIds = 100;
 }

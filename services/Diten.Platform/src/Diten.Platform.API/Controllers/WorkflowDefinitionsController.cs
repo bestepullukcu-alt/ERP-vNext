@@ -123,10 +123,11 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     public async Task<IActionResult> GetInstancesByObjects(
         [FromQuery] string? objectType,
         [FromQuery] string[]? objectIds,
-        CancellationToken ct)
+        CancellationToken ct,
+        [FromQuery] bool includeDeleted = false)
     {
         var response = await _mediator.Send(
-            new GetWorkflowInstancesByObjectsQuery(objectType, objectIds, CorrelationId), ct);
+            new GetWorkflowInstancesByObjectsQuery(objectType, objectIds, CorrelationId, includeDeleted), ct);
         return CreateActionResultInstance(response);
     }
 

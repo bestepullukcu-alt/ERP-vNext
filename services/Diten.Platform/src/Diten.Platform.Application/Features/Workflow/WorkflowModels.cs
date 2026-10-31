@@ -204,7 +204,10 @@ public sealed record WorkflowInstanceStatusDto(
     string CurrentStageCode,
     string CurrentStepCode,
     DateTimeOffset? StartedAt,
-    DateTimeOffset? CompletedAt);
+    DateTimeOffset? CompletedAt,
+    // MOD-0023 §17.7/4 — the stored key (null for an unkeyed start) and the deletion marker, trailing, optional.
+    string? IdempotencyKey = null,
+    bool IsDeleted = false);
 
 /// <summary>WP-CL-BE-3 — every instance of one object (empty list when none).</summary>
 public sealed record WorkflowObjectInstancesDto(string ObjectId, IReadOnlyList<WorkflowInstanceStatusDto> Instances);
@@ -462,7 +465,12 @@ public sealed record WorkflowInstanceHistoryEntryDto(
     string? ReasonCode,
     DateTimeOffset OccurredAt,
     // MOD-0022 E4 — the e-signature id the transition carried (ESIGN-BUNDLE x-workflow-addendum), trailing.
-    string? SignatureId = null);
+    string? SignatureId = null,
+    // MOD-0023 §17.7/4 — the stored task id and key, trailing, optional. IsDeleted is always false here: the read filters
+    // deleted rows, and history takes no includeDeleted (O-S17-2 = b).
+    Guid? ApprovalTaskId = null,
+    string? IdempotencyKey = null,
+    bool IsDeleted = false);
 
 public sealed record ApproveWorkflowTaskRequest(
     string? ActorId,
