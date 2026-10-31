@@ -22,7 +22,7 @@ public sealed class CentralAuditDeclarationTests
     [Fact]
     public void Every_write_command_is_marked_and_names_a_manifest_module_and_Platform_enum_names()
     {
-        Assert.Equal(18, Commands.Length);
+        Assert.Equal(19, Commands.Length);
         IModuleManifestProvider[] providers =
         [
             new ShipmentTrackingPodManifestProvider(), new CarrierManagementManifestProvider(), new RoutingLoadPlanningManifestProvider(),
@@ -87,7 +87,7 @@ public sealed class CentralAuditDeclarationTests
         }
         // Carrier, Claim, Load, S&OP: one each; Shipment: mutation, the MOD-0183 dispatch outcome (DL-1 review F-3)
         // and the late writer's record (re-review R-4); Return: mutation and the MOD-0186 §34.2 late writer's record;
-        // Capacity: plan, scenario, evaluation; MOD-0147 evaluation create (DL-1).
+        // Capacity: plan, scenario, evaluation; MOD-0147 evaluation create and submit (one shared CommitAsync).
         Assert.Equal(13, seen);
         Assert.Empty(failures);
     }

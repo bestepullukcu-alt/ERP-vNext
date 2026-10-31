@@ -5,29 +5,37 @@ using Diten.SupplyChainService.Domain.Features.SupplierPerformance;
 namespace Diten.SupplyChainService.Persistence.Features.SupplierPerformance;
 
 /// <summary>
-/// MOD-0147 DL-1 storage. Every query is scoped by Tenant + LE and hides soft-deleted rows. Create (§0.5 stage 8) writes the
-/// evaluation, its receipt and the central-audit event in one transaction; a unique-index refusal is reported as a Clash so the
-/// handler re-runs stage 5. After the commit was attempted nothing is written again: the receipt is read back once, and only a
+/// MOD-0147 storage. Every query is scoped by Tenant + LE and hides soft-deleted rows. Create and submit (§0.5 stage 8) write their
+/// state, receipt and central-audit event in one transaction, submit also its Pending event; a unique-index refusal is reported as a
+/// Clash so the handler re-runs stage 5. After the commit was attempted nothing is written again: the receipt is read back once, and only a
 /// commit that cannot be proven either way is Unknown.
 /// </summary>
 public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformanceCommitProbe probe) : IEvaluationRepository
 {
     public const string CreateOperation = "createSupplierEvaluation";
     public const string CreateTarget = "create";
+    public const string SubmitOperation = "submitSupplierEvaluation";
     private IMongoCollection<SupplierEvaluation> Evaluations => db.GetCollection<SupplierEvaluation>(SupplierPerformanceSchema.Evaluations);
+    private IMongoCollection<BsonDocument> Outbox => db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Outbox);
     private IMongoCollection<BsonDocument> Receipts => db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Receipts).WithReadConcern(ReadConcern.Majority);
     private static BsonDocument Scope(SupplierPerformanceScope s) { s.EnsureTrusted(); return new() { { "TenantId", s.TenantId.ToString() }, { "LegalEntityId", s.LegalEntityId.ToString() } }; }
     private static BsonDocument Visible(SupplierPerformanceScope s) { var f = Scope(s); f.Add("IsDeleted", false); return f; }
-    private static BsonDocument Identity(SupplierPerformanceScope s, string key)
-    { var f = Scope(s); f.Add("Operation", CreateOperation); f.Add("TargetId", CreateTarget); f.Add("IdempotencyKey", key); return f; }
+    private static BsonDocument Identity(SupplierPerformanceScope s, string operation, string target, string key)
+    { var f = Scope(s); f.Add("Operation", operation); f.Add("TargetId", target); f.Add("IdempotencyKey", key); return f; }
     private static SupplierPerformanceFailure Unavailable() => new(503, "PERSISTENCE_UNAVAILABLE");
 
-    public async Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct, bool afterClash = false)
+    public Task<EvaluationReceipt?> FindCreateReceiptAsync(SupplierPerformanceScope scope, string key, CancellationToken ct, bool afterClash = false) =>
+        FindReceiptAsync(Identity(scope, CreateOperation, CreateTarget, key), afterClash, ct);
+
+    public Task<EvaluationReceipt?> FindSubmitReceiptAsync(SupplierPerformanceScope scope, Guid evaluationId, string key, CancellationToken ct, bool afterClash = false) =>
+        FindReceiptAsync(Identity(scope, SubmitOperation, evaluationId.ToString(), key), afterClash, ct);
+
+    private async Task<EvaluationReceipt?> FindReceiptAsync(BsonDocument identity, bool afterClash, CancellationToken ct)
     {
         try
         {
             var receipts = afterClash ? Receipts.WithReadConcern(ReadConcern.Local) : Receipts;
-            var r = await receipts.Find(Identity(scope, key), new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(ct);
+            var r = await receipts.Find(identity, new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(ct);
             return r is null ? null : new(r["Fingerprint"].AsString, r["StatusCode"].AsInt32, r["Body"].AsString);
         }
         catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }
@@ -40,11 +48,39 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
         catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }
     }
 
-    public async Task<EvaluationCommitOutcome> CreateAsync(SupplierPerformanceScope scope, string key, string fingerprint, SupplierEvaluation evaluation, string responseBody, CancellationToken ct)
+    public Task<EvaluationCommitOutcome> CreateAsync(SupplierPerformanceScope scope, string key, string fingerprint, SupplierEvaluation evaluation, string responseBody, CancellationToken ct) =>
+        CommitAsync(scope, Identity(scope, CreateOperation, CreateTarget, key), 201, fingerprint, responseBody, evaluation.Id, evaluation.Id.ToString(), evaluation.CorrelationId, async session =>
+        {
+            await Evaluations.InsertOneAsync(session, evaluation, cancellationToken: ct); await probe.AtAsync("entity", ct);
+            return true;
+        }, ct);
+
+    public Task<EvaluationCommitOutcome> SubmitAsync(SupplierPerformanceScope scope, string key, string fingerprint, EvaluationSubmission s, string responseBody, CancellationToken ct) =>
+        CommitAsync(scope, Identity(scope, SubmitOperation, s.EvaluationId.ToString(), key), 200, fingerprint, responseBody, s.EvaluationId, s.ScorecardId.ToString(), s.CorrelationId, async session =>
+        {
+            await probe.AtAsync("submit", ct);
+            var draft = Visible(scope); draft.Add("_id", s.EvaluationId.ToString()); draft.Add("Status", nameof(EvaluationStatus.DRAFT)); draft.Add("Version", s.ExpectedVersion);
+            var update = Builders<SupplierEvaluation>.Update.Set(x => x.Status, EvaluationStatus.PUBLISHED).Set(x => x.Version, s.ExpectedVersion + 1)
+                .Set(x => x.ScorecardId, s.ScorecardId).Set(x => x.PublishedAt, s.PublishedAt).Set(x => x.PublishedBy, scope.ActorId).Set(x => x.PublishCorrelationId, s.CorrelationId)
+                .Set(x => x.SubmittedAt, s.SubmittedAt).Set(x => x.SubmitComment, s.Comment).Set(x => x.UpdatedBy, scope.ActorId).Set(x => x.UpdatedAt, s.PublishedAt);
+            var changed = await Evaluations.UpdateOneAsync(session, draft, update, cancellationToken: ct);
+            if (changed.ModifiedCount != 1) return false;
+            await probe.AtAsync("entity", ct);
+            var pending = Scope(scope); pending.Add("_id", s.EventId.ToString()); pending.Add("EvaluationId", s.EvaluationId.ToString()); pending.Add("EventName", SupplierPerformanceOutboxStore.EventName);
+            pending.Add("Status", "Pending"); pending.Add("AttemptCount", 0); pending.Add("OccurredAt", s.PublishedAt.UtcDateTime); pending.Add("NextAttemptAt", s.PublishedAt.UtcDateTime);
+            pending.Add("CorrelationId", s.CorrelationId.ToString()); pending.Add("CausationId", s.EvaluationId.ToString()); pending.Add("PayloadJson", s.EventPayload);
+            await Outbox.InsertOneAsync(session, pending, cancellationToken: ct); await probe.AtAsync("outbox", ct);
+            return true;
+        }, ct);
+
+    // The one transaction of §0.5 stage 8: the command's writes + receipt + central audit. commitId is unique to this request, so
+    // only this request's own receipt can prove a commit whose answer was lost. Writes answering false abort it as a Conflict.
+    private async Task<EvaluationCommitOutcome> CommitAsync(SupplierPerformanceScope scope, BsonDocument identity, int status, string fingerprint, string responseBody,
+        Guid evaluationId, string commitId, Guid correlationId, Func<IClientSessionHandle, Task<bool>> writes, CancellationToken ct)
     {
-        var receipt = Identity(scope, key);
-        receipt.Add("_id", Guid.NewGuid().ToString()); receipt.Add("Fingerprint", fingerprint); receipt.Add("StatusCode", 201); receipt.Add("Body", responseBody);
-        receipt.Add("ContractVersion", "v1"); receipt.Add("EvaluationId", evaluation.Id.ToString()); receipt.Add("CorrelationId", evaluation.CorrelationId.ToString());
+        var receipt = identity.DeepClone().AsBsonDocument;
+        receipt.Add("_id", Guid.NewGuid().ToString()); receipt.Add("Fingerprint", fingerprint); receipt.Add("StatusCode", status); receipt.Add("Body", responseBody);
+        receipt.Add("ContractVersion", "v1"); receipt.Add("EvaluationId", evaluationId.ToString()); receipt.Add("CommitId", commitId); receipt.Add("CorrelationId", correlationId.ToString());
         receipt.Add("ActorId", scope.ActorId.ToString()); receipt.Add("CommittedAt", DateTime.UtcNow);
         for (var attempt = 0; attempt < 20; attempt++)
         {
@@ -55,9 +91,9 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
                 session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority, maxCommitTime: TimeSpan.FromSeconds(5)));
                 try
                 {
-                    await Evaluations.InsertOneAsync(session, evaluation, cancellationToken: ct); await probe.AtAsync("entity", ct);
+                    if (!await writes(session)) { await session.AbortTransactionAsync(CancellationToken.None); return EvaluationCommitOutcome.Conflict; }
                     await Receipts.InsertOneAsync(session, receipt, cancellationToken: ct); await probe.AtAsync("receipt", ct);
-                    await CentralAuditTransaction.EnlistAsync(session, evaluation.Id, ct); await probe.AtAsync("beforeCommit", ct);
+                    await CentralAuditTransaction.EnlistAsync(session, evaluationId, ct); await probe.AtAsync("beforeCommit", ct);
                     commitAttempted = true;
                     await probe.AtAsync("commit", ct);
                     for (var commit = 0; ; commit++)
@@ -76,7 +112,7 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
             catch (MongoWriteException ex) when (!commitAttempted && ex.WriteError.Category == ServerErrorCategory.DuplicateKey) { return EvaluationCommitOutcome.Clash; }
             // The other request has not committed yet: try the same write again (Procurement is not asked again).
             catch (MongoException ex) when (!commitAttempted && ex.HasErrorLabel("TransientTransactionError")) { await Task.Delay(10 * (attempt + 1), ct); }
-            catch (Exception) when (commitAttempted) { return await ResolveCommitAsync(scope, key, evaluation.Id); }
+            catch (Exception) when (commitAttempted) { return await ResolveCommitAsync(identity, commitId); }
             catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }
         }
         return EvaluationCommitOutcome.Unknown;
@@ -84,14 +120,14 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
 
     // A commit whose answer was lost: this request's own receipt proves it committed, so the request succeeds and the shared
     // forwarder confirms its enlisted row. Bounded and independent of the caller's token; any failure here stays Unknown (503).
-    private async Task<EvaluationCommitOutcome> ResolveCommitAsync(SupplierPerformanceScope scope, string key, Guid evaluationId)
+    private async Task<EvaluationCommitOutcome> ResolveCommitAsync(BsonDocument identity, string commitId)
     {
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             await probe.AtAsync("resolve", timeout.Token);
-            var r = await Receipts.WithReadConcern(ReadConcern.Local).Find(Identity(scope, key), new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(timeout.Token);
-            return r is not null && r["EvaluationId"].AsString == evaluationId.ToString() ? EvaluationCommitOutcome.Committed : EvaluationCommitOutcome.Unknown;
+            var r = await Receipts.WithReadConcern(ReadConcern.Local).Find(identity, new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(timeout.Token);
+            return r is not null && r["CommitId"].AsString == commitId ? EvaluationCommitOutcome.Committed : EvaluationCommitOutcome.Unknown;
         }
         catch (Exception) { return EvaluationCommitOutcome.Unknown; }
     }

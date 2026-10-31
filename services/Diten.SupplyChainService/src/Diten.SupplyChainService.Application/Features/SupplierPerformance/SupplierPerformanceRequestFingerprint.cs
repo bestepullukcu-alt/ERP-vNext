@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 namespace Diten.SupplyChainService.Application.Features.SupplierPerformance;
 public static class SupplierPerformanceRequestFingerprint
@@ -11,5 +12,12 @@ public static class SupplierPerformanceRequestFingerprint
         periodEnd = r.PeriodEnd,
         metrics = r.Metrics.Select(m => new { metricCode = m.MetricCode, measuredValue = m.MeasuredValue, weight = m.Weight }),
         notes = r.Notes
+    });
+
+    // §0.5: submittedAt as the instant it denotes; comment absent = null, "" distinct; If-Match is not part of it.
+    public static string Submit(SubmitEvaluationInput r) => "v1:" + JsonSerializer.Serialize(new
+    {
+        submittedAt = r.SubmittedAt.UtcDateTime.ToString("O", CultureInfo.InvariantCulture),
+        comment = r.Comment
     });
 }
