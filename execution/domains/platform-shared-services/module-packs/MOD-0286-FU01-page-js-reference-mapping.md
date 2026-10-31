@@ -7,7 +7,7 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: GlobalEntity
-status: draft
+status: ready-for-dev
 build_gate: closed
 operational_runtime_gate: closed
 owner: K3
@@ -20,22 +20,24 @@ slice: "Reference-based mapping of the 106 page JS files the UI compliance selec
 
 # MOD-0286-FU01 - UI Compliance Page JS Reference Mapping
 
-> **Draft, revision 01, 2026-10-31; not a go-ahead.** Owner's word in the PSS-UI tower chat, 2026-10-31: "Evet". Header values follow the parent's reasons
-> (`MOD-0286-ui-design-system-page-pattern-governance.md:32-36`). DCP-002 at `0504c96ea`: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0286-FU01
+> **Revision 01, 2026-10-31: not approved until its row exists in `execution/approvals/approvals.tsv`; both gates stay closed.** The formal review runs on these bytes: a `status` change is not exempt
+> from review (`scripts/pack_approval.py:941` `review_exempt`, exempt keys `:95-96`), so `status: ready-for-dev` is set in this version; the field is not the approval. Owner's word in the PSS-UI tower chat,
+> 2026-10-31: "Evet". Header values follow the parent's reasons (`MOD-0286-ui-design-system-page-pattern-governance.md:32-36`). DCP-002 at `0504c96ea`: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0286-FU01
 > --name "UI Compliance Page JS Reference Mapping"` -> `OK  MOD-0286-FU01: proven against Blueprint/registry.`
 
 ## Why a separate pack, and what it supersedes
 
-Accepting work binds to the pack's bytes on main (`scripts/prompt_gate.py:736`). A parent revision would make the three accepted jobs (documents, CI, single-level)
-rebind and rerun, so the parent stays byte-identical. An FU id is its own module for the tools (`scripts/ct_queue.py:1359-1364`, `scripts/acceptance_record.py:75`).
+An accepted job covers only the exact pack version its record binds (`scripts/acceptance_record.py:1025-1028`, `:1043-1044`, `module_coverage`). A parent revision would leave the criteria of the three accepted jobs
+(documents, CI, single-level) open on the new version until they rebind and rerun, so the parent stays byte-identical. An FU id is its own module for the tools (`scripts/ct_queue.py:1359-1364`, `scripts/acceptance_record.py:75`).
 
 For **this pack's work only** it supersedes these parent statements (lines at `0504c96ea`):
 
 | Parent statement | Line | Here |
 |---|---|---|
 | Owned Objects, DL-3 part 1, "Not mapped in rev 15" (1)(2)(2b)(3) | `:336-346` | The 106 files map by reference; their own lines change |
-| "DL-3 tek seviye sayfalar": "Not mapped in rev 15", "`pages/` decision" | `:555-578` | Same; reference reading is chosen, moving JS is not |
-| Follow-up row FU-18 | `:966` | Closed by this pack |
+| "DL-3 tek seviye sayfalar": "They get the FU-18 line", "Not mapped in rev 15", "`pages/` decision" | `:554-578` | Same; reference reading is chosen, moving JS is not |
+| Repo Scope: "FU-18 line" among the rev 15 changes | `:658` | That line is replaced by this pack's own lines |
+| Follow-up row FU-18 | `:966` | Closed by this pack; what stays unchecked moves to FU-23 |
 | CI-4 tail on `Meetings/series/index.js`; "left out by name" on the 106 files | `:488`, `:516-518` | These files are page JS of the pages that reference them |
 | CI table "page JS" cells; `fu` lists of Validation Rules and AC-19 | `:488-494`, `:739-757`, `:823` | Widened only by this pack's `FU-19` row |
 
@@ -47,7 +49,7 @@ DL-3 part 2's count rule and the pattern block the selector reads (`:611-644`).
 | # | Decision | Who | Proposed answer | Status |
 |---|---|---|---|---|
 | O-1 | Name of the owner decision for the `FU-19` rows, and each row's owner | Owner | Tower asks; proposal in Owned Objects, part 6 | Precondition of dispatch; the pack holds only a placeholder |
-| O-2 | `Follow-up` row for MOD-0286-FU01 in `execution/registries/module-id-registry.md` | Owner (registry owner: Lead Architect) | Add in its own approved commit; the rule says before a pack is created, this draft comes first on the tower's instruction | Precondition of approval |
+| O-2 | `Follow-up` row for MOD-0286-FU01 in `execution/registries/module-id-registry.md` | Owner (registry owner: Lead Architect) | Add in its own approved commit; the rule says before a pack is created, this pack comes first on the tower's instruction | Precondition of approval |
 | O-3 | The 2 unreferenced files and the missing file named at `StrategyPeriodDetail.cshtml:132` | Owning domains (XMC-001) | Not here: FU-20, FU-21 | Does not block this pack |
 
 ## Module Summary
@@ -64,16 +66,17 @@ The selector prints `eşlenmemiş sayfa JS'i, sayfa kontrolü yok (FU-18) <path>
 
 **1. The class.** A "class file" is a path `map_path` returns as `fu18` today (`scripts/uic_changed_pages.py:892`, `:897`, `:902`); the path rule does not change. A reference brings in nothing else: `js/shared/**`, top-level files and another page's own folder stay as they are.
 
-**2. Reference rule, and which view counts (Decision 1).** Binding raw strings, Python `re`: `STRIP` with `re.S` is removed first, `SCRIPT` runs with `re.I | re.S`, text as `text_of` (`:227`); capture `c` names `frontend/Diten.Web/wwwroot/` + `c`.
+**2. Reference rule, and which view counts (Decision 1).** Binding raw strings, Python `re`: `STRIP` with `re.S` is removed first, `SCRIPT` runs with `re.I | re.S`, text as `text_of` (`:227`); capture `c` names `frontend/Diten.Web/wwwroot/` + `c`. `VARIABLE` (same flags, after `STRIP`) finds a `src` that `SCRIPT` cannot read.
 
 ```text
 STRIP	@\*.*?\*@|<!--.*?-->
 SCRIPT	<script\b[^>]*?\ssrc\s*=\s*["']\s*(?:@Url\.Content\(\s*["'])?[^"']*?(assets/js/[^"'?]+?\.js)
+VARIABLE	<script\b[^>]*?\ssrc\s*=\s*["']?(?!\s*(?:https?:)?//)(?!\s*@Url\.Content\(\s*["'])[^"'>\s]*?(?<!@)@(?!@)
 ```
 
 **Only a `.cshtml` whose own path belongs to the page counts**, by the rule the page's checks read (two-level: `Views/{Area}/{Module}/**`; single-level: files directly in `Views/{Module}/`). `Views/Shared/**`, `Views/Archive/**` and the two root files belong to no page.
 **The partial chain is not followed:** a partial name is a Razor expression, and following it means parsing every view whenever a page is selected, against Decision 7. What it misses, measured: 8 mapped files are referenced only from `EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml` or `_Scripts.cshtml`; 59 files name `_SubdomainShell`, and these callers are neither named nor checked when such a file changes. The violation is still red, under page `EnterpriseStrategyBusinessPerformance/Components`, because the check runs on the file.
-A capture holding `@`, `{` or `(` is not a path: `ölçülmedi <page> değişken script yolu <view> <capture>`, never red (0 today).
+A `VARIABLE` match (`src="@x"`, `src="@Url.Content(Model.X)"`, `src="~/assets/js/@x.js"`), or a capture holding `@`, `{` or `(`, is not a path: `ölçülmedi <page> değişken script yolu <view>`, once per view, only for a view of a selected page, never red (0 of each today). A CDN version (`https://...xlsx@...`) and `@@` are not variable.
 
 **3. Scope of a selected page.** The JS of its line checks (CI-4, CI-5, CI-6 JS, CI-7, CI-8, CI-9 `api/personalization`, CI-10) = its own-folder JS as today + every class file its own views reference at HEAD; `evaluate_page` reads only `js/{page}/` today (`:514`), so mapping alone would run no check. A referenced path absent at HEAD is not read (`Tree.read` gives `None`, `text_of` would fail): `başvurulan JS dosyası yok <page> <instance>`, never red. One exists today: `Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodDetail.cshtml:132`.
 
@@ -81,12 +84,13 @@ A capture holding `@`, `{` or `(` is not a path: `ölçülmedi <page> değişken
 
 - `eşlenmemiş sayfa JS'i, yalnız Shared görünümü yüklüyor, sayfa kontrolü yok (MOD-0286-FU01) <path>`: today `pages/enterprise-strategy/esbp-horizon-dates.js` (`_Layout`), `pages/governance/permissions.js` (`_PermissionBootstrap`).
 - `eşlenmemiş sayfa JS'i, hiçbir görünüm yüklemiyor, sayfa kontrolü yok (MOD-0286-FU01) <path>`: today `pages/systemStatus.js`, `pages/enterprise-strategy/project-ppm-form-init.js`.
+- `eşlenmemiş sayfa JS'i, yalnız Archive ya da kök görünüm yüklüyor, sayfa kontrolü yok (MOD-0286-FU01) <path>`: 0 files today. A Shared reference wins over these two kinds.
 
-The `(FU-18)` text (`:84`) does **not** stay: it cites a row this pack closes. A page reference wins over a Shared one. A Shared file does not select pages: that is all pages, against parent AC-20; the 4 files carry no debt today (0 matches of the seven JS keys).
+The `(FU-18)` text (`:84`) does **not** stay: it cites a row this pack closes. A page reference wins over all of these. A Shared file does not select pages: that is all pages, against parent AC-20; the 4 files carry no debt today (0 matches of the seven JS keys), but a Shared-only file cannot go red: FU-23 carries that.
 
 **5. Several pages (Decision 3): one row per page + check + file.** Each owning page is evaluated once, with one line per check for the file however many of its views reference it. `n` is the file's count; each row's `b` is compared alone (`:763`), so one added match is one `YENİ KIRMIZI <page> <check> <instance> <n> +1` per owning page. **No double-count trap:** rows are never pooled and no row's budget absorbs another page's match; a stale high row on one page leaves the others red. Cost: the number of `YENİ KIRMIZI` lines counts owning pages, not violations (the exit reads only that one exists, `:870`); `--check-baseline`'s `eşleşme` (`:953`) sums rows, so it grows by 92 for 89 real matches, the 3 extra being `modal-form-utils.js` on two pages; a lowered count is edited in each row. Not one row per file: `self.rows` is keyed by page + check (`:494`), and a page-less row could not close when one page drops the file.
 
-**6. Rows (Decision 6).** `fu` = `FU-19`, defined in Follow-up Items (the parent's list ends at FU-18, `:966`; a later parent revision starts at FU-23). `reason` = `sahip kararı <sahip karar adı> (<tarih>)`, filled from O-1, never `pss-mod0286-taban-01` or `tek-seviye-borc-01`. Reader, mapping, draft-mode change and rows land in **one pull request**, as parent AC-21 (a): mapping first makes each pull request on these pages red on old debt (inference from the 22 rows); rows first gives exit 2 on every pull request (measured on a scratch copy: `--check-baseline` exit 2, `HATA: taban satır 2155: CI-4 satır kontrolü instance'ı sayfanın dosya yolu değil`). In draft mode a class-file row gets `FU-19` and owner `belirsiz — sahip belirleyecek`, before the single-level branch of `owner_of` (`:394`), else an ESBP row would be `FU-16`.
+**6. Rows (Decision 6).** `fu` = `FU-19`, defined in Follow-up Items (the parent's list ends at FU-18, `:966`; a later parent revision starts at FU-24). `reason` = `sahip kararı <sahip karar adı> (<tarih>)`, filled from O-1, never `pss-mod0286-taban-01` or `tek-seviye-borc-01`. Reader, mapping, draft-mode change and rows land in **one pull request**, as parent AC-21 (a): mapping first makes each pull request on these pages red on old debt (inference from the 22 rows); rows first gives exit 2 on every pull request (measured on a scratch copy: `--check-baseline` exit 2, `HATA: taban satır 2155: CI-4 satır kontrolü instance'ı sayfanın dosya yolu değil`). In draft mode a class-file row gets `FU-19`, owner `belirsiz — sahip belirleyecek` (the worker fills it from O-1) and as `reason` one constant holding the filled O-1 text, as `SINGLE_REASON` (`:89`) does; both branches come before the single-level choices of `owner_of` (`:394`) and of `reason` (`:936`), else an ESBP row would be `FU-16`.
 Proposal for O-1, from each page's present rows: EnterpriseStrategyBusinessPerformance 11 and `.../Components` 3 (no present row, by area) enterprise-strategy-business-performance; DemandIdeas 3, DeliveryExecutionManagement 1, DecompositionTreeBuilder 1 portfolio-delivery; ManagementGovernance/ProcessModeling 1 management-governance; Meetings/Series 1, Meetings/MeetingTypes 1 platform-shared-services.
 
 **7. A reference that changes (Decision 5).** The two sides are computed only for a page with a changed view in the diff; its own views are read at HEAD and at the base. For a view of page P and class file J:
@@ -95,18 +99,21 @@ Proposal for O-1, from each page's present rows: EnterpriseStrategyBusinessPerfo
 |---|---|---|---|
 | P gains J, `n = 0` | yes | `başvuru eklendi P J`, `PASS P <check> J 0` | none |
 | P gains J, `n > 0`, no row | yes | `başvuru eklendi P J`, `YENİ KIRMIZI P <check> J <n> +<n>` | 1: taking on debt needs an owner decision |
+| P gains J, `n > 0`, row with count `b` (the revert of SB-6) | yes | `başvuru eklendi P J`; the row rule: `TABAN FU-19 P <check> J <n>` when `n = b`, `YENİ KIRMIZI P <check> J <n> +<n-b>` when `n > b` | 1 only when `n > b` |
 | A view drops J, another view of P keeps it | yes | check lines as usual, no `başvuru` line | none |
 | P's last reference to J goes | no | `başvuru kalktı P J`; each row of P on J `kapandı - satır silinmeli P <check> J` | none: closed, never dropped |
 | J deleted, P still references it | no | `başvurulan JS dosyası yok P J`; rows closed as above | none |
-| J renamed | new path | new path has no row (red when `n > 0`); old row closed | parent's rename rule |
+| J renamed to K, the view updated in the same pull request | K only | `başvuru eklendi P K`, `başvuru kalktı P J`; K has no row: `YENİ KIRMIZI P <check> K <n> +<n>` when `n > 0`, `PASS P <check> K 0` when `n = 0`; each row of P on J closed | 1 when K has `n > 0`: parent's rename rule |
+| J renamed to K, the view not updated | neither | `başvurulan JS dosyası yok P J`, rows of P on J closed; K's own `hiçbir görünüm` line (part 4); no `başvuru` line | none |
 
-Closed and not red because dropping a load adds no violation; a removed page keeps the parent's `sayfa kaldırıldı` closures. **Limit, on purpose:** moving a reference to `Views/Shared/**` prints `başvuru kalktı`, and J then has only the Shared line.
+Closed and not red because dropping a load adds no violation; a removed page keeps the parent's `sayfa kaldırıldı` closures. **Limit, on purpose:** moving a reference to `Views/Shared/**` prints `başvuru kalktı`, and J then has only the Shared line (FU-23).
 
-**8. Baseline reader (Decision 4).** A row with `fu` other than `FU-19` takes today's path unchanged, so no present refusal loosens. A `FU-19` row:
+**8. Baseline reader (Decision 4).** A row with `fu` other than `FU-19` takes today's path unchanged, so no present refusal loosens. A `FU-19` row is tested in this order; a refusal is exit 2 with `HATA: taban satır <n>: <text>`:
 
-- *Form, every run, no git:* `check` in CI-4, 5, 6, 7, 8, 9, 10; `instance` under `wwwroot/assets/js/<folder>/`, ending `.js`, no `:`, normal form (`_norm_ok`), top folder outside `NOT_PAGE_AREAS`, **not** under `js/{page}/`; `page` a page key outside `NOT_PAGE_AREAS`; `count` an integer >= 1. Else exit 2.
-- *Class and reference, CI:* only for rows **added or changed against the base's baseline** (`git show`): the path is a class file present at HEAD and a view of the row's own page references it, reading only those pages' views. Else exit 2.
-- *Class and reference, `--check-baseline`:* the same test on all `FU-19` rows, reading every view; CI never runs it.
+- *Form, every run, no git:* `check` in CI-4, 5, 6, 7, 8, 9, 10, else T-1 `FU-19 satırında kontrol CI-4, 5, 6, 7, 8, 9 ya da 10 olmalı`; `page` a page key whose first segment is outside `NOT_PAGE_AREAS` and `count` an integer >= 1, else T-7 `FU-19 satırında page ya da count bozuk`; `instance` under `wwwroot/assets/js/<folder>/`, ending `.js`, no `:`, normal form (`_norm_ok`), top folder outside `NOT_PAGE_AREAS`, else T-2 `FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil`.
+- *Not the page's own JS, same layer:* else T-3 `FU-19 instance'ı sayfanın kendi klasöründe`. Own JS is what `evaluate_page` reads already: for a two-level page anything under `js/{Area}/{Module}/`, at any depth; for a single-level page only a file **directly** in `js/{Module}/`, so `WorkCenterNext` + `js/WorkCenterNext/fixtures/**` (10 pairs) is a legitimate reference row.
+- *Class and reference, CI:* only for rows **added or changed against the base's baseline** (`git show`), reading only those pages' views: a class file, else T-4 `FU-19 instance'ı sınıf dosyası değil`; present at HEAD, else T-5 `FU-19 instance'ı HEAD'de yok`; referenced by a view of the row's own page, else T-6 `FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor`.
+- *Class and reference, `--check-baseline`:* the same three tests on all `FU-19` rows, reading every view; CI never runs it.
 
 CI does not test unchanged rows because a stale row must not stop a pull request that did not make it stale; it prints `kapandı` when its page is selected, as the parent's stale rows do.
 
@@ -149,14 +156,14 @@ None: no view and no `data_mode`. `frontend/Diten.Web/**` is only read.
 
 ## Validation Rules
 
-No field. Baseline: the parent's rules (`:739-757`) stand; the `FU-19` row is defined in Owned Objects, part 8. Line texts are those of Owned Objects, parts 2, 3, 4, 7, 9, byte for byte; instances are relative to `frontend/Diten.Web/`, as baseline rows.
+No field. Baseline: the parent's rules (`:739-757`) stand; the `FU-19` row is defined in Owned Objects, part 8. Line and refusal texts are those of Owned Objects, parts 2, 3, 4, 7, 8, 9, byte for byte; instances are relative to `frontend/Diten.Web/`, as baseline rows.
 
 ## Failure Path to Verify
 
 - **Duplicate** - a repeated page + check + instance: exit 2 (existing rule). A view naming J twice, or several views of a page: one line per page and check. **Missing** - a referenced file absent at HEAD: named line, no exception. A class file with no reference: its own line.
-- **Malformed or unreferenced row** - SB-13: exit 2. A stale row unchanged in a pull request: `kapandı`, exit unaffected; in `--check-baseline`: exit 2.
+- **Malformed or unreferenced row** - SB-13: exit 2 with its own text, so a row does not pass this test for another reason (R-0a, R-0b are the controls). A stale row unchanged in a pull request: `kapandı`, exit unaffected; in `--check-baseline`: exit 2.
 - **Hidden violation** - a match on a counted line: `n > b` (SB-3, SB-4). One removed and one added in a file: `TABAN`, the parent's accepted limit.
-- **Silent loss** - last reference gone: lines of part 7 (SB-6). A commented-out tag is no reference (SB-12).
+- **Silent loss** - last reference gone, or J renamed with or without its view: lines of part 7 (SB-6). A commented-out tag is no reference (SB-12). A variable `src`: `ölçülmedi` (part 2). A Shared-only file cannot go red: its own line, FU-23.
 - **Wrong order** - rows without the reader: exit 2; mapping without rows: old debt red (part 6).
 - **Tool error** - `git show` of the base's baseline or `cat-file` fails: exit 2, never "0 pages".
 - **Class changes under a row** - a new `Views/{X}/{Sub}/` makes J a normal page's file: old row closed, new page red until the owner adds a row (as the parent's rename rule).
@@ -176,18 +183,18 @@ Karar: Gateway değişikliği gereksiz; endpoint yok.
 
 ## Acceptance Criteria
 
-Each is measured by the tower's script in a temporary clone at the work's commit; SB ids are the sabotage table below.
+Each is measured by the tower's script in a temporary clone at the work's commit; SB ids are the sabotage table below. Against that table a run passes when its exit matches, each named line is present (`grep -Fx`, `<J>` expanded) and each named negative ("no ...") is absent; other `PASS` and `TABAN` lines of the selected pages are expected.
 
 - [ ] AC-1 (zorunlu) — Complete mapping: one commit appends one empty line to each of the 106 class files; `python3 scripts/uic_changed_pages.py --base <its parent>` exits 0, `grep -c '^YENİ KIRMIZI '` is 0, every (page, file) pair of the oracle has exactly one `CI-4` line `PASS` or `TABAN FU-19` with that page and instance (113 pairs, 22 pages at `0504c96ea`), `grep -c '^TABAN FU-19 '` equals the oracle's row count (22), `grep -c '(FU-18)'` is 0.
 - [ ] AC-2 (zorunlu) — The 4 unmapped files: SB-11 gives exit 0, no `YENİ KIRMIZI`, and each file's line of Owned Objects, part 4; `grep -c 'MOD-0286-FU01'` is 4.
-- [ ] AC-3 (zorunlu) — New violations: SB-1, SB-2, SB-3, SB-4, SB-8, SB-9 each exit 1 with exactly the table's lines, each owning page named once, no other `YENİ KIRMIZI`; each revert exits 0. SB-1 on the parent's selector and baseline exits 0 with its `(FU-18)` line, so the red comes from this work.
-- [ ] AC-4 (zorunlu) — Baseline holds, references change: SB-5, SB-6, SB-7, SB-12 exit 0 with exactly the table's lines; after SB-6, a further commit touching page `DecompositionTreeBuilder` exits 0 with the `kapandı` line while `--check-baseline` exits 2.
+- [ ] AC-3 (zorunlu) — New violations: SB-1, SB-2, SB-3, SB-4, SB-8, SB-9 each exit 1 with the table's lines, each owning page named once, and `grep -c '^YENİ KIRMIZI '` equal to the number of `YENİ KIRMIZI` lines the table names for it (1, 5, 2, 1, 2, 4); each revert exits 0. SB-1 on the parent's selector and baseline exits 0 with its `(FU-18)` line, so the red comes from this work.
+- [ ] AC-4 (zorunlu) — Baseline holds, references change: SB-5, SB-6, SB-7, SB-12 exit 0 with the table's lines and without its negatives; the revert of SB-6 prints its named lines; after SB-6, a further commit touching page `DecompositionTreeBuilder` exits 0 with the `kapandı` line while `--check-baseline` exits 2.
 - [ ] AC-5 (zorunlu) — Regression: SB-10 (a) stdout equals stdout of the same edit on the parent's selector and baseline, after dropping lines starting `süre:`, `başvuru taraması`, `okunan görünüm metni`; SB-10 (b), (c) exit 1 with the named lines.
-- [ ] AC-6 (zorunlu) — Reader: each row of SB-13, appended alone to the work's baseline, gives `--check-baseline` exit 2 with `taban satır <n>`; R-1 and R-5, committed, give exit 2 under `--base <parent>`; the unchanged baseline gives `--check-baseline` exit 0.
+- [ ] AC-6 (zorunlu) — Reader: each row of the SB-13 table, appended alone to the work's baseline, gives its `--check-baseline` result: R-0a and R-0b exit 0, every other row exit 2 with its table text on the `HATA: taban satır <n>: ` line, `<n>` the appended row's line; R-1, R-5 and R-10, committed, give the same text under `--base <parent>`; the unchanged baseline gives `--check-baseline` exit 0.
 - [ ] AC-7 (zorunlu) — Row set by an independent oracle: the tower's script, importing no selector code, computes (page, check, instance, count) from the git tree, Owned Objects parts 1-2 and the parent's pattern block; it equals the `FU-19` rows both ways, and the `FU-19` rows of `--draft-baseline`. A planted extra row and a planted lowered count each make it fail, recorded. Its `STRIP` and `SCRIPT` equal part 2's code block byte for byte.
 - [ ] AC-8 (zorunlu) — One pull request, old rows untouched: `git diff --numstat <base> -- tests/ui-compliance-baseline.tsv` shows only added lines, as many as the oracle's rows; `awk -F'\t' '$6 == "FU-19"' tests/ui-compliance-baseline.tsv` holds no `taban-01`, `tek-seviye-borc-01` or `belirsiz`, and each row's `reason` names the O-1 decision, given to the script as a parameter; the other `fu` values keep their row counts (at `0504c96ea`: FU-14 1953, FU-16 134, FU-4 64, FU-12 1, FU-15 1).
 - [ ] AC-9 (zorunlu) — Changed pages only: SB-10 (a) prints `başvuru taraması yok` and `okunan görünüm metni: HEAD 19, taban 0`; the AC-1 run prints `başvuru taraması: HEAD 1530 görünüm, taban 1530 görünüm, <s> s` (counts at `0504c96ea`) and `süre:`; `--help` lists the same four modes as today.
-- [ ] AC-10 (zorunlu) — Self-test: `python3 scripts/uic_changed_pages.py --self-test` exits 0 with every case of Test Expectations; the positive assertions of AC-21g03 (first case), g06, g07, g08 name the new `hiçbir görünüm` line, the negative `FU18` assertions (`:1351`) cover both new lines, with no other change to an existing case.
+- [ ] AC-10 (zorunlu) — Self-test: `python3 scripts/uic_changed_pages.py --self-test` exits 0, `grep -c '^FAIL '` is 0, and for each id `FU01-01` to `FU01-53` of Test Expectations `grep -c '^PASS FU01-<nn> '` is at least 1; the positive assertions of AC-21g03 (first case), g06, g07, g08 name the new `hiçbir görünüm` line, the negative `FU18` assertions (`:1351`) cover both new lines, with no other change to an existing case.
 - [ ] AC-11 (zorunlu) — Scope: `git diff --name-only <base> <work>` lists only the two Repo Scope worker files; the parent pack and `.github/workflows/ui-compliance.yml` have the same blob at both commits.
 - [ ] AC-12 (zorunlu) — CI: the `ui-compliance` job on the pull request's head exits 0; the acceptance record names run id, head SHA and the artefact's SHA-256.
 
@@ -203,17 +210,39 @@ Sabotage set: commits on a scratch branch of the clone, never pushed. A Commit p
 | SB-2 | `alert('x');` appended to `Traceability/trace-ui.js` | 1 | `YENİ KIRMIZI Traceability/<P> CI-7 <J> 1 +1` for each P of LotMigration, LotMovements, LotTrace, Lots, Serials |
 | SB-3 | ` a.style.b;` appended to the first `\.style\.` line of `pages/enterprise-strategy/modal-form-utils.js` (`:113`) | 1 | `YENİ KIRMIZI EnterpriseStrategyBusinessPerformance CI-6 <J> 4 +1`; `YENİ KIRMIZI EnterpriseStrategyBusinessPerformance/Components CI-6 <J> 4 +1` |
 | SB-4 | Same on `pages/enterprise-strategy/goals.js` (`:3372`) | 1 | `YENİ KIRMIZI EnterpriseStrategyBusinessPerformance CI-6 <J> 12 +1` |
-| SB-5 | Empty line appended to `pages/enterprise-strategy/goals.js` | 0 | `TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-6 <J> 11`; `TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-5 <J> 1` |
-| SB-6 | Tag of `pages/decomposition/decompositionPage.js` deleted at `Views/DecompositionTreeBuilder/Index.cshtml:179` | 0 | `başvuru kalktı DecompositionTreeBuilder <J>`; `kapandı - satır silinmeli DecompositionTreeBuilder CI-7 <J>` |
+| SB-5 | Empty line appended to `pages/enterprise-strategy/goals.js` | 0 | `TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-6 <J> 11`; `TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-5 <J> 1`; no `YENİ KIRMIZI` |
+| SB-6 | Tag of `pages/decomposition/decompositionPage.js` deleted at `Views/DecompositionTreeBuilder/Index.cshtml:179` | 0 | `başvuru kalktı DecompositionTreeBuilder <J>`; `kapandı - satır silinmeli DecompositionTreeBuilder CI-7 <J>`; no `TABAN FU-19 DecompositionTreeBuilder CI-7 <J> 1`. Revert: `başvuru eklendi DecompositionTreeBuilder <J>`; `TABAN FU-19 DecompositionTreeBuilder CI-7 <J> 1` |
 | SB-7 | Tag of `CRM/cycle-dates.js` deleted from `Views/CRM/CyclePeriods/Details.cshtml` (`Index` keeps it) | 0 | `PASS CRM/CyclePeriods CI-4 <J> 0`; no `başvuru kalktı` |
 | SB-8 | Tag of `pages/enterprise-strategy/goals.js` added to `Views/CRM/CyclePeriods/Index.cshtml` | 1 | `başvuru eklendi CRM/CyclePeriods <J>`; `YENİ KIRMIZI CRM/CyclePeriods CI-5 <J> 1 +1`; `YENİ KIRMIZI CRM/CyclePeriods CI-6 <J> 11 +11` |
 | SB-9 | Tag of `Traceability/trace-ui.js` deleted from `Views/Traceability/Serials/Index.cshtml`, `alert('x');` appended to the file | 1 | SB-2's line for the other 4 pages; `başvuru kalktı Traceability/Serials <J>`; no CI-7 line of Serials on J |
 | SB-10 | (a) Empty line on `CRM/Accounts/index.js`; (b) `alert('x');` there; (c) `alert('x');` on `Recall/cases.js` | 0, 1, 1 | (a) AC-5, AC-9; (b) `YENİ KIRMIZI CRM/Accounts CI-7 <J> 1 +1`; (c) `YENİ KIRMIZI Recall CI-7 <J> 1 +1` |
 | SB-11 | `alert('x');` appended to the 4 files of Owned Objects, part 4 | 0 | The 4 lines; none of those paths on a check line |
 | SB-12 | `@* <script src="~/assets/js/pages/enterprise-strategy/goals.js"></script> *@` added to `Views/CRM/CyclePeriods/Index.cshtml` | 0 | No `başvuru eklendi`; no goals.js line of that page |
-| SB-13 | Rows, one at a time (AC-6) | 2 | R-1 `FU-14` `HCM/Employees · CI-7 · wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js · 1`; `FU-19`: R-2 with `CI-2`; R-3 a `Views/...cshtml` instance; R-4 under `js/{page}/`; R-5 `Home · CI-7 · wwwroot/assets/js/pages/systemStatus.js`; R-6 `Home · CI-6 · wwwroot/assets/js/pages/governance/permissions.js`; R-7 `Home · CI-6 · wwwroot/assets/js/shared/diten-tags.js`; R-8 `HCM/Employees · CI-4 · wwwroot/assets/js/CRM/Accounts/index.js`; R-9 `wwwroot/assets/js/dt-defaults.js`, and a path with `..`; R-10 the missing `wwwroot/assets/js/pages/enterprise-strategy/strategy-initiatives-api.js` |
+| SB-13 | Rows of the table below, one at a time (AC-6) | 0 or 2 | The row's text |
 
-Self-test cases to add, in throw-away repositories, prefix `FU01`: a class file referenced by one page; one case per JS key on it (CI-4, CI-5, CI-6, CI-7, CI-8, CI-9 `api/personalization`, CI-10); two owning pages (both red, once each); two views of one page (one line); a two-level and a single-level owner; `Url.Content` and `?v=` forms; a tag in `@* *@` and in `<!-- -->`; `data-src` not read; a variable path (`ölçülmedi`); Shared only and unreferenced (the two lines); a path missing at HEAD (named line, no exception); each row of part 7's table; a page selected through another file reads its class files; no other page's view read when no class file changed (`okunan` line); `FU-19` rows accepted and refused as R-1...R-10; an added unreferenced row exit 2, the same row unchanged `kapandı`; the draft gives `FU-19` for a class file on a single-level page and `FU-16` for a file of its own folder.
+SB-13 rows: seven cells, tab-separated; `reason` is `sahip kararı sb-13 (2026-10-31)` and `owner` is `platform-shared-services` in every row. `<e>` = `wwwroot/assets/js/pages/enterprise-strategy`.
+
+| R | page | check | instance | count | fu | Result (text after `taban satır <n>: `) |
+|---|---|---|---|---|---|---|
+| R-0a | DecompositionTreeBuilder | CI-4 | `wwwroot/assets/js/pages/decomposition/decompositionPage.js` | 1 | FU-19 | Accepted, exit 0: control |
+| R-0b | WorkCenterNext | CI-7 | `wwwroot/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js` | 1 | FU-19 | Accepted, exit 0: control, subfolder of a single-level page |
+| R-1 | HCM/Employees | CI-7 | `wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js` | 1 | FU-14 | `CI-7 satır kontrolü instance'ı sayfanın dosya yolu değil` (today's text) |
+| R-2 | Home | CI-2 | `Views/Home/Status.cshtml` | 1 | FU-19 | T-1 |
+| R-3 | Home | CI-6 | `Views/Home/Status.cshtml` | 1 | FU-19 | T-2 |
+| R-4a | CRM/Accounts | CI-7 | `wwwroot/assets/js/CRM/Accounts/details-contacts.js` | 1 | FU-19 | T-3: two-level, direct file |
+| R-4b | CRM/Accounts | CI-7 | `wwwroot/assets/js/CRM/Accounts/sub/x.js` | 1 | FU-19 | T-3: two-level, any depth |
+| R-4c | Recall | CI-7 | `wwwroot/assets/js/Recall/cases.js` | 1 | FU-19 | T-3: single-level, direct file |
+| R-5 | Home | CI-7 | `wwwroot/assets/js/pages/systemStatus.js` | 1 | FU-19 | T-6: unreferenced |
+| R-6 | Home | CI-6 | `wwwroot/assets/js/pages/governance/permissions.js` | 1 | FU-19 | T-6: Shared only |
+| R-7 | Home | CI-6 | `wwwroot/assets/js/shared/diten-tags.js` | 1 | FU-19 | T-4 |
+| R-8 | HCM/Employees | CI-4 | `wwwroot/assets/js/CRM/Accounts/index.js` | 1 | FU-19 | T-4: another page's own JS |
+| R-9a | Home | CI-6 | `wwwroot/assets/js/dt-defaults.js` | 1 | FU-19 | T-2: no folder |
+| R-9b | Home | CI-6 | `wwwroot/assets/js/pages/../x.js` | 1 | FU-19 | T-2 |
+| R-10 | EnterpriseStrategyBusinessPerformance | CI-6 | `<e>/strategy-initiatives-api.js` | 1 | FU-19 | T-5: referenced, file missing |
+| R-11 | Shared/X | CI-6 | `wwwroot/assets/js/pages/systemStatus.js` | 1 | FU-19 | T-7 |
+| R-12 | Home | CI-6 | `wwwroot/assets/js/pages/systemStatus.js` | 0 | FU-19 | T-7 |
+
+Self-test cases to add, in throw-away repositories, each case name starting with its id: FU01-01 class file with a two-level owner, red through it; FU01-02 with a single-level owner; FU01-03 in a subfolder of a single-level page's JS folder, referenced by it; FU01-04 to FU01-10 one per JS key on a referenced file, in order CI-4, CI-5, CI-6, CI-7, CI-8, CI-9 `api/personalization`, CI-10; FU01-11 two owning pages, both red, once each; FU01-12 two views of one page, one line; FU01-13 `Url.Content` form; FU01-14 `?v=` form; FU01-15 tag in `@* *@`; FU01-16 tag in `<!-- -->`; FU01-17 `data-src` not read; FU01-18 capture holding `@`; FU01-19 `src="@x"`; FU01-20 CDN URL with `@`, not variable; FU01-21 Shared only line; FU01-22 unreferenced line; FU01-23 Archive or root only line; FU01-24 path missing at HEAD, named line, no exception; FU01-25 to FU01-32 part 7's table, one per row in order; FU01-33 a page selected through another file reads its class files; FU01-34 no other page's view read when no class file changed (`okunan` line); FU01-35 an added unreferenced row exit 2 under `--base`, the same row unchanged `kapandı`, `--check-baseline` exit 2; FU01-36 draft gives `FU-19` and the O-1 reason for a class file on a single-level page, `FU-16` for a file of its own folder; FU01-37 to FU01-53 the SB-13 rows in table order, on fixtures of the same shape, each asserting its result text.
 
 ## Page Help (UXH-001)
 
@@ -222,14 +251,15 @@ Not applicable: no page. Tur yok.
 ## Ready-for-dev Checklist
 
 - [ ] Before approval: sections complete (authorization, Gateway, lookup, audit, help, tour stated as not applicable); DCP-002 preflight OK; registry `Follow-up` row added (O-2).
-- [ ] Before approval: independent review of this version UYGUN, no open ENGEL; `status: ready-for-dev` on the approved bytes; approval row with `whole_pack=<WP>`.
+- [ ] Before approval: independent review of these bytes (`status: ready-for-dev` included) UYGUN, no open ENGEL; approval row on the same bytes with `whole_pack=<WP>`. Until that row exists the pack is not approved.
 - [ ] Before dispatch: O-1 recorded; row count re-measured at the expected base; evidence script and oracle committed, the oracle's own sabotage recorded.
 
 ## Implementation Notes
 
 - Measured at `0504c96eaf9251ea03ccb731c932823d964c4291`, clean tree: Python importing the selector read only (`map_path` over `git ls-tree`, `load_patterns`, `read_baseline`, `execute`), session scratch `fu01_measure.py`, `fu01_measure2.py`, `fu01_measure3.py`; the tower puts them in the review ZIP. The 106 and the debt match an earlier run at `1ee773e90` of a script that did not import the selector.
 - Reference rule over 1530 views: 1305 captures, all prefix `~/`, 0 variable; the 14 other `assets/js/` literals are `<link ... .css>`; 2 commented-out tags excluded; no `.cshtml` outside `Views/`. `git grep -n "assets/js" -- 'frontend/Diten.Web/**/*.cs'` 0 hits. `git grep` of the JS tree for `getScript`, `import(`, `createElement('script')` 0 loaders; `assets/js/` there only in comments and error texts.
-- Likely selector lines, for orientation, not a design: `:84`, `:298-347`, `:394`, `:493-494`, `:508-514`, `:801-813`, `:828`, `:872-902`, `:922-935`, `:953`; self-test `:1387-1446`.
+- Measured at `e16d4ff7d` (scratch `fu01_measure4.py`, `fu01_measure5.py`; views and JS tree as at `0504c96ea`): class pairs under `js/{page}/` 10, all `WorkCenterNext` subfolder files, no two-level page; class files held only by Archive or a root view 0; `VARIABLE` over 1530 views 0 (9 CDN-version hits before the `https?://` exclusion; 10 fixtures as intended); `SCRIPT` captures holding `@`, `{`, `(` 0; `git ls-tree -r --name-only HEAD frontend/Diten.Web/Views/Home/` gives `Status.cshtml`; the SB-13 rows do not exist in the baseline; `--self-test` prints `PASS <name>` / `FAIL <name>` (`:1540-1541`).
+- Likely selector lines, for orientation, not a design: `:84`, `:298-347`, `:394`, `:493-494`, `:508-514`, `:801-813`, `:828`, `:872-902`, `:922-936`, `:953`; self-test `:1387-1446`.
 - Not measured: the change itself; every sabotage line above (read from the code, not run); CI on a real pull request; time on a CI runner.
 
 ## Follow-up Items
@@ -240,6 +270,7 @@ Not applicable: no page. Tur yok.
 | FU-20 | Delete or wire the 2 unreferenced files | enterprise-strategy-business-performance (`systemStatus.js` owner to confirm) | 🟢 no reader; a violation there stays invisible |
 | FU-21 | Missing file named at `StrategyPeriodDetail.cshtml:132` (a 404 is inferred, not measured live) | enterprise-strategy-business-performance | 🟡 line printed whenever the page is selected |
 | FU-22 | Follow the partial chain, if the 59 callers should be named | PSS-UI tower | 🟡 8 files stay under `ESBP/Components` |
+| FU-23 | Files that can never go red: the 2 Shared-only files, and any reference moved to `Views/Shared/**`. Decide a page-less check of such a file; selecting all pages stays forbidden (parent AC-20) | PSS-UI tower | 🟡 a new violation there prints only its own line; no debt today |
 
 ## Teslim dilimleri
 
