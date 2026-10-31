@@ -80,5 +80,5 @@ Korunan yollar: services/Diten.Platform/src/Diten.Platform.Application/Features/
 - `dotnet` derleme ve test koşmadı; yerel `mongod` denenmedi.
 - Prompt'lardaki bazı komut değerleri koşulmadı: `--suite` adları, `verify_datatable_page.py` seçenekleri, sayım sorgusunun BSON alanları (P3 işçiye önce doğrulatır).
 - Taslakları yazan alt ajan kural dosyalarının bir kısmını yalnız adlandırdı, açmadı.
-- CT, P1'i ve bu planı baştan sona okudu; P2, P3, P4 için yalnız kapıyı koştu ve alt ajanın raporunu okudu. Bağımsız HIGH incelemesi her prompt'un son `Expected HEAD`'inde yapılır.
+- CT, P1'i ve bu planı baştan sona okudu; P2, P3, P4'ü yalnız bulgu satırlarında okudu. Dört taslak iki ayrı alt ajana ön inceleme için verildi (2026-10-31, kayıt dışı): 1 ENGEL (P2 create replay kurulumu, kapandı), 12 ORTA, 8 DÜŞÜK; hepsi işlendi, kod koşmadı, bu kurala göre yeni tur yok. Bağımsız HIGH incelemesi her prompt'un son `Expected HEAD`'inde yapılır.
 - Ana daldaki para birimi testi kayıtlı değildir; P4 yalnız bu bir arızayı tolere eder ve raporlar. Çözümü bu kulenin işi değildir.

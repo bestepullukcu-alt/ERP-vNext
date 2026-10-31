@@ -8,7 +8,7 @@ Korunan yollar: services/Diten.Platform/src/Diten.Platform.Application/Features/
 Kapsanan dilim: DL-28
 
 > **TASLAK v0.1 — DAĞITIMA HAZIR DEĞİL. Bu metin kod, commit ya da dağıtım izni değildir.**
-> - Kuyruk satırı `INSPECTED`, `READY` değil. Kayıt satırı `origin/main`'de değil. HIGH inceleme kaydı yok.
+> - Kuyruk satırı `PLANNED`, `READY` değil. Kayıt satırı `origin/main`'de değil. HIGH inceleme kaydı yok.
 > - **Başlangıç noktası P1'in son commit'idir; bugün bilinmez.** Repository, Branch, Expected HEAD ve Worktree, kapının iskeletinden gelir (CT dalının bugünkü ucu). Dağıtımda CT bunları işçi klasörü, işçi dalı ve P1 commit'iyle yeniden yazar; aşağıdaki kod alıntıları ve satır numaraları eb561752'de ölçüldü ve P1 sonrası kayar, CT yeniden ölçer.
 > - P1'in ürettiği `Features/Meetings/Services/MeetingWriteAccess.cs` ve `MeetingSystemOrigin.cs` bugünkü Expected HEAD'de yoktur; bu yüzden "Önce oku" listesinde değildir. İşçi ikisini de açar.
 > - Tek dal, tek birleştirme isteği (DL-28). Bu prompt sonunda takip toplantısı kuralları (P3) ve rapor (P4) eksiktir; ara durum ana dala gitmez.
@@ -117,7 +117,7 @@ NEDEN:
 - Bu kural yalnız doğrudan API çağıranını etkiler; form, Görev Merkezi ve takip penceresi etkilenmez (paket satır 4345–4362).
 
 NASIL:
-- **Makine yükü, ortam, taban.** P1 ile aynı: `(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average` 80 üstündeyse 60 saniye bekle. `$env:DITEN_TEST_MONGOD = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe'`; docker yok. Değişiklikten önce DOĞRULA 1 ve 2'yi koş; P1 tabanından farklıysa DUR.
+- **Makine yükü, ortam, taban.** P1 ile aynı: `(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average` 80 üstündeyse 60 saniye bekle. `$env:DITEN_TEST_MONGOD = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.exe'`; docker yok. Köprü testi için `Test-Path frontend/Diten.Web/node_modules`; yoksa `Push-Location frontend/Diten.Web; npm ci; Pop-Location`; `npm ci` başarısızsa DUR. Değişiklikten önce DOĞRULA 1 ve 2'yi koş; P1 tabanından farklıysa DUR.
 - **Komut** (`MeetingCommands.cs`). `CreateMeetingCommand` son parametreleri (P1'in `SystemOrigin`'inden sonra): `bool RequireCreatorCanView = true`, `Guid? PreAcceptedUserId = null`. HTTP istek modeline konmaz. Çağrılarda ad ile geçilir. Denetleyici değişmez: `MeetingsController.cs:42` iki konumsal argümanla kalır.
 - **`CreateMeetingHandler`** (`MeetingCommandHandlers.cs`, satırlar eb561752).
   - **Sıra:** tür kontrolü → düzenleyen uygunluğu (`:115–121`) → `FollowUpOfMeetingId` (`:123–131`, P1) → **yaratıcı kuralı** → anahtar ve `FindOrCreateAsync` (`:133–151`).
@@ -127,7 +127,7 @@ NASIL:
 - **`ScheduleFollowUpMeetingHandler`** (K-5; `MeetingFollowUpCommandHandlers.cs:92`). Taraf: kaynağın düzenleyeni ya da kaynakta katılımcı satırı olan (hangi yanıt olursa olsun); kimlikler P1'in `MeetingWriteAccess` yüklemesinden gelir. `SystemOrigin` varsa `false`; taraf ise `false`; taraf değilse `true`. `new CreateMeetingCommand(meetingRequest, command.CorrelationId, SystemOrigin: command.SystemOrigin, RequireCreatorCanView: …)`, ad vererek. Bu dosyada başka değişiklik yok; 200 tekrarında bugünkü davranış P3'e kadar sürer.
 - **Dokunulmayanlar.** `ScheduleReviewMeetingForTaskHandler` değişmez; düzenleyen çağıran olduğu için kural hep geçer, tekrar dalı içeride uygulanır (paket satır 4094–4101). `GenerateDueMeetingSeriesHandler` değişmez.
 - **Neden kodları** (`MeetingModels.cs:55+`, K-8). `CreateConflict = "MEETING_CREATE_CONFLICT"`, `CreatorCannotView = "MEETING_CREATOR_CANNOT_VIEW"`, `FollowUpConflict = "MEETING_FOLLOW_UP_CONFLICT"`. Sınıf içinde `public const string X = "…";` biçiminde: köprü testi bu biçimi okur (`meetings-reason-code-bridge.test.js:38`). `FollowUpConflict` P3'te kullanılır; köprü testi şimdiden ister.
-- **Köprü.** `api.js` `REASON_CODE_MESSAGE_KEYS` içine üç satır (K-8). `Views/Meetings/_IndexL10n.cshtml` içine `ErrorX = Localizer["ErrorX"]` biçiminde üç satır (`meetings-reason-code-bridge.test.js:106`). Yedi resx'e üç anahtar. `meetings-reason-code-bridge.test.js` değişmez ve yeşil kalır.
+- **Köprü.** `api.js` `REASON_CODE_MESSAGE_KEYS` içine üç satır (K-8). `Views/Meetings/_IndexL10n.cshtml` içine `ErrorX = Localizer["ErrorX"].Value,` biçiminde üç satır (`_IndexL10n.cshtml:116–117` deseni; `.Value` olmadan köprü testi yeşil kalır ama metin bozulur). Yedi resx'e üç anahtar. `meetings-reason-code-bridge.test.js` değişmez ve yeşil kalır.
 - **Metinler (CT taslağı; terimler ölçülen `MeetingsIndex` satırlarına göre: tr "düzenleyen", "devam"; ru "совещание"; zh "延续会议"; ar "متابعة"; es "continuación"). l10n-agent kontrol eder; değiştirirse Decisions'a yazar. Boş ya da İngilizce kopya olmaz.**
 
   | Dil | `ErrorCreateConflict` | `ErrorCreatorCannotView` | `ErrorFollowUpConflict` |
@@ -140,10 +140,10 @@ NASIL:
   | ar | تعذر إنشاء اجتماع بهذه البيانات. | لن تتمكن من رؤية هذا الاجتماع، لذلك لم يتم إنشاؤه. حدّد نفسك منظّمًا أو مشاركًا. | يوجد بالفعل اجتماع بهذه البيانات وهو ليس متابعة لهذا الاجتماع. |
   | ru | Не удалось создать совещание с этими данными. | Вы не смогли бы видеть это совещание, поэтому оно не создано. Укажите себя организатором или участником. | Совещание с этими данными уже существует и не является продолжением этого совещания. |
 
-- **HTTP konağı.** Yeni test yardımcısı `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Meetings/MeetingAccessHttpMongoHost.cs`, `MeetingAttendeeSearchHttpMongoTests.cs:426–507` desenine göre: gerçek `AddApplication()`, gerçek depolar, `ReplicaSetClassFixture`, JWT ile izin, `UsePlatformAccessPipeline`. Rotalar `MeetingsController`'dan okunur, uydurulmaz. P3 ve P4 bu konağı kullanır. Mail, kaydeden çift üzerinden ölçülür (`MeetingDispatchAssertions.cs`).
+- **HTTP konağı.** Yeni test yardımcısı `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Meetings/MeetingAccessHttpMongoHost.cs`, `MeetingAttendeeSearchHttpMongoTests.cs:426–507` desenine göre: gerçek `AddApplication()`, gerçek depolar, `ReplicaSetClassFixture`, JWT ile izin, üretim sırasında `app.UseMiddleware<CorrelationIdMiddleware>()` (`Program.cs:330`; `UsePlatformAccessPipeline` eklemez, yoksa zarftaki `correlation_id` istek başına değişir ve bayt eşitliği ölçülemez), `UsePlatformAccessPipeline`. Rotalar `MeetingsController`'dan okunur, uydurulmaz. P3 ve P4 bu konağı kullanır. Mail, kaydeden çift üzerinden ölçülür (`MeetingDispatchAssertions.cs`).
 - **Satırlar** (paket satırları bağlayıcıdır; ad senin, rapora dosya:satır):
-  - **create replay** (satır 4197–4200), HTTP: göremeyen `create` sahibi beş değeri gönderir, 409; gövde sabit baytlarla karşılaştırılır; kimlik, başlık, açıklama, yer, katılımcı, durum, iptal nedeni yok; satır, gündem, görev, bağlantı, posta yazılmaz. Düzenleyen aynısını gönderir, 200 ve toplantı.
-  - **`FollowUpOfMeetingId`** (satır 4201–4202), HTTP: görünmeyen toplantıyı adlandıran oluşturma 404, olmayan kimlikle bayt eşit, yazma yok.
+  - **create replay** (satır 4197–4200), HTTP: göremeyen `create` sahibi beş değeri gönderir, 409. Kurulum: anahtardaki düzenleyen başkasıdır, çağıranın var olan toplantıda satırı yoktur, istek `attendeeUserIds: [çağıran]` taşır ve çağıran uygunluk listesindedir; yoksa yaratıcı kuralı tekrar dalından önce 400 döner (paket satır 4316–4317, 4355–4357; kuralın sırası değiştirilmez). İki istek aynı korelasyon başlığını taşır; gövde sabit baytlarla karşılaştırılır; kimlik, başlık, açıklama, yer, katılımcı, durum, iptal nedeni yok; satır, gündem, görev, bağlantı, posta yazılmaz. Düzenleyen aynısını gönderir, 200 ve toplantı.
+  - **`FollowUpOfMeetingId`** (satır 4201–4202), HTTP: görünmeyen toplantıyı adlandıran oluşturma 404, olmayan kimlikle bayt eşit (aynı korelasyon başlığı), yazma yok.
   - **creator rule** (satır 4205–4212), HTTP: dört oluşturma durumu ve kaynağın düzenleyen olmayan katılımcısının takip ucundan 201 alması. `organizerUserId: null` hep geçer.
   - **pre-accepted only for that user** (satır 4278–4280), işleyici.
   - **non-party creator rule on the follow-up path** (satır 4283–4287), kaydeden aracıyla: taraf olmayan `true`; düzenleyen ve katılımcı `false`; işaretleyici `false`. S15 HTTP satırı bu prompt'ta yok.
@@ -172,11 +172,11 @@ YAPMA:
 - `meetings-reason-code-bridge.test.js`'i değiştirme, test `Skip` etme, iddia zayıflatma.
 
 DOĞRULA: Komutlar çalışma ağacı kökünde, Windows PowerShell'de. Her ağır komuttan önce makine yükü ölçülür. `T = services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj`, `R = $env:TEMP\mg-s28-p2`. Bu prompt E2 ve E3 üretir; gerekli E5 P4 sonundadır.
-1. Kademe 1: `dotnet build T -c Debug` → 0 hata; uyarı tabana göre yazılır.
+1. Kademe 1: `dotnet build T -c Debug` ve `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` (`T` Razor dosyasını derlemez) → 0 hata; uyarı tabana göre yazılır.
 2. Kademe 2: `dotnet test T -c Debug --no-build --filter "FullyQualifiedName~Diten.Platform.Application.Tests.Meetings" --results-directory R --logger "trx;LogFileName=meetings.trx"`, sonra `py -3 -I -B -X utf8 scripts/known_failures.py check R\meetings.trx --suite Diten.Platform.Application.Tests` → çıkış 0, 0 kırmızı.
 3. Yeni satırlar listede ve geçiyor (NASIL "Satırlar").
 4. Köprü: `Push-Location frontend/Diten.Web; npx vitest run tests/meetings-reason-code-bridge.test.js tests/meetings-follow-up.test.js; Pop-Location` → 0 kırmızı.
-5. Erken sabotaj (resmi koşu P4). Her biri elle; `Get-FileHash -Algorithm SHA256 <dosya>` önce ve sonra aynı.
+5. Erken sabotaj (resmi koşu P4). Her biri elle; `Get-FileHash -Algorithm SHA256 <dosya>` önce ve sonra aynı. Tarama ve yansıma testleri tek sınıfta: `MeetingCreateCommandGuardTests`; filtre `FullyQualifiedName~MeetingCreateCommandGuardTests`.
    - `MeetingCommandHandlers.cs` içinde bir yerel değişkene `new CreateMeetingCommand(r, c, RequireCreatorCanView: false)` yaz → `RequireCreatorCanView` taraması kırmızı. Geri al → yeşil. Paketin denetleyici sabotajı (satır 4656) denetleyici dosyası gerektirir, P4'tedir.
    - Aynı dosyada `new CreateMeetingCommand(r, c, PreAcceptedUserId: x)` yaz → `PreAcceptedUserId` taraması kırmızı. Geri al → yeşil.
    - `CreateMeetingRequest`'e `PreAcceptedUserId` ekle → yansıma testi kırmızı. Geri al → yeşil.

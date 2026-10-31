@@ -8,7 +8,7 @@ Korunan yollar: services/Diten.Platform/src/Diten.Platform.Application/Features/
 Kapsanan dilim: DL-28
 
 > **TASLAK v0.1 — DAĞITIMA HAZIR DEĞİL. Bu metin kod, commit ya da dağıtım izni değildir.**
-> - Kuyruk satırı `INSPECTED`, `READY` değil. Kayıt satırı `origin/main`'de değil. HIGH inceleme kaydı yok.
+> - Kuyruk satırı `PLANNED`, `READY` değil. Kayıt satırı `origin/main`'de değil. HIGH inceleme kaydı yok.
 > - **Başlangıç noktası P2'nin son commit'idir; bugün bilinmez.** Repository, Branch, Expected HEAD ve Worktree, kapının iskeletinden gelir (CT dalının bugünkü ucu). Dağıtımda CT bunları yeniden yazar. Kod alıntıları ve satır numaraları eb561752'de ölçüldü; P1 ve P2 sonrası kayar, CT yeniden ölçer.
 > - P1'in ürettiği `MeetingWriteAccess.cs`, `MeetingSystemOrigin.cs` ve P2'nin ürettiği `MeetingAccessHttpMongoHost.cs` bugünkü Expected HEAD'de yoktur; bu yüzden "Önce oku" listesinde değildir. İşçi hepsini açar.
 > - Tek dal, tek birleştirme isteği (DL-28). Bu prompt sonunda rapor ve matris (P4) eksiktir; ara durum ana dala gitmez.
@@ -139,26 +139,16 @@ NASIL:
   - Devam eden taşımada `SortOrder` seçimi Decisions'a yazılır; yeni takip toplantısında bugünkü sıra korunur. S25-8 sıralamayı sonra ele alır.
   - Bağlantı en son yazılır. Bağlantıyı bulan erken dönüş taşımayı yeniden koşmaz (paket satır 4444–4446).
 - **Depo** (K-11). `IAgendaItemRepository.TryCreateAsync` ve `AgendaItemRepository` karşılığı; yalnız `ServerErrorCategory.DuplicateKey` yakalanır (`MeetingRepositories.cs:431–432` deseni). `FakeAgendaItemRepository` (`MeetingS2TestDoubles.cs:255`) ve `CarryingAgendaStore` (`AgendaItemCommandHandlerTests.cs:60`) yeni üyeyi kazanır. Sahte depo tekil kuralı taklit etmez; tekil ölçümü gerçek Mongo'dadır.
-- **Mükerrer sayımı (dizinden önce; K-14; paket satır 4453–4456).** Salt-okunur. Çıktı yalnız sayıdır; kimlik ve içerik rapora yazılmaz. Koleksiyon `meeting_agenda_items` (`PlatformCollections.cs:139`):
-
-  ```
-  db.meeting_agenda_items.aggregate([
-    { $match: { CarriedFromMeetingId: { $type: "binData" }, IsDeleted: false } },
-    { $group: { _id: { TenantId: "$TenantId", MeetingId: "$MeetingId", RecordLinkId: "$RecordLinkId" }, n: { $sum: 1 } } },
-    { $match: { n: { $gt: 1 } } },
-    { $count: "duplicateGroups" }
-  ])
-  ```
-
+- **Mükerrer sayımı (dizinden önce; K-14; paket satır 4453–4456).** Salt-okunur. Çıktı yalnız sayıdır; kimlik ve içerik rapora yazılmaz. Koleksiyon `meeting_agenda_items` (`PlatformCollections.cs:139`). Sorgu `docs/records/audits/2026-10/mg-s28-inspection-01/duplicate-carried-lines-count.js`; değiştirilmez, `collectionExists`, `carriedLines` ve `duplicateGroups` yazar. `collectionExists=false` yanlış veritabanı demektir, o koşunun sıfırı kanıt sayılmaz.
   - Alan adlarını önce gerçek Mongo test veritabanındaki bir satırla doğrula; farklıysa dizini ve sorguyu sen değiştirme, DUR.
   - Geliştirici makinesi: bu makinede kalıcı bir yerel Toplantılar veritabanı varsa say, yoksa "yok" yaz. CI ve test Mongo'su her koşuda boş başlar.
-  - Staging ve canlı: sayımı CT verir. Sonucu ortam ve tarih ile rapora al.
+  - Staging ve canlı: sayımı CT verir. Üç değeri ortam ve tarih ile rapora al.
   - Herhangi bir ortamda sonuç sıfırdan büyükse dizin satırını ekleme, DUR, CT'ye bildir. Otomatik temizlik yok; onarım ayrı sahip kararıdır.
 - **Dizin** (`PlatformSchemaManifest.Meetings.cs:114–122`). `AgendaItem` dizi bloğuna: anahtar `TenantId`, `MeetingId`, `RecordLinkId` artan; `Unique = true`; `Name = "ux_meeting_agenda_items_tenant_meeting_carried_link"`; `PartialFilterExpression` birebir `{ CarriedFromMeetingId: { $type: "binData" }, IsDeleted: false }` (§24.4 satır 1420). Biçim için `CreateIndexOptions<T>` (`PlatformSchemaManifest.WorkingCalendar.cs:31–43`, `SchemaCollection.cs:114`). Taşınmayan satırlar ve silinmiş satırlar dizine girmez. `:109–110`'daki "No unique index" yorumu güncellenir.
 - **Satırlar** (paket satırları bağlayıcıdır; ad senin, rapora dosya:satır). HTTP satırları P2'nin `MeetingAccessHttpMongoHost.cs` konağında.
-  - **follow-up collision** (satır 4213–4223), HTTP: üç satır (göremez 409 sabit; görür ve kaynak değil 409 yalnız kimlik; görür, kaynak, bağlantı yok, tamamlama ve ikinci tekrar). `data` tek üyeli (K-12).
+  - **follow-up collision** (satır 4213–4223), HTTP: üç satır (göremez 409 sabit; görür ve kaynak değil 409 yalnız kimlik; görür, kaynak, bağlantı yok, tamamlama ve ikinci tekrar). Üçüncü satırda hata `CreateMeetingCommand` sonrasına konur (paket satır 4220–4221), konakta kancalı sarmalayıcıyla; olmuyorsa eşdeğer tohumlamayı gerekçesiyle Decisions'a yaz. `data` tek üyeli (K-12).
   - **carry cut off in the middle** (satır 4224–4230), işleyici, gerçek Mongo: `IAgendaItemRepository` sarmalayıcı ikinci satırda atar. Yeniden deneme 200, sayı 3, görev başına bir satır, atlama koşuluna ulaşıldı; üçüncü çağrı bağlantıdan 200, yazma yok.
-  - **two completions at once** (satır 4231–4238), işleyici, gerçek Mongo, dizinli veritabanı: bariyer iki çağrıyı okumadan sonra tutar. Tam biri 409 `MEETING_CONCURRENCY_CONFLICT`, öteki 200 sayı 3. Görev başına bir satır. Sonraki tekrar bağlantıdan 200. Şema `PlatformSchemaManifest.ApplyAsync` ile uygulanır (`mongo-indexing.md:52`); farklı `SortOrder` tohumlanır. Bariyer ve kanca `MeetingReadVersionRaceMongoTests.cs` desenindedir.
+  - **two completions at once** (satır 4231–4238), işleyici, gerçek Mongo, dizinli veritabanı: bariyer iki çağrıyı okumadan sonra tutar. Tam biri 409 `MEETING_CONCURRENCY_CONFLICT`, öteki 200 sayı 3. Görev başına bir satır. Sonraki tekrar bağlantıdan 200. Şema `PlatformSchemaManifest.ApplyAsync` ile uygulanır (`mongo-indexing.md:52`); farklı `SortOrder` tohumlanır. Bu satır dizin ön koşulu çağırmaz, yalnız kendi kiracı satırlarını temizler: dizin sabotajında (P4) kırmızı nedeni "görev başına iki satır" olmalıdır (paket satır 4664). Bariyer ve kanca `MeetingReadVersionRaceMongoTests.cs` desenindedir.
   - **completion on a cancelled or completed meeting** (satır 4256–4260), HTTP: iki satır.
   - **scheduler as attendee** (satır 4261–4272), HTTP, gerçek Mongo: beş satır. `GET /{id}` 200, davet gönderimi yok, Görev Merkezi öğesi yok (`MeetingWorkItemProviderTests.cs` deseni).
   - **scheduler under the marker** (satır 4273–4277), kaydeden aracıyla.
@@ -168,7 +158,7 @@ NASIL:
   - **"link exists" answers 200 whatever the lifecycle** (satır 4303–4306), HTTP: iki satır.
   - **a cancelled meeting that is not a follow-up of the source** (satır 4307–4309), HTTP.
   - **party outside the eligibility filter** (satır 4310–4312), HTTP: 201, takip var, zamanlayan satırı yok.
-  - **Dizin satırı** (paket açıkça saymaz, K-11'in ölçümü): gerçek Mongo'da `TryCreateAsync` ikinci satırda null; `CarriedFromMeetingId` null iki satır çakışmaz; silinmiş satır çakışmaz.
+  - **Dizin satırı** (paket açıkça saymaz, K-11'in ölçümü): gerçek Mongo'da `TryCreateAsync` ikinci satırda null; `CarriedFromMeetingId` null iki satır çakışmaz; silinmiş satır çakışmaz. Yazmadan önce `UniqueIndexPrecondition.RequireAsync` (`Persistence/UniqueIndexPrecondition.cs`), kendi kiracı satırları `finally` ile silinir (`MeetingMinutesVersionMongoTests.cs:52–73`). `listIndexes` ile ad, `unique` ve `partialFilterExpression` karşılaştırılır (`RecordLinkRepositoryMongoTests.cs:241`).
   - **P2 tamamlaması:** takip ucu gövde testi: yalnız zamanlayanın kendi satırı `Accepted` (satır 4505–4506); tarama K-15.
 - **Var olan testler.** `MeetingFollowUpCommandHandlerTests.cs:162, :184` değişmez (K-13). `:216` K11 testi yeşil kalır. Bağlantı sırasını iddia eden bir test varsa önce / sonra raporla. İddia zayıflatılmaz.
 - **Test planı dondurma.** Seçenek (b): ilk hatada dur. Yedek kapsam yok.
@@ -194,7 +184,7 @@ YAPMA:
 
 DOĞRULA: Komutlar çalışma ağacı kökünde, Windows PowerShell'de. Her ağır komuttan önce makine yükü ölçülür. `T = services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj`, `R = $env:TEMP\mg-s28-p3`. Bu prompt E2 ve E4 satırları üretir; gerekli E5 P4 sonundadır.
 1. Kademe 1: `dotnet build T -c Debug` → 0 hata; uyarı tabana göre yazılır.
-2. Kademe 2: `dotnet test T -c Debug --no-build --filter "FullyQualifiedName~Diten.Platform.Application.Tests.Meetings" --results-directory R --logger "trx;LogFileName=meetings.trx"`, sonra `py -3 -I -B -X utf8 scripts/known_failures.py check R\meetings.trx --suite Diten.Platform.Application.Tests` → çıkış 0, 0 kırmızı.
+2. Kademe 2: `dotnet test T -c Debug --no-build --filter "FullyQualifiedName~Diten.Platform.Application.Tests.Meetings" --results-directory R --logger "trx;LogFileName=meetings.trx"`, sonra `py -3 -I -B -X utf8 scripts/known_failures.py check R\meetings.trx --suite Diten.Platform.Application.Tests` → çıkış 0, 0 kırmızı. Ayrıca şema korumaları: `dotnet test T -c Debug --no-build --filter "FullyQualifiedName~Schema|FullyQualifiedName~MongoSchemaResidue" --results-directory R --logger "trx;LogFileName=schema.trx"`, aynı `known_failures.py` denetimi → çıkış 0.
 3. Yeni satırlar listede ve geçiyor (NASIL "Satırlar"). Eşzamanlı satır ardı ardına üç kez koşulur, üçü de yeşil; sonuçlar yazılır.
 4. Kademe 3 (mimari): `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests -c Debug --results-directory R --logger "trx;LogFileName=arch.trx"`, sonra `py -3 -I -B -X utf8 scripts/known_failures.py check R\arch.trx --suite TenantArchitecture.ArchitectureTests` → çıkış 0; yalnız kayıtlı arızalar. Bu koşu depo arayüzü ve şema değişikliğinin mimari kuralları bozmadığını da ölçer.
 5. Erken sabotaj (resmi koşu P4). Her biri elle; `Get-FileHash -Algorithm SHA256 <dosya>` önce ve sonra aynı.
@@ -204,7 +194,7 @@ DOĞRULA: Komutlar çalışma ağacı kökünde, Windows PowerShell'de. Her ağ�
 
 Durma koşulları:
 - Worktree HEAD P2 commit'i değil, dal farklı, ya da başlangıçta kirli dosya var.
-- Dağıtım mesajında staging ve canlı için sayım sonucu yok ya da herhangi bir ortamda mükerrer grup sayısı sıfırdan büyük. Dizin satırını ekleme.
+- Dağıtım mesajında staging ve canlı için sayım sonucu yok, herhangi bir ortamda `collectionExists=false` ya da mükerrer grup sayısı sıfırdan büyük. Dizin satırını ekleme.
 - Sayım sorgusu alan adları gerçek satırla uyuşmuyor.
 - `Accepted` ya da Q25 kuralı paketin metniyle çelişen bir kullanıcı akışı gösteriyor.
 - `MeetingFollowUpCommandHandlerTests.cs:162` ya da `:184` yeşil kalamıyor (K-13).
