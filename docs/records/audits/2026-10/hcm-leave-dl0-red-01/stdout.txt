@@ -1,0 +1,9 @@
+koşulan test adı: 52, satır: 85
+KIRMIZI: küme dosyasında sabit yok: leave.admin-requests.read
+KIRMIZI: küme dosyasında sabit yok: leave.entitlements.read
+KIRMIZI: küme dosyasında sabit yok: leave.sync-runs.read
+KIRMIZI: Hr_read_keys_enter_no_default_role_even_under_the_Admin_module: 3 geçen satır bekleniyor, ölçülen []
+KIRMIZI: An_ordinary_leave_read_key_still_reaches_Viewer: tek geçen satır bekleniyor, ölçülen None
+KIRMIZI: The_three_keys_are_in_the_explicit_grant_set_by_their_exact_names: tek geçen satır bekleniyor, ölçülen None
+KIRMIZI: The_explicit_grant_only_set_is_exactly_the_thirteen_owner_decided_keys: tek geçen satır bekleniyor, ölçülen None
+sonuç: kırmızı
