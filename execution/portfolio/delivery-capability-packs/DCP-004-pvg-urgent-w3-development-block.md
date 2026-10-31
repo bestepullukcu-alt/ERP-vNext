@@ -52,7 +52,7 @@ decision_records: "pending support package - not normative until committed"
 > `-02.md`, `-03.md`. See §10 "Build gate vs operational runtime gate". The 2026-10-31 note below narrows this for MOD-0230
 > only.
 
-> **2026-10-31 MOD-0230 closed catalog registration exception (owner "Evet" 2026-10-31, re-confirmation pending (record `-02`)):** for
+> **2026-10-31 MOD-0230 closed catalog registration exception (owner "Evet, sürsün" 2026-10-31, record `-03`):** for
 > **MOD-0230 only**, once revision 15 is approved on main, the build/test gate (local / dev / CI) authorizes one catalog registration of Case Intake
 > & Triage: a manifest in `Diten.PvgService` with `IsTenantAssignable: false` and every page hidden from the menu, pushed once
 > at start when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, as scoped by the MOD-0230 pack (revision 15, slice DL-11). A working live screen stays pending the owner
@@ -62,7 +62,7 @@ decision_records: "pending support package - not normative until committed"
 > MOD-0231, MOD-0232, and MOD-0234, and the MOD-0234 no-shell gate (§15) is untouched. §11's closing sentence stays word for
 > word for every member; one more sentence after it names this exception only. Seed data, grant code, menu entries, other
 > background jobs, and operational use stay unauthorized for every member; a person's role grant in dev, for measurement,
-> is allowed. Records: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (corrections). See §10.
+> is allowed. Records: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (corrections), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md` (re-confirmed). See §10.
 
 > **User constraint:** This draft does **not** develop Urgent foundation remediation W-3A0, does **not**
 > include next-stage W-4/W-5 modules outside the requested urgent slices, and does **not** start
@@ -297,7 +297,7 @@ and does not move the operational runtime gate. MOD-0231, MOD-0232, and MOD-0234
 collection, and migration exclusions (§11) stand. Seed data, permission seed or grant, and background jobs stay
 unauthorized for every member; the next paragraph narrows this for MOD-0230 only.
 
-**MOD-0230 build/test closed catalog registration exception (added 2026-10-31; owner "Evet" 2026-10-31, re-confirmation pending (record `-02`)).** Once revision 15 is approved on main, and
+**MOD-0230 build/test closed catalog registration exception (added 2026-10-31; owner "Evet, sürsün" 2026-10-31, record `-03`).** Once revision 15 is approved on main, and
 under the build/test gate only, MOD-0230 may enter the module catalog once, closed: `IsTenantAssignable: false`, every page
 `IsNavigationVisible: false`, registered by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, as scoped by the MOD-0230 pack
 (revision 15, slice DL-11). The push is one startup step, not a background job. Its keys reach AuthService through the
@@ -618,8 +618,8 @@ policy tests, and no forbidden path changes.
   (CAP-001 §7.1) and §8 item 5 (DL-10 before DL-5) added. No audit decision is taken; D-1, D-2, D-4, D-5, D-6, and D-7
   stay open.
 - 2026-10-31: MOD-0230 build/test closed catalog registration exception, once revision 15 is approved on main, recorded in the header note, §8 item 6,
-  §8.1, §10 (guard, gate, and "Audit trail gate" item 3), §11, and the runtime packet list (owner "Evet" 2026-10-31, re-confirmation pending (record `-02`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
-  corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`). The owner approves this DCP-004 change (`execution/domains/pharmacovigilance/domain-config.md` line 96);
+  §8.1, §10 (guard, gate, and "Audit trail gate" item 3), §11, and the runtime packet list (owner "Evet, sürsün" 2026-10-31, record `-03`: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
+  corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`). The owner approves this DCP-004 change (`execution/domains/pharmacovigilance/domain-config.md` line 96);
   `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-02.md` covered revision 14 only and is not extended; the pack's HIGH
   approval path is unchanged. Scope: the MOD-0230 build/test gate only. The operational runtime gate,
   MOD-0231 / MOD-0232 / MOD-0234, the MOD-0234 no-shell gate, seeds, grant code, menu entries, and other jobs are

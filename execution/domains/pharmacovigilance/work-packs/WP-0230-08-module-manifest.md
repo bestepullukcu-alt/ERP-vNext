@@ -3,7 +3,7 @@ id: WP-0230-08
 title: Module manifest and catalog registration
 module: MOD-0230
 service: Diten.PvgService
-depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10]
+depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10]
 gate: pack revision 15 approved on main
 status: blocked
 estimate: 0.5 d
@@ -13,8 +13,8 @@ estimate: 0.5 d
 
 ## Decision (2026-10-31)
 
-Owner "Evet" 2026-10-31, re-confirmation pending (record `-02`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md` (KK-1 ...
-KK-6), corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`. The draft applies option B, narrowed: the module enters the catalog with `IsTenantAssignable: false`, no page is visible in
+Owner "Evet, sürsün" 2026-10-31 (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md` (KK-1 ...
+KK-6) holds, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`. Option B applies, narrowed: the module enters the catalog with `IsTenantAssignable: false`, no page is visible in
 the menu, and it is not offered for tenant subscription. `Diten.PvgService` registers it, when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like. Platform and Auth
 code do not change, no seed is written, and the operational runtime gate stays closed. An authorized user then sees the
 page; the list returns no records and saving is refused (`-02` Düzeltme 1; pack gap G-23, OD-PVG-14).
@@ -26,8 +26,8 @@ user without the key gets 403 at that address, and no role can hold the key unti
 The open question under option B is answered as a CT reading: `pvg.case-intake-triage.route` is declared, not withheld. The
 owner sees that reading when approving pack revision 15 (record, "CT okumaları" 1).
 
-**Gate:** pack revision 15 approved on main. It is not approved yet, and the owner's re-confirmation is pending, so this pack
-stays `blocked` and nothing here may be started. The kept-for-history sections below are not the contract. The contract is the pack's "Closed Catalog
+**Gate:** pack revision 15 approved on main. It is not approved yet, so this pack stays `blocked` and nothing here may be
+started. The kept-for-history sections below are not the contract. The contract is the pack's "Closed Catalog
 Registration" section and slice DL-11 (AC-36, AC-37, AC-38), whose prerequisites are in `depends_on` above (DL-10 finished first, KK-5).
 
 ## Do not start this pack
@@ -78,13 +78,13 @@ available. That decision belongs to you, not to an implementing agent.
 | **C. Register fully** | Standard satisfied literally. | Advertises a regulated PV module as tenant-assignable while its masking, workflow, and evidence dependencies do not exist. **Not recommended.** |
 
 Option C should not happen before the operational runtime gate opens. Option B, narrowed, is the 2026-10-31 decision;
-see "Decision (2026-10-31)" for why option A no longer holds and for its pending re-confirmation.
+see "Decision (2026-10-31)" for why option A no longer holds.
 
 ## What is needed before this pack can move to `ready`
 
-Since 2026-10-31 the conditions are the gate above and the owner's re-confirmation. The list below is kept as history.
+Since 2026-10-31 the only condition is the gate above. The list below is kept as history.
 
-- [ ] You choose A, B, or C. "Evet" for B, narrowed, on 2026-10-31; re-confirmation pending.
+- [x] You choose A, B, or C. Done 2026-10-31: B, narrowed ("Evet, sürsün").
 - [ ] If **A**: the carve-out is written into either `.antigravity/rules/module-self-registration-standard.md` (protected - needs your approval) or as a scoped, time-boxed exception recorded in the MOD-0230 pack and DCP-004 §20.
 - [ ] If **B**: decide whether `pvg.case-intake-triage.route` is declared or withheld until MOD-0023 ships. Declared in the draft (CT reading, open to the owner at pack revision 15's approval).
 - [ ] If **C**: the operational runtime gate must open first, which requires MOD-0019, MOD-0023, MOD-0031, and a retention / legal-hold owner. That is not a slice-1 decision.
