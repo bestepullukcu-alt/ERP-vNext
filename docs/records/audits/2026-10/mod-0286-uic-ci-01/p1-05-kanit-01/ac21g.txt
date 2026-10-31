@@ -1,0 +1,94 @@
+PASS --base HEAD (empty diff) -> exit 0, the only line is the duration 'süre: … s'
+PASS exit 0: a changed page whose only reds are baseline rows -> TABAN with its FU, PASS lines, exit 0
+PASS exit 2: a missing base ref -> tool error, never '0 changed pages'
+PASS exit 2: a base that is an option ('--all') is refused — no all-pages value
+PASS count: a second match on the line of the baselined match -> +1
+PASS count: a byte copy of the violating line on a new line -> +1
+PASS count: a line inserted above the violation -> unchanged, TABAN
+PASS count: a re-indented violating line -> unchanged, TABAN
+PASS count: the violation moved inside the file -> unchanged, TABAN
+PASS count: the violating line edited without a new match -> unchanged, TABAN
+PASS count: one violation removed and one added in the same file (the written limit) -> TABAN
+PASS count: a match completed on its continuation line -> +1 (the preparatory commit itself stays TABAN)
+PASS count fell (2 -> 1) -> TABAN 1 and 'kapandı - satırı güncelle 2 -> 1', exit 0
+PASS count fell to 0 -> 'kapandı - satır silinmeli', exit 0
+PASS mapping: a deleted path selects its page; the verifier stops -> YENİ KIRMIZI '_Filter.cshtml exists', the page's other CI-3 row 'ölçülmedi', never 'kapandı'
+PASS mapping: a rename maps both paths — the old page removed ('sayfa kaldırıldı', its rows 'kapandı - satır silinmeli'), the new page checked as added (YENİ KIRMIZI)
+PASS registry: an entry added (Platform/Other, tr) -> the page selected; en still red (TABAN), tr closed
+PASS registry: both entries of a page removed (tr) -> YENİ KIRMIZI Platform/Tenants CI-12 platform-search.tr.json:yok
+PASS registry: only the navigation item removed, the suggestions item kept -> page selected, YENİ KIRMIZI
+PASS registry: an item object edited (keywords) -> the page selected
+PASS registry: a group renamed -> the page selected
+PASS registry: an entry whose url maps to no page -> 'kayıt sayfaya eşlenmedi'
+PASS registry: a page selected only through the registry runs CI-12 only
+PASS exit 2: a registry file not JSON -> tool error
+PASS exit 2: a registry file without 'suggestions' -> tool error
+PASS exit 2: a registry file an item without a string url -> tool error
+PASS mapping: a shared file and a JS file with no Views page -> 'paylaşılan dosya, sayfa kontrolü yok', exit 0
+PASS CI-11: a partial added to a new surface without GetAllStrings(true) -> YENİ KIRMIZI; with it -> PASS
+PASS CI-11: a partial re-added to a page that has files at the base (AC-18 (c) revert) -> no CI-11, exit 0
+PASS exit 2: verifier output the selector cannot classify -> tool error
+PASS CI-3: a new verifier line on a page with a baseline row -> YENİ KIRMIZI, the old row TABAN
+PASS CI-13 / CI-14 / CI-15: a language file deleted, a SharedResource key removed, a step title removed -> each a named YENİ KIRMIZI
+PASS baseline reader: the fixture baseline reads (6 rows)
+PASS baseline reader: an empty cell -> exit 2
+PASS baseline reader: a duplicate page + check + instance -> exit 2
+PASS baseline reader: a malformed instance (a line number) -> exit 2
+PASS baseline reader: a malformed instance (another page's file) -> exit 2
+PASS baseline reader: a line-check count 0 -> exit 2
+PASS baseline reader: a line-check count that is not an integer -> exit 2
+PASS baseline reader: a line-check count with a leading zero -> exit 2
+PASS baseline reader: a line-check count with a sign -> exit 2
+PASS baseline reader: another row's count other than '-' -> exit 2
+PASS baseline reader: a malformed FU id -> exit 2
+PASS baseline reader: a check outside CI-1…CI-15 -> exit 2
+PASS baseline reader: a pattern key written as a check (CI-6v) -> exit 2
+PASS baseline reader: a header that is not exact -> exit 2
+PASS baseline reader: a row with a missing cell -> exit 2
+PASS exit 2: CI mode on a malformed baseline (duplicate key) -> tool error
+PASS exit 2: git diff output b'X\x00a\x00' (unknown letter / missing path) -> tool error
+PASS exit 2: git diff output b'U\x00a\x00' (unknown letter / missing path) -> tool error
+PASS exit 2: git diff output b'R100\x00a\x00' (unknown letter / missing path) -> tool error
+PASS git diff output 'R086 old new' and 'D path' are read with both rename paths
+PASS exit 2: not a git repository -> tool error
+PASS pattern block: every key of the pack's block present, compiling with re.compile, and the selector's own pattern for each key the same string
+PASS pattern block: a missing key -> refused
+PASS pattern block: a pattern that does not compile -> refused
+PASS pattern block: a key written twice -> refused
+PASS pattern block: a different string for a key -> the self-test comparison fails
+PASS draft: the fixture's reds as rows (CI-5 count 1, CI-6 count 2, CI-3 'Old gap', CI-12 en + tr) plus the two bilgi rows; no CI-11 row
+PASS --check-baseline on a well-formed baseline -> exit 0 with per-CI rows and matches
+PASS exit 2: a working tree that is not HEAD under frontend/Diten.Web -> tool error
+PASS modes: no mode -> exit 2
+PASS modes: ['--base', 'HEAD', '--draft-baseline'] -> exit 2
+PASS modes: ['--self-test', '--check-baseline'] -> exit 2
+PASS modes: ['--base'] -> exit 2
+PASS modes: ['--all'] -> exit 2
+PASS AC-21g01 a view file directly in the folder -> page {Module}, a new match is YENİ KIRMIZI, not a shared file
+PASS AC-21g01 a non-.cshtml file directly in the folder selects the page and no check reads it
+PASS AC-21g02 JS directly in the folder, a direct view at HEAD and at the base -> page {Module}, YENİ KIRMIZI
+PASS AC-21g02 JS directly in the folder, the direct view only at the base -> the JS still selects page {Module}
+PASS AC-21g03 JS directly in the folder, no direct view at HEAD or at the base -> its FU-18 line, no page
+PASS AC-21g03 JS directly in the folder, the direct view only at the base, a subfolder page stays -> page, not FU-18
+PASS AC-21g04 one folder, a single-level and a two-level page -> each reads only its own files
+PASS AC-21g05 NOT_PAGE_AREAS (Shared, Archive): views and JS are the shared line, never a page, never FU-18, no draft row
+PASS AC-21g06 pages/** -> its FU-18 line for each path, not the shared line, no page
+PASS AC-21g07 js/{Module}/{Sub}/ with no view folder -> its FU-18 line, the single-level page is not selected
+PASS AC-21g08 an area folder holding only subfolders: JS directly in it and in a subfolder with no view -> FU-18 lines
+PASS AC-21g09 a folder-level _ViewStart.cshtml -> a file of page {Module} (its checks run) and the shared-file line
+PASS AC-21g09 a folder-level _ViewImports.cshtml -> a file of page {Module} (its checks run) and the shared-file line
+PASS AC-21g09 the root Views/_ViewStart.cshtml stays shared only
+PASS AC-21g10 baseline rows with a page key {Module} are accepted and matched as TABAN FU-16
+PASS AC-21g11 an empty key -> exit 2
+PASS AC-21g11 a key with a space -> exit 2
+PASS AC-21g11 a three-part key -> exit 2
+PASS AC-21g11 a key in NOT_PAGE_AREAS -> exit 2
+PASS AC-21g11 a CI-3 row with a single-level key -> exit 2
+PASS AC-21g12 a single-level CI-2 row whose instance lies in a subfolder -> exit 2
+PASS AC-21g12 a single-level CI-1 row whose instance lies in a subfolder -> exit 2
+PASS AC-21g13 a single-level new surface in a folder holding only subfolder pages -> CI-11 runs; at a later base it does not
+PASS AC-21g14 a single-level page removed while a subfolder page stays -> 'sayfa kaldırıldı', its rows closed, the subfolder page untouched
+PASS FU-17: a single-level list page -> one 'ölçülmedi' CI-3 line, the verifier not run, never red, no draft row; CI-9 savedView red as YENİ KIRMIZI
+PASS draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged
+PASS no write: every throw-away repository is clean after the runs (no file, no __pycache__)
+self-test: 93/93 passed

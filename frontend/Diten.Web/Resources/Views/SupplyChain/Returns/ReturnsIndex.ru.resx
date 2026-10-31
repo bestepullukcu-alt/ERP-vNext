@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>Отклонить</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>Отметить как в пути</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>Отменить возврат</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>Принять (ручное подтверждение)</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Принять</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>Принять решение</value></data>
   <data name="ActionClose" xml:space="preserve"><value>Закрыть</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>Получен (ручное подтверждение)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>Приёмка — только ручное подтверждение. Это не складское поступление, движение запасов не проводится.</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Получен</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>Время события</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>Ваши местные дата и время. Они отправляются в UTC.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,50 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Данные отгрузки, полученные из исходной системы, недействительны. Обратитесь в поддержку.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Справочные данные отгрузки неполные. Повторите тот же запрос позже.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Состояние отгрузки временно недоступно. Повторите тот же запрос.</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Справочные данные отгрузки временно недоступны. Повторите тот же запрос.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Необходимый сервис сейчас недоступен. Повторите тот же запрос чуть позже.</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Возвраты временно недоступны. Результат не подтверждён; повторите тот же запрос.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка. Можно повторить то же действие.</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>Чтобы пропустить партию с ближайшим сроком годности, нужна причина.</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>Эта партия нарушает порядок «первым истекает — первым отгружается».</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>Недостаточно доступного запаса для этой строки.</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>Недостаточно запаса для этой строки.</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>Позиция неактивна.</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>Остаточный срок годности партии ниже минимального.</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>Партия заблокирована.</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>Срок годности партии истёк.</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>Для этой позиции партия не допускается.</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>Для этой позиции требуется партия.</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>Партия требует повторного контроля.</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>Партия не относится к этому SKU.</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>Партия отзывается.</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>Основные данные продукта неполные.</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>Запас зарезервирован под другой документ.</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>Этот серийный номер уже существует.</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>Позиции с серийным учётом нельзя вернуть в этой версии.</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>Серийный номер не относится к этой партии.</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>Серийный номер недоступен.</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>SKU не относится к этой позиции.</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>На этом уровне SKU запас не ведётся.</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>Позиция не найдена.</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>Место хранения не найдено.</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>Партия не найдена.</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>Для этой строки не задан пересчёт единиц.</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>Неизвестная причина (код: {0}).</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>Модуль запасов отклонил приёмку по строке {0}.</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>У строки отгрузки {0} нет записанного списания запаса, поэтому возврат нельзя принять. Ничего не проведено.</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>Приёмка этого возврата уже выполняется или была начата с другими значениями. Отправьте снова с показанными сохранёнными значениями или повторите попытку чуть позже.</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>Сохранённые значения: склад {0}, место хранения {1}, время {2}.</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>Строку {0} нельзя принять без проводки по запасу.</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>Уже проведённые строки остаются проведёнными. Исправьте отклонённую строку и отправьте снова.</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>Проведена</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>Не проведена</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>Проводка по запасу</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>Причина</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>Принято без проводки по запасу — отгружено до интеграции с запасами</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>Нарушение целостности</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>При приёмке каждая строка проводится в карантин склада; уже проведённые строки повторно не проводятся. Отгрузка, отправленная до интеграции с запасами, принимается без проводки по запасу.</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>Склад приёмки</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>Место приёмки</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>Принять без проводки по запасу</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>Принять строку {0} без проводки по запасу? Модуль запасов отклонил её по причине, которую повторная попытка не изменит; затем запас нужно исправить в модуле запасов.</value></data>
 </root>
