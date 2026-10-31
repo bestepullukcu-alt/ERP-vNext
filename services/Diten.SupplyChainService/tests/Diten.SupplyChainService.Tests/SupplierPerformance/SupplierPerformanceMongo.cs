@@ -10,6 +10,7 @@ internal static class SupplierPerformanceMongo
     public const string SharedDatabase = "diten_mod0147_tests";
     public const string StorageDatabase = "diten_mod0147_storage";
     public const string UniqueIndexDatabase = "diten_mod0147_unique";
+    public const string OutboxDatabase = "diten_mod0147_outbox";
     public static string Connection => Environment.GetEnvironmentVariable("MOD0183_TEST_MONGO")
         ?? throw new InvalidOperationException("MOD0183_TEST_MONGO must point to an isolated replica set.");
 }

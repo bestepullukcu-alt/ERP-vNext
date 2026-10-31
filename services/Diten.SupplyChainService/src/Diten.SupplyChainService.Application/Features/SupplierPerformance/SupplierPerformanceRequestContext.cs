@@ -6,6 +6,8 @@ public sealed class SupplierPerformanceRequestContext
     public SupplierPerformanceScope Scope { get; set; } = new(Guid.Empty, Guid.Empty, Guid.Empty);
     public Guid CorrelationId { get; set; }
     public string IdempotencyKey { get; set; } = "";
+    /// <summary>The If-Match version of a submit; syntax checked at §0.5 stage 3, compared at stage 6.</summary>
+    public int ExpectedVersion { get; set; }
     /// <summary>The caller's token, forwarded to Procurement's eligibility read (pack §0.0 D2: the caller's token).</summary>
     public string Authorization { get; set; } = "";
 }

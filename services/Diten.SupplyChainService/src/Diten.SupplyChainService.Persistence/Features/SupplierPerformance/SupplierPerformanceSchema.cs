@@ -3,7 +3,7 @@ using MongoDB.Bson;
 using Microsoft.Extensions.Hosting;
 namespace Diten.SupplyChainService.Persistence.Features.SupplierPerformance;
 /// <summary>
-/// MOD-0147 DL-1 collections and their tenant-first indexes. Two unique indexes carry the §0.5 / §0.2 guarantees: the receipt
+/// MOD-0147 collections and their tenant-first indexes. Two unique indexes carry the §0.5 / §0.2 guarantees: the receipt
 /// tuple (concurrent identical creates: one result, the rest replay) and one active evaluation per Tenant + LE + canonical
 /// supplier + period (partial on IsActivePeriod, so Status is not in the key and DRAFT and PUBLISHED cannot coexist).
 /// </summary>
@@ -11,6 +11,7 @@ public sealed class SupplierPerformanceSchema(IMongoDatabase db) : IHostedServic
 {
     public const string Evaluations = "supplier_evaluations";
     public const string Receipts = "supplier_performance_receipts";
+    public const string Outbox = "supplier_performance_outbox";
     public const string ActivePeriodIndex = "supplier_evaluation_active_period";
     public const string ReceiptIndex = "supplier_performance_receipt";
 
@@ -18,9 +19,12 @@ public sealed class SupplierPerformanceSchema(IMongoDatabase db) : IHostedServic
     {
         var hello = await db.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1), cancellationToken: ct);
         if (!hello.Contains("setName") && hello.GetValue("msg", "").AsString != "isdbgrid") throw new InvalidOperationException("Supplier performance requires replica-set transactions.");
-        foreach (var n in new[] { Evaluations, Receipts }) await Index(n, "scope", false, null, ct);
+        foreach (var n in new[] { Evaluations, Receipts, Outbox }) await Index(n, "scope", false, null, ct);
         await Index(Evaluations, ActivePeriodIndex, true, new BsonDocument("IsActivePeriod", true), ct, "SupplierId", "PeriodStart", "PeriodEnd");
         await Index(Evaluations, "supplier_scorecard", false, null, ct, "ScorecardId");
+        await Index(Evaluations, "supplier_scorecard_supplier", false, null, ct, "SupplierId", "PeriodEnd");
+        // Not tenant-first by design: the trusted background publisher claims across tenants; no user-facing query uses this index.
+        await db.GetCollection<BsonDocument>(Outbox).Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(new BsonDocument { { "Status", 1 }, { "NextAttemptAt", 1 } }, new CreateIndexOptions { Name = "supplier_outbox_claim" }), cancellationToken: ct);
         await Index(Receipts, ReceiptIndex, true, null, ct, "Operation", "TargetId", "IdempotencyKey");
         // The indexes above created both collections; this read proves a transaction can open on the replica set at start-up.
         using var session = await db.Client.StartSessionAsync(cancellationToken: ct); session.StartTransaction();

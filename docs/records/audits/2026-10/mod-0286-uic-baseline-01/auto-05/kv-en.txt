@@ -1,0 +1,671 @@
+About	About
+AccessDenied	Access denied.
+AccessDeniedMessage	Ask your administrator to grant you permission for this page.
+AccessDeniedTitle	You don't have access to {0}
+AccessGovernance	Access Governance
+AccessMatrix	Access Matrix
+AccountsMenu	Accounts
+Action	Action
+Activate	Activate
+Active	Active
+AddModule	Add Module
+AddNotificationSettings	Add Settings
+AddNotificationTemplate	Add Template
+AddSubscriptionPlan	Add Subscription Plan
+AddTenant	Add Tenant
+AddWorkingCalendar	Add Calendar
+Address	Address
+Admin	Admin
+AdminBulkDeletePartial	Some administrators were deleted, but the request stopped at one that could not be deleted. Reload the list to see what remains.
+AdminBulkDuplicateIds	The same administrator is listed more than once. Nothing was deleted.
+AdminChangeUnavailable	The administrator change could not be saved right now. Nothing was written. Please try again.
+AdminEmailImmutable	An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.
+AdminLastSuperAdminDenied	At least one active Super Admin must remain in the system.
+AdminSeedDeleteDenied	The system seed administrator cannot be deleted.
+AdminSeedEmailChangeDenied	The system seed administrator's e-mail cannot be changed.
+AdminSeedSuspendDenied	The system seed administrator cannot be suspended.
+AdminSelfActionDenied	You cannot delete or suspend your own administrator account.
+AdminSelfRoleDowngradeDenied	You cannot remove your own administrative role.
+Apply	Apply
+AreYouSure	Are you sure?
+Attributes	Attributes
+AuditLogMenu	Audit Log
+AuditRetentionMenu	Audit Retention
+Auth.Dialog.Ok	OK
+Auth.Error.AccountDeactivated	Your account has been deactivated by an administrator. Contact your administrator.
+Auth.Error.CurrentPasswordIncorrect	Your current password is incorrect.
+Auth.Error.EmailLoginDisabled	Sign-in with email is turned off for this organization.
+Auth.Error.InvalidCredentials	The email or password is incorrect, or the account is temporarily locked. Please try again later.
+Auth.Error.InvalidVerificationCode	The verification code is invalid or has expired.
+Auth.Error.LinkInvalid	This link is no longer valid. Ask your administrator for a new link.
+Auth.Error.LoginFailed	Sign-in failed. Please try again.
+Auth.Error.LoginUnavailable	Sign-in is temporarily unavailable. Please try again in a moment.
+Auth.Error.PasswordChangeFailed	Your password could not be changed. Please try again.
+Auth.Error.PasswordChangedMeanwhile	Your password was changed meanwhile (for example by an administrator). Please sign in again.
+Auth.Error.PlatformPrivilegesRequired	This account has no platform administration role.
+Auth.Error.RequestInvalid	The request is incomplete. Please check the fields and try again.
+Auth.Error.ServiceUnavailable	The sign-in service is temporarily unavailable. Please try again in a moment.
+Auth.Error.SessionEnded	Your session has ended. Please sign in again.
+Auth.Error.TemporaryPasswordExpired	Your temporary password has expired. Please reset your password.
+Auth.Error.TenantMissing	This sign-in link has no organization information. Please use your invitation link again.
+Auth.Error.TooManyRequests	Too many requests. Please wait a few minutes and try again.
+Auth.Error.VerificationChallengeRequired	The verification step has expired. Please sign in again.
+Auth.Error.VerificationCodeRequired	Please enter the verification code.
+Auth.Error.VerificationFailed	Verification could not be completed. Please try again.
+Auth.Mfa.CodeLabel	Verification code
+Auth.Mfa.Prompt	Enter the verification code sent to
+Auth.Mfa.Resend	Resend code
+Auth.Mfa.Resending	Sending...
+Auth.Mfa.ResentMessage	A new verification code has been sent.
+Auth.Mfa.ResentTitle	Code sent
+Auth.Mfa.Title	Two-step verification
+Auth.Mfa.Verifying	Verifying...
+Back	Back
+BackToList	Back to List
+BackToLogin	Back to login
+BaselineCannotBeDeactivated	Baseline modules cannot be deactivated — they are automatically available to every tenant.
+BasicInfo	Basic Information
+BrandsMenu	Brands
+BulkDelete	Bulk Delete
+BulkDeleteConfirm	Are you sure you want to delete {0} selected records?
+BulkDeleteSuccess	{0} records deleted successfully
+CalendarAllDay	All day
+CalendarDay	Day
+CalendarMonth	Month
+CalendarMore	+{0} more
+CalendarNext	Next
+CalendarNoEvents	Nothing to show
+CalendarPrevious	Previous
+CalendarToday	Today
+CalendarUnresolved	Working calendar is not defined — weekends and holidays cannot be shown.
+CalendarWeek	Week
+CampaignsMenu	Campaigns
+Cancel	Cancel
+CategoryManagement	Category Management
+ChangePassword.Subtitle	You must change your temporary password before continuing.
+ChangePassword.Title	Change Password
+ClearSelection	Clear Selection
+Close	Close
+CollapseAll	Collapse all
+ColumnOrder	Column Order
+ColumnVisibility	Column Visibility
+ComingSoon	This feature will be added soon.
+CommercialSuite	Commercial Suite
+CompositionManagement	Composition Management
+ConfirmAction	Are you sure you want to proceed?
+ConfirmPassword	Confirm Password
+ConsentPreferencesMenu	Consent &amp; Preferences
+ContactPerson	Contact Person
+ContactsMenu	Contacts
+ContentEngagementJourneysMenu	Content Engagement Journeys
+ContractEditDraftOnly	Only draft contracts can be updated; an activated contract is managed through lifecycle actions, not edits.
+ControlledCopy.CreatedAt	Created at
+ControlledCopy.CreatedBy	Created by
+ControlledCopy.Filters	Filters
+ControlledCopy.None	None
+ControlledCopy.Page	Page {0} of {1}
+ControlledCopy.Report	Report
+ControlledCopy.Rows	Rows
+ControlledCopy.Search	Search
+ControlledCopy.Sort	Sort
+ControlledCopy.SortAsc	ascending
+ControlledCopy.SortDesc	descending
+ControlledCopy.Tenant	Company
+ControlledCopy.Uncontrolled	This printout is an uncontrolled copy — {0}
+ControlledDocuments	Controlled Documents
+Copied	Copied
+Copy	Copy
+CurrentPassword	Current Password
+CycleCapacitiesMenu	Cycle Capacity
+CyclePeriodsMenu	Cycle Periods
+Dark	Dark
+DateNotRecognized	A date you typed could not be read, so it was not saved. Type it again in the field's format or pick it from the calendar.
+Deactivate	Deactivate
+DefaultTimeZone	Default Time Zone
+Delete	Delete
+DeleteConfirmationSubText	This action cannot be undone!
+DeleteConfirmationTitle	Are you sure?
+DeleteConfirmationYesBtn	Yes, Delete
+Description	Description
+DescriptionPlaceholder	Enter a description...
+Details	Details
+DeveloperSandbox	Developer Sandbox
+DocumentMasterRegister	Document Master Register
+DocumentationStructures	Documentation Structures
+DomainCodeInUse	This domain code is already in use.
+DomainManagement	Domain Management
+DtEmptyTable	No data available in table
+DtInfo	Showing _START_ to _END_ of _TOTAL_ entries
+DtInfoEmpty	Showing 0 to 0 of 0 entries
+DtInfoFiltered	(filtered from _MAX_ total entries)
+DtLoadFailed	The list could not be loaded.
+DtLoadNoPermission	You do not have permission to see this list.
+DtNoRecords	No matching records found
+DtRetry	Retry
+DtZeroRecords	No matching records found
+Edit	Edit
+EditRecord	Edit
+EmailAddress	Email Address
+EmployeeDraftsMenu	Employee Drafts
+Error	Error
+ErrorOccurred	An error occurred while processing your request.
+ExpandAll	Expand all
+Export	Export
+ExportTooLarge	Too many rows to export (more than 50,000). Narrow the filter and try again.
+FailedToLoadData	Failed to load data. Please try again later.
+FieldRequired	This field is required
+Filter	Filter
+ForgotPassword.SentMessage	If the email exists, reset instructions have been sent.
+ForgotPassword.SentTitle	Check your email
+ForgotPassword.Submit	Send reset link
+ForgotPassword.Subtitle	Enter your email and we will send reset instructions.
+ForgotPassword.Title	Forgot Password?
+GatewayError	An error occurred while communicating with the server.
+GoldenCompact	Golden Compact
+GoldenSlim	Golden Slim
+GrnUpdateNotSupported	Updating a GRN is not supported; a posted receipt is corrected with a reversing movement, not an edit.
+HumanCapitalManagement	Human Capital Management
+Import	Import
+InterfaceRegistry	Interface Registry
+InvalidEmail	Invalid email address
+InvalidFiscalYear	Invalid format (e.g., 01-01)
+InvalidPhone	Invalid phone number
+InvalidUrl	Invalid URL format
+InvitationEmailSendFailed	Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.
+InviteAccept	Accept
+InviteAcceptAnyway	Accept Anyway
+InviteCardType	Meeting invitation
+InviteDecline	Decline
+InviteOverlapText	It overlaps your planned block "{0}" ({1}). Accept anyway?
+InviteOverlapTitle	This meeting overlaps your plan
+InvoiceUpdateNotSupported	Updating an invoice is not supported; correct it by re-running the 3-way match or resolving its exception, not by an edit.
+ItemMaster	Item Master
+KnowledgeConceptsMenu	Concepts
+KnowledgeMenu	Knowledge
+KnowledgePathsMenu	Knowledge Paths
+LegalEntities	Legal Entities
+LegalEntity	Legal Entity
+LegalEntityNone	This tenant has no active legal entity.
+LegalEntityRequired	Select a legal entity.
+LegalEntityUnavailable	The legal entity list is unavailable.
+LevelPrefix	Level
+Light	Light
+Loading	Loading...
+LogOut	Log Out
+Login.Email	Email
+Login.EmailOrUsername	Email or username
+Login.EmailRequired	Email is required.
+Login.Error	Invalid email or password
+Login.ErrorRequired	Email and password are required
+Login.ErrorTitle	Error
+Login.ForgotPassword	Forgot Password?
+Login.Loading	Signing in...
+Login.Password	Password
+Login.RememberMe	Remember Me
+Login.Submit	Sign In
+Login.Subtitle	Please sign-in to your account
+Login.Title	Sign In
+MDM	MDM
+MarkAllAsRead	Mark all as read
+MasterData	Master Data
+ModuleCatalog	Module Catalog
+ModuleCodeInUse	This module code is already in use.
+ModuleManagedByCode	This module is managed by code (self-registered) and cannot be changed here.
+MyProfile	My Profile
+Nav.Domain.ADMINISTRATION	Administration
+Nav.Domain.DEVENABLEMENT	Developer Enablement
+Nav.Domain.DOCUMENTMANAGEMENT	Document Management
+Nav.Domain.HUMANCAPITAL	Human Capital
+Nav.Domain.MANAGEMENTGOVERNANCE	Management &amp; Governance
+Nav.Domain.MANUFACTURING	Manufacturing
+Nav.Domain.MASTERDATAMANAGEMENT	Master Data Management
+Nav.Domain.PLATFORMSHAREDSERVICES	Platform Shared Services
+Nav.Domain.PORTFOLIODELIVERY	Portfolio Delivery
+Nav.Domain.PROCUREMENT	Procurement
+Nav.Domain.SALES	Sales
+Nav.Domain.SUPPLYCHAINEXECUTION	Supply Chain Execution
+Nav.Domain.TALENTECOSYSTEM	Talent Ecosystem
+Nav.Domain.WORKSPACE	Workspace
+Nav.Module.ACCESSGOVERNANCE	Access Governance
+Nav.Module.ADMINISTRATORS	Administrators
+Nav.Module.AUDIT	Audit
+Nav.Module.BOMROUTINGS	BOM &amp; Routings
+Nav.Module.BRANDPRODUCTMASTER	Brand &amp; Product Master
+Nav.Module.CAPACITYPLANNING	Capacity Planning
+Nav.Module.CARRIERMANAGEMENT	Carrier Management
+Nav.Module.CLAIMSMANAGEMENT	Claims Management
+Nav.Module.CONTRACTS	Contracts
+Nav.Module.CRM	Customer Relationship Management
+Nav.Module.DEMANDPLANNING	Demand Planning
+Nav.Module.DOCUMENTMANAGEMENT	Document Management
+Nav.Module.ESIGN	e-Signature
+Nav.Module.EXPIRYFEFOMANAGEMENT	Expiry / FEFO
+Nav.Module.GOLDENCOMPACT	Golden Compact
+Nav.Module.GOLDENSLIM	Golden Slim
+Nav.Module.GRN	Receiving (GRN)
+Nav.Module.HCMEMPLOYEEMASTER	Employee Master
+Nav.Module.HUMANCAPITAL	Human Capital
+Nav.Module.INTERFACEREGISTRY	Interface Registry
+Nav.Module.INVENTORYLEDGER	Inventory
+Nav.Module.INVOICEMATCH	Invoice Match
+Nav.Module.LEGALENTITY	Legal Entity
+Nav.Module.LOOKUPS	Lookups
+Nav.Module.LOTSERIALTRACKING	Lot / Serial Tracking
+Nav.Module.MEETINGS	Meetings
+Nav.Module.MODULECATALOG	Module Catalog
+Nav.Module.MODULEDOMAINS	Module Domains
+Nav.Module.MODULESERVICES	Module Services
+Nav.Module.NOTIFICATIONS	Notifications
+Nav.Module.ORGANIZATION	Organization
+Nav.Module.PERSON	Person Directory
+Nav.Module.PPM	Project &amp; Portfolio Management
+Nav.Module.PROCUREMENTSUPPLIERS	Suppliers
+Nav.Module.PRODUCTITEMSKUMASTER	Product / Item / SKU Master
+Nav.Module.PURCHASEORDERS	Purchase Orders
+Nav.Module.QUARANTINEBLOCKEDSTOCK	Quality
+Nav.Module.RECALLREADINESS	Recall Readiness
+Nav.Module.REFERENCEDATA	Reference Data
+Nav.Module.REQUISITIONS	Requisitions
+Nav.Module.REVERSELOGISTICS	Reverse Logistics
+Nav.Module.ROUTINGLOADPLANNING	Routing &amp; Load Planning
+Nav.Module.SHIPMENTTRACKINGPOD	Shipment Tracking &amp; POD
+Nav.Module.SOPWORKFLOWSIGNOFFS	S&amp;OP Workflow &amp; Sign-offs
+Nav.Module.SOURCING	Sourcing
+Nav.Module.SUBSCRIPTIONFEATURES	Subscription Features
+Nav.Module.SUBSCRIPTIONPLANS	Subscription Plans
+Nav.Module.SUPPLIERS	Suppliers
+Nav.Module.TALENTECOSYSTEM	Talent Ecosystem
+Nav.Module.TASKS	Task Settings
+Nav.Module.TENANTS	Tenants
+Nav.Module.TENANTSETTINGS	Tenant Settings
+Nav.Module.TIMEENTRY	Timesheet
+Nav.Module.WORKAGGREGATION	Task Center
+Nav.Module.WORKFLOW	Workflow
+Nav.Module.WORKINGCALENDAR	Working Calendar
+Nav.Module.WORKINGCALENDARIMPORT	Working Calendar Import
+Nav.Module.WORKREPORT	Work Report
+Nav.Page.ACCESSMATRIX	Document Access Matrix
+Nav.Page.ACCOUNT	Account
+Nav.Page.ACCOUNTCONTACT	Account Contact
+Nav.Page.ACCOUNTRELATIONSHIP	Account Relationship
+Nav.Page.ACCOUNTS	Accounts
+Nav.Page.APPLICANTINTAKE	Applicant Intake
+Nav.Page.ASSOCIATIONMEMBERSHIPS	Association Memberships
+Nav.Page.ASSOCIATIONOPERATIONS	Association Operations
+Nav.Page.ATTRIBUTE	Attribute
+Nav.Page.BENEFITCOMMITMENTS	Benefit Commitments
+Nav.Page.BLOCKEDSTOCK	Blocked stock
+Nav.Page.BOMS	Bills of Materials
+Nav.Page.BRANDS	Brands
+Nav.Page.CAMPAIGN	Campaign
+Nav.Page.CAMPAIGNS	Campaigns
+Nav.Page.CAMPAIGNSNAPSHOT	Campaign Snapshot
+Nav.Page.CAMPAIGNTARGET	Campaign Target
+Nav.Page.CANDIDATECAREERPASSPORT	Candidate Career Passport
+Nav.Page.CANDIDATEDISPUTES	Candidate Disputes
+Nav.Page.CANDIDATEPIPELINE	Candidate Pipeline
+Nav.Page.CANDIDATEPROFILES	Candidate Profiles
+Nav.Page.CAPACITYPLANS	Capacity Plans
+Nav.Page.CARRIERS	Carriers
+Nav.Page.CLAIMS	Claims
+Nav.Page.COMPENSATIONBENEFITS	Compensation &amp; Benefits
+Nav.Page.COMPETENCYSKILLS	Competency &amp; Skills
+Nav.Page.COMPETITORPRODUCTS	Competitor Products
+Nav.Page.CONSENT	Consent
+Nav.Page.CONSENTPREFERENCES	Consent &amp; Preferences
+Nav.Page.CONSENTVISIBILITYPOLICIES	Consent Visibility Policies
+Nav.Page.CONTACT	Contact
+Nav.Page.CONTACTS	Contacts
+Nav.Page.CONTENTENGAGEMENTJOURNEYS	Content Engagement Journeys
+Nav.Page.CONTENTSETS	Content Sets
+Nav.Page.CONTRACTS	Contracting &amp; Clause Library
+Nav.Page.CONTROLLEDDOCUMENTS	Controlled Documents
+Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS	Potential Thresholds
+Nav.Page.CUSTOMFIELDS	Custom Fields
+Nav.Page.CYCLECAPACITIES	Cycle Capacity
+Nav.Page.CYCLECAPACITY	Cycle Capacity
+Nav.Page.CYCLEPERIOD	Cycle Period
+Nav.Page.CYCLEPERIODS	Cycle Periods
+Nav.Page.DATAQUALITY	Data Quality
+Nav.Page.DEFINITIONS	Workflow Definitions
+Nav.Page.DEMANDPLANNING	Demand Planning
+Nav.Page.DEVELOPMENTPLANS	Development Plans
+Nav.Page.DOCUMENTLIST	Document List
+Nav.Page.EARLYWARNINGSIGNALS	Early Warning Signals
+Nav.Page.ELIGIBILITYPOLICIES	Eligibility Policies
+Nav.Page.EMPLOYEE	Employee
+Nav.Page.EMPLOYEEMASTER	Employee Master
+Nav.Page.EMPLOYEEONBOARDING	Employee Onboarding
+Nav.Page.EMPLOYEEPROJECTIONS	Employee Projections
+Nav.Page.EMPLOYMENTCHANGES	Employment Changes
+Nav.Page.ESIGNAUDITEXPORT	Audit Export
+Nav.Page.ESIGNMEANINGS	Signature Meanings
+Nav.Page.ESIGNMYSIGNATURE	My Signature
+Nav.Page.ESIGNPOLICY	e-Signature Policy
+Nav.Page.ESIGNREQUESTS	Signature Requests
+Nav.Page.ESIGNSAMPLEAPPROVALS	Sample Approvals
+Nav.Page.ESIGNVERIFICATION	Signature Verification
+Nav.Page.EXITREFERENCERECORDS	Exit Reference Records
+Nav.Page.EXPIREDSTOCK	Expired stock
+Nav.Page.EXPIRYAPPROACHING	Approaching expiry
+Nav.Page.EXPIRYDASHBOARD	FEFO dashboard
+Nav.Page.EXPIRYEVIDENCE	Evidence pack
+Nav.Page.EXPIRYEXCEPTIONDETAILS	Exception detail
+Nav.Page.EXPIRYEXCEPTIONS	Exception inbox
+Nav.Page.EXPIRYPOLICY	Shelf-life rules and settings
+Nav.Page.FEFOORDER	FEFO order
+Nav.Page.FIELDDEFINITIONS	Field Definitions
+Nav.Page.FINISHEDGOODS	Finished Goods
+Nav.Page.GLOBALPRODUCTS	Global Products
+Nav.Page.GRN	Receiving (GRN)
+Nav.Page.GSKUS	GSKUs
+Nav.Page.HEADCOUNTBUDGET	Headcount Budget
+Nav.Page.HIERARCHY	Hierarchy
+Nav.Page.HIRINGRISKINDICATORS	Hiring Risk Indicators
+Nav.Page.HRCASEMANAGEMENT	HR Case Management
+Nav.Page.HRCOMPLIANCE	HR Compliance
+Nav.Page.HRDOCUMENTATION	HR Documentation
+Nav.Page.HRKPIANALYTICS	HR KPI Analytics
+Nav.Page.INBOX	Inbox
+Nav.Page.INDUSTRYKNOWLEDGENETWORK	Industry Knowledge Network
+Nav.Page.INDUSTRYSKILLPASSPORT	Industry Skill Passport
+Nav.Page.INDUSTRYSUCCESSIONPOOL	Industry Succession Pool
+Nav.Page.INDUSTRYTALENTPOOL	Industry Talent Pool
+Nav.Page.INITIATIVES	Initiatives
+Nav.Page.INSTANCES	Document Instances
+Nav.Page.INVESTMENTCASES	Investment Cases
+Nav.Page.INVOICEMATCH	Invoice Capture &amp; 3-Way Match
+Nav.Page.ITEMS	Items
+Nav.Page.KNOWLEDGE	Knowledge
+Nav.Page.KNOWLEDGECONCEPT	Knowledge Concept
+Nav.Page.KNOWLEDGECONCEPTS	Concepts
+Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY	Content Engagement Journey
+Nav.Page.KNOWLEDGEPATH	Knowledge Path
+Nav.Page.KNOWLEDGEPATHS	Knowledge Paths
+Nav.Page.KNOWLEDGESUBJECT	Knowledge Subject
+Nav.Page.LEARNINGTRAINING	Learning &amp; Training
+Nav.Page.LEGALENTITIES	Legal Entities
+Nav.Page.LEGALPROFILES	Legal Profiles
+Nav.Page.LOADS	Loads
+Nav.Page.LOCATIONTREE	Locations
+Nav.Page.LOTMIGRATION	Typed Lot Migration
+Nav.Page.LOTS	Lot Explorer
+Nav.Page.LOTTRACE	Traceability
+Nav.Page.LSKUS	Local SKUs
+Nav.Page.MASTERREGISTER	Document Master Register
+Nav.Page.MEETINGREPORT	Meeting Report
+Nav.Page.MEETINGS	Meetings
+Nav.Page.MEETINGSERIES	Meeting Series
+Nav.Page.MEETINGTYPES	Meeting Types
+Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK	Mentorship Recommendation Network
+Nav.Page.MENUSETTINGS	Menu Settings
+Nav.Page.MODEL	Model
+Nav.Page.MYTIMESHEET	My Timesheet
+Nav.Page.NODE	Node
+Nav.Page.OBJECTIONRESPONSES	Objection Library
+Nav.Page.OFFBOARDINGCASES	Offboarding Cases
+Nav.Page.OFFERMANAGEMENT	Offer Management
+Nav.Page.ORGANIZATIONFIELDDEFINITIONS	Field Definitions
+Nav.Page.ORGANIZATIONUNITS	Organization Units
+Nav.Page.OVERRIDE	Override
+Nav.Page.OVERVIEW	Overview
+Nav.Page.PAYBENCHMARKING	Pay Benchmarking
+Nav.Page.PERFORMANCEREVIEWS	Performance Reviews
+Nav.Page.PLANNEDVISIT	Planned Visit
+Nav.Page.PLANNEDVISITS	Planned Visits
+Nav.Page.PORTFOLIOS	Portfolios
+Nav.Page.POSITIONASSIGNMENTS	Position Assignments
+Nav.Page.POSITIONS	Positions
+Nav.Page.PREFERENCE	Preference
+Nav.Page.PRODUCTABBREVIATIONS	Product Abbreviations
+Nav.Page.PRODUCTS	Products
+Nav.Page.PROFESSIONALREPUTATIONLEDGER	Professional Reputation Ledger
+Nav.Page.PROGRAMS	Programs
+Nav.Page.PROJECTS	Projects
+Nav.Page.PURCHASEORDERS	Purchase Orders
+Nav.Page.QMSBASELINES	QMS Baselines
+Nav.Page.QUARANTINEQUEUE	Quarantine queue
+Nav.Page.QUARANTINESETTINGS	Quarantine settings
+Nav.Page.RDSETS	Reference Data Sets
+Nav.Page.RECALLCASEDETAILS	Recall case
+Nav.Page.RECALLCASES	Recall cases
+Nav.Page.RECALLDASHBOARD	Recall readiness
+Nav.Page.RECALLDRILLS	Recall drill planner
+Nav.Page.RECALLEVIDENCE	Recall evidence pack
+Nav.Page.RECALLSETTINGS	Recall settings
+Nav.Page.RECALLTRACE	Recall trace
+Nav.Page.RECORDS	Records
+Nav.Page.RECURRENCERULES	Recurrence Rules
+Nav.Page.REFERENCEEXCHANGE	Reference Exchange
+Nav.Page.REHIRERECOMMENDATIONS	Rehire Recommendations
+Nav.Page.REPORTINGLINE	Reporting Line
+Nav.Page.REPORTS	Reports
+Nav.Page.REPOSITORYASSESSMENT	Repository Assessments
+Nav.Page.REQUISITIONS	Requisitions
+Nav.Page.RESTRICTEDINTEGRITYREGISTRY	Restricted Integrity Registry
+Nav.Page.RETESTQUEUE	Retest queue
+Nav.Page.RETURNS	Returns
+Nav.Page.REVIEWBOARD	Review Board
+Nav.Page.ROLEPERMISSIONS	Role Permissions
+Nav.Page.ROLES	Roles
+Nav.Page.SAFETYTEXTS	Safety Texts
+Nav.Page.SANDOPPLANS	S&amp;OP Plans
+Nav.Page.SECTORMOBILITYINTELLIGENCE	Sector Mobility Intelligence
+Nav.Page.SECTORTALENTTRENDS	Sector Talent Trends
+Nav.Page.SECURITYSETTINGS	Security Settings
+Nav.Page.SEGMENT	Segment
+Nav.Page.SEGMENTS	Segments
+Nav.Page.SELFSERVICE	Self Service
+Nav.Page.SENSITIVEACCESS	Sensitive Access
+Nav.Page.SERIALS	Serial Explorer
+Nav.Page.SHIPMENTCLAIMS	Shipment Claims
+Nav.Page.SHIPMENTS	Shipments
+Nav.Page.SKILLSGAPHEATMAP	Skills Gap Heatmap
+Nav.Page.SOURCING	Sourcing
+Nav.Page.STOCKLEDGER	Stock Ledger
+Nav.Page.STRATEGYTEMPLATE	Strategy Template
+Nav.Page.STRATEGYTEMPLATES	Strategy Templates
+Nav.Page.SUCCESSION	Succession
+Nav.Page.SUPPLIERS	Suppliers
+Nav.Page.TALENTDATAFOUNDATION	Talent Data Foundation
+Nav.Page.TALENTDEVELOPMENTNETWORK	Talent Development Network
+Nav.Page.TALENTSUPPLYDEMANDFORECASTING	Talent Supply Demand Forecasting
+Nav.Page.TASKCHECKLISTTEMPLATES	Checklist Templates
+Nav.Page.TASKCREATE	New task
+Nav.Page.TASKDETAIL	Task detail
+Nav.Page.TASKDOCUMENTLIST	Controlled Documents
+Nav.Page.TASKEDIT	Edit task
+Nav.Page.TASKFIELDDEFINITIONS	Field Definitions
+Nav.Page.TASKRECURRENCERULES	Recurring Task Rules
+Nav.Page.TASKS	Tasks
+Nav.Page.TASKTEMPLATES	Task Templates
+Nav.Page.TASKTYPES	Task Types
+Nav.Page.TASKWORKREPORT	Work Report
+Nav.Page.TEMPLATEMASTERS	Corporate Template Masters
+Nav.Page.TEMPLATEVARIANTS	Template Variants
+Nav.Page.TENANTNAVIGATION	Menu Settings
+Nav.Page.TENANTSECURITY	Security Settings
+Nav.Page.TERRITORY	Territory
+Nav.Page.TERRITORYMANAGEMENT	Territory Management
+Nav.Page.TERRITORYMODEL	Territory Model
+Nav.Page.TERRITORYNODE	Territory Node
+Nav.Page.TIMEAPPROVALS	Timesheet Approvals
+Nav.Page.TIMEATTENDANCELEAVE	Time, Attendance &amp; Leave
+Nav.Page.TIMECATEGORIES	Work Categories
+Nav.Page.TIMESETTINGS	Time Entry Settings
+Nav.Page.TRUSTLEVELS	Trust Levels
+Nav.Page.USERROLES	User Roles
+Nav.Page.USERS	Users
+Nav.Page.VERIFIEDCERTIFICATIONREGISTRY	Verified Certification Registry
+Nav.Page.VERIFIEDPARTICIPANTS	Verified Participants
+Nav.Page.VISITEVIDENCESETTINGS	Visit Evidence
+Nav.Page.VISITEXECUTION	Visit Execution
+Nav.Page.VISITFREQUENCYPOLICIES	Visit Frequency Policies
+Nav.Page.VISITPLANNING	Visit Planning
+Nav.Page.VISITWORKSPACE	Visit Workspace
+Nav.Page.WORKCENTER	Task Center
+Nav.Page.WORKFORCEANALYTICS	Workforce Analytics
+Nav.Page.WORKFORCEPLANNING	Workforce Planning
+Nav.Page.WORKINGCALENDARIMPORTS	Working Calendar Imports
+Nav.Page.WORKINGCALENDAROVERRIDES	Working Calendar Overrides
+Nav.Page.WORKINGCALENDARS	Working Calendars
+NavigationLoadFailed	Menu could not be loaded
+NavigationLoadFailedHint	Refresh the page to try again.
+NewNotifications	{0} New
+NewPassword	New Password
+NoNotifications	No notifications
+NoRecords	No records
+NoRecordsFound	No sub-records found yet.
+NotAvailable	N/A
+Notification	Notification
+NotificationDispatchesMenu	Notification Dispatches
+NotificationEventsMenu	Notification Events
+NotificationSettingsMenu	Notification Settings
+NotificationTemplatesMenu	Notification Templates
+NumericOnly	Only digits are allowed
+Organization	Organization
+OrganizationUnits	Organization Units
+Overview	Overview
+PDF	PDF
+Passive	Passive
+Password.Error.CurrentRequired	Current password is required.
+Password.Error.NeedsSpecial	Password must contain at least one special character.
+Password.Error.NeedsUppercase	Password must contain at least one uppercase letter.
+Password.Error.NewRequired	New password is required.
+Password.Error.Required	Password is required.
+Password.Error.ResetEmailRequired	Email is required.
+Password.Error.ResetTokenRequired	Reset token is required.
+Password.Error.TooLong	Password can be at most {0} characters.
+Password.Error.TooShort	Password must be at least {0} characters.
+Perm.Entity.APPROVALS	Approvals
+Perm.Entity.CATEGORIES	Categories
+Perm.Entity.CHECKLISTTEMPLATES	Checklist Templates
+Perm.Entity.CONTENTSCOPE	Content Scope
+Perm.Entity.CONTENTSET	Content Set
+Perm.Entity.ELIGIBILITY	Eligibility
+Perm.Entity.SETTINGS	Settings
+Perm.Entity.TEMPLATES	Templates
+Perm.Entity.TIMESHEETS	Timesheets
+Perm.Entity.VISITFREQUENCYPOLICY	Visit Frequency Policy
+Perm.Entity.WEEKS	Weeks
+Perm.Module.CRMACCOUNT	CRM Accounts
+Perm.Module.CRMCONTACT	CRM Contacts
+Perm.Module.CRMCONTENTCOMPOSITION	CRM Content Composition
+Perm.Module.CRMDOCTORINSIGHTS	CRM Doctor Insights
+Perm.Module.CRMKNOWLEDGE	CRM Knowledge
+Perm.Module.CRMPLANNEDVISIT	CRM Planned Visits
+Perm.Module.CRMTERRITORY	CRM Territories
+Perm.Module.CRMVISITPLAN	CRM Visit Planning
+Perm.Module.CRMVISITREPORT	CRM Visit Reports
+Perm.Module.MOD0251	Employee Registry (Core HR)
+Perm.Module.TASKS	Tasks
+PermissionsMenu	Permissions
+PhoneNumber	Phone Number
+PlannedVisitsMenu	Planned Visits
+Platform	Platform
+PlatformAdministration	Platform Administration
+PlatformAdministrators	Platform Administrators
+PositionAssignments	Position Assignments
+Positions	Positions
+PrimaryCurrency	Primary Currency
+Print	Print
+ProductMaster	Product Master
+ProductsMenu	Products
+PurchaseOrderUpdateNotSupported	Updating a purchase order is not supported; create a new purchase order or approve this one.
+QmsBaselines	QMS Baselines
+Reconciliation	Reconciliation
+RecordActivated	Record has been activated.
+RecordCreated	Record has been created successfully.
+RecordDeleted	Record has been deleted successfully.
+RecordSaved	Changes have been saved successfully.
+RecordUpdated	Record has been updated successfully.
+ReferenceDataMenu	Reference Data
+RepositoryAssessments	Repository Assessments
+RequiredProgress	Required: {{0}} / {{1}}
+RequiredStatus	Required: {0} / {1}
+RequisitionUpdateNotSupported	Updating a requisition is not supported; create a new requisition or submit this one for approval.
+Reset	Reset
+ResetPassword.Mismatch	Passwords do not match.
+ResetPassword.Required	All password fields are required.
+ResetPassword.Subtitle	Your new password must be different from previously used passwords.
+ResetPassword.SuccessMessage	Your password has been updated.
+ResetPassword.SuccessTitle	Password updated
+ResetPassword.Title	Reset Password
+RfxUpdateNotSupported	Updating an RFx is not supported; create a new RFx or manage it via publish, bid, and award.
+RoleName_Admin	Administrator
+RoleName_ReadOnly	Read Only
+RoleName_SuperAdmin	Super Administrator
+RoleName_Viewer	Viewer
+RolePermissionAssignmentMenu	Role Permissions
+RolesMenu	Roles
+SKUManagement	SKU Management
+Sandbox	Sandbox
+Save	Save
+SaveView	Save View
+SavedNotActivated	Saved, but could not be activated.
+Saving	Saving...
+Search	Search..
+SearchFilter	Search &amp; Filter
+Sector	Sector
+SegmentsMenu	Segments
+SelectPlaceholder	Select...
+SelectedCount	records selected
+SelfAccessMenu	My Access
+ServiceCodeInUse	Service code is already in use.
+ServiceManagement	Service Management
+SetNewPassword	Set new password
+Settings	Settings
+ShellSearchPlaceholder	Search ({0})
+Shortcuts.Close	Close
+Shortcuts.DialogTitle	Keyboard shortcuts
+Shortcuts.Key.Space	Space
+Shortcuts.Scope.Global	Everywhere
+Shortcuts.Scope.TaskDetails	Task details
+Shortcuts.Scope.WorkCenter	Task Center
+Shortcuts.ShowList	Show this list
+Shortcuts.SilenceNote	Shortcuts do not run while you type in a field or while a dialog or side panel is open.
+Shortcuts.Task.Back	Back to the task list
+Shortcuts.Task.Edit	Edit the task
+Shortcuts.Wcn.Accept	Accept or approve the selected item
+Shortcuts.Wcn.ClearSelection	Clear the selection
+Shortcuts.Wcn.Next	Select the next item
+Shortcuts.Wcn.Open	Open the selected item
+Shortcuts.Wcn.OpenFocused	Open the focused row
+Shortcuts.Wcn.Previous	Select the previous item
+Shortcuts.Wcn.Reject	Reject or return the selected item
+Shortcuts.Wcn.Tabs	Move between tabs (on a focused tab)
+ShowAll	Show All
+Status	Status
+StrategyTemplatesMenu	Strategy Templates
+SubRecords	Sub-records
+SubscriptionFeatures	Subscription Features
+SubscriptionPlans	Subscription Plans
+Success	Success
+SystemTheme	System
+TagsCount	{0} tags
+TagsPlaceholder	Type a tag and press Enter
+TagsRemove	Remove {0}
+TaxNumber	Tax Number
+TemplateMasters	Corporate Template Masters
+TemplateVariants	Template Variants
+TenantManagementMenu	Tenant Management
+TerritoryManagementMenu	Territory Management
+Title	Title
+ToggleTheme	Toggle Theme
+Unauthorized	Unauthorized
+Unknown	Unknown
+Update	Update
+User	User
+UserRoleAssignmentMenu	User Roles
+UsersMenu	Users
+ValidationErrors	Errors: {0}
+ValidationFailed	Please fill in the required fields.
+VariantManagement	Variant Management
+Variants	Variants
+ViewAllNotifications	View all notifications
+ViewDetails	View
+Website	Website
+WorkCenterNextMenu	Work Center (Next)
+WorkflowApprovalsMenu	Workflow Approvals
+WorkingCalendarsMenu	Working Calendars
+Workspace	Workspace

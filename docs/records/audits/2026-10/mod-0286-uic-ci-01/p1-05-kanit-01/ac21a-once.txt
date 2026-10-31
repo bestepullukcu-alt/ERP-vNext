@@ -1,0 +1,1 @@
+HATA: taban satır 2021: CI-1 instance biçimi bozuk

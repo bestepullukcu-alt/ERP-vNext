@@ -22,6 +22,8 @@ public sealed class CreateSupplierEvaluationHandlerTests
         public Task<bool> ActivePeriodExistsAsync(SupplierPerformanceScope scope, string supplierId, string periodStart, string periodEnd, CancellationToken ct) => Task.FromResult(activePeriod);
         public Task<EvaluationCommitOutcome> CreateAsync(SupplierPerformanceScope scope, string key, string fingerprint, SupplierEvaluation evaluation, string responseBody, CancellationToken ct) =>
             Task.FromResult(EvaluationCommitOutcome.Clash);
+        public Task<EvaluationReceipt?> FindSubmitReceiptAsync(SupplierPerformanceScope scope, Guid evaluationId, string key, CancellationToken ct, bool afterClash = false) => throw new NotSupportedException();
+        public Task<EvaluationCommitOutcome> SubmitAsync(SupplierPerformanceScope scope, string key, string fingerprint, EvaluationSubmission submission, string responseBody, CancellationToken ct) => throw new NotSupportedException();
         public Task<SupplierEvaluation?> GetAsync(SupplierPerformanceScope scope, Guid evaluationId, CancellationToken ct) => throw new NotSupportedException();
         public Task<(IReadOnlyList<SupplierEvaluation> Items, long Total)> ListAsync(SupplierPerformanceScope scope, EvaluationFilter filter, int page, int pageSize, CancellationToken ct) => throw new NotSupportedException();
         public Task<SupplierEvaluation?> GetPublishedAsync(SupplierPerformanceScope scope, Guid scorecardId, CancellationToken ct) => throw new NotSupportedException();
