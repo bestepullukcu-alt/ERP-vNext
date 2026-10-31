@@ -1,0 +1,2 @@
+koşulan test adı: 55, satır: 90
+sonuç: geçti
