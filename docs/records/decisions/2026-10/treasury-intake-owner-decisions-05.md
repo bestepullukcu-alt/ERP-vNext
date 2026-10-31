@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1353,6 +1353,14 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-35; oturum Treasury Intake CT (`
 
 1. **D113/1:** `unresolved-attempts` ucu, yetki geçmişi ucu + Roller salt-okunur bölümü, belirsiz commit kuralı (503 / 409) sahip onaylı (D108/1, D110). Kapsam büyümesi kabul; yeni izin anahtarı ve yeni kural dosyası yok. Paket buna uyuyor: uçlar mevcut `auth.payment-sod-waivers.read` ve `auth.users.assign-role` ile çalışır.
 2. **D113/2:** RCS-001 §3 metni Ali'ye ulaşmadı; yazılı onay yok, satır tek başına yeniden gönderilir.
+
+## D115 — Codex D112 turu bulguları (UYGUN DEĞİL: 0 ENGEL, 10 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316 ORTA hemen düzeltilir); kaynak `docs/records/reviews/MOD-0126/2026-10-31-f3b297e3.md`, MOD-0119, MOD-0120, MOD-0124 ve MOD-0289 aynı tarihli kayıtları; oturum Treasury Intake CT. Y-36 / D114 ayrı dalda: `treasury-intake-owner-decisions-07.md`.
+
+1. **D115/1 — durum hizası:** D112/3 işaretleri kapanış listesine yazılmış, Dependencies satırları eski kalmıştı. DCP-011 `approved`, `currency-minor-units` seed'i main'de, SUPPLIER 1.3.0 FROZEN olarak yazıldı; main `cc63c620c`'de ölçüldü. Ortamda yayım kanıtı DL-1 kabulünde, MOD-0140 DL-3 canlı uç önkoşulu yerinde kaldı.
+2. **D115/2 — ICU cümlesi:** ICU bağımlılığı Platform lookup'ının özelliğidir; set sürümlü ISO 4217 listesinden üretilir.
+3. **D115/3 — MOD-0120:** `external-references/resolve` Dependencies ve O-3'te de önkoşul olmaktan çıkarıldı (D112/2). Y-4/4b kabul metni tarihçe olarak durur.
 
 ## Karar olmayanlar
 
