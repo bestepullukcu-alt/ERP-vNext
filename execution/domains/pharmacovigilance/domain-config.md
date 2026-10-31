@@ -48,7 +48,7 @@ MOD-0230/MOD-0231/MOD-0232/MOD-0234 `ready-for-dev` for build/test):**
   dictionary redistribution, static MedDRA data, cache/search index, data-product stub, fake signal, fake metric,
   fake cohort, partner integration, AI, archive/void/export/delete/bulk-delete, or runtime endpoint.
 - `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**` plus matching JS / l10n / resource files. Since
-  2026-10-31, once pack revision 15 is approved on main: exactly two `Nav.*` keys in the seven
+  2026-10-31, once revision 15 is approved on main: exactly two `Nav.*` keys in the seven
   `frontend/Diten.Web/Resources/SharedResource.*.resx` files (pack slice DL-11).
 - `gateway/Diten.ApiGateway/**/ocelot.json` - one MOD-0230 route family, integration-agent-owned.
   Upstream `/api/pv-case-intake-triage`, downstream `/api/v1/pv-case-intake-triage` (NET-001).
@@ -122,7 +122,7 @@ recorded as draft / not approved and does not open operational runtime.**
   DL-10). Operational runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
 - **2026-10-31:** MOD-0230 build/test closed catalog registration exception (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
   KK-1 ... KK-6, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`; DCP-004 §10; pack revision 15, slice DL-11): non-assignable, hidden from the menu, pushed once at start
-  by `Diten.PvgService` when its key is set. Not in force until pack revision 15 is approved on main. Operational
+  by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like. In force only once revision 15 is approved on main. Owner "Evet", re-confirmation pending (record `-02`). Operational
   runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
 - MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
   (`IPvgFieldSecurityPolicy`, `IPvgWorkflowTransitionGate`, `IPvgEvidenceLinkPort`) because those modules have no
@@ -131,7 +131,7 @@ recorded as draft / not approved and does not open operational runtime.**
   committed.
 - Operational runtime authorization for every PVG member remains **closed**.
 - Seed data, background jobs, menu entries, and module-catalog work remain blocked. One exception (2026-10-31,
-  DCP-004 §10; pack revision 15, slice DL-11): the closed catalog registration of MOD-0230 under its build/test gate, once
-  that revision is approved on main. Its one startup push is not a background job, and the catalog→Auth sync it triggers
+  DCP-004 §10; pack revision 15, slice DL-11): the closed catalog registration of MOD-0230 under its build/test gate,
+  once revision 15 is approved on main. Its one startup push is not a background job, and the catalog→Auth sync it triggers
   is the OD-PVG-1 path, not a seed. Nothing else opens: seed data, grant code, menu entries, and every other catalog entry
   stay blocked, for MOD-0231, MOD-0232, and MOD-0234 too.

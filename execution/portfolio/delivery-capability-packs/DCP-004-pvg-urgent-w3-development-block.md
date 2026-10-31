@@ -52,10 +52,11 @@ decision_records: "pending support package - not normative until committed"
 > `-02.md`, `-03.md`. See §10 "Build gate vs operational runtime gate". The 2026-10-31 note below narrows this for MOD-0230
 > only.
 
-> **2026-10-31 MOD-0230 closed catalog registration exception (owner decision PVG-MOD0230-KAPALI-KAYIT-01):** for
-> **MOD-0230 only**, the build/test gate (local / dev / CI) authorizes one catalog registration of Case Intake & Triage:
-> a manifest in `Diten.PvgService` with `IsTenantAssignable: false` and every page hidden from the menu, pushed once at
-> start when the internal key is set, as scoped by the MOD-0230 pack (revision 15, slice DL-11). Its keys reach
+> **2026-10-31 MOD-0230 closed catalog registration exception (owner "Evet" 2026-10-31, re-confirmation pending (record `-02`)):** for
+> **MOD-0230 only**, once revision 15 is approved on main, the build/test gate (local / dev / CI) authorizes one catalog registration of Case Intake
+> & Triage: a manifest in `Diten.PvgService` with `IsTenantAssignable: false` and every page hidden from the menu, pushed once
+> at start when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, as scoped by the MOD-0230 pack (revision 15, slice DL-11). A working live screen stays pending the owner
+> (pack OD-PVG-14). Its keys reach
 > AuthService through the catalog→Auth sync of OD-PVG-1, which is not a seed; the push is a startup step, not a background
 > job. It is not offered for tenant subscription. The operational runtime gate and its conditions are unchanged. Nothing changes for
 > MOD-0231, MOD-0232, and MOD-0234, and the MOD-0234 no-shell gate (§15) is untouched. §11's closing sentence stays word for
@@ -238,7 +239,7 @@ required and not completed.
 
 | Slice | Kapsam | Not |
 |---|---|---|
-| PVG-W3A | MOD-0230 | Case Intake & Triage; build/test gate open (2026-08-09); build/test Mongo store exception since 2026-10-29 (§10, DEPO-01); build/test closed catalog registration exception since 2026-10-31 (§10, KAPALI-KAYIT-01); operational runtime closed |
+| PVG-W3A | MOD-0230 | Case Intake & Triage; build/test gate open (2026-08-09); build/test Mongo store exception since 2026-10-29 (§10, DEPO-01); build/test closed catalog registration exception once revision 15 is approved on main (§10, KAPALI-KAYIT-01); operational runtime closed |
 | PVG-W3B | MOD-0231 | Signal Minimum Scope only; build/test gate open for non-operational class-library contracts/tests; no Mongo, collection, or migration |
 | PVG-W3C | MOD-0232 | MedDRA Coding; build/test gate open for non-operational class-library contracts/tests; no Mongo, collection, migration, or dictionary data |
 | PVG-W3D | MOD-0234 | Signal MVP contracts/gates only; no shell; no Mongo, collection, or migration |
@@ -264,9 +265,9 @@ required and not completed.
   bulk-delete, or AI implementation is authorized. No collection is authorized, with one exception (2026-10-29,
   DEPO-01): under the MOD-0230 build/test gate only, MOD-0230 may persist its intake drafts in one Mongo store -
   collection, tenant-first indexes, and the startup schema bootstrap - as scoped by the MOD-0230 pack (slice DL-10);
-  see "Build gate vs operational runtime gate". No other member gains a collection. The one startup push of the MOD-0230
-  closed catalog registration (2026-10-31, slice DL-11) is not a job, and the catalog→Auth sync it triggers is not a
-  permission seed; see the same section. No other member gains either.
+  see "Build gate vs operational runtime gate". No other member gains a collection. Once revision 15 is approved on main, the one
+  startup push of the MOD-0230 closed catalog registration (slice DL-11) is not a job, and the catalog→Auth sync it triggers is
+  not a permission seed; see the same section. No other member gains either.
 - **Canonical naming:** MOD-0230, MOD-0231, MOD-0232, and MOD-0234 use Blueprint names exactly. Delivery-stage labels and slices are planning metadata only.
 - **Security baseline:** REG-PV-BASE is mandatory for any runtime member because these modules handle regulated safety data and PHI/PII-sensitive records.
 - **Case lifecycle:** MOD-0231 Signal Minimum Scope may define only the minimum lifecycle states and trace outputs required by MOD-0234; full W-4 Case Processing remains out of scope.
@@ -296,12 +297,12 @@ and does not move the operational runtime gate. MOD-0231, MOD-0232, and MOD-0234
 collection, and migration exclusions (§11) stand. Seed data, permission seed or grant, and background jobs stay
 unauthorized for every member; the next paragraph narrows this for MOD-0230 only.
 
-**MOD-0230 build/test closed catalog registration exception (added 2026-10-31; PVG-MOD0230-KAPALI-KAYIT-01).** Under the
-build/test gate only, MOD-0230 may enter the module catalog once, closed: `IsTenantAssignable: false`, every page
-`IsNavigationVisible: false`, registered by `Diten.PvgService` when its internal key is set, as scoped by the MOD-0230 pack
+**MOD-0230 build/test closed catalog registration exception (added 2026-10-31; owner "Evet" 2026-10-31, re-confirmation pending (record `-02`)).** Once revision 15 is approved on main, and
+under the build/test gate only, MOD-0230 may enter the module catalog once, closed: `IsTenantAssignable: false`, every page
+`IsNavigationVisible: false`, registered by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, as scoped by the MOD-0230 pack
 (revision 15, slice DL-11). The push is one startup step, not a background job. Its keys reach AuthService through the
-catalog→Auth sync of OD-PVG-1, which is not a seed. Platform and Auth code do not change; the shared resource files gain
-exactly two navigation text keys. A failed or skipped push does not change service behaviour or readiness, and no
+catalog→Auth sync of OD-PVG-1, which is not a seed. Platform and Auth code do not change. The shared resource files gain
+exactly two navigation text keys; that scope is open to the owner at this approval. A failed or skipped push does not change service behaviour or readiness, and no
 registration means no permission, so the screen stays closed. A person's role grant in dev, for measurement, is allowed. The
 service's deny-by-default adapters are unchanged, so an authorized user sees the page and the data operations stay refused.
 It is not operational runtime and does not move the operational runtime gate.
@@ -344,7 +345,7 @@ All four members run in one service, `Diten.PvgService`.
    operational runtime without audit (CAP-001 §7.1, read here as operational delivery - CT reading 2026-10-30).
    This section adds no build/test prerequisite: the build/test gates in the gate table above and the existing
    known-debt write commands of MOD-0231, MOD-0232, and MOD-0234 do not change. The MOD-0230 closed catalog registration
-   (2026-10-31) adds no write command: its push writes no PVG record, and Platform audits it.
+   (once revision 15 is approved on main) adds no write command: its push writes no PVG record, and Platform audits it.
 
 ## 11. Scope
 
@@ -367,8 +368,8 @@ integration, AI, export, delete, and bulk-delete remain blocked. Operational
 runtime, database, seed, appsettings, jobs, menu, module-catalog, production, supplier qualification, and validation
 remain unauthorized. One build/test exception is the MOD-0230 intake-draft Mongo store of §10 (2026-10-29,
 DEPO-01): it is not an operational database, it opens no seed, appsettings, job, menu, or module-catalog work, and it
-grants nothing to MOD-0231, MOD-0232, or MOD-0234. The other is the MOD-0230 closed catalog registration of §10
-(2026-10-31, KAPALI-KAYIT-01): it opens that one non-assignable, hidden catalog entry and its one startup push; it opens no
+grants nothing to MOD-0231, MOD-0232, or MOD-0234. The other, once revision 15 is approved on main, is the MOD-0230 closed catalog registration of §10
+(KAPALI-KAYIT-01): it opens that one non-assignable, hidden catalog entry and its one startup push; it opens no
 seed, appsettings, menu, or other job or catalog work, and it grants nothing to MOD-0231, MOD-0232, or MOD-0234.
 
 ## 12. Explicit exclusions
@@ -508,7 +509,7 @@ Forbidden until separately approved: `frontend/**`, `gateway/**`, seeds, fixture
 migrations, repositories, Mongo, persistence, partner integration, AI, archive, void, export, delete, bulk-delete,
 MOD-0231 runtime, MOD-0232 runtime, MOD-0234 runtime, production use, supplier qualification, CSV validation, and
 deployment. This list governs the operational runtime slice; the MOD-0230 build/test Mongo store of §10 (2026-10-29)
-and the MOD-0230 closed catalog registration of §10 (2026-10-31) do not carry into operational runtime and need this
+and the MOD-0230 closed catalog registration of §10 (once revision 15 is approved on main) do not carry into operational runtime and need this
 packet's approval like any other path.
 
 Validation expectations for any later authorized runtime slice include `git diff --check`, focused
@@ -616,8 +617,11 @@ policy tests, and no forbidden path changes.
 - 2026-10-30: Codex review 15 (`docs/records/reviews/DCP-004/2026-10-30-b8d838f6.md` F-1): §10 "Audit trail gate"
   (CAP-001 §7.1) and §8 item 5 (DL-10 before DL-5) added. No audit decision is taken; D-1, D-2, D-4, D-5, D-6, and D-7
   stay open.
-- 2026-10-31: MOD-0230 build/test closed catalog registration exception recorded in the header note, §8.1, §10, §11, and
-  the runtime packet list (owner decision `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`). Scope: the MOD-0230 build/test gate only. The operational runtime gate,
+- 2026-10-31: MOD-0230 build/test closed catalog registration exception, once revision 15 is approved on main, recorded in the header note, §8 item 6,
+  §8.1, §10 (guard, gate, and "Audit trail gate" item 3), §11, and the runtime packet list (owner "Evet" 2026-10-31, re-confirmation pending (record `-02`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
+  corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`). The owner approves this DCP-004 change (`execution/domains/pharmacovigilance/domain-config.md` line 96);
+  `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-02.md` covered revision 14 only and is not extended; the pack's HIGH
+  approval path is unchanged. Scope: the MOD-0230 build/test gate only. The operational runtime gate,
   MOD-0231 / MOD-0232 / MOD-0234, the MOD-0234 no-shell gate, seeds, grant code, menu entries, and other jobs are
   unchanged.
 - Reconciliation: implementation-phase results will be added here as member module packs are executed.
