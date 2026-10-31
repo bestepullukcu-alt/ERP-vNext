@@ -13,7 +13,7 @@
 |---|---|
 | Adında `Meeting` geçen bütün dosyalar, paket ölçümünden (`826150ef4`) sonra | Değişmemiş (`git diff --stat 826150ef4 HEAD -- '*Meeting*'` boş, 2026-10-31); paketin satır atıfları geçerli |
 | `MeetingWriteAccess` | Henüz yok (beklenen) |
-| Elle kurulan korunan işleyici | 13 test dosyası, 39 kurulum (paket "14 dosya, yaklaşık 40" diyor; küçük fark, iş yükünü değiştirmez) |
+| Elle kurulan korunan işleyici | 14 test dosyası, 53 kurulum: 39 açık `new …Handler(` ve 14 hedef tipli `new(` (paket "14 dosya, yaklaşık 40" diyor; bu notun ilk hali hedef tiplileri atlayıp 13 dosya, 39 yazmıştı). Grep ölçümü; atlanan kurulumu derleme yakalar |
 | `CreateMeetingCommand` kurulumu | 4 yer, ikişer konumsal argüman (paketle aynı) |
 | `Microsoft.CodeAnalysis` | Test projesinde yok; merkezi paket dosyası da yok, sürüm csproj'a yazılır |
 | Yerel gerçek Mongo | `mongod` 7.0 varsayılan yolda var; docker yok. Bu makinede koşu denenmedi |
