@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>Reddet</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>Yolda Olarak İşaretle</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>İadeyi İptal Et</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>Teslim Al (manuel beyan)</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Teslim Al</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>Karar Ver</value></data>
   <data name="ActionClose" xml:space="preserve"><value>Kapat</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>Teslim Alındı (manuel beyan)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>Teslim alma yalnızca manuel bir beyandır. Depo girişi değildir ve stok hareketi oluşturmaz.</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Teslim Alındı</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>Gerçekleşme Zamanı</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>Yerel tarih ve saatiniz. UTC olarak gönderilir.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,50 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Kaynak sistemin döndürdüğü sevkiyat verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Sevkiyat referans verisi eksik. Aynı isteği daha sonra yeniden deneyin.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Sevkiyat durumu geçici olarak kullanılamıyor. Aynı isteği yeniden deneyin.</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Gerekli bir servise şu anda ulaşılamıyor. Aynı isteği biraz sonra yeniden deneyin.</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>İadeler geçici olarak kullanılamıyor. Sonuç doğrulanmadı; aynı isteği yeniden deneyin.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu. Aynı işlemi yeniden deneyebilirsiniz.</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>İlk son kullanma tarihli lotu atlamak için bir gerekçe gerekli.</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>Bu lot, ilk son kullanma tarihli önce çıkar sırasına uymuyor.</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>Bu satır için yeterli kullanılabilir stok yok.</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>Bu satır için yeterli stok yok.</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>Kalem aktif değil.</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>Lotun kalan raf ömrü alt sınırın altında.</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>Lot bloke.</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>Lotun son kullanma tarihi geçmiş.</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>Bu kalem için lot verilemez.</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>Bu kalem için lot gerekli.</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>Lotun yeniden test tarihi geldi.</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>Lot bu SKU'ya ait değil.</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>Lot geri çağırma altında.</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>Ürünün ana verisi eksik.</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>Stok başka bir belge için ayrılmış.</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>Bu seri numarası zaten var.</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>Seri takipli kalemler bu sürümde iade alınamaz.</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>Seri numarası bu lota ait değil.</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>Seri numarası kullanılabilir değil.</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>SKU bu kaleme ait değil.</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>Bu SKU seviyesinde stok tutulamaz.</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>Kalem bilinmiyor.</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>Lokasyon bilinmiyor.</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>Lot bilinmiyor.</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>Bu satır için birim dönüşümü tanımlı değil.</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>Tanınmayan neden (kod: {0}).</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>Stok servisi {0}. satırın girişini reddetti.</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>{0}. sevkiyat satırının kayıtlı stok çıkışı yok; bu nedenle iade teslim alınamıyor. Hiçbir şey kaydedilmedi.</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>Bu iade için bir teslim alma işlemi zaten sürüyor ya da farklı değerlerle başlatıldı. Gösterilen kayıtlı değerlerle yeniden gönderin ya da biraz sonra yeniden deneyin.</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>Kayıtlı değerler: depo {0}, lokasyon {1}, gerçekleşme zamanı {2}.</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>{0}. satır stok kaydı olmadan teslim alınamaz.</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>Kaydedilmiş satırlar olduğu gibi kalır. Reddedilen satırı düzeltip yeniden gönderin.</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>Stok kaydedildi</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>Stok kaydedilmedi</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>Stok kaydı</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>Neden</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>Stok kaydı olmadan teslim alındı — stok entegrasyonundan önce sevk edildi</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>Bütünlük hatası</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>Teslim alma her satırı stok karantinasına kaydeder; daha önce kaydedilmiş satırlar yeniden kaydedilmez. Stok entegrasyonundan önce sevk edilmiş bir sevkiyat stok kaydı olmadan teslim alınır.</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>Teslim Alma Deposu</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>Teslim Alma Lokasyonu</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>Stok Kaydı Olmadan Teslim Al</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>{0}. satır stok kaydı olmadan teslim alınsın mı? Stok servisi bu satırı yeniden denemeyle değişmeyecek bir nedenle reddetti; stok daha sonra Stok modülünde düzeltilmelidir.</value></data>
 </root>

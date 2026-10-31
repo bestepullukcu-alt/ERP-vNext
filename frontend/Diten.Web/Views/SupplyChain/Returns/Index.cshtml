@@ -68,7 +68,7 @@
                             <i class="bx bx-git-branch diten-field-icon" aria-hidden="true"></i>
                             <select id="transitionTarget" class="form-select"></select>
                         </div>
-                        <div id="transitionReceivedNote" class="form-text d-none">@Localizer["ReceivedManualNote"]</div>
+                        <div id="transitionReceivedNote" class="form-text d-none">@Localizer["ReceivedPostsQuarantineNote"]</div>
                     </div>
                     <div class="col-12">
                         <label for="transitionOccurredAt" class="form-label fw-medium">@Localizer["OccurredAt"] <span class="text-danger">*</span></label>
@@ -79,6 +79,27 @@
                         <div id="transitionOccurredAtHelp" class="form-text">@Localizer["OccurredAtHelp"]</div>
                         <div id="transitionOccurredAtZone" class="form-text" dir="ltr"></div>
                     </div>
+                    @if (permissions.CanReceive)
+                    {
+                    <div class="col-12 d-none" id="transitionReceiptGroup">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label for="transitionToWarehouseId" class="form-label fw-medium">@Localizer["ToWarehouseId"] <span class="text-danger">*</span></label>
+                                <div class="diten-field">
+                                    <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="transitionToWarehouseId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="transitionToLocationId" class="form-label fw-medium">@Localizer["ToLocationId"]</label>
+                                <div class="diten-field">
+                                    <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="transitionToLocationId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
                     <div class="col-12 d-none" id="transitionDispositionGroup">
                         <label for="transitionDispositionCode" class="form-label fw-medium">@Localizer["DispositionCode"] <span class="text-danger">*</span></label>
                         <div class="diten-field">
@@ -97,9 +118,30 @@
                     </div>
                 </div>
             </form>
+            @* lines[] arrives only on the Received answer (SHIPMENT-BUNDLE 3.4.0), so the per-line result is shown here. *@
+            @if (permissions.CanReceive)
+            {
+            <div id="transitionReceiptResult" class="table-responsive d-none" role="status" tabindex="-1">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Localizer["LineNumber"]</th>
+                            <th scope="col">@Localizer["ReceiptPostingHeader"]</th>
+                            <th scope="col">@Localizer["ReceiptReasonHeader"]</th>
+                            <th scope="col">@Localizer["InventoryTransactionReferenceId"]</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transitionReceiptLines"></tbody>
+                </table>
+            </div>
+            }
         </div>
         <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+            @if (permissions.CanReceive)
+            {
+                <button type="button" id="btnReceiveWithoutPosting" class="btn btn-label-danger d-none">@Localizer["ActionReceiveWithoutPosting"]</button>
+            }
             <button type="button" id="btnSubmitTransition" class="btn btn-primary">@Localizer["SubmitTransition"]</button>
         </div>
     </div>

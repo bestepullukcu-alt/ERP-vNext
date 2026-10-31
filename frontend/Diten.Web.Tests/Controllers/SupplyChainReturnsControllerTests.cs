@@ -283,6 +283,54 @@ public sealed class SupplyChainReturnsControllerTests
         Assert.Empty(handler.Requests);
     }
 
+    // MOD-0186 DL-2 (Q504): the four receipt codes keep their status and carry only the fields a screen text needs.
+    [Theory]
+    [InlineData(422, "INVENTORY_REFUSED", "{\"shipmentLineNumber\":\"2\",\"inventoryCode\":\"LOT_UNDER_RECALL\",\"inventory\":{\"recallCaseNumber\":\"RC-SECRET\"}}", "{\"shipmentLineNumber\":\"2\",\"inventoryCode\":\"LOT_UNDER_RECALL\"}")]
+    [InlineData(422, "RETURN_SOURCE_MOVEMENT_MISSING", "{\"shipmentLineNumber\":\"1\",\"other\":\"RC-SECRET\"}", "{\"shipmentLineNumber\":\"1\"}")]
+    [InlineData(422, "RETURN_LINE_NOT_UNPOSTABLE", "{\"shipmentLineNumber\":\"3\",\"lastInventoryCode\":\"RC-SECRET\"}", "{\"shipmentLineNumber\":\"3\"}")]
+    [InlineData(409, "RETURN_RECEIPT_IN_PROGRESS", "{\"toWarehouseId\":\"wh-01\",\"toLocationId\":null,\"occurredAt\":\"2026-10-26T08:00:00Z\",\"other\":\"RC-SECRET\"}", "{\"toWarehouseId\":\"wh-01\",\"occurredAt\":\"2026-10-26T08:00:00Z\"}")]
+    public async Task Transition_relays_receipt_codes_with_status_and_filtered_details(int status, string code, string details, string expected)
+    {
+        var json = AssertFailure(await ReceiptFailure(status, code, details), status, code);
+        Assert.Contains($"\"details\":{expected}", json);
+        Assert.DoesNotContain("RC-SECRET", json);
+    }
+
+    [Fact]
+    public async Task Transition_carries_no_details_for_any_other_code()
+    {
+        var json = AssertFailure(await ReceiptFailure(503, "DEPENDENCY_UNAVAILABLE", "{\"shipmentLineNumber\":\"1\"}"),
+            StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE");
+        Assert.DoesNotContain("details", json);
+    }
+
+    [Fact]
+    public async Task Transition_keeps_an_unrecognized_422_as_a_refusal_with_its_code_and_no_details()
+    {
+        var json = AssertFailure(await ReceiptFailure(422, "NEW_RECEIPT_RULE", "{\"shipmentLineNumber\":\"RC-SECRET\"}"),
+            StatusCodes.Status422UnprocessableEntity, "NEW_RECEIPT_RULE");
+        Assert.DoesNotContain("details", json);
+        Assert.DoesNotContain("RC-SECRET", json);
+    }
+
+    [Theory]
+    [InlineData("<b>raw text</b>")]
+    [InlineData("lower_case")]
+    public async Task Transition_never_relays_a_422_code_that_is_not_code_shaped(string code)
+    {
+        var json = AssertFailure(await ReceiptFailure(422, code, "{}"), StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+        Assert.DoesNotContain(code, json);
+    }
+
+    private static Task<IActionResult> ReceiptFailure(int status, string code, string details)
+    {
+        var body = "{\"targetStatus\":\"Received\",\"occurredAt\":\"2026-09-26T10:00:00+03:00\",\"toWarehouseId\":\"wh-01\"}";
+        var handler = new CaptureHandler(request => request.Uri.EndsWith("/transition", StringComparison.Ordinal)
+            ? Json((HttpStatusCode)status, $"{{\"error\":{{\"code\":\"{code}\",\"message\":\"m\",\"details\":{details},\"correlationId\":\"{Root:D}\"}},\"contractVersion\":\"v1\"}}", Root)
+            : Json(HttpStatusCode.OK, ShipmentDetail("\"" + Root.ToString("D") + "\"")));
+        return CreateController(handler, [Transition, Receive, ShipmentRead], body, "k-3").Transition(ReturnIdValue, Shipment, CancellationToken.None);
+    }
+
     [Theory]
     [InlineData("Authorized", Authorize)]
     [InlineData("Rejected", Authorize)]
