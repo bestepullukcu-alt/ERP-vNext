@@ -3,7 +3,7 @@ id: WP-0230-08
 title: Module manifest and catalog registration
 module: MOD-0230
 service: Diten.PvgService
-depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10]
+depends_on: [WP-0230-DL4B, WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D, WP-0230-DL8, WP-0230-DL10]
 gate: pack revision 15 approved on main
 status: blocked
 estimate: 0.5 d

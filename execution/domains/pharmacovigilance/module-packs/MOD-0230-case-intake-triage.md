@@ -2531,8 +2531,8 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   yedi `frontend/Diten.Web/Resources/SharedResource.*.resx` dosyası (yalnız `Nav.Module.CASEINTAKETRIAGE` ve
   `Nav.Domain.PHARMACOVIGILANCE` anahtarları, yedi dilde, l10n kapısından).
   Önkoşul: DL-10 bitti (KK-5; iki iş de `PvgServiceApiHost.cs` dosyasına dokunur, AC-13 (f) listesi DL-10'dan gelir); WP-0230-DL4B,
-  WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D ve WP-0230-DL8 kuyrukta `INTEGRATED` ya da `ACCEPTED`
-  (AC-36 ve AC-38 bunların kodunu ölçer).
+  WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D ve WP-0230-DL8 kuyrukta `INTEGRATED` ya da `ACCEPTED`
+  (AC-36 ve AC-38 bunların kodunu ölçer; WP-0230-DL7B kuyrukta `REWORK`, yani son durumda; düzeltmesi WP-0230-DL7B-R1'dir).
   Kapsam dışı: Platform ve Auth kodu, Gateway ve `ocelot.json`, `.antigravity/**`, frontend'in geri kalanı, menü; seed, grant kodu,
   operasyonel kullanım (KK-6); MOD-0231 / MOD-0232 / MOD-0234. Rol izni geliştirme ortamında elle verilir; bu adımı
   sahip yapar, CT ölçer. Sabotaj kanıtı (AC-36, AC-37): depo biçimli, çalışma ağacı dışındaki karalama kopyada; yalnız bu
