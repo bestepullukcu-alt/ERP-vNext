@@ -20,7 +20,7 @@ slice: "Reference-based mapping of the 106 page JS files the UI compliance selec
 
 # MOD-0286-FU01 - UI Compliance Page JS Reference Mapping
 
-> **Revision 03, 2026-10-31: not approved until its row exists in `execution/approvals/approvals.tsv`; both gates stay closed.** The formal review runs on these bytes: a `status` change is not exempt
+> **Revision 04, 2026-10-31: not approved until its row exists in `execution/approvals/approvals.tsv`; both gates stay closed.** The formal review runs on these bytes: a `status` change is not exempt
 > from review (`scripts/pack_approval.py:941` `review_exempt`, exempt keys `:95-96`), so `status: ready-for-dev` is set in this version; the field is not the approval. Owner's word in the PSS-UI tower chat,
 > 2026-10-31: "Evet". Header values follow the parent's reasons (`MOD-0286-ui-design-system-page-pattern-governance.md:32-36`). DCP-002 at `0504c96ea`: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0286-FU01
 > --name "UI Compliance Page JS Reference Mapping"` -> `OK  MOD-0286-FU01: proven against Blueprint/registry.`
@@ -66,7 +66,7 @@ The selector prints `eşlenmemiş sayfa JS'i, sayfa kontrolü yok (FU-18) <path>
 
 **1. The class.** A "class file" is a path `map_path` returns as `fu18` today (`scripts/uic_changed_pages.py:892`, `:897`, `:902`); the path rule does not change. A reference brings in nothing else: `js/shared/**`, top-level files and another page's own folder stay as they are.
 
-**2. Reference rule, and which view counts (Decision 1).** Binding raw strings, Python `re`: `STRIP` with `re.S` is removed first, `SCRIPT` runs with `re.I | re.S`, text as `text_of` (`:227`); capture `c` names `frontend/Diten.Web/wwwroot/` + `c`. `VARIABLE` (same flags) runs on the `STRIP`ped text with every `SCRIPT` match removed, so a `SCRIPT` capture wins for its tag. The selector holds the three strings in one module-level dict literal named exactly `FU01_REF_PATTERNS`, keys `STRIP`, `SCRIPT`, `VARIABLE`, plain string-literal values, equal byte for byte to this block (AC-13).
+**2. Reference rule, and which view counts (Decision 1).** Binding raw strings, Python `re`: `STRIP` with `re.S` is removed first, `SCRIPT` runs with `re.I | re.S`, text as `text_of` (`:227`); capture `c` names `frontend/Diten.Web/wwwroot/` + `c`. `VARIABLE` (same flags) runs on the `STRIP`ped text with every `SCRIPT` match removed, so a `SCRIPT` capture wins for its tag. The selector holds the three strings in one module-level dict literal named exactly `FU01_REF_PATTERNS`, keys `STRIP`, `SCRIPT`, `VARIABLE`, plain string-literal values, equal byte for byte to this block (AC-13). Every run compiles the three patterns from this dict with the flags above, and the selector holds no other copy of them.
 
 ```text
 STRIP	@\*.*?\*@|<!--.*?-->
@@ -165,6 +165,7 @@ No field. Baseline: the parent's rules (`:739-757`) stand; the `FU-19` row is de
 - **Hidden violation** - a match on a counted line: `n > b` (SB-3, SB-4). One removed and one added in a file: `TABAN`, the parent's accepted limit.
 - **Silent loss** - last reference gone, or J renamed with or without its view: lines of part 7 (SB-6). A commented-out tag is no reference (SB-12). A local `src` the rule cannot read (variable, concatenated, unquoted, relative, not `.js`): `ölçülmedi` (part 2). A `?v=@x` query keeps its reference. An external URL is no reference. A Shared-only file cannot go red: its own line, FU-23.
 - **Wrong order** - rows without the reader: exit 2; mapping without rows: old debt red (part 6).
+- **Second copy of the patterns** - a copy other than the dict is caught by SB-14: the behaviour case does not fail, so the sabotage does.
 - **Tool error** - `git show` of the base's baseline or `cat-file` fails: exit 2, never "0 pages".
 - **Class changes under a row** - a new `Views/{X}/{Sub}/` makes J a normal page's file: old row closed, new page red until the owner adds a row (as the parent's rename rule).
 - **Unauthorized** - no endpoint; the CI token stays read-only. **Concurrency** - two pull requests that each pass may together make a page red; the next one that selects it shows it, as for any page today.
@@ -197,7 +198,7 @@ Each is measured in a temporary clone at the work's commit by the tower's eviden
 - [ ] AC-10 (zorunlu) — Self-test: `python3 scripts/uic_changed_pages.py --self-test` exits 0, `grep -c '^FAIL '` is 0, and for each id `FU01-01` to `FU01-67` of Test Expectations `grep -c '^PASS FU01-<nn> '` is at least 1. On the source, by `git diff -U0 <base> <work> -- scripts/uic_changed_pages.py` limited to `self_test`: the removed lines are exactly the base's `FU18` definition and the positive assertions of AC-21g03 (first case), g06, g07, g08 (`:1351`, `:1388`, `:1430`, `:1438`, `:1446` at `0504c96ea`); their replacements name `NO_VIEW_LINE`, whose value holds `hiçbir görünüm`; `FU18` becomes the prefix `eşlenmemiş sayfa JS'i, `, so the negative assertions cover all three lines of part 4; no case name of the base is missing.
 - [ ] AC-11 (zorunlu) — Scope: `git diff --name-only <base> <work>` lists only the two Repo Scope worker files; the parent pack and `.github/workflows/ui-compliance.yml` have the same blob at both commits.
 - [ ] AC-12 (zorunlu) — CI: the `ui-compliance` job on the pull request's head exits 0; the acceptance record names run id, head SHA and the artefact's SHA-256.
-- [ ] AC-13 (zorunlu) — The selector's copy: `python3 -B docs/records/audits/2026-10/mod-0286-fu01-01/uic-fu01-oracle-02.py secici <work>` prints `aynı` and exits 0 (it reads the selector with `ast` and imports nothing). SB-14: one character changed in each of the three values, one scratch commit per key, makes that command exit 1 with `farklı<TAB><key>` and makes `--self-test` print `FAIL FU01-67 ...` and exit non-zero; recorded.
+- [ ] AC-13 (zorunlu) — The selector's copy: `python3 -B docs/records/audits/2026-10/mod-0286-fu01-01/uic-fu01-oracle-02.py secici <work>` prints `aynı` and exits 0 (it reads the selector with `ast` and imports nothing). SB-14 a to d: each mutation of the table, one compilable scratch commit changing only that value, makes that command exit 1 with `farklı<TAB><key>` and makes `--self-test` exit non-zero with `FAIL FU01-67 ...` and a FAIL on the row's behaviour case, which fails only if the run really reads the dict. SB-14 e shows a real run on the real tree reads the dict; recorded.
 
 ## Test Expectations
 
@@ -220,7 +221,12 @@ Sabotage set: commits on a scratch branch of the clone, never pushed. A Commit p
 | SB-11 | `alert('x');` appended to the 4 files of Owned Objects, part 4 | 0 | The 4 lines; none of those paths on a check line |
 | SB-12 | `@* <script src="~/assets/js/pages/enterprise-strategy/goals.js"></script> *@` added to `Views/CRM/CyclePeriods/Index.cshtml` | 0 | No `başvuru eklendi`; no goals.js line of that page |
 | SB-13 | Rows of the table below, one at a time (AC-6) | 0 or 2 | The row's text |
-| SB-14 | One character changed in one value of `FU01_REF_PATTERNS`, one commit per key (AC-13). Runs: `oracle secici <the commit>` and `--self-test`, not `--base`; revert: `aynı`, exit 0 | 1 | `farklı<TAB><key>`; `FAIL FU01-67 ...`, with `--self-test` non-zero |
+| SB-14 | a to d: each one scratch commit changing only that value of `FU01_REF_PATTERNS`, still compiling (AC-13). Runs: `oracle secici <the commit>` and `--self-test`, not `--base`; revert: `aynı`, exit 0 | 1 | `farklı<TAB><key>`; `--self-test` non-zero with `FAIL FU01-67 ...` and a FAIL on the row's case |
+| SB-14a | `STRIP`: `@\*.*?\*@` becomes `@\#.*?\*@` | 1 | `farklı<TAB>STRIP`; `FAIL FU01-15 ...` |
+| SB-14b | `SCRIPT`: `@Url\.Content` becomes `@Urx\.Content` | 1 | `farklı<TAB>SCRIPT`; `FAIL FU01-13 ...` |
+| SB-14c | `VARIABLE`: `[^>]*?assets/js/\|` becomes `[^>]*?assets/jz/\|` (`\|` is the table escape of the pattern's bar) | 1 | `farklı<TAB>VARIABLE`; `FAIL FU01-62 ...` |
+| SB-14d | `VARIABLE`: `(?<!@)@(?!@)` becomes `(?<!@)#(?!@)` | 1 | `farklı<TAB>VARIABLE`; `FAIL FU01-19 ...` |
+| SB-14e | `SCRIPT`: `(assets/js/` becomes `(assets/jz/`, then SB-1's commit on top; run `--base <its parent>`; then the same with the dict restored | Not claimed for the mutated run (not run) | Mutated: `YENİ KIRMIZI HCM/Employees CI-7 <J> 1 +1` absent. Restored: present |
 
 SB-13 rows: seven cells, tab-separated; `reason` is `sahip kararı sb-13 (2026-10-31)` and `owner` is `platform-shared-services` in every row. `<e>` = `wwwroot/assets/js/pages/enterprise-strategy`.
 
@@ -264,6 +270,7 @@ Not applicable: no page. Tur yok.
 - Part 2's `SCRIPT` and `VARIABLE` at `5534e3b7b` (`python3 -B fu01_measure6.py`, session scratch): 25 fixtures as written in part 2; over 1530 views 1305 captures, `VARIABLE` 0, the (page, file) pairs identical to the first run (113), classes 102 / 2 / 2.
 - Forms of FU01-60 to FU01-66, measured against part 2's block as read from this pack (`python3 -B fu01_measure7.py`, session scratch, at `6cbe29914`): `/assets/js/a/x.js` captured; `@Url.Content(Model.X)` and `../assets/js/a/x.js` `VARIABLE`; the two CDN URLs, `src="@@x.js"` and `@Url.Content("~/assets/vendor/a.js")` neither.
 - `uic-fu01-oracle-02.py` at `6cbe29914` (`git log -1 --format=%h` on the file), read from HEAD: `satirlar` 106 class files, 113 pairs, 22 pages, 22 rows, 92 matches; `gorunum` 1530, `CRM/Accounts` 19; `degisken` 0; `turetim` anchors 113 and 3372, `kırmızı` SB-1=1 SB-2=5 SB-3=2 SB-4=1 SB-8=2 SB-9=4 (output kept at `docs/records/audits/2026-10/mod-0286-fu01-01/olcum/oracle-02-turetim.tsv`); `secici` exit 1 `FU01_REF_PATTERNS yok`, as expected before the work.
+- `docs/records/audits/2026-10/mod-0286-fu01-01/olcum/fu01_measure8.py` at `f288abcbe`, run from the repo root on part 2's patterns, not through a selector: each mutation of SB-14 a to d compiles; `@* *@` form from no capture to captured; `Url.Content` form from captured to `VARIABLE`; `../` and `@x` forms from `VARIABLE` to no line; `~/assets/js/@x.js` stays `VARIABLE` under either `VARIABLE` mutation, so FU01-18 is not their case.
 - Likely selector lines, for orientation, not a design: `:84`, `:298-347`, `:394`, `:493-494`, `:508-514`, `:801-813`, `:828`, `:872-902`, `:922-936`, `:953`; self-test `:1387-1446`.
 - Not measured: the change itself; every sabotage line above (read from the code, not run); CI on a real pull request; time on a CI runner.
 
