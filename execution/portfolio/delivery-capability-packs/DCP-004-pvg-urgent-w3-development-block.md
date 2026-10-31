@@ -62,7 +62,7 @@ decision_records: "pending support package - not normative until committed"
 > MOD-0231, MOD-0232, and MOD-0234, and the MOD-0234 no-shell gate (§15) is untouched. §11's closing sentence stays word for
 > word for every member; one more sentence after it names this exception only. Seed data, grant code, menu entries, other
 > background jobs, and operational use stay unauthorized for every member; a person's role grant in dev, for measurement,
-> is allowed. Records: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (corrections), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md` (re-confirmed). See §10.
+> is allowed. Records: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (corrections), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md` (re-confirmed), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md` (KK-7 ... KK-10). See §10.
 
 > **User constraint:** This draft does **not** develop Urgent foundation remediation W-3A0, does **not**
 > include next-stage W-4/W-5 modules outside the requested urgent slices, and does **not** start
@@ -232,8 +232,8 @@ required and not completed.
 2. **MOD-0231 signal-minimum slice contract and module pack** - canonical module name is Case Processing; delivery slice is **Signal Minimum Scope**. Define only the safety-case fields, lifecycle states, assessments, and trace outputs needed by downstream signal work. Build/test gate is open for non-operational class-library contracts/tests only; operational runtime remains closed.
 3. **MOD-0232 terminology/coding contract and module pack** - define MedDRA version binding, coded-term assignment model, coding audit trail, diff/export contract, and dictionary-source governance. Build/test gate is open for non-operational class-library contracts/tests only; operational runtime remains closed.
 4. **MOD-0234 Signal MVP contract, workflow, object model, and interface gates** - define signal hypothesis/evaluation/review-decision objects, data-product and metric interface gates, workflow handoff, evidence links, and telemetry contract. This step does **not** create a runtime shell, UI, service, or gateway route.
-5. **MOD-0230 persistence before audit (added 2026-10-30)** - inside MOD-0230 the build/test Mongo store (pack slice DL-10) is delivered and accepted before the audit write (pack slice DL-5); DL-5 then writes the audit record in the same Mongo transaction as the intake data (DEPO-01 KD-3). The open audit decisions listed in §10 "Audit trail gate" are not decided by this order.
-6. **MOD-0230 persistence before closed catalog registration (added 2026-10-31)** - inside MOD-0230 the build/test Mongo store (pack slice DL-10) finishes before pack revision 15 opens and before the closed catalog registration (pack slice DL-11) starts (KAPALI-KAYIT-01 KK-5). This order changes no other slice.
+5. **MOD-0230 persistence before audit (added 2026-10-30)** - inside MOD-0230 the build/test Mongo store (pack slice DL-10) reaches the queue state `INTEGRATED` (independently verified, merged to main; KAPALI-KAYIT-04 KK-7) before the audit write (pack slice DL-5) starts; DL-10's own acceptance is not removed and stays deferred until a live path exists (KK-8); DL-5 then writes the audit record in the same Mongo transaction as the intake data (DEPO-01 KD-3). The open audit decisions listed in §10 "Audit trail gate" are not decided by this order.
+6. **MOD-0230 persistence before closed catalog registration (added 2026-10-31)** - inside MOD-0230 the build/test Mongo store (pack slice DL-10) reaches the same queue state, `INTEGRATED`, as in item 5 before pack revision 15 opens and before the closed catalog registration (pack slice DL-11) starts (KAPALI-KAYIT-01 KK-5, KAPALI-KAYIT-04 KK-7). This order changes no other slice.
 
 ## 8.1 Delivery slices
 
@@ -304,7 +304,8 @@ under the build/test gate only, MOD-0230 may enter the module catalog once, clos
 catalog→Auth sync of OD-PVG-1, which is not a seed. Platform and Auth code do not change. The shared resource files gain
 exactly two navigation text keys; that scope is open to the owner at this approval, and the full list of what stays open
 at this approval is in the MOD-0230 pack (revision 15 note and OD-PVG-13). A failed or skipped push does not change service behaviour or readiness, and no
-registration means no permission, so the screen stays closed. A person's role grant in dev, for measurement, is allowed. The
+registration means no permission, so the screen stays closed. The limit: keys are additive, so a push skipped after an
+earlier one removes neither the keys nor the role grants already made, and the screen stays open to those holders. A person's role grant in dev, for measurement, is allowed. The
 service's deny-by-default adapters are unchanged, so an authorized user sees the page and the data operations stay refused.
 It is not operational runtime and does not move the operational runtime gate.
 MOD-0231, MOD-0232, and MOD-0234 gain nothing from it, and the MOD-0234 no-shell gate (§15) stands. Seed data, grant code,
@@ -339,7 +340,7 @@ All four members run in one service, `Diten.PvgService`.
    "Audited Events"). MOD-0231, MOD-0232, MOD-0234: no path is recorded in their packs (measured 2026-10-30); each
    records one in its own pack before any of its write commands enters operational runtime.
 3. **Work that builds it, and its order (§8).** MOD-0230: pack slice DL-10 (build/test Mongo store) first, then pack
-   slice DL-5 (audit write); DL-5 waits for DL-10's acceptance (DEPO-01 KD-3). How PvgService enters the forwarder and
+   slice DL-5 (audit write); DL-5 waits for WP-0230-DL10 to be `INTEGRATED` (DEPO-01 KD-3, KAPALI-KAYIT-04 KK-7). How PvgService enters the forwarder and
    the related audit decisions stay open - DEPO-01 open items D-1, D-2, D-4, D-5, D-6, and D-7 (DEPO-03 S-10) - and this
    DCP does not decide them. Until DL-5 is accepted no MOD-0230 mutation succeeds outside tests (deny-all permission
    gate, MOD-0230 pack). MOD-0231, MOD-0232, MOD-0234: the delivering work is not named yet; no member enters
@@ -620,7 +621,7 @@ policy tests, and no forbidden path changes.
   stay open.
 - 2026-10-31: MOD-0230 build/test closed catalog registration exception, once revision 15 is approved on main, recorded in the header note, §8 item 6,
   §8.1, §10 (guard, gate, and "Audit trail gate" item 3), §11, and the runtime packet list (owner "Evet, sürsün" 2026-10-31, record `-03`: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
-  corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`). The owner approves this DCP-004 change (`execution/domains/pharmacovigilance/domain-config.md` line 96);
+  corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`, sequenced by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md`: §8 items 5 and 6 and §10 "Audit trail gate" item 3 read `INTEGRATED`; §10 states the additive-keys limit). The owner approves this DCP-004 change (`execution/domains/pharmacovigilance/domain-config.md` line 96);
   `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-02.md` covered revision 14 only and is not extended; the pack's HIGH
   approval path is unchanged. Scope: the MOD-0230 build/test gate only. The operational runtime gate,
   MOD-0231 / MOD-0232 / MOD-0234, the MOD-0234 no-shell gate, seeds, grant code, menu entries, and other jobs are

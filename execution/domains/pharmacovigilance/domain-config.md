@@ -121,7 +121,7 @@ recorded as draft / not approved and does not open operational runtime.**
 - **2026-10-29:** MOD-0230 build/test Mongo store exception (DEPO-01, DEPO-03; DCP-004 §10; pack revision 14, slice
   DL-10). Operational runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
 - **2026-10-31:** MOD-0230 build/test closed catalog registration exception (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
-  KK-1 ... KK-6, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`; DCP-004 §10; pack revision 15, slice DL-11): non-assignable, hidden from the menu, pushed once at start
+  KK-1 ... KK-6, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`, sequenced by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md`; DCP-004 §10; pack revision 15, slice DL-11): non-assignable, hidden from the menu, pushed once at start
   by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like. In force only once revision 15 is approved on main. Operational
   runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
 - MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
