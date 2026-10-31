@@ -22,7 +22,7 @@ public sealed class CentralAuditDeclarationTests
     [Fact]
     public void Every_write_command_is_marked_and_names_a_manifest_module_and_Platform_enum_names()
     {
-        Assert.Equal(17, Commands.Length);
+        Assert.Equal(18, Commands.Length);
         IModuleManifestProvider[] providers =
         [
             new ShipmentTrackingPodManifestProvider(), new CarrierManagementManifestProvider(), new RoutingLoadPlanningManifestProvider(),
@@ -30,6 +30,9 @@ public sealed class CentralAuditDeclarationTests
             new SopWorkflowSignoffsManifestProvider()
         ];
         var modules = providers.Select(p => p.GetManifest().ModuleCode).ToHashSet(StringComparer.Ordinal);
+        // A module whose provider ships later (MOD-0147 DL-1) is named by its KnownWithoutProvider entry, which fails the moment
+        // the provider exists — so the code here and the manifest code cannot drift apart.
+        modules.UnionWith(Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.KnownWithoutProvider.Values.Select(v => v.ModuleCode));
         var enums = File.ReadAllText(Path.Combine(RepositoryRoot(), "services", "Diten.Platform", "src", "Diten.Platform.Domain", "Enums", "AuditEnums.cs"));
         var categories = EnumNames(enums, "AuditCategory");
         var operations = EnumNames(enums, "AuditOperation");
@@ -82,9 +85,10 @@ public sealed class CentralAuditDeclarationTests
                     failures.Add($"{name}: transaction #{i + 1} does not enlist the central-audit event before it commits");
             }
         }
-        // Carrier, Claim, Load, Return, S&OP: one each; Shipment: mutation, the MOD-0183 dispatch outcome (DL-1 review F-3)
-        // and the late writer's record (re-review R-4); Capacity: plan, scenario, evaluation.
-        Assert.Equal(11, seen);
+        // Carrier, Claim, Load, S&OP: one each; Shipment: mutation, the MOD-0183 dispatch outcome (DL-1 review F-3)
+        // and the late writer's record (re-review R-4); Return: mutation and the MOD-0186 §34.2 late writer's record;
+        // Capacity: plan, scenario, evaluation; MOD-0147 evaluation create (DL-1).
+        Assert.Equal(13, seen);
         Assert.Empty(failures);
     }
 
