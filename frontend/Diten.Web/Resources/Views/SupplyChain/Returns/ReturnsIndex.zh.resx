@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>拒绝</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>标记为运输中</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>取消退货</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>收货（人工确认）</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>收货</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>处置</value></data>
   <data name="ActionClose" xml:space="preserve"><value>关闭</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>已收货（人工确认）</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>收货仅为人工确认，不是仓库收货，也不会记录库存移动。</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>已收货</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>发生时间</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>您的本地日期和时间，将以 UTC 发送。</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,50 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>源系统返回的发运数据无效，请联系支持团队。</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>货运参考数据不完整，请稍后重试同一请求。</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>发运单状态暂时不可用，请重试同一请求。</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>货运参考数据暂时不可用，请重试同一请求。</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>所需服务暂时无法访问，请稍后重试同一请求。</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>退货服务暂时不可用。结果尚未确认，请重试同一请求。</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>发生意外错误。您可以重试同一操作。</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>跳过最早到期批次需要填写原因。</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>该批次违反了先到期先出库顺序。</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>该行的可用库存不足。</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>该行库存不足。</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>该物料未启用。</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>该批次的剩余保质期低于最低要求。</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>该批次已冻结。</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>该批次已过期。</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>该物料不允许指定批次。</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>该物料必须指定批次。</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>该批次需要复检。</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>该批次不属于此 SKU。</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>该批次正在召回中。</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>该产品的主数据不完整。</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>该库存已为其他单据预留。</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>该序列号已存在。</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>此版本不支持退回序列号管理的物料。</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>该序列号不属于此批次。</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>该序列号不可用。</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>该 SKU 不属于此物料。</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>此 SKU 层级不能持有库存。</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>未知物料。</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>未知库位。</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>未知批次。</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>该行未定义计量单位换算。</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>无法识别的原因（代码：{0}）。</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>库存拒绝了第 {0} 行的收货。</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>货运第 {0} 行没有已记录的出库，因此无法接收该退货。未过账任何内容。</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>该退货的收货正在进行中，或已使用其他值启动。请使用所显示的已保存值重新提交，或稍后重试。</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>已保存的值：仓库 {0}，库位 {1}，发生时间 {2}。</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>第 {0} 行不能在不过账库存的情况下接收。</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>已过账的行保持不变。请更正被拒绝的行后重新提交。</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>已过账</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>未过账</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>库存过账</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>原因</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>未过账库存即接收——在库存集成之前发运</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>完整性错误</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>接收会将每一行过账到库存隔离区；已过账的行不会重复过账。在库存集成之前发运的货运将不过账库存直接接收。</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>收货仓库</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>收货库位</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>不过账库存直接收货</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>是否在不过账库存的情况下接收第 {0} 行？库存以重试无法改变的原因拒绝了该行；之后须在库存模块中更正库存。</value></data>
 </root>

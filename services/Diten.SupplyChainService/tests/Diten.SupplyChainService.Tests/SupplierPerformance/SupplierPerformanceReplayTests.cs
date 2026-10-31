@@ -8,7 +8,7 @@ using Xunit;
 using static Diten.SupplyChainService.Tests.SupplierPerformance.SupplierPerformanceHost;
 namespace Diten.SupplyChainService.Tests.SupplierPerformance;
 
-/// <summary>MOD-0147 §0.5 replay receipt for createSupplierEvaluation: T-0147-RP-01…08 and 10…16 (RP-09 is submit, DL-2).</summary>
+/// <summary>MOD-0147 §0.5 replay receipt for createSupplierEvaluation: T-0147-RP-01…08 and 10…16 (RP-09 is submit, SubmitSupplierEvaluationTests).</summary>
 public sealed class SupplierPerformanceReplayTests
 {
     private static string Text(JsonNode? node) => node!.ToJsonString();
@@ -26,7 +26,7 @@ public sealed class SupplierPerformanceReplayTests
         Assert.Equal(Text(first.Body), Text(second.Body));
         Assert.Equal((1, 1), (await h.Evaluations(), await h.Receipts()));
         Assert.Single(await h.AuditRecords());
-        Assert.DoesNotContain((await (await h.Db.ListCollectionNamesAsync()).ToListAsync()), n => n.StartsWith("supplier_performance_outbox", StringComparison.Ordinal));
+        Assert.Empty(await h.OutboxRows());
         Assert.Single(h.Procurement.Calls);
     }
 
@@ -314,8 +314,7 @@ public sealed class SupplierPerformanceReplayTests
         await using var h = new SupplierPerformanceHost();
         var first = await h.Create();
         var id = first.Body!["evaluationId"]!.GetValue<string>();
-        await h.Db.GetCollection<SupplierEvaluation>(SupplierPerformanceSchema.Evaluations).UpdateOneAsync(new BsonDocument("_id", id),
-            Builders<SupplierEvaluation>.Update.Set(x => x.Status, EvaluationStatus.PUBLISHED).Set(x => x.Version, 2).Set(x => x.ScorecardId, Guid.NewGuid()).Set(x => x.PublishedAt, DateTimeOffset.UtcNow));
+        Assert.Equal(HttpStatusCode.OK, (await h.Submit(id)).Status);
 
         var replay = await h.Create();
 

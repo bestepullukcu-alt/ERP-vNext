@@ -5,4 +5,5 @@ public static class SupplierPerformancePermissions
 {
     public const string Read = "supplychain.supplier-performance.read";
     public const string Evaluate = "supplychain.supplier-performance.evaluate";
+    public const string Publish = "supplychain.supplier-performance.publish";
 }
