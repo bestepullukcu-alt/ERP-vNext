@@ -1,0 +1,1 @@
+38:          if python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt; then code=0; else code=$?; fi

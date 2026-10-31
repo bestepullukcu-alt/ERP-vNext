@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "python3",
+  "scripts/uic_changed_pages.py",
+  "--base",
+  "e3eda1752e3fe74ee8aa4f6f1ab02c992bc7d04b"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/ac21e-Foo-1/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 369,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/ac21e-Foo-1/stdout.txt",
+   "sha256": "ccb60641d77d06a57777b2f1e249fe64524bff335f3cba92089937b7a071f5c1"
+  }
+ ],
+ "commit": "158fc86e66f30e1bd40fba2a6bdbea3467bce02e",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-31T00:35:30Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/uic-tek-gecici/ac21e-Foo-1",
+ "started_utc": "2026-10-31T00:35:30Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "ef73d2a3f7522fa6d95b41ef11347eaa4f6a2e9b"
+}

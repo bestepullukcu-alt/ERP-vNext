@@ -1,0 +1,44 @@
+# PSS-UI-P1-04 kanıt betiği v07 — kırmızı kanıtı (kayıtsız koşular, 2026-10-31).
+# Commit: 8592335c0b61c753ab0361dbb8bda8c2ec41f8e6
+
+## 1. CI koşusu verilmedi: sh uic-dl3-kanit-07.sh <dizin> a37ae9988 (beklenen 12/13, AC-17b kaldı)
+CT-2 sonuç=geçti (zorunlu)
+CT-3 sonuç=geçti (zorunlu)
+AC-11 sonuç=geçti (zorunlu)
+AC-19 sonuç=geçti (zorunlu)
+AC-17a sonuç=geçti (zorunlu)
+AC-18a sonuç=geçti (zorunlu)
+AC-18b1 sonuç=geçti (zorunlu)
+AC-18b2 sonuç=geçti (zorunlu)
+AC-18c sonuç=geçti (zorunlu)
+AC-18d sonuç=geçti (zorunlu)
+AC-18e sonuç=geçti (zorunlu)
+AC-20 sonuç=geçti (zorunlu)
+AC-17b sonuç=kaldı (zorunlu)
+  zorunlu AC-17b geçmedi
+zorunlu geçti 12 / 13
+
+## 2. Eski CI koşusu ve eski kabul commit'i: <dizin> a37ae9988 40678833945 9f3f100ba (beklenen 12/13, AC-17b kaldı)
+CT-2 sonuç=geçti (zorunlu)
+CT-3 sonuç=geçti (zorunlu)
+AC-11 sonuç=geçti (zorunlu)
+AC-19 sonuç=geçti (zorunlu)
+AC-17a sonuç=geçti (zorunlu)
+AC-18a sonuç=geçti (zorunlu)
+AC-18b1 sonuç=geçti (zorunlu)
+AC-18b2 sonuç=geçti (zorunlu)
+AC-18c sonuç=geçti (zorunlu)
+AC-18d sonuç=geçti (zorunlu)
+AC-18e sonuç=geçti (zorunlu)
+AC-20 sonuç=geçti (zorunlu)
+  FARK kabul commit'inden sonra değişen tetikleyici yol = 29 (beklenen 0)
+AC-17b sonuç=kaldı (zorunlu)
+  zorunlu AC-17b geçmedi
+zorunlu geçti 12 / 13
+
+## 3. AC-19 karar süzgeci ve CT-3 seçici geçmişi (betiğin awk ve git komutları, geçici taban kopyası)
+taban olduğu gibi: karar yazmayan satır = 0 (beklenen 0)
+sabotaj (başka karar adı): karar yazmayan satır = 1 (beklenen 1)
+sabotaj (kararın yanlış yazımı): karar yazmayan satır = 1 (beklenen 1)
+seçiciyi değiştiren commit = P5: True
+P5'ten önce seçiciyi değiştiren commit sayısı = 0 (beklenen 0)

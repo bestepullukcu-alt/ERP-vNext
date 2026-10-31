@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "python3",
+  "scripts/uic_changed_pages.py",
+  "--base",
+  "e3eda1752e3fe74ee8aa4f6f1ab02c992bc7d04b"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/reg-sabotaj/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4003,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/reg-sabotaj/stdout.txt",
+   "sha256": "c4f91d291493a9aee85c1409d2b0d0829fa97126035c9ca1e3467c42de372214"
+  }
+ ],
+ "commit": "984244ebf9730d5c1a1b19083a4a9fdaf89acfb3",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-31T00:35:59Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/uic-tek-gecici/reg-sabotaj",
+ "started_utc": "2026-10-31T00:35:58Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "9610f64e0e21ce77cf681891f43feac97da005cc"
+}

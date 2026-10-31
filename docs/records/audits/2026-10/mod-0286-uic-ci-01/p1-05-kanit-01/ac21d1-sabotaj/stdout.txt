@@ -1,0 +1,85 @@
+PASS Tasks CI-1 Views/Tasks/Create.cshtml
+PASS Tasks CI-1 Views/Tasks/Details.cshtml
+PASS Tasks CI-1 Views/Tasks/Edit.cshtml
+PASS Tasks CI-1 Views/Tasks/WorkReport.cshtml
+YENİ KIRMIZI Tasks CI-2 Views/Tasks/Create.cshtml 1 +1
+PASS Tasks CI-2 Views/Tasks/Details.cshtml 0
+PASS Tasks CI-2 Views/Tasks/Edit.cshtml 0
+PASS Tasks CI-2 Views/Tasks/WorkReport.cshtml 0
+PASS Tasks CI-2 Views/Tasks/_Form.cshtml 0
+PASS Tasks CI-2 Views/Tasks/_IndexL10n.cshtml 0
+PASS Tasks CI-2 Views/Tasks/_QuickCreateOffcanvas.cshtml 0
+PASS Tasks CI-2 Views/Tasks/_WorkReportL10n.cshtml 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-4 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-5 Views/Tasks/Create.cshtml 0
+PASS Tasks CI-5 Views/Tasks/Details.cshtml 0
+PASS Tasks CI-5 Views/Tasks/Edit.cshtml 0
+PASS Tasks CI-5 Views/Tasks/WorkReport.cshtml 0
+PASS Tasks CI-5 Views/Tasks/_Form.cshtml 0
+PASS Tasks CI-5 Views/Tasks/_IndexL10n.cshtml 0
+PASS Tasks CI-5 Views/Tasks/_QuickCreateOffcanvas.cshtml 0
+PASS Tasks CI-5 Views/Tasks/_WorkReportL10n.cshtml 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-5 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-6 Views/Tasks/Create.cshtml 0
+PASS Tasks CI-6 Views/Tasks/Details.cshtml 0
+PASS Tasks CI-6 Views/Tasks/Edit.cshtml 0
+PASS Tasks CI-6 Views/Tasks/WorkReport.cshtml 0
+PASS Tasks CI-6 Views/Tasks/_Form.cshtml 0
+PASS Tasks CI-6 Views/Tasks/_IndexL10n.cshtml 0
+PASS Tasks CI-6 Views/Tasks/_QuickCreateOffcanvas.cshtml 0
+PASS Tasks CI-6 Views/Tasks/_WorkReportL10n.cshtml 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-6 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/index.l10n.js 0
+TABAN FU-16 Tasks CI-7 wwwroot/assets/js/Tasks/reassign.js 2
+PASS Tasks CI-7 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-8 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-9 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/api.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/details-page.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/document-references.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/form-page.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/form.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/index.l10n.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/reassign.js 0
+PASS Tasks CI-10 wwwroot/assets/js/Tasks/task-type-closure-outcomes.js 0
+süre: 0.2 s

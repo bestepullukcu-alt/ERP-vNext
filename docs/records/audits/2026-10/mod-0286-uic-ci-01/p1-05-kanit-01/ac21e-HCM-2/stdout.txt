@@ -1,0 +1,9 @@
+PASS HCM CI-1 Views/HCM/Index.cshtml
+PASS HCM CI-2 Views/HCM/Index.cshtml 0
+PASS HCM CI-2 Views/HCM/_IndexL10n.cshtml 0
+PASS HCM CI-5 Views/HCM/Index.cshtml 0
+PASS HCM CI-5 Views/HCM/_IndexL10n.cshtml 0
+PASS HCM CI-6 Views/HCM/Index.cshtml 0
+PASS HCM CI-6 Views/HCM/_IndexL10n.cshtml 0
+PASS HCM CI-11 Views/HCM/_IndexL10n.cshtml
+süre: 0.2 s
