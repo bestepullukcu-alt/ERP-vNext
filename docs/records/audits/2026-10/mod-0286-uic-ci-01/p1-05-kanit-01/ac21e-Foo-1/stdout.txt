@@ -1,0 +1,9 @@
+PASS Foo CI-1 Views/Foo/Index.cshtml
+PASS Foo CI-2 Views/Foo/Index.cshtml 0
+PASS Foo CI-2 Views/Foo/_IndexL10n.cshtml 0
+PASS Foo CI-5 Views/Foo/Index.cshtml 0
+PASS Foo CI-5 Views/Foo/_IndexL10n.cshtml 0
+PASS Foo CI-6 Views/Foo/Index.cshtml 0
+PASS Foo CI-6 Views/Foo/_IndexL10n.cshtml 0
+YENİ KIRMIZI Foo CI-11 Views/Foo/_IndexL10n.cshtml:yok:GetAllStrings
+süre: 0.2 s

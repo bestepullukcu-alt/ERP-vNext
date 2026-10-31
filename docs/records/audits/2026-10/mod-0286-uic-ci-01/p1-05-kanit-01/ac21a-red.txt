@@ -1,0 +1,1 @@
+HATA: taban satır 2155: CI-3 instance doğrulayıcı kontrol adı, count '-' olmalı
