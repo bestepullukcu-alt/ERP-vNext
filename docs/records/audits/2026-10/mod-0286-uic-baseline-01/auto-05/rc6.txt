@@ -1,0 +1,32 @@
+en ok
+6
+0
+12
+tr ok
+6
+0
+12
+fr ok
+6
+0
+12
+es ok
+6
+0
+12
+zh ok
+6
+0
+12
+ar ok
+6
+0
+12
+ru ok
+6
+0
+12
+marker ok
+en ok
+tr ok
+exit=0
