@@ -3,11 +3,21 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Common.Upstream;
+using Diten.InventoryService.Application.Features.Inventory;
+using Diten.InventoryService.Application.Features.Inventory.Commands;
+using Diten.InventoryService.Application.Features.Inventory.Ports;
+using Diten.InventoryService.Application.Features.Inventory.Services;
+using Diten.InventoryService.Application.Features.Recall.Ports;
+using Diten.InventoryService.Application.Features.Warehouse.Ports;
+using Diten.InventoryService.Application.Features.Warehouse.Services;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Warehouse.Entities;
 using Diten.InventoryService.Domain.Warehouse.Enums;
 using Diten.InventoryService.Domain.Warehouse.Repositories;
+using Diten.InventoryService.Persistence.Recall;
 using Diten.InventoryService.Persistence.Warehouse;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -26,12 +36,58 @@ namespace Diten.InventoryService.Tests.Warehouse;
 /// concurrency cases, or a staged "the twin already committed" outcome — and changes no decision. The <c>wms_*</c> records of the tenants
 /// it created are removed on dispose (DB-010).
 /// </summary>
-public sealed class WarehouseApiFactory : InventoryApiFactory
+public class WarehouseApiFactory : InventoryApiFactory
 {
     private readonly ConcurrentBag<Guid> _warehouseTenants = [];
+    private readonly IReadOnlyDictionary<string, string> _settings;
+
+    public WarehouseApiFactory()
+        : this(new Dictionary<string, string>())
+    {
+    }
+
+    /// <summary>A host with extra configuration (the <c>Warehouse:Putaway</c> options of the time-limit and start-up validation cases).</summary>
+    protected WarehouseApiFactory(IReadOnlyDictionary<string, string> settings) => _settings = settings;
 
     /// <summary>tenant → wraps the role transaction of that tenant's next commands (the argument runs the real transaction).</summary>
     public ConcurrentDictionary<Guid, Func<Func<Task<WarehouseWriteOutcome>>, Task<WarehouseWriteOutcome>>> AroundTransaction { get; } = new();
+
+    /// <summary>The host's clock: the system clock moved by <see cref="MovableClock.Advance"/> (flight locks, long Pending — pack §4.2 TimeProvider).</summary>
+    public MovableClock Clock { get; } = new();
+
+    /// <summary>
+    /// DL-2: PRODUCT-MASTER v1.1 <c>storageConditions</c> per SKU on top of the suite's product stub (absent = not stated = UNKNOWN).
+    /// The stub itself is unchanged; <see cref="ConditionedProductMaster"/> adds the member and counts the calls per SKU.
+    /// </summary>
+    public ConcurrentDictionary<Guid, IReadOnlyList<string>?> StorageConditions { get; } = new();
+
+    public ConcurrentDictionary<Guid, int> ProductCalls { get; } = new();
+
+    /// <summary>tenant → wraps that tenant's ledger postings (the argument runs the REAL posting path): a lost answer, an outage, a delay.</summary>
+    public ConcurrentDictionary<Guid, Func<PostMovementCommand, Func<Task<Response<MovementResponseDto>>>, Task<Response<MovementResponseDto>>>> AroundPosting { get; } = new();
+
+    /// <summary>tenant → a slow ledger: the posting waits this long first, honouring the posting's cancellation (the time limit, AC-67 (1)).</summary>
+    public ConcurrentDictionary<Guid, TimeSpan> PostingDelay { get; } = new();
+
+    /// <summary>tenants whose recall read fails (503 path, pack §8.5).</summary>
+    public ConcurrentDictionary<Guid, bool> RecallDown { get; } = new();
+
+    /// <summary>tenant → number of ledger key lookups (the "0 lookup" measures of AC-5 / AC-66).</summary>
+    public ConcurrentDictionary<Guid, int> KeyLookups { get; } = new();
+
+    /// <summary>tenant → runs before each task write transaction of that tenant (changes the task in between — AC-64 / AC-67).</summary>
+    public ConcurrentDictionary<Guid, Func<Task>> BeforeTaskWrite { get; } = new();
+
+    /// <summary>tenant → runs before each ledger key lookup of that tenant (orders two retries between their lock and their lookup — AC-54).</summary>
+    public ConcurrentDictionary<Guid, Func<Task>> BeforeLookup { get; } = new();
+
+    /// <summary>Q-13 A — the fake AUTH behind <see cref="IWarehouseAssigneeDirectory"/>: (tenant, user) pairs that are active users.</summary>
+    public ConcurrentDictionary<(Guid Tenant, Guid User), bool> ActiveUsers { get; } = new();
+
+    /// <summary>tenants for which AUTH cannot answer (503 path).</summary>
+    public ConcurrentDictionary<Guid, bool> AuthDown { get; } = new();
+
+    public ConcurrentDictionary<Guid, int> AssigneeChecks { get; } = new();
 
     public void TrackWarehouseTenant(Guid tenant)
     {
@@ -42,11 +98,27 @@ public sealed class WarehouseApiFactory : InventoryApiFactory
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
+        // the reconciler runs only when a test calls it (PutawayReconciler.RunOnceAsync for its own tenant) — never on a timer in the shared database
+        builder.UseSetting("Warehouse:Putaway:ReconcilerEnabled", "false");
+        foreach (var (key, value) in _settings) builder.UseSetting(key, value);
         builder.ConfigureTestServices(services =>
         {
             services.AddScoped<WarehouseLocationRoleRepository>();
             services.AddScoped<IWarehouseLocationRoleRepository>(sp => new SeamedLocationRoleRepository(
                 sp.GetRequiredService<WarehouseLocationRoleRepository>(), sp.GetRequiredService<ITenantContext>(), this));
+            services.AddSingleton<TimeProvider>(Clock);
+            services.AddSingleton<IProductMasterClient>(new ConditionedProductMaster(Products, this));
+            services.AddScoped<WarehouseMovementPoster>();
+            services.AddScoped<IWarehouseMovementPoster>(sp => new SeamedMovementPoster(sp.GetRequiredService<WarehouseMovementPoster>(),
+                sp.GetRequiredService<ITenantContext>(), this));
+            services.AddScoped<IRecallLotStatusReader>(sp => new SeamedRecallReader(sp.GetRequiredService<RecallPostingGate>(),
+                sp.GetRequiredService<ITenantContext>(), this));
+            services.AddScoped<PostingKeyLookup>();
+            services.AddScoped<IPostingKeyLookup>(sp => new CountingKeyLookup(sp.GetRequiredService<PostingKeyLookup>(), sp.GetRequiredService<ITenantContext>(), this));
+            services.AddScoped<WarehouseTaskRepository>();
+            services.AddScoped<IWarehouseAssigneeDirectory>(sp => new FakeAssigneeDirectory(sp.GetRequiredService<ITenantContext>(), this));
+            services.AddScoped<IWarehouseTaskRepository>(sp => new SeamedTaskRepository(sp.GetRequiredService<WarehouseTaskRepository>(),
+                sp.GetRequiredService<ITenantContext>(), this));
         });
     }
 
@@ -55,13 +127,135 @@ public sealed class WarehouseApiFactory : InventoryApiFactory
         if (disposing && !_warehouseTenants.IsEmpty)
         {
             var tenants = new BsonArray(_warehouseTenants.Select(t => t.ToString()));
-            foreach (var name in WarehouseCollections.All)
+            foreach (var name in WarehouseCollections.Everything)
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }
         }
 
         base.Dispose(disposing);
+    }
+}
+
+/// <summary>A warehouse host with its own <c>Warehouse:Putaway</c> settings (start-up validation, the posting time limit).</summary>
+public sealed class ConfiguredWarehouseApiFactory(IReadOnlyDictionary<string, string> settings) : WarehouseApiFactory(settings);
+
+/// <summary>The posting time limit at 1 s (lease 31 s = limit + 30) — AC-67 (1).</summary>
+public sealed class ShortPostingTimeoutApiFactory() : WarehouseApiFactory(new Dictionary<string, string>
+{
+    ["Warehouse:Putaway:PostingTimeoutSeconds"] = "1",
+    ["Warehouse:Putaway:InFlightLeaseSeconds"] = "31"
+});
+
+/// <summary>A clock that is the system clock plus an offset the test moves forward.</summary>
+public sealed class MovableClock : TimeProvider
+{
+    private long _offsetTicks;
+
+    public override DateTimeOffset GetUtcNow() => base.GetUtcNow() + TimeSpan.FromTicks(Interlocked.Read(ref _offsetTicks));
+
+    public void Advance(TimeSpan by) => Interlocked.Add(ref _offsetTicks, by.Ticks);
+}
+
+/// <summary>The suite's product stub + v1.1 <c>storageConditions</c> per SKU (absent = not stated) + a call count per SKU.</summary>
+public sealed class ConditionedProductMaster(StubProductMaster inner, WarehouseApiFactory factory) : IProductMasterClient
+{
+    public Task<IReadOnlyList<ProductRefValidation>> ValidateRefsAsync(IReadOnlyList<ProductRefQuery> refs, CancellationToken cancellationToken = default)
+        => inner.ValidateRefsAsync(refs, cancellationToken);
+
+    public Task<ProductReference?> GetProductAsync(Guid itemId, CancellationToken cancellationToken = default) => inner.GetProductAsync(itemId, cancellationToken);
+
+    public async Task<SkuReference?> GetSkuAsync(Guid skuId, SkuLevel level, CancellationToken cancellationToken = default)
+    {
+        factory.ProductCalls.AddOrUpdate(skuId, 1, (_, n) => n + 1);
+        var sku = await inner.GetSkuAsync(skuId, level, cancellationToken);
+        return sku is null ? null : sku with { StorageConditions = factory.StorageConditions.GetValueOrDefault(skuId) };
+    }
+
+    public Task<SkuUomInfo?> GetSkuUomAsync(Guid skuId, CancellationToken cancellationToken = default) => inner.GetSkuUomAsync(skuId, cancellationToken);
+}
+
+/// <summary>The REAL stock door, wrapped per tenant by <see cref="WarehouseApiFactory.AroundPosting"/> (no decision is changed when unset).</summary>
+public sealed class SeamedMovementPoster(WarehouseMovementPoster inner, ITenantContext tenant, WarehouseApiFactory factory) : IWarehouseMovementPoster
+{
+    public async Task<Response<MovementResponseDto>> PostAsync(PostMovementCommand request, Guid legalEntityId, Guid actorUserId, CancellationToken cancellationToken)
+    {
+        if (factory.PostingDelay.TryGetValue(tenant.TenantId, out var delay)) await Task.Delay(delay, cancellationToken);
+        return factory.AroundPosting.TryGetValue(tenant.TenantId, out var around)
+            ? await around(request, () => inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken))
+            : await inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken);
+    }
+}
+
+/// <summary>The REAL recall reader (seeded <c>recall_lot_blocks</c>), failing for the tenants in <see cref="WarehouseApiFactory.RecallDown"/>.</summary>
+public sealed class SeamedRecallReader(RecallPostingGate inner, ITenantContext tenant, WarehouseApiFactory factory) : IRecallLotStatusReader
+{
+    public Task<IReadOnlySet<string>> UnderRecallAsync(IReadOnlyCollection<string> lotIds, CancellationToken cancellationToken = default)
+        => factory.RecallDown.ContainsKey(tenant.TenantId)
+            ? throw new InvalidOperationException("test: recall read down")
+            : inner.UnderRecallAsync(lotIds, cancellationToken);
+}
+
+/// <summary>The fake AUTH lookup-validation (Q-13 A): the caller's tenant + an active user → Valid; AUTH down → Unavailable; else Invalid.</summary>
+public sealed class FakeAssigneeDirectory(ITenantContext tenant, WarehouseApiFactory factory) : IWarehouseAssigneeDirectory
+{
+    public Task<AssigneeCheck> CheckAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        factory.AssigneeChecks.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        return Task.FromResult(factory.AuthDown.ContainsKey(tenant.TenantId) ? AssigneeCheck.Unavailable
+            : factory.ActiveUsers.ContainsKey((tenant.TenantId, userId)) ? AssigneeCheck.Valid
+            : AssigneeCheck.Invalid);
+    }
+}
+
+/// <summary>The REAL MOD-0173 key lookup, counted per tenant.</summary>
+public sealed class CountingKeyLookup(PostingKeyLookup inner, ITenantContext tenant, WarehouseApiFactory factory) : IPostingKeyLookup
+{
+    public Task<PostingKeyLookupResult> LookupAsync(PostMovementCommand storedRequest, CancellationToken cancellationToken = default)
+    {
+        factory.KeyLookups.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        return factory.BeforeLookup.TryGetValue(tenant.TenantId, out var hook) ? Hooked(hook) : inner.LookupAsync(storedRequest, cancellationToken);
+
+        async Task<PostingKeyLookupResult> Hooked(Func<Task> before)
+        {
+            await before();
+            return await inner.LookupAsync(storedRequest, cancellationToken);
+        }
+    }
+}
+
+/// <summary>The production task repository with a per-tenant hook before each write transaction.</summary>
+public sealed class SeamedTaskRepository(WarehouseTaskRepository inner, ITenantContext tenant, WarehouseApiFactory factory) : IWarehouseTaskRepository
+{
+    public Task<WarehouseTask?> FindAsync(Guid taskId, CancellationToken cancellationToken = default) => inner.FindAsync(taskId, cancellationToken);
+
+    public Task<WarehouseTask?> FindByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => inner.FindByCreateKeyAsync(createdBy, idempotencyKey, cancellationToken);
+
+    public Task<IReadOnlyList<WarehouseTask>> FindManyAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken cancellationToken = default)
+        => inner.FindManyAsync(taskIds, cancellationToken);
+
+    public Task<WarehouseTaskPage> ListAsync(WarehouseTaskQuery query, CancellationToken cancellationToken = default) => inner.ListAsync(query, cancellationToken);
+
+    public Task<IReadOnlyList<WarehouseTask>> OpenTasksFromAsync(IReadOnlyCollection<Guid> fromLocationIds, CancellationToken cancellationToken = default)
+        => inner.OpenTasksFromAsync(fromLocationIds, cancellationToken);
+
+    public Task<WarehouseTaskEventPage> EventsAsync(Guid taskId, int page, int pageSize, CancellationToken cancellationToken = default)
+        => inner.EventsAsync(taskId, page, pageSize, cancellationToken);
+
+    public Task<WarehouseTaskEvent?> FindKeyEventAsync(Guid taskId, Guid actorUserId, string requestOp, string idempotencyKey,
+        CancellationToken cancellationToken = default)
+        => inner.FindKeyEventAsync(taskId, actorUserId, requestOp, idempotencyKey, cancellationToken);
+
+    public Task<IReadOnlyList<WarehouseTaskEvent>> FindBulkKeyEventsAsync(Guid actorUserId, string requestOp, string idempotencyKey,
+        CancellationToken cancellationToken = default)
+        => inner.FindBulkKeyEventsAsync(actorUserId, requestOp, idempotencyKey, cancellationToken);
+
+    public async Task<WarehouseWriteOutcome> InTransactionAsync(Func<IWarehouseTaskWriteSession, CancellationToken, Task<WarehouseWriteOutcome>> work,
+        CancellationToken cancellationToken = default)
+    {
+        if (factory.BeforeTaskWrite.TryGetValue(tenant.TenantId, out var hook)) await hook();
+        return await inner.InTransactionAsync(work, cancellationToken);
     }
 }
 
@@ -134,10 +328,10 @@ public sealed class WarehouseScenario
     public const string Read = "warehouse.location-roles.read";
     public const string Manage = "warehouse.location-roles.manage";
 
-    public WarehouseScenario(WarehouseApiFactory factory)
+    public WarehouseScenario(WarehouseApiFactory factory, bool lotControlled = false, bool serialControlled = false, SkuLevel level = SkuLevel.Lsku)
     {
         Factory = factory;
-        Inventory = new InventoryScenario(factory);
+        Inventory = new InventoryScenario(factory, level, lotControlled, serialControlled);
         factory.TrackWarehouseTenant(Inventory.Tenant);
         Token = TokenFor(Inventory.User, Read, Manage);
     }

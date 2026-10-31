@@ -33,8 +33,9 @@ public sealed class CentralAuditDeclarationTests
         // 58 measured 2026-10-14 (AuditTrailStandardTests inventory row); 59 after the MVP-1 merge (R4 PrepareRecallSettingsChangeCommand,
         // CT HOLD 2026-10-14). A new command fails here AND in the architecture test.
         // 66 after WP-0177-R5 (7 drill commands, CT decision 2026-10-14). 67 after WP-0177-R7b (CreateRecallEvidenceExportCommand).
-        // 71 after MOD-0178 DL-1 (the 4 location-role commands, pack §5 fifth seam); 82 after DL-2 (the 11 task commands).
-        Assert.Equal(71, WriteCommands.Length);
+        // 71 after MOD-0178 DL-1 (the 4 location-role commands, pack §5 fifth seam); 82 after DL-2 (the 11 task commands: create, update,
+        // claim, bulk assign — Q-13 A —, confirm, retry, close short, cancel, returned, resolve, reconcile).
+        Assert.Equal(82, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
@@ -107,7 +108,9 @@ public sealed class CentralAuditDeclarationTests
             }
         }
 
-        Assert.Equal(11, seen); // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
+        // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
+        // + WarehouseTaskRepository.InTransactionAsync (MOD-0178 DL-2)
+        Assert.Equal(12, seen);
         Assert.Empty(failures);
     }
 }

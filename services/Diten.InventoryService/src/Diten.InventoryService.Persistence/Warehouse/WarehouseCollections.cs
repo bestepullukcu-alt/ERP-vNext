@@ -17,4 +17,18 @@ public static class WarehouseCollections
     public const string NumberCounters = "wms_number_counters";
 
     public static readonly IReadOnlyList<string> All = [LocationRoles, LocationRoleEvents, NumberCounters];
+
+    /// <summary>DL-2: the tasks (mutable head + embedded confirmations, Version CAS). None keeps a stock total.</summary>
+    public const string Tasks = "wms_tasks";
+
+    /// <summary>DL-2: the insert-only task timeline.</summary>
+    public const string TaskEvents = "wms_task_events";
+
+    /// <summary>
+    /// The collections added by DL-2. Kept apart from <see cref="All"/> because the single-SoR test pins <see cref="All"/> line by line (the
+    /// XMC-001 seam of DL-1); the test declares this list on its own new line (the MOD-0177 <c>SinceR2</c> pattern).
+    /// </summary>
+    public static readonly IReadOnlyList<string> SinceDl2 = [Tasks, TaskEvents];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceDl2);
 }

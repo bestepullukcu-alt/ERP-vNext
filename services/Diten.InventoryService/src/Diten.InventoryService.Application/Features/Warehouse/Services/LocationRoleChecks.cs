@@ -11,20 +11,45 @@ namespace Diten.InventoryService.Application.Features.Warehouse.Services;
 /// <summary>
 /// The rules a role record must satisfy before it is written — shared by create and update (pack §4.4, §12): the shape of the sets
 /// (400), Receiving + Staging on one node (409 <c>WMS_LOCATION_ROLE_CONFLICT</c>) and the conflict with an ancestor or a node of the
-/// subtree (F-13, 409 <c>WMS_LOCATION_ROLE_INHERITED_CONFLICT</c>). The open-task rule of removing Receiving / deleting a record
-/// (409 <c>WMS_LOCATION_HAS_OPEN_TASKS</c>) needs tasks and comes with DL-2.
+/// subtree (F-13, 409 <c>WMS_LOCATION_ROLE_INHERITED_CONFLICT</c>), and the open-task rule of removing Receiving / deleting a record
+/// (DL-2, AC-58: 409 <c>WMS_LOCATION_HAS_OPEN_TASKS</c>).
 /// </summary>
 public sealed class LocationRoleChecks
 {
     private readonly ILocationRepository _locations;
     private readonly IWarehouseLocationRoleRepository _roles;
     private readonly LocationRoleReads _reads;
+    private readonly IWarehouseTaskRepository _tasks;
 
-    public LocationRoleChecks(ILocationRepository locations, IWarehouseLocationRoleRepository roles, LocationRoleReads reads)
+    public LocationRoleChecks(ILocationRepository locations, IWarehouseLocationRoleRepository roles, LocationRoleReads reads, IWarehouseTaskRepository tasks)
     {
         _locations = locations;
         _roles = roles;
         _reads = reads;
+        _tasks = tasks;
+    }
+
+    /// <summary>
+    /// §4.4 / §12 (M-5, AC-58): a node whose subtree is the source of an Open / InProgress task loses neither its Receiving role nor its record
+    /// → 409 <c>WMS_LOCATION_HAS_OPEN_TASKS</c>; null = no open task below.
+    /// </summary>
+    public async Task<Response<T>?> OpenTasksAsync<T>(Guid locationId, CancellationToken ct)
+    {
+        var subtree = new HashSet<Guid> { locationId };
+        var queue = new Queue<Guid>([locationId]);
+        while (queue.Count > 0)
+        {
+            foreach (var child in await _locations.ListAsync(null, queue.Dequeue(), ct))
+            {
+                if (subtree.Add(child.Id)) queue.Enqueue(child.Id);
+            }
+        }
+
+        var open = await _tasks.OpenTasksFromAsync(subtree, ct);
+        return open.Count == 0
+            ? null
+            : WarehouseSupport.Fail<T>(WarehouseErrorCodes.LocationHasOpenTasks, "Open putaway tasks start below this location; close them first.", 409,
+                new Dictionary<string, object?> { ["openTasks"] = open.Count, ["taskNumbers"] = open.Select(t => t.Number).Take(10).ToArray() });
     }
 
     /// <summary>The request-shape rules of a role record; null = valid.</summary>

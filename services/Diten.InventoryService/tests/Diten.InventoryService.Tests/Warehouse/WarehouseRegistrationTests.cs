@@ -41,7 +41,16 @@ public sealed class WarehouseRegistrationTests
             .ToList();
         Assert.Equal(6, enforced.Count);
         Assert.All(enforced, p => Assert.NotNull(p));
-        Assert.Equal(WarehousePermissions.Implemented.Order(StringComparer.Ordinal), enforced.Select(p => p!).Distinct().Order(StringComparer.Ordinal));
+        Assert.Equal(WarehousePermissions.Dl1.Order(StringComparer.Ordinal), enforced.Select(p => p!).Distinct().Order(StringComparer.Ordinal));
+
+        // DL-2: every key the warehouse controllers enforce is declared — and nothing else
+        var allEnforced = typeof(WarehouseLocationRolesController).Assembly.GetTypes()
+            .Where(t => t.Namespace == typeof(WarehouseLocationRolesController).Namespace && typeof(ControllerBase).IsAssignableFrom(t))
+            .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any())
+            .Select(m => m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!.Replace("Permission:", string.Empty))
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.Equal(keys.Order(StringComparer.Ordinal), allEnforced.Order(StringComparer.Ordinal));
     }
 
     [Fact]

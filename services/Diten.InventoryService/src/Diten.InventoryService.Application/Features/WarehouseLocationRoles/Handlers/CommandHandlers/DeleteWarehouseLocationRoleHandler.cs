@@ -12,19 +12,21 @@ namespace Diten.InventoryService.Application.Features.WarehouseLocationRoles.Han
 /// <summary>
 /// <c>deleteLocationRole</c> (pack §4.4, §8.1) — soft delete only (<c>IsDeleted</c>, <c>DeletedAt</c>; multi-tenancy rule). The key event of this
 /// role and operation first (replay = 200 + the record's current, deleted state), then the live record (404) and its version (409). The deletion
-/// (version + 1) and its <c>Deleted</c> key event (before values) are one transaction. The open-task rule (409 <c>WMS_LOCATION_HAS_OPEN_TASKS</c>)
-/// comes with the tasks (DL-2).
+/// (version + 1) and its <c>Deleted</c> key event (before values) are one transaction. A node with open tasks below keeps its record
+/// (409 <c>WMS_LOCATION_HAS_OPEN_TASKS</c>, DL-2 / AC-58).
 /// </summary>
 public sealed class DeleteWarehouseLocationRoleHandler : IRequestHandler<DeleteWarehouseLocationRoleCommand, Response<WarehouseLocationRoleDto>>
 {
     private readonly IWarehouseLocationRoleRepository _repository;
     private readonly LocationRoleReads _reads;
+    private readonly LocationRoleChecks _checks;
     private readonly WarehouseSupport _support;
 
-    public DeleteWarehouseLocationRoleHandler(IWarehouseLocationRoleRepository repository, LocationRoleReads reads, WarehouseSupport support)
+    public DeleteWarehouseLocationRoleHandler(IWarehouseLocationRoleRepository repository, LocationRoleReads reads, LocationRoleChecks checks, WarehouseSupport support)
     {
         _repository = repository;
         _reads = reads;
+        _checks = checks;
         _support = support;
     }
 
@@ -36,6 +38,7 @@ public sealed class DeleteWarehouseLocationRoleHandler : IRequestHandler<DeleteW
         var role = await _repository.FindAsync(request.RoleId, ct);
         if (role is null) return WarehouseSupport.RoleNotFound<WarehouseLocationRoleDto>();
         if (role.Version != request.ExpectedVersion) return WarehouseSupport.Conflict<WarehouseLocationRoleDto>();
+        if (await _checks.OpenTasksAsync<WarehouseLocationRoleDto>(role.LocationId, ct) is { } busy) return busy;
 
         var now = _support.Now();
         var before = WarehouseLocationRoleSnapshot.Of(role);

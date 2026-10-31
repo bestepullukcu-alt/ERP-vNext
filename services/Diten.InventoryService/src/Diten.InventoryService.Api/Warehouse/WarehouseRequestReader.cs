@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Diten.InventoryService.Application.Features.Warehouse.Services;
+using Diten.InventoryService.Application.Features.PutawayTasks;
 using Diten.InventoryService.Application.Features.WarehouseLocationRoles;
+using Diten.InventoryService.Domain.Rules;
 using Diten.InventoryService.Domain.Warehouse.Enums;
 
 namespace Diten.InventoryService.Api.Warehouse;
@@ -33,6 +35,50 @@ public static class WarehouseRequestReader
 
         public Guid Uuid(string name) => Id(Root, name) ?? throw new FormatException($"{name} is required and must be a canonical UUID.");
 
+        public Guid? OptionalUuid(string name) => Id(Root, name);
+
+        /// <summary>An enum member by its exact name; absent / null → <paramref name="fallback"/>.</summary>
+        public T EnumOr<T>(string name, T fallback) where T : struct, System.Enum => OptionalEnum<T>(name) ?? fallback;
+
+        public T? OptionalEnum<T>(string name) where T : struct, System.Enum
+        {
+            var raw = Str(Root, name);
+            if (raw is null) return null;
+            return System.Enum.TryParse<T>(raw, false, out var value) && System.Enum.IsDefined(value) && raw == value.ToString()
+                ? value
+                : throw new FormatException($"{name} must be one of {string.Join(", ", System.Enum.GetNames<T>())}.");
+        }
+
+        /// <summary>createPutawayTask — the source bucket: <c>candidateKey</c> or (warehouseId, fromLocationId, item, lotId?, stockStatus).</summary>
+        public TaskSourceInput Source()
+        {
+            if (String("candidateKey") is { } key)
+            {
+                if (Has("warehouseId") || Has("fromLocationId") || Has("item") || Has("lotId") || Has("stockStatus"))
+                    throw new FormatException("Send either candidateKey or the source members, not both.");
+                var parts = key.Split('|');
+                if (parts.Length != 6 || !WarehouseSupport.TryParseId(parts[0], out var w) || !WarehouseSupport.TryParseId(parts[1], out var l)
+                    || !WarehouseSupport.TryParseId(parts[2], out var sku) || !WireNames.TryParseSkuLevel(parts[3], out var level)
+                    || !WireNames.TryParseStockStatus(parts[5], out var status))
+                    throw new FormatException("candidateKey is not a putaway candidate key.");
+                return new TaskSourceInput(w, l, null, sku, level, parts[4].Length == 0 ? null : parts[4], status);
+            }
+
+            if (!Root.TryGetProperty("item", out var item) || item.ValueKind != JsonValueKind.Object) throw new FormatException("item is required and must be an object.");
+            foreach (var p in item.EnumerateObject())
+            {
+                if (p.Name is not ("itemId" or "skuId" or "skuLevel")) throw new FormatException($"Unknown member 'item.{p.Name}'.");
+            }
+
+            var levelText = Str(item, "skuLevel");
+            if (!WireNames.TryParseSkuLevel(levelText, out var skuLevel)) throw new FormatException("item.skuLevel must be Gsku, Lsku, FinishedGood or Item.");
+            var statusText = String("stockStatus") ?? throw new FormatException("stockStatus is required.");
+            if (!WireNames.TryParseStockStatus(statusText, out var stockStatus)) throw new FormatException("stockStatus must be a stock status (AVAILABLE, QUARANTINE …).");
+            return new TaskSourceInput(Uuid("warehouseId"), Uuid("fromLocationId"),
+                Id(item, "itemId") ?? throw new FormatException("item.itemId is required and must be a canonical UUID."),
+                Id(item, "skuId") ?? throw new FormatException("item.skuId is required and must be a canonical UUID."), skuLevel, String("lotId"), stockStatus);
+        }
+
         /// <summary>A required array of role names (an empty array is allowed).</summary>
         public IReadOnlyList<WarehouseRole> Roles(string name)
             => Array(Root, name).Select(e => e.ValueKind == JsonValueKind.String && Enum.TryParse<WarehouseRole>(e.GetString(), false, out var role)
@@ -60,6 +106,22 @@ public static class WarehouseRequestReader
                     ? n
                     : throw new FormatException($"{name}[].version is required and must be an integer ≥ 1.");
                 return new BulkDeleteLocationRoleItem(Id(e, "roleId") ?? throw new FormatException($"{name}[].roleId is required and must be a canonical UUID."), version);
+            }).ToList();
+
+        /// <summary>bulkAssignPutawayTasks — <c>items: [{ taskId, version }]</c>.</summary>
+        public IReadOnlyList<BulkAssignItem> AssignItems(string name)
+            => Array(Root, name).Select(e =>
+            {
+                if (e.ValueKind != JsonValueKind.Object) throw new FormatException($"{name}[] entries must be objects.");
+                foreach (var p in e.EnumerateObject())
+                {
+                    if (p.Name is not ("taskId" or "version")) throw new FormatException($"Unknown member '{name}[].{p.Name}'.");
+                }
+
+                var version = e.TryGetProperty("version", out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) && n >= 1
+                    ? n
+                    : throw new FormatException($"{name}[].version is required and must be an integer ≥ 1.");
+                return new BulkAssignItem(Id(e, "taskId") ?? throw new FormatException($"{name}[].taskId is required and must be a canonical UUID."), version);
             }).ToList();
 
         private static IEnumerable<JsonElement> Array(JsonElement e, string name)
@@ -121,4 +183,23 @@ public static class WarehouseRequestReader
     public static readonly HashSet<string> UpdateRoleMembers = new(StringComparer.Ordinal) { "idempotencyKey", "roles", "acceptedStorageConditions", "note" };
 
     public static readonly HashSet<string> BulkDeleteMembers = new(StringComparer.Ordinal) { "idempotencyKey", "items" };
+
+    // ── putaway tasks (WMS draft §4) ──
+    public static readonly HashSet<string> CreateTaskMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "candidateKey", "warehouseId", "fromLocationId", "item", "lotId", "stockStatus", "plannedQuantity", "toLocationId", "targetSource",
+          "assigneeUserId", "priority", "note" };
+
+    /// <summary>updatePutawayTask — the source bucket is not a member: it never changes (§8.15, 400).</summary>
+    public static readonly HashSet<string> UpdateTaskMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "plannedQuantity", "toLocationId", "targetSource", "assigneeUserId", "priority", "note" };
+
+    /// <summary>bulkAssignPutawayTasks (Q-13 A).</summary>
+    public static readonly HashSet<string> BulkAssignMembers = new(StringComparer.Ordinal) { "idempotencyKey", "assigneeUserId", "items" };
+
+    public static readonly HashSet<string> ConfirmMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "quantity", "toLocationId", "deviationReason", "channel", "scanRef" };
+
+    public static readonly HashSet<string> KeyMembers = new(StringComparer.Ordinal) { "idempotencyKey" };
+
+    public static readonly HashSet<string> ReasonMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason" };
 }

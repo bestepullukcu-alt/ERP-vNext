@@ -68,6 +68,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // wms_ (pack §3). None is stock (no OnHand / Available / Reserved — Only_the_ledger_and_its_projection_carry_quantities).
         Assert.Equal(["wms_location_role_events", "wms_location_roles", "wms_number_counters"],
             Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-2, XMC-001 decision Beste 2026-10-30) — the putaway tasks and their insert-only timeline; quantities there are plan /
+        // confirmed task quantities, never a stock total (the ledger stays the one balance).
+        Assert.Equal(["wms_task_events", "wms_tasks"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -84,7 +88,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b) // MOD-0177 (WP-0177-R7b)
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All)
-            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All).ToList(); // MOD-0178 (DL-1)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All) // MOD-0178 (DL-1)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2).ToList(); // MOD-0178 (DL-2)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)

@@ -112,6 +112,12 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
             .Find(TransactionScope() & Builders<InventoryTransaction>.Filter.Eq(x => x.ReversesTransactionId, transactionId))
             .AnyAsync(cancellationToken);
 
+    // MOD-0178 (pack §5): the reversal itself, same filter as IsReversedAsync
+    public async Task<InventoryTransaction?> FindReversalOfAsync(Guid transactionId, CancellationToken cancellationToken = default)
+        => await _transactions
+            .Find(TransactionScope() & Builders<InventoryTransaction>.Filter.Eq(x => x.ReversesTransactionId, transactionId))
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task<BalancePage> QueryBalancesAsync(BalanceQuery query, CancellationToken cancellationToken = default)
     {
         var f = Builders<InventoryBalance>.Filter;

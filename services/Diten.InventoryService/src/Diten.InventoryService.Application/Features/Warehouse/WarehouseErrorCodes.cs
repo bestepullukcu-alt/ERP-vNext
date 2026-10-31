@@ -21,6 +21,9 @@ public static class WarehouseErrorCodes
     public const string QuantityExceedsRemaining = "WMS_QUANTITY_EXCEEDS_REMAINING";
     public const string TargetNotAllowed = "WMS_TARGET_NOT_ALLOWED";
     public const string AssigneeInvalid = "WMS_ASSIGNEE_INVALID";
+
+    /// <summary>Q-13 A: AUTH could not confirm the assignee (no answer, 5xx, 401 / 403) — 503, nothing written.</summary>
+    public const string AssigneeDirectoryUnavailable = "WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE";
     public const string LocationRoleExists = "WMS_LOCATION_ROLE_EXISTS";
     public const string LocationRoleConflict = "WMS_LOCATION_ROLE_CONFLICT";
     public const string LocationTypeNotAllowed = "WMS_LOCATION_TYPE_NOT_ALLOWED";

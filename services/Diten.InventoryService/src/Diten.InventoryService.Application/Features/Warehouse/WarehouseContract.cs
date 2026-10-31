@@ -27,8 +27,29 @@ public static class WarehouseContract
     public const string OpDeleteLocationRole = "deleteLocationRole";
     public const string OpBulkDeleteLocationRoles = "bulkDeleteLocationRoles";
 
+    // WMS operationIds of the task writes (pack §4.3 "RequestOp")
+    public const string OpCreatePutawayTask = "createPutawayTask";
+    public const string OpUpdatePutawayTask = "updatePutawayTask";
+    public const string OpClaimPutawayTask = "claimPutawayTask";
+    public const string OpBulkAssignPutawayTasks = "bulkAssignPutawayTasks";
+    public const string OpConfirmPutawayTask = "confirmPutawayTask";
+    public const string OpRetryPutawayConfirmation = "retryPutawayConfirmation";
+    public const string OpClosePutawayTaskShort = "closePutawayTaskShort";
+    public const string OpCancelPutawayTask = "cancelPutawayTask";
+    public const string OpMarkPutawayConfirmationReturned = "markPutawayConfirmationReturned";
+    public const string OpResolvePutawayIntegrity = "resolvePutawayIntegrity";
+
+    /// <summary>The rows one bulk assignment may carry (WMS draft §4: ≤ 100).</summary>
+    public const int MaxBulkAssignItems = 100;
+
     // bulk-delete row results (WMS draft §4, rule 5)
     public const string RowDeleted = "Deleted";
     public const string RowConflict = "Conflict";
     public const string RowNotFound = "NotFound";
+
+    // bulkAssignPutawayTasks row outcomes besides Conflict / NotFound (pack §12 "toplu atama")
+    public const string RowAssigned = "Assigned";
+    public const string RowPendingConfirmation = "PendingConfirmation";
+    public const string RowIntegrityError = "IntegrityError";
+    public const string RowInvalidTransition = "InvalidTransition";
 }

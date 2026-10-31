@@ -2,8 +2,8 @@ namespace Diten.InventoryService.Infrastructure.Authorization;
 
 /// <summary>
 /// MOD-0178 permission keys — namespace <c>warehouse.*</c>, owned by MOD-0178 (pack §14.1, decision Q-08; PKS-001 §4 one owner per namespace).
-/// All Tenant scope. <see cref="Implemented"/> are the keys the controllers enforce so far — exactly what the manifest declares (DL-1: the
-/// location-role keys); the task, outbound, pick and package keys come with their slices.
+/// All Tenant scope. <see cref="Implemented"/> are the keys the controllers enforce so far — exactly what the manifest declares; the S2 pick,
+/// outbound-write and package keys come with their slices.
 /// </summary>
 public static class WarehousePermissions
 {
@@ -33,5 +33,11 @@ public static class WarehousePermissions
     ];
 
     /// <summary>DL-1 — the keys the location-role controller enforces.</summary>
-    public static readonly IReadOnlyList<string> Implemented = [LocationRolesRead, LocationRolesManage];
+    public static readonly IReadOnlyList<string> Dl1 = [LocationRolesRead, LocationRolesManage];
+
+    /// <summary>
+    /// The keys the controllers enforce so far — exactly what the manifest declares (DL-1 location roles; DL-2 putaway tasks + the frozen outbound
+    /// GETs). All S1 keys.
+    /// </summary>
+    public static readonly IReadOnlyList<string> Implemented = S1;
 }

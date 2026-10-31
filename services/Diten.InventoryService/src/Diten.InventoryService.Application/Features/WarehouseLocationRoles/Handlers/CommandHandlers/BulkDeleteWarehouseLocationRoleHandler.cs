@@ -19,11 +19,13 @@ namespace Diten.InventoryService.Application.Features.WarehouseLocationRoles.Han
 public sealed class BulkDeleteWarehouseLocationRoleHandler : IRequestHandler<BulkDeleteWarehouseLocationRoleCommand, Response<BulkDeleteLocationRolesResultDto>>
 {
     private readonly IWarehouseLocationRoleRepository _repository;
+    private readonly LocationRoleChecks _checks;
     private readonly WarehouseSupport _support;
 
-    public BulkDeleteWarehouseLocationRoleHandler(IWarehouseLocationRoleRepository repository, WarehouseSupport support)
+    public BulkDeleteWarehouseLocationRoleHandler(IWarehouseLocationRoleRepository repository, LocationRoleChecks checks, WarehouseSupport support)
     {
         _repository = repository;
+        _checks = checks;
         _support = support;
     }
 
@@ -44,6 +46,11 @@ public sealed class BulkDeleteWarehouseLocationRoleHandler : IRequestHandler<Bul
         if (await ReplayAsync(request, fingerprint, ct) is { } replay) return replay;
 
         var live = (await _repository.FindManyAsync(request.Items.Select(i => i.RoleId).ToList(), ct)).ToDictionary(r => r.Id);
+        var busy = new HashSet<Guid>();
+        foreach (var role in live.Values)
+        {
+            if (await _checks.OpenTasksAsync<bool>(role.LocationId, ct) is not null) busy.Add(role.Id); // DL-2 / AC-58: the row answers Conflict
+        }
         var now = _support.Now();
         var rows = new Dictionary<Guid, BulkDeleteLocationRoleRowDto>();
 
@@ -62,7 +69,7 @@ public sealed class BulkDeleteWarehouseLocationRoleHandler : IRequestHandler<Bul
                         continue;
                     }
 
-                    if (stored.Version != item.Version)
+                    if (stored.Version != item.Version || busy.Contains(stored.Id))
                     {
                         rows[item.RoleId] = new BulkDeleteLocationRoleRowDto(item.RoleId.ToString("D"), WarehouseContract.RowConflict);
                         continue;

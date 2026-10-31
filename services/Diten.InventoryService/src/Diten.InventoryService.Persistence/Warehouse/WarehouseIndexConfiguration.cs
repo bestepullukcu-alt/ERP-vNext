@@ -27,7 +27,16 @@ public static class WarehouseIndexConfiguration
     public const string BulkKeyIndex = "ix_wms_location_role_event_bulk_key";
     public const string CounterIndex = "ux_wms_number_counter";
 
-    public static readonly IReadOnlyList<string> UniqueIndexes = [LocationIndex, CreateKeyIndex, EventSeqIndex, EventKeyIndex, CounterIndex];
+    // DL-2 (pack §4.6)
+    public const string TaskNumberIndex = "ux_wms_task_number";
+    public const string TaskCreateKeyIndex = "ux_wms_task_create_key";
+    public const string TaskSerialSlotIndex = "ux_wms_task_serial_slot";
+    public const string TaskEventSeqIndex = "ux_wms_task_event_seq";
+    public const string TaskEventKeyIndex = "ux_wms_task_event_key";
+    public const string TaskBulkKeyIndex = "ix_wms_task_event_bulk_key";
+
+    public static readonly IReadOnlyList<string> UniqueIndexes =
+        [LocationIndex, CreateKeyIndex, EventSeqIndex, EventKeyIndex, CounterIndex, TaskNumberIndex, TaskCreateKeyIndex, TaskSerialSlotIndex, TaskEventSeqIndex, TaskEventKeyIndex];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
 
@@ -56,6 +65,47 @@ public static class WarehouseIndexConfiguration
             new(events.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ActorUserId).Ascending(x => x.RequestOp).Ascending(x => x.IdempotencyKey),
                 new CreateIndexOptions<WarehouseLocationRoleEvent>
                     { Name = BulkKeyIndex, PartialFilterExpression = IsString(nameof(WarehouseLocationRoleEvent.IdempotencyKey)) })
+        ], ct);
+
+        var tasks = Builders<WarehouseTask>.IndexKeys;
+        await database.GetCollection<WarehouseTask>(WarehouseCollections.Tasks).Indexes.CreateManyAsync(
+        [
+            // the number is an identity: unique tenant-wide (RCS-001 §6)
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.Number), new CreateIndexOptions { Name = TaskNumberIndex, Unique = true }),
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<WarehouseTask>
+                    { Name = TaskCreateKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(WarehouseTask.IdempotencyKey)) }),
+            // one OPEN task per serial bucket (§8.16, inspection 02 F-6)
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.WarehouseId).Ascending(x => x.FromLocationId)
+                    .Ascending(x => x.SkuId).Ascending(x => x.SkuLevel).Ascending(x => x.LotId),
+                new CreateIndexOptions<WarehouseTask>
+                    { Name = TaskSerialSlotIndex, Unique = true, PartialFilterExpression = new BsonDocument(nameof(WarehouseTask.OpenSerialSlot), true) }),
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.Kind).Ascending(x => x.Status).Ascending(x => x.WarehouseId),
+                new CreateIndexOptions { Name = "ix_wms_task_list" }),
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.FromLocationId).Ascending(x => x.SkuId)
+                    .Ascending(x => x.LotId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_wms_task_open_quantity" }),
+            new(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.AssigneeUserId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_wms_task_assignee" }),
+            new(tasks.Ascending(x => x.TenantId).Ascending("Confirmations.PostingKey"), new CreateIndexOptions { Name = "ix_wms_task_posting_key" }),
+            // the reconciler's two scans (independent review 07 F-4): normal and defensive branch
+            new(tasks.Ascending("Confirmations.Status").Ascending("Confirmations.LastAttemptAtUtc").Ascending(x => x.TenantId).Ascending(x => x.Id),
+                new CreateIndexOptions { Name = "ix_wms_task_reconcile" }),
+            new(tasks.Ascending("Confirmations.RefusedOnRetry").Ascending("Confirmations.RefusedAtUtc").Ascending(x => x.TenantId).Ascending(x => x.Id),
+                new CreateIndexOptions { Name = "ix_wms_task_defensive" })
+        ], ct);
+
+        var taskEvents = Builders<WarehouseTaskEvent>.IndexKeys;
+        await database.GetCollection<WarehouseTaskEvent>(WarehouseCollections.TaskEvents).Indexes.CreateManyAsync(
+        [
+            new(taskEvents.Ascending(x => x.TenantId).Ascending(x => x.TaskId).Ascending(x => x.Seq), new CreateIndexOptions { Name = TaskEventSeqIndex, Unique = true }),
+            // the key event of a non-create command: task + actor + OPERATION + key (independent review 12 F-3: two operations never share a key)
+            new(taskEvents.Ascending(x => x.TenantId).Ascending(x => x.TaskId).Ascending(x => x.ActorUserId).Ascending(x => x.RequestOp).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<WarehouseTaskEvent>
+                    { Name = TaskEventKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(WarehouseTaskEvent.IdempotencyKey)) }),
+            new(taskEvents.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ActorUserId).Ascending(x => x.RequestOp).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<WarehouseTaskEvent>
+                    { Name = TaskBulkKeyIndex, PartialFilterExpression = IsString(nameof(WarehouseTaskEvent.IdempotencyKey)) })
         ], ct);
 
         await database.GetCollection<BsonDocument>(WarehouseCollections.NumberCounters).Indexes.CreateOneAsync(

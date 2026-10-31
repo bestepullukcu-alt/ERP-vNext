@@ -57,6 +57,12 @@ public sealed class UpdateWarehouseLocationRoleHandler : IRequestHandler<UpdateW
         if (LocationRoleChecks.ShapeRefusal<WarehouseLocationRoleDto>(roles, conditions, newNote) is { } shape) return shape;
 
         var canonicalRoles = LocationRoleRules.Canonical(roles);
+        if (role.Roles.Contains(WarehouseRole.Receiving) && !canonicalRoles.Contains(WarehouseRole.Receiving)
+            && await _checks.OpenTasksAsync<WarehouseLocationRoleDto>(role.LocationId, ct) is { } busy)
+        {
+            return busy;
+        }
+
         var node = await _locations.FindAsync(role.LocationId, ct);
         if (node is not null && await _checks.InheritedConflictAsync<WarehouseLocationRoleDto>(node, canonicalRoles, ct) is { } conflict)
         {

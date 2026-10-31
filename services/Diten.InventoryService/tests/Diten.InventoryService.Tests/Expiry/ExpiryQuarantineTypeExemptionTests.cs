@@ -28,6 +28,15 @@ public sealed class ExpiryQuarantineTypeExemptionTests
         "Diten.InventoryService.Application/Features/Quarantine/Handlers/StockActionHandlers.cs:153"
     ];
 
+    /// <summary>
+    /// MOD-0178 DL-2 (XMC-001, decision Beste 2026-10-31): the ONE 0178 stock door (pack §5 / §8.3) — its call site of
+    /// <c>IWarehouseMovementPoster.PostAsync</c> and the poster that calls <c>InternalMovementPostingService</c>. Additive: the 0175 lists stay
+    /// as measured; any other caller or user still turns the guard red.
+    /// </summary>
+    private static readonly (string PosterCall, string InternalPostingUser) Mod0178StockDoor =
+        ("Diten.InventoryService.Application/Features/PutawayTasks/Services/PutawayPostingEngine.cs:137",
+         "Diten.InventoryService.Application/Features/Warehouse/Services/WarehouseMovementPoster.cs");
+
     /// <summary>Where a 0175 movement is built (its type is chosen there).</summary>
     private static readonly string[] MovementBuilders =
     [
@@ -111,7 +120,7 @@ public sealed class ExpiryQuarantineTypeExemptionTests
                 .Select(x => $"{f.RelativePath}:{x.no}"))
             .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
-        Assert.Equal(MeasuredPosterCalls.OrderBy(x => x, StringComparer.Ordinal), calls);
+        Assert.Equal(MeasuredPosterCalls.Append(Mod0178StockDoor.PosterCall).OrderBy(x => x, StringComparer.Ordinal), calls);
 
         // nothing else in 0175 reaches the ledger: the poster is the only user of the internal posting service outside the ledger
         var internalPosting = SourceScan.Production()
@@ -120,7 +129,8 @@ public sealed class ExpiryQuarantineTypeExemptionTests
                         && !f.RelativePath.EndsWith("/Program.cs", StringComparison.Ordinal))
             .Select(f => f.RelativePath)
             .ToList();
-        Assert.Equal(["Diten.InventoryService.Application/Features/Quarantine/Services/QuarantineMovementPoster.cs"], internalPosting);
+        Assert.Equal(new[] { "Diten.InventoryService.Application/Features/Quarantine/Services/QuarantineMovementPoster.cs", Mod0178StockDoor.InternalPostingUser }
+            .OrderBy(x => x, StringComparer.Ordinal), internalPosting.OrderBy(x => x, StringComparer.Ordinal));
 
         // every PlannedMovement is built in the measured files, and every movement type named there is exempt by TYPE
         var builders = SourceScan.Production()
