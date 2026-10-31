@@ -25,6 +25,8 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 
 # MOD-0124 — Cash Positioning
 
+> **KARAR D116 (Codex D115 turu bulguları, 2026-10-31):** `Finance = 18` ve seed önkoşulları main'deki duruma çekildi; ortamda yayım kanıtı korundu; kapsam, izin ve AC değişmedi. `status: draft`.
+
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de); kapsam, izin ve AC değişmedi. `status: draft`.
 
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
@@ -1444,10 +1446,8 @@ değişikliğinde yazılır (D35/4); o gelmeden MOD-0124 yazma komutu yazılamaz
 `## Bilinen borç`, `## K2 borcu`, `## İstisnalar`, `## Dolaylı`, `## Yazan sorgular` boş, `PinnedCounts` sıfır başlar —
 sonradan satır eklemek ayrı CT kararıdır (D35/2).
 
-`Category`: **`Finance`** (değer 18; Y-4/7) — KARAR D35/3: Platform `AuditCategory`'ye (bugün finans değeri yok —
-`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:3-27`) yalnız ekleme olarak `Finance` değeri
-eklenir (MOD-0126 O-6 kalanı). Platform sahibinin işidir (XMC-001); MOD-0126 DL-1 bu değer main'e girmeden başlamaz, bu
-yüzden MOD-0124 DL-1 de onu bekler. `MasterData` ara çözümü seçilmedi; başka değer kullanılmaz. `SourceModule`: `MOD-0124`.
+`Category`: **`Finance`** (değer 18; Y-4/7) — KARAR D35/3: Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` değeri
+eklendi (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:29`, #298). Platform sahibinin işiydi (XMC-001); bu önkoşul kapandı. `MasterData` ara çözümü seçilmedi; başka değer kullanılmaz. `SourceModule`: `MOD-0124`.
 `EntityType`: `CashPositionSnapshot` (aksi yazılmadıkça).
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | K2 (fail-closed) | İstisna sınıfı + gerekçe |
@@ -1947,7 +1947,7 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 | O-5 | Grup (çoklu LE) konsolidasyonu | v1 LE başına / LE↔LE modeli ile grup görünümü | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — **v1 LE başına**; model D9 gereği eklenmedi, kaynakta da yok | sahip (K1) + MDM |
 | O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
 | O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi yerine sahip teyidi — KARAR D43 (2026-10-26)**; Platform sahibi (Beste) yeniden teyidi: "v1'de kur çevrimi yok; pozisyonlar kendi para birimlerinde gösterilir", kur kaynağı ileride MOD-0048 ya da ayrı modülle (Y-4, 2026-10-27) — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
-| O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak; **Y-4/3 (2026-10-27, Platform): başlangıç listesi olarak kabul** (Finance listeyi sonradan değiştirebilir); seed JSON ve `ConsumableSets` izin listesi Platform'da — seed main'e girene kadar önkoşul açık | MOD-0048 sahibi |
+| O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak; **Y-4/3 (2026-10-27, Platform): başlangıç listesi olarak kabul** (Finance listeyi sonradan değiştirebilir); seed JSON ve `ConsumableSets` izin listesi main'de (PR #297); ortamda yayım kanıtı DL-1 kabulünde | MOD-0048 sahibi |
 | O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 — DL-1 kabul kapısı, `IRecordCodeAllocator` portu (KARAR D59/1) | sahip + CT (`.antigravity` onayı) |
 | O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
 | O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **KARAR D28 (2026-10-25): öneri kabul** — **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |

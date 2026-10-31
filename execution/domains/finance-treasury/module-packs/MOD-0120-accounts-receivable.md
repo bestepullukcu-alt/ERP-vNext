@@ -19,6 +19,8 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 
 # MOD-0120 — Accounts Receivable (AR)
 
+> **KARAR D116 (Codex D115 turu bulguları, 2026-10-31):** `Finance = 18` ve seed önkoşulları main'deki duruma çekildi; ortamda yayım kanıtı korundu; kapsam, izin ve AC değişmedi. `status: draft`.
+
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de; `external-references/resolve` O-3 ve MOD-0149 satırında da v1 dışı); kapsam, izin ve AC değişmedi. `status: draft`.
 
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
@@ -1368,8 +1370,7 @@ ilk adımıdır (Dependencies). Kaynak denetim yolu (`IAccountsReceivableControl
 paket §H, §L.2) **taşınmaz**.
 
 `Category`: `Finance` (değer 18; Y-4/7) — **KARAR D35/3** (`treasury-intake-owner-decisions-02.md` D35 (PR #235)): Platform `AuditCategory`'ye
-yalnız ekleme olarak `Finance` değeri Platform sahibince eklenir (XMC-001; MOD-0126 O-6 kalanı); MOD-0126 DL-1 bu değer
-main'e girmeden başlamaz, MOD-0120 DL-1 de dolayısıyla bekler. Bugün Platform'da değer yok; değer main'e girmeden başka bir
+yalnız ekleme olarak `Finance` değeri Platform sahibince eklendi (XMC-001; `services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:29`, #298); bu önkoşul kapandı. Başka bir
 kategori (ör. `MasterData` ara çözümü — D35/3'te seçilmedi) kullanılmaz. Defter dosyası ve `CT-DECISIONS.md` satırı MOD-0126
 DL-1 ile yazılır (D35/4); MOD-0120 komutları aynı denetim izine (`finance-treasury-merkezi-iletim | b`) eklenir, borç / istisna
 yok (D35/2).

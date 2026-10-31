@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113, D115 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D116 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1361,6 +1361,13 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316 ORTA hemen düzeltilir); k
 1. **D115/1 — durum hizası:** D112/3 işaretleri kapanış listesine yazılmış, Dependencies satırları eski kalmıştı. DCP-011 `approved`, `currency-minor-units` seed'i main'de, SUPPLIER 1.3.0 FROZEN olarak yazıldı; main `cc63c620c`'de ölçüldü. Ortamda yayım kanıtı DL-1 kabulünde, MOD-0140 DL-3 canlı uç önkoşulu yerinde kaldı.
 2. **D115/2 — ICU cümlesi:** ICU bağımlılığı Platform lookup'ının özelliğidir; set sürümlü ISO 4217 listesinden üretilir.
 3. **D115/3 — MOD-0120:** `external-references/resolve` Dependencies ve O-3'te de önkoşul olmaktan çıkarıldı (D112/2). Y-4/4b kabul metni tarihçe olarak durur.
+
+## D116 — Codex D115 turu bulguları (dört paket UYGUN DEĞİL: 0 ENGEL, 7 ORTA; MOD-0289 UYGUN) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316); kaynak `docs/records/reviews/MOD-0126/2026-10-31-03d96209.md`, MOD-0119, MOD-0120, MOD-0124 aynı tarihli kayıtları; oturum Treasury Intake CT.
+
+1. **D116/1 — `Finance`:** `AuditEnums.cs:29` ve `CentralAuditPlatformValues.cs:30` main'de (#298); dört paketin Denetim bölümündeki "değer main'e girmeden" önkoşulu kapandı.
+2. **D116/2 — seed:** MOD-0126 O-11, MOD-0119 O-10, MOD-0124 O-8 ve MOD-0126 `payment-method` satırı main'deki seed ve izin listesine çekildi; ortamda yayım kanıtı DL-1 kabulünde kaldı.
 
 ## Karar olmayanlar
 
