@@ -1,0 +1,35 @@
+{
+ "argv": [
+  "dotnet",
+  "test",
+  "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+  "--logger",
+  "console;verbosity=normal",
+  "--filter",
+  "FullyQualifiedName~PvgServiceApiHostTests|FullyQualifiedName~PvgServiceRuntimeApprovalTests|FullyQualifiedName~PvgServiceHostEnvironmentTests"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/pvg-dl3-live-01/run-02/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 50936,
+   "path": "docs/records/audits/2026-10/pvg-dl3-live-01/run-02/stdout.txt",
+   "sha256": "ddf15bef6ad457275cefbf2a9dd2fdec32af7134fdcea610a48fa5d80f92dafc"
+  }
+ ],
+ "commit": "bda170b436f71bd3a74f4f421697dec8034fde55",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-10-31T18:02:33Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/pvg-dl3-live-01/run-02",
+ "started_utc": "2026-10-31T18:02:27Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "c935b84299822b7f340f443ee74ad4438586f595"
+}
