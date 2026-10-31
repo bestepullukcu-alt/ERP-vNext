@@ -9,6 +9,10 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-10-31 · resmî inceleme (S-113, sahip kararı 2026-10-31):** resmî paket incelemesi ayrı oturumda ya da yalnız inceleme
+  ZIP'ini gören, sohbet geçmişi olmayan bir Claude alt ajanıyla yapılır; `reviews.tsv`'ye `--reviewer claude`, model ve ajan
+  kimliğiyle yazılır; alt ajan resmî incelemeyi yapıyorsa ayrı ön inceleme turu açılmaz; Codex yalnız sahip isteyince
+  (§1.1/2–3, SOP §20.4/2).
 - **2026-10-30 · geliştirici değerlendirmeleri (S-101):** Codex turunda durma (§1.1/7); "Update branch" yalnız onay satırlı ve
   üst üste PR'da, yedek onaylayıcı, kişi-hesap tablosu (§7a/3); iki yeni sık bulgu türü.
 - **2026-10-29 · PR yükü (S-100):** kule başına günde en çok bir kayıt PR'ı, gün sonunda; kule başına ve onaylayan başına
@@ -491,12 +495,15 @@ kodla tutmayan iddia ve ölçülemeyen kabul ölçütüydü — bunlar paketten 
    karışmaz (S-99).
 2. **Tur ve durma:** bulgular yalnız yazara gider; yazar düzeltir; **her tur yeni bir alt ajanda** ve önceki tur
    bulguları olmadan yeniden incelenir. **Turda ENGEL yoksa durulur (S-99):** ORTA ve DÜŞÜK bulgular tek yazar
-   geçişinde düzeltilir ve yeni ön inceleme turu açılmaz; resmî inceleme Codex'tir.
+   geçişinde düzeltilir ve yeni ön inceleme turu açılmaz; resmî inceleme ayrı oturumda ya da geçmişsiz alt ajanla yapılır (S-113).
    Hedef ENGEL'siz sonuçtur (UYGUN ya da KOŞULLU). **3 turda bir soru:** 3. turun incelemesi hâlâ ENGEL veriyorsa CT
    kendiliğinden yeni tur açmaz; sahibe butonla sorar: "3 tur daha" · "Codex'e git" · "kapsamı daralt" (sahip kararı
    2026-10-29). Her 3 turluk dilimin sonunda aynı soru yeniden sorulur.
-3. **Kayıt değildir:** ön inceleme `reviews.tsv`'ye yazılmaz, onay ya da dağıtım için sayılmaz; resmî inceleme yine
-   Codex'tir (farklı model, farklı kör nokta). Bulgular sohbette kalır; Codex'e gönderilmez (Codex de ipucusuz inceler).
+3. **Kayıt değildir:** ön inceleme `reviews.tsv`'ye yazılmaz, onay ya da dağıtım için sayılmaz. **Resmî inceleme (S-113,
+   sahip kararı 2026-10-31):** paketi yazan oturumdan ayrı bir oturumda ya da yalnız inceleme ZIP'ini gören, sohbet geçmişi
+   olmayan bir Claude alt ajanıyla yapılır ve `reviews.tsv`'ye `--reviewer claude`, model ve ajan kimliği (`--reviewer-session`)
+   ile yazılır; resmî incelemeyi alt ajan yapıyorsa ayrı ön inceleme turu açılmaz, tur başına tek inceleme olur. Codex
+   yalnız sahip isteyince kullanılır. Bulgular sohbette kalır; resmî inceleyene gönderilmez (o da ipucusuz inceler).
    Yazar bulguyu pakette düzeltir; paketin karar tablosuna bulgu metni ya da `P-` numarası yazılmaz, yalnız verilen karar
    yazılır (S-99).
 4. **Öğrenme:** Codex'in her ENGEL ya da ORTA bulgusu, CT tarafından **tür olarak** (modül ayrıntısı değil)

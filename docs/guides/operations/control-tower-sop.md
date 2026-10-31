@@ -1390,7 +1390,9 @@ istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'd
 HIGH değildir. Satır sayısı ölçüt değildir. Hiç onay almamış eski bir paket kuralın başladığı andaki sürümüyle
 karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
 
-**2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda yapılır.
+**2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda ya da yalnız
+inceleme ZIP'ini gören, sohbet geçmişi olmayan bir alt ajanda yapılır (`reviewer_session` = oturum ya da ajan kimliği; sahip
+kararı 2026-10-31, kart S-113).
 Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
 göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
 
