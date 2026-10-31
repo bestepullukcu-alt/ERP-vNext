@@ -302,7 +302,8 @@ under the build/test gate only, MOD-0230 may enter the module catalog once, clos
 `IsNavigationVisible: false`, registered by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, as scoped by the MOD-0230 pack
 (revision 15, slice DL-11). The push is one startup step, not a background job. Its keys reach AuthService through the
 catalog→Auth sync of OD-PVG-1, which is not a seed. Platform and Auth code do not change. The shared resource files gain
-exactly two navigation text keys; that scope is open to the owner at this approval. A failed or skipped push does not change service behaviour or readiness, and no
+exactly two navigation text keys; that scope is open to the owner at this approval, and the full list of what stays open
+at this approval is in the MOD-0230 pack (revision 15 note and OD-PVG-13). A failed or skipped push does not change service behaviour or readiness, and no
 registration means no permission, so the screen stays closed. A person's role grant in dev, for measurement, is allowed. The
 service's deny-by-default adapters are unchanged, so an authorized user sees the page and the data operations stay refused.
 It is not operational runtime and does not move the operational runtime gate.
