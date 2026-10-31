@@ -1,0 +1,10 @@
+CT-2 zorunlu geçti
+CT-3 zorunlu geçti
+AC-21a zorunlu geçti
+AC-21b zorunlu geçti
+AC-21c zorunlu geçti
+AC-21d zorunlu geçti
+AC-21e zorunlu geçti
+AC-21f zorunlu geçti
+AC-21g zorunlu geçti
+REG zorunlu geçti
