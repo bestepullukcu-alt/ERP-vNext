@@ -40,6 +40,8 @@ public static class DependencyInjection
         // MOD-0183 DL-1 (§23): the dispatch issue. Its INVENTORY client and DispatchOptions are composed in Program.cs.
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<Features.Shipments.Dispatch.LateWriterPolicy>(); services.AddScoped<Features.Shipments.Dispatch.ShipmentDispatchCoordinator>();
+        // MOD-0186 DL-1 (§34): the return receipt into QUARANTINE, over the same INVENTORY client and DispatchOptions.
+        services.AddScoped<Features.Returns.Receipt.ReturnLateWriterPolicy>(); services.AddScoped<Features.Returns.Receipt.ReturnReceiptCoordinator>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));

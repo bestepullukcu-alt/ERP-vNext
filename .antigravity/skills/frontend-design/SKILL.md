@@ -229,7 +229,7 @@ Contrast + Harmony:
 
 - **Line length**: 45-75 characters optimal
 - **Line height**: 1.4-1.6 for body text
-- **Contrast**: Check WCAG requirements
+- **Contrast**: Diten kuralı `.antigravity/rules/frontend-standards.md` §4.4 (WCAG AA)
 - **Size**: 16px+ for body on web
 
 For detailed typography: [typography-system.md](typography-system.md)
@@ -297,7 +297,7 @@ Duration based on:
 ### Performance
 
 - Animate only transform and opacity
-- Respect reduced-motion preference
+- Respect reduced-motion preference (Diten kuralı: `.antigravity/rules/frontend-standards.md` §4.4)
 - Test on low-end devices
 
 For animation patterns: [animation-guide.md](animation-guide.md), for advanced: [motion-graphics.md](motion-graphics.md)

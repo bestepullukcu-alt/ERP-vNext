@@ -193,6 +193,90 @@ bağımsız inceleme revizyondan sonra, onay satırından önce.
 kapanmalı; **DL-1'i bunlar bekletmez**. Henüz vermediği: K-W5, K-A1, K-A2, K-A3 ve "önerileri kabul" listesi (K-1b, K-2, K-3, K-5, K-W2,
 K-W4, K-W6); K-W7 ve K-A4b teyidi ayrıca. → D80.
 
+## Y-20 — Beste, MOD-0048 XMC-001 izni (2026-10-29; K1 aktardı)
+
+K1'in aktarımı (2026-10-29): "48 izin alındı" — Beste, MOD-0048 seed PR'ı için B1 (a) yolunu kabul etti: `PlatformLookupProvider.BuildCurrencyOptions`
+yalnız geçerli üç harfli ISO kodlarını döndürür (`¤¤` gibi ICU yer tutucuları elenir) + test; Treasury yazar, PR'ı Beste onaylar. Yazılı metin
+bu kayda alınmadı (sahip aktarımı). `module: BusinessReferenceData` sapması ve O-14 için ayrı cevap gelmedi.
+
+## Y-21 — Ali, Auth eki açık maddeleri (2026-10-29; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+#293'ü gördü. D79/D80 kayıtlarındaki açık maddeleri 29 Ekim'de verdi, hepsi paketin önerisiyle: K-1b paket başına kod · K-2 hiçbiri ·
+K-3 bugünkü davranış · K-W2 (a) · K-W4 `/api/roles/…` · K-W6 sürümlü dosya · K-A1 `/internal/permission-candidates` + sürümlü
+sözleşme · K-A2 (b) tüketici süzer · K-A3 hizmet hesabı aday değil, geçici kilitli aday · K-W5 `auth-gunlugu` + önce-yaz, CT defter
+kararı (DL-5 kodundan önce kapanmalı) · K-W7 ve K-A4b teyit · K-5'te yalnız yöntem kabul: banka / amaç anahtarlarını MOD-0289 /
+MOD-0217 sahibi söyler, Platform dosyaları Beste'den (XMC-001). 7 dilli rol adı tablosu (§14.2) kontrol ediliyor, sonucu ayrıca
+yazacak. "MOD-0220 yeniden onayı açık, §22 alanınız o netleşene kadar ready-for-dev'e geçemez" (hangi paketin §22'si olduğu ve
+D82/2 dilim kapısıyla ilişkisi Ali'ye soruldu — K1 kararı 2026-10-29). → D84.
+
+## Y-22 — Beste, Treasury CT'ye cevap (2026-10-29; K1 aktardı)
+
+(1) #304: sırada #299'dan başlayan PR'lar var; sonra inceleyip merge edecek; bu arada dal güncellenmeyecek (onay düşer).
+(2) DCP-011 `approved`: kabul. Bugünkü sürümün (`4cb9e99a`) UYGUN incelemesi main'de, onay satırı yok. Durum `draft` → `approved`;
+yalnız durum değiştiği için yeni sürüme kısa doğrulama incelemesi yeterli. Durum değişikliği + inceleme satırı + onay satırı (yazan
+gmg-10, onaylayan bestepullukcu-alt) tek PR'da; PR'ı Treasury açar, Beste onaylayıp merge eder.
+(3) K-6: kabul, cevabı "hayır". FinanceTreasuryService Platform kapsam ucunu doğrudan kullanmayacak; dört finans paketi kendi kapsam
+yolunu yazar (O-19 / O-22 / O-14 / O-23). Soranın kimliği yalnız MDM (`DITENMDMSERVICE`); FU27 §5.2 koşullu Platform dosyaları gerekmez.
+(4) SEC-002 eki (FU27 DL-4), Platform tarafı XMC-001: yalnız `TrustedLegalEntityScopeCredentialAuthenticator.cs` (K-5'teki
+`mdm.bank-accounts.*` ve `mdm.contracts.*` anahtarları; `MaxAllowedPairs` eklenen çift kadar; `AllowsPair` ve `IsValidConfiguration`'da
+tek modül kodu → ürün + MOD-0289 + MOD-0217 kümesi; her izin kendi modül koduyla eşleşir; `DITENMDMSERVICE` kontrolü değişmez),
+`TrustedLegalEntityScopeCredentialAuthenticatorTests.cs` (yeni tavan ve çiftler, yanlış modül kodlu çiftin reddi, bilinmeyen çiftin 403'ü;
+sabotaj kanıtı), `docs/guides/operations/post-deploy-steps.md` (ortam ayarı `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs`: sıra,
+geri alma, kontrol). Başka Platform dosyasına dokunulmaz; kapalı-başarısız korunur. K-5 listesini kontrol edecek. Kod FU27 onaylandıktan
+sonra. MDM tarafı (`PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri) MDM sahibinin alanı — XMC-001 ve sıra Ali ile.
+Sıra (FU27 §8): Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+(5) BL-565 (RCS-001): v1 = allocate ucu, atomik sayaç, tür önekleri, şirket kısa kodları. Kesin sözleşme 3 Kasım'da Treasury'de;
+servis v1 hedefi 6 Kasım main. "İKİSİ DE" türleri ve mevcut modüllerin taşınması sonraki dilim. Port + sahte istemci yolu (D59/1)
+uyumlu. Excel ve kısa kod listesi en geç 2 Kasım'da Beste'de olmalı.
+(6) MOD-0262-FU01 servis kimliği: Platform pack revizyonu 2 Kasım'da hazır; Auth tarafı (MDM için iç istemci ve izin) Ali'nin
+alanı — kapsam ve tarih Ali ile; revizyon onaylanınca Platform kodunun tarihi bildirilecek. → D88.
+
+**Özgün metin (K1'in 2026-10-29'da Treasury CT oturumuna yapıştırdığı haliyle, değiştirilmeden):**
+
+> Beste → Treasury CT (gmg-10)
+> Merhaba,
+>
+> * #304: sırada #299’dan başlayan PR’lar var. Onlar alındıktan sonra #304’ü inceleyip merge edeceğim. Lütfen bu arada dalı güncellemeyin, yoksa onay düşüyor.
+> * DCP-011 approved: kabul.
+> * Bugünkü sürümün (`4cb9e99a…`) UYGUN incelemesi main’de, ama onay satırı yok.
+> * Durumu `draft` → `approved` yapın. Yalnız durum değiştiği için yeni sürüme kısa bir doğrulama incelemesi yeterli.
+> * Durum değişikliğini, inceleme satırını ve onay satırını (yazan gmg-10, onaylayan bestepullukcu-alt) tek PR’da hazırlayın. PR’ı siz açın, ben onaylayıp merge ederim.
+> * K-6: kabul, cevabım “hayır”.
+> * FinanceTreasuryService Platform kapsam ucunu doğrudan kullanmayacak. Dört finans paketi kendi kapsam yolunu yazar (O-19 / O-22 / O-14 / O-23).
+> * Soranın kimliği yalnız MDM (`DITENMDMSERVICE`) olarak kalır. FU27 §5.2'deki koşullu Platform dosyaları gerekmiyor.
+> * SEC-002 eki (FU27 DL-4):
+> * Platform tarafı, XMC-001 izni veriyorum. Kapsamı yalnız şu dosyalar:
+> * services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:
+> * izin listesine K-5'teki `mdm.bank-accounts.*` ve `mdm.contracts.*` anahtarları;
+> * `MaxAllowedPairs` tavanının eklenen çift sayısı kadar artırılması;
+> * `AllowsPair` ve `IsValidConfiguration` içindeki tek modül kodunun ürün, MOD-0289 ve MOD-0217 kodlarından oluşan bir kümeye çevrilmesi.
+>
+> Her izin kendi modül koduyla eşleşmeli: bir banka izni ürün modülü adına sorulamaz. `DITENMDMSERVICE` kimlik kontrolü değişmez.
+>
+> * services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs:
+> * yeni tavan ve yeni çiftler;
+> * yanlış modül koduyla gelen çiftin reddi;
+> * bilinmeyen çiftin 403 alması.
+>
+> Sabotaj kanıtıyla.
+>
+> * docs/guides/operations/post-deploy-steps.md: ortam ayarı `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` için yeni adım; sıra, geri alma ve kontrol.
+>
+> Başka Platform dosyasına dokunulmaz. Kapalı-başarısız davranış korunur: hata, boş liste ya da belirsizlik “erişim yok” demek. K-5 anahtar listesini ilettiğinizde kontrol edeceğim. Kod FU27 onaylandıktan sonra yazılır.
+>
+> * MDM tarafı: `PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri MDM sahibinin alanı. Lütfen XMC-001 iznini ve sırayı Ali ile netleştirin.
+> * Sıra (FU27 §8): Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+> * BL-565 (RCS-001 ortak kod servisi):
+> * v1 kapsamı: ayırma (allocate) endpoint’i, atomik sayaç, tür önekleri ve şirket kısa kodları.
+> * Kesin sözleşme 3 Kasım’da sizde olacak, servis v1'in 6 Kasım’da main’de olmasını hedefliyoruz.
+> * “İKİSİ DE” türleri ve mevcut modüllerin taşınması sonraki dilimde.
+> * Port ve sahte istemci yolunuz (D59/1) bu planla uyumlu.
+> * Excel’in ve kısa kod listesinin en geç 2 Kasım’da elimde olması gerekiyor.
+> * MOD-0262-FU01 servis kimliği:
+> * Platform tarafındaki pack revizyonu 2 Kasım’da hazır olacak.
+> * Auth tarafı (MDM için iç istemci ve izin) Ali’nin alanı. Lütfen kapsamı ve tarihi doğrudan Ali ile netleştirin.
+> * Revizyon onaylanınca Platform kodunun tarihini bildireceğim.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -232,3 +316,6 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-17 (D54 Auth yapısını Treasury yazar; beş kabul şartı) | MOD-0018 Treasury Auth eki; MOD-0126 | D64 |
 | Y-18 (iç uç kimliği, açık atama sayısı, muafiyet atayan) | MOD-0018 Treasury Auth eki | D74 |
 | Y-19 (FU27, K-7, DL-6; şartlı teyit — K-W5 + rol atama denetimi DL-5 kodundan önce) | MOD-0018 Treasury Auth eki; altı paket | D80 |
+| Y-20 (MOD-0048 B1 izni: currencies lookup alpha-3 filtresi) | seed dalı `feature/pss/mod0048-fu01-treasury-seeds`; MOD-0126 / 0119 / 0120 / 0124 seed önkoşulu | seed PR'ında |
+| Y-21 (Auth eki açık maddeleri paket önerisiyle; K-W5 yöntem, K-5 yalnız yöntem; MOD-0220 / §22 notu) | MOD-0018 Treasury Auth eki; ready-for-dev tutuşu | D84 |
+| Y-22 (#304 sırası; DCP-011 onay yolu; K-6 "hayır"; Platform XMC-001 dosya kapsamı; BL-565 ve MOD-0262-FU01 tarihleri) | DCP-011; FU27 DL-4; dört finans paketi SEC-002; RCS-001 | D88 |

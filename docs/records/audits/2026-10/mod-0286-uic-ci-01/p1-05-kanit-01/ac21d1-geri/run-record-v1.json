@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "python3",
+  "scripts/uic_changed_pages.py",
+  "--base",
+  "01bfa9ff14b423939a79cfeceed3fd8dd865e882"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/ac21d1-geri/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4558,
+   "path": "docs/records/audits/2026-10/uic-tek-gecici/ac21d1-geri/stdout.txt",
+   "sha256": "97b0fb999a7dab77203677284b1ac5b9233e6563bfa6554f8abe0507810a3232"
+  }
+ ],
+ "commit": "e01b9bebb4f096b26c168af0669ee673a092b788",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-10-31T00:35:26Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/uic-tek-gecici/ac21d1-geri",
+ "started_utc": "2026-10-31T00:35:26Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "0fa347c4a72749bbb0a06575773cbb78b792ffcd"
+}
