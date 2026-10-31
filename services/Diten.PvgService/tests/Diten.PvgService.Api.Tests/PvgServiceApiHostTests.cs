@@ -1484,6 +1484,7 @@ public sealed class PvgServiceApiHostTests
     {
         public ValueTask<string> AddAsync(
             PvgPersistenceTenantScope tenantScope,
+            string actorId,
             SafetyCaseIntake intake,
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
@@ -1498,6 +1499,7 @@ public sealed class PvgServiceApiHostTests
             PvgPersistenceTenantScope tenantScope,
             string intakeDraftId,
             long? expectedVersion,
+            string actorId,
             SafetyCaseIntake intake,
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();

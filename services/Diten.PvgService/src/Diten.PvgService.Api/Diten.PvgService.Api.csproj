@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Diten.PvgService.Application\Diten.PvgService.Application.csproj" />
     <ProjectReference Include="..\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj" />
     <ProjectReference Include="..\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj" />
+    <ProjectReference Include="..\Diten.PvgService.Persistence\Diten.PvgService.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
   </ItemGroup>
 </Project>
