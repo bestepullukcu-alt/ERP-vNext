@@ -607,7 +607,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     """S-5 (F-1, F-3, N-3, N-4, N-5, R3-3, Q2, Q4, Q5): (stops, covering versions, notes, next step, the person keys that
     accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — or, with
     `deferred` (S-115, owner decision 2026-11-01: the branch reading of the dispatch gate and of acceptance_record.py),
-    from the reviews at `commit` (the CT's ref), where main's rows must be a prefix (pack_approval.prefix_problem) and
+    from the reviews at `commit` (the CT's ref), where main's rows of this pack must be a prefix (pack_approval.prefix_problem) and
     a row not yet on main counts with its human step pending (pack_approval.review_problems deferred).
       - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything; the
         offending commit stays in history, so re-adding rows never clears it (an owner decision). A malformed row
