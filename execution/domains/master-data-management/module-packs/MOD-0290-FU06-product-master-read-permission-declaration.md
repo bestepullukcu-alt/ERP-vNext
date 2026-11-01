@@ -220,7 +220,7 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 - [ ] AC-6 `ModuleVersion` `1.4.0`; `Declares_exact_identity_route_and_non_baseline_flags` güncel, sayfa sayısı 8 değişmez.
 - [ ] AC-7 `git diff` yalnız §5 dosyaları ve §18 kanıt dizini; Auth, Platform, Web, Gateway boş.
 - [ ] AC-8 `CompositionRootGuardTests` yeşil, T3 ile aynı süreçte.
-- [ ] AC-9 §18 E3 adımlarının her biri tek `run_record.py` koşusunun süzülmüş çıktısında: Platform listesi anahtarı içerir, Auth kataloğu satırı doğru, hak olayından sonra Admin ve Viewer `/api/product-master/stockable-items` 200, anahtarsız kullanıcı 403 (gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok), Auth günlüğünde eşitlik hatası 0; çıktıda jeton ve anahtar yok. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
+- [ ] AC-9 §18 E3 **yükseltme yolu**, tek `run_record.py` koşusunun süzülmüş çıktısında, sırayla: (Y2) taban MDM ile hak satırı var, Admin ve Viewer yeni jetonda anahtarsız, `/api/product-master/stockable-items` 403 ve gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok; (Y3) 1.4.0 itildi, Auth kataloğunda satır var, kiracı hâlâ anahtarsız, 403; (Y4) `PATCH` uzlaştırmasından sonra yeni jetonda Admin ve Viewer anahtarlı, 200, anahtarsız kullanıcı 403, Auth günlüğünde eşitlik hatası 0; (Y5) yeni kiracıda yeni hak satırıyla 200. Çıktıda jeton ve anahtar yok. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
 
 §23 canlı doğrulaması bu dilimin kabulü değildir.
 
@@ -299,9 +299,13 @@ dotnet test services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/D
 - **Sırlar:** yalnız ortam değişkeninden okunur, argv'ye girmez. Betik çıktıyı süzer: `Authorization`, jeton ve anahtar değeri yazılmaz; yanıttan yalnız durum kodu ve beklenen alan.
 - **Kanıt dizini:** `docs/records/audits/2026-11/mod0290-fu06-dl1/` (yeni): betik ve `SABOTAJ.md` burada; E3 koşusu `--out .../e3-run`, E2 komutu ayrı `--out .../e2-run`. Kod commit'inden sonra, temiz ağaçta.
 
-**Yerel yığın (E3).** Canlı değildir, §23'ün yerine geçmez. Kaynak `scripts/dev-up.sh`; portlar `AGENTS.md` §3.
+**Yerel yığın (E3): yükseltme yolu.** Canlı değildir, §23'ün yerine geçmez. Var olan kiracının kazancı `PATCH` uzlaştırmasıyla gelir (§23 pilot); hak satırı yeni manifestten sonra açılırsa `TenantEntitlementAddedV1` anahtarı önceden verir ve `PATCH` hiçbir şey kanıtlamaz. Bu yüzden yığın **taban MDM** ile başlar. Kaynak `scripts/dev-up.sh`; portlar `AGENTS.md` §3.
 
-**E3 önkoşulları (betik başta ölçer, biri tutmazsa durur, kayda yazar):**
+**Taban commit:** `git merge-base origin/main <dal>`, ölçülen değer kayda yazılır. Koşul: o commit'te `ProductItemSkuMasterManifestProvider.cs` `ModuleVersion: "1.3.0"` taşır ve `READ_PRODUCT_MASTER` taşımaz (`git show <taban>:<yol> | grep`; bugün `b0ca699d7`, koşul tutuyor). Tutmazsa onay anında kayda yazılan commit kullanılır; o da tutmazsa kuleye dur. Taban ikilisi repo dışı geçici dizindedir: `git worktree add --detach <geçici> <taban>`, orada yalnız `services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj` derlenir, koşu sonunda `git worktree remove`.
+
+**Jeton:** MDM izni jetondaki `permission` iddiasından okur (`PermissionAuthorizationHandler`). Her ölçümde kullanıcı **yeniden girer**; anahtar kararı yeni jetondadır, betik yalnız var/yok yazar.
+
+**Başta ölçülür (yığın açılmadan; biri tutmazsa durur, kayda yazar):**
 
 | Önkoşul | Ölçüm | Tutmazsa |
 |---|---|---|
@@ -309,24 +313,27 @@ dotnet test services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/D
 | Port ve süreç | 5000, 5001, 5056, 5057, 5058, 5059, 5060 dinleyen yok (`lsof`). `scripts/dev-up.sh --restart` **kullanılmaz**: porttaki süreci sahibine bakmadan öldürür. Yalnız betiğin başlattığı süreç, kayıtlı PID + başlangıç zamanı eşleşirse durur | **Kuleye dur.** Başka oturum olabilir; yeniden başlatılmaz |
 | Atılabilir veritabanı (zorunlu) | Kendi mongod'u: `--replSet`, paylaşılan 27017–27021 dışı port, yeni `--dbpath` (emsal `MdmTestMongo`). Servislere ortam değişkeni: Auth ve Platform `MongoDbSettings__ConnectionString`, `MongoDbSettings__DatabaseName`, Platform `BackgroundJobs__StorageDatabaseName`, MDM `Mongo__ConnectionString`, `Mongo__DatabaseName`. `scripts/dev-up.sh` süreci `env` ile başlattığı için ortam geçer (kod okuması; koşulmadı) | **Kuleye dur.** Paylaşılan veritabanına yazılmaz |
 | RabbitMQ (zorunlu) | Çalışıyor (`scripts/dev-up.sh` başlatmaz), yeni vhost: `Eventing__VirtualHost` (üç serviste aynı ayar) | Kuleye dur |
-| MDM kayıt kimliği | Platform `ModuleRegistrationCredentials:Mdm` ile MDM `PlatformRegistration:ModuleRegistrationCredential*` eşleşir; adım 2'de 401 olmaz | Kuleye dur |
-| Kapsam yayılımı ve 38 çift | Kiracının `ProductLegalEntityScopeRolloutMode` değeri ölçülür. Yalnız `Enforced` ise `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` gerekir: geliştirme ayarlarında **yok** (kaynak ZIP dışı ölçüm), ortam değişkeniyle 38 çift verilir | Çift eksikse kuleye dur |
-| Test verisi | Kiracı + Admin + Viewer + anahtarsız kullanıcı atılabilir veritabanında; ürün modülü planda değil (plan satırında `extendExpiry` yok). Kullanıcı kurulum yolunu betik yazılırken kule ölçer (bu pakette ölçülmedi) | E3 bekler |
-| Hak satırı | `POST /api/platform/tenants/{tenantId}/commercial/module-entitlements` (`AddTenantModuleEntitlementCommandHandler`, `AddTenantModuleEntitlementCommandValidator`): `Source = Addon`, `ExpiryDateUtc` gelecekte, `Reason` dolu; `PlatformAdminOnly`. Bu çağrı kendi `TenantEntitlementAddedV1` olayını doğurur; adım 5 ayrıca ölçülür | E3 bekler |
+| MDM kayıt kimliği | Platform `ModuleRegistrationCredentials:Mdm` ile MDM `PlatformRegistration:ModuleRegistrationCredential*` ayarları eşleşir | Kuleye dur |
+| Derleme | Bu daldan Auth, Platform, MDM, Gateway Api projeleri (Gateway `scripts/dev-up.sh` için ikili ister); taban MDM | Kuleye dur |
 
-**403 ayrımı:** anahtarsız kullanıcının 403'ü `[HasPermission]`'dan gelir; `LEGAL_ENTITY_SCOPE_FORBIDDEN` kapsam reddidir (`ProductLegalEntityScopeCandidateFacade`, `ProductMasterController.Answer`), rol yokluğu değildir. Adım 6'da bu kod çıkarsa neden çifttir, E3 kırmızı.
+**Yığın ayaktayken kurulur ve ölçülür:** kiracı, kullanıcılar, hak satırı, yayılım modu. Veri yeni veritabanına ancak servisler açıkken yazılır; kullanıcı kurulum yolunu betik yazılırken kule ölçer (bu pakette ölçülmedi).
+
+**Betik sırası (gerçek sıra):**
 
 | # | Adım | Komut | Beklenen |
 |---|---|---|---|
-| 1 | Bu dalın kodu | `dotnet build` Auth, Platform, MDM **ve** Gateway Api projeleri (Gateway `scripts/dev-up.sh` için ikili ister); sonra `scripts/dev-up.sh` (bayraksız) | Dört servis dinliyor. Derlenmemiş diğerleri "not built" der, bekleme uzar |
-| 2 | MDM itmesi | MDM günlüğünde `Module manifest self-registered … ModuleCode=product-item-sku-master`; Platform katalogunda modül **1.4.0** | İkisi de var |
-| 3 | Platform listesi | `GET http://localhost:5057/api/internal/tenants/{tenantId}/entitled-modules-with-permissions`, başlık `X-Internal-Api-Key` | Modül satırında anahtar var |
-| 4 | Auth kataloğu | Auth Mongo `permissions`, `Key = mdm.product-master.read` | `Module = product-item-sku-master`, `Scope` Tenant |
-| 5 | Hak olayı | §23 pilot `PATCH`: aynı bitiş, güncel `RowVersion`, yeni `Reason` | Auth günlüğünde yeni `entitlement.sync.applied` |
-| 6 | Rol | Admin ve Viewer yeniden girer, `GET http://localhost:5000/api/product-master/stockable-items` | 200 |
-| 7 | Anahtarsız | Aynı istek | 403, gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok |
-| 8 | Eşitlik hatası | Auth günlüğünde `complete active module descriptor set` sayısı | 0 |
-| 9 | Temizlik | Betiğin süreçleri PID + başlangıç zamanıyla durur; `git status --porcelain` yalnız `--out` | Paylaşılan veritabanı ve portlar dokunulmamış |
+| Y1 | Yığın, taban MDM | Taban MDM 5059'da başlar (`--urls`, içerik kökü proje dizini, `scripts/dev-up.sh` `start_one` gibi), sonra `scripts/dev-up.sh` bayraksız: dolu porta dokunmaz ("already up"). Auth ve Platform `/health/live` cevap verince taban MDM kendi PID + başlangıç zamanıyla durur, bir kez yeniden başlar: itme 5 denemeyle sınırlı, Platform'dan önce biterse kaybolur | MDM günlüğünde `Module manifest self-registered … ModuleCode=product-item-sku-master`; Platform katalogunda **1.3.0**, `READ_PRODUCT_MASTER` yok |
+| Y2a | Kiracı ve hak satırı | Kiracı + Admin + Viewer + anahtarsız kullanıcı; ürün modülü planda değil. `POST /api/platform/tenants/{tenantId}/commercial/module-entitlements` (`AddTenantModuleEntitlementCommandHandler`, `AddTenantModuleEntitlementCommandValidator`): `Source = Addon`, `ExpiryDateUtc` gelecekte, `Reason` dolu; `PlatformAdminOnly`. §23 pilot koşuluna uyar | Satır ve `RowVersion` okunur. `ProductLegalEntityScopeRolloutMode` ölçülür; `Enforced` ise çift gerekir (`TrustedLegalEntityScopeCredential:Mdm:AllowedPairs`, geliştirme ayarlarında yok, kaynak ZIP dışı ölçüm; Platform başlamadan verilmeliydi): kuleye dur |
+| Y2b | Ön ölçüm | Admin ve Viewer yeni jeton; `GET http://localhost:5000/api/product-master/stockable-items`. Auth Mongo `permissions`, `Key = mdm.product-master.read` | Jetonda anahtar yok, 403, gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok; katalogda satır yok |
+| Y3a | MDM yeni sürüm | Taban MDM kendi PID + başlangıç zamanıyla durur; `scripts/dev-up.sh` bayraksız yalnız boş 5059'u bu dalın ikilisiyle açar | Günlükte yeni itme; Platform katalogunda **1.4.0**, `READ_PRODUCT_MASTER` var |
+| Y3b | Henüz kazanç yok | Auth `permissions`; `GET http://localhost:5057/api/internal/tenants/{tenantId}/entitled-modules-with-permissions`, başlık `X-Internal-Api-Key`; Admin ve Viewer yeni jeton, aynı istek | Katalogda `Module = product-item-sku-master`, `Scope` Tenant; Platform listesinde anahtar; **jetonda hâlâ yok, 403**; `entitlement.sync.applied` sayısı artmadı |
+| Y4a | Tetikleyici | §23 pilot `PATCH`: aynı bitiş, güncel `RowVersion`, yeni `Reason`. Olay asenkron: en çok 60 sn yoklanır | Auth günlüğünde yeni `entitlement.sync.applied` |
+| Y4b | Kazanç | Admin ve Viewer yeni jeton, aynı istek; anahtarsız kullanıcı yeni jeton, aynı istek | Admin ve Viewer jetonda anahtarlı, 200; anahtarsız 403, gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok |
+| Y4c | Eşitlik hatası | Auth günlüğünde `complete active module descriptor set` sayısı, bütün koşu | 0 |
+| Y5 | Yeni kiracı, yeni hak | İkinci kiracı + Admin + Viewer; aynı `POST` (`TenantEntitlementAddedV1`); `PATCH` yok; yeni jeton, aynı istek | Admin ve Viewer 200 |
+| Y6 | Temizlik | Betiğin süreçleri PID + başlangıç zamanıyla durur; `git worktree remove`; `git status --porcelain` yalnız `--out` | Paylaşılan veritabanı ve portlar dokunulmamış |
+
+**403 ayrımı:** rol yokluğu `[HasPermission]`'dan gelir; `LEGAL_ENTITY_SCOPE_FORBIDDEN` kapsam reddidir (`ProductLegalEntityScopeCandidateFacade`, `ProductMasterController.Answer`). Y2b, Y3b ya da Y4b'de bu kod çıkarsa neden kapsamdır, E3 kırmızı.
 
 ## 19. Page Help (UXH-001)
 
@@ -485,7 +492,7 @@ Silme verilmiş jetonu geri almaz: MDM izni jetondaki `permission` iddiasından 
 
 2 ile 3 arasında Platform listesinde var, Auth kataloğunda yok: hak olayları fırlar, tekrar denenir, 3'ten sonra yakınsar. Sonraki ileri düzeltmede satır `reactivated` olur; kiracı hakları pilot adımıyla yeniden kurulur.
 
-**Pilot kiracı (var olan kiracı).** Manifest itmesi rol eşitlemesi başlatmaz: `GlobalApplicabilityChangedV1`'in Auth'ta tüketicisi yok. `EntitlementSyncConsumer.ConsumeAsync`'i tetikleyen olaylar ve onları doğuran işlemler:
+**Pilot kiracı (var olan kiracı).** E3 bu yükseltmeyi atılabilir veritabanında ölçer (§18 Y1–Y4); canlının yerine geçmez. Manifest itmesi rol eşitlemesi başlatmaz: `GlobalApplicabilityChangedV1`'in Auth'ta tüketicisi yok. `EntitlementSyncConsumer.ConsumeAsync`'i tetikleyen olaylar ve onları doğuran işlemler:
 
 | Olay | İşlem | Not |
 |---|---|---|
@@ -502,20 +509,20 @@ Silme verilmiş jetonu geri almaz: MDM izni jetondaki `permission` iddiasından 
 - [ ] Varsayılan kiracı SuperAdmin anahtarı tutar (ilk eşitlemeden).
 - [ ] Platform `GET /api/internal/tenants/{tenantId}/entitled-modules-with-permissions` hak olan kiracıda anahtarı listeler.
 - [ ] Pilot kiracıda yukarıdaki olay tetiklendi; Auth günlüğünde `entitlement.sync.applied`, `complete active module descriptor set` yok.
-- [ ] **Bu adımdan sonra:** pilot kiracıda Admin ve Viewer anahtarı tutar; adanmış üç rol tutmaz.
+- [ ] **Bu adımdan sonra, yeni jetonla:** pilot kiracıda Admin ve Viewer anahtarı tutar; adanmış üç rol tutmaz. İzin jetondan okunur: eski jeton süresi dolana ya da kullanıcı yeniden girene kadar anahtarsız kalır.
 - [ ] Ürün modülü hakkı **olmayan** kiracıda Viewer ve Admin ne `mdm.items.read` ne `mdm.product-master.read` tutar (elle atanmadıysa).
 - [ ] Enforced kiracıda `/api/product-master/…` ürün satırı döner.
 - [ ] Platform MDM kimlik bilgisi 38 çiftle geçerli.
 
-**Stok ekibine "hazır" haberi yalnız bunlardan ve K-3 kapanışından sonra.** Haberde yazılacak (`### BL-592`, "Stok ekibine söz"): hak olan kiracıda varsayılan olarak Admin + Viewer alır; var olan kiracı ancak eşitleme tetiklenince alır; varsayılan kiracı SuperAdmin ilk eşitlemede alır; kiracı yöneticisi başka role elle atayabilir; başka rol varsayılan almaz. BL-592 "canlı rol önerisiyle hizalanır" der: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md` bu anahtarı anmıyor, hizalama kule işi (K-5).
+**Stok ekibine "hazır" haberi yalnız bunlardan ve K-3 kapanışından sonra.** Haberde yazılacak (`### BL-592`, "Stok ekibine söz"): hak olan kiracıda varsayılan olarak Admin + Viewer alır; var olan kiracı ancak eşitleme tetiklenince ve kullanıcı yeniden girince alır; varsayılan kiracı SuperAdmin ilk eşitlemede alır; kiracı yöneticisi başka role elle atayabilir; başka rol varsayılan almaz. BL-592 "canlı rol önerisiyle hizalanır" der: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md` bu anahtarı anmıyor, hizalama kule işi (K-5).
 
 ## 24. Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
 |---|---|---|---|---|---|
-| DL-1 | izin beyanı, platform yolu testleri ve yerel yığın kanıtı | Owned Objects, Repo Scope, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria, Test Expectations, Implementation Notes | E3 | plan kimliği yok | plan satırı yok |
+| DL-1 | izin beyanı, platform yolu testleri ve yerel yığında yükseltme kanıtı | Owned Objects, Repo Scope, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria, Test Expectations, Implementation Notes | E3 | plan kimliği yok | plan satırı yok |
 
-DL-1 çekirdek ve tek dilimdir. E3 kartta birikimlidir: §18 otomatik test + sabotaj (AC-1…AC-8) ve yerel yığın (AC-9) birlikte istenir. Canlı §23 ayrı kapıdır.
+DL-1 çekirdek ve tek dilimdir. E3 kartta birikimlidir: §18 otomatik test + sabotaj (AC-1…AC-8) ve taban MDM'den 1.4.0'a yerel yükseltme (AC-9) birlikte istenir. Canlı §23 ayrı kapıdır.
 
 ## 25. Açık kararlar
 
