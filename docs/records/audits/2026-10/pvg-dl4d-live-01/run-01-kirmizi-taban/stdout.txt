@@ -1,0 +1,53 @@
+== pre-check: ports must be free
+port 5011 free
+port 5000 free
+== run-time identity (secret and tokens stay in /var/folders/1x/lwl5wtmx2rqdb8srq1t66nwh0000gn/T/tmp.YioOcKQWUX, mode 700; values are not printed)
+identity ready: two random tenants, one HS256 token, secret length 64
+== build
+    0 Hata
+
+Geçen Süre 00:00:03.83
+    0 Hata
+
+Geçen Süre 00:00:02.11
+== start PVG service on 5011 (Development, run-time JwtSettings)
+pvg pid 7089
+== start Gateway on 5000 (Development, same run-time JwtSettings)
+gateway pid 7090 (exec: the subshell becomes the dotnet process)
+port 5011 listening after 2s
+port 5000 listening after 2s
+== 1. Gateway GET options without a token
+status 401
+PASS 1 no token -> 401
+== 2. Gateway GET options with a valid tenant_user token
+status 409
+body:
+{"outcome":"Blocked","reasonCode":"PVG_PERMISSION_DENIED","validationReasonCodes":[],"intakeDraftId":null,"items":[],"version":null,"totalCount":null,"filteredCount":null,"draft":null}
+expected from PvgIntakeOptionSets.cs: {"reportTypes": ["Literature", "Other", "Solicited", "Spontaneous", "Study"], "productRoles": ["Concomitant", "Suspect"], "unknownCountry": "unknown"}
+members ['outcome', 'reasonCode', 'validationReasonCodes', 'intakeDraftId', 'items', 'version', 'totalCount', 'filteredCount', 'draft'] -> MISMATCH
+FAIL 2 valid token -> 200 and exactly the PvgIntakeOptionSets codes in ordinal order
+== 3. the same request straight to the service
+status 409
+PASS 3 Gateway returns the service's result (status + byte-identical body)
+== 4. tenant refusal equals the list endpoint's (service)
+tenant missing: options 409 PVG_TENANT_CONTEXT_REQUIRED | list 409 PVG_TENANT_CONTEXT_REQUIRED
+PASS 4 tenant missing -> refused like the list endpoint, no codes
+tenant different: options 409 PVG_TENANT_CONTEXT_MISMATCH | list 409 PVG_TENANT_CONTEXT_MISMATCH
+PASS 4 tenant different -> refused like the list endpoint, no codes
+== 5. Gateway PUT options (reserved segment)
+status 409
+FAIL 5 PUT options -> 404
+== gateway log lines for the route
+{"Timestamp":"2026-10-29T13:53:59.5023470+03:00","Level":"Warning","MessageTemplate":"TenantResolution dev bypass applied in gateway. Path={Path} TenantId={TenantId}","RenderedMessage":"TenantResolution dev bypass applied in gateway. Path=\"/api/pv-case-intake-triage/options\" TenantId=<id>","TraceId":"0b6198da71034119b35712d96f11caad","SpanId":"944bef1d1d307b96","Properties":{"Path":"/api/pv-case-intake-triage/options","TenantId":"<id>","SourceContext":"Diten.ApiGateway.Middleware.TenantResolutionMiddleware","RequestId":"0HNPLLBNTJLFT:00000001","RequestPath":"/api/pv-case-intake-triage/options","ConnectionId":"[REDACTED]","TraceId":"0b6198da71034119b35712d96f11caad","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"}}
+{"Timestamp":"2026-10-29T13:53:59.7669780+03:00","Level":"Warning","MessageTemplate":"{State:l}","RenderedMessage":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","TraceId":"0b6198da71034119b35712d96f11caad","SpanId":"944bef1d1d307b96","Properties":{"State":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","SourceContext":"Ocelot.Requester.Middleware.HttpRequesterMiddleware","RequestId":"0HNPLLBNTJLFT:00000001","RequestPath":"/api/pv-case-intake-triage/options","ConnectionId":"[REDACTED]","TraceId":"0b6198da71034119b35712d96f11caad","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"},"Renderings":{"State":[{"Format":"l","Rendering":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options"}]}}
+{"Timestamp":"2026-10-29T13:53:59.7754020+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"GET\" \"/api/pv-case-intake-triage/options\" responded 401 in 287.9631 ms","TraceId":"0b6198da71034119b35712d96f11caad","SpanId":"944bef1d1d307b96","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"<id>","RequestPath":"/api/pv-case-intake-triage/options","StatusCode":401,"TraceId":"0b6198da71034119b35712d96f11caad","RequestMethod":"GET","Elapsed":287.963084,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNPLLBNTJLFT:00000001","ConnectionId":"[REDACTED]","MachineName":"192"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"287.9631"}]}}
+{"Timestamp":"2026-10-29T13:53:59.8664460+03:00","Level":"Warning","MessageTemplate":"{State:l}","RenderedMessage":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","TraceId":"e05f510fd41d7d53ee8b26fb03f1da91","SpanId":"1668777350bbba2d","Properties":{"State":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","SourceContext":"Ocelot.Requester.Middleware.HttpRequesterMiddleware","RequestId":"0HNPLLBNTJLFU:00000001","RequestPath":"/api/pv-case-intake-triage/options","ConnectionId":"[REDACTED]","TraceId":"e05f510fd41d7d53ee8b26fb03f1da91","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"},"Renderings":{"State":[{"Format":"l","Rendering":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options"}]}}
+{"Timestamp":"2026-10-29T13:53:59.8676950+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"GET\" \"/api/pv-case-intake-triage/options\" responded 409 in 77.6260 ms","TraceId":"e05f510fd41d7d53ee8b26fb03f1da91","SpanId":"1668777350bbba2d","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"<id>","RequestPath":"/api/pv-case-intake-triage/options","StatusCode":409,"TraceId":"e05f510fd41d7d53ee8b26fb03f1da91","RequestMethod":"GET","Elapsed":77.625958,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNPLLBNTJLFU:00000001","ConnectionId":"[REDACTED]","MachineName":"192"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"77.6260"}]}}
+{"Timestamp":"2026-10-29T13:54:00.4140880+03:00","Level":"Warning","MessageTemplate":"{State:l}","RenderedMessage":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","TraceId":"5e35532b08a0fde2f9179ad4d356c645","SpanId":"0824c68cbf2d1d93","Properties":{"State":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options","SourceContext":"Ocelot.Requester.Middleware.HttpRequesterMiddleware","RequestId":"0HNPLLBNTJLFV:00000001","RequestPath":"/api/pv-case-intake-triage/options","ConnectionId":"[REDACTED]","TraceId":"5e35532b08a0fde2f9179ad4d356c645","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"},"Renderings":{"State":[{"Format":"l","Rendering":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage/options"}]}}
+{"Timestamp":"2026-10-29T13:54:00.4145760+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"PUT\" \"/api/pv-case-intake-triage/options\" responded 409 in 64.7186 ms","TraceId":"5e35532b08a0fde2f9179ad4d356c645","SpanId":"0824c68cbf2d1d93","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"<id>","RequestPath":"/api/pv-case-intake-triage/options","StatusCode":409,"TraceId":"5e35532b08a0fde2f9179ad4d356c645","RequestMethod":"PUT","Elapsed":64.718583,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNPLLBNTJLFV:00000001","ConnectionId":"[REDACTED]","MachineName":"192"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"64.7186"}]}}
+stop: kill -TERM 7090 (Thu Oct 29 13:53:57 2026)
+stop: kill -TERM 7089 (Thu Oct 29 13:53:57 2026)
+== post-check: ports must be free
+port 5011 free
+port 5000 free
+== exit 1
