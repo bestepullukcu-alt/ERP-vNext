@@ -21,7 +21,8 @@
   PR'ına girer (§6; `docs-organization` §3.1). Ölçüm: bugüne kadar hiçbir modül için kullanıcı kılavuzu üretilmemişti.
 - **2026-11-01 · tek sahip sözü «onayla» (S-117, sahip kararı 2026-11-01):** modül başına sahipten tek söz: «onayla» paketi
   onaylar ve bütün dilimleri sırayla başlatır; kule sonraki dilim için yeni söz beklemez; takip sayfası kule açılışında
-  şablondan kendiliğinden açılır (`sayfa-ac` sözü kalktı); modül ya da dalga sonu PR'ını kule kendisi açar. Zorunlu duraklar
+  şablondan kendiliğinden açılır (`sayfa-ac` sözü kalktı); modül ya da dalga sonu PR'ı için ikinci ve son söz «PR aç»
+  (push ve PR; GIT-002 §4–5 değişmedi — bağımsız inceleme F-2, 2026-11-01). Zorunlu duraklar
   yalnız geri alınamaz olanlardır: başka modülün dosyası (XMC-001), kapsam değişikliği, yıkıcı git işlemi, kural ya da
   `.antigravity` değişikliği, dışarıya mesaj, kulenin kendi çözemediği engel ("İşçi sohbetleri" 9, §0, §6, §7).
 - **2026-11-01 · inceleme diyalogu ve sahibin seçimi (S-116, sahip kararı 2026-11-01; S-93 ve S-113'ün yerine):** resmî
@@ -431,8 +432,9 @@ Kurallar:
      kadar o dilimi bekletir ve varsa başka dilime geçer): başka modülün dosyasına dokunma (XMC-001), kapsam ya da
      mimari değişikliği (§7), yıkıcı git işlemi (GIT-002 §6), kural ya da `.antigravity` değişikliği, dışarıya giden
      mesaj (Beste, geliştirici, Codex), kulenin kendi çözemediği engel (kapı ENGEL'i, kırmızı test, sabotaj testi
-     çalışmıyor), §1.1/3'teki inceleme seçimi. Bunların dışında "başlat", "devam", `sayfa-ac`, "PR aç" gibi ara sözler
-     istenmez. Modül ya da dalga sonu PR'ı §6'daki adımla, «onayla» sözüne dayanarak kule tarafından açılır.
+     çalışmıyor), §1.1/3'teki inceleme seçimi, modül ya da dalga sonu PR'ının «PR aç» sözü (GIT-002 §4–5: push ve PR
+     her seferinde açık onay; inceleme F-2). Bunların dışında "başlat", "devam", `sayfa-ac` gibi ara sözler istenmez.
+     Modül ya da dalga sonu PR'ı §6'daki adımla, sahibin «PR aç» sözüyle kule tarafından açılır.
   Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
   (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa CT, kule açılışında ("Yer"
@@ -524,7 +526,9 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
   (S-115, sahip kararı 2026-11-01):** paketin onay satırı ve inceleme satırları CT dalında yazılıdır ve dağıtım için
   yeter; `prompt_gate.py check` ve `acceptance_record.py check` bunları daldan okur (`pack_approval.py check <paket>
   --ref <CT HEAD> --deferred` aynı okumayı elle verir; `--deferred` olmadan bugünkü sıkı, ana dal okumasıdır). Onay
-  satırı için PR açılmaz. Yine de ölçülür: paket ve kart özeti, onaylayan listede ve `high = evet`, onaylayan ≠ yazan,
+  satırı için PR açılmaz; satır `row <paket> … --deferred --note "onayla · <kule sohbeti> · <tarih saat>"` ile üretilir
+  (sahip sözünün kaydı not sütunudur; onay satırında `requested_by` alanı yoktur — inceleme F-4). Yine de ölçülür:
+  paket ve kart özeti, not sütununda `onayla`, onaylayan listede ve `high = evet`, onaylayan ≠ yazan,
   inceleme onaydan önce, UYGUN DEĞİL ya da açık ENGEL yok, iki dosya yalnız ekleme. İnsan adımı (başka bir listeli
   kişinin birleştirdiği PR) satır main'e girince, modül PR'ında ölçülür; doğrudan main'e yazılmış satır her iki okumada
   da geçersizdir. Kuyruk kayıt satırı yine yalnız `origin/main`'den okunur (modül başı tek PR). Künyede `approval_status` koşulluysa yalnız hazırlık; yeni dağıtım için paketin kapsamı ve onayı netleşir; ret ya da bozuk alan DUR (SOP §20.2, Görev sınıfı kuralı).
@@ -581,7 +585,9 @@ inceleyen kuleyle konuşup düzeltsin; bağımsız son bakış ya da Codex sahib
      direkt kabuldür ve son bakış yalnız sahip seçerse koşar.
    - **Codex:** yalnız sahip seçince; S-94 teslimi ve Yönetici kuyruğu kuralı değişmez; sonucu ikinci inceleme satırıdır.
    - **Direkt kabul:** CT «onayla» sözüyle onay satırını dala yazar ("İşçi sohbetleri" 9). Sahibin seçimi gelene kadar
-     CT paket dışı işine devam eder; dağıtım seçimi bekler.
+     CT paket dışı işine devam eder; dağıtım seçimi bekler. «onayla» tek sözdür (inceleme F-14): LOW'da son bakış yok;
+     HIGH'da son bakış arka planda koşar, temiz çıkarsa ikinci söz gerekmez; ENGEL çıkarsa paket düzelir ve yeni sürüm
+     için yeniden «onayla» istenir (yeni sürüm = yeni onay satırı).
    Her satır ve bulgu dosyası `reviews.tsv` kuralına (SOP §20.4/3) uyar; onay ya da dağıtım için inceleme sayılmasının
    tek yolu budur.
 4. **Öğrenme:** her ENGEL ya da ORTA bulgu (diyalog, son bakış ya da Codex), CT tarafından **tür olarak** (modül ayrıntısı
@@ -681,12 +687,16 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
   dilindedir; ekranı olmayan modülde kılavuz yerine "ne görülür" notu yazılır ve neden kılavuz olmadığı kaydedilir.
   Eksik belgeyle modül "bitti" denmez.
 - [ ] **Modül ya da dalga sonu PR'ı (S-115 ve S-117, sahip kararı 2026-11-01):** bütün dilimler kabul edilince (ya da
-  modül iki haftayı aşmışsa dalga sonunda) CT, yeni söz istemeden, «onayla» sözüne dayanarak: CT dalını `git merge
-  origin/main` ile günceller (merge commit; §7a), birleşik hâlde testleri koşar, S-63/3 taramasını yapar (e-posta, şifre,
-  anahtar), **sha ile** push eder (`git push origin <sha>:refs/heads/<dal>`), uzak = sha ölçer ve **tek PR** açar: kod,
-  kayıtlar, onay ve inceleme satırları, kabul kayıtları, kapanış belge paketi. PR açıklaması modülün sade adını,
-  dilimleri ve S-120 türlerine göre sayıları yazar; birleştirecek kişi listedeki, `high = evet`, satırları yazanın kişisi
-  olmayan biridir ve bunu PR'da bir satırla söyler. Birleştirme yine Beste'nindir; CT merge etmez. Biten'de tek satır:
+  modül iki haftayı aşmışsa dalga sonunda) CT hazırlığı sözsüz yapar: CT dalını `git merge origin/main` ile günceller
+  (merge commit; §7a), birleşik hâlde testleri koşar, S-63/3 taramasını yapar (e-posta, şifre, anahtar) ve sahibe
+  **tek istek** yazar: dal adı, sha, dilimler, S-120 türlerine göre sayılar — "Sizden istenen: «PR aç»" (GIT-002 §4–5:
+  push ve PR her seferinde açık onay; söz yalnız o sha içindir). Söz gelince **sha ile** push eder (`git push origin
+  <sha>:refs/heads/<dal>`), uzak = sha ölçer ve **tek PR** açar: kod, kayıtlar, onay ve inceleme satırları, kabul
+  kayıtları, kapanış belge paketi. PR açıklaması modülün sade adını, dilimleri ve türlere göre sayıları yazar;
+  birleştirecek kişi listedeki, `high = evet`, satırları yazanın kişisi olmayan biridir ve bunu PR'da bir satırla
+  söyler. **PR yalnız merge commit ile birleşir** (squash ya da rebase satır commit'lerini main çizgisine düşürür ve
+  modülün bütün onay, inceleme ve kabul satırlarını geriye dönük geçersiz kılar; S-82 kalıbı, inceleme F-7) — Beste'ye
+  giden mesaj bunu bir satırla söyler. Birleştirme yine Beste'nindir; CT merge etmez. Biten'de tek satır:
   "<modül> PR'ı açıldı — <bağlantı>". Kırmızı ana dal, güvenlik açığı ya da başka kulenin bekleyişi ((c)–(d), §7b) ara
   PR'ı yine açtırır.
 - [ ] PR merge edildikten sonra worktree temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırıldı; değilse kaldırılmadı, sahibe bildirilip soruldu (SOP §16.5).
@@ -728,7 +738,7 @@ Her modül ACCEPTED olurken CT sahibe modülün canlıda **kullanılabilmesi** i
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
 | CT'nin kendi dalında (`chore/ct/…`) yerel commit ve ana dalı yerel almak (`git merge origin/main`, merge commit; force yok) | **Kalıcı — tekrar sorulmaz**; yalnız CT'nin kendi dalı — main, işçi dalları ve başka dallar değil (işçide S-63 geçerli) | GIT-002 §4 (S-99 istisnası); sahip kararı 2026-10-29 |
 | **Oturum dal izni** — CT'nin kendi dalını push etmek (yalnız CT dalı; main, işçi dalı ve başka dal değil; force yok) | **Oturumda bir kez açık onay** (butonla, `dal-izni`); oturum bitince, sahip "dur" deyince ya da bir tarama bulunca biter. Her push'tan önce: dal CT dalı, `git diff origin/main...<sha>` içinde e-posta, şifre ve anahtar taraması temiz; push `git push origin <sha>:refs/heads/<dal>` ile; sonra uzak uç = yerel sha ölçülür ve Biten'de tek satır yazılır. İzin varken yedek push (`yedek`) ayrıca sorulmaz. Gereksiz push yapılmaz (iş PC'de kalabilir; PR yalnız gerekince, §7b) | GIT-002 §5 (S-99 istisnası); sahip kararı 2026-10-29 |
-| Commit, push, PR ve merge | **Her seferinde açık onay** (istisna yalnız yukarıdaki iki satır, CT dalı için); işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63). **Modül ya da dalga sonu PR'ı için açık onay modülün «onayla» sözüdür (S-117, 2026-11-01):** söz o paket sürümü için verilir, push sha ile ve taramadan sonra yapılır, PR'ı CT açar, merge yine ikinci kişinindir (§6) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
+| Commit, push, PR ve merge | **Her seferinde açık onay** (istisna yalnız yukarıdaki iki satır, CT dalı için); işçi dalının push ve PR'ı: onay CT sohbetine, dal adı ve sha ile ve yalnız o sha için yazılır; push'u CT sha ile yapar (S-63). **Modül ya da dalga sonu PR'ı için açık onay sahibin «PR aç» sözüdür (S-117, 2026-11-01; GIT-002 değişmedi):** söz dal adı ve sha ile, yalnız o sha için verilir; push taramadan sonra sha ile yapılır, PR'ı CT açar, merge yine ikinci kişinindir (§6) | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5; sahip kararı 2026-10-26 |
 | CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | Oturum dal izni yoksa: **her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
 | Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur. Main'e girmiş, main'de hiç olmamış bir satırın düştüğü bilinen tek commit için yalnız sahip onaylı istisna satırı (`append-only-exceptions.tsv`, `pack_approval.py exception-row`, S-91); her PR'da GitHub işi `approvals-append-only` koşar | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Kendi oturumunun ve kendi işçilerinin adı ve kenar çubuğu grubu (§0 "Oturum adı") | Kalıcı — tekrar sorulmaz; başka oturumlar için yalnız öneri | Sahip kararı 2026-10-26 (S-62) |
@@ -760,8 +770,8 @@ Bir CT'nin işi başka bir sahibin modülünde ek gerektiriyorsa (izin anahtarı
 ### 7b. PR yalnız zorunluysa (S-77, sahip kuralı 2026-10-27: "CT'ler sürekli PR açmasın, zorunlu olmadıkça PR olmasın")
 
 Varsayılan: iş CT dalında **yerel commit** olarak birikir; **modülün sonunda** (modül iki haftayı aşarsa dalganın
-sonunda) **tek PR** açılır (S-76; S-115 ve S-117, sahip kararı 2026-11-01: PR'ı kule «onayla» sözüne dayanarak kendisi açar,
-§6). Ara PR yalnız şu durumlarda açılır; CT sahibe sorarken hangisi olduğunu tek cümleyle söyler ve bekleyen her şeyi o
+sonunda) **tek PR** açılır (S-76; S-115 ve S-117, sahip kararı 2026-11-01: hazırlık sözsüz, push ve PR sahibin «PR aç»
+sözüyle, §6). Ara PR yalnız şu durumlarda açılır; CT sahibe sorarken hangisi olduğunu tek cümleyle söyler ve bekleyen her şeyi o
 PR'a toplar:
 
 | Durum | Örnek |
@@ -843,10 +853,12 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    yük düştükten sonra bir kez daha koşulmadan "kalıcı" ya da "üründe hata" sayılmaz; iki koşunun sonucu da kayda girer.
 6. Kuralları değiştiren bir PR (`.antigravity/`, kart, SOP) merge edilince her CT kartı yeniden okur; skill
    değiştiyse yeni oturum açılır.
-7. **Bir PR'da bir paket için tek onay satırı (S-41; "onaylayan merge eder" cümlesi S-115 ile kalktı, 2026-11-01).** Ara sürümler onaylanmaz; PR'a giren son paket sürümü onaylanır. Modül PR'ını birleştiren, listedeki, `high = evet`, satırı yazanın kişisi olmayan herhangi biridir; onaylayan olması gerekmez (§7b).
-   Aynı PR'da aynı pakete iki satır olursa ilk satır merge'le geçerli olur, ikincinin onay kartı main'de başka bir
-   tabana göre hesaplanır ve tutmaz; satır merge'den sonra yeniden üretilip yeni bir PR ile alınmak zorunda kalır.
-   Onay satırının onaylayanı PR'ı kendisi merge eder; satırı yazan merge ederse onay sayılmaz.
+7. **Modül PR'ında onay satırları (S-115, 2026-11-01; S-41'in "bir PR'da tek satır" ve "onaylayan merge eder" kuralları
+   kalktı, inceleme F-1).** Modül PR'ı aynı paketin birden çok revizyon satırını taşıyabilir; son satır karar verir. Her
+   satırın kartı dalda `pack_approval.py row … --deferred --note "onayla · <kule sohbeti> · <tarih saat>"` ile üretilir
+   (bekleyen önceki satır taban sayılır; sıkı okuma main'de aynı sırayla ölçer: önceki satır düşerse sonraki de düşer).
+   Birleştiren listedeki, `high = evet`, satırı yazanın kişisi olmayan herhangi biridir; PR'ı açan satırın yazarıdır
+   (inceleme F-5); onaylayan olması gerekmez (§7b). Doğrudan main'e yazılmış satır geçersizdir.
 
 ## 8. Domain → Control Tower sahipliği (yalnız kanıttan)
 

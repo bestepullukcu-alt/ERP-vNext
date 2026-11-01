@@ -33,14 +33,18 @@ akışı 8 gün; Yetki, Zaman, İzin, Çalışan kaydı, Toplantılar: yok). Sah
 5. **Sahip sözü modül başına tek: "onayla".** Paketi onaylar ve tüm dilimleri sırayla başlatır. Kule bir sonraki dilim
    için yeni söz beklemez. Zorunlu duraklar yalnız: başka modülün dosyası (XMC-001), kapsam değişikliği, yıkıcı git
    işlemi, kural / `.antigravity` değişikliği, dışarıya mesaj, kulenin kendi çözemediği engel. Takip sayfası kule
-   açılışında şablondan açılır ("sayfa-ac" sözü kalkar); modül sonu PR'ını kule açar (açmak geri alınabilir).
+   açılışında şablondan açılır ("sayfa-ac" sözü kalkar). **Düzeltme (inceleme turu 1, F-2):** modül ya da dalga sonu
+   PR'ı için sahibin ikinci ve son sözü «PR aç» gerekir; GIT-002 §4–5 (push ve PR her seferinde açık onay) değişmedi,
+   `.antigravity/rules/git-safety.md`'ye dokunulmadı. Kule hazırlığı (merge, test, tarama) sözsüz yapar, sha ile tek
+   istek yazar. Modül başına sahip sözü: «onayla» + «PR aç».
 6. **Kapanış belge paketi** (docs-organization §3.1): kullanıcı kılavuzu, API anlatısı, servis README, ADR, sürüm notu,
    mimari denetim raporu; kule alt ajanlarla üretir, modül PR'ına koyar.
 7. **Tür kelimesi:** her iş satırı (kısa haber, tam rapor Parçalar, takip sayfası) şu sekizden biriyle başlar: Belge ·
    Arka uç · Ekran · API · Geçit · Test · Kural · Karar. İlerleme satırı "kod N · belge M" sayısını taşır.
 
 Kabul edilen bedel (sahip kararı): onay satırındaki "onaylayan" alanı, satır main'e girene kadar GitHub'da doğrulanmaz;
-sahibin "onayla" sözü kule sohbetinde ve satırın `requested_by` / oturum alanlarındadır. Kod yine ikinci kişi olmadan
+sahibin "onayla" sözü kule sohbetinde ve satırın `note` sütunundadır (`onayla · <kule sohbeti> · <tarih saat>`; onay
+satırında `requested_by` alanı yoktur — inceleme turu 1, F-4). Kod yine ikinci kişi olmadan
 main'e giremez (dal koruması). Kule öncesi dönemle aynı sınır; üstüne paket, inceleme ve sabotaj testi kalır.
 
 ## Araç değişikliği
@@ -78,6 +82,24 @@ main'e giremez (dal koruması). Kule öncesi dönemle aynı sınır; üstüne pa
 
 - Q3: paketin bu baytları **CT ref'inde** (`at_full`) ve `pa.evaluate(root, at_full, path, deferred=True)` çıkış 0; inceleme
   örtüsü `review_negatives(..., deferred=True)`. Bugünkü "main'de" okuması, satır main'e girince aynı sonucu verir.
+
+### İnceleme turu 1 (2026-11-01, geçmişsiz Claude alt ajanı; bulgu dosyası CT-Setup kayıt klasöründe)
+
+Sonuç **UYGUN DEĞİL, 3 ENGEL**: F-1 kart §7a/7'de eski "onaylayan merge eder" cümlesi kalmıştı; F-2 "modül sonu PR'ını
+kule açar" GIT-002 §4–5 ile çelişiyordu; F-3 aynı dalda ikinci onay satırı (`row`/`card` sıkı taban, `check --deferred`
+bekleyen taban) kart uyuşmazlığı veriyordu. Düzeltmeler bu dalda:
+
+- F-1 kart §7a/7 yeniden yazıldı; F-2 «PR aç» sözü eklendi (yukarıda); F-7 modül PR'ı yalnız merge commit; F-14 «onayla»
+  tek söz, HIGH son bakış temizse ikinci söz yok.
+- F-3 `row` / `card --deferred` (deferred Ctx ile aynı kart). F-4 onay satırı `note` sütunu `onayla · …` taşır; deferred
+  HIGH bekleyen satırda not yoksa ENGEL. F-5 sıkı okumada PR'ı açan = satırın yazarı (kişi). F-8 push:main CI'da dokunulan
+  paketler için sıkı `check`. F-10 kabul kaydının geçmiş yeniden ölçümünde önek main–kayıt merge-base'ine göre, bugünkü
+  revoke / UYGUN DEĞİL yine durdurur. F-11 satır kaybı olmayan yeniden sıralama merge'i için GitHub'a sorulmaz. F-12/F-13
+  mesajlar. Yeni kural başlangıcı `execution/approvals/POLICY-BRANCH-START.md`: F-4 ve F-5 yalnız bu commit'ten sonra
+  eklenen satırlara uygulanır (eski main satırları geriye dönük düşmez).
+- Kalan (kayıtlı, sahip kararı bekler): F-6 `gmg-10` (K1) ile `GMG-ERP` (K3) aynı insansa modül PR'ı Beste'siz geçebilir —
+  sahibe soru; F-9 dalda geçmiş yeniden yazılarak yalnız dalda var olan olumsuz satır izsiz silinebilir — modül PR'ının
+  tam geçmişi insan kontrolündedir, dal push'u şartı GIT-002 ile çelişir, ayrı karar.
 
 ## Sabotaj testleri (öz testler; hepsi kırmızı olmalı, guard kaldırılınca yeşile dönmeli)
 

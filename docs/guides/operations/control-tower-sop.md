@@ -1429,8 +1429,9 @@ bulgu dosyası biçimine çevrilmesi, commit'i ve `reviews.tsv` satırı sahibin
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz. Dal onayında (kart
 S-115) bu kanıt dağıtım anında değil modül PR'ı birleşince gelir; onaylayan alanı o ana kadar yalnız sahibin kule
-sohbetindeki «onayla» sözüne ve satırın `requested_by` / oturum alanlarına dayanır (sahibin kabul ettiği bedel,
-`docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`).
+sohbetindeki «onayla» sözüne ve satırın `note` sütunundaki kayda (`onayla · <kule sohbeti> · <tarih saat>`; onay satırında
+`requested_by` alanı yoktur, araç deferred okumada bu notu ister) dayanır; doğrulanmış ikinci insan modül PR'ının
+birleştirenidir ve PR'ı açan satırın yazarıdır (sahibin kabul ettiği bedel, `docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`).
 
 **6. Dilimli uygulama.** İnceleme isteyen bir Module Pack `## Teslim dilimleri` tablosu (`| DL-1 | ad | bölümler |`), bir
 DCP `## 8.1 Delivery slices` tablosu taşır. WP prompt'u `Kapsanan dilim:` satırını yazar (§17.1, §36.1). Prompt kapısı
