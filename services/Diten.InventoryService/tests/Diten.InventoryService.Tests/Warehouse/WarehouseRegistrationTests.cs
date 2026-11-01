@@ -28,9 +28,12 @@ public sealed class WarehouseRegistrationTests
         Assert.Equal("PUTAWAY-PICKING-PACKING", manifest.ModuleCode);
         Assert.Equal(WarehouseCentralAudit.Module, manifest.ModuleCode);
         Assert.Equal(178, manifest.SortOrder);
-        Assert.Empty(manifest.Pages); // DL-1 has no screen (DL-3)
 
-        var keys = (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).ToList();
+        // DL-3: the keys are declared by the pages and their actions; only the frozen outbound read stays an API permission
+        var keys = manifest.Pages.Select(p => p.RequiredPermission)
+            .Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+            .Concat((manifest.ApiPermissions ?? []).Select(p => p.PermissionKey))
+            .Distinct(StringComparer.Ordinal).ToList();
         Assert.All(keys, k => Assert.StartsWith("warehouse.", k, StringComparison.Ordinal));
         Assert.All(manifest.ApiPermissions ?? [], p => Assert.Equal("Tenant", p.Scope));
         Assert.Equal(WarehousePermissions.Implemented.Order(StringComparer.Ordinal), keys.Order(StringComparer.Ordinal));
@@ -51,6 +54,48 @@ public sealed class WarehouseRegistrationTests
             .Select(m => m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!.Replace("Permission:", string.Empty))
             .ToHashSet(StringComparer.Ordinal);
         Assert.Equal(keys.Order(StringComparer.Ordinal), allEnforced.Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// AC-20 (pack §11.1, §11.3, §14.4): two tenant pages under <c>/Warehouse/</c> (never <c>/Platform/</c> — the route derives the scope), in the
+    /// menu, and one action per real §11.3 button with its key; the action types are the Platform's own enum names (an unknown name silently
+    /// becomes Toolbar in the reconcile); only <c>warehouse.outbound-shipments.read</c> stays API-only.
+    /// </summary>
+    [Fact]
+    public void AC20_the_manifest_declares_the_two_S1_pages_and_one_action_per_button()
+    {
+        var manifest = new PutawayPickingPackingManifestProvider().GetManifest();
+
+        Assert.Equal(new[] { ("PUTAWAYTASKS", "/Warehouse/PutawayTasks", WarehousePermissions.PutawayTasksRead), ("WAREHOUSELOCATIONROLES", "/Warehouse/LocationRoles", WarehousePermissions.LocationRolesRead) },
+            manifest.Pages.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission)));
+        Assert.All(manifest.Pages, p =>
+        {
+            Assert.True(p.IsNavigationVisible);
+            Assert.Null(p.ParentPageCode);
+            Assert.DoesNotContain("/Platform/", p.RoutePath, StringComparison.OrdinalIgnoreCase);
+            Assert.All(p.Actions, a => Assert.Contains(a.ActionType, new[] { "Toolbar", "RowAction", "BulkAction" }));
+        });
+
+        var actions = manifest.Pages.SelectMany(p => p.Actions).ToDictionary(a => a.ActionCode, a => (a.PermissionKey, a.IsDangerous));
+        Assert.Equal(new Dictionary<string, (string, bool)>
+        {
+            ["PUTAWAY_TASK_CREATE"] = (WarehousePermissions.PutawayTasksCreate, false),
+            ["PUTAWAY_TASK_UPDATE"] = (WarehousePermissions.PutawayTasksUpdate, false),
+            ["PUTAWAY_TASK_ASSIGN"] = (WarehousePermissions.PutawayTasksUpdate, false),
+            ["PUTAWAY_TASK_CONFIRM"] = (WarehousePermissions.PutawayTasksConfirm, false),
+            ["PUTAWAY_TASK_RETRY"] = (WarehousePermissions.PutawayTasksConfirm, false),
+            ["PUTAWAY_TASK_RETURNED"] = (WarehousePermissions.PutawayTasksConfirm, false),
+            ["PUTAWAY_TASK_RESOLVE_INTEGRITY"] = (WarehousePermissions.PutawayTasksResolve, true),
+            ["PUTAWAY_TASK_CLOSE_SHORT"] = (WarehousePermissions.PutawayTasksConfirm, false),
+            ["PUTAWAY_TASK_CANCEL"] = (WarehousePermissions.PutawayTasksCancel, true),
+            ["PUTAWAY_TASK_CLAIM"] = (WarehousePermissions.PutawayTasksConfirm, false),
+            ["LOCATION_ROLE_CREATE"] = (WarehousePermissions.LocationRolesManage, false),
+            ["LOCATION_ROLE_UPDATE"] = (WarehousePermissions.LocationRolesManage, false),
+            ["LOCATION_ROLE_DELETE"] = (WarehousePermissions.LocationRolesManage, true),
+            ["LOCATION_ROLE_BULK_DELETE"] = (WarehousePermissions.LocationRolesManage, true)
+        }, actions);
+
+        Assert.Equal([WarehousePermissions.OutboundShipmentsRead], (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey));
     }
 
     [Fact]
