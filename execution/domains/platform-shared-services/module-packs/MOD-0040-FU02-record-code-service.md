@@ -19,7 +19,7 @@ backlog: BL-565
 rule: RCS-001
 consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217, MOD-0178
 contract_draft: docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md
-revision: r3 — bağımsız inceleme 02 KOŞULLU (0 ENGEL, 2 ORTA, 9 DÜŞÜK; hedef e49a67359, pack blob b18184f0, bulgu dosyası özeti 46aeb4a5) bulguları F-1…F-11 işlendi; r2 — inceleme 01 UYGUN DEĞİL (bulgu dosyası özeti 277fd253) bulguları ve sahip kararları K-8r, K-9…K-12 işlendi
+revision: r4 — bağımsız inceleme 03 KOŞULLU (0 ENGEL, 2 ORTA, 8 DÜŞÜK; hedef r3 pack sha256 010fe1c2, bulgu dosyası docs/records/reviews/MOD-0040-FU02/review-03-raw-2026-11-02.md) bulguları F-1…F-10 işlendi; r3 — bağımsız inceleme 02 KOŞULLU (0 ENGEL, 2 ORTA, 9 DÜŞÜK; hedef e49a67359, pack blob b18184f0, bulgu dosyası özeti 46aeb4a5) bulguları F-1…F-11 işlendi; r2 — inceleme 01 UYGUN DEĞİL (bulgu dosyası özeti 277fd253) bulguları ve sahip kararları K-8r, K-9…K-12 işlendi
 code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay satırı olmadan kod izni yoktur
 ---
 
@@ -31,6 +31,11 @@ code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay sat�
 > `ready-for-dev` olmadan hiçbir kod, yapılandırma, gizli bilgi ya da veri değişikliğini yetkilendirmez. Bir WP paketin
 > tamamını alamaz; dilim tablosundaki (Bölüm 23) bir ya da birkaç dilimi alır. DL-2 ve sonrası bu sürümde **kod izni
 > taşımaz** — her biri kendi paket revizyonu ve onayıyla açılır.
+>
+> **Revizyon r4 (2026-11-02).** Bağımsız inceleme 03 (hedef r3 pack sha256 `010fe1c2…8124`, kaynak `81864bd98`; bulgu
+> dosyası `docs/records/reviews/MOD-0040-FU02/review-03-raw-2026-11-02.md`) sonucu **KOŞULLU** (0 ENGEL, 2 ORTA, 8 DÜŞÜK).
+> Bulgular F-1…F-10 (CT kabulü 2026-11-02) tek yazar geçişinde işlendi; kapanış yerleri Bölüm 19.3'te
+> (`F-n@review-03-raw-2026-11-02`). r4 doğrulama incelemesine (04) gider.
 >
 > **Revizyon r3 (2026-10-30).** Bağımsız inceleme 02 (hedef `e49a67359`, pack blob `b18184f0…`; bulgu dosyası
 > `docs/records/reviews/MOD-0040-FU02/2026-10-30-b18184f0.md` @ `bbd30dd87`, özet `46aeb4a5…`) sonucu **KOŞULLU**
@@ -45,16 +50,20 @@ code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay sat�
 > kararı geri alındı (K-8r): aktör isteği yapan kullanıcıdır.
 >
 > **Kimlik (sahip kararı Beste 2026-10-30).** `parent = Blueprint MOD-0040 (Canonical ID & Correlation Standard)`,
-> **repodaki MOD-0040 / MOD-0040-FU01 takma adları değil.** `execution/registries/module-id-registry.md:136` satırındaki
-> MOD-0040 eski bir takma addır (Tenant Organization Foundation → MOD-0288) ve `:137` satırındaki MOD-0040-FU01 de eski
-> takma addır (→ MOD-0288-FU01); `:354` notu bu ayrımı yazar, `:353` notu ise eski anlamı hâlâ "reserved" diye anar
-> (A-12). Bu paket kayıt dosyasına **yazmaz**; önerilen satır Bölüm 0'dadır, satırı CT yazar.
+> **repodaki MOD-0040 / MOD-0040-FU01 takma adları değil.** `execution/registries/module-id-registry.md` tablosundaki
+> `MOD-0040` satırı eski bir takma addır (Tenant Organization Foundation → MOD-0288) ve `MOD-0040-FU01` satırı da eski
+> takma addır (→ MOD-0288-FU01); dosyanın "`MOD-0040` disambiguation (added 2026-08-09)" notu bu ayrımı yazar,
+> "`MOD-0040` is reserved for Tenant Organization Foundation…" notu ise eski anlamı hâlâ "reserved" diye anar (A-12).
+> Bu paket kayıt dosyasına **yazmaz**; önerilen satır Bölüm 0'dadır, satırı CT yazar.
 >
 > **Kaynak.** RCS-001 (`.antigravity/rules/record-coding-standard.md`, tamamı okundu), sahip kararları (Bölüm 0.1),
 > Treasury v0 çağrı sözleşmesi (KARAR D59/1, Y-8 — `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md:605-610`,
-> `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:80-85`). Bütün satır
-> numaraları `origin/main @ 6d49f5823` üzerinde numaralı okumayla ölçüldü (2026-10-30); çıkarım olan yerler "çıkarım"
-> ya da "CT önerisi" diye işaretlidir.
+> `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:80-85`). **Satır ölçüm
+> commit'i `81864bd98`** (r4, inceleme 03 F-10): satır numaraları ilk kez `origin/main @ 6d49f5823` üzerinde ölçüldü
+> (2026-10-30); 2026-11-02'de `git diff --stat 6d49f5823 81864bd98` atıf yapılan servis, Gateway ve kural dosyalarında
+> değişiklik göstermedi (yalnız kayıt dosyası değişti — onun notlarına artık metinle atıf yapılır), bu yüzden numaralar
+> `81864bd98`'de geçerlidir. r4'te eklenen atıflar dosya yolu + sembol adıyla yazılır (S-99). Çıkarım olan yerler
+> "çıkarım" ya da "CT önerisi" diye işaretlidir.
 
 ## 0. Kimlik ve ön kontrol (DCP-002)
 
@@ -72,10 +81,10 @@ code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay sat�
 
 `| MOD-0040-FU02 | Record Code Service | record-code-service | Follow-up | planned / reserved |  | MOD-0040 | platform-shared-services | Child of **Blueprint** MOD-0040 (Canonical ID & Correlation Standard, W-2) — NOT the repo alias row MOD-0040 (Tenant Organization Foundation → MOD-0288) nor MOD-0040-FU01 (→ MOD-0288-FU01). RCS-001 shared record-code service (BL-565). Pack: MOD-0040-FU02-record-code-service.md (draft). Owner decision Beste 2026-10-30. |`
 
-> ⚠ **Kayıt çözümleme riski (ölçüldü):** kayıt dosyasında `MOD-0040` satırı `Deprecated Alias → MOD-0288`'dir ve `:353`
-> notu "`MOD-0040` is reserved for Tenant Organization Foundation…" der. Ebeveyni kayıttan çözen bir araç ya da okuyucu
-> FU02'yi yanlışlıkla MOD-0288'e bağlayabilir. CT satırı yazarken ayrım notunu (`:354`) satıra da yazar ve `:353`'ü
-> düzeltir (A-12).
+> ⚠ **Kayıt çözümleme riski (ölçüldü):** kayıt dosyasında `MOD-0040` satırı `Deprecated Alias → MOD-0288`'dir ve
+> "`MOD-0040` is reserved for Tenant Organization Foundation…" notu hâlâ eski anlamı anar. Ebeveyni kayıttan çözen bir
+> araç ya da okuyucu FU02'yi yanlışlıkla MOD-0288'e bağlayabilir. CT satırı yazarken "`MOD-0040` disambiguation" notunu
+> satıra da yazar ve "reserved" notunu düzeltir (A-12).
 
 ## 0.1 Sahip kararları (bağlayıcı)
 
@@ -117,7 +126,7 @@ Diten.InventoryService (WMS) DL-8 ile bağlanır.
    DL-1'de tür izni geçtiyse 422, izinli çağıranı olmayan türde (`PLN`) 403 (K-11).
 4. Tür önek kaydı: kod kataloğu (RCS-001 §3 OTOMATİK türler + `AGR` + `PLN`), tür başına izinli kapsam, izinli
    çağıran ve gerekli kullanıcı izni; §3'e testle sabitlenir.
-5. İdempotency: `(kiracı, çağıran servis, idempotencyKey)` başına tek kod; gövde parmak iziyle.
+5. İdempotency: `(kiracı, çağıran servis, idempotencyKey)` başına tek kod; gövde alanlarının ayrı ayrı eşitliğiyle (Bölüm 4.2).
 6. Denetim: her yeni ayırma, ayırma defteriyle **aynı işlemde** merkezi denetim kutusuna yazılır (aktör kullanıcı, kaynak
    servis çağıran); kiracısı bilinen her ret ayrı kısa bir işlemle `Denied` / `Failed` yazılır.
 7. Kiracı izolasyonu: kiracı doğrulanmış kullanıcı token'ının `tenant_id`'si; bütün okuma/yazmalar **tam eşitlik**
@@ -180,20 +189,21 @@ Diten.InventoryService (WMS) DL-8 ile bağlanır.
 | Değer | `RecordCodeFormat` | biçimleme + doğrulama |
 | Enum | `RecordCodePrefixScope` | `LegalEntity = 1`, `Group = 2`, `Platform = 3` (JSON'da ad) |
 | Repository | `IRecordCodeCounterRepository` | `NextAsync(tenantId, prefix, recordType)` |
-| Repository | `IRecordCodeAllocationRepository` | `InsertAsync(session, tenantId, …)`, `FindByIdempotencyKeyAsync(tenantId, caller, key)`, `FindByIdAsync(tenantId, allocationId)`, `FindLatestPrefixForLegalEntityAsync(tenantId, legalEntityId)`, `ExistsPrefixForOtherLegalEntityAsync(tenantId, prefix, legalEntityId)` — güncelleme / silme / değiştirme yok |
+| Repository | `IRecordCodeAllocationRepository` | `InsertAsync(session, tenantId, …)` (idempotency index'inde E11000 → `RecordCodeIdempotencyConflictException`, Bölüm 8.6), `FindByIdempotencyKeyAsync(tenantId, caller, key)` (oturumlu ve oturumsuz), `FindLatestPrefixForLegalEntityAsync(tenantId, legalEntityId)`, `ExistsPrefixForOtherLegalEntityAsync(tenantId, prefix, legalEntityId)` — güncelleme / silme / değiştirme yok (r4: `FindByIdAsync` kaldırıldı — inceleme 03 F-3) |
+| İstisna (Domain) | `RecordCodeIdempotencyConflictException` | `MongoException` **değildir**; yürütücü onu 503'e çevirmeden iptal edip yeniden atar (Bölüm 8.6, r4 F-3) |
 | Repository | `IRecordCodeGroupPrefixRepository` | `GetAsync(tenantId)`, `AlignIfUnlockedAsync(tenantId, orgPrefix, …)`, `LockAsync(session, tenantId, prefix)` — silme yok |
 | Port (Application) | `ILegalEntityShortCodeReader` | sonuç: `Found(code, approvalStatus?)` · `NotFound` · `Unavailable(reason)` |
 | Komut | `AllocateRecordCodeCommand` | yazma komutu; `IAuditableCommand` değil (denetim işleyicide, Bölüm 21) |
-| Komut | `AlignRecordCodeGroupPrefixCommand` | gövdesiz; kiracı ayarını etkin belge `OrgPrefix`'ine hizalar; `IAuditableCommand` + `IAuditMetadataProvider` (yol a) |
+| Komut | `AlignRecordCodeGroupPrefixCommand` | gövdesiz; kiracı ayarını etkin belge `OrgPrefix`'ine hizalar; `IAuditableCommand` + `IAuditMetadataProvider` (yol a), `TargetTenantId` = rota kiracısı; depo çağrıları `TenantScope.Begin` içinde (Bölüm 4, r4 F-1) |
 | Sorgu | `GetRecordCodeGroupPrefixQuery` | yönetici ucu `GET` |
 | DTO | `RecordCodeAllocationResult` (`Code`, `Sequence`) | `RecordCodesModels.cs` |
 | API (iç) | `POST /api/internal/record-codes/allocate` | `InternalRecordCodesController`; Gateway'e açılmaz |
-| API (yönetici) | `PUT` (gövdesiz hizalama) / `GET /api/admin/tenants/{tenantId:guid}/record-code-group-prefix` | `TenantRecordCodeGroupPrefixController`; mevcut `/api/admin/tenants/{everything}` rotası |
+| API (yönetici) | `PUT` (gövdesiz hizalama) / `GET /api/admin/tenants/{tenantId:guid}/record-code-group-prefix` | `TenantRecordCodeGroupPrefixController`; `[Authorize(Policy = "PlatformAdminOnly")]` (r4 F-4); mevcut `/api/admin/tenants/{everything}` rotası |
 | Yapılandırma | `TrustedRecordCodeCredential` | tüketici başına kimlik bilgisi bağlaması; değer depoda yok |
 | Hız sınırlayıcı | `RecordCodeAllocateRateLimiter` | yürütücü içi `PartitionedRateLimiter`, bölüm (tüketici servis, kiracı); ASP.NET `AddRateLimiter` / `OnRejected` kullanılmaz (r3, F-5); değer A-16 |
 | Denetim yazıcısı (eklemeli) | `TransactionOwnedAuditIntent.SourceService` (isteğe bağlı), `TransactionOwnedAuditSourceServices` (izinli ad kümesi), `ITransactionalAuditRefusalWriter` (yeni arayüz, `CanonicalTransactionalAuditOutboxWriter` uygular) | K-9, K-10; r3 F-3, F-4 |
 | Denetim çağrısı | `RecordCodeAuditIntent.EnqueueAsync` / `.EnqueueRefusalAsync` | yeni belirteç; CT defter kararı (A-10) |
-| İzin | `platform.record-code-group-prefixes.read`, `platform.record-code-group-prefixes.update` | PKS-001 Tier 1; yalnız Platform aktörü |
+| İzin | `platform.record-code-group-prefixes.read`, `platform.record-code-group-prefixes.update` | PKS-001 Tier 1; yalnız `platform_admin` (`partner_admin` 403, r4 F-4) |
 | Frontend rota | — | yok (`shell: none`) |
 
 ## 4. Entity Fields
@@ -208,13 +218,47 @@ bu özellikte kullanılmaz. DL-4 kiracısız satırın tabanını ayrıca kararl
 yöntemi `Guid tenantId`'yi açık parametre olarak alır ve filtre **tam eşitliktir** `TenantId == tenantId`. Depo şu üç
 durumda `InvalidOperationException` atar ve hiçbir şey okumaz/yazmaz: (a) `tenantId == Guid.Empty`; (b)
 `ITenantContext.IsPlatformContext == true` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/ITenantContext.cs:10`,
-`SetPlatformContext` ile kurulan bağlam); (c) `tenantId ≠ ITenantContext.TenantId`. **Platform sentinel kimliği
-`00000000-0000-0000-0000-000000000001` reddedilmez:** bu kimlik aynı zamanda varsayılan / tohum iş kiracısıdır
-(`services/Diten.Platform/src/Diten.Platform.Domain/Entities/SystemTenantRules.cs:12`, `…/Persistence/Configurations/TenantSeed.cs:17`,
-`PositionSeed.cs:20`; AuthService'te varsayılan ve geliştirme kiracısı — CT ölçümü, inceleme 02); o kiracının
-`tenant_user` token'ıyla gelen istek her iş kiracısı gibi kod alır (AC-38). Platform yöneticisi token'ı zaten 403 alır
-(`actor_type ≠ tenant_user`, Bölüm 8.2). Kiracı değeri işleyiciye yürütücüden (token) gelir; komut DTO'sunda kiracı
-alanı yoktur.
+`SetPlatformContext` ile kurulan bağlam); (c) `tenantId ≠ ITenantContext.TenantId`. **Platform sistem kiracısı
+`00000000-0000-0000-0000-000000000001` reddedilmez.** Bu kimlik bir iş kiracısı **değildir** (r4, inceleme 03 F-10 ile
+düzeltildi): `SystemTenantRules.PlatformSystemTenantId` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/SystemTenantRules.cs`)
+tohumlanmış **Internal** platform sistem kiracısıdır (Code `PLATFORM`, ad "Platform Admin Tenant", `Status = Active`,
+`TenantType = Internal` — `…/Infrastructure/Persistence/Configurations/TenantSeed.cs` `EnsureSeededAsync`), platform
+yöneticilerinin ev kiracısıdır; AuthService'te aynı kimlik `PlatformSystemTenant.Id`
+(`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/PlatformSystemTenant.cs`) ve geliştirme ortamının
+`DevBypassTenantId`'sidir (`…/Diten.AuthService.Api/appsettings.Development.json`); Platform'un yalnız açıkça açılan
+geliştirme tohumu `PositionSeed.DefaultTenantId` olarak kullanır. Kiracı kaydı Active olduğundan ve `tenant_user` token'ı
+taşıyabildiğinden bu servis onu reddetmez; o kiracının `tenant_user` token'ıyla gelen istek kiracı kapsamlı her istek
+gibi kod alır (AC-38; inceleme 02 F-1 kararı değişmedi, yalnız gerekçe düzeltildi). Platform yöneticisi token'ı iç uçta
+403 alır (`actor_type ≠ tenant_user`, Bölüm 8.2; AC-44). Kiracı değeri işleyiciye yürütücüden (token) gelir; komut
+DTO'sunda kiracı alanı yoktur.
+
+**Yönetici ucu — rota kiracısında okuma/yazma (r4, inceleme 03 F-1).** `/api/admin/*` isteğinde
+`TenantResolutionMiddleware` (`services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs`,
+`IsAdminPath` dalı) `tenantContext.SetPlatformContext(Guid.Empty)` çağırır; bu bağlamda yukarıdaki (b) kuralı depoyu
+reddeder. Bu yüzden hizalama (`AlignRecordCodeGroupPrefixHandler`) ve okuma (`GetRecordCodeGroupPrefixHandler`) işleyicileri
+şu sırayı izler:
+
+1. Platform bağlamında rota kiracısını doğrular: `ITenantRegistryRepository.GetByIdAsync(Guid id, …)`
+   (`services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ITenantRegistryRepository.cs`); kayıt yok ya da
+   `IsDeleted` → 404, depo çağrılmaz. `Guid.Empty` rota değeri `{tenantId:guid}` kısıtından geçse de 404'tür.
+2. Doğrulanan kiracı için `using (TenantScope.Begin(_tenantContext, routeTenantId))`
+   (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/TenantScope.cs`, `Begin`) açar — bağlam
+   `SetTenant(routeTenantId)` ile kiracı bağlamına geçer (`IsPlatformContext = false`, `TenantId = routeTenantId`);
+   `IRecordCodeGroupPrefixRepository` çağrılarının hepsi bu bloğun içindedir ve `tenantId = routeTenantId` verir. Blok
+   kapanınca `TenantScope` anlık görüntüsü platform bağlamını (`SetPlatformContext(Guid.Empty)`) geri yükler
+   (`TenantScope.TenantSnapshot.RestoreTo`). `TenantScope.BeginPlatform` **kullanılmaz** (bağlamı platform bırakır).
+3. Denetim kaydı `AuditBehavior` (`…/Application/Contracts/Behaviors/AuditBehavior.cs`, `AppendAuditAsync`) tarafından
+   işleyiciden **sonra**, yani platform bağlamı geri yüklendikten sonra yazılır; komutun `GetAuditMetadata()`'sı
+   `TargetTenantId = routeTenantId` verir. `AuditService.ResolveTenantId`
+   (`…/Application/Features/Audit/AuditService.cs`) platform bağlamında `TenantId == Guid.Empty` iken bildirilen
+   `TargetTenantId`'yi kaydın sahibi yapar ("FIX-AUDIT-TARGET-EMPTY" dalı); `TargetTenantId` verilmezse ekleme "Audit tenant id
+   cannot be empty" ile reddedilir. Emsal: `ArchiveNotificationTemplateCommand` (`TargetTenantId: TenantId`).
+
+Emsal notu: platform bağlamındaki bir yönetici isteğinden `TenantScope.Begin` ile kiracı bağlamına geçen mevcut bir
+işleyici yoktur (ölçüldü, `services/Diten.Platform/src` içinde `TenantScope.Begin(` kullanımları iş akışı, arka plan işi ve
+güvenilir yürütücülerdir); bazı mevcut yönetici uçları depoya açık `tenantId` verip platform bağlamında yazar (ör.
+`ITenantModuleEntitlementRepository.GetByIdAsync(Guid tenantId, …)`) — bu özellik (b) kuralı gereği bunu yapmaz. Bu yolu
+AC-43 sabotajla ölçer.
 
 **Silme yok:** soft delete dahil hiçbir silme yolu yoktur — kod asla yeniden kullanılmaz (§5.8); `IsDeleted` daima
 `false`, `DeletedAt` uygulanmaz (gerekçe: silinebilir kayıt "arşivli kodu tekrar kullanma" kuralını zayıflatır).
@@ -240,8 +284,14 @@ devam etmesi) bu serviste r3'ten itibaren 409 ile durdurulur (Bölüm 8.13).
 | `TenantId` | Guid | evet | token kiracısı |
 | `CallerService` | string | evet | kimlik bilgisinin kapalı listedeki servis adı (Bölüm 8.2, ör. `Diten.FinanceTreasuryService`) |
 | `IdempotencyKey` | string | evet | Bölüm 12 (istemcinin anahtarı; yalnız bu defterde, kiracı + çağıran kapsamında tekil) |
-| `RequestFingerprint` | string | evet | SHA-256 hex: `recordType` `\n` `prefixScope` `\n` `legalEntityId` (`D` biçimi ya da boş) |
-| `RecordType`, `PrefixScope`, `LegalEntityId?`, `Prefix`, `Sequence` (long), `Code` | — | evet | `Prefix` koda bir kez yazılır (§5.2) |
+| `RecordType`, `PrefixScope`, `LegalEntityId?`, `Prefix`, `Sequence` (long), `Code` | — | evet | `Prefix` koda bir kez yazılır (§5.2); `PrefixScope` **varsayılan uygulanmış** değerdir (gövdede yoksa `LegalEntity`) |
+
+**İstek eşitliği (r4, inceleme 03 F-9).** r3'teki birleştirilmiş `RequestFingerprint` (SHA-256 metni) kaldırıldı;
+"aynı gövde" kuralı saklanan üç alanın **ayrı ayrı** karşılaştırılmasıdır (ortak bulgu §3 "birleştirilmiş metin"):
+`RecordType` sıralı (ordinal) eşit, `PrefixScope` enum değeri eşit — karşılaştırma **varsayılan uygulandıktan sonra**
+yapılır, yani `prefixScope` gönderilmeyen v0 gövdesi ile `"prefixScope": "LegalEntity"` gönderen gövde aynıdır —,
+`LegalEntityId` `Guid` olarak eşit (ikisi de boş ya da aynı değer; metin biçimi — büyük/küçük harf, `D` / `N` — karşılaştırmaya
+girmez, ayrıştırılan `Guid` karşılaştırılır). Koleksiyon yenidir; eski biçimde satır yoktur.
 | `OnBehalfOfUserId` | Guid | evet | token `sub` |
 | `CorrelationId` | string | evet | isteğin korelasyonu |
 | `AllocatedAtUtc` | DateTimeOffset | evet | UTC |
@@ -251,13 +301,13 @@ Index'ler: `ux_record_code_allocations_tenant_caller_key` `(TenantId, CallerServ
 `(TenantId, RecordType, Prefix, Sequence desc)` (DL-6 için); **r3 (inceleme 02 F-11):**
 `ix_record_code_allocations_tenant_le_time` `(TenantId, LegalEntityId, AllocatedAtUtc desc)` ve
 `ix_record_code_allocations_tenant_prefix_le` `(TenantId, Prefix, LegalEntityId)` — kısa kod kullanım kilidinin ara dönem
-denetimi için (Bölüm 8.13).
+denetimi için (Bölüm 8.13). Ayırma kimliğiyle arama yolu yoktur (r4 F-3: kutu `false` kurtarması kaldırıldı, Bölüm 8.6).
 
 ### 4.3 RecordCodeGroupPrefix — `record_code_group_prefixes` (kiracı ayarı)
 
 | Alan | Tip | Zorunlu | Kural |
 |---|---|---|---|
-| `TenantId` | Guid | evet | yönetici ucunun rota kiracısı (var olan, silinmemiş kiracı; yoksa 404); `Guid.Empty` ve platform bağlamı yasak (Bölüm 4) |
+| `TenantId` | Guid | evet | yönetici ucunun rota kiracısı (var olan, silinmemiş kiracı; yoksa 404); `Guid.Empty` ve platform bağlamı yasak — depo çağrısı `TenantScope.Begin(_tenantContext, routeTenantId)` içinde (Bölüm 4 "Yönetici ucu", r4 F-1); ilk `Group` ayırmasında kilit yazımı token kiracısının bağlamında (yürütücü) |
 | `GroupPrefix` | string | evet | **etkin belge `OrgPrefix`'inin kopyası** — elle girilmez; `^[A-Z]{2,5}$`, ASCII, normalleştirme yok |
 | `AlignedAtUtc` / `AlignedBy` | — | evet | son hizalamanın zamanı / Platform aktörü |
 | `LockedAtUtc` | DateTimeOffset? | hayır | ilk `Group` ayırması **aynı işlemde** yazar; doluysa değer kilitlidir |
@@ -292,8 +342,8 @@ arasındaki her sapmayı kırmızı yapar.
 
 | TÜR | Kayıt türü (RCS-001 §3) | Sınıf | Sahip modül | İzinli kapsam | İzinli çağıran (v1) | Kullanıcıda gerekli izin (F-4) |
 |---|---|---|---|---|---|---|
-| `ORG` | Organizasyon Birimi | OTOMATİK | MOD-0288 | LegalEntity (A-8) | yok (DL-2) | DL-2'de |
-| `POS` | Pozisyon (kadro) | OTOMATİK | MOD-0288 | LegalEntity (A-8) | yok (DL-2) | DL-2'de |
+| `ORG` | Organizasyon Birimi | OTOMATİK | MOD-0288 | **DL-1'de boş küme**; karar A-8 (öneri LegalEntity), DL-2 başlamadan | yok (DL-2) | DL-2'de |
+| `POS` | Pozisyon (kadro) | OTOMATİK | MOD-0288 | **DL-1'de boş küme**; karar A-8 (öneri LegalEntity), DL-2 başlamadan | yok (DL-2) | DL-2'de |
 | `PAY` | Ödeme Partisi | OTOMATİK | MOD-0126 | LegalEntity | FinanceTreasury | `finance-treasury.payment-batches.create` |
 | `APD` | AP Belgesi | OTOMATİK | MOD-0119 | LegalEntity | FinanceTreasury | `finance-treasury.ap-invoices.create` |
 | `ARI` | AR Alacak Faturası | OTOMATİK | MOD-0120 | LegalEntity | FinanceTreasury | `finance-treasury.receivable-invoices.create` |
@@ -311,6 +361,9 @@ arasındaki her sapmayı kırmızı yapar.
 Katalogda olmayan her değer — KALSIN (`ACC`, `CMP`, `GP`, `GS`, `LS`, `FG`, `IT`, `UID`), İKİSİ DE (`TTY`, `PFL`,
 `PRG`, `PRJ`, `INI`, `INV`), eski `CTR`, WMS'in henüz §3'te olmayan `PUT` / `PCK` / `OUT` / `PKG`'si — 422
 `RECORD_TYPE_UNKNOWN`. `ORG`, `POS`, `PLN` katalogdadır ama izinli çağıranı yoktur: HTTP'den 403 `RECORD_CODE_FORBIDDEN`.
+`ORG` / `POS` için izinli kapsam DL-1 kataloğunda **boş kümedir** (r4, inceleme 03 F-7): açık karar A-8 DL-1'e sabitlenmez;
+izinli çağıranı olmadığı için kapsam adımına (Bölüm 8.5 adım 10) hiç gelinmez. Kapsam DL-2 paket revizyonunda A-8 kararıyla
+yazılır.
 
 ## 5. Repo Scope
 
@@ -388,6 +441,7 @@ Domain (`services/Diten.Platform/src/Diten.Platform.Domain/`):
 - N `Enums/RecordCodes/RecordCodePrefixScope.cs`
 - N `Features/RecordCodes/RecordCodeTypeCatalog.cs`
 - N `Features/RecordCodes/RecordCodeFormat.cs`
+- N `Features/RecordCodes/RecordCodeIdempotencyConflictException.cs` (r4 F-3)
 - N `Repositories/IRecordCodeRepositories.cs`
 
 Infrastructure (`services/Diten.Platform/src/Diten.Platform.Infrastructure/`):
@@ -412,7 +466,7 @@ Testler (`services/Diten.Platform/tests/Diten.Platform.Application.Tests/`):
 - N `RecordCodes/RecordCodeAllocationMongoTests.cs`
 - N `RecordCodes/RecordCodeTenantIsolationMongoTests.cs`
 - N `RecordCodes/RecordCodeAuditDeliveryMongoTests.cs`
-- N `RecordCodes/RecordCodeActorProbeHttpTests.cs` — DL-1'in **ilk adımı** (AC-41)
+- N `RecordCodes/RecordCodeActorProbeHttpTests.cs` — DL-1'in **ilk commit grubu** (AC-41; asgari yol Bölüm 16 AC-41)
 - N `RecordCodes/InternalRecordCodesHttpTests.cs`
 - N `RecordCodes/TrustedRecordCodeRequestExecutorRefusalTests.cs`
 - N `RecordCodes/RecordCodeAllocateRateLimiterTests.cs`
@@ -463,7 +517,8 @@ sabitleri (A-10); `.antigravity/rules/record-coding-standard.md` §3 (A-3, Ali +
 | Treasury ve MDM izin anahtarları (Bölüm 4.4) | MOD-0018-FU27 taslağında | adlar FU27 onayıyla kesinleşir (A-11) |
 | Platform Mongo işlemi (replica set) | var — `PlatformTransactionExecutor.cs`, `IPlatformTransactionSession` | gerekli |
 | Denetim kutusu kapısı `CanonicalTransactionalAuditOutboxWriter` | var (`:37-186`); aktör principal'dan (`:156-185`); `SourceService` sabit (`:39`, `:138`); `Outcome` sabit `Succeeded` (`:131`); kayıt Application DI `:329-330` | **eklemeli genişletme** (Bölüm 5) |
-| `audit_outbox` tekillik index'i | `ux_audit_outbox_idempotency_key` **küresel tekil** (`…/Persistence/Schema/PlatformSchemaManifest.AccessGovernance.cs:118-120`); çakışmada depo `false` döner (`…/Persistence/Repositories/AuditOutboxRepository.cs:159-161`) | anahtar istemci anahtarından türetilmez (Bölüm 8.6, r3 F-2) |
+| `audit_outbox` tekillik index'i | `ux_audit_outbox_idempotency_key` **küresel tekil** (`…/Persistence/Schema/PlatformSchemaManifest.AccessGovernance.cs:118-120`); işlem içi yolda çakışmada depo `false` döner (`…/Persistence/Repositories/AuditOutboxRepository.cs`, `TryInsertAsync(IPlatformTransactionSession session, AuditOutboxWriteRequest request, …)` — r4, inceleme 03 F-3 ile düzeltildi; r3'ün `:159-161` atfı oturumsuz `private TryInsertAsync(AuditOutboxMessage message, …)` yolundaydı) | anahtar istemci anahtarından türetilmez (Bölüm 8.6, r3 F-2); `false` = değişmez ihlali → 503 (Bölüm 8.6, r4 F-3) |
+| Platform işlem yürütücüsü `PlatformTransactionExecutor.ExecuteAsync` (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/PlatformTransactionExecutor.cs`) | gövde yalnız geçici hatada (`TransientTransactionError` etiketi ya da `MongoCommandException` kod 112) yeni oturumla yeniden koşar (`MaximumBodyAttempts = 3`); commit yalnız `UnknownTransactionCommitResult`'ta **aynı oturumda** yenilenir, gövde tekrar koşmaz (`MaximumCommitAttempts = 3`); geçici olmayan her `MongoException` (E11000 dahil) `PlatformTransactionUnavailableException`'a çevrilir; `MongoException` olmayan istisna iptalden sonra olduğu gibi yeniden atılır; test sondası `IPlatformTransactionFaultProbe` (`BeforeCommitAsync` / `AfterCommitAsync`) | değişmez; Bölüm 8.6'daki kurtarma yolları bu davranışa göre yazıldı (r4 F-3) |
 | Yeni belirteç kabulü (`platform-islem-ici` iz satırına `RecordCodeAuditIntent.*`) | defterde yok (`tests/architecture/audit-ledger/Diten.Platform.md:8-17`) | **DL-1 main'e girmeden önce CT kararı** (A-10) |
 | Kiracı durumu | `GetTenantStatusQuery` — yalnız `TenantStatus.Active` canlı (`…/Features/Tenants/Handlers/GetTenantStatusQueryHandler.cs:18-29`) | gerekli (askıdaki kiracı) |
 | Hız sınırlayıcı | `System.Threading.RateLimiting` (çerçeve); `PeopleSearchRateLimit` emsali yalnız okunur, kullanılmaz | gerekli; değer A-16 |
@@ -472,6 +527,9 @@ sabitleri (A-10); `.antigravity/rules/record-coding-standard.md` §3 (A-3, Ali +
 | RCS-001 §3 `AGR` satırı + izinli kapsam sütunu | §3 bugün `CTR` (`record-coding-standard.md:70`) | DL-1'i bekletmez: katalog testinde adlı tek istisna; DL-7'de kalkar (A-3) |
 | Tüketici kimlik bilgileri (`FinanceTreasury`, `Mdm`) | yok | uçtan uca kabul için gerekli; değerler ortam gizli bilgisi, depoda yok |
 | BL-501 ortak iletici | MOD-0178 §8.8: olduğu gibi | **kullanılmaz** — bu komut Platform içindedir |
+| **DL-5 bağımlılığı** — RCS-001 §5.4 kısa kod kalıcı kullanım kilidi ve kısa kod önerisi (MDM kodu) | MDM `UpdateLegalEntityHandler` kısa kodu bugün değiştirebiliyor (Bölüm 8.13) | **bu paketin kodu değil** (r4, inceleme 03 F-8). Bağlı paket: **MOD-0220** (`execution/domains/master-data-management/module-packs/MOD-0220-legal-entity-foundation.md`, künye `owner: mdm-domain-team`); işin MOD-0220'nin yeni revizyonu mu yoksa bir FU'su mu olacağı **TBD** — kimliği MOD-0220 sahibi DCP-002 ön kontrolüyle verir. Sahip rolü: MDM sahibi (paket kararı: Ali) + Beste (Platform tarafı); karar A-18. DL-1'i bekletmez |
+| **DL-7 bağımlılığı** — RCS-001 §3 `CTR` → `AGR` satırı ve tür başına izinli kapsam sütunu | §3 bugün `CTR` | **bu paketin kodu değil** (r4 F-8). Bağlı paket: **yok** — değişiklik `.antigravity/rules/record-coding-standard.md` kural dosyasıdır (korunan yol, AGENTS.md §4, kullanıcı onayı); ayrı paket gerekip gerekmediği **TBD** (CT). Sahip rolü: `.antigravity` sahibi (Ali) + Treasury PR'ı; karar A-3. DL-1'i bekletmez |
+| **DL-9 bağımlılığı** — arka plan çağıranları için servis kimliği token'ı (P3) | Auth servis kimliği token'ı bugün yalnız `Diten.MDM` hedef kitlesine verilir (`ServiceIdentityTokenAudiencePolicy`) | **bu paketin kodu değil** (r4 F-8). Bağlı paket: **MOD-0033-FU02** Service Identity Token Issuance Foundation (`execution/domains/platform-shared-services/module-packs/MOD-0033-FU02-service-identity-token-issuance-foundation.md`, `service: Diten.AuthService`, `status: review`); Platform kayıt kodu hedef kitlesinin onun revizyonu mu yeni FU'su mu olacağı **TBD** (kimlik uydurulmaz). Sahip rolü: künyedeki `auth-security-owner` / `api-consumer-credential-owner` + Ali (Auth) + Beste (Platform yürütücüsünün P3'ü kabulü). DL-1'i bekletmez |
 
 ### 7.1 Tüketici yükümlülükleri (tüketici paketlerine yazılır; bu paketin AC'si değildir)
 
@@ -497,8 +555,11 @@ defterindeki `Prefix` alanı verilmiş kodun parçasıdır, kısa kod tablosu de
 - Diten.Platform, port **5057** (AGENTS.md §3). Uç yalnız `/api/internal/*`; Platform `TenantResolutionMiddleware` bu yolu
   atlar (`InternalAuditController.cs:13`) — kiracıyı ve kiracı durumunu yürütücü kurar/denetler.
 - Gövde ≤ **4 KB** → aşarsa 413 `RECORD_CODE_REQUEST_TOO_LARGE`.
-- Zaman bütçesi: MDM okuması **3 s** (`MdmLegalEntityReferenceValidator.cs:52-57` yorumu, WorkingCalendar emsali), isteğin
-  tamamı **5 s**; dolarsa 503. Sözleşme 503 der; emsallerin 504'ü kullanılmaz.
+- Zaman bütçesi: MDM okuması **3 s** — emsal `WorkingCalendarLegalEntityValidator.TotalTimeout = TimeSpan.FromSeconds(3)`
+  (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/Mdm/WorkingCalendarLegalEntityValidator.cs`).
+  r3 bunu yanlış sınıfa bağlıyordu (r4, inceleme 03 F-10): `MdmLegalEntityReferenceValidator.TotalTimeout` **5 s**'dir ve bu
+  özellikte örnek alınmaz (yalnız sınıf yorumu WorkingCalendar emsalini anar). İsteğin tamamı **5 s**; dolarsa 503. Sözleşme
+  503 der; emsallerin 504'ü kullanılmaz.
 
 ### 8.2 İç uç kimliği — P2 (K-8r, K-12 e) ve kimlik bilgisi sızmasına karşı azaltıcılar (F-4)
 
@@ -522,7 +583,7 @@ ve kullanıcı token'ı taşımaz → DL-9. **Seçim P2** (MOD-0018-FU21 deseni;
 | Bağlamanın `ConsumerService` / `AllowedAudience`'ı ya da hedef kitle başlığı uyuşmuyor | `:76-80` (`Denied`) | 403 `RECORD_CODE_FORBIDDEN` |
 | `X-Tenant-Id` başlığı var | `TrustedLegalEntityScopeJwtContext.cs:11-16` (`Forbidden` = kimliği doğrulanmış sayılır, `ITrustedLegalEntityScopeJwtContext.cs:20-21`) | 403 `RECORD_CODE_FORBIDDEN` |
 | Kullanıcı token'ı yok / geçersiz / süresi dolmuş | `:18-22` | 401 `RECORD_CODE_UNAUTHENTICATED` |
-| Token'da tam bir `tenant_id` / `sub` yok, Guid değil, boş, ya da `actor_type ≠ tenant_user` | `:25-38` | 403 `RECORD_CODE_FORBIDDEN` |
+| Token'da tam bir `tenant_id` / `sub` yok, Guid değil, boş, ya da `actor_type ≠ tenant_user` (`platform_admin` ve `partner_admin` token'ı dahil — AC-44, r4 F-4) | `:25-38` | 403 `RECORD_CODE_FORBIDDEN` |
 | Hız sınırı aşıldı | yeni (r3 F-5) | 429 `RECORD_CODE_RATE_LIMITED` |
 | Kiracı aktif değil (askıda, sağlanıyor, devre dışı, yok) | yeni (inceleme 01 F-12) | 403 `RECORD_CODE_TENANT_NOT_ACTIVE` |
 | Tür bu kimlik bilgisinin izinli kümesinde değil | FU21 `AllowsPair` emsali `:68-72` | 403 `RECORD_CODE_FORBIDDEN` |
@@ -536,7 +597,7 @@ ve `HttpContext.User`'ı doğrulanmış principal'a ayarlar; bu, MediatR işleyi
 `ITenantAuthorizationContext`'i çözülmeden **önce** olur (o bağlam principal'ı kurucusunda okur —
 `…/Infrastructure/Authorization/JwtTenantAuthorizationContext.cs:24`; emsal: iş akışı yürütücüsü principal'ı dispatch'ten
 önce ayarlıyor, `TrustedWorkflowConsumerRequestExecutor.cs:126-138`). Aktörün gerçekten `TenantUser` + `sub` çıktığı
-DL-1'in **ilk adımında** gerçek HTTP ana makinesinde üretim yazıcısıyla ölçülür (AC-41); ölçüm başarısızsa DL-1 durur ve
+DL-1'in **ilk commit grubunda** gerçek HTTP ana makinesinde üretim yazıcısıyla ölçülür (AC-41); ölçüm başarısızsa DL-1 durur ve
 paket revizyonuna döner.
 
 **Kaynak servis kapalı listesi (K-9; r3 inceleme 02 F-4).** Kimlik bilgisi bağlaması → servis adı:
@@ -619,12 +680,13 @@ sınırı `RecordCodes:RateLimit:PermitsPerMinute`. Sırlar ortam değişkeni / 
 (tüketici servis, kiracı) → 429 `RECORD_CODE_RATE_LIMITED`. 4. Kiracı aktif mi → 403 `RECORD_CODE_TENANT_NOT_ACTIVE`.
 5. Gövde → 400 `RECORD_CODE_REQUEST_INVALID`. 6. Tür katalogda mı → 422 `RECORD_TYPE_UNKNOWN`. 7. Tür bu kimlik bilgisine
 izinli mi → 403 `RECORD_CODE_FORBIDDEN`. 8. Kullanıcıda türün izni var mı → 403 `RECORD_CODE_PERMISSION_MISSING`.
-9. **İdempotency** `(TenantId, CallerService, IdempotencyKey)`: kayıt varsa parmak izi eşit → **200 aynı kod + sequence**
+9. **İdempotency** `(TenantId, CallerService, IdempotencyKey)`: kayıt varsa `RecordType`, varsayılan uygulanmış
+`PrefixScope` ve `LegalEntityId` alan alan eşit (Bölüm 4.2) → **200 aynı kod + sequence**
 (sayaç, MDM, yeni denetim yok); değil → 400 `IDEMPOTENCY_KEY_REUSED`. 10. Kapsam kuralları → 422 `RECORD_CODE_SCOPE_INVALID`
 (DL-1'de `Platform` bu adımda reddedilir). 11. Önek: Group → kiracı ayarı (yoksa 409 `GROUP_PREFIX_MISSING`; etkin belge
 `OrgPrefix`'ten farklıysa 409 `GROUP_PREFIX_MISMATCH`); LegalEntity → MDM (Bölüm 8.3), ardından kısa kod kullanım
 denetimi (Bölüm 8.13; 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`). 12. Sayaç `$inc` (depo hatası → 503 `RECORD_CODE_UNAVAILABLE`).
-13. **Tek işlem** (Bölüm 8.6) → 200.
+13. **Tek işlem** (Bölüm 8.6; gövdenin ilk işi anahtarın oturumlu yeniden okunması) → 200.
 
 Yetki (7–8) idempotency'den (9) önce gelir: izni olmayan kullanıcı başkasının anahtarını tekrarlayarak kod okuyamaz.
 **Tür izni (7) kapsamdan (10) önce gelir:** izinli çağıranı olmayan bir tür (`ORG`, `POS`, `PLN`) hangi kapsamla
@@ -642,17 +704,41 @@ istenirse istensin 403 alır; ör. `PLN` + `Platform` → 403 `RECORD_CODE_FORBI
   - başarılı ayırma: `record-code:allocated:{allocationId:N}` — `allocationId` defter satırının kimliğidir, her ayırma
     denemesinde yeni Guid;
   - ret kaydı: `record-code:refused:{Guid.NewGuid():N}` — her ret için yeni Guid.
-- **`TryInsertAsync` `false` dönerse** (depo E11000'i `false`'a çevirir, `AuditOutboxRepository.cs:159-161`): anahtar
-  `allocationId`'den türediği için bu yalnız **aynı ayırmanın** kutu satırı daha önce yazılmışsa olur (commit sonucu
-  bilinmeyen bir denemenin tekrarı). Kural: işlem iptal edilir (MongoDB işlem içindeki yazım hatasında işlemi iptal eder —
-  sürücü davranışı, bu repoda ölçülmedi), ardından defter `allocationId` ile okunur: satır varsa **zaten yazılmıştır** →
-  200 o satırın kodu ve sequence'i (503 değil); satır yoksa (yalnız başka bir yazarın anahtar çakışmasında mümkün) 503
-  `RECORD_CODE_UNAVAILABLE` + **hata** logu. Ret yolunda `false` → uyarı logu, cevap değişmez.
-- **Geçici çakışma:** `TransientTransactionError` / `WriteConflict` → işlem en çok **3** kez, 5 s bütçe içinde yeniden
-  denenir. **Aynı istemci anahtarı yarışı:** defterde `(TenantId, CallerService, IdempotencyKey)` E11000 → işlem iptal,
-  kazanan satır okunur, parmak izi eşitse 200 (kazananın kodu), değilse 400. **503 yalnız gerçek erişilemezlikte**
-  (bağlantı yok, bütçe doldu, yeniden denemeler tükendi).
-- **Boşluk üst sınırı:** aynı anahtarla eşzamanlı **N** istek en çok **N−1** sayaç numarası harcar; hepsi aynı kodu alır.
+- **Yürütücü gerçeği (r4, inceleme 03 F-3; Bölüm 7 satırı).** `PlatformTransactionExecutor.ExecuteAsync` gövdeyi yalnız
+  geçici hatada yeni oturumla yeniden koşar, commit'i yalnız `UnknownTransactionCommitResult`'ta aynı oturumda yeniler
+  (gövde tekrar koşmaz) ve geçici olmayan her `MongoException`'ı — E11000 dahil — `PlatformTransactionUnavailableException`'a
+  (→ 503) çevirir. Bütün kurtarma yolları buna göre yazılır:
+- **`allocationId` her gövde denemesinde yeni Guid'dir** ve kutu anahtarı ondan türer. İptal edilen bir deneme hiçbir şey
+  bırakmaz; commit yenilemesi aynı satırları yeniden yazmaz. Bu yüzden işlem içi `TryInsertAsync` `false`
+  (`AuditOutboxRepository.TryInsertAsync(IPlatformTransactionSession …)`, E11000 → `false`) üretim yürütücüsüyle
+  **erişilemez bir değişmez ihlalidir** (yalnız başka bir yazarın aynı anahtarı kullanmasında olur). r3'ün "kutu `false` →
+  defteri `allocationId` ile oku → 200" kurtarması **kaldırıldı**: `false` → işleyici `InvalidOperationException` atar
+  (emsal `PhysicalEntitlementAuditIntent.EnqueueAsync`, `!inserted` dalı), işlem iptal, 503 `RECORD_CODE_UNAVAILABLE` + **hata**
+  logu, defter satırı yok, kod yok. Ret yolunda `false` → uyarı logu, cevap değişmez.
+- **Commit sonucu bilinmiyor:** yürütücü commit'i en çok 3 kez yeniler; biri başarılıysa 200. Yenilemeler tükenirse 503
+  `RECORD_CODE_UNAVAILABLE` — işlem commit olmuş **ya da** olmamış olabilir (ortak bulgu §5). Tüketici **aynı**
+  `idempotencyKey` ile yeniden dener (TC-2): commit olmuşsa adım 9 defter satırını bulur → 200 aynı kod; olmamışsa bu
+  istek bir tekrar değil **ilk yazımdır** → yeni ayırma, yeni kod (önceki denemenin aldığı sayaç numarası boşluk kalır).
+- **Aynı istemci anahtarı yarışı — üç ayrı durum** (ortak bulgu §3 "her durum ayrı yazılır"):
+  1. *İlk okumada bulunan tekrar:* adım 9 (`FindByIdempotencyKeyAsync`, oturumsuz) kazananın commit olmuş satırını bulur →
+     alan alan eşitse 200 kazananın kodu, değilse 400; sayaç, MDM, defter, denetim yazımı yok.
+  2. *İşlem içi örtüşme (kazanan henüz commit olmamış):* iki işlem aynı unique anahtara yazınca MongoDB geç gelene
+     `WriteConflict` döner (çıkarım: sürücü/sunucu davranışı, bu repoda ölçülmedi — test bunu ölçer) → yürütücü gövdeyi yeni
+     oturumla yeniden koşar. **Gövdenin ilk işi** `FindByIdempotencyKeyAsync(session, …)` ile anahtarı yeniden okumaktır;
+     kazanan o arada commit olduysa satır bulunur → gövde defter/denetim yazmadan kazananın kodunu döner (eşitse 200, değilse
+     400). Yürütücü denemeler arasında beklemez; kazananın commit'i üç denemeden uzun sürerse gövde denemeleri tükenir →
+     503 `RECORD_CODE_UNAVAILABLE`, tüketici aynı anahtarla yeniden dener ve durum 1'e düşer (200 aynı kod). Bu, kabul
+     edilen bir sınırdır; yürütücüye bekleme eklenmez (paylaşılan altyapı, bu paketin kapsamı dışı).
+  3. *Geç gelen (kazanan, bu isteğin adım 9 okumasından sonra commit oldu):* defter eklemesi E11000 alır. Depo bunu
+     `MongoException` olarak sızdırmaz: `ux_record_code_allocations_tenant_caller_key` E11000'ini
+     `RecordCodeIdempotencyConflictException`'a çevirir (MDM `CodeReservationRepository` "E11000'de kazananı oku" deseni);
+     yürütücü bu istisnayı 503'e çevirmeden iptal edip yeniden atar (`catch` → `AbortIfActiveAsync` → `throw`). İşleyici onu
+     yürütücünün dışında yakalar, kazananı oturumsuz okur → eşitse 200 kazananın kodu, değilse 400. Başka bir index'teki
+     E11000 (ör. `(TenantId, Code)`) bu istisnaya çevrilmez → 503 + hata logu.
+  Her üç durumda defterde tek satır ve tek başarı denetim satırı kalır. **503 yalnız gerçek erişilemezlikte** (bağlantı yok,
+  bütçe doldu, yeniden denemeler tükendi).
+- **Boşluk üst sınırı:** aynı anahtarla eşzamanlı **N** istek en çok **N−1** sayaç numarası harcar (sayaç adım 12'de, işlem
+  dışında alınır); hepsi aynı kodu alır.
 - Farklı anahtarlı eşzamanlı istekler aynı sayaçta farklı numara alır; sayaç işlem dışında olduğu için sıcak sayaçta işlem
   çakışması doğmaz.
 
@@ -782,7 +868,11 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
 - **İki kiracı aynı istemci anahtarıyla** — ikisi de kendi kodunu alır; denetim kutusu anahtarları çakışmaz (ayırma kimliğinden).
 - **Önce ret, sonra aynı anahtarla başarı** (ör. önce 409, MDM düzeltilince tekrar) — başarılı ayırma 200; ret ve başarı
   kayıtları ayrı satırlardır (ret anahtarı yeni Guid).
-- **Commit sonucu bilinmeyen deneme tekrarı** — kutu `false` → defter `allocationId` ile okunur → 200 aynı kod; 503 değil.
+- **Commit sonucu bilinmiyor** (r4 F-3) — yürütücü commit'i yeniler, başarılıysa 200; tükenirse 503; aynı anahtarla tekrar:
+  commit olmuşsa 200 aynı kod, olmamışsa yeni ayırma (ilk yazım).
+- **İşlem içi kutu `false`** (değişmez ihlali, yalnız sahte depoyla zorlanabilir) — 503 `RECORD_CODE_UNAVAILABLE` + hata logu;
+  defter satırı yok.
+- **v0 gövdesi, sonra aynı anahtarla açık `"prefixScope": "LegalEntity"`** (r4 F-9) — 200 aynı kod; 400 değil.
 - **Eşzamanlı farklı anahtarlar** — hepsi farklı kod; ilk sayaç yaratma yarışı 500 üretmez.
 - **Tanımsız / KALSIN tür** — 422 `RECORD_TYPE_UNKNOWN`; sayaç yaratılmaz.
 - **Tür kimlik bilgisine izinsiz** (Mdm ile `PAY`; herkes için `ORG`/`POS`/`PLN`, hangi kapsamla olursa olsun) — 403 `RECORD_CODE_FORBIDDEN`; `Denied`.
@@ -800,7 +890,10 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
 - **Mongo erişilemez / işlem tükenir** — 503 `RECORD_CODE_UNAVAILABLE`; kod yok; alınmış sayaç numarası boşluk kalır.
 - **Denetim kutusu satırı yazılamaz (bağlantı)** — işlem iptal, 503; defter satırı yok.
 - **Kapıya küme dışı kaynak servis adı** — istisna, hiçbir şey yazılmaz.
-- **Yetkisiz aktör** — Bölüm 8.2 tablosu; işleyici çağrılmaz.
+- **Yetkisiz aktör** — Bölüm 8.2 tablosu; işleyici çağrılmaz. İç uçta `platform_admin` / `partner_admin` token'ı 403
+  `RECORD_CODE_FORBIDDEN`; yönetici ucunda `partner_admin` 403 (`PlatformAdminOnly`) — AC-44 (r4 F-4).
+- **Yönetici ucu platform bağlamında depoya gider** (`TenantScope.Begin` unutulmuş) — depo istisnası; ayar yazılmaz; AC-43
+  bunu kırmızı yapar (r4 F-1).
 - **Gövdede kiracı ya da kaynak servis** — 400; kiracı ve kaynak servis değişmez.
 - **Hız sınırı** — 429 `RECORD_CODE_RATE_LIMITED`; başka kiracının kovası etkilenmez.
 - **Sayaç sınırı** — `…-999999`, sonra `…-1000000`.
@@ -816,9 +909,16 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
   yürütücü kullanıcının **türe özgü oluşturma iznini** ister (Bölüm 4.4).
 - **Aktör:** denetimde `TenantUser` (iletilen token'ın `sub`'ı), kaynak servis kapalı listeden (K-8r, K-9).
 - **İzinli çağıran × tür:** Bölüm 8.2 tablosu.
-- **Yönetici ucu (gövdesiz hizalama):** `[Authorize(Policy = "PlatformActor")]` (`Controllers/Admin/TenantsController.cs:15-16`
-  emsali), `[HasPermission("platform.record-code-group-prefixes.update")]` (PUT) ve `...read` (GET); aktör `platform_admin`.
-  Kiracı kullanıcısı 403. Değer yönetici tarafından girilmez; etkin belge `OrgPrefix`'inden kopyalanır (Bölüm 4.3).
+- **Yönetici ucu (gövdesiz hizalama):** `[Authorize(Policy = "PlatformAdminOnly")]` (r4, inceleme 03 F-4) —
+  `PlatformActor` **kullanılmaz**: o politika `partner_admin`'i de kabul eder (`AddPlatformActorPolicies`,
+  `services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs`: uç `IPartnerAdminAllowed` taşıyorsa
+  ortak yöneticiyi, taşımıyorsa yalnız kaydı doğrulanmış platform yöneticisini alır). `PlatformAdminOnly` yalnız kaydı canlı
+  ve ortak kaydı olmayan `platform_admin`'i kabul eder (`IsConfirmedPlatformAdministratorAsync`); emsal
+  `TenantsController.RegisterTenant` / `DeleteTenant`. Controller `[PartnerAdminScope]` taşımaz. Ayrıca
+  `[HasPermission("platform.record-code-group-prefixes.update")]` (PUT) ve `...read` (GET). `partner_admin` 403, kiracı
+  kullanıcısı 403 (ara katman `IsAdminPath` dalı). Değer yönetici tarafından girilmez; etkin belge `OrgPrefix`'inden
+  kopyalanır (Bölüm 4.3). Rota kiracısında okuma/yazma `TenantScope.Begin` içinde, denetim `TargetTenantId` ile (Bölüm 4
+  "Yönetici ucu", r4 F-1).
 
 ## 15. Gateway / API Routing Decision
 
@@ -831,7 +931,7 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
 
 ## 16. Acceptance Criteria
 
-**DL-1 — v1 servis (K-2).** Her maddenin sabotajı maddenin içindedir. Madde 25 DL-4'e aittir (K-11). Madde 41 DL-1'in ilk adımıdır.
+**DL-1 — v1 servis (K-2).** Her maddenin sabotajı maddenin içindedir. Madde 25 DL-4'e aittir (K-11). Madde 41 DL-1'in ilk commit grubudur (r4 F-6).
 
 - [ ] AC-1 (zorunlu) — Uç yalnız `POST /api/internal/record-codes/allocate`'tır; 401 / 403 eşlemesi Bölüm 8.2 tablosuyla birebirdir (başlık eksik/çift, iptal edilmiş kimlik bilgisi, yanlış sır, token yok/geçersiz → 401 `RECORD_CODE_UNAUTHENTICATED`; geçersiz yapılandırma, yanlış hedef kitle ya da tüketici, `X-Tenant-Id`, eksik token iddiaları → 403 `RECORD_CODE_FORBIDDEN`) ve her retle işleyici hiç çağrılmaz; `InternalRecordCodesController` `LoginOnlyEndpointGuardTests.AnonymousInternalControllers` listesindedir.
   Sabotaj: yürütücüdeki her ret dalı tek tek kaldırılınca `TrustedRecordCodeRequestExecutorRefusalTests`'ten adı konmuş bir test kırmızı; iptal edilmiş kimlik bilgisi 403'e çevrilince eşleme testi kırmızı.
@@ -841,16 +941,16 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
   Sabotaj: dolgu 5'e indirilince ya da varsayılan kapsam kaldırılınca biçim / HTTP testi kırmızı.
 - [ ] AC-4 (zorunlu) — Gerçek Mongo'da aynı `(kiracı, MYG, PAY)` için farklı anahtarlı 50 eşzamanlı ayırma 50 farklı kod ve 50 farklı sequence üretir; sayaç belgesi yokken başlayan ilk yarış 500 üretmez.
   Sabotaj: `$inc` yerine oku-artır-yaz konunca çift kod; upsert yarışı kurtarması kaldırılınca ilk-yarış testi kırmızı.
-- [ ] AC-5 (zorunlu) — Aynı anahtar + aynı gövde aynı kodu ve sequence'i döner, sayacı ilerletmez, MDM'i çağırmaz, ikinci defter ve denetim satırı yazmaz; aynı anahtar + farklı gövde 400 `IDEMPOTENCY_KEY_REUSED`; aynı anahtarla 10 eşzamanlı istek tek defter satırı ve tek kod üretir, hiçbiri 503 almaz ve sayaç en çok 9 (N−1) numara fazla ilerler; geçici yazım çakışması (`WriteConflict`) sahte depoyla zorlandığında işlem yeniden denenir ve 200 döner.
-  Sabotaj: parmak izi karşılaştırması kaldırılınca farklı-gövde testi; idempotency unique index'i kaldırılınca eşzamanlı-anahtar testi; yeniden deneme kaldırılınca geçici-çakışma testi kırmızı.
+- [ ] AC-5 (zorunlu) — Aynı anahtar + aynı gövde aynı kodu ve sequence'i döner, sayacı ilerletmez, MDM'i çağırmaz, ikinci defter ve denetim satırı yazmaz; `prefixScope` gönderilmeyen v0 gövdesinden sonra aynı anahtarla açık `"prefixScope": "LegalEntity"` gövdesi 200 ve aynı kodu döner (varsayılan uygulanmış eşitlik, Bölüm 4.2; r4 F-9), `legalEntityId` büyük harfle yazılmış aynı Guid de aynıdır; aynı anahtar + farklı gövde (her alan ayrı: `recordType`, `prefixScope`, `legalEntityId`) 400 `IDEMPOTENCY_KEY_REUSED`. Aynı anahtar yarışı Bölüm 8.6'nın üç durumuyla **ayrı ayrı** gerçek Mongo'da ölçülür ve her birinde defterde tek satır, tek başarı denetim satırı kalır ve ikinci istek 200 alır (r4 F-3): (1) ilk okumada bulunan tekrar — kazanan commit olduktan sonra gelen istek 200; (2) işlem içi örtüşme — kazananın commit'i `IPlatformTransactionFaultProbe.BeforeCommitAsync` içinde bir bariyerle tutulur, ikinci istek gövdesine girer; üretim deposunu saran test sarmalayıcısı ikinci isteğin ilk `WriteConflict`'inde bariyeri bırakır ve kazananın `AfterCommitAsync`'ini bekledikten sonra hatayı yeniden atar; ikinci istek gövde yeniden denemesinde kazananı okur ve 200 alır (`WriteConflict` alınmazsa test kırmızıdır — çıkarım ölçülür); (3) geç gelen — ikinci istek adım 9'u geçtikten sonra sahte MDM okumasında (adım 11) bekletilir, kazanan commit olunca bırakılır, defter eklemesi E11000 alır ve `RecordCodeIdempotencyConflictException` yoluyla kazananın kodunu 200 ile döner. Ayrıca aynı anahtarla 10 eşzamanlı istek tek defter satırı ve tek kod üretir, sayaç en çok 9 (N−1) numara fazla ilerler; bu testte 503 alan bir istek olursa (yürütücü gövdeyi beklemesiz 3 kez dener — Bölüm 8.6 durum 2) aynı anahtarla tekrar 200 ve aynı kodu alır (destekleyici; durum kanıtı 1–3'tür).
+  Sabotaj: alan karşılaştırmasından `PrefixScope` çıkarılınca farklı-kapsam testi; varsayılan karşılaştırmadan önce uygulanmayınca v0→açık-`LegalEntity` testi; gövde içi yeniden okuma kaldırılınca durum (2) testi; depodaki E11000 → `RecordCodeIdempotencyConflictException` çevirisi kaldırılınca durum (3) testi 503 alır ve kırmızı; idempotency unique index'i kaldırılınca 10-istek testi çift satırla kırmızı.
 - [ ] AC-6 (zorunlu) — Sayaç `(kiracı, önek, tür)` başınadır ve sıfırlanmaz: `MYG-PAY`, `GPL-PAY`, `MYG-APD` ve B kiracısının `MYG-PAY`'i bağımsız `000001`'den başlar; zorla düşürülen bir ayırmadan sonra bir sonraki kod bir üst numarayı alır (boşluk kalır, hiçbir kod iki kez verilmez); sayaç deposunda azaltan/sıfırlayan üye yok.
   Sabotaj: sayaç anahtarından önek çıkarılınca bağımsızlık testi; başarısızlıkta sayacı geri alan değişiklik konunca boşluk testi kırmızı.
 - [ ] AC-7 (zorunlu) — `LastNumber = 999998` ile tohumlanmış sayaçta iki ayırma `MYG-PAY-999999` ve `MYG-PAY-1000000` üretir; sequence `long`.
   Sabotaj: biçim 6 haneye kesilince biçim ve Mongo testi kırmızı.
 - [ ] AC-8 (zorunlu) — Uyumsuz kapsam 422 `RECORD_CODE_SCOPE_INVALID` döner, MDM çağrılmaz, sayaç yaratılmaz: `Group` + dolu `legalEntityId`, `LegalEntity` + boş `legalEntityId` ve DL-1'de **tür izni adımını geçmiş** her `prefixScope = Platform` isteği (ör. `PAY` + `Platform` → 422); izinli çağıranı olmayan tür kapsamdan önce reddedilir (ör. `PLN` + `Platform` → 403 `RECORD_CODE_FORBIDDEN`, sözleşme örneğiyle aynı); tanımsız `prefixScope` 400.
   Sabotaj: `Platform` reddi kaldırılınca `PAY` + `Platform` testi; tür izni adımı kapsam adımının arkasına taşınınca `PLN` + `Platform` testi kırmızı.
-- [ ] AC-9 (zorunlu) — Tür başına izinli kapsam: `BNK` yalnız `Group`; `BAC` `LegalEntity` (önek sahip şirketin kısa kodu) ve `Group` (grup öneki); `PAY`, `APD`, `ARI`, `CPS`, `CTP`, `AGR` yalnız `LegalEntity`; `ORG`, `POS` yalnız `LegalEntity`; `PLN` yalnız `Platform`.
-  Sabotaj: `PAY`'e `Group` izni eklenince katalog tür×kapsam testi kırmızı.
+- [ ] AC-9 (zorunlu) — Tür başına izinli kapsam: `BNK` yalnız `Group`; `BAC` `LegalEntity` (önek sahip şirketin kısa kodu) ve `Group` (grup öneki); `PAY`, `APD`, `ARI`, `CPS`, `CTP`, `AGR` yalnız `LegalEntity`; `PLN` yalnız `Platform`; `ORG` ve `POS` izinli çağıranı olmayan türlerdir ve DL-1'de izinli kapsam kümeleri **boştur** — bu madde onların kapsamını ölçmez (açık karar A-8, DL-2 revizyonunda yeni AC ile; r4 F-7), yalnız izinli çağıran kümelerinin boş olduğunu ölçer.
+  Sabotaj: `PAY`'e `Group` izni eklenince katalog tür×kapsam testi; `ORG`'a izinli çağıran eklenince boş-çağıran testi kırmızı.
 - [ ] AC-10 (zorunlu) — Grup öneki ayarı hizalanmış (`GMG`, etkin `OrgPrefix` = `GMG`) kiracıda `BNK` ilk ayırması `GMG-BNK-000001`, tedarikçi `BAC` ilk ayırması `GMG-BAC-000001`; ayarı olmayan kiracıda 409 `GROUP_PREFIX_MISSING`, sayaç yaratılmaz; servis grup önekini kendiliğinden (kod sabiti, `OrgPrefix` ya da başka varsayılan) doldurmaz.
   Sabotaj: kayıt yokken `OrgPrefix`'e düşen yedek eklenince 409 testi kırmızı.
 - [ ] AC-11 (zorunlu) — MDM `code` `^[A-Z]{2,5}$`'e birebir uymuyorsa (`GMG-CH`, `my`, `M`, `ABCDEF`, `MYĞ`, boş, boşluklu) 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, sayaç yaratılmaz; normalleştirme yok; `MYG`, `GPL`, `GMT` kabul.
@@ -865,17 +965,17 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
   Sabotaj: önek doğrulaması gevşetilip `Ğ` kabul edilince özellik testi kırmızı.
 - [ ] AC-16 (zorunlu) — `RecordCodeTypeCatalog` RCS-001 §3'ün bütün OTOMATİK satırlarını (`ORG`, `POS`, `PAY`, `APD`, `ARI`, `CPS`, `CTP`, `BNK`, `BAC`; `CTR` yerine `AGR`) ve §5.3'teki `PLN`'yi birebir içerir; test kuralı `.antigravity/rules/record-coding-standard.md`'den okur; `CTR` → `AGR` adı konmuş tek istisnadır ve §3 güncellenince testten çıkarılmazsa test kırmızıdır; KALSIN türü katalogda yok.
   Sabotaj: kataloğa §3'te olmayan tür eklenince ya da bir OTOMATİK tür çıkarılınca katalog testi kırmızı.
-- [ ] AC-17 (zorunlu) — Her yeni ayırma, defter satırıyla **aynı Mongo işleminde** tek denetim kutusu satırı yazar; bu satırın `IdempotencyKey`'i `record-code:allocated:{allocationId:N}`'dir (istemci anahtarı değildir); işleyiciden sonra `audit_events`'te tek satır: `ActorType = TenantUser`, `ActorId` = iletilen token'ın `sub`'ı, `SourceService` = kimlik bilgisinin kapalı listedeki adı (ör. `Diten.FinanceTreasuryService`), `TenantId` = token kiracısı, kategori `PlatformConfiguration`, varlık `RecordCodeAllocation` + defter kimliği, işlem `Create`, sonuç `Succeeded`, metadata `recordType`, `prefixScope`, `legalEntityId`, `prefix`, `code`, `sequence`, `idempotencyKey`; tekrar yeni satır yazmaz; kutu yazımı bağlantı hatasıyla düşerse işlem iptal, 503, defter satırı yok; kutu `false` dönerse (aynı ayırmanın satırı zaten var) defter `allocationId` ile okunur ve 200 aynı kod döner. Aktör ölçümü madde 41'deki ilk adım ölçümüne dayanır.
-  Sabotaj: kutu yazımı commit sonrasına taşınınca hata yolu testi; aktör sabit `Service`/`System` yapılınca aktör testi; `false` 503'e çevrilince tekrar-yazım testi kırmızı.
+- [ ] AC-17 (zorunlu) — Her yeni ayırma, defter satırıyla **aynı Mongo işleminde** tek denetim kutusu satırı yazar; bu satırın `IdempotencyKey`'i `record-code:allocated:{allocationId:N}`'dir (istemci anahtarı değildir); işleyiciden sonra `audit_events`'te tek satır ve bu satır **Bölüm 21.3 Tablo A**'yla alan alan birebirdir (r4, inceleme 03 F-2): `ActorType = TenantUser`, `ActorId` = iletilen token'ın `sub`'ı, `SourceService` = kimlik bilgisinin kapalı listedeki adı, `TenantId` = `TargetTenantId` = token kiracısı, `Category = PlatformConfiguration`, `EntityType = RecordCodeAllocation`, `EntityId` = defter satırının `Id`'si, `Operation = Create`, `Outcome = Succeeded`, `RequestType = AllocateRecordCodeCommand`, `SourceModule = MOD-0040-FU02`, `BeforeState` yok, `AfterState` tam olarak `Code`, `Sequence`, `RecordType`, `PrefixScope`, `Prefix`, `LegalEntityId`, `Metadata` tam olarak `EventName`, `IdempotencyKey`, `GroupPrefixLockedNow` (+ kapının eklediği `ClientCorrelation`, başlık varsa); tekrar yeni satır yazmaz; kutu yazımı bağlantı hatasıyla düşerse işlem iptal, 503, defter satırı yok; işlem içi kutu `false` (sahte depoyla zorlanır) → 503 `RECORD_CODE_UNAVAILABLE` + hata logu, defter satırı yok (r4 F-3, Bölüm 8.6). Aktör ölçümü AC-41'e dayanır.
+  Sabotaj: kutu yazımı commit sonrasına taşınınca hata yolu testi; aktör sabit `Service`/`System` yapılınca aktör testi; `AfterState`'ten bir alan çıkarılınca ya da bir alan `Metadata`'ya taşınınca Tablo A eşitlik testi; `false`'ta kod döndüren değişiklik konunca `false` testi kırmızı.
 - [ ] AC-18 (zorunlu) — Merkezi denetim BL-501 ile değil Platform içi işlem içi kapıyla yapılır: işleyici `RecordCodeAuditIntent.EnqueueAsync`'i çağırır ve o her zaman `Intent` taşır (elle yük yok; `TransactionOwnedAuditPayloadExemptions` listesi değişmez); CT'nin defter kararıyla `AuditTrailStandardTests` komutu denetlenen sayar; Platform'a iletici kopyası eklenmez; tüketicinin Create kaydıyla eşleşme `idempotencyKey` + `code` üzerinden.
   Sabotaj: işleyiciden yazıcı çağrısı kaldırılınca mimari test komutu "yeni ve denetimsiz" sayar; muafiyet listesine satır eklenince mevcut muafiyet testi kırmızı.
-- [ ] AC-19 (zorunlu) — Ret kaydı Bölüm 21.2 tablosuna birebir uyar: "yazılır" denen her ret ayrı kısa bir işlemle tek denetim satırı yazar (`Outcome` tablodaki `Denied` ya da `Failed`, `reason_code` metadata'da, aktör kullanıcı, kaynak servis kapalı listeden, kutu anahtarı her ret için yeni Guid); "yazılmaz" denenler (401, kiracı çözülmeden verilen 403, 400 biçim, 413, 429) yalnız loglanır; hiçbir ret defter, sayaç ya da grup öneki satırı yazmaz ve kod döndürmez.
-  Sabotaj: 404 dalından ret yazımı kaldırılınca ret testi; 401'de ret yazdıran değişiklik konunca "yazılmaz" testi kırmızı.
+- [ ] AC-19 (zorunlu) — Ret kaydı Bölüm 21.2 tablosuna birebir uyar: "yazılır" denen her ret ayrı kısa bir işlemle tek denetim satırı yazar (`Outcome` tablodaki `Denied` ya da `Failed`, aktör kullanıcı, kaynak servis kapalı listeden, kutu anahtarı her ret için yeni Guid) ve `Metadata`'sı **Bölüm 21.3 Tablo B**'yle birebirdir: `EventName`, `ReasonCode`, `EvaluationStep` her retde; `IdempotencyKey`, `RecordType`, `PrefixScope`, `LegalEntityId` yalnız adım 6–13 retlerinde — adım 4 reddinde (`RECORD_CODE_TENANT_NOT_ACTIVE`) bu anahtarlar **yoktur**; `Prefix` yalnız Tablo B'deki retlerde; `Code` / `Sequence` hiçbir retde (r4 F-2); "yazılmaz" denenler (401, kiracı çözülmeden verilen 403, 400 biçim, 413, 429) yalnız loglanır; hiçbir ret defter, sayaç ya da grup öneki satırı yazmaz ve kod döndürmez.
+  Sabotaj: 404 dalından ret yazımı kaldırılınca ret testi; 401'de ret yazdıran değişiklik konunca "yazılmaz" testi; adım 4 reddine boş `RecordType` anahtarı yazdıran değişiklik konunca Tablo B adım testi kırmızı.
 - [ ] AC-20 (zorunlu) — Defter deposunda güncelleme, değiştirme ya da silme üyesi yok; sayaç deposunda yalnız `NextAsync`; grup öneki deposunda yalnız kilitsizken koşullu hizalama ve kilitleme (silme yok); v1'de kodu değiştiren, iptal eden ya da yeniden veren uç yok.
   Sabotaj: defter arayüzüne `DeleteAsync` eklenince yansıma testi kırmızı.
 - [ ] AC-21 (zorunlu) — `ocelot.json`'da `record-codes` ya da `/internal` içeren rota yok; `frontend/Diten.Web` altında `record-codes/allocate` çağrısı yok.
   Sabotaj: test kopyasına rota eklenince Gateway testi kırmızı.
-- [ ] AC-22 (zorunlu) — Yalnız Platform aktörü gövdesiz `PUT /api/admin/tenants/{tenantId}/record-code-group-prefix` ile kiracının grup öneki ayarını **etkin belge `OrgPrefix`'ine hizalar**; gövde gönderilirse 400; kilitsizken `OrgPrefix` değiştirilip yeniden hizalanınca ayar yeni değere geçer ve önceki/sonraki değer yol a ile denetlenir; ilk `Group` ayırması aynı işlemde `LockedAtUtc`'yi yazar; kilitten sonra farklı `OrgPrefix`'le hizalama 409 `GROUP_PREFIX_LOCKED` ve ayar değişmez, aynı değerle 200 ve değişiklik yok; olmayan kiracı 404; kiracı kullanıcısı 403; eşzamanlı hizalama + ilk ayırma sessiz üzerine yazma üretmez.
+- [ ] AC-22 (zorunlu) — Yalnız Platform aktörü gövdesiz `PUT /api/admin/tenants/{tenantId}/record-code-group-prefix` ile kiracının grup öneki ayarını **etkin belge `OrgPrefix`'ine hizalar**; gövde gönderilirse 400; kilitsizken `OrgPrefix` değiştirilip yeniden hizalanınca ayar yeni değere geçer ve önceki/sonraki değer yol a ile denetlenir; ilk `Group` ayırması aynı işlemde `LockedAtUtc`'yi yazar; kilitten sonra farklı `OrgPrefix`'le hizalama 409 `GROUP_PREFIX_LOCKED` ve ayar değişmez, aynı değerle 200 ve değişiklik yok; olmayan ya da silinmiş kiracı 404 (depo çağrılmaz); kiracı kullanıcısı ve `partner_admin` 403 (AC-44); eşzamanlı hizalama + ilk ayırma sessiz üzerine yazma üretmez. Ayar satırı rota kiracısının bağlamında yazılır ve okunur (AC-43; Bölüm 4 "Yönetici ucu").
   Sabotaj: kilit denetimi kaldırılınca kilitli-hizalama testi; kilidin ayırma işleminin dışına taşınması eşzamanlılık testinde kırmızı.
 - [ ] AC-23 (zorunlu) — İstek ve cevap biçimi `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md`'deki örneklerle ve hata tablosuyla birebir test edilir: örnek gövdeler kabul, bilinmeyen üye 400, her hata durumunda `statusCode` ve `reason_code` tablodakiyle aynı (401/403 satırları Bölüm 8.2 eşlemesiyle), cevap `data`'sında yalnız `code` ve `sequence`.
   Sabotaj: cevapta `code` → `recordCode` yapılınca sözleşme testi kırmızı.
@@ -891,7 +991,7 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
   Sabotaj: kaynak servisi gövdeden ya da başlıktan alan değişiklik konunca `TransactionOwnedAuditSourceServiceTests` / HTTP testi kırmızı; varsayılan `"Diten.Platform"` kaldırılınca mevcut kapı testleri kırmızı.
 - [ ] AC-29 (zorunlu) — Ret yolu (K-10): `ITransactionalAuditRefusalWriter.TryEnqueueRefusalAsync` yalnız `Denied` ve `Failed` kabul eder (`Succeeded` → geçersiz niyet istisnası), ayırma işleminden **ayrı** bir oturumla yazar, aktörü, kaynak servis kuralı ve doğrulamaları başarı yoluyla aynıdır; yazıcı Application DI'da ayrı `AddScoped` kaydıyla çözülür; ret işleminde defter, sayaç ve grup öneki koleksiyonlarına yazım sıfırdır ve cevapta `data = null`'dır.
   Sabotaj: ret yolu `Succeeded` kabul edince yazıcı testi; ret işleminde defter satırı yazdıran değişiklik konunca Mongo ret testi; ret yazıcısı kaydı kaldırılınca DI testi kırmızı.
-- [ ] AC-30 (zorunlu) — Kiracı yüklemi: üç depoda bütün okuma ve yazmalar açık `tenantId` parametresiyle **tam eşitlik** filtresi kullanır; `HybridRepository` ve "`TenantId` null veya kiracı" filtresi kullanılmaz; depo yalnız şu durumlarda istisnaya düşer ve hiçbir satır yazmaz: `tenantId = Guid.Empty`, `ITenantContext.IsPlatformContext = true` (`SetPlatformContext` ile), `tenantId ≠ ITenantContext.TenantId`; platform sentinel kimliği `00000000-0000-0000-0000-000000000001` **reddedilmez**.
+- [ ] AC-30 (zorunlu) — Kiracı yüklemi: üç depoda bütün okuma ve yazmalar açık `tenantId` parametresiyle **tam eşitlik** filtresi kullanır; `HybridRepository` ve "`TenantId` null veya kiracı" filtresi kullanılmaz; depo yalnız şu durumlarda istisnaya düşer ve hiçbir satır yazmaz: `tenantId = Guid.Empty`, `ITenantContext.IsPlatformContext = true` (`SetPlatformContext` ile), `tenantId ≠ ITenantContext.TenantId`; platform sistem kiracısı `00000000-0000-0000-0000-000000000001` **reddedilmez**. Kural istisnasızdır: depoyu platform bağlamından çağıran tek yüzey olan yönetici ucu bu yüzden depoyu rota kiracısı doğrulandıktan sonra `TenantScope.Begin(_tenantContext, routeTenantId)` içinde çağırır (AC-43, r4 F-1) — depo platform bağlamını hiçbir uç için kabul etmez.
   Sabotaj: herhangi bir depoya `HybridRepository` tabanı, `Guid.Empty` kabulü ya da platform bağlamı kabulü konunca `RecordCodeTenantIsolationMongoTests` kırmızı; sentinel kimliğini reddeden bir kural eklenince sentinel kiracı testi kırmızı.
 - [ ] AC-31 (zorunlu) — Kiracı yüklemleri **ayrı ayrı** sabotajlanır; iki kiracının ikisi de `GMG` grup önekiyle aynı kod metnini üretebileceği için testler kodu değil **B kiracısının defter satırını ve sayaç belgesini** doğrular: (a) sayaç filtresinden `TenantId` çıkarılınca A ve B'nin `(GMG, BNK)` sayacı tek belgeye düşer ve B'nin ayrı sayaç belgesi testi kırmızı; (b) idempotency aramasından `TenantId` çıkarılınca B'nin aynı anahtarlı isteği A'nın satırını döndürür ve "B'de defter satırı var, `TenantId = B`" testi kırmızı; (c) grup öneki okumasından kiracı parametresi çıkarılınca öneki olmayan B kiracısı A'nın önekini alır ve B'nin 409 testi kırmızı; (d) defter yazımında kiracı token yerine bağlamdan alınıp bağlam değiştirildiğinde satır `TenantId`'si testi kırmızı; (e) `X-Tenant-Id` reddi tek başına kaldırılınca 403 testi kırmızı.
   Sabotaj: beş sabotaj tek tek uygulanır, her biri kendi adlı testini kırmızıya döndürür.
@@ -909,14 +1009,18 @@ Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları ça
   Sabotaj: kiracı durumu denetimi kaldırılınca askıdaki-kiracı testi kırmızı.
 - [ ] AC-38 (zorunlu) — Varsayılan / tohum kiracı: `00000000-0000-0000-0000-000000000001` kiracısının `tenant_user` token'ıyla (kiracı Active) `PAY` ayırması 200 döner; sayaç ve defter satırı `TenantId = …0001` taşır ve denetim kaydı yazılır.
   Sabotaj: depoya ya da yürütücüye sentinel kimliğini reddeden kural eklenince bu test kırmızı.
-- [ ] AC-39 (zorunlu) — Denetim kutusu anahtarı istemci anahtarından türemez: (a) A ve B kiracıları aynı istemci `idempotencyKey`'iyle ayırma yapınca ikisi de 200 alır ve iki ayrı kutu satırı yazılır; (b) aynı istemci anahtarıyla önce 409 alan (ret kaydı yazılmış) istek, sorun giderilince aynı anahtarla tekrarlandığında 200 alır ve başarı kutu satırı yazılır; (c) aynı `allocationId` için kutu `false` dönerse cevap 200 ve aynı koddur.
-  Sabotaj: kutu anahtarı istemci anahtarından türetilince (a) ve (b) 503 alır ve testler kırmızı.
+- [ ] AC-39 (zorunlu) — Denetim kutusu anahtarı istemci anahtarından türemez: (a) A ve B kiracıları aynı istemci `idempotencyKey`'iyle ayırma yapınca ikisi de 200 alır ve iki ayrı kutu satırı yazılır; (b) aynı istemci anahtarıyla önce 409 alan (ret kaydı yazılmış) istek, sorun giderilince aynı anahtarla tekrarlandığında 200 alır ve başarı kutu satırı yazılır; (c) **commit sonucu bilinmiyor** (r4, inceleme 03 F-3): `IPlatformTransactionFaultProbe.AfterCommitAsync` commit olmuş bir denemede `UnknownTransactionCommitResult` etiketli hata atınca yürütücü commit'i aynı oturumda yeniler ve cevap 200 aynı koddur, defterde ve kutuda tek satır vardır; `BeforeCommitAsync` üç denemede de aynı hatayı atınca cevap 503 `RECORD_CODE_UNAVAILABLE`'dır, ardından aynı anahtarla tekrar commit olmamış ilk denemeden sonra **ilk yazım** olarak yeni bir kod alır (emsal `PlatformTransactionUnknownCommitMongoTests`); (d) işlem içi kutu `false` sahte depoyla zorlanınca cevap 503, defter satırı yok, kod yok.
+  Sabotaj: kutu anahtarı istemci anahtarından türetilince (a) ve (b) 503 alır ve testler kırmızı; commit yenilemesi kaldırılınca (c)'nin ilk senaryosu 503 alır ve kırmızı; kutu `false`'ta defterden kod döndüren r3 yolu geri konunca (d) kırmızı.
 - [ ] AC-40 (zorunlu) — Kaynak servis değer denetimi: kapı `Intent.SourceService` dolu ve `TransactionOwnedAuditSourceServices` kümesinde değilse (`Diten.Unknown`, `diten.mdmservice`, baş/son boşluklu ad) `TransactionOwnedAuditIntentInvalidException` atar ve kutuya hiçbir şey yazmaz; küme `Diten.Platform` ve kimlik bilgisi eşlemesindeki adları içerir, eşlemedeki her ad kümededir (test); `TransactionOwnedAuditIntent` sınıf yorumu yeni kuralı söyler.
   Sabotaj: küme denetimi kaldırılınca küme-dışı-ad testi; eşlemeye kümede olmayan bir ad eklenince eşleme testi kırmızı.
-- [ ] AC-41 (zorunlu) — **DL-1'in ilk adımı (diğer bütün maddelerden önce):** gerçek HTTP ana makinesinde (`SignedTenantTokenHttpHost` deseni) üretimdeki `CanonicalTransactionalAuditOutboxWriter` ve gerçek Mongo ile, iç uçtan gelen bir ayırmanın kutu satırında `ActorType = TenantUser` ve `ActorId` = iletilen token'ın `sub`'ı olduğu ölçülür (yürütücü kullanıcı token'ını açık `AuthenticateAsync` ile doğrular ve `HttpContext.User`'ı işleyici çözülmeden önce ayarlar). Ölçüm başarısızsa DL-1 durur ve paket revizyonuna döner.
-  Sabotaj: `HttpContext.User` ayarı kaldırılınca kapı aktörü çözemez (ret ya da yanlış aktör) ve ölçüm testi kırmızı.
+- [ ] AC-41 (zorunlu) — **DL-1'in ilk commit grubu = aktör ölçümünün asgari yolu** (r4, inceleme 03 F-6: "ilk adım" sıralaması commit geçmişiyle ölçülür). DL-1 dalının ilk commit grubu **yalnız** şu dosyaları ekler ya da değiştirir: `Controllers/Internal/InternalRecordCodesController.cs` (yalnız `allocate` eylemi), `Security/ITrustedRecordCodeRequestExecutor.cs` + `TrustedRecordCodeRequestExecutor.cs` (yalnız adım 1–2: kimlik bilgisi, açık `HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme)`, `HttpContext.User` ataması, `TenantScope.Begin(_tenantContext, jwtTenant)`), `Security/ITrustedRecordCodeCredentialAuthenticator.cs` + `TrustedRecordCodeCredentialAuthenticator.cs`, `Security/ITrustedRecordCodeJwtContext.cs` + `TrustedRecordCodeJwtContext.cs`, `Configuration/TrustedRecordCodeCredentialOptions.cs`, `Features/RecordCodes/Commands/AllocateRecordCodeCommand.cs`, `Features/RecordCodes/Handlers/CommandHandlers/AllocateRecordCodeHandler.cs` (bu aşamada yalnız `IPlatformTransactionExecutor.ExecuteAsync` içinde `RecordCodeAuditIntent.EnqueueAsync` çağrısı; sayaç, MDM ve defter yok, cevap sabit sınama kodu), `Features/RecordCodes/RecordCodeAuditIntent.cs`, `Program.cs` / `DependencyInjection.cs` kayıt satırları ve `RecordCodes/RecordCodeActorProbeHttpTests.cs`. Test gerçek HTTP ana makinesinde (`SignedTenantTokenHttpHost` deseni), üretimdeki `CanonicalTransactionalAuditOutboxWriter` ve gerçek Mongo ile kutu satırında `ActorType = TenantUser` ve `ActorId` = iletilen token'ın `sub`'ı olduğunu ölçer (bu aşamada `SourceService` `"Diten.Platform"` olabilir; K-9 genişletmesi sonraki commit'lerdedir). **Kanıt:** kabul kaydı bu commit grubunun kimliğini, grubun dosya listesini (`git show --stat`) ve testin o commit'teki yeşil koşusunu yazar; dosya listesi bu maddedekinden genişse madde karşılanmamıştır. **Başarısızlıkta:** sonraki hiçbir DL-1 commit'i yazılmaz; ilk commit grubu dalda `git revert` ile geri alınır (başka kod yoktur), DL-1 durur ve paket yeni revizyona döner.
+  Sabotaj: `HttpContext.User` ataması kaldırılınca kapı aktörü çözemez (`TransactionOwnedAuditRefusedException` ya da yanlış aktör) ve ölçüm testi kırmızı.
 - [ ] AC-42 (zorunlu) — Kısa kod kullanım kilidi (ara dönem): X şirketi `MYG` önekiyle ayırma yaptıktan sonra MDM kodu `MYX`'e değişirse X için yeni ayırma 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`; `MYG` daha sonra Y şirketine verilirse Y için ayırma 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`; ikisinde kod verilmez, sayaç ilerlemez, `Failed` ret kaydı ve hata logu yazılır; X'in kodu `MYG`'ye geri alınınca ayırma yeniden çalışır; Group kapsamlı satırlar bu denetime girmez.
   Sabotaj: defter denetimi kaldırılınca iki senaryo testi de kırmızı.
+- [ ] AC-43 (zorunlu) — **Yönetici ucunun kiracı bağlamı** (r4, inceleme 03 F-1): üretimdeki `TenantResolutionMiddleware` ile kurulan gerçek HTTP ana makinesinde `platform_admin` token'ıyla gövdesiz `PUT /api/admin/tenants/{T}/record-code-group-prefix` 200 döner; `record_code_group_prefixes`'te tek satır `TenantId = T` ile yazılır; `GET` aynı satırı döner; `audit_events`'te tek satır `TenantId = T`, `TargetTenantId = T`, `ActorType = PlatformAdministrator`, `EntityType = RecordCodeGroupPrefix`; işleyici dönünce bağlam yeniden `IsPlatformContext = true` ve `TenantId = Guid.Empty`'dir (scope geri yüklemesi); başka bir kiracının (`U`) ayar satırı yoktur ve değişmez.
+  Sabotaj: işleyiciden `TenantScope.Begin` kaldırılınca depo platform bağlamını reddeder ve "PUT 200 + satır `TenantId = T`" testi kırmızı; `TenantScope.Begin` yerine `TenantScope.BeginPlatform` konunca aynı test kırmızı; `GetAuditMetadata()`'dan `TargetTenantId` kaldırılınca `AuditService` eklemeyi reddeder ve "denetim satırı `TenantId = T`" testi kırmızı; scope `using` dışına taşınınca geri yükleme testi kırmızı. Testler `TenantRecordCodeGroupPrefixHttpTests` içinde adlandırılır.
+- [ ] AC-44 (zorunlu) — **Platform aktörleri** (r4, inceleme 03 F-4): yönetici ucunda `partner_admin` token'ı (kaydı ortak yönetici olan) `PUT` ve `GET` için 403 alır, ayar satırı yazılmaz; `platform_admin` 200. İç uçta `platform_admin` ve `partner_admin` token'ıyla (geçerli kimlik bilgisiyle) gelen ayırma 403 `RECORD_CODE_FORBIDDEN` alır, işleyici çağrılmaz, ret denetime yazılmaz (kiracı çözülmeden 403, Bölüm 21.2).
+  Sabotaj: controller'da `PlatformAdminOnly` yerine `PlatformActor` + `[PartnerAdminScope]` konunca `partner_admin` 403 testi; yürütücüdeki `actor_type = tenant_user` denetimi kaldırılınca iç uç `platform_admin` testi kırmızı. Testler `TenantRecordCodeGroupPrefixHttpTests` ve `TrustedRecordCodeRequestExecutorRefusalTests` içinde adlandırılır.
 
 **DL-2…DL-10.** Kabul ölçütleri her dilimin kendi paket revizyonunda yeni numarayla eklenir (numaralar silinmez,
 yeniden numaralanmaz).
@@ -925,19 +1029,19 @@ yeniden numaralanmaz).
 
 | Test sınıfı | Tür | Kapsadığı kabul ölçütleri |
 |---|---|---|
-| `RecordCodeActorProbeHttpTests` | gerçek HTTP + üretim yazıcısı + gerçek Mongo — **DL-1'in ilk adımı** | AC-41 |
+| `RecordCodeActorProbeHttpTests` | gerçek HTTP + üretim yazıcısı + gerçek Mongo — **DL-1'in ilk commit grubu** | AC-41 |
 | `RecordCodeFormatTests` | birim | AC-3, AC-7, AC-15 |
 | `RecordCodeTypeCatalogTests` | birim (RCS-001 §3'ü `RepoPaths` ile okur) | AC-9, AC-14, AC-16 |
-| `AllocateRecordCodeHandlerTests` | birim (sahte depo/okuyucu) | AC-5 (parmak izi, geçici çakışma), AC-8, AC-10, AC-13, AC-19, AC-35, AC-42 |
-| `RecordCodeAllocationMongoTests` | gerçek Mongo replica set | AC-4, AC-5 (eşzamanlı), AC-6, AC-7, AC-20, AC-22 (kilit), AC-24, AC-42 |
+| `AllocateRecordCodeHandlerTests` | birim (sahte depo/okuyucu) | AC-5 (alan alan eşitlik), AC-8, AC-10, AC-13, AC-19, AC-35, AC-42 |
+| `RecordCodeAllocationMongoTests` | gerçek Mongo replica set + `IPlatformTransactionFaultProbe` bariyeri + test depo sarmalayıcısı | AC-4, AC-5 (üç yarış durumu, v0→açık kapsam), AC-6, AC-7, AC-20, AC-22 (kilit), AC-24, AC-39 (c), AC-42 |
 | `RecordCodeTenantIsolationMongoTests` | gerçek Mongo, iki kiracı + sentinel kiracı | AC-12, AC-30, AC-31, AC-38 |
-| `RecordCodeAuditDeliveryMongoTests` | gerçek Mongo + üretimdeki kutu işleyicisi | AC-17, AC-18, AC-19, AC-29, AC-39 |
+| `RecordCodeAuditDeliveryMongoTests` | gerçek Mongo + üretimdeki kutu işleyicisi | AC-17 (Tablo A eşitliği), AC-18, AC-19 (Tablo B, adım 4 dahil), AC-29, AC-39 (a, b, d) |
 | `InternalRecordCodesHttpTests` | gerçek HTTP (`SignedTenantTokenHttpHost` deseni) + sahte MDM | AC-1, AC-2, AC-3, AC-8, AC-12, AC-13, AC-23, AC-26, AC-28, AC-32, AC-37, AC-38 |
-| `TrustedRecordCodeRequestExecutorRefusalTests` | birim, her ret dalı | AC-1, AC-34 |
+| `TrustedRecordCodeRequestExecutorRefusalTests` | birim, her ret dalı | AC-1, AC-34, AC-44 (iç uç) |
 | `RecordCodeAllocateRateLimiterTests` | birim + HTTP | AC-33 |
 | `MdmLegalEntityShortCodeReaderTests` | birim, sahte HTTP | AC-11, AC-13, AC-26, AC-36 |
 | `RecordCodeGatewayExposureTests` | dosya ölçümü | AC-21 |
-| `TenantRecordCodeGroupPrefixHttpTests` | gerçek HTTP | AC-22, AC-35 |
+| `TenantRecordCodeGroupPrefixHttpTests` | gerçek HTTP + üretim `TenantResolutionMiddleware` + üretim `AddPlatformActorPolicies` + gerçek Mongo | AC-22, AC-35, AC-43, AC-44 (yönetici ucu) |
 | `TransactionOwnedAuditSourceServiceTests` | birim + Mongo | AC-28, AC-40 |
 | `TransactionalAuditRefusalWriterTests` | birim + Mongo + DI | AC-29 |
 | `LoginOnlyEndpointGuardTests` (liste), `DependencyInjectionSmokeTests` (değişmeden) | mimari / DI | AC-1, AC-27, AC-29 |
@@ -953,7 +1057,7 @@ yeniden numaralanmaz).
 | S-3 | İptal edilmiş kimlik bilgisi 403'e çevrilir | 401/403 eşleme testi |
 | S-4 | `$inc` yerine oku-artır-yaz | eşzamanlı ayırma testi |
 | S-5 | Upsert yarışı kurtarması kaldırılır | ilk-yarış testi |
-| S-6 | Parmak izi karşılaştırması kaldırılır | farklı-gövde testi |
+| S-6 | Alan karşılaştırmasından bir alan (`PrefixScope`) çıkarılır (r4: birleştirilmiş parmak izi kaldırıldı) | farklı-kapsam testi |
 | S-7 | İdempotency unique index'i kaldırılır | eşzamanlı-anahtar testi |
 | S-8 | Geçici çakışma yeniden denemesi kaldırılır | geçici-çakışma testi |
 | S-9 | Sayaç anahtarından önek çıkarılır | bağımsızlık testi |
@@ -990,12 +1094,21 @@ yeniden numaralanmaz).
 | S-40 | `approvalStatus` denetimi kaldırılır | onaysız şirket testi |
 | S-41 | Kiracı durumu denetimi kaldırılır | askıdaki kiracı testi |
 | S-42 | Kutu anahtarı istemci anahtarından türetilir | AC-39 (a), (b) |
-| S-43 | Kutu `false` → 503 | AC-39 (c) / tekrar-yazım testi |
+| S-43 | (r4 F-3 ile değişti) Kutu `false`'ta defterden kod döndüren r3 yolu geri konur | AC-39 (d) |
 | S-44 | Kaynak servis küme denetimi kaldırılır | küme-dışı-ad testi |
 | S-45 | Ret yazıcısının Application DI kaydı kaldırılır | DI testi |
 | S-46 | `HttpContext.User` ayarı kaldırılır | aktör ölçüm testi (AC-41) |
 | S-47 | Kısa kod kullanım denetimi kaldırılır | AC-42 iki senaryo |
 | S-48 | Tür izni adımı kapsam adımının arkasına taşınır | `PLN` + `Platform` 403 testi |
+| S-49 | Yönetici işleyicisinden `TenantScope.Begin` kaldırılır / `BeginPlatform` konur (r4 F-1) | AC-43 "PUT 200 + satır `TenantId = T`" |
+| S-50 | Hizalama komutunun `GetAuditMetadata()`'sından `TargetTenantId` kaldırılır (r4 F-1) | AC-43 denetim satırı testi |
+| S-51 | Yönetici controller'ında `PlatformAdminOnly` yerine `PlatformActor` + `[PartnerAdminScope]` (r4 F-4) | AC-44 `partner_admin` 403 |
+| S-52 | Yürütücüde `actor_type = tenant_user` denetimi kaldırılır (r4 F-4) | AC-44 iç uç `platform_admin` 403 |
+| S-53 | Gövde içi idempotency yeniden okuması kaldırılır (r4 F-3) | AC-5 durum (2) |
+| S-54 | Depodaki E11000 → `RecordCodeIdempotencyConflictException` çevirisi kaldırılır (r4 F-3) | AC-5 durum (3) |
+| S-55 | Varsayılan kapsam karşılaştırmadan sonra uygulanır (r4 F-9) | AC-5 v0 → açık `LegalEntity` |
+| S-56 | `AfterState`'ten bir alan çıkarılır ya da `Metadata`'ya taşınır; adım 4 reddine gövde anahtarı yazılır (r4 F-2) | AC-17 Tablo A / AC-19 Tablo B |
+| S-57 | `PlatformTransactionExecutor`'ın commit yenilemesi geçici olarak kaldırılır (yalnız sabotaj koşusu, geri alınır) (r4 F-3) | AC-39 (c) ilk senaryo 503 alır |
 
 Diğer: kiracı izolasyonu gerçek HTTP + gerçek Mongo ile; soft delete yok; tarayıcı smoke yok; RESX yok; DataTable
 doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi replica set'ini kullanır.
@@ -1003,22 +1116,33 @@ doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi re
 ## 18. Ready-for-dev Checklist
 
 - [x] Golden Reference `none`; arka uç düzeni Golden Reference'a birebir (Bölüm 10).
-- [x] Künye alanları dolu; `approval_status: pending`; `code_start` yok; `revision: r3`.
+- [x] Künye alanları dolu; `approval_status: pending`; `code_start` yok; `revision: r4`.
 - [x] Layout & Shell: `shell: none` (Bölüm 9). Validation (Bölüm 12), Failure Path (Bölüm 13), Authorization (Bölüm 14),
   Gateway (Bölüm 15), Lookup kararı (Bölüm 7.1), Audited Events (Bölüm 21) yazılı.
 - [x] Kimlik ön kontrolü `OK`, çıkış 0 (Bölüm 0).
-- [x] `pack_approval.slices()` DL listesi döndürür — `PYTHONUTF8=1 python3 -P -c "import sys; sys.path.insert(0,'scripts'); import pack_approval as p; t=open('execution/domains/platform-shared-services/module-packs/MOD-0040-FU02-record-code-service.md',encoding='utf-8').read(); print(p.slices(t)); print(p.kunye(t)['status'])"` → `['DL-1', … 'DL-10']` ve `draft` (r3, bu commit).
-- [x] İnceleme 01 bulguları (Bölüm 19.1) ve inceleme 02 bulguları F-1…F-11 (Bölüm 19.2) kapatıldı.
-- [ ] Açık kararlar A-1 (2026-11-02), A-17 (2026-11-02), A-11, A-16 (2026-11-03), A-18 (2026-11-06) kapandı ve işlendi.
+- [x] `pack_approval.slices()` DL listesi döndürür — `PYTHONUTF8=1 python3 -P -c "import sys; sys.path.insert(0,'scripts'); import pack_approval as p; t=open('execution/domains/platform-shared-services/module-packs/MOD-0040-FU02-record-code-service.md',encoding='utf-8').read(); print(p.slices(t)); print(p.kunye(t)['status'])"` → `['DL-1', … 'DL-10']` ve `draft` (r4, 2026-11-02 bu dosya üzerinde).
+- [x] İnceleme 01 bulguları (Bölüm 19.1), inceleme 02 bulguları F-1…F-11 (Bölüm 19.2) ve inceleme 03 bulguları F-1…F-10
+  (Bölüm 19.3) işlendi.
+- [ ] Açık kararlar A-1 (2026-11-02), A-17 (2026-11-02), A-11, A-16 (2026-11-03) kapandı ve işlendi. (r4, inceleme 03 F-5:
+  A-18 buradan çıkarıldı — DL-5'in kararıdır, Bölüm 18.1.)
 - [ ] Sözleşme 2026-11-03'te CT adımıyla donduruldu.
-- [ ] A-10 CT defter kararı — DL-1 **main'e girmeden önce**.
-- [ ] A-12 kayıt satırı, `:353` düzeltmesi ve domain-config satırı CT tarafından yazıldı.
-- [ ] CT-APR-02 doğrulama incelemesi (inceleme 03) bu sürüm için; açık ENGEL yok.
+- [ ] A-12 kayıt satırı, "reserved" notunun düzeltilmesi ve domain-config satırı CT tarafından yazıldı.
+- [ ] CT-APR-02 doğrulama incelemesi (inceleme 04) bu sürüm için; açık ENGEL ve ORTA yok.
 - [ ] CT-APR-01 onay satırı (yüksek risk: iç uç, kiracı, şema, kimlik bilgisi, denetim altyapısı; paketi yazmamış `high: evet` onaylayıcı) main'de; künye `ready-for-dev`.
+
+### 18.1 Kabul ve merge kapıları (hazırlık şartı değil — r4, inceleme 03 F-5)
+
+Aşağıdakiler `ready-for-dev`'i bekletmez; dilim tablosundaki (Bölüm 23) kapılarıdır ve orada da aynı yazılır:
+
+| Kapı | Koşul | Ne zaman | Sahip |
+|---|---|---|---|
+| DL-1 **merge kapısı** | A-10 CT defter kararı: `platform-islem-ici` iz satırına `RecordCodeAuditIntent.*` belirteci, CT-DECISIONS satırı, `AuditTrailStandardTests` sabiti | DL-1 kodu main'e girmeden önce (kod yazımını bekletmez) | CT |
+| DL-1 **kabul kapısı** | AC-41 ilk commit grubu kanıtı; FU-RCS-13 döndürme prosedürü | DL-1 kabul kaydı | Beste |
+| DL-5 **başlama kapısı** | A-18 kararı (MDM kalıcı kısa kod kilidi) ve bağlı paket kimliği (Bölüm 7, DL-5 bağımlılığı) | DL-5 paket revizyonundan önce; hedef 2026-11-06 — DL-1'i bekletmez, o güne kadar Bölüm 8.13 ara dönem azaltıcısı geçerli | MDM sahibi (Ali) + Beste |
 
 ## 19. Implementation Notes
 
-**Örnek alınan çalışan kod (yalnız okundu, `6d49f5823`).**
+**Örnek alınan çalışan kod (yalnız okundu; satırlar `6d49f5823`'te ölçüldü, `81864bd98`'de değişmedi — r4 F-10).**
 
 - Doküman kimlik üreticisi (K-1): `services/Diten.Platform/src/Diten.Platform.Application/Features/DocumentManagementIdentifiers/Services/DocumentIdentifierAllocationService.cs`
   — sınıf `:19`; yoklama döngüsü `:317-335` (100 deneme `:28`); biçim `:337-343`; elle rezervasyon `:102-153`; iptal = durum
@@ -1036,7 +1160,7 @@ doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi re
 - `HybridRepository` filtresi `Repositories.cs:96-109` (kullanılmaz); `TenantRepository` `:70-92`.
 - FU21 kimlik ve 401/403: Bölüm 8.2 tablosu; sonuç sabitleri `ITrustedLegalEntityScopeCredentialAuthenticator.cs:10-11`,
   `ITrustedLegalEntityScopeJwtContext.cs:17-21`.
-- Kiracı durumu: `GetTenantStatusQueryHandler.cs:18-29`. Hız sınırı emsali `PeopleSearchRateLimit.cs:17-57` (`OnRejected` tek kanca, politika dışı ret `RATE_LIMITED` `:23`, `:38-46`) — **kullanılmaz**, yürütücü içi sınırlayıcı (r3 F-5). Denetim kutusu anahtarı emsali `…/Entitlements/Handlers/CommandHandlers/PhysicalEntitlementAuditIntent.cs:29`; kutu tekilliği `PlatformSchemaManifest.AccessGovernance.cs:118-120`, `AuditOutboxRepository.cs:159-161`. Sentinel kimliği `SystemTenantRules.cs:12`. Ret yazıcısı DI: Application `DependencyInjection.cs:329-330`, `DependencyInjectionSmokeTests.cs:281-282`.
+- Kiracı durumu: `GetTenantStatusQueryHandler.cs:18-29`. Hız sınırı emsali `PeopleSearchRateLimit.cs:17-57` (`OnRejected` tek kanca, politika dışı ret `RATE_LIMITED` `:23`, `:38-46`) — **kullanılmaz**, yürütücü içi sınırlayıcı (r3 F-5). Denetim kutusu anahtarı emsali `…/Entitlements/Handlers/CommandHandlers/PhysicalEntitlementAuditIntent.cs:29`; kutu tekilliği `PlatformSchemaManifest.AccessGovernance.cs:118-120`, işlem içi ekleme `AuditOutboxRepository.TryInsertAsync(IPlatformTransactionSession …)` (r4 F-3; oturumsuz `TryInsertAsync(AuditOutboxMessage …)` değil). Platform sistem kiracısı `SystemTenantRules.PlatformSystemTenantId` (Internal, Code `PLATFORM`; r4 F-10). İşlem yürütücüsü `PlatformTransactionExecutor.ExecuteAsync`, test sondası `IPlatformTransactionFaultProbe`, emsal test `PlatformTransactionUnknownCommitMongoTests`. Yönetici politikaları `AddPlatformActorPolicies` (`Diten.Platform.Infrastructure/DependencyInjection.cs`). Kiracı kapsamı `TenantScope.Begin` / `BeginPlatform`; platform bağlamı denetim sahipliği `AuditService.ResolveTenantId`. Ret yazıcısı DI: Application `DependencyInjection.cs:329-330`, `DependencyInjectionSmokeTests.cs:281-282`.
 - MOD-0220 yanıtı `LegalEntityModels.cs:100-106` (`approvalStatus` yok).
 - MOD-0178 tüketici beklentisi: §8.7 (`:815-822`), §22 (`:1956-1974`) — WMS kendi 422 `WMS_COMPANY_CODE_INVALID`'ini döner
   ve bu servisin 409'unu kendi koduna eşler (FU-0178-RCS-01); geçici sayaçtan geçişte merkezi sayaç WMS'in en büyük
@@ -1066,7 +1190,7 @@ dosyasının özetidir — POLICY-REVIEW-START.md; r2'de yanlışlıkla pack blo
 | F-8@277fd253 | DÜŞÜK | Grup öneki kilidi (r3: tek kaynak `OrgPrefix` — inceleme 02 F-7) | Bölüm 4.3, 8.12; AC-22, AC-35 |
 | F-9@277fd253 | DÜŞÜK | Aktif + onaylı (r3: v1.1 bağımlılığı — inceleme 02 F-8) | Bölüm 7, 7.1, 8.3; AC-36 |
 | F-10@277fd253 | DÜŞÜK | `BAC` kapsam seçimi tüketicide | Bölüm 7.1 (TC-4, TC-5) |
-| F-11@277fd253 | DÜŞÜK | `module-id-registry.md:353` A-12'de | Bölüm 0, 24 (A-12) |
+| F-11@277fd253 | DÜŞÜK | `module-id-registry.md` "reserved" notu A-12'de (r4: satır numarası yerine metinle) | Bölüm 0, 24 (A-12) |
 | F-12@277fd253 | DÜŞÜK | Askıdaki kiracı DL-1'de | Bölüm 8.2, 8.5; AC-37 |
 
 ### 19.2 Bağımsız inceleme 02 (KOŞULLU) — kapanış tablosu
@@ -1077,17 +1201,35 @@ Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-10-30-b18184f0.md` @ `bb
 
 | Bulgu | Seviye | Kapanış | Nerede |
 |---|---|---|---|
-| F-1@46aeb4a5 | ORTA | Sentinel kimliği `…0001` reddedilmez (varsayılan / tohum iş kiracısı); depo yalnız `Guid.Empty` ve platform bağlamını (`IsPlatformContext`) reddeder; sentinel kiracıda normal ayırma | Bölüm 4; AC-30, AC-38; S-30 |
-| F-2@46aeb4a5 | ORTA | Kutu anahtarı istemci anahtarı değil: başarıda `record-code:allocated:{allocationId:N}`, retde yeni Guid (emsal `PhysicalEntitlementAuditIntent.cs:29`); `TryInsertAsync` `false` → işlem iptal, defter `allocationId` ile okunur, 200 aynı kod (503 değil) | Bölüm 4.2, 8.6, 13; AC-17, AC-19, AC-39; S-42, S-43; sözleşme §11 |
+| F-1@46aeb4a5 | ORTA | Sentinel kimliği `…0001` reddedilmez (r4 F-10: iş kiracısı değil, Internal platform sistem kiracısı — Bölüm 4); depo yalnız `Guid.Empty` ve platform bağlamını (`IsPlatformContext`) reddeder; sentinel kiracıda normal ayırma | Bölüm 4; AC-30, AC-38; S-30 |
+| F-2@46aeb4a5 | ORTA | Kutu anahtarı istemci anahtarı değil: başarıda `record-code:allocated:{allocationId:N}`, retde yeni Guid (emsal `PhysicalEntitlementAuditIntent.cs:29`); `TryInsertAsync` `false` → işlem iptal, defter `allocationId` ile okunur, 200 aynı kod (503 değil) — **r4 F-3 ile geri alındı**: `false` değişmez ihlali → 503 (Bölüm 8.6) | Bölüm 4.2, 8.6, 13; AC-17, AC-19, AC-39; S-42, S-43; sözleşme §11 |
 | F-3@46aeb4a5 | DÜŞÜK | Ret yazıcısı Application DI'da ayrı `AddScoped`; Infrastructure DI ifadesi kaldırıldı; `DependencyInjectionSmokeTests.cs:281-282` değişmeden yeşil | Bölüm 5; AC-27, AC-29; S-45 |
 | F-4@46aeb4a5 | DÜŞÜK | `TransactionOwnedAuditSourceServices` kapalı küme; küme dışı → istisna; `TransactionOwnedAuditIntent.cs:6-9` yorumu güncellenir | Bölüm 5, 8.2, 12; AC-40; S-44 |
 | F-5@46aeb4a5 | DÜŞÜK | Yürütücü içi `PartitionedRateLimiter`, bölüm (tüketici servis, kiracı); 429 `RECORD_CODE_RATE_LIMITED` yürütücünün ret yolundan; `PeopleSearchRateLimit.cs` ve `OnRejected` kullanılmaz; değer A-16 | Bölüm 3, 5, 8.2, 8.5; AC-33; S-37 |
-| F-6@46aeb4a5 | DÜŞÜK | Açık `AuthenticateAsync` + `HttpContext.User` işleyiciden önce; aktör DL-1'in ilk adımında gerçek HTTP + üretim yazıcısıyla ölçülür, başarısızsa DL-1 durur | Bölüm 8.2; AC-17, AC-41; S-46 |
+| F-6@46aeb4a5 | DÜŞÜK | Açık `AuthenticateAsync` + `HttpContext.User` işleyiciden önce; aktör DL-1'in ilk commit grubunda (r4 F-6) gerçek HTTP + üretim yazıcısıyla ölçülür, başarısızsa DL-1 durur | Bölüm 8.2; AC-17, AC-41; S-46 |
 | F-7@46aeb4a5 | DÜŞÜK | Grup önekinin tek kaynağı belge `OrgPrefix`'i; ayar gövdesiz hizalama + kilit; kilitsizken düzeltme = `OrgPrefix` değişikliği; kilitten sonra uyuşmazlık 409 + kurtarma yolu (geri alma; bilinçli değişiklik FU-RCS-16) | Bölüm 3, 4.3, 8.12, 14; AC-22, AC-35 |
 | F-8@46aeb4a5 | DÜŞÜK | v1.1 yayınlanana kadar yalnız aktiflik + TC-3 zorunlu; v1.1'de alan yoksa 503 (`v1.1-proposal:69`) — kod değişikliği (FU-RCS-15), MOD-0220 sahibine açık bağımlılık; "kod değişikliği gerekmez" kaldırıldı | Bölüm 7, 7.1, 8.3, 20; AC-36 |
 | F-9@46aeb4a5 | DÜŞÜK | "Platform DL-1'de 422 (tür izni geçtiyse)"; `PLN` + `Platform` 403; sözleşme örneğiyle hizalı | Bölüm 0.1 (K-11), 8.5; AC-8; S-48; sözleşme §2, §4, §10 |
 | F-10@46aeb4a5 | DÜŞÜK | "v0 yanıt biçimi bağlayıcı değildi" **öneri** olarak; Treasury CT teyidi (A-17, 2026-11-02) | sözleşme başlığı, §3, §9, §12 |
 | F-11@46aeb4a5 | DÜŞÜK | Ara dönem azaltıcısı: kullanılmış kısa kod değişirse ya da başka şirkete geçerse 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`; MDM kalıcı kilidi A-18, MDM sahibi (Ali) + Beste, 2026-11-06 | Bölüm 4.2, 7, 8.13, 24; AC-42; S-47 |
+
+### 19.3 Bağımsız inceleme 03 (KOŞULLU) — karar tablosu
+
+Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/review-03-raw-2026-11-02.md` (hedef r3 pack sha256 `010fe1c2…8124`, kaynak
+`81864bd98`); CT kabulü 2026-11-02 (S-116, tek yazar geçişi). Sütunlar: bulgu | düzeltme | bölümler.
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@review-03-raw-2026-11-02 | Yönetici ucu rota kiracısını platform bağlamında doğrular, depoyu `TenantScope.Begin` içinde çağırır; denetim `TargetTenantId` = rota kiracısı; AC-30 istisnasız, yönetici yolu AC-43 | Bölüm 3, 4, 4.3, 13, 14, 21.1; AC-22, AC-30, AC-43; S-49, S-50 |
+| F-2@review-03-raw-2026-11-02 | Başarı ve ret yükünün tek tanımı (yer, ad, adım); sözleşme §11 aynı tabloya bağlandı | Bölüm 21.1, 21.3; AC-17, AC-19; S-56; sözleşme §11 |
+| F-3@review-03-raw-2026-11-02 | Kutu `false` kurtarması kaldırıldı (değişmez ihlali → 503); commit belirsizliği ve aynı anahtar yarışının üç durumu yürütücü davranışına göre; atıf `TryInsertAsync(IPlatformTransactionSession …)` | Bölüm 3, 4.2, 5, 7, 8.5, 8.6, 13, 19; AC-5, AC-17, AC-39; S-43, S-53, S-54, S-57; sözleşme §11 |
+| F-4@review-03-raw-2026-11-02 | Yönetici ucu `PlatformAdminOnly`; iç uçta platform aktörleri 403, adlı testlerle | Bölüm 3, 8.2, 13, 14; AC-44; S-51, S-52 |
+| F-5@review-03-raw-2026-11-02 | A-18 ve A-10 hazırlık listesinden kabul / merge kapılarına | Bölüm 18, 18.1, 23 |
+| F-6@review-03-raw-2026-11-02 | AC-41 ilk commit grubu: asgari dosya listesi, kanıt, başarısızlıkta geri alma | Bölüm 5, 16, 17; AC-41 |
+| F-7@review-03-raw-2026-11-02 | `ORG` / `POS` kapsamı DL-1'de boş küme; A-8 DL-2'de | Bölüm 4.4; AC-9 |
+| F-8@review-03-raw-2026-11-02 | DL-5 / DL-7 / DL-9 bağımlılık olarak: bağlı paket + sahip rolü, bilinmeyen kimlik TBD | Bölüm 7, 20, 23 |
+| F-9@review-03-raw-2026-11-02 | Birleştirilmiş parmak izi yerine alan alan, varsayılan uygulanmış karşılaştırma; v0 → açık `LegalEntity` senaryosu | Bölüm 4.2, 8.5, 13; AC-5; S-6, S-55; sözleşme §8 |
+| F-10@review-03-raw-2026-11-02 | Satır ölçüm commit'i `81864bd98`; platform sistem kiracısı tanımı ve MDM 3 s emsali düzeltildi; kayıt notlarına metinle atıf | başlık, Bölüm 0, 4, 8.1, 19, 19.1 |
 
 ## 20. Follow-up Items
 
@@ -1097,11 +1239,11 @@ Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-10-30-b18184f0.md` @ `bb
 | FU-RCS-02 | İKİSİ DE motoru: öneri + gerekçeli değişiklik + AUD-001; §5.9 | Beste | DL-3 |
 | FU-RCS-03 | TTY, PPM (PPM sahibi Codex), PLN bağlanması + Platform kapsamı | Beste + PPM sahibi | DL-4 |
 | FU-RCS-04 | Kodu kayda bağlama / tüketme, kullanılmayan kod raporu | Beste | DL-3 / DL-4 |
-| FU-RCS-05 | Tüzel Kişilik kısa kodu önerisi + §5.4 kalıcı kilidi (MDM) — karar A-18 | MDM sahibi (Ali) + Beste | DL-5 (karar 2026-11-06) |
+| FU-RCS-05 | Tüzel Kişilik kısa kodu önerisi + §5.4 kalıcı kilidi (MDM) — karar A-18; **bağımlılık**, bağlı paket MOD-0220 (revizyon mu FU mu: TBD) | MDM sahibi (MOD-0220 `mdm-domain-team`; paket kararı Ali) + Beste | DL-5 (karar 2026-11-06) |
 | FU-RCS-06 | İçe aktarma / yüksek su işareti; WMS geçici sayacından devam | Beste + MOD-0178 sahibi | DL-6 |
-| FU-RCS-07 | RCS-001 §3 `CTR` → `AGR` + izinli kapsam sütunu | Ali (`.antigravity`) + Treasury PR'ı | DL-7 |
+| FU-RCS-07 | RCS-001 §3 `CTR` → `AGR` + izinli kapsam sütunu — **bağımlılık**, bağlı paket yok (kural dosyası; ayrı paket gerekip gerekmediği TBD, CT) | Ali (`.antigravity`) + Treasury PR'ı | DL-7 |
 | FU-RCS-08 | WMS türleri `PUT` / `PCK` / `OUT` / `PKG` + Inventory kimlik bilgisi (+ `Diten.InventoryService` kaynak servis kümesine) | Beste + MOD-0178 sahibi | DL-8 |
-| FU-RCS-09 | Arka plan çağıranları için servis kimliği token'ı (Auth, Ali) | Beste + Ali | DL-9 |
+| FU-RCS-09 | Arka plan çağıranları için servis kimliği token'ı — **bağımlılık**, bağlı paket MOD-0033-FU02 (revizyon mu yeni FU mu: TBD); Platform tarafı (yürütücünün P3'ü kabulü) bu paketin DL-9 revizyonu | Auth: MOD-0033-FU02 sahip rolleri (`auth-security-owner` / `api-consumer-credential-owner`) + Ali; Platform: Beste | DL-9 |
 | FU-RCS-10 | Platform yönetici ekranları | Beste | DL-10 |
 | FU-RCS-12 | Doküman sayacındaki E11000 yarışı — MOD-0029 sahibine bildirilir | MOD-0029 sahibi | — |
 | FU-RCS-13 | Kimlik bilgisi döndürme / iptal prosedürü (dev-runbook): yeni `ActiveSecret` → eski `PreviousSecret` + `PreviousValidUntilUtc` → tüketici geçişi → eskiyi sil; acil durumda `IsRevoked`; değer depoya yazılmaz | Beste + tüketici sahipleri | DL-1 kabulü |
@@ -1123,9 +1265,9 @@ eklenir (A-10). Karar yoksa DL-1 main'e giremez.
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
 |---|---|---|---|---|---|
-| `AllocateRecordCodeCommand` (başarı) | `platform.record-code.allocated` | `RecordCodeAllocation` | a — işlem içi kapı (`RecordCodeAuditIntent.EnqueueAsync` → `ITransactionalAuditOutboxWriter.TryEnqueueAsync`, `Intent.SourceService` = kapalı listedeki ad; kutu anahtarı `record-code:allocated:{allocationId:N}`) | AfterState: `Code`, `Sequence`, `RecordType`, `PrefixScope`, `Prefix`, `LegalEntityId`; Metadata: `IdempotencyKey`, `GroupPrefixLockedNow`; aktör `TenantUser` (`sub`); `SourceService` çağıran; sonuç `Succeeded` | — |
-| `AllocateRecordCodeCommand` (ret) | `platform.record-code.allocation-refused` | `RecordCodeAllocation` (kimliksiz) | a — ayrı kısa işlem (`RecordCodeAuditIntent.EnqueueRefusalAsync` → `ITransactionalAuditRefusalWriter`; kutu anahtarı `record-code:refused:{yeni Guid:N}`) | Metadata: `reason_code`, `RecordType`, `PrefixScope`, `LegalEntityId`; sonuç Bölüm 21.2 | — |
-| `AlignRecordCodeGroupPrefixCommand` | `platform.record-code.group-prefix.aligned` | `RecordCodeGroupPrefix` | a — `IAuditableCommand` + `IAuditMetadataProvider` (`AuditBehavior`), aktör `PlatformAdministrator`, `TargetTenantId` | Before: önceki `GroupPrefix` (ilk hizalamada yok) · After: `GroupPrefix` (= etkin `OrgPrefix`) | — |
+| `AllocateRecordCodeCommand` (başarı) | `platform.record-code.allocated` | `RecordCodeAllocation` | a — işlem içi kapı (`RecordCodeAuditIntent.EnqueueAsync` → `ITransactionalAuditOutboxWriter.TryEnqueueAsync`, `Intent.SourceService` = kapalı listedeki ad; kutu anahtarı `record-code:allocated:{allocationId:N}`) | **yük Bölüm 21.3 Tablo A** (tek tanım, r4 F-2) | — |
+| `AllocateRecordCodeCommand` (ret) | `platform.record-code.allocation-refused` | `RecordCodeAllocation` (kimliksiz) | a — ayrı kısa işlem (`RecordCodeAuditIntent.EnqueueRefusalAsync` → `ITransactionalAuditRefusalWriter`; kutu anahtarı `record-code:refused:{yeni Guid:N}`) | **yük Bölüm 21.3 Tablo B** (alanların hangi adımda elde olduğuyla); sonuç Bölüm 21.2 | — |
+| `AlignRecordCodeGroupPrefixCommand` | `platform.record-code.group-prefix.aligned` | `RecordCodeGroupPrefix` | a — `IAuditableCommand` + `IAuditMetadataProvider` (`AuditBehavior`, merkezi yol), aktör `PlatformAdministrator`; `TargetTenantId` = rota kiracısı → kaydın `TenantId`'si rota kiracısı (`AuditService.ResolveTenantId`, Bölüm 4 "Yönetici ucu", r4 F-1) | `BeforeState`: `GroupPrefix` (önceki; ilk hizalamada yok), `LockedAtUtc` · `AfterState`: `GroupPrefix` (= etkin `OrgPrefix`), `LockedAtUtc` · `Metadata`: `EventName` = `platform.record-code.group-prefix.aligned` | — |
 
 ### 21.2 Hangi ret yazılır (K-10)
 
@@ -1154,6 +1296,53 @@ eklenir (A-10). Karar yoksa DL-1 main'e giremez.
 - **Okuma denetimi:** yok (AUD-001 §7'nin üç sınıfına girmez).
 - **BL-501:** kullanılmaz (AUD-001 §5 yol a). Tüketicinin Create kaydı tüketicinin yoluyla; eşleşme `idempotencyKey` + `code` (TC-7).
 
+### 21.3 Ayırma denetim yükü — tek tanım (r4, inceleme 03 F-2)
+
+Bu bölüm başarılı ayırma ve ret kayıtlarının **tek** tanımıdır; Bölüm 21.1, AC-17, AC-19 ve sözleşme §11 aynı alanları
+aynı yerde ve aynı yazımla anar, kendi listelerini tutmaz. **Ölçülen kapı davranışı** (`CanonicalTransactionalAuditOutboxWriter.TryEnqueueAsync`,
+`services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/CanonicalTransactionalAuditOutboxWriter.cs`):
+`intent.BeforeState`, `intent.AfterState` ve `intent.Metadata` **olduğu gibi** `AuditCanonicalRecord`'a kopyalanır; kapı
+`Metadata`'ya kendiliğinden yalnız `SystemActor` (principal yokken; bu uçta yok) ve `ClientCorrelation`
+(`AuditCorrelation.ClientCorrelationMetadataKey`, istemcinin korelasyon başlığı varsa) ekler; `Outcome` bugün sabit
+`Succeeded`, `SourceService` bugün sabit `"Diten.Platform"` (K-9 / K-10 ile eklemeli genişler, Bölüm 5); aktör principal'dan
+(`ResolveActor`). Anahtar yazımı PascalCase'dir (emsal `PhysicalEntitlementAuditIntent`: `ModuleCode`, `IsEnabled`);
+sensitive-field redactor'ı (`SensitiveFieldRedactionRegistry`) bu adların hiçbirini maskelemez (ölçüldü: `IdempotencyKey`
+"apiKey" / "token" / "secret" içermez). Olay adı `RequestType`'ta değil `Metadata.EventName`'dedir (emsal
+`CancelNotificationDispatchCommand`: `["EventName"] = "notifications.dispatch.cancelled"`); `RequestType` komut adıdır.
+
+**Tablo A — başarılı ayırma** (`RecordCodeAuditIntent.EnqueueAsync`, ayırmayla aynı işlem):
+
+| Yer | Alan | Değer |
+|---|---|---|
+| `AuditOutboxWriteRequest` | `TenantId` | token kiracısı |
+| | `IdempotencyKey` | `record-code:allocated:{allocationId:N}` |
+| | `RequestType` | `AllocateRecordCodeCommand` |
+| | `Operation` / `EntityType` / `EntityId` | `Create` / `RecordCodeAllocation` / `allocationId` (defter satırının `Id`'si) |
+| `Intent` | `Category` | `PlatformConfiguration` |
+| | `TargetTenantId` | token kiracısı |
+| | `SourceService` | kimlik bilgisinin kapalı listedeki adı (ör. `Diten.FinanceTreasuryService`) |
+| | `SourceModule` | `MOD-0040-FU02` |
+| | `BeforeState` | yok (`null`) |
+| | `AfterState` | `Code`, `Sequence`, `RecordType`, `PrefixScope` (varsayılan uygulanmış, enum adı), `Prefix`, `LegalEntityId` (Group'ta `null`) |
+| | `Metadata` | `EventName` = `platform.record-code.allocated`, `IdempotencyKey` (istemcinin anahtarı), `GroupPrefixLockedNow` (bool; bu ayırma kilidi yazdıysa `true`, LegalEntity'de daima `false`) |
+| Kapının eklediği | aktör, `Outcome`, `SourceService`, `ClientCorrelation` | `TenantUser` + `sub`; `Succeeded`; `Intent.SourceService`; başlık varsa |
+
+**Tablo B — ret** (`RecordCodeAuditIntent.EnqueueRefusalAsync`, ayrı kısa işlem). `RequestType`, `Operation`, `EntityType`,
+`Category`, `TargetTenantId`, `SourceService`, `SourceModule` Tablo A ile aynıdır; `EntityId` boş (`null`), kutu anahtarı
+`record-code:refused:{Guid.NewGuid():N}`, `BeforeState` / `AfterState` yok, `Outcome` Bölüm 21.2'deki değer. `Metadata`
+anahtarları ve **elde oldukları adım** (Bölüm 8.5 numaraları; adımda elde olmayan anahtar **yazılmaz** — `null` değil):
+
+| Anahtar | Değer | Elde olduğu adım | Yazılan retler |
+|---|---|---|---|
+| `EventName` | `platform.record-code.allocation-refused` | sabit | her yazılan ret |
+| `ReasonCode` | cevaptaki `reason_code` | ret anı | her yazılan ret |
+| `EvaluationStep` | retin adım numarası (4…13) | ret anı | her yazılan ret |
+| `IdempotencyKey`, `RecordType`, `PrefixScope` (varsayılan uygulanmış), `LegalEntityId` | gövdedeki değerler (`LegalEntityId` Group'ta yok) | **adım 5'ten sonra** (gövde ayrıştırıldı) | adım 6–13 retleri; **adım 4 reddinde (`RECORD_CODE_TENANT_NOT_ACTIVE`) yoktur** — gövde henüz okunmamıştır |
+| `Prefix` | çözülen önek | adım 11'de önek çözüldükten sonra | `LEGAL_ENTITY_SHORT_CODE_CHANGED` (MDM kısa kodu `K`), `GROUP_PREFIX_MISMATCH` (kiracı ayarındaki kilitli önek), adım 12–13'teki 503 |
+| `Code`, `Sequence` | — | — | **hiçbir ret yazmaz** (ret kod üretmez; adım 12'de alınmış numara boşluk kalır ve loglanır) |
+
+Aktör (`TenantUser` + `sub`) ve kiracı adım 2'de doğrulanmıştır; adım 2 öncesi ve adım 2–3 retleri yazılmaz (Bölüm 21.2).
+
 ## 22. Record Codes
 
 Bu paket kendi kullanıcıya görünen kayıt türünü **açmaz**. Servisin verdiği türler ve kuralları Bölüm 4.4'tedir (RCS-001
@@ -1174,18 +1363,19 @@ Bu paket kendi kullanıcıya görünen kayıt türünü **açmaz**. Servisin ver
 
 | dilim | ad | kapsadığı bölümler | kabul ölçütleri ve kapsam notu |
 |---|---|---|---|
-| DL-1 | v1 servis — ilk adım aktör ölçümü; allocate iç ucu, atomik sayaç, LegalEntity ve Group kapsamları, OTOMATİK tür önek kaydı, şirket kısa kodu ve uygunluk okuması, kısa kod kullanım kilidi (ara dönem), idempotency, işlem içi denetim (aktör kullanıcı, kaynak servis, ayırma kimliğinden kutu anahtarı), ret kaydı, denetim yazıcısının eklemeli genişletmesi, kiracı izolasyonu ve askıdaki kiracı, kimlik bilgisi azaltıcıları ve hız sınırı, grup öneki hizalaması | Owned Objects, Entity Fields, Repo Scope, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes | AC-1…AC-24 ve AC-26…AC-42; AC-41 ilk adım (başarısızsa dilim durur); Platform kapsamı tür izni geçtiyse 422 (K-11); hedef main 2026-11-06; sözleşme 2026-11-03'te donar; main'e girmeden önce A-10 CT defter kararı |
+| DL-1 | v1 servis — ilk commit grubu aktör ölçümü; allocate iç ucu, atomik sayaç, LegalEntity ve Group kapsamları, OTOMATİK tür önek kaydı, şirket kısa kodu ve uygunluk okuması, kısa kod kullanım kilidi (ara dönem), idempotency, işlem içi denetim (aktör kullanıcı, kaynak servis, ayırma kimliğinden kutu anahtarı), ret kaydı, denetim yazıcısının eklemeli genişletmesi, kiracı izolasyonu ve askıdaki kiracı, kimlik bilgisi azaltıcıları ve hız sınırı, grup öneki hizalaması | Owned Objects, Entity Fields, Repo Scope, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes | AC-1…AC-24 ve AC-26…AC-44; AC-41 ilk commit grubu (başarısızsa geri alınır, dilim durur); Platform kapsamı tür izni geçtiyse 422 (K-11); hedef main 2026-11-06; sözleşme 2026-11-03'te donar; **merge kapısı** A-10 CT defter kararı (Bölüm 18.1) — kod yazımını bekletmez |
 | DL-2 | OTOMATİK mevcut modüllerin bağlanması — Organizasyon Birimi (ORG) ve Pozisyon (POS), süreç içi port | Ownership and Boundaries, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; A-8 önkoşul; kod izni yok |
 | DL-3 | İKİSİ DE motoru — öneri, gerekçeli değişiklik, AUD-001 eski/yeni kod + gerekçe, RCS-001 §5.9 | Ownership and Boundaries, Audited Events, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; kod izni yok |
 | DL-4 | Platform kapsamı ve İKİSİ DE modüllerinin bağlanması — Abonelik Planı (PLN, öneksiz kod), Görev Türü (TTY), PPM (PFL/PRG/PRJ/INI/INV) | Ownership and Boundaries, Runtime Constraints, Acceptance Criteria, Record Codes, Follow-up Items | AC-25 (K-11'den taşındı) ve bu dilimin revizyonunda eklenecekler; kiracısız satır tabanı ve platform-global denetim yolu burada kararlaştırılır; kod izni yok |
-| DL-5 | Tüzel Kişilik kısa kodu önerisi ve RCS-001 §5.4 kalıcı kullanım kilidi (MDM tarafı) | Dependencies, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; karar A-18 (MDM sahibi Ali + Beste, 2026-11-06); o güne kadar ara dönem azaltıcısı DL-1'de; kod izni yok |
+| DL-5 | Tüzel Kişilik kısa kodu önerisi ve RCS-001 §5.4 kalıcı kullanım kilidi (MDM tarafı) — **bağımlılık**: MDM kodu bağlı paket MOD-0220'nin (revizyon mu FU mu: TBD), bu paketin payı yalnız Platform azaltıcısının (Bölüm 8.13) kilit gelince gözden geçirilmesi | Dependencies, Follow-up Items | **başlama kapısı** A-18 (MDM sahibi Ali + Beste, 2026-11-06; Bölüm 18.1); kabul ölçütleri bu dilimin paket revizyonunda; o güne kadar ara dönem azaltıcısı DL-1'de; kod izni yok |
 | DL-6 | İçe aktarma ve sayaç yüksek su işareti (RCS-001 §5.11), WMS geçici sayacından devam | Runtime Constraints, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; FU-0178-RCS-01 önkoşulu; kod izni yok |
-| DL-7 | RCS-001 §3 tür başına izinli kapsam sütunu ve CTR → AGR satırı | Record Codes, Açık kararlar | sahip Ali (.antigravity) + Treasury PR'ı; katalog testindeki adlı istisna kalkar |
+| DL-7 | RCS-001 §3 tür başına izinli kapsam sütunu ve CTR → AGR satırı — **bağımlılık**: kural dosyası değişikliği, bağlı paket yok (TBD, CT); bu paketin payı yalnız katalog testindeki adlı istisnanın kaldırılması | Record Codes, Açık kararlar | sahip Ali (.antigravity) + Treasury PR'ı (A-3); DL-1'i bekletmez |
 | DL-8 | WMS türleri (PUT, PCK, OUT, PKG) kataloğa ve Inventory kimlik bilgisi | Entity Fields, Authorization Convention, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; FU-0178-RCS-02 önkoşul; kaynak servis kümesine Diten.InventoryService; kod izni yok |
-| DL-9 | Arka plan çağıranları için servis kimliği token'ı (P3) | Runtime Constraints, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; Auth değişikliği (Ali); kod izni yok |
+| DL-9 | Arka plan çağıranları için servis kimliği token'ı (P3) — **bağımlılık**: Auth kodu bağlı paket MOD-0033-FU02'nin (revizyon mu yeni FU mu: TBD); bu paketin payı Platform yürütücüsünün P3 token'ını kabul etmesi | Runtime Constraints, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; Auth sahip rolleri MOD-0033-FU02 künyesindeki + Ali; kod izni yok |
 | DL-10 | Platform yönetici ekranları (tür kataloğu, sayaç, defter, grup öneki) | Layout & Shell Contract, Frontend File Contract, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; 2 dil, `_LayoutPlatformAdmin`, SEC-002 kapsam cümlesi; kod izni yok |
 
-Dilim sırası: DL-1 tek başına teslim edilebilir ve ilk adımı aktör ölçümüdür. DL-2 ve DL-4 DL-1'i, DL-4 ayrıca DL-3'ü
+Dilim sırası: DL-1 tek başına teslim edilebilir ve ilk commit grubu aktör ölçümüdür (AC-41). DL-5, DL-7 ve DL-9'un ana
+işi başka sahiplerin kodudur ve bu paketin bağımlılığıdır (Bölüm 7, r4 F-8). DL-2 ve DL-4 DL-1'i, DL-4 ayrıca DL-3'ü
 bekler. DL-6, MOD-0178'in FU-0178-RCS-01 geçişinden önce main'de olmalıdır. DL-7 DL-1'i bekletmez. DL-8, DL-6 ve
 FU-0178-RCS-02'yi bekler. Tüketici kapıları: Treasury paketlerinin DL-1 kabulü bu paketin DL-1 kodunun main'de olmasını
 bekler (D59/1); MOD-0289 ve MOD-0217 için ayrıca MDM bağdaştırıcısı, TC-4 ve TC-5 (A-11).
@@ -1206,7 +1396,7 @@ bekler (D59/1); MOD-0289 ve MOD-0217 için ayrıca MDM bağdaştırıcısı, TC-
 | A-9 | Tür kaydı kod mu koleksiyon mu | — | **KAPANDI — K-12 (b)**: kodda | Beste | 2026-10-30 |
 | A-10 | `platform-islem-ici` iz satırına `RecordCodeAuditIntent.*` belirteci; CT-DECISIONS; `AuditTrailStandardTests` sabiti | — | açık; kabul önerisi | CT | DL-1 main'e girmeden önce |
 | A-11 | Dondurma ayrıntıları: `idempotencyKey` biçimi; Treasury ve MDM portuna `prefixScope`; Bölüm 4.4 izin adlarının FU27 ile teyidi (`APD` alacak dekontu dahil) | — | açık; taslaktaki gibi | Beste + Treasury CT + MDM sahibi | 2026-11-03 |
-| A-12 | Kayıt satırı (Bölüm 0), `module-id-registry.md:353` notunun düzeltilmesi, domain-config In-Scope satırı | — | açık | CT | paket onayından önce |
+| A-12 | Kayıt satırı (Bölüm 0), `module-id-registry.md` "`MOD-0040` is reserved…" notunun düzeltilmesi, domain-config In-Scope satırı | — | açık | CT | paket onayından önce |
 | A-13 | İç uç kimlik deseni | — | **KAPANDI — K-12 (e)**: P2 + azaltıcılar (Bölüm 8.2) | Beste | 2026-10-30 |
 | A-14 | Ret denetimi | — | **KAPANDI — K-10** (Bölüm 21.2) | Beste | 2026-10-30 |
 | A-15 | AUD-001 §3 satır 3 ile aktör | — | **KAPANDI — K-8r**: aktör kullanıcı, `SourceService` çağıran; çelişki yok | Beste | 2026-10-30 |

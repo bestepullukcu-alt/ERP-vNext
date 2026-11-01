@@ -2,7 +2,7 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
+    x-status       : DRAFT (rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
                      öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
                      dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
@@ -192,7 +192,11 @@ satırının `AGR`'ye çevrilmesi Ali (`.antigravity`) + Treasury PR'ıyla ayrı
 ## 8. Idempotency ve eşzamanlılık
 
 - Anahtar kapsamı: (kiracı, çağıran servis, `idempotencyKey`). Başka kiracı ya da servis aynı anahtarı bağımsız kullanır.
-- Parmak izi: `recordType`, `prefixScope` (varsayılan uygulanmış), `legalEntityId`.
+- "Aynı gövde" = üç alanın **ayrı ayrı** eşitliği (birleştirilmiş metin ya da özet yok): `recordType` (birebir),
+  `prefixScope` (**varsayılan uygulandıktan sonra** — gönderilmeyen `prefixScope` ile `"LegalEntity"` aynıdır),
+  `legalEntityId` (UUID değeri olarak; büyük/küçük harf ya da yazım biçimi farkı aynı değerdir). Örnek: önce v0 gövdesi
+  (`prefixScope` yok), sonra aynı anahtarla `"prefixScope": "LegalEntity"` → 200 ve aynı `code`; aynı anahtarla
+  `"prefixScope": "Group"` → 400 `IDEMPOTENCY_KEY_REUSED`.
 - Ömür sınırsızdır. Tekrar MDM'e gitmez (MDM kapalıyken de 200 döner).
 - **Eşzamanlı aynı anahtar:** N eşzamanlı istek tek kod üretir ve hepsi o kodu alır; geçici yazım çakışmaları
   (`TransientTransactionError` / `WriteConflict`) sunucuda yeniden denenir ya da kazanan okunur; 503 yalnız gerçek
@@ -274,12 +278,21 @@ Hatalar:
     içi denetim kapısı aktörü doğrulanmış principal'dan çıkarır);
   - **kaynak servis** `SourceService` = §1 kapalı listesindeki servis adı (ör. `Diten.FinanceTreasuryService`) — yalnız
     doğrulanmış kimlik bilgisinden; gövde ya da başlıktan asla;
-  - `TenantId` = token kiracısı; varlık `RecordCodeAllocation`; işlem `Create`; sonuç `Succeeded`; metadata `recordType`,
-    `prefixScope`, `legalEntityId`, `prefix`, `code`, `sequence`, `idempotencyKey`;
+  - `TenantId` = `TargetTenantId` = token kiracısı; `RequestType` `AllocateRecordCodeCommand`; varlık `RecordCodeAllocation`
+    (kimlik = ayırma defteri kaydı); işlem `Create`; kategori `PlatformConfiguration`; `SourceModule` `MOD-0040-FU02`;
+    sonuç `Succeeded`;
+  - **yükün tek tanımı paket Bölüm 21.3 Tablo A'dır (rev 4, inceleme 03 F-2); alanlar ve yerleri birebir:**
+    `BeforeState` yok; `AfterState` = `Code`, `Sequence`, `RecordType`, `PrefixScope` (varsayılan uygulanmış), `Prefix`,
+    `LegalEntityId` (`Group`'ta `null`); `Metadata` = `EventName` (`platform.record-code.allocated`), `IdempotencyKey`,
+    `GroupPrefixLockedNow` (bu ayırma kiracının grup önekini kilitlediyse `true`); Platform'un denetim kapısı istemci
+    korelasyon başlığı varsa `ClientCorrelation` ekler. Anahtar yazımı PascalCase'dir;
   - **denetim kutusu anahtarı istemci anahtarı değildir (inceleme 02 F-2):** başarılı ayırmada ayırma defteri kaydının
     kimliğinden türetilir (`record-code:allocated:{allocationId}`), ret kaydında her ret için yeni bir Guid'dir. Böylece iki
-    kiracının aynı istemci anahtarı ya da önce reddedilip sonra başarılı olan aynı anahtar çakışmaz. Aynı ayırmanın kutu
-    satırı zaten yazılmışsa (commit sonucu bilinmeyen tekrar) servis 503 değil, 200 ve aynı kodu döner.
+    kiracının aynı istemci anahtarı ya da önce reddedilip sonra başarılı olan aynı anahtar çakışmaz.
+  - **Commit sonucu bilinmiyorsa (rev 4, inceleme 03 F-3):** Platform commit'i kendisi yeniler; yenilemeler tükenirse 503
+    `RECORD_CODE_UNAVAILABLE` döner ve ayırma commit olmuş ya da olmamış olabilir. Tüketici **aynı** `idempotencyKey` ile
+    yeniden dener: commit olmuşsa 200 ve aynı kod, olmamışsa yeni bir ayırma (ilk yazım) ve yeni kod. (rev 3'teki "kutu satırı
+    zaten yazılmışsa 200" cümlesi kaldırıldı: Platform'un işlem yürütücüsüyle o durum oluşmaz.)
 - **Ret kaydı:** ret bir iş işlemi olmadığından kayıt **ayrı kısa bir işlemle** yazılır ve hiçbir zaman kod üretmez:
 
 | Cevap | Kayıt | Outcome |
@@ -290,6 +303,13 @@ Hatalar:
 
   Gerekçe: kimliksiz bir istek ne kiracı ne kişi adlandırabilir; onu yazmak herkesin bir kiracının günlüğünü doldurmasına
   izin verir. Kimliği doğrulanmış ve kiracısı bilinen her ret iz bırakır.
+
+  Ret kaydının yükü paket Bölüm 21.3 Tablo B'dir (rev 4, inceleme 03 F-2): aktör, kiracı, `RequestType`, varlık türü,
+  kategori ve kaynak servis başarıyla aynı; varlık kimliği yok; `BeforeState` / `AfterState` yok. `Metadata`: `EventName`
+  (`platform.record-code.allocation-refused`), `ReasonCode`, `EvaluationStep` (§5 numarası) her retde; `IdempotencyKey`,
+  `RecordType`, `PrefixScope`, `LegalEntityId` yalnız gövde okunduktan sonraki retlerde (§5 adım 6–13) — **adım 4 reddinde
+  (`RECORD_CODE_TENANT_NOT_ACTIVE`) bu anahtarlar yoktur**; `Prefix` yalnız önek çözüldükten sonraki retlerde
+  (`LEGAL_ENTITY_SHORT_CODE_CHANGED`, `GROUP_PREFIX_MISMATCH`, adım 12–13'teki 503); `code` / `sequence` hiçbir retde.
 - Tekrar (aynı anahtar) yeni kayıt yazmaz.
 - Bu kayıtlar BL-501 ortak ileticisiyle değil Platform içinden yazılır. Tüketici kendi Create kaydını kendi yoluyla yazar
   ve kendi kaydına `idempotencyKey` ile `code`'u koyar; iki kayıt bunlarla eşleşir.
@@ -323,6 +343,11 @@ Hatalar:
 
 ## 14. Değişiklik geçmişi
 
+- 1.0.0 rev 4 (2026-11-02) — paket r4, bağımsız inceleme 03 (KOŞULLU): başarı ve ret denetim yükü paket Bölüm 21.3'teki
+  tek tanıma bağlandı, alan adları ve yerleri (`AfterState` / `Metadata`) birebir, ret alanlarının elde olduğu adım yazıldı
+  (§11, F-2); commit sonucu bilinmeyen deneme için 503 + aynı anahtarla tekrar kuralı, "kutu satırı zaten yazılmışsa 200"
+  cümlesi kaldırıldı (§11, F-3); "aynı gövde" alan alan ve varsayılan uygulanmış kapsamla, v0 → açık `LegalEntity`
+  örneği (§8, F-9). İstek gövdesi, durum kodları ve neden kodları değişmedi.
 - 1.0.0 rev 3 (2026-10-30) — bağımsız inceleme 02 (KOŞULLU): denetim kutusu anahtarı ayırma kimliğinden / ret başına yeni
   Guid, aynı ayırmanın tekrarında 200 (§11); `approvalStatus` için v1.1 bağımlılığı doğru yazıldı (§7, N-11); kısa kod
   ara dönem kilidi ve `LEGAL_ENTITY_SHORT_CODE_CHANGED` (§4, §7, N-12); grup önekinin tek kaynağı belge `OrgPrefix`'i (§6);
