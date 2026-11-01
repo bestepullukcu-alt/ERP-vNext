@@ -1,0 +1,17 @@
+# MOD-0286-FU01 oracle sabotajı, ham çıktı (kayıt 01, 2026-11-01). Ölçülen: docs/records/audits/2026-10/mod-0286-fu01-01/uic-fu01-oracle-02.py (değişmedi).
+# Komut (depo kökünden, HEAD a6750f5755618d09a2d282c3aef83eb82a967cde): python3 -B docs/records/audits/2026-11/mod-0286-fu01-01/uic-fu01-kanit-01.py <boş çıktı klasörü> a6750f5755618d09a2d282c3aef83eb82a967cde --oracle-sabotaj --klon-var <geçici klon>
+# Geçici klon: paylaşımlı klon (--shared), origin kaldırılmış, dal fu01-sabotaj, hiçbir şey push edilmedi. Bugünkü HEAD'de FU-19 satırı ve FU01_REF_PATTERNS yok: kurulum oracle satirlar çıktısından 22 satır ve paket bloğundan sözlük ekler.
+# --- ham çıktı başı ---
+klon: /private/tmp/claude-501/-Users-alitufanoglu-ERP-vNext/05ce4e4b-9875-47e7-8842-ee9372026895/scratchpad/kanit-deneme/uic-fu01-klon-kh7zcyp5/klon  iş: a6750f5755618d09a2d282c3aef83eb82a967cde  taban: None
+ORACLE SABOTAJI: uic-fu01-oracle-02.py geçici klonda, a6750f575561 ağacında
+kur: tabana oracle satirlar çıktısından 22 FU-19 satırı eklendi (bugünkü HEAD'de yok)
+kur: seçici kopyasına FU01_REF_PATTERNS sözlüğü eklendi (paket bloğundan; bugünkü HEAD'de yok)
+KONTROL: oracle satirlar 22 satır, tabandaki FU-19 22 satır, fark 0 -> eşit
+KONTROL: oracle secici -> ['aynı'] çıkış 0
+(a) tabana fazladan FU-19 satırı: oracle 22, taban 23, fark ['+ Zzz/Plant\tCI-7\twwwroot/assets/js/Zzz/plant.js\t1'] -> YAKALANDI (kırmızı)
+(b) bir FU-19 sayısı düşürüldü (['DemandIdeas', 'CI-7', 'wwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js']): fark ['- DemandIdeas\tCI-7\twwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js\t2', '+ DemandIdeas\tCI-7\twwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js\t1'] -> YAKALANDI (kırmızı)
+(c) secici modunda VARIABLE deseni farklı sözlük: oracle secici -> ['farklı\tVARIABLE'] çıkış 1 -> YAKALANDI (kırmızı)
+(d) oracle girdisi: DecompositionTreeBuilder görünümünden decompositionPage.js etiketi kaldırıldı: oracle 21, taban 22, fark ['+ DecompositionTreeBuilder\tCI-7\twwwroot/assets/js/pages/decomposition/decompositionPage.js\t1'] -> YAKALANDI (kırmızı)
+ÖZET: kontrol=eşit, a=kırmızı, b=kırmızı, c=kırmızı, d=kırmızı
+# --- ham çıktı sonu ---
+# Yorum: kontrol eşit/aynı iken dört sabotajın dördü de kırmızı verdi (a fazla satır, b düşürülmüş sayı, c sözlükte farklı desen, d oracle girdisinden kaldırılan etiket); kırmızı vermeyen yok; sabote edilmeyen: oracle'ın degisken ve turetim modları ve seçici modunda STRIP/SCRIPT değerleri.
