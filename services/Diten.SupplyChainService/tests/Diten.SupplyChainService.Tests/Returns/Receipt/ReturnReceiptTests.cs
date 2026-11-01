@@ -638,13 +638,18 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
     [Theory]
     [InlineData("client-reference")]
     [InlineData("no-warehouse")]
-    public async Task Received_RefusesAClientReferenceOrAMissingWarehouse_With400_AndNoCall(string variant)
+    [InlineData("no-location")]
+    [InlineData("blank-location")]
+    public async Task Received_RefusesAClientReferenceOrAMissingPlace_With400_AndNoCall(string variant)
     {
         var (app, s) = Start();
         using var _ = app;
         var id = await s.InTransit(("1", "4"));
         var body = Received();
-        if (variant == "client-reference") body["inventoryTransactionReferenceId"] = "txn-8801"; else body.Remove("toWarehouseId");
+        if (variant == "client-reference") body["inventoryTransactionReferenceId"] = "txn-8801";
+        else if (variant == "no-warehouse") body.Remove("toWarehouseId");
+        else if (variant == "no-location") body.Remove("toLocationId");
+        else body["toLocationId"] = " ";
 
         var r = await s.Receive(id, "receive-1", body);
 

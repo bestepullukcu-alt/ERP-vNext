@@ -895,16 +895,18 @@ const ReturnsList = (function () {
         target?.focus({ preventScroll: true });
     };
 
-    const receiptWarehouseMissing = () => {
-        const field = document.getElementById('transitionToWarehouseId');
-        const missing = (field?.value ?? '').trim() === '';
-        field?.classList.toggle('is-invalid', missing);
-        field?.setAttribute('aria-invalid', String(missing));
-        if (missing) {
+    const receiptPlaceMissing = () => {
+        const missing = ['transitionToWarehouseId', 'transitionToLocationId'].map((id) => document.getElementById(id)).filter((field) => {
+            const empty = (field?.value ?? '').trim() === '';
+            field?.classList.toggle('is-invalid', empty);
+            field?.setAttribute('aria-invalid', String(empty));
+            return empty;
+        });
+        if (missing.length > 0) {
             showAlert('formReturnTransitionAlert', { status: 400, code: 'INVALID_REQUEST', reference: '' });
-            field?.focus({ preventScroll: true });
+            missing[0]?.focus({ preventScroll: true });
         }
-        return missing;
+        return missing.length > 0;
     };
 
     // lines[] exists only on the Received answer (ReturnResponse, not the list), so the result is shown where it arrives.
@@ -945,7 +947,7 @@ const ReturnsList = (function () {
 
     // TransitionReturnCommand: targetStatus + occurredAt (exact text); dispositionCode only for Dispositioned (sent as
     // typed, whitespace kept); inventoryTransactionReferenceId only for Dispositioned and omitted when empty (README A9);
-    // toWarehouseId / toLocationId only for Received, the location omitted when empty (SHIPMENT-BUNDLE 3.4.0: optional);
+    // toWarehouseId / toLocationId only for Received, the location omitted when empty (receiptPlaceMissing stops that first);
     // unpostedLines only for the unposted exit. Optional fields not listed for a target are omitted (pack §32.7).
     const buildTransitionBody = (unposted) => {
         const target = document.getElementById('transitionTarget')?.value || '';
@@ -993,7 +995,7 @@ const ReturnsList = (function () {
             return;
         }
         // Mirror of the business rule only: Received needs toWarehouseId (400 otherwise; the backend stays authoritative).
-        if (target === 'Received' && receiptWarehouseMissing()) return;
+        if (target === 'Received' && receiptPlaceMissing()) return;
         const subtext = target === 'Received' ? `${t('ConfirmTransition')} ${t('ReceivedPostsQuarantineNote')}` : t('ConfirmTransition');
         // Shared premium wrapper only (MOD-0013 _GlobalConfirmation: showConfirm(title, callback, options));
         // no native dialog and no direct SweetAlert call. Title and subtext are resx text only.
@@ -1008,7 +1010,7 @@ const ReturnsList = (function () {
         const candidate = unpostedCandidate;
         if (!transitionContext || !candidate) return;
         if (transitionPending) { window.showToast?.(t('RequestPending'), 'warning'); return; }
-        if (receiptWarehouseMissing()) return;
+        if (receiptPlaceMissing()) return;
         window.showConfirm?.(t('ActionReceiveWithoutPosting'), () => { void submitTransition(candidate); }, {
             subtext: format(t('ConfirmReceiveWithoutPosting'), candidate.shipmentLineNumber),
             type: 'danger',
