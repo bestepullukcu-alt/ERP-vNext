@@ -250,3 +250,26 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 
 Tahmin; kesin değil. Ölçülmeyen: Excel'e yapıştırmanın kapılarla gerçek davranışı (Excel açılmadı) ve sahibin
 listeleri.
+
+## 7. Ek — dal onayı (S-115, sahip kararı 2026-11-01)
+
+Yukarıdaki metin değişmedi; bu bölüm §3.1, §3.3 ve §3.5'in **dağıtım ve kabul anındaki** okumasını değiştirir (tasarım:
+`docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`; yürürlük: kural PR'ı `origin/main`'e girince).
+
+1. **İki okuma.** `pack_approval.py check <paket> --deferred` (dağıtım kapısı `prompt_gate.py` ve kabul kaydı
+   `acceptance_record.py` bu okumayı kullanır): onay ve inceleme satırları CT dalında, henüz main'de değilken de
+   sayılır; insan adımı "beklemede" notuyla geçer. `--deferred` olmadan (sıkı okuma, CI) §3.5 aynen geçerlidir: satır
+   main'e PR merge'üyle gelmiş olmalıdır.
+2. **Dalda da ölçülen:** paket ve kart özetleri; onaylayan **main'deki** listede ve `high = evet`; onaylayan kişisi ≠
+   yazan kişisi; ENGEL kabulü onaylayana ait; inceleme onaydan önce; UYGUN DEĞİL ya da açık ENGEL yok; inceleyen oturumu
+   ≠ yazan oturumu; yalnız ekleme; main'in satırları dalın öneki (geride kalan dal reddedilir, kısmi okunmaz). Doğrudan
+   main'e yazılmış satır iki okumada da geçersizdir.
+3. **Modül PR'ında ikinci insan (§3.5 değişikliği):** satırı main'e getiren PR'ı birleştiren, listede `high = evet` olan,
+   PR'ı açan olmayan ve satırı yazanın kişisi olmayan **herhangi bir** kişidir; onaylayanın kendisi olmak zorunda
+   değildir (S-41 geri alındı). S-91 istisna satırları "onaylayanı birleştirir" kuralını korur.
+4. **Kabul edilen bedel:** onay satırındaki onaylayan alanı, satır main'e girene kadar GitHub'da doğrulanmaz; sahibin
+   "onayla" sözü kule sohbetinde ve satırın `requested_by` / oturum alanlarındadır. Kod yine ikinci kişi olmadan main'e
+   giremez (dal koruması).
+5. **GitHub kotası (Yönetici bulgusu 2026-11-01):** `gh api` kota hatası (`API rate limit exceeded`) `GitHubQuota`
+   istisnasıdır: her okuma çıkış 2 "ölçülemedi: GitHub sorgu kotası doldu — <sıfırlanma saati> sonra yeniden dene"
+   der; onay ya da inceleme dosyasını "güvenilmez" ilan etmez; onay yine GEÇMEZ (fail-closed).
