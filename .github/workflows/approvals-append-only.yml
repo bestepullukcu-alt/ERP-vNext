@@ -2,8 +2,20 @@ name: approvals-append-only
 
 # S-91: a pull request that drops, changes or moves a row of approvals.tsv / reviews.tsv is red. Only breaks the
 # pull request brings count (--base); a known, owner-approved break is excused by append-only-exceptions.tsv on main.
+# S-115 F-8 (independent review 2026-11-01): on every push to main, the packs whose approval / review rows the push
+# brought are read STRICTLY (`check <paket> --ref HEAD`): a module pull request merged by the wrong person (not listed,
+# high = hayır, the row author's other account, an opener who is not the row's author) makes main red at once — the
+# human step is measured when the row reaches main, not only at the pack's next revision. Only the touched packs are
+# checked (GitHub quota); gh runs with the workflow token.
 on:
   pull_request:
+    paths:
+      - "execution/approvals/**"
+      - "scripts/pack_approval.py"
+      - ".github/workflows/approvals-append-only.yml"
+  push:
+    branches:
+      - main
     paths:
       - "execution/approvals/**"
       - "scripts/pack_approval.py"
@@ -15,6 +27,7 @@ permissions:
 
 jobs:
   append-only:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -27,3 +40,41 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
+
+  strict-check-on-main:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Fetch main
+        run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
+      - name: Strict approval check for the packs this push touched (S-115 F-8)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          before="$BEFORE_SHA"
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+            before="HEAD^1"
+          fi
+          packs=$(git diff -U0 "$before" HEAD -- execution/approvals/approvals.tsv execution/approvals/reviews.tsv \
+                  | grep '^+' | grep -v '^+++' | sed 's/^+//' | cut -f1 | grep '^execution/' | sort -u || true)
+          if [ -z "$packs" ]; then
+            echo "bu push onay ya da inceleme satırı getirmedi — sıkı okuma gerekmez"
+            exit 0
+          fi
+          rc=0
+          for p in $packs; do
+            echo "== $p"
+            if python3 scripts/pack_approval.py check "$p" --ref HEAD; then
+              echo "   onaylı (sıkı okuma)"
+            else
+              echo "   KIRMIZI: $p — main'deki satır sıkı okumada geçmiyor (çıkış $?); kart §7b (d): iptal satırı + yeniden onay"
+              rc=1
+            fi
+          done
+          exit $rc

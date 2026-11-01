@@ -378,7 +378,15 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
             # else the worktree's HEAD, else main — so approval and review rows still on the branch count (their human
             # step pending until the module pull request merges; on main the reading is the strict one)
             at_rows = rec or pa.commit_of(root, "HEAD") or main
-            stops, cover, _notes, step, accepted = pg.review_negatives(pa, root, main, at_rows, path, pdata, deferred=True)
+            # F-10: a record is re-measured later, after main gained other rows — the prefix anchor is the record's
+            # merge-base with main (what main was when the record was made); today's negatives on main still count (K4)
+            mb = pa.git(root, "merge-base", at_rows, main, ok_fail=True)
+            anchor = mb.decode().strip() if mb else main
+            stops, cover, _notes, step, accepted = pg.review_negatives(pa, root, main, at_rows, path, pdata, deferred=True,
+                                                                        anchor=anchor)
+            if anchor != main:
+                today = pg.review_negatives(pa, root, main, main, path, pdata)[0]       # the strict reading of today's main
+                stops += [x for x in today if x not in stops]
             out += [(f"bağlı paket sürümü (sha {pa.sha256(pdata)[:8]}): {x}", f"{step}; yürüyen iş de bu sonuçla kabul "
                      "edilmez") for x in stops]
             sha8 = pa.sha256(pdata)[:8]
@@ -386,10 +394,14 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
                 # Q3: BOTH a valid approval of exactly these bytes at the CT's ref (pack_approval.evaluate deferred exit 0;
                 # a legacy 'unchanged since the start' counts) AND a valid review cover or proven running-work protection
                 # — an old approval never replaces the review requirement
-                code_a, lines_a = (pa.evaluate(root, at_rows, path, deferred=True) if pa.read(root, at_rows, path) == pdata
+                code_a, lines_a = (pa.evaluate(root, at_rows, path, deferred=True, anchor=anchor) if pa.read(root, at_rows, path) == pdata
                                    else (1, ["sonuç: bu sürüm dalın (ya da main'in) paket sürümü değil"]))
-                if code_a != 0:
-                    why_a = next((l for l in reversed(lines_a) if l.startswith(("sonuç:", "ENGEL:"))), lines_a[-1])
+                why_a = next((l for l in reversed(lines_a) if l.startswith(("sonuç:", "ENGEL:"))), lines_a[-1])
+                if code_a == 2:
+                    # F-13: nothing was measured (GitHub quota or an unreadable file) — not "not approved"
+                    out.append((f"kabul edilen paket sürümü (sha {sha8}) onayı ölçülemedi — {why_a}",
+                                "kota sıfırlanınca ya da dosya okunur olunca aynı kaydı yeniden koş; onay dosyaları bozuk sayılmaz"))
+                elif code_a != 0:
                     out.append((f"kabul edilen paket sürümü (sha {sha8}) dalda ya da main'de onaylı değil (CT-APR-01: {why_a})",
                                 f"paketin bu sürümünü onaylatın (`python3 scripts/pack_approval.py check {path} --deferred` "
                                 "çıkış 0; SOP §20.4)"))
@@ -1605,7 +1617,7 @@ def self_test() -> int:
     r_w2 = s5_run(rw2, VW, code_w2, code_w2, code_w2)
     cases.append(("sabotage S-5 R3-1 / S-115: the branch-edited version under CT-APR-01 with no approval row -> refused "
                   "'onaylı değil' (the branch reading invents no approval) and 'incelenmemiş'",
-                  r_w2[0] == 1 and any("main'de onaylı değil" in e and "onay yok" in e for e in s5e(r_w2))
+                  r_w2[0] == 1 and any("dalda ya da main'de onaylı değil" in e and "onay yok" in e for e in s5e(r_w2))
                   and any("incelenmemiş" in e for e in s5e(r_w2))))
     # Q3 with protection: W7 running at the S-5 start; CT-APR-01 either keeps the pack's legacy approval (the pack is
     # older than POLICY-START, unchanged) or does not (the pack changed after POLICY-START, no approval row)
@@ -1673,7 +1685,7 @@ def self_test() -> int:
     r_c = wp_run(rc, pc, cc, "W7")
     cases.append(("sabotage S-5 Q3: the WP's protected start version but no valid CT-APR-01 approval (changed after "
                   "POLICY-START, no approval row) -> refused (protection never replaces the approval)",
-                  r_c[0] == 1 and any("main'de onaylı değil" in e and "CT-APR-01" in e for e in s5e(r_c))))
+                  r_c[0] == 1 and any("dalda ya da main'de onaylı değil" in e and "CT-APR-01" in e for e in s5e(r_c))))
     # Q4: an ENGEL accepted ('kabul — onaylayan') in a review of the bound version, no approval row for it
     ra4 = S5Repo(os.path.join(s5_tmp.name, "q4"))
     p4 = ra4.commit_file(PK, V)
@@ -1712,13 +1724,44 @@ def self_test() -> int:
     c15n = r15.commit("review only, no approval row")
     r_15n = s5_run(r15, V, p15, c15n, c15n)
     cases.append(("sabotage S-115 (17): a branch review without an approval row -> refused 'onaylı değil' (the branch reading "
-                  "invents no approval)", r_15n[0] == 1 and any("main'de onaylı değil" in e for e in s5e(r_15n))))
+                  "invents no approval)", r_15n[0] == 1 and any("dalda ya da main'de onaylı değil" in e for e in s5e(r_15n))))
     r15.g("checkout", "-q", "main")
     r15.g("merge", "-q", "--no-ff", "-m", "Merge ct", "ct", who=r15.LEAD)
     m15 = r15.head()
     r_15m = s5_run(r15, V, p15, m15, m15)
     cases.append(("S-115 (17): the same rows after the module PR merged by another person -> still accepted (strict human step)",
                   r_15m[0] == 0 and not s5e(r_15m)))
+    # F-10 (E10): the record is re-measured after main gained ANOTHER pack's review row -> still accepted (the prefix
+    # anchor is the record's merge-base with main); a revoke of THIS pack on main today -> refused (K4 kept)
+    r10 = S5Repo(os.path.join(s5_tmp.name, "f10"))
+    r10.put(r10.pa.APPROVALS, "\t".join(r10.pa.APPROVAL_COLUMNS) + "\n")
+    r10.put(r10.pa.POLICY, "# start\n")
+    r10.commit("CT-APR-01 start", r10.LEAD)
+    p10 = r10.commit_file(PK, V)
+    PK2 = "execution/domains/x/module-packs/MOD-0152-y.md"
+    r10.commit_file(PK2, V.replace("MOD-0151", "MOD-0152"))
+    r10.start()
+    r10.g("checkout", "-q", "-b", "ct")
+    r10.put(rel15, body15)
+    r10.put(r10.pa.REVIEWS, r10.get(r10.pa.REVIEWS) + "\t".join([PK, d15, rel15, hashlib.sha256(body15.encode("utf-8")).hexdigest(),
+                                                               "UYGUN", "0", "claude", "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-11-01"]) + "\n")
+    r10.commit("review row on the branch")
+    r10.put(r10.pa.APPROVALS, r10.get(r10.pa.APPROVALS) + r10.pa.make_row(r10.root, "HEAD", PK, "dev", "lead", "HIGH", "test", "2026-11-01") + "\n")
+    c10 = r10.commit("approval row on the branch (the record's commit)")
+    r10.g("checkout", "-q", "main")
+    r10.review(PK2, V.replace("MOD-0151", "MOD-0152"), "UYGUN", REV_OK, 0)        # another pack's row lands on main later
+    r_10 = s5_run(r10, V, p10, c10, c10)
+    cases.append(("S-115 F-10 (E10): main gained another pack's review row after the record -> the record still passes "
+                  "(prefix anchored at its merge-base with main)", r_10[0] == 0 and not s5e(r_10)))
+    r10.g("checkout", "-q", "-b", "revoke-pk", "main")
+    r10.put(r10.pa.APPROVALS, r10.get(r10.pa.APPROVALS) + "\t".join([PK, d15, "revoke", "HIGH", "iptal", "lead", "lead", "2026-11-02",
+                                                                   "-", ""]) + "\n")
+    r10.commit("revoke on main", r10.LEAD)
+    r10.g("checkout", "-q", "main")
+    r10.g("merge", "-q", "--no-ff", "-m", "Merge revoke-pk", "revoke-pk", who=r10.LEAD)
+    r_10r = s5_run(r10, V, p10, c10, c10)
+    cases.append(("sabotage S-115 F-10 / K4: a revoke of THIS pack on today's main -> the old record is refused",
+                  r_10r[0] == 1 and any("dalda ya da main'de onaylı değil" in e for e in s5e(r_10r))))
     # F — F-6: a shallow clone
     shallow = os.path.join(s5_tmp.name, "f")
     subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + rb.root, shallow], check=True, capture_output=True,

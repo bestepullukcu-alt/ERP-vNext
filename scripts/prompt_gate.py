@@ -602,7 +602,8 @@ def _negative_rows(rows: list[dict], fails: list[str]) -> list[dict]:
     return [r for r in rows if r["_n"] in hit or r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"] or rows
 
 
-def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes, deferred: bool = False) -> tuple[list[str], list[str], list[str], str, set]:
+def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes, deferred: bool = False,
+                     anchor: str | None = None) -> tuple[list[str], list[str], list[str], str, set]:
     """S-5 (F-1, F-3, N-3, N-4, N-5, R3-3, Q2, Q4, Q5): (stops, covering versions, notes, next step, the person keys that
     accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — or, with
     `deferred` (S-115, owner decision 2026-11-01: the branch reading of the dispatch gate and of acceptance_record.py),
@@ -624,7 +625,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     at = commit if deferred else main          # S-115: the branch reading reads the rows at the CT's ref
     where = "dalda" if deferred else "main'de"
     if deferred:
-        gap = pa.prefix_problem(root, commit, main, pa.REVIEWS)
+        gap = pa.prefix_problem(root, commit, anchor or main, pa.REVIEWS)    # F-10: the acceptance anchors at its merge-base
         if gap:
             return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1) ve yeniden koşun", set()
     trail = pa.append_only_problems(root, at, pa.REVIEWS, main)
