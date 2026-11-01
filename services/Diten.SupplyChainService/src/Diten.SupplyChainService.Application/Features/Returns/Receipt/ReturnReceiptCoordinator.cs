@@ -32,6 +32,8 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         var warehouse = ReturnWire.OptionalText(b, "toWarehouseId");
         if (string.IsNullOrWhiteSpace(warehouse)) return Fail(InvalidRequest, 400);
         var location = ReturnWire.OptionalText(b, "toLocationId");
+        // Pack §34.1: required on Received. INVENTORY refuses an inbound movement without it, which would strand the line.
+        if (string.IsNullOrWhiteSpace(location)) return Fail(InvalidRequest, 400);
         var occurredAt = ReturnInstant.Normalize(b.GetProperty("occurredAt").GetString()!);
         if (!CustomerReturnMovementMapper.TryInstant(occurredAt, out var at)) return Fail(InvalidRequest, 400);
         var unposted = ReturnWire.UnpostedLines(b);
