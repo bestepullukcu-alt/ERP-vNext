@@ -332,9 +332,12 @@ public sealed class WarehouseScenario
     {
         Factory = factory;
         Inventory = new InventoryScenario(factory, level, lotControlled, serialControlled);
+        _wms = factory.CreateDefaultClient(new WmsDraftContractHandler()); // AC-19: every /api/warehouse answer is checked against the WMS draft
         factory.TrackWarehouseTenant(Inventory.Tenant);
         Token = TokenFor(Inventory.User, Read, Manage);
     }
+
+    private readonly HttpClient _wms;
 
     public WarehouseApiFactory Factory { get; }
 
@@ -409,7 +412,7 @@ public sealed class WarehouseScenario
         var effective = token ?? Token;
         if (effective.Length > 0) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", effective);
         configure?.Invoke(request);
-        return Inventory.SendAsync(request);
+        return _wms.SendAsync(request);
     }
 
     // ── conveniences that assert the status ──────────────────────────────────────────────────────────────

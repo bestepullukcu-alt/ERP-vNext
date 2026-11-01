@@ -50,6 +50,5 @@ public static class WarehouseContract
     // bulkAssignPutawayTasks row outcomes besides Conflict / NotFound (pack §12 "toplu atama")
     public const string RowAssigned = "Assigned";
     public const string RowPendingConfirmation = "PendingConfirmation";
-    public const string RowIntegrityError = "IntegrityError";
     public const string RowInvalidTransition = "InvalidTransition";
 }

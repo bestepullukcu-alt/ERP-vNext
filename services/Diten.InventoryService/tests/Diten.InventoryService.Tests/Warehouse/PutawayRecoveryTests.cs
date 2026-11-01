@@ -337,7 +337,7 @@ public sealed class PutawayRecoveryTests : IClassFixture<WarehouseApiFactory>
         await s.MutateStoredTaskAsync(TaskId(task), t => t.Confirmations.Add(new TaskConfirmation
         {
             Seq = 2, Quantity = 1, ToLocationId = s.A01, Status = Diten.InventoryService.Domain.Warehouse.Enums.ConfirmationStatus.Pending, PostingKey = PostingKey(TaskId(task), 2),
-            ConfirmedBy = s.User, ConfirmedAtUtc = DateTimeOffset.UtcNow
+            ConfirmedBy = s.User, ConfirmedAtUtc = DateTimeOffset.UtcNow, Attempts = 1
         }));
         var current = await s.GetTaskAsync(TaskId(task));
         Assert.Equal("WMS_CONFIRMATION_PENDING", await ErrorCode(s.ResolveAsync(TaskId(task), 1, ETagOf(current)), 409));
@@ -351,7 +351,7 @@ public sealed class PutawayRecoveryTests : IClassFixture<WarehouseApiFactory>
         var (s, task) = await OpenAsync();
         await PendingAsync(s, task, 20, committed: true);
         var movement = Assert.Single(s.TaskMovements(TaskId(task)));
-        await s.PostLedgerAsync(s.Inventory.Reversal(new() { ["quantity"] = "20", ["uomId"] = "EA" }, movement["_id"].ToString()));
+        await s.PostLedgerAsync(s.Inventory.Reversal(new() { ["quantity"] = "20", ["uomId"] = "EA" }, MovementId(movement)));
         LockExpires();
 
         var error = await Expect(s.RetryAsync(TaskId(task), 1), 409);
@@ -368,7 +368,7 @@ public sealed class PutawayRecoveryTests : IClassFixture<WarehouseApiFactory>
         var other = await s.TaskAsync(20);
         await PendingAsync(s, other, 20, committed: true);
         var second = Assert.Single(s.TaskMovements(TaskId(other)));
-        await s.PostLedgerAsync(s.Inventory.Reversal(new() { ["quantity"] = "20", ["uomId"] = "EA" }, second["_id"].ToString()));
+        await s.PostLedgerAsync(s.Inventory.Reversal(new() { ["quantity"] = "20", ["uomId"] = "EA" }, MovementId(second)));
         LockExpires();
         await s.ReconcileAsync();
         var swept = await s.GetTaskAsync(TaskId(other));

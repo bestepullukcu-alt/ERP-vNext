@@ -16,8 +16,8 @@ namespace Diten.InventoryService.Application.Features.PutawayTasks.Handlers.Comm
 /// of THIS operation only (11 F-2): same fingerprint → replay (a row that carries the key answers <c>Assigned</c> with its current version,
 /// another row <c>Conflict</c>, an unknown one <c>NotFound</c>); other fingerprint → 400. Then the assignee is checked with AUTH (invalid →
 /// 422, AUTH down → 503, nothing written). Every row is assigned at its own version in ONE transaction with its <c>Assigned</c> key event; a
-/// gone row answers <c>NotFound</c>, a stale one <c>Conflict</c>, a task with a Pending confirmation <c>PendingConfirmation</c>, one with an
-/// integrity error <c>IntegrityError</c>, a closed one <c>InvalidTransition</c>. The central event is enlisted only when a row was written.
+/// gone row answers <c>NotFound</c>, a stale one <c>Conflict</c>, a task with a Pending confirmation <c>PendingConfirmation</c>, a closed one
+/// or one locked by an integrity error <c>InvalidTransition</c>. The central event is enlisted only when a row was written.
 /// </summary>
 public sealed class BulkAssignPutawayTaskHandler : IRequestHandler<BulkAssignPutawayTaskCommand, Response<BulkAssignResultDto>>
 {
@@ -69,9 +69,9 @@ public sealed class BulkAssignPutawayTaskHandler : IRequestHandler<BulkAssignPut
                         continue;
                     }
 
+                    // the draft's row outcomes (WMS draft §4): a closed task and one locked by an integrity error cannot be assigned → InvalidTransition
                     var refusal = stored.Version != item.Version ? WarehouseContract.RowConflict
-                        : !PutawayTaskRules.IsOpen(stored) ? WarehouseContract.RowInvalidTransition
-                        : PutawayTaskRules.HasIntegrityError(stored) ? WarehouseContract.RowIntegrityError
+                        : !PutawayTaskRules.IsOpen(stored) || PutawayTaskRules.HasIntegrityError(stored) ? WarehouseContract.RowInvalidTransition
                         : PutawayTaskRules.HasPending(stored) ? WarehouseContract.RowPendingConfirmation
                         : null;
                     if (refusal is not null)
