@@ -625,9 +625,13 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     at = commit if deferred else main          # S-115: the branch reading reads the rows at the CT's ref
     where = "dalda" if deferred else "main'de"
     if deferred:
-        gap = pa.prefix_problem(root, commit, anchor or main, pa.REVIEWS)    # F-10: the acceptance anchors at its merge-base
+        try:        # S-130: only this pack's rows; F-10: the acceptance anchors at its merge-base
+            gap = pa.prefix_problem(root, commit, anchor or main, path)
+        except (pa.Unreadable, UnicodeDecodeError) as e:
+            line = re.search(r"satır (\d+)", str(e))
+            return [f"{pa.REVIEWS} okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?"), set()
         if gap:
-            return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1) ve yeniden koşun", set()
+            return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1), prompt'un Expected HEAD'ini yenileyin ve yeniden koşun", set()
     trail = pa.append_only_problems(root, at, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
@@ -2353,6 +2357,9 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-115: the CT branch lacks a review row main already has -> ENGEL 'dalı main ile güncelleyin', "
                   "never a partial reading", has(eng5("W-13", PK13, module="MOD-0013"), "önek olarak içermiyor")))
     g("checkout", "-q", "main")
+    other_gap = pa.prefix_problem(root, "ct-13", main13, PK2)
+    cases.append(("S-130: the row the branch lacks belongs to PK13, so PK2's prefix reading on the same branch is unaffected",
+                  other_gap is None))
     # R3-3: one malformed row (another spelling of a pack path) makes reviews.tsv unreadable — fail-closed, with a next
     # step that names the row
     def bad_row():
