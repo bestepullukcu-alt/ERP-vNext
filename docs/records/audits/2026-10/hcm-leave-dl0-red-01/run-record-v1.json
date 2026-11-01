@@ -1,0 +1,31 @@
+{
+ "argv": [
+  "python",
+  "-B",
+  "execution/domains/human-capital-management/work-packs/hcm-leave/scripts/dl0_explicit_grant_evidence.py"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/hcm-leave-dl0-red-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 707,
+   "path": "docs/records/audits/2026-10/hcm-leave-dl0-red-01/stdout.txt",
+   "sha256": "a1df33eff2fb23dd4ab2797e7a2c3b21b798695df4fa817228a0d7a4bbfca68f"
+  }
+ ],
+ "commit": "5f57e3f029e00ecdf2f1833c9bf17bdcc980efbb",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-10-30T21:39:20Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/hcm-leave-dl0-red-01",
+ "started_utc": "2026-10-30T21:38:42Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "da3406309cc1bc8cd2f814d2c9646696e8b93e3d"
+}

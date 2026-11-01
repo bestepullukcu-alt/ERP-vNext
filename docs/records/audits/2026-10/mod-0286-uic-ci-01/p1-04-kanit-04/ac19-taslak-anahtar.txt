@@ -1,0 +1,2151 @@
+Account	CI-1	Views/Account/ForgotPassword.cshtml:yok:Layout	-
+Account	CI-1	Views/Account/Login.cshtml:yok:Layout	-
+Account	CI-1	Views/Account/ResetPassword.cshtml:yok:Layout	-
+Account	CI-6	Views/Account/ForgotPassword.cshtml	3
+Account	CI-6	Views/Account/Login.cshtml	3
+Account	CI-6	Views/Account/ResetPassword.cshtml	3
+Account	CI-7	wwwroot/assets/js/Account/forgot-password.js	3
+Account	CI-7	wwwroot/assets/js/Account/login.js	3
+Account	CI-7	wwwroot/assets/js/Account/reset-password.js	3
+CRM/Accounts	CI-10	wwwroot/assets/js/CRM/Accounts/details-contacts.js	1
+CRM/Accounts	CI-10	wwwroot/assets/js/CRM/Accounts/details-dt-section.js	4
+CRM/Accounts	CI-10	wwwroot/assets/js/CRM/Accounts/details-territory.js	1
+CRM/Accounts	CI-10	wwwroot/assets/js/CRM/Accounts/details.js	1
+CRM/Accounts	CI-10	wwwroot/assets/js/CRM/Accounts/index.js	4
+CRM/Accounts	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+CRM/Accounts	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Accounts	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Accounts	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Accounts	CI-4	wwwroot/assets/js/CRM/Accounts/index.js	1
+CRM/Accounts	CI-6	Views/CRM/Accounts/Details.cshtml	1
+CRM/Accounts	CI-6	Views/CRM/Accounts/_Form.cshtml	4
+CRM/Accounts	CI-6	wwwroot/assets/js/CRM/Accounts/details-dt-section.js	1
+CRM/Accounts	CI-9	wwwroot/assets/js/CRM/Accounts/index.js:yok:savedView	-
+CRM/Campaigns	CI-10	wwwroot/assets/js/CRM/Campaigns/details.js	1
+CRM/Campaigns	CI-10	wwwroot/assets/js/CRM/Campaigns/index.js	4
+CRM/Campaigns	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Campaigns	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Campaigns	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/Campaigns	CI-3	direct-gateway profile uses window.API service base	-
+CRM/Campaigns	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/Campaigns	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/Campaigns	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/Campaigns	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/Campaigns	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/Campaigns	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/Campaigns	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Campaigns	CI-9	wwwroot/assets/js/CRM/Campaigns/index.js:yok:savedView	-
+CRM/Claims	CI-10	wwwroot/assets/js/CRM/Claims/index.js	4
+CRM/Claims	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Claims	CI-3	Index.cshtml shows @Localizer["PageDescription"]	-
+CRM/Claims	CI-3	Reset click restores full factory table state	-
+CRM/Claims	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Claims	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/Claims	CI-3	direct-gateway profile uses window.API service base	-
+CRM/Claims	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/Claims	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/Claims	CI-3	index.js defines getAuthHeaders()	-
+CRM/Claims	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+CRM/Claims	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/Claims	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/Claims	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/Claims	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/Claims	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Claims	CI-9	wwwroot/assets/js/CRM/Claims/index.js:yok:savedView	-
+CRM/ConsentPreferences	CI-10	wwwroot/assets/js/CRM/ConsentPreferences/index.js	2
+CRM/ConsentPreferences	CI-6	wwwroot/assets/js/CRM/ConsentPreferences/index.js	2
+CRM/ConsentPreferences	CI-9	wwwroot/assets/js/CRM/ConsentPreferences/index.js	1
+CRM/Contacts	CI-10	wwwroot/assets/js/CRM/Contacts/availability.js	5
+CRM/Contacts	CI-10	wwwroot/assets/js/CRM/Contacts/index.js	4
+CRM/Contacts	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Contacts	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Contacts	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Contacts	CI-4	wwwroot/assets/js/CRM/Contacts/index.js	1
+CRM/Contacts	CI-6	Views/CRM/Contacts/Availability.cshtml	1
+CRM/Contacts	CI-6	Views/CRM/Contacts/Details.cshtml	1
+CRM/Contacts	CI-6	Views/CRM/Contacts/Import.cshtml	1
+CRM/Contacts	CI-6	Views/CRM/Contacts/_Form.cshtml	4
+CRM/Contacts	CI-6	wwwroot/assets/js/CRM/Contacts/availability.js	3
+CRM/Contacts	CI-9	wwwroot/assets/js/CRM/Contacts/index.js:yok:savedView	-
+CRM/ContentEngagementJourneys	CI-10	wwwroot/assets/js/CRM/ContentEngagementJourneys/index.js	4
+CRM/ContentEngagementJourneys	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/ContentEngagementJourneys	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/ContentEngagementJourneys	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/ContentEngagementJourneys	CI-3	direct-gateway profile uses window.API service base	-
+CRM/ContentEngagementJourneys	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/ContentEngagementJourneys	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/ContentEngagementJourneys	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/ContentEngagementJourneys	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/ContentEngagementJourneys	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/ContentEngagementJourneys	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/ContentEngagementJourneys	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/ContentEngagementJourneys	CI-9	wwwroot/assets/js/CRM/ContentEngagementJourneys/index.js:yok:savedView	-
+CRM/CycleCapacities	CI-10	wwwroot/assets/js/CRM/CycleCapacities/index.js	4
+CRM/CycleCapacities	CI-2	Views/CRM/CycleCapacities/_Form.cshtml	2
+CRM/CycleCapacities	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+CRM/CycleCapacities	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/CycleCapacities	CI-3	direct-gateway profile uses window.API service base	-
+CRM/CycleCapacities	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/CycleCapacities	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/CycleCapacities	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/CycleCapacities	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/CycleCapacities	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/CycleCapacities	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/CycleCapacities	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/CycleCapacities	CI-6	Views/CRM/CycleCapacities/Details.cshtml	8
+CRM/CycleCapacities	CI-6	Views/CRM/CycleCapacities/_Form.cshtml	1
+CRM/CycleCapacities	CI-9	wwwroot/assets/js/CRM/CycleCapacities/index.js:yok:savedView	-
+CRM/CyclePeriods	CI-10	wwwroot/assets/js/CRM/CyclePeriods/index.js	4
+CRM/CyclePeriods	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/CyclePeriods	CI-3	direct-gateway profile uses window.API service base	-
+CRM/CyclePeriods	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/CyclePeriods	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/CyclePeriods	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/CyclePeriods	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/CyclePeriods	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/CyclePeriods	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/CyclePeriods	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/CyclePeriods	CI-9	wwwroot/assets/js/CRM/CyclePeriods/index.js:yok:savedView	-
+CRM/EligibilityPolicies	CI-10	wwwroot/assets/js/CRM/EligibilityPolicies/index.js	4
+CRM/EligibilityPolicies	CI-3	Compact reference has Details.cshtml	-
+CRM/EligibilityPolicies	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/EligibilityPolicies	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/EligibilityPolicies	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/EligibilityPolicies	CI-3	direct-gateway profile uses window.API service base	-
+CRM/EligibilityPolicies	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/EligibilityPolicies	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/EligibilityPolicies	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/EligibilityPolicies	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/EligibilityPolicies	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/EligibilityPolicies	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/EligibilityPolicies	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/EligibilityPolicies	CI-6	Views/CRM/EligibilityPolicies/_Evaluate.cshtml	1
+CRM/EligibilityPolicies	CI-9	wwwroot/assets/js/CRM/EligibilityPolicies/index.js:yok:savedView	-
+CRM/Knowledge	CI-10	wwwroot/assets/js/CRM/Knowledge/index.js	4
+CRM/Knowledge	CI-10	wwwroot/assets/js/CRM/Knowledge/taxonomy.js	1
+CRM/Knowledge	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+CRM/Knowledge	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Knowledge	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Knowledge	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/Knowledge	CI-3	direct-gateway profile uses window.API service base	-
+CRM/Knowledge	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/Knowledge	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/Knowledge	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/Knowledge	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/Knowledge	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/Knowledge	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/Knowledge	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Knowledge	CI-6	Views/CRM/Knowledge/Details.cshtml	3
+CRM/Knowledge	CI-6	wwwroot/assets/js/CRM/Knowledge/form.js	1
+CRM/Knowledge	CI-6	wwwroot/assets/js/CRM/Knowledge/taxonomy.js	2
+CRM/Knowledge	CI-9	wwwroot/assets/js/CRM/Knowledge/index.js:yok:savedView	-
+CRM/KnowledgeConcepts	CI-10	wwwroot/assets/js/CRM/KnowledgeConcepts/concept-slim.js	5
+CRM/KnowledgeConcepts	CI-10	wwwroot/assets/js/CRM/KnowledgeConcepts/index.js	4
+CRM/KnowledgeConcepts	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/KnowledgeConcepts	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/KnowledgeConcepts	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/KnowledgeConcepts	CI-3	direct-gateway profile uses window.API service base	-
+CRM/KnowledgeConcepts	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/KnowledgeConcepts	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/KnowledgeConcepts	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/KnowledgeConcepts	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/KnowledgeConcepts	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/KnowledgeConcepts	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/KnowledgeConcepts	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/KnowledgeConcepts	CI-6	wwwroot/assets/js/CRM/KnowledgeConcepts/concept-slim.js	2
+CRM/KnowledgeConcepts	CI-6	wwwroot/assets/js/CRM/KnowledgeConcepts/template-form.js	2
+CRM/KnowledgeConcepts	CI-9	wwwroot/assets/js/CRM/KnowledgeConcepts/index.js:yok:savedView	-
+CRM/KnowledgePaths	CI-10	wwwroot/assets/js/CRM/KnowledgePaths/index.js	4
+CRM/KnowledgePaths	CI-3	Compact reference has Details.cshtml	-
+CRM/KnowledgePaths	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/KnowledgePaths	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/KnowledgePaths	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/KnowledgePaths	CI-3	direct-gateway profile uses window.API service base	-
+CRM/KnowledgePaths	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/KnowledgePaths	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/KnowledgePaths	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/KnowledgePaths	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/KnowledgePaths	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/KnowledgePaths	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/KnowledgePaths	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/KnowledgePaths	CI-6	Views/CRM/KnowledgePaths/_Form.cshtml	2
+CRM/KnowledgePaths	CI-6	wwwroot/assets/js/CRM/KnowledgePaths/presentation-notes.js	1
+CRM/KnowledgePaths	CI-9	wwwroot/assets/js/CRM/KnowledgePaths/index.js:yok:savedView	-
+CRM/LegalProfiles	CI-10	wwwroot/assets/js/CRM/LegalProfiles/index.js	1
+CRM/LegalProfiles	CI-3	Server mode: export declared server-side (BL-452	-
+CRM/LegalProfiles	CI-3	direct-gateway profile uses window.API service base	-
+CRM/LegalProfiles	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/ObjectionResponses	CI-10	wwwroot/assets/js/CRM/ObjectionResponses/objection-list.js	1
+CRM/ObjectionResponses	CI-6	wwwroot/assets/js/CRM/ObjectionResponses/objection-details.js	2
+CRM/PlannedVisits	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/PlannedVisits	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/PlannedVisits	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/PlannedVisits	CI-3	direct-gateway profile uses window.API service base	-
+CRM/PlannedVisits	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/PlannedVisits	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/PlannedVisits	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/PlannedVisits	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/PlannedVisits	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/PlannedVisits	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/PlannedVisits	CI-9	wwwroot/assets/js/CRM/PlannedVisits/index.js:yok:savedView	-
+CRM/SafetyTexts	CI-10	wwwroot/assets/js/CRM/SafetyTexts/index.js	1
+CRM/SafetyTexts	CI-3	Server mode: export declared server-side (BL-452	-
+CRM/SafetyTexts	CI-3	direct-gateway profile uses window.API service base	-
+CRM/SafetyTexts	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Segments	CI-10	wwwroot/assets/js/CRM/Segments/index.js	4
+CRM/Segments	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+CRM/Segments	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/Segments	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/Segments	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/Segments	CI-3	direct-gateway profile uses window.API service base	-
+CRM/Segments	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/Segments	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/Segments	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/Segments	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/Segments	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/Segments	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/Segments	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/Segments	CI-9	wwwroot/assets/js/CRM/Segments/index.js:yok:savedView	-
+CRM/StrategyTemplates	CI-10	wwwroot/assets/js/CRM/StrategyTemplates/index.js	4
+CRM/StrategyTemplates	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+CRM/StrategyTemplates	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/StrategyTemplates	CI-3	Required label markers match ViewModel required metadata	-
+CRM/StrategyTemplates	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/StrategyTemplates	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/StrategyTemplates	CI-3	direct-gateway profile uses window.API service base	-
+CRM/StrategyTemplates	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/StrategyTemplates	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/StrategyTemplates	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/StrategyTemplates	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/StrategyTemplates	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/StrategyTemplates	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/StrategyTemplates	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/StrategyTemplates	CI-6	Views/CRM/StrategyTemplates/Details.cshtml	7
+CRM/StrategyTemplates	CI-6	wwwroot/assets/js/CRM/StrategyTemplates/form.js	2
+CRM/StrategyTemplates	CI-9	wwwroot/assets/js/CRM/StrategyTemplates/index.js:yok:savedView	-
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/assignment-history.js	1
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/assignment-rules.js	7
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/hierarchy.js	3
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/index.js	4
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/plan-vs-current.js	7
+CRM/TerritoryManagement	CI-10	wwwroot/assets/js/CRM/TerritoryManagement/resource-assignments.js	7
+CRM/TerritoryManagement	CI-2	Views/CRM/TerritoryManagement/_ResourceAssignments.cshtml	1
+CRM/TerritoryManagement	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/TerritoryManagement	CI-3	Form declares a strongly typed ViewModel	-
+CRM/TerritoryManagement	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+CRM/TerritoryManagement	CI-3	Index.cshtml shows @Localizer["PageDescription"]	-
+CRM/TerritoryManagement	CI-3	No hard-coded page cap in the page's JS	-
+CRM/TerritoryManagement	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/TerritoryManagement	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/TerritoryManagement	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+CRM/TerritoryManagement	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+CRM/TerritoryManagement	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+CRM/TerritoryManagement	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/TerritoryManagement	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/TerritoryManagement	CI-3	index.js includes .js-quick-view selector	-
+CRM/TerritoryManagement	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+CRM/TerritoryManagement	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+CRM/TerritoryManagement	CI-3	index.js uses window.DtDefaults.create(...)	-
+CRM/TerritoryManagement	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/TerritoryManagement	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/TerritoryManagement	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/TerritoryManagement	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/TerritoryManagement	CI-4	wwwroot/assets/js/CRM/TerritoryManagement/index.js	1
+CRM/TerritoryManagement	CI-6	Views/CRM/TerritoryManagement/NodeForm.cshtml	1
+CRM/TerritoryManagement	CI-6	wwwroot/assets/js/CRM/TerritoryManagement/node-form.js	1
+CRM/TerritoryManagement	CI-7	wwwroot/assets/js/CRM/TerritoryManagement/account-assignments.js	1
+CRM/TerritoryManagement	CI-9	wwwroot/assets/js/CRM/TerritoryManagement/index.js	1
+CRM/TerritoryManagement	CI-9	wwwroot/assets/js/CRM/TerritoryManagement/index.js:yok:savedView	-
+CRM/VisitExecution	CI-6	Views/CRM/VisitExecution/Index.cshtml	1
+CRM/VisitExecution	CI-6	wwwroot/assets/js/CRM/VisitExecution/visit-execution.js	1
+CRM/VisitFrequencyPolicies	CI-10	wwwroot/assets/js/CRM/VisitFrequencyPolicies/index.js	4
+CRM/VisitFrequencyPolicies	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/VisitFrequencyPolicies	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+CRM/VisitFrequencyPolicies	CI-3	No hard-coded page cap in the page's JS	-
+CRM/VisitFrequencyPolicies	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/VisitFrequencyPolicies	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides Active	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides Cancel	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides Import	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides Passive	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides Unknown	-
+CRM/VisitFrequencyPolicies	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+CRM/VisitFrequencyPolicies	CI-3	direct-gateway profile uses window.API service base	-
+CRM/VisitFrequencyPolicies	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/VisitFrequencyPolicies	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/VisitFrequencyPolicies	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/VisitFrequencyPolicies	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/VisitFrequencyPolicies	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/VisitFrequencyPolicies	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/VisitFrequencyPolicies	CI-3	personalizationClient sends tenant header only for tenant users	-
+CRM/VisitFrequencyPolicies	CI-9	wwwroot/assets/js/CRM/VisitFrequencyPolicies/index.js:yok:savedView	-
+CRM/VisitPlanning	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+CRM/VisitPlanning	CI-3	No hard-coded page cap in the page's JS	-
+CRM/VisitPlanning	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+CRM/VisitPlanning	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+CRM/VisitPlanning	CI-3	direct-gateway profile uses window.API service base	-
+CRM/VisitPlanning	CI-3	index.js calls bulk endpoint (.../bulk)	-
+CRM/VisitPlanning	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+CRM/VisitPlanning	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+CRM/VisitPlanning	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+CRM/VisitPlanning	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+CRM/VisitPlanning	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+CRM/VisitPlanning	CI-6	Views/CRM/VisitPlanning/Details.cshtml	17
+CRM/VisitPlanning	CI-6	Views/CRM/VisitPlanning/_DoctorPanel.cshtml	3
+CRM/VisitPlanning	CI-6	Views/CRM/VisitPlanning/_NewPlanDrawer.cshtml	1
+CRM/VisitPlanning	CI-6	wwwroot/assets/js/CRM/VisitPlanning/details.js	4
+CRM/VisitPlanning	CI-6	wwwroot/assets/js/CRM/VisitPlanning/header.js	1
+CRM/VisitPlanning	CI-9	wwwroot/assets/js/CRM/VisitPlanning/index.js:yok:savedView	-
+CRM/VisitPresentation	CI-6	wwwroot/assets/js/CRM/VisitPresentation/visit-presentation.js	1
+CRM/VisitWorkspace	CI-2	Views/CRM/VisitWorkspace/Index.cshtml	2
+CRM/VisitWorkspace	CI-6	Views/CRM/VisitWorkspace/Index.cshtml	4
+CRM/VisitWorkspace	CI-6	wwwroot/assets/js/CRM/VisitWorkspace/visit-workspace.js	1
+DecompositionTreeBuilder	CI-1	Views/DecompositionTreeBuilder/Index.cshtml:yok:Layout	-
+DecompositionTreeBuilder	CI-6	Views/DecompositionTreeBuilder/Index.cshtml	1
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/DeliveryMap.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/InitiativeCreate.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/InitiativeDetail.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/Initiatives.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/Overview.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/Programs.cshtml:yok:Layout	-
+DeliveryExecutionManagement	CI-1	Views/DeliveryExecutionManagement/ProjectCreate.cshtml:yok:Layout	-
+DemandIdeas	CI-1	Views/DemandIdeas/Capture.cshtml:yok:Layout	-
+DemandIdeas	CI-1	Views/DemandIdeas/Dashboard.cshtml:yok:Layout	-
+DemandIdeas	CI-1	Views/DemandIdeas/Detail.cshtml:yok:Layout	-
+DemandIdeas	CI-1	Views/DemandIdeas/Index.cshtml:yok:Layout	-
+DemandIdeas	CI-1	Views/DemandIdeas/ModulePlaceholder.cshtml:yok:Layout	-
+DemandIdeas	CI-2	Views/DemandIdeas/Capture.cshtml	6
+DemandIdeas	CI-2	Views/DemandIdeas/_CaptureApiFormPartial.cshtml	2
+DemandIdeas	CI-6	Views/DemandIdeas/Capture.cshtml	1
+DemandIdeas	CI-6	Views/DemandIdeas/Index.cshtml	1
+DemandIdeas	CI-6	Views/DemandIdeas/ModulePlaceholder.cshtml	1
+DemandIdeas	CI-6	Views/DemandIdeas/_CaptureApiFormPartial.cshtml	6
+DemandIdeas	CI-6	Views/DemandIdeas/_CaptureFormPartial.cshtml	1
+DevEnablement/GoldenReferenceCompact	CI-3	personalizationClient sends tenant header only for tenant users	-
+DevEnablement/GoldenReferenceSlim	CI-3	personalizationClient sends tenant header only for tenant users	-
+DocumentManagement/AccessMatrix	CI-10	wwwroot/assets/js/DocumentManagement/AccessMatrix/index.js	4
+DocumentManagement/AccessMatrix	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/AccessMatrix	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/AccessMatrix	CI-3	personalizationClient sends tenant header only for tenant users	-
+DocumentManagement/AccessMatrix	CI-4	wwwroot/assets/js/DocumentManagement/AccessMatrix/index.js	1
+DocumentManagement/AccessMatrix	CI-9	wwwroot/assets/js/DocumentManagement/AccessMatrix/index.js:yok:savedView	-
+DocumentManagement/ControlledDocuments	CI-10	wwwroot/assets/js/DocumentManagement/ControlledDocuments/details.js	1
+DocumentManagement/ControlledDocuments	CI-6	Views/DocumentManagement/ControlledDocuments/Index.cshtml	1
+DocumentManagement/ControlledDocuments	CI-6	wwwroot/assets/js/DocumentManagement/ControlledDocuments/index.js	7
+DocumentManagement/Instantiations	CI-6	Views/DocumentManagement/Instantiations/Index.cshtml	6
+DocumentManagement/MasterRegister	CI-10	wwwroot/assets/js/DocumentManagement/MasterRegister/details.js	6
+DocumentManagement/MasterRegister	CI-10	wwwroot/assets/js/DocumentManagement/MasterRegister/index.js	1
+DocumentManagement/MasterRegister	CI-2	Views/DocumentManagement/MasterRegister/Import.cshtml	4
+DocumentManagement/MasterRegister	CI-2	Views/DocumentManagement/MasterRegister/_CreateControlledDocumentForm.cshtml	2
+DocumentManagement/MasterRegister	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+DocumentManagement/MasterRegister	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/MasterRegister	CI-3	Form declares a strongly typed ViewModel	-
+DocumentManagement/MasterRegister	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/MasterRegister	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides Active	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides Passive	-
+DocumentManagement/MasterRegister	CI-3	_IndexL10n.cshtml provides Unknown	-
+DocumentManagement/MasterRegister	CI-3	direct-gateway profile uses window.API service base	-
+DocumentManagement/MasterRegister	CI-3	index.js calls bulk endpoint (.../bulk)	-
+DocumentManagement/MasterRegister	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+DocumentManagement/MasterRegister	CI-3	index.js includes .js-quick-view selector	-
+DocumentManagement/MasterRegister	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+DocumentManagement/MasterRegister	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+DocumentManagement/MasterRegister	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+DocumentManagement/MasterRegister	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+DocumentManagement/MasterRegister	CI-3	index.js uses window.DtDefaults.create(...)	-
+DocumentManagement/MasterRegister	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+DocumentManagement/MasterRegister	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+DocumentManagement/MasterRegister	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+DocumentManagement/MasterRegister	CI-4	wwwroot/assets/js/DocumentManagement/MasterRegister/import.js	1
+DocumentManagement/MasterRegister	CI-4	wwwroot/assets/js/DocumentManagement/MasterRegister/index.js	1
+DocumentManagement/MasterRegister	CI-9	wwwroot/assets/js/DocumentManagement/MasterRegister/index.js:yok:savedView	-
+DocumentManagement/QmsBaselines	CI-10	wwwroot/assets/js/DocumentManagement/QmsBaselines/details.js	1
+DocumentManagement/QmsBaselines	CI-10	wwwroot/assets/js/DocumentManagement/QmsBaselines/index.js	5
+DocumentManagement/QmsBaselines	CI-2	Views/DocumentManagement/QmsBaselines/Details.cshtml	7
+DocumentManagement/QmsBaselines	CI-2	Views/DocumentManagement/QmsBaselines/Import.cshtml	4
+DocumentManagement/QmsBaselines	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/QmsBaselines	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+DocumentManagement/QmsBaselines	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/QmsBaselines	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides Active	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides Cancel	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides Edit	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides Import	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides Passive	-
+DocumentManagement/QmsBaselines	CI-3	_IndexL10n.cshtml provides QuickView	-
+DocumentManagement/QmsBaselines	CI-3	direct-gateway profile uses window.API service base	-
+DocumentManagement/QmsBaselines	CI-3	index.js calls bulk endpoint (.../bulk)	-
+DocumentManagement/QmsBaselines	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+DocumentManagement/QmsBaselines	CI-3	index.js defines getAuthHeaders()	-
+DocumentManagement/QmsBaselines	CI-3	index.js includes .js-quick-view selector	-
+DocumentManagement/QmsBaselines	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+DocumentManagement/QmsBaselines	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+DocumentManagement/QmsBaselines	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+DocumentManagement/QmsBaselines	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+DocumentManagement/QmsBaselines	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+DocumentManagement/QmsBaselines	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+DocumentManagement/QmsBaselines	CI-3	personalizationClient sends tenant header only for tenant users	-
+DocumentManagement/QmsBaselines	CI-6	Views/DocumentManagement/QmsBaselines/Designer.cshtml	1
+DocumentManagement/QmsBaselines	CI-6	Views/DocumentManagement/QmsBaselines/Details.cshtml	1
+DocumentManagement/QmsBaselines	CI-6	wwwroot/assets/js/DocumentManagement/QmsBaselines/designer.js	2
+DocumentManagement/QmsBaselines	CI-6	wwwroot/assets/js/DocumentManagement/QmsBaselines/details.js	2
+DocumentManagement/QmsBaselines	CI-9	wwwroot/assets/js/DocumentManagement/QmsBaselines/index.js:yok:savedView	-
+DocumentManagement/Reconciliation	CI-10	wwwroot/assets/js/DocumentManagement/Reconciliation/deviations.js	4
+DocumentManagement/Reconciliation	CI-10	wwwroot/assets/js/DocumentManagement/Reconciliation/evidence.js	4
+DocumentManagement/RepositoryAssessments	CI-10	wwwroot/assets/js/DocumentManagement/RepositoryAssessments/index.js	1
+DocumentManagement/RepositoryAssessments	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+DocumentManagement/RepositoryAssessments	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/RepositoryAssessments	CI-3	Form declares a strongly typed ViewModel	-
+DocumentManagement/RepositoryAssessments	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/RepositoryAssessments	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides Active	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides Import	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides Passive	-
+DocumentManagement/RepositoryAssessments	CI-3	_IndexL10n.cshtml provides Unknown	-
+DocumentManagement/RepositoryAssessments	CI-3	direct-gateway profile uses window.API service base	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js calls bulk endpoint (.../bulk)	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js includes .js-quick-view selector	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js uses window.DtDefaults.create(...)	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+DocumentManagement/RepositoryAssessments	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+DocumentManagement/RepositoryAssessments	CI-4	wwwroot/assets/js/DocumentManagement/RepositoryAssessments/index.js	1
+DocumentManagement/RepositoryAssessments	CI-9	wwwroot/assets/js/DocumentManagement/RepositoryAssessments/index.js:yok:savedView	-
+DocumentManagement/TemplateMasters	CI-10	wwwroot/assets/js/DocumentManagement/TemplateMasters/index.js	5
+DocumentManagement/TemplateMasters	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/TemplateMasters	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/TemplateMasters	CI-3	personalizationClient sends tenant header only for tenant users	-
+DocumentManagement/TemplateMasters	CI-4	wwwroot/assets/js/DocumentManagement/TemplateMasters/index.js	1
+DocumentManagement/TemplateMasters	CI-7	wwwroot/assets/js/DocumentManagement/TemplateMasters/index.js	1
+DocumentManagement/TemplateMasters	CI-9	wwwroot/assets/js/DocumentManagement/TemplateMasters/index.js:yok:savedView	-
+DocumentManagement/TemplateVariants	CI-10	wwwroot/assets/js/DocumentManagement/TemplateVariants/index.js	4
+DocumentManagement/TemplateVariants	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+DocumentManagement/TemplateVariants	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+DocumentManagement/TemplateVariants	CI-3	personalizationClient sends tenant header only for tenant users	-
+DocumentManagement/TemplateVariants	CI-4	wwwroot/assets/js/DocumentManagement/TemplateVariants/index.js	1
+DocumentManagement/TemplateVariants	CI-9	wwwroot/assets/js/DocumentManagement/TemplateVariants/index.js:yok:savedView	-
+ESignature	CI-6	Views/ESignature/AuditExport.cshtml	3
+ESignature	CI-6	Views/ESignature/MySignature.cshtml	10
+ESignature	CI-6	Views/ESignature/Requests.cshtml	2
+ESignature	CI-6	wwwroot/assets/js/ESignature/my-signature.js	4
+ESignature/Settings	CI-6	Views/ESignature/Settings/Policy.cshtml	3
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/CascadeBuilder.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Connections.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ConnectionsGap.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ConnectionsGraph.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ConnectionsLineage.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ConsolidationView.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/DecisionsActions.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/GoalCreate.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/GoalCreateStepper.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/GoalDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/GoalHierarchy.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Goals.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/InitiativeCreate.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/InitiativeDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Initiatives.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiCatalog.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiEditor.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiGovernance.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiLibraryCatalog.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiOwnership.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiScorecard.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPackDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPacks.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiTemplateDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/KpiThresholdModels.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ObjectiveAlignment.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ObjectiveCreate.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ObjectiveDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Objectives.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Overview.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Planning.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/PlanningCycleCreate.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/PlanningCycleDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/PlanningCycles.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ProjectDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/Projects.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ReviewCalendar.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ReviewHistory.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/ReviewPack.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryBlueprintDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryCatalog.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryGovernance.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryImportWorkbench.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryInstantiateWizard.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryProjects.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryUsage.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodCreate.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodDetail.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/StrategyPeriods.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/TargetAllocation.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-1	Views/EnterpriseStrategyBusinessPerformance/VarianceAnalysis.cshtml:yok:Layout	-
+EnterpriseStrategyBusinessPerformance	CI-2	Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodDetail.cshtml	2
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/GoalCreateStepper.cshtml	2
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/Goals.cshtml	1
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/InitiativeCreate.cshtml	1
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/Planning.cshtml	1
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/PlanningCycleDetail.cshtml	3
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryCatalog.cshtml	1
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryGovernance.cshtml	2
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryInstantiateWizard.cshtml	2
+EnterpriseStrategyBusinessPerformance	CI-6	Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryProjects.cshtml	1
+Expiry	CI-6	Views/Expiry/Exceptions.cshtml	1
+Expiry	CI-6	Views/Expiry/Index.cshtml	3
+Expiry	CI-6	Views/Expiry/_DecisionDrawer.cshtml	1
+Expiry	CI-6	Views/Expiry/_Header.cshtml	1
+Expiry	CI-6	wwwroot/assets/js/Expiry/exceptions.js	1
+Governance/Permissions	CI-10	wwwroot/assets/js/Governance/Permissions/index.js	4
+Governance/Permissions	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Governance/Permissions	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Governance/Permissions	CI-3	Index.cshtml includes <partial name="_Filter" />	-
+Governance/Permissions	CI-3	Index.cshtml includes <partial name="_IndexL10n" />	-
+Governance/Permissions	CI-3	Selection column ↔ bulk JS	-
+Governance/Permissions	CI-3	Selection column ↔ bulk bar	-
+Governance/Permissions	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Active	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Edit	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Import	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Passive	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Status	-
+Governance/Permissions	CI-3	_IndexL10n.cshtml provides Unknown	-
+Governance/Permissions	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Governance/Permissions	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Governance/Permissions	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Governance/Permissions	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Governance/Permissions	CI-3	index.js uses window.DtDefaults.create(...)	-
+Governance/Permissions	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Governance/Permissions	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Governance/Permissions	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Governance/Permissions	CI-3	personalizationClient sends tenant header only for tenant users	-
+Governance/Permissions	CI-4	wwwroot/assets/js/Governance/Permissions/index.js	1
+Governance/Permissions	CI-9	wwwroot/assets/js/Governance/Permissions/index.js:yok:savedView	-
+Governance/Roles	CI-10	wwwroot/assets/js/Governance/Roles/index.js	1
+Governance/Roles	CI-3	personalizationClient sends tenant header only for tenant users	-
+Governance/TenantNavigationSettings	CI-2	Views/Governance/TenantNavigationSettings/Index.cshtml	2
+Governance/TenantSecuritySettings	CI-6	wwwroot/assets/js/Governance/TenantSecuritySettings/index.js	1
+Governance/Users	CI-10	wwwroot/assets/js/Governance/Users/index.js	1
+Governance/Users	CI-3	personalizationClient sends tenant header only for tenant users	-
+Governance/Users	CI-7	wwwroot/assets/js/Governance/Users/index.js	1
+HCM/Employees	CI-10	wwwroot/assets/js/HCM/Employees/index.js	3
+HCM/Employees	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+HCM/Employees	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+HCM/Employees	CI-3	Selection column ↔ bulk JS	-
+HCM/Employees	CI-3	Selection column ↔ bulk bar	-
+HCM/Employees	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+HCM/Employees	CI-3	direct-gateway profile uses window.API service base	-
+HCM/Employees	CI-3	index.js calls bulk endpoint (.../bulk)	-
+HCM/Employees	CI-3	index.js includes .js-quick-view selector	-
+HCM/Employees	CI-3	index.js uses DtDefaults.exportButtons(...)	-
+HCM/Employees	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+HCM/Employees	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+HCM/Employees	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+HCM/Employees	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+HCM/Employees	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+HCM/Employees	CI-3	personalizationClient sends tenant header only for tenant users	-
+HCM/Employees	CI-9	wwwroot/assets/js/HCM/Employees/index.js:yok:savedView	-
+Home	CI-1	Views/Home/Status.cshtml:yok:Layout	-
+HumanCapital/ApplicantIntake	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/ApplicantIntake	CI-3	_Filter.cshtml exists	-
+HumanCapital/ApplicantIntake	CI-4	wwwroot/assets/js/HumanCapital/ApplicantIntake/index.js	1
+HumanCapital/ApplicantIntake	CI-9	wwwroot/assets/js/HumanCapital/ApplicantIntake/index.js:yok:savedView	-
+HumanCapital/CandidatePipeline	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/CandidatePipeline	CI-3	_Filter.cshtml exists	-
+HumanCapital/CandidatePipeline	CI-4	wwwroot/assets/js/HumanCapital/CandidatePipeline/index.js	1
+HumanCapital/CandidatePipeline	CI-9	wwwroot/assets/js/HumanCapital/CandidatePipeline/index.js:yok:savedView	-
+HumanCapital/CompensationBenefits	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/CompensationBenefits	CI-3	_Filter.cshtml exists	-
+HumanCapital/CompensationBenefits	CI-4	wwwroot/assets/js/HumanCapital/CompensationBenefits/index.js	1
+HumanCapital/CompensationBenefits	CI-9	wwwroot/assets/js/HumanCapital/CompensationBenefits/index.js:yok:savedView	-
+HumanCapital/CompetencySkills	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/CompetencySkills	CI-3	_Filter.cshtml exists	-
+HumanCapital/CompetencySkills	CI-4	wwwroot/assets/js/HumanCapital/CompetencySkills/index.js	1
+HumanCapital/CompetencySkills	CI-9	wwwroot/assets/js/HumanCapital/CompetencySkills/index.js:yok:savedView	-
+HumanCapital/DevelopmentPlans	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/DevelopmentPlans	CI-3	_Filter.cshtml exists	-
+HumanCapital/DevelopmentPlans	CI-4	wwwroot/assets/js/HumanCapital/DevelopmentPlans/index.js	1
+HumanCapital/DevelopmentPlans	CI-9	wwwroot/assets/js/HumanCapital/DevelopmentPlans/index.js:yok:savedView	-
+HumanCapital/EmployeeOnboarding	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/EmployeeOnboarding	CI-3	_Filter.cshtml exists	-
+HumanCapital/EmployeeOnboarding	CI-4	wwwroot/assets/js/HumanCapital/EmployeeOnboarding/index.js	1
+HumanCapital/EmployeeOnboarding	CI-9	wwwroot/assets/js/HumanCapital/EmployeeOnboarding/index.js:yok:savedView	-
+HumanCapital/EmployeeProjections	CI-3	_Filter.cshtml exists	-
+HumanCapital/EmployeeProjections	CI-5	wwwroot/assets/js/HumanCapital/EmployeeProjections/index.js	1
+HumanCapital/EmployeeProjections	CI-9	wwwroot/assets/js/HumanCapital/EmployeeProjections/index.js:yok:savedView	-
+HumanCapital/EmploymentChanges	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/EmploymentChanges	CI-3	_Filter.cshtml exists	-
+HumanCapital/EmploymentChanges	CI-4	wwwroot/assets/js/HumanCapital/EmploymentChanges/index.js	1
+HumanCapital/EmploymentChanges	CI-9	wwwroot/assets/js/HumanCapital/EmploymentChanges/index.js:yok:savedView	-
+HumanCapital/HeadcountBudget	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/HeadcountBudget	CI-3	_Filter.cshtml exists	-
+HumanCapital/HeadcountBudget	CI-4	wwwroot/assets/js/HumanCapital/HeadcountBudget/index.js	1
+HumanCapital/HeadcountBudget	CI-9	wwwroot/assets/js/HumanCapital/HeadcountBudget/index.js:yok:savedView	-
+HumanCapital/HrCaseManagement	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/HrCaseManagement	CI-3	_Filter.cshtml exists	-
+HumanCapital/HrCaseManagement	CI-4	wwwroot/assets/js/HumanCapital/HrCaseManagement/index.js	1
+HumanCapital/HrCaseManagement	CI-9	wwwroot/assets/js/HumanCapital/HrCaseManagement/index.js:yok:savedView	-
+HumanCapital/HrCompliance	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/HrCompliance	CI-3	_Filter.cshtml exists	-
+HumanCapital/HrCompliance	CI-4	wwwroot/assets/js/HumanCapital/HrCompliance/index.js	1
+HumanCapital/HrCompliance	CI-9	wwwroot/assets/js/HumanCapital/HrCompliance/index.js:yok:savedView	-
+HumanCapital/HrDocumentation	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/HrDocumentation	CI-3	_Filter.cshtml exists	-
+HumanCapital/HrDocumentation	CI-4	wwwroot/assets/js/HumanCapital/HrDocumentation/index.js	1
+HumanCapital/HrDocumentation	CI-9	wwwroot/assets/js/HumanCapital/HrDocumentation/index.js:yok:savedView	-
+HumanCapital/HrKpiAnalytics	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/HrKpiAnalytics	CI-3	_Filter.cshtml exists	-
+HumanCapital/HrKpiAnalytics	CI-4	wwwroot/assets/js/HumanCapital/HrKpiAnalytics/index.js	1
+HumanCapital/HrKpiAnalytics	CI-9	wwwroot/assets/js/HumanCapital/HrKpiAnalytics/index.js:yok:savedView	-
+HumanCapital/LearningTraining	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/LearningTraining	CI-3	_Filter.cshtml exists	-
+HumanCapital/LearningTraining	CI-4	wwwroot/assets/js/HumanCapital/LearningTraining/index.js	1
+HumanCapital/LearningTraining	CI-9	wwwroot/assets/js/HumanCapital/LearningTraining/index.js:yok:savedView	-
+HumanCapital/OffboardingCases	CI-3	_Filter.cshtml exists	-
+HumanCapital/OffboardingCases	CI-5	wwwroot/assets/js/HumanCapital/OffboardingCases/index.js	1
+HumanCapital/OffboardingCases	CI-9	wwwroot/assets/js/HumanCapital/OffboardingCases/index.js:yok:savedView	-
+HumanCapital/OfferManagement	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/OfferManagement	CI-3	_Filter.cshtml exists	-
+HumanCapital/OfferManagement	CI-4	wwwroot/assets/js/HumanCapital/OfferManagement/index.js	1
+HumanCapital/OfferManagement	CI-9	wwwroot/assets/js/HumanCapital/OfferManagement/index.js:yok:savedView	-
+HumanCapital/PerformanceReviews	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/PerformanceReviews	CI-3	_Filter.cshtml exists	-
+HumanCapital/PerformanceReviews	CI-4	wwwroot/assets/js/HumanCapital/PerformanceReviews/index.js	1
+HumanCapital/PerformanceReviews	CI-9	wwwroot/assets/js/HumanCapital/PerformanceReviews/index.js:yok:savedView	-
+HumanCapital/PositionAssignments	CI-3	_Filter.cshtml exists	-
+HumanCapital/PositionAssignments	CI-5	wwwroot/assets/js/HumanCapital/PositionAssignments/index.js	1
+HumanCapital/PositionAssignments	CI-9	wwwroot/assets/js/HumanCapital/PositionAssignments/index.js:yok:savedView	-
+HumanCapital/SelfService	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/SelfService	CI-3	_Filter.cshtml exists	-
+HumanCapital/SelfService	CI-4	wwwroot/assets/js/HumanCapital/SelfService/index.js	1
+HumanCapital/SelfService	CI-9	wwwroot/assets/js/HumanCapital/SelfService/index.js:yok:savedView	-
+HumanCapital/SensitiveAccess	CI-5	wwwroot/assets/js/HumanCapital/SensitiveAccess/index.js	1
+HumanCapital/Succession	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/Succession	CI-3	_Filter.cshtml exists	-
+HumanCapital/Succession	CI-4	wwwroot/assets/js/HumanCapital/Succession/index.js	1
+HumanCapital/Succession	CI-9	wwwroot/assets/js/HumanCapital/Succession/index.js:yok:savedView	-
+HumanCapital/TimeAttendanceLeave	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/TimeAttendanceLeave	CI-3	_Filter.cshtml exists	-
+HumanCapital/TimeAttendanceLeave	CI-4	wwwroot/assets/js/HumanCapital/TimeAttendanceLeave/index.js	1
+HumanCapital/TimeAttendanceLeave	CI-9	wwwroot/assets/js/HumanCapital/TimeAttendanceLeave/index.js:yok:savedView	-
+HumanCapital/WorkforcePlanning	CI-3	Compact reference has Edit.cshtml	-
+HumanCapital/WorkforcePlanning	CI-3	_Filter.cshtml exists	-
+HumanCapital/WorkforcePlanning	CI-4	wwwroot/assets/js/HumanCapital/WorkforcePlanning/index.js	1
+HumanCapital/WorkforcePlanning	CI-9	wwwroot/assets/js/HumanCapital/WorkforcePlanning/index.js:yok:savedView	-
+Inventory	CI-8	wwwroot/assets/js/Inventory/company-selector.js	1
+Inventory/LocationTree	CI-6	Views/Inventory/LocationTree/Index.cshtml	5
+Inventory/LocationTree	CI-6	Views/Inventory/LocationTree/_DetailPanel.cshtml	4
+Inventory/Locations	CI-3	Form declares a strongly typed ViewModel	-
+Inventory/Locations	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Inventory/Locations	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Inventory/Locations	CI-3	Server mode: export declared server-side (BL-452	-
+Inventory/Locations	CI-3	Slim _CreateEditOffcanvas.cshtml has #offcanvasCreateEdit	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Active	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Edit	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Export	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Import	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Passive	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides QuickView	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides Status	-
+Inventory/Locations	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Inventory/Locations	CI-3	direct-gateway profile uses window.API service base	-
+Inventory/Locations	CI-3	index.js defines getAuthHeaders()	-
+Inventory/Locations	CI-3	index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))	-
+Inventory/Locations	CI-3	index.js includes .js-quick-view selector	-
+Inventory/Locations	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Inventory/Locations	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Inventory/Locations	CI-3	personalizationClient sends tenant header only for tenant users	-
+Inventory/Locations	CI-7	wwwroot/assets/js/Inventory/Locations/bulk-bins.js	6
+Inventory/Shared	CI-6	Views/Inventory/Shared/_CompanySelector.cshtml	1
+Inventory/StockLedger	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Inventory/StockLedger	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Inventory/StockLedger	CI-3	Server mode: export declared server-side (BL-452	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Active	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Cancel	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Edit	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Export	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Import	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Passive	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides QuickView	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Search	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides Status	-
+Inventory/StockLedger	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Inventory/StockLedger	CI-3	direct-gateway profile uses window.API service base	-
+Inventory/StockLedger	CI-3	index.js defines getAuthHeaders()	-
+Inventory/StockLedger	CI-3	index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))	-
+Inventory/StockLedger	CI-3	index.js includes .js-quick-view selector	-
+Inventory/StockLedger	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Inventory/StockLedger	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Inventory/StockLedger	CI-3	personalizationClient sends tenant header only for tenant users	-
+Inventory/StockMovements	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Inventory/StockMovements	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Inventory/StockMovements	CI-3	Server mode: export declared server-side (BL-452	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Active	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Edit	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Export	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Import	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Passive	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides QuickView	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Search	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides Status	-
+Inventory/StockMovements	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Inventory/StockMovements	CI-3	direct-gateway profile uses window.API service base	-
+Inventory/StockMovements	CI-3	index.js includes .js-quick-view selector	-
+Inventory/StockMovements	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Inventory/StockMovements	CI-3	personalizationClient sends tenant header only for tenant users	-
+MDM/ProductAbbreviationRegister	CI-10	wwwroot/assets/js/MDM/ProductAbbreviationRegister/index.js	4
+MDM/ProductAbbreviationRegister	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+MDM/ProductAbbreviationRegister	CI-3	Reset click restores full factory table state	-
+MDM/ProductAbbreviationRegister	CI-3	Selection column ↔ bulk bar	-
+MDM/ProductAbbreviationRegister	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides Active	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides Edit	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides Import	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides Passive	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides QuickView	-
+MDM/ProductAbbreviationRegister	CI-3	_IndexL10n.cshtml provides Status	-
+MDM/ProductAbbreviationRegister	CI-3	direct-gateway profile uses window.API service base	-
+MDM/ProductAbbreviationRegister	CI-3	index.js calls bulk endpoint (.../bulk)	-
+MDM/ProductAbbreviationRegister	CI-3	index.js includes .js-quick-view selector	-
+MDM/ProductAbbreviationRegister	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+MDM/ProductAbbreviationRegister	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+MDM/ProductAbbreviationRegister	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+MDM/ProductAbbreviationRegister	CI-3	personalizationClient sends tenant header only for tenant users	-
+MDM/ProductAbbreviationRegister	CI-6	Views/MDM/ProductAbbreviationRegister/_DataTable.cshtml	4
+MDM/ProductAbbreviationRegister	CI-6	Views/MDM/ProductAbbreviationRegister/_DetailsQuickView.cshtml	1
+MDM/ProductAbbreviationRegister	CI-9	wwwroot/assets/js/MDM/ProductAbbreviationRegister/index.js:yok:savedView	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Cadence.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/ExecutiveCockpit.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Favorites.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Index.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/ModulePlaceholder.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/RecentActivity.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Reports.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Search.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Subdomain.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/SubdomainWorkspace.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/Subdomains.cshtml:yok:Layout	-
+ManagementGovernance	CI-1	Views/ManagementGovernance/WorkQueue.cshtml:yok:Layout	-
+ManagementGovernance/ProcessModeling	CI-3	index.js exists	-
+ManagementGovernance/ProcessModeling	CI-3	index.l10n.js exists	-
+ManagementGovernance/ProcessModeling	CI-9	wwwroot/assets/js/ManagementGovernance/ProcessModeling/index.js:yok:savedView	-
+Manufacturing/Boms	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterData/Brands	CI-10	wwwroot/assets/js/MasterData/Brands/index.js	1
+MasterData/Brands	CI-3	Server mode: export declared server-side (BL-452	-
+MasterData/Brands	CI-3	direct-gateway profile uses window.API service base	-
+MasterData/Brands	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterData/LegalEntities	CI-10	wwwroot/assets/js/MasterData/LegalEntities/index.js	4
+MasterData/LegalEntities	CI-2	Views/MasterData/LegalEntities/Details.cshtml	1
+MasterData/LegalEntities	CI-3	index.l10n.js exists	-
+MasterData/LegalEntities	CI-6	Views/MasterData/LegalEntities/Wizard.cshtml	1
+MasterData/LegalEntities	CI-6	Views/MasterData/LegalEntities/_DataTable.cshtml	6
+MasterData/LegalEntities	CI-6	wwwroot/assets/js/MasterData/LegalEntities/wizard.js	2
+MasterData/LegalEntities	CI-9	wwwroot/assets/js/MasterData/LegalEntities/index.js:yok:savedView	-
+MasterData/Products	CI-10	wwwroot/assets/js/MasterData/Products/index.js	1
+MasterData/Products	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+MasterData/Products	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+MasterData/Products	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+MasterData/Products	CI-3	direct-gateway profile uses window.API service base	-
+MasterData/Products	CI-3	index.js calls bulk endpoint (.../bulk)	-
+MasterData/Products	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+MasterData/Products	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+MasterData/Products	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+MasterData/Products	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+MasterData/Products	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+MasterData/Products	CI-9	wwwroot/assets/js/MasterData/Products/index.js:yok:savedView	-
+MasterDataManagement/FinishedGoods	CI-10	wwwroot/assets/js/MasterDataManagement/FinishedGoods/index.js	1
+MasterDataManagement/FinishedGoods	CI-3	Server mode: export declared server-side (BL-452	-
+MasterDataManagement/FinishedGoods	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/FinishedGoods	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterDataManagement/GlobalProducts	CI-10	wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.js	1
+MasterDataManagement/GlobalProducts	CI-3	Server mode: export declared server-side (BL-452	-
+MasterDataManagement/GlobalProducts	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/GlobalProducts	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterDataManagement/Gskus	CI-10	wwwroot/assets/js/MasterDataManagement/Gskus/index.js	1
+MasterDataManagement/Gskus	CI-3	Server mode: export declared server-side (BL-452	-
+MasterDataManagement/Gskus	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/Gskus	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterDataManagement/Items	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/Items	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterDataManagement/Lskus	CI-10	wwwroot/assets/js/MasterDataManagement/Lskus/index.js	4
+MasterDataManagement/Lskus	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+MasterDataManagement/Lskus	CI-3	Save View payload has non-empty default name	-
+MasterDataManagement/Lskus	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+MasterDataManagement/Lskus	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides Active	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides Edit	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides Import	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides Passive	-
+MasterDataManagement/Lskus	CI-3	_IndexL10n.cshtml provides ShowAll	-
+MasterDataManagement/Lskus	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/Lskus	CI-3	index.js calls bulk endpoint (.../bulk)	-
+MasterDataManagement/Lskus	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+MasterDataManagement/Lskus	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+MasterDataManagement/Lskus	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+MasterDataManagement/Lskus	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+MasterDataManagement/Lskus	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+MasterDataManagement/Lskus	CI-3	personalizationClient sends tenant header only for tenant users	-
+MasterDataManagement/Lskus	CI-9	wwwroot/assets/js/MasterDataManagement/Lskus/index.js:yok:savedView	-
+MasterDataManagement/ProductLegalEntityScopes	CI-10	wwwroot/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.js	1
+MasterDataManagement/ProductLegalEntityScopes	CI-3	Server mode: export declared server-side (BL-452	-
+MasterDataManagement/ProductLegalEntityScopes	CI-3	direct-gateway profile uses window.API service base	-
+MasterDataManagement/ProductLegalEntityScopes	CI-3	personalizationClient sends tenant header only for tenant users	-
+Meetings	CI-4	wwwroot/assets/js/Meetings/index.js	1
+Meetings	CI-7	wwwroot/assets/js/Meetings/follow-up-dialog.js	1
+Meetings	CI-7	wwwroot/assets/js/Meetings/minutes-editor.js	1
+Meetings	CI-7	wwwroot/assets/js/Meetings/task-from-meeting-dialog.js	1
+Meetings	CI-9	wwwroot/assets/js/Meetings/index.js:yok:savedView	-
+Meetings/MeetingTypes	CI-3	Compact reference has Details.cshtml	-
+Meetings/MeetingTypes	CI-3	index.js exists	-
+Meetings/MeetingTypes	CI-3	index.l10n.js exists	-
+Meetings/MeetingTypes	CI-9	wwwroot/assets/js/Meetings/MeetingTypes/index.js:yok:savedView	-
+Meetings/Report	CI-5	wwwroot/assets/js/Meetings/Report/index.js	1
+Meetings/Series	CI-3	Compact reference has Details.cshtml	-
+Meetings/Series	CI-3	_Filter.cshtml exists	-
+Meetings/Series	CI-9	wwwroot/assets/js/Meetings/Series/index.js:yok:savedView	-
+Organization/FieldDefinitions	CI-10	wwwroot/assets/js/Organization/FieldDefinitions/index.js	4
+Organization/FieldDefinitions	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Organization/FieldDefinitions	CI-3	DataTable markup has #skeleton-loader	-
+Organization/FieldDefinitions	CI-3	Selection column ↔ bulk JS	-
+Organization/FieldDefinitions	CI-3	direct-gateway profile uses window.API service base	-
+Organization/FieldDefinitions	CI-3	personalizationClient sends tenant header only for tenant users	-
+Organization/FieldDefinitions	CI-9	wwwroot/assets/js/Organization/FieldDefinitions/index.js:yok:savedView	-
+Organization/OrganizationUnits	CI-10	wwwroot/assets/js/Organization/OrganizationUnits/index.js	4
+Organization/OrganizationUnits	CI-3	index.l10n.js exists	-
+Organization/OrganizationUnits	CI-9	wwwroot/assets/js/Organization/OrganizationUnits/index.js:yok:savedView	-
+Organization/PositionAssignments	CI-10	wwwroot/assets/js/Organization/PositionAssignments/index.js	4
+Organization/PositionAssignments	CI-3	index.l10n.js exists	-
+Organization/PositionAssignments	CI-9	wwwroot/assets/js/Organization/PositionAssignments/index.js:yok:savedView	-
+Organization/Positions	CI-10	wwwroot/assets/js/Organization/Positions/index.js	4
+Organization/Positions	CI-3	index.l10n.js exists	-
+Organization/Positions	CI-9	wwwroot/assets/js/Organization/Positions/index.js:yok:savedView	-
+PPM	CI-10	wwwroot/assets/js/PPM/ppm-crud.js	3
+PPM	CI-4	wwwroot/assets/js/PPM/ppm-crud.js	1
+PPM/BenefitCommitments	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/BenefitCommitments	CI-3	List goes through the shared layer (createCrudTable / DtDefaults.create)	-
+PPM/BenefitCommitments	CI-3	direct-gateway profile uses window.API service base	-
+PPM/BenefitCommitments	CI-9	wwwroot/assets/js/PPM/BenefitCommitments/index.js:yok:savedView	-
+PPM/Initiatives	CI-10	wwwroot/assets/js/PPM/Initiatives/index.js	3
+PPM/Initiatives	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/Initiatives	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+PPM/Initiatives	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+PPM/Initiatives	CI-3	direct-gateway profile uses window.API service base	-
+PPM/Initiatives	CI-3	index.js calls bulk endpoint (.../bulk)	-
+PPM/Initiatives	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+PPM/Initiatives	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+PPM/Initiatives	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+PPM/Initiatives	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+PPM/Initiatives	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+PPM/Initiatives	CI-3	personalizationClient sends tenant header only for tenant users	-
+PPM/Initiatives	CI-4	wwwroot/assets/js/PPM/Initiatives/index.js	1
+PPM/Initiatives	CI-7	wwwroot/assets/js/PPM/Initiatives/index.js	1
+PPM/Initiatives	CI-9	wwwroot/assets/js/PPM/Initiatives/index.js:yok:savedView	-
+PPM/InvestmentCases	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/InvestmentCases	CI-3	List goes through the shared layer (createCrudTable / DtDefaults.create)	-
+PPM/InvestmentCases	CI-3	direct-gateway profile uses window.API service base	-
+PPM/InvestmentCases	CI-9	wwwroot/assets/js/PPM/InvestmentCases/index.js:yok:savedView	-
+PPM/Portfolios	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/Portfolios	CI-3	List goes through the shared layer (createCrudTable / DtDefaults.create)	-
+PPM/Portfolios	CI-3	direct-gateway profile uses window.API service base	-
+PPM/Portfolios	CI-9	wwwroot/assets/js/PPM/Portfolios/index.js:yok:savedView	-
+PPM/Programs	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/Programs	CI-3	List goes through the shared layer (createCrudTable / DtDefaults.create)	-
+PPM/Programs	CI-3	direct-gateway profile uses window.API service base	-
+PPM/Programs	CI-9	wwwroot/assets/js/PPM/Programs/index.js:yok:savedView	-
+PPM/Projects	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+PPM/Projects	CI-3	List goes through the shared layer (createCrudTable / DtDefaults.create)	-
+PPM/Projects	CI-3	direct-gateway profile uses window.API service base	-
+PPM/Projects	CI-9	wwwroot/assets/js/PPM/Projects/index.js:yok:savedView	-
+PPM/Shared	CI-3	Index.cshtml exists	-
+PPM/Shared	CI-3	_IndexL10n.cshtml exists	-
+PPM/Shared	CI-3	index.js exists	-
+PPM/Shared	CI-3	index.l10n.js exists	-
+PPM/Shared	CI-9	wwwroot/assets/js/PPM/Shared/index.js:yok:savedView	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	Server mode: export declared server-side (BL-452	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides Export	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	_IndexL10n.cshtml provides Import	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	direct-gateway profile uses window.API service base	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Pharmacovigilance/CaseIntakeTriage	CI-3	personalizationClient sends tenant header only for tenant users	-
+Platform/Administrators	CI-10	wwwroot/assets/js/Platform/Administrators/index.js	4
+Platform/Administrators	CI-2	Views/Platform/Administrators/Index.cshtml	2
+Platform/Administrators	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/Administrators	CI-3	Selection column ↔ bulk JS	-
+Platform/Administrators	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/Administrators	CI-7	wwwroot/assets/js/Platform/Administrators/index.js	1
+Platform/AuditLog	CI-10	wwwroot/assets/js/Platform/AuditLog/index.js	4
+Platform/AuditLog	CI-2	Views/Platform/AuditLog/_DetailsModal.cshtml	1
+Platform/AuditLog	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/AuditLog	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/AuditLog	CI-3	Index.cshtml includes <partial name="_Filter" />	-
+Platform/AuditLog	CI-3	Index.cshtml includes <partial name="_IndexL10n" />	-
+Platform/AuditLog	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/AuditLog	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/AuditLog	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/AuditLog	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/AuditLog	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/AuditLog	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/AuditLog	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/AuditLog	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/AuditLog	CI-6	Views/Platform/AuditLog/_DetailsModal.cshtml	2
+Platform/AuditLog	CI-9	wwwroot/assets/js/Platform/AuditLog/index.js:yok:savedView	-
+Platform/AuditRetention	CI-10	wwwroot/assets/js/Platform/AuditRetention/index.js	1
+Platform/AuditRetention	CI-2	Views/Platform/AuditRetention/_Form.cshtml	2
+Platform/AuditRetention	CI-3	Compact reference has Create.cshtml	-
+Platform/AuditRetention	CI-3	Compact reference has Details.cshtml	-
+Platform/AuditRetention	CI-3	Compact reference has Edit.cshtml	-
+Platform/AuditRetention	CI-3	_Filter.cshtml exists	-
+Platform/AuditRetention	CI-6	Views/Platform/AuditRetention/_DataTable.cshtml	5
+Platform/AuditRetention	CI-7	wwwroot/assets/js/Platform/AuditRetention/index.js	1
+Platform/AuditRetention	CI-9	wwwroot/assets/js/Platform/AuditRetention/index.js:yok:savedView	-
+Platform/DomainManagement	CI-10	wwwroot/assets/js/Platform/DomainManagement/index.js	1
+Platform/DomainManagement	CI-12	platform-search.en.json:yok	-
+Platform/DomainManagement	CI-12	platform-search.tr.json:yok	-
+Platform/DomainManagement	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/DomainManagement	CI-3	Form declares a strongly typed ViewModel	-
+Platform/DomainManagement	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/DomainManagement	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/DomainManagement	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides Active	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides Export	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides Import	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides Passive	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides QuickView	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides SaveView	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides Unknown	-
+Platform/DomainManagement	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Platform/DomainManagement	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/DomainManagement	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/DomainManagement	CI-3	index.js includes .js-quick-view selector	-
+Platform/DomainManagement	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/DomainManagement	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/DomainManagement	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/DomainManagement	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/DomainManagement	CI-6	Views/Platform/DomainManagement/_DataTable.cshtml	6
+Platform/DomainManagement	CI-9	wwwroot/assets/js/Platform/DomainManagement/index.js:yok:savedView	-
+Platform/InterfaceRegistry	CI-10	wwwroot/assets/js/Platform/InterfaceRegistry/details.js	4
+Platform/InterfaceRegistry	CI-10	wwwroot/assets/js/Platform/InterfaceRegistry/index.js	4
+Platform/InterfaceRegistry	CI-2	Views/Platform/InterfaceRegistry/Details.cshtml	2
+Platform/InterfaceRegistry	CI-2	Views/Platform/InterfaceRegistry/Index.cshtml	2
+Platform/InterfaceRegistry	CI-6	Views/Platform/InterfaceRegistry/Index.cshtml	2
+Platform/InterfaceRegistry	CI-6	Views/Platform/InterfaceRegistry/_ConsumersDataTable.cshtml	5
+Platform/InterfaceRegistry	CI-6	wwwroot/assets/js/Platform/InterfaceRegistry/details.js	1
+Platform/InterfaceRegistry	CI-6	wwwroot/assets/js/Platform/InterfaceRegistry/index.js	1
+Platform/ModuleCatalog	CI-10	wwwroot/assets/js/Platform/ModuleCatalog/index.js	4
+Platform/ModuleCatalog	CI-10	wwwroot/assets/js/Platform/ModuleCatalog/module-pages.js	1
+Platform/ModuleCatalog	CI-10	wwwroot/assets/js/Platform/ModuleCatalog/page-details.js	1
+Platform/ModuleCatalog	CI-2	Views/Platform/ModuleCatalog/Details.cshtml	2
+Platform/ModuleCatalog	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Platform/ModuleCatalog	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/ModuleCatalog	CI-3	Optional numeric/date fields use nullable ViewModel types	-
+Platform/ModuleCatalog	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/ModuleCatalog	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/ModuleCatalog	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/ModuleCatalog	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/ModuleCatalog	CI-3	index.js includes .js-quick-view selector	-
+Platform/ModuleCatalog	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/ModuleCatalog	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/ModuleCatalog	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/ModuleCatalog	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/ModuleCatalog	CI-6	Views/Platform/ModuleCatalog/_DataTable.cshtml	6
+Platform/NotificationDispatches	CI-10	wwwroot/assets/js/Platform/NotificationDispatches/index.js	1
+Platform/NotificationDispatches	CI-12	platform-search.en.json:yok	-
+Platform/NotificationDispatches	CI-12	platform-search.tr.json:yok	-
+Platform/NotificationDispatches	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/NotificationDispatches	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/NotificationDispatches	CI-3	No hard-coded page cap in the page's JS	-
+Platform/NotificationDispatches	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/NotificationDispatches	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/NotificationDispatches	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/NotificationDispatches	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/NotificationDispatches	CI-3	index.js defines getAuthHeaders()	-
+Platform/NotificationDispatches	CI-3	index.js includes .js-quick-view selector	-
+Platform/NotificationDispatches	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Platform/NotificationDispatches	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/NotificationDispatches	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Platform/NotificationDispatches	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/NotificationDispatches	CI-3	index.js uses window.DtDefaults.create(...)	-
+Platform/NotificationDispatches	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/NotificationDispatches	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/NotificationDispatches	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/NotificationDispatches	CI-4	wwwroot/assets/js/Platform/NotificationDispatches/index.js	1
+Platform/NotificationDispatches	CI-6	Views/Platform/NotificationDispatches/Details.cshtml	2
+Platform/NotificationDispatches	CI-9	wwwroot/assets/js/Platform/NotificationDispatches/index.js:yok:savedView	-
+Platform/NotificationEvents	CI-10	wwwroot/assets/js/Platform/NotificationEvents/index.js	1
+Platform/NotificationEvents	CI-12	platform-search.en.json:yok	-
+Platform/NotificationEvents	CI-12	platform-search.tr.json:yok	-
+Platform/NotificationEvents	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/NotificationEvents	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/NotificationEvents	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/NotificationEvents	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/NotificationEvents	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/NotificationEvents	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/NotificationEvents	CI-3	index.js defines getAuthHeaders()	-
+Platform/NotificationEvents	CI-3	index.js includes .js-quick-view selector	-
+Platform/NotificationEvents	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Platform/NotificationEvents	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/NotificationEvents	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Platform/NotificationEvents	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/NotificationEvents	CI-3	index.js uses window.DtDefaults.create(...)	-
+Platform/NotificationEvents	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/NotificationEvents	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/NotificationEvents	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/NotificationEvents	CI-4	wwwroot/assets/js/Platform/NotificationEvents/index.js	1
+Platform/NotificationEvents	CI-9	wwwroot/assets/js/Platform/NotificationEvents/index.js:yok:savedView	-
+Platform/NotificationSettings	CI-10	wwwroot/assets/js/Platform/NotificationSettings/index.js	4
+Platform/NotificationSettings	CI-12	platform-search.en.json:yok	-
+Platform/NotificationSettings	CI-12	platform-search.tr.json:yok	-
+Platform/NotificationSettings	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/NotificationSettings	CI-3	Form declares a strongly typed ViewModel	-
+Platform/NotificationSettings	CI-3	No hard-coded page cap in the page's JS	-
+Platform/NotificationSettings	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/NotificationSettings	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/NotificationSettings	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/NotificationSettings	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/NotificationSettings	CI-3	index.js defines getAuthHeaders()	-
+Platform/NotificationSettings	CI-3	index.js includes .js-quick-view selector	-
+Platform/NotificationSettings	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Platform/NotificationSettings	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/NotificationSettings	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Platform/NotificationSettings	CI-3	index.js uses same-origin frontend proxy endpoint (/Platform/NotificationSettings/api)	-
+Platform/NotificationSettings	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/NotificationSettings	CI-3	index.js uses window.DtDefaults.create(...)	-
+Platform/NotificationSettings	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/NotificationSettings	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/NotificationSettings	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/NotificationSettings	CI-4	wwwroot/assets/js/Platform/NotificationSettings/index.js	1
+Platform/NotificationSettings	CI-9	wwwroot/assets/js/Platform/NotificationSettings/index.js:yok:savedView	-
+Platform/NotificationTemplates	CI-10	wwwroot/assets/js/Platform/NotificationTemplates/index.js	4
+Platform/NotificationTemplates	CI-12	platform-search.en.json:yok	-
+Platform/NotificationTemplates	CI-12	platform-search.tr.json:yok	-
+Platform/NotificationTemplates	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/NotificationTemplates	CI-3	Form declares a strongly typed ViewModel	-
+Platform/NotificationTemplates	CI-3	No hard-coded page cap in the page's JS	-
+Platform/NotificationTemplates	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/NotificationTemplates	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/NotificationTemplates	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/NotificationTemplates	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/NotificationTemplates	CI-3	index.js defines getAuthHeaders()	-
+Platform/NotificationTemplates	CI-3	index.js includes .js-quick-view selector	-
+Platform/NotificationTemplates	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Platform/NotificationTemplates	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/NotificationTemplates	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Platform/NotificationTemplates	CI-3	index.js uses same-origin frontend proxy endpoint (/Platform/NotificationTemplates/api)	-
+Platform/NotificationTemplates	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/NotificationTemplates	CI-3	index.js uses window.DtDefaults.create(...)	-
+Platform/NotificationTemplates	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/NotificationTemplates	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/NotificationTemplates	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/NotificationTemplates	CI-4	wwwroot/assets/js/Platform/NotificationTemplates/index.js	1
+Platform/NotificationTemplates	CI-6	Views/Platform/NotificationTemplates/Details.cshtml	3
+Platform/NotificationTemplates	CI-6	Views/Platform/NotificationTemplates/_Form.cshtml	1
+Platform/NotificationTemplates	CI-9	wwwroot/assets/js/Platform/NotificationTemplates/index.js:yok:savedView	-
+Platform/ReferenceData	CI-10	wwwroot/assets/js/Platform/ReferenceData/hierarchy.js	1
+Platform/ReferenceData	CI-10	wwwroot/assets/js/Platform/ReferenceData/index.js	4
+Platform/ReferenceData	CI-10	wwwroot/assets/js/Platform/ReferenceData/mappings.js	2
+Platform/ReferenceData	CI-10	wwwroot/assets/js/Platform/ReferenceData/usage.js	4
+Platform/ReferenceData	CI-12	platform-search.en.json:yok	-
+Platform/ReferenceData	CI-12	platform-search.tr.json:yok	-
+Platform/ReferenceData	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/ReferenceData	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/ReferenceData	CI-3	Index.cshtml uses _LayoutPlatformAdmin	-
+Platform/ReferenceData	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/ReferenceData	CI-3	_IndexL10n.cshtml provides Apply	-
+Platform/ReferenceData	CI-3	_IndexL10n.cshtml provides Reset	-
+Platform/ReferenceData	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/ReferenceData	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Platform/ReferenceData	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/ReferenceData	CI-3	index.js uses window.DtDefaults.create(...)	-
+Platform/ReferenceData	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/ReferenceData	CI-4	wwwroot/assets/js/Platform/ReferenceData/index.js	1
+Platform/ReferenceData	CI-4	wwwroot/assets/js/Platform/ReferenceData/usage.js	1
+Platform/ReferenceData	CI-6	Views/Platform/ReferenceData/AttributeManager.cshtml	4
+Platform/ReferenceData	CI-6	Views/Platform/ReferenceData/HierarchyView.cshtml	2
+Platform/ReferenceData	CI-6	Views/Platform/ReferenceData/MappingManager.cshtml	3
+Platform/ReferenceData	CI-6	Views/Platform/ReferenceData/VersionDetail.cshtml	4
+Platform/SelfAccess	CI-12	platform-search.en.json:yok	-
+Platform/SelfAccess	CI-12	platform-search.tr.json:yok	-
+Platform/ServiceManagement	CI-10	wwwroot/assets/js/Platform/ServiceManagement/index.js	1
+Platform/ServiceManagement	CI-12	platform-search.en.json:yok	-
+Platform/ServiceManagement	CI-12	platform-search.tr.json:yok	-
+Platform/ServiceManagement	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/ServiceManagement	CI-3	Form declares a strongly typed ViewModel	-
+Platform/ServiceManagement	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/ServiceManagement	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/ServiceManagement	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides Active	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides Export	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides Import	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides Passive	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides QuickView	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides SaveView	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides Unknown	-
+Platform/ServiceManagement	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Platform/ServiceManagement	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/ServiceManagement	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/ServiceManagement	CI-3	index.js includes .js-quick-view selector	-
+Platform/ServiceManagement	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/ServiceManagement	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/ServiceManagement	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/ServiceManagement	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/ServiceManagement	CI-6	Views/Platform/ServiceManagement/_DataTable.cshtml	6
+Platform/ServiceManagement	CI-9	wwwroot/assets/js/Platform/ServiceManagement/index.js:yok:savedView	-
+Platform/SubscriptionFeatures	CI-10	wwwroot/assets/js/Platform/SubscriptionFeatures/index.js	2
+Platform/SubscriptionFeatures	CI-4	wwwroot/assets/js/Platform/SubscriptionFeatures/index.js	2
+Platform/SubscriptionPlans	CI-2	Views/Platform/SubscriptionPlans/_Form.cshtml	4
+Platform/SubscriptionPlans	CI-6	Views/Platform/SubscriptionPlans/Index.cshtml	10
+Platform/Tenants	CI-10	wwwroot/assets/js/Platform/Tenants/details.js	3
+Platform/Tenants	CI-10	wwwroot/assets/js/Platform/Tenants/index.js	4
+Platform/Tenants	CI-2	Views/Platform/Tenants/Commercial/_TenantQuotaGovernanceTab.cshtml	2
+Platform/Tenants	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/Tenants	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Platform/Tenants	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/Tenants	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/Tenants	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/Tenants	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/Tenants	CI-3	index.js includes .js-quick-view selector	-
+Platform/Tenants	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Platform/Tenants	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/Tenants	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/Tenants	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/Tenants	CI-6	Views/Platform/Tenants/Commercial/_ModuleEntitlementsTab.cshtml	5
+Platform/Tenants	CI-6	Views/Platform/Tenants/Commercial/_PlanSubscriptionTab.cshtml	5
+Platform/Tenants	CI-6	Views/Platform/Tenants/Details.cshtml	6
+Platform/Tenants	CI-6	Views/Platform/Tenants/_DataTable.cshtml	6
+Platform/Tenants	CI-6	wwwroot/assets/js/Platform/Tenants/details.js	1
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/escalations.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/index.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/instances.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/sla-rules.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/tasks.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/transition-gate.js	4
+Platform/Workflow	CI-10	wwwroot/assets/js/Platform/Workflow/versions.js	4
+Platform/Workflow	CI-12	platform-search.en.json:yok	-
+Platform/Workflow	CI-12	platform-search.tr.json:yok	-
+Platform/Workflow	CI-3	index.l10n.js exists	-
+Platform/Workflow	CI-4	wwwroot/assets/js/Platform/Workflow/index.js	1
+Platform/Workflow	CI-4	wwwroot/assets/js/Platform/Workflow/instances.js	1
+Platform/Workflow	CI-4	wwwroot/assets/js/Platform/Workflow/sla-rules.js	1
+Platform/Workflow	CI-4	wwwroot/assets/js/Platform/Workflow/tasks.js	1
+Platform/Workflow	CI-4	wwwroot/assets/js/Platform/Workflow/versions.js	1
+Platform/Workflow	CI-6	Views/Platform/Workflow/Designer.cshtml	4
+Platform/Workflow	CI-6	Views/Platform/Workflow/VisualDesigner.cshtml	1
+Platform/WorkingCalendarImports	CI-12	platform-search.en.json:yok	-
+Platform/WorkingCalendarImports	CI-12	platform-search.tr.json:yok	-
+Platform/WorkingCalendarImports	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/WorkingCalendarImports	CI-3	Selection column ↔ bulk JS	-
+Platform/WorkingCalendarImports	CI-3	Selection column ↔ bulk bar	-
+Platform/WorkingCalendarImports	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/WorkingCalendarImports	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/WorkingCalendarImports	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/WorkingCalendarImports	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+Platform/WorkingCalendarImports	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/WorkingCalendarImports	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/WorkingCalendarImports	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/WorkingCalendarImports	CI-9	wwwroot/assets/js/Platform/WorkingCalendarImports/index.js:yok:savedView	-
+Platform/WorkingCalendars	CI-10	wwwroot/assets/js/Platform/WorkingCalendars/index.js	4
+Platform/WorkingCalendars	CI-12	platform-search.en.json:yok	-
+Platform/WorkingCalendars	CI-12	platform-search.tr.json:yok	-
+Platform/WorkingCalendars	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Platform/WorkingCalendars	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Platform/WorkingCalendars	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Platform/WorkingCalendars	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Platform/WorkingCalendars	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Platform/WorkingCalendars	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Platform/WorkingCalendars	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Platform/WorkingCalendars	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Platform/WorkingCalendars	CI-4	wwwroot/assets/js/Platform/WorkingCalendars/index.js	1
+Platform/WorkingCalendars	CI-9	wwwroot/assets/js/Platform/WorkingCalendars/index.js:yok:savedView	-
+Procurement/Contracts	CI-10	wwwroot/assets/js/Procurement/Contracts/index.js	4
+Procurement/Contracts	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/Contracts	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/Contracts	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/Contracts	CI-4	wwwroot/assets/js/Procurement/Contracts/index.js	1
+Procurement/Contracts	CI-9	wwwroot/assets/js/Procurement/Contracts/index.js:yok:savedView	-
+Procurement/Grn	CI-10	wwwroot/assets/js/Procurement/Grn/index.js	4
+Procurement/Grn	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/Grn	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/Grn	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/Grn	CI-4	wwwroot/assets/js/Procurement/Grn/index.js	1
+Procurement/Grn	CI-9	wwwroot/assets/js/Procurement/Grn/index.js:yok:savedView	-
+Procurement/InvoiceMatch	CI-10	wwwroot/assets/js/Procurement/InvoiceMatch/index.js	4
+Procurement/InvoiceMatch	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/InvoiceMatch	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/InvoiceMatch	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/InvoiceMatch	CI-4	wwwroot/assets/js/Procurement/InvoiceMatch/index.js	1
+Procurement/InvoiceMatch	CI-9	wwwroot/assets/js/Procurement/InvoiceMatch/index.js:yok:savedView	-
+Procurement/PurchaseOrders	CI-10	wwwroot/assets/js/Procurement/PurchaseOrders/index.js	4
+Procurement/PurchaseOrders	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/PurchaseOrders	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/PurchaseOrders	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/PurchaseOrders	CI-4	wwwroot/assets/js/Procurement/PurchaseOrders/index.js	1
+Procurement/PurchaseOrders	CI-9	wwwroot/assets/js/Procurement/PurchaseOrders/index.js:yok:savedView	-
+Procurement/Requisitions	CI-10	wwwroot/assets/js/Procurement/Requisitions/index.js	4
+Procurement/Requisitions	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/Requisitions	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/Requisitions	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/Requisitions	CI-4	wwwroot/assets/js/Procurement/Requisitions/index.js	1
+Procurement/Requisitions	CI-9	wwwroot/assets/js/Procurement/Requisitions/index.js:yok:savedView	-
+Procurement/Sourcing	CI-10	wwwroot/assets/js/Procurement/Sourcing/index.js	4
+Procurement/Sourcing	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/Sourcing	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/Sourcing	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/Sourcing	CI-4	wwwroot/assets/js/Procurement/Sourcing/index.js	1
+Procurement/Sourcing	CI-9	wwwroot/assets/js/Procurement/Sourcing/index.js:yok:savedView	-
+Procurement/Suppliers	CI-10	wwwroot/assets/js/Procurement/Suppliers/index.js	4
+Procurement/Suppliers	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Procurement/Suppliers	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Procurement/Suppliers	CI-3	personalizationClient sends tenant header only for tenant users	-
+Procurement/Suppliers	CI-4	wwwroot/assets/js/Procurement/Suppliers/index.js	1
+Procurement/Suppliers	CI-9	wwwroot/assets/js/Procurement/Suppliers/index.js:yok:savedView	-
+Quarantine	CI-6	Views/Quarantine/Index.cshtml	1
+Quarantine	CI-6	Views/Quarantine/_Header.cshtml	1
+Quarantine	CI-6	Views/Quarantine/_Stepper.cshtml	1
+Quarantine	CI-6	wwwroot/assets/js/Quarantine/queue.js	2
+Recall	CI-2	Views/Recall/Trace.cshtml	2
+Recall	CI-6	Views/Recall/Evidence.cshtml	1
+Recall	CI-6	Views/Recall/Index.cshtml	3
+Recall	CI-6	Views/Recall/Settings.cshtml	3
+Recall	CI-6	Views/Recall/_Header.cshtml	1
+Resources/SharedResource	CI-14	ar:equal:AccessGovernance	-
+Resources/SharedResource	CI-14	ar:equal:BackToLogin	-
+Resources/SharedResource	CI-14	ar:equal:ChangePassword.Subtitle	-
+Resources/SharedResource	CI-14	ar:equal:ChangePassword.Title	-
+Resources/SharedResource	CI-14	ar:equal:ConfirmPassword	-
+Resources/SharedResource	CI-14	ar:equal:CurrentPassword	-
+Resources/SharedResource	CI-14	ar:equal:ForgotPassword.SentMessage	-
+Resources/SharedResource	CI-14	ar:equal:ForgotPassword.SentTitle	-
+Resources/SharedResource	CI-14	ar:equal:ForgotPassword.Submit	-
+Resources/SharedResource	CI-14	ar:equal:ForgotPassword.Subtitle	-
+Resources/SharedResource	CI-14	ar:equal:ForgotPassword.Title	-
+Resources/SharedResource	CI-14	ar:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	ar:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	ar:equal:KnowledgeConceptsMenu	-
+Resources/SharedResource	CI-14	ar:equal:Login.EmailRequired	-
+Resources/SharedResource	CI-14	ar:equal:Login.ForgotPassword	-
+Resources/SharedResource	CI-14	ar:equal:MDM	-
+Resources/SharedResource	CI-14	ar:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	ar:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	ar:equal:Nav.Page.KNOWLEDGECONCEPTS	-
+Resources/SharedResource	CI-14	ar:equal:NewPassword	-
+Resources/SharedResource	CI-14	ar:equal:PDF	-
+Resources/SharedResource	CI-14	ar:equal:PermissionsMenu	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.Mismatch	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.Required	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.Subtitle	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.SuccessMessage	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.SuccessTitle	-
+Resources/SharedResource	CI-14	ar:equal:ResetPassword.Title	-
+Resources/SharedResource	CI-14	ar:equal:RolePermissionAssignmentMenu	-
+Resources/SharedResource	CI-14	ar:equal:RolesMenu	-
+Resources/SharedResource	CI-14	ar:equal:SelfAccessMenu	-
+Resources/SharedResource	CI-14	ar:equal:SetNewPassword	-
+Resources/SharedResource	CI-14	ar:equal:UserRoleAssignmentMenu	-
+Resources/SharedResource	CI-14	ar:equal:UsersMenu	-
+Resources/SharedResource	CI-14	ar:missing:AddModule	-
+Resources/SharedResource	CI-14	ar:missing:AddNotificationSettings	-
+Resources/SharedResource	CI-14	ar:missing:AddNotificationTemplate	-
+Resources/SharedResource	CI-14	ar:missing:AddSubscriptionPlan	-
+Resources/SharedResource	CI-14	ar:missing:AddTenant	-
+Resources/SharedResource	CI-14	ar:missing:AddWorkingCalendar	-
+Resources/SharedResource	CI-14	ar:missing:AdminBulkDeletePartial	-
+Resources/SharedResource	CI-14	ar:missing:AdminBulkDuplicateIds	-
+Resources/SharedResource	CI-14	ar:missing:AdminChangeUnavailable	-
+Resources/SharedResource	CI-14	ar:missing:AdminEmailImmutable	-
+Resources/SharedResource	CI-14	ar:missing:AdminLastSuperAdminDenied	-
+Resources/SharedResource	CI-14	ar:missing:AdminSeedDeleteDenied	-
+Resources/SharedResource	CI-14	ar:missing:AdminSeedEmailChangeDenied	-
+Resources/SharedResource	CI-14	ar:missing:AdminSeedSuspendDenied	-
+Resources/SharedResource	CI-14	ar:missing:AdminSelfActionDenied	-
+Resources/SharedResource	CI-14	ar:missing:AdminSelfRoleDowngradeDenied	-
+Resources/SharedResource	CI-14	ar:missing:AuditLogMenu	-
+Resources/SharedResource	CI-14	ar:missing:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	ar:missing:BaselineCannotBeDeactivated	-
+Resources/SharedResource	CI-14	ar:missing:DomainCodeInUse	-
+Resources/SharedResource	CI-14	ar:missing:DomainManagement	-
+Resources/SharedResource	CI-14	ar:missing:InterfaceRegistry	-
+Resources/SharedResource	CI-14	ar:missing:InvitationEmailSendFailed	-
+Resources/SharedResource	CI-14	ar:missing:ModuleCatalog	-
+Resources/SharedResource	CI-14	ar:missing:ModuleManagedByCode	-
+Resources/SharedResource	CI-14	ar:missing:NotificationDispatchesMenu	-
+Resources/SharedResource	CI-14	ar:missing:NotificationEventsMenu	-
+Resources/SharedResource	CI-14	ar:missing:NotificationSettingsMenu	-
+Resources/SharedResource	CI-14	ar:missing:NotificationTemplatesMenu	-
+Resources/SharedResource	CI-14	ar:missing:PlatformAdministrators	-
+Resources/SharedResource	CI-14	ar:missing:ServiceCodeInUse	-
+Resources/SharedResource	CI-14	ar:missing:ServiceManagement	-
+Resources/SharedResource	CI-14	ar:missing:SubscriptionFeatures	-
+Resources/SharedResource	CI-14	ar:missing:TenantManagementMenu	-
+Resources/SharedResource	CI-14	ar:missing:WorkingCalendarsMenu	-
+Resources/SharedResource	CI-14	es:equal:AccessGovernance	-
+Resources/SharedResource	CI-14	es:equal:BackToLogin	-
+Resources/SharedResource	CI-14	es:equal:ChangePassword.Subtitle	-
+Resources/SharedResource	CI-14	es:equal:ChangePassword.Title	-
+Resources/SharedResource	CI-14	es:equal:ConfirmPassword	-
+Resources/SharedResource	CI-14	es:equal:CurrentPassword	-
+Resources/SharedResource	CI-14	es:equal:Error	-
+Resources/SharedResource	CI-14	es:equal:ForgotPassword.SentMessage	-
+Resources/SharedResource	CI-14	es:equal:ForgotPassword.SentTitle	-
+Resources/SharedResource	CI-14	es:equal:ForgotPassword.Submit	-
+Resources/SharedResource	CI-14	es:equal:ForgotPassword.Subtitle	-
+Resources/SharedResource	CI-14	es:equal:ForgotPassword.Title	-
+Resources/SharedResource	CI-14	es:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	es:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	es:equal:KnowledgeConceptsMenu	-
+Resources/SharedResource	CI-14	es:equal:Login.EmailRequired	-
+Resources/SharedResource	CI-14	es:equal:Login.ErrorTitle	-
+Resources/SharedResource	CI-14	es:equal:Login.ForgotPassword	-
+Resources/SharedResource	CI-14	es:equal:MDM	-
+Resources/SharedResource	CI-14	es:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	es:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	es:equal:Nav.Page.KNOWLEDGECONCEPTS	-
+Resources/SharedResource	CI-14	es:equal:Nav.Page.ROLES	-
+Resources/SharedResource	CI-14	es:equal:NewPassword	-
+Resources/SharedResource	CI-14	es:equal:PDF	-
+Resources/SharedResource	CI-14	es:equal:PermissionsMenu	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.Mismatch	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.Required	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.Subtitle	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.SuccessMessage	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.SuccessTitle	-
+Resources/SharedResource	CI-14	es:equal:ResetPassword.Title	-
+Resources/SharedResource	CI-14	es:equal:RolePermissionAssignmentMenu	-
+Resources/SharedResource	CI-14	es:equal:RolesMenu	-
+Resources/SharedResource	CI-14	es:equal:Sector	-
+Resources/SharedResource	CI-14	es:equal:SelfAccessMenu	-
+Resources/SharedResource	CI-14	es:equal:SetNewPassword	-
+Resources/SharedResource	CI-14	es:equal:UserRoleAssignmentMenu	-
+Resources/SharedResource	CI-14	es:equal:UsersMenu	-
+Resources/SharedResource	CI-14	es:missing:AddModule	-
+Resources/SharedResource	CI-14	es:missing:AddNotificationSettings	-
+Resources/SharedResource	CI-14	es:missing:AddNotificationTemplate	-
+Resources/SharedResource	CI-14	es:missing:AddSubscriptionPlan	-
+Resources/SharedResource	CI-14	es:missing:AddTenant	-
+Resources/SharedResource	CI-14	es:missing:AddWorkingCalendar	-
+Resources/SharedResource	CI-14	es:missing:AdminBulkDeletePartial	-
+Resources/SharedResource	CI-14	es:missing:AdminBulkDuplicateIds	-
+Resources/SharedResource	CI-14	es:missing:AdminChangeUnavailable	-
+Resources/SharedResource	CI-14	es:missing:AdminEmailImmutable	-
+Resources/SharedResource	CI-14	es:missing:AdminLastSuperAdminDenied	-
+Resources/SharedResource	CI-14	es:missing:AdminSeedDeleteDenied	-
+Resources/SharedResource	CI-14	es:missing:AdminSeedEmailChangeDenied	-
+Resources/SharedResource	CI-14	es:missing:AdminSeedSuspendDenied	-
+Resources/SharedResource	CI-14	es:missing:AdminSelfActionDenied	-
+Resources/SharedResource	CI-14	es:missing:AdminSelfRoleDowngradeDenied	-
+Resources/SharedResource	CI-14	es:missing:AuditLogMenu	-
+Resources/SharedResource	CI-14	es:missing:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	es:missing:BaselineCannotBeDeactivated	-
+Resources/SharedResource	CI-14	es:missing:DomainCodeInUse	-
+Resources/SharedResource	CI-14	es:missing:DomainManagement	-
+Resources/SharedResource	CI-14	es:missing:InterfaceRegistry	-
+Resources/SharedResource	CI-14	es:missing:InvitationEmailSendFailed	-
+Resources/SharedResource	CI-14	es:missing:ModuleCatalog	-
+Resources/SharedResource	CI-14	es:missing:ModuleManagedByCode	-
+Resources/SharedResource	CI-14	es:missing:NotificationDispatchesMenu	-
+Resources/SharedResource	CI-14	es:missing:NotificationEventsMenu	-
+Resources/SharedResource	CI-14	es:missing:NotificationSettingsMenu	-
+Resources/SharedResource	CI-14	es:missing:NotificationTemplatesMenu	-
+Resources/SharedResource	CI-14	es:missing:PlatformAdministrators	-
+Resources/SharedResource	CI-14	es:missing:ServiceCodeInUse	-
+Resources/SharedResource	CI-14	es:missing:ServiceManagement	-
+Resources/SharedResource	CI-14	es:missing:SubscriptionFeatures	-
+Resources/SharedResource	CI-14	es:missing:TenantManagementMenu	-
+Resources/SharedResource	CI-14	es:missing:WorkingCalendarsMenu	-
+Resources/SharedResource	CI-14	fr:equal:AccessGovernance	-
+Resources/SharedResource	CI-14	fr:equal:BackToLogin	-
+Resources/SharedResource	CI-14	fr:equal:ChangePassword.Subtitle	-
+Resources/SharedResource	CI-14	fr:equal:ChangePassword.Title	-
+Resources/SharedResource	CI-14	fr:equal:ConfirmPassword	-
+Resources/SharedResource	CI-14	fr:equal:ContactsMenu	-
+Resources/SharedResource	CI-14	fr:equal:CurrentPassword	-
+Resources/SharedResource	CI-14	fr:equal:ForgotPassword.SentMessage	-
+Resources/SharedResource	CI-14	fr:equal:ForgotPassword.SentTitle	-
+Resources/SharedResource	CI-14	fr:equal:ForgotPassword.Submit	-
+Resources/SharedResource	CI-14	fr:equal:ForgotPassword.Subtitle	-
+Resources/SharedResource	CI-14	fr:equal:ForgotPassword.Title	-
+Resources/SharedResource	CI-14	fr:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	fr:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	fr:equal:KnowledgeConceptsMenu	-
+Resources/SharedResource	CI-14	fr:equal:Login.EmailRequired	-
+Resources/SharedResource	CI-14	fr:equal:Login.ForgotPassword	-
+Resources/SharedResource	CI-14	fr:equal:MDM	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Domain.ADMINISTRATION	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Module.AUDIT	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Module.NOTIFICATIONS	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Module.SOURCING	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.CONTACT	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.CONTACTS	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.KNOWLEDGECONCEPTS	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.SEGMENT	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.SEGMENTS	-
+Resources/SharedResource	CI-14	fr:equal:Nav.Page.SOURCING	-
+Resources/SharedResource	CI-14	fr:equal:NewPassword	-
+Resources/SharedResource	CI-14	fr:equal:Notification	-
+Resources/SharedResource	CI-14	fr:equal:PDF	-
+Resources/SharedResource	CI-14	fr:equal:PermissionsMenu	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.Mismatch	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.Required	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.Subtitle	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.SuccessMessage	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.SuccessTitle	-
+Resources/SharedResource	CI-14	fr:equal:ResetPassword.Title	-
+Resources/SharedResource	CI-14	fr:equal:RolePermissionAssignmentMenu	-
+Resources/SharedResource	CI-14	fr:equal:RolesMenu	-
+Resources/SharedResource	CI-14	fr:equal:SegmentsMenu	-
+Resources/SharedResource	CI-14	fr:equal:SelfAccessMenu	-
+Resources/SharedResource	CI-14	fr:equal:SetNewPassword	-
+Resources/SharedResource	CI-14	fr:equal:UserRoleAssignmentMenu	-
+Resources/SharedResource	CI-14	fr:equal:UsersMenu	-
+Resources/SharedResource	CI-14	fr:missing:AddModule	-
+Resources/SharedResource	CI-14	fr:missing:AddNotificationSettings	-
+Resources/SharedResource	CI-14	fr:missing:AddNotificationTemplate	-
+Resources/SharedResource	CI-14	fr:missing:AddSubscriptionPlan	-
+Resources/SharedResource	CI-14	fr:missing:AddTenant	-
+Resources/SharedResource	CI-14	fr:missing:AddWorkingCalendar	-
+Resources/SharedResource	CI-14	fr:missing:AdminBulkDeletePartial	-
+Resources/SharedResource	CI-14	fr:missing:AdminBulkDuplicateIds	-
+Resources/SharedResource	CI-14	fr:missing:AdminChangeUnavailable	-
+Resources/SharedResource	CI-14	fr:missing:AdminEmailImmutable	-
+Resources/SharedResource	CI-14	fr:missing:AdminLastSuperAdminDenied	-
+Resources/SharedResource	CI-14	fr:missing:AdminSeedDeleteDenied	-
+Resources/SharedResource	CI-14	fr:missing:AdminSeedEmailChangeDenied	-
+Resources/SharedResource	CI-14	fr:missing:AdminSeedSuspendDenied	-
+Resources/SharedResource	CI-14	fr:missing:AdminSelfActionDenied	-
+Resources/SharedResource	CI-14	fr:missing:AdminSelfRoleDowngradeDenied	-
+Resources/SharedResource	CI-14	fr:missing:AuditLogMenu	-
+Resources/SharedResource	CI-14	fr:missing:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	fr:missing:BaselineCannotBeDeactivated	-
+Resources/SharedResource	CI-14	fr:missing:DomainCodeInUse	-
+Resources/SharedResource	CI-14	fr:missing:DomainManagement	-
+Resources/SharedResource	CI-14	fr:missing:InterfaceRegistry	-
+Resources/SharedResource	CI-14	fr:missing:InvitationEmailSendFailed	-
+Resources/SharedResource	CI-14	fr:missing:ModuleCatalog	-
+Resources/SharedResource	CI-14	fr:missing:ModuleManagedByCode	-
+Resources/SharedResource	CI-14	fr:missing:NotificationDispatchesMenu	-
+Resources/SharedResource	CI-14	fr:missing:NotificationEventsMenu	-
+Resources/SharedResource	CI-14	fr:missing:NotificationSettingsMenu	-
+Resources/SharedResource	CI-14	fr:missing:NotificationTemplatesMenu	-
+Resources/SharedResource	CI-14	fr:missing:PlatformAdministrators	-
+Resources/SharedResource	CI-14	fr:missing:ServiceCodeInUse	-
+Resources/SharedResource	CI-14	fr:missing:ServiceManagement	-
+Resources/SharedResource	CI-14	fr:missing:SubscriptionFeatures	-
+Resources/SharedResource	CI-14	fr:missing:TenantManagementMenu	-
+Resources/SharedResource	CI-14	fr:missing:WorkingCalendarsMenu	-
+Resources/SharedResource	CI-14	ru:equal:AccessGovernance	-
+Resources/SharedResource	CI-14	ru:equal:BackToLogin	-
+Resources/SharedResource	CI-14	ru:equal:ChangePassword.Subtitle	-
+Resources/SharedResource	CI-14	ru:equal:ChangePassword.Title	-
+Resources/SharedResource	CI-14	ru:equal:ConfirmPassword	-
+Resources/SharedResource	CI-14	ru:equal:CurrentPassword	-
+Resources/SharedResource	CI-14	ru:equal:ForgotPassword.SentMessage	-
+Resources/SharedResource	CI-14	ru:equal:ForgotPassword.SentTitle	-
+Resources/SharedResource	CI-14	ru:equal:ForgotPassword.Submit	-
+Resources/SharedResource	CI-14	ru:equal:ForgotPassword.Subtitle	-
+Resources/SharedResource	CI-14	ru:equal:ForgotPassword.Title	-
+Resources/SharedResource	CI-14	ru:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	ru:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	ru:equal:KnowledgeConceptsMenu	-
+Resources/SharedResource	CI-14	ru:equal:Login.EmailRequired	-
+Resources/SharedResource	CI-14	ru:equal:Login.ForgotPassword	-
+Resources/SharedResource	CI-14	ru:equal:MDM	-
+Resources/SharedResource	CI-14	ru:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	ru:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	ru:equal:Nav.Page.KNOWLEDGECONCEPTS	-
+Resources/SharedResource	CI-14	ru:equal:NewPassword	-
+Resources/SharedResource	CI-14	ru:equal:PDF	-
+Resources/SharedResource	CI-14	ru:equal:PermissionsMenu	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.Mismatch	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.Required	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.Subtitle	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.SuccessMessage	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.SuccessTitle	-
+Resources/SharedResource	CI-14	ru:equal:ResetPassword.Title	-
+Resources/SharedResource	CI-14	ru:equal:RolePermissionAssignmentMenu	-
+Resources/SharedResource	CI-14	ru:equal:RolesMenu	-
+Resources/SharedResource	CI-14	ru:equal:SelfAccessMenu	-
+Resources/SharedResource	CI-14	ru:equal:SetNewPassword	-
+Resources/SharedResource	CI-14	ru:equal:UserRoleAssignmentMenu	-
+Resources/SharedResource	CI-14	ru:equal:UsersMenu	-
+Resources/SharedResource	CI-14	ru:missing:AddModule	-
+Resources/SharedResource	CI-14	ru:missing:AddNotificationSettings	-
+Resources/SharedResource	CI-14	ru:missing:AddNotificationTemplate	-
+Resources/SharedResource	CI-14	ru:missing:AddSubscriptionPlan	-
+Resources/SharedResource	CI-14	ru:missing:AddTenant	-
+Resources/SharedResource	CI-14	ru:missing:AddWorkingCalendar	-
+Resources/SharedResource	CI-14	ru:missing:AdminBulkDeletePartial	-
+Resources/SharedResource	CI-14	ru:missing:AdminBulkDuplicateIds	-
+Resources/SharedResource	CI-14	ru:missing:AdminChangeUnavailable	-
+Resources/SharedResource	CI-14	ru:missing:AdminEmailImmutable	-
+Resources/SharedResource	CI-14	ru:missing:AdminLastSuperAdminDenied	-
+Resources/SharedResource	CI-14	ru:missing:AdminSeedDeleteDenied	-
+Resources/SharedResource	CI-14	ru:missing:AdminSeedEmailChangeDenied	-
+Resources/SharedResource	CI-14	ru:missing:AdminSeedSuspendDenied	-
+Resources/SharedResource	CI-14	ru:missing:AdminSelfActionDenied	-
+Resources/SharedResource	CI-14	ru:missing:AdminSelfRoleDowngradeDenied	-
+Resources/SharedResource	CI-14	ru:missing:AuditLogMenu	-
+Resources/SharedResource	CI-14	ru:missing:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	ru:missing:BaselineCannotBeDeactivated	-
+Resources/SharedResource	CI-14	ru:missing:DomainCodeInUse	-
+Resources/SharedResource	CI-14	ru:missing:DomainManagement	-
+Resources/SharedResource	CI-14	ru:missing:InterfaceRegistry	-
+Resources/SharedResource	CI-14	ru:missing:InvitationEmailSendFailed	-
+Resources/SharedResource	CI-14	ru:missing:ModuleCatalog	-
+Resources/SharedResource	CI-14	ru:missing:ModuleManagedByCode	-
+Resources/SharedResource	CI-14	ru:missing:NotificationDispatchesMenu	-
+Resources/SharedResource	CI-14	ru:missing:NotificationEventsMenu	-
+Resources/SharedResource	CI-14	ru:missing:NotificationSettingsMenu	-
+Resources/SharedResource	CI-14	ru:missing:NotificationTemplatesMenu	-
+Resources/SharedResource	CI-14	ru:missing:PlatformAdministrators	-
+Resources/SharedResource	CI-14	ru:missing:ServiceCodeInUse	-
+Resources/SharedResource	CI-14	ru:missing:ServiceManagement	-
+Resources/SharedResource	CI-14	ru:missing:SubscriptionFeatures	-
+Resources/SharedResource	CI-14	ru:missing:TenantManagementMenu	-
+Resources/SharedResource	CI-14	ru:missing:WorkingCalendarsMenu	-
+Resources/SharedResource	CI-14	tr:equal:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	tr:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	tr:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	tr:equal:MDM	-
+Resources/SharedResource	CI-14	tr:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	tr:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	tr:equal:Nav.Page.MODEL	-
+Resources/SharedResource	CI-14	tr:equal:Nav.Page.SEGMENT	-
+Resources/SharedResource	CI-14	tr:equal:PDF	-
+Resources/SharedResource	CI-14	tr:equal:Sandbox	-
+Resources/SharedResource	CI-14	zh:equal:AccessGovernance	-
+Resources/SharedResource	CI-14	zh:equal:BackToLogin	-
+Resources/SharedResource	CI-14	zh:equal:ChangePassword.Subtitle	-
+Resources/SharedResource	CI-14	zh:equal:ChangePassword.Title	-
+Resources/SharedResource	CI-14	zh:equal:ConfirmPassword	-
+Resources/SharedResource	CI-14	zh:equal:CurrentPassword	-
+Resources/SharedResource	CI-14	zh:equal:ForgotPassword.SentMessage	-
+Resources/SharedResource	CI-14	zh:equal:ForgotPassword.SentTitle	-
+Resources/SharedResource	CI-14	zh:equal:ForgotPassword.Submit	-
+Resources/SharedResource	CI-14	zh:equal:ForgotPassword.Subtitle	-
+Resources/SharedResource	CI-14	zh:equal:ForgotPassword.Title	-
+Resources/SharedResource	CI-14	zh:equal:GoldenCompact	-
+Resources/SharedResource	CI-14	zh:equal:GoldenSlim	-
+Resources/SharedResource	CI-14	zh:equal:KnowledgeConceptsMenu	-
+Resources/SharedResource	CI-14	zh:equal:Login.EmailRequired	-
+Resources/SharedResource	CI-14	zh:equal:Login.ForgotPassword	-
+Resources/SharedResource	CI-14	zh:equal:MDM	-
+Resources/SharedResource	CI-14	zh:equal:Nav.Module.GOLDENCOMPACT	-
+Resources/SharedResource	CI-14	zh:equal:Nav.Module.GOLDENSLIM	-
+Resources/SharedResource	CI-14	zh:equal:Nav.Page.KNOWLEDGECONCEPTS	-
+Resources/SharedResource	CI-14	zh:equal:NewPassword	-
+Resources/SharedResource	CI-14	zh:equal:PDF	-
+Resources/SharedResource	CI-14	zh:equal:PermissionsMenu	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.Mismatch	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.Required	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.Subtitle	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.SuccessMessage	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.SuccessTitle	-
+Resources/SharedResource	CI-14	zh:equal:ResetPassword.Title	-
+Resources/SharedResource	CI-14	zh:equal:RolePermissionAssignmentMenu	-
+Resources/SharedResource	CI-14	zh:equal:RolesMenu	-
+Resources/SharedResource	CI-14	zh:equal:SelfAccessMenu	-
+Resources/SharedResource	CI-14	zh:equal:SetNewPassword	-
+Resources/SharedResource	CI-14	zh:equal:UserRoleAssignmentMenu	-
+Resources/SharedResource	CI-14	zh:equal:UsersMenu	-
+Resources/SharedResource	CI-14	zh:missing:AddModule	-
+Resources/SharedResource	CI-14	zh:missing:AddNotificationSettings	-
+Resources/SharedResource	CI-14	zh:missing:AddNotificationTemplate	-
+Resources/SharedResource	CI-14	zh:missing:AddSubscriptionPlan	-
+Resources/SharedResource	CI-14	zh:missing:AddTenant	-
+Resources/SharedResource	CI-14	zh:missing:AddWorkingCalendar	-
+Resources/SharedResource	CI-14	zh:missing:AdminBulkDeletePartial	-
+Resources/SharedResource	CI-14	zh:missing:AdminBulkDuplicateIds	-
+Resources/SharedResource	CI-14	zh:missing:AdminChangeUnavailable	-
+Resources/SharedResource	CI-14	zh:missing:AdminEmailImmutable	-
+Resources/SharedResource	CI-14	zh:missing:AdminLastSuperAdminDenied	-
+Resources/SharedResource	CI-14	zh:missing:AdminSeedDeleteDenied	-
+Resources/SharedResource	CI-14	zh:missing:AdminSeedEmailChangeDenied	-
+Resources/SharedResource	CI-14	zh:missing:AdminSeedSuspendDenied	-
+Resources/SharedResource	CI-14	zh:missing:AdminSelfActionDenied	-
+Resources/SharedResource	CI-14	zh:missing:AdminSelfRoleDowngradeDenied	-
+Resources/SharedResource	CI-14	zh:missing:AuditLogMenu	-
+Resources/SharedResource	CI-14	zh:missing:AuditRetentionMenu	-
+Resources/SharedResource	CI-14	zh:missing:BaselineCannotBeDeactivated	-
+Resources/SharedResource	CI-14	zh:missing:DomainCodeInUse	-
+Resources/SharedResource	CI-14	zh:missing:DomainManagement	-
+Resources/SharedResource	CI-14	zh:missing:InterfaceRegistry	-
+Resources/SharedResource	CI-14	zh:missing:InvitationEmailSendFailed	-
+Resources/SharedResource	CI-14	zh:missing:ModuleCatalog	-
+Resources/SharedResource	CI-14	zh:missing:ModuleManagedByCode	-
+Resources/SharedResource	CI-14	zh:missing:NotificationDispatchesMenu	-
+Resources/SharedResource	CI-14	zh:missing:NotificationEventsMenu	-
+Resources/SharedResource	CI-14	zh:missing:NotificationSettingsMenu	-
+Resources/SharedResource	CI-14	zh:missing:NotificationTemplatesMenu	-
+Resources/SharedResource	CI-14	zh:missing:PlatformAdministrators	-
+Resources/SharedResource	CI-14	zh:missing:ServiceCodeInUse	-
+Resources/SharedResource	CI-14	zh:missing:ServiceManagement	-
+Resources/SharedResource	CI-14	zh:missing:SubscriptionFeatures	-
+Resources/SharedResource	CI-14	zh:missing:TenantManagementMenu	-
+Resources/SharedResource	CI-14	zh:missing:WorkingCalendarsMenu	-
+SupplyChain/CapacityPlans	CI-6	Views/SupplyChain/CapacityPlans/Details.cshtml	1
+SupplyChain/CapacityPlans	CI-6	Views/SupplyChain/CapacityPlans/Index.cshtml	1
+SupplyChain/CapacityPlans	CI-6	wwwroot/assets/js/SupplyChain/CapacityPlans/details.js	1
+SupplyChain/CapacityPlans	CI-6	wwwroot/assets/js/SupplyChain/CapacityPlans/index.js	1
+SupplyChain/Carriers	CI-10	wwwroot/assets/js/SupplyChain/Carriers/index.js	4
+SupplyChain/Carriers	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+SupplyChain/Carriers	CI-3	DataTable markup has #skeleton-loader	-
+SupplyChain/Carriers	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+SupplyChain/Carriers	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Actions	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Active	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Apply	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Cancel	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Edit	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Export	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Filter	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Import	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Passive	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides QuickView	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Reset	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides SaveView	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Search	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides ShowAll	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Status	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides Unknown	-
+SupplyChain/Carriers	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+SupplyChain/Carriers	CI-3	direct-gateway profile uses window.API service base	-
+SupplyChain/Carriers	CI-3	index.js calls bulk endpoint (.../bulk)	-
+SupplyChain/Carriers	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+SupplyChain/Carriers	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+SupplyChain/Carriers	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+SupplyChain/Carriers	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+SupplyChain/Carriers	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+SupplyChain/Carriers	CI-3	personalizationClient sends tenant header only for tenant users	-
+SupplyChain/Carriers	CI-6	wwwroot/assets/js/SupplyChain/Carriers/index.js	1
+SupplyChain/Carriers	CI-9	wwwroot/assets/js/SupplyChain/Carriers/index.js:yok:savedView	-
+SupplyChain/Claims	CI-10	wwwroot/assets/js/SupplyChain/Claims/index.js	4
+SupplyChain/Claims	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+SupplyChain/Claims	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+SupplyChain/Claims	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Actions	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Active	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Apply	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Cancel	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Edit	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Export	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Filter	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Import	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Passive	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides QuickView	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Reset	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides SaveView	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Search	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides ShowAll	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Status	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides Unknown	-
+SupplyChain/Claims	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+SupplyChain/Claims	CI-3	direct-gateway profile uses window.API service base	-
+SupplyChain/Claims	CI-3	index.js calls bulk endpoint (.../bulk)	-
+SupplyChain/Claims	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+SupplyChain/Claims	CI-3	index.js defines getAuthHeaders()	-
+SupplyChain/Claims	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+SupplyChain/Claims	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+SupplyChain/Claims	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+SupplyChain/Claims	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+SupplyChain/Claims	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+SupplyChain/Claims	CI-3	personalizationClient sends tenant header only for tenant users	-
+SupplyChain/Claims	CI-6	wwwroot/assets/js/SupplyChain/Claims/index.js	2
+SupplyChain/Loads	CI-10	wwwroot/assets/js/SupplyChain/Loads/index.js	4
+SupplyChain/Loads	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+SupplyChain/Loads	CI-3	DataTable markup has #skeleton-loader	-
+SupplyChain/Loads	CI-3	Form declares a strongly typed ViewModel	-
+SupplyChain/Loads	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+SupplyChain/Loads	CI-3	Reset baseline is factory table state	-
+SupplyChain/Loads	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+SupplyChain/Loads	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Actions	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Active	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Apply	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Cancel	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Edit	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Export	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Filter	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Import	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Passive	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides QuickView	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Reset	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides SaveView	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Search	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides ShowAll	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Status	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides Unknown	-
+SupplyChain/Loads	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+SupplyChain/Loads	CI-3	direct-gateway profile uses window.API service base	-
+SupplyChain/Loads	CI-3	index.js calls bulk endpoint (.../bulk)	-
+SupplyChain/Loads	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+SupplyChain/Loads	CI-3	index.js includes .js-quick-view selector	-
+SupplyChain/Loads	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+SupplyChain/Loads	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+SupplyChain/Loads	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+SupplyChain/Loads	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+SupplyChain/Loads	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+SupplyChain/Loads	CI-3	personalizationClient sends tenant header only for tenant users	-
+SupplyChain/Loads	CI-6	wwwroot/assets/js/SupplyChain/Loads/index.js	1
+SupplyChain/Loads	CI-9	wwwroot/assets/js/SupplyChain/Loads/index.js:yok:savedView	-
+SupplyChain/Returns	CI-10	wwwroot/assets/js/SupplyChain/Returns/index.js	1
+SupplyChain/Returns	CI-3	Apply click updates Save View visibility	-
+SupplyChain/Returns	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+SupplyChain/Returns	CI-3	Form declares a strongly typed ViewModel	-
+SupplyChain/Returns	CI-3	Reset baseline is factory table state	-
+SupplyChain/Returns	CI-3	Reset click recalculates Save View dirty visibility	-
+SupplyChain/Returns	CI-3	Reset click restores full factory table state	-
+SupplyChain/Returns	CI-3	Save View payload has non-empty default name	-
+SupplyChain/Returns	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+SupplyChain/Returns	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Actions	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Active	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Apply	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Cancel	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Edit	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Export	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Filter	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Import	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Passive	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides QuickView	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Reset	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides SaveView	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Search	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides ShowAll	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Status	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides Unknown	-
+SupplyChain/Returns	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+SupplyChain/Returns	CI-3	direct-gateway profile uses window.API service base	-
+SupplyChain/Returns	CI-3	index.js calls bulk endpoint (.../bulk)	-
+SupplyChain/Returns	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+SupplyChain/Returns	CI-3	index.js defines getAuthHeaders()	-
+SupplyChain/Returns	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+SupplyChain/Returns	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+SupplyChain/Returns	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+SupplyChain/Returns	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+SupplyChain/Returns	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+SupplyChain/Returns	CI-3	personalizationClient sends tenant header only for tenant users	-
+SupplyChain/Returns	CI-6	wwwroot/assets/js/SupplyChain/Returns/index.js	2
+SupplyChain/SandopPlans	CI-6	Views/SupplyChain/SandopPlans/Details.cshtml	1
+SupplyChain/SandopPlans	CI-6	Views/SupplyChain/SandopPlans/Index.cshtml	1
+SupplyChain/SandopPlans	CI-6	wwwroot/assets/js/SupplyChain/SandopPlans/details.js	1
+SupplyChain/SandopPlans	CI-6	wwwroot/assets/js/SupplyChain/SandopPlans/index.js	1
+SupplyChain/Shipments	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+SupplyChain/Shipments	CI-3	Compact reference has Edit.cshtml	-
+SupplyChain/Shipments	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+SupplyChain/Shipments	CI-3	Index.cshtml includes <partial name="_Filter" />	-
+SupplyChain/Shipments	CI-3	Index.cshtml includes <partial name="_IndexL10n" />	-
+SupplyChain/Shipments	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+SupplyChain/Shipments	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Actions	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Active	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Apply	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Cancel	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Edit	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Export	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Filter	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Import	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Passive	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides QuickView	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Reset	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides SaveView	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Search	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides ShowAll	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Status	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides Unknown	-
+SupplyChain/Shipments	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+SupplyChain/Shipments	CI-3	direct-gateway profile uses window.API service base	-
+SupplyChain/Shipments	CI-3	index.js calls bulk endpoint (.../bulk)	-
+SupplyChain/Shipments	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+SupplyChain/Shipments	CI-3	index.js includes .js-quick-view selector	-
+SupplyChain/Shipments	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+SupplyChain/Shipments	CI-3	index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)	-
+SupplyChain/Shipments	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+SupplyChain/Shipments	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+SupplyChain/Shipments	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+SupplyChain/Shipments	CI-6	Views/SupplyChain/Shipments/Details.cshtml	1
+SupplyChain/Shipments	CI-6	Views/SupplyChain/Shipments/_DataTable.cshtml	2
+SupplyChain/Shipments	CI-6	wwwroot/assets/js/SupplyChain/Shipments/details.js	1
+SupplyChain/Shipments	CI-9	wwwroot/assets/js/SupplyChain/Shipments/index.js:yok:savedView	-
+TalentEcosystem/AssociationMemberships	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/AssociationMemberships	CI-5	wwwroot/assets/js/TalentEcosystem/AssociationMemberships/index.js	1
+TalentEcosystem/AssociationMemberships	CI-9	wwwroot/assets/js/TalentEcosystem/AssociationMemberships/index.js:yok:savedView	-
+TalentEcosystem/AssociationOperations	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/AssociationOperations	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/AssociationOperations	CI-4	wwwroot/assets/js/TalentEcosystem/AssociationOperations/index.js	1
+TalentEcosystem/AssociationOperations	CI-9	wwwroot/assets/js/TalentEcosystem/AssociationOperations/index.js:yok:savedView	-
+TalentEcosystem/CandidateCareerPassport	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/CandidateCareerPassport	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/CandidateCareerPassport	CI-4	wwwroot/assets/js/TalentEcosystem/CandidateCareerPassport/index.js	1
+TalentEcosystem/CandidateCareerPassport	CI-9	wwwroot/assets/js/TalentEcosystem/CandidateCareerPassport/index.js:yok:savedView	-
+TalentEcosystem/CandidateDisputes	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/CandidateDisputes	CI-5	wwwroot/assets/js/TalentEcosystem/CandidateDisputes/index.js	1
+TalentEcosystem/CandidateDisputes	CI-9	wwwroot/assets/js/TalentEcosystem/CandidateDisputes/index.js:yok:savedView	-
+TalentEcosystem/CandidateProfiles	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/CandidateProfiles	CI-5	wwwroot/assets/js/TalentEcosystem/CandidateProfiles/index.js	1
+TalentEcosystem/CandidateProfiles	CI-9	wwwroot/assets/js/TalentEcosystem/CandidateProfiles/index.js:yok:savedView	-
+TalentEcosystem/ConsentVisibilityPolicies	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/ConsentVisibilityPolicies	CI-5	wwwroot/assets/js/TalentEcosystem/ConsentVisibilityPolicies/index.js	1
+TalentEcosystem/ConsentVisibilityPolicies	CI-9	wwwroot/assets/js/TalentEcosystem/ConsentVisibilityPolicies/index.js:yok:savedView	-
+TalentEcosystem/EarlyWarningSignals	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/EarlyWarningSignals	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/EarlyWarningSignals	CI-4	wwwroot/assets/js/TalentEcosystem/EarlyWarningSignals/index.js	1
+TalentEcosystem/EarlyWarningSignals	CI-9	wwwroot/assets/js/TalentEcosystem/EarlyWarningSignals/index.js:yok:savedView	-
+TalentEcosystem/ExitReferenceRecords	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/ExitReferenceRecords	CI-5	wwwroot/assets/js/TalentEcosystem/ExitReferenceRecords/index.js	1
+TalentEcosystem/ExitReferenceRecords	CI-9	wwwroot/assets/js/TalentEcosystem/ExitReferenceRecords/index.js:yok:savedView	-
+TalentEcosystem/HiringRiskIndicators	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/HiringRiskIndicators	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/HiringRiskIndicators	CI-4	wwwroot/assets/js/TalentEcosystem/HiringRiskIndicators/index.js	1
+TalentEcosystem/HiringRiskIndicators	CI-9	wwwroot/assets/js/TalentEcosystem/HiringRiskIndicators/index.js:yok:savedView	-
+TalentEcosystem/IndustryKnowledgeNetwork	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/IndustryKnowledgeNetwork	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/IndustryKnowledgeNetwork	CI-4	wwwroot/assets/js/TalentEcosystem/IndustryKnowledgeNetwork/index.js	1
+TalentEcosystem/IndustryKnowledgeNetwork	CI-9	wwwroot/assets/js/TalentEcosystem/IndustryKnowledgeNetwork/index.js:yok:savedView	-
+TalentEcosystem/IndustrySkillPassport	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/IndustrySkillPassport	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/IndustrySkillPassport	CI-4	wwwroot/assets/js/TalentEcosystem/IndustrySkillPassport/index.js	1
+TalentEcosystem/IndustrySkillPassport	CI-9	wwwroot/assets/js/TalentEcosystem/IndustrySkillPassport/index.js:yok:savedView	-
+TalentEcosystem/IndustrySuccessionPool	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/IndustrySuccessionPool	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/IndustrySuccessionPool	CI-4	wwwroot/assets/js/TalentEcosystem/IndustrySuccessionPool/index.js	1
+TalentEcosystem/IndustrySuccessionPool	CI-9	wwwroot/assets/js/TalentEcosystem/IndustrySuccessionPool/index.js:yok:savedView	-
+TalentEcosystem/IndustryTalentPool	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/IndustryTalentPool	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/IndustryTalentPool	CI-4	wwwroot/assets/js/TalentEcosystem/IndustryTalentPool/index.js	1
+TalentEcosystem/IndustryTalentPool	CI-9	wwwroot/assets/js/TalentEcosystem/IndustryTalentPool/index.js:yok:savedView	-
+TalentEcosystem/MentorshipRecommendationNetwork	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/MentorshipRecommendationNetwork	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/MentorshipRecommendationNetwork	CI-4	wwwroot/assets/js/TalentEcosystem/MentorshipRecommendationNetwork/index.js	1
+TalentEcosystem/MentorshipRecommendationNetwork	CI-9	wwwroot/assets/js/TalentEcosystem/MentorshipRecommendationNetwork/index.js:yok:savedView	-
+TalentEcosystem/PayBenchmarking	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/PayBenchmarking	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/PayBenchmarking	CI-4	wwwroot/assets/js/TalentEcosystem/PayBenchmarking/index.js	1
+TalentEcosystem/PayBenchmarking	CI-9	wwwroot/assets/js/TalentEcosystem/PayBenchmarking/index.js:yok:savedView	-
+TalentEcosystem/ProfessionalReputationLedger	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/ProfessionalReputationLedger	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/ProfessionalReputationLedger	CI-4	wwwroot/assets/js/TalentEcosystem/ProfessionalReputationLedger/index.js	1
+TalentEcosystem/ProfessionalReputationLedger	CI-9	wwwroot/assets/js/TalentEcosystem/ProfessionalReputationLedger/index.js:yok:savedView	-
+TalentEcosystem/ReferenceExchange	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/ReferenceExchange	CI-5	wwwroot/assets/js/TalentEcosystem/ReferenceExchange/index.js	1
+TalentEcosystem/ReferenceExchange	CI-9	wwwroot/assets/js/TalentEcosystem/ReferenceExchange/index.js:yok:savedView	-
+TalentEcosystem/RehireRecommendations	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/RehireRecommendations	CI-5	wwwroot/assets/js/TalentEcosystem/RehireRecommendations/index.js	1
+TalentEcosystem/RehireRecommendations	CI-9	wwwroot/assets/js/TalentEcosystem/RehireRecommendations/index.js:yok:savedView	-
+TalentEcosystem/RestrictedIntegrityRegistry	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/RestrictedIntegrityRegistry	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/RestrictedIntegrityRegistry	CI-4	wwwroot/assets/js/TalentEcosystem/RestrictedIntegrityRegistry/index.js	1
+TalentEcosystem/RestrictedIntegrityRegistry	CI-9	wwwroot/assets/js/TalentEcosystem/RestrictedIntegrityRegistry/index.js:yok:savedView	-
+TalentEcosystem/ReviewBoard	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/ReviewBoard	CI-5	wwwroot/assets/js/TalentEcosystem/ReviewBoard/index.js	1
+TalentEcosystem/ReviewBoard	CI-9	wwwroot/assets/js/TalentEcosystem/ReviewBoard/index.js:yok:savedView	-
+TalentEcosystem/SectorMobilityIntelligence	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/SectorMobilityIntelligence	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/SectorMobilityIntelligence	CI-4	wwwroot/assets/js/TalentEcosystem/SectorMobilityIntelligence/index.js	1
+TalentEcosystem/SectorMobilityIntelligence	CI-9	wwwroot/assets/js/TalentEcosystem/SectorMobilityIntelligence/index.js:yok:savedView	-
+TalentEcosystem/SectorTalentTrends	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/SectorTalentTrends	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/SectorTalentTrends	CI-4	wwwroot/assets/js/TalentEcosystem/SectorTalentTrends/index.js	1
+TalentEcosystem/SectorTalentTrends	CI-9	wwwroot/assets/js/TalentEcosystem/SectorTalentTrends/index.js:yok:savedView	-
+TalentEcosystem/SkillsGapHeatmap	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/SkillsGapHeatmap	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/SkillsGapHeatmap	CI-4	wwwroot/assets/js/TalentEcosystem/SkillsGapHeatmap/index.js	1
+TalentEcosystem/SkillsGapHeatmap	CI-9	wwwroot/assets/js/TalentEcosystem/SkillsGapHeatmap/index.js:yok:savedView	-
+TalentEcosystem/TalentDataFoundation	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/TalentDataFoundation	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/TalentDataFoundation	CI-4	wwwroot/assets/js/TalentEcosystem/TalentDataFoundation/index.js	1
+TalentEcosystem/TalentDataFoundation	CI-9	wwwroot/assets/js/TalentEcosystem/TalentDataFoundation/index.js:yok:savedView	-
+TalentEcosystem/TalentDevelopmentNetwork	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/TalentDevelopmentNetwork	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/TalentDevelopmentNetwork	CI-4	wwwroot/assets/js/TalentEcosystem/TalentDevelopmentNetwork/index.js	1
+TalentEcosystem/TalentDevelopmentNetwork	CI-9	wwwroot/assets/js/TalentEcosystem/TalentDevelopmentNetwork/index.js:yok:savedView	-
+TalentEcosystem/TalentSupplyDemandForecasting	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/TalentSupplyDemandForecasting	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/TalentSupplyDemandForecasting	CI-4	wwwroot/assets/js/TalentEcosystem/TalentSupplyDemandForecasting/index.js	1
+TalentEcosystem/TalentSupplyDemandForecasting	CI-9	wwwroot/assets/js/TalentEcosystem/TalentSupplyDemandForecasting/index.js:yok:savedView	-
+TalentEcosystem/TepShellMetadata	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/TepShellMetadata	CI-5	wwwroot/assets/js/TalentEcosystem/TepShellMetadata/index.js	1
+TalentEcosystem/TepShellMetadata	CI-9	wwwroot/assets/js/TalentEcosystem/TepShellMetadata/index.js:yok:savedView	-
+TalentEcosystem/TrustLevels	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/TrustLevels	CI-5	wwwroot/assets/js/TalentEcosystem/TrustLevels/index.js	1
+TalentEcosystem/TrustLevels	CI-9	wwwroot/assets/js/TalentEcosystem/TrustLevels/index.js:yok:savedView	-
+TalentEcosystem/VerifiedCertificationRegistry	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/VerifiedCertificationRegistry	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/VerifiedCertificationRegistry	CI-4	wwwroot/assets/js/TalentEcosystem/VerifiedCertificationRegistry/index.js	1
+TalentEcosystem/VerifiedCertificationRegistry	CI-9	wwwroot/assets/js/TalentEcosystem/VerifiedCertificationRegistry/index.js:yok:savedView	-
+TalentEcosystem/VerifiedParticipants	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/VerifiedParticipants	CI-5	wwwroot/assets/js/TalentEcosystem/VerifiedParticipants/index.js	1
+TalentEcosystem/VerifiedParticipants	CI-9	wwwroot/assets/js/TalentEcosystem/VerifiedParticipants/index.js:yok:savedView	-
+TalentEcosystem/WorkforceAnalytics	CI-3	Compact reference has Edit.cshtml	-
+TalentEcosystem/WorkforceAnalytics	CI-3	_Filter.cshtml exists	-
+TalentEcosystem/WorkforceAnalytics	CI-4	wwwroot/assets/js/TalentEcosystem/WorkforceAnalytics/index.js	1
+TalentEcosystem/WorkforceAnalytics	CI-9	wwwroot/assets/js/TalentEcosystem/WorkforceAnalytics/index.js:yok:savedView	-
+Tasks	CI-7	wwwroot/assets/js/Tasks/reassign.js	2
+Tasks/ChecklistTemplates	CI-10	wwwroot/assets/js/Tasks/ChecklistTemplates/index.js	4
+Tasks/ChecklistTemplates	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Tasks/ChecklistTemplates	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Tasks/ChecklistTemplates	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Tasks/ChecklistTemplates	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Tasks/ChecklistTemplates	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Tasks/ChecklistTemplates	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Tasks/ChecklistTemplates	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Tasks/ChecklistTemplates	CI-3	direct-gateway profile uses window.API service base	-
+Tasks/ChecklistTemplates	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Tasks/ChecklistTemplates	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Tasks/ChecklistTemplates	CI-3	index.js includes .js-quick-view selector	-
+Tasks/ChecklistTemplates	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Tasks/ChecklistTemplates	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Tasks/ChecklistTemplates	CI-3	index.js uses window.DtDefaults.create(...)	-
+Tasks/ChecklistTemplates	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Tasks/ChecklistTemplates	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Tasks/ChecklistTemplates	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Tasks/ChecklistTemplates	CI-3	personalizationClient sends tenant header only for tenant users	-
+Tasks/ChecklistTemplates	CI-4	wwwroot/assets/js/Tasks/ChecklistTemplates/index.js	1
+Tasks/ChecklistTemplates	CI-9	wwwroot/assets/js/Tasks/ChecklistTemplates/index.js:yok:savedView	-
+Tasks/FieldDefinitions	CI-10	wwwroot/assets/js/Tasks/FieldDefinitions/index.js	4
+Tasks/FieldDefinitions	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Tasks/FieldDefinitions	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Tasks/FieldDefinitions	CI-3	direct-gateway profile uses window.API service base	-
+Tasks/FieldDefinitions	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Tasks/FieldDefinitions	CI-3	personalizationClient sends tenant header only for tenant users	-
+Tasks/FieldDefinitions	CI-4	wwwroot/assets/js/Tasks/FieldDefinitions/index.js	1
+Tasks/FieldDefinitions	CI-9	wwwroot/assets/js/Tasks/FieldDefinitions/index.js:yok:savedView	-
+Tasks/RecurrenceRules	CI-10	wwwroot/assets/js/Tasks/RecurrenceRules/index.js	4
+Tasks/RecurrenceRules	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Tasks/RecurrenceRules	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Tasks/RecurrenceRules	CI-3	Optional numeric/date fields use nullable ViewModel types	-
+Tasks/RecurrenceRules	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Tasks/RecurrenceRules	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Tasks/RecurrenceRules	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Tasks/RecurrenceRules	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Tasks/RecurrenceRules	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Tasks/RecurrenceRules	CI-3	direct-gateway profile uses window.API service base	-
+Tasks/RecurrenceRules	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Tasks/RecurrenceRules	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Tasks/RecurrenceRules	CI-3	index.js includes .js-quick-view selector	-
+Tasks/RecurrenceRules	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Tasks/RecurrenceRules	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Tasks/RecurrenceRules	CI-3	index.js uses window.DtDefaults.create(...)	-
+Tasks/RecurrenceRules	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Tasks/RecurrenceRules	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Tasks/RecurrenceRules	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Tasks/RecurrenceRules	CI-3	personalizationClient sends tenant header only for tenant users	-
+Tasks/RecurrenceRules	CI-4	wwwroot/assets/js/Tasks/RecurrenceRules/index.js	1
+Tasks/RecurrenceRules	CI-9	wwwroot/assets/js/Tasks/RecurrenceRules/index.js:yok:savedView	-
+Tasks/TaskTypes	CI-10	wwwroot/assets/js/Tasks/TaskTypes/index.js	4
+Tasks/TaskTypes	CI-3	Compact Details.cshtml exposes logical section/card headings	-
+Tasks/TaskTypes	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Tasks/TaskTypes	CI-3	Required label markers match ViewModel required metadata	-
+Tasks/TaskTypes	CI-3	Selection column ↔ bulk JS	-
+Tasks/TaskTypes	CI-3	Selection column ↔ bulk bar	-
+Tasks/TaskTypes	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Tasks/TaskTypes	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Tasks/TaskTypes	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Tasks/TaskTypes	CI-3	direct-gateway profile uses window.API service base	-
+Tasks/TaskTypes	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Tasks/TaskTypes	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Tasks/TaskTypes	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Tasks/TaskTypes	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Tasks/TaskTypes	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Tasks/TaskTypes	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Tasks/TaskTypes	CI-3	personalizationClient sends tenant header only for tenant users	-
+Tasks/TaskTypes	CI-4	wwwroot/assets/js/Tasks/TaskTypes/index.js	1
+Tasks/TaskTypes	CI-9	wwwroot/assets/js/Tasks/TaskTypes/index.js:yok:savedView	-
+Tasks/Templates	CI-10	wwwroot/assets/js/Tasks/Templates/index.js	4
+Tasks/Templates	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Tasks/Templates	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+Tasks/Templates	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+Tasks/Templates	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+Tasks/Templates	CI-3	_IndexL10n.cshtml provides BulkDelete	-
+Tasks/Templates	CI-3	_IndexL10n.cshtml provides BulkDeleteConfirm	-
+Tasks/Templates	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Tasks/Templates	CI-3	direct-gateway profile uses window.API service base	-
+Tasks/Templates	CI-3	index.js calls bulk endpoint (.../bulk)	-
+Tasks/Templates	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+Tasks/Templates	CI-3	index.js includes .js-quick-view selector	-
+Tasks/Templates	CI-3	index.js uses DataTables v2 constructor (new DataTable(...))	-
+Tasks/Templates	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Tasks/Templates	CI-3	index.js uses window.DtDefaults.create(...)	-
+Tasks/Templates	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+Tasks/Templates	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+Tasks/Templates	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+Tasks/Templates	CI-3	personalizationClient sends tenant header only for tenant users	-
+Tasks/Templates	CI-4	wwwroot/assets/js/Tasks/Templates/index.js	1
+Tasks/Templates	CI-9	wwwroot/assets/js/Tasks/Templates/index.js:yok:savedView	-
+TimeEntry/Approvals	CI-3	Server mode: export declared server-side (BL-452	-
+TimeEntry/Approvals	CI-3	direct-gateway profile uses window.API service base	-
+TimeEntry/Approvals	CI-3	personalizationClient sends tenant header only for tenant users	-
+TimeEntry/Categories	CI-3	direct-gateway profile uses window.API service base	-
+TimeEntry/Categories	CI-3	personalizationClient sends tenant header only for tenant users	-
+Traceability/LotMigration	CI-3	_Filter.cshtml exists	-
+Traceability/LotMovements	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Traceability/LotMovements	CI-3	Index.cshtml shows @Localizer["PageDescription"]	-
+Traceability/LotMovements	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Traceability/LotMovements	CI-3	Server mode: export declared server-side (BL-452	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Actions	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Active	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Apply	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Cancel	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Edit	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Export	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Filter	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Import	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Passive	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides QuickView	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Reset	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides SaveView	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Search	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Status	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides Unknown	-
+Traceability/LotMovements	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Traceability/LotMovements	CI-3	direct-gateway profile uses window.API service base	-
+Traceability/LotMovements	CI-3	index.js defines getAuthHeaders()	-
+Traceability/LotMovements	CI-3	index.js includes .js-quick-view selector	-
+Traceability/LotMovements	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Traceability/LotMovements	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Traceability/LotMovements	CI-3	index.l10n.js merges payload into window.L10n	-
+Traceability/LotMovements	CI-3	personalizationClient sends tenant header only for tenant users	-
+Traceability/LotMovements	CI-6	Views/Traceability/LotMovements/Index.cshtml	1
+Traceability/LotMovements	CI-6	wwwroot/assets/js/Traceability/LotMovements/index.js	1
+Traceability/LotTrace	CI-6	Views/Traceability/LotTrace/Index.cshtml	1
+Traceability/Lots	CI-3	Compact _Form.cshtml matches Details.cshtml section/card map	-
+Traceability/Lots	CI-3	Index.cshtml shows @Localizer["PageDescription"]	-
+Traceability/Lots	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Traceability/Lots	CI-3	Server mode: export declared server-side (BL-452	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Actions	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Active	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Apply	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Cancel	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Edit	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Export	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Filter	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Import	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Passive	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides QuickView	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Reset	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides SaveView	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Search	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Status	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides Unknown	-
+Traceability/Lots	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Traceability/Lots	CI-3	direct-gateway profile uses window.API service base	-
+Traceability/Lots	CI-3	index.js defines getAuthHeaders()	-
+Traceability/Lots	CI-3	index.js includes .js-quick-view selector	-
+Traceability/Lots	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Traceability/Lots	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Traceability/Lots	CI-3	index.l10n.js merges payload into window.L10n	-
+Traceability/Lots	CI-3	personalizationClient sends tenant header only for tenant users	-
+Traceability/Lots	CI-6	wwwroot/assets/js/Traceability/Lots/index.js	1
+Traceability/Lots	CI-7	wwwroot/assets/js/Traceability/Lots/status.js	1
+Traceability/Serials	CI-3	Index.cshtml has #offcanvasDetailsPreview	-
+Traceability/Serials	CI-3	Index.cshtml shows @Localizer["PageDescription"]	-
+Traceability/Serials	CI-3	List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)	-
+Traceability/Serials	CI-3	Server mode: export declared server-side (BL-452	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Actions	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Active	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Apply	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides AreYouSure	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Cancel	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides ColumnVisibility	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Edit	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Export	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Filter	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Import	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Passive	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides QuickView	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Reset	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides SaveView	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Search	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides ShowAll	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Status	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides Unknown	-
+Traceability/Serials	CI-3	_IndexL10n.cshtml provides ViewDetails	-
+Traceability/Serials	CI-3	direct-gateway profile uses window.API service base	-
+Traceability/Serials	CI-3	index.js defines getAuthHeaders()	-
+Traceability/Serials	CI-3	index.js includes .js-quick-view selector	-
+Traceability/Serials	CI-3	index.js uses event delegation (closest('.js-quick-view'))	-
+Traceability/Serials	CI-3	index.js uses getAuthHeaders() in fetch headers	-
+Traceability/Serials	CI-3	index.l10n.js merges payload into window.L10n	-
+Traceability/Serials	CI-3	personalizationClient sends tenant header only for tenant users	-
+WorkCenterNext	CI-10	wwwroot/assets/js/WorkCenterNext/app.js	1
+WorkCenterNext	CI-7	wwwroot/assets/js/WorkCenterNext/app.js	10
+WorkingCalendar/Overrides	CI-10	wwwroot/assets/js/WorkingCalendar/Overrides/index.js	4
+WorkingCalendar/Overrides	CI-3	Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)	-
+WorkingCalendar/Overrides	CI-3	Shaped placeholder: shared _TableSkeleton partial	-
+WorkingCalendar/Overrides	CI-3	_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)	-
+WorkingCalendar/Overrides	CI-3	direct-gateway profile uses window.API service base	-
+WorkingCalendar/Overrides	CI-3	index.js calls bulk endpoint (.../bulk)	-
+WorkingCalendar/Overrides	CI-3	index.js declares bulk action config (bulkOptions / bulkBarSelector)	-
+WorkingCalendar/Overrides	CI-3	index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])	-
+WorkingCalendar/Overrides	CI-3	index.js wires bulk selection (getSelectedIds(...) or onBulkAction)	-
+WorkingCalendar/Overrides	CI-3	index.js wires clear-selection (clearSelectionSelector or clearSelection())	-
+WorkingCalendar/Overrides	CI-3	personalizationClient sends tenant header only for tenant users	-
+WorkingCalendar/Overrides	CI-4	wwwroot/assets/js/WorkingCalendar/Overrides/index.js	1
+WorkingCalendar/Overrides	CI-9	wwwroot/assets/js/WorkingCalendar/Overrides/index.js:yok:savedView	-

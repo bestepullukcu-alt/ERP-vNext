@@ -1,0 +1,177 @@
+BASE=5d2774ae973f65797b0d67e75fee611ee83baeef IS=e3eda1752e3fe74ee8aa4f6f1ab02c992bc7d04b HEAD=e3eda1752e3fe74ee8aa4f6f1ab02c992bc7d04b
+CT-2
+  paket sha256 = 0c53533e3e2434fbd8abe615f814d037c3c390b06625ee822358871958aed102 (beklenen 0c53533e3e2434fbd8abe615f814d037c3c390b06625ee822358871958aed102)
+CT-2 sonuç=geçti (zorunlu)
+CT-3
+  BASE <= IS <= HEAD
+scripts/uic_changed_pages.py
+tests/ui-compliance-baseline.tsv
+  izinli dışında değişen dosya = 0 (beklenen 0)
+  seçici işte değişti = 1 (beklenen 1)
+  taban işte değişti = 1 (beklenen 1)
+  işten sonra değişen seçici ve taban = 0 (beklenen 0)
+  işten sonra kayıt ve kuyruk dışında değişen dosya = 0 (beklenen 0)
+  eklenme sonrası değişen kanıt dosyası = 0 (beklenen 0)
+  kanıt betiğinin silinip eklenmesi = 0 (beklenen 0)
+CT-3 sonuç=geçti (zorunlu)
+AC-21a
+HATA: taban satır 2021: CI-2 satır kontrolü instance'ı sayfanın dosya yolu değil
+  önce: bir FU-16 satırıyla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2021: CI-1 instance biçimi bozuk
+  önce: bir FU-16 satırıyla --check-baseline = 2 (beklenen 2)
+taban tests/ui-compliance-baseline.tsv geçerli
+CI-1 satır=81 eşleşme=0
+CI-2 satır=21 eşleşme=54
+CI-3 satır=1177 eşleşme=0
+CI-4 satır=78 eşleşme=79
+CI-5 satır=16 eşleşme=16
+CI-6 satır=129 eşleşme=322
+CI-7 satır=16 eşleşme=37
+CI-8 satır=1 eşleşme=1
+CI-9 satır=125 eşleşme=2
+CI-10 satır=109 eşleşme=347
+CI-11 satır=0 eşleşme=0
+CI-12 satır=22 eşleşme=0
+CI-13 satır=0 eşleşme=0
+CI-14 satır=376 eşleşme=0
+CI-15 satır=0 eşleşme=0
+bilgi satır=2 eşleşme=0
+toplam satır=2153 eşleşme=858
+  sonra: --check-baseline = 0 (beklenen 0)
+  FU-16 satırı 134, bağımsız ölçüm 134 (paket, 2026-10-29: 134)
+  FU-16 satırları bağımsız ölçümle aynı
+  FU-16 satırlarında taban-01 = 0 (beklenen 0)
+kararla aynı olmayan FU-16 satırı 0
+  kararla aynı olmayan satır = kararla aynı olmayan FU-16 satırı 0 (beklenen kararla aynı olmayan FU-16 satırı 0)
+  sayfa anahtarı / içermeyen ama FU-16 olmayan satır = 0 (beklenen 0)
+  sayfa anahtarı / içeren FU-16 satırı = 0 (beklenen 0)
+  tabandan silinen satır (yalnız ekleme) = 0 (beklenen 0)
+  --draft-baseline çıkış = 0 (beklenen 0)
+  FU-16 satırları taslakla aynı
+  taslakta FU-16 satırında taban-01 = 0 (beklenen 0)
+  taslakta belirsiz sahipli olmayan FU-16 = 0 (beklenen 0)
+HATA: taban satır 2155: CI-2 satır kontrolü instance'ı sayfanın dosya yolu değil
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2155: CI-1 instance biçimi bozuk
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2155: boş hücre
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2155: CI-2 satır kontrolü instance'ı sayfanın dosya yolu değil
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2155: CI-2 satır kontrolü instance'ı sayfanın dosya yolu değil
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+HATA: taban satır 2155: CI-3 instance doğrulayıcı kontrol adı, count '-' olmalı
+  bozuk satırla --check-baseline = 2 (beklenen 2)
+AC-21a sonuç=geçti (zorunlu)
+AC-21b
+  cshtml dosyası = 162 (beklenen 162)
+  js dosyası = 87 (beklenen 87)
+  FU-18 dosyası = 106 (beklenen 106)
+  koşu ac21b --base e3eda1752: çıkış 0, verify 0
+  tek seviye sayfa = 19 (beklenen 19)
+  CI-2 görünüm satırı = 162 (beklenen 162)
+  CI-1 görünüm satırı = 121 (beklenen 121)
+  CI-4 JS satırı = 87 (beklenen 87)
+  ölçülmedi Meetings CI-3 = 1 (beklenen 1)
+  satır: ölçülmedi Meetings CI-3 - doğrulayıcı alansız sayfayı desteklemiyor (FU-17)
+  FU-18 satırı = 106 (beklenen 106)
+  paylaşılan dosya satırı = 1 (beklenen 1)
+  satır: paylaşılan dosya, sayfa kontrolü yok frontend/Diten.Web/Views/Platform/_ViewStart.cshtml
+süre: 0.6 s
+AC-21b sonuç=geçti (zorunlu)
+AC-21c
+  (b) koşusu çıkış = 0 (beklenen 0)
+  YENİ KIRMIZI = 0 (beklenen 0)
+AC-21c sonuç=geçti (zorunlu)
+AC-21d
+  Tasks/Create.cshtml spinner-border = 0 (beklenen 0)
+  Recall/cases.js alert( = 0 (beklenen 0)
+  koşu ac21d1-sabotaj --base e3eda1752: çıkış 1, verify 0
+  d1 sabotaj çıkış = 1 (beklenen 1)
+  satır: YENİ KIRMIZI Tasks CI-2 Views/Tasks/Create.cshtml 1 +1
+  koşu ac21d1-geri --base 01bfa9ff1: çıkış 0, verify 0
+  d1 geri alma çıkış = 0 (beklenen 0)
+  koşu ac21d2-sabotaj --base e01b9bebb: çıkış 1, verify 0
+  d2 sabotaj çıkış = 1 (beklenen 1)
+  satır: YENİ KIRMIZI Recall CI-7 wwwroot/assets/js/Recall/cases.js 1 +1
+  koşu ac21d2-geri --base 509b97c71: çıkış 0, verify 0
+  d2 geri alma çıkış = 0 (beklenen 0)
+AC-21d sonuç=geçti (zorunlu)
+AC-21e
+  Views/HCM altında doğrudan dosya = 0 (beklenen 0)
+  koşu ac21e-Foo-1 --base e3eda1752: çıkış 1, verify 0
+  Foo ilk commit çıkış = 1 (beklenen 1)
+  satır: YENİ KIRMIZI Foo CI-11 Views/Foo/_IndexL10n.cshtml:yok:GetAllStrings
+  koşu ac21e-Foo-2 --base e3eda1752: çıkış 0, verify 0
+  Foo ikinci koşu çıkış = 0 (beklenen 0)
+  Foo PASS CI-11 = 1 (beklenen 1)
+  koşu ac21e-HCM-1 --base e3eda1752: çıkış 1, verify 0
+  HCM ilk commit çıkış = 1 (beklenen 1)
+  satır: YENİ KIRMIZI HCM CI-11 Views/HCM/_IndexL10n.cshtml:yok:GetAllStrings
+  koşu ac21e-HCM-2 --base e3eda1752: çıkış 0, verify 0
+  HCM ikinci koşu çıkış = 0 (beklenen 0)
+  HCM PASS CI-11 = 1 (beklenen 1)
+AC-21e sonuç=geçti (zorunlu)
+AC-21f
+frontend/Diten.Web/Views/Meetings/Create.cshtml
+frontend/Diten.Web/Views/Meetings/Details.cshtml
+frontend/Diten.Web/Views/Meetings/Edit.cshtml
+frontend/Diten.Web/Views/Meetings/Index.cshtml
+frontend/Diten.Web/Views/Meetings/MeetingsIndex.cs
+frontend/Diten.Web/Views/Meetings/_DataTable.cshtml
+frontend/Diten.Web/Views/Meetings/_Filter.cshtml
+frontend/Diten.Web/Views/Meetings/_Form.cshtml
+frontend/Diten.Web/Views/Meetings/_IndexL10n.cshtml
+  silinecek dosya = 9 (beklenen 9)
+  koşu ac21f --base e3eda1752: çıkış 0, verify 0
+  silme çıkış = 0 (beklenen 0)
+  sayfa kaldırıldı Meetings = 1 (beklenen 1)
+  kapandı satırı = Meetings FU-16 satırı = 5 (beklenen 5)
+  iki seviyeli Meetings sayfası = 0 (beklenen 0)
+  koşu ac21f-geri --base d60508c11: çıkış 1, verify 0
+  geri alma çıkış = 1 (beklenen 1)
+  geri almada YENİ KIRMIZI = 1 (beklenen 1)
+  satır: YENİ KIRMIZI Meetings CI-11 Views/Meetings/_IndexL10n.cshtml:yok:GetAllStrings
+AC-21f sonuç=geçti (zorunlu)
+AC-21g
+PASS draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged
+PASS no write: every throw-away repository is clean after the runs (no file, no __pycache__)
+self-test: 93/93 passed
+  --self-test çıkış = 0 (beklenen 0)
+  AC-21g01 durumu = var (beklenen var)
+  AC-21g02 durumu = var (beklenen var)
+  AC-21g03 durumu = var (beklenen var)
+  AC-21g04 durumu = var (beklenen var)
+  AC-21g05 durumu = var (beklenen var)
+  AC-21g06 durumu = var (beklenen var)
+  AC-21g07 durumu = var (beklenen var)
+  AC-21g08 durumu = var (beklenen var)
+  AC-21g09 durumu = var (beklenen var)
+  AC-21g10 durumu = var (beklenen var)
+  AC-21g11 durumu = var (beklenen var)
+  AC-21g12 durumu = var (beklenen var)
+  AC-21g13 durumu = var (beklenen var)
+  AC-21g14 durumu = var (beklenen var)
+AC-21g sonuç=geçti (zorunlu)
+REG
+  koşu reg-sabotaj --base e3eda1752: çıkış 1, verify 0
+  iki seviyeli sabotaj çıkış = 1 (beklenen 1)
+  iki seviyeli adlı satır var
+  koşu reg-geri --base 984244ebf: çıkış 0, verify 0
+  iki seviyeli geri alma çıkış = 0 (beklenen 0)
+  koşu reg-bos --base e3eda1752: çıkış 0, verify 0
+  boş fark çıkış = 0 (beklenen 0)
+  boş farkta kontrol satırı = 0 (beklenen 0)
+REG sonuç=geçti (zorunlu)
+ÖZET
+CT-2 zorunlu geçti
+CT-3 zorunlu geçti
+AC-21a zorunlu geçti
+AC-21b zorunlu geçti
+AC-21c zorunlu geçti
+AC-21d zorunlu geçti
+AC-21e zorunlu geçti
+AC-21f zorunlu geçti
+AC-21g zorunlu geçti
+REG zorunlu geçti
+zorunlu geçti 10 / 10
