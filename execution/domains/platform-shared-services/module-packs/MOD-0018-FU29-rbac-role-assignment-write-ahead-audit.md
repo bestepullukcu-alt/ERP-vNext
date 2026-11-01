@@ -557,8 +557,8 @@ Karar: Gateway değişikliği **gereksiz**.
   komut 503 döner ve değişiklik çağrılmaz. Sabotaj: hata dalındaki sonuç yazımı kaldırılınca; `mutationApplied` `version` /
   `sessions` aşamasında `false` yazılınca; belirsiz hata kesin hata gibi `false` sınıflanınca (zaman aşımı testi `null` bekler);
   sonuç yazımına istek `ct`'si geçirilince (iptal testi sonuç satırı bulamaz) test kırmızıya döner.
-- [ ] AC-6 (zorunlu) — **Korumalar ve etkisiz işlem satır yazmaz:** 401 (eylemi yapan yok; beş komutta bugünkü, iki revoke'da AC-29 /
-  AC-30 ile yeni), 404 (kullanıcı / rol yok, başka kiracı), 409 (son yetkili) ve 204 etkisiz atama deneme satırı **yazmaz**. 404 / 409 /
+- [ ] AC-6 (zorunlu) — **Korumalar ve etkisiz işlem satır yazmaz:** 401 (eylemi yapan yok; beş komutta bugünkü, iki revoke'da AC-29 ve AC-30 ile
+  yeni), 404 (kullanıcı / rol yok, başka kiracı), 409 (son yetkili) ve 204 etkisiz atama deneme satırı **yazmaz**. 404 / 409 /
   204 cevapları bugünkü gibidir. Sabotaj: deneme çağrısı korumaların önüne alınınca 401 / 404 / 409 testleri satır bulur ve kırmızıya
   döner.
 - [ ] AC-7 (zorunlu) — **İletim sonra ve aynı:** Başarıda Platform'a değişiklikten sonra, bugünkü yükle iletim yapılır: `EntityType User`,
@@ -572,7 +572,7 @@ Karar: Gateway değişikliği **gereksiz**.
   eski imzaları ile `IRbacAuditRecorder.RecordAsync` istisna atmamaya devam eder. `CreateUser`, `DeleteUser`, `SetUserActiveStatus` ve
   e-imza işleyicilerinin mevcut testleri değişmeden yeşildir. Yeni `RecordAsync(…, outcome, …)` aşırı yüklemesi bugünkü yerel satırı
   ve iletimi üretir; tek farkı türetilmiş kimliktir (birim testi). Sabotaj: aşırı yükleme yalnız sonuç satırı yazıp iletimi atlayınca
-  AC-7 testi kırmızıya döner. `RbacAuditRecorder` istisna yükseltince `CreateUser` testi kırmızıya döner.
+  ilgili yedinci ölçüt testi kırmızıya döner. `RbacAuditRecorder` istisna yükseltince `CreateUser` testi kırmızıya döner.
 - [ ] AC-9 (zorunlu) — **Defter, DL-1 — değişmez:** `AssignRoleCommand` ve `RevokeRoleCommand` `## K2 borcu`'nda kalır.
   `PinnedCounts` Auth (`Debt 18, Exceptions 1, K2Debt 11`) DL-1'de değişmez. Erken çıkış ancak Açık kararlar (n)'deki yazılı CT
   kararıyla olur. İki komut `auth-kullanici-iletimi` ile "denetleniyor" ölçülmeye devam eder.
@@ -589,7 +589,7 @@ Karar: Gateway değişikliği **gereksiz**.
   `email` eklenince izin listesi testi kırmızıya döner. Kiracı istekten alınınca A / B kiracı testi kırmızıya döner.
 - [ ] AC-12 (zorunlu) — **Önce-yaz ve kapalı-başarısız (beş rol komutu):** `CreateRole` (`CreateAsync` öncesi), `UpdateRole`
   (`UpdateAsync` öncesi), `DeleteRole` (`DeleteAsync` öncesi), `AssignPermission` (`held` denetiminden sonra, `AssignAsync` öncesi) ve
-  `RevokePermission` (S-GUARD ve son-yetkili korumasından sonra, `RevokeAsync` öncesi) için AC-1, AC-2, AC-4, AC-6 ve AC-7 maddeleri
+  `RevokePermission` (S-GUARD ve son-yetkili korumasından sonra, `RevokeAsync` öncesi) için 1, 2, 4, 6 ve 7 numaralı ölçütler
   parametreli tek testle sınanır. Rol tarafında iletim `EntityType Role` taşır. **CreateRole kimliği:** Deneme satırının `EntityId`
   değeri, oluşacak rolün kimliğidir ve `Guid.Empty` değildir. Kimlik `CreateAsync`'ten önce bellidir: `new Role(...)`
   (`CreateRoleCommandHandler.cs:46-49`) `GlobalEntityBase.Id`'yi `Guid.NewGuid()` ile kurar (`GlobalEntityBase.cs:5`) ve
@@ -603,8 +603,8 @@ Karar: Gateway değişikliği **gereksiz**.
   dönünce geçmiş testi "Sonuçlanmadı" bulur ve kırmızıya döner.
 - [ ] AC-14 (zorunlu) — **Değişiklikten sonraki hata (RevokePermission):** Bir sahibin refresh token iptali istisna atınca sonuç
   `Failed`, `stage = sessions`, `mutationApplied = true` olur ve istisna yükselir. Sürüm artırma hatasında aynı satır
-  `stage = version` ile yazılır. Beş rol komutunun hepsinde sürüm artırma hatası aynı biçimde sınanır. İletim AC-7 kuralına uyar
-  (Açık kararlar (m)). Sabotaj: AC-5 ile aynı.
+  `stage = version` ile yazılır. Beş rol komutunun hepsinde sürüm artırma hatası aynı biçimde sınanır. İletim yedinci ölçütün kuralına uyar
+  (Açık kararlar (m)). Sabotaj: beşinci ölçütle aynı.
 - [ ] AC-15 (zorunlu) — **Güncellemenin önce / sonrası:** `UpdateRole` deneme satırı istenen `after` değerini, sonuç satırı
   `before` / `after` değerini taşır. Platform'a giden `BeforeState` / `AfterState` bugünkü gibidir (`RoleAuditRecorder.cs:45-65`).
   Sabotaj: `before` yakalaması değişiklikten sonraya alınınca test kırmızıya döner.
@@ -619,18 +619,18 @@ Karar: Gateway değişikliği **gereksiz**.
   kırmızıya döner.
 - [ ] AC-17 (zorunlu) — **Kişi rol geçmişi ucu (a1):** `GET /api/users/{id}/role-history` yalnız o kullanıcının
   (`EntityType User`) rol atama / geri alma olaylarını döner. Öteki kullanıcı olayları (`user_created` vb.) dönmez. Kiracı, izin,
-  404 ve sayfalama AC-16 gibidir. Sabotaj: olay ailesi süzgeci kaldırılınca `user_updated` satırı döner ve test kırmızıya döner.
+  404 ve sayfalama 16 numaralı ölçüt gibidir. Sabotaj: olay ailesi süzgeci kaldırılınca `user_updated` satırı döner ve test kırmızıya döner.
 - [ ] AC-18 (zorunlu) — **Meta-denetim teslimi (a1):** Her geçmiş okuması `IsMetaAudit = true` okuma satırını
   `TryForwardAsync` ile gönderir. Veri yalnız teslim teyidi gelince döner. Gerçek `PlatformAuditForwarder`, Platform iç ucunun
   sözleşmesine uyan saplama sunucuya karşı koşar: (i) 2xx → 200 + veri; (ii) anahtar boş → 503 `RBAC_HISTORY_AUDIT_UNAVAILABLE` ve
-  saplamaya çağrı yok; (iii) 500 / 401 → 503; (iv) bağlantı reddi / zaman aşımı → 503. Bu madde FU27 AC-46 deseniyle aynıdır
+  saplamaya çağrı yok; (iii) 500 / 401 → 503; (iv) bağlantı reddi / zaman aşımı → 503. Bu madde FU27'nin 46 numaralı ölçütündeki desenle aynıdır
   (ct-06). Sabotaj: teslim teyidi yok sayılınca (iii) ve (iv) kırmızıya döner.
 - [ ] AC-19 (zorunlu) — **Okuyucu salt-okunur (a1):** `IRbacAuditHistoryReader` ve `IRbacWriteAheadAuditWriter` arayüzlerinde
   `Update` / `Delete` / `Replace` adlı üye yoktur (yansıma testi). Gerçek Mongo'da geçmiş satırları hiçbir uçtan değiştirilemez. Sabotaj:
   arayüze `DeleteAsync` eklenince yansıma testi kırmızıya döner.
 - [ ] AC-20 (zorunlu) — **Hata metni 7 dil (Roller + rol-izin ekranı):** `RBAC_AUDIT_UNAVAILABLE` iki ekranda eşlenir.
   `RBAC_HISTORY_AUDIT_UNAVAILABLE` ve `RBAC_HISTORY_PAGING_INVALID` geçmiş bölümlerinde eşlenir. Anahtarlar 7 dosyada vardır ve
-  İngilizce dışı değer `en` ile aynı değildir. Sabotaj: AC-10 ile aynı.
+  İngilizce dışı değer `en` ile aynı değildir. Sabotaj: onuncu ölçütle aynı.
 - [ ] AC-21 (zorunlu) — **DL-2'de defter değişmez:** Beş rol komutu `## Bilinen borç`'ta kalır ve `AuditTrailStandard` yeşildir
   (iz kabul edilmediği için "denetlenmiyor" ölçülürler). `git diff <taban>..HEAD -- tests/architecture/audit-ledger/` boştur.
   Sabotaj: DL-2'de bir borç satırı çıkarılınca iki test kırmızıya döner. `EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt`
@@ -647,17 +647,17 @@ Karar: Gateway değişikliği **gereksiz**.
   `KnownDebt_OnlyShrinks_AnEntryThatIsAuditedOrGone_MustBeRemoved` "ARTIK DENETLENİYOR" der ve kırmızıya döner
   (`AuditTrailStandardTests.cs:230-233`). Bu yüzden DeleteRole'ü borçta tutmak mekanik olarak mümkün değildir.
   **DL-3 giriş şartı:** Açık kararlar (k) iki parçasıyla kapanmış olmalıdır: uç "bulur" ve kiracı tarafı giriş yolu seçilmiş.
-  AC-16'nın silinmiş rol testi yeşil olmalıdır. Bu şart yoksa DL-3 başlamaz.
+  Silinmiş rol ölçütünün (16 numaralı) testi yeşil olmalıdır. Bu şart yoksa DL-3 başlamaz.
   `PinnedCounts` Auth `Debt` ve `K2Debt` aynı değişiklikte ölçülen değere iner. Beklenen değerler hesaptır ve teslimde ölçülür:
   `Debt 18 → 13`, `K2Debt 11 → 9`, `Exceptions 1`. `CT-DECISIONS.md` satırı yazılır. `AuditTrailStandard`
   yeşildir ve `grep -E '^\+- '` boştur. Sabotaj: `AcceptedTrails` üçlüsü kaldırılınca beş rol komutu "yeni denetimsiz" olur ve
   kırmızıya döner. Bir rol işleyicisinden `RecordAttemptAsync` çağrısı kaldırılınca o komut kırmızıya döner. Sayılardan biri eski
   değerinde bırakılınca `DebtAndExceptionCounts_ArePinned_…` kırmızıya döner.
 - [ ] AC-23 (zorunlu) — **K2 sınıfı tutarlılığı:** K2 çıkışı DL-3'tedir. DL-1 ve DL-2 birleştikten sonra iki kişi-rol komutu
-  `## K2 borcu`'nda, beş rol komutu `## Bilinen borç`'ta kalır; davranışları ise kapalı-başarısızdır (AC-2, AC-12). DL-3 birleştiğinde
-  yedi komutun hiçbiri iki listede değildir, yedisi de kabul edilmiş ve okunabilen `auth-rbac-gecmisi` izine yazar ve AC-2 / AC-12
+  `## K2 borcu`'nda, beş rol komutu `## Bilinen borç`'ta kalır; davranışları ise kapalı-başarısızdır (2 ve 12 numaralı ölçütler). DL-3 birleştiğinde
+  yedi komutun hiçbiri iki listede değildir, yedisi de kabul edilmiş ve okunabilen `auth-rbac-gecmisi` izine yazar ve 2 ile 12 numaralı ölçütlerin
   testlerini taşır. `## K2 borcu` sayısı hiçbir dilimde büyümez. DL-1'de erken çıkış yalnız Açık kararlar (n)'deki yazılı CT
-  kararıyla olur. Sabotaj: rol komutlarına kredi DL-2 kapalı-başarısız davranışı olmadan verilirse AC-12 kırmızıdır. Bu yüzden DL-3,
+  kararıyla olur. Sabotaj: rol komutlarına kredi DL-2 kapalı-başarısız davranışı olmadan verilirse 12 numaralı ölçüt kırmızıdır. Bu yüzden DL-3,
   DL-1 ve DL-2'den önce birleşemez (Teslim dilimleri sırası).
 - [ ] AC-24 (zorunlu) — **Roller ekranı "Geçmiş" (a1):** `auth.roles.read` (ya da (f) kararındaki anahtar) iznine sahip kullanıcı
   hızlı görünümde rolün geçmişini görür. Bölüm, sayfanın kendi okuyucusu `Perms.Has(...)` ile açılır (`Roles/Index.cshtml:21`
@@ -675,7 +675,7 @@ Karar: Gateway değişikliği **gereksiz**.
   bulamaz ve kırmızıya döner (sayfa açılır, bölüm yok: yüz ile durum kodu ayrışır). Kapı kaldırılınca izinsiz kullanıcı testi
   kırmızıya döner. Bir dil dosyasından anahtar silinince `Diten.Web.Tests` kırmızıya döner.
 - [ ] AC-26 (zorunlu) — **Çalıştırılmış kanıt (§8-(3)):** `dev` ortamında bir rol oluşturma, bir güncelleme ve bir silme koşulur.
-  Üç deneme + sonuç çifti geçmiş ucundan gösterilir. Silme çifti, silinmiş rolün geçmişinden okunur (AC-16 silinmiş rol dalı;
+  Üç deneme + sonuç çifti geçmiş ucundan gösterilir. Silme çifti, silinmiş rolün geçmişinden okunur (silinmiş rol ölçütü;
   Açık kararlar (k)). Aynı üç olay Platform `audit_events` sorgusuyla
   (`EntityType: "Role"`, `EntityId`) gösterilir. Bir izin bağlama ve bir kişi-rol atama da gösterilir. Rapor ortamın adını yazar.
   §3'ün on alanı tek tek işaretlenir; eksik alan "bilinen boşluk" olarak yazılır (ör. eylemi yapanın o andaki adı, Açık kararlar (j)).
@@ -693,7 +693,7 @@ Karar: Gateway değişikliği **gereksiz**.
 - [ ] AC-30 (zorunlu) — **Yeni eylemi yapan koruması (RevokePermission, DL-2):** AC-29 aynı biçimde `RevokePermissionCommandHandler`
   için geçerlidir. Çağrılmayanlar: rol / hak araması, S-GUARD, son-yetkili denetimi, deneme satırı, `RevokeAsync`, sürüm artırma ve
   sahiplerin oturum kapatması. Etkisiz işlem (204, hedef hak yok) da aktörsüz istekte 401 döner, çünkü koruma ilk adımdır.
-  Sabotaj: AC-29 ile aynı.
+  Sabotaj: 29 numaralı ölçütle aynı.
 - [ ] AC-31 (zorunlu) — **"Uygulandı, sonrası hata verdi" rozeti (a1, DL-3):** Okuyucu `Failed` + `mutationApplied = true` sonucunu
   ayrı bir değerle döner (`outcome = applied_with_errors` ya da eşdeğeri; DL-2 sözleşmesinde sabitlenir). İki ekran bunu
   "Başarısız"dan ayrı rozetle ve `stage` bilgisiyle gösterir. Rozet metni `RolesIndex.*.resx` ve `UserRoleAssignmentsIndex.*.resx`
