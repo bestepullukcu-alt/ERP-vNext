@@ -86,10 +86,30 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string DoctorInsightsReadAll = "crm.doctor-insights.read-all";
 
+    /// <summary>
+    /// MOD-0280-FU02 (Leave and Absence Management, slice DL-0) — every leave request in the tenant. It reads the personal
+    /// leave data of the whole tenant, not of one person, so the module-entitlement sync, the SuperAdmin full-catalog path
+    /// and the default Viewer read rule must never hand it out; a person grants it explicitly (owner decision, 2026-10-31).
+    /// </summary>
+    public const string LeaveAdminRequestsRead = "leave.admin-requests.read";
+
+    /// <summary>
+    /// MOD-0280-FU02 (DL-0) — the entitlement list of every employee in the tenant. Same reasoning as
+    /// <see cref="LeaveAdminRequestsRead"/>: tenant-wide personal data, by explicit assignment only (owner decision, 2026-10-31).
+    /// </summary>
+    public const string LeaveEntitlementsRead = "leave.entitlements.read";
+
+    /// <summary>
+    /// MOD-0280-FU02 (DL-0) — the leave sync monitoring, which reads other people's data across the tenant. Same reasoning as
+    /// <see cref="LeaveAdminRequestsRead"/>: by explicit assignment only (owner decision, 2026-10-31).
+    /// </summary>
+    public const string LeaveSyncRunsRead = "leave.sync-runs.read";
+
     public static readonly IReadOnlySet<string> Keys =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide,
-            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, TaskRequestsCreate, PlannedVisitReadAll, VisitPlanReadAll, DoctorInsightsReadAll
+            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, TaskRequestsCreate, PlannedVisitReadAll, VisitPlanReadAll, DoctorInsightsReadAll,
+            LeaveAdminRequestsRead, LeaveEntitlementsRead, LeaveSyncRunsRead
         };
 }
