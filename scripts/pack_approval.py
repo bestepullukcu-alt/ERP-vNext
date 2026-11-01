@@ -442,7 +442,7 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
             # The approver list is read on MAIN as it is today — a branch cannot list its own approver
             out.append("insan adımı: beklemede — modül PR'ı başka bir kişi tarafından birleştirilince ölçülür (dal onayı, S-115)")
             listed = approvers_at(root, ctx.main)
-            if under_branch_rule(root, ctx.bstart, added_by) and not OWNER_WORD.search(row["note"]):
+            if ctx.bstart is not None and not OWNER_WORD.search(row["note"]):    # pending: under the rule once it exists
                 # F-4: the only trace of the owner's word while the row is on the branch is the note cell
                 fails.append("dal onayı satırının notunda sahip sözü yok — `note` hücresi `onayla · <kule sohbeti> · <tarih saat>` "
                              "taşımalı (satır `row --deferred --note …` ile üretilir)")
@@ -456,7 +456,7 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
                 before = approvers_at(root, f"{merge}^1")
                 author_key = person_of(before, row["author"]) or f"@{row['author'].lower()}"
                 ok, why2 = pr_person_check(root, merge, author_key=author_key, high=True,
-                                           opener_key=author_key if under_branch_rule(root, ctx.bstart, added_by) else None)
+                                           opener_key=author_key if policy_in_merge(root, merge) else None)
                 why = f"{why}; {why2}" if ok else why2
             (out.append("insan adımı: " + why) if ok else fails.append("insan adımı yok: " + why))
             listed = approvers_at(root, f"{merge}^1")       # the list as it was on main before this merge
@@ -1184,7 +1184,7 @@ def review_problems(root: str, main: str, path: str, data: bytes, at: str, defer
     stops, any ENGEL left open stops; a later UYGUN does not override. A UYGUN verdict carries no ENGEL line."""
     commit = at
     pending = 0
-    bstart = branch_start(root, main) or branch_start(root, commit)      # F-5 for review rows
+    branch_start(root, main)                      # fail-closed: the rule file deleted on main refuses every reading
     digest = sha256(data)
     rows = [r for r in review_rows(root, commit) if r["target"] == path]
     cur = [r for r in rows if r["target_sha256"] == digest]
@@ -1204,8 +1204,9 @@ def review_problems(root: str, main: str, path: str, data: bytes, at: str, defer
         tag = f"inceleme satır {r['_n']}"
         bad = []
         r_added = row_commit(root, commit, r["_n"], REVIEWS)
+        m0 = main_merge(root, main, r_added)[0]                       # F-5 scope: the rule file in the bringing merge
         merge, why = human_step(root, main, r_added, r["author"],
-                                opener_key=r["author"] if under_branch_rule(root, bstart, r_added) else None)
+                                opener_key=r["author"] if m0 is not None and policy_in_merge(root, m0) else None)
         if merge is None and deferred and why.startswith(NOT_ON_MAIN):
             pending += 1            # S-115: still on the branch — counted, its human step measured on main later
         elif merge is None:
@@ -1308,8 +1309,14 @@ def branch_start(root: str, commit: str) -> str | None:
     return added[-1]
 
 
-def under_branch_rule(root: str, bstart: str | None, added: str) -> bool:
-    return bstart is not None and not strictly_before(root, added, bstart)
+def policy_in_merge(root: str, merge: str) -> bool:
+    """S-115 F-5 scope, measured at the moment the row reached main (coordinator 2026-11-01, PR #308 case): the
+    opener = author rule applies to a row on main only when the merge commit that brought it already carries
+    POLICY-BRANCH-START.md — a row merged before the rule PR is exempt whatever its branch's ancestry (a branch forked
+    before the rule file is not 'before' it in the tree sense, so tree ancestry was the wrong yardstick). A pending row
+    (not on main) is under the rule whenever the rule file exists (Ctx.bstart). The file deleted on main stays a
+    refusal (branch_start). A row written straight onto main is invalid anyway (main_merge)."""
+    return read(root, merge, BRANCH_POLICY) is not None
 
 
 def slices(text: str) -> list[str] | None:
@@ -3157,22 +3164,45 @@ def self_test_deferred(cases: list) -> None:
     put(PACK, v1.replace("- a\n", "- a\n- b\n"))
     put(PACK2, get(PACK2).replace("- a\n", "- a\n- b\n"))
     commit("packs changed after the start")
-    # legacy (before POLICY-BRANCH-START): a row whose pull request was opened by a third person, no owner word in the
-    # note — the earlier rules apply to it for good (F-4 / F-5 start only with the policy file)
-    branch("legacy", "main")
-    review("UYGUN", OK, 0, author_key="K3")      # the review row's author (K3) is neither the opener (K1) nor the merger (K2)
-    commit("legacy review (author K3)")
-    approve("dev", "lead", note="")
-    commit("legacy row, no note")
-    put("legacy-later.txt", "x\n")
-    commit("later commit by lead (the opener)", who=LEAD)
-    g("checkout", "-q", "main")
-    g("merge", "-q", "--no-ff", "-m", "Merge legacy", "legacy", who=LEAD2)
-    code, out = chk(deferred=False)
-    cases.append(("S-115 legacy: a row merged BEFORE POLICY-BRANCH-START, opened by a third person, no note -> strict exit 0 "
-                  "(the earlier rules keep it)", code == 0))
+    # the rule PR (POLICY-BRANCH-START) is written on its own branch first — like PR #330 — and merges LATER
+    branch("rule-pr", "main")
     put(BRANCH_POLICY, "# S-115 start\n")
-    commit("POLICY-BRANCH-START", who=LEAD)
+    rule_commit = commit("POLICY-BRANCH-START on the rule branch", who=LEAD)
+    g("checkout", "-q", "main")
+    # (a) an open approval PR of the old way (PR #308 shape): the row's author dev, the PR opened by a third person (lead),
+    # no owner word; it merges BEFORE the rule PR — the bringing merge does not carry the rule file -> exempt for good,
+    # although its commits are no ancestors of the rule commit (tree ancestry would have put it under the rule)
+    def old_way(name):
+        branch(name, "main")
+        review("UYGUN", OK, 0, author_key="K3")      # the review row's author (K3) is neither the opener (K1) nor the merger (K2)
+        commit(f"{name} review (author K3)")
+        approve("dev", "lead", note="")
+        commit(f"{name} row, no note")
+        put(f"{name}-later.txt", "x\n")
+        commit("later commit by lead (the opener)", who=LEAD)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=LEAD2)
+        return git(root, "rev-parse", "HEAD").decode().strip()
+    legacy_merge = old_way("legacy")
+    legacy_row = row_commit(root, legacy_merge, approval_rows(root, legacy_merge, PACK)[-1]["_n"])
+    cases.append(("S-115 scope (a) setup: the old-way row is NOT a tree ancestor of the rule commit",
+                  strictly_before(root, legacy_row, rule_commit) is False))
+    g("merge", "-q", "--no-ff", "-m", "Merge rule-pr", "rule-pr", who=LEAD)        # now the rule file is on main
+    code, out = chk(deferred=False)
+    cases.append(("S-115 scope (a): the row reached main by a merge WITHOUT the rule file (merged before the rule PR), opened by "
+                  "a third person, no note -> strict exit 0 (exempt by the moment it entered main, not by tree ancestry)",
+                  code == 0 and not has(out, "açan satırın yazarı değil")))
+    # (b) the same shape merged AFTER the rule PR -> the bringing merge carries the rule file -> under the rule -> ENGEL
+    put(PACK, get(PACK) + "- after the rule\n")
+    commit("pack changed after the rule", who=LEAD)
+    old_way("after-rule")
+    code, out = chk(deferred=False)
+    cases.append(("sabotage S-115 scope (b): the same shape merged after the rule PR (the merge carries the rule file) -> "
+                  "strict ENGEL 'açan satırın yazarı değil'", code == 1 and has(out, "açan satırın yazarı değil")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", legacy_merge)           # back to: old-way row on main, rule PR not yet merged
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge rule-pr", "rule-pr", who=LEAD)
     put(PACK, get(PACK) + "- after the branch rule\n")
     main0 = commit("pack changed after the branch rule")
     # the CT branch: a clean review, then the HIGH approval row — both only on the branch
