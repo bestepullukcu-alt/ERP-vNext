@@ -38,8 +38,7 @@ public sealed class PvgCaseIntakeFormViewModel
     [Required]
     public string? AdverseEventNarrative { get; set; }
 
-    [Required]
-    public string? SuspectProductText { get; set; }
+    public List<PvgCaseIntakeProductLineViewModel> ProductLines { get; set; } = [];
 
     [Required]
     public string? Seriousness { get; set; }
@@ -48,4 +47,31 @@ public sealed class PvgCaseIntakeFormViewModel
     public string? IntakePriority { get; set; }
 
     public string? EvidenceLinkReferencesRaw { get; set; }
+
+    [Required]
+    public DateTime? AwarenessAtUtc { get; set; }
+
+    [Required]
+    public string? EventCountry { get; set; }
+
+    [Required]
+    public string? ReportType { get; set; }
+
+    public string? ReporterNameOrInitials { get; set; }
+
+    public string? ReporterProfession { get; set; }
+
+    public string? ReporterCountry { get; set; }
+}
+
+/// <summary>One line of the product list: the role and the name are required on every line, the lot is optional.</summary>
+public sealed class PvgCaseIntakeProductLineViewModel
+{
+    [Required]
+    public string? ProductRole { get; set; }
+
+    [Required]
+    public string? ProductNameAsReported { get; set; }
+
+    public string? LotNumber { get; set; }
 }
