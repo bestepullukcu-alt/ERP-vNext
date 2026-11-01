@@ -20,6 +20,7 @@ using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
 using Diten.SupplyChainService.Tests.Common;
+using Diten.SupplyChainService.Tests.Shipments.Dispatch;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -48,36 +49,30 @@ public sealed class ShipmentTests(ITestOutputHelper output)
     {
         protected override IHost CreateHost(IHostBuilder builder)
         {
-            builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Mongo:ConnectionString"] = Connection,
-                ["Mongo:DatabaseName"] = Database,
-                ["JwtSettings:Secret"] = TestSecret,
-                ["JwtSettings:Issuer"] = "mod0183-tests",
-                ["JwtSettings:Audience"] = "mod0183-tests"
-            }));
+            builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(Settings()));
             return base.CreateHost(builder);
         }
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Testing");
-            builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Mongo:ConnectionString"] = Connection,
-                ["Mongo:DatabaseName"] = Database,
-                ["JwtSettings:Secret"] = TestSecret,
-                ["JwtSettings:Issuer"] = "mod0183-tests",
-                ["JwtSettings:Audience"] = "mod0183-tests"
-            }));
+            builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings()));
             builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IShipmentCommitProbe>(probe))
-                .StubLegalEntityValidation());
+                .StubLegalEntityValidation().UseFakeInventory(Inventory));
         }
+        // MOD-0183 DL-1: Dispatched now issues the stock in INVENTORY; these lifecycle tests run against the fake INVENTORY.
+        public readonly FakeInventory Inventory = new();
+        private static Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(TestSecret))
+        {
+            ["Mongo:ConnectionString"] = Connection,
+            ["Mongo:DatabaseName"] = Database,
+            ["Inventory:ReferenceBaseUrl"] = DispatchTestHost.InventoryBaseUrl
+        };
     }
     private static JsonObject CreateBody() => JsonNode.Parse("""
  {"sourceModule":"MOD-0141","sourceType":"SALES_ORDER","sourceDocumentId":"SO-900","warehouseReferenceId":"wh-01",
  "shipToReference":"CUST-100/ADDR-2","plannedShipAt":"2026-09-20T08:00:00Z","plannedDeliverAt":"2026-09-21T16:00:00Z",
  "lines":[{"lineNumber":"1","itemId":"b1f2c3d4-0000-0000-0000-000000000001","skuId":"c3d4e5f6-0000-0000-0000-000000000002",
- "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001"}]}
+ "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001","skuLevel":"Lsku"}]}
  """)!.AsObject();
     private static JsonObject Transition(string status) => new() { ["targetStatus"] = status, ["occurredAt"] = "2026-09-20T08:15:00Z" };
     private static JsonObject Pod() => new()
@@ -87,20 +82,16 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         ["evidenceReferenceIds"] = new JsonArray("test-evidence"),
         ["note"] = "Test only"
     };
-    private string Token(Guid tenant, Guid le, string[]? permissions = null, bool omitLe = false)
-    {
-        var claims = new List<Claim> { new("sub", _actor.ToString()), new("tenant_id", tenant.ToString()), new("actor_type", "tenant_user") };
-        if (!omitLe) claims.Add(new("legal_entity_id", le.ToString()));
-        claims.AddRange((permissions ?? AllPermissions).Select(p => new Claim("permission", "supplychain.shipments." + p)));
-        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("mod0183-tests", "mod0183-tests", claims,
-         expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSecret)), SecurityAlgorithms.HmacSha256)));
-    }
+    // AuthService's real token shape: no legal_entity_id claim at all (the header carries it), so the old
+    // omitLe switch is gone — every request is now the "no claim" case a real user sends.
+    private string Token(Guid tenant, string[]? permissions = null) =>
+        AuthServiceToken.Mint(TestSecret, tenant, _actor, (permissions ?? AllPermissions).Select(p => "supplychain.shipments." + p));
     private async Task<(int Status, JsonObject Body)> Send(HttpClient client, string method, string path, JsonObject? body = null, string? key = null,
      Guid? tenant = null, Guid? le = null, string[]? permissions = null, string? correlation = null, bool omitCorrelation = false, bool omitLeClaim = false)
     {
         var t = tenant ?? _tenant; var l = le ?? _le;
         using var request = new HttpRequestMessage(new HttpMethod(method), "/api/shipment-bundle/shipments" + path);
-        request.Headers.Add("Authorization", "Bearer " + Token(t, l, permissions, omitLeClaim));
+        request.Headers.Add("Authorization", "Bearer " + Token(t, permissions));
         request.Headers.Add("X-Tenant-Id", t.ToString()); request.Headers.Add("X-Legal-Entity-Id", l.ToString());
         if (!omitCorrelation) request.Headers.Add("X-Correlation-Id", correlation ?? _correlation.ToString());
         if (key is not null) request.Headers.Add("Idempotency-Key", key);
@@ -118,6 +109,17 @@ public sealed class ShipmentTests(ITestOutputHelper output)
     {
         var r = await Send(c, "POST", "", CreateBody(), key); Assert.Equal(201, r.Status); return Guid.Parse(r.Body["shipmentId"]!.GetValue<string>());
     }
+    // H2: the legal-entity gate over the real host with AuthService's token shape — the refusal, and no write.
+    [Theory]
+    [InlineData(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome.NotReferenceable, 404)]
+    [InlineData(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome.Unavailable, 503)]
+    public async Task LegalEntityGateRefusalWritesNothing(Diten.SupplyChainService.Application.Common.LegalEntityScopeOutcome outcome, int expected)
+    {
+        using var app = new Factory(new Probe()); using var c = app.CreateClient();
+        await LegalEntityGate.AssertRefusedWithoutWrites(LegalEntityGate.Stub(app.Services), Db(app), _tenant, outcome, expected,
+            async () => (await Send(c, "POST", "", CreateBody(), "gate-" + Guid.NewGuid())).Status);
+    }
+
     [Fact]
     public async Task GoldenFlow_Replay_Outbox_AndRestartAreDurable()
     {
@@ -203,7 +205,9 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "planned")).Status);
         var race = await Task.WhenAll(Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "dispatch-a"),
          Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "dispatch-b"));
-        Assert.Equal(new[] { 200, 422 }, race.Select(x => x.Status).Order().ToArray());
+        // DL-1: the loser meets the winner's dispatch attempt (409 DISPATCH_IN_PROGRESS) or its finished Dispatched (422).
+        Assert.Single(race, x => x.Status == 200); Assert.Single(race, x => x.Status is 409 or 422);
+        Assert.Single(app.Inventory.IssueIds);
         Assert.Equal(1, await Count(app, "sce_shipments")); Assert.Equal(3, await Count(app, "sce_shipment_history")); Assert.Equal(3, await Count(app, "sce_shipment_outbox"));
         var otherLe = await Send(c, "POST", "", CreateBody(), "race-create", le: Guid.NewGuid()); Assert.Equal(201, otherLe.Status);
         Assert.NotEqual(id.ToString(), otherLe.Body["shipmentId"]!.GetValue<string>());

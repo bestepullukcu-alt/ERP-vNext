@@ -32,8 +32,14 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// person's call with nobody to name must be refused and leave the business data untouched.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class TransactionOwnedAuditDeliveryMongoTests
+[Trait("Category", "Mongo")]
+public sealed class TransactionOwnedAuditDeliveryMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture), a fresh database per test.
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public TransactionOwnedAuditDeliveryMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     private static readonly Guid Administrator = Guid.Parse("7b000000-0000-4000-8000-0000000000ad");
 
     // ── caller 2: tenant subscriptions ──────────────────────────────────────────────────────────────────
@@ -41,7 +47,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task Suspending_a_subscription_reaches_audit_events_once_with_the_actor_and_the_status_before_and_after()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active);
         var expected = subscription.RowVersion;
         subscription.Status = TenantSubscriptionStatus.Suspended;
@@ -79,7 +85,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task Renewing_a_subscription_records_the_period_end_before_and_after()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active,
             periodEnd: new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero));
         var expected = subscription.RowVersion;
@@ -97,7 +103,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task A_subscription_change_with_nobody_to_name_is_refused_and_the_subscription_is_unchanged()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, subscription, planId) = await world.SubscriptionAsync(Nobody(), TenantSubscriptionStatus.Active);
         var expected = subscription.RowVersion;
         subscription.Status = TenantSubscriptionStatus.Suspended;
@@ -118,7 +124,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task A_catalogue_change_by_a_platform_administrator_reaches_audit_events_once_as_a_platform_global_record()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var coordinator = world.Coordinator(Person("platform_admin"));
         var item = Guid.NewGuid();
 
@@ -149,7 +155,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [InlineData("SeedDefaultSubscriptionPlansCommand", "SubscriptionPlan", "subscription-plan-startup-seed", AuditCategory.SubscriptionBilling)]
     public async Task An_unattended_job_is_recorded_as_the_system_actor_with_its_name(string requestType, string entityType, string job, AuditCategory category)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
 
         await world.Coordinator(Nobody()).ExecuteAsync(
             new GlobalApplicabilityMutationDescriptor(requestType, AuditOperation.Update, entityType, Guid.NewGuid(), SystemActor: job),
@@ -167,7 +173,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task A_catalogue_change_with_nobody_to_name_is_refused_and_the_global_version_does_not_move()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var projectionWritten = false;
 
         await Assert.ThrowsAsync<TransactionOwnedAuditRefusedException>(() => world.Coordinator(Nobody()).ExecuteAsync(
@@ -185,7 +191,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task A_plan_price_change_is_recorded_with_the_price_before_and_after_and_free_text_by_name_only()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var plan = new SubscriptionPlan
         {
             Code = "PRO", Name = "Pro", Description = "old private wording", IsActive = true, PriceMonthly = 10m, Currency = "EUR",
@@ -223,7 +229,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     [Fact]
     public async Task A_catalogue_status_change_is_recorded_with_the_status_before_and_after()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var item = new ModuleCatalogItem
         {
             ModuleCode = "CRM", ModuleName = "Crm", DisplayName = "CRM", Domain = "SALES", Service = "CRM",
@@ -250,7 +256,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     {
         // FIX1 rule e — the descriptor's metadata (the manifest's DeclaredModuleCode, an authenticated producer) is
         // what tells a module self-registration's records apart.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
 
         await world.Coordinator(Nobody()).ExecuteAsync(
             new GlobalApplicabilityMutationDescriptor("RegisterModuleManifestCommand", AuditOperation.Update, "ModuleCatalogItem", Guid.NewGuid(),
@@ -269,7 +275,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task A_cancellation_at_period_end_is_in_the_state_after()
     {
         // FIX1 rule f — the subscription's recorded state includes CancelAtPeriodEnd and its dates.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var periodEnd = new DateTimeOffset(2027, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var (writer, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active, periodEnd);
         subscription.CancelAtPeriodEnd = true;
@@ -293,7 +299,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         // FIX1 item 6 — the request's own check ran BEFORE the other subscription committed (that is the window); the
         // writer's check inside the transaction is what refuses it. A Trialing beside an Active is what the unique
         // (TenantId, Status) index alone lets through.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, live, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active);
         var tenant = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == live.TenantId).SingleAsync();
         var late = new TenantSubscription
@@ -316,7 +322,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task An_intent_naming_an_empty_target_tenant_is_refused_and_nothing_is_written()
     {
         // FIX1 rule g.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var door = world.ProductionDoor(Person("platform_admin"), correlation: null);
 
         // FIX2 item 7 — an invalid intent is its own (sub)type of refusal: a programming error, answered 500 not 503.
@@ -337,7 +343,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         // FIX1 item 5 — RegisterTenantCommand writes two records: one through the central door (AuditService, from the
         // pipeline) and one through the in-transaction door (the subscription it opens). Measured here on the two doors
         // themselves with the request's correlation in scope; without it each keeps its own.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var request = Guid.NewGuid();
         var correlation = new FixedCorrelation(request.ToString("N"));
         var central = world.CentralDoor(Person("platform_admin"), correlation);
@@ -369,7 +375,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task The_central_record_carries_the_actors_email_and_name_masked_never_in_clear()
     {
         // FIX1 rule a.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var central = world.CentralDoor(Person("platform_admin"), correlation: null);
         var tenant = Guid.NewGuid();
 
@@ -406,7 +412,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         // FIX2 A2 — built deterministically: B reads "no live subscription" INSIDE its transaction, then — before B
         // writes anything — A assigns and commits. B must not commit a second live subscription. The live-check read
         // pins B's snapshot, so B's write of the tenant meets A's committed change and B is answered as stale.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var paused = new TaskCompletionSource();
         var resume = new TaskCompletionSource();
         var (writerB, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Cancelled,
@@ -438,7 +444,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     {
         // FIX2 A2 — the request read the tenant before its transaction began; a change committed in between must not be
         // written back over by that older copy.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, cancelled, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Cancelled);
         var tenantId = cancelled.TenantId;
         var readEarlier = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == tenantId).SingleAsync();
@@ -459,7 +465,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     {
         // FIX2 rule :225 — the update path's stale answer. B's transaction has begun (its subscription write pins the
         // snapshot); the tenant document is then changed and committed elsewhere; B's tenant write meets that change.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var paused = new TaskCompletionSource();
         var resume = new TaskCompletionSource();
         var (writer, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Trialing,
@@ -487,7 +493,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task A_ClientCorrelation_written_into_the_body_is_never_kept_only_the_header_one_is()
     {
         // FIX3 item 5 — a caller of the central door could name its own "ClientCorrelation" in the body.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var tenant = Guid.NewGuid();
         AuditAppendRequest Request() => new()
         {
@@ -512,7 +518,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task An_update_reads_its_before_state_and_its_plan_inside_its_transaction()
     {
         // FIX3 A6 — both reads go through the transaction's session; a read beside it is refused here.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (_, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active,
             wrapSubscriptions: inner => new SessionOnlyReads(inner));
         var writer = world.WriterFor(subscription.TenantId, planId, Person("platform_admin"),
@@ -531,7 +537,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task A_participant_refusal_keeps_its_code_on_both_writer_paths()
     {
         // FIX2 rules :76 / :101 — a quota participant's coded refusal reaches the caller with its code.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (writer, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Trialing);
         Task<Response<NoContent>> Refuse(IPlatformTransactionSession _, TenantSubscription __, SubscriptionPlan ___, CancellationToken ____) =>
             Task.FromResult(Response<NoContent>.Fail("limit", 409, "QUOTA_LIMIT_EXCEEDED"));
@@ -555,7 +561,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     public async Task The_integration_event_and_the_audit_record_carry_one_correlation()
     {
         // FIX2 A6 — measured on both callers: the subscription writer and the global coordinator.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var request = Guid.NewGuid();
         var correlation = new FixedCorrelation(request.ToString("D"));
         var (writer, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active, correlation: correlation);
@@ -583,7 +589,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     {
         // FIX2 A3 — two requests with the SAME client header: two record correlations (the server's), both records
         // carrying the client's value as metadata only, through both doors.
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var first = new FixedCorrelation(Guid.NewGuid().ToString("N"), client: "same-client-header");
         var second = new FixedCorrelation(Guid.NewGuid().ToString("N"), client: "same-client-header");
         var tenant = Guid.NewGuid();
@@ -748,6 +754,8 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
 
     private sealed class World : IAsyncDisposable
     {
+        private const string DatabaseName = "diten_platform_tx_audit_delivery";
+
         private readonly DisposableMongoReplicaSet _mongo;
         private readonly PlatformDbContext _context;
 
@@ -760,11 +768,8 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
             _context = new PlatformDbContext(mongo.Client, database);
         }
 
-        public static async Task<World> StartAsync()
-        {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            return new World(mongo, mongo.CreateDatabase());
-        }
+        public static async Task<World> StartAsync(DisposableMongoReplicaSet mongo) =>
+            new World(mongo, await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName));
 
         public PlatformDbContext Context => _context;
 
@@ -863,7 +868,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         public Task<long> CountAsync(string collection) =>
             Database.GetCollection<BsonDocument>(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
 
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 
     private sealed class MongoIntentWriter(IPlatformDbContext context) : ITransactionalIntegrationEventWriter

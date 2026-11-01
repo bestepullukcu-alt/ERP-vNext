@@ -71,6 +71,7 @@ public sealed class G7SandopCapacityGrantRetractionPlanTests
 }
 
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class G7SandopCapacityGrantRetractionRunnerTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private static readonly BaselineGrantRetraction.Definition G7 = G7SandopCapacityGrantRetraction.Definition;

@@ -14,6 +14,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// <c>recall.settings.update</c> not required). The effective policy needs the recall subject provider, which this host does not have. Platform source is unchanged — only this test is added.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class RecallESignRegistrationHostTests : IClassFixture<ESignatureTestHost>
 {
     /// <summary>The body InventoryService sends for module recall (captured from its registration hosted service, WP-0177-R4).</summary>

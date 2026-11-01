@@ -1,0 +1,12 @@
+prompt-sha256: e244e401cb37661036b901e84ad8b107879df9113a6c1983f151468c163ec97e
+kip: DAĞITIM DENETİMİ
+wp: WP-0230-DL10 · prompt PVG-WP-0230-DL10-P v1.1 · risk HIGH · sınıf ürün
+kaynak-paketi-sha256: da86776a11113fc8a961a58aadc0038738b872ec2fe95e9b89925f1da43770ca · 9 dosya
+BİLGİ sözleşme: 3 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ dilim: DL-10 · paketin 10 diliminden
+BİLGİ dağıtım kapısı (S-5): bu sürümün main'deki incelemesi geçerli (execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md)
+BİLGİ kuyruk: DAĞITILABİLİR WP-0230-DL10: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 0504c96eaf9251ea03ccb731c932823d964c4291 — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: e94de79693f1bb909463e79b879612d583985a17148c169c56f4556c6d4f0913

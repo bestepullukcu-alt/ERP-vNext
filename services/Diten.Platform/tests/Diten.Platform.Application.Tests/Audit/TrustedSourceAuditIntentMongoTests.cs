@@ -17,6 +17,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Audit;
 
+[Trait("Category", "Mongo")]
 public sealed class TrustedSourceAuditIntentMongoTests : IAsyncLifetime
 {
     /*

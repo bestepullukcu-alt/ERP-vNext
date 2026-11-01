@@ -18,6 +18,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// from the real query and an accepted invitation reappears in the inbox with every existing test still green —
 /// measured by the Control Tower, 2026-09-12.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingAttendeePendingQueryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

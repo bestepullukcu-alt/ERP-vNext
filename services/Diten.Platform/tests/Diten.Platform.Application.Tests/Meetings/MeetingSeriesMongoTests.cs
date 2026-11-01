@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// Shared-database pattern reused from <c>MongoIntegrationHarness</c>, exactly as
 /// <c>MeetingMinutesVersionMongoTests</c>/<c>RecordLinkRepositoryMongoTests</c> already establish for this module.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingSeriesMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

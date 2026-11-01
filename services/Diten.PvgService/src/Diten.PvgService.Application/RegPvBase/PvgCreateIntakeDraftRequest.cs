@@ -10,7 +10,16 @@ public sealed record PvgCreateIntakeDraftRequest(
     string? PatientSubjectCode,
     DateOnly? EventOnsetDate,
     string? AdverseEventNarrative,
-    string? SuspectProductText,
+    IReadOnlyList<PvgIntakeProductLineRequest>? ProductLines,
     string? Seriousness,
     string? IntakePriority,
-    IReadOnlyList<string>? EvidenceLinkReferences);
+    IReadOnlyList<string>? EvidenceLinkReferences,
+    DateTimeOffset? AwarenessAtUtc,
+    string? CompanyRecipientPersonId,
+    string? EventCountry,
+    string? ReportType,
+    string? ReporterSelectionDirectory,
+    string? ReporterSelectionId,
+    string? ReporterNameOrInitials,
+    string? ReporterProfession,
+    string? ReporterCountry);

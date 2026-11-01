@@ -40,8 +40,14 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// of the group), 21 planners, one person whose position has ended; tenant B has one person.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class DecisionMakerSearchHttpMongoTests
+[Trait("Category", "Mongo")]
+public sealed class DecisionMakerSearchHttpMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture), a fresh database per test.
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public DecisionMakerSearchHttpMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -49,7 +55,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [InlineData("  a  ")]
     public async Task A_request_without_a_search_of_at_least_two_characters_is_400_and_never_the_whole_list(string? search)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, code, body) = await host.GetAsync(search is null ? "" : $"?search={Uri.EscapeDataString(search)}");
 
@@ -61,7 +67,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task Two_characters_find_a_person_and_each_row_has_exactly_four_fields()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync("?search=il");
 
@@ -76,7 +82,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task Twenty_one_matches_answer_twenty()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync("?search=planlama");
 
@@ -93,7 +99,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [InlineData("kalite mudur")]
     public async Task Turkish_letters_and_case_are_folded_one_explicit_way(string search)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync($"?search={Uri.EscapeDataString(search)}");
 
@@ -110,7 +116,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [InlineData("ÇAĞRI MERKEZİ")]
     public async Task G_O_and_C_with_their_marks_are_folded_too(string search)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync($"?search={Uri.EscapeDataString(search)}");
 
@@ -122,7 +128,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task Two_searches_in_a_row_build_the_directory_once()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=il")).Status);
         Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=pl")).Status);
@@ -136,7 +142,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task When_the_names_cannot_be_read_the_search_is_503_and_nothing_is_kept()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.NameSource.Unavailable = true;
 
         var (status, code, body) = await host.GetAsync("?search=il");
@@ -157,7 +163,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task A_directory_with_unanswered_names_is_served_but_not_kept()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.NameSource.AnswerOnly = [Host.Ilker, Host.Gokce];
 
         var partial = await host.GetAsync("?search=pl");
@@ -177,7 +183,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task On_the_production_client_a_partial_outage_is_served_in_one_request_and_not_kept()
     {
-        await using var host = await Host.StartAsync(realNames: true);
+        await using var host = await Host.StartAsync(_mongo, realNames: true);
         host.Auth.AnswerOnly = [Host.Ilker, Host.Gokce];               // their names land in the client's cache
         Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=il")).Status);
         host.Clock.Advance(DecisionMakerDirectoryCache.Lifetime);      // that (complete) directory expires
@@ -203,7 +209,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task A_hanging_name_source_costs_the_search_at_most_the_bound()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.NameSource.Hang = true;
 
         // BL-661 (was BL-649 on the MVP-6 branch): the HTTP contract this test owns is "a hanging name source surfaces as a 503, end to end" — not
@@ -223,7 +229,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task A_person_AuthService_answers_has_no_name_for_is_listed_and_the_directory_is_kept()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.NameSource.Absent = [Host.Gokce];
 
         var (status, _, body) = await host.GetAsync("?search=cagri");
@@ -239,7 +245,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task A_tenant_with_nobody_answers_an_empty_list_not_a_503()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync("?search=il", tenant: Guid.NewGuid());
 
@@ -251,7 +257,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task An_outage_is_remembered_briefly_and_not_rebuilt_per_keystroke()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.NameSource.Unavailable = true;
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, (await host.GetAsync("?search=il")).Status);
@@ -267,7 +273,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task Ids_answer_only_live_people_of_this_tenant_and_another_company_is_still_found()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         // İlker works for another company of the group (approval is scope-exempt, BL-057); the others must drop.
         var ids = string.Join(",", Host.Ilker, Host.OtherTenantPerson, Host.EndedPerson, Guid.NewGuid());
@@ -280,7 +286,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task Eleven_ids_or_a_search_together_with_ids_are_400()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var eleven = string.Join(",", Enumerable.Range(0, 11).Select(_ => Guid.NewGuid()));
         Assert.Equal("PEOPLE_LOOKUP_TOO_MANY_IDS", (await host.GetAsync($"?ids={eleven}")).Code);
@@ -291,7 +297,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
     [Fact]
     public async Task The_sixty_first_search_in_a_minute_is_429_and_another_user_is_not_affected()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var me = Guid.NewGuid();
         Assert.Equal(60, PeopleSearchRateLimit.PermitsPerMinute); // the prompt's number, pinned: the loop below reads the constant
 
@@ -310,6 +316,8 @@ public sealed class DecisionMakerSearchHttpMongoTests
 
     private sealed class Host : IAsyncDisposable
     {
+        private const string DatabaseName = "diten_platform_tx_decision_maker_search";
+
         private const string Issuer = "diten-auth-bl512-test";
         private const string Audience = "diten-platform-bl512-test";
         private const string Secret = "BL-512 decision makers search signing key, test only, 0123456789";
@@ -421,10 +429,9 @@ public sealed class DecisionMakerSearchHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync(bool realNames = false)
+        public static async Task<Host> StartAsync(DisposableMongoReplicaSet mongo, bool realNames = false)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             var units = database.GetCollection<OrganizationUnit>(PlatformCollections.OrganizationUnits);
             var positions = database.GetCollection<Position>(PlatformCollections.Positions);
             var assignments = database.GetCollection<PositionAssignment>(PlatformCollections.PositionAssignments);
@@ -509,7 +516,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
         public ValueTask DisposeAsync()
         {
             _server.Dispose();
-            return _mongo.DisposeAsync();
+            return ValueTask.CompletedTask; // the replica set is the class fixture's
         }
 
         /// <summary>AuthService's names, counted; <see cref="Unavailable"/> answers nothing, as the real client does

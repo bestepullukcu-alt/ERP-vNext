@@ -108,6 +108,24 @@ public sealed class TrackedConfigurationGuardTests
     }
 
     /// <summary>
+    /// E-5 (owner decision 2026-10-21, integration plan §2.1): SupplyChain reaches MDM through the Gateway, never MDM's own
+    /// port (Core rule 5). The Gateway's port is read from the one port table (<c>.antigravity/rules/ports.md</c>), so a
+    /// renumbering there makes this red instead of silently pointing the scope check somewhere else.
+    /// </summary>
+    [Fact]
+    public void The_legal_entity_root_is_the_gateway_from_the_port_table()
+    {
+        using var development = Config(Development);
+        var uri = AbsoluteHttp("LegalEntity", Section(development, "LegalEntity"));
+        var ports = File.ReadAllText(Path.Combine(RepositoryRoot(), ".antigravity", "rules", "ports.md"));
+        var gateway = System.Text.RegularExpressions.Regex.Match(ports, @"\*\*(?<port>\d{4})\*\*: Gateway");
+        Assert.True(gateway.Success, "ports.md no longer names the Gateway port in its '**NNNN**: Gateway' line.");
+        Assert.True(uri.IsLoopback && uri.Port == int.Parse(gateway.Groups["port"].Value),
+            "LegalEntity:ReferenceBaseUrl is " + uri + ", not the Gateway (port " + gateway.Groups["port"].Value
+            + " in ports.md). E-5: MDM is reached through the Gateway; a direct MDM port bypasses it.");
+    }
+
+    /// <summary>
     /// The three module roots must agree with each other as well as with the service. Equal to the service's
     /// origin already implies this today, but the relationship is the thing Q457 named, and stating it
     /// separately means a future change that moves all three somewhere else on purpose still has to keep

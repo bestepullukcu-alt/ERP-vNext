@@ -13,6 +13,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// allow-list entry in LoginOnlyEndpointGuardTests names.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class InternalESignActionsRegisterAuthTests : IClassFixture<ESignatureTestHost>
 {
     private static readonly string[] AllKeys = ESignPermissions.All.ToArray();

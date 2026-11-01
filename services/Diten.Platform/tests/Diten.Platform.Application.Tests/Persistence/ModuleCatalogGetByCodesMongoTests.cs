@@ -13,6 +13,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// record is not a catalogue module.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ModuleCatalogGetByCodesMongoTests
 {
     [Fact]

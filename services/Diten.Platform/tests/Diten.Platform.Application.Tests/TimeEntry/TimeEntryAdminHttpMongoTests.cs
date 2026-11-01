@@ -12,6 +12,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// (pack §17 T-18, T-19, T-20; §13 "Unauthorized").
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryAdminHttpMongoTests : TimeEntryScenario
 {
     public TimeEntryAdminHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

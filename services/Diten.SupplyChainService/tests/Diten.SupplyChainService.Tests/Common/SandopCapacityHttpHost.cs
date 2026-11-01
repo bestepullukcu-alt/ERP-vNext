@@ -48,7 +48,6 @@ namespace Diten.SupplyChainService.Tests.Common;
 public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
 {
     private const string Secret = "sandop-capacity-bounded-slice-host-signing-key-01234567";
-    private const string Issuer = "sandop-capacity-tests";
 
     /// <summary>The one scope the CapacityPlans fixtures recognise. Anything else is a foreign scope by design.</summary>
     public static Guid Tenant => CapacityInfra.DemandFixtureReader.Tenant;
@@ -70,11 +69,9 @@ public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
         _settings = new Dictionary<string, string?>
         {
             ["Mongo:ConnectionString"] = mongo,
-            ["Mongo:DatabaseName"] = "DitenSupplyChain_Mod0190_0192_Http_Test",
-            ["JwtSettings:Secret"] = Secret,
-            ["JwtSettings:Issuer"] = Issuer,
-            ["JwtSettings:Audience"] = Issuer
+            ["Mongo:DatabaseName"] = "DitenSupplyChain_Mod0190_0192_Http_Test"
         };
+        foreach (var (key, value) in AuthServiceToken.JwtSettings(Secret)) _settings[key] = value;
         DropOwnCollections(mongo);
     }
 
@@ -163,19 +160,12 @@ public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
     /// which this host could not see because it minted the claim itself. The legal entity travels in
     /// X-Legal-Entity-Id (see <see cref="Send"/>).
     /// </summary>
-    public string Token(Guid? tenant = null, IEnumerable<string>? permissions = null, Guid? actor = null)
-    {
-        var claims = new List<Claim>
-        {
-            new("tenant_id", (tenant ?? Tenant).ToString()),
-            new("sub", (actor ?? Actor).ToString())
-        };
-        claims.AddRange((permissions ?? AllPermissions).Select(p => new Claim("permission", p)));
-        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(Issuer, Issuer, claims,
-            expires: DateTime.UtcNow.AddMinutes(10),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
-    }
+    public string Token(Guid? tenant = null, IEnumerable<string>? permissions = null, Guid? actor = null) =>
+        AuthServiceToken.Mint(Secret, tenant ?? Tenant, actor ?? Actor, permissions ?? AllPermissions);
+
+    /// <summary>The MDM legal-entity stub every request of this host consults; a test may set its outcome.</summary>
+    public StubLegalEntityScopeValidator LegalEntityValidator =>
+        (StubLegalEntityScopeValidator)Services.GetRequiredService<ILegalEntityScopeValidator>();
 
     public static IReadOnlyList<string> AllPermissions =>
     [

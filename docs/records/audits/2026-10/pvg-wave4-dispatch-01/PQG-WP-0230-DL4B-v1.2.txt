@@ -1,0 +1,13 @@
+PQG RAPORU v1
+prompt-sha256: 03c76ef651f0889d085c9670f07140afad96eb76daa8b07ba8924bd4b7cf0125
+kip: DAĞITIM DENETİMİ
+wp: WP-0230-DL4B · prompt PVG-WP-0230-DL4B-P v1.2 · risk HIGH · sınıf ürün
+kaynak-paketi-sha256: d3f78278a6fe6c20f8b3cb9965691e5b9c4ca2f8d11d561eeab0d4069d8af268 · 28 dosya
+BİLGİ sözleşme: 15 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ dilim: DL-4 · paketin 9 diliminden
+BİLGİ dağıtım kapısı (S-5): bu sürümün main'deki incelemesi geçerli (execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md)
+BİLGİ kuyruk: DAĞITILABİLİR WP-0230-DL4B: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 826150ef4b8f27cbfbd4879c8a5f7255c20724db — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: 99b07d1caf06322d8df3d1dacdd712d030cf6679dcff7a6938d0b948aaab322b

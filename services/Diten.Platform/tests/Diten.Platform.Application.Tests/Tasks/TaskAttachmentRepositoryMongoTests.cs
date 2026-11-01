@@ -18,6 +18,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// evidence would keep satisfying <c>ChecklistRunItem.EvidenceRequired</c> and a deleted file would keep showing in
 /// the task's list — with every existing test still green. Measured by the Control Tower, 2026-09-12.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskAttachmentRepositoryMongoTests : IAsyncLifetime
 {
     private static readonly Guid TenantId = Guid.Parse("11111111-2222-3333-4444-555555555555");

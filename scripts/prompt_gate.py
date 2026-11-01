@@ -45,7 +45,10 @@ What it checks (each is an ENGEL when it fails):
   S-5        (CT-APR-02 dispatch gate; SOP §20.4 item 8) from where execution/approvals/POLICY-DISPATCH-REVIEW-START.md
              entered MAIN (the oldest first-parent commit of main that added it; a worker-branch preview uses the
              branch's own adding commit only while main does not have it): every new dispatch of a product WP, in every
-             queue (strict or legacy), needs the pack version at Expected HEAD covered by reviews on main. review_negatives
+             queue (strict or legacy), needs the pack version at Expected HEAD covered by reviews on main — or, since
+             S-115 (owner decision 2026-11-01, "dal onayı"), by review and approval rows still on the CT's own ref
+             (the deferred reading: main's rows must be the ref's prefix; a row not yet on main counts with its human
+             step pending until the module pull request merges). review_negatives
              (shared with acceptance_record.py): the review file's append-only history on main first; negatives from this
              version, every reviewed version with the same body (outside the künye) and every version this one is exempt
              from (pack_approval.review_problems at main — any failure stops). Owner-approved 2026-10-21, conditional:
@@ -353,7 +356,7 @@ class GitRepo:
 
     def symlinks(self, commit: str, prefix: str) -> list[str]:
         """CT-FIX-05 (C1): the symbolic links at `commit` on the way to `prefix` (every ancestor component, Codex:
-        docs/alias -> ../services under docs/alias/New.cs) and at or under it (git does not follow them)."""
+        docs/guides/alias -> ../services under docs/guides/alias/New.cs) and at or under it (git does not follow them)."""
         parts, found = prefix.split("/"), []
         for n in range(1, len(parts) + 1):            # each component itself, not recursively
             out = self._git(self.worktree, "ls-tree", "-z", commit, "--", "/".join(parts[:n])) or ""
@@ -599,10 +602,13 @@ def _negative_rows(rows: list[dict], fails: list[str]) -> list[dict]:
     return [r for r in rows if r["_n"] in hit or r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"] or rows
 
 
-def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str], str, set]:
+def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes, deferred: bool = False,
+                     anchor: str | None = None) -> tuple[list[str], list[str], list[str], str, set]:
     """S-5 (F-1, F-3, N-3, N-4, N-5, R3-3, Q2, Q4, Q5): (stops, covering versions, notes, next step, the person keys that
-    accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — the one
-    reading of the dispatch gate and of acceptance_record.py.
+    accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — or, with
+    `deferred` (S-115, owner decision 2026-11-01: the branch reading of the dispatch gate and of acceptance_record.py),
+    from the reviews at `commit` (the CT's ref), where main's rows must be a prefix (pack_approval.prefix_problem) and
+    a row not yet on main counts with its human step pending (pack_approval.review_problems deferred).
       - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything; the
         offending commit stays in history, so re-adding rows never clears it (an owner decision). A malformed row
         (pa.review_rows refuses the whole file) stops everything too, with a next step naming that row.
@@ -616,24 +622,31 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         first 8 hex of its findings_sha256. An older own UYGUN never settles a later negative.
       - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
-    trail = pa.append_only_problems(root, main, pa.REVIEWS)
+    at = commit if deferred else main          # S-115: the branch reading reads the rows at the CT's ref
+    where = "dalda" if deferred else "main'de"
+    if deferred:
+        gap = pa.prefix_problem(root, commit, anchor or main, pa.REVIEWS)    # F-10: the acceptance anchors at its merge-base
+        if gap:
+            return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1) ve yeniden koşun", set()
+    trail = pa.append_only_problems(root, at, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
-        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
+        return [f"inceleme dosyası {where} yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
     text = data.decode("utf-8", errors="replace")
     try:
-        rows = [r for r in pa.review_rows(root, main) if r["target"] == path]
+        rows = [r for r in pa.review_rows(root, at) if r["target"] == path]
     except (pa.Unreadable, UnicodeDecodeError) as e:
         line = re.search(r"satır (\d+)", str(e))
-        return [f"{pa.REVIEWS} main'de okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?"), set()
+        return [f"{pa.REVIEWS} {where} okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?"), set()
     own, others, cover, notes, accepted, others_acc = [], [], [], [], set(), set()
     own_ok = False
     for sha in sorted({r["target_sha256"] for r in rows}):
         mine = [r for r in rows if r["target_sha256"] == sha]
         if sha == digest:
-            fails, _n, acc, _e = pa.review_problems(root, main, path, data, main)
+            fails, _n, acc, _e = pa.review_problems(root, main, path, data, at, deferred)
             own_ok = not fails
             accepted |= acc
+            notes += [x for x in _n if x.startswith("dal onayı")]       # S-115: rows still on the branch, named
             own += [f"sha {digest[:8]}: {f}" for f in fails]
             if not fails:
                 cover.append(sha)
@@ -652,7 +665,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         if not exempt and _body(otext, pa) != _body(text, pa):
             notes.append(f"{sha[:8]}'den bu yana değişiklik muaf değil")
             continue
-        fails, _n, acc, _e = pa.review_problems(root, main, path, old, main)
+        fails, _n, acc, _e = pa.review_problems(root, main, path, old, at, deferred)
         label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if exempt else 'gövdesi aynı'})"
         if fails:
             negs = _negative_rows(mine, fails)
@@ -666,7 +679,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     if others:
         negs = {r["_n"]: r for _m, rs in others for r in rs}.values()
         names = ", ".join(sorted({neg_name(pa, r) for r in negs}))
-        if own_ok and settles(pa, root, main, [r for r in rows if r["target_sha256"] == digest], list(negs)):
+        if own_ok and settles(pa, root, at, [r for r in rows if r["target_sha256"] == digest], list(negs)):
             notes += [f"bilgi (bu sürümün sonraki kendi incelemesi {names} incelemesini adıyla değerlendirdi): {m}"
                       for m, _r in others]
             accepted |= others_acc
@@ -694,15 +707,19 @@ def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) ->
     return False
 
 
-def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, accepted: set) -> str | None:
-    """Q4: an ENGEL accepted in a review read for this version needs a CT-APR-01 approval row on main for exactly this
-    SHA, valid (pack_approval.judge + today_problems), effectively HIGH, whose approver's person key (approvers.tsv as
-    it was on main before the row's merge) is the acceptor. An old, unchanged pack's legacy approval is not enough."""
-    rows = pa.approval_rows(root, main, path)
+def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, accepted: set, at: str | None = None,
+                           deferred: bool = False) -> str | None:
+    """Q4: an ENGEL accepted in a review read for this version needs a CT-APR-01 approval row on main — at `at`, the
+    CT's ref, in the branch reading (S-115, `deferred`) — for exactly this SHA, valid (pack_approval.judge +
+    today_problems), effectively HIGH, whose approver's person key (approvers.tsv as it was on main before the row's
+    merge; main's list today while the row is still on the branch) is the acceptor. An old, unchanged pack's legacy
+    approval is not enough."""
+    at = at or main
+    rows = pa.approval_rows(root, at, path)
     if not rows or rows[-1]["action"] != "approve" or rows[-1]["pack_sha256"] != digest:
-        return (f"bu sürümün incelemesinde kabul edilmiş ENGEL var ({', '.join(sorted(accepted))}) ama main'de bu sürüm "
+        return (f"bu sürümün incelemesinde kabul edilmiş ENGEL var ({', '.join(sorted(accepted))}) ama {'dalda ya da ' if deferred else ''}main'de bu sürüm "
                 f"(sha {digest[:8]}) için son satır olan bir CT-APR-01 onay satırı yok — eski onay ya da 'değişmedi' yetmez")
-    ctx = pa.Ctx(root, main, path)
+    ctx = pa.Ctx(root, at, path, deferred)
     i = len(ctx.rows) - 1
     fails, _out, effective, _needed = pa.judge(ctx, i)
     fails = fails + pa.today_problems(ctx, i)
@@ -710,9 +727,9 @@ def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, acc
         return f"kabul edilmiş ENGEL'i taşıyan sürümün onay satırı geçersiz — {fails[0]}"
     if effective != "HIGH":
         return "kabul edilmiş ENGEL'i taşıyan sürümün onayı HIGH değil"
-    merge = pa.main_merge(root, main, pa.row_commit(root, main, rows[-1]["_n"]))[0]
-    listed = pa.approvers_at(root, f"{merge}^1") if merge else {}
-    person = listed.get(rows[-1]["approver"], {}).get("person")
+    merge = pa.main_merge(root, main, pa.row_commit(root, at, rows[-1]["_n"]))[0]
+    listed = pa.approvers_at(root, f"{merge}^1") if merge else (pa.approvers_at(root, main) if deferred else {})
+    person = pa.person_of(listed, rows[-1]["approver"])
     if accepted != {person}:
         return (f"ENGEL'i kabul eden ({', '.join(sorted(accepted))}) onay satırının onaylayanı değil "
                 f"({person or rows[-1]['approver']}) — riski yalnız onaylayan üstlenir")
@@ -866,23 +883,24 @@ def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tup
         if data is None:
             return [], []          # check_authority reports the missing pack
         protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q, [commit, main])
-        stops, cover, _notes, step, accepted = review_negatives(pa, where, main, commit, path, data)
+        # S-115: the dispatch gate reads the branch (deferred) — a review row still on the CT's ref counts
+        stops, cover, _notes, step, accepted = review_negatives(pa, where, main, commit, path, data, deferred=True)
         guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
-        soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith("bilgi")]
+        soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith(("bilgi", "dal onayı"))]
         if stops:
             return [s5_line(start, guard + stops, path, step)], soft_notes
         digest = pa.sha256(data)[:8]
         if accepted:
-            bad = accepted_engel_problem(pa, where, main, path, pa.sha256(data), accepted)
+            bad = accepted_engel_problem(pa, where, main, path, pa.sha256(data), accepted, at=commit, deferred=True)
             if bad:
                 return [s5_line(start, guard + [bad], path, ACCEPT_STEP.format(path=path))], soft_notes
         if cover:
-            how = ("bu sürümün main'deki incelemesi geçerli" if pa.sha256(data) in cover else
+            how = ("bu sürümün dalda ya da main'deki incelemesi geçerli" if pa.sha256(data) in cover else
                    f"önceki sürüm incelemesi taşındı ({', '.join(s[:8] for s in cover)} → {digest}): değişiklik yalnız muaf")
             return [], [f"dağıtım kapısı (S-5): {how} ({path})"] + soft_notes
         if protected:
             return [], [f"dağıtım kapısı (S-5): {why} — yürüyen iş korunur, olumsuz inceleme yok ({path})"]
-        return [s5_line(start, guard + [f"sha {digest} için main'de geçerli inceleme yok" +
+        return [s5_line(start, guard + [f"sha {digest} için dalda ya da main'de geçerli inceleme yok" +
                                          (f" ({'; '.join(_notes[:2])})" if _notes else "")], path)], []
     except StartDeleted as e:
         return [s5_line(start, [str(e)], path, RESTORE_STEP)], []
@@ -917,8 +935,8 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool, q: dict | No
     if where is not None or repo.file(commit, pa.POLICY) is not None:
         if where is None:
             code, lines = 2, ["onay ölçülemedi — depo erişimi yok"]
-        else:
-            code, lines = pa.evaluate(where, commit, p["authority"])
+        else:        # S-115: the branch reading — an approval row still on the CT's ref counts, its human step pending
+            code, lines = pa.evaluate(where, commit, p["authority"], deferred=True)
         if code != 0:
             why = next((l for l in reversed(lines) if l.startswith(("sonuç:", "ENGEL:"))), lines[-1])
             (info if prepare else eng).append(f"görev sınıfı: sürüme bağlı onay (CT-APR-01) — {why} ({p['authority']})")
@@ -1208,6 +1226,24 @@ def check_review(p: dict, prompt_sha: str, digest: str, pack: list[tuple[str, st
     return eng
 
 
+def try_review(prompt: bytes, repo, review: bytes) -> tuple[int, list[str]]:
+    """S-54: the review record's own rules (check_review) on a record that is NOT committed yet, against the prompt and
+    its source pack at Expected HEAD — so a reviewer sees, before the commit, that every `kontrol` line must name a
+    path of the source pack. Never a dispatch permission: dispatch still needs `check --review PATH@COMMIT`."""
+    head = ["PROMPT İNCELEME DENEMESİ v1 — dağıtım izni değil (kayıt commit'lenmedi)", f"prompt-sha256: {sha256(prompt)}"]
+    p, _bad = parse_prompt(prompt.decode("utf-8"))
+    commit = repo.commit_id(p["expected"]) if p.get("expected") else None
+    if commit is None:
+        return 2, head + ["DUR: promptun Expected HEAD'i okunamadı ya da bu depoda yok", "çıkış: 2"]
+    pack = source_pack(p, repo, commit)
+    eng = check_review(p, sha256(prompt), pack_digest(pack), pack, review)
+    lines = head + [f"kaynak-paketi-sha256: {pack_digest(pack)} · {len(pack)} dosya"] + [f"ENGEL {e}" for e in eng]
+    if eng:
+        return 1, lines + [f"sonuç: kayıt bu hâliyle reddedilir — {len(eng)} bulgu", "çıkış: 1"]
+    return 0, lines + ["sonuç: kaydın kendi kuralları geçti — commit'leyin, sonra check --review YOL@COMMIT ile "
+                       "dağıtım denetimi", "çıkış: 0"]
+
+
 # ------------------------------------------------------------------------------------------------ gate
 def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read_report, names_for,
          root_common: str | None = None) -> tuple[int, list[str]]:
@@ -1423,6 +1459,16 @@ class FakeRepo:
 
 
 def self_test() -> int:
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",
@@ -1508,7 +1554,7 @@ Rapor formatı: §22
     cases.append(("dirty file in the allowed paths -> ENGEL; an unrelated one is only inventory",
                   sum("kirli" in e for e in eng(r)) == 1 and any("kapsam dışı 1 kirli" in l for l in r[1])))
     cases.append(("sabotage: a dirty source file -> ENGEL", any("docs/api.md" in e for e in eng(run(good, rp=FakeRepo(files, dirty=["docs/api.md"]))))))
-    globbed = good.replace("2. docs/api.md", "2. docs/api.md\n3. rules/*.md")
+    globbed = good.replace("2. docs/api.md", "2. docs/api.md" + "\n3. rules/*.md")
     cases.append(("sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL",
                   any("rules/a.md" in e for e in eng(run(globbed, rp=FakeRepo(files, dirty=["rules/a.md"]))))))
     cases.append(("sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL",
@@ -1675,6 +1721,11 @@ Rapor formatı: §22
     empty_ev = good_review.replace("docs/api.md:1-2 ve AGENTS.md karşılaştırıldı, uyumlu".encode(), "bakıldı, sorun yok herhalde".encode())
     cases.append(("sabotage: checklist evidence that names no source of the pack -> ENGEL",
                   any("kanıtı boş" in e for e in eng(run(high, review=empty_ev)))))
+    t_ok, t_bad = try_review(hp, repo, good_review), try_review(hp, repo, empty_ev)
+    cases.append(("S-54: review-check on an uncommitted valid record -> 0, says 'not a dispatch permission'",
+                  t_ok[0] == 0 and "dağıtım izni değil" in t_ok[1][0]))
+    cases.append(("sabotage S-54: review-check on a record whose evidence names no source of the pack -> 1 with the reason",
+                  t_bad[0] == 1 and any("kanıtı boş" in l for l in t_bad[1])))
     cases.append(("sabotage: a HIGH prompt with no quote at all -> ENGEL",
                   any("hiç alıntı yok" in e for e in eng(run(re.sub(r"«[^»]+» \([^)]+\)", "N/A — bu yüzey bu işte kullanılmıyor, gerekçe kayıtta", high), review=good_review)))))
     body = run(good)[1]
@@ -1808,12 +1859,12 @@ Rapor formatı: §22
     cases.append(("CT-FIX-05 C1: governance allowed paths into services/, frontend/, gateway/ (any case), a root-wide glob, "
                   "a brace glob, '..', './', '//', an absolute path -> ENGEL each",
                   all(gpaths([g]) for g in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "Services/x/**", "**", "*",
-                                            "{services,docs}/**", "docs/../services/**", "./docs/**", "docs//x", "/docs/**"))))
+                                            "{services,docs}/**", "docs/guides/../../services/**", "./docs/**", "docs//x", "/docs/**"))))
     cases.append(("CT-FIX-05 C1: a symbolic link at or under the prefix at Expected HEAD -> ENGEL; docs/** without one passes; "
                   "the product class is not limited by this rule",
-                  bool(gpaths(["docs/**"], links=("docs/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
-                  and bool(gpaths(["docs/alias/New.cs"], links=("docs/alias",)))
-                  and bool(gpaths(["docs/alias/sub/New.cs"], links=("docs/alias",)))
+                  bool(gpaths(["docs/**"], links=("docs/guides/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
+                  and bool(gpaths(["docs/guides/alias/New.cs"], links=("docs/guides/alias",)))
+                  and bool(gpaths(["docs/guides/alias/sub/New.cs"], links=("docs/guides/alias",)))
                   and not gpaths(["services/x/**"], cls="ürün")))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
@@ -2239,6 +2290,11 @@ def self_test_dispatch_review(cases: list) -> None:
     e, i = lim("W-10", PK10)
     cases.append(("S-5 Q4: the same with a HIGH CT-APR-01 approval row whose approver (K1) is the acceptor -> pass",
                   not s5(e)))
+    via_branch("approve-10b", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK10, "dev", "LEAD", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-22") + "\n"))
+    e, i = lim("W-10", PK10)
+    cases.append(("Codex F-14: the approval row's approver written LEAD is the listed lead (K1), the acceptor -> pass",
+                  not s5(e)))
     eng12 = review(PK12, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
     review(PK12, "KOŞULLU", [f"F-1@{eng12} | ENGEL | yetki eksik | kabul — onaylayan | K2 | -"], 0)
     via_branch("approve-12", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
@@ -2265,6 +2321,38 @@ def self_test_dispatch_review(cases: list) -> None:
                   has(eng5("W-RUN", now="IN_PROGRESS"), "koruma düştü", "inceleme yok")))
     cases.append(("S-5: W-RUN5 (INTEGRATED at the start, pack unchanged, no review) -> protected before the review file is "
                   "tampered with", not eng5("W-RUN5", PK5, "INTEGRATED")))
+    # S-115 (owner decision 2026-11-01, "dal onayı"): the dispatch gate reads the CT branch — a review row still on the
+    # branch counts (15), a UYGUN DEĞİL there stops (16); the strict reading ignores it; a branch behind main is refused
+    PK13 = pk(13)
+    put(PK13, ver(13))
+    commit("pack 13", who=LEAD)
+    main13 = repo.head()
+    g("checkout", "-q", "-b", "ct-13")
+
+    def row_here(path, verdict, findings, blockers):
+        n[0] += 1
+        digest = sha256(get(path).encode("utf-8"))
+        rel = f"docs/records/reviews/t/{n[0]:02d}-{digest[:8]}.md"
+        put(rel, f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings))
+        put(pa.REVIEWS, get(pa.REVIEWS) + "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers),
+                                                      "claude", "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-11-01"]) + "\n")
+        commit(f"review {verdict} on the branch")
+    row_here(PK13, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    e, i = lim("W-13", PK13, module="MOD-0013")
+    cases.append(("S-115 (15): a UYGUN review row only on the CT branch -> the dispatch gate passes, 'dal onayı' note",
+                  not s5(e) and has(s5(i), "incelemesi geçerli") and has(s5(i), "dal onayı (S-115)")))
+    strict = review_negatives(pa, root, main13, repo.head(), PK13, get(PK13).encode("utf-8"), deferred=False)
+    cases.append(("S-115: the strict reading of the same branch row -> no cover (the row is not on main; the gate would "
+                  "say 'geçerli inceleme yok')", not strict[0] and not strict[1]))
+    row_here(PK13, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
+    cases.append(("sabotage S-115 (16): a UYGUN DEĞİL review row only on the CT branch -> ENGEL naming that verdict (not the "
+                  "generic 'inceleme yok' step text)", has(eng5("W-13", PK13, module="MOD-0013"), "sonuç UYGUN DEĞİL")))
+    g("checkout", "-q", "main")
+    review(PK13, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)        # main gains a row the branch lacks
+    g("checkout", "-q", "ct-13")
+    cases.append(("sabotage S-115: the CT branch lacks a review row main already has -> ENGEL 'dalı main ile güncelleyin', "
+                  "never a partial reading", has(eng5("W-13", PK13, module="MOD-0013"), "önek olarak içermiyor")))
+    g("checkout", "-q", "main")
     # R3-3: one malformed row (another spelling of a pack path) makes reviews.tsv unreadable — fail-closed, with a next
     # step that names the row
     def bad_row():
@@ -2320,6 +2408,9 @@ def main() -> int:
     pc.add_argument("--prepare", action="store_true", help="preparation only: no dispatch permission")
     pp = sub.add_parser("pack")
     pp.add_argument("prompt")
+    pr = sub.add_parser("review-check", help="S-54: tries an uncommitted prompt review record — never a dispatch permission")
+    pr.add_argument("prompt")
+    pr.add_argument("review_file", help="the review record file in the working tree (not committed yet)")
     pd = sub.add_parser("draft", help="CT-FIX-03 U2: a §36.1 skeleton on stdout — never a dispatch permission")
     pd.add_argument("--queue", required=True)
     pd.add_argument("--wp", required=True)
@@ -2340,6 +2431,17 @@ def main() -> int:
               f"doldurulmadan check ENGEL verir. Sonra: python3 scripts/prompt_gate.py check <dosya> --queue {a.queue}"
               " (kayıt main'de değilse --prepare: yalnız hazırlık)", file=sys.stderr)
         return 0
+    if a.cmd == "review-check":
+        try:
+            prompt = Path(a.prompt).read_bytes()
+            p, _bad = parse_prompt(prompt.decode("utf-8"))
+            repo = GitRepo(p["worktree"] if os.path.isdir(p.get("worktree", "")) else str(ROOT))
+            code, lines = try_review(prompt, repo, Path(a.review_file).read_bytes())
+        except (Incomplete, OSError, UnicodeDecodeError) as e:
+            print(f"DUR: tamamlanamadı — {e}")
+            return 2
+        print("\n".join(lines))
+        return code
     if a.cmd == "pack":
         try:
             p, bad = parse_prompt(Path(a.prompt).read_text(encoding="utf-8"))

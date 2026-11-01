@@ -14,6 +14,15 @@ builder.Services.AddSingleton<IModuleManifestProvider, MrpManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    if (!PlanningCorrelation.IsValid(context))
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return;
+    }
+    await next();
+});
 app.UseAuthentication();
 app.UseMiddleware<DemandTenantMiddleware>();
 app.UseAuthorization();

@@ -5,7 +5,7 @@ public sealed record MrpCalculationResult(MrpCalculationStatus Status, MrpResult
 
 public sealed class MrpLiveCalculation(ILegalEntityScopeReader companies,
     IMrpPublishedDemandReader demand, IMrpInventoryReader inventory,
-    IMrpApprovedLeadTimeReader leadTimes)
+    IMrpApprovedLeadTimeReader leadTimes, IMrpApprovedSafetyStockReader safetyStock)
 {
     public async Task<MrpCalculationResult> CalculateAsync(Guid tenantId, Guid legalEntityId,
         string period, Guid skuId, Guid warehouseId, CancellationToken ct)
@@ -31,15 +31,34 @@ public sealed class MrpLiveCalculation(ILegalEntityScopeReader companies,
             var stock = await inventory.ReadAsync(tenantId, legalEntityId, skuId, warehouseId, ct);
             if (stock is null || stock.TenantId != tenantId || stock.LegalEntityId != legalEntityId ||
                 stock.SkuId != skuId || stock.WarehouseId != warehouseId ||
-                stock.BaseUomId != published.BaseUomId || stock.AsOf == default ||
-                DateOnly.FromDateTime(stock.AsOf.UtcDateTime) > published.Weeks[0].WeekStart)
+                stock.BaseUomId != published.BaseUomId || stock.AsOf == default)
+                return new(MrpCalculationStatus.Unavailable);
+            var stockDate = DateOnly.FromDateTime(stock.AsOf.UtcDateTime);
+            var stockWeekStart = stockDate.AddDays(-(((int)stockDate.DayOfWeek + 6) % 7));
+            var planningWeeks = published.Weeks
+                .Where(week => week.WeekStart >= stockWeekStart).ToArray();
+            if (planningWeeks.Length == 0)
                 return new(MrpCalculationStatus.Unavailable);
             var leadTime = await leadTimes.ReadAsync(tenantId, legalEntityId, skuId, warehouseId,
-                published.Weeks[0].WeekStart, published.Weeks[^1].WeekStart.AddDays(6), ct);
+                planningWeeks[0].WeekStart, planningWeeks[^1].WeekStart.AddDays(6), ct);
             if (leadTime is null || leadTime.TenantId != tenantId ||
                 leadTime.LegalEntityId != legalEntityId || leadTime.SkuId != skuId ||
                 leadTime.WarehouseId != warehouseId)
                 return new(MrpCalculationStatus.Unavailable);
+
+            var safetyReads = new MrpSafetyStockRead[planningWeeks.Length];
+            for (var i = 0; i < planningWeeks.Length; i++)
+            {
+                var weekStart = planningWeeks[i].WeekStart;
+                var read = await safetyStock.ReadAsync(tenantId, legalEntityId, skuId,
+                    warehouseId, weekStart, ct);
+                if (read.Status == MrpSafetyStockStatus.Unavailable ||
+                    read.Status == MrpSafetyStockStatus.Found &&
+                    (read.Value is null || read.Value.BaseUomId != published.BaseUomId) ||
+                    read.Status == MrpSafetyStockStatus.NotFound && read.Value is not null)
+                    return new(MrpCalculationStatus.Unavailable);
+                safetyReads[i] = read;
+            }
 
             var stillPublished = await demand.ReadAsync(tenantId, legalEntityId, period,
                 skuId, warehouseId, ct);
@@ -48,8 +67,24 @@ public sealed class MrpLiveCalculation(ILegalEntityScopeReader companies,
                 stillPublished.Checksum != published.Checksum)
                 return new(MrpCalculationStatus.Unavailable);
 
-            var weeks = published.Weeks.Select(w =>
-                new MrpWeek(w.WeekStart, w.Quantity, 0m, MrpWeekQuality.Reliable)).ToArray();
+            for (var i = 0; i < planningWeeks.Length; i++)
+            {
+                var current = await safetyStock.ReadAsync(tenantId, legalEntityId, skuId,
+                    warehouseId, planningWeeks[i].WeekStart, ct);
+                if (current != safetyReads[i])
+                    return new(MrpCalculationStatus.Unavailable);
+            }
+
+            var weeks = planningWeeks.Select((w, i) =>
+            {
+                var found = safetyReads[i].Status == MrpSafetyStockStatus.Found;
+                var value = safetyReads[i].Value;
+                return new MrpWeek(w.WeekStart, w.Quantity, value?.Quantity ?? 0m,
+                    MrpWeekQuality.Reliable, found
+                        ? new MrpWeekSafetyEvidence(true, value!.PolicyRevisionId.ToString("D"),
+                            value.RecordVersion, value.Source)
+                        : new MrpWeekSafetyEvidence(false));
+            }).ToArray();
             var input = new MrpInput(tenantId, legalEntityId, skuId, warehouseId,
                 published.BaseUomId, published.RevisionId.ToString("D"),
                 published.StateVersion, published.Checksum, stock.AsOf, "",

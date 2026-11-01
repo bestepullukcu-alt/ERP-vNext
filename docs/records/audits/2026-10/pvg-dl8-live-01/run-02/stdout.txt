@@ -1,0 +1,42 @@
+== pre-check: ports must be free
+port 5011 free
+port 5000 free
+== AC-16: MOD-0230 route entries in gateway/Diten.ApiGateway/ocelot.json
+route /api/pv-case-intake-triage ['GET', 'POST']
+route /api/pv-case-intake-triage/{intakeDraftId} ['GET', 'PUT']
+route /api/pv-case-intake-triage/{intakeDraftId}/triage ['POST']
+route /api/pv-case-intake-triage/{intakeDraftId}/route ['POST']
+route count 4 matches expected
+forbidden routes none
+== build
+    0 Hata
+
+Geçen Süre 00:00:02.06
+    0 Hata
+
+Geçen Süre 00:00:01.24
+== start PVG service on 5011 (Development)
+pvg pid 38386
+== start Gateway on 5000 (Development)
+gateway pid 38387 (exec: the subshell becomes the dotnet process)
+port 5011 listening after 2s
+port 5000 listening after 2s
+== request 1: through the Gateway
+status 409
+body:
+{"outcome":"Blocked","reasonCode":"PVG_TENANT_CONTEXT_REQUIRED","validationReasonCodes":[],"intakeDraftId":null,"items":[],"version":null,"totalCount":null,"filteredCount":null,"draft":null}
+== request 2: directly to the service
+status 409
+body:
+{"outcome":"Blocked","reasonCode":"PVG_TENANT_CONTEXT_REQUIRED","validationReasonCodes":[],"intakeDraftId":null,"items":[],"version":null,"totalCount":null,"filteredCount":null,"draft":null}
+RESULT: Gateway returned the service's result (same status, byte-identical body)
+== gateway log lines for the route
+{"Timestamp":"2026-10-27T10:44:56.4647650+03:00","Level":"Warning","MessageTemplate":"TenantResolution dev bypass applied in gateway. Path={Path} TenantId={TenantId}","RenderedMessage":"TenantResolution dev bypass applied in gateway. Path=\"/api/pv-case-intake-triage\" TenantId=<id>","TraceId":"ec635507d4cab2cdf88790e59a80cbc2","SpanId":"a681bc3188515320","Properties":{"Path":"/api/pv-case-intake-triage","TenantId":"<id>","SourceContext":"Diten.ApiGateway.Middleware.TenantResolutionMiddleware","RequestId":"0HNPJVOP0O7E7:00000001","RequestPath":"/api/pv-case-intake-triage","ConnectionId":"[REDACTED]","TraceId":"ec635507d4cab2cdf88790e59a80cbc2","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"}}
+{"Timestamp":"2026-10-27T10:44:56.7212680+03:00","Level":"Warning","MessageTemplate":"{State:l}","RenderedMessage":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage","TraceId":"ec635507d4cab2cdf88790e59a80cbc2","SpanId":"a681bc3188515320","Properties":{"State":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage","SourceContext":"Ocelot.Requester.Middleware.HttpRequesterMiddleware","RequestId":"0HNPJVOP0O7E7:00000001","RequestPath":"/api/pv-case-intake-triage","ConnectionId":"[REDACTED]","TraceId":"ec635507d4cab2cdf88790e59a80cbc2","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"},"Renderings":{"State":[{"Format":"l","Rendering":"RequestId: <id>, PreviousRequestId: -\n409 Conflict status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage"}]}}
+{"Timestamp":"2026-10-27T10:44:56.7314940+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"GET\" \"/api/pv-case-intake-triage\" responded 409 in 281.0226 ms","TraceId":"ec635507d4cab2cdf88790e59a80cbc2","SpanId":"a681bc3188515320","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"<id>","RequestPath":"/api/pv-case-intake-triage","StatusCode":409,"TraceId":"ec635507d4cab2cdf88790e59a80cbc2","RequestMethod":"GET","Elapsed":281.022583,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNPJVOP0O7E7:00000001","ConnectionId":"[REDACTED]","MachineName":"192"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"281.0226"}]}}
+stop: kill -TERM 38387 (Tue Oct 27 10:44:54 2026)
+stop: kill -TERM 38386 (Tue Oct 27 10:44:54 2026)
+== post-check: ports must be free
+port 5011 free
+port 5000 free
+== exit 0

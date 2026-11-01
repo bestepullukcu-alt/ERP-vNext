@@ -39,8 +39,16 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// shared database, never the seeded admin.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
-public sealed class PlatformAdministratorSafetyMongoTests
+[Trait("Category", "Mongo")]
+public sealed class PlatformAdministratorSafetyMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_admin_safety";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public PlatformAdministratorSafetyMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     // ── (a) own actor type, status, e-mail ──────────────────────────────────────────────────────────────
 
     [Theory]
@@ -49,7 +57,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("email")]
     public async Task An_administrator_cannot_change_its_own_actor_type_status_or_email(string field)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var self = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]); // not the last: only (a) can refuse
         var before = await world.ReadAsync(self.Id);
@@ -71,7 +79,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task An_administrator_may_still_edit_its_own_name()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var self = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
 
         var response = await world.UpdateAsync(self, actingAs: self, r => r with { DisplayName = "Renamed Self" });
@@ -89,7 +97,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("assignRoles")]
     public async Task A_read_only_administrator_cannot_give_itself_super_admin_on_either_path(string path)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var self = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.ReadOnly]);
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var before = await world.ReadAsync(self.Id);
@@ -109,7 +117,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task An_administrator_cannot_drop_its_own_roles_either()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var self = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin, AdministratorRole.BillingAdmin]);
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
 
@@ -129,7 +137,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("dropSuperAdmin")]
     public async Task The_last_active_platform_super_admin_cannot_be_demoted_or_suspended_through_update(string change)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (last, actor) = await world.LastSuperAdminWorldAsync();
 
         var response = await world.UpdateAsync(last, actingAs: actor, change switch
@@ -149,7 +157,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task The_last_active_platform_super_admin_cannot_be_suspended_deleted_bulk_deleted_or_stripped()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (last, actor) = await world.LastSuperAdminWorldAsync();
 
         AssertLastSuperAdminRefusal(await world.SuspendAsync(last, actor));
@@ -162,7 +170,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task With_a_second_active_platform_super_admin_the_demotion_goes_through()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var (last, actor) = await world.LastSuperAdminWorldAsync();
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
 
@@ -177,7 +185,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task A_partner_record_holding_super_admin_is_not_protected_as_one()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
         var partner = await world.SeedAsync(ActorType.PartnerAdmin, [AdministratorRole.SuperAdmin]);
 
@@ -200,7 +208,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("lastSuperAdmin")]
     public async Task Another_administrators_email_cannot_be_changed_409_and_nothing_reaches_auth(string who)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         PlatformAdministrator target, actor;
         if (who == "lastSuperAdmin")
         {
@@ -229,7 +237,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task The_same_address_in_other_letter_case_or_with_spaces_is_not_a_change()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
 
@@ -248,7 +256,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task When_the_record_write_is_refused_auth_follows_the_record_as_it_now_is_not_as_it_was_loaded()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
         var concurrentSaveDone = false;
@@ -276,7 +284,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("disable")]
     public async Task The_system_seed_administrators_email_and_status_do_not_change_through_update(string change)
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var seed = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin], email: "admin@diten.com");
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]); // not the last: only the seed rule refuses
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
@@ -300,7 +308,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [Fact]
     public async Task The_system_seed_administrator_is_not_bulk_deleted_and_nothing_else_in_the_request_is()
     {
-        await using var world = await World.StartAsync();
+        await using var world = await World.StartAsync(_mongo);
         var seed = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin], email: "admin@diten.com");
         await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var other = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.ReadOnly]);
@@ -338,10 +346,9 @@ public sealed class PlatformAdministratorSafetyMongoTests
         /// <summary>What the handlers asked Auth to do, in order (FIX3 item 2(a)).</summary>
         public RecordingAuth Auth { get; } = new();
 
-        public static async Task<World> StartAsync()
+        public static async Task<World> StartAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>())
                          .Where(c => c.Name is PlatformCollections.PlatformAdministrators or PlatformCollections.PlatformAdministratorSafetyGuards))
             {
@@ -450,7 +457,7 @@ public sealed class PlatformAdministratorSafetyMongoTests
                 .Handle(new AssignPlatformAdministratorRolesCommand(target.Id, new AssignPlatformAdministratorRolesRequest(roles, (await ReadAsync(target.Id)).Version)), CancellationToken.None);
         }
 
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 
     private sealed class Actor(string email) : ICurrentUserContext

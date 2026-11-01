@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.DocumentRepository;
 /// test. Both are checked below against the live server.
 /// </para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class RepositoryObjectMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

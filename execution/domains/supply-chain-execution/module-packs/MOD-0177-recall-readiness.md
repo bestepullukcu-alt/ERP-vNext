@@ -912,7 +912,7 @@ switcher); PDF archive to DMS (FU-0177-EVID-01).
 ### 11.6 Resx
 `Recall.*` keys (screens, columns, filters, buttons, statuses, classes, levels, node kinds, gap kinds and their texts,
 request statuses / not-needed reasons, channels, drill steps, evidence section titles, errors incl. `LOT_UNDER_RECALL`
-band text), `Nav.Module.RECALL-READINESS`, `Nav.Page.*` for the 6 nav pages — **7 languages** (tenant module).
+band text), `Nav.Module.RECALLREADINESS`, `Nav.Page.*` for the 6 nav pages — **7 languages** (tenant module).
 
 ## 12. Validation Rules
 

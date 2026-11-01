@@ -29,6 +29,7 @@
 | **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 FROZEN** · v1.1.0 additive (2026-10-06, MVP-3: management surface; v1.0.0 operations unchanged) · **v1.2.0 additive** (2026-10-13): BOM-version lifecycle event `BomVersionEvent` (`manufacturing.bomversion.effective.v1` / `.superseded.v1`, outbox in the BOM transaction; identity + state only, consumer MOD-0189 MRP) |
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
+| **BANK-DISPATCH** | MOD-0269 (tüketici MOD-0126) | `bank-dispatch.md` (süreç içi port sözleşmesi, OpenAPI değil) | ✅ **0.1.0 FROZEN** (2026-10-25, D27/7): gönderim kapalı, tek sonuç `NotConfigured`; T32 sapması (MOD-0003 yok, D27/1) |
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 

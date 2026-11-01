@@ -131,7 +131,7 @@ python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --modu
 
 **Aşama 1 — Module Pack Hazırlık:**
 1. `/prepare-module-pack` çağır (modül adı + domain + servis + shell + form alan sayısı + iş kuralları)
-2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir
+2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir; `Teslim dilimleri` tablosu plan satırlarına göre yazılır (her dilimde plan yetenek kimliği ve plan MVP'si, DL-1 çekirdek; pakette olmayan yeni plan MVP'si takip paketi `MOD-NNNN-FUxx`) — [module-pack-standard](rules/module-pack-standard.md) Bölüm 16 "Plan hizalaması"
 3. Kullanıcı incelemesi → `status: approved` veya `ready-for-dev`
 
 **Aşama 2 — Geliştirme:**
@@ -224,3 +224,12 @@ sessizce görünmez oldu — dosyalar duruyordu, kimse okumuyordu.
 
 Bu dosya o boşluğu kapatır. Tek işi seni `AGENTS.md`'ye götürmek; büyümeye başlarsa
 amacını kaybeder.
+
+## AGENTS.md'den taşınan ölçüm notları (2026-10-26, boyut bütçesi)
+
+AGENTS.md uyarı eşiğini (22000 bayt) aşınca kural olmayan tarihli ölçüm notları buraya taşındı; kurallar değişmedi.
+
+- §6 Yerelleştirme satırı: ölçüldü 2026-09-07 — `Views/Platform/*` 2 dil dosyası, `Views/Organization/*` 7 dil dosyası taşır.
+- §6.1 kural sayısı: `.antigravity/rules/` altındaki 46 kural dosyası 2026-10-17'de `git ls-tree` ile sayıldı (sayı AGENTS.md'den kaldırıldı; güncel sayı için `git ls-tree` koşulur).
+- §6.1 yükleme: 2026-10-17 denetiminde yalnız `agents-core.md`'nin Claude Code'da yüklenmesi ölçüldü; Codex ve Antigravity'nin
+  haritayı bu dosyayla birlikte yüklemesi canlı ölçülmedi.

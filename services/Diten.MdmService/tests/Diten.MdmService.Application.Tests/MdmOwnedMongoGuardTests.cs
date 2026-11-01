@@ -671,7 +671,17 @@ public sealed class MdmTestMongoTests
         using var child = Process.Start(new ProcessStartInfo("/bin/sleep", "60") { UseShellExecute = false })!;
         try
         {
+            // TEST-HIZ-01: Process.Start returns after the fork, before the child has exec'd /bin/sleep; probed in that
+            // window the path is null (CI: Assert.NotNull failed) or still the test host's. Wait until the child IS sleep.
             var probe = MdmTestMongo.Probe(child.Id);
+            var execDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+            while (DateTime.UtcNow < execDeadline && probe.State == MdmTestMongo.ProcessState.Alive
+                   && !string.Equals(System.IO.Path.GetFileName(probe.Path), "sleep", StringComparison.Ordinal))
+            {
+                Thread.Sleep(20);
+                probe = MdmTestMongo.Probe(child.Id);
+            }
+
             Assert.Equal(MdmTestMongo.ProcessState.Alive, probe.State);
             Assert.NotNull(probe.Path);
             var record = new MdmTestMongo.OwnerRecord(child.Id, probe.StartedUtc, Environment.ProcessId, DateTime.UtcNow,

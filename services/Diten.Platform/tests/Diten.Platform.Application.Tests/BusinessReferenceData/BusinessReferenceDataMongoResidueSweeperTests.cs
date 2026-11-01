@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
  * The BRD harness itself no longer calls this sweeper (it uses fixed-name scoped databases that are emptied, not
  * dropped — see BusinessReferenceDataTestHarness), so nothing sweeps the shared mongod from this folder any more.
  */
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataMongoResidueSweeperTests
     : IClassFixture<BusinessReferenceDataMongoResidueSweeperTests.PrivateMongo>, IAsyncLifetime
 {

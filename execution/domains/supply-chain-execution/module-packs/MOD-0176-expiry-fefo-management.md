@@ -642,7 +642,7 @@ button "Bu lotu rezerve et" (KF-F → FU-0176-RES-01); market / customer rules (
 
 ### 11.6 Resx
 `Expiry.*` keys (screens, columns, filters, buttons, exception types / statuses / resolutions, band texts, errors, the
-excluded-lot reasons), `Nav.Module.EXPIRY-FEFO-MANAGEMENT`, `Nav.Page.*` for the 7 nav pages — **7 languages**
+excluded-lot reasons), `Nav.Module.EXPIRYFEFOMANAGEMENT`, `Nav.Page.*` for the 7 nav pages — **7 languages**
 (tenant module). Wording fixes from §21.3 apply ("Dolduğundan beri", not "Dolalı").
 
 ## 12. Validation Rules

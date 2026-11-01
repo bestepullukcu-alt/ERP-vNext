@@ -3,4 +3,5 @@ namespace Diten.PvgService.Application.RegPvBase;
 public sealed record PvgIntakeDraftMutationResult(
     PvgApplicationResult Result,
     string? IntakeDraftId,
-    PvgAuditIntent? AuditIntent);
+    PvgAuditIntent? AuditIntent,
+    long? Version = null);

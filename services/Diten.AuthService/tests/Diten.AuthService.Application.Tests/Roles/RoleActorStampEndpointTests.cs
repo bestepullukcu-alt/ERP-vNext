@@ -19,7 +19,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 /// and checks that the person stamped on the document is the same id the RBAC audit row carries.
 /// Nothing here writes to the DefaultTenant; the seeder's own rows are only READ (E5).
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class RoleActorStampEndpointTests : IClassFixture<AccountKindAcceptance.AuthTestHost>, IAsyncLifetime
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

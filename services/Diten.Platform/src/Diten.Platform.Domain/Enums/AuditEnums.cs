@@ -23,7 +23,10 @@ public enum AuditCategory
     Tasks = 16,
 
     /// <summary>MOD-0022 e-Signature Service — signatures, invalidations, requests, policy, meanings, exports. Additive.</summary>
-    ESignature = 17
+    ESignature = 17,
+
+    /// <summary>Finance &amp; Treasury (DCP-011: MOD-0119, MOD-0120, MOD-0124, MOD-0126) — owner decision. Additive.</summary>
+    Finance = 18
 }
 
 public enum AuditOperation

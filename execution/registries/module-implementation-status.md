@@ -168,3 +168,21 @@ Ordered by how much they block verticals:
 |---|---|---|---|---|
 | MOD-0193 BOM & Routings | Done (G2B 2026-10-13, conditional waiver W-G2B-0290) | 95 | `Diten.ManufacturingService` (5070): BomVersion (components + routing), Draft→Effective→Superseded, single-Effective unique index, cycle guard, frozen `current`/`version`/`explode` + v1.1.0 list/export/draft/release/delete/history; history in the same Mongo transaction (AUD-001 path c); v1.2.0 BOM-version event (outbox in the BOM transaction → shared publisher → MassTransit/RabbitMQ, delivery measured); legal entity proven by MDM per request; Platform self-registration + entitlement; `/Manufacturing/Boms` Golden Compact, 7 languages, browser-verified (M-5); gateway `/api/bom` → 5070; 82 service tests. | MOD-0290 validate + UoM (W-G2B-0290: F-0193-07/03); MOD-0209 format-only (F-0193-04); central audit BL-501; company authority F-0193-08; future-dated release (F-0193-01); item picker (F-0193-02); work-center master (F-0193-06); MOD-0040 meaning (F-0193-09) |
 
+
+## Supply Chain Execution — Logistics & Planning (MVP-6)
+
+> Added 2026-10-22 by the MVP-6 Control Tower from code and recorded evidence (finish line PR #158 `c07aa7746`; integration
+> PRs #196/#198 open). **%** is the CT's estimate — no owner-approved completion formula exists (same rule as MOD-0290);
+> estimate key: pack 10 + backend 35 + UI 20 + tests/acceptance 20 + integration 15. MOD-0147 / MOD-0148 have no code and
+> are not listed (scope rule above).
+
+| Module ID | Durum | % | Var olan | Eksik |
+|---|---|---|---|---|
+| MOD-0183 Shipment Tracking & POD (`Diten.SupplyChainService`, 5066) | Backend+Frontend | 85 (tahmin) | Shipment aggregate + lifecycle + POD, SHIPMENT-BUNDLE 3.3.0, Shipments UI (7 dil), manifest; tests; live Gateway tour 18/18 (2026-10-22); central audit + MDM via Gateway in PR #198 | Inventory stock issue at `Dispatched` (W-4, DL-1/2/5 — waits on G2–G4 and pack revision §23); product check (DL-4, PRODUCT-MASTER freeze); reservations (DL-6) |
+| MOD-0184 Carrier Management | Backend+Frontend | 97 (tahmin) | Carrier CRUD/status, contract tests, UI, manifest | PR #198 merge (central audit) |
+| MOD-0185 Routing & Load Planning | Backend+Frontend | 97 (tahmin) | Load plan + lifecycle, contract tests, UI, manifest | PR #198 merge |
+| MOD-0186 Reverse Logistics | Backend+Frontend | 85 (tahmin) | Return/RMA lifecycle, contract tests, UI, manifest | Return → Inventory `CUSTOMER_RETURN` into QUARANTINE (E-7, DL-3 after DL-2; pack revision §34) |
+| MOD-0187 Claims Management | Backend+Frontend | 97 (tahmin) | Claim lifecycle, replay/restart tests, UI, manifest | PR #198 merge |
+| MOD-0188 Demand Planning (`Diten.PlanningService`) | Backend+Frontend | 75 (tahmin) | Demand plan UI and backend, fixture-proven (#158) | Production authorities S1, AC-D01…D29 (post-MVP-6) |
+| MOD-0190 S&OP Workflow & Sign-offs | Backend+Frontend | 80 (tahmin) | S&OP plans, snapshots, sign-offs, UI (G6), composed only with a demand source | Real DEMAND v2 source instead of the fixture seed (post-MVP-6) |
+| MOD-0192 Capacity Planning | Backend+Frontend | 80 (tahmin) | Capacity plans, scenarios, evaluations, UI (G6), fixture constraints | SUPPLY-CONSTRAINTS producer MOD-0193 (post-MVP-6) |

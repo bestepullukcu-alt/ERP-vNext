@@ -1,0 +1,60 @@
+name: approvals-append-only
+
+# S-91: a pull request that drops, changes or moves a row of approvals.tsv / reviews.tsv is red. Only breaks the
+# pull request brings count (--base); a known, owner-approved break is excused by append-only-exceptions.tsv on main.
+# S-115 F-8 (independent review 2026-11-01): on every push to main, the packs whose approval / review rows the push
+# brought are read STRICTLY (`check <paket> --ref HEAD`): a module pull request merged by the wrong person (not listed,
+# high = hayır, the row author's other account, an opener who is not the row's author) makes main red at once — the
+# human step is measured when the row reaches main, not only at the pack's next revision. Only the touched packs are
+# checked (GitHub quota); gh runs with the workflow token.
+on:
+  pull_request:
+    paths:
+      - "execution/approvals/**"
+      - "scripts/pack_approval.py"
+      - ".github/workflows/approvals-append-only.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "execution/approvals/**"
+      - "scripts/pack_approval.py"
+      - ".github/workflows/approvals-append-only.yml"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  append-only:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Fetch main
+        run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
+      - name: Append-only check (new breaks only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
+
+  strict-check-on-main:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Fetch main
+        run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
+      - name: Strict approval check for the packs whose approve rows this push added (S-115 F-8 / G-2)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE_SHA: ${{ github.event.before }}
+        # pack_approval.py ci-main: packs of the APPROVE rows the push added, read strictly at HEAD; exit 1 only for a
+        # human-step class refusal; state refusals and an unmeasurable reading (quota) are ::warning:: lines (G-2, G-12);
+        # an empty / zero BEFORE_SHA falls back to HEAD^1 inside the command
+        run: python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD

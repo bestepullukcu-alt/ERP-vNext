@@ -44,6 +44,8 @@ public static class CentralAuditServiceCollectionExtensions
         services.AddHttpClient(PlatformCentralAuditClient.HttpClientName, client => client.Timeout = TimeSpan.FromSeconds(15));
         services.AddSingleton<ICentralAuditPlatformClient, PlatformCentralAuditClient>();
         services.AddSingleton<CentralAuditDispatcher>();
+        // Before the dispatcher and before the host serves requests: the outbox exists before any command's transaction.
+        services.AddHostedService<CentralAuditOutboxInitializerHostedService>();
         if (configuration.GetValue($"{CentralAuditOptions.TuningSection}:{nameof(CentralAuditOptions.DispatcherEnabled)}", true))
         {
             services.AddHostedService<CentralAuditDispatcherHostedService>();

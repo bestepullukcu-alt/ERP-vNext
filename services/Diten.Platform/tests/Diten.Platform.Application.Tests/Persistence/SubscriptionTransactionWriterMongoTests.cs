@@ -18,6 +18,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.Persistence;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class SubscriptionTransactionWriterMongoTests
 {
     public static TheoryData<string> SuccessPaths => new() { "Create", "Assign", "Activate", "Cancel", "Expire", "Reactivate", "Renew", "Suspend" };

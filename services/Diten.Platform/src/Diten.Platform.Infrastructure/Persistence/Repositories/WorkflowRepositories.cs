@@ -148,6 +148,10 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         _dbContext = dbContext;
     }
 
+    // MOD-0023 §17.7/2 (AC-W15) — a workflow instance is never deleted: the inherited soft delete refuses before any write.
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        throw new NotSupportedException("Workflow instances are retained; they cannot be deleted.");
+
     // WP-CL-BE-3 — the terminal write joins the Platform transaction that also carries the completion outbox event.
     public async Task<bool> UpdateAsync(
         IPlatformTransactionSession session,
@@ -180,6 +184,25 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
 
         var filter = Builders<WorkflowInstance>.Filter.And(
             ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectType, objectType),
+            Builders<WorkflowInstance>.Filter.In(x => x.ObjectId, objectIds));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    // MOD-0023 §17.9/2 — ListByObjectIdsAsync with soft-deleted rows included: the tenant condition of ExecutionFilter stays,
+    // only IsDeleted == false is dropped.
+    public async Task<IReadOnlyList<WorkflowInstance>> ListByObjectIdsAllRowsAsync(
+        string objectType,
+        IReadOnlyCollection<string> objectIds,
+        CancellationToken ct = default)
+    {
+        if (objectIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            Builders<WorkflowInstance>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectType, objectType),
             Builders<WorkflowInstance>.Filter.In(x => x.ObjectId, objectIds));
         return await Collection.Find(filter).ToListAsync(ct);
@@ -458,6 +481,10 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
     {
         _dbContext = dbContext;
     }
+
+    // MOD-0023 §17.7/2 (AC-W15) — an approval task is never deleted: the inherited soft delete refuses before any write.
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        throw new NotSupportedException("Approval tasks are retained; they cannot be deleted.");
 
     // D1 — the next step's task joins the transaction that closes the previous step.
     public async Task<ApprovalTask> CreateAsync(
@@ -804,6 +831,10 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
     {
         _dbContext = dbContext;
     }
+
+    // MOD-0023 §17.7/2 (AC-W15) — a transition log row is never deleted: the inherited soft delete refuses before any write.
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        throw new NotSupportedException("Workflow transition logs are retained; they cannot be deleted.");
 
     // WP-CL-BE-3 — terminal transition log inside the Platform transaction. Same tenant rule as the base CreateAsync:
     // the tenant always comes from the context, never from the caller.

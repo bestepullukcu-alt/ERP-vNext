@@ -112,12 +112,15 @@ class SkipAllowListTests(unittest.TestCase):
     # that carry the code (measured). WP-CI-SERVICE-TESTS-05 (CT decision A, BL-646 items 3 and 6): the platform-app BL-534
     # line (2, removed with the WP-AUTH-ADMIN-BOOTSTRAP-01 merge) and the mdm-api CONTRACT_LINE_ABSENT line (1, review
     # 2026-12-31). MVP-6 plan v9.9 step 3: the supplychain-tests CLAIMS_RESTART_CHILD line (1 — the Claims restart child,
-    # which its parent test runs twice in the same job). The pin stays EXACT: anything else added is still red here.
+    # which its parent test runs twice in the same job). TEST-HIZ-01 (owner decision 2026-10-23): the inventory-tests
+    # INVENTORY_PERF line (4 — the PerformanceFact tests, review 2026-12-31). The pin stays EXACT: anything else added is
+    # still red here.
     def test_the_repository_allowlist_holds_exactly_the_auth_manufacturing_bl534_and_contract_line_entries(self):
         self.assertEqual({("auth-app", "MACOS_ONLY"): 1, ("auth-app", "UID_EQUALS_GID"): 1, ("auth-app", "RUNS_AS_ROOT"): 1,
                           ("manufacturing-tests", "MANUFACTURING_TEST_MONGO"): 35,
                           ("platform-app", "BL-534"): 2, ("mdm-api", "CONTRACT_LINE_ABSENT"): 1,
-                          ("supplychain-tests", "CLAIMS_RESTART_CHILD"): 1},
+                          ("supplychain-tests", "CLAIMS_RESTART_CHILD"): 1,
+                          ("inventory-tests", "INVENTORY_PERF"): 4},
                          script.load_allowlist(ALLOWLIST))
 
     # WP-CI-SERVICE-TESTS-05 (CT decision A): the code pattern accepts a backlog item code (BL-534) as ONE code — never a

@@ -8,6 +8,6 @@ public abstract class CustomBaseController : ControllerBase
     protected IActionResult Wire<T>(Response<T> response)
     {
         var context = HttpContext.RequestServices.GetRequiredService<RequestContext>();
-        return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ContractError.Create(response.ErrorCode, response.Message ?? response.ErrorCode, context.CorrelationId));
+        return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ContractError.Create(response.ErrorCode, response.Message ?? response.ErrorCode, context.CorrelationId, response.Details));
     }
 }

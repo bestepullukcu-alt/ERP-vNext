@@ -6,6 +6,8 @@ namespace Diten.PvgService.Infrastructure.RegPvBase;
 
 public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
 {
+    private const long InitialVersion = 1;
+
     private readonly ConcurrentDictionary<PvgIntakeDraftKey, PvgIntakeDraftEntity> _drafts = new();
 
     public ValueTask<string> AddAsync(
@@ -17,14 +19,15 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
 
         var intakeDraftId = NewDraftId();
         _drafts[new PvgIntakeDraftKey(tenantScope.TenantId, intakeDraftId)] =
-            PvgIntakeDraftEntity.FromDomain(tenantScope.TenantId, intakeDraftId, intake);
+            PvgIntakeDraftEntity.FromDomain(tenantScope.TenantId, intakeDraftId, InitialVersion, intake);
 
         return ValueTask.FromResult(intakeDraftId);
     }
 
-    public ValueTask<bool> ReplaceAsync(
+    public ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(
         PvgPersistenceTenantScope tenantScope,
         string intakeDraftId,
+        long? expectedVersion,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default)
     {
@@ -32,17 +35,25 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
 
         if (string.IsNullOrWhiteSpace(intakeDraftId))
         {
-            return ValueTask.FromResult(false);
+            return ValueTask.FromResult(PvgIntakeDraftReplaceResult.NotFound());
         }
 
         var key = new PvgIntakeDraftKey(tenantScope.TenantId, intakeDraftId);
-        if (!_drafts.ContainsKey(key))
+        if (!_drafts.TryGetValue(key, out var current))
         {
-            return ValueTask.FromResult(false);
+            return ValueTask.FromResult(PvgIntakeDraftReplaceResult.NotFound());
         }
 
-        _drafts[key] = PvgIntakeDraftEntity.FromDomain(tenantScope.TenantId, intakeDraftId, intake);
-        return ValueTask.FromResult(true);
+        if (expectedVersion is null || current.Version != expectedVersion.Value)
+        {
+            return ValueTask.FromResult(PvgIntakeDraftReplaceResult.VersionConflict());
+        }
+
+        var replacement = PvgIntakeDraftEntity.FromDomain(tenantScope.TenantId, intakeDraftId, current.Version + 1, intake);
+        return ValueTask.FromResult(
+            _drafts.TryUpdate(key, replacement, current)
+                ? PvgIntakeDraftReplaceResult.Replaced(replacement.Version)
+                : PvgIntakeDraftReplaceResult.VersionConflict());
     }
 
     public ValueTask<PvgPersistedIntakeDraft?> FindByIdAsync(
@@ -84,6 +95,20 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         return ValueTask.FromResult<IReadOnlyList<PvgPersistedIntakeDraft>>(items);
     }
 
+    public ValueTask<int> CountAsync(
+        PvgPersistenceTenantScope tenantScope,
+        PvgIntakeStatus? status,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureTenantScope(tenantScope);
+
+        var count = _drafts
+            .Values
+            .Count(entity => entity.TenantId == tenantScope.TenantId && (status is null || entity.Status == status));
+
+        return ValueTask.FromResult(count);
+    }
+
     private static void EnsureTenantScope(PvgPersistenceTenantScope tenantScope, SafetyCaseIntake? intake = null)
     {
         if (string.IsNullOrWhiteSpace(tenantScope.TenantId))
@@ -104,6 +129,7 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
     private sealed record PvgIntakeDraftEntity(
         string TenantId,
         string IntakeDraftId,
+        long Version,
         PvgIntakeStatus Status,
         string IntakeChannel,
         string SourceType,
@@ -114,21 +140,33 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         string? PatientSubjectCode,
         DateOnly? EventOnsetDate,
         string AdverseEventNarrative,
-        string? SuspectProductText,
         string Seriousness,
         string IntakePriority,
         PvgTriageOutcome? TriageOutcome,
         string? TriageReason,
         string? RouteTargetQueue,
-        IReadOnlyList<string> EvidenceLinkReferences)
+        IReadOnlyList<string> EvidenceLinkReferences,
+        IReadOnlyList<PvgIntakeProductLine> ProductLines,
+        DateTimeOffset AwarenessAtUtc,
+        string? CompanyRecipientPersonId,
+        string EventCountry,
+        string ReportType,
+        PvgReporterSource ReporterSource,
+        string? ReporterSourceId,
+        PvgReporterCrmSearchState ReporterCrmSearchState,
+        string? ReporterNameOrInitials,
+        string? ReporterProfession,
+        string? ReporterCountry)
     {
         public static PvgIntakeDraftEntity FromDomain(
             string tenantId,
             string intakeDraftId,
+            long version,
             SafetyCaseIntake intake) =>
             new(
                 tenantId,
                 intakeDraftId,
+                version,
                 intake.Status,
                 intake.IntakeChannel,
                 intake.SourceType,
@@ -139,13 +177,23 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
                 intake.PatientSubjectCode,
                 intake.EventOnsetDate,
                 intake.AdverseEventNarrative,
-                intake.SuspectProductText,
                 intake.Seriousness,
                 intake.IntakePriority,
                 intake.TriageOutcome,
                 intake.TriageReason,
                 intake.RouteTargetQueue,
-                intake.EvidenceLinkReferences.ToArray());
+                intake.EvidenceLinkReferences.ToArray(),
+                intake.ProductLines.ToArray(),
+                intake.AwarenessAtUtc,
+                intake.CompanyRecipientPersonId,
+                intake.EventCountry,
+                intake.ReportType,
+                intake.ReporterSource,
+                intake.ReporterSourceId,
+                intake.ReporterCrmSearchState,
+                intake.ReporterNameOrInitials,
+                intake.ReporterProfession,
+                intake.ReporterCountry);
 
         public PvgPersistedIntakeDraft ToPersistedDraft() =>
             new(
@@ -168,8 +216,19 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
                     ReporterContactSummary = ReporterContactSummary,
                     PatientSubjectCode = PatientSubjectCode,
                     EventOnsetDate = EventOnsetDate,
-                    SuspectProductText = SuspectProductText,
-                    EvidenceLinkReferences = EvidenceLinkReferences.ToArray()
-                });
+                    EvidenceLinkReferences = EvidenceLinkReferences.ToArray(),
+                    ProductLines = ProductLines.ToArray(),
+                    AwarenessAtUtc = AwarenessAtUtc,
+                    CompanyRecipientPersonId = CompanyRecipientPersonId,
+                    EventCountry = EventCountry,
+                    ReportType = ReportType,
+                    ReporterSource = ReporterSource,
+                    ReporterSourceId = ReporterSourceId,
+                    ReporterCrmSearchState = ReporterCrmSearchState,
+                    ReporterNameOrInitials = ReporterNameOrInitials,
+                    ReporterProfession = ReporterProfession,
+                    ReporterCountry = ReporterCountry
+                },
+                Version);
     }
 }

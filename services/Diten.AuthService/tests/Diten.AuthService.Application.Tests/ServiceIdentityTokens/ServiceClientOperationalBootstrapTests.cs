@@ -17,6 +17,7 @@ using Diten.AuthService.Application.Tests.Persistence;
 namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 [Collection(OperationalMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixture fixture, ITestOutputHelper output)
 {
     [OwnedMongoTheory]

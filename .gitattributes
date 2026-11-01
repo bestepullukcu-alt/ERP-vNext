@@ -10,3 +10,9 @@ frontend/Diten.Web/wwwroot/assets/vendor/libs/driverjs/* -text
 # them. Only these files are pinned; every other file keeps the repository's existing line-ending behaviour.
 services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/mod-0290-gsku-reference.json text eol=lf
 services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/mod-0290-market-reference.json text eol=lf
+# Speed review item 4 (owner 'uygula' 2026-10-29): the append-only approval files merge with main's new rows first,
+# then the branch's (scripts/merge_append_only.py). Needs `git config merge.append-only.driver …` once per clone; without
+# it git merges them as plain text, as before.
+execution/approvals/approvals.tsv merge=append-only
+execution/approvals/reviews.tsv merge=append-only
+execution/approvals/append-only-exceptions.tsv merge=append-only

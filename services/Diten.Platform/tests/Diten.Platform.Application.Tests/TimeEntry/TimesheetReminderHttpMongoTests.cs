@@ -27,6 +27,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// that produce each state have their own suites.</para>
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetReminderHttpMongoTests : TimerScenario
 {
     /// <summary>Monday 2026-10-12 09:00 in Istanbul (UTC+3, no DST).</summary>

@@ -27,7 +27,7 @@ namespace Diten.AuthService.Application.Tests.Authorization;
 /// <c>CreatedAt</c> before the key's; a tenant opened after the feature goes through the production provisioning
 /// service and gets "now".</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
