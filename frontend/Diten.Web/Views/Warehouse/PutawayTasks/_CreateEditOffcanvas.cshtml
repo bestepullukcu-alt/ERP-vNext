@@ -1,0 +1,96 @@
+@using Diten.Web.Views.Warehouse.PutawayTasks
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PutawayTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Create / edit (pack §9: 6 user fields, slim). "Yerleştirilecek stok" lists eligible AND locked rows — a locked row is shown with its lock,
+    reason and blocking document number and cannot be picked (§8.15, AC-41). The source never changes after create (edit shows it read-only).
+    The bin suggestion never fills the form: "Uygula" takes it and the record carries targetSource = SuggestionApplied (§8.6, AC-42).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formPutawayTaskAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formPutawayTask" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="putawayTaskId" value="" />
+            <input type="hidden" id="putawayTaskETag" value="" />
+            <input type="hidden" id="putawayTargetSource" value="Manual" />
+            <input type="hidden" id="putawayWarehouseId" value="" />
+
+            <div class="row g-4">
+                <div class="col-12" id="putawaySourceBlock">
+                    <label for="putawayCandidate" class="form-label fw-medium">@Localizer["FieldSource"] <span class="text-danger">*</span></label>
+                    <select id="putawayCandidate" class="form-select" data-placeholder="@Localizer["SourcePlaceholder"]" required>
+                        <option value=""></option>
+                    </select>
+                    <small id="putawayCandidateHint" class="text-muted d-block mt-1"></small>
+                    <div class="invalid-feedback d-block" id="putawayCandidateError"></div>
+                </div>
+
+                <div class="col-12 d-none" id="putawaySourceReadonly">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldSource"]</span>
+                    <span id="putawaySourceText" class="text-heading"></span>
+                    <small class="text-muted d-block">@Localizer["SourceLockedHint"]</small>
+                </div>
+
+                <div class="col-12">
+                    <label for="putawayQuantity" class="form-label fw-medium">@Localizer["FieldPlanned"] <span class="text-danger">*</span></label>
+                    <div class="input-group wh-stepper">
+                        <button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="-1" data-wh-for="putawayQuantity" aria-label="@Localizer["QuantityDecrease"]"><i class="bx bx-minus"></i></button>
+                        <input type="text" inputmode="decimal" id="putawayQuantity" class="form-control text-center wh-touch" autocomplete="off" required />
+                        <button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="1" data-wh-for="putawayQuantity" aria-label="@Localizer["QuantityIncrease"]"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <div class="invalid-feedback d-block" id="putawayQuantityError"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="putawayBinCode" class="form-label fw-medium">@Localizer["FieldTarget"]</label>
+                    <input type="text" id="putawayBinCode" class="form-control wh-touch" data-wh-bin-input autocomplete="off" autocapitalize="characters"
+                           list="putawayBinOptions" placeholder="@Localizer["BinScanPlaceholder"]" />
+                    <datalist id="putawayBinOptions"></datalist>
+                    <input type="hidden" id="putawayBinId" />
+                    <small id="putawayBinLabel" class="text-success d-block mt-1"></small>
+                    <div class="invalid-feedback d-block" id="putawayBinError"></div>
+                    <div id="putawaySuggestion" class="alert alert-info d-none mt-2 mb-0 py-2 d-flex align-items-center justify-content-between gap-2">
+                        <span><i class="bx bx-bulb me-1"></i>@Localizer["SuggestionLabel"] <strong id="putawaySuggestionText"></strong></span>
+                        <button type="button" class="btn btn-sm btn-info" id="btnApplySuggestion">@Localizer["Warehouse.Action.ApplySuggestion"]</button>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["CapacityNotChecked"]</small>
+                </div>
+
+                <div class="col-12">
+                    <label for="putawayAssignee" class="form-label fw-medium">@Localizer["ColAssignee"]</label>
+                    <select id="putawayAssignee" class="form-select" data-placeholder="@Localizer["AssigneePlaceholder"]">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label for="putawayPriority" class="form-label fw-medium">@Localizer["ColPriority"]</label>
+                    <select id="putawayPriority" class="form-select">
+                        <option value="Normal">@Localizer["Warehouse.Priority.Normal"]</option>
+                        <option value="High">@Localizer["Warehouse.Priority.High"]</option>
+                        <option value="Low">@Localizer["Warehouse.Priority.Low"]</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label for="putawayNote" class="form-label fw-medium">@Localizer["FieldNote"]</label>
+                    <textarea id="putawayNote" class="form-control" rows="3" maxlength="1000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button data-dt-primary="enter" type="button" id="btnSavePutawayTask" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

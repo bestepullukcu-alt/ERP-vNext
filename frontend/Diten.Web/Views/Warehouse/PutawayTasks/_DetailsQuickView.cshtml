@@ -1,0 +1,178 @@
+@using Diten.Web.Views.Warehouse.PutawayTasks
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PutawayTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    var canConfirm = Perms.Has(WarehousePermissionKeys.PutawayTasksConfirm);
+    var canUpdate = Perms.Has(WarehousePermissionKeys.PutawayTasksUpdate);
+    var canReason = canConfirm || Perms.Has(WarehousePermissionKeys.PutawayTasksCancel) || Perms.Has(WarehousePermissionKeys.PutawayTasksResolve);
+}
+@*
+    QuickView (pack §11.2): the task head, its confirmations with the INVENTORY movement number, its timeline, and the actions of its state.
+    The action buttons are drawn by index.js from the service's allowedActions / disabledActions, only for the keys the reader holds
+    (absent otherwise); a disabled one says why (§8.15, AC-39 / AC-43). Status and integration flag are two badges (AC-46).
+*@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-package fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="offcanvasDetailsPreviewLabel" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div id="oc-error" class="alert alert-danger d-none" role="alert"></div>
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span id="oc-status" class="badge bg-label-secondary">-</span>
+                    <span id="oc-flag" class="badge d-none" data-wh-flag></span>
+                </div>
+                <dl class="row g-3 mb-0 wh-fields">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColProduct"]</dt><dd class="col-7 mb-0" id="oc-sku">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColLot"]</dt><dd class="col-7 mb-0" id="oc-lot">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldWarehouse"]</dt><dd class="col-7 mb-0" id="oc-warehouse">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColFrom"]</dt><dd class="col-7 mb-0" id="oc-from">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColTo"]</dt><dd class="col-7 mb-0" id="oc-to">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldPlanned"]</dt><dd class="col-7 mb-0" id="oc-planned">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldConfirmed"]</dt><dd class="col-7 mb-0" id="oc-confirmed">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldPending"]</dt><dd class="col-7 mb-0" id="oc-pending">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldRemaining"]</dt><dd class="col-7 mb-0" id="oc-remaining">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColAssignee"]</dt><dd class="col-7 mb-0" id="oc-assignee">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColPriority"]</dt><dd class="col-7 mb-0" id="oc-priority">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldNote"]</dt><dd class="col-7 mb-0 text-break" id="oc-note">-</dd>
+                </dl>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["SectionConfirmations"]</h6>
+                <div id="oc-confirmations" class="d-flex flex-column gap-3"></div>
+                <p id="oc-confirmations-empty" class="text-muted mb-0 d-none">@Localizer["NoConfirmations"]</p>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["SectionTimeline"]</h6>
+                <ul id="oc-timeline" class="timeline mb-0"></ul>
+                <p id="oc-timeline-unavailable" class="text-muted mb-0 d-none">@Localizer["TimelineUnavailable"]</p>
+            </section>
+        </div>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex flex-wrap justify-content-between gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <div id="oc-actions" class="d-flex flex-wrap gap-2 justify-content-end"></div>
+    </div>
+</div>
+
+@if (canConfirm || canReason || canUpdate)
+{
+    @* The writes that are not the create / edit form are signed with this token. *@
+    <form id="putawayActionToken" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@if (canConfirm)
+{
+    @* "Onayla" panel (§8.15, AC-44 / AC-45): measured at 375 px — touch targets ≥ 48 px, quantity −/+, a fixed bottom action bar. The bin field
+       takes keyboard and keyboard-emulating barcode input: an EXACT code selects the bin, anything else is a field error and nothing is sent. *@
+    <div class="offcanvas offcanvas-end wh-confirm-panel" tabindex="-1" id="offcanvasConfirm" aria-labelledby="offcanvasConfirmLabel">
+        <div class="offcanvas-header p-4">
+            <div class="min-w-0">
+                <h5 id="offcanvasConfirmLabel" class="offcanvas-title mb-0">@Localizer["Warehouse.Action.Confirm"]</h5>
+                <small id="confirm-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+        </div>
+        <div class="offcanvas-body border-top p-4">
+            <div id="confirm-alert" class="alert alert-danger d-none" role="alert"></div>
+            <form id="formConfirm" novalidate>
+                <div class="mb-4">
+                    <label for="confirmQuantity" class="form-label fw-medium">@Localizer["FieldQuantity"] <span class="text-danger">*</span></label>
+                    <div class="input-group wh-stepper">
+                        <button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="-1" aria-label="@Localizer["QuantityDecrease"]"><i class="bx bx-minus"></i></button>
+                        <input type="text" inputmode="decimal" id="confirmQuantity" class="form-control text-center wh-touch" autocomplete="off" required />
+                        <button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="1" aria-label="@Localizer["QuantityIncrease"]"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <small id="confirm-remaining" class="text-muted d-block mt-1"></small>
+                    <div class="invalid-feedback d-block" id="confirmQuantityError"></div>
+                </div>
+                <div class="mb-4">
+                    <label for="confirmBinCode" class="form-label fw-medium">@Localizer["FieldActualTarget"] <span class="text-danger">*</span></label>
+                    <input type="text" id="confirmBinCode" class="form-control wh-touch" data-wh-bin-input autocomplete="off" autocapitalize="characters"
+                           list="confirmBinOptions" placeholder="@Localizer["BinScanPlaceholder"]" required />
+                    <datalist id="confirmBinOptions"></datalist>
+                    <input type="hidden" id="confirmBinId" />
+                    <small id="confirmBinLabel" class="text-success d-block mt-1"></small>
+                    <div class="invalid-feedback d-block" id="confirmBinError"></div>
+                </div>
+                <div class="mb-4 d-none" id="confirmDeviationBlock">
+                    <label for="confirmDeviation" class="form-label fw-medium">@Localizer["FieldDeviationReason"] <span class="text-danger">*</span></label>
+                    <textarea id="confirmDeviation" class="form-control" rows="3" maxlength="1000"></textarea>
+                    <small class="text-muted">@Localizer["DeviationHint"]</small>
+                </div>
+            </form>
+        </div>
+        <div class="wh-action-bar border-top p-3 d-flex gap-2 bg-white">
+            <button type="button" class="btn btn-label-secondary wh-touch flex-grow-1 d-none" id="btnConfirmRetry">@Localizer["Warehouse.Action.Retry"]</button>
+            <button type="button" class="btn btn-primary wh-touch flex-grow-1" id="btnConfirmSubmit" data-dt-primary="enter">@Localizer["Warehouse.Action.Confirm"]</button>
+        </div>
+    </div>
+}
+
+@if (canReason)
+{
+    @* One reason dialog for "Geri taşındı", "Uzlaştır", "Kalanı kapat" and "İptal" (pack §11.3: each asks a reason; Uzlaştır and İptal are dangerous). *@
+    <div class="modal fade" id="modalPutawayReason" tabindex="-1" aria-labelledby="modalPutawayReasonLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPutawayReasonLabel">-</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="reason-intro" class="mb-3"></p>
+                    <div id="reason-alert" class="alert alert-danger d-none" role="alert"></div>
+                    <label for="putawayReason" class="form-label fw-medium">@Localizer["FieldReason"] <span class="text-danger">*</span></label>
+                    <textarea id="putawayReason" class="form-control" rows="3" minlength="10" maxlength="1000"></textarea>
+                    <small class="text-muted">@Localizer["ReasonHint"]</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnReasonSubmit">-</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (canUpdate)
+{
+    @* Bulk "Ata" (Q-13 A): one active user of the tenant; the answer is reported per row. *@
+    <div class="modal fade" id="modalPutawayAssign" tabindex="-1" aria-labelledby="modalPutawayAssignLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPutawayAssignLabel">@Localizer["Warehouse.Action.Assign"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="assign-alert" class="alert alert-danger d-none" role="alert"></div>
+                    <label for="assignUser" class="form-label fw-medium">@Localizer["ColAssignee"] <span class="text-danger">*</span></label>
+                    <select id="assignUser" class="form-select" data-placeholder="@Localizer["AssigneePlaceholder"]"><option value=""></option></select>
+                    <ul id="assign-results" class="list-unstyled small mt-3 mb-0"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnAssignSubmit">@Localizer["Warehouse.Action.Assign"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

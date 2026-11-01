@@ -1197,4 +1197,13 @@
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Paramètres de rappel</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Opérations d’Entrepôt</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Tâches de Rangement</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Rôles des Emplacements d’Entrepôt</value>
+  </data>
 </root>

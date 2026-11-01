@@ -2032,4 +2032,70 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>自己的样本交给他人</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>将收货库位的库存移至其货位并确认；确认后库存在库存台账中移动。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>仓库操作员（确认）和仓库主管（创建、分配、对账）。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>选择库存</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>点击“新建任务”，在“待上架库存”中选择一行。锁定的行会显示原因及阻止它的单据，不能选择。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>货位和负责人</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>在“目标货位”中输入或扫描货位代码，只接受完全一致的代码。在“负责人”中选择操作员。建议货位只有点击“应用”才会采用。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>点击“确认”，检查数量（−/+）和实际货位。允许部分数量；货位不同需填写原因。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>重试等待中的确认</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>如果标记显示“等待确认”，说明库存答复未到达；打开任务并点击“重试”。处理完成前其他操作均不可用。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>确认会立即移动库存；撤销需在库存移动中做冲销。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>用于标记收货库位和储存条件</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>查看确认所移动的库存</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>标记哪些库位是收货区或发货暂存区，以及节点接受哪些储存条件；下级节点继承这些设置。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>仓库主管。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>选择库位</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>点击“新建角色”，在“库位节点”中选择节点。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>设置角色和条件</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>勾选“收货区”或“发货暂存区”以及接受的储存条件；只设条件、不设角色也有效。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>检查收货库位</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>上架任务只能从收货库位开始；请确认每个仓库都有收货库位。继承的条件集会显示“来自上级节点”标记。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>用于上架已收货库存</value>
+  </data>
 </root>

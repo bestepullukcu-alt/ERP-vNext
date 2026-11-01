@@ -2032,4 +2032,70 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Свой образец оставьте другим</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Переместите принятый товар из зоны приёмки в его ячейку и подтвердите; подтверждение проводит движение в складском журнале.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Операторы склада (подтверждение) и руководители склада (создание, назначение, сверка).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Выберите товар</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Задача» и выберите строку в поле «Товар к размещению». Заблокированная строка показывает причину и блокирующий документ; выбрать её нельзя.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Ячейка и исполнитель</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>Введите или отсканируйте код ячейки в поле «Целевая ячейка»; принимается только точный код. Выберите оператора в поле «Исполнитель». Предлагаемая ячейка берётся только кнопкой «Применить».</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Подтвердите</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>Нажмите «Подтвердить», проверьте количество (−/+) и фактическую ячейку. Частичное количество допустимо; другая ячейка требует причины.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Повторите ожидающее подтверждение</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>Если на значке «Ожидает подтверждения», ответ склада не пришёл; откройте задачу и нажмите «Повторить». До завершения другие действия недоступны.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>Подтверждение сразу перемещает товар; отмена — это сторно в движениях запасов.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Чтобы отметить зоны приёмки и условия хранения</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>Чтобы увидеть товар, перемещённый подтверждениями</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Отметьте, какие места являются зонами приёмки или подготовки отгрузки и какие условия хранения принимает узел; нижние узлы их наследуют.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Руководители склада.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Выберите место</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Роль» и выберите узел в поле «Узел места».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Задайте роли и условия</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>Отметьте «Приёмка» или «Подготовка отгрузки» и принимаемые условия хранения; одни условия без роли тоже допустимы.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Проверьте зоны приёмки</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Задачи размещения начинаются только из зон приёмки; проверьте, что у каждого склада она есть. Унаследованный набор помечен значком «от вышестоящего узла».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>Чтобы разместить принятый товар</value>
+  </data>
 </root>

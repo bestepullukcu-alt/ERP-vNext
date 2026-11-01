@@ -2032,4 +2032,70 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Laissez votre propre spécimen</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Déplacez le stock reçu de la zone de réception vers son casier et confirmez-le ; la confirmation déplace le stock dans le registre des stocks.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Opérateurs d’entrepôt (confirmation) et responsables d’entrepôt (création, attribution, rapprochement).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Choisir le stock</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>Cliquez sur « Nouvelle Tâche » et choisissez une ligne dans « Stock à ranger ». Une ligne verrouillée indique pourquoi et quel document la bloque ; elle ne peut pas être choisie.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Casier et attributaire</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>Saisissez ou scannez le code du casier dans « Casier cible » ; seul un code exact est accepté. Choisissez l’opérateur dans « Attributaire ». Un casier suggéré n’est pris qu’avec « Appliquer ».</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>Cliquez sur « Confirmer », vérifiez la quantité (−/+) et le casier réel. Une quantité partielle est permise ; un autre casier demande un motif.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Réessayer une confirmation en attente</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>Si le badge indique « Confirmation en attente », la réponse du stock n’est pas arrivée ; ouvrez la tâche et cliquez sur « Réessayer ». Rien d’autre ne fonctionne avant son règlement.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>Une confirmation déplace le stock immédiatement ; l’annuler se fait par une contre-passation dans les mouvements de stock.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Pour marquer les zones de réception et les conditions de stockage</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>Pour voir le stock déplacé par les confirmations</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Indiquez quels emplacements sont des zones de réception ou de préparation et quelles conditions de stockage un nœud accepte ; les nœuds inférieurs en héritent.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Responsables d’entrepôt.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Choisir l’emplacement</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>Cliquez sur « Nouveau Rôle » et choisissez le nœud dans « Nœud d’emplacement ».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Attribuer rôles et conditions</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>Cochez « Réception » ou « Préparation à l’expédition » et les conditions de stockage acceptées ; des conditions seules, sans rôle, sont valides.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Vérifier les zones de réception</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Les tâches de rangement partent uniquement des zones de réception ; vérifiez que chaque entrepôt en a une. Un ensemble hérité porte le badge « du nœud supérieur ».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>Pour ranger le stock reçu</value>
+  </data>
 </root>
