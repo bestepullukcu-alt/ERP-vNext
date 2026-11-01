@@ -142,6 +142,14 @@ public sealed class PutawayScenario
 
     public static string PostingKey(string taskId, int seq) => $"wms:put:{taskId}:{seq}";
 
+    /// <summary>The stored ledger movement's id — a non-empty string, asserted (the reversal needs it).</summary>
+    public static string MovementId(BsonDocument movement)
+    {
+        var id = movement["_id"].AsString;
+        Assert.False(string.IsNullOrWhiteSpace(id), "the stored movement has no id");
+        return id;
+    }
+
     /// <summary>
     /// A LATE commit: the confirmation's STORED ledger request (<see cref="PutawayPostingEngine.Request"/>, optionally changed) posted through the
     /// REAL stock door in this tenant's scope — the movement a lost / slow answer committed after the task moved on.
