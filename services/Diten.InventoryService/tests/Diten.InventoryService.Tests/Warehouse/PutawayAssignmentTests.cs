@@ -161,6 +161,29 @@ public sealed class PutawayAssignmentTests : IClassFixture<WarehouseApiFactory>
     }
 
     [Fact]
+    public async Task F3_bulk_assign_answers_InvalidTransition_for_a_task_locked_by_an_integrity_error_and_for_a_closed_task()
+    {
+        var s = await ReadyAsync();
+        var locked = await s.TaskAsync(10);
+        await s.ForeignUnderKeyAsync(PostingKey(TaskId(locked), 1));
+        var lockedNow = DetailsTask(await Expect(s.ConfirmAsync(locked, 5, s.A01), 409));
+        Assert.Equal("PostingIntegrityError", Flag(lockedNow));
+        var cancelled = await s.TaskAsync(10);
+        var cancelledNow = await Expect(s.CancelAsync(TaskId(cancelled), ETagOf(cancelled)), 200);
+        var alice = s.ActiveUser();
+        var items = new[] { (TaskId(locked), lockedNow.GetProperty("version").GetInt32()), (TaskId(cancelled), cancelledNow.GetProperty("version").GetInt32()) };
+
+        // the draft's row outcomes (WMS draft §4) have no IntegrityError: a task locked by an integrity error is InvalidTransition, like a closed one;
+        // every answer passes WmsDraftContractHandler, so another outcome value also fails the draft's enum
+        var result = await Expect(s.BulkAssignAsync(alice, items), 200);
+        Assert.Equal("InvalidTransition", Row(result, TaskId(locked)).GetProperty("outcome").GetString());
+        Assert.Equal("InvalidTransition", Row(result, TaskId(cancelled)).GetProperty("outcome").GetString());
+        Assert.Empty(s.W.CentralRows(BulkAssign));
+        Assert.DoesNotContain("Assigned", s.EventKinds(TaskId(locked)));
+        Assert.False((await s.GetTaskAsync(TaskId(locked))).TryGetProperty("assignee", out var a) && a.ValueKind == JsonValueKind.Object);
+    }
+
+    [Fact]
     public async Task AC15_a_bulk_assign_that_writes_no_row_leaves_no_trace_and_no_key()
     {
         var s = await ReadyAsync();
