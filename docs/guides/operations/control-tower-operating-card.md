@@ -18,8 +18,9 @@
   yalnız son mesajdan beri bitenler; `Bekliyor:` satırı kaç gündür beklediğini yazar; tam raporda "Ekranda ne zaman
   görürsünüz" zorunlu ("Sahibe rapor ve mesaj biçimi" 7, tam rapor kuralı 5).
 - **2026-11-01 · tasarruf, tek uzak dal ve kule modeli (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** alt ajana tek
-  seferde tam brief; tam test takımı yazımda bir, PR'dan önce bir; bağımsız inceleme en çok iki tur (ENGEL sıfır tabanı
-  kalır); uzakta modül başına tek dal, işçi dalları push edilmez; kule oturumunun modeli SOP §17.1 r5'te ("İşçi
+  seferde tam brief; tam test takımı yazımda bir, PR'dan önce bir; inceleme tur sınırı yok — UYGUN ya da engelsiz KOŞULLU
+  olana kadar, aynı sürümde ikinci turdan sonra sahibe tek satır bilgi (S-127, sahip kararı 2026-11-01 `tur-sinirsiz`);
+  uzakta modül başına tek dal, işçi dalları push edilmez; kule oturumunun modeli SOP §17.1 r5'te ("İşçi
   sohbetleri" 10). Ölçüm: bir günde haftalık Fable sınırının %44'ü.
 - **2026-11-01 · tür kelimesi (S-120, sahip kararı 2026-11-01):** kısa haberin, tam raporun ve takip sayfasının her iş
   satırı şu sekizden biriyle başlar: Belge · Arka uç · Ekran · API · Geçit · Test · Kural · Karar; ilerleme satırı "kod N ·
@@ -454,8 +455,12 @@ Kurallar:
   10. **Tasarruf ve tek uzak dal (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** (a) alt ajana ya da işçiye verilen
      her iş tek seferde tam brief alır (amaç, okunacak dosyalar, kapsam, rapor biçimi); ikinci tur yalnız engelde açılır.
      (b) Tam test takımı bir iş için yazım sırasında bir kez ve son değişiklikten sonra PR'dan önce bir kez koşulur; ara
-     koşu yapılmaz. (c) Bağımsız inceleme en çok iki tur: açık ENGEL sıfıra inmeden PR açılmaz, kalan koşullar PR
-     incelemesine (Beste) bırakılır. (d) Uzakta modül başına **tek dal**: yalnız modül dalı push edilir; işçi dalları yerel
+     koşu yapılmaz. (c) **İnceleme tur sınırı yok (S-127, sahip kararı 2026-11-01 `tur-sinirsiz`; ölçüm: 189 turun 19
+     olumsuzundan 8'i üçüncü turdan sonra geldi):** inceleme, sonuç UYGUN ya da açık ENGEL'i sıfır KOŞULLU olana kadar
+     sürer; açık ENGEL varken ileri gidilmez. Aynı paket sürümünde ikinci turdan sonra kule sahibe tek satır bilgi yazar
+     ("<paket> · 3. tur · neden: …"); sahip "yeter" derse paket bekler. ENGEL olmayan küçük bulgular (DÜŞÜK, NOT)
+     düzeltilmeden de PR'a gidebilir ve Beste'nin PR incelemesine kalır; engel sayılmaz. Ölçüm 2026-11-14: paket başına
+     tur sayısı; 5'i aşan paket varsa sınır yeniden konuşulur. (d) Uzakta modül başına **tek dal**: yalnız modül dalı push edilir; işçi dalları yerel
      kalır ve modül dalına katılır (paralel işçiler yerelde ayrı kopyada çalışır, uzağa yine tek dal gider); birden çok
      uzak dal yalnız sahip isterse. Kule oturumunun modeli: SOP §17.1 r5 son madde (rutin iş Opus 5.5, inceleme ve
      araç/kural değişikliği Fable 5.1).
@@ -603,7 +608,8 @@ inceleyen kuleyle konuşup düzeltsin; bağımsız son bakış ya da Codex sahib
 3. **Kayıt ve sahibin seçimi:** inceleyen "temiz" (ENGEL yok) deyince CT bulgu dosyasını commit eder ve o sürüm için
    inceleme satırını **CT dalına** yazar (dal onayı, S-115; `--reviewer claude`, model, `--reviewer-session` = ayrı
    oturumun ya da alt ajanın kimliği; PR yok). Sonra sahibe **tek düğme** (karar kutusu; bu, "İşçi sohbetleri" 9'daki
-   zorunlu duraklardan biridir): **direkt kabul** · **bağımsız son bakış** · **Codex**.
+   zorunlu duraklardan biridir): **direkt kabul** · **bağımsız son bakış** · **Codex**. Aynı sürümde ikinci tur gerekmişse
+   düğmede önerilen seçenek **bağımsız son bakış**tır; Codex yine yalnız sahip seçince (S-127, 2026-11-01).
    - **Bağımsız son bakış:** sohbet geçmişi olmayan ikinci bir Claude alt ajanı yalnız S-94 isteğini ve ZIP'i alır
      (diyalogun bulguları, sık bulgu listesi ve CT'nin görüşü verilmez; ipucusuz kalır), tek tur, sonucu ikinci inceleme
      satırı olarak dala yazılır; iki satır da sayılır (en kısıtlayıcı okuma, SOP §20.4/4). Araç paketin riskini HIGH
