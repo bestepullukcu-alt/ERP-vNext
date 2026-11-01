@@ -19,7 +19,7 @@
   görürsünüz" zorunlu ("Sahibe rapor ve mesaj biçimi" 7, tam rapor kuralı 5).
 - **2026-11-01 · tasarruf, tek uzak dal ve kule modeli (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** alt ajana tek
   seferde tam brief; tam test takımı yazımda bir, PR'dan önce bir; inceleme tur sınırı yok — UYGUN ya da engelsiz KOŞULLU
-  olana kadar, aynı sürümde ikinci turdan sonra sahibe tek satır bilgi (S-127, sahip kararı 2026-11-01 `tur-sinirsiz`);
+  olana kadar (S-127, sahip kararı 2026-11-01 `tur-sinirsiz`), aynı sürümde ikinci turdan sonra sahibe kalan bulgular, öncelik ve tek öneriyle karar özeti (S-128, `tur-bilgi`);
   uzakta modül başına tek dal, işçi dalları push edilmez; kule oturumunun modeli SOP §17.1 r5'te ("İşçi
   sohbetleri" 10). Ölçüm: bir günde haftalık Fable sınırının %44'ü.
 - **2026-11-01 · tür kelimesi (S-120, sahip kararı 2026-11-01):** kısa haberin, tam raporun ve takip sayfasının her iş
@@ -457,9 +457,17 @@ Kurallar:
      (b) Tam test takımı bir iş için yazım sırasında bir kez ve son değişiklikten sonra PR'dan önce bir kez koşulur; ara
      koşu yapılmaz. (c) **İnceleme tur sınırı yok (S-127, sahip kararı 2026-11-01 `tur-sinirsiz`; ölçüm: 189 turun 19
      olumsuzundan 8'i üçüncü turdan sonra geldi):** inceleme, sonuç UYGUN ya da açık ENGEL'i sıfır KOŞULLU olana kadar
-     sürer; açık ENGEL varken ileri gidilmez. Aynı paket sürümünde ikinci turdan sonra kule sahibe tek satır bilgi yazar
-     ("<paket> · 3. tur · neden: …"); sahip "yeter" derse paket bekler. ENGEL olmayan küçük bulgular (DÜŞÜK, NOT)
-     düzeltilmeden de PR'a gidebilir ve Beste'nin PR incelemesine kalır; engel sayılmaz. Ölçüm 2026-11-14: paket başına
+     sürer; açık ENGEL varken ileri gidilmez. **Aynı paket sürümünde ikinci turdan sonra kule sahibe karar özeti yazar
+     (S-128, sahip kararı 2026-11-01 `tur-bilgi`):** tur numarası; kalan bulgu sayısı (engel · önemli · küçük); engel ve
+     önemli bulgular önem sırasıyla, her biri tek cümleyle "düzeltilmezse ne olur"; küçüklerin yalnız sayısı; tek öneri ve
+     tahmini tur. Düğme kalan bulguya göre değişir, önerilen önce gelir:
+     - Engel yok, yalnız küçükler: **yeter** (küçükler Beste'ye kalır) · bir tur daha.
+     - Engel yok, önemli var: **düzelt, tur açma** · yeter (risk nota yazılır).
+     - Açık engel var: **devam** · bekle · riski kabul et. "Yeter" açık engeli geçirmez. Kabul bulgu dosyasına kabul satırı
+       olarak yazılır ve onayı HIGH yapar; araç kabulü yalnız onay satırının onaylayanı adına sayar, onaylayan yazan kişi
+       olamaz. Yazar sahibin hesabıysa kabul listedeki başka bir kişiden gelir; o zaman düğme bunu söyler.
+     ENGEL olmayan küçük bulgular (DÜŞÜK, NOT) düzeltilmeden de PR'a gidebilir ve Beste'nin PR incelemesine kalır; engel
+     sayılmaz. Ölçüm 2026-11-14: paket başına
      tur sayısı; 5'i aşan paket varsa sınır yeniden konuşulur. (d) Uzakta modül başına **tek dal**: yalnız modül dalı push edilir; işçi dalları yerel
      kalır ve modül dalına katılır (paralel işçiler yerelde ayrı kopyada çalışır, uzağa yine tek dal gider); birden çok
      uzak dal yalnız sahip isterse. Kule oturumunun modeli: SOP §17.1 r5 son madde (rutin iş Opus 5.5, inceleme ve
