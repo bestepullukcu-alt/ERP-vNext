@@ -65,6 +65,13 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r6 (2026-11-01, sahip kararı; kart S-115…S-120; tasarım `docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`):
+dal onayı — onay ve inceleme satırları CT dalında yazılır ve dağıtım kapısı ile kabul kaydı bunları daldan okur; onay için
+PR açılmaz; ikinci insan modül (ya da dalga) sonundaki tek PR'da ve onaylayan olmak zorunda değildir (§20.4/2, /4, /5, /8).
+İnceleme diyalogla, sonra sahibin seçimi (direkt kabul · bağımsız son bakış · Codex; HIGH'da son bakış varsayılan).
+Modül başına tek sahip sözü «onayla». Takip sayfası ortak şablondan, sormadan (§22.2/2a, /5); her iş satırı tür
+kelimesiyle. Kapanış belge paketi modül PR'ına girer (kart §6).
+
 Revision r5 (2026-10-20, PVG Control Tower testi ve yöneticinin isteği; Codex görüşleri): §17.1'e `Model · Effort
 (istenen / kullanılan)` alanları ve kuralları eklendi — karmaşıklık ve risk ayrı eksenler, başlangıç profili,
 başarısızlıkta önce hata sınıfı, istenen ile kullanılanın kaydı; yalnız 2026-10-15'ten sonra açılan Control Tower'lar
@@ -1390,9 +1397,13 @@ istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'd
 HIGH değildir. Satır sayısı ölçüt değildir. Hiç onay almamış eski bir paket kuralın başladığı andaki sürümüyle
 karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
 
-**2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda ya da yalnız
-inceleme ZIP'ini gören, sohbet geçmişi olmayan bir alt ajanda yapılır (`reviewer_session` = oturum ya da ajan kimliği; sahip
-kararı 2026-10-31, kart S-113).
+**2. Kim inceler.** İnceleme, paketi yazan oturumdan ve paket yazarı ajandan ayrıdır: sahip bilgisayar başındayken ayrı bir
+sohbette, uzaktayken CT içinde sohbet geçmişi olmayan bir alt ajanda yapılır (`reviewer_session` = oturum ya da ajan
+kimliği). İnceleyen kuleyle konuşup düzeltme isteyebilir ve imzalayacağı tam sürümü yeniden okur; "temiz" deyince
+inceleme satırı CT dalına yazılır (dal onayı, kart S-115). Sonra sahip seçer: direkt kabul · bağımsız son bakış (geçmişsiz
+ikinci alt ajan, yalnız inceleme ZIP'i, tek tur) · Codex. Araç riski HIGH ölçüyorsa bağımsız son bakış sahibi beklemeden
+kendiliğinden koşar (sahip «atla» diyebilir); LOW'da varsayılan direkt kabuldür. Codex yalnız sahip seçince (sahip kararı
+2026-11-01, kart S-116; S-113'ün yerine). Her inceleyenin satırı sayılır (madde 4, en kısıtlayıcı okuma).
 Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
 göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
 
@@ -1402,7 +1413,11 @@ eklenir. Özetler ve açık ENGEL sayısı dosyadan hesaplanır; elle yazılmaz.
 
 **4. Onaya bağlanma.** `pack_approval.py check`: o sürüm için inceleme yoksa (paket sonra değiştiyse inceleme bayattır),
 herhangi bir inceleme `UYGUN DEĞİL` ise, açık bir ENGEL kaldıysa, bulgu dosyası kayıttan sonra değiştiyse ya da inceleme
-satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklenen bir `UYGUN` önceki sonucu ezmez. ENGEL'i
+satırı main'e başkasının merge'iyle gelmediyse onay geçmez. **Dal onayı (kart S-115, sahip kararı 2026-11-01):** dağıtım
+kapısı ve kabul kaydı onay ve inceleme satırlarını CT dalından okur (`pack_approval.py` `--deferred` okuması): henüz main'de
+olmayan satır için insan adımı "beklemede" notudur, hata değil; diğer her denetim aynen uygulanır. İnsan adımı satır
+main'e modül PR'ıyla girince ölçülür: PR'ı listedeki, `high = evet`, satırı yazanın kişisi olmayan başka biri birleştirmiş
+olmalıdır (onaylayan olması gerekmez; S-41 kalktı). Doğrudan main'e yazılmış satır her iki okumada da geçersizdir. Sonradan eklenen bir `UYGUN` önceki sonucu ezmez. ENGEL'i
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
@@ -1412,7 +1427,10 @@ oturumun geçici klasörü kayıt yeri değildir (S-19: MOD-0230 sonucu oturum k
 bulgu dosyası biçimine çevrilmesi, commit'i ve `reviews.tsv` satırı sahibin onayıyla olur.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
-main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
+main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz. Dal onayında (kart
+S-115) bu kanıt dağıtım anında değil modül PR'ı birleşince gelir; onaylayan alanı o ana kadar yalnız sahibin kule
+sohbetindeki «onayla» sözüne ve satırın `requested_by` / oturum alanlarına dayanır (sahibin kabul ettiği bedel,
+`docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`).
 
 **6. Dilimli uygulama.** İnceleme isteyen bir Module Pack `## Teslim dilimleri` tablosu (`| DL-1 | ad | bölümler |`), bir
 DCP `## 8.1 Delivery slices` tablosu taşır. WP prompt'u `Kapsanan dilim:` satırını yazar (§17.1, §36.1). Prompt kapısı
@@ -1437,8 +1455,8 @@ değilse kalan commit'ler yeni bir PR'la gelir (2026-10-21, PR #176 → #182).
 
 **8. Dağıtım kapısı (S-5).** Kural kaydı `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`; başlangıç, dosyanın
 main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni dağıtımı — katı ya da eski her kuyrukta —
-Expected HEAD'deki paket sürümünün main'deki geçerli incelemesini ister (`prompt_gate.py check`; `--prepare` yalnız
-raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
+Expected HEAD'deki paket sürümünün **dalda ya da main'de** geçerli incelemesini ister (`prompt_gate.py check`; `--prepare`
+yalnız raporlar; dal onayı, kart S-115, sahip kararı 2026-11-01 — önceki metin "main'deki" idi). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
 `reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
 Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
 ve `module`) değişmeyen ve
@@ -1555,9 +1573,9 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
    aynı listeyi görür.
 2. **Zorunlu (sahip kararı 2026-10-22, S-39).** Pharmacovigilance pilotu işe yaradı; her Control Tower kendi block'u
    için tek bir iş takip sayfası tutar. Açık bir CT'de sayfa yoksa, main'i aldıktan sonraki ilk uygun adımda önerir.
-2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** CT, ilk durum
-   değerlendirmesinden sonra ya da block'un ilk paket / karar kaydı commit edildiğinde sayfayı **kendisi önerir** ve tek
-   kelimelik onayla (`sayfa-ac`) açar; "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
+2a. **Ne zaman açılır (S-31; S-117 ve S-119 ile değişti, sahip kararı 2026-11-01).** CT sayfayı kule açılışında, "Yer"
+   adımından sonraki ilk adımda **sormadan, ortak şablondan** açar (`docs/guides/operations/ct-tracking-page-template.html`,
+   açma adımları ve veri modeli `ct-tracking-page-template.md`); `sayfa-ac` sözü kalktı, "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
    depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
    "nasıl kullanılır"ı verir, bağlantıyı 8. maddedeki yere yazar.
 3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
@@ -1569,10 +1587,14 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
    Sahip bir değişiklik isterse sohbette söyler; CT önce depoya yazar (karar kaydı, kuyruk durumu), sonra sayfayı günceller.
    Eski sayfada işaretleme düğmesi varsa CT, main'i aldıktan sonraki ilk uygun adımda düğmeleri kaldırır ve yazma
    kuralını koyar; sayfada kalmış sahip işaretlerini (`markedOnPage`) bir kez okur ve depoya yazmadan önce sahibe sorar.
-5. **Biçim.** claude.ai Artifact, paylaşılan veritabanı (`db`) yeteneğiyle; adı "<Block adı> İş Takibi". Bölümler: Şimdi
-   ve sırada · Karar bekleyenler · Sonraki fazlar · Bizim takipler · Başka sahiplerin işi (XMC-001) · Ortak bileşenler ·
-   Duraklatılanlar. Her işte kod (WP / FU / K / BL), kısa başlık, bir cümle ayrıntı, bitti işareti ve tarihi. Sayfa
-   sahibin dilindedir.
+5. **Biçim (S-119, sahip kararı 2026-11-01: tek şablon).** claude.ai Artifact, paylaşılan veritabanı (`db`) yeteneğiyle;
+   adı "<Block adı> İş Takibi"; **her kule aynı şablondan ve aynı veri modelinden** açar
+   (`docs/guides/operations/ct-tracking-page-template.html` ve `.md`; Çalışan kaydı kulesinin tasarımı temel alındı), kendi
+   tasarımını yapmaz. Üstte dilim cetveli (parçaların durumu), bölümler: Şimdi ve sırada · Karar bekleyenler · Sonraki
+   fazlar · Bizim takipler · Başka sahiplerin işi (XMC-001) · Ortak bileşenler · Duraklatılanlar. Her satırda sade başlık
+   önde, **tür kelimesi** (S-120: Belge · Arka uç · Ekran · API · Geçit · Test · Kural · Karar), kod (WP / FU / K / BL)
+   başlığın yanında küçük etiket, bir cümle ayrıntı, kanıt, durum (açık · bekliyor · bitti · duraklatıldı), kimi
+   beklediği ve bitiş tarihi. Sayfa sahibin dilindedir. Eski tasarımlı sayfa aynı bağlantıda şablona geçirilir.
 6. **Gizlilik.** Sayfa ÖZEL başlar; yalnız ekip içinde paylaşılır, herkese açık (public) yapılmaz. Karar notları ve iş
    listesi herkese açık olmamalıdır.
 7. **CT'nin güncellemesi (istenmeden; sahip "bitti" demek zorunda değildir — S-43).** CT kabulü (K13 /
