@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.10
+# CONTROL TOWER — Daily Operating Card v1.11
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r7).
 
@@ -9,6 +9,9 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-11-01 · Fable kullanılmaz (S-129, sahip kararı 2026-11-01; S-125'in model cümlesinin yerine):** kule sohbeti, paket
+  yazımı, bağımsız inceleme, son bakış, araç ve kural değişikliği Opus 5.5 · high; işçilerde SOP §17.1 tablosu değişmedi.
+  Sahip kuralı PR'dan önce kulelere duyurdu ("İşçi sohbetleri" 10, SOP §17.1 r5).
 - **2026-11-01 · dilim, plan ve kuyruk hizalaması (r7, planlama tarafının isteği; öneri ve açık kararlar
   `docs/roadmap/plans/ct-plan-alignment-01/`):** iş, durum ve yeni kuyruk kaydı modül dilimiyle (`MOD-nnnn DL-n`)
   adlandırılır; bir dilim tek kuyrukta; plandaki sahip blok kayıtla anlaşır, plan "Uses" satırı başka modüldür (XMC-001);
@@ -470,8 +473,8 @@ Kurallar:
      sayılmaz. Ölçüm 2026-11-14: paket başına
      tur sayısı; 5'i aşan paket varsa sınır yeniden konuşulur. (d) Uzakta modül başına **tek dal**: yalnız modül dalı push edilir; işçi dalları yerel
      kalır ve modül dalına katılır (paralel işçiler yerelde ayrı kopyada çalışır, uzağa yine tek dal gider); birden çok
-     uzak dal yalnız sahip isterse. Kule oturumunun modeli: SOP §17.1 r5 son madde (rutin iş Opus 5.5, inceleme ve
-     araç/kural değişikliği Fable 5.1).
+     uzak dal yalnız sahip isterse. Model: SOP §17.1 r5 son madde; **Fable hiçbir işte kullanılmaz** (S-129): kule sohbeti,
+     inceleme, son bakış, araç ve kural değişikliği Opus 5.5 · high. Alt ajan açarken model açıkça verilir.
   Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
   (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa CT, kule açılışında ("Yer"
