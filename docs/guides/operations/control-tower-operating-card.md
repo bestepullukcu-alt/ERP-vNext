@@ -1,6 +1,6 @@
-# CONTROL TOWER — Daily Operating Card v1.9
+# CONTROL TOWER — Daily Operating Card v1.10
 
-> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r6).
+> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r7).
 
 ## Ne değişti (en yeni üstte; S-99, sahip kararı 2026-10-29)
 
@@ -9,6 +9,14 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-11-01 · dilim, plan ve kuyruk hizalaması (r7, planlama tarafının isteği; öneri ve açık kararlar
+  `docs/roadmap/plans/ct-plan-alignment-01/`):** iş, durum ve yeni kuyruk kaydı modül dilimiyle (`MOD-nnnn DL-n`)
+  adlandırılır; bir dilim tek kuyrukta; plandaki sahip blok kayıtla anlaşır, plan "Uses" satırı başka modüldür (XMC-001);
+  plan dosyası depoda olmadığı için plan eşleşmesi bugün yalnız ölçülür ve sorulur, dağıtımı durdurmaz (SOP §20.4/6b;
+  §0 "Görev kaynağı", §8). Var olan kayıt satırları değişmez.
+- **2026-11-01 · rapor: günün biteni, bekleme süresi, ekran satırı (S-126, sahip kararı 2026-11-01):** kısa haberin Biten'i
+  yalnız son mesajdan beri bitenler; `Bekliyor:` satırı kaç gündür beklediğini yazar; tam raporda "Ekranda ne zaman
+  görürsünüz" zorunlu ("Sahibe rapor ve mesaj biçimi" 7, tam rapor kuralı 5).
 - **2026-11-01 · tasarruf, tek uzak dal ve kule modeli (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** alt ajana tek
   seferde tam brief; tam test takımı yazımda bir, PR'dan önce bir; bağımsız inceleme en çok iki tur (ENGEL sıfır tabanı
   kalır); uzakta modül başına tek dal, işçi dalları push edilmez; kule oturumunun modeli SOP §17.1 r5'te ("İşçi
@@ -278,6 +286,10 @@ sade dille yazılır; teknik ayrıntı (test sayıları, sha, commit, dosya yolu
      Birden çok türü olan iş en ağır türüyle yazılır ("Arka uç + Ekran" değil, iki ayrı satır). Aynı sekiz kelime tam
      raporun Parçalar tablosunda ("Tür" sütunu) ve takip sayfasının satırlarında kullanılır; başka tür kelimesi
      uydurulmaz. Başkasını bekleyen iş türden sonra yazılır: `- Belge — Bekliyor: Beste — modül PR'ı`.
+  7. **Günün biteni ve bekleme süresi (S-126, sahip kararı 2026-11-01 `rapor-ekle`):** kısa haberin **Biten** başlığı
+     yalnız son mesajdan bu yana bitenleri yazar; eski bitenler takip sayfasında durur, mesajda birikmez. Her
+     `Bekliyor:` satırı kaç gündür beklediğini yazar: `- Belge — Bekliyor: Beste — modül PR'ı, 2 gün` (ölçülür: isteğin
+     yazıldığı tarihten bugüne). Tam raporda "Ekranda ne zaman görürsünüz" satırı zorunludur (aşağıdaki kural 5).
 - **İstemeden önce ölç (S-64, 2026-10-26):** "Sizden istenen" yazılmadan önce o işin hâlâ beklediği ölçülür (işçi sohbeti,
   `gh pr view`, dal durumu); sahip zaten yapmışsa yeniden istenmez.
   - **Engel hâlâ geçerli mi (S-84, 2026-10-27):** CT bir işi "başkasını bekliyor" diye yazmadan ya da başkasına istek
@@ -338,8 +350,8 @@ Kurallar:
    yüzde ancak onaylı efor tabanıyla (REP-001 §7.1).
 4. **"Kalan prompt" her zaman "tahmin"dir:** bir dilim ≈ 1–2 geliştirme prompt'u; karar ya da başka dilim bekleyenler
    ayrı sayılır ve "Kimi bekliyor" sütununda kimin kararı beklendiği yazılır (sahip, Beste, başka modülün sahibi).
-5. **"Ekranda ne zaman görürsünüz"** her raporda yazılır; ekranı olmayan modülde ne görüleceği söylenir (ör. "her PR'da
-   otomatik kontrol").
+5. **"Ekranda ne zaman görürsünüz"** her raporda **zorunludur** (S-126, 2026-11-01); satır yoksa rapor eksiktir. Ekranı
+   olmayan modülde ne görüleceği söylenir (ör. "her PR'da otomatik kontrol").
 6. Kayıt ve denetim için teknik tablo (REP-001 §2, `status_report.py`) ayrıca durur; bu biçim onun yerine geçmez, sahibe
    giden anlatımdır.
 
@@ -466,7 +478,10 @@ Kurallar:
   satırı ([`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)) `vocabulary` = `sop7`,
   `strict` = `yes` ile, sahip onayıyla `main`'e girer. `python3 scripts/ct_queue.py validate --queue <kuyruk>` 0 hata.
   Kuyruk bir DCP diliminin teslimatıysa `scope` `dcp:<DCP yolu>#<Slice>` ile başlar (CAP-001 §4 sonu); önek yoksa
-  `scope` serbest metindir, yönlendirme verisi değildir.
+  `scope` serbest metindir, yönlendirme verisi değildir. **Yeni satırda (r7) `scope` dilimleri adlandırır:** DCP
+  diliminde `dcp:` önekiyle, tek modülde `MOD-nnnn DL-a…DL-b` ile başlar; aynı dilim başka bir kayıtlı kuyrukta
+  olamaz; satırın `evidence` alanı plandaki sahip bloğunu ve satır türünü (sahip / "Uses") yazar ya da "plan satırı
+  yok" der (SOP §20.4/6b-c, -d, -e).
 - [ ] **Durumlar:** sözlük `sop7` = SOP §7'nin 13 ana + 6 istisna durumu. İzinli geçişler ve her geçişin kanıtı
   [`ct-sop7-transitions.tsv`](../../../execution/delivery/ct-sop7-transitions.tsv)'de; `öneri` işaretli satırlar SOP'de
   açıkça yazmayan, sahibin onayladığı geçişlerdir. Son durumlar (çıkış yok): ACCEPTED, REWORK, FAILED, SUPERSEDED,
@@ -893,6 +908,6 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 | developer-enablement | Belirsiz — sahip ataması bekliyor | — |
 | enterprise-strategy-business-performance | Belirsiz — sahip ataması bekliyor | `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir |
 | human-capital-management | **kısmi** (S-88): CT · Çalışan kaydı → MOD-0251; CT · İzin ve devamsızlık → MOD-0280 izin/devamsızlık parçaları; CT · Time Entry → MOD-0280-FU01; diğer İK modülleri Belirsiz | `docs/records/decisions/2026-10/hcm-ct-ownership-01.md@f81aa251d` |
-| management-governance | Belirsiz — sahip ataması bekliyor | `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir |
+| management-governance | **kısmi**: CT · Toplantılar → MOD-0357 (kayıt satırı `mg`); MOD-0354 ve MOD-0355 paket durumu `ready-for-dev`, kuyruk yok (SOP §20.4/6b-d); diğer modüller Belirsiz | `execution/delivery/ct-queue-registry.tsv@dee36d252` satır `mg` · `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir · plan sahipliği (sahip blok) bu tabloya ancak plan satırı depoya girince yazılır |
 | portfolio-delivery | Belirsiz — sahip ataması bekliyor | — |
 | *(domain dışı)* altyapı, CI, test altyapısı, ortak ön yüz | Backlog'daki "CT"; bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (altyapı 12, ortak ön yüz 5, test altyapısı 2) |
