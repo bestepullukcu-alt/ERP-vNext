@@ -131,7 +131,7 @@ python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --modu
 
 **Aşama 1 — Module Pack Hazırlık:**
 1. `/prepare-module-pack` çağır (modül adı + domain + servis + shell + form alan sayısı + iş kuralları)
-2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir
+2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir; `Teslim dilimleri` tablosu plan satırlarına göre yazılır (her dilimde plan yetenek kimliği ve plan MVP'si, DL-1 çekirdek; pakette olmayan yeni plan MVP'si takip paketi `MOD-NNNN-FUxx`) — [module-pack-standard](rules/module-pack-standard.md) Bölüm 16 "Plan hizalaması"
 3. Kullanıcı incelemesi → `status: approved` veya `ready-for-dev`
 
 **Aşama 2 — Geliştirme:**

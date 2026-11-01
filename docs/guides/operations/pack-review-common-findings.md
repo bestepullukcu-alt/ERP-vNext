@@ -50,6 +50,9 @@ olarak** eklenir; kaynak inceleme dosyası parantez içinde yazılır.
   kimlikle çalışacağı yazılmamış. (MOD-0280-FU02 2026-10-29-47df0fc4 F-11)
 - Bir yetki "satır kapsamı" (atama, sahiplik) ile sağlanmış gösteriliyor; eylem için izin anahtarı ayrıca adlandırılmalı,
   okuma için ayrı anahtar olmalı. (MOD-0280-FU02 2026-10-29-ea61e8c6 F-03, 2026-10-29-47df0fc4 F-13)
+- "Bu izin anahtarını rol şablonu vermez" iddiası koda karşı ölçülmemiş. Varsayılan Görüntüleyici rolü, istisna listesindekiler
+  dışında kiracı düzeyindeki her okuma anahtarını alır (`DefaultRolePermissionTemplate`); hassas okuma anahtarı için istisna
+  ya da başka bir önlem pakette yazılır. İddia dosya ve satırla yazılır, inceleme paketine kanıtı konur. (MOD-0280-FU02, İzin kulesi bildirimi 2026-10-30)
 
 ## 3. Ölçülemeyen kabul ölçütü
 
