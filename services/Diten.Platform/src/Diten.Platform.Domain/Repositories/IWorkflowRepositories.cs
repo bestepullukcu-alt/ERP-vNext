@@ -166,6 +166,15 @@ public interface IWorkflowInstanceRepository
             .Where(x => string.Equals(x.ObjectType, objectType, StringComparison.Ordinal) && objectIds.Contains(x.ObjectId))
             .ToList();
 
+    // MOD-0023 §17.9/2 — the same read with soft-deleted rows included (tenant scoped; only IsDeleted == false is dropped),
+    // for by-objects?includeDeleted=true. The default throws rather than filters: the default above reads through
+    // GetAllForTenantAsync, which hides deleted rows, so an implementation without an override would silently ignore the flag.
+    Task<IReadOnlyList<WorkflowInstance>> ListByObjectIdsAllRowsAsync(
+        string objectType,
+        IReadOnlyCollection<string> objectIds,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Reading soft-deleted workflow instances is not implemented by this repository.");
+
     // BL-484 — GetByIdAsync for several instances in ONE read (tenant scoped, non-deleted): an id that is not a live
     // instance of this tenant is simply absent. Default = in-memory filter for test doubles.
     async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(

@@ -80,9 +80,13 @@ FU4_NAME = "personalizationClient sends tenant header only for tenant users"
 CORE_FILE_CHECKS = {"Index.cshtml exists", "_Filter.cshtml exists", "_DataTable.cshtml exists", "_IndexL10n.cshtml exists",
                     "index.js exists", "index.l10n.js exists", "dt-defaults.js exists", "backbone-custom.css exists"}
 NOT_MEASURED_STOP = "doğrulayıcı eksik dosyada durdu"
+FOLDER_LEVEL_VIEWS = ("_ViewStart.cshtml", "_ViewImports.cshtml")
+FU18_LINE = "eşlenmemiş sayfa JS'i, sayfa kontrolü yok (FU-18)"
 
 # Owner decision pss-mod0286-taban-01 (taban-karar, 2026-10-27): reason, fu and owner of the first baseline
 REASON = "sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)"
+# Owner decision tek-seviye-borc-01 (2026-10-31): reason of the FU-16 rows; their owners are in the decision record, not here
+SINGLE_REASON = "sahip kararı tek-seviye-borc-01 (tek seviye sayfalar, 2026-10-31)"
 UNKNOWN_OWNER = "belirsiz — sahip belirleyecek"
 AREA_OWNER = {}
 for _owner, _areas in (
@@ -170,6 +174,7 @@ class Tree:
             while i != -1:
                 self.dirs.add(p[:i + 1])
                 i = p.find("/", i + 1)
+        self.parents = {p.rsplit("/", 1)[0] + "/" for p in self.sha}   # the folders that hold a file directly
         self.cache: dict[str, bytes] = {}
 
     def has(self, path: str) -> bool:
@@ -178,8 +183,20 @@ class Tree:
     def has_dir(self, prefix: str) -> bool:
         return prefix in self.dirs
 
+    def has_direct(self, prefix: str) -> bool:
+        return prefix in self.parents
+
     def under(self, prefix: str) -> list[str]:
         return sorted(p for p in self.sha if p.startswith(prefix))
+
+    def direct(self, prefix: str) -> list[str]:
+        return sorted(p for p in self.sha if p.startswith(prefix) and "/" not in p[len(prefix):])
+
+    def has_page(self, page: str) -> bool:
+        """A page exists at this commit: {Area}/{Module} = any file under its folder; {Module} = a file directly in it
+        (its subfolders are other pages, pack part 1, rev 15)."""
+        vdir = f"{WEB}Views/{page}/"
+        return self.has_dir(vdir) if "/" in page else self.has_direct(vdir)
 
     def prefetch(self, paths) -> None:
         want = sorted({self.sha[p] for p in paths if p in self.sha and p not in self.cache})
@@ -284,10 +301,14 @@ def instance_problem(page: str, check: str, instance: str, count: str) -> str | 
     if check.startswith("bilgi: "):
         return None if instance == "-" and count == "-" else "bilgi: satırında instance ve count '-' olmalı"
     area_module = re.fullmatch(r"[^/\s]+/[^/\s]+", page) is not None
+    single = re.fullmatch(r"[^/\s]+", page) is not None and page not in NOT_PAGE_AREAS   # {Module}, FU-16 (rev 15)
+    page_key = area_module or single
     vdir, jdir = f"Views/{page}/", f"wwwroot/assets/js/{page}/"
 
     def path_in(p: str, prefixes, suffixes) -> bool:
-        return (re.fullmatch(PATH_PART, p) is not None and _norm_ok(p) and any(p.startswith(x) for x in prefixes)
+        # a single-level page's instance is a file directly in its folder, no further '/' (pack Validation Rules, F-34)
+        return (re.fullmatch(PATH_PART, p) is not None and _norm_ok(p)
+                and any(p.startswith(x) and not (single and "/" in p[len(x):]) for x in prefixes)
                 and any(p.endswith(s) for s in suffixes))
     if check == "CI-3":
         ok = page and area_module and instance == instance.strip() and instance != "-" and " — " not in instance
@@ -295,7 +316,7 @@ def instance_problem(page: str, check: str, instance: str, count: str) -> str | 
     if check in ("CI-2", "CI-4", "CI-5", "CI-6", "CI-7", "CI-8", "CI-10") or (check == "CI-9" and ":" not in instance):
         scope = {"CI-2": ([vdir], [".cshtml"]), "CI-5": ([vdir, jdir], [".cshtml", ".js"]),
                  "CI-6": ([vdir, jdir], [".cshtml", ".js"])}.get(check, ([jdir], [".js"]))
-        if not area_module or not path_in(instance, *scope):
+        if not page_key or not path_in(instance, *scope):
             return f"{check} satır kontrolü instance'ı sayfanın dosya yolu değil"
         return None if line_count else f"{check} satır kontrolünde count 1 ya da büyük bir tam sayı olmalı (işaretsiz, baştaki sıfırsız)"
     if count != "-":
@@ -303,13 +324,13 @@ def instance_problem(page: str, check: str, instance: str, count: str) -> str | 
     lang = "(?:" + "|".join(LANGS) + ")"
     if check == "CI-1":
         m = re.fullmatch(r"(.+):yok:Layout", instance)
-        ok = area_module and m and path_in(m.group(1), [vdir], [".cshtml"]) and not m.group(1).split("/")[-1].startswith("_")
+        ok = page_key and m and path_in(m.group(1), [vdir], [".cshtml"]) and not m.group(1).split("/")[-1].startswith("_")
     elif check == "CI-9":
         m = re.fullmatch(r"(.+):yok:savedView", instance)
-        ok = area_module and m and m.group(1) == jdir + "index.js"
+        ok = page_key and m and m.group(1) == jdir + "index.js"
     elif check == "CI-11":
         m = re.fullmatch(r"(.+):yok:GetAllStrings", instance)
-        ok = area_module and m and path_in(m.group(1), [vdir], ["/_IndexL10n.cshtml", "/_L10n.cshtml"])
+        ok = page_key and m and path_in(m.group(1), [vdir], ["/_IndexL10n.cshtml", "/_L10n.cshtml"])
     elif check == "CI-12":
         ok = page.startswith("Platform/") and area_module and re.fullmatch(r"platform-search\.(?:en|tr)\.json:yok", instance)
     elif check == "CI-13":
@@ -371,6 +392,8 @@ def read_baseline(root) -> list[dict]:
 
 # ---------------------------------------------------------------------------------------------- shared helpers
 def owner_of(page: str, check: str, instance: str) -> tuple[str, str]:
+    if "/" not in page:      # a single-level page: AREA_OWNER does not apply, the owner decides (pack part 2, rev 15)
+        return "FU-16", UNKNOWN_OWNER
     if check == "CI-3" and instance == FU4_NAME:
         return "FU-4", "developer-enablement"
     if check == "CI-13":
@@ -477,12 +500,18 @@ class Run:
     def either_has_dir(self, prefix: str) -> bool:
         return self.head.has_dir(prefix) or (self.base is not None and self.base.has_dir(prefix))
 
-    # ----- the checks of one page; results are ("abs", check, reds, passes, measured) or ("line", check, counts)
+    def either_has_direct(self, prefix: str) -> bool:
+        return self.head.has_direct(prefix) or (self.base is not None and self.base.has_direct(prefix))
+
+    # ----- the checks of one page; results are ("abs", check, reds, passes, measured), ("line", check, counts) or
+    # ("note", line) — a line printed as it is, never a red, never a baseline row
     def evaluate_page(self, page: str, added_partials=()) -> list[tuple]:
-        area, module = page.split("/", 1)
-        vdir, jdir = f"{WEB}Views/{area}/{module}/", f"{WEB}wwwroot/assets/js/{area}/{module}/"
-        views = [p for p in self.head.under(vdir) if p.endswith(".cshtml")]
-        js = [p for p in self.head.under(jdir) if p.endswith(".js")]
+        two_level = "/" in page
+        area, module = page.split("/", 1) if two_level else (None, page)
+        vdir, jdir = f"{WEB}Views/{page}/", f"{WEB}wwwroot/assets/js/{page}/"
+        files = self.head.under if two_level else self.head.direct    # a single-level page: only files directly in its folder
+        views = [p for p in files(vdir) if p.endswith(".cshtml")]
+        js = [p for p in files(jdir) if p.endswith(".js")]
         self.head.prefetch(views + js)
         rel = lambda p: p[len(WEB):]
         results = []
@@ -507,7 +536,10 @@ class Run:
                 for k in ("CI-2", "CI-4", "CI-5", "CI-7", "CI-8", "CI-9p", "CI-10")}
         line["CI-6"] = ("line", "CI-6", counts([("CI-6v", views), ("CI-6j", js)]))
         list_page = self.either_has(vdir + "_DataTable.cshtml")
-        ci3 = self.ci3(area, module, vdir) if list_page else None
+        ci3 = None
+        if list_page:
+            ci3 = (self.ci3(area, module, vdir) if two_level
+                   else ("note", f"ölçülmedi {page} CI-3 - doğrulayıcı alansız sayfayı desteklemiyor (FU-17)"))
         ci9 = None
         if list_page:
             idx = jdir + "index.js"
@@ -704,7 +736,9 @@ class Run:
     # ----- comparison with the baseline (CI mode)
     def emit(self, page: str, results: list[tuple], closing: list[str]) -> None:
         for r in results:
-            if r[0] == "abs":
+            if r[0] == "note":
+                self.out.append(r[1])
+            elif r[0] == "abs":
                 _, check, reds, passes, measured = r
                 rows = {i: row for i, row in self.rows.get((page, check), {}).items() if check != "CI-9" or ":yok:" in i}
                 for inst in sorted(reds):
@@ -762,15 +796,21 @@ class Run:
         shared_resx = pagehelp = False
         registry_files: set[str] = set()
         shared: list[str] = []
+        unmapped: list[str] = []
         added: dict[str, set[str]] = collections.defaultdict(set)
         for letter, paths in diff:
             for k, path in enumerate(paths):
                 kind, value = self.map_path(path)
-                if kind == "page":
+                if kind in ("page", "page_shared"):
                     pages.add(value)
                     is_new = letter == "A" or (letter in "RC" and k == 1)
                     if is_new and path.rsplit("/", 1)[-1] in ("_IndexL10n.cshtml", "_L10n.cshtml"):
                         added[value].add(path)
+                    if kind == "page_shared" and path not in shared:
+                        shared.append(path)
+                elif kind == "fu18":
+                    if path not in unmapped:
+                        unmapped.append(path)
                 elif kind == "resx":
                     resx.add(value)
                 elif kind == "shared_resx":
@@ -784,6 +824,8 @@ class Run:
                         shared.append(path)
         for path in shared:
             self.out.append(f"paylaşılan dosya, sayfa kontrolü yok {path}")
+        for path in unmapped:
+            self.out.append(f"{FU18_LINE} {path}")
         for path in sorted(registry_files):
             before = registry_keys(self.base.read(path), f"{path}@base")
             after = registry_keys(self.head.read(path), f"{path}@HEAD")
@@ -796,19 +838,17 @@ class Run:
                 else:
                     registry_pages.add(page)
         for page in sorted(pages | registry_pages):
-            area, module = page.split("/", 1)
-            vdir = f"{WEB}Views/{area}/{module}/"
-            if not self.head.has_dir(vdir):
+            if not self.head.has_page(page):
                 self.removed("sayfa kaldırıldı", page)
                 continue
             closing: list[str] = []
             if page in pages:
-                new_surface = self.base is not None and not self.base.has_dir(vdir)
+                new_surface = self.base is not None and not self.base.has_page(page)
                 results = self.evaluate_page(page, added.get(page, set()) if new_surface else ())
                 self.emit(page, results, closing)
                 self.out.extend(self.bilgi(page))
             else:
-                self.emit(page, [self.ci12(module)], closing)
+                self.emit(page, [self.ci12(page.split("/", 1)[1])], closing)   # a registry page is always Platform/{Module}
             self.out.extend(closing)
         for base in sorted(resx):
             results = self.evaluate_resx(base)
@@ -841,11 +881,25 @@ class Run:
         if parts[0] == "Views":
             if len(parts) >= 4 and parts[1] not in NOT_PAGE_AREAS:
                 return "page", f"{parts[1]}/{parts[2]}"
+            if len(parts) == 3 and parts[1] not in NOT_PAGE_AREAS:       # single-level page, any file type (rev 15)
+                return ("page_shared" if parts[2] in FOLDER_LEVEL_VIEWS else "page"), parts[1]
             return "shared", path
         if parts[0] == "wwwroot":
-            if (len(parts) >= 6 and parts[3] not in NOT_PAGE_AREAS
-                    and self.either_has_dir(f"{WEB}Views/{parts[3]}/{parts[4]}/")):
-                return "page", f"{parts[3]}/{parts[4]}"
+            if len(parts) < 5 or parts[3] in NOT_PAGE_AREAS:
+                return "shared", path
+            top = parts[3]
+            if top == "pages":                                           # FU-18 (1)
+                return "fu18", path
+            vtop = f"{WEB}Views/{top}/"
+            if len(parts) >= 6:
+                if self.either_has_dir(f"{vtop}{parts[4]}/"):
+                    return "page", f"{top}/{parts[4]}"
+                return ("fu18", path) if self.either_has_dir(vtop) else ("shared", path)   # FU-18 (2), (2b)
+            if path.endswith(".js"):
+                if self.either_has_direct(vtop):
+                    return "page", top
+                if self.either_has_dir(vtop):                            # FU-18 (3)
+                    return "fu18", path
             return "shared", path
         if re.fullmatch(r"Resources/SharedResource\.[^/]*\.resx", rel):
             return "shared_resx", None
@@ -866,9 +920,9 @@ class Run:
 
     # ----- draft mode
     def draft(self) -> list[tuple]:
-        pages = sorted({"/".join(p[len(WEB):].split("/")[1:3]) for p in self.head.sha
-                        if p.startswith(WEB + "Views/") and len(p[len(WEB):].split("/")) >= 4
-                        and p[len(WEB):].split("/")[1] not in NOT_PAGE_AREAS})
+        pages = sorted({("/".join(parts[1:3]) if len(parts) >= 4 else parts[1])
+                        for parts in (p[len(WEB):].split("/") for p in self.head.sha if p.startswith(WEB + "Views/"))
+                        if len(parts) >= 3 and parts[1] not in NOT_PAGE_AREAS})
         found: list[tuple[str, list[tuple]]] = [(page, self.evaluate_page(page)) for page in pages]
         bases = sorted({m.group(1) for p in self.head.sha
                         for m in [re.fullmatch(WEB + r"(Resources/Views/.+)\.(?:" + "|".join(LANGS) + r")\.resx", p)] if m})
@@ -879,13 +933,14 @@ class Run:
         rows = []
         for page, results in found:
             for r in results:
+                reason = REASON if "/" in page else SINGLE_REASON      # FU-16 rows: decision tek-seviye-borc-01
                 if r[0] == "abs":
                     for inst in r[2]:
-                        rows.append((page, r[1], inst, "-") + (REASON,) + owner_of(page, r[1], inst))
-                else:
+                        rows.append((page, r[1], inst, "-") + (reason,) + owner_of(page, r[1], inst))
+                elif r[0] == "line":
                     for path, n in r[2].items():
                         if n > 0:
-                            rows.append((page, r[1], path, str(n)) + (REASON,) + owner_of(page, r[1], path))
+                            rows.append((page, r[1], path, str(n)) + (reason,) + owner_of(page, r[1], path))
         rows.extend(BILGI_ROWS)
         order = lambda row: (row[0], int(row[1][3:]) if row[1].startswith("CI-") else 99, row[1], row[2])
         return sorted(rows, key=order)
@@ -1292,6 +1347,186 @@ def self_test() -> int:
         for argv in ([], ["--base", "HEAD", "--draft-baseline"], ["--self-test", "--check-baseline"], ["--base"], ["--all"]):
             done = subprocess.run([sys.executable, "-B", str(Path(__file__).resolve())] + argv, cwd=r, capture_output=True)
             cases.append((f"modes: {argv or 'no mode'} -> exit 2", done.returncode == 2))
+        # --- single-level pages (pack rev 15, AC-21 (g)): every case a real run on a throw-away repository
+        M_V, M_J, FU18 = W + "Views/Mod/Index.cshtml", W + "wwwroot/assets/js/Mod/app.js", FU18_LINE + " "
+        SHARED_LINE = "paylaşılan dosya, sayfa kontrolü yok "
+        mod = {M_V: layout, W + "Views/Mod/ModIndex.cs": "// marker\n", M_J: "a = 1;\n"}
+
+        def no_check_lines(lines):
+            return not any(re.search(r" CI-[0-9]+ ", l) for l in lines)
+
+        r, b0 = repo(mod)
+        edit(r, M_V, lambda t: t + '<span class="spinner-border"></span>\n')
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g01 a view file directly in the folder -> page {Module}, a new match is YENİ KIRMIZI, not a shared file",
+                      code == 1 and "YENİ KIRMIZI Mod CI-2 Views/Mod/Index.cshtml 1 +1" in out and not any(SHARED_LINE in l for l in out)))
+        r, b0 = repo(mod)
+        edit(r, W + "Views/Mod/ModIndex.cs", lambda t: t + "// 2\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g01 a non-.cshtml file directly in the folder selects the page and no check reads it",
+                      code == 0 and "PASS Mod CI-1 Views/Mod/Index.cshtml" in out and not any("ModIndex.cs" in l for l in out)))
+        r, b0 = repo(mod)
+        edit(r, M_J, lambda t: t + "alert('x');\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g02 JS directly in the folder, a direct view at HEAD and at the base -> page {Module}, YENİ KIRMIZI",
+                      code == 1 and "YENİ KIRMIZI Mod CI-7 wwwroot/assets/js/Mod/app.js 1 +1" in out and not any(FU18 in l for l in out)))
+        r, b0 = repo(mod)
+        tg(r, "rm", "-q", M_V, W + "Views/Mod/ModIndex.cs")
+        edit(r, M_J, lambda t: t + "b = 2;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g02 JS directly in the folder, the direct view only at the base -> the JS still selects page {Module}",
+                      code == 0 and "sayfa kaldırıldı Mod" in out and not any(FU18 in l or SHARED_LINE in l for l in out)))
+        r, b0 = repo({W + "Views/Sub1/Inner/Index.cshtml": layout, W + "wwwroot/assets/js/Sub1/helper.js": "a = 1;\n"})
+        edit(r, W + "wwwroot/assets/js/Sub1/helper.js", lambda t: t + "alert('x');\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g03 JS directly in the folder, no direct view at HEAD or at the base -> its FU-18 line, no page",
+                      code == 0 and f"{FU18}{W}wwwroot/assets/js/Sub1/helper.js" in out and no_check_lines(out)))
+        r, b0 = repo({W + "Views/Sub1/Index.cshtml": layout, W + "Views/Sub1/Inner/Index.cshtml": layout,
+                      W + "wwwroot/assets/js/Sub1/helper.js": "a = 1;\n"})
+        tg(r, "rm", "-q", W + "Views/Sub1/Index.cshtml")
+        edit(r, W + "wwwroot/assets/js/Sub1/helper.js", lambda t: t + "b = 2;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g03 JS directly in the folder, the direct view only at the base, a subfolder page stays -> page, not FU-18",
+                      code == 0 and "sayfa kaldırıldı Sub1" in out and not any(FU18 in l for l in out)))
+        both = {**mod, W + "Views/Mod/Sub/Index.cshtml": layout + '<span class="spinner-border"></span>\n',
+                W + "wwwroot/assets/js/Mod/Sub/index.js": "alert('x');\n"}
+        r, b0 = repo(both)
+        edit(r, M_J, lambda t: t + "b = 2;\n")
+        commit(r)
+        code1, out1, _ = ci(r, b0)
+        r, b0 = repo(both)
+        edit(r, W + "Views/Mod/Sub/Index.cshtml", lambda t: t + '<span class="spinner-border"></span>\n')
+        commit(r)
+        code2, out2, _ = ci(r, b0)
+        cases.append(("AC-21g04 one folder, a single-level and a two-level page -> each reads only its own files",
+                      code1 == 0 and "PASS Mod CI-4 wwwroot/assets/js/Mod/app.js 0" in out1 and not any("Mod/Sub" in l for l in out1)
+                      and code2 == 1 and "YENİ KIRMIZI Mod/Sub CI-2 Views/Mod/Sub/Index.cshtml 2 +2" in out2
+                      and not any(l.startswith(("PASS Mod ", "YENİ KIRMIZI Mod ")) for l in out2)))
+        na = [W + "Views/Shared/_Y.cshtml", W + "Views/Archive/z.cshtml", W + "wwwroot/assets/js/Shared/x.js",
+              W + "wwwroot/assets/js/Archive/y.js", W + "wwwroot/assets/js/Shared/Sub/x.js"]
+        r, b0 = repo({p: "alert('x'); spinner-border\n" for p in na})
+        for p in na:
+            edit(r, p, lambda t: t + "alert('y');\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        dcode, dout, _ = execute(r, "draft")
+        cases.append(("AC-21g05 NOT_PAGE_AREAS (Shared, Archive): views and JS are the shared line, never a page, never FU-18, no draft row",
+                      code == 0 and all(f"{SHARED_LINE}{p}" in out for p in na) and no_check_lines(out)
+                      and not any(FU18 in l for l in out)
+                      and dcode == 0 and not any(l.split("\t")[0] in NOT_PAGE_AREAS for l in dout)))
+        pg = [W + "wwwroot/assets/js/pages/foo/a.js", W + "wwwroot/assets/js/pages/b.js"]
+        r, b0 = repo({p: "alert('x');\n" for p in pg})
+        for p in pg:
+            edit(r, p, lambda t: t + "c = 3;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g06 pages/** -> its FU-18 line for each path, not the shared line, no page",
+                      code == 0 and all(f"{FU18}{p}" in out for p in pg) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
+        deep = [W + "wwwroot/assets/js/Mod/fixtures/a.js", W + "wwwroot/assets/js/Mod/fixtures/more/b.js"]
+        r, b0 = repo({**mod, **{p: "alert('x');\n" for p in deep}})
+        for p in deep:
+            edit(r, p, lambda t: t + "c = 3;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g07 js/{Module}/{Sub}/ with no view folder -> its FU-18 line, the single-level page is not selected",
+                      code == 0 and all(f"{FU18}{p}" in out for p in deep) and no_check_lines(out)))
+        area_js = [W + "wwwroot/assets/js/Ar/direct.js", W + "wwwroot/assets/js/Ar/NoPage/x.js"]
+        r, b0 = repo({p: "alert('x');\n" for p in area_js})
+        for p in area_js:
+            edit(r, p, lambda t: t + "c = 3;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g08 an area folder holding only subfolders: JS directly in it and in a subfolder with no view -> FU-18 lines",
+                      code == 0 and all(f"{FU18}{p}" in out for p in area_js) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
+        for name in FOLDER_LEVEL_VIEWS:
+            p = W + f"Views/Mod/{name}"
+            r, b0 = repo({**mod, p: layout})
+            edit(r, p, lambda t: t + "@* 2 *@\n")
+            commit(r)
+            code, out, _ = ci(r, b0)
+            cases.append((f"AC-21g09 a folder-level {name} -> a file of page {{Module}} (its checks run) and the shared-file line",
+                          code == 0 and f"{SHARED_LINE}{p}" in out and f"PASS Mod CI-2 Views/Mod/{name} 0" in out
+                          and not any(f" CI-1 Views/Mod/{name}" in l for l in out)))
+        root_view = W + "Views/_ViewStart.cshtml"
+        r, b0 = repo({root_view: layout})
+        edit(r, root_view, lambda t: t + "@* 2 *@\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g09 the root Views/_ViewStart.cshtml stays shared only", code == 0 and f"{SHARED_LINE}{root_view}" in out and no_check_lines(out)))
+
+        def fu16(*rows):
+            return baseline + "".join("\t".join(x) + "\tr\tFU-16\to\n" for x in rows)
+        spin = {**mod, M_V: '<span class="spinner-border"></span>\n'}
+        r, b0 = repo({**spin, BASELINE: fu16(("Mod", "CI-1", "Views/Mod/Index.cshtml:yok:Layout", "-"), ("Mod", "CI-2", "Views/Mod/Index.cshtml", "1"))})
+        code1, out1, _ = execute(r, "check")
+        edit(r, M_J, lambda t: t + "b = 2;\n")
+        commit(r)
+        code2, out2, _ = ci(r, b0)
+        cases.append(("AC-21g10 baseline rows with a page key {Module} are accepted and matched as TABAN FU-16",
+                      code1 == 0 and "CI-2 satır=1 eşleşme=1" in out1 and code2 == 0
+                      and "TABAN FU-16 Mod CI-2 Views/Mod/Index.cshtml 1" in out2 and "TABAN FU-16 Mod CI-1 Views/Mod/Index.cshtml:yok:Layout" in out2))
+
+        def check_row(cells):
+            root, _ = repo({BASELINE: baseline + "\t".join(cells) + "\n"})
+            return execute(root, "check")[0]
+        for label, cells in (("an empty key", ("", "CI-2", "Views/Tasks/Create.cshtml", "1", "r", "FU-16", "o")),
+                             ("a key with a space", ("Foo Bar", "CI-2", "Views/Foo Bar/x.cshtml", "1", "r", "FU-16", "o")),
+                             ("a three-part key", ("A/B/C", "CI-2", "Views/A/B/C/x.cshtml", "1", "r", "FU-16", "o")),
+                             ("a key in NOT_PAGE_AREAS", ("Shared", "CI-2", "Views/Shared/x.cshtml", "1", "r", "FU-16", "o")),
+                             ("a CI-3 row with a single-level key", ("Mod", "CI-3", "x exists", "-", "r", "FU-16", "o"))):
+            cases.append((f"AC-21g11 {label} -> exit 2", check_row(cells) == 2))
+        cases.append(("AC-21g12 a single-level CI-2 row whose instance lies in a subfolder -> exit 2",
+                      check_row(("Mod", "CI-2", "Views/Mod/Report/x.cshtml", "1", "r", "FU-16", "o")) == 2))
+        cases.append(("AC-21g12 a single-level CI-1 row whose instance lies in a subfolder -> exit 2",
+                      check_row(("Mod", "CI-1", "Views/Mod/Report/Index.cshtml:yok:Layout", "-", "r", "FU-16", "o")) == 2))
+        partial = W + "Views/Ar/_IndexL10n.cshtml"
+        r, b0 = repo()
+        write(r, W + "Views/Ar/Index.cshtml", layout)
+        write(r, partial, "<script></script>\n")
+        commit(r)
+        code1, out1, _ = ci(r, b0)
+        edit(r, partial, lambda t: "<script>@Localizer.GetAllStrings(true)</script>\n")
+        s1 = commit(r)
+        code2, out2, _ = ci(r, b0)
+        edit(r, partial, lambda t: "<script></script>\n")
+        commit(r)
+        code3, out3, _ = ci(r, s1)
+        cases.append(("AC-21g13 a single-level new surface in a folder holding only subfolder pages -> CI-11 runs; at a later base it does not",
+                      code1 == 1 and "YENİ KIRMIZI Ar CI-11 Views/Ar/_IndexL10n.cshtml:yok:GetAllStrings" in out1
+                      and code2 == 0 and "PASS Ar CI-11 Views/Ar/_IndexL10n.cshtml" in out2
+                      and code3 == 0 and not any(" CI-11 " in l for l in out3)))
+        r, b0 = repo({**mod, W + "Views/Mod/Sub/Index.cshtml": layout,
+                      BASELINE: fu16(("Mod", "CI-4", "wwwroot/assets/js/Mod/app.js", "1"))})
+        tg(r, "rm", "-q", M_V, W + "Views/Mod/ModIndex.cs")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("AC-21g14 a single-level page removed while a subfolder page stays -> 'sayfa kaldırıldı', its rows closed, "
+                      "the subfolder page untouched",
+                      code == 0 and "sayfa kaldırıldı Mod" in out
+                      and "kapandı - satır silinmeli Mod CI-4 wwwroot/assets/js/Mod/app.js" in out and not any("Mod/Sub" in l for l in out)))
+        r, b0 = repo({**mod, W + "Views/Mod/_DataTable.cshtml": "<table></table>\n",
+                      W + "wwwroot/assets/js/Mod/index.js": "x = 1;\n"})
+        edit(r, M_J, lambda t: t + "b = 2;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        dcode, dout, _ = execute(r, "draft")
+        cases.append(("FU-17: a single-level list page -> one 'ölçülmedi' CI-3 line, the verifier not run, never red, no draft row; "
+                      "CI-9 savedView red as YENİ KIRMIZI",
+                      code == 1 and out.count("ölçülmedi Mod CI-3 - doğrulayıcı alansız sayfayı desteklemiyor (FU-17)") == 1
+                      and "YENİ KIRMIZI Mod CI-9 wwwroot/assets/js/Mod/index.js:yok:savedView" in out
+                      and sum(1 for l in out if l.startswith("YENİ KIRMIZI ")) == 1
+                      and dcode == 0 and not any(l.startswith("Mod\tCI-3\t") for l in dout)))
+        r, b0 = repo({W + "Views/Account/Login.cshtml": "<i></i>\n"})
+        dcode, dout, _ = execute(r, "draft")
+        cases.append(("draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged",
+                      dcode == 0 and "\t".join(("Account", "CI-1", "Views/Account/Login.cshtml:yok:Layout", "-", SINGLE_REASON, "FU-16", UNKNOWN_OWNER)) in dout
+                      and any(l.startswith("Ar/ListA\tCI-5\t") and f"\t{REASON}\tFU-14\t" in l for l in dout)))
         # --- the selector writes nothing in the repository it measures
         clean = all(not git(Path(tmp.name) / f"r{i}", "status", "--porcelain", "--untracked-files=all").strip()
                     and not list((Path(tmp.name) / f"r{i}").rglob("__pycache__")) for i in range(1, counter[0] + 1))

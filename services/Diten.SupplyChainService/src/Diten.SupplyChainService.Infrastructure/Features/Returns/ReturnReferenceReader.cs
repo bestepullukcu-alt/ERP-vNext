@@ -29,6 +29,7 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
         return Text(e.GetProperty("lineNumber")) && Uuid(e.GetProperty("itemId")) && Uuid(e.GetProperty("skuId")) && PositiveQuantity(e.GetProperty("quantity")) && Text(e.GetProperty("uomId"))
             && OptionalLineTexts.All(n => !e.TryGetProperty(n, out var value) || Nullable(value, Text));
     }
+    private static string? OptionalText(JsonElement e, string name) => e.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     private static bool Pod(JsonElement e)
     {
         if (e.ValueKind == JsonValueKind.Null) return true;
@@ -62,13 +63,18 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
         Property(e, "carrierId", x => Nullable(x, Uuid)); Property(e, "loadId", x => Nullable(x, Uuid));
         Property(e, "plannedShipAt", Date); Property(e, "plannedDeliverAt", x => Nullable(x, Date)); Property(e, "actualDeliverAt", x => Nullable(x, Date)); Property(e, "pod", Pod);
         Property(e, "lines", x => Array(x, Line));
-        var lines = e.GetProperty("lines").EnumerateArray().Select(x => new ReturnSourceLine(x.GetProperty("lineNumber").GetString()!, x.GetProperty("quantity").GetString()!, x.GetProperty("uomId").GetString()!, Guid.Parse(x.GetProperty("itemId").GetString()!), Guid.Parse(x.GetProperty("skuId").GetString()!))).ToArray();
+        // MOD-0186 §34.1 / §34.2 (3.4.0): stockIssued tells a pre-WP-P1 shipment (null) from one with a stock issue; each line's
+        // skuLevel, lotId and the completed dispatch attempt's issueTransactionId feed the CUSTOMER_RETURN.
+        Property(e, "stockIssued", x => x.ValueKind is JsonValueKind.Null or JsonValueKind.True or JsonValueKind.False);
+        bool? stockIssued = e.TryGetProperty("stockIssued", out var issued) && issued.ValueKind != JsonValueKind.Null ? issued.GetBoolean() : null;
+        var lines = e.GetProperty("lines").EnumerateArray().Select(x => new ReturnSourceLine(x.GetProperty("lineNumber").GetString()!, x.GetProperty("quantity").GetString()!, x.GetProperty("uomId").GetString()!, Guid.Parse(x.GetProperty("itemId").GetString()!), Guid.Parse(x.GetProperty("skuId").GetString()!),
+            OptionalText(x, "skuLevel"), OptionalText(x, "lotId"), OptionalText(x, "issueTransactionId"))).ToArray();
         if (lines.Select(x => x.LineNumber).Distinct(StringComparer.Ordinal).Count() != lines.Length) Invalid();
         if (!e.TryGetProperty("shipmentId", out var shipmentId) || !e.TryGetProperty("status", out var status)) throw new ReturnFailureException(503, "REFERENCE_STATE_UNAVAILABLE");
         if (Guid.Parse(shipmentId.GetString()!) != expectedId) Invalid();
         if (!e.TryGetProperty("lifecycleCorrelationId", out var root) || root.ValueKind == JsonValueKind.Null) throw new ReturnFailureException(503, "RETURN_SHIPMENT_ROOT_UNAVAILABLE");
         if (!Uuid(root)) throw new ReturnFailureException(502, "RETURN_SHIPMENT_ROOT_INVALID");
-        return new(expectedId, status.GetString()!, Guid.Parse(root.GetString()!), observedAt, lines);
+        return new(expectedId, status.GetString()!, Guid.Parse(root.GetString()!), observedAt, lines, stockIssued);
     }
     public async Task<ReturnReferenceSnapshot> ObserveAsync(ReturnOrder order, CancellationToken ct)
     {

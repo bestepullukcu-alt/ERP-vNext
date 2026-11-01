@@ -32,6 +32,10 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
     private const int DefaultListPageSize = 25;
     // The API does no paging arithmetic in a checked context: the proxy never asks beyond a page whose offset fits an int.
     private const int MaxListPageNumber = 1_000_000;
+    private static readonly string[] FormDateFormats = ["yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd'T'HH:mm:ss"];
+
+    // The service's code for the same rule (PvgValidationReasonCodes): one rule, one code on every layer.
+    private const string ReporterLinkRemovalWithSelection = "PVG_REPORTER_LINK_REMOVAL_WITH_SELECTION";
 
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
@@ -97,6 +101,18 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
         return await ProxyListAsync($"{ApiBase}?{BuildListQuery(Request.Query)}", ct);
     }
 
+    // The option codes live only in the service (AC-34): the proxy passes its answer on unchanged, order included.
+    [HttpGet("api/options")]
+    public async Task<IActionResult> Options(CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission) is { } denied)
+        {
+            return denied;
+        }
+
+        return await ProxyGetAsync($"{ApiBase}/options", ct);
+    }
+
     [HttpGet("api/detail/{intakeDraftId}")]
     public async Task<IActionResult> Detail(string intakeDraftId, CancellationToken ct)
     {
@@ -117,7 +133,12 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
             return denied;
         }
 
-        return await ProxyJsonAsync(HttpMethod.Post, ApiBase, input.ToPayload(includeVersion: false), ct);
+        if (!input.HasReadableDates())
+        {
+            return ValidationFailedJson();
+        }
+
+        return await ProxyJsonAsync(HttpMethod.Post, ApiBase, input.ToPayload(isUpdate: false), ct);
     }
 
     [HttpPost("api/update/{intakeDraftId}")]
@@ -129,7 +150,17 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
             return denied;
         }
 
-        return await ProxyJsonAsync(HttpMethod.Put, $"{ApiBase}/{Uri.EscapeDataString(intakeDraftId)}", input.ToPayload(includeVersion: true), ct);
+        if (!input.HasReadableDates())
+        {
+            return ValidationFailedJson();
+        }
+
+        if (input.RemovesLinkWithSelection())
+        {
+            return JsonFailure(StatusCodes.Status400BadRequest, ReporterLinkRemovalWithSelection, _sharedLocalizer["ValidationFailed"].Value);
+        }
+
+        return await ProxyJsonAsync(HttpMethod.Put, $"{ApiBase}/{Uri.EscapeDataString(intakeDraftId)}", input.ToPayload(isUpdate: true), ct);
     }
 
     [HttpPost("api/triage/{intakeDraftId}")]
@@ -303,6 +334,8 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
 
     private IActionResult UnauthorizedJson() => JsonFailure(401, "UNAUTHORIZED", _sharedLocalizer["Unauthorized"].Value);
     private IActionResult GatewayErrorJson() => JsonFailure(502, "GATEWAY_ERROR", _sharedLocalizer["GatewayError"].Value);
+    private IActionResult ValidationFailedJson() =>
+        JsonFailure(StatusCodes.Status400BadRequest, "VALIDATION_FAILED", _sharedLocalizer["ValidationFailed"].Value);
 
     private ContentResult JsonFailure(int status, string reasonCode, string message)
     {
@@ -350,38 +383,89 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
         string? PatientSubjectCode,
         string? EventOnsetDate,
         string? AdverseEventNarrative,
-        string? SuspectProductText,
+        IReadOnlyList<ProductLineFormInput>? ProductLines,
         string? Seriousness,
         string? IntakePriority,
         string? EvidenceLinkReferencesRaw,
+        string? AwarenessAtUtc,
+        string? EventCountry,
+        string? ReportType,
+        string? ReporterNameOrInitials,
+        string? ReporterProfession,
+        string? ReporterCountry,
+        string? ReporterSelectionDirectory = null,
+        string? ReporterSelectionId = null,
+        bool? RemoveReporterLink = null,
         long? ExpectedVersion = null)
     {
+        public bool HasReadableDates() =>
+            TryNormalizeUtc(ReceivedAtUtc, out _) && TryNormalizeUtc(AwarenessAtUtc, out _);
+
+        public bool RemovesLinkWithSelection() =>
+            RemoveReporterLink == true && (Clean(ReporterSelectionDirectory) is not null || Clean(ReporterSelectionId) is not null);
+
         // The record version is the API's optimistic-concurrency token (DL4A): an update sends it, a create has none.
-        public IReadOnlyDictionary<string, object?> ToPayload(bool includeVersion)
+        // The reporter link (selection pair, removal marker) exists only on an update, and only as keys with a value:
+        // an absent field is an absent key, never a null.
+        public IReadOnlyDictionary<string, object?> ToPayload(bool isUpdate)
         {
+            TryNormalizeUtc(ReceivedAtUtc, out var receivedAtUtc);
+            TryNormalizeUtc(AwarenessAtUtc, out var awarenessAtUtc);
             var payload = new Dictionary<string, object?>
             {
                 ["IntakeChannel"] = Clean(IntakeChannel),
                 ["SourceType"] = Clean(SourceType),
                 ["SourceReference"] = Clean(SourceReference),
-                ["ReceivedAtUtc"] = Clean(ReceivedAtUtc),
+                ["ReceivedAtUtc"] = receivedAtUtc,
                 ["ReporterType"] = Clean(ReporterType),
                 ["ReporterContactSummary"] = Clean(ReporterContactSummary),
                 ["PatientSubjectCode"] = Clean(PatientSubjectCode),
                 ["EventOnsetDate"] = Clean(EventOnsetDate),
                 ["AdverseEventNarrative"] = Clean(AdverseEventNarrative),
-                ["SuspectProductText"] = Clean(SuspectProductText),
+                ["ProductLines"] = (ProductLines ?? []).Where(line => !line.IsEmpty).Select(line => line.ToPayload()).ToArray(),
                 ["Seriousness"] = Clean(Seriousness),
                 ["IntakePriority"] = Clean(IntakePriority),
-                ["EvidenceLinkReferences"] = SplitReferences(EvidenceLinkReferencesRaw)
+                ["EvidenceLinkReferences"] = SplitReferences(EvidenceLinkReferencesRaw),
+                ["AwarenessAtUtc"] = awarenessAtUtc,
+                ["EventCountry"] = Clean(EventCountry),
+                ["ReportType"] = Clean(ReportType),
+                ["ReporterNameOrInitials"] = Clean(ReporterNameOrInitials),
+                ["ReporterProfession"] = Clean(ReporterProfession),
+                ["ReporterCountry"] = Clean(ReporterCountry)
             };
-            if (includeVersion)
+            if (isUpdate)
             {
                 payload["ExpectedVersion"] = ExpectedVersion;
+                if (Clean(ReporterSelectionDirectory) is { } directory)
+                {
+                    payload["ReporterSelectionDirectory"] = directory;
+                }
+
+                if (Clean(ReporterSelectionId) is { } selectionId)
+                {
+                    payload["ReporterSelectionId"] = selectionId;
+                }
+
+                if (RemoveReporterLink is { } removeLink)
+                {
+                    payload["RemoveReporterLink"] = removeLink;
+                }
             }
 
             return payload;
         }
+    }
+
+    public sealed record ProductLineFormInput(string? ProductRole, string? ProductNameAsReported, string? LotNumber)
+    {
+        public bool IsEmpty => Clean(ProductRole) is null && Clean(ProductNameAsReported) is null && Clean(LotNumber) is null;
+
+        public IReadOnlyDictionary<string, object?> ToPayload() => new Dictionary<string, object?>
+        {
+            ["ProductRole"] = Clean(ProductRole),
+            ["ProductNameAsReported"] = Clean(ProductNameAsReported),
+            ["LotNumber"] = Clean(LotNumber)
+        };
     }
 
     public sealed record TriageFormInput(string? TriageOutcome, string? TriageReasonCode, string? TriageReason, long? ExpectedVersion = null)
@@ -405,6 +489,27 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
     }
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    // A form date is a UTC moment without an offset. The API gets it with seconds and an explicit Z, so the server's
+    // time zone never decides what it means. Empty is null; a value that cannot be read is false.
+    private static bool TryNormalizeUtc(string? raw, out string? normalized)
+    {
+        normalized = null;
+        if (Clean(raw) is not { } value)
+        {
+            return true;
+        }
+
+        if (!DateTime.TryParseExact(
+                value, FormDateFormats, CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed))
+        {
+            return false;
+        }
+
+        normalized = parsed.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
+        return true;
+    }
 
     private static IReadOnlyList<string> SplitReferences(string? raw) =>
         string.IsNullOrWhiteSpace(raw)
