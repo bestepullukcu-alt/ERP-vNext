@@ -280,7 +280,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
 | 21 | `Audited Events` (Denetlenen Olaylar) | Yeni paketlerde zorunlu; mevcut pakette yazma komutu ekleyen/degistiren ilk iste zorunlu (Bolum 10.1 gecis kurali). Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
-| 22 | `Teslim dilimleri` | CT-APR-02'den sonra inceleme isteyen pakette zorunlu: `| DL-n | ad | kapsadığı bölümler |`; her WP bir ya da birkaç dilim alır, paketin tamamını tek WP alamaz (istisna: onay satırında `whole_pack=<WP>`). Bkz. Bölüm 16 "Onaydan önce bağımsız inceleme" |
+| 22 | `Teslim dilimleri` | CT-APR-02'den sonra inceleme isteyen pakette zorunlu: `| DL-n | ad | kapsadığı bölümler |`; her WP bir ya da birkaç dilim alır, paketin tamamını tek WP alamaz (istisna: onay satırında `whole_pack=<WP>`). Bkz. Bölüm 16 "Onaydan önce bağımsız inceleme". 2026-11-01'den sonra ilk kez yazılan tabloda her dilim plan yetenek kimliğini ve plan MVP'sini adlandırır, DL-1 çekirdek dilimdir: Bölüm 16 "Plan hizalaması" |
 
 ---
 
@@ -535,6 +535,23 @@ Bir modulun **gerceklesme durumu degistiginde** (frontend eklendi, test eklendi,
   ```
 
 - Ayrıntı: `docs/guides/operations/control-tower-sop.md` §20.4.
+
+### Plan hizalaması, çekirdek dilim ve takip paketi (2026-11-01; öneri `docs/roadmap/plans/ct-plan-alignment-01/`)
+
+- **Kapsam.** 2026-11-01'den sonra ilk kez `## Teslim dilimleri` tablosu yazılan ya da tablosuna yeni dilim eklenen
+  paket. Var olan tablolar ve dilim numaraları geriye dönük değişmez (ör. DL-1'i düzeltme dilimi olan eski paketler).
+- **Sütunlar.** `| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |`.
+  Araçlar yalnız ilk sütunu (`DL-n`) okur; ek sütunlar onların okumasını değiştirmez. `plan yetenek kimliği` plan
+  satırındaki `1.x.y` kimliğidir; plan vermiyorsa `plan kimliği yok`. `plan MVP` plan satırındaki MVP kimliğidir
+  (ör. `BLK-10-MVP3`); modülün plan satırı yoksa `plan satırı yok`. Değer uydurulmaz; kaynağı (plan sürümü ve satırı)
+  `Implementation Notes`'a yazılır.
+- **DL-1 çekirdek dilimdir:** modülün en küçük çalışan kaydı (kimlik, kalıcı veri, yetki, kiracı ve denetim). Diğer
+  dilimler DL-1'e dayanır; DL-1'e dayanmayan dilim `ad` hücresinde `DL-1'den bağımsız` diye yazılır.
+- **Büyük artış takip paketidir.** Onaylı bir pakete, paketin hiçbir diliminde olmayan yeni bir plan MVP'si ya da yeni
+  bir plan yetenek kimliği getiren dilim eklenmez; `MOD-NNNN-FUxx` takip paketi açılır (DCP-002 ön kontrolü
+  `--parent` ile). Bu sınırın altındaki ekleme aynı pakette yeni dilim ve yeni onaydır (CT-APR-01).
+- **Yetki sırası korunur.** Plan bu sıranın parçası değildir (depoda değildir): plan satırı ile paket farklıysa paket
+  kazanır, fark sahibe sorulur; paket plana göre kendiliğinden değiştirilmez.
 
 ## 17. Authority Rule
 
