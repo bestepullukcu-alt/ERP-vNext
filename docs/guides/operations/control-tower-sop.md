@@ -65,6 +65,12 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r7 (2026-11-01, planlama tarafının iki isteği; öneri ve açık kararlar
+`docs/roadmap/plans/ct-plan-alignment-01/PROPOSAL.md`, `DECISIONS.md`): §20.4/6b eklendi — WP dilimi, durum raporu ve
+kuyruk kapsamı modül dilimiyle (`MOD-nnnn DL-n`) adlandırılır; plan satırıyla eşleşme, plan dilim satırı depoya girene
+kadar koşulludur (plan dosyası depoda değildir, §2.2); bir dilim tek kuyrukta; plandaki sahip blok kayıtla anlaşır,
+"Uses" satırı XMC-001'dir. §22.1'e dilim adı. Yeni kayıt satırlarına uygulanır; var olan satırlar değişmez.
+
 Revision r6 (2026-11-01, sahip kararı; kart S-115…S-120; tasarım `docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`):
 dal onayı — onay ve inceleme satırları CT dalında yazılır ve dağıtım kapısı ile kabul kaydı bunları daldan okur; onay için
 PR açılmaz; ikinci insan modül (ya da dalga) sonundaki tek PR'da ve onaylayan olmak zorunda değildir (§20.4/2, /4, /5, /8).
@@ -917,7 +923,7 @@ Authority Sources:
 
 Allowed Paths:
 Protected Paths:
-Kapsanan dilim:              # r5 (CT-APR-02) — paketin `Teslim dilimleri` DL-n kimlikleri; `tamamı` yalnız onay satırındaki whole_pack=<WP> ile (§20.4)
+Kapsanan dilim:              # r5 (CT-APR-02) — paketin `Teslim dilimleri` DL-n kimlikleri; `tamamı` yalnız onay satırındaki whole_pack=<WP> ile (§20.4); plan satırıyla eşleşme r7 §20.4/6b-a
 
 Golden-Flow Profile:
 A | B | C
@@ -1443,6 +1449,25 @@ paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa y
 yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
 almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
 
+**6b. Dilim, plan ve kuyruk hizalaması (r7, 2026-11-01).** Kaynak: planlama tarafının isteği; plan dosyası
+(Capability Planning) depoda değildir ve repository authority değildir (§2.2) — aşağıdaki "plan" maddeleri ancak planın
+ilgili satırı depoya girince kapı olur; o zamana kadar CT yalnız ölçer ve raporlar, dağıtımı plan farkı yüzünden
+durdurmaz.
+- (a) **WP dilimi.** `Kapsanan dilim:` paketin onaylı sürümündeki `Teslim dilimleri` kimlikleridir (madde 6). Plan
+  satırı bir paket dilimi adlandırıyorsa WP'nin dilimi onunla aynıdır; farklıysa CT prompt'tan önce farkı yazar ve
+  sahibe sorar. Plan satırında dilim yoksa (2026-11-01 ölçümü: planda dilim sütunu yok) bu madde koşuludur.
+- (b) **Durum dilim bazında.** Durum, kısa haber ve takip sayfası modül + dilim (`MOD-nnnn DL-n`) ile yazılır; çok
+  modüllü raporda kapsam cümlesi dilimi adlandırır (§22.1). Dilim tablosu olmayan pakette "dilim yok" yazılır.
+- (c) **Kuyruk kapsamı.** 2026-11-01'den sonra eklenen her kayıt satırının `scope`'u teslim ettiği dilimleri adlandırır:
+  DCP diliminde `dcp:<DCP yolu>#<Slice>[, …]` (CAP-001 §8.1; `scripts/ct_route.py` okur), tek modülde
+  `MOD-nnnn DL-a…DL-b` ya da `MOD-nnnn DL-a, DL-c` ile başlar (serbest metindir; araç okumaz, CT ölçer). Var olan
+  satırlar değişmez; değiştirmek sahibin kuyruk onayıyla yeni satır sürümüdür.
+- (d) **Bir dilim, bir kuyruk.** Bir modül dilimi en çok bir kayıtlı kuyruktadır (K15). Onaylı paketi olup hiçbir
+  kuyrukta dilimi olmayan modül raporda "kuyruk yok" diye adıyla yazılır; kuyruk açmak sahibin kararıdır.
+- (e) **Sahip blok.** Kule bir modülü kuyruğuna alırken plandaki sahip bloğunu ve satır türünü (sahip / "Uses") yazar.
+  Plan modülü başka bloğa "Uses" diye bağlıyorsa o modülün dosyası bu kule için başka modüldür (XMC-001). Plan, kayıt
+  ve domain sahipliği (kart §8) farklıysa CT hiçbirini kendiliğinden düzeltmez; farkı sahibe sorar.
+
 **6a. Kural değişince oturum.** Kart ya da SOP'ta değişen bir kural, CT dalını main ile birleştirip dosyayı yeniden
 okuyunca geçerli olur; yeni oturum gerekmez. Skill (`.claude/skills/…`, `.agents/skills/…`) oturum başında yüklenir;
 skill'de değişen bir kural ancak yeni oturumda geçerlidir. GitHub hesap adı değişirse önce
@@ -1559,6 +1584,7 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 §22 tek bir iş paketini anlatır. **Birden çok modülün durumunu** bildiren rapor ayrıdır ve biçimi
 `.antigravity/rules/status-reporting-and-evidence.md` (REP-001) ile sabittir. Özet:
 
+- Kapsam cümlesi, paketin dilim tablosu varsa dilimi adlandırır (`DL-n: …`; r7, §20.4/6b-b); sütunlar değişmez.
 - Tek tablo, sabit sütunlar: modül · kapsam cümlesi · kanıt seviyesi (§23) · kanıtın yeri (`yol@commit`) ·
   karar (`accepted` · `rejected` · `conditional` ya da `karar yok`) · tamamlanma (§29'daki Done seviyesi ya da
   `yok`; karardan türetilmez, §29.5) · sıradaki tek eksik.
