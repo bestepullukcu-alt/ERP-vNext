@@ -12,7 +12,7 @@
 | # | Decision |
 |---|---|
 | 1 | Option A. The change is made in the shared forwarder library (BL-501, `Diten.BuildingBlocks.CentralAudit`). |
-| 2 | No new `details` field. Per the owner, `/api/internal/audit/append` already carries `BeforeState`, `AfterState`, `Metadata` and a `Failed` / `Denied` outcome. The MVP-6 side did not measure this. |
+| 2 | No new `details` field. Measured by the MVP-6 CT on `main` `8698dbddc`: Platform `AuditAppendRequest` (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Audit/AuditAppendRequest.cs`) carries `Outcome`, `BeforeState`, `AfterState` and `Metadata`; the shared library's `CentralAuditOutboxRecord` carries none of them. So the change is in the library. |
 | 3 | Values are schema-bound and size-limited, and carry no personal data or secrets. The forwarder applies the forbidden-key list. |
 | 4 | A failed outcome that is stored as state (for example the MOD-0183 compensation result) is written in the same transaction as the business data. |
 | 5 | The `Failed` record of a command rolled back by an exception is written outside the transaction, best effort. If it cannot be written, a warning is logged. |
