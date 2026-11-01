@@ -50,31 +50,11 @@ jobs:
           fetch-depth: 0
       - name: Fetch main
         run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
-      - name: Strict approval check for the packs this push touched (S-115 F-8)
+      - name: Strict approval check for the packs whose approve rows this push added (S-115 F-8 / G-2)
         env:
           GH_TOKEN: ${{ github.token }}
           BEFORE_SHA: ${{ github.event.before }}
-        run: |
-          set -euo pipefail
-          before="$BEFORE_SHA"
-          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] \
-             || ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
-            before="HEAD^1"
-          fi
-          packs=$(git diff -U0 "$before" HEAD -- execution/approvals/approvals.tsv execution/approvals/reviews.tsv \
-                  | grep '^+' | grep -v '^+++' | sed 's/^+//' | cut -f1 | grep '^execution/' | sort -u || true)
-          if [ -z "$packs" ]; then
-            echo "bu push onay ya da inceleme satırı getirmedi — sıkı okuma gerekmez"
-            exit 0
-          fi
-          rc=0
-          for p in $packs; do
-            echo "== $p"
-            if python3 scripts/pack_approval.py check "$p" --ref HEAD; then
-              echo "   onaylı (sıkı okuma)"
-            else
-              echo "   KIRMIZI: $p — main'deki satır sıkı okumada geçmiyor (çıkış $?); kart §7b (d): iptal satırı + yeniden onay"
-              rc=1
-            fi
-          done
-          exit $rc
+        # pack_approval.py ci-main: packs of the APPROVE rows the push added, read strictly at HEAD; exit 1 only for a
+        # human-step class refusal; state refusals and an unmeasurable reading (quota) are ::warning:: lines (G-2, G-12);
+        # an empty / zero BEFORE_SHA falls back to HEAD^1 inside the command
+        run: python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD

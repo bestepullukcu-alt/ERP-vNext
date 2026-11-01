@@ -95,7 +95,11 @@ EXCEPTIONS = "execution/approvals/append-only-exceptions.tsv"
 EXCEPTION_COLUMNS = ["commit", "path", "lost_sha256", "reason", "author", "approver", "approved_at"]
 REVIEW_POLICY = "execution/approvals/POLICY-REVIEW-START.md"
 BRANCH_POLICY = "execution/approvals/POLICY-BRANCH-START.md"    # S-115: from its commit on, F-4 (owner word) and F-5 (opener = author)
-OWNER_WORD = re.compile(r"(?<![\w-])onayla(?![\w-])")            # the owner's word in a pending row's note (F-4)
+OWNER_WORD = re.compile(r"(?<![\w-])onayla(?![\w-])", re.IGNORECASE)   # the owner's word in a pending row's note (F-4; G-7:
+                                                                         # Onayla / ONAYLA count, "onaylandı" never does)
+# S-115 F-8 / G-2: on a push to main only a HUMAN-STEP class refusal makes main red; state messages (a revoke as the last
+# row, the pack changed after its approval, no review yet) are warnings, and an unmeasurable reading (quota) a warning too
+CI_RED = re.compile(r"insan adımı|açan|merge eden|birleştiren|onaylayan .*listesinde|onaylayamaz")
 REVIEW_COLUMNS = ["target", "target_sha256", "findings", "findings_sha256", "verdict", "blockers_open", "reviewer", "model",
                   "effort", "reviewer_session", "author", "author_session", "requested_by", "reviewed_at"]
 VERDICTS = ("UYGUN", "KOŞULLU", "UYGUN DEĞİL")
@@ -1470,7 +1474,12 @@ def evaluate(root: str, ref: str, path: str, deferred: bool = False, anchor: str
             # no row is left — each walk asks GitHub for every reordering merge (F-1: never cached), measured +53 calls
             problems += [p for p in (prefix_problem(root, commit, anchor or ctx.main, REVIEWS),) if p]
             digest_now = sha256(data)
-            if not any(r["target"] == path and r["target_sha256"] == digest_now for r in review_rows(root, commit)):
+            # G-9 / F-15: review_problems walks that history only for a row under the review rule whose version has rows
+            # at the ref; a legacy row (before POLICY-REVIEW-START) or a version without rows gets the walk here, so a
+            # manual `check --deferred` sees a deleted review row exactly as the dispatch gate's trail does
+            last_added = row_commit(root, commit, rows[-1]["_n"]) if rows else commit
+            legacy_last = ctx.rstart is None or strictly_before(root, last_added, ctx.rstart)
+            if legacy_last or not any(r["target"] == path and r["target_sha256"] == digest_now for r in review_rows(root, commit)):
                 problems += append_only_problems(root, commit, REVIEWS, ctx.main)
         if problems:
             return 1, head + problems + ["sonuç: onay dosyası güvenilmez — hiçbir onay geçmez", "çıkış: 1"]
@@ -3346,6 +3355,15 @@ def self_test_deferred(cases: list) -> None:
     commit("row f4 with the word")
     code, out = chk()
     cases.append(("S-115 F-4: the note carries 'onayla' -> deferred exit 0", code == 0))
+    for name, note in (("cap", "Onayla · CT · sohbet · 2026-11-01 03:31"), ("upper", "ONAYLA · CT · sohbet · 2026-11-01 03:32")):
+        branch(f"f4-{name}", f4_base)
+        approve("dev", "lead", note=note)
+        commit(f"row f4 {name}")
+        code, out = chk()
+        cases.append((f"S-115 G-7: the word written '{note.split(' ')[0]}' is recognised (case-insensitive) -> deferred exit 0", code == 0))
+    cases.append(("sabotage S-115 G-7: 'onaylandı' / 'onaylamadı' / 'ön-onayla' are not the word",
+                  not OWNER_WORD.search("onaylandı · x") and not OWNER_WORD.search("onaylamadı") and not OWNER_WORD.search("ön-onayla")
+                  and bool(OWNER_WORD.search("Sahip ONAYLA dedi"))))
     try:
         make_row(root, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", "", True)
         refused = False
@@ -3483,6 +3501,168 @@ def self_test_deferred(cases: list) -> None:
     g("checkout", "-q", "--detach")
     g("branch", "-f", "main", main_ok)
     g("checkout", "-q", "main")
+    # G-2 / F-8: the push-to-main job (ci_main) — red only for a human-step class refusal
+    def push_main(name, change, merger=LEAD2, row_author=DEV):
+        """a pull request into main: `change` on a branch (commits by row_author), merged by `merger`; returns
+        (before, after) for ci_main"""
+        before = git(root, "rev-parse", "main").decode().strip()
+        branch(name, "main")
+        change(row_author)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=merger)
+        return before, git(root, "rev-parse", "HEAD").decode().strip()
+
+    def good_rows(who):
+        put(PACK, get(PACK) + f"- ci {who[0]}\n")
+        commit("pack ci", who=who)
+        review("UYGUN", OK, 0)
+        commit("review ci", who=who)
+        approve("dev", "lead")
+        commit("row ci", who=who)
+    b, a = push_main("ci-ok", good_rows)
+    code, out = ci_main(root, b, a)
+    cases.append(("S-115 G-2 (E2a): a module PR with a proper approve row, merged by a listed high=evet other person -> ci-main "
+                  "exit 0 'onaylı'", code == 0 and has(out, "onaylı (sıkı okuma)")))
+    main_ci = a
+
+    def revoke_row(who):
+        append(APPROVALS, "\t".join([PACK, sha256(get(PACK).encode("utf-8")), "revoke", "HIGH", "iptal", "dev", "lead", "2026-11-02", "-", ""]))
+        commit("revoke row", who=who)
+    b, a = push_main("ci-revoke", revoke_row)
+    code, out = ci_main(root, b, a)
+    cases.append(("S-115 G-2 (E2b): a revoke row merged to main -> ci-main exit 0 (no approve row added: no pack to read)",
+                  code == 0 and has(out, "onay (approve) satırı getirmedi")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", main_ci)
+    g("checkout", "-q", "main")
+
+    def review_only(who):
+        put(PACK, get(PACK) + "- ci v2\n")
+        commit("pack ci v2", who=who)
+        review("UYGUN", OK, 0)
+        commit("review ci v2 (approval pending, owner away)", who=who)
+    b, a = push_main("ci-review-only", review_only)
+    code, out = ci_main(root, b, a)
+    cases.append(("S-115 G-2 (E2c'): a review-only push of a revised pack (approval pending) -> ci-main exit 0 (no approve row)",
+                  code == 0 and has(out, "onay (approve) satırı getirmedi")))
+
+    def approve_then_change(who):
+        put(PACK, get(PACK) + "- ci v3\n")
+        commit("pack ci v3", who=who)
+        review("UYGUN", OK, 0)
+        commit("review ci v3", who=who)
+        approve("dev", "lead")
+        commit("row ci v3", who=who)
+        put(PACK, get(PACK) + "- ci v3 later\n")
+        commit("pack changed after its row, same push", who=who)
+    b, a = push_main("ci-state", approve_then_change)
+    code, out = ci_main(root, b, a)
+    cases.append(("S-115 G-2: an approve row whose pack changed again in the same push -> state refusal is a ::warning::, job green",
+                  code == 0 and has(out, "::warning::") and has(out, "paket onaydan sonra değişti")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", main_ci)
+    g("checkout", "-q", "main")
+
+    def no_review_rows(who):
+        put(PACK, get(PACK) + "- ci no review\n")
+        commit("pack ci no review", who=who)
+        approve("dev", "lead")
+        commit("row ci without a review", who=who)
+    b, a = push_main("ci-noreview", no_review_rows)
+    code, out = ci_main(root, b, a)
+    cases.append(("S-115 G-2: an approve row merged without a review of its version -> ENGEL 'inceleme yok' is a state "
+                  "refusal -> ::warning::, job green", code == 0 and has(out, "::warning::") and has(out, "inceleme yok")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", main_ci)
+    g("checkout", "-q", "main")
+    for name, merger, text in (("ci-jun", JUN, "merge eden"), ("ci-devalt", DEVALT, "aynı kişi")):
+        b, a = push_main(name, good_rows, merger=merger)
+        code, out = ci_main(root, b, a)
+        cases.append((f"sabotage S-115 G-2: the module PR merged by {merger[0]} -> ci-main exit 1 KIRMIZI naming '{text}'",
+                      code == 1 and has(out, "KIRMIZI") and has(out, text)))
+        g("checkout", "-q", "--detach")
+        g("branch", "-f", "main", main_ci)
+        g("checkout", "-q", "main")
+
+    def ghost_rows(who):
+        put(PACK, get(PACK) + "- ci ghost\n")
+        commit("pack ci ghost", who=who)
+        review("UYGUN", OK, 0)
+        commit("review ci ghost", who=who)
+        approve("dev", "ghost")
+        commit("row ci ghost", who=who)
+    b, a = push_main("ci-ghost", ghost_rows)
+    code, out = ci_main(root, b, a)
+    cases.append(("sabotage S-115 G-2: an approve row whose approver is not on the list -> ci-main exit 1 KIRMIZI",
+                  code == 1 and has(out, "KIRMIZI") and has(out, "listesinde yok")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", main_ci)
+    g("checkout", "-q", "main")
+    b, a = push_main("ci-quota", good_rows)
+    saved_gh, saved_src = globals()["_gh_json"], globals()["_PR_SOURCE"]
+    globals()["_PR_SOURCE"] = None
+    _PR_CACHE.clear()
+    globals()["_gh_json"] = lambda path, paginate=False: (_ for _ in ()).throw(GitHubQuota("GitHub sorgu kotası doldu — test"))
+    code, out = ci_main(root, b, a)
+    globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
+    _PR_CACHE.clear()
+    cases.append(("S-115 G-2 / G-12: GitHub quota exhausted during the push job -> ::warning::, exit 0 (main not red)",
+                  code == 0 and has(out, "::warning::") and has(out, "kota")))
+    code, out = ci_main(root, "0" * 40, a)
+    cases.append(("S-115 G-2 (E2d): a zero 'before' falls back to after^1 -> the same push is read", code == 0 and has(out, f"{b[:12]}..")))
+    code, out = ci_main(root, a, a)
+    cases.append(("S-115 G-2 (E2d): a push that adds no row -> 'satır getirmedi', exit 0", code == 0 and has(out, "getirmedi")))
+    g("checkout", "-q", "--detach")
+    g("branch", "-f", "main", main_ok)
+    g("checkout", "-q", "main")
+    # G-9 / F-15: a manual `check --deferred` on a LEGACY row (before the review rule) still walks reviews.tsv to HEAD
+    tmp2 = tempfile.TemporaryDirectory()
+    root2 = tmp2.name
+    g2 = lambda *args, who=DEV: subprocess.run(["git", "-C", root2, *args], capture_output=True, check=True,
+                                                env=dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1],
+                                                         GIT_COMMITTER_NAME=who[0], GIT_COMMITTER_EMAIL=who[1],
+                                                         GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")).stdout.decode()
+
+    def put2(rel, text):
+        full = os.path.join(root2, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def get2(rel):
+        with open(os.path.join(root2, rel), encoding="utf-8", newline="") as f:
+            return f.read()
+    g2("init", "-q", "-b", "main")
+    put2(APPROVERS, get(APPROVERS))
+    put2(POLICY, "# start\n")
+    put2(APPROVALS, "\t".join(APPROVAL_COLUMNS) + "\n")
+    put2(REVIEWS, "\t".join(REVIEW_COLUMNS) + "\n")
+    put2(PACK, v1)
+    g2("add", "-A"); g2("commit", "-q", "-m", "legacy start (no review rule)", who=LEAD)
+    v1L = v1 + "- legacy change\n"
+    put2(PACK, v1L)
+    put2(PACK2, v1.replace("MOD-0001", "MOD-0002"))
+    rows2 = []
+    for pk, text in ((PACK, v1L), (PACK2, v1.replace("MOD-0001", "MOD-0002"))):
+        d = sha256(text.encode("utf-8"))
+        rel = f"docs/records/reviews/t/{pk.split('/')[-1][:8]}.md"
+        put2(rel, f"# İnceleme\n\nhedef: {pk} @ {d}\n\nF-1 | DÜŞÜK | yazım | kapandı | - | -\n")
+        rows2.append("\t".join([pk, d, rel, sha256(get2(rel).encode("utf-8")), "UYGUN", "0", "claude", "claude-opus-5-5", "high",
+                                "rs-1", "K4", "as-1", "dev", "2026-10-01"]))
+    put2(REVIEWS, get2(REVIEWS) + "\n".join(rows2) + "\n")   # review rows for THIS version and another pack; no POLICY-REVIEW-START: legacy
+    g2("add", "-A"); g2("commit", "-q", "-m", "packs + informational review rows", who=LEAD)
+    g2("checkout", "-q", "-b", "ct")
+    put2(APPROVALS, get2(APPROVALS) + make_row(root2, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", WORD, True) + "\n")
+    g2("add", "-A"); g2("commit", "-q", "-m", "legacy-rule row on the branch")
+    code, out = evaluate(root2, "HEAD", PACK, True)
+    cases.append(("S-115 G-9: a legacy (no review rule) row on the branch -> check --deferred exit 0", code == 0))
+    put2(REVIEWS, get2(REVIEWS).split("\n")[0] + "\n" + rows2[0] + "\n")      # the OTHER pack's row deleted; this version keeps its row
+    g2("add", "-A"); g2("commit", "-q", "-m", "another pack's review row deleted on the branch")
+    code, out = evaluate(root2, "HEAD", PACK, True)
+    cases.append(("sabotage S-115 G-9 / F-15: the branch deleted another pack's review row while this legacy version keeps its "
+                  "own -> check --deferred still walks reviews.tsv -> ENGEL 'yalnız ekleme değil'",
+                  code == 1 and has(out, "yalnız ekleme değil")))
+    tmp2.cleanup()
     # GitHub quota (Yönetici finding 2026-11-01): the reading stops with exit 2 and never calls the files broken
     saved_gh, saved_src = globals()["_gh_json"], globals()["_PR_SOURCE"]
     globals()["_PR_SOURCE"] = None
@@ -3551,6 +3731,58 @@ def self_test_deferred(cases: list) -> None:
     tmp.cleanup()
 
 
+def ci_main(root: str, before: str, after: str) -> tuple[int, list[str]]:
+    """S-115 F-8 / G-2 (independent review, round 2): the push-to-main job. The packs whose APPROVE rows the push added
+    to approvals.tsv (a revoke row or a review-only push adds no pack) are read strictly at `after`. Exit 1 ("main red")
+    only for a human-step class refusal (CI_RED: no human step, opener / merger / approver not the right person, an
+    approver who cannot approve); a state refusal (last row a revoke, the pack changed after its approval, no review)
+    is printed as a warning; an unmeasurable reading (quota, unreadable: exit 2) is a `::warning::` line, never red
+    (G-12). An unresolvable `before` (an empty value, the zero sha of a new branch) falls back to `after^1`."""
+    a = commit_of(root, after)
+    if a is None:
+        return 2, [f"ci-main: after '{after[:40]}' çözülemedi", "çıkış: 2"]
+    b = commit_of(root, before) if before and not re.fullmatch(r"0{40}", before) else None
+    b = b or commit_of(root, f"{a}^1")
+    if b is None:
+        return 2, [f"ci-main: before '{before[:40]}' çözülemedi ve {a[:12]}^1 yok", "çıkış: 2"]
+    old = read(root, b, APPROVALS) or b""
+    new = read(root, a, APPROVALS) or b""
+    old_lines = set(content_lines(old.decode("utf-8", errors="replace")))
+    added = [l for l in content_lines(new.decode("utf-8", errors="replace")) if l not in old_lines]
+    packs = []
+    for l in added:
+        cells = l.split("\t")
+        if len(cells) >= 3 and cells[2] == "approve" and cells[0] not in packs and PACK_PATH.match(cells[0]):
+            packs.append(cells[0])
+    head = [f"CI-MAIN — {b[:12]}..{a[:12]} · eklenen onay satırı {len([l for l in added if l.split(chr(9))[2:3] == ['approve']])} · "
+            f"paket {len(packs)}"]
+    if not packs:
+        return 0, head + ["bu push onay (approve) satırı getirmedi — sıkı okuma gerekmez", "çıkış: 0"]
+    red, lines = 0, head
+    for p in packs:
+        code, out = evaluate(root, a, p)
+        lines.append(f"== {p}")
+        if code == 0:
+            lines.append("   onaylı (sıkı okuma)")
+            continue
+        engels = [l for l in out if l.startswith(("ENGEL:", "sonuç:"))]
+        if code == 2:
+            why = next((l for l in reversed(out) if l.startswith("sonuç:")), out[-1])
+            lines.append(f"::warning::{p}: onay ölçülemedi — {why[7:]} (main bozuk sayılmaz; kota sıfırlanınca yeniden koşun)")
+            continue
+        human = [l for l in engels if l.startswith("ENGEL:") and CI_RED.search(l)]
+        if human:
+            red += 1
+            lines.append(f"   KIRMIZI: insan adımı sınıfı — {'; '.join(h[7:] for h in human)[:400]}")
+            lines.append("   kart §7b (d): iptal satırı + yeniden onay")
+        else:
+            why = next((l for l in reversed(out) if l.startswith("sonuç:")), out[-1])
+            detail = "; ".join(l[7:] for l in engels if l.startswith("ENGEL:"))[:300]
+            lines.append(f"::warning::{p}: durum — {why[7:]}" + (f" — {detail}" if detail else "") + " (insan adımı hatası değil; iş yeşil)")
+    lines.append(f"çıkış: {1 if red else 0}")
+    return (1 if red else 0), lines
+
+
 def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
     """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
     already a problem at `base` (a pull request is red only for a break it brings)."""
@@ -3607,6 +3839,9 @@ def main(argv: list[str]) -> int:
     for opt in ("--model", "--effort", "--reviewer-session", "--author", "--author-session", "--requested-by"):
         v.add_argument(opt, required=True)
     v.add_argument("--date", default=datetime.date.today().isoformat())
+    ci = sub.add_parser("ci-main", help="S-115 F-8: push:main işi — push'un eklediği onay satırlarının paketleri sıkı okunur; "
+                        "yalnız insan adımı sınıfı hata kırmızı (0 yeşil · 1 kırmızı · 2 çözülemedi)")
+    ci.add_argument("before"); ci.add_argument("after", nargs="?", default="HEAD")
     h = sub.add_parser("history", help="S-91: onay ve inceleme dosyası yalnız ekleme mi; --base verilirse yalnız yeni "
                        "bozulmalar (0 temiz · 1 bozulma · 2 okunamadı)")
     h.add_argument("--ref", default="HEAD"); h.add_argument("--base")
@@ -3621,6 +3856,13 @@ def main(argv: list[str]) -> int:
             code, out = history(root, a.ref, a.base)
         except Unreadable as e:
             code, out = 2, [f"okunamadı — {e}"]
+        print("\n".join(out))
+        return code
+    if a.cmd == "ci-main":
+        try:
+            code, out = ci_main(root, a.before, a.after)
+        except Unreadable as e:
+            code, out = 2, [f"::warning::ci-main okunamadı — {e}", "çıkış: 2"]
         print("\n".join(out))
         return code
     if a.cmd == "exception-row":

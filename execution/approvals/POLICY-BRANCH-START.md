@@ -15,8 +15,15 @@ Bu dosyanın main'e girdiği commit, kuralın başladığı yerdir (sahip karar�
   değil, yazan değil; onaylayanın kendisi olması gerekmez (S-41 kalktı; S-91 istisna satırları "onaylayanı birleştirir"
   kuralını korur).
 - **Önek ve yalnız ekleme:** main'in satırları dalın önekidir (geride kalan dal reddedilir); dalın geçmişi yalnız
-  ekleme ile ilerler. Yalnız sırayı değiştiren, satır kaybetmeyen `git merge origin/main` (main satırları önce, sonra
-  bizimkiler) GitHub'a sorulmadan geçer; satır kaybeden merge bugünkü gibi sorulur.
+  ekleme ile ilerler. Satır kaybeden ya da kendi satırlarının sırasını bozan merge git ile, GitHub'a sorulmadan
+  reddedilir. Yalnız sırayı değiştiren, satır kaybetmeyen `git merge origin/main` (main satırları önce, sonra
+  bizimkiler) dalda GitHub'a sorulmadan geçer; GitHub'a yalnız main geçmişine girmiş kayıpsız yeniden sıralama merge'i
+  (bir PR merge'ü olup olmadığı) ve S-91 istisna satırı için sorulur.
+- **Sahip sözü yazımı:** `onayla` büyük/küçük harf ayrımı olmadan tanınır (`Onayla`, `ONAYLA`); `onaylandı` gibi türevler
+  tanınmaz.
+- **main'e push (CI):** `pack_approval.py ci-main <önce> <sonra>` push'un eklediği **onay (approve)** satırlarının
+  paketlerini sıkı okur; yalnız insan adımı sınıfı hata (insan adımı yok, açan / birleştiren / onaylayan kişi) main'i
+  kırmızı yapar; iptal satırı, onaydan sonra değişen paket, henüz incelemesiz sürüm ve ölçülemeyen okuma (kota) uyarıdır.
 - **Kabul kaydının yeniden ölçümü:** önek denetimi kaydın commit'i ile main'in ortak atasına (merge-base) göre yapılır;
   bugünkü main'deki aynı paketin iptal ya da olumsuz inceleme satırları yine durdurur.
 - **Eski satırlar:** bu commit'ten önce main'e girmiş satırlar geriye dönük düşmez.

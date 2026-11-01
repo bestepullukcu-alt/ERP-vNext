@@ -286,3 +286,8 @@ Yukarıdaki metin değişmedi; bu bölüm §3.1, §3.3 ve §3.5'in **dağıtım 
    göre yapılır; bugünkü main'in aynı paketteki iptal ve olumsuz inceleme satırları yine durdurur. Yalnız sırayı
    değiştiren, satır kaybetmeyen `git merge origin/main` GitHub'a sorulmaz. Bekleyen HIGH taban üstündeki LOW satırın
    sonucu "insan adımı: beklemede (taban <sürüm>)" notunu taşır.
+8. **Ana dalda ölçüm ve not sözcüğü (tur 2 G-2, G-7; 2026-11-01):** `pack_approval.py ci-main <önce> [sonra]` push:main
+   CI adımında, push'un eklediği **onay** satırlarının paketlerini `sonra`'da sıkı okur; yalnız insan adımı sınıfı ENGEL
+   (insan adımı, açan, merge eden, birleştiren, onaylayan listede değil / onaylayamaz) kırmızıdır; iptal satırı, onaydan
+   sonra değişen paket ve inceleme yokluğu uyarıdır; kota ve okunamadı uyarıdır, main bozuk sayılmaz. Not sütunundaki
+   `onayla` sözcüğü büyük/küçük harfe duyarsız, sözcük sınırıyla eşleşir ("onaylandı" sayılmaz).
