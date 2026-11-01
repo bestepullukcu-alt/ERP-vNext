@@ -186,7 +186,7 @@ Yollar `services/Diten.AuthService/` altındadır. "(a1)" işaretli satırlar ya
   `frontend/Diten.Web/Resources/Views/Governance/UserRoleAssignments/UserRoleAssignmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (bugün 29 giriş × 7).
 - Testler (yeni): `tests/Diten.AuthService.Application.Tests/Rbac/RbacWriteAheadAuditTests.cs`,
   `…/Users/AssignRoleWriteAheadTests.cs`, `…/Users/RevokeRoleWriteAheadTests.cs`,
-  `tests/Diten.AuthService.ServiceClientRegistry.Tests/RbacWriteAheadAuditMongoTests.cs` (yeni; gerçek Mongo; desen `ServiceClientRegistryMongoTests.cs:365-378`).
+  `tests/Diten.AuthService.ServiceClientRegistry.Tests/RbacWriteAheadAuditMongoTests.cs` (yeni) (gerçek Mongo; desen `ServiceClientRegistryMongoTests.cs:365-378`).
   Mevcut testler güncellenir: `…/Users/AssignRoleCommandHandlerTests.cs`, `…/Users/RevokeRoleCommandHandlerTests.cs`, `…/Users/LastStewardPathsTests.cs`.
 
 ### DL-2 — rol ve izin komutları + geçmiş uçları
