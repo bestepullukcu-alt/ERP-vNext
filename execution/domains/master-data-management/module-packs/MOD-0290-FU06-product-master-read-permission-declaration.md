@@ -168,8 +168,6 @@ Sayfa ve kullanıcı girdisi yok.
 
 | Durum | Beklenen | Nerede |
 |---|---|---|
-| Anahtar yanlış yazıldı | Kırmızı | T1, T2, T3, T4-b |
-| Anahtar `ApiPermissions`'a taşındı | Kırmızı | T1, T4-b |
 | Anahtarı olmayan kullanıcı | 403; mevcut sınıf düzeyi zorlama | E3 |
 | Modül hakkı olmayan kiracı | Admin ve Viewer almaz | `BL592_A_tenant_without_the_product_module_entitlement_gets_neither` (destekleyici) |
 | Başka modüle katalogda yazılmış anahtar | Ürün eşitlemesi kimseye vermez | `BL592_FIX1_A_read_contract_catalogued_under_another_module_is_granted_to_nobody_by_the_product_sync` (destekleyici) |
@@ -177,7 +175,7 @@ Sayfa ve kullanıcı girdisi yok.
 | İtme sırasında Auth eşitlemesi başarısız | Platform listesinde var, Auth kataloğunda yok → eşitlik denetimi fırlar, sonraki itmeye kadar. Her yeni anahtarda bugün de geçerli | §23 denetim |
 | Platform'a itme 5 denemede başarısız | Eski manifest kalır, MDM yalnız uyarı yazar (`ModuleRegistrationHostedService`); anahtar beyan edilmemiş sayılır | §23 denetim |
 | **MDM 1.3.0'a geri döner** ya da **eski kopya yeniden başlar** | Eylem budanır (`RegisterModuleManifestCommandHandler` "MC-6"), Auth satırı silinmez ("additive") → §0.3 kırılması. Platform sürüm karşılaştırmaz, son itme kazanır. **Kule kararı: geri alınmaz, yalnız ileri düzeltme** (§23) | §23 |
-| Eski ve yeni kopya karışık iter | Her kopya açılışta iter; son başlayan belirler. Eski kopya sonra başlarsa aynı kırılma. Yeni kopyanın yeniden başlaması düzeltir: eylem dizini yalnız silinmemiş satırlarda tekildir (`ux_platform_module_page_actions_tenant_page_action`), eylem geri gelir. Kopya sayısı depoda bulunmadı (kaynak ZIP dışı arama) | §23 |
+| Eski ve yeni kopya karışık iter | Her kopya açılışta iter; son başlayan belirler. Eski kopya sonra başlarsa aynı kırılma. Yeni kopyanın yeniden başlaması düzeltir: `ux_platform_module_page_actions_tenant_page_action` kısmi dizindir (`IsDeleted = false`; `PlatformSchemaManifest.Core`, `PlatformSchemaMigrations` "FIX C"), budanan satır kodu tutmaz, eylem yeni satırla döner (kod okuması). Kopya sayısı depoda bulunmadı (kaynak ZIP dışı arama) | §23 |
 | Aynı manifest ikinci kez | Aynı değerler, çoğalma yok | `Explicit_permission_owner_flows_in_descriptor_order_and_replay_converges_to_the_same_payloads` (destekleyici) |
 
 ## 14. Authorization Convention
@@ -218,11 +216,11 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 - [ ] AC-2 T2 yeşil: sınıf düzeyi öznitelik okunur, `ProductMasterController` listededir; beyan sayısı 52 → 53, neden yalnız bu anahtar.
 - [ ] AC-3 T3 yeşil: üretim işleyicisi üretim manifestiyle koşar; Auth çağrısı `("mdm.product-master.read", "PRODUCT-ITEM-SKU-MASTER", "Tenant")`.
 - [ ] AC-4 T4-b yeşil: plan okuması anahtarı listeler ve modül sahibiyle eşitlenen küme plan listesine eşittir.
-- [ ] AC-5 §18 sabotajlarının her biri adı geçen testte kırmızı, kayıtlı.
+- [ ] AC-5 §18 sabotajlarının her biri adı geçen testte kırmızı; `SABOTAJ.md` satırında çapa, kırmızı test adı ve geri alma sonrası `git status --porcelain` boş.
 - [ ] AC-6 `ModuleVersion` `1.4.0`; `Declares_exact_identity_route_and_non_baseline_flags` güncel, sayfa sayısı 8 değişmez.
-- [ ] AC-7 `git diff` yalnız §5 dosyaları; Auth, Platform, Web, Gateway boş.
+- [ ] AC-7 `git diff` yalnız §5 dosyaları ve §18 kanıt dizini; Auth, Platform, Web, Gateway boş.
 - [ ] AC-8 `CompositionRootGuardTests` yeşil, T3 ile aynı süreçte.
-- [ ] AC-9 §18 E3 adımlarının her biri `run_record.py` kaydında: Platform listesi anahtarı içerir, Auth kataloğu satırı doğru, hak olayından sonra Admin ve Viewer `/api/product-master/stockable-items` 200, anahtarsız kullanıcı 403, Auth günlüğünde eşitlik hatası 0. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
+- [ ] AC-9 §18 E3 adımlarının her biri tek `run_record.py` koşusunun süzülmüş çıktısında: Platform listesi anahtarı içerir, Auth kataloğu satırı doğru, hak olayından sonra Admin ve Viewer `/api/product-master/stockable-items` 200, anahtarsız kullanıcı 403 (gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok), Auth günlüğünde eşitlik hatası 0; çıktıda jeton ve anahtar yok. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
 
 §23 canlı doğrulaması bu dilimin kabulü değildir.
 
@@ -248,7 +246,7 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 ```
 
 - **Tip çakışması:** iki proje kümesinde tek ortak tam ad `Diten.Platform.Application.Contracts.Eventing.EventTransportMessage`, kasıtlı olarak aynı (`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Eventing/EventTransportMessage.cs`). MDM testleri kullanıyor (`CompetitorTestDoubles`, `WorkflowApprovalCoreTests`); takma adsız CS0433. Emsal `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj`, `extern alias PlatformProducer` (`EntitlementAttestationConsumerTests`). `Platform.Domain` ve `Platform.Common` geçişli, küresel kalır; manifest tipi ortak `Diten.BuildingBlocks.ModuleRegistration.Abstractions`'tan gelir.
-- **Paket sürümleri:** ortak paketler aynı ya da yukarı yönlü; `MongoDB.Driver` kümede 2.24 ve 2.27, MDM doğrudan 2.27. Küme Serilog, OpenTelemetry, `Microsoft.AspNetCore.Http.Abstractions 2.2.0` getirir; MDM'de derleme **ölçülmedi**.
+- **Paket sürümleri:** ortak paketler aynı ya da yukarı yönlü; MDM'de derleme **ölçülmedi**.
 - **Bileşim bekçisi:** `CompositionRootGuardTests.Host` süreçteki bütün `Diten.*` derlemelerini tarar, MDM konteynerinde kayıtlı arayüz uygulayanları seçer. Platform'un `IModuleManifestProvider`'ı MDM'ninkinden ayrı tiptir; ortak `Abstractions` arayüz taşımaz. Kod okumasına göre yeni tip seçilmez; AC-8 ölçer.
 - **Derleme kırılırsa:** dur, kuleye bildir. En dar alternatif testi Platform'a koymaktır, o da XMC-001 durağıdır ve MDM manifestini ancak `Diten.MdmService.Api` başvurusuyla görür. Manifest kopyalanarak test yazılmaz.
 
@@ -272,7 +270,7 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 
 **Anahtar eşitliği:** `git grep -nF '"mdm.product-master.read"' -- 'services/*/src/*'` kabul commit'inde dört üretim satırı döner, sabit dizgi araması bayt eşitliğidir: `ProductMasterContract`, `ProductIdentityLifecycleEntitlementGrantProfile`, `DefaultRolePermissionTemplate`, `TrustedLegalEntityScopeCredentialAuthenticator`. Sayı 4 değilse DUR. MDM testi Auth'a başvurmaz.
 
-**Sabotaj (üretim kodunda; çapa tam bir kez, taban yeşil, kırmızı adlı test; her biri koşudan sonra geri alınır).** `Global_product_…` = `Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions`.
+**Sabotaj (üretim kodunda; çapa tam bir kez, taban yeşil, kırmızı adlı test; her biri koşudan sonra geri alınır). Ağaç kirlendiği için `run_record` dışıdır; kayıt kanıt dizininde `SABOTAJ.md`.** `Global_product_…` = `Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions`.
 
 | # | Sabotaj | Beklenen kırmızı |
 |---|---|---|
@@ -286,6 +284,8 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 | g | `IsRowAction` `true` | T1 |
 | h | `IsToolbarAction` `true` | T1 |
 | i | Eyleme `PermissionOwnerModuleCode: "brand-product-master"` | T1, T3, T4-b (sahip `BRAND-PRODUCT-MASTER` olur; plan listesinde anahtar kalır, modül sahipli küme eşit olmaz) |
+| j | `IsDangerous` `true` | T1 |
+| k | Görünen adı değiştir | T1 |
 
 **Koşulacak (E2).** Sabit `MdmTestMongo` test mongod'u ister (`DITEN_TEST_MONGOD`; bekçi için `MDM_COMPOSITION_GUARD_MONGO_URI` de olur); paylaşılan Mongo kullanılmaz. Aynı süreçte, tek komut; tam süit yok:
 
@@ -293,18 +293,40 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 dotnet test services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj --filter "FullyQualifiedName~ModuleRegistration|FullyQualifiedName~CompositionRootGuardTests"
 ```
 
-**Yerel yığın (E3).** Canlı değildir, §23'ün yerine geçmez. Önce `uptime`: 1 dakikalık yük 12'yi aşıyorsa E3 bekler, kayda yazılır. Gerekli: mongod, RabbitMQ (`scripts/dev-up.sh` başlatmaz; Auth ve Platform `appsettings.Development.json` `Eventing:Transport` RabbitMQ), Auth 5056, Platform 5057, MDM 5059, Gateway 5000 (`AGENTS.md` §3); ürün modülü hakkı fiziksel satırla verilmiş bir kiracı, onun Admin'i, Viewer'ı ve bu anahtarı tutmayan bir kullanıcı. Kiracı ve kullanıcılar hazır değilse E3 bekler. Her adım `scripts/run_record.py` ile kaydedilir.
+**Kanıt kaydı.** `scripts/run_record.py` kirli ağacı reddeder, `--out` yalnız denetim kayıtları altında yeni dizin ister, argv ve stdout'u saklar. Bu yüzden:
+
+- **Tek kanıt betiği, tek koşu.** Kart S-83 (`docs/guides/operations/control-tower-operating-card.md` "Kanıt betiğini CT yazar"): betiği **kule yazar**, kırmızı tabanını kaydeder, prompt'a yol + SHA-256 ile verir; işçi yazmaz, değiştirmez.
+- **Sırlar:** yalnız ortam değişkeninden okunur, argv'ye girmez. Betik çıktıyı süzer: `Authorization`, jeton ve anahtar değeri yazılmaz; yanıttan yalnız durum kodu ve beklenen alan.
+- **Kanıt dizini:** `docs/records/audits/2026-11/mod0290-fu06-dl1/` (yeni): betik ve `SABOTAJ.md` burada; E3 koşusu `--out .../e3-run`, E2 komutu ayrı `--out .../e2-run`. Kod commit'inden sonra, temiz ağaçta.
+
+**Yerel yığın (E3).** Canlı değildir, §23'ün yerine geçmez. Kaynak `scripts/dev-up.sh`; portlar `AGENTS.md` §3.
+
+**E3 önkoşulları (betik başta ölçer, biri tutmazsa durur, kayda yazar):**
+
+| Önkoşul | Ölçüm | Tutmazsa |
+|---|---|---|
+| Yük | `uptime` 1 dakikalık ≤ 12 | E3 bekler |
+| Port ve süreç | 5000, 5001, 5056, 5057, 5058, 5059, 5060 dinleyen yok (`lsof`). `scripts/dev-up.sh --restart` **kullanılmaz**: porttaki süreci sahibine bakmadan öldürür. Yalnız betiğin başlattığı süreç, kayıtlı PID + başlangıç zamanı eşleşirse durur | **Kuleye dur.** Başka oturum olabilir; yeniden başlatılmaz |
+| Atılabilir veritabanı (zorunlu) | Kendi mongod'u: `--replSet`, paylaşılan 27017–27021 dışı port, yeni `--dbpath` (emsal `MdmTestMongo`). Servislere ortam değişkeni: Auth ve Platform `MongoDbSettings__ConnectionString`, `MongoDbSettings__DatabaseName`, Platform `BackgroundJobs__StorageDatabaseName`, MDM `Mongo__ConnectionString`, `Mongo__DatabaseName`. `scripts/dev-up.sh` süreci `env` ile başlattığı için ortam geçer (kod okuması; koşulmadı) | **Kuleye dur.** Paylaşılan veritabanına yazılmaz |
+| RabbitMQ (zorunlu) | Çalışıyor (`scripts/dev-up.sh` başlatmaz), yeni vhost: `Eventing__VirtualHost` (üç serviste aynı ayar) | Kuleye dur |
+| MDM kayıt kimliği | Platform `ModuleRegistrationCredentials:Mdm` ile MDM `PlatformRegistration:ModuleRegistrationCredential*` eşleşir; adım 2'de 401 olmaz | Kuleye dur |
+| Kapsam yayılımı ve 38 çift | Kiracının `ProductLegalEntityScopeRolloutMode` değeri ölçülür. Yalnız `Enforced` ise `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` gerekir: geliştirme ayarlarında **yok** (kaynak ZIP dışı ölçüm), ortam değişkeniyle 38 çift verilir | Çift eksikse kuleye dur |
+| Test verisi | Kiracı + Admin + Viewer + anahtarsız kullanıcı atılabilir veritabanında; ürün modülü planda değil (plan satırında `extendExpiry` yok). Kullanıcı kurulum yolunu betik yazılırken kule ölçer (bu pakette ölçülmedi) | E3 bekler |
+| Hak satırı | `POST /api/platform/tenants/{tenantId}/commercial/module-entitlements` (`AddTenantModuleEntitlementCommandHandler`, `AddTenantModuleEntitlementCommandValidator`): `Source = Addon`, `ExpiryDateUtc` gelecekte, `Reason` dolu; `PlatformAdminOnly`. Bu çağrı kendi `TenantEntitlementAddedV1` olayını doğurur; adım 5 ayrıca ölçülür | E3 bekler |
+
+**403 ayrımı:** anahtarsız kullanıcının 403'ü `[HasPermission]`'dan gelir; `LEGAL_ENTITY_SCOPE_FORBIDDEN` kapsam reddidir (`ProductLegalEntityScopeCandidateFacade`, `ProductMasterController.Answer`), rol yokluğu değildir. Adım 6'da bu kod çıkarsa neden çifttir, E3 kırmızı.
 
 | # | Adım | Komut | Beklenen |
 |---|---|---|---|
-| 1 | Yığını bu dalın kodundan aç | `scripts/dev-up.sh --restart`, sonra `--status` | Servisler dinliyor, "STARTED BEFORE mongod" yok |
-| 2 | MDM itmesi | `grep "Module manifest self-registered" /private/tmp/dev-mdm.log` | `ModuleCode=product-item-sku-master` |
+| 1 | Bu dalın kodu | `dotnet build` Auth, Platform, MDM **ve** Gateway Api projeleri (Gateway `scripts/dev-up.sh` için ikili ister); sonra `scripts/dev-up.sh` (bayraksız) | Dört servis dinliyor. Derlenmemiş diğerleri "not built" der, bekleme uzar |
+| 2 | MDM itmesi | MDM günlüğünde `Module manifest self-registered … ModuleCode=product-item-sku-master`; Platform katalogunda modül **1.4.0** | İkisi de var |
 | 3 | Platform listesi | `GET http://localhost:5057/api/internal/tenants/{tenantId}/entitled-modules-with-permissions`, başlık `X-Internal-Api-Key` | Modül satırında anahtar var |
 | 4 | Auth kataloğu | Auth Mongo `permissions`, `Key = mdm.product-master.read` | `Module = product-item-sku-master`, `Scope` Tenant |
-| 5 | Hak olayı | §23 "Pilot kiracı" adımı | Auth günlüğünde `entitlement.sync.applied` |
+| 5 | Hak olayı | §23 pilot `PATCH`: aynı bitiş, güncel `RowVersion`, yeni `Reason` | Auth günlüğünde yeni `entitlement.sync.applied` |
 | 6 | Rol | Admin ve Viewer yeniden girer, `GET http://localhost:5000/api/product-master/stockable-items` | 200 |
-| 7 | Anahtarsız | Aynı istek | 403 |
-| 8 | Eşitlik hatası | `grep -c "complete active module descriptor set" /private/tmp/dev-auth.log` | 0 |
+| 7 | Anahtarsız | Aynı istek | 403, gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok |
+| 8 | Eşitlik hatası | Auth günlüğünde `complete active module descriptor set` sayısı | 0 |
+| 9 | Temizlik | Betiğin süreçleri PID + başlangıç zamanıyla durur; `git status --porcelain` yalnız `--out` | Paylaşılan veritabanı ve portlar dokunulmamış |
 
 ## 19. Page Help (UXH-001)
 
@@ -340,7 +362,7 @@ Uygulanmaz: yeni ya da değişen sayfa metni yok; tur yok.
 
 Aynı BL maddesinin diğer ikisi Auth kodudur (§22 F-2).
 
-**Tam yollar (inceleme ZIP'i bu satırlardan toplar):**
+**Tam yollar (inceleme ZIP'i bu satırlardan toplar).** `appsettings.*.json` ZIP'e girmez (`scripts/review_zip.py` `APPSETTINGS`): bu paketteki ayar adı ölçümleri **kaynak ZIP dışıdır**, dosya yolları listelenmez.
 
 - `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleManifestDocument.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Diten.Platform.Application.csproj`
@@ -348,6 +370,30 @@ Aynı BL maddesinin diğer ikisi Auth kodudur (§22 F-2).
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Handlers/QueryHandlers/GetTenantEntitledModulePermissionsQueryHandler.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Handlers/CommandHandlers/UpdateTenantModuleEntitlementExpiryCommandHandler.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Handlers/CommandHandlers/RefreshTenantModuleEntitlementProjectionCommandHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Handlers/CommandHandlers/AddTenantModuleEntitlementCommandHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Handlers/CommandHandlers/TenantModuleEntitlementActionGate.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/TenantModuleEntitlementRowActions.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Entitlements/Validators/TenantModuleEntitlementValidators.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.Core.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaMigrations.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/RabbitMqEventingOptions.cs`
+- `services/Diten.Platform/src/Diten.Platform.Domain/Diten.Platform.Domain.csproj`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj`
+- `services/Diten.Platform.Contracts/Diten.Platform.Contracts.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/Diten.BuildingBlocks.BackgroundJobs.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Email/Diten.BuildingBlocks.Email.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/Diten.BuildingBlocks.Eventing.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ListExport/Diten.BuildingBlocks.ListExport.csproj`
+- `services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj`
+- `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Eventing/AuthServiceEventingOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductLegalEntityScopeRolloutMode.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PermissionAuthorizationHandler.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/MdmTestMongo.cs`
+- `scripts/run_record.py`
+- `docs/guides/operations/control-tower-operating-card.md`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Subscriptions/TenantSubscriptionTransactionWriter.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/ModulePages/ModulePageDescriptorNormalizer.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/ModulePages/Handlers/CommandHandlers/DeleteModulePageActionDescriptorCommandHandler.cs`
@@ -435,14 +481,16 @@ Aynı BL maddesinin diğer ikisi Auth kodudur (§22 F-2).
 2. `DELETE /internal/permissions/mdm.product-master.read`, Auth 5056, başlık `X-Internal-Api-Key` (`InternalPermissionsController.Delete`). Katalogdan doğan satır `MarkAsUserDefined` olduğu için 409 vermez; **anahtarın bütün rol hakları silinir**, satır yumuşak silinir, `permission_catalog_removed` denetimi yazılır. Platform ekranından yol yok: kodla yönetilen modülde `DeleteModulePageActionDescriptorCommandHandler` 409 döner.
 3. Eski MDM başlar, eylem budanır.
 
+Silme verilmiş jetonu geri almaz: MDM izni jetondaki `permission` iddiasından okur (`PermissionAuthorizationHandler`), jeton süresince erişim sürer; süre ortama bağlı, Auth tarafı önbellek etkisi ölçülmedi.
+
 2 ile 3 arasında Platform listesinde var, Auth kataloğunda yok: hak olayları fırlar, tekrar denenir, 3'ten sonra yakınsar. Sonraki ileri düzeltmede satır `reactivated` olur; kiracı hakları pilot adımıyla yeniden kurulur.
 
 **Pilot kiracı (var olan kiracı).** Manifest itmesi rol eşitlemesi başlatmaz: `GlobalApplicabilityChangedV1`'in Auth'ta tüketicisi yok. `EntitlementSyncConsumer.ConsumeAsync`'i tetikleyen olaylar ve onları doğuran işlemler:
 
 | Olay | İşlem | Not |
 |---|---|---|
-| `TenantEntitlementExpiryUpdatedV1` (uzlaştırma) | `PATCH /api/platform/tenants/{tenantId}/commercial/module-entitlements/{entitlementId}/expiry` | **Pilot için bu:** aynı bitiş tarihi, güncel `RowVersion`, yeni `Reason`. Ticari değer değişmez. Bitiş ve neden aynıysa 204 döner, olay yok (`UpdateTenantModuleEntitlementExpiryCommandHandler`). Fiziksel hak satırı ister, `PlatformAdminOnly` |
-| `TenantSubscriptionChangedV1` (uzlaştırma) | `TenantCommercialSubscriptionsController` eylemleri (`TenantSubscriptionTransactionWriter`) | Hak plandan geliyorsa tek yol; ticari etkisi var, sahip onayı |
+| `TenantEntitlementExpiryUpdatedV1` (uzlaştırma) | `PATCH /api/platform/tenants/{tenantId}/commercial/module-entitlements/{entitlementId}/expiry` | **Pilot için bu, yalnız şu koşulda:** `TenantModuleEntitlementActionGate.RefuseStoredAsync` + `TenantModuleEntitlementRowActions.For` (`extendExpiry`): kayıtlı satır (plan satırı değil), `Source` `Addon`, `Trial` ya da `ManualOverride` (`System` değil), modül çekirdek/baseline değil, katalogda; `UpdateTenantModuleEntitlementExpiryCommandValidator`: `ExpiryDateUtc` dolu ve gelecekte, `RowVersion` dolu. **Ticari değer yalnız satırın bitişi zaten gelecekteyse değişmez** (aynı tarih + yeni `Reason`); bitişsiz ya da süresi geçmiş satırda tarih değişir. Tarih ve neden aynıysa 204, olay yok. `PlatformAdminOnly` |
+| `TenantSubscriptionChangedV1` (uzlaştırma) | `TenantCommercialSubscriptionsController` eylemleri (`TenantSubscriptionTransactionWriter`) | Koşula uymayan kiracıda ölçülen tek yol; ticari etkisi var: K-3 sahip kararı |
 | `TenantEntitlementAddedV1`, `TenantEntitlementEnabledV1`, `TenantEntitlementOverrideRemovedV1` | `TenantModuleEntitlementsController` | Hak durumunu değiştirir; pilot için kullanılmaz |
 
 `refresh-projection` olay üretmez (`RefreshTenantModuleEntitlementProjectionCommandHandler` yalnız 204). **Toplu yol: yok**; her kiracı ayrı işlem ister. Yeni kiracı açılışta eşitlenir (`InternalEventsController.SyncEntitledModulesBestEffortAsync`).
@@ -475,7 +523,7 @@ DL-1 çekirdek ve tek dilimdir. E3 kartta birikimlidir: §18 otomatik test + sab
 |---|---|---|---|
 | K-1 | §0.3 yol | Kule | **Kapandı: A** |
 | K-2 | Eylemin sayfası | Kule | **Kapandı: `GLOBAL_PRODUCTS`** |
-| K-3 | Var olan kiracının eşitlenmesi | **Kule; kapı: stok ekibine haberden önce** | Pilot + kiracı listesi; toplu yol yok (§23) |
+| K-3 | Var olan kiracının eşitlenmesi | **Kule; kapı: stok ekibine haberden önce.** Pilot koşuluna uymayan canlı kiracı (plandan gelen hak, bitişsiz ya da süresi geçmiş satır) için yol: **sahip kararı, açık** | Koşula uyan için pilot; toplu yol yok (§23) |
 | K-4 | `target` tarihi, onaylayan, modül PR'ını birleştiren ikinci kişi | Kule | TBD; verilmedi, uydurulmadı |
 | K-5 | Stok kullanıcı rolleri + canlı rol önerisi hizalaması | Kule + stok ekibi | Hak olan kiracıda Admin + Viewer; başka rol elle atama |
 | K-6 | MDM test projesine Platform başvurusu + Moq | Kule | **Kapandı: kabul.** `EventTransportMessage` dosyası bu başvuruyu üretim için "wrong layer, heavy graph" diye reddeder; burada yalnız test projesinde, takma adla kabul edildi: üretim grafiği değişmez. Derleme maliyeti ölçülmedi |
