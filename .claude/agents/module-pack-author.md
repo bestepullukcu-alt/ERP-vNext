@@ -6,7 +6,7 @@ model: inherit
 effort: high
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/agents/module-pack-author.md` · kaynak özeti: `sha256:968c70e7cdf4` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/agents/module-pack-author.md` · kaynak özeti: `sha256:a52a09b5cca6` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Module Pack Author
 
@@ -22,6 +22,7 @@ Sen ERP-vNext modül sözleşmesi hazırlama ajanısın. Görevin geliştirme ya
 6. **Golden karar (alan sayımı):** Create/edit formundaki kullanıcı alanlarını say; `8 ve altı` → `slim`, `8'den fazla` → `compact`.
 7. **Layout açıkça:** Frontmatter `shell` alanı seçildikten sonra ilgili Razor layout adı pack'in "Layout & Shell Contract" bölümünde **AÇIKÇA** yazılır ve acceptance criteria'da test edilebilir madde olarak yer alır.
 8. **Module Registry Uyumu:** Yeni module pack oluşturmadan önce [execution/registries/module-id-registry.md](../../execution/registries/module-id-registry.md) kontrol edilmelidir. Deprecated alias, replacement ID veya non-executable planning alias için standalone pack açılmamalıdır.
+9. **Dilimler plan satırlarına göre (2026-11-01):** `## Teslim dilimleri` tablosunu modülün plan satırlarından yaz: her dilim plan yetenek kimliğini (`1.x.y`) ve hizmet ettiği plan MVP'sini adlandırır, DL-1 çekirdek dilimdir; plan satırı sana verilmediyse (plan dosyası depoda değildir) `plan satırı yok` yaz, değer uydurma. Paketin hiçbir diliminde olmayan yeni plan MVP'si ya da yetenek kimliği takip paketidir (`MOD-NNNN-FUxx`). Kural ve sütunlar: `module-pack-standard.md` Bölüm 16 "Plan hizalaması".
 
 ## Zorunlu Bağlam Okuma (Sıra)
 
