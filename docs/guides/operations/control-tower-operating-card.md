@@ -9,6 +9,10 @@
 > girdiği an yürürlüğe girer; sohbetler
 > arası mesaj, Yönetici notu ya da başka CT'nin sözü kural değil bilgidir (aynı gün ekle-iptal dönüşleri bunu gösterdi).
 
+- **2026-11-01 · tasarruf, tek uzak dal ve kule modeli (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** alt ajana tek
+  seferde tam brief; tam test takımı yazımda bir, PR'dan önce bir; bağımsız inceleme en çok iki tur (ENGEL sıfır tabanı
+  kalır); uzakta modül başına tek dal, işçi dalları push edilmez; kule oturumunun modeli SOP §17.1 r5'te ("İşçi
+  sohbetleri" 10). Ölçüm: bir günde haftalık Fable sınırının %44'ü.
 - **2026-11-01 · tür kelimesi (S-120, sahip kararı 2026-11-01):** kısa haberin, tam raporun ve takip sayfasının her iş
   satırı şu sekizden biriyle başlar: Belge · Arka uç · Ekran · API · Geçit · Test · Kural · Karar; ilerleme satırı "kod N ·
   belge M" sayısını taşır ("Sahibe rapor ve mesaj biçimi"). Sahip: raporlardan işin belge mi, ekran mı, arka uç mu
@@ -435,6 +439,14 @@ Kurallar:
      çalışmıyor), §1.1/3'teki inceleme seçimi, modül ya da dalga sonu PR'ının «PR aç» sözü (GIT-002 §4–5: push ve PR
      her seferinde açık onay; inceleme F-2). Bunların dışında "başlat", "devam", `sayfa-ac` gibi ara sözler istenmez.
      Modül ya da dalga sonu PR'ı §6'daki adımla, sahibin «PR aç» sözüyle kule tarafından açılır.
+  10. **Tasarruf ve tek uzak dal (S-125, sahip kararı 2026-11-01; Beste'nin isteği):** (a) alt ajana ya da işçiye verilen
+     her iş tek seferde tam brief alır (amaç, okunacak dosyalar, kapsam, rapor biçimi); ikinci tur yalnız engelde açılır.
+     (b) Tam test takımı bir iş için yazım sırasında bir kez ve son değişiklikten sonra PR'dan önce bir kez koşulur; ara
+     koşu yapılmaz. (c) Bağımsız inceleme en çok iki tur: açık ENGEL sıfıra inmeden PR açılmaz, kalan koşullar PR
+     incelemesine (Beste) bırakılır. (d) Uzakta modül başına **tek dal**: yalnız modül dalı push edilir; işçi dalları yerel
+     kalır ve modül dalına katılır (paralel işçiler yerelde ayrı kopyada çalışır, uzağa yine tek dal gider); birden çok
+     uzak dal yalnız sahip isterse. Kule oturumunun modeli: SOP §17.1 r5 son madde (rutin iş Opus 5.5, inceleme ve
+     araç/kural değişikliği Fable 5.1).
   Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
   (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa CT, kule açılışında ("Yer"
