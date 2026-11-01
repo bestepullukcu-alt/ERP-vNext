@@ -186,7 +186,7 @@ Yollar `services/Diten.AuthService/` altındadır. "(a1)" işaretli satırlar ya
   `frontend/Diten.Web/Resources/Views/Governance/UserRoleAssignments/UserRoleAssignmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (bugün 29 giriş × 7).
 - Testler (yeni): `tests/Diten.AuthService.Application.Tests/Rbac/RbacWriteAheadAuditTests.cs`,
   `…/Users/AssignRoleWriteAheadTests.cs`, `…/Users/RevokeRoleWriteAheadTests.cs`,
-  `tests/Diten.AuthService.ServiceClientRegistry.Tests/RbacWriteAheadAuditMongoTests.cs` (gerçek Mongo; desen `ServiceClientRegistryMongoTests.cs:365-378`).
+  `tests/Diten.AuthService.ServiceClientRegistry.Tests/RbacWriteAheadAuditMongoTests.cs` (yeni; gerçek Mongo; desen `ServiceClientRegistryMongoTests.cs:365-378`).
   Mevcut testler güncellenir: `…/Users/AssignRoleCommandHandlerTests.cs`, `…/Users/RevokeRoleCommandHandlerTests.cs`, `…/Users/LastStewardPathsTests.cs`.
 
 ### DL-2 — rol ve izin komutları + geçmiş uçları
@@ -213,10 +213,10 @@ Yollar `services/Diten.AuthService/` altındadır. "(a1)" işaretli satırlar ya
 ### DL-3 — ekranlar, iz kabulü, borç kapanışı (a1)
 
 - `frontend/Diten.Web/Views/Governance/Roles/_DetailsQuickView.cshtml` — "Geçmiş" bölümü (kısmi görünüm satırı).
-- `frontend/Diten.Web/Views/Governance/Roles/_RoleHistory.cshtml` — **yeni** kısmi görünüm.
+- `frontend/Diten.Web/Views/Governance/Roles/_RoleHistory.cshtml` (yeni) — **yeni** kısmi görünüm.
 - `frontend/Diten.Web/Views/Governance/UserRoleAssignments/Index.cshtml` — seçili kullanıcı paneline "Rol geçmişi" satırı (`:111-144` bölgesi).
-- `frontend/Diten.Web/Views/Governance/UserRoleAssignments/_UserRoleHistory.cshtml` — **yeni** kısmi görünüm.
-- `frontend/Diten.Web/wwwroot/assets/js/Governance/rbac-history.js` — **yeni**. İki ekranın ortak okuyucu-çizici modülüdür (tek kopya).
+- `frontend/Diten.Web/Views/Governance/UserRoleAssignments/_UserRoleHistory.cshtml` (yeni) — **yeni** kısmi görünüm.
+- `frontend/Diten.Web/wwwroot/assets/js/Governance/rbac-history.js` (yeni) — **yeni**. İki ekranın ortak okuyucu-çizici modülüdür (tek kopya).
 - `…/js/Governance/Roles/index.js`, `…/Roles/index.l10n.js`, `…/UserRoleAssignments/index.js`, `…/UserRoleAssignments/index.l10n.js`, iki `_IndexL10n.cshtml`.
 - `frontend/Diten.Web/Controllers/RolesController.cs` (`:18` kökü) ve `…/Controllers/UserRoleAssignmentsController.cs` (`:18` kökü) — yeni GET eylemleri.
   Eylemler Gateway üzerinden Auth uçlarına gider ve aynı kökten (same-origin) çağrılır.
