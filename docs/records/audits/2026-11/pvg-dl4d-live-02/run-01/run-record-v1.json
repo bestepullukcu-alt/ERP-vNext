@@ -1,0 +1,30 @@
+{
+ "argv": [
+  "bash",
+  "execution/domains/pharmacovigilance/work-packs/scripts/dl4d_options_smoke.sh"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-dl4d-live-02/run-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 7365,
+   "path": "docs/records/audits/2026-11/pvg-dl4d-live-02/run-01/stdout.txt",
+   "sha256": "65d200d71a15460c8022e2b39211f4fb6d6fc06fb10e9c35d0b9163c55bb0c16"
+  }
+ ],
+ "commit": "2a1185fd5f64e8131e025911b194a3c85f85e18c",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-01T20:53:06Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/pvg-dl4d-live-02/run-01",
+ "started_utc": "2026-11-01T20:52:40Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "a1112ae03076730874a8d76d6d4ba0075ef87b63"
+}
