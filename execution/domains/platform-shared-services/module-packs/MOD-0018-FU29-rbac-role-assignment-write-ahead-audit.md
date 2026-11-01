@@ -6,7 +6,7 @@ service: Diten.AuthService
 shell: none
 golden_reference: none
 entity_base: GlobalEntity
-status: draft
+status: ready-for-dev
 owner: auth-owner
 branch: chore/ct/auth-ct-01
 started: 2026-11-01
