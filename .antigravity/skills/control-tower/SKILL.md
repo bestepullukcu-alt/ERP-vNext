@@ -87,7 +87,7 @@ hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartı
    gizlemez.
 4. Gerekçeli tek öneri, "öneri — onay değil".
 5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma. Soru
-   "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
+   "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "«onayla»: satır dala, dilimler başlar; «PR aç»: push + PR");
    kullanıcıdan uzun onay metni beklenmez. Soruyu kartın "Soru biçimi"yle yanıtın sonunda yaz;
    butonlu soru kutusu kullanılmaz; "Şimdi siz" satırı soru yerine geçmez.
 

@@ -101,6 +101,17 @@ bekleyen taban) kart uyuşmazlığı veriyordu. Düzeltmeler bu dalda:
   sahibe soru; F-9 dalda geçmiş yeniden yazılarak yalnız dalda var olan olumsuz satır izsiz silinebilir — modül PR'ının
   tam geçmişi insan kontrolündedir, dal push'u şartı GIT-002 ile çelişir, ayrı karar.
 
+### İnceleme turu 2 (2026-11-01, yeni geçmişsiz Claude alt ajanı)
+
+Sonuç **KOŞULLU, ENGEL 0**: tur 1'in F-2, F-3, F-4, F-5, F-7, F-8, F-11…F-14, F-17, F-18 kapandı; F-1 kısmen (kart §7a/3'te
+iki eski kopya → G-1, düzeltildi); F-10 kısmen (aynı paketin sonraki onay satırı main'e girince eski dilim kaydı yeniden
+ölçülemiyor; S-115 öncesi de böyleydi → G-4 DÜŞÜK, kayıtlı). Koşullar: G-2 push:main CI adımı yalnız insan adımı sınıfı
+hatada kırmızı (iptal satırı, onaysız revizyon, kota uyarı) → `pack_approval.py ci-main`; G-3 `--author` = modül PR'ını
+açacak gh hesabı (kart §7a/7), F-6 cevabı aynı insansa aynı K anahtarı; G-5 kart örnekleri `--deferred`; G-6 politika
+metni; G-7 `onayla` büyük/küçük harf; G-9 (F-15) elle `check --deferred` inceleme yürüyüşü; G-13 «PR aç» isteği push'u
+adlandırır, skill örneği. NOT: G-14 sahte `onayla` için ek izler (kabul edilen bedel, ölçülebilir ek: kule oturum kimliği
+notta), G-15 deferred taban zinciri ölçüldü, yanlış geçiş yok.
+
 ## Sabotaj testleri (öz testler; hepsi kırmızı olmalı, guard kaldırılınca yeşile dönmeli)
 
 | # | Sabotaj | Beklenen |

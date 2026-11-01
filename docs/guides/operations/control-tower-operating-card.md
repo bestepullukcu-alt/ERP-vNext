@@ -67,7 +67,7 @@
 | WP dağıtılabilir mi — isteğe bağlı erken kontrol (kapı aynı kararı kendisi verir) | `python3 scripts/ct_queue.py require <WP> --queue <kuyruk>` | 0 dağıtılabilir · 1 DUR |
 | Yeni iş: önce keşif, raporu commit et (taslaktan önce; yoksa Expected HEAD eskir) | `python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"` | 0 eşleşme yok · 3 inceleme gerekli · 2 tamamlanamadı |
 | Prompt taslağı (keşif commit'inden sonra) | `python3 scripts/prompt_gate.py draft --queue <kuyruk> --wp <WP>` | 0 taslak üretildi — dağıtım izni değil · 2 ölçülemez |
-| Paket onayı: kart, onay satırı ve kontrol (kural başlangıcından sonra değişen paket; satırı `execution/approvals/approvals.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py card <paket>` · `python3 scripts/pack_approval.py row <paket> --author <hesap> --approver <hesap> --risk HIGH --reason "<gerekçe>"` · `python3 scripts/pack_approval.py check <paket>` | check: 0 onaylı · 1 onaylı değil · 2 okunamadı |
+| Paket onayı: kart, onay satırı ve kontrol (kural başlangıcından sonra değişen paket; satırı `execution/approvals/approvals.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py card <paket> --deferred` · `python3 scripts/pack_approval.py row <paket> --author <hesap> --approver <hesap> --risk HIGH --reason "<gerekçe>" --deferred --note "onayla · <kule sohbeti> · <tarih saat>"` · `python3 scripts/pack_approval.py check <paket> --ref <CT HEAD> --deferred` (dal onayı, S-115; `--deferred` olmadan sıkı ana dal okuması; `--author` = modül PR'ını açacak gh hesabı) | check: 0 onaylı · 1 onaylı değil · 2 okunamadı (kota dahil) |
 | Onaydan önce bağımsız inceleme (Module Pack ya da DCP; SOP §20.4; bulgu dosyası önce commit edilir, satırı `execution/approvals/reviews.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py review-row <paket> --findings <dosya> --verdict UYGUN --reviewer codex --model <model> --effort <effort> --reviewer-session <oturum> --author <K…> --author-session <oturum> --requested-by <hesap>` | 0 satır basıldı · 2 reddedildi |
 | Dağıtımdan önce (kayıt `main`'de değilse `--prepare`: yalnız hazırlık) | `python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk>` | 0 geçti · 1 ENGEL · 2 tamamlanamadı |
 | Kuyruğa yazmadan hemen önce | `python3 scripts/ct_queue.py guard --queue <kuyruk>` | yazma öncesi özet; kilit değildir |
@@ -580,7 +580,7 @@ inceleyen kuleyle konuşup düzeltsin; bağımsız son bakış ya da Codex sahib
    - **Bağımsız son bakış:** sohbet geçmişi olmayan ikinci bir Claude alt ajanı yalnız S-94 isteğini ve ZIP'i alır
      (diyalogun bulguları, sık bulgu listesi ve CT'nin görüşü verilmez; ipucusuz kalır), tek tur, sonucu ikinci inceleme
      satırı olarak dala yazılır; iki satır da sayılır (en kısıtlayıcı okuma, SOP §20.4/4). Araç paketin riskini HIGH
-     ölçüyorsa (`pack_approval.py card`; yetki, kiracı, şema, güvenlik, `.antigravity`, ilk onay) son bakış **sahibi
+     ölçüyorsa (`pack_approval.py card <paket> --deferred`; yetki, kiracı, şema, güvenlik, `.antigravity`, ilk onay) son bakış **sahibi
      beklemeden kendiliğinden koşar**, düğme yine gösterilir ve sahip «atla» derse sonucu beklenmez; LOW'da varsayılan
      direkt kabuldür ve son bakış yalnız sahip seçerse koşar.
    - **Codex:** yalnız sahip seçince; S-94 teslimi ve Yönetici kuyruğu kuralı değişmez; sonucu ikinci inceleme satırıdır.
@@ -689,7 +689,8 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] **Modül ya da dalga sonu PR'ı (S-115 ve S-117, sahip kararı 2026-11-01):** bütün dilimler kabul edilince (ya da
   modül iki haftayı aşmışsa dalga sonunda) CT hazırlığı sözsüz yapar: CT dalını `git merge origin/main` ile günceller
   (merge commit; §7a), birleşik hâlde testleri koşar, S-63/3 taramasını yapar (e-posta, şifre, anahtar) ve sahibe
-  **tek istek** yazar: dal adı, sha, dilimler, S-120 türlerine göre sayılar — "Sizden istenen: «PR aç»" (GIT-002 §4–5:
+  **tek istek** yazar: dal adı, sha, dilimler, S-120 türlerine göre sayılar — "Sizden istenen: «PR aç» (bu sha'yı push eder
+  ve PR'ı açar)" (GIT-002 §4–5:
   push ve PR her seferinde açık onay; söz yalnız o sha içindir). Söz gelince **sha ile** push eder (`git push origin
   <sha>:refs/heads/<dal>`), uzak = sha ölçer ve **tek PR** açar: kod, kayıtlar, onay ve inceleme satırları, kabul
   kayıtları, kapanış belge paketi. PR açıklaması modülün sade adını, dilimleri ve türlere göre sayıları yazar;
@@ -836,15 +837,16 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
 3. **Birleştirme isteği (S-99):** Beste birikmiş PR'ları sabit saatlerde sırayla birleştirir; CT isteğinde PR'ın acil
    olup olmadığını yazar. Acil yalnız şunlardır: ana dal kırmızı, onay yolu kapalı ya da başka bir kule bu PR'ı bekliyor.
    Acil PR sabit saati beklemez. Kayıt PR'ları gün sonunda birleştirilir (§7b "Günlük sınır"); gün içi "Update branch"
-   ve düşen onay döngüsü böylece azalır. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu satırdaki
-   onaylayan kişi kendisi birleştirir (§7a/7). Bu dosyalara dokunan PR'lar tek tek merge edilir.
+   ve düşen onay döngüsü böylece azalır. Onay ya da inceleme satırı taşıyan PR bu toplu birleştirmeye girmez: onu listedeki,
+   `high = evet`, satırı yazanın kişisi olmayan biri merge commit ile birleştirir (§7a/7; S-115 — "onaylayan kendisi
+   birleştirir" cümlesi kalktı). Bu dosyalara dokunan PR'lar tek tek merge edilir.
    **"Update branch" (S-101):** yalnız bu dosyalara dokunan ya da başka bir PR'ın üstüne açılmış PR'da yapılır: önce Update
    branch, kontroller yeşil, sonra onay ve hemen merge commit (SOP §20.4/7). Diğer PR'larda GitHub çakışma göstermiyorsa
    basılmaz; basmak onayı düşürür ve kontrolleri yeniden koşturur.
    **Yedek onaylayıcı (S-101, sahip kararı 2026-10-30):** ana onaylayıcı yoksa ya da PR aynı gün kalıyorsa K3 yedektir. PR'ı
-   açan kendi PR'ını birleştiremez; K3 hesabıyla açılan PR K2'de kalır. Onay satırını satırdaki onaylayan birleştirir: K3
-   birleştirecekse satır baştan onun adıyla ve onun kendi sözüyle yazılır. Kişi, hesap ve rol tablosu:
-   `execution/approvals/approvers.tsv`.
+   açan kendi PR'ını birleştiremez; K3 hesabıyla açılan PR K2'de kalır. Onay satırını birleştiren, onaylayan olmak
+   zorunda değildir (S-115, 2026-11-01): listede, `high = evet` ve satırı yazanın kişisi değildir; PR'ı açan satırın
+   yazarıdır. Kişi, hesap ve rol tablosu: `execution/approvals/approvers.tsv`.
 4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
 5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı
    geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
@@ -858,7 +860,10 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    satırın kartı dalda `pack_approval.py row … --deferred --note "onayla · <kule sohbeti> · <tarih saat>"` ile üretilir
    (bekleyen önceki satır taban sayılır; sıkı okuma main'de aynı sırayla ölçer: önceki satır düşerse sonraki de düşer).
    Birleştiren listedeki, `high = evet`, satırı yazanın kişisi olmayan herhangi biridir; PR'ı açan satırın yazarıdır
-   (inceleme F-5); onaylayan olması gerekmez (§7b). Doğrudan main'e yazılmış satır geçersizdir.
+   (inceleme F-5); onaylayan olması gerekmez (§7b). Doğrudan main'e yazılmış satır geçersizdir. **`--author` modül
+   PR'ını açacak gh hesabıdır** (kulenin kendi hesabı; inceleme satırında aynı kişinin K anahtarı): PR başka bir kişinin
+   hesabıyla açılırsa modülün bütün onay ve inceleme satırları düşer (tur 2 G-3). Kural PR'ı birleşirken açık olan eski
+   yol onay PR'ları da bu kurala girer; açan = yazar ise etkilenmez.
 
 ## 8. Domain → Control Tower sahipliği (yalnız kanıttan)
 
