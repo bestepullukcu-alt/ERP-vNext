@@ -1,0 +1,30 @@
+{
+ "argv": [
+  "bash",
+  "execution/domains/pharmacovigilance/work-packs/scripts/dl3_host_smoke.sh"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-dl3-live-02/run-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 11419,
+   "path": "docs/records/audits/2026-11/pvg-dl3-live-02/run-01/stdout.txt",
+   "sha256": "37a0062a2e5277b0d97c22824693c7754715034226684be4e52d0c85aff5b9d9"
+  }
+ ],
+ "commit": "21a0a7630d5c2f5278a32f8d7211c705074c4b0d",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-01T20:50:33Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/pvg-dl3-live-02/run-01",
+ "started_utc": "2026-11-01T20:49:14Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "2729da49c452f077cca70b638c1f79f108e0c611"
+}
