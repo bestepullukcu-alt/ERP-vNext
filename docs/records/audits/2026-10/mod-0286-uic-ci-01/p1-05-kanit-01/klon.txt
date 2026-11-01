@@ -1,0 +1,21 @@
+[detached HEAD e01b9bebb] Revert "uic ac21 d1"
+ Date: Sat Oct 31 03:35:26 2026 +0300
+ 1 file changed, 2 deletions(-)
+[detached HEAD d03bcd465] Revert "uic ac21 d2"
+ Date: Sat Oct 31 03:35:28 2026 +0300
+ 1 file changed, 2 deletions(-)
+[detached HEAD 31771fe24] Revert "uic ac21 f"
+ Date: Sat Oct 31 03:35:37 2026 +0300
+ 9 files changed, 706 insertions(+)
+ create mode 100644 frontend/Diten.Web/Views/Meetings/Create.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/Details.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/Edit.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/Index.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/MeetingsIndex.cs
+ create mode 100644 frontend/Diten.Web/Views/Meetings/_DataTable.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/_Filter.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/_Form.cshtml
+ create mode 100644 frontend/Diten.Web/Views/Meetings/_IndexL10n.cshtml
+[detached HEAD 853ca256e] Revert "uic reg"
+ Date: Sat Oct 31 03:35:59 2026 +0300
+ 1 file changed, 2 deletions(-)

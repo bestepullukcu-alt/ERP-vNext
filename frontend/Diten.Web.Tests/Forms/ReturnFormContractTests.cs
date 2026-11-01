@@ -258,7 +258,7 @@ public sealed class ReturnFormContractTests
     }
 
     [Fact]
-    public void Mandatory_keys_and_all_twenty_one_error_codes_are_localized()
+    public void Mandatory_keys_and_all_twenty_five_error_codes_are_localized()
     {
         var english = Resx($"{ResxDir}/ReturnsIndex.en.resx");
         foreach (var key in new[] { "ReturnsTitle", "PageDescription", "AddNewReturns", "RmaNumber", "ShipmentId", "ActionsHeader" }.Concat(ErrorKeys))
@@ -266,18 +266,19 @@ public sealed class ReturnFormContractTests
             Assert.True(english.ContainsKey(key), key);
         }
 
-        Assert.Equal(21, english.Keys.Count(key => key.StartsWith("Err", StringComparison.Ordinal)));
+        Assert.Equal(25, english.Keys.Count(key => key.StartsWith("Err", StringComparison.Ordinal)));
         // One identical safe-not-found text for the Return and the Shipment 404 (pack §32.8).
         Assert.Equal(english["ErrReturnNotFound"], english["ErrShipmentNotFound"]);
     }
 
     [Fact]
-    public void Received_wording_is_a_manual_assertion()
+    public void Received_wording_is_the_stock_posting_receipt()
     {
         var english = Resx($"{ResxDir}/ReturnsIndex.en.resx");
-        Assert.Equal("Received (manual assertion)", english["TargetReceivedLabel"]);
-        Assert.Equal("Receive (manual assertion)", english["ActionReceive"]);
-        Assert.Contains("not a warehouse receipt", english["ReceivedManualNote"]);
+        Assert.Equal("Received", english["TargetReceivedLabel"]);
+        Assert.Equal("Receive", english["ActionReceive"]);
+        Assert.Contains("quarantine", english["ReceivedPostsQuarantineNote"]);
+        Assert.False(english.ContainsKey("ReceivedManualNote"));
         Assert.Contains("not the remaining quantity", english["ReturnLinesHelp"]);
     }
 

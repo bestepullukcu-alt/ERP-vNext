@@ -26,6 +26,7 @@ const ReturnsList = (function () {
     const filterCollapseId = 'inlineFilterCollapse';
     const colvisColumns = [1, 2, 3];
     const UUID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    const LINE_NUMBER_PATTERN = /^[0-9A-Za-z._-]{1,64}$/;
 
     // ReturnLifecycle.cs:4-9 (display only; the backend decides). InTransit→Cancelled does not exist (annex correction).
     const TRANSITIONS = Object.freeze({
@@ -49,8 +50,9 @@ const ReturnsList = (function () {
     });
     // Manifest §33: Reject and Cancel Return are the dangerous actions.
     const DANGEROUS_TARGETS = new Set(['Rejected', 'Cancelled']);
-    // Optional inventoryTransactionReferenceId is offered on Received and Dispositioned only (pack §32.7).
-    const INVENTORY_REFERENCE_TARGETS = new Set(['Received', 'Dispositioned']);
+    // Optional inventoryTransactionReferenceId is offered on Dispositioned only: on Received the service sets each line's
+    // reference and a client value is 400 (pack §34.2).
+    const INVENTORY_REFERENCE_TARGETS = new Set(['Dispositioned']);
     const RETURN_STATUS_KEY = Object.freeze({
         Requested: 'StatusRequested', Authorized: 'StatusAuthorized', Rejected: 'StatusRejected', InTransit: 'StatusInTransit',
         Received: 'StatusReceived', Dispositioned: 'StatusDispositioned', Closed: 'StatusClosed', Cancelled: 'StatusCancelled'
@@ -66,7 +68,7 @@ const ReturnsList = (function () {
     });
     // ReturnRepository.cs:57 (display note + disabled submit; server 422 SHIPMENT_NOT_RETURNABLE stays authoritative).
     const ELIGIBLE_SHIPMENT_STATUSES = new Set(['Delivered', 'Closed']);
-    // All 21 published Returns codes (shipment-bundle.openapi.yaml /returns operations), localized (pack §32.8/§32.9).
+    // All published Returns codes (shipment-bundle.openapi.yaml 3.4.0 /returns operations), localized (pack §32.8/§32.9).
     const ERROR_KEY = Object.freeze({
         INVALID_REQUEST: 'ErrInvalidRequest',
         RETURN_NOT_FOUND: 'ErrReturnNotFound',
@@ -88,7 +90,50 @@ const ReturnsList = (function () {
         REFERENCE_STATE_UNAVAILABLE: 'ErrReferenceStateUnavailable',
         DEPENDENCY_UNAVAILABLE: 'ErrDependencyUnavailable',
         PERSISTENCE_UNAVAILABLE: 'ErrPersistenceUnavailable',
-        INTERNAL_ERROR: 'ErrInternalError'
+        INTERNAL_ERROR: 'ErrInternalError',
+        INVENTORY_REFUSED: 'ErrInventoryRefused',
+        RETURN_SOURCE_MOVEMENT_MISSING: 'ErrReturnSourceMovementMissing',
+        RETURN_RECEIPT_IN_PROGRESS: 'ErrReturnReceiptInProgress',
+        RETURN_LINE_NOT_UNPOSTABLE: 'ErrReturnLineNotUnpostable'
+    });
+    // MOD-0183 §23.3 closed list: details.inventoryCode of a refused receipt line → its reason text (pack MOD-0186 §34.3).
+    const INVENTORY_CODE_KEY = Object.freeze({
+        FEFO_BYPASS_REASON_REQUIRED: 'InventoryRefusedFefoBypassReasonRequired',
+        FEFO_ORDER_VIOLATION: 'InventoryRefusedFefoOrderViolation',
+        INSUFFICIENT_AVAILABLE: 'InventoryRefusedInsufficientAvailable',
+        INSUFFICIENT_STOCK: 'InventoryRefusedInsufficientStock',
+        ITEM_NOT_ACTIVE: 'InventoryRefusedItemNotActive',
+        LOT_BELOW_MIN_REMAINING_SHELF_LIFE: 'InventoryRefusedLotBelowMinRemainingShelfLife',
+        LOT_BLOCKED: 'InventoryRefusedLotBlocked',
+        LOT_EXPIRED: 'InventoryRefusedLotExpired',
+        LOT_NOT_ALLOWED: 'InventoryRefusedLotNotAllowed',
+        LOT_REQUIRED: 'InventoryRefusedLotRequired',
+        LOT_RETEST_DUE: 'InventoryRefusedLotRetestDue',
+        LOT_SKU_MISMATCH: 'InventoryRefusedLotSkuMismatch',
+        LOT_UNDER_RECALL: 'InventoryRefusedLotUnderRecall',
+        PRODUCT_MASTER_DATA_INCOMPLETE: 'InventoryRefusedProductMasterDataIncomplete',
+        RESERVATION_CONFLICT: 'InventoryRefusedReservationConflict',
+        SERIAL_ALREADY_EXISTS: 'InventoryRefusedSerialAlreadyExists',
+        SERIAL_COUNT_MISMATCH: 'InventoryRefusedSerialCountMismatch',
+        SERIAL_LOT_MISMATCH: 'InventoryRefusedSerialLotMismatch',
+        SERIAL_NOT_AVAILABLE: 'InventoryRefusedSerialNotAvailable',
+        SKU_ITEM_MISMATCH: 'InventoryRefusedSkuItemMismatch',
+        SKU_LEVEL_NOT_STOCKABLE: 'InventoryRefusedSkuLevelNotStockable',
+        UNKNOWN_ITEM: 'InventoryRefusedUnknownItem',
+        UNKNOWN_LOCATION: 'InventoryRefusedUnknownLocation',
+        UNKNOWN_LOT: 'InventoryRefusedUnknownLot',
+        UOM_CONVERSION_MISSING: 'InventoryRefusedUomConversionMissing'
+    });
+    // The refusals no retry can change (ReturnReceiptCoordinator Permanent, pack §34.2): only these offer the unposted exit.
+    const PERMANENT_INVENTORY_CODES = new Set(['ITEM_NOT_ACTIVE', 'SKU_LEVEL_NOT_STOCKABLE', 'UNKNOWN_ITEM']);
+    const POSTING_KEY = Object.freeze({ Posted: 'ReceiptLinePosted', NotPosted: 'ReceiptLineNotPosted' });
+    // inventoryPostingReason of a NotPosted line (ReturnModels.cs); the three permanent codes reuse their refusal text.
+    const POSTING_REASON_KEY = Object.freeze({
+        PRE_WP_P1: 'ReceiptReasonPreWpP1',
+        INTEGRITY_FAULT: 'ReceiptReasonIntegrityFault',
+        ITEM_NOT_ACTIVE: 'InventoryRefusedItemNotActive',
+        SKU_LEVEL_NOT_STOCKABLE: 'InventoryRefusedSkuLevelNotStockable',
+        UNKNOWN_ITEM: 'InventoryRefusedUnknownItem'
     });
     // INVALID_REQUEST covers 400 schema, 401 auth, 403 context and 415 media (annex D186-05); the text follows the status.
     const INVALID_REQUEST_NOTICE = Object.freeze({ 401: 'NoticeSessionEnded', 403: 'NoticeForbidden', 415: 'NoticeUnsupportedMedia' });
@@ -124,6 +169,8 @@ const ReturnsList = (function () {
     let transitionContext = null;      // { returnId, shipmentId, rmaNumber, fromStatus }
     let transitionIntent = null;       // { returnId, key, bodyText, blocked, blockedFailure }
     let transitionPending = false;
+    let unpostedCandidate = null;      // { shipmentLineNumber, reasonCode } of the last permanent refusal
+    let storedReceipt = null;          // { fieldValue, occurredAt } of the 409 stored values, filled into the panel
 
     // ─── Basics ──────────────────────────────────────────────────────────────
     function readPermissions() {
@@ -164,7 +211,6 @@ const ReturnsList = (function () {
     const returnStatusLabel = (status) => (isText(status) && RETURN_STATUS_KEY[status] ? t(RETURN_STATUS_KEY[status]) : '');
     const shipmentStatusLabel = (status) =>
         (isText(status) && SHIPMENT_STATUS_KEY[status] ? t(SHIPMENT_STATUS_KEY[status]) : t('NotProvided'));
-    // "Received (manual assertion)" on the transition surfaces; the status column keeps "Received" (README A8).
     const targetLabel = (target) => (target === 'Received' ? t('TargetReceivedLabel') : returnStatusLabel(target));
     const offcanvas = (id) => {
         const el = document.getElementById(id);
@@ -226,11 +272,41 @@ const ReturnsList = (function () {
             : (STATUS_FALLBACK_CODE[response.status] || (response.status >= 500 ? 'INTERNAL_ERROR' : 'INVALID_REQUEST'));
         const headerReference = response.headers.get('X-Correlation-Id');
         const reference = isText(body?.error?.correlationId) ? body.error.correlationId : (headerReference || '');
-        return { status: response.status, code, reference };
+        const rawDetails = body?.error?.details;
+        const details = rawDetails !== null && typeof rawDetails === 'object' && !Array.isArray(rawDetails) ? rawDetails : {};
+        // A 422 with a code this page does not know is an INVENTORY answer it cannot name: shown with the code, never as a
+        // validation text (pack §34.3).
+        const unknownCode = response.status === 422 && envelopeCode && !ERROR_KEY[envelopeCode] ? envelopeCode : '';
+        return { status: response.status, code, reference, details, unknownCode };
     };
-    const networkFailure = (code) => ({ status: 0, code, reference: '' });
+    const networkFailure = (code) => ({ status: 0, code, reference: '', details: {}, unknownCode: '' });
+    // {0}-style text; a missing value shows NotProvided (the Returns resx has no Unknown key). Function replacement: a value
+    // is never read as a replacement pattern.
+    const format = (text, ...values) => values.reduce((result, value, index) => result.replace(`{${index}}`,
+        () => (isText(value) && value !== '' ? value : t('NotProvided'))), text);
+    const inventoryReason = (code) => (isText(code) && Object.hasOwn(INVENTORY_CODE_KEY, code)
+        ? t(INVENTORY_CODE_KEY[code]) : format(t('InventoryRefusedUnknown'), code));
+    const permanentRefusal = (failure) => failure.code === 'INVENTORY_REFUSED' && isText(failure.details?.shipmentLineNumber)
+        && LINE_NUMBER_PATTERN.test(failure.details.shipmentLineNumber) && PERMANENT_INVENTORY_CODES.has(failure.details?.inventoryCode);
+    // The stored instant is UTC on the wire and local in the field (Q374): shown the way the user would type it.
+    const localStoredValue = (value) => {
+        const when = new Date(value);
+        if (!isText(value) || Number.isNaN(when.getTime())) return '';
+        return `${localInputValue(when)}:${pad(when.getSeconds())}`;
+    };
+    const storedValues = (failure) => (failure.code === 'RETURN_RECEIPT_IN_PROGRESS' && isText(failure.details?.toWarehouseId)
+        ? [failure.details.toWarehouseId, failure.details.toLocationId, localStoredValue(failure.details.occurredAt).replace('T', ' ')] : null);
     const failureText = (failure) => {
+        const details = failure.details || {};
+        if (failure.unknownCode) return format(t('InventoryRefusedUnknown'), failure.unknownCode);
         if (failure.code === 'INVALID_REQUEST' && INVALID_REQUEST_NOTICE[failure.status]) return t(INVALID_REQUEST_NOTICE[failure.status]);
+        if (failure.code === 'INVENTORY_REFUSED') {
+            const refused = `${format(t('ErrInventoryRefused'), details.shipmentLineNumber)} ${inventoryReason(details.inventoryCode)}`;
+            return permanentRefusal(failure) ? refused : `${refused} ${t('ReceiptPartialRetryHint')}`;
+        }
+        if (failure.code === 'RETURN_SOURCE_MOVEMENT_MISSING') return format(t('ErrReturnSourceMovementMissing'), details.shipmentLineNumber);
+        if (failure.code === 'RETURN_LINE_NOT_UNPOSTABLE') return format(t('ErrReturnLineNotUnpostable'), details.shipmentLineNumber);
+        if (storedValues(failure)) return `${t('ErrReturnReceiptInProgress')} ${format(t('ReceiptStoredValues'), ...storedValues(failure))}`;
         return t(ERROR_KEY[failure.code] || 'ErrInternalError');
     };
     const retryable = (failure) => failure.status === 0 || failure.status === 500 || failure.status === 503;
@@ -244,13 +320,31 @@ const ReturnsList = (function () {
         window.showToast?.(`${failureText(failure)}${reference}`, failure.status >= 500 || failure.status === 0 ? 'error' : 'warning');
     };
 
+    // Identifiers and dates stay isolated inside an RTL sentence (localization-standard §5).
+    const storedValuesRow = (values) => {
+        const row = document.createElement('div');
+        row.className = 'small mt-1';
+        t('ReceiptStoredValues').split(/(\{\d\})/).forEach((part) => {
+            const slot = /^\{(\d)\}$/.exec(part);
+            if (!slot) { row.appendChild(document.createTextNode(part)); return; }
+            const value = values[Number(slot[1])];
+            const bdi = document.createElement('bdi');
+            bdi.dir = 'ltr';
+            bdi.textContent = isText(value) && value !== '' ? value : t('NotProvided');
+            row.appendChild(bdi);
+        });
+        return row;
+    };
+
     const showAlert = (alertId, failureOrText) => {
         const alert = document.getElementById(alertId);
         if (!alert) return;
         alert.replaceChildren();
         const message = document.createElement('div');
-        message.textContent = typeof failureOrText === 'string' ? failureOrText : failureText(failureOrText);
+        const stored = typeof failureOrText === 'string' ? null : storedValues(failureOrText);
+        message.textContent = stored ? t('ErrReturnReceiptInProgress') : (typeof failureOrText === 'string' ? failureOrText : failureText(failureOrText));
         alert.appendChild(message);
+        if (stored) alert.appendChild(storedValuesRow(stored));
         const reference = typeof failureOrText === 'string' ? '' : safeReference(failureOrText.reference);
         if (reference) {
             const row = document.createElement('div');
@@ -730,10 +824,11 @@ const ReturnsList = (function () {
         if (occurredAt) occurredAt.value = localInputValue(now); // default now, local wall clock
         const zone = document.getElementById('transitionOccurredAtZone');
         if (zone) zone.textContent = zoneLabel(now);
-        ['transitionDispositionCode', 'transitionInventoryReference'].forEach((id) => {
+        ['transitionDispositionCode', 'transitionInventoryReference', 'transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
+        resetReceiptSurfaces();
         syncTransitionTarget();
         const el = document.getElementById('offcanvasReturnTransition');
         if (el) el.inert = false;
@@ -745,21 +840,131 @@ const ReturnsList = (function () {
         const target = document.getElementById('transitionTarget')?.value || '';
         document.getElementById('transitionDispositionGroup')?.classList.toggle('d-none', target !== 'Dispositioned');
         document.getElementById('transitionInventoryGroup')?.classList.toggle('d-none', !INVENTORY_REFERENCE_TARGETS.has(target));
+        document.getElementById('transitionReceiptGroup')?.classList.toggle('d-none', target !== 'Received');
         document.getElementById('transitionReceivedNote')?.classList.toggle('d-none', target !== 'Received');
     };
 
+    // The unposted exit (Natig 2026-10-30, Q5): offered only after a permanent refusal of that line.
+    const showUnpostedAction = (candidate) => {
+        unpostedCandidate = candidate;
+        document.getElementById('btnReceiveWithoutPosting')?.classList.toggle('d-none', !candidate);
+    };
+    const resetReceiptSurfaces = () => {
+        showUnpostedAction(null);
+        document.getElementById('transitionReceiptResult')?.classList.add('d-none');
+        document.getElementById('transitionReceiptLines')?.replaceChildren();
+        document.getElementById('formReturnTransition')?.classList.remove('d-none');
+        document.getElementById('btnSubmitTransition')?.classList.remove('d-none');
+        storedReceipt = null;
+    };
+
+    // The 409 asks for the stored values: they go into the fields, and an unchanged time is sent as the exact stored
+    // instant, so the wall-clock field cannot turn it into another value and answer 409 again.
+    const fillStoredReceipt = (failure) => {
+        if (!storedValues(failure)) return;
+        const details = failure.details;
+        const warehouse = document.getElementById('transitionToWarehouseId');
+        const location = document.getElementById('transitionToLocationId');
+        if (warehouse) warehouse.value = details.toWarehouseId;
+        if (location) location.value = isText(details.toLocationId) ? details.toLocationId : '';
+        const fieldValue = localStoredValue(details.occurredAt);
+        const occurredAt = document.getElementById('transitionOccurredAt');
+        if (fieldValue && occurredAt) {
+            occurredAt.value = fieldValue;
+            storedReceipt = { fieldValue, occurredAt: details.occurredAt };
+        }
+    };
+
+    // Pack §32.8: after an unknown outcome the unposted request is retried with the same key and the same body, so the
+    // exit stays and the plain Submit, which would send another body under that key, leaves. Any definite answer ends it.
+    const settleUnposted = (failure, intent, unposted) => {
+        const unknownOutcome = Boolean(unposted) && retryable(failure);
+        intent.retryBodyText = unknownOutcome ? intent.bodyText : null;
+        document.getElementById('btnSubmitTransition')?.classList.toggle('d-none', unknownOutcome);
+        if (unknownOutcome) showUnpostedAction(unposted);
+        else if (permanentRefusal(failure)) showUnpostedAction({ shipmentLineNumber: failure.details.shipmentLineNumber, reasonCode: failure.details.inventoryCode });
+        else showUnpostedAction(null);
+    };
+
+    // Checklist UI-PM-10 pattern: a hidden or disabled button drops focus to BODY and Escape does nothing.
+    const restoreTransitionFocus = () => {
+        const surface = document.getElementById('offcanvasReturnTransition');
+        if (!surface?.classList.contains('show') || surface.contains(document.activeElement)) return;
+        const candidates = ['transitionReceiptResult', 'btnReceiveWithoutPosting', 'btnSubmitTransition'];
+        const target = candidates.map((id) => document.getElementById(id)).find((el) => el && !el.classList.contains('d-none'));
+        target?.focus({ preventScroll: true });
+    };
+
+    const receiptWarehouseMissing = () => {
+        const field = document.getElementById('transitionToWarehouseId');
+        const missing = (field?.value ?? '').trim() === '';
+        field?.classList.toggle('is-invalid', missing);
+        field?.setAttribute('aria-invalid', String(missing));
+        if (missing) {
+            showAlert('formReturnTransitionAlert', { status: 400, code: 'INVALID_REQUEST', reference: '' });
+            field?.focus({ preventScroll: true });
+        }
+        return missing;
+    };
+
+    // lines[] exists only on the Received answer (ReturnResponse, not the list), so the result is shown where it arrives.
+    const postingReasonText = (reason) => {
+        if (!isText(reason) || reason === '') return '';
+        return Object.hasOwn(POSTING_REASON_KEY, reason) ? t(POSTING_REASON_KEY[reason]) : format(t('InventoryRefusedUnknown'), reason);
+    };
+    const receiptLineCells = (line) => [
+        isText(line?.shipmentLineNumber) ? line.shipmentLineNumber : t('NotProvided'),
+        isText(line?.inventoryPosting) && Object.hasOwn(POSTING_KEY, line.inventoryPosting) ? t(POSTING_KEY[line.inventoryPosting]) : t('NotProvided'),
+        postingReasonText(line?.inventoryPostingReason),
+        isText(line?.inventoryTransactionReferenceId) ? line.inventoryTransactionReferenceId : ''
+    ];
+    const showReceiptResult = (lines) => {
+        const body = document.getElementById('transitionReceiptLines');
+        if (!body) return;
+        body.replaceChildren(...lines.map((line) => {
+            const row = document.createElement('tr');
+            receiptLineCells(line).forEach((value, index) => {
+                const cell = document.createElement('td');
+                if (index === 0 || index === 3) {
+                    const bdi = document.createElement('bdi');
+                    bdi.dir = 'ltr';
+                    bdi.textContent = value;
+                    cell.appendChild(bdi);
+                } else {
+                    cell.textContent = value;
+                }
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+        document.getElementById('formReturnTransition')?.classList.add('d-none');
+        document.getElementById('btnSubmitTransition')?.classList.add('d-none');
+        showUnpostedAction(null);
+        document.getElementById('transitionReceiptResult')?.classList.remove('d-none');
+    };
+
     // TransitionReturnCommand: targetStatus + occurredAt (exact text); dispositionCode only for Dispositioned (sent as
-    // typed, whitespace kept); inventoryTransactionReferenceId only for Received/Dispositioned and omitted when empty
-    // (README A9). Optional fields not listed for a target are omitted (pack §32.7).
-    const buildTransitionBody = () => {
+    // typed, whitespace kept); inventoryTransactionReferenceId only for Dispositioned and omitted when empty (README A9);
+    // toWarehouseId / toLocationId only for Received, the location omitted when empty (SHIPMENT-BUNDLE 3.4.0: optional);
+    // unpostedLines only for the unposted exit. Optional fields not listed for a target are omitted (pack §32.7).
+    const buildTransitionBody = (unposted) => {
         const target = document.getElementById('transitionTarget')?.value || '';
         const when = parseLocalInput(document.getElementById('transitionOccurredAt')?.value ?? '');
         const body = { targetStatus: target, occurredAt: when ? when.toISOString() : '' };
+        if (target === 'Received' && storedReceipt && document.getElementById('transitionOccurredAt')?.value === storedReceipt.fieldValue) {
+            body.occurredAt = storedReceipt.occurredAt;
+        }
         if (INVENTORY_REFERENCE_TARGETS.has(target)) {
             const reference = document.getElementById('transitionInventoryReference')?.value ?? '';
             if (reference !== '') body.inventoryTransactionReferenceId = reference;
         }
         if (target === 'Dispositioned') body.dispositionCode = document.getElementById('transitionDispositionCode')?.value ?? '';
+        if (target === 'Received') {
+            body.toWarehouseId = document.getElementById('transitionToWarehouseId')?.value ?? '';
+            const location = document.getElementById('transitionToLocationId')?.value ?? '';
+            if (location !== '') body.toLocationId = location;
+            if (unposted) body.unpostedLines = [unposted];
+        }
         return { target, bodyText: JSON.stringify(body) };
     };
 
@@ -787,7 +992,9 @@ const ReturnsList = (function () {
             showAlert('formReturnTransitionAlert', t('ErrDispositionRequired'));
             return;
         }
-        const subtext = target === 'Received' ? `${t('ConfirmTransition')} ${t('ReceivedManualNote')}` : t('ConfirmTransition');
+        // Mirror of the business rule only: Received needs toWarehouseId (400 otherwise; the backend stays authoritative).
+        if (target === 'Received' && receiptWarehouseMissing()) return;
+        const subtext = target === 'Received' ? `${t('ConfirmTransition')} ${t('ReceivedPostsQuarantineNote')}` : t('ConfirmTransition');
         // Shared premium wrapper only (MOD-0013 _GlobalConfirmation: showConfirm(title, callback, options));
         // no native dialog and no direct SweetAlert call. Title and subtext are resx text only.
         window.showConfirm?.(targetLabel(target), () => { void submitTransition(); }, {
@@ -797,11 +1004,24 @@ const ReturnsList = (function () {
         });
     };
 
-    const submitTransition = async () => {
+    const requestReceiveWithoutPosting = () => {
+        const candidate = unpostedCandidate;
+        if (!transitionContext || !candidate) return;
+        if (transitionPending) { window.showToast?.(t('RequestPending'), 'warning'); return; }
+        if (receiptWarehouseMissing()) return;
+        window.showConfirm?.(t('ActionReceiveWithoutPosting'), () => { void submitTransition(candidate); }, {
+            subtext: format(t('ConfirmReceiveWithoutPosting'), candidate.shipmentLineNumber),
+            type: 'danger',
+            confirmButtonText: t('ActionReceiveWithoutPosting')
+        });
+    };
+
+    const submitTransition = async (unposted) => {
         const context = transitionContext;
         if (!context || transitionPending) return;
         hideAlert('formReturnTransitionAlert');
-        const { bodyText } = buildTransitionBody();
+        const retryBodyText = unposted ? transitionIntent?.retryBodyText : null;
+        const bodyText = retryBodyText || buildTransitionBody(unposted).bodyText;
         if (!transitionIntent || transitionIntent.returnId !== context.returnId) {
             transitionIntent = { returnId: context.returnId, key: uuid(), bodyText: null, blocked: false, blockedFailure: null };
         }
@@ -824,22 +1044,26 @@ const ReturnsList = (function () {
                 let result = null;
                 try { result = await response.json(); } catch (_) { result = null; }
                 transitionIntent = null;
-                closeTransition();
+                if (Array.isArray(result?.lines) && result.lines.length) showReceiptResult(result.lines);
+                else closeTransition();
                 window.showToast?.(t(result?.idempotentReplay === true ? 'TransitionReplayed' : 'TransitionCompleted'), 'success');
                 reloadList(); // a replay snapshot is never shown as current state
                 return;
             }
-            handleTransitionFailure(await readFailure(response), intent);
+            handleTransitionFailure(await readFailure(response), intent, unposted);
         } catch (error) {
             console.error('[Returns] Transition request failed.', error);
-            showAlert('formReturnTransitionAlert', networkFailure('PERSISTENCE_UNAVAILABLE'));
+            const failure = networkFailure('PERSISTENCE_UNAVAILABLE');
+            showAlert('formReturnTransitionAlert', failure);
+            settleUnposted(failure, intent, unposted);
         } finally {
             transitionPending = false;
             if (submit) submit.disabled = false;
+            restoreTransitionFocus();
         }
     };
 
-    const handleTransitionFailure = (failure, intent) => {
+    const handleTransitionFailure = (failure, intent, unposted) => {
         if (failure.status === 401) { handleUnauthorized(); return; }
         if (failure.status === 403 || failure.status === 404) {
             // Close; hidden surface inert; one localized text + support reference; reload (RU-11).
@@ -861,6 +1085,8 @@ const ReturnsList = (function () {
         }
         // DISPOSITION_REQUIRED/400/415: inputs kept. 500/503: same key + identical body on the explicit retry.
         showAlert('formReturnTransitionAlert', failure);
+        fillStoredReceipt(failure);
+        settleUnposted(failure, intent, unposted);
     };
 
     // ─── Filters ─────────────────────────────────────────────────────────────
@@ -1143,6 +1369,7 @@ const ReturnsList = (function () {
         document.getElementById('btnSaveReturn')?.addEventListener('click', () => { void submitCreate(); });
 
         document.getElementById('transitionTarget')?.addEventListener('change', syncTransitionTarget);
+        document.getElementById('btnReceiveWithoutPosting')?.addEventListener('click', requestReceiveWithoutPosting);
         document.getElementById('btnSubmitTransition')?.addEventListener('click', requestTransition);
         ['formReturn', 'formReturnTransition'].forEach((id) => {
             document.getElementById(id)?.addEventListener('submit', (event) => event.preventDefault());
@@ -1167,6 +1394,7 @@ const ReturnsList = (function () {
     };
 
     return {
+        failureText, readFailure, permanentRefusal, receiptLineCells, buildTransitionBody, bindEvents, loadReturns, openTransition,
         init: function () {
             syncL10n();
             bindEvents();

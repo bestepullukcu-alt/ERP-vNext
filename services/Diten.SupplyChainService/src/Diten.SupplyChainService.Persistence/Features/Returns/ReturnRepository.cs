@@ -31,12 +31,25 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
         if (receipt["CorrelationRoot"].AsString != root.ToString()) return ReturnMutationResult.Error(409, "CORRELATION_ROOT_MISMATCH");
         if (receipt["Fingerprint"].AsString != fingerprint) return ReturnMutationResult.Error(409, "IDEMPOTENCY_KEY_REUSED");
         return new(Guid.Parse(receipt["ReturnId"].AsString), receipt["RmaNumber"].AsString,
-            Guid.Parse(receipt["ShipmentId"].AsString), receipt["ResultingStatus"].AsString, true, receipt["StatusCode"].AsInt32);
+            Guid.Parse(receipt["ShipmentId"].AsString), receipt["ResultingStatus"].AsString, true, receipt["StatusCode"].AsInt32,
+            Lines: receipt.TryGetValue("Lines", out var lines) && lines.IsBsonArray ? lines.AsBsonArray.Select(x => ReceiptLine(x.AsBsonDocument)).ToArray() : null);
     }
+    // MOD-0186 §34.2: the per-line result a Received receipt stores, so its replay answers the same ReturnResponse.lines[].
+    private static BsonDocument LineDocument(ReturnLine line) => new()
+    {
+        { "ShipmentLineNumber", line.ShipmentLineNumber }, { "InventoryTransactionReferenceId", Text(line.InventoryTransactionReferenceId) },
+        { "InventoryPosting", Text(line.InventoryPosting) }, { "InventoryPostingReason", Text(line.InventoryPostingReason) }
+    };
+    private static ReturnLine ReceiptLine(BsonDocument line) => new(line["ShipmentLineNumber"].AsString, "", "",
+        line["InventoryTransactionReferenceId"].IsBsonNull ? null : line["InventoryTransactionReferenceId"].AsString,
+        line["InventoryPosting"].IsBsonNull ? null : line["InventoryPosting"].AsString,
+        line["InventoryPostingReason"].IsBsonNull ? null : line["InventoryPostingReason"].AsString);
     public async Task<ReturnMutationResult> MutateAsync(ReturnScope scope, Guid? id, string key, string fingerprint,
         Guid root, ReturnOrder? create, ReturnStatus? target, string? occurredAt, string? inventoryReference,
-        string? dispositionCode, Func<ReturnOrder, CancellationToken, Task<ReturnReferenceSnapshot>> observe, CancellationToken ct, string? rawCreateJson = null)
+        string? dispositionCode, Func<ReturnOrder, CancellationToken, Task<ReturnReferenceSnapshot>> observe, CancellationToken ct, string? rawCreateJson = null,
+        ReturnReceiptCompletion? completion = null)
     {
+        if (completion is not null && (id is null || target != ReturnStatus.Received)) throw new ArgumentException("A receipt completion belongs to InTransit → Received.", nameof(completion));
         var identity = Scope(scope);
         identity.Add("Operation", id is null ? "createReturn" : "transitionReturn");
         identity.Add("TargetId", id?.ToString() ?? "create"); identity.Add("IdempotencyKey", key);
@@ -94,6 +107,7 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                         if (!ReturnLifecycle.Allows(order.Status, target!.Value)) throw new ReturnFailureException(422, "INVALID_RETURN_TRANSITION");
                         if (target == ReturnStatus.Dispositioned && string.IsNullOrEmpty(dispositionCode)) throw new ReturnFailureException(422, "DISPOSITION_REQUIRED");
                         previousStatus = order.Status.ToString(); cause = order.LastEventId;
+                        if (completion is not null) Complete(order, completion);
                         if (ReturnLifecycle.Releases(target.Value)) await Release(session, scope, order, ct);
                         order.Status = target.Value; order.UpdatedBy = scope.ActorId; order.UpdatedAt = DateTimeOffset.UtcNow;
                         order.Version++; order.InventoryTransactionReferenceId = inventoryReference;
@@ -111,13 +125,20 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                     saved.Add("_id", Guid.NewGuid().ToString()); saved.Add("CorrelationRoot", root.ToString()); saved.Add("Fingerprint", fingerprint);
                     saved.Add("ReturnId", order.Id.ToString()); saved.Add("RmaNumber", order.RmaNumber); saved.Add("ShipmentId", order.ShipmentId.ToString());
                     saved.Add("ResultingStatus", order.Status.ToString()); saved.Add("StatusCode", id is null ? 201 : 200); saved.Add("ActorId", scope.ActorId.ToString());
+                    if (completion is not null) saved.Add("Lines", new BsonArray(order.Lines.Select(LineDocument)));
                     await Receipts.InsertOneAsync(session, saved, cancellationToken: ct); await probe.AtAsync("receipt", ct);
                     var audit = Scope(scope); audit.Add("_id", Guid.NewGuid().ToString()); audit.Add("ReturnId", order.Id.ToString());
                     audit.Add("ActorId", scope.ActorId.ToString()); audit.Add("Version", order.Version); audit.Add("CorrelationRoot", root.ToString());
                     audit.Add("FromStatus", Text(previousStatus)); audit.Add("ToStatus", order.Status.ToString());
                     audit.Add("OccurredAt", Text(occurredAt)); audit.Add("CommittedAt", DateTimeOffset.UtcNow.ToString("O"));
                     audit.Add("InventoryTransactionReferenceId", Text(inventoryReference)); audit.Add("DispositionCode", Text(dispositionCode));
-                    audit.Add("EvidenceType", target == ReturnStatus.Received ? "manual-assertion" : BsonNull.Value);
+                    audit.Add("EvidenceType", target != ReturnStatus.Received ? BsonNull.Value : completion is null ? "manual-assertion" : "inventory-customer-return");
+                    // MOD-0186 §34.2: each line's posting, reason (PRE_WP_P1 / unpostedLines) and last INVENTORY answer.
+                    if (completion is not null)
+                    {
+                        audit.Add("ReceiptLines", new BsonArray(order.Lines.Select(LineDocument)));
+                        audit.Add("ReceiptAttempt", BsonDocument.Parse(completion.AuditDetailJson));
+                    }
                     audit.Add("RawCreate", create is null ? BsonNull.Value : BsonDocument.Parse(rawCreateJson ?? JsonSerializer.Serialize(create)));
                     audit.Add("ReferenceObservation", observation is null ? BsonNull.Value : BsonDocument.Parse(JsonSerializer.Serialize(observation)));
                     await database.GetCollection<BsonDocument>("returns_audit").InsertOneAsync(session, audit, cancellationToken: ct);
@@ -141,7 +162,7 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                         catch (MongoException ex) when (ex.HasErrorLabel("UnknownTransactionCommitResult") && commit < 2) { }
                     }
                     await probe.AtAsync("afterCommit", ct);
-                    return new(order.Id, order.RmaNumber, order.ShipmentId, order.Status.ToString(), false, id is null ? 201 : 200);
+                    return new(order.Id, order.RmaNumber, order.ShipmentId, order.Status.ToString(), false, id is null ? 201 : 200, Lines: completion is null ? null : order.Lines);
                 }
                 catch
                 {
@@ -181,6 +202,61 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
         return ReturnMutationResult.Error(503, "PERSISTENCE_UNAVAILABLE");
     }
     private static BsonValue Text(string? value) => value is null ? BsonNull.Value : new BsonString(value);
+    /// <summary>§34.2 step D, inside the transaction: the lease is still ours and every line is Posted or NotPosted with a reason.</summary>
+    private static void Complete(ReturnOrder order, ReturnReceiptCompletion receipt)
+    {
+        var held = order.ReceiptAttempt;
+        if (held is null || held.LeaseId != receipt.LeaseId || !held.IsComplete()) throw new ReturnFailureException(409, "RETURN_RECEIPT_IN_PROGRESS");
+        order.Lines = order.Lines.Select(line =>
+        {
+            var result = receipt.Lines.Single(r => r.ShipmentLineNumber == line.ShipmentLineNumber);
+            return line with { InventoryTransactionReferenceId = result.InventoryTransactionReferenceId, InventoryPosting = result.InventoryPosting,
+                InventoryPostingReason = result.InventoryPostingReason };
+        }).ToList();
+        held.LeaseUntil = DateTimeOffset.UtcNow; held.Rev++;
+    }
+    private static BsonDocument Identified(ReturnScope scope, Guid id) { var filter = Visible(scope); filter.Add("_id", id.ToString()); return filter; }
+    public async Task<ReturnOrder?> GetAsync(ReturnScope scope, Guid id, CancellationToken ct) =>
+        await Orders.Find(Identified(scope, id)).FirstOrDefaultAsync(ct);
+    public async Task<ReturnMutationResult?> FindTransitionReplayAsync(ReturnScope scope, Guid id, string key, string fingerprint, Guid root, CancellationToken ct)
+    {
+        var identity = Scope(scope); identity.Add("Operation", "transitionReturn"); identity.Add("TargetId", id.ToString()); identity.Add("IdempotencyKey", key);
+        var prior = await Receipts.Find(identity, new FindOptions { Collation = Collation.Simple }).FirstOrDefaultAsync(ct);
+        return prior is null ? null : Replay(prior, fingerprint, root);
+    }
+    // A takeover or a first attempt is conditional on what the caller observed (no attempt, or the same revision), so a
+    // write the old holder made after the observation is never overwritten from a stale copy.
+    public async Task<bool> TryBeginOrResumeReceiptAsync(ReturnScope scope, Guid id, ReceiptAttempt? observed, ReceiptAttempt next, CancellationToken ct)
+    {
+        var filter = Identified(scope, id); filter.Add("Status", ReturnStatus.InTransit.ToString());
+        if (observed is null) { filter.Add("ReceiptAttempt", BsonNull.Value); next.Rev = 0; }
+        else { filter.Add("ReceiptAttempt.Rev", observed.Rev); next.Rev = observed.Rev + 1; }
+        return (await Orders.UpdateOneAsync(filter, Builders<ReturnOrder>.Update.Set(x => x.ReceiptAttempt, next), cancellationToken: ct)).MatchedCount == 1;
+    }
+    public async Task<bool> SaveReceiptAttemptAsync(ReturnScope scope, Guid id, ReceiptAttempt attempt, Guid heldLeaseId, CancellationToken ct)
+    {
+        var filter = Identified(scope, id); filter.Add("Status", ReturnStatus.InTransit.ToString()); filter.Add("ReceiptAttempt.LeaseId", heldLeaseId.ToString());
+        attempt.Rev++;
+        return (await Orders.UpdateOneAsync(filter, Builders<ReturnOrder>.Update.Set(x => x.ReceiptAttempt, attempt), cancellationToken: ct)).MatchedCount == 1;
+    }
+    public async Task AppendReceiptAuditAsync(ReturnScope scope, Guid id, ReceiptAuditEntry entry, CancellationToken ct)
+    {
+        using var session = await database.Client.StartSessionAsync(cancellationToken: ct);
+        await session.WithTransactionAsync(async (transaction, token) =>
+        {
+            // Append-only and without the lease: whatever state the return is in, the pair is kept.
+            await Orders.UpdateOneAsync(transaction, Identified(scope, id), Builders<ReturnOrder>.Update.Push(x => x.ReceiptAuditHistory, entry), cancellationToken: token);
+            var row = Scope(scope); row.Add("_id", Guid.NewGuid().ToString()); row.Add("ReturnId", id.ToString()); row.Add("ActorId", scope.ActorId.ToString());
+            // Review 01 F-2: a posted resend answered with another movement is recorded the same way, under its own kind.
+            row.Add("Kind", entry.Outcome.StartsWith("ResendTransactionMismatch", StringComparison.Ordinal) ? "ReceiptIntegrityFault" : "ReceiptLateWriter"); row.Add("CommittedAt", DateTimeOffset.UtcNow.ToString("O"));
+            row.Add("LateWriter", BsonDocument.Parse(JsonSerializer.Serialize(entry)));
+            await database.GetCollection<BsonDocument>("returns_audit").InsertOneAsync(transaction, row, cancellationToken: token);
+            // The command that runs the late writer has lost its lease and fails, so this row stays Abandoned (BL-501).
+            await CentralAuditTransaction.EnlistAsync(transaction, id, token);
+            await probe.AtAsync("lateWriter", token);
+            return true;
+        }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), ct);
+    }
     private static BsonDocument EntitlementKey(ReturnScope scope, Guid shipment, string line)
     { var filter = Scope(scope); filter.Add("ShipmentId", shipment.ToString()); filter.Add("LineNumber", line); return filter; }
     private async Task Debit(IClientSessionHandle session, ReturnScope scope, ReturnOrder order, ReturnReferenceSnapshot snapshot, CancellationToken ct)
