@@ -2,7 +2,7 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
+    x-status       : DRAFT (rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
                      öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
                      dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
@@ -12,7 +12,8 @@
     x-decision     : sahip kararları K-3, K-4, K-5, K-7, K-8r, K-9, K-10, K-11, K-12 (Beste 2026-10-30; paket Bölüm 0.1);
                      KARAR D59/1 (docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md:605-610); KARAR D91
     x-rule         : RCS-001 (.antigravity/rules/record-coding-standard.md) §1, §3, §5.1–§5.12
-    x-measured-at  : origin/main @ 6d49f5823 (2026-10-30)
+    x-measured-at  : 81864bd98 (2026-11-02; ilk ölçüm 6d49f5823, 2026-10-30 — atıf yapılan servis, Gateway ve kural dosyaları
+                     iki commit arasında ve 8e954eb2b'ye kadar değişmedi, `git diff --stat`)
 
 **Uyumluluk kuralı.** v0'a göre **istek gövdesi ve hata kodlarında değişiklik yalnız eklemedir** (D59/1, K-3): v0 gövdesi
 (`legalEntityId`, `recordType`, `idempotencyKey`) v1'de aynı anlamı taşır (`prefixScope` yoksa `LegalEntity`), v0'ın dört
@@ -198,9 +199,16 @@ satırının `AGR`'ye çevrilmesi Ali (`.antigravity`) + Treasury PR'ıyla ayrı
   (`prefixScope` yok), sonra aynı anahtarla `"prefixScope": "LegalEntity"` → 200 ve aynı `code`; aynı anahtarla
   `"prefixScope": "Group"` → 400 `IDEMPOTENCY_KEY_REUSED`.
 - Ömür sınırsızdır. Tekrar MDM'e gitmez (MDM kapalıyken de 200 döner).
-- **Eşzamanlı aynı anahtar:** N eşzamanlı istek tek kod üretir ve hepsi o kodu alır; geçici yazım çakışmaları
-  (`TransientTransactionError` / `WriteConflict`) sunucuda yeniden denenir ya da kazanan okunur; 503 yalnız gerçek
-  erişilemezlikte. Sayaçta **en çok N−1** numara boşluk olarak kalabilir.
+- **Eşzamanlı aynı anahtar:** N eşzamanlı istek tek kod üretir; **200 alan her istek o kodu alır**. Geçici yazım
+  çakışmaları (`TransientTransactionError` / `WriteConflict`) sunucuda yeniden denenir ve yeniden denemede kazanan okunur.
+  **Sınır (rev 5, inceleme 03 tur 2 F-3):** Platform yeniden denemeleri beklemeden ve sınırlı sayıda yapar; kazananın
+  commit'i bu denemelerden uzun sürerse aynı anahtarlı bir istek **503 `RECORD_CODE_UNAVAILABLE`** alabilir. Bu bir hata
+  değil, tanımlı sınırdır: istek kod almamıştır ve yeni kod da üretilmemiştir. Sayaçta **en çok N−1** numara boşluk
+  olarak kalabilir.
+- **Kural — 503'ten sonra aynı anahtarla yeniden dene:** tüketici 503'ü (bu sınır dahil) Create başarısızlığı sayar ve
+  Create'i **aynı** `idempotencyKey` ile yeniden dener; kazanan commit olduysa cevap 200 ve **kazananın kodu**dur (yeni kod
+  değil). Yeni anahtar kullanmak yeni ve ayrı bir kod demektir — 503'ten sonra yapılmamalıdır. Commit sonucu bilinmeyen
+  503'te de kural aynıdır (§11).
 - Çağıranın yeniden deneme kuralı: zaman aşımı, 429, 503 ya da bağlantı hatasından sonra **aynı anahtarla** yeniden dener;
   yeni anahtar yeni kod demektir. Diğer 4xx yeniden denenmez.
 
@@ -343,6 +351,10 @@ Hatalar:
 
 ## 14. Değişiklik geçmişi
 
+- 1.0.0 rev 5 (2026-11-02) — paket r5, bağımsız inceleme 03 tur 2 (KOŞULLU): aynı anahtar örtüşmesinde 503 sınırı ve
+  "503'ten sonra aynı anahtarla yeniden dene" kuralı yazıldı, "hepsi aynı kodu alır / 503 yalnız gerçek erişilemezlikte"
+  ifadesi daraltıldı (§8, F-3); `x-measured-at` 81864bd98 (başlık, F-3). İstek gövdesi, durum kodları ve neden kodları
+  değişmedi.
 - 1.0.0 rev 4 (2026-11-02) — paket r4, bağımsız inceleme 03 (KOŞULLU): başarı ve ret denetim yükü paket Bölüm 21.3'teki
   tek tanıma bağlandı, alan adları ve yerleri (`AfterState` / `Metadata`) birebir, ret alanlarının elde olduğu adım yazıldı
   (§11, F-2); commit sonucu bilinmeyen deneme için 503 + aynı anahtarla tekrar kuralı, "kutu satırı zaten yazılmışsa 200"
