@@ -434,6 +434,58 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
         Assert.Equal("InTransit", (await s2.Stored(other))["Status"].AsString);
     }
 
+    [Fact]
+    public async Task R34_12_TheSameExitRetriedAfterA503_CompletesWithOneReceipt()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"), ("2", "3"));
+        var phase = 0;
+        app.Inventory.Script = c =>
+        {
+            if (phase == 0 && IsReceipt(c, "1")) return Answer(FakeInventory.Error(422, "ITEM_NOT_ACTIVE"));
+            if (phase == 0 && IsReceipt(c, "2")) return Answer(FakeInventory.Error(422, "UNKNOWN_LOCATION"));
+            if (phase == 1 && IsReceipt(c, "2")) throw new HttpRequestException("timeout");
+            return Default;
+        };
+        Assert.Equal(422, (await s.Receive(id, "receive-1")).Status);
+        phase = 1;
+        var exit = Received(location: "loc-q2", unposted: Unposted("1", "ITEM_NOT_ACTIVE"));
+        Assert.Equal(503, (await s.Receive(id, "receive-2", exit)).Status);      // line 1 is stored NotPosted, line 2 Unknown
+        Assert.Equal("NotPosted", (await s.Stored(id))["ReceiptAttempt"]["Lines"][0]["State"].AsString);
+        phase = 2;
+
+        var retried = await s.Receive(id, "receive-2", exit.DeepClone().AsObject());
+
+        Assert.Equal(200, retried.Status);
+        Assert.Equal(("NotPosted", "ITEM_NOT_ACTIVE"), (Line(retried.Body, "1")["inventoryPosting"]!.GetValue<string>(), Line(retried.Body, "1")["inventoryPostingReason"]!.GetValue<string>()));
+        Assert.Equal("Posted", Line(retried.Body, "2")["inventoryPosting"]!.GetValue<string>());
+        Assert.Equal(1, await s.Events(id, "ReturnReceived"));
+    }
+
+    [Fact]
+    public async Task R34_12_ARecordedExitIsNotAWayToChangeTheReason()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"), ("2", "3"));
+        var phase = 0;
+        app.Inventory.Script = c =>
+        {
+            if (phase == 0 && IsReceipt(c, "1")) return Answer(FakeInventory.Error(422, "ITEM_NOT_ACTIVE"));
+            if (phase == 0 && IsReceipt(c, "2")) return Answer(FakeInventory.Error(422, "UNKNOWN_LOCATION"));
+            if (phase == 1 && IsReceipt(c, "2")) throw new HttpRequestException("timeout");
+            return Default;
+        };
+        Assert.Equal(422, (await s.Receive(id, "receive-1")).Status);
+        phase = 1;
+        Assert.Equal(503, (await s.Receive(id, "receive-2", Received(location: "loc-q2", unposted: Unposted("1", "ITEM_NOT_ACTIVE")))).Status);
+
+        var other = await s.Receive(id, "receive-3", Received(location: "loc-q2", unposted: Unposted("1", "UNKNOWN_ITEM")));
+
+        Assert.Equal((422, "RETURN_LINE_NOT_UNPOSTABLE"), (other.Status, Code(other.Body)));
+    }
+
     // ---- R34-13 ------------------------------------------------------------------------------------------------------
     [Theory]
     [InlineData(false)]
@@ -501,6 +553,30 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
         var reused = await s2.Receive(other, "receive-2", Received(unposted: Unposted("1", "INTEGRITY_FAULT")));
         Assert.Equal((422, "RETURN_LINE_NOT_UNPOSTABLE"), (reused.Status, Code(reused.Body)));
         Assert.Equal("IDEMPOTENCY_KEY_REUSED", Details(reused.Body)!["lastInventoryCode"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task R34_14_AnAttemptStoredWithoutALocation_LeavesThroughTheIntegrityFaultExit()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"));
+        app.Inventory.Script = c => IsReceipt(c, "1") ? Answer(FakeInventory.Error(400, "INVALID_REQUEST")) : Default;
+        Assert.Equal(500, (await s.Receive(id, "receive-1")).Status);
+        // The state a Received without a location left before it was required.
+        await app.Db.GetCollection<BsonDocument>("returns").UpdateOneAsync(new BsonDocument("_id", id.ToString()), new BsonDocument("$set", new BsonDocument
+        {
+            { "ReceiptAttempt.CurrentLocationId", BsonNull.Value }, { "ReceiptAttempt.Lines.$[].ToLocationId", BsonNull.Value }
+        }));
+
+        var noLocation = await s.Receive(id, "receive-2", Received(location: null, unposted: Unposted("1", "INTEGRITY_FAULT")));
+        var otherWarehouse = await s.Receive(id, "receive-3", Received(warehouse: "wh-other", unposted: Unposted("1", "INTEGRITY_FAULT")));
+        var exit = await s.Receive(id, "receive-4", Received(unposted: Unposted("1", "INTEGRITY_FAULT")));
+
+        Assert.Equal((400, "INVALID_REQUEST"), (noLocation.Status, Code(noLocation.Body)));
+        Assert.Equal((409, "RETURN_RECEIPT_IN_PROGRESS"), (otherWarehouse.Status, Code(otherWarehouse.Body)));
+        Assert.Equal(200, exit.Status);
+        Assert.Equal(("NotPosted", "INTEGRITY_FAULT"), (Line(exit.Body, "1")["inventoryPosting"]!.GetValue<string>(), Line(exit.Body, "1")["inventoryPostingReason"]!.GetValue<string>()));
     }
 
     // ---- R34-15 ------------------------------------------------------------------------------------------------------
