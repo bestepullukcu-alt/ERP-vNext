@@ -6,7 +6,7 @@ service: Diten.ApiGateway
 shell: none
 golden_reference: none
 entity_base: none
-status: draft
+status: ready-for-dev
 owner: auth-owner
 branch: chore/ct/auth-ct-01
 started: 2026-11-02
@@ -17,7 +17,7 @@ parent: MOD-0032
 
 # MOD-0032-FU02 — Gateway Path Traversal Guard
 
-> **`status: draft`. Bu paket bir planlama belgesidir, kod yazma izni vermez.** Kod için paket `approved` / `ready-for-dev`
+> **`status: ready-for-dev` yalnız bağımsız inceleme içindir; bu paket kod yazma izni vermez.** Kod için paket `approved` / `ready-for-dev`
 > olmalı, bağımsız inceleme (CT-APR-02) yapılmalı ve CT-APR-01 onay satırı bulunmalıdır:
 > `python3 scripts/pack_approval.py check <paket>` onaylı (çıkış 0) demelidir. **Onay satırı yoksa kod yok.** Bu iş ağ
 > geçidine ve güvenliğe dokunur, bu yüzden yüksek risklidir: onaylayıcı paketi yazmamış ve `high: evet` olan biridir.
@@ -43,8 +43,10 @@ parent: MOD-0032
 >
 > **Ölçüm tabanı.** Aksi yazılmadıkça her `dosya:satır`, kule dalı `chore/ct/auth-ct-01` @ `6f169f677` üzerinde numaralı
 > okumayla alındı. Bu commit `origin/main` `4099e3ad1`'i birleştiriyor. Yol aşma ölçümü CT'nindir (kanıt:
-> `/private/tmp/claude-501/-Users-alitufanoglu-ERP-vNext/4ae208ce-bd3d-4be2-8a41-adbda964c44c/scratchpad/gateway-traversal-measure-2026-11-02.md`).
-> Bu dosya depoda değildir. Onaydan önce depoya bir kayıt olarak alınır (Ready-for-dev Checklist).
+> `docs/records/audits/2026-11/mod-0032-fu02-gateway-traversal-measure-2026-11-02.md`).
+>
+> **Durum notu (2026-11-02):** Sahip "Evet, incelemeye gönder" dedi; `ready-for-dev` yalnız bağımsız inceleme ZIP'i
+> içindir. Onay değildir, kod izni vermez; kod için CT-APR-01 onay satırı gerekir.
 
 ## Module Summary
 
@@ -171,7 +173,7 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
 | `TenantResolutionMiddleware` | Yolu `context.Request.Path` ile sınıflıyor (`:35`, `:45`, `:73`, `:87`, `:93`, `:99`, `:161`, `:169`, `:180`, `:215`, `:229`). Kimliksiz bir istek kiracı yolunda 403 alabilir (`:229-234`). Kod okuması, koşu değil | Tablo testi ve meşru yol testi, isteği bugün `TenantResolutionMiddleware`'in geçirdiği biçimde gönderir: testte basılan geçerli `tenant_user` belirteci ve test başına rastgele kiracı. Biçim DL-1 başında ölçülür (Implementation Notes "Ölçülmeyenler"). Kimliksiz istek bu durumda zaten 403 alır; o zaman korumanın sabotaj kanıtı bir şey ölçmez |
 | `GatewayJwtAuthenticationHandler` | İmzayı `JwtSettings:Secret` ile, `Issuer` ve `Audience`'ı yapılandırmadan doğruluyor (`GatewayJwtAuthenticationHandler.cs:34-43`). Mevcut test konağı rastgele bir sır geçiriyor (`GatewayPipelineCorrelationTests.cs:104-110`) | Test belirteci bu sırla basılır. Üretim kodunda sabit kiracı ya da sır yoktur |
 | Kayıt satırı | `MOD-0032-FU02` satırı yok | Ready-for-dev Checklist |
-| Onay kapısı (CT-APR-01 / CT-APR-02) | Paket `draft`; inceleme ve onay satırı yok | Ready-for-dev Checklist |
+| Onay kapısı (CT-APR-01 / CT-APR-02) | Paket `ready-for-dev` (yalnız inceleme için); inceleme ve onay satırı yok | Ready-for-dev Checklist |
 
 ## Runtime Constraints
 
@@ -425,8 +427,8 @@ biçiminde, test adlarıyla gösterilir.
 - [ ] Audited Events: yazma komutu yok; ret olayının denetim değil güvenlik günlüğü olduğu yazılı
 - [ ] **Kayıt satırı:** `execution/registries/module-id-registry.md`'ye `MOD-0032-FU02` satırı ayrı bir değişiklikle yazıldı ve
   `verify_module_id.py --check-id … --parent MOD-0032` yeniden koşuldu (Açık kararlar (m))
-- [ ] **Ölçüm kanıtı depoda:** CT'nin 2026-11-02 yol aşma ölçümü (`/private/tmp/...`) depoya bir kayıt olarak alındı ve bu paket
-  `yol@commit` ile ona atıf verdi
+- [x] **Ölçüm kanıtı depoda:** CT'nin 2026-11-02 yol aşma ölçümü
+  `docs/records/audits/2026-11/mod-0032-fu02-gateway-traversal-measure-2026-11-02.md` kaydı olarak alındı
 - [ ] Açık kararlar kapandı: onaydan önce (a), (b), (c), (d), (h), (i), (j), (k), (l), (m); bilgi için (e), (f), (g), (n)
 - [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) yapıldı ve `reviews.tsv` satırı var
 - [ ] CT-APR-01 onay satırı: yüksek risk (güvenlik, ağ geçidi). Onaylayıcı paketi yazmamış ve `high: evet` olan biri
