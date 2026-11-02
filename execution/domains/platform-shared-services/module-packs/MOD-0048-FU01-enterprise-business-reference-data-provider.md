@@ -2862,6 +2862,10 @@ this pack's frontmatter/status and authorizes no change until it passes CT-APR-0
 accepts it. Queue: `treasury-intake` TRM-17. The value lists below are a starting proposal; the owner of the values is
 the reference-data owner together with Finance.
 
+**Revision 2026-11-02 — KARAR D105, D119 (sources Y-31, Y-39, Platform owner):** `currency-minor-units` is the only currency list
+Treasury reads, and the Platform currencies lookup is narrowed to the same set (PR #346, `249ee3959`), so the list no longer
+depends on the host's ICU data. No retired code enters the seed. Changed: 21.4 and AC-R2. The test was adapted, not removed.
+
 ### 21.1 Why
 
 Treasury (MOD-0126, MOD-0119, MOD-0120, MOD-0124) needs (a) a governed list of payment methods (MOD-0126 `PaymentMethod`,
@@ -2902,6 +2906,12 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 
 - `payment-method`: published + `IsActive` code → valid; unknown / inactive → 422 `PAYMENT_METHOD_NOT_ALLOWED`; set
   unreadable → 503 (MOD-0126 AC-41).
+- `currency-minor-units` is the **only** source of selectable currencies and minor units on Treasury screens (D105). A code
+  that is not in the set, also from another module or an old record (e.g. `HRK`), is refused the same way, never rounded and
+  never given a default. A currency that is needed is added to the set; the list never comes from code (D119).
+- Test place (D117/3, proposal open with the Platform owner): the set's existence and shape are tested here (AC-R2); that a
+  consumer reads the set and refuses a code outside it is tested in that consumer's pack, as a sabotage test on its own
+  production check, since `Diten.FinanceTreasuryService` has no code yet.
 - `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
   `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
@@ -2911,8 +2921,11 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - AC-R1 — Both sets are returned by the published-values endpoint for any signed-in tenant user, with `IsActive` values only
   counted as valid; a set code not in the allow-list still answers as today (unchanged behaviour).
 - AC-R2 — `currency-minor-units`: every value has `attributes.minorUnits` ∈ {"0","1","2","3","4"}; no duplicate codes
-  (case-insensitive); the codes are a superset of the codes returned by `GET /api/lookups/reference/currencies`.
-  Sabotage: removing `minorUnits` from one value turns the test red.
+  (case-insensitive); every code returned by `GET /api/lookups/reference/currencies` is in the set, because the lookup is
+  narrowed to it (`Currency_minor_units_covers_every_code_the_currencies_lookup_returns`,
+  `A_code_outside_the_published_set_never_reaches_the_list_whatever_the_server_ICU_data_says`).
+  Sabotage: removing `minorUnits` from one value turns the test red; removing the narrowing turns the fixed-input test red on
+  any host, and brings `ANG`, `BGN`, `HRK`, `SLL` back wherever the host's ICU data carries them.
 - AC-R3 — Missing set behaviour (gap 20/1, measured @e66746606): the loader does **not** stop — a required set that is not
   published is reported as `published_set_not_found` in the lookup verification (`BusinessReferenceDataCatalogLoaderService.cs:506-513`)
   and the worker logs it and continues (`BusinessReferenceDataCatalogLoadWorker.cs:86-92`; only blocked conflicts throw, and
