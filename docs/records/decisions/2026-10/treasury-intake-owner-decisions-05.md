@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D104 (2026-10-30) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D118, D120 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1285,6 +1285,137 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-29, Y-30 (`SOURCE-ANSWERS-2026-1
 6. **D104/6 — MOD-0144 / MOD-0217 (D94/3):** Y-30'a göre iki modül aynı kaydı tutmuyor, D39 sınırı v1 için yeterli; üç kenar boşluğu var (SERVICE / LEASE / LICENSE alım
    yönü; Supplier karşı taraf türü; madde kütüphanesi MOD-0218). Y-30 başka CT'nin raporudur, sahip kararı değildir; MOD-0217 metni değişmedi. **K1 kararı (soru kutusu,
    2026-10-30, "Ali teyit etsin"):** Procurement adına "itiraz yok" teyidi Ali'den istenir; o gelene kadar açık.
+
+## D105 — ayrı dosyada
+
+`treasury-intake-owner-decisions-06.md` (MOD-0048-FU01 §21 PR'ı).
+
+## D106 — Ali Y-32: FU27 teyidi, D99/1, D80/2 daraltması, Tag adları (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-32 (`SOURCE-ANSWERS-2026-10-27.md`); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D106/1 — teyit:** FU27 D79 sonrası sürüm (#314) teyit edildi; D80/2 (a) işaretlendi. D99/1 kabul; `ForwardAsync` `TryForwardAsync`'i çağırıp sonucu yok sayar.
+2. **D106/2 — D80/2 (b) daraldı:** FU27 DL-5'te muafiyet yetkisi ayrı önce-yaz komutlarıyla verilir / alınır; genel dört komut bu rol ve iki anahtar için reddeder. Dört ortak komut, `CreateRole` / `UpdateRole` / `DeleteRole` ile ayrı MOD-0018 ekine gider (aday `MOD-0018-FU29`, `--check-id` OK 2026-10-31; ek açılmadı). Sahip notu: "18→16, 11→9" sayıları yalnız izin komutlarının yeni yazıcısı kabul edilmiş ize bağlanırsa doğrudur; Revoke'ta kapalı-başarısız mı acil kaldırma mı ayrı ekte karara bağlanır.
+3. **D106/3 — yetim kayıt:** önce deneme satırı, sonra sonuç satırı; sonuç yoksa "sonuçlanmadı". CT yorumu: DL-5'in dört K2 komutuna da uygulanır.
+4. **D106/4 — adlar:** Tag rol adları uygun; D103 terimlerine itiraz yok, yedi dosya kod diliminde.
+5. **D106/5 — açık:** K-W8 (yeni komutların izni), K-W9 (sonuç satırı hatası). Komut, uç ve hata kodu adları CT önerisidir.
+6. **D106/6 — MOD-0144:** Ali Procurement adına teyit vermedi; "itiraz yok" Procurement sahibinden istenir (D104/6 kararı değişti). MVP-6 sorusu bu kaydın konusu değil.
+7. **D106/7 — MOD-0262-FU01:** Auth paket metni Auth kulesinde, tahmini 3 Kasım (ölçülmedi).
+
+## D107 — Ali Y-33: K-W8, K-W9, AGR, FU29 (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-33; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D107/1 — K-W8:** mevcut `auth.users.assign-role`, yeni anahtar yok; iki anahtar role ilk vermede bağlanır. Sahip şartı: kişinin yetkiyi kendine verip veremediği test edilir. AC-50 "veremez" diye yazıldı; hata kodu ve "veremez" yorumu CT'nindir, Auth kulesi kodda doğrular.
+2. **D107/2 — K-W9:** (a) komut başarılı döner, satır "sonuçlanmadı" okunur.
+3. **D107/3 — RCS-001 §3:** satırı Treasury hazırlar, Ali'nin yazılı onayıyla gider; sahiplik değişmez. D104/4 güncellenir.
+4. **D107/4 — FU29:** kimlik açılmaz; açma kararı Ali'nin. Önce Ali'ye yazılır.
+
+## D108 — Codex CT-APR-02 `c37628ae` bulguları (UYGUN DEĞİL: 2 ENGEL, 2 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-c37628ae.md`; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D108/1 — F-2 kapandı:** yetki geçmişi ucu, okuma satırı, Roller ekranı, AC-51 yazıldı. Uç adı CT önerisidir.
+2. **D108/2 — F-3 kapandı:** eski önkoşul ve teyit metinleri D106'ya hizalandı.
+3. **D108/3 — F-4 kapandı:** AC-50'de sahip şartı ile CT yorumu ayrıldı.
+4. **D108/4 — F-1 açık:** Y-33 (a) ile audit-trail-standard §4.3 uzlaşmıyor; karar MOD-0018 sahibinde ve kural sahibinde. Yeni Codex turu bu karardan sonra.
+
+## D109 — Ali Y-34: K-W9 (b), aynı işlem (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-34; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D109/1 — K-W9 (b):** iş yazımı ve sonuç satırı aynı işlemde, hata olursa ikisi de geri alınır. D107/2 geri alındı. Kural sahibi Ali; K2 kararı (2 Ekim) geçerli. Codex `c37628ae` F-1 bu kararla kapanır.
+2. **D109/2 — yapılabilirlik (kod okuması; çalışma testi yok):** yapılabilir. Depolar oturum almaz (`UserRoleRepository.cs:43-54`, `RolePermissionRepository.cs:43-47`), ama Auth'ta emsal var: `EntitlementReconciliationOperationStore.cs:110-145` aynı oturumda `rolePermissions`, `auth_role_assignment_versions`, `refreshTokens` yazıyor. FU27 yeni store dosyalarıyla aynı deseni kullanır; outbox gerekmez. Dev / test ortamının replica set şartı ve `authAuditLogs`'un aynı işleme alınması kod başında sınanır.
+
+## D110 — Codex `c098f372` bulguları (UYGUN DEĞİL: 1 ENGEL, 4 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-c098f372.md`; oturum Treasury Intake CT. D109/1 F-1'i kapattı (Codex teyitli).
+
+1. **D110/1 — F-5:** oluşturulamayan atama denemesi `…/unresolved-attempts` ile okunur; uç adı ve okuma satırı CT önerisidir (MOD-0018 sahibinin teyidine). AC-52.
+2. **D110/2 — F-8:** belirsiz commit emsaldeki gibi çoğunluk okumasıyla çözülür; kanıt yoksa 503 `SOD_WAIVER_OUTCOME_UNKNOWN` ve elle uzlaştırma (hata kodu CT önerisi).
+3. **D110/3 — F-3, F-6, F-7:** metin hizalandı.
+
+## D111 — Codex `10e38d61` bulguları (UYGUN DEĞİL: 0 ENGEL, 3 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi); kaynak `docs/records/reviews/MOD-0018-FU27/2026-10-31-10e38d61.md`; oturum Treasury Intake CT. F-3, F-6, F-8 kapatıldı: K-7 metni, okuma satırı alanları, istek özeti + belirsizlikte mutasyon yasağı. `RequestSha256` ve 409 kodu CT önerisidir.
+
+## D112 — D105/4 paket hizalaması, MOD-0120 dış referans ertelemesi, kapı işaretleri (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu "Evet, ertele", 2026-10-30); kaynak Y-31, MOD-0149 sorusu; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`).
+
+1. **D112/1 — para birimi:** dört finans paketinin ekran ve Dependencies metni `currency-minor-units`'e çevrildi, "sette olmayan kod reddedilir" AC'lere eklendi (D105/3; Beste teyidi açık). MOD-0217 ve MOD-0289 değişmedi; Beste'nin cevabı açık.
+2. **D112/2 — MOD-0120:** MOD-0149 `external-references/resolve` ucu O-10'a ertelendi; v1'de çağıran yok, `lookup-validation` kalır. 409 için önerilen 422 `RECEIVABLE_CUSTOMER_AMBIGUOUS` O-10 kapsamındadır.
+3. **D112/3 — kapı işaretleri:** DCP-011 `approved` (#309) beş pakette, SUPPLIER 1.3.0 FROZEN (#289) MOD-0119 ve MOD-0289'da işaretlendi; main `819cc642a`'da ölçüldü.
+
+## D113 — Ali Y-35: FU27 ekleri onaylandı (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-35; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D113/1:** `unresolved-attempts` ucu, yetki geçmişi ucu + Roller salt-okunur bölümü, belirsiz commit kuralı (503 / 409) sahip onaylı (D108/1, D110). Kapsam büyümesi kabul; yeni izin anahtarı ve yeni kural dosyası yok. Paket buna uyuyor: uçlar mevcut `auth.payment-sod-waivers.read` ve `auth.users.assign-role` ile çalışır.
+2. **D113/2:** RCS-001 §3 metni Ali'ye ulaşmadı; yazılı onay yok, satır tek başına yeniden gönderilir.
+
+## D115 — Codex D112 turu bulguları (UYGUN DEĞİL: 0 ENGEL, 10 ORTA) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316 ORTA hemen düzeltilir); kaynak `docs/records/reviews/MOD-0126/2026-10-31-f3b297e3.md`, MOD-0119, MOD-0120, MOD-0124 ve MOD-0289 aynı tarihli kayıtları; oturum Treasury Intake CT. Y-36 / D114 ayrı dalda: `treasury-intake-owner-decisions-07.md`.
+
+1. **D115/1 — durum hizası:** D112/3 işaretleri kapanış listesine yazılmış, Dependencies satırları eski kalmıştı. DCP-011 `approved`, `currency-minor-units` seed'i main'de, SUPPLIER 1.3.0 FROZEN olarak yazıldı; main `cc63c620c`'de ölçüldü. Ortamda yayım kanıtı DL-1 kabulünde, MOD-0140 DL-3 canlı uç önkoşulu yerinde kaldı.
+2. **D115/2 — ICU cümlesi:** ICU bağımlılığı Platform lookup'ının özelliğidir; set sürümlü ISO 4217 listesinden üretilir.
+3. **D115/3 — MOD-0120:** `external-references/resolve` Dependencies ve O-3'te de önkoşul olmaktan çıkarıldı (D112/2). Y-4/4b kabul metni tarihçe olarak durur.
+
+## D116 — Codex D115 turu bulguları (dört paket UYGUN DEĞİL: 0 ENGEL, 7 ORTA; MOD-0289 UYGUN) (2026-10-31)
+
+Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316); kaynak `docs/records/reviews/MOD-0126/2026-10-31-03d96209.md`, MOD-0119, MOD-0120, MOD-0124 aynı tarihli kayıtları; oturum Treasury Intake CT.
+
+1. **D116/1 — `Finance`:** `AuditEnums.cs:29` ve `CentralAuditPlatformValues.cs:30` main'de (#298); dört paketin Denetim bölümündeki "değer main'e girmeden" önkoşulu kapandı.
+2. **D116/2 — seed:** MOD-0126 O-11, MOD-0119 O-10, MOD-0124 O-8 ve MOD-0126 `payment-method` satırı main'deki seed ve izin listesine çekildi; ortamda yayım kanıtı DL-1 kabulünde kaldı.
+
+## Y-37 — Beste, Treasury açık kalemleri cevabı (2026-11-02; K1 aktardı)
+
+> 1. #314: dalı güncelleyebilirsiniz, iznimiz var. Çakışmayı çözüp bitince haber verin; inceleyip birleştireceğiz (merge commit).
+> 2. Finans tüketicisi için Platform XMC-001: öneri dosyası bize ulaşmadı. Değişecek Platform dosyalarının listesini içeren öneri dosyasını yeniden gönderin; okuyup izni vereceğiz.
+> 3. Aday modu: öneriyi inceleyeceğiz. Değerlendirmeyi 2. maddedeki öneri dosyasıyla (beş sınır ve üç sabotaj testi dahil) yapıp kararımızı yazacağız.
+> 4. D105/3 — para birimi kaynağı ve test yeri: MOD-0217 ve MOD-0289 para birimini Business Reference Data'dan (MOD-0048-FU01, currency-minor-units kümesi) okumalı; kendi listelerini tutmamalı. Test yeri önerimiz: kümenin varlığı ve biçimi Platform'da MOD-0048-FU01 testlerinde; tüketicilerin MOD-0048'den okuduğu ise MOD-0217 ve MOD-0289'un kendi testlerinde (kod listeye gömülürse kırmızı). D105 kararının tam metnini de gönderirseniz §21 PR'ını buna göre netleştirelim.
+> 5. Para birimi lookup XMC-001: kırmızı görünen testin adını ve son ölçüm commit'ini gönderin; bugün yeniden ölçelim.
+> 6–8. DCP-011, MOD-0289 ve AGR onayları: #314 birleştikten ve PR'lar açıldıktan sonra.
+
+## D117 — Beste Y-37: #314 güncelleme izni, para birimi kaynağı, sıra (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-37; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D117/1 — #314:** dal güncelleme izni verildi; birleştirme merge commit ile.
+2. **D117/2 — para birimi kaynağı:** MOD-0217 ve MOD-0289 `currency-minor-units` setinden okur, kendi listesini tutmaz (D105/4 ve D112/1'in açık kısmı kapandı). İki paket #314 sonrası yeni revizyonla çevrilir; paket özeti değişeceği için yeniden inceleme gerekir.
+3. **D117/3 — test yeri (Beste önerisi, açık):** setin varlığı ve biçimi Platform'da MOD-0048-FU01 testlerinde; tüketicilerin setten okuduğu MOD-0217 ve MOD-0289'un kendi testlerinde. D105 metni gönderilir, §21 PR'ı Beste ile netleşir.
+4. **D117/4 — açık:** Platform XMC-001 ve aday modu verilmedi; öneri dosyası yeniden gönderilir. Para birimi lookup XMC-001 için test adı ve ölçüm commit'i gönderilir.
+5. **D117/5 — sıra:** DCP-011, MOD-0289 ve AGR onayları #314 birleştikten ve PR'lar açıldıktan sonra.
+
+## Y-38 — Cihan, Procurement cevabı (2026-11-02; K1 aktardı)
+
+> Procurement sahibi olarak **itiraz yok**:
+> - D39 sınırına itirazım yok: satın alma / tedarik sözleşmeleri MOD-0144'te kalır; MOD-0217 satın alma dışı hukuki sözleşmeleri tutar; `PURCHASE` türü yok (AC-59).
+> - MOD-0217'nin rotasına itirazım yok: `/api/mdm/contracts` ve `/MasterData/Contracts`.
+> - MOD-0144'e dokunulmaması (AC-47) ve iki modül arasındaki başvuru bağlantısının Follow-up olması bana uygun.
+>
+> Bu cevap MOD-0144'ü değiştirmez. Procurement, MOD-0217 dosyasına yazmaz (XMC-001).
+
+Ek öneri: `mod0217-netlestirmeler.md` (Cihan, 2026-11-02; MOD-0217 `4d944a3dcdcd…`), iki netleştirme: alım yönlü türler için ayrım ölçütü; `Supplier` türünün v1'de kapalı kalması. Cevapta "D94 metnini görmedim, main'de değil" notu var.
+
+## D118 — Procurement "itiraz yok" alındı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım; Cihan'ı Procurement sahibi olarak teyit, soru kutusu "Evet, Cihan versin"); kaynak Y-38; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D118/1 — D39/3 ve D106/6 kapandı:** Procurement sahibinden "itiraz yok" alındı; MOD-0144 değişmez.
+2. **D118/2 — iki netleştirme öneridir, karar değil:** MOD-0217 metni değişmedi. `Supplier` önerisi D41/4'ün açılış koşulunu değiştirdiği için K1 kararı ister.
+
+Y-39 ve D119 `treasury-intake-owner-decisions-06.md` dosyasındadır (#351).
+
+## D120 — MOD-0217 iki netleştirme kabul; Kurulum satırı kapandı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, üç cevap "Önerilen"); kaynak Y-38, `mod0217-netlestirmeler.md`; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D120/1 — ayrım ölçütü:** P2P üzerinden satın alınan mal ya da hizmet sözleşmesi, türü ne olursa olsun MOD-0144'te kalır. MOD-0217'ye `ContractType` kuralı ve Page Help metni girer; sistem zorlamaz, yeni AC yok, AC-59 değişmez.
+2. **D120/2 — `Supplier`:** v1'de, MOD-0140 sözleşmesi ölçülse bile kapalı kalır (AC-60 değişmez). Açılması MOD-0140 / MOD-0144 sahibiyle ortak, ayrı karardır. D41/4'ün "ölçülene kadar kapalı" koşulu bu kadar değişir. Follow-up satırı buna göre düzelir.
+3. **D120/3 — uygulama:** metin #314 sonrası MOD-0217 revizyonuna (D117/2) girer; paket özeti değişeceği için yeniden inceleme gerekir.
+4. **D120/4 — Kurulum:** sahip kuyruğundaki "Kurulum cevabı" satırı kapandı.
 
 ## Karar olmayanlar
 
