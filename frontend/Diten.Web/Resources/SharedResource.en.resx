@@ -1255,4 +1255,6 @@
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Recall settings</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Pharmacovigilance</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Case Intake &amp; Triage</value></data>
 </root>

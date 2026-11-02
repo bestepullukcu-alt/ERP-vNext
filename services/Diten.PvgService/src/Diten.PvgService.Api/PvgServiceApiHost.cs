@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.PvgService.Api.ModuleRegistration;
 using Diten.PvgService.Application.CaseProcessing;
 using Diten.PvgService.Application.MeddraCoding;
 using Diten.PvgService.Application.RegPvBase;
@@ -129,6 +130,7 @@ public static class PvgServiceApiHost
         }
 
         AddPvgJwtAuthentication(services, configuration);
+        services.AddPvgModuleRegistration();
 
         return services;
     }

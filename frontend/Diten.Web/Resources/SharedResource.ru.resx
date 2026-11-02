@@ -1196,4 +1196,6 @@
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Фармаконадзор</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Приём Случаев и Триаж</value></data>
 </root>
