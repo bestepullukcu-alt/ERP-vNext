@@ -32,6 +32,8 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         var warehouse = ReturnWire.OptionalText(b, "toWarehouseId");
         if (string.IsNullOrWhiteSpace(warehouse)) return Fail(InvalidRequest, 400);
         var location = ReturnWire.OptionalText(b, "toLocationId");
+        // Pack §34.1: required on Received. INVENTORY refuses an inbound movement without it, which would strand the line.
+        if (string.IsNullOrWhiteSpace(location)) return Fail(InvalidRequest, 400);
         var occurredAt = ReturnInstant.Normalize(b.GetProperty("occurredAt").GetString()!);
         if (!CustomerReturnMovementMapper.TryInstant(occurredAt, out var at)) return Fail(InvalidRequest, 400);
         var unposted = ReturnWire.UnpostedLines(b);
@@ -63,7 +65,9 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
                 // the last accepted command's are a conflict that shows those values (review 01 F-1: never each line's, which
                 // differ after a correction); an Unknown line keeps its request and is resent first (R34-13).
                 if (!next.Lines.Any(l => l.State is ReceiptLineState.Refused or ReceiptLineState.Unknown)
-                    && (Current(next).Warehouse != warehouse || Current(next).Location != location || Current(next).OccurredAt != occurredAt))
+                    && (Current(next).Warehouse != warehouse || Current(next).OccurredAt != occurredAt
+                        // An attempt opened before the location was required has none stored: this command supplies it.
+                        || (Current(next).Location is not null && Current(next).Location != location)))
                     return FailWith(ContractErrorCodes.ReturnReceiptInProgress, 409, Stored(next));
             }
             next.CurrentWarehouseId = warehouse; next.CurrentLocationId = location; next.CurrentOccurredAt = occurredAt;
@@ -118,6 +122,8 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         foreach (var (lineNumber, reason) in unposted)
         {
             var line = attempt.Lines.FirstOrDefault(l => l.ShipmentLineNumber == lineNumber);
+            // The same exit retried after a later step failed: this line is already recorded with this reason.
+            if (line is { State: ReceiptLineState.NotPosted } && line.PostingReason == reason) continue;
             var allowed = line is not null
                 && ((line.State == ReceiptLineState.Refused && Permanent.Contains(line.LastInventoryCode) && reason == line.LastInventoryCode)
                     || (line.State == ReceiptLineState.Blocked && line.LastInventoryCode == InvalidRequest && reason == IntegrityFault));

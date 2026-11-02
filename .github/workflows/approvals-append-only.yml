@@ -26,8 +26,9 @@ permissions:
   pull-requests: read
 
 jobs:
+  # One job, one token line, no if: (CiServiceTestsGuardTests): the event is told apart in the shell. A failing command
+  # in either branch fails the step.
   append-only:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -35,26 +36,17 @@ jobs:
           fetch-depth: 0
       - name: Fetch main
         run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
-      - name: Append-only check (new breaks only)
+      - name: Pull request append-only check, push strict approval check
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
-
-  strict-check-on-main:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
-      - name: Fetch main
-        run: git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
-      - name: Strict approval check for the packs whose approve rows this push added (S-115 F-8 / G-2)
-        env:
-          GH_TOKEN: ${{ github.token }}
           BEFORE_SHA: ${{ github.event.before }}
-        # pack_approval.py ci-main: packs of the APPROVE rows the push added, read strictly at HEAD; exit 1 only for a
-        # human-step class refusal; state refusals and an unmeasurable reading (quota) are ::warning:: lines (G-2, G-12);
-        # an empty / zero BEFORE_SHA falls back to HEAD^1 inside the command
-        run: python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD
+        # pull_request: new append-only breaks only. push to main: pack_approval.py ci-main reads the packs of the APPROVE
+        # rows the push added, strictly at HEAD; exit 1 only for a human-step class refusal; state refusals and an
+        # unmeasurable reading (quota) are ::warning:: lines (G-2, G-12); an empty / zero BEFORE_SHA falls back to HEAD^1
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
+          else
+            python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD
+          fi

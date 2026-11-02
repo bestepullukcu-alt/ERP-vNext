@@ -15,7 +15,8 @@ const ShipmentCreate = (function () {
     // R-2 (SHIPMENT-BUNDLE 3.2.0): the company is chosen on this page and rides the query — never the body,
     // which the service refuses scope in. The Create page is its own surface, so it loads the list itself.
     let legalEntities = [];
-    const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId'];
+    const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId', 'skuLevel', 'fromLocationId', 'lotId'];
+    const optionalStockFields = ['lotId']; // left out when empty: SHIPMENT-BUNDLE 3.4.0 keeps the fingerprint of a line without them
     const value = (id) => document.getElementById(id)?.value || '';
     const toUtc = (input) => input ? new Date(input).toISOString() : null;
     const token = () => document.querySelector('#formShipment input[name="__RequestVerificationToken"]')?.value || '';
@@ -53,7 +54,8 @@ const ShipmentCreate = (function () {
         if (focusNewLine) line.querySelector('[data-field="lineNumber"]')?.focus();
     };
     const linePayload = (line) => Object.fromEntries(lineFields
-        .map((name) => [name, line.querySelector(`[data-field="${name}"]`).value]));
+        .map((name) => [name, line.querySelector(`[data-field="${name}"]`).value])
+        .filter(([name, fieldValue]) => !optionalStockFields.includes(name) || fieldValue.trim() !== ''));
     const payload = () => ({
         sourceModule: value('sourceModule'), sourceType: value('sourceType'), sourceDocumentId: value('sourceDocumentId'),
         warehouseReferenceId: value('warehouseReferenceId'), shipToReference: value('shipToReference'),
@@ -63,7 +65,9 @@ const ShipmentCreate = (function () {
     const validate = (body) => body.sourceModule && body.sourceType && body.sourceDocumentId && body.warehouseReferenceId
         && body.shipToReference && body.plannedShipAt && body.lines.length > 0 && body.lines.every((line) =>
             line.lineNumber && /^[0-9a-f-]{36}$/i.test(line.itemId) && /^[0-9a-f-]{36}$/i.test(line.skuId)
-            && /^-?[0-9]+(\.[0-9]+)?$/.test(line.quantity) && line.uomId);
+            && /^-?[0-9]+(\.[0-9]+)?$/.test(line.quantity) && line.uomId
+            // Dispatched needs both: without skuLevel 422 SHIPMENT_LINE_STOCK_INCOMPLETE, without the location INVENTORY refuses.
+            && line.skuLevel && line.fromLocationId.trim());
     const failure = async (response) => {
         let body = null; try { body = await response.json(); } catch (_) { }
         const code = body?.error?.code || '';
