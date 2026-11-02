@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Lookups.Services;
 
@@ -26,6 +27,7 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
     private readonly IBusinessReferenceDataConsumerQueryService _referenceData;
     private readonly ITenantContext _tenantContext;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<PlatformLookupProvider> _logger;
 
     public PlatformLookupProvider(
         IPlatformLookupCache cache,
@@ -35,7 +37,8 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
         IAuthPermissionModulesClient authPermissionModulesClient,
         IBusinessReferenceDataConsumerQueryService referenceData,
         ITenantContext tenantContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<PlatformLookupProvider> logger)
     {
         _cache = cache;
         _featureCategoryRepository = featureCategoryRepository;
@@ -45,29 +48,68 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
         _referenceData = referenceData;
         _tenantContext = tenantContext;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetCurrenciesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
-            BuildCacheKey(PlatformLookupKeys.Currencies),
+            // The set is read in the caller's tenant first, so one tenant's list must never answer another's.
+            $"{BuildCacheKey(PlatformLookupKeys.Currencies)}:{CallerTenantId}",
             DataBackedLookupTtl,
             async token => BuildCurrencyOptions(await ReadPublishedCurrencyCodesAsync(token)),
             ct);
 
-    // The cache entry is shared by every tenant, so the set is read in the reference tenant the catalog seed writes under
-    // (same key as TaskFieldDefinitionQueryHandlers), never in the caller's. No ICU fallback: an unreadable set fails the lookup.
+    // Same order as TaskFieldDefinitionQueryHandlers: the caller's tenant, then the reference tenant the catalog seed writes
+    // under when that key is set. No ICU fallback and no empty list: a set found nowhere fails the lookup with its own code.
     private async Task<IReadOnlySet<string>> ReadPublishedCurrencyCodesAsync(CancellationToken ct)
     {
-        if (!Guid.TryParse(_configuration["BusinessReferenceData:CatalogLoad:TenantId"], out var referenceTenantId)
-            || referenceTenantId == Guid.Empty)
+        var codes = await TryReadCurrencyCodesAsync(ct);
+
+        if (codes is null
+            && Guid.TryParse(_configuration["BusinessReferenceData:CatalogLoad:TenantId"], out var referenceTenantId)
+            && referenceTenantId != Guid.Empty
+            && referenceTenantId != CallerTenantId)
         {
-            throw new InvalidOperationException("reference_tenant_misconfigured");
+            using (TenantScope.Begin(_tenantContext, referenceTenantId))
+            {
+                codes = await TryReadCurrencyCodesAsync(ct);
+            }
         }
 
-        using (TenantScope.Begin(_tenantContext, referenceTenantId))
+        if (codes is null)
+        {
+            _logger.LogError(
+                "{ReasonCode}: set {SetCode} is not published for tenant {TenantId} or the reference tenant.",
+                CurrencySetUnavailableException.ReasonCode,
+                CurrencyMinorUnitsSetCode,
+                CallerTenantId);
+            throw new CurrencySetUnavailableException();
+        }
+
+        return codes;
+    }
+
+    // ITenantContext.TenantId throws until a tenant is resolved; such a caller has no set of its own.
+    private Guid CallerTenantId => _tenantContext.IsResolved ? _tenantContext.TenantId : Guid.Empty;
+
+    private async Task<IReadOnlySet<string>?> TryReadCurrencyCodesAsync(CancellationToken ct)
+    {
+        try
         {
             var published = await _referenceData.GetPublishedValuesAsync(CurrencyMinorUnitsSetCode, null, ct);
-            return published.Items.Select(item => item.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var codes = published.Items
+                .Where(item => item.IsActive)
+                .Select(item => item.Code)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return codes.Count == 0 ? null : codes;
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
         }
     }
 
