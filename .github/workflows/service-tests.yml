@@ -378,3 +378,24 @@ jobs:
           name: test-results-${{ matrix.suite }}
           path: ${{ runner.temp }}/test-results
           if-no-files-found: warn
+
+  # One check name for branch protection (owner decision 2026-11-02): the matrix gives every suite its own check name,
+  # so the required check is this job. It is green only when both suite jobs above ended in success; failure,
+  # cancelled and skipped are all red.
+  service-tests-result:
+    name: service-tests result
+    if: always()
+    needs: [service-tests, service-tests-macos]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Every suite passed
+        env:
+          LINUX: ${{ needs.service-tests.result }}
+          MACOS: ${{ needs.service-tests-macos.result }}
+        run: |
+          echo "linux: $LINUX, macos: $MACOS"
+          case "$LINUX/$MACOS" in
+            success/success) echo "Bütün test takımları geçti." ;;
+            *) echo "En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır."; exit 1 ;;
+          esac
