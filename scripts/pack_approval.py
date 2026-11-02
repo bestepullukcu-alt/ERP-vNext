@@ -3141,7 +3141,7 @@ def self_test_slice_deferred(cases: list) -> None:
           "## Teslim dilimleri\n| dilim | ad | bölümler |\n|---|---|---|\n| DL-1 | çekirdek | Notes |\n| DL-2 | ekran | Notes |\n")
     g("init", "-q", "-b", "main")
     put(PACK, v1)
-    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
+    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\njun\tK3\tjunior\thayır\n")
     put(POLICY, "# start\n")
     put(APPROVALS, "\t".join(APPROVAL_COLUMNS) + "\n")
     put(REVIEW_POLICY, "# review start\n")
@@ -3165,11 +3165,22 @@ def self_test_slice_deferred(cases: list) -> None:
                   evaluate(root, "HEAD", PACK, True)[0] == 0 and slice_rule(root, "HEAD", PACK, True)[2] == "WP-9"))
     cases.append(("S-133: the same row in the strict reading -> no whole_pack (its human step is not on main)",
                   slice_rule(root, "HEAD", PACK)[2] is None))
-    g("checkout", "-q", "-b", "self", base)
-    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "dev", "LOW", "test", "2026-11-01", word, True) + "\n")
-    commit("self-granted LOW branch row with whole_pack")
-    cases.append(("sabotage S-133 (B2): the author grants whole_pack to himself with a LOW branch row -> branch slice reading "
-                  "gives no whole_pack", slice_rule(root, "HEAD", PACK, True)[2] is None))
+    # B2 isolated (independent review 2026-11-02, finding 1): the version's computed risk is LOW (date only) and the
+    # approver is another person — only B2 (whole_pack makes the approval HIGH) refuses a junior's LOW row
+    g("checkout", "-q", "-b", "b2", base)
+    plain = "onayla · CT · Deneme sohbeti · 2026-11-01 03:30"
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", plain, True) + "\n")
+    commit("HIGH base row on the branch, no whole_pack")
+    put(PACK, get(PACK).replace("updated: 2026-10-01", "updated: 2026-11-02"))
+    commit("date only")
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "jun", "LOW", "test", "2026-11-02",
+                                             plain + " whole_pack=WP-9", True) + "\n")
+    commit("junior LOW branch row with whole_pack")
+    code, out = evaluate(root, "HEAD", PACK, True)
+    cases.append(("sabotage S-133 (B2): a LOW-risk version, a junior's LOW branch row with whole_pack -> deferred ENGEL "
+                  "'yüksek riskli işi onaylayamaz' and no whole_pack (only B2 refuses it)",
+                  code == 1 and any("yüksek riskli işi onaylayamaz" in l for l in out) and any("hesaplanan risk: LOW" in l for l in out)
+                  and slice_rule(root, "HEAD", PACK, True)[2] is None))
     tmp.cleanup()
 
 
