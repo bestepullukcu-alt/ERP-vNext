@@ -2,7 +2,7 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
+    x-status       : DRAFT (rev 7 — paket r8, son bakış 01 tur 2 (özet 8a63c4e5) ve inceleme 03 tur 5 (özet e6dd4cd8) sözleşme payı; rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
                      öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
                      dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
@@ -21,8 +21,9 @@
 hata kodu aynen kalır. **Yanıt biçimi — ÖNERİ, karar değil (inceleme 02 F-10):** D59/1 ve Y-8 değişikliğin "yalnız ekleme"
 olduğunu yanıt dahil söyler; v0 metni "200 `{code, sequence}`" yazıyordu ve zarfı tanımlamıyordu. Bu taslağın **önerisi**,
 v0 yanıt biçiminin bağlayıcı olmadığını kabul edip 1.0.0 yanıtını Platform `Response<T>` zarfının `data` alanında
-dondurmaktır (`data` içeriği v0 ile aynı). Öneri **Treasury CT teyidi** gelmeden karar sayılmaz (§12 N-2, son tarih
-2026-11-02); teyit gelmezse yanıt biçimi dondurma adımında yeniden ele alınır. Tablo §9'da.
+dondurmaktır (`data` içeriği v0 ile aynı). Öneri **Treasury CT teyidi** gelmeden karar sayılmaz. **Varsayılan (rev 7, son
+bakış 01 tur 2 F-7 — §12 N-2 ile aynı):** teyit sözleşme dondurma adımına (2026-11-03) kadar gelmezse 1.0.0 zarfla donar;
+Treasury sonradan en üst düzey biçimi isterse bu büyük sürümdür (§13). Tablo §9'da.
 
 ## 1. Uç ve kimlik
 
@@ -101,7 +102,7 @@ Treasury CT teyidi bekleniyor (§12 N-2):
 
 ## 4. Hatalar
 
-Hata gövdesi aynı zarftır: `data = null`, `isSuccessful = false`, `reason_code` aşağıdaki kod, `errors[]` İngilizce
+Hata gövdesi aynı zarftır — **iki adlı istisna** `AUDIT_RECORD_UNAVAILABLE` ve `AUDIT_INTENT_INVALID` (`ProblemDetails`, `reason_code` uzantıda; rev 7): `data = null`, `isSuccessful = false`, `reason_code` aşağıdaki kod, `errors[]` İngilizce
 tanılama metni (**tüketici ekranında gösterilmez**; tüketici `reason_code`'u kendi dil dosyasıyla çevirir).
 
 | HTTP | `reason_code` | Ne zaman | Tüketici davranışı |
@@ -125,6 +126,8 @@ tanılama metni (**tüketici ekranında gösterilmez**; tüketici `reason_code`'
 | 403 | `LEGAL_ENTITY_READ_PERMISSION_MISSING` | MDM 403: kullanıcı token'ında `mdm.legal-entities.read` yok (rev 6, ekleme) | Create 403; **yeniden denenmez** (kalıcı) |
 | 503 | `LEGAL_ENTITY_SOURCE_UNAVAILABLE` | MDM erişilemez, 5xx, 3 s aşımı, 400/401, ya da çelişkili/ayrıştırılamaz yanıt | **Create yapılmaz** (fail-closed); aynı anahtarla, sınırlı sayıda ve geri çekilerek yeniden denenebilir (§8) |
 | 503 | `RECORD_CODE_UNAVAILABLE` | Platform deposu gerçekten erişilemez, işlem yeniden denemeleri tükendi ya da istek bütçesi (5 s) doldu | **Create yapılmaz**; aynı anahtarla yeniden denenebilir |
+| 503 | `AUDIT_RECORD_UNAVAILABLE` | **`ProblemDetails` gövdesi, zarf değil** (Platform ortak kuralı): başarılı ayırmanın denetim kaydı yazılamadı (aktör adlandırılamadı); ayırma yapılmadı (rev 7) | **Create yapılmaz**; aynı anahtarla, sınırlı olarak yeniden denenebilir; `reason_code` `ProblemDetails` uzantısındadır |
+| 500 | `AUDIT_INTENT_INVALID` | **`ProblemDetails` gövdesi, zarf değil**: Platform'da programlama hatası (geçersiz denetim niyeti); ayırma yapılmadı (rev 7) | **Create yapılmaz**; yeniden denenmez |
 
 Tüketici kuralı (D59/1): **200 dışı her cevap, zaman aşımı ya da port bağlı değil → Create başarısız**, kodsuz kayıt
 açılmaz, yedek kod ya da kendi sayacı üretilmez (RCS-001 §6).
@@ -320,12 +323,17 @@ Hatalar:
   Gerekçe: kimliksiz bir istek ne kiracı ne kişi adlandırabilir; onu yazmak herkesin bir kiracının günlüğünü doldurmasına
   izin verir. Kimliği doğrulanmış ve kiracısı bilinen her ret iz bırakır.
 
-  Ret kaydının yükü paket Bölüm 21.3 Tablo B'dir (rev 4, inceleme 03 F-2): aktör, kiracı, `RequestType`, varlık türü,
-  kategori ve kaynak servis başarıyla aynı; varlık kimliği yok; `BeforeState` / `AfterState` yok. `Metadata`: `EventName`
+  Ret kaydının yükü paket Bölüm 21.3 Tablo B'dir; bu paragraf onunla birebirdir (rev 7, son bakış 01 tur 2 F-6). Ortak:
+  `RequestType` `AllocateRecordCodeCommand`, varlık türü `RecordCodeAllocation`, kategori `PlatformConfiguration`, kaynak
+  servis kapalı listedeki ad; varlık kimliği yok; `BeforeState` / `AfterState` yok. `Metadata`: `EventName`
   (`platform.record-code.allocation-refused`), `ReasonCode`, `EvaluationStep` (§5 numarası) her retde; `IdempotencyKey`,
-  `RecordType`, `PrefixScope`, `LegalEntityId` yalnız gövde okunduktan sonraki retlerde (§5 adım 6–13) — **adım 4 reddinde
-  (`RECORD_CODE_TENANT_NOT_ACTIVE`) bu anahtarlar yoktur**; `Prefix` yalnız önek çözüldükten sonraki retlerde
-  (`LEGAL_ENTITY_SHORT_CODE_CHANGED`, `GROUP_PREFIX_MISMATCH`, adım 12–13'teki 503); `code` / `sequence` hiçbir retde.
+  `RecordType`, `PrefixScope`, `LegalEntityId` yalnız gövde ayrıştırıldıktan sonraki retlerde (§5 adım 6–13) — **adım 4
+  (`RECORD_CODE_TENANT_NOT_ACTIVE`) ve adım 5 (400 `RECORD_CODE_REQUEST_INVALID`) retlerinde bu anahtarlar yoktur**; `Prefix`
+  yalnız önek çözüldükten sonraki retlerde (`LEGAL_ENTITY_SHORT_CODE_CHANGED`, `GROUP_PREFIX_MISMATCH`, adım 12–13'teki 503);
+  `code` / `sequence` hiçbir retde. Kiracı ve aktör: adım 4–13 retlerinde kayıt **token kiracısının**, aktör kullanıcıdır
+  (`TenantUser`). **Platform aktörü reddi** (adım 2): kayıt **platform denetim kiracısında**, hedef kiracı token'daki
+  `tenant_id` (yoksa boş), aktör platform / ortak yönetici, `Outcome = Denied`, `Metadata` yalnız `EventName`, `ReasonCode`
+  (`RECORD_CODE_FORBIDDEN`), `EvaluationStep = 2`; yazımı hız sınırlayıcıdan geçer (sınırı aşan retler yazılmaz).
 - Tekrar (aynı anahtar) yeni kayıt yazmaz.
 - Bu kayıtlar BL-501 ortak ileticisiyle değil Platform içinden yazılır. Tüketici kendi Create kaydını kendi yoluyla yazar
   ve kendi kaydına `idempotencyKey` ile `code`'u koyar; iki kayıt bunlarla eşleşir.
@@ -358,6 +366,11 @@ Hatalar:
 - Yeni tür eklemek sözleşme değişikliği değildir; katalog RCS-001 §3'e bağlıdır.
 
 ## 14. Değişiklik geçmişi
+
+- 1.0.0 rev 7 (2026-11-02) — paket r8, son bakış 01 tur 2 ve inceleme 03 tur 5: §11 ret yükü paket Bölüm 21.3 Tablo B ile
+  birebir (adım 5 reddi, platform aktörü reddinin kiracısı ve `EvaluationStep = 2`, sınırlayıcı); §4 iki `ProblemDetails`
+  satırı (`AUDIT_RECORD_UNAVAILABLE` 503, `AUDIT_INTENT_INVALID` 500) ve zarf kuralının adlı istisnası; başlıktaki A-17
+  metni §12 N-2 varsayılanıyla aynı. İstek gövdesi değişmedi; hata kodları yalnız eklendi.
 
 - 1.0.0 rev 6 (2026-11-02) — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 (özet f4049860): paketle beş
   uyuşmazlık giderildi (§5 adım 9 alan alan eşitlik, §6 `ORG` / `POS` boş küme, §4 `GROUP_PREFIX_MISMATCH` kilitli ya da değil,
