@@ -544,31 +544,29 @@ public sealed class ListSignaturesBySubjectQueryHandler : IRequestHandler<ListSi
     }
 }
 
-/// <summary>§4.7 — verification changes nothing; it writes one audit event carrying the computed status.</summary>
-public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignatureCommand, Response<VerificationResultDto>>
+/// <summary>
+/// §4.7 — verification changes nothing. Its audit event is written by AuditBehavior on every run, a refused one included
+/// (VerifyESignatureCommand.GetAuditMetadata).
+/// </summary>
+public sealed class VerifyESignatureCommandHandler : IRequestHandler<VerifyESignatureCommand, Response<VerificationResultDto>>
 {
     private readonly IESignActorAccessor _actors;
     private readonly IESignatureRecordRepository _records;
     private readonly IESignatureInvalidationRepository _invalidations;
     private readonly IESignatureVerifier _verifier;
-    private readonly IAuditService _audit;
-    private readonly ITenantAuthorizationContext _principal;
     private readonly IESignatureVisibility _visibility;
 
-    public VerifySignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
-        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IAuditService audit, ITenantAuthorizationContext principal,
-        IESignatureVisibility visibility)
+    public VerifyESignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
+        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IESignatureVisibility visibility)
     {
         _actors = actors;
         _records = records;
         _invalidations = invalidations;
         _verifier = verifier;
-        _audit = audit;
-        _principal = principal;
         _visibility = visibility;
     }
 
-    public async Task<Response<VerificationResultDto>> Handle(VerifySignatureCommand request, CancellationToken ct)
+    public async Task<Response<VerificationResultDto>> Handle(VerifyESignatureCommand request, CancellationToken ct)
     {
         var actor = _actors.Current();
         if (actor is null)
@@ -586,33 +584,12 @@ public sealed class VerifySignatureCommandHandler : IRequestHandler<VerifySignat
 
         var invalidation = await _invalidations.GetBySignatureAsync(actor.TenantId, record.Id, ct);
         var result = await _verifier.VerifyAsync(record, invalidation, ct);
-
-        await _audit.AppendAsync(new AuditAppendRequest
-        {
-            CorrelationId = Guid.NewGuid(),
-            RequestType = ESignAuditEvents.Verified,
-            ActorType = AuditActorTypeResolver.ForCommand(_principal),
-            ActorId = actor.UserId,
-            Category = AuditCategory.ESignature,
-            EntityType = "ESignatureRecord",
-            EntityId = record.Id,
-            Operation = AuditOperation.Execute,
-            Metadata = new Dictionary<string, object?>
-            {
-                ["signatureNumber"] = record.SignatureNumber,
-                ["status"] = result.Status,
-                ["imageIntact"] = result.ImageIntact,
-                ["digestIntact"] = result.DigestIntact
-            },
-            SourceModule = ESignAuditEvents.SourceModule
-        }, ct);
-
         return Response<VerificationResultDto>.Success(result);
     }
 }
 
 /// <summary>§4.8 — inserts one invalidation (reason ≥ 10, a PASSWORD ticket with intent invalidate); the record is untouched.</summary>
-public sealed class InvalidateSignatureCommandHandler : IRequestHandler<InvalidateSignatureCommand, Response<SignatureRecordDto>>
+public sealed class InvalidateESignatureCommandHandler : IRequestHandler<InvalidateESignatureCommand, Response<SignatureRecordDto>>
 {
     private readonly IESignActorAccessor _actors;
     private readonly IESignatureRecordRepository _records;
@@ -621,7 +598,7 @@ public sealed class InvalidateSignatureCommandHandler : IRequestHandler<Invalida
     private readonly IPlatformTransactionExecutor _transactions;
     private readonly ITransactionalAuditOutboxWriter _audit;
 
-    public InvalidateSignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
+    public InvalidateESignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
         IESignatureInvalidationRepository invalidations, IESignTicketConsumer tickets, IPlatformTransactionExecutor transactions,
         ITransactionalAuditOutboxWriter audit)
     {
@@ -633,7 +610,7 @@ public sealed class InvalidateSignatureCommandHandler : IRequestHandler<Invalida
         _audit = audit;
     }
 
-    public async Task<Response<SignatureRecordDto>> Handle(InvalidateSignatureCommand request, CancellationToken ct)
+    public async Task<Response<SignatureRecordDto>> Handle(InvalidateESignatureCommand request, CancellationToken ct)
     {
         var actor = _actors.Current();
         if (actor is null)
