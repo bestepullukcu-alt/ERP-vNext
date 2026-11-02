@@ -78,7 +78,9 @@
   tahsis başarısızsa açılmaz — pack AC-26).
 - `ReadyToShip`'ten sonra detayın tek değişen üyesi `status`'tur (`Shipped` / `Cancelled`): MOD-0183 anlık görüntü hash'iyle drift
   arar (MOD-0183 pack §8.2).
-- Outbound satırında `skuLevel: Item` yazılmaz (enum'da yok; MVP-6 `SkuLevels` 3 değer — pack Q-M6-6).
+- Outbound satırında `skuLevel: Item` donmuş uçlara yazılmaz (enum'da yok; MVP-6 `SkuLevels` 3 değer ve `WarehousePage` her öğeyi doğrular —
+  pack Q-M6-6). W-6 (r20): Item outbound'u 0178'de açılır ama donmuş uçlarda **görünmez** (listede yok, detay 404) ve `release` 409
+  `WMS_ITEM_LEVEL_NOT_PUBLISHABLE` — pack §8.24 kural 4.
 - `itemId` / `skuId` UUID "D" biçimi; tarih `…Z`.
 - S1'de liste boş (`{ "items": [], "contractVersion": "v1" }`), detay 404.
 - S2 (r20): iç durumlar `Allocating` / `AllocationFailed` donmuş uçlarda **görünmez** (listede yok, detay 404 `UNKNOWN_OUTBOUND`); detay
@@ -106,6 +108,7 @@ değişmez, üyeler WMS-BUNDLE 1.1.0'dadır:
 | `OutboundLine` | `fefoBypassReason` (10–1000) | FEFO sapması MVP-6 çıkışına taşınır (INVENTORY 1.3.0 `fefoBypassReason`) |
 | `OutboundShipmentReadyEvent` | `legalEntityId`, `tenantId`, `outboundNumber`; `correlationId` UUID | GAP-0183-01 / 02 |
 | `Package` | `contents [{ orderLineId, lotId?, quantity }]` | paket içeriği (MVP-6 isterse) |
+| `SkuLevel` (enum) | `Item` (eklemeli değer) | W-6 — **v1'de eklenmez**: yalnız MOD-0183 okuyucusu kabul edince (Q-M6-6) 1.1.0'a girer ve Item outbound'unun yayın kapısı kalkar (pack FU-0178-ITEM-PUB) |
 
 Bir satır birden çok lot / staging lokasyonuyla toplanırsa: 1.0.0 `OutboundLine` tek lot taşır → **satır lot başına bölünür**
 (aynı `orderLineId`, ayrı satırlar). MVP-6'nın buna dayanıklılığı sorulur (Q-M6-1).
@@ -349,7 +352,9 @@ replay 200) — istemci yeniden denemenin güvenli olduğunu `postingKey`'den bi
 | `WMS_STAGING_NOT_CONFIGURED` | 422 | S2: depoda Staging rolünde stoklanabilir düğüm yok |
 | `WMS_UOM_NOT_BASE` | 422 | S2: satır birimi SKU baz birimi değil |
 | `WMS_LOT_NOT_ALLOCATABLE` | 422 | S2: lot değişimindeki lot FEFO uygun listesinde yok |
-| `WMS_SKU_LEVEL_NOT_SHIPPABLE` | 422 | S2: outbound satırında `skuLevel: Item` (W-6 açık) |
+| `WMS_ITEM_NOT_RESOLVABLE` | 422 | S2: Item satırı kalemin kendi SKU'suna çözülemedi; `details.reason`: `SkuIdMismatch` / `UnknownItemSku` / `NotStockable` / `LifecycleBlocked` (pack §8.24) |
+| `WMS_OUTBOUND_LEVEL_MIXED` | 422 | S2: aynı outbound'da Item ile öbür seviyeler |
+| `WMS_ITEM_LEVEL_NOT_PUBLISHABLE` | 409 | S2: Item outbound'u v1'de sevke hazır yapılamaz (WAREHOUSE-OUTBOUND / MVP-6 Item'ı tanımaz) |
 | `WMS_PACKAGE_EXCEEDS_PICKED` | 422 | S2: kolilerdeki toplam toplananı aşar |
 | `WMS_PACKAGE_EMPTY` | 422 | S2: içeriksiz koli kapatılamaz |
 | `WMS_DISPATCH_AMBIGUOUS` | 409 | S2: outbound için birden çok uygun MVP-6 sevkiyatı |
@@ -477,16 +482,16 @@ kesimlerdir (rota kısıtı uygulayıcının işi).
 
 | Yöntem + yol | operationId | x-permission | Gövde / not | Başarı | Başlıca hata kodları |
 |---|---|---|---|---|---|
-| `POST /outbound-shipments` | `createOutboundShipment` | `warehouse.outbound-shipments.create` | `{ idempotencyKey, warehouseId, stagingLocationId?, orderRef?, shipTo, note?, lines: [{ orderLineId, item { itemId, skuId, skuLevel }, uomId, quantity, lotOverride? { lotId, fefoBypassReason? } }] }` (1–100) — tahsis birlikte (pack §8.17) | 201 outbound görünümü + ETag (replay 200) | WMS_ALLOCATION_FAILED, WMS_ALLOCATION_TOO_MANY_LINES, WMS_OUTBOUND_ALLOCATION_IN_PROGRESS, WMS_STAGING_NOT_CONFIGURED, WMS_TARGET_NOT_ALLOWED, WMS_UOM_NOT_BASE, WMS_LOT_NOT_ALLOCATABLE, WMS_SKU_LEVEL_NOT_SHIPPABLE, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_COMPANY_CODE_INVALID, WMS_RECORD_CODE_UNAVAILABLE, INVENTORY_UNAVAILABLE (503, tahsis sonucu bilinmiyor — kayıt `Allocating`, bakım tamamlar), LOT_UNDER_RECALL, LOT_EXPIRED, LOT_BLOCKED, LOT_RETEST_DUE, REASON_REQUIRED, UNKNOWN_LOCATION, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, CROSS_LE_FORBIDDEN |
+| `POST /outbound-shipments` | `createOutboundShipment` | `warehouse.outbound-shipments.create` | `{ idempotencyKey, warehouseId, stagingLocationId?, orderRef?, shipTo, note?, lines: [{ orderLineId, item { itemId, skuId?, skuLevel }, uomId, quantity, lotOverride? { lotId, fefoBypassReason? } }] }` (1–100) — tahsis birlikte (pack §8.17); `skuId` yalnız `skuLevel: Item`'da isteğe bağlı (= `itemId`, pack §8.24) | 201 outbound görünümü + ETag (replay 200) | WMS_ALLOCATION_FAILED, WMS_ALLOCATION_TOO_MANY_LINES, WMS_OUTBOUND_ALLOCATION_IN_PROGRESS, WMS_STAGING_NOT_CONFIGURED, WMS_TARGET_NOT_ALLOWED, WMS_UOM_NOT_BASE, WMS_LOT_NOT_ALLOCATABLE, WMS_ITEM_NOT_RESOLVABLE, WMS_OUTBOUND_LEVEL_MIXED, PRODUCT_MASTER_UNAVAILABLE, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_COMPANY_CODE_INVALID, WMS_RECORD_CODE_UNAVAILABLE, INVENTORY_UNAVAILABLE (503, tahsis sonucu bilinmiyor — kayıt `Allocating`, bakım tamamlar), LOT_UNDER_RECALL, LOT_EXPIRED, LOT_BLOCKED, LOT_RETEST_DUE, REASON_REQUIRED, UNKNOWN_LOCATION, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, CROSS_LE_FORBIDDEN |
 | `POST /outbound-shipments/allocation-preview` | `previewOutboundAllocation` | `warehouse.outbound-shipments.create` | aynı gövde, `idempotencyKey` yok; yazımsız | 200 satır başına önerilen lotlar, `fefoRank`, alınabilir miktar | createOutboundShipment'in ön kontrol kodları |
-| `GET /outbound-shipments/search` | `searchOutboundShipments` | `warehouse.outbound-shipments.read` | `status*`, `warehouseId?`, `q?` (numara / sipariş ref.), `orderBy`, `page`, `pageSize` | 200 sayfa (ekran listesi; donmuş liste değil) | INVALID_REQUEST |
+| `GET /outbound-shipments/search` | `searchOutboundShipments` | `warehouse.outbound-shipments.read` (kişisel veri — Viewer'a otomatik gitmez, pack §14.2 Q-10a) | `status*`, `warehouseId?`, `q?` (numara / sipariş ref.), `orderBy`, `page`, `pageSize` | 200 sayfa (ekran listesi; donmuş liste değil) | INVALID_REQUEST |
 | `GET /outbound-shipments/{outboundId}/view` | `getOutboundShipmentView` | `warehouse.outbound-shipments.read` | — | 200 + ETag (tahsisler, pick görevleri, koliler, rezervasyon bırakma durumu) | UNKNOWN_OUTBOUND |
 | `PUT /outbound-shipments/{outboundId}` | `updateOutboundShipment` | `warehouse.outbound-shipments.update` | If-Match; `{ idempotencyKey, orderRef?, shipTo?, note? }` — tahsis değişmez | 200 + ETag (replay 200) | WMS_OUTBOUND_IMMUTABLE, WMS_CONFLICT, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_OUTBOUND |
 | `POST /outbound-shipments/{outboundId}/cancel` | `cancelOutboundShipment` | `warehouse.outbound-shipments.cancel` | If-Match; `{ idempotencyKey, reason }` (10–1000) | 200 (tahsis başına bırakma durumu; replay 200) | WMS_OUTBOUND_CANCEL_NOT_ALLOWED, WMS_CONFIRMATION_PENDING, WMS_POSTING_INTEGRITY_ERROR, WMS_INVALID_TRANSITION, WMS_CONFLICT, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED |
-| `POST /outbound-shipments/{outboundId}/release` | `releaseOutboundShipment` | `warehouse.outbound-shipments.release` | If-Match; `{ idempotencyKey }` — `Packed → ReadyToShip`, `readyAt`, outbox | 200 (replay 200) | WMS_INVALID_TRANSITION, WMS_CONFLICT, IDEMPOTENCY_KEY_REUSED |
+| `POST /outbound-shipments/{outboundId}/release` | `releaseOutboundShipment` | `warehouse.outbound-shipments.release` | If-Match; `{ idempotencyKey }` — `Packed → ReadyToShip`, `readyAt`, outbox | 200 (replay 200) | WMS_INVALID_TRANSITION, WMS_ITEM_LEVEL_NOT_PUBLISHABLE, WMS_CONFLICT, IDEMPOTENCY_KEY_REUSED |
 | `POST /outbound-shipments/{outboundId}/sync-dispatch` | `syncOutboundDispatch` | `warehouse.outbound-shipments.update` (+ çağıranda MVP-6 `supplychain.shipments.read`) | If-Match; `{ idempotencyKey }` | 200 `{ dispatchSeen, outbound }` (değişiklik yoksa yazım yok) | WMS_DISPATCH_AMBIGUOUS, WMS_DISPATCH_READ_FORBIDDEN, WMS_DISPATCH_SOURCE_UNAVAILABLE, WMS_INVALID_TRANSITION, WMS_CONFLICT |
 | `GET /outbound-shipments/{outboundId}/events` | `listOutboundEvents` | `warehouse.outbound-shipments.read` | `page`, `pageSize` | 200 sayfa | UNKNOWN_OUTBOUND |
-| `GET /outbound-shipments/{outboundId}/packages` | `listPackages` | `warehouse.packages.read` | — | 200 koliler | UNKNOWN_OUTBOUND |
+| `GET /outbound-shipments/{outboundId}/packages` | `listPackages` | `warehouse.packages.read` | — | 200 koliler + tahsis özeti (`allocSeq`, item, lot, toplanan, paketlenen); **`shipTo` yok** (Q-10a) | UNKNOWN_OUTBOUND |
 | `POST /outbound-shipments/{outboundId}/packages` | `createPackage` | `warehouse.packages.create` | `{ idempotencyKey, weightKg?, dimensionsCm?, contents: [{ allocSeq, quantity }] }` — ağırlık / ölçü elle, ambalaj seviyesi dönüşümü yok (Q-MDM-1) | 201 + ETag (replay 200) | WMS_PACKAGE_EXCEEDS_PICKED, WMS_OUTBOUND_IMMUTABLE, WMS_INVALID_TRANSITION, WMS_RECORD_CODE_UNAVAILABLE, INVALID_REQUEST |
 | `PUT /packages/{packageId}` | `updatePackage` | `warehouse.packages.update` | If-Match; `{ idempotencyKey, weightKg?, dimensionsCm?, contents? }` — yalnız `Open` | 200 + ETag (replay 200) | WMS_PACKAGE_EXCEEDS_PICKED, WMS_OUTBOUND_IMMUTABLE, WMS_INVALID_TRANSITION, WMS_CONFLICT |
 | `POST /packages/{packageId}/close` | `closePackage` | `warehouse.packages.update` | If-Match; `{ idempotencyKey }` — son kapanış outbound'u `Packed` yapar | 200 (replay 200) | WMS_PACKAGE_EMPTY, WMS_INVALID_TRANSITION, WMS_CONFLICT |
@@ -509,7 +514,7 @@ Pick görevi için iptal ucu yoktur (outbound iptali kapatır). Toplam: §4'ün 
 | `fromLocationId`, `toLocationId` | LOCATION `getLocation` · `locationId`, `type`, `status`, `isStockable`; `getLocationPath` | okuma | hedef `Bin` / stoklanabilir `StorageLocation`, `Active`, aynı depo yolunda |
 | `WarehouseLocationRole.locationId` | LOCATION `getLocation` · `type ∈ {StorageLocation, Zone, Bin}` | okuma | düğüm yaratılmaz |
 | `PutawayCandidate.onHand`, `stockStatus`, `lotId`, `baseUomId`, `lastPostingDate` | INVENTORY `getBalance` · `BalanceView.onHand / stockStatus / lotId / baseUomId / lastPostingDate` (süreç içi aynı sorgu) | okuma | saklanmaz; `openQuantity` okuma anında |
-| `item { itemId, skuId, skuLevel }` | INVENTORY `BalanceView.itemId / skuId / skuLevel` (PRODUCT-MASTER kimliği) | okuma | `Item` seviyesi görevde kabul, outbound'da değil (§2.1) |
+| `item { itemId, skuId, skuLevel }` | INVENTORY `BalanceView.itemId / skuId / skuLevel` (PRODUCT-MASTER kimliği) | okuma | `Item` seviyesi görevde ve (W-6, r20) outbound'da kabul; Item'da `skuId = itemId` (PRODUCT-MASTER `ItemSkuRef`); donmuş uçlarda Item yok (§2.1) |
 | `lotNumber`, `lotStatus` | TRACE `getLot` · `LotRef.lotNumber`, `LotRef.status` (`trace.openapi.yaml:288-300`) | okuma | Blocked / Expired uygun değil |
 | `storageConditions` (ürün) | PRODUCT-MASTER v1.1 `getSku` · `storageConditions` (`StorageConditionCode[]`, `product-master-bundle.openapi.yaml:601-604, 750`; **1.1.0-draft.16, donmamış**) | okuma | §3.6; alan yok = bilinmiyor |
 | `acceptedStorageConditions` (lokasyon) | aynı `StorageConditionCode` kod kümesi | 0178 sahibi | §3.5 |
@@ -523,7 +528,7 @@ Pick görevi için iptal ucu yoktur (outbound iptali kapatır). Toplam: §4'ün 
 | S2 `fefoRank`, önerilen lot | FEFO `getFefoOrder` · `FefoEligibleLot.rank / lotId / available / allocated`; `FefoExcludedLot.reason` (RECALLED dahil) | okuma | öneri; sapma gerekçe ister |
 | S2 `fefoBypassReason` | INVENTORY `MovementRequest.fefoBypassReason` (1.3.0; MVP-6'nın `GOODS_ISSUE_SALES`'inde) | taşıma | 10–1000 |
 | S2 `reservationId` | MOD-0173-FU03 süreç içi `IInventoryReservationPort.CreateBatchAsync` (hepsi ya da hiçbiri, `reservationType WAREHOUSE_OUTBOUND`, `sourceModule MOD-0178`, `sourceDocumentId = outboundId`, `sourceLineId = lineSeq`, `expiresAt` yok); pick hareketinde INVENTORY 1.7.0 `MovementRequest.reservationId` (doğrular, tüketmez) | yazma | tüketim MVP-6'nın (MOD-0183 revizyonu, pack Q-M6-2) |
-| S2 alınabilir miktar | FU03 `GetScopeFreeAsync` (depo / lot kapsam serbest) ∧ FEFO `available` ∧ Staging dışı `AVAILABLE` bakiyesi | okuma | FEFO başka rezervasyonları düşmez (FU03 Q-01) |
+| S2 alınabilir miktar | FU03 `GetScopeFreeAsync` (depo / lot kapsam serbest) ∧ FEFO `available` ∧ Staging dışı `AVAILABLE` bakiyesi | okuma | FEFO okuması başka rezervasyonları düşmez (`onHandAvailable`; FU03 §8.5 bilinen fark); serbest miktarı 0 olan lot sırada sayılmaz — FEFO kancasıyla aynı karar (FU03 Q-01 = A) |
 | `outboundId` | SHIPMENT-BUNDLE `createShipment` · `sourceModule = MOD-0178`, `sourceType = WAREHOUSE_OUTBOUND`, `sourceDocumentId = outboundId`, `warehouseReferenceId = warehouseId` (MOD-0183 pack `:91-92`) | MVP-6 okur | 0178 yazmaz |
 | `Shipped` | SHIPMENT-BUNDLE `ShipmentStatus = Dispatched` (`queryShipments?sourceDocumentId`, ya da `ShipmentDispatched` olayı) | okuma | W-4 |
 | `shipTo` | (kaynak sipariş — SoR belirsiz, pack Q-EA-3) | — | KVKK: log / OTel'e yazılmaz |
@@ -534,8 +539,8 @@ Pick görevi için iptal ucu yoktur (outbound iptali kapatır). Toplam: §4'ün 
 
 | Sahip | İhtiyaç | Dilim | Pack |
 |---|---|---|---|
-| MOD-0173 (MVP-1 CT, W-5) | **karşılandı (r20): MOD-0173-FU03** — kapsamlı rezervasyon, toplu port, `reservationId` ile tüketim, sahibinin `LOCATION_TRANSFER`'ı rezervasyonu düşürmez (paket ready-for-dev, onay bekliyor; DL-4 kapısı FU03 DL-1 + DL-2 CT kabulü) | S2 | §8.10 |
-| MOD-0176 (MVP-1 CT) | FEFO kancasının başka outbound'a ayrılmış lotları değerlendirmesi — açık (FU03 Q-01); v1'de 0178 sınırı FU03 kapsam serbest miktarıyla koyar | S2 | §8.10, §8.17 |
+| MOD-0173 (MVP-1 CT, W-5) | **karşılandı (r20): MOD-0173-FU03** — kapsamlı rezervasyon, toplu port, `reservationId` ile tüketim, sahibinin `LOCATION_TRANSFER`'ı rezervasyonu düşürmez (paket ready-for-dev, onay bekliyor; DL-4 kapısı FU03 DL-1 + DL-2 + DL-3 CT kabulü — CT-04 güncel) | S2 | §8.10 |
+| MOD-0176 (MVP-1 CT) | FEFO kancasının serbest tabana geçmesi — **karar verildi** (FU03 Q-01 = A, Beste 2026-11-02; FU03 DL-3, XMC-001 izni); `getFefoOrder` okuması `onHandAvailable` kalır (FU03 §8.5 bilinen fark), 0178 serbest tabanı kapsam serbest miktarıyla kurar | S2 | §8.10, §8.17 |
 | MOD-0175 (MVP-1 CT) | (isteğe bağlı) tutmanın lokasyonunun taşınması | sonra | FU-0178-QH-01 |
 | MVP-6 (MOD-0183) | §2.3 eklemeli üyelerin kullanımı + anlık görüntü beyaz listesi; dispatch sinyali (olay taşıması); `reservationId` ile rezervasyon tüketimi (yeni MOD-0183 revizyonu — S2 canlıya çıkış kapısı) | S2 | Q-M6-1…10 |
 | MDM (MOD-0290) | P9 ambalaj hiyerarşisi (bağımlılık değil; P9 gelene kadar koli elle, dönüşüm yok — karar Q-MDM-1) | S2 sonrası | FU-0178-P9; MDM'ye yalnız P9 takvimi (bilgi) |
@@ -550,10 +555,11 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
-İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) ve bağımsız inceleme 09 F-1…F-5 (§19.1.12; merkezi kayıt ad ve gövde taşımaz — değerler yerel zaman çizelgesinde; (C2) → 409 `WMS_CONFLICT`) ve bağımsız inceleme 10 F-1…F-3 (§19.1.13; bütün yazma operasyonlarında istek idempotency'si — anahtar If-Match'ten önce, kural 5; 0-satır (D) yalnız Refused, zaten `IntegrityError` ise yazım yok) ve bağımsız inceleme 11 F-1…F-3 (§19.1.14; onay cevabında `seq`, anahtar kapsamı kullanıcı + operasyon, yaratmada her yinelenen kayıtta anahtar araması) ve bağımsız inceleme 12 F-1…F-4 + Codex incelemesi P1 / P2 (§19.1.15; `details.seq`, `ConfirmPutawayTaskResult` §3.9, `RequestOp` kabloda yok, commit sonucu bilinmeyen posting → Pending) ve bağımsız inceleme 13 F-1…F-3 (§19.1.16; iptal, `PostingPendingLong` — deneme sınırı yok, bilinçli kabul) ve bağımsız inceleme 14 F-1…F-3 (§19.1.17; bayrak öncelik sırası, istisna türü `PostingPendingLong`, `LongPendingMinutes` açılış doğrulaması) ve bağımsız inceleme 15 F-1 / F-2 (§19.1.18; `PostingRefused` yalnız çözümsüz Refused, S3 türü `PostingIntegrityError`) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5); r20'de karar gelene kadar `Item` → 422 `WMS_SKU_LEVEL_NOT_SHIPPABLE`. r20 (pack §19.1.19):
-§9 ve §11 bağlayıcı; Q-07 (FU03) kapandı — sevkiyat rezervasyonu `expiresAt` göndermez.
+İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6), inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) ve bağımsız inceleme 05 F-1…F-7 (§19.1.8), bağımsız inceleme 06 F-1…F-6 (§19.1.9) ve bağımsız inceleme 07 F-1…F-5 (§19.1.10) ve bağımsız inceleme 08 F-1…F-5 (§19.1.11; merkezi denetim yalnız başarılı komutlarda — BL-501 olduğu gibi) ve bağımsız inceleme 09 F-1…F-5 (§19.1.12; merkezi kayıt ad ve gövde taşımaz — değerler yerel zaman çizelgesinde; (C2) → 409 `WMS_CONFLICT`) ve bağımsız inceleme 10 F-1…F-3 (§19.1.13; bütün yazma operasyonlarında istek idempotency'si — anahtar If-Match'ten önce, kural 5; 0-satır (D) yalnız Refused, zaten `IntegrityError` ise yazım yok) ve bağımsız inceleme 11 F-1…F-3 (§19.1.14; onay cevabında `seq`, anahtar kapsamı kullanıcı + operasyon, yaratmada her yinelenen kayıtta anahtar araması) ve bağımsız inceleme 12 F-1…F-4 + Codex incelemesi P1 / P2 (§19.1.15; `details.seq`, `ConfirmPutawayTaskResult` §3.9, `RequestOp` kabloda yok, commit sonucu bilinmeyen posting → Pending) ve bağımsız inceleme 13 F-1…F-3 (§19.1.16; iptal, `PostingPendingLong` — deneme sınırı yok, bilinçli kabul) ve bağımsız inceleme 14 F-1…F-3 (§19.1.17; bayrak öncelik sırası, istisna türü `PostingPendingLong`, `LongPendingMinutes` açılış doğrulaması) ve bağımsız inceleme 15 F-1 / F-2 (§19.1.18; `PostingRefused` yalnız çözümsüz Refused, S3 türü `PostingIntegrityError`) düzeltmeleri işlendi; W-6 (`Item` outbound) **karar verildi** (Beste 2026-11-02): Item outbound açılır, yayın kapısı MVP-6 uyumuna kadar sürer (pack §8.24). r20 (pack §19.1.19):
+§9 ve §11 bağlayıcı; Q-07 (FU03) kapandı — sevkiyat rezervasyonu `expiresAt` göndermez; FU03 Q-01 = A (serbest taban) ve Q-10a (outbound okuması
+Viewer'a gitmez) r20 ek geçişinde işlendi.
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).
-Açık (pack §19.5): Q-10 (MVP-1 CT), Q-M2-1…2 (MVP-2), Q-M6-1…10 (MVP-6; Q-M6-2 / Q-M6-4 kısmi), Q-MDM-3 + kısa kod alanı / P9 takvimleri (bilgi) (MDM),
+Açık (pack §19.5): Q-10 (MVP-1 CT), Q-M2-1…2 (MVP-2), Q-M6-1…11 (MVP-6; Q-M6-2 / Q-M6-4 kısmi), Q-MDM-3 + kısa kod alanı / P9 takvimleri (bilgi) (MDM),
 Q-EA-1…5 (EA). Kablo şeklini değiştirebilecek olanlar: Q-M6-1…9 (§2.3); PRODUCT-MASTER v1.1 donarken `storageConditions` değişirse §3.6.
