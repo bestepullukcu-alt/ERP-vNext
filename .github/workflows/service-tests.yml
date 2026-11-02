@@ -70,7 +70,7 @@ jobs:
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
           # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
           # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
-          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
+          # its reason: the guard's NotInThisJob (Crm, HCM, MG Integration / Architecture, PPM).
           - suite: bb-secrets
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
@@ -101,6 +101,12 @@ jobs:
           # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
           - suite: inventory-tests
             project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
+          # Owner decision 2026-11-02: Enterprise Strategy's two projects, green after the default-permission fix on this
+          # branch (138/138 and 4/4); they need nothing outside the process (no git, no mongod).
+          - suite: es-app
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj
+          - suite: es-e2e
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
