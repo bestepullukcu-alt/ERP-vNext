@@ -2,7 +2,7 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 7 — paket r8, son bakış 01 tur 2 (özet 8a63c4e5) ve inceleme 03 tur 5 (özet e6dd4cd8) sözleşme payı; rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
+    x-status       : DRAFT (rev 8 — paket r9, inceleme 03 tur 6 (özet f9c26991) ve son bakış 01 tur 3 (özet ec0346bb) sözleşme payı; rev 7 — paket r8, son bakış 01 tur 2 (özet 8a63c4e5) ve inceleme 03 tur 5 (özet e6dd4cd8) sözleşme payı; rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
                      öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
                      dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
@@ -140,7 +140,8 @@ açılmaz, yedek kod ya da kendi sayacı üretilmez (RCS-001 §6).
 10. 422 `RECORD_CODE_SCOPE_INVALID` → 11. önek: `Group` → 409 `GROUP_PREFIX_MISSING` / `GROUP_PREFIX_MISMATCH`;
 `LegalEntity` → MDM (404 / 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING` / 422 `LEGAL_ENTITY_NOT_ELIGIBLE` / 409 / 503), ardından kısa kod kullanım denetimi (409
 `LEGAL_ENTITY_SHORT_CODE_CHANGED`) → 12. sayaç (503) → 13. defter + denetim (+ grup
-öneki kilidi) tek işlemde (503) → 200.
+öneki kilidi) tek işlemde: kilit eşleşmezse 409 `GROUP_PREFIX_MISMATCH` (grup öneki ayarı bu istekten sonra başka bir
+önekle yeniden hizalandı), işlem / bütçe tükenirse 503 → 200 (rev 8).
 
 Yetki (7–8) idempotency'den (9) önce gelir: izinsiz kullanıcı tekrarla kod okuyamaz. Tür izni (7) kapsamdan (10) önce
 gelir: `PLN` + `Platform` → 403, `PAY` + `Platform` → 422. MDM, kapsam, tür ya da yetki
@@ -317,8 +318,10 @@ Hatalar:
 | 403 `RECORD_CODE_TENANT_NOT_ACTIVE`, 403 `RECORD_CODE_FORBIDDEN` (tür izinsiz), 403 `RECORD_CODE_PERMISSION_MISSING`, 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`, 404 | yazılır | `Denied` |
 | 400 `RECORD_CODE_REQUEST_INVALID` (rev 6), 400 `IDEMPOTENCY_KEY_REUSED`, 409 (dört kod), 422 `RECORD_CODE_SCOPE_INVALID` (rev 6: `Failed`), 422 `RECORD_TYPE_UNKNOWN`, 422 `LEGAL_ENTITY_NOT_ELIGIBLE`, 503 | yazılır (503'te en iyi çaba) | `Failed` |
 
-  Kural (rev 6): `Denied` = istekçi yetkili değil ya da hedef kayıt istekçinin erişim alanında değil; `Failed` = diğer her ret
-  (biçim, iş kuralı, yapılandırma, kaynak). Ret kaydının yükü paket Bölüm 21.2 / 21.3'tedir.
+  **Tek `Outcome` kuralı** (paket Bölüm 21.2'deki cümlenin aynısı; rev 8):
+  > **`Denied`** = (a) istekçi (kimlik bilgisi, kullanıcı ya da kiracı) bu işi yapmaya **yetkili değil**, ya da (b) istenen kayıt
+  > istekçiye **tek gövdeli bir "yok" cevabıyla gizlenir** (yok / başka kiracının / aktif değil ayırt edilmez). **`Failed`** =
+  > diğer her ret (biçim, iş kuralı, yapılandırma / ana veri, kaynak erişilemezliği).
 
   Gerekçe: kimliksiz bir istek ne kiracı ne kişi adlandırabilir; onu yazmak herkesin bir kiracının günlüğünü doldurmasına
   izin verir. Kimliği doğrulanmış ve kiracısı bilinen her ret iz bırakır.
@@ -331,8 +334,9 @@ Hatalar:
   (`RECORD_CODE_TENANT_NOT_ACTIVE`) ve adım 5 (400 `RECORD_CODE_REQUEST_INVALID`) retlerinde bu anahtarlar yoktur**; `Prefix`
   yalnız önek çözüldükten sonraki retlerde (`LEGAL_ENTITY_SHORT_CODE_CHANGED`, `GROUP_PREFIX_MISMATCH`, adım 12–13'teki 503);
   `code` / `sequence` hiçbir retde. Kiracı ve aktör: adım 4–13 retlerinde kayıt **token kiracısının**, aktör kullanıcıdır
-  (`TenantUser`). **Platform aktörü reddi** (adım 2): kayıt **platform denetim kiracısında**, hedef kiracı token'daki
-  `tenant_id` (yoksa boş), aktör platform / ortak yönetici, `Outcome = Denied`, `Metadata` yalnız `EventName`, `ReasonCode`
+  (`TenantUser`) — adım 4'te kiracı kaydı yok ya da silinmişse kayıt **platform denetim kiracısında**, hedef kiracı token
+  kiracısı (rev 8). **Platform aktörü reddi** (adım 2): kayıt **platform denetim kiracısında**, hedef kiracı token'daki
+  `tenant_id` (yoksa, Guid değilse ya da boş Guid ise boş), aktör platform / ortak yönetici, `Outcome = Denied`, `Metadata` yalnız `EventName`, `ReasonCode`
   (`RECORD_CODE_FORBIDDEN`), `EvaluationStep = 2`; yazımı hız sınırlayıcıdan geçer (sınırı aşan retler yazılmaz).
 - Tekrar (aynı anahtar) yeni kayıt yazmaz.
 - Bu kayıtlar BL-501 ortak ileticisiyle değil Platform içinden yazılır. Tüketici kendi Create kaydını kendi yoluyla yazar
@@ -366,6 +370,11 @@ Hatalar:
 - Yeni tür eklemek sözleşme değişikliği değildir; katalog RCS-001 §3'e bağlıdır.
 
 ## 14. Değişiklik geçmişi
+
+- 1.0.0 rev 8 (2026-11-02) — paket r9 (künye ready-for-dev), inceleme 03 tur 6 ve son bakış 01 tur 3 düşük bulguları: §5 adım 13'e
+  kilit eşleşmezliği 409; §11 tek `Outcome` cümlesi paketteki ile aynı, yinelenen yük cümlesi kaldırıldı; adım 4 reddinde
+  olmayan kiracının kayıt kiracısı; boş Guid `tenant_id` → hedef kiracı boş. İstek gövdesi, durum kodları ve neden kodları
+  değişmedi.
 
 - 1.0.0 rev 7 (2026-11-02) — paket r8, son bakış 01 tur 2 ve inceleme 03 tur 5: §11 ret yükü paket Bölüm 21.3 Tablo B ile
   birebir (adım 5 reddi, platform aktörü reddinin kiracısı ve `EvaluationStep = 2`, sınırlayıcı); §4 iki `ProblemDetails`
