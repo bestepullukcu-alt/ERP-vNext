@@ -2863,8 +2863,10 @@ accepts it. Queue: `treasury-intake` TRM-17. The value lists below are a startin
 the reference-data owner together with Finance.
 
 **Revision 2026-11-02 — KARAR D105, D119 (sources Y-31, Y-39, Platform owner):** `currency-minor-units` is the only currency list
-Treasury reads, and the Platform currencies lookup is narrowed to the same set (PR #346, `249ee3959`), so the list no longer
-depends on the host's ICU data. No retired code enters the seed. Changed: 21.4 and AC-R2. The test was adapted, not removed.
+Treasury reads, and the Platform currencies lookup is narrowed to the same set (PR #346, `249ee3959`): its codes still come
+from the host's ICU data, intersected with the set, so ICU can no longer add a code but a set code missing from the host's ICU data
+does not appear in the picker (open with the Platform owner). Treasury consumers read the set directly and are not affected. No
+retired code enters the seed. Changed: 21.4 and AC-R2. The test was adapted, not removed.
 
 ### 21.1 Why
 
@@ -2912,8 +2914,9 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - Test place (D117/3, proposal open with the Platform owner): the set's existence and shape are tested here (AC-R2); that a
   consumer reads the set and refuses a code outside it is tested in that consumer's pack, as a sabotage test on its own
   production check, since `Diten.FinanceTreasuryService` has no code yet.
-- `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
-  `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
+- `currency-minor-units`: a code from another module or an old record that is not in the set, missing / non-integer /
+  out-of-range `minorUnits` → 503 `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default; a code a user submits follows the error
+  contract below); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
 - Error contract (D122, K1; Platform owner confirmation open): a code a user submits that is outside the set → **400** in every
   consumer (`…_CURRENCY_CODE_INVALID` in MOD-0119, MOD-0120 and MOD-0126, `CASH_POSITION_INVALID_CURRENCY_CODE` in MOD-0124, the
