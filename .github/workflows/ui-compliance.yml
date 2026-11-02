@@ -55,11 +55,10 @@ jobs:
           CODE: ${{ steps.selector.outputs.code }}
         run: |
           # Only 0 is green: the selector defines 0, 1 and 2; anything else (127 command not found, 137 killed, empty) is red
+          # (no "exit 0": CiServiceTestsGuardTests bans it in every workflow; the 0 branch simply ends the step green)
           case "$CODE" in
-            0) echo "Seçici çıkışı 0: yeşil (taban dışında kırmızı yok)."; exit 0 ;;
-            1) meaning="yeni kırmızı" ;;
-            2) meaning="araç hatası" ;;
-            *) meaning="beklenmeyen çıkış" ;;
+            0) echo "Seçici çıkışı 0: yeşil (taban dışında kırmızı yok)." ;;
+            1) echo "Seçici çıkışı 1: kırmızı (yeni kırmızı)."; exit 1 ;;
+            2) echo "Seçici çıkışı 2: kırmızı (araç hatası)."; exit 1 ;;
+            *) echo "Seçici çıkışı ${CODE:-boş}: kırmızı (beklenmeyen çıkış)."; exit 1 ;;
           esac
-          echo "Seçici çıkışı ${CODE:-boş}: kırmızı ($meaning)."
-          exit 1
