@@ -938,12 +938,41 @@ Additive; single writer MVP-6 CT. K1 itself needs none.
 - **OD-183-3** `sourceModule` / `sourceType` values of a hand-made shipment (24.2): owner Natig.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
+### 24.9 Acceptance, tests and sabotage
+
+Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`, `Controllers/SupplyChainShipmentsControllerTests.cs`, `JavaScript/ShipmentIndexBehaviorTests.cs`, `JavaScript/ShipmentDetailActionTests.cs`). Each row gets a test on production code; a row with a sabotage is red when that sabotage is applied.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| SB-1 | Create form shows the session company read-only; the query carries it, the body never does; changing it in the shared selector changes the request | Sending the company in the body turns it red |
+| SB-2 | Recipient picker lists CRM accounts by name and code; choosing one sends the account id as `shipToReference`; the wire body is valid against SHIPMENT-BUNDLE 3.4.0 unchanged | Sending the name instead of the id turns it red |
+| SB-3 | Without `crm.account.read`: field disabled with a localized reason, no CRM request, no create | Sending the CRM request anyway turns it red |
+| SB-4 | The account's address is shown read-only; v1 offers no address choice | — |
+| SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
+| SB-6 | Line numbers are assigned in order and stay unique after a line is removed | Numbering by index after removal without renumbering turns it red |
+| SB-7 | Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear turns it red |
+| SB-8 | `fefoBypassReason` appears only after the FEFO refusal codes and is sent unchanged | Showing it always turns it red |
+| SB-9 | List shows recipient and warehouse names and localized status; no GUID in any cell; `data_mode: server` is declared in pack, table and `createList` alike | Rendering `shipToReference` raw for a resolved row turns it red |
+| SB-10 | A failed or denied name read: page loads, localized "name unavailable", reference shown small; no blank | Throwing on a read failure turns it red |
+| SB-11 | An old shipment with free-text `shipToReference` or `warehouse-outbound:…:ship-to` shows it as stored, no failing CRM call | Treating every value as an id turns it red |
+| SB-12 | Details page: recipient, address, warehouse names; lines sub-table with product, SKU, lot, location names; `issueTransactionId` is not a column; `_Form` and `Details` share one card map | — |
+| SB-13 | Status names localized in 7 languages on filter, badge and details; note limit 1000 in UI and server | Removing the `zh` key turns parity red |
+| SB-14 | `verify_datatable_page.py --reference compact`: only the declared bulk and delete rows fail; the failures are recorded | A new failing row stops the slice |
+| SB-15 | Cross-tenant data: a name adapter uses the caller's token and sends the current tenant; no shared cache across requests | Adding a static cache turns it red |
+| SB-16 | Real browser on the integrated target: a user with the tour's permissions plus `crm.account.read` and `trace.lots.read` creates a shipment with pickers only and dispatches it; `GOODS_ISSUE_SALES` as S23-1 | — |
+| SB-17 | Intake stays off: no host registration of `WarehouseIntakeCoordinator` | Registering it fails the existing obligation check |
+| SB-18 | No write path changed: S23-1…S23-21 stay green; the REVERSAL body is unchanged until 24.6 closes | Adding `restoreReservation` before FU03 fails S23-17 |
+
+The full SupplyChain and Web test assemblies run unfiltered. Measure page latency of the list with 50 rows in the slice's evidence (24.4); no latency target is invented.
+
 ## Teslim dilimleri
 
-| dilim | ad | kapsadığı bölümler |
-|---|---|---|
-| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance |
-| DL-2 | ret ve durum metinleri | Refusals and events, Acceptance |
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-2 | ret ve durum metinleri | Refusals and events, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-3 | gönderen, alıcı ve Compact form (K1) | Screen slice B: Sender and recipient, Golden Compact form | E3 | plan kimliği yok | plan satırı yok |
+| DL-4 | Compact liste, ad gösterimi, satır alt tablosu | Golden Compact list, Names instead of GUIDs and the line sub-table, Contract changes needed | E3 | plan kimliği yok | plan satırı yok |
 
 DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-21; the 3.4.0 contract patch ships in the same change
 (`ContractErrorCodeParityTests`) together with the return reader's acceptance of the 3.4.0 line fields (Repo Scope, §23 DL-1
@@ -951,3 +980,5 @@ exception). DL-2 covers the screen texts and labels of S23-7. S23-16 is measured
 modules). Not slices of this version: the product check (Dependencies, PRODUCT-MASTER row — dispatchable only after
 PRODUCT-MASTER is frozen, by a new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work, a
 later MOD-0183 revision). CT-APR-01 note: "only DL-1, DL-2".
+
+DL-3 covers SB-1…SB-8, SB-11 and SB-16; it needs no contract change. DL-4 covers SB-9, SB-10, SB-12…SB-15 and needs contract item 1 first. SB-17 and SB-18 run in both. Not slices of this version: the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes. CT-APR-01 note for r8: "only DL-3, DL-4"; evidence levels are proposals.

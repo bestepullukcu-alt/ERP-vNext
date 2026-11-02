@@ -1197,13 +1197,49 @@ Evidence references and the customer name are not written to the audit record.
 - **OD-186-5** PRODUCT-MASTER is a draft: this module's name read waits on the same G6 condition as MOD-0183's product row, or the owner accepts a read of a draft contract for display only.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
+### 35.12 Acceptance, tests and sabotage
+
+Tests live in the owned files named in section "Owned UI paths" and `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/`, plus new `ReturnAuthorizationWorkflowTests.cs`, `ReturnDetailsReadTests.cs` and `frontend/Diten.Web.Tests/JavaScript/ReturnDetailsBehaviorTests.cs`. Each row gets a test on production code; a row with a sabotage is red when that sabotage is applied.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| RB-1 | Resolve projection carries product name and code, SKU code and name, lot number per line; `itemId`, `skuId` never appear as a label | Dropping the projection fields turns it red |
+| RB-2 | Name read fails or is denied → row kept, localized "name unavailable", create still works | Making the failure throw turns it red |
+| RB-3 | Eligible-shipment picker lists only Delivered and Closed; a stale response never fills a changed choice | Removing the status filter, or the stale guard, turns it red |
+| RB-4 | List filter sends `shipmentId` from the picker; no UUID text input remains on list or form | Restoring the input fails `ReturnFormContractTests` |
+| RB-5 | Reason select sends a listed code; 7 languages have every label; an old free-text return shows its stored text | Removing one language's key turns parity red |
+| RB-6 | Received: warehouse and location pickers; location disabled until a warehouse is chosen and cleared on change; empty location sends nothing and stops at `receiptPlaceMissing` | Keeping the old location on warehouse change turns it red |
+| RB-7 | `RETURN_RECEIPT_IN_PROGRESS` fills the pickers from `details`, by name | Showing raw ids turns it red |
+| RB-8 | `getReturn`: own company 200 with all fields; other tenant, other company, unknown → 404 with one text | Dropping the company predicate turns it red |
+| RB-9 | Details page: no `.read` → only `_AccessDenied` inside the shell; skeleton, empty and error are distinct; 390 / 768 / 1024 / 1440 without page overflow; Arabic RTL | Drawing the page before the permission check turns it red |
+| RB-10 | KRN link lists `holdNumber` per line from `listHoldsBySource`; no `quarantine.holds.read` → block absent, no request; `NotPosted` line shows its reason | Sending the request without the permission turns it red |
+| RB-11 | Submit: `Requested` → instance started, `PendingApproval`, status unchanged; replay starts no second instance | Removing the idempotent check starts two, red |
+| RB-12 | No active template → 422 `RETURN_WORKFLOW_TEMPLATE_MISSING`; workflow down → 503; no change in either | Falling back to direct authorization turns it red |
+| RB-13 | Approved outcome → `Authorized` once, `ReturnAuthorized` once, audit once; duplicate event → inbox stops it | Removing the inbox check turns it red |
+| RB-14 | Rejected outcome → `Rejected`, entitlement released once. Cancelled or timed out → stays `Requested`, submit works again | Releasing on every delivery turns it red |
+| RB-15 | Event with a foreign tenant, or an instance id that differs from the stored one, or a return not `PendingApproval` → ignored, no write | Removing the instance-id comparison turns it red |
+| RB-16 | Lost event: read-time reconciliation applies the outcome | Removing the reconciliation path turns it red |
+| RB-17 | `transitionReturn` to `Authorized` or `Rejected` → 422 `RETURN_APPROVAL_REQUIRED`, even with `.authorize` | Restoring the old arrow for `.authorize` turns it red |
+| RB-18 | Real flow on the integrated target: return submitted, task visible in the Task Center, approver acts, list shows `Authorized` (E4; no bridge class added) | — |
+| RB-19 | Shipment dispatch has no workflow call (K2) | Adding a workflow client to `Features/Shipments` fails an architecture test |
+| RB-20 | Audited Events table: one audit row per command in the same commit as the outcome; `.close` etc. unchanged | Moving the write outside the commit turns it red |
+| RB-21 | Manifest: `RETURN_DETAILS` page, `SUBMIT_AUTHORIZATION` action; `AUTHORIZE` and `REJECT` gone; M-02…M-08 pass | Leaving `AUTHORIZE` in the manifest fails M-05 |
+| RB-22 | Texts of every new state, picker, error and label exist in all 7 `ReturnsIndex` languages (parity by MATCH count); no hardcoded text | Removing a key from `ar` turns it red |
+
+Also: `verify_datatable_page.py --reference slim` is run and recorded (RU-SCR-06 stands); the full SupplyChain and Web test assemblies run unfiltered; one real-browser pass on the integrated target with the tour's permission set plus `trace.lots.read` and `quarantine.holds.read`. The MOD-0175 binding (35.8) has no acceptance row until it is written.
+
 ## Teslim dilimleri
 
-| dilim | ad | kapsadığı bölümler |
-|---|---|---|
-| DL-1 | iade → karantina | Exact prospective DEV owned files and shared exception proposal, Customer return to Inventory, What is posted, Receipt attempt and failure behaviour, Return acceptance |
-| DL-2 | ret metinleri | Receipt attempt and failure behaviour, Return acceptance |
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | iade → karantina | Exact prospective DEV owned files and shared exception proposal, Customer return to Inventory, What is posted, Receipt attempt and failure behaviour, Return acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-2 | ret metinleri | Receipt attempt and failure behaviour, Return acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-3 | iade seçicileri ve satır görünümü | Screen slice B and return approval: Line fields of the return screens, Pickers, Form shape | E3 | plan kimliği yok | plan satırı yok |
+| DL-4 | iade ayrıntı sayfası ve KRN bağı | Return details page and quarantine link, Read model, Contract changes needed | E4 | plan kimliği yok | plan satırı yok |
+| DL-5 | iade onayı iş akışı (K2) | Authorization through Platform Workflow, Contract changes needed, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 
 DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 covers the R34-3 texts. DL-1 is dispatchable only
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
+
+DL-3 covers RB-1…RB-7 and the matching part of RB-22; it needs no contract change, except the optional picker search. DL-4 covers RB-8…RB-10 and needs contract item 1 and its Gateway route. DL-5 covers RB-11…RB-21 and needs contract items 2–4. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. The MOD-0175 binding is not in any slice until it is written with Beste. CT-APR-01 note for r9: "only DL-3, DL-4, DL-5"; evidence levels are proposals.
