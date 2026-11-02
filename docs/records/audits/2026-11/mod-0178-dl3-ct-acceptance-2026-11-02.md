@@ -47,3 +47,20 @@ F-6 | DÜŞÜK | Raf önerisi yalnız düzenleme formunda (sözleşmede adayda �
 - WMS-BUNDLE dondurması (§19.7 / AC-60) DL-3 dışında; dondurma sonrası Web DTO'ları yeniden kıyaslanır.
 - Geliştiricinin 14 mimari kırmızısına karşı CT ağacında 10: fark `.claude/worktrees` kopyalarının taranmasından (CT ağacı depo dışında; ölçülmedi).
 - Taban kırmızıları DL-3 bulgusu değil; sahiplerine bildirim ayrı takip.
+
+## Düzeltme turu ve sonuç (2026-11-02, aynı gün)
+
+- Düzeltme commit'leri: `bec38513f` (F-1, yansımayla eylem başına anahtar testi) · `03aa826dd` (F-2(1) servis: aday cevabında
+  `storageConditions`) · `dc03e189b` (F-2(1) ekran: "Saklama koşulu bilinmiyor" rozeti, hedef raf ve Kaydet kapalı, 7 dil). Geliştirici:
+  Inventory 1579 / 0 kırmızı; Web 4233 geçti, 5 kırmızı tabanda (4 CT taban listesi + `WorkCenterMenuWithoutPermissionsTests` ortam);
+  mimari kırmızılar tabanla aynı.
+- CT ölçümü (depo dışı detached ağaç `dc03e189b`, iş sonunda kaldırıldı): Web depo testleri 115 / 115; CT sabotajı
+  `PutawayTasksController.Edit` izin kontrolü silindi → 1 kırmızı (F-1 kapandı); aday işleyicisinde `StorageConditions` ataması
+  kaldırıldı → `PutawayCreateRulesTests` 1 kırmızı (F-2(1) kapandı); ikisi de byte-eşit geri alındı.
+- F-2(2) (şirket kodu ön okuması): sahip kararı **C** (2026-11-02) — paket ve taslak ön okuma ucu tanımlamıyor; gönderim sonrası 7 dilli
+  `WMS_COMPANY_CODE_INVALID` yeterli. Kayıtta açık nota dönüştü (paket revizyonunda §11.3a metni hizalanır).
+- F-3 (AC-45 375 px + §17 E4 çalışma zamanı kanıtı) açık AC olarak kalır: DL-8 hatta (`83b01ef62`), Web 5001 bu sırada cevap vermedi;
+  CT canlı ölçümü Web ayağa kalkınca koşar.
+
+**Sonuç: VERIFIED** — F-1 ve F-2(1) kapandı; F-2(2) sahip kararıyla not; F-3 açık AC (DL-8 sonrası canlı ölçüm). ACCEPTED, kod main'e
+girdiğinde yazılır (SOP §7).
