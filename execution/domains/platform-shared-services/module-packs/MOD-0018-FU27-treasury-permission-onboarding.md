@@ -23,6 +23,10 @@ consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217
 > `approved` / `ready-for-dev` olduktan ve CT-APR-01 onay satırı main'e girdikten sonra, Bölüm 5'teki tam yol listesiyle ve
 > dilim sırasıyla yazılır. Platform ve MDM yollarına dokunmak ayrıca XMC-001 onayı ister (Bölüm 5, D63/2).
 >
+> **KARAR D103 (kaynak Y-28, 2026-10-30):** Bölüm 14.2 "Görünen adlar" tablosu MOD-0018 sahibinin düzeltmeleriyle güncellendi (rol 26 ve 27
+> `tr`; "Manager" fr, es, zh, ru tek terim). ar, ru, zh anadil kontrolsüz. Yedi `SharedResource` dosyası DL koduyla yazılır; bu revizyon
+> kod değildir. D80/2 (a) ve (b) değişmedi: FU27 son hâli teyidi bu teyide dahil değildir.
+>
 > **Yetki dayanağı.** MOD-0018 Auth eki Treasury tarafından yazılır; MOD-0018 sahibi inceler ve teyit eder (Y-15, Y-16;
 > `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md`). Y-14 geçersizdir ve bu pakete
 > işlenmedi. Modül tanımı biçimi değişmedi; bu paket mevcut MOD-0018 onboarding kalıbını (FU20 / FU22) izler (Y-16/2).
@@ -402,8 +406,9 @@ sonra yazılır. MDM tarafı (`PlatformTrustedLegalEntityScopeProviderClient.cs`
 | Ortam yapılandırması `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` | depoda yok (her ortam verir) | 38 çift | yeni çiftler (sıra Bölüm 8) |
 | `docs/guides/operations/post-deploy-steps.md` | yeni adım (desen `:297-320`, BL-592 §7) | — | sıra, geri alma ve kontrol |
 
-**Koşullu (K-6 "evet" ise — finans tüketicisi Platform kapsam ucunu kullanacaksa) — GEREKMİYOR: K-6 "hayır" (Platform sahibi,
-Y-22 / KARAR D88/2); aşağıdaki tablo yalnız tarihçedir: finans tüketicisi için **ikinci kimlik bilgisi bağlama** değişiklikleri
+**Koşullu (K-6 "evet" ise — finans tüketicisi Platform kapsam ucunu kullanacaksa) — GEREKİYOR: K-6 "evet" (Platform sahibi, Y-23 /
+KARAR D92/1; D88/2'deki "hayır" düzeltildi). XMC-001'i Beste finans çift listesi, dosya-satır listesi ve sabotajlı testleri gördükten sonra
+verecek (gönderildi, 2026-10-29). Aşağıdaki tablo ilk ölçümdür; güncel satır listesi Beste'ye giden pakettedir. Önceki notun tarihçesi: finans tüketicisi için **ikinci kimlik bilgisi bağlama** değişiklikleri
 yapılmaz. `TrustedLegalEntityScopeCredentialAuthenticator.cs` yukarıdaki XMC-001 kapsamında (izin listesi, tavan, modül kodu kümesi)
 değişir; tablodaki satırları (`:11`, `:27`, `:76-81` — tüketici kimliği / `Mdm` bağlaması) ise değişmez:**
 
@@ -415,7 +420,7 @@ değişir; tablodaki satırları (`:11`, `:27`, `:76-81` — tüketici kimliği 
 | `services/Diten.Platform/src/Diten.Platform.API/Program.cs` | `:192-193`, `:213-215` | seçenek ve doğrulayıcı kaydı |
 | `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalLegalEntityScopeResolutionController.cs` | `:15` (sınıf; ilgili satırlar ölçülmedi) | MDM kimlik bilgisiyle çağrı |
 
-**MDM (sahibi MDM sahibi — XMC-001 onayı ondan):**
+**MDM (sahibi MDM sahibi — XMC-001 onayı ondan) — XMC-001 VERİLDİ (Ali, Y-26 / KARAR D97/1):** yalnız aşağıdaki dosya ve testleri; sıra Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi (§8.3).
 
 | Dosya | Satır | Bugün | Değişiklik |
 |---|---|---|---|
@@ -474,7 +479,7 @@ Golden Reference arka uç klasör düzeni (Bölüm 10):
   sabitler (AC-29 sıra testi).
 
 **DL-5'te Platform dosyası yok (ölçüm):** atama kaydı, uçlar ve denetim Auth içindedir; denetim önce-yaz kalıbıyla Auth
-günlüğüne gider (`IAuthAuditService.WriteOnceAsync`, `IAuthAuditService.cs:18`). Gateway: **K-W4 KAPANDI — KARAR D79/5:**
+günlüğüne gider — **ayrı yazıcı tipi `IPaymentSodWaiverAuditWriter`** (KARAR D97/2 (a), D98; yukarıda). Gateway: **K-W4 KAPANDI — KARAR D79/5:**
 kiracı uçlarının kök yolu `/api/roles/sod-waiver-assignments`; mevcut `/api/roles/{everything}`
 (`gateway/Diten.ApiGateway/ocelot.json:2232`) altında kalır, Gateway değişmez, `integration-agent` görevi yoktur.
 
@@ -482,6 +487,57 @@ kiracı uçlarının kök yolu `/api/roles/sod-waiver-assignments`; mevcut `/api
 sözleşme dosyası (alan adları Bölüm 8.5; hata kodları dahil). Dosya adı klasörün desenini izler (`*-semantics-vX.Y.Z.md` ya da
 `*.openapi.yaml`; ad DL-5 başında yazılır). `…/SodWaivers/PaymentSodWaiverAssignmentContractTests.cs` ve MOD-0126 sahte istemcisi
 bu dosyaya karşı yazılır (AC-34).
+
+**K-W5 okuma yolu — KARAR D97/2 (Ali, Y-26) → paket metni KARAR D98** (ölçüm ct-05 `264863e80`; yol `c`'nin beş koşulu,
+`.antigravity/rules/audit-trail-standard.md` §5.c; meta-denetim §7):
+
+- **Ayrı yazıcı tipi (D97/2 (a)):** `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IPaymentSodWaiverAuditWriter.cs` — **yeni**;
+  iki metot `WriteCreatedAsync(...)` ve `WriteRevokedAsync(...)` (yalnız bu iki komut çağırır; önce-yaz, çağıranın verdiği denetim
+  kimliğiyle bir kez yazar). Uygulama `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PaymentSodWaiverAuditWriter.cs`
+  — **yeni**; `authAuditLogs` koleksiyonuna `EntityType = "PaymentSodWaiverAssignment"` + `EntityId` ile yazar. `IAuthAuditService`
+  (`IAuthAuditService.cs:18-19` `WriteOnceAsync`) **değişmez**; `IssueServiceIdentityTokenHandler.cs:123,151` ve
+  `ServiceClientRegistryReconciler.cs:94,170` aynı yolu kullanmaya devam eder, İ5 istisnası (`Diten.AuthService.md:26`) kaymaz.
+  DI kaydı `Persistence/DependencyInjection.cs` (`:109` deseni).
+- **Nesne alanı (öneri 2):** `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/AuthAuditLog.cs` (`:3-21`) — yalnız
+  ekleme `EntityType` (string?) ve `EntityId` (Guid?); eski kayıtlar boş kalır; kurucu değişmez, yeni alanlar yalnız yeni yazıcıda
+  dolar. Dizin `Persistence/Configurations/MongoDbIndexConfigurations.cs` (`:83-89` yanına) `(TenantId, EntityType, EntityId,
+  OccurredAt)`.
+- **Okuma arayüzü (öneri 3, kural koşul 2):** `Application/Common/Interfaces/IPaymentSodWaiverAuditReader.cs` — **yeni**; tek
+  üye `GetHistoryAsync(tenantId, assignmentId, ct)` (güncelleme / silme üyesi yok); uygulaması
+  `Persistence/Repositories/PaymentSodWaiverAuditReader.cs` — **yeni** (yalnız `Find`).
+- **Geçmiş sorgusu ve uç:** `…/Features/PaymentSodWaiverAssignments/Queries/GetPaymentSodWaiverAssignmentHistoryQuery.cs`,
+  `…/Handlers/QueryHandlers/GetPaymentSodWaiverAssignmentHistoryHandler.cs` — **yeni**; liste ucu için
+  `…/Queries/GetPaymentSodWaiverAssignmentsQuery.cs` + `…/Handlers/QueryHandlers/GetPaymentSodWaiverAssignmentsHandler.cs` —
+  **yeni** (`paymentBatchId`siz biçim: kiracının bütün atamaları, sayfalı, en yeni önce; `paymentBatchId` almaz — parti biçimi
+  mevcut `GetPaymentSodWaiverAssignmentsForBatchQuery`'dir, KARAR D99/4, D100/1). Uçlar `PaymentSodWaiverAssignmentsController.cs`'te
+  (Bölüm 14.3).
+- **Meta-denetim (öneri 5, D97/2 (b)):** `Application/Common/Interfaces/IPlatformAuditForwarder.cs` (`:9-21`) `PlatformAuditEvent`'e
+  yalnız ekleme `bool IsMetaAudit = false`; `Infrastructure/Services/PlatformAuditForwarder.cs` (`:77-100`) yükte
+  `IsMetaAudit` gönderir (Platform `AuditAppendRequest.IsMetaAudit`, `Diten.Platform.Application/Contracts/Audit/AuditAppendRequest.cs:27`
+  — Platform dosyası **değişmez**). Bugün anahtar boşsa iletici yalnız uyarı yazıp döner (`PlatformAuditForwarder.cs:55-59`) —
+  okuma satırı sessizce kaybolur, Platform / bağlantı hataları da yalnız uyarıyla yutulur (`:111-138`); bu yüzden geçmiş sorgusu
+  okuma satırını sonucu dönen ayrı iletici üyesiyle (`TryForwardAsync`, yalnız ekleme — KARAR D99/1) gönderir ve teslim
+  edilmedikçe (anahtar `PlatformService:InternalApiKey` boş — `Infrastructure/Settings/PlatformServiceOptions.cs:9` —, 2xx dışı,
+  bağlantı hatası, zaman aşımı) 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE` döner, veri dönmez (AC-46). Üretimde anahtar zaten başlangıçta zorunludur (`Infrastructure/DependencyInjection.cs:226`, `:27`);
+  kural yine de uçta sınanır (geliştirme / test ortamı ve yanlış yapılandırma).
+- **Defter ve mimari test (öneri 6):** `tests/architecture/audit-ledger/Diten.AuthService.md` `## İzler`'e yeni satır
+  `auth-sod-muafiyet-gecmisi | c | yazıcı | IPaymentSodWaiverAuditWriter.WriteCreatedAsync/IPaymentSodWaiverAuditWriter.WriteRevokedAsync` + beş koşul kanıt notu; `auth-gunlugu` (`:13`) `aday` kalır;
+  `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` `AcceptedTrails` (`:99`, Auth satırı `:103`
+  yanına) yeni üçlü; `PinnedCounts` (`:61`, `Debt 18 / Exceptions 1 / K2Debt 11`) **değişmez** (iki yeni komut kabul edilmiş ize
+  yazar, borç eklemez); `tests/architecture/audit-ledger/CT-DECISIONS.md` satırı (D97/2). Belirteç biçimi `Tip.Metot`, işleyicinin
+  enjekte bağımlılık üzerinden çağrısıyla eşleşir (`AuditTrailStandard/AuditTrailMeasurement.cs:275-279`, `:362-377`).
+- **Ekran (öneri 4, D97/2 (c)):** Roller sayfası (`frontend/Diten.Web/Views/Governance/Roles/Index.cshtml`, `_LayoutTenantShell` —
+  kiracı tarafı, `:8`) — **yeni** kısmi görünüm `Views/Governance/Roles/_SodWaiverAssignments.cshtml` (salt-okunur liste +
+  "Geçmiş" ekranı; yalnız `Perms.Has("auth.payment-sod-waivers.read")` iken çizilir — UAS-001); `Index.cshtml`'e kısmi
+  görünüm satırı; JS `wwwroot/assets/js/Governance/Roles/sod-waivers.js` — **yeni**; `index.l10n.js` (`:5-14` anahtar listesi);
+  `_IndexL10n.cshtml` köprüsü; Web vekili `Controllers/RolesController.cs` (`:17-18`) iki **yeni** GET eylemi
+  (`sod-waiver-assignments`, `sod-waiver-assignments/{id:guid}/history`) Auth uçlarına iletir; yetki Auth'ta `[HasPermission]`
+  (`RolesController.cs:13-16` deseni). Metin **7 dil** — `Resources/Views/Governance/Roles/RolesIndex.{en,tr,fr,es,zh,ar,ru}.resx`
+  (bugün 38 giriş, 7 dil). Roller sayfasının sayfa yardımı varsa yeni bölüm için bir paragraf eklenir (DL-5 başında ölçülür).
+- **Testler (yeni):** `…/SodWaivers/PaymentSodWaiverAuditWriterTests.cs` (iki metot, önce-yaz, aynı kimlikle ikinci çağrı yazmaz),
+  `…/SodWaivers/PaymentSodWaiverHistoryTests.cs` (HTTP: kiracı 404, izinsiz 403, iletici anahtarı boş → 503, meta-denetim
+  satırı), `…/SodWaivers/PaymentSodWaiverAuditMongoTests.cs` (gerçek Mongo: `EntityType`/`EntityId` dizini, okuma arayüzünde
+  güncelleme / silme yolu yok), `frontend/Diten.Web.Tests` Roller ekranı testi (bölüm izinsiz çizilmez, 7 dil kaynak eşliği).
 
 ### 5.4 Auth — DL-6 (onaylayıcı aday sorgusu, D66/1)
 
@@ -560,10 +616,10 @@ olarak görünür — guard testi bu durumu kırmızı yapar. Rol **açıklamas�
 | Modül kodu değerleri (K-1b) | yapı **KARAR D79/1**: paket başına bir kod (kiracı modül bazında alır); **değerler** tüketici paketlerin manifest adımında — bugün seçilmedi (MOD-0289 `:146` "SEC-002 modül kodu değeri seçilmedi (ek paketinde)") | profil, kiracı hakkı ve DL-4 çiftleri bu değere bağlı |
 | Platform modül kataloğu / kiracı hakkı kaydı (Treasury modül kodları) | yok | hak olmadan profil hiçbir hak vermez (beklenen) |
 | MOD-0217 onayı | `draft` | DL-3 kodu onaydan sonra (Y-6, Y-10/1) |
-| XMC-001 — Beste (Platform), MDM sahibi | istenmedi (D63/2) | DL-4 dosyalarına onaya kadar dokunulmaz |
+| XMC-001 — Beste (Platform), MDM sahibi | **verildi** — Beste, Platform dosyaları (Y-22 / D88/3); Ali, MDM istemcisi ve testleri (Y-26 / D97/1); finans tüketicisi Platform dosyaları için Beste'nin XMC-001'i açık (D92/1) | DL-4 dosyalarına yalnız verilen dosya kapsamında ve §8.3 sırasıyla dokunulur |
 | D64 main'de | **var** — PR #276 (`3bb1ab838`; `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0) | DL-5 paket kapısı (D62/1) — kapandı |
 | Auth K2 denetim yolu: önce-yaz `IAuthAuditService.WriteOnceAsync` | var (`IAuthAuditService.cs:18`; kullanım `IssueServiceIdentityTokenHandler.cs:123,151`) | DL-5 için uyulabilir yol |
-| Auth denetim defteri: `auth-gunlugu` izi | **`aday`** — okuyan uç yok (`tests/architecture/audit-ledger/Diten.AuthService.md` `## İzler`) | **DL-5 ENGELİ:** yeni K2 komutu kabul edilmiş ize yazılmalı; CT defter kararı ya da okuyan uç gerekir (K-W5); DL-5 kodundan önce kapanması sahip şartıdır — **KARAR D80/2 (a)** (Y-19) |
+| Auth denetim defteri: `auth-gunlugu` izi | **`aday`** — okuyan uç yok (`tests/architecture/audit-ledger/Diten.AuthService.md` `## İzler`) | **DL-5 ENGELİ:** yeni K2 komutu kabul edilmiş ize yazılmalı; CT defter kararı ya da okuyan uç gerekir (K-W5); DL-5 kodundan önce kapanması sahip şartıdır — **KARAR D80/2 (a)** (Y-19) **KARAR D97/2 (Ali, Y-26):** okuma yolu kabul — yeni iz `auth-sod-muafiyet-gecmisi` (belirteç: iki komut için ayrı yazıcı tipinin metodu), `AuthAuditLog` `EntityType` / `EntityId`, `GET /api/roles/sod-waiver-assignments/{id}/history`, Roller ekranında salt-okunur atama listesi + "Geçmiş", meta-denetim okuma satırı (iletici anahtarı yapılandırma şartı); DL-5 paket metni bu yolla yazıldı (**KARAR D98**, D99: Bölüm 5.3, 8.5, 14.3, 21; AC-44…AC-47); engel iki koşulla kalkar: metin CT-APR-02'den geçer **ve** MOD-0018 sahibi D79 sonrası değişiklikleri teyit eder (D98/6). |
 | FinanceTreasuryService → Auth iç uç kimliği (DL-5 iç ucu; **KARAR D74/1**) | servis yok; Auth'ta ortak sır deseni var (`X-Internal-Api-Key`, `IInternalEventAuthService.IsAuthorized` — `InternalEventAuthService.cs:16-24`; kullanım `InternalPermissionsController.cs:21, 49-52`, `InternalRolesController.cs:11, 30-33`; yapılandırma `InternalEventAuth:ApiKey`, `Infrastructure/DependencyInjection.cs:225`); kullanıcı token'ı doğrulaması var (JwtBearer varsayılan şema, `Infrastructure/DependencyInjection.cs:42-56`; `Program.cs:215`). Servis kimliği token'ı (`InternalServiceIdentityTokensController.cs`) **kullanılmaz (D74/1)** | Bölüm 8.7; çağıran servis ortak sırrı ve kullanıcı token'ını iletir (tüketici paketin işi) |
 | MOD-0126 tüketici sözleşmesi | paket metninde: port `IPaymentSodWaiverAssignmentSource`, okunan alanlar (bitiş, başlangıç, onaylayan, gerekçe kodu, hedef parti), aday sorgusu (MOD-0126 `:1253-1259`, AC-42, AC-43) | DL-5 yanıt biçimi bununla birebir uyumlu (Bölüm 8.5) |
 | D66 main'de | **var** — PR #281 (`c32cabe6b`; `git merge-base --is-ancestor 3c98e7bfc c32cabe6b` → 0) | DL-6 paket kapısı (D62/1) — kapandı |
@@ -631,7 +687,7 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
   hata / boş liste / belirsizlik → erişim yok (Y-4/6).
 - Finans servisinin kapsam yolu (`IFinanceTreasuryDataScopeSource`, Y-4/6) bugün Platform'da tüketici olarak yok; Platform
   ucu yalnız MDM kimlik bilgisini kabul eder (`TrustedLegalEntityScopeCredentialAuthenticator.cs:11`,
-  `TrustedLegalEntityScopeCredentialOptions.cs:7`). **K-6 kapandı — "hayır" (Y-22 / KARAR D88/2):** finans servisi Platform
+  `TrustedLegalEntityScopeCredentialOptions.cs:7`). **K-6 düzeltildi — "evet" (Y-23 / KARAR D92/1):** finans servisi ikinci tüketici olur (kendi kimliği, gizli anahtarı, çift listesi; MDM bağlaması değişmez). Eski not (Y-22 / D88/2, "hayır"): finans servisi Platform
   kapsam ucunu doğrudan kullanmaz; soranın kimliği yalnız MDM (`DITENMDMSERVICE`); dört finans paketi kendi kapsam yolunu yazar
   (O-19 / O-22 / O-14 / O-23 — yolun ayrıntısı Platform sahibine soruldu, D88/4).
 
@@ -674,6 +730,18 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
 - Kiracı: `TenantId` JWT'den (kiracı uçları) ya da iç uçta çağrıyı başlatan kullanıcının iletilen token'ından (**KARAR D74/1**,
   Bölüm 8.7); istekte (gövde, sorgu dizesi, `X-Tenant-Id`) kiracı okunmaz; başka kiracının atama kimliği ya da kullanıcısı
   (`granteeUserId`) → 404; başka kiracının partisi için sorgu boş döner (Auth partiyi doğrulamaz — opak).
+- **Denetim izi ve geçmiş (K-W5 — KARAR D97/2, D98):** iki komut denetimi yeni iz `auth-sod-muafiyet-gecmisi`'ye yazar
+  (`IPaymentSodWaiverAuditWriter.WriteCreatedAsync` / `.WriteRevokedAsync`; `EntityType = PaymentSodWaiverAssignment`, `EntityId` = atama). Geçmiş
+  `GET /api/roles/sod-waiver-assignments/{id}/history` ile okunur: izin `auth.payment-sod-waivers.read` (kaydı gören izini de
+  görür — yeni anahtar yok, açık atama listesi değişmez); kiracı JWT'den, başka kiracının ya da olmayan atamanın geçmişi 404;
+  yanıt yalnız bu atamanın denetim satırları (olay, zaman, eylemi yapan, önce / sonra alanları), en eskiden yeniye. Her geçmiş
+  okuması merkezi günlüğe bir okuma satırı (`IsMetaAudit = true`) iletir. **Teslim teyidi (KARAR D99/1 — K1 önerisi, MOD-0018
+  sahibinin teyidine gider):** mevcut `ForwardAsync` en iyi çabadır ve Platform / bağlantı hatasını yalnız uyarıyla yutar
+  (`PlatformAuditForwarder.cs:111-138`); geçmiş ucu bunun yerine sonucu dönen ayrı bir üye kullanır (`IPlatformAuditForwarder`'a yalnız
+  ekleme, ör. `TryForwardAsync` → teslim edildi / edilmedi; mevcut çağıranlar değişmez). Satır teslim edilmedikçe (anahtar boş,
+  Platform 2xx dışı, bağlantı hatası, zaman aşımı) uç veri döndürmez → 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE` (kapalı-başarısız
+  okuma; D97/2 (b)'nin genişletilmesi). Liste ucu (aynı `GET /api/roles/sod-waiver-assignments`, `paymentBatchId`siz biçim, sayfalı — Bölüm 14.3 tek satır)
+  aynı izinle Roller ekranındaki salt-okunur listeyi besler; ekran yazma eylemi sunmaz (atama yine API ile).
 
 ### 8.6 Onaylayıcı aday sorgusu (DL-6, KARAR D66/1)
 
@@ -764,7 +832,9 @@ Platform MDM kimlik bilgisini tamamen reddeder (her güvenilir kapsam sorusu 403
 `shell: none`. Bu FU Razor görünümü, ön yüz rotası, DataTable ya da gezinme öğesi sahiplenmez. Hiçbir `.cshtml` dosyası
 oluşturulmaz; yalnız Bölüm 5.5'teki mevcut üç `_IndexL10n.cshtml` köprüsüne rol görünen adı girişleri eklenir (**KARAR D79/9**)
 — sayfa, yerleşim (layout) ya da kabuk değişmez, bu yüzden `Layout = "_LayoutPlatformAdmin"` / `Layout = "_LayoutTenantShell"`
-yazılacak dosya yoktur. Atama ekranı ayrı paket kararıdır (Bölüm 11, 20).
+yazılacak dosya yoktur. Atama ekranı ayrı paket kararıdır (Bölüm 11, 20). **DL-5 istisnası (KARAR D97/2, D98):** mevcut Roller sayfasına
+(`_LayoutTenantShell`) salt-okunur muafiyet atamaları bölümü ve "Geçmiş" kısmi görünümü eklenir; yeni sayfa, rota ya da
+kabuk değişikliği yoktur.
 
 ## 10. Backend File Convention
 
@@ -781,7 +851,9 @@ yazılacak dosya yoktur. Atama ekranı ayrı paket kararıdır (Bölüm 11, 20).
 
 ## 11. Frontend File Contract
 
-Yeni ekran, sayfa ya da ön yüz rotası yoktur. Atama ekranı yok (v1'de atama API ile; kök yol **KARAR D79/5**). Ön yüz işi
+Yeni ekran, sayfa ya da ön yüz rotası yoktur. Atama ekranı yok (v1'de atama API ile; kök yol **KARAR D79/5**). **DL-5 (KARAR
+D97/2, D98):** mevcut Roller sayfasında salt-okunur muafiyet atamaları listesi + "Geçmiş" (dosyalar Bölüm 5.3); yalnız
+`auth.payment-sod-waivers.read` iken çizilir (UAS-001), yazma düğmesi yok; metin 7 dil (sayfa kaynağı `RolesIndex.{lang}.resx`). Ön yüz işi
 yalnız rol görünen adlarının yerelleştirilmesidir (**K-7 KAPANDI — KARAR D79/9**; dosya listesi Bölüm 5.5): rol ekranları
 (Roller, Rol izinleri, Kullanıcı rolleri — `Views/Governance/{Roles, RoleAssignments, UserRoleAssignments}`) sistem rolünün
 adını kod → kaynak eşlemesiyle gösterir.
@@ -929,13 +1001,13 @@ miras alır (D49/1). Sayı = rolün tam modül anahtarı sayısı (mekanik geni�
 | 23 | `ContractViewer` | Contract Viewer | Sözleşme görüntüleyici | `mdm.contracts.read`, `mdm.contracts.documents.read` (belge deposu izni yok — D56/2) | 2 |
 | 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | (+23) + `mdm.contracts.create`, `.update`, `.delete`, `.bulk-delete`, `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.submit-approval`, `mdm.contracts.terminate`, `mdm.contracts.archive`, `mdm.contracts.value.read`, `mdm.contracts.value.write` (D49/2), `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`. **Yok:** `mdm.contracts.record-signature` (D47/5) | 15 |
 | 25 | `ContractSignatureRecorder` | Contract Signature Recorder | Sözleşme imza kaydedici | `mdm.contracts.record-signature`, `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create` | 4 |
-| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme onaylayıcı | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` (**D69**; belge deposu izni yok — D56/2; açık atama değil). **Yok:** `mdm.contracts.submit-approval` ve yazma anahtarları | 3 |
+| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme sürümü onaylayıcı | `mdm.contracts.read`, `mdm.contracts.documents.read`, `mdm.contracts.versions.approve` (**D69**; belge deposu izni yok — D56/2; açık atama değil). **Yok:** `mdm.contracts.submit-approval` ve yazma anahtarları | 3 |
 
 **Auth — 1 rol (DL-5, KARAR D74/3):**
 
 | # | RoleName | en | tr | Anahtarlar | Sayı |
 |---|---|---|---|---|---|
-| 27 | `PaymentSodWaiverAuthority` (KARAR D79/9) | Payment SoD Waiver Authority | Muafiyet yetkilisi | `auth.payment-sod-waivers.assign`, `auth.payment-sod-waivers.read` — ikisi de yalnız açık atama (Bölüm 14.1): rol hiçbir otomatik yoldan dolmaz, anahtarlar role açık (`Manual`) rol-izin atamasıyla bağlanır; rol kullanıcıya açık atamayla verilir. **Yok:** hiçbir `finance-treasury.*` / `mdm.*` anahtarı, `waive-sod`, bağımlı anahtar. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (kendine atama 403, D64 / D74/3). Rolü Treasury hak profili izinsiz oluşturur; atayan izin + bu rolün üyeliğini taşır (**KARAR D75/1**) | 0 (+ 2 Auth) |
+| 27 | `PaymentSodWaiverAuthority` (KARAR D79/9) | Payment SoD Waiver Authority | Muafiyet atama yetkilisi | `auth.payment-sod-waivers.assign`, `auth.payment-sod-waivers.read` — ikisi de yalnız açık atama (Bölüm 14.1): rol hiçbir otomatik yoldan dolmaz, anahtarlar role açık (`Manual`) rol-izin atamasıyla bağlanır; rol kullanıcıya açık atamayla verilir. **Yok:** hiçbir `finance-treasury.*` / `mdm.*` anahtarı, `waive-sod`, bağımlı anahtar. Ödeme sürecinde rolü olan kişi kendine muafiyet veremez (kendine atama 403, D64 / D74/3). Rolü Treasury hak profili izinsiz oluşturur; atayan izin + bu rolün üyeliğini taşır (**KARAR D75/1**) | 0 (+ 2 Auth) |
 
 Sayı sütunu Treasury modül anahtarı sayısıdır; iki Auth anahtarı 117'ye girmez (karar dosyası matris sayım kuralı: modül
 anahtarı = altı Treasury paketinin anahtarları). Toplam: 117 modül anahtarı + 2 Auth anahtarı; 27 rol.
@@ -956,28 +1028,31 @@ yedi kaynak dosyaya birlikte yazılır).
 | 7 | `TreasuryPaymentApprover` | Payment Approver | Ödeme onaylayıcı | Approbateur des paiements | Aprobador de pagos | 付款审批人 | معتمد المدفوعات | Утверждающий платежи |
 | 8 | `TreasuryPaymentTier2Approver` | Payment Approver (Tier 2) | Ödeme onaylayıcı (2. kademe) | Approbateur des paiements (niveau 2) | Aprobador de pagos (nivel 2) | 付款审批人（二级） | معتمد المدفوعات (المستوى 2) | Утверждающий платежи (уровень 2) |
 | 9 | `TreasuryPaymentReleaser` | Payment Releaser | Ödeme serbest bırakıcı | Responsable de la libération des paiements | Liberador de pagos | 付款放行人 | مسؤول الإفراج عن المدفوعات | Ответственный за выпуск платежей |
-| 10 | `TreasuryManager` | Treasury Manager | Hazine yöneticisi | Responsable de la trésorerie | Gerente de tesorería | 资金经理 | مدير الخزينة | Руководитель казначейства |
+| 10 | `TreasuryManager` | Treasury Manager | Hazine yöneticisi | Gestionnaire de la trésorerie | Gestor de tesorería | 资金经理 | مدير الخزينة | Менеджер казначейства |
 | 11 | `TreasuryApOperator` | AP Operator | Borç (AP) operatörü | Opérateur comptes fournisseurs | Operador de cuentas por pagar | 应付账款操作员 | مشغل الحسابات الدائنة | Оператор кредиторской задолженности |
 | 12 | `TreasuryApApprover` | AP Approver | Borç (AP) onaylayıcı | Approbateur comptes fournisseurs | Aprobador de cuentas por pagar | 应付账款审批人 | معتمد الحسابات الدائنة | Утверждающий по кредиторской задолженности |
-| 13 | `TreasuryApOperationsManager` | AP Operations Manager | AP operasyon yöneticisi | Responsable des opérations fournisseurs | Gerente de operaciones de cuentas por pagar | 应付账款运营经理 | مدير عمليات الحسابات الدائنة | Руководитель операций по кредиторской задолженности |
+| 13 | `TreasuryApOperationsManager` | AP Operations Manager | AP operasyon yöneticisi | Gestionnaire des opérations fournisseurs | Gestor de operaciones de cuentas por pagar | 应付账款运营经理 | مدير عمليات الحسابات الدائنة | Менеджер операций по кредиторской задолженности |
 | 14 | `TreasuryArOperator` | AR Operator | Alacak (AR) operatörü | Opérateur comptes clients | Operador de cuentas por cobrar | 应收账款操作员 | مشغل الحسابات المدينة | Оператор дебиторской задолженности |
 | 15 | `TreasuryArApprover` | AR Approver | Alacak (AR) onaylayıcı | Approbateur comptes clients | Aprobador de cuentas por cobrar | 应收账款审批人 | معتمد الحسابات المدينة | Утверждающий по дебиторской задолженности |
-| 16 | `TreasuryArOperationsManager` | AR Operations Manager | AR operasyon yöneticisi | Responsable des opérations clients | Gerente de operaciones de cuentas por cobrar | 应收账款运营经理 | مدير عمليات الحسابات المدينة | Руководитель операций по дебиторской задолженности |
+| 16 | `TreasuryArOperationsManager` | AR Operations Manager | AR operasyon yöneticisi | Gestionnaire des opérations clients | Gestor de operaciones de cuentas por cobrar | 应收账款运营经理 | مدير عمليات الحسابات المدينة | Менеджер операций по дебиторской задолженности |
 | 17 | `TreasuryArTier2AdjustmentApprover` | AR Tier-2 Adjustment Approver | AR 2. kademe düzeltme onaylayıcı | Approbateur des ajustements clients (niveau 2) | Aprobador de ajustes de cuentas por cobrar (nivel 2) | 应收账款调整审批人（二级） | معتمد تسويات الحسابات المدينة (المستوى 2) | Утверждающий корректировки дебиторской задолженности (уровень 2) |
 | 18 | `TreasuryCashPositionPreparer` | Cash Position Preparer | Nakit pozisyonu hazırlayıcı | Préparateur de la position de trésorerie | Preparador de posición de caja | 现金头寸编制人 | معد المركز النقدي | Составитель денежной позиции |
 | 19 | `TreasuryCashPositionApprover` | Cash Position Approver | Nakit pozisyonu onaylayıcı | Approbateur de la position de trésorerie | Aprobador de posición de caja | 现金头寸审批人 | معتمد المركز النقدي | Утверждающий денежную позицию |
 | 20 | `BankDataViewer` | Bank Data Viewer | Banka verisi görüntüleyici | Lecteur des données bancaires | Visualizador de datos bancarios | 银行数据查看者 | مشاهد البيانات المصرفية | Наблюдатель банковских данных |
-| 21 | `BankDataManager` | Bank Data Manager | Banka verisi yöneticisi | Gestionnaire des données bancaires | Gestor de datos bancarios | 银行数据管理员 | مدير البيانات المصرفية | Менеджер банковских данных |
+| 21 | `BankDataManager` | Bank Data Manager | Banka verisi yöneticisi | Gestionnaire des données bancaires | Gestor de datos bancarios | 银行数据经理 | مدير البيانات المصرفية | Менеджер банковских данных |
 | 22 | `BankAccountActivator` | Bank Account Activator | Banka hesabı etkinleştirici | Responsable de l'activation des comptes bancaires | Activador de cuentas bancarias | 银行账户激活人 | مسؤول تفعيل الحسابات المصرفية | Ответственный за активацию банковских счетов |
 | 23 | `ContractViewer` | Contract Viewer | Sözleşme görüntüleyici | Lecteur des contrats | Visualizador de contratos | 合同查看者 | مشاهد العقود | Наблюдатель контрактов |
-| 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | Gestionnaire des contrats | Gestor de contratos | 合同管理员 | مدير العقود | Менеджер контрактов |
+| 24 | `ContractManager` | Contract Manager | Sözleşme yöneticisi | Gestionnaire des contrats | Gestor de contratos | 合同经理 | مدير العقود | Менеджер контрактов |
 | 25 | `ContractSignatureRecorder` | Contract Signature Recorder | Sözleşme imza kaydedici | Responsable de l'enregistrement des signatures de contrats | Registrador de firmas de contratos | 合同签署登记人 | مسجل توقيعات العقود | Регистратор подписей контрактов |
-| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme onaylayıcı | Approbateur des versions de contrat | Aprobador de versiones de contrato | 合同版本审批人 | معتمد إصدارات العقود | Утверждающий версии контрактов |
-| 27 | `PaymentSodWaiverAuthority` | Payment SoD Waiver Authority | Muafiyet yetkilisi | Responsable des dérogations SoD (paiements) | Responsable de exenciones SoD (pagos) | 付款职责分离豁免授权人 | مسؤول إعفاءات فصل المهام (المدفوعات) | Уполномоченный по исключениям SoD (платежи) |
+| 26 | `ContractVersionApprover` | Contract Version Approver | Sözleşme sürümü onaylayıcı | Approbateur des versions de contrat | Aprobador de versiones de contrato | 合同版本审批人 | معتمد إصدارات العقود | Утверждающий версии контрактов |
+| 27 | `PaymentSodWaiverAuthority` | Payment SoD Waiver Authority | Muafiyet atama yetkilisi | Responsable des dérogations SoD (paiements) | Responsable de exenciones SoD (pagos) | 付款职责分离豁免授权人 | مسؤول إعفاءات فصل المهام (المدفوعات) | Уполномоченный по исключениям SoD (платежи) |
 
 Satır sayısı 27 = Bölüm 14.2 rol sayısı; kod sütunu yukarıdaki üç tablonun `RoleName` sütunuyla birebir aynıdır. "SoD" fr, es
-ve ru'da kısaltma olarak kalır (ürün terimi; en ile aynı olan tek parça budur, değerin tamamı değil). Rol 26'nın `tr` adı
-matristeki gibi "Sözleşme onaylayıcı"dır, öteki dillerde "sürüm" sözcüğü `en` adını izler — sahip teyidinde hizalanabilir.
+ve ru'da kısaltma olarak kalır (ürün terimi; en ile aynı olan tek parça budur, değerin tamamı değil). **KARAR D103 (Y-28):** MOD-0018 sahibi
+tabloyu düzeltmelerle teyit etti. `tr`: rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi"; "Manager" her dilde
+tek terim (tr yöneticisi, fr Gestionnaire, es Gestor, zh 经理, ar مدير, ru Менеджер). Paket metnindeki kısa adlar ("Sözleşme onaylayıcı",
+"Muafiyet yetkilisi") karar kayıtlarının adıdır; görünen ad bu tablodur. **ar, ru ve zh için anadil kontrolü yapılmadı (düşük güven,
+sahip notu);** kontrol yapılınca düzeltme bu tabloya ve yedi kaynak dosyaya birlikte yazılır.
 
 **Bağımlı anahtarlar (başka modülün; kayıt o sahipte; rollere Treasury manifestinde çapraz modül bağımlılığı olarak beyanla,
 profil verir — K-4 (b), KARAR D70/1):** `mdm.legal-entities.read` (MOD-0220): 6–19 arasındaki
@@ -1001,7 +1076,8 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
 |---|---|---|
 | `POST /api/roles/sod-waiver-assignments` | `[Authorize]` | `auth.payment-sod-waivers.assign` (**KARAR D74/2–3**; yalnız açık atama, 27. rol Muafiyet yetkilisi; rolü taşımayan 403, kendine atama 403) **+ işleyicide Muafiyet yetkilisi rol üyeliği** (**KARAR D75/1**; izni var ama rol üyesi değil → 403 `SOD_WAIVER_ASSIGN_FORBIDDEN`) |
 | `POST /api/roles/sod-waiver-assignments/{id}/revoke` | `[Authorize]` | `auth.payment-sod-waivers.assign` (aynı; rol üyeliği denetimi dahil — **KARAR D76/1**) |
-| `GET /api/roles/sod-waiver-assignments?paymentBatchId=` | `[Authorize]` | `auth.payment-sod-waivers.read` (**KARAR D74/2–3**; 27. rol) — K1 kullanım incelemesi; yalnız izin, rol üyeliği denetimi yok (**KARAR D76/1**) |
+| `GET /api/roles/sod-waiver-assignments[?paymentBatchId=][&page=&pageSize=]` — **tek uç, iki biçim (KARAR D98, D99/4)** | `[Authorize]` | `auth.payment-sod-waivers.read` (**KARAR D74/2–3**; 27. rol); yalnız izin, rol üyeliği denetimi yok (**KARAR D76/1**); kiracı JWT'den. **`paymentBatchId` verilirse:** bugünkü parti biçimi — yalnız geçerli atamalar, yanıt alanları ve sözleşme dosyası aynen (D79/6; `GetPaymentSodWaiverAssignmentsForBatchQuery`, K1 kullanım incelemesi). **Verilmezse:** Roller ekranı listesi — kiracının bütün atamaları (geçerli, süresi dolmuş, geri alınmış; durum alanıyla), sayfalı, en yeni önce (`GetPaymentSodWaiverAssignmentsQuery`). Denetleyici biçimi `paymentBatchId`'nin varlığına göre seçer; parti biçiminde `page` / `pageSize` verilirse 400 (iki biçim karıştırılmaz) |
+| `GET /api/roles/sod-waiver-assignments/{id}/history` (**KARAR D97/2, D98**) | `[Authorize]` | `auth.payment-sod-waivers.read`; başka kiracı / yok → 404; iletici anahtarı boş → 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE`; her okuma bir meta-denetim satırı |
 | `GET /internal/sod-waiver-assignments/payment-batches/{batchId}[?granteeUserId=]` | `X-Internal-Api-Key` + iletilen kullanıcı token'ı (**KARAR D74/1**, Bölüm 8.7); `[HasPermission]` yok (iç uç) | ortak sırrı tutan servis (amaçlanan çağıran FinanceTreasuryService; sır çağıranı ayırt etmez); kiracı token'dan |
 
 ### 14.4 DL-6 iç uç (D66/1)
@@ -1019,7 +1095,8 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   Gateway'den geçmez (servisten servise); kimlik **KARAR D74/1** (Bölüm 8.7) — Gateway'e kimlik ya da rota eklenmez
   (`ocelot.json`'da `/internal` rotası yok, ölçüldü).
 - DL-6: iç uç, Gateway'den geçmez; Gateway **değişmez** (kimlik D74/1, DL-5 iç ucuyla aynı).
-- Ön yüz bu uçları çağırmaz (ekran yok). Bölüm 5.5'in rol görünen adı işi yeni uç ya da rota istemez (mevcut `GET /api/roles`
+- Ön yüz yazma uçlarını çağırmaz; DL-5'te Roller sayfası Web vekili üzerinden yalnız liste ve geçmiş uçlarını okur (KARAR D98;
+  `/api/roles/{everything}` altında, Gateway değişmez). Bölüm 5.5'in rol görünen adı işi yeni uç ya da rota istemez (mevcut `GET /api/roles`
   yanıtındaki `name` kodu kullanılır).
 
 ## 16. Acceptance Criteria
@@ -1157,7 +1234,7 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   hattıyla koşar (`ValidationBehavior` dahil; Bölüm 5.3 ölçümü). Sabotaj: sıra ters çevrilince (alan doğrulaması ya da kendine
   atama denetimi üyelikten önce, ya da alan doğrulaması kendine atamadan önce) (i)–(iii)'ten en az biri kırmızıya döner.
 - [ ] AC-30 (zorunlu) — **Denetim kaydı (K2):** yaratma ve geri alma `auth.sod-waiver-assignment.created` / `.revoked` olayını
-  iş yazımından **önce** `WriteOnceAsync` ile yazar; olay alıcı, hedef parti, başlangıç, bitiş, onaylayan ve gerekçe kodunu taşır;
+  iş yazımından **önce** ayrı yazıcı tipiyle (`IPaymentSodWaiverAuditWriter.WriteCreatedAsync` / `.WriteRevokedAsync` — KARAR D97/2 (a), D98) yazar; olay alıcı, hedef parti, başlangıç, bitiş, onaylayan ve gerekçe kodunu taşır;
   denetim yazımı başarısızsa atama yazılmaz ve komut başarısız döner. Sabotaj: denetim yazıcısı hata verecek şekilde
   ayarlandığında atama koleksiyonunda satır kalırsa test kırmızı.
 - [ ] AC-31 (zorunlu) — Geri alınan atama sorguda dönmez; eşzamanlı iki geri alma → biri 409; fiziksel silme yok.
@@ -1230,6 +1307,40 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
   eşitlemede role `auth.payment-sod-waivers.assign` otomatik eklenince, ya da `TreasuryManager`'a eklenince test kırmızıya
   döner; profil rolü oluşturmayınca "eşitlemeden sonra rol var, sıfır hak" testi kırmızıya döner; eşitleme `Manual` satırları
   silince "yeniden eşitleme açık atamayı korur" testi kırmızıya döner.
+- [ ] AC-44 (zorunlu) — **Kabul edilmiş iz (KARAR D97/2, D98):** `Diten.AuthService.md` `## İzler`'de
+  `auth-sod-muafiyet-gecmisi | c | yazıcı | IPaymentSodWaiverAuditWriter.WriteCreatedAsync/IPaymentSodWaiverAuditWriter.WriteRevokedAsync` satırı ve beş koşul notu; `AcceptedTrails`'te aynı üçlü;
+  `AuditTrailStandard` testleri yeşil; iki komut "denetleniyor" ölçülür, `PinnedCounts` Auth değeri (`Debt 18, Exceptions 1,
+  K2Debt 11`) değişmez; `IssueServiceIdentityTokenCommand` İ5 satırı aynen kalır; `auth-gunlugu` `aday` kalır. Sabotaj: iki
+  işleyiciden biri yazıcı yerine `IAuthAuditService.WriteOnceAsync`'i çağırınca ya da `AcceptedTrails` üçlüsü kaldırılınca test
+  kırmızıya döner.
+- [ ] AC-45 (zorunlu) — **Geçmiş ucu (öneri 3; kural koşul 1–3):** `GET /api/roles/sod-waiver-assignments/{id}/history` yalnız o
+  atamanın satırlarını (`EntityType` + `EntityId` ile) döner; izinsiz 403; başka kiracının atama kimliği 404; olmayan kimlik 404;
+  yaratma ve geri alma satırları alıcı, hedef parti, süre, onaylayan, gerekçe kodu, geri alan ve zamanı taşır. Okuma arayüzünde
+  güncelleme / silme üyesi yoktur (mimari test) ve gerçek Mongo'da geçmiş satırları uç üzerinden değiştirilemez. Sabotaj: kiracı
+  süzgeci kaldırılınca başka kiracı testi kırmızıya döner.
+  **Liste ucunun iki biçimi (KARAR D99/4, D100/1) — sözleşme testleri:** (i) `paymentBatchId` var, `page` / `pageSize` yok →
+  parti biçimi, yalnız geçerli atamalar, yanıt D79/6 sözleşme dosyasıyla aynı; (ii) `paymentBatchId` yok → sayfalı tam liste
+  (geçerli, süresi dolmuş, geri alınmış; durum alanı), sayfalama paketle sabit (KARAR D101/1): varsayılan `page = 1`, `pageSize = 20` (Auth deseni
+  `Features/Users/Queries/GetAllUsersQuery.cs:15`), üst sınır `pageSize = 100`; `page < 1`, `pageSize < 1` ya da `pageSize > 100`
+  → 400 `SOD_WAIVER_PAGING_INVALID` (kırpma yok); yanıt `DTOs/PaginatedResult.cs` biçiminde; 21 atamalı kiracıda varsayılan istek
+  20 öğe + `TotalCount = 21` döner, `pageSize = 101` → 400; en yeni önce;
+  (iii) `paymentBatchId` + `page` ya da `pageSize` birlikte → 400 (iki biçim karıştırılmaz); (iv) iki biçimde de başka kiracının
+  ataması dönmez. Sabotaj: denetleyici biçim seçimini kaldırıp hep tam listeyi döndürünce (i) kırmızıya döner.
+- [ ] AC-46 (zorunlu) — **Meta-denetim teslimi ve yapılandırma şartı (öneri 5, KARAR D97/2 (b), D99/1):** geçmiş okuması
+  `IsMetaAudit = true` okuma satırını sonucu dönen iletici üyesiyle gönderir ve **yalnız teslim teyidi gelince** veri döndürür.
+  HTTP testleri gerçek `PlatformAuditForwarder` ile, Platform iç ucunun sözleşmesine (`POST /api/internal/audit/append`,
+  `X-Internal-Api-Key`, gövde `AuditAppendRequest` + `IsMetaAudit`) uyan saplama sunucuya karşı koşar: (i) 2xx → 200 + veri ve
+  saplamada gövdesi `IsMetaAudit = true`, `EntityType = PaymentSodWaiverAssignment`, `EntityId` = atama olan tek satır; (ii) anahtar
+  boş → 503 `SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE`, saplamaya çağrı yok; (iii) saplama 500 / 401 → 503, veri yok; (iv) bağlantı
+  reddi ve zaman aşımı → 503, veri yok. Mevcut `ForwardAsync` çağıranlarının davranışı değişmez (gerileme testi). Dev ortamı
+  kanıtı: bir geçmiş okumasından sonra Platform merkezi günlüğünde meta-denetim satırı görülür; `post-deploy-steps.md` Auth adımı
+  anahtarın dolu olduğunu ve bu satırın görüldüğünü kontrol eder. Sabotaj: teslim teyidi yok sayılıp (`ForwardAsync`'e dönülüp)
+  veri döndürülünce (iii) ve (iv) kırmızıya döner; anahtar denetimi kaldırılınca (ii) kırmızıya döner.
+- [ ] AC-47 (zorunlu) — **Roller ekranı (öneri 4, KARAR D97/2 (c)):** `auth.payment-sod-waivers.read` izni olan kullanıcı Roller
+  sayfasında salt-okunur muafiyet atamaları listesini ve satırın "Geçmiş"ini görür; izni olmayana bölüm çizilmez (iskelet yok,
+  yönlendirme yok — UAS-001); yazma düğmesi yok. Bütün görünen metin `RolesIndex.{en,tr,fr,es,zh,ar,ru}.resx`'te, İngilizce dışı
+  değer en ile aynı değil, `index.l10n.js` anahtar listesi eksiksiz. Sabotaj: bir dil dosyasından yeni anahtar silinince ya da
+  izin denetimi kaldırılınca `Diten.Web.Tests` kırmızıya döner.
 
 ## 17. Test Expectations
 
@@ -1245,7 +1356,7 @@ MOD-0126 v1: O-14, KARAR D28). Bağımlı anahtar sayısı 7.
 | Hak döngüsü | Etkin / eksik / kapalı / süresi dolmuş / belirsiz; geri yükleme kesinliği |
 | Yalıtım | A / B kiracı, `Manual` / `System` / başka modül koruma |
 | DL-4 | Gerçek Platform doğrulayıcısı ve MDM istemcisi testleri; dev ortamı iki şirket iki kullanıcı |
-| DL-5 | İşleyici, doğrulayıcı, denetim (hata enjeksiyonu), sözleşme, gerçek Mongo; iç uç kimliği KARAR D74/1 — ortak sır, iletilen token'dan kiracı, istekteki kiracının yok sayılması, kapalı-başarısız 401 (AC-26, AC-32); atayan Muafiyet yetkilisi, rolsüz 403, kendine 403, izni var ama rol üyesi değil 403 ve rol üyesi ama izni yok 403 — yaratma ve geri alma (AC-29, KARAR D75/1, geri alma KARAR D76/1); okuma ucu yalnız `.read` (D76/1); denetim sırası testi gerçek boru hattıyla ve sıra sabotajı (AC-29, KARAR D76/2); rol şablonu, profilin rolü izinsiz oluşturması ve iki Auth anahtarı (AC-42, AC-43, D75/1); kiracı uçları `/api/roles/sod-waiver-assignments` altında (KARAR D79/5); sürümlü sözleşme dosyasına karşı Auth sözleşme testi ve MOD-0126 sahte istemcisi (AC-34, KARAR D79/6); token üretimi değişmez (KARAR D79/4) |
+| DL-5 | **K-W5 okuma yolu (KARAR D98):** ayrı yazıcı tipi, `AcceptedTrails` + defter (AC-44), geçmiş ucu kiracı / izin / salt-okunur (AC-45), meta-denetim + anahtar boş → 503 (AC-46), Roller ekranı izin + 7 dil (AC-47); İşleyici, doğrulayıcı, denetim (hata enjeksiyonu), sözleşme, gerçek Mongo; iç uç kimliği KARAR D74/1 — ortak sır, iletilen token'dan kiracı, istekteki kiracının yok sayılması, kapalı-başarısız 401 (AC-26, AC-32); atayan Muafiyet yetkilisi, rolsüz 403, kendine 403, izni var ama rol üyesi değil 403 ve rol üyesi ama izni yok 403 — yaratma ve geri alma (AC-29, KARAR D75/1, geri alma KARAR D76/1); okuma ucu yalnız `.read` (D76/1); denetim sırası testi gerçek boru hattıyla ve sıra sabotajı (AC-29, KARAR D76/2); rol şablonu, profilin rolü izinsiz oluşturması ve iki Auth anahtarı (AC-42, AC-43, D75/1); kiracı uçları `/api/roles/sod-waiver-assignments` altında (KARAR D79/5); sürümlü sözleşme dosyasına karşı Auth sözleşme testi ve MOD-0126 sahte istemcisi (AC-34, KARAR D79/6); token üretimi değişmez (KARAR D79/4) |
 | DL-6 | İşleyici (kiracı, etkin izin hesabı, açık atama kaynağı, etkinlik — hizmet hesabı aday değil, geçici kilitli aday (KARAR D79/8, AC-38) —, muafiyet biçimi; şirket kapsamı Auth'ta yok, tüketicide (KARAR D79/7, AC-40); `permissionKey = platform.workflow.tasks.approve` sorgusu — KARAR D71), doğrulayıcı, sözleşme, gerçek Mongo, iç uç kimliği (KARAR D74/1 — ortak sır + token'dan kiracı; AC-35); tüketici tarafı (anahtar başına ayrı çağrı ve iş akışı izni kesişimi dahil — KARAR D71) her paketin aday AC'sinde sahte istemciyle (MOD-0126 AC-11, MOD-0119 AC-10, MOD-0120 AC-9, MOD-0124 AC-10, MOD-0217 AC-33) |
 | Gerçek Mongo | Ayrı sahipli örnek, sabit veritabanı, `MONGO_TEST_URI`; uygulama 27017 yasak; sahte / bellek içi kanıt kalıcılık iddiasını kapatmaz |
 | Derleme / takımlar | Odaklı Auth testleri, tam AuthService takımı, Auth API Release derlemesi; Bölüm 5.5 için odaklı `Diten.Web.Tests` (guard + mevcut `RoleAssignments` / `UserRoleAssignments` / Roller JS testleri gerileme); DL-4'te Platform ve MDM odaklı + tam takım; gerçek sayılar ve önceden bilinen kırmızılar (FU20 kaydındaki `UserLookupValidationContractTests` gibi) taban karşılaştırmasıyla |
@@ -1301,7 +1412,7 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   teyitli — KARAR D80/3** (Y-19); **K-1b, K-2, K-3 sahip teyitli — Y-21 / KARAR D84/1.**
 - [ ] Bağımsız inceleme (CT-APR-02) ve CT-APR-01 onay satırı main'de.
 - [ ] XMC-001 onayı: Beste (Platform dosyaları) ve MDM sahibi (MDM istemcisi); K-5 çift listesi — DL-4 için. **Beste: verildi,
-  dosya kapsamıyla (Y-22 / D88/3); K-5 listesi K1 kararı (D88/1); MDM sahibinin XMC-001'i açık.**
+  dosya kapsamıyla (Y-22 / D88/3); K-5 listesi K1 kararı (D88/1); MDM sahibinin XMC-001'i verildi (Ali, Y-26 / KARAR D97/1: yalnız `PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri); finans tüketicisi Platform dosyaları için Beste'nin XMC-001'i açık (D92/1).**
 - [ ] MOD-0217 `approved` / `ready-for-dev` — DL-3 kodu için.
 - [x] D64 main'de (D62/1) — DL-5 paket kapısı. Kaynak: PR #276 (`3bb1ab838`; `git merge-base --is-ancestor 4d8a4050a 3bb1ab838` → 0, 2026-10-28).
 - [ ] **KARAR D80/2 (a) — sahip şartı (Y-19):** K-W5 denetim izi için defter kararı — `auth-gunlugu` izinin K2 için kabulü ya da
@@ -1309,7 +1420,8 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   D87):** K2 borcu yolu geçmez — K2 borcundaki komut denetleniyor olmalı (`AuditTrailStandardTests.cs:616-619`, `IsAudited`
   yalnız kabul edilmiş izde doğru); önce-yaz `aday` izi kabul edilmiş ize çevirmez (§4.4 ≠ §5.c-3). Önerilen kapanış (MOD-0018
   sahibinin kararı): DL-5'e `auth-gunlugu` için kiracı + izin denetimli okuma yolu, kaydın ekranından geçmiş, yol `c`'nin beş
-  koşulunun kanıtı, iz belirtecinin deftere ve kabul listesine işlenmesi, günlük okumasının meta-denetimi (§7); önce-yaz korunur.
+  koşulunun kanıtı, iz belirtecinin deftere ve kabul listesine işlenmesi, günlük okumasının meta-denetimi (§7); önce-yaz korunur — **KARAR D97/2 (Ali, Y-26):** sahip okuma yolunu kabul etti (öneri 1, 2, 3, 5, 6 ve 4 — ekran: Roller ekranında salt-okunur muafiyet atamaları listesi + "Geçmiş" bölümü); düzeltmeler: (a) iz belirteci iki komut için ayrı bir yazıcı tipinin metodu (`WriteOnceAsync` + komut adı biçimi yok; `IssueServiceIdentityTokenHandler`'ın istisnası kaymaz), (b) Auth'un merkezi iletici anahtarı boşsa okuma satırı sessizce kaybolur — kabul ölçütüne yapılandırma şartı yazılır, (c) ekran kiracı tarafındaysa 7 dil; paket metni yazıldı (**KARAR D98**, D99); **işaret iki koşulla konur (D98/6):** (1) bu metin CT-APR-02'den geçer, (2) MOD-0018
+  sahibi D79 sonrası değişiklikleri (D98 dahil, D99/1 teslim teyidi önerisi dahil) teyit eder — ikisi gelene kadar işaretsiz.
 - [ ] **KARAR D80/2 (b) — sahip şartı (Y-19):** rol atama adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu kapandı
   (defterde rol / izin değişikliklerinin izi `auth-rbac-gunlugu` bugün `aday`, Bölüm 7, 21; kapanış yolu bu pakette seçilmedi) —
   **DL-5 kodundan önce** (DL-1'i bekletmez).
@@ -1327,8 +1439,9 @@ yalnız matristen (bu paketten) gelir ve üretim kümesiyle eşitlenir. Her sabo
   MOD-0018 sahibinin teyidine Auth ekiyle gider; K-A4 bağımlı iş akışı anahtarı **KAPANDI — D70/1**; K-A4b elle atamada iş akışı izni olmayan aday **KAPANDI — KARAR D71**:
   tüketici kesiştirir) — **sahip teyitli: Y-21 / KARAR D84/1** (uç `/internal/permission-candidates` + sürümlü sözleşme dosyası;
   K-A2 (b), K-A3, K-A4b teyitli).
-- [ ] Ekran yok, tur yok, sayfa yardımı yok (UXH-001: sayfa sahiplenilmiyor); Bölüm 5.5 yalnız mevcut rol ekranlarına görünen ad
-  kaynağı ekler (KARAR D79/9).
+- [ ] Yeni sayfa yok, tur yok (UXH-001: sayfa sahiplenilmiyor); Bölüm 5.5 yalnız mevcut rol ekranlarına görünen ad kaynağı ekler
+  (KARAR D79/9); **DL-5 (KARAR D97/2, D98):** mevcut Roller sayfasına salt-okunur muafiyet atamaları bölümü + "Geçmiş" (izinle
+  çizilir, 7 dil, AC-47; sayfa yardımı varsa bir paragraf) — DL-5 için.
 - [ ] 27 rolün fr / es / zh / ar / ru görünen adları MOD-0018 sahibince teyit edildi (KARAR D79/9: "Treasury yazar, MOD-0018
   sahibi teyit eder") — DL-1 / DL-2 / DL-3 / DL-5 rol adı satırları için. D79'dan sonraki değişiklik olduğu için Y-19'un şartlı
   teyidine girmez; sahip teyidine **ayrıca** gider (KARAR D80/2) — teyit yok.
@@ -1393,17 +1506,20 @@ K2 sınıfıdır (yetki değiştirir).
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
 |---|---|---|---|---|---|
-| CreatePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.created | PaymentSodWaiverAssignment | c — `auth-gunlugu` önce-yaz (`IAuthAuditService.WriteOnceAsync`); iz bugün `aday` → **engel, K-W5** (D86 geri alındı — D87; önerilen: okuma yolu + yol `c`) | AfterState: GranteeUserId, TargetPaymentBatchId, StartsAtUtc, ExpiresAtUtc, ApprovedByUserId, ReasonCode | — |
-| RevokePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.revoked | PaymentSodWaiverAssignment | c — aynı (engel, K-W5; D87) | Before/After: RevokedAtUtc, RevokedByUserId (+ atamanın kimliği ve hedef partisi) | — |
+| CreatePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.created | PaymentSodWaiverAssignment | c — yeni iz `auth-sod-muafiyet-gecmisi`, önce-yaz `IPaymentSodWaiverAuditWriter.WriteCreatedAsync` (KARAR D97/2, D98; okuma ucu + Roller ekranı "Geçmiş" — yol `c`'nin beş koşulu, AC-44…AC-47) | AfterState: GranteeUserId, TargetPaymentBatchId, StartsAtUtc, ExpiresAtUtc, ApprovedByUserId, ReasonCode | — |
+| RevokePaymentSodWaiverAssignmentCommand | auth.sod-waiver-assignment.revoked | PaymentSodWaiverAssignment | c — aynı iz, `IPaymentSodWaiverAuditWriter.WriteRevokedAsync` (D98) | Before/After: RevokedAtUtc, RevokedByUserId (+ atamanın kimliği ve hedef partisi) | — |
+| GetPaymentSodWaiverAssignmentHistoryQuery (**okuma satırı** — audit-trail-standard §7, denetim günlüğünün kendisi okunur; KARAR D102/1) | auth.sod-waiver-assignment.history.read | PaymentSodWaiverAssignment (okunan atamanın kimliği) | b — merkezi günlüğe meta-denetim satırı (`IsMetaAudit = true`), Auth iletici üzerinden teslim teyitli (`TryForwardAsync`, D99/1); teslim yoksa okuma yok, 503 (AC-46). Eşdeğer iz okuma için kullanılmaz | — (okuma; değişen alan yok — satır okuyan kullanıcı, kiracı, atama kimliği ve zamanı taşır) | — |
 
 - **K2 (kapalı-başarısız):** iki komut da denetim kaydını iş yazımından önce yazar; yazılamazsa komut başarısız olur, atama
   yazılmaz (AC-30). "En iyi çaba" yoktur. İz kabul edilmeden komut yazılamaz (audit-trail-standard §4.4: kabul edilmiş K2 yolu
   yoksa Control Tower'a yazılır) — bu yüzden DL-5'in kapısında.
 - **Sahip şartları — KARAR D80/2 (Y-19), DL-5 kodundan önce:** (a) K-W5 denetim izi için defter kararı (yukarıdaki iki komutun
-  izi) — **açık** (D86 geri alındı — KARAR D87; önerilen kapanış: `auth-gunlugu` okuma yolu + yol `c`'nin beş koşulu, MOD-0018 sahibinin kararı); (b) rol atama adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu — defterde `auth-rbac-gunlugu` (rol / izin
+  izi) — **sahip kararı verildi — KARAR D97/2 (Y-26)**, paket metni **KARAR D98**, D99 (yeni dar iz, okuma ucu, Roller ekranı,
+  meta-denetim teslim teyidi); işaret iki koşulla: CT-APR-02 + MOD-0018 sahibinin D79 sonrası teyidi (D98/6); (b) rol atama adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu — defterde `auth-rbac-gunlugu` (rol / izin
   değişiklikleri) bugün `aday`; bu borcun hangi yolla kapanacağı bu pakette seçilmedi. İkisi de DL-1'i bekletmez.
 - **Kayda yazılmayan:** token, istek başlıkları, kullanıcının kişi verisi (yalnız kimlikler).
-- **Okuma denetimi:** iç sorgu, kiracı listesi ve DL-6 aday sorgusu okumadır; ayrıca denetlenmez (muafiyetin **kullanımı** MOD-0126'nın K2
+- **Okuma denetimi:** iç sorgu, kiracı listesi ve DL-6 aday sorgusu okumadır; ayrıca denetlenmez — **istisna:** geçmiş okuması
+  denetim kaydının okunmasıdır, meta-denetim satırı yazar (§7; AC-46) — tabloda ayrı okuma satırı (KARAR D102/1) (muafiyetin **kullanımı** MOD-0126'nın K2
   olayıdır, `…approved-with-sod-waiver`).
 
 ## Teslim dilimleri
@@ -1414,7 +1530,7 @@ K2 sınıfıdır (yetki değiştirir).
 | DL-2 | banka onboarding'i — MOD-0289: 23 anahtar, 3 rol, 2 açık atama; AC-13…AC-16; ayrıntı: §5.1, §8.1–8.3, §14.2 satır 20–22 | Repo Scope, Runtime Constraints, Authorization Convention, Acceptance Criteria |
 | DL-3 | sözleşme onboarding'i — MOD-0217: 18 anahtar, 4 rol, 1 açık atama (D69 dahil); **koşullu: MOD-0217 onayından sonra** (Y-6, Y-10/1); AC-17…AC-21; ayrıntı: §5.1, §8.1–8.3, §14.2 satır 23–26 | Repo Scope, Runtime Constraints, Authorization Convention, Acceptance Criteria |
 | DL-4 | SEC-002 eki — Platform izin listesi + MDM istemcisinin modül kodu (e; D56/1); XMC-001 Beste + MDM sahibi; AC-22…AC-25; ayrıntı: §5.2, §8.3, §8.4 | Repo Scope, Runtime Constraints, Acceptance Criteria |
-| DL-5 | `waive-sod` parti bağlı atama — kayıt, yazma ucu, "bu parti için geçerli atamalar" sorgusu, K2 denetim (d; D54 + D64); **kod önkoşulu KARAR D80/2: K-W5 defter kararı + rol atama denetim borcu (tablonun altı)**; AC-26…AC-34, AC-42, AC-43 (D74); iki Auth anahtarı ve 27. rol Muafiyet yetkilisi (D74/2–3; rol izinsiz, atayan izin + rol üyeliği — D75/1; geri almada da, okuma yalnız `.read`, denetim sırası — D76/1–2); ayrıntı: §4 yeni kayıt, §5.3, §8.5, §8.7, §14.1 (Auth satırları), §14.2 rol 27, §14.3 | Owned Objects, Entity Fields, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Audited Events |
+| DL-5 | `waive-sod` parti bağlı atama — kayıt, yazma ucu, "bu parti için geçerli atamalar" sorgusu, K2 denetim (d; D54 + D64); **kod önkoşulu KARAR D80/2: K-W5 defter kararı + rol atama denetim borcu (tablonun altı)**; AC-26…AC-34, AC-42, AC-43 (D74), AC-44…AC-47 (K-W5 okuma yolu — KARAR D98); iki Auth anahtarı ve 27. rol Muafiyet yetkilisi (D74/2–3; rol izinsiz, atayan izin + rol üyeliği — D75/1; geri almada da, okuma yalnız `.read`, denetim sırası — D76/1–2); ayrıntı: §4 yeni kayıt, §5.3, §8.5, §8.7, §14.1 (Auth satırları), §14.2 rol 27, §14.3 | Owned Objects, Entity Fields, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Audited Events |
 | DL-6 | onaylayıcı aday sorgusu — "bu izne sahip kullanıcılar" iç ucu (g; D66/1); D56/3 muafiyet aday listesi bunun `waive-sod` + parti biçimi; AC-35…AC-41; ayrıntı: §5.4, §8.6, §8.7 (iç uç kimliği, D74/1), §14.4 | Owned Objects, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria |
 
 Tüketici paket kapısı (D53/1, **KARAR D70/3**): bu paketin metni main'de + MOD-0018 sahibinin teyidi (karar dosyasında kaynak) —
@@ -1440,13 +1556,13 @@ kapısı — MOD-0126 DL-2, MOD-0119 DL-2, MOD-0120 DL-3, MOD-0124 DL-3, MOD-021
 | K-3 | Varsayılan kiracı SuperAdmin tam katalog yolu Treasury anahtarlarını alsın mı | bugünkü davranış (açık atama dışı hepsi) · Treasury'yi dışla | **KAPANDI — KARAR D79/3 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** bugünkü davranış (açık atama dışı hepsi; FU20 / FU22 deseni); varsayılan kiracı iş kiracısı değil **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D79) | DL-1 başlamadan (teyit) |
 | K-4 | Bağımlı 5 anahtar rollere nasıl ulaşır (D69'un Sözleşme onaylayıcısının `platform.workflow.tasks.approve` / `.reject` alıp almayacağı dahil) | (a) ilgili modülün kendi yolu, rolde yok (b) Treasury manifestinde çapraz modül bağımlılığı olarak beyan, profil verir (ürün kimliği `DeclaredCrossModuleDependencyKeys` deseni) (c) elle atama | **KAPANDI — KARAR D70/1: (b)**; bütün onaylayıcı rollere (7, 8, 12, 15, 17, 19, 26) `platform.workflow.tasks.approve` / `.reject` çapraz modül bağımlılığı olarak (AC-3, AC-18). D70/1 iki görev anahtarını adlandırır; öteki üç bağımlı anahtarın (`mdm.legal-entities.read`, `platform.workflow.instances.start`, `platform.workflow.tasks.request-info`) aynı yolla gelmesi CT çıkarımıdır — MOD-0018 sahibinin D70/1 teyidiyle birlikte teyit edilir. **KARAR D72/3–4:** `procurement.suppliers.eligibility.read` ve `procurement.suppliers.read` aynı yolla (b) gelir; `mdm.legal-entities.read` banka rollerine (20–22) de — bağımlı anahtar sayısı 7 (Bölüm 14.2). **Ölçüm notu (açık):** `platform.workflow.*` tohum sahipli anahtarlardır (`SeedOwnedTenantScopeKeys`, FU24/25); bağımlı manifestle kapsam / sınıf çatışması ölçülmeli | MOD-0018 sahibi + MOD-0023 / MOD-0220 sahipleri; teyit MOD-0018 sahibi (D70/1) | DL-1 başlamadan (teyit) |
 | K-5 | DL-4'te Platform izin listesine girecek (modül kodu, anahtar) çiftleri | MOD-0289 + MOD-0217'nin şirket kapsamı soran anahtarları (`read-tenant-wide` hariç) | hesap ve sözleşme anahtarları; banka / amaç (referans veri) kapsam sorar mı MOD-0289 sahibi söyler **Yalnız yöntem sahip teyitli — Y-21 / KARAR D84/3:** banka / amaç anahtarlarının kapsam sorup sormadığını MOD-0289 / MOD-0217 sahibi söyler; Platform dosyaları Beste'den (XMC-001). **KAPANDI — liste KARAR D88/1 (K1, MOD-0289 / MOD-0217 için sahip kararı — D19, D20/1):** MOD-0289 (9): `mdm.bank-accounts.read`, `mdm.bank-accounts.create`, `mdm.bank-accounts.update`, `mdm.bank-accounts.activate`, `mdm.bank-accounts.deactivate`, `mdm.bank-accounts.delete`, `mdm.bank-accounts.bulk-delete`, `mdm.bank-accounts.read-unmasked`, `mdm.bank-accounts.sensitive-reads.read`; MOD-0217 (14): `mdm.contracts.read`, `mdm.contracts.create`, `mdm.contracts.update`, `mdm.contracts.delete`, `mdm.contracts.bulk-delete`, `mdm.contracts.documents.read`, `mdm.contracts.documents.create`, `mdm.contracts.documents.delete`, `mdm.contracts.submit-approval`, `mdm.contracts.record-signature`, `mdm.contracts.amendments.create`, `mdm.contracts.renewal-decisions.create`, `mdm.contracts.terminate`, `mdm.contracts.archive`. Listede yok: `*.read-tenant-wide` (kapsamı atlar), `mdm.banks.*` ve `mdm.bank-account-purposes.*` (kiracı geneli referans), `mdm.contracts.versions.approve` (MDM'de uç yok; DL-6), `mdm.contracts.value.read` / `.value.write` (alan düzeyi). Beste kontrol eder (Y-22). | MOD-0289 / MOD-0217 sahibi; Beste (Platform) | DL-4 başlamadan |
-| K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | **KAPANDI — "hayır" (Beste, Y-22 / KARAR D88/2):** finans servisi Platform kapsam ucunu doğrudan kullanmaz; dört finans paketi kendi kapsam yolunu yazar; Bölüm 5.2 koşullu Platform dosyaları gerekmez | K1 + Beste | kapandı (2026-10-29) |
+| K-6 | SEC-002 eki finans tüketicisini (FinanceTreasuryService → Platform kapsam ucu) de kapsar mı | evet (ikinci kimlik bilgisi bağlaması, Bölüm 5.2 koşullu dosyalar) · hayır (dört finans paketinin O-19 / O-22 / O-14 / O-23 işi) | **DÜZELTİLDİ — "evet" (Beste, Y-23 / KARAR D92/1):** finans servisi Platform güvenilir kapsam ucunun ikinci tüketicisi; §5.2 koşullu Platform dosyaları gerekir; XMC-001 Beste'de (çift listesi + dosya-satır + sabotajlı testler gönderildi). Önceki: "hayır" (Y-22 / D88/2). | K1 + Beste | kapandı (2026-10-29; Platform kodu açık) |
 | K-7 | Rol adları ve Türkçe görünen ad | `RoleName` İngilizce PascalCase + `DisplayName` İngilizce (mevcut desen, tek dil) · tr ad için rol ekranında kod → kaynak eşlemesi | **KAPANDI — KARAR D79/9 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** `RoleName` İngilizce PascalCase sabit kod; görünen ad rol ekranlarında kod → kaynak eşlemesiyle (`SharedResource` `RoleName_{RoleName}` + `RoleNames` köprüsü, Bölüm 5.5, 11) **7 dilde** (en, tr, fr, es, zh, ar, ru; Çekirdek kural 4); 27 rolün 7 dilli adlarını Treasury yazdı (Bölüm 14.2 "Görünen adlar"), MOD-0018 sahibi teyit eder; AC-7 guard testi. **Not (karar değil):** rol açıklaması (`Role.Description`, Roller ekranı hızlı görünümü) D79/9'un kapsamında değildir — açıklama yazılacaksa aynı 7 dil kuralına girer; MOD-0018 sahibinin teyidinde sorulur **D80/3: sahip teyit etti (Y-19)** — 27 rolün 7 dilli ad tablosu D79'dan sonraki değişiklik olarak sahip teyidine ayrıca gider (D80/2) | MOD-0018 sahibi; teyit Auth ekiyle (D79/9) | DL-1 başlamadan (teyit) |
 | K-W1 | Atamayı onaylama izni | yeni Auth anahtarı (öneri `auth.payment-sod-waivers.assign`, `.read`; yalnız açık atama) · başka yol | **KAPANDI — KARAR D74/2–3:** iki yeni Auth anahtarı `auth.payment-sod-waivers.assign` ve `.read`, yalnız açık atama (liste 10 → 20); yalnız yeni 27. rol **Muafiyet yetkilisi** (`PaymentSodWaiverAuthority`) üzerinden; atayan bu rolü taşır, taşımayan 403, kendine atama 403. Önceki öneri "Hazine yöneticisi kişilerine / K1'e elle" kalktı | MOD-0018 sahibi + K1; teyit MOD-0018 sahibi (D74/3) | DL-5 başlamadan (teyit) |
 | K-W2 | `waive-sod` izninin token'da süreli olması | (a) izin açık atamayla süresiz, kullanım ayrıca geçerli atama ister (b) atama izni token'a koyar ve bitişte düşürür (token üretimi değişir; FU11) | **KAPANDI — KARAR D79/4 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** (a) — izin açık atamayla süresiz; her kullanım ayrıca geçerli atama ister (MOD-0126 her kullanımda atamayı okur); token üretimine dokunulmaz **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D79) | DL-5 başlamadan (teyit) |
 | K-W3 | İç sorgu ucunun kimlik doğrulaması | servis kimliği token'ı (MOD-0033-FU02, `InternalServiceIdentityTokensController`) · `X-Internal-Api-Key` (`InternalRolesController` deseni) | **KAPANDI — KARAR D74/1:** `X-Internal-Api-Key` (mevcut ortak sır deseni); kiracı istekten değil, çağrıyı başlatan kullanıcının iletilen token'ından; yeni doğrulama katmanı yok; token yok / kiracı çıkarılamazsa kapalı-başarısız (Bölüm 8.7). Servis kimliği token'ı kullanılmaz | MOD-0018 sahibi; teyit Auth ekiyle | DL-5 başlamadan (teyit) |
 | K-W4 | Kiracı uçlarının kök yolu | `/api/roles/sod-waiver-assignments` (Gateway değişmez) · ayrı kök (`integration-agent`) | **KAPANDI — KARAR D79/5 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** `/api/roles/sod-waiver-assignments`; Gateway değişmez **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D79) | DL-5 başlamadan (teyit) |
-| K-W5 | K2 denetim izi | `auth-gunlugu` izinin kabulü (okuyan uç ya da CT defter kararı) · merkezi iletimin kapalı-başarısız yolu | `auth-gunlugu` + önce-yaz; CT defter kararı **Yöntem sahip teyitli — Y-21 / KARAR D84/2:** `auth-gunlugu` + önce-yaz; **CT defter kararı açık — KARAR D86 geri alındı (D87):** K2 borcu yolu testi geçmez; önerilen yol `auth-gunlugu` okuma yolu + yol `c` kanıtı (MOD-0018 sahibine önerildi). DL-5 kodu için engel. | Treasury CT + MOD-0018 sahibi (defter) | DL-5 başlamadan |
+| K-W5 | K2 denetim izi | `auth-gunlugu` izinin kabulü (okuyan uç ya da CT defter kararı) · merkezi iletimin kapalı-başarısız yolu | `auth-gunlugu` + önce-yaz; CT defter kararı **Yöntem sahip teyitli — Y-21 / KARAR D84/2:** `auth-gunlugu` + önce-yaz; **CT defter kararı açık — KARAR D86 geri alındı (D87):** K2 borcu yolu testi geçmez; önerilen yol `auth-gunlugu` okuma yolu + yol `c` kanıtı (MOD-0018 sahibine önerildi). DL-5 kodu için engel. **KARAR D97/2 (Ali, Y-26):** okuma yolu kabul (öneri 1–6; ekran evet — Roller ekranı salt-okunur liste + Geçmiş) + düzeltmeler (a) ayrı yazıcı tipi, (b) iletici anahtarı yapılandırma şartı AC'de, (c) kiracı tarafı ekran → 7 dil; **DL-5 paket metni yazıldı — KARAR D98, D99** (Bölüm 5.3, 8.5, 14.3, 21; AC-44…AC-47); **açık:** CT-APR-02 ve MOD-0018 sahibinin D79 sonrası teyidi (D99/1 teslim teyidi önerisi dahil). | Treasury CT + MOD-0018 sahibi (defter) | DL-5 başlamadan |
 | K-W6 | Sorgu yanıtının sözleşme dosyası | `docs/analysis/contracts/` altında sürümlü dosya · yalnız pakette | **KAPANDI — KARAR D79/6 (MOD-0018 sahibinin teyidine Auth ekiyle gider):** `docs/analysis/contracts/` altında sürümlü dosya; MOD-0126 sahte istemcisi ona karşı (AC-34 zorunlu) **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi + MOD-0126 yazarı; teyit Auth ekiyle (D79) | DL-5 başlamadan (teyit) |
 | K-W7 | Muafiyet yetkilisi rolünün (27, KARAR D74/3) oluşturulma yolu ve izin denetimi | (a) Treasury hak profili MOD-0126 modül hakkıyla rolü izinsiz ayrılmış sistem rolü olarak oluşturur (ad çakışma ön denetimine girer); iki anahtar role açık (`Manual`) rol-izin atamasıyla bağlanır · (b) rol oluşturulmaz, yetkili kişi rolü ve iki anahtarı elle kurar · (c) Auth tohum / taşıma ile her kiracıda oluşturulur. Ek soru: atayan denetimi yalnız izinle mi (`[HasPermission("auth.payment-sod-waivers.assign")]`), yoksa izin + rol üyeliğiyle mi — anahtar elle başka role bağlanırsa rolsüz kişi de atayabilir | **KAPANDI — KARAR D75/1:** (a) — rolü Treasury hak profili izinsiz ayrılmış sistem rolü olarak oluşturur, izinler açık (`Manual`) atamayla verilir; atayan denetimi **izin + rol üyeliği** (CT önerisi "yalnız izin" seçilmedi): atayan hem `auth.payment-sod-waivers.assign` iznini hem Muafiyet yetkilisi rol üyeliğini taşır; izin başka role elle bağlansa da rolsüz kişi atayamaz (403 `SOD_WAIVER_ASSIGN_FORBIDDEN`; AC-29, AC-43). Geri alma ucuna aynı denetim **KARAR D76/1** (okuma ucu yalnız `.read`); denetim sırası izin + üyelik → kendine atama → alan doğrulama, rolsüz + kendini alıcı → 403 `SOD_WAIVER_ASSIGN_FORBIDDEN` (**KARAR D76/2**; Bölüm 8.5, AC-29) **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi; teyit Auth ekiyle (D75/1) | DL-5 başlamadan (teyit) |
 | K-A1 | DL-6 iç ucunun adı, kimliği ve sözleşme dosyası | uç `GET /internal/permission-candidates` · başka ad; kimlik K-W3 ile aynı (servis kimliği token'ı) · `X-Internal-Api-Key` (`InternalRolesController` deseni); sözleşme dosyası `docs/analysis/contracts/` altında sürümlü · yalnız pakette | **KAPANDI — kimlik KARAR D74/1; uç adı ve sözleşme dosyası Y-21 / KARAR D84/1** (K-W3 ile aynı: ortak sır + iletilen kullanıcı token'ından kiracı; Bölüm 8.7). Kalan iki parça CT önerisi olarak MOD-0018 sahibinin teyidinde: uç adı `/internal/permission-candidates`; sürümlü sözleşme dosyası (hata kodları dahil) **Sahip teyit etti — Y-21 / KARAR D84/1 (2026-10-29).** | MOD-0018 sahibi + tüketici yazarları | DL-6 başlamadan (teyit) |
