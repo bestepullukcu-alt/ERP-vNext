@@ -308,6 +308,10 @@ public sealed class WorkflowSameKeyHttpMongoTests : IClassFixture<WorkflowESigna
 
         // the replay answers before the signature gate: the gate would say SIGNATURE_*, this is the distinct body conflict
         Assert.Equal((409, WorkflowReasonCodes.WorkflowTransitionIdempotencyConflict), (differentSignature.Status, differentSignature.Reason));
+        // the wire value itself, as a plain string: a constant compared with itself cannot notice its value changing
+        // (and it must not become the retryable WORKFLOW_TRANSITION_CONFLICT, which a consumer maps to "unknown")
+        Assert.Equal("WORKFLOW_TRANSITION_IDEMPOTENCY_CONFLICT", differentSignature.Reason);
+        Assert.Contains("\"reason_code\":\"WORKFLOW_TRANSITION_IDEMPOTENCY_CONFLICT\"", differentSignature.Body, StringComparison.Ordinal);
         Assert.Equal(200, sameBody.Status);
         Assert.True(Data(sameBody.Body).GetProperty("isIdempotent").GetBoolean(), sameBody.Body);
         var rows = await Collection<WorkflowTransitionLog>(PlatformCollections.WorkflowTransitionLogs)

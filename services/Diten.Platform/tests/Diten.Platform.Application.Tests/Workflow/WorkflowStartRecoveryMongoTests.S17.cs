@@ -471,4 +471,21 @@ public sealed partial class WorkflowStartRecoveryMongoTests
         Assert.Equal((409, WorkflowReasonCodes.WorkflowInstanceStartConflict), (replay.StatusCode, replay.ReasonCode));
         Assert.Equal(before, await CountsAsync(instance.Id));
     }
+
+    [Fact]
+    public async Task AC_W11_idempotent_replay_flag_is_true_when_a_start_told_unavailable_is_found_whole()
+    {
+        // WholeStartAsync via AfterUnavailableAsync: the winner completes the start inside this caller's transaction, the caller is
+        // told "unavailable", re-reads and answers as the whole start it finds — a replay by definition (the key was bound before it).
+        var request = Request("w11-whole-after-unavailable");
+        Response<StartWorkflowInstanceResponse>? winner = null;
+
+        var answer = await HandlerWith(new UnavailableAfter(async () => winner = await Handler().Handle(Command(request), default)))
+            .Handle(Command(request), default);
+
+        Assert.True(winner!.IsSuccessful, winner.ReasonCode); // non-vacuity: the winner completed it
+        Assert.True(answer.IsSuccessful, $"{answer.StatusCode} {answer.ReasonCode}");
+        Assert.Equal(winner.Data!.ApprovalTaskId, answer.Data!.ApprovalTaskId);
+        Assert.True(answer.Data.IdempotentReplay);
+    }
 }

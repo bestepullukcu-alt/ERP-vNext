@@ -856,6 +856,46 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
         Assert.Single(await RowsAsync(seeded.Instance.Id, WorkflowTransitionAction.Cancel, "w18-same"));
     }
 
+    // ── the tenant fence of the key lookup ─────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("approve", true)]
+    [InlineData("approve", false)]
+    [InlineData("reject", true)]
+    [InlineData("reject", false)]
+    [InlineData("requestInfo", true)]
+    [InlineData("requestInfo", false)]
+    [InlineData("cancel", true)]
+    [InlineData("cancel", false)]
+    public async Task AC_W14_another_tenant_sending_the_task_id_and_key_of_a_recorded_transition_gets_404(string action, bool sameActor)
+    {
+        var seeded = await _store.SeedAsync([D(First), D(Second)]);
+        var key = "tenant-fence-" + action + sameActor;
+        var recorded = action == "cancel"
+            ? await _store.CancelAsync(seeded.Task.Id, D(First), key)
+            : await ByAsync(action, seeded.Task.Id, D(First), key);
+        Assert.True(recorded.IsSuccessful, recorded.ReasonCode);
+        var rows = await RowsAsync(seeded.Instance.Id, action == "cancel" ? WorkflowTransitionAction.Cancel : ActionOf(action), key);
+        Assert.Single(rows); // non-vacuity: tenant A has a row under exactly this (task, action, key)
+
+        // another tenant, the same database: its repositories carry its own TenantId
+        var other = await Store.CreateAsync(replicaSet.ConnectionString, "diten_platform_workflow_candidate_decision");
+        Assert.NotEqual(_store.TenantContext.TenantId, other.TenantContext.TenantId);
+        var actor = D(sameActor ? First : Second);
+
+        var answer = action switch
+        {
+            "approve" => await other.ApproveAsync(seeded.Task.Id, actor, key),
+            "reject" => await other.RejectAsync(seeded.Task.Id, actor, key),
+            "requestInfo" => await other.RequestInfoAsync(seeded.Task.Id, actor, key),
+            _ => await other.CancelAsync(seeded.Task.Id, actor, key)
+        };
+
+        // not 403 (the row's actor), not 200 / 409 (the replay of a row that is not this tenant's): the task is not found
+        AssertCode(answer, 404, WorkflowReasonCodes.NotFoundNonLeakage);
+        Assert.Single(await RowsAsync(seeded.Instance.Id, rows[0].Action, key)); // and nothing was written
+    }
+
     // ── test seams ─────────────────────────────────────────────────────────────────────────────────────────────
 
     private sealed class S17Hold
