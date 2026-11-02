@@ -4,8 +4,11 @@ namespace Diten.PvgService.Application.RegPvBase;
 
 public interface IPvgIntakeDraftStore
 {
+    // actorId is the validated subject (PvgActorContext.ActorId, OD-PVG-2); a store that keeps actor fields writes
+    // CreatedBy / UpdatedBy from it and never from a request body or header.
     ValueTask<string> AddAsync(
         PvgPersistenceTenantScope tenantScope,
+        string actorId,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default);
 
@@ -13,6 +16,7 @@ public interface IPvgIntakeDraftStore
         PvgPersistenceTenantScope tenantScope,
         string intakeDraftId,
         long? expectedVersion,
+        string actorId,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default);
 

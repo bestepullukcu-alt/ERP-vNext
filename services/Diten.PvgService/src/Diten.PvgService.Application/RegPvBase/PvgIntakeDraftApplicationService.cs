@@ -107,6 +107,7 @@ public sealed class PvgIntakeDraftApplicationService
 
         var draftId = await _draftStore.AddAsync(
             Scope(command.TenantContext),
+            command.ActorContext.ActorId,
             BuildIntake(
                 command.TenantContext.TenantId,
                 PvgIntakeStatus.IntakeCreated,
@@ -225,6 +226,7 @@ public sealed class PvgIntakeDraftApplicationService
             Scope(command.TenantContext),
             command.IntakeDraftId,
             command.ExpectedVersion,
+            command.ActorContext.ActorId,
             updated,
             cancellationToken);
         if (replaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)
@@ -320,6 +322,7 @@ public sealed class PvgIntakeDraftApplicationService
             Scope(command.TenantContext),
             command.IntakeDraftId,
             command.ExpectedVersion,
+            command.ActorContext.ActorId,
             draft,
             cancellationToken);
         if (triageReplaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)
@@ -415,6 +418,7 @@ public sealed class PvgIntakeDraftApplicationService
             Scope(command.TenantContext),
             command.IntakeDraftId,
             command.ExpectedVersion,
+            command.ActorContext.ActorId,
             draft,
             cancellationToken);
         if (routeReplaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)

@@ -5,6 +5,7 @@ using Diten.PvgService.Application.MeddraCoding;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Application.SignalManagement;
 using Diten.PvgService.Infrastructure.RegPvBase;
+using Diten.PvgService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,12 @@ public static class PvgServiceApiHost
 
     private const string RequiredDependencyStartupRefusal =
         "PVG production-like startup refused; required dependencies are not registered: ";
+
+    // DL-10: persistence selection (pack "Build/Test Persistence (Mongo Store)", "Where it may run").
+    public const string PersistenceStoreKey = "Pvg:Persistence:Store";
+    public const string PersistenceBuildTestOnly = "PVG_PERSISTENCE_BUILD_TEST_ONLY";
+    public const string PersistenceStoreUnknown = "PVG_PERSISTENCE_STORE_UNKNOWN";
+    public const string IntakeStoreUnreachableCode = "PVG_DEPENDENCY_INTAKE_STORE_UNREACHABLE";
 
     // Single source for the PvgIntakeDraftApplicationService dependencies checked at startup and by /health/ready.
     private static readonly (Type ServiceType, string SafeCode)[] RequiredDependencies =
@@ -77,6 +84,9 @@ public static class PvgServiceApiHost
         ArgumentNullException.ThrowIfNull(environment);
 
         var options = PvgServiceApiRuntimeOptions.From(configuration, environment.EnvironmentName);
+
+        // The persistence check is the first check of the start: before ThrowIfUnsafe and before any connection attempt.
+        var store = ResolvePersistenceStore(configuration, options.IsProductionLike);
         options.ThrowIfUnsafe();
 
         services.AddSingleton(Options.Create(options));
@@ -93,7 +103,15 @@ public static class PvgServiceApiHost
             services.AddSingleton<IPvgWorkflowTransitionGate, DenyAllWorkflowTransitionGate>();
             services.AddSingleton<IPvgEvidenceLinkPort, DenyAllEvidenceLinkPort>();
             services.AddSingleton<IPvgPermissionGate, DenyAllPermissionGate>();
-            services.AddSingleton<IPvgIntakeDraftStore, InMemoryPvgIntakeDraftRepository>();
+            if (store == PvgPersistenceStore.InMemory)
+            {
+                services.AddSingleton<IPvgIntakeDraftStore, InMemoryPvgIntakeDraftRepository>();
+            }
+        }
+
+        if (store == PvgPersistenceStore.Mongo)
+        {
+            services.AddPvgMongoIntakeStore(configuration, environment);
         }
 
         AddPvgJwtAuthentication(services, configuration);
@@ -149,13 +167,22 @@ public static class PvgServiceApiHost
         endpoints.MapGet("/health/live", Ok<PvgServiceHealthStatus> () =>
             TypedResults.Ok(PvgServiceHealthStatus.Live()));
 
-        endpoints.MapGet("/health/ready", Results<Ok<PvgServiceHealthStatus>, JsonHttpResult<PvgServiceNotReadyStatus>> (
+        endpoints.MapGet("/health/ready", async Task<Results<Ok<PvgServiceHealthStatus>, JsonHttpResult<PvgServiceNotReadyStatus>>> (
             HttpContext httpContext,
             IOptions<PvgServiceApiRuntimeOptions> options) =>
         {
             var serviceRegistry = httpContext.RequestServices.GetService<IServiceProviderIsService>();
             var missingCodes = MissingRequiredDependencyCodes(
-                serviceType => serviceRegistry?.IsService(serviceType) == true);
+                serviceType => serviceRegistry?.IsService(serviceType) == true).ToList();
+
+            // DL-10: with the Mongo store selected, a store that stops answering is not ready. The readiness service
+            // exists only when Mongo is selected, so the in-memory host never asks.
+            var storeReadiness = httpContext.RequestServices.GetService<IPvgIntakeStoreReadiness>();
+            if (storeReadiness is not null &&
+                !await storeReadiness.IsReadyAsync(httpContext.RequestAborted))
+            {
+                missingCodes.Add(IntakeStoreUnreachableCode);
+            }
 
             return missingCodes.Count == 0
                 ? TypedResults.Ok(PvgServiceHealthStatus.Ready(options.Value))
@@ -165,6 +192,28 @@ public static class PvgServiceApiHost
         });
 
         return endpoints;
+    }
+
+    // DEPO-03 S-8: the in-memory store is the default and Mongo is opt-in. Any other value refuses the start. Mongo on a
+    // production-like host is refused whatever the other runtime flags are (build/test gate only). The message is the
+    // safe code and nothing else: no configuration value is echoed.
+    private static PvgPersistenceStore ResolvePersistenceStore(IConfiguration configuration, bool isProductionLike)
+    {
+        var configured = configuration[PersistenceStoreKey];
+        var store = configured switch
+        {
+            null => PvgPersistenceStore.InMemory,
+            _ when string.Equals(configured, "InMemory", StringComparison.OrdinalIgnoreCase) => PvgPersistenceStore.InMemory,
+            _ when string.Equals(configured, "Mongo", StringComparison.OrdinalIgnoreCase) => PvgPersistenceStore.Mongo,
+            _ => throw new InvalidOperationException(PersistenceStoreUnknown)
+        };
+
+        if (store == PvgPersistenceStore.Mongo && isProductionLike)
+        {
+            throw new InvalidOperationException(PersistenceBuildTestOnly);
+        }
+
+        return store;
     }
 
     // Owner decision K3: an unset, empty, or whitespace-only environment name is "not given", which is Production.
@@ -196,6 +245,12 @@ public static class PvgServiceApiHost
             .Where(dependency => !isRegistered(dependency.ServiceType))
             .Select(dependency => dependency.SafeCode)
             .ToArray();
+}
+
+internal enum PvgPersistenceStore
+{
+    InMemory,
+    Mongo
 }
 
 public sealed record PvgServiceApiRuntimeOptions(
