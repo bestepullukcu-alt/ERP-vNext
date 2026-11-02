@@ -24,6 +24,8 @@ namespace TenantArchitecture.ArchitectureTests;
  * applied directly instead of per-file seals — (1) docs/analysis/contracts/ is the rule's one registered exception
  * (docs-organization.md K2), so a reference into it is honoured like the five folders; (2) docs/records/ never changes
  * and is never run, so a file under it is read only when the authority names it (its seals stay consumed).
+ *   Known limit (Codex review 2026-11-02): a NEW unsealed script placed under docs/records is not scanned; a wrong path
+ *   in it breaks only that script when someone runs it. No such file is run by CI today (measured at de66301ed).
  *
  * WHAT IS MATCHED — the two shapes the four breakages actually had:
  *   • a slashed path whose first segment under docs is followed by a separator: docs/‹x›/… or docs\‹x›\…
@@ -76,8 +78,12 @@ public class DocsPathGuardTests
 
     /* The rule's one registered exception (docs-organization.md K2): docs/analysis/contracts/, the frozen API contracts. */
     private const string RegisteredException = "analysis/contracts";
-    // "contracts" as a whole folder name: not followed by a name character, so contracts-old/ or contracts2/ is not it.
-    private static readonly Regex ContractsTail = new($@"^\s*(?:@?""contracts""|contracts(?![{NameChars}]))", RegexOptions.Compiled);
+    // "contracts" as a whole folder name, and nothing after it that leaves the folder:
+    //   slashed — no name character next (contracts-old/, contracts2/) and no "/.." step back out;
+    //   Path.Combine — the argument closes there ("contracts" + "-old" is not it) and the next one is not "..".
+    private static readonly Regex ContractsTail = new(
+        $@"^\s*(?:@?""contracts""(?!\s*,\s*@?""\.\."")\s*[,)]|contracts(?![{NameChars}])(?![/\\]+\.\.))",
+        RegexOptions.Compiled);
 
     /* Records never change (docs-organization.md: records/ ARTIK DEĞİŞMEZ) and are not run: a stale path in one can
        neither be fixed nor break anything. Read only when the authority file names the record. */
@@ -108,6 +114,9 @@ public class DocsPathGuardTests
     [InlineData("var p = \"docs/" + "analysis/contracts2/x.yaml\";", "analysis")]
     [InlineData("var p = \"docs/" + "analysis/workpackages/x.md\";", "analysis")]
     [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"notes\", file)", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\" + \"-old\", \"x.yaml\")", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\", \"..\", \"unregistered\", f)", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/contracts/../unregistered/x.yaml\";", "analysis")]
     public void Only_the_contracts_folder_under_analysis_is_the_registered_exception(string line, string expected)
     {
         Assert.Equal([expected], Hits(line, new HashSet<string>(StringComparer.Ordinal)).ToArray());
