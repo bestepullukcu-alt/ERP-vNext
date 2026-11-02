@@ -2915,6 +2915,9 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
   `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
+- Error contract by consumer (D122, K1; Platform owner confirmation open): the four Treasury packs answer a code outside the
+  set with 503 `…_CURRENCY_PRECISION_UNAVAILABLE`, because the code decides the amount's precision. MOD-0217 and MOD-0289 only
+  validate a submitted code: outside the set → **400** validation error. In every consumer an unreadable set → 503.
 
 ### 21.5 Acceptance criteria (defined; not implemented or run)
 

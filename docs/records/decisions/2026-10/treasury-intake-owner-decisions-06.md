@@ -54,3 +54,11 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-40; oturum Treasury Intake CT (`
 1. **D121/1 — eski kayıtlar:** dört kod için geçiş işi yok; #346'daki açık iş sorusu kapandı.
 2. **D121/2 — canlı küme:** küme canlıda yayımlı değil; yükleme adımı ve yürütücüsü açık, para birimi seçicileri o güne kadar 503 döner.
 3. **D121/3 — sıra:** MOD-0289 onay PR'ı D117/2 revizyonu ve yeniden incelemeden sonra açılır; paket metni değişmeden açılırsa onay eski özete bağlanır.
+
+## D122 — Küme dışı para birimi kodu için hata sözleşmesi (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu "MDM 400, finans 503"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktır.
+
+1. **D122/1 — finans:** dört finans paketinde küme dışı kod 503 `…_CURRENCY_PRECISION_UNAVAILABLE`.
+2. **D122/2 — MDM:** MOD-0217 ve MOD-0289'da küme dışı kod 400 doğrulama hatası.
+3. **D122/3 — ortak:** küme okunamazsa her tüketicide 503.
