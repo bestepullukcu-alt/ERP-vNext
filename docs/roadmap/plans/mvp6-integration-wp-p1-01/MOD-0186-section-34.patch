@@ -1,6 +1,8 @@
---- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md	2026-10-22 00:40:22
-+++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md	2026-10-22 00:40:48
-@@ -35,6 +35,8 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+index 9defaac6b..9077dc4dc 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -35,6 +35,8 @@ frozen INVENTORY transactions but never stores or adjusts a shadow stock balance
  
  **Does not own:** shipment source, warehouse receiving trigger, inventory movement/balance, Supplier, carrier or claim.
  
@@ -9,7 +11,7 @@
  ## 3. Owned Objects
  
  | Object | Purpose |
-@@ -70,14 +72,14 @@
+@@ -70,14 +72,14 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
  | Dependency | State | Rule |
  |---|---|---|
  | MOD-0183 Shipment | Required before runtime | Return references an existing eligible shipment/line |
@@ -27,7 +29,7 @@
  status forbids runtime implementation.
  
  ## 9. Layout & Shell Contract
-@@ -880,3 +882,62 @@
+@@ -880,3 +882,63 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
  4. The Returns UI is approved but not built; the route and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
  5. Rebase required if the Q39 Returns sign-off changes this pack's base first (see the base note).
  6. Runtime tests R-02…R-04 need a native executor and the integrated target.
@@ -45,7 +47,7 @@
 +|---|---|
 +| `movementType` | `CUSTOMER_RETURN` |
 +| `toStockStatus` | `QUARANTINE` (E-7). A Blocked / Expired lot is accepted into QUARANTINE by INVENTORY CT-R10 |
-+| `itemId`, `skuId`, `skuLevel`, `lotId`, `serialIds`, `uomId` | read from the **original issue movement** of the shipment line (G8), never re-entered |
++| `itemId`, `skuId`, `skuLevel`, `lotId`, `serialIds`, `uomId` | from the **original issue** of the shipment line (G8): MOD-0183 stores each line's issue `transactionId` and `lotId` at dispatch (MOD-0183 §23.4 step 3) — INVENTORY `getTransactions` cannot be searched by shipment; never re-entered |
 +| `quantity` | the return line quantity (frozen decimal string) |
 +| `toWarehouseId`, `toLocationId` | entered at return receipt (G8; RETURNS contract addition, separately versioned) |
 +| `sourceModule` / `sourceType` | `MOD-0186` / `CUSTOMER_RETURN` |
@@ -66,7 +68,7 @@
 +  INVENTORY code in its details. Lines already posted **stay posted** (the goods are physically in quarantine); a retry of the
 +  same command reuses the same keys, so INVENTORY replays them and posts only what is missing. No REVERSAL is used here.
 +- INVENTORY unreachable or 5xx → 503 `DEPENDENCY_UNAVAILABLE`, no state change.
-+- A shipment line with **no original issue movement** (dispatched before MOD-0183 §23 DL-2 existed) is refused at receipt with
++- A shipment line with **no stored issue movement** (dispatched before MOD-0183 §23 DL-1 existed) is refused at receipt with
 +  a module code (to be named in the RETURNS addition); no lot is guessed.
 +
 +### 34.3 Acceptance and tests (in addition to §26)
@@ -87,6 +89,7 @@
 +
 +| dilim | ad | kapsadığı bölümler |
 +|---|---|---|
-+| DL-3 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 |
++| DL-1 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 |
 +
-+DL-3 ships only after MOD-0183 §23 DL-2, because §34.1 reads the original issue movement.
++DL-1 is dispatchable only after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the per-line issue `transactionId` / `lotId`
++that MOD-0183 stores. CT-APR-01 note: "only DL-1; after MOD-0183 DL-1".

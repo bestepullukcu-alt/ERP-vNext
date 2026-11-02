@@ -10921,3 +10921,43 @@ notunda.
 **Ölçüm komutu:**
 
     gh issue list --repo bestepullukcu-alt/ERP-vNext --assignee GMG-ERP --state open
+
+### BL-663
+
+**AGENTS.md'nin kalıcı sadeleştirilmesi — boyut bütçesi her yeni kayıtla aşılıyor**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 (`agents-sikistir`: bugün yalnız yer açıldı) · KAYIT: 2026-10-27
+
+**Ne:** AGENTS.md'nin uyarı eşiği 22000 bayt (Antigravity 24000'de keser); `test_sync_adapters_budget` uyarıyı da hata
+sayar. 2026-10-25'te bir domain kaydı (ec53ec2d3) eşiği aştı ve phase1 kırmızı oldu; 2026-10-26'da tarihli notlar taşındı
+(#244, 31 bayt pay), 2026-10-27'de iki tekrar bölümü kural dosyalarına bağlantıyla kısaltıldı (≈350 bayt pay). Her yeni
+domain, port ya da dal kodu satırı payı yer. Kalıcı çözüm: kural haritası (§6.1) ve tabloları kural dosyalarına taşıyıp
+AGENTS.md'yi çekirdek + yetki sırası + bağlantılara indirmek; ya da eşiği gerekçesiyle yeniden ölçmek.
+**Neden ertelendi:** AGENTS.md'nin yapısını değiştiren bir karar; her ajan aracında yüklenen metni etkiler, ayrı bir
+tasarım ve Codex incelemesi ister.
+**Yapım tetikleyicisi:** pay 150 baytın altına düşünce ya da bir PR yalnız bu yüzden kırmızı olunca.
+**Gelecek regresyon riski:** 🟡 — yeni bir kayıt eşiği aşarsa phase1 kırmızı olur ve arkasındaki kapılar koşmaz (S-67).
+
+**Ölçüm komutu:**
+
+    git show origin/main:AGENTS.md | wc -c
+
+### BL-664
+
+**Kurulum araç adayları (2026-10-27 dalgasından kalanlar)**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-27 (`kurulum-dalga`: bu dalga yalnız kart) · KAYIT: 2026-10-27
+
+**Ne:** (1) `pack_approval.py check` paketin Teslim dilimleri tablosunda dilim başına kanıt seviyesi yoksa UYARI versin
+(S-85); (2) `docs/records/**` için `.gitattributes` ile LF (S-87); (3) `prompt_gate.py` yardım metninde "kuyruk kayıtlı"
+yerine "kuyruğun kayıt satırı (`ct-queue-registry.tsv`)" (S-77'de yanlış okundu); (4) Views klasörü → domain eşleme
+tablosu (UI CT kendi tablosunu kullandı); (5) `tests/known-failures.tsv` güncel değil (Platform e-imza, DocsPathGuard
+parmak izi) — Platform sahibiyle.
+**Neden ertelendi:** her biri araç ya da ortak dosya değişikliği; ayrı inceleme ister. Bu dalga yalnız kart kurallarıydı.
+**Yapım tetikleyicisi:** aynı sorun ikinci kez yaşanınca ya da sahip istediğinde.
+**Gelecek regresyon riski:** 🟡 — kart kuralı insanlara söyler, araç denetlemez; unutulursa kabul ya da dağıtım geç durur.
+
+**Ölçüm komutu:**
+
+    git grep -n "S-85\|S-87" -- docs/guides/operations/control-tower-operating-card.md
+

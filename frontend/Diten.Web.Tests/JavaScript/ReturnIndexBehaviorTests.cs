@@ -141,7 +141,7 @@ public sealed class ReturnIndexBehaviorTests
         Assert.Contains("if (INVENTORY_REFERENCE_TARGETS.has(target))", build);
         Assert.Contains("if (reference !== '') body.inventoryTransactionReferenceId = reference;", build);
         Assert.DoesNotContain(".trim(", build);
-        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Received', 'Dispositioned']);", _script);
+        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Dispositioned']);", _script);
         Assert.Contains("const DANGEROUS_TARGETS = new Set(['Rejected', 'Cancelled']);", _script);
         Assert.Contains("window.showConfirm?.(", _script);
         Assert.DoesNotContain("Swal.fire", _script);

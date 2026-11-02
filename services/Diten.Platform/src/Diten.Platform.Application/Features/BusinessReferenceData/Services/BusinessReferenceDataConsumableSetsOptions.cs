@@ -114,7 +114,9 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "mdm-reimbursement-status",
         // WP-VW-W4 (W4-FIX-d, G-2) — the competitor page's market picker (a VERIFIED global catalog: read from the verified
         // provider tenant when no other tenant holds it).
-        "market"
+        "market",
+        "payment-method",
+        "currency-minor-units"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

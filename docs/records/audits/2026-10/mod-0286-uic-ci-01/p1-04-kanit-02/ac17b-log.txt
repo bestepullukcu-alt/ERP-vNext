@@ -1,0 +1,606 @@
+ui-compliance	Set up job	﻿2026-10-28T11:17:50.9641929Z Current runner version: '2.338.0'
+ui-compliance	Set up job	2026-10-28T11:17:50.9670455Z ##[group]Runner Image Provisioner
+ui-compliance	Set up job	2026-10-28T11:17:50.9671589Z Hosted Compute Agent
+ui-compliance	Set up job	2026-10-28T11:17:50.9672289Z Version: 20261021.618
+ui-compliance	Set up job	2026-10-28T11:17:50.9673083Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+ui-compliance	Set up job	2026-10-28T11:17:50.9673938Z Build Date: 2026-10-21T00:45:21Z
+ui-compliance	Set up job	2026-10-28T11:17:50.9674763Z Worker ID: {2e51bc73-7a54-4310-95cd-df3563e35f35}
+ui-compliance	Set up job	2026-10-28T11:17:50.9675739Z Region: eastus
+ui-compliance	Set up job	2026-10-28T11:17:50.9676379Z Cloud: Azure
+ui-compliance	Set up job	2026-10-28T11:17:50.9677120Z ##[endgroup]
+ui-compliance	Set up job	2026-10-28T11:17:50.9679376Z ##[group]Operating System
+ui-compliance	Set up job	2026-10-28T11:17:50.9680192Z Ubuntu
+ui-compliance	Set up job	2026-10-28T11:17:50.9680859Z 24.04.5
+ui-compliance	Set up job	2026-10-28T11:17:50.9681456Z LTS
+ui-compliance	Set up job	2026-10-28T11:17:50.9682115Z ##[endgroup]
+ui-compliance	Set up job	2026-10-28T11:17:50.9682762Z ##[group]Runner Image
+ui-compliance	Set up job	2026-10-28T11:17:50.9683502Z Image: ubuntu-24.04
+ui-compliance	Set up job	2026-10-28T11:17:50.9684227Z Version: 20261012.334.1
+ui-compliance	Set up job	2026-10-28T11:17:50.9685568Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+ui-compliance	Set up job	2026-10-28T11:17:50.9687805Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+ui-compliance	Set up job	2026-10-28T11:17:50.9689226Z ##[endgroup]
+ui-compliance	Set up job	2026-10-28T11:17:50.9690601Z ##[group]GITHUB_TOKEN Permissions
+ui-compliance	Set up job	2026-10-28T11:17:50.9692920Z Contents: read
+ui-compliance	Set up job	2026-10-28T11:17:50.9693623Z Metadata: read
+ui-compliance	Set up job	2026-10-28T11:17:50.9694376Z ##[endgroup]
+ui-compliance	Set up job	2026-10-28T11:17:50.9696743Z Secret source: Actions
+ui-compliance	Set up job	2026-10-28T11:17:50.9697879Z Cache mode: write
+ui-compliance	Set up job	2026-10-28T11:17:50.9699059Z Prepare workflow directory
+ui-compliance	Set up job	2026-10-28T11:17:51.0058982Z Prepare all required actions
+ui-compliance	Set up job	2026-10-28T11:17:51.0114410Z Getting action download info
+ui-compliance	Set up job	2026-10-28T11:17:51.1750123Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+ui-compliance	Set up job	2026-10-28T11:17:51.2774430Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+ui-compliance	Set up job	2026-10-28T11:17:51.5109651Z Complete job name: ui-compliance
+ui-compliance	Checkout	﻿2026-10-28T11:17:51.5800342Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+ui-compliance	Checkout	2026-10-28T11:17:51.5801173Z with:
+ui-compliance	Checkout	2026-10-28T11:17:51.5801501Z   fetch-depth: 0
+ui-compliance	Checkout	2026-10-28T11:17:51.5801886Z   repository: bestepullukcu-alt/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:17:51.5805177Z   token: ***
+ui-compliance	Checkout	2026-10-28T11:17:51.5805530Z   ssh-strict: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5805879Z   ssh-user: git
+ui-compliance	Checkout	2026-10-28T11:17:51.5806237Z   persist-credentials: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5806624Z   clean: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5806983Z   sparse-checkout-cone-mode: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5807401Z   fetch-tags: false
+ui-compliance	Checkout	2026-10-28T11:17:51.5807752Z   show-progress: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5808107Z   lfs: false
+ui-compliance	Checkout	2026-10-28T11:17:51.5808610Z   submodules: false
+ui-compliance	Checkout	2026-10-28T11:17:51.5808981Z   set-safe-directory: true
+ui-compliance	Checkout	2026-10-28T11:17:51.5809376Z   allow-unsafe-pr-checkout: false
+ui-compliance	Checkout	2026-10-28T11:17:51.5809944Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:17:51.8189672Z Syncing repository: bestepullukcu-alt/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:17:51.8192479Z ##[group]Getting Git version info
+ui-compliance	Checkout	2026-10-28T11:17:51.8193702Z Working directory is '/home/runner/work/ERP-vNext/ERP-vNext'
+ui-compliance	Checkout	2026-10-28T11:17:51.8195241Z [command]/usr/bin/git version
+ui-compliance	Checkout	2026-10-28T11:17:51.8272084Z git version 2.55.0
+ui-compliance	Checkout	2026-10-28T11:17:51.8288899Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:17:51.8302817Z Temporarily overriding HOME='/home/runner/work/_temp/029c4e95-c382-4cd9-ae4f-7365f893be0f' before making global git config changes
+ui-compliance	Checkout	2026-10-28T11:17:51.8304898Z Adding repository directory to the temporary git global config as a safe directory
+ui-compliance	Checkout	2026-10-28T11:17:51.8307012Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ERP-vNext/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:17:51.8355837Z Deleting the contents of '/home/runner/work/ERP-vNext/ERP-vNext'
+ui-compliance	Checkout	2026-10-28T11:17:51.8361113Z ##[group]Initializing the repository
+ui-compliance	Checkout	2026-10-28T11:17:51.8364583Z [command]/usr/bin/git init /home/runner/work/ERP-vNext/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:17:51.8465957Z hint: Using 'master' as the name for the initial branch. This default branch name
+ui-compliance	Checkout	2026-10-28T11:17:51.8469139Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+ui-compliance	Checkout	2026-10-28T11:17:51.8470596Z hint: to use in all of your new repositories, which will suppress this warning,
+ui-compliance	Checkout	2026-10-28T11:17:51.8471737Z hint: call:
+ui-compliance	Checkout	2026-10-28T11:17:51.8472307Z hint:
+ui-compliance	Checkout	2026-10-28T11:17:51.8473021Z hint: 	git config --global init.defaultBranch <name>
+ui-compliance	Checkout	2026-10-28T11:17:51.8473911Z hint:
+ui-compliance	Checkout	2026-10-28T11:17:51.8474729Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+ui-compliance	Checkout	2026-10-28T11:17:51.8476066Z hint: 'development'. The just-created branch can be renamed via this command:
+ui-compliance	Checkout	2026-10-28T11:17:51.8477135Z hint:
+ui-compliance	Checkout	2026-10-28T11:17:51.8477733Z hint: 	git branch -m <name>
+ui-compliance	Checkout	2026-10-28T11:17:51.8478579Z hint:
+ui-compliance	Checkout	2026-10-28T11:17:51.8479580Z hint: Disable this message with "git config set advice.defaultBranchName false"
+ui-compliance	Checkout	2026-10-28T11:17:51.8484157Z Initialized empty Git repository in /home/runner/work/ERP-vNext/ERP-vNext/.git/
+ui-compliance	Checkout	2026-10-28T11:17:51.8486923Z [command]/usr/bin/git remote add origin https://github.com/bestepullukcu-alt/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:17:51.8524048Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:17:51.8525254Z ##[group]Disabling automatic garbage collection
+ui-compliance	Checkout	2026-10-28T11:17:51.8526941Z [command]/usr/bin/git config --local gc.auto 0
+ui-compliance	Checkout	2026-10-28T11:17:51.8556375Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:17:51.8557522Z ##[group]Setting up auth
+ui-compliance	Checkout	2026-10-28T11:17:51.8563757Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ui-compliance	Checkout	2026-10-28T11:17:51.8609813Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ui-compliance	Checkout	2026-10-28T11:17:51.8929572Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ui-compliance	Checkout	2026-10-28T11:17:51.8961344Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ui-compliance	Checkout	2026-10-28T11:17:51.9153418Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ui-compliance	Checkout	2026-10-28T11:17:51.9186613Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ui-compliance	Checkout	2026-10-28T11:17:51.9392288Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+ui-compliance	Checkout	2026-10-28T11:17:51.9432686Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:17:51.9433488Z ##[group]Fetching the repository
+ui-compliance	Checkout	2026-10-28T11:17:51.9443735Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +3491a4267829663a19afb82bd6453bd634ab5d0e:refs/remotes/pull/275/merge
+ui-compliance	Checkout	2026-10-28T11:18:01.9440860Z From https://github.com/bestepullukcu-alt/ERP-vNext
+ui-compliance	Checkout	2026-10-28T11:18:01.9441965Z  * [new branch]          archive/pc2/backup/20260829-1253_fu23_pre_rebase -> origin/archive/pc2/backup/20260829-1253_fu23_pre_rebase
+ui-compliance	Checkout	2026-10-28T11:18:01.9443304Z  * [new branch]          archive/pc2/codex/fg-writer-dependency-review-20260913 -> origin/archive/pc2/codex/fg-writer-dependency-review-20260913
+ui-compliance	Checkout	2026-10-28T11:18:01.9444635Z  * [new branch]          archive/pc2/codex/p5-entitlement-command-20260929 -> origin/archive/pc2/codex/p5-entitlement-command-20260929
+ui-compliance	Checkout	2026-10-28T11:18:01.9445722Z  * [new branch]          archive/pc2/codex/p5-selected-audit-20260929 -> origin/archive/pc2/codex/p5-selected-audit-20260929
+ui-compliance	Checkout	2026-10-28T11:18:01.9446933Z  * [new branch]          archive/pc2/codex/product-five-release-readiness-20260913 -> origin/archive/pc2/codex/product-five-release-readiness-20260913
+ui-compliance	Checkout	2026-10-28T11:18:01.9448408Z  * [new branch]          archive/pc2/codex/product-pv-delivery-integration-20260907 -> origin/archive/pc2/codex/product-pv-delivery-integration-20260907
+ui-compliance	Checkout	2026-10-28T11:18:01.9449909Z  * [new branch]          archive/pc2/feature/mdm/dcp-006-product-regulatory-pv-readiness -> origin/archive/pc2/feature/mdm/dcp-006-product-regulatory-pv-readiness
+ui-compliance	Checkout	2026-10-28T11:18:01.9451771Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-audit-consumer-delivery -> origin/archive/pc2/feature/mdm/mod-0290-audit-consumer-delivery
+ui-compliance	Checkout	2026-10-28T11:18:01.9452924Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-dcp-backlog -> origin/archive/pc2/feature/mdm/mod-0290-dcp-backlog
+ui-compliance	Checkout	2026-10-28T11:18:01.9453883Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-delegated-maker-gateway-compatibility -> origin/archive/pc2/feature/mdm/mod-0290-delegated-maker-gateway-compatibility
+ui-compliance	Checkout	2026-10-28T11:18:01.9454712Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-first-gsku-lifecycle -> origin/archive/pc2/feature/mdm/mod-0290-first-gsku-lifecycle
+ui-compliance	Checkout	2026-10-28T11:18:01.9455449Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-fu01-abb-workcenter -> origin/archive/pc2/feature/mdm/mod-0290-fu01-abb-workcenter
+ui-compliance	Checkout	2026-10-28T11:18:01.9456288Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-fu01-product-abbreviation-register -> origin/archive/pc2/feature/mdm/mod-0290-fu01-product-abbreviation-register
+ui-compliance	Checkout	2026-10-28T11:18:01.9457156Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-fu03-delivery -> origin/archive/pc2/feature/mdm/mod-0290-fu03-delivery
+ui-compliance	Checkout	2026-10-28T11:18:01.9457918Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-fu03-integration -> origin/archive/pc2/feature/mdm/mod-0290-fu03-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9459092Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-global-product-lifecycle -> origin/archive/pc2/feature/mdm/mod-0290-global-product-lifecycle
+ui-compliance	Checkout	2026-10-28T11:18:01.9460339Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-global-product-lifecycle-api -> origin/archive/pc2/feature/mdm/mod-0290-global-product-lifecycle-api
+ui-compliance	Checkout	2026-10-28T11:18:01.9461727Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-global-product-workflow-consumer -> origin/archive/pc2/feature/mdm/mod-0290-global-product-workflow-consumer
+ui-compliance	Checkout	2026-10-28T11:18:01.9463114Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-gsku-child-admission-retirement -> origin/archive/pc2/feature/mdm/mod-0290-gsku-child-admission-retirement
+ui-compliance	Checkout	2026-10-28T11:18:01.9464657Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-gsku-lifecycle-api -> origin/archive/pc2/feature/mdm/mod-0290-gsku-lifecycle-api
+ui-compliance	Checkout	2026-10-28T11:18:01.9465638Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-lsku-lifecycle -> origin/archive/pc2/feature/mdm/mod-0290-lsku-lifecycle
+ui-compliance	Checkout	2026-10-28T11:18:01.9466815Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-lsku-replica-ping-remediation -> origin/archive/pc2/feature/mdm/mod-0290-lsku-replica-ping-remediation
+ui-compliance	Checkout	2026-10-28T11:18:01.9468416Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-product-identity-final-integration -> origin/archive/pc2/feature/mdm/mod-0290-product-identity-final-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9470019Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-product-identity-lifecycle-workcenter-plan -> origin/archive/pc2/feature/mdm/mod-0290-product-identity-lifecycle-workcenter-plan
+ui-compliance	Checkout	2026-10-28T11:18:01.9471869Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-product-item-sku-master -> origin/archive/pc2/feature/mdm/mod-0290-product-item-sku-master
+ui-compliance	Checkout	2026-10-28T11:18:01.9473073Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-product-lifecycle-ui -> origin/archive/pc2/feature/mdm/mod-0290-product-lifecycle-ui
+ui-compliance	Checkout	2026-10-28T11:18:01.9474439Z  * [new branch]          archive/pc2/feature/mdm/mod-0290-product-scope-integration -> origin/archive/pc2/feature/mdm/mod-0290-product-scope-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9475861Z  * [new branch]          archive/pc2/feature/mdm/product-identity-lifecycle-integration -> origin/archive/pc2/feature/mdm/product-identity-lifecycle-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9477545Z  * [new branch]          archive/pc2/feature/pss/mod-0018-fu16-brand-product-registration-mapping -> origin/archive/pc2/feature/pss/mod-0018-fu16-brand-product-registration-mapping
+ui-compliance	Checkout	2026-10-28T11:18:01.9479620Z  * [new branch]          archive/pc2/feature/pss/mod-0018-fu21-trusted-legal-entity-scope -> origin/archive/pc2/feature/pss/mod-0018-fu21-trusted-legal-entity-scope
+ui-compliance	Checkout	2026-10-28T11:18:01.9481366Z  * [new branch]          archive/pc2/feature/pss/mod-0018-fu23-product-identity-lifecycle-permissions -> origin/archive/pc2/feature/pss/mod-0018-fu23-product-identity-lifecycle-permissions
+ui-compliance	Checkout	2026-10-28T11:18:01.9482989Z  * [new branch]          archive/pc2/feature/pss/mod-0018-fu24-fu26-governance-reconciliation -> origin/archive/pc2/feature/pss/mod-0018-fu24-fu26-governance-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9484172Z  * [new branch]          archive/pc2/feature/pss/mod-0021-fu01-r1-integration -> origin/archive/pc2/feature/pss/mod-0021-fu01-r1-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9485141Z  * [new branch]          archive/pc2/feature/pss/mod-0021-fu01-trusted-durable-source-audit-intent-ingestion -> origin/archive/pc2/feature/pss/mod-0021-fu01-trusted-durable-source-audit-intent-ingestion
+ui-compliance	Checkout	2026-10-28T11:18:01.9486570Z  * [new branch]          archive/pc2/feature/pss/mod-0021-fu02-audit-outbox-temporal-storage-hardening -> origin/archive/pc2/feature/pss/mod-0021-fu02-audit-outbox-temporal-storage-hardening
+ui-compliance	Checkout	2026-10-28T11:18:01.9487597Z  * [new branch]          archive/pc2/feature/pss/mod-0021-fu02-audit-temporal-inventory-drift -> origin/archive/pc2/feature/pss/mod-0021-fu02-audit-temporal-inventory-drift
+ui-compliance	Checkout	2026-10-28T11:18:01.9488632Z  * [new branch]          archive/pc2/feature/pss/mod-0023-fu02-start-authorization -> origin/archive/pc2/feature/pss/mod-0023-fu02-start-authorization
+ui-compliance	Checkout	2026-10-28T11:18:01.9489503Z  * [new branch]          archive/pc2/feature/pss/mod-0023-fu02-terminal-evidence-hardening -> origin/archive/pc2/feature/pss/mod-0023-fu02-terminal-evidence-hardening
+ui-compliance	Checkout	2026-10-28T11:18:01.9490455Z  * [new branch]          archive/pc2/feature/pss/mod-0023-fu03-closure-projection-reconciliation -> origin/archive/pc2/feature/pss/mod-0023-fu03-closure-projection-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9491525Z  * [new branch]          archive/pc2/feature/pss/mod-0023-fu04-port -> origin/archive/pc2/feature/pss/mod-0023-fu04-port
+ui-compliance	Checkout	2026-10-28T11:18:01.9493077Z  * [new branch]          archive/pc2/feature/pss/mod-0033-fu02-service-identity-token-issuance-foundation -> origin/archive/pc2/feature/pss/mod-0033-fu02-service-identity-token-issuance-foundation
+ui-compliance	Checkout	2026-10-28T11:18:01.9494023Z  * [new branch]          archive/pc2/feature/pss/mod-0033-fu02-workflow-audience -> origin/archive/pc2/feature/pss/mod-0033-fu02-workflow-audience
+ui-compliance	Checkout	2026-10-28T11:18:01.9494844Z  * [new branch]          archive/pc2/feature/pss/mod-0048-fu01-reference-data-provider -> origin/archive/pc2/feature/pss/mod-0048-fu01-reference-data-provider
+ui-compliance	Checkout	2026-10-28T11:18:01.9495627Z  * [new branch]          archive/pc2/feature/pss/pss-012-brd-mongo-profile -> origin/archive/pc2/feature/pss/pss-012-brd-mongo-profile
+ui-compliance	Checkout	2026-10-28T11:18:01.9496309Z  * [new branch]          archive/pc2/feature/pv/kurulum-dogrulama -> origin/archive/pc2/feature/pv/kurulum-dogrulama
+ui-compliance	Checkout	2026-10-28T11:18:01.9496998Z  * [new branch]          backup/crm-content-visit-e2e-presync-20261006 -> origin/backup/crm-content-visit-e2e-presync-20261006
+ui-compliance	Checkout	2026-10-28T11:18:01.9497664Z  * [new branch]          backup/test-crm-e2e-presync-20261016     -> origin/backup/test-crm-e2e-presync-20261016
+ui-compliance	Checkout	2026-10-28T11:18:01.9498421Z  * [new branch]          backup/test-crm-e2e-presync-20261019     -> origin/backup/test-crm-e2e-presync-20261019
+ui-compliance	Checkout	2026-10-28T11:18:01.9499010Z  * [new branch]          chore/agents/agents-size-01              -> origin/chore/agents/agents-size-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9499537Z  * [new branch]          chore/agents/agents-size-02              -> origin/chore/agents/agents-size-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9500070Z  * [new branch]          chore/agents/backlog-istek-01            -> origin/chore/agents/backlog-istek-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9500614Z  * [new branch]          chore/agents/codeowners-k3-01            -> origin/chore/agents/codeowners-k3-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9501123Z  * [new branch]          chore/agents/ct-apr-03                   -> origin/chore/agents/ct-apr-03
+ui-compliance	Checkout	2026-10-28T11:18:01.9501770Z  * [new branch]          chore/agents/ct-apr-04                   -> origin/chore/agents/ct-apr-04
+ui-compliance	Checkout	2026-10-28T11:18:01.9502245Z  * [new branch]          chore/agents/ct-apr-05                   -> origin/chore/agents/ct-apr-05
+ui-compliance	Checkout	2026-10-28T11:18:01.9502715Z  * [new branch]          chore/agents/ct-apr-06                   -> origin/chore/agents/ct-apr-06
+ui-compliance	Checkout	2026-10-28T11:18:01.9503207Z  * [new branch]          chore/agents/ct-close-01                 -> origin/chore/agents/ct-close-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9503702Z  * [new branch]          chore/agents/ct-name-01                  -> origin/chore/agents/ct-name-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9504172Z  * [new branch]          chore/agents/ct-prm-01                   -> origin/chore/agents/ct-prm-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9504635Z  * [new branch]          chore/agents/ct-rep-01                   -> origin/chore/agents/ct-rep-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9505108Z  * [new branch]          chore/agents/ct-route-01                 -> origin/chore/agents/ct-route-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9505594Z  * [new branch]          chore/agents/ct-start-03                 -> origin/chore/agents/ct-start-03
+ui-compliance	Checkout	2026-10-28T11:18:01.9506061Z  * [new branch]          chore/agents/ct-start-04                 -> origin/chore/agents/ct-start-04
+ui-compliance	Checkout	2026-10-28T11:18:01.9506531Z  * [new branch]          chore/agents/ct-start-05                 -> origin/chore/agents/ct-start-05
+ui-compliance	Checkout	2026-10-28T11:18:01.9507032Z  * [new branch]          chore/agents/ct-start-06                 -> origin/chore/agents/ct-start-06
+ui-compliance	Checkout	2026-10-28T11:18:01.9507574Z  * [new branch]          chore/agents/ct-start-07                 -> origin/chore/agents/ct-start-07
+ui-compliance	Checkout	2026-10-28T11:18:01.9508044Z  * [new branch]          chore/agents/ct-start-08                 -> origin/chore/agents/ct-start-08
+ui-compliance	Checkout	2026-10-28T11:18:01.9508724Z  * [new branch]          chore/agents/ct-start-09                 -> origin/chore/agents/ct-start-09
+ui-compliance	Checkout	2026-10-28T11:18:01.9509207Z  * [new branch]          chore/agents/ct-start-10                 -> origin/chore/agents/ct-start-10
+ui-compliance	Checkout	2026-10-28T11:18:01.9509814Z  * [new branch]          chore/agents/ct-start-11                 -> origin/chore/agents/ct-start-11
+ui-compliance	Checkout	2026-10-28T11:18:01.9510288Z  * [new branch]          chore/agents/ct-start-12                 -> origin/chore/agents/ct-start-12
+ui-compliance	Checkout	2026-10-28T11:18:01.9510759Z  * [new branch]          chore/agents/ct-start-13                 -> origin/chore/agents/ct-start-13
+ui-compliance	Checkout	2026-10-28T11:18:01.9511226Z  * [new branch]          chore/agents/ct-start-14                 -> origin/chore/agents/ct-start-14
+ui-compliance	Checkout	2026-10-28T11:18:01.9511695Z  * [new branch]          chore/agents/ct-start-15                 -> origin/chore/agents/ct-start-15
+ui-compliance	Checkout	2026-10-28T11:18:01.9512159Z  * [new branch]          chore/agents/ct-trk-02                   -> origin/chore/agents/ct-trk-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9512645Z  * [new branch]          chore/agents/docs-path-01                -> origin/chore/agents/docs-path-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9513204Z  * [new branch]          chore/agents/i1a1-instruction-fixes      -> origin/chore/agents/i1a1-instruction-fixes
+ui-compliance	Checkout	2026-10-28T11:18:01.9513804Z  * [new branch]          chore/agents/i5a-agent-loading-pilot     -> origin/chore/agents/i5a-agent-loading-pilot
+ui-compliance	Checkout	2026-10-28T11:18:01.9514350Z  * [new branch]          chore/agents/i5b-release-01              -> origin/chore/agents/i5b-release-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9514917Z  * [new branch]          chore/agents/pr-only-when-required-01    -> origin/chore/agents/pr-only-when-required-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9515464Z  * [new branch]          chore/agents/setup-wave-02               -> origin/chore/agents/setup-wave-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9516114Z  * [new branch]          chore/agents/xmc-writer-01               -> origin/chore/agents/xmc-writer-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9516668Z  * [new branch]          chore/backlog-bl311-measured             -> origin/chore/backlog-bl311-measured
+ui-compliance	Checkout	2026-10-28T11:18:01.9517277Z  * [new branch]          chore/backlog-eventing-transport         -> origin/chore/backlog-eventing-transport
+ui-compliance	Checkout	2026-10-28T11:18:01.9518523Z  * [new branch]          chore/backlog-verified-against-code      -> origin/chore/backlog-verified-against-code
+ui-compliance	Checkout	2026-10-28T11:18:01.9519503Z  * [new branch]          chore/blueprint-v7-reconciliation        -> origin/chore/blueprint-v7-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9520371Z  * [new branch]          chore/ci/service-tests-05                -> origin/chore/ci/service-tests-05
+ui-compliance	Checkout	2026-10-28T11:18:01.9521166Z  * [new branch]          chore/ct-round-2                         -> origin/chore/ct-round-2
+ui-compliance	Checkout	2026-10-28T11:18:01.9521917Z  * [new branch]          chore/ct-small-items                     -> origin/chore/ct-small-items
+ui-compliance	Checkout	2026-10-28T11:18:01.9522767Z  * [new branch]          chore/ct/approvals-mod0023-s17-01        -> origin/chore/ct/approvals-mod0023-s17-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9523655Z  * [new branch]          chore/ct/audit-followup-01               -> origin/chore/ct/audit-followup-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9524491Z  * [new branch]          chore/ct/codeowners-01                   -> origin/chore/ct/codeowners-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9525337Z  * [new branch]          chore/ct/hcm-employee-ct-01              -> origin/chore/ct/hcm-employee-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9526170Z  * [new branch]          chore/ct/hcm-leave-ct-01                 -> origin/chore/ct/hcm-leave-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9527139Z  * [new branch]          chore/ct/mod0178-approval-rerow-01       -> origin/chore/ct/mod0178-approval-rerow-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9528136Z  * [new branch]          chore/ct/pqg-01                          -> origin/chore/ct/pqg-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9529054Z  * [new branch]          chore/ct/pss-ui-ct-01                    -> origin/chore/ct/pss-ui-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9529793Z  * [new branch]          chore/ct/pvg-ct-01                       -> origin/chore/ct/pvg-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9530577Z  * [new branch]          chore/ct/sop-speed-note-01               -> origin/chore/ct/sop-speed-note-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9531430Z  * [new branch]          chore/ct/treasury-intake-ct-01           -> origin/chore/ct/treasury-intake-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9532581Z  * [new branch]          chore/ct/treasury-intake-ct-02           -> origin/chore/ct/treasury-intake-ct-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9533443Z  * [new branch]          chore/ct/treasury-intake-ct-03           -> origin/chore/ct/treasury-intake-ct-03
+ui-compliance	Checkout	2026-10-28T11:18:01.9534460Z  * [new branch]          chore/ct/treasury-intake-ct-04           -> origin/chore/ct/treasury-intake-ct-04
+ui-compliance	Checkout	2026-10-28T11:18:01.9535216Z  * [new branch]          chore/ct/treasury-intake-ct-05           -> origin/chore/ct/treasury-intake-ct-05
+ui-compliance	Checkout	2026-10-28T11:18:01.9535703Z  * [new branch]          chore/ct/wms-ct-01                       -> origin/chore/ct/wms-ct-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9536261Z  * [new branch]          chore/ct/workcenter-identity-approvals-01 -> origin/chore/ct/workcenter-identity-approvals-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9536847Z  * [new branch]          chore/mongo-schema-profiles              -> origin/chore/mongo-schema-profiles
+ui-compliance	Checkout	2026-10-28T11:18:01.9537358Z  * [new branch]          chore/mongo-test-rule                    -> origin/chore/mongo-test-rule
+ui-compliance	Checkout	2026-10-28T11:18:01.9537978Z  * [new branch]          chore/platform-docs-module-pack-reconciliation -> origin/chore/platform-docs-module-pack-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9538820Z  * [new branch]          chore/pvg/ct-queue-01                    -> origin/chore/pvg/ct-queue-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9539390Z  * [new branch]          chore/sce/approval-rows-wp-p1-supplier-01 -> origin/chore/sce/approval-rows-wp-p1-supplier-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9539971Z  * [new branch]          chore/sce/queue-wp-p1-dl1-01             -> origin/chore/sce/queue-wp-p1-dl1-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9540507Z  * [new branch]          chore/status-reporting-standard          -> origin/chore/status-reporting-standard
+ui-compliance	Checkout	2026-10-28T11:18:01.9541031Z  * [new branch]          chore/test-infra-debt                    -> origin/chore/test-infra-debt
+ui-compliance	Checkout	2026-10-28T11:18:01.9541538Z  * [new branch]          chore/worktree-secret-note               -> origin/chore/worktree-secret-note
+ui-compliance	Checkout	2026-10-28T11:18:01.9542548Z  * [new branch]          claude/bold-bell-52tgsz                  -> origin/claude/bold-bell-52tgsz
+ui-compliance	Checkout	2026-10-28T11:18:01.9543422Z  * [new branch]          claude/determined-lovelace-tujt69        -> origin/claude/determined-lovelace-tujt69
+ui-compliance	Checkout	2026-10-28T11:18:01.9610012Z  * [new branch]          codex/main-continuation-20260831         -> origin/codex/main-continuation-20260831
+ui-compliance	Checkout	2026-10-28T11:18:01.9611168Z  * [new branch]          codex/ppm-es-recovery-closure            -> origin/codex/ppm-es-recovery-closure
+ui-compliance	Checkout	2026-10-28T11:18:01.9611862Z  * [new branch]          codex/ppm-portfolio-first-delivery       -> origin/codex/ppm-portfolio-first-delivery
+ui-compliance	Checkout	2026-10-28T11:18:01.9612644Z  * [new branch]          codex/pss/mod-0023-transition-gate-sort-fix -> origin/codex/pss/mod-0023-transition-gate-sort-fix
+ui-compliance	Checkout	2026-10-28T11:18:01.9613416Z  * [new branch]          contracts/mvp6-consumed-seams            -> origin/contracts/mvp6-consumed-seams
+ui-compliance	Checkout	2026-10-28T11:18:01.9614208Z  * [new branch]          contracts/shipment-bundle-3.3-demand-history -> origin/contracts/shipment-bundle-3.3-demand-history
+ui-compliance	Checkout	2026-10-28T11:18:01.9614902Z  * [new branch]          docs/backlog-idpill-stash                -> origin/docs/backlog-idpill-stash
+ui-compliance	Checkout	2026-10-28T11:18:01.9615541Z  * [new branch]          docs/contracts-location-exception        -> origin/docs/contracts-location-exception
+ui-compliance	Checkout	2026-10-28T11:18:01.9616108Z  * [new branch]          docs/ct/treasury-decisions-04            -> origin/docs/ct/treasury-decisions-04
+ui-compliance	Checkout	2026-10-28T11:18:01.9616743Z  * [new branch]          docs/ct/treasury-mod0023-s17-rev2        -> origin/docs/ct/treasury-mod0023-s17-rev2
+ui-compliance	Checkout	2026-10-28T11:18:01.9617415Z  * [new branch]          docs/ct/treasury-mod0126-dl1-prep        -> origin/docs/ct/treasury-mod0126-dl1-prep
+ui-compliance	Checkout	2026-10-28T11:18:01.9618044Z  * [new branch]          docs/ct/treasury-packs-rev-02            -> origin/docs/ct/treasury-packs-rev-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9618770Z  * [new branch]          docs/records/test-hiz-01-report          -> origin/docs/records/test-hiz-01-report
+ui-compliance	Checkout	2026-10-28T11:18:01.9619752Z  * [new branch]          docs/sce/dc02-supplier-eligibility-draft-01 -> origin/docs/sce/dc02-supplier-eligibility-draft-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9620533Z  * [new branch]          docs/sce/dc03-supplier-actor-binding-draft-01 -> origin/docs/sce/dc03-supplier-actor-binding-draft-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9621252Z  * [new branch]          docs/sce/mod0147-0148-v1-approval-01     -> origin/docs/sce/mod0147-0148-v1-approval-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9621899Z  * [new branch]          docs/sce/mod0176-0177-nav-keys-01        -> origin/docs/sce/mod0176-0177-nav-keys-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9622533Z  * [new branch]          docs/sce/mvp6-ct-handoff-record-01       -> origin/docs/sce/mvp6-ct-handoff-record-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9623183Z  * [new branch]          docs/sce/mvp6-decisions-2026-10-26       -> origin/docs/sce/mvp6-decisions-2026-10-26
+ui-compliance	Checkout	2026-10-28T11:18:01.9623749Z  * [new branch]          docs/sce/mvp6-plan-v10-01                -> origin/docs/sce/mvp6-plan-v10-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9624317Z  * [new branch]          docs/sce/mvp6-plan-v10-02                -> origin/docs/sce/mvp6-plan-v10-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9624911Z  * [new branch]          docs/sce/wp-p1-dl1-contract-01           -> origin/docs/sce/wp-p1-dl1-contract-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9625556Z  * [new branch]          docs/sce/wp-p1-inventory-writes-01       -> origin/docs/sce/wp-p1-inventory-writes-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9626144Z  * [new branch]          docs/treasury/finance-legal-intake-01    -> origin/docs/treasury/finance-legal-intake-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9626818Z  * [new branch]          feat/ct/audit-category-finance-01        -> origin/feat/ct/audit-category-finance-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9627388Z  * [new branch]          feat/golden-reference-form-icons         -> origin/feat/golden-reference-form-icons
+ui-compliance	Checkout	2026-10-28T11:18:01.9627976Z  * [new branch]          feat/hr-hcm-recovery                     -> origin/feat/hr-hcm-recovery
+ui-compliance	Checkout	2026-10-28T11:18:01.9628756Z  * [new branch]          feat/hr-hcm-webui                        -> origin/feat/hr-hcm-webui
+ui-compliance	Checkout	2026-10-28T11:18:01.9629216Z  * [new branch]          feat/hr-tep-recovery                     -> origin/feat/hr-tep-recovery
+ui-compliance	Checkout	2026-10-28T11:18:01.9629667Z  * [new branch]          feat/hr-tep-webui                        -> origin/feat/hr-tep-webui
+ui-compliance	Checkout	2026-10-28T11:18:01.9630210Z  * [new branch]          feature/PV                               -> origin/feature/PV
+ui-compliance	Checkout	2026-10-28T11:18:01.9630693Z  * [new branch]          feature/access-governance-v2             -> origin/feature/access-governance-v2
+ui-compliance	Checkout	2026-10-28T11:18:01.9631266Z  * [new branch]          feature/auth/soft-delete-deleted-at-01   -> origin/feature/auth/soft-delete-deleted-at-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9631814Z  * [new branch]          feature/crm-chain-template               -> origin/feature/crm-chain-template
+ui-compliance	Checkout	2026-10-28T11:18:01.9632310Z  * [new branch]          feature/crm-integration                  -> origin/feature/crm-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9632811Z  * [new branch]          feature/crm-integration-v2               -> origin/feature/crm-integration-v2
+ui-compliance	Checkout	2026-10-28T11:18:01.9633306Z  * [new branch]          feature/crm-scmm-studio                  -> origin/feature/crm-scmm-studio
+ui-compliance	Checkout	2026-10-28T11:18:01.9633860Z  * [new branch]          feature/dev-enablement                   -> origin/feature/dev-enablement
+ui-compliance	Checkout	2026-10-28T11:18:01.9634398Z  * [new branch]          feature/dm-document-master-register      -> origin/feature/dm-document-master-register
+ui-compliance	Checkout	2026-10-28T11:18:01.9634987Z  * [new branch]          feature/dm/dcp-005-register-import-ui    -> origin/feature/dm/dcp-005-register-import-ui
+ui-compliance	Checkout	2026-10-28T11:18:01.9635546Z  * [new branch]          feature/dm/dcp-005-retire-csv-list       -> origin/feature/dm/dcp-005-retire-csv-list
+ui-compliance	Checkout	2026-10-28T11:18:01.9636112Z  * [new branch]          feature/dm/dcp-005-step0-register-seed   -> origin/feature/dm/dcp-005-step0-register-seed
+ui-compliance	Checkout	2026-10-28T11:18:01.9636742Z  * [new branch]          feature/document-lifecycle-template-sharing -> origin/feature/document-lifecycle-template-sharing
+ui-compliance	Checkout	2026-10-28T11:18:01.9637508Z  * [new branch]          feature/document-management-integration  -> origin/feature/document-management-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9638062Z  * [new branch]          feature/email-service                    -> origin/feature/email-service
+ui-compliance	Checkout	2026-10-28T11:18:01.9638878Z  * [new branch]          feature/erp-project-integration          -> origin/feature/erp-project-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9639431Z  * [new branch]          feature/es/enterprise-strategy           -> origin/feature/es/enterprise-strategy
+ui-compliance	Checkout	2026-10-28T11:18:01.9639938Z  * [new branch]          feature/event-bus                        -> origin/feature/event-bus
+ui-compliance	Checkout	2026-10-28T11:18:01.9640441Z  * [new branch]          feature/fin/treasury-intake-prep         -> origin/feature/fin/treasury-intake-prep
+ui-compliance	Checkout	2026-10-28T11:18:01.9641188Z  * [new branch]          feature/governance/access-governance-completion-plan -> origin/feature/governance/access-governance-completion-plan
+ui-compliance	Checkout	2026-10-28T11:18:01.9642024Z  * [new branch]          feature/governance/access-governance-completion-plan-refresh -> origin/feature/governance/access-governance-completion-plan-refresh
+ui-compliance	Checkout	2026-10-28T11:18:01.9642805Z  * [new branch]          feature/governance/access-governance-execution -> origin/feature/governance/access-governance-execution
+ui-compliance	Checkout	2026-10-28T11:18:01.9643547Z  * [new branch]          feature/governance/access-governance-foundation-planning -> origin/feature/governance/access-governance-foundation-planning
+ui-compliance	Checkout	2026-10-28T11:18:01.9644247Z  * [new branch]          feature/governance/ag-infra-completion   -> origin/feature/governance/ag-infra-completion
+ui-compliance	Checkout	2026-10-28T11:18:01.9644910Z  * [new branch]          feature/governance/antigravity-capability-hardening -> origin/feature/governance/antigravity-capability-hardening
+ui-compliance	Checkout	2026-10-28T11:18:01.9645672Z  * [new branch]          feature/governance/blueprint-module-id-reconciliation -> origin/feature/governance/blueprint-module-id-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9646561Z  * [new branch]          feature/governance/blueprint-v81-canonical-promotion -> origin/feature/governance/blueprint-v81-canonical-promotion
+ui-compliance	Checkout	2026-10-28T11:18:01.9647283Z  * [new branch]          feature/governance/dcp-001-access-governance -> origin/feature/governance/dcp-001-access-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9647952Z  * [new branch]          feature/governance/mod-0288-drift-reconciliation -> origin/feature/governance/mod-0288-drift-reconciliation
+ui-compliance	Checkout	2026-10-28T11:18:01.9648880Z  * [new branch]          feature/hr/platform-backbone-hr-source-readiness-recovered -> origin/feature/hr/platform-backbone-hr-source-readiness-recovered
+ui-compliance	Checkout	2026-10-28T11:18:01.9649572Z  * [new branch]          feature/infra/auth-account-kind          -> origin/feature/infra/auth-account-kind
+ui-compliance	Checkout	2026-10-28T11:18:01.9650116Z  * [new branch]          feature/infra/auth-display-label         -> origin/feature/infra/auth-display-label
+ui-compliance	Checkout	2026-10-28T11:18:01.9650611Z  * [new branch]          feature/inventory                        -> origin/feature/inventory
+ui-compliance	Checkout	2026-10-28T11:18:01.9651106Z  * [new branch]          feature/legal-org-audit                  -> origin/feature/legal-org-audit
+ui-compliance	Checkout	2026-10-28T11:18:01.9651590Z  * [new branch]          feature/mdm/abb-accept                   -> origin/feature/mdm/abb-accept
+ui-compliance	Checkout	2026-10-28T11:18:01.9652152Z  * [new branch]          feature/mdm/mod-0220-legal-entity-foundation -> origin/feature/mdm/mod-0220-legal-entity-foundation
+ui-compliance	Checkout	2026-10-28T11:18:01.9652792Z  * [new branch]          feature/mdm/mod-0290-product-item-sku-master -> origin/feature/mdm/mod-0290-product-item-sku-master
+ui-compliance	Checkout	2026-10-28T11:18:01.9653422Z  * [new branch]          feature/mg/mod-0354-current-main-reconcile -> origin/feature/mg/mod-0354-current-main-reconcile
+ui-compliance	Checkout	2026-10-28T11:18:01.9654022Z  * [new branch]          feature/mg/mod-0355-catalog-foundation   -> origin/feature/mg/mod-0355-catalog-foundation
+ui-compliance	Checkout	2026-10-28T11:18:01.9654695Z  * [new branch]          feature/mg/mod-0355-closure-governance   -> origin/feature/mg/mod-0355-closure-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9655451Z  * [new branch]          feature/mg/mod-0355-closure-implementation -> origin/feature/mg/mod-0355-closure-implementation
+ui-compliance	Checkout	2026-10-28T11:18:01.9656047Z  * [new branch]          feature/mg/mod-0355-core-current-main    -> origin/feature/mg/mod-0355-core-current-main
+ui-compliance	Checkout	2026-10-28T11:18:01.9656645Z  * [new branch]          feature/mg/mod-0355-current-main-governance -> origin/feature/mg/mod-0355-current-main-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9657285Z  * [new branch]          feature/mg/mod-0357-management-review-cadence -> origin/feature/mg/mod-0357-management-review-cadence
+ui-compliance	Checkout	2026-10-28T11:18:01.9657883Z  * [new branch]          feature/mobile-crm-integration           -> origin/feature/mobile-crm-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9658937Z  * [new branch]          feature/mod-0285-navigation              -> origin/feature/mod-0285-navigation
+ui-compliance	Checkout	2026-10-28T11:18:01.9659507Z  * [new branch]          feature/module-catalog                   -> origin/feature/module-catalog
+ui-compliance	Checkout	2026-10-28T11:18:01.9660031Z  * [new branch]          feature/mvp2/mod0143-net-amount          -> origin/feature/mvp2/mod0143-net-amount
+ui-compliance	Checkout	2026-10-28T11:18:01.9660583Z  * [new branch]          feature/mvp2/supplier-tenant-01          -> origin/feature/mvp2/supplier-tenant-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9661110Z  * [new branch]          feature/mvp2/supplier-tenant-02          -> origin/feature/mvp2/supplier-tenant-02
+ui-compliance	Checkout	2026-10-28T11:18:01.9661620Z  * [new branch]          feature/mvp3-bom-routings                -> origin/feature/mvp3-bom-routings
+ui-compliance	Checkout	2026-10-28T11:18:01.9662129Z  * [new branch]          feature/mvp3-bom-version-event           -> origin/feature/mvp3-bom-version-event
+ui-compliance	Checkout	2026-10-28T11:18:01.9662626Z  * [new branch]          feature/mvp6-logistics                   -> origin/feature/mvp6-logistics
+ui-compliance	Checkout	2026-10-28T11:18:01.9663168Z  * [new branch]          feature/nav-menu-dedup-perm-sync-fixes   -> origin/feature/nav-menu-dedup-perm-sync-fixes
+ui-compliance	Checkout	2026-10-28T11:18:01.9663712Z  * [new branch]          feature/notification                     -> origin/feature/notification
+ui-compliance	Checkout	2026-10-28T11:18:01.9664357Z  * [new branch]          feature/password-message-l10n            -> origin/feature/password-message-l10n
+ui-compliance	Checkout	2026-10-28T11:18:01.9664881Z  * [new branch]          feature/phase-b-workcenter               -> origin/feature/phase-b-workcenter
+ui-compliance	Checkout	2026-10-28T11:18:01.9665526Z  * [new branch]          feature/platform-authorization-entitlement-carryover -> origin/feature/platform-authorization-entitlement-carryover
+ui-compliance	Checkout	2026-10-28T11:18:01.9666158Z  * [new branch]          feature/ppm-integration                  -> origin/feature/ppm-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9666737Z  * [new branch]          feature/ppm/mod-0117-audit-contract-extraction -> origin/feature/ppm/mod-0117-audit-contract-extraction
+ui-compliance	Checkout	2026-10-28T11:18:01.9667430Z  * [new branch]          feature/ppm/mod-0117-full-closure-guard-reconcile -> origin/feature/ppm/mod-0117-full-closure-guard-reconcile
+ui-compliance	Checkout	2026-10-28T11:18:01.9668139Z  * [new branch]          feature/ppm/mod-0117-initiative-frontend-governance -> origin/feature/ppm/mod-0117-initiative-frontend-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9669018Z  * [new branch]          feature/ppm/mod-0117-initiative-frontend-v2 -> origin/feature/ppm/mod-0117-initiative-frontend-v2
+ui-compliance	Checkout	2026-10-28T11:18:01.9669692Z  * [new branch]          feature/ppm/mod-0117-initiative-surface-governance -> origin/feature/ppm/mod-0117-initiative-surface-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9670479Z  * [new branch]          feature/ppm/mod-0117-lifecycle-contract-authority-governance -> origin/feature/ppm/mod-0117-lifecycle-contract-authority-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9671217Z  * [new branch]          feature/ppm/mod-0117-lifecycle-contracts-v2 -> origin/feature/ppm/mod-0117-lifecycle-contracts-v2
+ui-compliance	Checkout	2026-10-28T11:18:01.9671792Z  * [new branch]          feature/procurement-mvp-2                -> origin/feature/procurement-mvp-2
+ui-compliance	Checkout	2026-10-28T11:18:01.9672446Z  * [new branch]          feature/pss/candcap0006-wc1-work-item-projection -> origin/feature/pss/candcap0006-wc1-work-item-projection
+ui-compliance	Checkout	2026-10-28T11:18:01.9673233Z  * [new branch]          feature/pss/dcp-005-citation-repoint     -> origin/feature/pss/dcp-005-citation-repoint
+ui-compliance	Checkout	2026-10-28T11:18:01.9673875Z  * [new branch]          feature/pss/entitlement-attestation-platform -> origin/feature/pss/entitlement-attestation-platform
+ui-compliance	Checkout	2026-10-28T11:18:01.9674551Z  * [new branch]          feature/pss/entitlement-transactions-reconcile -> origin/feature/pss/entitlement-transactions-reconcile
+ui-compliance	Checkout	2026-10-28T11:18:01.9675230Z  * [new branch]          feature/pss/mod-0018-canonical-name-reconcile -> origin/feature/pss/mod-0018-canonical-name-reconcile
+ui-compliance	Checkout	2026-10-28T11:18:01.9675960Z  * [new branch]          feature/pss/mod-0018-fu13-cache-invalidation-status -> origin/feature/pss/mod-0018-fu13-cache-invalidation-status
+ui-compliance	Checkout	2026-10-28T11:18:01.9676637Z  * [new branch]          feature/pss/mod-0021-ppm-audit-acceptance -> origin/feature/pss/mod-0021-ppm-audit-acceptance
+ui-compliance	Checkout	2026-10-28T11:18:01.9677268Z  * [new branch]          feature/pss/mod-0021-ppm-audit-consumer-v1 -> origin/feature/pss/mod-0021-ppm-audit-consumer-v1
+ui-compliance	Checkout	2026-10-28T11:18:01.9678054Z  * [new branch]          feature/pss/mod-0023-fu01-global-object-transition-gate-support -> origin/feature/pss/mod-0023-fu01-global-object-transition-gate-support
+ui-compliance	Checkout	2026-10-28T11:18:01.9678973Z  * [new branch]          feature/pss/mod-0024-att1-task-attachments -> origin/feature/pss/mod-0024-att1-task-attachments
+ui-compliance	Checkout	2026-10-28T11:18:01.9679611Z  * [new branch]          feature/pss/mod-0024-closure-outcome-editor -> origin/feature/pss/mod-0024-closure-outcome-editor
+ui-compliance	Checkout	2026-10-28T11:18:01.9680211Z  * [new branch]          feature/pss/mod-0024-returned-signal     -> origin/feature/pss/mod-0024-returned-signal
+ui-compliance	Checkout	2026-10-28T11:18:01.9680903Z  * [new branch]          feature/pss/mod-0024-review-meeting-policy -> origin/feature/pss/mod-0024-review-meeting-policy
+ui-compliance	Checkout	2026-10-28T11:18:01.9681529Z  * [new branch]          feature/pss/mod-0024-task-closure-reporting -> origin/feature/pss/mod-0024-task-closure-reporting
+ui-compliance	Checkout	2026-10-28T11:18:01.9682258Z  * [new branch]          feature/pss/mod-0024-work-report-screen  -> origin/feature/pss/mod-0024-work-report-screen
+ui-compliance	Checkout	2026-10-28T11:18:01.9683016Z  * [new branch]          feature/pss/mod-0027-fu04c-tenant-producer-eventcode-status -> origin/feature/pss/mod-0027-fu04c-tenant-producer-eventcode-status
+ui-compliance	Checkout	2026-10-28T11:18:01.9683750Z  * [new branch]          feature/pss/mod-0033-consumer-quota-model -> origin/feature/pss/mod-0033-consumer-quota-model
+ui-compliance	Checkout	2026-10-28T11:18:01.9684424Z  * [new branch]          feature/pss/mod-0033-fu01-tenant-quota-governance-ui -> origin/feature/pss/mod-0033-fu01-tenant-quota-governance-ui
+ui-compliance	Checkout	2026-10-28T11:18:01.9685160Z  * [new branch]          feature/pss/mod-0040-tenant-organization-foundation -> origin/feature/pss/mod-0040-tenant-organization-foundation
+ui-compliance	Checkout	2026-10-28T11:18:01.9685839Z  * [new branch]          feature/pss/mod-0047-tenant-user-foundation -> origin/feature/pss/mod-0047-tenant-user-foundation
+ui-compliance	Checkout	2026-10-28T11:18:01.9686557Z  * [new branch]          feature/pss/mod-0263-external-messaging-provider-status -> origin/feature/pss/mod-0263-external-messaging-provider-status
+ui-compliance	Checkout	2026-10-28T11:18:01.9687456Z  * [new branch]          feature/pss/mod-0288-fu01-position-assignment-user-reference-validation -> origin/feature/pss/mod-0288-fu01-position-assignment-user-reference-validation
+ui-compliance	Checkout	2026-10-28T11:18:01.9688449Z  * [new branch]          feature/pss/pss-007-subscription-feature-management -> origin/feature/pss/pss-007-subscription-feature-management
+ui-compliance	Checkout	2026-10-28T11:18:01.9689142Z  * [new branch]          feature/pss/pss-012-brd-mongo-profile    -> origin/feature/pss/pss-012-brd-mongo-profile
+ui-compliance	Checkout	2026-10-28T11:18:01.9689758Z  * [new branch]          feature/pvg/all-four-build-test-governance -> origin/feature/pvg/all-four-build-test-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9690428Z  * [new branch]          feature/pvg/all-four-nonoperational-integration -> origin/feature/pvg/all-four-nonoperational-integration
+ui-compliance	Checkout	2026-10-28T11:18:01.9691114Z  * [new branch]          feature/pvg/all-four-nonoperational-scaffold -> origin/feature/pvg/all-four-nonoperational-scaffold
+ui-compliance	Checkout	2026-10-28T11:18:01.9691936Z  * [new branch]          feature/pvg/all-four-nonoperational-scaffold-final -> origin/feature/pvg/all-four-nonoperational-scaffold-final
+ui-compliance	Checkout	2026-10-28T11:18:01.9692649Z  * [new branch]          feature/pvg/dcp-004-mod-0230-readiness-checklist -> origin/feature/pvg/dcp-004-mod-0230-readiness-checklist
+ui-compliance	Checkout	2026-10-28T11:18:01.9693288Z  * [new branch]          feature/pvg/dcp-004-urgent-w3-governance -> origin/feature/pvg/dcp-004-urgent-w3-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9693900Z  * [new branch]          feature/pvg/mod-0230-build-test-governance -> origin/feature/pvg/mod-0230-build-test-governance
+ui-compliance	Checkout	2026-10-28T11:18:01.9694534Z  * [new branch]          feature/pvg/mod-0230-nonoperational-scaffold -> origin/feature/pvg/mod-0230-nonoperational-scaffold
+ui-compliance	Checkout	2026-10-28T11:18:01.9695223Z  * [new branch]          feature/pvg/mod-0230-runtime-authorization-packet -> origin/feature/pvg/mod-0230-runtime-authorization-packet
+ui-compliance	Checkout	2026-10-28T11:18:01.9695831Z  * [new branch]          feature/pvg/wp-0230-dl2                  -> origin/feature/pvg/wp-0230-dl2
+ui-compliance	Checkout	2026-10-28T11:18:01.9696326Z  * [new branch]          feature/pvg/wp-0230-dl2b-r1              -> origin/feature/pvg/wp-0230-dl2b-r1
+ui-compliance	Checkout	2026-10-28T11:18:01.9696801Z  * [new branch]          feature/pvg/wp-0230-dl3                  -> origin/feature/pvg/wp-0230-dl3
+ui-compliance	Checkout	2026-10-28T11:18:01.9697277Z  * [new branch]          feature/pvg/wp-0230-dl3b-r1              -> origin/feature/pvg/wp-0230-dl3b-r1
+ui-compliance	Checkout	2026-10-28T11:18:01.9697751Z  * [new branch]          feature/pvg/wp-0230-dl4a-r1              -> origin/feature/pvg/wp-0230-dl4a-r1
+ui-compliance	Checkout	2026-10-28T11:18:01.9698379Z  * [new branch]          feature/sce/central-audit-01             -> origin/feature/sce/central-audit-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9698930Z  * [new branch]          feature/sce/contract-example-walker      -> origin/feature/sce/contract-example-walker
+ui-compliance	Checkout	2026-10-28T11:18:01.9699508Z  * [new branch]          feature/sce/ct-queue-confirmation-01     -> origin/feature/sce/ct-queue-confirmation-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9700219Z  * [new branch]          feature/sce/mod-0147-0148-approval-rows-01 -> origin/feature/sce/mod-0147-0148-approval-rows-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9700865Z  * [new branch]          feature/sce/mod-0147-0148-dc02-eligibility-seam-01 -> origin/feature/sce/mod-0147-0148-dc02-eligibility-seam-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9701519Z  * [new branch]          feature/sce/mod-0147-0148-pack-readiness-01 -> origin/feature/sce/mod-0147-0148-pack-readiness-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9702126Z  * [new branch]          feature/sce/mod-0148-dc03-decision-prep-01 -> origin/feature/sce/mod-0148-dc03-decision-prep-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9702774Z  * [new branch]          feature/sce/mod-0173-inventory-ledger-valuation -> origin/feature/sce/mod-0173-inventory-ledger-valuation
+ui-compliance	Checkout	2026-10-28T11:18:01.9703410Z  * [new branch]          feature/sce/mod-0183-docs-path-repin-320 -> origin/feature/sce/mod-0183-docs-path-repin-320
+ui-compliance	Checkout	2026-10-28T11:18:01.9703997Z  * [new branch]          feature/sce/mod-0183-q358-grant-cleanup  -> origin/feature/sce/mod-0183-q358-grant-cleanup
+ui-compliance	Checkout	2026-10-28T11:18:01.9704588Z  * [new branch]          feature/sce/mod-0183-q358-grant-removal  -> origin/feature/sce/mod-0183-q358-grant-removal
+ui-compliance	Checkout	2026-10-28T11:18:01.9705154Z  * [new branch]          feature/sce/mod-0188-demand-planning     -> origin/feature/sce/mod-0188-demand-planning
+ui-compliance	Checkout	2026-10-28T11:18:01.9705731Z  * [new branch]          feature/sce/mod-0188-demand-v2-hardening -> origin/feature/sce/mod-0188-demand-v2-hardening
+ui-compliance	Checkout	2026-10-28T11:18:01.9706311Z  * [new branch]          feature/sce/mod-0188-demand-v2-intent    -> origin/feature/sce/mod-0188-demand-v2-intent
+ui-compliance	Checkout	2026-10-28T11:18:01.9706884Z  * [new branch]          feature/sce/mod-0188-product-master-uom  -> origin/feature/sce/mod-0188-product-master-uom
+ui-compliance	Checkout	2026-10-28T11:18:01.9707459Z  * [new branch]          feature/sce/mod-0188-uom-pack-revision   -> origin/feature/sce/mod-0188-uom-pack-revision
+ui-compliance	Checkout	2026-10-28T11:18:01.9708035Z  * [new branch]          feature/sce/mod-0189-bound-run-contract  -> origin/feature/sce/mod-0189-bound-run-contract
+ui-compliance	Checkout	2026-10-28T11:18:01.9708894Z  * [new branch]          feature/sce/mod-0189-correlation-forwarding -> origin/feature/sce/mod-0189-correlation-forwarding
+ui-compliance	Checkout	2026-10-28T11:18:01.9709496Z  * [new branch]          feature/sce/mod-0189-current-week-fix    -> origin/feature/sce/mod-0189-current-week-fix
+ui-compliance	Checkout	2026-10-28T11:18:01.9710042Z  * [new branch]          feature/sce/mod-0189-mrp-core            -> origin/feature/sce/mod-0189-mrp-core
+ui-compliance	Checkout	2026-10-28T11:18:01.9710586Z  * [new branch]          feature/sce/mod-0189-mrp-replenishment   -> origin/feature/sce/mod-0189-mrp-replenishment
+ui-compliance	Checkout	2026-10-28T11:18:01.9711186Z  * [new branch]          feature/sce/mod-0189-safety-stock-consumer -> origin/feature/sce/mod-0189-safety-stock-consumer
+ui-compliance	Checkout	2026-10-28T11:18:01.9711776Z  * [new branch]          feature/sce/mod-0190-0192-bounded-slice  -> origin/feature/sce/mod-0190-0192-bounded-slice
+ui-compliance	Checkout	2026-10-28T11:18:01.9712358Z  * [new branch]          feature/sce/mod-0190-0192-g7-grant-removal -> origin/feature/sce/mod-0190-0192-g7-grant-removal
+ui-compliance	Checkout	2026-10-28T11:18:01.9712964Z  * [new branch]          feature/sce/mod-0191-effective-quantity  -> origin/feature/sce/mod-0191-effective-quantity
+ui-compliance	Checkout	2026-10-28T11:18:01.9713594Z  * [new branch]          feature/sce/mod-0191-safety-stock-optimization -> origin/feature/sce/mod-0191-safety-stock-optimization
+ui-compliance	Checkout	2026-10-28T11:18:01.9714214Z  * [new branch]          feature/sce/mvp4-date-stable-tests       -> origin/feature/sce/mvp4-date-stable-tests
+ui-compliance	Checkout	2026-10-28T11:18:01.9714795Z  * [new branch]          feature/sce/mvp6-g5-logistics-golden-flow -> origin/feature/sce/mvp6-g5-logistics-golden-flow
+ui-compliance	Checkout	2026-10-28T11:18:01.9715386Z  * [new branch]          feature/sce/mvp6-ops-runbook-dcp009-01   -> origin/feature/sce/mvp6-ops-runbook-dcp009-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9715944Z  * [new branch]          feature/sce/real-identity-tests-01       -> origin/feature/sce/real-identity-tests-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9716473Z  * [new branch]          feature/scmm-content-studio              -> origin/feature/scmm-content-studio
+ui-compliance	Checkout	2026-10-28T11:18:01.9717174Z  * [new branch]          feature/slug-login-catalog-pages-api-proxy -> origin/feature/slug-login-catalog-pages-api-proxy
+ui-compliance	Checkout	2026-10-28T11:18:01.9717792Z  * [new branch]          feature/structured-content-messaging     -> origin/feature/structured-content-messaging
+ui-compliance	Checkout	2026-10-28T11:18:01.9718474Z  * [new branch]          feature/task-templates-chain             -> origin/feature/task-templates-chain
+ui-compliance	Checkout	2026-10-28T11:18:01.9719011Z  * [new branch]          feature/tenant-auth-token-flow           -> origin/feature/tenant-auth-token-flow
+ui-compliance	Checkout	2026-10-28T11:18:01.9719529Z  * [new branch]          feature/tenant-lifecycle-c3              -> origin/feature/tenant-lifecycle-c3
+ui-compliance	Checkout	2026-10-28T11:18:01.9720034Z  * [new branch]          feature/tenant-management-v2             -> origin/feature/tenant-management-v2
+ui-compliance	Checkout	2026-10-28T11:18:01.9720560Z  * [new branch]          feature/tenant-organization-mdm          -> origin/feature/tenant-organization-mdm
+ui-compliance	Checkout	2026-10-28T11:18:01.9721083Z  * [new branch]          feature/tenat-management                 -> origin/feature/tenat-management
+ui-compliance	Checkout	2026-10-28T11:18:01.9721570Z  * [new branch]          feature/workcenter                       -> origin/feature/workcenter
+ui-compliance	Checkout	2026-10-28T11:18:01.9722052Z  * [new branch]          feature/workcenter-frontend              -> origin/feature/workcenter-frontend
+ui-compliance	Checkout	2026-10-28T11:18:01.9722571Z  * [new branch]          feature/workcenter-kanban-board          -> origin/feature/workcenter-kanban-board
+ui-compliance	Checkout	2026-10-28T11:18:01.9723067Z  * [new branch]          feature/workcenter-ux                    -> origin/feature/workcenter-ux
+ui-compliance	Checkout	2026-10-28T11:18:01.9723534Z  * [new branch]          features/referencedata                   -> origin/features/referencedata
+ui-compliance	Checkout	2026-10-28T11:18:01.9724022Z  * [new branch]          fix/active-switch-binding                -> origin/fix/active-switch-binding
+ui-compliance	Checkout	2026-10-28T11:18:01.9724563Z  * [new branch]          fix/bl-470-procurement-gateway-port      -> origin/fix/bl-470-procurement-gateway-port
+ui-compliance	Checkout	2026-10-28T11:18:01.9725088Z  * [new branch]          fix/brd-tenant-crm-sets                  -> origin/fix/brd-tenant-crm-sets
+ui-compliance	Checkout	2026-10-28T11:18:01.9725695Z  * [new branch]          fix/central/bl501-outbox-race            -> origin/fix/central/bl501-outbox-race
+ui-compliance	Checkout	2026-10-28T11:18:01.9726233Z  * [new branch]          fix/chunked-cookie-and-nav-retry         -> origin/fix/chunked-cookie-and-nav-retry
+ui-compliance	Checkout	2026-10-28T11:18:01.9726798Z  * [new branch]          fix/ci/phase1-cross-db-test-boundary     -> origin/fix/ci/phase1-cross-db-test-boundary
+ui-compliance	Checkout	2026-10-28T11:18:01.9727325Z  * [new branch]          fix/ci/test-hiz-01-green                 -> origin/fix/ci/test-hiz-01-green
+ui-compliance	Checkout	2026-10-28T11:18:01.9727790Z  * [new branch]          fix/crm-iis-hosting                      -> origin/fix/crm-iis-hosting
+ui-compliance	Checkout	2026-10-28T11:18:01.9728430Z  * [new branch]          fix/css-brace-and-platform-boot          -> origin/fix/css-brace-and-platform-boot
+ui-compliance	Checkout	2026-10-28T11:18:01.9728923Z  * [new branch]          fix/dm-test-drift                        -> origin/fix/dm-test-drift
+ui-compliance	Checkout	2026-10-28T11:18:01.9729462Z  * [new branch]          fix/global-applicability-event-name      -> origin/fix/global-applicability-event-name
+ui-compliance	Checkout	2026-10-28T11:18:01.9729991Z  * [new branch]          fix/hr-integration-gaps                  -> origin/fix/hr-integration-gaps
+ui-compliance	Checkout	2026-10-28T11:18:01.9730509Z  * [new branch]          fix/jwt-validation-refresh-logout        -> origin/fix/jwt-validation-refresh-logout
+ui-compliance	Checkout	2026-10-28T11:18:01.9731060Z  * [new branch]          fix/module-domain-normalization          -> origin/fix/module-domain-normalization
+ui-compliance	Checkout	2026-10-28T11:18:01.9731555Z  * [new branch]          fix/mvp1-sec-esign1                      -> origin/fix/mvp1-sec-esign1
+ui-compliance	Checkout	2026-10-28T11:18:01.9732193Z  * [new branch]          fix/platform-correlation-context-di      -> origin/fix/platform-correlation-context-di
+ui-compliance	Checkout	2026-10-28T11:18:01.9732935Z  * [new branch]          fix/platform-mdm-403-unavailable         -> origin/fix/platform-mdm-403-unavailable
+ui-compliance	Checkout	2026-10-28T11:18:01.9733646Z  * [new branch]          fix/rbac-permission-module-attribution   -> origin/fix/rbac-permission-module-attribution
+ui-compliance	Checkout	2026-10-28T11:18:01.9734220Z  * [new branch]          fix/task-center-live-defects             -> origin/fix/task-center-live-defects
+ui-compliance	Checkout	2026-10-28T11:18:01.9734746Z  * [new branch]          fix/tasks-menu-naming-and-l10n           -> origin/fix/tasks-menu-naming-and-l10n
+ui-compliance	Checkout	2026-10-28T11:18:01.9735366Z  * [new branch]          fix/tenant-module-entitlement-platform-context -> origin/fix/tenant-module-entitlement-platform-context
+ui-compliance	Checkout	2026-10-28T11:18:01.9736016Z  * [new branch]          fix/test-hiz-01-platform-suspend-race    -> origin/fix/test-hiz-01-platform-suspend-race
+ui-compliance	Checkout	2026-10-28T11:18:01.9736578Z  * [new branch]          fix/token-refresh-same-request           -> origin/fix/token-refresh-same-request
+ui-compliance	Checkout	2026-10-28T11:18:01.9737080Z  * [new branch]          fix/wc-outbox-assignee                   -> origin/fix/wc-outbox-assignee
+ui-compliance	Checkout	2026-10-28T11:18:01.9737563Z  * [new branch]          fix/wcn-source-navigation                -> origin/fix/wcn-source-navigation
+ui-compliance	Checkout	2026-10-28T11:18:01.9738081Z  * [new branch]          fix/wcn-stale-pool-comment               -> origin/fix/wcn-stale-pool-comment
+ui-compliance	Checkout	2026-10-28T11:18:01.9738733Z  * [new branch]          fix/workcenter-role-testing              -> origin/fix/workcenter-role-testing
+ui-compliance	Checkout	2026-10-28T11:18:01.9739221Z  * [new branch]          future/platformUI                        -> origin/future/platformUI
+ui-compliance	Checkout	2026-10-28T11:18:01.9739651Z  * [new branch]          hr-future                                -> origin/hr-future
+ui-compliance	Checkout	2026-10-28T11:18:01.9740091Z  * [new branch]          ia/governance-structure                  -> origin/ia/governance-structure
+ui-compliance	Checkout	2026-10-28T11:18:01.9740563Z  * [new branch]          integration/2026-08-27                   -> origin/integration/2026-08-27
+ui-compliance	Checkout	2026-10-28T11:18:01.9741018Z  * [new branch]          integration/2026-08-28                   -> origin/integration/2026-08-28
+ui-compliance	Checkout	2026-10-28T11:18:01.9741467Z  * [new branch]          integration/2026-08-29                   -> origin/integration/2026-08-29
+ui-compliance	Checkout	2026-10-28T11:18:01.9742051Z  * [new branch]          integration/2026-08-29b                  -> origin/integration/2026-08-29b
+ui-compliance	Checkout	2026-10-28T11:18:01.9742531Z  * [new branch]          integration/2026-09-21-test              -> origin/integration/2026-09-21-test
+ui-compliance	Checkout	2026-10-28T11:18:01.9743077Z  * [new branch]          integration/ct-legacy-post-closure-01    -> origin/integration/ct-legacy-post-closure-01
+ui-compliance	Checkout	2026-10-28T11:18:01.9743552Z  * [new branch]          main                                     -> origin/main
+ui-compliance	Checkout	2026-10-28T11:18:01.9744024Z  * [new branch]          mod-0262-documentrepository-d5-wip       -> origin/mod-0262-documentrepository-d5-wip
+ui-compliance	Checkout	2026-10-28T11:18:01.9744556Z  * [new branch]          test/crm-content-visit-e2e               -> origin/test/crm-content-visit-e2e
+ui-compliance	Checkout	2026-10-28T11:18:01.9745046Z  * [new branch]          test/test-hiz-01-auth-app                -> origin/test/test-hiz-01-auth-app
+ui-compliance	Checkout	2026-10-28T11:18:01.9745539Z  * [new branch]          test/test-hiz-01-guard-tests             -> origin/test/test-hiz-01-guard-tests
+ui-compliance	Checkout	2026-10-28T11:18:01.9746070Z  * [new branch]          test/test-hiz-01-platform-fast           -> origin/test/test-hiz-01-platform-fast
+ui-compliance	Checkout	2026-10-28T11:18:01.9746592Z  * [new branch]          test/test-hiz-01-redirect-port           -> origin/test/test-hiz-01-redirect-port
+ui-compliance	Checkout	2026-10-28T11:18:01.9747143Z  * [new branch]          test/test-hiz-01-shared-mongo-batch-1    -> origin/test/test-hiz-01-shared-mongo-batch-1
+ui-compliance	Checkout	2026-10-28T11:18:01.9747719Z  * [new branch]          test/test-hiz-01-shared-mongo-batch-2    -> origin/test/test-hiz-01-shared-mongo-batch-2
+ui-compliance	Checkout	2026-10-28T11:18:01.9748444Z  * [new branch]          test/test-hiz-01-shared-mongo-pilot      -> origin/test/test-hiz-01-shared-mongo-pilot
+ui-compliance	Checkout	2026-10-28T11:18:01.9748992Z  * [new branch]          wip/bl030-datetimeoffset-sort            -> origin/wip/bl030-datetimeoffset-sort
+ui-compliance	Checkout	2026-10-28T11:18:01.9749496Z  * [new branch]          wip/idpill-experiment                    -> origin/wip/idpill-experiment
+ui-compliance	Checkout	2026-10-28T11:18:01.9750070Z  * [new ref]             3491a4267829663a19afb82bd6453bd634ab5d0e -> pull/275/merge
+ui-compliance	Checkout	2026-10-28T11:18:01.9751246Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:18:01.9751602Z ##[group]Determining the checkout info
+ui-compliance	Checkout	2026-10-28T11:18:01.9751992Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:18:01.9752325Z [command]/usr/bin/git sparse-checkout disable
+ui-compliance	Checkout	2026-10-28T11:18:01.9752945Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+ui-compliance	Checkout	2026-10-28T11:18:01.9753677Z ##[group]Checking out the ref
+ui-compliance	Checkout	2026-10-28T11:18:01.9754003Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/275/merge
+ui-compliance	Checkout	2026-10-28T11:18:02.9919764Z Updating files:  33% (10426/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.0051175Z Updating files:  34% (10484/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.0236189Z Updating files:  35% (10793/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.0576679Z Updating files:  36% (11101/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.1499069Z Updating files:  37% (11409/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.1914142Z Updating files:  38% (11718/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.2125952Z Updating files:  39% (12026/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.2369390Z Updating files:  40% (12334/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.2642892Z Updating files:  41% (12643/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.2869775Z Updating files:  42% (12951/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3077113Z Updating files:  43% (13260/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3246261Z Updating files:  44% (13568/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3389618Z Updating files:  45% (13876/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3500201Z Updating files:  46% (14185/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3616039Z Updating files:  47% (14493/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3728139Z Updating files:  48% (14801/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.3864305Z Updating files:  49% (15110/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.4102063Z Updating files:  50% (15418/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.4370380Z Updating files:  51% (15726/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.4600919Z Updating files:  52% (16035/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.4873797Z Updating files:  53% (16343/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.5061054Z Updating files:  54% (16651/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.5673427Z Updating files:  55% (16960/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.6541819Z Updating files:  56% (17268/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.6793686Z Updating files:  57% (17576/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.6961714Z Updating files:  58% (17885/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.7135004Z Updating files:  59% (18193/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.7824830Z Updating files:  60% (18501/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.8121047Z Updating files:  61% (18810/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.8351910Z Updating files:  62% (19118/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.8617246Z Updating files:  63% (19427/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.8759529Z Updating files:  64% (19735/30835)
+ui-compliance	Checkout	2026-10-28T11:18:03.8963575Z Updating files:  65% (20043/30835)
+ui-compliance	Checkout	2026-10-28T11:18:04.0136997Z Updating files:  66% (20352/30835)
+ui-compliance	Checkout	2026-10-28T11:18:04.2544625Z Updating files:  66% (20554/30835)
+ui-compliance	Checkout	2026-10-28T11:18:04.8125532Z Updating files:  67% (20660/30835)
+ui-compliance	Checkout	2026-10-28T11:18:04.8307355Z Updating files:  68% (20968/30835)
+ui-compliance	Checkout	2026-10-28T11:18:04.8471909Z Updating files:  69% (21277/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.0398690Z Updating files:  70% (21585/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.1114720Z Updating files:  70% (21799/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.3898039Z Updating files:  71% (21893/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.4893414Z Updating files:  72% (22202/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5024958Z Updating files:  73% (22510/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5150575Z Updating files:  74% (22818/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5282491Z Updating files:  75% (23127/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5444790Z Updating files:  76% (23435/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5638335Z Updating files:  77% (23743/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5788558Z Updating files:  78% (24052/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.5933599Z Updating files:  79% (24360/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6072517Z Updating files:  80% (24668/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6304637Z Updating files:  81% (24977/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6478419Z Updating files:  82% (25285/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6608969Z Updating files:  83% (25594/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6731019Z Updating files:  84% (25902/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.6899103Z Updating files:  85% (26210/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7048048Z Updating files:  86% (26519/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7203958Z Updating files:  87% (26827/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7330839Z Updating files:  88% (27135/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7463293Z Updating files:  89% (27444/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7596122Z Updating files:  90% (27752/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.7774804Z Updating files:  91% (28060/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8030672Z Updating files:  92% (28369/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8238747Z Updating files:  93% (28677/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8346144Z Updating files:  94% (28985/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8485043Z Updating files:  95% (29294/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8617376Z Updating files:  96% (29602/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8748373Z Updating files:  97% (29910/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8861361Z Updating files:  98% (30219/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8998860Z Updating files:  99% (30527/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8999273Z Updating files: 100% (30835/30835)
+ui-compliance	Checkout	2026-10-28T11:18:05.8999858Z Updating files: 100% (30835/30835), done.
+ui-compliance	Checkout	2026-10-28T11:18:06.0691206Z Note: switching to 'refs/remotes/pull/275/merge'.
+ui-compliance	Checkout	2026-10-28T11:18:06.0691482Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0691668Z You are in 'detached HEAD' state. You can look around, make experimental
+ui-compliance	Checkout	2026-10-28T11:18:06.0692065Z changes and commit them, and you can discard any commits you make in this
+ui-compliance	Checkout	2026-10-28T11:18:06.0692432Z state without impacting any branches by switching back to a branch.
+ui-compliance	Checkout	2026-10-28T11:18:06.0692644Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0692787Z If you want to create a new branch to retain commits you create, you may
+ui-compliance	Checkout	2026-10-28T11:18:06.0693129Z do so (now or later) by using -c with the switch command. Example:
+ui-compliance	Checkout	2026-10-28T11:18:06.0693330Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0693419Z   git switch -c <new-branch-name>
+ui-compliance	Checkout	2026-10-28T11:18:06.0693548Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0693636Z Or undo this operation with:
+ui-compliance	Checkout	2026-10-28T11:18:06.0693758Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0693836Z   git switch -
+ui-compliance	Checkout	2026-10-28T11:18:06.0693934Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0694103Z Turn off this advice by setting config variable advice.detachedHead to false
+ui-compliance	Checkout	2026-10-28T11:18:06.0694694Z 
+ui-compliance	Checkout	2026-10-28T11:18:06.0694961Z HEAD is now at 3491a4267 Merge 9f3f100baff7bd4026458cfd025cbfd48f2fad79 into f81d34df705db693a7843dc879d8740f71d7881b
+ui-compliance	Checkout	2026-10-28T11:18:06.0777892Z ##[endgroup]
+ui-compliance	Checkout	2026-10-28T11:18:06.0823491Z [command]/usr/bin/git log -1 --format=%H
+ui-compliance	Checkout	2026-10-28T11:18:06.0849040Z 3491a4267829663a19afb82bd6453bd634ab5d0e
+ui-compliance	Changed-page selector	﻿2026-10-28T11:18:06.1535801Z ##[group]Run start=$(date +%s)
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1536147Z ^[[36;1mstart=$(date +%s)^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1536374Z ^[[36;1mset +e^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1537270Z ^[[36;1mpython3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1538875Z ^[[36;1mcode=$?^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1539488Z ^[[36;1mset -e^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1539675Z ^[[36;1mcat uic-selector-stdout.txt^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1540532Z ^[[36;1mecho "SHA-256 (stdout): $(sha256sum uic-selector-stdout.txt | cut -d' ' -f1)"^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1541685Z ^[[36;1mecho "Süre: $(( $(date +%s) - start )) s (yalnız değişen sayfalar; CI'da tüm-sayfa kipi yok)"^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1542341Z ^[[36;1mecho "Seçici çıkışı: $code"^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.1542596Z ^[[36;1mecho "code=$code" >> "$GITHUB_OUTPUT"^[[0m
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.2041874Z shell: /usr/bin/bash -e {0}
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.2042292Z env:
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.2042548Z   BASE_SHA: f81d34df705db693a7843dc879d8740f71d7881b
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.2042908Z ##[endgroup]
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.3816029Z süre: 0.1 s
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.3840065Z SHA-256 (stdout): c1aff2f3c5ebd1ae6ce2def6d186fd04fed3ba15a3e25a41a37eaf4bcd91eacb
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.3850752Z Süre: 0 s (yalnız değişen sayfalar; CI'da tüm-sayfa kipi yok)
+ui-compliance	Changed-page selector	2026-10-28T11:18:06.3851250Z Seçici çıkışı: 0
+ui-compliance	Keep the selector output	﻿2026-10-28T11:18:06.4410435Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4410789Z with:
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4410968Z   name: uic-selector-stdout
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4411177Z   path: uic-selector-stdout.txt
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4411607Z   if-no-files-found: error
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4411804Z   compression-level: 6
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4411988Z   overwrite: false
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4412165Z   include-hidden-files: false
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.4412373Z ##[endgroup]
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.5798932Z (node:2109) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.5799613Z (Use `node --trace-deprecation ...` to show where the warning was created)
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.5837384Z With the provided path, there will be 1 file uploaded
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.5842460Z Artifact name is valid!
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.5842945Z Root directory input is valid!
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.8214756Z Beginning upload of artifact content to blob storage
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.8919571Z (node:2109) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.9216164Z Uploaded bytes 175
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.9368531Z Finished uploading artifact content to blob storage!
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.9369318Z SHA256 digest of uploaded artifact zip is 1475f317485bbfbed0935a4679542919f6175c934d7f0dcdf20ede951533dbd3
+ui-compliance	Keep the selector output	2026-10-28T11:18:06.9370102Z Finalizing artifact upload
+ui-compliance	Keep the selector output	2026-10-28T11:18:07.4020538Z Artifact uic-selector-stdout.zip successfully finalized. Artifact ID 12811542840
+ui-compliance	Keep the selector output	2026-10-28T11:18:07.4021445Z Artifact uic-selector-stdout has been successfully uploaded! Final size is 175 bytes. Artifact ID is 12811542840
+ui-compliance	Keep the selector output	2026-10-28T11:18:07.4026024Z Artifact download URL: https://github.com/bestepullukcu-alt/ERP-vNext/actions/runs/40678833945/artifacts/12811542840
+ui-compliance	Fail only on selector exit 1 or 2	﻿2026-10-28T11:18:07.4148764Z ##[group]Run if [ "$CODE" = "1" ] || [ "$CODE" = "2" ]; then
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4149130Z ^[[36;1mif [ "$CODE" = "1" ] || [ "$CODE" = "2" ]; then^[[0m
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4149644Z ^[[36;1m  echo "Seçici çıkışı $CODE: kırmızı (1 = yeni kırmızı, 2 = araç ya da taban hatası)."^[[0m
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4165985Z ^[[36;1m  exit 1^[[0m
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4166215Z ^[[36;1mfi^[[0m
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4166448Z ^[[36;1mecho "Seçici çıkışı $CODE: yeşil."^[[0m
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4228399Z shell: /usr/bin/bash -e {0}
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4228627Z env:
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4228791Z   CODE: 0
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4228959Z ##[endgroup]
+ui-compliance	Fail only on selector exit 1 or 2	2026-10-28T11:18:07.4303600Z Seçici çıkışı 0: yeşil.
+ui-compliance	Post Checkout	﻿2026-10-28T11:18:07.4408611Z Post job cleanup.
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5098363Z [command]/usr/bin/git version
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5133266Z git version 2.55.0
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5163206Z Temporarily overriding HOME='/home/runner/work/_temp/4c8eed47-2221-4add-8255-34e0f2013937' before making global git config changes
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5164251Z Adding repository directory to the temporary git global config as a safe directory
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5167399Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ERP-vNext/ERP-vNext
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5203926Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5234807Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5499657Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5527147Z http.https://github.com/.extraheader
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5537396Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5572124Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5811373Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ui-compliance	Post Checkout	2026-10-28T11:18:07.5855191Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ui-compliance	Complete job	﻿2026-10-28T11:18:07.6206571Z Cleaning up orphan processes
+ui-compliance	Complete job	2026-10-28T11:18:07.6511534Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

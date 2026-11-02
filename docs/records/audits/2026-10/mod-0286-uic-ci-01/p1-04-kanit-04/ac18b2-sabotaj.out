@@ -1,0 +1,25 @@
+PASS Meetings/Report CI-1 Views/Meetings/Report/Index.cshtml
+PASS Meetings/Report CI-2 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-2 Views/Meetings/Report/_Filter.cshtml 0
+PASS Meetings/Report CI-2 Views/Meetings/Report/_IndexL10n.cshtml 0
+PASS Meetings/Report CI-4 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-4 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-5 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-5 Views/Meetings/Report/_Filter.cshtml 0
+PASS Meetings/Report CI-5 Views/Meetings/Report/_IndexL10n.cshtml 0
+YENİ KIRMIZI Meetings/Report CI-5 wwwroot/assets/js/Meetings/Report/index.js 2 +1
+PASS Meetings/Report CI-5 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-6 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-6 Views/Meetings/Report/_Filter.cshtml 0
+PASS Meetings/Report CI-6 Views/Meetings/Report/_IndexL10n.cshtml 0
+PASS Meetings/Report CI-6 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-6 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-7 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-7 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-8 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-8 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-9 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-9 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-10 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-10 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+süre: 0.2 s

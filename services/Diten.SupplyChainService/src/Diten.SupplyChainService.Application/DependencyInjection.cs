@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Application.Behaviors;
 namespace Diten.SupplyChainService.Application;
@@ -36,6 +37,11 @@ public static class DependencyInjection
             includeDemandConsumers || type.Namespace is not { } ns || !IsExcluded(ns);
         services.AddScoped<RequestContext>(); services.AddMediatR(c => { c.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly); c.TypeEvaluator = IsComposedFeatureType; });
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        // MOD-0183 DL-1 (§23): the dispatch issue. Its INVENTORY client and DispatchOptions are composed in Program.cs.
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<Features.Shipments.Dispatch.LateWriterPolicy>(); services.AddScoped<Features.Shipments.Dispatch.ShipmentDispatchCoordinator>();
+        // MOD-0186 DL-1 (§34): the return receipt into QUARANTINE, over the same INVENTORY client and DispatchOptions.
+        services.AddScoped<Features.Returns.Receipt.ReturnLateWriterPolicy>(); services.AddScoped<Features.Returns.Receipt.ReturnReceiptCoordinator>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));

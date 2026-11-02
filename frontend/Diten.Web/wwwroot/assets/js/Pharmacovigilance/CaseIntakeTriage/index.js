@@ -2,7 +2,7 @@
 
 (function () {
     const tableEl = document.querySelector('.datatables-pvg-case-intake-triage');
-    if (!tableEl || !window.DataTable) return;
+    if (!tableEl || !window.DitenDataTable?.createList) return;
 
     const L = window.PvgCaseIntakeTriageL10n || {};
     const t = key => L[key] || key;
@@ -25,42 +25,36 @@
         return path;
     };
 
-    const buildListUrl = () => {
-        const params = new URLSearchParams();
-        const status = document.getElementById('pvgStatusFilter')?.value || '';
-        if (status) params.set('status', status);
-        params.set('pageNumber', '1');
-        params.set('pageSize', '100');
-        return safeProxyUrl(`${endpoint}/list?${params.toString()}`);
-    };
-
-    const filterBtn = {
-        text: '<i class="icon-base bx bx-filter-alt icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + escapeHtml(t('Apply')) + '</span>',
-        className: 'btn btn-label-secondary dt-filter-btn',
-        attr: { title: t('Apply'), 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
-        action: () => {
-            const collapseEl = document.getElementById(filterCollapseId);
-            if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).toggle();
+    const rowActionHandlers = {
+        quickView: ({ trigger }) => {
+            const id = trigger?.closest('.js-quick-view')?.getAttribute('data-id');
+            if (id) window.location.assign(`/Pharmacovigilance/CaseIntakeTriage/Details/${encodeURIComponent(id)}`);
+        },
+        edit: ({ id }) => {
+            if (id) window.location.assign(`/Pharmacovigilance/CaseIntakeTriage/Edit/${encodeURIComponent(id)}`);
         }
     };
 
-    const config = window.DtDefaults.create({
-        ajax: {
-            url: buildListUrl(),
-            dataSrc: json => {
-                if (isControlledFailure(json)) {
-                    showAlert(safeMessage(json));
-                    setListStatus(alertEl?.textContent || t('ControlledBlock'));
-                    return [];
-                }
+    // The list is the shared list component's (DitenDataTable.createList, server mode): it sends start, length and the
+    // applied status filter to the same-origin proxy and reads { data: { items, total, filteredTotal } } back. The
+    // service sorts and searches nothing, so both stay off (Known gap) and the table shows the service's own counts.
+    tableEl.addEventListener('preXhr.dt', () => {
+        showLoading();
+        setListStatus(t('Loading'));
+    });
 
-                hideAlert();
-                const items = itemsOf(json);
-                setListStatus(items.length ? '' : t('NoRecords'));
-                return items;
-            },
+    tableEl.addEventListener('xhr.dt', () => {
+        hideLoading();
+    });
+
+    window.DitenDataTable.createList({
+        tableEl,
+        dataMode: 'server',
+        ajax: {
+            url: safeProxyUrl(`${endpoint}/list`),
+            type: 'GET',
             // BL-515: a CONTROLLED refusal (a reason code from the service) is this page's own sentence and stays here.
-            // Every other failure — session (401), permission (403), outage — is the list component's: shown in the
+            // Every other failure - session (401), permission (403), outage - is the list component's: shown in the
             // table, in the reader's language, with a retry (`return false` hands it over).
             error: xhr => {
                 hideLoading();
@@ -72,79 +66,67 @@
             },
             headers: getAuthHeaders()
         },
-        columns: [
-            { data: null, defaultContent: '', className: 'control', orderable: false, searchable: false },
-            {
-                data: null,
-                render: row => {
-                    const id = valueOf(row, 'intakeDraftId');
-                    return `<span class="fw-medium text-break">${escapeHtml(id)}</span>`;
-                }
-            },
-            {
-                data: null,
-                render: row => `<span class="badge bg-label-primary">${escapeHtml(valueOf(row, 'status'))}</span>`
-            },
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                className: 'text-end',
-                render: row => {
-                    const id = encodeURIComponent(valueOf(row, 'intakeDraftId'));
-                    return `<div class="d-inline-flex gap-1">
-                        <a class="btn btn-sm btn-icon btn-label-secondary js-quick-view" href="/Pharmacovigilance/CaseIntakeTriage/Details/${id}" title="${escapeHtml(t('Details'))}" aria-label="${escapeHtml(t('Details'))}">
-                            <i class="icon-base bx bx-show"></i>
-                        </a>
-                        <a class="btn btn-sm btn-icon btn-label-primary" href="/Pharmacovigilance/CaseIntakeTriage/Edit/${id}" title="${escapeHtml(t('Edit'))}" aria-label="${escapeHtml(t('Edit'))}">
-                            <i class="icon-base bx bx-edit"></i>
-                        </a>
-                    </div>`;
-                }
-            }
-        ],
-        order: [[1, 'asc']],
-        responsive: true,
-        processing: true,
-        buttons: window.DtDefaults?.toolbarButtons
-            ? window.DtDefaults.toolbarButtons({ filterBtn })
-            : [filterBtn],
-        language: {
-            emptyTable: t('NoRecords'),
-            loadingRecords: t('Loading'),
-            processing: t('Loading')
+        actions: { onRowAction: rowActionHandlers },
+        toolbar: { addNewText: '', exportPermitted: false },
+        filters: {
+            hostId: 'inlineFilterHost',
+            collapseId: filterCollapseId,
+            applyBtn: 'pvgApplyFilter',
+            resetBtn: 'pvgResetFilter',
+            fields: [{ id: 'pvgStatusFilter', key: 'status', kind: 'single' }]
         },
-        initComplete: () => {
-            hideLoading();
+        savedView: {
+            moduleKey: 'Pharmacovigilance',
+            pageKey: 'CaseIntakeTriage',
+            saveViewColumnIndexes: [1, 2],
+            defaultVisibleColumnIndexes: [1, 2],
+            baseOrder: [[1, 'asc']]
+        },
+        onResponse: json => {
+            hideAlert();
+            const items = itemsOf(json);
+            setListStatus(items.length ? '' : t('NoRecords'));
+        },
+        config: {
+            ordering: false,
+            searching: false,
+            responsive: true,
+            columns: [
+                { data: null, defaultContent: '', className: 'control', orderable: false, searchable: false },
+                {
+                    data: null,
+                    orderable: false,
+                    render: row => `<span class="fw-medium text-break">${escapeHtml(valueOf(row, 'intakeDraftId'))}</span>`
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    render: row => `<span class="badge bg-label-primary">${escapeHtml(valueOf(row, 'status'))}</span>`
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'cell-fit text-end all',
+                    render: row => {
+                        const id = valueOf(row, 'intakeDraftId');
+                        return window.DitenDataTable.renderActions([
+                            { key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show', attrs: { 'data-id': id, title: t('Details') } },
+                            { key: 'edit', className: 'js-edit-item', icon: 'bx bx-edit', text: t('Edit'), attrs: { 'data-id': id } }
+                        ]);
+                    }
+                }
+            ],
+            language: {
+                emptyTable: t('NoRecords'),
+                loadingRecords: t('Loading'),
+                processing: t('Loading')
+            },
+            initComplete: () => {
+                hideLoading();
+            }
         }
-    });
-
-    const dt = new DataTable(tableEl, config);
-
-    tableEl.addEventListener('preXhr.dt', () => {
-        showLoading();
-        setListStatus(t('Loading'));
-    });
-
-    tableEl.addEventListener('xhr.dt', () => {
-        hideLoading();
-    });
-
-    document.getElementById('pvgApplyFilter')?.addEventListener('click', () => {
-        dt.ajax.url(buildListUrl()).load();
-    });
-
-    document.getElementById('pvgResetFilter')?.addEventListener('click', () => {
-        const status = document.getElementById('pvgStatusFilter');
-        if (status) status.value = '';
-        dt.ajax.url(buildListUrl()).load();
-    });
-
-    tableEl.addEventListener('click', event => {
-        const link = event.target.closest('.js-quick-view');
-        if (!link) return;
-        window.location.assign(link.getAttribute('href'));
-    });
+    }).catch(() => showAlert(t('ErrorOccurred')));
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -154,12 +136,6 @@
             '"': '&quot;',
             "'": '&#39;'
         }[char]));
-    }
-
-    function isControlledFailure(body) {
-        const outcome = body?.outcome || body?.Outcome || '';
-        const statusCode = Number(body?.statusCode || body?.StatusCode || 0);
-        return ['Blocked', 'Invalid'].includes(outcome) || [401, 403, 409].includes(statusCode);
     }
 
     function safeMessage(body, statusCode) {

@@ -362,6 +362,8 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
             .Where(region => region is not null)
             .Cast<RegionInfo>()
             .Where(region => !string.IsNullOrWhiteSpace(region.ISOCurrencySymbol))
+            // ISO 4217 alpha-3 only: ICU gives macro regions (001, 150, 419) the placeholder "¤¤", which is no currency.
+            .Where(region => IsIsoAlpha3(region.ISOCurrencySymbol.Trim()))
             .GroupBy(region => region.ISOCurrencySymbol.Trim(), StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
@@ -386,6 +388,8 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
             .ThenBy(option => option.Code)
             .ToList();
     }
+
+    private static bool IsIsoAlpha3(string code) => code.Length == 3 && code.All(ch => ch is >= 'A' and <= 'Z');
 
     private static IReadOnlyList<LookupOptionDto> BuildTimezoneOptions()
     {

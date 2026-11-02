@@ -1,0 +1,72 @@
+# Bağımsız inceleme isteği — şablon (S-94)
+
+Her CT, inceleyene giden her paket incelemesini bu biçimde hazırlar — S-116 (sahip kararı 2026-11-01): diyalog inceleyeni
+(ayrı sohbet ya da CT içinde alt ajan), bağımsız son bakış (geçmişsiz ikinci alt ajan) ve sahip seçince Codex aynı
+isteği alır; yalnız "Hedef" satırındaki alıcı adı değişir. Kayıt:
+`docs/records/reviews/<MOD>/REVIEW-REQUEST-<NN>.md`. Örnek kayıtlar: `docs/records/reviews/MOD-0230/REVIEW-REQUEST-12.md`,
+`docs/records/reviews/MOD-0286/REVIEW-REQUEST-07b.md`.
+
+## 1. Dosya
+
+````markdown
+# <MOD> — bağımsız inceleme isteği <NN> (SOP §20.4 / CT-APR-02)
+
+- **Hedef:** `<paket yolu>` @ sha256 `<64 hex>` (revizyon <n>)
+- **Kaynak commit:** `<sha>` · dal `<dal>` (yerel / push edildi)
+- **Risk:** <kartın hesapladığı risk> — neden inceleme gerekli
+- **Önceki sürüm ve incelemeler:** <yoksa "ilk inceleme">
+- **Bu sürümün nedeni:** <yeniden incelemede: ne değişti; ilk incelemede yazılmaz>
+- **Yetki:** sahibin sözü "<kelime>" (<tarih>)
+- **İsteyen / hazırlayan / tarih:** <rol> · <CT> · <YYYY-AA-GG>
+- **İnceleyen:** <diyalog inceleyeni: ayrı sohbet ya da alt ajan | bağımsız son bakış: geçmişsiz alt ajan | Codex: yeni oturum> · istenen model ve effort · yanıtın başına model, effort, oturum ya da ajan kimliği
+- **ZIP:** `<ad>.zip` · sha256 `<64 hex>` · <bayt> · <dosya sayısı> + `MANIFEST.sha256`
+  - Yeri: `<mutlak yol>` (depoya girmez)
+- **Bulgu dosyası:** `docs/records/reviews/<MOD>/<YYYY-AA-GG>-<hedef sha ilk 8>.md`
+- **Prompt bloğunun SHA-256'sı:** `<64 hex>`
+
+## İnceleme prompt'u (inceleyen oturuma olduğu gibi iletilir)
+
+```text
+Hedef: <inceleme N | bağımsız son bakış N | Codex> — <MOD> module pack bağımsız incelemesi <NN> (SOP §20.4 / CT-APR-02). İnceleyensin; paketi yazan oturum değilsin.
+Depoya erişimin yok: yalnız ekteki ZIP'i oku. Dosya düzenleme, kod yazma, commit yok. Tek çıktın aşağıdaki bulgu metnidir.
+Kaynak: ekteki ZIP (yeri ve sha256'sı son satırlarda) — önce ZIP'in sha256'sını hesaplayıp son satırla karşılaştır, sonra `shasum -a 256 -c MANIFEST.sha256` ile doğrula.
+Hedef belge: <paket yolu> @ sha256 <…> — tutmuyorsa dur ve bildir.
+Model · Effort: kullandığın modeli, effort'u ve oturum kimliğini yanıtın başına yaz; veremiyorsan "verilemiyor" yaz.
+[Yeniden incelemede: Ne değişti — <liste>. Kapandı iddiasındaki önceki bulgular — <F-n listesi>. Her iddiayı kendin ölç.]
+Görev: <ne incelenecek>. ZIP'te eksik girdi varsa (atıf verilen ama ZIP'te olmayan dosya) bunu ayrı bir bulgu olarak yaz.
+[Yalnız diyalog inceleyenine: Ek: sık bulgu türleri — docs/guides/operations/pack-review-common-findings.md; en azından bunlara bak, yalnız bunlara bakma. Bağımsız son bakışa ve Codex'e bu satır verilmez.]
+[Yalnız diyalog inceleyenine: Bulgularını yazdıktan sonra kuleyle konuşabilirsin; kule düzeltince "düzeltildi, yeniden oku" der, sen yeni ZIP'in sha256'sını doğrulayıp imzalayacağın sürümü yeniden okursun. Son sonucun o sürüm içindir.]
+Çıktı: ilk satır `hedef: <paket yolu> @ <sha>`; her bulgu tek satırda `F-n | ENGEL|ORTA|DÜŞÜK | <metin> | açık | <K…> | <tarih>`;
+son satırda sonuç UYGUN / KOŞULLU / UYGUN DEĞİL.
+ZIP'in yeri: <mutlak yol>
+ZIP sha256: <64 hex>
+```
+````
+
+ZIP elle toplanmaz: `python3 scripts/review_zip.py build --pack <paket> --ref <commit> --out <dizin>` (S-99). Araç son
+iki satırı (`ZIP'in yeri`, `ZIP sha256`) basar; paket geliştirmeye hazır değilse ZIP kurmaz. AGENTS.md, kart ve SOP her
+ZIP'te vardır; prompt bunlardaki bir kurala atıf verebilir.
+
+## 2. Sohbette sahibe (tek kopya, S-98) — yalnız sahip Codex'i seçince
+
+Diyalog inceleyenine ve bağımsız son bakışa isteği CT kendisi iletir (ayrı sohbete mesajla, alt ajana prompt olarak);
+sahibe kopya verilmez, yalnız kısa haberde "inceleme N başladı" yazılır. Aşağıdaki adımlar Codex içindir (S-116):
+
+1. Tek cümle: "Codex'te **yeni** bir oturum açın, aşağıdaki metni yapıştırın ve açılan klasördeki ZIP'i sürükleyin (klasör açılmadıysa
+   son satırdaki yoldan)"
+2. Prompt'un tamamı, tek ```text bloğunda (dosyadaki blokla aynı). ZIP'in yeri ve sha256'sı bu bloğun son iki satırıdır;
+   ayrı kutu açılmaz. Bloğun özeti altında düz metinle yazılır.
+3. CT ZIP'i Finder'da (Windows'ta Dosya Gezgini'nde) seçili gösterir; gösteremiyorsa bunu tek cümleyle söyler.
+
+Son satır: "Codex'in cevabını olduğu gibi bu sohbete yapıştırın." (teslimde soru varsa bu cümle sorudan önce gelir)
+
+ZIP inceleme isteği dosyasını içermez; sıra ZIP → prompt → kayıt. ZIP yeniden kurulursa yeni istek numarası açılır.
+
+## 3. Yapılmaz
+
+- Prompt yerine yalnız dosya yolu vermek ("dosyadan kopyalayın").
+- ZIP yolunu ya da sha256'sını ayrı kutuya koymak (sahip iki üç kez kopyalar).
+- Prompt'u kod bloğu dışında, markdown olarak yazmak (başlıklar ve `|` satırları bozulur).
+- İlk incelemede CT'nin görüşünü, beklenen sonucu ya da "şuraya bakma" yönlendirmesini yazmak.
+- Diyalog incelemesinin bulgularını, sık bulgu listesini ya da CT'nin görüşünü bağımsız son bakışın ya da Codex'in
+  prompt'una eklemek (S-116: ikinci bakış ipucusuz kalır).
