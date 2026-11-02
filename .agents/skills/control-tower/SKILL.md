@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:5a4053ecbdfe` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:9f308e81002c` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -37,8 +37,8 @@ hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartı
 - Sahip kararlarını ara: modül kimlikleri ve domain adıyla `git log --grep` ve `docs/records/decisions/` içinde. Bulduğun
   her kararı kaynağıyla (`yol@commit`) yaz ve "hâlâ geçerli mi? Evet / Hayır" diye sor; sahibin hatırlamasını bekleme.
 - Keşfi bir kez koş ve çıktıyı ekrandan oku; geçici dosya dahil hiçbir dosyaya yönlendirme. Aynı kaynak ve sorguyla
-  tekrar koşma; kaynak değiştiyse ya da teknik bir hata olduysa gerekçesini yazıp bir kez yeniden koşabilirsin. Uzun çıktıyı
-  kartın §0.1'deki gibi süz; kesildiyse "kısmi" de.
+  tekrar koşma; kaynak değişti ya da teknik hata olduysa gerekçeyle bir kez yeniden koş. Uzun çıktıyı kartın §0.1'deki
+  gibi süz; kesildiyse "kısmi" de.
 - Önceki bir keşif raporu: `--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil. Raporu yalnız aynı iş için,
   HEAD, kirli kaynak baytları ve ref kimliklerinin değişmediği ölçüldüyse yeniden kullan; yeni işte ya da bunlar
   kanıtlanamıyorsa yeniden keşfet.
@@ -68,14 +68,12 @@ hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartı
   olmadan ürün kodu, commit, push ya da PR yok.
 - İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok; "Yer" dışında hiçbir dosyaya
   yazma (geçici dahil). Görev, test, kabul ve başka bir MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
-- Alt ajana, alt oturuma ya da worker prompt'una iş verirken her biri için modeli ve effort'u yaz ve kullanılanı ölç
-  (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
+- Alt ajana ya da işçiye iş verirken her biri için modeli ve effort'u yaz ve kullanılanı ölç (SOP §17.1 r5).
 - Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
   tamamını tek WP'ye vermez.
 - Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
   karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
-  incelemenin neyi kaçırdığını yaz. Ham sonucu hemen worktree'ye commit'siz taslak yaz (geçici klasöre değil); kaydı
-  ve commit'i yazmadan önce sahibe sor.
+  incelemenin neyi kaçırdığını yaz. Ham sonucu hemen worktree'ye commit'siz taslak yaz; kayıt ve commit için sahibe sor.
   İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
 - Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
 - Sen karar verir, ölçer, denetlersin; işi devredersin. Kod işi için bağlı alt oturum aç, kapıdan geçmiş prompt'u
@@ -91,11 +89,12 @@ hangi komut" tablosunda ve §0'dadır, burada kopyalanmaz. İlk çağrı, kartı
    gizlemez.
 4. Gerekçeli tek öneri, "öneri — onay değil".
 5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma. Soru
-   "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
+   "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "«onayla»: satır dala, dilimler başlar; «PR aç»: push + PR");
    kullanıcıdan uzun onay metni beklenmez. Soruyu kartın "Soru biçimi"yle yanıtın sonunda yaz;
    butonlu soru kutusu kullanılmaz; "Şimdi siz" satırı soru yerine geçmez.
 
-Block'un iş takip sayfası varsa her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01).
+Block'un iş takip sayfası yoksa açılışta sormadan ortak şablondan aç (kart S-119); varsa
+her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01). İş satırları tür kelimesiyle başlar (S-120).
 
 Kısa yanıtta da olguyu çıkarımdan ayır. Kaynak tablosu, olgular (`kaynak:satır`), çıkarımlar ve aday listesi istenince
 ayrıntılı verilir. Satır numarasını yalnız numaralı bir okumadan ver (`grep -n`, `nl -ba` ya da okuma aracının satır

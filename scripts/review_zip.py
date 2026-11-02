@@ -711,8 +711,8 @@ def self_test() -> int:
 
     # 7. a referenced directory is listed, not expanded — never a refusal, however big; --expand over DIR_CAP -> 2
     for i in range(DIR_CAP + 1):
-        put(f"docs/big/f{i:03d}.md", "x\n")
-    put(PACK, head.format(s="ready-for-dev") + body + "- `docs/big/`\n")
+        put(f"docs/reference/big/f{i:03d}.md", "x\n")
+    put(PACK, head.format(s="ready-for-dev") + body + "- `docs/reference/big/`\n")
     c5 = commit("big directory")
     clear()
     code, lines = build(root, PACK, c5, out)
@@ -721,14 +721,14 @@ def self_test() -> int:
         listing = zipfile.ZipFile(zip_of(lines)).read(DIRECTORIES).decode("utf-8")
     cases.append(("sabotage: without --expand a referenced directory is not expanded (exit 0 even over the cap): its "
                   "files are listed in DIRECTORIES.txt (REVIEW-REQUEST left out of the list), none is in the ZIP",
-                  code == 0 and not any(n.startswith("docs/big/") or n.startswith("docs/records/reviews/") for n in got)
-                  and "docs/big/f099.md\n" in listing and "docs/big/f100.md\n" not in listing
+                  code == 0 and not any(n.startswith("docs/reference/big/") or n.startswith("docs/records/reviews/") for n in got)
+                  and "docs/reference/big/f099.md\n" in listing and "docs/reference/big/f100.md\n" not in listing
                   and f"… ve {DIR_CAP + 1 - LIST_CAP} dosya daha" in listing and "docs/records/reviews/MOD-0001/2026-10-01-aaaa.md\n" in listing
                   and "REVIEW-REQUEST" not in listing))
     clear()
-    code, lines = build(root, PACK, c5, out, expand=["docs/big"])
+    code, lines = build(root, PACK, c5, out, expand=["docs/reference/big"])
     cases.append(("--expand of a directory over the cap -> exit 2 with the directory named, no ZIP",
-                  code == 2 and any("docs/big (" in l for l in lines) and no_zip()))
+                  code == 2 and any("docs/reference/big (" in l for l in lines) and no_zip()))
 
     # 7b. test caps: TESTS_PER_NAME per base name (own-name matches first), TESTS_TOTAL in all; a pack-named test is in
     names_g = [f"Gadget{i}" for i in range(9)]

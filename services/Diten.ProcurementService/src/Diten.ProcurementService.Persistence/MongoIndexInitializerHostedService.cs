@@ -29,6 +29,7 @@ public sealed class MongoIndexInitializerHostedService : BackgroundService
             using var scope = _scopeFactory.CreateScope();
             var database = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
             await SupplierIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
+            await SupplierTenantModelIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
             await SourcingIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
             await RequisitionPoIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
             await GrnIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
