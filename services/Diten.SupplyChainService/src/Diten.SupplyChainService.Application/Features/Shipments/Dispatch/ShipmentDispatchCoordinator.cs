@@ -50,7 +50,9 @@ public sealed class ShipmentDispatchCoordinator(IShipmentRepository repository, 
     {
         if (!ShipmentLifecycle.Allows(s.Status, ShipmentStatus.Dispatched)) return Fail(ContractErrorCodes.InvalidShipmentTransition, 422);
         // INVENTORY requires skuLevel: refuse before any call (r4 F-4). Whether a line is lot-tracked is INVENTORY's to say.
-        if (s.Lines.FirstOrDefault(l => string.IsNullOrWhiteSpace(l.SkuLevel)) is { } incomplete)
+        // It also refuses an outbound movement without a location. Only a new attempt is refused for that: an open one may
+        // hold posted lines and must still resume, finish its compensation and reverse them.
+        if (s.Lines.FirstOrDefault(l => string.IsNullOrWhiteSpace(l.SkuLevel) || (s.DispatchAttempt is null && string.IsNullOrWhiteSpace(l.FromLocationId))) is { } incomplete)
             return FailWith(ContractErrorCodes.ShipmentLineStockIncomplete, 422, new JsonObject { ["lineNumber"] = incomplete.LineNumber });
         var now = clock.GetUtcNow();
         var observed = s.DispatchAttempt;
