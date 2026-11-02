@@ -72,15 +72,17 @@ public class DocsPathGuardTests
         "frontend/_Reference"
     ];
 
+    private const string NameChars = "A-Za-z0-9_.-";
+
     /* The rule's one registered exception (docs-organization.md K2): docs/analysis/contracts/, the frozen API contracts. */
     private const string RegisteredException = "analysis/contracts";
-    private static readonly Regex ContractsTail = new(@"^\s*(?:@?""contracts""|contracts\b)", RegexOptions.Compiled);
+    // "contracts" as a whole folder name: not followed by a name character, so contracts-old/ or contracts2/ is not it.
+    private static readonly Regex ContractsTail = new($@"^\s*(?:@?""contracts""|contracts(?![{NameChars}]))", RegexOptions.Compiled);
 
     /* Records never change (docs-organization.md: records/ ARTIK DEĞİŞMEZ) and are not run: a stale path in one can
        neither be fixed nor break anything. Read only when the authority file names the record. */
     private const string RecordsPrefix = "docs/records/";
 
-    private const string NameChars = "A-Za-z0-9_.-";
 
     /* docs/‹x›/  or  docs\‹x›\  — not preceded by a name character, so "mydocs/x/" is not a docs path. */
     private static readonly Regex Slashed = new(
@@ -95,6 +97,21 @@ public class DocsPathGuardTests
     /* What sits immediately before a match — the parent folder, if the path names one. */
     private static readonly Regex SlashedParent = new($@"(?<p>[{NameChars}]+)[/\\]+$", RegexOptions.Compiled);
     private static readonly Regex CombinedParent = new(@"""(?<p>[^""]+)""\s*,\s*$", RegexOptions.Compiled);
+
+    // The exception's boundary, both path shapes: only the folder named exactly "contracts" under analysis is honoured.
+    // (The negative lines are split "docs/" + "…" so this file's own scan does not read them as paths.)
+    [Theory]
+    [InlineData("var p = \"docs/analysis/contracts/bom.openapi.yaml\";", "analysis/contracts")]
+    [InlineData("/// docs/analysis/contracts (no contract file) is named here", "analysis/contracts")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\", file)", "analysis/contracts")]
+    [InlineData("var p = \"docs/" + "analysis/contracts-old/x.yaml\";", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/contracts2/x.yaml\";", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/workpackages/x.md\";", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"notes\", file)", "analysis")]
+    public void Only_the_contracts_folder_under_analysis_is_the_registered_exception(string line, string expected)
+    {
+        Assert.Equal([expected], Hits(line, new HashSet<string>(StringComparer.Ordinal)).ToArray());
+    }
 
     [Fact]
     public void NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
