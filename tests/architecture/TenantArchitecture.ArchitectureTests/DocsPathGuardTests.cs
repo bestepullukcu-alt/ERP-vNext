@@ -19,7 +19,11 @@ namespace TenantArchitecture.ArchitectureTests;
  * · reference. Any code-side path naming another folder directly under it points at something that was moved
  * or never existed, and it fails the day somebody runs it rather than the day the docs moved.
  * A separately approved exact authority record can distinguish a verified legacy canonical
- * dependency or sealed historical evidence. No prefix/directory exclusion is granted; see ReadAuthority.
+ * dependency or sealed historical evidence; see ReadAuthority.
+ * SIMPLIFIED 2026-11-02 (owner decision, process simplification stage 0): two rules the docs rule already states are
+ * applied directly instead of per-file seals — (1) docs/analysis/contracts/ is the rule's one registered exception
+ * (docs-organization.md K2), so a reference into it is honoured like the five folders; (2) docs/records/ never changes
+ * and is never run, so a file under it is read only when the authority names it (its seals stay consumed).
  *
  * WHAT IS MATCHED — the two shapes the four breakages actually had:
  *   • a slashed path whose first segment under docs is followed by a separator: docs/‹x›/… or docs\‹x›\…
@@ -68,6 +72,14 @@ public class DocsPathGuardTests
         "frontend/_Reference"
     ];
 
+    /* The rule's one registered exception (docs-organization.md K2): docs/analysis/contracts/, the frozen API contracts. */
+    private const string RegisteredException = "analysis/contracts";
+    private static readonly Regex ContractsTail = new(@"^\s*(?:@?""contracts""|contracts\b)", RegexOptions.Compiled);
+
+    /* Records never change (docs-organization.md: records/ ARTIK DEĞİŞMEZ) and are not run: a stale path in one can
+       neither be fixed nor break anything. Read only when the authority file names the record. */
+    private const string RecordsPrefix = "docs/records/";
+
     private const string NameChars = "A-Za-z0-9_.-";
 
     /* docs/‹x›/  or  docs\‹x›\  — not preceded by a name character, so "mydocs/x/" is not a docs path. */
@@ -103,6 +115,7 @@ public class DocsPathGuardTests
         foreach (var file in files)
         {
             var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            if (relative.StartsWith(RecordsPrefix, StringComparison.Ordinal) && !authority.Contains(relative)) continue;
             var lines = File.ReadAllLines(file);
 
             for (var i = 0; i < lines.Length; i++)
@@ -119,6 +132,13 @@ public class DocsPathGuardTests
                     if (authority.Contains(relative))
                     {
                         consumed.Add(relative);
+                        continue;
+                    }
+
+                    // After the authority, so a sealed input that points into the exception still counts as consumed.
+                    if (hit == RegisteredException)
+                    {
+                        honoured++;
                         continue;
                     }
                     offenders.Add($"{relative}:{i + 1} → docs/{hit} — bkz. docs-organization.md §4");
@@ -399,12 +419,16 @@ public class DocsPathGuardTests
                 f.Save(); break;
             case "wrong-source-hash": first["sha256"] = new string('0', 64); f.Approve(); break;
             case "synthetic-production": break;
-            case "unknown-path": f.Write("new.cs", "// " + f.Target + ".unknown"); break;
+            // The registered exception (analysis/contracts) is honoured since 2026-11-02, so the unsealed reference names a
+            // sibling folder the exception does not cover.
+            case "unknown-path": f.Write("new.cs", "// " + f.Target.Replace("analysis/contracts/", "analysis/unregistered/") + ".unknown"); break;
             case "wrong-canonical-hash":
                 f.Record["canonicalTargets"]![0]!["sha256"] = new string('0', 64); f.Approve(); break;
             case "missing-canonical": File.Delete(Path.Combine(f.Root, f.Target)); break;
             case "changed-history": File.AppendAllText(Path.Combine(f.Root, f.History), "\n "); break;
-            case "unregistered-tool": f.Write("unregistered.py", File.ReadAllText(Path.Combine(f.Root, f.Tool))); break;
+            case "unregistered-tool":
+                f.Write("unregistered.py", File.ReadAllText(Path.Combine(f.Root, f.Tool)).Replace("analysis/contracts", "analysis/unregistered")
+                    .Replace("\"analysis\", \"contracts\"", "\"analysis\", \"unregistered\"")); break;
             case "missing-provenance": File.Delete(Path.Combine(f.Root, f.Proof)); break;
             case "wrong-provenance-hash": first["provenanceSha256"] = new string('0', 64); f.Approve(); break;
             case "wrong-provenance-line": first["provenanceLine"] = 1; f.Approve(); break;
@@ -448,15 +472,22 @@ public class DocsPathGuardTests
         {
             var parent = SlashedParent.Match(line[..m.Index]);
             if (parent.Success && nestedDocsParents.Contains(parent.Groups["p"].Value)) continue;
-            yield return m.Groups["x"].Value;
+            yield return Classify(m, line);
         }
 
         foreach (Match m in Combined.Matches(line))
         {
             var parent = CombinedParent.Match(line[..m.Index]);
             if (parent.Success && nestedDocsParents.Contains(parent.Groups["p"].Value)) continue;
-            yield return m.Groups["x"].Value;
+            yield return Classify(m, line);
         }
+    }
+
+    /* "analysis" followed by "contracts" is the registered exception; any other folder under analysis is not. */
+    private static string Classify(Match m, string line)
+    {
+        var x = m.Groups["x"].Value;
+        return x == "analysis" && ContractsTail.IsMatch(line[(m.Index + m.Length)..]) ? RegisteredException : x;
     }
 
     /// <summary>
