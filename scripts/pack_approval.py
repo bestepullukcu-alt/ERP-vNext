@@ -666,6 +666,13 @@ def no_pr_proven(root: str, merge: str) -> bool:
     (merged or not) is False; a malformed answer raises — "no PR found in a broken answer" is never a proof."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
+    key = ("no_pr", merge)      # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
+    if key not in _PR_CACHE:
+        _PR_CACHE[key] = _no_pr_answer(root, merge)
+    return _PR_CACHE[key]
+
+
+def _no_pr_answer(root: str, merge: str) -> bool:
     pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
     if not isinstance(pages, list) or not all(isinstance(page, list) for page in pages):
         raise Unreadable("GitHub cevabı sayfa listesi değil")
@@ -682,7 +689,9 @@ def no_pr_proven(root: str, merge: str) -> bool:
 
 def _pr_merge_why(root: str, c: str) -> str | None:
     """S-42 / independent review F-1: None when GitHub proves `c` is no pull request's merge commit; else why it counts
-    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never cached (Codex F-3)."""
+    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never kept beyond this process (Codex F-3; S-132:
+    within one process the same merge is asked once, sahip kararı 2026-11-02 `kota-duzelt`; a disk cache would let a local
+    writer forge a human step)."""
     try:
         if no_pr_proven(root, c):
             return None
@@ -828,12 +837,19 @@ def _quota_reset_local() -> str:
     return "sıfırlanma saati ölçülemedi"
 
 
+_QUOTA_STOP: str | None = None       # S-132: once GitHub said the quota is gone, this process asks nothing more
+
+
 def _gh_json(path: str, paginate: bool = False):
+    global _QUOTA_STOP
+    if _QUOTA_STOP is not None:
+        raise GitHubQuota(_QUOTA_STOP)
     done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         err = done.stderr.decode(errors="replace").strip()
         if QUOTA_TEXT.search(err) and ("403" in err or "exceeded" in err.lower()):
-            raise GitHubQuota(f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)")
+            _QUOTA_STOP = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
+            raise GitHubQuota(_QUOTA_STOP)
         raise Unreadable(f"gh api {path}: {err[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
 
@@ -1370,18 +1386,19 @@ def slices(text: str) -> list[str] | None:
 
 
 
-def slice_rule(root: str, ref: str, path: str) -> tuple[bool, list[str] | None, str | None]:
+def slice_rule(root: str, ref: str, path: str, deferred: bool = False) -> tuple[bool, list[str] | None, str | None]:
     """(does the CT-APR-02 slice rule bind this pack at `ref`, its slice ids, the WP its last approval row allows to
     take the whole pack). It binds once an approval row at or after the start needed a review; an old pack, or one only
     re-approved for an exempt change (owner filled, a date), keeps the earlier rule (a warning only). whole_pack is read
-    only from a last row that passes on its own — a HIGH approval by another person (B2)."""
+    only from a last row that passes on its own — a HIGH approval by another person (B2). `deferred` (S-133) is the
+    branch reading of the dispatch gate: a row still on the CT branch keeps its whole_pack, its human step pending."""
     commit = commit_of(root, ref)
     if commit is None:
         raise Unreadable(f"ref '{ref[:40]}' çözülemedi")
     data = read(root, commit, path)
     if data is None:
         raise Unreadable(f"paket {path} bu ref'te yok")
-    ctx = Ctx(root, commit, path)
+    ctx = Ctx(root, commit, path, deferred)
     if ctx.rstart is None or ctx.policy is None:
         return False, None, None
     binds = any(r["action"] == "approve" and judge(ctx, i)[3] for i, r in enumerate(ctx.rows))
@@ -1935,6 +1952,7 @@ def self_test() -> int:
     cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached", pr_merge_sha not in _PR_CACHE))
     # S-42 / Codex F-1: "no PR" is a proof only from a well-formed answer
     def proven(pages):
+        _PR_CACHE.clear()       # S-132: each case is a fresh process; the same merge gets another answer
         answers.clear()
         answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = pages
         try:
@@ -1977,14 +1995,17 @@ def self_test() -> int:
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha)
     cases.append(("S-97 (no_pr_proven): index empty but pulls/7 matches -> it IS a pull request's merge, never 'no PR'",
                   no_pr_proven(root, msg_sha) is False))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha="0" * 40)
     cases.append(("S-97 (no_pr_proven): index empty and pulls/7 is another merge -> 'no PR' proven",
                   no_pr_proven(root, msg_sha) is True))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha, merged_at=None)
     cases.append(("S-97 (review F-2, no_pr_proven): pulls/7 has this merge commit but is not merged -> still a PR, "
                   "never 'no PR'", no_pr_proven(root, msg_sha) is False))
 
     def raises(record):
+        _PR_CACHE.clear()
         if record is None:
             answers.pop(f"repos/{TRUSTED_REPO}/pulls/7", None)
         else:
@@ -2083,6 +2104,7 @@ def self_test() -> int:
     self_test_review(cases)
     self_test_exception(cases)
     self_test_deferred(cases)
+    self_test_slice_deferred(cases)
     for label, ok in cases:
         print(("PASS " if ok else "FAIL ") + label)
     passed = sum(1 for _, ok in cases if ok)
@@ -3088,6 +3110,80 @@ def self_test_review(cases: list) -> None:
     tmp.cleanup()
 
 
+def self_test_slice_deferred(cases: list) -> None:
+    """S-133 (Arayüz finding 2026-11-02): the dispatch gate's slice reading follows the branch reading — a HIGH branch
+    approval row with whole_pack=<WP> keeps it while its human step is pending; a self-granted LOW row still loses it."""
+    globals()["_PR_SOURCE"] = _test_pr
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+
+    def g(*args, who=("dev", "dev@x.invalid")):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, text):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def get(rel):
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
+            return f.read()
+
+    def commit(msg, who=("dev", "dev@x.invalid")):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+
+    PACK = "execution/domains/x/module-packs/MOD-0001-x.md"
+    v1 = ("---\nid: MOD-0001\nname: X\nstatus: approved\nowner: kalite\nupdated: 2026-10-01\n---\n# X\n\n## Notes\n- a\n\n"
+          "## Teslim dilimleri\n| dilim | ad | bölümler |\n|---|---|---|\n| DL-1 | çekirdek | Notes |\n| DL-2 | ekran | Notes |\n")
+    g("init", "-q", "-b", "main")
+    put(PACK, v1)
+    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\njun\tK3\tjunior\thayır\n")
+    put(POLICY, "# start\n")
+    put(APPROVALS, "\t".join(APPROVAL_COLUMNS) + "\n")
+    put(REVIEW_POLICY, "# review start\n")
+    put(REVIEWS, "\t".join(REVIEW_COLUMNS) + "\n")
+    put(BRANCH_POLICY, "# S-115 start\n")
+    commit("rules start", who=("lead", "lead@x.invalid"))
+    put(PACK, v1.replace("- a\n", "- a\n- b\n"))
+    commit("pack changed after the start")
+    g("checkout", "-q", "-b", "ct")
+    digest = sha256(get(PACK).encode("utf-8"))
+    rel = f"docs/records/reviews/t/01-{digest[:8]}.md"
+    put(rel, f"# İnceleme\n\nhedef: {PACK} @ {digest}\n\nF-1 | DÜŞÜK | yazım | kapandı | - | -\n")
+    put(REVIEWS, get(REVIEWS) + "\t".join([PACK, digest, rel, sha256(get(rel).encode("utf-8")), "UYGUN", "0", "claude",
+                                           "claude-opus-5-5", "high", "rs-1", "K3", "as-1", "dev", "2026-11-01"]) + "\n")
+    commit("review row on the branch")
+    base = git(root, "rev-parse", "HEAD").decode().strip()
+    word = "onayla · CT · Deneme sohbeti · 2026-11-01 03:30 whole_pack=WP-9"
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", word, True) + "\n")
+    commit("HIGH branch approval row with whole_pack")
+    cases.append(("S-133 positive control: a HIGH branch row with whole_pack=WP-9 -> the branch slice reading keeps WP-9",
+                  evaluate(root, "HEAD", PACK, True)[0] == 0 and slice_rule(root, "HEAD", PACK, True)[2] == "WP-9"))
+    cases.append(("S-133: the same row in the strict reading -> no whole_pack (its human step is not on main)",
+                  slice_rule(root, "HEAD", PACK)[2] is None))
+    # B2 isolated (independent review 2026-11-02, finding 1): the version's computed risk is LOW (date only) and the
+    # approver is another person — only B2 (whole_pack makes the approval HIGH) refuses a junior's LOW row
+    g("checkout", "-q", "-b", "b2", base)
+    plain = "onayla · CT · Deneme sohbeti · 2026-11-01 03:30"
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", plain, True) + "\n")
+    commit("HIGH base row on the branch, no whole_pack")
+    put(PACK, get(PACK).replace("updated: 2026-10-01", "updated: 2026-11-02"))
+    commit("date only")
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "jun", "LOW", "test", "2026-11-02",
+                                             plain + " whole_pack=WP-9", True) + "\n")
+    commit("junior LOW branch row with whole_pack")
+    code, out = evaluate(root, "HEAD", PACK, True)
+    cases.append(("sabotage S-133 (B2): a LOW-risk version, a junior's LOW branch row with whole_pack -> deferred ENGEL "
+                  "'yüksek riskli işi onaylayamaz' and no whole_pack (only B2 refuses it)",
+                  code == 1 and any("yüksek riskli işi onaylayamaz" in l for l in out) and any("hesaplanan risk: LOW" in l for l in out)
+                  and slice_rule(root, "HEAD", PACK, True)[2] is None))
+    tmp.cleanup()
+
+
 def self_test_deferred(cases: list) -> None:
     """S-115 (owner decision 2026-11-01, "dal onayı"): the branch reading (deferred) of the dispatch gate and the
     acceptance — every guard with its sabotage (design docs/roadmap/plans/ct-branch-approval-01/DESIGN.md, table 1–14);
@@ -3728,6 +3824,46 @@ def self_test_deferred(cases: list) -> None:
                       code == 2 and has(out, "kota") and has(out, "ölçülemedi") and not has(out, "güvenilmez")))
     cases.append(("S-115 kota: GitHubQuota is an Unreadable (every generic handler still fails closed)",
                   issubclass(GitHubQuota, Unreadable)))
+    globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
+    _PR_CACHE.clear()
+    # S-132: after the first quota answer the process runs no further gh command; one answer per merge within a process
+    saved_cmd, saved_reset, saved_src = globals()["_gh_cmd"], globals()["_quota_reset_local"], globals()["_PR_SOURCE"]
+    with tempfile.TemporaryDirectory() as td:
+        count = os.path.join(td, "calls")
+        globals()["_gh_cmd"] = lambda path, paginate=False: ["sh", "-c", f"echo x >> '{count}'; echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
+        globals()["_quota_reset_local"] = lambda: "04:12"
+        globals()["_QUOTA_STOP"] = None
+        raised = 0
+        for _ in range(3):
+            try:
+                _gh_json("x")
+            except GitHubQuota:
+                raised += 1
+        with open(count, encoding="utf-8") as f:
+            calls = len(f.readlines())
+        cases.append(("S-132: quota exhausted -> three readings raise GitHubQuota, only ONE gh command ran", raised == 3 and calls == 1))
+    globals()["_gh_cmd"], globals()["_quota_reset_local"] = saved_cmd, saved_reset
+    globals()["_QUOTA_STOP"] = None
+    asked = []
+    answers2 = [ValueError("bozuk"), [[]]]
+
+    def counting_gh(path, paginate=False):
+        asked.append(path)
+        a = answers2.pop(0) if answers2 else [[]]
+        if isinstance(a, Exception):
+            raise a
+        return a
+    globals()["_PR_SOURCE"], globals()["_gh_json"] = None, counting_gh
+    _PR_CACHE.clear()
+    plain = g("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "a plain merge subject").strip()
+    try:
+        no_pr_proven(root, plain)
+        first_raised = False
+    except ValueError:
+        first_raised = True
+    second, third = no_pr_proven(root, plain), no_pr_proven(root, plain)
+    cases.append(("S-132: a raised answer is not kept; a good answer is asked once per process (2 asks for 3 readings)",
+                  first_raised and second is True and third is True and len(asked) == 2))
     globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
     _PR_CACHE.clear()
     # (8) a row written straight onto main — invalid in both readings
