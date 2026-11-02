@@ -361,6 +361,40 @@ Gönderen metinde yazmıyor; içerikten Procurement tarafı CT oturumu olduğu �
 - MOD-0144 / MOD-0217: aynı kaydı tutmuyor; D39 sınırı var; rota, izin ve ekran çakışması yok. Üç kenar boşluğu: SERVICE / LEASE / LICENSE alım yönü; Supplier karşı taraf türü; madde kütüphanesi Blueprint'te MOD-0218. Öneri: D39 v1 için kalsın, MOD-0217'ye iki netleştirme, MOD-0144'e dokunulmasın.
 - Açık karar: Procurement adına "itiraz yok" demek kimin yetkisinde. Rapor kısmi inceleme olduğunu yazıyor.
 
+## Y-32 — Ali, tek mesaj: önceki parçaların yerine (2026-10-31; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+Madde 1, 7, 8 Y-26 ve Y-27 ile aynı. Özgün metin (madde 2–6, 9, 10):
+
+> 2) Meta-denetim teslimi (D99/1): kabul. Geçmiş okuması için ayrı TryForwardAsync; teslim teyidi yoksa veri dönmez, 503 SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE. Eski üye yeni üyeyi çağırıp sonucu yok saysın (iki yol ayrışmasın). Bilinen bedel: Platform yavaşsa geçmiş ekranı 5 sn'ye kadar bekler, kapalıysa açılmaz; dev ortamda iletici anahtarı boşsa geçmiş hep 503 olur (testler saplamayla koşar).
+> 3) FU27 D79 sonrası hâli (PR #314): teyit. Önceki üç düzeltmem (ayrı yazıcı tipi, iletici anahtarı şartı, 7 dilli Roller ekranı) işlenmiş, çelişki bulunmadı.
+> 4) Tag rol adları (D97/3): TagReader, TagAssigner, TagTaxonomyManager uygun. Kodda ve main'deki paketlerde çakışma yok.
+> 5) Rol adları (D103): terim seçiminize ("Manager" tek terim: fr Gestionnaire, es Gestor, zh 经理, ru Менеджер) itirazım yok. ar/ru/zh için anadil kontrolü yapılmadı (düşük güven). Dosyaların kod diliminde yazılması kabul.
+> 6) Rol atama denetim borcu (D80/2 b): dar yol + B ayrı ek; yetim kayıt "deneme" (önce deneme kaydı, sonra sonuç satırı; sonuç yoksa "sonuçlanmadı" okunur).
+> FU27 DL-5 içinde: muafiyet yetkisini verme/alma ayrı, önce-yaz denetimli komutla yapılır; genel rol/izin komutları bu rol ve iki anahtar için reddeder; K-W5 geçmiş yoluna eklenir.
+> Dört ortak komutun (AssignRole, RevokeRole, AssignPermission, RevokePermission) kayıt-önce-yaz geçişi (B) ayrı bir MOD-0018 eki; kimlik verify_module_id.py ön kontrolüyle, kendi incelemesiyle. B'nin "18→16, 11→9" sayıları yalnız izin komutlarının yeni yazıcısı kabul edilmiş bir ize bağlanırsa doğru; CreateRole/UpdateRole/DeleteRole aynı yazıcıyı kullandığı için ayrı ekte birlikte ele alınsın. Revoke'ta fail-closed mi acil kaldırma önceliği mi kararı ayrı ekte verilecek.
+> Y-19 şartı bu karara göre güncellenir: DL-5 kodu için şart, muafiyet adımının korunması; kalan RBAC borcu ayrı ekin konusu.
+> 8) MOD-0262-FU01 Auth tarafı: MDM servisi için istemci kaydı ve hedef kitle; yeni kullanıcı izni yok. Paket metnini Auth kulesi yazacak, tahmini 3 Kasım (ölçülmedi).
+> 9) MVP-6 sorusu (merkezi denetim ayrıntı alanı): Platform/BuildingBlocks sahibi Beste; karar vermiyorum, ona sorun.
+> 10) MOD-0144 / MOD-0217 (Procurement): Procurement adına teyit veremem. Onay Procurement sahibinde; sorunuzu oraya yöneltin.
+
+## Y-33 — Ali, K-W8, K-W9, AGR, FU29 (2026-10-31; K1 aktardı)
+
+> 1. K-W8: Mevcut auth.users.assign-role izniyle çalışsın; yeni anahtar yok. İki auth.payment-sod-waivers anahtarı role ilk vermede bağlanır. Şart: bir kişi bu yetkiyi kendine verebiliyor mu testi FU27'ye yazılsın; Auth kule bunu kodda doğrulayacak.
+> 2. K-W9: (a) — komut başarılı döner, satır "sonuçlanmadı" okunur.
+> 3. RCS-001 §3 CTR → AGR: Siz hazırlayın; benim yazılı onayımla gider. Sahiplik değişmez, satırı ben değiştirmiyorum.
+> MOD-0018-FU29 (dört ortak komut + Create/Update/DeleteRole): kimlik açmadan önce bana yazın; açma kararı benim.
+
+## Y-34 — Ali, K-W9 (b) (2026-10-31; K1 aktardı)
+
+> K-W9: (b) seçildi — iş yazımı ve sonuç satırı aynı işlemde yazılır, hata olursa ikisi de geri alınır. Önceki "(a) başarılı döner" cevabım geri alındı; kural sahibi benim, K2 kararım (2 Ekim) geçerli.
+> Rol depolarında tek işlemin yapılabilirliğini ölçün. Mümkün değilse kendiniz (a) ya da (c)'ye geçmeyin: aynı işlem içinde outbox gibi K2'nin kabul ettiği yolu da yazıp bana dönün. (a) ve (c) K2'ye uymuyor.
+> FU27 ve Codex ENGEL'i bu karara göre güncellensin.
+
+## Y-35 — Ali, FU27 ekleri (2026-10-31; K1 aktardı)
+
+> FU27 ekleri onaylandı: (1) unresolved-attempts ucu, (2) yetki geçmişi ucu + Roller ekranında salt-okunur bölüm, (3) belirsiz commit kuralı (503 / 409). Kapsam büyümesini kabul ediyorum; yeni izin anahtarı ve yeni kural dosyası eklenmesin.
+> RCS-001 §3 CTR → AGR satırı için önceki mesajınızdaki metin bana ulaşmadı. Lütfen değişecek satırı (eski → yeni) ve gerekçeyi bir mesajda, tek başına gönderin. Metni görmeden yazılı onay vermem.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -411,3 +445,7 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-28 (FU27 §14.2 rol adları düzeltmeli teyit; D80/2 (b) not metni istendi) | FU27 §14.2 | D103 |
 | Y-29 (#314 sırası; XMC-001 dosya; aday modu sınırları; AGR Ali'ye; MOD-0289 PR) | öneri dosyası; RCS-001; MOD-0289 | D104 |
 | Y-30 (Procurement CT raporu: 1.3.0 tarihleri, MOD-0144 / MOD-0217 sınırı) | MOD-0217; MOD-0119; MOD-0289 | D104/6 |
+| Y-32 (FU27 teyidi, D99/1, D80/2 (b) daraltması, Tag adları, MOD-0144 yönlendirmesi) | FU27; FU28; D104/6 | D106 |
+| Y-33 (K-W8, K-W9, AGR hazırlığı, FU29 kararı) | FU27; RCS-001 | D107 |
+| Y-34 (K-W9 (b), aynı işlem; D107/2 geri alındı) | FU27 | D109 |
+| Y-35 (FU27 ekleri onayı; AGR metni yeniden istendi) | FU27; RCS-001 | D113 |
