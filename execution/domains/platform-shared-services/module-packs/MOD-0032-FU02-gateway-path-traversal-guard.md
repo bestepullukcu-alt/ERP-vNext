@@ -7,10 +7,10 @@ shell: none
 golden_reference: none
 entity_base: none
 status: ready-for-dev
-owner: auth-owner
+owner: auth-owner (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi)
 branch: chore/ct/auth-ct-01
 started: 2026-11-02
-target: TBD
+target: 2026-11-09
 form_field_count: 0
 parent: MOD-0032
 ---
@@ -28,6 +28,12 @@ parent: MOD-0032
 > kulede** ve rol atama ekinden (MOD-0018-FU29) **önce** açılmasıdır. **Onay değildir.** Kapsamı, hata kodunu ve açık
 > kararları onaylamaz.
 >
+> **Sahiplik kararı (CT · Yetki sohbeti, doğrudan, 2026-11-02):** Sahip bu kulede "Evet, ben, 11-09" dedi. Buna göre paketin
+> sahibi ve bu işte MOD-0032 (ağ geçidi) karar sahibi MOD-0018 (Auth) sahibidir; hedef tarih 2026-11-09'dur. Künyedeki
+> `owner` ve `target` bu sözden yazıldı ve Açık kararlar (j) bu sözle kapandı. Paket boyunca "Sahip (MOD-0018 sahibi; bu işte
+> MOD-0032 karar sahibi)" bu kişiyi anlatır. Bu söz sahipliği ve tarihi belirler. **Onay değildir:** kapsamı, hata kodunu ve
+> öteki açık kararları onaylamaz.
+>
 > **DCP-002 kimlik notu.** Ön kontrol paket yazılmadan hemen önce yeniden koşuldu (2026-11-02, HEAD `6f169f677`):
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0032-FU02 --name "Gateway Path Traversal Guard" --parent MOD-0032`
 > → `OK  MOD-0032-FU02: proven against Blueprint/registry.` (çıkış 0). CT'nin `--parent` olmadan koştuğu sonuç da OK'ydi
@@ -35,7 +41,12 @@ parent: MOD-0032
 > (`execution/registries/module-id-registry.md`) `MOD-0032-FU02` satırı **yok**. Ana modülün satırı `:125`'tedir. `:126`'da
 > `MOD-0032-FU1` "Frontend Direct-service Fallback Removal" var (`[Non-executable]`). Bu başka bir iştir ve iki basamaklı FU
 > numaralarıyla aynı biçimde yazılmamıştır. Kayıt satırı bu görevin izinli dosyası dışındadır ve ayrı bir değişiklikle yazılır
-> (Ready-for-dev Checklist, Açık kararlar (m)). `--discover` bu oturumda koşulmadı.
+> (Ready-for-dev Checklist, Açık kararlar (m)).
+>
+> **Keşif (`--discover`):** CT 2026-11-02'de `python3 .antigravity/scripts/verify_module_id.py . --discover "gateway path traversal"`
+> koştu (çıkış 3). Bulgular: blueprint 0 · sor 0 · registry 0 · paket 0 · gateway 0 · görev 1. Tek görev bulgusu
+> `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` Q395 satırıdır (ağ geçidinde zaman aşımı yok). Bu satır yol aşmayla
+> ilgisizdir ve bu paketin mükerreri değildir (Açık kararlar (g)). Bu yazar keşfi yeniden koşmadı; sonuç CT iletisindendir.
 >
 > **Golden Reference kararı.** Bu iş ağ geçidi ara katmanıdır. Yeni sayfa, DataTable, varlık ya da kalıcı kayıt yoktur. Bu
 > yüzden `shell: none`, `golden_reference: none`, `entity_base: none`, `form_field_count: 0` bilinçli seçildi. `data_mode`
@@ -43,10 +54,14 @@ parent: MOD-0032
 >
 > **Ölçüm tabanı.** Aksi yazılmadıkça her `dosya:satır`, kule dalı `chore/ct/auth-ct-01` @ `6f169f677` üzerinde numaralı
 > okumayla alındı. Bu commit `origin/main` `4099e3ad1`'i birleştiriyor. Yol aşma ölçümü CT'nindir (kanıt:
-> `docs/records/audits/2026-11/mod-0032-fu02-gateway-traversal-measure-2026-11-02.md`).
+> `docs/records/audits/2026-11/mod-0032-fu02-gateway-traversal-measure-2026-11-02.md`). Bu revizyonun yeni okumaları
+> (inceleme bulgularını kapatan) @`6c3f1c3d0`'dadır. `git diff --stat 6f169f677 6c3f1c3d0 -- gateway services scripts` boştur;
+> yani kod iki commit'te aynıdır.
 >
 > **Durum notu (2026-11-02):** Sahip "Evet, incelemeye gönder" dedi; `ready-for-dev` yalnız bağımsız inceleme ZIP'i
-> içindir. Onay değildir, kod izni vermez; kod için CT-APR-01 onay satırı gerekir.
+> içindir. Onay değildir, kod izni vermez; kod için CT-APR-01 onay satırı gerekir. İlk bağımsız inceleme (@`6c3f1c3d0`)
+> UYGUN DEĞİL dedi (13 bulgu, `docs/records/reviews/MOD-0032-FU02/2026-11-02-6c3f1c3d0.md`). Bu revizyon on üç bulguyu
+> kapatır ve yeniden incelemeye gider.
 
 ## Module Summary
 
@@ -71,7 +86,7 @@ koşar. İsteğin ham hedefini (`IHttpRequestFeature.RawTarget`) okur ve yalnız
 yinelemeli olarak çözer. Şu durumlardan biri varsa istek 400 ve sabit bir hata koduyla durur:
 
 - herhangi bir aşamada yol kesimlerinden biri `.` ya da `..` ise;
-- son turdan sonra yolda `%2e`, `%2f` ya da `%5c` (büyük / küçük harf fark etmez) kalıyorsa;
+- son turdan sonra çözüm yakınsamadıysa, yani bir tur daha dizeyi değiştirecekse (yolda geçerli bir `%XX` dizisi kalmışsa);
 - yolda ters bölü (`\`) varsa.
 
 Sorgu dizesine bakılmaz. Sorgu dizesinde `..` meşrudur ve isteği geçirmeye devam eder.
@@ -101,8 +116,9 @@ kullanıcıya gösterilecek metin yoktur, yalnız makinenin okuyacağı hata kod
 - `%00`, aşırı uzun UTF-8 (`%c0%ae`) ve tam genişlikte nokta gibi biçimler için **yeni ret kuralı**. Bu biçimler tablo
   testine "rota önekinden çıkmaz" iddiasıyla girer ama ret kuralı eklenmez (Açık kararlar (n)).
 
-**Sahiplik:** Ağ geçidi MOD-0032'dir. Paketi CT · Yetki kulesi açtı (sahip kararı, başlık). `owner: auth-owner` geçici
-yazıldı. Doğru sahip onaydan önce kesinleşir (Açık kararlar (j)).
+**Sahiplik:** Ağ geçidi MOD-0032'dir. Paketi CT · Yetki kulesi açtı (sahip kararı, başlık). Paketin sahibi ve bu işte
+MOD-0032 karar sahibi MOD-0018 (Auth) sahibidir; hedef 2026-11-09 (sahip, 2026-11-02, "Evet, ben, 11-09"; başlıktaki
+sahiplik kararı, Açık kararlar (j) kapandı).
 
 ## Owned Objects
 
@@ -111,7 +127,7 @@ yazıldı. Doğru sahip onaydan önce kesinleşir (Açık kararlar (j)).
 | Ara katman | `PathTraversalGuardMiddleware` (`gateway/Diten.ApiGateway/Middleware/`) | yeni |
 | Saf karar yardımcısı | `GatewayPathInspector` — `Inspect(string rawTarget)` → (izin / ret, ret nedeni, yapılan tur sayısı). Durum tutmaz, G/Ç yapmaz | yeni |
 | Sabit | `GatewayPathInspector.MaxDecodeRounds` (öneri `3`; Açık kararlar (c)) | yeni |
-| Ret nedeni (iç, günlük için) | `DotSegment`, `ResidualEncodedSeparator`, `Backslash` | yeni — kullanıcıya gösterilmez, cevaba yazılmaz |
+| Ret nedeni (iç, günlük için) | `DotSegment`, `NotConverged`, `Backslash` | yeni — kullanıcıya gösterilmez, cevaba yazılmaz |
 | Hata kodu | `GATEWAY_PATH_REJECTED` (400) — öneri, Açık kararlar (a) | yeni |
 | Kayıt satırı | `Program.cs`'te `app.UseMiddleware<PathTraversalGuardMiddleware>();` | yeni satır |
 | Test konağı | `GatewayKestrelProgramHost` — gerçek `Program.cs`, gerçek Kestrel, kayıt tutan Kestrel servis yerine geçeni | yeni (yalnız test) |
@@ -132,7 +148,9 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
 - `gateway/Diten.ApiGateway/Middleware/PathTraversalGuardMiddleware.cs` — (yeni). `RawTarget`'i okur, yardımcıyı çağırır,
   retteyse 400 cevabını yazar ve tek bir `Warning` günlük satırı bırakır. Retteyse `next` çağrılmaz.
 - `gateway/Diten.ApiGateway/Program.cs` — tek satır: `app.UseMiddleware<PathTraversalGuardMiddleware>();`. Öneri yeri
-  `UseSerilogRequestLogging` bloğundan (`:130-148`) hemen sonra ve metrik bloğundan (`:150-154`) önce. Böylece sağlık
+  `UseSerilogRequestLogging` bloğundan (`:130-148`) hemen sonra ve metrik bloğundan (`:150-154`) önce. Satır koşullu metrik
+  bloğunun (`if (observabilityOptions.Metrics.Enabled)`) **içine girmez**; girerse metrik kapalı ortamda koruma da kapanır
+  (Açık kararlar (h), AC-6 ölçer). Böylece sağlık
   (`:156-171`), metrik, çerezden başlığa aktarım (`:173-183`), `UseAuthentication` (`:185`), `TenantResolutionMiddleware`
   (`:186`), `UseAuthorization` (`:187`) ve `UseOcelot` (`:189`) korumadan sonra gelir (Açık kararlar (b), (h)).
 - `gateway/Diten.ApiGateway.Tests/GatewayKestrelProgramHost.cs` — (yeni). Ağ geçidinin kendi giriş noktasını
@@ -170,10 +188,10 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
 | Ocelot + gönderilen `ocelot.json` | 347 rota; 163'ünün üst yolu `{everything}` ile bitiyor; `/api/internal` üst ya da alt rotası yok; `GlobalConfiguration` yalnız `BaseUrl` taşıyor; yalnız iki rotada `AuthenticationOptions` var (`/api/v1/uploads`, `/api/v1/uploads/{everything}`); bir `{everything}` rotasında üst ve alt önek farklı (`/api/v1/platform/workflows/instances/{everything}` → `/api/v1/workflow/instances/{everything}`); GET taşımayan iki `{everything}` rotası var (`/api/v1/notifications/{everything}`, `/api/crm/visit-content/{everything}`). Ölçüm: dosyanın JSON okuması, @`6f169f677` | Tablo testi rota listesini test anında dosyadan okur. Her rota **kendi alt önekiyle** sınanır. Sayı koda gömülmez |
 | `Program.cs` boru hattı | `UseCors` (`:128`) → `CorrelationIdMiddleware` (`:129`) → `UseSerilogRequestLogging` (`:130-148`) → metrik (`:150-154`, koşullu) → sağlık (`:156-171`) → çerez → başlık (`:173-183`) → `UseAuthentication` (`:185`) → `TenantResolutionMiddleware` (`:186`) → `UseAuthorization` (`:187`) → `UseOcelot` (`:189`). Yol aşma denetimi yok. `grep RawTarget` `Middleware/` ve `Authentication/` altında eşleşme vermedi | Kayıt yeri Repo Scope'ta |
 | Test konağı deseni | `GatewayProgramHost` gerçek `Program.cs`'i `TestServer` ile açıyor (`GatewayPipelineCorrelationTests.cs:62-158`). `Mod0290Fu04ProductMasterTraversalTests` gerçek Kestrel ve ham soket kullanıyor ama **kendi** konağını kuruyor: `Program.cs` yok, yalnız Ocelot var (`:76-102`) | Yeni konak iki deseni birleştirir. Sabotaj kanıtı ancak `Program.cs`'teki kaydı ölçen testle verilebilir |
-| `TenantResolutionMiddleware` | Yolu `context.Request.Path` ile sınıflıyor (`:35`, `:45`, `:73`, `:87`, `:93`, `:99`, `:161`, `:169`, `:180`, `:215`, `:229`). Kimliksiz bir istek kiracı yolunda 403 alabilir (`:229-234`). Kod okuması, koşu değil | Tablo testi ve meşru yol testi, isteği bugün `TenantResolutionMiddleware`'in geçirdiği biçimde gönderir: testte basılan geçerli `tenant_user` belirteci ve test başına rastgele kiracı. Biçim DL-1 başında ölçülür (Implementation Notes "Ölçülmeyenler"). Kimliksiz istek bu durumda zaten 403 alır; o zaman korumanın sabotaj kanıtı bir şey ölçmez |
-| `GatewayJwtAuthenticationHandler` | İmzayı `JwtSettings:Secret` ile, `Issuer` ve `Audience`'ı yapılandırmadan doğruluyor (`GatewayJwtAuthenticationHandler.cs:34-43`). Mevcut test konağı rastgele bir sır geçiriyor (`GatewayPipelineCorrelationTests.cs:104-110`) | Test belirteci bu sırla basılır. Üretim kodunda sabit kiracı ya da sır yoktur |
+| `TenantResolutionMiddleware` | Yolu `context.Request.Path` ile sınıflıyor (`:35`, `:45`, `:73`, `:87`, `:93`, `:99`, `:161`, `:169`, `:180`, `:215`, `:229`). `OPTIONS` her yolda kiracı çözümünü atlıyor (`:35`). **Belirteçsiz** istek kiracı yolunda 400 "Missing Tenant" alır (`:213-226`); bu dal `SetPasswordPublicEndpointGuardTests.cs:52-59`'da Production ortamında ölçülüyor. Development ortamında `TenantResolution:DevBypassEnabled` açıksa (`appsettings.Development.json:10-11`) eksik kiracının yerine sahte kiracı konur (`:204-211`) ve istek geçer; korunan Ocelot rotasında cevap o zaman Ocelot'un 401'idir (çerçeve bilgisi, ölçülmedi). `tenant_user` belirteci `/api/admin` ve `/api/platform` öneklerinde (kiracı kapsamlı örgüt yolları hariç, `:457-481`) 403 "Forbidden Actor" alır (`:169-173`). Kiracı çözümünün ret gövdeleri `title`, `status`, `detail`, `traceId` taşır, **`code` taşımaz** (`:551-568`). Kod okuması + mevcut test | Tablo testi ve meşru yol testi, isteği bugün `TenantResolutionMiddleware`'in geçirdiği biçimde gönderir: testte basılan geçerli `tenant_user` belirteci ve test başına rastgele kiracı. Biçim DL-1 başında ölçülür (Implementation Notes "Ölçülmeyenler"). Kiracı çözümü de 400 dönebildiği için korumanın ölçütleri durum koduna değil, gövdedeki `code: GATEWAY_PATH_REJECTED` değerine bakar (AC-5) |
+| `GatewayJwtAuthenticationHandler` | `Issuer` ve `Audience`'ı yapılandırmadan okuyup doğruluyor (`ValidateIssuer = true`, `ValidateAudience = true`); imza anahtarları `JwtSecretRotationResolver.GetValidationKeys()`'ten geliyor (`GatewayJwtAuthenticationHandler.cs:33-46`). Çözücü `JwtSettings:Secret` ve `JwtSettings:PreviousSecrets` değerlerinden anahtar kuruyor (`services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtSecretRotationResolver.cs:27-45`). Development değerleri `Issuer: diten-auth-service`, `Audience: diten-erp` (`appsettings.Development.json:54-55`). Mevcut test konağı Development ortamında açılıyor ve rastgele bir sır geçiriyor (`GatewayPipelineCorrelationTests.cs:104-110`). Okuma @`6c3f1c3d0` | Test belirteci bu sırla, bu `iss` ve `aud` değerleriyle basılır. Üretim kodunda sabit kiracı ya da sır yoktur |
 | Kayıt satırı | `MOD-0032-FU02` satırı yok | Ready-for-dev Checklist |
-| Onay kapısı (CT-APR-01 / CT-APR-02) | Paket `ready-for-dev` (yalnız inceleme için); inceleme ve onay satırı yok | Ready-for-dev Checklist |
+| Onay kapısı (CT-APR-01 / CT-APR-02) | Paket `ready-for-dev` (yalnız inceleme için). İlk inceleme 2026-11-02 UYGUN DEĞİL (13 bulgu); bu revizyon onları kapatır. Onay satırı yok | Ready-for-dev Checklist |
 
 ## Runtime Constraints
 
@@ -186,19 +204,31 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
   cevaba bakarak belirtecinin geçerli olup olmadığını öğrenemez.
 - **Çözüm kuralı (`GatewayPathInspector`):**
   1. Girdi `RawTarget`'tir. Mutlak biçimli hedefte (`GET http://host/path HTTP/1.1`) yol kısmı alınır. Yıldız biçimli
-     hedefe (`OPTIONS *`) dokunulmaz.
+     hedefe (`OPTIONS *`) dokunulmaz: izin. Yetki biçimli hedefte (`CONNECT host:443 HTTP/1.1`) yol kısmı yoktur;
+     yardımcı ona da dokunmaz: izin. Yolu boş mutlak hedef (`http://host`) de izin alır. Gerekçe: denetlenecek yol yoksa
+     yol aşma da yoktur; isteğin rotaya eşleşip eşleşmediği Ocelot'un işidir. `ocelot.json`'da `CONNECT` taşıyan rota yok
+     (JSON okuması @`6c3f1c3d0`: 347 rotanın hepsi `UpstreamHttpMethod` taşıyor; yöntemler GET, POST, PUT, PATCH, DELETE,
+     OPTIONS). Kestrel'in yetki biçimli hedefi kabul edip `RawTarget`'e nasıl koyduğu ölçülmedi (Implementation Notes
+     "Ölçülmeyenler").
   2. Yol, ilk `?`'te sorgudan ayrılır. Sorguya hiç bakılmaz.
   3. Aşama 0 ham yoldur. Sonraki her tur, yalnız geçerli `%XX` dizilerini çözer (`+` boşluk sayılmaz). En çok
-     `MaxDecodeRounds` tur yapılır. Dize değişmezse turlar erken biter.
+     `MaxDecodeRounds` tur yapılır. Dize değişmezse turlar erken biter (yakınsadı).
   4. Her aşamada yol hem `/` hem `\` ile kesimlere bölünür. Kesimlerden biri tam olarak `.` ya da `..` ise sonuç ret olur
      (`DotSegment`).
-  5. Son aşamadan sonra yolda `%2e`, `%2f` ya da `%5c` (büyük / küçük harf fark etmez) kalıyorsa sonuç ret olur
-     (`ResidualEncodedSeparator`). Bu kural, tur sınırından derin kodlamayı yakalar.
+  5. Son turdan sonra yolda hâlâ geçerli bir `%XX` dizisi varsa, yani bir çözüm turu daha dizeyi değiştirecekse (çözüm
+     yakınsamadıysa), sonuç ret olur (`NotConverged`). Bu kural kat sayısından bağımsızdır: tur sınırının ötesindeki her
+     kodlama katmanı en az bir geçerli `%XX` (`%25…`) bırakır. Eski taslaktaki "son turdan sonra `%2e`, `%2f`, `%5c` kalıntısı"
+     kuralı bu iddiayı taşıyamıyordu: yalnız sınırın bir fazlası katı yakalıyordu. Beş kat `%252525252e` üç turdan sonra
+     `%252e` olarak kalır ve `%2e` içermez (inceleme bulgusu F-2). Yakınsama kuralının bedeli şudur: üç turdan derin
+     kodlanmış **meşru** bir karakter de reddedilir (ör. dört kat kodlanmış `A`, `%25252541`). Böyle bir meşru istemci
+     bilinmiyor (ölçülmedi). Bu bedel bilinçlidir ve AC-7'de bir satırla gösterilir.
   6. Herhangi bir aşamada yolda `\` varsa sonuç ret olur (`Backslash`).
-  7. Geçersiz `%` dizileri (ör. `%zz`, sondaki tek `%`) olduğu gibi bırakılır. Bunlar tek başına ret nedeni değildir.
+  7. Geçersiz `%` dizileri (ör. `%zz`, sondaki tek `%`, `100%.pdf`) olduğu gibi bırakılır. Bunlar dizeyi değiştirmez; bu
+     yüzden tek başına ret nedeni değildir ve 5. kuralı da tetiklemez.
 - **Neden tur sınırı yeterli:** Bugün yol üzerinde iki çözücü var: ağ geçidi (Ocelot) ve servisin Kestrel'i (ölçüm, Module
-  Summary). Öneri sınırı `3`, bu zincirden bir tur fazladır. Daha derin kodlama 5. kurala takılır. Bu gerekçe yeni bir çözücü
-  eklenirse (ör. servis içinde ikinci bir çözüm) yeniden ölçülür.
+  Summary). Öneri sınırı `3`, bu zincirden bir tur fazladır. Sınırdan derin her kodlama 5. kurala (yakınsama) takılır; bunu
+  AC-2'deki dört ve beş kat satırları ile AC-7 ölçer. Bu gerekçe yeni bir çözücü eklenirse (ör. servis içinde ikinci bir
+  çözüm) yeniden ölçülür.
 - **Sınırlı iş:** Her tur dizeyi kısaltır ya da değiştirmez. Döngü sabit sınırla biter. Uzunluk sınırı Kestrel'indir
   (`MaxRequestHeadersTotalSize = 64 KB`, `Program.cs:38-41`; istek satırı sınırı Kestrel varsayılanı). Koruma yeni bir
   uzunluk sınırı koymaz.
@@ -207,13 +237,32 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
   bugünkü deseniyle `WriteAsJsonAsync`'e geçirilir (`TenantResolutionMiddleware.cs:551-568`). Koruma
   `CorrelationIdMiddleware`'den sonra koştuğu için cevap `X-Correlation-Id` başlığını taşır. Biçim Açık kararlar (a) ve
   (i)'ye bağlıdır.
+- **`traceId` kaynağı:** `EdgeCorrelation.CorrelationIdOf(context)` (`gateway/Diten.ApiGateway/Observability/EdgeCorrelation.cs:24-25`).
+  Bu, `CorrelationIdMiddleware`'in ürettiği ve cevabın `X-Correlation-Id` başlığına yazdığı değerdir
+  (`services/Diten.Platform.Common/src/Diten.Platform.Common/Observability/CorrelationIdMiddleware.cs:29-39`). Ağ geçidi
+  arayanın imzasız `X-Correlation-Id` değerini benimsemez (`:50-75`; yalnız kendi imzasını taşıyan değeri benimser,
+  `:62-70`). `context.TraceIdentifier` **kullanılmaz**: Ocelot'un `RequestId` ara katmanı oraya arayanın `RequestId`
+  başlığını denetimsiz yazar (`EdgeCorrelation.cs:19-23`; istek günlüğü de aynı nedenle `CorrelationIdOf` kullanır,
+  `Program.cs:142-143`). Koruma bugün Ocelot'tan önce koştuğu için `TraceIdentifier` o anda üretilen değeri taşır
+  (`CorrelationIdMiddleware.cs:38`); kaynak yine de `CorrelationIdOf`'a sabitlenir, çünkü kayıt yeri değişirse
+  `TraceIdentifier` arayanın değerine dönebilir. `Activity.Current.TraceId` seçilmez: o değer cevap başlığıyla eşleşmez ve
+  arayan ret cevabını günlükteki `CorrelationId` ile ilişkilendiremez.
+- **`Response<T>` muafiyeti (AGENTS.md §6, `AGENTS.md:135` "API Yanıt: `Response<T>` envelope + `CustomBaseController`"):**
+  Ret cevabı `Response<T>` zarfı değildir. Gerekçe: koruma bir ağ geçidi ara katmanıdır, bir servis ucu değildir.
+  `CustomBaseController`, MediatR ya da işleyici yoktur; cevap Ocelot'tan ve her servisten önce yazılır. Ağ geçidinin bugünkü
+  bütün ret cevapları da zarfsız `application/problem+json`'dur (`TenantResolutionMiddleware.cs:551-593`). Muafiyet yalnız bu
+  ret cevabı içindir; servislerin cevapları değişmez.
 - **Dil:** Kullanıcıya görünen metin olmadığı için resx yoktur. İstemci kodu ekranda göstermek isterse çeviriyi kendisi
   yapar. Bugün böyle bir istemci yoktur.
 - **Ayar anahtarı yok:** Korumayı kapatan bir yapılandırma anahtarı eklenmez (Açık kararlar (k)). Koruma her ortamda açıktır.
-- **Günlük:** Her rette bir `Warning` satırı yazılır. Alanlar: `Reason` (iç ret nedeni), `Method`, `RawTargetLength`,
-  `DecodeRounds`. `CorrelationId` `LogContext` üzerinden gelir. Ham hedef ve çözülmüş yol **yazılmaz**, çünkü yolda kimlik,
-  e-posta ya da ad olabilir (logging-observability "PII"). Bu satır Açık kararlar (d)'ye bağlıdır. `Error` düzeyi
-  kullanılmaz, çünkü ret beklenen bir saldırı gürültüsüdür.
+- **Günlük:** Her rette korumanın kendi `Warning` satırı yazılır (`SourceContext`:
+  `Diten.ApiGateway.Middleware.PathTraversalGuardMiddleware`). Alanlar: `Reason` (iç ret nedeni), `Method`,
+  `RawTargetLength`, `DecodeRounds`. `CorrelationId` `LogContext` üzerinden gelir. Ham hedef ve çözülmüş yol **bu satıra
+  yazılmaz**, çünkü yolda kimlik, e-posta ya da ad olabilir (logging-observability "PII"). Bu satır Açık kararlar (d)'ye
+  bağlıdır. `Error` düzeyi kullanılmaz, çünkü ret beklenen bir saldırı gürültüsüdür. **Bilinen durum:** istek günlüğü
+  (`UseSerilogRequestLogging`, `Program.cs:130-148`) reddedilen istekte de satırını yazar ve o satır `RequestPath` alanını,
+  yani Kestrel'in bir kez çözdüğü `Request.Path`'i taşır (`Program.cs:144`). Bu paket o satırı değiştirmez (Açık kararlar
+  (d), Follow-up Items). Korumanın "ham hedef yazılmaz" iddiası yalnız kendi satırı içindir.
 
 ## Layout & Shell Contract
 
@@ -247,7 +296,7 @@ Form alanı yok. Doğrulanan şey isteğin hedefidir.
 | `RawTarget` yol kısmı | Evet (Kestrel her istekte koyar) | Runtime Constraints "Çözüm kuralı" 1–7. Ret → 400 `GATEWAY_PATH_REJECTED` | — | `RawTarget` boşsa ya da yoksa (Kestrel dışı sunucu, ör. `TestServer`) `Request.PathBase + Request.Path` değerinin `ToUriComponent()` biçimi denetlenir. Bu yedek yol bir kaçış kapısı değildir: aynı kurallar uygulanır. Kestrel'de `RawTarget`'in her zaman dolu olduğu DL-1 başında ölçülür |
 | Sorgu dizesi | Hayır | Denetlenmez. `..`, `%2e%2e%2f`, `\` sorguda meşrudur | — | — |
 | Çözüm tur sayısı | — | `1 ≤ tur ≤ MaxDecodeRounds` (öneri 3). Dize değişmezse erken biter | — | — |
-| Yöntem | — | Bütün yöntemlerde aynı kural (`OPTIONS` ön uçuş isteği dahil) | — | — |
+| Yöntem | — | Korumaya ulaşan bütün yöntemlerde aynı kural; ön uçuş olmayan `OPTIONS` dahil. **CORS ön uçuşu** (`OPTIONS` + `Origin` + `Access-Control-Request-Method`) korumaya ulaşmaz: `UseCors` (`Program.cs:128`) korumadan önce koşar ve ön uçuşu 204 ile bitirir. Bu çerçeve bilgisidir (ASP.NET Core `CorsMiddleware`), ölçülmedi; AC-15 ölçer. Ön uçuş Ocelot'a da ulaşmadığı için servise yol taşımaz | — | — |
 
 İlişkili kontroller: Kesim denetimi `/` ve `\` ile yapılır. `...`, `a..b`, `..foo`, `.well-known`, `report.v1.pdf` gibi
 kesimler `.` ya da `..`'ya eşit olmadığı için geçer.
@@ -259,21 +308,31 @@ kesimler `.` ya da `..`'ya eşit olmadığı için geçer.
     yerine geçene hiçbir istek ulaşmaz.
 - **Ham, tek, çift ve üç kat kodlanmış biçimler; karışık harf; `%2f` / `%5c` ayırıcı**
   - Expected: 400. Servise hiçbir istek ulaşmaz. Ret, rota önekinden bağımsızdır (tüm `{everything}` rotalarında aynı).
-- **Tur sınırından derin kodlama (dört kat `%2525252e%2525252e/`)**
-  - Expected: 400 (`ResidualEncodedSeparator`). Döngü sınırı aşılmaz.
+- **Tur sınırından derin kodlama (dört kat `%2525252e%2525252e/`, beş kat `%252525252e%252525252e/`)**
+  - Expected: 400 (`NotConverged`). Döngü sınırı aşılmaz. Kat sayısı arttıkça sonuç değişmez.
 - **Meşru yol (`report.v1.pdf`, `v1.2`, `...`, `a..b`, `100%25.pdf`, sorguda `..`)**
   - Expected: Bugünkü gibi geçer. Servis yerine geçen konak isteği rota öneki altında alır ve 200 döner. Sorgu bozulmadan
     ulaşır.
 - **Kimliksiz istek, korunan rotada yol aşma (`/api/v1/uploads/%252e%252e/x`)**
-  - Expected: 400 (korumasız tabanda 403 ya da 401; taban ölçülür). Koruma kimlik doğrulamadan önce koşar ve cevap belirtece
-    göre değişmez.
+  - Expected: 400 ve gövdede `code: GATEWAY_PATH_REJECTED`. Korumasız taban: kiracı çözümünden 400 "Missing Tenant"
+    (gövdede `code` yok; `TenantResolutionMiddleware.cs:213-226`), ya da Development'ta dev bypass açıksa Ocelot'tan 401.
+    Taban ölçülür. Durum kodu tek başına ayırt etmez (iki taraf da 400 olabilir); ayıran gövdedeki `code`'dur. Koruma kimlik
+    doğrulamadan önce koşar ve cevap belirtece göre değişmez.
 - **Kiracı çözümünün reddedeceği istek + yol aşma**
-  - Expected: Korumanın 400 gövdesi döner, `TenantResolutionMiddleware`'in gövdesi dönmez.
+  - Expected: Korumanın 400 gövdesi (`code: GATEWAY_PATH_REJECTED`) döner, `TenantResolutionMiddleware`'in gövdesi
+    (`title: "Invalid Tenant Header"`, `code` yok) dönmez.
 - **Sağlık ve metrik uçlarında yol aşma (`/health/%2e%2e/x`, `/metrics/%252e%252e/`)**
   - Expected: 400 (Açık kararlar (b) önerisi). Düz `/health`, `/health/live`, `/health/ready` ve `/metrics` bugünkü durum
     koduyla cevap verir.
 - **CORS ön uçuş isteği + yol aşma**
-  - Expected: 400. Koruma `UseCors`'tan sonra koştuğu için tarayıcı cevabı okuyabilir (Açık kararlar (h)).
+  - Expected: `UseCors` ön uçuşu korumadan önce 204 ile bitirir; servis yerine geçen konak hiçbir istek kaydetmez. Ret
+    yoktur, çünkü istek ne Ocelot'a ne servise ulaşır. Bu beklenti çerçeve bilgisidir, ölçülmedi (AC-15 ölçer).
+- **Ön uçuş olmayan `OPTIONS` ve çapraz kökenli `GET` + yol aşma**
+  - Expected: 400, `code: GATEWAY_PATH_REJECTED`. Koruma `UseCors`'tan sonra koştuğu için çapraz kökenli ret cevabı
+    `Access-Control-Allow-Origin` başlığını taşır ve tarayıcı kodu okuyabilir (Açık kararlar (h), AC-15).
+- **Metrik kapalı ortam + yol aşma**
+  - Expected: `Observability:Metrics:Enabled=false` iken de ölçülen istek 400 alır. Kayıt satırı koşullu metrik bloğunda
+    değildir (Açık kararlar (h), AC-6).
 - **Duplicate / Concurrency**
   - Expected: Uygulanmaz. Koruma durum tutmaz, aynı isteğin tekrarı aynı sonucu verir.
 - **Unauthorized actor**
@@ -318,14 +377,25 @@ Karar: Gateway **rota** değişikliği **gereksiz**. Ağ geçidi **kodu** deği�
   `ocelot.json`'dan okur. Üst yolu `{everything}` ile biten her rota sınanır ve okunan sayı test çıktısına yazılır. Sayı koda
   gömülmez; sıfırsa test başarısız olur. Her rota için rotanın üst öneki ile şu biçimler birleştirilir: ham `../`, `./`,
   `%2e%2e/`, `%2E%2e/`, `.%2e/`, `%2e%2e%2f`, `%2E%2E%2F`, `..%2f`, `..%5c`, `%5c..%5c`, `%252e%252e/`, `%252E%252e/`,
-  `%252e%252e%252f`, `%25252e%25252e/` (üç kat), `%2525252e%2525252e/` (dört kat, tur sınırının ötesi). Her biçimin ardına
+  `%252e%252e%252f`, `%25252e%25252e/` (üç kat), `%2525252e%2525252e/` (dört kat, tur sınırının ötesi),
+  `%252525252e%252525252e/` (beş kat; yakınsama kuralının kat sayısından bağımsız olduğunu ölçer). Her biçimin ardına
   `internal/x` eklenir. Yöntem, rota GET taşıyorsa GET'tir, taşımıyorsa rotanın listesindeki ilk yöntemdir. Her satır iki şeyi
-  ölçer: cevap 400 `GATEWAY_PATH_REJECTED`'dir ve servis yerine geçen konak, rotanın **alt** öneki dışında yönlendirilmiş
-  bir istek kaydetmemiştir (konak koruma varken hiç istek kaydetmez). Test adı
+  ölçer: cevap 400'dür ve gövdesi `code: GATEWAY_PATH_REJECTED` taşır; servis yerine geçen konak, rotanın **alt** öneki
+  dışında yönlendirilmiş bir istek kaydetmemiştir (konak koruma varken hiç istek kaydetmez). Durum koduna tek başına
+  bakılmaz, çünkü kiracı çözümü de 400 dönebilir. Kapsam notu: `/api/lookups/{everything}` rotası da bu tablodadır. Bu önek
+  kiracı çözümünün dışında tutulur (`TenantResolutionMiddleware.cs:430-436`) ve Platform servisine gider (Açık kararlar
+  (e)). Koruma varken bu önek üzerinden yol aşma, öteki rotalar gibi 400 alır. Test her satır için yöntemi, durum kodunu,
+  gövdedeki `code` değerini ve konağın kaydettiği yolu (yoksa "yok") test çıktısına yazar. Test adı
   `Mod0032Fu02PathTraversalGuardTests.Every_everything_route_refuses_every_traversal_form`. Sabotaj: kayıt satırı
-  çıkarılınca test kırmızıya döner (ham `../` satırları 400 yerine 404 alır, `%252e%252e/` satırları konakta rota dışına
-  ulaşır). Ara katman `RawTarget` yerine `Request.Path` okuyacak biçimde değiştirilince ham `../` ve `./` satırları 400 yerine
-  404 alır ve test kırmızıya döner.
+  çıkarılınca her satır kırmızıya döner, çünkü hiçbir cevap `code: GATEWAY_PATH_REJECTED` taşımaz. Korumasız davranış satıra
+  göre değişir ve test bunu tek tip saymaz: `./` satırları ağ geçidinin Kestrel'inde normalleşip rota içinde kalır ve
+  konaktan 200 alır; ham `../` satırları normalleşir ve rota eşleşmesine göre çoğunlukla 404 alır; `%252e%252e/` satırları
+  konakta rota dışına ulaşır (ölçüm, Module Summary); `/api/admin` ve `/api/platform` öneklerindeki satırlar (kiracı
+  kapsamlı örgüt yolları hariç, `TenantResolutionMiddleware.cs:457-481`) `tenant_user` belirteciyle kiracı çözümünde 403
+  "Forbidden Actor" alır (`:169-173`) ve servise hiç ulaşmaz. Bu yüzden sabotaj koşusunun test çıktısı rota başına taban
+  erişilebilirliği olarak teslim kaydına girer: hangi rota ve biçimde istek servise ulaştı, hangisinde ağ geçidinde durdu.
+  Ara katman `RawTarget` yerine `Request.Path` okuyacak biçimde değiştirilince ham `../` ve `./` satırları (ve Kestrel'in
+  normalleştirdiği tek kodlanmış nokta satırları) ret almaz ve test kırmızıya döner.
 - [ ] AC-3 (zorunlu) — **Meşru yollar geçmeye devam eder:** Gerçek konakta şu istekler servis yerine geçene rota öneki altında
   ulaşır ve konağın 200 cevabı istemciye döner: `report.v1.pdf`, `v1.2/items`, `...`, `a..b`, `..foo`, `.well-known`,
   `100%25.pdf`, `a%2Fb` (tek kodlanmış bölü) ve sorgu dizesi `?path=../../x&q=%2e%2e%2f`. Sorgu konağa değeri bozulmadan
@@ -336,19 +406,32 @@ Karar: Gateway **rota** değişikliği **gereksiz**. Ağ geçidi **kodu** deği�
   Bu beklenen davranıştır, çünkü test aşırı engellemeyi ölçer.
 - [ ] AC-4 (zorunlu) — **Ret cevabı yalnız koddur:** Ret cevabı 400'dür, `Content-Type` değeri `application/problem+json`'dur.
   Gövde tam olarak `status`, `code` ve `traceId` alanlarını taşır; `code` değeri `GATEWAY_PATH_REJECTED`'dir. `title` ve
-  `detail` alanları yoktur ve ret nedeni gövdede geçmez. Cevap `X-Correlation-Id` başlığını taşır. Test adı
-  `Mod0032Fu02PathTraversalGuardTests.The_refusal_carries_the_code_only`. Sabotaj: gövdeye bir `detail` metni ya da ret
-  nedeni eklenince, ya da `contentType` yerine `Response.ContentType` atanınca test kırmızıya döner. Kayıt satırı
-  çıkarılınca da kırmızıya döner.
-- [ ] AC-5 (zorunlu) — **Kimlik doğrulamadan ve kiracı çözümünden önce:** İki ölçüm yapılır. Birincisinde Ocelot'ta kimlik
-  isteyen tek `{everything}` rotası olan `/api/v1/uploads/{everything}` üzerinde belirteçsiz `/api/v1/uploads/%252e%252e/x`
-  isteği 400 `GATEWAY_PATH_REJECTED` alır. Korumasız tabanda bu istek kiracı çözümünden 403 ya da Ocelot'tan 401 alır;
-  hangisi olduğu tabanda ölçülür ve teslim kaydına yazılır. İkincisinde `TenantResolutionMiddleware`'in bugün reddettiği bir istek
-  yol aşmayla birlikte gönderilir. Öneri: yönetici yoluna `X-Tenant-Id` başlığıyla giden istek; bugün 400 "Invalid Tenant
-  Header" alıyor (`TenantResolutionMiddleware.cs:161-166`). Bu istek korumanın gövdesini alır, kiracı çözümünün gövdesini
-  almaz. Test adı `Mod0032Fu02PathTraversalGuardTests.The_guard_answers_before_tenant_resolution_and_route_authentication`.
-  Sabotaj: kayıt satırı `app.UseMiddleware<TenantResolutionMiddleware>();` satırından sonraya taşınınca ikinci ölçüm
-  kırmızıya döner. Kayıt satırı çıkarılınca iki ölçüm de kırmızıya döner.
+  `detail` alanları yoktur ve ret nedeni gövdede geçmez. Cevap `X-Correlation-Id` başlığını taşır ve gövdedeki `traceId`
+  bu başlığın değerine eşittir (kaynak `EdgeCorrelation.CorrelationIdOf`, Runtime Constraints). Arayanın değeri yansımaz:
+  istek rastgele, imzasız bir `X-Correlation-Id` işareti ve ayrı bir rastgele `RequestId` işareti taşır; iki işaret de ne
+  gövdede ne cevap başlıklarında geçer. Test adı `Mod0032Fu02PathTraversalGuardTests.The_refusal_carries_the_code_only`.
+  Sabotaj: gövdeye bir `detail` metni ya da ret nedeni eklenince, `contentType` yerine `Response.ContentType` atanınca, ya da
+  `traceId`'ye gelen `X-Correlation-Id` başlığı yazılınca test kırmızıya döner. Kayıt satırı çıkarılınca da kırmızıya döner.
+  `context.TraceIdentifier` kullanmak bugün kırmızı üretmez, çünkü koruma Ocelot'tan önce koşar ve o alan o anda üretilen
+  değeri taşır (`CorrelationIdMiddleware.cs:38`); bu yüzden kaynak kuralla sabitlenir ve bu değişiklik sabotaj kanıtı olarak
+  sunulmaz.
+- [ ] AC-5 (zorunlu) — **Kimlik doğrulamadan ve kiracı çözümünden önce:** İki ölçüm yapılır. İkisi de durum koduna değil,
+  gövdedeki `code` alanına bakar: kiracı çözümünün retleri de 400 dönebilir ve `code` alanı taşımaz, `title` taşır
+  (`TenantResolutionMiddleware.cs:551-568`). Birincisinde Ocelot'ta kimlik isteyen tek `{everything}` rotası olan
+  `/api/v1/uploads/{everything}` üzerinde belirteçsiz `/api/v1/uploads/%252e%252e/x` isteği 400 alır ve gövdesi
+  `code: GATEWAY_PATH_REJECTED` taşır. Korumasız tabanda bu istek iki cevaptan birini alır. Dev bypass kapalıysa kiracı
+  çözümünden 400 "Missing Tenant" alır (`TenantResolutionMiddleware.cs:213-226`; aynı dal
+  `SetPasswordPublicEndpointGuardTests.cs:52-59`'da ölçülüyor). Test konağı Development ortamında açılır ve
+  `TenantResolution:DevBypassEnabled` açıksa (`appsettings.Development.json:10-11`), istek sahte kiracıyla geçer ve Ocelot'un
+  kimlik denetiminden 401 alır (çerçeve bilgisi, ölçülmedi). Hangisi olduğu tabanda ölçülür ve teslim kaydına yazılır.
+  İkincisinde `TenantResolutionMiddleware`'in bugün reddettiği bir istek yol aşmayla birlikte gönderilir. Öneri: yönetici
+  yoluna `X-Tenant-Id` başlığıyla giden istek; bugün korumayla **aynı durum kodu** olan 400 "Invalid Tenant Header" alıyor
+  (`TenantResolutionMiddleware.cs:161-166`). Bu istek korumanın gövdesini (`code: GATEWAY_PATH_REJECTED`, `title` yok) alır,
+  kiracı çözümünün gövdesini almaz. Test adı
+  `Mod0032Fu02PathTraversalGuardTests.The_guard_answers_before_tenant_resolution_and_route_authentication`. Sabotaj: kayıt
+  satırı `app.UseMiddleware<TenantResolutionMiddleware>();` satırından sonraya taşınınca ikinci ölçüm kırmızıya döner (gövde
+  `title: "Invalid Tenant Header"` taşır, `code` taşımaz). Kayıt satırı çıkarılınca iki ölçüm de kırmızıya döner, çünkü iki
+  tabanın hiçbiri `code: GATEWAY_PATH_REJECTED` taşımaz.
 - [ ] AC-6 (zorunlu) — **Sağlık ve metrik uçları:** Açık kararlar (b) önerisi kabul edilirse `/health/%2e%2e/x`,
   `/health/live/%252e%252e/x`, `/health/ready/..%2fx` ve `/metrics/%252e%252e/x` istekleri 400 alır. Düz `/health`,
   `/health/live`, `/health/ready` ve `/metrics` istekleri korumasız tabandaki durum kodunu alır. Taban, aynı test konağında
@@ -356,27 +439,49 @@ Karar: Gateway **rota** değişikliği **gereksiz**. Ağ geçidi **kodu** deği�
   `Mod0032Fu02PathTraversalGuardTests.Health_and_metrics_paths_are_guarded_and_still_answer`. Sabotaj: kayıt satırı
   çıkarılınca yol aşan sağlık ve metrik satırları 400 almaz ve test kırmızıya döner. Not: kayıt satırını sağlık bloğunun
   altına taşımak bu testi kırmızıya çevirmez, çünkü sağlık ucu yalnız kalan yol boşken eşleşir; yol aşan istek sağlık ucuna
-  takılmadan korumaya ulaşır. Bu beklenen davranıştır ve sabotaj olarak sayılmaz. Karar (b) önerisinden farklı kapanırsa
-  bu ölçüt onaydan önce yeniden yazılır.
+  takılmadan korumaya ulaşır. Bu beklenen davranıştır ve sabotaj olarak sayılmaz. Aynı not metrik bloğu için de
+  geçerlidir: kayıt satırı metrik bloğunun (`Program.cs:150-154`) altına taşınırsa `/metrics/%252e%252e/x` satırının
+  sonucu, metrik sunucusunun yolu önek olarak mı yoksa tam eşleşmeyle mi yakaladığına bağlıdır ve bu ölçülmedi; bu taşıma
+  da sabotaj kanıtı olarak sunulmaz. Kayıt satırı koşullu metrik bloğunun içine girmez (Açık kararlar (h)). Bunu ölçmek
+  için test konağı ikinci kez `--Observability:Metrics:Enabled=false` ile açılır (`Program.cs:46-48` ayarı
+  `builder.Configuration`'dan okur; kod okuması). O konakta ölçülen istek
+  (`/api/product-master/%252e%252e/internal/v1/product-master/validate`) yine 400 alır ve gövdesi
+  `code: GATEWAY_PATH_REJECTED` taşır. Sabotaj: kayıt satırı `if (observabilityOptions.Metrics.Enabled)` bloğunun içine
+  taşınınca bu satır kırmızıya döner. Karar (b) önerisinden farklı kapanırsa bu ölçüt onaydan önce yeniden yazılır.
 - [ ] AC-7 (zorunlu) — **Her kuralın yalnız onun yakaladığı bir satırı var (birim):** Saf yardımcı için tablo testi şu
-  satırları içerir. Yalnız kesim kuralının yakaladığı satır `/a/%2e%2e/b`'dir. Yalnız kalıntı kuralının yakaladığı satır, tur
-  sınırının bir fazlası kat kodlanmış `..` kesimidir (öneri sınır 3 için dört kat). Yalnız ters bölü kuralının yakaladığı satır
-  noktasız `/a/b%5cc`'dir. Ayrıca mutlak biçimli hedef `http://h/api/x/%252e%252e/y` ret alır ve `OPTIONS *` geçer. Test
+  satırları içerir. Yalnız kesim kuralının yakaladığı satır `/a/%2e%2e/b`'dir. Yalnız yakınsama kuralının yakaladığı iki
+  satır vardır: tur sınırının bir fazlası kat kodlanmış `..` kesimi (öneri sınır 3 için dört kat, `/a/%2525252e%2525252e/b`)
+  ve beş kat kodlanmış `..` kesimi (`/a/%252525252e%252525252e/b`). Beş kat satırı, üç turdan sonra `%252e` kalan ve `%2e`
+  içermeyen biçimdir; yakınsama kuralının kat sayısından bağımsız olduğunu ölçer. Yalnız ters bölü kuralının yakaladığı
+  satır noktasız `/a/b%5cc`'dir. Bedel satırı: dört kat kodlanmış meşru `A` (`/a/%25252541`) ret alır (`NotConverged`;
+  Runtime Constraints 5. kural). Yakınsayan satırlar ret almaz: `100%25.pdf` ve geçersiz `%` dizisi `/a/%zz`. Ayrıca mutlak
+  biçimli hedef `http://h/api/x/%252e%252e/y` ret alır; `OPTIONS *`, yetki biçimli `h:443` ve yolu boş `http://h` geçer. Test
   adı `Mod0032Fu02GatewayPathInspectorTests.Each_rule_has_a_row_only_it_refuses`. Sabotaj: kesim kuralı kaldırılınca,
-  kalıntı kuralı kaldırılınca ya da ters bölü kuralı kaldırılınca o kurala ait satır kırmızıya döner. Teslim kaydında üç
+  yakınsama kuralı kaldırılınca ya da ters bölü kuralı kaldırılınca o kurala ait satır kırmızıya döner. Yakınsama kuralı
+  eski "`%2e` / `%2f` / `%5c` kalıntısı" kuralıyla değiştirilince beş kat satırı kırmızıya döner. Teslim kaydında bu dört
   sabotaj ayrı ayrı gösterilir.
 - [ ] AC-8 (zorunlu) — **Çözüm sınırlıdır:** Yardımcının sonucu yapılan tur sayısını taşır. Sayı hiçbir girdide
   `MaxDecodeRounds`'u geçmez. Girdiler arasında 8 KB uzunluğunda, `%25` katmanlarıyla şişirilmiş bir yol vardır. Değişmeyen
   bir yol bir turda biter. Test adı `Mod0032Fu02GatewayPathInspectorTests.Decoding_stops_at_the_round_cap`. Sabotaj: döngü
   sınırsız "değişmeyene kadar" biçimine çevrilince şişirilmiş satır sınırı aşar ve test kırmızıya döner.
-- [ ] AC-9 (zorunlu) — **Ret günlüğü ham hedefi yazmaz:** Gerçek konakta, günlük yakalayıcıyla, her ret tam bir `Warning`
-  satırı üretir. Satır `Reason`, `Method`, `RawTargetLength` ve `DecodeRounds` alanlarını taşır. Ne ileti metninde ne de
-  özelliklerde ham hedef ya da çözülmüş yol geçer: test, isteğe özgü bir işaret dizesini (ör. rastgele bir GUID kesimi)
-  arar ve bulamaz. Test adı `Mod0032Fu02PathTraversalGuardTests.The_refusal_log_holds_no_raw_target`. Sabotaj: günlük
-  satırına `RawTarget` eklenince test kırmızıya döner. Kayıt satırı çıkarılınca `Warning` satırı oluşmaz ve test yine
-  kırmızıya döner. Açık kararlar (d) farklı kapanırsa bu ölçüt onaydan önce yeniden yazılır.
-- [ ] AC-10 (zorunlu) — **Kapsam ve `ocelot.json`:** `git diff --name-only <taban>..HEAD` çıktısındaki her satır
-  `gateway/Diten.ApiGateway/` ya da `gateway/Diten.ApiGateway.Tests/` ile başlar. `git diff <taban>..HEAD -- gateway/Diten.ApiGateway/ocelot.json`
+- [ ] AC-9 (zorunlu) — **Korumanın ret satırı ham hedefi yazmaz:** Ölçüm yalnız korumanın kendi `Warning` satırına bakar:
+  `SourceContext` değeri `Diten.ApiGateway.Middleware.PathTraversalGuardMiddleware` olan olaylar. Gerçek konakta, günlük
+  yakalayıcıyla, her ret bu kaynaktan tam bir `Warning` satırı üretir. Satır `Reason`, `Method`, `RawTargetLength` ve
+  `DecodeRounds` alanlarını taşır. O satırın ne ileti metninde ne de özelliklerinde ham hedef ya da çözülmüş yol geçer: test,
+  isteğe özgü bir işaret dizesini (ör. rastgele bir GUID kesimi) bu satırda arar ve bulamaz. İstek günlüğünün satırı
+  (`UseSerilogRequestLogging`, `Program.cs:130-148`) ölçümün dışındadır: o satır reddedilen istekte de `RequestPath`
+  alanını yazar (`Program.cs:144`) ve işaret dizesi orada görünür. Bu bilinen durumdur ve bu paket onu değiştirmez (Açık
+  kararlar (d), Follow-up Items). Günlük yakalama yöntemi DL-1 başında seçilir (Implementation Notes "Ölçülmeyenler"). Test
+  adı `Mod0032Fu02PathTraversalGuardTests.The_refusal_log_holds_no_raw_target`. Sabotaj: korumanın satırına `RawTarget`
+  eklenince test kırmızıya döner. Kayıt satırı çıkarılınca bu kaynaktan `Warning` satırı oluşmaz ve test yine kırmızıya
+  döner. Açık kararlar (d) farklı kapanırsa bu ölçüt onaydan önce yeniden yazılır.
+- [ ] AC-10 (zorunlu) — **Kapsam ve `ocelot.json`:** Ölçülen şey **kod diff'idir**:
+  `git diff --name-only <taban>..HEAD -- . ':(exclude)docs/records/**' ':(exclude)execution/domains/platform-shared-services/module-packs/MOD-0032-FU02-gateway-path-traversal-guard.md'`.
+  Bu çıktıdaki her satır `gateway/Diten.ApiGateway/` ya da `gateway/Diten.ApiGateway.Tests/` ile başlar. Açık istisna
+  yalnız ikidir: teslim kaydı (`docs/records/**`) ve bu paket dosyası (Acceptance Criteria girişindeki "test adı değişirse
+  bu bölüm de değişir" kuralı). İki istisnanın yolları ayrıca `git diff --name-only <taban>..HEAD -- docs/records
+  <bu paket>` ile listelenir ve teslim kaydına yazılır. Bunların dışındaki her yol kırmızıdır; kayıt satırı (Açık
+  kararlar (m)) bu aralığa girmez, ayrı değişiklikle yazılır. `git diff <taban>..HEAD -- gateway/Diten.ApiGateway/ocelot.json`
   boştur. `gateway/Diten.ApiGateway/appsettings*.json` değişmez. `Mod0290Fu04ProductMasterTraversalTests.cs` değişmez.
   Komutlar ve çıktıları teslim kaydına yazılır.
 - [ ] AC-11 (zorunlu) — **Gerileme:** `dotnet test gateway/Diten.ApiGateway.Tests` tam koşulur. Önceden yeşil olan her test
@@ -386,30 +491,47 @@ Karar: Gateway **rota** değişikliği **gereksiz**. Ağ geçidi **kodu** deği�
   (`dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Release`) geçer.
 - [ ] AC-12 (zorunlu) — **Çalışan ağ geçidinde kanıt (E3):** `dev` ortamında 5000'de çalışan ağ geçidine
   `curl --path-as-is -s -w '%{http_code}' 'http://localhost:5000/api/product-master/%252e%252e/internal/v1/product-master/validate'`
-  gönderilir. Cevap 400'dür ve gövde `GATEWAY_PATH_REJECTED` taşır. MDM'nin (5059) günlüğünde bu istek görünmez. Aynı
-  oturumda `curl -s -o /dev/null -w '%{http_code}' http://localhost:5000/health` bugünkü durum kodunu verir. Bir meşru iş
-  isteği (ör. ürün listesi, oturum açmış kullanıcıyla) bugünkü gibi cevap verir. Komutlar, çıktılar ve ortamın adı teslim
-  kaydına yazılır. Sabotaj kanıtı bu maddede aranmaz: madde çalışma kanıtıdır, test değildir.
+  gönderilir. Cevap 400'dür ve gövde `GATEWAY_PATH_REJECTED` taşır. MDM'nin (5059) günlüğünde bu istek görünmez. Bu
+  negatif kanıtın bir kontrol satırı vardır: aynı oturumda `/api/product-master/` altındaki meşru bir iş isteği (ör. ürün
+  listesi, oturum açmış kullanıcıyla) gönderilir ve bugünkü gibi cevap verir. İki cevabın `X-Correlation-Id` değerleri
+  aynı komutla MDM günlüğünde aranır: meşru isteğinki bulunur, reddedilenin değeri bulunmaz. Kontrol isteği MDM günlüğünde
+  bulunmazsa negatif kanıt geçersizdir ve madde kırmızıdır. Arama yeri (günlük dosyası, konsol çıktısı ya da Seq) DL-1'de
+  seçilir. Aynı oturumda `curl -s -o /dev/null -w '%{http_code}' http://localhost:5000/health` bugünkü durum kodunu verir.
+  Komutlar, çıktılar ve ortamın adı teslim kaydına yazılır. Sabotaj kanıtı bu maddede aranmaz: madde çalışma kanıtıdır,
+  test değildir.
 - [ ] AC-13 (isteğe bağlı) — **HTTP/2:** Ağ geçidi uç noktası HTTP/2 sunuyorsa (DL-1 başında ölçülür) aynı ölçülen istek
   HTTP/2 üzerinden de 400 alır. HTTP/2 sunulmuyorsa teslim kaydına "uygulanmaz" ve ölçüm komutu yazılır.
 - [ ] AC-14 (isteğe bağlı) — **Kural dışı biçimler rota dışına çıkmaz:** Tablo testine `%c0%ae%c0%ae/`, `..;/`, `%00`
   ve tam genişlikte nokta (`%ef%bc%8e%ef%bc%8e/`) satırları eklenir. Bu satırlar 400 beklemez. Yalnız servis yerine geçen
   konağın rotanın alt öneki dışında bir istek kaydetmediğini ölçer. Bir satır rota dışına çıkarsa bu paket genişletilmez:
   bulgu Açık kararlar (n) için sahibe götürülür.
+- [ ] AC-15 (zorunlu) — **CORS ön uçuşu korumaya ulaşmaz, çapraz kökenli ret okunabilir:** Üç istek gönderilir. Üçü de
+  `Origin: http://localhost:5001` taşır (izinli köken, `Program.cs:106-113`) ve yolu
+  `/api/product-master/%252e%252e/internal/x`'tir. Birinci istek CORS ön uçuşudur (`OPTIONS` +
+  `Access-Control-Request-Method: GET`): `UseCors` (`Program.cs:128`) onu korumadan önce bitirir, cevap 204'tür ve servis
+  yerine geçen konak hiçbir istek kaydetmez. Bu beklenti çerçeve bilgisidir ve ölçülmedi. DL-1 başında ölçülür; farklı
+  çıkarsa ölçüt onaydan önce yeniden yazılır. İkinci istek ön uçuş olmayan `OPTIONS`'tur (`Access-Control-Request-Method`
+  yok): 400 alır ve gövdesi `code: GATEWAY_PATH_REJECTED` taşır. Üçüncü istek `GET`'tir: 400 alır, gövdesi
+  `code: GATEWAY_PATH_REJECTED` taşır ve cevap `Access-Control-Allow-Origin: http://localhost:5001` başlığını taşır. Test adı
+  `Mod0032Fu02PathTraversalGuardTests.Cors_preflight_ends_at_cors_and_cross_origin_refusals_stay_readable`. Sabotaj: kayıt
+  satırı çıkarılınca ikinci ve üçüncü istek kırmızıya döner. Kayıt satırı `UseCors`'tan önceye taşınınca (Açık kararlar
+  (h2)) birinci istek 400 alır ve üçüncü istek `Access-Control-Allow-Origin` başlığını kaybeder; test kırmızıya döner.
 
 ## Test Expectations
 
 | Alan | Gerekli kanıt |
 |---|---|
-| Birim — saf yardımcı | `Mod0032Fu02GatewayPathInspectorTests`: her kural için yalnız onun yakaladığı satır; meşru satırlar; tur sınırı; mutlak biçimli hedef; `OPTIONS *`; geçersiz `%` dizisi (AC-7, AC-8) |
-| Gerçek boru hattı | `Mod0032Fu02PathTraversalGuardTests`: gerçek `Program.cs`, gerçek Kestrel, Ocelot, gönderilen `ocelot.json` (yalnız `DownstreamHostAndPorts` çevrilir), ham soket, kayıt tutan Kestrel servis yerine geçeni (AC-1…AC-6, AC-9, AC-14) |
-| Sabotaj — kayıt satırı | `app.UseMiddleware<PathTraversalGuardMiddleware>();` çıkarılınca **kırmızı:** `The_measured_double_encoded_dot_dot_is_refused_before_it_reaches_the_service`, `Every_everything_route_refuses_every_traversal_form`, `The_refusal_carries_the_code_only`, `The_guard_answers_before_tenant_resolution_and_route_authentication`, `Health_and_metrics_paths_are_guarded_and_still_answer`, `The_refusal_log_holds_no_raw_target`. **Yeşil kalan (beklenen):** `Legitimate_paths_and_queries_still_reach_the_service` ve `Mod0032Fu02GatewayPathInspectorTests` içindeki her test |
-| Sabotaj — yer | Kayıt satırı `TenantResolutionMiddleware`'den sonraya taşınınca `The_guard_answers_before_tenant_resolution_and_route_authentication` kırmızı. Sağlık bloğunun altına taşımak kırmızı üretmez (AC-6 notu); bu bir sabotaj kanıtı olarak sunulmaz |
+| Birim — saf yardımcı | `Mod0032Fu02GatewayPathInspectorTests`: her kural için yalnız onun yakaladığı satır (yakınsama kuralı için dört ve beş kat); bedel satırı (`%25252541`); meşru ve yakınsayan satırlar; tur sınırı; mutlak biçimli hedef; `OPTIONS *`; yetki biçimli hedef; geçersiz `%` dizisi (AC-7, AC-8) |
+| Gerçek boru hattı | `Mod0032Fu02PathTraversalGuardTests`: gerçek `Program.cs`, gerçek Kestrel, Ocelot, gönderilen `ocelot.json` (yalnız `DownstreamHostAndPorts` çevrilir), ham soket, kayıt tutan Kestrel servis yerine geçeni (AC-1…AC-6, AC-9, AC-14, AC-15). Ret ölçütleri durum koduna değil gövdedeki `code`'a bakar |
+| Sabotaj — kayıt satırı | `app.UseMiddleware<PathTraversalGuardMiddleware>();` çıkarılınca **kırmızı:** `The_measured_double_encoded_dot_dot_is_refused_before_it_reaches_the_service`, `Every_everything_route_refuses_every_traversal_form`, `The_refusal_carries_the_code_only`, `The_guard_answers_before_tenant_resolution_and_route_authentication`, `Health_and_metrics_paths_are_guarded_and_still_answer`, `The_refusal_log_holds_no_raw_target`, `Cors_preflight_ends_at_cors_and_cross_origin_refusals_stay_readable`. **Yeşil kalan (beklenen):** `Legitimate_paths_and_queries_still_reach_the_service` ve `Mod0032Fu02GatewayPathInspectorTests` içindeki her test. Bu koşunun `Every_everything_route_refuses_every_traversal_form` çıktısı rota başına taban erişilebilirliği olarak teslim kaydına girer (AC-2) |
+| Sabotaj — yer | Kayıt satırı `TenantResolutionMiddleware`'den sonraya taşınınca `The_guard_answers_before_tenant_resolution_and_route_authentication` kırmızı. Koşullu metrik bloğunun içine taşınınca `Health_and_metrics_paths_are_guarded_and_still_answer`'ın metrik kapalı satırı kırmızı. `UseCors`'tan önceye taşınınca `Cors_preflight_ends_at_cors_and_cross_origin_refusals_stay_readable` kırmızı. Sağlık ya da metrik bloğunun altına taşımak kırmızı üretmeyebilir (AC-6 notu); bunlar sabotaj kanıtı olarak sunulmaz |
 | Sabotaj — kaynak | `RawTarget` yerine `Request.Path` okununca `Every_everything_route_refuses_every_traversal_form` ham `../` ve `./` satırlarında kırmızı |
+| Sabotaj — kural | Kesim, yakınsama ve ters bölü kuralı ayrı ayrı kaldırılınca, ve yakınsama kuralı eski kalıntı kuralıyla değiştirilince `Each_rule_has_a_row_only_it_refuses` kırmızı (AC-7, dört koşu) |
+| Sabotaj — `traceId` | `traceId`'ye gelen `X-Correlation-Id` başlığı yazılınca `The_refusal_carries_the_code_only` kırmızı. `context.TraceIdentifier`'a geçmek bugün kırmızı üretmez (AC-4); sabotaj kanıtı olarak sunulmaz |
 | Gerileme | Tam `Diten.ApiGateway.Tests` takımı, tabanla karşılaştırmalı (AC-11) |
 | Derleme | Ağ geçidi Release derlemesi (AC-11) |
 | Çalışma kanıtı | `dev` ortamında `curl --path-as-is` (AC-12) |
-| Süre | Tablo testi yaklaşık 163 rota × 15 biçim ≈ 2.400 soket isteği gönderir. Süre ölçülmedi. Teslimde ölçülür ve yazılır; CI süresine etkisi TEST-HIZ-01 (test hızı işi) için not edilir |
+| Süre | Tablo testi yaklaşık 163 rota × 16 biçim ≈ 2.600 soket isteği gönderir. Süre ölçülmedi. **Eşik önerisi (Açık kararlar (o), karar değil):** `Every_everything_route_refuses_every_traversal_form` yerelde Release derlemede 60 sn'yi geçmez. Süre teslimde ölçülür ve yazılır; eşik aşılırsa teslim durur ve konu sahibe gelir (biçim ya da rota sayısı koda gömülerek azaltılmaz). CI süresine etkisi TEST-HIZ-01 (test hızı işi) için not edilir |
 
 Kural üretim koduyla ölçülür. Gerçek boru hattı testleri ağ geçidinin kendi `Program.cs`'ini koşturur. Korumanın bir kopyasını
 kendi konağına koyan test sabotaj kanıtı sayılmaz. Sabotaj kanıtı teslim kaydında "kaldır → kırmızı → geri koy → yeşil"
@@ -420,8 +542,8 @@ biçiminde, test adlarıyla gösterilir.
 - [ ] **Kod izni:** Paket `approved` / `ready-for-dev` ve CT-APR-01 onay satırı var (`python3 scripts/pack_approval.py check <paket>` → 0).
   Onay satırı yoksa kod yok
 - [ ] Golden Reference: `golden_reference: none` ve `entity_base: none` gerekçesi okundu (başlık notu)
-- [ ] Frontmatter zorunlu alanları dolu. `owner` ve `target` ilk incelemeden **önce** kesinleşti (Açık kararlar (j)). İlk onayda
-  UYGUN incelemeden sonra paket değiştirilmez
+- [x] Frontmatter zorunlu alanları dolu. `owner` ve `target` sahip sözüyle kesinleşti (2026-11-02, "Evet, ben, 11-09";
+  Açık kararlar (j) kapandı); ilk UYGUN incelemeden **önce** yazıldı. İlk onayda UYGUN incelemeden sonra paket değiştirilmez
 - [ ] Layout & Shell Contract: `shell: none`, ön yüz dokunuşu yok (AC-10 ölçer)
 - [ ] Validation Rules, Failure Path to Verify (en az 4 senaryo), Authorization Convention ve Gateway kararı yazılı
 - [ ] Audited Events: yazma komutu yok; ret olayının denetim değil güvenlik günlüğü olduğu yazılı
@@ -429,8 +551,10 @@ biçiminde, test adlarıyla gösterilir.
   `verify_module_id.py --check-id … --parent MOD-0032` yeniden koşuldu (Açık kararlar (m))
 - [x] **Ölçüm kanıtı depoda:** CT'nin 2026-11-02 yol aşma ölçümü
   `docs/records/audits/2026-11/mod-0032-fu02-gateway-traversal-measure-2026-11-02.md` kaydı olarak alındı
-- [ ] Açık kararlar kapandı: onaydan önce (a), (b), (c), (d), (h), (i), (j), (k), (l), (m); bilgi için (e), (f), (g), (n)
-- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) yapıldı ve `reviews.tsv` satırı var
+- [ ] Açık kararlar kapandı: onaydan önce (a), (b), (c), (d), (h), (i), (k), (l), (m), (o); (j) kapandı (sahip,
+  2026-11-02); bilgi için (e), (f), (g), (n)
+- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) yapıldı ve `reviews.tsv` satırı var. İlk inceleme (@`6c3f1c3d0`)
+  UYGUN DEĞİL dedi; bu revizyon için yeniden inceleme gerekir
 - [ ] CT-APR-01 onay satırı: yüksek risk (güvenlik, ağ geçidi). Onaylayıcı paketi yazmamış ve `high: evet` olan biri
 - [ ] **Ölçülmeyenler kapandı:** Implementation Notes "Ölçülmeyenler" tablosundaki her girdi DL-1 başında CT'nin numaralı
   ölçümüyle (`dosya:satır@commit` ya da komut + çıktı) kapatıldı
@@ -453,11 +577,20 @@ biçiminde, test adlarıyla gösterilir.
 5. `TenantResolutionMiddleware.cs` yolu `Request.Path` ile sınıflıyor (Dependencies). `IsNonTenantPath` (`:430-436`)
    `/api/lookups` önekini kiracı çözümünün dışında tutuyor. `IsAdminPath` (`:457-462`) `/api/admin` ve `/api/platform`
    öneklerine bakıyor. `/api/lookups/{everything}` rotası Platform servisine (5057) gidiyor (ölçüm 2). Bu bir kod okumasıdır.
-   Bunun yol aşma ile birlikte bir atlatma açıp açmadığı **ölçülmedi** (Açık kararlar (e)).
+   Bunun yol aşma ile birlikte bir atlatma açıp açmadığı **ölçülmedi** (Açık kararlar (e)). Koruma varken bu önek
+   üzerinden yol aşma, AC-2 tablosunun `/api/lookups/{everything}` satırlarında 400 alır.
 6. Ret cevabı deseni `TenantResolutionMiddleware.cs:551-568`: `WriteAsJsonAsync`, `contentType: "application/problem+json"`.
 7. `appsettings.json` ve `appsettings.Development.json`: metrik yolu `/metrics`, sağlık yolları `/health`, `/health/live`,
-   `/health/ready`. Metrik bugün açık görünüyor (`"Enabled": true`, `appsettings.json:24`). Hangi `Enabled` satırının hangi
-   bölüme ait olduğu yalnız `grep` ile okundu.
+   `/health/ready`. Metrik bugün açık (`Observability:Metrics:Enabled: true`, `appsettings.json:23-26`, numaralı okuma
+   @`6c3f1c3d0`).
+8. İnceleme bulgularını kapatan okumalar (@`6c3f1c3d0`): `GatewayJwtAuthenticationHandler.cs:25-46` ve
+   `JwtSecretRotationResolver.cs:27-45` (Dependencies); `TenantResolutionMiddleware.cs:33-39`, `:161-177`, `:204-236`,
+   `:430-481`, `:551-593` (Dependencies, AC-2, AC-5); `SetPasswordPublicEndpointGuardTests.cs:52-59` (Production ortamında
+   belirteçsiz `/api/users` → 400); `appsettings.Development.json:10-11` (`DevBypassEnabled: true`) ve `:54-55`;
+   `GatewayPipelineCorrelationTests.cs:104-110` (`--environment=Development`); `Program.cs:60-72` (Serilog yalnız konsola
+   JSON yazıyor; Seq koşullu), `:106-113` (CORS politikası), `:128-154`; `EdgeCorrelation.cs:14-25`;
+   `CorrelationIdMiddleware.cs:27-75` (Common); `ocelot.json` JSON okuması (`/api/lookups/{everything}` var; `CONNECT`
+   taşıyan rota yok); `AGENTS.md:135`.
 
 **Plan hizalaması:** Bu pakete plan satırı verilmedi; plan dosyası depoda değil. Teslim dilimleri tablosunda `plan kimliği
 yok` ve `plan satırı yok` yazıldı. Değer uydurulmadı.
@@ -469,7 +602,13 @@ yok` ve `plan satırı yok` yazıldı. Değer uydurulmadı.
 | Girdi | Neden önemli | Yazar okuması |
 |---|---|---|
 | Gerçek ağ geçidinde (kiracı çözümü dahil) ölçülen isteğin bugün geçip geçmediği; ölçüm Ocelot-yalnız konakta yapıldı | AC-1 ve AC-2'nin sabotaj kanıtı, isteğin kiracı çözümünden geçebilmesine bağlı | ölçülmedi |
-| `TenantResolutionMiddleware`'in geçirdiği test belirteci biçimi (`actor_type`, `tenant_id`, `Issuer`, `Audience`) | Test konağının belirteci | kısmen okundu (`:69`, `:330`; `GatewayJwtAuthenticationHandler.cs:34-43`) |
+| `TenantResolutionMiddleware`'in geçirdiği test belirteci biçimi (`actor_type`, `tenant_id`, `Issuer`, `Audience`) | Test konağının belirteci | kısmen okundu (`:69`, `:330`; `GatewayJwtAuthenticationHandler.cs:33-46`; `JwtSecretRotationResolver.cs:27-45`; `appsettings.Development.json:54-55`) |
+| AC-5 tabanı: belirteçsiz `/api/v1/uploads/%252e%252e/x` korumasız konakta 400 "Missing Tenant" mı, dev bypass ile 401 mi | AC-5 taban satırı | kod okuması; konak Development'ta açılırsa bypass açık (`appsettings.Development.json:10-11`); 401'in Ocelot'tan geldiği çerçeve bilgisi |
+| CORS ön uçuşunun `UseCors`'ta 204 ile bittiği | AC-15 birinci istek, Validation Rules | çerçeve bilgisi (ASP.NET Core `CorsMiddleware`), ölçülmedi |
+| Günlük yakalama yöntemi: `Program.cs` Serilog'u yalnız konsola JSON yazacak biçimde kuruyor (`:60-72`) ve süreç düzeyinde tek; ağ geçidi testlerinde günlük yakalayan bir desen yok (`grep` `ILogEventSink` / `InMemorySink` eşleşme vermedi). Seçenekler: konsol çıktısını test süresince yakalamak (koleksiyon paralel değil) ya da test konağına yapılandırmayla ek bir sink vermek | AC-9 | ölçülmedi; DL-1 başında seçilir ve teslim kaydına yazılır |
+| Kestrel'in yetki biçimli hedefi (`CONNECT host:443`) kabul edip etmediği ve `RawTarget`'e ne koyduğu | Runtime Constraints "Çözüm kuralı" 1 | ölçülmedi |
+| Metrik sunucusunun `/metrics` yolunu önek olarak mı tam eşleşmeyle mi yakaladığı | AC-6 notu | ölçülmedi |
+| MDM (5059) günlüğünde ağ geçidinin ilettiği `X-Correlation-Id` değerinin aranabildiği | AC-12 kontrol satırı | ölçülmedi |
 | Kestrel'de `RawTarget`'in her istekte dolu olduğu; HTTP/2 `:path` davranışı | Validation Rules yedek yolu; AC-13 | ölçülmedi |
 | Ocelot'un `a%2Fb` ve sorgu dizesini nasıl ilettiği | AC-3 beklenen değeri | ölçülmedi |
 | `Program.cs`'in gerçek Kestrel'de `--urls=http://127.0.0.1:0` ile açılabildiği (mevcut konak yalnız `TestServer` kullanıyor) | Test konağı | ölçülmedi |
@@ -485,8 +624,9 @@ yok` ve `plan satırı yok` yazıldı. Değer uydurulmadı.
   (Implementation Notes madde 5). Önce ölçüm, sonra gerekirse ayrı paket.
 - **Servis tarafında savunma derinliği:** Servislerin kendi Kestrel'lerinde yol aşma koruması. Her servisin sahibine aittir.
 - **`Mod0290Fu04ProductMasterTraversalTests`'in gerçek `Program.cs` konağına taşınması** (Açık kararlar (l) seçilirse).
-- **İstek günlüğünün `RequestPath` alanı** (`Program.cs:144`): Yolda kişisel veri olabilir. Bu alan bugün her istekte
-  yazılıyor. Ayrı karar ve ayrı iş (Açık kararlar (d)).
+- **İstek günlüğünün `RequestPath` alanı** (`Program.cs:144`): Yolda kişisel veri olabilir. Bu alan bugün her istekte,
+  korumanın reddettiği istekte de yazılıyor (Kestrel'in bir kez çözdüğü `Request.Path`). Ayrı karar ve ayrı iş (Açık
+  kararlar (d)).
 - **Kural dışı biçimler** (`%00`, aşırı uzun UTF-8, tam genişlikte nokta): AC-14 bulgusuna göre (Açık kararlar (n)).
 
 ## Audited Events
@@ -499,7 +639,11 @@ değiştirmez. Ret, bir denetim olayı değil, bir **güvenlik günlüğü** sat
 |---|---|---|---|---|---|
 | — (yazma komutu yok) | — | — | — | — | Uygulanmaz: bu paket yazma komutu taşımıyor; AUD-001 tablosu yalnız yazma komutlarını sayar |
 
-- **Kayda yazılmayan:** ham hedef, çözülmüş yol, sorgu dizesi, belirteç, istek başlıkları.
+- **Korumanın `Warning` satırına yazılmayan:** ham hedef, çözülmüş yol, sorgu dizesi, belirteç, istek başlıkları.
+- **Bilinen durum:** istek günlüğü (`UseSerilogRequestLogging`, `Program.cs:130-148`) reddedilen istekte de kendi satırını
+  yazar ve o satır `RequestPath` alanını, yani Kestrel'in bir kez çözdüğü yolu taşır (`Program.cs:144`). Bu paket o satırı
+  değiştirmez (Açık kararlar (d), Follow-up Items). Yani ağ geçidinin günlüğünde reddedilen isteğin yolu bugün görünür;
+  "yazılmaz" iddiası yalnız korumanın kendi satırı içindir (AC-9).
 
 ## Teslim dilimleri
 
@@ -514,17 +658,18 @@ başına çalışan en küçük korumadır.
 
 | # | Konu | Seçenekler | Önerisi (bu paketin önerisi; karar değil) | Sahip | Bağımlılık / son tarih |
 |---|---|---|---|---|---|
-| (a) | Hata kodu adı | **`GATEWAY_PATH_REJECTED`** · `GATEWAY_PATH_TRAVERSAL_REJECTED` · `PATH_NOT_ALLOWED` | **`GATEWAY_PATH_REJECTED`.** Kaynağı (ağ geçidi) söyler, saldırgana hangi kuralın tuttuğunu söylemez. Ağ geçidi bugün makine kodu taşımıyor (`title` / `detail` metni var); bu ilk kod olur | MOD-0032 sahibi | Onay öncesi |
-| (b) | Sağlık ve metrik uçları | **(b1)** her yola uygulanır (sağlık ve metrik dahil) · (b2) sağlık / metrik yolları muaf | **(b1).** Muafiyet bir önek eşleşmesidir ve kendisi bir atlatma yüzeyi olur. Düz sağlık ve metrik istekleri kurala takılmaz; yoklamalar (probe) etkilenmez. AC-6 bunu ölçer | MOD-0032 sahibi | Onay öncesi |
-| (c) | Çözüm tur sayısı | 2 · **3** · "değişmeyene kadar, üst sınır 8" | **3.** Yoldaki iki çözücüden bir fazla (Runtime Constraints). Daha derini kalıntı kuralı yakalar. Sınır bir adlı sabittir; değişmesi paket revizyonudur | MOD-0032 sahibi | Onay öncesi |
-| (d) | Günlüğe ne yazılır | **(d1)** neden, yöntem, ham hedef uzunluğu, tur sayısı; ham hedef yok · (d2) ham hedef kırpılmış (ilk N karakter) · (d3) ham hedefin SHA-256 öneki | **(d1).** Yolda kimlik, e-posta ya da ad olabilir (OBS-001 PII kuralı). İlişki `CorrelationId` ile kurulur. Not: istek günlüğü bugün her istekte `RequestPath` alanını yazıyor (`Program.cs:144`). Bu paket o satırı değiştirmez; ayrı karar (Follow-up Items). (d3) seçilirse AC-9 yeniden yazılır | MOD-0032 sahibi | Onay öncesi |
-| (e) | Ağ geçidinin kiracı / yetki denetimleri ham yola bakıyor mu | — | **Ölçülmedi.** Kod okuması: `TenantResolutionMiddleware` yolu `Request.Path` ile sınıflıyor (Implementation Notes madde 5). Bu paketin koruması bu denetimlerden önce koştuğu için, koruma varken yol aşan istek o denetimlere ulaşmaz. Korumasız durumda neyin atlatılabildiği ayrı bir ölçüm işidir | MOD-0032 sahibi + CT | Bilgi; ayrı iş |
+| (a) | Hata kodu adı | **`GATEWAY_PATH_REJECTED`** · `GATEWAY_PATH_TRAVERSAL_REJECTED` · `PATH_NOT_ALLOWED` | **`GATEWAY_PATH_REJECTED`.** Kaynağı (ağ geçidi) söyler, saldırgana hangi kuralın tuttuğunu söylemez. Ağ geçidi bugün makine kodu taşımıyor (`title` / `detail` metni var); bu ilk kod olur | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (b) | Sağlık ve metrik uçları | **(b1)** her yola uygulanır (sağlık ve metrik dahil) · (b2) sağlık / metrik yolları muaf | **(b1).** Muafiyet bir önek eşleşmesidir ve kendisi bir atlatma yüzeyi olur. Düz sağlık ve metrik istekleri kurala takılmaz; yoklamalar (probe) etkilenmez. AC-6 bunu ölçer | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (c) | Çözüm tur sayısı | 2 · **3** · "değişmeyene kadar, üst sınır 8" | **3.** Yoldaki iki çözücüden bir fazla (Runtime Constraints). Sınırdan derin her kodlamayı yakınsama kuralı (5. kural, `NotConverged`) kat sayısından bağımsız yakalar; AC-2 ve AC-7'deki dört ve beş kat satırları bunu ölçer. Bedeli: üç turdan derin kodlanmış meşru karakter de reddedilir. Sınır bir adlı sabittir; değişmesi paket revizyonudur | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (d) | Günlüğe ne yazılır | **(d1)** neden, yöntem, ham hedef uzunluğu, tur sayısı; ham hedef yok · (d2) ham hedef kırpılmış (ilk N karakter) · (d3) ham hedefin SHA-256 öneki | **(d1).** Yolda kimlik, e-posta ya da ad olabilir (OBS-001 PII kuralı). İlişki `CorrelationId` ile kurulur. (d) yalnız korumanın kendi `Warning` satırını kapsar. Not: istek günlüğü bugün her istekte, korumanın reddettiği istekte de, `RequestPath` alanını yazıyor (`Program.cs:144`); yani reddedilen isteğin yolu ağ geçidinin günlüğünde bugün görünür. Bu paket o satırı değiştirmez; ayrı karar (Follow-up Items). (d3) seçilirse AC-9 yeniden yazılır | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (e) | Ağ geçidinin kiracı / yetki denetimleri ham yola bakıyor mu | — | **Ölçülmedi.** Kod okuması: `TenantResolutionMiddleware` yolu `Request.Path` ile sınıflıyor (Implementation Notes madde 5). Bu paketin koruması bu denetimlerden önce koştuğu için, koruma varken yol aşan istek o denetimlere ulaşmaz. Korumasız durumda neyin atlatılabildiği ayrı bir ölçüm işidir. Kapsam notu: kiracı çözümünün dışında tutulan `/api/lookups` öneki (`TenantResolutionMiddleware.cs:430-436`) üzerinden yol aşma bu paketin kapsamındadır: `/api/lookups/{everything}` AC-2 tablosundadır ve koruma varken her biçimde 400 alır | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) + CT | Bilgi; ayrı iş |
 | (f) | İç uç anahtarının sabit süreli olmayan karşılaştırması | — | **Kapsam dışı, ayrı iş.** CT iletisindeki ölçüme (Yönetici) dayanır; bu yazar okumadı. Servis kodudur (XMC-001) | İlgili servis sahipleri | Bilgi |
 | (g) | Q395 (yedek rota / zaman aşımı satırı) ile ilişki | — | **İlişki yok, ayrı iş** (CT iletisi). Bu paket rota ya da zaman aşımı değiştirmez | — | Bilgi |
-| (h) | Kayıt satırının yeri | **(h1)** `UseSerilogRequestLogging`'den sonra, metrikten önce · (h2) boru hattının en başı (`UseCors`'tan önce) · (h3) `UseCors` ile `CorrelationIdMiddleware` arasında | **(h1).** Ret istek günlüğünde 400 olarak görünür, cevap `X-Correlation-Id` taşır, CORS başlıkları eklenir (tarayıcı kodu okuyabilir). Sağlık, metrik, kimlik ve kiracı çözümü korumadan sonra gelir. (h1) ile ret, HTTP metriklerine (`UseHttpMetrics`) sayılmaz; sayılması istenirse kayıt satırı metrik bloğunun içine, `UseHttpMetrics` ile `UseMetricServer` arasına girer | MOD-0032 sahibi | Onay öncesi |
-| (i) | Ret gövdesinin biçimi | **(i1)** `application/problem+json` + `status`, `code`, `traceId` · (i2) gövdesiz 400 · (i3) ağ geçidinin bugünkü `title` / `detail` biçimi | **(i1).** Ağ geçidinin bugünkü problem+json biçimine yakın kalır ve kullanıcıya görünen metin içermez (Çekirdek kural 4) | MOD-0032 sahibi | Onay öncesi |
-| (j) | Paket sahibi ve hedef tarih | `owner`: auth-owner · MOD-0032 sahibi · CT; `target`: tarih | Ağ geçidinin adlı bir sahibi bu oturumda bulunamadı (`MOD-0032-api-gateway.md` künyesiz). **İlk incelemeden önce** doldurulur, çünkü ilk onayda UYGUN incelemeden sonra paket değiştirilmez | Sahip | İnceleme öncesi |
-| (k) | Korumayı kapatan ayar | **(k1)** yok · (k2) `Gateway:PathGuard:Enabled` | **(k1).** Kapatılabilen güvenlik koruması üretimde yanlışlıkla kapalı kalabilir. Geri alma kod geri almadır | MOD-0032 sahibi | Onay öncesi |
-| (l) | Mevcut `Mod0290Fu04ProductMasterTraversalTests` | **(l1)** değişmez · (l2) ölçülen `%252e%252e/` satırı eklenir · (l3) gerçek `Program.cs` konağına taşınır | **(l1).** Test Ocelot'u yalnız ölçüyor ve korumayı içermiyor. (l2) seçilirse o konakta **kırmızı** olur (ölçüm, Module Summary). Yeni testler ölçülen biçimi gerçek boru hattında kapsıyor. (l3) Follow-up Items'tadır. Test MOD-0290-FU04'e aittir; dokunmak XMC-001 sorusu olur | MOD-0032 sahibi (+ MOD-0290 sahibi (l2) / (l3) için) | Onay öncesi |
-| (m) | Kayıt satırı | `module-id-registry.md`'ye `MOD-0032-FU02` satırı | Ayrı bir değişiklikle yazılır. Mevcut `MOD-0032-FU1` satırı (`:126`, başka iş, `[Non-executable]`) değiştirilmez. Adlandırma farkı (`FU1` / `FU02`) kayıt sahibine not edilir | MOD-0032 sahibi + kayıt sahibi | Onay öncesi |
-| (n) | Kural dışı biçimler (`%00`, aşırı uzun UTF-8, `..;`, tam genişlikte nokta) | Bu pakete ret kuralı ekle · AC-14 ile yalnız ölç, bulguya göre takip paketi | **Yalnız ölç (AC-14).** Kestrel bu biçimleri `..` olarak normalleştirmiyor diye beklenir ama ölçülmedi. Rota dışına çıkan bir satır bulunursa takip paketi açılır | MOD-0032 sahibi | DL-1 teslimi |
+| (h) | Kayıt satırının yeri | **(h1)** `UseSerilogRequestLogging`'den sonra, metrikten önce · (h2) boru hattının en başı (`UseCors`'tan önce) · (h3) `UseCors` ile `CorrelationIdMiddleware` arasında | **(h1).** Ret istek günlüğünde 400 olarak görünür, cevap `X-Correlation-Id` taşır, çapraz kökenli rette CORS başlıkları eklenir (tarayıcı kodu okuyabilir). CORS ön uçuşu `UseCors`'ta 204 ile biter ve korumaya ulaşmaz (çerçeve bilgisi, ölçülmedi; AC-15). Sağlık, metrik, kimlik ve kiracı çözümü korumadan sonra gelir. **Kayıt satırı koşullu metrik bloğuna (`if (observabilityOptions.Metrics.Enabled)`, `Program.cs:150-154`) girmez:** girerse metrik kapalı ortamda koruma da kapanır; AC-6 bunu metrik kapalı ikinci konakla ölçer. (h1) ile ret HTTP metriklerine (`UseHttpMetrics`) sayılmaz. Sayılması istenirse bu ayrı bir karardır ve kayıt satırını koşullu bloğa taşımadan çözülür (ör. korumanın kendi sayacı); bu paket sayaç eklemez. (h2) seçilirse AC-15 yeniden yazılır | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (i) | Ret gövdesinin biçimi | **(i1)** `application/problem+json` + `status`, `code`, `traceId` · (i2) gövdesiz 400 · (i3) ağ geçidinin bugünkü `title` / `detail` biçimi | **(i1).** Ağ geçidinin bugünkü problem+json biçimine yakın kalır ve kullanıcıya görünen metin içermez (Çekirdek kural 4) | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (j) | Paket sahibi ve hedef tarih | `owner`: auth-owner · MOD-0032 sahibi · CT; `target`: tarih | **Kapandı.** Sahip 2026-11-02'de bu kulede (CT · Yetki sohbeti, doğrudan) "Evet, ben, 11-09" dedi: paketin sahibi ve bu işte MOD-0032 karar sahibi MOD-0018 (Auth) sahibidir; `target: 2026-11-09`. Künye buna göre yazıldı. Ağ geçidi paketine (`MOD-0032-api-gateway.md`) künye eklemek bu paketin işi değildir | Sahip | Kapandı 2026-11-02 |
+| (k) | Korumayı kapatan ayar | **(k1)** yok · (k2) `Gateway:PathGuard:Enabled` | **(k1).** Kapatılabilen güvenlik koruması üretimde yanlışlıkla kapalı kalabilir. Geri alma kod geri almadır | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
+| (l) | Mevcut `Mod0290Fu04ProductMasterTraversalTests` | **(l1)** değişmez · (l2) ölçülen `%252e%252e/` satırı eklenir · (l3) gerçek `Program.cs` konağına taşınır | **(l1).** Test Ocelot'u yalnız ölçüyor ve korumayı içermiyor. (l2) seçilirse o konakta **kırmızı** olur (ölçüm, Module Summary). Yeni testler ölçülen biçimi gerçek boru hattında kapsıyor. (l3) Follow-up Items'tadır. Test MOD-0290-FU04'e aittir; dokunmak XMC-001 sorusu olur | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) (+ MOD-0290 sahibi (l2) / (l3) için) | Onay öncesi |
+| (m) | Kayıt satırı | `module-id-registry.md`'ye `MOD-0032-FU02` satırı | Ayrı bir değişiklikle yazılır. Mevcut `MOD-0032-FU1` satırı (`:126`, başka iş, `[Non-executable]`) değiştirilmez. Adlandırma farkı (`FU1` / `FU02`) kayıt sahibine not edilir | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) + kayıt sahibi | Onay öncesi |
+| (n) | Kural dışı biçimler (`%00`, aşırı uzun UTF-8, `..;`, tam genişlikte nokta) | Bu pakete ret kuralı ekle · AC-14 ile yalnız ölç, bulguya göre takip paketi | **Yalnız ölç (AC-14).** Kestrel bu biçimleri `..` olarak normalleştirmiyor diye beklenir ama ölçülmedi. Rota dışına çıkan bir satır bulunursa takip paketi açılır | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | DL-1 teslimi |
+| (o) | Tablo testinin süre eşiği | **(o1)** yerelde Release derlemede 60 sn; aşılırsa teslim durur ve sahibe gelir · (o2) eşik yok, yalnız ölç ve yaz · (o3) daha sıkı eşik (ör. 20 sn) | **(o1).** Süre ölçülmedi (Test Expectations "Süre"); 60 sn, ≈ 2.600 yerel soket isteği için geniş bir tavandır ve TEST-HIZ-01'e karşı bir çit koyar. Eşik aşılırsa biçim ya da rota sayısı koda gömülerek azaltılmaz; çözüm sahiple seçilir | Sahip (MOD-0018 sahibi; bu işte MOD-0032 karar sahibi) | Onay öncesi |
