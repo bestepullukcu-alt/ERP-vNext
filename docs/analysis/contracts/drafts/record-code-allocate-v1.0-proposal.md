@@ -2,9 +2,10 @@
 
     contract       : RECORD-CODE-ALLOCATE
     version        : 1.0.0 (önceki: v0 — yazılı sözleşme belgesi yoktu; KARAR D59/1 metni, Beste Y-8 2026-10-28)
-    x-status       : DRAFT (rev 7 — paket r8, son bakış 01 tur 2 (özet 8a63c4e5) ve inceleme 03 tur 5 (özet e6dd4cd8) sözleşme payı; rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
-                     öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve açık noktalar (§12) kapanmadan
-                     dondurulmaz; dondurma ayrı CT adımıdır (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
+    x-status       : DRAFT (rev 9 — paket r10, son bakış 01 tur 4 (özet 0e25482b) §12 ayrımı; rev 8 — paket r9, inceleme 03 tur 6 (özet f9c26991) ve son bakış 01 tur 3 (özet ec0346bb) sözleşme payı; rev 7 — paket r8, son bakış 01 tur 2 (özet 8a63c4e5) ve inceleme 03 tur 5 (özet e6dd4cd8) sözleşme payı; rev 6 — paket r7, bağımsız son bakış 01 (özet a52313ba) ve inceleme 03 tur 4 sözleşme payı işlendi; rev 5 — paket r5, inceleme 03 tur 2 F-3 işlendi; rev 4 — paket r4, bağımsız inceleme 03 F-2 / F-3 / F-9 sözleşme payı işlendi; rev 3 — bağımsız inceleme 02 KOŞULLU bulguları işlendi; rev 2 — inceleme 01 ve sahip kararları K-8r, K-9…K-12) —
+                     öneri; MOD-0040-FU02 paketi CT-APR-02 / CT-APR-01'den geçmeden ve **dondurmayı bekleten** açık noktalar (§12, "Bekletir")
+                     kapanmadan dondurulmaz; bekletmeyen noktalar dondurmadan sonra da açık kalabilir (rev 9); dondurma ayrı CT adımıdır
+                     (hedef 2026-11-03), dondurulmuş dosyanın yeri o adımda belirlenir
     x-owner        : MOD-0040-FU02 Record Code Service (platform-shared-services, Diten.Platform 5057) — sahip Beste (K2)
     x-module-pack  : execution/domains/platform-shared-services/module-packs/MOD-0040-FU02-record-code-service.md
     x-consumers    : Diten.FinanceTreasuryService (MOD-0126 PAY, MOD-0119 APD, MOD-0120 ARI, MOD-0124 CPS / CTP);
@@ -140,7 +141,8 @@ açılmaz, yedek kod ya da kendi sayacı üretilmez (RCS-001 §6).
 10. 422 `RECORD_CODE_SCOPE_INVALID` → 11. önek: `Group` → 409 `GROUP_PREFIX_MISSING` / `GROUP_PREFIX_MISMATCH`;
 `LegalEntity` → MDM (404 / 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING` / 422 `LEGAL_ENTITY_NOT_ELIGIBLE` / 409 / 503), ardından kısa kod kullanım denetimi (409
 `LEGAL_ENTITY_SHORT_CODE_CHANGED`) → 12. sayaç (503) → 13. defter + denetim (+ grup
-öneki kilidi) tek işlemde (503) → 200.
+öneki kilidi) tek işlemde: kilit eşleşmezse 409 `GROUP_PREFIX_MISMATCH` (grup öneki ayarı bu istekten sonra başka bir
+önekle yeniden hizalandı), işlem / bütçe tükenirse 503 → 200 (rev 8).
 
 Yetki (7–8) idempotency'den (9) önce gelir: izinsiz kullanıcı tekrarla kod okuyamaz. Tür izni (7) kapsamdan (10) önce
 gelir: `PLN` + `Platform` → 403, `PAY` + `Platform` → 422. MDM, kapsam, tür ya da yetki
@@ -317,8 +319,10 @@ Hatalar:
 | 403 `RECORD_CODE_TENANT_NOT_ACTIVE`, 403 `RECORD_CODE_FORBIDDEN` (tür izinsiz), 403 `RECORD_CODE_PERMISSION_MISSING`, 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`, 404 | yazılır | `Denied` |
 | 400 `RECORD_CODE_REQUEST_INVALID` (rev 6), 400 `IDEMPOTENCY_KEY_REUSED`, 409 (dört kod), 422 `RECORD_CODE_SCOPE_INVALID` (rev 6: `Failed`), 422 `RECORD_TYPE_UNKNOWN`, 422 `LEGAL_ENTITY_NOT_ELIGIBLE`, 503 | yazılır (503'te en iyi çaba) | `Failed` |
 
-  Kural (rev 6): `Denied` = istekçi yetkili değil ya da hedef kayıt istekçinin erişim alanında değil; `Failed` = diğer her ret
-  (biçim, iş kuralı, yapılandırma, kaynak). Ret kaydının yükü paket Bölüm 21.2 / 21.3'tedir.
+  **Tek `Outcome` kuralı** (paket Bölüm 21.2'deki cümlenin aynısı; rev 8):
+  > **`Denied`** = (a) istekçi (kimlik bilgisi, kullanıcı ya da kiracı) bu işi yapmaya **yetkili değil**, ya da (b) istenen kayıt
+  > istekçiye **tek gövdeli bir "yok" cevabıyla gizlenir** (yok / başka kiracının / aktif değil ayırt edilmez). **`Failed`** =
+  > diğer her ret (biçim, iş kuralı, yapılandırma / ana veri, kaynak erişilemezliği).
 
   Gerekçe: kimliksiz bir istek ne kiracı ne kişi adlandırabilir; onu yazmak herkesin bir kiracının günlüğünü doldurmasına
   izin verir. Kimliği doğrulanmış ve kiracısı bilinen her ret iz bırakır.
@@ -331,29 +335,34 @@ Hatalar:
   (`RECORD_CODE_TENANT_NOT_ACTIVE`) ve adım 5 (400 `RECORD_CODE_REQUEST_INVALID`) retlerinde bu anahtarlar yoktur**; `Prefix`
   yalnız önek çözüldükten sonraki retlerde (`LEGAL_ENTITY_SHORT_CODE_CHANGED`, `GROUP_PREFIX_MISMATCH`, adım 12–13'teki 503);
   `code` / `sequence` hiçbir retde. Kiracı ve aktör: adım 4–13 retlerinde kayıt **token kiracısının**, aktör kullanıcıdır
-  (`TenantUser`). **Platform aktörü reddi** (adım 2): kayıt **platform denetim kiracısında**, hedef kiracı token'daki
-  `tenant_id` (yoksa boş), aktör platform / ortak yönetici, `Outcome = Denied`, `Metadata` yalnız `EventName`, `ReasonCode`
+  (`TenantUser`) — adım 4'te kiracı kaydı yok ya da silinmişse kayıt **platform denetim kiracısında**, hedef kiracı token
+  kiracısı (rev 8). **Platform aktörü reddi** (adım 2): kayıt **platform denetim kiracısında**, hedef kiracı token'daki
+  `tenant_id` (yoksa, Guid değilse ya da boş Guid ise boş), aktör platform / ortak yönetici, `Outcome = Denied`, `Metadata` yalnız `EventName`, `ReasonCode`
   (`RECORD_CODE_FORBIDDEN`), `EvaluationStep = 2`; yazımı hız sınırlayıcıdan geçer (sınırı aşan retler yazılmaz).
 - Tekrar (aynı anahtar) yeni kayıt yazmaz.
 - Bu kayıtlar BL-501 ortak ileticisiyle değil Platform içinden yazılır. Tüketici kendi Create kaydını kendi yoluyla yazar
   ve kendi kaydına `idempotencyKey` ile `code`'u koyar; iki kayıt bunlarla eşleşir.
 
-## 12. Açık noktalar (dondurmadan önce kapanır)
+## 12. Açık noktalar
 
-| # | Nokta | Öneri | Sahip | Son tarih |
-|---|---|---|---|---|
-| N-1 | İç uç kimlik deseni | **KAPANDI — K-12 (e)**: P2 + azaltıcılar; arka plan çağıranı paket DL-9 | Beste | 2026-10-30 |
-| N-2 | `Response<T>` zarfı — v0 "200 {code, sequence}" yazıyordu, zarfı tanımlamıyordu; D59/1 ve Y-8 yanıt dahil "yalnız ekleme" der | **öneri:** zarf (Platform uçlarının hepsi gibi), `data` içeriği v0 ile aynı; "v0 yanıt biçimi bağlayıcı değildi" bir öneridir. **Varsayılan (rev 6):** teyit dondurma adımına kadar gelmezse 1.0.0 zarfla donar; sonradan en üst düzey biçim istenirse büyük sürüm (§13) | **Treasury CT** (teyit); varsayılanı CT dondurmada uygular | 2026-11-03 (dondurma) |
-| N-3 | `idempotencyKey` biçimi (1–200 yazdırılabilir ASCII) | taslaktaki gibi | Beste + Treasury CT | 2026-11-03 |
-| N-4 | Tüketici portuna `prefixScope` (BNK, BAC); MDM bağdaştırıcısının `BAC` eşlemesi (şirket hesabı → LegalEntity, tedarikçi hesabı → Group) | port imzasına isteğe bağlı parametre; tüketici AC'si | Treasury CT + MDM sahibi | 2026-11-03 |
-| N-5 | `Platform` kapsamı | **KAPANDI — K-11**: tanımlı, DL-4'te açılır, o güne kadar 422 | Beste | 2026-10-30 |
-| N-6 | `PLN` katalogda mı | **KAPANDI — K-12 (d)**: katalogda, bağlanması DL-4; HTTP'den 403 | Beste | 2026-10-30 |
-| N-7 | Şirket öneki biçimi (K-6) | karar yoksa RCS-001 §1 | K1 (`gmg-10`) | 2026-11-02 |
-| N-8 | `CTR` → `AGR` RCS-001 §3 satırı; MOD-0144 / MOD-0217 kapsam çakışması | `AGR` sözleşmede kalır (K-12 a) | Ali (`.antigravity`) + Treasury PR'ı; Cihan + Treasury | 2026-11-03 (§3); TBD (çakışma) |
-| N-9 | Hız sınırı değeri (bölüm: tüketici servis + kiracı) ve eski sırrın geçerlilik penceresi | 600 istek/dakika/bölüm; pencere en çok 24 saat | Beste | 2026-11-03 |
-| N-10 | §1 kullanıcı izni adlarının teyidi (MOD-0018-FU27 taslağı; `APD` alacak dekontu dahil) | tablodaki gibi | Beste + Treasury CT + MDM sahibi | 2026-11-03 |
-| N-11 | MDM lookup-validation v1.1 (`approvalStatus`) yayını; o sürümde Platform okuyucusunun "alan yok → 503" kuralına geçmesi (kod değişikliği) | v1.1'e kadar tüketici onay ön kontrolü zorunlu | MOD-0220 sahibi + Beste | TBD |
-| N-12 | RCS-001 §5.4 kısa kod kalıcı kullanım kilidi (MDM tarafı); o güne kadar `LEGAL_ENTITY_SHORT_CODE_CHANGED` ara dönem kilidi | MDM'de kilit | MDM sahibi (Ali) + Beste | 2026-11-06 |
+**Dondurma kuralı (rev 9, son bakış 01 tur 4 F-1):** "Bekletir" sütunu **evet** olan nokta (N-2, N-3, N-4, N-7, N-9, N-10)
+kapanmadan 1.0.0 dondurulmaz; **hayır** olan nokta (N-8, N-11, N-12) dondurmayı bekletmez — 1.0.0 metnini değiştirmez ya da
+sonradan yalnız eklemeli değişiklikle gelir (§13). KAPANDI satırları (N-1, N-5, N-6) bilgi içindir.
+
+| # | Nokta | Öneri | Sahip | Son tarih | Bekletir |
+|---|---|---|---|---|---|
+| N-1 | İç uç kimlik deseni | **KAPANDI — K-12 (e)**: P2 + azaltıcılar; arka plan çağıranı paket DL-9 | Beste | 2026-10-30 | — (kapandı) |
+| N-2 | `Response<T>` zarfı — v0 "200 {code, sequence}" yazıyordu, zarfı tanımlamıyordu; D59/1 ve Y-8 yanıt dahil "yalnız ekleme" der | **öneri:** zarf (Platform uçlarının hepsi gibi), `data` içeriği v0 ile aynı; "v0 yanıt biçimi bağlayıcı değildi" bir öneridir. **Varsayılan (rev 6):** teyit dondurma adımına kadar gelmezse 1.0.0 zarfla donar; sonradan en üst düzey biçim istenirse büyük sürüm (§13) | **Treasury CT** (teyit); varsayılanı CT dondurmada uygular | 2026-11-03 (dondurma) | **evet** (yanıt biçimi; teyit yoksa varsayılanla kapanır) |
+| N-3 | `idempotencyKey` biçimi (1–200 yazdırılabilir ASCII) | taslaktaki gibi | Beste + Treasury CT | 2026-11-03 | **evet** |
+| N-4 | Tüketici portuna `prefixScope` (BNK, BAC); MDM bağdaştırıcısının `BAC` eşlemesi (şirket hesabı → LegalEntity, tedarikçi hesabı → Group) | port imzasına isteğe bağlı parametre; tüketici AC'si | Treasury CT + MDM sahibi | 2026-11-03 | **evet** |
+| N-5 | `Platform` kapsamı | **KAPANDI — K-11**: tanımlı, DL-4'te açılır, o güne kadar 422 | Beste | 2026-10-30 | — (kapandı) |
+| N-6 | `PLN` katalogda mı | **KAPANDI — K-12 (d)**: katalogda, bağlanması DL-4; HTTP'den 403 | Beste | 2026-10-30 | — (kapandı) |
+| N-7 | Şirket öneki biçimi (K-6) | karar yoksa RCS-001 §1 | K1 (`gmg-10`) | 2026-11-02 | **evet** (gelmezse RCS-001 §1 ile kapanır) |
+| N-8 | `CTR` → `AGR` RCS-001 §3 satırı; MOD-0144 / MOD-0217 kapsam çakışması | `AGR` sözleşmede kalır (K-12 a) | Ali (`.antigravity`) + Treasury PR'ı; Cihan + Treasury | 2026-11-03 (§3); TBD (çakışma) | **hayır** — §3 kolu DL-7, katalog testinde adlı istisna; MOD-0144 / MOD-0217 çakışma kolu TBD; ikisi de 1.0.0 metnini değiştirmez (`AGR` kalır) |
+| N-9 | Hız sınırı değeri (bölüm: tüketici servis + kiracı) ve eski sırrın geçerlilik penceresi | 600 istek/dakika/bölüm; pencere en çok 24 saat | Beste | 2026-11-03 | **evet** |
+| N-10 | §1 kullanıcı izni adlarının teyidi (MOD-0018-FU27 taslağı; `APD` alacak dekontu dahil) | tablodaki gibi | Beste + Treasury CT + MDM sahibi | 2026-11-03 | **evet** |
+| N-11 | MDM lookup-validation v1.1 (`approvalStatus`) yayını; o sürümde Platform okuyucusunun "alan yok → 503" kuralına geçmesi (kod değişikliği) | v1.1'e kadar tüketici onay ön kontrolü zorunlu | MOD-0220 sahibi + Beste | TBD | **hayır** — v1.1 yayını gelecekte; o güne kadar tüketici ön kontrolü, sözleşme metni değişmez |
+| N-12 | RCS-001 §5.4 kısa kod kalıcı kullanım kilidi (MDM tarafı); o güne kadar `LEGAL_ENTITY_SHORT_CODE_CHANGED` ara dönem kilidi | MDM'de kilit | MDM sahibi (Ali) + Beste | 2026-11-06 | **hayır** — DL-5 kararı (2026-11-06); ara dönem kilidi 1.0.0'da tanımlı |
 
 ## 13. Sürüm kuralı
 
@@ -366,6 +375,14 @@ Hatalar:
 - Yeni tür eklemek sözleşme değişikliği değildir; katalog RCS-001 §3'e bağlıdır.
 
 ## 14. Değişiklik geçmişi
+
+- 1.0.0 rev 9 (2026-11-02) — paket r10, son bakış 01 tur 4 F-1: §12'ye "Bekletir" sütunu ve dondurma kuralı (N-2, N-3, N-4, N-7,
+  N-9, N-10 bekletir; N-8, N-11, N-12 bekletmez); başlık cümlesi buna göre. İstek, cevap ve hata kodları değişmedi.
+
+- 1.0.0 rev 8 (2026-11-02) — paket r9 (künye ready-for-dev), inceleme 03 tur 6 ve son bakış 01 tur 3 düşük bulguları: §5 adım 13'e
+  kilit eşleşmezliği 409; §11 tek `Outcome` cümlesi paketteki ile aynı, yinelenen yük cümlesi kaldırıldı; adım 4 reddinde
+  olmayan kiracının kayıt kiracısı; boş Guid `tenant_id` → hedef kiracı boş. İstek gövdesi, durum kodları ve neden kodları
+  değişmedi.
 
 - 1.0.0 rev 7 (2026-11-02) — paket r8, son bakış 01 tur 2 ve inceleme 03 tur 5: §11 ret yükü paket Bölüm 21.3 Tablo B ile
   birebir (adım 5 reddi, platform aktörü reddinin kiracısı ve `EvaluationStep = 2`, sınırlayıcı); §4 iki `ProblemDetails`
