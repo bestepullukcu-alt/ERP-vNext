@@ -83,6 +83,7 @@ const open = () => {
     sent.length = 0;
     list.openTransition(RETURN, 'Received');
     element('transitionToWarehouseId').value = 'wh-01';
+    element('transitionToLocationId').value = 'loc-01';
 };
 const submit = async () => { element('btnSubmitTransition').click(); await settle(); };
 const exit = async () => { element('btnReceiveWithoutPosting').click(); await settle(); };
@@ -148,7 +149,7 @@ test('a definite answer to the unposted request ends the retry', async () => {
 test('the 409 fills the stored values, shows the local time and resends the exact stored instant', async () => {
     open();
     const occurredAt = '2026-10-26T08:00:07.250Z';
-    answers = [{ status: 409, body: { error: { code: 'RETURN_RECEIPT_IN_PROGRESS', details: { toWarehouseId: 'wh-stored', toLocationId: null, occurredAt } } } }, { status: 200, body: {} }];
+    answers = [{ status: 409, body: { error: { code: 'RETURN_RECEIPT_IN_PROGRESS', details: { toWarehouseId: 'wh-stored', toLocationId: 'loc-stored', occurredAt } } } }, { status: 200, body: {} }];
     await submit();
     const local = new Date(occurredAt);
     const pad = (n) => String(n).padStart(2, '0');
@@ -164,6 +165,18 @@ test('the 409 fills the stored values, shows the local time and resends the exac
     assert.equal(sent[1].body.toWarehouseId, 'wh-stored');
 });
 
+test('a stored attempt without a location asks for one before it resends', async () => {
+    open();
+    answers = [{ status: 409, body: { error: { code: 'RETURN_RECEIPT_IN_PROGRESS', details: { toWarehouseId: 'wh-stored', toLocationId: null, occurredAt: '2026-10-26T08:00:07.250Z' } } } }, { status: 200, body: {} }];
+    await submit();
+    assert.equal(element('transitionToLocationId').value, '');
+    await submit();
+    assert.equal(sent.length, 1);
+    element('transitionToLocationId').value = 'loc-new';
+    await submit();
+    assert.equal(sent[1].body.toLocationId, 'loc-new');
+});
+
 test('an empty warehouse stops both paths and marks the field', async () => {
     open();
     answers = [refused('UNKNOWN_ITEM')];
@@ -172,4 +185,19 @@ test('an empty warehouse stops both paths and marks the field', async () => {
     await exit();
     assert.equal(sent.length, 1);
     assert.equal(element('transitionToWarehouseId').attributes['aria-invalid'], 'true');
+});
+
+test('an empty location stops both paths and marks the field', async () => {
+    open();
+    element('transitionToLocationId').value = ' ';
+    await submit();
+    assert.equal(sent.length, 0);
+    assert.equal(element('transitionToLocationId').attributes['aria-invalid'], 'true');
+    open();
+    answers = [refused('UNKNOWN_ITEM')];
+    await submit();
+    element('transitionToLocationId').value = '';
+    await exit();
+    assert.equal(sent.length, 1);
+    assert.equal(element('transitionToLocationId').attributes['aria-invalid'], 'true');
 });
