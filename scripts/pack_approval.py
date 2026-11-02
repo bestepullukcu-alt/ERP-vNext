@@ -666,6 +666,13 @@ def no_pr_proven(root: str, merge: str) -> bool:
     (merged or not) is False; a malformed answer raises — "no PR found in a broken answer" is never a proof."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
+    key = ("no_pr", merge)      # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
+    if key not in _PR_CACHE:
+        _PR_CACHE[key] = _no_pr_answer(root, merge)
+    return _PR_CACHE[key]
+
+
+def _no_pr_answer(root: str, merge: str) -> bool:
     pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
     if not isinstance(pages, list) or not all(isinstance(page, list) for page in pages):
         raise Unreadable("GitHub cevabı sayfa listesi değil")
@@ -682,7 +689,9 @@ def no_pr_proven(root: str, merge: str) -> bool:
 
 def _pr_merge_why(root: str, c: str) -> str | None:
     """S-42 / independent review F-1: None when GitHub proves `c` is no pull request's merge commit; else why it counts
-    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never cached (Codex F-3)."""
+    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never kept beyond this process (Codex F-3; S-132:
+    within one process the same merge is asked once, sahip kararı 2026-11-02 `kota-duzelt`; a disk cache would let a local
+    writer forge a human step)."""
     try:
         if no_pr_proven(root, c):
             return None
@@ -828,12 +837,19 @@ def _quota_reset_local() -> str:
     return "sıfırlanma saati ölçülemedi"
 
 
+_QUOTA_STOP: str | None = None       # S-132: once GitHub said the quota is gone, this process asks nothing more
+
+
 def _gh_json(path: str, paginate: bool = False):
+    global _QUOTA_STOP
+    if _QUOTA_STOP is not None:
+        raise GitHubQuota(_QUOTA_STOP)
     done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         err = done.stderr.decode(errors="replace").strip()
         if QUOTA_TEXT.search(err) and ("403" in err or "exceeded" in err.lower()):
-            raise GitHubQuota(f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)")
+            _QUOTA_STOP = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
+            raise GitHubQuota(_QUOTA_STOP)
         raise Unreadable(f"gh api {path}: {err[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
 
@@ -1935,6 +1951,7 @@ def self_test() -> int:
     cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached", pr_merge_sha not in _PR_CACHE))
     # S-42 / Codex F-1: "no PR" is a proof only from a well-formed answer
     def proven(pages):
+        _PR_CACHE.clear()       # S-132: each case is a fresh process; the same merge gets another answer
         answers.clear()
         answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = pages
         try:
@@ -1977,14 +1994,17 @@ def self_test() -> int:
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha)
     cases.append(("S-97 (no_pr_proven): index empty but pulls/7 matches -> it IS a pull request's merge, never 'no PR'",
                   no_pr_proven(root, msg_sha) is False))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha="0" * 40)
     cases.append(("S-97 (no_pr_proven): index empty and pulls/7 is another merge -> 'no PR' proven",
                   no_pr_proven(root, msg_sha) is True))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha, merged_at=None)
     cases.append(("S-97 (review F-2, no_pr_proven): pulls/7 has this merge commit but is not merged -> still a PR, "
                   "never 'no PR'", no_pr_proven(root, msg_sha) is False))
 
     def raises(record):
+        _PR_CACHE.clear()
         if record is None:
             answers.pop(f"repos/{TRUSTED_REPO}/pulls/7", None)
         else:
@@ -3728,6 +3748,46 @@ def self_test_deferred(cases: list) -> None:
                       code == 2 and has(out, "kota") and has(out, "ölçülemedi") and not has(out, "güvenilmez")))
     cases.append(("S-115 kota: GitHubQuota is an Unreadable (every generic handler still fails closed)",
                   issubclass(GitHubQuota, Unreadable)))
+    globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
+    _PR_CACHE.clear()
+    # S-132: after the first quota answer the process runs no further gh command; one answer per merge within a process
+    saved_cmd, saved_reset, saved_src = globals()["_gh_cmd"], globals()["_quota_reset_local"], globals()["_PR_SOURCE"]
+    with tempfile.TemporaryDirectory() as td:
+        count = os.path.join(td, "calls")
+        globals()["_gh_cmd"] = lambda path, paginate=False: ["sh", "-c", f"echo x >> '{count}'; echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
+        globals()["_quota_reset_local"] = lambda: "04:12"
+        globals()["_QUOTA_STOP"] = None
+        raised = 0
+        for _ in range(3):
+            try:
+                _gh_json("x")
+            except GitHubQuota:
+                raised += 1
+        with open(count, encoding="utf-8") as f:
+            calls = len(f.readlines())
+        cases.append(("S-132: quota exhausted -> three readings raise GitHubQuota, only ONE gh command ran", raised == 3 and calls == 1))
+    globals()["_gh_cmd"], globals()["_quota_reset_local"] = saved_cmd, saved_reset
+    globals()["_QUOTA_STOP"] = None
+    asked = []
+    answers2 = [ValueError("bozuk"), [[]]]
+
+    def counting_gh(path, paginate=False):
+        asked.append(path)
+        a = answers2.pop(0) if answers2 else [[]]
+        if isinstance(a, Exception):
+            raise a
+        return a
+    globals()["_PR_SOURCE"], globals()["_gh_json"] = None, counting_gh
+    _PR_CACHE.clear()
+    plain = g("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "a plain merge subject").strip()
+    try:
+        no_pr_proven(root, plain)
+        first_raised = False
+    except ValueError:
+        first_raised = True
+    second, third = no_pr_proven(root, plain), no_pr_proven(root, plain)
+    cases.append(("S-132: a raised answer is not kept; a good answer is asked once per process (2 asks for 3 readings)",
+                  first_raised and second is True and third is True and len(asked) == 2))
     globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
     _PR_CACHE.clear()
     # (8) a row written straight onto main — invalid in both readings
