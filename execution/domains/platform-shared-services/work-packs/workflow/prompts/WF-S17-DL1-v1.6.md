@@ -1,0 +1,106 @@
+@[.antigravity/agents/backend-architect.md]
+WP: WF-S17-DL1 · Prompt PSS-WF-S17-DL1-P v1.6
+Repository: /Users/alitufanoglu/ERP-vNext · Branch: feature/pss/wf-s17-dl1-r1 · Expected HEAD: 3096aaddaed6f6b018c01226e1c97f3cd618eb05 · Worktree: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/pss-wf-s17-dl1-r1
+Risk: HIGH · §9.1 sinyalleri: silme, kiracı, sözleşme
+Görev sınıfı: ürün · Paket: execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md
+İzinli yollar: services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs, services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstancesByObjectsHandler.cs, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetWorkflowInstanceHistoryHandler.cs, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetWorkflowInstancesByObjectsQuery.cs, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs, services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs, services/Diten.Platform/tests/**, tests/architecture/TenantArchitecture.ArchitectureTests/**
+Korunan yollar: services/Diten.Platform.Common/**, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetWorkflowInstanceHistoryQuery.cs, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/**, services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/**, services/Diten.Platform/src/Diten.Platform.Domain/Entities/**, services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/**, services/Diten.CrmService/**, services/Diten.InventoryService/**, services/Diten.MdmService/**, frontend/**, gateway/**, .antigravity/**, AGENTS.md, docs/records/**, execution/**
+Kapsanan dilim: DL-1
+
+Önce oku (sırayla):
+1. execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md — §17 ve Teslim dilimleri; §17.9 madde 1–6, 15, 16 öncelikli
+2. AGENTS.md
+3. execution/domains/platform-shared-services/domain-config.md
+4. .antigravity/rules/multi-tenancy.md
+5. .antigravity/rules/security-jwt.md
+6. .antigravity/rules/git-safety.md
+7. .antigravity/rules/cross-module-change-consent.md
+8. docs/records/audits/2026-10/mod0023-s17-inspection-01/INSPECTION.md
+9. docs/records/decisions/2026-10/mod0023-s17-owner-decisions-01.md
+10. services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowCrossServiceTests.cs
+
+Sözleşme yüzeyleri:
+- API: «`by-objects` and `history` return `isDeleted`; `by-objects` hides deleted rows» (execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md:666)
+- İzin: «no new permission; the existing `instances.view`» (execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md:731)
+- Test: «AC-W15 — **One deletion marker; inherited delete closed (DL-1):**» (execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md:751)
+- Sabotaj: «Sabotage: dropping the tenant condition on the `includeDeleted` branch» (execution/domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md:1364)
+
+Keşif: inceleme gerekli · rapor docs/records/audits/2026-10/mod0023-s17-inspection-01/DISCOVERY-workflow-designer.txt@70fae3153 · sha256 bcb8eaa5e9236975421acdaf8f92746836ae8ec8dc98094865b596a8a68bcda9
+Keşif kararı 1: parent — Blueprint satırı MOD-0023 bu işin üst modülüdür; bu iş paketin DL-1 dilimidir, yeni modül açılmaz
+Keşif kararı 2: yeni — Blueprint MOD-0068 Prompt Registry yalnız ad benzerliği (Approval Workflow); yapay zekâ prompt onayıdır, bu iş ona dokunmaz
+Keşif kararı 3: yeni — Blueprint MOD-0161 SLA Routing yalnız ad benzerliği (hizmet SLA'sı); bu iş ona dokunmaz
+Keşif kararı 4: parent — kayıt satırı MOD-0023 aynı modüldür; kimlik değişmez
+Keşif kararı 5: yeni — kayıt satırı MOD-0161 yalnız ad benzerliği; bu iş ona dokunmaz
+Keşif kararı 6: parent — MDM-020 aynı Blueprint satırının eski MDM yerleşimli paket adıdır; güncel paket MOD-0023-workflow-config-approval-templates'tir, bu iş ona yazmaz
+Keşif kararı 7: parent — MOD-0023-workflow-config-approval-templates bu işin yetki paketidir (§17 revizyon 3, sha256 ec942baa…, main'de onaylı)
+Keşif kararı 8: parent — MOD-0023-workflow-designer.md eski paket adıdır (künyede previous); yeni iş açmaz
+Keşif kararı 9: parent — gateway 'workflow' → 5057 MOD-0023'ün rota ailesidir; bu iş rotaya dokunmaz
+Keşif kararı 10: parent — gateway 'workflows' → 5057 aynı rota ailesi; bu iş rotaya dokunmaz
+Keşif kararı 11: parent — PVG-M1-09 PVG kuyruğunda bu modüle bağımlılık takibidir; PVG yazmaz, bu işle çakışmaz
+Keşif kararı 12: parent — TRM-15 Treasury kuyruğunda bu işin tüketici tarafı takibidir; kodu bu iş yazar (D25/1)
+Keşif kararı 13: parent — WF-S17-DL1 bu işin kendi satırıdır
+Keşif kararı 14: child — WF-S17-DL2 aynı paketin DL-2 dilimidir; WorkflowModels.cs ve testler DL-2 ile ortak, işler sıralıdır (DL-2 bu işten sonra); yazma yolu dosyaları DL-2'dedir
+Keşif kararı 15: child — WF-TPL-01 aynı kuyrukta şablon kurulumu; bu işle yol paylaşmaz
+Keşif kararı 16: yeni — HCM-EMP-05 MOD-0251 kuyruğunda iş akışı anılması; bu iş ona dokunmaz
+
+Hedef ajan giriş alanları (§17.4, backend-architect):
+- Hedef servis ve proje yolları: Diten.Platform · yukarıdaki İzinli yollar · test projesi services/Diten.Platform/tests/Diten.Platform.Application.Tests · kaynak-metin kuralı tests/architecture/TenantArchitecture.ArchitectureTests
+- Aggregate / alanlar: entity değişmez; WorkflowInstanceStatusDto ve WorkflowInstanceHistoryEntryDto'ya sona eklemeli isteğe bağlı üyeler
+- Komut / sorgu listesi: GetWorkflowInstancesByObjectsQuery'ye sona isteğe bağlı IncludeDeleted (varsayılan false); komut yok
+- Neden kodları: yeni kod yok; 404 NotFoundNonLeakage aynen
+- Doğrulayıcı kuralları: yok
+- İzin anahtarları: yeni anahtar yok; instances.view aynen
+- Response<T> ve CustomBaseController: mevcut kalıp aynen
+
+NE: MOD-0023 §17 DL-1 — (1) Silmeme: WorkflowInstanceRepository, ApprovalTaskRepository, WorkflowTransitionLogRepository içinde devralınan DeleteAsync override edilir, yazmadan reddeder (AC-W1, AC-W15; arayüzlere silme üyesi yok; Platform.Common değişmez). (2) Eklemeli okuma alanları: by-objects → idempotencyKey, isDeleted; history → approvalTaskId, idempotencyKey, isDeleted (AC-W2, §17.7/4). history'de isDeleted dönen satırlarda hep false'tur, çünkü silinmiş satır süzülür. (3) by-objects?includeDeleted=true: IWorkflowInstanceRepository'ye tek yeni okuma üyesi (ListByObjectIdsAsync ikizi; kiracı koşulu kalır, yalnız IsDeleted == false düşer); varsayılan davranış değişmez (AC-W13). Varsayılan arayüz gövdesi NotSupportedException atar, yalnız WorkflowInstanceRepository uygular (§17.9/2). (4) Kiracı ve izin sınırı (AC-W16, §17.9/15). (5) AC-W2 kiracı cümlesi §17.9/16'daki haliyle. (6) Handler süzgeci `.Where(x => x.DeletedAt is null)` includeDeleted dalında kalkar (tek işaret kuralı D32/2); varsayılan dalda etkisizdir ve kalır: mevcut davranış değişmesin (§17.9/1a kaldırmayı zorunlu kılmaz).
+NEDEN: TRM-15 — Treasury bilinmeyen sonuçtan sonra kendi örneğini anahtarla bulmalı ve silinmiş satırı görüp yeniden başlatmamalı. Paket §17.1, §17.7, §17.8, §17.9; sahip kararı O-S17-2 = (b): history'ye includeDeleted yok. Kodu MOD-0023 sahibi tarafı yazar, başka kişi merge eder (D32/1).
+NASIL:
+- Makine yükü: her dotnet build / test komutundan önce uptime koş; 1 dakikalık yük 12'den büyükse 60 saniye bekle ve yeniden ölç; 12'nin altına inmeden derleme başlatma. Testleri proje proje koş; çözüm genelinde dotnet test yok.
+- Önce taban çizgisi: DOĞRULA 1–2 değişiklik yapmadan; geçen / kalan sayıları yaz.
+- Mimari taban (ölçüldü, v1.5 durması, Expected HEAD'de, kod değişmeden; 146 toplam, 143 geçti, 3 kaldı). `python3 scripts/known_failures.py fingerprint <trx> --suite TenantArchitecture.ArchitectureTests` tam olarak şu üç satırı verir:
+  items:5:d9773291e8efe9fa AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  items:55:6ee8c6dc31c3a246 AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  msg:13385a5e6ed357ef DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+  Bu üç kırmızı bu işten önce var ve bu işin konusu değildir: kayıt dosyalarına (tests/known-failures*) dokunma, düzeltme. Bu yüzden `check` burada çıkış 1 verir; ölçüt DOĞRULA 2'dedir.
+- AC-W13, AC-W15, AC-W16 kanıtı gerçek depoda Mongo ile (§17.9/1c; sahte depo kanıt değildir). Platform Mongo testleri DITEN_PLATFORM_TEST_MONGO_URI ister, yoksa kapalı-başarısızlık verir (services/Diten.Platform/tests/Shared/PlatformTestMongo.cs): başlamadan kendi mongod'unu başlat (tek üyeli replica set, loopback, geçici dizin, slot 6: port 36994, rs adı rswfdl1, /opt/homebrew/bin/mongod; port doluysa başka slot seç ve yaz), değişkeni `eval "$(scripts/test-env/mvp6-test-mongo-env.sh --slot 6 --rs rswfdl1)"` ile kur, işin sonunda yalnız kendi başlattığın süreci PID ile durdur ve raporda Mongo testlerinin gerçekten koştuğunu (atlanmadığını) göster. services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow altında MongoIntegrationHarness donanımını kullan (örnek TrustedWorkflowStartRecoveryMongoTests; AuditOutboxTemporalReplicaSetFixture kullanma, kendi mongod'unu başlatır); deleted fixture IsDeleted = true, DeletedAt = null.
+- AC başına ölçüm: AC-W2 — keyed ve unkeyed yazım için by-objects ve history'de idempotencyKey (history'de approvalTaskId) değerleri; AC-W13 — parametre verilmezse silinmiş satır gizli, includeDeleted=true ile isDeleted=true dönüyor; AC-W16 — başka kiracının nesnesinde (fixture: o kiracı aynı objectId için bir canlı ve bir IsDeleted = true örnek tutar, §17.9/15) by-objects boş instances ile 200 (bayraklı ve bayraksız), history ve instances/{id} 404 NotFoundNonLeakage, üç eylemde [HasPermission(instances.view)] öznitelik testi, includeDeleted varsayılanı false.
+- AC-W15 davranış testi (üç depo için de ayrı ayrı koşar: WorkflowInstance, ApprovalTask, WorkflowTransitionLog; kuramsal ya da veri-sürümlü): silmeyi türetilmiş depo ve RepositoryBase<T> / TenantRepository<T> başvurusu üzerinden çağırır; ikisi de reddeder; satır değişmez (IsDeleted false, UpdatedAt aynı).
+- AC-W1 kaynak-metin kuralı tests/architecture/TenantArchitecture.ArchitectureTests altına, sınıf gövdesi bazında (aynı dosyadaki SlaEscalationRuleRepository kapsam dışı, WorkflowRepositories.cs:970-971 IsDeleted yazar): WorkflowInstanceRepository, ApprovalTaskRepository, WorkflowTransitionLogRepository gövdelerinde `override` DeleteAsync var ve gövdesi yalnız fırlatır (Collection çağrısı ve IsDeleted / DeletedAt yazımı yok); üç arayüzde silme üyesi yok (adı Delete, SoftDelete, Remove ya da Purge içeren üye sayılır); PlatformSchemaManifest.WorkflowWorkCenter.cs'te bu üç koleksiyon için ExpireAfter yok; Common'daki RepositoryBase<T>.DeleteAsync hâlâ virtual ve IsDeleted + UpdatedAt yazıyor (AC-W15 'Platform.Common değişmedi'). Kural denetlediği kaynak metni parametre alan bir yardımcıya dayanır; böylece sabotaj korunan dosyaya yazmadan denenebilir.
+- Dördüncü depo (sahip kararı S17-8; kayıt Expected HEAD'de yoktur, kural aşağıda tam yazılıdır, kaydı arama): services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowStartRecoveryStore.cs da TenantRepository<WorkflowInstance> türetir. Bu dosyaya yazma, override ekleme (İzinli yol değil). AC-W1 kuralı Infrastructure altında üç tipten birini TenantRepository<…> ya da RepositoryBase<…> ile türeten bütün sınıfları listeler: beklenen küme tam olarak üç depo + WorkflowStartRecoveryStore; başka sınıf çıkarsa kırmızı. WorkflowStartRecoveryStore için kural IWorkflowStartRecoveryStore'da silme üyesi olmadığını ve services/Diten.Platform/src altında bu sınıfa DeleteAsync çağrısı olmadığını doğrular. Raporda açık kayıt olarak yaz: AC-W15 override şartı bu depo için sonraki paket revizyonuna kadar açık.
+- Yeni alanlar kayıtların sonuna isteğe bağlı üye olarak; AC-W4 için `git grep -n "WorkflowInstanceStatusDto\|WorkflowInstanceDto\|WorkflowInstanceHistoryEntryDto"` ile kurulum yerlerini tara ve raporda yaz.
+- Kişi alanları (§17.9/4): yalnız ölç ve raporda yaz (RuntimeAssignmentSnapshot.TieBreakExplanation; CreatedBy / UpdatedBy dolu mu; WorkflowInstance.ObjectId: Inventory, CRM, MDM ve Platform içi çağıranların gönderdiği objectId türü kodda taranır, kişiyi adlandıran var mı); kod değişikliği yok; O-S17-1 açık.
+- Commit ve teslim (S-63): kendi dalında yerel commit; push ve PR yok; commit sonrası dur ve CT'ye dal adı, HEAD sha'sı ve test sonucunu bildir.
+YAPMA:
+- CommandHandlers/**, Services/** (DL-2), GetWorkflowInstanceHistoryQuery.cs ve history eylemine includeDeleted (O-S17-2 = b), Platform.Common, entity dosyaları, gateway, frontend, başka servis (XMC-001).
+- Yeni izin, yeni rota, indeks ya da şema değişikliği; arayüze silme üyesi; TTL.
+- tests/architecture altında yalnız yeni dosya ve yeni kural; mevcut kural ve izin listeleri değiştirilmez (gerekiyorsa DUR).
+- Tüketici servislerin kodunu ya da testini değiştirme; kırılırsa DUR ve adıyla raporla.
+- Push, PR, merge, dal değiştirme, stash, reset, rebase.
+DOĞRULA: (komutlar worktree kökünde; her dotnet komutundan önce uptime)
+1. dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj -c Debug --filter "FullyQualifiedName~Workflow" --logger "trx;LogFileName=wf-dl1.trx" → 0 failed; sayı = taban çizgisi + yeni testler; WorkflowCrossServiceTests yeni alanlarla geçer (AC-W3 Platform satırları).
+2. dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj -c Debug --logger "trx;LogFileName=wf-dl1-arch.trx" → yeni kurallar yeşil; toplam = 146 + yeni testler; kalan tam 3. python3 scripts/known_failures.py fingerprint tests/architecture/TenantArchitecture.ArchitectureTests/TestResults/wf-dl1-arch.trx --suite TenantArchitecture.ArchitectureTests → çıktı NASIL'daki üç satırla birebir aynı (yeni satır yok, parmak izi değişmedi). Aynı TRX ile known_failures.py check koş; çıktısını rapora ekle (beklenen: çıkış 1, YENİ=0, aynı iki YENİ-AYRINTI satırı ve aynı KISMEN-DÜZELDİ satırı). Çıkış 1 tek başına durma nedeni değildir; YENİ > 0 ya da parmak izi farkı durma nedenidir.
+3. python3 scripts/known_failures.py check services/Diten.Platform/tests/Diten.Platform.Application.Tests/TestResults/wf-dl1.trx --suite platform-app → çıkış 0; kayıtta platform-app satırı yoktur, her kırmızı yenidir (CI adı .github/workflows/service-tests.yml:49). Madde 1'deki filtre dışında kalan bilinen kırmızılar bu işin konusu değildir.
+4. dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug → 0 hata (AC-W4).
+5. AC-W3 tüketici koşusu (değişiklik yok, yalnız koş): dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj --filter "FullyQualifiedName~ClaimsWorkflowApprovalTests|FullyQualifiedName~KnowledgePathReviewTests" ve dotnet test services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj --filter "FullyQualifiedName~QuarantineWorkflowTests" → 0 failed. Inventory testleri kendi Mongo'sunu ister: `DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod` ile koş (services/Diten.InventoryService/tests/Diten.InventoryService.Tests TestMongo.cs); Mongo kaynaklı kapalı-başarısızlık yeni alan kırmızısı sayılmaz, ayrı yaz. Raporda şunu yaz: bu koşu yeni alanlı gövde kanıtı değildir (testler kendi gövdesini kurar); AC-W3 tüketici satırları sahiplerince kanıtlanır; MDM ve Web bu işin dışında, "koşmadı".
+Sabotajlar (her biri geçici; ilgili testi koş, adı verilen testin kırmızısını gör, geri al, yeşil; kırmızı test adlarını raporla; derleme hatası kırmızı sayılmaz):
+6. S1 — üç depodan birinin DeleteAsync override'ını kaldır → AC-W15 davranış testi (adını yaz) ve AC-W1 kuralı kırmızı.
+7. S2 — includeDeleted dalını ExecutionFilter üzerinden oku (bayrak yok sayılır) → AC-W13 testi kırmızı; varsayılan dalı ExecutionFilter'sız oku → varsayılan gizleme testi kırmızı.
+8. S3 — yeni okuma üyesinde kiracı koşulunu düşür → AC-W16 testi kırmızı.
+9. S4 — IApprovalTaskRepository'ye bir Delete üyesi ekle → AC-W1 kuralı kırmızı.
+10a. S6 — AC-W1 kuralının kaynak-metin girdisine beklenen küme dışında TenantRepository<ApprovalTask> türeten bir sınıf metni ver → kuralın adı verilen testi kırmızı; geri al, yeşil.
+10. S5 — AC-W1 kuralının kaynak-metin girdisine geçici olarak ExpireAfter içeren bir metin ver (manifest dosyasına yazma, korunan yol) → kuralın adı verilen testi kırmızı; geri al, yeşil.
+11. git diff --check temiz; git status --porcelain yalnız İzinli yolları gösterir; git diff --stat -- services/Diten.Platform.Common boş.
+Durma koşulları:
+- İş İzinli yolların dışında değişiklik gerektiriyorsa → DUR ve adıyla raporla (XMC-001).
+- Worktree HEAD Expected HEAD'den farklı, dal farklı ya da başlangıçta kirli dosya → DUR.
+- Taban çizgisinde NASIL'daki üç mimari satır dışında kırmızı ya da parmak izi farkı, ya da Platform Workflow filtresinde kırmızı → değişiklik yapmadan DUR.
+- Değişiklik sonrası mimari parmak izi çıktısı NASIL'daki üç satırdan farklıysa → düzeltmeden önce DUR ve farkı adıyla raporla.
+- Paket ile kod arasında §17.9'da çözülmeyen çelişki → DUR.
+- Beklenen dördünün dışında üç tipten birini türeten bir depo bulunursa → DUR ve adıyla raporla.
+- Bir sabotaj adı verilen testi kırmızı yapmıyorsa ya da geri alma sonrası yeşile dönmüyorsa → DUR ve raporla.
+- Değişiklik sonrası mevcut bir Platform testi kırılırsa → testi düzeltmeden DUR ve adıyla raporla.
+- DITEN_PLATFORM_TEST_MONGO_URI kurulamıyorsa ya da Mongo testleri atlanıyorsa → DUR ve raporla.
+- Bir tüketici testi yeni alanlarla kırılırsa → düzeltme yapmadan DUR ve testi adıyla raporla.
+- 1 dakikalık yük 15 dakika boyunca 12'nin altına inmiyorsa → DUR ve uptime çıktılarıyla raporla.
+- Commit dışında push, PR, merge gerekirse → DUR.
+Rapor formatı: SOP §22 yapılandırılmış rapor (Agent Verdict · Branch / HEAD · Worktree status · Changed files · Contract flow · Failure paths · Tests · Persistence evidence · Security/RBAC/Tenant evidence · Sabotaj başına kırmızı test adı · Kişi alanı ölçümü · AC başına durum). Raporda açık kayıt olarak yaz: paket §17.8/2'deki ortam başına `isDeleted: true` satır sayımı sahip işidir, kodla yapılmadı.

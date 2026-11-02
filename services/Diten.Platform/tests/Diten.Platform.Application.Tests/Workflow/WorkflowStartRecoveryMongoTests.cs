@@ -49,7 +49,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// </list>
 /// </summary>
 [Trait("Category", "Mongo")]
-public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
+public sealed partial class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
     IAsyncLifetime,
     IClassFixture<AuditOutboxTemporalReplicaSetFixture>
 {
