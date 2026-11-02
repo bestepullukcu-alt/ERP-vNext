@@ -666,6 +666,13 @@ def no_pr_proven(root: str, merge: str) -> bool:
     (merged or not) is False; a malformed answer raises — "no PR found in a broken answer" is never a proof."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
+    key = ("no_pr", merge)      # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
+    if key not in _PR_CACHE:
+        _PR_CACHE[key] = _no_pr_answer(root, merge)
+    return _PR_CACHE[key]
+
+
+def _no_pr_answer(root: str, merge: str) -> bool:
     pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
     if not isinstance(pages, list) or not all(isinstance(page, list) for page in pages):
         raise Unreadable("GitHub cevabı sayfa listesi değil")
@@ -682,7 +689,9 @@ def no_pr_proven(root: str, merge: str) -> bool:
 
 def _pr_merge_why(root: str, c: str) -> str | None:
     """S-42 / independent review F-1: None when GitHub proves `c` is no pull request's merge commit; else why it counts
-    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never cached (Codex F-3)."""
+    as one (a pull request's merge, or not measurable / malformed — Codex F-1). Never kept beyond this process (Codex F-3; S-132:
+    within one process the same merge is asked once, sahip kararı 2026-11-02 `kota-duzelt`; a disk cache would let a local
+    writer forge a human step)."""
     try:
         if no_pr_proven(root, c):
             return None
@@ -828,12 +837,19 @@ def _quota_reset_local() -> str:
     return "sıfırlanma saati ölçülemedi"
 
 
+_QUOTA_STOP: str | None = None       # S-132: once GitHub said the quota is gone, this process asks nothing more
+
+
 def _gh_json(path: str, paginate: bool = False):
+    global _QUOTA_STOP
+    if _QUOTA_STOP is not None:
+        raise GitHubQuota(_QUOTA_STOP)
     done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         err = done.stderr.decode(errors="replace").strip()
         if QUOTA_TEXT.search(err) and ("403" in err or "exceeded" in err.lower()):
-            raise GitHubQuota(f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)")
+            _QUOTA_STOP = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
+            raise GitHubQuota(_QUOTA_STOP)
         raise Unreadable(f"gh api {path}: {err[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
 
@@ -969,16 +985,15 @@ def human_step(root: str, main: str, added: str, author_key: str | None = None,
 NOT_ON_MAIN = "onay satırı henüz ana çizgide (main) değil"     # S-115: the one reason a deferred reading lets pass
 
 
-def prefix_problem(root: str, ref: str, main: str, path: str) -> str | None:
-    """S-115: in the branch reading main's `path` must be a prefix of the ref's (the append-only merge keeps main's rows
-    first): a branch behind main would otherwise miss a revoke or a negative review that main already carries."""
-    theirs = read(root, main, path)
-    if not theirs:
-        return None
-    ours = read(root, ref, path) or b""
-    t, o = content_lines(theirs.decode("utf-8", errors="replace")), content_lines(ours.decode("utf-8", errors="replace"))
+def prefix_problem(root: str, ref: str, main: str, target: str) -> str | None:
+    """S-115, S-130: in the branch reading main's review rows OF THIS PACK must be a prefix of the ref's rows of this pack,
+    so a branch behind main cannot miss a negative review of this pack. Another pack's row reaching main says nothing about
+    this pack and must not stop its dispatch (a whole-file prefix did, S-130); the same scoping as Codex K4 for approvals."""
+    rows = lambda c: [{k: v for k, v in r.items() if k != "_n"} for r in review_rows(root, c) if r["target"] == target]
+    t, o = rows(main), rows(ref)
     if o[:len(t)] != t:
-        return f"bu ref, main'deki {path} satırlarını önek olarak içermiyor — dalı main ile güncelleyin (git merge origin/main)"
+        return (f"bu ref, main'deki {REVIEWS} içinde bu paketin satırlarını önek olarak içermiyor — dalı main ile güncelleyin "
+                "(git merge origin/main) ve prompt'un Expected HEAD'ini yenileyin")
     return None
 
 
@@ -1479,7 +1494,7 @@ def evaluate(root: str, ref: str, path: str, deferred: bool = False, anchor: str
             # would otherwise read as "no review" instead of a break). When this version still has review rows at the
             # ref, review_problems (today_problems) walks that history itself; the walk is repeated here only when
             # no row is left — each walk asks GitHub for every reordering merge (F-1: never cached), measured +53 calls
-            problems += [p for p in (prefix_problem(root, commit, anchor or ctx.main, REVIEWS),) if p]
+            problems += [p for p in (prefix_problem(root, commit, anchor or ctx.main, path),) if p]
             digest_now = sha256(data)
             # G-9 / F-15: review_problems walks that history only for a row under the review rule whose version has rows
             # at the ref; a legacy row (before POLICY-REVIEW-START) or a version without rows gets the walk here, so a
@@ -1936,6 +1951,7 @@ def self_test() -> int:
     cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached", pr_merge_sha not in _PR_CACHE))
     # S-42 / Codex F-1: "no PR" is a proof only from a well-formed answer
     def proven(pages):
+        _PR_CACHE.clear()       # S-132: each case is a fresh process; the same merge gets another answer
         answers.clear()
         answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = pages
         try:
@@ -1978,14 +1994,17 @@ def self_test() -> int:
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha)
     cases.append(("S-97 (no_pr_proven): index empty but pulls/7 matches -> it IS a pull request's merge, never 'no PR'",
                   no_pr_proven(root, msg_sha) is False))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha="0" * 40)
     cases.append(("S-97 (no_pr_proven): index empty and pulls/7 is another merge -> 'no PR' proven",
                   no_pr_proven(root, msg_sha) is True))
+    _PR_CACHE.clear()
     answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(merge_commit_sha=msg_sha, merged_at=None)
     cases.append(("S-97 (review F-2, no_pr_proven): pulls/7 has this merge commit but is not merged -> still a PR, "
                   "never 'no PR'", no_pr_proven(root, msg_sha) is False))
 
     def raises(record):
+        _PR_CACHE.clear()
         if record is None:
             answers.pop(f"repos/{TRUSTED_REPO}/pulls/7", None)
         else:
@@ -3324,6 +3343,27 @@ def self_test_deferred(cases: list) -> None:
     code, out = chk()
     cases.append(("sabotage S-115: a branch whose reviews.tsv lacks a row main already has -> deferred refused 'dalı main ile "
                   "güncelleyin', never a partial reading", code == 1 and has(out, "önek olarak içermiyor")))
+    # S-130: another pack's review row reaching main must not stop this pack's branch reading
+    g("checkout", "-q", "main")
+    branch("behind-other", "main")
+    put(PACK, get(PACK) + "- other pack case\n")
+    commit("pack moves on the branch")
+    review("UYGUN", OK, 0)
+    commit("branch review")
+    approve("dev", "lead")
+    commit("branch row")
+    g("checkout", "-q", "main")
+    branch("main-other", "main")
+    other = "execution/domains/x/module-packs/MOD-0777-other.md"
+    append(REVIEWS, "\t".join([other, "a" * 64, "docs/records/reviews/o/01.md", "b" * 64, "UYGUN", "0", "claude",
+                               "claude-opus-5-5", "high", "rs-9", "K4", "as-9", "dev", "2026-11-01"]))
+    commit("another pack's review row")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge main-other", "main-other", who=LEAD)
+    g("checkout", "-q", "behind-other")
+    code, out = chk()
+    cases.append(("S-130: main gains ANOTHER pack's review row the branch lacks -> deferred exit 0, no prefix refusal",
+                  code == 0 and not has(out, "önek olarak içermiyor")))
     # (10) / (9) / (11): the strict reading of the merger on main — high = hayır, the author's other account, the opener
     def merged_round(name, merger, row_author=DEV):
         g("checkout", "-q", "main")
@@ -3708,6 +3748,46 @@ def self_test_deferred(cases: list) -> None:
                       code == 2 and has(out, "kota") and has(out, "ölçülemedi") and not has(out, "güvenilmez")))
     cases.append(("S-115 kota: GitHubQuota is an Unreadable (every generic handler still fails closed)",
                   issubclass(GitHubQuota, Unreadable)))
+    globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
+    _PR_CACHE.clear()
+    # S-132: after the first quota answer the process runs no further gh command; one answer per merge within a process
+    saved_cmd, saved_reset, saved_src = globals()["_gh_cmd"], globals()["_quota_reset_local"], globals()["_PR_SOURCE"]
+    with tempfile.TemporaryDirectory() as td:
+        count = os.path.join(td, "calls")
+        globals()["_gh_cmd"] = lambda path, paginate=False: ["sh", "-c", f"echo x >> '{count}'; echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
+        globals()["_quota_reset_local"] = lambda: "04:12"
+        globals()["_QUOTA_STOP"] = None
+        raised = 0
+        for _ in range(3):
+            try:
+                _gh_json("x")
+            except GitHubQuota:
+                raised += 1
+        with open(count, encoding="utf-8") as f:
+            calls = len(f.readlines())
+        cases.append(("S-132: quota exhausted -> three readings raise GitHubQuota, only ONE gh command ran", raised == 3 and calls == 1))
+    globals()["_gh_cmd"], globals()["_quota_reset_local"] = saved_cmd, saved_reset
+    globals()["_QUOTA_STOP"] = None
+    asked = []
+    answers2 = [ValueError("bozuk"), [[]]]
+
+    def counting_gh(path, paginate=False):
+        asked.append(path)
+        a = answers2.pop(0) if answers2 else [[]]
+        if isinstance(a, Exception):
+            raise a
+        return a
+    globals()["_PR_SOURCE"], globals()["_gh_json"] = None, counting_gh
+    _PR_CACHE.clear()
+    plain = g("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "a plain merge subject").strip()
+    try:
+        no_pr_proven(root, plain)
+        first_raised = False
+    except ValueError:
+        first_raised = True
+    second, third = no_pr_proven(root, plain), no_pr_proven(root, plain)
+    cases.append(("S-132: a raised answer is not kept; a good answer is asked once per process (2 asks for 3 readings)",
+                  first_raised and second is True and third is True and len(asked) == 2))
     globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
     _PR_CACHE.clear()
     # (8) a row written straight onto main — invalid in both readings

@@ -165,6 +165,18 @@ test('the 409 fills the stored values, shows the local time and resends the exac
     assert.equal(sent[1].body.toWarehouseId, 'wh-stored');
 });
 
+test('a stored attempt without a location asks for one before it resends', async () => {
+    open();
+    answers = [{ status: 409, body: { error: { code: 'RETURN_RECEIPT_IN_PROGRESS', details: { toWarehouseId: 'wh-stored', toLocationId: null, occurredAt: '2026-10-26T08:00:07.250Z' } } } }, { status: 200, body: {} }];
+    await submit();
+    assert.equal(element('transitionToLocationId').value, '');
+    await submit();
+    assert.equal(sent.length, 1);
+    element('transitionToLocationId').value = 'loc-new';
+    await submit();
+    assert.equal(sent[1].body.toLocationId, 'loc-new');
+});
+
 test('an empty warehouse stops both paths and marks the field', async () => {
     open();
     answers = [refused('UNKNOWN_ITEM')];

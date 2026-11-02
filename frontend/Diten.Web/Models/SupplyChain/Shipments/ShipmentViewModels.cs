@@ -22,6 +22,9 @@ public sealed class CreateShipmentLineViewModel
     [Required, RegularExpression(@"^-?[0-9]+(\.[0-9]+)?$")] public string? Quantity { get; set; }
     [Required, MinLength(1)] public string? UomId { get; set; }
     public string? InventoryReferenceId { get; set; }
+    [RegularExpression("^(Gsku|Lsku|FinishedGood|Item)$")] public string? SkuLevel { get; set; }
+    public string? LotId { get; set; }
+    public string? FromLocationId { get; set; }
 }
 
 public sealed class TransitionShipmentViewModel
