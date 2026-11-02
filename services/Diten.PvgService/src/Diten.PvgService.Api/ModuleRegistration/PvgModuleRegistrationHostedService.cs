@@ -103,6 +103,9 @@ public sealed class PvgModuleRegistrationHostedService : IHostedService
     // The whole push. It never throws: every exit is a safe log code.
     private async Task PushAsync(CancellationToken stopToken)
     {
+        // The number of the last attempt that began, so a give-up after an unexpected exception names the real number.
+        var attemptsMade = 0;
+
         try
         {
             // The production-like check comes first: on such a host the values are not read at all.
@@ -131,7 +134,11 @@ public sealed class PvgModuleRegistrationHostedService : IHostedService
             var manifest = _provider.GetManifest();
 
             var stopped = await ModuleRegistrationRetry.RunAsync(
-                attempt: (attemptNumber, ct) => TryRegisterAsync(manifest, key, address, attemptNumber, ct),
+                attempt: (attemptNumber, ct) =>
+                {
+                    attemptsMade = attemptNumber;
+                    return TryRegisterAsync(manifest, key, address, attemptNumber, ct);
+                },
                 maxAttempts: MaxAttempts,
                 backoff: attemptNumber => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber)),
                 delay: _timing.Delay,
@@ -150,7 +157,7 @@ public sealed class PvgModuleRegistrationHostedService : IHostedService
         {
             // An exception the state table has no code for ends the push. The exception object and its message are
             // not logged: its text can carry the address.
-            _logger.LogWarning(GaveUpCode + " attempts={Attempts}", MaxAttempts);
+            _logger.LogWarning(GaveUpCode + " attempts={Attempts}", attemptsMade);
         }
     }
 

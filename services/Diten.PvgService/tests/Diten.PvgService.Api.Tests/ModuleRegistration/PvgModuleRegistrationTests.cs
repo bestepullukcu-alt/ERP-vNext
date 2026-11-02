@@ -35,11 +35,14 @@ public sealed class PvgModuleRegistrationTests
     {
         var expectedBody = JsonSerializer.Serialize(new PvgCaseIntakeTriageManifestProvider().GetManifest(), Web);
 
-        foreach (var suffix in new[] { string.Empty, "/" })
+        // As given, with a trailing slash, and padded with whitespace around (the address is the trimmed one).
+        (string Prefix, string Suffix)[] shapes = [(string.Empty, string.Empty), (string.Empty, "/"), ("  ", "/  ")];
+        foreach (var (prefix, suffix) in shapes)
         {
             var key = RegistrationValues.NewKey();
             var baseUrl = RegistrationValues.NewBaseUrl(RegistrationValues.NewToken());
-            await using var rig = RegistrationRig.Create(StubRegistrationHandler.Always(HttpStatusCode.OK), key, baseUrl + suffix);
+            await using var rig = RegistrationRig.Create(
+                StubRegistrationHandler.Always(HttpStatusCode.OK), key, prefix + baseUrl + suffix);
 
             await rig.StartAsync();
             Assert.Equal(Succeeded, await rig.Logs.WaitForAnyAsync(Bound, Succeeded));
@@ -209,12 +212,27 @@ public sealed class PvgModuleRegistrationTests
         var open = new StubRegistrationHandler(async (_, _, ct) =>
         {
             entered.TrySetResult();
-            await release.Task.WaitAsync(ct);
+            try
+            {
+                await release.Task.WaitAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                // The call takes a moment to unwind after the cancel, so a StopAsync that does not wait returns first.
+                await Task.Delay(300, CancellationToken.None);
+                throw;
+            }
+
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
+        // The attempt timeout is long (60 s) and the stop limit short (5 s): only the link to the stop token can end the
+        // open call in time, so a timeout that happens to equal the limit cannot make this test pass.
         await using (var rig = RegistrationRig.Create(
-                         open, RegistrationValues.NewKey(), RegistrationValues.NewBaseUrl(RegistrationValues.NewToken())))
+                         open,
+                         RegistrationValues.NewKey(),
+                         RegistrationValues.NewBaseUrl(RegistrationValues.NewToken()),
+                         attemptTimeout: TimeSpan.FromSeconds(60)))
         {
             Task? stop = null;
             try
@@ -226,7 +244,8 @@ public sealed class PvgModuleRegistrationTests
                 var stopped = await RegistrationValues.CompletesWithinAsync(stop, TimeSpan.FromSeconds(5));
                 Assert.True(stopped, "StopAsync did not end the push within 5 seconds (open call)");
                 Assert.Equal(1, open.CallCount);
-                Assert.Equal(Stopped, await rig.Logs.WaitForAnyAsync(Bound, Stopped));
+                // StopAsync waits for the task: when it returns, the stop code is already written (no polling).
+                Assert.Equal(1, rig.Logs.CountOf(Stopped));
             }
             finally
             {
@@ -251,7 +270,7 @@ public sealed class PvgModuleRegistrationTests
             var stopped = await RegistrationValues.CompletesWithinAsync(stop, TimeSpan.FromSeconds(5));
             Assert.True(stopped, "StopAsync did not end the push within 5 seconds (wait)");
             Assert.Equal(1, failing.CallCount);
-            Assert.Equal(Stopped, await rig.Logs.WaitForAnyAsync(Bound, Stopped));
+            Assert.Equal(1, rig.Logs.CountOf(Stopped));
         }
     }
 
@@ -513,6 +532,20 @@ public sealed class PvgModuleRegistrationTests
         Assert.Equal(
             new[] { Retrying, Retrying, Retrying, Retrying, Retrying, GaveUp },
             await RunAsync(StubRegistrationHandler.Always(HttpStatusCode.BadGateway), key, url, false, GaveUp));
+
+        // An exception no table row names ends the push on the attempt it happened in: the give-up names that number.
+        var unexpected = new StubRegistrationHandler((number, _, _) => number < 3
+            ? Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))
+            : throw new InvalidOperationException("unexpected failure"));
+        await using (var rig = RegistrationRig.Create(unexpected, key, url))
+        {
+            await rig.StartAsync();
+            Assert.Equal(GaveUp, await rig.Logs.WaitForAnyAsync(Bound, GaveUp));
+            Assert.Equal(new[] { Retrying, Retrying, GaveUp }, rig.Logs.CodesOf("PVG_MODULE_REGISTRATION_").ToArray());
+            var giveUp = Assert.Single(rig.Logs.Entries, entry => entry.Message.StartsWith(GaveUp, StringComparison.Ordinal));
+            Assert.Equal(GaveUp + " attempts=3", giveUp.Message);
+            Assert.Equal(3, unexpected.CallCount);
+        }
 
         // Stop during the push.
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -143,11 +143,26 @@ internal sealed class RecordingDelay
         _waiting.TrySetResult();
         if (BlockUntilCancelled)
         {
-            return Task.Delay(Timeout.Infinite, cancellationToken);
+            return BlockAsync(cancellationToken);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
         return Task.CompletedTask;
+    }
+
+    // Blocks until cancelled, then takes a moment to unwind: a StopAsync that does not wait for the push returns before
+    // the push has logged its stop code, so the test can tell the two apart.
+    private static async Task BlockAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            await Task.Delay(300, CancellationToken.None);
+            throw;
+        }
     }
 }
 
@@ -201,10 +216,20 @@ internal sealed class CapturingLoggerProvider : ILoggerProvider
 
     private sealed class CapturingLogger(string category, ConcurrentQueue<CapturedLog> entries) : ILogger
     {
+        // A scope is captured like an entry (level None), so a scope that carries the key or the address is found too.
         public IDisposable? BeginScope<TState>(TState state)
-            where TState : notnull => null;
+            where TState : notnull
+        {
+            entries.Enqueue(new CapturedLog(category, LogLevel.None, "scope: " + state, null, Describe(state)));
+            return null;
+        }
 
         public bool IsEnabled(LogLevel logLevel) => true;
+
+        private static string Describe<TState>(TState state) =>
+            state is IEnumerable<KeyValuePair<string, object?>> pairs
+                ? string.Join(";", pairs.Select(pair => pair.Key + "=" + pair.Value))
+                : state?.ToString() ?? string.Empty;
 
         public void Log<TState>(
             LogLevel logLevel,
