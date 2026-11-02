@@ -18,7 +18,10 @@ const ShipmentCreate = (function () {
     const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId', 'skuLevel', 'fromLocationId', 'lotId'];
     const optionalStockFields = ['lotId']; // left out when empty: SHIPMENT-BUNDLE 3.4.0 keeps the fingerprint of a line without them
     const value = (id) => document.getElementById(id)?.value || '';
-    const toUtc = (input) => input ? new Date(input).toISOString() : null;
+    // DitenDateField binds `.flatpickr-date` and defaults to a date only; these two fields carry a time too.
+    const dateOptions = { enableTime: true, time_24hr: true, dateFormat: 'Y-m-d H:i' };
+    const enhanceDates = () => window.DitenDateField?.enhance(document, dateOptions);
+    const toUtc = (input) => input ? new Date(input.replace(' ', 'T')).toISOString() : null;
     const token = () => document.querySelector('#formShipment input[name="__RequestVerificationToken"]')?.value || '';
     const showError = (message) => {
         const alert = document.getElementById('formShipmentAlert');
@@ -132,9 +135,9 @@ const ShipmentCreate = (function () {
         document.getElementById('btnAddLine')?.addEventListener('click', () => addLine(true));
         document.getElementById('formShipment')?.addEventListener('submit', submit);
         addLine();
-        window.DitenDateField?.enhance(document);
+        enhanceDates();
         await loadLegalEntities();
     };
     document.addEventListener('DOMContentLoaded', () => { void init(); });
-    return { init, payload };
+    return { init, payload, enhanceDates };
 })();
