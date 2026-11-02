@@ -10,7 +10,7 @@ golden_reference: none
 entity_base: EntityBase
 status: draft
 approval_status: pending
-status_note: "draft — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. Açık sorular §19.4 (Q-01…Q-08), CT kararları §19.5 (CT-01…CT-07). Kod yazılmaz: status ready-for-dev + CT-APR-02 bağımsız inceleme + CT-APR-01 onay satırı gerekir."
+status_note: "draft — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\") ve CT kararları CT-01, CT-02, CT-03, CT-04 (MVP-1 CT) verildi — §19.6. Hâlâ draft: ready-for-dev önkoşulu CT-07 (LotHeldStock.cs XMC-001 onayı) açık — sahibe soruluyor (§18). Açık sorular Q-01, Q-05, Q-07 (§19.4); açık CT kararları CT-05, CT-06, CT-07 (§19.5). Kod yazılmaz: status ready-for-dev + CT-APR-02 bağımsız inceleme + CT-APR-01 onay satırı gerekir."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-02
@@ -24,7 +24,7 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0174, MOD-0175, MOD-0176, MOD-0177, 
 > **Kimlik (DCP-002) — ölçüldü 2026-11-02, dal `chore/ct/mod0178-dl1-accept-01` @ `703cbaec7`:**
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0173-FU03 --name "Inventory Lot & Location Reservation" --parent MOD-0173`
 > → çıkış **0** ("OK MOD-0173-FU03: proven against Blueprint/registry"). Ebeveyn `--check-id MOD-0173 --name "Inventory Ledger & Valuation"`
-> → çıkış 0. Keşif ve kimlik gerekçesi §19.1'de. **Registry satırı bu paketle yazılmaz** — satır eklemek CT kararıdır (CT-01, §19.5).
+> → çıkış 0. Keşif ve kimlik gerekçesi §19.1'de. **Registry satırı bu paketle yazılmaz** — satırı CT ekledi (CT-01, `2265cce90`, §19.6). **Kanonik ad** "Inventory Lot & Location Reservation" (CT kararı 2026-11-02); kayıt satırındaki "Inventory Lot / Location Reservation" yazımını CT düzeltecek.
 >
 > **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`. Ebeveyn paket
 > `MOD-0173-inventory-ledger-valuation.md` §19 ASSUMPTION-0173-12…17 (SKU düzeyinde rezervasyon tasarımı) bu paketin **tabanıdır**;
@@ -614,8 +614,10 @@ Gateway üzerinden ölçer (AC-19); geçmiyorsa gövdedeki `etag` alanı yeterli
 - [ ] Test expectations build / sözleşme / izolasyon / denetim / smoke (§17)
 - [ ] Audited Events her yazma komutunu tam bir kez içeriyor (§21)
 - [ ] Sayfa yardımı: sayfa yok (§23); tur yok
-- [ ] Q-02, Q-03, Q-04, Q-06, Q-08 kararları verildi (DL-1 / DL-2 davranışını belirler; ready-for-dev önkoşulu)
-- [ ] CT-01 registry satırı, CT-02 hata kataloğu yetkisi, CT-03 sürüm adımı, CT-07 `LotHeldStock.cs` XMC-001 onayı yazıldı
+- [x] Q-02, Q-03, Q-04, Q-06, Q-08 kararları verildi (sahip kararı Beste 2026-11-02, §19.6)
+- [x] CT-01 registry satırı (`2265cce90`) ve CT-03 sürüm adımı (iki adım) yazıldı (MVP-1 CT 2026-11-02, §19.6); CT-04 dilim / W-5 koşulu da verildi
+- [x] CT-02 hata kataloğu yetkisi yazıldı — bu FU paketi; ebeveyne DL-1 kabulünde sürüm notu (MVP-1 CT 2026-11-02, §19.6)
+- [ ] CT-07 `LotHeldStock.cs` XMC-001 onayı yazıldı — **açık, sahibe soruluyor** (tek kalan ready-for-dev önkoşulu, bağımsız inceleme ve onay dışında; ayrıca DL-1 önkoşulu, §7)
 - Not: Q-01 (FEFO) ready-for-dev önkoşulu **değildir**; yalnız DL-3'ün dağıtım kapısıdır (§22). Q-05, Q-07 başka paketlerin kararıdır.
 - [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) + CT-APR-01 onay satırı (yüksek risk: sözleşme + ürün kodu yolu)
 - [ ] `status: ready-for-dev`
@@ -681,7 +683,7 @@ revizyonu onaylı"); MOD-0176 FU-0176-RES-01 ("Lot-based reservation … MOD-017
 
 ### 19.3 Varsayımlar (yalnız yeni paket sürümüyle değişir)
 
-- **ASSUMPTION-0173-FU03-01:** v1 kapsamı depo + lot; bin (lokasyon) pini yok (Q-02 kararına kadar).
+- **ASSUMPTION-0173-FU03-01:** v1 kapsamı depo + lot; bin (lokasyon) pini yok — Q-02 kapandı: **hayır** (sahip kararı Beste 2026-11-02, §19.6); gerekirse FU-03-BIN.
 - **ASSUMPTION-0173-FU03-02:** tam tüketim `RELEASED` + `closedReason Consumed`; wire `status` enum'u değişmez.
 - **ASSUMPTION-0173-FU03-03:** kapsam bekçisinin azalış reddi mevcut `INSUFFICIENT_STOCK` kodudur (0175 ve MVP-6 G7 eşlemeleri için).
 - **ASSUMPTION-0173-FU03-04:** `target 2026-11-30` şema zorunlu planlama değeridir, taahhüt değil.
@@ -693,34 +695,56 @@ revizyonu onaylı"); MOD-0176 FU-0176-RES-01 ("Lot-based reservation … MOD-017
 | # | Soru | Seçenekler / öneri | Sahip | Karar hedefi |
 |---|---|---|---|---|
 | Q-01 | FEFO kancası başka outbound'lara ayrılmış lotları nasıl sayar? (MOD-0178 §8.10 gereksinim 4) | (a) serbest miktar tabanı + DL-3 okuma portu + 0176 revizyonu (öneri); (b) değişmez, gerekçeyle sapma | MVP-1 CT (Beste) — MOD-0173 + MOD-0176 sahibi; MVP-5 S2 yazarı bilgi | 2026-11-09 (DL-3 kapısı ve 0178 S2 revizyonundan önce; ready-for-dev önkoşulu değil) |
-| Q-02 | Bin (lokasyon) pini v1'de gerekli mi? | Öneri: hayır (depo + lot); fiziksel yer 0178 görevinde; gerekirse FU-03-BIN | MVP-1 CT (Beste), MVP-5 S2 yazarıyla | 2026-11-09 (ready-for-dev önkoşulu) |
-| Q-03 | Rezervasyonu kim tüketebilir? | Öneri: v1 kapsamı eşleşen her hareket (`inventory.movements.create`) + denetim; daraltma (ör. `consumerModule`) FU | MVP-1 CT (Beste); MVP-6 CT (Natig) bilgi | 2026-11-09 (ready-for-dev önkoşulu) |
-| Q-04 | Tüketen çıkış kalandan fazlaysa? | Öneri: 422 `RESERVATION_QUANTITY_EXCEEDED`; alternatif: kalanı tüket + fazlasını serbest stoktan al | MVP-1 CT (Beste) | 2026-11-09 (ready-for-dev önkoşulu) |
+| Q-02 | Bin (lokasyon) pini v1'de gerekli mi? | **KAPANDI — hayır** (depo + lot; bin pini yok, gerekirse FU-03-BIN) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-03 | Rezervasyonu kim tüketebilir? | **KAPANDI** — v1'de kapsamı eşleşen her hareket (`inventory.movements.create`) + denetim; daraltma FU (FU-03-CONSUMER) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-04 | Tüketen çıkış kalandan fazlaysa? | **KAPANDI** — 422 `RESERVATION_QUANTITY_EXCEEDED`; fazlası serbest stoktan alınmaz | Beste (sahip kararı 2026-11-02) | §19.6 |
 | Q-05 | MVP-6 sevkiyat satırından `reservationId` hangi alanla gelir? (`inventoryReferenceId` mi, 3.5.0 yeni alan mı) — MOD-0178 Q-M6-2 ile aynı | MVP-6'nın kararı; bu paket yalnız `MovementRequest.reservationId` sunar | MVP-6 CT (Natig) | MOD-0183 revizyonunda; MVP-5 S2 canlıya çıkmadan önce |
-| Q-06 | Toplu port (`CreateBatchAsync`) kabul mü? | Öneri: evet — outbound tahsisi "hepsi ya da hiçbiri" (WMS taslağı §11 `WMS_ALLOCATION_FAILED`, "kayıt açılmaz") | MVP-1 CT (Beste) | 2026-11-09 (ready-for-dev önkoşulu) |
+| Q-06 | Toplu port (`CreateBatchAsync`) kabul mü? | **KAPANDI — evet**; toplu port hepsi ya da hiçbiri (§8.7) | Beste (sahip kararı 2026-11-02) | §19.6 |
 | Q-07 | 0178 rezervasyonları `expiresAt` taşır mı; `reservationType` / kaynak üçlüsü değeri? | 0178 S2 revizyonunun kararı; öneri `expiresAt` yok (MVP-6 sevkiyat rezervasyonu emsali, `DECISION-DRAFT.md` §3b ek not 2) | MVP-1 CT (MVP-5 S2 revizyonu) | 0178 S2 revizyonu |
-| Q-08 | Rezervasyona görünür kayıt kodu gerekir mi? | Öneri: hayır (§8.10) | MVP-1 CT (Beste) | 2026-11-09 (ready-for-dev önkoşulu) |
+| Q-08 | Rezervasyona görünür kayıt kodu gerekir mi? | **KAPANDI — hayır** (§8.10) | Beste (sahip kararı 2026-11-02) | §19.6 |
 
 ### 19.5 CT kararları
 
 | # | Karar | Öneri |
 |---|---|---|
-| CT-01 | Registry'ye `MOD-0173-FU03 \| Inventory Lot & Location Reservation \| inventory-lot-location-reservation \| Follow-up \| draft \| … \| MOD-0173 \| supply-chain-execution` satırı | ekle (bu paket registry'ye yazmaz) |
-| CT-02 | Kapalı hata kataloğu (`InventoryErrorCodes.All`, "no other code without new pack version") için bu FU paketi yeni kodların yetkisi mi, yoksa ebeveyn MOD-0173 paketine sürüm notu mu gerekir? Yeni kodlar: `RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED` | bu paket yeterli; ebeveyn pakete yalnız atıf satırı (ayrı onay) |
-| CT-03 | Sözleşme iki adım (1.6.0 DL-1, 1.7.0 DL-2) mı, tek 1.6.0 mı? | iki adım — her dilim kendi sürümünü kod paritesiyle getirir |
-| CT-04 | Dilim sırası ve MOD-0178 S2'nin açılma koşulu | DL-1 + DL-2 CT kabulü = W-5 kapandı; DL-3 yalnız Q-01 = (a) ise ve 0178 S2 için engel sayılmaz |
+| CT-01 | Registry'ye `MOD-0173-FU03` satırı | **KARAR VERİLDİ** — satır eklendi (`2265cce90`, MVP-1 CT 2026-11-02); ad farkı açık nokta (§19.6) |
+| CT-02 | Kapalı hata kataloğu (`InventoryErrorCodes.All`, "no other code without new pack version") için yeni kodların yetkisi (`RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`) | **KARAR VERİLDİ** — yetki bu FU paketidir; ebeveyn MOD-0173 paketine yalnız DL-1 kabulünde sürüm notu düşülür (MVP-1 CT 2026-11-02) |
+| CT-03 | Sözleşme iki adım (1.6.0 DL-1, 1.7.0 DL-2) mı, tek 1.6.0 mı? | **KARAR VERİLDİ — iki adım kalır** (1.6.0 / 1.7.0; MVP-1 CT 2026-11-02) |
+| CT-04 | Dilim sırası ve MOD-0178 S2'nin açılma koşulu | **KARAR VERİLDİ** — W-5 = DL-1 + DL-2 CT kabulü; DL-3 MOD-0178 S2 için engel değildir (MVP-1 CT 2026-11-02) |
 | CT-05 | Plan satırı (yetenek kimliği, plan MVP) | plan sahibinden alınıp dilim tablosuna yazılır |
 | CT-06 | MOD-0176 FU-0176-RES-01 sahibi (MOD-0178 yazıyor) W-5 ile çelişiyor | 0176 paket metni düzeltmesi (XMC-001, 0176 sahibi aynı) |
 | CT-07 | XMC-001: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 yolları) DL-1'de kapsam pozisyonlarını güncellemek için değişir | onay — başka yolla değişmez korunamaz (§8.2 yol 3–4); onay yoksa DL-1 başlamaz |
 
+### 19.6 Verilen kararlar (2026-11-02)
+
+Sahip kararları Beste'nin ("hepsi öneri gibi"), CT kararları MVP-1 CT'nin. Hepsi paketin önerisini aynen kabul eder; paket gövdesi
+(§8.2, §8.3, §8.7, §8.10, §12) bu davranışı zaten yazıyordu, değişen yalnız kararın kaydıdır.
+
+| # | Karar | Veren | Pakette nerede |
+|---|---|---|---|
+| Q-02 | Hayır — v1 kapsamı depo + lot; bin pini yok; gerekirse FU-03-BIN | Beste (sahip) | §1, §2, §8.4, §12, §19.3 ASSUMPTION-01, §20 |
+| Q-03 | v1'de kapsamı eşleşen her hareket tüketebilir (`inventory.movements.create`) + denetim; daraltma FU (FU-03-CONSUMER) | Beste (sahip) | §8.3, §14, §20, §21 |
+| Q-04 | 422 `RESERVATION_QUANTITY_EXCEEDED`; fazlası serbest stoktan alınmaz | Beste (sahip) | §8.3, §8.8 |
+| Q-06 | Evet — toplu port `CreateBatchAsync` hepsi ya da hiçbiri | Beste (sahip) | §8.7 |
+| Q-08 | Hayır — görünür kayıt kodu yok | Beste (sahip) | §8.10 |
+| CT-01 | Registry satırı eklendi (`2265cce90`) | MVP-1 CT | `execution/registries/module-id-registry.md` |
+| CT-03 | Sözleşme iki adım kalır: 1.6.0 (DL-1), 1.7.0 (DL-2) | MVP-1 CT | §8.8, §22 |
+| CT-04 | W-5 = DL-1 + DL-2 CT kabulü; DL-3 MOD-0178 S2 için engel değildir | MVP-1 CT | §22 |
+| CT-02 | Beş yeni hata kodunun (`RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`) kapalı kataloğa `InventoryErrorCodes.All` eklenme yetkisi bu FU paketidir; ebeveyn MOD-0173 paketine yalnız DL-1 kabulünde sürüm notu düşülür | MVP-1 CT | §8.8, §12, §22 (DL-1 kabulü) |
+| Ad | Kanonik paket adı "Inventory Lot & Location Reservation" (künye ve DCP-002 ön kontrolüyle aynı); kayıt satırını CT düzeltir | MVP-1 CT | künye, §19.1 |
+
+**Açık kalanlar:** Q-01 (FEFO, DL-3 kapısı), Q-05 (MVP-6), Q-07 (MOD-0178 S2 revizyonu); CT-05 (plan satırı), CT-06 (MOD-0176 FU
+satırı düzeltmesi), CT-07 (`LotHeldStock.cs` XMC-001 onayı — sahibe soruluyor; ready-for-dev önkoşulu). Kayıt satırındaki ad yazımını
+CT düzeltecek (kanonik ad yukarıda).
+
 ## 20. Follow-up Items
 
-- **FU-03-BIN** — bin (lokasyon) pini: rezervasyonun `locationId`'si, `LOCATION_TRANSFER`'da pinin taşınması (Q-02 "evet" ise).
+- **FU-03-BIN** — bin (lokasyon) pini: rezervasyonun `locationId`'si, `LOCATION_TRANSFER`'da pinin taşınması — Q-02 = **hayır** (2026-11-02); yalnız ileride ihtiyaç doğarsa ayrı sahip kararıyla açılır.
 - **FU-03-FEFO** — MOD-0176 revizyonu: FEFO aday kümesi serbest miktarla (Q-01 = a); FEFO-BUNDLE eklemeli `basis`.
 - **FU-03-QH** — MOD-0175 ön kontrolünü lot / depo düzeyine indirmek (daha net 409 mesajı); bugün defter bekçisi yakalıyor (§8.6).
 - **FU-03-UI** — MOD-0173-FU01 BG-08 rezervasyon çekmecesi (`getReservation` + liste okuması); 7 dil.
 - **FU-03-LIST** — `GET /reservations` listesi (kapsam / kaynak süzgeci) — tüketici isteyince.
-- **FU-03-CONSUMER** — tüketiciyi daraltma (Q-03 alternatifi).
+- **FU-03-CONSUMER** — tüketiciyi daraltma (ör. `consumerModule`) — Q-03 kararı (2026-11-02): v1'de eşleşen her hareket, daraltma bu FU'da.
 - **FU-03-403AUDIT** — 403 (`Denied`) denemelerinin servis genelinde denetimi (AUD-001 §3); servis geneli altyapı, bu paketin değil.
 - **FU-03-COUNT** — MOD-0181 sayımı: ayrılmış stoğu açıkta bırakan `COUNT_LOSS` reddedilir (§8.2); sayım akışının rezervasyon uzlaştırması MOD-0181 paketinde.
 - **FU-03-EAM** — MOD-0201 yedek parça "reservations (maintenance view)" bu rezervasyonu tüketecekse ayrı paket.
@@ -754,7 +778,7 @@ Kayda yazılmayan alanlar: token, gizli anahtar; rezervasyon kişisel veri taş�
 | DL-2 | rezervasyon kimliğiyle tüketim + yer değiştirme + INVENTORY 1.7.0 | Rezervasyon kimliğiyle tüketim, Ayrılmış stokun yer değiştirmesi, Sözleşme değişikliği (INVENTORY 1.6.0 ve 1.7.0), Durum ve komut tablosu, Validation Rules, Failure Path to Verify, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 | DL-3 | FEFO için ayrılmış lot okuma portu (yalnız Q-01 = a) | FEFO kancası ve ayrılmış lotlar | E4 | plan kimliği yok | plan satırı yok |
 
-Kabul ölçütleri: DL-1 → AC-1…AC-19, AC-32, AC-34; DL-2 → AC-20…AC-30, AC-32, AC-33; DL-3 → AC-31, AC-32. DL-1'in önkoşulu CT-07. DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
+Kabul ölçütleri: DL-1 → AC-1…AC-19, AC-32, AC-34; DL-2 → AC-20…AC-30, AC-32, AC-33; DL-3 → AC-31, AC-32. DL-1'in önkoşulu CT-07. DL-1 kabulünde ebeveyn MOD-0173 paketine beş yeni hata kodu için sürüm notu düşülür (CT-02). DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
 iki dilimde geçer: DL-1 yalnız 1.6.0 maddelerini, DL-2 yalnız 1.7.0 maddelerini yapar. W-5'in kapanışı ve MOD-0178 S2'nin (DL-4) açılma
 koşulu: DL-1 + DL-2 CT kabulü (CT-04). MVP-6'nın gerçek tüketimi (E5, iki modül birlikte) MOD-0183 revizyonunun kabulüdür, bu paketin değil.
 
