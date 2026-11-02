@@ -98,11 +98,13 @@ const ShipmentCreate = (function () {
             if (legalEntities.length === 0) { showError(L.legalEntityNone); return false; }
             if (select) {
                 select.innerHTML = '';
+                // The company chosen on the list opens here; none chosen, exactly one auto-selects and several open on the first.
+                const chosen = document.getElementById('formShipment')?.dataset.companyId || '';
                 legalEntities.forEach((item, index) => {
                     const option = document.createElement('option');
                     option.value = item.id;
                     option.textContent = item.name;
-                    if (index === 0) option.selected = true;  // exactly one auto-selects; several open on the first
+                    if (chosen ? item.id === chosen : index === 0) option.selected = true;
                     select.appendChild(option);
                 });
             }

@@ -12,14 +12,31 @@ public sealed class ShipmentIndexBehaviorTests
     public void CarriesTheCompanyScopeOnTheListAndOnCreate()
     {
         var create = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js");
-        Assert.Contains("params.set('legalEntityId', company)", _script);
-        Assert.Contains("'/SupplyChain/api/legal-entities'", _script);
-        Assert.Contains("if (!await loadLegalEntities()) return;", _script);
-        // Reset clears status and the source document id, never the scope: a blank would guarantee a 400.
-        Assert.DoesNotContain("filterLegalEntity').value = ''", _script);
+        Assert.Contains("params.set('legalEntityId', company())", _script);
+        Assert.Contains("dataset.legalEntityId", _script);
+        Assert.DoesNotContain("document.cookie", _script);
         Assert.Contains("'/SupplyChain/api/legal-entities'", create);
         Assert.Contains("Shipments/api?legalEntityId=${encodeURIComponent(company)}", create);
         Assert.Contains("if (!company) { showError(L.legalEntityRequired); return; }", create);
+    }
+
+    // The shared selector, not a page of its own: the same cookie as the MVP-1 screens, and no list until a company is chosen.
+    [Fact]
+    public void UsesTheSharedCompanySelectorAndDrawsNoListWithoutACompany()
+    {
+        var index = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml");
+        Assert.Contains("CompanySelection.ResolveAsync(", index);
+        Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
+        Assert.True(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal) < index.IndexOf("id=\"shipmentsListSurface\"", StringComparison.Ordinal));
+        Assert.Contains("data-legal-entity-id=\"@companyScope\"", index);
+        Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml"));
+    }
+
+    [Fact]
+    public void TheCreatePageOpensOnTheChosenCompany()
+    {
+        Assert.Contains("data-company-id=\"@company?.ToString(\"D\")\"", Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml"));
+        Assert.Contains("chosen ? item.id === chosen : index === 0", Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js"));
     }
 
     [Fact] public void UsesDataTablesV2WithoutSavedState() { Assert.Contains("new DataTable", _script); Assert.Contains("serverSide: true", _script); Assert.Contains("stateSave: false", _script); Assert.Contains("window.DtDefaults", _script); }

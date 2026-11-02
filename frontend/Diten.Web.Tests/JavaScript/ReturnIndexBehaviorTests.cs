@@ -261,6 +261,19 @@ public sealed class ReturnIndexBehaviorTests
         return text[from..to];
     }
 
+    [Fact]
+    public void UsesTheSharedCompanySelectorAndTheListFollowsACreatedReturn()
+    {
+        var index = Read("frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml");
+        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js");
+        Assert.Contains("CompanySelection.ResolveAsync(", index);
+        Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
+        Assert.True(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal) < index.IndexOf("_DataTable.cshtml", StringComparison.Ordinal));
+        Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml"));
+        Assert.DoesNotContain("filterLegalEntity", script);
+        Assert.True(script.IndexOf("adoptCompany(createdScope);", StringComparison.Ordinal) > 0);
+    }
+
     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));
     private static string Root() { var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent; return dir?.FullName ?? throw new DirectoryNotFoundException(); }
 }
