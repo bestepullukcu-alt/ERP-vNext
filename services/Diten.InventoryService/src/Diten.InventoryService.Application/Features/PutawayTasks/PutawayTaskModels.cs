@@ -127,7 +127,11 @@ public sealed record WarehouseTaskEventPageDto(IReadOnlyList<WarehouseTaskEventD
 
 public sealed record BlockingDocumentDto(string Kind, string Id, string? Number = null);
 
-/// <summary>§3.3 <c>PutawayCandidate</c> — computed from the INVENTORY balance at read time, never stored.</summary>
+/// <summary>
+/// §3.3 <c>PutawayCandidate</c> — computed from the INVENTORY balance at read time, never stored. <see cref="StorageConditions"/> is the product's
+/// PRODUCT-MASTER v1.1 <c>getSku.storageConditions</c> copy (display only, the rule is §3.6): absent = UNKNOWN (never read as "no condition",
+/// pack §8.12 — the screen's "Saklama koşulu bilinmiyor" badge, §11.3a), an empty list = the product states no condition.
+/// </summary>
 public sealed record PutawayCandidateDto(
     string CandidateKey,
     string WarehouseId,
@@ -145,7 +149,8 @@ public sealed record PutawayCandidateDto(
     string? LotStatus = null,
     string? NotEligibleReason = null,
     BlockingDocumentDto? BlockingDocument = null,
-    string? LastPostingDate = null);
+    string? LastPostingDate = null,
+    IReadOnlyList<string>? StorageConditions = null);
 
 public sealed record PutawayCandidatePageDto(IReadOnlyList<PutawayCandidateDto> Items, long Total, int Page, int PageSize,
     string ContractVersion = Warehouse.WarehouseContract.ContractVersion);

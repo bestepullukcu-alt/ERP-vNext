@@ -63,6 +63,9 @@ public class WarehouseApiFactory : InventoryApiFactory
 
     public ConcurrentDictionary<Guid, int> ProductCalls { get; } = new();
 
+    /// <summary>DL-3 CT F-2: SKUs whose PRODUCT-MASTER read throws (unreachable) — the candidate list must still answer.</summary>
+    public ConcurrentDictionary<Guid, bool> ProductMasterDown { get; } = new();
+
     /// <summary>tenant → wraps that tenant's ledger postings (the argument runs the REAL posting path): a lost answer, an outage, a delay.</summary>
     public ConcurrentDictionary<Guid, Func<PostMovementCommand, Func<Task<Response<MovementResponseDto>>>, Task<Response<MovementResponseDto>>>> AroundPosting { get; } = new();
 
@@ -168,6 +171,7 @@ public sealed class ConditionedProductMaster(StubProductMaster inner, WarehouseA
     public async Task<SkuReference?> GetSkuAsync(Guid skuId, SkuLevel level, CancellationToken cancellationToken = default)
     {
         factory.ProductCalls.AddOrUpdate(skuId, 1, (_, n) => n + 1);
+        if (factory.ProductMasterDown.ContainsKey(skuId)) throw new ProductMasterUnavailableException("PRODUCT-MASTER down (test).");
         var sku = await inner.GetSkuAsync(skuId, level, cancellationToken);
         return sku is null ? null : sku with { StorageConditions = factory.StorageConditions.GetValueOrDefault(skuId) };
     }

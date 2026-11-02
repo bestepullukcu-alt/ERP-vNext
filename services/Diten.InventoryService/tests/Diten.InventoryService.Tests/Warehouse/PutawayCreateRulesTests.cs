@@ -38,6 +38,44 @@ public sealed class PutawayCreateRulesTests : IClassFixture<WarehouseApiFactory>
         Assert.Equal("StockHeld", row.GetProperty("notEligibleReason").GetString());
     }
 
+    /// <summary>
+    /// DL-3 CT F-2 (pack §11.3a, §8.12; WMS draft §3.3): a candidate carries its product's PRODUCT-MASTER <c>storageConditions</c>; an empty list is
+    /// "no condition", a product that does not state them answers WITHOUT the member (UNKNOWN — never read as empty), and PRODUCT-MASTER down
+    /// leaves the member out while the list still answers (display only — create keeps its 503 / 422). Every answer passes the draft's closed schema.
+    /// </summary>
+    [Fact]
+    public async Task F2_a_candidate_carries_the_products_storage_conditions_and_an_unknown_product_has_none()
+    {
+        var s = await new PutawayScenario(_factory, productConditions: ["COOL_2_8", "PROTECT_FROM_LIGHT"]).ReadyAsync();
+        await s.ReceiveAsync(10);
+
+        var stated = Row(await s.CandidatesAsync(), "AVAILABLE");
+        Assert.Equal(["COOL_2_8", "PROTECT_FROM_LIGHT"], stated.GetProperty("storageConditions").EnumerateArray().Select(c => c.GetString()));
+
+        _factory.StorageConditions[s.Sku] = [];
+        var none = Row(await s.CandidatesAsync(), "AVAILABLE");
+        Assert.Equal(JsonValueKind.Array, none.GetProperty("storageConditions").ValueKind);
+        Assert.Empty(none.GetProperty("storageConditions").EnumerateArray());
+
+        _factory.StorageConditions[s.Sku] = null;
+        var unknown = Row(await s.CandidatesAsync(), "AVAILABLE");
+        Assert.False(unknown.TryGetProperty("storageConditions", out _), "an unknown product answers no storageConditions (never null, never [])");
+        Assert.True(unknown.GetProperty("eligible").GetBoolean());                    // the row is listed, not hidden
+        Assert.Equal("WMS_STORAGE_CONDITIONS_UNKNOWN", await ErrorCode(s.CreateTaskAsync(s.TaskBody(5, s.A01)), 422));
+
+        _factory.StorageConditions[s.Sku] = ["COOL_2_8"];
+        _factory.ProductMasterDown[s.Sku] = true;
+        try
+        {
+            var down = Row(await s.CandidatesAsync(), "AVAILABLE");
+            Assert.False(down.TryGetProperty("storageConditions", out _));
+        }
+        finally
+        {
+            _factory.ProductMasterDown.TryRemove(s.Sku, out _);
+        }
+    }
+
     [Fact]
     public async Task AC8_a_recalled_lot_refuses_create_and_confirm_and_a_failed_recall_read_is_503()
     {

@@ -1,5 +1,6 @@
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.PutawayTasks.Queries;
 using Diten.InventoryService.Application.Features.PutawayTasks.Services;
 using Diten.InventoryService.Application.Features.Recall.Ports;
@@ -25,6 +26,10 @@ namespace Diten.InventoryService.Application.Features.PutawayTasks.Handlers.Quer
 /// of its Receiving nodes, each with its open quantity (OnHand − the open tasks' remaining on the same bucket, read now — never stored) and
 /// whether it can be put away. A row that cannot is NOT hidden: <c>eligible: false</c>, the reason and the blocking document's number — the
 /// 0175 hold / blocked record, the recall case, the lot status.
+/// <para>DL-3 CT F-2 (§11.3a, draft §3.3): each row of the PAGE carries its product's <c>storageConditions</c> from PRODUCT-MASTER, read once per
+/// SKU of the page. A SKU that does not state them stays without the member (UNKNOWN — the screen's badge). The read is display only: the draft
+/// gives this operation no 503, so PRODUCT-MASTER down leaves the member out too and the list still answers; the create / confirm rule
+/// (§8.12) keeps its own fail-closed 503.</para>
 /// </summary>
 public sealed class GetPutawayCandidateListHandler : IRequestHandler<GetPutawayCandidateListQuery, Response<PutawayCandidatePageDto>>
 {
@@ -36,10 +41,13 @@ public sealed class GetPutawayCandidateListHandler : IRequestHandler<GetPutawayC
     private readonly IRecallLotStatusReader _recall;
     private readonly IRecallRepository _recallCases;
     private readonly IQuarantineRepository _quarantine;
+    private readonly IProductMasterClient _products;
 
     public GetPutawayCandidateListHandler(IWarehouseLocationRoleRepository roles, ILocationRepository locations, IWarehouseStockReader stock,
-        IWarehouseTaskRepository tasks, IWarehouseLotReader lots, IRecallLotStatusReader recall, IRecallRepository recallCases, IQuarantineRepository quarantine)
+        IWarehouseTaskRepository tasks, IWarehouseLotReader lots, IRecallLotStatusReader recall, IRecallRepository recallCases, IQuarantineRepository quarantine,
+        IProductMasterClient products)
     {
+        _products = products;
         _roles = roles;
         _locations = locations;
         _stock = stock;
@@ -131,8 +139,32 @@ public sealed class GetPutawayCandidateListHandler : IRequestHandler<GetPutawayC
                                              && (search is null || (c.LotNumber?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
                                                  || (c.LocationCode?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)))
             .OrderBy(c => c.LocationCode, StringComparer.Ordinal).ThenBy(c => c.LotNumber, StringComparer.Ordinal).ToList();
+        var page = filtered.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
+        var conditions = await StorageConditionsAsync(page, ct);
         return Response<PutawayCandidatePageDto>.Success(new PutawayCandidatePageDto(
-            filtered.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList(), filtered.Count, paging.Page, paging.PageSize));
+            page.Select(c => c with { StorageConditions = conditions.GetValueOrDefault((c.Item.SkuId, c.Item.SkuLevel)) }).ToList(),
+            filtered.Count, paging.Page, paging.PageSize));
+    }
+
+    /// <summary>The product's stated conditions per SKU of the page; a SKU that states none, is not found, or PRODUCT-MASTER down → no entry (UNKNOWN).</summary>
+    private async Task<Dictionary<(string SkuId, string SkuLevel), IReadOnlyList<string>>> StorageConditionsAsync(IReadOnlyList<PutawayCandidateDto> page,
+        CancellationToken ct)
+    {
+        var found = new Dictionary<(string, string), IReadOnlyList<string>>();
+        foreach (var (skuId, level) in page.Select(c => (c.Item.SkuId, c.Item.SkuLevel)).Distinct())
+        {
+            if (!Guid.TryParse(skuId, out var id) || !WireNames.TryParseSkuLevel(level, out var skuLevel)) continue;
+            try
+            {
+                if ((await _products.GetSkuAsync(id, skuLevel, ct))?.StorageConditions is { } stated) found[(skuId, level)] = stated;
+            }
+            catch (ProductMasterUnavailableException)
+            {
+                return found; // display only — the rows of this page stay UNKNOWN; create / confirm answer 503 themselves (§8.12)
+            }
+        }
+
+        return found;
     }
 
     /// <summary>Why a row cannot be put away and the document that blocks it (§8.15 "Seçilemeyen stok gizlenmez"); null = eligible.</summary>
