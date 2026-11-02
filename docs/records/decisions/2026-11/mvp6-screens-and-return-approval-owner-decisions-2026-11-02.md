@@ -15,7 +15,20 @@
 
 The first wording named an "MDM customer record". Measured on `main` `49012bd7b`: `services/Diten.MdmService/src` has no file containing `customer`; `verify_module_id.py --discover "customer"` names MOD-0149 Customer 360 / Account Hierarchy as owner of `accounts/customers`; `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0149-v1.0.md` item 1 records the same owner. The MVP-6 CT raised the conflict and Natig decided for MOD-0149 on 2026-11-03.
 
+## Open items decided (Natig, 2026-11-03)
+
+| Item | Decision |
+|---|---|
+| OD-186-2 | Return reasons are a closed, module-owned code list. Old returns keep their text as written. |
+| OD-186-3 | Four-eyes applies: the approver may not be the person who opened the return. If the approver cannot be read, the outcome is not applied. |
+| OD-183-2, OD-186-5 | A read of the draft PRODUCT-MASTER is accepted for display and selection only. Field names are bound at Phase 1.5. |
+| OD-183-1 | Old shipments show the current name. |
+| OD-183-3 | A hand-made shipment uses `MOD-0183` / `MANUAL`. |
+
 ## Carried as open items, not decided here
+
+- **OD-186-4.** Depth of the location picker: to be measured.
+- **`accountType` filter.** Proposal: no filter in v1.
 
 - **MOD-0149 contract.** `docs/analysis/contracts` holds no CRM contract file; the account read used by the picker is measured from `services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/AccountController.cs`.
 - **TRM-09.** The MOD-0149 registry row says `reserved / planned` while its pack says `ready-for-dev` (`docs/roadmap/plans/erp-finance-legal-module-intake-01/CT-QUEUE.tsv`). Its owner resolves it.

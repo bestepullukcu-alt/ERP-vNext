@@ -1078,7 +1078,7 @@ The Shipment resolve adapter (GET `/SupplyChain/Returns/api/shipments/{shipmentI
 
 - Names are read at display time and **are not stored on the return**: MOD-0186 keeps no product or lot master.
 - `skuLevel` and `lotId` are already read by `ReturnReferenceReader` for §34; the adapter only adds them to the browser projection.
-- The SKU reference's `code`, `name` field names are bound at Phase 1.5: PRODUCT-MASTER is `1.1.0-draft.16`, not frozen (open item OD-186-5).
+- The SKU reference's `code`, `name` field names are bound at Phase 1.5: PRODUCT-MASTER is `1.1.0-draft.16`, not frozen; a read for display and selection only is accepted (OD-186-5, decided).
 - A failed name read shows a localized "name unavailable" text with the row kept. It never blocks a return and never shows a GUID as a label. A permission failure on the read is treated the same way and logged.
 - New UI prerequisites for create and transition actors, beside `supplychain.shipments.read`: `mdm.product-master.read` (already on the tour's permission list) and `trace.lots.read`.
 - Return lines themselves stay `shipmentLineNumber`, `quantity`, `uomId` (`ReturnLine` is unchanged). `shipmentLineNumber` remains the only key; no GUID line identity is added.
@@ -1096,7 +1096,7 @@ Every picker is a Select2 search field inside `.diten-field`, served by a same-o
 | Receiving location | `toLocationId` text | `GET /api/locations` with `parentId` = the chosen warehouse, `isStockable=true`, `status=Active` | disabled until a warehouse is chosen; cleared when the warehouse changes. `toLocationId` stays required on Received. Whether `parentId` returns deeper levels (a Bin under a Zone) is **not measured** (OD-186-4) |
 
 - `queryShipments` has no text search (parameters: status, sourceDocumentId, page, pageSize). The shipment picker therefore searches only the loaded page unless the contract adds `search` (35.9 item 5).
-- **Reason list (proposal, OD-186-2):** a closed, module-owned code set in v1: `DAMAGED`, `WRONG_ITEM`, `WRONG_QUANTITY`, `EXPIRED`, `QUALITY_COMPLAINT`, `CUSTOMER_REFUSED`, `OTHER`, with labels in `ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`. No lookup key exists for return reasons in `Diten.Platform` or MDM. The backend stays a free string, so old returns keep their text, shown as stored. Sourcing the list from MOD-0048 instead would change another module (XMC-001) and is not assumed here.
+- **Reason list (OD-186-2, decided):** a closed, module-owned code set in v1: `DAMAGED`, `WRONG_ITEM`, `WRONG_QUANTITY`, `EXPIRED`, `QUALITY_COMPLAINT`, `CUSTOMER_REFUSED`, `OTHER`, with labels in `ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`. No lookup key exists for return reasons in `Diten.Platform` or MDM. The backend stays a free string, so old returns keep their text, shown as written.
 - `RETURN_RECEIPT_IN_PROGRESS` keeps its behaviour: stored warehouse and location ids from `details` fill the pickers, shown by name.
 - The transition panel and create form keep one `Idempotency-Key` per opened form or panel (section "Errors, replay and concurrency").
 
@@ -1143,7 +1143,7 @@ Dispatch of a shipment is not touched: K2 names no workflow there.
 | Direct call | `transitionReturn` with target `Authorized` or `Rejected` answers 422 `RETURN_APPROVAL_REQUIRED`, whatever the caller's permissions |
 
 - **Trust.** Platform publishes unsigned (`QuarantineWorkflowOutcomeConsumer` comment). The event is applied only when the tenant owns the return and the event's instance id equals the stored `workflowInstanceId` of a return still `PendingApproval`. A read-time reconciliation (the MOD-0175 `refresh` shape) is the guaranteed path, so a lost event does not strand a return. Inbox: `returns_event_inbox`, one row per `EventId`.
-- **Four-eyes (OD-186-3):** proposal: the approver may not be the return's creator, checked when the outcome is applied, as in MOD-0175. An approval whose approver cannot be read is not applied by the consumer.
+- **Four-eyes (OD-186-3, decided):** the approver may not be the person who opened the return, checked when the outcome is applied, as in MOD-0175. An approval whose approver cannot be read is not applied. In both cases the return stays `PendingApproval` and the case is logged.
 - **Rollout.** Returns already `Requested` use the same submit action. Returns already `Authorized` or later are unaffected.
 - **Screens.** Row action "Send for approval" replaces Authorize and Reject. The list and details show the approval state, localized in 7 languages. The manifest actions `AUTHORIZE` and `REJECT` are replaced by `SUBMIT_AUTHORIZATION` (`supplychain.returns.authorize`, RowAction, not dangerous). No new permission key. Approvers act in the Task Center, not on this page.
 - **Shared file.** The consumer and the transport switch need the service `Program.cs` (single writer) and the broker configuration. The tenant's template seed is an operational step.
@@ -1191,10 +1191,10 @@ Evidence references and the customer name are not written to the audit record.
 
 - **SHP / RMA record codes:** `RMA-` + GUID today (`ReturnRepository.cs`, `49012bd7b`), against RCS-001. A separate FU after MOD-0040-FU02, which is not on `main` (`approval_status: pending` on `origin/chore/ct/mod0178-dl1-accept-01`). No identity is minted here. RCS-001's table has no `RMA` row.
 - **OD-186-1** MOD-0175 binding (35.8): owner Natig and Beste.
-- **OD-186-2** Reason code list and its source (35.3): owner Natig.
-- **OD-186-3** Four-eyes on return approval (35.7): owner Natig.
+- **OD-186-2** Reason code list and its source (35.3): **decided** (Natig, 2026-11-03): closed module list; old returns as written.
+- **OD-186-3** Four-eyes on return approval (35.7): **decided** (Natig, 2026-11-03): yes; an unreadable approver is not applied.
 - **OD-186-4** Depth of the location picker (35.3): measure against `location.openapi.yaml` search with a real tree.
-- **OD-186-5** PRODUCT-MASTER is a draft: this module's name read waits on the same G6 condition as MOD-0183's product row, or the owner accepts a read of a draft contract for display only.
+- **OD-186-5** PRODUCT-MASTER is a draft: **decided** (Natig, 2026-11-03): a draft read is accepted for display and selection only; field names are bound at Phase 1.5.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
 ### 35.12 Acceptance, tests and sabotage
@@ -1225,6 +1225,7 @@ Tests live in the owned files named in section "Owned UI paths" and `services/Di
 | RB-20 | Audited Events table: one audit row per command in the same commit as the outcome; `.close` etc. unchanged | Moving the write outside the commit turns it red |
 | RB-21 | Manifest: `RETURN_DETAILS` page, `SUBMIT_AUTHORIZATION` action; `AUTHORIZE` and `REJECT` gone; M-02…M-08 pass | Leaving `AUTHORIZE` in the manifest fails M-05 |
 | RB-22 | Texts of every new state, picker, error and label exist in all 7 `ReturnsIndex` languages (parity by MATCH count); no hardcoded text | Removing a key from `ar` turns it red |
+| RB-23 | Approver equals the person who opened the return, or the approver cannot be read → outcome not applied, return stays `PendingApproval`, logged (OD-186-3) | Removing the approver comparison turns it red |
 
 Also: `verify_datatable_page.py --reference slim` is run and recorded (RU-SCR-06 stands); the full SupplyChain and Web test assemblies run unfiltered; one real-browser pass on the integrated target with the tour's permission set plus `trace.lots.read` and `quarantine.holds.read`. The MOD-0175 binding (35.8) has no acceptance row until it is written.
 
@@ -1242,4 +1243,4 @@ DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 co
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
 
-DL-3 covers RB-1…RB-7 and the matching part of RB-22; it needs no contract change, except the optional picker search. DL-4 covers RB-8…RB-10 and needs contract item 1 and its Gateway route. DL-5 covers RB-11…RB-21 and needs contract items 2–4. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. The MOD-0175 binding is not in any slice until it is written with Beste. CT-APR-01 note for r9: "only DL-3, DL-4, DL-5"; evidence levels are proposals.
+DL-3 covers RB-1…RB-7 and the matching part of RB-22; it needs no contract change, except the optional picker search. DL-4 covers RB-8…RB-10 and needs contract item 1 and its Gateway route. DL-5 covers RB-11…RB-21 and RB-23 and needs contract items 2–4. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. The MOD-0175 binding is not in any slice until it is written with Beste. CT-APR-01 note for r9: "only DL-3, DL-4, DL-5"; evidence levels are proposals.

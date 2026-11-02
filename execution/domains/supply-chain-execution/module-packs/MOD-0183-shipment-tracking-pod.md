@@ -875,11 +875,11 @@ Today's form asks the user for internal references. After this revision the form
 | | FEFO bypass reason | textarea, shown only after `FEFO_BYPASS_REASON_REQUIRED` or `FEFO_ORDER_VIOLATION` | `fefoBypassReason` |
 
 - **Field count:** 5 header + 5 per line = **10**, more than 8, so Compact stands (`form_field_count: 10`). `_Form.cshtml` and `Details.cshtml` keep the same card map.
-- **Not asked any more:** `sourceModule` and `sourceType` (the MVC adapter sends `MOD-0183` / `MANUAL`; **value to confirm**, OD-183-3), `lineNumber` (assigned in order, `1, 2, 3`, read-only), `uomId` (read-only from the chosen SKU), `inventoryReferenceId` (unused in v1, section "What is posted").
+- **Not asked any more:** `sourceModule` and `sourceType` (the MVC adapter sends `MOD-0183` / `MANUAL`, OD-183-3, decided), `lineNumber` (assigned in order, `1, 2, 3`, read-only), `uomId` (read-only from the chosen SKU), `inventoryReferenceId` (unused in v1, section "What is posted").
 - `lotId`: a lot-tracked SKU without a lot is refused by INVENTORY as today (`LOT_REQUIRED`); the form does not decide lot tracking.
 - Pickers: same adapter rule as MOD-0186: same-origin MVC, no GUID as a label, a stale response never fills a changed field; changing warehouse clears From location, changing SKU clears Lot.
 - Required parity: validator, view model, Razor `required`, label star and the required-fields tracker agree. `Models/SupplyChain/Shipments/ShipmentViewModels.cs` changes accordingly.
-- **PRODUCT-MASTER is `1.1.0-draft.16`, not frozen.** Section "Dependencies" keeps its row "a later MOD-0183 revision after the contract is frozen". This picker uses that read for selection, and the service still does not validate products. Whether that is acceptable before G6 is OD-183-2.
+- **PRODUCT-MASTER is `1.1.0-draft.16`, not frozen.** Section "Dependencies" keeps its row "a later MOD-0183 revision after the contract is frozen". This picker uses that read for selection, and the service still does not validate products. The read is accepted before G6 for display and selection only; field names are bound at Phase 1.5 (OD-183-2, decided).
 - `Edit.cshtml` stays absent: the contract has no update operation.
 
 ### 24.3 Golden Compact list
@@ -896,7 +896,7 @@ Today's form asks the user for internal references. After this revision the form
 - **Read-time resolution.** The contract stays as it is (K1), so names are not stored on the shipment. The MVC adapters resolve them for the page: warehouse and location from `/api/locations/{id}`, recipient from `/api/crm/accounts/{id}` (route shape **not measured**: the list route is measured; the by-id route is asked of the MOD-0149 owner), SKU through `/api/product-master/skus/bulk-read`, lot through `/api/trace/lots/{lotId}`.
 - **Cost.** `pageSize` default 50 and there is no CRM bulk read (**not measured beyond `AccountController.cs` routes**): per-request de-duplication, bounded concurrency, no cross-request cache across tenants. Latency is measured in the slice's evidence.
 - **Failure.** A failed or denied name read shows a localized "name unavailable" text and the reference in a small LTR block. The page never fails for it, and it never shows a blank.
-- **Changed master data.** Names are current, not historic: a renamed customer shows the new name on an old shipment. This is the cost of K1's "no contract change", and the owner is told in OD-183-1.
+- **Changed master data.** Names are current, not historic: a renamed customer shows the new name on an old shipment. This follows K1's "no contract change" (OD-183-1, decided).
 - **Details page:** the summary card shows recipient name and address, warehouse name, company. **Lines sub-table:** line, product name and code, SKU code, lot number, from location name, quantity, UoM, FEFO reason. `issueTransactionId` is not a column. A pre-existing line with an unresolved reference shows it as stored.
 
 ### 24.5 Warehouse intake: FU-0178-MVP6
@@ -933,9 +933,9 @@ Additive; single writer MVP-6 CT. K1 itself needs none.
 ### 24.8 Follow-ups and open decisions
 
 - **SHP record code:** `SHP-{id:N}` today (`CreateShipmentHandler.cs`, `49012bd7b`) while the contract's example shows `SHP-2026-000001`, and RCS-001's table has no `SHP` row. A separate FU after MOD-0040-FU02, not on `main`. No identity is minted here.
-- **OD-183-1** Current name versus name at shipment time on old shipments (24.4): owner Natig. A snapshot would be a contract change, which K1 excludes in v1.
-- **OD-183-2** Using PRODUCT-MASTER draft reads in the picker before G6 (24.2): owner Natig.
-- **OD-183-3** `sourceModule` / `sourceType` values of a hand-made shipment (24.2): owner Natig.
+- **OD-183-1** Current name versus name at shipment time on old shipments (24.4): **decided** (Natig, 2026-11-03): current name.
+- **OD-183-2** Using PRODUCT-MASTER draft reads in the picker before G6 (24.2): **decided** (Natig, 2026-11-03): accepted for display and selection only.
+- **OD-183-3** `sourceModule` / `sourceType` values of a hand-made shipment (24.2): **decided** (Natig, 2026-11-03): `MOD-0183` / `MANUAL`.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
 ### 24.9 Acceptance, tests and sabotage
@@ -948,7 +948,7 @@ Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`,
 | SB-2 | Recipient picker lists CRM accounts by name and code; choosing one sends the account id as `shipToReference`; the wire body is valid against SHIPMENT-BUNDLE 3.4.0 unchanged | Sending the name instead of the id turns it red |
 | SB-3 | Without `crm.account.read`: field disabled with a localized reason, no CRM request, no create | Sending the CRM request anyway turns it red |
 | SB-4 | The account's address is shown read-only; v1 offers no address choice | — |
-| SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
+| SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; the adapter sends `MOD-0183` / `MANUAL`; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
 | SB-6 | Line numbers are assigned in order and stay unique after a line is removed | Numbering by index after removal without renumbering turns it red |
 | SB-7 | Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear turns it red |
 | SB-8 | `fefoBypassReason` appears only after the FEFO refusal codes and is sent unchanged | Showing it always turns it red |
