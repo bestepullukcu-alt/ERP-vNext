@@ -1386,18 +1386,19 @@ def slices(text: str) -> list[str] | None:
 
 
 
-def slice_rule(root: str, ref: str, path: str) -> tuple[bool, list[str] | None, str | None]:
+def slice_rule(root: str, ref: str, path: str, deferred: bool = False) -> tuple[bool, list[str] | None, str | None]:
     """(does the CT-APR-02 slice rule bind this pack at `ref`, its slice ids, the WP its last approval row allows to
     take the whole pack). It binds once an approval row at or after the start needed a review; an old pack, or one only
     re-approved for an exempt change (owner filled, a date), keeps the earlier rule (a warning only). whole_pack is read
-    only from a last row that passes on its own — a HIGH approval by another person (B2)."""
+    only from a last row that passes on its own — a HIGH approval by another person (B2). `deferred` (S-133) is the
+    branch reading of the dispatch gate: a row still on the CT branch keeps its whole_pack, its human step pending."""
     commit = commit_of(root, ref)
     if commit is None:
         raise Unreadable(f"ref '{ref[:40]}' çözülemedi")
     data = read(root, commit, path)
     if data is None:
         raise Unreadable(f"paket {path} bu ref'te yok")
-    ctx = Ctx(root, commit, path)
+    ctx = Ctx(root, commit, path, deferred)
     if ctx.rstart is None or ctx.policy is None:
         return False, None, None
     binds = any(r["action"] == "approve" and judge(ctx, i)[3] for i, r in enumerate(ctx.rows))
@@ -2103,6 +2104,7 @@ def self_test() -> int:
     self_test_review(cases)
     self_test_exception(cases)
     self_test_deferred(cases)
+    self_test_slice_deferred(cases)
     for label, ok in cases:
         print(("PASS " if ok else "FAIL ") + label)
     passed = sum(1 for _, ok in cases if ok)
@@ -3105,6 +3107,69 @@ def self_test_review(cases: list) -> None:
     cases.append(("sabotage S-40/Codex F-6 (review path): a review row straight on main carried by another person's "
                   "pull-merge and a fast-forward -> not a pull request's merge, the row does not count",
                   any("PR'ın merge commit'i değil" in f for f in fails)))
+    tmp.cleanup()
+
+
+def self_test_slice_deferred(cases: list) -> None:
+    """S-133 (Arayüz finding 2026-11-02): the dispatch gate's slice reading follows the branch reading — a HIGH branch
+    approval row with whole_pack=<WP> keeps it while its human step is pending; a self-granted LOW row still loses it."""
+    globals()["_PR_SOURCE"] = _test_pr
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+
+    def g(*args, who=("dev", "dev@x.invalid")):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, text):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def get(rel):
+        with open(os.path.join(root, rel), encoding="utf-8", newline="") as f:
+            return f.read()
+
+    def commit(msg, who=("dev", "dev@x.invalid")):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+
+    PACK = "execution/domains/x/module-packs/MOD-0001-x.md"
+    v1 = ("---\nid: MOD-0001\nname: X\nstatus: approved\nowner: kalite\nupdated: 2026-10-01\n---\n# X\n\n## Notes\n- a\n\n"
+          "## Teslim dilimleri\n| dilim | ad | bölümler |\n|---|---|---|\n| DL-1 | çekirdek | Notes |\n| DL-2 | ekran | Notes |\n")
+    g("init", "-q", "-b", "main")
+    put(PACK, v1)
+    put(APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
+    put(POLICY, "# start\n")
+    put(APPROVALS, "\t".join(APPROVAL_COLUMNS) + "\n")
+    put(REVIEW_POLICY, "# review start\n")
+    put(REVIEWS, "\t".join(REVIEW_COLUMNS) + "\n")
+    put(BRANCH_POLICY, "# S-115 start\n")
+    commit("rules start", who=("lead", "lead@x.invalid"))
+    put(PACK, v1.replace("- a\n", "- a\n- b\n"))
+    commit("pack changed after the start")
+    g("checkout", "-q", "-b", "ct")
+    digest = sha256(get(PACK).encode("utf-8"))
+    rel = f"docs/records/reviews/t/01-{digest[:8]}.md"
+    put(rel, f"# İnceleme\n\nhedef: {PACK} @ {digest}\n\nF-1 | DÜŞÜK | yazım | kapandı | - | -\n")
+    put(REVIEWS, get(REVIEWS) + "\t".join([PACK, digest, rel, sha256(get(rel).encode("utf-8")), "UYGUN", "0", "claude",
+                                           "claude-opus-5-5", "high", "rs-1", "K3", "as-1", "dev", "2026-11-01"]) + "\n")
+    commit("review row on the branch")
+    base = git(root, "rev-parse", "HEAD").decode().strip()
+    word = "onayla · CT · Deneme sohbeti · 2026-11-01 03:30 whole_pack=WP-9"
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "lead", "HIGH", "test", "2026-11-01", word, True) + "\n")
+    commit("HIGH branch approval row with whole_pack")
+    cases.append(("S-133 positive control: a HIGH branch row with whole_pack=WP-9 -> the branch slice reading keeps WP-9",
+                  evaluate(root, "HEAD", PACK, True)[0] == 0 and slice_rule(root, "HEAD", PACK, True)[2] == "WP-9"))
+    cases.append(("S-133: the same row in the strict reading -> no whole_pack (its human step is not on main)",
+                  slice_rule(root, "HEAD", PACK)[2] is None))
+    g("checkout", "-q", "-b", "self", base)
+    put(APPROVALS, get(APPROVALS) + make_row(root, "HEAD", PACK, "dev", "dev", "LOW", "test", "2026-11-01", word, True) + "\n")
+    commit("self-granted LOW branch row with whole_pack")
+    cases.append(("sabotage S-133 (B2): the author grants whole_pack to himself with a LOW branch row -> branch slice reading "
+                  "gives no whole_pack", slice_rule(root, "HEAD", PACK, True)[2] is None))
     tmp.cleanup()
 
 
