@@ -27,7 +27,7 @@ public sealed class ShipmentIndexBehaviorTests
         var index = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml");
         Assert.Contains("CompanySelection.ResolveAsync(", index);
         Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
-        Assert.True(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal) < index.IndexOf("id=\"shipmentsListSurface\"", StringComparison.Ordinal));
+        Assert.InRange(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal), 0, index.IndexOf("id=\"shipmentsListSurface\"", StringComparison.Ordinal));
         Assert.Contains("data-legal-entity-id=\"@companyScope\"", index);
         Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml"));
     }

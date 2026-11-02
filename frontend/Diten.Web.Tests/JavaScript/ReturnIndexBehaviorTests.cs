@@ -268,7 +268,7 @@ public sealed class ReturnIndexBehaviorTests
         var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js");
         Assert.Contains("CompanySelection.ResolveAsync(", index);
         Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
-        Assert.True(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal) < index.IndexOf("_DataTable.cshtml", StringComparison.Ordinal));
+        Assert.InRange(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal), 0, index.IndexOf("_DataTable.cshtml", StringComparison.Ordinal));
         Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml"));
         Assert.DoesNotContain("filterLegalEntity", script);
         Assert.True(script.IndexOf("adoptCompany(createdScope);", StringComparison.Ordinal) > 0);
