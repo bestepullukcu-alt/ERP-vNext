@@ -70,7 +70,7 @@ jobs:
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
           # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
           # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
-          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM Integration).
+          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
           - suite: bb-secrets
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
@@ -101,10 +101,6 @@ jobs:
           # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
           - suite: inventory-tests
             project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
-          # Owner decision 2026-11-02: PPM's unit tests, green on a clean tree (381/381, measured locally at 6b3bf573a);
-          # they need nothing outside the process. PPM's integration tests stay out (fixed mongod path, 10 red).
-          - suite: ppm-tests
-            project: services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
