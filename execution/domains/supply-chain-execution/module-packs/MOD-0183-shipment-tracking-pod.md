@@ -872,7 +872,7 @@ Today's form asks the user for internal references. After this revision the form
 | | Planned deliver at | flatpickr | `plannedDeliverAt` |
 | Lines (sub-table) | Product / SKU | picker: `GET /api/product-master/stockable-items?q=`, showing `name` and `canonicalCode` | `itemId`, `skuId`, `skuLevel` |
 | | Lot | picker: `GET /api/trace/lots?skuId=&q=`; empty for a line without lots | `lotId` |
-| | From location | picker: `GET /api/locations/search`, `search`, `parentId` = warehouse, `isStockable=true`, `status=Active` | `fromLocationId` |
+| | From location | tree picker from the chosen warehouse, below | `fromLocationId` |
 | | Quantity | text, decimal string | `quantity` |
 | | FEFO bypass reason | textarea, shown only after `FEFO_BYPASS_REASON_REQUIRED` or `FEFO_ORDER_VIOLATION` | `fefoBypassReason` |
 
@@ -880,6 +880,7 @@ Today's form asks the user for internal references. After this revision the form
 - **Not asked any more:** `sourceModule` and `sourceType` (the MVC adapter sends `MOD-0183` / `MANUAL`, OD-183-3, decided), `lineNumber` (assigned in order, `1, 2, 3`, read-only), `uomId` (read-only from the chosen SKU), `inventoryReferenceId` (unused in v1, section "What is posted").
 - `lotId`: a lot-tracked SKU without a lot is refused by INVENTORY as today (`LOT_REQUIRED`); the form does not decide lot tracking.
 - Location pickers use `/search` because `GET /api/locations` accepts only `type`, `parentId`, `legalEntityId`. The company comes from `LocationRepository.Scope()`; `inventory.locations.read` is required.
+- **Tree picker.** `parentId` returns direct children only (`LocationRepository`), and the contract has no ancestor filter, so the contract does not change. The picker opens the tree one layer at a time with `GET /api/locations/search`, `parentId` = the opened node, `status=Active`, **without** `isStockable`, so non-stockable parents stay visible: Warehouse → StorageLocation → Zone → Bin, or StorageLocation → Bin (`LocationHierarchyRules`, K-01). Only a node with `isStockable = true` can be chosen; a StorageLocation may be both chosen and opened. `search` narrows the open layer only.
 - Pickers: same adapter rule as MOD-0186: same-origin MVC, no GUID as a label, a stale response never fills a changed field; changing warehouse clears From location, changing SKU clears Lot.
 - Required parity: validator, view model, Razor `required`, label star and the required-fields tracker agree. `Models/SupplyChain/Shipments/ShipmentViewModels.cs` changes accordingly.
 - **PRODUCT-MASTER is `1.1.0-draft.16`, not frozen.** Section "Dependencies" keeps its row "a later MOD-0183 revision after the contract is frozen". This picker uses that read for selection, and the service still does not validate products. The read is accepted before G6 for display and selection only; field names are bound at Phase 1.5 (OD-183-2, decided).
@@ -954,7 +955,7 @@ Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`,
 | SB-4 | After a choice the address comes from the by-id read and is shown read-only; v1 offers no address choice. The adapter's JSON holds only name, code and the four address fields: no person, phone, e-mail, notes, coordinates or logo | Returning the raw `AccountDetailDto` turns it red |
 | SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; the adapter sends `MOD-0183` / `MANUAL`; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
 | SB-6 | Line numbers are assigned in order and stay unique after a line is removed | Numbering by index after removal without renumbering turns it red |
-| SB-7 | Location pickers call `/api/locations/search`; an Inactive place or a non-stockable Zone is not offered, measured against the real INVENTORY query. Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear turns it red |
+| SB-7 | Location pickers call `/api/locations/search`; an Inactive place is not offered; against the real INVENTORY query a Bin under Zone under StorageLocation can be reached and chosen while the Zone cannot be chosen, and a Bin directly under a StorageLocation is reached too. Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear, or sending `isStockable=true` on the layers, turns it red |
 | SB-8 | `fefoBypassReason` appears only after the FEFO refusal codes and is sent unchanged | Showing it always turns it red |
 | SB-9 | List shows recipient and warehouse names and localized status; no GUID in any cell except the shipment number until the SHP follow-up; `data_mode: server` is declared in pack, table and `createList` alike | Rendering `shipToReference` raw for a resolved row turns it red |
 | SB-10 | A failed or denied name read: page loads, localized "name unavailable", reference shown small; no blank | Throwing on a read failure turns it red |
