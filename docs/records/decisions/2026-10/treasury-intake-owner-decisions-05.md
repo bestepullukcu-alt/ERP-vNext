@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113, D115–D117 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D118 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1387,6 +1387,24 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-37; oturum Treasury Intake CT (`
 3. **D117/3 — test yeri (Beste önerisi, açık):** setin varlığı ve biçimi Platform'da MOD-0048-FU01 testlerinde; tüketicilerin setten okuduğu MOD-0217 ve MOD-0289'un kendi testlerinde. D105 metni gönderilir, §21 PR'ı Beste ile netleşir.
 4. **D117/4 — açık:** Platform XMC-001 ve aday modu verilmedi; öneri dosyası yeniden gönderilir. Para birimi lookup XMC-001 için test adı ve ölçüm commit'i gönderilir.
 5. **D117/5 — sıra:** DCP-011, MOD-0289 ve AGR onayları #314 birleştikten ve PR'lar açıldıktan sonra.
+
+## Y-38 — Cihan, Procurement cevabı (2026-11-02; K1 aktardı)
+
+> Procurement sahibi olarak **itiraz yok**:
+> - D39 sınırına itirazım yok: satın alma / tedarik sözleşmeleri MOD-0144'te kalır; MOD-0217 satın alma dışı hukuki sözleşmeleri tutar; `PURCHASE` türü yok (AC-59).
+> - MOD-0217'nin rotasına itirazım yok: `/api/mdm/contracts` ve `/MasterData/Contracts`.
+> - MOD-0144'e dokunulmaması (AC-47) ve iki modül arasındaki başvuru bağlantısının Follow-up olması bana uygun.
+>
+> Bu cevap MOD-0144'ü değiştirmez. Procurement, MOD-0217 dosyasına yazmaz (XMC-001).
+
+Ek öneri: `mod0217-netlestirmeler.md` (Cihan, 2026-11-02; MOD-0217 `4d944a3dcdcd…`), iki netleştirme: alım yönlü türler için ayrım ölçütü; `Supplier` türünün v1'de kapalı kalması. Cevapta "D94 metnini görmedim, main'de değil" notu var.
+
+## D118 — Procurement "itiraz yok" alındı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım; Cihan'ı Procurement sahibi olarak teyit, soru kutusu "Evet, Cihan versin"); kaynak Y-38; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D118/1 — D39/3 ve D106/6 kapandı:** Procurement sahibinden "itiraz yok" alındı; MOD-0144 değişmez.
+2. **D118/2 — iki netleştirme öneridir, karar değil:** MOD-0217 metni değişmedi. `Supplier` önerisi D41/4'ün açılış koşulunu değiştirdiği için K1 kararı ister.
 
 ## Karar olmayanlar
 
