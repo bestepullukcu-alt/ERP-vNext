@@ -2916,7 +2916,8 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
   `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
 - Error contract (D122, K1; Platform owner confirmation open): a code a user submits that is outside the set → **400** in every
-  consumer (`…_CURRENCY_CODE_INVALID` in the four Treasury packs, the validation error in MOD-0217 and MOD-0289). A code outside
+  consumer (`…_CURRENCY_CODE_INVALID` in MOD-0119, MOD-0120 and MOD-0126, `CASH_POSITION_INVALID_CURRENCY_CODE` in MOD-0124, the
+  validation error in MOD-0217 and MOD-0289). A code outside
   the set arriving from another module or an old record → 503 `…_CURRENCY_PRECISION_UNAVAILABLE` in the four Treasury packs.
   An unreadable set → 503 in every consumer.
 
