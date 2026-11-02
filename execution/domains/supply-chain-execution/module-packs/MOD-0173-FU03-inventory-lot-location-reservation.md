@@ -10,7 +10,7 @@ golden_reference: none
 entity_base: EntityBase
 status: draft
 approval_status: pending
-status_note: "draft — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\") ve CT kararları CT-01, CT-02, CT-03, CT-04 (MVP-1 CT) verildi — §19.6. Hâlâ draft: ready-for-dev önkoşulu CT-07 (LotHeldStock.cs XMC-001 onayı) açık — sahibe soruluyor (§18). Açık sorular Q-01, Q-05, Q-07 (§19.4); açık CT kararları CT-05, CT-06, CT-07 (§19.5). Kod yazılmaz: status ready-for-dev + CT-APR-02 bağımsız inceleme + CT-APR-01 onay satırı gerekir."
+status_note: "draft — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\"), CT kararları CT-01, CT-02, CT-03, CT-04 (MVP-1 CT) ve CT-07 sahip izni (Beste, XMC-001 LotHeldStock.cs) verildi — §19.6. Hâlâ draft: §18 \"Acceptance criteria ölçülebilir ve sabotajlı\" maddesi karşılanmıyor (34 AC'nin 23'ünde sabotaj yok); CT-07 izin metniyle paket değişikliğinin ifade farkı CT teyidi bekliyor (§19.6). Açık sorular Q-01, Q-05, Q-07 (§19.4); açık CT kararları CT-05, CT-06 (§19.5). Kod yazılmaz: status ready-for-dev + CT-APR-02 bağımsız inceleme + CT-APR-01 onay satırı gerekir."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-02
@@ -174,9 +174,9 @@ Hepsi `services/Diten.InventoryService/` altında (MOD-0173 sahibi aynı: MVP-1 
   `InventoryLedgerRepository.cs` (`ApplySkuPositionAsync` ve tüketim), `SkuPositionRebuilder.cs` (kapsam pozisyonlarını da kurar),
   `ReservationExpirySweeper.cs`, `LedgerProjectionReKey.cs` (§8.2 yol 5); `InventoryCollections.cs`, `InventoryIndexConfiguration.cs`,
   `InventoryBsonMappings.cs`, `DependencyInjection.cs`.
-- **Yalnız CT-07 (XMC-001) onayıyla:** `src/Diten.InventoryService.Persistence/Traceability/LotHeldStock.cs` (§8.2 yol 3 ve 4 — `ApplyAsync`,
+- **CT-07 (XMC-001) onayıyla — sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) için verildi — "yalnız ayrılmış (reserved) miktarın tutulan stok hesabına eklenmesi kapsamında, başka değişiklik yok":** `src/Diten.InventoryService.Persistence/Traceability/LotHeldStock.cs` (§8.2 yol 3 ve 4 — `ApplyAsync`,
   `ApplyRetestAsync` kapsam pozisyonlarını da günceller; çağıranlar `LotRepository`, `LotExpirySweeper`, `RetestHoldSweeperHostedService`
-  değişmez). Onay yoksa DL-1 başlamaz (değişmez başka türlü korunamaz).
+  değişmez). İzin bu dosyadaki değişikliği yukarıdaki kapsamla sınırlar; başka değişiklik yapılmaz, ihtiyaç çıkarsa durulur ve sorulur (değişmez başka türlü korunamaz).
 - `src/Diten.InventoryService.Api/`: `Controllers/InventoryController.cs` (yeni GET), `Contract/ReservationRequestReader.cs`,
   `Contract/MovementRequestReader.cs`.
 - DL-3 (koşullu): `src/Diten.InventoryService.Application/Features/Inventory/Ports/ILotReservationReader.cs` + Persistence uygulaması.
@@ -196,7 +196,7 @@ Hepsi `services/Diten.InventoryService/` altında (MOD-0173 sahibi aynı: MVP-1 
 - `services/Diten.Building.Blocks/**` (BL-501 ortak iletici olduğu gibi kalır).
 - Başka modüllerin kodu: `Features/Expiry/**` (MOD-0176), `Features/Quarantine/**` (MOD-0175), `Features/Recall/**` (MOD-0177),
   `Features/Traceability/**` (MOD-0174), `Features/Warehouse/**` (MOD-0178), `Persistence/Quarantine/**`, `Persistence/Recall/**`,
-  `Persistence/Expiry/**`, `Persistence/Traceability/**` (tek istisna `LotHeldStock.cs`, yalnız CT-07 onayıyla) — **okunur, değiştirilmez**
+  `Persistence/Expiry/**`, `Persistence/Traceability/**` (tek istisna `LotHeldStock.cs`, CT-07 izniyle ve yalnız o kapsamda — Beste 2026-11-02) — **okunur, değiştirilmez**
   (XMC-001). İhtiyaç çıkarsa durulur ve sorulur.
 - `docs/analysis/contracts/fefo.openapi.yaml`, `shipment-bundle.openapi.yaml`, `warehouse-outbound.openapi.yaml`,
   `docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md` — başka sahiplerin.
@@ -221,7 +221,7 @@ Hepsi `services/Diten.InventoryService/` altında (MOD-0173 sahibi aynı: MVP-1 
 
 **XMC-001:** Bu paket MOD-0173'ün kendi dosyalarına (Repo Scope) dokunur; **tek istisna** `Persistence/Traceability/LotHeldStock.cs`'tir
 (MOD-0174'ün lot durumu yolu, MOD-0175'in retest yolu da onu çağırır): kapsam pozisyonlarının değişmezi bu dosya güncellenmeden korunamaz
-(§8.2 yol 3–4), bu yüzden **CT-07 onayı DL-1'in önkoşuludur**. MOD-0176 (Q-01), MOD-0183 (reservationId eşlemesi) ve MOD-0178 (S2 revizyonu)
+(§8.2 yol 3–4), bu yüzden **CT-07 onayı DL-1'in önkoşuludur** — **verildi** (sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) için verildi — "yalnız ayrılmış (reserved) miktarın tutulan stok hesabına eklenmesi kapsamında, başka değişiklik yok"). MOD-0176 (Q-01), MOD-0183 (reservationId eşlemesi) ve MOD-0178 (S2 revizyonu)
 etkileri **o modüllerin paket revizyonudur**; bu paketin dilimleri onlara dokunmaz. MOD-0174…0177'nin sahibi de MVP-1 CT'dir; yine de
 onların başka bir dosyasına dokunmak gerekirse durulur ve sorulur.
 
@@ -600,24 +600,24 @@ Gateway üzerinden ölçer (AC-19); geçmiyorsa gövdedeki `etag` alanı yeterli
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] Golden Reference (`GoldenReferenceSlim` backend klasör düzeni) okundu; `Features/Inventory/` düzeni ile birebir (§10)
-- [ ] Frontmatter zorunlu alanlar dolu (`service`, `shell: none`, `golden_reference: none`, `entity_base`); ekran yok gerekçesi §9
-- [ ] Layout & Shell Contract: ekran yok, layout yok (§9)
-- [ ] Backend File Convention Golden Reference ile birebir (§10)
-- [ ] Frontend File Contract: yok, tüketici metinleri tüketici paketlerinde (§11)
-- [ ] Validation Rules her yeni alan için (§12)
-- [ ] Failure Path ≥ 4 senaryo: tekrar, eksik, yetkisiz, eşzamanlılık + kiracı dışı + K2 (§13)
-- [ ] Authorization: anahtarlar, politika, aktör; yeni anahtar yok (§14)
-- [ ] Gateway kararı: gereksiz (§15)
-- [ ] Platform lookup kararı: uygulanmaz (Platform/Admin modülü değil; lookup yok)
-- [ ] Acceptance criteria ölçülebilir ve sabotajlı (§16)
-- [ ] Test expectations build / sözleşme / izolasyon / denetim / smoke (§17)
-- [ ] Audited Events her yazma komutunu tam bir kez içeriyor (§21)
-- [ ] Sayfa yardımı: sayfa yok (§23); tur yok
+- [x] Golden Reference (`GoldenReferenceSlim` backend klasör düzeni) okundu; `Features/Inventory/` düzeni ile birebir (§10) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Frontmatter zorunlu alanlar dolu (`service`, `shell: none`, `golden_reference: none`, `entity_base`); ekran yok gerekçesi §9 — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Layout & Shell Contract: ekran yok, layout yok (§9) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Backend File Convention Golden Reference ile birebir (§10) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Frontend File Contract: yok, tüketici metinleri tüketici paketlerinde (§11) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Validation Rules her yeni alan için (§12) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Failure Path ≥ 4 senaryo: tekrar, eksik, yetkisiz, eşzamanlılık + kiracı dışı + K2 (§13) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Authorization: anahtarlar, politika, aktör; yeni anahtar yok (§14) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Gateway kararı: gereksiz (§15) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Platform lookup kararı: uygulanmaz (Platform/Admin modülü değil; lookup yok) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [ ] Acceptance criteria ölçülebilir ve sabotajlı (§16) — **açık** (2026-11-02 ölçümü): 34 AC'nin 23'ünde sabotaj yazılı değil — AC-6, AC-7, AC-8, AC-9, AC-10, AC-12, AC-13, AC-14, AC-16, AC-17, AC-18, AC-19, AC-21, AC-22, AC-23, AC-24, AC-25, AC-26, AC-27, AC-29, AC-30, AC-32, AC-33 (§17 "her sabotaj ayrı koşu" der ama sabotajı adlandırmaz); ready-for-dev önkoşulu
+- [x] Test expectations build / sözleşme / izolasyon / denetim / smoke (§17) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Audited Events her yazma komutunu tam bir kez içeriyor (§21) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Sayfa yardımı: sayfa yok (§23); tur yok — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
 - [x] Q-02, Q-03, Q-04, Q-06, Q-08 kararları verildi (sahip kararı Beste 2026-11-02, §19.6)
 - [x] CT-01 registry satırı (`2265cce90`) ve CT-03 sürüm adımı (iki adım) yazıldı (MVP-1 CT 2026-11-02, §19.6); CT-04 dilim / W-5 koşulu da verildi
 - [x] CT-02 hata kataloğu yetkisi yazıldı — bu FU paketi; ebeveyne DL-1 kabulünde sürüm notu (MVP-1 CT 2026-11-02, §19.6)
-- [ ] CT-07 `LotHeldStock.cs` XMC-001 onayı yazıldı — **açık, sahibe soruluyor** (tek kalan ready-for-dev önkoşulu, bağımsız inceleme ve onay dışında; ayrıca DL-1 önkoşulu, §7)
+- [x] CT-07 `LotHeldStock.cs` XMC-001 onayı yazıldı — sahip izni Beste 2026-11-02 (§19.6); izin metni ile §8.2 yol 3–4 arasındaki ifade farkı CT teyidi bekliyor (§19.6 açık nokta)
 - Not: Q-01 (FEFO) ready-for-dev önkoşulu **değildir**; yalnız DL-3'ün dağıtım kapısıdır (§22). Q-05, Q-07 başka paketlerin kararıdır.
 - [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) + CT-APR-01 onay satırı (yüksek risk: sözleşme + ürün kodu yolu)
 - [ ] `status: ready-for-dev`
@@ -713,7 +713,7 @@ revizyonu onaylı"); MOD-0176 FU-0176-RES-01 ("Lot-based reservation … MOD-017
 | CT-04 | Dilim sırası ve MOD-0178 S2'nin açılma koşulu | **KARAR VERİLDİ** — W-5 = DL-1 + DL-2 CT kabulü; DL-3 MOD-0178 S2 için engel değildir (MVP-1 CT 2026-11-02) |
 | CT-05 | Plan satırı (yetenek kimliği, plan MVP) | plan sahibinden alınıp dilim tablosuna yazılır |
 | CT-06 | MOD-0176 FU-0176-RES-01 sahibi (MOD-0178 yazıyor) W-5 ile çelişiyor | 0176 paket metni düzeltmesi (XMC-001, 0176 sahibi aynı) |
-| CT-07 | XMC-001: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 yolları) DL-1'de kapsam pozisyonlarını güncellemek için değişir | onay — başka yolla değişmez korunamaz (§8.2 yol 3–4); onay yoksa DL-1 başlamaz |
+| CT-07 | XMC-001: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 yolları) DL-1'de kapsam pozisyonlarını güncellemek için değişir | **KARAR VERİLDİ** — sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) için verildi — "yalnız ayrılmış (reserved) miktarın tutulan stok hesabına eklenmesi kapsamında, başka değişiklik yok" |
 
 ### 19.6 Verilen kararlar (2026-11-02)
 
@@ -732,10 +732,14 @@ Sahip kararları Beste'nin ("hepsi öneri gibi"), CT kararları MVP-1 CT'nin. He
 | CT-04 | W-5 = DL-1 + DL-2 CT kabulü; DL-3 MOD-0178 S2 için engel değildir | MVP-1 CT | §22 |
 | CT-02 | Beş yeni hata kodunun (`RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`) kapalı kataloğa `InventoryErrorCodes.All` eklenme yetkisi bu FU paketidir; ebeveyn MOD-0173 paketine yalnız DL-1 kabulünde sürüm notu düşülür | MVP-1 CT | §8.8, §12, §22 (DL-1 kabulü) |
 | Ad | Kanonik paket adı "Inventory Lot & Location Reservation" (künye ve DCP-002 ön kontrolüyle aynı); kayıt satırını CT düzeltir | MVP-1 CT | künye, §19.1 |
+| CT-07 | XMC-001 izni: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası); "yalnız ayrılmış (reserved) miktarın tutulan stok hesabına eklenmesi kapsamında, başka değişiklik yok" | Beste (sahip izni 2026-11-02) | §5, §6, §7, §8.2 (yol 3–4), §22 |
 
 **Açık kalanlar:** Q-01 (FEFO, DL-3 kapısı), Q-05 (MVP-6), Q-07 (MOD-0178 S2 revizyonu); CT-05 (plan satırı), CT-06 (MOD-0176 FU
-satırı düzeltmesi), CT-07 (`LotHeldStock.cs` XMC-001 onayı — sahibe soruluyor; ready-for-dev önkoşulu). Kayıt satırındaki ad yazımını
-CT düzeltecek (kanonik ad yukarıda).
+satırı düzeltmesi). Kayıt satırındaki ad yazımını CT düzeltecek (kanonik ad yukarıda). **Açık nokta (karar değil) — CT-07 ifade
+farkı:** paketin bu dosyadaki değişikliği §8.2 yol 3–4'tür: `ApplyAsync` / `ApplyRetestAsync` lot tutulup bırakıldığında lotun
+her depodaki `W:` ve `L:` kapsam pozisyonlarının `AvailableOnHand`'ini de günceller. İzin metni ise "ayrılmış miktarın tutulan stok
+hesabına eklenmesi" der. İkisinin aynı değişiklik olduğunu CT (ya da sahip) DL-1 başlamadan teyit eder; değilse izin metni ya da
+§8.2 yol 3–4 bir sonraki paket sürümünde hizalanır.
 
 ## 20. Follow-up Items
 
@@ -778,7 +782,7 @@ Kayda yazılmayan alanlar: token, gizli anahtar; rezervasyon kişisel veri taş�
 | DL-2 | rezervasyon kimliğiyle tüketim + yer değiştirme + INVENTORY 1.7.0 | Rezervasyon kimliğiyle tüketim, Ayrılmış stokun yer değiştirmesi, Sözleşme değişikliği (INVENTORY 1.6.0 ve 1.7.0), Durum ve komut tablosu, Validation Rules, Failure Path to Verify, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 | DL-3 | FEFO için ayrılmış lot okuma portu (yalnız Q-01 = a) | FEFO kancası ve ayrılmış lotlar | E4 | plan kimliği yok | plan satırı yok |
 
-Kabul ölçütleri: DL-1 → AC-1…AC-19, AC-32, AC-34; DL-2 → AC-20…AC-30, AC-32, AC-33; DL-3 → AC-31, AC-32. DL-1'in önkoşulu CT-07. DL-1 kabulünde ebeveyn MOD-0173 paketine beş yeni hata kodu için sürüm notu düşülür (CT-02). DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
+Kabul ölçütleri: DL-1 → AC-1…AC-19, AC-32, AC-34; DL-2 → AC-20…AC-30, AC-32, AC-33; DL-3 → AC-31, AC-32. DL-1'in önkoşulu CT-07 — sahip izniyle karşılandı (Beste 2026-11-02, yalnız izin kapsamında; §19.6). DL-1 kabulünde ebeveyn MOD-0173 paketine beş yeni hata kodu için sürüm notu düşülür (CT-02). DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
 iki dilimde geçer: DL-1 yalnız 1.6.0 maddelerini, DL-2 yalnız 1.7.0 maddelerini yapar. W-5'in kapanışı ve MOD-0178 S2'nin (DL-4) açılma
 koşulu: DL-1 + DL-2 CT kabulü (CT-04). MVP-6'nın gerçek tüketimi (E5, iki modül birlikte) MOD-0183 revizyonunun kabulüdür, bu paketin değil.
 
