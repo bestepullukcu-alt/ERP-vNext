@@ -37,3 +37,20 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-39; oturum Treasury Intake CT (`
 1. **D119/1 — değişen:** D105/1'in "`PlatformLookupProvider.cs` değişmez" kısmı ve D105/2'nin test kaldırma kısmı geçersiz. Treasury'nin setten okuma ve set dışı kodu reddetme kuralı yerinde kalır.
 2. **D119/2 — XMC-001:** yalnız `PlatformLookupProvider.cs`, yalnız para birimi listesi ve önbelleği. Küme main'de.
 3. **D119/3 — dal:** `fix/treasury/currency-lookup-set-01`. `chore/ct/treasury-mod0048-r2-01` (`a2d8afc2f`) testi kaldırdığı için bu haliyle gönderilmez; §21 PR'ı yeniden hazırlanır (bu dal: `chore/ct/treasury-mod0048-r2-02`).
+
+## Y-40 — Beste, #346 sonrası cevap (2026-11-02; K1 aktardı)
+
+> 1. #314: Dalı güncelleme izni veriyorum. Çakışmayı çöz, push et; onay düşerse yeniden onaylayıp merge edeceğim.
+> 2. phase1: AuditTrailStandardTests'in kalan kırmızısı CRM'in 53 denetimsiz komutu; sahibi benim, düzeltme hazır, PR onayı bekliyoruz. DocsPathGuardTests main'de güncellendi; son main koşusuna bakar mısın, hâlâ kırmızıysa günlüğü gönder.
+> 3. currency-minor-units: canlıda şu an bu küme yüklü değil, para birimi seçicileri 503 currency_set_unavailable döner. PR #346 açıklamasındaki yükleme adımı canlıya uygulanmalı; adımı ve kimin koşacağını netleştirelim.
+> 4. ANG, BGN, HRK, SLL: şu an sistemde yoklar ve eski verilerde kullanılmamışlar; geçiş için ek bir iş gerekmiyor.
+>
+> Sizden beklediklerimiz: Platform XMC-001 öneri dosyasını ve aday modu kararını yeniden gönderin; ikisini aynı dosya üzerinden değerlendireceğiz. §21 PR'ını D105, D117/3 ve D119'a göre hazırlayıp gönderin; inceleyeceğiz. MOD-0289 onay PR'ını açın; açılınca inceleyip merge edeceğiz.
+
+## D121 — Y-40 kaydı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-40; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D121/1 — eski kayıtlar:** dört kod için geçiş işi yok; #346'daki açık iş sorusu kapandı.
+2. **D121/2 — canlı küme:** küme canlıda yayımlı değil; yükleme adımı ve yürütücüsü açık, para birimi seçicileri o güne kadar 503 döner.
+3. **D121/3 — sıra:** MOD-0289 onay PR'ı D117/2 revizyonu ve yeniden incelemeden sonra açılır; paket metni değişmeden açılırsa onay eski özete bağlanır.
