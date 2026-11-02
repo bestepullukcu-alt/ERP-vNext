@@ -102,6 +102,22 @@ public sealed class WarehouseScreensSurfaceTests(WebApplicationFactory<Program> 
         Assert.DoesNotContain("name=\"legalEntityId\"", html, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// DL-3 CT F-2 (§11.3a): the create form carries the "Saklama koşulu bilinmiyor" badge and the save reason, hidden until rules.js
+    /// applyConditionGate opens them (measured in warehouse-putaway-rules.test.mjs); the badge text is the page's localized word, never hardcoded.
+    /// </summary>
+    [Fact]
+    public async Task F2_the_create_form_carries_the_unknown_condition_badge_and_the_save_reason_hidden_until_needed()
+    {
+        var html = await RenderAsync(Putaway, "tr", PutawayAll);
+
+        var badge = Between(html, "id=\"putawayConditionsUnknown\"", "</div>");
+        Assert.Matches(@"class=""[^""]*\bd-none\b", Between(html, "<div id=\"putawayConditionsUnknown\"", ">"));
+        Assert.Contains("Saklama koşulu bilinmiyor", System.Net.WebUtility.HtmlDecode(badge), StringComparison.Ordinal);
+        Assert.Matches(@"<small id=""putawaySaveReason"" class=""[^""]*\bd-none\b", html);
+        Assert.Contains("id=\"btnSavePutawayTask\"", html, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task The_role_screen_draws_writes_only_for_manage()
     {

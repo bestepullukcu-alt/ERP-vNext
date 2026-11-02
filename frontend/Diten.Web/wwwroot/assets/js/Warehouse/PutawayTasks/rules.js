@@ -9,6 +9,8 @@
  *  - The bin field: only an EXACT code answer selects a bin; anything else is a field error and blocks the submit (AC-44).
  *  - A locked candidate is shown with its lock, reason and blocking document number and cannot be picked (AC-41).
  *  - The bin suggestion is offered, never applied by itself (AC-42).
+ *  - A product whose storage conditions are UNKNOWN (no storageConditions on the candidate, §11.3a / draft §3.3) shows its badge in the picker and
+ *    the form; the target bin and "Kaydet" are closed and say why. An empty list is "no condition", not unknown.
  */
 'use strict';
 
@@ -107,10 +109,37 @@ const PutawayRules = (function () {
      */
     const candidateOption = (c, w) => {
         const base = [c.locationCode, c.sku, c.lotNumber, `${c.openQuantity ?? ''} ${c.uom ?? ''}`.trim()].filter(Boolean).join(' · ');
-        if (c.eligible) return { id: c.key, text: base, disabled: false, locked: false };
+        const unknownConditions = c.conditionsKnown === false;
+        if (c.eligible) {
+            return unknownConditions
+                ? { id: c.key, text: `${base} — ${w('Warehouse.Candidate.StorageConditionsUnknown')}`, disabled: false, locked: false, unknownConditions: true }
+                : { id: c.key, text: base, disabled: false, locked: false, unknownConditions: false };
+        }
         const reason = w(`Warehouse.Candidate.${c.reason}`);
         const document = c.blockingKind ? `${w(`Warehouse.Blocking.${c.blockingKind}`)} ${c.blockingNumber ?? ''}`.trim() : '';
-        return { id: c.key, text: [base, reason, document].filter(Boolean).join(' — '), disabled: true, locked: true, reason: c.reason, document };
+        return { id: c.key, text: [base, reason, document].filter(Boolean).join(' — '), disabled: true, locked: true, reason: c.reason, document, unknownConditions };
+    };
+
+    /**
+     * §11.3a "Saklama koşulu bilinmiyor": the form's badge shows, the target bin field and "Kaydet" are closed and the save reason says why; a
+     * known set (even empty) opens them again. `byId` returns the form's elements (or null); `w` maps a word key to its text.
+     */
+    const applyConditionGate = (byId, unknown, w) => {
+        const closed = !!unknown;
+        byId('putawayConditionsUnknown')?.classList.toggle('d-none', !closed);
+        const bin = byId('putawayBinCode');
+        if (bin) bin.disabled = closed;
+        const save = byId('btnSavePutawayTask');
+        if (save) {
+            save.disabled = closed;
+            save.title = closed ? w('Warehouse.Disabled.StorageConditionsUnknown') : '';
+        }
+        const reason = byId('putawaySaveReason');
+        if (reason) {
+            reason.textContent = closed ? w('Warehouse.Disabled.StorageConditionsUnknown') : '';
+            reason.classList.toggle('d-none', !closed);
+        }
+        return closed;
     };
 
     /** The suggestion line: shown only when the task has a suggestion that is not already the target; applying it is the reader's act (AC-42). */
@@ -122,7 +151,7 @@ const PutawayRules = (function () {
     const targetSource = (appliedSuggestionId, currentTargetId) =>
         appliedSuggestionId && currentTargetId && appliedSuggestionId === currentTargetId ? 'SuggestionApplied' : 'Manual';
 
-    return { ActionKeys, ActionWord, RowMenu, QuickViewMenu, actionState, menu, statusBadge, flagBadge, reasonWord, binVerdict, needsDeviation, step, isQuantity, candidateOption, suggestion, targetSource };
+    return { ActionKeys, ActionWord, RowMenu, QuickViewMenu, actionState, menu, statusBadge, flagBadge, reasonWord, binVerdict, needsDeviation, step, isQuantity, candidateOption, applyConditionGate, suggestion, targetSource };
 })();
 
 if (typeof window !== 'undefined') window.PutawayRules = PutawayRules;

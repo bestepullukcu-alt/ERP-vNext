@@ -27,7 +27,8 @@
     opacity: 0.75;
 }
 
-.wh-locked-option .bx-lock-alt {
+.wh-locked-option .bx-lock-alt,
+.wh-unknown-option .bx-error {
     margin-inline-end: 0.25rem;
 }
 

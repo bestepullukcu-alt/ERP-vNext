@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>التشغيلة قيد الاستدعاء</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>المخزون في الحجر أو محجوز</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>التشغيلة محجوبة</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>شرط التخزين غير معروف — يجب إكماله في بطاقة المنتج (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>شرط تخزين المنتج غير معروف؛ أكمل بطاقة المنتج قبل فتح مهمة</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>التشغيلة منتهية الصلاحية</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>حالة الاستدعاء</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>حجز الحجر</value></data>

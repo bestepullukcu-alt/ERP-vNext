@@ -5,7 +5,9 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @*
     Create / edit (pack §9: 6 user fields, slim). "Yerleştirilecek stok" lists eligible AND locked rows — a locked row is shown with its lock,
-    reason and blocking document number and cannot be picked (§8.15, AC-41). The source never changes after create (edit shows it read-only).
+    reason and blocking document number and cannot be picked (§8.15, AC-41). A row whose product does not state its storage conditions stays
+    selectable with the "Saklama koşulu bilinmiyor" badge; the target bin and "Kaydet" are then closed and say why (§11.3a — rules.js
+    applyConditionGate). The source never changes after create (edit shows it read-only).
     The bin suggestion never fills the form: "Uygula" takes it and the record carries targetSource = SuggestionApplied (§8.6, AC-42).
 *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
@@ -32,6 +34,9 @@
                     </select>
                     <small id="putawayCandidateHint" class="text-muted d-block mt-1"></small>
                     <div class="invalid-feedback d-block" id="putawayCandidateError"></div>
+                    <div id="putawayConditionsUnknown" class="alert alert-warning d-none mt-2 mb-0 py-2" role="status">
+                        <i class="bx bx-error me-1" aria-hidden="true"></i>@Localizer["Warehouse.Candidate.StorageConditionsUnknown"]
+                    </div>
                 </div>
 
                 <div class="col-12 d-none" id="putawaySourceReadonly">
@@ -91,6 +96,9 @@
 
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button data-dt-primary="enter" type="button" id="btnSavePutawayTask" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        <div class="d-flex flex-column align-items-end">
+            <button data-dt-primary="enter" type="button" id="btnSavePutawayTask" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+            <small id="putawaySaveReason" class="text-muted wh-menu-reason d-none" role="status"></small>
+        </div>
     </div>
 </div>

@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>Партия отзывается</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>Товар в карантине или заблокирован</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>Партия заблокирована</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>Условие хранения неизвестно — заполните его в карточке товара (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>Условие хранения товара неизвестно; заполните карточку товара, прежде чем создавать задачу</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>Партия просрочена</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>Дело об отзыве</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>Карантинное удержание</value></data>

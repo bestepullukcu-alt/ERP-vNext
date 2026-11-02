@@ -207,7 +207,7 @@ public sealed class WarehouseProxyControllerTests
         var gateway = new FakeGateway();
         gateway.On("/api/warehouse/putaway-candidates", 200, $$$"""
             {"items":[
-              {"candidateKey":"k1","warehouseId":"{{{WarehouseId}}}","locationId":"a1","locationCode":"RCV-01","item":{"itemId":"e1","skuId":"f1","skuLevel":"Lsku"},"stockStatus":"AVAILABLE","onHand":"10","openTaskQuantity":"0","openQuantity":"10","baseUomId":"EA","eligible":true,"lotNumber":"L-1"},
+              {"candidateKey":"k1","warehouseId":"{{{WarehouseId}}}","locationId":"a1","locationCode":"RCV-01","item":{"itemId":"e1","skuId":"f1","skuLevel":"Lsku"},"stockStatus":"AVAILABLE","onHand":"10","openTaskQuantity":"0","openQuantity":"10","baseUomId":"EA","eligible":true,"lotNumber":"L-1","storageConditions":[]},
               {"candidateKey":"k2","warehouseId":"{{{WarehouseId}}}","locationId":"a1","locationCode":"RCV-01","item":{"itemId":"e1","skuId":"f1","skuLevel":"Lsku"},"stockStatus":"AVAILABLE","onHand":"5","openTaskQuantity":"0","openQuantity":"5","baseUomId":"EA","eligible":false,"lotNumber":"L-2","notEligibleReason":"LotUnderRecall","blockingDocument":{"kind":"RecallCase","id":"r1","number":"MG-RCL-000007"}}
             ],"total":2,"page":1,"pageSize":200,"contractVersion":"v1"}
             """);
@@ -221,6 +221,12 @@ public sealed class WarehouseProxyControllerTests
         Assert.False(locked.GetProperty("eligible").GetBoolean());
         Assert.Equal("LotUnderRecall", locked.GetProperty("reason").GetString());
         Assert.Equal(("RecallCase", "MG-RCL-000007"), (locked.GetProperty("blockingKind").GetString(), locked.GetProperty("blockingNumber").GetString()));
+
+        // DL-3 CT F-2 (§11.3a, draft §3.3): an empty list is a KNOWN "no condition"; an absent member is UNKNOWN — the screen's badge
+        var open = items.Single(i => i.GetProperty("key").GetString() == "k1");
+        Assert.True(open.GetProperty("conditionsKnown").GetBoolean());
+        Assert.Empty(open.GetProperty("storageConditions").EnumerateArray());
+        Assert.False(locked.GetProperty("conditionsKnown").GetBoolean());
     }
 
     [Theory]

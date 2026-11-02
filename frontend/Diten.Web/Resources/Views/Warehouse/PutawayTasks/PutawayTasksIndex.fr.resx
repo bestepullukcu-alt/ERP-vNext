@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>Lot en rappel</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>Stock en quarantaine ou bloqué</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>Lot bloqué</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>Condition de stockage inconnue — à compléter sur la fiche produit (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>La condition de stockage du produit est inconnue ; complétez la fiche produit avant d’ouvrir une tâche</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>Lot périmé</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>Dossier de rappel</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>Blocage qualité</value></data>

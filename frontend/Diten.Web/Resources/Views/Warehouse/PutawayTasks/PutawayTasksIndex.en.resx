@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>Lot under recall</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>Stock in quarantine or blocked</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>Lot blocked</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>Storage condition unknown — complete it on the product card (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>The product's storage condition is unknown; complete the product card before opening a task</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>Lot expired</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>Recall case</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>Quarantine hold</value></data>

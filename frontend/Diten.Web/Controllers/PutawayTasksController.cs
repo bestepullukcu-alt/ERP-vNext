@@ -178,7 +178,7 @@ public sealed class PutawayTasksController : Controller
     }
 
     // "Yerleştirilecek stok" picker (§11.2): eligible AND locked rows — a locked row is never hidden, it carries its reason and the blocking
-    // document number (§8.15, AC-41).
+    // document number (§8.15, AC-41) — and whether the product's storage conditions are known (§11.3a, draft §3.3 storageConditions).
     [HttpGet("candidates")]
     public async Task<IActionResult> Candidates([FromQuery] string? q, [FromQuery] string? warehouseId, CancellationToken ct)
     {
@@ -215,7 +215,10 @@ public sealed class PutawayTasksController : Controller
                 eligible = c.Eligible,
                 reason = c.NotEligibleReason,
                 blockingKind = c.BlockingDocument?.Kind,
-                blockingNumber = c.BlockingDocument?.Number
+                blockingNumber = c.BlockingDocument?.Number,
+                // §11.3a: an absent member is UNKNOWN (never "no condition") — the form shows the badge and closes the bin and "Kaydet"
+                storageConditions = c.StorageConditions,
+                conditionsKnown = c.StorageConditions is not null
             }),
             available = true
         });

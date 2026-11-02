@@ -15,8 +15,8 @@ public static class WarehouseVocabulary
     private static readonly string[] TaskActions = ["Confirm", "Retry", "Returned", "ResolveIntegrity", "CloseShort", "Cancel", "Claim", "Edit", "Assign", "ApplySuggestion"];
     private static readonly string[] DisabledReasons =
         ["TaskTerminal", "ConfirmationPending", "IntegrityError", "AlreadyAssigned", "HasPostedConfirmations", "SerialControlled", "NoPostedConfirmation",
-         "NoPendingConfirmation", "NoRefusedConfirmation", "NoIntegrityError"];
-    private static readonly string[] CandidateReasons = ["LotUnderRecall", "StockHeld", "LotBlocked", "LotExpired"];
+         "NoPendingConfirmation", "NoRefusedConfirmation", "NoIntegrityError", "StorageConditionsUnknown"];
+    private static readonly string[] CandidateReasons = ["LotUnderRecall", "StockHeld", "LotBlocked", "LotExpired", "StorageConditionsUnknown"];
     private static readonly string[] BlockingKinds = ["RecallCase", "QuarantineHold", "BlockedStock", "LotStatus"];
     private static readonly string[] EventKinds =
         ["Created", "Updated", "Assigned", "Claimed", "SuggestionApplied", "ConfirmationRecorded", "ConfirmationPosted", "ConfirmationRefused", "ConfirmationRetried",

@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>批次召回中</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>库存隔离或冻结中</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>批次已冻结</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>储存条件未知——请在产品卡片中补充（MDM）</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>产品的储存条件未知；请先补充产品卡片再创建任务</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>批次已过期</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>召回案例</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>隔离单</value></data>

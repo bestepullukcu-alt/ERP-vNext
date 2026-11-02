@@ -461,11 +461,13 @@ const PutawayTasksList = (function () {
     let formState = null; // { mode, task, etag, key, appliedSuggestion }
 
     const candidateTemplate = (item) => {
-        if (!item.id || !item.locked) return item.text;
+        if (!item.id || (!item.locked && !item.unknownConditions)) return item.text;
         const span = document.createElement('span');
-        span.className = 'wh-locked-option';
-        span.innerHTML = `<i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(item.text)}`;
-        span.title = W('LockedSource');
+        span.className = item.locked ? 'wh-locked-option' : 'wh-unknown-option';
+        span.innerHTML = item.locked
+            ? `<i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(item.text)}`
+            : `<i class="bx bx-error" aria-hidden="true"></i>${esc(item.text)}`;
+        span.title = item.locked ? W('LockedSource') : W('Warehouse.Candidate.StorageConditionsUnknown');
         return span;
     };
 
@@ -496,6 +498,8 @@ const PutawayTasksList = (function () {
                 byId('putawayQuantity').dataset.max = data.openQuantity || '';
                 byId('putawayCandidateHint').textContent = format(W('RemainingHint'), data.openQuantity, data.uom);
                 fieldError('putawayCandidateError', '');
+                // §11.3a: an unknown storage condition closes the bin and "Kaydet" and says why; the row stays selectable (not hidden)
+                if (rules.applyConditionGate(byId, !!data.unknownConditions, W)) setBin('putaway', '', '');
             });
         }
 
@@ -534,6 +538,7 @@ const PutawayTasksList = (function () {
         byId('putawayPriority').value = 'Normal';
         byId('putawayNote').value = '';
         byId('putawaySuggestion')?.classList.add('d-none'); // a new task has no suggestion yet — the service computes it on create (§8.6)
+        rules.applyConditionGate(byId, false, W);
         ['putawayCandidateError', 'putawayQuantityError', 'putawayBinError'].forEach((id) => fieldError(id, ''));
         offcanvas('offcanvasCreateEdit')?.show();
     };
@@ -557,6 +562,7 @@ const PutawayTasksList = (function () {
         byId('putawayPriority').value = task.priority || 'Normal';
         byId('putawayNote').value = task.note || '';
         showSuggestion(task);
+        rules.applyConditionGate(byId, false, W); // the task carries no product conditions (draft §3.1): the service answers 422 on save if unknown
         ['putawayQuantityError', 'putawayBinError'].forEach((fid) => fieldError(fid, ''));
         offcanvas('offcanvasDetailsPreview')?.hide();
         offcanvas('offcanvasCreateEdit')?.show();
@@ -572,7 +578,7 @@ const PutawayTasksList = (function () {
     };
 
     const submitForm = async () => {
-        if (!formState) return;
+        if (!formState || byId('btnSavePutawayTask')?.disabled) return; // closed by §11.3a (unknown storage condition): nothing is sent
         showAlert('formPutawayTaskAlert', '');
         const qty = byId('putawayQuantity').value.trim();
         if (!rules.isQuantity(qty)) { fieldError('putawayQuantityError', W('ValidationQuantity')); return; }

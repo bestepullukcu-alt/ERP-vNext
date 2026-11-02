@@ -123,6 +123,8 @@ public sealed class WmsCandidateDto
     public string? LotNumber { get; set; }
     public string? NotEligibleReason { get; set; }
     public WmsBlockingDocumentDto? BlockingDocument { get; set; }
+    /// <summary>The product's PRODUCT-MASTER conditions (draft §3.3): absent = UNKNOWN (§11.3a badge), empty = no condition.</summary>
+    public List<string>? StorageConditions { get; set; }
 }
 
 public sealed class WmsCandidatePageDto

@@ -128,3 +128,44 @@ test('AC-45 — −/+ steps by 1, never below 0 nor above the remaining; a quant
     assert.equal(rules.needsDeviation('A', 'B'), true);
     assert.equal(rules.needsDeviation(null, 'B'), false);
 });
+
+// DL-3 CT F-2 (§11.3a) — "Saklama koşulu bilinmiyor": the elements of the create form, as plain stand-ins (no jsdom in a clean checkout)
+const element = (hidden = true) => {
+    const classes = new Set(hidden ? ['d-none'] : []);
+    return { disabled: false, title: '', textContent: '', classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)), contains: (c) => classes.has(c) } };
+};
+const form = () => {
+    const els = { putawayConditionsUnknown: element(), putawayBinCode: element(false), btnSavePutawayTask: element(false), putawaySaveReason: element() };
+    return { els, byId: (id) => els[id] ?? null };
+};
+const words = (k) => ({ 'Warehouse.Candidate.StorageConditionsUnknown': 'Saklama koşulu bilinmiyor — ürün kartında tamamlanmalı (MDM)', 'Warehouse.Disabled.StorageConditionsUnknown': 'Ürünün saklama koşulu bilinmiyor' }[k] || k);
+
+test('F-2 — an unknown storage condition: the candidate keeps its row with the badge; a known set (even empty) has none', () => {
+    const unknown = rules.candidateOption({ key: 'k3', locationCode: 'RCV-01', sku: 'SKU-1', lotNumber: 'L-3', openQuantity: '4', uom: 'EA', eligible: true, conditionsKnown: false }, words);
+    assert.equal(unknown.unknownConditions, true);
+    assert.equal(unknown.disabled, false);                                         // not hidden, not locked: the reader sees it and why
+    assert.match(unknown.text, /Saklama koşulu bilinmiyor/);
+    const empty = rules.candidateOption({ key: 'k4', locationCode: 'RCV-01', sku: 'SKU-2', eligible: true, conditionsKnown: true }, words);
+    assert.equal(empty.unknownConditions, false);
+    assert.doesNotMatch(empty.text, /bilinmiyor/);
+});
+
+test('F-2 — the gate shows the badge, closes the bin and "Kaydet" with the reason; a known product opens them again', () => {
+    const { els, byId } = form();
+    assert.equal(rules.applyConditionGate(byId, true, words), true);
+    assert.equal(els.putawayConditionsUnknown.classList.contains('d-none'), false);
+    assert.equal(els.putawayBinCode.disabled, true);
+    assert.equal(els.btnSavePutawayTask.disabled, true);
+    assert.equal(els.btnSavePutawayTask.title, 'Ürünün saklama koşulu bilinmiyor');
+    assert.equal(els.putawaySaveReason.textContent, 'Ürünün saklama koşulu bilinmiyor');
+    assert.equal(els.putawaySaveReason.classList.contains('d-none'), false);
+
+    assert.equal(rules.applyConditionGate(byId, false, words), false);
+    assert.equal(els.putawayConditionsUnknown.classList.contains('d-none'), true);
+    assert.equal(els.putawayBinCode.disabled, false);
+    assert.equal(els.btnSavePutawayTask.disabled, false);
+    assert.equal(els.putawaySaveReason.classList.contains('d-none'), true);
+    // the page applies it on every pick and resets it on open; a closed "Kaydet" sends nothing
+    assert.match(index, /if \(rules\.applyConditionGate\(byId, !!data\.unknownConditions, W\)\) setBin\('putaway', '', ''\);/);
+    assert.match(index, /if \(!formState \|\| byId\('btnSavePutawayTask'\)\?\.disabled\) return;/);
+});

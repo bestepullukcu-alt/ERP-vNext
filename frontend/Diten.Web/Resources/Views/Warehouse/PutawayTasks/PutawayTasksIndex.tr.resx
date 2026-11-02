@@ -175,6 +175,8 @@
   <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>Lot geri çağırmada</value></data>
   <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>Stok karantinada ya da bloke</value></data>
   <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>Lot bloke</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>Saklama koşulu bilinmiyor — ürün kartında tamamlanmalı (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>Ürünün saklama koşulu bilinmiyor; görev açmadan önce ürün kartı tamamlanmalı</value></data>
   <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>Lotun süresi doldu</value></data>
   <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>Geri çağırma vakası</value></data>
   <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>Karantina tutma</value></data>
