@@ -2,20 +2,12 @@ name: ui-compliance
 
 # MOD-0286 DL-3 (pack rev 14 §"Separate CI job", AC-17 / AC-20): the UI compliance selector on the pages a pull request
 # touches. Its own job, not a phase1 step: a red phase1 does not stop it and it does not read phase1's result. Same rule as
-# phase1-gates.yml — read-only token, no secret, actions pinned to a COMMIT SHA. No .NET, no service. A pull request that
-# changes only the selector, the baseline or this file still starts the job; deletions and renames match the path filter.
+# phase1-gates.yml — read-only token, no secret, actions pinned to a COMMIT SHA. No .NET, no service.
+# Every pull request starts it (owner decision 2026-11-02), so branch protection can require it: a required check whose
+# workflow is path-filtered never reports on other PRs and they wait forever. The selector itself picks the touched pages;
+# a PR that touches none ends with exit 0 in under a second (measured on 1ae33452d..6b3bf573a).
 on:
   pull_request:
-    paths:
-      - 'frontend/Diten.Web/Views/**'
-      - 'frontend/Diten.Web/wwwroot/assets/js/**'
-      - 'frontend/Diten.Web/Resources/**'
-      - 'frontend/Diten.Web/Services/Help/PageHelpCatalog.cs'
-      - 'frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json'
-      - 'frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json'
-      - 'scripts/uic_changed_pages.py'
-      - 'tests/ui-compliance-baseline.tsv'
-      - '.github/workflows/ui-compliance.yml'
 
 permissions:
   contents: read
