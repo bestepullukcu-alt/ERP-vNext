@@ -607,7 +607,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     """S-5 (F-1, F-3, N-3, N-4, N-5, R3-3, Q2, Q4, Q5): (stops, covering versions, notes, next step, the person keys that
     accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — or, with
     `deferred` (S-115, owner decision 2026-11-01: the branch reading of the dispatch gate and of acceptance_record.py),
-    from the reviews at `commit` (the CT's ref), where main's rows must be a prefix (pack_approval.prefix_problem) and
+    from the reviews at `commit` (the CT's ref), where main's rows of this pack must be a prefix (pack_approval.prefix_problem) and
     a row not yet on main counts with its human step pending (pack_approval.review_problems deferred).
       - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything; the
         offending commit stays in history, so re-adding rows never clears it (an owner decision). A malformed row
@@ -625,9 +625,13 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     at = commit if deferred else main          # S-115: the branch reading reads the rows at the CT's ref
     where = "dalda" if deferred else "main'de"
     if deferred:
-        gap = pa.prefix_problem(root, commit, anchor or main, pa.REVIEWS)    # F-10: the acceptance anchors at its merge-base
+        try:        # S-130: only this pack's rows; F-10: the acceptance anchors at its merge-base
+            gap = pa.prefix_problem(root, commit, anchor or main, path)
+        except (pa.Unreadable, UnicodeDecodeError) as e:
+            line = re.search(r"satır (\d+)", str(e))
+            return [f"{pa.REVIEWS} okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?"), set()
         if gap:
-            return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1) ve yeniden koşun", set()
+            return [f"inceleme dosyası: {gap}"], [], [], "dalı main ile güncelleyin (`git merge origin/main`, kart §7a-1), prompt'un Expected HEAD'ini yenileyin ve yeniden koşun", set()
     trail = pa.append_only_problems(root, at, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
@@ -946,7 +950,7 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool, q: dict | No
             problems, notes = ["dilim: kural ölçülemedi — depo erişimi yok"], []
         else:
             try:
-                binds, ids, whole = pa.slice_rule(where, commit, p["authority"])
+                binds, ids, whole = pa.slice_rule(where, commit, p["authority"], deferred=True)    # S-133: branch reading
             except pa.Unreadable as e:
                 problems, notes = [f"dilim: kural ölçülemedi — {e}"], []
             else:
@@ -1955,6 +1959,8 @@ Rapor formatı: §22
     self_test_dispatch_review(cases)
 
     src = Path(__file__).read_text(encoding="utf-8")
+    cases.append(("S-133: the slice rule is read with the branch reading, like the approval (pa.evaluate deferred=True)",
+                  bool(re.search(r"pa\.slice_rule\(where, commit, p\[\"authority\"\], deferred=True\)", src.split("def self_test")[0]))))
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
     failed = 0
     for name, ok in cases:
@@ -2353,6 +2359,9 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-115: the CT branch lacks a review row main already has -> ENGEL 'dalı main ile güncelleyin', "
                   "never a partial reading", has(eng5("W-13", PK13, module="MOD-0013"), "önek olarak içermiyor")))
     g("checkout", "-q", "main")
+    other_gap = pa.prefix_problem(root, "ct-13", main13, PK2)
+    cases.append(("S-130: the row the branch lacks belongs to PK13, so PK2's prefix reading on the same branch is unaffected",
+                  other_gap is None))
     # R3-3: one malformed row (another spelling of a pack path) makes reviews.tsv unreadable — fail-closed, with a next
     # step that names the row
     def bad_row():
