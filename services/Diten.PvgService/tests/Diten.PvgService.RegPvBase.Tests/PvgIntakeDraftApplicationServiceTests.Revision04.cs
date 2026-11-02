@@ -411,7 +411,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     public async Task Update_without_reporter_selection_on_linked_record_is_rejected(PvgReporterSource source)
     {
         var (service, store) = AllowedServiceWithStore();
-        var intakeDraftId = await store.AddAsync(Scope(), LinkedFixtureIntake(source));
+        var intakeDraftId = await store.AddAsync(Scope(), "actor-fake", LinkedFixtureIntake(source));
         var before = await StoredAsync(store, intakeDraftId);
 
         var withoutMarker = await service.UpdateDraftAsync(UpdateCommand(
@@ -434,7 +434,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     public async Task Remove_reporter_link_sets_manual_clears_source_id_and_keeps_snapshot(PvgReporterSource source)
     {
         var (service, store) = AllowedServiceWithStore();
-        var intakeDraftId = await store.AddAsync(Scope(), LinkedFixtureIntake(source));
+        var intakeDraftId = await store.AddAsync(Scope(), "actor-fake", LinkedFixtureIntake(source));
         var before = await StoredAsync(store, intakeDraftId);
 
         var removed = await service.UpdateDraftAsync(UpdateCommand(
@@ -467,7 +467,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     public async Task Remove_reporter_link_with_selection_pair_is_rejected(string row)
     {
         var (service, store) = AllowedServiceWithStore();
-        var intakeDraftId = await store.AddAsync(Scope(), LinkedFixtureIntake(PvgReporterSource.Crm));
+        var intakeDraftId = await store.AddAsync(Scope(), "actor-fake", LinkedFixtureIntake(PvgReporterSource.Crm));
         var before = await StoredAsync(store, intakeDraftId);
         var request = row switch
         {
@@ -741,7 +741,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
     public async Task Update_keeps_stored_reporter_source_and_search_state(PvgReporterCrmSearchState searchState)
     {
         var (service, store) = AllowedServiceWithStore();
-        var intakeDraftId = await store.AddAsync(Scope(), FixtureIntake(PvgReporterSource.Manual, null, searchState, FixtureReceivedAtUtc));
+        var intakeDraftId = await store.AddAsync(Scope(), "actor-fake", FixtureIntake(PvgReporterSource.Manual, null, searchState, FixtureReceivedAtUtc));
         var before = await StoredAsync(store, intakeDraftId);
 
         var updated = await service.UpdateDraftAsync(UpdateCommand(
@@ -837,6 +837,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         var (service, store) = AllowedServiceWithStore();
         var intakeDraftId = await store.AddAsync(
             Scope(),
+            "actor-fake",
             FixtureIntake(PvgReporterSource.Manual, null, PvgReporterCrmSearchState.Pending, FixtureReceivedAtUtc.ToOffset(PlusThreeHours)));
         var before = await StoredAsync(store, intakeDraftId);
 
@@ -860,6 +861,7 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         var (service, store) = AllowedServiceWithStore();
         var intakeDraftId = await store.AddAsync(
             Scope(),
+            "actor-fake",
             new SafetyCaseIntake(
                 TenantContext().TenantId,
                 PvgIntakeStatus.IntakeCreated,

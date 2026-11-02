@@ -10,8 +10,10 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
 
     private readonly ConcurrentDictionary<PvgIntakeDraftKey, PvgIntakeDraftEntity> _drafts = new();
 
+    // actorId is accepted for the store contract and not kept: this store holds no actor fields.
     public ValueTask<string> AddAsync(
         PvgPersistenceTenantScope tenantScope,
+        string actorId,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default)
     {
@@ -28,6 +30,7 @@ public sealed class InMemoryPvgIntakeDraftRepository : IPvgIntakeDraftStore
         PvgPersistenceTenantScope tenantScope,
         string intakeDraftId,
         long? expectedVersion,
+        string actorId,
         SafetyCaseIntake intake,
         CancellationToken cancellationToken = default)
     {

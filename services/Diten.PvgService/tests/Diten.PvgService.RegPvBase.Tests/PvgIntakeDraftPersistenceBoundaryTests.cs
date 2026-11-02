@@ -24,8 +24,8 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
         var tenantA = new PvgPersistenceTenantScope("tenant-a-secret");
         var tenantB = new PvgPersistenceTenantScope("tenant-b-secret");
 
-        var tenantAId = await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
-        var tenantBId = await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        var tenantAId = await repository.AddAsync(tenantA, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        var tenantBId = await repository.AddAsync(tenantB, "actor-fake", Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
 
         var crossTenantRead = await repository.FindByIdAsync(tenantB, tenantAId);
         var tenantBList = await repository.ListAsync(new PvgPersistenceListScope(tenantB, 1, 10, null));
@@ -44,13 +44,14 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
         var repository = new InMemoryPvgIntakeDraftRepository();
         var tenantA = new PvgPersistenceTenantScope("tenant-a-secret");
         var tenantB = new PvgPersistenceTenantScope("tenant-b-secret");
-        var tenantAId = await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        var tenantAId = await repository.AddAsync(tenantA, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
         var tenantAVersion = (await repository.FindByIdAsync(tenantA, tenantAId))!.Version;
 
         var crossTenantReplace = await repository.ReplaceAsync(
             tenantB,
             tenantAId,
             tenantAVersion,
+            "actor-fake",
             Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
         var tenantARead = await repository.FindByIdAsync(tenantA, tenantAId);
 
@@ -64,18 +65,20 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
     {
         var repository = new InMemoryPvgIntakeDraftRepository();
         var tenant = new PvgPersistenceTenantScope("tenant-a-secret");
-        var intakeDraftId = await repository.AddAsync(tenant, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        var intakeDraftId = await repository.AddAsync(tenant, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
         var initialVersion = (await repository.FindByIdAsync(tenant, intakeDraftId))!.Version;
 
         var current = await repository.ReplaceAsync(
             tenant,
             intakeDraftId,
             initialVersion,
+            "actor-fake",
             Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated));
         var stale = await repository.ReplaceAsync(
             tenant,
             intakeDraftId,
             initialVersion,
+            "actor-fake",
             Intake("tenant-a-secret", PvgIntakeStatus.Triaged));
         var persisted = await repository.FindByIdAsync(tenant, intakeDraftId);
 
@@ -100,7 +103,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
 
         for (var round = 0; round < rounds; round++)
         {
-            var intakeDraftId = await repository.AddAsync(tenant, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+            var intakeDraftId = await repository.AddAsync(tenant, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
             var expectedVersion = (await repository.FindByIdAsync(tenant, intakeDraftId))!.Version;
             using var startBarrier = new Barrier(concurrentCalls);
 
@@ -110,7 +113,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
                     {
                         Assert.True(startBarrier.SignalAndWait(TimeSpan.FromSeconds(30)));
                         return repository
-                            .ReplaceAsync(tenant, intakeDraftId, expectedVersion, Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated))
+                            .ReplaceAsync(tenant, intakeDraftId, expectedVersion, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated))
                             .AsTask()
                             .GetAwaiter()
                             .GetResult();
@@ -139,13 +142,13 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
         var repository = new InMemoryPvgIntakeDraftRepository();
         var tenantA = new PvgPersistenceTenantScope("tenant-a-secret");
         var tenantB = new PvgPersistenceTenantScope("tenant-b-secret");
-        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
-        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
-        await repository.AddAsync(tenantA, Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated));
-        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
-        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
-        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
-        await repository.AddAsync(tenantB, Intake("tenant-b-secret", PvgIntakeStatus.IntakeCreated));
+        await repository.AddAsync(tenantA, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        await repository.AddAsync(tenantA, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeCreated));
+        await repository.AddAsync(tenantA, "actor-fake", Intake("tenant-a-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, "actor-fake", Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, "actor-fake", Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, "actor-fake", Intake("tenant-b-secret", PvgIntakeStatus.IntakeUpdated));
+        await repository.AddAsync(tenantB, "actor-fake", Intake("tenant-b-secret", PvgIntakeStatus.IntakeCreated));
 
         Assert.Equal(3, await repository.CountAsync(tenantA, null));
         Assert.Equal(2, await repository.CountAsync(tenantA, PvgIntakeStatus.IntakeCreated));
@@ -167,6 +170,7 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await repository.AddAsync(
                 new PvgPersistenceTenantScope("tenant-a-secret"),
+                "actor-fake",
                 Intake("tenant-b-secret", PvgIntakeStatus.IntakeCreated)));
 
         Assert.Equal("PVG_PERSISTENCE_TENANT_SCOPE_MISMATCH", exception.Message);
@@ -193,6 +197,25 @@ public sealed class PvgIntakeDraftPersistenceBoundaryTests
             PvgIntakeDraftIndexCatalog.RequiredIndexes,
             index => index.IsUnique &&
                      index.Fields.SequenceEqual(["IntakeDraftId"]));
+    }
+
+    [Fact]
+    public void Catalog_declares_the_tenant_received_index_with_received_descending()
+    {
+        // DEPO-03 S-6: the third index serves the unfiltered list (received descending, then draft id).
+        var indexes = PvgIntakeDraftIndexCatalog.RequiredIndexes;
+        Assert.Equal(3, indexes.Count);
+
+        var received = Assert.Single(indexes, index => index.Name == "ix_pvg_case_intake_drafts_tenant_received");
+        Assert.Equal(["TenantId", "ReceivedAtUtc", "IntakeDraftId"], received.Fields);
+        Assert.False(received.IsUnique);
+        Assert.Equal(["ReceivedAtUtc"], received.DescendingFields);
+
+        // Every descending entry of every definition is one of the same definition's fields.
+        foreach (var index in indexes)
+        {
+            Assert.All(index.DescendingFields, field => Assert.Contains(field, index.Fields));
+        }
     }
 
     [Fact]
