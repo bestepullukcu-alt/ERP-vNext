@@ -2,10 +2,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.Lookups;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Lookups.Services;
 
@@ -13,33 +17,101 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
 {
     private static readonly TimeSpan StaticLookupTtl = TimeSpan.FromHours(12);
     private static readonly TimeSpan DataBackedLookupTtl = TimeSpan.FromMinutes(5);
+    private const string CurrencyMinorUnitsSetCode = "currency-minor-units";
 
     private readonly IPlatformLookupCache _cache;
     private readonly IFeatureCategoryRepository _featureCategoryRepository;
     private readonly IModuleDomainRepository _moduleDomainRepository;
     private readonly IModuleServiceRepository _moduleServiceRepository;
     private readonly IAuthPermissionModulesClient _authPermissionModulesClient;
+    private readonly IBusinessReferenceDataConsumerQueryService _referenceData;
+    private readonly ITenantContext _tenantContext;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<PlatformLookupProvider> _logger;
 
     public PlatformLookupProvider(
         IPlatformLookupCache cache,
         IFeatureCategoryRepository featureCategoryRepository,
         IModuleDomainRepository moduleDomainRepository,
         IModuleServiceRepository moduleServiceRepository,
-        IAuthPermissionModulesClient authPermissionModulesClient)
+        IAuthPermissionModulesClient authPermissionModulesClient,
+        IBusinessReferenceDataConsumerQueryService referenceData,
+        ITenantContext tenantContext,
+        IConfiguration configuration,
+        ILogger<PlatformLookupProvider> logger)
     {
         _cache = cache;
         _featureCategoryRepository = featureCategoryRepository;
         _moduleDomainRepository = moduleDomainRepository;
         _moduleServiceRepository = moduleServiceRepository;
         _authPermissionModulesClient = authPermissionModulesClient;
+        _referenceData = referenceData;
+        _tenantContext = tenantContext;
+        _configuration = configuration;
+        _logger = logger;
     }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetCurrenciesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
-            BuildCacheKey(PlatformLookupKeys.Currencies),
-            StaticLookupTtl,
-            _ => Task.FromResult(BuildCurrencyOptions()),
+            // The set is read in the caller's tenant first, so one tenant's list must never answer another's.
+            $"{BuildCacheKey(PlatformLookupKeys.Currencies)}:{CallerTenantId}",
+            DataBackedLookupTtl,
+            async token => BuildCurrencyOptions(await ReadPublishedCurrencyCodesAsync(token)),
             ct);
+
+    // Same order as TaskFieldDefinitionQueryHandlers: the caller's tenant, then the reference tenant the catalog seed writes
+    // under when that key is set. No ICU fallback and no empty list: a set found nowhere fails the lookup with its own code.
+    private async Task<IReadOnlySet<string>> ReadPublishedCurrencyCodesAsync(CancellationToken ct)
+    {
+        var codes = await TryReadCurrencyCodesAsync(ct);
+
+        if (codes is null
+            && Guid.TryParse(_configuration["BusinessReferenceData:CatalogLoad:TenantId"], out var referenceTenantId)
+            && referenceTenantId != Guid.Empty
+            && referenceTenantId != CallerTenantId)
+        {
+            using (TenantScope.Begin(_tenantContext, referenceTenantId))
+            {
+                codes = await TryReadCurrencyCodesAsync(ct);
+            }
+        }
+
+        if (codes is null)
+        {
+            _logger.LogError(
+                "{ReasonCode}: set {SetCode} is not published for tenant {TenantId} or the reference tenant.",
+                CurrencySetUnavailableException.ReasonCode,
+                CurrencyMinorUnitsSetCode,
+                CallerTenantId);
+            throw new CurrencySetUnavailableException();
+        }
+
+        return codes;
+    }
+
+    // ITenantContext.TenantId throws until a tenant is resolved; such a caller has no set of its own.
+    private Guid CallerTenantId => _tenantContext.IsResolved ? _tenantContext.TenantId : Guid.Empty;
+
+    private async Task<IReadOnlySet<string>?> TryReadCurrencyCodesAsync(CancellationToken ct)
+    {
+        try
+        {
+            var published = await _referenceData.GetPublishedValuesAsync(CurrencyMinorUnitsSetCode, null, ct);
+            var codes = published.Items
+                .Where(item => item.IsActive)
+                .Select(item => item.Code)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return codes.Count == 0 ? null : codes;
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetLocalesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
@@ -355,7 +427,17 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
         where TEnum : struct, Enum =>
         GetEnumLookupAsync<TEnum>(lookupKey, group, valueUsesDisplayName, excludeUnknown: false, ct);
 
-    private static IReadOnlyList<LookupOptionDto> BuildCurrencyOptions()
+    private static IReadOnlyList<LookupOptionDto> BuildCurrencyOptions(IReadOnlySet<string> publishedCodes) =>
+        KeepPublishedCurrencies(BuildRegionCurrencyOptions(), publishedCodes);
+
+    // MOD-0048-FU01 §21: the host's ICU data differs between servers and can still carry retired codes (ANG, BGN, HRK,
+    // SLL); the published currency-minor-units set decides which codes a picker offers.
+    private static IReadOnlyList<LookupOptionDto> KeepPublishedCurrencies(
+        IEnumerable<LookupOptionDto> options,
+        IReadOnlySet<string> publishedCodes) =>
+        options.Where(option => publishedCodes.Contains(option.Code)).ToList();
+
+    private static IReadOnlyList<LookupOptionDto> BuildRegionCurrencyOptions()
     {
         return CultureInfo.GetCultures(CultureTypes.SpecificCultures)
             .Select(TryGetRegion)
