@@ -177,6 +177,23 @@ test('a stored attempt without a location asks for one before it resends', async
     assert.equal(sent[1].body.toLocationId, 'loc-new');
 });
 
+test('a new panel opens without the marks of the one closed last', async () => {
+    open();
+    element('transitionToWarehouseId').value = '';
+    element('transitionToLocationId').value = '';
+    await submit();
+    const fields = [element('transitionToWarehouseId'), element('transitionToLocationId')];
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'true');
+        assert.equal(field.classList.contains('is-invalid'), true);
+    });
+    list.openTransition(RETURN, 'Received');
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'false');
+        assert.equal(field.classList.contains('is-invalid'), false);
+    });
+});
+
 test('an empty warehouse stops both paths and marks the field', async () => {
     open();
     answers = [refused('UNKNOWN_ITEM')];
