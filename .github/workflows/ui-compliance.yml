@@ -50,13 +50,16 @@ jobs:
           path: uic-selector-stdout.txt
           if-no-files-found: error
 
-      - name: Fail only on selector exit 1 or 2
+      - name: Fail on every selector exit except 0
         env:
           CODE: ${{ steps.selector.outputs.code }}
         run: |
-          case "$CODE" in 1|2) failed=1 ;; *) failed=0 ;; esac
-          if [ "$failed" = "1" ]; then
-            echo "Seçici çıkışı $CODE: kırmızı (1 = yeni kırmızı, 2 = araç ya da taban hatası)."
-            exit 1
-          fi
-          echo "Seçici çıkışı $CODE: yeşil."
+          # Only 0 is green: the selector defines 0, 1 and 2; anything else (127 command not found, 137 killed, empty) is red
+          case "$CODE" in
+            0) echo "Seçici çıkışı 0: yeşil (taban dışında kırmızı yok)."; exit 0 ;;
+            1) meaning="yeni kırmızı" ;;
+            2) meaning="araç hatası" ;;
+            *) meaning="beklenmeyen çıkış" ;;
+          esac
+          echo "Seçici çıkışı ${CODE:-boş}: kırmızı ($meaning)."
+          exit 1
