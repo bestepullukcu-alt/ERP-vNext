@@ -81,7 +81,8 @@ public class CiServiceTestsGuardTests
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
             "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
-            "green, but waits for the PPM team's approval (owner relays it)",
+            "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
+            + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
         ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
             "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
     };
