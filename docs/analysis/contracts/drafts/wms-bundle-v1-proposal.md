@@ -12,6 +12,10 @@
 > (Beste, 2026-10-21; pack §19.1.1, §19.1.2) ve bağımsız inceleme 01 düzeltmeleri F-1…F-16 (pack §19.1.3). **E-imza yok** (M-1): bu sözleşmede imzalanabilir eylem ve imza alanı tanımlanmaz.
 > Açık sorular yalnız diğer ekiplerde + Q-10 (pack §19.5).
 >
+> **r25 (2026-11-02, pack r25):** son bakış 03 — `ShortDispatchUnresolved` çıkışı lot başına ve tek `StagingLocationId` düğümünde (≠ 0 iken
+> listede; Pending onay ya da eşitlenmemiş `ReadyToShip` varken hesap yok), `exceptionId` tür başına kaynak anahtarı, `WMS_ALLOCATION_FAILED`
+> genel cümlesi iki dala ayrıldı, sevk okumasında öbür 4xx → 503 (pack §19.1.24).
+>
 > **r24 (2026-11-02, pack r24):** son bakış 02 — `AllocationFailure` / `ShortDispatchUnresolved[]` saklanan alanları ve iki S3 türünün
 > çıkış koşulu, FU03 r3 `FindByIdempotencyKeysAsync` ile 400 dalı bırakması (el ile yol yok), `origin` yedi değer (`Outbound` dahil),
 > toplanabilir düğüm tek tanımı, 1000 üstü gerekçe 400 `INVALID_REQUEST`, sevk okuması hata eşlemesi, dört entegrasyon kartı (pack §19.1.23).
@@ -362,7 +366,7 @@ replay 200) — istemci yeniden denemenin güvenli olduğunu `postingKey`'den bi
 | `WMS_POSTING_INTEGRITY_ERROR` | 409 | ledger aynı `postingKey` ile farklı bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`) ya da 0-satır (D): bu deneme Posted / replay aldı ama onay Refused (→ `IntegrityError`, `StatusDiverged`) ya da zaten `IntegrityError` (yazım yok, `priorResolution` korunur; bağımsız inceleme 10 F-2) ya da koşullu artış planlananı aşıyor (`details.reason = OverPlanned`, savunma; inceleme 04 F-2) ya da holder ters kaydedilmiş (`HolderReversed`) ya da kapatıcı komutun **ön araması** geç commit buldu (`StatusDiverged`; yeni onay / "Geri taşındı" / İptal / Kalanı kapat 409 döner, kendi değişikliğini yazmaz) ya da savunma dalı geç commit buldu (`StatusDiverged`); onay `IntegrityError`, görev kilitli; çıkış yalnız `resolvePutawayIntegrity` (inceleme 02 F-1, inceleme 03 F-1 / F-2, bağımsız inceleme 05 F-1 / F-2); onay / yeniden deneme / Uzlaştır ucunda `details.seq` (bağımsız inceleme 12 F-4) |
 | `WMS_CONFIRMATION_IN_FLIGHT` | 409 | onayın uçuş kilidi geçerli (asıl istek ya da başka bir deneme sürüyor); `details.inFlightUntilUtc`, `details.seq` (inceleme 03 F-1, bağımsız inceleme 12 F-4) |
 | `WMS_SERIAL_BUCKET_MIXED_STATUS` | 422 | aynı lokasyonda aynı lot + SKU'nun AVAILABLE dışı stoğu var — seri görevi S1'de açılmaz / onaylanmaz (inceleme 02 F-2) |
-| `WMS_ALLOCATION_FAILED` | 422 | S2: tahsis yapılamadı (plan ya da FU03 toplu reddi); `details.lines[] { lineSeq, code, requested, allocatable }`; görünür outbound ve rezervasyon yok. r24: FU03 400 `IDEMPOTENCY_KEY_REUSED` dalında `details.reason = ReservationKeyConflict`, `details.lines` boş (outbound iç `AllocationFailed`, rezervasyonlar bakımca anahtarla bırakılır — pack §8.17 adım 6) |
+| `WMS_ALLOCATION_FAILED` | 422 | S2: tahsis yapılamadı. **İki dal (r25, pack son bakış 03 F-6):** (1) plan reddi (yazım hiç başlamaz) ya da FU03 toplu reddi (`BatchRefused`; toplu port atomik) → `details.lines[] { lineSeq, code, requested, allocatable }`; görünür outbound **ve rezervasyon yok**. (2) r24: FU03 400 `IDEMPOTENCY_KEY_REUSED` dalında `details.reason = ReservationKeyConflict`, `details.lines` boş — görünür outbound yok ama **rezervasyon olabilir** (FU03 400'ü rezervasyon olmadığının kanıtı değildir; tahsisler `Pending`); outbound iç `AllocationFailed`, rezervasyonlar bakımca anahtarla bırakılır — pack §8.17 adım 6) |
 | `WMS_ALLOCATION_TOO_MANY_LINES` | 422 | S2: tahsis satırı sayısı 100'ü aşar (FU03 toplu sınırı) |
 | `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS` | 409 | S2: aynı anahtarla tahsis sürüyor (`Allocating`) |
 | `WMS_OUTBOUND_IMMUTABLE` | 409 | S2: `ReadyToShip` ve sonrası düzenleme / koli komutu |
@@ -377,7 +381,7 @@ replay 200) — istemci yeniden denemenin güvenli olduğunu `postingKey`'den bi
 | `WMS_PACKAGE_EMPTY` | 422 | S2: içeriksiz koli kapatılamaz |
 | `WMS_DISPATCH_AMBIGUOUS` | 409 | S2: outbound için birden çok uygun MVP-6 sevkiyatı |
 | `WMS_DISPATCH_READ_FORBIDDEN` | 403 | S2: MVP-6 okuması 401 ya da 403 (kullanıcıda `supplychain.shipments.read` yok; MOD-0177 okuyucusu ikisini `Forbidden`'a çevirir — r24, pack §5) |
-| `WMS_DISPATCH_SOURCE_UNAVAILABLE` | 503 | S2: MVP-6 erişilemez / 5xx / okuma başına 2 sn zaman aşımı / okunamayan gövde / sorgunun döndürdüğü adayın detayı 404 (r24, pack §5) |
+| `WMS_DISPATCH_SOURCE_UNAVAILABLE` | 503 | S2: MVP-6 erişilemez / 5xx / öbür 4xx (400, 409, 429 … — okuyucunun `default:` dalı; r25) / okuma başına 2 sn zaman aşımı / okunamayan gövde / sorgunun döndürdüğü adayın detayı 404 (r24, pack §5) |
 | `UNKNOWN_OUTBOUND` | 404 | donmuş kod (WAREHOUSE-OUTBOUND 1.0.0); S2 outbound uçları da bunu kullanır — ayrı `WMS_*` bulunamadı kodu yok |
 
 ### 5.2 Yeniden tanımlanmayan, kullanılan kodlar
@@ -463,7 +467,10 @@ Olay zarfı: `eventId` (uuid), `occurredAt`, `correlationId` (uuid), `tenantId`,
 ## 9. Exception model (S3 — r20 bağlayıcı)
 
 `WarehouseException { exceptionId, kind, taskId? | outboundId?, code?, details?, openedAtUtc, status }` — **saklanmaz**, okuma anında
-türetilir; `exceptionId` = tür + kaynak kimliğinden kararlı bir dize. `status` v1'de daima `Open` (çözülen kayıt listeden düşer);
+türetilir; `exceptionId` = `{kind}:{kaynak anahtarı}` — kaynak anahtarı türün satır birimidir (r25, pack son bakış 03 F-7; pack §8.23):
+`PostingRefused` / `PostingPendingLong` / `PostingIntegrityError` → `{taskId}:{seq}`; `DispatchNotSeen` / `AllocationStuck` /
+`AllocationOrphanSuspected` → `{outboundId}`; `ReservationReleasePending` / `ReservedLotUnderRecall` → `{outboundId}:{allocSeq}`;
+`ShortDispatchUnresolved` → `{outboundId}:{skuId}`. Bir cevapta aynı `exceptionId` iki kez geçmez. `status` v1'de daima `Open` (çözülen kayıt listeden düşer);
 `Acknowledged` / `Resolved` ve `resolvedBy` / `note` ayrılmış adlardır, v1'de yazılmaz (pack FU-0178-S3-ACT). Salt okunur
 `GET /exceptions` (`listWarehouseExceptions`, `warehouse.exceptions.read`; süzgeç `kind?`, `warehouseId?`, `page`, `pageSize ≤ 200`).
 
@@ -474,7 +481,7 @@ türetilir; `exceptionId` = tür + kaynak kimliğinden kararlı bir dize. `statu
 | `PostingIntegrityError` | `IntegrityError` onay (bayrakla aynı ad; pack §4.2, §8.3) | — |
 | `DispatchNotSeen` | `ReadyToShip` outbound | `readyAt`'ten bu yana `Warehouse:Outbound:DispatchNotSeenHours` (öneri 24) |
 | `ReservationReleasePending` | bırakması bekleyen tahsis (`Cancelled` ya da `Shipped` outbound; `AllocationFailed` outbound'unki `AllocationOrphanSuspected`'tadır) | — |
-| `ShortDispatchUnresolved` | `Shipped` outbound'un saklanan `shortDispatchUnresolved[]` satırı (r24: `{ skuId, lotId?, expected, issued, reason: LotMissing \| NotFromStaging \| OverIssued }`, `Shipped` yazımında; SKU'nun bir satırında `lotId` yok, `fromLocationId` yok ya da Staging değil, ya da çıkan > toplanan); `details` + `stagingDifference` | listede: Staging farkı (Staging düğümünde SKU `OnHand` − açık outbound'ların toplanmışı − Staging kaynaklı açık putaway kalanı) `LotMissing` / `NotFromStaging`'de > 0, `OverIssued`'da < 0; kapanınca düşer; Pending onay varken hesaplanmaz (pack §8.23) |
+| `ShortDispatchUnresolved` | `Shipped` outbound'un saklanan `shortDispatchUnresolved[]` satırı (r24: `{ skuId, lotId?, expected, issued, reason: LotMissing \| NotFromStaging \| OverIssued }`, `Shipped` yazımında; SKU'nun bir satırında `lotId` yok, `fromLocationId` yok ya da Staging değil, ya da çıkan > toplanan; satır outbound içinde `skuId` ile tekil); `details` + `stagingDifference[] { lotId?, onHand, bound, difference }` \| null + `differenceDeferredBy` \| null | r25 (pack son bakış 03 F-1 / F-2): Staging farkı **(SKU, lot) başına** ve **tam** `StagingLocationId` düğümünde (alt ağaç yok, iki tarafta aynı): `OnHand(lot)` − bağlı miktar(lot) (`StagingLocationId`'si bu düğüm olan açık outbound'ların toplanmışı + bu düğüm kaynaklı açık putaway kalanı); herhangi bir lotta ≠ 0 iken listede (işarete bakılmaz), bütün lotlar 0 olunca düşer; aynı düğüm + SKU'da Pending onay (`PendingConfirmation`) ya da eşitlenmemiş `ReadyToShip` outbound (`UnsyncedReadyToShip`) varken hesaplanmaz, listede kalır (pack §8.23) |
 | `AllocationOrphanSuspected` | `AllocationFailed` outbound, `AllocationFailure.kind = KeyReused` (FU03 400 dalı; r24) | listede: en az bir tahsis `Released` değil; bakım FU03 r3 `FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` ile bulup `ACTIVE`'i bırakınca düşer — el ile yol yok (pack §8.17 adım 6) |
 | `ReservedLotUnderRecall` | `Allocated` / `Picked` / `Packed` / `ReadyToShip` outbound'un tahsis lotu recall'da (r21; kapsam r22 — `Allocating` iç durum, bakım tamamlayınca görünür) | — (çıkış: iptal → bırakma → MOD-0177 "Yeniden dene") |
 | `AllocationStuck` | `Allocating` outbound | şimdi − oluşturma zamanı > 2 × `Warehouse:Outbound:AllocationLeaseSeconds` |
