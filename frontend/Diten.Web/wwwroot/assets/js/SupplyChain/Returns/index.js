@@ -828,6 +828,12 @@ const ReturnsList = (function () {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
+        // The marks of the panel closed last: the new one opens empty, not red.
+        ['transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
+            const el = document.getElementById(id);
+            el?.classList.remove('is-invalid');
+            el?.setAttribute('aria-invalid', 'false');
+        });
         resetReceiptSurfaces();
         syncTransitionTarget();
         const el = document.getElementById('offcanvasReturnTransition');
