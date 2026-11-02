@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r9 (slice B, K2): draft, not approved; needs CT-APR-02 and a CT-APR-01 row before code."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -1041,6 +1041,161 @@ Permissions (the BL-652 interim path), never through the default role template. 
 
 Each rule above gets a sabotage proof (remove the posting, change the status, drop the key, recompute the dates on retry,
 read attempt a1's issue → the matching test is red). The full SupplyChain test assembly runs unfiltered.
+
+## 35. Screen slice B and return approval
+
+> **Draft revision r9 — not approved.** Owner decisions K2 and K4: `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`.
+> Needs CT-APR-02 and a CT-APR-01 row before any code. Facts below are measured on `main` `49012bd7b` unless marked. Slice A is
+> PR `bestepullukcu-alt/ERP-vNext#355` (branch `feature/sce/mvp6-screen-fixes-a-01`, `1ca0e36cc`); this section is written on top of
+> it. Whether #355 is merged is **not measured** (no `gh` here); slice B starts only after it is on `main`.
+> When this section is approved it replaces the sentences it names in sections "Tenant UI scope", "Self-registration" and
+> "Exact frozen operation and field parity". Nothing else in those sections changes.
+
+### 35.1 What this section replaces
+
+| Section and sentence | Replaced by |
+|---|---|
+| "Bound operations": no Return by-ID GET, detail page, reason catalogue | 35.5, 35.6, 35.3 |
+| "Screens, routes, permissions": Shipment resolve adapter projection = number, status, lines (lineNumber, quantity, uomId) | 35.2 |
+| "List — bounded DataTables v2 profile": `shipmentId` UUID text filter; QuickView shows the row summary only | 35.3, 35.5 |
+| "Create offcanvas": `shipmentId` UUID text + Resolve; `reasonCode` free text, no catalogue | 35.3 |
+| "Transition action": Requested row; Received `toWarehouseId` / `toLocationId` as text; Received → Dispositioned row (open, 35.8) | 35.3, 35.7 |
+| "Self-registration" Actions: `AUTHORIZE`, `REJECT` row actions | 35.7 |
+| "Exact frozen operation and field parity": "no GET-by-ID" | 35.6 |
+
+### 35.2 Line fields of the return screens
+
+The Shipment resolve adapter (GET `/SupplyChain/Returns/api/shipments/{shipmentId:guid}`) widens its projection. The class today is
+`ReturnShipmentProjection` in `frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs`; it carries `lineNumber`, `quantity`, `uomId`.
+
+| Projected per line | Source | Shown as |
+|---|---|---|
+| `lineNumber`, `quantity`, `uomId` | `getShipment` (today) | as today |
+| `itemId`, `skuId`, `skuLevel`, `lotId` | `getShipment` `ShipmentLine` (SHIPMENT-BUNDLE 3.4.0; never shown as a GUID) | not shown |
+| `itemName`, `itemCode` | PRODUCT-MASTER `/api/product-master/skus/bulk-read`, server-side in the adapter | name and code |
+| `skuCode`, `skuName` | same read | name and code |
+| `lotNumber` | TRACE `GET /api/trace/lots/{lotId}`, server-side in the adapter | lot number; empty when the line has no lot |
+
+- Names are read at display time and **are not stored on the return**: MOD-0186 keeps no product or lot master.
+- `skuLevel` and `lotId` are already read by `ReturnReferenceReader` for §34; the adapter only adds them to the browser projection.
+- The SKU reference's `code`, `name` field names are bound at Phase 1.5: PRODUCT-MASTER is `1.1.0-draft.16`, not frozen (open item OD-186-5).
+- A failed name read shows a localized "name unavailable" text with the row kept. It never blocks a return and never shows a GUID as a label. A permission failure on the read is treated the same way and logged.
+- New UI prerequisites for create and transition actors, beside `supplychain.shipments.read`: `mdm.product-master.read` (already on the tour's permission list) and `trace.lots.read`.
+- Return lines themselves stay `shipmentLineNumber`, `quantity`, `uomId` (`ReturnLine` is unchanged). `shipmentLineNumber` remains the only key; no GUID line identity is added.
+
+### 35.3 Pickers
+
+Every picker is a Select2 search field inside `.diten-field`, served by a same-origin MVC adapter (NET-001). The browser never calls the Gateway or a service. No picker text is a GUID.
+
+| Field | Replaces | Source | Rule |
+|---|---|---|---|
+| Shipment (create form) | UUID text + Resolve | new adapter GET `/SupplyChain/Returns/api/eligible-shipments` → `queryShipments` with `status=Delivered`, then `status=Closed` | shows number, customer name (MOD-0183 section "Screen slice B"), date. Choosing runs the existing resolve with its stale-response guard. The eligibility note and backend 422 stay |
+| Shipment (list filter) | UUID text input | same adapter, without the status restriction | sends the frozen `shipmentId` parameter. The company comes from the shared selector of slice A |
+| Reason code | free text | closed module list, below | sends the code through the frozen `reasonCode` string |
+| Receiving warehouse | `toWarehouseId` text | `GET /api/locations` with `type=Warehouse`, `status=Active` | company-scoped through `legalEntityId` |
+| Receiving location | `toLocationId` text | `GET /api/locations` with `parentId` = the chosen warehouse, `isStockable=true`, `status=Active` | disabled until a warehouse is chosen; cleared when the warehouse changes. `toLocationId` stays required on Received. Whether `parentId` returns deeper levels (a Bin under a Zone) is **not measured** (OD-186-4) |
+
+- `queryShipments` has no text search (parameters: status, sourceDocumentId, page, pageSize). The shipment picker therefore searches only the loaded page unless the contract adds `search` (35.9 item 5).
+- **Reason list (proposal, OD-186-2):** a closed, module-owned code set in v1: `DAMAGED`, `WRONG_ITEM`, `WRONG_QUANTITY`, `EXPIRED`, `QUALITY_COMPLAINT`, `CUSTOMER_REFUSED`, `OTHER`, with labels in `ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`. No lookup key exists for return reasons in `Diten.Platform` or MDM. The backend stays a free string, so old returns keep their text, shown as stored. Sourcing the list from MOD-0048 instead would change another module (XMC-001) and is not assumed here.
+- `RETURN_RECEIPT_IN_PROGRESS` keeps its behaviour: stored warehouse and location ids from `details` fill the pickers, shown by name.
+- The transition panel and create form keep one `Idempotency-Key` per opened form or panel (section "Errors, replay and concurrency").
+
+### 35.4 Form shape
+
+`form_field_count` stays 6 and `golden_reference` stays `slim`: shipment, `shipmentLineNumber`, `quantity`, `uomId`, reason, `evidenceReferenceIds`. Each line row shows product, SKU and lot read-only (35.2). `ICON_MAP` entries for changed fields go to the integration owner (G-ICONMAP).
+
+### 35.5 Return details page and quarantine link
+
+A declared difference from the Slim file set: Slim has no Details page, and this module gains one because the list row cannot hold lines and receipt results.
+
+| Surface | MVC route | Gateway downstream | Display gate | Backend |
+|---|---|---|---|---|
+| Details page | GET `/SupplyChain/Returns/Details/{returnId:guid}` | — | `supplychain.returns.read` | — |
+| Details adapter | GET `/SupplyChain/Returns/api/{returnId:guid}` | GET `/api/shipment-bundle/returns/{returnId}` | read | new `getReturn` (35.9 item 1) |
+| Quarantine link adapter | GET `/SupplyChain/Returns/api/{returnId:guid}/holds` | GET `/api/quarantine/holds/by-source?sourceModule=MOD-0186&sourceDocumentId={returnId}` | read + `quarantine.holds.read` | MOD-0175 `listHoldsBySource` |
+
+- New files: `Views/SupplyChain/Returns/Details.cshtml`, `wwwroot/assets/js/SupplyChain/Returns/details.js`, resx keys in the existing `ReturnsIndex` set. `Layout = "_LayoutTenantShell"`. Skeleton, empty and error are three states. Cards use `card backbone-preview-section` and `row g-6`; `dl.row`; no edit button (Details template).
+- **Summary card:** RMA number, status, approval state (35.7), shipment number linking to the shipment details page, customer name, reason, created date. A GUID is not a label.
+- **Lines sub-table:** line number, product, SKU, lot, quantity, UoM, `inventoryPosting` label, reason, quarantine record.
+- **Quarantine (KRN) link:** the `CUSTOMER_RETURN` movement carries `sourceDocumentId` = return id (§34.1), so a hold is found by source. Each row shows `holdNumber` (`KRN-YYYY-NNNN`) linking to the MOD-0175 hold page, plus hold status. Whether MOD-0175 stores `sourceModule` / `sourceDocumentId` from this movement for this query is **not measured at runtime**. A line `NotPosted` has no hold and shows why. Without `quarantine.holds.read` the block is not drawn (UAS-001).
+- Known defect carried: after a REVERSAL the hold stays Open (F-2, owner MOD-0175; `QuarantineIntake.TargetOf` returns `None` for a reversal). The link shows the hold as stored and draws no conclusion from it.
+- List: the row's `Details` link is navigation, not a manifest action. QuickView stays and gains the link. New manifest page `RETURN_DETAILS`, route above, `supplychain.returns.read`, parent `RETURNS`, not navigation-visible. Tests M-04 and M-07 of "Self-registration" apply to it.
+- Help text: the page needs a "?" help entry (UXH-001), or a debt-ledger row.
+
+### 35.6 Read model
+
+`getReturn` adds the first by-ID read. It is tenant + company scoped: a foreign or unknown id answers 404 `RETURN_NOT_FOUND`, one text for both. Its handler, query and validator follow the folder rule of the section "Backend File Convention" (`Queries/GetReturnByIdQuery.cs`, `Handlers/QueryHandlers/GetReturnByIdHandler.cs`, `Validators/GetReturnByIdValidator.cs`). The response uses the unwrapped contract form.
+
+### 35.7 Authorization through Platform Workflow (K2)
+
+Dispatch of a shipment is not touched: K2 names no workflow there.
+
+**Pattern.** The MOD-0175 pattern is the measured one, and SupplyChain has no consumer today (`Program.cs`): `GatewayWorkflowClient` (Inventory) calls MOD-0023 over the Gateway at `/api/v1/workflow/*` with the **caller's** token, and `QuarantineWorkflowOutcomeConsumer` applies `platform.workflow.instance.completed.v1` with an inbox. The CRM `ClaimWorkflowOutcomeConsumer` is the same shape. Approval tasks reach the Task Center through Platform's `WorkflowApprovalWorkItemProvider`; no module bridge class is written (WC-D1).
+
+| Step | Behaviour |
+|---|---|
+| Submit | A user holding `supplychain.returns.authorize` sends a `Requested` return for approval: new command, new contract operation (35.9 item 2). It starts a MOD-0023 instance with object type `return.authorization`, object id = return id, object ref = RMA number, template code `SCE-RETURN-AUTHORIZATION` (seed resource under `Application/Features/Returns/Workflow/`; the template record is MOD-0023's). Stored on the return: `workflowInstanceId`, `authorizationState = PendingApproval` |
+| No active template | 422 `RETURN_WORKFLOW_TEMPLATE_MISSING`, no state change. There is no fallback to direct authorization |
+| Workflow unreachable | 503 `DEPENDENCY_UNAVAILABLE`, no state change |
+| Approved | The return moves `Requested → Authorized`, `ReturnAuthorized` event, audit, with `occurredAt` = the event's `CompletedAt` and the return's stored correlation root |
+| Rejected | `Requested → Rejected`, `ReturnRejected`; entitlement released as today, once |
+| Cancelled / timed out | The return stays `Requested`, `authorizationState = None`; it can be submitted again. The user sees the outcome |
+| Direct call | `transitionReturn` with target `Authorized` or `Rejected` answers 422 `RETURN_APPROVAL_REQUIRED`, whatever the caller's permissions |
+
+- **Trust.** Platform publishes unsigned (`QuarantineWorkflowOutcomeConsumer` comment). The event is applied only when the tenant owns the return and the event's instance id equals the stored `workflowInstanceId` of a return still `PendingApproval`. A read-time reconciliation (the MOD-0175 `refresh` shape) is the guaranteed path, so a lost event does not strand a return. Inbox: `returns_event_inbox`, one row per `EventId`.
+- **Four-eyes (OD-186-3):** proposal: the approver may not be the return's creator, checked when the outcome is applied, as in MOD-0175. An approval whose approver cannot be read is not applied by the consumer.
+- **Rollout.** Returns already `Requested` use the same submit action. Returns already `Authorized` or later are unaffected.
+- **Screens.** Row action "Send for approval" replaces Authorize and Reject. The list and details show the approval state, localized in 7 languages. The manifest actions `AUTHORIZE` and `REJECT` are replaced by `SUBMIT_AUTHORIZATION` (`supplychain.returns.authorize`, RowAction, not dangerous). No new permission key. Approvers act in the Task Center, not on this page.
+- **Shared file.** The consumer and the transport switch need the service `Program.cs` (single writer) and the broker configuration. The tenant's template seed is an operational step.
+
+### 35.8 Binding to the MOD-0175 decision — open, written with Beste
+
+K2 fixes the rule: the quality decision stays in MOD-0175, the return's disposition follows it, and one set of goods gets one quality approval. **The binding is not specified here.** It is written together with Beste, and MOD-0175's pack is not changed by this revision. Until it is written, section "Transition action" keeps its `Received → Dispositioned` row and `dispositionCode` stays as today.
+
+To settle together:
+
+1. What moves a return to `Dispositioned`: an event from MOD-0175 (the contract's `x-events` lists only the consumed workflow event), or a read of the decision at transition time.
+2. A return with several lines and several holds; a partial decision (`HoldDecision` 1 or 2 lines, Release / Reject / Block).
+3. How `dispositionCode` is derived from the decision, and whether a user still enters it.
+4. Lines `NotPosted` (`PRE_WP_P1`, `unpostedLines`): they have no hold and no MOD-0175 decision.
+5. The Open-hold defect F-2 when a receipt is reversed.
+
+### 35.9 Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here)
+
+Additive, for the next version after 3.4.0, single writer MVP-6 CT; `ContractErrorCodeParityTests` pins new codes to `ContractErrorCodes`.
+
+| # | Change | For |
+|---|---|---|
+| 1 | New `getReturn` GET `/returns/{returnId}`: summary fields, `reasonCode`, `createdAt`, `lines[]` (`shipmentLineNumber`, `quantity`, `uomId`, `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason`), `authorizationState`, `workflowInstanceId`; statuses 200, 404 | 35.5 |
+| 2 | New `submitReturnAuthorization` POST `/returns/{returnId}/submit-authorization`, `Idempotency-Key`; statuses 200, 403, 404, 409, 422, 503 | 35.7 |
+| 3 | `ReturnSummary` gains optional `authorizationState`, `reasonCode`, `createdAt` | list, 35.7 |
+| 4 | New codes `RETURN_APPROVAL_REQUIRED`, `RETURN_WORKFLOW_TEMPLATE_MISSING`; `transitionReturn` description says Authorized / Rejected come only from workflow | 35.7 |
+| 5 | Optional `search` on `queryShipments` | 35.3; also MOD-0183 section "Screen slice B" |
+
+Gateway: the route for `getReturn` and the submit route go to `integration-agent`. Today `/api/shipment-bundle/returns` and its transition route exist; no by-ID route is measured.
+
+### 35.10 Audited Events
+
+Written because this revision adds write commands (AUD-001). `SupplyChainCentralAuditScope` is registered in the service's `Program.cs`; Path **b**. Existing event names are **not measured** in `Features/Returns`, so the names below are proposals.
+
+| Command | Event | Object | Path | Fields | Exception |
+|---|---|---|---|---|---|
+| `CreateReturnCommand` | `return.created` | ReturnOrder | b | After: RmaNumber, ShipmentId, ReasonCode, line count | — |
+| `TransitionReturnCommand` | `return.transitioned` | ReturnOrder | b | Before/After: Status; line posting results on Received | — |
+| `SubmitReturnAuthorizationCommand` | `return.authorization-submitted` | ReturnOrder | b | After: AuthorizationState, WorkflowInstanceId | — |
+| `ApplyReturnAuthorizationOutcomeCommand` | `return.authorization-decided` | ReturnOrder | b | Before/After: Status, AuthorizationState; outcome, approver id | — |
+
+Evidence references and the customer name are not written to the audit record.
+
+### 35.11 Follow-ups and open decisions
+
+- **SHP / RMA record codes:** `RMA-` + GUID today (`ReturnRepository.cs`, `49012bd7b`), against RCS-001. A separate FU after MOD-0040-FU02, which is not on `main` (`approval_status: pending` on `origin/chore/ct/mod0178-dl1-accept-01`). No identity is minted here. RCS-001's table has no `RMA` row.
+- **OD-186-1** MOD-0175 binding (35.8): owner Natig and Beste.
+- **OD-186-2** Reason code list and its source (35.3): owner Natig.
+- **OD-186-3** Four-eyes on return approval (35.7): owner Natig.
+- **OD-186-4** Depth of the location picker (35.3): measure against `location.openapi.yaml` search with a real tree.
+- **OD-186-5** PRODUCT-MASTER is a draft: this module's name read waits on the same G6 condition as MOD-0183's product row, or the owner accepts a read of a draft contract for display only.
+- **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
 ## Teslim dilimleri
 
