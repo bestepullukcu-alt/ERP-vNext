@@ -79,7 +79,7 @@ class InstructionBudget(unittest.TestCase):
     def test_every_import_form_of_agents_md_outside_code_is_forbidden(self):
         for label, extra in (("a line-start import", "\n@AGENTS.md\n"), ("a ./ path", "\n@./AGENTS.md\n"),
                              ("inside a sentence", "\nKurallar için @AGENTS.md okunur.\n"),
-                             ("another case", "\n@agents.md\n"), ("a path through a folder", "\n@./docs/../AGENTS.md\n"),
+                             ("another case", "\n@agents.md\n"), ("a path through a folder", "\n@./docs/records/../../AGENTS.md\n"),
                              ("behind an unclosed fence", "\n```\n@AGENTS.md\n"),
                              ("after a lone backtick (no code span)", "\nbir ` işareti @AGENTS.md\n")):
             with self.subTest(form=label):
