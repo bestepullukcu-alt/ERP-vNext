@@ -1197,4 +1197,6 @@
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Paramètres de rappel</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Pharmacovigilance</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Réception des Cas et Triage</value></data>
 </root>

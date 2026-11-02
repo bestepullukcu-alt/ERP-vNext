@@ -333,11 +333,13 @@ public sealed class PvgMongoApiTests(PvgMongoReplicaSetFixture mongo)
     [Fact]
     public void Pvg_host_registers_only_the_named_hosted_services()
     {
-        // Measured on the host at Expected HEAD (DL-10 DoR): these two, and no other.
+        // Measured on the host at Expected HEAD (DL-10 DoR): these two, and no other. DL-11 (AC-37) adds exactly one
+        // type, the closed catalog registration, and nothing else.
         string[] baseline =
         [
             "Microsoft.AspNetCore.DataProtection.Internal.DataProtectionHostedService",
-            "Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckPublisherHostedService"
+            "Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckPublisherHostedService",
+            "Diten.PvgService.Api.ModuleRegistration.PvgModuleRegistrationHostedService"
         ];
 
         using (var inMemory = PvgMongoApiHost.Build(PvgMongoApiHost.Configuration("InMemory", null, null)))
