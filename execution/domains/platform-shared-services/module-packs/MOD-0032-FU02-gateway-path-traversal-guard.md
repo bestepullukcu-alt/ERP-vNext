@@ -127,15 +127,15 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
 
 ### DL-1 — ham hedef koruması + tüm rotalar için tablo testi
 
-- `gateway/Diten.ApiGateway/Middleware/GatewayPathInspector.cs` — **yeni**. Saf karar yardımcısı (Runtime Constraints
+- `gateway/Diten.ApiGateway/Middleware/GatewayPathInspector.cs` — (yeni). Saf karar yardımcısı (Runtime Constraints
   "Çözüm kuralı").
-- `gateway/Diten.ApiGateway/Middleware/PathTraversalGuardMiddleware.cs` — **yeni**. `RawTarget`'i okur, yardımcıyı çağırır,
+- `gateway/Diten.ApiGateway/Middleware/PathTraversalGuardMiddleware.cs` — (yeni). `RawTarget`'i okur, yardımcıyı çağırır,
   retteyse 400 cevabını yazar ve tek bir `Warning` günlük satırı bırakır. Retteyse `next` çağrılmaz.
 - `gateway/Diten.ApiGateway/Program.cs` — tek satır: `app.UseMiddleware<PathTraversalGuardMiddleware>();`. Öneri yeri
   `UseSerilogRequestLogging` bloğundan (`:130-148`) hemen sonra ve metrik bloğundan (`:150-154`) önce. Böylece sağlık
   (`:156-171`), metrik, çerezden başlığa aktarım (`:173-183`), `UseAuthentication` (`:185`), `TenantResolutionMiddleware`
   (`:186`), `UseAuthorization` (`:187`) ve `UseOcelot` (`:189`) korumadan sonra gelir (Açık kararlar (b), (h)).
-- `gateway/Diten.ApiGateway.Tests/GatewayKestrelProgramHost.cs` — **yeni**. Ağ geçidinin kendi giriş noktasını
+- `gateway/Diten.ApiGateway.Tests/GatewayKestrelProgramHost.cs` — (yeni). Ağ geçidinin kendi giriş noktasını
   (`Program.cs`) gerçek Kestrel'de `http://127.0.0.1:0` üzerinde açar. Kalıp mevcut `GatewayProgramHost`'un
   `HostBuilding` / `HostBuilt` gözlemcisidir (`GatewayPipelineCorrelationTests.cs:62-158`). Fark şudur: `TestServer`
   konmaz, çünkü ham hedef soket üzerinden bayt bayt gönderilir ve hiçbir istemci yolu normalleştirmez (desen
@@ -143,8 +143,8 @@ Yeni varlık, koleksiyon, dizin ya da kalıcı alan yok. Ara katman durum tutmaz
   isteğin `RawTarget` değerini ve Kestrel'in yönlendirdiği `Request.Path` değerini kaydeder (desen `:60-74`). Gönderilen
   `ocelot.json`'un **yalnız** `DownstreamHostAndPorts` alanı servis yerine geçene çevrilir. Öteki her alan dosyada olduğu gibi
   kalır. Bunu geçici içerik kökündeki kopyayla ya da sonda eklenen yapılandırma kaynağıyla yapmak uygulayıcının seçimidir.
-- `gateway/Diten.ApiGateway.Tests/Mod0032Fu02GatewayPathInspectorTests.cs` — **yeni** (birim, saf yardımcı).
-- `gateway/Diten.ApiGateway.Tests/Mod0032Fu02PathTraversalGuardTests.cs` — **yeni** (gerçek `Program.cs` + gerçek Kestrel
+- `gateway/Diten.ApiGateway.Tests/Mod0032Fu02GatewayPathInspectorTests.cs` — (yeni) (birim, saf yardımcı).
+- `gateway/Diten.ApiGateway.Tests/Mod0032Fu02PathTraversalGuardTests.cs` — (yeni) (gerçek `Program.cs` + gerçek Kestrel
   + Ocelot + gönderilen `ocelot.json`). Sınıf `GatewayProgramCollection`'a girer
   (`GatewayPipelineCorrelationTests.cs:59-64`, `DisableParallelization = true`), çünkü `Program.cs` süreç düzeyinde Serilog
   kuruyor.
