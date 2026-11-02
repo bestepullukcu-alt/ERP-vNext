@@ -33,7 +33,17 @@ public sealed class InternalRecordCodesController : CustomBaseController
             HttpContext,
             cancellationToken,
             async (caller, token) => CreateActionResultInstance(
-                await _mediator.Send(new AllocateRecordCodeCommand(caller.TenantId, caller.CallerService), token)),
+                await _mediator.Send(
+                    new AllocateRecordCodeCommand(
+                        caller.TenantId,
+                        caller.SubjectId,
+                        caller.CallerService,
+                        caller.AllowedRecordTypes,
+                        caller.Request,
+                        caller.RequestErrors ?? [],
+                        caller.HasRequiredPermission,
+                        caller.CorrelationId),
+                    token)),
             Failure);
 
     private IActionResult Failure(int statusCode, string code) =>

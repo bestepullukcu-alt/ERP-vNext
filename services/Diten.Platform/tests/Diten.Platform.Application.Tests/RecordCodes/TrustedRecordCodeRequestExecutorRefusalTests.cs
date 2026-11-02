@@ -252,6 +252,100 @@ public sealed class TrustedRecordCodeRequestExecutorRefusalTests
         Assert.Equal(User.ToString(), context.User.FindFirst("sub")?.Value);
     }
 
+    // ── AC-34 — rotation and revocation ─────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(10, true)]
+    [InlineData(-10, false)]
+    public async Task AC34_the_previous_secret_is_accepted_only_inside_its_window(int minutesLeft, bool accepted)
+    {
+        var options = Options();
+        options.FinanceTreasury.ActiveSecret = "rotated-secret";
+        options.FinanceTreasury.PreviousSecret = Secret;
+        options.FinanceTreasury.PreviousValidUntilUtc = DateTimeOffset.UtcNow.AddMinutes(minutesLeft);
+
+        var result = await ExecuteAsync(Context(), options);
+
+        Assert.Equal(accepted, result.ActionRan);
+        if (!accepted)
+        {
+            Assert.Equal((401, "RECORD_CODE_UNAUTHENTICATED"), result.Refusal);
+        }
+    }
+
+    [Fact]
+    public async Task AC34_a_revoked_credential_is_refused_at_once_even_with_the_active_secret()
+    {
+        var options = Options();
+        options.FinanceTreasury.IsRevoked = true;
+        options.FinanceTreasury.PreviousSecret = "old";
+        options.FinanceTreasury.PreviousValidUntilUtc = DateTimeOffset.UtcNow.AddHours(1);
+
+        var result = await ExecuteAsync(Context(), options);
+
+        Assert.Equal((401, "RECORD_CODE_UNAUTHENTICATED"), result.Refusal);
+    }
+
+    [Fact]
+    public void AC34_the_secret_comparison_is_fixed_time()
+    {
+        var source = File.ReadAllText(Path.Combine(RepoPaths.Root(), "services", "Diten.Platform", "src", "Diten.Platform.API", "Security",
+            "TrustedRecordCodeCredentialAuthenticator.cs"));
+
+        Assert.Contains("CryptographicOperations.FixedTimeEquals", source);
+    }
+
+    // ── AC-33 — step 3 at the gate ──────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task AC33_past_the_limit_the_gate_answers_429_and_the_action_never_runs()
+    {
+        using var limiter = new RecordCodeAllocateRateLimiter(1);
+        var token = RecordCodeHttpHost.TenantUserToken(Tenant, User);
+
+        var first = await ExecuteAsync(Context(bearer: token), limiter: limiter);
+        var second = await ExecuteAsync(Context(bearer: token), limiter: limiter);
+
+        Assert.True(first.ActionRan);
+        Assert.Equal((429, "RECORD_CODE_RATE_LIMITED"), second.Refusal);
+        Assert.False(second.ActionRan);
+    }
+
+    // ── AC-44 — a platform actor on the internal endpoint ───────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task AC44_a_platform_actor_is_403_its_refusal_is_written_Denied_and_the_handler_is_never_called(string actorType)
+    {
+        var refusals = new RecordingRefusalWriter();
+
+        var result = await ExecuteAsync(Context(bearer: RecordCodeHttpHost.Token(actorType, Tenant.ToString(), User.ToString())), refusals: refusals);
+
+        Assert.Equal((403, "RECORD_CODE_FORBIDDEN"), result.Refusal);
+        Assert.False(result.ActionRan);
+        var (request, outcome) = Assert.Single(refusals.Written);
+        Assert.Equal(Diten.Platform.Domain.Enums.AuditOutcome.Denied, outcome);
+        Assert.Equal(Diten.Platform.Domain.Entities.Audit.AuditTenantIds.PlatformSystemTenantId, request.TenantId);
+        Assert.Equal(Tenant, request.Intent!.TargetTenantId);
+        Assert.Equal(2, request.Intent.Metadata!["EvaluationStep"]);
+    }
+
+    [Fact]
+    public async Task AC19_a_tenant_users_gate_refusal_is_never_written()
+    {
+        var refusals = new RecordingRefusalWriter();
+
+        await ExecuteAsync(Context(bearer: RecordCodeHttpHost.Token("tenant_user", null, User.ToString())), refusals: refusals);
+        await ExecuteAsync(Context(secret: "wrong"), refusals: refusals);
+        var noToken = Context();
+        noToken.Request.Headers.Remove("Authorization");
+        await ExecuteAsync(noToken, refusals: refusals);                                                                  // 401 no token
+        await ExecuteAsync(Context(bearer: TokenSignedWith("another key entirely, test only, 0123456789abcdef")), refusals: refusals); // 401 token
+
+        Assert.Empty(refusals.Written);
+    }
+
     // ── harness ─────────────────────────────────────────────────────────────────────────────────────────────
 
     private const string Identifier = RecordCodeHttpHost.FinanceIdentifier;
@@ -267,9 +361,11 @@ public sealed class TrustedRecordCodeRequestExecutorRefusalTests
 
     private static async Task<Outcome> ExecuteAsync(
         DefaultHttpContext context,
-        TrustedRecordCodeCredentialOptions? options = null)
+        TrustedRecordCodeCredentialOptions? options = null,
+        RecordCodeAllocateRateLimiter? limiter = null,
+        RecordingRefusalWriter? refusals = null)
     {
-        context.RequestServices = Services();
+        context.RequestServices = Services(refusals ?? new RecordingRefusalWriter());
         var tenantContext = new TenantContext();
         (int, string)? refusal = null;
         var actionRan = false;
@@ -280,7 +376,9 @@ public sealed class TrustedRecordCodeRequestExecutorRefusalTests
                 new TrustedRecordCodeCredentialAuthenticator(
                     Microsoft.Extensions.Options.Options.Create(options ?? Options()), TimeProvider.System),
                 new TrustedRecordCodeJwtContext(),
-                tenantContext)
+                tenantContext,
+                limiter ?? new RecordCodeAllocateRateLimiter(RecordCodeAllocateRateLimiter.DefaultPermitsPerMinute),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedRecordCodeRequestExecutor>.Instance)
             .ExecuteAsync(
                 context,
                 default,
@@ -306,10 +404,12 @@ public sealed class TrustedRecordCodeRequestExecutorRefusalTests
     }
 
     /// <summary>The JWT bearer scheme the executor validates the forwarded token under (the host's Platform settings).</summary>
-    private static IServiceProvider Services()
+    private static IServiceProvider Services(RecordingRefusalWriter refusals)
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSingleton<Diten.Platform.Application.Contracts.Audit.ITransactionalAuditRefusalWriter>(refusals);
+        services.AddSingleton<Diten.Platform.Domain.Repositories.IPlatformTransactionExecutor>(new InlineTransactionExecutor());
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -347,5 +447,35 @@ public sealed class TrustedRecordCodeRequestExecutorRefusalTests
         context.Request.Headers[TrustedRecordCodeRequestExecutor.AudienceHeader] = audience;
         context.Request.Headers["Authorization"] = "Bearer " + (bearer ?? RecordCodeHttpHost.TenantUserToken(Tenant, User));
         return context;
+    }
+}
+
+/// <summary>Records every refusal the executor writes (request + outcome); writes nothing anywhere.</summary>
+internal sealed class RecordingRefusalWriter : Diten.Platform.Application.Contracts.Audit.ITransactionalAuditRefusalWriter
+{
+    public System.Collections.Concurrent.ConcurrentQueue<(Diten.Platform.Application.Contracts.Audit.AuditOutboxWriteRequest Request,
+        Diten.Platform.Domain.Enums.AuditOutcome Outcome)> Written { get; } = new();
+
+    public Task<bool> TryEnqueueRefusalAsync(
+        Diten.Platform.Domain.Repositories.IPlatformTransactionSession session,
+        Diten.Platform.Application.Contracts.Audit.AuditOutboxWriteRequest request,
+        Diten.Platform.Domain.Enums.AuditOutcome outcome,
+        CancellationToken ct = default)
+    {
+        Written.Enqueue((request, outcome));
+        return Task.FromResult(true);
+    }
+}
+
+/// <summary>Runs the body once with a session that is never a Mongo session (for refusal writers that write nothing).</summary>
+internal sealed class InlineTransactionExecutor : Diten.Platform.Domain.Repositories.IPlatformTransactionExecutor
+{
+    public Task<T> ExecuteAsync<T>(
+        Func<Diten.Platform.Domain.Repositories.IPlatformTransactionSession, CancellationToken, Task<T>> body,
+        CancellationToken cancellationToken = default) => body(new Session(), cancellationToken);
+
+    private sealed class Session : Diten.Platform.Domain.Repositories.IPlatformTransactionSession
+    {
+        public Guid TransactionId { get; } = Guid.NewGuid();
     }
 }

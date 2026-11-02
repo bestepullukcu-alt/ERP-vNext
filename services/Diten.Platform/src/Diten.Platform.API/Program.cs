@@ -219,6 +219,7 @@ builder.Services.Configure<TrustedRecordCodeCredentialOptions>(
 builder.Services.AddSingleton<ITrustedRecordCodeCredentialAuthenticator, TrustedRecordCodeCredentialAuthenticator>();
 builder.Services.AddScoped<ITrustedRecordCodeJwtContext, TrustedRecordCodeJwtContext>();
 builder.Services.AddScoped<ITrustedRecordCodeRequestExecutor, TrustedRecordCodeRequestExecutor>();
+builder.Services.AddSingleton<RecordCodeAllocateRateLimiter>();
 builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
