@@ -838,15 +838,16 @@ MVP-1 CT's live tours are the acceptance.
 
 - **Sender:** the company of the session. The create form shows it read-only from the shared company selector of slice A (`CompanySelection`). The form's own `formLegalEntity` select goes away; changing company happens only in the shared selector. It still rides the query, never the body (R-2).
 - **Recipient:** a MOD-0149 CRM account. `shipToReference` carries the **account id**, as text; SHIPMENT-BUNDLE does not change.
-- **Picker:** new adapter GET `/SupplyChain/Shipments/api/customers?search=&page=` → `GET /api/crm/accounts` (`search`, `page`, `pageSize`, `status`, measured from `AccountController.cs`), showing `AccountName`, `AccountCode`, and the address line beneath. Display gate: `supplychain.shipments.create` + `crm.account.read`. A user without `crm.account.read` sees a disabled field with a localized reason, and cannot create.
-- **Address:** v1 shows the account's single address (`AddressLine`, `CityRef`, `CountryRef`) read-only. No delivery-address list.
+- **Picker:** new adapter GET `/SupplyChain/Shipments/api/customers?search=&page=` → `GET /api/crm/accounts` (`search`, `page`, `pageSize`, `status`, measured from `AccountController.cs`), showing `AccountName` and `AccountCode` only: `AccountListItemDto` carries no `AddressLine` or `CityRef`. Display gate: `supplychain.shipments.create` + `crm.account.read`. A user without `crm.account.read` sees a disabled field with a localized reason, and cannot create.
+- **Address:** after a choice, the adapter reads `GET /api/crm/accounts/{id:guid}` (`crm.account.read`) and v1 shows the account's single address (`AddressLine`, `CityRef`, `DistrictRef`, `CountryRef`) read-only. No delivery-address list. The reference fields show as stored; no display-name source is added for them.
+- **Projection.** `AccountDetailDto` also holds the responsible person's name, phone and e-mail, notes, coordinates and logo. Every CRM adapter here returns only name, code and the four address fields to the browser, and logs none of them.
 - **Scope:** `Account.cs` has no `LegalEntityId`, so a CRM account is tenant-wide and a picker result is not company-filtered. Tenant isolation is CRM's.
 - **Intercompany shipment:** out of v1; needs a separate decision.
-- **Validation:** the service keeps treating `shipToReference` as an opaque string. The adapter refuses a non-account value on create. It does not call CRM from `Diten.SupplyChainService`.
+- **Validation:** the service keeps treating `shipToReference` as an opaque string and does not call CRM. The MVC create adapter checks it: the value must parse as a GUID, and `GET /api/crm/accounts/{id:guid}` with the caller's token must answer 200. A malformed value or a CRM 404 (including another tenant's id) → 400 `INVALID_SHIP_TO_ACCOUNT`, localized, nothing sent. A CRM 403 → 403; CRM unreachable → 503, nothing sent. A caller that goes straight to `createShipment` is not checked: the contract does not change (K1).
 
 **Open items on MOD-0149:**
 
-1. **No contract file.** `docs/analysis/contracts` has no CRM contract, so this read has no frozen surface. Its shape here is measured from code. Asked of the MOD-0149 owner; a change there can break the picker silently.
+1. **No contract file.** `docs/analysis/contracts` has no CRM contract, so these two reads have no frozen surface. Their shape here is measured from `AccountController.cs` and `AccountModels.cs`. Asked of the MOD-0149 owner; a change there can break the picker silently.
 2. **TRM-09.** The registry row says `reserved / planned`, the pack `ready-for-dev`. Resolved by its owner; this module does not touch it.
 3. **`accountType` filter.** Which account types count as a customer is **not decided**: proposal, no filter in v1 beyond `status`. `Active` as the status value is **not measured**.
 4. **Permission.** `crm.account.read` is in no SupplyChain role template; the tenant grants it (BL-652 interim path, as `inventory.movements.create`).
@@ -854,7 +855,8 @@ MVP-1 CT's live tours are the acceptance.
 **Effect on other readers:**
 
 - **Old records:** `shipToReference` values already stored (free text, or `warehouse-outbound:{id}:ship-to` from the intake mapper) are not rewritten. They show as stored, labelled as a reference.
-- **MOD-0177 recall (XMC-001, not changed here):** `CaseDetailReadHandlers.cs` uses `ShipToReference` as the customer label on the recall case's customer view. After this revision that label is an account id unless MOD-0177 resolves it. The MOD-0177 owner is told before slice DL-3 lands.
+- **MOD-0177 recall (XMC-001, MOD-0177 is not changed here):** `shipToReference` is both a **key** and a **label** there. Key: `RecallTraceEngine.ShipmentsAsync` writes `node.CustomerRef = shipTo`; `CaseDetailReadHandlers` groups customer rows by `CustomerRef` and binds notifications to it; `RecallEvidence` and the drill handlers read it too. Label: the same handler shows `ShipToReference` as the customer name. After DL-3, one customer's old shipment (free text) and new shipment (account id) are two customers: two rows, a notification tied to one, the other showing as not notified, and an id as its label.
+  **DL-3 precondition:** a written answer from the MOD-0177 owner (supply-chain-execution / mvp-1 control-tower) saying how recall treats this. DL-3 is not dispatched without it, and the answer's path goes in the DL-3 evidence (SB-19).
 - **MOD-0186** reads the name through the same display rule.
 
 ### 24.2 Golden Compact form
@@ -864,19 +866,20 @@ Today's form asks the user for internal references. After this revision the form
 | Card | Field | Control | Sent as |
 |---|---|---|---|
 | Source and destination | Source document | text | `sourceDocumentId` |
-| | Warehouse | picker: `GET /api/locations`, `type=Warehouse`, `status=Active` | `warehouseReferenceId` |
+| | Warehouse | picker: `GET /api/locations/search`, `search`, `type=Warehouse`, `status=Active` | `warehouseReferenceId` |
 | | Recipient | picker (24.1) | `shipToReference` |
 | Schedule | Planned ship at | flatpickr | `plannedShipAt` |
 | | Planned deliver at | flatpickr | `plannedDeliverAt` |
-| Lines (sub-table) | Product / SKU | picker: `GET /api/product-master/stockable-items?q=` | `itemId`, `skuId`, `skuLevel` |
+| Lines (sub-table) | Product / SKU | picker: `GET /api/product-master/stockable-items?q=`, showing `name` and `canonicalCode` | `itemId`, `skuId`, `skuLevel` |
 | | Lot | picker: `GET /api/trace/lots?skuId=&q=`; empty for a line without lots | `lotId` |
-| | From location | picker: `GET /api/locations`, `parentId` = warehouse, `isStockable=true` | `fromLocationId` |
+| | From location | picker: `GET /api/locations/search`, `search`, `parentId` = warehouse, `isStockable=true`, `status=Active` | `fromLocationId` |
 | | Quantity | text, decimal string | `quantity` |
 | | FEFO bypass reason | textarea, shown only after `FEFO_BYPASS_REASON_REQUIRED` or `FEFO_ORDER_VIOLATION` | `fefoBypassReason` |
 
 - **Field count:** 5 header + 5 per line = **10**, more than 8, so Compact stands (`form_field_count: 10`). `_Form.cshtml` and `Details.cshtml` keep the same card map.
 - **Not asked any more:** `sourceModule` and `sourceType` (the MVC adapter sends `MOD-0183` / `MANUAL`, OD-183-3, decided), `lineNumber` (assigned in order, `1, 2, 3`, read-only), `uomId` (read-only from the chosen SKU), `inventoryReferenceId` (unused in v1, section "What is posted").
 - `lotId`: a lot-tracked SKU without a lot is refused by INVENTORY as today (`LOT_REQUIRED`); the form does not decide lot tracking.
+- Location pickers use `/search` because `GET /api/locations` accepts only `type`, `parentId`, `legalEntityId`. The company comes from `LocationRepository.Scope()`; `inventory.locations.read` is required.
 - Pickers: same adapter rule as MOD-0186: same-origin MVC, no GUID as a label, a stale response never fills a changed field; changing warehouse clears From location, changing SKU clears Lot.
 - Required parity: validator, view model, Razor `required`, label star and the required-fields tracker agree. `Models/SupplyChain/Shipments/ShipmentViewModels.cs` changes accordingly.
 - **PRODUCT-MASTER is `1.1.0-draft.16`, not frozen.** Section "Dependencies" keeps its row "a later MOD-0183 revision after the contract is frozen". This picker uses that read for selection, and the service still does not validate products. The read is accepted before G6 for display and selection only; field names are bound at Phase 1.5 (OD-183-2, decided).
@@ -886,18 +889,18 @@ Today's form asks the user for internal references. After this revision the form
 
 - `data_mode: server` goes into the front matter. Today `index.js` builds its own paged calls.
 - Columns: shipment number, source document, **recipient name**, **warehouse name**, localized status, planned ship, planned delivery, details link. No GUID column.
-- `queryShipments` accepts `status`, `sourceDocumentId`, `page`, `pageSize` only. Golden server mode needs `search`, `orderBy`, `orderDir`, `filteredTotal`, so the list either waits for 24.7 item 1, or runs with search and sort off as a declared difference. **Proposal:** contract change first.
+- `queryShipments` accepts `status`, `sourceDocumentId`, `page`, `pageSize` only. Golden server mode needs `search`, `orderBy`, `orderDir`, `filteredTotal`, so DL-4 waits for 24.7 items 1 and 2. `ShipmentSummary` has no `shipToReference` or `warehouseReferenceId` (`ShipmentProjection.Summary`), so the name columns need item 2.
 - Filter: status as Select2, source document as text, company from the shared selector.
 - `verify_datatable_page.py --reference compact` fails today on checkbox, bulk bar, bulk endpoint, bulk delete, reload-with-toast, clear-selection and `window.API` rows. The contract has no delete or bulk operation, so those rows are **declared exceptions**, run and recorded only. The rest must pass.
 - Status names are localized here, closing open item 4 of section "Frontend File Contract". The note length mismatch (open item 3) is closed in the same slice: UI 1000, as the server.
 
 ### 24.4 Names instead of GUIDs, and the line sub-table
 
-- **Read-time resolution.** The contract stays as it is (K1), so names are not stored on the shipment. The MVC adapters resolve them for the page: warehouse and location from `/api/locations/{id}`, recipient from `/api/crm/accounts/{id}` (route shape **not measured**: the list route is measured; the by-id route is asked of the MOD-0149 owner), SKU through `/api/product-master/skus/bulk-read`, lot through `/api/trace/lots/{lotId}`.
-- **Cost.** `pageSize` default 50 and there is no CRM bulk read (**not measured beyond `AccountController.cs` routes**): per-request de-duplication, bounded concurrency, no cross-request cache across tenants. Latency is measured in the slice's evidence.
+- **Read-time resolution.** The contract stays as it is (K1), so names are not stored on the shipment. The MVC adapters resolve them for the page: warehouse and location from `/api/locations/{id}`, recipient from `GET /api/crm/accounts/{id:guid}`, SKU through `POST /api/product-master/skus/bulk-read` (`name`, `canonicalCode`), lot through `/api/trace/lots/{lotId}`.
+- **Cost.** `pageSize` default 50 and `AccountController` has no bulk read: per-request de-duplication, bounded concurrency, no cross-request cache across tenants. Latency is measured in the slice's evidence.
 - **Failure.** A failed or denied name read shows a localized "name unavailable" text and the reference in a small LTR block. The page never fails for it, and it never shows a blank.
 - **Changed master data.** Names are current, not historic: a renamed customer shows the new name on an old shipment. This follows K1's "no contract change" (OD-183-1, decided).
-- **Details page:** the summary card shows recipient name and address, warehouse name, company. **Lines sub-table:** line, product name and code, SKU code, lot number, from location name, quantity, UoM, FEFO reason. `issueTransactionId` is not a column. A pre-existing line with an unresolved reference shows it as stored.
+- **Details page:** the summary card shows recipient name and address, warehouse name, company. **Lines sub-table:** line, product / SKU name and code (one pair: `BulkSkuReadItem.name` already names the product, and bulk-read has no separate product code), lot number, from location name, quantity, UoM, FEFO reason. `issueTransactionId` is not a column. A pre-existing line with an unresolved reference shows it as stored.
 
 ### 24.5 Warehouse intake: FU-0178-MVP6
 
@@ -923,12 +926,12 @@ MOD-0178's pack is not changed by this revision.
 
 ### 24.7 Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here)
 
-Additive; single writer MVP-6 CT. K1 itself needs none.
+Additive; single writer MVP-6 CT. DL-3 and K1 need none.
 
 | # | Change | For |
 |---|---|---|
-| 1 | `queryShipments`: optional `search`, `orderBy`, `orderDir`; `ShipmentListResponse.filteredTotal` | 24.3; MOD-0186 picker |
-| 2 | `ShipmentSummary`: `shipToReference`, `warehouseReferenceId` in the list response, unless present (the summary's full field set is bound at Phase 1.5) | 24.3 |
+| 1 | `queryShipments`: optional `search`, `orderBy`, `orderDir`; `ShipmentListResponse.filteredTotal` | DL-4; MOD-0186 DL-3 |
+| 2 | `ShipmentSummary`: `shipToReference`, `warehouseReferenceId` in the list response (absent in 3.4.0) | DL-4; MOD-0186 DL-3 |
 
 ### 24.8 Follow-ups and open decisions
 
@@ -946,21 +949,23 @@ Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`,
 |---|---|---|
 | SB-1 | Create form shows the session company read-only; the query carries it, the body never does; changing it in the shared selector changes the request | Sending the company in the body turns it red |
 | SB-2 | Recipient picker lists CRM accounts by name and code; choosing one sends the account id as `shipToReference`; the wire body is valid against SHIPMENT-BUNDLE 3.4.0 unchanged | Sending the name instead of the id turns it red |
+| SB-2a | Create adapter with free text, a malformed id, or another tenant's id (CRM 404) → 400 `INVALID_SHIP_TO_ACCOUNT`, no `createShipment` call; CRM 503 → 503, no call | Removing the CRM read turns it red |
 | SB-3 | Without `crm.account.read`: field disabled with a localized reason, no CRM request, no create | Sending the CRM request anyway turns it red |
-| SB-4 | The account's address is shown read-only; v1 offers no address choice | — |
+| SB-4 | After a choice the address comes from the by-id read and is shown read-only; v1 offers no address choice. The adapter's JSON holds only name, code and the four address fields: no person, phone, e-mail, notes, coordinates or logo | Returning the raw `AccountDetailDto` turns it red |
 | SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; the adapter sends `MOD-0183` / `MANUAL`; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
 | SB-6 | Line numbers are assigned in order and stay unique after a line is removed | Numbering by index after removal without renumbering turns it red |
-| SB-7 | Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear turns it red |
+| SB-7 | Location pickers call `/api/locations/search`; an Inactive place or a non-stockable Zone is not offered, measured against the real INVENTORY query. Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear turns it red |
 | SB-8 | `fefoBypassReason` appears only after the FEFO refusal codes and is sent unchanged | Showing it always turns it red |
-| SB-9 | List shows recipient and warehouse names and localized status; no GUID in any cell; `data_mode: server` is declared in pack, table and `createList` alike | Rendering `shipToReference` raw for a resolved row turns it red |
+| SB-9 | List shows recipient and warehouse names and localized status; no GUID in any cell except the shipment number until the SHP follow-up; `data_mode: server` is declared in pack, table and `createList` alike | Rendering `shipToReference` raw for a resolved row turns it red |
 | SB-10 | A failed or denied name read: page loads, localized "name unavailable", reference shown small; no blank | Throwing on a read failure turns it red |
 | SB-11 | An old shipment with free-text `shipToReference` or `warehouse-outbound:…:ship-to` shows it as stored, no failing CRM call | Treating every value as an id turns it red |
-| SB-12 | Details page: recipient, address, warehouse names; lines sub-table with product, SKU, lot, location names; `issueTransactionId` is not a column; `_Form` and `Details` share one card map | — |
+| SB-12 | Details page: recipient, address, warehouse names; lines sub-table with product / SKU name and code, lot number, location name, for Item, Gsku, Lsku and FinishedGood lines; `issueTransactionId` is not a column; `_Form` and `Details` share one card map | — |
 | SB-13 | Status names localized in 7 languages on filter, badge and details; note limit 1000 in UI and server | Removing the `zh` key turns parity red |
 | SB-14 | `verify_datatable_page.py --reference compact`: only the declared bulk and delete rows fail; the failures are recorded | A new failing row stops the slice |
 | SB-15 | Cross-tenant data: a name adapter uses the caller's token and sends the current tenant; no shared cache across requests | Adding a static cache turns it red |
 | SB-16 | Real browser on the integrated target: a user with the tour's permissions plus `crm.account.read` and `trace.lots.read` creates a shipment with pickers only and dispatches it; `GOODS_ISSUE_SALES` as S23-1 | — |
 | SB-17 | Intake stays off: no host registration of `WarehouseIntakeCoordinator` | Registering it fails the existing obligation check |
+| SB-19 | DL-3 evidence cites the MOD-0177 owner's written answer on `CustomerRef` as key and label; without it the slice is not dispatched. MOD-0177 files are unchanged in the DL-3 diff | Dispatch without the answer is refused by the CT checklist |
 | SB-18 | No write path changed: S23-1…S23-21 stay green; the REVERSAL body is unchanged until 24.6 closes | Adding `restoreReservation` before FU03 fails S23-17 |
 
 The full SupplyChain and Web test assemblies run unfiltered. Measure page latency of the list with 50 rows in the slice's evidence (24.4); no latency target is invented.
@@ -981,4 +986,4 @@ modules). Not slices of this version: the product check (Dependencies, PRODUCT-M
 PRODUCT-MASTER is frozen, by a new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work, a
 later MOD-0183 revision). CT-APR-01 note: "only DL-1, DL-2".
 
-DL-3 covers SB-1…SB-8, SB-11 and SB-16; it needs no contract change. DL-4 covers SB-9, SB-10, SB-12…SB-15 and needs contract item 1 first. SB-17 and SB-18 run in both. Not slices of this version: the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes. CT-APR-01 note for r8: "only DL-3, DL-4"; evidence levels are proposals.
+DL-3 covers SB-1…SB-8, SB-2a, SB-11, SB-16 and SB-19; it needs no contract change, and it needs the MOD-0177 owner's written answer first. DL-4 covers SB-9, SB-10, SB-12…SB-15 and needs contract items 1 and 2 first. SB-17 and SB-18 run in both. Not slices of this version: the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes. CT-APR-01 note for r8: "only DL-3, DL-4"; evidence levels are proposals.
