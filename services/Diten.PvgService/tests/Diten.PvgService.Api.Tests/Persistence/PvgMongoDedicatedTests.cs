@@ -7,6 +7,7 @@ using Diten.PvgService.Domain.RegPvBase;
 using Diten.PvgService.Infrastructure.RegPvBase;
 using Diten.PvgService.Persistence;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
@@ -51,6 +52,122 @@ public sealed class PvgMongoDedicatedTests
         Assert.Equal("PVG_PERSISTENCE_STORE_UNREACHABLE", refusal.Message);
         Assert.DoesNotContain("127.0.0.1", exception.ToString(), StringComparison.Ordinal);
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(15), $"the refusal took {clock.Elapsed}");
+    }
+
+    // WP-0230-DL10-R1: a connection string the driver cannot parse is refused with the same safe code as an unreachable
+    // store. The driver's own message quotes the value (the password with it); neither the message, nor the inner
+    // exception chain, nor the log, nor the console output of the run may carry it. No mongod is needed: the value is
+    // refused before any connection is tried. The test runs in this non-parallel collection because it redirects the
+    // console for the time of the run.
+    [Fact]
+    public async Task Malformed_mongo_connection_string_refuses_start_without_echoing_the_value()
+    {
+        // Generated for this run; a single slash after "mongodb:" is what makes the value malformed.
+        var fakePassword = "fakepw" + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(12));
+        var fakeUser = "fakeuser" + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(4));
+        var malformed = $"mongodb:/{fakeUser}:{fakePassword}@127.0.0.1:9/diten_fake";
+        var configuration = PvgMongoApiHost.Configuration("Mongo", malformed, PvgMongoTestHarness.SharedDatabaseName);
+
+        var logs = new CapturingLoggerProvider();
+        var console = new StringWriter();
+        var originalOut = Console.Out;
+        var originalError = Console.Error;
+        Console.SetOut(console);
+        Console.SetError(console);
+        Exception exception;
+        try
+        {
+            exception = await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                using var host = PvgMongoApiHost.Build(
+                    configuration,
+                    configureServices: services => services.AddLogging(logging => logging.AddProvider(logs)));
+                await host.StartAsync();
+            });
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+        }
+
+        var refusal = Unwrap(exception);
+        Assert.Equal("PVG_PERSISTENCE_STORE_UNREACHABLE", refusal.Message);
+        Assert.Null(refusal.InnerException);
+
+        // The value, its parts, and the address in it appear nowhere: not in the text of any exception in the chain, not
+        // in the log entries, not in what the run wrote to the console.
+        var everything = string.Join(
+            "\n",
+            new[] { exception.ToString(), logs.Text(), console.ToString() }.Concat(ChainMessages(exception)));
+        foreach (var forbidden in new[] { fakePassword, fakeUser, malformed, "127.0.0.1" })
+        {
+            Assert.DoesNotContain(forbidden, everything, StringComparison.Ordinal);
+        }
+    }
+
+    private static IEnumerable<string> ChainMessages(Exception exception)
+    {
+        var pending = new Stack<Exception>([exception]);
+        while (pending.Count > 0)
+        {
+            var current = pending.Pop();
+            yield return current.Message;
+            if (current is AggregateException aggregate)
+            {
+                foreach (var inner in aggregate.InnerExceptions)
+                {
+                    pending.Push(inner);
+                }
+            }
+            else if (current.InnerException is not null)
+            {
+                pending.Push(current.InnerException);
+            }
+        }
+    }
+
+    private sealed class CapturingLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider
+    {
+        private readonly List<string> _lines = [];
+
+        public string Text()
+        {
+            lock (_lines)
+            {
+                return string.Join("\n", _lines);
+            }
+        }
+
+        public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => new Capture(this);
+
+        public void Dispose()
+        {
+        }
+
+        private void Add(string line)
+        {
+            lock (_lines)
+            {
+                _lines.Add(line);
+            }
+        }
+
+        private sealed class Capture(CapturingLoggerProvider owner) : Microsoft.Extensions.Logging.ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state)
+                where TState : notnull => null;
+
+            public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+            public void Log<TState>(
+                Microsoft.Extensions.Logging.LogLevel logLevel,
+                Microsoft.Extensions.Logging.EventId eventId,
+                TState state,
+                Exception? exception,
+                Func<TState, Exception?, string> formatter) =>
+                owner.Add(formatter(state, exception) + (exception is null ? string.Empty : "\n" + exception));
+        }
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.PvgService.Application.RegPvBase;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -44,20 +45,34 @@ public static class PvgPersistenceServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(environment);
 
-        // The connection string is a secret: read through the secrets rules of the other services, never logged or echoed.
+        // The connection string is a secret: it is required here (a missing value is refused at registration, and the
+        // message names only the key) and it is read through the secrets provider of the other services, never logged or
+        // echoed. ConfigurationSecretsProvider asks the container for IConfiguration, which a bare ServiceCollection does
+        // not have; TryAdd leaves the host's own registration alone.
+        services.TryAddSingleton(configuration);
+        services.AddSecretsProvider(configuration, environment, options => options.ServiceName = "Pvg.Persistence");
         services.ValidateRequiredSecrets(configuration, environment, "Pvg.Persistence", [
             new(ConnectionStringKey, "Pvg.Persistence", SecretRequirementKind.ConnectionString)
         ]);
 
-        var connectionString = configuration[ConnectionStringKey]
-            ?? throw new InvalidOperationException($"Configuration error: '{ConnectionStringKey}' is missing.");
         var databaseName = configuration[DatabaseNameKey];
         if (string.IsNullOrWhiteSpace(databaseName))
         {
             throw new InvalidOperationException($"Configuration error: '{DatabaseNameKey}' is missing.");
         }
 
-        services.AddSingleton(_ => new PvgMongoContext(connectionString, databaseName, configureClientSettings));
+        // The secrets provider is asynchronous, so the value is read where the connection is made (the first resolution of
+        // the context, which is the start-up bootstrap), not at registration. The provider of this package answers from
+        // memory, so waiting for it blocks nothing; the host has no synchronization context.
+        services.AddSingleton(provider =>
+        {
+            var connectionString = provider
+                .GetRequiredService<ISecretsProvider>()
+                .GetSecretAsync(ConnectionStringKey, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            return new PvgMongoContext(connectionString, databaseName, configureClientSettings);
+        });
         services.AddSingleton<IPvgIntakeDraftStore>(provider =>
             new PvgMongoIntakeDraftStore(provider.GetRequiredService<PvgMongoContext>()));
         services.AddSingleton<IPvgIntakeStoreReadiness>(provider =>

@@ -52,12 +52,19 @@ public sealed class PvgMongoStartRefusalTests
         Assert.DoesNotContain("127.0.0.1", exception.ToString(), StringComparison.Ordinal);
     }
 
+    // WP-0230-DL10-R1: a key that is there must be exactly "InMemory" or exactly "Mongo" (ordinal). The rows are the
+    // other names, the other letter cases of the two names, an empty value and a blank value; the empty value goes through
+    // the host (PvgServiceApiHost), as the service gets it from the environment.
     [Theory]
     [InlineData("Postgres")]
     [InlineData(" ")]
+    [InlineData("")]
     [InlineData("mongo-db")]
-    // An empty value reads as "not set" through the host's configuration and so selects the default store; a value that
-    // is present but is not one of the two names refuses the start.
+    [InlineData("mongo")]
+    [InlineData("MONGO")]
+    [InlineData("inmemory")]
+    [InlineData("INMEMORY")]
+    [InlineData("Mongo ")]
     public void Unknown_store_value_refuses_start(string value)
     {
         var configuration = PvgMongoApiHost.Configuration(value, FakeConnectionString, "diten_fake");
@@ -67,5 +74,33 @@ public sealed class PvgMongoStartRefusalTests
 
         Assert.Equal("PVG_PERSISTENCE_STORE_UNKNOWN", exception.Message);
         Assert.DoesNotContain(FakeConnectionValue, exception.ToString(), StringComparison.Ordinal);
+    }
+
+    // A production-like host refuses a store value of the wrong letter case too, before any other check and without
+    // any connection attempt: the refusal comes out of Build, and nothing was started.
+    [Theory]
+    [InlineData("mongo")]
+    [InlineData("MONGO")]
+    [InlineData("")]
+    public void Wrong_case_or_empty_store_value_is_refused_on_a_production_like_host(string value)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [PvgServiceApiHost.PersistenceStoreKey] = value,
+                ["Mongo:ConnectionString"] = FakeConnectionString,
+                ["Mongo:DatabaseName"] = "diten_fake",
+                ["Pvg:Runtime:ProductionLike"] = "true",
+                ["Pvg:Runtime:OperationalRuntimeAuthorized"] = "true",
+                ["Pvg:Runtime:ApprovalReference"] = "RTA-MOD0230-001"
+            })
+            .Build();
+        var builder = PvgServiceApiHost.CreatePvgServiceWebHostBuilder("Development", configuration, "http://127.0.0.1:0");
+
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+        Assert.Equal("PVG_PERSISTENCE_STORE_UNKNOWN", exception.Message);
+        Assert.DoesNotContain(FakeConnectionValue, exception.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("127.0.0.1", exception.ToString(), StringComparison.Ordinal);
     }
 }

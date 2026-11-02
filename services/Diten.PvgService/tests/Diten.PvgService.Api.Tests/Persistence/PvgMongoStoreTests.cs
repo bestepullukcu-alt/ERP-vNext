@@ -1,10 +1,13 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Reflection;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Domain.RegPvBase;
 using Diten.PvgService.Infrastructure.RegPvBase;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 using Xunit;
 
 namespace Diten.PvgService.Api.Tests.Persistence;
@@ -164,6 +167,23 @@ public sealed class PvgMongoStoreTests(PvgMongoReplicaSetFixture mongo)
             await store.AddAsync(scope, ActorA, PvgMongoTestData.Intake(PvgMongoTestData.NewTenant())));
         Assert.Equal("PVG_PERSISTENCE_TENANT_SCOPE_MISMATCH", mismatch.Message);
         Assert.DoesNotContain(tenant, mismatch.Message, StringComparison.OrdinalIgnoreCase);
+
+        // The same two refusals on a replace (WP-0230-DL10-R1, H6): an existing draft, an intake of another tenant. The
+        // refusal comes before any write, so the draft stays where it was, in its own tenant, at its own version.
+        var ownId = await store.AddAsync(scope, ActorA, intake);
+        var replaceMismatch = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await store.ReplaceAsync(scope, ownId, 1, ActorB, PvgMongoTestData.Intake(PvgMongoTestData.NewTenant())));
+        Assert.Equal("PVG_PERSISTENCE_TENANT_SCOPE_MISMATCH", replaceMismatch.Message);
+        Assert.DoesNotContain(tenant, replaceMismatch.Message, StringComparison.OrdinalIgnoreCase);
+
+        var replaceMissingScope = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await store.ReplaceAsync(new PvgPersistenceTenantScope(" "), ownId, 1, ActorB, intake));
+        Assert.Equal("PVG_PERSISTENCE_TENANT_SCOPE_REQUIRED", replaceMissingScope.Message);
+
+        var stayed = await store.FindByIdAsync(scope, ownId);
+        Assert.NotNull(stayed);
+        Assert.Equal(1, stayed.Version);
+        Assert.Equal(tenant, stayed.Intake.TenantId);
     }
 
     // ---- T1: every SafetyCaseIntake field survives a write and a read ------------------------------------------
@@ -195,26 +215,51 @@ public sealed class PvgMongoStoreTests(PvgMongoReplicaSetFixture mongo)
         var intakeDraftId = await mongo.Store.AddAsync(scope, ActorA, written);
         var read = (await mongo.Store.FindByIdAsync(scope, intakeDraftId))!.Intake;
 
-        foreach (var property in properties)
-        {
-            var expected = property.GetValue(written);
-            var actual = property.GetValue(read);
-            if (expected is IEnumerable expectedItems and not string)
-            {
-                Assert.Equal(
-                    expectedItems.Cast<object?>().ToArray(),
-                    ((IEnumerable)actual!).Cast<object?>().ToArray());
-            }
-            else
-            {
-                Assert.True(Equals(expected, actual), $"{property.Name}: expected '{expected}', read '{actual}'");
-            }
-        }
+        AssertEveryPropertyEqual(properties, written, read);
 
         // The instants come back exactly, sub-millisecond ticks included.
         Assert.Equal(written.ReceivedAtUtc.UtcTicks, read.ReceivedAtUtc.UtcTicks);
         Assert.Equal(written.AwarenessAtUtc.UtcTicks, read.AwarenessAtUtc.UtcTicks);
+
+        // The replace turn (WP-0230-DL10-R1, N1): the replacement changes every property but the tenant, so a field that
+        // the replace body leaves out keeps its old value and is found. The difference is checked by reflection too.
+        var changed = PvgMongoTestData.FullIntakeChanged(tenant);
+        foreach (var property in properties)
+        {
+            AssertFilled(property.Name, property.GetValue(changed), property.PropertyType);
+            if (property.Name == nameof(SafetyCaseIntake.TenantId))
+            {
+                continue;
+            }
+
+            Assert.False(
+                SameValue(property.GetValue(written), property.GetValue(changed)),
+                $"{property.Name} is the same in both fixtures, so a replace that skips it would go unnoticed");
+        }
+
+        var replaced = await mongo.Store.ReplaceAsync(scope, intakeDraftId, 1, ActorB, changed);
+        Assert.Equal(PvgIntakeDraftReplaceOutcome.Replaced, replaced.Outcome);
+        var readBack = (await mongo.Store.FindByIdAsync(scope, intakeDraftId))!;
+        Assert.Equal(2, readBack.Version);
+        AssertEveryPropertyEqual(properties, changed, readBack.Intake);
+        Assert.Equal(changed.ReceivedAtUtc.UtcTicks, readBack.Intake.ReceivedAtUtc.UtcTicks);
+        Assert.Equal(changed.AwarenessAtUtc.UtcTicks, readBack.Intake.AwarenessAtUtc.UtcTicks);
     }
+
+    private static void AssertEveryPropertyEqual(PropertyInfo[] properties, SafetyCaseIntake expected, SafetyCaseIntake actual)
+    {
+        foreach (var property in properties)
+        {
+            Assert.True(
+                SameValue(property.GetValue(expected), property.GetValue(actual)),
+                $"{property.Name}: expected '{property.GetValue(expected)}', read '{property.GetValue(actual)}'");
+        }
+    }
+
+    private static bool SameValue(object? left, object? right) =>
+        left is IEnumerable leftItems and not string && right is IEnumerable rightItems and not string
+            ? leftItems.Cast<object?>().SequenceEqual(rightItems.Cast<object?>())
+            : Equals(left, right);
 
     private static void AssertFilled(string name, object? value, Type type)
     {
@@ -366,6 +411,106 @@ public sealed class PvgMongoStoreTests(PvgMongoReplicaSetFixture mongo)
         Assert.True(raw["CreatedAt"].IsValidDateTime && raw["CreatedAt"].ToUniversalTime() > before);
         Assert.True(raw["UpdatedAt"].IsValidDateTime);
         Assert.Equal(tenant, raw["TenantId"].AsString);
+    }
+
+    // ---- WP-0230-DL10-R1: gaps the independent verification left unmeasured ------------------------------------
+
+    // J11, J12: a replace moves UpdatedAt forward and leaves CreatedAt where it was.
+    [Fact]
+    public async Task Mongo_replace_advances_UpdatedAt_and_keeps_CreatedAt()
+    {
+        var tenant = PvgMongoTestData.NewTenant();
+        var scope = new PvgPersistenceTenantScope(tenant);
+        var intakeDraftId = await mongo.Store.AddAsync(scope, ActorA, PvgMongoTestData.Intake(tenant));
+        var created = (await mongo.RawDraftAsync(tenant, intakeDraftId))!;
+        var createdAt = created["CreatedAt"].ToUniversalTime();
+        Assert.Equal(createdAt, created["UpdatedAt"].ToUniversalTime());
+
+        // Mongo dates have millisecond resolution: the pause makes "later" a measurable difference.
+        await Task.Delay(100);
+        var replaced = await mongo.Store.ReplaceAsync(
+            scope, intakeDraftId, 1, ActorB, PvgMongoTestData.Intake(tenant, PvgIntakeStatus.IntakeUpdated));
+        Assert.Equal(PvgIntakeDraftReplaceOutcome.Replaced, replaced.Outcome);
+
+        var after = (await mongo.RawDraftAsync(tenant, intakeDraftId))!;
+        Assert.Equal(createdAt, after["CreatedAt"].ToUniversalTime());
+        Assert.Equal(ActorA, after["CreatedBy"].AsString);
+        Assert.True(
+            after["UpdatedAt"].ToUniversalTime() > createdAt,
+            $"UpdatedAt {after["UpdatedAt"].ToUniversalTime():O} did not move past CreatedAt {createdAt:O}");
+        Assert.True(after["UpdatedAt"].ToUniversalTime() >= createdAt.AddMilliseconds(50));
+    }
+
+    // G7: the draft id decides between equal received times, with and without a status filter. Draft ids are random, so
+    // the fixture carries enough drafts that the order in which they were written cannot match the id order by chance.
+    [Theory]
+    [InlineData(PvgStoreKind.InMemory)]
+    [InlineData(PvgStoreKind.Mongo)]
+    public async Task Mongo_list_breaks_equal_received_times_by_draft_id_with_and_without_a_status_filter(PvgStoreKind kind)
+    {
+        var store = StoreOf(kind);
+        var tenant = PvgMongoTestData.NewTenant();
+        var scope = new PvgPersistenceTenantScope(tenant);
+        var received = new DateTimeOffset(2026, 3, 1, 8, 0, 0, TimeSpan.Zero);
+
+        var updated = new List<string>();
+        var everything = new List<string>();
+        for (var index = 0; index < 16; index++)
+        {
+            var status = index % 4 == 3 ? PvgIntakeStatus.IntakeCreated : PvgIntakeStatus.IntakeUpdated;
+            var id = await store.AddAsync(scope, ActorA, PvgMongoTestData.Intake(tenant, status, received));
+            everything.Add(id);
+            if (status == PvgIntakeStatus.IntakeUpdated)
+            {
+                updated.Add(id);
+            }
+        }
+
+        var filtered = await store.ListAsync(new PvgPersistenceListScope(scope, 1, 100, PvgIntakeStatus.IntakeUpdated));
+        Assert.Equal(12, filtered.Count);
+        Assert.Equal(updated.Order(StringComparer.Ordinal), filtered.Select(item => item.IntakeDraftId));
+
+        var unfiltered = await store.ListAsync(new PvgPersistenceListScope(scope, 1, 100, null));
+        Assert.Equal(16, unfiltered.Count);
+        Assert.Equal(everything.Order(StringComparer.Ordinal), unfiltered.Select(item => item.IntakeDraftId));
+    }
+
+    // N3: the first command of every write transaction carries the snapshot read concern. The store's own client reports
+    // the commands it sends, and the first command of a transaction is the one that carries startTransaction.
+    [Fact]
+    public async Task Mongo_write_transactions_start_with_the_snapshot_read_concern()
+    {
+        var firstCommands = new ConcurrentQueue<(string Command, string? Level)>();
+        await using var services = PvgMongoTestStores.BuildServices(
+            mongo.ConnectionString,
+            settings => settings.ClusterConfigurator = builder => builder.Subscribe<CommandStartedEvent>(started =>
+            {
+                if (started.Command.TryGetValue("startTransaction", out var start) && start.ToBoolean())
+                {
+                    string? level = null;
+                    if (started.Command.TryGetValue("readConcern", out var concern) &&
+                        concern is BsonDocument concernDocument &&
+                        concernDocument.TryGetValue("level", out var levelValue))
+                    {
+                        level = levelValue.AsString;
+                    }
+
+                    firstCommands.Enqueue((started.CommandName, level));
+                }
+            }));
+        var store = services.GetRequiredService<IPvgIntakeDraftStore>();
+        var tenant = PvgMongoTestData.NewTenant();
+        var scope = new PvgPersistenceTenantScope(tenant);
+
+        var intakeDraftId = await store.AddAsync(scope, ActorA, PvgMongoTestData.Intake(tenant));
+        var replaced = await store.ReplaceAsync(
+            scope, intakeDraftId, 1, ActorA, PvgMongoTestData.Intake(tenant, PvgIntakeStatus.IntakeUpdated));
+        Assert.Equal(PvgIntakeDraftReplaceOutcome.Replaced, replaced.Outcome);
+
+        // Positive control: both writes started a transaction, and the commands are the ones the store sends first.
+        var commands = firstCommands.ToArray();
+        Assert.Equal(new[] { "insert", "update" }, commands.Select(command => command.Command).ToArray());
+        Assert.All(commands, command => Assert.Equal("snapshot", command.Level));
     }
 
     // ---- AC-13 (b): schema ---------------------------------------------------------------------------------------------

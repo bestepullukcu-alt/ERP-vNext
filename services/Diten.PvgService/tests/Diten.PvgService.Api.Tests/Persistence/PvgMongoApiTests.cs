@@ -1,8 +1,10 @@
 using System.Text.Json.Nodes;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Infrastructure.RegPvBase;
 using Diten.PvgService.Persistence;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -28,11 +30,16 @@ public sealed class PvgMongoApiTests(PvgMongoReplicaSetFixture mongo)
     // ---- AC-35 (b): cross-tenant access looks like an unknown id --------------------------------------------------
 
     [Fact]
-    public async Task Cross_tenant_get_and_put_on_the_mongo_store_return_404_like_an_unknown_id()
+    public async Task Cross_tenant_get_and_put_on_the_mongo_store_answer_like_an_unknown_id()
     {
         await using var host = await PvgMongoApiHost.StartMongoAsync(mongo.ConnectionString);
         var tenantA = PvgMongoTestData.NewTenant();
         var tenantB = PvgMongoTestData.NewTenant();
+
+        // One PUT body for every PUT below. Field validation runs before the store is asked, so an invalid body would
+        // answer the same for a foreign draft, an unknown id and the owner's own draft, and this test would stay green
+        // without the store ever being reached. The last step of the test therefore sends this same body for the owner.
+        var putBody = PvgMongoApiHost.UpdateJson(1);
 
         var created = await host.SendAsync(HttpMethod.Post, Path, tenantA, SubjectA, PvgMongoApiHost.CreateJson);
         Assert.Equal(200, created.StatusCode);
@@ -46,20 +53,21 @@ public sealed class PvgMongoApiTests(PvgMongoReplicaSetFixture mongo)
         var unknownId = "pvg-draft-" + Guid.NewGuid().ToString("N");
         var unknownGet = await host.SendAsync(HttpMethod.Get, $"{Path}/{unknownId}", tenantB, SubjectB);
         var unknownPut = await host.SendAsync(
-            HttpMethod.Put, $"{Path}/{unknownId}", tenantB, SubjectB, PvgMongoApiHost.UpdateJson(1));
+            HttpMethod.Put, $"{Path}/{unknownId}", tenantB, SubjectB, putBody);
 
         var crossGet = await host.SendAsync(HttpMethod.Get, $"{Path}/{draftId}", tenantB, SubjectB);
         var crossPut = await host.SendAsync(
-            HttpMethod.Put, $"{Path}/{draftId}", tenantB, SubjectB, PvgMongoApiHost.UpdateJson(1));
+            HttpMethod.Put, $"{Path}/{draftId}", tenantB, SubjectB, putBody);
 
-        // The other tenant's GET and PUT are the same as the unknown id's: same status, same body, no record data.
-        // DEVIATION D-1 (recorded in the work report): the pack's target status is 404 (AC-6 / OD-PVG-3, slice DL-4C,
-        // not delivered; gap G-8). The host answers every not-found with 409 and the reason code
-        // PVG_INTAKE_DRAFT_NOT_FOUND today, and this slice may not change the API contract. The test therefore pins what
-        // the pack's sentence is about - cross-tenant looks exactly like unknown - and not the number 404.
+        // The other tenant's GET and PUT answer like the unknown id: same status, same body, no record data.
+        // What that status is today: 409 with the reason code PVG_INTAKE_DRAFT_NOT_FOUND. The pack's target status is
+        // 404 (AC-6 / OD-PVG-3, slice DL-4C, not delivered; gap G-8); PvgCaseIntakeTriageEndpoints.cs answers every
+        // not-found with 409 until then, and this slice may not change that file or the API contract. The assertion on
+        // 409 below is the one line that changes when DL-4C lands.
+        Assert.Equal(409, unknownGet.StatusCode);
+        Assert.Equal(409, unknownPut.StatusCode);
         foreach (var (cross, unknown) in new[] { (crossGet, unknownGet), (crossPut, unknownPut) })
         {
-            Assert.NotEqual(200, cross.StatusCode);
             Assert.Equal(unknown.StatusCode, cross.StatusCode);
             Assert.Equal(unknown.Raw, cross.Raw);
             Assert.Equal("PVG_INTAKE_DRAFT_NOT_FOUND", cross.Body().ReasonCode);
@@ -71,6 +79,12 @@ public sealed class PvgMongoApiTests(PvgMongoReplicaSetFixture mongo)
         var after = await host.SendAsync(HttpMethod.Get, $"{Path}/{draftId}", tenantA, SubjectA);
         Assert.Equal(200, after.StatusCode);
         Assert.Equal(1, after.Body().Draft!.Version);
+
+        // The same PUT body is valid: the owner's own PUT succeeds with it, so the refusals above came from the store's
+        // tenant filter and not from the body.
+        var ownerPut = await host.SendAsync(HttpMethod.Put, $"{Path}/{draftId}", tenantA, SubjectA, putBody);
+        Assert.Equal(200, ownerPut.StatusCode);
+        Assert.Equal(2, ownerPut.Body().Version);
     }
 
     // ---- AC-35 (c): durability --------------------------------------------------------------------------------------
@@ -197,7 +211,104 @@ public sealed class PvgMongoApiTests(PvgMongoReplicaSetFixture mongo)
         Assert.NotEqual("body-updated-by-fake", afterUpdate["UpdatedBy"].AsString);
     }
 
+    // WP-0230-DL10-R1, J9 and J10: the triage and route writes carry the validated subject as UpdatedBy as well. (The
+    // pack asks for it on create and update; these two calls hand the actor to the store the same way, and a constant in
+    // either call would not show in any other test.)
+    [Theory]
+    [InlineData("triage")]
+    [InlineData("route")]
+    public async Task Mongo_store_writes_UpdatedBy_from_the_validated_subject_on_triage_and_route(string operation)
+    {
+        await using var host = await PvgMongoApiHost.StartMongoAsync(mongo.ConnectionString);
+        var tenant = PvgMongoTestData.NewTenant();
+
+        var created = await host.SendAsync(HttpMethod.Post, Path, tenant, SubjectA, PvgMongoApiHost.CreateJson);
+        Assert.Equal(200, created.StatusCode);
+        var draftId = created.Body().IntakeDraftId!;
+
+        var body = operation == "triage"
+            ? """{"triageOutcome":1,"triageReason":"triage-reason-fake","expectedVersion":1}"""
+            : """{"routeTargetQueue":"queue-fake","expectedVersion":1}""";
+        var written = await host.SendAsync(
+            HttpMethod.Post, $"{Path}/{draftId}/{operation}", tenant, SubjectB, body, ForgedActorHeaders());
+
+        Assert.Equal(200, written.StatusCode);
+        Assert.Equal(2, written.Body().Version);
+        var raw = (await mongo.RawDraftAsync(tenant, draftId))!;
+        Assert.Equal(SubjectA, raw["CreatedBy"].AsString);
+        Assert.Equal(SubjectB, raw["UpdatedBy"].AsString);
+        Assert.Equal(2, raw["Version"].AsInt64);
+        Assert.Equal(operation == "triage" ? "Triaged" : "RoutePending", raw["Status"].AsString);
+    }
+
     // ---- AC-13 (c): which store the host selects ------------------------------------------------------------------
+
+    // WP-0230-DL10-R1: the connection string is read through the secrets provider, not from the configuration. The
+    // configuration holds a value that reaches no server; the replaced provider knows the real replica set. A store that
+    // read the configuration directly would try the closed address and the host would refuse to start.
+    [Fact]
+    public async Task Mongo_connection_string_is_read_through_the_secrets_provider()
+    {
+        var provider = new RecordingSecretsProvider(mongo.ConnectionString);
+        var configuration = PvgMongoApiHost.Configuration(
+            "Mongo", "mongodb://127.0.0.1:1/?directConnection=true", PvgMongoTestHarness.SharedDatabaseName);
+
+        await using (var host = await PvgMongoApiHost.StartAsync(
+                         configuration,
+                         services => services.Replace(ServiceDescriptor.Singleton<ISecretsProvider>(provider))))
+        {
+            var tenant = PvgMongoTestData.NewTenant();
+            var created = await host.SendAsync(HttpMethod.Post, Path, tenant, SubjectA, PvgMongoApiHost.CreateJson);
+            Assert.Equal(200, created.StatusCode);
+            var read = await host.SendAsync(HttpMethod.Get, $"{Path}/{created.Body().IntakeDraftId}", tenant, SubjectA);
+            Assert.Equal(200, read.StatusCode);
+        }
+
+        Assert.Contains(PvgPersistenceServiceCollectionExtensions.ConnectionStringKey, provider.RequestedKeys);
+
+        // The provider exists only when Mongo is selected; the in-memory host registers none.
+        using var inMemory = PvgMongoApiHost.Build(PvgMongoApiHost.Configuration("InMemory", null, null));
+        Assert.Null(inMemory.Services.GetService<ISecretsProvider>());
+
+        // A missing connection string refuses the start, and the message names the key and nothing else.
+        var missing = PvgMongoApiHost.Configuration("Mongo", null, PvgMongoTestHarness.SharedDatabaseName);
+        var exception = Assert.ThrowsAny<Exception>(() => PvgMongoApiHost.Build(missing));
+        Assert.Contains(PvgPersistenceServiceCollectionExtensions.ConnectionStringKey, exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(PvgMongoTestHarness.SharedDatabaseName, exception.Message, StringComparison.Ordinal);
+    }
+
+    private sealed class RecordingSecretsProvider(string connectionString) : ISecretsProvider
+    {
+        private readonly List<string> _requestedKeys = [];
+
+        public IReadOnlyList<string> RequestedKeys
+        {
+            get
+            {
+                lock (_requestedKeys)
+                {
+                    return _requestedKeys.ToArray();
+                }
+            }
+        }
+
+        public Task<string> GetSecretAsync(string key, CancellationToken ct)
+        {
+            lock (_requestedKeys)
+            {
+                _requestedKeys.Add(key);
+            }
+
+            return Task.FromResult(
+                key == PvgPersistenceServiceCollectionExtensions.ConnectionStringKey
+                    ? connectionString
+                    : throw new InvalidOperationException("Unexpected secret key."));
+        }
+
+        public Task<IReadOnlyDictionary<string, string>> GetSecretsAsync(string prefix, CancellationToken ct) =>
+            throw new InvalidOperationException("Unexpected secret prefix.");
+    }
+
 
     [Fact]
     public void In_memory_store_is_the_default_and_mongo_is_opt_in()

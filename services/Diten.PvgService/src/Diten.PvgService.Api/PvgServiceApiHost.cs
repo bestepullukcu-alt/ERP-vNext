@@ -54,7 +54,10 @@ public static class PvgServiceApiHost
             .ConfigureServices((context, services) =>
             {
                 services.AddRouting();
-                services.AddPvgServiceApiHost(context.Configuration, context.HostingEnvironment);
+                // The store value is read from the configuration as it was handed in: the host's own copy of it does not
+                // keep a key whose value is empty, and an empty value must refuse the start, not select the default.
+                var storeValue = configuration[PersistenceStoreKey] ?? context.Configuration[PersistenceStoreKey];
+                services.AddPvgServiceApiHost(context.Configuration, context.HostingEnvironment, storeValue);
                 configureServices?.Invoke(services);
 
                 ThrowIfRequiredDependenciesMissing(
@@ -81,12 +84,23 @@ public static class PvgServiceApiHost
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+        return services.AddPvgServiceApiHost(configuration, environment, configuration[PersistenceStoreKey]);
+    }
+
+    private static IServiceCollection AddPvgServiceApiHost(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        string? persistenceStoreValue)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(environment);
 
         var options = PvgServiceApiRuntimeOptions.From(configuration, environment.EnvironmentName);
 
         // The persistence check is the first check of the start: before ThrowIfUnsafe and before any connection attempt.
-        var store = ResolvePersistenceStore(configuration, options.IsProductionLike);
+        var store = ResolvePersistenceStore(persistenceStoreValue, options.IsProductionLike);
         options.ThrowIfUnsafe();
 
         services.AddSingleton(Options.Create(options));
@@ -194,17 +208,18 @@ public static class PvgServiceApiHost
         return endpoints;
     }
 
-    // DEPO-03 S-8: the in-memory store is the default and Mongo is opt-in. Any other value refuses the start. Mongo on a
-    // production-like host is refused whatever the other runtime flags are (build/test gate only). The message is the
-    // safe code and nothing else: no configuration value is echoed.
-    private static PvgPersistenceStore ResolvePersistenceStore(IConfiguration configuration, bool isProductionLike)
+    // DEPO-03 S-8: the in-memory store is the default and Mongo is opt-in. A key that is not there selects the default; a
+    // key that is there must be exactly "InMemory" or exactly "Mongo" (ordinal: "mongo", "MONGO", an empty value and a
+    // blank value refuse the start with PVG_PERSISTENCE_STORE_UNKNOWN). Mongo on a production-like host is refused
+    // whatever the other runtime flags are (build/test gate only). The message is the safe code and nothing else: no
+    // configuration value is echoed.
+    private static PvgPersistenceStore ResolvePersistenceStore(string? configured, bool isProductionLike)
     {
-        var configured = configuration[PersistenceStoreKey];
         var store = configured switch
         {
             null => PvgPersistenceStore.InMemory,
-            _ when string.Equals(configured, "InMemory", StringComparison.OrdinalIgnoreCase) => PvgPersistenceStore.InMemory,
-            _ when string.Equals(configured, "Mongo", StringComparison.OrdinalIgnoreCase) => PvgPersistenceStore.Mongo,
+            "InMemory" => PvgPersistenceStore.InMemory,
+            "Mongo" => PvgPersistenceStore.Mongo,
             _ => throw new InvalidOperationException(PersistenceStoreUnknown)
         };
 

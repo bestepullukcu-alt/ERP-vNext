@@ -43,6 +43,46 @@ internal static class PvgMongoTestData
         };
     }
 
+    // The replacement of FullIntake: every property except the tenant (a replace never moves a draft to another tenant)
+    // carries a value that differs from FullIntake's, and is again not the default of its type. The round-trip test
+    // checks the difference by reflection, so a property added to SafetyCaseIntake later that this fixture leaves equal
+    // breaks the test.
+    public static SafetyCaseIntake FullIntakeChanged(string tenantId) =>
+        new(
+            tenantId,
+            PvgIntakeStatus.Routed,
+            "Email",
+            "Literature",
+            new DateTimeOffset(2026, 6, 7, 8, 9, 10, TimeSpan.Zero).AddTicks(2345678),
+            "Consumer",
+            "narrative-changed-fake",
+            "NonSerious",
+            "Low",
+            PvgTriageOutcome.Rejected,
+            "triage-reason-changed-fake",
+            "route-queue-changed-fake")
+        {
+            SourceReference = "source-ref-changed-fake",
+            ReporterContactSummary = "contact-changed-fake",
+            PatientSubjectCode = "patient-changed-fake",
+            EventOnsetDate = new DateOnly(2022, 8, 10),
+            EvidenceLinkReferences = ["evidence-ref-changed-1", "evidence-ref-changed-2", "evidence-ref-changed-3"],
+            ProductLines =
+            [
+                new PvgIntakeProductLine("Concomitant", "global-product-changed-1", "product-changed-a", "gsku-changed-1", "lot-changed-1")
+            ],
+            AwarenessAtUtc = new DateTimeOffset(2026, 6, 6, 7, 8, 9, TimeSpan.Zero).AddTicks(8765432),
+            CompanyRecipientPersonId = "company-person-changed-fake",
+            EventCountry = "country-event-changed-fake",
+            ReportType = "Literature",
+            ReporterSource = PvgReporterSource.Crm,
+            ReporterSourceId = "reporter-source-changed-fake",
+            ReporterCrmSearchState = PvgReporterCrmSearchState.Searched,
+            ReporterNameOrInitials = "reporter-name-changed-fake",
+            ReporterProfession = "profession-changed-fake",
+            ReporterCountry = "country-reporter-changed-fake"
+        };
+
     // Every property of SafetyCaseIntake carries a value that is not the default of its type; the instants carry
     // sub-millisecond ticks so that a store that cuts to milliseconds cannot return them unchanged.
     public static SafetyCaseIntake FullIntake(string tenantId) =>

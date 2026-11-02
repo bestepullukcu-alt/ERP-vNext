@@ -90,7 +90,10 @@ internal sealed class PvgMongoApiHost : IAsyncDisposable
     }
 
     // Builds the host the way the service does, with the allow stubs; does not start it.
-    public static IWebHost Build(IConfiguration configuration, string environmentName = "Development") =>
+    public static IWebHost Build(
+        IConfiguration configuration,
+        string environmentName = "Development",
+        Action<IServiceCollection>? configureServices = null) =>
         PvgServiceApiHost
             .CreatePvgServiceWebHostBuilder(
                 environmentName,
@@ -102,12 +105,18 @@ internal sealed class PvgMongoApiHost : IAsyncDisposable
                     services.Replace(ServiceDescriptor.Singleton<IPvgFieldSecurityPolicy>(new AllowFieldSecurityPolicy()));
                     services.Replace(ServiceDescriptor.Singleton<IPvgWorkflowTransitionGate>(new AllowWorkflowTransitionGate()));
                     services.Replace(ServiceDescriptor.Singleton<IPvgEvidenceLinkPort>(new AllowEvidenceLinkPort()));
+                    configureServices?.Invoke(services);
                 })
             .Build();
 
-    public static async Task<PvgMongoApiHost> StartMongoAsync(string connectionString)
+    public static Task<PvgMongoApiHost> StartMongoAsync(string connectionString) =>
+        StartAsync(Configuration("Mongo", connectionString, PvgMongoTestHarness.SharedDatabaseName));
+
+    public static async Task<PvgMongoApiHost> StartAsync(
+        IConfiguration configuration,
+        Action<IServiceCollection>? configureServices = null)
     {
-        var host = Build(Configuration("Mongo", connectionString, PvgMongoTestHarness.SharedDatabaseName));
+        var host = Build(configuration, "Development", configureServices);
         try
         {
             await host.StartAsync();

@@ -17,7 +17,7 @@ internal sealed class PvgMongoContext : IDisposable
 
     public PvgMongoContext(string connectionString, string databaseName, Action<MongoClientSettings>? configureClientSettings)
     {
-        var settings = MongoClientSettings.FromConnectionString(connectionString);
+        var settings = ParseConnectionString(connectionString);
         // The driver shares one cluster between clients with equal settings. This context disposes its own cluster, so
         // each context gets its own application name (a test hook may replace it) and with it its own cluster.
         settings.ApplicationName = "diten-pvg-store-" + Interlocked.Increment(ref _sequence);
@@ -30,6 +30,21 @@ internal sealed class PvgMongoContext : IDisposable
         Client = new MongoClient(settings);
         Database = Client.GetDatabase(databaseName);
         Drafts = Database.GetCollection<PvgIntakeDraftDocument>(PvgIntakeDraftIndexCatalog.CollectionName);
+    }
+
+    // The driver's parse error carries the connection string (parts of it, the password included) in its message. A value
+    // that cannot be read is refused with the one safe code of "the store cannot be reached": no inner exception, no text
+    // of the driver, nothing of the value. (A malformed value is a start refusal of the same kind as an unreachable server.)
+    private static MongoClientSettings ParseConnectionString(string connectionString)
+    {
+        try
+        {
+            return MongoClientSettings.FromConnectionString(connectionString);
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException(PvgMongoSchemaBootstrap.StoreUnreachable);
+        }
     }
 
     public IMongoClient Client { get; }

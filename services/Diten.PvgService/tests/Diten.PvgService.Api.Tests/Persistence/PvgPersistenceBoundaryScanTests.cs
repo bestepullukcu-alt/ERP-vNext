@@ -128,6 +128,26 @@ public sealed class PvgPersistenceBoundaryScanTests
                 "fixture/launchSettings.json|underscore"
             },
             findings.Select(finding => finding.Path + "|" + finding.Spelling).Order(StringComparer.Ordinal).ToArray());
+
+        // The nested form (WP-0230-DL10-R1, C9): an appsettings file that selects Mongo through nested JSON objects, in
+        // any letter case of the value, is found as "nested" and only so; the same shape selecting InMemory, and a file
+        // that is not JSON, are not.
+        var nested = PvgStoreSelectionScan.Find(
+        [
+            ("fixture/appsettings.Development.json", """{ "Pvg": { "Persistence": { "Store": "Mongo" } } }"""),
+            ("fixture/appsettings.Lower.json", """{ "pvg": { "persistence": { "store": "mongo" } } }"""),
+            ("fixture/appsettings.InMemory.json", """{ "Pvg": { "Persistence": { "Store": "InMemory" } } }"""),
+            ("fixture/appsettings.Other.json", """{ "Pvg": { "Runtime": { "Store": "Mongo" } } }"""),
+            ("fixture/notes.txt", """{ "Pvg": { "Persistence": { "Store": "Mongo" } } }""")
+        ]);
+
+        Assert.Equal(
+            new[]
+            {
+                "fixture/appsettings.Development.json|nested",
+                "fixture/appsettings.Lower.json|nested"
+            },
+            nested.Select(finding => finding.Path + "|" + finding.Spelling).Order(StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
