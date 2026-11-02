@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113, D115–D118 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D119 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1405,6 +1405,22 @@ Onay kanıtı: K1 / gmg-10 (aktarım; Cihan'ı Procurement sahibi olarak teyit, 
 
 1. **D118/1 — D39/3 ve D106/6 kapandı:** Procurement sahibinden "itiraz yok" alındı; MOD-0144 değişmez.
 2. **D118/2 — iki netleştirme öneridir, karar değil:** MOD-0217 metni değişmedi. `Supplier` önerisi D41/4'ün açılış koşulunu değiştirdiği için K1 kararı ister.
+
+## Y-39 — Beste, para birimi listesi (2026-11-02; K1 aktardı)
+
+> A geçerli. Y-31'in "PlatformLookupProvider.cs'e dokunulmaz, test §21 PR'ında kaldırılır" kısmını kaldırıyoruz; para birimi listesinin kaynağı Business Reference Data (currency-minor-units kümesi) olacak.
+> - XMC-001: PlatformLookupProvider.cs için veriyoruz — yalnız para birimi listesinin currency-minor-units kümesiyle süzülmesi (BuildCurrencyOptions ve onun önbelleği); başka lookup'a dokunulmaz.
+> - Test silinmez; currency-minor-units kümesini okuyacak şekilde uyarlanır. Sabotaj: süzme kaldırılınca ANG / BGN / HRK / SLL geri gelir ve test kırmızı olur.
+> - Şart: currency-minor-units kümesi main'de olmalı. Değilse seed'i aynı §21 PR'ına alın ya da önce o PR'ı açın; main'in yeşile dönmesi bu PR'la olur.
+> - Kümede olmayan bir para birimi gerekirse kümeye eklenir; liste koddan değil kümeden gelir.
+
+## D119 — Y-31'in bir kısmı kaldırıldı; para birimi listesi kümeden süzülür (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-39; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D119/1 — değişen:** D105/1'in "`PlatformLookupProvider.cs` değişmez" kısmı ve D105/2'nin test kaldırma kısmı geçersiz. Treasury'nin setten okuma ve set dışı kodu reddetme kuralı yerinde kalır.
+2. **D119/2 — XMC-001:** yalnız `PlatformLookupProvider.cs`, yalnız para birimi listesi ve önbelleği. Küme main'de.
+3. **D119/3 — dal:** `fix/treasury/currency-lookup-set-01`. `chore/ct/treasury-mod0048-r2-01` (`a2d8afc2f`) testi kaldırdığı için bu haliyle gönderilmez; §21 PR'ı yeniden hazırlanır.
 
 ## Karar olmayanlar
 
