@@ -25,9 +25,10 @@ Ilk kapsam yalnizca DCP-004 tarafindan tanimlanan urgent W-3 first-stage governa
 ## Out-of-Scope
 
 - W-3A0 foundation remediation development; not waived, still a production blocker.
-- Operational runtime implementation, production deployment, supplier qualification, validation, collections,
-  seed data, jobs, migrations, and any runtime surface outside the MOD-0230/MOD-0231/MOD-0232/MOD-0234 build/test
-  gates.
+- Operational runtime implementation, production deployment, supplier qualification, validation, collections
+  (except the MOD-0230 build/test intake-draft store, DCP-004 §10), seed data, jobs, migrations (that store's startup
+  index bootstrap excepted; no data migration), and any runtime surface outside the
+  MOD-0230/MOD-0231/MOD-0232/MOD-0234 build/test gates.
 - MOD-0234 runtime shell, placeholder dashboard, placeholder endpoint, menu entry, fake data, fake signal, fake
   metric, or fake cohort.
 - Full W-4/W-5 PV scope outside DCP-004, including MOD-0233, MOD-0235, MOD-0236, MOD-0237, MOD-0238, and MOD-0239.
@@ -41,11 +42,14 @@ MOD-0230/MOD-0231/MOD-0232/MOD-0234 `ready-for-dev` for build/test):**
 - `execution/domains/pharmacovigilance/**`
 - `services/Diten.PvgService/**` - dedicated PVG service boundary, port **5011** (OD-7). MOD-0230 slice 1,
   MOD-0231 Signal Minimum Scope, MOD-0232 MedDRA Coding, and MOD-0234 Signal Management class-library
-  contracts/tests only. MOD-0231, MOD-0232, and MOD-0234 must stay non-operational: no API host, controllers,
+  contracts/tests only; since 2026-10-29 MOD-0230 slice 1 also has its build/test Mongo store (DEPO-01, pack slice
+  DL-10). MOD-0231, MOD-0232, and MOD-0234 must stay non-operational: no API host, controllers,
   appsettings, persistence, Mongo, repositories, Gateway route, frontend, seeds, jobs, dictionary import,
   dictionary redistribution, static MedDRA data, cache/search index, data-product stub, fake signal, fake metric,
   fake cohort, partner integration, AI, archive/void/export/delete/bulk-delete, or runtime endpoint.
-- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**` plus matching JS / l10n / resource files.
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**` plus matching JS / l10n / resource files. Since
+  2026-10-31, once revision 15 is approved on main: exactly two `Nav.*` keys in the seven
+  `frontend/Diten.Web/Resources/SharedResource.*.resx` files (pack slice DL-11).
 - `gateway/Diten.ApiGateway/**/ocelot.json` - one MOD-0230 route family, integration-agent-owned.
   Upstream `/api/pv-case-intake-triage`, downstream `/api/v1/pv-case-intake-triage` (NET-001).
 - `tests/**` for the above.
@@ -67,7 +71,7 @@ recorded as draft / not approved and does not open operational runtime.**
 
 - `.antigravity/**` (global engineering system). `rules/ports.md` needs explicit approval before port 5011 is registered there.
 - `services/**` **except `services/Diten.PvgService/**`**
-- `frontend/**` **except the MOD-0230 view root and its JS / resource siblings**
+- `frontend/**` **except the MOD-0230 view root and its JS / resource siblings**, and the two `Nav.*` keys of pack slice DL-11
 - `gateway/**` except the single MOD-0230 route family
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml` (FROZEN)
 - `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**`
@@ -97,7 +101,7 @@ recorded as draft / not approved and does not open operational runtime.**
   [.antigravity/rules/ports.md](../../../.antigravity/rules/ports.md), [.antigravity/rules/routes.md](../../../.antigravity/rules/routes.md).
 - **Security and regulated data:** PHI/PII masking, row/field security, RBAC/ABAC, audit, correlation, evidence-link, and regulated error-model gates must remain fail-closed. Full owner approvals still gate operational runtime. Ref: [.antigravity/rules/security-jwt.md](../../../.antigravity/rules/security-jwt.md), [.antigravity/rules/multi-tenancy.md](../../../.antigravity/rules/multi-tenancy.md).
 - **Localization and UI:** MOD-0230 tenant UI is limited to the build/test gate if executed by its pack. Other PVG UI remains unauthorized. Approved UI must follow repo localization/layout rules. Ref: [.antigravity/rules/localization-standard.md](../../../.antigravity/rules/localization-standard.md), [.antigravity/rules/views-organization.md](../../../.antigravity/rules/views-organization.md).
-- **Data and persistence:** no operational collection/schema/index is authorized here. Future persistence decisions belong in approved member module packs and remain subject to the operational runtime gate. Ref: [.antigravity/rules/entity-base-template.md](../../../.antigravity/rules/entity-base-template.md), [.antigravity/rules/mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md).
+- **Data and persistence:** no operational collection/schema/index is authorized here. Exception (2026-10-29, DEPO-01): MOD-0230 may use one Mongo store under its build/test gate only (local / dev / CI) - collection, tenant-first indexes, startup schema bootstrap - as scoped by the MOD-0230 pack (revision 14, slice DL-10) and DCP-004 §10; MOD-0231, MOD-0232, and MOD-0234 gain nothing from it. Any other persistence decision belongs in an approved member module pack and remains subject to the operational runtime gate. Ref: [.antigravity/rules/entity-base-template.md](../../../.antigravity/rules/entity-base-template.md), [.antigravity/rules/mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md).
 
 ## Domain Bootstrap Notes
 
@@ -114,10 +118,20 @@ recorded as draft / not approved and does not open operational runtime.**
 - **2026-08-12:** Final all-four PVG governance package reconciliation recorded. MOD-0230 runtime authorization
   packet remains draft / not approved. Operational runtime remains **NO-GO**; MOD-0231, MOD-0232, and MOD-0234
   operational runtime remain blocked.
+- **2026-10-29:** MOD-0230 build/test Mongo store exception (DEPO-01, DEPO-03; DCP-004 §10; pack revision 14, slice
+  DL-10). Operational runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
+- **2026-10-31:** MOD-0230 build/test closed catalog registration exception (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
+  KK-1 ... KK-6, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`, sequenced by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md`; DCP-004 §10; pack revision 15, slice DL-11): non-assignable, hidden from the menu, pushed once at start
+  by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like. In force only once revision 15 is approved on main. Operational
+  runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
 - MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
   (`IPvgFieldSecurityPolicy`, `IPvgWorkflowTransitionGate`, `IPvgEvidenceLinkPort`) because those modules have no
   runtime. Ports are interface + deny default only; they must never store policy, host a workflow engine, or
   persist evidence. Detailed port contract material remains a pending support package and is not normative until
   committed.
 - Operational runtime authorization for every PVG member remains **closed**.
-- Seed data, background jobs, menu entries, and module-catalog work remain blocked.
+- Seed data, background jobs, menu entries, and module-catalog work remain blocked. One exception (2026-10-31,
+  DCP-004 §10; pack revision 15, slice DL-11): the closed catalog registration of MOD-0230 under its build/test gate,
+  once revision 15 is approved on main. Its one startup push is not a background job, and the catalog→Auth sync it triggers
+  is the OD-PVG-1 path, not a seed. Nothing else opens: seed data, grant code, menu entries, and every other catalog entry
+  stay blocked, for MOD-0231, MOD-0232, and MOD-0234 too.

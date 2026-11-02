@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>Rechazar</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>Marcar en tránsito</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>Cancelar devolución</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>Recibir (declaración manual)</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Recibir</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>Asignar disposición</value></data>
   <data name="ActionClose" xml:space="preserve"><value>Cerrar</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida (declaración manual)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de inventario.</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,50 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Los datos del envío devueltos por el sistema de origen no son válidos. Póngase en contacto con soporte.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Los datos de referencia del envío están incompletos. Vuelva a intentar la misma solicitud más tarde.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>El estado del envío no está disponible temporalmente. Vuelva a intentar la misma solicitud.</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Un servicio necesario no está disponible en este momento. Vuelva a intentar la misma solicitud en breve.</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Las devoluciones no están disponibles temporalmente. El resultado no está confirmado; vuelva a intentar la misma solicitud.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado. Puede reintentar la misma acción.</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>Se requiere un motivo para omitir el lote de caducidad más próxima.</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>Este lote incumple el orden de primero en caducar, primero en salir.</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>No hay suficiente stock disponible para esta línea.</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>No hay suficiente stock para esta línea.</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>El artículo no está activo.</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>La vida útil restante del lote está por debajo del mínimo.</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>El lote está bloqueado.</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>El lote ha caducado.</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>No se puede indicar un lote para este artículo.</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>Se requiere un lote para este artículo.</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>El lote debe volver a analizarse.</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>El lote no pertenece a este SKU.</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>El lote está retirado del mercado.</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>Los datos maestros del producto están incompletos.</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>El stock está reservado para otro documento.</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>Este número de serie ya existe.</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>Los artículos con seguimiento por número de serie no se pueden devolver en esta versión.</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>El número de serie no pertenece a este lote.</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>El número de serie no está disponible.</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>El SKU no pertenece a este artículo.</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>No se puede mantener stock en este nivel de SKU.</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>El artículo es desconocido.</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>La ubicación es desconocida.</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>El lote es desconocido.</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>No hay conversión de unidades definida para esta línea.</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>Motivo no reconocido (código: {0}).</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>El módulo de Inventario rechazó la recepción de la línea {0}.</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>La línea {0} del envío no tiene salida de stock registrada, por lo que la devolución no se puede recibir. No se contabilizó nada.</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>Ya hay una recepción en curso para esta devolución o se inició con otros valores. Envíe de nuevo con los valores guardados que se muestran o inténtelo de nuevo en breve.</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>Valores guardados: almacén {0}, ubicación {1}, fecha {2}.</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>La línea {0} no se puede recibir sin contabilización de stock.</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>Las líneas ya contabilizadas permanecen contabilizadas. Corrija la línea rechazada y envíe de nuevo.</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>Contabilizada</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>No contabilizada</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>Contabilización de stock</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>Recibido sin contabilización de stock: enviado antes de la integración de stock</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>La recepción contabiliza cada línea en la cuarentena de Inventario; las líneas ya contabilizadas no se vuelven a contabilizar. Un envío despachado antes de la integración de stock se recibe sin contabilización de stock.</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>Almacén de recepción</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>Ubicación de recepción</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>Recibir sin contabilización de stock</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>¿Recibir la línea {0} sin contabilización de stock? Inventario la rechazó por un motivo que ningún reintento puede cambiar; después el stock deberá corregirse en Inventario.</value></data>
 </root>

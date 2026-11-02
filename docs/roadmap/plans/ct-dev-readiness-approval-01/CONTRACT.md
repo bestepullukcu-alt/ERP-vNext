@@ -250,3 +250,44 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 
 Tahmin; kesin değil. Ölçülmeyen: Excel'e yapıştırmanın kapılarla gerçek davranışı (Excel açılmadı) ve sahibin
 listeleri.
+
+## 7. Ek — dal onayı (S-115, sahip kararı 2026-11-01)
+
+Yukarıdaki metin değişmedi; bu bölüm §3.1, §3.3 ve §3.5'in **dağıtım ve kabul anındaki** okumasını değiştirir (tasarım:
+`docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`; yürürlük: kural PR'ı `origin/main`'e girince).
+
+1. **İki okuma.** `pack_approval.py check <paket> --deferred` (dağıtım kapısı `prompt_gate.py` ve kabul kaydı
+   `acceptance_record.py` bu okumayı kullanır): onay ve inceleme satırları CT dalında, henüz main'de değilken de
+   sayılır; insan adımı "beklemede" notuyla geçer. `--deferred` olmadan (sıkı okuma, CI) §3.5 aynen geçerlidir: satır
+   main'e PR merge'üyle gelmiş olmalıdır.
+2. **Dalda da ölçülen:** paket ve kart özetleri; onaylayan **main'deki** listede ve `high = evet`; onaylayan kişisi ≠
+   yazan kişisi; ENGEL kabulü onaylayana ait; inceleme onaydan önce; UYGUN DEĞİL ya da açık ENGEL yok; inceleyen oturumu
+   ≠ yazan oturumu; yalnız ekleme; main'in satırları dalın öneki (geride kalan dal reddedilir, kısmi okunmaz). Doğrudan
+   main'e yazılmış satır iki okumada da geçersizdir.
+3. **Modül PR'ında ikinci insan (§3.5 değişikliği):** satırı main'e getiren PR'ı birleştiren, listede `high = evet` olan,
+   PR'ı açan olmayan ve satırı yazanın kişisi olmayan **herhangi bir** kişidir; onaylayanın kendisi olmak zorunda
+   değildir (S-41 geri alındı). S-91 istisna satırları "onaylayanı birleştirir" kuralını korur.
+4. **Kabul edilen bedel (bağımsız inceleme F-4 ile düzeltildi):** onay satırında `requested_by` ya da oturum alanı
+   yoktur; satır main'e girene kadar onaylayan alanı GitHub'da doğrulanmaz. Sahibin "onayla" sözünün izi kule
+   sohbeti ve — `POLICY-BRANCH-START.md`'nin commit'inden itibaren — satırın `note` hücresidir: dalda bekleyen HIGH
+   satırda `onayla · <kule sohbeti> · <tarih saat>` yoksa dal onayı geçmez (`row --deferred --note …` üretir). Kod yine
+   ikinci kişi olmadan main'e giremez (dal koruması).
+5. **GitHub kotası (Yönetici bulgusu 2026-11-01):** `gh api` kota hatası (`API rate limit exceeded`) `GitHubQuota`
+   istisnasıdır: `pack_approval.py check` çıkış 2 "ölçülemedi: GitHub sorgu kotası doldu — <sıfırlanma saati> sonra
+   yeniden dene"; dağıtım kapısı S-5 ENGEL "ölçülemedi — kota" ile, kabul kaydı "onayı ölçülemedi — kota" satırıyla
+   durur; hiçbiri onay ya da inceleme dosyasını "güvenilmez" ilan etmez; onay yine GEÇMEZ (fail-closed). Kota dışı bir
+   GitHub cevapsızlığı bugünkü gibi "sorulamadı" → insan adımı yok / güvenilmez (çıkış 1) kalır.
+6. **PR'ı açan = satırı yazan (F-5; `POLICY-BRANCH-START.md`'den itibaren):** sıkı okumada HIGH onay satırı ve inceleme
+   satırı için PR'ı açan hesabın kişisi, satırın `author` kişisi olmalıdır ("PR'ı açan satırın yazarı değil" ENGEL);
+   böylece birleştirenin "yazan olmadığı" beyana değil GitHub'a dayanır. Ek GitHub çağrısı yoktur (açan zaten okunur).
+7. **Üretim ve yeniden ölçüm (F-3, F-10, F-11, F-12):** `row --deferred` ve `card --deferred` kartı dal onayı okumasının
+   tabanıyla (dalda bekleyen satır) hesaplar; `check --deferred` aynı kartı bulur, main'e girince sıkı okuma da aynı
+   tabanı bulur (taban düşerse satır da düşer). Kabul kaydının önek denetimi kaydın commit'i ile main'in merge-base'ine
+   göre yapılır; bugünkü main'in aynı paketteki iptal ve olumsuz inceleme satırları yine durdurur. Yalnız sırayı
+   değiştiren, satır kaybetmeyen `git merge origin/main` GitHub'a sorulmaz. Bekleyen HIGH taban üstündeki LOW satırın
+   sonucu "insan adımı: beklemede (taban <sürüm>)" notunu taşır.
+8. **Ana dalda ölçüm ve not sözcüğü (tur 2 G-2, G-7; 2026-11-01):** `pack_approval.py ci-main <önce> [sonra]` push:main
+   CI adımında, push'un eklediği **onay** satırlarının paketlerini `sonra`'da sıkı okur; yalnız insan adımı sınıfı ENGEL
+   (insan adımı, açan, merge eden, birleştiren, onaylayan listede değil / onaylayamaz) kırmızıdır; iptal satırı, onaydan
+   sonra değişen paket ve inceleme yokluğu uyarıdır; kota ve okunamadı uyarıdır, main bozuk sayılmaz. Not sütunundaki
+   `onayla` sözcüğü büyük/küçük harfe duyarsız, sözcük sınırıyla eşleşir ("onaylandı" sayılmaz).
