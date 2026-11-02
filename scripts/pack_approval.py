@@ -969,16 +969,15 @@ def human_step(root: str, main: str, added: str, author_key: str | None = None,
 NOT_ON_MAIN = "onay satırı henüz ana çizgide (main) değil"     # S-115: the one reason a deferred reading lets pass
 
 
-def prefix_problem(root: str, ref: str, main: str, path: str) -> str | None:
-    """S-115: in the branch reading main's `path` must be a prefix of the ref's (the append-only merge keeps main's rows
-    first): a branch behind main would otherwise miss a revoke or a negative review that main already carries."""
-    theirs = read(root, main, path)
-    if not theirs:
-        return None
-    ours = read(root, ref, path) or b""
-    t, o = content_lines(theirs.decode("utf-8", errors="replace")), content_lines(ours.decode("utf-8", errors="replace"))
+def prefix_problem(root: str, ref: str, main: str, target: str) -> str | None:
+    """S-115, S-130: in the branch reading main's review rows OF THIS PACK must be a prefix of the ref's rows of this pack,
+    so a branch behind main cannot miss a negative review of this pack. Another pack's row reaching main says nothing about
+    this pack and must not stop its dispatch (a whole-file prefix did, S-130); the same scoping as Codex K4 for approvals."""
+    rows = lambda c: [{k: v for k, v in r.items() if k != "_n"} for r in review_rows(root, c) if r["target"] == target]
+    t, o = rows(main), rows(ref)
     if o[:len(t)] != t:
-        return f"bu ref, main'deki {path} satırlarını önek olarak içermiyor — dalı main ile güncelleyin (git merge origin/main)"
+        return (f"bu ref, main'deki {REVIEWS} içinde bu paketin satırlarını önek olarak içermiyor — dalı main ile güncelleyin "
+                "(git merge origin/main) ve prompt'un Expected HEAD'ini yenileyin")
     return None
 
 
@@ -1479,7 +1478,7 @@ def evaluate(root: str, ref: str, path: str, deferred: bool = False, anchor: str
             # would otherwise read as "no review" instead of a break). When this version still has review rows at the
             # ref, review_problems (today_problems) walks that history itself; the walk is repeated here only when
             # no row is left — each walk asks GitHub for every reordering merge (F-1: never cached), measured +53 calls
-            problems += [p for p in (prefix_problem(root, commit, anchor or ctx.main, REVIEWS),) if p]
+            problems += [p for p in (prefix_problem(root, commit, anchor or ctx.main, path),) if p]
             digest_now = sha256(data)
             # G-9 / F-15: review_problems walks that history only for a row under the review rule whose version has rows
             # at the ref; a legacy row (before POLICY-REVIEW-START) or a version without rows gets the walk here, so a
@@ -3324,6 +3323,27 @@ def self_test_deferred(cases: list) -> None:
     code, out = chk()
     cases.append(("sabotage S-115: a branch whose reviews.tsv lacks a row main already has -> deferred refused 'dalı main ile "
                   "güncelleyin', never a partial reading", code == 1 and has(out, "önek olarak içermiyor")))
+    # S-130: another pack's review row reaching main must not stop this pack's branch reading
+    g("checkout", "-q", "main")
+    branch("behind-other", "main")
+    put(PACK, get(PACK) + "- other pack case\n")
+    commit("pack moves on the branch")
+    review("UYGUN", OK, 0)
+    commit("branch review")
+    approve("dev", "lead")
+    commit("branch row")
+    g("checkout", "-q", "main")
+    branch("main-other", "main")
+    other = "execution/domains/x/module-packs/MOD-0777-other.md"
+    append(REVIEWS, "\t".join([other, "a" * 64, "docs/records/reviews/o/01.md", "b" * 64, "UYGUN", "0", "claude",
+                               "claude-opus-5-5", "high", "rs-9", "K4", "as-9", "dev", "2026-11-01"]))
+    commit("another pack's review row")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge main-other", "main-other", who=LEAD)
+    g("checkout", "-q", "behind-other")
+    code, out = chk()
+    cases.append(("S-130: main gains ANOTHER pack's review row the branch lacks -> deferred exit 0, no prefix refusal",
+                  code == 0 and not has(out, "önek olarak içermiyor")))
     # (10) / (9) / (11): the strict reading of the merger on main — high = hayır, the author's other account, the opener
     def merged_round(name, merger, row_author=DEV):
         g("checkout", "-q", "main")
