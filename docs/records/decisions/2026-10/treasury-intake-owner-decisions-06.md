@@ -57,8 +57,9 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-40; oturum Treasury Intake CT (`
 
 ## D122 — Küme dışı para birimi kodu için hata sözleşmesi (2026-11-02)
 
-Onay kanıtı: K1 / gmg-10 (soru kutusu "MDM 400, finans 503"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktır.
+Onay kanıtı: K1 / gmg-10 (soru kutuları "MDM 400, finans 503", sonra düzeltme "Evet, düzelt"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı) ve Y-31; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktır.
 
-1. **D122/1 — finans:** dört finans paketinde küme dışı kod 503 `…_CURRENCY_PRECISION_UNAVAILABLE`.
-2. **D122/2 — MDM:** MOD-0217 ve MOD-0289'da küme dışı kod 400 doğrulama hatası.
+1. **D122/1 — kullanıcı girdisi:** kullanıcının gönderdiği küme dışı kod her tüketicide 400: dört finans paketinde `…_CURRENCY_CODE_INVALID`, MOD-0217 ve MOD-0289'da doğrulama hatası.
+2. **D122/2 — başka modül ya da eski kayıt:** bu yoldan gelen küme dışı kod dört finans paketinde 503 `…_CURRENCY_PRECISION_UNAVAILABLE` (Y-31).
 3. **D122/3 — ortak:** küme okunamazsa her tüketicide 503.
+4. **D122/4 — düzeltme notu:** ilk seçenek "finans 503" paketlerin 400 satırı ölçülmeden sunulmuştu; bu metin onun yerini alır.

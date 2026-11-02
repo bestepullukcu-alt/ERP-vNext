@@ -502,7 +502,7 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 | EffectiveFrom | DateOnly | zorunlu |
 | EffectiveTo | DateOnly? | boş = süresiz; doluysa ≥ EffectiveFrom |
 | NoticePeriodDays | int? | 0..3650 |
-| CurrencyCode | string(3)? | `ContractValue` doluysa zorunlu; `^[A-Z]{3}$`, MOD-0048 listesinde |
+| CurrencyCode | string(3)? | `ContractValue` doluysa zorunlu; `^[A-Z]{3}$`, `currency-minor-units` kümesinde |
 | ContractValue | decimal? | ≥ 0; küsurat hanesi MOD-0048'den (MOD-0289 D24/8 deseni; bu paket için O-11, KARAR D41/8) |
 | Summary | string? | ≤ 2000 |
 | Signatories | `List<ContractSignatory>` | `Id` (sunucu), `Side` (`Internal`=1, `Counterparty`=2), `Name` 1..140, `RoleTitle` ≤ 100, `InternalUserId` Guid? (`Internal`'da isteğe bağlı), `SignedAt` DateTimeOffset?, `SignatureRecordedBy` Guid?, `SignedCopyContentId` Guid?; onaya göndermeden önce en az bir `Internal` ve bir `Counterparty` (öneri). **`SignedCopyContentId` imza kaydında bir kez yazılır, sonra değişmez**; gösterdiği belge geri çekilemez (Validation Rules → WithdrawContractDocument) |

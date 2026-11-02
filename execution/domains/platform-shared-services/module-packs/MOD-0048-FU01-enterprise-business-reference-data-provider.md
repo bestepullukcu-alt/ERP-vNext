@@ -2907,17 +2907,18 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - `payment-method`: published + `IsActive` code → valid; unknown / inactive → 422 `PAYMENT_METHOD_NOT_ALLOWED`; set
   unreadable → 503 (MOD-0126 AC-41).
 - `currency-minor-units` is the **only** source of selectable currencies and minor units on Treasury screens (D105). A code
-  that is not in the set, also from another module or an old record (e.g. `HRK`), is refused the same way, never rounded and
-  never given a default. A currency that is needed is added to the set; the list never comes from code (D119).
+  that is not in the set, also from another module or an old record (e.g. `HRK`), is refused (error contract below), never
+  rounded and never given a default. A currency that is needed is added to the set; the list never comes from code (D119).
 - Test place (D117/3, proposal open with the Platform owner): the set's existence and shape are tested here (AC-R2); that a
   consumer reads the set and refuses a code outside it is tested in that consumer's pack, as a sabotage test on its own
   production check, since `Diten.FinanceTreasuryService` has no code yet.
 - `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
   `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
-- Error contract by consumer (D122, K1; Platform owner confirmation open): the four Treasury packs answer a code outside the
-  set with 503 `…_CURRENCY_PRECISION_UNAVAILABLE`, because the code decides the amount's precision. MOD-0217 and MOD-0289 only
-  validate a submitted code: outside the set → **400** validation error. In every consumer an unreadable set → 503.
+- Error contract (D122, K1; Platform owner confirmation open): a code a user submits that is outside the set → **400** in every
+  consumer (`…_CURRENCY_CODE_INVALID` in the four Treasury packs, the validation error in MOD-0217 and MOD-0289). A code outside
+  the set arriving from another module or an old record → 503 `…_CURRENCY_PRECISION_UNAVAILABLE` in the four Treasury packs.
+  An unreadable set → 503 in every consumer.
 
 ### 21.5 Acceptance criteria (defined; not implemented or run)
 
