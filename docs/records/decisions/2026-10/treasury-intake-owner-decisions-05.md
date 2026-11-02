@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113, D115–D119 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D120 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1421,6 +1421,15 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-39; oturum Treasury Intake CT (`
 1. **D119/1 — değişen:** D105/1'in "`PlatformLookupProvider.cs` değişmez" kısmı ve D105/2'nin test kaldırma kısmı geçersiz. Treasury'nin setten okuma ve set dışı kodu reddetme kuralı yerinde kalır.
 2. **D119/2 — XMC-001:** yalnız `PlatformLookupProvider.cs`, yalnız para birimi listesi ve önbelleği. Küme main'de.
 3. **D119/3 — dal:** `fix/treasury/currency-lookup-set-01`. `chore/ct/treasury-mod0048-r2-01` (`a2d8afc2f`) testi kaldırdığı için bu haliyle gönderilmez; §21 PR'ı yeniden hazırlanır.
+
+## D120 — MOD-0217 iki netleştirme kabul; Kurulum satırı kapandı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, üç cevap "Önerilen"); kaynak Y-38, `mod0217-netlestirmeler.md`; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D120/1 — ayrım ölçütü:** P2P üzerinden satın alınan mal ya da hizmet sözleşmesi, türü ne olursa olsun MOD-0144'te kalır. MOD-0217'ye `ContractType` kuralı ve Page Help metni girer; sistem zorlamaz, yeni AC yok, AC-59 değişmez.
+2. **D120/2 — `Supplier`:** v1'de, MOD-0140 sözleşmesi ölçülse bile kapalı kalır (AC-60 değişmez). Açılması MOD-0140 / MOD-0144 sahibiyle ortak, ayrı karardır. D41/4'ün "ölçülene kadar kapalı" koşulu bu kadar değişir. Follow-up satırı buna göre düzelir.
+3. **D120/3 — uygulama:** metin #314 sonrası MOD-0217 revizyonuna (D117/2) girer; paket özeti değişeceği için yeniden inceleme gerekir.
+4. **D120/4 — Kurulum:** sahip kuyruğundaki "Kurulum cevabı" satırı kapandı.
 
 ## Karar olmayanlar
 
