@@ -425,19 +425,20 @@ public sealed class EnterpriseStrategyModuleTests
     [Fact]
     public async Task PlanningCycle_Update_Blocks_Date_Shrink_When_Linked_Period_Would_Fall_Outside_Horizon()
     {
+        var planningCycles = new InMemoryPlanningCycleRepository(new PlanningCycleAggregate
+        {
+            Id = "pc-shrink-1",
+            Code = "PC-SHRINK-1",
+            Name = "Cycle Shrink Guard",
+            PlanningCycleType = "Annual Plan",
+            OwnerCompanyId = ActiveCompanyId,
+            OwnerPositionId = "pos-1",
+            Status = "Active",
+            EffectiveFrom = new DateTime(2026, 4, 1),
+            EffectiveTo = new DateTime(2026, 4, 20)
+        });
         var service = BuildPlanningCycleService(
-            new InMemoryPlanningCycleRepository(new PlanningCycleAggregate
-            {
-                Id = "pc-shrink-1",
-                Code = "PC-SHRINK-1",
-                Name = "Cycle Shrink Guard",
-                PlanningCycleType = "Annual",
-                OwnerCompanyId = ActiveCompanyId,
-                OwnerPositionId = "pos-1",
-                Status = "Active",
-                EffectiveFrom = new DateTime(2026, 4, 1),
-                EffectiveTo = new DateTime(2026, 4, 20)
-            }),
+            planningCycles,
             new InMemoryStrategyPeriodRepository(new StrategyPeriodAggregate
             {
                 Id = "sp-shrink-1",
@@ -457,7 +458,7 @@ public sealed class EnterpriseStrategyModuleTests
             Id = "pc-shrink-1",
             Code = "PC-SHRINK-1",
             Name = "Cycle Shrink Guard",
-            PlanningCycleType = "Annual",
+            PlanningCycleType = "Annual Plan",
             OwnerCompanyId = ActiveCompanyId,
             OwnerPositionId = "pos-1",
             Status = "Active",
@@ -469,24 +470,29 @@ public sealed class EnterpriseStrategyModuleTests
         Assert.Equal(EnterpriseStrategyErrorCodes.Conflict, result.Error?.Code);
         Assert.Contains("effectiveFrom", result.Error?.Details.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Contains("effectiveTo", result.Error?.Details.Keys, StringComparer.OrdinalIgnoreCase);
+        var persisted = await planningCycles.GetByIdAsync("pc-shrink-1");
+        Assert.Equal(new DateTime(2026, 4, 1), persisted!.EffectiveFrom);
+        Assert.Equal(new DateTime(2026, 4, 20), persisted.EffectiveTo);
+        Assert.Equal(0, planningCycles.UpdateCalls);
     }
 
     [Fact]
     public async Task PlanningCycle_Update_Allows_Date_Expand_When_Linked_Period_Remains_Inside_Horizon()
     {
+        var planningCycles = new InMemoryPlanningCycleRepository(new PlanningCycleAggregate
+        {
+            Id = "pc-expand-1",
+            Code = "PC-EXPAND-1",
+            Name = "Cycle Expand Guard",
+            PlanningCycleType = "Annual Plan",
+            OwnerCompanyId = ActiveCompanyId,
+            OwnerPositionId = "pos-1",
+            Status = "Active",
+            EffectiveFrom = new DateTime(2026, 4, 1),
+            EffectiveTo = new DateTime(2026, 4, 20)
+        });
         var service = BuildPlanningCycleService(
-            new InMemoryPlanningCycleRepository(new PlanningCycleAggregate
-            {
-                Id = "pc-expand-1",
-                Code = "PC-EXPAND-1",
-                Name = "Cycle Expand Guard",
-                PlanningCycleType = "Annual",
-                OwnerCompanyId = ActiveCompanyId,
-                OwnerPositionId = "pos-1",
-                Status = "Active",
-                EffectiveFrom = new DateTime(2026, 4, 1),
-                EffectiveTo = new DateTime(2026, 4, 20)
-            }),
+            planningCycles,
             new InMemoryStrategyPeriodRepository(new StrategyPeriodAggregate
             {
                 Id = "sp-expand-1",
@@ -506,7 +512,7 @@ public sealed class EnterpriseStrategyModuleTests
             Id = "pc-expand-1",
             Code = "PC-EXPAND-1",
             Name = "Cycle Expand Guard",
-            PlanningCycleType = "Annual",
+            PlanningCycleType = "Annual Plan",
             OwnerCompanyId = ActiveCompanyId,
             OwnerPositionId = "pos-1",
             Status = "Active",
@@ -517,6 +523,10 @@ public sealed class EnterpriseStrategyModuleTests
         Assert.True(result.Success);
         Assert.Equal(new DateTime(2026, 3, 28), result.Data!.EffectiveFrom);
         Assert.Equal(new DateTime(2026, 4, 25), result.Data.EffectiveTo);
+        var persisted = await planningCycles.GetByIdAsync("pc-expand-1");
+        Assert.Equal(result.Data.EffectiveFrom, persisted!.EffectiveFrom);
+        Assert.Equal(result.Data.EffectiveTo, persisted.EffectiveTo);
+        Assert.Equal(1, planningCycles.UpdateCalls);
     }
 
     [Fact]
@@ -560,6 +570,35 @@ public sealed class EnterpriseStrategyModuleTests
             ScopeMode = "Enterprise"
         });
         var objectives = new InMemoryObjectiveRepository(new ObjectiveAggregate { Id = "obj-1", ParentGoalId = "goal-1", Name = "O1" });
+        var links = new InMemoryInitiativeLinkRepository(new InitiativeStrategyLinkAggregate { Id = "lnk-1", InitiativeId = "init-001", InitiativeName = "Existing initiative", ParentObjectiveId = "obj-1", ParentGoalId = "goal-1", Version = 3 });
+        var service = new InitiativeOrchestrationService(new MockPpmInitiativeReadAdapter(), new InMemoryPpmInitiativeCacheRepository(), links, new InMemoryProjectLinkRepository(), objectives, goals, new NoOpEnterpriseStrategyAuditSink());
+
+        // Creation is unique per initiative, not per parent objective; upsert is an update operation.
+        var result = await service.CreateAsync(new InitiativeStrategyLinkViewDto
+        {
+            InitiativeId = "init-001",
+            InitiativeName = "Duplicate attempt",
+            ParentObjectiveId = "obj-1",
+            Status = "Draft",
+            StrategyLinkStatus = "Linked",
+            SponsoringCompanyId = "cmp-001"
+        }, "tester", "corr");
+
+        Assert.False(result.Success);
+        Assert.Equal(EnterpriseStrategyErrorCodes.Conflict, result.Error?.Code);
+        Assert.Contains("initiativeId", result.Error!.Details.Keys, StringComparer.OrdinalIgnoreCase);
+        var persisted = Assert.Single(await links.ListAsync());
+        Assert.Equal("Existing initiative", persisted.InitiativeName);
+        Assert.Equal("obj-1", persisted.ParentObjectiveId);
+        Assert.Equal(3, persisted.Version);
+        Assert.Equal(0, links.WriteCalls);
+    }
+
+    [Fact]
+    public async Task Distinct_Initiatives_Can_Align_To_The_Same_Objective()
+    {
+        var goals = new InMemoryGoalRepository(new GoalAggregate { Id = "goal-1", Name = "G1" });
+        var objectives = new InMemoryObjectiveRepository(new ObjectiveAggregate { Id = "obj-1", ParentGoalId = "goal-1", Name = "O1" });
         var links = new InMemoryInitiativeLinkRepository(new InitiativeStrategyLinkAggregate { Id = "lnk-1", InitiativeId = "init-001", ParentObjectiveId = "obj-1", ParentGoalId = "goal-1" });
         var service = new InitiativeOrchestrationService(new MockPpmInitiativeReadAdapter(), new InMemoryPpmInitiativeCacheRepository(), links, new InMemoryProjectLinkRepository(), objectives, goals, new NoOpEnterpriseStrategyAuditSink());
 
@@ -571,8 +610,14 @@ public sealed class EnterpriseStrategyModuleTests
             SponsoringCompanyId = "cmp-001"
         }, 0, "tester", "corr");
 
-        Assert.False(result.Success);
-        Assert.Equal(EnterpriseStrategyErrorCodes.Conflict, result.Error?.Code);
+        Assert.True(result.Success);
+        Assert.Equal("obj-1", result.Data!.ParentObjectiveId);
+        Assert.Equal("goal-1", result.Data.ParentGoalId);
+        var aligned = await links.ListByObjectiveIdAsync("obj-1");
+        Assert.Equal(2, aligned.Count);
+        Assert.Contains(aligned, x => x.InitiativeId == "init-001");
+        Assert.Contains(aligned, x => x.InitiativeId == "init-002");
+        Assert.Equal(1, links.WriteCalls);
     }
 
     [Fact]
@@ -1247,6 +1292,31 @@ public sealed class EnterpriseStrategyModuleTests
         }, 0, "tester", "corr");
         Assert.True(linkInitiative.Success);
 
+        // Strategy-link upsert validates the existing project; provide a complete non-draft fixture.
+        var createProject = await projectService.CreateAsync(new ProjectStrategyLinkViewDto
+        {
+            ProjectId = "prj-001",
+            ParentInitiativeId = "init-001",
+            ProjectName = "Retention delivery project",
+            Description = "Deliver the retention initiative",
+            OwnerPm = "usr-pm",
+            Sponsor = "usr-sponsor",
+            DeliveryCompanyId = ActiveCompanyId,
+            ScopeSummary = "Implement retention improvements",
+            Status = "Planned",
+            Phase = "Plan",
+            DeliveryType = "Technology",
+            DeliveryMethodology = "Hybrid",
+            Priority = "High",
+            StartDate = new DateTime(2027, 1, 10),
+            EndDate = new DateTime(2027, 4, 10),
+            ReadinessStatus = "Ready",
+            RiskRating = "Medium",
+            BudgetRequired = false,
+            NoBudgetReason = "Covered by the existing operating budget"
+        }, "tester", "corr");
+        Assert.True(createProject.Success);
+
         var linkProject = await projectService.UpsertStrategyLinkAsync("prj-001", new ProjectStrategyLinkViewDto
         {
             ProjectId = "prj-001",
@@ -1254,8 +1324,15 @@ public sealed class EnterpriseStrategyModuleTests
             StrategyLinkStatus = "Linked",
             ContributionNote = "Execution package",
             DeliveryCompanyId = "cmp-001"
-        }, 0, "tester", "corr");
+        }, createProject.Data!.Version, "tester", "corr");
         Assert.True(linkProject.Success);
+        Assert.Equal("Planned", linkProject.Data!.Status);
+        Assert.Equal(createProject.Data.Version + 1, linkProject.Data.Version);
+        var persistedProject = await projectLinks.GetByProjectIdAsync("prj-001");
+        Assert.Equal("Execution package", persistedProject!.ContributionNote);
+        Assert.Equal("init-001", persistedProject.ParentInitiativeId);
+        Assert.Equal("obj-e2e", persistedProject.ParentObjectiveId);
+        Assert.Equal("goal-e2e", persistedProject.ParentGoalId);
 
         var lineage = await projectService.UpstreamLineageAsync("prj-001");
         Assert.True(lineage.Success);
@@ -1679,6 +1756,7 @@ sealed class InMemoryStrategyPeriodRepository : IStrategyPeriodRepository
 sealed class InMemoryPlanningCycleRepository : IPlanningCycleRepository
 {
     private readonly List<PlanningCycleAggregate> _rows = new();
+    public int UpdateCalls { get; private set; }
     public InMemoryPlanningCycleRepository(params PlanningCycleAggregate[] rows) => _rows.AddRange(rows);
     public Task<PlanningCycleAggregate?> GetByIdAsync(string id, CancellationToken cancellationToken = default) => Task.FromResult(_rows.FirstOrDefault(x => x.Id == id));
     public Task<PlanningCycleAggregate?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(_rows.FirstOrDefault(x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
@@ -1686,6 +1764,7 @@ sealed class InMemoryPlanningCycleRepository : IPlanningCycleRepository
     public Task AddAsync(PlanningCycleAggregate aggregate, CancellationToken cancellationToken = default) { _rows.Add(aggregate); return Task.CompletedTask; }
     public Task UpdateAsync(PlanningCycleAggregate aggregate, CancellationToken cancellationToken = default)
     {
+        UpdateCalls++;
         var idx = _rows.FindIndex(x => x.Id == aggregate.Id);
         if (idx >= 0) _rows[idx] = aggregate;
         return Task.CompletedTask;
@@ -1695,6 +1774,7 @@ sealed class InMemoryPlanningCycleRepository : IPlanningCycleRepository
 sealed class InMemoryInitiativeLinkRepository : IInitiativeStrategyLinkRepository
 {
     private readonly List<InitiativeStrategyLinkAggregate> _rows = new();
+    public int WriteCalls { get; private set; }
     public InMemoryInitiativeLinkRepository(params InitiativeStrategyLinkAggregate[] rows) => _rows.AddRange(rows);
     public Task<IReadOnlyList<InitiativeStrategyLinkAggregate>> ListAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InitiativeStrategyLinkAggregate>>(_rows.ToList());
     public Task<InitiativeStrategyLinkAggregate?> GetByInitiativeIdAsync(string initiativeId, CancellationToken cancellationToken = default) => Task.FromResult(_rows.FirstOrDefault(x => x.InitiativeId == initiativeId));
@@ -1702,6 +1782,7 @@ sealed class InMemoryInitiativeLinkRepository : IInitiativeStrategyLinkRepositor
     public Task<IReadOnlyList<InitiativeStrategyLinkAggregate>> ListByObjectiveIdAsync(string objectiveId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InitiativeStrategyLinkAggregate>>(_rows.Where(x => x.ParentObjectiveId == objectiveId).ToList());
     public Task AddOrUpdateAsync(InitiativeStrategyLinkAggregate aggregate, CancellationToken cancellationToken = default)
     {
+        WriteCalls++;
         var idx = _rows.FindIndex(x => x.InitiativeId == aggregate.InitiativeId);
         if (idx >= 0) _rows[idx] = aggregate; else _rows.Add(aggregate);
         return Task.CompletedTask;

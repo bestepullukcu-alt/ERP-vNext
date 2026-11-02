@@ -1,0 +1,1 @@
+                attr: { title: l.Filter, 'aria-controls': collapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },

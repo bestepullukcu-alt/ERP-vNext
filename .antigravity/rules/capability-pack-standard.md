@@ -82,7 +82,10 @@ her satır bir dilimdir: `Slice` (büyük harf, rakam, `-`) ve `Kapsam` (virgül
 ve kişi yazılmaz). Dilimi bir kuyruk teslim eder: kayıt satırının (`execution/delivery/ct-queue-registry.tsv`) `scope`
 alanı `dcp:<DCP dosya yolu>#<Slice>` ile başlar — DCP kimliği değil yol, çünkü aynı kimlik birden çok dosyada olabilir.
 Okuyan araç `scripts/ct_route.py`'dir. Bölümü olmayan DCP'ler ve önekle başlamayan eski `scope` metinleri değişmez. Bu
-bölüm yeni bir durum eklemez; yetki §5'teki `status`'tan gelir (`approved` ve sonrası).
+bölüm yeni bir durum eklemez; yetki §5'teki `status`'tan gelir (`approved` ve sonrası). 2026-11-01'den sonra yazılan
+tabloda `Not` hücresi dilimin hizmet ettiği plan MVP'sini (ör. `BLK-10-MVP3`) ya da `plan satırı yok` yazar; başlık
+`| Slice | Kapsam | Not |` aynen kalır (araç başlığı birebir okur). Tek modül kuyruğu `scope`'u `MOD-nnnn DL-a…DL-b`
+ile adlandırabilir; bu biçim serbest metindir, araç okumaz (SOP §20.4/6b).
 
 ```markdown
 ## 8.1 Delivery slices

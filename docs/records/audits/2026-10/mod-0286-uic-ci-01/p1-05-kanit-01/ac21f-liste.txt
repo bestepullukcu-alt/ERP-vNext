@@ -1,0 +1,9 @@
+frontend/Diten.Web/Views/Meetings/Create.cshtml
+frontend/Diten.Web/Views/Meetings/Details.cshtml
+frontend/Diten.Web/Views/Meetings/Edit.cshtml
+frontend/Diten.Web/Views/Meetings/Index.cshtml
+frontend/Diten.Web/Views/Meetings/MeetingsIndex.cs
+frontend/Diten.Web/Views/Meetings/_DataTable.cshtml
+frontend/Diten.Web/Views/Meetings/_Filter.cshtml
+frontend/Diten.Web/Views/Meetings/_Form.cshtml
+frontend/Diten.Web/Views/Meetings/_IndexL10n.cshtml
