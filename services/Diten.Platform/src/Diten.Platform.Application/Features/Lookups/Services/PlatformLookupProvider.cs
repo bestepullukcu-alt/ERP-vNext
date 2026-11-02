@@ -2,10 +2,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.Lookups;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace Diten.Platform.Application.Features.Lookups.Services;
 
@@ -13,33 +16,60 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
 {
     private static readonly TimeSpan StaticLookupTtl = TimeSpan.FromHours(12);
     private static readonly TimeSpan DataBackedLookupTtl = TimeSpan.FromMinutes(5);
+    private const string CurrencyMinorUnitsSetCode = "currency-minor-units";
 
     private readonly IPlatformLookupCache _cache;
     private readonly IFeatureCategoryRepository _featureCategoryRepository;
     private readonly IModuleDomainRepository _moduleDomainRepository;
     private readonly IModuleServiceRepository _moduleServiceRepository;
     private readonly IAuthPermissionModulesClient _authPermissionModulesClient;
+    private readonly IBusinessReferenceDataConsumerQueryService _referenceData;
+    private readonly ITenantContext _tenantContext;
+    private readonly IConfiguration _configuration;
 
     public PlatformLookupProvider(
         IPlatformLookupCache cache,
         IFeatureCategoryRepository featureCategoryRepository,
         IModuleDomainRepository moduleDomainRepository,
         IModuleServiceRepository moduleServiceRepository,
-        IAuthPermissionModulesClient authPermissionModulesClient)
+        IAuthPermissionModulesClient authPermissionModulesClient,
+        IBusinessReferenceDataConsumerQueryService referenceData,
+        ITenantContext tenantContext,
+        IConfiguration configuration)
     {
         _cache = cache;
         _featureCategoryRepository = featureCategoryRepository;
         _moduleDomainRepository = moduleDomainRepository;
         _moduleServiceRepository = moduleServiceRepository;
         _authPermissionModulesClient = authPermissionModulesClient;
+        _referenceData = referenceData;
+        _tenantContext = tenantContext;
+        _configuration = configuration;
     }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetCurrenciesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
             BuildCacheKey(PlatformLookupKeys.Currencies),
-            StaticLookupTtl,
-            _ => Task.FromResult(BuildCurrencyOptions()),
+            DataBackedLookupTtl,
+            async token => BuildCurrencyOptions(await ReadPublishedCurrencyCodesAsync(token)),
             ct);
+
+    // The cache entry is shared by every tenant, so the set is read in the reference tenant the catalog seed writes under
+    // (same key as TaskFieldDefinitionQueryHandlers), never in the caller's. No ICU fallback: an unreadable set fails the lookup.
+    private async Task<IReadOnlySet<string>> ReadPublishedCurrencyCodesAsync(CancellationToken ct)
+    {
+        if (!Guid.TryParse(_configuration["BusinessReferenceData:CatalogLoad:TenantId"], out var referenceTenantId)
+            || referenceTenantId == Guid.Empty)
+        {
+            throw new InvalidOperationException("reference_tenant_misconfigured");
+        }
+
+        using (TenantScope.Begin(_tenantContext, referenceTenantId))
+        {
+            var published = await _referenceData.GetPublishedValuesAsync(CurrencyMinorUnitsSetCode, null, ct);
+            return published.Items.Select(item => item.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetLocalesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
@@ -355,7 +385,17 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
         where TEnum : struct, Enum =>
         GetEnumLookupAsync<TEnum>(lookupKey, group, valueUsesDisplayName, excludeUnknown: false, ct);
 
-    private static IReadOnlyList<LookupOptionDto> BuildCurrencyOptions()
+    private static IReadOnlyList<LookupOptionDto> BuildCurrencyOptions(IReadOnlySet<string> publishedCodes) =>
+        KeepPublishedCurrencies(BuildRegionCurrencyOptions(), publishedCodes);
+
+    // MOD-0048-FU01 §21: the host's ICU data differs between servers and can still carry retired codes (ANG, BGN, HRK,
+    // SLL); the published currency-minor-units set decides which codes a picker offers.
+    private static IReadOnlyList<LookupOptionDto> KeepPublishedCurrencies(
+        IEnumerable<LookupOptionDto> options,
+        IReadOnlySet<string> publishedCodes) =>
+        options.Where(option => publishedCodes.Contains(option.Code)).ToList();
+
+    private static IReadOnlyList<LookupOptionDto> BuildRegionCurrencyOptions()
     {
         return CultureInfo.GetCultures(CultureTypes.SpecificCultures)
             .Select(TryGetRegion)
