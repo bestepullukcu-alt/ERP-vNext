@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-05
-status: approved — D45–D113, D115–D116 (2026-10-31) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D45–D113, D115–D117 (2026-11-02) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-27
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); soru kutusu cevapları (2026-10-27), dört sorunun dördünde önerilen seçenek
@@ -1368,6 +1368,25 @@ Onay kanıtı: K1 / gmg-10 (CT düzeltmesi, Rule #316); kaynak `docs/records/rev
 
 1. **D116/1 — `Finance`:** `AuditEnums.cs:29` ve `CentralAuditPlatformValues.cs:30` main'de (#298); dört paketin Denetim bölümündeki "değer main'e girmeden" önkoşulu kapandı.
 2. **D116/2 — seed:** MOD-0126 O-11, MOD-0119 O-10, MOD-0124 O-8 ve MOD-0126 `payment-method` satırı main'deki seed ve izin listesine çekildi; ortamda yayım kanıtı DL-1 kabulünde kaldı.
+
+## Y-37 — Beste, Treasury açık kalemleri cevabı (2026-11-02; K1 aktardı)
+
+> 1. #314: dalı güncelleyebilirsiniz, iznimiz var. Çakışmayı çözüp bitince haber verin; inceleyip birleştireceğiz (merge commit).
+> 2. Finans tüketicisi için Platform XMC-001: öneri dosyası bize ulaşmadı. Değişecek Platform dosyalarının listesini içeren öneri dosyasını yeniden gönderin; okuyup izni vereceğiz.
+> 3. Aday modu: öneriyi inceleyeceğiz. Değerlendirmeyi 2. maddedeki öneri dosyasıyla (beş sınır ve üç sabotaj testi dahil) yapıp kararımızı yazacağız.
+> 4. D105/3 — para birimi kaynağı ve test yeri: MOD-0217 ve MOD-0289 para birimini Business Reference Data'dan (MOD-0048-FU01, currency-minor-units kümesi) okumalı; kendi listelerini tutmamalı. Test yeri önerimiz: kümenin varlığı ve biçimi Platform'da MOD-0048-FU01 testlerinde; tüketicilerin MOD-0048'den okuduğu ise MOD-0217 ve MOD-0289'un kendi testlerinde (kod listeye gömülürse kırmızı). D105 kararının tam metnini de gönderirseniz §21 PR'ını buna göre netleştirelim.
+> 5. Para birimi lookup XMC-001: kırmızı görünen testin adını ve son ölçüm commit'ini gönderin; bugün yeniden ölçelim.
+> 6–8. DCP-011, MOD-0289 ve AGR onayları: #314 birleştikten ve PR'lar açıldıktan sonra.
+
+## D117 — Beste Y-37: #314 güncelleme izni, para birimi kaynağı, sıra (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-37; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D117/1 — #314:** dal güncelleme izni verildi; birleştirme merge commit ile.
+2. **D117/2 — para birimi kaynağı:** MOD-0217 ve MOD-0289 `currency-minor-units` setinden okur, kendi listesini tutmaz (D105/4 ve D112/1'in açık kısmı kapandı). İki paket #314 sonrası yeni revizyonla çevrilir; paket özeti değişeceği için yeniden inceleme gerekir.
+3. **D117/3 — test yeri (Beste önerisi, açık):** setin varlığı ve biçimi Platform'da MOD-0048-FU01 testlerinde; tüketicilerin setten okuduğu MOD-0217 ve MOD-0289'un kendi testlerinde. D105 metni gönderilir, §21 PR'ı Beste ile netleşir.
+4. **D117/4 — açık:** Platform XMC-001 ve aday modu verilmedi; öneri dosyası yeniden gönderilir. Para birimi lookup XMC-001 için test adı ve ölçüm commit'i gönderilir.
+5. **D117/5 — sıra:** DCP-011, MOD-0289 ve AGR onayları #314 birleştikten ve PR'lar açıldıktan sonra.
 
 ## Karar olmayanlar
 
