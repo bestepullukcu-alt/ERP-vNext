@@ -197,8 +197,11 @@ public sealed class WorkflowInstanceStartTests
         var fixture = Fixture(TenantA);
         var (template, _) = await fixture.AddPublishedTemplateAsync("WF-IDEMPOTENT");
 
-        var first = await fixture.Handler.Handle(Start(template.Id, idempotencyKey: "idem-001"), CancellationToken.None);
-        var second = await fixture.Handler.Handle(Start(template.Id, idempotencyKey: "idem-001"), CancellationToken.None);
+        // one fixed due date for both calls: the key is bound to every fact of the first start (AC-W11), and "now + 2 days"
+        // read twice is two different facts
+        var due = DateTimeOffset.UtcNow.AddDays(2);
+        var first = await fixture.Handler.Handle(Start(template.Id, idempotencyKey: "idem-001", dueAt: due), CancellationToken.None);
+        var second = await fixture.Handler.Handle(Start(template.Id, idempotencyKey: "idem-001", dueAt: due), CancellationToken.None);
 
         Assert.True(first.IsSuccessful);
         Assert.True(second.IsSuccessful);
@@ -298,7 +301,8 @@ public sealed class WorkflowInstanceStartTests
     private static StartWorkflowInstanceCommand Start(
         Guid templateId,
         IReadOnlyList<string>? candidates = null,
-        string? idempotencyKey = null) =>
+        string? idempotencyKey = null,
+        DateTimeOffset? dueAt = null) =>
         new(new StartWorkflowInstanceRequest(
             templateId,
             null,
@@ -310,7 +314,7 @@ public sealed class WorkflowInstanceStartTests
             idempotencyKey,
             CommentRequired: true,
             EvidenceRequired: false,
-            DueAt: DateTimeOffset.UtcNow.AddDays(2)), Correlation);
+            DueAt: dueAt ?? DateTimeOffset.UtcNow.AddDays(2)), Correlation);
 
     private static TestFixture Fixture(Guid tenantId)
     {
