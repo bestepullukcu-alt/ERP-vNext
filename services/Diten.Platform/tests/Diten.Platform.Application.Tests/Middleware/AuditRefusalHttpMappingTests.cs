@@ -4,6 +4,7 @@ using Diten.Platform.API.Middleware;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Features.Audit;
+using Diten.Platform.Application.Features.Lookups.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -61,6 +62,29 @@ public sealed class AuditRefusalHttpMappingTests
                 behavior.Handle(new Probe(), () => throw new TransactionOwnedAuditRefusedException(InternalSentence), CancellationToken.None));
             await Assert.ThrowsAsync<TransactionOwnedAuditIntentInvalidException>(() =>
                 behavior.Handle(new Probe(), () => throw new TransactionOwnedAuditIntentInvalidException("bad intent"), CancellationToken.None));
+        }
+        finally
+        {
+            ExceptionBehavior<Probe, Response<NoContent>>.FailMethodFinderOverride.Value = null;
+        }
+    }
+
+    [Fact]
+    public async Task No_published_currency_list_is_503_with_its_code_through_the_pipeline()
+    {
+        // MOD-0048-FU01 §21 — the same seam as above: the pipeline must not turn it into a response of its own.
+        ExceptionBehavior<Probe, Response<NoContent>>.FailMethodFinderOverride.Value =
+            _ => typeof(AuditRefusalHttpMappingTests).GetMethod(nameof(FailWithStatus), BindingFlags.NonPublic | BindingFlags.Static);
+        try
+        {
+            var behavior = new ExceptionBehavior<Probe, Response<NoContent>>(NullLogger<ExceptionBehavior<Probe, Response<NoContent>>>.Instance);
+            var unavailable = await Assert.ThrowsAsync<CurrencySetUnavailableException>(() =>
+                behavior.Handle(new Probe(), () => throw new CurrencySetUnavailableException(), CancellationToken.None));
+
+            var (status, body, _) = await HandleAsync(unavailable);
+
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
+            Assert.Equal("currency_set_unavailable", body.GetProperty("reason_code").GetString());
         }
         finally
         {
