@@ -994,7 +994,7 @@ const ReturnsList = (function () {
             showAlert('formReturnTransitionAlert', t('ErrDispositionRequired'));
             return;
         }
-        // Mirror of the business rule only: Received needs toWarehouseId (400 otherwise; the backend stays authoritative).
+        // Mirror of the business rule only: Received needs both places (400 otherwise; the backend stays authoritative).
         if (target === 'Received' && receiptPlaceMissing()) return;
         const subtext = target === 'Received' ? `${t('ConfirmTransition')} ${t('ReceivedPostsQuarantineNote')}` : t('ConfirmTransition');
         // Shared premium wrapper only (MOD-0013 _GlobalConfirmation: showConfirm(title, callback, options));

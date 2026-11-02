@@ -946,10 +946,11 @@ A | B | C
   araç izin veriyorsa tam model kimliği yazılır.
 - **Kapsam.** 2026-10-15'ten sonra açılan Control Tower'lar için zorunlu; eski Control Tower'lara geriye dönük yük
   getirmez.
-- **Kule oturumunun kendi modeli (S-125, sahip kararı 2026-11-01).** Yukarıdaki tablo işçi ve alt ajan içindir; kule
-  sohbetinin kendi modeli de yazılıdır: rutin kule işi (keşif, paket yazımı, rapor, takip sayfası, dağıtım) → Opus 5.5 ·
-  high; bağımsız inceleme, araç ve kural değişikliği → Fable 5.1. Ölçüm: 2026-11-01'de bir günde haftalık Fable
-  sınırının %44'ü tek kulede harcandı. Fark 2026-11-14'te engel oranıyla ölçülür; seçim sahibin kararıdır.
+- **Kule oturumunun kendi modeli ve Fable (S-125, S-129; sahip kararı 2026-11-01).** Yukarıdaki tablo işçi ve alt ajan
+  içindir. Kule sohbetinin modelini sahip sohbeti açarken seçer (öneri Opus 5.5). Bağımsız inceleme, son bakış, araç ve kural
+  değişikliği alt ajanları → Opus 5.5 · high. **Fable hiçbir işte kullanılmaz.** Gerekçe: 2026-11-01'de bir günde haftalık Fable
+  sınırının %44'ü tek kulede harcandı; incelemede Opus'tan üstünlüğü ölçülmedi. Alt ajan açarken model açıkça verilir;
+  sohbetin modeli araçla denetlenmez, Fable'da açık kalan oturumu CT sahibe bildirir.
 
 **v2.5 rules for the two new fields**
 

@@ -1,4 +1,6 @@
+using System.Text.Json;
 using System.Xml.Linq;
+using Diten.Web.Models.SupplyChain.Shipments;
 using Xunit;
 
 namespace Diten.Web.Tests.Forms;
@@ -6,12 +8,12 @@ namespace Diten.Web.Tests.Forms;
 public sealed class ShipmentFormContractTests
 {
     [Fact]
-    public void CreateSurface_ContainsExactlyThirteenUserInputKindsAndNoScopeFields()
+    public void CreateSurface_ContainsExactlySixteenUserInputKindsAndNoScopeFields()
     {
         var form = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml");
         foreach (var id in new[] { "sourceModule", "sourceType", "sourceDocumentId", "warehouseReferenceId", "shipToReference", "plannedShipAt", "plannedDeliverAt" })
             Assert.Equal(1, Count(form, $"id=\"{id}\""));
-        foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId" })
+        foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId", "skuLevel", "fromLocationId", "lotId" })
             Assert.Equal(1, Count(form, $"data-field=\"{field}\""));
         Assert.DoesNotContain("TenantId", form); Assert.DoesNotContain("LegalEntityId", form); Assert.DoesNotContain("Status\"", form);
     }
@@ -21,13 +23,34 @@ public sealed class ShipmentFormContractTests
     {
         var form = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml");
         var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js");
-        foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId" })
+        foreach (var field in new[] { "lineNumber", "itemId", "skuId", "quantity", "uomId", "inventoryReferenceId", "skuLevel", "fromLocationId", "lotId" })
             Assert.Equal(1, Count(form, $"data-field-label=\"{field}\""));
         Assert.Contains("const syncLineAccessibility", script);
         Assert.Contains("input.id = `shipmentLine_${index}_${field}`", script);
         Assert.Contains("label.htmlFor = input.id", script);
         Assert.Contains("focusTarget?.focus()", script);
         Assert.DoesNotContain("input.name =", script);
+    }
+
+    [Fact]
+    public void ALineCarriesTheStockFieldsDispatchReads()
+    {
+        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js");
+        var model = Read("frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs");
+        foreach (var property in new[] { "SkuLevel", "LotId", "FromLocationId" })
+            Assert.Contains($"public string? {property} {{ get; set; }}", model);
+        Assert.Contains("&& line.skuLevel && line.fromLocationId.trim()", script);
+        Assert.Contains("const optionalStockFields = ['lotId']", script);
+    }
+
+    [Fact]
+    public void TheWebModelForwardsTheStockFieldsToTheGateway()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var line = JsonSerializer.Deserialize<CreateShipmentLineViewModel>("""{"skuLevel":"Lsku","lotId":"lot-1","fromLocationId":"loc-1"}""", options)!;
+        var forwarded = JsonSerializer.SerializeToNode(line, options)!;
+
+        Assert.Equal(("Lsku", "lot-1", "loc-1"), (forwarded["skuLevel"]!.GetValue<string>(), forwarded["lotId"]!.GetValue<string>(), forwarded["fromLocationId"]!.GetValue<string>()));
     }
 
     [Fact]

@@ -81,7 +81,7 @@ public sealed class ReturnReceiptTextTests
 
     [Theory]
     [InlineData("return-receipt-text.test.mjs", 8)]
-    [InlineData("return-receipt-flow.test.mjs", 8)]
+    [InlineData("return-receipt-flow.test.mjs", 9)]
     public async Task IndexJsPassesItsNodeFile(string file, int cases)
     {
         var start = new ProcessStartInfo("node") { WorkingDirectory = Root(), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
