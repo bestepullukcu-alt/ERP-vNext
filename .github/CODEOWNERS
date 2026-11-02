@@ -9,3 +9,7 @@
 /scripts/ct_queue.py            @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /scripts/acceptance_record.py   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /scripts/run_phase1_gates.sh    @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+# AGENTS.md §4 protected paths (2026-11-02, owner decision): agent rules and the gateway route table change only with a
+# code-owner review, so the rule is enforced by GitHub rather than written text alone.
+/.antigravity/                         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/gateway/Diten.ApiGateway/ocelot.json  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
