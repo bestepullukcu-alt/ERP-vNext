@@ -37,11 +37,10 @@ New component schema `CustomerRef`: `type: [string, 'null']`.
 | Format | schema `pattern` `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$` (CT kararı 2026-11-03, review F-3) |
 | Service | checks the pattern (`CreateShipmentValidator`; mismatch → 400 `INVALID_REQUEST`, the code of `ValidationBehavior.cs:11`), stores a matching value as given, never calls CRM |
 | Who checks the account | the MVC create adapter (MOD-0183 24.1): the account readable with the caller's token, and an address present (`CUSTOMER_ADDRESS_MISSING` otherwise) |
-| Screens | a stored value that is not a lower-case Guid is shown as "not found", never as a name |
 | Empty | null or absent on records written before 3.5.0, on Warehouse-intake shipments and on API calls that do not send it |
 | Consumers when empty | keep their earlier rule; MOD-0177: `shipToReference`, then `"DOC:" + sourceDocumentId` |
 | Old records | never matched to an account by a guess on `shipToReference` (SB-19, accepted limit) |
-| Screens | never shown as a label |
+| Screens | never shown as a label; a stored value that is not a lower-case Guid is shown as "not found", never as a name |
 
 Where it appears:
 
