@@ -359,6 +359,8 @@ sonradan yalnız eklemeli değişiklikle gelir (§13). KAPANDI satırları (N-1,
 | N-6 | `PLN` katalogda mı | **KAPANDI — K-12 (d)**: katalogda, bağlanması DL-4; HTTP'den 403 | Beste | 2026-10-30 | — (kapandı) |
 | N-7 | Şirket öneki biçimi (K-6) | karar yoksa RCS-001 §1 | K1 (`gmg-10`) | 2026-11-02 | **evet** (gelmezse RCS-001 §1 ile kapanır) |
 | N-8 | `CTR` → `AGR` RCS-001 §3 satırı; MOD-0144 / MOD-0217 kapsam çakışması | `AGR` sözleşmede kalır (K-12 a) | Ali (`.antigravity`) + Treasury PR'ı; Cihan + Treasury | 2026-11-03 (§3); TBD (çakışma) | **hayır** — §3 kolu DL-7, katalog testinde adlı istisna; MOD-0144 / MOD-0217 çakışma kolu TBD; ikisi de 1.0.0 metnini değiştirmez (`AGR` kalır) |
+| N-7 notu | **KAPANDI — 2026-11-03 (MVP-1 CT):** K1'den 2026-11-02'ye kadar karar gelmedi; RCS-001 §1 ile kapandı (paket K-6) | — | — | 2026-11-03 | — (kapandı) |
+| N-9 notu | **KAPANDI — sahip kararı (Beste, 2026-11-03, paket A-16):** 600 istek / dakika / bölüm; eski sırrın geçerlilik penceresi en çok 24 saat | — | — | 2026-11-03 | — (kapandı) |
 | N-9 | Hız sınırı değeri (bölüm: tüketici servis + kiracı) ve eski sırrın geçerlilik penceresi | 600 istek/dakika/bölüm; pencere en çok 24 saat | Beste | 2026-11-03 | **evet** |
 | N-10 | §1 kullanıcı izni adlarının teyidi (MOD-0018-FU27 taslağı; `APD` alacak dekontu dahil) | tablodaki gibi | Beste + Treasury CT + MDM sahibi | 2026-11-03 | **evet** |
 | N-11 | MDM lookup-validation v1.1 (`approvalStatus`) yayını; o sürümde Platform okuyucusunun "alan yok → 503" kuralına geçmesi (kod değişikliği) | v1.1'e kadar tüketici onay ön kontrolü zorunlu | MOD-0220 sahibi + Beste | TBD | **hayır** — v1.1 yayını gelecekte; o güne kadar tüketici ön kontrolü, sözleşme metni değişmez |
