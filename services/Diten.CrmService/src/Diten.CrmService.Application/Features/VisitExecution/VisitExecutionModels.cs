@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Common.Models;
 using MediatR;
@@ -145,19 +147,39 @@ public sealed record StartVisitExecutionCommand(
     double? AccuracyMeters,
     string? LocationError,
     VisitEvidenceFile? Photo,
-    string? PhotoCapturedAt) : IRequest<Response<VisitExecutionDto>>;
+    string? PhotoCapturedAt) : IRequest<Response<VisitExecutionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("VisitExecution");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<VisitExecutionDto>(response, dto => dto.Id);
+}
 
 public sealed record CaptureVisitExecutionCommand(Guid ExecutionId, VisitCaptureInput Capture)
-    : IRequest<Response<VisitExecutionDto>>;
+    : IRequest<Response<VisitExecutionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitExecution");
+    public Guid? CentralAuditEntityId(object? response) => ExecutionId;
+}
 
 public sealed record FinishVisitExecutionCommand(Guid ExecutionId, VisitCaptureInput? Capture)
-    : IRequest<Response<VisitExecutionDto>>;
+    : IRequest<Response<VisitExecutionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitExecution");
+    public Guid? CentralAuditEntityId(object? response) => ExecutionId;
+}
 
 public sealed record SignVisitExecutionCommand(Guid ExecutionId, VisitEvidenceFile? File, bool Confirmed, string? Context)
-    : IRequest<Response<VisitExecutionDto>>;
+    : IRequest<Response<VisitExecutionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitExecution");
+    public Guid? CentralAuditEntityId(object? response) => ExecutionId;
+}
 
 public sealed record UpdateVisitEvidencePolicyCommand(VisitEvidencePolicyInput Input)
-    : IRequest<Response<VisitEvidencePolicyDto>>;
+    : IRequest<Response<VisitEvidencePolicyDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitEvidencePolicy");
+    public Guid? CentralAuditEntityId(object? response) => null;
+}
 
 // ── queries (reads) ──────────────────────────────────────────────────────────────────────────────────────────────────
 
