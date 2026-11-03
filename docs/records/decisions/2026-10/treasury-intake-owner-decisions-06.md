@@ -57,9 +57,29 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-40; oturum Treasury Intake CT (`
 
 ## D122 — Küme dışı para birimi kodu için hata sözleşmesi (2026-11-02)
 
-Onay kanıtı: K1 / gmg-10 (soru kutuları "MDM 400, finans 503", sonra düzeltme "Evet, düzelt"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı) ve Y-31; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktır.
+Onay kanıtı: K1 / gmg-10 (soru kutuları "MDM 400, finans 503", sonra düzeltme "Evet, düzelt"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı) ve Y-31; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktı, D123/2 ile kapandı.
 
 1. **D122/1 — kullanıcı girdisi:** kullanıcının gönderdiği küme dışı kod her tüketicide 400: MOD-0119, MOD-0120 ve MOD-0126'da `…_CURRENCY_CODE_INVALID`, MOD-0124'te `CASH_POSITION_INVALID_CURRENCY_CODE`, MOD-0217 ve MOD-0289'da doğrulama hatası.
 2. **D122/2 — başka modül ya da eski kayıt:** bu yoldan gelen küme dışı kod dört finans paketinde 503 `…_CURRENCY_PRECISION_UNAVAILABLE` (Y-31).
 3. **D122/3 — ortak:** küme okunamazsa her tüketicide 503.
 4. **D122/4 — düzeltme notu:** ilk seçenek "finans 503" paketlerin 400 satırı ölçülmeden sunulmuştu; bu metin onun yerini alır.
+
+## Y-41 — Beste, ICU kesişimi ve D122 (2026-11-02; K1 aktardı)
+
+İki ayrı mesajdan alıntı; aynı mesajın D117/3 sorusu ve #353 notu olan kısımları buraya alınmadı.
+
+> Y-39: Platform tarafı olduğu gibi kalıyor; seçici listesi ICU ile kümenin kesişimi (#346) yeterli kabul edildi. ICU kümeye kod ekleyemiyor, bu yüzden liste kümenin dışına çıkmıyor. Kümede olup ICU'da olmayan kodun seçicide görünmemesi kabul edilen sınır; finans kümeyi doğrudan okuduğu için doğrulama tarafı etkilenmiyor. Platform'da ek kod işi açılmayacak
+>
+> §21 teyitleri: D122 "uygun, kullanıcı girdisinde önce 400" şartıyla verildi; ICU kesişimi kabul (Platform değişmiyor).
+
+## Y-42 — Beste, D117/3 (2026-11-02; K1 aktardı)
+
+> D117/3 uygun. Aynı kural dört finans paketi için de geçerli: her tüketici kümeden okumayı ve küme dışı kodu reddetmeyi kendi paketinde, kendi üretim kontrolü üzerinde sabotajlı testle ölçer; Platform yalnız kümenin varlığını ve biçimini ölçer (MOD-0048-FU01 AC-R2). Finans testleri Diten.FinanceTreasuryService yazılırken gelir.
+
+## D123 — §21 sahip teyitleri kapandı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-41, Y-42; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D123/1 — ICU:** lookup ICU ile kümenin kesişimi kalır; kümede olup ICU'da olmayan kodun seçicide görünmemesi kabul edilen sınırdır. Platform'da ek kod işi yok.
+2. **D123/2 — D122:** Platform sahibi teyit etti; kullanıcı girdisinde önce 400.
+3. **D123/3 — D117/3:** teyit edildi ve dört finans paketini kapsar.
