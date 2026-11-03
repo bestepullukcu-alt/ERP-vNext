@@ -23,6 +23,8 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de); kapsam, izin ve AC değişmedi. `status: draft`.
 
+> **KARAR D126 (2026-11-03):** kayıt kodu anahtarı türetme kuralı (D125/2) pakete yazıldı; yeni AC-47. Kapsam ve izin değişmedi. `status: draft`.
+
 > **KARAR D124 (2026-11-03):** para birimi metni #346 ve D121–D123 sonrasına hizalandı: Bağımlılık satırının gerekçesi, canlı yayım durumu ve Gateway çağrı ucu. Kapsam, izin ve AC değişmedi. `status: draft`.
 
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
@@ -915,7 +917,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     yazılmamıştır; aynı anahtarla tekrar baştan çalışır.
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `BatchCode` yalnız `IRecordCodeAllocator.AllocateAsync(legalEntityId,
   recordType = PAY, idempotencyKey)` portundan alınır; anahtar Create'in idempotency anahtarından (D12/2) türetilir, aynı
-  anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
+  anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126; servis ortak, tek tanım bu maddededir):** istemci anahtarı allocator'a ham geçmez. Servis ortak `RecordCodeIdempotencyKey.Derive(recordType, receiptScope)` (`Application/Common/RecordCodes/`) `recordType` ile makbuzun altı alanını (`TenantId`, `LegalEntityId`, `ActorId`, `Operation`, `TargetId`, `Key`) bu sırayla RFC 8785 (JCS) JSON dizisine yazar: boşluk yok, Guid küçük harfli `D` biçimi, `null` `TargetId` çıplak `null`, dizgede yalnız `"`, `\` ve U+0000…U+001F kaçırılır. Dizinin UTF-8 baytlarının SHA-256'sı küçük harfli 64 hex olarak `idempotencyKey` olur. Neden: makbuz kapsamı aktörü ve şirketi içerir, kod servisi ise yalnız (kiracı, servis, anahtar) ile eşler; ham anahtar iki aktöre aynı kodu verebilir. Türetme port çağrısından önce Create işleyicisinde yapılır; port ve bağdaştırıcı anahtarı değiştirmez. Test vektörü D125/2'dedir (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-06.md`) ve birim testine aynen girer. Bu modülde `Operation` = ``mod0126:CreatePaymentBatch``. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
   200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i
   503 `PAYMENT_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek
   bağdaştırıcı kayıtlı değil) Create 503, kodsuz kayıt açılmaz; servis içinde kendi sayaç, yedek kod ya da yerel kod
@@ -1880,12 +1882,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   (c) sahte MOD-0023 Approve için `WorkflowIsFinalStep = false` döndürdüğünde karar `Recorded` olur ve parti
   `PendingApproval`'da kalır, onaylanmış sayılmaz (KARAR D66/2: bu yanıt v1'de beklenmez). Sabotaj: Approve'a "son adım değil → `PartiallyApproved`" dalı
   eklendiğinde (a) ve (c) kırmızıya döner. DL-2'de kapanır.
+- [ ] AC-47 (zorunlu) — **Kayıt kodu anahtarı türetme (KARAR D125/2, D126):** üretim türeticisi `RecordCodeIdempotencyKey.Derive` ve sahte `IRecordCodeAllocator` ile: (v) D125/2'nin üç test vektörü aynen geçer; (a) aynı makbuz kapsamı, farklı istemci `Key` → iki ayrı kod, allocator iki farklı `idempotencyKey` görür; (b) sahte allocator ilk çağrıda 503 `RECORD_CODE_UNAVAILABLE` döner, Create 503 `PAYMENT_RECORD_CODE_UNAVAILABLE` ile başarısız olur ve makbuz yazılmaz; aynı `Idempotency-Key` ile yeniden denenen Create allocator'a ikinci çağrıyı yapar ve iki çağrıdaki `idempotencyKey` birebir aynıdır (tamamlanmış makbuzdan erken dönüş bu testi karşılamaz); (c) iki aktör, aynı şirket ve aynı istemci `Key` → iki ayrı kod. `Operation` = `mod0126:CreatePaymentBatch`. **Sabotaj:** türetme ham anahtara çevrilince (c), `Key` girdiden çıkarılınca (a), türetilen anahtara çağrı başına değişen değer (yeni Guid ya da zaman damgası) eklenince (b), serileştirmede bir bayt değişince (v) kırmızı.
 
 ## Test Expectations
 
 - **Birim:** validatorlar (her alan); SoD politika servisi R1–R11 (oluşturan/gönderen/güncelleyen, tier-2 sınır değeri
   `TotalAmount == eşik`, para birimi farkı, muafiyet üç dalı, Guid karşılaştırması); durum makinesi geçişleri; idempotency
-  parmak izi; RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi ve port bağlı değilken 503 (AC-45, sabotajlı).
+  parmak izi; RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi, anahtar türetme (D125/2 vektörü, (a)–(c); AC-47) ve port bağlı değilken 503 (AC-45, sabotajlı).
 - **Entegrasyon (Mongo replika kümesi, işlem):** kiracı/şirket izolasyonu (404); veri kapsamı (AC-32, sabotajlı); soft
   delete; idempotent tekrar; CAS 409;
   CentralAudit kaydının iş işlemiyle birlikte commit/rollback'i ve outbox yazım hatasında komutun başarısız olması (sabotaj);

@@ -102,3 +102,12 @@ Onay kanıtı: K1 / gmg-10 (soru kutuları); kaynak Beste'nin dondurma isteği (
 3. **D125/3 — N-4:** uygun. `BNK` → `Group`; şirket `BAC` → `LegalEntity` + sahip şirket; tedarikçi `BAC` → `Group` (D93/1, D65/2, D95/1 ile aynı). MDM bağdaştırıcısı için MDM sahibi Ali'nin teyidi ayrıca istenir.
 4. **D125/4 — N-10:** uygun. Sekiz izin adı FU27 taslağı ve MOD-0119, 0120, 0124, 0126, 0289, 0217 paketleriyle birebir aynı. Alacak dekontu MOD-0119'da `ApInvoice` belge türüdür, `APD` + `finance-treasury.ap-invoices.create` doğrudur. Adlar FU27 onayıyla kesinleşir.
 5. **D125/5 — not:** sözleşme §9'daki Treasury port imzası (`AllocateAsync(legalEntityId, recordType, idempotencyKey)`) yalnız finans paketleri için geçerli. MDM paketleri tek imzalı `prefixScope`'lu portu kullanır (D95/1). Bu, dondurmayı bekletmez.
+
+## D126 — D125/2 türetme kuralı dört finans paketine yazıldı (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 ("devam edelim"); kaynak D125/2; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D126/1 — tek tanım:** kural MOD-0126 "Kayıt kodu" maddesinde servis ortak olarak tanımlandı: `RecordCodeIdempotencyKey.Derive(recordType, receiptScope)`, `Application/Common/RecordCodes/`. Türetme port çağrısından önce Create işleyicisinde yapılır. MOD-0119, MOD-0120 ve MOD-0124 aynı maddeye atıf yapar ve kendi `Operation` adını yazar.
+2. **D126/2 — işlem adları:** `mod0119:CreateApInvoice`, `mod0120:CreateReceivableInvoice`, `mod0124:CreateCashPosition` (`CPS`), `mod0124:CreateCashPositionThresholdPolicy` (`CTP`), `mod0126:CreatePaymentBatch`. Desen MOD-0126 makbuz tanımındaki `{modül}:{Komut}`.
+3. **D126/3 — yeni AC:** MOD-0119 AC-45, MOD-0120 AC-45, MOD-0124 AC-39, MOD-0126 AC-47. Her biri vektör testi (v) ile D125/2'nin (a), (b) ve (c) senaryolarını ve dört sabotajı içerir. Test bölümlerine de eklendi.
+4. **D126/4 — sınır:** kural ve testler paket metnindedir; üretim kodu yok (`Diten.FinanceTreasuryService` yazılmadı). D125/2'deki "bugün açık" durumu kodla kapanır. Zarf satırı (D125/1) sözleşme dondurulunca ayrı revizyonla gelir. Kapsam, izin ve `status: draft` değişmedi.

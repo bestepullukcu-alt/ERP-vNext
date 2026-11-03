@@ -29,6 +29,8 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de); kapsam, izin ve AC değişmedi. `status: draft`.
 
+> **KARAR D126 (2026-11-03):** kayıt kodu anahtarı türetme kuralı (D125/2) pakete yazıldı; yeni AC-39. Kapsam ve izin değişmedi. `status: draft`.
+
 > **KARAR D124 (2026-11-03):** para birimi metni #346 ve D121–D123 sonrasına hizalandı: Bağımlılık satırının gerekçesi, canlı yayım durumu ve Gateway çağrı ucu. Kapsam, izin ve AC değişmedi. `status: draft`.
 
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
@@ -953,7 +955,7 @@ ister.
   - Başka her altyapı hatası → 503 (kaynaktaki varsayılan 400 taşınmaz, paket §E).
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `SnapshotCode` (`CPS`) ve `PolicyCode` (`CTP`) yalnız
   `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portundan alınır; anahtar Create'in
-  idempotency anahtarından (D12/2) türetilir, aynı anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini
+  idempotency anahtarından (D12/2) türetilir, aynı anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = ``mod0124:CreateCashPosition` (`CPS`) ve `mod0124:CreateCashPositionThresholdPolicy` (`CTP`)`. Bağdaştırıcı v0 sözleşmesini
   (`POST /api/internal/record-codes/allocate`) çağırır; 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
   `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` ile
   başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı kayıtlı değil) anlık görüntü ve eşik
@@ -1711,13 +1713,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   değilken (bağdaştırıcı kaydı kaldırılır) iki Create de 503 döner ve koleksiyonlara yazma olmaz; fail-closed korunağı
   kaldırılıp kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: MOD-0124 kodunda kendi sayaç / yedek kod
   üreticisi yok.
+- [ ] AC-39 (zorunlu) — **Kayıt kodu anahtarı türetme (KARAR D125/2, D126):** üretim türeticisi `RecordCodeIdempotencyKey.Derive` ve sahte `IRecordCodeAllocator` ile: (v) D125/2'nin üç test vektörü aynen geçer; (a) aynı makbuz kapsamı, farklı istemci `Key` → iki ayrı kod, allocator iki farklı `idempotencyKey` görür; (b) sahte allocator ilk çağrıda 503 `RECORD_CODE_UNAVAILABLE` döner, Create 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` ile başarısız olur ve makbuz yazılmaz; aynı `Idempotency-Key` ile yeniden denenen Create allocator'a ikinci çağrıyı yapar ve iki çağrıdaki `idempotencyKey` birebir aynıdır (tamamlanmış makbuzdan erken dönüş bu testi karşılamaz); (c) iki aktör, aynı şirket ve aynı istemci `Key` → iki ayrı kod. `Operation` = `mod0124:CreateCashPosition` (`CPS`) ve `mod0124:CreateCashPositionThresholdPolicy` (`CTP`). (a)–(c) iki Create için ayrı koşar. **Sabotaj:** türetme ham anahtara çevrilince (c), `Key` girdiden çıkarılınca (a), türetilen anahtara çağrı başına değişen değer (yeni Guid ya da zaman damgası) eklenince (b), serileştirmede bir bayt değişince (v) kırmızı.
 
 ## Test Expectations
 
 - **Birim:** validatorlar (her alan, iki ekran); `CashPositionReconciler` (tazelik sınırı `== BlockingFreshnessHours`, fark
   sınırı `== CriticalAbsoluteAmount`, eşik 0, para birimi uyumsuzluğu, beklenen bakiye yok); SoD R1–R7 (Guid
   karşılaştırması dahil); durum makinesi ve geçiş matrisi; içerik revizyonu ve onay düşürme; idempotency parmak izi;
-  RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi ve port bağlı değilken 503 (AC-38, sabotajlı); 8+ rakam koruması.
+  RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi, anahtar türetme (D125/2 vektörü, (a)–(c); AC-39) ve port bağlı değilken 503 (AC-38, sabotajlı); 8+ rakam koruması.
 - **Entegrasyon (Mongo replika kümesi, işlem):** kiracı/şirket izolasyonu (404); veri kapsamı (AC-31, sabotajlı, iki
   ekran); soft delete; idempotent tekrar; CAS 409; CentralAudit kaydının iş işlemiyle commit/rollback'i ve outbox yazım hatasında komutun başarısız olması (sabotaj);
   tekil indeksler (kod, satır anahtarı, açık istisna, geçerli kanıt, yayım yuvası, açık niyetler, makbuz kapsamı, politika
