@@ -363,6 +363,7 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 | `crm.account.hierarchy.manage` | link/unlink parent | Orta | Tenant | Evet |
 | `crm.account.attribute.manage` | dynamic attribute upsert | Orta | Tenant | Evet |
 | `crm.account.overview.read` | 360 read model | Düşük | Tenant | Hayır |
+| `crm.account.lookup-validation` | Treasury AR müşteri doğrulama (§30; U-1, ertelenen U-2) — `crm.account.read` yerine geçmez, onu kapsamaz | Düşük (yalnız doğrulama alanları) | Tenant | Hayır (salt okuma, §30.1) |
 
 > **PKS-001 permission key kararları (net):**
 > - `crm.account.360.read` **KULLANILMAYACAK** — segment grammar `^[a-z][a-z0-9-]*$` segmentin harfle başlamasını ister; "360" rakamla başlar (geçersiz).
@@ -382,6 +383,7 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 | Sales Representative / MR | read | Tenant → territory scoped later (FU15) |
 | Marketing Manager | read | Tenant |
 | Read-only CRM Viewer | read | Tenant |
+| AR kullanıcısı (MOD-0120; atama MOD-0018-FU27) | yalnız `lookup-validation` — `read` **almaz** (K-1) | Tenant |
 
 ## 17. Gateway / API Routing Decision
 
@@ -595,8 +597,9 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 
 ## 30. Treasury AR tüketimi (MOD-0120) — ek (2026-10-30)
 
-> **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§29, mevcut AC'ler (§21), kapsam guard'ı ve
-> `status` değişmedi. Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`)
+> **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§29'da yalnız §16 izin tablosu ve rol eşlemesi
+> K-1 anahtarıyla genişledi (2026-11-02); mevcut AC'ler (§21), kapsam guard'ı ve `status` değişmedi.
+> Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`)
 > ve CT-APR-01 onay satırı (`execution/approvals/approvals.tsv`) gerekir. Kaynak: commercial-suite sahibi yanıtları
 > Y-4/4b ve Y-4/4c (2026-10-27, `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35`);
 > MOD-0120 O-3 (KARAR D29/1, seçenek (a)) ve O-4.
@@ -637,7 +640,7 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
   (`[HasPermission("crm.account.lookup-validation")]`); `crm.account.read` bu uçlara **yetmez**, AR kullanıcısı
   `crm.account.read` **almaz** (MOD-0120 O-3 (b) reddedildi).
 - PKS-001 uyumu: 3 segment; `lookup-validation` Tier-3 eylem sözlüğünde var; emsal `auth.users.lookup-validation`.
-- Anahtar §16 tablosuna ayrı bir revizyonla eklenir (bu ek §16'yı değiştirmez).
+- Anahtar §16 izin tablosuna ve rol eşlemesine eklendi (2026-11-02, bağımsız inceleme öncesi revizyon).
 - Ayrı işler: Auth katalog kaydı (MOD-0018), AR rollerine atama (MOD-0018-FU27 ya da sahibin seçtiği yer).
 
 ### 30.4 Gateway
@@ -698,5 +701,5 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | Treasury AR müşteri doğrulama ucu (U-1 lookup-validation) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
+| DL-1 | Treasury AR müşteri doğrulama ucu (U-1 lookup-validation) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Permission / Authorization Convention, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
 | DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve) — ERTELENDİ: MOD-0120 O-10 ile (K-7) | Uçlar ve sözleşme, Gateway, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
