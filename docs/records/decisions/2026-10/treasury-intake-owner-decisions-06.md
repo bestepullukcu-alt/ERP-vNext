@@ -83,3 +83,22 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-41, Y-42; oturum Treasury Intake
 1. **D123/1 — ICU:** lookup ICU ile kümenin kesişimi kalır; kümede olup ICU'da olmayan kodun seçicide görünmemesi kabul edilen sınırdır. Platform'da ek kod işi yok.
 2. **D123/2 — D122:** Platform sahibi teyit etti; kullanıcı girdisinde önce 400.
 3. **D123/3 — D117/3:** teyit edildi ve dört finans paketini kapsar.
+
+## D124 — Dört finans paketinde para birimi metni hizalandı (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu "Üçünü düzelt"); kaynak #346, D121/2, D123; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D124/1 — ölçüm:** D105/4'ün istediği revizyon #314 ile main'de (D112): dört paket para birimini yalnız `currency-minor-units` kümesinden okur. Kullanıcı girdisi 400 (D122/1), başka modül ya da eski kayıt 503 (D122/2) ve sabotajlı AC (D123/3) zaten pakette.
+2. **D124/2 — paketler:** MOD-0119, MOD-0124 ve MOD-0126'nın Bağımlılık satırında gerekçe #346 sonrasına çekildi: lookup ICU ile kümenin kesişimidir, doğrulama kümeyi doğrudan okur. Dört pakete "küme canlıda henüz yayımlı değil (D121/2)" eklendi. MOD-0119, MOD-0124 ve MOD-0126'nın Gateway satırında para birimi ucu `/api/lookups/reference/*` yerine `/api/lookups/reference-data/consumable-sets/*` oldu.
+3. **D124/3 — DL hazırlık dosyaları:** sekiz dosyaya tarihli not eklendi: seed ve izin listesi main'de (#297), `Finance = 18` main'de, küme canlıda yayımlı değil. Eski ölçüm satırları tarihçe olarak kalır.
+4. **D124/4 — sınır:** kapsam, izin, AC ve `status: draft` değişmedi. Paketler CT-APR-02 için yeniden incelenir.
+
+## D125 — RECORD-CODE-ALLOCATE 1.0.0 §12 Treasury teyitleri (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 (soru kutuları); kaynak Beste'nin dondurma isteği (K1 aktardı) ve sözleşme taslağı `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (`origin/chore/ct/mod0178-dl1-accept-01`, rev 9) §1, §2, §3, §6, §8, §12; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D125/1 — N-2:** uygun. 200 yanıtı `Response<T>` zarfında, `data` = `{code, sequence}`. Treasury'de bağdaştırıcı kodu yok; paketlerdeki v0 satırı ("200 `{code, sequence}`") sonraki revizyonda zarfa çevrilir.
+2. **D125/2 — N-3:** uygun; sözleşme değişmez. Treasury şartı tüketici tarafındadır: finans paketleri istemciden 1–128 anahtar alır ve makbuz kapsamı kiracı + şirket + aktör + işlem + hedeftir; kod servisi yalnız (kiracı, servis, anahtar) ile eşler. Ham anahtar geçirilirse iki kullanıcının aynı anahtarı aynı kodu alabilir. Bu yüzden tüketici anahtarı tür ve makbuz kapsamının SHA-256 özetinden türetir (64 hex, boşluksuz). Bu kural Treasury paketlerine sabotajlı AC olarak eklenir (iki aktör, aynı istemci anahtarı → iki ayrı kod).
+3. **D125/3 — N-4:** uygun. `BNK` → `Group`; şirket `BAC` → `LegalEntity` + sahip şirket; tedarikçi `BAC` → `Group` (D93/1, D65/2, D95/1 ile aynı). MDM bağdaştırıcısı için MDM sahibi Ali'nin teyidi ayrıca istenir.
+4. **D125/4 — N-10:** uygun. Sekiz izin adı FU27 taslağı ve MOD-0119, 0120, 0124, 0126, 0289, 0217 paketleriyle birebir aynı. Alacak dekontu MOD-0119'da `ApInvoice` belge türüdür, `APD` + `finance-treasury.ap-invoices.create` doğrudur. Adlar FU27 onayıyla kesinleşir.
+5. **D125/5 — not:** sözleşme §9'daki Treasury port imzası (`AllocateAsync(legalEntityId, recordType, idempotencyKey)`) yalnız finans paketleri için geçerli. MDM paketleri tek imzalı `prefixScope`'lu portu kullanır (D95/1). Bu, dondurmayı bekletmez.
