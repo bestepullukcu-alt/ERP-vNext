@@ -1,4 +1,5 @@
 using System.Globalization;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
@@ -75,7 +76,12 @@ public sealed record DoctorInsightAggregatesDto(Guid? ProductId, string DoctorCo
 
 public sealed record GetDoctorProfileQuery(Guid ContactId) : IRequest<Response<DoctorProfileReadDto>>;
 
-public sealed record UpdateDoctorProfileCommand(Guid ContactId, DoctorProfileInput Input) : IRequest<Response<DoctorProfileReadDto>>;
+public sealed record UpdateDoctorProfileCommand(Guid ContactId, DoctorProfileInput Input)
+    : IRequest<Response<DoctorProfileReadDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("DoctorProfile");
+    public Guid? CentralAuditEntityId(object? response) => ContactId;
+}
 
 public sealed record GetDoctorPotentialsQuery(Guid ContactId, IReadOnlyList<Guid>? ProductIds) : IRequest<Response<DoctorPotentialsDto>>;
 
@@ -84,7 +90,12 @@ public sealed record GetProductIndicationProfilesQuery(Guid ProductId) : IReques
 public sealed record GetPotentialThresholdsQuery : IRequest<Response<PotentialThresholdsDto>>;
 
 /// <summary><see cref="ProductId"/> null = the tenant default.</summary>
-public sealed record UpdatePotentialThresholdCommand(Guid? ProductId, PotentialThresholdInput Input) : IRequest<Response<PotentialThresholdDto>>;
+public sealed record UpdatePotentialThresholdCommand(Guid? ProductId, PotentialThresholdInput Input)
+    : IRequest<Response<PotentialThresholdDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("PotentialThreshold");
+    public Guid? CentralAuditEntityId(object? response) => ProductId;
+}
 
 public sealed record GetPotentialThresholdHistoryQuery(int? Page = null, int? PageSize = null) : IRequest<Response<PotentialThresholdHistoryDto>>;
 

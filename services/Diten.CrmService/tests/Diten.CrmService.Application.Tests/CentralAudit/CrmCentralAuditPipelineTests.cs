@@ -1,10 +1,17 @@
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Knowledge.ObjectionResponses;
+using Diten.CrmService.Application.Features.VisitEvidence;
+using Diten.CrmService.Application.Features.VisitExecution;
+using Diten.CrmService.Application.Features.VisitPlanning;
+using Diten.CrmService.Application.Features.VisitPlanning.Commands;
+using Diten.CrmService.Application.Features.VisitReport.V2;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -13,11 +20,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using Xunit;
+using VisitReportFollowUp = Diten.CrmService.Domain.Entities.VisitReportFollowUp;
+using VisitReportGeneral = Diten.CrmService.Domain.Entities.VisitReportGeneral;
+using VisitReportSafety = Diten.CrmService.Domain.Entities.VisitReportSafety;
 
 namespace Diten.CrmService.Application.Tests.CentralAudit;
 
 /*
- * CRM-AUD-KN-01 (b)(c) — THE REAL CRM HOST (Program.cs: AddApplication + AddCentralAudit<CrmCentralAuditScope>, the real
+ * CRM central audit (b)(c) — THE REAL CRM HOST (Program.cs: AddApplication + AddCentralAudit<CrmCentralAuditScope>, the real
  * MediatR pipeline with CRM's Validation / Logging / ExceptionHandling / Performance behaviors) with only two things swapped:
  * the outbox store (in memory — no Mongo; the Mongo store is the shared package's, measured by its own tests) and the
  * command's handler (a stub that answers what the test asks). What is read back is what the shared recorder wrote:
@@ -130,6 +140,80 @@ public sealed class CrmCentralAuditPipelineTests : IClassFixture<CrmCentralAudit
     }
 
     [Fact]
+    public async Task Visit_payload_reason_comment_photo_and_signature_never_enter_the_serialized_events()
+    {
+        var caller = Caller.New();
+        var exceptionId = Guid.NewGuid();
+        var executionId = Guid.NewGuid();
+        var planningSessionId = Guid.NewGuid();
+        var plannedVisitId = Guid.NewGuid();
+        var exceptionDto = (VisitEvidenceExceptionDto)RuntimeHelpers.GetUninitializedObject(typeof(VisitEvidenceExceptionDto)) with { Id = exceptionId };
+        var executionDto = (VisitExecutionDto)RuntimeHelpers.GetUninitializedObject(typeof(VisitExecutionDto)) with { Id = executionId };
+        _factory.DecideExceptionOutcome = _ => Response<VisitEvidenceExceptionDto>.Success(exceptionDto);
+        _factory.SignExecutionOutcome = _ => Response<VisitExecutionDto>.Success(executionDto);
+        _factory.ReopenWeekOutcome = _ => Response<PlanningWeekReopenResult>.Success(
+            new PlanningWeekReopenResult(planningSessionId, "2026-11-02", "reopened", [], []));
+        _factory.ShelfPhotoOutcome = _ => Response<ShelfPhotoDto>.Success(new ShelfPhotoDto(Guid.NewGuid(), "image/jpeg", 20));
+
+        await _factory.SendAsync(caller, new DecideVisitEvidenceExceptionCommand(exceptionId, "approved", "PRIVATE-COMMENT"));
+        await _factory.SendAsync(caller, new ReopenPlanningWeekCommand(planningSessionId, "2026-11-02", "PRIVATE-REASON", 1));
+        await _factory.SendAsync(caller, new UploadShelfPhotoCommand(plannedVisitId,
+            new VisitEvidenceFile("PRIVATE-PHOTO.jpg", "image/jpeg", Encoding.UTF8.GetBytes("PRIVATE-PHOTO-CONTENT"))));
+        await _factory.SendAsync(caller, new SignVisitExecutionCommand(executionId,
+            new VisitEvidenceFile("PRIVATE-SIGNATURE.png", "image/png", Encoding.UTF8.GetBytes("PRIVATE-SIGNATURE-CONTENT")),
+            true, "PRIVATE-SIGNATURE-CONTEXT"));
+
+        var rows = _factory.Events(caller.Tenant);
+        Assert.Equal(4, rows.Count);
+        var stored = JsonSerializer.Serialize(rows);
+        Assert.DoesNotContain("PRIVATE-COMMENT", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-REASON", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-PHOTO", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-SIGNATURE", stored, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Visit_report_v2_amend_success_records_the_report_without_serializing_body_reason_or_reporter()
+    {
+        var caller = Caller.New();
+        var reportId = Guid.NewGuid();
+        _factory.AmendVisitReportOutcome = _ => Response<VisitReportV2SaveResultDto>.Success(
+            new VisitReportV2SaveResultDto(reportId, 2, "amended", [], []));
+        var body = new VisitReportV2Body(
+            General: new VisitReportGeneral { GeneralNote = "PRIVATE-REPORT-BODY" },
+            Safety: new VisitReportSafety { AdverseEvent = true, AdverseEventNote = "PRIVATE-SAFETY-TEXT" },
+            FollowUp: new VisitReportFollowUp { Required = true, Note = "PRIVATE-FOLLOW-UP" });
+
+        await _factory.SendAsync(caller, new AmendVisitReportV2Command(
+            reportId, "PRIVATE-AMENDMENT-REASON", body, 1, "PRIVATE-REPORTED-BY"));
+
+        var row = Assert.Single(_factory.Events(caller.Tenant));
+        Assert.Equal(reportId, row.EntityId);
+        Assert.Equal("VisitReport", row.EntityType);
+        Assert.Equal("Update", row.Operation);
+        Assert.Equal(nameof(AmendVisitReportV2Command), row.RequestType);
+        var stored = JsonSerializer.Serialize(row);
+        Assert.DoesNotContain("PRIVATE-REPORT-BODY", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-SAFETY-TEXT", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-FOLLOW-UP", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-AMENDMENT-REASON", stored, StringComparison.Ordinal);
+        Assert.DoesNotContain("PRIVATE-REPORTED-BY", stored, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Visit_report_v2_amend_failed_envelope_records_nothing()
+    {
+        var caller = Caller.New();
+        _factory.AmendVisitReportOutcome = _ => Response<VisitReportV2SaveResultDto>.Fail("report_not_found", 404);
+
+        var response = await _factory.SendAsync(caller, new AmendVisitReportV2Command(
+            Guid.NewGuid(), "PRIVATE-AMENDMENT-REASON", new VisitReportV2Body(), 1, "PRIVATE-REPORTED-BY"));
+
+        Assert.False(response.IsSuccessful);
+        Assert.Empty(_factory.Events(caller.Tenant));
+    }
+
+    [Fact]
     public async Task Without_platform_settings_the_health_check_says_degraded()
     {
         using var client = _factory.CreateClient();
@@ -176,6 +260,21 @@ public sealed class CrmCentralAuditApiFactory : WebApplicationFactory<Program>
     public Func<UpdateObjectionResponseCommand, Response<bool>> Outcome { get; set; } = _ => Response<bool>.Success(true);
 
     public Func<CreateObjectionResponseCommand, Response<Guid>> CreateOutcome { get; set; } = _ => Response<Guid>.Success(Guid.NewGuid());
+
+    public Func<DecideVisitEvidenceExceptionCommand, Response<VisitEvidenceExceptionDto>> DecideExceptionOutcome { get; set; } =
+        _ => throw new InvalidOperationException("Set the visit-exception outcome in the test.");
+
+    public Func<SignVisitExecutionCommand, Response<VisitExecutionDto>> SignExecutionOutcome { get; set; } =
+        _ => throw new InvalidOperationException("Set the visit-execution outcome in the test.");
+
+    public Func<ReopenPlanningWeekCommand, Response<PlanningWeekReopenResult>> ReopenWeekOutcome { get; set; } =
+        _ => throw new InvalidOperationException("Set the planning-week outcome in the test.");
+
+    public Func<UploadShelfPhotoCommand, Response<ShelfPhotoDto>> ShelfPhotoOutcome { get; set; } =
+        _ => throw new InvalidOperationException("Set the shelf-photo outcome in the test.");
+
+    public Func<AmendVisitReportV2Command, Response<VisitReportV2SaveResultDto>> AmendVisitReportOutcome { get; set; } =
+        _ => throw new InvalidOperationException("Set the visit-report amendment outcome in the test.");
 
     public IReadOnlyList<CentralAuditOutboxRecord> Events(Guid tenant) => Store.Rows.Where(r => r.TenantId == tenant).ToList();
 
@@ -251,6 +350,16 @@ public sealed class CrmCentralAuditApiFactory : WebApplicationFactory<Program>
             services.AddScoped<ICentralAuditOutboxStore>(sp => sp.GetRequiredService<InMemoryCentralAuditOutboxStore>());
             services.AddTransient<IRequestHandler<UpdateObjectionResponseCommand, Response<bool>>>(_ => new StubHandler<UpdateObjectionResponseCommand, bool>(c => Outcome(c)));
             services.AddTransient<IRequestHandler<CreateObjectionResponseCommand, Response<Guid>>>(_ => new StubHandler<CreateObjectionResponseCommand, Guid>(c => CreateOutcome(c)));
+            services.AddTransient<IRequestHandler<DecideVisitEvidenceExceptionCommand, Response<VisitEvidenceExceptionDto>>>(
+                _ => new StubHandler<DecideVisitEvidenceExceptionCommand, VisitEvidenceExceptionDto>(c => DecideExceptionOutcome(c)));
+            services.AddTransient<IRequestHandler<SignVisitExecutionCommand, Response<VisitExecutionDto>>>(
+                _ => new StubHandler<SignVisitExecutionCommand, VisitExecutionDto>(c => SignExecutionOutcome(c)));
+            services.AddTransient<IRequestHandler<ReopenPlanningWeekCommand, Response<PlanningWeekReopenResult>>>(
+                _ => new StubHandler<ReopenPlanningWeekCommand, PlanningWeekReopenResult>(c => ReopenWeekOutcome(c)));
+            services.AddTransient<IRequestHandler<UploadShelfPhotoCommand, Response<ShelfPhotoDto>>>(
+                _ => new StubHandler<UploadShelfPhotoCommand, ShelfPhotoDto>(c => ShelfPhotoOutcome(c)));
+            services.AddTransient<IRequestHandler<AmendVisitReportV2Command, Response<VisitReportV2SaveResultDto>>>(
+                _ => new StubHandler<AmendVisitReportV2Command, VisitReportV2SaveResultDto>(c => AmendVisitReportOutcome(c)));
         });
     }
 
@@ -269,7 +378,7 @@ public sealed class InMemoryCentralAuditOutboxStore : ICentralAuditOutboxStore
     public IReadOnlyCollection<CentralAuditOutboxRecord> Rows => _rows.ToArray();
 
     public Task InsertInTransactionAsync(IClientSessionHandle session, CentralAuditOutboxRecord record, CancellationToken ct) =>
-        throw new InvalidOperationException("CRM's Knowledge commands own no transaction; nothing should enlist.");
+        throw new InvalidOperationException("These CRM commands own no transaction; nothing should enlist.");
 
     public Task InsertAsync(CentralAuditOutboxRecord record, CancellationToken ct)
     {
