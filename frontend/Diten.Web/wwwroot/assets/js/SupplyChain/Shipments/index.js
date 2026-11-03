@@ -7,8 +7,9 @@ const ShipmentList = (function () {
     let table;
     // R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope on every call, not an optional filter — the service accepts
     // exactly one company per call, so there is no 'all companies' answer to ask for. The page sends it as a
-    // query value; turning it into the downstream scope header is the adapter's job, never the browser's.
-    let legalEntities = [];
+    // query value; turning it into the downstream scope header is the adapter's job, never the browser's. The shared
+    // company selector chose it; Index.cshtml draws no list until one is chosen.
+    const company = () => document.getElementById('shipmentsListSurface')?.dataset.legalEntityId || '';
 
     const uuid = () => crypto.randomUUID();
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest', 'X-Correlation-Id': uuid() });
@@ -48,40 +49,6 @@ const ShipmentList = (function () {
         showLoadFailure(code === 'INTERNAL_ERROR' ? L.internalError : L.listUnavailable,
             body?.error?.correlationId || response.headers.get('X-Correlation-Id'));
     };
-    const fillLegalEntitySelect = (element, selected) => {
-        if (!element) return;
-        element.innerHTML = '';
-        legalEntities.forEach((item) => {
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = item.name;
-            if (item.id === selected) option.selected = true;
-            element.appendChild(option);
-        });
-    };
-    const loadLegalEntities = async () => {
-        try {
-            const response = await fetch('/SupplyChain/api/legal-entities',
-                { credentials: 'same-origin', headers: getAuthHeaders() });
-            if (response.status === 401) { window.DtDefaults?.handleUnauthorized?.(); return false; }
-            if (!response.ok) { showLoadFailure(L.legalEntityUnavailable); return false; }
-            let payload = null;
-            try { payload = await response.json(); } catch (_) { payload = null; }
-            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
-            legalEntities = rows.map((row) => ({
-                id: String(row.legalEntityId ?? row.LegalEntityId ?? ''),
-                name: String(row.displayName ?? row.DisplayName ?? row.legalName ?? row.LegalName ?? row.code ?? '')
-            })).filter((row) => row.id);
-            // An empty answer is not an outage: the tenant genuinely has none, and the page says so rather
-            // than drawing a table that would read as 'no shipments'.
-            if (legalEntities.length === 0) { showLoadFailure(L.legalEntityNone); return false; }
-            fillLegalEntitySelect(document.getElementById('filterLegalEntity'), legalEntities[0].id);
-            return true;
-        } catch (error) {
-            showLoadFailure(L.legalEntityUnavailable);
-            return false;
-        }
-    };
     const buildUrl = (request) => {
         const params = new URLSearchParams({
             page: String(Math.floor(request.start / request.length) + 1),
@@ -90,10 +57,9 @@ const ShipmentList = (function () {
         const status = document.getElementById('filterStatus')?.value || '';
         // Stored source document ids are trimmed, so padded input would match nothing.
         const source = (document.getElementById('filterSourceDocumentId')?.value || '').trim();
-        const company = document.getElementById('filterLegalEntity')?.value || '';
         if (status) params.set('status', status);
         if (source) params.set('sourceDocumentId', source);
-        if (company) params.set('legalEntityId', company);
+        if (company()) params.set('legalEntityId', company());
         return `${endpoint}?${params.toString()}`;
     };
     const load = async (request, callback) => {
@@ -111,11 +77,8 @@ const ShipmentList = (function () {
             callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
         }
     };
-    const init = async () => {
+    const init = () => {
         if (!tableElement || typeof DataTable === 'undefined') return;
-        // Resolved BEFORE the table asks for rows: every list call needs it, so a table drawn first would
-        // fire one guaranteed 400.
-        if (!await loadLegalEntities()) return;
         const toolbar = window.DtDefaults.exportButtons('', {}, {}, { exportColumns: [1, 2, 3, 4, 5], colvisColumns: [1, 2, 3, 4, 5] })
             .filter((feature) => !feature.buttons?.some((button) => String(button.className || '').includes('dt-export-collection-btn')));
         table = new DataTable(tableElement, window.DtDefaults.create({
@@ -128,7 +91,7 @@ const ShipmentList = (function () {
                 { data: 'status', render: badge },
                 { data: 'plannedShipAt', render: formatDate },
                 { data: 'plannedDeliverAt', render: formatDate },
-                { data: 'shipmentId', orderable: false, searchable: false, render: (id) => `<a class="btn btn-sm btn-icon btn-label-primary" href="/SupplyChain/Shipments/Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(document.getElementById('filterLegalEntity')?.value || '')}" aria-label="${escapeHtml(L.details)}"><i class="bx bx-show" aria-hidden="true"></i></a>` }
+                { data: 'shipmentId', orderable: false, searchable: false, render: (id) => `<a class="btn btn-sm btn-icon btn-label-primary" href="/SupplyChain/Shipments/Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(company())}" aria-label="${escapeHtml(L.details)}"><i class="bx bx-show" aria-hidden="true"></i></a>` }
             ], buttons: toolbar, language: { emptyTable: L.empty, zeroRecords: L.empty }
         }));
         document.getElementById('btnFilterApply')?.addEventListener('click', () => table.ajax.reload());
@@ -139,6 +102,6 @@ const ShipmentList = (function () {
             table.ajax.reload();
         });
     };
-    document.addEventListener('DOMContentLoaded', () => { void init(); });
+    document.addEventListener('DOMContentLoaded', init);
     return { init };
 })();
