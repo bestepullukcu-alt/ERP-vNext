@@ -408,6 +408,33 @@ refusal texts `frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsInd
 `frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js`. Used, not written: MOD-0183's INVENTORY client
 `S.Application/Features/Shipments/Dispatch/IInventoryMovementClient.cs` and its implementation (MOD-0183 DL-1).
 
+**§35 DL-3 and DL-4 additions (r10; Natig K1 decision 6, 2026-11-03).** Written only when §35 DL-3 / DL-4 are approved; still
+no parent wildcard, and nothing of DL-5 (35.7) is granted here.
+
+- **DL-3 (pickers and line view; UI only):** changed `frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs` (the
+  eligible-shipment, reason and location adapters of 35.3 and the widened resolve projection of 35.2),
+  `frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs` (`ReturnShipmentProjection`), the views
+  `frontend/Diten.Web/Views/SupplyChain/Returns/{Index.cshtml, _Filter.cshtml, _DataTable.cshtml, _CreateEditOffcanvas.cshtml, _DetailsQuickView.cshtml, _IndexL10n.cshtml}`,
+  `frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/{index.js, index.l10n.js}`,
+  `frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, and the tests
+  `frontend/Diten.Web.Tests/{Controllers/SupplyChainReturnsControllerTests.cs, Forms/ReturnFormContractTests.cs, JavaScript/ReturnIndexBehaviorTests.cs}`.
+  No backend file.
+- **DL-4 (details page, `getReturn`, customer copy):** new `S.Application/Features/Returns/Queries/GetReturnByIdQuery.cs`,
+  `S.Application/Features/Returns/Handlers/QueryHandlers/GetReturnByIdHandler.cs`,
+  `S.Application/Features/Returns/Validators/GetReturnByIdValidator.cs` (35.6); changed `S.Api/Features/Returns/ReturnsController.cs`
+  (the GET by-ID action), `S.Domain/Features/Returns/ReturnOrder.cs` (`CustomerRef`), `S.Application/Features/Returns/ReturnModels.cs`
+  (`customerRef`, `reasonCode`, `createdAt`, detail lines), `S.Application/Features/Returns/IReturnReferenceReader.cs`,
+  `S.Application/Features/Returns/ReturnSourceSnapshot.cs` and `S.Infrastructure/Features/Returns/ReturnReferenceReader.cs` (read
+  the shipment's `customerRef` over the existing shipment seam), `S.Application/Features/Returns/Handlers/CommandHandlers/CreateReturnHandler.cs`
+  (copy it onto the return at create), `S.Persistence/Features/Returns/ReturnRepository.cs` and `ReturnSchema.cs`; tests
+  `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnDetailsReadTests.cs` (new) and
+  `…/Returns/ReturnReferenceTests.cs`. UI: new `frontend/Diten.Web/Views/SupplyChain/Returns/Details.cshtml` and
+  `frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/details.js`, new `frontend/Diten.Web.Tests/JavaScript/ReturnDetailsBehaviorTests.cs`,
+  and the DL-3 UI files above again (Details link, QuickView link, resx keys). The manifest provider change for `RETURN_DETAILS`
+  (RB-21) follows section "Self-registration".
+- Not written by DL-3 or DL-4: `shipment-bundle.openapi.yaml` (3.5.0 lands with MOD-0183 DL-3), service `Program.cs`, the Gateway
+  route for `getReturn` (integration owner), and any Shipment source file.
+
 ## 26. Transaction/event and verification contract (future acceptance)
 
 Proposed durability L3: replica-set Mongo transaction, no standalone/in-memory fallback. Collections owned only
@@ -1046,7 +1073,8 @@ read attempt a1's issue → the matching test is red). The full SupplyChain test
 
 > **Draft revision r10 — not approved.** Owner decisions K2 and K4, and the MVP-1 CT's answer on customer identity (MOD-0177 owner,
 > 2026-11-03, accepted by Natig K1 the same day): `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`.
-> r10 changes only how the customer is carried and shown (`customerRef`, SHIPMENT-BUNDLE 3.5.0); what changed is listed in 35.13.
+> r10 changes how the customer is carried and shown (`customerRef`, SHIPMENT-BUNDLE 3.5.0) and, by Natig K1's decisions of the same
+> day, moves items 1–4 of "Contract changes needed" into 3.5.0 and extends the owned-files list; what changed is listed in 35.13.
 > Needs CT-APR-02 and a CT-APR-01 row before any code; that approval covers DL-3 and DL-4 only (35.7 is not yet in force). Facts below are measured on `main` `49012bd7b` unless marked. Slice A is
 > PR `bestepullukcu-alt/ERP-vNext#355` (branch `feature/sce/mvp6-screen-fixes-a-01`, `1ca0e36cc`); this section is written on top of
 > it. Whether #355 is merged is **not measured** (no `gh` here); slice B starts only after it is on `main`.
@@ -1187,17 +1215,22 @@ To settle together:
 
 ### 35.9 Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here)
 
-Additive, single writer MVP-6 CT; `ContractErrorCodeParityTests` pins new codes to `ContractErrorCodes`. **Items 5 and 6 are
-SHIPMENT-BUNDLE 3.5.0** (proposal `docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md`, patch
-`SHIPMENT-BUNDLE-3.5.0.patch` beside it), applied by MOD-0183 DL-3 together with its code. Items 1–4 are not in 3.5.0 and go
-in a later additive version.
+Additive, single writer MVP-6 CT; `ContractErrorCodeParityTests` pins new codes to `ContractErrorCodes`. **All six items are
+SHIPMENT-BUNDLE 3.5.0** (Natig K1, 2026-11-03: `getReturn` and items 2–4 join 3.5.0; proposal
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md`, patch `SHIPMENT-BUNDLE-3.5.0.patch` beside it).
+The whole of 3.5.0 is applied by MOD-0183 DL-3 together with its code; MOD-0186 DL-3 and DL-4 start after it. Declaring an
+operation is not serving it: `getReturn` is served from MOD-0186 DL-4 (`x-served-from: MOD-0186 DL-4`), and
+`submitReturnAuthorization`, the workflow fields of item 3 and the `RETURN_APPROVAL_REQUIRED` rule of item 4 only from an
+approved DL-5 (`x-served-from: MOD-0186 DL-5`; the `transitionReturn` text keeps the 3.4.0 behaviour until then). The five new
+codes of item 4 enter `ContractErrorCodes` with the MOD-0183 DL-3 change (MOD-0183 Repo Scope, §24 DL-3 exception), so the
+parity test stays green; DL-5 stays outside this approval.
 
 | # | Change | For |
 |---|---|---|
-| 1 | New `getReturn` GET `/returns/{returnId}`: summary fields, `reasonCode`, `createdAt`, `lines[]` (`shipmentLineNumber`, `quantity`, `uomId`, `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason`); statuses 200, 404 | DL-4 |
-| 2 | New `submitReturnAuthorization` POST `/returns/{returnId}/submit-authorization`, `Idempotency-Key`; statuses 200, 400, 403, 404, 409, 422, 503 | DL-5 |
-| 3 | `ReturnSummary` gains optional `authorizationState`, `lastAuthorizationOutcome`, `reasonCode`, `createdAt`; `getReturn` gains `authorizationState`, `lastAuthorizationOutcome`, `workflowInstanceId` | DL-5 |
-| 4 | New codes `RETURN_APPROVAL_REQUIRED`, `RETURN_WORKFLOW_TEMPLATE_MISSING`, `RETURN_APPROVERS_NOT_CONFIGURED`, `RETURN_WORKFLOW_FORBIDDEN`, `RETURN_WORKFLOW_REJECTED`; `transitionReturn` description says Authorized / Rejected come only from workflow | DL-5 |
+| 1 | New `getReturn` GET `/returns/{returnId}` (`ReturnDetail`): summary fields, `reasonCode`, `createdAt`, `lines[]` (`shipmentLineNumber`, `quantity`, `uomId`, `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason`); statuses 200, 404 | DL-4 (3.5.0) |
+| 2 | New `submitReturnAuthorization` POST `/returns/{returnId}/submit-authorization`, `Idempotency-Key`; statuses 200, 400, 403, 404, 409, 422, 503 | DL-5 (declared in 3.5.0, served from DL-5) |
+| 3 | `ReturnSummary` gains optional `authorizationState`, `lastAuthorizationOutcome`, `reasonCode`, `createdAt`; `getReturn` gains `authorizationState`, `lastAuthorizationOutcome`, `workflowInstanceId` | DL-5 (declared in 3.5.0; `reasonCode`, `createdAt` served from DL-4, the workflow fields from DL-5) |
+| 4 | New codes `RETURN_APPROVAL_REQUIRED`, `RETURN_WORKFLOW_TEMPLATE_MISSING`, `RETURN_APPROVERS_NOT_CONFIGURED`, `RETURN_WORKFLOW_FORBIDDEN`, `RETURN_WORKFLOW_REJECTED`; `transitionReturn` description says Authorized / Rejected come only from workflow once DL-5 is served | DL-5 (declared in 3.5.0, served from DL-5) |
 | 5 | Items 1–3 of MOD-0183 section "Contract changes needed": `search` on `queryShipments`, `shipToReference`, `warehouseReferenceId` and `customerRef` on `ShipmentSummary` | DL-3 precondition (3.5.0) |
 | 6 | `ReturnSummary.customerRef`: read-only, the same `CustomerRef` schema as shipments (Account.Id, Guid "D", lower case, compared case-insensitively), copied by the service from the shipment at create (35.6); never in `CreateReturnCommand` | DL-4 (3.5.0; the field is optional, so it is valid while MOD-0186 does not fill it yet) |
 
@@ -1225,6 +1258,8 @@ Evidence references and the customer name are not written to the audit record.
 - **OD-186-4** Depth of the location picker (35.3): **closed.** Measured: `LocationRepository` filters `ParentId` by equality, `location.openapi.yaml` has no ancestor filter, K-01 and `MayBeStockable` allow stock on Bin and StorageLocation only. Solved by the tree picker, no contract change.
 - **OD-186-5** PRODUCT-MASTER is a draft: **decided** (Natig, 2026-11-03): a draft read is accepted for display and selection only; field names are bound at Phase 1.5.
 - **Customer identity:** **decided** (MVP-1 CT as MOD-0177 owner, 2026-11-03; accepted by Natig K1): the customer is `customerRef` on shipments and returns (SHIPMENT-BUNDLE 3.5.0), never `shipToReference`; no GUID on screen; old records shown separately; CRM read contractless and measured until CRM decides, nothing from CRM in logs. The switch to a contracted CRM endpoint is open, owner CRM / MOD-0149 owner (MOD-0183 section "Sender and recipient", open item 5).
+- **OD-186-7** Customer choice on the return form: **open, owner MVP-1 CT.** Decision point 2 says the customer is chosen on the return form too. Default until MVP-1 answers: the return form has no customer picker; the customer is the chosen shipment's (shown by name and code in the shipment picker) and the service copies the shipment's `customerRef` onto the return (35.6). `CreateReturnCommand` gets no `customerRef`.
+- **OD-186-8** Address in the customer picker list: **open, owner MVP-1 CT** (the same question as MOD-0183 OD-183-5). Default until MVP-1 answers: the list shows name and code, the address follows the choice (MOD-0183 24.1).
 - **OD-186-6** Approver list (35.7): where the per-company list is kept and who edits it. A new settings surface, its permission key, manifest page and contract operations are not covered by K2. Decided when DL-5 opens.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
@@ -1280,12 +1315,13 @@ tree picker stays as written.
 | 35.3 Shipment picker row and bullets | customer name; summary lacks `shipToReference` | customer from `ShipmentSummary.customerRef`; "old record" for shipments without it; item 5 = 3.5.0 via MOD-0183 DL-3; `search` does not match names |
 | 35.5 Summary card | customer name | name and code from the return's `customerRef`, then the shipment's; "old record" otherwise; no id in the failure cell |
 | 35.6 Read model | `getReturn` only | the service copies the shipment's `customerRef` onto the return at create; read-only; no back-fill; reader tolerance measured |
-| 35.9 Contract changes | item 5 = `search`, `shipToReference`, `warehouseReferenceId` | item 5 adds `customerRef`; new item 6 `ReturnSummary.customerRef`; items 5 and 6 are 3.5.0, items 1–4 a later version |
-| 35.11 | — | customer-identity decision line |
+| 35.9 Contract changes | item 5 = `search`, `shipToReference`, `warehouseReferenceId`; all items in "the next version after 3.4.0" | item 5 adds `customerRef`; new item 6 `ReturnSummary.customerRef`; all six items are SHIPMENT-BUNDLE 3.5.0, landed with MOD-0183 DL-3 (Natig K1, 2026-11-03); `getReturn` served from DL-4, items 2–4 declared but served only from DL-5 |
+| §25 owned files | §34 additions only | new "§35 DL-3 and DL-4 additions" list (Natig K1 decision 6, 2026-11-03) |
+| 35.11 | — | customer-identity decision line; OD-186-7 (customer choice on the return form) and OD-186-8 (address in the picker list) open with MVP-1 CT, current behaviour as default |
 | 35.12 | RB-3 | RB-3 reworded; new RB-24 (no GUID on screen), RB-25 (old records shown separately), RB-26 (nothing from CRM in logs), RB-27 (customer copied, never sent) |
-| Slice note | DL-3 needs MOD-0183 items 1 and 2 | DL-3 needs MOD-0183 items 1–3 (3.5.0); DL-4 needs items 1 and 6; new rows assigned |
+| Slice note | DL-3 needs MOD-0183 items 1 and 2 | DL-3 needs MOD-0183 items 1–3 (3.5.0); DL-4 needs items 1 and 6 and starts after MOD-0183 DL-3; DL-5 serves items 2–4 declared in 3.5.0; new rows assigned |
 
-The slice table, every YAML block, §1–§34, 35.1, 35.4, 35.7, 35.8 and 35.10 are unchanged. Scope stays DL-3 and DL-4; DL-5 stays
+The two change sets of r10 (customer identity; then Natig K1's four decisions of 2026-11-03 on the open questions) are one draft revision, not reviewed in between. The slice table, every YAML block, §1–§24, §26–§34, 35.1, 35.4, 35.7, 35.8 and 35.10 are unchanged. Scope stays DL-3 and DL-4; DL-5 stays
 outside this approval.
 
 ## Teslim dilimleri
@@ -1302,4 +1338,4 @@ DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 co
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
 
-DL-3 covers RB-1…RB-7, the picker part of RB-24…RB-26 and the matching part of RB-22; it needs contract item 5 (MOD-0183 contract items 1–3, SHIPMENT-BUNDLE 3.5.0, applied by MOD-0183 DL-3) first. DL-4 covers RB-8…RB-10, RB-27, the list and details part of RB-24…RB-26, the DL-4 part of RB-21 and the matching part of RB-22, and needs contract items 1 and 6 and the Gateway route of item 1. DL-5 covers RB-11…RB-20, the DL-5 part of RB-21, RB-23, needs contract items 2–4, and opens only after OD-186-1 and OD-186-6 are decided, with its own CT-APR-02 and CT-APR-01. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. Until DL-5 ships, return approval runs through the existing `.authorize` transition and K2 is not met live. CT-APR-01 note for r10: "only DL-3, DL-4"; evidence levels are proposals.
+DL-3 covers RB-1…RB-7, the picker part of RB-24…RB-26 and the matching part of RB-22; it needs contract item 5 (MOD-0183 contract items 1–3, SHIPMENT-BUNDLE 3.5.0, applied by MOD-0183 DL-3) first. DL-4 covers RB-8…RB-10, RB-27, the list and details part of RB-24…RB-26, the DL-4 part of RB-21 and the matching part of RB-22, and needs contract items 1 and 6 (SHIPMENT-BUNDLE 3.5.0, landed with MOD-0183 DL-3) and the Gateway route of item 1; it starts after MOD-0183 DL-3. DL-5 covers RB-11…RB-20, the DL-5 part of RB-21, RB-23, serves contract items 2–4 (declared in 3.5.0), and opens only after OD-186-1 and OD-186-6 are decided, with its own CT-APR-02 and CT-APR-01. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. Until DL-5 ships, return approval runs through the existing `.authorize` transition and K2 is not met live. CT-APR-01 note for r10: "only DL-3, DL-4"; evidence levels are proposals.

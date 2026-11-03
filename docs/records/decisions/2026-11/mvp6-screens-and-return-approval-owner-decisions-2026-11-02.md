@@ -73,3 +73,22 @@ This refines K1's sentence "`shipToReference` carries the account id; the contra
    written confirmation that MOD-0183 r8 made a DL-3 precondition; that precondition is closed.
 
 Natig (K1) accepted 2026-11-03.
+
+### Same day — Natig (K1) decided the open questions of the drafts
+
+On 2026-11-03, after reading MOD-0183 r9, MOD-0186 r10 and the 3.5.0 draft, **Natig (K1) decided**:
+
+1. **OD-183-4.** The create adapter writes the chosen CRM account's address as one text into `shipToReference`; the field keeps
+   its meaning, the delivery destination.
+2. **Sequencing.** The whole of SHIPMENT-BUNDLE 3.5.0 (search, summary fields, `customerRef`) lands with MOD-0183 DL-3; MOD-0183
+   DL-4 starts after DL-3.
+3. **`getReturn` joins 3.5.0.** MOD-0186 "Contract changes needed" items 1–4 (`getReturn`, `submitReturnAuthorization`, the
+   workflow fields and the five Returns codes) move into 3.5.0, additive only. They are declared there; `getReturn` is served
+   from MOD-0186 DL-4 and the rest only from an approved DL-5.
+4. **MOD-0186 owned files.** MOD-0186's owned-files list names what DL-3 and DL-4 now change (`CreateReturnHandler`,
+   `ReturnReferenceReader`, the return model, the Returns views and scripts).
+
+Sent to the **MVP-1 CT** as open items, with the drafts' current behaviour as the default until they answer: whether the return
+form needs its own customer choice (default: the customer is the chosen shipment's, copied onto the return; MOD-0186 OD-186-7),
+and whether the customer picker list itself must show the address (default: name and code in the list, the address after the
+choice; MOD-0183 OD-183-5, MOD-0186 OD-186-8).

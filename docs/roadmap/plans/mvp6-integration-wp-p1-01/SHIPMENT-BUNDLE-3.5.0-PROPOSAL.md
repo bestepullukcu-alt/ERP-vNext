@@ -11,15 +11,17 @@ STATUS: DRAFT — a proposal, not an approval. The frozen contract file is **not
 MOD-0183 DL-3 code change, exactly as `SHIPMENT-BUNDLE-3.5.0.patch` in this folder, under the "§24 DL-3 exception" of
 MOD-0183's Repo Scope (the 3.4.0 pattern: proposal + patch here, applied with the code by DL-1).
 
-# SHIPMENT-BUNDLE 3.5.0 — customer key, list search and list fields (proposal)
+# SHIPMENT-BUNDLE 3.5.0 — customer key, list search and list fields, return read and approval surface (proposal)
 
 Sources:
 
 - MOD-0183 r9, section "Screen slice B", item list "Contract changes needed" (24.7), items 1–4.
-- MOD-0186 r10, section "Contract changes needed" (35.9), items 5 and 6.
+- MOD-0186 r10, section "Contract changes needed" (35.9), items 1–6 (items 1–4 joined 3.5.0 by Natig K1's decision of
+  2026-11-03).
 - Decision: the MVP-1 CT's answer on customer identity, as MOD-0177 owner, 2026-11-03, accepted by Natig (K1) the same day —
   `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`, section
-  "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)".
+  "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)", and Natig K1's four decisions of the same day appended
+  there (sequencing: the whole of 3.5.0 lands with MOD-0183 DL-3; `getReturn` and MOD-0186 items 1–4 join 3.5.0).
 
 Everything is **additive only**: no path, parameter, required field, type, enum value, status code or error code is removed or
 changed; a 3.4.0 client keeps working unchanged. `info.version` goes 3.4.0 → 3.5.0.
@@ -70,12 +72,26 @@ old record's destination without a per-row `getShipment`. `ShipmentDetail` alrea
 (`14900000-0000-4000-8000-000000000001`, lower case); the list example also gains `warehouseReferenceId`, `shipToReference`
 and `filteredTotal`. Existing example values are unchanged.
 
+## 4a. Returns read and approval surface (MOD-0186 35.9 items 1–4; Natig K1, 2026-11-03)
+
+Declaring is not serving. Each new operation carries `x-served-from`; until that slice ships, the service and the Gateway have
+no route and the call answers 404. DL-5 stays outside the DL-3 / DL-4 approval.
+
+| Item | Change | Served from |
+|---|---|---|
+| 1 | `GET /returns/{returnId}` `getReturn` → new `ReturnDetail` (`ReturnSummary` + `lines[]` with `shipmentLineNumber`, `quantity`, `uomId`, `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason`, + `workflowInstanceId`, `contractVersion`); 200, 404 (`RETURN_NOT_FOUND`, one text for foreign and unknown) | MOD-0186 DL-4 |
+| 2 | `POST /returns/{returnId}/submit-authorization` `submitReturnAuthorization`, `Idempotency-Key`, no body; 200 `ReturnResponse`, 400, 403, 404, 409, 422, 503 | MOD-0186 DL-5 |
+| 3 | `ReturnSummary` gains optional `reasonCode`, `createdAt`, and read-only `authorizationState` (`None`, `PendingApproval`), `lastAuthorizationOutcome` (value set bound when DL-5 opens); `ReturnDetail` has `workflowInstanceId` | `reasonCode`, `createdAt`: DL-4; workflow fields: DL-5 |
+| 4 | Codes `RETURN_APPROVAL_REQUIRED` (422 example on the shared `Unprocessable`), `RETURN_WORKFLOW_TEMPLATE_MISSING`, `RETURN_APPROVERS_NOT_CONFIGURED` (409), `RETURN_WORKFLOW_FORBIDDEN` (403), `RETURN_WORKFLOW_REJECTED` (400) as examples on the submit operation; `transitionReturn` description: "once MOD-0186 DL-5 is served" Authorized / Rejected come only from the workflow outcome; until then the 3.4.0 text stands | DL-5 |
+
+The five codes enter `ContractErrorCodes` with the MOD-0183 DL-3 change (constants only), so `ContractErrorCodeParityTests`
+stays green (MOD-0183 Repo Scope, §24 DL-3 exception).
+
 ## 5. Not changed
 
 `ShipmentResponse` (the create acknowledgement carries no header field today), `ShipmentEventPayload`,
-`ReturnEventPayload` and every event envelope, `CreateReturnCommand`, every path, status code, error code and the lifecycle.
-The MVC adapter code `INVALID_CUSTOMER_ACCOUNT` is not a wire code and is not added. MOD-0186 35.9 items 1–4 (`getReturn`,
-submit-authorization, workflow fields and codes) are **not** in 3.5.0; they go in a later additive version.
+`ReturnEventPayload` and every event envelope, `CreateReturnCommand`, `TransitionReturnCommand`, every existing path, status code
+and error code, and both lifecycles. The MVC adapter code `INVALID_CUSTOMER_ACCOUNT` is not a wire code and is not added.
 
 ## 6. Consumers measured on this branch
 
@@ -89,8 +105,9 @@ submit-authorization, workflow fields and codes) are **not** in 3.5.0; they go i
 
 `git apply --check docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0.patch` passes against the contract at
 3.4.0 on this branch. The patched file was loaded with a strict duplicate-key YAML loader: no duplicate key; `info.version`
-3.5.0; `CustomerRef` present; `ShipmentSummary`, `ReturnSummary`, `ShipmentListResponse` and the `queryShipments`
-parameters carry the new fields. Not run here: the contract example tests (`ShipmentBundleContractExampleTests`), Prism, the
+3.5.0; `CustomerRef` and `ReturnDetail` present; `ShipmentSummary`, `ReturnSummary`, `ShipmentListResponse` and the
+`queryShipments` parameters carry the new fields; `/returns/{returnId}` and `/returns/{returnId}/submit-authorization` exist;
+every `#/components/...` reference resolves. Not run here: the contract example tests (`ShipmentBundleContractExampleTests`), Prism, the
 service build; they belong to the DL-3 change.
 
 ## 8. Approval path
