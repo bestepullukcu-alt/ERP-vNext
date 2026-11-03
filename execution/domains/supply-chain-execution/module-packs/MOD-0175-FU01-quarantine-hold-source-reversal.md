@@ -14,17 +14,17 @@ screens:
   - module: BlockedStock
     data_mode: server
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 approval_status: pending
 risk: HIGH
-risk_reason: "Stok değişmezi (açık tutma kaydı miktarı ≤ kova bakiyesi) + GxP kaydı denetimi (AUD-001 K2) + sözleşme (QUARANTINE 1.4.0; DL-3'te INVENTORY ek hata kodu) + ürün kodu yolu + iki XMC-001 (MOD-0173 defter, BL-501 denetim kapsamı)"
-status_note: "draft r1 (2026-11-02) — MVP-6 yerel turu F-2 (KRN-2026-0001) ve MVP-1 turu 2026-11-02 (KRN-2026-0004) bulgusu: kaynak hareketin REVERSAL'ı tutma kaydını kapatmıyor, kayıt sıkışıyor. Kod yazılmaz: açık kararlar Q-01…Q-11 (§19.4; sahip Beste, MVP-6 etkisi Natig), CT-APR-02 bağımsız inceleme ve CT-APR-01 onay satırı gerekir. Registry satırı bu paketle yazılmaz (CT)."
+risk_reason: "Stok değişmezi (açık tutma kaydı miktarı ≤ kova bakiyesi) + GxP kaydı denetimi (AUD-001 K2) + sözleşme (QUARANTINE 1.4.0; DL-3'te INVENTORY 1.8.0 ek hata kodu) + ürün kodu yolu + üç XMC-001 (MOD-0173 defter, MOD-0173 / BL-501 denetim kapsamı bağdaştırıcısı, MOD-0173-FU01 ekran metni — DL-3 Web)"
+status_note: "ready-for-dev r5 (2026-11-03) — sahip «onayla» (Beste, 2026-11-03). Onay satırı S-49 gereği `draft` künyeye yazılamadığı için künye `ready-for-dev`, `approval_status: pending`: CT-APR-01 onay satırını CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar; satır yazılmadan kod yazılmaz. DL-3 Web XMC-001 izni verildi (Beste 2026-11-03, `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`; kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` ekran metni). r4 (`962fda71`) inceleme 01 tur 3 (UYGUN, 2 DÜŞÜK) ve son bakış 01 (UYGUN, 5 DÜŞÜK) bulguları tek geçişte pakete işlendi (S-101; CT kararı MVP-1 CT 2026-11-03, hepsi kabul) — §19.8. Önceki: draft r4 (2026-11-03) — bağımsız inceleme 01 tur 2 (r3 `54d736e1`, KOŞULLU, 0 ENGEL / 1 ORTA / 4 DÜŞÜK) bulguları F-1…F-5 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.7; r4'te DL-3 Web XMC-001 izni henüz verilmemişti (r5'te verildi). Önceki: draft r3 (2026-11-03) — bağımsız inceleme 01 tur 1 (r2 `ae3fed7d`, UYGUN DEĞİL, 2 ENGEL / 3 ORTA / 8 DÜŞÜK) bulguları F-1…F-13 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.6. Kod yazılmaz: r3'ün kendi CT-APR-02 incelemesi ve CT-APR-01 onay satırı gerekir. Önceki: draft r2 (2026-11-03) — sahip kararları Q-01…Q-06, Q-08, Q-09 (Beste, 2026-11-03, \"hepsi öneri gibi\") ve CT kararları Q-07 (QUARANTINE 1.4.0; INVENTORY 1.8.0, FU03 1.7.0'dan sonra), Q-11 (registry satırını CT ekler) işlendi; iki XMC-001 izni (InventoryCentralAuditScope.cs; MOD-0173 defter bekçisi dikişi) yazıldı — §19.5. Açık kalan: Q-10 (MVP-6 CT Natig; DL-3 kabul kapısı, ready-for-dev önkoşulu değil), registry satırı (CT), plan satırı. Kod yazılmaz: CT-APR-02 bağımsız inceleme (r2'nin kendi incelemesi) ve CT-APR-01 onay satırı gerekir; ready-for-dev'i inceleme sonrası CT yapar. r1 (2026-11-02): MVP-6 yerel turu F-2 (KRN-2026-0001) ve MVP-1 turu 2026-11-02 (KRN-2026-0004) bulgusu — kaynak hareketin REVERSAL'ı tutma kaydını kapatmıyor, kayıt sıkışıyor."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-02
 target: 2026-11-30
 form_field_count: 9
-dependencies: [MOD-0175, MOD-0173, MOD-0174, QUARANTINE-BUNDLE-v1.3.0, INVENTORY-BUNDLE-v1.5.0, BL-501 (central audit), MOD-0173-FU03 (yalnız DL-3 — INVENTORY sürüm sırası)]
+dependencies: [MOD-0175, MOD-0173, MOD-0174, QUARANTINE-BUNDLE-v1.3.0, INVENTORY-BUNDLE-v1.5.0, BL-501 (central audit), MOD-0173-FU03 (yalnız DL-3 — INVENTORY 1.7.0 sonrası 1.8.0), MOD-0186 (yalnız DL-3 kabul kapısı — Q-10 MVP-6)]
 ---
 
 # MOD-0175-FU01 — Quarantine hold closure on source reversal
@@ -36,7 +36,40 @@ dependencies: [MOD-0175, MOD-0173, MOD-0174, QUARANTINE-BUNDLE-v1.3.0, INVENTORY
 > çalışma ağacında `MOD-0175-FU` geçen `.md` / `.tsv` dosyası 0; `git log --all -S "MOD-0175-FU01"` (487 ref) boş → **FU01 ilk boş numara**.
 > Mükerrer iş keşfi CT tarafından koşuldu: `verify_module_id.py . --discover "quarantine reversal"` → yalnız gateway 5067 karantina rotası
 > (üretici, çakışma değil); paket / registry / görev bulgusu 0 (bu oturumda yeniden koşulmadı). `FU-0175-*` adlı takip maddeleri (ör.
-> `FU-0175-WF-SOD`) MOD kimliği değildir. **Registry satırı bu paketle yazılmaz** (Q-11, CT).
+> `FU-0175-WF-SOD`) MOD kimliği değildir. **Registry satırını CT ekler** (Q-11, CT kararı 2026-11-03); bu paket kayıt dosyasına yazmaz.
+>
+> **r2 (2026-11-03):** sahip kararları Q-01…Q-06, Q-08, Q-09 (Beste, "hepsi öneri gibi") ve CT kararları Q-07, Q-11 işlendi; iki XMC-001
+> izni kapsamıyla yazıldı (§5). Kararların hepsi r1'in önerisidir; değişen, koşullu yazılmış gövdenin ("… seçilirse", "… = A ise")
+> kesinleşmesidir — r1'in önerdiği davranış değişmez. Ek olarak: INVENTORY sürümü 1.8.0 (§8.8, AC-36 tabanı 1.7.0), sistem aktörü kipinin
+> sınırı AC-20'de üç yol ve adlı sabotajla ölçülür, iki donmuş sözleşme kopyası Repo Scope'a girdi (`quarantine-v1.3.0`, `inventory-bundle-v1.7.0`),
+> §8.2'deki yanlış "Q-08" atfı Q-05'e düzeltildi. Kayıt §19.5; açık kalan Q-10 (MVP-6 CT, DL-3 kabul kapısı). Künye `draft` / `pending`:
+> r2'nin kendi CT-APR-02 incelemesi ve CT-APR-01 onay satırı gerekir.
+>
+> **r3 (2026-11-03):** bağımsız inceleme 01 tur 1 (`docs/records/reviews/MOD-0175-FU01/2026-11-03-ae3fed7d.md`, hedef r2 `ae3fed7d…`) 13 bulgusu
+> tek geçişte kapatıldı (S-101; CT kararı MVP-1 CT 2026-11-03, hepsi kabul). Davranış değişiklikleri: (1) `Voided` yalnız **intake kökenli**
+> kayıtlara uygulanır; MOD-0175'in kendi hareketinden doğan kayıtta REVERSAL uyuşmazlık işareti üretir (`Cause = OwnMovementReversed`; §8.3);
+> (2) karar `Submitted` penceresi kural tablosunda; kapanış ile karar yazarları kaydın `Version`'ını ortak yazma kilidi olarak paylaşır ve
+> `Voided` emici son durumdur (§8.6); (3) süpürücü terminal kayıtları da ayrı imleçle tarar, defter sorgusu kiracı + şirket önekli (§8.2);
+> (4) DL-1 uyuşmazlık / geç-kapanış ölçütleri DL-3 etkin iken de geçerli kurguyla yazıldı (§16 kurgu kuralı); (5) DL-3'e Web hata metni (7 dil).
+> AC numaraları r2 ile aynı kalır; yeni ölçütler sona eklenir (AC-37 DL-1, AC-38 DL-3). Kapanış tablosu §19.6. Künye `draft` / `pending`.
+>
+> **r4 (2026-11-03):** bağımsız inceleme 01 tur 2 (`docs/records/reviews/MOD-0175-FU01/2026-11-03-54d736e1.md`, hedef r3 `54d736e1…`) beş
+> bulgusu tek geçişte kapatıldı (S-101; CT kararı MVP-1 CT 2026-11-03, hepsi kabul). Davranış değişiklikleri: (1) W5 / W6 `Voided` kararda
+> **hiçbir şey yazmaz**; satırı postlanmışsa uyuşmazlık işaretini uygulama motoru ayrı iç komutla (`ApplySourceReversalTo{Hold,Blocked}Command`,
+> kendi merkezi kaydı, aktör `System`) yazdırır, kaçarsa süpürücünün yeni **geçersiz beslemesi** yazar (§8.2, §8.3 R0a, §8.6); (2) W3 onay
+> işlemine W2 / W4 ile aynı ≤ 3 deneme (§8.6); (3) W1 satırı bugünkü koda hizalandı (`QUARANTINE_DECISION_ALREADY_PENDING`, kod değişmez);
+> (4) §8.3'e eşleşmeyen durum kuralı (R13, `NoChange (Unmatched)` + hata logu, fail-closed); (5) açık kayıttaki uyuşmazlık kabul edilen
+> sınır olarak yazıldı (§8.3, §23). Yeni ölçüt AC-39 (DL-1); AC-2, AC-13, AC-20, AC-28, AC-29 genişledi. Kapanış tablosu §19.7. Künye
+> `draft` / `pending`. DL-3 Web dosyalarının XMC-001 izni r4'te henüz verilmemişti (r5'te verildi).
+>
+> **r5 (2026-11-03):** sahip «onayla» dedi (Beste, 2026-11-03). Künye `ready-for-dev` / `approval_status: pending`: onay satırı S-49 gereği
+> `draft` künyeye yazılamaz; CT-APR-01 satırını CT r5'in sha256'sıyla yazar. DL-3 Web XMC-001 izni **verildi** (§5; karar kaydı
+> `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`). r4'ün iki incelemesinin (tur 3: `2026-11-03-962fda71.md`;
+> son bakış 01: `2026-11-03-962fda71-son-bakis-01.md`) yedi düşük bulgusu tek geçişte pakete işlendi (S-101; sürüm zaten değiştiği için
+> talimata ertelenmedi). Davranış değişiklikleri: (1) geri çekme (W7) ve Workflow başlatma hatası kolu (W8) yazar tablosunda (§8.6);
+> (2) lot adımı uygulanmış satırsız karar kapanışla `Voided` olur **ve** `Cause = LotChanged` işareti + log alır (§8.3 R5a); lot adımının dar
+> penceresi kabul edilen sınır, adı ve logu var (§8.6); (3) detay ucunun hareket listesi REVERSAL satırını sunucuda verir (DL-1, §5).
+> Yeni ölçütler AC-40, AC-41 (DL-1); AC-2, AC-5, AC-13, AC-23, AC-27, AC-28, AC-29, AC-33 düzeldi / genişledi. Kapanış tablosu §19.8.
 >
 > **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`. Ebeveyn
 > `MOD-0175-quarantine-blocked-stock.md` (`ready-for-dev`) **tabanıdır**; bu paket onun §8 "Hold states" kuralını ("A hold is never deleted";
@@ -45,8 +78,9 @@ dependencies: [MOD-0175, MOD-0173, MOD-0174, QUARANTINE-BUNDLE-v1.3.0, INVENTORY
 > Bu sayılan genişletme dışındaki her çelişkide ebeveyn kazanır ve fark CT'ye sorulur.
 >
 > **Sözleşme:** yalnız eklemeli. QUARANTINE-BUNDLE 1.3.0 (`docs/analysis/contracts/quarantine.openapi.yaml:12-14`, `x-status: FROZEN`,
-> `x-owner: MOD-0175`) → **1.4.0** (DL-1, §8.7). INVENTORY-BUNDLE 1.5.0 (`inventory-bundle.openapi.yaml:9-10`) yalnız DL-3 seçilirse (Q-06)
-> bir ek hata koduyla değişir; sürüm numarası MOD-0173-FU03'ün 1.6.0 / 1.7.0 adımlarından sonraki ilk boş sürümdür (§8.8).
+> `x-owner: MOD-0175`) → **1.4.0** (DL-1, §8.7). INVENTORY-BUNDLE (bugün 1.5.0, `inventory-bundle.openapi.yaml:9-10`) DL-3'te (Q-06 = A)
+> bir ek hata koduyla **1.8.0** olur: MOD-0173-FU03'ün 1.6.0 (DL-1) / 1.7.0 (DL-2) adımlarından sonraki ek sürüm (Q-07, CT kararı; FU03
+> onaylı — `execution/approvals/approvals.tsv`, `c03ac5511`). DL-3'ün sözleşme adımı 1.7.0 dalda olduktan sonra yazılır (§8.8).
 
 ## 1. Module Summary
 
@@ -58,14 +92,20 @@ ve kilitli kalır (§19.2 ölçümler). Aynı kovada başka bir kaydın stoğu v
 
 Bu paket:
 
-1. **Geri alma kapanışı (DL-1):** kaynak hareketin REVERSAL'ı defterde commit edilince bağlı kayıt — durumu buna izin veriyorsa — yeni terminal
-   durum **`Voided`** (neden `SourceReversed`) ile kapanır. Aynı post-commit gözlemci yolu + bir süpürücü, tam bir kez (§8.2).
-2. **Karar aşaması kuralı (DL-1):** henüz hiçbir satırı defterde postlanmamış karar (`PendingApproval`, `Approved`, satırsız `ApplyFailed`)
-   kayıtla birlikte `Voided` olur; sonradan gelen onay sonucu etkisizdir. Satırı postlanmış ya da uygulanmış karar sonrası geri alma
-   **otomatik kapanmaz**: kayda "kaynak geri alındı · uyuşmazlık" işareti ve geçmiş satırı düşer (§8.3).
+1. **Geri alma kapanışı (DL-1):** kaynak hareketin REVERSAL'ı defterde commit edilince bağlı kayıt — **kaydın kökeni intake ise** (MOD-0175
+   dışı inbound hareketten doğan hold ya da `OtherInbound` bloke kaydı) ve durumu buna izin veriyorsa — yeni terminal durum **`Voided`**
+   (neden `SourceReversed`) ile kapanır. Aynı post-commit gözlemci yolu + bir süpürücü, tam bir kez (§8.2).
+2. **Karar aşaması kuralı (DL-1):** intake kökenli kayıtta henüz hiçbir satırı defterde postlanmamış karar (`Submitted`, `PendingApproval`,
+   `Approved`, satırsız `ApplyFailed`) kayıtla birlikte `Voided` olur; `Voided` kararın emici son durumudur, sonradan gelen onay / ret / iptal /
+   zaman aşımı sonucu etkisizdir (§8.6). Satırsız karar lotu zaten değiştirmişse (lot adımı uygulanmış) kayıt yine `Voided` olur, ama
+   aynı işlemde "kaynak geri alındı · uyuşmazlık" işareti (`Cause = LotChanged`) ve log da yazılır (§8.3 R5a, r5). Satırı postlanmış ya da
+   uygulanmış karar sonrası geri alma **otomatik kapanmaz**: kayda "kaynak geri alındı · uyuşmazlık" işareti ve geçmiş satırı düşer (§8.3).
+2a. **MOD-0175 kökenli kayıt (DL-1):** kaydın kaynak hareketi MOD-0175'in kendi hareketiyse (Manual / Retest / Recall / Rework hold,
+   `ManualBlock` bloke) REVERSAL kaydı **hiçbir durumda kapatmaz**: uyuşmazlık işareti (`Cause = OwnMovementReversed`) + geçmiş satırı düşer;
+   bu REVERSAL'ı DL-3 bekçisi reddeder (§8.3, §8.8 kural 1).
 3. **Denetim (DL-1):** kapanış ve uyuşmazlık işareti AUD-001 yol `b` (merkezi kayıt, K2: işlemle birlikte) + ürün içi karantina geçmişi (§21).
 4. **Ekran (DL-2):** kuyruk, detay ve bloke stok listesinde "Geçersiz · Kaynak geri alındı" durumu; 7 dil; sayfa yardımı.
-5. **Defter bekçisi (DL-3, Q-06'ya bağlı):** uyuşmazlığa yol açacak REVERSAL'ı ve MOD-0175'in kendi hareketlerinin REVERSAL'ını defter
+5. **Defter bekçisi (DL-3, Q-06 = A):** uyuşmazlığa yol açacak REVERSAL'ı ve MOD-0175'in kendi hareketlerinin REVERSAL'ını defter
    post etmeden reddeder (kalite kararını atlayan yol kapanır).
 
 **Kısmi geri alma yoktur (ölçüldü):** REVERSAL miktarı aslınınkine eşit olmak zorundadır ve bir hareket bir kez geri alınır (§19.2 G-4, G-5).
@@ -84,30 +124,33 @@ Bu yüzden "miktarı düşür" dalı v1'de yoktur; kapanış hep tam kapanışt�
 - Stok hareketi yazmaz (kapanış yalnız kayıt durumu; stok zaten REVERSAL ile çıkmıştır). Yeni stok durumu ya da hareket türü yok (DEC-INV-08).
 - Kayıt silmez (`IsDeleted` kullanılmaz; ebeveyn "never deleted").
 - Uygulanmış kararı geri almaz, başka kaydın miktarını değiştirmez, kovayı "düzeltmez".
-- Platform Workflow örneğini iptal etmez (sistem token'ı yok — ebeveyn CT-Q11; Q-02).
+- Platform Workflow örneğini iptal etmez (sistem token'ı yok — ebeveyn CT-Q11; Q-02 = A: örnek açık kalır, sonradan gelen onay etkisiz).
+- Operatöre elle kapatma yolu açmaz (Q-05 = A): yeni izin anahtarı, satır eylemi ya da HTTP ucu yok.
 - REVERSAL dışı yollarla (ör. QUARANTINE'den doğrudan `SCRAP`, `STATUS_TRANSFER`) kovadan çıkan stoğu ele almaz → takip maddesi
-  FU-0175-FU01-OUTBOUND (§20).
+  FU-0175-FU01-OUTBOUND (§20; Q-05 = A).
 - MOD-0173 / MOD-0186 / MOD-0142 paketlerini değiştirmez; gerekli kod dikişleri §5'te, sahip onayıyla (XMC-001).
 
 ## 3. Owned Objects
 
 | Nesne | Tür | Dilim | Not |
 |---|---|---|---|
-| `ApplySourceReversalToHoldCommand` | iç MediatR komutu (HTTP ucu yok) | DL-1 | girdi: REVERSAL `transactionId`; sonuç `Voided` / `Conflict` / `NoChange`; `ICentralAuditDeclaration` |
+| `ApplySourceReversalToHoldCommand` | iç MediatR komutu (HTTP ucu yok) | DL-1 | girdi: REVERSAL `transactionId`; sonuç `Voided` / `Conflict` / `NoChange`; `ICentralAuditDeclaration`; gönderenler: gözlemci, süpürücü, uygulama motoru (W5 / W6 `Voided` dalı, §8.6) |
 | `ApplySourceReversalToBlockedCommand` | iç MediatR komutu | DL-1 | aynı, `BlockedStock` için |
 | `ApplySourceReversalToHoldHandler`, `ApplySourceReversalToBlockedHandler` | handler | DL-1 | kural `SourceReversalRules` (saf) |
 | `ApplySourceReversalToHoldValidator`, `ApplySourceReversalToBlockedValidator` | validator | DL-1 | §12 V1–V3 |
-| `SourceReversalRules` | saf domain kuralı | DL-1 | kaydın durumu + karar olayları + defterdeki satır anahtarları → `Void` / `Conflict` / `NoChange` (§8.3 tablosu) |
+| `SourceReversalRules` | saf domain kuralı | DL-1 | kaydın kökeni (`HoldSource` / `BlockedOrigin` + aslın `SourceModule`'ü) + durumu + karar olayları + defterdeki satır anahtarları + aktif kararın lot adımı (lot geçmişinde `mod-0175:{decisionId}` anahtarlı satır var mı; r5) → `Void` / `Void` + işaret (R5a) / `Conflict` / `NoChange` (§8.3 tablosu) |
 | `QuarantineRecordStates` | saf yüklem | DL-1 | `IsOpen(HoldStatus)` = Open \| DecisionPending; `IsTerminal` = Decided \| Voided; 13 sunucu çağrı yeri bunu kullanır (§8.5) |
 | `QuarantineSourceReversalObserver` | `IPostedMovementObserver` | DL-1 | yalnız `MovementType = REVERSAL`; komutu gönderir |
-| `QuarantineSourceReversalFeed` | çapraz kiracı salt okuma | DL-1 | açık kayıtlar (`SourceMovementId` dolu) + o hareketlerin REVERSAL'ları |
-| `QuarantineSourceReversalSweeper` + `…HostedService` | arka plan | DL-1 | açık kayıt tabanlı (zaman penceresi yok), kayıt başına kiracı + şirket kapsamı |
+| `QuarantineSourceReversalFeed` | salt okuma | DL-1 | üç besleme (açık kayıtlar; işaretsiz terminal kayıtlar; işaretsiz, kararlı `Voided` kayıtlar — r4), kayıt koleksiyonunda `Id` imleçli sayfa; defter sorgusu kiracı + şirket önekli (§8.2) |
+| `QuarantineSourceReversalSweeper` + `…HostedService` | arka plan | DL-1 | kayıt tabanlı (zaman penceresi yok), tur başına besleme başına bir sayfa, imleç ilerler; kayıt başına kiracı + şirket kapsamı |
 | `QuarantineHold.Voided`, `.SourceReversalConflict`; `BlockedStock` aynısı | alan | DL-1 | §4 |
 | `HoldStatus.Voided`, `BlockedStatus.Voided`, `DecisionEventKind.Voided` / `DecisionState.Voided`, `HistoryAction.SourceReversed` / `.SourceReversalConflict` | enum değeri (sona eklenir) | DL-1 | §4 |
 | QUARANTINE-BUNDLE 1.4.0 | sözleşme | DL-1 | §8.7 |
 | Kuyruk / detay / bloke stok görünümü + JS + resx | Web | DL-2 | §11 |
-| `IReversalPrecondition` (MOD-0173 dikişi) + `QuarantineReversalPrecondition` | port + uygulama | DL-3 | Q-06 = A ise |
-| INVENTORY ek hata kodu (öneri `REVERSAL_QUALITY_RECORD_LOCKED`) | sözleşme | DL-3 | Q-06 = A ise |
+| `IReversalPrecondition` (MOD-0173 dikişi) + `QuarantineReversalPrecondition` | port + uygulama | DL-3 | Q-06 = A; XMC-001 MOD-0173 (§5) |
+| INVENTORY ek hata kodu `REVERSAL_QUALITY_RECORD_LOCKED` (INVENTORY 1.8.0) | sözleşme | DL-3 | Q-06 = A, Q-07 (§8.8) |
+| Web hata metni `ErrReversalQualityRecordLocked` (Inventory ekranlarının ortak kod haritası `InventoryErrorMessages`; 7 dil × 2 resx ailesi `StockLedgerIndex`, `StockMovementsIndex`) | Web | DL-3 | §8.8; AC-38 |
+| Inventory merkezi kayıt kapsamının sistem aktörü kipi (`InventoryCentralAuditScope.cs`) | bağdaştırıcı değişikliği | DL-1 | Q-03 = A; XMC-001 MOD-0173 / BL-501 (§5) |
 
 Kayıt kodu (RCS-001): yeni kayıt türü **yok** (`Voided` bir durumdur) → yeni görünen kod yok; `KRN-` / `BLK-` numaraları değişmez.
 
@@ -121,22 +164,35 @@ Taban: InventoryService `EntityBase` (ebeveyn §4). Silme yok.
 |---|---|---|
 | `Voided` | `RecordVoid?` | yalnız `Status = Voided` iken dolu; bir kez yazılır |
 | `Voided.AtUtc` | DateTimeOffset | kapanış anı |
-| `Voided.Reason` | enum `VoidReason` | v1'de tek değer `SourceReversed` (Q-05 elle kapatma seçilirse `Manual` eklenir) |
+| `Voided.Reason` | enum `VoidReason` | tek değer `SourceReversed` (Q-05 = A: elle kapatma yok, `Manual` değeri yok) |
 | `Voided.ReversalTransactionId` | string (UUID D) | REVERSAL'ın `transactionId`'si |
 | `Voided.ReversalTransactionNumber` | string | REVERSAL'ın `TransactionNumber`'ı (`INV-…`) |
 | `Voided.ReversedByUserId` | Guid | REVERSAL'ı postlayan (`InventoryTransaction.CreatedBy`) |
 | `Voided.DecisionId` | Guid? | kapanışla birlikte `Voided` olan aktif karar |
-| `SourceReversalConflict` | `SourceReversalMark?` | yalnız uyuşmazlıkta; durum değişmez; bir kez yazılır |
-| `SourceReversalConflict.AtUtc`, `.ReversalTransactionId`, `.ReversalTransactionNumber`, `.ReversedByUserId`, `.Cause` | | `Cause` ∈ `Decided` \| `LinesPosted` \| `QuantityChanged` (§8.3) |
+| `SourceReversalConflict` | `SourceReversalMark?` | yalnız uyuşmazlıkta; durum değişmez (R5a'da kapanışla aynı işlemde yazılır); bir kez yazılır — ilk neden kalır; `Voided` kayıtta da yazılabilir (§8.3 R0a — geçersiz kararın satırı kapanıştan sonra postlandı; R5a — kapanan kararın lot adımı uygulanmıştı, r5) |
+| `SourceReversalConflict.AtUtc`, `.ReversalTransactionId`, `.ReversalTransactionNumber`, `.ReversedByUserId`, `.Cause` | | `Cause` ∈ `Decided` \| `LinesPosted` \| `QuantityChanged` \| `OwnMovementReversed` \| `LotChanged` (r5) (§8.3) |
 
 `Quantity` **değişmez** (kaydın tuttuğu miktar iz olarak kalır); açık miktar toplamları `QuarantineRecordStates.IsOpen` ile süzer.
+
+**Köken (yeni alan yok, F-1@ae3fed7d):** kaydın kökeni oluşturulurken bir kez yazılan mevcut alandan okunur (A-2):
+
+| Kayıt | Alan | Intake kökenli (Void dalı uygulanır) | MOD-0175 kökenli (yalnız Conflict) | `SourceMovementId` yok (kural dışı) |
+|---|---|---|---|---|
+| `QuarantineHold` | `Source` (`HoldSource`, `QuarantineEnums.cs:7-19`) | `GoodsReceipt`, `Production`, `CustomerReturn`, `OtherInbound` — yalnız `QuarantineIntakeService` yazar (`QuarantineIntake.cs:59-65, 107`), o da `SourceModule = MOD-0175` hareketi dışlar (`:43`) | `Manual`, `Retest`, `Recall` (`StockActionHandlers.cs:346-348`, kaynak MOD-0175'in `STATUS_TRANSFER`'ı), `Rework` (`QuarantineApplyEngine.cs:287-288`, kaynak Rework `STATUS_TRANSFER`'ı) | — |
+| `BlockedStock` | `Origin` (`BlockedOrigin`, `QuarantineEnums.cs:103-110`) | `OtherInbound` (`QuarantineIntake.cs:139-140`) | `ManualBlock` (`StockActionHandlers.cs:455-456`) | `QuarantineDecision` (`NewBlocked`, `QuarantineApplyEngine.cs:227`, `SourceMovementId` yazmaz), `LotBlocked` (bugün yazan yer yok) — depoda `SourceMovementId` yazan yer yalnız beştir (G-21) |
+
+`SourceReversalRules.OriginOf(record, original)` kaydın alanını okur ve aslın `SourceModule`'üyle (V2'de okunan REVERSAL'ın
+`ReversesTransactionId`'siyle bulunan işlem) çapraz denetler: alan intake diyor ama aslın `SourceModule = MOD-0175`
+(`QuarantineContract.ModuleId`, `QuarantineContract.cs:11`) ise ya da alan değeri tabloda yoksa (gelecekte eklenen değer) köken **MOD-0175
+sayılır** (fail-closed: kayıt kapanmaz, işaretlenir) ve uyarı logu yazılır.
 
 ### 4.2 Enum ekleri (yalnız sona; mevcut değerlerin sayısal sırası değişmez)
 
 - `HoldStatus` (`Domain/Quarantine/Enums/QuarantineEnums.cs:29-34`) += `Voided`.
-- `BlockedStatus` (`:112-117`) += `Voided` (Q-01: `Closed` yeniden kullanılmaz — `Closed` "imha / iade / blokesi kaldırıldı" demektir).
+- `BlockedStatus` (`:112-117`) += `Voided` (Q-01 = A: `Closed` yeniden kullanılmaz — `Closed` "imha / iade / blokesi kaldırıldı" demektir).
 - `DecisionEventKind` (`:79-92`) += `Voided`; `DecisionState` (`:62-76`) += `Voided`; `QuarantineFacts.StateOf` (`QuarantineFacts.cs:101-120`)
-  eşlemesi eklenir (eşlenmeyen olay bugün `ArgumentOutOfRangeException` atar — eksik eşleme fail-closed).
+  eşlemesi eklenir (eşlenmeyen olay bugün `ArgumentOutOfRangeException` atar — eksik eşleme fail-closed). **`Voided` emicidir** (F-2, F-12):
+  olaylarda `Voided` varsa `StateOf` sıradan bağımsız `Voided` döner; yoksa bugünkü "son olay kazanır" (§8.6).
 - `HistoryAction` (`:125-146`) += `SourceReversed`, `SourceReversalConflict`.
 - `QuarantineDecisionEvent.OnceKey` (`QuarantineSupport.cs:131`): `Voided` tek seferlik olaydır (`OnceKey = "Voided"`).
 
@@ -151,9 +207,12 @@ bağlanır); `Reason` = REVERSAL numarası. Koleksiyon yalnız ekleme (mevcut mi
 
 ### 4.4 İndeksler
 
-Yeni indeks gerekmez: kayıt `(TenantId, SourceMovementId)` tekil kısmi indeksiyle bulunur (`QuarantineIndexConfiguration.cs:49-50, 81-82`;
-okuma `QuarantineRepository.cs:85, 125` kiracı + şirket kapsamlı). Süpürücü beslemesi için `(TenantId, LegalEntityId, Status)` mevcut
-(ebeveyn §4). DL-3 bekçisi aynı tekil indeksle okur.
+Yeni indeks gerekmez. Kayıt `(TenantId, SourceMovementId)` tekil kısmi indeksiyle bulunur (`QuarantineIndexConfiguration.cs:49-50, 81-82`).
+**İndeks yalnız kiracı kapsamlıdır, şirket alanı yoktur** (F-10@ae3fed7d): bir kiracıda aynı `SourceMovementId` yalnız bir hold'da (ve yalnız bir
+bloke kayıtta) bulunabilir, şirket fark etmez. Şirket süzgeci okumadadır: `FindHoldBySourceMovementAsync` / `FindBlockedBySourceMovementAsync`
+`Scope<T>()` ile kiracı + şirket süzer (`QuarantineRepository.cs:85, 125`). Süpürücünün kayıt sayfası `_id` imleciyle, defter sorgusu
+`ux_tenant_le_reversestransactionid` (`TenantId, LegalEntityId, ReversesTransactionId`; `InventoryIndexConfiguration.cs:20, 49-56`) önekiyle
+okunur (§8.2). DL-3 bekçisi kaydı aynı kiracı + şirket kapsamlı okumayla bulur.
 
 ## 5. Repo Scope
 
@@ -164,25 +223,73 @@ okuma `QuarantineRepository.cs:85, 125` kiracı + şirket kapsamlı). Süpürüc
     (yeni dosyalar Golden Reference klasör düzeninde, §10).
   - `…/Features/Quarantine/Services/QuarantineIntake.cs` — gözlemci kaydı ve **geç intake** kuralı (§8.4: kaynağı zaten geri alınmış hareket için
     kayıt açılmaz).
-  - `…/Features/Quarantine/Services/QuarantineApplyEngine.cs` — `Voided` kararın uygulanmaması, `RecordAppliedAsync`'in `Voided` kaydı
-    `Decided`'a çevirmemesi, `ApplyOutcomeAsync` terminal listesi ve onay ↔ kapanış dışlaması (§8.6).
+  - `…/Features/Quarantine/Services/QuarantineApplyEngine.cs` — `Voided` kararın uygulanmaması, `RecordAppliedAsync` / `RecordFailureAsync`'in
+    `Voided` kararda hiçbir şey yazmaması ve satırı postlanmışsa işlem dışında iç komutu göndermesi (W5 / W6, r4), `ApplyOutcomeAsync`
+    onay işleminin ≤ 3 denemeli yeniden okuması (W3, r4) ve `CloseWithoutMovementAsync`'in işlem içi yeniden okuması, ortak yazma kilidi (§8.6);
+    lot adımı (`:91-106`) başarılı döndükten sonra satır öncesi yeniden okuma `Voided` görürse `quarantine.source_reversal.lot_changed_after_void`
+    logu (r5, §8.6 "Lot adımı"); lot komutunun reddi `Voided` kararda `ApplyResult(Voided, …)` döner (W6).
+  - `…/Features/Quarantine/Handlers/DecisionHandlers.cs` — ayrıca `SubmitDecisionHandler`'ın ikinci işlemi (`:422-434`): işlem içi yeniden
+    okuma, sürüm uyuşmazlığında yeniden deneme, `Voided` kaydı `DecisionPending`'e çevirmeme (§8.6 yazar 2); **Workflow başlatma hatası kolu**
+    (`:440-448`, r5, F-1@962fda71-son-bakis-01): ≤ 3 deneme, her denemede kaydın işlem dışında yeniden okunması (§8.6 W8).
+  - `…/Features/Quarantine/Handlers/WorkflowHandlers.cs` (r5, F-1@962fda71-son-bakis-01) — `WithdrawDecisionHandler` (`:109-177`): işlem içi
+    olay yeniden okuması, `Voided` görürse olay / geçmiş / `ReopenAsync` yazmama, kayıt `Version + 1` (§8.6 W7). `RefreshDecisionHandler`
+    (`:61`) değişmez.
+  - `…/Features/Quarantine/Handlers/QueryHandlers.cs` detay izi (r5, F-3@962fda71-son-bakis-01): `GetHoldHandler` (`:206-207`) ve
+    `GetBlockedHandler` (`:327-328`) `TrailAsync`'in `extraTransactions` listesine `Voided.ReversalTransactionId` ve
+    `SourceReversalConflict.ReversalTransactionId`'yi (UUID, dolu olanlar) ekler → REVERSAL satırı `movements` dizisinde (§11 detay, AC-40).
+    `TrailAsync` (`:63-74`) ve `QuarantineLedgerReads.TransactionsAsync` (`:51-64`, kiracı + şirket kapsamı `:47-49`) değişmez.
+  - Lot geçmişi **salt okuma** (r5, R5a): `Domain/Traceability/Repositories/ILotRepository.cs` `FindStatusChangeByKeyAsync` (MOD-0174, mevcut;
+    `LotRepository.cs:140-144`) ve anahtar biçimi `ApplyApprovedLotStatusChangeHandler.Key` (`ApplyApprovedLotStatusChange.cs:78`) kapanış
+    handler'ından okunur. MOD-0174 dosyası değişmez (yalnız tüketim; XMC-001 gerekmez).
+  - `src/Diten.InventoryService.Domain/Quarantine/Repositories/QuarantineRepositories.cs` + `Persistence/Quarantine/QuarantineRepository.cs`
+    `WriteSession` — yalnız gerekirse `IQuarantineWriteSession`'a işlem içi kayıt okuması (`FindHoldAsync` / `FindBlockedAsync` eşdeğeri; §8.6
+    mekanizması uygulamaya açık).
   - `…/Features/Quarantine/Services/QuarantineFacts.cs`, `QuarantineSupport.cs`, `QuarantineMapping.cs`, `QuarantineRecallRequester.cs`,
     `Handlers/{DecisionHandlers,LotQualityStatusHandler,QueryHandlers,RetestHandlers,ReviewHandlers,StockActionHandlers,UpdateHoldHandler}.cs`
     — açık / terminal yüklemi (§8.5).
   - `src/Diten.InventoryService.Persistence/Quarantine/{QuarantineRepository,QuarantineSourceReversalSweeper}.cs` — besleme + süpürücü;
-    `QuarantineRepository.cs:108` yüklemi.
+    `QuarantineRepository.cs:108` yüklemi; `QuarantineLedgerReads.cs` `QuarantineSweeperOptions` (`:149-167`) yeni seçenekler (§8.2).
   - `src/Diten.InventoryService.Api/Quarantine/QuarantineServiceCollectionExtensions.cs` — gözlemci, süpürücü, seçenekler.
-  - Q-03 = A ise `src/Diten.InventoryService.Api/CentralAudit/InventoryCentralAuditScope.cs` — sistem aktörü kipi (**XMC-001: BL-501 bağdaştırıcısı**,
-    sahip Beste; izin yazılmadan dokunulmaz).
-  - Testler `services/Diten.InventoryService/tests/**`; sabit sayı `CentralAudit/CentralAuditDeclarationTests.cs:37` (71 → 73, aynı değişiklikte).
+  - `src/Diten.InventoryService.Api/CentralAudit/InventoryCentralAuditScope.cs` — sistem aktörü kipi (Q-03 = A). **XMC-001 izni:** Beste
+    2026-11-03 (MOD-0173 / BL-501 bağdaştırıcısı; MOD-0173 ve BL-501 sahibi aynı). **İznin kapsamı:** kayıt kapsamı (`Begin` anında okunur,
+    `CentralAuditRecorder.cs:82-121`) yalnız `ApplySourceReversalTo{Hold,Blocked}Command` gönderimi süresince `ActorType = System`,
+    `ActorId = 00000000-0000-0000-0000-000000000175`, `ActorDisplayName = null` ve `CorrelationId` = REVERSAL'ın kayıtlı `CorrelationId`'si
+    (`InventoryTransaction.cs:82`; süpürücü yolunda istek bağlamı yoktur) döner; gönderim bitince — hata dahil — kip kapanır. **Kip gönderene
+    değil komutun kendi gönderimine bağlıdır** (r4, F-1@54d736e1): gözlemci, süpürücü ya da uygulama motoru (W5 / W6 — `RefreshDecisionCommand`,
+    `ReapplyDecisionCommand`, okuma anı uzlaştırması yapan sorgu handler'ları ya da MediatR dışı `QuarantineWorkflowOutcomeConsumer` içinden)
+    göndersin, kip `CentralAuditBehavior`'ın `Begin`'inden önce açılır (davranış en içtedir, `CentralAuditBehavior.cs:15-16`); iç içe gönderimde
+    dıştaki komutun kaydı kendi `Begin` anında okunmuştur, değişmez (kayıt yığını `CentralAuditRecorder.cs:57, 119, 130`). Bu, iznin
+    kuralı içindedir: kip yine yalnız bu iki komutun gönderimi süresince açıktır. `TenantId` /
+    `CompanyId` değişmez (kaydın kapsamı, §8.1). Başka komutun, aynı istekteki REVERSAL'ın kendi `PostMovementCommand` kaydı dahil, aktörü
+    değişmez (AC-20). `services/Diten.Building.Blocks/**` değişmez (§6); mekanizma (kapsamlı geçersiz kılma servisi ya da eşdeğeri) uygulamaya
+    açık, AC-20 bağlayıcı.
+  - Testler `services/Diten.InventoryService/tests/**`; sabit sayı `CentralAudit/CentralAuditDeclarationTests.cs:37` — **geliştirme anında
+    dalda ölçülen değer N → N + 2**, aynı değişiklikte (F-7@ae3fed7d, CT kuralı: sabit geliştirme anında ölçülür). Bugün N = 71 (`e89bce84c`);
+    aynı tek çalışma dalında MOD-0178 DL-2 önce birleşirse N = 82 (`:36` yorumu "82 after DL-2 (the 11 task commands)") → 84;
+    `Contract/Fixtures/quarantine-v1.3.0.openapi.yaml` yeni donmuş kopya (AC-23 karşılaştırma tabanı; bugün `v1.0.0`…`v1.2.0` var, 1.3.0 yok —
+    ölçüldü 2026-11-03).
   - Sözleşme `docs/analysis/contracts/quarantine.openapi.yaml` 1.4.0 + `docs/analysis/contracts/README.md` satırı.
 - **DL-2 (`frontend/Diten.Web/**`):** `wwwroot/assets/js/Quarantine/{queue,details,blocked,decide,quarantine-ui}.js`,
   `Views/Quarantine/{Index,Details,Blocked}.cshtml` (yalnız rozet / afiş / süzgeç seçeneği), `Resources/Views/Quarantine/Quarantine.{en,tr,fr,es,zh,ar,ru}.resx`,
-  `Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` (QUARANTINEQUEUE, QUARANTINEDETAILS, BLOCKEDSTOCK adımları), `frontend/Diten.Web.Tests/Quarantine/**`.
-- **DL-3 (Q-06 = A ise; XMC-001 MOD-0173):** `…/Features/Inventory/Ports/IReversalPrecondition.cs` (yeni),
+  `Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` (QUARANTINEQUEUE, QUARANTINEDETAILS, BLOCKEDSTOCK adımları),
+  **`Views/Quarantine/Quarantine.cs`** (`Keys` listesi — F-8@ae3fed7d: `window.QuarantineL10n` yalnız bu listedeki anahtarları taşır ve
+  `QuarantineWebTests` 7 resx'i bu listeye sabitler, `Quarantine.cs:3-8`; §11'in yeni anahtarları bu listeye girmeden JS'e ulaşmaz),
+  `frontend/Diten.Web.Tests/Quarantine/**`.
+- **DL-3 (Q-06 = A; XMC-001 MOD-0173 izni Beste 2026-11-03 — MOD-0173 sahibi aynı):** `…/Features/Inventory/Ports/IReversalPrecondition.cs` (yeni),
   `…/Features/Inventory/Services/InternalMovementPostingService.cs` (`BuildReversalAsync` içinde, `:253-256` "zaten geri alındı" denetiminden
-  sonra tek çağrı), `Application/Common/InventoryErrorCodes.cs` (ek kod), `…/Features/Quarantine/Services/QuarantineReversalPrecondition.cs`,
-  `docs/analysis/contracts/inventory-bundle.openapi.yaml` (ek sürüm).
+  sonra tek çağrı), `Application/Common/InventoryErrorCodes.cs` (ek kod `REVERSAL_QUALITY_RECORD_LOCKED`), `…/Features/Quarantine/Services/QuarantineReversalPrecondition.cs`,
+  `docs/analysis/contracts/inventory-bundle.openapi.yaml` (1.7.0 → **1.8.0**, Q-07), `Contract/Fixtures/inventory-bundle-v1.7.0.openapi.yaml`
+  (yeni donmuş kopya, AC-36 karşılaştırma tabanı; FU03 deseni). **İznin kapsamı:** yalnız bu dosyalar ve §8.8'in iki kuralı; MOD-0173'ün
+  başka posting, REVERSAL ya da katalog davranışı değişmez.
+  - **DL-3 Web (F-5@ae3fed7d; CT kabulü 2026-11-03).** XMC-001: bu dosyalar MOD-0173-FU01 S-2 / S-1 ekranlarınındır (`StockMovements/index.js:2`);
+    r2'nin MOD-0173 izni dosya listesinde yoktular. **XMC-001 izni verildi** (Beste 2026-11-03; karar kaydı
+    `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`; r5). **İznin kapsamı yalnız `REVERSAL_QUALITY_RECORD_LOCKED`
+    hata kodunun ekran metnidir**, başka değişiklik yok — dosyalar: `frontend/Diten.Web/Models/Inventory/InventoryErrorMessages.cs`
+    (`ByCode` += `REVERSAL_QUALITY_RECORD_LOCKED` → `ErrReversalQualityRecordLocked`; `:10-40`), `frontend/Diten.Web/Resources/Views/Inventory/StockLedger/StockLedgerIndex.{en,tr,fr,es,zh,ar,ru}.resx`
+    ve `…/StockMovements/StockMovementsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (yeni anahtar 14 dosyada — sınıf yorumu: anahtarlar iki ailede, 7 dilde),
+    `frontend/Diten.Web.Tests/Inventory/InventoryResxParityTests.cs` (kod listesi `:81-86`'ya kod eklenir). JS değişmez: ileti MVC tarafında kod
+    haritasından gelir (`StockMovementsController.cs:525, 648`; `StockLedgerController.cs:122`), S-2 onay penceresi reddi kendi metniyle gösterir
+    (`StockMovements/index.js:16-18`).
 - **Bu taslak:** yalnız bu dosya.
 
 ## 6. Protected Paths
@@ -191,7 +298,7 @@ okuma `QuarantineRepository.cs:85, 125` kiracı + şirket kapsamlı). Süpürüc
   MOD-0186, MOD-0183, MOD-0142).
 - `gateway/Diten.ApiGateway/ocelot.json` (değişmez; §15).
 - `_Layout.cshtml` (FROZEN), Archive.
-- `services/Diten.Building.Blocks/**` (BL-501 ortak iletici — değişmez; Q-03 = A yalnız Inventory'nin kendi kapsam bağdaştırıcısını değiştirir).
+- `services/Diten.Building.Blocks/**` (BL-501 ortak iletici — değişmez; Q-03 = A yalnız Inventory'nin kendi kapsam bağdaştırıcısını, §5'teki izin kapsamında değiştirir).
 - `services/Diten.SupplyChainService/**`, `services/Diten.ProcurementService/**` (REVERSAL üreticileri — davranışları değişmez; DL-3 etkisi §7).
 - Dondurulmuş sözleşmeler yalnız sahibinin tek yazar adımıyla: QUARANTINE (MOD-0175, bu paket), INVENTORY (MOD-0173, DL-3).
 
@@ -202,9 +309,10 @@ okuma `QuarantineRepository.cs:85, 125` kiracı + şirket kapsamlı). Süpürüc
 | MOD-0175 | `ready-for-dev`, registry `in-progress` (satır 306) | taban; ekranlar ve kayıtlar canlı |
 | MOD-0173 post-commit gözlemci | var (`IPostedMovementObserver.cs:10-13`; `InternalMovementPostingService.cs:155-159, 201-214`) — her commit edilen hareket, REVERSAL dahil, gözlemcilere gider; gözlemci hatası loglanır, posting'i değiştirmez | DL-1 yolu; ek MOD-0173 değişikliği yok |
 | MOD-0173 REVERSAL kuralı | tam ve tek (§19.2 G-4, G-5) | kısmi dal yok |
-| BL-501 merkezi denetim | `tests/architecture/audit-ledger/Diten.InventoryService.md` → `inventory-merkezi-iletim \| b \| işaret \| ICentralAuditDeclaration`; `RequireEnlistment = true`; K2 borcu yok | yol `b` kullanılabilir; Q-03 sistem aktörü için kapsam bağdaştırıcısı değişikliği |
-| REVERSAL üreticileri | S-2 hareket listesi "Reversal" satır eylemi (`InventoryLedgerManifestProvider.cs:76`; JS yalnız `sourceModule = MOD-0173` satırında gösterir — `StockMovements/index.js:15`, **sunucuda böyle bir sınır yok**); "Düzelt" = REVERSAL + yeni hareket (KD-1); MOD-0186 geç yazan (`ReturnLateWriterPolicy.cs:37-43`, MVP-6); MOD-0142 `reverseGrn` (`ReverseGrnHandler.cs:56-59`) | DL-1 hepsini kapsar (gözlemci kaynağa bakmaz); DL-3 seçilirse karar verilmiş kaydın kaynağının REVERSAL'ı bu üreticilere 422 döner (MVP-6: Natig, Q-10) |
-| MOD-0173-FU03 | `ready-for-dev`, INVENTORY 1.6.0 / 1.7.0 önerisi | yalnız DL-3: INVENTORY sürüm numarası FU03'ten sonra (Q-07) |
+| MOD-0174 lot geçmişi (r5) | `ILotRepository.FindStatusChangeByKeyAsync` var (`LotRepository.cs:140-144`, kiracı kapsamlı `:301-302`); onaylı lot değişikliği tek anahtarlı satır yazar (`mod-0175:{decisionId}`, `ApplyApprovedLotStatusChange.cs:78, 135-136`; değişiklik yoksa satır yok, `:130-133`) | salt okuma, §8.3 R5a; MOD-0174 dosyası değişmez (§19.2 G-34) |
+| BL-501 merkezi denetim | `tests/architecture/audit-ledger/Diten.InventoryService.md` → `inventory-merkezi-iletim \| b \| işaret \| ICentralAuditDeclaration`; `RequireEnlistment = true`; K2 borcu yok | yol `b` kullanılabilir; Q-03 = A: sistem aktörü için kapsam bağdaştırıcısı değişikliği, XMC-001 izni Beste 2026-11-03 (§5) |
+| REVERSAL üreticileri | S-2 hareket listesi "Reversal" satır eylemi (`InventoryLedgerManifestProvider.cs:76`; JS yalnız `sourceModule = MOD-0173` satırında gösterir — `StockMovements/index.js:15`, **sunucuda böyle bir sınır yok**); "Düzelt" = REVERSAL + yeni hareket (KD-1); MOD-0186 geç yazan (`ReturnLateWriterPolicy.cs:37-43`, MVP-6). **MOD-0142 `reverseGrn` bugün Inventory'ye ulaşmıyor** (F-6@ae3fed7d): REVERSAL'ı `SourceModule MOD-0142` / `SourceType GOODS_RECEIPT` ile kurar (`ReverseGrnHandler.cs:57-73`, `GrnModels.cs:25-26`), Inventory zarfı `MOD-0173` / `REVERSAL` ister (`ReversalRules.cs:22-26`) → 400; ayrıca Procurement DI'da `MockInventoryPostingClient` bağlı (`Persistence/DependencyInjection.cs:61`) | DL-1 Inventory'ye ulaşan her REVERSAL'ı kapsar (gözlemci üreticiye bakmaz, kural kaydın kökenine bakar — §8.3); DL-3'te (Q-06 = A) karar verilmiş ya da MOD-0175 kökenli kaydın kaynağının REVERSAL'ı S-2 ve MOD-0186'ya 422 döner. **MOD-0142: DL-3 etkisi yok** (bugün ulaşmıyor; gerçek istemci bağlandığında zarfı da değişmelidir — sahibine bilgi notu CT'den, karar değil). MOD-0186 etkisinin kabulü **Q-10 — açık, MVP-6 CT (Natig); DL-3 kabul kapısı**, ready-for-dev önkoşulu değil (§19.4, §22) |
+| MOD-0173-FU03 | `ready-for-dev`, CT-APR-01 onaylı (r4 `0e93c1ba`, `execution/approvals/approvals.tsv`, `c03ac5511`); INVENTORY 1.6.0 (DL-1) / 1.7.0 (DL-2) | yalnız DL-3: INVENTORY ek sürümü **1.8.0** (Q-07); DL-3'ün sözleşme adımı FU03'ün 1.7.0'ı dalda olduktan sonra yazılır, olmadan DL-3 sözleşme adımı bekler (§8.8) |
 | RabbitMQ | bu makinede kapalı (ebeveyn §8) | Workflow sonucu okuma anında uzlaştırılır; kapanış bundan bağımsız |
 
 ## 8. Runtime Constraints
@@ -216,55 +324,151 @@ okuma `QuarantineRepository.cs:85, 125` kiracı + şirket kapsamlı). Süpürüc
   kapsamı kaydın `TenantId` + `LegalEntityId`'siyle kurar (intake süpürücüsü deseni, `QuarantineLedgerReads.cs:199-206`). Kayıt yalnız kendi
   kiracı + şirketindeki `SourceMovementId` ile bulunur. Başka kiracının kaydı 404 (ebeveyn V23 / §13 #21).
 
-### 8.2 Tetik — gözlemci + süpürücü, tam bir kez
+### 8.2 Tetik — gözlemci + süpürücü; tam bir kez
 
 - **Gözlemci (hızlı yol):** `QuarantineSourceReversalObserver.OnPostedAsync(t)` yalnız `t.MovementType = REVERSAL` ve `t.ReversesTransactionId`
   doluyken çalışır; `ReversesTransactionId`'yi `SourceMovementId` olarak taşıyan hold ve blocked kayıtlarının her biri için ilgili komutu
   (`ApplySourceReversalTo{Hold,Blocked}Command(reversalTransactionId)`) gönderir. Mevcut `QuarantineIntakeObserver` REVERSAL'ı zaten dışlar
   (`QuarantineIntake.cs:44`; ayrıca `MovementDirectionRules.cs:29` REVERSAL'ı `Inbound` saymaz) — o davranış değişmez.
-- **Süpürücü (kaçanlar ve eski veri):** zaman penceresine **değil açık kayıtlara** dayanır: her turda kiracı / şirket başına `IsOpen` hold'lar ve
-  `Open` blocked kayıtlar (`SourceMovementId` dolu, sayfalı ≤ 500) okunur, bu kimliklerden `ReversesTransactionId IN (…)` ile REVERSAL'ı olanlar
-  bulunur, her biri için aynı komut gönderilir. Varsayılan aralık 300 sn, `SettleSeconds` 60 (gözlemciye pay); seçenekler `Inventory:Quarantine`
-  altında (`QuarantineSweeperOptions` deseni, `QuarantineLedgerReads.cs:149-167`). Gerekçe: intake süpürücüsünün 72 sa penceresi
-  (`:157-158`) bu FU'dan önce geri alınmış kayıtları (KRN-2026-0001, KRN-2026-0004) asla görmez; açık kayıt tabanı onları ilk turda kapatır
-  ve ayrı bir "geri doldurma" işi gerektirmez (Q-08).
-- **Tam bir kez:** komut önce kaydı okur; `Voided` (aynı REVERSAL) ya da `SourceReversalConflict` (aynı REVERSAL) zaten yazılıysa **işlem açmadan**
-  `NoChange` döner — merkezi kayıt yazılmaz (`RequireEnlistment` altında işlemsiz başarılı komut kayıt bırakmaz,
+- **Süpürücü (kaçanlar ve eski veri):** zaman penceresine **değil kayıtlara** dayanır. Üç besleme (F-3@ae3fed7d, F-11@ae3fed7d; üçüncüsü r4,
+  F-1@54d736e1):
+  - **Açık besleme (kapanış):** `IsOpen` hold'lar ve `Open` blocked kayıtlar;
+  - **Terminal besleme (uyuşmazlık emniyet ağı):** `Decided` hold'lar ve `Closed` / `SampleRetained` blocked kayıtlar;
+  - **Geçersiz besleme (W5 / W6 emniyet ağı, r4):** `Voided` hold / blocked kayıtlar, `Voided.DecisionId` dolu, `Voided.AtUtc` son
+    `SourceReversalVoidedWatchHours` (varsayılan 72) saat içinde ve `< şimdi − SettleSeconds`. Bu beslemede defter sorgusu REVERSAL'ı değil
+    **geçersiz kararın satır anahtarlarını** (`quarantine:{Voided.DecisionId}:{lineNo}`, `QuarantineMovementPoster.cs:55`;
+    `FindByIdempotencyKeyAsync`, kiracı + şirket kapsamında) sorar; satırı postlanmış kayıt için komut `Voided.ReversalTransactionId` ile
+    gönderilir (§8.3 R0a). Satırı olmayan kayıt yazılmaz (`NoChange`), pencere dolunca beslemeden çıkar.
+
+  Üçünde de süzgeç: `SourceMovementId` dolu (string) ve `SourceReversalConflict` boş (işaretli kayıt bir daha okunmaz; bir hareket bir kez
+  geri alınır, G-5). Her tur, her besleme ve her koleksiyon (hold, blocked) için **tek sayfa** okunur: kayıt koleksiyonunda çapraz kiracı,
+  `Id > imleç` sıralı, en çok `SourceReversalPageSize` (varsayılan 500) kayıt. Sayfa kiracı + şirkete göre gruplanır; açık ve terminal
+  beslemede her grup için defter sorgusu `TenantId = t ∧ LegalEntityId = le ∧ ReversesTransactionId IN (sayfadaki SourceMovementId'ler) ∧ CreatedAt < şimdi − SettleSeconds`
+  — `ux_tenant_le_reversestransactionid` öneki (`InventoryIndexConfiguration.cs:20, 49-56`); çapraz kiracı defter sorgusu **yoktur**. REVERSAL'ı
+  bulunan her kayıt için komut kaydın kapsamında gönderilir (§8.1). **İmleç:** sayfanın son `Id`'si; sayfa `PageSize`'dan kısa gelirse imleç
+  başa döner. Altı imleç (besleme × koleksiyon) bellekte tutulur; süreç yeniden başlarsa baştan başlar (komut idempotent, §8.2 "tam bir kez").
+  Böylece N kayıtlık beslemede her kayıt en geç ⌈N / PageSize⌉ turda okunur; ilk sayfa sonrakileri aç bırakmaz. Tur maliyeti sabittir
+  (≤ 6 kayıt sayfası + grup başına bir indeksli defter sorgusu; geçersiz beslemede kayıt başına karar satırı kadar anahtar okuması).
+- **Geçersiz beslemede zaman penceresi neden kabul (r4):** F-3'te reddedilen pencere eski veriyi (bu FU'dan önce geri alınmış kayıtları)
+  kaçırdığı içindi; `Voided` kaydın hepsi bu FU'yla doğar, eski verisi yoktur. `Voided`'dan sonra satır postlanabilecek tek yol, satır öncesi
+  yeniden okumayı `Voided`'dan önce geçmiş, sürmekte olan bir `ApplyAsync`'tir (`ApplyAsync` `Voided` kararı uygulamaz, `QuarantineApplyEngine.cs:81`; V7 yeniden
+  uygulamayı reddeder) → satırın `CreatedAt`'i kapanıştan en çok bir posting çağrısı sonradır. 72 saat süreç yeniden başlamalarını ve
+  süpürücü kesintilerini karşılar. Kalan sınır: satır sonrası iç komut gönderimi (§8.6 W5) başarısız **ve** süpürücü 72 saat boyunca kapalı /
+  durmuş ise işaret yazılmaz — W5 hata logu (`quarantine.source_reversal.mark_dispatch_failed`, kayıt numarası, karar kimliği) bunu adıyla
+  bırakır.
+- **Seçim gerekçesi (F-3):** terminal kayıtlar için ayrı bir REVERSAL tabanlı tarama (defterde `MovementType = REVERSAL` + zaman damgası) seçilmedi:
+  defterde bu sorguya uyan kiracı önekli indeks yok ve kalıcı bir filigran gerekirdi; terminal besleme mevcut kayıt koleksiyonlarını ve aynı defter
+  indeksini kullanır, tur maliyetini sabit tutar. Bedeli: terminal kayıt sayısı büyüdükçe işaretin gecikmesi ⌈N / 500⌉ tur × 300 sn'ye çıkar —
+  işaret stok durumu değil bilgi işaretidir (Q-04 = A), gecikme kabul edilir; DL-3 bu sınıfı canlı yoldan kapatır (§8.8).
+- Seçenekler `Inventory:Quarantine` altında `QuarantineSweeperOptions`'a eklenir (`QuarantineLedgerReads.cs:149-167` deseni):
+  `SourceReversalSweeperEnabled` (true), `SourceReversalSweepIntervalSeconds` (300), `SourceReversalSettleSeconds` (60, gözlemciye pay),
+  `SourceReversalPageSize` (500), `SourceReversalVoidedWatchHours` (72, yalnız geçersiz besleme; r4). Gerekçe: intake süpürücüsünün 72 sa penceresi (`:157-158`) bu FU'dan önce geri alınmış kayıtları
+  (KRN-2026-0001, KRN-2026-0004) asla görmez; kayıt tabanı onları ilk tam döngüde kapatır ve ayrı bir "geri doldurma" işi ya da elle kapatma
+  yolu gerektirmez (Q-05 = A; r1'deki "Q-08" atfı yanlıştı, Q-08 kuyruk varsayılanıdır).
+- **Tam bir kez:** komut önce kaydı okur; `SourceReversalConflict` (aynı REVERSAL) zaten yazılıysa, ya da `Voided` (aynı REVERSAL) yazılı ve
+  §8.3 R0a eşleşmiyorsa (karar yok ya da geçersiz kararın defterde postlanmış satırı yok) **işlem açmadan** `NoChange` döner — merkezi kayıt yazılmaz (`RequireEnlistment` altında işlemsiz başarılı komut kayıt bırakmaz,
   `ICentralAuditDeclaration.cs` `ICentralAuditOutsideTransaction` notu). Değişiklik tek karantina işleminde, kaydın `Version`'ı beklenen
   değerle (`ReplaceHoldAsync` / `ReplaceBlockedAsync`) yazılır; eşzamanlı ikinci çağıran değiştirmede kaybeder, işlem geri alınır (enlist
-  edilmiş merkezi kayıt da), yeniden okur ve `NoChange` döner.
-- Gözlemci hatası posting'i etkilemez (MOD-0173 davranışı); süpürücü kapatır.
+  edilmiş merkezi kayıt da), yeniden okur ve §8.3 tablosunu yeniden uygular: kazanan aynı REVERSAL'ın kapanışı / işaretiyse R0 → `NoChange`;
+  kazanan başka bir yazar ise (ör. §8.6 W2 gönderim) yeni duruma göre sonuç (≤ 3 deneme, sonra hata logu; süpürücü sonraki turda dener).
+- **Komut sonucu adlıdır** (F-13@ae3fed7d; AC-11, AC-12 bunu ölçer): `Voided`, `Conflict` ya da `NoChange` (R5a `Voided` döner, işaret aynı işlemdedir — r5); `NoChange` nedeni
+  `AlreadyRecorded` (ilk okumada işaret / kapanış vardı, işlem açılmadı), `LostRace` (yazmada kaybetti — sürüm uyuşmazlığı → `QuarantineRetryException`
+  ya da Mongo yazma çakışmasıyla yeniden koşan işlemin sürüm uyuşmazlığı; iki yol da handler'ın aynı yeniden okuma dalına düşer — ve yeniden
+  okumada R0'a düştü), `NoRecord` (V2 / V3), `Unmatched` (§8.3 R13 — tablo dışı durum; yazma yok, hata logu; r4).
+- Gözlemci hatası posting'i etkilemez (MOD-0173 davranışı); süpürücü kapatır ya da işaretler (açık besleme kapanışı, terminal besleme
+  uyuşmazlık işaretini; F-3; geçersiz besleme kapanıştan sonra postlanmış satırın işaretini, r4). K2 enlist hatası (AC-21) işlemi geri alır; işaret / kapanış sonraki turda yeniden denenir.
 
 ### 8.3 Kural tablosu (`SourceReversalRules`)
 
 "Postlanmış satır" defterden ölçülür: kararın satır anahtarları `quarantine:{decisionId}:{lineNo}` (`QuarantineMovementPoster.cs:55`) için
 `FindByIdempotencyKeyAsync` — olaylara güvenilmez, çünkü satır postlanıp `Applied` yazılmadan önce geri alma gelebilir.
 
-| Kayıt durumu | Aktif karar durumu | Postlanmış satır | Sonuç |
-|---|---|---|---|
-| Hold `Open` (Waiting / InReview; Draft karar olabilir) | — / Draft | — | **Void**: hold `Voided`; Draft karar dokunulmaz, submit'i V6 ile reddedilir |
-| Hold `DecisionPending` | `PendingApproval` | 0 | **Void** + karara `Voided` olayı |
-| Hold `DecisionPending` | `Approved` (uygulanmamış) / `ApplyFailed` | 0 | **Void** + karara `Voided` olayı |
-| Hold `DecisionPending` | `Approved` / `ApplyFailed` | ≥ 1 | **Conflict** (`Cause = LinesPosted`); durum değişmez |
-| Hold `Decided` | `Applied` | — | **Conflict** (`Cause = Decided`) |
-| Hold `Voided` | — | — | **NoChange** |
-| Blocked `Open`, `Quantity` = kaynağın `BaseQuantity`'si | yok / `PendingApproval` / satırsız `Approved` · `ApplyFailed` | 0 | **Void** (+ karara `Voided`) |
-| Blocked `Open`, `Quantity` < kaynağın `BaseQuantity`'si | herhangi | — | **Conflict** (`Cause = QuantityChanged`) |
-| Blocked `Closed` / `SampleRetained` | — | — | **Conflict** (`Cause = Decided`) |
-| Blocked `Voided` | — | — | **NoChange** |
+Satırlar yukarıdan aşağı okunur; ilk eşleşen kazanır; **hiçbiri eşleşmezse R13** (fail-closed, r4). "Köken" §4.1 köken tablosudur (`OriginOf`).
 
-- **Void** aynı işlemde: kayıt `Status = Voided`, `Voided` alanı, `ActiveDecisionId = null`, `UpdatedAt`, `Version + 1`; karar varsa `Voided` olayı
-  (`ErrorCode` yok, `Detail` = REVERSAL numarası); geçmiş `SourceReversed`; merkezi kayıt (enlist).
+| # | Köken | Kayıt durumu | Aktif karar durumu | Postlanmış satır | Sonuç |
+|---|---|---|---|---|---|
+| R0a | intake | aynı REVERSAL için `Voided`, `Voided.DecisionId` dolu, `SourceReversalConflict` boş (r4, F-1@54d736e1) | `Voided` (kapanışla geçersiz olan karar) | ≥ 1 (kapanıştan sonra postlandı — §8.6 W5 / W6 penceresi) | **Conflict** (`Cause = LinesPosted`); durum `Voided` kalır, `Voided.*` değişmez, karar olayı yazılmaz |
+| R0 | herhangi | aynı REVERSAL için `SourceReversalConflict` zaten yazılı, ya da `Voided` yazılı ve R0a eşleşmedi | — | — | **NoChange** (`AlreadyRecorded`) |
+| R1 | MOD-0175 | herhangi (hold `Open` / `DecisionPending` / `Decided`; blocked `Open` / `Closed` / `SampleRetained`) | herhangi | — | **Conflict** (`Cause = OwnMovementReversed`); durum, aktif karar, miktar değişmez; karar olayı yazılmaz |
+| R2 | intake | Hold `Open` (Waiting / InReview; `ActiveDecisionId` yok; Draft ya da kayda dönmüş `StartFailed` / `Rejected` / … karar olabilir) | — / Draft / kapanmış karar | — | **Void**: hold `Voided`; aktif olmayan karar dokunulmaz, Draft'ın submit'i V5 ile reddedilir |
+| R3 | intake | Hold `Open` + `ActiveDecisionId` dolu (**gönderim penceresi**: `SubmitDecisionHandler` birinci işlemi commit, Workflow henüz başlamadı — `DecisionHandlers.cs:396-402`) | `Submitted` | 0 | **Void** + karara `Voided` olayı; `ActiveDecisionId = null` (F-2@ae3fed7d) |
+| R4 | intake | Hold `DecisionPending` | `PendingApproval` | 0 | **Void** + karara `Voided` olayı |
+| R5a | intake | Hold `DecisionPending` (r5, F-2@962fda71-son-bakis-01) | `Approved` (uygulanmamış) / `ApplyFailed`, karar `ChangesLot` ve **lot adımı uygulanmış** (lot geçmişinde `mod-0175:{decisionId}` anahtarlı satır var) | 0 | **Void** + karara `Voided` olayı + aynı işlemde **işaret** (`SourceReversalConflict`, `Cause = LotChanged`); geçmiş `SourceReversed` + `SourceReversalConflict`; uyarı logu `quarantine.source_reversal.lot_changed` (kayıt numarası, karar kimliği, lot kimliği, REVERSAL numarası). Lot geri alınmaz |
+| R5 | intake | Hold `DecisionPending` | `Approved` (uygulanmamış) / `ApplyFailed` (lot adımı uygulanmamış ya da karar `ChangesLot` değil) | 0 | **Void** + karara `Voided` olayı |
+| R6 | intake | Hold `DecisionPending` | `Approved` / `ApplyFailed` | ≥ 1 | **Conflict** (`Cause = LinesPosted`); durum değişmez |
+| R7 | intake | Hold `Decided` | `Applied` | — | **Conflict** (`Cause = Decided`) |
+| R8 | intake | Blocked `Open`, `Quantity` = aslın `BaseQuantity`'si | yok / `Submitted` / `PendingApproval` / satırsız `Approved` · `ApplyFailed` | 0 | **Void** (+ aktif karara `Voided`) |
+| R9 | intake | Blocked `Open`, `Quantity` < aslın `BaseQuantity`'si | herhangi | — | **Conflict** (`Cause = QuantityChanged`) |
+| R10 | intake | Blocked `Open`, aktif karar satırı postlanmış | `Approved` / `ApplyFailed` | ≥ 1 | **Conflict** (`Cause = LinesPosted`) |
+| R11 | intake | Blocked `Closed` / `SampleRetained` | — | — | **Conflict** (`Cause = Decided`) |
+| R12 | herhangi | `Voided` (başka REVERSAL — olamaz, G-5; savunma) | — | — | **NoChange** (`AlreadyRecorded`) |
+| R13 | herhangi | **R0a–R12'nin hiçbirine uymayan birleşim** (r4, F-4@54d736e1) — ör. hold `DecisionPending` + aktif karar `Draft` / `Submitted` / `StartFailed` / `Rejected` / `Cancelled` / `TimedOut` / `Withdrawn` / `FourEyesViolation`; hold `Open` + `ActiveDecisionId` dolu + `Submitted` dışı karar; gelecekte eklenen `HoldStatus` / `BlockedStatus` / `DecisionState` değeri | herhangi | herhangi | **NoChange** (`Unmatched`); hiçbir yazma, olay, geçmiş ya da merkezi kayıt yok; hata logu `quarantine.source_reversal.unmatched` (kayıt numarası, kayıt durumu, karar durumu, REVERSAL numarası) |
+
+- **Köken kuralı (F-1@ae3fed7d, CT kararı 2026-11-03):** `Voided` yalnız intake kökenli kayıtlara uygulanır. MOD-0175'in kendi hareketi
+  (Manual / Retest / Recall hold'un `STATUS_TRANSFER`'ı, Rework'ün BLOCKED → QUARANTINE hareketi, `ManualBlock`'un hareketi) kalite kararının
+  parçasıdır; onun REVERSAL'ı DEC-INV-08'i atlar. DL-1 bunu **meşrulaştırmaz**: kayıt kapanmaz, "Kaynak geri alındı · uyuşmazlık" işareti ve
+  geçmiş satırı düşer (Recall hold'u açık kalır → MOD-0177 recall isteği kaydı açık görmeye devam eder; Rework hold'unun REVERSAL'ında stok
+  BLOCKED'a döner ama kaynak blocked kaydı azaltılmış / `Closed` kalır — işaret bu kayıtsız BLOCKED stoğu QA'ya gösterir). DL-3 bu REVERSAL'ı
+  defterde reddeder (§8.8 kural 1).
+- **Lot adımı uygulanmış satırsız karar (R5a; r5, F-2@962fda71-son-bakis-01, CT kararı MVP-1 CT 2026-11-03):** `ApplyAsync` lotu satırlardan
+  önce, kendi işleminde değiştirir (`ApplyApprovedLotStatusChangeCommand`, `QuarantineApplyEngine.cs:91-106`); lot adımı başarılı olup ilk satır
+  reddedilirse karar `ApplyFailed`, 0 satır kalır (`:109-117`). R5 tek başına bu kararı sessizce `Voided` yapardı: lot kararın etkisiyle
+  `Released` / yeni yeniden test tarihli kalır, kayıtta iz olmaz. R5a kaydı yine kapatır (stok kayıttan çıkmıştır, karar artık uygulanamaz) ve
+  aynı işlemde işareti yazar; lot değişikliğini geri almaz (A-3: düzeltme QA'nındır). Ölçü: karar `ChangesLot` ise (`:61-65`) kapanış komutu
+  lot geçmişinde `ApplyApprovedLotStatusChangeHandler.Key(decisionId)` anahtarını kiracı kapsamında okur (`ILotRepository.FindStatusChangeByKeyAsync`,
+  MOD-0174, salt okuma; anahtar onaylı değişikliğin tek satırındadır, değişiklik yoksa satır yoktur — `ApplyApprovedLotStatusChange.cs:130-136`).
+  Okuma kapanış işleminin dışındadır; okuma ile commit arasında lot adımı commit olursa R5 uygulanır — bu, §8.6 "Lot adımı"nın kabul edilen
+  sınırıdır. **Yalnız hold:** `ChangesLot` yalnız hold kararında ve kayıtsız `LotRelease`'te doğrudur (`LotStatusTarget` / `NewRetestDate` yalnız
+  hold dalında yazılır, `DecisionHandlers.cs:168-206`; blocked kararı satırsızdır ve lot alanı taşımaz) → R8 için lot dalı yoktur. R5a da R5 gibi
+  bekçinin reddettiği satırdır (§8.8 kural 2, `details.cause DecisionInProgress`); DL-3 etkinken yalnız (b) yoluyla doğar.
+- **DL-3 sonrası erişilebilirlik (F-4@ae3fed7d):** DL-3 etkinken bekçi R5, R5a (r5), R6, R7, R9, R10, R11'e yol açacak REVERSAL'ı ve R1'i (aslın
+  `SourceModule = MOD-0175`) reddeder. Bu satırlar yine de yürürlükte kalır ve yalnız şu yollardan erişilir: (a) bekçi ↔ commit penceresi
+  (bekçi işlem dışında okur, §8.8); (b) REVERSAL bekçinin izin verdiği durumda (R2–R4, R8) commit oldu, gözlemci kaçtı ve kayıt süpürücüden
+  önce ilerledi (karar onaylandı / uygulandı / kısmi imha); (c) eski veri — DL-3'ten önce commit olmuş REVERSAL. R1 için yalnız (c) vardır
+  (aslın `SourceModule`'ü değişmez, pencere yok). R0a (r4) bekçinin reddettiği bir satır değildir ama DL-3 etkinken de yalnız (b) yoluyla doğar:
+  REVERSAL kayıt `PendingApproval` iken commit olur (R4 `Allow`), gözlemci kaçar, karar onaylanır ve `ApplyAsync` satır öncesi yeniden okumayı
+  geçtikten sonra süpürücü kaydı R5 ile kapatır, satır sonra postlanır. DL-1 ölçütleri bu yollarla kurulur (§16 kurgu kuralı).
+- **Eşleşmeyen durum (R13, F-4@54d736e1, r4):** köken için yazılan fail-closed kural (§4.1: eşlenmeyen köken MOD-0175 sayılır) durum için de
+  geçerlidir — tablo dışı birleşimde kayıt **asla `Voided` olmaz**. `Conflict` yerine `NoChange (Unmatched)` seçildi: (1) `Cause` kapalı
+  listesinde bu durumu adlandıran değer yok; R13 bilinen bir olgu değil bilinmeyen bir durumdur, ona kalıcı bir `Cause` değeri vermek
+  sözleşmeye geçici bir ad yazar (r5'te eklenen `LotChanged` ise ölçülen bir olgunun adıdır, R5a); (2) işaret kaydı bütün beslemelerden
+  çıkarır, tablo genişletildiğinde kayıt yeniden değerlendirilemez. `NoChange` yazmadığı için kayıt beslemede kalır; her turda bir hata logu
+  satırı kayıt numarasıyla düşer (okuma yüzeyi: log + kuyruktaki kayıt); tablo genişletilene kadar sürer. Kod `switch`'in varsayılan dalı
+  R13'tür (`ArgumentOutOfRangeException` atmaz — süpürücü turu diğer kayıtlarla sürer).
+
+- **Void** aynı işlemde: kayıt `Status = Voided`, `Voided` alanı, `ActiveDecisionId = null`, `UpdatedAt`, `Version + 1`; aktif karar (`ActiveDecisionId`) varsa ona `Voided` olayı
+  (`ErrorCode` yok, `Detail` = REVERSAL numarası); geçmiş `SourceReversed`; merkezi kayıt (enlist). R5a'da aynı işleme ayrıca `SourceReversalConflict`
+  (`Cause = LotChanged`) ve `SourceReversalConflict` geçmiş satırı girer; tek komut, tek merkezi kayıt.
 - **Conflict** aynı işlemde: `SourceReversalConflict` alanı, `Version + 1`; geçmiş `SourceReversalConflict`; merkezi kayıt. Hiçbir stok, durum ya
-  da başka kayıt değişmez — QA kullanıcısı görür ve düzeltmeyi elle yapar (Q-04). **Uyuşmazlık bugün yalnız aynı kovada başka kaydın stoğu varken
-  doğar**; tek kayıtlı kovada defter REVERSAL'ı zaten `INSUFFICIENT_STOCK` ile reddeder (ölçüm: MVP-6 turu R1-b, 422 "available 1, requested 4").
-  Önlem DL-3'tür.
-- `FourEyesViolation`, `Rejected`, `Cancelled`, `TimedOut`, `Withdrawn`, `StartFailed` sonrası hold zaten `Open`'a döner (ebeveyn §8) → ilk satır.
+  da başka kayıt değişmez; aktif karar varsa ona olay yazılmaz — QA kullanıcısı görür (Q-04 = A: işaret + geçmiş, otomatik düzeltme yok);
+  düzeltme kayıtta değil stok tarafındadır (A-3), açık kayıtta kayıt üzerinde eylem yoktur (aşağıdaki sınır). **Intake kökenli kayıtta uyuşmazlık (R0a, R6, R7, R9–R11) bugün yalnız aynı kovada başka kaydın stoğu varken doğar**;
+  tek kayıtlı kovada defter REVERSAL'ı zaten `INSUFFICIENT_STOCK` ile reddeder (ölçüm: MVP-6 turu R1-b, 422 "available 1, requested 4").
+  **R5a tek kayıtlı kovada da doğar** (işaret stoktan değil lottan gelir; kova boş olduğu için ilk satır reddedilmiştir). **R1 tek kayıtlı kovada da doğar** (manuel karantinanın REVERSAL'ı QUARANTINE'deki kendi stoğunu AVAILABLE'a geri taşır). Önlem DL-3'tür (Q-06 = A).
+- **Açık kayıtta uyuşmazlık — kabul edilen sınır (F-5@54d736e1, CT kararı MVP-1 CT 2026-11-03; karar yeniden açılmaz, yalnız sonucun adı ve
+  sayıma etkisi):** R1 (Manual / Retest / Recall hold `Open` / `DecisionPending`, `ManualBlock` blocked `Open`), R6 (`DecisionPending`, satırı
+  postlanmış `Approved` / `ApplyFailed`), R9 ve R10 (blocked `Open`) kayıtları işaretlenir ama **açık kalır**.
+  - **Kapanış yolu yok:** Q-05 = A değişmez (elle kapatma, `quarantine.holds.void`, `VoidReason.Manual` yok). Tek kayıtlı kovada R1 sonrası
+    kova 0'dır → yeni karar oluşturma ve gönderme V7 ile 409 `QUARANTINE_STOCK_CHANGED` alır (`QuarantineDecisionRules.cs:131-134`,
+    `DecisionHandlers.cs:48-49, 376`); R6 / R10'da "Yeniden uygula" kalan satırı kova yetmediği için `ApplyFailed` ile bitirebilir (G-9) ve kayıt
+    `DecisionPending` + `ActiveDecisionId` ile kilitli kalır. Bu kayıtlar **kalıcı açık** olabilir. Q-04'ün "QA elle düzeltir"i bu kayıtta
+    kayıt üzerinde bir eyleme karşılık gelmez: QA'nın elindeki yalnız işarettir; stok düzeltmesi defterdedir (A-3).
+  - **Sayıma etkisi (açıkça):** kayıt `IsOpen`'dır ve `Quantity` değişmez (iz, §4.1) → §8.5'in her yüklemi onu tam miktarıyla sayar: KPI kartları
+    (açık kayıt sayısı ve miktarı), `late=true` süzgeci, `lots/{lotId}/quality-status` miktarları ("karantinada N" — kova bakiyesinden fazla
+    görünür), yeniden test kuyruğu, CT-Q6 rezervasyon çakışma listesi, MOD-0177 recall istekçisinin açık hold listesi
+    (`QuarantineRecallRequester.cs:59` — Recall hold'u açık görmeye devam eder), `EnteredBefore` süzgeci; blocked tarafında `status=Open`
+    listesi ve lot kalite durumunun bloke miktarı (`LotQualityStatusHandler.cs:114`). Sayımlar kayıt düzeyindedir, defter düzeyinde değil;
+    fark kayıt sayısıyla değil uyuşmazlık rozetiyle görünür (DL-2 §11, AC-28) ve sayfa yardımında yazılıdır (§23). KPI'dan çıkarma yoktur
+    (Q-08 yalnız `Voided`'ı dışarıda tutar).
+  - **DL-3 ile sınırı:** R1'in canlı yolu bekçiyle kapanır (§8.8 kural 1); R6 / R9 / R10'a yol açan REVERSAL'ı bekçi reddeder — DL-3 etkinken
+    açık kayıtta uyuşmazlık yalnız §8.3 "DL-3 sonrası erişilebilirlik" (a)–(c) yollarıyla doğar. Kalıcı açık kaydın kapatılması bu FU'nun
+    kapsamında değildir; aynı "kayıtsız kova farkı" sınıfı FU-0175-FU01-OUTBOUND'un kararına not düşüldü (§20).
+- `FourEyesViolation`, `Rejected`, `Cancelled`, `TimedOut`, `Withdrawn`, `StartFailed` sonrası hold zaten `Open`'a döner, `ActiveDecisionId`
+  boşalır (ebeveyn §8; `QuarantineReopen.ReopenAsync`, `QuarantineApplyEngine.cs:562-573`) → R2.
 
 ### 8.4 Geç intake
 
 Intake gözlemcisi kaçmış, REVERSAL intake süpürücüsünden önce gelmişse süpürücü bugün geri alınmış harekete kayıt açar (besleme REVERSAL'ı
-sormaz, `QuarantineLedgerReads.cs:138-146`). Kural (Q-09 = A): `QuarantineIntakeService.TakeInAsync` kayıt açmadan önce
+sormaz, `QuarantineLedgerReads.cs:138-146`). Kural (Q-09 = A, Beste 2026-11-03): `QuarantineIntakeService.TakeInAsync` kayıt açmadan önce
 `IInventoryLedgerRepository.IsReversedAsync(transactionId)` sorar; geri alınmışsa kayıt açmaz, bilgi logu yazar. Kalan küçük yarış (intake
 açtıktan hemen sonra REVERSAL) §8.2 gözlemcisi / süpürücüsüyle kapanır.
 
@@ -279,17 +483,87 @@ biçimindedir (`QuarantineDecisionRules.cs:120`, `ReviewHandlers.cs:111`, `Quara
 
 ### 8.6 Karar motoru ile dışlama
 
-- `ApplyOutcomeAsync` durumu işlem **dışında** okur (`QuarantineApplyEngine.cs:411-412`) ve `Approved` olayını yeniden okumadan ekler (`:476-489`);
-  `StateOf` "son olay kazanır" (`QuarantineFacts.cs:103`). Kapanış ile onay farklı belgelere yazdığı sürece ikisi de commit olur ve `Voided`'dan
-  sonra `Approved` gelir → durum `Approved` → motor postlar. **Değişmez:** bir kararda `Voided`'dan sonra `Approved` / `Applied` olayı olmaz.
-  Yol (öneri, uygulama serbest, AC-13 bağlayıcı): onay kolu da kaydın `Version`'ını beklenen değerle artırır; iki işlem aynı belgeye yazar, Mongo
-  yazma çakışması birini yeniden koşturur, yeniden koşan son durumu görür.
-- `ApplyOutcomeAsync` terminal listesine (`:435-437`) `Voided` eklenir: sonradan gelen sonuç `200 Voided` döner, olay yazmaz.
+**Sorun (ölçüldü):** karar yazarları durumu işlem **dışında** okur ve olay ekler; `StateOf` "son olay kazanır" (`QuarantineFacts.cs:103`).
+Kapanış ile bu yazarlar farklı belgelere yazdığı sürece ikisi de commit olur ve `Voided`'dan sonra başka olay gelir:
+- onay: `ApplyOutcomeAsync` okur (`QuarantineApplyEngine.cs:411-412`), `Approved`'ı yeniden okumadan ekler (`:476-489`) → durum `Approved` → motor postlar;
+- **gönderim (F-2@ae3fed7d):** `SubmitDecisionHandler` ikinci işlemi Workflow başladıktan sonra hold'u taze okur ve koşulsuz `DecisionPending`'e
+  çevirir (`DecisionHandlers.cs:422-434`; sürüm denetimi taze okunan değerle geçer), `WorkflowStarted` `Voided`'dan sonra eklenir → `StateOf`
+  `PendingApproval` → onay gelir → postlanır;
+- **ret / iptal / zaman aşımı / dört göz (F-12@ae3fed7d):** `CloseWithoutMovementAsync` (`:501-533`) `Voided`'dan sonra `Rejected` / `Cancelled` /
+  `TimedOut` / `FourEyesViolation` ekler; `ReopenAsync` `ActiveDecisionId ≠ decisionId` iken kayda yazmadığı için (`:565`) ortak belge de yazılmaz →
+  karar "Reddedildi" görünür, `Voided` kaybolur;
+- **geri çekme ve başlatma hatası kolu (r5, F-1@962fda71-son-bakis-01):** `WithdrawDecisionHandler` durumu işlem dışında okur, kapanıştan sonra
+  `ReopenAsync` kayda yazmaz (`ActiveDecisionId` boş) ve `Withdrawn` olayı + geçmiş satırı `Voided`'dan sonra düşer (`WorkflowHandlers.cs:109-166`);
+  gönderimin başlatma hatası kolu sürüm uyuşmazlığında `QuarantineRetryException`'ı handler dışına sızdırır (`DecisionHandlers.cs:440-448`).
+
+**Değişmezler (CT kararı 2026-11-03):**
+1. **`Voided` emici son durumdur:** `StateOf` olaylarda `Voided` varsa sıradan bağımsız `Voided` döner (§4.2). `Voided`'dan sonra yazılmış her
+   olay (`WorkflowStarted`, `StartFailed`, `Rejected`, `Cancelled`, `TimedOut`, `FourEyesViolation`, `ApplyFailed`, `Withdrawn` — r5) durumu değiştirmez.
+2. Bir kararda `Voided`'dan sonra **`Approved` / `Applied` olayı yazılmaz** (2. değişmez 1.'den bağımsız ölçülür — AC-13).
+3. `Voided` kayıt (hold / blocked) hiçbir karar yazarınca başka duruma çevrilmez.
+
+**Ortak yazma kilidi = kaydın (hold / blocked) `Version`'ı.** Kapanış (Void / Conflict) kaydı beklenen sürümle yazar. Aynı kararın sonucunu
+yazan her yol da **aynı belgeyi beklenen sürümle yazar** ve **işlem içinde** kararın olaylarını yeniden okur (`IQuarantineWriteSession.DecisionEventsAsync`,
+`QuarantineRepositories.cs:114`; snapshot okuma). İki işlem aynı belgeye yazdığı için biri Mongo yazma çakışmasıyla yeniden koşar ya da sürüm
+denetiminde kaybedip yeniden okur; yeniden koşan son durumu görür. Yazarlar ve `Voided` gördüklerindeki davranış:
+
+| # | Yazar (bugün) | Ortak belge yazımı | `Voided` görürse |
+|---|---|---|---|
+| W1 | `SubmitDecisionHandler` 1. işlem `LockAsync` (`DecisionHandlers.cs:396-410`, `:453-475`) | var (bugün de sürümlü) | **kod değişmez** (r4, F-3@54d736e1 — bugünkü koda hizalandı): (i) kayıt gönderimin işlem dışı okumasında (`:371`) zaten `Voided` ise ön denetim V5 → 409 `QUARANTINE_HOLD_CLOSED` / `QUARANTINE_BLOCKED_CLOSED` (§8.5 yüklemiyle); (ii) okuma ile kilit işlemi arasında `Voided` olursa `LockAsync` sürüm uyuşmazlığıyla `false` döner (`:464-468`, blocked `:472-476`) → 409 **`QUARANTINE_DECISION_ALREADY_PENDING`** ("The record changed or another decision is waiting for approval.", `:411-413`); `Submitted` olayı ve geçmiş yazılmaz, `StartAsync` çağrılmaz, karar `Draft` / `StartFailed` kalır. Aynı kararın sonraki gönderimi ilk yazmadır, tekrar değil → (i) yolundan 409 `QUARANTINE_HOLD_CLOSED`. Seçim gerekçesi: kilit başarısızlığında kaydı yeniden okuyup `HOLD_CLOSED` döndürmek kodu değiştirir ve kazanç yalnız ileti metnidir; sonraki deneme doğru kodu zaten alır. AC-13 (d) |
+| W2 | `SubmitDecisionHandler` 2. işlem (`:422-434`) | var; sürüm uyuşmazlığı bugün `QuarantineRetryException`'ı handler dışına sızdırır (yeniden deneme yok) → `CloseWithoutMovementAsync` deseninde ≤ 3 deneme, her denemede yeniden okuma | kayıt `DecisionPending`'e **çevrilmez**, yazılmaz; `WorkflowStarted` olayı **yazılır** (Q-02: örnek açık kalır; örnek kimliğini taşır — V8'in örnek denetimi buna bakar). Cevap bugünkü gibi `202` + karar gövdesi; gövdede `state Voided` |
+| W3 | `ApplyOutcomeAsync` onay işlemi (`:476-489`) | **eklenir:** kayıt `Version + 1`, `UpdatedAt` (başka alan değişmez). **Sürüm uyuşmazlığı dalı (r4, F-2@54d736e1):** bugün yalnız `QuarantineDuplicateException` yakalanır (`:491-495`); eklenen sürüm yazımının `QuarantineRetryException`'ı W2 / W4 ile aynı biçimde ele alınır — `CloseWithoutMovementAsync` deseninde (`:504-527`) ≤ 3 deneme, her denemede kayıt işlem dışında yeniden okunur (`FindHoldAsync` / `FindBlockedAsync`) ve işlem içinde olaylar yeniden okunur; yeniden okumada `Voided` → aşağıdaki sütun, değilse `Approved` yazılır ve akış sürer. Üçüncü uyuşmazlıktan sonra `QuarantineRetryException` W2 / W4 gibi yukarı çıkar (işlem geri alınmıştır, `Approved` olayı yoktur); tüketici yolunda gelen kutusu satırı yazılmış olduğundan (`QuarantineWorkflowOutcomeConsumer.cs:92`) sonucu okuma anı uzlaştırması sonraki okumada uygular (`QuarantineWorkflow.cs:228-270`). `QuarantineDuplicateException` dalı değişmez | `Approved` ve geçmiş yazılmaz; cevap `200 Voided`; `ApplyAsync` çağrılmaz |
+| W4 | `CloseWithoutMovementAsync` (`:501-533`) | **eklenir:** kayıt `Version + 1` (`ReopenAsync` yazmasa da) | olay, geçmiş, `ReopenAsync` yazılmaz; cevap `200 Voided` |
+| W5 | `RecordAppliedAsync` (`:168-209`) | var (`ApplyHoldDecisionAsync` / `ApplyDispositionAsync` sürümlü; kayıt işlem dışında `:172-173`'te okunur, kapanış araya girerse `ReplaceHoldAsync` / `ReplaceBlockedAsync` `false` → `QuarantineRetryException` → `ApplyAsync`'in mevcut döngüsü yeniden okur, `:124-140`) | **hiçbir şey yazmaz** (r4, F-1@54d736e1): `Applied` olayı, kayıt değişikliği, geçmiş ve işaret yok; işlem içi olay okumasında (`:177`) `Voided` görülünce işlem yazmadan biter. Satır postlanmışsa (`posted` ≥ 1) uyuşmazlık işaretini **ayrı iç komut** yazar — aşağıdaki "W5 / W6 `Voided` dalı". `ApplyAsync` `ApplyResult(Voided, …)` döner |
+| W6 | `RecordFailureAsync` (`:144-166`) | gerekmez (olay durumu değiştirmez, değişmez 1) | `ApplyFailed` ve geçmiş yazılmaz; reddedilen satırdan önce postlanmış satır varsa (`postedIds` ≥ 1) W5 ile aynı iç komut dalı. Lot komutunun reddi de bu yoldan gelir (`:94-99`, `postedIds` boş) → yazma yok, `ApplyAsync` `ApplyResult(Voided, …)` döner |
+| W7 | `WithdrawDecisionHandler` (r5, F-1@962fda71-son-bakis-01; `WorkflowHandlers.cs:109-177`): durumu işlem dışında okur (`:109-119`), Workflow görevini çağıranın token'ıyla iptal eder (`:136`), sonra ≤ 3 denemeli işlemde `Withdrawn` olayı + `ReopenAsync` + `Withdrawn` geçmişi (`:148-177`) | var (`ReopenAsync` sürümlü, yalnız kaydın `ActiveDecisionId`'si bu karar iken — `QuarantineApplyEngine.cs:562-575`); **eklenir:** işlem içi olay okuması (`DecisionEventsAsync`) ve kayıt `Version + 1` (`ReopenAsync` yazmasa da — W4 deseni) | (i) kayıt / karar okumada (`:109-110`) zaten `Voided` → bugünkü kod: 409 `QUARANTINE_DECISION_NOT_PENDING` ("A Voided decision cannot be withdrawn.", `:116-118`), görev iptal edilmez; (ii) okuma ile işlem arasında `Voided` olursa `Withdrawn` olayı, `Withdrawn` geçmiş satırı ve `ReopenAsync` **yazılmaz**; cevap bugünkü `200` + karar gövdesi (`:179`), `state Voided`. Görev iptali (`:136`) geri alınmaz: çağıranın kendi isteğidir (ebeveyn §4.10); Q-02'nin "örnek açık kalır" kuralı sistem yolu içindir |
+| W8 | `SubmitDecisionHandler` Workflow başlatma hatası kolu (r5, F-1@962fda71-son-bakis-01; `DecisionHandlers.cs:440-448`): kaydı işlem dışında taze okur (`:441-442`), işlemde `StartFailed` olayı + `ReopenAsync` | var (`ReopenAsync` sürümlü); sürüm uyuşmazlığı bugün `QuarantineRetryException`'ı handler dışına sızdırır (yakalama yok) → W2 deseninde ≤ 3 deneme, her denemede kayıt işlem dışında yeniden okunur | `StartFailed` olayı **yazılır** (W2'nin `WorkflowStarted`'ı gibi Workflow çağrısının olgusudur; durum emici, değişmez 1); `Voided` kayıtta `ActiveDecisionId` boş olduğu için `ReopenAsync` yazmaz (bugünkü koşul `:565`, `:575`); cevap bugünkü başlatma hatası (`start.ErrorCode`, `start.Status`, `:449`) |
+
+- `ApplyOutcomeAsync`'in işlem dışı okumasında (`:411-412`) `state == Voided` denetimi örnek kimliği denetiminden (`:414-418`) ve `Approved`
+  dalından **önce** gelir → `200 Voided`, olay yok. Terminal listesine (`:435-437`) `Voided` eklenir.
 - `ApplyAsync` uygulanabilir durumları (`:81`) `Voided`'ı içermez; her satırı postlamadan hemen önce karar durumunu yeniden okur; `Voided` ise
-  durur (satır postlanmaz). `RecordAppliedAsync` (`:168-209`) hold'u `Voided` bulursa `Decided`'a çevirmez, `Conflict` yazar. Bu yeniden okuma ile
-  post arasındaki kalan pencere yalnız çok kayıtlı kovada anlamlıdır ve DL-3 ile kapanır (bekçi, `Approved` / `ApplyFailed` kararlı kaydın
-  kaynağının REVERSAL'ını reddeder).
-- Platform Workflow örneği açık kalır (sistem kimliği yok; Q-02). WorkCenter'daki onay `Voided` kararda etkisizdir; DisplayContext bağlantısı
+  durur (satır postlanmaz). Bu yeniden okuma ile post arasındaki kalan pencerede satır postlanırsa W5 / W6 `Voided` dalı işaretletir (görünür,
+  sessiz değil). Pencere yalnız çok kayıtlı kovada anlamlıdır; DL-3 onu daraltır ama kapatmaz (§8.3 "DL-3 sonrası erişilebilirlik" (a), (b)).
+- **Lot adımı (r5, F-1@962fda71, CT kararı MVP-1 CT 2026-11-03):** `ChangesLot` kararda (`QuarantineApplyEngine.cs:61-65`) `ApplyAsync` satırlardan
+  önce `ApplyApprovedLotStatusChangeCommand`'ı gönderir (`:91-106`; lot kendi işleminde değişir, ayrı merkezi kaydı `LifecycleTransition` / `Lot`).
+  - **Ana yol (korunur, ölçülür — AC-13 (g)):** lot komutu kararı kendisi yeniden okur (`QuarantineLotGate.FindApprovedAsync`, `QuarantineLotGate.cs:225-237`:
+    `StateOf` `Approved` / `ApplyFailed` değilse `null`) → `Voided` kararda 409 `LOT_APPROVAL_REQUIRED` (`ApplyApprovedLotStatusChange.cs:82-85`),
+    lot değişmez; ret W6'ya düşer (yazma yok), satır postlanmaz.
+  - **Kalan pencere — kabul edilen sınır:** `FindApprovedAsync` okuması ile lot işleminin commit'i arasında kapanış commit olursa lot, `Voided`
+    karar için değişir (durum `Released` ve / veya yeni yeniden test tarihi). Kapanış lot anahtarını henüz görmediği için R5 uygular (R5a değil);
+    satır öncesi yeniden okuma `Voided` görür, satır postlanmaz; W5 / W6 iç gönderimi yalnız postlanmış satıra baktığı için koşmaz → kayıtta
+    işaret **yoktur**. Görünürlük: `ApplyAsync` lot adımı bu çağrıda başarılı döndükten sonra satır öncesi yeniden okumada `Voided` görürse uyarı
+    logu `quarantine.source_reversal.lot_changed_after_void` (kayıt numarası, karar kimliği, lot kimliği) yazar; lotun kendi geçmişinde onaylayan
+    ve `mod-0175:{decisionId}` anahtarlı satır, merkezi kayıtta lot komutunun satırı kalır. Pencere bir lot işlemi kadardır; sıralı yol (lot
+    adımı kapanıştan önce commit) R5a ile işaretlenir. İşareti bu pencerede de yazmak (R0a'yı lot anahtarına genişletmek) bu sürümde seçilmedi
+    (CT kararı: kabul edilen sınır; AC-13 (g2) sınırı ve logu ölçer).
+- **W5 / W6 `Voided` dalı — seçim ve gerekçe (r4, F-1@54d736e1; CT'nin iki seçeneğinden birincisi):** uyuşmazlık işareti
+  **`ApplySourceReversalTo{Hold,Blocked}Command` kipine taşındı**; AC-20 için W5 istisnası **açılmadı**. Gerekçe: W5 / W6 `ApplySourceReversal`
+  komutlarının dışında koşar ve dört ayrı bağlamda çağrılır — `RefreshDecisionCommand` (`WorkflowHandlers.cs:61` → uzlaştırıcı, `Operation Execute`,
+  aktör onaylayan / çağıran), `ReapplyDecisionCommand` (`DecisionHandlers.cs:515`), okuma anı uzlaştırması yapan sorgu handler'ları
+  (`QueryHandlers.cs:142, 196, 232, 269, 309`, `LotQualityStatusHandler.cs:72` → `QuarantineWorkflow.cs:270`; işaretli komut yok) ve MediatR
+  dışı Workflow tüketicisi (`QuarantineWorkflowOutcomeConsumer.cs:98-99`; işaretli komut yok). W5'te yazılan işaretin merkezi kaydı bu
+  bağlamların ikisinde hiç oluşmaz (işaretli komut yokken kayıt yazılmaz, G-14), ikisinde yanlış aktör ve işlem adıyla oluşur; ayrı ölçüm dört
+  yolu ayrı ayrı istisna yapardı. Komut kipi tek yoldur: tam bir kez, `ActorType System`, `RequestType` komut adı (AC-20 değişmeden geçerli).
+  - **Akış:** W5 / W6 işlemi yazmadan bittikten sonra, **hiçbir işlemin içinde değilken**, `ApplyAsync` kaydı yeniden okur
+    (`FindHoldAsync` / `FindBlockedAsync`) ve `_sender.Send(new ApplySourceReversalTo{Hold,Blocked}Command(record.Voided.ReversalTransactionId))`
+    gönderir — `ApplyAsync`'in aynı `ISender` ile iç komut göndermesinin emsali var (`ApplyApprovedLotStatusChangeCommand`, `QuarantineApplyEngine.cs:93`;
+    bu da aynı dört bağlamdan çağrılır). Komut kendi işleminde §8.3'ü uygular → R0a → `Conflict (LinesPosted)`.
+  - **REVERSAL kimliği / numarası / postlayan nereden okunur:** komutun girdisi kaydın kapanışta yazılmış `Voided.ReversalTransactionId`'sidir
+    (§4.1; W5 bunu yalnız kayıttan okur, ödünç değer üretmez). Komut REVERSAL'ı V2 ile defterden kiracı + şirket kapsamında yeniden okur;
+    `SourceReversalConflict.ReversalTransactionNumber` = REVERSAL'ın `TransactionNumber`'ı, `.ReversedByUserId` = `InventoryTransaction.CreatedBy`,
+    geçmiş satırının `ByUserId` / `Reason` / `CorrelationId`'si aynı işlemden (AC-22) — gözlemci ve süpürücü yoluyla aynı kaynak. Onaylayan
+    kullanıcı ya da tüketicinin kapsamındaki aktör hiçbir alana girmez.
+  - **Merkezi kayıt:** komutun kendi `ICentralAuditDeclaration`'ı, sistem aktörü kipi gönderene bağlı değildir (§5) → `ActorType System`,
+    `ActorId …0175`, `CorrelationId` = REVERSAL'ınki, `WrittenInCommandTransaction = true`, tam 1 satır. İç içe gönderimde dıştaki
+    `RefreshDecisionCommand` / `ReapplyDecisionCommand` kaydı kendi aktörüyle ayrı kalır (yığın, §5); W5 / W6 dıştaki komut için yazma
+    yapmadığından dıştaki komut bu dalda merkezi kayıt bırakmaz (`RequireEnlistment`, `CentralAuditRecorder.cs:160-168`). Tüketici yolunda kapsam
+    tüketicinin kurduğu kiracı + şirkettir (`QuarantineWorkflowOutcomeConsumer.cs:89`) → `TenantId` / `CompanyId` kaydınki.
+  - **Gönderim başarısız olursa** (istisna ya da başarısız `Response`; ör. K2 enlist hatası): `ApplyAsync` hata logu
+    `quarantine.source_reversal.mark_dispatch_failed` yazar ve yine `ApplyResult(Voided, …)` döner (çağıranın cevabı değişmez); işareti
+    süpürücünün geçersiz beslemesi yazar (§8.2). Gönderim aynı işlem için ikinci kez gelirse komut R0 → `NoChange (AlreadyRecorded)`.
+    Kayıt R5a ile zaten işaretliyse (`LotChanged`) R0a eşleşmez (işaret boş değil) → R0, `NoChange`; işaret bir kez yazılır, ilk neden kalır (r5).
+- Mekanizma uygulamaya açıktır (ör. işlem içi kayıt okuması için `IQuarantineWriteSession`'a okuma eklemek, §5); AC-13 (a)–(g2), AC-39 ve AC-41 bağlayıcıdır.
+- Platform Workflow örneği açık kalır (sistem kimliği yok; Q-02 = A). WorkCenter'daki onay `Voided` kararda etkisizdir; DisplayContext bağlantısı
   kaydı "Geçersiz" gösterir (DL-2).
 - Karar e-imzası geçerli kalır: karar yalnız eklemeli, imzalanan özet değişmez (ebeveyn §8 e-signature).
 
@@ -299,33 +573,71 @@ biçimindedir (`QuarantineDecisionRules.cs:120`, `ReviewHandlers.cs:111`, `Quara
   (`quarantine.openapi.yaml:400, 405, 407, 408`).
 - `Hold` / `HoldDetail` / `BlockedStock` (+ ayrıntı) isteğe bağlı `voided` (`RecordVoid`: `atUtc`, `reason` [`SourceReversed`], `reversalTransactionId`,
   `reversalTransactionNumber`, `reversedBy`, `decisionId?`) ve `sourceReversalConflict` (`atUtc`, `reversalTransactionId`, `reversalTransactionNumber`,
-  `reversedBy`, `cause` [`Decided`, `LinesPosted`, `QuantityChanged`]); `HistoryEntry` isteğe bağlı `reversalTransactionId`. Hiçbiri `required` değil.
+  `reversedBy`, `cause` [`Decided`, `LinesPosted`, `QuantityChanged`, `OwnMovementReversed`, `LotChanged`]); `HistoryEntry` isteğe bağlı `reversalTransactionId`.
+  Hiçbiri `required` değil. `cause` yeni bir enum'dur (1.3.0'da yok) → beş değeri birlikte 1.4.0'da girer (`LotChanged` r5), mevcut enum değişmez.
+- Detay ucunun `movements` dizisi (`HoldDetail` / `BlockedStockDetail`, `quarantine.openapi.yaml:549, 785`) REVERSAL satırını da taşır (r5, §5);
+  şema değişmez (`MovementLink`, `movementType` enum'u `REVERSAL`'ı zaten içerir, `:397, 477-485`). Yalnız `MovementLink.description` metnine
+  "or the REVERSAL of the record's source movement" eklenir (açıklama; yol, özellik, tip, `required`, enum değişmez).
 - `listHolds` / `listBlocked` `status` sorgu parametresi aynı enum'u gösterdiği için `Voided` ile süzülebilir; **varsayılan liste değişmez**
-  (bugün durum verilmeyince hepsi döner; `Voided` satırlar `Decided` gibi sona sıralanır — Q-08).
+  (bugün durum verilmeyince hepsi döner; `Voided` satırlar görünür, `Decided` gibi sona sıralanır, KPI'ya girmez — Q-08 = A).
 - Yeni hata kodu yok: kapanmış kayıtta eylemler mevcut `QUARANTINE_HOLD_CLOSED` (`QuarantineDecisionRules.cs:39`) ve blocked için mevcut
   `QUARANTINE_BLOCKED_CLOSED` (`:40`) kodunu döner; ileti "kaynak geri alındı" der.
 - Olay yayını yok (Inventory'de taşıma bağlı değil, ebeveyn §8). `x-changelog` 1.4.0 satırı "No existing path, parameter, property, type, required
   list, status code or enum value changed" cümlesiyle (1.1.0–1.3.0 emsali).
 
-### 8.8 DL-3 — defter bekçisi (Q-06 = A ise)
+### 8.8 DL-3 — defter bekçisi (Q-06 = A)
+
+Karar: Q-06 = A (Beste 2026-11-03; §19.5).
 
 - MOD-0173 dikişi `IReversalPrecondition.CheckAsync(InventoryTransaction original, CancellationToken)` → `Allow` | `Refuse(code, message, details)`;
   `InternalMovementPostingService.BuildReversalAsync` "zaten geri alındı" denetiminden (`:253-256`) sonra çağırır; ret → 422, hiçbir şey
   yazılmaz, yerel `inventory_audit`'e ret satırı (`ExpiryPostingPolicy.FlushRefusalAuditAsync` emsali).
 - MOD-0175 uygulaması iki kural: (1) aslın `SourceModule = MOD-0175` → ret (DEC-INV-08: 0175'in kendi `STATUS_TRANSFER` / `SCRAP` /
-  `SUPPLIER_RETURN` / `LOCATION_TRANSFER` hareketinin REVERSAL'ı kalite kararını atlar; düzeltme yeni 0175 kararıyla); (2) aslı bir kaydın
-  `SourceMovementId`'si ve §8.3'e göre sonuç `Conflict` ya da karar `Approved` / `ApplyFailed` → ret. Diğer her durumda `Allow`.
+  `SUPPLIER_RETURN` / `LOCATION_TRANSFER` hareketinin REVERSAL'ı kalite kararını atlar; düzeltme yeni 0175 kararıyla) — bu, §8.3 R1'in (MOD-0175
+  kökenli kayıt) canlı yolunu kapatır; `details.cause = OwnMovementReversed`, `recordNumber` / `recordType` bu hareketi `SourceMovementId` olarak
+  taşıyan kayıt varsa dolu, yoksa (ör. karar satırının `STATUS_TRANSFER`'ı) yok; (2) aslı intake kökenli bir kaydın `SourceMovementId`'si ve §8.3'e
+  göre sonuç `Conflict` (R6, R7, R9–R11) ya da karar `Approved` / `ApplyFailed` (R5, R5a — r5) ya da tablo dışı (R13, r4 — fail-closed: DL-1 bu kaydı
+  kapatmayacağı ve işaretlemeyeceği için REVERSAL'a izin vermek kayıtsız kova farkı doğurur) → ret. `details.cause` kapalı listesi (INVENTORY 1.8.0):
+  `OwnMovementReversed` (kural 1), `Decided` / `LinesPosted` / `QuantityChanged` (kural 2, §8.3'ün `Cause`'u), `DecisionInProgress` (kural 2, R5 ve R5a —
+  bekçi lot adımını ayırmaz, karar uygulama aşamasındadır; QUARANTINE `LotChanged` INVENTORY listesine girmez),
+  `Unmatched` (kural 2, R13; r4 — INVENTORY 1.8.0 henüz yazılmadığı için liste bu sürümde genişler, yayımlanmış sözleşme değişmez).
+  Diğer her durumda (R2–R4, R8, kayıt yok) `Allow`; bekçi R0 / R0a / R12'ye (kayıt zaten `Voided` ya da işaretli) varmaz — `Voided` kaydın
+  kaynağı zaten geri alınmıştır, ikinci REVERSAL `ALREADY_REVERSED` ile bekçiden önce reddedilir (G-5).
 - Okuma hatası → 503 `INVENTORY_UNAVAILABLE` (mevcut kod), fail-closed.
-- INVENTORY ek kodu (öneri `REVERSAL_QUALITY_RECORD_LOCKED`, 422, `details: { recordNumber, recordType, cause }`): `InventoryErrorCodes.All`
-  kapalı kataloğuna bu paketle girer (MOD-0173-FU03 CT-02 emsali); sözleşme sürümü FU03'ün 1.7.0'ından sonraki ilk boş sürüm (Q-07).
-- Kalan pencere: bekçi işlem dışında okur; bekçi ile commit arasında karar uygulanırsa DL-1 `Conflict` yazar (görünür, sessiz değil).
+- INVENTORY ek kodu `REVERSAL_QUALITY_RECORD_LOCKED` (422, `details: { recordNumber, recordType, cause }`): `InventoryErrorCodes.All`
+  kapalı kataloğuna bu paketle girer (MOD-0173-FU03 CT-02 emsali; XMC-001 MOD-0173 izni, §5).
+- **Sürüm (Q-07, CT kararı 2026-11-03):** INVENTORY **1.8.0** — MOD-0173-FU03'ün 1.6.0 (DL-1) ve 1.7.0 (DL-2) adımlarından sonraki ek sürüm
+  (FU03 onaylı, `c03ac5511`). `x-changelog` 1.8.0 satırı yalnız ekleme cümlesiyle; karşılaştırma tabanı 1.7.0'ın donmuş kopyası. Sıra:
+  DL-3'ün sözleşme adımı FU03'ün 1.7.0'ı dalda (`feature/sce/mod-0173-inventory-ledger-valuation`) olduktan sonra yazılır; 1.7.0 dalda değilken
+  DL-3'ün sözleşme adımı bekler (numara atlanmaz, 1.6.0 / 1.7.0 bu paketle yazılmaz). Sıra değişirse yeni numara CT kararıyla ve yeni paket
+  sürümüyle yazılır.
+- **MVP-6 kapısı (Q-10, açık — Natig):** DL-3, MOD-0186 geç yazanının kaydı karar verilmiş iadenin REVERSAL'ını 422 ile reddeder; mevcut
+  `ReversalFailed:<kod>` yolu (`ReturnLateWriterPolicy.cs:43`) bunu taşır. Bu etkinin MVP-6 CT kabulü **DL-3 kabul kapısıdır** (§22): DL-3 kabul
+  kaydı Q-10 kararını (tarih, veren) taşımadan kapanmaz. Kabul edilmezse DL-3 yeni paket sürümüyle yeniden kararlaştırılır; DL-1 / DL-2 etkilenmez.
+- Kalan pencere: bekçi işlem dışında okur; bekçi ile commit arasında karar uygulanırsa DL-1 `Conflict` yazar (görünür, sessiz değil). DL-3 etkinken
+  DL-1'in hangi satırlarının hangi yoldan erişilir kaldığı §8.3 "DL-3 sonrası erişilebilirlik"tedir.
+- **Web (F-5@ae3fed7d):** S-2 "Reversal" onay penceresi ve "Düzelt" akışı reddi okurun dilinde söyler: `InventoryErrorMessages.ByCode`
+  `REVERSAL_QUALITY_RECORD_LOCKED` → `ErrReversalQualityRecordLocked`; metin (tr) "Bu hareket geri alınamaz: kaynağı olduğu karantina / bloke kaydı
+  kalite kararına bağlı. Düzeltmeyi Karantina ekranından yeni kararla yapın." — 7 dil, `StockLedgerIndex` ve `StockMovementsIndex` ailelerinde.
+  Bugün kod haritada yok → 422 genel cümleye düşer (`InventoryErrorMessages.cs:10-40`, `KeyFor`).
 
 ### 8.9 Durum ve komut tablosu
 
 | Tetik | Kaynak | Komut | Sonuç | Stok etkisi |
 |---|---|---|---|---|
-| REVERSAL commit (gözlemci) | MOD-0173 | `ApplySourceReversalToHoldCommand` / `…ToBlockedCommand` | Void / Conflict / NoChange | yok |
-| Süpürücü turu | Inventory arka plan | aynı | aynı | yok |
+| REVERSAL commit (gözlemci) | MOD-0173 | `ApplySourceReversalToHoldCommand` / `…ToBlockedCommand` | Void / Conflict / NoChange (§8.3 R0a–R13) | yok |
+| Süpürücü turu — açık besleme | Inventory arka plan | aynı | aynı | yok |
+| Süpürücü turu — terminal besleme (F-3) | Inventory arka plan | aynı | Conflict / NoChange (terminal kayıtta Void satırı yok) | yok |
+| Süpürücü turu — geçersiz besleme (r4) | Inventory arka plan | aynı (`Voided.ReversalTransactionId` ile) | R0a → Conflict (`LinesPosted`); satırsız → NoChange, yazma yok | yok |
+| Gönderimin kilit işlemi, kayıt okuma–kilit arasında `Voided` oldu (r4, F-3@54d736e1) | `SubmitDecisionHandler` (W1) | — | 409 `QUARANTINE_DECISION_ALREADY_PENDING` (bugünkü kod); `Submitted` yok, `StartAsync` yok; sonraki gönderim 409 `QUARANTINE_HOLD_CLOSED` | yok |
+| Gönderim 2. işlemi `Voided` kayıtta (F-2) | `SubmitDecisionHandler` | — | kayıt değişmez, `WorkflowStarted` yazılır, karar `Voided` kalır | yok |
+| Workflow sonucu `Voided` kararda (F-12) | `ApplyOutcomeAsync` / uzlaştırıcı | — | `200 Voided`, olay yok | yok |
+| Onay işleminde kayıt sürümü değişti, `Voided` değil (r4, F-2@54d736e1) | `ApplyOutcomeAsync` (W3) | — | ≤ 3 deneme, yeniden okuma → `Approved`, uygulama sürer; üçüncü uyuşmazlıkta hata yukarı, `Approved` yok | uygulama kadar |
+| Satır `Voided`'dan sonra postlandı (r4, F-1@54d736e1) | `ApplyAsync` (W5 / W6) | `ApplySourceReversalTo{Hold,Blocked}Command` (iç gönderim, işlem dışında) | W5 / W6 hiçbir şey yazmaz; komut R0a → Conflict (`LinesPosted`), merkezi kayıt `System` | postlanan satır kadar (önlenemeyen pencere, işaretli) |
+| REVERSAL, satırsız kararın lot adımı uygulanmış (r5, R5a) | gözlemci / süpürücü | `ApplySourceReversalToHoldCommand` | Void + `Conflict (LotChanged)` aynı işlemde, log `lot_changed`; lot değişikliği kalır | yok (lot durumu değişmez) |
+| Geri çekme `Voided` kararda (r5, W7) | `WithdrawDecisionHandler` | — | okumada `Voided`: 409 `QUARANTINE_DECISION_NOT_PENDING`; okuma–işlem arasında `Voided`: `200` `state Voided`, `Withdrawn` olayı / geçmişi yok | yok |
+| Workflow başlatma hatası, kayıt arada `Voided` oldu (r5, W8) | `SubmitDecisionHandler` | — | ≤ 3 deneme, hata sızmaz; `StartFailed` olayı, kayıt yazılmaz; cevap başlatma hatası | yok |
+| Kapanış lot adımının karar okuması ile commit'i arasında (r5, kabul edilen sınır) | `ApplyAsync` lot adımı | — | lot değişir, satır postlanmaz, kayıt `Voided` işaretsiz; log `lot_changed_after_void` | yok (lot durumu değişir) |
 | Geç intake (§8.4) | intake süpürücüsü | — (kayıt açılmaz) | — | yok |
 | REVERSAL isteği (DL-3) | MOD-0173 `postMovement` | — (bekçi) | 422 / Allow | ret → yok |
 
@@ -369,15 +681,18 @@ DL-2, ebeveynin ekran dosyalarında küçük eklemelerdir (yeni sayfa, yeni rota
 | Ekran | Dosya | Değişiklik |
 |---|---|---|
 | Karantina Kuyruğu (`QUARANTINEQUEUE`) | `queue.js` (`:68`, `:120`), `quarantine-ui.js` (`:95-104`) | `Voided` rozeti "Geçersiz · Kaynak geri alındı"; satır eylemi yok (Karar Ver çizilmez); geç rengi yok; KPI sunucudan zaten süzülü |
-| Karantina Detayı (`QUARANTINEDETAILS`) | `details.js` (`:31`, `:125`), `Details.cshtml` | afiş: "Bu kayıt geçersiz: kaynak hareket {REVERSAL no} ile {tarih} tarihinde {kişi} tarafından geri alındı"; Karar Ver / İncelemeye al / Kararı geri çek / Yeniden uygula gizli; geçmiş etiketleri; hareketler listesinde REVERSAL satırı |
+| Karantina Detayı (`QUARANTINEDETAILS`) | `details.js` (`:31`, `:125`), `Details.cshtml` | afiş: "Bu kayıt geçersiz: kaynak hareket {REVERSAL no} ile {tarih} tarihinde {kişi} tarafından geri alındı"; Karar Ver / İncelemeye al / Kararı geri çek / Yeniden uygula gizli; geçmiş etiketleri; hareketler listesinde REVERSAL satırı — satırı sunucu DL-1'de verir (r5, F-3@962fda71-son-bakis-01: bugün iz yalnız `SourceModule MOD-0175` belgelerini ve kaydın `SourceMovementId`'sini okur, `QueryHandlers.cs:206-207`, `QuarantineLedgerReads.cs:59-63`; REVERSAL'ın `SourceModule`'ü MOD-0173 olduğundan girmez → §5 detay izi, AC-40); DL-2 yalnız mevcut listeyi çizer |
 | Karar Ver (`QUARANTINEDECIDE`) | `decide.js` (`:162-163`) | `Voided` kayıtta mevcut "kapalı" iletisi, durum adıyla |
-| Bloke Stok (`BLOCKEDSTOCK`) | `blocked.js` (`:41`, `:260`), `Blocked.cshtml` | durum süzgecine `Voided`; rozet; eylem yok |
-| Uyuşmazlık | `quarantine-ui.js`, `details.js`, `blocked.js` | `Decided` / `Closed` kayıtta uyarı rozeti "Kaynak geri alındı · uyuşmazlık" + afiş ("stok bu kaydın dışında değişti; QA kontrolü gerekir") |
+| Bloke Stok (`BLOCKEDSTOCK`) | `Blocked.cshtml` (`:76-81` durum süzgeci), `blocked.js` (`:261-262`, `:275`) | durum süzgecine `<option value="Voided">` (`Blocked.cshtml:76-81`; bugün Açık / Closed / SampleRetained / All); rozet **mevcut kod**: `Open` dışı her durumda `t('Quarantine.Blocked.Status.' + status)` rozeti çizilir (`blocked.js:261-262`) → yeni anahtar `Quarantine.Blocked.Status.Voided` yeter; eylem yok **mevcut kod**: eylemlerin hepsi `open = status === 'Open' && !activeDecision`'a bağlı (`:275`, `:279-281`) → JS değişmez (r5, F-4@962fda71-son-bakis-01; ölçüldü) |
+| Uyuşmazlık | `quarantine-ui.js`, `details.js`, `blocked.js` | `sourceReversalConflict` dolu her kayıtta (durumdan bağımsız: `Open`, `DecisionPending`, `Decided`, `Closed`, `SampleRetained` ve — r4, §8.3 R0a; r5, R5a — `Voided`; `Voided` kayıtta "Geçersiz" afişiyle birlikte) uyarı rozeti "Kaynak geri alındı · uyuşmazlık" + neden metni + afiş ("stok bu kaydın dışında değişti; QA kontrolü gerekir"; `LotChanged`'de "kararın lot değişikliği uygulanmıştı; lot durumunu QA kontrol eder") |
 
 Yeni resx anahtarları (7 dil, `Resources/Views/Quarantine/Quarantine.*.resx`; bugün her dilde 451 anahtar, eşit):
 `Quarantine.HoldState.Voided`, `Quarantine.Blocked.Status.Voided`, `Quarantine.Workflow.Voided`, `Quarantine.History.SourceReversed`,
 `Quarantine.History.SourceReversalConflict`, `Quarantine.Details.VoidedBanner`, `Quarantine.Details.ConflictBanner`,
-`Quarantine.Common.ConflictBadge`, `Quarantine.Conflict.Cause.{Decided,LinesPosted,QuantityChanged}`. Sayfa yardımı (UXH-001):
+`Quarantine.Common.ConflictBadge`, `Quarantine.Conflict.Cause.{Decided,LinesPosted,QuantityChanged,OwnMovementReversed,LotChanged}` (13 anahtar; `LotChanged` r5).
+Her yeni anahtar aynı değişiklikte `Views/Quarantine/Quarantine.cs` `Keys` listesine de eklenir (F-8@ae3fed7d; liste dışındaki anahtar
+`window.QuarantineL10n`'a girmez, `QuarantineWebTests` 7 resx'i bu listeye sabitler — `Quarantine.cs:3-8`). Uyuşmazlık rozeti `Open` /
+`DecisionPending` hold'da ve `Open` blocked'ta da çizilir (R1, R6, R9, R10 açık kayıtta, R0a ve R5a `Voided` kayıtta işaret bırakır). Sayfa yardımı (UXH-001):
 `Help.QUARANTINEQUEUE.*`, `Help.QUARANTINEDETAILS.*`, `Help.BLOCKEDSTOCK.*` içinde bir adım metni güncellenir (yeni anahtar gerekmezse
 mevcut adım, 7 dil). JS'de sabit metin yok (`_QuarantineL10n.cshtml` / `quarantine.l10n.js` yolu).
 
@@ -393,13 +708,19 @@ CT ile netleşir.
 | V1 | `reversalTransactionId` boş olmayan UUID | 400 `INVALID_REQUEST` (iç çağrı; programlama hatası logu) |
 | V2 | işlem kiracı + şirket kapsamında bulunur, `MovementType = REVERSAL`, `ReversesTransactionId` dolu | bulunmazsa `NoChange` (kayıt yok), uyarı logu; kapsam dışı aranmaz |
 | V3 | kayıt `SourceMovementId = ReversesTransactionId` ile kendi kiracı + şirketinde | yoksa `NoChange` |
-| V4 | §8.3 tablosu | Void / Conflict / NoChange |
+| V4 | §8.3 tablosu; köken §4.1 (`OriginOf`, fail-closed: eşlenmeyen köken MOD-0175 sayılır); durum fail-closed: eşleşmeyen birleşim R13 (r4) | Void / Conflict / NoChange (`AlreadyRecorded` / `LostRace` / `NoRecord` / `Unmatched`) |
 | V5 | kapanmış kayıtta karar oluşturma / gönderme | 409 `QUARANTINE_HOLD_CLOSED` (hold), blocked için 409 `QUARANTINE_BLOCKED_CLOSED` |
 | V6 | kapanmış kayıtta İncelemeye al / not güncelle / İncelemeyi tamamla | aynı 409 |
 | V7 | `Voided` kararı yeniden uygula | 409 `QUARANTINE_DECISION_NOT_APPLICABLE` (`QuarantineApplyEngine.cs:83`) |
-| V8 | `Voided` karara gelen Workflow sonucu | 200 `Voided`, olay yazılmaz |
+| V8 | `Voided` karara gelen Workflow sonucu (onay, ret, iptal, zaman aşımı; örnek kimliği verilmiş ya da verilmemiş) | 200 `Voided`, olay yazılmaz (§8.6 W3, W4; `Voided` denetimi örnek kimliği denetiminden önce) |
+| V8a | gönderimin ikinci işlemi kaydı `Voided` bulur | kayıt değişmez; `WorkflowStarted` yazılır; cevap bugünkü `202` + karar gövdesi, `state Voided` (§8.6 W2) |
+| V8b (r4) | gönderimin kilit işlemi, kayıt okunduktan sonra `Voided` olmuş kayda yazamaz | 409 `QUARANTINE_DECISION_ALREADY_PENDING` (bugünkü kod, değişmez; §8.6 W1 (ii)); sonraki gönderim V5 |
+| V8c (r4) | `Voided` kararın satırı kapanıştan sonra postlandı | W5 / W6 yazmaz; iç komut → `Conflict (LinesPosted)` (§8.3 R0a, §8.6) |
+| V8d (r5) | `Voided` karara geri çekme | okumada `Voided`: 409 `QUARANTINE_DECISION_NOT_PENDING` (bugünkü kod); okuma–işlem arasında `Voided`: `200`, `state Voided`, olay / geçmiş yok (§8.6 W7) |
+| V8e (r5) | Workflow başlatma hatası, kayıt taze okumadan sonra `Voided` oldu | ≤ 3 deneme; cevap bugünkü başlatma hatası, `QuarantineRetryException` sızmaz (§8.6 W8) |
+| V8f (r5) | satırsız kararın lot adımı uygulanmış, kaynak geri alındı | `Void` + `Conflict (LotChanged)` aynı işlemde + log (§8.3 R5a) |
 | V9 | geç intake: kaynak geri alınmış | kayıt açılmaz |
-| V10 (DL-3) | §8.8 bekçi kuralları | 422 ek kod / 503 `INVENTORY_UNAVAILABLE` |
+| V10 (DL-3) | §8.8 bekçi kuralları | 422 `REVERSAL_QUALITY_RECORD_LOCKED` / 503 `INVENTORY_UNAVAILABLE` |
 
 ## 13. Failure Path to Verify
 
@@ -418,6 +739,19 @@ CT ile netleşir.
 13. `Voided` kayıtta Karar Ver → 409; ekran düğmeyi çizmez.
 14. Yetkisiz kullanıcı kuyruğu açar → UAS-001 (değişmez).
 15. (DL-3) MOD-0175 hareketinin REVERSAL'ı → 422; karar verilmiş kaydın kaynağının REVERSAL'ı → 422; bekçi okuma hatası → 503; hepsinde defter değişmez.
+16. MOD-0175 kökenli kayıt (Manual / Retest / Recall / Rework hold, `ManualBlock`) kaynağının REVERSAL'ı (DL-1, ya da DL-3'ten önceki eski veri) → `Voided` **değil**, `Conflict` (`OwnMovementReversed`); durum ve aktif karar değişmez.
+17. Gönderim penceresi: karar `Submitted`, Workflow başlarken kapanış commit olur → hold `Voided`, karar `Voided`; gönderimin ikinci işlemi hold'u `DecisionPending`'e çevirmez; sonraki onay → hareket yok.
+18. Kapanıştan sonra ya da kapanışla yarışan ret / iptal / zaman aşımı → karar `Voided` kalır, `Rejected` / `Cancelled` / `TimedOut` olayı ve hold'u `Open`'a çeviren yazım yok.
+19. Uygulanmış kararın kaynağı gözlemci kaçarken geri alındı → terminal besleme `Conflict` yazar (süpürücü emniyet ağı).
+20. Açık kayıt sayısı sayfa boyutunu aşar → imleç ilerler, geri alınmış kayıt ⌈N / PageSize⌉ turda kapanır.
+21. (r4) `Voided` kararın satırı kapanıştan sonra postlandı (uygulama motoru satır öncesi yeniden okumayı kapanıştan önce geçmişti) → `Applied` yok, kayıt `Voided` kalır, iç komut `Conflict (LinesPosted)` yazar (merkezi kayıt `System`, tam 1); iç gönderim başarısızsa geçersiz besleme yazar.
+22. (r4) Gönderimin kayıt okuması ile kilit işlemi arasında kapanış commit olur → 409 `QUARANTINE_DECISION_ALREADY_PENDING`, Workflow başlamaz; sonraki gönderim 409 `QUARANTINE_HOLD_CLOSED`.
+23. (r4) Onay işleminde kayıt sürümü başka bir yazarla değişti (kapanış değil) → yeniden okuma, ikinci denemede `Approved`; uyuşmazlık sızmaz.
+24. (r4) Tablo dışı durum birleşimi → kayıt kapanmaz, yazma yok, hata logu (`Unmatched`).
+25. (r5) Geri çekme ile kapanış yarışır → `Withdrawn` olayı ve geçmiş satırı `Voided`'dan sonra yazılmaz; cevap `200` `state Voided`; ters sırada kayıt `Open` olur, sonra R2.
+26. (r5) Workflow başlatma başarısız, kapanış taze okuma ile işlem arasında commit olur → `QuarantineRetryException` sızmaz, cevap başlatma hatası, kayıt `Voided`.
+27. (r5) Satırsız `ApplyFailed` kararın lot adımı uygulanmış, sonra kaynak geri alındı → `Voided` + `Conflict (LotChanged)` + log; lot değişikliği kalır.
+28. (r5) Kapanış lot adımının karar okuması ile lot commit'i arasında → lot değişir (kabul edilen sınır), satır postlanmaz, kayıt işaretsiz, log `lot_changed_after_void`.
 
 ## 14. Authorization Convention
 
@@ -425,9 +759,11 @@ CT ile netleşir.
   (`inventory.movements.create`, MOD-0173); MOD-0175 bunu yeniden denetlemez.
 - Okuma ve ekranlar ebeveynin anahtarlarıyla: `quarantine.holds.read` (kuyruk, detay, bloke stok). Manifest değişmez
   (`QuarantineBlockedStockManifestProvider`); yalnız `quarantine.*` (CAT-01).
-- Q-05 = B seçilirse (elle kapatma) yeni Tier-3 anahtar `quarantine.holds.void` + `RowAction` `VOIDHOLD` (`IsDangerous: true`) bu pakete eklenir;
-  önerilen karar A (yok).
-- Aktör: merkezi kayıtta Q-03'e göre (öneri `System`), ürün geçmişinde REVERSAL'ı postlayan kullanıcı.
+- Elle kapatma yolu yok (Q-05 = A, Beste 2026-11-03): `quarantine.holds.void` anahtarı ve `VOIDHOLD` satır eylemi bu pakette **yoktur**;
+  manifest değişmez.
+- Aktör (Q-03 = A, Beste 2026-11-03): merkezi kayıtta `ActorType System`, `ActorId` sabit `00000000-0000-0000-0000-000000000175`
+  (`QuarantineIntakeSweeper.QuarantineSweeperActor`, `QuarantineLedgerReads.cs:217`; kapsam §5 XMC-001); ürün geçmişinde REVERSAL'ı postlayan
+  kullanıcı (`ByUserId`); ikisi `CorrelationId` ile defterin `InventoryMovementReversed` denetim satırına bağlanır.
 
 ## 15. Gateway / API Routing Decision
 
@@ -439,61 +775,76 @@ CT ile netleşir.
 Ortak fixture: kiracı T1 / şirket LE1; depo W, lokasyon L1; lotlu ürün; test ayarlarında `QuarantineSourceReversalSweeper` ve intake süpürücüsü
 **kapalı** (testler süpürücüyü `SweepAsync` ile elle koşar). Her sabotaj tek tek uygulanır; kabul kaydına "kırmızı → geri al → yeşil, diff boş" yazılır.
 
+**Kurgu kuralı (F-4@ae3fed7d) — DL-1 ölçütleri DL-3 etkin iken de geçerlidir.** DL-3 bekçisi §8.3 R1, R5–R7, R9–R11'e yol açacak REVERSAL'ı
+reddeder (§8.8; r4: R13; r5: R5a). Bu satırları ölçen DL-1 ölçütleri (AC-2 (b) entegrasyon satırı — r5, AC-4, AC-6, AC-7, AC-8, AC-10 (b), AC-11 Conflict dalı, AC-12, AC-13 (a2), AC-15 (b), AC-37, AC-39, AC-41 — r5) REVERSAL'ı
+ya bekçinin izin verdiği anda postlar ya da eski veriyi kurar; kayıt REVERSAL'dan **sonra** ilerletilir (§8.3 "DL-3 sonrası erişilebilirlik" (b), (c)):
+(i) **geç ilerleme kurgusu** — `InventoryApiFactory`'nin gözlemcisiz varyantı (DI'da `QuarantineSourceReversalObserver` kayıtlı değil; kural,
+handler, süpürücü ve bekçi üretim kodudur, test kancası yok): REVERSAL kayıt `Open` / `PendingApproval` iken 201 alır (bekçi `Allow` — R2 / R4 / R8),
+sonra karar onaylanır / uygulanır / kısmi imha yapılır, kapanış `SweepAsync` ile ya da test gözlemciyi doğrudan çağırarak koşar;
+(ii) **eski veri kurgusu** (R1 için tek yol) — REVERSAL işlemi `inventory_transactions`'a doğrudan yazılır (DL-3'ten önce commit olmuş REVERSAL'ın
+temsili; AC-16 (a)'daki doğrudan yazılmış kayıt emsali). Bekçi hiçbir testte `Allow`'a alınmaz. AC-24'ün DL-3 sonrası süzgeçsiz tam koşusu bu
+ölçütleri değiştirmeden içerir; AC-33 bunu DL-3 kabulünde adıyla ölçer.
+
 **DL-1 — arka uç**
 
 - [ ] AC-1 (zorunlu) — `CUSTOMER_RETURN` 4 EA → `QUARANTINE` (manuel hareket) gözlemciyle `Open / Waiting` hold açar; aynı hareketin REVERSAL'ı 201 → aynı istek içinde hold `status Voided`, `voided.reason SourceReversed`, `voided.reversalTransactionId` = REVERSAL kimliği, `voided.reversedBy` = postlayan, `quantity` 4 (değişmez), `activeDecision` yok; geçmişte tam 1 `SourceReversed` satırı. Sabotaj: `QuarantineSourceReversalObserver` kaydını DI'dan kaldır → hold `Open` kalır, test kırmızı.
-- [ ] AC-2 (zorunlu) — Tablo güdümlü: `GOODS_RECEIPT_PO` → `QUALITY_INSPECTION`, `OPENING_BALANCE` → `QUARANTINE`, `COUNT_GAIN` → `QUARANTINE` ve `InReview` durumundaki hold'un her biri REVERSAL sonrası `Voided`; `reviewState` korunur. Sabotaj: kuralı `Source = CustomerReturn` ile sınırla → üç satır kırmızı.
-- [ ] AC-3 (zorunlu) — `PendingApproval` kararlı hold (test onay portu): REVERSAL → hold `Voided`, karar durumu `Voided` (tek `Voided` olayı), `voided.decisionId` dolu; ardından test portu `Approved` sonucu verir → `ApplyOutcomeAsync` `200 Voided`, yeni olay yok, defterde `quarantine:{decisionId}:*` anahtarlı hareket yok; uzlaştırıcı kararı seçmez. Sabotaj: `ApplyOutcomeAsync` terminal listesinden `Voided`'ı çıkar → 409 ya da `ApplyFailed`, test kırmızı.
-- [ ] AC-4 (zorunlu) — `Approved` (uygulanmamış, uygulama test engeliyle durdurulmuş) ve satırsız `ApplyFailed` kararlı iki hold: REVERSAL → ikisi de `Voided`; `reapplyDecision` → 409 `QUARANTINE_DECISION_NOT_APPLICABLE`; defter hareket sayısı yalnız REVERSAL kadar artar. Sabotaj: `ApplyAsync` uygulanabilir durumlarına `Voided` ekle → hareket postlanmaya çalışılır, test kırmızı.
-- [ ] AC-5 (zorunlu) — `Voided` hold'da `createDecision`, Draft kararın `submitDecision`'ı, `startReview`, `updateHold` → 409 `QUARANTINE_HOLD_CLOSED`; hiçbir kayıt değişmez. Sabotaj: `QuarantineDecisionRules.HoldState` `Voided`'ı `Open` say → `createDecision` 201, test kırmızı.
-- [ ] AC-6 (zorunlu) — Çok kayıtlı kova: hold A (4, kaynak t1) ve hold B (4, kaynak t2) aynı kovada; A'nın Release kararı uygulanır (`Decided`); t1'in REVERSAL'ı defterde 201 (DL-1'de bekçi yok) → A `Decided` kalır, `sourceReversalConflict.cause Decided`, A'da 1 `SourceReversalConflict` geçmiş satırı; B'nin durumu, miktarı, `Version`'ı değişmez. Sabotaj (ayrı ayrı): uyuşmazlık dalını kapanışa çevir → A `Voided`, kırmızı; kovaya göre eşle → B işaretlenir, kırmızı.
-- [ ] AC-7 (zorunlu) — Satırı postlanmış ama `Applied` olayı yazılmamış karar (iki satırlı kısmi karar, satır 1 postlandıktan sonra test engeli) ve satırı postlanmış `ApplyFailed`: kaynağın REVERSAL'ı → `Conflict` (`cause LinesPosted`), durum değişmez. Sabotaj: postlanmış satırı olaylardan say (deftere bakma) → `Voided`, kırmızı.
-- [ ] AC-8 (zorunlu) — Uygulama motoru `Voided` kararın satırını postlamaz: `ApplyAsync` durum denetimini geçtikten sonra (test engeli) kapanış commit olur → satır postlanmaz, `RecordAppliedAsync` hold'u `Decided`'a çevirmez. Sabotaj: satır öncesi yeniden okumayı kaldır → defterde `quarantine:{id}:1` anahtarlı hareket, kırmızı.
+- [ ] AC-2 (zorunlu) — Tablo güdümlü: `GOODS_RECEIPT_PO` → `QUALITY_INSPECTION`, `OPENING_BALANCE` → `QUARANTINE`, `COUNT_GAIN` → `QUARANTINE` ve `InReview` durumundaki hold'un her biri REVERSAL sonrası `Voided`; `reviewState` korunur. (b) Eşleşmeyen durum (r4, F-4@54d736e1, §8.3 R13): `SourceReversalRules` birim testinde tablo dışı satırlar — intake hold `DecisionPending` + aktif karar `Draft`, `Withdrawn` ve `StartFailed`; intake hold `Open` + `ActiveDecisionId` dolu + karar `PendingApproval`; tanımsız `HoldStatus` değeri (`(HoldStatus)99`) ve tanımsız `DecisionState` değeri — her biri `NoChange (Unmatched)`, asla `Void`; entegrasyonda kurgu (i) (r5 — DL-3 bekçisi R13'ü reddettiği için REVERSAL önce postlanır): gözlemcisiz fabrikada intake hold `Open` iken REVERSAL 201 (bekçi `Allow`, R2), ardından hold doğrudan `DecisionPending` + `Draft` aktif karara yazılır ve `SweepAsync` koşar → kayıt, `Version`, karar olayları, geçmiş ve `central_audit_outbox` değişmez, `quarantine.source_reversal.unmatched` logunda kayıt numarası var; aynı turdaki ikinci (eşleşen) kayıt yine `Voided` olur (tur durmaz). Sabotaj (ayrı ayrı): kuralı `Source = CustomerReturn` ile sınırla → (a) üç satır kırmızı; varsayılan dalı `Void`'e çevir → (b) tablo dışı satırlar `Voided`, kırmızı; varsayılan dalda `ArgumentOutOfRangeException` at → (b) ikinci kayıt kapanmaz, kırmızı.
+- [ ] AC-3 (zorunlu) — (a) `PendingApproval` kararlı hold (test onay portu): REVERSAL → hold `Voided`, karar durumu `Voided` (tek `Voided` olayı), `voided.decisionId` dolu; ardından test portu `Approved` sonucu verir → `ApplyOutcomeAsync` `200 Voided`, yeni olay yok, defterde `quarantine:{decisionId}:*` anahtarlı hareket yok; uzlaştırıcı kararı seçmez. (b) Ret sonucu (F-12@ae3fed7d): aynı kurgu üç ayrı hold / kararla; her birinde `Voided`'dan sonra test portu sırasıyla `Rejected`, `Cancelled`, `TimedOut` verir → her biri `200 Voided`; karar olaylarında `Rejected` / `Cancelled` / `TimedOut` yok; hold `Voided`, `activeDecision` yok; geçmişte `Rejected` / `Cancelled` / `TimedOut` satırı yok; ayrıca örnek kimliği verilmiş sonuç da `200 Voided` (V8). Sabotaj (ayrı ayrı): `ApplyOutcomeAsync`'te `Voided` denetimini kaldır → (a) 409 ya da `ApplyFailed`, kırmızı; `CloseWithoutMovementAsync`'in `Voided` denetimini kaldır → (b) `Rejected` olayı yazılır, kırmızı; `StateOf` emiciliğini kaldır → (b) karar durumu `Rejected`, kırmızı.
+- [ ] AC-4 (zorunlu) — Kurgu (i), çok kayıtlı kova değil: hold X (`Approved`, uygulama test engeliyle satır postlanmadan durdurulmuş) ve hold Y (satırsız `ApplyFailed`): her ikisinin kaynağının REVERSAL'ı kayıt `PendingApproval` iken 201 (gözlemcisiz); sonra X onaylanır (engel), Y onaylanır → kova boş olduğu için defter `INSUFFICIENT_STOCK` → `ApplyFailed`, 0 satır; `SweepAsync` → ikisi de `Voided` + karar `Voided` (R5); `reapplyDecision` → 409 `QUARANTINE_DECISION_NOT_APPLICABLE`; engel kalkınca X'in satırı postlanmaz; defter hareket sayısı yalnız iki REVERSAL kadar artar. Sabotaj: `ApplyAsync` uygulanabilir durumlarına `Voided` ekle → X'in satırı postlanmaya çalışılır, kırmızı.
+- [ ] AC-5 (zorunlu) — `Voided` hold'da (AC-1 kurgusu, tek kayıtlı kova boş) `createDecision`, Draft kararın `submitDecision`'ı, `startReview`, `updateHold` → 409 ve `error.code` **`QUARANTINE_HOLD_CLOSED`** (kod da ölçülür, yalnız durum değil); hiçbir kayıt değişmez. Sabotaj: `QuarantineDecisionRules.HoldState` `Voided`'ı `Open` say → `createDecision` V5'i geçer ve sonraki denetimlerde reddedilir — geçerli satırlı istekte V7 kova denetimi 409 `QUARANTINE_STOCK_CHANGED` (kova 0 < 4; denetim sırası `DecisionHandlers.cs:29-49`, `QuarantineDecisionRules.cs:131-134`) — kod `QUARANTINE_HOLD_CLOSED` değil, kırmızı (r5, F-4@962fda71-son-bakis-01: r4'ün beklediği 201 tek kayıtlı kovada oluşmaz; kabul kaydına beklenen kırmızı bu kodla yazılır).
+- [ ] AC-6 (zorunlu) — Kurgu (i), çok kayıtlı kova: hold A (4, kaynak t1) ve hold B (4, kaynak t2) aynı kovada; gözlemcisiz fabrikada t1'in REVERSAL'ı A `Open` iken 201 (kovada B'nin 4'ü kalır); sonra A'nın Release kararı onaylanır ve uygulanır (V7 kova bakiyesine bakar, G-10) → A `Decided`; `SweepAsync` (terminal besleme) → A `Decided` kalır, `sourceReversalConflict.cause Decided`, A'da 1 `SourceReversalConflict` geçmiş satırı; B'nin durumu, miktarı, `Version`'ı değişmez. Sabotaj (ayrı ayrı): uyuşmazlık dalını kapanışa çevir → A `Voided`, kırmızı; kovaya göre eşle → B işaretlenir, kırmızı; terminal beslemeyi kaldır (F-3) → A işaretsiz, kırmızı.
+- [ ] AC-7 (zorunlu) — Kurgu (i): hold A (4, kaynak t1) ve hold B (2) aynı kovada; t1'in REVERSAL'ı A'nın iki satırlı kısmi kararı (Release 2 + Block 2) `PendingApproval` iken 201 (kovada 2 kalır); onay → (a) satır 1 postlandıktan sonra test engeli, `SweepAsync` → `Conflict` (`cause LinesPosted`, R6), durum `DecisionPending`; (b) ayrı koşu, engelsiz: satır 1 postlanır, satır 2 `INSUFFICIENT_STOCK` → satırı postlanmış `ApplyFailed`, `SweepAsync` → `Conflict` (`LinesPosted`). İkisinde karar olayı yazılmaz. Sabotaj: postlanmış satırı olaylardan say (deftere bakma) → (a) `Voided`, kırmızı.
+- [ ] AC-8 (zorunlu) — Uygulama motoru `Voided` kararın satırını postlamaz. Kurgu (i), çok kayıtlı kova: hold A (4, `PendingApproval`) ve hold B (4) aynı kovada; A'nın kaynağının REVERSAL'ı 201 (gözlemcisiz; kovada B'nin 4'ü kalır); onay → `Approved` yazılır, `ApplyAsync` durum denetimini geçtikten sonra test engeli; `SweepAsync` kapanışı commit eder (R5) → engel kalkar → satır postlanmaz, `Applied` yazılmaz, `RecordAppliedAsync` hold'u `Decided`'a çevirmez. Sabotaj: satır öncesi yeniden okumayı kaldır → B'nin stoğuyla defterde `quarantine:{id}:1` anahtarlı hareket, kırmızı.
 - [ ] AC-9 (zorunlu) — Inbound → `BLOCKED` 3 EA `BlockedStock` (origin `OtherInbound`) açar; REVERSAL → `status Voided`, `voided` dolu, geçmiş `SourceReversed`; bloke stok listesi `status=Open` süzgecinde görünmez. Sabotaj: gözlemciyi yalnız hold'a bağla → blocked `Open` kalır, kırmızı.
-- [ ] AC-10 (zorunlu) — (a) `PendingApproval` imha kararlı blocked → `Voided` + karar `Voided`; (b) 1 EA imha uygulanmış (miktar 3 → 2) blocked, aynı kovada başka blocked kaydının 3 EA'sı varken kaynağın REVERSAL'ı 201 → `Conflict` (`cause QuantityChanged`). Sabotaj: miktar karşılaştırmasını kaldır → (b) `Voided`, kırmızı.
-- [ ] AC-11 (zorunlu) — Sıralı tam bir kez: gözlemci kapatır; `SweepAsync` iki kez → 0 değişiklik; gözlemci aynı işlemle yeniden çağrılır → 0; sonuç: geçmiş `SourceReversed` 1, `central_audit_outbox`'ta bu kayıt için 1 satır, `Version` bir kez arttı. Ters sıra: gözlemci test dekoratörüyle hata atar (posting yine 201), süpürücü kapatır, gözlemci yeniden çağrılır → 0. Sabotaj: "zaten kapalı" erken dönüşünü kaldır → ikinci geçmiş satırı, kırmızı.
-- [ ] AC-12 (zorunlu) — Eşzamanlı tam bir kez: gözlemci ve `SweepAsync` `Task.WhenAll` ile; sonuç AC-11 ile aynı (1 geçmiş, 1 merkezi kayıt); `TransactionRetryCounter` `quarantine` türü > 0 (çakışma dalı koştu; 0 ise test destekleyici sayılır ve yeniden yazılır). Sabotaj: beklenen `Version` olmadan değiştir → 2 geçmiş satırı, kırmızı.
-- [ ] AC-13 (zorunlu) — Kapanış ↔ onay yarışı (test dekoratörü onay işlemini okumadan sonra kapanış commit olana kadar bekletir; iki sıra da koşulur): bir kararda `Voided`'dan sonra `Approved` / `Applied` olayı hiçbir koşuda yok; tam biri kazanır: ya `Voided` (defter hareketsiz) ya `Applied` + `Decided` (ardından kapanış `Conflict` yazar). Sabotaj: onay kolunun ortak yazmasını (kayıt `Version` artışı ya da eşdeğeri) kaldır → `Voided` + `Approved` birlikte, kırmızı.
+- [ ] AC-10 (zorunlu) — (a) `PendingApproval` imha kararlı intake blocked (`OtherInbound`, 3 EA) → REVERSAL 201 → `Voided` + karar `Voided` (R8). (b) Kurgu (i): intake blocked X (3, kaynak t) ve blocked Y (3) aynı kovada; t'nin REVERSAL'ı X `Open` ve kararsızken 201 (R8 `Allow`; kovada 3 kalır); sonra X'te 1 EA imha uygulanır (miktar 3 → 2); `SweepAsync` → `Conflict` (`cause QuantityChanged`, R9); Y değişmez. Sabotaj: miktar karşılaştırmasını kaldır → (b) `Voided`, kırmızı.
+- [ ] AC-11 (zorunlu) — Sıralı tam bir kez: (a) Void dalı: gözlemci kapatır; `SweepAsync` iki kez → 0 değişiklik; gözlemci aynı işlemle yeniden çağrılır → `NoChange (AlreadyRecorded)`; sonuç: geçmiş `SourceReversed` 1, `central_audit_outbox`'ta bu kayıt için 1 satır, `Version` bir kez arttı. Ters sıra: gözlemci test dekoratörüyle hata atar (posting yine 201), süpürücü kapatır, gözlemci yeniden çağrılır → 0. (b) Conflict dalı (F-3@ae3fed7d): AC-6 kurgusunda `SweepAsync` işaretler; `SweepAsync` iki kez daha → 0 (işaretli kayıt beslemeye girmez); gözlemci REVERSAL işlemiyle doğrudan çağrılır → `NoChange (AlreadyRecorded)`; 1 `SourceReversalConflict` geçmiş satırı, 1 merkezi kayıt. Sabotaj (ayrı ayrı): "zaten kapalı" erken dönüşünü (R0) kaldır → (a) ikinci geçmiş satırı, kırmızı; beslemenin `SourceReversalConflict` boş süzgecini ve R0'ı kaldır → (b) ikinci işaret satırı, kırmızı.
+- [ ] AC-12 (zorunlu) — Eşzamanlı tam bir kez (F-13@ae3fed7d): gözlemcisiz fabrikada REVERSAL 201 (hold `Open`); `QuarantineSourceReversalObserver.OnPostedAsync(REVERSAL)` ve `SweepAsync` `Task.WhenAll` ile; test dekoratörü (`IQuarantineRepository` sarmalayıcısı) iki çağıranın ilk kayıt okumasını (`FindHoldBySourceMovementAsync` ya da uygulamadaki eşdeğer ilk okuma) ikisi de okuyana kadar bekletir (engel = 2) → ikisi de işleme girer. Sonuç: 1 geçmiş, 1 merkezi kayıt, `Version` bir kez arttı; komut sonuçlarından biri `Voided`, diğeri **`NoChange (LostRace)`** — kaybedenin yeniden okuma dalı adıyla sayılır (sürüm uyuşmazlığı ya da Mongo yazma çakışması sonrası sürüm uyuşmazlığı; iki yol aynı dala düşer, §8.2). `TransactionRetryCounter` `quarantine` sayısı kabul kaydına bilgi olarak yazılır, ölçüt değildir. Sabotaj (ayrı ayrı): beklenen `Version` olmadan değiştir → 2 geçmiş satırı, kırmızı; `LostRace` dalında yeniden okumayı kaldır (hatayı yukarı at) → kaybeden hata döner, sonuç `LostRace` değil, kırmızı.
+- [ ] AC-13 (zorunlu) — Kapanış ↔ karar yazarları (F-2@ae3fed7d, F-12@ae3fed7d; r5: F-1@962fda71, F-1@962fda71-son-bakis-01; §8.6 W1–W8 ve lot adımı). Her yarış iki sırayla koşulur; test dekoratörleri `InventoryApiFactory` DI'ında. (a) Kapanış ↔ onay (W3): dekoratör onay işlemini işlem içi olay okumasından sonra kapanış commit olana kadar bekletir → bir kararda `Voided`'dan sonra `Approved` / `Applied` olayı hiçbir koşuda yok; tam biri kazanır: ya `Voided` (defter hareketsiz) ya `Applied` + `Decided` (ardından kapanış `Conflict` yazar). (a2) Sürüm uyuşmazlığı, `Voided` değil (r4, F-2@54d736e1): MOD-0175 kökenli Manual hold, `PendingApproval` kararlı; kaynağının REVERSAL'ı doğrudan yazılmış (kurgu (ii)); dekoratör onay işlemini kayıt okumasından sonra bekletir, bu arada `SweepAsync` R1 `Conflict (OwnMovementReversed)` yazar (`Version + 1`, durum değişmez) → onayın ilk denemesi sürüm uyuşmazlığına düşer, ikinci denemede kaydı yeniden okur, `Approved` tam 1 kez yazılır ve uygulama sürer — kurgu (ii)'de doğrudan yazılmış REVERSAL bakiyeye dokunmaz (bakiye bacakları yalnız `LedgerPosting` ile yazılır, `InternalMovementPostingService.cs:148-155`), Manual hold'un QUARANTINE kovası dolu kalır → Release satırı postlanır, karar **`Applied`**, hold **`Decided`**, R1 işareti (`OwnMovementReversed`) kalır (r5, F-5@962fda71-son-bakis-01: r4'ün beklediği `ApplyFailed` bu kurguda oluşmaz); `ApplyOutcomeAsync` hata atmaz, dekoratörün saydığı deneme sayısı 2; ayrı koşu: dekoratör her denemede sürümü artırır → üç deneme, `QuarantineRetryException` yukarı çıkar, `Approved` olayı ve `Approved` geçmiş satırı yok (işlem geri alındı). (b) Kapanış ↔ gönderim, `Submitted` penceresi (W2): (b1) dekoratör `IQuarantineApprovalPort.StartAsync`'i (gönderimin iki işlemi arası) kapanış commit olana kadar bekletir; (b2) dekoratör ikinci işlemin taze kayıt okumasından sonra kapanış commit olana kadar bekletir → ikisinde: hold `Voided` kalır (`DecisionPending` değil), karar `Voided`, `WorkflowStarted` olayı var, cevap `202` gövdesi `state Voided`; ardından test portu `Approved` → `200 Voided`, `Approved` olayı yok, defter hareketsiz. (c) Kapanış ↔ ret (W4): dekoratör `CloseWithoutMovementAsync`'i işlem içi olay okumasından sonra kapanış commit olana kadar bekletir → karar `Voided`, `Rejected` olayı yok, hold `Voided`; ters sırada (ret önce) → karar `Rejected`, hold `Open` olmuş ve sonra `Voided` (R2), `Voided` olayı yok. (d) Kapanış ↔ gönderimin kilidi (W1, r4, F-3@54d736e1): Draft kararlı intake hold; dekoratör gönderimin kayıt okumasından (`DecisionHandlers.cs:371`) sonra, kilit işleminden önce kapanış commit olana kadar bekletir → cevap 409 `QUARANTINE_DECISION_ALREADY_PENDING`; karar olaylarında `Submitted` yok, `IQuarantineApprovalPort.StartAsync` çağrılmadı (dekoratör sayar: 0), hold `Voided` ve `ActiveDecisionId` boş, `DecisionSubmitted` geçmiş satırı yok; aynı kararın ikinci gönderimi → 409 `QUARANTINE_HOLD_CLOSED`. (e) Kapanış ↔ geri çekme (W7; r5, F-1@962fda71-son-bakis-01): `PendingApproval` kararlı intake hold, REVERSAL 201 (gözlemcisiz); dekoratör (`IQuarantineWorkflowClient` sarmalayıcısı) `CancelTaskAsync`'in başarılı dönüşünü — işlem dışı durum okumasından (`WorkflowHandlers.cs:109-119`) ve görev iptalinden (`:136`) sonra, işlemden önce — `SweepAsync` kapanışı (R4) commit edene kadar bekletir → cevap `200`, gövdede `state Voided`; karar olaylarında `Withdrawn` yok, `Withdrawn` geçmiş satırı yok, hold `Voided` ve `ActiveDecisionId` boş; ters sırada (geri çekme önce) → karar `Withdrawn`, hold `Open` olmuş ve sonra `Voided` (R2), karara `Voided` olayı yok. Ayrı satır: kapanıştan sonra gelen geri çekme → 409 `QUARANTINE_DECISION_NOT_PENDING`, test Workflow istemcisinin iptal sayacı 0. (f) Kapanış ↔ Workflow başlatma hatası (W8; r5, F-1@962fda71-son-bakis-01): Draft kararlı intake hold; test onay portu `StartAsync`'te başlatma hatası döner (kod ve durum test portundan, ör. 503 `QUARANTINE_WORKFLOW_UNAVAILABLE`); dekoratör (`IQuarantineRepository` sarmalayıcısı, AC-12 deseni) hata kolunun taze kayıt okumasını (`DecisionHandlers.cs:441-442`) döndükten sonra, işlemden önce kapanış (R3, `Submitted` penceresi) commit olana kadar bekletir → cevap test portunun hata kodu ve durumu (500 değil), `QuarantineRetryException` sızmaz; dekoratörün saydığı deneme sayısı 2; hold `Voided`, `ActiveDecisionId` boş, karar durumu `Voided` (`StartFailed` olayı var — emici). (g) Lot adımı ana yolu (r5, F-1@962fda71): intake hold (`GOODS_RECEIPT_PO` → `QUALITY_INSPECTION`, lot `Draft`), Release 4 kararı (`LotStatusTarget Released`, `ChangesLot`) `PendingApproval`, REVERSAL 201 (gözlemcisiz); onay → `Approved`; dekoratör (`IApprovedLotChanges` sarmalayıcısı, `QuarantineServiceCollectionExtensions.cs:73`) `FindApprovedAsync` okumasını **önce** bekletir, `SweepAsync` R5 ile kapatır (lot anahtarı yok), engel kalkar → lot komutu 409 `LOT_APPROVAL_REQUIRED`, lot `Draft` kalır, lot geçmişinde `mod-0175:{kararId}` satırı yok; karar olaylarında `ApplyFailed` / `Applied` yok, satır postlanmaz, kayıt `Voided` ve işaretsiz, `lot_changed_after_void` logu yok. Not: bu sırada `Voided` son olaydır, `StateOf` emiciliği burada ölçülmez (AC-3 (b), AC-13 (b) ölçer). (g2) Lot adımı penceresi — kabul edilen sınır (§8.6): aynı kurgu, dekoratör `FindApprovedAsync` **dönüşünden sonra** (karar `Approved` okundu), lot işleminden önce kapanışı commit ettirir → lot `Released` (sınır: `Voided` karar için değişti), satır postlanmaz, kayıt `Voided` ve **işaretsiz**, `quarantine.source_reversal.lot_changed_after_void` logunda kayıt numarası, karar kimliği ve lot kimliği; kabul kaydına "kabul edilen sınır" diye yazılır. Sabotaj (ayrı ayrı): onay kolunun kayıt `Version` artışını kaldır → (a) `Voided` + `Approved` birlikte, kırmızı; onay kolunun yeniden deneme döngüsünü kaldır → (a2) `QuarantineRetryException` sızar, kırmızı; `LockAsync`'i beklenen sürüm olmadan yaz → (d) eski kopya `Voided`'ı ezer, hold `Open` + `ActiveDecisionId` dolu, kırmızı; W2'nin `Voided` denetimini kaldır → (b1) hold `DecisionPending`, kırmızı; W2'nin yeniden deneme döngüsünü kaldır → (b2) gönderim hata döner, kırmızı; `StateOf` emiciliğini kaldır → (b) karar `PendingApproval`, onay satır postlar, kırmızı; W4'ün kayıt `Version` artışını kaldır → (c) `Rejected` olayı `Voided`'dan sonra yazılır, kırmızı; W7'nin işlem içi `Voided` denetimini kaldır → (e) `Withdrawn` olayı ve geçmiş satırı `Voided`'dan sonra yazılır, kırmızı; W8'in yeniden deneme döngüsünü kaldır → (f) `QuarantineRetryException` sızar (500), kırmızı; `FindApprovedAsync`'in durum denetimini "olaylarda `Approved` var mı"ya çevir (`QuarantineLotGate.cs:234`) → (g) lot `Released`, kırmızı; W6'nın `Voided` denetimini lot reddi yolunda kaldır → (g) `ApplyFailed` olayı yazılır, kırmızı; `lot_changed_after_void` logunu kaldır → (g2) log yok, kırmızı.
 - [ ] AC-14 (zorunlu) — Geç intake: intake gözlemcisi kapalıyken `CUSTOMER_RETURN` ve REVERSAL postlanır, sonra intake `SweepAsync` → hold açılmaz, geçmiş yok. Sabotaj: `IsReversedAsync` denetimini kaldır → `Open` hold açılır, kırmızı.
-- [ ] AC-15 (zorunlu) — Eski veri: hold ve REVERSAL'ı `CreatedAt` 30 gün geriye alınmış fixture (gözlemci kapalıydı) → ilk `SweepAsync` turunda `Voided`. Sabotaj: beslemeyi "son N saatteki REVERSAL'lar" penceresine çevir → hold `Open`, kırmızı.
-- [ ] AC-16 (zorunlu) — Kiracı ve şirket izolasyonu: (a) T2'de, `SourceMovementId`'si T1'in kaynak hareket kimliğine eşitlenmiş hold (doğrudan yazılmış) T1'in REVERSAL'ından sonra değişmez; (b) aynı kiracının LE2'sindeki aynı kurgu değişmez; (c) süpürücü çapraz kiracı beslemeden her kaydı kendi `TenantId` + `LegalEntityId` kapsamında işler (merkezi kaydın `TenantId` / `CompanyId`'si kaydınki); (d) T1 kullanıcısı T2'nin `Voided` hold'unu `GET` eder → 404. Sabotaj (ayrı ayrı): kaynak hareket aramasından kiracı süzgecini kaldır → (a) kırmızı; şirket süzgecini kaldır → (b) kırmızı.
+- [ ] AC-15 (zorunlu) — Eski veri ve sayfalama (F-3, F-11@ae3fed7d): (a) intake hold ve REVERSAL'ı `CreatedAt` 30 gün geriye alınmış fixture (gözlemci kapalıydı) → ilk `SweepAsync` turunda `Voided`; (b) kurgu (ii): `Decided` intake hold ve 30 gün önceki doğrudan yazılmış REVERSAL'ı → terminal besleme `Conflict (Decided)`; (c) `SourceReversalPageSize = 2` test ayarıyla 5 açık intake hold, yalnız `Id`'si sıralamada sonuncu olanın (kimlikler fixture'da seçilir) kaynağı geri alınmış → 1. ve 2. tur o kaydı değiştirmez, 3. tur `Voided`, 4. tur imleç başa döner ve 0 değişiklik; varsayılan `SourceReversalPageSize` 500; (d) defter sorgusunun planı (`explain`) `ux_tenant_le_reversestransactionid` indeksini kullanır (`IXSCAN`, çapraz kiracı defter taraması yok). Sabotaj (ayrı ayrı): beslemeyi "son N saatteki REVERSAL'lar" penceresine çevir → (a) `Open`, kırmızı; terminal beslemeyi kaldır → (b) işaretsiz, kırmızı; imleç ilerletmesini kaldır (her tur ilk sayfa) → (c) 3. turdan sonra `Open`, kırmızı; defter sorgusundan `TenantId` / `LegalEntityId`'yi kaldır → (d) plan `COLLSCAN`, kırmızı.
+- [ ] AC-16 (zorunlu) — Kiracı ve şirket izolasyonu: (a) T2'de, `SourceMovementId`'si T1'in kaynak hareket kimliğine eşitlenmiş hold (doğrudan yazılmış) T1'in REVERSAL'ından sonra değişmez; (b) aynı kiracıda (F-10@ae3fed7d): LE1'de kayıt açmayan hareket t (`GOODS_RECEIPT_PO` → `AVAILABLE`) ve LE2'de `SourceMovementId = t` ile doğrudan yazılmış hold — tekil indeks kiracı kapsamlıdır, LE1'de t'li kayıt olmadığı için yazılabilir (§4.4) — t'nin LE1'deki REVERSAL'ı → LE2 hold değişmez; (c) süpürücü her kaydı kendi `TenantId` + `LegalEntityId` kapsamında işler (merkezi kaydın `TenantId` / `CompanyId`'si kaydınki); (d) T1 kullanıcısı T2'nin `Voided` hold'unu `GET` eder → 404. Sabotaj (ayrı ayrı): kaynak hareket aramasından kiracı süzgecini kaldır → (a) kırmızı; şirket süzgecini kaldır → (b) kırmızı.
 - [ ] AC-17 (zorunlu) — İlgisiz REVERSAL (kaynak olmayan `GOODS_RECEIPT_PO` → `AVAILABLE`'ın geri alınması) → hiçbir kayıt, geçmiş satırı, merkezi kayıt; bütün kayıt `Version`'ları aynı. Sabotaj: kaydı kovayla (ürün + lot + lokasyon + durum) eşle → aynı kovadaki hold kapanır, kırmızı.
 - [ ] AC-18 (zorunlu) — Açık yüklemi: `Voided` hold KPI kartlarında, `late=true` süzgecinde, `lots/{lotId}/quality-status` miktarlarında, yeniden test kuyruğunun açık hold'larında, CT-Q6 rezervasyon çakışma listesinde, MOD-0177 süreç içi recall istekçisinin açık hold listesinde (`QuarantineRecallRequester.cs:59`) ve `EnteredBefore` süzgecinde sayılmaz (her biri ayrı ölçüm); kaynak taraması `HoldStatus.Decided` karşılaştırmasını `QuarantineRecordStates` dışında bulamaz. Sabotaj: `LotQualityStatusHandler.cs:112`'yi `!= HoldStatus.Decided`'a geri çevir → kalite durumu ölçümü ve kaynak taraması kırmızı.
 - [ ] AC-19 (zorunlu) — Kapanış stok yazmaz: AC-1, AC-3, AC-9 senaryolarında defter işlem sayısı yalnız REVERSAL kadar artar; `sourceModule = MOD-0175` yeni işlem yok; "0175 defter koleksiyonuna yazmaz" mimari testi yeşil. Sabotaj: handler'a `STATUS_TRANSFER` postlaması ekle → kırmızı.
-- [ ] AC-20 (zorunlu) — Merkezi kayıt: her `Voided` / `Conflict` için `central_audit_outbox`'ta tam 1 satır — `RequestType` komut adı, `Category MasterData`, `Operation LifecycleTransition`, `EntityType QuarantineHold` / `BlockedStock`, `EntityId` kayıt kimliği, `SourceModule QUARANTINE-BLOCKED-STOCK`, `ActorType` Q-03 kararı (öneri `System`), `CorrelationId` = REVERSAL'ın `CorrelationId`'si, `WrittenInCommandTransaction = true`; `NoChange` → 0 satır. `CentralAuditDeclarationTests` sabiti 71 → 73. Sabotaj: komuttan `ICentralAuditDeclaration`'ı kaldır → 0 satır ve bildirim testi kırmızı.
+- [ ] AC-20 (zorunlu) — Merkezi kayıt: her `Voided` / `Conflict` için `central_audit_outbox`'ta tam 1 satır (R5a'nın kapanış + işareti tek komut, tek işlem → 1 satır; r5) — `RequestType` komut adı, `Category MasterData`, `Operation LifecycleTransition`, `EntityType QuarantineHold` / `BlockedStock`, `EntityId` kayıt kimliği, `SourceModule QUARANTINE-BLOCKED-STOCK`, `ActorType System`, `ActorId` `00000000-0000-0000-0000-000000000175`, `ActorDisplayName` boş (Q-03 = A), `CorrelationId` = REVERSAL'ın `CorrelationId`'si, `WrittenInCommandTransaction = true`; `NoChange` → 0 satır. Yollar ayrı ayrı ölçülür (r4: dört yol): (a) gözlemci yolu — REVERSAL'ı adı ve `actor_type` claim'i dolu bir kiracı kullanıcısı postlar; aynı istekteki REVERSAL'ın kendi `PostMovementCommand` satırı `ActorType TenantUser`, `ActorId` = postlayan kalır; (b) süpürücü yolu (gözlemci kapalı, `SweepAsync`) — `ActorType System`, `CorrelationId` = REVERSAL'ınki (olay kimliği değil); (c) kip sızmaz — aynı DI kapsamında kapanıştan sonra gönderilen başka işaretli komutun (test: ikinci bir hold'da `UpdateHoldCommand`) satırı `ActorType TenantUser`, `ActorId` = çağıran; (d) uygulama motoru yolu (r4, F-1@54d736e1; W5 / W6 `Voided` dalı, AC-39 kurgusu) — iç komutun satırı `ActorType System`, `RequestType` `ApplySourceReversalToHoldCommand`, `CorrelationId` = REVERSAL'ınki; aynı akıştaki dış komutun satırı kendi kimliğiyle ayrı kalır ya da hiç oluşmaz (dış komut bu dalda yazmaz). W5 için istisna yoktur: işareti hiçbir yolda W5 yazmaz. `CentralAuditDeclarationTests` sabiti geliştirme anında dalda ölçülen N → N + 2 (bugün 71 → 73; MOD-0178 DL-2 önce birleşirse 82 → 84; F-7@ae3fed7d, §5). Sabotaj (ayrı ayrı): komuttan `ICentralAuditDeclaration`'ı kaldır → 0 satır ve bildirim testi kırmızı; sistem kipini kaldır → (a) `ActorType TenantUser` / `ActorId` postlayan, kırmızı; kipi gönderimden sonra kapatma → (c) `System`, kırmızı; süpürücü yolunda REVERSAL'ın `CorrelationId`'sini taşıma → (b) `CorrelationId` = olay kimliği, kırmızı; kipi yalnız gözlemci / süpürücü gönderiminde aç (gönderene bağla) → (d) iç komut satırı `ActorType TenantUser`, kırmızı.
 - [ ] AC-21 (zorunlu) — K2 fail-closed: test dekoratörü enlist edilen merkezi kaydın yazımını hata attırır → kapanış işlemi geri alınır: hold `Open`, geçmiş satırı yok, karar olayı yok; dekoratör kaldırılınca sonraki `SweepAsync` kapatır. Sabotaj: merkezi kaydı işlem dışında, commit'ten sonra yaz → hold `Voided` ama kayıt yok, kırmızı.
 - [ ] AC-22 (zorunlu) — Ürün izi: `SourceReversed` / `SourceReversalConflict` geçmiş satırı `ByUserId` = REVERSAL'ın `CreatedBy`'ı, `ReversalTransactionId`, `Reason` = REVERSAL numarası, `CorrelationId` = REVERSAL'ınki taşır; detay ucunun `history` dizisinde görünür; geçmiş deposu yalnız ekleme (mevcut mimari testi). Sabotaj: `ReversalTransactionId`'yi yazma → kırmızı.
-- [ ] AC-23 (zorunlu) — QUARANTINE 1.4.0: `ContractSchemaValidator` yeşil; `Voided` hold / blocked / karar cevapları şemaya uyar; 1.3.0 ile karşılaştırma testi hiçbir yol, parametre, özellik, `required` listesi, durum kodu ya da mevcut enum değerinin değişmediğini ölçer; `x-changelog` 1.4.0 satırı var. Sabotaj (ayrı ayrı): `voided`'ı `required`'a ekle → kırmızı; mevcut bir `HistoryAction` değerini yeniden adlandır → kırmızı.
-- [ ] AC-24 (zorunlu) — Toplu kapı: `services/Diten.InventoryService` testleri süzgeçsiz tam koşu yeşil (taban kırmızısı aynı gün `main`'de karşılaştırılır); `tests/architecture/TenantArchitecture.ArchitectureTests` `AuditTrailStandardTests` defter sayıları değişmez (yeni borç / istisna satırı yok). Sabotaj: kapı ölçüsüdür — test sınıfını değil kabul kaydının ölçümünü kırmızıya çevirir (MOD-0173-FU03 AC-32 emsali).
+- [ ] AC-23 (zorunlu) — QUARANTINE 1.4.0: `ContractSchemaValidator` yeşil; `Voided` hold / blocked / karar cevapları, REVERSAL satırlı `movements` dizisi (r5) ve beş `cause` değerli (`Decided`, `LinesPosted`, `QuantityChanged`, `OwnMovementReversed`, `LotChanged` — r5) `sourceReversalConflict` şemaya uyar; 1.3.0 ile karşılaştırma testi hiçbir yol, parametre, özellik, `required` listesi, durum kodu ya da mevcut enum değerinin değişmediğini ölçer; `x-changelog` 1.4.0 satırı var. Sabotaj (ayrı ayrı): `voided`'ı `required`'a ekle → kırmızı; mevcut bir `HistoryAction` değerini yeniden adlandır → kırmızı.
+- [ ] AC-24 (zorunlu) — Toplu kapı: `services/Diten.InventoryService` testleri süzgeçsiz tam koşu yeşil (taban kırmızısı aynı gün `main`'de karşılaştırılır); `tests/architecture/TenantArchitecture.ArchitectureTests` `AuditTrailStandardTests` defter sayıları değişmez (yeni borç / istisna satırı yok). DL-3 kabulündeki tam koşu DL-1 ölçütlerini kurgu kuralıyla değiştirmeden içerir (AC-33). Sabotaj: kapı ölçüsüdür — test sınıfını değil kabul kaydının ölçümünü kırmızıya çevirir (MOD-0173-FU03 AC-32 emsali).
+- [ ] AC-37 (zorunlu) — MOD-0175 kökenli kayıt kapanmaz (F-1@ae3fed7d, §8.3 R1; DL-1, AC-24'ten sonra eklendi — numaralar r2 ile sabit). Kurgu (ii), tablo güdümlü beş satır: Manual hold (`quarantineStock` Manual), Retest hold (`quarantineStock` Retest), Recall hold (`quarantineStock`, origin MOD-0177), Rework hold (Rework kararı uygulanmış blocked'tan), `ManualBlock` blocked (`blockStock`); her birinin kaynak hareketinin REVERSAL'ı doğrudan yazılır, kapanış iki yoldan ayrı ayrı koşar — gözlemci (`OnPostedAsync` test tarafından o işlemle çağrılır) ve `SweepAsync` (açık besleme; Rework'ün kaynak blocked'ı `Closed` iken bile hold açık) → kayıt `status`, `activeDecision`, `quantity` değişmez, `voided` yok, `sourceReversalConflict.cause OwnMovementReversed`, 1 `SourceReversalConflict` geçmiş satırı, 1 merkezi kayıt (`Operation LifecycleTransition`, `ActorType System`); aktif kararı olan Manual hold'da karara olay yazılmaz. Çapraz denetim satırı: `Source = CustomerReturn` ile doğrudan yazılmış ama aslının `SourceModule = MOD-0175` olduğu hold → `Conflict (OwnMovementReversed)` + uyarı logu (fail-closed). Sabotaj (ayrı ayrı): köken denetimini kaldır (her kayda intake kuralı) → Manual hold `Voided`, kırmızı; aslın `SourceModule` çapraz denetimini kaldır → çapraz denetim satırı `Voided`, kırmızı; `ManualBlock`'u intake köken listesine ekle → blocked `Voided`, kırmızı.
+- [ ] AC-39 (zorunlu) — Kapanıştan sonra postlanan satırın işareti komut kipinde (F-1@54d736e1, §8.3 R0a, §8.6 W5 / W6 `Voided` dalı; DL-1, r4'te sona eklendi). Kurgu (i), çok kayıtlı kova: intake hold A (4, kaynak t1, Release 4 kararı `PendingApproval`) ve intake hold B (4) aynı kovada; gözlemcisiz fabrikada t1'in REVERSAL'ı A `PendingApproval` iken 201 (R4 `Allow`; kovada B'nin 4'ü kalır); REVERSAL'ı postlayan U1, onaylayan U2 (farklı kullanıcılar). Onay sonucu gelir → `Approved` yazılır → test engeli `ApplyAsync`'i satır öncesi yeniden okumadan **sonra**, `PostAsync`'ten **önce** durdurur → `SweepAsync` A'yı R5 ile kapatır (A `Voided`, karar `Voided`) → engel kalkar → `quarantine:{A kararı}:1` postlanır. Onayın giriş yolu tablo güdümlü, her biri ayrı koşu: (a1) `RefreshDecisionCommand` (`POST …/decisions/{id}/refresh`, test Workflow istemcisi `approved` döner); (a2) `QuarantineWorkflowOutcomeConsumer.ConsumeAsync` doğrudan (MediatR dışı); (a3) `GET` hold detayı (okuma anı uzlaştırması); (a4) W6: A'nın kararı iki satırlı (Release 2 + Block 2), B 2 EA → satır 1 postlanır, satır 2 `INSUFFICIENT_STOCK` ile reddedilir. Her koşuda: A `status Voided`, `voided.*` değişmedi; karar olaylarında `Applied` ve `ApplyFailed` yok; A `Decided` olmadı; `sourceReversalConflict.cause LinesPosted`, `.reversalTransactionId` = A'nın `voided.reversalTransactionId`'si, `.reversalTransactionNumber` = REVERSAL numarası, `.reversedBy` = U1 (U2 değil); geçmişte 1 `SourceReversed` + 1 `SourceReversalConflict` (`ByUserId` U1, `CorrelationId` REVERSAL'ınki); `central_audit_outbox`'ta A için 2 satır (`Void` + `Conflict`), ikisi `ActorType System`, `RequestType ApplySourceReversalToHoldCommand`; (a1)'de ayrıca `RefreshDecisionCommand`'ın kendi satırı (onay yazımı, aktör U2) değişmeden 1, (a2) / (a3)'te başka satır yok; B'nin kaydı ve `Version`'ı değişmez (pencerenin bilinen sonucu — işaret A'dadır); gönderilen iç komutların sayısı (dekoratör) 1. (b) İç gönderim başarısız: dekoratör iç komutun merkezi kayıt enlist'ini hata attırır → A `Voided` ve işaretsiz, `quarantine.source_reversal.mark_dispatch_failed` logunda A'nın numarası ve karar kimliği, giriş yolunun cevabı (a1) ile aynı; dekoratör kalkar, `SweepAsync` (geçersiz besleme) → `Conflict (LinesPosted)`, 1 merkezi kayıt `System`; `SweepAsync` bir kez daha → 0 değişiklik. (c) Geçersiz besleme sınırı: satırsız `Voided` kayıt (AC-3 (a) kurgusu) beslemede okunur, yazma yok; `Voided.AtUtc`'si `SourceReversalVoidedWatchHours` + 1 saat önceye alınmış, satırı postlanmış, doğrudan yazılmış `Voided` kayıt okunmaz (kabul edilen sınır, §8.2). (d) Tekrar: iç gönderim sonrası `SweepAsync` → `NoChange (AlreadyRecorded)`, işaret / geçmiş / merkezi kayıt 1'de kalır. Sabotaj (ayrı ayrı): işareti W5'in kendi işlemine yazdır (r3 davranışı) → (a2), (a3) merkezi kayıt 0 ve (a1) satırı `RequestType RefreshDecisionCommand` / aktör U2, kırmızı; iç gönderimi kaldır → (a1) işaretsiz, kırmızı; W6 dalından iç gönderimi kaldır → (a4) işaretsiz, kırmızı; geçersiz beslemeyi kaldır → (b) işaretsiz, kırmızı; R0a'yı kaldır (`Voided` → R0) → (a1) işaretsiz, kırmızı; W5'in işlem içi `Voided` denetimini kaldır → `Applied` yazılır ve A `Decided`, kırmızı.
+- [ ] AC-40 (zorunlu) — Detay izinde REVERSAL satırı (r5, F-3@962fda71-son-bakis-01; DL-1 sunucu okuması, §5; DL-2 AC-26 bunu çizer). (a) AC-1 kurgusu: `GET` hold detayı → `movements` dizisinde kaynak hareket ve REVERSAL satırı (`movementType REVERSAL`, `transactionId` = `voided.reversalTransactionId`, `transactionNumber` = REVERSAL numarası); (b) AC-9 kurgusu: `GET` bloke kayıt detayı → aynı; (c) AC-6 kurgusu (`Decided` + işaret): REVERSAL satırı `sourceReversalConflict.reversalTransactionId` ile `movements`'ta; (d) kiracı: T2'nin REVERSAL kimliği T1 kaydının alanına doğrudan yazılsa da T1 detayında satır görünmez (okuma kiracı + şirket kapsamlı, `QuarantineLedgerReads.cs:47-49`). Cevaplar QUARANTINE 1.4.0 şemasına uyar (AC-23). Sabotaj (ayrı ayrı): `extraTransactions`'a REVERSAL kimliklerini ekleme (bugünkü kod) → (a) REVERSAL satırı yok, kırmızı; yalnız `Voided.ReversalTransactionId`'yi ekle → (c) satır yok, kırmızı.
+- [ ] AC-41 (zorunlu) — Lot adımı uygulanmış satırsız karar (r5, F-2@962fda71-son-bakis-01, §8.3 R5a; DL-1). Kurgu (i), tek kayıtlı kova: intake hold H (`GOODS_RECEIPT_PO` → `QUALITY_INSPECTION`, 4 EA, lot `Draft`), Release 4 kararı (`LotStatusTarget Released`, `ChangesLot`) `PendingApproval`; gözlemcisiz fabrikada REVERSAL 201 (R4 `Allow`; kova 0); onay → lot adımı lotu `Draft` → `Released` yapar (lot geçmişinde `mod-0175:{kararId}` anahtarlı satır), satır 1 `INSUFFICIENT_STOCK` → karar `ApplyFailed`, 0 satır; `SweepAsync` → H `status Voided`, karar `Voided`, `voided.decisionId` dolu, `sourceReversalConflict.cause LotChanged` (`reversalTransactionId` = `voided.reversalTransactionId`), geçmişte 1 `SourceReversed` + 1 `SourceReversalConflict`, `central_audit_outbox`'ta H için tam 1 satır (`ActorType System`), `quarantine.source_reversal.lot_changed` logunda kayıt numarası, karar kimliği, lot kimliği; lot `Released` kalır (geri alınmaz); `SweepAsync` bir kez daha → 0 değişiklik (işaretli kayıt beslemelere girmez). Karşı satırlar: (b) AC-4 Y (lotu değiştirmeyen satırsız `ApplyFailed`) → R5, işaretsiz; (c) lot `Released`, yeniden test tarihi gelecekte D; Release kararı `NewRetestDate = D` (aynı tarih → `ChangesLot` doğru, `LotStatusTarget` yok; lot adımı başarılı ama satır yazmaz, `ApplyApprovedLotStatusChange.cs:117, 130-133`), aynı REVERSAL / ret sırası → R5, işaretsiz. Sabotaj (ayrı ayrı): lot anahtarı okumasını kaldır → (a) işaretsiz `Voided`, kırmızı; R5a'yı Void'siz işarete çevir (R6 gibi) → (a) H `DecisionPending` kalır, kırmızı; anahtar okumasını `ChangesLot`'tan bağımsız "lot durumu `Released` mi"ye çevir → (c) işaretli, kırmızı.
 
 **DL-2 — ekran**
 
-- [ ] AC-25 (zorunlu) — Kuyruk: `Voided` satır "Geçersiz · Kaynak geri alındı" rozetiyle `Decided` satırlarla birlikte sona sıralanır; "Karar Ver" satır eylemi DOM'da yok; geç rengi yok. Web testi + tarayıcı smoke (en, tr, ar). Sabotaj: `queue.js:68`'i `status !== 'Decided'` bırak → Karar Ver çizilir, kırmızı.
-- [ ] AC-26 (zorunlu) — Detay: afiş REVERSAL numarası, tarihi ve kişiyle; Karar Ver / İncelemeye al / Kararı geri çek / Yeniden uygula düğmeleri yok; geçmişte iki yeni etiket; hareketler listesinde REVERSAL satırı. Sabotaj: `details.js:125`'i değiştirme → düğmeler çizilir, kırmızı.
-- [ ] AC-27 (zorunlu) — Bloke Stok: durum süzgecinde `Voided` seçeneği; rozet; eylem yok. Sabotaj: `blocked.js:260` dalına `Voided`'ı ekleme → Disposition / Blokeyi Kaldır çizilir, kırmızı.
-- [ ] AC-28 (zorunlu) — Uyuşmazlık: `sourceReversalConflict` dolu `Decided` hold ve `Closed` blocked "Kaynak geri alındı · uyuşmazlık" rozeti + neden metniyle görünür. Sabotaj: rozet koşulunu kaldır → kırmızı.
-- [ ] AC-29 (zorunlu) — 7 dil: §11 anahtarları `Quarantine.{en,tr,fr,es,zh,ar,ru}.resx` hepsinde (anahtar sayıları eşit), `ar` RTL; sayfa yardımı QUARANTINEQUEUE / QUARANTINEDETAILS / BLOCKEDSTOCK adımı 7 dilde güncel; JS'de sabit kullanıcı metni yok. Sabotaj: `zh`'den bir anahtarı sil → eşitlik testi kırmızı.
+- [ ] AC-25 (zorunlu) — Kuyruk (Q-08 = A; durum süzgeci verilmemiş varsayılan liste): `Voided` satır görünür, "Geçersiz · Kaynak geri alındı" rozetiyle `Decided` satırlarla birlikte sona sıralanır; "Karar Ver" satır eylemi DOM'da yok; geç rengi yok. Web testi + tarayıcı smoke (en, tr, ar). Sabotaj: `queue.js:68`'i `status !== 'Decided'` bırak → Karar Ver çizilir, kırmızı.
+- [ ] AC-26 (zorunlu) — Detay: afiş REVERSAL numarası, tarihi ve kişiyle; Karar Ver / İncelemeye al / Kararı geri çek / Yeniden uygula düğmeleri yok; geçmişte iki yeni etiket; hareketler listesinde REVERSAL satırı (sunucu satırı DL-1 AC-40 ile verir; r5, F-3@962fda71-son-bakis-01). Sabotaj: `details.js:125`'i değiştirme → düğmeler çizilir, kırmızı.
+- [ ] AC-27 (zorunlu) — Bloke Stok: durum süzgecinde `Voided` seçeneği (`Blocked.cshtml:76-81`); `Voided` satırda `Quarantine.Blocked.Status.Voided` rozeti; eylem yok (Disposition / Blokeyi Kaldır / İncelemeyi tamamla DOM'da yok). Web testi + tarayıcı smoke. Rozet ve eylemsizlik bugünkü JS'in kuralıdır (`blocked.js:261-262` `Open` dışı her durum rozet; `:275` `open = status === 'Open'`) — ölçüt bu kuralın `Voided`'da da tuttuğunu sabitler. Sabotaj (ayrı ayrı; r5, F-4@962fda71-son-bakis-01 — r4'ün `:260` sabotajı bugünkü kodda kırmızıya dönemezdi): `Blocked.cshtml`'den `Voided` seçeneğini çıkar → süzgeç testi kırmızı; `blocked.js:275`'i kapalı durum listesine çevir (`!['Closed', 'SampleRetained'].includes(status)`) → `Voided` satırda Disposition / Blokeyi Kaldır çizilir, kırmızı; `:261`'i aynı listeye çevir → `Voided` satırda durum rozeti yerine "bekliyor" hücresi, kırmızı.
+- [ ] AC-28 (zorunlu) — Uyuşmazlık: `sourceReversalConflict` dolu kayıt durumdan bağımsız rozetle görünür — `Decided` hold, `Closed` blocked, `Open` blocked (`QuantityChanged`), `Open` MOD-0175 kökenli hold (`OwnMovementReversed`), — r4, §8.3 R0a — `Voided` intake hold (`LinesPosted`; "Geçersiz" afişi ile uyuşmazlık rozeti birlikte) ve — r5, R5a — `Voided` intake hold (`LotChanged`); her birinde "Kaynak geri alındı · uyuşmazlık" rozeti + neden metni (beş neden). Sabotaj (ayrı ayrı): rozet koşulunu `Decided` / `Closed` ile sınırla → `Open` satırlar rozetsiz, kırmızı; `Voided` kayıtta rozeti çizme (yalnız afiş) → `Voided` satır rozetsiz, kırmızı.
+- [ ] AC-29 (zorunlu) — 7 dil: §11'in 13 anahtarı (r5: `Quarantine.Conflict.Cause.LotChanged`) `Quarantine.{en,tr,fr,es,zh,ar,ru}.resx` hepsinde (anahtar sayıları eşit) ve `Views/Quarantine/Quarantine.cs` `Keys` listesinde (F-8@ae3fed7d); `ar` RTL; sayfa yardımı QUARANTINEQUEUE / QUARANTINEDETAILS / BLOCKEDSTOCK adımı 7 dilde güncel ve QUARANTINEDETAILS / BLOCKEDSTOCK adımı açık kayıttaki uyuşmazlığın kabul edilen sınırını söyler (kayıt açık kalır, açık sayımlarda görünür, kayıt üzerinde kapatma eylemi yoktur — §8.3, §23; r4, F-5@54d736e1; Web testi: ilgili adım anahtarı `PageHelpResource.*.resx` 7 dilde dolu, en / tr metni "kapatma eylemi yok" anlamını taşır — kabul kaydında metin alıntısıyla); JS'de sabit kullanıcı metni yok. Sabotaj (ayrı ayrı): `zh`'den bir anahtarı sil → eşitlik testi kırmızı; yeni bir anahtarı `Quarantine.cs` `Keys`'ten çıkar → `QuarantineWebTests` kırmızı; `ru`'dan açık kayıt sınırı adımının metnini boşalt → sayfa yardımı dolu-metin testi kırmızı.
 - [ ] AC-30 (zorunlu) — `Views/Quarantine/{Index,Details,Blocked}.cshtml` dosyalarında `Layout = "_LayoutTenantShell"` AÇIKÇA yazılı ve değişmemiş; `quarantine.holds.read`'siz kullanıcı UAS-001 yüzeyini görür (iskelet yok, yönlendirme yok); `verify_datatable_page.py` koşuldu ve sapmalar sahibe soruldu (kabul kaydında). Sabotaj: `Index.cshtml`'de izin denetimini atla → UAS-001 Web testi kırmızı.
 
-**DL-3 — defter bekçisi (yalnız Q-06 = A)**
+**DL-3 — defter bekçisi (Q-06 = A; kabul kapısı Q-10, §22)**
 
-- [ ] AC-31 (zorunlu) — Uyuşmazlığa yol açacak REVERSAL reddedilir: AC-6 (Decided), AC-7 (satır postlanmış), AC-10 (b) (miktar değişmiş) ve `Approved` / `ApplyFailed` kararlı kaydın kaynağının REVERSAL'ı → 422 ek kod, `details.recordNumber`; defter işlem sayısı, bakiye, pozisyon değişmez; `inventory_audit`'te `Outcome Failed` ret satırı. Sabotaj: bekçi her zaman `Allow` dönsün → 201, kırmızı.
-- [ ] AC-32 (zorunlu) — MOD-0175 hareketlerinin REVERSAL'ı reddedilir: "Karantinaya Al" `STATUS_TRANSFER`, "Stoğu bloke et", karar satırı (Release), Rework, Numune `LOCATION_TRANSFER` için REVERSAL → 422; stok kalite kararı dışında `AVAILABLE`'a dönmez. Sabotaj: `SourceModule = MOD-0175` kuralını kaldır → manuel karantinanın REVERSAL'ı 201, stok `AVAILABLE`, kırmızı.
-- [ ] AC-33 (zorunlu) — Bekçi kapanabilir kayıtları engellemez: `Open` ve `PendingApproval` kayıtların kaynağının REVERSAL'ı 201 → DL-1 kapanışı (AC-1, AC-3 yeniden koşulur); MOD-0173 kaynaklı ilgisiz hareketin REVERSAL'ı 201. Sabotaj: `SourceMovementId`'si olan her kaynağı reddet → AC-1 kırmızı.
+- [ ] AC-31 (zorunlu) — Uyuşmazlığa yol açacak REVERSAL reddedilir (doğal sıra: kayıt önce ilerler, REVERSAL sonra istenir): AC-6 kovasında A `Decided` iken (R7), AC-7 kovasında satır 1 postlanmış iken (R6), AC-10 kovasında X 1 EA imha sonrası (R9), `Approved` / `ApplyFailed` kararlı intake kaydın (R5) ve — r4, §8.3 R13 — doğrudan yazılmış `DecisionPending` + `Draft` aktif kararlı intake hold'un kaynağının REVERSAL'ı → 422 `REVERSAL_QUALITY_RECORD_LOCKED`, `details.recordNumber`, `details.cause` (sırasıyla `Decided`, `LinesPosted`, `QuantityChanged`, `DecisionInProgress`, `Unmatched`); defter işlem sayısı, bakiye, pozisyon değişmez; `inventory_audit`'te `Outcome Failed` ret satırı. Sabotaj (ayrı ayrı): bekçi her zaman `Allow` dönsün → 201, kırmızı; bekçide tablo dışı durumu `Allow`'a çevir → R13 satırı 201, kırmızı.
+- [ ] AC-32 (zorunlu) — MOD-0175 hareketlerinin REVERSAL'ı reddedilir (kural 1, §8.3 R1'in canlı yolu): "Karantinaya Al" `STATUS_TRANSFER` (Manual, Retest, Recall), "Stoğu bloke et" (`ManualBlock`), karar satırı (Release), Rework, Numune `LOCATION_TRANSFER` için REVERSAL → 422, `details.cause OwnMovementReversed`, kayıt kaynağı olan hareketlerde `details.recordNumber` dolu; stok kalite kararı dışında `AVAILABLE`'a dönmez. Sabotaj: `SourceModule = MOD-0175` kuralını kaldır → manuel karantinanın REVERSAL'ı 201, stok `AVAILABLE`, kırmızı.
+- [ ] AC-33 (zorunlu) — Bekçi kapanabilir kayıtları engellemez: `Open`, `Submitted` penceresindeki ve `PendingApproval` intake kayıtların kaynağının REVERSAL'ı 201 → DL-1 kapanışı (AC-1, AC-3, AC-13 (b) yeniden koşulur); MOD-0173 kaynaklı ilgisiz hareketin REVERSAL'ı 201; DL-3 etkin iken AC-2, AC-4, AC-6, AC-7, AC-8, AC-10, AC-11, AC-12, AC-13, AC-15, AC-37, AC-39, AC-40, AC-41 değiştirilmeden yeşil (kurgu kuralı, F-4@ae3fed7d; AC-39 r4; AC-2 (b) kurgusu, AC-13 (e)–(g2), AC-40, AC-41 r5). Sabotaj: `SourceMovementId`'si olan her kaynağı reddet → AC-1 ve AC-4 kurgusu kırmızı.
 - [ ] AC-34 (zorunlu) — Fail-closed: bekçinin karantina okuması hata atar → 503 `INVENTORY_UNAVAILABLE`, hiçbir şey yazılmaz. Sabotaj: hatayı yakala ve `Allow` dön → 201, kırmızı.
 - [ ] AC-35 (zorunlu) — Kiracı kapsamı: bekçi yalnız postlayanın kiracı + şirketindeki kaydı okur; T2'deki kurgulanmış `Decided` kayıt T1'in REVERSAL'ını reddettirmez. Sabotaj: bekçi okumasından kiracı süzgecini kaldır → T1 422 alır, kırmızı.
-- [ ] AC-36 (zorunlu) — INVENTORY ek sürümü: ek kod `InventoryErrorCodes.All`'da ve sözleşmede (`postMovement` 422 açıklaması + kod listesi), `x-changelog` ek sürüm satırı; `ContractSchemaValidatorTests`, `InventoryBundleDescriptionNoteTests` yeşil; 1.5.0'a göre karşılaştırmada yalnız ekleme. Sabotaj: kodu katalogdan çıkar → katalog testi kırmızı.
+- [ ] AC-36 (zorunlu) — INVENTORY 1.8.0 (Q-07): `info.version` 1.8.0; `REVERSAL_QUALITY_RECORD_LOCKED` `InventoryErrorCodes.All`'da ve sözleşmede (`postMovement` 422 açıklaması + kod listesi; `details.cause` kapalı listesi `OwnMovementReversed`, `Decided`, `LinesPosted`, `QuantityChanged`, `DecisionInProgress`, `Unmatched` — §8.8; `Unmatched` r4), `x-changelog` 1.8.0 satırı; `ContractSchemaValidatorTests`, `InventoryBundleDescriptionNoteTests` yeşil; 1.7.0 donmuş kopyasına (`Contract/Fixtures/inventory-bundle-v1.7.0.openapi.yaml`) göre karşılaştırmada yalnız ekleme. Sabotaj (ayrı ayrı): kodu katalogdan çıkar → katalog testi kırmızı; mevcut bir hata kodunu yeniden adlandır → karşılaştırma testi kırmızı.
+- [ ] AC-38 (zorunlu) — Web hata metni (F-5@ae3fed7d; DL-3, AC-36'dan sonra eklendi): `InventoryErrorMessages.KeyFor("REVERSAL_QUALITY_RECORD_LOCKED", 422)` → `ErrReversalQualityRecordLocked` (genel cümle değil); anahtar `StockLedgerIndex` ve `StockMovementsIndex` ailelerinin 7 dilinde (14 dosya) gerçek metinle; `InventoryResxParityTests` kod listesi kodu içerir; S-2 tarayıcı smoke (tr, en, ar): karar verilmiş kaydın kaynağının "Reversal" onayı → pencere açık kalır, ret metni okurun dilinde, liste yeniden yüklenmez. Sabotaj (ayrı ayrı): `ByCode`'dan kodu çıkar → kod listesi testi (genel cümleye düşer) kırmızı; `zh`'den anahtarı sil → resx eşitlik testi kırmızı.
 
 ## 17. Test Expectations
 
-- **Birim:** `SourceReversalRules` (§8.3 tablosunun her satırı, tablo güdümlü), `QuarantineRecordStates`, `StateOf` `Voided` eşlemesi.
-- **Entegrasyon (gerçek Mongo replika seti, `InventoryApiFactory`; testler kendi replika setini açar):** AC-1…AC-23, AC-31…AC-35. Süpürücüler test
-  ayarlarında kapalı, `SweepAsync` elle.
-- **Eşzamanlılık / yarış:** AC-12 (`Task.WhenAll` + `TransactionRetryCounter`), AC-13 ve AC-8 (test dekoratörü / engel; üretim koduna test
+- **Birim:** `SourceReversalRules` (§8.3 tablosunun her satırı R0a–R13 ve R5a, tablo güdümlü; R5a için lot anahtarı var / yok × `ChangesLot` doğru / yanlış; R13 için tablo dışı durum satırları ve tanımsız enum değerleri — AC-2 (b); `OriginOf` köken tablosu §4.1 ve çapraz denetim), `QuarantineRecordStates`, `StateOf` `Voided` eşlemesi ve emiciliği (`Voided`'dan sonra her olay türü, `Withdrawn` dahil → `Voided`).
+- **Entegrasyon (gerçek Mongo replika seti, `InventoryApiFactory`; testler kendi replika setini açar):** AC-1…AC-23, AC-37, AC-39, AC-40, AC-41, AC-31…AC-35. Süpürücüler test
+  ayarlarında kapalı, `SweepAsync` elle. Kurgu kuralı (§16): gözlemcisiz fabrika varyantı ve doğrudan yazılmış eski REVERSAL; bekçi hiçbir testte `Allow`'a alınmaz.
+- **Eşzamanlılık / yarış:** AC-12 (`Task.WhenAll` + iki okuma engeli; ölçüt `NoChange (LostRace)`, `TransactionRetryCounter` yalnız bilgi), AC-13 (a), (a2), (b)–(g2) (r5: geri çekme, başlatma hatası, lot adımı ve penceresi), AC-8 ve AC-39 (test dekoratörü / engel; üretim koduna test
   kancası eklenmez — dekoratör `InventoryApiFactory` DI'ında).
-- **Kiracı izolasyonu:** AC-16, AC-35. **Denetim:** AC-20, AC-21, AC-22; `CentralAuditDeclarationTests` sabiti 71 → 73.
-- **Sözleşme:** AC-23, AC-36; Prism mock smoke QUARANTINE 1.4.0.
-- **Web:** `frontend/Diten.Web.Tests/Quarantine/QuarantineWebTests.cs` genişler (AC-25…AC-30); tarayıcı smoke en / tr / ar.
+- **Kiracı izolasyonu:** AC-16, AC-35. **Denetim:** AC-20 (sistem aktörü, Q-03 = A: gözlemci, süpürücü, sızma ve uygulama motoru yolu ayrı), AC-21, AC-22, AC-39, AC-41; `CentralAuditDeclarationTests` sabiti geliştirme anında dalda ölçülen N → N + 2 (bugün 71 → 73; MOD-0178 DL-2 önce birleşirse 82 → 84; F-7@ae3fed7d, §5).
+- **Sözleşme:** AC-23, AC-36; Web kod haritası AC-38; Prism mock smoke QUARANTINE 1.4.0 (DL-1) ve INVENTORY 1.8.0 (DL-3).
+- **Web:** `frontend/Diten.Web.Tests/Quarantine/QuarantineWebTests.cs` genişler (AC-25…AC-30; `Quarantine.cs` `Keys`; `Blocked.cshtml` durum süzgeci seçeneği — AC-27); DL-3'te `frontend/Diten.Web.Tests/Inventory/InventoryResxParityTests.cs` (AC-38); tarayıcı smoke en / tr / ar.
 - **Smoke (E3, DL-1 + DL-2):** Gateway 5000 üzerinden gerçek login: manuel `CUSTOMER_RETURN` → kuyrukta hold → S-2 "Reversal" → kuyrukta "Geçersiz".
 - **Taban kanıtı:** MVP-6 turu F-2 ve MVP-1 turu 2026-11-02 senaryosu bu FU kabulünde yeniden koşulur (aynı adımlar, hold `Voided`).
 - Tam paket kuralı: servis dokunulduğunda süzgeçsiz tam koşu (AC-24).
@@ -505,16 +856,20 @@ Ortak fixture: kiracı T1 / şirket LE1; depo W, lokasyon L1; lotlu ürün; test
 - [x] Layout & Shell Contract: `_LayoutTenantShell` açıkça ve AC-30'da test edilebilir (§9)
 - [x] Backend File Convention: `Handlers/CommandHandlers/`, suffix'siz handler / validator adları (§10)
 - [x] Frontend File Contract: ebeveyn ekranlarına ekleme; `_CreateEditOffcanvas` yok (§11)
-- [x] Validation Rules, Failure Path (15 senaryo: tekrar, eksik, yetkisiz, eşzamanlılık, kiracı dışı, K2), Authorization (yeni anahtar yok), Gateway (değişmez)
+- [x] Validation Rules, Failure Path (28 senaryo: tekrar, eksik, yetkisiz, eşzamanlılık, kiracı dışı, K2, köken, gönderim penceresi, ret yarışı, sayfalama; r4: kapanış sonrası postlanan satır, kilit yarışı, onay sürüm uyuşmazlığı, tablo dışı durum; r5: geri çekme yarışı, başlatma hatası yarışı, lot adımı uygulanmış satırsız karar, lot adımı penceresi), Authorization (yeni anahtar yok), Gateway (değişmez)
 - [x] Platform lookup kararı: uygulanmaz (kiracı modülü; lookup yok)
-- [x] Acceptance criteria ölçülebilir ve sabotajlı — 36 AC'nin her birinde adlı sabotaj (AC-24 kapı ölçüsü)
+- [x] Acceptance criteria ölçülebilir ve sabotajlı — 41 AC'nin her birinde adlı sabotaj (AC-24 kapı ölçüsü); DL-1 ölçütleri DL-3 etkin iken de geçerli kurguyla (§16 kurgu kuralı, AC-33); r5'te AC-5, AC-27 sabotajı ve AC-13 (a2) beklenen sonucu bugünkü kodla yeniden ölçüldü (§19.8)
 - [x] Audited Events: modülün mevcut 14 yazma komutu + 2 yeni komut (§21)
 - [x] Kimlik ön kontrolü çıkış 0 (`--check-id … --parent MOD-0175`)
-- [ ] Sahip kararları Q-01…Q-09 (Beste); MVP-6 bilgisi Q-10 (Natig); registry satırı Q-11 (CT)
-- [ ] XMC-001 izinleri: Q-03 = A ise `InventoryCentralAuditScope.cs` (BL-501 bağdaştırıcısı); Q-06 = A ise MOD-0173 `InternalMovementPostingService.cs` + `InventoryErrorCodes.cs` + INVENTORY sözleşmesi
-- [ ] Plan satırı (yetenek kimliği, plan MVP) plan sahibinden (§22)
-- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) + CT-APR-01 onay satırı (risk HIGH)
-- [ ] `status: ready-for-dev` (şimdi `draft`)
+- [x] Sahip kararları Q-01…Q-06, Q-08, Q-09 (Beste 2026-11-03, "hepsi öneri gibi") ve CT kararı Q-07 (sürüm sırası) verildi — §19.5
+- [x] XMC-001 izinleri yazıldı (Beste 2026-11-03, §5): `InventoryCentralAuditScope.cs` sistem aktörü kipi (MOD-0173 / BL-501 bağdaştırıcısı); MOD-0173 `InternalMovementPostingService.cs` + `IReversalPrecondition.cs` + `InventoryErrorCodes.cs` + INVENTORY 1.8.0
+- [x] DL-3 Web XMC-001 izni **verildi** (Beste 2026-11-03; `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`; r5): kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` ekran metni — `InventoryErrorMessages.cs`, `StockLedgerIndex` / `StockMovementsIndex` resx aileleri (7 dil), `InventoryResxParityTests.cs` (§5, §22)
+- [x] Registry satırı `MOD-0175-FU01` — CT ekledi (Q-11; `execution/registries/module-id-registry.md` satır 307, durum `draft` — ölçüldü 2026-11-03 `8b5205226`); bu paket kayıt dosyasına yazmaz
+- Not: Q-10 (MVP-6 CT, Natig — DL-3'ün MOD-0186 etkisi) **ready-for-dev önkoşulu değildir**; DL-3 kabul kapısıdır (§8.8, §22)
+- Not: plan satırı bu pakete verilmedi (plan dosyası depoda değil) → §22'de `plan kimliği yok` / `plan satırı yok` (module-pack-standard §16 "Plan hizalaması"; değer uydurulmaz); **ready-for-dev önkoşulu değildir**, plan sahibinden gelince yazılır
+- [x] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — r4 (`962fda71`): inceleme 01 tur 3 UYGUN (0 ENGEL, 2 DÜŞÜK) ve son bakış 01 (S-116) UYGUN (0 ENGEL, 5 DÜŞÜK), `execution/approvals/reviews.tsv` satır 228-229; yedi düşük bulgu r5'te kapandı (§19.8). Önceki turlar §19.6, §19.7
+- [x] `status: ready-for-dev` (r5; sahip «onayla», Beste 2026-11-03)
+- [ ] CT-APR-01 onay satırı (risk HIGH) — CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar (S-49: `draft` künyeye yazılamazdı); satır yazılana kadar `approval_status: pending` ve kod yazılmaz
 
 ## 19. Implementation Notes
 
@@ -528,6 +883,29 @@ ve `DECISION-DRAFT.md`, sözleşmeler `quarantine.openapi.yaml` 1.3.0 / `invento
 **Okunmadı:** `execution/portfolio/master-development-plan.md` ve plan dosyası (plan satırı verilmedi → §22 "plan satırı yok"); Blueprint xlsx
 doğrudan açılmadı (kimlik `verify_module_id.py` ile ölçüldü). `views-organization.md`, `handler-design.md`, `routes.md`, `entity-base-template.md`
 bu oturumda açılmadı — ebeveynin aynı kararları (layout, EntityBase, rota) değişmeden alındı; inceleme bunları doğrulamalıdır.
+**r2'de ek okunan (2026-11-03, `c189cb0cd`):** `Api/CentralAudit/InventoryCentralAuditScope.cs` (kapsam okuması, `:28`, `:54-59`),
+`Diten.BuildingBlocks.CentralAudit/CentralAuditRecorder.cs:82-121` (kapsam `Begin` anında okunur), `Domain/Entities/InventoryTransaction.cs:82`
+(`CorrelationId`), `QuarantineLedgerReads.cs:217` (sabit aktör), `tests/…/Contract/Fixtures/` (donmuş kopyalar), `execution/approvals/approvals.tsv`
+(FU03 r4 onay satırı, `c03ac5511`), `MOD-0173-FU03-inventory-lot-location-reservation.md` §8.8, §19.4–§19.6 (sürüm adımları, karar tablosu biçimi),
+`docs/guides/operations/pack-review-common-findings.md`.
+**r4'te ek okunan (2026-11-03, `0be75c8c6`, salt okuma; `023755fa4` ile kod farkı yok):** `docs/records/reviews/MOD-0175-FU01/2026-11-03-54d736e1.md`,
+`QuarantineApplyEngine.cs` (tamamı), `QuarantineWorkflowOutcomeConsumer.cs:51-104`, `QuarantineWorkflow.cs:188-286` (uzlaştırıcı),
+`WorkflowHandlers.cs:1-68` (`RefreshDecisionCommand`), `DecisionHandlers.cs:355-523` (gönderim, kilit, yeniden uygulama), `UpdateHoldHandler.cs:60-130`,
+`QuarantineDecisionRules.cs:100-140`, `QueryHandlers.cs` ve `LotQualityStatusHandler.cs` uzlaştırıcı çağrı satırları,
+`Diten.BuildingBlocks.CentralAudit/CentralAuditBehavior.cs:1-85`, `CentralAuditRecorder.cs:40-200`, `ApplyApprovedLotStatusChange.cs:48`,
+`tests/architecture/audit-ledger/Diten.InventoryService.md`, `quarantine.openapi.yaml:151-153`. **Okunmadı:** `StockMovementsController.cs` /
+`StockLedgerController.cs` (G-26 atıfları r3'ten, yeniden ölçülmedi), Mongo plan ölçümü ve testler (koşu yok).
+**r5'te ek okunan (2026-11-03, `8b5205226`, salt okuma):** `docs/records/reviews/MOD-0175-FU01/2026-11-03-962fda71.md` ve
+`2026-11-03-962fda71-son-bakis-01.md` (CT kararlarıyla), `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`,
+`WorkflowHandlers.cs:70-180` (geri çekme), `DecisionHandlers.cs:20-55, 160-216, 360-480` (denetim sırası, hold / blocked karar dalları,
+gönderim, başlatma hatası kolu, kilit), `QuarantineApplyEngine.cs:55-145, 555-580` (lot adımı, satır döngüsü, `ReopenAsync`),
+`QuarantineLotGate.cs:215-245`, `Traceability/Handlers/CommandHandlers/ApplyApprovedLotStatusChange.cs:40-140`,
+`Persistence/Traceability/LotRepository.cs:140-144, 301-302`, `QueryHandlers.cs:63-74, 185-210, 300-335`, `QuarantineLedgerReads.cs:40-75`,
+`InternalMovementPostingService.cs:140-160`, `quarantine.openapi.yaml:397-401, 477-485, 519, 549, 761, 785`, `blocked.js:30-50, 252-290`,
+`Views/Quarantine/Blocked.cshtml:76-81`, `queue.js:68, 120`, `details.js:125`, `decide.js:162-163`, `Quarantine.en.resx` (`<data` sayısı 451),
+`tests/architecture/audit-ledger/Diten.InventoryService.md:30-41`, `execution/registries/module-id-registry.md:306-307`,
+`execution/approvals/reviews.tsv:226-229`, `docs/guides/operations/pack-review-common-findings.md`, `scripts/pack_approval.py` (`kunye`, `slices`, `card`).
+**Okunmadı:** testler (koşu yok), Mongo plan ölçümü, `StockMovementsController.cs` / `StockLedgerController.cs` (r3 atıfları).
 
 ### 19.2 Ölçülen gerçekler (`e3cbbca4d`, salt okuma)
 
@@ -548,11 +926,31 @@ bu oturumda açılmadı — ebeveynin aynı kararları (layout, EntityBase, rota
 | G-13 | Intake süpürücüsü 72 sa geriye, 60 sn yerleşme payıyla, yalnız inbound türlerine bakar | `QuarantineLedgerReads.cs:128-146, 153-161, 187-214` |
 | G-14 | Intake (gözlemci + süpürücü) MediatR komutu değildir; işlem enlist eder ama işaretli komut yokken merkezi kayıt yazılmaz — kayıt açılışı bugün yalnız karantina geçmişinde izlenir | `QuarantineRepository.cs:214-226`; `CentralAuditDeclarationTests.cs:73-82` notu |
 | G-15 | Inventory merkezi kayıt kapsamı `ActorType`'ı yalnız token'dan okur; `System` üretmez | `Api/CentralAudit/InventoryCentralAuditScope.cs:54-59`; `CentralAuditActorTypes.System` var (`ICentralAuditScope.cs:40`) |
-| G-16 | Inventory yazma komutu sayısı sabiti 71 | `CentralAuditDeclarationTests.cs:37` |
+| G-16 | Inventory yazma komutu sayısı sabiti 71; yorum aynı dalda MOD-0178 DL-2 sonrası 82 öngörür → sabit geliştirme anında ölçülür (F-7) | `CentralAuditDeclarationTests.cs:36-37` |
 | G-17 | S-2 "Reversal" düğmesi yalnız `sourceModule = MOD-0173` satırında (yalnız JS); sunucu her aslı kabul eder → MOD-0175 hareketinin REVERSAL'ı API'den mümkün (DEC-INV-08 atlaması) | `StockMovements/index.js:13-15`; `ReversalRules.cs:19-56` (kaynak modül denetimi yok) |
-| G-18 | REVERSAL üreticileri: MOD-0186 geç yazan, MOD-0142 `reverseGrn`, S-2 ve "Düzelt" | `ReturnLateWriterPolicy.cs:13, 37-43`; `ReverseGrnHandler.cs:11-13, 56-59`; `form.js:85` |
+| G-18 | Inventory'ye ulaşan REVERSAL üreticileri: MOD-0186 geç yazan, S-2 ve "Düzelt". MOD-0142 `reverseGrn` bugün ulaşmıyor: zarfı `MOD-0142` / `GOODS_RECEIPT` (Inventory `MOD-0173` / `REVERSAL` ister → 400) ve Procurement'ta mock istemci bağlı (F-6) | `ReturnLateWriterPolicy.cs:13, 37-43`; `form.js:85`; `ReverseGrnHandler.cs:57-73`, `GrnModels.cs:25-26`, `ReversalRules.cs:22-26`, Procurement `Persistence/DependencyInjection.cs:61` |
 | G-19 | Resx eşitliği: `Quarantine.*.resx` 7 dilde 451 anahtar | `grep -c "<data "` |
 | G-20 | Liste doğrulayıcısı bu modülün dosya adlarını bulmuyor | `verify_datatable_page.py . --area Quarantine --module Quarantine --format gaps` → 2–6 numaralı "Missing" |
+| G-21 | (r3, `049bbb89d`) `SourceMovementId` yazan yer beştir: intake hold / blocked (`QuarantineIntake.cs:108, 140`), Manual / Retest / Recall hold (`StockActionHandlers.cs:346-348`), `ManualBlock` (`:455-456`), Rework hold (`QuarantineApplyEngine.cs:287-288`); MOD-0175 hareketleri `SourceModule = MOD-0175` ile postlanır (`QuarantineMovementPoster.cs:95`, `QuarantineContract.cs:11`) | `grep SourceMovementId` (F-1) |
+| G-22 | (r3) `SubmitDecisionHandler` ikinci işlemi hold'u işlem dışı depo okumasıyla tazeler ve koşulsuz `DecisionPending` yazar; sürüm uyuşmazlığında yeniden deneme yok; `WorkflowStarted` olayı koşulsuz | `DecisionHandlers.cs:416-437` (F-2) |
+| G-23 | (r3) `CloseWithoutMovementAsync` olayları dış okumadan sonra ekler; `ReopenAsync` yalnız `ActiveDecisionId == decisionId` iken kayda yazar | `QuarantineApplyEngine.cs:501-533, 562-573` (F-12) |
+| G-24 | (r3) `IQuarantineWriteSession` işlem içi okuma olarak yalnız `DecisionEventsAsync` taşır; `InTransactionAsync` `WithTransactionAsync` + snapshot okuma; `TransactionRetryCounter` `quarantine` yalnız işlem yeniden koşusunda artar | `QuarantineRepositories.cs:88-123`; `QuarantineRepository.cs:214-226` (F-13) |
+| G-25 | (r3) Hold / blocked kaynak indeksi `(TenantId, SourceMovementId)` — şirket yok; defter REVERSAL indeksi `(TenantId, LegalEntityId, ReversesTransactionId)` | `QuarantineIndexConfiguration.cs:49-50, 81-82`; `InventoryIndexConfiguration.cs:20, 49-56` (F-10, F-11) |
+| G-26 | (r3) Web Inventory kod haritası `REVERSAL_QUALITY_RECORD_LOCKED`'i bilmez; ileti MVC'de `KeyFor` ile seçilir; kod listesi testi `InventoryResxParityTests.cs:81-86`; `Quarantine.cs` `Keys` 7 resx'i sabitler | `InventoryErrorMessages.cs:10-40`; `StockMovementsController.cs:525, 648`; `Quarantine.cs:3-8` (F-5, F-8) |
+| G-27 | (r4) `RecordAppliedAsync` dört bağlamdan gelen akışta koşar: `RefreshDecisionCommand` (uzlaştırıcı, `Execute`), `ReapplyDecisionCommand`, okuma anı uzlaştırması yapan sorgu handler'ları (işaretli komut yok), MediatR dışı Workflow tüketicisi (işaretli komut yok); tüketici gelen kutusu satırını `ApplyOutcomeAsync`'ten önce yazar | `WorkflowHandlers.cs:61`; `DecisionHandlers.cs:515`; `QueryHandlers.cs:142, 196, 232, 269, 309`; `LotQualityStatusHandler.cs:72`; `QuarantineWorkflow.cs:270`; `QuarantineWorkflowOutcomeConsumer.cs:89-99` (F-1) |
+| G-28 | (r4) Merkezi kayıt iç içe komutu destekler: bekleyen olaylar yığında, `EnlistAsync` en üsttekini yazar, kapsam `Begin` anında okunur; `CentralAuditBehavior` en içtedir; `ApplyAsync` bugün de iç komut gönderir (`ApplyApprovedLotStatusChangeCommand`, işaretli) | `CentralAuditRecorder.cs:57, 82-121, 123-140, 160-168`; `CentralAuditBehavior.cs:15-16, 36-57`; `QuarantineApplyEngine.cs:93`; `ApplyApprovedLotStatusChange.cs:48` (F-1) |
+| G-29 | (r4) Onay işlemi yalnız `QuarantineDuplicateException` yakalar; `CloseWithoutMovementAsync` `QuarantineRetryException`'ı `attempt < 3` iken yutar, üçüncüde yukarı atar | `QuarantineApplyEngine.cs:474-495, 504-531` (F-2) |
+| G-30 | (r4) Gönderimin kilit işlemi kayıt işlem dışında `:371`'de okunduktan sonra sürümlü yazar; başarısızlık tek iletiyle 409 `QUARANTINE_DECISION_ALREADY_PENDING` döner; `UpdateHoldCommand` aktif kararlı kayıtta 409 verir (onay sırasında ikinci yazar olamaz) | `DecisionHandlers.cs:371, 396-413, 453-477`; `UpdateHoldHandler.cs:92-96` (F-2, F-3) |
+| G-31 | (r4) V7 kova denetimi `QUARANTINE_STOCK_CHANGED` 409; kurtarma yolu olmayan açık kayıt | `QuarantineDecisionRules.cs:41, 131-134`; `DecisionHandlers.cs:48-49, 376` (F-5) |
+| G-32 | (r5) Geri çekme durumu işlem dışında okur, Workflow görevini çağıranın token'ıyla iptal eder, sonra ≤ 3 denemeli işlemde `Withdrawn` olayı + `ReopenAsync` + `Withdrawn` geçmişi yazar; işlem içi olay okuması yok; `ReopenAsync` yalnız `ActiveDecisionId == decisionId` iken kayda (sürümlü) yazar | `WorkflowHandlers.cs:109-119, 136, 148-177`; `QuarantineApplyEngine.cs:562-575` (F-1@962fda71-son-bakis-01) |
+| G-33 | (r5) Gönderimin Workflow başlatma hatası kolu kaydı işlem dışında taze okur, işlemde `StartFailed` + `ReopenAsync`; `QuarantineRetryException` yakalanmaz | `DecisionHandlers.cs:440-449` (F-1@962fda71-son-bakis-01) |
+| G-34 | (r5) Lot adımı satırlardan önce, ayrı iç komutla ve kendi işleminde; komut kararı `FindApprovedAsync` ile yeniden okur (`Approved` / `ApplyFailed` değilse 409 `LOT_APPROVAL_REQUIRED`); onaylı değişiklik tek satıra `mod-0175:{decisionId}` anahtarını yazar, değişiklik yoksa satır yazmaz; anahtar `FindStatusChangeByKeyAsync` ile kiracı kapsamında okunur; `ChangesLot` yalnız hold kararında ve `LotRelease`'te doğru olabilir (blocked kararı satırsız, lot alanı yazılmaz) | `QuarantineApplyEngine.cs:61-65, 91-106, 109-117`; `QuarantineLotGate.cs:225-237`; `ApplyApprovedLotStatusChange.cs:78, 82-85, 96-99, 117, 130-136`; `LotRepository.cs:140-144, 301-302`; `DecisionHandlers.cs:168-206` (F-1@962fda71, F-2@962fda71-son-bakis-01) |
+| G-35 | (r5) Detay izi karar numaralarını (`SourceModule MOD-0175`) ve `extraTransactions`'ı (bugün yalnız `SourceMovementId`) okur → REVERSAL (MOD-0173) girmez; okuma kiracı + şirket kapsamlı; `MovementLink.movementType` enum'u `REVERSAL` içerir | `QueryHandlers.cs:63-74, 206-207, 327-328`; `QuarantineLedgerReads.cs:47-49, 51-64`; `quarantine.openapi.yaml:397, 477-485, 549, 785` (F-3@962fda71-son-bakis-01) |
+| G-36 | (r5) Bloke stok JS'i `Open` dışı her durumda durum rozeti çizer, eylemleri yalnız `status === 'Open'` iken çizer; durum süzgeci seçenekleri Açık / Closed / SampleRetained / All | `blocked.js:261-262, 275, 279-281`; `Blocked.cshtml:76-81` (F-4@962fda71-son-bakis-01) |
+| G-37 | (r5) `createDecision` denetim sırası: kayıt durumu (V5 / V6) → satırlar → seri → CoA → blok nedeni → lot tutma → yeniden test tarihi → V7 kova | `DecisionHandlers.cs:29-49` (F-4@962fda71-son-bakis-01) |
+| G-38 | (r5) Bakiye bacakları yalnız `LedgerPosting` ile yazılır; `inventory_transactions`'a doğrudan yazılmış işlem bakiyeyi değiştirmez | `InternalMovementPostingService.cs:148-155` (F-5@962fda71-son-bakis-01) |
+| G-39 | (r5) Inventory denetim defterinin "Yazan sorgular" bölümü boş ve "yalnız küçülür" → satır ekleyerek kapatma yolu yoktur | `tests/architecture/audit-ledger/Diten.InventoryService.md:39-41` (F-2@962fda71) |
+| G-40 | (r5) Registry satırı var (CT ekledi), durum `draft` | `execution/registries/module-id-registry.md:307` |
 
 **Kanıt (kusurun canlı izi):**
 - MVP-6 yerel turu (`docs/roadmap/plans/mvp6-integration-wp-p1-01/LOCAL-LIVE-RUN-2026-11-01.md:23-24`): F-2 "the REVERSAL takes stock out of QUARANTINE
@@ -568,32 +966,173 @@ bu oturumda açılmadı — ebeveynin aynı kararları (layout, EntityBase, rota
 - A-2: Bir kaydın `SourceMovementId`'si bir kez yazılır, değişmez (intake / karar motoru / stok eylemleri yalnız oluştururken yazar).
 - A-3: Uyuşmazlık durumunda doğru stok düzeltmesi QA'nın elle yaptığı yeni 0175 eylemi ya da defter hareketidir; sistem tahmin etmez.
 
-### 19.4 Açık karar soruları
+### 19.4 Karar soruları (r1'de açık; r2'de Q-10 dışında kapandı)
 
-| # | Soru | Seçenekler / öneri | Sahip | Hedef |
+| # | Soru | Seçenekler / karar | Sahip | Hedef |
 |---|---|---|---|---|
-| Q-01 | Terminal durum adı ve blocked için ayrı değer mi? | **A (öneri):** hold ve blocked için yeni `Voided` (neden `SourceReversed`); **B:** blocked'ta `Closed` + `closeReason` alanı | Beste | DL-1 önce |
-| Q-02 | Karar aşamasındaki kayıt: satırı postlanmamış her karar (PendingApproval / Approved / satırsız ApplyFailed) kapanışla `Voided` olsun mu; Workflow örneği? | **A (öneri):** evet; Workflow örneği açık kalır, sonradan gelen onay etkisiz, WorkCenter bağlantısı "Geçersiz" gösterir. **B:** karar aşamasındakiler `Conflict` olur, karar sahibi geri çeker. **C:** A + karar sahibinin bir sonraki okumasında görevi kendi token'ıyla iptal (FU) | Beste | DL-1 önce |
-| Q-03 | Merkezi kaydın aktörü | **A (öneri, CT brifi):** `ActorType System`, `ActorId` sabit `00000000-0000-0000-0000-000000000175` (`QuarantineIntakeSweeper.QuarantineSweeperActor`, `QuarantineLedgerReads.cs:217`); geri alan kullanıcı geçmiş satırında ve `CorrelationId` ile defter denetiminde. `InventoryCentralAuditScope.cs`'e sistem kipi gerekir (BL-501 bağdaştırıcısı, XMC-001). **B:** `TenantUser` = REVERSAL'ı postlayan (bugünkü recall süpürücüsü / sonuç tüketicisi deseni, kod değişikliği yok) | Beste (BL-501 merkezi) | DL-1 önce |
-| Q-04 | Uygulanmış / satırı postlanmış karardan sonra geri alma | **A (öneri):** DL-1 `Conflict` işareti + geçmiş, otomatik düzeltme yok; önlem DL-3. **B:** yalnız işaret, DL-3 yok (kalan risk yazılı kabul) | Beste | DL-1 önce |
-| Q-05 | Operatör için elle kapatma yolu | **A (öneri):** bu FU'da yok — geri alma kaynaklı her kayıt otomatik kapanır, eski kayıtlar ilk süpürücü turunda; REVERSAL dışı hayalet kaynakları FU-0175-FU01-OUTBOUND'da. **B:** `quarantine.holds.void` (Tier-3, tehlikeli, gerekçe ≥ 10, e-imza politika satırı `quarantine.hold.void`, iş akışı yok çünkü stok değişmez) | Beste | DL-1 önce |
-| Q-06 | DL-3 defter bekçisi bu FU'da mı? (MOD-0175 hareketlerinin REVERSAL'ı da reddedilir) | **A (öneri):** evet, DL-3 — DEC-INV-08 atlaması (G-17) ve değişmez kırığı (G-10) yalnız ön koşulla kapanır; XMC-001 MOD-0173 + INVENTORY ek kodu. **B:** ayrı takip, bu FU yalnız DL-1 + DL-2 | Beste (MOD-0173 sahibi aynı) | DL-1 kabulünden önce |
-| Q-07 | Sürümler | QUARANTINE **1.4.0** tek adım (DL-1). INVENTORY ek sürümü (DL-3) MOD-0173-FU03 1.7.0'dan sonraki ilk boş sürüm; FU03 dondurmadan önce DL-3 açılırsa sıra CT'de | Beste / MVP-1 CT | DL-3 önce |
-| Q-08 | Kuyruk varsayılanı: `Voided` satırlar görünür mü? | **A (öneri):** görünür, `Decided` gibi sona sıralı, KPI dışı (varsayılan liste değişmez — sözleşme eklemeli kalır). **B:** varsayılan gizli, süzgeçle görünür (varsayılan davranış değişikliği — eklemeli değil) | Beste | DL-2 önce |
-| Q-09 | Geç intake | **A (öneri):** kaynağı geri alınmışsa kayıt açılmaz (§8.4). **B:** açılır ve aynı turda kapanır (iz bırakır, kuyrukta gürültü) | Beste | DL-1 önce |
-| Q-10 | MVP-6 etkisi | (1) MOD-0186 tur satırı R1-a'nın beklenen sonucu "hold `Open`" → "hold `Voided`" olur; (2) Q-06 = A ise MOD-0186 geç yazanının, kaydı karar verilmiş iadenin REVERSAL'ı 422 alır → mevcut `ReversalFailed:<kod>` yolu (`ReturnLateWriterPolicy.cs:43`) — kabul mü? MOD-0183'ün REVERSAL'ları (`GOODS_ISSUE_SALES` telafisi) etkilenmez | Natig (MVP-6 CT) | DL-1 / DL-3 kabulünden önce |
-| Q-11 | Registry satırı `MOD-0175-FU01` | CT ekler (bu paket kayıt dosyasına yazmaz; MOD-0173-FU03 CT-01 emsali) | MVP-1 CT | onaydan önce |
+| Q-01 | Terminal durum adı ve blocked için ayrı değer mi? | **KAPANDI — A:** hold ve blocked için yeni `Voided` (neden `SourceReversed`); `Closed` yeniden kullanılmaz. (B: blocked'ta `Closed` + `closeReason` — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-02 | Karar aşamasındaki kayıt: satırı postlanmamış her karar (PendingApproval / Approved / satırsız ApplyFailed) kapanışla `Voided` olsun mu; Workflow örneği? | **KAPANDI — A:** evet, kayıtla birlikte `Voided`; sonradan gelen onay etkisiz; Workflow örneği açık kalır; WorkCenter bağlantısı "Geçersiz" gösterir. (B, C — seçilmedi; FU-0175-FU01-WFCANCEL açılmaz) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-03 | Merkezi kaydın aktörü | **KAPANDI — A:** `ActorType System`, `ActorId` sabit `00000000-0000-0000-0000-000000000175`; geri alan kullanıcı ürün geçmişinde ve `CorrelationId` ile defter denetiminde. `InventoryCentralAuditScope.cs` değişikliği XMC-001 izniyle (MOD-0173 / BL-501 bağdaştırıcısı; sahip aynı, Beste), kapsam §5. (B: `TenantUser` — seçilmedi) | Beste (sahip kararı + XMC-001 izni 2026-11-03) | §19.5 |
+| Q-04 | Uygulanmış / satırı postlanmış karardan sonra geri alma | **KAPANDI — A:** DL-1 uyuşmazlık işareti (`SourceReversalConflict`) + geçmiş, otomatik düzeltme yok; önlem DL-3. (B — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-05 | Operatör için elle kapatma yolu | **KAPANDI — A:** yok; geri alma kaynaklı her kayıt otomatik kapanır, eski kayıtlar ilk süpürücü turunda; REVERSAL dışı hayalet kayıtlar FU-0175-FU01-OUTBOUND'a. (B: `quarantine.holds.void` — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-06 | DL-3 defter bekçisi bu FU'da mı? | **KAPANDI — A:** evet, DL-3 bu pakette; XMC-001 MOD-0173 izni ve INVENTORY ek hata kodu `REVERSAL_QUALITY_RECORD_LOCKED`. (B: ayrı takip — seçilmedi) | Beste (sahip kararı + XMC-001 izni 2026-11-03; MOD-0173 sahibi aynı) | §19.5 |
+| Q-07 | Sürümler | **KAPANDI (CT):** QUARANTINE **1.4.0** tek adım (DL-1); INVENTORY ek kodu FU03'ün 1.7.0'ından sonraki ek sürüm **1.8.0** (DL-3); FU03 onaylı (`execution/approvals/approvals.tsv`, `c03ac5511`) | MVP-1 CT (2026-11-03) | §19.5 |
+| Q-08 | Kuyruk varsayılanı: `Voided` satırlar görünür mü? | **KAPANDI — A:** görünür, sona sıralı, KPI'ya girmez; varsayılan liste değişmez. (B — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-09 | Geç intake | **KAPANDI — A:** kaynağı geri alınmış hareket için kayıt açılmaz (§8.4). (B — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
+| Q-10 | MVP-6 etkisi | **AÇIK.** (1) Bilgi: MOD-0186 tur satırı R1-a'nın beklenen sonucu "hold `Open`" → "hold `Voided`" olur (DL-1; MVP-6'nın tur kaydı, bu paketin kapısı değil). (2) Karar: DL-3'te MOD-0186 geç yazanının, kaydı karar verilmiş iadenin REVERSAL'ı 422 `REVERSAL_QUALITY_RECORD_LOCKED` alır → mevcut `ReversalFailed:<kod>` yolu (`ReturnLateWriterPolicy.cs:43`) — kabul mü? MOD-0183'ün REVERSAL'ları (`GOODS_ISSUE_SALES` telafisi) etkilenmez. **DL-3 kabul kapısı; ready-for-dev önkoşulu değil** (§8.8, §22) | Natig (MVP-6 CT) — soruldu | **TBD** — DL-3 kabulünden önce |
+| Q-11 | Registry satırı `MOD-0175-FU01` | **KAPANDI (CT):** CT ekler; bu paket kayıt dosyasına yazmaz (MOD-0173-FU03 CT-01 emsali) | MVP-1 CT (2026-11-03) | satır onaydan önce |
 
-Ayrıca bilgi: MOD-0142 `reverseGrn` (Procurement) DL-3'ten aynı biçimde etkilenir; sahibine bilgi notu CT'den.
+Ayrıca bilgi (F-6@ae3fed7d): MOD-0142 `reverseGrn` (Procurement) bugün Inventory'ye ulaşmıyor (G-18) → **DL-3 etkisi yok**; gerçek istemci bağlandığında REVERSAL zarfı da `MOD-0173` / `REVERSAL`'a uymalıdır. Sahibine bilgi notu CT'den (karar değil).
+
+### 19.5 Verilen kararlar (2026-11-03)
+
+Sahip kararları Beste'nin ("hepsi öneri gibi", 2026-11-03), CT kararları MVP-1 CT'nin. Her karar r1'in önerisini aynen kabul eder; paket
+gövdesi bu davranışı r1'de zaten yazıyordu. r2'de değişen: koşullu ifadelerin ("… seçilirse", "… = A ise") kesinleşmesi, iki XMC-001
+izninin kapsamıyla yazılması (§5), INVENTORY sürüm numarası (1.8.0), Q-03'ün AC-20'de ölçülmesi ve Q-10'un DL-3 kabul kapısı olarak yazılması.
+
+| # | Karar | Veren | Pakette nerede |
+|---|---|---|---|
+| Q-01 | A — yeni `Voided` durumu hold ve blocked için (`HoldStatus`, `BlockedStatus`, `DecisionState` / `DecisionEventKind`); neden `SourceReversed`; `Closed` yeniden kullanılmaz | Beste (sahip) | §1, §3, §4.1, §4.2, §8.7; AC-1, AC-9, AC-23 |
+| Q-02 | A — satırı postlanmamış karar (PendingApproval / Approved / satırsız ApplyFailed) kayıtla birlikte `Voided`; sonradan gelen onay etkisiz; Platform Workflow örneği açık kalır | Beste (sahip) | §1, §2, §8.3, §8.6, §12 V8, §20; AC-3, AC-4, AC-13 |
+| Q-03 | A — merkezi kayıtta aktör `System`, `ActorId` sabit `…0175`. XMC-001 izni: `InventoryCentralAuditScope.cs` sistem aktörü kipi (MOD-0173 / BL-501 bağdaştırıcısı; sahip aynı, Beste); kapsam yalnız iki yeni komutun gönderimi, `Building.Blocks` değişmez | Beste (sahip kararı + XMC-001 izni) | §3, §5, §6, §7, §14, §21; AC-20 |
+| Q-04 | A — uygulanmış / satırı postlanmış karardan sonraki geri alma uyuşmazlık işareti + geçmiş; otomatik düzeltme yok | Beste (sahip) | §1, §8.3, §11; AC-6, AC-7, AC-10, AC-28 |
+| Q-05 | A — elle kapatma yolu yok (`quarantine.holds.void` / `VOIDHOLD` yok, `VoidReason.Manual` yok); REVERSAL dışı hayalet kayıtlar FU-0175-FU01-OUTBOUND | Beste (sahip) | §2, §4.1, §8.2, §14, §20; AC-15 |
+| Q-06 | A — DL-3 defter bekçisi bu pakette; XMC-001 MOD-0173 izni (`IReversalPrecondition.cs`, `InternalMovementPostingService.cs`, `InventoryErrorCodes.cs`, INVENTORY sözleşmesi); ek kod `REVERSAL_QUALITY_RECORD_LOCKED` | Beste (sahip kararı + XMC-001 izni; MOD-0173 sahibi aynı) | §1, §3, §5, §8.3, §8.8, §12 V10, §22; AC-31…AC-36 |
+| Q-07 | QUARANTINE 1.4.0 (DL-1); INVENTORY 1.8.0 (DL-3) — FU03'ün 1.7.0'ından sonraki ek sürüm; FU03 onaylı (`c03ac5511`); DL-3'ün sözleşme adımı 1.7.0 dalda olduktan sonra | MVP-1 CT | künye, §7, §8.7, §8.8; AC-23, AC-36 |
+| Q-08 | A — `Voided` satırlar kuyrukta görünür, sona sıralanır, KPI'ya girmez; varsayılan liste değişmez | Beste (sahip) | §8.7, §11; AC-18, AC-25 |
+| Q-09 | A — geç intake: kaynağı geri alınmış hareket için kayıt açılmaz | Beste (sahip) | §8.4, §12 V9; AC-14 |
+| Q-11 | Registry satırını CT ekler; paket kayıt dosyasına yazmaz | MVP-1 CT | kimlik bloğu (başlık altı), §6, §18 |
+| Dal | `branch: feature/sce/mod-0173-inventory-ledger-valuation` — tek çalışma dalı kuralı; servis portu 5067 (`AGENTS.md` §3) | MVP-1 CT teyidi 2026-11-03 | künye, §8.1 |
+| XMC-001 DL-3 Web (r5) | **Verildi** — MOD-0173-FU01 ekran dosyalarına dokunma izni; kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` hata kodunun ekran metni: `InventoryErrorMessages.cs` (kod → metin eşlemesi), `StockLedgerIndex` ve `StockMovementsIndex` resx aileleri (7 dil), `InventoryResxParityTests.cs` (kod listesi); başka değişiklik yok (`docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`) | Beste (sahip) | künye, §5, §18, §22; AC-38 |
+| Onay (r5) | «onayla» — künye `ready-for-dev`; CT-APR-01 satırı CT tarafından r5 sha256'sıyla (S-49) | Beste (sahip) | künye, §18 |
+
+**Açık kalanlar:** Q-10 (MVP-6 CT Natig — DL-3'ün MOD-0186 etkisi; DL-3 kabul kapısı, ready-for-dev önkoşulu değil); plan satırı (yetenek
+kimliği, plan MVP — plan sahibinden; değer uydurulmadı, ready-for-dev önkoşulu değil, §22); CT-APR-01 onay satırı (CT, r5 sha256'sı). Registry
+satırı CT tarafından eklendi (satır 307, Q-11 kapandı); DL-3 Web XMC-001 izni verildi (r5).
+
+### 19.6 Bağımsız inceleme 01 — kapanış tablosu (tur 1 → r3)
+
+Bulgu dosyası `docs/records/reviews/MOD-0175-FU01/2026-11-03-ae3fed7d.md` (`ac98304e8`; dosya özeti `0d6412cd…74b4fc1`,
+`git show 049bbb89d:<yol> | sha256sum`); hedef r2 pack sha256 `ae3fed7d…cd1db787`, kaynak `e89bce84c`; UYGUN DEĞİL, 2 ENGEL, 3 ORTA, 8 DÜŞÜK.
+CT kararı MVP-1 CT 2026-11-03: hepsi kabul, r3'te tek geçiş (S-101). Sahip kararları Q-01…Q-09 yeniden açılmadı. Her düzeltme kodla ölçüldü
+(`049bbb89d`, salt okuma; G-21…G-26).
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@ae3fed7d (ENGEL) | `Voided` yalnız intake kökenli kayıtlara (hold `Source` ∈ GoodsReceipt / Production / CustomerReturn / OtherInbound; blocked `Origin = OtherInbound`); köken `HoldSource` / `BlockedOrigin` alanından okunur, aslın `SourceModule`'üyle çapraz denetlenir, eşlenmeyen köken MOD-0175 sayılır (fail-closed); MOD-0175 kökenli kayıtta (Manual / Retest / Recall / Rework hold, `ManualBlock`) REVERSAL kapanış değil `Conflict (OwnMovementReversed)`; DL-3 kural 1 bunu reddeder (`details.cause OwnMovementReversed`); Recall / Rework sonuçları yazıldı | §1, §3, §4.1, §8.3 (R1), §8.7, §8.8, §11, §12 V4, §13 #16, §17; AC-28, AC-32, AC-37 |
+| F-2@ae3fed7d (ENGEL) | `Submitted` penceresi kural tablosunda (R3, R8); ortak yazma kilidi = kayıt `Version`'ı, karar yazarları W1–W6 işlem içinde olayları yeniden okur; gönderimin ikinci işlemi `Voided` kaydı `DecisionPending`'e çevirmez, sürüm uyuşmazlığında yeniden dener, `WorkflowStarted` yazılır; `StateOf`'ta `Voided` emici | §1, §4.2, §5, §8.3, §8.6, §8.9, §12 V8a, §13 #17; AC-13 (b), AC-33 |
+| F-3@ae3fed7d | Süpürücüye terminal besleme (Decided hold, Closed / SampleRetained blocked; işaretsiz); seçim gerekçesi (REVERSAL tabanlı tarama yerine) ve gecikme sınırı yazıldı | §3, §8.2, §8.9, §13 #19; AC-6, AC-11 (b), AC-15 (b) |
+| F-4@ae3fed7d | Kurgu kuralı: DL-1 ölçütleri REVERSAL'ı bekçinin izin verdiği anda postlar (gözlemcisiz fabrika) ya da eski veriyi doğrudan yazar, kayıt sonra ilerler; bekçi testte `Allow`'a alınmaz; DL-3 sonrası erişilebilirlik sınırı §8.3'te | §8.3, §8.8, §16 kurgu kuralı, §17; AC-4, AC-6, AC-7, AC-8, AC-10, AC-24, AC-31, AC-33 |
+| F-5@ae3fed7d | `REVERSAL_QUALITY_RECORD_LOCKED` Web metni: `InventoryErrorMessages.ByCode`, `StockLedgerIndex` / `StockMovementsIndex` 7 dil, `InventoryResxParityTests` kod listesi DL-3 kapsamında; XMC-001 genişletmesi açık nokta | §3, §5, §8.8, §17, §18, §19.5, §22; AC-38 |
+| F-6@ae3fed7d | MOD-0142 `reverseGrn` bugün Inventory'ye ulaşmıyor (zarf `MOD-0142` / `GOODS_RECEIPT` → 400; mock istemci) → DL-3 etkisi yok; bilgi notu buna göre | §7, §19.2 G-18, §19.4 |
+| F-7@ae3fed7d | Sabit geliştirme anında ölçülür: N → N + 2 (bugün 71 → 73; MOD-0178 DL-2 önce birleşirse 82 → 84) | §5, §17, §19.2 G-16; AC-20 |
+| F-8@ae3fed7d | `Views/Quarantine/Quarantine.cs` `Keys` listesi DL-2 Repo Scope'ta; yeni anahtarlar listeye de girer | §5, §11; AC-29 |
+| F-9@ae3fed7d | DL-1 tek başına kullanıcıya açık ortama çıkmaz; açılış DL-1 + DL-2 birlikte; ara dönem bilinen geçici sapma | §22 |
+| F-10@ae3fed7d | Tekil indeks yalnız kiracı kapsamlı (şirket yok), şirket süzgeci okumada; AC-16 (b) fixture'ı LE1'de kayıt açmayan hareketle | §4.4, §19.2 G-25; AC-16 |
+| F-11@ae3fed7d | Besleme: kayıt koleksiyonunda `Id` imleçli sayfa (tur başına besleme başına bir sayfa, kısa sayfada başa döner), defter sorgusu kiracı + şirket önekli `ux_tenant_le_reversestransactionid`; sayfa boyutu seçeneği; 500'ü aşan kayıt ve plan ölçümü | §4.4, §8.2, §13 #20; AC-15 (c), (d) |
+| F-12@ae3fed7d | `Voided` emici (F-2 ile ortak); `CloseWithoutMovementAsync` (W4) işlem içi yeniden okuma + kayıt `Version` yazımı; ret / iptal / zaman aşımı sonucu `200 Voided`, olay yok | §4.2, §8.6, §12 V8, §13 #18; AC-3 (b), AC-13 (c) |
+| F-13@ae3fed7d | Komut sonucu adlı (`NoChange` nedeni `AlreadyRecorded` / `LostRace` / `NoRecord`); AC-12 iki okuma engeliyle yarışı zorlar ve kaybedenin `LostRace` dalını sayar; `TransactionRetryCounter` yalnız bilgi | §8.2, §12 V4, §17; AC-11, AC-12 |
+
+**pack-review-common-findings taraması (r3):** §1 kendisiyle çelişki — AC numaraları ile dilim aralıkları, hazırlık listesi ile dilim kapıları
+(Q-10, XMC-001 Web genişletmesi: ikisi de dilim kapısı, ready-for-dev önkoşulu değil), 71 / 73 sabiti dört yerde aynı kurala bağlandı; geçici
+ölçüt yok (DL-1 ölçütleri DL-3 sonrasında da geçerli, §16 kurgu kuralı). §2 kodla tutmayan iddia — adlar ve satırlar `049bbb89d`'de grep ile
+ölçüldü (G-21…G-26); indeks kapsamı düzeltildi (F-10); bağımlı modül sınırı (MOD-0142) dosya ve satırla yazıldı; arka plan işinin kimliği
+(sistem aktörü) AC-20'de. §3 ölçülemeyen ölçüt — yarış ölçütleri zorlayan dekoratörle ve adlı sonuçla (AC-12, AC-13); sayfa boyutu ve imleç
+kuralı yazıldı (AC-15); her yazma yolu için ayrı senaryo (W1–W6, AC-13 (a)–(c)). §3a değişmez — `Voided`'ı bozabilecek her yazar sayıldı (§8.6
+W1–W6); ortak belge yazımı olmayan yollara sürüm yazımı eklendi (W3, W4). §3a durum × komut — §8.3 R0–R12 ve §8.9. §4 araç biçimi — ölçütler
+liste satırı, hücre içi `|` yok. §5 dış sistem — Workflow örneği açık kalır (Q-02), geç gelen sonuç son durumla yanıtlanır (V8).
+
+### 19.7 Bağımsız inceleme 01 — kapanış tablosu (tur 2 → r4)
+
+Bulgu dosyası `docs/records/reviews/MOD-0175-FU01/2026-11-03-54d736e1.md` (`df4f48933`; dosya özeti `6e8caf9c…ddeb04812`,
+`git show 0be75c8c6:<yol> | sha256sum`); hedef r3 pack sha256 `54d736e1…e6f394e8c5`, kaynak `023755fa4`; KOŞULLU, 0 ENGEL, 1 ORTA, 4 DÜŞÜK.
+CT kararı MVP-1 CT 2026-11-03: hepsi kabul, r4'te tek geçiş (S-101). Sahip kararları Q-01…Q-09 ve tur 1'de verilen yazar seçimleri yeniden
+açılmadı. Her düzeltme kodla ölçüldü (`0be75c8c6`, salt okuma; `023755fa4` ile kod farkı yok; G-27…G-31).
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@54d736e1 (ORTA) | **Seçim: işaret komut kipine taşındı** (AC-20 istisnası açılmadı). W5 / W6 `Voided` kararda hiçbir şey yazmaz; satırı postlanmışsa `ApplyAsync` işlem dışında `ApplySourceReversalTo{Hold,Blocked}Command(record.Voided.ReversalTransactionId)` gönderir (emsal `ApplyApprovedLotStatusChangeCommand`, `:93`); yeni R0a `Voided` kayıtta `Conflict (LinesPosted)` yazar. REVERSAL kimliği kaydın `Voided.ReversalTransactionId`'sinden, numarası / postlayanı / `CorrelationId`'si V2'nin defter okumasından. Sistem aktörü kipi gönderene değil komutun gönderimine bağlı → `RefreshDecisionCommand`, `ReapplyDecisionCommand`, okuma anı uzlaştırması ve MediatR dışı `QuarantineWorkflowOutcomeConsumer` yolunda da tam 1 merkezi kayıt `System`; iç içe gönderimde dış komutun kaydı ayrı (yığın). Gönderim kaçarsa süpürücünün yeni geçersiz beslemesi (72 sa penceresi, gerekçeli) yazar. §21 `RefreshDecisionCommand` / `ReapplyDecisionCommand` satırları buna göre | künye, §3, §4.1, §5, §8.2, §8.3 (R0a), §8.6 (W5, W6, "W5 / W6 `Voided` dalı"), §8.9, §11, §12 V8c, §13 #21, §19.2 G-27, G-28, §21; AC-20 (d), AC-28, AC-39 |
+| F-2@54d736e1 | W3 onay işlemine W2 / W4 ile aynı ≤ 3 deneme + her denemede kayıt ve olay yeniden okuması; üçüncü uyuşmazlıkta hata yukarı (işlem geri alınmış, `Approved` yok), tüketici yolunda uzlaştırıcı sonraki okumada uygular; ikinci yazar olarak gerçek R1 işareti (onay sırasında `UpdateHoldCommand` 409 verdiği için) | §8.6 W3, §8.9, §13 #23, §19.2 G-29, G-30; AC-13 (a2) |
+| F-3@54d736e1 | W1 satırı bugünkü koda hizalandı (CT kararı): okuma–kilit arası `Voided` → 409 `QUARANTINE_DECISION_ALREADY_PENDING` (kod değişmez), `Submitted` / Workflow yok; sonraki gönderim ilk yazma sayılır → 409 `QUARANTINE_HOLD_CLOSED`; seçim gerekçesi | §8.6 W1, §8.9, §12 V8b, §13 #22, §19.2 G-30; AC-13 (d) |
+| F-4@54d736e1 | §8.3'e eşleşmeyen satır R13: `NoChange (Unmatched)`, yazma yok, hata logu (kayıt numaralı), asla `Void`; `Conflict` yerine seçilme gerekçesi (kapalı `Cause` listesi, yeniden değerlendirme); varsayılan dal istisna atmaz. Tutarlılık için DL-3 bekçisi R13'ü reddeder (`details.cause Unmatched`, INVENTORY 1.8.0 henüz yazılmadığından liste genişler) | §8.2, §8.3 (R13 ve "Eşleşmeyen durum"), §8.8, §12 V4, §13 #24, §17; AC-2 (b), AC-31, AC-36 |
+| F-5@54d736e1 | Açık kayıttaki uyuşmazlık (R1, R6, R9, R10) kabul edilen sınır: kapanış yolu yok (Q-05 değişmez), tek kayıtlı kovada V7 409 `QUARANTINE_STOCK_CHANGED` ile kayıt kalıcı açık; Q-04'ün "QA elle düzeltir"i kayıt üzerinde eylem değildir; KPI, lot kalite durumu, recall istekçisi ve diğer §8.5 sayımlarına etkisi açıkça yazıldı; sayfa yardımında aynı sınır | §8.3 ("Açık kayıtta uyuşmazlık — kabul edilen sınır"), §19.2 G-31, §20, §23; AC-29 |
+| Sahip izni (XMC-001, DL-3 Web) | r4'e işlenmedi: CT bildirimi (2026-11-03) o gün izin gelmemişti; DL-3 Web adımının kapısıydı, ready-for-dev önkoşulu değildi. **r5'te verildi olarak işlendi** (§19.8) | künye, §5, §18, §19.5 |
+
+**Yeni gözlemler (r4 ölçümü sırasında; karar değil, r4'te davranış değişmedi — CT'ye; ikisi de r5'te işlendi, §19.8):**
+- `ApplyAsync`'in lot adımı (`ApplyApprovedLotStatusChangeCommand`, `QuarantineApplyEngine.cs:91-106`) satırlardan önce koşar; §8.6'nın
+  "her satırdan önce yeniden okuma" kuralı bu adımı anmaz. Lotu değiştiren hold kararında (`NewRetestDate` / `LotStatusTarget`,
+  `ChangesLot`, `:61-65`) onay ile kapanış yarışırsa lot `Voided` karara rağmen değişebilir. Bu bulgu tur 2 listesinde yok; ele alınması CT'nin
+  kararıdır (ör. lot adımından önce de aynı yeniden okuma).
+- Okuma anı uzlaştırması sorgu handler'larında yazar (`Approved` / `Applied` / ret olayları, W3 / W4'ün eklenen sürüm yazımı); bu yolun merkezi
+  kaydı bugün yoktur (işaretli komut yok) ve denetim defterinin "Yazan sorgular" bölümü boştur. Ebeveynin mevcut davranışıdır; bu FU yeni
+  yazma yolu açmaz, W5 / W6 işaretini komut kipine taşıyarak bu yoldan ayırır.
+
+**pack-review-common-findings taraması (r4):** §1 kendisiyle çelişki — W5'in "aynı işlemde Conflict yazar" cümlesi §8.6 tablosu, akış
+maddesi, §8.9, §11, §21 ve AC-20'de tek kurala (komut kipi) bağlandı; R0 ile §8.2 "tam bir kez" erken dönüşü R0a'yı içerecek biçimde birlikte
+güncellendi; AC sayısı (39), dilim aralıkları (§22) ve hazırlık listesi aynı; DL-3 Web izni künye, §5, §18, §19.5'te aynı ifadeyle (r4'te:
+izin henüz yok; r5'te verildi). §2 kodla tutmayan iddia — W1 cevabı koddaki kodla yazıldı (F-3); W3 dalı koddaki yakalama listesiyle (G-29); bağlam sayısı ve
+satırlar grep ile ölçüldü (G-27…G-31); "arka plan işinin kimliği" maddesi: iç komutun aktörü her bağlamda `System` (§5, AC-20 (d)).
+§3 ölçülemeyen ölçüt — R13 için tablo dışı satırlar adıyla (AC-2 (b)); W1 / W3 yarışları dekoratörle zorlanır (AC-13 (a2), (d)); geçersiz
+beslemenin pencere sınırı ölçülür (AC-39 (c)); her giriş yolu ayrı satır (AC-39 (a1)–(a4)). "Bir sayı raporlanıyor ama okuma yüzeyi yok" —
+`Unmatched` ve `mark_dispatch_failed` loglarında kayıt numarası var, kayıt kuyrukta görünür. §3a — `Voided`'ı bozabilecek yazar listesi W1–W6
+değişmedi; W5 / W6'nın yeni dalı yazmaz; "tamamlandı işareti ilk yazılıyor" — satır önce postlanır, işaret sonra ve iki yoldan (iç gönderim,
+geçersiz besleme). §3a durum × komut — §8.3 R0a–R13 (eşleşmeyen satır dahil) ve §8.9. §4 araç biçimi — ölçütler liste satırı, hücre içi `|`
+yok. §5 dış sistem — tüketicinin gelen kutusu satırı uygulamadan önce yazıldığı için W3'ün son hatasında sonuç uzlaştırıcıya kalır (§8.6 W3).
+
+### 19.8 İnceleme 01 tur 3 ve son bakış 01 — kapanış tablosu (r4 → r5)
+
+Bulgu dosyaları: `docs/records/reviews/MOD-0175-FU01/2026-11-03-962fda71.md` (`c1471a786`; dosya özeti `5a9754cb…25de55f`) — UYGUN,
+0 ENGEL, 2 DÜŞÜK; `docs/records/reviews/MOD-0175-FU01/2026-11-03-962fda71-son-bakis-01.md` (`8f0365fdc`; dosya özeti `246b49a4…01236c1a`) —
+UYGUN, 0 ENGEL, 5 DÜŞÜK (`git show 8b5205226:<yol> | sha256sum`; `execution/approvals/reviews.tsv` satır 228-229 ile aynı). Hedef r4 pack
+sha256 `962fda71…6266067c`. CT kararı MVP-1 CT 2026-11-03: yedisi de kabul. S-101'e göre yalnız düşük bulgu sürüm değiştirmez ve talimata
+yazılırdı; sahip onayı ve izin işlendiği için sürüm zaten değişti (r5) → bulgular talimata ertelenmeden pakete, tek geçişte işlendi. Sahip
+kararları Q-01…Q-09 ve önceki turların yazar seçimleri yeniden açılmadı. Her düzeltme kodla ölçüldü (`8b5205226`, salt okuma; G-32…G-40).
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@962fda71 | Lot adımı §8.6'da adlandırıldı: ana yol (lot komutu kararı `FindApprovedAsync` ile yeniden okur, `Voided` kararda 409 `LOT_APPROVAL_REQUIRED`, lot değişmez) ve kalan pencere (`FindApprovedAsync` okuması ↔ lot commit'i) **kabul edilen sınır** — işaret yok, uyarı logu `lot_changed_after_void`; AC-13 (g) ChangesLot ana yol yarışı, (g2) pencere ölçümü, adlı sabotajlar. Ölçüm notu: bu sırada `Voided` son olay olduğundan önerilen "`StateOf` emiciliğini kaldır" sabotajı kırmızıya dönmez; sabotaj `FindApprovedAsync` durum denetimi üzerinden yazıldı | §8.6 "Lot adımı", §8.9, §13 #28, §19.2 G-34; AC-13 (g), (g2) |
+| F-2@962fda71 | §20'ye ebeveyn MOD-0175 sahipli takip maddesi FU-0175-RECONCILE-AUDIT (okuma anı uzlaştırmasının merkezi kaydı; sahip Beste). Defterin "Yazan sorgular" bölümü yalnız küçülür (G-39) → yol satır eklemek değil, uzlaştırmayı iç işaretli komuta taşımaktır. Bu paketin kodu değişmez | §20, §21; G-39 |
+| F-1@962fda71-son-bakis-01 | Yazar tablosuna W7 geri çekme (işlem içi olay okuması, `Voided` görürse olay / geçmiş / `ReopenAsync` yok, kayıt `Version + 1`; okumada `Voided` → bugünkü 409 `QUARANTINE_DECISION_NOT_PENDING`) ve W8 başlatma hatası kolu (≤ 3 deneme + yeniden okuma, `StartFailed` olayı yazılır, kayıt yazılmaz, cevap bugünkü hata); `Withdrawn` değişmez 1 listesinde; `WorkflowHandlers.cs` ve başlatma hatası kolu Repo Scope'ta; AC-13 (e), (f) ve sabotajları | §5, §8.6 (değişmez 1, W7, W8), §8.9, §12 V8d, V8e, §13 #25, #26, §19.2 G-32, G-33, §21; AC-13 (e), (f) |
+| F-2@962fda71-son-bakis-01 | Yeni kural R5a: intake hold, satırsız `Approved` / `ApplyFailed` karar `ChangesLot` ve lot geçmişinde `mod-0175:{decisionId}` satırı var → Void + aynı işlemde `Conflict (LotChanged)` + log `lot_changed`; lot geri alınmaz. `Cause` listesine `LotChanged` (QUARANTINE 1.4.0 henüz yazılmadı → yalnız ekleme). Blocked için lot dalı yok (ölçüldü). Lot geçmişi MOD-0174'ten salt okunur (dosya değişmez). Yeni ölçüt AC-41 | künye, §1, §3, §4.1, §5, §7, §8.3 (R5a ve madde), §8.6, §8.7, §8.8, §8.9, §11, §12 V8f, §13 #27, §17, §19.2 G-34, §21, §23; AC-20, AC-23, AC-28, AC-29, AC-41 |
+| F-3@962fda71-son-bakis-01 | REVERSAL satırının sunucu okuması DL-1'e: `GetHoldHandler` / `GetBlockedHandler` `TrailAsync`'e `Voided.ReversalTransactionId` ve `SourceReversalConflict.ReversalTransactionId`'yi ekler (kiracı + şirket kapsamlı okuma değişmez); şema değişmez, `MovementLink.description` metni genişler. Yeni ölçüt AC-40; AC-26 ona bağlandı | §5, §8.7, §11, §17, §19.2 G-35; AC-23, AC-26, AC-40 |
+| F-4@962fda71-son-bakis-01 | AC-27: rozet ve eylemsizlik bugünkü JS kuralı olarak sabitlendi; sabotajlar `Blocked.cshtml` süzgeç seçeneği ve `blocked.js:261` / `:275` kapalı listeye çevirme üzerinden (gerçek kırmızı). AC-5: hata kodu ölçülür, sabotajın beklenen kırmızısı 409 `QUARANTINE_STOCK_CHANGED` (V7) | §11, §17; §19.2 G-36, G-37; AC-5, AC-27 |
+| F-5@962fda71-son-bakis-01 | AC-13 (a2) beklenen sonuç kurgu (ii) ile hizalandı: doğrudan yazılmış REVERSAL bakiyeye dokunmaz → Release satırı postlanır, karar `Applied`, hold `Decided`, R1 işareti kalır | §19.2 G-38; AC-13 (a2) |
+| XMC-001 DL-3 Web | **Verildi** (Beste 2026-11-03, `705a9cd03`); kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` ekran metni; iznin açık olduğunu söyleyen her ifade "verildi" olarak yeniden yazıldı | künye, başlık, §5, §18, §19.5, §19.7, §22 |
+| Onay / künye | Sahip «onayla» (Beste 2026-11-03); künye `ready-for-dev`, `approval_status: pending`; CT-APR-01 satırı CT tarafından r5 sha256'sıyla (S-49) | künye, §18, §19.5 |
+| Tarama bulgusu (r5, yazar) | AC-2 (b)'nin entegrasyon satırı REVERSAL'ı `DecisionPending` + `Draft` kayıtta istiyordu; DL-3 bekçisi R13'ü reddettiği için (AC-31) DL-3 etkinken kırmızı olurdu → kurgu (i)'ye çevrildi (REVERSAL `Open` kayıtta, kayıt sonra doğrudan yazılır); kurgu kuralı ve AC-33 listesine AC-2 (b), AC-13 (a2), AC-40, AC-41 eklendi. Registry satırı (G-40) ve plan satırı notu hazırlık listesinde düzeltildi | §16 kurgu kuralı, §18; AC-2, AC-33 |
+
+**pack-review-common-findings taraması (r5):** §1 kendisiyle çelişki — AC sayısı 41 (§16 sayımı, §18, §22 aynı); dilim aralıkları DL-1 →
+AC-1…AC-24, AC-37, AC-39, AC-40, AC-41; DL-3 Web izni künye, başlık, §5, §18, §19.5, §22'de aynı ifadeyle ("verildi"); hazırlık listesinde Q-10 ve
+plan satırı ready-for-dev önkoşulu değil, dilim tablosuyla aynı; `Cause` beş değeri §4.1, §8.7, §11 (13 anahtar), AC-23, AC-28, AC-29'da aynı;
+R13'ün "yeni `Cause` değeri yok" gerekçesi `LotChanged` eklenince çelişmesin diye yeniden yazıldı (§8.3); geçici ölçüt yok — AC-2 (b) DL-3
+sonrası kurguya çevrildi. §2 kodla tutmayan iddia — her yeni ad ve satır `8b5205226`'da okundu (G-32…G-40); "kod değişmez" denen dallar
+(W7 (i), AC-27 rozet / eylem) bugünkü koddaki davranışla yazıldı; bağımlı modül (MOD-0174) sınırı dosya ve satırla (G-34); kiracı kapsamı
+(`LotRepository.cs:301-302` yalnız kiracı; lot kimliği Guid) yazıldı. Mevcut test kanıt diye gösterilmedi. §3 ölçülemeyen ölçüt —
+sabotajların beklenen kırmızısı bugünkü kodla doğrulandı (AC-5 V7 kodu, AC-27 kapalı liste, AC-13 (g)'de emicilik yerine `FindApprovedAsync`);
+yarışlar dekoratörle ve adlı arayüzle zorlanır (`IQuarantineWorkflowClient`, `IQuarantineRepository`, `IApprovedLotChanges`); "bir sayı
+raporlanıyor ama okuma yüzeyi yok" — `lot_changed` ve `lot_changed_after_void` loglarında kayıt numarası, karar ve lot kimliği; R5a işareti
+kuyrukta rozetle görünür. §3a değişmez — `Voided`'ı bozabilecek yazar listesi W1–W8 (geri çekme ve başlatma hatası kolu eklendi); lot adımı
+ayrı yazar olarak sayıldı ve kalan penceresi adlandırıldı; "tamamlandı işareti ilk yazılıyor" — R5a'da kapanış ve işaret aynı işlemde. §3a
+durum × komut — §8.3 R0a–R13 + R5a, §8.9 yeni satırlar. §4 araç biçimi — ölçütler liste satırı, hücre içi `|` yok. §5 dış sistem — geri çekmede
+Workflow görevi iptal edilmiş olabilir; kayıt yine son yeniden okunan duruma göre yazılır (W7), iptal çağıranın isteğidir.
 
 ## 20. Follow-up Items
 
 - **FU-0175-FU01-OUTBOUND** — REVERSAL dışı yollarla tutma statüsünden çıkan stok (QUARANTINE / QI / BLOCKED'dan MOD-0175 olmayan `SCRAP`,
   `WRITE_OFF`, `COUNT_LOSS`, transfer, `STATUS_TRANSFER` — `MovementDirectionRules.cs:62-107` yapısal olarak izin verir) de hayalet kayıt doğurur;
-  ayrı karar (bekçi ya da kova uzlaştırma raporu).
+  ayrı karar (bekçi ya da kova uzlaştırma raporu). Q-05 = A (2026-11-03): bu FU'da elle kapatma yok, bu hayalet kayıtların yeri bu maddedir.
+  **Not (r4, F-5@54d736e1):** aynı "kayıtsız kova farkı" sınıfına giren, bu FU'da işaretlenip açık kalan kayıtlar (§8.3 "Açık kayıtta uyuşmazlık
+  — kabul edilen sınır": R1, R6, R9, R10) bu maddenin kararında birlikte ele alınır; bu FU onları kapatmaz.
 - **FU-0175-FU01-INTAKE-AUDIT** — intake'in kayıt açılışı merkezi kayıt yazmıyor (G-14); intake'i iç MediatR komutuna taşımak (AUD-001 §2 "yeni
   kodda yazma yolu MediatR komutu").
-- **FU-0175-FU01-WFCANCEL** — Q-02 = C seçilirse: `Voided` kararın Workflow görevini karar sahibinin token'ıyla iptal.
+- **FU-0175-RECONCILE-AUDIT** (r5, F-2@962fda71; **ebeveyn MOD-0175 sahipli, sahip Beste**) — okuma anı uzlaştırması (sorgu handler'ları
+  `QueryHandlers.cs:142, 196, 232, 269, 309`, `LotQualityStatusHandler.cs:72` → `QuarantineWorkflow.cs:270`) ve MediatR dışı
+  `QuarantineWorkflowOutcomeConsumer` (`:98-99`) `Approved` / `Applied` / ret olaylarını ve r4'te eklenen W3 / W4 sürüm yazımını işaretli komut
+  olmadan yazar → merkezi kayıt yok. Inventory denetim defterinin "Yazan sorgular" bölümü boş ve yalnız küçülür
+  (`tests/architecture/audit-ledger/Diten.InventoryService.md:39-41`, G-39) → kapatma yolu satır eklemek değil, uzlaştırmayı iç işaretli komuta
+  taşımaktır (ör. `ReconcileDecisionCommand`, `ICentralAuditDeclaration`; W5 / W6 işaretinin bu FU'daki komut kipi emsal). Ebeveynin mevcut
+  davranışıdır; bu FU yeni yazma yolu açmaz ve kendi işaretini komut kipinde yazar (§8.6). Karar ve paket sürümü ebeveyn sahibinin.
+- ~~FU-0175-FU01-WFCANCEL~~ — **açılmaz:** Q-02 = A (2026-11-03), C seçilmedi; Workflow örneği açık kalır, sonradan gelen onay etkisiz (§8.6).
 - **FU-0175-FU01-LAYOUT** — ebeveynin Quarantine feature klasörünü Golden düzenine taşımak (§10 sapması).
 - **FU-0175-FU01-DTVERIFY** — `verify_datatable_page.py` için Quarantine ekranlarının modül eşlemesi (G-20).
 
@@ -608,18 +1147,19 @@ K2: karantina kaydı GxP kaydıdır → merkezi kayıt iş verisiyle aynı Mongo
 
 | Komut | `Operation` / `EntityType` | Yol | Önceki / sonraki ya da değişen alanlar (ürün izinde) | İstisna |
 |---|---|---|---|---|
-| `ApplySourceReversalToHoldCommand` (**yeni**) | `LifecycleTransition` / `QuarantineHold` | b (K2) | Void: `Status` Open/DecisionPending → Voided, `Voided.*`, `ActiveDecisionId`; karar olayı `Voided`; geçmiş `SourceReversed` (`ReversalTransactionId`). Conflict: `SourceReversalConflict.*`; geçmiş `SourceReversalConflict`. NoChange → kayıt yok | — |
-| `ApplySourceReversalToBlockedCommand` (**yeni**) | `LifecycleTransition` / `BlockedStock` | b (K2) | aynı, blocked alanlarıyla | — |
+| `ApplySourceReversalToHoldCommand` (**yeni**) | `LifecycleTransition` / `QuarantineHold` | b (K2; aktör `System` `…0175`, Q-03 = A) | Void: `Status` Open/DecisionPending → Voided, `Voided.*`, `ActiveDecisionId`; karar olayı `Voided`; geçmiş `SourceReversed` (`ReversalTransactionId`). R5a (r5): Void + aynı işlemde `SourceReversalConflict.*` (`LotChanged`) + geçmiş `SourceReversalConflict`; tek merkezi kayıt. Conflict (intake kökenli R6, R7, R9–R11; `Voided` kayıtta R0a `LinesPosted` — r4; MOD-0175 kökenli R1 `OwnMovementReversed`): `SourceReversalConflict.*`; geçmiş `SourceReversalConflict`. NoChange (`Unmatched` dahil) → kayıt yok. Gönderenler: gözlemci, süpürücü, uygulama motoru (W5 / W6); aktör her gönderende `System` | — |
+| `ApplySourceReversalToBlockedCommand` (**yeni**) | `LifecycleTransition` / `BlockedStock` | b (K2; aktör `System` `…0175`, Q-03 = A) | aynı, blocked alanlarıyla | — |
 | `QuarantineStockCommand` (mevcut) | `Create` / `QuarantineHold` | b | değişmez | — |
 | `BlockStockCommand` (mevcut) | `Create` / `BlockedStock` | b | değişmez | — |
 | `UpdateHoldCommand` (mevcut; `Voided`'da 409) | `Update` / `QuarantineHold` | b | değişmez; ret merkezi kayıt yazmaz (mevcut) | — |
 | `StartReviewCommand` (mevcut; `Voided`'da 409) | `LifecycleTransition` / `QuarantineHold` | b | değişmez | — |
 | `CompleteBlockedReviewCommand` (mevcut) | `LifecycleTransition` / `BlockedStock` | b | değişmez | — |
 | `CreateDecisionCommand` (mevcut; `Voided`'da 409) | `Create` / `QuarantineDecision` | b | değişmez | — |
-| `SubmitDecisionCommand` (mevcut; `Voided`'da 409) | `LifecycleTransition` / `QuarantineDecision` | b | değişmez | — |
-| `ReapplyDecisionCommand` (mevcut; `Voided` kararda 409) | `Execute` / `QuarantineDecision` | b | değişmez | — |
-| `RefreshDecisionCommand` (mevcut; `Voided` kararda sonuç etkisiz) | `Execute` / `QuarantineDecision` | b | değişmez | — |
-| `WithdrawDecisionCommand` (mevcut) | `LifecycleTransition` / `QuarantineDecision` | b | değişmez | — |
+| `SubmitDecisionCommand` (mevcut; `Voided`'da 409) | `LifecycleTransition` / `QuarantineDecision` | b | değişmez; ikinci işlemin `Voided` dalı (§8.6 W2) ve başlatma hatası kolunun yeniden denemesi (W8, r5) yeni yazma yolu açmaz, aynı komutun işlemidir | — |
+| `ReapplyDecisionCommand` (mevcut; `Voided` kararda 409) | `Execute` / `QuarantineDecision` | b | değişmez; yarışta `Voided` olan kararın satırı postlanmışsa (§8.6 W5 / W6) bu komut o dalda **yazmaz**, uyuşmazlık işaretini iç `ApplySourceReversalTo{Hold,Blocked}Command` kendi kaydıyla (`System`) yazar (r4, F-1@54d736e1) | — |
+| `RefreshDecisionCommand` (mevcut; `Voided` kararda sonuç etkisiz) | `Execute` / `QuarantineDecision` | b | değişmez; W3 / W4'ün kayıt `Version` yazımı aynı komut işleminde (yeni komut yok). W5 / W6 `Voided` dalında bu komut uyuşmazlık işaretini **yazmaz**: işaret iç `ApplySourceReversalTo{Hold,Blocked}Command`'ın kendi işlemi ve kendi merkezi kaydıdır (`System`, tam 1); bu komutun kaydı onay yazımı için kendi aktörüyle ayrı kalır (r4, F-1@54d736e1; AC-20 (d), AC-39) | — |
+| Okuma anı uzlaştırması (sorgu handler'ları) ve `QuarantineWorkflowOutcomeConsumer` (mevcut, işaretli komut yok) | — | — | onay / ret olayları ve W3 / W4 sürüm yazımı (ebeveyn davranışı; merkezi kayıt bugün yok, G-27); W5 / W6 işareti bu yollarda da yalnız iç komutla, kendi merkezi kaydıyla yazılır. Bu FU yeni yazma yolu açmaz; mevcut yolun merkezi kaydı ebeveyn kapsamıdır — takip maddesi FU-0175-RECONCILE-AUDIT (§20, sahip Beste; r5) | — |
+| `WithdrawDecisionCommand` (mevcut) | `LifecycleTransition` / `QuarantineDecision` | b | değişmez; `Voided` kararda (§8.6 W7, r5) `Withdrawn` olayı, geçmiş ve `ReopenAsync` yazılmaz; aynı komutun işlemidir, yeni yazma yolu yok | — |
 | `SaveSettingsCommand` (mevcut) | `Update` / `QuarantineSettings` | b | değişmez | — |
 | `CreateBlockReasonCommand` (mevcut) | `Create` / `BlockReason` | b | değişmez | — |
 | `UpdateBlockReasonCommand` (mevcut) | `Update` / `BlockReason` | b | değişmez | — |
@@ -634,18 +1174,29 @@ Kayda yazılmayan alanlar: token, gizli anahtar; kişisel veri yok (kullanıcı 
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
 |---|---|---|---|---|---|
-| DL-1 | çekirdek: kaynak geri alma kapanışı + uyuşmazlık işareti + gözlemci / süpürücü + açık yüklemi + denetim + QUARANTINE 1.4.0 | Owned Objects, Entity Fields, Repo Scope, Runtime Constraints (8.1–8.7, 8.9), Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Audited Events | E4 | plan kimliği yok | plan satırı yok |
-| DL-2 | ekran: kuyruk / detay / bloke stok durumu, uyuşmazlık rozeti, 7 dil, sayfa yardımı | Layout & Shell Contract, Frontend File Contract | E3 | plan kimliği yok | plan satırı yok |
-| DL-3 | defter bekçisi: uyuşmazlık doğuracak ve MOD-0175 kaynaklı REVERSAL reddi + INVENTORY ek kodu (yalnız Q-06 = A; XMC-001 MOD-0173) | Runtime Constraints (8.8), Repo Scope, Protected Paths, Dependencies, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-1 | çekirdek: kaynak geri alma kapanışı (intake kökenli) + uyuşmazlık işareti (MOD-0175 kökenli dahil) + gözlemci / süpürücü (açık + terminal + geçersiz besleme) + karar yazarlarıyla ortak kilit, `Voided` emici + açık yüklemi + denetim + QUARANTINE 1.4.0 | Owned Objects, Entity Fields, Repo Scope, Servis ve kapsam, Tetik — gözlemci + süpürücü; tam bir kez, Kural tablosu (`SourceReversalRules`), Geç intake, Açık / terminal yüklemi, Karar motoru ile dışlama, Sözleşme — QUARANTINE 1.4.0 (yalnız ekleme), Durum ve komut tablosu, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-2 | ekran: kuyruk / detay / bloke stok durumu, uyuşmazlık rozeti, 7 dil, sayfa yardımı | Layout & Shell Contract, Frontend File Contract, Page Help (UXH-001) | E3 | plan kimliği yok | plan satırı yok |
+| DL-3 | defter bekçisi: uyuşmazlık doğuracak ve MOD-0175 kaynaklı REVERSAL reddi + INVENTORY 1.8.0 ek kodu + Web hata metni 7 dil (Q-06 = A; XMC-001 MOD-0173; Web adımı: XMC-001 izni verildi, Beste 2026-11-03; kabul kapısı Q-10) | DL-3 — defter bekçisi (Q-06 = A), Repo Scope, Protected Paths, Dependencies, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 
-Kabul ölçütleri: DL-1 → AC-1…AC-24; DL-2 → AC-25…AC-30; DL-3 → AC-31…AC-36. DL-2 ve DL-3 DL-1'e dayanır. Plan satırı bu taslağa verilmedi
-(plan dosyası depoda değil) → değer uydurulmadı; plan sahibinden alınıp yazılır (§18). Q-06 = B olursa DL-3 satırı ve AC-31…AC-36 "isteğe bağlı"
-değil, ayrı takip paketi olarak çıkar (AC'ler silinmez, durumları CT kaydında "kapsam dışı" yazılır).
+Kabul ölçütleri: DL-1 → AC-1…AC-24, AC-37, AC-39, AC-40, AC-41; DL-2 → AC-25…AC-30; DL-3 → AC-31…AC-36, AC-38 (r3'te eklenen iki ölçüt,
+r4'te eklenen AC-39 ve r5'te eklenen AC-40, AC-41 sona numaralandı, r2 numaraları değişmedi; toplam 41). DL-2 ve DL-3 DL-1'e dayanır. **Açılış sırası (F-9@ae3fed7d):** DL-1 tek başına kullanıcıya açık ortama (canlı ya da MVP
+turu ortamı) çıkmaz; açılış DL-1 + DL-2 birlikte yapılır (§17 E3 smoke ikisini birlikte koşar). Gerekçe: DL-2'siz ekranda `Voided` hold kuyrukta
+"Bekliyor" rozetiyle (`quarantine-ui.js:95-104`), Karar Ver eylemiyle (`queue.js:68`) ve detayda karar düğmeleriyle (`details.js:125`) görünür;
+sunucu 409 döner ama ekran yanıltır; DL-1'e geçici rozet koymak DL-2'nin dosyalarını iki dilime böler. DL-1 kabulü ile DL-2 kabulü arasında
+dalda bu görünüm **bilinen geçici sapmadır** ve DL-1 kabul kaydına yazılır. Plan satırı bu taslağa verilmedi
+(plan dosyası depoda değil) → değer uydurulmadı; plan sahibinden alınıp yazılır (§18). DL-3 bu paketin dilimidir (Q-06 = A, Beste
+2026-11-03). **DL-3 kapıları:** (1) sözleşme adımı — FU03'ün INVENTORY 1.7.0'ı dalda olmadan 1.8.0 yazılmaz (Q-07, §8.8); (2) **kabul kapısı
+Q-10** — DL-3 kabul kaydı MVP-6 CT (Natig) kararını (tarih, veren) taşımadan kapanmaz; Q-10 ready-for-dev önkoşulu değildir, DL-1 / DL-2
+kabulünü bağlamaz.
 
 ## 23. Page Help (UXH-001)
 
 DL-2 yeni sayfa açmaz; mevcut üç sayfanın yardımı güncellenir (7 dil, `PageHelpResource.*.resx`):
 - `Help.QUARANTINEQUEUE` — durumlar adımına "Geçersiz · Kaynak geri alındı: kaynak stok hareketi geri alındığı için kayıt kapandı; karar gerekmez".
-- `Help.QUARANTINEDETAILS` — "Kaynak geri alındı · uyuşmazlık: stok bu kaydın dışında değişti; QA kontrol eder" açıklaması.
-- `Help.BLOCKEDSTOCK` — durum süzgecindeki "Geçersiz" seçeneği.
+- `Help.QUARANTINEDETAILS` — "Kaynak geri alındı · uyuşmazlık: stok bu kaydın dışında değişti; QA kontrol eder" açıklaması. Açık kayıt sınırı
+  (r4, F-5@54d736e1, §8.3): "Uyuşmazlık işaretli kayıt açıksa açık kalır ve açık sayımlarda (KPI, lot kalite durumu, recall) tam miktarıyla
+  görünür; kayıt üzerinde kapatma eylemi yoktur — QA düzeltmeyi stok tarafında yapar." Geçersiz kayıtta işaret: "Geçersiz kaydın kararına ait bir
+  satır kapanıştan sonra postlandı; stok başka bir kaydın kovasından çıktı." Lot değişikliği işareti (r5, R5a): "Kayıt kapanmadan önce kararın lot
+  değişikliği (durum ve / veya yeniden test tarihi) uygulanmıştı; lot geri alınmadı — lot durumunu QA kontrol eder."
+- `Help.BLOCKEDSTOCK` — durum süzgecindeki "Geçersiz" seçeneği; uyuşmazlık işaretli açık bloke kayıt için aynı açık kayıt sınırı cümlesi.
 Tur yok (yeni sayfa yok).
