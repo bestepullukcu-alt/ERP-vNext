@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using MediatR;
 
@@ -75,7 +77,11 @@ public sealed record ReopenPlanningWeekCommand(
     Guid PlanningSessionId,
     string WeekStart,
     string? Reason,
-    int? ExpectedVersion) : IRequest<Response<PlanningWeekReopenResult>>;
+    int? ExpectedVersion) : IRequest<Response<PlanningWeekReopenResult>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("PlanningSession");
+    public Guid? CentralAuditEntityId(object? response) => PlanningSessionId;
+}
 
 /// <summary>Re-plans a subset (doctor missed / "I can go day X"): re-runs the route for the affected contacts and
 /// updates ONLY their atoms IN PLACE (D-REPLAN = A). The session is not reopened.</summary>
