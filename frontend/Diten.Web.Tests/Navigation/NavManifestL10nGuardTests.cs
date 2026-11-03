@@ -189,8 +189,8 @@ public sealed class NavManifestL10nGuardTests
     private static readonly IReadOnlyDictionary<string, string> PagelessUntil = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
-        ["mrp-replenishment"] = "MOD-0189 pack §9/§11: MRP Monitor screen pending",
-        ["safety-stock-optimization"] = "MOD-0191 pack §11: safety stock workspace screen pending"
+        ["mrp-replenishment"] = "MOD-0189 MRP Monitor / Exception Queue / Evidence Pack ekran işi (pack §11) bekleniyor",
+        ["safety-stock-optimization"] = "MOD-0191 Safety Stock Optimization tenant çalışma alanı ekran işi (AC-S09) bekleniyor"
     };
 
     [Fact]
