@@ -154,13 +154,11 @@ behaviour change). Inventory's `ShipmentBundleHttpReader` does not read lines an
 code, because the create command, the summary projection and the contract tests must agree in one change. DL-3 therefore also
 writes, and only these: `docs/analysis/contracts/shipment-bundle.openapi.yaml` (exactly
 `docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0.patch` as approved; single writer: the MOD-0183 contract
-writer, MVP-6 CT), `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`,
-and — because 3.5.0 also declares the five Returns workflow codes of MOD-0186 35.9 item 4 —
-`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/ContractErrorCodes.cs` and
-`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ContractErrorCodeParityTests.cs` (constants
-only, no behaviour). Every other DL-3 file is already in the paths above. MOD-0186 code is not changed by DL-3: the Returns
-additions of 3.5.0 (`ReturnSummary` fields, `getReturn`, `submitReturnAuthorization`) are optional or not yet served, and MOD-0186
-serves them in its own DL-4 and, after its own approval, DL-5 (MOD-0186 section "Contract changes needed").
+writer, MVP-6 CT) and `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`.
+Every other DL-3 file is already in the paths above. 3.5.0 adds no error code, so `ContractErrorCodes` and its parity test are not
+touched. MOD-0186 code is not changed by DL-3: the Returns additions of 3.5.0 (`ReturnSummary.customerRef`, `getReturn` with
+`ReturnDetail`) are optional or not yet served, and MOD-0186 serves them in its own DL-4 (MOD-0186 section "Contract changes
+needed", items 1 and 6). No DL-5 surface is in 3.5.0.
 
 ## 6. Protected Paths
 
@@ -960,7 +958,7 @@ DL-3 exception), as 3.4.0 was by DL-1. r8 said "DL-3 and K1 need none"; with `cu
 | 2 | `ShipmentSummary`: `shipToReference`, `warehouseReferenceId` in the list response (absent in 3.4.0) | DL-4; MOD-0186 DL-3 |
 | 3 | New schema `CustomerRef` (nullable string; `Account.Id`, Guid "D", lower case; compared case-insensitively; opaque to the service). `CreateShipmentCommand.customerRef` (optional) and `ShipmentSummary.customerRef` (so also `ShipmentDetail` and the list). `shipToReference` keeps its type and its meaning, the delivery destination; only its description says it carries no customer identity | DL-3; DL-4; MOD-0186 DL-3; MOD-0177 FU (MVP-1) |
 | 4 | `ReturnSummary.customerRef`, read-only, the same `CustomerRef` (so also `ReturnResponse` and the return list); filled by MOD-0186 | MOD-0186 DL-4 |
-| 5 | MOD-0186 section "Contract changes needed" items 1–4 (Natig K1, 2026-11-03): `getReturn` and `ReturnDetail`; `submitReturnAuthorization`; `ReturnSummary` `reasonCode`, `createdAt`, `authorizationState`, `lastAuthorizationOutcome`; five Returns workflow codes and the `transitionReturn` text. Declared here, served by MOD-0186 (`x-served-from`: DL-4 for `getReturn`, DL-5 for the rest); MOD-0183 DL-3 adds only the code constants | MOD-0186 DL-4; MOD-0186 DL-5 |
+| 5 | MOD-0186 section "Contract changes needed" item 1 only (Natig K1, 2026-11-03: `getReturn` joins 3.5.0): `GET /returns/{returnId}` `getReturn` and `ReturnDetail` (`reasonCode`, `createdAt`, `lines[]`; no authorization or workflow field). Declared here with `x-served-from: MOD-0186 DL-4`, because the contract lands with this module's DL-3 before MOD-0186 serves it. The DL-5 items (submit, workflow fields, codes) are not in 3.5.0 | MOD-0186 DL-4 |
 
 Not changed by 3.5.0: `ShipmentResponse` (the create acknowledgement carries no header field today), every event payload, every
 Shipments path, status code and error code, the shipment lifecycle. The MVC adapter code `INVALID_CUSTOMER_ACCOUNT` is not a wire code.
@@ -1005,7 +1003,7 @@ Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`,
 | SB-19 | **Accepted limit (MVP-1 CT, 2026-11-03).** Old-key records are shown separately, marked "old record": a shipment without `customerRef` is never linked to an account by any match on `shipToReference` (name, code or text), and nothing merges it with a `customerRef` shipment of the same customer. DL-3 evidence cites the decision record section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)". MOD-0177 files are unchanged in the DL-3 diff | Adding a lookup that fills a name or `customerRef` for an old record from its `shipToReference` turns it red |
 | SB-20 | **No GUID on screen.** On create form, list and details, no visible text, option label, tooltip or `title` holds `customerRef` or any account id; the id rides only in the request body. Measured on the rendered pages, 7 languages | Rendering the id as the picker's option text turns it red |
 | SB-21 | **Nothing from CRM in logs.** With a capturing logger on the picker, address, name and create adapters, no log line holds the account name, code, any address field, person, phone or e-mail | Adding a log line with the CRM response turns it red |
-| SB-22 | **3.5.0 applied exactly.** The contract file equals 3.4.0 plus `SHIPMENT-BUNDLE-3.5.0.patch`; `CreateShipmentCommand` stores `customerRef` as given and `ShipmentSummary` / `ShipmentDetail` return it with `shipToReference` and `warehouseReferenceId`; `search`, `orderBy`, `orderDir`, `filteredTotal` behave as the contract text; the five Returns workflow codes are in `ContractErrorCodes` and `ContractErrorCodeParityTests` is green; all contract examples validate; a 3.4.0 client without `customerRef` still creates | Dropping `customerRef` from the summary projection turns it red |
+| SB-22 | **3.5.0 applied exactly.** The contract file equals 3.4.0 plus `SHIPMENT-BUNDLE-3.5.0.patch`; `CreateShipmentCommand` stores `customerRef` as given and `ShipmentSummary` / `ShipmentDetail` return it with `shipToReference` and `warehouseReferenceId`; `search`, `orderBy`, `orderDir`, `filteredTotal` behave as the contract text; no error code is added; all contract examples validate; a 3.4.0 client without `customerRef` still creates | Dropping `customerRef` from the summary projection turns it red |
 | SB-18 | No write path changed: S23-1…S23-21 stay green; the REVERSAL body is unchanged until 24.6 closes | Adding `restoreReservation` before FU03 fails S23-17 |
 
 The full SupplyChain and Web test assemblies run unfiltered. Measure page latency of the list with 50 rows in the slice's evidence (24.4); no latency target is invented.
@@ -1030,13 +1028,12 @@ location tree picker, the `/search` source, the name/code + by-id address split,
 | 24.2 form table | Recipient → `shipToReference` | Customer → `customerRef` + `shipToReference` destination; field count unchanged (10) |
 | 24.3, 24.4 | recipient name from `shipToReference` | customer name and code from `customerRef`; "old record" mark; no id in the customer failure cell; DL-4 starts after DL-3 |
 | 24.5 | intake writes no account id | intake sets no `customerRef` (FU-0178-MVP6) |
-| 24.7 | items 1, 2; "DL-3 and K1 need none" | items 1–5 = SHIPMENT-BUNDLE 3.5.0, proposal + patch, applied whole by DL-3 (item 5 = MOD-0186 items 1–4, joined by Natig K1); DL-4 and MOD-0186 DL-3 / DL-4 after DL-3 |
-| §5 DL-3 exception (second set) | 3.5.0 patch + contract helper | also `ContractErrorCodes.cs` and `ContractErrorCodeParityTests.cs` (constants for the five Returns codes) |
+| 24.7 | items 1, 2; "DL-3 and K1 need none" | items 1–5 = SHIPMENT-BUNDLE 3.5.0, proposal + patch, applied whole by DL-3 (item 5 = MOD-0186 `getReturn` only, joined by Natig K1; the DL-5 surface is kept out); DL-4 and MOD-0186 DL-3 / DL-4 after DL-3 |
 | 24.8 | OD-183-1…3 | customer-identity decision; OD-183-4 decided (Natig K1); OD-183-5 open with MVP-1 CT; CRM switch, MOD-0177 consumer row added |
 | 24.9 | SB-2, SB-2a, SB-9…SB-11, SB-19 as precondition | rows reworded; SB-19 accepted limit; new SB-20 (no GUID on screen), SB-21 (nothing from CRM in logs), SB-22 (3.5.0 applied exactly) |
 | Slice table and its note | DL-3: "no contract change", MOD-0177 answer first | DL-3 row adds "Contract changes needed" (the only slice-table change, required by the decision); DL-3 applies 3.5.0; DL-4 after DL-3 |
 
-r9 holds two change sets, not reviewed in between: the customer-identity rule, then Natig K1's four decisions of 2026-11-03 on the open questions (OD-183-4; sequencing; `getReturn` and MOD-0186 items 1–4 in 3.5.0; MOD-0186 owned files). Nothing in §1–§3, §6–§11, §13–§23 or the DL-1 / DL-2 rows changed; no YAML block was edited.
+r9 holds two change sets, not reviewed in between: the customer-identity rule, then Natig K1's four decisions of 2026-11-03 on the open questions (OD-183-4; sequencing; `getReturn` only in 3.5.0, DL-5 surface kept out; MOD-0186 owned files). Nothing in §1–§3, §6–§11, §13–§23 or the DL-1 / DL-2 rows changed; no YAML block was edited.
 
 ## Teslim dilimleri
 
@@ -1054,4 +1051,4 @@ modules). Not slices of this version: the product check (Dependencies, PRODUCT-M
 PRODUCT-MASTER is frozen, by a new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work, a
 later MOD-0183 revision). CT-APR-01 note: "only DL-1, DL-2".
 
-DL-3 covers SB-1…SB-8, SB-2a, SB-11, SB-16, SB-19, SB-22 and the create-form part of SB-20 and SB-21; it applies the whole of SHIPMENT-BUNDLE 3.5.0 (all five items of "Contract changes needed"; the Shipments service side of items 1–3 included, the Returns items only as declarations and code constants) in the same change, under the §24 DL-3 exception of Repo Scope. The MOD-0177 owner's written answer that r8 required first is given (decision record, 2026-11-03), so that precondition is closed. DL-4 covers SB-9, SB-10, SB-12…SB-15 and the list and details part of SB-20 and SB-21, and starts after DL-3 (contract items 1–3). SB-17 and SB-18 run in both. Not slices of this version: the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes, the MOD-0177 FU (MVP-1's). CT-APR-01 note for r9: "only DL-3, DL-4"; evidence levels are proposals.
+DL-3 covers SB-1…SB-8, SB-2a, SB-11, SB-16, SB-19, SB-22 and the create-form part of SB-20 and SB-21; it applies the whole of SHIPMENT-BUNDLE 3.5.0 (all five items of "Contract changes needed"; the Shipments service side of items 1–3 included, the Returns items 4 and 5 only as declarations) in the same change, under the §24 DL-3 exception of Repo Scope. The MOD-0177 owner's written answer that r8 required first is given (decision record, 2026-11-03), so that precondition is closed. DL-4 covers SB-9, SB-10, SB-12…SB-15 and the list and details part of SB-20 and SB-21, and starts after DL-3 (contract items 1–3). SB-17 and SB-18 run in both. Not slices of this version: the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes, the MOD-0177 FU (MVP-1's). CT-APR-01 note for r9: "only DL-3, DL-4"; evidence levels are proposals.

@@ -82,9 +82,12 @@ On 2026-11-03, after reading MOD-0183 r9, MOD-0186 r10 and the 3.5.0 draft, **Na
    its meaning, the delivery destination.
 2. **Sequencing.** The whole of SHIPMENT-BUNDLE 3.5.0 (search, summary fields, `customerRef`) lands with MOD-0183 DL-3; MOD-0183
    DL-4 starts after DL-3.
-3. **`getReturn` joins 3.5.0.** MOD-0186 "Contract changes needed" items 1–4 (`getReturn`, `submitReturnAuthorization`, the
-   workflow fields and the five Returns codes) move into 3.5.0, additive only. They are declared there; `getReturn` is served
-   from MOD-0186 DL-4 and the rest only from an approved DL-5.
+3. **`getReturn` joins 3.5.0 — `getReturn` only; DL-5 surface kept out.** MOD-0186 "Contract changes needed" item 1
+   (`getReturn` with `ReturnDetail`: `reasonCode`, `createdAt`, lines; no authorization or workflow field) moves into 3.5.0,
+   additive only, served from MOD-0186 DL-4. Items 2–4 (`submitReturnAuthorization`, `authorizationState`,
+   `lastAuthorizationOutcome`, `workflowInstanceId`, the five Returns workflow codes, the `transitionReturn` text) are DL-5,
+   stay fully outside this approval and go in a later contract version opened with DL-5 (OD-186-1, OD-186-6 pending).
+   (A first application of this decision on the drafts had moved items 1–4; it was corrected the same day to item 1 only.)
 4. **MOD-0186 owned files.** MOD-0186's owned-files list names what DL-3 and DL-4 now change (`CreateReturnHandler`,
    `ReturnReferenceReader`, the return model, the Returns views and scripts).
 
