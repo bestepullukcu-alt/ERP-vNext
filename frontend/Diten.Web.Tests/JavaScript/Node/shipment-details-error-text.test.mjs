@@ -28,12 +28,19 @@ const L10n = {
     dispatchInProgress: 'dispatchInProgress', dispatchCompensationFailed: 'dispatchCompensationFailed',
     dependencyUnavailable: 'dependencyUnavailable', inventoryCodeUnknown: 'inventoryCodeUnknown[{0}]',
     inventoryCodes: Object.fromEntries(closedList.map((code) => [code, `reason:${code}`])),
-    statuses: { Planned: 'status:Planned' },
+    statuses: { Planned: 'status:Planned' }, unavailable: 'unavailable', skuLevels: { FinishedGood: 'level:FinishedGood' },
     dispatchStates: { InProgress: 'state:InProgress', CompensationFailed: 'state:CompensationFailed' }
 };
 const context = vm.createContext({ document: { getElementById: () => null, addEventListener: () => {} }, window: { L10n }, Intl, crypto });
-const { errorText, statusText } = vm.runInContext(`${source}\n;ShipmentDetails`, context);
+const { errorText, statusText, lineCells } = vm.runInContext(`${source}\n;ShipmentDetails`, context);
 const body = (code, details) => ({ error: { code, details, correlationId: 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa' }, contractVersion: 'v1' });
+
+test('a line shows its stock fields from the response; a missing one says so', () => {
+    const line = { lineNumber: '1', itemId: 'item', skuId: 'sku', quantity: '2.000', uomId: 'EA', inventoryReferenceId: null,
+        skuLevel: 'FinishedGood', fromLocationId: 'loc-1', lotId: 'lot-1', issueTransactionId: 'tx-1' };
+    assert.deepEqual([...lineCells(line)].slice(5), ['unavailable', 'level:FinishedGood', 'loc-1', 'lot-1', 'tx-1']);
+    assert.deepEqual([...lineCells({ lineNumber: '2', skuLevel: 'Lsku' })].slice(6), ['Lsku', 'unavailable', 'unavailable', 'unavailable']);
+});
 
 test('every closed-list inventoryCode shows the line and its own reason', () => {
     assert.equal(closedList.length, 25);
