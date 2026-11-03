@@ -277,11 +277,11 @@ suppliers while payment execution remains with treasury/payment gateway capabili
   (KARAR D72; Dependencies); MOD-0048 para birimi listesi;
   RCS-001 ortak kod servisi; SEC-002 veri kapsamı (MDM'de var olan `ITrustedLegalEntityScopeProvider` adayı); MDM'nin
   denetim izi (`mdm-guvenilir-kaynak-niyeti`, Audited Events).
-- **Domain-config ile ilişki:** MDM domain-config'te MOD-0289 "In-Scope Reserved Module" listesinde yok ve frontend /
-  gateway istisnası yalnız MOD-0290-FU02 için yazılı (`execution/domains/master-data-management/domain-config.md` "This
-  exception applies to no other MDM module pack"). Yetki sırası gereği module pack domain-config'in üstündedir, ama bu
-  paket domain-config'i değiştirmez; domain-config satırı ve MOD-0289 için frontend/gateway kapsam cümlesi follow-up'tır:
-  satır paket kapısıdır (ready-for-dev engeli), frontend/gateway kapsam cümlesi dilim kapısıdır — DL-4 için (D51/1).
+- **Domain-config ile ilişki:** MDM domain-config'te MOD-0289 satırı "In-Scope Reserved Modules" listesinde **var**
+  (PR #270; D127 ile `ready-for-dev` cümlesine güncellendi) — o paket kapısı maddesi kapalıdır. Frontend / gateway istisnası
+  bugün yalnız MOD-0290-FU02 için yazılı (`execution/domains/master-data-management/domain-config.md` "This exception
+  applies to no other MDM module pack"); MOD-0289 için frontend/gateway kapsam cümlesi açık ve dilim kapısıdır — DL-4 için
+  (D51/1). Yetki sırası gereği module pack domain-config'in üstündedir.
 
 ## Owned Objects
 
@@ -1862,6 +1862,10 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 
 **ENGELLER — tasarım / onay kapısı = paket kapısı (D51/1).** Tek kural (MOD-0217 ve Treasury paketlerinin deseni): işaretsiz
 madde **paket düzeyidir** — bütün dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz.
+**Tek istisna — onay maddeleri (S-49, KARAR D127/3):** CT-APR-02 ve CT-APR-01 künyesi `ready-for-dev` olan sürüme yazılır;
+bu yüzden sıra künye → inceleme → onay satırıdır ve bu iki madde künyeden **sonra** kapanır. Bu iki madde dışındaki paket
+düzeyi maddeler kapanmadan künye `ready-for-dev` yapılmaz. Künye `ready-for-dev` iken bu sürümün CT-APR-01 satırı main'de
+değilse paket **kod için onaylı değildir**: kod, WP prompt'u ve dağıtım yok (`pack_approval.py check` geçmez).
 **"— DL-n için"** işaretli madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde
 o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Auth (MOD-0018) iki
 parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de ve MOD-0018 sahibince teyitli (**KARAR D70/3**; şartlı teyit Y-19 / **KARAR D80/2** — DL-1'i bekletmez); kayıt kodu DL-1 kabul kapısıdır;
