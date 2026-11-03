@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using MediatR;
 
@@ -66,20 +68,36 @@ public sealed record ArchiveKnowledgePathCommand(Guid PathId, int? ExpectedVersi
 /// legacy-path wizard). The path subject must be the chain's subject (409 chain_subject_mismatch).</summary>
 public sealed record BindKnowledgePathChainCommand(
     Guid PathId, Guid ChainTemplateId, string? CountryCode, string? LanguageCode, int? ExpectedVersion = null)
-    : IRequest<Response<bool>>;
+    : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 // ---------------- WP-KP-1 claims on a chain-bound path (mutate the path document, share the path Version token) -------
 
 public sealed record AddKnowledgePathClaimCommand(
     Guid PathId, Guid ClaimId, KnowledgePathArrangementInput? Arrangement, int? ExpectedVersion = null)
-    : IRequest<Response<bool>>;
+    : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 /// <summary>Changes only the Position inside the claim's slot (the slot itself never moves — D-KP-7).</summary>
 public sealed record ArrangeKnowledgePathClaimCommand(
-    Guid PathId, Guid ClaimId, int Position, int? ExpectedVersion = null) : IRequest<Response<bool>>;
+    Guid PathId, Guid ClaimId, int Position, int? ExpectedVersion = null) : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 public sealed record RemoveKnowledgePathClaimCommand(
-    Guid PathId, Guid ClaimId, int? ExpectedVersion = null) : IRequest<Response<bool>>;
+    Guid PathId, Guid ClaimId, int? ExpectedVersion = null) : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 // ---------------- embedded step sub-commands (mutate the path document, share the path Version token) ----------------
 
