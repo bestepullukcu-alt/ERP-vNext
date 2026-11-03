@@ -16,5 +16,7 @@
     <ProjectReference Include="..\Diten.CrmService.Infrastructure\Diten.CrmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.CrmService.Persistence\Diten.CrmService.Persistence.csproj" />
       <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+    <!-- BL-501 / CRM-AUD-KN-01: the shared central-audit forwarder (AddCentralAudit + the scope adapter). -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit\Diten.BuildingBlocks.CentralAudit.csproj" />
 </ItemGroup>
 </Project>
