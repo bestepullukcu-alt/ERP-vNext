@@ -46,17 +46,16 @@ public sealed class TransactionOwnedAuditCommandGuardTests
     internal static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> MainSyncESignCommands =
         new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
         {
-            ["CancelSignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
+            ["CancelESignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
+            ["CreateESignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["CreateExportCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["CreateMeaningCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["CreateSampleCommand"] = (ESignOwner, ESignReason, ESignBacklog),
-            ["CreateSignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["DeactivateSampleCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["DecideSampleCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["ExpireSignatureRequestsCommand"] = (ESignOwner, ESignReason, ESignBacklog),
-            ["InvalidateSignatureCommand"] = (ESignOwner, ESignReason, ESignBacklog),
-            ["RegisterSignableActionsCommand"] = (ESignOwner, ESignReason, ESignBacklog),
-            ["RejectSignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
+            ["InvalidateESignatureCommand"] = (ESignOwner, ESignReason, ESignBacklog),
+            ["RejectESignatureRequestCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["RevertLegalEntityPolicyCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["SavePolicyCommand"] = (ESignOwner, ESignReason, ESignBacklog),
             ["SetMeaningActiveCommand"] = (ESignOwner, ESignReason, ESignBacklog),
@@ -65,13 +64,11 @@ public sealed class TransactionOwnedAuditCommandGuardTests
             ["WithdrawSampleCommand"] = (ESignOwner, ESignReason, ESignBacklog)
         };
 
-    // …and the one whose handler writes through the central audit service (a platform-global catalog event), not the
-    // in-transaction door: named for the door check below, same owner, reason and backlog item.
+    // …and the marked ones whose handler writes through the central audit service, not the in-transaction door: named for
+    // the door check below, same owner, reason and backlog item. Empty since 2026-11-02: its only row,
+    // RegisterSignableActionsCommand, is no longer marked — AuditBehavior audits it (IAuditableCommand, AUD-001 §5 path a).
     internal static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> MainSyncESignWithoutADoor =
-        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
-        {
-            ["RegisterSignableActionsCommand"] = (ESignOwner, ESignReason, ESignBacklog)
-        };
+        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal);
 
     [Fact]
     public void The_pipelines_allow_list_is_exactly_the_marked_commands()

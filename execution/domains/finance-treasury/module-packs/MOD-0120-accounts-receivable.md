@@ -23,6 +23,8 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de; `external-references/resolve` O-3 ve MOD-0149 satırında da v1 dışı); kapsam, izin ve AC değişmedi. `status: draft`.
 
+> **KARAR D124 (2026-11-03):** para birimi metni #346 ve D121–D123 sonrasına hizalandı: hassasiyet satırına canlı yayım durumu eklendi. Kapsam, izin ve AC değişmedi. `status: draft`.
+
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
 
 > **Durum: `draft` (planlama belgesi).** Bu paket kod, servis iskeleti, port kaydı, gateway rotası ya da kaynak
@@ -501,7 +503,7 @@ başlığı, MOD-0220'den doğrulanmış; R-2 deseni, MOD-0126 pack Entity Field
 |---|---|
 | decimal | tüm tutarlar `decimal` (Mongo `Decimal128`); `float`/`double` yasak (kaynakta da, `AccountsReceivableEntities.cs:4-5@218acaf5`) |
 | para birimi kaynağı | fatura başına **tek** ISO 4217 kodu, `currency-minor-units` setinde (KARAR D105); satır, taksit, tahsilat ve düzeltme faturanın para birimini taşır, farklıysa ret |
-| hassasiyet | para biriminin küsurat hanesi MOD-0048'den; kaynak MOD-0048-FU01 §21 `currency-minor-units` (Y-4/3 başlangıç listesi kabul; seed main'de (PR #297); ortamda yayım kanıtı DL-1 kabulünde — MOD-0126 O-11 ile aynı karar, tek karar iki pakete uygulanır); hane yoksa yazma 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`, sabit tablo uydurulmaz |
+| hassasiyet | para biriminin küsurat hanesi MOD-0048'den; kaynak MOD-0048-FU01 §21 `currency-minor-units` (Y-4/3 başlangıç listesi kabul; seed main'de (PR #297); ortamda yayım kanıtı DL-1 kabulünde, küme canlıda henüz yayımlı değil (D121/2) — MOD-0126 O-11 ile aynı karar, tek karar iki pakete uygulanır); hane yoksa yazma 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`, sabit tablo uydurulmaz |
 | yuvarlama | **yuvarlama yapılmaz.** Hane aşan tutar **reddedilir**. Miktar × birim fiyat bu sürümde yoktur (fiyatlama faturalamanındır, D27/2); toplamlar tam decimal toplamıdır, yuvarlama gerektirmez. Vergi motoru yok: satır vergisi kullanıcı girdisidir (O-11) |
 | saat dilimi | zaman damgaları UTC `DateTimeOffset`; `InvoiceDate`, `DueDate`, taksit vadesi, `PromiseToPayDate`, `PaymentDate` yalnız tarih (`DateOnly`), çevrim yapılmaz; yaşlandırmanın "bugün"ü O-12 |
 | hafta sınırı | uygulanmaz — bu sürümde haftalık kova yok (projeksiyon MOD-0125'le birlikte taşınmadı) |
