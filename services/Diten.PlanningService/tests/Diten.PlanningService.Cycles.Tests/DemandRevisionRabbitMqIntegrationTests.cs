@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
@@ -99,6 +100,27 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
             Assert.Equal(correlationId, receipt.CorrelationId);
             Assert.Equal("Published", receipt.DeliveryState);
             Assert.NotNull(receipt.DispatchedAt);
+
+            // CI uploads this proof alongside its TRX only after the real consumer and Mongo receipt agree.
+            var runnerTemp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
+            if (!string.IsNullOrWhiteSpace(runnerTemp))
+            {
+                var resultsDirectory = Path.Combine(runnerTemp, "test-results");
+                Directory.CreateDirectory(resultsDirectory);
+                var proof = new
+                {
+                    Broker = "RabbitMQ",
+                    BrokerEventId = brokerMessage.EventId,
+                    BrokerCorrelationId = brokerMessage.CorrelationId,
+                    OutboxEventId = receipt.EventId,
+                    OutboxCorrelationId = receipt.CorrelationId,
+                    OutboxDeliveryState = receipt.DeliveryState,
+                    OutboxDispatchedAt = receipt.DispatchedAt
+                };
+                await File.WriteAllTextAsync(
+                    Path.Combine(resultsDirectory, "mod0188-rabbitmq-delivery-proof.json"),
+                    JsonSerializer.Serialize(proof, new JsonSerializerOptions { WriteIndented = true }));
+            }
         }
         finally
         {

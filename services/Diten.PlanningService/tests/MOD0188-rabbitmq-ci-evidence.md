@@ -1,6 +1,6 @@
 # MOD-0188 Demand v2 — gerçek RabbitMQ kanıtı
 
-Durum: **CI gerçek broker koşusu bekleniyor.** Bu belge tek başına teslimi kanıtlamaz. Demand v2 DRAFT ve PR #228 taslak kalır.
+Durum: **İlk CI gerçek broker koşusu yeşil; kimlikli JSON artifact koşusu bekleniyor.** Demand v2 DRAFT ve PR #228 taslak kalır.
 
 - Test: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/DemandRevisionRabbitMqIntegrationTests.cs
 - CI: .github/workflows/service-tests.yml içindeki planning-tests matrisi. RABBITMQ_IMAGE mevcut sabit sürüm/digest; hazır olma kontrolü mevcut Start RabbitMQ (Eventing) adımı. Tek üyeli test Mongo scripts/test-env/mod0188-ci-mongo.sh ile ayrı başlar.
@@ -10,4 +10,5 @@ Durum: **CI gerçek broker koşusu bekleniyor.** Bu belge tek başına teslimi k
 - Yerel sabotaj komutu (PowerShell, test Mongo açıkken): $env:MOD0188_TEST_RABBITMQ_ENABLED='true'; $env:MOD0188_TEST_RABBITMQ_HOST='127.0.0.1'; $env:MOD0188_TEST_RABBITMQ_PORT='1'; dotnet test services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj --no-restore --filter 'FullyQualifiedName~RabbitMqOptIn_ConsumesCommittedOutboxEventAndMatchesMongoReceipt' --logger 'console;verbosity=normal'
 - Sabotaj sonucu: **1 kırmızı**, çıkış kodu 1, MOD0188_RABBITMQ_CONNECTION_FAILED; alt neden Broker unreachable: guest@127.0.0.1:1/. Kapalı port testin yeşil kalmasına izin vermedi. Bu, broker kapalıyken gerçek teslimin gerçekleştiği iddiası değildir.
 - Main acfdf3fe2 merge sonrası mimari takım: **16 kırmızı, 211 geçti, 0 atlandı**. Yeni broker koleksiyonu ve CI guard uyarlaması kendi odaklı muhafızlarını geçti; 16 kırmızının main ile birebir karşılaştırması CI koşusunda ayrıca kaydedilecek.
-- CI iş bağlantısı ve gerçek broker sonucu: **PR #228 push koşusu tamamlanınca eklenecek.**
+- İlk gerçek broker CI işi: https://github.com/bestepullukcu-alt/ERP-vNext/actions/runs/41612852920/job/125838856285?pr=228 — Start RabbitMQ, filtresiz Test ve Skipped = 0 adımları başarılı. Bu koşu 4975000f9 commitindedir; Mongo receipt ve broker kimlik eşliği test assertionlarıyla sınandı.
+- Sonraki koşu aynı doğrulamadan sonra `test-results-planning-tests` artifactinde `mod0188-rabbitmq-delivery-proof.json` üretecek: broker ve outbox eventId/correlationId çiftleri, outbox DeliveryState=`Published` ve DispatchedAt. İndirilebilir artifact bağlantısı CI tamamlanınca PR açıklamasına eklenecek.
