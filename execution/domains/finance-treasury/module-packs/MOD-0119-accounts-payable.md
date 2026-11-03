@@ -23,6 +23,8 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de, SUPPLIER 1.3.0 FROZEN); kapsam, izin ve AC değişmedi. `status: draft`.
 
+> **KARAR D126 (2026-11-03):** kayıt kodu anahtarı türetme kuralı (D125/2) pakete yazıldı; yeni AC-45. Kapsam ve izin değişmedi. `status: draft`.
+
 > **KARAR D124 (2026-11-03):** para birimi metni #346 ve D121–D123 sonrasına hizalandı: Bağımlılık satırının gerekçesi, canlı yayım durumu ve Gateway çağrı ucu. Kapsam, izin ve AC değişmedi. `status: draft`.
 
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
@@ -901,7 +903,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     tx1 commit olmadıysa hiçbir şey yazılmamıştır; aynı anahtarla tekrar baştan çalışır.
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `InvoiceCode` yalnız `IRecordCodeAllocator.AllocateAsync(legalEntityId,
   recordType = APD, idempotencyKey)` portundan alınır; anahtar Create'in idempotency anahtarından (D12/2) türetilir, aynı
-  anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
+  anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = `mod0119:CreateApInvoice`. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
   200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i
   503 `AP_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı
   kayıtlı değil) Create 503, kodsuz kayıt açılmaz; modülde kendi sayaç, yedek kod ya da yerel kod üretimi yasak (RCS-001
@@ -1768,13 +1770,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   çağrıları kullanıcının `Authorization` başlığını taşır (servis token'ı yok). **Sabotaj:** kanonikleştirme kaldırılıp
   istekteki kod saklanınca eski kod testi ve mükerrer testi kırmızıya döner; `SupplierMasterId` `null` iken yazmaya izin
   verilince `null` testi kırmızıya döner.
+- [ ] AC-45 (zorunlu) — **Kayıt kodu anahtarı türetme (KARAR D125/2, D126):** üretim türeticisi `RecordCodeIdempotencyKey.Derive` ve sahte `IRecordCodeAllocator` ile: (v) D125/2'nin üç test vektörü aynen geçer; (a) aynı makbuz kapsamı, farklı istemci `Key` → iki ayrı kod, allocator iki farklı `idempotencyKey` görür; (b) sahte allocator ilk çağrıda 503 `RECORD_CODE_UNAVAILABLE` döner, Create 503 `AP_RECORD_CODE_UNAVAILABLE` ile başarısız olur ve makbuz yazılmaz; aynı `Idempotency-Key` ile yeniden denenen Create allocator'a ikinci çağrıyı yapar ve iki çağrıdaki `idempotencyKey` birebir aynıdır (tamamlanmış makbuzdan erken dönüş bu testi karşılamaz); (c) iki aktör, aynı şirket ve aynı istemci `Key` → iki ayrı kod. `Operation` = `mod0119:CreateApInvoice`. **Sabotaj:** türetme ham anahtara çevrilince (c), `Key` girdiden çıkarılınca (a), türetilen anahtara çağrı başına değişen değer (yeni Guid ya da zaman damgası) eklenince (b), serileştirmede bir bayt değişince (v) kırmızı.
 
 ## Test Expectations
 
 - **Birim:** validatorlar (her alan, koşullu alanlar belge türüne göre); tutar hesabı (`Gross = Net + Tax`, satır
   toplamları, hane sınırı); SoD R1–R9 (oluşturan / gönderen / güncelleyen, Guid karşılaştırması, ret de engelli); durum
   makinesi geçişleri (taşınan 6 durum + bekletme dönüşü); mükerrer anahtar normalizasyonu; idempotency parmak izi; RCS
-  kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi ve port bağlı değilken 503 (AC-43, sabotajlı).
+  kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi, anahtar türetme (D125/2 vektörü, (a)–(c); AC-45) ve port bağlı değilken 503 (AC-43, sabotajlı).
 - **Entegrasyon (Mongo replika kümesi, işlem):** kiracı/şirket izolasyonu (404); veri kapsamı (AC-32, sabotajlı); soft
   delete; idempotent tekrar; CAS 409; tekil indeksler (kod, iş anahtarı, MOD-0143 referansı, açık niyet, aktif istisna); CentralAudit kaydının iş işlemiyle
   birlikte commit/rollback'i ve outbox yazım hatasında komutun başarısız olması (sabotaj).
@@ -2080,7 +2083,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   TRM-14, MOD-0140 1.3.0 FROZEN dosyası (MOD-0140 DL-1; uçlar MOD-0140 DL-3'e kadar sahte istemci / Prism — KARAR D72), O-10, O-22 tasarımı + Auth'ta `read-tenant-wide` tanımı); "— DL-n için" işaretli
   maddeler DL-1'i bekletmez (D51/1). RCS-001 / BL-565 servisi önkoşul değildir — DL-1 kabul kapısıdır (KARAR D59/1): kod
   `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır. Servis iskeleti bu dilimde değil, MOD-0126 DL-1 WP'sinin ilk adımıdır (D51/3). **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır — `feature/fin/wp-0119-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
-  Bitiş: AC-1…3, 4 (Create / Update / Validate kısmı — KARAR D72), 5 (Create / Update / Validate kısmı — KARAR D73), 6, 15 (Create / Update / Delete / BulkDelete / Validate kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete / BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Validate kısmı), 40 (Validate kısmı), 43, 44 (KARAR D72). **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `APD` kodu alındı (kapanış tablosu RCS-001 satırı).
+  Bitiş: AC-1…3, 4 (Create / Update / Validate kısmı — KARAR D72), 5 (Create / Update / Validate kısmı — KARAR D73), 6, 15 (Create / Update / Delete / BulkDelete / Validate kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32 (DL-1 uçları kısmı: liste, detay, Create / Update / Delete / BulkDelete / Validate — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 33 (Create / Update / Validate kısmı), 40 (Validate kısmı), 43, 44 (KARAR D72), 45 (KARAR D126). **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `APD` kodu alındı (kapanış tablosu RCS-001 satırı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve / Reject / RequestInfo, SoD politika servisi ve gönderme çözümleyicisi (aday
   tabanı servis ortak `IFinanceTreasuryApproverCandidateSource` üzerinden — MOD-0126 DL-2 yazar, KARAR D66/1), `IApWorkflowPort` uygulaması
   (`Infrastructure/ApWorkflow/**` — MOD-0126 DL-2'nin servis ortak MOD-0023 bağdaştırıcısı üzerinde; zaman aşımı ortak ayarda),
