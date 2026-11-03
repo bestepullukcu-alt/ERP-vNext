@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r9 (slice B DL-3, DL-4): draft, not approved; needs CT-APR-02 and a CT-APR-01 row before code. DL-5 (K2) is not yet in force."
+status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r10 (slice B DL-3, DL-4; customer shown from customerRef, SHIPMENT-BUNDLE 3.5.0, per the MVP-1 CT answer of 2026-11-03 accepted by Natig K1): draft, not approved; needs CT-APR-02 and a CT-APR-01 row before code. DL-5 (K2) is not yet in force."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -1044,7 +1044,9 @@ read attempt a1's issue → the matching test is red). The full SupplyChain test
 
 ## 35. Screen slice B and return approval
 
-> **Draft revision r9 — not approved.** Owner decisions K2 and K4: `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`.
+> **Draft revision r10 — not approved.** Owner decisions K2 and K4, and the MVP-1 CT's answer on customer identity (MOD-0177 owner,
+> 2026-11-03, accepted by Natig K1 the same day): `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`.
+> r10 changes only how the customer is carried and shown (`customerRef`, SHIPMENT-BUNDLE 3.5.0); what changed is listed in 35.13.
 > Needs CT-APR-02 and a CT-APR-01 row before any code; that approval covers DL-3 and DL-4 only (35.7 is not yet in force). Facts below are measured on `main` `49012bd7b` unless marked. Slice A is
 > PR `bestepullukcu-alt/ERP-vNext#355` (branch `feature/sce/mvp6-screen-fixes-a-01`, `1ca0e36cc`); this section is written on top of
 > it. Whether #355 is merged is **not measured** (no `gh` here); slice B starts only after it is on `main`.
@@ -1083,7 +1085,7 @@ The Shipment resolve adapter (GET `/SupplyChain/Returns/api/shipments/{shipmentI
 - `BulkSkuReadItem.name` is derived at read time: the item's name, or the Global Product name with pack quantity and unit, plus the market code on an LSKU. It already names the product, so one name and one code are shown. No separate product code is shown: bulk-read returns none, and a Global Product id answers `notFound` there. A per-line `/products/{itemId}` read is not added.
 - PRODUCT-MASTER is `1.1.0-draft.16`, not frozen; a read for display and selection only is accepted (OD-186-5, decided). Field names above are re-checked at Phase 1.5.
 - A failed name read shows a localized "name unavailable" text with the row kept. It never blocks a return and never shows a GUID as a label. A permission failure on the read is treated the same way and logged.
-- New UI prerequisites for create and transition actors, beside `supplychain.shipments.read`: `mdm.product-master.read` (already on the tour's permission list), `trace.lots.read`, `inventory.locations.read` (receiving pickers) and `crm.account.read` (customer name). Without `crm.account.read` the shipment picker and details show number and date only. Details also uses `quarantine.holds.read` (35.5); workflow keys are in 35.7.
+- New UI prerequisites for create and transition actors, beside `supplychain.shipments.read`: `mdm.product-master.read` (already on the tour's permission list), `trace.lots.read`, `inventory.locations.read` (receiving pickers) and `crm.account.read` (customer name and code, resolved from `customerRef`). Without `crm.account.read` the shipment picker and details show number and date only, never the id. Details also uses `quarantine.holds.read` (35.5); workflow keys are in 35.7.
 - Return lines themselves stay `shipmentLineNumber`, `quantity`, `uomId` (`ReturnLine` is unchanged). `shipmentLineNumber` remains the only key; no GUID line identity is added.
 
 ### 35.3 Pickers
@@ -1092,14 +1094,15 @@ Every picker is a Select2 search field inside `.diten-field`, served by a same-o
 
 | Field | Replaces | Source | Rule |
 |---|---|---|---|
-| Shipment (create form) | UUID text + Resolve | new adapter GET `/SupplyChain/Returns/api/eligible-shipments` → `queryShipments` with `status=Delivered`, then `status=Closed` | shows number, customer name (MOD-0183 section "Screen slice B"), date. Choosing runs the existing resolve with its stale-response guard. The eligibility note and backend 422 stay |
+| Shipment (create form) | UUID text + Resolve | new adapter GET `/SupplyChain/Returns/api/eligible-shipments` → `queryShipments` with `status=Delivered`, then `status=Closed` | shows number, customer name and code (resolved from `ShipmentSummary.customerRef` by the MOD-0183 section "Screen slice B" display rule; a shipment without `customerRef` shows "old record"), date. No id is shown. Choosing runs the existing resolve with its stale-response guard. The eligibility note and backend 422 stay |
 | Shipment (list filter) | UUID text input | same adapter, without the status restriction | sends the frozen `shipmentId` parameter. The company comes from the shared selector of slice A |
 | Reason code | free text | closed module list, below | sends the code through the frozen `reasonCode` string |
 | Receiving warehouse | `toWarehouseId` text | `GET /api/locations/search` (`searchLocations`) with `search`, `type=Warehouse`, `status=Active` | the company comes from `LocationRepository.Scope()`, not from a parameter |
 | Receiving location | `toLocationId` text | tree picker below, from the chosen warehouse | disabled until a warehouse is chosen; cleared when the warehouse changes. `toLocationId` stays required on Received. `GET /api/locations` is not used: it accepts only `type`, `parentId`, `legalEntityId` and would ignore these filters |
 
 - **Tree picker.** `parentId` returns direct children only (`LocationRepository`), and the contract has no ancestor filter, so the contract does not change. The picker opens the tree one layer at a time with `GET /api/locations/search`, `parentId` = the opened node, `status=Active`, **without** `isStockable`, so non-stockable parents stay visible: Warehouse → StorageLocation → Zone → Bin, or StorageLocation → Bin (`LocationHierarchyRules`, K-01). Only a node with `isStockable = true` can be chosen; a StorageLocation may be both chosen and opened. `search` narrows the open layer only. (OD-186-4, closed.)
-- `queryShipments` has no text search, and its summary carries no `shipToReference` (`ShipmentProjection.Summary`). The UUID input goes away, so the picker needs both: 35.9 item 5 is a **precondition of DL-3**, not an option. It also needs no per-row `getShipment`.
+- In 3.4.0 `queryShipments` has no text search, and its summary carries no `customerRef` (`ShipmentProjection.Summary`). The UUID input goes away, so the picker needs both: 35.9 item 5 (SHIPMENT-BUNDLE 3.5.0, applied with MOD-0183 DL-3) is a **precondition of DL-3**, not an option. It also needs no per-row `getShipment`. `search` finds a shipment by number or source document, not by customer name (names are not stored).
+- **Old records (SB-19 of MOD-0183, accepted limit).** A shipment or return without `customerRef` is never linked to an account by a match on `shipToReference`; it is shown separately, marked "old record", with no CRM call.
 - **Reason list (OD-186-2, decided):** a closed, module-owned code set in v1: `DAMAGED`, `WRONG_ITEM`, `WRONG_QUANTITY`, `EXPIRED`, `QUALITY_COMPLAINT`, `CUSTOMER_REFUSED`, `OTHER`, with labels in `ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`. No lookup key exists for return reasons in `Diten.Platform` or MDM. The backend stays a free string, so old returns keep their text, shown as written.
 - `RETURN_RECEIPT_IN_PROGRESS` keeps its behaviour: stored warehouse and location ids from `details` fill the pickers, shown by name.
 - The transition panel and create form keep one `Idempotency-Key` per opened form or panel (section "Errors, replay and concurrency").
@@ -1119,7 +1122,7 @@ A declared difference from the Slim file set: Slim has no Details page, and this
 | Quarantine link adapter | GET `/SupplyChain/Returns/api/{returnId:guid}/holds` | GET `/api/quarantine/holds/by-source?sourceModule=MOD-0186&sourceDocumentId={returnId}` | read + `quarantine.holds.read` | MOD-0175 `listHoldsBySource` |
 
 - New files: `Views/SupplyChain/Returns/Details.cshtml`, `wwwroot/assets/js/SupplyChain/Returns/details.js`, resx keys in the existing `ReturnsIndex` set. `Layout = "_LayoutTenantShell"`. Skeleton, empty and error are three states. Cards use `card backbone-preview-section` and `row g-6`; `dl.row`; no edit button (Details template).
-- **Summary card:** RMA number, status, shipment number linking to the shipment details page, customer name, reason, created date. A GUID is not a label.
+- **Summary card:** RMA number, status, shipment number linking to the shipment details page, customer name and code, reason, created date. A GUID is not a label. The customer comes from the return's own `customerRef` (35.9 item 6); a return created before it has none, and then the shipment's `customerRef` is used; when neither is set the card shows "old record" and the shipment's `shipToReference` as stored. A failed name read shows only the localized "name unavailable" text, never the id.
 - **Lines sub-table:** line number, product / SKU name and code, lot, quantity, UoM, `inventoryPosting` label, reason, quarantine record.
 - **Quarantine (KRN) link:** the `CUSTOMER_RETURN` movement carries `sourceDocumentId` = return id (§34.1), so a hold is found by source. Each row shows `holdNumber` (`KRN-YYYY-NNNN`) linking to the MOD-0175 hold page, plus hold status. Whether MOD-0175 stores `sourceModule` / `sourceDocumentId` from this movement for this query is **not measured at runtime**. A line `NotPosted` has no hold and shows why. Without `quarantine.holds.read` the block is not drawn (UAS-001).
 - Known defect carried: after a REVERSAL the hold stays Open (F-2, owner MOD-0175; `QuarantineIntake.TargetOf` returns `None` for a reversal). The link shows the hold as stored and draws no conclusion from it.
@@ -1129,6 +1132,14 @@ A declared difference from the Slim file set: Slim has no Details page, and this
 ### 35.6 Read model
 
 `getReturn` adds the first by-ID read. It is tenant + company scoped: a foreign or unknown id answers 404 `RETURN_NOT_FOUND`, one text for both. Its handler, query and validator follow the folder rule of the section "Backend File Convention" (`Queries/GetReturnByIdQuery.cs`, `Handlers/QueryHandlers/GetReturnByIdHandler.cs`, `Validators/GetReturnByIdValidator.cs`). The response uses the unwrapped contract form.
+
+**Customer on the return (r10, 35.9 item 6).** When a return is created, the service copies the shipment's `customerRef` from the
+`getShipment` answer it already reads at create (`ReturnReferenceReader`, called through `CreateReturnHandler`) onto the return,
+as given; it is never taken from the client and the service does not call CRM. `ReturnSummary.customerRef` (so also the
+create answer, the list and `getReturn`) returns it read-only. Returns created before this are not back-filled; their
+`customerRef` is null. Measured on `main` `49012bd7b`: `ReturnReferenceReader.ParseShipment` checks named top-level fields and
+duplicates but has no top-level allow-list, so a 3.5.0 `ShipmentDetail` with `customerRef` is already accepted; DL-4 adds the
+read of the field and a test.
 
 ### 35.7 Authorization through Platform Workflow (K2) — not yet in force
 
@@ -1176,7 +1187,10 @@ To settle together:
 
 ### 35.9 Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here)
 
-Additive, for the next version after 3.4.0, single writer MVP-6 CT; `ContractErrorCodeParityTests` pins new codes to `ContractErrorCodes`.
+Additive, single writer MVP-6 CT; `ContractErrorCodeParityTests` pins new codes to `ContractErrorCodes`. **Items 5 and 6 are
+SHIPMENT-BUNDLE 3.5.0** (proposal `docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md`, patch
+`SHIPMENT-BUNDLE-3.5.0.patch` beside it), applied by MOD-0183 DL-3 together with its code. Items 1–4 are not in 3.5.0 and go
+in a later additive version.
 
 | # | Change | For |
 |---|---|---|
@@ -1184,7 +1198,8 @@ Additive, for the next version after 3.4.0, single writer MVP-6 CT; `ContractErr
 | 2 | New `submitReturnAuthorization` POST `/returns/{returnId}/submit-authorization`, `Idempotency-Key`; statuses 200, 400, 403, 404, 409, 422, 503 | DL-5 |
 | 3 | `ReturnSummary` gains optional `authorizationState`, `lastAuthorizationOutcome`, `reasonCode`, `createdAt`; `getReturn` gains `authorizationState`, `lastAuthorizationOutcome`, `workflowInstanceId` | DL-5 |
 | 4 | New codes `RETURN_APPROVAL_REQUIRED`, `RETURN_WORKFLOW_TEMPLATE_MISSING`, `RETURN_APPROVERS_NOT_CONFIGURED`, `RETURN_WORKFLOW_FORBIDDEN`, `RETURN_WORKFLOW_REJECTED`; `transitionReturn` description says Authorized / Rejected come only from workflow | DL-5 |
-| 5 | Items 1 and 2 of MOD-0183 section "Contract changes needed": `search` on `queryShipments`, `shipToReference` and `warehouseReferenceId` on `ShipmentSummary` | DL-3 precondition |
+| 5 | Items 1–3 of MOD-0183 section "Contract changes needed": `search` on `queryShipments`, `shipToReference`, `warehouseReferenceId` and `customerRef` on `ShipmentSummary` | DL-3 precondition (3.5.0) |
+| 6 | `ReturnSummary.customerRef`: read-only, the same `CustomerRef` schema as shipments (Account.Id, Guid "D", lower case, compared case-insensitively), copied by the service from the shipment at create (35.6); never in `CreateReturnCommand` | DL-4 (3.5.0; the field is optional, so it is valid while MOD-0186 does not fill it yet) |
 
 Gateway: the route for `getReturn` and the submit route go to `integration-agent`. Today `/api/shipment-bundle/returns` and its transition route exist; no by-ID route is measured.
 
@@ -1209,6 +1224,7 @@ Evidence references and the customer name are not written to the audit record.
 - **OD-186-3** Four-eyes on return approval (35.7): **decided** (Natig, 2026-11-03): yes; an unreadable approver is not applied.
 - **OD-186-4** Depth of the location picker (35.3): **closed.** Measured: `LocationRepository` filters `ParentId` by equality, `location.openapi.yaml` has no ancestor filter, K-01 and `MayBeStockable` allow stock on Bin and StorageLocation only. Solved by the tree picker, no contract change.
 - **OD-186-5** PRODUCT-MASTER is a draft: **decided** (Natig, 2026-11-03): a draft read is accepted for display and selection only; field names are bound at Phase 1.5.
+- **Customer identity:** **decided** (MVP-1 CT as MOD-0177 owner, 2026-11-03; accepted by Natig K1): the customer is `customerRef` on shipments and returns (SHIPMENT-BUNDLE 3.5.0), never `shipToReference`; no GUID on screen; old records shown separately; CRM read contractless and measured until CRM decides, nothing from CRM in logs. The switch to a contracted CRM endpoint is open, owner CRM / MOD-0149 owner (MOD-0183 section "Sender and recipient", open item 5).
 - **OD-186-6** Approver list (35.7): where the per-company list is kept and who edits it. A new settings surface, its permission key, manifest page and contract operations are not covered by K2. Decided when DL-5 opens.
 - **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
 
@@ -1220,7 +1236,7 @@ Tests live in the owned files named in section "Owned UI paths" and `services/Di
 |---|---|---|
 | RB-1 | Resolve projection carries `skuName` (`BulkSkuReadItem.name`), `skuCode` (`canonicalCode`) and lot number per line, for Item, Gsku, Lsku and FinishedGood lines; `itemId`, `skuId` never appear as a label | Dropping the projection fields turns it red |
 | RB-2 | Name read fails or is denied → row kept, localized "name unavailable", create still works | Making the failure throw turns it red |
-| RB-3 | Eligible-shipment picker lists only Delivered and Closed, finds a shipment beyond the first page by `search`, and draws the customer name from the summary with no per-row `getShipment`; without `crm.account.read` it shows number and date; a stale response never fills a changed choice | Removing the status filter, or the stale guard, turns it red |
+| RB-3 | Eligible-shipment picker lists only Delivered and Closed, finds a shipment beyond the first page by `search`, and draws the customer name and code from the summary's `customerRef` with no per-row `getShipment`; a shipment without `customerRef` shows "old record"; without `crm.account.read` it shows number and date; a stale response never fills a changed choice | Removing the status filter, or the stale guard, turns it red |
 | RB-4 | List filter sends `shipmentId` from the picker; no UUID text input remains on list or form | Restoring the input fails `ReturnFormContractTests` |
 | RB-5 | Reason select sends a listed code; 7 languages have every label; an old free-text return shows its stored text | Removing one language's key turns parity red |
 | RB-6 | Received: warehouse and location pickers; location disabled until a warehouse is chosen and cleared on change; empty location sends nothing and stops at `receiptPlaceMissing`; the adapter calls `/api/locations/search`, an Inactive place is not offered, and against the real INVENTORY query a Bin under Zone under StorageLocation can be reached and chosen while the Zone cannot be chosen | Keeping the old location on warehouse change, or sending `isStockable=true` on the layers, turns it red |
@@ -1241,8 +1257,36 @@ Tests live in the owned files named in section "Owned UI paths" and `services/Di
 | RB-21 | Manifest. DL-4: `RETURN_DETAILS` page added, `AUTHORIZE` and `REJECT` still present. DL-5: `SUBMIT_AUTHORIZATION` replaces them. M-02…M-08 pass in both | Leaving `AUTHORIZE` in the manifest fails M-05 |
 | RB-22 | Texts of every new state, picker, error and label exist in all 7 `ReturnsIndex` languages (parity by MATCH count); no hardcoded text | Removing a key from `ar` turns it red |
 | RB-23 | Approver equals the opener, on the event and the reconciliation path → nothing moves, return `Requested`, `lastAuthorizationOutcome = FourEyesViolation`, entitlement unchanged, and a new submit starts `r{n+1}`. Approver unreadable → not applied, `PendingApproval`, applied on a later read once readable (OD-186-3) | Removing the approver comparison, or leaving the violation in `PendingApproval`, turns it red |
+| RB-24 | **No GUID on screen.** Picker, list, QuickView and details hold no visible text, option label, tooltip or `title` with `customerRef` or any account id; a failed or denied customer name read shows only the localized text | Rendering the id as the picker's option text, or in the failure cell, turns it red |
+| RB-25 | **Old records shown separately (MOD-0183 SB-19).** A shipment or return without `customerRef` shows "old record" and, on details, the shipment's `shipToReference` as stored; no CRM call and no match on `shipToReference` links it to an account | Adding a name lookup from `shipToReference` turns it red |
+| RB-26 | **Nothing from CRM in logs.** With a capturing logger on the Returns adapters that resolve the customer, no log line holds the account name, code, any address field, person, phone or e-mail | Adding a log line with the CRM response turns it red |
+| RB-27 | **Customer copied, never sent (DL-4).** A return created for a shipment with `customerRef` returns the same value read-only in the create answer, the list and `getReturn`; `CreateReturnCommand` has no `customerRef` (it stays `additionalProperties: false`), and a value sent anyway is never stored; a shipment without `customerRef` gives a null; returns created earlier stay null; the service makes no CRM call | Taking the value from the request, or dropping the copy, turns it red |
 
 Also: `verify_datatable_page.py --reference slim` is run and recorded (RU-SCR-06 stands); the full SupplyChain and Web test assemblies run unfiltered; one real-browser pass on the integrated target with the tour's permission set plus `trace.lots.read`, `inventory.locations.read`, `crm.account.read`, `quarantine.holds.read`, and for DL-5 the three workflow keys of 35.7. The MOD-0175 binding (35.8) has no acceptance row until it is written.
+
+### 35.13 Revision r10 — what changed and why
+
+Cause: the MVP-1 CT's answer as MOD-0177 owner on customer identity (2026-11-03), accepted by Natig (K1) the same day,
+recorded in the decision record's section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)". The customer is
+carried in a separate `customerRef` on shipments and returns (SHIPMENT-BUNDLE 3.5.0), never in `shipToReference`. r9
+(`df328109…`) passed its last narrow review (`docs/records/reviews/MOD-0186/2026-11-03-df328109.md`, UYGUN); none of its
+closed findings is reopened: DL-5 stays outside this approval, the workflow fields stay in item 3 / DL-5, and the location
+tree picker stays as written.
+
+| Place | r9 | r10 |
+|---|---|---|
+| Front matter `status_note` | r9 draft | r10 draft; `approved_by` not set |
+| 35.2 permissions bullet | customer name | customer name and code from `customerRef`; never the id |
+| 35.3 Shipment picker row and bullets | customer name; summary lacks `shipToReference` | customer from `ShipmentSummary.customerRef`; "old record" for shipments without it; item 5 = 3.5.0 via MOD-0183 DL-3; `search` does not match names |
+| 35.5 Summary card | customer name | name and code from the return's `customerRef`, then the shipment's; "old record" otherwise; no id in the failure cell |
+| 35.6 Read model | `getReturn` only | the service copies the shipment's `customerRef` onto the return at create; read-only; no back-fill; reader tolerance measured |
+| 35.9 Contract changes | item 5 = `search`, `shipToReference`, `warehouseReferenceId` | item 5 adds `customerRef`; new item 6 `ReturnSummary.customerRef`; items 5 and 6 are 3.5.0, items 1–4 a later version |
+| 35.11 | — | customer-identity decision line |
+| 35.12 | RB-3 | RB-3 reworded; new RB-24 (no GUID on screen), RB-25 (old records shown separately), RB-26 (nothing from CRM in logs), RB-27 (customer copied, never sent) |
+| Slice note | DL-3 needs MOD-0183 items 1 and 2 | DL-3 needs MOD-0183 items 1–3 (3.5.0); DL-4 needs items 1 and 6; new rows assigned |
+
+The slice table, every YAML block, §1–§34, 35.1, 35.4, 35.7, 35.8 and 35.10 are unchanged. Scope stays DL-3 and DL-4; DL-5 stays
+outside this approval.
 
 ## Teslim dilimleri
 
@@ -1258,4 +1302,4 @@ DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 co
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
 
-DL-3 covers RB-1…RB-7 and the matching part of RB-22; it needs contract item 5 (MOD-0183 contract items 1 and 2) first. DL-4 covers RB-8…RB-10, the DL-4 part of RB-21 and the matching part of RB-22, and needs contract item 1 and its Gateway route. DL-5 covers RB-11…RB-20, the DL-5 part of RB-21, RB-23, needs contract items 2–4, and opens only after OD-186-1 and OD-186-6 are decided, with its own CT-APR-02 and CT-APR-01. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. Until DL-5 ships, return approval runs through the existing `.authorize` transition and K2 is not met live. CT-APR-01 note for r9: "only DL-3, DL-4"; evidence levels are proposals.
+DL-3 covers RB-1…RB-7, the picker part of RB-24…RB-26 and the matching part of RB-22; it needs contract item 5 (MOD-0183 contract items 1–3, SHIPMENT-BUNDLE 3.5.0, applied by MOD-0183 DL-3) first. DL-4 covers RB-8…RB-10, RB-27, the list and details part of RB-24…RB-26, the DL-4 part of RB-21 and the matching part of RB-22, and needs contract items 1 and 6 and the Gateway route of item 1. DL-5 covers RB-11…RB-20, the DL-5 part of RB-21, RB-23, needs contract items 2–4, and opens only after OD-186-1 and OD-186-6 are decided, with its own CT-APR-02 and CT-APR-01. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. Until DL-5 ships, return approval runs through the existing `.authorize` transition and K2 is not met live. CT-APR-01 note for r10: "only DL-3, DL-4"; evidence levels are proposals.

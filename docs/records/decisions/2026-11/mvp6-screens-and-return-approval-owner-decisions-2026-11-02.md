@@ -40,3 +40,36 @@ The first wording named an "MDM customer record". Measured on `main` `49012bd7b`
 
 - The two revisions are drafts. Each needs an independent review and an approval row (CT-APR-02, CT-APR-01) before any code.
 - The contract changes they name are listed in each pack; no contract file is changed by this record.
+
+## 2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)
+
+- given by: the **MVP-1 Control Tower**, as owner of MOD-0177, on 2026-11-03, answering the DL-3 precondition of MOD-0183 r8
+  (section "Screen slice B", effect on MOD-0177 recall)
+- accepted by: **Natig (K1)**, 2026-11-03
+- applied in (drafts, not approved): MOD-0183 r9, MOD-0186 r10, and the SHIPMENT-BUNDLE 3.5.0 proposal
+  (`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md` and `SHIPMENT-BUNDLE-3.5.0.patch`)
+
+This refines K1's sentence "`shipToReference` carries the account id; the contract does not change". Sender, recipient source
+(MOD-0149), `crm.account.read`, the single address and intercompany out of v1 stay as decided.
+
+1. **Separate field.** Customer identity is not written into `shipToReference`. SHIPMENT-BUNDLE 3.5.0 adds, additive only, a
+   separate `customerRef` field, with the same name on shipments and returns. Value: MOD-0149 `Account.Id`, Guid "D" format,
+   lower case; comparison is case-insensitive. `shipToReference` stays the delivery destination. Reason: no two meanings in one
+   field, and no mix-up with the `shipToReference` values already stored.
+2. **Screen.** No GUID is shown to the user. On the shipment and return forms the customer is chosen from a list by account
+   name and address; the id goes to `customerRef` behind the scenes. List and details screens show customer name and code,
+   never the id.
+3. **Picker source.** CRM's list and address endpoints have no contract today. Until the CRM owner decides, the
+   "contractless, measured" use that CRM described is acceptable: to the browser only name, code and the four address fields,
+   and nothing of it in logs. When the contracted endpoint opens, the screens switch to it (open item, owner: CRM / MOD-0149
+   owner).
+4. **MOD-0177 rule.** If `customerRef` is set it is the customer key; if it is empty, today's order stays (`shipToReference`,
+   then `"DOC:" + sourceDocumentId`). Name and code are resolved with CRM-ACCOUNT-LOOKUP 1.0.0 U-1 (`lookup-validation`;
+   today a draft: `docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md`). MOD-0177 is added to that
+   contract's consumer table by MVP-1 / CRM, not by MVP-6. A deleted account keeps its id, and its name shows "not found".
+5. **SB-19 (same customer on two rows).** No automatic merge. Old-key rows (free text, `warehouse-outbound:…:ship-to`) are not
+   linked to the new id by a guessed match; the screen shows them separately, marked "old record". This is an accepted limit.
+6. **Follow-up and precondition.** MVP-1 opens a small MOD-0177 FU once it sees the MVP-6 3.5.0 draft. This text replaces the
+   written confirmation that MOD-0183 r8 made a DL-3 precondition; that precondition is closed.
+
+Natig (K1) accepted 2026-11-03.
