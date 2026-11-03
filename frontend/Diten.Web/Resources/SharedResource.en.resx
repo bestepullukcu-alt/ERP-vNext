@@ -1253,6 +1253,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Recall drill planner</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Recall evidence pack</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Recall settings</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>MRP and Replenishment</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Safety Stock Optimization</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
 </root>

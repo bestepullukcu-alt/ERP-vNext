@@ -183,12 +183,14 @@ public sealed class NavManifestL10nGuardTests
         }
     }
 
-    // CT FIX-F4R1 — the ONE open exception to "every manifest yields pages": a module that is API-only for now, named with the WP that
-    // gives it its screens. It is self-expiring: the test below turns red the moment the listed manifest declares a page (or disappears),
+    // CT FIX-F4R1 — narrow exceptions to "every manifest yields pages": API-only modules awaiting real screens.
+    // Each entry names its owning pack. It expires when that manifest declares a page (or disappears),
     // and asks for the entry to be deleted. A page-less manifest that is NOT listed here stays red; nothing else is relaxed.
     private static readonly IReadOnlyDictionary<string, string> PagelessUntil = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
+        ["mrp-replenishment"] = "MOD-0189 pack §9/§11: MRP Monitor screen pending",
+        ["safety-stock-optimization"] = "MOD-0191 pack §11: safety stock workspace screen pending"
     };
 
     [Fact]
