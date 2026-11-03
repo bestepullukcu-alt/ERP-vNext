@@ -258,6 +258,9 @@ jobs:
         run: |
           dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
             --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+          if [ "$SUITE" = "planning-tests" ]; then
+            cat "$RUNNER_TEMP/test-results/mod0188-rabbitmq-delivery-proof.json"
+          fi
 
       # dotnet test exits 0 when tests are skipped. Runs even after a red test step, so both are reported. FIX1: the only
       # accepted skips are the repository allow-list's codes for THIS suite (scripts/ci-skip-allowlist.tsv).

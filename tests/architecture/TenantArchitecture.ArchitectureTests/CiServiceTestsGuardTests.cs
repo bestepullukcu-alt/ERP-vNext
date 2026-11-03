@@ -535,17 +535,22 @@ public class CiServiceTestsGuardTests
                  })
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
 
-        // CT-CI-MACOS-01: the Test step is exact in EVERY job (two jobs, one Test step each).
+        // CT-CI-MACOS-01: each job has one exact Test step; Linux also prints the verified broker receipt.
         var serviceJobs = SuiteJobs(Code(WorkflowText("service-tests.yml")));
         Assert.Equal(2, serviceJobs.Count);
-        foreach (var (_, body) in serviceJobs)
+        foreach (var (name, body) in serviceJobs)
         {
             Assert.Single(Regex.Matches(body, @"(?m)^      - name: Test$"));
-            Assert.Equal(
+            var expectedTestStep =
                 "- name: Test\n        run: |\n"
                 + "          dotnet test \"$PROJECT\" -c Debug --blame-hang --blame-hang-timeout 20m \\\n"
-                + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
-                Step(body, "Test"));
+                + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n";
+            if (name == "service-tests")
+                expectedTestStep +=
+                    "          if [ \"$SUITE\" = \"planning-tests\" ]; then\n"
+                    + "            cat \"$RUNNER_TEMP/test-results/mod0188-rabbitmq-delivery-proof.json\"\n"
+                    + "          fi\n";
+            Assert.Equal(expectedTestStep, Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
         Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
