@@ -950,7 +950,7 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool, q: dict | No
             problems, notes = ["dilim: kural ölçülemedi — depo erişimi yok"], []
         else:
             try:
-                binds, ids, whole = pa.slice_rule(where, commit, p["authority"])
+                binds, ids, whole = pa.slice_rule(where, commit, p["authority"], deferred=True)    # S-133: branch reading
             except pa.Unreadable as e:
                 problems, notes = [f"dilim: kural ölçülemedi — {e}"], []
             else:
@@ -1959,6 +1959,8 @@ Rapor formatı: §22
     self_test_dispatch_review(cases)
 
     src = Path(__file__).read_text(encoding="utf-8")
+    cases.append(("S-133: the slice rule is read with the branch reading, like the approval (pa.evaluate deferred=True)",
+                  bool(re.search(r"pa\.slice_rule\(where, commit, p\[\"authority\"\], deferred=True\)", src.split("def self_test")[0]))))
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
     failed = 0
     for name, ok in cases:

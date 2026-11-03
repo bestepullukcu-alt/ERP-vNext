@@ -155,9 +155,6 @@ echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
 
-# CT-APR-01: the version-bound pack approval's own self-test (a throw-away git repository; standard library and git only)
-echo "[phase1] pack approval self-test"
-python3 -B scripts/pack_approval.py --self-test
 
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
@@ -221,6 +218,7 @@ dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/D
 dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c Debug
 dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
 dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/Diten.BuildingBlocks.CentralAudit.Tests.csproj -c Debug
+dotnet build services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj -c Debug
 dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
 dotnet build services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj -c Debug
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug

@@ -286,7 +286,13 @@ public static class DependencyInjection
         services.AddScoped<IProductPotentialThresholdRepository, ProductPotentialThresholdRepository>();
         services.AddScoped<IProductPotentialThresholdChangeRepository, ProductPotentialThresholdChangeRepository>();
 
-        TryEnsureIndexes(client.GetDatabase(databaseName));
+        // Index creation talks to the server during registration. Mongo:EnsureIndexesOnStartup=false (default true) lets a
+        // wiring test resolve the container with no server at all — a missing server surfaces as System.TimeoutException,
+        // which the MongoException catch below does not cover.
+        if (!bool.TryParse(configuration["Mongo:EnsureIndexesOnStartup"], out var ensureIndexes) || ensureIndexes)
+        {
+            TryEnsureIndexes(client.GetDatabase(databaseName));
+        }
 
         return services;
     }

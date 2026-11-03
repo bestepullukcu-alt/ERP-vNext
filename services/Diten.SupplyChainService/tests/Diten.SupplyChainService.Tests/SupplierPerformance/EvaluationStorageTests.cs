@@ -61,6 +61,19 @@ public sealed class EvaluationStorageTests(EvaluationStorageDatabase database) :
     private static EvaluationSubmission Submission(SupplierEvaluation e) =>
         new(e.Id, e.Version, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null, Guid.NewGuid(), Guid.NewGuid(), "{}");
 
+    // No server of that set exists, so server selection times out.
+    [Fact]
+    public async Task Get_WhenTheServerCannotBeSelected_ShouldReportUnavailable()
+    {
+        var settings = MongoClientSettings.FromConnectionString(SupplierPerformanceMongo.Connection);
+        settings.ReplicaSetName = "mod0147-absent"; settings.ServerSelectionTimeout = TimeSpan.FromMilliseconds(200);
+        var repository = new EvaluationRepository(new MongoClient(settings).GetDatabase(SupplierPerformanceMongo.StorageDatabase), _probe);
+
+        var failure = await Assert.ThrowsAsync<SupplierPerformanceFailure>(() => repository.GetAsync(_scope, Guid.NewGuid(), CancellationToken.None));
+
+        Assert.Equal((503, "PERSISTENCE_UNAVAILABLE"), (failure.Status, failure.Code));
+    }
+
     // The handler's stage 6 already refuses this; the update must refuse it on its own.
     [Fact]
     public async Task Submit_ShouldNotTouchAnotherCompanysEvaluation()
