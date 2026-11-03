@@ -238,6 +238,51 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         Assert.Single(app.Inventory.Calls, c => c.MovementType == "REVERSAL"); Assert.Equal(0m, app.Inventory.Net);
     }
 
+    // MovementDirectionRules: an outbound movement needs a location; blank counts as omitted.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" ")]
+    public async Task S23_5_NoFromLocationIsRefusedBeforeInventory(string? location)
+    {
+        using var app = new Host();
+        var body = CreateBody([("1", "1", "Lsku"), ("2", "1", "Lsku")]);
+        body["lines"]![1]!["fromLocationId"] = location;
+        var created = await Send(app, "POST", "", body, "create-" + Guid.NewGuid());
+        Assert.Equal(201, created.Status);
+        var id = Guid.Parse(created.Body["shipmentId"]!.GetValue<string>());
+        Assert.Equal(200, (await Send(app, "POST", $"/{id}/transition", Transition("Planned"), "plan-" + id)).Status);
+
+        var r = await Dispatch(app, id, "dispatch-no-location");
+
+        Assert.Equal((422, "SHIPMENT_LINE_STOCK_INCOMPLETE", "2"), (r.Status, Code(r.Body), Details(r.Body)["lineNumber"]!.GetValue<string>()));
+        Assert.Empty(app.Inventory.Calls);
+        var stored = await Stored(app, id);
+        Assert.Null(stored.DispatchAttempt); Assert.Equal(ShipmentStatus.Planned, stored.Status);
+    }
+
+    // An attempt already open (a build without this check) keeps its way out: the posted line is still reversed.
+    [Fact]
+    public async Task S23_5_AnOpenAttemptWithoutFromLocationStillFinishesItsCompensation()
+    {
+        using var app = new Host(); var id = await Planned(app, [("1", "4", "Lsku"), ("2", "1", "Lsku")]);
+        var crash = true;
+        app.Inventory.Script = c =>
+        {
+            if (IsIssue(c, "2")) return Answer(FakeInventory.Error(400, "INVALID_REQUEST"));
+            if (crash && c.MovementType == "REVERSAL") { crash = false; throw new InvalidOperationException("crash before REVERSAL posted"); }
+            return Default;
+        };
+        Assert.Equal(500, (await Dispatch(app, id, "dispatch-open-a")).Status);
+        await Shipments(app).UpdateOneAsync(x => x.Id == id, Builders<Shipment>.Update.Set("Lines.1.FromLocationId", (string?)null));
+        app.Clock.Advance(PastLease);
+
+        var resumed = await Dispatch(app, id, "dispatch-open-b");
+
+        Assert.Equal(500, resumed.Status);
+        Assert.Equal(0m, app.Inventory.Net);
+        Assert.Equal(DispatchState.Compensated, (await Stored(app, id)).DispatchHistory.Single().State);
+    }
+
     // ---- S23-6 -------------------------------------------------------------------------------------------------------
     [Fact]
     public async Task S23_6_CrossTenantAndCrossLegalEntityAre404AndPostNothing()

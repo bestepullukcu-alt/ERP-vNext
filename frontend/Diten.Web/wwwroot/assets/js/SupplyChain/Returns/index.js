@@ -155,7 +155,7 @@ const ReturnsList = (function () {
     // exactly one company per call, so there is no 'all companies' answer to ask for. The page sends it as a
     // query value; turning it into the downstream scope header is the adapter's job, never the browser's.
     let legalEntities = [];
-    let legalEntityScope = '';
+    let legalEntityScope = document.getElementById('returnsCompanyScope')?.dataset.legalEntityId || '';
     const rowsById = new Map();
     const permissions = readPermissions();
 
@@ -385,6 +385,16 @@ const ReturnsList = (function () {
     // The create panel's own select scopes a create and its shipment lookup, not the list scope, or the
     // panel's required changeable field would be decorative.
     const formScope = () => String(document.getElementById('formLegalEntity')?.value || legalEntityScope || '');
+    // A return created under another company: the list follows it. The shared selector keeps the choice for the next
+    // pages (it writes the cookie and reloads); a token's company has no selector, so the list just rescopes.
+    const adoptCompany = (company) => {
+        if (!company || company === legalEntityScope) return;
+        legalEntityScope = company;
+        const selector = document.getElementById('inventoryCompany');
+        if (!selector) return;
+        selector.value = company;
+        selector.dispatchEvent(new Event('change', { bubbles: true }));
+    };
     const fillLegalEntitySelect = (element, selected) => {
         if (!element) return;
         element.innerHTML = '';
@@ -411,8 +421,6 @@ const ReturnsList = (function () {
             })).filter((row) => row.id);
             // An empty answer is not an outage: the tenant genuinely has none.
             if (legalEntities.length === 0) { window.DtDefaults?.showError?.(t('LegalEntityNone')); return false; }
-            legalEntityScope = legalEntities[0].id;
-            fillLegalEntitySelect(document.getElementById('filterLegalEntity'), legalEntityScope);
             fillLegalEntitySelect(document.getElementById('formLegalEntity'), legalEntityScope);
             return true;
         } catch (error) {
@@ -762,6 +770,7 @@ const ReturnsList = (function () {
                 createIntent = null;
                 offcanvas('offcanvasCreateEdit')?.hide();
                 window.showToast?.(t(result?.idempotentReplay === true ? 'ReturnCreateReplayed' : 'ReturnCreated'), 'success');
+                adoptCompany(createdScope);
                 reloadList(); // a replay snapshot is never shown as current state
                 return;
             }
@@ -827,6 +836,12 @@ const ReturnsList = (function () {
         ['transitionDispositionCode', 'transitionInventoryReference', 'transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
             const el = document.getElementById(id);
             if (el) el.value = '';
+        });
+        // The marks of the panel closed last: the new one opens empty, not red.
+        ['transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
+            const el = document.getElementById(id);
+            el?.classList.remove('is-invalid');
+            el?.setAttribute('aria-invalid', 'false');
         });
         resetReceiptSurfaces();
         syncTransitionTarget();
@@ -1123,7 +1138,6 @@ const ReturnsList = (function () {
             status: document.getElementById('filterStatus')?.value || '',
             shipmentId: document.getElementById('filterShipmentId')?.value ?? '' // as typed; backend validates
         };
-        legalEntityScope = String(document.getElementById('filterLegalEntity')?.value || legalEntityScope);
         if (dt) window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
         markViewDirty();
         reloadList();
@@ -1396,6 +1410,7 @@ const ReturnsList = (function () {
     };
 
     return {
+        adoptCompany,
         failureText, readFailure, permanentRefusal, receiptLineCells, buildTransitionBody, bindEvents, loadReturns, openTransition,
         init: function () {
             syncL10n();
