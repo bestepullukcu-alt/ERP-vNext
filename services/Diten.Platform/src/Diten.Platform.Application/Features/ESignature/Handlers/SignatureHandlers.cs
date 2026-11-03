@@ -545,8 +545,13 @@ public sealed class ListSignaturesBySubjectQueryHandler : IRequestHandler<ListSi
 }
 
 /// <summary>
-/// §4.7 — verification changes nothing. Its audit event is written by AuditBehavior on every run, a refused one included
-/// (VerifyESignatureCommand.GetAuditMetadata).
+/// §4.7 — verification changes nothing. ONE VERIFICATION = TWO AUDIT RECORDS, never more:
+/// <list type="number">
+/// <item>the attempt — AuditBehavior, on every run, a refused one (404) included (VerifyESignatureCommand.GetAuditMetadata);</item>
+/// <item>the result — written here once, only when a verdict was computed: <c>esign.signature.verified</c> with the status
+/// and the two integrity flags. Booleans and the status only — never a hash, a digest or image bytes.</item>
+/// </list>
+/// Both go to the same central log (IAuditService) and carry the same request correlation.
 /// </summary>
 public sealed class VerifyESignatureCommandHandler : IRequestHandler<VerifyESignatureCommand, Response<VerificationResultDto>>
 {
@@ -555,15 +560,20 @@ public sealed class VerifyESignatureCommandHandler : IRequestHandler<VerifyESign
     private readonly IESignatureInvalidationRepository _invalidations;
     private readonly IESignatureVerifier _verifier;
     private readonly IESignatureVisibility _visibility;
+    private readonly IAuditService _audit;
+    private readonly ITenantAuthorizationContext _principal;
 
     public VerifyESignatureCommandHandler(IESignActorAccessor actors, IESignatureRecordRepository records,
-        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IESignatureVisibility visibility)
+        IESignatureInvalidationRepository invalidations, IESignatureVerifier verifier, IESignatureVisibility visibility,
+        IAuditService audit, ITenantAuthorizationContext principal)
     {
         _actors = actors;
         _records = records;
         _invalidations = invalidations;
         _verifier = verifier;
         _visibility = visibility;
+        _audit = audit;
+        _principal = principal;
     }
 
     public async Task<Response<VerificationResultDto>> Handle(VerifyESignatureCommand request, CancellationToken ct)
@@ -584,6 +594,26 @@ public sealed class VerifyESignatureCommandHandler : IRequestHandler<VerifyESign
 
         var invalidation = await _invalidations.GetBySignatureAsync(actor.TenantId, record.Id, ct);
         var result = await _verifier.VerifyAsync(record, invalidation, ct);
+
+        await _audit.AppendAsync(new AuditAppendRequest
+        {
+            CorrelationId = Guid.NewGuid(),
+            RequestType = ESignAuditEvents.Verified,
+            ActorType = AuditActorTypeResolver.ForCommand(_principal),
+            ActorId = actor.UserId,
+            Category = AuditCategory.ESignature,
+            EntityType = "ESignatureRecord",
+            EntityId = record.Id,
+            Operation = AuditOperation.Execute,
+            Metadata = new Dictionary<string, object?>
+            {
+                ["status"] = result.Status,
+                ["imageIntact"] = result.ImageIntact,
+                ["digestIntact"] = result.DigestIntact
+            },
+            SourceModule = ESignAuditEvents.SourceModule
+        }, ct);
+
         return Response<VerificationResultDto>.Success(result);
     }
 }

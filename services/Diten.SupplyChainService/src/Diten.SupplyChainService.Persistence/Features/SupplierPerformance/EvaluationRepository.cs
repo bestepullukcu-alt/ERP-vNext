@@ -133,7 +133,11 @@ public sealed class EvaluationRepository(IMongoDatabase db, ISupplierPerformance
     }
 
     public async Task<SupplierEvaluation?> GetAsync(SupplierPerformanceScope scope, Guid evaluationId, CancellationToken ct)
-    { var f = Visible(scope); f.Add("_id", evaluationId.ToString()); return await Evaluations.Find(f).FirstOrDefaultAsync(ct); }
+    {
+        var f = Visible(scope); f.Add("_id", evaluationId.ToString());
+        try { return await Evaluations.Find(f).FirstOrDefaultAsync(ct); }
+        catch (Exception ex) when (ex is MongoException or TimeoutException) { throw Unavailable(); }
+    }
 
     public async Task<(IReadOnlyList<SupplierEvaluation> Items, long Total)> ListAsync(SupplierPerformanceScope scope, EvaluationFilter filter, int page, int pageSize, CancellationToken ct)
     {

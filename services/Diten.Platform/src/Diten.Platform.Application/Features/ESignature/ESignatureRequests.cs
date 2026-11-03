@@ -12,7 +12,9 @@ namespace Diten.Platform.Application.Features.ESignature;
 // a signature, the request it fulfils and its audit event commit together. Two commands are audited by the central
 // AuditBehavior instead (IAuditableCommand + IAuditMetadataProvider, AUD-001 §5 path a), so a refusal is recorded too
 // (AUD-001 §3): verification, which changes no record, and the platform-global signable-action catalog registration,
-// which has no tenant transaction to write an intent into. Queries are not audited.
+// which has no tenant transaction to write an intent into. A verification whose verdict was computed adds ONE result
+// record (esign.signature.verified: status + imageIntact + digestIntact) through the same central log — one attempt plus
+// one result, never more. Queries are not audited.
 //
 // The five commands that share their name with a MOD-0029-FU23 document-signature command carry "ESignature" in theirs
 // (VerifyESignatureCommand, …): the audit ledger tells commands apart by type name.
@@ -65,12 +67,15 @@ public sealed record GetSignatureQuery(Guid Id) : IRequest<Response<SignatureRec
 
 public sealed record ListSignaturesBySubjectQuery(string? Module, string? SubjectType, string? SubjectId) : IRequest<Response<IReadOnlyList<SignatureRecordDto>>>;
 
-/// <summary>§4.7 — audited by AuditBehavior on every run, a refused one (404) included; the record is never written.</summary>
+/// <summary>
+/// §4.7 — the ATTEMPT is audited by AuditBehavior on every run, a refused one (404) included; the record is never written.
+/// AuditBehavior runs before the verdict exists, so the result is a second record its handler writes (resultEvent).
+/// </summary>
 public sealed record VerifyESignatureCommand(Guid Id) : IRequest<Response<VerificationResultDto>>, IAuditableCommand, IAuditMetadataProvider
 {
     public AuditRequestMetadata GetAuditMetadata() =>
         new(AuditCategory.ESignature, AuditOperation.Execute, "ESignatureRecord", EntityId: Id, SourceModule: ESignAuditEvents.SourceModule,
-            Metadata: new Dictionary<string, object?> { ["event"] = ESignAuditEvents.Verified });
+            Metadata: new Dictionary<string, object?> { ["resultEvent"] = ESignAuditEvents.Verified });
 }
 
 public sealed record InvalidateESignatureCommand(Guid Id, string? Ticket, string? Reason, string? IdempotencyKey)
