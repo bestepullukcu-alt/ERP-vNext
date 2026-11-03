@@ -19,10 +19,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
     {
         // S2 adds inventory_reservations (holds) and inventory_sku_positions (projection, ASSUMPTION-0173-13).
         // MOD-0173-FU02 adds inventory_locations (place master, no quantity) and inventory_location_history (K-11).
+        // MOD-0173-FU03 adds inventory_reservation_positions (the warehouse / lot levels of the same projection, §4.2).
         Assert.Equal(
             ["inventory_audit", "inventory_balances", "inventory_location_history", "inventory_locations", "inventory_outbox",
-             "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
-            InventoryCollections.All.OrderBy(x => x).ToList());
+             "inventory_reservation_positions", "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
+            InventoryCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
 
         // MOD-0174 (WP-0174-P1) — the lot / serial SoR in the same database, prefix trace_ (pack ASSUMPTION-0174-02).
         // None carries a quantity (asserted below by Only_the_ledger_and_its_projection_carry_quantities).
@@ -126,8 +127,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // (pack ASSUMPTION-0173-13, rebuild-proven by the AC-R9 invariant test), not a second stock truth.
         // WP-0174-P2 (MOD-0174 K-A): the per-lot position carries OnHand — a projection of the same ledger transactions,
         // written in the posting transaction and equal to Σ balance OnHand of the lot (property-tested), not a second truth.
+        // MOD-0173-FU03: the reservation position (warehouse / lot levels) is the same projection as the SKU position, one level down
+        // (rebuild-proven by the scoped invariant test, AC-11).
         Assert.Equal(
-            [nameof(InventoryBalance), nameof(InventorySkuPosition), nameof(Diten.InventoryService.Domain.Traceability.Entities.LotPosition)],
+            [nameof(InventoryBalance), nameof(InventoryReservationPosition), nameof(InventorySkuPosition),
+             nameof(Diten.InventoryService.Domain.Traceability.Entities.LotPosition)],
             quantityCarriers.OrderBy(x => x, StringComparer.Ordinal));
     }
 

@@ -165,6 +165,42 @@ periodic sweeper (`Inventory:Reservations:SweepIntervalSeconds`, default 60). Re
 outbox event (internal payload) with the request's correlation id; the sweeper uses the system actor and one id per
 sweep.
 
+### 4.1 Scoped reservations (INVENTORY 1.6.0 — MOD-0173-FU03 DL-1)
+
+`ReservationRequest` may name **`warehouseId`** (an Active Warehouse node of the caller's company) and **`lotId`** (a registered
+lot of the SKU; needs `warehouseId`). The hold then protects SKU + warehouse or SKU + warehouse + lot **and** the SKU: every level
+that contains the scope is guarded (`AvailableOnHand − Reserved ≥ q`), in the order LOT → WAREHOUSE → SKU. The warehouse / lot
+levels live in `inventory_reservation_positions` (a projection of the ledger + reservations like `inventory_sku_positions`,
+written in the same transactions, rebuilt at startup). Bins are not pinned (Q-02).
+
+| Situation | Answer (one `InventoryReservationRefused` audit row on every refusal, `Outcome Failed`) |
+|---|---|
+| every level covers it | **201** + `warehouseId`, `lotId`, `remainingQuantity`; `availableAfter` stays the SKU's free quantity |
+| one level does not | **422 `INSUFFICIENT_AVAILABLE`**, `details.level` = `LOT` \| `WAREHOUSE` \| `SKU` (the first that does not cover), `available`, `requested` |
+| warehouse unknown / not a Warehouse / not Active / another company | **422 `UNKNOWN_LOCATION`**; LOCATION unreadable → **503 `LOCATION_MASTER_UNAVAILABLE`** |
+| lot unknown / another SKU / Blocked / expired / retest due / under recall | **422** `UNKNOWN_LOT` / `LOT_SKU_MISMATCH` / `LOT_BLOCKED` / `LOT_EXPIRED` / `LOT_RETEST_DUE` / `LOT_UNDER_RECALL` (a Draft lot is accepted) |
+| `lotId` without `warehouseId` | **400 `INVALID_REQUEST`** |
+
+A request without `warehouseId` / `lotId` behaves as in 1.5.0 and keeps its idempotency fingerprint.
+
+**Issues and transfers** — an AVAILABLE decrease (sales / production issue, scrap, write-off, supplier return, count loss,
+`WAREHOUSE_TRANSFER` W1 → W2 although the SKU nets 0) must leave every warehouse / lot level it touches covered; otherwise **422
+`INSUFFICIENT_STOCK`** with `details.level` and one `InventoryReservationConsumptionRefused` audit row. A `LOCATION_TRANSFER` (same
+warehouse) changes no level. The source-triple consumption (ASSUMPTION-0173-15) consumes a scoped reservation only when its warehouse /
+lot match the movement, and frees every level of its scope.
+
+**GET /reservations/{id}** (`getReservation`, `inventory.stock.read`) — the `ReservationView` (status, `closedReason` Released |
+Consumed | Expired once closed, scope, quantities, source, `etag`) with header `ETag: W/"<version>"`; an unknown, malformed or other
+Tenant / LE id → **404** in the release's shape.
+
+**GET /availability** — `lotId` (needs `warehouseId` and one named SKU; not with `locationId`) and, for one named SKU with
+`warehouseId`, **`scopeReserved`** (ACTIVE, not-yet-due reservations containing the scope) and **`scopeAvailable`** (the scope's
+AVAILABLE on-hand − `scopeReserved`, not floored). `reserved` / `available` keep their meaning.
+
+**In-process port** — `IInventoryReservationPort` (`CreateAsync`, `CreateBatchAsync` 1…100 lines all-or-nothing, `ReleaseAsync`,
+`GetAsync`, `GetScopeFreeAsync`, `FindByIdempotencyKeysAsync`) is MOD-0178's door; same rules as HTTP, no controller uses it, and a
+caller naming another company / tenant gets `InvalidOperationException` before anything is read or written.
+
 ## 5. Reads
 
 - **GET /availability** — `itemId` or `skuId` required; optional `skuLevel`, `warehouseId`, `locationId` (echoed in

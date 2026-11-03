@@ -101,12 +101,13 @@ public sealed class LedgerImmutabilityArchitectureTests
             .OrderBy(r => r, StringComparer.Ordinal)
             .ToList();
 
-        // S1's four + S2's createReservation / releaseReservation — the frozen contract has no other operation (no
-        // GET reservation, no reservation list), so neither does the service.
+        // S1's four + S2's createReservation / releaseReservation + INVENTORY 1.6.0 getReservation (MOD-0173-FU03, a READ) — the
+        // contract has no other operation (no reservation list, no edit of a transaction), so neither does the service.
         Assert.Equal(
             [
                 "GET api/inventory/availability",
                 "GET api/inventory/balance",
+                "GET api/inventory/reservations/{id}",
                 "GET api/inventory/transactions",
                 "POST api/inventory/movements",
                 "POST api/inventory/reservations",

@@ -46,6 +46,7 @@ public sealed class InternalMovementPostingService
     private readonly ILogger<InternalMovementPostingService> _logger;
     private readonly IExpiryPostingPolicy _expiry;
     private readonly IPostingActorName? _actorName;
+    private readonly IInventoryReservationRepository? _reservations;
 
     public InternalMovementPostingService(
         IInventoryLedgerRepository ledger,
@@ -56,9 +57,11 @@ public sealed class InternalMovementPostingService
         IEnumerable<IPostedMovementObserver> observers,
         ILogger<InternalMovementPostingService> logger,
         IExpiryPostingPolicy? expiry = null,
-        IPostingActorName? actorName = null)
+        IPostingActorName? actorName = null,
+        IInventoryReservationRepository? reservations = null)
     {
         _actorName = actorName; // WP-MVP1-FU-CLEAN2: DI always passes it; a hand-built service stores no name
+        _reservations = reservations; // MOD-0173-FU03 AC-40: DI always passes it; a hand-built service writes no refusal row
         _expiry = expiry ?? new AllowAllExpiryPostingPolicy(); // MOD-0176 F2: DI always passes the registered policy
         _ledger = ledger;
         _lots = lots;
@@ -160,6 +163,19 @@ public sealed class InternalMovementPostingService
                 return Response<MovementResponseDto>.Success(
                     InventoryMapping.ToMovementResponse(result.Transaction!, idempotentReplay: false, _tenantContext.LegalEntityId), 201);
 
+            case LedgerPostingOutcome.InsufficientStock when result.Level is not null:
+                // MOD-0173-FU03 §8.2 / AC-40: a reservation scope guard refused — reserved stock does not leave to someone else (nor out of
+                // its warehouse). The same code (MOD-0175 / MVP-6 G7 map it), details.level added; one refusal row after the rollback.
+                await WriteGuardRefusalAsync(transaction, actorUserId, result, cancellationToken);
+                return Response<MovementResponseDto>.Fail(InventoryErrorCodes.InsufficientStock,
+                    "Insufficient unreserved stock: the quantity is reserved at this scope level.", 422,
+                    new Dictionary<string, object?>
+                    {
+                        ["available"] = InventoryQuantity.ToWire(result.Available ?? 0m),
+                        ["requested"] = InventoryQuantity.ToWire(result.Requested ?? 0m),
+                        ["level"] = result.Level
+                    });
+
             case LedgerPostingOutcome.InsufficientStock:
                 return Response<MovementResponseDto>.Fail(InventoryErrorCodes.InsufficientStock,
                     "Insufficient stock on the source row; negative stock is prohibited.", 422,
@@ -196,6 +212,50 @@ public sealed class InternalMovementPostingService
             default:
                 throw new InvalidOperationException($"Unhandled posting outcome {result.Outcome}.");
         }
+    }
+
+    /// <summary>
+    /// MOD-0173-FU03 §4.4 / §21 (AC-40): ONE <c>InventoryReservationConsumptionRefused</c> row for a movement a reservation scope guard
+    /// refused — written after the rolled-back posting, best effort (the repository logs and counts a failure). The movement named no
+    /// reservation (DL-1): <c>ReservationId</c> = <see cref="Guid.Empty"/>, <c>ReservationIdText</c> null. A row-level refusal (negative-stock
+    /// guard, no level) writes none.
+    /// </summary>
+    private Task WriteGuardRefusalAsync(InventoryTransaction transaction, Guid actorUserId, LedgerPostingResult result, CancellationToken ct)
+    {
+        if (_reservations is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        return _reservations.WriteRefusalAsync(new InventoryReservationAuditRecord
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = now,
+            Action = ReservationAuditActions.ConsumptionRefused,
+            ReservationId = Guid.Empty,
+            ReservationIdText = null,
+            ItemId = transaction.ItemId,
+            SkuId = transaction.SkuId,
+            SkuLevel = transaction.SkuLevel,
+            WarehouseId = transaction.FromWarehouseId,
+            LotId = LotPostingRules.IsRegisteredLotForm(transaction.LotId, out var lot) ? lot : null,
+            ChangedQuantity = 0m,
+            RemainingQuantity = 0m,
+            Status = null,
+            Outcome = ReservationAuditOutcomes.Failed,
+            ErrorCode = InventoryErrorCodes.InsufficientStock,
+            Level = result.Level,
+            MovementType = WireNames.ToWire(transaction.MovementType),
+            RequestedQuantity = result.Requested,
+            UncoveredQuantity = result.Available,
+            SourceModule = transaction.SourceModule,
+            ActorUserId = actorUserId,
+            ActorDisplayName = NameOf(actorUserId),
+            CorrelationId = transaction.CorrelationId,
+            LeSource = _tenantContext.LegalEntitySource,
+            OccurredAt = now
+        }, ct);
     }
 
     private async Task NotifyObserversAsync(InventoryTransaction transaction, CancellationToken ct)

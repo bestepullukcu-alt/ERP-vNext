@@ -25,6 +25,8 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
     [
         "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences",
         "inventory_reservations", "inventory_sku_positions", "inventory_locations", "inventory_location_history",
+        // MOD-0173-FU03: the warehouse / lot levels of the reservation projection.
+        "inventory_reservation_positions",
         // MOD-0175: the post-commit intake observer writes quarantine records for any tenant that posts into QUARANTINE /
         // QUALITY_INSPECTION / BLOCKED — removed with the tenant like the ledger documents (DB-010).
         "quarantine_holds", "quarantine_decisions", "quarantine_decision_events", "quarantine_blocked_stock", "quarantine_history",

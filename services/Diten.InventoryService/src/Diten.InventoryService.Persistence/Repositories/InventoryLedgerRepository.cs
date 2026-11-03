@@ -236,7 +236,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
                 // retest hold on the same document conflicts and one side re-runs) — the stored hold decides, like Blocked / Expired.
                 if (lot is null || !LotPostingRules.HoldsStock(lot))
                 {
-                    await ApplySkuPositionAsync(s, posting, ct);
+                    await ApplySkuPositionAsync(s, posting, lot, ct);
                 }
 
                 await ApplySerialsAsync(posting, lot, ct);
@@ -252,7 +252,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         }
         catch (UncoveredQuantityException uncovered)
         {
-            return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested);
+            return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested, uncovered.Level);
         }
         catch (LocationNotPostableException notPostable)
         {
@@ -274,29 +274,52 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
     /// <summary>
     /// The S2 half of a posting (pack ASSUMPTION-0173-13..16), in the same transaction as the legs: the SKU position
-    /// moves by the posting's NET AVAILABLE delta (a transfer between two AVAILABLE rows nets 0 and touches nothing —
-    /// reservations are SKU-level, not bin-level). On a net decrease the SKU's due reservations are expired, a matching
-    /// reservation is consumed, and only then is <c>AvailableOnHand − Reserved ≥ 0</c> enforced, so a holder can issue
-    /// its own reserved stock while nobody else can.
+    /// moves by the posting's NET AVAILABLE delta (a transfer between two AVAILABLE rows nets 0 and touches nothing at SKU
+    /// level). On a net decrease the SKU's due reservations are expired, a matching reservation is consumed, and only then is
+    /// <c>AvailableOnHand − Reserved ≥ 0</c> enforced, so a holder can issue its own reserved stock while nobody else can.
+    /// <para>MOD-0173-FU03 §8.2: the warehouse level (net AVAILABLE delta per warehouse) and the lot level (per warehouse, the
+    /// posting's registered lot; a typed lot text has none) move by their OWN net deltas — the net-0 early return is the SKU's only,
+    /// so a WAREHOUSE_TRANSFER W1 → W2 (SKU net 0) still meets the W1 guard and cannot take reserved stock out of its warehouse. A
+    /// decrease on any level first expires the SKU's due reservations; the guards then run LOT → WAREHOUSE → SKU.</para>
     /// </summary>
-    private async Task ApplySkuPositionAsync(IClientSessionHandle session, LedgerPosting posting, CancellationToken ct)
+    private async Task ApplySkuPositionAsync(IClientSessionHandle session, LedgerPosting posting, Lot? lot, CancellationToken ct)
     {
         var transaction = posting.Transaction;
-        var netAvailable = posting.Legs
-            .Where(l => l.Dimension.StockStatus == StockStatus.Available)
-            .Sum(l => l.Delta);
-        if (netAvailable == 0m)
+        var available = posting.Legs.Where(l => l.Dimension.StockStatus == StockStatus.Available).ToList();
+        var netAvailable = available.Sum(l => l.Delta);
+        var byWarehouse = available
+            .Where(l => l.Dimension.WarehouseId is not null)
+            .GroupBy(l => l.Dimension.WarehouseId!, StringComparer.Ordinal)
+            .Select(g => (WarehouseId: g.Key, Delta: g.Sum(l => l.Delta)))
+            .Where(w => w.Delta != 0m)
+            .ToList();
+        if (netAvailable == 0m && byWarehouse.Count == 0)
         {
             return;
         }
 
         var sku = new SkuKey(transaction.ItemId, transaction.SkuId, transaction.SkuLevel);
         var now = transaction.CreatedAt;
-        if (netAvailable < 0m)
+        if (netAvailable < 0m || byWarehouse.Any(w => w.Delta < 0m))
         {
             await _reservations.ExpireDueAsync(session, sku, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+        }
+
+        if (netAvailable < 0m)
+        {
             await _reservations.ConsumeAsync(session, sku, transaction.SourceModule, transaction.SourceDocumentId,
-                transaction.SourceLineId, -netAvailable, transaction.Id, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+                transaction.SourceLineId, transaction.FromWarehouseId, lot?.Id, -netAvailable, transaction.Id, transaction.CorrelationId,
+                transaction.CreatedBy, now, ct);
+        }
+
+        foreach (var (warehouseId, delta) in byWarehouse.OrderBy(w => w.Delta < 0m ? 0 : 1))
+        {
+            if (lot is not null)
+            {
+                await _reservations.ApplyScopeDeltaAsync(session, sku, ReservationScopeLevel.Lot, warehouseId, lot.Id, delta, transaction.BaseUomId, now, ct);
+            }
+
+            await _reservations.ApplyScopeDeltaAsync(session, sku, ReservationScopeLevel.Warehouse, warehouseId, Guid.Empty, delta, transaction.BaseUomId, now, ct);
         }
 
         await _reservations.ApplyAvailableDeltaAsync(session, sku, netAvailable, transaction.BaseUomId, now, ct);

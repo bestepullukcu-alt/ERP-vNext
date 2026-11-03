@@ -10,12 +10,15 @@ public sealed record LedgerPostingResult(
     string? RefusedLocationId = null,
     string? RefusalCode = null,
     string? RefusalMessage = null,
-    IReadOnlyDictionary<string, object?>? RefusalDetails = null)
+    IReadOnlyDictionary<string, object?>? RefusalDetails = null,
+    string? Level = null)
 {
     public static LedgerPostingResult Posted(InventoryTransaction transaction) => new(LedgerPostingOutcome.Posted, transaction);
 
-    public static LedgerPostingResult Insufficient(decimal available, decimal requested)
-        => new(LedgerPostingOutcome.InsufficientStock, Available: available, Requested: requested);
+    /// <param name="level">MOD-0173-FU03 §8.2: the reservation scope level whose guard refused (<c>SKU</c> | <c>WAREHOUSE</c> | <c>LOT</c>);
+    /// null when a balance row itself did not cover the leg (negative-stock guard).</param>
+    public static LedgerPostingResult Insufficient(decimal available, decimal requested, string? level = null)
+        => new(LedgerPostingOutcome.InsufficientStock, Available: available, Requested: requested, Level: level);
 
     public static LedgerPostingResult KeyTaken() => new(LedgerPostingOutcome.IdempotencyKeyTaken);
 

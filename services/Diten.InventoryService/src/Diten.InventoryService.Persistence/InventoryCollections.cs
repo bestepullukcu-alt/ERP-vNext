@@ -30,6 +30,12 @@ public static class InventoryCollections
     /// <summary>Per-SKU projection of the ledger + reservations (pack ASSUMPTION-0173-13); rebuildable, not a second truth.</summary>
     public const string SkuPositions = "inventory_sku_positions";
 
+    /// <summary>
+    /// MOD-0173-FU03 §4.2: the warehouse and warehouse + lot levels of the same projection (ledger + reservations); rebuildable,
+    /// not a second truth.
+    /// </summary>
+    public const string ReservationPositions = "inventory_reservation_positions";
+
     /// <summary>MOD-0173-FU02: the place hierarchy (Site → … → Bin); holds no quantity — stock presence is read from the ledger.</summary>
     public const string Locations = "inventory_locations";
 
@@ -37,5 +43,5 @@ public static class InventoryCollections
     public const string LocationHistory = "inventory_location_history";
 
     public static readonly IReadOnlyList<string> All =
-        [Transactions, Balances, Audit, Outbox, Sequences, Reservations, SkuPositions, Locations, LocationHistory];
+        [Transactions, Balances, Audit, Outbox, Sequences, Reservations, SkuPositions, Locations, LocationHistory, ReservationPositions];
 }

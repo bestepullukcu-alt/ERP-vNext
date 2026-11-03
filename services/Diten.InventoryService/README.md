@@ -37,6 +37,7 @@ tests/
 | POST | `/api/inventory/movements` | `inventory.movements.create` | the ONLY way to change stock; `Idempotency-Key` header = body `idempotencyKey` |
 | POST | `/api/inventory/reservations` | `inventory.reservations.manage` | SKU-level hold of AVAILABLE stock; `Idempotency-Key` = body key; 422 `INSUFFICIENT_AVAILABLE` |
 | POST | `/api/inventory/reservations/{id}/release` | `inventory.reservations.manage` | `If-Match: W/"<version>"` required; stale / not ACTIVE → 409 `RESERVATION_CONFLICT` |
+| GET | `/api/inventory/reservations/{id}` | `inventory.stock.read` | INVENTORY 1.6.0 (MOD-0173-FU03): the reservation + `ETag`; other scope / unknown → 404 |
 | GET | `/api/inventory/availability` | `inventory.stock.read` | `itemId` or `skuId` required; `reserved` = SKU-level ACTIVE holds; no stock → PRODUCT-MASTER decides (200 zeros / 404 / 503) |
 | GET | `/api/inventory/balance` | `inventory.stock.read` | paged projection rows |
 | GET | `/api/inventory/transactions` | `inventory.stock.read` | immutable history, newest posting first |
@@ -87,6 +88,10 @@ without a `test` / `tests` / `itest` segment) any such group also **stops the st
 
 Permissions are in the `inventory.*` namespace owned by this service (PKS-001 §4; owner decision 2026-10-01). The
 former `supplychain.*` names have no alias.
+
+MOD-0173-FU03 DL-1 (INVENTORY 1.6.0): a reservation may also be limited to a warehouse or a warehouse + registered lot; every level is
+guarded (`inventory_reservation_positions`, rebuilt at startup with the SKU positions) — see
+`docs/reference/architecture/api/mod-0173-inventory-bundle.md` §4.1.
 
 Reservations (S2) hold quantity at **Tenant + LE + item + SKU + level** against AVAILABLE stock (pack
 ASSUMPTION-0173-12..17): balance rows keep `reserved 0`; `/availability` shows the SKU-level total. A movement whose
