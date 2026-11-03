@@ -955,7 +955,7 @@ ister.
   - Başka her altyapı hatası → 503 (kaynaktaki varsayılan 400 taşınmaz, paket §E).
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `SnapshotCode` (`CPS`) ve `PolicyCode` (`CTP`) yalnız
   `IRecordCodeAllocator.AllocateAsync(legalEntityId, recordType, idempotencyKey)` portundan alınır; anahtar Create'in
-  idempotency anahtarından (D12/2) türetilir, aynı anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = ``mod0124:CreateCashPosition` (`CPS`) ve `mod0124:CreateCashPositionThresholdPolicy` (`CTP`)`. Bağdaştırıcı v0 sözleşmesini
+  idempotency anahtarından (D12/2) türetilir, aynı anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = `mod0124:CreateCashPosition` (`CPS`) ve `mod0124:CreateCashPositionThresholdPolicy` (`CTP`). Bağdaştırıcı v0 sözleşmesini
   (`POST /api/internal/record-codes/allocate`) çağırır; 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
   `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` ile
   başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı kayıtlı değil) anlık görüntü ve eşik
@@ -2004,7 +2004,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   (künyedeki `branch` paket dalıdır; her WP kendi dalını açar).
   Bitiş: AC-1, 2 (DL-1 komutları kısmı: Create / Update / Delete / BulkDelete, eşik politikası yazmaları ve okumalar), 3 (DL-1
   uçları kısmı: okuma, güncelleme, silme, politika), 4, 5, 8, 16 (Create/Update/Delete kısmı), 17 (tek aşamalı kısım: DL-1 komutları), 18, 19 (Create), 21, 22, 28, 29,
-  31 (DL-1 uçları kısmı: anlık görüntü ve politika listesi, detay, Create / Update / Delete / BulkDelete ve politika yazmaları — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 32 (Create / Update / Delete / politika kısmı), 38. AC-29 burada: AUD-001 §8 dev kanıtı DL-1'in oluşturma / güncelleme /
+  31 (DL-1 uçları kısmı: anlık görüntü ve politika listesi, detay, Create / Update / Delete / BulkDelete ve politika yazmaları — SEC-002 kapsamı soran kod + kanıt testi DL-1 kabul kapısı, D51/2), 32 (Create / Update / Delete / politika kısmı), 38, 39 (KARAR D126). AC-29 burada: AUD-001 §8 dev kanıtı DL-1'in oluşturma / güncelleme /
   silme komutlarıyla alınır. **Kabul kapısı (KARAR D59/1):** gerçek
   RCS-001 servisi (BL-565) main'de ve dev ortamında gerçek servisle `CPS` ve `CTP` kodu alındı (kapanış tablosu RCS-001 satırı).
 - **DL-2** — Yollar: `ReconcileCashPositionCommand` + `CashPositionReconciler`, istisna sorgusu,

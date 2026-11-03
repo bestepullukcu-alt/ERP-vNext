@@ -903,7 +903,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     tekrar baştan çalışır.
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `InvoiceCode` yalnız `IRecordCodeAllocator.AllocateAsync(legalEntityId,
   recordType = ARI, idempotencyKey)` portundan alınır; anahtar Create'in idempotency anahtarından (D12/2) türetilir, aynı
-  anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = ``mod0120:CreateReceivableInvoice``. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
+  anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = `mod0120:CreateReceivableInvoice`. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
   200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i
   503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek
   bağdaştırıcı kayıtlı değil) Create 503, kodsuz kayıt açılmaz; modülde kendi sayaç, yedek kod ya da yerel kod üretimi
@@ -1999,7 +1999,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   aşamalı: Create / Update / Delete / BulkDelete kısmı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
   iki merkezi kayıt AUD-001 §8 sorgusuyla gösterilir ve on alan işaretlenir; açma kaydı DL-2'dedir), 32 (d) kısmı (aynı dış
   numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number` kaldırıldığında kırmızı — sabotaj),
-  34, 35 (Create / Update / Delete kısmı), 44. **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve
+  34, 35 (Create / Update / Delete kısmı), 44, 45 (KARAR D126). **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve
   dev ortamında gerçek servisle `ARI` kodu alındı (kapanış tablosu RCS-001 satırı).
 - **DL-2** — Yollar: Issue, SetCollectionStage, yaşlandırma türetme. **Neden ayrı:** fatura kilitlenmesi ve aşama tablosu
   bağımsız incelenebilir; DL-3'ün ön koşulu. Önkoşul: DL-1. Bitiş: AC-2 (Issue / SetCollectionStage kısmı), 4, 5 (Issue /
