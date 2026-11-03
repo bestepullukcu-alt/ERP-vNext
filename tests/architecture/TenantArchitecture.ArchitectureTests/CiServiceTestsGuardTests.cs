@@ -429,7 +429,7 @@ public class CiServiceTestsGuardTests
         [
             "matrix.suite == 'mdm-app'",
             "matrix.suite == 'platform-bgjobs'",
-            "matrix.suite == 'platform-eventing'",
+            "matrix.suite == 'platform-eventing' || matrix.suite == 'planning-tests'",
             // WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): Prism for the Inventory row.
             "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
@@ -459,7 +459,7 @@ public class CiServiceTestsGuardTests
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its
         // owned-Mongo flag, pinned below by The_mongod_variables_are_set_by_the_install_step_and_never_overridden and
         // The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path.
-        ["service-tests.yml"] = 10
+        ["service-tests.yml"] = 13
     };
 
     [Fact]

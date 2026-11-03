@@ -185,7 +185,7 @@ jobs:
       # as `-u rabbitmq`, the cookie's owner; (3) a container that has exited fails at once with its log. No cookie value
       # is written anywhere (the server generates its own; nothing here is a secret). Budget back to 120 s.
       - name: Start RabbitMQ (Eventing)
-        if: matrix.suite == 'platform-eventing'
+        if: matrix.suite == 'platform-eventing' || matrix.suite == 'planning-tests'
         env:
           RABBITMQ_PORT: "5672"
         run: |
@@ -219,6 +219,11 @@ jobs:
           echo "Eventing__RabbitMq__IntegrationTestsEnabled=true" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Host=127.0.0.1" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Port=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+          if [ "$SUITE" = "planning-tests" ]; then
+            echo "MOD0188_TEST_RABBITMQ_ENABLED=true" >> "$GITHUB_ENV"
+            echo "MOD0188_TEST_RABBITMQ_HOST=127.0.0.1" >> "$GITHUB_ENV"
+            echo "MOD0188_TEST_RABBITMQ_PORT=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+          fi
 
       # WP-LANE-MAIN-SYNC-02 M1: Inventory's PrismMockFixture reads @stoplight/prism-cli 4.10.5 from the npx cache; a
       # one-shot `--version` puts exactly that version there and exits (no server). Pinned version, Inventory row only.
@@ -254,7 +259,11 @@ jobs:
 
       - name: Stop owned Mongo (Planning)
         if: always() && matrix.suite == 'planning-tests'
-        run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+        run: |
+          bash scripts/test-env/mod0188-ci-mongo.sh stop
+          if docker inspect rabbitmq >/dev/null 2>&1; then
+            docker rm -f rabbitmq
+          fi
 
       - name: Stop owned Mongo (SupplyChain)
         if: always() && matrix.suite == 'supplychain-tests'
