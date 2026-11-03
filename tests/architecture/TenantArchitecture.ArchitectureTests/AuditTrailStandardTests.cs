@@ -155,10 +155,13 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
         // WP-PLATFORM-AUDIT-INTX-01 (2026-10-02) — the in-transaction door, proven end to end; the token is the CALL,
         // not the ITransactionOwnedAuditCommand marker (a marked command that calls none of these is unaudited).
+        // Owner decision A-10 (Beste, 2026-11-03, CT-DECISIONS.md): MOD-0040-FU02 record codes through the same door.
         ("Diten.Platform", "platform-islem-ici", "a",
             "PhysicalEntitlementAuditIntent.EnqueueAsync/TenantSubscriptionTransactionWriter.UpdateAsync"
             + "/TenantSubscriptionCommandSupport.CreateAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteAsync"
-            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"),
+            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"
+            + "/RecordCodeAuditIntent.EnqueueAsync/RecordCodeAuditIntent.EnqueueRefusalAsync"
+            + "/RecordCodeAuditIntent.EnqueueGroupPrefixAlignedAsync/RecordCodeAuditIntent.EnqueueGroupPrefixAlignRefusalAsync"),
         ("Diten.Platform", "gorev-etkinlik-akisi", "c", "TaskItem.Declare"),
         ("Diten.Platform", "is-akisi-gecis-gunlugu", "c",
             "IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync"
