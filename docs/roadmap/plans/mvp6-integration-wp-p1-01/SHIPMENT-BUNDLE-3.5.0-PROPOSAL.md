@@ -34,8 +34,10 @@ New component schema `CustomerRef`: `type: [string, 'null']`.
 |---|---|
 | Value | MOD-0149 CRM `Account.Id`, written as a Guid in "D" format, lower case |
 | Comparison | case-insensitive, by every consumer |
-| Service | stores it as given; never calls CRM; no format check on the wire (opaque, as `shipToReference`) |
-| Who checks | the MVC create adapter (MOD-0183 24.1): lower-case Guid "D", and the account readable with the caller's token |
+| Format | schema `pattern` `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$` (CT kararı 2026-11-03, review F-3) |
+| Service | checks the pattern (`CreateShipmentValidator`; mismatch → 400 `INVALID_REQUEST`, the code of `ValidationBehavior.cs:11`), stores a matching value as given, never calls CRM |
+| Who checks the account | the MVC create adapter (MOD-0183 24.1): the account readable with the caller's token, and an address present (`CUSTOMER_ADDRESS_MISSING` otherwise) |
+| Screens | a stored value that is not a lower-case Guid is shown as "not found", never as a name |
 | Empty | null or absent on records written before 3.5.0, on Warehouse-intake shipments and on API calls that do not send it |
 | Consumers when empty | keep their earlier rule; MOD-0177: `shipToReference`, then `"DOC:" + sourceDocumentId` |
 | Old records | never matched to an account by a guess on `shipToReference` (SB-19, accepted limit) |
@@ -70,13 +72,15 @@ old record's destination without a per-row `getShipment`. `ShipmentDetail` alrea
 
 `createShipment` request, `getShipment` 200 and `queryShipments` 200 examples gain `customerRef`
 (`14900000-0000-4000-8000-000000000001`, lower case); the list example also gains `warehouseReferenceId`, `shipToReference`
-and `filteredTotal`. Existing example values are unchanged.
+and `filteredTotal`. The three `shipToReference` example values change from `CUST-100/ADDR-2` (which read like a customer code)
+to an address-like text, `TR, Istanbul, Kadikoy, Ataturk Cad. No 12`, built by the MOD-0183 24.1 rule (review F-7); an example
+value is not a schema change. Every example `customerRef` matches the pattern.
 
 ## 4a. Return read by ID (MOD-0186 35.9 item 1; Natig K1, 2026-11-03)
 
 | Change | Why each field is there |
 |---|---|
-| `GET /returns/{returnId}` `getReturn`; headers as the other Returns operations; 200 `ReturnDetail`, 404 (shared `NotFound`, `RETURN_NOT_FOUND`, one text for foreign and unknown) | MOD-0186 DL-4 details page (35.5, 35.6; RB-8, RB-9) |
+| `GET /returns/{returnId}` `getReturn`; headers as the other Returns operations; 200 `ReturnDetail`; 400, 401, 403, 404 (`RETURN_NOT_FOUND`, one text for foreign and unknown), 500, 503 with the same response blocks as `queryReturns` (review F-4) | MOD-0186 DL-4 details page (35.5, 35.6; RB-8, RB-9) |
 | New schema `ReturnDetail` = `ReturnSummary` (with `customerRef`, section 1) + `reasonCode`, `createdAt`, `lines[]` (`shipmentLineNumber`, `quantity`, `uomId`, `inventoryTransactionReferenceId`, `inventoryPosting`, `inventoryPostingReason`), `contractVersion` | `reasonCode` and `createdAt`: the 35.5 summary card shows reason and created date (RB-8 "fields of item 1", RB-9); `lines[]`: the 35.5 lines sub-table (RB-8, RB-9, RB-10). They are on `ReturnDetail` only, not on `ReturnSummary`: no DL-3 or DL-4 row needs them on the list |
 
 `getReturn` carries `x-served-from: MOD-0186 DL-4`: the contract lands with MOD-0183 DL-3, before MOD-0186 DL-4 serves the
@@ -92,7 +96,7 @@ OD-186-1, OD-186-6). 3.5.0 adds no error code, so `ContractErrorCodes` and `Cont
 
 `ShipmentResponse` (the create acknowledgement carries no header field today), `ShipmentEventPayload`,
 `ReturnEventPayload` and every event envelope, `CreateReturnCommand`, `TransitionReturnCommand` and the `transitionReturn`
-operation, every existing path, status code and error code, and both lifecycles. No error code is added. The MVC adapter code `INVALID_CUSTOMER_ACCOUNT` is not a wire code and is not added.
+operation, every existing path, status code and error code, and both lifecycles. No error code is added. The MVC adapter codes `INVALID_CUSTOMER_ACCOUNT` and `CUSTOMER_ADDRESS_MISSING` are not wire codes and are not added.
 
 ## 6. Consumers measured on this branch
 
@@ -100,14 +104,17 @@ operation, every existing path, status code and error code, and both lifecycles.
 |---|---|---|
 | MOD-0186 `ReturnReferenceReader.ParseShipment` (`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs`) | `getShipment`: named top-level fields plus a duplicate check, no top-level allow-list; lines have an allow-list (`OptionalLineTexts`) | a new top-level `customerRef` is accepted; lines are unchanged. MOD-0186 DL-4 adds the read of the field |
 | MOD-0177 `ShipmentBundleHttpReader` (`services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Recall/ShipmentBundleHttpReader.cs`) | `getShipment`: `status`, `actualDeliverAt`, `shipToReference` | unchanged until the MOD-0177 FU (MVP-1) reads `customerRef`; XMC-001: not touched here |
-| MOD-0183 Web adapters | list, details, create | DL-3 / DL-4 per MOD-0183 24.9 (SB-2, SB-9, SB-20…SB-22) |
+| MOD-0187 `ClaimReferenceReader.ValidateShipment` (`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs:39-51`) | `getShipment`: required and named fields, no top-level allow-list | a new top-level `customerRef` is accepted; no change (review F-6) |
+| MOD-0185 `LoadReferenceReader.ValidateShipment` (`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Loads/LoadReferenceReader.cs:28-34`) | `getShipment`: required and named fields, no top-level allow-list | a new top-level `customerRef` is accepted; no change (review F-6) |
+| MOD-0183 Web adapters | list, details, create | DL-3 / DL-4 per MOD-0183 24.9 (SB-2, SB-9, SB-20…SB-26) |
 
 ## 7. Check
 
 `git apply --check docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0.patch` passes against the contract at
 3.4.0 on this branch. The patched file was loaded with a strict duplicate-key YAML loader: no duplicate key; `info.version`
 3.5.0; `CustomerRef` and `ReturnDetail` present; `ShipmentSummary`, `ReturnSummary`, `ShipmentListResponse` and the
-`queryShipments` parameters carry the new fields; `/returns/{returnId}` exists and no submit-authorization path, authorization field or DL-5 code is present;
+`queryShipments` parameters carry the new fields; `/returns/{returnId}` exists with 200, 400, 401, 403, 404, 500, 503 and no submit-authorization path, authorization field or
+DL-5 code is present; `CustomerRef` has its `pattern` and every example `customerRef` matches it;
 every `#/components/...` reference resolves. Not run here: the contract example tests (`ShipmentBundleContractExampleTests`), Prism, the
 service build; they belong to the DL-3 change.
 

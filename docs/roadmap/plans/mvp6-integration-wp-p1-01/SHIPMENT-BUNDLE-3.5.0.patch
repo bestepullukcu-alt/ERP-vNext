@@ -24,7 +24,7 @@
                      shipmentNumber: SHP-2026-000001
                      sourceDocumentId: SO-900
 +                    warehouseReferenceId: wh-01
-+                    shipToReference: CUST-100/ADDR-2
++                    shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
 +                    customerRef: 14900000-0000-4000-8000-000000000001
                      status: Dispatched
                      carrierId: 18400000-0000-0000-0000-000000000001
@@ -37,23 +37,27 @@
                  contractVersion: v1
          '400': { $ref: '#/components/responses/BadRequest' }
          '401':
-@@ -147,6 +154,7 @@
+@@ -146,7 +153,8 @@
+               sourceType: SALES_ORDER
                sourceDocumentId: SO-900
                warehouseReferenceId: wh-01
-               shipToReference: CUST-100/ADDR-2
+-              shipToReference: CUST-100/ADDR-2
++              shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
 +              customerRef: 14900000-0000-4000-8000-000000000001
                plannedShipAt: '2026-09-20T08:00:00Z'
                plannedDeliverAt: '2026-09-21T16:00:00Z'
                lines:
-@@ -201,6 +209,7 @@
+@@ -200,7 +208,8 @@
+                 sourceType: SALES_ORDER
                  sourceDocumentId: SO-900
                  warehouseReferenceId: wh-01
-                 shipToReference: CUST-100/ADDR-2
+-                shipToReference: CUST-100/ADDR-2
++                shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
 +                customerRef: 14900000-0000-4000-8000-000000000001
                  carrierId: 18400000-0000-0000-0000-000000000001
                  loadId: 18500000-0000-0000-0000-000000000001
                  status: Delivered
-@@ -2002,6 +2011,39 @@
+@@ -2002,6 +2011,168 @@
          Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
          replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
          publisher.'
@@ -89,11 +93,140 @@
 +                lines:
 +                  - { shipmentLineNumber: '1', quantity: '2.000', uomId: EA, inventoryTransactionReferenceId: 17300000-0000-4000-8000-000000000001, inventoryPosting: Posted, inventoryPostingReason: null }
 +                contractVersion: v1
-+        '404': { $ref: '#/components/responses/NotFound' }
++        '400':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '401':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++            WWW-Authenticate:
++              schema:
++                type: string
++                const: Bearer
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '403':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INVALID_REQUEST:
++                  value:
++                    error:
++                      code: INVALID_REQUEST
++                      message: INVALID REQUEST
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '404':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                RETURN_NOT_FOUND:
++                  value:
++                    error:
++                      code: RETURN_NOT_FOUND
++                      message: RETURN NOT FOUND
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '500':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                INTERNAL_ERROR:
++                  value:
++                    error:
++                      code: INTERNAL_ERROR
++                      message: INTERNAL ERROR
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
++        '503':
++          description: Returns-specific branch; normative annex defines precedence.
++          headers:
++            X-Correlation-Id:
++              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
++                replacement business root.
++              schema:
++                type: string
++                format: uuid
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Error'
++              examples:
++                PERSISTENCE_UNAVAILABLE:
++                  value:
++                    error:
++                      code: PERSISTENCE_UNAVAILABLE
++                      message: PERSISTENCE UNAVAILABLE
++                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                    contractVersion: v1
    /returns/{returnId}/transition:
      post:
        tags:
-@@ -3205,7 +3247,8 @@
+@@ -3205,7 +3376,8 @@
          sourceType: { type: string }
          sourceDocumentId: { type: string }
          warehouseReferenceId: { type: string, description: WAREHOUSE-SHIPMENT-TRIGGER contract'i gelene kadar opaque reference. }
@@ -103,7 +236,7 @@
          plannedShipAt: { type: string, format: date-time }
          plannedDeliverAt: { type: [string, 'null'], format: date-time }
          lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ShipmentLine' } }
-@@ -3250,12 +3293,18 @@
+@@ -3250,12 +3422,19 @@
          shipmentId: { type: string, format: uuid }
          shipmentNumber: { type: string }
          sourceDocumentId: { type: string }
@@ -118,11 +251,12 @@
          actualDeliverAt: { type: [string, 'null'], format: date-time }
 +    CustomerRef:
 +      type: [string, 'null']
-+      description: "3.5.0 (MOD-0183 r9 §24.1 / §24.7 item 3, additive; MVP-1 CT decision 2026-11-03, accepted by Natig K1) — the customer of the shipment or return: a MOD-0149 CRM Account.Id written as a Guid in \"D\" format, lower case. Consumers compare it case-insensitively. The service stores it as given and never calls CRM; the MVC create adapter checks it. Null or absent on records written before 3.5.0, on Warehouse-intake shipments and on calls that do not send it: a consumer then keeps its earlier rule (MOD-0177: shipToReference, then DOC:<sourceDocumentId>) and never matches an old record to an account. Same name and meaning on ShipmentSummary, ShipmentDetail and ReturnSummary. Never shown to a user as a label."
++      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
++      description: "3.5.0 (MOD-0183 r9 §24.1 / §24.7 item 3, additive; MVP-1 CT decision 2026-11-03, accepted by Natig K1) — the customer of the shipment or return: a MOD-0149 CRM Account.Id written as a Guid in \"D\" format, lower case (pattern). Consumers compare it case-insensitively. The service rejects a value that does not match the pattern with 400 INVALID_REQUEST, stores a matching value as given and never calls CRM; the MVC create adapter also checks that the account is readable. Null or absent on records written before 3.5.0, on Warehouse-intake shipments and on calls that do not send it: a consumer then keeps its earlier rule (MOD-0177: shipToReference, then DOC:<sourceDocumentId>) and never matches an old record to an account. Same name and meaning on ShipmentSummary, ShipmentDetail and ReturnSummary. Never shown to a user as a label."
      ShipmentDetail:
        allOf:
          - { $ref: '#/components/schemas/ShipmentSummary' }
-@@ -3280,6 +3329,7 @@
+@@ -3280,6 +3459,7 @@
          page: { type: integer }
          pageSize: { type: integer }
          total: { type: integer }
@@ -130,7 +264,7 @@
          contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      PodResponse:
        type: object
-@@ -3428,6 +3478,10 @@
+@@ -3428,6 +3608,10 @@
          rmaNumber: { type: string }
          shipmentId: { type: string, format: uuid }
          status: { $ref: '#/components/schemas/ReturnStatus' }
@@ -141,10 +275,11 @@
      ReturnResponse:
        allOf:
          - { $ref: '#/components/schemas/ReturnSummary' }
-@@ -3447,6 +3501,28 @@
+@@ -3446,6 +3630,28 @@
+                   inventoryTransactionReferenceId: { type: [string, 'null'], description: "the CUSTOMER_RETURN transactionId; null when NotPosted" }
                    inventoryPosting: { type: string, enum: [Posted, NotPosted] }
                    inventoryPostingReason: { type: [string, 'null'], description: "PRE_WP_P1 or the reasonCode of unpostedLines; null when Posted" }
-             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
++            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
 +    ReturnDetail:
 +      description: "3.5.0 (MOD-0186 r10 §35.9 item 1, additive) — getReturn answer. No authorization or workflow field: those belong to MOD-0186 DL-5 and a later contract version."
 +      allOf:
@@ -166,7 +301,6 @@
 +                  inventoryTransactionReferenceId: { type: [string, 'null'] }
 +                  inventoryPosting: { type: [string, 'null'], enum: [Posted, NotPosted, null], description: "null before Received" }
 +                  inventoryPostingReason: { type: [string, 'null'] }
-+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      ReturnListResponse:
        type: object
-       required: [items, total, contractVersion]
