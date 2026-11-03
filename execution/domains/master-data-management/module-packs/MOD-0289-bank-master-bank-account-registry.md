@@ -16,8 +16,7 @@ screens:
     data_mode: client
     data_mode_max_rows: 200
 entity_base: EntityBase
-status: draft
-approval_status: not-approved
+status: ready-for-dev
 owner: mdm-domain-team
 branch: feature/mdm/mod-0289-bank-master-bank-account-registry
 started: 2026-10-25
@@ -27,6 +26,8 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 ---
 
 # MOD-0289 — Bank Master & Bank Account Registry
+
+> **KARAR D127 (2026-11-03) — `ready-for-dev`:** paket kapısının işaretsiz son iki maddesi main'de karşılandı: CT-APR-02 bağımsız inceleme `docs/records/reviews/MOD-0289/2026-11-02-691e9b05.md` (UYGUN, açık ENGEL yok) ve CT-APR-01 onay satırı (`execution/approvals/approvals.tsv`, onaylayıcı `bestepullukcu-alt`, #354). Kalan işaretsiz maddelerin hepsi "— DL-n için" dilim kapısıdır (D51/1). Künye `status: ready-for-dev`; `approval_status` alanı kaldırıldı (standart alan değil; onayın kaynağı `approvals.tsv`). Bu sürüm için yeni CT-APR-02 incelemesi ve CT-APR-01 satırı gerekir (S-49: onay satırı künyesi `ready-for-dev` olan sürüme yazılır). Kapsam, izin, AC ve dilimler değişmedi. Aşağıdaki eski revizyon notlarındaki `status: draft` ifadeleri kendi tarihlerindeki durumu anlatır.
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, SUPPLIER 1.3.0 FROZEN); MOD-0140 DL-3 canlı uç önkoşulu korundu; kapsam, izin ve AC değişmedi. `status: draft`.
 
@@ -100,11 +101,10 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > DL-2'de "tam kapanış" sayılıyordu; AC-60 bitişi bölündü: banka DL-1, şirket hesabı DL-2, tedarikçi hesabı DL-3 (tam
 > kapanış). Yeni AC yok; AC numaraları, AC aralığı (AC-1…60) ve dilim tablosu değişmedi. `status: draft`.
 >
-> **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
-> rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev`
-> olduktan ve bağımsız inceleme (CT-APR-02) ile sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır.
-> Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene
-> kadar kapalı (D1: kod alma izni modül modül verilir). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
+> **Durum: `ready-for-dev` (KARAR D127).** Kod yalnız bu paket sürümüne bağlı CT-APR-01 onay satırı main'de olduktan
+> sonra, dilim sırasıyla ve her dilimin Önkoşulu kapanınca yazılır; satır yoksa ya da paket sonradan değişirse kod
+> yazılmaz. Gateway rotası (integration-agent) ve sözleşme dosyası kendi dilimlerinin işidir.
+> Kod alma izni D45/3 ile verildi (D1: kod alma izni modül modül verilir); DCP-011 `approved`. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D1 (doğrula, sonra uyarlayarak al), D7 (MDM yerleşim önerisi) —
@@ -1842,7 +1842,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 
 **Biçim maddeleri (paket içi):**
 - [x] Golden Reference Compact okundu (backend + frontend klasörü)
-- [x] Frontmatter tam (service, shell, golden_reference, data_mode, screens, entity_base, form_field_count, approval_status)
+- [x] Frontmatter tam (service, shell, golden_reference, data_mode, screens, entity_base, form_field_count)
 - [x] Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık
 - [x] Backend / Frontend file convention Golden Reference ile (suffix yok, CommandHandlers/QueryHandlers ayrı)
 - [x] Validation her alan için yazılı; dört göz ve sahiplik kuralları
@@ -1870,9 +1870,11 @@ açık atama eki ayrı madde, DL-2 için. SEC-002 sağlayıcısının "permissio
 (KARAR D59/1), paket kapısı değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek
 servis DL-1 kabulünden önce main'de olmalıdır. Grup önekli kayıtların `legalEntityId` / önek kapsamı kararı (O-14) **kapandı — KARAR D93/1**; gerçek
 servis kabulü sözleşme (3 Kasım) ve servis (6 Kasım) main'e girince.
-- [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
-- [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
-  paketi yazmamış, `high: evet` onaylayıcı
+- [x] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok —
+  `draft` sürümü için `2026-11-02-691e9b05.md` UYGUN; `ready-for-dev` sürümünün incelemesi bu sürümün PR'ında (KARAR D127)
+- [x] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
+  paketi yazmamış, `high: evet` onaylayıcı — `draft` sürümü için `bestepullukcu-alt` (#354); `ready-for-dev` sürümünün
+  satırı bu sürümün PR'ında, onay o PR'ın `bestepullukcu-alt` tarafından birleştirilmesidir (KARAR D127)
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [x] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` — #309 ile main'de (D112/3)

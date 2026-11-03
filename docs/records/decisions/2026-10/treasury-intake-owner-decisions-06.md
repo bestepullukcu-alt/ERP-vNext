@@ -111,3 +111,12 @@ Onay kanıtı: K1 / gmg-10 ("devam edelim"); kaynak D125/2; oturum Treasury Inta
 2. **D126/2 — işlem adları:** `mod0119:CreateApInvoice`, `mod0120:CreateReceivableInvoice`, `mod0124:CreateCashPosition` (`CPS`), `mod0124:CreateCashPositionThresholdPolicy` (`CTP`), `mod0126:CreatePaymentBatch`. Desen MOD-0126 makbuz tanımındaki `{modül}:{Komut}`.
 3. **D126/3 — yeni AC:** MOD-0119 AC-45, MOD-0120 AC-45, MOD-0124 AC-39, MOD-0126 AC-47. Her biri vektör testi (v) ile D125/2'nin (a), (b) ve (c) senaryolarını ve dört sabotajı içerir. Test bölümlerine de eklendi. Her yeni AC kendi paketinin DL-1 "Bitiş" listesine eklendi; Create'ler DL-1'de teslim edildiği için anahtar kanıtı DL-1 kabulünde aranır.
 4. **D126/4 — sınır:** kural ve testler paket metnindedir; üretim kodu yok (`Diten.FinanceTreasuryService` yazılmadı). D125/2'deki "bugün açık" durumu kodla kapanır. Zarf satırı (D125/1) sözleşme dondurulunca ayrı revizyonla gelir. Kapsam, izin ve `status: draft` değişmedi.
+
+## D127 — MOD-0289 `ready-for-dev` (2026-11-03)
+
+Kaynak: K1 (Natig) soru kutusunda "Evet, hazırla" ve "Alanı kaldır" (2026-11-03). Ölçüm: `origin/main` @ `73a90cc34`.
+
+1. **D127/1 — paket kapısı kapandı:** MOD-0289 "Ready-for-dev Checklist"inde işaretsiz paket düzeyi madde olarak yalnız CT-APR-02 ve CT-APR-01 kalmıştı; ikisi `draft` sürümü için main'de: inceleme `docs/records/reviews/MOD-0289/2026-11-02-691e9b05.md` (UYGUN), onay satırı `execution/approvals/approvals.tsv` (onaylayıcı `bestepullukcu-alt`, #354). Öbür işaretsiz maddeler "— DL-n için" dilim kapısıdır (D51/1) ve paketi bekletmez.
+2. **D127/2 — künye:** `status: draft` → `ready-for-dev`. `approval_status` alanı kaldırıldı: paket standardında tanımlı değil, `ready-for-dev` olan MOD-0220 ve MOD-0140 künyesinde yok; onayın kaynağı `approvals.tsv`dir.
+3. **D127/3 — yeni sürüm onayı:** onay satırı sürüme bağlıdır ve `pack_approval.py` S-49 uyarısı onay satırının künyesi `ready-for-dev` olan sürüme yazılmasını ister. Bu sürüm için yeni CT-APR-02 incelemesi (Codex) ve CT-APR-01 satırı (onaylayıcı `bestepullukcu-alt`) aynı PR'da gelir; onay, o PR'ın Beste tarafından birleştirilmesidir.
+4. **D127/4 — sınır:** kapsam, izin, AC (AC-1…60), dilimler ve Açık kararlar değişmedi. Kod ancak yeni onay satırı main'de olunca ve dilim sırasıyla yazılır; DL-1 kabul kapısı (Auth kayıt kodu, SEC-002 eki kodu, RCS-001 servisi) açık.
