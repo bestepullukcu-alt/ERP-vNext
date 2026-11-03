@@ -29,6 +29,7 @@ source: /Users/natig/Projects/ERP-vNext @ da4abb204e05fbd47ec088a6b0da08b8f7c6dc
 > - **Denetim sınıfı:** Issue K2, SetCollectionStage K1 (D57/2).
 > - **BL-565 / RCS-001** DL-1 kabul kapısıdır (D59/1): DL-1 `IRecordCodeAllocator` sahtesiyle yazılır; gerçek servis kabulden
 > önce main'de olmalı (v0 sözleşmesi Beste, 6 Kasım). Ölçüm: servis main'de yok (BL-565 `DURUM: AÇIK`).
+> - **2026-11-03 güncellemesi (D124):** aşağıdaki seed ve `Finance = 18` ölçümü eskidi. `currency-minor-units` seed'i ve izin listesi main'de (#297; `services/Diten.Platform/src/Diten.Platform.API/appsettings.json:167-168@35e973bd2`); değer sorusu Y-4/3 ile kapandı; `Finance = 18` main'de (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs:29@35e973bd2`). Küme canlıda henüz yayımlı değil (D121/2).
 > - **MOD-0048 seed'leri** (`currency-minor-units`): Treasury CT ekler, Beste onaylar (D59/2, D60); ölçüm: main'de yok
 > (`services/Diten.Platform/**`'te 0). `currency-minor-units` değer sorusu Beste'de (D60/3). `Finance = 18` main'de yok
 > (`AuditEnums.cs` son değer `ESignature = 17`).
