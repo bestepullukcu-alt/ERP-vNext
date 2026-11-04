@@ -8,4 +8,7 @@ public static class ReservationAuditActions
 
     /// <summary>An issue refused by a reservation scope guard (422 INSUFFICIENT_STOCK with <c>details.level</c>).</summary>
     public const string ConsumptionRefused = "InventoryReservationConsumptionRefused";
+
+    /// <summary>§8.3.1: a REVERSAL with <c>restoreReservation: true</c> gave a consumed quantity back (success row, written in the transaction).</summary>
+    public const string Restored = "InventoryReservationRestored";
 }

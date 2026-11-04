@@ -159,6 +159,62 @@ public sealed class ReservationRefusalAuditTests : IClassFixture<TraceApiFactory
         Assert.Equal(before, Refusals(e, "InventoryReservationConsumptionRefused").Count);
     }
 
+    /// <summary>
+    /// AC-28 (DL-2) — every refusal of a movement that NAMED a reservation (the RESERVATION_* codes and a scope guard's INSUFFICIENT_STOCK
+    /// after the named consumption) leaves exactly one <c>InventoryReservationConsumptionRefused</c> row with the reservationId text as sent.
+    /// Sabotage: the rows of the reservationId refusals removed → red.
+    /// </summary>
+    [Fact]
+    public async Task Consumption_refusal_writes_one_row_per_code()
+    {
+        var w = new ScopedReservationWorld(_factory);
+        var lot = await w.LotAsync();
+        var lot2 = await w.LotAsync();
+        await w.ReceiveAsync("30", lot);
+        await w.ReceiveAsync("10", lot2);
+        await w.ReceiveAsync("50", lot2, w.Ledger.LocationC);
+        var r1 = await w.ReserveOkAsync("10", w.W);           // warehouse reservation
+        var r2 = await w.ReserveOkAsync("30", w.W, lot);      // the whole lot L
+        var released = await w.ReserveOkAsync("1", w.W2, lot2); // W itself is fully held by R1 + R2
+        await w.ReleaseAsync(released, "W/\"1\"", 200);
+        var named = Named(w);
+        var unknown = Guid.NewGuid().ToString();
+
+        var cases = new (Dictionary<string, object?> Body, string Code, string Text, string? Id, string? Level)[]
+        {
+            (ScopedReservationWorld.Naming(w.Issue("1", lot), unknown), "RESERVATION_NOT_FOUND", unknown, null, null),
+            (ScopedReservationWorld.Naming(w.Issue("1", lot), "no-uuid-text"), "RESERVATION_NOT_FOUND", "no-uuid-text", null, null),
+            (ScopedReservationWorld.Naming(w.Issue("1", lot2, w.Ledger.LocationC), released), "RESERVATION_NOT_ACTIVE", released, released, null),
+            (ScopedReservationWorld.Naming(w.Issue("1", lot2), r2), "RESERVATION_MISMATCH", r2, r2, null),
+            (ScopedReservationWorld.Naming(w.Issue("31", lot), r2), "RESERVATION_QUANTITY_EXCEEDED", r2, r2, null),
+            (ScopedReservationWorld.Naming(w.WarehouseTransfer("1", lot), r2), "RESERVATION_NOT_APPLICABLE", r2, null, null),
+            // R1 (warehouse) is consumed, then L is left at 30 − 10 = 20 against R2's 30 → the LOT guard refuses
+            (ScopedReservationWorld.Naming(w.Issue("10", lot), r1), "INSUFFICIENT_STOCK", r1, r1, "LOT")
+        };
+
+        foreach (var (body, code, text, id, level) in cases)
+        {
+            var before = Refusals(w, "InventoryReservationConsumptionRefused").Count;
+            var movements = w.Count("inventory_transactions");
+            using var response = await w.Ledger.PostAsync(body, token: named);
+            var json = await w.Ledger.ReadAsync(response);
+            Assert.True((int)response.StatusCode == 422, code + ": " + json);
+            Assert.Equal(code, ScopedReservationWorld.Code(json));
+            var row = Assert.Single(Refusals(w, "InventoryReservationConsumptionRefused").Skip(before));
+            Assert.Equal(("Failed", code, text), (row["Outcome"].AsString, row["ErrorCode"].AsString, row["ReservationIdText"].AsString));
+            Assert.Equal(id ?? Guid.Empty.ToString(), row["ReservationId"].AsString);
+            Assert.Equal(level, row["Level"].IsBsonNull ? null : row["Level"].AsString);
+            Assert.Equal(((string)body["movementType"]!).Replace("_", "", StringComparison.Ordinal), row["MovementType"].AsString.Replace("_", "", StringComparison.Ordinal));
+            Assert.Equal((w.Ledger.User.ToString(), ActorName, (string)body["sourceModule"]!), (row["ActorUserId"].AsString, row["ActorDisplayName"].AsString, row["SourceModule"].AsString));
+            Assert.Equal(Guid.Parse(response.Headers.GetValues("X-Correlation-Id").Single()).ToString(), row["CorrelationId"].AsString);
+            Assert.Equal(movements, w.Count("inventory_transactions"));
+            Assert.DoesNotContain(CentralRows(w), r => r.RequestType == "PostMovementCommand" && r.CorrelationId == Guid.Parse(row["CorrelationId"].AsString));
+        }
+
+        Assert.Equal(("Active", 10m), (w.ReservationDocument(r1)["Status"].AsString, w.ReservationDocument(r1)["RemainingQuantity"].ToDecimal()));
+        w.AssertInvariant("AC-28");
+    }
+
     private async Task AssertGuardRowAsync(ScopedReservationWorld w, Dictionary<string, object?> movement, string level, string movementType, string warehouse, string? lot)
     {
         var named = Named(w);

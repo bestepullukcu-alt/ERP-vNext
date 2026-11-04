@@ -23,6 +23,16 @@ public static class InventoryMapping
             BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity),
             ExpiryChecks = transaction.ExpiryChecks is { } checks
                 ? new ExpiryChecksDto { Fefo = checks.Fefo, MinRemaining = checks.MinRemaining, ExceptionIds = [.. checks.ExceptionIds] }
+                : null,
+            ReservationConsumption = transaction.ReservationConsumption is { } consumption
+                ? new ReservationConsumptionDto
+                {
+                    ReservationId = consumption.ReservationId.ToString(),
+                    ConsumedQuantity = InventoryQuantity.ToWire(consumption.ConsumedQuantity),
+                    RemainingQuantity = InventoryQuantity.ToWire(consumption.RemainingQuantity),
+                    Status = WireNames.ToWire(consumption.Status),
+                    ClosedReason = consumption.ClosedReason
+                }
                 : null
         };
 
@@ -149,6 +159,7 @@ public static class InventoryMapping
             SourceDocumentId = transaction.SourceDocumentId,
             SourceLineId = transaction.SourceLineId,
             TransactionDate = Utc(transaction.TransactionDate),
-            PostingDate = Utc(transaction.PostingDate)
+            PostingDate = Utc(transaction.PostingDate),
+            ReservationId = transaction.ReservationId?.ToString()
         };
 }

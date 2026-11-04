@@ -10,7 +10,7 @@ public sealed class InventoryReservationChangedPayload
 {
     public Guid ReservationId { get; set; }
 
-    /// <summary>Created · Released · Expired · Consumed · PartiallyConsumed.</summary>
+    /// <summary>Created · Released · Expired · Consumed · PartiallyConsumed · Restored (MOD-0173-FU03 §8.3.1; internal payload, not contract).</summary>
     public string Change { get; set; } = string.Empty;
 
     public Guid ItemId { get; set; }

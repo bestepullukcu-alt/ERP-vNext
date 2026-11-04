@@ -88,6 +88,21 @@ public sealed class ScopedReservationWorld
 
     public Task<JsonElement> PostAsync(Dictionary<string, object?> body, int expected) => Lots.PostAsync(body, expected);
 
+    /// <summary>INVENTORY 1.7.0: the same movement naming a reservation by <c>reservationId</c>.</summary>
+    public static Dictionary<string, object?> Naming(Dictionary<string, object?> body, string reservationId)
+    {
+        body["reservationId"] = reservationId;
+        return body;
+    }
+
+    /// <summary>The REVERSAL of a posted movement; <paramref name="restore"/> null = no <c>restoreReservation</c> member at all.</summary>
+    public Dictionary<string, object?> Reversal(Dictionary<string, object?> original, string transactionId, bool? restore = null)
+    {
+        var body = Ledger.Reversal(original, transactionId);
+        if (restore is { } flag) body["restoreReservation"] = flag;
+        return body;
+    }
+
     // ── reservations ─────────────────────────────────────────────────────────────────────────────────────
 
     public Dictionary<string, object?> Reservation(

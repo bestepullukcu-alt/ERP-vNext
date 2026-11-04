@@ -27,6 +27,9 @@ public sealed record LedgerPostingResult(
     public static LedgerPostingResult NotPostable(string locationId)
         => new(LedgerPostingOutcome.LocationNotPostable, RefusedLocationId: locationId);
 
+    public static LedgerPostingResult ReservationRefused(string code, string message, IReadOnlyDictionary<string, object?>? details)
+        => new(LedgerPostingOutcome.ReservationRefused, RefusalCode: code, RefusalMessage: message, RefusalDetails: details);
+
     public static LedgerPostingResult LotOrSerialRefused(string code, string message, IReadOnlyDictionary<string, object?>? details)
         => new(LedgerPostingOutcome.LotOrSerialRefused, RefusalCode: code, RefusalMessage: message, RefusalDetails: details);
 }

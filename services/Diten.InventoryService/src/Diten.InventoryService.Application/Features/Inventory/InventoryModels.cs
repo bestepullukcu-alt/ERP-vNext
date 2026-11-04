@@ -23,6 +23,19 @@ public sealed class MovementResponseDto
 
     /// <summary>INVENTORY 1.3.0 (MOD-0176): what the expiry hooks decided; absent when no hook applied.</summary>
     public ExpiryChecksDto? ExpiryChecks { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (MOD-0173-FU03 §8.3): only when the movement named a reservation by <c>reservationId</c>.</summary>
+    public ReservationConsumptionDto? ReservationConsumption { get; init; }
+}
+
+/// <summary>INVENTORY 1.7.0 <c>ReservationConsumption</c>: a LOCATION_TRANSFER validates and consumes nothing (<c>consumedQuantity "0.000"</c>).</summary>
+public sealed class ReservationConsumptionDto
+{
+    public string ReservationId { get; init; } = string.Empty;
+    public string ConsumedQuantity { get; init; } = string.Empty;
+    public string RemainingQuantity { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
+    public string? ClosedReason { get; init; }
 }
 
 /// <summary>INVENTORY 1.3.0 <c>ExpiryChecks</c> (MOD-0176 F2).</summary>
@@ -124,6 +137,9 @@ public sealed class TransactionItemDto
 
     /// <summary>INVENTORY 1.5.0 (WP-MVP1-NAMES1, additive, optional) — who posted it; absent for a posting without a user.</summary>
     public TransactionCreatedByDto? CreatedBy { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (MOD-0173-FU03 §4.3): the reservation the movement named; absent otherwise.</summary>
+    public string? ReservationId { get; init; }
 }
 
 /// <summary>

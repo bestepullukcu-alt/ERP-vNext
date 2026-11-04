@@ -35,7 +35,8 @@ public sealed class ContractSchemaValidatorTests
         // WP-0177-R3 (MOD-0177 KR-C / CT-R10): the additive step 1.3.0 → 1.4.0 (422 LOT_UNDER_RECALL, CT-R10 note).
         // WP-MVP1-NAMES1 (FU-0173-UI-USER-01, owner decision A): the additive optional step 1.4.0 → 1.5.0 (TransactionItem.createdBy).
         // MOD-0173-FU03 DL-1 (CT-03): the additive optional step 1.5.0 → 1.6.0 (reservation scope, getReservation, scope figures).
-        Assert.Contains("version: 1.6.0", text);
+        // MOD-0173-FU03 DL-2 (CT-03): the additive optional step 1.6.0 → 1.7.0 (reservationId consumption, restoreReservation).
+        Assert.Contains("version: 1.7.0", text);
     }
 
     [Fact]

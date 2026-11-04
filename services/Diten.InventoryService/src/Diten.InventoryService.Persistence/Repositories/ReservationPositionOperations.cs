@@ -1,5 +1,6 @@
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
+using Diten.InventoryService.Domain.Rules;
 using Diten.InventoryService.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -372,17 +373,113 @@ internal sealed class ReservationPositionOperations
             var full = status == ReservationStatus.Released;
             reservation.ClosedReason = full ? ReservationClosedReasons.Consumed : null;
             await WriteChangeAsync(session, reservation, full ? ActionConsumed : ActionPartiallyConsumed,
-                full ? "Consumed" : "PartiallyConsumed", take, remaining, status, transactionId, correlationId, actor, now, ct);
+                full ? "Consumed" : "PartiallyConsumed", take, remaining, status, transactionId, correlationId, actor, now, ct, consumerModule: sourceModule);
             left -= take;
         }
 
         return quantity - left;
     }
 
+    /// <summary>
+    /// MOD-0173-FU03 §8.3 — the reservation a movement NAMED by <c>reservationId</c> gives the movement's base quantity, in the posting
+    /// transaction: the remaining quantity drops (all → RELEASED + <c>Consumed</c>, part → still ACTIVE), <c>Version</c> + 1, and every level
+    /// of its scope frees it, so the decrease guard that runs next lets the holder issue its own reserved stock. The update is conditional
+    /// on the version read in this transaction (a concurrent consumption / release conflicts and re-runs on the committed state).
+    /// </summary>
+    public async Task<ReservationConsumptionSnapshot> ConsumeNamedAsync(
+        IClientSessionHandle session, InventoryReservation reservation, decimal quantity, Guid transactionId, Guid correlationId, Guid actor,
+        string consumerModule, DateTimeOffset now, CancellationToken ct)
+    {
+        var remaining = reservation.RemainingQuantity - quantity;
+        var full = remaining == 0m;
+        var f = Builders<InventoryReservation>.Filter;
+        var u = Builders<InventoryReservation>.Update;
+        var update = u.Combine(
+            u.Set(x => x.RemainingQuantity, remaining),
+            u.Set(x => x.Status, full ? ReservationStatus.Released : ReservationStatus.Active),
+            u.Set(x => x.UpdatedAt, now),
+            u.Inc(x => x.Version, 1));
+        if (full)
+        {
+            update = u.Combine(update, u.Set(x => x.ClosedAt, now), u.Set(x => x.ClosedReason, ReservationClosedReasons.Consumed));
+        }
+
+        var result = await _reservations.UpdateOneAsync(
+            session,
+            ReservationScope() & f.Eq(x => x.Id, reservation.Id) & f.Eq(x => x.Version, reservation.Version)
+                & f.Eq(x => x.Status, ReservationStatus.Active) & f.Gte(x => x.RemainingQuantity, quantity),
+            update,
+            cancellationToken: ct);
+        if (result.ModifiedCount != 1)
+        {
+            throw new InvalidOperationException("The named reservation changed inside the posting transaction.");
+        }
+
+        await ReleaseReservedAsync(session, reservation, quantity, now, ct);
+        reservation.ClosedReason = full ? ReservationClosedReasons.Consumed : null;
+        var status = full ? ReservationStatus.Released : ReservationStatus.Active;
+        await WriteChangeAsync(session, reservation, full ? ActionConsumed : ActionPartiallyConsumed, full ? "Consumed" : "PartiallyConsumed",
+            quantity, remaining, status, transactionId, correlationId, actor, now, ct, consumerModule: consumerModule);
+        return new ReservationConsumptionSnapshot
+        {
+            ReservationId = reservation.Id, ConsumedQuantity = quantity, RemainingQuantity = remaining, Status = status, ClosedReason = reservation.ClosedReason
+        };
+    }
+
+    /// <summary>
+    /// MOD-0173-FU03 §8.3.1 (CT-08) — a REVERSAL with <c>restoreReservation: true</c> of a movement that consumed <paramref name="restore"/>'s
+    /// reservation gives the quantity back IN ITS TRANSACTION: ACTIVE (partly consumed) → remaining + q; RELEASED + <c>Consumed</c> → ACTIVE with
+    /// remaining + q (closed reason / time cleared); a holder's release (<c>Released</c>) or an EXPIRED one stays as it is. Every level of the
+    /// scope reserves q again — <c>AvailableOnHand</c> is not touched and no guard runs (a held lot may read negative free stock). A
+    /// reservation past <c>expiresAt</c> is then expired in the same step. Missing reservation or remaining &gt; quantity = broken invariant.
+    /// </summary>
+    public async Task RestoreAsync(
+        IClientSessionHandle session, ReservationRestore restore, InventoryTransaction reversal, DateTimeOffset now, CancellationToken ct)
+    {
+        var reservation = await FindAsync(session, restore.ReservationId, ct)
+                          ?? throw new InvalidOperationException("Invariant broken: the reservation a reversed movement consumed does not exist.");
+        var restorable = reservation.Status == ReservationStatus.Active
+                         || (reservation.Status == ReservationStatus.Released && reservation.ClosedReason == ReservationClosedReasons.Consumed);
+        if (!restorable)
+        {
+            return;
+        }
+
+        var remaining = reservation.RemainingQuantity + restore.Quantity;
+        if (remaining > reservation.Quantity)
+        {
+            throw new InvalidOperationException("Invariant broken: a restore would hold more than the reservation's quantity.");
+        }
+
+        var f = Builders<InventoryReservation>.Filter;
+        var u = Builders<InventoryReservation>.Update;
+        var result = await _reservations.UpdateOneAsync(
+            session,
+            ReservationScope() & f.Eq(x => x.Id, reservation.Id) & f.Eq(x => x.Version, reservation.Version),
+            u.Combine(
+                u.Set(x => x.RemainingQuantity, remaining),
+                u.Set(x => x.Status, ReservationStatus.Active),
+                u.Set(x => x.ClosedReason, null),
+                u.Set(x => x.ClosedAt, null),
+                u.Set(x => x.UpdatedAt, now),
+                u.Inc(x => x.Version, 1)),
+            cancellationToken: ct);
+        if (result.ModifiedCount != 1)
+        {
+            throw new InvalidOperationException("The restored reservation changed inside the posting transaction.");
+        }
+
+        await HoldAgainAsync(session, reservation, restore.Quantity, now, ct);
+        reservation.ClosedReason = null;
+        await WriteChangeAsync(session, reservation, ReservationAuditActions.Restored, "Restored", restore.Quantity, remaining, ReservationStatus.Active,
+            reversal.Id, reversal.CorrelationId, reversal.CreatedBy, now, ct, actorDisplayName: restore.ActorDisplayName);
+        await ExpireDueAsync(session, KeyOf(reservation), reversal.CorrelationId, reversal.CreatedBy, now, ct);
+    }
+
     public async Task WriteChangeAsync(
         IClientSessionHandle session, InventoryReservation reservation, string action, string change,
         decimal changedQuantity, decimal remaining, ReservationStatus status, Guid? transactionId, Guid correlationId,
-        Guid actor, DateTimeOffset now, CancellationToken ct)
+        Guid actor, DateTimeOffset now, CancellationToken ct, string? consumerModule = null, string? actorDisplayName = null)
     {
         var audit = new InventoryReservationAuditRecord
         {
@@ -404,7 +501,9 @@ internal sealed class ReservationPositionOperations
             WarehouseId = reservation.WarehouseId,
             LotId = reservation.LotId,
             ClosedReason = reservation.ClosedReason,
-            Outcome = ReservationAuditOutcomes.Succeeded
+            Outcome = ReservationAuditOutcomes.Succeeded,
+            SourceModule = consumerModule, // §21: the consuming movement's module (null on create / release / expiry rows)
+            ActorDisplayName = actorDisplayName // §4.4: only the Restored row carries it locally
         };
         var outbox = new InventoryReservationOutboxMessage
         {
@@ -464,6 +563,10 @@ internal sealed class ReservationPositionOperations
                 cancellationToken: ct);
         }
     }
+
+    /// <summary>§8.3.1: <paramref name="quantity"/> reserved again on the SKU level and every level of the scope — no guard, AvailableOnHand untouched.</summary>
+    private Task HoldAgainAsync(IClientSessionHandle session, InventoryReservation reservation, decimal quantity, DateTimeOffset now, CancellationToken ct)
+        => ReleaseReservedAsync(session, reservation, -quantity, now, ct);
 
     private FilterDefinition<InventorySkuPosition> PositionKey(SkuKey sku)
     {

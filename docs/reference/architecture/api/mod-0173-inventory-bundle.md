@@ -201,6 +201,29 @@ AVAILABLE on-hand − `scopeReserved`, not floored). `reserved` / `available` ke
 `GetAsync`, `GetScopeFreeAsync`, `FindByIdempotencyKeysAsync`) is MOD-0178's door; same rules as HTTP, no controller uses it, and a
 caller naming another company / tenant gets `InvalidOperationException` before anything is read or written.
 
+### 4.2 Consuming a reservation (INVENTORY 1.7.0 — MOD-0173-FU03 DL-2)
+
+`MovementRequest.reservationId` names the reservation a `GOODS_ISSUE_SALES` / `GOODS_ISSUE_PROD` out of AVAILABLE **consumes** in its posting
+transaction (no source-triple match; all of it → RELEASED + `closedReason Consumed`, part → ACTIVE, `Version` + 1), or a `LOCATION_TRANSFER`
+**moves** (validated, nothing consumed). The answer carries `reservationConsumption { reservationId, consumedQuantity, remainingQuantity,
+status, closedReason }`, replayed verbatim; `TransactionItem.reservationId` shows it in `getTransactions`.
+
+| Situation (all 422, nothing written, one `InventoryReservationConsumptionRefused` audit row) | Code |
+|---|---|
+| any other type / direction, a REVERSAL included | `RESERVATION_NOT_APPLICABLE` |
+| unknown id, another tenant's / company's, or not a UUID — one message | `RESERVATION_NOT_FOUND` |
+| released, consumed or expired (due ones are expired first) | `RESERVATION_NOT_ACTIVE` (`details.status`, `closedReason`) |
+| SKU, source warehouse or lot differs | `RESERVATION_MISMATCH` (`details.field`) |
+| more than the remaining quantity (never taken from free stock) | `RESERVATION_QUANTITY_EXCEEDED` (`details.remaining`, `requested`) |
+
+They come after the recall and FEFO checks (a reservation is not exempt from FEFO) and before the stock / scope guards.
+
+**REVERSAL** — with `restoreReservation: true` (optional, default false; REVERSAL only, else 400) the reversal of a movement that consumed a
+reservation by `reservationId` gives the quantity back in the same transaction (RELEASED/Consumed → ACTIVE; Reserved on every scope level,
+also through a held lot); a holder's release or an EXPIRED reservation stays closed; a restored one past `expiresAt` expires at once
+(`InventoryReservationRestored` then `…Expired`). Without the flag the reservation stays closed. `reservationId` enters the idempotency
+fingerprint only when sent and `restoreReservation` only when true.
+
 ## 5. Reads
 
 - **GET /availability** — `itemId` or `skuId` required; optional `skuLevel`, `warehouseId`, `locationId` (echoed in
