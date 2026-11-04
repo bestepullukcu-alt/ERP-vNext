@@ -102,3 +102,23 @@ Onay kanıtı: K1 / gmg-10 (soru kutuları); kaynak Beste'nin dondurma isteği (
 3. **D125/3 — N-4:** uygun. `BNK` → `Group`; şirket `BAC` → `LegalEntity` + sahip şirket; tedarikçi `BAC` → `Group` (D93/1, D65/2, D95/1 ile aynı). MDM bağdaştırıcısı için MDM sahibi Ali'nin teyidi ayrıca istenir.
 4. **D125/4 — N-10:** uygun. Sekiz izin adı FU27 taslağı ve MOD-0119, 0120, 0124, 0126, 0289, 0217 paketleriyle birebir aynı. Alacak dekontu MOD-0119'da `ApInvoice` belge türüdür, `APD` + `finance-treasury.ap-invoices.create` doğrudur. Adlar FU27 onayıyla kesinleşir.
 5. **D125/5 — not:** sözleşme §9'daki Treasury port imzası (`AllocateAsync(legalEntityId, recordType, idempotencyKey)`) yalnız finans paketleri için geçerli. MDM paketleri tek imzalı `prefixScope`'lu portu kullanır (D95/1). Bu, dondurmayı bekletmez.
+
+## D126 — D125/2 türetme kuralı dört finans paketine yazıldı (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 ("devam edelim"); kaynak D125/2; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D126/1 — tek tanım:** kural MOD-0126 "Kayıt kodu" maddesinde servis ortak olarak tanımlandı: `RecordCodeIdempotencyKey.Derive(recordType, receiptScope)`, `Application/Common/RecordCodes/`. Türetme port çağrısından önce Create işleyicisinde yapılır. MOD-0119, MOD-0120 ve MOD-0124 aynı maddeye atıf yapar ve kendi `Operation` adını yazar.
+2. **D126/2 — işlem adları:** `mod0119:CreateApInvoice`, `mod0120:CreateReceivableInvoice`, `mod0124:CreateCashPosition` (`CPS`), `mod0124:CreateCashPositionThresholdPolicy` (`CTP`), `mod0126:CreatePaymentBatch`. Desen MOD-0126 makbuz tanımındaki `{modül}:{Komut}`.
+3. **D126/3 — yeni AC:** MOD-0119 AC-45, MOD-0120 AC-45, MOD-0124 AC-39, MOD-0126 AC-47. Her biri vektör testi (v) ile D125/2'nin (a), (b) ve (c) senaryolarını ve dört sabotajı içerir. Test bölümlerine de eklendi. Her yeni AC kendi paketinin DL-1 "Bitiş" listesine eklendi; Create'ler DL-1'de teslim edildiği için anahtar kanıtı DL-1 kabulünde aranır.
+4. **D126/4 — sınır:** kural ve testler paket metnindedir; üretim kodu yok (`Diten.FinanceTreasuryService` yazılmadı). D125/2'deki "bugün açık" durumu kodla kapanır. Zarf satırı (D125/1) sözleşme dondurulunca ayrı revizyonla gelir. Kapsam, izin ve `status: draft` değişmedi.
+
+## D127 — MOD-0289 `ready-for-dev` (2026-11-03)
+
+Kaynak: K1 (Natig) soru kutusunda "Evet, hazırla" ve "Alanı kaldır" (2026-11-03). Ölçüm: `origin/main` @ `73a90cc34`.
+
+1. **D127/1 — paket kapısı:** MOD-0289 "Ready-for-dev Checklist"inde işaretsiz paket düzeyi madde olarak yalnız CT-APR-02 ve CT-APR-01 kalır; bu sürüm için kayıtları bu sürümün PR'ında gelir, kutular o yüzden metinde açıktır (Codex tur 1 ENGEL'i). İkisi önceki `draft` sürümü için main'de: inceleme `docs/records/reviews/MOD-0289/2026-11-02-691e9b05.md` (UYGUN), onay satırı `execution/approvals/approvals.tsv` (onaylayıcı `bestepullukcu-alt`, #354). Öbür işaretsiz maddeler "— DL-n için" dilim kapısıdır (D51/1) ve paketi bekletmez.
+2. **D127/2 — künye:** `status: draft` → `ready-for-dev`. `approval_status` alanı kaldırıldı: paket standardında tanımlı değil, `ready-for-dev` olan MOD-0220 ve MOD-0140 künyesinde yok; onayın kaynağı `approvals.tsv`dir.
+3. **D127/3 — yeni sürüm onayı:** onay satırı sürüme bağlıdır ve `pack_approval.py` S-49 uyarısı onay satırının künyesi `ready-for-dev` olan sürüme yazılmasını ister. Bu sürüm için yeni CT-APR-02 incelemesi (Codex) ve CT-APR-01 satırı (onaylayıcı `bestepullukcu-alt`) aynı PR'da gelir; onay, o PR'ın Beste tarafından birleştirilmesidir.
+4. **D127/4 — sınır:** kapsam, izin, AC (AC-1…60), dilimler ve Açık kararlar değişmedi. Kod ancak yeni onay satırı main'de olunca ve dilim sırasıyla yazılır; DL-1 kabul kapısı (Auth kayıt kodu, SEC-002 eki kodu, RCS-001 servisi) açık.
+5. **D127/5 — Codex tur 1 (`c4b970b13`, UYGUN DEĞİL):** ENGEL — CT-APR-02 / CT-APR-01 kutuları önceki sürümün kayıtlarıyla işaretlenmişti → açık bırakıldı, "bu sürüm için henüz yok" yazıldı. DÜŞÜK — domain-config maddesindeki "fark boş" ölçümü 2026-10-28'e bağlandı, D127 güncellemesi eklendi.
+6. **D127/6 — Codex tur 2 (`cd2c0b6c6`, UYGUN DEĞİL):** ENGEL — paket kapısı kuralı ("hepsi kapanmadan `ready-for-dev` olmaz") açık CT-APR kutularıyla çelişiyordu → kurala tek istisna yazıldı: CT-APR-02 / CT-APR-01 S-49 gereği künyeden sonra kapanır; o ana kadar paket kod için onaylı değildir. ORTA — Ownership and Boundaries'teki domain-config cümlesi satırı "yok" diyordu → satırın var olduğu, yalnız frontend/gateway cümlesinin DL-4 için açık olduğu yazıldı.
