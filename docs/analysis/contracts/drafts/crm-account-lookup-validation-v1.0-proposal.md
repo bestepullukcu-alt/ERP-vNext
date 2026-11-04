@@ -11,7 +11,8 @@
     x-decisions    : Y-4/4b (uçlar + sözleşme eki kabul), Y-4/4c (`account-status` kümesi, faturalanabilir yalnız `active`)
                      — docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35;
                      MOD-0120 O-3 (KARAR D29/1, seçenek (a)), O-4; K-1, K-2, K-3 (commercial-suite sahibi Beste, 2026-10-30);
-                     K-8 (U-3, Beste 2026-11-04)
+                     K-8 (U-3, Beste 2026-11-04) — kayıt docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md;
+                     K-7 = D112/2 (docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md)
     x-pattern      : LEGAL-ENTITY-LOOKUP 1.1.0 ve BANK-ACCOUNT-LOOKUP 1.0.0
                      (docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md,
                      docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md)
@@ -150,7 +151,8 @@ Kiracı yalnız token'dan; silinmiş hesaplar dönmez. Sıralama ada göre artan
   ile `oldcrm` iki ayrı kaynaktır.
 - Boş ya da yalnız boşluk `sourceSystem` / `externalId` → **400**. Çözümleme `"default"` kaynağını **varsaymaz**
   (yazma yolunun varsayılanı tüketiciye taşınmaz; `"default"` aranacaksa açıkça gönderilir).
-- Uzunluk üst sınırı: her biri 256 karakter (öneri; aşan → 400). Yazma yolunda sınır ölçülmedi.
+- Uzunluk üst sınırı (bağlayıcı, DL-2): `Trim()` sonrası her biri en çok 256 karakter; aşan → **400** (pack AC-AR-6).
+  Yazma yolunda sınır ölçülmedi; 256'dan uzun kayıtlı bir değer bu uçla aranamaz.
 
 ### 3.2 Eşleşme kuralı
 
@@ -196,7 +198,7 @@ Küme MOD-0048 `account-status` setidir (kiracı kapsamlı); CRM değeri sakland
   MOD-0048'de yayımlanmış her kodu kabul eder (`AccountReferenceValidation.cs:25`); şablon yayımlandıysa `archived`
   hesap vardır ve tüketici sözleşmede adı geçmeyen bir kod görmemelidir.
 - Kümede olmayan bir kod (ileride MOD-0048'e eklenen değer, eski veri) da `isBillable = false` döner; CRM 200'ü
-  bozmaz. Yeni bir kodun **faturalanabilir** sayılması bu sözleşmenin değişikliğidir (§9).
+  bozmaz. Yeni bir kodun **faturalanabilir** sayılması bu sözleşmenin değişikliğidir (§10).
 - Tüketici `status`'u yalnız gösterim / gerekçe için kullanır; karar `isBillable` iledir.
 
 ## 5. Tüketici sınıflandırması — MOD-0120 eşlemesi (sözleşmenin parçası)
@@ -207,10 +209,10 @@ geçiş yok"; Runtime Constraints "Müşteri uygunluğu güncel durumdur"):
 | CRM yanıtı | Sınıf | MOD-0120 sonucu |
 |---|---|---|
 | 200; `accountId` istenen (U-2'de: dolu, UUID) ; `contractVersion` `crm-account-lookup/1.` ile başlar; `isBillable = true`; `status = "active"` | uygun | işlem sürer |
-| 200, tutarlı; `isBillable = false` (herhangi bir `status`) | tanımlı, uygun değil | 422 `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE` |
+| 200, tutarlı; `isBillable = false` ve `status ≠ "active"` | tanımlı, uygun değil | 422 `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE` |
 | 404 (U-1 ya da U-2) | bulunamadı (yok / silinmiş / başka kiracı / eşleşmeyen dış referans) | 422 `RECEIVABLE_CUSTOMER_NOT_FOUND` |
 | 409 (U-2, çoklu eşleşme) | belirsiz — veri bozulması, hesap belirlenemez | **Üretici kuralı K-3:** tahmin yok, hesap seçilmez, işlem durur; kalıcı hata (tekrar denemek çözmez) → öneri 422 ayrı kod (ör. `RECEIVABLE_CUSTOMER_AMBIGUOUS`), 503 değil; kod adı MOD-0120 sahibinin |
-| 200 ama `accountId` yok / farklı; `isBillable` yok / `null`; `isBillable = true` iken `status ≠ "active"`; `status` / `code` / `name` yok ya da boş; `contractVersion` yok ya da `1.` değil; gövde ayrıştırılamıyor / `data` yok | geçersiz / çelişkili | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` |
+| 200 ama `accountId` yok / farklı; `isBillable` yok / `null`; `isBillable = true` iken `status ≠ "active"`; `isBillable = false` iken `status = "active"`; `status` / `code` / `name` yok ya da boş; `contractVersion` yok ya da `1.` değil; gövde ayrıştırılamıyor / `data` yok | geçersiz / çelişkili | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` |
 | 400, 401 / 403 (izin ataması eksik dahil), 5xx (CRM 503 dahil), zaman aşımı, ulaşılamıyor | erişilemiyor | 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE` |
 
 Kural: **geçersiz ya da çelişkili yanıt 503**, **tanımlı ama uygun olmayan durum 422**; hiçbir belirsiz yanıt "uygun"
@@ -265,8 +267,10 @@ mükerrer `AccountExternalReference` satırının temizlenmesidir.
   genel hata yoluna düşer — 503 eşlemesi bu ekin uygulama işidir. Tüketici her 5xx'i 503 sayar (§5).
 - **Korelasyon:** tüketici `X-Correlation-Id` başlığını gönderir (emsal tüketici davranışı, CrmService'in kendi
   istemcileri de iletir). CRM başlığı yanıt gövdesine taşımaz; başlığın yokluğu hata değildir. Gelen başlığı günlük
-  kapsamına koyan ara katman CrmService Api'de ölçülmedi/bulunmadı → ekin uygulama işinde ya mevcut paylaşılan bir
-  ara katman bağlanır ya da bu madde açık kalır (yeni bir mekanizma bu sözleşmeyle tanımlanmaz).
+  kapsamına koyan ara katman CrmService Api'de ölçülmedi/bulunmadı → sözleşme 1.0 korelasyonu **garanti etmez**;
+  tüketici CRM günlüğünde başlığa güvenmez. DL-1 uygulayıcısı paylaşılan bir ara katman bulursa bağlar ve raporlar
+  (pack §30.9); bulamazsa madde K-10 olarak açık kalır (sahip commercial-suite / K2). Yeni bir mekanizma bu sözleşmeyle
+  tanımlanmaz.
 - **Önbellek:** yanıtlar güncel durumdur; tüketici uygunluk kararını önbelleğe almaz (MOD-0120 "Müşteri uygunluğu güncel
   durumdur").
 
@@ -281,8 +285,10 @@ açmadan yayımlandı. Sonuç: **yeni Gateway rotası gerekmez**; `ocelot.json`'
 
 ## 9. Uyum fikstürleri
 
-Her biri öteki alanlar uygunken yalnız bir şeyi bozar; CrmService testlerinde bir başvuru sınıflandırıcısı koşar, MOD-0120
-aynı fikstürleri kendi `ICustomerReferencePort` sınıflandırıcısına karşı koşar (MOD-0120 AC kapsamı, o paketin işi).
+Her biri öteki alanlar uygunken yalnız bir şeyi bozar. Fikstürler **tüketicinin** testidir: MOD-0120 onları kendi üretim
+`ICustomerReferencePort` sınıflandırıcısına karşı koşar (MOD-0120 AC-3; DL-2 satırları O-10 ile). CRM'de sınıflandırıcı
+kopyası yazılmaz; üreticinin uyumu gerçek işleyicilerle ölçülür (pack AC-AR-9a / AC-AR-9b). Dilim sütunu, fikstürün
+dayandığı üretici dilimidir.
 
 | Fikstür | Durum | Beklenen sınıf | Dilim |
 |---|---|---|---|
@@ -293,6 +299,7 @@ aynı fikstürleri kendi `ICustomerReferencePort` sınıflandırıcısına karş
 | F-R404 | U-2 eşleşme yok; `oldcrm` ile `OldCRM` kaydı (harf farkı) | 422 NOT_FOUND | DL-2 |
 | F-R409 | U-2 iki etkin aday satır | 422 belirsiz (K-3; kod adı MOD-0120'nin) | DL-2 |
 | F-C1 | `isBillable = true` + `status = suspended` | 503 | DL-1 |
+| F-C4 | `isBillable = false` + `status = active` | 503 | DL-1 |
 | F-C2 | `accountId` farklı | 503 | DL-1 |
 | F-C3 | `isBillable` yok | 503 | DL-1 |
 | F-V | `contractVersion = crm-account-lookup/2.0` | 503 | DL-1 |
@@ -317,6 +324,7 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
 | K-4 | Gateway: mevcut joker rota yeterli mi (§8) | integration-agent | **KAPANDI (sahip) 2026-10-30:** yeterli; integration-agent teyidi yalnız not |
 | K-8 | MOD-0120 seçicisinin veri kaynağı | commercial-suite (Beste) | **KAPANDI 2026-11-04:** U-3 `lookup` aynı anahtarla, DL-1'de; MOD-0120:1146-1147 ve :1349-1350 hizalanır (Finans) |
 | K-9 | MVP-6 seçici + adres için sözleşmeli yüzey | commercial-suite (Beste) | **AÇIK:** U-3 adres taşımaz; adres okuması bugün sözleşmesiz `GET /api/crm/accounts/{id}` (`crm.account.read`). Öneri: DL-1 sonrası 1.x eki |
+| K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (§7) | commercial-suite (K2) | **AÇIK:** 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar; yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez |
 | K-7 | U-2'nin MOD-0120'deki kullanım yeri | MOD-0120 sahibi | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 ## 12. Değişiklik geçmişi
@@ -330,3 +338,7 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
   DL-1'e (U-1, U-3) bağlandı, U-2 DL-2 ile ayrıca donar; F-7: ölçümler 4dbcd67a8'de yenilendi, §6 CRM rol eşlemesi
   güncellendi; K-8: U-3 `lookup` (§2a); §5a tüketiciler (MOD-0177, MOD-0183 / MOD-0186) ve çağrı yolu; §9 fikstürlerine
   dilim sütunu; K-9 açık karar.
+- 1.0.0 (2026-11-04, eski sürümün (paket 4e6c020d, sözleşme ec4aaa16) ayrı bir bağımsız incelemesinden kalan bulgular) —
+  üretici uyumu gerçek işleyicilerle ölçülür, §9 fikstürleri tüketicinin testidir; §5 `isBillable = false` + `active`
+  çelişkisi 503 (F-C4); §3.1 256 karakter sınırı bağlayıcı (DL-2); §4 sürüm atfı §10; §7 korelasyon K-10 olarak
+  sahiplendi; K kararları kayda bağlandı.

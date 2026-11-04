@@ -668,7 +668,7 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 - [ ] **AC-AR-3** (U-1) Başka kiracının hesabı, silinmiş hesap ve olmayan kimlik → 404; üç gövde bayt bayt aynı.
 - [ ] **AC-AR-7a** (U-1, U-3) Depo okunamazsa (Mongo istisnası / zaman aşımı) 503; 500, 200, 404 ya da boş liste dönmez.
 - [ ] **AC-AR-8a** (U-1, U-3) `crm.account.lookup-validation` olmadan 403; yalnız `crm.account.read` sahibi kullanıcı 403 alır; anahtar sahibi `crm.account.read` olmadan 200 alır.
-- [ ] **AC-AR-9a** (U-1) Sözleşme §9'un DL-1 fikstürleri (F-OK, F-NE-x, F-UNK, F-404, F-C1…F-C3, F-V, F-503, F-403) CrmService testlerinde bir başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
+- [ ] **AC-AR-9a** (U-1, U-3) Üretici uyumu gerçek işleyicilerle ölçülür: aynı veriyle U-1 ve U-3 her `account-status` değeri ve küme dışı bir kod için aynı `isBillable`'ı verir ve bu değer her zaman `status == "active"` ile aynıdır (çelişkili satır üretilmez); `contractVersion` `crm-account-lookup/1.0`; alanlar sözleşme §2.2 / §2a.2 ile birebir. Sözleşme §9 fikstürleri tüketicinin testidir (MOD-0120 AC-3, üretim sınıflandırıcısına karşı); CRM'de sınıflandırıcı kopyası yazılmaz.
 - [ ] **AC-AR-10** `dotnet build` (CrmService) PASS; mevcut Account testleri tabandaki sonuçla aynı.
 - [ ] **AC-AR-11** (U-3) Yalnız çağıranın kiracısındaki silinmemiş hesaplar döner; öğe alanları birebir `accountId`, `code`, `name`, `status`, `isBillable` (sözleşme §2a); adres / sorumlu kişi / dış referans / öznitelik **yok**; `isBillable` U-1 kuralıyla aynı.
 - [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
@@ -679,10 +679,10 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 
 - [ ] **AC-AR-4** (U-2) Tam eşleşmede 200 ve U-1 ile aynı doğrulama alanları; eşleşme yok → 404; harf farkı (`oldcrm` / `OldCRM`) eşleşmez → 404; başka kiracıdaki eşleşme → 404.
 - [ ] **AC-AR-5** (U-2) İki etkin aday satırda 409; hiçbir hesap döndürülmez.
-- [ ] **AC-AR-6** (U-2) Boş / yalnız boşluk `sourceSystem` ya da `externalId` → 400.
+- [ ] **AC-AR-6** (U-2) Boş / yalnız boşluk `sourceSystem` ya da `externalId` → 400; `Trim()` sonrası 256 karakterden uzun `sourceSystem` ya da `externalId` → 400 (sözleşme §3.1).
 - [ ] **AC-AR-7b** (U-2) Depo okunamazsa 503; 500, 200 ya da 404 dönmez.
 - [ ] **AC-AR-8b** (U-2) AC-AR-8a'nın üç izin koşulu U-2 için de geçerlidir.
-- [ ] **AC-AR-9b** (U-2) Sözleşme §9'un DL-2 fikstürleri (F-R404, F-R409) başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
+- [ ] **AC-AR-9b** (U-2) Üretici uyumu gerçek U-2 işleyicisiyle ölçülür: 200 gövdesi U-1 ile aynı alanları ve aynı `isBillable` kuralını taşır; eşleşme yokluğu 404, çoklu aday 409 (sözleşme §3, §7). F-R404 / F-R409 tüketici testidir (MOD-0120 O-10).
 
 ### 30.7 Sabotaj beklentileri — DL-1
 
@@ -698,7 +698,8 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | Uca `crm.account.read` + `crm.account.lookup-validation` ikisini birden iste | AC-AR-8a (anahtar sahibi `read` olmadan 403 alır) |
 | Mongo istisnasını yakalama / 404'e ya da boş listeye çevir | AC-AR-7a |
 | U-1 gövdesine ya da U-3 öğesine `AddressLine` ekle | AC-AR-1, AC-AR-11 |
-| Başvuru sınıflandırıcısında `isBillable = true` + `status ≠ "active"` çelişkisini "uygun" say | AC-AR-9a (F-C1) |
+| U-3'te `isBillable`'ı U-1'den ayrı bir kuralla hesapla (ör. `Status != "archived"`) | AC-AR-9a (iki uç farklı `isBillable` verir) |
+| `contractVersion`'ı `crm-account-lookup/2.0` yap | AC-AR-9a |
 | U-3 aramasında kiracı ya da `IsDeleted` filtresini kaldır | AC-AR-11 |
 | U-3'te en kısa arama sınırını kaldır | AC-AR-12 (tek harf aramada liste döner) |
 | U-3'te terimi kaçışsız regex olarak kullan | AC-AR-13 (`.*` her hesabı döner) |
@@ -713,7 +714,8 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | Boş girdi kontrolünü kaldır (boş `sourceSystem` ile aramaya git) | AC-AR-6 |
 | Mongo istisnasını 404'e çevir | AC-AR-7b |
 | U-2'de `[HasPermission]`'ı `crm.account.read` yap | AC-AR-8b |
-| Başvuru sınıflandırıcısında 409'da ilk adayı "uygun" say | AC-AR-9b (F-R409) |
+| U-2 200 gövdesinde `isBillable`'ı hesaplamadan `true` yaz | AC-AR-9b |
+| 256 karakter sınırını kaldır | AC-AR-6 |
 
 ### 30.9 Test beklentileri — DL-1
 
@@ -721,7 +723,12 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
   U-3 işleyicisi için kiracı, silme, arama ve sayfa sınırları, düz metin arama (`.*`, `a.b(`), Türkçe i, `billableOnly`,
   sayfalama ve depo hatası vakaları.
 - **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
-- **Sözleşme fikstürleri:** sözleşme §9 tablosunun DL-1 satırları başvuru sınıflandırıcısıyla (AC-AR-9a).
+- **Üretici uyumu (AC-AR-9a):** U-1 ve U-3 işleyicileri aynı veriyle çağrılır; her `account-status` değeri ve küme dışı
+  bir kod için iki uç aynı `isBillable`'ı verir; `contractVersion` ve alan listesi sözleşmeyle karşılaştırılır. Sözleşme
+  §9 fikstürleri tüketicinin (MOD-0120) testidir; CRM'de sınıflandırıcı kopyası yazılmaz (Çekirdek 10).
+- **Korelasyon (K-10):** uygulayıcı, CrmService Api'de gelen `X-Correlation-Id`'yi günlük kapsamına koyan paylaşılan bir
+  ara katman olup olmadığını ölçer; varsa U-1 ve U-3 için bağlar, yoksa raporuna yazar. Yeni mekanizma yazılmaz;
+  sözleşme 1.0 korelasyonu garanti etmez.
 - **Build:** `dotnet build services/Diten.CrmService/...Api.csproj -c Debug`.
 - Canlı veri ölçümü (indeksin canlı veritabanındaki varlığı) bu ekin parçası değildir; ayrı operatör adımıdır.
 
@@ -730,7 +737,8 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 - **xUnit (Application):** U-2 işleyicisi için kiracı, silme, normalizasyon (harf korunur), çoklu eşleşme, boş girdi ve
   depo hatası vakaları.
 - **xUnit (Api / yetki):** U-2 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
-- **Sözleşme fikstürleri:** sözleşme §9 tablosunun DL-2 satırları (F-R404, F-R409; AC-AR-9b).
+- **Üretici uyumu (AC-AR-9b):** U-2 200 gövdesi U-1 ile aynı alanlar ve `isBillable`; F-R404 / F-R409 tüketicinin
+  (MOD-0120 O-10) testidir.
 
 ### 30.11 Kararlar ve açık sorular
 
@@ -744,6 +752,10 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-6 | Teslim dilimleri tablosu | **KAPANDI** (Beste, 2026-10-30): yalnız bu ek için tablo (§31); §1–§29'un mevcut, teslim edilmiş işi geriye dönük dilimlere bölünmez |
 | K-8 | MOD-0120 müşteri seçicisinin veri kaynağı (inceleme F-2) | **KAPANDI** (Beste, 2026-11-04, seçenek 1): dar arama ucu U-3 `GET /api/crm/accounts/lookup`, aynı `crm.account.lookup-validation` anahtarıyla; yalnız `accountId`, `code`, `name`, `status`, `isBillable` döner; DL-1'e girer. AR kullanıcısı `crm.account.read` almaz (K-1 korunur). MOD-0120:1146-1147 ve :1349-1350 U-3'e hizalanır (Finans'ın işi). |
 | K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
+| K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (sözleşme §7) | **AÇIK** (sahip commercial-suite / K2): sözleşme 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar (§30.9); yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez. |
+
+Kayıt: K-1…K-6 ve K-8 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md`; K-7 = D112/2
+(`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`, MOD-0120 sahibi).
 
 ## 31. Teslim dilimleri
 
