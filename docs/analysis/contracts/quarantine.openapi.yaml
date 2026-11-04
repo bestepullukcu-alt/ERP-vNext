@@ -9,7 +9,7 @@ info:
     Workflow approval (DEC-INV-08, KQ-F); "Numune / Referans" is BLOCKED stock at a sample location (KQ-E). Tenant from the token,
     company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN,
     another tenant → 404. Success bodies are the schemas below; failures are the INVENTORY Error schema.
-  version: 1.3.0
+  version: 1.4.0
   x-status: FROZEN
   x-owner: MOD-0175
   x-owner-service: Diten.InventoryService (MOD-0175, in-process with MOD-0173 / MOD-0174)
@@ -18,6 +18,7 @@ info:
     - "1.1.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId) — the same four values as INVENTORY-BUNDLE / TRACE-BUNDLE SkuLevel, so an Item-level bucket can be quarantined, blocked and decided and every hold / blocked / decision body carrying it stays valid. Nothing else changed: no path, parameter, property, type, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
     - "1.2.0 — additive (WP-MVP1-FUB2; FU-0175-ITEM-01, FU-0175-ITEM-03): HistoryAction gains NoteUpdated — a saved updateHold writes one history row (by, atUtc) with the new optional HistoryEntry.noteChange (NoteChange: previousNoteLength, noteLength, previousAttachmentCount, attachmentCount — the sizes before / after, not the text; the text stays in the inventory_audit row); updateHold lists the existing QUARANTINE_DECISION_ALREADY_PENDING (409) — the note is locked while the hold has a submitted decision (waiting for approval, or approved and not yet applied) and editable again when that decision ends. The x-rules replay rule now holds for updateHold too (O-ITEM-4: the same key answers the first result). Nothing else changed: no path, parameter, request schema, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
     - "1.3.0 — additive (WP-0177-R3, MOD-0177 KR-B / CT-R2 / CT-R3; owner step MOD-0175): HoldSource gains Recall (appended) — a hold a recall case asked for through the in-process port (quarantineStock mode Manual; every stock / lot / reservation / e-sign-policy check unchanged; MOD-0177 never cancels a reservation); such a hold carries sourceDocument = { module: MOD-0177, type: RECALL_CASE, id: <caseId>, number: RC-YYYY-NNNN, text: <reason> }, so listHoldsBySource(MOD-0177, caseId) answers which holds a case caused. The origin is not a wire member of quarantineStock (in-process only). Descriptions added to SourceDocument and listHoldsBySource. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.4.0 — additive (MOD-0175-FU01 DL-1, source reversal): when the source movement of an intake hold / OtherInbound blocked record is reversed (INVENTORY REVERSAL), the record closes with the new terminal state Voided (HoldStatus, BlockedStatus) — its active decision too (DecisionState Voided, absorbing: a later outcome changes nothing) — or, when it cannot close (decided, lines posted, quantity changed, a MOD-0175 movement reversed, the lot step already applied), keeps its state and gets the optional sourceReversalConflict mark (SourceReversalMark: atUtc, reversalTransactionId, reversalTransactionNumber, reversedBy, cause — a new enum Decided / LinesPosted / QuantityChanged / OwnMovementReversed / LotChanged). Hold / HoldDetail / BlockedStock / BlockedStockDetail gain the optional voided (RecordVoid: atUtc, reason [SourceReversed], reversalTransactionId, reversalTransactionNumber, reversedBy, decisionId) and sourceReversalConflict; HistoryAction gains SourceReversed and SourceReversalConflict (appended) and HistoryEntry the optional reversalTransactionId; the detail movements list the REVERSAL too (MovementLink description). A closed record answers the existing QUARANTINE_HOLD_CLOSED / QUARANTINE_BLOCKED_CLOSED. Values appended at the end of HoldStatus, BlockedStatus and DecisionState. No existing path, parameter, property, type, required list, status code or enum value changed."
   x-decisions: [DEC-INV-08, KQ-A, KQ-B, KQ-C, KQ-D, KQ-E, KQ-F, KQ-G, KQ-H, KQ-I, CT-Q6, CT-Q8, CT-Q9]
 servers: [{ url: /api/quarantine }]
 security: [{ bearerAuth: [] }]
@@ -397,15 +398,15 @@ components:
     MovementType: { type: string, enum: [OPENING_BALANCE, GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD, GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER, LOCATION_TRANSFER, STATUS_TRANSFER, CUSTOMER_RETURN, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, SCRAP, WRITE_OFF, REVERSAL], description: "INVENTORY-BUNDLE MovementType — not owned here." }
     SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
     HoldSource: { type: string, enum: [GoodsReceipt, Production, CustomerReturn, Manual, Retest, Rework, OtherInbound, Recall] }
-    HoldStatus: { type: string, enum: [Open, DecisionPending, Decided] }
+    HoldStatus: { type: string, enum: [Open, DecisionPending, Decided, Voided] }
     ReviewState: { type: string, enum: [Waiting, InReview] }
     DecisionKind: { type: string, enum: [HoldDecision, Disposition, Unblock, LotRelease] }
     LineDecision: { type: string, enum: [Release, Reject, Block] }
     DispositionKind: { type: string, enum: [Destroy, ReturnToSupplier, Rework, Sample] }
-    DecisionState: { type: string, enum: [Draft, Submitted, PendingApproval, Approved, Applied, Rejected, Cancelled, TimedOut, Withdrawn, StartFailed, ApplyFailed, FourEyesViolation] }
+    DecisionState: { type: string, enum: [Draft, Submitted, PendingApproval, Approved, Applied, Rejected, Cancelled, TimedOut, Withdrawn, StartFailed, ApplyFailed, FourEyesViolation, Voided] }
     BlockedOrigin: { type: string, enum: [QuarantineDecision, ManualBlock, Rework, OtherInbound, LotBlocked] }
-    BlockedStatus: { type: string, enum: [Open, Closed, SampleRetained] }
-    HistoryAction: { type: string, enum: [Quarantined, ReviewStarted, DecisionSubmitted, Approved, Rejected, Cancelled, TimedOut, Withdrawn, Applied, ApplyFailed, FourEyesViolation, Blocked, ReviewCompleted, Disposed, Unblocked, SampleRetained, NoteUpdated] }
+    BlockedStatus: { type: string, enum: [Open, Closed, SampleRetained, Voided] }
+    HistoryAction: { type: string, enum: [Quarantined, ReviewStarted, DecisionSubmitted, Approved, Rejected, Cancelled, TimedOut, Withdrawn, Applied, ApplyFailed, FourEyesViolation, Blocked, ReviewCompleted, Disposed, Unblocked, SampleRetained, NoteUpdated, SourceReversed, SourceReversalConflict] }
     EsignActionCode: { type: string, enum: [quarantine.hold.release, quarantine.hold.reject, quarantine.hold.block, quarantine.blocked.dispose, quarantine.blocked.unblock, quarantine.hold.create, quarantine.lot.release] }
     UserRef:
       type: object
@@ -465,6 +466,28 @@ components:
         signatureId: { type: string }
         approverSignatureId: { type: string }
         noteChange: { $ref: '#/components/schemas/NoteChange' }
+        reversalTransactionId: { type: string, format: uuid, description: "1.4.0 — on a SourceReversed / SourceReversalConflict entry only: the REVERSAL's INVENTORY transaction id." }
+    RecordVoid:
+      type: object
+      description: "1.4.0 — the record closed because its source movement was reversed (status Voided)."
+      required: [atUtc, reason, reversalTransactionId, reversalTransactionNumber, reversedBy]
+      properties:
+        atUtc: { type: string, format: date-time }
+        reason: { type: string, enum: [SourceReversed] }
+        reversalTransactionId: { type: string, format: uuid }
+        reversalTransactionNumber: { type: string }
+        reversedBy: { $ref: '#/components/schemas/UserRef' }
+        decisionId: { type: string, format: uuid, description: "The active decision voided with the record." }
+    SourceReversalMark:
+      type: object
+      description: "1.4.0 — the source movement was reversed but the record could not close; its state is unchanged (written once)."
+      required: [atUtc, reversalTransactionId, reversalTransactionNumber, reversedBy, cause]
+      properties:
+        atUtc: { type: string, format: date-time }
+        reversalTransactionId: { type: string, format: uuid }
+        reversalTransactionNumber: { type: string }
+        reversedBy: { $ref: '#/components/schemas/UserRef' }
+        cause: { type: string, enum: [Decided, LinesPosted, QuantityChanged, OwnMovementReversed, LotChanged] }
     NoteChange:
       type: object
       description: "1.2.0 — on a NoteUpdated history entry only: the analysis note length (characters, after trim; 0 = no note) and the attachment count before and after the change."
@@ -476,7 +499,7 @@ components:
         attachmentCount: { type: integer, minimum: 0 }
     MovementLink:
       type: object
-      description: "The INVENTORY transaction (sourceModule MOD-0175, sourceDocumentId = decision / hold / blocked number; or the intake transaction)."
+      description: "The INVENTORY transaction (sourceModule MOD-0175, sourceDocumentId = decision / hold / blocked number; or the intake transaction; or the REVERSAL of the record's source movement)."
       required: [transactionId, transactionNumber, movementType, atUtc, quantity]
       properties:
         transactionId: { type: string, format: uuid }
@@ -514,6 +537,8 @@ components:
         late: { type: boolean }
         activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
         version: { type: integer, minimum: 0 }
+        voided: { $ref: '#/components/schemas/RecordVoid' }
+        sourceReversalConflict: { $ref: '#/components/schemas/SourceReversalMark' }
     HoldDetail:
       type: object
       description: "HoldRef + analysisNote, attachments, review facts, history, movements, decisions."
@@ -540,6 +565,8 @@ components:
         late: { type: boolean }
         activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
         version: { type: integer, minimum: 0 }
+        voided: { $ref: '#/components/schemas/RecordVoid' }
+        sourceReversalConflict: { $ref: '#/components/schemas/SourceReversalMark' }
         analysisNote: { type: string, maxLength: 2000 }
         attachments: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/Attachment' } }
         reviewStartedAtUtc: { type: string, format: date-time }
@@ -756,6 +783,8 @@ components:
         allowedActions: { type: array, items: { $ref: '#/components/schemas/AllowedAction' } }
         activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
         version: { type: integer, minimum: 0 }
+        voided: { $ref: '#/components/schemas/RecordVoid' }
+        sourceReversalConflict: { $ref: '#/components/schemas/SourceReversalMark' }
     BlockedStockDetail:
       type: object
       description: "BlockedStockRef + history, movements, decisions (getBlocked)."
@@ -781,6 +810,8 @@ components:
         allowedActions: { type: array, items: { $ref: '#/components/schemas/AllowedAction' } }
         activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
         version: { type: integer, minimum: 0 }
+        voided: { $ref: '#/components/schemas/RecordVoid' }
+        sourceReversalConflict: { $ref: '#/components/schemas/SourceReversalMark' }
         history: { type: array, items: { $ref: '#/components/schemas/HistoryEntry' } }
         movements: { type: array, items: { $ref: '#/components/schemas/MovementLink' } }
         decisions: { type: array, items: { $ref: '#/components/schemas/DecisionRef' } }

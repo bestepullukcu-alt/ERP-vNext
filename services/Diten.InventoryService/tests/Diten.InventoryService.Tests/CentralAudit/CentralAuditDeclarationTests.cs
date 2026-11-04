@@ -35,7 +35,8 @@ public sealed class CentralAuditDeclarationTests
         // 66 after WP-0177-R5 (7 drill commands, CT decision 2026-10-14). 67 after WP-0177-R7b (CreateRecallEvidenceExportCommand).
         // 71 after MOD-0178 DL-1 (the 4 location-role commands, pack §5 fifth seam); 82 after DL-2 (the 11 task commands: create, update,
         // claim, bulk assign — Q-13 A —, confirm, retry, close short, cancel, returned, resolve, reconcile).
-        Assert.Equal(82, WriteCommands.Length);
+        // 84 after MOD-0175-FU01 DL-1 (ApplySourceReversalToHoldCommand, ApplySourceReversalToBlockedCommand; measured 82 on the branch at 25e06fe08).
+        Assert.Equal(84, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

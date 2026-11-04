@@ -98,9 +98,19 @@ public sealed class QuarantineFacts
                && location.AncestorIds.Contains(warehouse);
     }
 
+    /// <summary>
+    /// Contract §5: the state is the last event — except <c>Voided</c> (MOD-0175-FU01 §8.6 invariant 1), which is absorbing: a decision
+    /// with a Voided event is Voided whatever was written after it (a late WorkflowStarted, StartFailed, outcome, ApplyFailed, Withdrawn).
+    /// </summary>
     public static DecisionState StateOf(IEnumerable<QuarantineDecisionEvent> events)
     {
-        var last = events.OrderBy(e => e.Sequence).LastOrDefault();
+        var ordered = events.OrderBy(e => e.Sequence).ToList();
+        if (ordered.Any(e => e.Kind == DecisionEventKind.Voided))
+        {
+            return DecisionState.Voided;
+        }
+
+        var last = ordered.LastOrDefault();
         return last?.Kind switch
         {
             null => DecisionState.Draft,
@@ -115,6 +125,7 @@ public sealed class QuarantineFacts
             DecisionEventKind.ApplyFailed => DecisionState.ApplyFailed,
             DecisionEventKind.FourEyesViolation => DecisionState.FourEyesViolation,
             DecisionEventKind.Withdrawn => DecisionState.Withdrawn,
+            DecisionEventKind.Voided => DecisionState.Voided,
             _ => throw new ArgumentOutOfRangeException(nameof(events), last.Kind, "Unknown decision event.")
         };
     }

@@ -24,7 +24,8 @@ public sealed class ExpiryQuarantineTypeExemptionTests
     /// <summary>Measured 2026-10-13 at 120cf7666: the two callers of <c>QuarantineMovementPoster.PostAsync</c>.</summary>
     private static readonly string[] MeasuredPosterCalls =
     [
-        "Diten.InventoryService.Application/Features/Quarantine/Services/QuarantineApplyEngine.cs:111",
+        // MOD-0175-FU01 DL-1 (XMC-001, Beste 2026-11-04): the same call, moved from line 111 by the line re-read and the Voided recorders
+        "Diten.InventoryService.Application/Features/Quarantine/Services/QuarantineApplyEngine.cs:127",
         "Diten.InventoryService.Application/Features/Quarantine/Handlers/StockActionHandlers.cs:153"
     ];
 

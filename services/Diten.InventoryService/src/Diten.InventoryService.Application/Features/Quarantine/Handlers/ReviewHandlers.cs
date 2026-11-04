@@ -38,9 +38,9 @@ public sealed class StartReviewHandler : IRequestHandler<StartReviewCommand, Res
             return QuarantineSupport.Fail<HoldRefDto>(QuarantineErrorCodes.HoldNotFound, "Hold not found.", 404);
         }
 
-        if (hold.Status == HoldStatus.Decided)
+        if (QuarantineDecisionRules.HoldState(hold.Status, null) is { Code: QuarantineDecisionRules.HoldClosed } closed)
         {
-            return QuarantineSupport.Fail<HoldRefDto>(QuarantineDecisionRules.HoldClosed, "The hold is already decided.", 409);
+            return QuarantineSupport.Fail<HoldRefDto>(closed);
         }
 
         if (hold.ReviewState != HoldReviewState.InReview)
