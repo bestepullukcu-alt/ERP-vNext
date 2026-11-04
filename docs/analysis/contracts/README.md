@@ -30,6 +30,7 @@
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **BANK-DISPATCH** | MOD-0269 (tüketici MOD-0126) | `bank-dispatch.md` (süreç içi port sözleşmesi, OpenAPI değil) | ✅ **0.1.0 FROZEN** (2026-10-25, D27/7): gönderim kapalı, tek sonuç `NotConfigured`; T32 sapması (MOD-0003 yok, D27/1) |
+| **RECORD-CODE-ALLOCATE** | MOD-0040-FU02 (tüketiciler: Treasury MOD-0119/0120/0124/0126, MDM MOD-0289/0217, sonra MOD-0178) | `record-code-allocate.md` (iç uç + süreç içi port sözleşmesi, OpenAPI değil) | ✅ **1.0.0 FROZEN** (2026-11-04): §12 bekleten noktalar kapandı (Treasury CT + Ali) |
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 
