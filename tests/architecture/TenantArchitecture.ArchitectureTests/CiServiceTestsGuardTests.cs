@@ -47,7 +47,7 @@ namespace TenantArchitecture.ArchitectureTests;
  *
  * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
- * the "not yet" list (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
@@ -68,8 +68,6 @@ public class CiServiceTestsGuardTests
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
         // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
-            "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
         ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
             "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
