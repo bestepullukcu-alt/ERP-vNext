@@ -130,27 +130,33 @@ class Unreadable(Exception):
 
 
 def _process_memory() -> dict:
-    """KOTA-02 (owner 'a' 2026-11-04, Codex independent audit A): ONE memory for every copy of this file loaded in this
-    process. A dispatch gate loads it seven times (ct_queue → acceptance_record per ACCEPTED row, prompt_gate for the
-    target pack); each copy had its own caches and asked GitHub the same ~94 questions again (650 asks, 94 distinct).
-    Keyed by this file's bytes: another version of the code gets its own memory. Lives in the process only and ends with
-    it — nothing is written to disk (S-132: a disk cache would let a local writer forge a human step)."""
+    """KOTA-02 (owner 'a' 2026-11-04, Codex independent audit A): ONE GitHub memory for every copy of this file loaded
+    in this process. A dispatch gate loads it seven times (ct_queue → acceptance_record per ACCEPTED row, prompt_gate for
+    the target pack); each copy asked GitHub the same ~94 questions again (650 asks, 94 distinct). Only GitHub's answers
+    and the quota stop are shared — never the git memory (_CACHE): a cached result such as review_problems carries a
+    GitHub decision (Codex KOTA-02 F-1). Bound to the code that RUNS: when this file's bytes do not compile to the
+    executing module (a stale .pyc, the file changed while loading — Codex KOTA-02 F-3) the copy keeps a memory of its
+    own. Lives in the process only and ends with it — nothing is written to disk (S-132: a disk cache would let a local
+    writer forge a human step)."""
+    private = {"github": {}, "quota_stop": None}
     try:
         with open(__file__, "rb") as f:
-            key = hashlib.sha256(f.read()).hexdigest()
-    except (OSError, NameError):
-        return {"git": {}, "github": {}, "quota_stop": None}
+            source = f.read()
+        if compile(source, __file__, "exec", dont_inherit=True) != sys._getframe(1).f_code:
+            return private
+    except (OSError, NameError, SyntaxError, ValueError):
+        return private
     holder = sys.modules.setdefault("_pack_approval_process_memory", types.ModuleType("_pack_approval_process_memory"))
     states = holder.__dict__.setdefault("states", {})
-    return states.setdefault(key, {"git": {}, "github": {}, "quota_stop": None})
+    return states.setdefault(hashlib.sha256(source).hexdigest(), {"github": {}, "quota_stop": None})
 
 
 _MEMORY = _process_memory()
 
 
 # A commit id never changes what it names: results read at a full 40-hex id (or its ^n parent) are cached for the
-# process (shared by every copy of this file, _process_memory). A symbolic ref (HEAD, main) is never cached — it moves.
-_CACHE: dict = _MEMORY["git"]
+# process — by this copy only (KOTA-02 F-1). A symbolic ref (HEAD, main) is never cached — it moves.
+_CACHE: dict = {}
 IMMUTABLE = re.compile(r"^[0-9a-f]{40}(\^\d+)?$")
 
 
@@ -687,9 +693,10 @@ def no_pr_proven(root: str, merge: str) -> bool:
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
     key = ("no_pr",) + _pr_key(merge)   # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
-    if key not in _PR_CACHE:
-        _PR_CACHE[key] = _no_pr_answer(root, merge)
-    return _PR_CACHE[key]
+    memory = _github_memory()
+    if key not in memory:
+        memory[key] = _no_pr_answer(root, merge)
+    return memory[key]
 
 
 def _no_pr_answer(root: str, merge: str) -> bool:
@@ -826,7 +833,7 @@ def other_merger(root: str, added: str, merge: str) -> tuple[bool, str]:
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 TRUSTED_REPO = "bestepullukcu-alt/ERP-vNext"     # Codex F-8: the one repository whose pull requests count (code-owned)
 _PR_SOURCE = None                                # self-tests only: set in-process to _test_pr; never from the CLI (F-7)
-_PR_CACHE: dict = _MEMORY["github"]              # KOTA-02: shared by every copy of this file in the process
+_PR_CACHE: dict = {}                             # this copy's own GitHub memory (a stand-in or a replaced reader)
 
 
 GITHUB_HOST = "github.com"                       # Codex F-15: never the host GH_HOST or gh's config points at
@@ -879,6 +886,19 @@ def _gh_json(path: str, paginate: bool = False):
     return json.loads(done.stdout.decode())
 
 
+_REAL_GH_JSON, _REAL_GH_CMD = _gh_json, _gh_cmd
+
+
+def _github_memory() -> dict:
+    """KOTA-02: the process-wide GitHub memory — only for a copy that asks the real GitHub through its own _gh_json and
+    _gh_cmd. A copy with a replaced reader (a self-test double) keeps its own (_PR_CACHE), so a double's answer never
+    reaches a real reading, nor the other way round (Codex KOTA-02 F-1). A stand-in copy (_PR_SOURCE) never gets here:
+    pr_of_merge and no_pr_proven answer from the stand-in before any memory is read or written."""
+    if _gh_json is _REAL_GH_JSON and _gh_cmd is _REAL_GH_CMD:
+        return _MEMORY["github"]
+    return _PR_CACHE
+
+
 def _login(x) -> str | None:
     v = x.get("login") if isinstance(x, dict) else None
     return v.lower() if isinstance(v, str) and v.strip() else None
@@ -923,8 +943,9 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
     is cached (Codex F-12)."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge)
-    if _pr_key(merge) in _PR_CACHE:
-        return _PR_CACHE[_pr_key(merge)]
+    memory = _github_memory()
+    if _pr_key(merge) in memory:
+        return memory[_pr_key(merge)]
     pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
     if not isinstance(pages, list):
         raise Unreadable("GitHub cevabı bir liste değil")
@@ -945,7 +966,8 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
     info = {"number": pr.get("number"), "opener": _login(pr.get("user")), "merger": _login(pr.get("merged_by")),
             "base": base.get("ref") if isinstance(base.get("ref"), str) else None,
             "base_repo": repo.get("full_name") if isinstance(repo.get("full_name"), str) else None}
-    _PR_CACHE[_pr_key(merge)] = info
+    if isinstance(info["number"], int) and all(info[k] for k in ("opener", "merger", "base", "base_repo")):
+        memory[_pr_key(merge)] = info       # Codex KOTA-02 F-2: an incomplete answer is never kept — asked again
     return info
 
 
@@ -1610,9 +1632,22 @@ def make_review_row(root: str, ref: str, path: str, findings: str, verdict: str,
 
 
 # ------------------------------------------------------------------------------------------------ self-test
-def _load_twin(extra: bytes = b""):
+def _load_twin(extra: bytes = b"", stale: bool = False):
     """KOTA-02 self-test: another copy of this file in this process, as ct_queue → acceptance_record loads it; with
-    `extra` the copy has other bytes (another code version)."""
+    `extra` the copy has other bytes (another code version); with `stale` it runs other code than this file's bytes, as
+    a stale .pyc would (Codex KOTA-02 F-3)."""
+    if stale:
+        from importlib.machinery import SourceFileLoader
+
+        class Stale(SourceFileLoader):
+            def get_code(self, fullname):
+                with open(self.path, "rb") as f:
+                    return compile(f.read() + b"\n_KOTA02_STALE = 1\n", self.path, "exec", dont_inherit=True)
+        spec = importlib.util.spec_from_file_location("pack_approval_stale", __file__,
+                                                      loader=Stale("pack_approval_stale", __file__))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
     if not extra:
         spec = importlib.util.spec_from_file_location("pack_approval_twin", __file__)
         mod = importlib.util.module_from_spec(spec)
@@ -3151,6 +3186,27 @@ def self_test_review(cases: list) -> None:
     cases.append(("sabotage S-40/Codex F-6 (review path): a review row straight on main carried by another person's "
                   "pull-merge and a fast-forward -> not a pull request's merge, the row does not count",
                   any("PR'ın merge commit'i değil" in f for f in fails)))
+    # Codex KOTA-02 F-1 (its reproduction): the decision this copy just cached with the stand-in (review_problems is
+    # @cached) must not reach a real copy in the same process — that copy asks GitHub itself; unreachable = no pass
+    gh_seen: list = []
+    real_run = subprocess.run
+
+    def unreachable_run(cmd, *a, **k):
+        if isinstance(cmd, list) and cmd[:2] == ["gh", "api"]:
+            gh_seen.append(cmd[-1])
+            return subprocess.CompletedProcess(cmd, 1, b"", "ağ yok (test)".encode())
+        return real_run(cmd, *a, **k)
+    real_copy = _load_twin()
+    subprocess.run = unreachable_run
+    try:
+        real_fails = real_copy.review_problems(root, head, PACK2, get(PACK2).encode("utf-8"), head)[0]
+    except Exception as e:              # noqa: BLE001 — a raise is this case's (red) answer, never a stopped self-test
+        real_fails = [f"raised {type(e).__name__}"]
+    finally:
+        subprocess.run = real_run
+    cases.append(("sabotage KOTA-02 F-1 (Codex reproduction): a review decision cached with the stand-in does not reach "
+                  "a real copy — it asks GitHub and, unreachable, does not pass",
+                  bool(gh_seen) and any("GitHub'a sorulamadı" in f for f in real_fails)))
     tmp.cleanup()
 
 
@@ -3920,28 +3976,88 @@ def self_test_deferred(cases: list) -> None:
     second, third = no_pr_proven(root, plain), no_pr_proven(root, plain)
     cases.append(("S-132: a raised answer is not kept; a good answer is asked once per process (2 asks for 3 readings)",
                   first_raised and second is True and third is True and len(asked) == 2))
-    # KOTA-02: every copy of this file in the process shares the GitHub and git memory — a second copy asks nothing new;
-    # a raised (malformed) answer is kept by no copy; a different version of the code gets a memory of its own
-    twin = _load_twin()
-    twin._PR_SOURCE, twin._gh_json = None, counting_gh
-    before = len(asked)
-    twin_answer = twin.no_pr_proven(root, plain)
-    cases.append(("KOTA-02: a second loaded copy reuses the first copy's GitHub answer (no new ask) and the same memories",
-                  twin_answer is True and len(asked) == before and twin._PR_CACHE is _PR_CACHE and twin._CACHE is _CACHE))
-    _PR_CACHE.clear()
-    answers2[:] = [ValueError("bozuk"), [[]]]
+    # KOTA-02: copies of this file that ask the REAL GitHub (no stand-in, their own _gh_json/_gh_cmd) share GitHub's
+    # answers; nothing else. GitHub is replaced one level lower here (subprocess.run for `gh api` only), so the code
+    # under test is the production path of both copies.
+    gh_queue: dict = {}
+    gh_asked: list = []
+    real_run = subprocess.run
+
+    def fake_run(cmd, *a, **k):
+        if not (isinstance(cmd, list) and cmd[:2] == ["gh", "api"]):
+            return real_run(cmd, *a, **k)
+        gh_asked.append(cmd[-1])
+        answer = (gh_queue.get(cmd[-1]) or [("fail", "ağ yok (test)")]).pop(0)
+        if isinstance(answer, tuple) and answer[0] == "fail":
+            return subprocess.CompletedProcess(cmd, 1, b"", answer[1].encode())
+        return subprocess.CompletedProcess(cmd, 0, json.dumps(answer).encode(), b"")
+
+    def detail(**over):
+        d = {"number": 7, "merged_at": "2026-11-04T10:00:00Z", "merge_commit_sha": plain, "user": {"login": "dev"},
+             "merged_by": {"login": "lead"}, "base": {"ref": "main", "repo": {"full_name": TRUSTED_REPO}}}
+        d.update(over)
+        return d
+    pulls, one = f"repos/{TRUSTED_REPO}/commits/{plain}/pulls", f"repos/{TRUSTED_REPO}/pulls/7"
+    hit = [[{"number": 7, "merge_commit_sha": plain, "merged_at": "2026-11-04T10:00:00Z"}]]
+
+    def fresh(**queue):
+        _MEMORY["github"].clear()
+        _MEMORY["quota_stop"] = None
+        gh_queue.clear()
+        gh_queue.update({pulls: queue.get("pulls", []), one: queue.get("one", [])})
+        del gh_asked[:]
+    def attempt(fn, *args):
+        """A raise is a result here, so a broken sharing turns its own case red instead of stopping the self-test."""
+        try:
+            return fn(*args)
+        except Exception as e:          # noqa: BLE001 — every raise is the case's answer
+            return e
+    globals()["_PR_SOURCE"], globals()["_gh_json"], globals()["_gh_cmd"] = None, _REAL_GH_JSON, _REAL_GH_CMD
+    subprocess.run = fake_run
     try:
-        no_pr_proven(root, plain)
-        first_raised = False
-    except ValueError:
-        first_raised = True
-    before = len(asked)
-    twin_second = twin.no_pr_proven(root, plain)
-    cases.append(("sabotage KOTA-02: a malformed answer raised in one copy is not kept — the second copy asks GitHub again",
-                  first_raised and twin_second is True and len(asked) == before + 1))
-    other = _load_twin(extra=b"\n# another version\n")
-    cases.append(("KOTA-02: a copy with other bytes (another code version) never shares this memory",
-                  other._PR_CACHE is not _PR_CACHE and other._CACHE is not _CACHE))
+        twin = _load_twin()
+        fresh(pulls=[[[]]])
+        a1, a2 = attempt(no_pr_proven, root, plain), attempt(twin.no_pr_proven, root, plain)
+        cases.append(("KOTA-02: a second loaded copy reuses the first copy's GitHub answer — one ask for two readings",
+                      a1 is True and a2 is True and len(gh_asked) == 1 and twin._MEMORY is _MEMORY))
+        cases.append(("KOTA-02 F-1 (Codex): the git memory is never shared between copies", twin._CACHE is not _CACHE))
+        fresh(pulls=[{"message": "not a list"}, [[]]])
+        first = attempt(no_pr_proven, root, plain)
+        cases.append(("sabotage KOTA-02: a malformed answer raised in one copy is not kept — the second copy asks again",
+                      isinstance(first, Unreadable) and attempt(twin.no_pr_proven, root, plain) is True
+                      and len(gh_asked) == 2))
+        fresh(pulls=[hit, hit], one=[detail(merged_by=None), detail()])
+        i1, i2 = attempt(pr_of_merge, root, plain), attempt(twin.pr_of_merge, root, plain)
+        cases.append(("sabotage KOTA-02 F-2 (Codex): a PR answer without merged_by is not kept — the second copy asks "
+                      "again and reads the merger", isinstance(i1, dict) and i1["merger"] is None and isinstance(i2, dict)
+                      and i2["merger"] == "lead" and len(gh_asked) == 4))
+        fresh(pulls=[hit], one=[detail()])
+        globals()["_PR_SOURCE"] = lambda r, m: {"number": 7, "opener": "dev", "merger": "lead", "base": "main",
+                                                "base_repo": TRUSTED_REPO}
+        stand = attempt(pr_of_merge, root, plain)
+        globals()["_PR_SOURCE"] = None
+        gh_queue[pulls] = [("fail", "ağ yok (test)")]
+        real = attempt(twin.pr_of_merge, root, plain)
+        cases.append(("sabotage KOTA-02 F-1 (Codex): a stand-in's answer never reaches a real copy — it asks GitHub and, "
+                      "unreachable, raises", isinstance(stand, dict) and stand["merger"] == "lead"
+                      and isinstance(real, twin.Unreadable) and len(gh_asked) == 1 and not _MEMORY["github"]))
+        fresh(pulls=[hit], one=[detail()])
+        real = attempt(twin.pr_of_merge, root, plain)
+        globals()["_PR_SOURCE"] = lambda r, m: None
+        cases.append(("sabotage KOTA-02 F-1 (Codex): a real copy's kept answer never reaches a stand-in copy",
+                      isinstance(real, dict) and real["merger"] == "lead" and _pr_key(plain) in _MEMORY["github"]
+                      and attempt(pr_of_merge, root, plain) is None))
+        globals()["_PR_SOURCE"] = None
+        other = _load_twin(extra=b"\n# another version\n")
+        cases.append(("KOTA-02: a copy with other bytes (another code version) never shares this memory",
+                      other._MEMORY is not _MEMORY and other._MEMORY["github"] is not _MEMORY["github"]))
+        stale = _load_twin(stale=True)
+        cases.append(("sabotage KOTA-02 F-3 (Codex): a copy whose running code is not this file's bytes (a stale .pyc) "
+                      "keeps a memory of its own", getattr(stale, "_KOTA02_STALE", None) == 1 and stale._MEMORY is not _MEMORY))
+    finally:
+        subprocess.run = real_run
+        _MEMORY["github"].clear()
+        _MEMORY["quota_stop"] = None
     globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
     _PR_CACHE.clear()
     # (8) a row written straight onto main — invalid in both readings
