@@ -869,19 +869,21 @@ def _quota_reset_local() -> str:
     return "sıfırlanma saati ölçülemedi"
 
 
-# S-132: once GitHub said the quota is gone, this process asks nothing more — KOTA-02: every copy of this file sees it
-# (_MEMORY["quota_stop"])
+# S-132: once GitHub said the quota is gone, this process asks nothing more — KOTA-02: every copy that asks the real
+# GitHub sees it (_quota_state); a copy with a replaced reader keeps its own stop
+_LOCAL_QUOTA: dict = {"quota_stop": None}
 
 
 def _gh_json(path: str, paginate: bool = False):
-    if _MEMORY["quota_stop"] is not None:
-        raise GitHubQuota(_MEMORY["quota_stop"])
+    state = _quota_state()
+    if state["quota_stop"] is not None:
+        raise GitHubQuota(state["quota_stop"])
     done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         err = done.stderr.decode(errors="replace").strip()
         if QUOTA_TEXT.search(err) and ("403" in err or "exceeded" in err.lower()):
-            _MEMORY["quota_stop"] = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
-            raise GitHubQuota(_MEMORY["quota_stop"])
+            state["quota_stop"] = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
+            raise GitHubQuota(state["quota_stop"])
         raise Unreadable(f"gh api {path}: {err[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
 
@@ -889,14 +891,24 @@ def _gh_json(path: str, paginate: bool = False):
 _REAL_GH_JSON, _REAL_GH_CMD = _gh_json, _gh_cmd
 
 
+def _real_reader() -> bool:
+    """KOTA-02: this copy asks the real GitHub through its own _gh_json and _gh_cmd (no self-test double)."""
+    return _gh_json is _REAL_GH_JSON and _gh_cmd is _REAL_GH_CMD
+
+
+def _quota_state() -> dict:
+    """KOTA-02 (Codex second review): the same choice as _github_memory — copies that ask the real GitHub share the
+    quota stop; a copy with a replaced reader keeps its own, so a double's quota answer never stops a real reading, nor
+    the other way round."""
+    return _MEMORY if _real_reader() else _LOCAL_QUOTA
+
+
 def _github_memory() -> dict:
     """KOTA-02: the process-wide GitHub memory — only for a copy that asks the real GitHub through its own _gh_json and
     _gh_cmd. A copy with a replaced reader (a self-test double) keeps its own (_PR_CACHE), so a double's answer never
     reaches a real reading, nor the other way round (Codex KOTA-02 F-1). A stand-in copy (_PR_SOURCE) never gets here:
     pr_of_merge and no_pr_proven answer from the stand-in before any memory is read or written."""
-    if _gh_json is _REAL_GH_JSON and _gh_cmd is _REAL_GH_CMD:
-        return _MEMORY["github"]
-    return _PR_CACHE
+    return _MEMORY["github"] if _real_reader() else _PR_CACHE
 
 
 def _login(x) -> str | None:
@@ -3932,7 +3944,7 @@ def self_test_deferred(cases: list) -> None:
         count = os.path.join(td, "calls")
         globals()["_gh_cmd"] = lambda path, paginate=False: ["sh", "-c", f"echo x >> '{count}'; echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
         globals()["_quota_reset_local"] = lambda: "04:12"
-        _MEMORY["quota_stop"] = None
+        _LOCAL_QUOTA["quota_stop"] = None   # a replaced _gh_cmd: this copy's own stop (KOTA-02)
         raised = 0
         for _ in range(3):
             try:
@@ -3942,20 +3954,8 @@ def self_test_deferred(cases: list) -> None:
         with open(count, encoding="utf-8") as f:
             calls = len(f.readlines())
         cases.append(("S-132: quota exhausted -> three readings raise GitHubQuota, only ONE gh command ran", raised == 3 and calls == 1))
-        # KOTA-02: another copy of this file loaded in the same process (ct_queue → acceptance_record) sees the stop too
-        twin = _load_twin()
-        twin._gh_cmd = globals()["_gh_cmd"]
-        try:
-            twin._gh_json("y")
-            twin_raised = False
-        except twin.GitHubQuota:
-            twin_raised = True
-        with open(count, encoding="utf-8") as f:
-            calls = len(f.readlines())
-        cases.append(("KOTA-02: after the quota answer a second loaded copy raises GitHubQuota too and runs no gh command",
-                      twin_raised and calls == 1))
     globals()["_gh_cmd"], globals()["_quota_reset_local"] = saved_cmd, saved_reset
-    _MEMORY["quota_stop"] = None
+    _LOCAL_QUOTA["quota_stop"] = None
     asked = []
     answers2 = [ValueError("bozuk"), [[]]]
 
@@ -4003,6 +4003,7 @@ def self_test_deferred(cases: list) -> None:
     def fresh(**queue):
         _MEMORY["github"].clear()
         _MEMORY["quota_stop"] = None
+        _LOCAL_QUOTA["quota_stop"] = None
         gh_queue.clear()
         gh_queue.update({pulls: queue.get("pulls", []), one: queue.get("one", [])})
         del gh_asked[:]
@@ -4018,19 +4019,49 @@ def self_test_deferred(cases: list) -> None:
         twin = _load_twin()
         fresh(pulls=[[[]]])
         a1, a2 = attempt(no_pr_proven, root, plain), attempt(twin.no_pr_proven, root, plain)
-        cases.append(("KOTA-02: a second loaded copy reuses the first copy's GitHub answer — one ask for two readings",
+        cases.append((f"KOTA-02 (Python {sys.version.split()[0]}): a second loaded copy reuses the first copy's GitHub "
+                      "answer — one ask for two readings",
                       a1 is True and a2 is True and len(gh_asked) == 1 and twin._MEMORY is _MEMORY))
+        # the quota stop (Codex second review): shared between real readers only, never from or to a replaced reader
+        saved_reset_q = globals()["_quota_reset_local"]
+        globals()["_quota_reset_local"] = twin._quota_reset_local = lambda: "04:12"
+        fresh(pulls=[("fail", "HTTP 403: API rate limit exceeded"), [[]]])
+        q1, q2 = attempt(no_pr_proven, root, plain), attempt(twin.no_pr_proven, root, plain)
+        cases.append(("KOTA-02: a real copy's quota answer stops a second real copy too — it runs no gh command",
+                      isinstance(q1, GitHubQuota) and isinstance(q2, twin.GitHubQuota) and len(gh_asked) == 1))
+        fresh(pulls=[[[]]])
+        twin_cmd = twin._gh_cmd
+        twin._gh_cmd = lambda path, paginate=False: ["sh", "-c", "echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
+        t1 = attempt(twin._gh_json, "x")
+        twin._gh_cmd = twin_cmd
+        r1 = attempt(no_pr_proven, root, plain)
+        cases.append(("sabotage KOTA-02 (Codex second review): a replaced reader's quota answer never stops a real copy",
+                      isinstance(t1, twin.GitHubQuota) and r1 is True and len(gh_asked) == 1 and _MEMORY["quota_stop"] is None))
+        fresh(pulls=[("fail", "HTTP 403: API rate limit exceeded")])
+        twin._LOCAL_QUOTA["quota_stop"] = None      # the stop the case above left in the twin's own state
+        r2 = attempt(no_pr_proven, root, plain)
+        twin._gh_cmd = lambda path, paginate=False: ["sh", "-c", "echo '[[]]'"]
+        t2 = attempt(twin._gh_json, "x")
+        twin._gh_cmd = twin_cmd
+        cases.append(("sabotage KOTA-02 (Codex second review): a real copy's quota answer never stops a replaced reader",
+                      isinstance(r2, GitHubQuota) and t2 == [[]] and twin._LOCAL_QUOTA["quota_stop"] is None))
+        globals()["_quota_reset_local"] = saved_reset_q
+        twin._quota_reset_local = saved_reset_q
         cases.append(("KOTA-02 F-1 (Codex): the git memory is never shared between copies", twin._CACHE is not _CACHE))
         fresh(pulls=[{"message": "not a list"}, [[]]])
         first = attempt(no_pr_proven, root, plain)
         cases.append(("sabotage KOTA-02: a malformed answer raised in one copy is not kept — the second copy asks again",
                       isinstance(first, Unreadable) and attempt(twin.no_pr_proven, root, plain) is True
                       and len(gh_asked) == 2))
-        fresh(pulls=[hit, hit], one=[detail(merged_by=None), detail()])
-        i1, i2 = attempt(pr_of_merge, root, plain), attempt(twin.pr_of_merge, root, plain)
-        cases.append(("sabotage KOTA-02 F-2 (Codex): a PR answer without merged_by is not kept — the second copy asks "
-                      "again and reads the merger", isinstance(i1, dict) and i1["merger"] is None and isinstance(i2, dict)
-                      and i2["merger"] == "lead" and len(gh_asked) == 4))
+        for field, bad in (("number", detail(number=None)), ("opener", detail(user=None)),
+                           ("merger", detail(merged_by=None)),
+                           ("base", detail(base={"ref": None, "repo": {"full_name": TRUSTED_REPO}})),
+                           ("base_repo", detail(base={"ref": "main", "repo": {}}))):
+            fresh(pulls=[hit, hit], one=[bad, detail()])
+            i1, i2 = attempt(pr_of_merge, root, plain), attempt(twin.pr_of_merge, root, plain)
+            cases.append((f"sabotage KOTA-02 F-2 (Codex): a PR answer without {field} is not kept — the second copy asks "
+                          "again and reads it", isinstance(i1, dict) and not i1[field] and isinstance(i2, dict)
+                          and i2["merger"] == "lead" and i2[field] and len(gh_asked) == 4))
         fresh(pulls=[hit], one=[detail()])
         globals()["_PR_SOURCE"] = lambda r, m: {"number": 7, "opener": "dev", "merger": "lead", "base": "main",
                                                 "base_repo": TRUSTED_REPO}
