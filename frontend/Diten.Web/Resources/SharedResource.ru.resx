@@ -1194,6 +1194,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Планировщик учений по отзыву</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Пакет доказательств отзыва</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Планирование потребности в материалах и пополнение запасов</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Оптимизация страхового запаса</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
 </root>
