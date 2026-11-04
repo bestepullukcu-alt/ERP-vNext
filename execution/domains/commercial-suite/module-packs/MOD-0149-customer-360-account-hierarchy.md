@@ -363,7 +363,7 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 | `crm.account.hierarchy.manage` | link/unlink parent | Orta | Tenant | Evet |
 | `crm.account.attribute.manage` | dynamic attribute upsert | Orta | Tenant | Evet |
 | `crm.account.overview.read` | 360 read model | Düşük | Tenant | Hayır |
-| `crm.account.lookup-validation` | Treasury AR müşteri doğrulama (§30; U-1, ertelenen U-2) — `crm.account.read` yerine geçmez, onu kapsamaz | Düşük (yalnız doğrulama alanları) | Tenant | Hayır (salt okuma, §30.1) |
+| `crm.account.lookup-validation` | Treasury AR müşteri doğrulama ve seçici araması (§30; U-1, U-3, ertelenen U-2) — `crm.account.read` yerine geçmez, onu kapsamaz | Düşük (yalnız doğrulama alanları) | Tenant | Hayır (salt okuma, §30.1) |
 
 > **PKS-001 permission key kararları (net):**
 > - `crm.account.360.read` **KULLANILMAYACAK** — segment grammar `^[a-z][a-z0-9-]*$` segmentin harfle başlamasını ister; "360" rakamla başlar (geçersiz).
@@ -377,7 +377,7 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 
 | Role | Permissions | Data Scope |
 |---|---|---|
-| CRM Admin | tüm `crm.account.*` | Tenant |
+| CRM Admin | tüm `crm.account.*` (`crm.account.lookup-validation` dahil) | Tenant |
 | CRM Manager | read/create/update/export + hierarchy.manage + attribute.manage | Tenant |
 | Sales Manager | read/export | Tenant (ekip, FU15) |
 | Sales Representative / MR | read | Tenant → territory scoped later (FU15) |
@@ -599,6 +599,8 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 
 > **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§29'da yalnız §16 izin tablosu ve rol eşlemesi
 > K-1 anahtarıyla genişledi (2026-11-02); mevcut AC'ler (§21), kapsam guard'ı ve `status` değişmedi.
+> **Revizyon 2026-11-04:** bağımsız inceleme `docs/records/reviews/MOD-0149/2026-11-04-6df3626c.md` (KOŞULLU) bulguları
+> F-1…F-9 işlendi; F-2 için sahip kararı K-8 ile seçici arama ucu U-3 eklendi (§30.2, §30.11).
 > Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`)
 > ve CT-APR-01 onay satırı (`execution/approvals/approvals.tsv`) gerekir. Kaynak: commercial-suite sahibi yanıtları
 > Y-4/4b ve Y-4/4c (2026-10-27, `docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35`);
@@ -608,10 +610,11 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 
 - MOD-0120 Accounts Receivable müşteri kimliğini (`CustomerId` = `Account.Id`) bu modülden **yalnız sözleşmeyle** doğrular;
   AR hesap kaydını okumaz, yazmaz, `accounts` / `account_external_references` koleksiyonlarına doğrudan erişmez.
-- Bu ek iki **salt-okuma** ucu ve sözleşme belgesini ekler. Account modeline alan, yeni koleksiyon, yeni yazma komutu ya da
+- Bu ek üç **salt-okuma** ucu (U-1, U-3; ertelenen U-2) ve sözleşme belgesini ekler. Account modeline alan, yeni koleksiyon, yeni yazma komutu ya da
   yeni denetim olayı eklenmez (§23 değişmez; okuma AUD-001 dışında).
 - Kapsam dışı: AR'nin kendi port / sınıflandırıcı kodu (MOD-0120), Auth katalog kaydı ve rol ataması (MOD-0018),
-  `ocelot.json` (integration-agent), müşteri seçici UI (MOD-0120 same-origin proxy).
+  `ocelot.json` (integration-agent), müşteri seçici UI (MOD-0120 same-origin proxy). Seçicinin veri kaynağı bu ekin
+  U-3 ucudur (K-8); seçimden sonra kimlik yazmadan önce U-1 ile doğrulanır.
 
 ### 30.2 Uçlar ve sözleşme
 
@@ -619,16 +622,26 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
 (taslak; çelişkide bu pack kazanır).
 
 > **U-2 ertelendi (K-7, MOD-0120 sahibi 2026-10-30):** bu sürümde tüketicisi yok; MOD-0120 O-10 (içe aktarma / eski
-> kayıt taşıma) ile etkinleşir. Tanımı burada ve sözleşmede kalır; bu sürümün işi yalnız DL-1 (U-1).
+> kayıt taşıma) ile etkinleşir. Tanımı burada ve sözleşmede kalır; bu sürümün işi yalnız DL-1 (U-1 ve U-3).
 
-| Uç | Yanıt | Dosyalar (Golden Compact düzeni, §13) |
-|---|---|---|
-| `GET /api/crm/accounts/{accountId:guid}/lookup-validation` | 200 `accountId`, `code`, `name`, `status`, `isBillable`, `contractVersion` · 404 (yok / silinmiş / başka kiracı — aynı gövde) · 503 | `Queries/GetAccountLookupValidationQuery.cs` · `Handlers/QueryHandlers/GetAccountLookupValidationHandler.cs` |
-| `GET /api/crm/accounts/external-references/resolve?sourceSystem=&externalId=` | 200 (aynı alanlar + `sourceSystem`, `externalId`) · 400 (boş girdi) · 404 (eşleşme yok / hesap geçersiz) · 409 (çoklu eşleşme, savunma) · 503 | `Queries/GetAccountByExternalReferenceQuery.cs` · `Handlers/QueryHandlers/GetAccountByExternalReferenceHandler.cs` |
+| Uç | Dilim | Yanıt | Dosyalar (Golden Compact düzeni, §13) |
+|---|---|---|---|
+| U-1 `GET /api/crm/accounts/{accountId:guid}/lookup-validation` | DL-1 | 200 `accountId`, `code`, `name`, `status`, `isBillable`, `contractVersion` · 404 (yok / silinmiş / başka kiracı — aynı gövde) · 503 | `Queries/GetAccountLookupValidationQuery.cs` · `Handlers/QueryHandlers/GetAccountLookupValidationHandler.cs` |
+| U-3 `GET /api/crm/accounts/lookup?search=&page=&pageSize=&billableOnly=` | DL-1 | 200 sayfalı liste (öğe alanları U-1 ile aynı: `accountId`, `code`, `name`, `status`, `isBillable`; sayfa üstünde `page`, `pageSize`, `total`, `contractVersion`) · 400 (arama / sayfa sınırı) · 503 | `Queries/SearchAccountLookupQuery.cs` · `Handlers/QueryHandlers/SearchAccountLookupHandler.cs` |
+| U-2 `GET /api/crm/accounts/external-references/resolve?sourceSystem=&externalId=` | DL-2 (ertelendi) | 200 (U-1 alanları + `sourceSystem`, `externalId`) · 400 (boş girdi) · 404 (eşleşme yok / hesap geçersiz) · 409 (çoklu eşleşme, savunma) · 503 | `Queries/GetAccountByExternalReferenceQuery.cs` · `Handlers/QueryHandlers/GetAccountByExternalReferenceHandler.cs` |
 
+- Denetleyici: üç uç `Controllers/CRM/AccountController.cs`'e eklenir (§7'deki `Controllers/AccountController.cs` yolu
+  bugün `Controllers/CRM/` altındadır). `lookup` ve `external-references/resolve` sabit yolları `{id:guid}` kısıtlı
+  rotalarla çakışmaz (emsal aynı denetleyicide `filter-options`, `related`).
 - DTO: `AccountLookupValidationDto` `AccountModels.cs` içinde (tek dosya kuralı). Depo: `IAccountExternalReferenceRepository`'ye
   çözümleme sorgusu eklenir (kiracı + `IsDeleted = false` + tam eşitlik; en çok 2 satır okur, 2 satır = 409).
 - `isBillable = (Status == "active")`, sıradan karşılaştırma; faturalanabilirlik kuralı yalnız CRM'dedir.
+- U-3 (K-8): `search` `Trim()` sonrası 2–100 karakter, aksi 400; düz metindir (regex değil) — mevcut sayfalı arama
+  deposu `IAccountRepository.ListAsync` (`AccountRepository.cs:78-113`: kiracı + `IsDeleted = false`, ad ya da kodda
+  "içerir", `TurkishInsensitivePattern` ile kaçışlı ve Türkçe i harflerine duyarsız) kullanılır; indeks
+  `ix_accounts_tenant_name` var. `page` ≥ 1, `pageSize` 1–50 (varsayılan 20), aksi 400. `billableOnly=true` yalnız
+  `active` döner. Sıralama ada göre artan. Eşleşme yoksa 200 boş liste (404 yok). U-3 sonucu uygunluk kararı
+  değildir: tüketici seçilen kimliği yazmadan önce U-1 ile doğrular.
 - `sourceSystem` / `externalId`: yazma yoluyla aynı normalizasyon — yalnız `Trim()`, büyük/küçük harf korunur
   (`CreateAccountHandler.cs:62-73`); çözümleme `"default"` kaynağını varsaymaz.
 - `account-status` kümesi sözleşmede yayımlanır: `active` (faturalanabilir), `inactive`, `draft`, `suspended` (Y-4/4c) ve
@@ -636,7 +649,7 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
 
 ### 30.3 İzin anahtarı
 
-- **Karar K-1 (Beste, 2026-10-30): `crm.account.lookup-validation`.** İki uç yalnız bu anahtarla korunur
+- **Karar K-1 (Beste, 2026-10-30): `crm.account.lookup-validation`.** Üç uç (U-1, U-3, U-2) yalnız bu anahtarla korunur
   (`[HasPermission("crm.account.lookup-validation")]`); `crm.account.read` bu uçlara **yetmez**, AR kullanıcısı
   `crm.account.read` **almaz** (MOD-0120 O-3 (b) reddedildi).
 - PKS-001 uyumu: 3 segment; `lookup-validation` Tier-3 eylem sözlüğünde var; emsal `auth.users.lookup-validation`.
@@ -646,22 +659,32 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
 ### 30.4 Gateway
 
 Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelot.json:2970-2989`, GET dahil, port 5061)
-iki ucu taşır; yeni rota gerekmez, `ocelot.json` değişmez. Teyit integration-agent'ındır (yalnız not; §17 değişmez).
+üç ucu da taşır (U-1, U-3 — DL-1; U-2 — DL-2); yeni rota gerekmez, `ocelot.json` değişmez. Teyit integration-agent'ındır (yalnız not; §17 değişmez).
 
-### 30.5 Kabul ölçütleri (AC-AR)
+### 30.5 Kabul ölçütleri — DL-1 (U-1 ve U-3)
 
-- [ ] **AC-AR-1** U-1 kendi kiracısındaki `active` hesap için 200, `isBillable = true`, alanlar sözleşme §2.2 ile birebir; gövdede adres / sorumlu kişi / dış referans / öznitelik **yok**.
-- [ ] **AC-AR-2** `inactive`, `draft`, `suspended`, `archived` ve kümede olmayan bir kod için 200, `isBillable = false`.
-- [ ] **AC-AR-3** Başka kiracının hesabı, silinmiş hesap ve olmayan kimlik → 404; üç gövde bayt bayt aynı.
-- [ ] **AC-AR-4** U-2 tam eşleşmede 200 ve U-1 ile aynı doğrulama alanları; eşleşme yok → 404; harf farkı (`oldcrm` / `OldCRM`) eşleşmez → 404; başka kiracıdaki eşleşme → 404.
-- [ ] **AC-AR-5** U-2 iki etkin aday satırda 409; hiçbir hesap döndürülmez.
-- [ ] **AC-AR-6** U-2 boş / yalnız boşluk `sourceSystem` ya da `externalId` → 400.
-- [ ] **AC-AR-7** Depo okunamazsa (Mongo istisnası / zaman aşımı) iki uç da 503; 500, 200 ya da 404 dönmez.
-- [ ] **AC-AR-8** `crm.account.lookup-validation` olmadan 403; yalnız `crm.account.read` sahibi kullanıcı 403 alır; anahtar sahibi `crm.account.read` olmadan 200 alır.
-- [ ] **AC-AR-9** Sözleşme §9 fikstürleri CrmService testlerinde bir başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
+- [ ] **AC-AR-1** (U-1) Kendi kiracısındaki `active` hesap için 200, `isBillable = true`, alanlar sözleşme §2.2 ile birebir; gövdede adres / sorumlu kişi / dış referans / öznitelik **yok**.
+- [ ] **AC-AR-2** (U-1) `inactive`, `draft`, `suspended`, `archived` ve kümede olmayan bir kod için 200, `isBillable = false`.
+- [ ] **AC-AR-3** (U-1) Başka kiracının hesabı, silinmiş hesap ve olmayan kimlik → 404; üç gövde bayt bayt aynı.
+- [ ] **AC-AR-7a** (U-1, U-3) Depo okunamazsa (Mongo istisnası / zaman aşımı) 503; 500, 200, 404 ya da boş liste dönmez.
+- [ ] **AC-AR-8a** (U-1, U-3) `crm.account.lookup-validation` olmadan 403; yalnız `crm.account.read` sahibi kullanıcı 403 alır; anahtar sahibi `crm.account.read` olmadan 200 alır.
+- [ ] **AC-AR-9a** (U-1) Sözleşme §9'un DL-1 fikstürleri (F-OK, F-NE-x, F-UNK, F-404, F-C1…F-C3, F-V, F-503, F-403) CrmService testlerinde bir başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
 - [ ] **AC-AR-10** `dotnet build` (CrmService) PASS; mevcut Account testleri tabandaki sonuçla aynı.
+- [ ] **AC-AR-11** (U-3) Yalnız çağıranın kiracısındaki silinmemiş hesaplar döner; öğe alanları birebir `accountId`, `code`, `name`, `status`, `isBillable` (sözleşme §2a); adres / sorumlu kişi / dış referans / öznitelik **yok**; `isBillable` U-1 kuralıyla aynı.
+- [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
+- [ ] **AC-AR-13** (U-3) Arama düz metindir: `.*` ya da `a.b(` her hesabı eşleştirmez ve hata vermez; ad ya da kodda "içerir"; `HAMİDİYE` kaydı `hamidiye` aramasıyla bulunur.
+- [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ada göre artan; ardışık sayfalar çakışmaz; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
 
-### 30.6 Sabotaj beklentileri
+### 30.6 Kabul ölçütleri — DL-2 (U-2 ertelendi)
+
+- [ ] **AC-AR-4** (U-2) Tam eşleşmede 200 ve U-1 ile aynı doğrulama alanları; eşleşme yok → 404; harf farkı (`oldcrm` / `OldCRM`) eşleşmez → 404; başka kiracıdaki eşleşme → 404.
+- [ ] **AC-AR-5** (U-2) İki etkin aday satırda 409; hiçbir hesap döndürülmez.
+- [ ] **AC-AR-6** (U-2) Boş / yalnız boşluk `sourceSystem` ya da `externalId` → 400.
+- [ ] **AC-AR-7b** (U-2) Depo okunamazsa 503; 500, 200 ya da 404 dönmez.
+- [ ] **AC-AR-8b** (U-2) AC-AR-8a'nın üç izin koşulu U-2 için de geçerlidir.
+- [ ] **AC-AR-9b** (U-2) Sözleşme §9'un DL-2 fikstürleri (F-R404, F-R409) başvuru sınıflandırıcısına karşı koşar ve beklenen sınıfı verir.
+
+### 30.7 Sabotaj beklentileri — DL-1
 
 Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koşar; sabotaj kanıtı olmayan guard sayılmaz):
 
@@ -669,23 +692,47 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 |---|---|
 | U-1 depo çağrısından kiracı filtresini kaldır | AC-AR-3 (başka kiracı 200 döner) |
 | `IsDeleted` filtresini kaldır | AC-AR-3 (silinmiş hesap 200 döner) |
+| Başka kiracının hesabı için ayrı ileti ya da 403 döndür | AC-AR-3 (gövdeler aynı değil) |
 | `isBillable`'ı `Status != "inactive"` yap | AC-AR-2 (`draft` / `suspended` / `archived` faturalanabilir olur) |
+| U-1 ya da U-3'te `[HasPermission]`'ı `crm.account.read` yap | AC-AR-8a |
+| Uca `crm.account.read` + `crm.account.lookup-validation` ikisini birden iste | AC-AR-8a (anahtar sahibi `read` olmadan 403 alır) |
+| Mongo istisnasını yakalama / 404'e ya da boş listeye çevir | AC-AR-7a |
+| U-1 gövdesine ya da U-3 öğesine `AddressLine` ekle | AC-AR-1, AC-AR-11 |
+| Başvuru sınıflandırıcısında `isBillable = true` + `status ≠ "active"` çelişkisini "uygun" say | AC-AR-9a (F-C1) |
+| U-3 aramasında kiracı ya da `IsDeleted` filtresini kaldır | AC-AR-11 |
+| U-3'te en kısa arama sınırını kaldır | AC-AR-12 (tek harf aramada liste döner) |
+| U-3'te terimi kaçışsız regex olarak kullan | AC-AR-13 (`.*` her hesabı döner) |
+| U-3'te `billableOnly`'yi yok say | AC-AR-14 |
+
+### 30.8 Sabotaj beklentileri — DL-2
+
+| Sabotaj | Kırmızıya dönmesi gereken |
+|---|---|
 | Çözümlemede `ToLowerInvariant()` ekle | AC-AR-4 (harf farkı eşleşir) |
 | Çoklu adayda ilk satırı döndür | AC-AR-5 |
-| `[HasPermission]`'ı `crm.account.read` yap | AC-AR-8 |
-| Mongo istisnasını yakalama / 404'e çevir | AC-AR-7 |
-| Gövdeye `AddressLine` ekle | AC-AR-1 |
+| Boş girdi kontrolünü kaldır (boş `sourceSystem` ile aramaya git) | AC-AR-6 |
+| Mongo istisnasını 404'e çevir | AC-AR-7b |
+| U-2'de `[HasPermission]`'ı `crm.account.read` yap | AC-AR-8b |
+| Başvuru sınıflandırıcısında 409'da ilk adayı "uygun" say | AC-AR-9b (F-R409) |
 
-### 30.7 Test beklentileri
+### 30.9 Test beklentileri — DL-1
 
-- **xUnit (Application):** iki işleyici için kiracı, silme, durum tablosu, normalizasyon, çoklu eşleşme, boş girdi ve
-  depo hatası (sahte depo istisna atar) vakaları.
-- **xUnit (Api / yetki):** iki uç için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
-- **Sözleşme fikstürleri:** sözleşme §9 tablosu başvuru sınıflandırıcısıyla (AC-AR-9).
+- **xUnit (Application):** U-1 işleyicisi için kiracı, silme, durum tablosu ve depo hatası (sahte depo istisna atar);
+  U-3 işleyicisi için kiracı, silme, arama ve sayfa sınırları, düz metin arama (`.*`, `a.b(`), Türkçe i, `billableOnly`,
+  sayfalama ve depo hatası vakaları.
+- **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
+- **Sözleşme fikstürleri:** sözleşme §9 tablosunun DL-1 satırları başvuru sınıflandırıcısıyla (AC-AR-9a).
 - **Build:** `dotnet build services/Diten.CrmService/...Api.csproj -c Debug`.
 - Canlı veri ölçümü (indeksin canlı veritabanındaki varlığı) bu ekin parçası değildir; ayrı operatör adımıdır.
 
-### 30.8 Kararlar ve açık sorular
+### 30.10 Test beklentileri — DL-2
+
+- **xUnit (Application):** U-2 işleyicisi için kiracı, silme, normalizasyon (harf korunur), çoklu eşleşme, boş girdi ve
+  depo hatası vakaları.
+- **xUnit (Api / yetki):** U-2 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
+- **Sözleşme fikstürleri:** sözleşme §9 tablosunun DL-2 satırları (F-R404, F-R409; AC-AR-9b).
+
+### 30.11 Kararlar ve açık sorular
 
 | # | Karar | Durum |
 |---|---|---|
@@ -695,11 +742,12 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-4 | Gateway joker rotası | **KAPANDI** (Beste, 2026-10-30): yeterli; integration-agent teyidi yalnız not (§30.4) |
 | K-5 | `runtime_code_scope` künyesi | **KAPANDI** (Beste, 2026-10-30): değişmez — "external-ref surface" U-2'yi, "Account/WorkPlace master + 360" okuma yüzeyi U-1'i kapsar; yeni nesne / alan / komut yok |
 | K-6 | Teslim dilimleri tablosu | **KAPANDI** (Beste, 2026-10-30): yalnız bu ek için tablo (§31); §1–§29'un mevcut, teslim edilmiş işi geriye dönük dilimlere bölünmez |
+| K-8 | MOD-0120 müşteri seçicisinin veri kaynağı (inceleme F-2) | **KAPANDI** (Beste, 2026-11-04, seçenek 1): dar arama ucu U-3 `GET /api/crm/accounts/lookup`, aynı `crm.account.lookup-validation` anahtarıyla; yalnız `accountId`, `code`, `name`, `status`, `isBillable` döner; DL-1'e girer. AR kullanıcısı `crm.account.read` almaz (K-1 korunur). MOD-0120:1146-1147 ve :1349-1350 U-3'e hizalanır (Finans'ın işi). |
 | K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 ## 31. Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | Treasury AR müşteri doğrulama ucu (U-1 lookup-validation) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Permission / Authorization Convention, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
-| DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve) — ERTELENDİ: MOD-0120 O-10 ile (K-7) | Uçlar ve sözleşme, Gateway, Kabul ölçütleri (AC-AR), Sabotaj beklentileri, Test beklentileri |
+| DL-1 | Treasury AR müşteri doğrulama ve seçici arama uçları (U-1 lookup-validation ve U-3 lookup) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Permission / Authorization Convention, Gateway, Kabul ölçütleri — DL-1 (U-1 ve U-3), Sabotaj beklentileri — DL-1, Test beklentileri — DL-1 |
+| DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve) — ERTELENDİ: MOD-0120 O-10 ile (K-7) | Uçlar ve sözleşme, İzin anahtarı, Gateway, Kabul ölçütleri — DL-2 (U-2 ertelendi), Sabotaj beklentileri — DL-2, Test beklentileri — DL-2 |
