@@ -1194,6 +1194,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>召回演练计划</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>召回证据包</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>召回设置</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>物料需求计划与补货</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>安全库存优化</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
 </root>

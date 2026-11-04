@@ -57,9 +57,68 @@ Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-40; oturum Treasury Intake CT (`
 
 ## D122 — Küme dışı para birimi kodu için hata sözleşmesi (2026-11-02)
 
-Onay kanıtı: K1 / gmg-10 (soru kutuları "MDM 400, finans 503", sonra düzeltme "Evet, düzelt"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı) ve Y-31; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktır.
+Onay kanıtı: K1 / gmg-10 (soru kutuları "MDM 400, finans 503", sonra düzeltme "Evet, düzelt"); kaynak Codex incelemesinin bulgu 1'i (K1 aktardı) ve Y-31; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; §21 metni olduğu için Platform sahibi teyidine açıktı, D123/2 ile kapandı.
 
 1. **D122/1 — kullanıcı girdisi:** kullanıcının gönderdiği küme dışı kod her tüketicide 400: MOD-0119, MOD-0120 ve MOD-0126'da `…_CURRENCY_CODE_INVALID`, MOD-0124'te `CASH_POSITION_INVALID_CURRENCY_CODE`, MOD-0217 ve MOD-0289'da doğrulama hatası.
 2. **D122/2 — başka modül ya da eski kayıt:** bu yoldan gelen küme dışı kod dört finans paketinde 503 `…_CURRENCY_PRECISION_UNAVAILABLE` (Y-31).
 3. **D122/3 — ortak:** küme okunamazsa her tüketicide 503.
 4. **D122/4 — düzeltme notu:** ilk seçenek "finans 503" paketlerin 400 satırı ölçülmeden sunulmuştu; bu metin onun yerini alır.
+
+## Y-41 — Beste, ICU kesişimi ve D122 (2026-11-02; K1 aktardı)
+
+İki ayrı mesajdan alıntı; aynı mesajın D117/3 sorusu ve #353 notu olan kısımları buraya alınmadı.
+
+> Y-39: Platform tarafı olduğu gibi kalıyor; seçici listesi ICU ile kümenin kesişimi (#346) yeterli kabul edildi. ICU kümeye kod ekleyemiyor, bu yüzden liste kümenin dışına çıkmıyor. Kümede olup ICU'da olmayan kodun seçicide görünmemesi kabul edilen sınır; finans kümeyi doğrudan okuduğu için doğrulama tarafı etkilenmiyor. Platform'da ek kod işi açılmayacak
+>
+> §21 teyitleri: D122 "uygun, kullanıcı girdisinde önce 400" şartıyla verildi; ICU kesişimi kabul (Platform değişmiyor).
+
+## Y-42 — Beste, D117/3 (2026-11-02; K1 aktardı)
+
+> D117/3 uygun. Aynı kural dört finans paketi için de geçerli: her tüketici kümeden okumayı ve küme dışı kodu reddetmeyi kendi paketinde, kendi üretim kontrolü üzerinde sabotajlı testle ölçer; Platform yalnız kümenin varlığını ve biçimini ölçer (MOD-0048-FU01 AC-R2). Finans testleri Diten.FinanceTreasuryService yazılırken gelir.
+
+## D123 — §21 sahip teyitleri kapandı (2026-11-02)
+
+Onay kanıtı: K1 / gmg-10 (aktarım); kaynak Y-41, Y-42; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D123/1 — ICU:** lookup ICU ile kümenin kesişimi kalır; kümede olup ICU'da olmayan kodun seçicide görünmemesi kabul edilen sınırdır. Platform'da ek kod işi yok.
+2. **D123/2 — D122:** Platform sahibi teyit etti; kullanıcı girdisinde önce 400.
+3. **D123/3 — D117/3:** teyit edildi ve dört finans paketini kapsar.
+
+## D124 — Dört finans paketinde para birimi metni hizalandı (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu "Üçünü düzelt"); kaynak #346, D121/2, D123; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D124/1 — ölçüm:** D105/4'ün istediği revizyon #314 ile main'de (D112): dört paket para birimini yalnız `currency-minor-units` kümesinden okur. Kullanıcı girdisi 400 (D122/1), başka modül ya da eski kayıt 503 (D122/2) ve sabotajlı AC (D123/3) zaten pakette.
+2. **D124/2 — paketler:** MOD-0119, MOD-0124 ve MOD-0126'nın Bağımlılık satırında gerekçe #346 sonrasına çekildi: lookup ICU ile kümenin kesişimidir, doğrulama kümeyi doğrudan okur. Dört pakete "küme canlıda henüz yayımlı değil (D121/2)" eklendi. MOD-0119, MOD-0124 ve MOD-0126'nın Gateway satırında para birimi ucu `/api/lookups/reference/*` yerine `/api/lookups/reference-data/consumable-sets/*` oldu.
+3. **D124/3 — DL hazırlık dosyaları:** sekiz dosyaya tarihli not eklendi: seed ve izin listesi main'de (#297), `Finance = 18` main'de, küme canlıda yayımlı değil. Eski ölçüm satırları tarihçe olarak kalır.
+4. **D124/4 — sınır:** kapsam, izin, AC ve `status: draft` değişmedi. Paketler CT-APR-02 için yeniden incelenir.
+
+## D125 — RECORD-CODE-ALLOCATE 1.0.0 §12 Treasury teyitleri (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 (soru kutuları); kaynak Beste'nin dondurma isteği (K1 aktardı) ve sözleşme taslağı `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (`origin/chore/ct/mod0178-dl1-accept-01`, rev 9) §1, §2, §3, §6, §8, §12; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D125/1 — N-2:** uygun. 200 yanıtı `Response<T>` zarfında, `data` = `{code, sequence}`. Treasury'de bağdaştırıcı kodu yok; paketlerdeki v0 satırı ("200 `{code, sequence}`") sonraki revizyonda zarfa çevrilir.
+2. **D125/2 — N-3:** uygun; sözleşme değişmez. Treasury şartı tüketici tarafındadır: finans paketleri istemciden 1–128 anahtar alır ve makbuz kapsamı kiracı + şirket + aktör + işlem + hedeftir; kod servisi yalnız (kiracı, servis, anahtar) ile eşler. Ham anahtar geçirilirse iki kullanıcının aynı anahtarı aynı kodu alabilir. Bu yüzden tüketici anahtarı ham geçirmez, özetten türetir. Özetin girdisi `recordType` ile makbuzun altı alanıdır: `TenantId`, `LegalEntityId`, `ActorId`, `Operation`, `TargetId` ve istemcinin `Key` değeri (MOD-0126 makbuz tanımı, D12/2). Girdi tek bir bayt dizisine bağlanır: yedi değer bu sırayla (`recordType`, `TenantId`, `LegalEntityId`, `ActorId`, `Operation`, `TargetId`, `Key`) bir JSON dizisi olarak, RFC 8785 (JCS) kurallarıyla yazılır. Pratikte: hiç boşluk yok (ayırıcı yalnız `,`), her değer JSON dizgesi, `null` `TargetId` çıplak `null`; Guid'ler küçük harfli `D` biçimi (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`); dizgede yalnız `"` → `\"`, `\` → `\\` ve U+0000…U+001F kaçırılır (JCS kısa biçimleri, diğerleri küçük harfli `\u00xx`), başka karakter kaçırılmaz. Girdilerin hepsi ASCII olduğundan (Guid, `Operation`, `recordType`, 1–128 yazdırılabilir ASCII `Key`) normalleştirme sorusu doğmaz. Dizinin UTF-8 baytlarının SHA-256'sı küçük harfli 64 hex olarak `idempotencyKey` olur (boşluksuz, §2 sınırının içinde). **Test vektörü** (örnek değerler; `Operation` adı örnektir): girdi `["PAY","00000000-0000-0000-0000-000000000001","11111111-1111-1111-1111-111111111111","22222222-2222-2222-2222-222222222222","mod0126:CreatePaymentBatch",null,"k-1\"\\x"]` (istemci anahtarı `k-1"\x`) → `7a9e9296fa48ef12c051a408f325e7142b61970de38b5fbb5a45bdd14c01f018`; aynı girdide `ActorId` `33333333-3333-3333-3333-333333333333` → `6c572bf9a17633185a65fab1a64e5bffbdf08ba45ef26f17af11e389fa50305a`; `Key` `k-2` → `e5206ed402288b5f4c6b141026529e9ed68f853797de0645b8194ec103209c76` (Python `json.dumps(…, separators=(",", ":"))` ve `shasum -a 256` ile ayrı ayrı hesaplandı, 2026-11-03). Vektör, türeticinin birim testine aynen girer. Bu kural ve üç sabotajlı kabul testi dört finans paketinin sonraki revizyonunda eklenir: (a) aynı kapsam, farklı istemci anahtarı → iki ayrı kod; (b) aynı makbuzla yeniden deneme → aynı servis anahtarı: sahte allocator ilk çağrıda 503 `RECORD_CODE_UNAVAILABLE` döner, Create başarısız olur ve makbuz yazılmaz; aynı `Idempotency-Key` ile yeniden denenen Create türeticiyi yeniden çalıştırır (Create tek aşamalıdır, makbuz yalnız tx1'de yazılır; tx1 commit olmadıysa aynı anahtarla tekrar baştan çalışır — `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md:896, 906, 912-913@35e973bd2`; allocator 503'ü Create'i başarısız kılar — aynı dosya `:914-918@35e973bd2`). Test, sahte allocator'ın iki çağrı aldığını ve iki çağrıdaki `idempotencyKey`'in birebir aynı olduğunu doğrular (tamamlanmış makbuzdan erken dönüş yolu bu testi karşılamaz); (c) iki aktör, aynı istemci anahtarı → iki ayrı kod. Testler üretim türeticisine bağlanır; türetme ham anahtara çevrilince (c), istemci anahtarı girdiden çıkarılınca (a), türetilen anahtara çağrı başına değişen bir değer (ör. yeni Guid ya da zaman damgası) eklenince (b) kırmızı olur; vektör testi serileştirmedeki her bayt değişikliğinde kırmızı olur. Bugün risk paket testleriyle kapanmış değildir; bu revizyona kadar açık bir paket işidir.
+3. **D125/3 — N-4:** uygun. `BNK` → `Group`; şirket `BAC` → `LegalEntity` + sahip şirket; tedarikçi `BAC` → `Group` (D93/1, D65/2, D95/1 ile aynı). MDM bağdaştırıcısı için MDM sahibi Ali'nin teyidi ayrıca istenir.
+4. **D125/4 — N-10:** uygun. Sekiz izin adı FU27 taslağı ve MOD-0119, 0120, 0124, 0126, 0289, 0217 paketleriyle birebir aynı. Alacak dekontu MOD-0119'da `ApInvoice` belge türüdür, `APD` + `finance-treasury.ap-invoices.create` doğrudur. Adlar FU27 onayıyla kesinleşir.
+5. **D125/5 — not:** sözleşme §9'daki Treasury port imzası (`AllocateAsync(legalEntityId, recordType, idempotencyKey)`) yalnız finans paketleri için geçerli. MDM paketleri tek imzalı `prefixScope`'lu portu kullanır (D95/1). Bu, dondurmayı bekletmez.
+
+## D126 — D125/2 türetme kuralı dört finans paketine yazıldı (2026-11-03)
+
+Onay kanıtı: K1 / gmg-10 ("devam edelim"); kaynak D125/2; oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D126/1 — tek tanım:** kural MOD-0126 "Kayıt kodu" maddesinde servis ortak olarak tanımlandı: `RecordCodeIdempotencyKey.Derive(recordType, receiptScope)`, `Application/Common/RecordCodes/`. Türetme port çağrısından önce Create işleyicisinde yapılır. MOD-0119, MOD-0120 ve MOD-0124 aynı maddeye atıf yapar ve kendi `Operation` adını yazar.
+2. **D126/2 — işlem adları:** `mod0119:CreateApInvoice`, `mod0120:CreateReceivableInvoice`, `mod0124:CreateCashPosition` (`CPS`), `mod0124:CreateCashPositionThresholdPolicy` (`CTP`), `mod0126:CreatePaymentBatch`. Desen MOD-0126 makbuz tanımındaki `{modül}:{Komut}`.
+3. **D126/3 — yeni AC:** MOD-0119 AC-45, MOD-0120 AC-45, MOD-0124 AC-39, MOD-0126 AC-47. Her biri vektör testi (v) ile D125/2'nin (a), (b) ve (c) senaryolarını ve dört sabotajı içerir. Test bölümlerine de eklendi. Her yeni AC kendi paketinin DL-1 "Bitiş" listesine eklendi; Create'ler DL-1'de teslim edildiği için anahtar kanıtı DL-1 kabulünde aranır.
+4. **D126/4 — sınır:** kural ve testler paket metnindedir; üretim kodu yok (`Diten.FinanceTreasuryService` yazılmadı). D125/2'deki "bugün açık" durumu kodla kapanır. Zarf satırı (D125/1) sözleşme dondurulunca ayrı revizyonla gelir. Kapsam, izin ve `status: draft` değişmedi.
+
+## D127 — MOD-0289 `ready-for-dev` (2026-11-03)
+
+Kaynak: K1 (Natig) soru kutusunda "Evet, hazırla" ve "Alanı kaldır" (2026-11-03). Ölçüm: `origin/main` @ `73a90cc34`.
+
+1. **D127/1 — paket kapısı:** MOD-0289 "Ready-for-dev Checklist"inde işaretsiz paket düzeyi madde olarak yalnız CT-APR-02 ve CT-APR-01 kalır; bu sürüm için kayıtları bu sürümün PR'ında gelir, kutular o yüzden metinde açıktır (Codex tur 1 ENGEL'i). İkisi önceki `draft` sürümü için main'de: inceleme `docs/records/reviews/MOD-0289/2026-11-02-691e9b05.md` (UYGUN), onay satırı `execution/approvals/approvals.tsv` (onaylayıcı `bestepullukcu-alt`, #354). Öbür işaretsiz maddeler "— DL-n için" dilim kapısıdır (D51/1) ve paketi bekletmez.
+2. **D127/2 — künye:** `status: draft` → `ready-for-dev`. `approval_status` alanı kaldırıldı: paket standardında tanımlı değil, `ready-for-dev` olan MOD-0220 ve MOD-0140 künyesinde yok; onayın kaynağı `approvals.tsv`dir.
+3. **D127/3 — yeni sürüm onayı:** onay satırı sürüme bağlıdır ve `pack_approval.py` S-49 uyarısı onay satırının künyesi `ready-for-dev` olan sürüme yazılmasını ister. Bu sürüm için yeni CT-APR-02 incelemesi (Codex) ve CT-APR-01 satırı (onaylayıcı `bestepullukcu-alt`) aynı PR'da gelir; onay, o PR'ın Beste tarafından birleştirilmesidir.
+4. **D127/4 — sınır:** kapsam, izin, AC (AC-1…60), dilimler ve Açık kararlar değişmedi. Kod ancak yeni onay satırı main'de olunca ve dilim sırasıyla yazılır; DL-1 kabul kapısı (Auth kayıt kodu, SEC-002 eki kodu, RCS-001 servisi) açık.
+5. **D127/5 — Codex tur 1 (`c4b970b13`, UYGUN DEĞİL):** ENGEL — CT-APR-02 / CT-APR-01 kutuları önceki sürümün kayıtlarıyla işaretlenmişti → açık bırakıldı, "bu sürüm için henüz yok" yazıldı. DÜŞÜK — domain-config maddesindeki "fark boş" ölçümü 2026-10-28'e bağlandı, D127 güncellemesi eklendi.
+6. **D127/6 — Codex tur 2 (`cd2c0b6c6`, UYGUN DEĞİL):** ENGEL — paket kapısı kuralı ("hepsi kapanmadan `ready-for-dev` olmaz") açık CT-APR kutularıyla çelişiyordu → kurala tek istisna yazıldı: CT-APR-02 / CT-APR-01 S-49 gereği künyeden sonra kapanır; o ana kadar paket kod için onaylı değildir. ORTA — Ownership and Boundaries'teki domain-config cümlesi satırı "yok" diyordu → satırın var olduğu, yalnız frontend/gateway cümlesinin DL-4 için açık olduğu yazıldı.

@@ -1,4 +1,6 @@
 using System.Text;
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Api.CentralAudit;
 using Diten.CrmService.Application;
 using Diten.CrmService.Infrastructure;
 using Diten.CrmService.Persistence;
@@ -48,6 +50,12 @@ builder.WebHost.UseIISIntegration();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+// CRM-AUD-KN-01 (BL-501, AUD-001 K4 path b): every marked write command also lands in Platform's central audit log. The
+// outbox is in this service's database; RequireEnlistment stays false — CRM's Knowledge writes own no Mongo transaction,
+// so the record is written right after the command succeeds (owner decision K-AUD-2: not the §4.4 K2 class). Registered
+// after AddApplication, so CentralAuditBehavior is the innermost behavior. PlatformRegistration:BaseUrl / InternalApiKey
+// unset → events accumulate, a warning every minute and /health/central-audit Degraded (never silent).
+builder.Services.AddCentralAudit<CrmCentralAuditScope>(builder.Configuration, "Diten.CrmService");
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -132,6 +140,7 @@ app.UseTenantResolution();
 app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "Diten.CrmService" })).AllowAnonymous();
+app.MapHealthChecks("/health/central-audit").AllowAnonymous(); // CRM-AUD-KN-01: Degraded while audit delivery is unconfigured / stuck
 app.MapControllers();
 
 app.Run();

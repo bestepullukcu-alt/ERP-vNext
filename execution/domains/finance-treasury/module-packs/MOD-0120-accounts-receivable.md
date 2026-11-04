@@ -23,6 +23,10 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, seed main'de; `external-references/resolve` O-3 ve MOD-0149 satırında da v1 dışı); kapsam, izin ve AC değişmedi. `status: draft`.
 
+> **KARAR D126 (2026-11-03):** kayıt kodu anahtarı türetme kuralı (D125/2) pakete yazıldı; yeni AC-45. Kapsam ve izin değişmedi. `status: draft`.
+
+> **KARAR D124 (2026-11-03):** para birimi metni #346 ve D121–D123 sonrasına hizalandı: hassasiyet satırına canlı yayım durumu eklendi. Kapsam, izin ve AC değişmedi. `status: draft`.
+
 > **KARAR D105, D112 (kaynak Y-31, 2026-10-31):** para birimi listesi ve küsuratı yalnız `currency-minor-units` setinden gelir; Platform currencies lookup'ı kullanılmaz; sette olmayan kod `…_CURRENCY_PRECISION_UNAVAILABLE` ile reddedilir. DCP-011 `approved` (#309).
 
 > **Durum: `draft` (planlama belgesi).** Bu paket kod, servis iskeleti, port kaydı, gateway rotası ya da kaynak
@@ -501,7 +505,7 @@ başlığı, MOD-0220'den doğrulanmış; R-2 deseni, MOD-0126 pack Entity Field
 |---|---|
 | decimal | tüm tutarlar `decimal` (Mongo `Decimal128`); `float`/`double` yasak (kaynakta da, `AccountsReceivableEntities.cs:4-5@218acaf5`) |
 | para birimi kaynağı | fatura başına **tek** ISO 4217 kodu, `currency-minor-units` setinde (KARAR D105); satır, taksit, tahsilat ve düzeltme faturanın para birimini taşır, farklıysa ret |
-| hassasiyet | para biriminin küsurat hanesi MOD-0048'den; kaynak MOD-0048-FU01 §21 `currency-minor-units` (Y-4/3 başlangıç listesi kabul; seed main'de (PR #297); ortamda yayım kanıtı DL-1 kabulünde — MOD-0126 O-11 ile aynı karar, tek karar iki pakete uygulanır); hane yoksa yazma 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`, sabit tablo uydurulmaz |
+| hassasiyet | para biriminin küsurat hanesi MOD-0048'den; kaynak MOD-0048-FU01 §21 `currency-minor-units` (Y-4/3 başlangıç listesi kabul; seed main'de (PR #297); ortamda yayım kanıtı DL-1 kabulünde, küme canlıda henüz yayımlı değil (D121/2) — MOD-0126 O-11 ile aynı karar, tek karar iki pakete uygulanır); hane yoksa yazma 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE`, sabit tablo uydurulmaz |
 | yuvarlama | **yuvarlama yapılmaz.** Hane aşan tutar **reddedilir**. Miktar × birim fiyat bu sürümde yoktur (fiyatlama faturalamanındır, D27/2); toplamlar tam decimal toplamıdır, yuvarlama gerektirmez. Vergi motoru yok: satır vergisi kullanıcı girdisidir (O-11) |
 | saat dilimi | zaman damgaları UTC `DateTimeOffset`; `InvoiceDate`, `DueDate`, taksit vadesi, `PromiseToPayDate`, `PaymentDate` yalnız tarih (`DateOnly`), çevrim yapılmaz; yaşlandırmanın "bugün"ü O-12 |
 | hafta sınırı | uygulanmaz — bu sürümde haftalık kova yok (projeksiyon MOD-0125'le birlikte taşınmadı) |
@@ -899,7 +903,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     tekrar baştan çalışır.
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `InvoiceCode` yalnız `IRecordCodeAllocator.AllocateAsync(legalEntityId,
   recordType = ARI, idempotencyKey)` portundan alınır; anahtar Create'in idempotency anahtarından (D12/2) türetilir, aynı
-  anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
+  anahtarla tekrar aynı kodu alır. **Anahtar türetme (KARAR D125/2, D126):** istemci anahtarı ham geçmez; servis ortak `RecordCodeIdempotencyKey.Derive` `recordType` ile altı makbuz alanından RFC 8785 JSON dizisi kurar ve SHA-256'sını (64 hex) `idempotencyKey` yapar. Tek tanım MOD-0126 "Kayıt kodu" maddesindedir. Bu modülde `Operation` = `mod0120:CreateReceivableInvoice`. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
   200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i
   503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek
   bağdaştırıcı kayıtlı değil) Create 503, kodsuz kayıt açılmaz; modülde kendi sayaç, yedek kod ya da yerel kod üretimi
@@ -1652,6 +1656,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   döndürdüğünde Create 503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE` ve fatura yazılmaz. **Sabotaj:** üretim kompozisyonunda port
   bağlı değilken (bağdaştırıcı kaydı kaldırılır) Create 503 döner ve koleksiyona yazma olmaz; fail-closed korunağı kaldırılıp
   kodsuz fatura açılabildiğinde test kırmızıya döner. Mimari testi: AR kodunda kendi sayaç / yedek kod üreticisi yok.
+- [ ] AC-45 (zorunlu) — **Kayıt kodu anahtarı türetme (KARAR D125/2, D126):** üretim türeticisi `RecordCodeIdempotencyKey.Derive` ve sahte `IRecordCodeAllocator` ile: (v) D125/2'nin üç test vektörü aynen geçer; (a) aynı makbuz kapsamı, farklı istemci `Key` → iki ayrı kod, allocator iki farklı `idempotencyKey` görür; (b) sahte allocator ilk çağrıda 503 `RECORD_CODE_UNAVAILABLE` döner, Create 503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE` ile başarısız olur ve makbuz yazılmaz; aynı `Idempotency-Key` ile yeniden denenen Create allocator'a ikinci çağrıyı yapar ve iki çağrıdaki `idempotencyKey` birebir aynıdır (tamamlanmış makbuzdan erken dönüş bu testi karşılamaz); (c) iki aktör, aynı şirket ve aynı istemci `Key` → iki ayrı kod. `Operation` = `mod0120:CreateReceivableInvoice`. **Sabotaj:** türetme ham anahtara çevrilince (c), `Key` girdiden çıkarılınca (a), türetilen anahtara çağrı başına değişen değer (yeni Guid ya da zaman damgası) eklenince (b), serileştirmede bir bayt değişince (v) kırmızı.
 
 ## Test Expectations
 
@@ -1660,7 +1665,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   DL-1 kısımları) bu yoldadır; AC-19 mimari testi `tests/architecture/TenantArchitecture.ArchitectureTests`'te koşulur.
 - **Birim:** validatorlar (her alan); durum ve aşama geçiş tabloları (izinli/izinsiz her çift); yaşlandırma türetme (sınır
   günleri, taksitli fatura); düzeltme SoD kuralları A1–A7 (eşik sınırı `Amount == eşik`, para birimi farkı, ayar yok, Guid
-  karşılaştırması); idempotency parmak izi; RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi ve port bağlı değilken 503 (AC-44,
+  karşılaştırması); idempotency parmak izi; RCS kod portu (`IRecordCodeAllocator`) sahtesiyle kod biçimi, anahtar türetme (D125/2 vektörü, (a)–(c); AC-45) ve port bağlı değilken 503 (AC-44,
   sabotajlı); toplam ve taksit hesapları (hane sınırları).
 - **Entegrasyon (Mongo replika kümesi, işlem):** kiracı/şirket izolasyonu (404); veri kapsamı (AC-6, sabotajlı); soft
   delete; idempotent tekrar; CAS 409; CentralAudit commit/rollback ve outbox yazım hatasında komutun başarısız olması
@@ -1994,7 +1999,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   aşamalı: Create / Update / Delete / BulkDelete kısmı), 19, 20, 21, 22, 23, 24, 30, 31 (oluşturma ve silme kısmı: dev ortamında bir Create ve bir Delete çalıştırılır,
   iki merkezi kayıt AUD-001 §8 sorgusuyla gösterilir ve on alan işaretlenir; açma kaydı DL-2'dedir), 32 (d) kısmı (aynı dış
   numarayla iki eşzamanlı Create → biri 409; `ux_receivable_invoice_external_number` kaldırıldığında kırmızı — sabotaj),
-  34, 35 (Create / Update / Delete kısmı), 44. **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve
+  34, 35 (Create / Update / Delete kısmı), 44, 45 (KARAR D126). **Kabul kapısı (KARAR D59/1):** gerçek RCS-001 servisi (BL-565) main'de ve
   dev ortamında gerçek servisle `ARI` kodu alındı (kapanış tablosu RCS-001 satırı).
 - **DL-2** — Yollar: Issue, SetCollectionStage, yaşlandırma türetme. **Neden ayrı:** fatura kilitlenmesi ve aşama tablosu
   bağımsız incelenebilir; DL-3'ün ön koşulu. Önkoşul: DL-1. Bitiş: AC-2 (Issue / SetCollectionStage kısmı), 4, 5 (Issue /
