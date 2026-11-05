@@ -214,6 +214,14 @@ Kaynak: Codex K3 tur 1 (`de49ac68b`; MOD-0120 UYGUN DEĞİL — 3 ORTA; MOD-0124
 4. **D136/4 — sınır:** kapsam, izin, AC numaraları ve `status` değişmedi. MOD-0124 tur 1'de UYGUN (inceleme kaydı bu commit'le). MOD-0120 tur 2 bu sürümle.
 5. **D136/5 — Codex K3 tur 2 (`8cff9a5c1`, ORTA):** MOD-0120 Dependencies hücresi iznin canlı Auth kataloğunda olmadığını kesin söylüyordu; canlı ortam ölçülmedi. İfade depo ölçümüyle sınırlandı (`crm.account.lookup-validation` depoda yalnız CRM kodunda ve testinde, `git grep`, `018f0119c`); canlı katalog ve AR rol ataması Ali'den teyit ve DL-1 kabul kanıtı bekleyen koşul. Tur 3 bu sürümle.
 
+## D138 — MOD-0057 O-10 kapandı, O-4 commercial-suite payı (2026-11-05)
+
+Kaynak: Beste'nin mesajı (K1 aktardı, 2026-11-05; D131 dalını `0e3549642` okudu). Onay satırı değildir.
+
+1. **D138/1 — O-10:** (a) teyit — MOD-0057 tek modül paketi, DCP-011 üyesi değil. DCP-011'in `parked_modules` satırını DCP sahibi (Beste) günceller. Kapandı.
+2. **D138/2 — O-4:** commercial-suite sahibi (a)'yı uygun buldu: MOD-0162 Subject / Topic / AudienceProfile'ın tek kayıt sahibi kalır; `KnowledgeContent.Tags[]` v1'de değişmez. XMC-001 teyidini MOD-0162 sahibi verir — açık (MOD-0162-FU01 künyesinde `owner: module-pack-author`; kişi sorulacak).
+3. **D138/3 — sıra:** O-5 (FU28, Ali) açık; sonra MOD-0057 incelemesi Beste'de.
+
 ## D139 — Platform XMC-001 "evet", aday modu (a); dört finans paketi `ready-for-dev` (2026-11-06)
 
 Kaynak: Beste'nin mesajı (Platform sahibi; K1 aktardı, 2026-11-06), 70 çift dosyası `xmc001-finans-70-cift` (md + csv; çiftler paketlerin Authorization bölümünden, dal `docs/ct/treasury-envelope-d132-01` @ `9dfba1894`). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
