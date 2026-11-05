@@ -29,9 +29,11 @@ by '+' or written with escapes) anywhere else it can see it. Comments never coun
                                 test file cannot be decoded.
     report --pack <id> --results <file|dir>... [--base <ref>]
                                 every criterion of the pack at the base, with the results of its tagged tests from the
-                                given TRX / JUnit files. Only tags that LEAD a test's name count (a Theory's data never
-                                does); this pack's tag syntax anywhere else in a result name, or a criterion the pack does
-                                not have, is an ENGEL (exit 1). A test that did not pass (failed, error, timeout, not
+                                given TRX / JUnit files. Only tags that LEAD a test's name count — a TRX name's start; a
+                                JUnit name's start or right after its FIRST ' > ' (a tagged JS test sits at most one
+                                describe deep) — so a Theory's data never does. This pack's id anywhere else in a result
+                                name next to ':' or 'AC' (a broken tag: '[MOD-0900 AC-9]', '[MOD-0900;AC-9]', any case), or
+                                a criterion the pack does not have, is an ENGEL (exit 1). A test that did not pass (failed, error, timeout, not
                                 executed, skipped, todo) is never a pass and is never hidden by one that passed. A criterion
                                 without results is listed. The report says "the tests linked to this criterion ran and
                                 passed" — never "the criterion is met". It does NOT verify that the files belong to one CI
@@ -65,9 +67,10 @@ CS_TEST = re.compile(r"(?:^|/)(?:tests?|[^/]+\.Tests?|[^/]*Tests)/(?:.*/)?[^/]+\
 JS_TEST = re.compile(r"\.(?:test|spec)\.(?:[cm]?js|jsx|ts|tsx)$")
 CS_NAME_CTX = re.compile(r"\[\s*(?:global\s*::\s*)?(?:[A-Za-z_]\w*\s*\.\s*)*\w*(?:Fact|Theory)(?:Attribute)?\s*\("
                          r"[^\]]*\bDisplayName\s*=\s*", re.S)
-# a test's name in a result: tags at its start, or right after a JUnit suite path's ' > ' (Vitest joins the describe
-# names with it) — the FIRST such place only, so a ' > ' inside the test's own name never hides it (Codex)
-RESULT_LEAD = re.compile(rf"(?:^|\s>\s)((?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+)")
+# a test's name in a result opens with its tags: at the very start (TRX: only there), or — JUnit only — right after the
+# FIRST ' > ' (Vitest joins a describe's name to the test's with it; a tagged test sits at most one describe deep).
+# Codex 3rd: any later ' > ' or one in a TRX name (Theory data) never opens a name.
+RESULT_LEAD = re.compile(rf"(?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+")
 ESCAPE = re.compile(r"\\(?:u\{([0-9A-Fa-f]{1,6})\}|u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8})|x([0-9A-Fa-f]{1,4}))")
 # a JS '/' after one of these (or at the start) opens a regex literal, not a division
 REGEX_BEFORE = set("(,=:[!&|?{};+-*%<>~^") | {""}
@@ -369,12 +372,12 @@ def results_of(paths: list[str]) -> tuple[list[tuple[str, str]], list[str]]:
         if root.tag == TRX_NS + "TestRun":
             for r in root.iter(TRX_NS + "UnitTestResult"):
                 rows.append((r.get("testName", ""), PASS if r.get("outcome") == "Passed"
-                             else NOT_RUN if r.get("outcome") == "NotExecuted" else FAIL))
+                             else NOT_RUN if r.get("outcome") == "NotExecuted" else FAIL, "trx"))
         elif root.tag in ("testsuites", "testsuite"):
             for c in root.iter("testcase"):
                 kids = {k.tag for k in c}
                 rows.append((c.get("name", ""), FAIL if kids & {"failure", "error"} else NOT_RUN if "skipped" in kids
-                             else PASS))
+                             else PASS, "junit"))
         else:
             raise Incomplete(f"{f}: TRX ya da JUnit değil ({root.tag[:40]})")
         if not rows:
@@ -391,12 +394,17 @@ def report(root: str, pack: str, paths: list[str], base: str | None) -> tuple[in
     rows, files = results_of(paths)
     runs: dict[int, list[str]] = {n: [] for n in crit}
     engel = []
-    mine = re.compile(rf"{re.escape(pack)}(?![-\w])\s*:")   # this pack's tag syntax, never a longer id's
-    for name, state in rows:
-        lead = RESULT_LEAD.search(name)
-        head = lead.group(1) if lead else ""
+    # this pack's id followed by ':' or by an 'AC' a few non-word characters later ('[MOD-0900 AC-99]', '[MOD-0900;AC-99]',
+    # 'MOD-0900-AC-1'; any case) — never a longer id's ('MOD-0900-FU01:' is another pack). Codex 3rd: a broken tag must
+    # not pass the boundary.
+    mine = re.compile(rf"{re.escape(pack)}(?:(?![-\w])[^A-Za-z0-9\]\n]{{0,3}}AC|\s*:|-AC)", re.I)
+    for name, state, fmt in rows:
+        lead = RESULT_LEAD.match(name)
+        if lead is None and fmt == "junit" and " > " in name:
+            lead = RESULT_LEAD.match(name, name.index(" > ") + 3)
+        head = lead.group(0) if lead else ""
         tags = [(p, int(n)) for p, n in dict.fromkeys(TAG.findall(head)) if p == pack]
-        rest = name[:lead.start(1)] + name[lead.end(1):] if lead else name
+        rest = name[:lead.start()] + name[lead.end():] if lead else name
         if mine.search(rest):            # the boundary: this pack's syntax anywhere but the leading tags (Codex)
             engel.append(f"{pack} etiketi bir test adının başında değil ya da biçimi bozuk — '{name[:90]}'")
         for _p, n in tags:
@@ -597,6 +605,27 @@ def self_test() -> int:
                       "a link to the same file is read once", has("AC-1 (zorunlu)", "1/2 KALDI")))
         cases.append(("sabotage report (the boundary): a broken tag in a result name built at run time -> ENGEL, exit 1",
                       _c == 1 and any(l.startswith("ENGEL") and "biçimi bozuk" in l for l in o)))
+        trx_names = ["plain &gt; [MOD-0900:AC-1] nonleading", "BoundaryTests.Data(data: &quot; &gt; [MOD-0900:AC-1]&quot;)",
+                     "[MOD-0900 AC-99] missing colon", "[MOD-0900;AC-99] semicolon", "[mod-0900:ac-1] lower case"]
+        put("r7/b.trx", '<?xml version="1.0"?><TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">'
+                        "<Results>" + "".join(f'<UnitTestResult testName="{t}" outcome="Passed"/>' for t in trx_names)
+                        + "</Results></TestRun>")
+        _c, o = report(td, "MOD-0900", [str(Path(td) / "r7" / "b.trx")], base)
+        bad = [l for l in o if l.startswith("ENGEL")]
+        cases.append(("sabotage report (Codex 3rd): in a TRX name a ' > ' never opens a name, and a tag with a missing or "
+                      "wrong ':' or in another case is broken -> one ENGEL for each of the 5 names, nothing counted",
+                      _c == 1 and len(bad) == 5 and has("AC-1 (zorunlu)", "sonuç yok")))
+        put("r8/v.xml", '<testsuites><testsuite name="v">'
+                        '<testcase name="suite &gt; plain &gt; [MOD-0900:AC-1] nonleading"/>'
+                        '<testcase name="suite &gt; [MOD-0900;AC-99] semicolon"/>'
+                        '<testcase name="suite &gt; [MOD-0900:AC-2] one describe deep"/>'
+                        '<testcase name="[MOD-0900-FU01:AC-1] another pack"/></testsuite></testsuites>')
+        _c, o = report(td, "MOD-0900", [str(Path(td) / "r8")], base)
+        bad = [l for l in o if l.startswith("ENGEL")]
+        cases.append(("sabotage report (Codex 3rd): in a JUnit name only the FIRST ' > ' opens the test's name; a second "
+                      "one, or a broken tag after it -> ENGEL; one describe deep counts; a follow-up pack's tag is no ENGEL",
+                      _c == 1 and len(bad) == 2 and has("AC-2 (isteğe bağlı)", "bağlı 1 test koştu ve geçti")
+                      and has("AC-1 (zorunlu)", "sonuç yok")))
         put("r2/only.xml", '<testsuites><testsuite name="x"><testcase name="untagged"/></testsuite></testsuites>')
         _c, o = report(td, "MOD-0900", [str(Path(td) / "r2")], base)
         cases.append(("report: a criterion no tagged test ran for -> 'sonuç yok' (never silently absent)",
