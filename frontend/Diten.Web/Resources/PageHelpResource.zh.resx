@@ -1670,7 +1670,7 @@
     <value>隔离库存</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>在“客户与发货”中使用“标记为已通知”和“添加消耗声明”。在“退回”中，“录入客户退货”会打开库存移动表单；然后在候选项上点击“关联退货”。</value>
+    <value>在“客户与发货”中使用“标记为已通知”和“添加消耗声明”。在“退回”中，“录入客户退货”会打开库存移动表单；然后在候选项上点击“关联退货”。“旧记录”或“无 CRM 标识”徽标表示没有 CRM 标识的客户；此类行绝不会与 CRM 客户合并。无法连接 CRM 时，或您无权查看 CRM 客户名称（“缺少权限”）时，该客户的通知、消耗声明和退货关联均不可用。客户名称每页显示 25 个客户；其他客户请使用翻页按钮。</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>跟进客户和退货</value>

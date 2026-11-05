@@ -1670,7 +1670,7 @@
     <value>Ponga el stock en cuarentena</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>En «Clientes y envíos», use «Marcar como informado» y «Añadir declaración de consumo». En «Devoluciones», «Registrar devolución de cliente» abre el formulario de movimiento de stock; después haga clic en «Vincular la devolución» en una candidata.</value>
+    <value>En «Clientes y envíos», use «Marcar como informado» y «Añadir declaración de consumo». En «Devoluciones», «Registrar devolución de cliente» abre el formulario de movimiento de stock; después haga clic en «Vincular la devolución» en una candidata. Una insignia «Registro antiguo» o «Sin identidad CRM» marca un cliente sin identidad CRM; nunca se fusiona con un cliente CRM. Mientras no se pueda acceder al CRM, o si no tiene permiso para ver los nombres de clientes del CRM («Falta permiso»), la notificación, la declaración de consumo y la vinculación de devoluciones están cerradas para ese cliente. Los nombres de clientes se muestran en páginas de 25; use los botones de página para los demás.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Siga clientes y devoluciones</value>

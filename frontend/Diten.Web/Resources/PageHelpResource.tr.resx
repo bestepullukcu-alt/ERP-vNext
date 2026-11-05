@@ -1670,7 +1670,7 @@
     <value>Stoğu karantinaya alın</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>“Müşteriler ve sevkiyatlar” sekmesinde “Bilgilendirildi olarak kaydet” ve “Tüketim beyanı ekle”yi kullanın. “Geri dönüşler” sekmesinde “Müşteri iadesi gir” stok hareketi formunu açar; ardından adaydaki “İadeyi bağla”ya tıklayın.</value>
+    <value>“Müşteriler ve sevkiyatlar” sekmesinde “Bilgilendirildi olarak kaydet” ve “Tüketim beyanı ekle”yi kullanın. “Geri dönüşler” sekmesinde “Müşteri iadesi gir” stok hareketi formunu açar; ardından adaydaki “İadeyi bağla”ya tıklayın. “Eski kayıt” ya da “CRM kimliği yok” rozeti CRM kimliği olmayan müşteriyi işaretler; böyle bir satır CRM müşterisiyle birleştirilmez. CRM’e ulaşılamadığında ya da CRM müşteri adlarını görme izniniz yokken (“İzin eksik”) o müşteri için bildirim, tüketim beyanı ve iade bağlama kapalıdır. Müşteri adları 25’er müşterilik sayfalarla gösterilir; ötekiler için sayfa düğmelerini kullanın.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Müşterileri ve iadeleri izleyin</value>

@@ -1670,7 +1670,7 @@
     <value>Quarantine the stock</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>On “Customers and shipments”, use “Mark as notified” and “Add consumption declaration”. On “Returns”, “Enter customer return” opens the stock movement form; then click “Link the return” on a candidate.</value>
+    <value>On “Customers and shipments”, use “Mark as notified” and “Add consumption declaration”. On “Returns”, “Enter customer return” opens the stock movement form; then click “Link the return” on a candidate. A “Legacy record” or “No CRM identity” badge marks a customer without a CRM identity; it is never merged with a CRM customer. While CRM cannot be reached, or while you may not read CRM customer names (“Permission missing”), notification, consumption declaration and return linking are closed for that customer. Customer names are shown 25 customers at a time; use the page buttons for the others.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Follow customers and returns</value>

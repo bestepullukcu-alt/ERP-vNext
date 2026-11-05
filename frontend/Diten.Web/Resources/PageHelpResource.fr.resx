@@ -1670,7 +1670,7 @@
     <value>Mettez le stock en quarantaine</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>Dans «Clients et expéditions», utilisez «Marquer comme informé» et «Ajouter une déclaration de consommation». Dans «Retours», «Saisir un retour client» ouvre le formulaire de mouvement de stock ; cliquez ensuite sur «Lier le retour» sur un candidat.</value>
+    <value>Dans «Clients et expéditions», utilisez «Marquer comme informé» et «Ajouter une déclaration de consommation». Dans «Retours», «Saisir un retour client» ouvre le formulaire de mouvement de stock ; cliquez ensuite sur «Lier le retour» sur un candidat. Un badge «Ancien enregistrement» ou «Sans identité CRM» signale un client sans identité CRM ; il n’est jamais fusionné avec un client CRM. Tant que le CRM est inaccessible, ou si vous n’êtes pas autorisé à voir les noms des clients CRM («Autorisation manquante»), la notification, la déclaration de consommation et la liaison de retour sont fermées pour ce client. Les noms des clients s’affichent par pages de 25 ; utilisez les boutons de page pour les autres.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Suivez clients et retours</value>
