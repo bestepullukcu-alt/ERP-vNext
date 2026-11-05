@@ -87,4 +87,73 @@ public sealed class ShipmentBundleHttpReader : IShipmentReader
 
     private static string? Text(JsonElement root, string name)
         => root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    // ── MOD-0178 DL-5 (additive, XMC-001 seam — pack §5): the dispatch sync's two reads, the SAME client, header forwarding, 2 s bound and
+    // outcome rule as ReadOneAsync (200 Ok, 401 / 403 Forbidden, 404 NotFound, any other answer / timeout / no answer / unreadable body
+    // Unavailable; the caller's own cancellation is rethrown). ReadAsync above is unchanged. ──
+
+    public async Task<ShipmentQueryResult> QueryBySourceDocumentAsync(string sourceDocumentId, CancellationToken cancellationToken = default)
+    {
+        var (outcome, root) = await GetAsync($"api/shipment-bundle/shipments?sourceDocumentId={Uri.EscapeDataString(sourceDocumentId)}&pageSize=200", cancellationToken);
+        if (outcome != ShipmentReadOutcome.Ok) return new ShipmentQueryResult(outcome, []);
+        if (root is not { ValueKind: JsonValueKind.Object } body || !body.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+            return new ShipmentQueryResult(ShipmentReadOutcome.Unavailable, []);
+        var list = new List<ShipmentQueryItem>();
+        foreach (var item in items.EnumerateArray())
+        {
+            if (Text(item, "shipmentId") is not { } id) return new ShipmentQueryResult(ShipmentReadOutcome.Unavailable, []);
+            list.Add(new ShipmentQueryItem(id, Text(item, "shipmentNumber")));
+        }
+
+        return new ShipmentQueryResult(ShipmentReadOutcome.Ok, list);
+    }
+
+    public async Task<ShipmentDetailResult> ReadDetailAsync(string shipmentId, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParseExact(shipmentId, "D", out var id)) return new ShipmentDetailResult(ShipmentReadOutcome.NotFound, shipmentId, null, null, null, null, null, []);
+        var (outcome, root) = await GetAsync($"api/shipment-bundle/shipments/{id:D}", cancellationToken);
+        if (outcome != ShipmentReadOutcome.Ok || root is not { ValueKind: JsonValueKind.Object } body)
+            return new ShipmentDetailResult(outcome == ShipmentReadOutcome.Ok ? ShipmentReadOutcome.Unavailable : outcome, shipmentId, null, null, null, null, null, []);
+        var lines = new List<ShipmentDetailLine>();
+        if (body.TryGetProperty("lines", out var raw) && raw.ValueKind == JsonValueKind.Array)
+        {
+            lines.AddRange(raw.EnumerateArray().Select(l => new ShipmentDetailLine(Text(l, "skuId"), Text(l, "lotId"), Text(l, "fromLocationId"), Text(l, "quantity"))));
+        }
+
+        bool? stockIssued = body.TryGetProperty("stockIssued", out var issued) && issued.ValueKind is JsonValueKind.True or JsonValueKind.False ? issued.GetBoolean() : null;
+        return new ShipmentDetailResult(ShipmentReadOutcome.Ok, Text(body, "shipmentId") ?? shipmentId, Text(body, "shipmentNumber"), Text(body, "sourceModule"),
+            Text(body, "sourceType"), Text(body, "status"), stockIssued, lines);
+    }
+
+    private async Task<(ShipmentReadOutcome Outcome, JsonElement? Root)> GetAsync(string path, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(PerReadTimeout);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", _tenant.LegalEntityId.ToString("D"));
+            using var response = await _http.SendAsync(request, timeout.Token);
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    using (var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token)))
+                    {
+                        return (ShipmentReadOutcome.Ok, document.RootElement.Clone());
+                    }
+                case HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden:
+                    return (ShipmentReadOutcome.Forbidden, null);
+                case HttpStatusCode.NotFound:
+                    return (ShipmentReadOutcome.NotFound, null);
+                default:
+                    return (ShipmentReadOutcome.Unavailable, null);
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException or JsonException
+                                   && !cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("wms.dispatch.read_unavailable {Path}: {Reason}", path.Split('?')[0], ex.GetType().Name);
+            return (ShipmentReadOutcome.Unavailable, null);
+        }
+    }
 }

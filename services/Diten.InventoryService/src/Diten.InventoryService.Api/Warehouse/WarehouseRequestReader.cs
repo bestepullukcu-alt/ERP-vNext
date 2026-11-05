@@ -154,6 +154,41 @@ public static class WarehouseRequestReader
             return new CreateOutboundShipmentInput(Uuid("warehouseId"), OptionalUuid("stagingLocationId"), String("orderRef"), Address("shipTo"), String("note"), lines);
         }
 
+        /// <summary>DL-5 <c>createPackage</c> / <c>updatePackage</c> — <c>weightKg?</c>, <c>dimensionsCm?</c>, <c>contents?: [{ allocSeq, quantity }]</c>.</summary>
+        public PackageInput Package()
+        {
+            List<PackageContentInput>? contents = null;
+            if (Root.TryGetProperty("contents", out var raw) && raw.ValueKind != JsonValueKind.Null)
+            {
+                contents = Array(Root, "contents").Select(e =>
+                {
+                    if (e.ValueKind != JsonValueKind.Object) throw new FormatException("contents[] entries must be objects.");
+                    Closed(e, "contents[]", "allocSeq", "quantity");
+                    var seq = e.TryGetProperty("allocSeq", out var s) && s.ValueKind == JsonValueKind.Number && s.TryGetInt32(out var n) && n >= 1
+                        ? n
+                        : throw new FormatException("contents[].allocSeq is required and must be an integer ≥ 1.");
+                    return new PackageContentInput(seq, Str(e, "quantity"));
+                }).ToList();
+            }
+
+            return new PackageInput(Has("weightKg"), String("weightKg"), Has("dimensionsCm"), String("dimensionsCm"), Has("contents"), contents);
+        }
+
+        /// <summary>DL-5 <c>releaseOutboundShipment</c> — <c>fefoBypassReasons?: [{ allocSeq, reason }]</c>.</summary>
+        public IReadOnlyList<ReleaseReasonInput> ReleaseReasons()
+        {
+            if (!Root.TryGetProperty("fefoBypassReasons", out var raw) || raw.ValueKind == JsonValueKind.Null) return [];
+            return Array(Root, "fefoBypassReasons").Select(e =>
+            {
+                if (e.ValueKind != JsonValueKind.Object) throw new FormatException("fefoBypassReasons[] entries must be objects.");
+                Closed(e, "fefoBypassReasons[]", "allocSeq", "reason");
+                var seq = e.TryGetProperty("allocSeq", out var s) && s.ValueKind == JsonValueKind.Number && s.TryGetInt32(out var n) && n >= 1
+                    ? n
+                    : throw new FormatException("fefoBypassReasons[].allocSeq is required and must be an integer ≥ 1.");
+                return new ReleaseReasonInput(seq, Str(e, "reason"));
+            }).ToList();
+        }
+
         /// <summary>S2 <c>updateOutboundShipment</c> — header members only; each one's presence is kept (absent = unchanged).</summary>
         public UpdateOutboundShipmentInput OutboundChange()
             => new(Has("orderRef"), String("orderRef"), Has("shipTo"), Address("shipTo"), Has("note"), String("note"));
@@ -263,4 +298,13 @@ public static class WarehouseRequestReader
     public static readonly HashSet<string> UpdateOutboundMembers = new(StringComparer.Ordinal) { "idempotencyKey", "orderRef", "shipTo", "note" };
 
     public static readonly HashSet<string> ReasonMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason" };
+
+    // ── DL-5 (WMS draft §11) ──
+
+    /// <summary>confirmPickTask — the quantity (+ channel, scanRef); a target or a source is NOT a member (400, pack §8.19).</summary>
+    public static readonly HashSet<string> ConfirmPickMembers = new(StringComparer.Ordinal) { "idempotencyKey", "quantity", "channel", "scanRef" };
+
+    public static readonly HashSet<string> ReleaseOutboundMembers = new(StringComparer.Ordinal) { "idempotencyKey", "fefoBypassReasons" };
+
+    public static readonly HashSet<string> PackageMembers = new(StringComparer.Ordinal) { "idempotencyKey", "weightKg", "dimensionsCm", "contents" };
 }

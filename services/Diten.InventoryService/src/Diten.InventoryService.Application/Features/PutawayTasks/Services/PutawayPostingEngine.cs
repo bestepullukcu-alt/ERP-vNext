@@ -77,16 +77,16 @@ public sealed class PutawayPostingEngine
     private readonly IWarehouseMovementPoster _poster;
     private readonly IPostingKeyLookup _lookup;
     private readonly PutawayTaskSupport _support;
-    private readonly TimeProvider _clock;
+    private readonly TimeProvider _clock; private readonly IPickTaskCompletion? _pickCompletion; // DL-5: the pick task's outbound step
 
     public PutawayPostingEngine(IWarehouseTaskRepository tasks, IWarehouseMovementPoster poster, IPostingKeyLookup lookup, PutawayTaskSupport support,
-        TimeProvider clock)
+        TimeProvider clock, IPickTaskCompletion? pickCompletion = null)
     {
         _tasks = tasks;
         _poster = poster;
         _lookup = lookup;
         _support = support;
-        _clock = clock;
+        _clock = clock; _pickCompletion = pickCompletion;
     }
 
     /// <summary>Times are stored to the second, so the stored value IS the value sent (the ledger fingerprint covers the dates, F-2).</summary>
@@ -101,7 +101,7 @@ public sealed class PutawayPostingEngine
     {
         HeaderIdempotencyKey = c.PostingKey,
         IdempotencyKey = c.PostingKey,
-        DocumentGroupId = task.Number,
+        DocumentGroupId = task.Kind == WarehouseTaskKind.Pick ? task.OutboundNumber ?? task.Number : task.Number, ReservationId = PickReservation(task),
         MovementType = WireNames.ToWire(Domain.Enums.MovementType.LocationTransfer),
         ItemId = task.ItemId.ToString("D"),
         SkuId = task.SkuId.ToString("D"),
@@ -117,7 +117,7 @@ public sealed class PutawayPostingEngine
         FromStockStatus = WireNames.ToWire(task.StockStatus),
         ToStockStatus = WireNames.ToWire(task.StockStatus),
         SourceModule = SourceModule,
-        SourceType = SourceType,
+        SourceType = SourceTypeOf(task.Kind),
         SourceDocumentId = task.Id.ToString("D"),
         SourceLineId = c.Seq.ToString(CultureInfo.InvariantCulture),
         TransactionDate = c.TransactionDate.UtcDateTime.ToString(WireDate, CultureInfo.InvariantCulture),
@@ -252,7 +252,7 @@ public sealed class PutawayPostingEngine
             var target = copy.Confirmations.Single(x => x.Seq == seq);
             var (kind, events) = Apply(copy, target, result, mode, now);
             if (await SaveAsync(copy, task.Version, events, now, ct)) return new ResultWrite(kind, copy);
-            task = await _tasks.FindAsync(task.Id, ct) ?? throw new InvalidOperationException("A task vanished while its result was written.");
+            task = await FindAsync(task, ct) ?? throw new InvalidOperationException("A task vanished while its result was written.");
         }
 
         return new ResultWrite(ResultWriteKind.ConflictRetryExhausted, task);
@@ -357,7 +357,7 @@ public sealed class PutawayPostingEngine
             var e = system ? _support.SystemEvent(copy, WarehouseTaskEventKind.ConfirmationIntegrityError, now, data)
                 : _support.Event(copy, WarehouseTaskEventKind.ConfirmationIntegrityError, now, data);
             if (await SaveAsync(copy, task.Version, [e], now, ct)) return new ResultWrite(ResultWriteKind.IntegrityError, copy);
-            task = await _tasks.FindAsync(task.Id, ct) ?? throw new InvalidOperationException("A task vanished while its result was written.");
+            task = await FindAsync(task, ct) ?? throw new InvalidOperationException("A task vanished while its result was written.");
         }
 
         return new ResultWrite(ResultWriteKind.DivergedExhausted, task);
@@ -372,8 +372,27 @@ public sealed class PutawayPostingEngine
         {
             if (!await session.ReplaceTaskAsync(copy, expectedVersion, tx)) return WarehouseWriteOutcome.None;
             await session.InsertEventsAsync(events, tx);
+            // DL-5 (§8.18 / §8.19): a pick task that is terminal now moves its outbound in THIS transaction (Picked when every task is terminal
+            // and something was picked; otherwise the outbound is only touched, so two concurrent last writes conflict instead of skewing)
+            if (copy.Kind == WarehouseTaskKind.Pick && PutawayTaskRules.IsTerminal(copy.Status) && copy.OutboundId is { } outboundId && _pickCompletion is not null)
+                await _pickCompletion.ApplyAsync(session, outboundId, now, tx);
             return new WarehouseWriteOutcome(1, copy.Id);
         }, ct);
         return outcome.Affected > 0;
     }
+
+    // ── DL-5 (pack §8.19): the pick kind on the one engine — kept BELOW the poster call (MOD-0176's ExpiryQuarantineTypeExemptionTests pins its line) ──
+
+    /// <summary>The source type of a pick task's movement.</summary>
+    public const string PickSourceType = "PICK_TASK";
+
+    /// <summary>The movement source type of a task's kind (S1 putaway / S2 pick).</summary>
+    public static string SourceTypeOf(WarehouseTaskKind kind) => kind == WarehouseTaskKind.Pick ? PickSourceType : SourceType;
+
+    /// <summary>A pick movement names the allocation's reservation (INVENTORY 1.7.0 validates it, never consumes it); a putaway movement none.</summary>
+    public static string? PickReservation(WarehouseTask task) => task.Kind == WarehouseTaskKind.Pick ? task.ReservationId?.ToString("D") : null;
+
+    /// <summary>The task again, read by its own kind (the S1 member reads putaway tasks only).</summary>
+    public Task<WarehouseTask?> FindAsync(WarehouseTask task, CancellationToken ct)
+        => task.Kind == WarehouseTaskKind.Pick ? _tasks.FindOfKindAsync(task.Id, WarehouseTaskKind.Pick, ct) : _tasks.FindAsync(task.Id, ct);
 }

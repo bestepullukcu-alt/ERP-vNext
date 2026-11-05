@@ -95,8 +95,10 @@ public sealed class WarehouseRegistrationTests
             ["LOCATION_ROLE_BULK_DELETE"] = (WarehousePermissions.LocationRolesManage, true)
         }, actions);
 
-        // DL-4: the S2 outbound create / update keys are API permissions until the DL-6 screen declares them as page actions
-        Assert.Equal([WarehousePermissions.OutboundShipmentsRead, WarehousePermissions.OutboundShipmentsCreate, WarehousePermissions.OutboundShipmentsUpdate],
+        // DL-4: the S2 outbound create / update keys are API permissions until the DL-6 screen declares them as page actions; DL-5 adds the cancel /
+        // release, pick task and package keys the same way (pack §14.2)
+        Assert.Equal([WarehousePermissions.OutboundShipmentsRead, WarehousePermissions.OutboundShipmentsCreate, WarehousePermissions.OutboundShipmentsUpdate,
+                .. WarehousePermissions.Dl5],
             (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey));
     }
 
@@ -128,11 +130,12 @@ public sealed class WarehouseRegistrationTests
     public void The_warehouse_code_names_no_ledger_store_no_stock_total_and_no_sales_issue()
     {
         var warehouse = SourceScan.Production()
-            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks|OutboundShipments)/")) // DL-4: the S2 outbound folder too
+            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks|OutboundShipments|PickTasks|HandlingUnits)/")) // DL-4 / DL-5: the S2 folders too
             .ToList();
         Assert.True(warehouse.Count >= 15, $"vacuous scan: {warehouse.Count} files");
 
-        foreach (var forbidden in new[] { "IInventoryLedgerRepository", "inventory_transactions", "inventory_balances", "GOODS_ISSUE_SALES" })
+        // DL-5 (AC-31, W-4, sabotage (t)): 0178 never writes the sales issue — neither the wire name nor the movement enum member
+        foreach (var forbidden in new[] { "IInventoryLedgerRepository", "inventory_transactions", "inventory_balances", "GOODS_ISSUE_SALES", "GoodsIssueSales" })
         {
             Assert.DoesNotContain(warehouse, f => f.Body.Contains(forbidden, StringComparison.Ordinal));
         }

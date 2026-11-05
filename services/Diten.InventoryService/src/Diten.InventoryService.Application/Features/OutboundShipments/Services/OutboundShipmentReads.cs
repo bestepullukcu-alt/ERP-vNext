@@ -44,16 +44,26 @@ public sealed class OutboundShipmentReads
     public async Task<OutboundShipmentViewDto> ViewAsync(OutboundShipment outbound, CancellationToken ct)
     {
         var tasks = await _outbounds.PickTasksAsync(outbound.Id, ct);
+        var packages = await _outbounds.PackagesAsync(outbound.Id, ct);
         var locationIds = outbound.AllAllocations().SelectMany(a => a.PlannedBins).Select(b => b.LocationId)
             .Concat(tasks.Select(t => t.FromLocationId)).Distinct().ToList();
         var codes = locationIds.Count == 0
             ? new Dictionary<Guid, string>()
             : (await _locations.FindManyAsync(locationIds, ct)).ToDictionary(l => l.Id, l => l.Code);
-        return View(outbound, tasks, codes);
+        return View(outbound, tasks, codes, packages);
     }
 
-    public static OutboundShipmentViewDto View(OutboundShipment o, IReadOnlyList<WarehouseTask> tasks, IReadOnlyDictionary<Guid, string> codes)
-        => new(
+    public static PackageDto Package(HandlingUnit p)
+        => new(p.Id.ToString("D"), p.PackageNumber, p.OutboundId.ToString("D"), p.Status.ToString(),
+            p.Contents.OrderBy(c => c.AllocSeq).Select(c => new PackageContentDto(c.AllocSeq, Q(c.Quantity))).ToList(),
+            p.WeightKg?.ToString("0.000", CultureInfo.InvariantCulture), p.DimensionsCm, p.Version);
+
+    public static OutboundShipmentViewDto View(OutboundShipment o, IReadOnlyList<WarehouseTask> tasks, IReadOnlyDictionary<Guid, string> codes,
+        IReadOnlyList<HandlingUnit>? packages = null)
+    {
+        var picked = OutboundFlowRules.PickedByAllocation(tasks);
+        var packed = OutboundFlowRules.PackedByAllocation(packages ?? []);
+        return new(
             o.Id.ToString("D"),
             o.OutboundNumber,
             (o.LegalEntityId ?? Guid.Empty).ToString("D"),
@@ -76,7 +86,8 @@ public sealed class OutboundShipmentReads
                 l.Allocations.Select(a => new OutboundAllocationDto(
                     a.AllocSeq, a.LotId, a.LotNumber, Q(a.Quantity), a.FefoRank, a.FefoBypassReason,
                     a.PlannedBins.Select(b => new OutboundPlannedBinDto(b.LocationId.ToString("D"), codes.GetValueOrDefault(b.LocationId), Q(b.Quantity))).ToList(),
-                    a.ReservationId?.ToString("D"), a.ReservationReleaseState.ToString())).ToList())).ToList(),
+                    a.ReservationId?.ToString("D"), a.ReservationReleaseState.ToString(), Q(picked.GetValueOrDefault(a.AllocSeq)),
+                    Q(packed.GetValueOrDefault(a.AllocSeq)))).ToList())).ToList(),
             tasks.OrderBy(t => t.AllocSeq).ThenBy(t => t.Number, StringComparer.Ordinal).Select(t => new OutboundPickTaskDto(
                 t.Id.ToString("D"), t.Number, t.Status.ToString(), t.LineSeq ?? 0, t.AllocSeq ?? 0, t.FromLocationId.ToString("D"),
                 codes.GetValueOrDefault(t.FromLocationId), (t.ToLocationId ?? Guid.Empty).ToString("D"), t.LotId, t.LotNumber, Q(t.PlannedQuantity),
@@ -85,7 +96,13 @@ public sealed class OutboundShipmentReads
             Wire(o.CreatedAt),
             new OutboundPersonDto(o.CreatedBy.ToString("D"), o.CreatedByName),
             o.Version,
-            WarehouseContract.ContractVersion);
+            WarehouseContract.ContractVersion,
+            o.Shipment is { } s ? new OutboundShipmentLinkDto(s.ShipmentId, s.ShipmentNumber, s.Status, Wire(s.ObservedAtUtc)) : null,
+            packages is null ? null : packages.OrderBy(p => p.PackageNumber, StringComparer.Ordinal).Select(Package).ToList(),
+            o.CancelReason,
+            o.ShortDispatchUnresolved.Count == 0 ? null : o.ShortDispatchUnresolved.Select(u => new ShortDispatchUnresolvedDto(u.SkuId.ToString("D"), u.LotId,
+                Q(u.Expected), Q(u.Issued), u.Reason)).ToList());
+    }
 
     public static OutboundShipmentSummaryDto Summary(OutboundShipment o)
         => new(o.Id.ToString("D"), o.OutboundNumber, o.Status.ToString(), o.WarehouseId.ToString("D"), o.WarehouseCode, o.OrderRef, o.ShipTo.Name,

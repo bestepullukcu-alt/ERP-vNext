@@ -149,6 +149,43 @@ public sealed class OutboundAllocationFailure
     }
 }
 
+/// <summary>
+/// §4.5 <c>Shipment</c> (DL-5, §8.21) — the MVP-6 shipment the dispatch sync saw; <see cref="ObservedAtUtc"/> is the moment of the sync (the
+/// MVP-6 wire carries no dispatch time). Shown on <c>/view</c> only, never on the frozen detail (<c>SOURCE_DRIFT</c>, Q-M6-1).
+/// </summary>
+public sealed class OutboundShipmentLink
+{
+    public string ShipmentId { get; set; } = string.Empty;
+
+    public string? ShipmentNumber { get; set; }
+
+    public string Status { get; set; } = string.Empty;
+
+    public DateTimeOffset ObservedAtUtc { get; set; }
+
+    public OutboundShipmentLink Copy() => (OutboundShipmentLink)MemberwiseClone();
+}
+
+/// <summary>
+/// §4.5 <c>ShortDispatchUnresolved[]</c> (r24 / r25, §8.21) — one row per SKU whose unissued picked quantity could not be put back by a task,
+/// written with <c>Shipped</c> and never changed; <see cref="LotId"/> only when every line of the SKU was on one lot.
+/// </summary>
+public sealed class OutboundShortDispatchUnresolved
+{
+    public Guid SkuId { get; set; }
+
+    public string? LotId { get; set; }
+
+    public decimal Expected { get; set; }
+
+    public decimal Issued { get; set; }
+
+    /// <summary><c>LotMissing</c> → <c>NotFromStaging</c> → <c>OverIssued</c> — the first condition that did not hold (explanatory only).</summary>
+    public string Reason { get; set; } = string.Empty;
+
+    public OutboundShortDispatchUnresolved Copy() => (OutboundShortDispatchUnresolved)MemberwiseClone();
+}
+
 /// <summary>§4.5 <c>OutboundShipment</c> (<c>wms_outbound_shipments</c>; the source of WAREHOUSE-OUTBOUND <c>OutboundShipment</c>).</summary>
 public sealed class OutboundShipment : EntityBase
 {
@@ -182,6 +219,22 @@ public sealed class OutboundShipment : EntityBase
 
     public OutboundAllocationFailure? AllocationFailure { get; set; }
 
+    /// <summary>DL-5: the MVP-6 shipment that made the outbound <c>Shipped</c> (§8.21).</summary>
+    public OutboundShipmentLink? Shipment { get; set; }
+
+    /// <summary>DL-5: the cancel reason (10–1000, §8.22).</summary>
+    public string? CancelReason { get; set; }
+
+    /// <summary>DL-5: written with <c>Shipped</c> only (§8.21), never changed afterwards.</summary>
+    public List<OutboundShortDispatchUnresolved> ShortDispatchUnresolved { get; set; } = [];
+
+    /// <summary>
+    /// DL-5: raised by every pick task write that makes a task terminal, in the SAME transaction — two concurrent last confirmations of two
+    /// tasks then both write this document, so one of them conflicts and re-reads (no write skew: the outbound becomes <c>Picked</c> once,
+    /// pack §8.19 "eşzamanlı iki son onay"). Not a quantity and not the version (a header edit's If-Match is not touched).
+    /// </summary>
+    public int PickProgress { get; set; }
+
     public Guid CreatedBy { get; set; }
 
     public string? CreatedByName { get; set; }
@@ -212,6 +265,8 @@ public sealed class OutboundShipment : EntityBase
         copy.ShipTo = ShipTo.Copy();
         copy.Lines = Lines.Select(l => l.Copy()).ToList();
         copy.AllocationFailure = AllocationFailure?.Copy();
+        copy.Shipment = Shipment?.Copy();
+        copy.ShortDispatchUnresolved = ShortDispatchUnresolved.Select(u => u.Copy()).ToList();
         return copy;
     }
 }

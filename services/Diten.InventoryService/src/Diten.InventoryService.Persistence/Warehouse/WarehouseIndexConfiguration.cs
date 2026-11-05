@@ -41,9 +41,13 @@ public static class WarehouseIndexConfiguration
     public const string OutboundEventSeqIndex = "ux_wms_outbound_event_seq";
     public const string OutboundEventKeyIndex = "ux_wms_outbound_event_key";
 
+    // DL-5 (pack §4.6 S2: wms_handling_units)
+    public const string PackageNumberIndex = "ux_wms_package_number";
+    public const string PackageCreateKeyIndex = "ux_wms_package_create_key";
+
     public static readonly IReadOnlyList<string> UniqueIndexes =
         [LocationIndex, CreateKeyIndex, EventSeqIndex, EventKeyIndex, CounterIndex, TaskNumberIndex, TaskCreateKeyIndex, TaskSerialSlotIndex, TaskEventSeqIndex, TaskEventKeyIndex,
-         OutboundNumberIndex, OutboundCreateKeyIndex, OutboundEventSeqIndex, OutboundEventKeyIndex];
+         OutboundNumberIndex, OutboundCreateKeyIndex, OutboundEventSeqIndex, OutboundEventKeyIndex, PackageNumberIndex, PackageCreateKeyIndex];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
 
@@ -147,6 +151,21 @@ public static class WarehouseIndexConfiguration
                 new CreateIndexOptions<OutboundShipmentEvent>
                     { Name = OutboundEventKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(OutboundShipmentEvent.IdempotencyKey)) })
         ], ct);
+
+        // DL-5 — the packages (number unique tenant-wide, the create key per user) and the outbox scan
+        var packages = Builders<HandlingUnit>.IndexKeys;
+        await database.GetCollection<HandlingUnit>(WarehouseCollections.HandlingUnits).Indexes.CreateManyAsync(
+        [
+            new(packages.Ascending(x => x.TenantId).Ascending(x => x.PackageNumber), new CreateIndexOptions { Name = PackageNumberIndex, Unique = true }),
+            new(packages.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<HandlingUnit>
+                    { Name = PackageCreateKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(HandlingUnit.IdempotencyKey)) }),
+            new(packages.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.OutboundId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_wms_package_outbound" })
+        ], ct);
+        await database.GetCollection<WarehouseOutboxMessage>(WarehouseCollections.Outbox).Indexes.CreateOneAsync(
+            new CreateIndexModel<WarehouseOutboxMessage>(Builders<WarehouseOutboxMessage>.IndexKeys.Ascending(x => x.Status).Ascending(x => x.OccurredAt),
+                new CreateIndexOptions { Name = "ix_wms_outbox_status" }), cancellationToken: ct);
 
         await database.GetCollection<BsonDocument>(WarehouseCollections.NumberCounters).Indexes.CreateOneAsync(
             new CreateIndexModel<BsonDocument>(

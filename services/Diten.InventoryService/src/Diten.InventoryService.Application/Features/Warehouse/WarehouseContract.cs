@@ -49,6 +49,25 @@ public static class WarehouseContract
     /// <summary>The maintenance service's operation (no request key; the fingerprint of the FU03 batch is the stored plan's).</summary>
     public const string OpCompleteOutboundAllocation = "completeOutboundAllocation";
 
+    // DL-5 — WMS operationIds of the S2 pick / package / outbound writes (WMS draft §11; pack §4.5 "RequestOp")
+    public const string OpCancelOutboundShipment = "cancelOutboundShipment";
+    public const string OpReleaseOutboundShipment = "releaseOutboundShipment";
+    public const string OpSyncOutboundDispatch = "syncOutboundDispatch";
+    public const string OpReleaseOutboundReservations = "releaseOutboundReservations";
+    public const string OpClaimPickTask = "claimPickTask";
+    public const string OpBulkAssignPickTasks = "bulkAssignPickTasks";
+    public const string OpConfirmPickTask = "confirmPickTask";
+    public const string OpRetryPickConfirmation = "retryPickConfirmation";
+    public const string OpMarkPickConfirmationReturned = "markPickConfirmationReturned";
+    public const string OpResolvePickIntegrity = "resolvePickIntegrity";
+    public const string OpClosePickTaskShort = "closePickTaskShort";
+    public const string OpCreatePackage = "createPackage";
+    public const string OpUpdatePackage = "updatePackage";
+    public const string OpClosePackage = "closePackage";
+
+    /// <summary>S2 (pack §8.21): the MVP-6 source of an outbound's shipment — anything else is a foreign shipment.</summary>
+    public const string DispatchSourceType = "WAREHOUSE_OUTBOUND";
+
     /// <summary>S2 (pack §8.10, FU03 Q-07): the source module of every 0178 reservation.</summary>
     public const string ReservationSourceModule = ModuleId;
 

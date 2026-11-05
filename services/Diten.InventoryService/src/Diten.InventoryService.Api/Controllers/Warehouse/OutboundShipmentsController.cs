@@ -1,6 +1,7 @@
 using Diten.InventoryService.Api.Warehouse;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Features.HandlingUnits;
 using Diten.InventoryService.Application.Features.OutboundShipments;
 using Diten.InventoryService.Application.Features.OutboundShipments.Commands;
 using Diten.InventoryService.Application.Features.OutboundShipments.Queries;
@@ -37,20 +38,26 @@ public sealed class OutboundShipmentsController : CustomBaseController
 
     // ── frozen WAREHOUSE-OUTBOUND 1.0.0 ──────────────────────────────────────────────────────────────────
 
+    // DL-5: the frozen reads are FILLED (pack §8.21, AC-30) — the six visible statuses, never an Item-level outbound (§8.24), no JSON null.
     [HttpGet]
     [HasPermission(WarehousePermissions.OutboundShipmentsRead)]
-    public IActionResult List([FromQuery] string? status, [FromQuery] string? warehouseId, [FromQuery] string? cursor)
-        => status is not null && !Statuses.Contains(status, StringComparer.Ordinal)
-            ? ContractFailure(StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest, "status must be an OutboundStatus.")
-            : Ok(new OutboundPage([], WarehouseContract.ContractVersion));
+    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? warehouseId, [FromQuery] string? cursor, CancellationToken ct)
+    {
+        if (status is not null && !Statuses.Contains(status, StringComparer.Ordinal))
+            return ContractFailure(StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest, "status must be an OutboundStatus.");
+        var page = await _mediator.Send(new GetFrozenOutboundListQuery(status, warehouseId, cursor), ct);
+        return page.IsSuccessful && page.Data is { } body
+            ? Ok(body)
+            : ContractFailure(StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest, page.Errors.FirstOrDefault() ?? "The request is malformed.");
+    }
 
     [HttpGet("{outboundId}")]
     [HasPermission(WarehousePermissions.OutboundShipmentsRead)]
-    public IActionResult Get(string outboundId)
-        => ContractFailure(StatusCodes.Status404NotFound, UnknownOutbound, "Outbound shipment not found.");
-
-    /// <summary>The frozen page; <c>nextCursor</c> is not a member at all (never written as null).</summary>
-    public sealed record OutboundPage(IReadOnlyList<object> Items, string ContractVersion);
+    public async Task<IActionResult> Get(string outboundId, CancellationToken ct)
+    {
+        var detail = await _mediator.Send(new GetFrozenOutboundQuery(outboundId), ct);
+        return detail.IsSuccessful && detail.Data is { } body ? Ok(body) : ContractFailure(StatusCodes.Status404NotFound, UnknownOutbound, "Outbound shipment not found.");
+    }
 
     // ── S2 reads (WMS draft §11) ─────────────────────────────────────────────────────────────────────────
 
@@ -105,6 +112,67 @@ public sealed class OutboundShipmentsController : CustomBaseController
         if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
         if (IfMatch() is not { } version) return Invalid("If-Match is required.");
         return WithETag(await _mediator.Send(new UpdateOutboundShipmentCommand(id, body.Change, key, version), ct));
+    }
+
+    // ── DL-5: cancel, release, dispatch sync, packing (WMS draft §11) ─────────────────────────────────────
+
+    [HttpPost("{outboundId}/cancel")]
+    [HasPermission(WarehousePermissions.OutboundShipmentsCancel)]
+    public async Task<IActionResult> Cancel(string outboundId, CancellationToken ct)
+    {
+        if (!WarehouseSupport.TryParseId(outboundId, out var id)) return NotFound();
+        var read = await WarehouseRequestReader.ReadAsync(Request.Body, WarehouseRequestReader.ReasonMembers,
+            b => new { Reason = b.String("reason"), Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        return WithETag(await _mediator.Send(new CancelOutboundShipmentCommand(id, body.Reason, key, version), ct));
+    }
+
+    [HttpPost("{outboundId}/release")]
+    [HasPermission(WarehousePermissions.OutboundShipmentsRelease)]
+    public async Task<IActionResult> Release(string outboundId, CancellationToken ct)
+    {
+        if (!WarehouseSupport.TryParseId(outboundId, out var id)) return NotFound();
+        var read = await WarehouseRequestReader.ReadAsync(Request.Body, WarehouseRequestReader.ReleaseOutboundMembers,
+            b => new { Reasons = b.ReleaseReasons(), Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        return WithETag(await _mediator.Send(new ReleaseOutboundShipmentCommand(id, body.Reasons, key, version), ct));
+    }
+
+    [HttpPost("{outboundId}/sync-dispatch")]
+    [HasPermission(WarehousePermissions.OutboundShipmentsUpdate)]
+    public async Task<IActionResult> SyncDispatch(string outboundId, CancellationToken ct)
+    {
+        if (!WarehouseSupport.TryParseId(outboundId, out var id)) return NotFound();
+        var read = await WarehouseRequestReader.ReadAsync(Request.Body, WarehouseRequestReader.KeyMembers, b => new { Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        var answer = await _mediator.Send(new SyncOutboundDispatchCommand(id, key, version), ct);
+        if (answer.IsSuccessful && answer.Data is not null) Response.Headers.ETag = $"W/\"{answer.Data.Outbound.Version}\"";
+        return CreateActionResultInstance(answer);
+    }
+
+    [HttpGet("{outboundId}/packages")]
+    [HasPermission(WarehousePermissions.PackagesRead)]
+    public async Task<IActionResult> Packages(string outboundId, CancellationToken ct)
+        => WarehouseSupport.TryParseId(outboundId, out var id) ? CreateActionResultInstance(await _mediator.Send(new GetHandlingUnitListQuery(id), ct)) : NotFound();
+
+    [HttpPost("{outboundId}/packages")]
+    [HasPermission(WarehousePermissions.PackagesCreate)]
+    public async Task<IActionResult> CreatePackage(string outboundId, CancellationToken ct)
+    {
+        if (!WarehouseSupport.TryParseId(outboundId, out var id)) return NotFound();
+        var read = await WarehouseRequestReader.ReadAsync(Request.Body, WarehouseRequestReader.PackageMembers,
+            b => new { Package = b.Package(), Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        var answer = await _mediator.Send(new CreateHandlingUnitCommand(id, body.Package, key), ct);
+        if (answer.IsSuccessful && answer.Data is not null) Response.Headers.ETag = $"W/\"{answer.Data.Version}\"";
+        return CreateActionResultInstance(answer);
     }
 
     // ── plumbing ──────────────────────────────────────────────────────────────────────────────────────────

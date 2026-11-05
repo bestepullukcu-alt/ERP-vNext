@@ -257,6 +257,9 @@ public sealed class WarehouseTask : EntityBase
 
     public int? FefoRank { get; set; }
 
+    /// <summary>DL-5: the outbound's number — the pick movement's <c>documentGroupId</c> (pack §8.19).</summary>
+    public string? OutboundNumber { get; set; }
+
     public WarehouseTask Copy()
     {
         var copy = (WarehouseTask)MemberwiseClone();

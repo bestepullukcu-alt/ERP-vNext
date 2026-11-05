@@ -73,6 +73,12 @@ public static class WarehouseServiceCollectionExtensions
         services.AddScoped<OutboundAllocationPlanner>();
         services.AddScoped<OutboundAllocationService>();
         services.AddScoped<IOutboundMaintenanceScan, OutboundMaintenanceScan>();
+
+        // DL-5 — pick / pack / ship / cancel (pack §8.19–§8.22): a pick task's terminal write moves its outbound in the task's transaction; the ONE
+        // reservation release rule (cancel, post-dispatch remainder, maintenance). The MVP-6 shipment read is MOD-0177's IShipmentReader (its DI
+        // registration is unchanged — pack §5).
+        services.AddScoped<IPickTaskCompletion, PickTaskCompletion>();
+        services.AddScoped<OutboundReservationReleaser>();
         services.AddSingleton<OutboundMaintenance>();
         services.AddHostedService<OutboundMaintenanceHostedService>();
 

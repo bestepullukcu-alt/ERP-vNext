@@ -112,6 +112,14 @@ public sealed record WarehouseTaskDto
     public TaskStampDto? Updated { get; init; }
     public required int Version { get; init; }
     public int? ConfirmationSeq { get; init; }
+
+    /// <summary>DL-5: a pick task's outbound (<c>outboundId</c>, <c>outboundNumber</c>, <c>status</c> on the pick reads) — never the ship-to.</summary>
+    public PickTaskOutboundDto? Outbound { get; init; }
+
+    public int? AllocSeq { get; init; }
+
+    public string? ReservationId { get; init; }
+
     public string ContractVersion { get; init; } = Warehouse.WarehouseContract.ContractVersion;
 }
 
@@ -191,3 +199,9 @@ public sealed record ConfirmPutawayTaskInput(string? Quantity, Guid ToLocationId
     string? ScanRef);
 
 public sealed record BulkAssignItem(Guid TaskId, int Version);
+
+/// <summary>DL-5 (WMS draft §11): the outbound of a pick task as the pick reads show it — the "Paketle" link; no ship-to (Q-10a).</summary>
+public sealed record PickTaskOutboundDto(string OutboundId, string? OutboundNumber, string? Status);
+
+/// <summary>DL-5 <c>confirmPickTask</c> body: the quantity (+ channel, opaque scanRef) — never a target nor a source (pack §8.19).</summary>
+public sealed record ConfirmPickTaskInput(string? Quantity, Domain.Warehouse.Enums.ConfirmationChannel Channel, string? ScanRef);

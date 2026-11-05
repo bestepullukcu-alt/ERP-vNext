@@ -11,7 +11,9 @@ public sealed record WarehouseTaskQuery(
     string? Search,
     bool OldestFirst,
     int Page,
-    int PageSize);
+    int PageSize,
+    WarehouseTaskKind Kind = WarehouseTaskKind.Putaway,
+    Guid? OutboundId = null);
 
 public sealed record WarehouseTaskPage(IReadOnlyList<WarehouseTask> Items, long Total);
 
@@ -50,6 +52,12 @@ public interface IWarehouseTaskRepository
 
     Task<WarehouseTask?> FindByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    /// <summary>DL-5: a task of the caller's company of the given kind (the pick surface reads <see cref="WarehouseTaskKind.Pick"/> only).</summary>
+    Task<WarehouseTask?> FindOfKindAsync(Guid taskId, WarehouseTaskKind kind, CancellationToken cancellationToken = default);
+
+    /// <summary>DL-5: the tasks of the given kind among <paramref name="taskIds"/>.</summary>
+    Task<IReadOnlyList<WarehouseTask>> FindManyOfKindAsync(IReadOnlyCollection<Guid> taskIds, WarehouseTaskKind kind, CancellationToken cancellationToken = default);
+
     /// <summary>The PUTAWAY tasks among <paramref name="taskIds"/> (pick tasks are absent).</summary>
     Task<IReadOnlyList<WarehouseTask>> FindManyAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken cancellationToken = default);
 
@@ -83,6 +91,22 @@ public interface IWarehouseTaskWriteSession
     Task<bool> ReplaceTaskAsync(WarehouseTask task, int expectedVersion, CancellationToken cancellationToken = default);
 
     Task InsertEventsAsync(IReadOnlyList<WarehouseTaskEvent> events, CancellationToken cancellationToken = default);
+
+    // ── DL-5: a pick task's terminal write moves its outbound in the SAME transaction (pack §8.19 "son görevin Completed yazımıyla aynı işlemde") ──
+
+    /// <summary>The outbound of the caller's company as this transaction sees it.</summary>
+    Task<OutboundShipment?> FindOutboundAsync(Guid outboundId, CancellationToken cancellationToken = default);
+
+    /// <summary>The outbound's pick tasks as this transaction sees them (this write's own task included).</summary>
+    Task<IReadOnlyList<WarehouseTask>> PickTasksOfAsync(Guid outboundId, CancellationToken cancellationToken = default);
+
+    /// <summary>Replaces the outbound if its stored version is still <paramref name="expectedVersion"/>.</summary>
+    Task<bool> ReplaceOutboundAsync(OutboundShipment outbound, int expectedVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>Raises <see cref="OutboundShipment.PickProgress"/> — a write on the outbound document that makes concurrent last confirmations conflict.</summary>
+    Task TouchOutboundAsync(Guid outboundId, CancellationToken cancellationToken = default);
+
+    Task InsertOutboundEventsAsync(IReadOnlyList<OutboundShipmentEvent> events, CancellationToken cancellationToken = default);
 }
 
 /// <summary>A task the reconciler should look at, with the scope it is processed in (the actor = the confirmation's <c>ConfirmedBy</c>).</summary>

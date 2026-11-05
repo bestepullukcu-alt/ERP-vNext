@@ -78,6 +78,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // the hold is the FU03 reservation).
         Assert.Equal(["wms_outbound_events", "wms_outbound_shipments"],
             Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-5, XMC-001 decision Beste 2026-11-05) — the packages (pack §4.5; a package's content is the picked quantity laid into it, never a stock
+        // total) and the outbound outbox (OutboundShipmentReady, Pending; pack §8.9).
+        Assert.Equal(["wms_handling_units", "wms_outbox"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -96,7 +100,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All) // MOD-0178 (DL-1)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2) // MOD-0178 (DL-2)
-            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4).ToList(); // MOD-0178 (DL-4)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4) // MOD-0178 (DL-4)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5).ToList(); // MOD-0178 (DL-5)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)

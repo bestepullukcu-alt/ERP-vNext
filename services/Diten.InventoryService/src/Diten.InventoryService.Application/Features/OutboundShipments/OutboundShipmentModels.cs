@@ -1,3 +1,4 @@
+using Diten.InventoryService.Application.Features.Warehouse;
 using Diten.InventoryService.Domain.Enums;
 
 namespace Diten.InventoryService.Application.Features.OutboundShipments;
@@ -50,7 +51,9 @@ public sealed record OutboundAllocationDto(
     string? FefoBypassReason,
     IReadOnlyList<OutboundPlannedBinDto> PlannedBins,
     string? ReservationId,
-    string ReservationReleaseState);
+    string ReservationReleaseState,
+    string? PickedQuantity = null,
+    string? PackedQuantity = null);
 
 public sealed record OutboundLotOverrideDto(string LotId, string? FefoBypassReason);
 
@@ -100,7 +103,44 @@ public sealed record OutboundShipmentViewDto(
     string CreatedAtUtc,
     OutboundPersonDto CreatedBy,
     int Version,
-    string ContractVersion);
+    string ContractVersion,
+    OutboundShipmentLinkDto? Shipment = null,
+    IReadOnlyList<PackageDto>? Packages = null,
+    string? CancelReason = null,
+    IReadOnlyList<ShortDispatchUnresolvedDto>? ShortDispatchUnresolved = null);
+
+// ── DL-5 ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+/// <summary><c>/view</c> only (never the frozen detail — SOURCE_DRIFT, Q-M6-1): the MVP-6 shipment the dispatch sync saw.</summary>
+public sealed record OutboundShipmentLinkDto(string ShipmentId, string? ShipmentNumber, string Status, string ObservedAt);
+
+public sealed record ShortDispatchUnresolvedDto(string SkuId, string? LotId, string Expected, string Issued, string Reason);
+
+public sealed record PackageContentDto(int AllocSeq, string Quantity);
+
+/// <summary>A package (WMS draft §11) — no ship-to (Q-10a); <c>packageNumber</c> is the frozen <c>packageId</c>.</summary>
+public sealed record PackageDto(string PackageId, string PackageNumber, string OutboundId, string Status, IReadOnlyList<PackageContentDto> Contents, string? WeightKg,
+    string? DimensionsCm, int Version, string ContractVersion = WarehouseContract.ContractVersion);
+
+public sealed record PackingOutboundDto(string OutboundId, string OutboundNumber, string Status, int Version);
+
+public sealed record PackingAllocationDto(int AllocSeq, OutboundItemDto Item, string? LotId, string? LotNumber, string Picked, string Packed);
+
+/// <summary><c>listPackages</c> — the Packing page's one read (r21): the outbound summary, the allocation summary, the packages; no ship-to.</summary>
+public sealed record PackingViewDto(PackingOutboundDto Outbound, IReadOnlyList<PackingAllocationDto> Allocations, IReadOnlyList<PackageDto> Packages,
+    string ContractVersion = WarehouseContract.ContractVersion);
+
+/// <summary><c>createPackage</c> / <c>updatePackage</c> body (Has* = the member was sent).</summary>
+public sealed record PackageInput(bool HasWeight, string? WeightKg, bool HasDimensions, string? DimensionsCm, bool HasContents, IReadOnlyList<PackageContentInput>? Contents);
+
+public sealed record PackageContentInput(int AllocSeq, string? Quantity);
+
+/// <summary><c>releaseOutboundShipment</c> body: the FEFO bypass reasons per allocation (§8.21).</summary>
+public sealed record ReleaseReasonInput(int AllocSeq, string? Reason);
+
+/// <summary><c>syncOutboundDispatch</c> answer: whether a dispatch was seen, the shipment's status when one was found, the outbound.</summary>
+public sealed record SyncDispatchResultDto(bool DispatchSeen, string? ShipmentStatus, OutboundShipmentViewDto Outbound,
+    string ContractVersion = WarehouseContract.ContractVersion);
 
 /// <summary>One row of <c>searchOutboundShipments</c> (the screen list; not the frozen list).</summary>
 public sealed record OutboundShipmentSummaryDto(

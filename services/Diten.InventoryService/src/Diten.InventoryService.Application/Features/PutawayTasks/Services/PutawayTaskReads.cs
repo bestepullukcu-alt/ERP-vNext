@@ -59,7 +59,13 @@ public sealed class PutawayTaskReads
             Created = new TaskStampDto(task.CreatedBy.ToString("D"), PutawayTaskSupport.Wire(task.CreatedAt), task.CreatedByName),
             Updated = task.UpdatedBy is { } u && task.UpdatedAt is { } at ? new TaskStampDto(u.ToString("D"), PutawayTaskSupport.Wire(at), task.UpdatedByName) : null,
             Version = task.Version,
-            ConfirmationSeq = confirmationSeq
+            ConfirmationSeq = confirmationSeq,
+            // DL-5 (WMS draft §11): a pick task names its outbound and allocation (never the ship-to, Q-10a)
+            Outbound = task.Kind == WarehouseTaskKind.Pick && task.OutboundId is { } outboundId
+                ? new PickTaskOutboundDto(outboundId.ToString("D"), task.OutboundNumber, null)
+                : null,
+            AllocSeq = task.Kind == WarehouseTaskKind.Pick ? task.AllocSeq : null,
+            ReservationId = task.Kind == WarehouseTaskKind.Pick ? task.ReservationId?.ToString("D") : null
         };
     }
 
@@ -119,6 +125,17 @@ public sealed class PutawayTaskReads
         var integrity = PutawayTaskRules.HasIntegrityError(task);
         var lockReason = integrity ? "IntegrityError" : pending ? "ConfirmationPending" : null;
         var terminal = open ? null : "TaskTerminal";
+        if (task.Kind == WarehouseTaskKind.Pick)
+        {
+            // DL-5 (§8.19): a pick task has no edit and no cancel of its own (the outbound's cancel closes it); "Kalanı kapat" also with 0 posted
+            Gate("Confirm", terminal ?? lockReason);
+            Gate("Claim", terminal ?? lockReason ?? (task.AssigneeUserId is null ? null : "AlreadyAssigned"));
+            Gate("CloseShort", terminal ?? lockReason ?? (task.SerialControlled ? "SerialControlled" : null));
+            Gate("Retry", pending ? null : "NoPendingConfirmation");
+            Gate("MarkReturned", task.Confirmations.Any(PutawayTaskRules.IsUnresolvedRefused) ? (pending ? "ConfirmationPending" : null) : "NoRefusedConfirmation");
+            Gate("ResolveIntegrity", integrity ? (pending ? "ConfirmationPending" : null) : "NoIntegrityError");
+            return (allowed, disabled);
+        }
 
         Gate("Confirm", terminal ?? lockReason);
         Gate("Update", terminal ?? lockReason);

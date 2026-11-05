@@ -24,6 +24,8 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
     private readonly IMongoCollection<OutboundShipmentEvent> _events;
     private readonly IMongoCollection<WarehouseTask> _tasks;
     private readonly IMongoCollection<WarehouseTaskEvent> _taskEvents;
+    private readonly IMongoCollection<HandlingUnit> _packages;
+    private readonly IMongoCollection<WarehouseOutboxMessage> _outbox;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
@@ -34,6 +36,8 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
         _events = database.GetCollection<OutboundShipmentEvent>(WarehouseCollections.OutboundEvents);
         _tasks = database.GetCollection<WarehouseTask>(WarehouseCollections.Tasks);
         _taskEvents = database.GetCollection<WarehouseTaskEvent>(WarehouseCollections.TaskEvents);
+        _packages = database.GetCollection<HandlingUnit>(WarehouseCollections.HandlingUnits);
+        _outbox = database.GetCollection<WarehouseOutboxMessage>(WarehouseCollections.Outbox);
         _tenantId = tenant.TenantId;
         _legalEntityId = tenant.LegalEntityId;
     }
@@ -61,6 +65,8 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
         var f = Builders<OutboundShipment>.Filter;
         var filter = Company<OutboundShipment>() & f.In(x => x.Status, query.Statuses);
         if (query.WarehouseId is { } warehouse) filter &= f.Eq(x => x.WarehouseId, warehouse);
+        // DL-5 (pack §8.24 rule 4): the frozen list never carries an Item-level outbound (no line is Item — a mix is refused at creation)
+        if (query.ExcludeItemLevel) filter &= new BsonDocument("Lines.SkuLevel", new BsonDocument("$ne", nameof(Domain.Enums.SkuLevel.Item)));
         if (query.Search is not null)
         {
             var pattern = new BsonRegularExpression(Regex.Escape(query.Search), "i");
@@ -93,6 +99,29 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
     public async Task<IReadOnlyList<WarehouseTask>> PickTasksAsync(Guid outboundId, CancellationToken cancellationToken = default)
         => await _tasks.Find(Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.Eq(x => x.OutboundId, outboundId)
                              & Builders<WarehouseTask>.Filter.Eq(x => x.Kind, WarehouseTaskKind.Pick)).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<WarehouseTask>> PickTasksOfManyAsync(IReadOnlyCollection<Guid> outboundIds, CancellationToken cancellationToken = default)
+        => outboundIds.Count == 0
+            ? []
+            : await _tasks.Find(Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.In(x => x.OutboundId, outboundIds.Select(i => (Guid?)i))
+                                & Builders<WarehouseTask>.Filter.Eq(x => x.Kind, WarehouseTaskKind.Pick)).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<HandlingUnit>> PackagesAsync(Guid outboundId, CancellationToken cancellationToken = default)
+        => await _packages.Find(Company<HandlingUnit>() & Builders<HandlingUnit>.Filter.Eq(x => x.OutboundId, outboundId))
+            .SortBy(x => x.PackageNumber).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<HandlingUnit>> PackagesOfManyAsync(IReadOnlyCollection<Guid> outboundIds, CancellationToken cancellationToken = default)
+        => outboundIds.Count == 0
+            ? []
+            : await _packages.Find(Company<HandlingUnit>() & Builders<HandlingUnit>.Filter.In(x => x.OutboundId, outboundIds))
+                .SortBy(x => x.PackageNumber).ToListAsync(cancellationToken);
+
+    public async Task<HandlingUnit?> FindPackageAsync(Guid packageId, CancellationToken cancellationToken = default)
+        => await _packages.Find(Company<HandlingUnit>() & Builders<HandlingUnit>.Filter.Eq(x => x.Id, packageId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<HandlingUnit?> FindPackageByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _packages.Find(Company<HandlingUnit>() & Builders<HandlingUnit>.Filter.Eq(x => x.CreatedBy, createdBy)
+                                & Builders<HandlingUnit>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
 
     // ── writes ────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -130,6 +159,8 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
         if (message.Contains(WarehouseIndexConfiguration.OutboundCreateKeyIndex, StringComparison.Ordinal)) return OutboundUniqueIndex.CreateKey;
         if (message.Contains(WarehouseIndexConfiguration.OutboundEventSeqIndex, StringComparison.Ordinal)
             || message.Contains(WarehouseIndexConfiguration.OutboundEventKeyIndex, StringComparison.Ordinal)) return OutboundUniqueIndex.Event;
+        if (message.Contains(WarehouseIndexConfiguration.PackageNumberIndex, StringComparison.Ordinal)
+            || message.Contains(WarehouseIndexConfiguration.PackageCreateKeyIndex, StringComparison.Ordinal)) return OutboundUniqueIndex.Package;
         return WarehouseTaskRepository.UniqueIndexOf(category, message) is not null ? OutboundUniqueIndex.Task : null;
     }
 
@@ -174,6 +205,39 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
             await _owner._tasks.InsertManyAsync(_session, tasks, new InsertManyOptions { IsOrdered = true }, cancellationToken);
             if (events.Count > 0) await _owner._taskEvents.InsertManyAsync(_session, events, new InsertManyOptions { IsOrdered = true }, cancellationToken);
         }
+
+        public async Task<bool> ReplaceTaskAsync(WarehouseTask task, int expectedVersion, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(task);
+            var filter = _owner.Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.Eq(x => x.Id, task.Id)
+                         & Builders<WarehouseTask>.Filter.Eq(x => x.Version, expectedVersion);
+            var result = await _owner._tasks.ReplaceOneAsync(_session, filter, task, cancellationToken: cancellationToken);
+            return result.MatchedCount == 1;
+        }
+
+        public Task InsertTasksAsync(IReadOnlyList<WarehouseTask> tasks, IReadOnlyList<WarehouseTaskEvent> events, CancellationToken cancellationToken = default)
+            => InsertPickTasksAsync(tasks, events, cancellationToken);
+
+        public Task InsertPackageAsync(HandlingUnit package, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(package);
+            return _owner._packages.InsertOneAsync(_session, package, cancellationToken: cancellationToken);
+        }
+
+        public async Task<bool> ReplacePackageAsync(HandlingUnit package, int expectedVersion, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(package);
+            var filter = _owner.Company<HandlingUnit>() & Builders<HandlingUnit>.Filter.Eq(x => x.Id, package.Id)
+                         & Builders<HandlingUnit>.Filter.Eq(x => x.Version, expectedVersion);
+            var result = await _owner._packages.ReplaceOneAsync(_session, filter, package, cancellationToken: cancellationToken);
+            return result.MatchedCount == 1;
+        }
+
+        public Task InsertOutboxAsync(WarehouseOutboxMessage message, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(message);
+            return _owner._outbox.InsertOneAsync(_session, message, cancellationToken: cancellationToken);
+        }
     }
 }
 
@@ -193,6 +257,33 @@ public sealed class OutboundMaintenanceScan : IOutboundMaintenanceScan
     {
         var f = Builders<OutboundShipment>.Filter;
         var filter = f.Eq(x => x.Status, OutboundStatus.Allocating) & f.Lt(x => x.AllocationLeaseUntilUtc, now);
+        if (onlyTenants is not null) filter &= f.In(x => x.TenantId, onlyTenants.Select(t => (Guid?)t));
+        if (after is { } cursor)
+        {
+            var tenant = cursor.TenantId.ToString("D");
+            var id = cursor.OutboundId.ToString("D");
+            filter &= new BsonDocument("$or", new BsonArray
+            {
+                new BsonDocument("TenantId", new BsonDocument("$gt", tenant)),
+                new BsonDocument { ["TenantId"] = tenant, ["_id"] = new BsonDocument("$gt", id) }
+            });
+        }
+
+        var rows = await _outbounds.Find(filter)
+            .Sort(Builders<OutboundShipment>.Sort.Ascending(x => x.TenantId).Ascending(x => x.Id))
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+        return rows.Where(r => r.TenantId is not null && r.LegalEntityId is not null)
+            .Select(r => new OutboundMaintenanceRow(r.Id, r.TenantId!.Value, r.LegalEntityId!.Value, r.CreatedBy, r.CreatedByName))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<OutboundMaintenanceRow>> PendingReleasesAsync((Guid TenantId, Guid OutboundId)? after, int limit,
+        IReadOnlyCollection<Guid>? onlyTenants = null, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<OutboundShipment>.Filter;
+        FilterDefinition<OutboundShipment> filter = new BsonDocument("Lines.Allocations.ReservationReleaseState", nameof(ReservationReleaseState.Pending));
+        filter &= f.In(x => x.Status, [OutboundStatus.AllocationFailed, OutboundStatus.Shipped, OutboundStatus.Cancelled]);
         if (onlyTenants is not null) filter &= f.In(x => x.TenantId, onlyTenants.Select(t => (Guid?)t));
         if (after is { } cursor)
         {

@@ -145,7 +145,7 @@ public static class WmsDraftContract
         "taskId": { "$ref": "#/$defs/Uuid" }, "number": { "type": "string", "pattern": "^[A-Z]{2,5}-PUT-\\d{6,}$" },
         "companyCodePrefix": { "type": "string", "pattern": "^[A-Z]{2,5}$" }, "warehouseCode": { "type": "string" },
         "kind": { "enum": ["Putaway"] }, "status": { "enum": ["Open", "InProgress", "Completed", "Cancelled"] },
-        "origin": { "enum": ["Manual", "Receipt", "Production", "Cancellation", "External"] }, "sourceRef": { "$ref": "#/$defs/SourceRef" },
+        "origin": { "enum": ["Manual", "Receipt", "Production", "Cancellation", "External", "Outbound", "ShortDispatch"] }, "sourceRef": { "$ref": "#/$defs/SourceRef" },
         "sourceSystem": { "type": "string" }, "externalRef": { "type": "string" }, "legalEntityId": { "$ref": "#/$defs/Uuid" },
         "warehouseId": { "type": "string" }, "item": { "$ref": "#/$defs/Item" }, "lotId": { "type": "string" }, "lotNumber": { "type": "string" },
         "stockStatus": { "$ref": "#/$defs/StockStatus" }, "fromLocationId": { "type": "string" }, "toLocationId": { "type": "string" },

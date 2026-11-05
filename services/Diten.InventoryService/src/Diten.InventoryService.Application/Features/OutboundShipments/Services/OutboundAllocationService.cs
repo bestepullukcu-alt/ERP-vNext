@@ -281,7 +281,8 @@ public sealed class OutboundAllocationService
             LineSeq = line.LineSeq,
             AllocSeq = a.AllocSeq,
             ReservationId = a.ReservationId,
-            FefoRank = a.FefoRank
+            FefoRank = a.FefoRank,
+            OutboundNumber = o.OutboundNumber // DL-5: the pick movement's documentGroupId (§8.19)
         };
 
     private WarehouseTaskEvent TaskCreated(WarehouseTask task, DateTimeOffset now) => new()

@@ -26,6 +26,7 @@ public sealed class OutboundMaintenance
     private readonly WarehouseOutboundOptions _options;
     private readonly ILogger<OutboundMaintenance> _logger;
     private (Guid TenantId, Guid OutboundId)? _cursor;
+    private (Guid TenantId, Guid OutboundId)? _releaseCursor;
 
     public OutboundMaintenance(IServiceScopeFactory scopes, IOptions<WarehouseOutboundOptions> options, ILogger<OutboundMaintenance> logger)
     {
@@ -66,7 +67,35 @@ public sealed class OutboundMaintenance
             }
         }
 
-        return new OutboundMaintenanceTick(rows.Count, sent, failures);
+        // DL-5 (§8.17 step 6, §8.21, §8.22): the Pending reservation releases — per outbound, its creator as actor, the same scope rule
+        IReadOnlyList<OutboundMaintenanceRow> pending;
+        using (var scanScope = _scopes.CreateScope())
+        {
+            pending = await scanScope.ServiceProvider.GetRequiredService<IOutboundMaintenanceScan>().PendingReleasesAsync(_releaseCursor, budget, onlyTenants, ct);
+        }
+
+        _releaseCursor = pending.Count < budget ? null : (pending[^1].TenantId, pending[^1].OutboundId);
+        foreach (var row in pending)
+        {
+            try
+            {
+                using var scope = _scopes.CreateScope();
+                scope.ServiceProvider.GetRequiredService<ITenantContext>().SetScope(row.TenantId, row.LegalEntityId, row.ActorUserId);
+                scope.ServiceProvider.GetService<IPostingActorName>()?.Use(row.ActorName);
+                scope.ServiceProvider.GetRequiredService<ICorrelationContext>().Set(Guid.NewGuid());
+                var answer = await scope.ServiceProvider.GetRequiredService<IMediator>().Send(new ReleaseOutboundReservationsCommand(row.OutboundId), ct);
+                sent++;
+                if (!answer.IsSuccessful) failures++;
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException && ct.IsCancellationRequested))
+            {
+                failures++;
+                _logger.LogError(ex, "wms.outbound.release_maintenance_failed {OutboundId} tenant {TenantId} company {LegalEntityId}", row.OutboundId, row.TenantId,
+                    row.LegalEntityId);
+            }
+        }
+
+        return new OutboundMaintenanceTick(rows.Count + pending.Count, sent, failures);
     }
 }
 

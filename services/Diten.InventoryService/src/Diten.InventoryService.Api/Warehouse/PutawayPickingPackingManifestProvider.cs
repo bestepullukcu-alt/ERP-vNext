@@ -78,6 +78,16 @@ public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvi
                 new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRead, "Read outbound shipments", "Tenant"),
                 // DL-4: the S2 outbound writes have no screen yet (DL-6 moves them onto the OUTBOUNDSHIPMENTS page's actions)
                 new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsCreate, "Create outbound shipments", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsUpdate, "Edit outbound shipments", "Tenant")
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsUpdate, "Edit outbound shipments", "Tenant"),
+                // DL-5: the S2 cancel / release, pick task and package keys — API permissions until their screens (DL-6) declare them as page actions
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsCancel, "Cancel outbound shipments", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRelease, "Release outbound shipments for shipping", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PickTasksRead, "Read pick tasks", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PickTasksUpdate, "Assign pick tasks", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PickTasksConfirm, "Confirm pick tasks", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PickTasksResolve, "Resolve pick integrity errors", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PackagesRead, "Read packages", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PackagesCreate, "Create packages", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.PackagesUpdate, "Edit and close packages", "Tenant")
             ]);
 }

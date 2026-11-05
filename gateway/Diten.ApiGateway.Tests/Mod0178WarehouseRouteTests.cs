@@ -79,8 +79,12 @@ public sealed class Mod0178WarehouseRouteTests
         var endpoints = ControllerEndpoints();
         // S1: 14 putaway + 6 location-role + 2 frozen outbound (22). DL-4 (pack AC-74, WMS draft §11): + 6 outbound — POST /outbound-shipments,
         // POST /outbound-shipments/allocation-preview, GET /outbound-shipments/search, GET /outbound-shipments/{outboundId}/view,
-        // PUT /outbound-shipments/{outboundId}, GET /outbound-shipments/{outboundId}/events (28). DL-5 / DL-7 add theirs here.
-        Assert.Equal(28, endpoints.Count);
+        // PUT /outbound-shipments/{outboundId}, GET /outbound-shipments/{outboundId}/events (28). DL-5 (pack AC-74, WMS draft §11): + 17 —
+        // POST /outbound-shipments/{outboundId}/cancel | /release | /sync-dispatch, GET + POST /outbound-shipments/{outboundId}/packages,
+        // PUT /packages/{packageId}, POST /packages/{packageId}/close, GET /pick-tasks, GET /pick-tasks/{taskId}, POST /pick-tasks/bulk-assign,
+        // POST /pick-tasks/{taskId}/claim | /confirmations | /confirmations/{seq}/retry | /returned | /resolve-integrity | /close-short,
+        // GET /pick-tasks/{taskId}/events (45). DL-7 adds its 3 S3 reads here (48).
+        Assert.Equal(45, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
@@ -126,6 +130,24 @@ public sealed class Mod0178WarehouseRouteTests
     [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/view", "GET")]
     [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003", "PUT")]
     [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/events", "GET")]
+    // DL-5 (S2 pick / pack / ship / cancel, WMS draft §11)
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/cancel", "POST")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/release", "POST")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/sync-dispatch", "POST")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/packages", "GET")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/packages", "POST")]
+    [InlineData("/api/warehouse/packages/3f2b5a1e-0000-4000-8000-000000000004", "PUT")]
+    [InlineData("/api/warehouse/packages/3f2b5a1e-0000-4000-8000-000000000004/close", "POST")]
+    [InlineData("/api/warehouse/pick-tasks", "GET")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005", "GET")]
+    [InlineData("/api/warehouse/pick-tasks/bulk-assign", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/claim", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations/1/retry", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations/1/returned", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations/1/resolve-integrity", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/close-short", "POST")]
+    [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/events", "GET")]
     public void Named_operations_reach_the_warehouse_route_with_their_method(string path, string method)
     {
         var route = Assert.Single(Matching(path));

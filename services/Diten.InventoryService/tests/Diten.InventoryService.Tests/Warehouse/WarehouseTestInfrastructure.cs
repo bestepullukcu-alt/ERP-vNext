@@ -101,6 +101,26 @@ public class WarehouseApiFactory : InventoryApiFactory
     /// <summary>DL-4: tenant → number of FU03 batch calls.</summary>
     public ConcurrentDictionary<Guid, int> BatchCalls { get; } = new();
 
+    /// <summary>DL-5: company (X-Legal-Entity-Id) → the fake MVP-6 SHIPMENT-BUNDLE behind the REAL MOD-0177 reader (its HTTP client's primary handler).</summary>
+    public ConcurrentDictionary<Guid, FakeShipments> Shipments { get; } = new();
+
+    /// <summary>DL-5: tenants whose outbound outbox write throws inside the release transaction (AC-30 K2).</summary>
+    public ConcurrentDictionary<Guid, bool> FailOutbox { get; } = new();
+
+    /// <summary>DL-5: tenant → runs before each FU03 <c>ReleaseAsync</c> (a version bump between read and release); may throw (an injected failure).</summary>
+    public ConcurrentDictionary<Guid, Func<Guid, Task>> BeforeRelease { get; } = new();
+
+    /// <summary>DL-5: tenant → FU03 <c>ReleaseAsync</c> calls / <c>FindByIdempotencyKeysAsync</c> calls.</summary>
+    public ConcurrentDictionary<Guid, int> ReleaseCalls { get; } = new();
+
+    public ConcurrentDictionary<Guid, int> KeyedReads { get; } = new();
+
+    /// <summary>DL-5: tenant → the actor of each FU03 <c>ReleaseAsync</c>.</summary>
+    public ConcurrentDictionary<Guid, ConcurrentQueue<Guid>> ReleaseActors { get; } = new();
+
+    /// <summary>DL-5: tenant → INVENTORY calls of any kind made by MOD-0178's stock door (packing must make none — AC-29).</summary>
+    public ConcurrentDictionary<Guid, int> PostingCalls { get; } = new();
+
     public void TrackWarehouseTenant(Guid tenant)
     {
         _warehouseTenants.Add(tenant);
@@ -134,6 +154,12 @@ public class WarehouseApiFactory : InventoryApiFactory
                 sp.GetRequiredService<ITenantContext>(), this));
             services.AddScoped<InventoryReservationPort>();
             services.AddScoped<IInventoryReservationPort>(sp => new SeamedReservationPort(sp.GetRequiredService<InventoryReservationPort>(),
+                sp.GetRequiredService<ITenantContext>(), this));
+            // DL-5: the REAL MOD-0177 reader (ShipmentBundleHttpReader, DI unchanged) talking to a fake SHIPMENT-BUNDLE; the outbound store with an outbox seam
+            services.AddHttpClient<IShipmentReader, Diten.InventoryService.Infrastructure.Recall.ShipmentBundleHttpReader>()
+                .ConfigurePrimaryHttpMessageHandler(() => new FakeShipmentBundleHandler(this));
+            services.AddScoped<OutboundShipmentRepository>();
+            services.AddScoped<IOutboundShipmentRepository>(sp => new SeamedOutboundRepository(sp.GetRequiredService<OutboundShipmentRepository>(),
                 sp.GetRequiredService<ITenantContext>(), this));
         });
     }
@@ -198,6 +224,7 @@ public sealed class SeamedMovementPoster(WarehouseMovementPoster inner, ITenantC
 {
     public async Task<Response<MovementResponseDto>> PostAsync(PostMovementCommand request, Guid legalEntityId, Guid actorUserId, CancellationToken cancellationToken)
     {
+        factory.PostingCalls.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
         if (factory.PostingDelay.TryGetValue(tenant.TenantId, out var delay)) await Task.Delay(delay, cancellationToken);
         return factory.AroundPosting.TryGetValue(tenant.TenantId, out var around)
             ? await around(request, () => inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken))
@@ -220,8 +247,13 @@ public sealed class SeamedReservationPort(InventoryReservationPort inner, ITenan
             : inner.CreateBatchAsync(lines, legalEntityId, actorUserId, cancellationToken);
     }
 
-    public Task<Response<ReservationResponseDto>> ReleaseAsync(Guid reservationId, string? ifMatch, Guid actorUserId, CancellationToken cancellationToken = default)
-        => inner.ReleaseAsync(reservationId, ifMatch, actorUserId, cancellationToken);
+    public async Task<Response<ReservationResponseDto>> ReleaseAsync(Guid reservationId, string? ifMatch, Guid actorUserId, CancellationToken cancellationToken = default)
+    {
+        factory.ReleaseCalls.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        factory.ReleaseActors.GetOrAdd(tenant.TenantId, _ => new ConcurrentQueue<Guid>()).Enqueue(actorUserId);
+        if (factory.BeforeRelease.TryGetValue(tenant.TenantId, out var hook)) await hook(reservationId);
+        return await inner.ReleaseAsync(reservationId, ifMatch, actorUserId, cancellationToken);
+    }
 
     public Task<ReservationViewDto?> GetAsync(Guid reservationId, CancellationToken cancellationToken = default) => inner.GetAsync(reservationId, cancellationToken);
 
@@ -230,7 +262,10 @@ public sealed class SeamedReservationPort(InventoryReservationPort inner, ITenan
 
     public Task<IReadOnlyList<ReservationKeyMatch>> FindByIdempotencyKeysAsync(Guid tenantId, Guid legalEntityId, IReadOnlyCollection<string> keys,
         CancellationToken cancellationToken = default)
-        => inner.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys, cancellationToken);
+    {
+        factory.KeyedReads.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        return inner.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys, cancellationToken);
+    }
 }
 
 /// <summary>The REAL recall reader (seeded <c>recall_lot_blocks</c>), failing for the tenants in <see cref="WarehouseApiFactory.RecallDown"/>.</summary>
@@ -277,6 +312,12 @@ public sealed class SeamedTaskRepository(WarehouseTaskRepository inner, ITenantC
 
     public Task<WarehouseTask?> FindByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default)
         => inner.FindByCreateKeyAsync(createdBy, idempotencyKey, cancellationToken);
+
+    public Task<WarehouseTask?> FindOfKindAsync(Guid taskId, WarehouseTaskKind kind, CancellationToken cancellationToken = default)
+        => inner.FindOfKindAsync(taskId, kind, cancellationToken);
+
+    public Task<IReadOnlyList<WarehouseTask>> FindManyOfKindAsync(IReadOnlyCollection<Guid> taskIds, WarehouseTaskKind kind, CancellationToken cancellationToken = default)
+        => inner.FindManyOfKindAsync(taskIds, kind, cancellationToken);
 
     public Task<IReadOnlyList<WarehouseTask>> FindManyAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken cancellationToken = default)
         => inner.FindManyAsync(taskIds, cancellationToken);

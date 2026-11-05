@@ -38,7 +38,10 @@ public sealed class CentralAuditDeclarationTests
         // 84 after MOD-0175-FU01 DL-1 (ApplySourceReversalToHoldCommand, ApplySourceReversalToBlockedCommand; measured 82 on the branch at 25e06fe08).
         // 87 after MOD-0178 DL-4 (pack §5 rule "82 + the slice's S2 write commands": CreateOutboundShipment, UpdateOutboundShipment,
         // CompleteOutboundAllocation — 0178's count is 85; the 2 MOD-0175-FU01 commands above are outside that rule; measured 84 at d6aff589e).
-        Assert.Equal(87, WriteCommands.Length);
+        // 101 after MOD-0178 DL-5 (the 14 S2 write commands of the slice: Cancel / Release / SyncDispatch / ReleaseOutboundReservations, the 7 pick
+        // commands — claim, bulk assign, confirm, retry, returned, resolve, close short — and the 3 package commands; 0178's count is 99 = 82 + 17;
+        // the 2 MOD-0175-FU01 commands stay outside that rule — CT S-101, DÜŞÜK).
+        Assert.Equal(101, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

@@ -39,5 +39,14 @@ public static class WarehouseCollections
     /// <summary>The collections added by DL-4, declared on their own line beside <see cref="SinceDl2"/> (the same single-SoR test pattern).</summary>
     public static readonly IReadOnlyList<string> SinceDl4 = [OutboundShipments, OutboundEvents];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceDl2).Concat(SinceDl4);
+    /// <summary>DL-5 (S2, pack §4.5): the packages (mutable head + embedded contents, Version CAS). No stock total.</summary>
+    public const string HandlingUnits = "wms_handling_units";
+
+    /// <summary>DL-5 (pack §8.9): the outbound outbox (<c>OutboundShipmentReady</c>, Pending — the transport is not wired).</summary>
+    public const string Outbox = "wms_outbox";
+
+    /// <summary>The collections added by DL-5, declared on their own line beside <see cref="SinceDl4"/> (the same single-SoR test pattern).</summary>
+    public static readonly IReadOnlyList<string> SinceDl5 = [HandlingUnits, Outbox];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceDl2).Concat(SinceDl4).Concat(SinceDl5);
 }

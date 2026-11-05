@@ -26,7 +26,13 @@ public enum WarehouseTaskOrigin
     External,
 
     /// <summary>S2 (pack §4.5): a pick task opened by an outbound's allocation — only on <see cref="WarehouseTaskKind.Pick"/>.</summary>
-    Outbound
+    Outbound,
+
+    /// <summary>
+    /// S2 (pack §4.5, §8.21, r24 son bakış 02 F-3): a putaway task opened from the Staging node for the picked quantity MVP-6 did not issue
+    /// (<c>Shipped</c> with a short dispatch) — with <see cref="Cancellation"/> the only putaway whose source may hold the Staging role (§12).
+    /// </summary>
+    ShortDispatch
 }
 
 public enum WarehouseTargetSource

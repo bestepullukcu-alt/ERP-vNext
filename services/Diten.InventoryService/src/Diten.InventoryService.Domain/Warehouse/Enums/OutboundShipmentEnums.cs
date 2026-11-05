@@ -46,6 +46,14 @@ public enum ReservationReleaseState
     Released
 }
 
+/// <summary>§4.5 <c>HandlingUnit.Status</c> (DL-5, §8.20): only an <see cref="Open"/> package changes; a cancelled outbound cancels its packages.</summary>
+public enum HandlingUnitStatus
+{
+    Open,
+    Closed,
+    Cancelled
+}
+
 /// <summary>§4.5 <c>AllocationFailure.kind</c> (r24): the FU03 batch refusal, or the FU03 400 <c>IDEMPOTENCY_KEY_REUSED</c> branch.</summary>
 public enum AllocationFailureKind
 {

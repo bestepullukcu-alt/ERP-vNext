@@ -55,6 +55,16 @@ public static class WarehouseErrorCodes
     public const string ItemNotResolvable = "WMS_ITEM_NOT_RESOLVABLE";
     public const string OutboundLevelMixed = "WMS_OUTBOUND_LEVEL_MIXED";
 
+    // S2 — DL-5 (WMS draft §5.1, pack §12 S2 rows)
+    public const string OutboundCancelNotAllowed = "WMS_OUTBOUND_CANCEL_NOT_ALLOWED";
+    public const string ItemLevelNotPublishable = "WMS_ITEM_LEVEL_NOT_PUBLISHABLE";
+    public const string PackageExceedsPicked = "WMS_PACKAGE_EXCEEDS_PICKED";
+    public const string PackageEmpty = "WMS_PACKAGE_EMPTY";
+    public const string PackageNotFound = "WMS_PACKAGE_NOT_FOUND";
+    public const string DispatchAmbiguous = "WMS_DISPATCH_AMBIGUOUS";
+    public const string DispatchReadForbidden = "WMS_DISPATCH_READ_FORBIDDEN";
+    public const string DispatchSourceUnavailable = "WMS_DISPATCH_SOURCE_UNAVAILABLE";
+
     /// <summary>The frozen WAREHOUSE-OUTBOUND 1.0.0 not-found code; the S2 outbound paths use it too (WMS draft §5.1 — no WMS_* twin).</summary>
     public const string UnknownOutbound = "UNKNOWN_OUTBOUND";
 
@@ -67,6 +77,8 @@ public static class WarehouseErrorCodes
         QuantityBelowConfirmed, SerialPartialNotSupported, SerialBucketChanged, ConfirmationNotResolvable, LocationRoleInheritedConflict,
         PostingIntegrityError, ConfirmationInFlight, SerialBucketMixedStatus,
         AllocationFailed, AllocationTooManyLines, OutboundAllocationInProgress, OutboundImmutable, StagingNotConfigured, UomNotBase, LotNotAllocatable,
-        ItemNotResolvable, OutboundLevelMixed, UnknownOutbound
+        ItemNotResolvable, OutboundLevelMixed, UnknownOutbound,
+        OutboundCancelNotAllowed, ItemLevelNotPublishable, PackageExceedsPicked, PackageEmpty, PackageNotFound, DispatchAmbiguous, DispatchReadForbidden,
+        DispatchSourceUnavailable
     };
 }

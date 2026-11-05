@@ -9,7 +9,8 @@ public sealed record OutboundShipmentQuery(
     string? Search,
     bool OldestFirst,
     int Page,
-    int PageSize);
+    int PageSize,
+    bool ExcludeItemLevel = false);
 
 public sealed record OutboundShipmentPage(IReadOnlyList<OutboundShipment> Items, long Total);
 
@@ -28,7 +29,10 @@ public enum OutboundUniqueIndex
     Event,
 
     /// <summary>A unique index of <c>wms_tasks</c> / <c>wms_task_events</c> (a pick task written in transaction B).</summary>
-    Task
+    Task,
+
+    /// <summary>DL-5: a unique index of <c>wms_handling_units</c> (the package number or the create key).</summary>
+    Package
 }
 
 public sealed class OutboundDuplicateException(OutboundUniqueIndex index, Exception? inner = null) : Exception($"Duplicate on {index}.", inner)
@@ -57,6 +61,18 @@ public interface IOutboundShipmentRepository
     /// <summary>The company's pick tasks of this outbound (every status).</summary>
     Task<IReadOnlyList<WarehouseTask>> PickTasksAsync(Guid outboundId, CancellationToken cancellationToken = default);
 
+    /// <summary>DL-5: the company's pick tasks of these outbounds (the frozen page reads the picked quantities of a whole page at once).</summary>
+    Task<IReadOnlyList<WarehouseTask>> PickTasksOfManyAsync(IReadOnlyCollection<Guid> outboundIds, CancellationToken cancellationToken = default);
+
+    /// <summary>DL-5: the outbound's packages (every status), in number order.</summary>
+    Task<IReadOnlyList<HandlingUnit>> PackagesAsync(Guid outboundId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<HandlingUnit>> PackagesOfManyAsync(IReadOnlyCollection<Guid> outboundIds, CancellationToken cancellationToken = default);
+
+    Task<HandlingUnit?> FindPackageAsync(Guid packageId, CancellationToken cancellationToken = default);
+
+    Task<HandlingUnit?> FindPackageByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Runs <paramref name="work"/> in ONE multi-document transaction; the central-audit event is enlisted only when the work changed an
     /// outbound (<see cref="WarehouseWriteOutcome.Affected"/> &gt; 0). A unique-index refusal surfaces as <see cref="OutboundDuplicateException"/>.
@@ -76,6 +92,21 @@ public interface IOutboundWriteSession
 
     /// <summary>The pick tasks of transaction B and their <c>Created</c> timeline rows (<c>wms_tasks</c> / <c>wms_task_events</c>).</summary>
     Task InsertPickTasksAsync(IReadOnlyList<WarehouseTask> tasks, IReadOnlyList<WarehouseTaskEvent> events, CancellationToken cancellationToken = default);
+
+    // ── DL-5 ──
+
+    /// <summary>A task of the outbound (a pick task closed by the cancel) — compare-and-set on its version.</summary>
+    Task<bool> ReplaceTaskAsync(WarehouseTask task, int expectedVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>Putaway tasks opened by the outbound (<c>Origin = Cancellation</c> / <c>ShortDispatch</c>) and their <c>Created</c> rows.</summary>
+    Task InsertTasksAsync(IReadOnlyList<WarehouseTask> tasks, IReadOnlyList<WarehouseTaskEvent> events, CancellationToken cancellationToken = default);
+
+    Task InsertPackageAsync(HandlingUnit package, CancellationToken cancellationToken = default);
+
+    Task<bool> ReplacePackageAsync(HandlingUnit package, int expectedVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>§8.9 / §8.21: the <c>OutboundShipmentReady</c> outbox row, in the same transaction as <c>ReadyToShip</c>.</summary>
+    Task InsertOutboxAsync(WarehouseOutboxMessage message, CancellationToken cancellationToken = default);
 }
 
 /// <summary>An outbound the maintenance service should complete, with the scope it is processed in (the actor = the outbound's <c>CreatedBy</c>).</summary>
@@ -90,4 +121,11 @@ public interface IOutboundMaintenanceScan
     /// <summary><see cref="OutboundStatus.Allocating"/> outbounds whose recovery lock ended before <paramref name="now"/>, after the cursor, ≤ limit.</summary>
     Task<IReadOnlyList<OutboundMaintenanceRow>> ExpiredAllocationsAsync(DateTimeOffset now, (Guid TenantId, Guid OutboundId)? after, int limit,
         IReadOnlyCollection<Guid>? onlyTenants = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// DL-5 (§8.17 step 6, §8.21, §8.22): <c>AllocationFailed</c> / <c>Shipped</c> / <c>Cancelled</c> outbounds with an allocation whose
+    /// reservation release is <c>Pending</c> (<c>(TenantId, "Lines.Allocations.ReservationReleaseState")</c>), after the cursor, ≤ limit.
+    /// </summary>
+    Task<IReadOnlyList<OutboundMaintenanceRow>> PendingReleasesAsync((Guid TenantId, Guid OutboundId)? after, int limit, IReadOnlyCollection<Guid>? onlyTenants = null,
+        CancellationToken cancellationToken = default);
 }

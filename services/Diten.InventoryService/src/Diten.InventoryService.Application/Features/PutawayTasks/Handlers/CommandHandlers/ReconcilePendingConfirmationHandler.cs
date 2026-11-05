@@ -30,7 +30,8 @@ public sealed class ReconcilePendingConfirmationHandler : IRequestHandler<Reconc
 
     public async Task<Response<bool>> Handle(ReconcilePendingConfirmationCommand request, CancellationToken ct)
     {
-        var task = await _tasks.FindAsync(request.TaskId, ct);
+        // DL-5 (§8.19): the same machine reconciles a pick confirmation — the scan names both kinds, the task is read by either
+        var task = await _tasks.FindAsync(request.TaskId, ct) ?? await _tasks.FindOfKindAsync(request.TaskId, Domain.Warehouse.Enums.WarehouseTaskKind.Pick, ct);
         if (task is null) return Response<bool>.Success(false);
         var posted = false;
         var integrity = false;

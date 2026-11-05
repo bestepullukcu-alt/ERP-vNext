@@ -34,6 +34,13 @@ public abstract class PutawayCommandHandler
 
     protected PutawayPostingEngine Engine { get; }
 
+    /// <summary>DL-5: the task kind this command serves (the pick commands share this skeleton, pack §8.19 "tek çekirdek").</summary>
+    protected virtual WarehouseTaskKind Kind => WarehouseTaskKind.Putaway;
+
+    /// <summary>The task of this command's kind (a putaway command never sees a pick task and vice versa).</summary>
+    protected Task<WarehouseTask?> FindTaskAsync(Guid taskId, CancellationToken ct)
+        => Kind == WarehouseTaskKind.Pick ? Repository.FindOfKindAsync(taskId, WarehouseTaskKind.Pick, ct) : Repository.FindAsync(taskId, ct);
+
     /// <summary>The refusal details of a task command: the current task (and the confirmation's seq once transaction 1 opened it — 11 F-1).</summary>
     protected IReadOnlyDictionary<string, object?> Details(WarehouseTask task, int? seq = null, params (string Key, object? Value)[] extra)
     {
@@ -49,10 +56,11 @@ public abstract class PutawayCommandHandler
         var earlier = await Repository.FindKeyEventAsync(taskId, Support.UserId, op, key, ct);
         if (earlier is null) return null;
         if (earlier.RequestFingerprint != fingerprint) return WarehouseSupport.KeyReused<WarehouseTaskDto>();
-        var task = await Repository.FindAsync(taskId, ct);
+        var task = await FindTaskAsync(taskId, ct);
         if (task is null) return PutawayTaskSupport.TaskNotFound<WarehouseTaskDto>();
         int? seq = earlier.Data.TryGetValue("seq", out var raw) && int.TryParse(raw, NumberStyles.None, CultureInfo.InvariantCulture, out var s) ? s : null;
-        return Response<WarehouseTaskDto>.Success(Reads.Dto(task, op is WarehouseContract.OpConfirmPutawayTask or WarehouseContract.OpRetryPutawayConfirmation ? seq : null));
+        return Response<WarehouseTaskDto>.Success(Reads.Dto(task, op is WarehouseContract.OpConfirmPutawayTask or WarehouseContract.OpRetryPutawayConfirmation
+            or WarehouseContract.OpConfirmPickTask or WarehouseContract.OpRetryPickConfirmation ? seq : null));
     }
 
     /// <summary>

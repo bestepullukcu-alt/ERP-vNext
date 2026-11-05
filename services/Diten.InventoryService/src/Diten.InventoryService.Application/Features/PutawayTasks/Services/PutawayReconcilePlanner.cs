@@ -35,7 +35,8 @@ public sealed class PutawayReconcilePlanner
 
     public async Task<bool> NeedsWriteAsync(Guid taskId, bool defensive, CancellationToken ct)
     {
-        var task = await _tasks.FindAsync(taskId, ct);
+        // DL-5 (§8.19): the same machine reconciles a pick confirmation — the task is read by either kind
+        var task = await _tasks.FindAsync(taskId, ct) ?? await _tasks.FindOfKindAsync(taskId, Domain.Warehouse.Enums.WarehouseTaskKind.Pick, ct);
         if (task is null) return false;
         var now = _support.Now();
         foreach (var c in defensive ? DefensiveTargets(task, now) : NormalTargets(task, now))
