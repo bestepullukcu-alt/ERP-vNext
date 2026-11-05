@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Features.Recall.Ports;
+using Diten.InventoryService.Domain.Recall.Rules;
 using Diten.InventoryService.Domain.Recall.Trace;
 using Microsoft.Extensions.Logging;
 
@@ -17,6 +18,12 @@ namespace Diten.InventoryService.Infrastructure.Recall;
 /// </summary>
 public sealed class ShipmentBundleHttpReader : IShipmentReader
 {
+    /// <summary>
+    /// MOD-0177-FU01 (pack §8.2, D-1 / Q-2) — the SHIPMENT-BUNDLE 3.5.0 field that carries the CRM account id (MOD-0149 Account.Id, "D").
+    /// The name is the MVP-6 draft's, to be confirmed when 3.5.0 freezes; this is the only place it is written.
+    /// </summary>
+    public const string CustomerRefField = "customerRef";
+
     public const int MaxParallel = 8;
     public static readonly TimeSpan PerReadTimeout = TimeSpan.FromSeconds(2);
 
@@ -65,9 +72,11 @@ public sealed class ShipmentBundleHttpReader : IShipmentReader
                     using (var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token)))
                     {
                         var root = document.RootElement;
+                        var shipTo = Text(root, "shipToReference");
+                        if (RecallCustomerKeyRules.IsDShaped(shipTo)) _logger.LogInformation("recall.shipment.ship_to_guid_shaped {ShipmentId}", shipmentId);
                         return new TraceShipmentInfo(ShipmentReadOutcome.Ok, Text(root, "status"),
                             Text(root, "actualDeliverAt") is { } at && DateTimeOffset.TryParse(at, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var when) ? when : null,
-                            Text(root, "shipToReference"));
+                            shipTo, CustomerAccount(root, shipmentId));
                     }
                 case HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden:
                     return new TraceShipmentInfo(ShipmentReadOutcome.Forbidden, null, null, null);
@@ -83,6 +92,18 @@ public sealed class ShipmentBundleHttpReader : IShipmentReader
             _logger.LogInformation("recall.shipment.read_unavailable {ShipmentId}: {Reason}", shipmentId, ex.GetType().Name);
             return new TraceShipmentInfo(ShipmentReadOutcome.Unavailable, null, null, null);
         }
+    }
+
+    /// <summary>
+    /// The CRM account of the shipment (pack §8.2): a string in the "D" form, not Guid.Empty; anything else (absent, empty, not a GUID, not a
+    /// string) is no account — the key falls back to shipToReference / DOC. An unusable value is logged WITHOUT the value.
+    /// </summary>
+    private Guid? CustomerAccount(JsonElement root, string shipmentId)
+    {
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty(CustomerRefField, out var value) || value.ValueKind == JsonValueKind.Null) return null;
+        if (value.ValueKind == JsonValueKind.String && Guid.TryParseExact(value.GetString(), "D", out var account) && account != Guid.Empty) return account;
+        _logger.LogInformation("recall.shipment.customer_ref_invalid {ShipmentId}", shipmentId);
+        return null;
     }
 
     private static string? Text(JsonElement root, string name)
