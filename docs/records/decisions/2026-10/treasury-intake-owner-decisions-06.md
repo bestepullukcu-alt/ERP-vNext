@@ -195,3 +195,12 @@ Kaynak: Codex K2 tur 1 (`a586738a0`; MOD-0119 ve MOD-0126 UYGUN DEĞİL — 1 EN
 2. **D135/2 — DL-1 dilim kapıları (ORTA ×2):** DL-1 Önkoşul metni MOD-0126 DL-1'i (MOD-0119, 0120, 0124) ve TRM-14'ü (dört paket) "işaretsiz paket kapısı" listesinde sayıyordu; Checklist ikisini "— DL-1 için" dilim kapısı işaretliyor (D82/2). Dört pakette ikisi listeden çıkarıldı ve DL-1'in kendi dilim kapıları olarak ayrı yazıldı.
 3. **D135/3 — sınır:** kapsam, izin, AC ve `status` değişmedi. Codex K2 tur 2 bu sürümle.
 4. **D135/4 — Codex K2 tur 2 (`ef059d19a`, ORTA ×2):** DL-1 Önkoşul'daki genel cümle ("— DL-n için" işaretli maddeler DL-1'i bekletmez) aynı paragraftaki DL-1 dilim kapılarıyla çelişiyordu → dört pakette yalnız sonraki dilimlerin maddeleri ("— DL-2 için" ve sonrası) DL-1'i bekletmeyen madde sayıldı. MOD-0126 değiştiği için ortak tanım sabitlemesi MOD-0119, MOD-0120 ve MOD-0124'te `e8e5ce47332273ef6bd0d532ce51e52c533ea6762ad065f6687274ba8c8d1288`'e çekildi (D135/1'deki `e483272a…539d`'nin yerini alır). Tur 3 bu sürümle.
+
+## D136 — Codex K3 tur 1: MOD-0120 güncel ölçüm, O-3 kapanışı, AC-3 F-OK (2026-11-05)
+
+Kaynak: Codex K3 tur 1 (`de49ac68b`; MOD-0120 UYGUN DEĞİL — 3 ORTA; MOD-0124 UYGUN); K1 / gmg-10 D132 soru kutusu ("Evet, hazırla"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D136/1 —** MOD-0120 Dependencies MOD-0149 "Recovery durumu" hücresi güncel ölçüme çekildi (ek onayı #372, U-1 + U-3 #377, CRM-ACCOUNT-LOOKUP 1.0.0 FROZEN #379; U-2 yok; canlı izin Auth'ta değil); D130 öncesi ölçüm tarihsel olarak işaretlendi.
+2. **D136/2 —** Açık kararlar O-3: "MOD-0149 pack revizyonuyla gelecek (o gelene kadar önkoşul)" yerine D132/3 kapanışı ve kalan canlı koşul (`crm.account.lookup-validation` Auth kataloğu + AR rolü, Ali; DL-1 kabul kapısı).
+3. **D136/3 —** AC-3: F-OK uygun sınıflanır ve Create / Issue ilerler; "kayıt yazılmaz" yalnız ret ve bağımlılık hatası fikstürleri için.
+4. **D136/4 — sınır:** kapsam, izin, AC numaraları ve `status` değişmedi. MOD-0124 tur 1'de UYGUN (inceleme kaydı bu commit'le). MOD-0120 tur 2 bu sürümle.
