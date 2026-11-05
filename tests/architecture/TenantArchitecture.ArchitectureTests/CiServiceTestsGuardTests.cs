@@ -47,7 +47,7 @@ namespace TenantArchitecture.ArchitectureTests;
  *
  * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
- * the "not yet" list (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
@@ -68,12 +68,6 @@ public class CiServiceTestsGuardTests
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
         // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
-            "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
-            "B (Enterprise Strategy): 6 red, RBAC assertions among them",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj"] =
-            "B (Enterprise Strategy): 2 red",
         ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
             "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
@@ -81,7 +75,8 @@ public class CiServiceTestsGuardTests
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
             "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
-            "green, but waits for the PPM team's approval (owner relays it)",
+            "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
+            + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
         ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
             "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
     };
@@ -229,11 +224,39 @@ public class CiServiceTestsGuardTests
     }
 
     // BL-590 item 4: Auth rows carry the owned-Mongo flag (BL-570 FIX3 makes it bite; today it is harmless).
+    // Owner decision 2026-11-02: branch protection requires one name, so one job turns both suite jobs into it. Exact,
+    // because one word ("skipped" accepted, a missing need, no if: always()) would let a red or unrun suite pass.
+    [Fact]
+    public void One_result_job_is_green_only_when_both_suite_jobs_succeeded()
+    {
+        var jobs = Jobs(Code(Workflow()));
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Select(job => job.Name));
+        Assert.Equal(
+            "  service-tests-result:\n"
+            + "    name: service-tests result\n"
+            + "    if: always()\n"
+            + "    needs: [service-tests, service-tests-macos]\n"
+            + "    runs-on: ubuntu-22.04\n"
+            + "    timeout-minutes: 5\n"
+            + "    steps:\n"
+            + "      - name: Every suite passed\n"
+            + "        env:\n"
+            + "          LINUX: ${{ needs.service-tests.result }}\n"
+            + "          MACOS: ${{ needs.service-tests-macos.result }}\n"
+            + "        run: |\n"
+            + "          echo \"linux: $LINUX, macos: $MACOS\"\n"
+            + "          case \"$LINUX/$MACOS\" in\n"
+            + "            success/success) echo \"Bütün test takımları geçti.\" ;;\n"
+            + "            *) echo \"En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır.\"; exit 1 ;;\n"
+            + "          esac\n",
+            jobs.Single(job => job.Name == ResultJob).Body);
+    }
+
     [Fact]
     public void Auth_rows_require_an_owned_mongo()
     {
         // CT-CI-MACOS-01: in EVERY job (both run an auth- row), not only the first one Step() would find.
-        foreach (var (_, body) in Jobs(Code(Workflow())))
+        foreach (var (_, body) in SuiteJobs(Code(Workflow())))
         {
             var step = Step(body, "Owned Mongo is required (Auth)");
             Assert.Contains("if: startsWith(matrix.suite, 'auth-')", step, StringComparison.Ordinal);
@@ -262,8 +285,8 @@ public class CiServiceTestsGuardTests
         });
         // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
         // Hardening: the whole step, exact — ` | cat` (no pipefail in the default bash -e) would turn its red green.
-        // CT-CI-MACOS-01: in EVERY job, exact.
-        foreach (var (_, body) in jobs)
+        // CT-CI-MACOS-01: in EVERY suite job, exact.
+        foreach (var (_, body) in SuiteJobs(workflow))
             Assert.Equal(
                 "- name: Skipped = 0\n        if: always()\n"
                 + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
@@ -443,6 +466,8 @@ public class CiServiceTestsGuardTests
             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
             "startsWith(matrix.suite, 'auth-')",
             "always()",
+            "always()",
+            // Owner decision 2026-11-02: the result job (job level, the only one).
             "always()"
         ]
     };
@@ -469,7 +494,12 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\bcontinue-on-error\b"), $"{name}: continue-on-error");
-            Assert.True(!Regex.IsMatch(code, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
+            // The one exception: the result job runs always(), or a red suite would skip it and a skipped check counts
+            // as passed. Its exact text is pinned by One_result_job_is_green_only_when_both_suite_jobs_succeeded.
+            var jobLevel = name == "service-tests.yml"
+                ? string.Concat(Jobs(code).Where(job => job.Name != ResultJob).Select(job => job.Body))
+                : code;
+            Assert.True(!Regex.IsMatch(jobLevel, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
             Assert.Equal(ExpectedIfs[name], KeyValues(code, "if"));
             Assert.True(KeyCount(code, "exclude") == 0, $"{name}: a matrix exclude:");
             Assert.True(!Regex.IsMatch(code, @"(?i)--filter\b"), $"{name}: dotnet test --filter");
@@ -506,7 +536,7 @@ public class CiServiceTestsGuardTests
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
 
         // CT-CI-MACOS-01: the Test step is exact in EVERY job (two jobs, one Test step each).
-        var serviceJobs = Jobs(Code(WorkflowText("service-tests.yml")));
+        var serviceJobs = SuiteJobs(Code(WorkflowText("service-tests.yml")));
         Assert.Equal(2, serviceJobs.Count);
         foreach (var (_, body) in serviceJobs)
         {
@@ -518,7 +548,7 @@ public class CiServiceTestsGuardTests
                 Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
-        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[""\*\*""\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
         // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
         // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
@@ -985,14 +1015,14 @@ public class CiServiceTestsGuardTests
         const string project = "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj";
         var code = Code(Workflow());
         var jobs = Jobs(code).ToDictionary(job => job.Name, job => job.Body, StringComparer.Ordinal);
-        Assert.Equal(["service-tests", "service-tests-macos"], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
         var mac = jobs["service-tests-macos"];
         Assert.Equal([project], MatrixProjects(mac).ToArray());
         Assert.DoesNotContain(project, MatrixProjects(jobs["service-tests"]));
         Assert.Single(Regex.Matches(mac, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(code, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(jobs["service-tests"], @"(?m)^    runs-on: ubuntu-22\.04$"));
-        Assert.Equal(2, KeyCount(code, "runs-on"));
+        Assert.Equal(3, KeyCount(code, "runs-on"));   // two suite jobs + the result job
 
         var version = Regex.Match(code, @"(?m)^  MONGODB_VERSION: ""(7\.0\.\d+)""$").Groups[1].Value;
         Assert.NotEmpty(version);
@@ -1140,6 +1170,13 @@ public class CiServiceTestsGuardTests
     private static HashSet<string> MatrixProjects(string workflow) =>
         Regex.Matches(workflow, @"(?m)^ +project: *(\S+)\s*$").Select(match => match.Groups[1].Value)
             .ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>The one job that runs no suite: it turns the suite jobs' results into one required check.</summary>
+    private const string ResultJob = "service-tests-result";
+
+    /// <summary>The jobs that run a suite — every job except <see cref="ResultJob"/>.</summary>
+    private static List<(string Name, string Body)> SuiteJobs(string workflow) =>
+        Jobs(workflow).Where(job => job.Name != ResultJob).ToList();
 
     /// <summary>Each job under `jobs:` (two-space key) with its body, up to the next job or the end.</summary>
     private static List<(string Name, string Body)> Jobs(string workflow)

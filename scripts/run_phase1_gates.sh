@@ -155,9 +155,37 @@ echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
 
-# CT-APR-01: the version-bound pack approval's own self-test (a throw-away git repository; standard library and git only)
-echo "[phase1] pack approval self-test"
-python3 -B scripts/pack_approval.py --self-test
+# AC-TEST-01 step 1 (owner 2026-11-05, design v0.2 after Codex): a test name's [MOD-nnnn(-FUnn):AC-n] tag names a
+# criterion of a readable pack AT THE PR's BASE (a new criterion reaches main first, then a test carries it). Reports
+# only; no acceptance record, queue or coverage changes. Not a pull request (AC_TAG_BASE unset) = HEAD is the base.
+# A pull request whose base cannot be fetched is red (Codex KOŞULLU→review: a skip here would pass unchecked tags).
+check_ac_tags() {
+  local base="${AC_TAG_BASE:-}"
+  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+    local try
+    for try in 1 2 3; do
+      if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+        base="$(git rev-parse FETCH_HEAD)"
+        break
+      fi
+      sleep 5
+    done
+    if [ -z "$base" ]; then
+      echo "[phase1] acceptance criteria tags: *** FAILED *** — base branch '$GITHUB_BASE_REF' could not be fetched (3 tries)."
+      return 1
+    fi
+  fi
+  if [ -z "$base" ]; then
+    python3 -B scripts/ac_coverage.py check-tags
+  else
+    python3 -B scripts/ac_coverage.py check-tags --base "$base"
+  fi
+}
+
+echo "[phase1] acceptance criteria tags"
+python3 -B scripts/ac_coverage.py --self-test
+check_ac_tags
+
 
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
@@ -221,6 +249,7 @@ dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/D
 dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c Debug
 dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
 dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/Diten.BuildingBlocks.CentralAudit.Tests.csproj -c Debug
+dotnet build services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj -c Debug
 dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
 dotnet build services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj -c Debug
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug
