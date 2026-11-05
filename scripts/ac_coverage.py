@@ -12,6 +12,13 @@ test name):
 The id is the FULL pack id (a parent and its follow-up packs each have an AC-1) and the criterion number of that pack's
 '## Acceptance Criteria' section, read by acceptance_record.read_pack — the one pack reader; no looser second one.
 
+WHAT IS PROTECTED (threat model, owner 2026-11-05 after five review rounds): the report never shows a criterion as
+passed that its tests did not pass — only a valid leading tag of a criterion the pack has counts; a failed, skipped or
+not-run test is never hidden; a criterion without results is listed; a valid-looking tag of a criterion the pack does
+not have is an ENGEL. That is the safety property. Finding broken tags ('[MOD-0900;AC-9]', 'AC-TBD', …) is a help
+against typos: every one found is an ENGEL, but a broken tag the tool does not recognize can never create a pass — its
+test links to nothing and its criterion reads "sonuç yok". A missed spelling is a LOW gap, not a hole in the boundary.
+
 WHERE THE BOUNDARY IS (Codex reviews of 3a4bc6388 and 9d33ca311): reading source code can never be complete — regex
 literals, nested templates, escapes, names built at run time. The test RESULT is the ground truth: there a test's name
 is final, however it was written. So `report` is the boundary: every result name that carries the selected pack's tag
@@ -74,9 +81,10 @@ CS_NAME_CTX = re.compile(r"\[\s*(?:global\s*::\s*)?(?:[A-Za-z_]\w*\s*\.\s*)*\w*(
 RESULT_LEAD = re.compile(rf"(?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+")
 # a tag candidate in a result name, read from its normalized form (lower case, every run of other characters one space,
 # letters and digits apart): "[MOD-0900    AC-99]", "[MOD-0900--AC-99]", "mod0900ac99" all read "mod 0900 ac 99"; a
-# follow-up id reads "mod 0900 fu 01". 'ac' must be a word of its own followed by a number, so "Account" and
-# "accepted" are no tag (Codex 4th; a real test is named "MOD-0188 accepted history view").
-CANDIDATE = re.compile(r"(?<![a-z0-9])mod (\d{4})((?: fu \d+(?: [a-z](?![a-z0-9]))?)?) ac \d+(?![a-z0-9])")
+# follow-up id reads "mod 0900 fu 01". 'ac' must be a word of its own — with a number, without one or with letters
+# ('AC-', 'AC-TBD', 'AC': Codex 5th) — so "Account" and "accepted" are no tag (Codex 4th; a real test is named
+# "MOD-0188 accepted history view").
+CANDIDATE = re.compile(r"(?<![a-z0-9])mod (\d{4})((?: fu \d+(?: [a-z](?![a-z0-9]))?)?) ac(?![a-z0-9])")
 
 
 def normalized(text: str) -> str:
@@ -627,16 +635,18 @@ def self_test() -> int:
                       "wrong ':' or in another case is broken -> one ENGEL for each of the 5 names, nothing counted",
                       _c == 1 and len(bad) == 5 and has("AC-1 (zorunlu)", "sonuç yok")))
         more = ["[MOD-0900    AC-99] four spaces", "[MOD-0900--AC-99] double dash", "[MOD-0900- AC-99] dash space",
-                "MOD0900AC99 compact", "MOD-0900 Account is created", "MOD-0900 accepted history view",
+                "MOD0900AC99 compact", "[MOD-0900:AC-] missing number", "[MOD-0900:AC-TBD] placeholder",
+                "[MOD-0900:AC] truncated", "MOD-0900 Account is created", "MOD-0900 accepted history view",
                 "[MOD-0900-FU01 AC-1] another pack, broken"]
         put("r9/c.trx", '<?xml version="1.0"?><TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">'
                         "<Results>" + "".join(f'<UnitTestResult testName="{t}" outcome="Passed"/>' for t in more)
                         + "</Results></TestRun>")
         _c, o = report(td, "MOD-0900", [str(Path(td) / "r9" / "c.trx")], base)
         bad = [l for l in o if l.startswith("ENGEL")]
-        cases.append(("sabotage report (Codex 4th): a broken tag of this pack however it is separated (4 spaces, '--', "
-                      "'- ', none) -> ENGEL each; 'Account', 'accepted' and a follow-up pack's id are no ENGEL",
-                      _c == 1 and len(bad) == 4 and not any("Account" in l or "accepted" in l or "FU01" in l for l in bad)))
+        cases.append(("sabotage report (Codex 4th, 5th): a broken tag of this pack however it is separated (4 spaces, '--', "
+                      "'- ', none) or with a missing / lettered number ('AC-', 'AC-TBD', 'AC') -> ENGEL each; 'Account', "
+                      "'accepted' and a follow-up pack's id are no ENGEL",
+                      _c == 1 and len(bad) == 7 and not any("Account" in l or "accepted" in l or "FU01" in l for l in bad)))
         _c, o = report(td, "MOD-0900-FU01", [str(Path(td) / "r9" / "c.trx")], base)
         cases.append(("sabotage report (Codex 4th): the follow-up pack's broken tag is that pack's ENGEL",
                       _c == 1 and any(l.startswith("ENGEL") and "FU01 AC-1" in l for l in o)))
