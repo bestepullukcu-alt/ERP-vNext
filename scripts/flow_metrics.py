@@ -11,16 +11,15 @@ What it measures, per calendar week (Monday–Sunday, UTC):
       .antigravity/scripts/), process (everything else: records, packs, queues, rules)
     - share approved by the most frequent approver account
   Main check (phase1-gates runs, GitHub REST, read week by week so no answer is capped): runs, red share, median duration
-  Work-package waiting (every queue in execution/delivery/ct-queue-registry.tsv, its earlier file names too): for each
-    state, how long work packages stayed in it before they moved on, and the ones still in it at the cut-off with their
-    age. A state starts at the commit that CHANGED that row against its own parent — a tower-branch commit included; a
-    merge only where its result differs from every parent; nothing after the cut-off is applied.
+  Where work packages wait (every queue in execution/delivery/ct-queue-registry.tsv, read on main at the cut-off): per
+    state how many wait and for how many days — from the tower's own 'since' date in the row — and the five oldest.
 
 WHAT IS PROTECTED (threat model, written before the review): the tool never shows a number without the data behind it
 and never a number that differs from what happened. (a) no data → "veri yok" / null, never 0; (b) every source is read
 in full for the window — an answer that could be capped or a list that could be cut is verified or split, so "veri yok"
 means there was nothing; (c) GitHub, gh or git that cannot be read stops the run (exit 2), never a partial table;
-(d) every number says what it counts; (e) how a queue stay is timed and the UTC cut-off are written in both outputs.
+(d) every number says what it counts; (e) where a waiting age comes from, main's commit read and the UTC cut-off
+are written in both outputs.
 """
 
 from __future__ import annotations
@@ -46,9 +45,8 @@ NO_DATA = "veri yok"
 UNDEFINED = "(tanımsız durum)"
 REST_CAP = 1000                      # GitHub answers a filtered run list with at most this many runs
 BASIS = {"week": "pazartesi–pazar, UTC",
-         "queue_time": "bir durum, o satırı kendi ebeveynine göre değiştiren commit'in zamanında başlar (kulenin dalındaki "
-                       "commit dahil; merge yalnız sonucu her ebeveynden farklıysa); kesim anından sonraki hiçbir değişiklik "
-                       "uygulanmaz; ana dala ulaşma beklemesi PR tablosundadır"}
+         "queue_time": "bekleme yaşı, kulenin kuyrukta yazdığı 'since' tarihinden (gün); kuyruklar ana dalın kesim "
+                       "anındaki commit'inden okunur; kulenin henüz ana dala gelmemiş değişiklikleri görünmez"}
 
 
 class Unreadable(Exception):
@@ -270,127 +268,89 @@ def git(root: str, *args: str) -> str:
     return run(["git", "-C", root, *args], f"git {' '.join(args[:2])}").decode("utf-8", errors="replace")
 
 
-class Repo:
-    """One root and ref: real parents (path limiting rewrites them, so they come from rev-list) and queue versions read
-    once. A version is None only when NO name of the queue is in that commit's tree; a name that is there but cannot be
-    shown stops the run (Codex: an error was taken for a deletion)."""
-
-    def __init__(self, root: str, ref: str):
-        self.root, self.ref, self._v = root, ref, {}
-        self.parents = {}
-        for line in git(root, "rev-list", "--parents", ref).splitlines():
-            ids = line.split()
-            self.parents[ids[0]] = ids[1:]
-
-    def version(self, sha: str, names: list[str]) -> dict[str, str] | None:
-        key = (sha, tuple(names))
-        if key not in self._v:
-            present = set(git(self.root, "ls-tree", "-r", "--name-only", sha, "--", *names).split("\n"))
-            name = next((n for n in names if n in present), None)
-            if name is None:
-                self._v[key] = None
-            else:
-                t = queue_reader().Table(git(self.root, "show", f"{sha}:{name}"))
-                i, s = t.index("id"), t.index("state")
-                if i is None or s is None:
-                    raise Unreadable(f"{name}@{sha[:12]}: id / state sütunu yok")
-                self._v[key] = {r[i]: r[s] for r in t.rows if len(r) > max(i, s) and r[i]}
-        return self._v[key]
+def snapshot_commit(root: str, ref: str, end: dt.datetime) -> tuple[str, dt.datetime]:
+    """Main as it was at the cut-off: the newest commit on `ref`'s first-parent line committed at or before `end`."""
+    sha = git(root, "rev-list", "-1", "--first-parent", f"--before={end.strftime('%Y-%m-%dT%H:%M:%S+00:00')}", ref).strip()
+    if not sha:
+        raise Unreadable(f"{ref}: kesim anından ({end.isoformat()}) önce commit yok")
+    return sha, ts(git(root, "show", "-s", "--format=%cI", sha).strip())
 
 
-def queue_names(repo: Repo, path: str) -> list[str]:
-    """The queue's file names, current first, then the earlier ones it was moved from (Codex: a move reset the starts)."""
-    names = [path]
-    out = git(repo.root, "log", "--follow", "--name-only", "--format=tformat:@@", repo.ref, "--", path)
-    for line in out.splitlines():
-        if line and line != "@@" and line not in names:
-            names.append(line)
-    return names
-
-
-def queue_events(repo: Repo, path: str) -> list[tuple[dt.datetime, str, str | None]]:
-    """(time, work package, new state | None = removed) for every row a commit really changed against its own parent;
-    a merge only for rows whose result differs from EVERY parent (Codex: whole snapshots in date order invented moves
-    when two branches changed different rows)."""
-    names = queue_names(repo, path)
-    out = []
-    for line in git(repo.root, "log", "--full-history", "--format=%H %cI", repo.ref, "--", *names).splitlines():
-        sha, when = line.split(" ", 1)
-        now = repo.version(sha, names) or {}
-        before = [repo.version(p, names) or {} for p in repo.parents.get(sha, [])] or [{}]
-        for wp in set(now).union(*before):
-            new = now.get(wp)
-            if all(b.get(wp) != new for b in before):
-                out.append((ts(when), wp, new))
-    return out
-
-
-def stays_from(events: list[tuple[dt.datetime, str, str, str | None]], end: dt.datetime) -> tuple[list[tuple], list[tuple]]:
-    """(closed stays, open stays): (work package, queue, state, entered, left | None). events: (time, queue, work
-    package, state | None). Nothing after `end` is applied (Codex: a later change erased an earlier week's waiting). A
-    work package is followed across queues (one queue was split from another's file): it leaves a state only when no
-    queue holds it in that state any more."""
-    held: dict[str, dict[str, tuple[str, dt.datetime]]] = {}       # wp -> queue -> (state, since)
-    current: dict[str, tuple[str, str, dt.datetime]] = {}          # wp -> (queue, state, entered)
-    closed = []
-    for when, queue, wp, state in sorted((e for e in events if e[0] <= end), key=lambda e: (e[0], e[3] is None)):
-        h = held.setdefault(wp, {})
-        if state is None:
-            h.pop(queue, None)
-        else:
-            h[queue] = (state, when)
-        now = max(h.items(), key=lambda kv: kv[1][1]) if h else None   # the most recent state any queue holds
-        cur = current.get(wp)
-        if now is None:
-            if cur:
-                closed.append((wp, cur[0], cur[1], cur[2], when))
-                del current[wp]
-        elif cur is None or cur[1] != now[1][0]:
-            if cur:
-                closed.append((wp, cur[0], cur[1], cur[2], when))
-            current[wp] = (now[0], now[1][0], when)
-    return closed, [(wp, q, s, t, None) for wp, (q, s, t) in current.items()]
-
-
-def queue_stats(root: str, ref: str, since: dt.datetime, end: dt.datetime) -> dict:
-    """Per state: stays that ENDED in [since, end] with their median length, and stays still open at `end` with their
-    median age. A state outside the queue's own vocabulary (STATES, by the registry's vocabulary column) is one bucket,
-    UNDEFINED — free text in a state cell is not a state; a 'closed'-class state waits for nothing."""
-    repo = Repo(root, ref)
+def queue_snapshot(root: str, ref: str, end: dt.datetime) -> dict:
+    """Where work packages wait at the cut-off, from the towers' own record: every queue in the registry, read at main's
+    commit at the cut-off, each row's state and its 'since' date (the day the tower wrote that the row entered its
+    state). No git history is rebuilt (owner 2026-11-05 after Codex round 2: branches, merges and same-second commits
+    made a rebuilt history wrong in new corners every round; all 708 rows carry a since date). Per state: how many wait
+    and their age in days (median, oldest). A 'closed'-class state waits for nothing; a state outside the queue's own
+    vocabulary is one UNDEFINED bucket; a since date that cannot be read or lies after the cut-off gives no age and is
+    counted. A work package with more than one row (a queue that appended a row per change — measured: 79 in one queue;
+    the first row showed Q15 waiting 41 days for a decision taken on 27 Sep) is counted once, by its row with the latest
+    since date — the latest state entry is the current state; on a tie the later row."""
+    sha, when = snapshot_commit(root, ref, end)
     table = queue_reader().Table
-    t = table(git(root, "show", f"{ref}:{REGISTRY}"))
+    t = table(git(root, "show", f"{sha}:{REGISTRY}"))
     qi, pi, vi = t.index("queue_id"), t.index("path"), t.index("vocabulary")
     if qi is None or pi is None:
         raise Unreadable(f"{REGISTRY}: queue_id / path sütunu yok")
     vocab: dict[str, dict[str, str]] = {}
-    vt = table(git(root, "show", f"{ref}:{STATES}"))
+    vt = table(git(root, "show", f"{sha}:{STATES}"))
     a_, b_, c_ = vt.index("queue_id"), vt.index("state"), vt.index("class")
     for r in vt.rows:
         if a_ is not None and b_ is not None and len(r) > max(a_, b_):
             vocab.setdefault(r[a_], {})[r[b_]] = r[c_] if c_ is not None and len(r) > c_ else ""
-    events, known_of, queues = [], {}, 0
+    count: dict[str, int] = {}
+    ages: dict[str, list[int]] = {}
+    oldest, latest, order = [], {}, 0
+    closed_states, bad_since, future_since, repeats, queues = set(), 0, 0, 0, 0
+
+    def day_of(since: str) -> dt.date | None:
+        try:
+            return dt.date.fromisoformat(since) if len(since) == 10 else None
+        except ValueError:
+            return None
     for row in t.rows:
         if len(row) <= max(qi, pi) or not row[pi]:
             continue
         queues += 1
-        known_of[row[qi]] = vocab.get(row[vi]) if vi is not None and len(row) > vi else None
-        events += [(when, row[qi], wp, state) for when, wp, state in queue_events(repo, row[pi])]
-    closed, still = stays_from(events, end)
-    name = lambda q, s: s if not known_of.get(q) or s in known_of[q] else UNDEFINED
-    per_state: dict[str, list[float]] = {}
-    open_now: dict[str, list[float]] = {}
-    closed_states: set[str] = set()
-    for _wp, q, state, a, b in closed:
-        if since <= b <= end:                                     # the stay ended inside the measured window
-            per_state.setdefault(name(q, state), []).append(hours(a, b))
-    for _wp, q, state, a, _b in still:
-        if (known_of.get(q) or {}).get(state) == "closed":
+        known = vocab.get(row[vi]) if vi is not None and len(row) > vi else None
+        q = table(git(root, "show", f"{sha}:{row[pi]}"))           # a listed queue that cannot be read stops the run
+        i, s, d = q.index("id"), q.index("state"), q.index("since")
+        if i is None or s is None or d is None:
+            raise Unreadable(f"{row[pi]}@{sha[:12]}: id / state / since sütunu yok")
+        for r in q.rows:
+            if len(r) <= max(i, s, d) or not r[i]:
+                continue
+            order += 1
+            since = r[d].strip()
+            key = (day_of(since) or dt.date.min, order)              # the latest since date wins, then the later row
+            if r[i] in latest:
+                repeats += 1
+                if key <= latest[r[i]][0]:
+                    continue
+            latest[r[i]] = (key, row[qi], known, r[s], since)
+    for wp, (_key, queue_id, known, state, since) in latest.items():
+        if known and known.get(state) == "closed":
             closed_states.add(state)
             continue
-        open_now.setdefault(name(q, state), []).append(hours(a, end))
-    return {"queues": queues, "closed_states": sorted(closed_states), "cutoff_utc": end.isoformat(),
-            "states": {s: {"left": len(v), "median_h": med(v)} for s, v in sorted(per_state.items())},
-            "open": {s: {"count": len(v), "age_median_h": med(v)} for s, v in sorted(open_now.items())}}
+        bucket = state if not known or state in known else UNDEFINED
+        count[bucket] = count.get(bucket, 0) + 1
+        day = day_of(since)
+        if day is None:
+            bad_since += 1
+        elif day > end.date():
+            future_since += 1
+        else:
+            age = (end.date() - day).days
+            ages.setdefault(bucket, []).append(age)
+            if bucket != UNDEFINED:
+                oldest.append((age, wp, queue_id, bucket))
+    return {"snapshot": sha, "snapshot_time": when.isoformat(), "cutoff_utc": end.isoformat(), "queues": queues,
+            "closed_states": sorted(closed_states), "bad_since": bad_since, "future_since": future_since,
+            "repeats": repeats,
+            "open": {k: {"count": count[k], "age_median_d": med(ages.get(k, [])),
+                         "age_max_d": max(ages[k]) if ages.get(k) else None} for k in sorted(count)},
+            "oldest": [{"wp": w, "queue": qn, "state": st, "age_d": ag}
+                       for ag, w, qn, st in sorted(oldest, key=lambda x: (-x[0], x[1]))[:5]]}
 
 
 # ------------------------------------------------------------------------------------------------ report
@@ -410,12 +370,16 @@ def render(weeks: list, pr: list[dict], ci: list[dict], q: dict, cost: str, wind
     for (a, b), s in zip(weeks, ci):
         red = NO_DATA if s["runs"] is None else f"{s['red']}/{s['runs']}"
         L.append(f"{a:%d.%m}–{b:%d.%m} | {n(s['runs'])} | {red} | {fmt(s['duration_median_min'], 'dk')}")
-    L += ["", f"İş paketi beklemeleri ({q['queues']} kuyruk; kesim {q['cutoff_utc']}) — {BASIS['queue_time']}",
-          "durum | pencerede çıkılan | o durumda kalış medyan"]
-    L += [f"{s} | {v['left']} | {fmt(v['median_h'])}" for s, v in q["states"].items()] or [f"— | {NO_DATA} | {NO_DATA}"]
-    L += ["", "Kesim anında bekleyenler (kuyruğun durum listesinde 'closed' sınıfındaki "
-              f"{', '.join(q.get('closed_states') or []) or 'durumlar'} sayılmaz)", "durum | iş paketi | bekleme yaşı medyan"]
-    L += [f"{s} | {v['count']} | {fmt(v['age_median_h'])}" for s, v in q["open"].items()] or [f"— | {NO_DATA} | {NO_DATA}"]
+    L += ["", f"İş paketleri nerede bekliyor ({q['queues']} kuyruk; ana dal {q['snapshot'][:12]} @ {q['snapshot_time']}, "
+              f"kesim {q['cutoff_utc']}) — {BASIS['queue_time']}",
+          f"durum | iş paketi | bekleme medyan | en eski  ('closed' sınıfındaki "
+          f"{', '.join(q.get('closed_states') or []) or 'durumlar'} sayılmaz)"]
+    L += [f"{k} | {v['count']} | {fmt(v['age_median_d'], 'gün')} | {fmt(v['age_max_d'], 'gün')}" for k, v in q["open"].items()] \
+        or [f"— | {NO_DATA} | {NO_DATA} | {NO_DATA}"]
+    L += ["", "En uzun bekleyen 5 iş (tanımsız durumlar hariç)"]
+    L += [f"{o['wp']} · {o['queue']} · {o['state']} · {o['age_d']} gün" for o in q["oldest"]] or [NO_DATA]
+    L += [f"Veri kalitesi: since tarihi okunamayan {q['bad_since']} iş ve kesimden sonra olan {q['future_since']} iş "
+          f"(bunlara yaş verilmez); aynı işin ek satırı {q['repeats']} (en yeni since tarihli satır geçerli)"]
     return L
 
 
@@ -431,14 +395,13 @@ def main(argv: list[str]) -> int:
     now = dt.datetime.now(dt.timezone.utc)
     until = dt.date.fromisoformat(a.until) if a.until else now.date()
     weeks = weeks_ending(until, max(1, a.weeks))
-    start = dt.datetime.combine(weeks[0][0], dt.time(), dt.timezone.utc)
     end = min(dt.datetime.combine(weeks[-1][1], dt.time(23, 59, 59), dt.timezone.utc), now)
     try:
         prs, points = fetch_prs(weeks[0][0])
         runs, pages = fetch_runs(weeks)
         pr = [pr_stats(prs, w) for w in weeks]
         ci = [run_stats(runs, w) for w in weeks]
-        q = queue_stats(str(ROOT), a.ref, start, end)
+        q = queue_snapshot(str(ROOT), a.ref, end)
     except Unreadable as e:
         print(f"sonuç: tamamlanamadı — {e}\nçıkış: 2")
         return 2
@@ -493,144 +456,87 @@ def self_test() -> int:
                   r["runs"] == 2 and r["red"] == 1 and r["duration_median_min"] == 11))
     cases.append(("sabotage CI: a week without runs is 'veri yok' in every field",
                   all(v is None for v in run_stats(runs, (dt.date(2026, 10, 1), dt.date(2026, 10, 7))).values())))
-    lines = render([week], [empty], [run_stats([], week)], {"queues": 1, "states": {}, "open": {}, "cutoff_utc": "x"},
-                   "test", week)
-    cases.append(("sabotage render (Codex): no data anywhere reads 'veri yok' in every cell, never a 0",
-                  any(l.startswith(f"{week[0]:%d.%m}") and l.count(NO_DATA) == 8 for l in lines)
-                  and not any(" 0 " in l or "0/0/0" in l or " 0.0 " in l for l in lines)))
+    q_empty = {"snapshot": "0" * 40, "snapshot_time": "x", "cutoff_utc": "x", "queues": 1, "closed_states": [],
+               "bad_since": 0, "future_since": 0, "repeats": 0, "open": {}, "oldest": []}
+    lines = render([week], [empty], [run_stats([], week)], q_empty, "test", week)
+    rows = [l for l in lines if l.startswith(f"{week[0]:%d.%m}")]
+    cases.append(("sabotage render (Codex): no data anywhere reads 'veri yok' in every cell of the weekly rows and the "
+                  "queue tables, never a 0",
+                  len(rows) == 2 and rows[0].count(NO_DATA) == 8 and rows[1].count(NO_DATA) == 3
+                  and not any(" 0 " in l or "0/0/0" in l or " 0.0 " in l for l in rows)
+                  and f"— | {NO_DATA} | {NO_DATA} | {NO_DATA}" in lines and NO_DATA in lines))
+    # the queue snapshot: the towers' own since dates, on main at the cut-off
     with tempfile.TemporaryDirectory() as td:
         env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@x", "GIT_COMMITTER_NAME": "t",
                "GIT_COMMITTER_EMAIL": "t@x"}
         g = lambda *a, when=None: subprocess.run(["git", "-C", td, *a], capture_output=True, check=True,
                                                  env={**env, **({"GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when} if when else {})})
-        g("init", "-q", "-b", "main")
-        q, q_old = "execution/q/CT-QUEUE.tsv", "execution/CT-QUEUE.tsv"
-        Path(td, "execution/delivery").mkdir(parents=True)
-        Path(td, "execution/q").mkdir(parents=True)
-        Path(td, REGISTRY).write_text("queue_id\tpath\tvocabulary\nq1\t" + q + "\tv1\n", encoding="utf-8")
-        Path(td, STATES).write_text(
-            "queue_id\tstate\tclass\n" + "".join(f"v1\t{s}\t{c}\n" for s, c in (
-                ("PLANNED", "planned"), ("READY", "dispatchable"), ("DISPATCHED", "active"), ("ACCEPTED", "closed"))),
+        q1, q2 = "execution/q1/CT-QUEUE.tsv", "execution/q2/CT-QUEUE.tsv"
+        for d in ("execution/delivery", "execution/q1", "execution/q2"):
+            Path(td, d).mkdir(parents=True)
+        reg = "queue_id\tpath\tvocabulary\nq1\t" + q1 + "\tv1\nq2\t" + q2 + "\t\n"
+        Path(td, REGISTRY).write_text(reg, encoding="utf-8")
+        Path(td, STATES).write_text("queue_id\tstate\tclass\n" + "".join(f"v1\t{s_}\t{c}\n" for s_, c in (
+            ("PLANNED", "planned"), ("READY", "dispatchable"), ("DISPATCHED", "active"), ("ACCEPTED", "closed"))),
             encoding="utf-8")
-
-        def version(rows: list[tuple[str, str]], when: str, path: str = q) -> None:
-            Path(td, path).write_text("id\titem\tstate\n" + "".join(f"{i}\tx\t{s}\n" for i, s in rows), encoding="utf-8")
-            g("add", "-A")
-            g("commit", "-q", "-m", when, when=when)
-        version([("WP-1", "PLANNED")], "2026-11-02T08:00:00+00:00", q_old)                    # under its earlier name
-        g("mv", q_old, q)
-        g("commit", "-q", "-m", "move", when="2026-11-02T09:00:00+00:00")                      # moved, same content
-        version([("WP-1", "READY"), ("WP-2", "PLANNED")], "2026-11-02T10:00:00+00:00")
-        version([("WP-1", "DISPATCHED"), ("WP-2", "PLANNED")], "2026-11-02T16:00:00+00:00")
-        g("checkout", "-q", "-b", "a")
-        version([("WP-1", "ACCEPTED"), ("WP-2", "PLANNED"), ("WP-3", "Bekliyor — notlar burada")],
-                "2026-11-03T10:00:00+00:00")                                                   # tower branch a
-        g("checkout", "-q", "main")
-        g("checkout", "-q", "-b", "b")
-        version([("WP-1", "DISPATCHED"), ("WP-2", "READY")], "2026-11-03T12:00:00+00:00")      # sibling branch b
-        g("checkout", "-q", "main")
-        g("merge", "-q", "--no-ff", "-m", "merge a", "a", when="2026-11-04T10:00:00+00:00")
-        try:                                                    # neighbouring rows: git asks for a resolution
-            g("merge", "-q", "--no-ff", "-m", "merge b", "b", when="2026-11-04T11:00:00+00:00")
-        except subprocess.CalledProcessError:
-            Path(td, q).write_text("id\titem\tstate\nWP-1\tx\tACCEPTED\nWP-2\tx\tREADY\nWP-3\tx\tBekliyor — notlar burada\n",
-                                   encoding="utf-8")            # both branches' changes, nothing new
-            g("add", "-A")
-            g("commit", "-q", "-m", "merge b", when="2026-11-04T11:00:00+00:00")
-        version([("WP-1", "ACCEPTED"), ("WP-2", "READY"), ("WP-3", "Bekliyor — notlar burada"), ("WP-4", "PLANNED")],
-                "2026-11-06T10:00:00+00:00")                                                   # after the cut-off
-        end = dt.datetime(2026, 11, 5, 10, tzinfo=dt.timezone.utc)
-        qs = queue_stats(td, "main", dt.datetime(2026, 11, 2, tzinfo=dt.timezone.utc), end)
-        st, op = qs["states"], qs["open"]
-        cases.append(("sabotage queue (Codex): a move with the same content keeps the start — PLANNED stays WP-1 2 h (from "
-                      "the commit under the earlier name, not 1 h from the move) and WP-2 26 h: median 14 h",
-                      st.get("PLANNED") == {"left": 2, "median_h": 14}))
-        cases.append(("queue: READY 6 h; DISPATCHED left once, after 18 h, on tower branch a's own commit",
-                      st.get("READY", {}).get("median_h") == 6 and st.get("DISPATCHED") == {"left": 1, "median_h": 18}))
-        cases.append(("sabotage queue (Codex): two sibling branches changing different rows invent no move — WP-1 stays "
-                      "ACCEPTED, WP-2 READY since branch b's commit (22 h), no second DISPATCHED stay",
-                      op.get("READY") == {"count": 1, "age_median_h": 46} and "DISPATCHED" not in op
-                      and "ACCEPTED" not in op and qs["closed_states"] == ["ACCEPTED"]))
-        cases.append(("sabotage queue (Codex): nothing after the cut-off is applied (WP-4 of 6 Nov is not there)",
-                      sum(v["count"] for v in op.values()) == 2))
-        cases.append(("sabotage queue: free text in a state cell is not a state — one '(tanımsız durum)' bucket",
-                      op.get(UNDEFINED, {}).get("count") == 1 and not any("notlar" in k for k in op)))
-        g("checkout", "-q", "-b", "c", "main~1")
-        version([("WP-1", "ACCEPTED"), ("WP-2", "PLANNED")], "2026-11-04T12:00:00+00:00")
-        g("checkout", "-q", "main~1")
-        g("checkout", "-q", "-b", "d")
-        try:                                                    # the merge is committed only after the change below
-            g("merge", "-q", "--no-ff", "--no-commit", "c", when="2026-11-04T13:00:00+00:00")
-        except subprocess.CalledProcessError:
-            pass
-        Path(td, q).write_text("id\titem\tstate\nWP-1\tx\tACCEPTED\nWP-2\tx\tBLOCKED\nWP-3\tx\tBekliyor — notlar burada\n",
-                               encoding="utf-8")                                              # a resolution changes WP-2
-        g("add", "-A")
-        g("commit", "-q", "-m", "resolve", when="2026-11-04T13:00:00+00:00")
-        rd = Repo(td, "d")
-        is_merge = len(rd.parents[git(td, "rev-parse", "d").strip()]) == 2
-        ev = queue_events(rd, q)
-        cases.append(("sabotage queue (Codex): a change made in a merge commit (its result differs from every parent) is "
-                      "counted", is_merge and any(wp == "WP-2" and s_ == "BLOCKED" for _t, wp, s_ in ev)))
-        lines = render([week], [s], [r], qs, "test", week)
-        cases.append(("render (Codex): the stay timing rule and the UTC cut-off are written",
-                      any("kendi ebeveynine göre" in l and "kesim 2026-11-05T10:00:00+00:00" in l for l in lines)))
-        Path(td, q).unlink()
-        g("add", "-A")
-        g("commit", "-q", "-m", "delete", when="2026-11-05T08:00:00+00:00")
-        ev = queue_events(Repo(td, "d"), q)
-        gone = dt.datetime(2026, 11, 5, 8, tzinfo=dt.timezone.utc)
-        cases.append(("queue (Codex): a real deletion closes every stay of the queue (its 3 rows, at the deleting commit)",
-                      sum(1 for t_, _w, s_ in ev if s_ is None and t_ == gone) == 3))
-        real_git = globals()["git"]
-        bad_sha = real_git(td, "rev-parse", "main~1").strip()
-
-        def broken_git(root_, *args):
-            if args[:1] == ("show",) and args[1].startswith(bad_sha + ":"):
-                raise Unreadable("git show (test)")
-            return real_git(root_, *args)
-        globals()["git"] = broken_git
-        try:
-            stopped = isinstance(attempt(queue_stats, td, "main", end, end), Unreadable)
-        finally:
-            globals()["git"] = real_git
-        cases.append(("sabotage queue (Codex): a version git lists but cannot show stops the run (exit 2), never a deletion",
-                      stopped))
-        try:
-            queue_stats(td, "no-such-ref", end, end)
-            raised = False
-        except Unreadable:
-            raised = True
-        cases.append(("sabotage queue: an unreadable ref stops the run (exit 2), never an empty table", raised))
-    # git's default history simplification drops a side branch whose merge result equals the first parent — the
-    # 1-of-58-versions case; --full-history keeps the side branch's own, earlier commit
-    with tempfile.TemporaryDirectory() as td:
-        env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@x", "GIT_COMMITTER_NAME": "t",
-               "GIT_COMMITTER_EMAIL": "t@x"}
-        g = lambda *a, when=None: subprocess.run(["git", "-C", td, *a], capture_output=True, check=True,
-                                                 env={**env, **({"GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when} if when else {})})
-        q = "execution/q/CT-QUEUE.tsv"
-        Path(td, "execution/delivery").mkdir(parents=True)
-        Path(td, "execution/q").mkdir(parents=True)
-        Path(td, REGISTRY).write_text("queue_id\tpath\tvocabulary\nq1\t" + q + "\t\n", encoding="utf-8")
-        Path(td, STATES).write_text("queue_id\tstate\tclass\n", encoding="utf-8")
-        put_q = lambda state: Path(td, q).write_text(f"id\titem\tstate\nWP-9\tx\t{state}\n", encoding="utf-8")
+        put = lambda path, rows_: Path(td, path).write_text(
+            "id\titem\tstate\tsince\n" + "".join(f"{w}\tx\t{st}\t{sd}\n" for w, st, sd in rows_), encoding="utf-8")
+        put(q1, [("WP-1", "READY", "2026-11-01"), ("WP-2", "ACCEPTED", "2026-11-02"), ("WP-9", "READY", "2026-11-02"),
+                 ("WP-3", "Bekliyor — notlar burada", "2026-10-01"), ("WP-4", "PLANNED", "geçen hafta"),
+                 ("WP-8", "PLANNED", "2026-10-20"), ("WP-8", "READY", "2026-11-03"),      # a row appended per change
+                 ("WP-9", "PLANNED", "2026-10-25")])                                       # an older row added later
+        put(q2, [("WP-5", "PLANNED", "2026-10-20"), ("WP-1", "READY", "2026-11-01"), ("WP-7", "READY", "2026-11-09")])
         g("init", "-q", "-b", "main")
-        put_q("PLANNED")
         g("add", "-A")
-        g("commit", "-q", "-m", "c0", when="2026-11-02T08:00:00+00:00")
-        g("checkout", "-q", "-b", "x")
-        put_q("READY")
-        g("commit", "-q", "-am", "x1", when="2026-11-02T09:00:00+00:00")
-        g("checkout", "-q", "main")
-        put_q("READY")
-        g("commit", "-q", "-am", "m1", when="2026-11-02T12:00:00+00:00")
-        g("merge", "-q", "--no-ff", "-m", "merge x", "x", when="2026-11-02T13:00:00+00:00")
-        hs = attempt(queue_stats, td, "main", dt.datetime(2026, 11, 2, tzinfo=dt.timezone.utc),
-                     dt.datetime(2026, 11, 3, tzinfo=dt.timezone.utc))
-        cases.append(("sabotage queue (Codex): a side branch whose merge equals main's own version keeps its earlier "
-                      "commit — WP-9 READY since 09:00 (15 h), not since main's 12:00 (12 h)",
-                      isinstance(hs, dict) and hs["open"].get("READY", {}).get("age_median_h") == 15))
+        g("commit", "-q", "-m", "c1", when="2026-11-04T09:00:00+00:00")
+        c1 = git(td, "rev-parse", "HEAD").strip()
+        put(q1, [("WP-1", "DISPATCHED", "2026-11-06"), ("WP-2", "ACCEPTED", "2026-11-02"),
+                 ("WP-3", "Bekliyor — notlar burada", "2026-10-01"), ("WP-4", "PLANNED", "geçen hafta"),
+                 ("WP-6", "PLANNED", "2026-11-06")])
+        g("commit", "-q", "-am", "c2", when="2026-11-06T09:00:00+00:00")       # after the cut-off
+        end = dt.datetime(2026, 11, 5, 10, tzinfo=dt.timezone.utc)
+        qs = attempt(queue_snapshot, td, "main", end)
+        ok = isinstance(qs, dict)
+        op = qs["open"] if ok else {}
+        cases.append(("sabotage queue: main is read as it was at the cut-off — the commit of 4 Nov, not the later one "
+                      "(WP-1 still READY, WP-6 not there)", ok and qs["snapshot"] == c1 and "DISPATCHED" not in op))
+        cases.append(("queue: age in days from the tower's own since date — READY: 4 waiting, ages 4, 3, 2 days (WP-7's "
+                      "date lies after the cut-off: counted, no age)",
+                      ok and op.get("READY") == {"count": 4, "age_median_d": 3, "age_max_d": 4} and qs["future_since"] == 1))
+        cases.append(("sabotage queue: a since date that cannot be read gives no age and is counted — PLANNED: WP-4 "
+                      "(no age) and WP-5 of a queue without vocabulary (16 days)",
+                      ok and op.get("PLANNED") == {"count": 2, "age_median_d": 16, "age_max_d": 16} and qs["bad_since"] == 1))
+        cases.append(("sabotage queue: a 'closed'-class state waits for nothing (WP-2 ACCEPTED not listed)",
+                      ok and "ACCEPTED" not in op and qs["closed_states"] == ["ACCEPTED"]))
+        cases.append(("sabotage queue: free text in a state cell is one '(tanımsız durum)' bucket",
+                      ok and op.get(UNDEFINED, {}).get("count") == 1 and not any("notlar" in k for k in op)))
+        cases.append(("sabotage queue: a work package with several rows counts once, by its row with the latest since "
+                      "date — WP-8's appended READY row (2 days), WP-9's READY row although an older PLANNED row comes "
+                      "after it, WP-1 in two queues; 3 extra rows counted",
+                      ok and qs["repeats"] == 3 and "WP-8" in [o["wp"] for o in qs["oldest"]]
+                      and next(o for o in qs["oldest"] if o["wp"] == "WP-8")["state"] == "READY"
+                      and next(o for o in qs["oldest"] if o["wp"] == "WP-9")["state"] == "READY"))
+        cases.append(("queue: the five oldest, undefined states left out, oldest first (WP-5 16, WP-1 4, WP-9 3, WP-8 2)",
+                      ok and [o["wp"] for o in qs["oldest"]] == ["WP-5", "WP-1", "WP-9", "WP-8"]))
+        lines = render([week], [s], [r], qs if ok else q_empty, "test", week)
+        cases.append(("render (Codex): where an age comes from, main's commit read and the UTC cut-off are written",
+                      ok and any("'since' tarihinden" in l and c1[:12] in l and "kesim 2026-11-05T10:00:00+00:00" in l
+                                 for l in lines)))
+        cases.append(("sabotage queue: no commit on main before the cut-off stops the run (exit 2)",
+                      isinstance(attempt(queue_snapshot, td, "main", dt.datetime(2026, 11, 1, tzinfo=dt.timezone.utc)),
+                                 Unreadable)))
+        g("checkout", "-q", "-b", "bad", c1)
+        Path(td, REGISTRY).write_text(reg + "q3\texecution/q3/CT-QUEUE.tsv\t\n", encoding="utf-8")
+        g("commit", "-q", "-am", "a listed queue without its file", when="2026-11-04T10:00:00+00:00")
+        cases.append(("sabotage queue: a listed queue whose file cannot be read stops the run (exit 2), never a skipped "
+                      "queue", isinstance(attempt(queue_snapshot, td, "bad", end), Unreadable)))
+        g("checkout", "-q", "-b", "nosince", c1)
+        Path(td, q2).write_text("id\titem\tstate\nWP-5\tx\tPLANNED\n", encoding="utf-8")
+        g("commit", "-q", "-am", "no since column", when="2026-11-04T10:00:00+00:00")
+        cases.append(("sabotage queue: a queue without its since column stops the run (exit 2)",
+                      isinstance(attempt(queue_snapshot, td, "nosince", end), Unreadable)))
+        cases.append(("sabotage queue: an unreadable ref stops the run (exit 2), never an empty table",
+                      isinstance(attempt(queue_snapshot, td, "no-such-ref", end), Unreadable)))
     # the GitHub readers against a stand-in `gh` on PATH
     with tempfile.TemporaryDirectory() as td:
         conn = lambda nodes, more, cur: {"pageInfo": {"hasNextPage": more, "endCursor": cur}, "nodes": nodes}
