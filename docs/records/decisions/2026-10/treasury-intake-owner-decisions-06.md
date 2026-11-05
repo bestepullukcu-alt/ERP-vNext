@@ -140,3 +140,11 @@ Onay kanıtı: K1 / gmg-10 (soru kutuları, 2026-11-04: "Şimdi hazırla" ve "Ev
 2. **D129/2 — kod alanı:** `runtime_code_allowed: true`, kapsam yalnız MOD-0289 (D127); bu DCP sürümünün CT-APR-01 satırı main'e girene kadar yürürlükte değildir, önceki onaylı sürüm (`runtime_code_allowed: false`) geçerlidir. CAP-001 §7'nin iki koşulu (DCP `approved`, sıradaki üyenin pack'i `ready-for-dev`) MOD-0289 için sağlanıyor; kod dilim sırasıyla ve her dilimin WP prompt'u kapıdan geçince yazılır. Diğer üyeler ready-for-dev oldukça alan yeni bir DCP revizyonuyla genişletilir.
 3. **D129/3 — sınır:** teslim sırası, diğer üyeler, kapsam dışılar ve AC aralıkları değişmedi. Bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir.
 4. **D129/4 — Codex tur 1 (`f209c70a2`, UYGUN DEĞİL):** ENGEL — kod alanının yürürlüğü onaya bağlanmamıştı → künyede ve MOD-0289'un üç satırında "onay satırı main'e girene kadar kod yok" yazıldı. ORTA — TRM-S3 "draft pack" → `ready-for-dev`. ORTA — D128/1'deki 64 hex cümlesi finans tüketicileriyle sınırlandı; MDM anahtarı kendi paket kuralında.
+
+## D131 — commercial-suite domain sahibi: Beste (2026-11-05)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-05: "Beste (Önerilen)"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Ölçüm: `origin/main` @ `a38bab855`. Bağlam: CRM CT, MOD-0149 kararlarını (K-1…K-11) "commercial-suite sahibi Beste" olarak kaydediyor (`docs/crm/mod0149-review-01` @ `1ec2d1385`). Onay satırı değildir.
+
+1. **D131/1 — atama:** commercial-suite domain sahibi Beste (`bestepullukcu-alt`). MOD-0057 O-13 (D61, D65/1) kapandı.
+2. **D131/2 — sonuç:** D61 yerleşim onayı ve MOD-0057 paket onayı ona bilgi olarak gider. MOD-0057 paket onayını (CT-APR-01) domain sahibi olarak Beste verir. O-4 (MOD-0162 sahibi teyidi), O-5 (MOD-0018 kaydı, FU28) ve O-10 (DCP-011 sahibi teyidi) açık kalır.
+3. **D131/3 — sınır:** MOD-0057 kapsamı, izinleri ve AC'leri değişmedi; künye `draft`. `domain-config.md`'de sahip alanı yok, değişmedi. Sahiplik kaydının başka bir yere yazılması gerekiyorsa ayrı adımdır.
