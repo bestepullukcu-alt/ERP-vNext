@@ -20,6 +20,8 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 
 # MOD-0217 — Contract Lifecycle Management (CLM)
 
+> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt, zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-20 buna çekildi. Codex K1 ENGEL: RCS-001 satırı ve Runtime Constraints `Response<T>` zarfına çevrildi (D132/2); RCS-001 §3 `AGR` satırı DL-1 Önkoşul'da paket düzeyi listeden çıkarılıp Checklist'teki gibi DL-1 dilim kapısı yazıldı; satır sahibi Ali (D104/4).
+>
 > **KARAR D132/3 (2026-11-05):** DCP üyeliği maddesi kapandı — DCP-011 D129 revizyonu main'de (PR #371, `a38bab855`). Kapsam, izin, AC ve `status: draft` değişmedi.
 >
 > **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
@@ -661,7 +663,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | Bağımlılık | Sözleşme / sürüm | Sahibi | Hata davranışı (MOD-0217) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod) | master-data-management | yok / başka kiracı / silinmiş / `Active` değil → 422 `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` | birim + entegrasyon · — (aynı süreç) | DL-1 |
-| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{prefixScope, legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan; `prefixScope` eklemeli alan, 3 Kasım — KARAR D93/1; port tek imza D95/1); bu paket `prefixScope = LegalEntity`, `legalEntityId` = yöneten şirket, `recordType = AGR` (D94/1), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565) | Beste (D44) servis; §3 sözleşme satırı main'de `CTR` (D41/2; #265) → `AGR`'ye Beste çevirir (D94/1) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, sözleşme ve sürüm yazılmaz; yedek kod yok | sahte allocator (AC-20, sabotajlı) · dev ortamında gerçek servisle `AGR` kodu (`prefixScope = LegalEntity`) | DL-1 kabul kapısı (D59/1) |
+| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{prefixScope, legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan; `prefixScope` eklemeli alan, 3 Kasım — KARAR D93/1; port tek imza D95/1); bu paket `prefixScope = LegalEntity`, `legalEntityId` = yöneten şirket, `recordType = AGR` (D94/1), 200 `Response<T>` zarfı, `data` = `{code, sequence}` (aynı anahtar aynı kod; 1.0.0 §3 — KARAR D125/1, D132/2; sözleşme RECORD-CODE-ALLOCATE 1.0.0, taslak `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (rev 10, sha256 `b7a2e036…`), dondurma bekleniyor), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565) | Beste (D44) servis; §3 sözleşme satırı main'de `CTR` (D41/2; #265) → `AGR`'ye Ali çevirir (`.antigravity` kural dosyaları Ali'nin — D104/4; satır `fbbdcdff0`, D114; D94/1) | 403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING` → Create 403 (kullanıcının izni yok; yeniden denenmez; kayıt yazılmaz — KARAR D133); diğer 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`, sözleşme ve sürüm yazılmaz; yedek kod yok | sahte allocator (AC-20, sabotajlı) · dev ortamında gerçek servisle `AGR` kodu (`prefixScope = LegalEntity`) | DL-1 kabul kapısı (D59/1) |
 | MOD-0048 para birimi | `GET /api/lookups/reference-data/consumable-sets/currency-minor-units/published-values` | platform-shared-services | erişilemez → 503; kümede yok → 400 | sahte istemci · dev ortamında TRY / EUR | DL-1 |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` + MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | Treasury yazar, MOD-0018 sahibi teyit eder (MOD-0018 Treasury Auth eki DL-4, D56/1 — `…/MOD-0018-FU27-treasury-permission-onboarding.md`); platform-shared-services (Platform ucu; XMC-001 Beste) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | master-data-management + CT | niyet yazılamazsa komut 503, iş verisi yok | AC-11 (sabotaj) · bir sözleşme oluşturmanın merkezi kaydı (AUD-001 §8) | DL-1 |
@@ -686,8 +688,8 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
   sözleşme silinir; silme sözleşmeyi ve sürüm 1'i aynı işlemde işaretler. Belge ikilisi silinmez (MOD-0262 saklama).
 - **Kayıt kodu (RCS-001, KARAR D59/1):** `Contract.Code` yalnız `IRecordCodeAllocator.AllocateAsync(prefixScope =
   LegalEntity, legalEntityId = yöneten şirket, recordType = AGR, idempotencyKey)` (tek imza, KARAR D95/1) portundan alınır; anahtar Create'in `Idempotency-Key`'inden türetilir,
-  aynı anahtarla tekrar aynı kodu alır. Bağdaştırıcı v0 sözleşmesini (`POST /api/internal/record-codes/allocate`) çağırır;
-  200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503
+  aynı anahtarla tekrar aynı kodu alır. Bağdaştırıcı RECORD-CODE-ALLOCATE 1.0.0 sözleşmesini (200'de kod `data.code`, sıra `data.sequence`; `isSuccessful` true değil ya da `data` boşsa 200 dışı sayılır — D132/2) (`POST /api/internal/record-codes/allocate`) çağırır;
+  iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create'i 403 ile başarısız kılar ve yeniden denenmez (KARAR D133); diğer 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503
   `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE` ile başarısız kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı
   kayıtlı değil) Create 503, kodsuz sözleşme açılmaz; kendi sayaç, yedek kod ya da `CodeReservation` ile kod üretimi yasak
   (RCS-001 §6). Sahte allocator yalnız test projesinde kayıtlıdır.
@@ -994,6 +996,7 @@ Terminated; ya da Active + `CurrentEffectiveTo` < bugün; ya da Draft + açık s
   örneği; iki eşzamanlı son imza → biri 409, tek Effective sürüm.
 - **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1) → Create 503
   `MDM_CONTRACT_RECORD_CODE_UNAVAILABLE`; sözleşme, sürüm ve denetim niyeti yazılmaz (kodsuz kayıt yok), yedek kod üretilmez (AC-20).
+- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar yukarıdaki 503 kuralındadır
 - **Bağımlılık erişilemez vs geçersiz girdi:** RCS-001 / MOD-0048 / MOD-0262 / MOD-0023 erişilemez, 5xx, zaman aşımı,
   tanınmayan gövde → 503, kayıt değişmez; para birimi listede yok → 400; şirket aktif değil → 422; MOD-0262 dosyayı reddetti →
   400 / 413 (503 değil).
@@ -1242,7 +1245,7 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   tekrar aynı kodu döner ve ikinci sözleşme açmaz; sahte allocator 422 / 409 / 404 / 503 ya da zaman aşımı döndürdüğünde Create
   503 ve sözleşme / sürüm yazılmaz. **Sabotaj:** üretim kompozisyonunda port bağlı değilken (bağdaştırıcı kaydı kaldırılır)
   Create 503 döner ve koleksiyonlara yazma olmaz; fail-closed korunağı kaldırılıp kodsuz sözleşme açılabildiğinde test
-  kırmızıya döner. Mimari testi: MOD-0217 kodunda kendi sayaç / yedek kod üreticisi ya da `CodeReservation` kullanımı yok.
+  kırmızıya döner. Mimari testi: MOD-0217 kodunda kendi sayaç / yedek kod üreticisi ya da `CodeReservation` kullanımı yok. **KARAR D133:** sahte allocator iki izin hatasından birini (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) döndüğünde Create 403, kayıt ve kod yok; sabotaj — eşleme 503'e çevrilince test kırmızı.
 - [ ] AC-21 (zorunlu) — `mdm.contracts.value.read` olmayan kullanıcıya liste, detay ve sürüm yanıtlarında `contractValue` ve
   `currencyCode` `null`, `valueMasked = true`; `mdm.contracts.value.write` olmadan değer içeren yazma 403
   `MDM_CONTRACT_VALUE_WRITE_REQUIRED` (AC-65); denetim niyetinde
@@ -1541,7 +1544,7 @@ main'de olmalıdır.
 - [x] O-5 RCS-001 öneki — **KARAR D41/2 (2026-10-26; treasury-intake-owner-decisions-04.md)** — OTOMATİK, `CTR`, şirket öneki yöneten şirketin kısa kodu; sahip §3 satırını onayladı — **KARAR D94/1 (2026-10-29, Beste Y-25): önek `AGR`** (`CTR-` MOD-0144 Procurement'ın kodu); diğer kısımlar aynen
 - [x] RCS-001 §3 `CTR` satırı `.antigravity/rules/record-coding-standard.md`'ye yazıldı (D41/2 onayı; `.antigravity/rules/record-coding-standard.md:70` @ `82711f0ae`, main'de (#265))
 - [x] RCS-001 §3 `CTR` satırı main'de — `.antigravity/rules/record-coding-standard.md:70` (origin/main @904dfd5c2; #265 ile, `82711f0ae`) — servis (BL-565) ayrı madde, açık
-- [ ] RCS-001 §3 sözleşme satırı `CTR` → `AGR` main'de (Beste, KARAR D94/1; satır sahibi değiştirir) — DL-1 için
+- [ ] RCS-001 §3 sözleşme satırı `CTR` → `AGR` main'de (KARAR D94/1; `.antigravity` kural dosyaları Ali'nin — D104/4; satır `fbbdcdff0`, D114) — DL-1 için (dilim kapısı; paket kapısı değil — D133/2)
 - [ ] RCS-001 ortak kod servisi (BL-565) main'de — sahibi Beste (D44); v0 sözleşmesi (`POST /api/internal/record-codes/allocate`) 6 Kasım'da kesinleşti — DL-1 için (kabul kapısı; **KARAR D59/1**). DL-1 `IRecordCodeAllocator`'a karşı sahte uygulamayla ilerler; üretimde port bağlı değilse Create 503 (AC-20)
 - [x] SEC-002 sağlayıcısı paket metni main'de — MOD-0018 Treasury Auth ekinin **SEC-002 dilimi (DL-4, "permission onboarding"
   eki)** (`…/MOD-0018-FU27-treasury-permission-onboarding.md`; Treasury yazar, MOD-0018 sahibi teyit eder; Platform
@@ -1784,8 +1787,9 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `ContractsController` (bu aksiyonlar), manifest sağlayıcısı, RCS (`IRecordCodeAllocator`, KARAR D59/1) / MOD-0048 portları, denetim izi genişletmesi, defter +
   CT-DECISIONS satırı. **Neden önce:** belge ve iş akışı olmadan sözleşme kaydını, kiracı / kapsam / idempotency / işlem
   kurallarını en düşük riskle kanıtlar. Önkoşul: paket düzeyi ENGELLER'in tümü (`ready-for-dev`: CT-APR-02/01, DCP,
-  domain-config + kayıt satırı, Auth paket metni (MOD-0018, D53/1), RCS-001 §3 sözleşme satırı (`CTR` main'de, #265; KARAR D94/1 ile `AGR` — **yeniden açık**, Beste), SEC-002
+  domain-config + kayıt satırı, Auth paket metni (MOD-0018, D53/1), SEC-002
   "permission onboarding" eki paket metni (MOD-0018, KARAR D56/1; kodu DL-1 kabulünde), MOD-0048 tüketim yolu; O-1 KARAR D39, O-4…O-15 KARAR D41, `AuditCategory` ve `OTHER` KARAR D45 ile kapandı);
+  dilim kapısı: RCS-001 §3 sözleşme satırı `CTR` → `AGR` main'de (KARAR D94/1; `CTR` main'de, #265; Ali — D104/4, D114; Checklist "— DL-1 için", D133/2);
   "— DL-1 için (kabul kapısı)" işaretli maddeler (Auth kayıt kodu D53/2, RCS-001 / BL-565 servisi KARAR D59/1) önkoşul
   değildir — DL-1 kabulünden önce main'de olur; kod `IRecordCodeAllocator`'a karşı sahte uygulamayla yazılır. O-3 açıkken ilerler. **WP dalı (D52/1):** DL-1 WP'si kendi dalında çalışır —
   `feature/mdm/wp-0217-dl1` (künyedeki `branch` paket dalıdır; her WP kendi dalını açar). Bitiş: AC-1,
