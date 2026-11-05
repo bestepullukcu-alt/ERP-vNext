@@ -140,3 +140,18 @@ Onay kanıtı: K1 / gmg-10 (soru kutuları, 2026-11-04: "Şimdi hazırla" ve "Ev
 2. **D129/2 — kod alanı:** `runtime_code_allowed: true`, kapsam yalnız MOD-0289 (D127); bu DCP sürümünün CT-APR-01 satırı main'e girene kadar yürürlükte değildir, önceki onaylı sürüm (`runtime_code_allowed: false`) geçerlidir. CAP-001 §7'nin iki koşulu (DCP `approved`, sıradaki üyenin pack'i `ready-for-dev`) MOD-0289 için sağlanıyor; kod dilim sırasıyla ve her dilimin WP prompt'u kapıdan geçince yazılır. Diğer üyeler ready-for-dev oldukça alan yeni bir DCP revizyonuyla genişletilir.
 3. **D129/3 — sınır:** teslim sırası, diğer üyeler, kapsam dışılar ve AC aralıkları değişmedi. Bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir.
 4. **D129/4 — Codex tur 1 (`f209c70a2`, UYGUN DEĞİL):** ENGEL — kod alanının yürürlüğü onaya bağlanmamıştı → künyede ve MOD-0289'un üç satırında "onay satırı main'e girene kadar kod yok" yazıldı. ORTA — TRM-S3 "draft pack" → `ready-for-dev`. ORTA — D128/1'deki 64 hex cümlesi finans tüketicileriyle sınırlandı; MDM anahtarı kendi paket kuralında.
+
+## D130 — MOD-0120: CRM-ACCOUNT-LOOKUP hizalaması (2026-11-05)
+
+Kaynak: CRM CT (MOD-0149) hizalama mesajı (K1 aktardı, 2026-11-05) ve K1 / gmg-10 soru kutusu ("Şimdi taslak, PR sonra"). Ölçüm: `origin/main` @ `a38bab855`; CRM dalı `docs/crm/mod0149-review-01` @ `1ec2d1385`. O dalda MOD-0149 paketi sha256 `2840220b…`, CT-APR-02 KOŞULLU (açık ENGEL 0), CT-APR-01 satırı HIGH (onaylayan GMG-ERP). Sözleşme taslağı `docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md` (K-1, K-2, K-8, K-11 kayıtlı). Mesajdaki MOD-0120 satır numaraları main'de tuttu.
+
+1. **D130/1 — seçici:** müşteri seçicinin veri kaynağı U-3 `GET /api/crm/accounts/lookup` (K-8). Seçici same-origin proxy ile çalışır; seçicide görünmek uygunluk kararı değildir, seçilen kimlik kayıttan önce U-1 ile doğrulanır. `GET /api/crm/accounts?search=` seçeneği düştü.
+2. **D130/2 — izin:** müşteri seçici ve doğrulama için yalnız `crm.account.lookup-validation` (K-1). O-3 (b) reddedildi; AR kullanıcısı `crm.account.read` almaz. Rol ataması MOD-0018-FU27'dedir.
+3. **D130/3 — durum kümesi:** `account-status` beş değerdir, `archived` da yayımlanır (K-2). Faturalanabilir yalnız `active`; karar `isBillable` ile verilir.
+4. **D130/4 — sınıflandırma:** sözleşme §5 ve §9 bu paketin testidir (AC-3 genişledi). Çelişkili yanıt (F-C4 dahil), U-1'in 400'ü ve 403 → 503. `tenant_id`'siz token reddi (K-11) AR'yi etkilemez, çünkü çağrı kullanıcının token'ıyla gider.
+5. **D130/5 — teyit:** O-3'teki "commercial-suite sahibi teyidi açık" ifadesi kapandı. Sözleşme "yazılacak" yerine "taslak" yazıldı; sözleşme MOD-0149 DL-1 kabulüyle donar.
+6. **D130/6 — değişmeyenler:** U-2 (`external-references/resolve`) ve K-3 (409 → ayrı 422 kodu) O-10'da kalır (D112/2). U-1'in 404'ü üç durumda aynı gövdedir (yok, silinmiş, başka kiracı).
+7. **D130/7 — sınır ve sıra:**
+   - Kapsam, AC numaraları ve `status: draft` değişmedi.
+   - MOD-0149 önkoşulu açık kalır. Bunun iki koşulu var: ekin onayı (CRM onay PR'ı) main'e girmeli ve sözleşme MOD-0149 DL-1 kabulüyle donmalı.
+   - Bu revizyon yerel dalda bekler. RECORD-CODE-ALLOCATE dondurulunca zarf revizyonu aynı sürüme eklenir. Ardından Codex tek tur inceler. PR, CRM onay PR'ı main'e girince açılır.
