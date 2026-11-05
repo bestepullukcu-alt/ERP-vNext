@@ -25,7 +25,7 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 
 # MOD-0124 — Cash Positioning
 
-> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt, zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-38 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar.
+> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt (404 `LEGAL_ENTITY_NOT_FOUND` hariç — D133/5), zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-38 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar.
 >
 > **KARAR D132 (2026-11-05):** (1) SEC-002'nin kod kısmı — Platform güvenilir kapsam ucunun FinanceTreasury ikinci tüketici kodu ve `read-tenant-wide`'ın Auth kodu (MOD-0018 Treasury Auth eki DL-1) — paket kapısından **DL-1 kabul kapısına** taşındı (D59/1, D82/2 deseni; SEC-002 §4 paket için kapsam cümlesini ister, kod ve kanıt testi kabuldedir); paket kapısında SEC-002'den yalnız Platform sahibinin XMC-001 cevabı ve aday modu kararı kalır. Checklist SEC-002 maddesi, yeni dilim maddesi, ENGELLER metni, Dependencies SEC-002 satırı ve DL-1 Önkoşul buna çekildi. (2) RCS-001 yanıtı RECORD-CODE-ALLOCATE 1.0.0 `Response<T>` zarfına çevrildi (KARAR D125/1, D132/2): 200'de kod `data.code`, sıra `data.sequence`; `isSuccessful` true değilse ya da `data` boşsa yanıt 200 dışı sayılır (fail-closed). Kaynak taslak `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (rev 10, sha256 `b7a2e036…`); dondurulan metin §3, §4 ya da §9'da farklıysa paket yeniden revize edilir. Dependencies ve Runtime Constraints RCS-001 satırları buna çekildi. Kapsam, izin, AC numaraları ve `status: draft` değişmedi.
 >
@@ -1321,7 +1321,7 @@ yoktur (O-21).
 - **Idempotency-Key yok** → 400 `CASH_POSITION_IDEMPOTENCY_KEY_REQUIRED`, kayıt yok.
 - **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1; iki izin hatası ve 404 `LEGAL_ENTITY_NOT_FOUND` hariç — aşağıdaki iki madde, D133) → anlık görüntü ya da eşik
   politikası Create 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE`; kayıt yazılmaz (kodsuz kayıt yok), yedek kod üretilmez (AC-38).
-- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar yukarıdaki 503 kuralındadır
+- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar (404 `LEGAL_ENTITY_NOT_FOUND` hariç — sonraki madde, D133/5) yukarıdaki 503 kuralındadır
 - **Kod servisi 404 `LEGAL_ENTITY_NOT_FOUND` döner** (şirket yok, silinmiş, başka kiracının ya da aktif değil; KARAR D133/5) → Create 422 `CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE` (şirket doğrulamasıyla aynı yanıt), kayıt ve kod yazılmaz, yeniden denenmez
 - **Idempotent tekrar** — aynı anahtar + aynı yük + `Completed`: kayıtlı yanıt, ikinci kayıt / olay / uzak çağrı yok;
   `Pending`: 202 `CASH_POSITION_REQUEST_IN_PROGRESS`, kurtarma yok; aynı anahtar + farklı yük: 409
@@ -1714,7 +1714,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] AC-38 (zorunlu) — **Kayıt kodu portu (KARAR D59/1):** sahte `IRecordCodeAllocator` ile anlık görüntü Create
   `SnapshotCode`'u (`recordType = CPS`), eşik politikası Create `PolicyCode`'u (`recordType = CTP`) tek
   `AllocateAsync(legalEntityId = oturum şirketi, recordType, idempotencyKey)` çağrısıyla alır; aynı idempotency anahtarlı
-  tekrar aynı kodu döner ve ikinci kayıt açmaz. Sahte allocator 422 / 409 / 404 / 503 ya da zaman aşımı döndürdüğünde iki
+  tekrar aynı kodu döner ve ikinci kayıt açmaz. Sahte allocator 422 / 409 / 503 (404 `LEGAL_ENTITY_NOT_FOUND` 422'dir — aşağıda, D133/5) ya da zaman aşımı döndürdüğünde iki
   Create de 503 `CASH_POSITION_RECORD_CODE_UNAVAILABLE` ve kayıt yazılmaz. **Sabotaj:** üretim kompozisyonunda port bağlı
   değilken (bağdaştırıcı kaydı kaldırılır) iki Create de 503 döner ve koleksiyonlara yazma olmaz; fail-closed korunağı
   kaldırılıp kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: MOD-0124 kodunda kendi sayaç / yedek kod

@@ -27,7 +27,7 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 
 # MOD-0289 — Bank Master & Bank Account Registry
 
-> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt, zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-60 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar.
+> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt (404 `LEGAL_ENTITY_NOT_FOUND` hariç — D133/5), zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-60 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar.
 >
 > **KARAR D132/2 (2026-11-05):** RCS-001 yanıtı RECORD-CODE-ALLOCATE 1.0.0 `Response<T>` zarfına çevrildi (KARAR D125/1, D132/2): 200'de kod `data.code`, sıra `data.sequence`; `isSuccessful` true değilse ya da `data` boşsa yanıt 200 dışı sayılır (fail-closed). Kaynak taslak `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (rev 10, sha256 `b7a2e036…`); dondurulan metin §3, §4 ya da §9'da farklıysa paket yeniden revize edilir. Dependencies ve Runtime Constraints RCS-001 satırları buna çekildi. Paket özeti değiştiği için bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir (D127/3, D128/4); önceki onaylı sürüm `fafef5c4…` (#368). Kapsam, izin, AC ve dilimler değişmedi.
 >
@@ -1327,7 +1327,7 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **RCS-001 ya da MOD-0048 erişilemez** → Create 503 ilgili kod; kayıt yok.
 - **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1; iki izin hatası ve 404 `LEGAL_ENTITY_NOT_FOUND` hariç — aşağıdaki iki madde, D133) → banka ya da hesap Create 503
   `MDM_BANK_RECORD_CODE_UNAVAILABLE`; kayıt ve denetim niyeti yazılmaz (kodsuz kayıt yok), yedek kod üretilmez (AC-60).
-- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar yukarıdaki 503 kuralındadır
+- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar (404 `LEGAL_ENTITY_NOT_FOUND` hariç — sonraki madde, D133/5) yukarıdaki 503 kuralındadır
 - **Kod servisi 404 `LEGAL_ENTITY_NOT_FOUND` döner** (şirket yok, silinmiş, başka kiracının ya da aktif değil; KARAR D133/5) → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (şirket doğrulamasıyla aynı yanıt), kayıt ve kod yazılmaz, yeniden denenmez
 
 ## Authorization Convention
@@ -1769,7 +1769,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   harf seçeneği kaldırılınca `ACME` vakası, uzunluk kuralı kaldırılınca 101 karakter vakası kırmızıya döner.
 - [ ] AC-60 (zorunlu) — **Kayıt kodu portu (KARAR D59/1):** sahte `IRecordCodeAllocator` ile banka Create `Code`'u
   (`recordType = BNK`) ve hesap Create `Code`'u (`recordType = BAC`) tek `AllocateAsync(prefixScope, legalEntityId, recordType, idempotencyKey)`
-  çağrısıyla alır (tek imza, KARAR D95/1); aynı denemenin yeniden çağrısı aynı kodu döner. Sahte allocator 422 / 409 / 404 / 503 ya
+  çağrısıyla alır (tek imza, KARAR D95/1); aynı denemenin yeniden çağrısı aynı kodu döner. Sahte allocator 422 / 409 / 503 (404 `LEGAL_ENTITY_NOT_FOUND` 422'dir — aşağıda, D133/5) ya
   da zaman aşımı döndürdüğünde Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`; kayıt ve denetim niyeti yazılmaz. **Sabotaj:**
   üretim kompozisyonunda port bağlı değilken (bağdaştırıcı kaydı kaldırılır) Create 503 döner ve koleksiyona yazma olmaz;
   fail-closed korunağı kaldırılıp kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: MOD-0289 kodunda kendi
