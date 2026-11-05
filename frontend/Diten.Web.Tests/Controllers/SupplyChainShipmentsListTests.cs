@@ -190,7 +190,9 @@ public sealed class SupplyChainShipmentsListTests
         Assert.NotNull(zip.GetEntry("[Content_Types].xml"));
     }
 
-    // VER F-4: a location read that throws keeps its reference; the page still loads (SB-10).
+    // SB-10: Gateway down on a location read → the warehouse keeps its reference and the page still loads. The gateway client
+    // turns the transport error into a failed reply, so this measures that path; the Gate catch (VER F-4) is defence in depth
+    // that no location or lot read reaches today (measured 2026-11-05: removing it keeps this test green).
     [Fact]
     public async Task List_ALocationReadThatThrows_KeepsItsReference()
     {
