@@ -689,7 +689,7 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 - [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
 - [ ] **AC-AR-13** (U-3) Arama düz metindir: `.*` ya da `a.b(` her hesabı eşleştirmez ve hata vermez; ad ya da kodda "içerir"; `HAMİDİYE` kaydı `hamidiye` aramasıyla bulunur.
 - [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ad artan, eşit adda `Id` artan; aynı adlı üç hesap `pageSize=1` ile üç sayfada her biri tam bir kez görünür; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
-- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400; token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400 (K-11); üç durumda da veri dönmez ve depo sorgulanmaz (sözleşme §1). Red uca özel filtrededir: aynı `tenant_id`'siz token + `X-Tenant-Id` ile başka bir CRM ucu (ör. `GET /api/crm/accounts/{id}`) bugünkü davranışını korur.
+- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400; token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400 (K-11); üç durumda da veri dönmez ve depo sorgulanmaz (sözleşme §1). Red uca özel filtrededir: filtre yalnız U-1 ve U-3 eylemlerinde bulunur (öznitelik / yansıma testi) ve ortak kiracı ara katmanı bu dilimde değişmez. Öteki CRM uçlarının `tenant_id`'siz token karşısındaki davranışı bu ekin konusu değildir (BL-324); testler o uçların veri döndürmesini **beklemez ve sabitlemez**.
 
 ### 30.6 Kabul ölçütleri — DL-2 (U-2 ertelendi)
 
@@ -729,7 +729,8 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | U-3'te `total`'ı filtresiz sayıdan ver | AC-AR-14 |
 | İşleyicide kiracı yoksa kiracı filtresiz sorguya devam et | AC-AR-15 (kiracısız çağrı veri döner) |
 | Token'da `tenant_id` yokken `X-Tenant-Id` başlığını kabul et | AC-AR-15 (başlıktaki kiracının verisi döner) |
-| K-11 reddini ortak `TenantResolutionMiddleware`'e taşı | AC-AR-15 (başka CRM ucu da 400 döner) |
+| K-11 reddini ortak `TenantResolutionMiddleware`'e taşı | AC-AR-15 (filtre U-1 / U-3 eylemlerinde bulunmaz; öznitelik testi kırmızı) |
+| K-11 filtresini denetleyici ya da genel (global) düzeye koy | AC-AR-15 (filtre U-1 / U-3 dışındaki eylemlerde de bulunur) |
 
 ### 30.8 Sabotaj beklentileri — DL-2
 
@@ -750,8 +751,9 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
   sayfalama ve depo hatası vakaları.
 - **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
 - **Kiracı (AC-AR-15):** U-1 ve U-3 için başlık ↔ token uyuşmazlığı (400), kiracısız çağrı (400, veri yok) ve
-  `tenant_id`'siz token + `X-Tenant-Id` başlığı (400, veri yok); aynı token'la başka bir CRM ucunun davranışının
-  değişmediği (red uca özel filtrede, ortak ara katman aynı).
+  `tenant_id`'siz token + `X-Tenant-Id` başlığı (400, veri yok); K-11 filtresinin yalnız U-1 ve U-3 eylemlerinde
+  bulunduğu (öznitelik / yansıma testi; ortak ara katman değişmez). Öteki uçların veri döndürmesi beklenmez ve
+  ölçülmez — o uçların kiracı davranışı BL-324'ün işidir.
 - **Depo testleri (gerçek mongod):** kiracı / `IsDeleted` filtresi, kaçışlı arama, filtreli `total` ve sıralama depoda
   olduğundan, sahte depolu işleyici testi bu sabotajları göremez. AC-AR-3 (U-1 depo okuması), AC-AR-11, AC-AR-13 ve
   AC-AR-14 test sahipli mongod ile koşar (`tests/Diten.CrmService.Application.Tests/CentralAudit/DisposableCrmMongod.cs`

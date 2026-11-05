@@ -77,7 +77,8 @@ Kod yoktur; üç uç henüz yazılmadı. Bu dosya pack ekinin sözleşme hâlidi
   Development'ta yedek kiracıyı kullanabilir (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs:204-211`,
   `:229-235`, `:298`); CRM ise yalnız iki değer de doluysa karşılaştırır (`TenantResolutionMiddleware.cs:37`). K-11 bu
   yolların bu sözleşmenin uçlarına kiracı seçtirmesini kapatır. Red yalnız bu uçlara bağlı bir filtrededir; CRM'in ortak
-  kiracı ara katmanı ve öteki CRM uçları değişmez (pack §30.2, AC-AR-15).
+  kiracı ara katmanı bu ekle değişmez (pack §30.2, AC-AR-15); öteki CRM uçlarının `tenant_id`'siz token karşısındaki
+  davranışı bu sözleşmenin konusu değildir (BL-324).
 - İzin: tek dar okuma anahtarı (§6); `crm.account.read` **gerekmez ve yetmez**.
 - Yalnız okuma: hiçbir uç kayıt yazmaz, denetim olayı üretmez (AUD-001 okuma; MOD-0149 §23 okuma olayı tanımlamaz).
 - Gateway: üç uç da mevcut `/api/crm/accounts/{everything}` rotasıyla taşınır (§8); `ocelot.json` bu sözleşmeyle değişmez.
@@ -368,3 +369,5 @@ Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup
   yolunda olduğu ve ek indeks pack §30.2'de.
 - 1.0.0 (2026-11-05, son dar yeniden inceleme 3 `docs/records/reviews/MOD-0149/2026-11-05-31972f8e.md` sonrası) — K-11
   reddinin yeri: yalnız U-1 / U-3 uç filtresi, ortak ara katman değişmez; §11 tablosu onarıldı (K-7 satırı tabloda).
+- 1.0.0 (2026-11-05, mini inceleme 4 `docs/records/reviews/MOD-0149/2026-11-05-ab7afd83.md` sonrası) — K-11 kapsam
+  koruması öteki uçların bugünkü (başlığı kabul eden) davranışını sabitlemez; ölçüt filtrenin yalnız U-1 / U-3'te bulunmasıdır.
