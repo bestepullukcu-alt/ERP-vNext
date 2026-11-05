@@ -64,3 +64,33 @@ F-6 | DÜŞÜK | Raf önerisi yalnız düzenleme formunda (sözleşmede adayda �
 
 **Sonuç: VERIFIED** — F-1 ve F-2(1) kapandı; F-2(2) sahip kararıyla not; F-3 açık AC (DL-8 sonrası canlı ölçüm). ACCEPTED, kod main'e
 girdiğinde yazılır (SOP §7).
+
+## F-3 canlı ölçümü — AC-45, 375 px (2026-11-05)
+
+- Ortam: fleet açık (Web 5001 → Gateway 5000 → Inventory 5067, ana checkout `d6aff589e`), tarayıcı 375 × 812 (mobil öykünme), kiracı kullanıcısı
+  gerçek oturumla; kiracı dev JWT yok. Şirket GMG, depo D01.
+- Test verisi (hepsi bu ölçüm için, kullanıcı onayıyla): MDM raf KBL-01 ve A-01-01-02 (D01-A altında, «ekle»); KBL-01 Mal Kabul rolü;
+  `COUNT_GAIN` INV-2026-0000016 (5 EA, lot AMX-2604, KBL-01); görev **GMG-PUT-000001** (KBL-01 → A-01-01-02, 5 EA). Görev onaylanmadı
+  (ölçüm onay gerektirmez; açık kalır).
+- **Önkoşul bulgusu:** ilk deneme 422 `WMS_COMPANY_CODE_INVALID` — GMG tüzel kişilik kodu `GMGGRANDMEDCALLACLARLTDST-238`,
+  `WarehouseRecordCodeRules.IsValidCompanyCode` `^[A-Z]{2,5}$` ister. Kiracıdaki tüzel kişiliklerin hiçbirinin kodu kurala uymuyor (`LE-001`,
+  `SETONDATR-274` …). Kullanıcı kararıyla (Beste, 2026-11-05) yalnız GMG kodu MDM'de `GMG` yapıldı (sürüm 1 → 2; ülke `TR` zaten kayıtlıydı,
+  onay / yaşam döngüsü durumu değişmedi). Geri kalan kodlar MDM sahibine (Ali) iletilecek. Yan bulgu (MDM, XMC-001 — dokunulmadı):
+  tüzel kişilik sihirbazının ülke listesi `GET …/reference-data/country` 400 `scope_key_required` alıyor ve boş kalıyor; düzenlemede
+  kayıtlı ülke görünmüyor ve kaydetme "Bu alan zorunludur." ile duruyor.
+- Ölçüm (DOM, `getBoundingClientRect`; ekran görüntüleri `mod-0178-dl3-375px/`):
+
+| Öğe | Ölçü | AC-45 |
+|---|---|---|
+| Panel (`offcanvas-end wh-confirm-panel`) | 375 × 812, yatay kaydırma yok | — |
+| Miktar − / + (`aria-label` "Miktarı azalt / artır") | 57 × 48 | ✓ |
+| Miktar alanı `confirmQuantity` | 231 × 48 | ✓ |
+| Gerçek hedef raf `confirmBinCode` | 343 × 48 | ✓ |
+| Onayla `btnConfirmSubmit` | 351 × 48; ebeveyn `wh-action-bar` `position: sticky; bottom: 0` | ✓ sabit alt çubuk |
+| Panel kapatma (×, `aria-label` "İptal") | **36 × 36** | ✗ |
+
+F-7 | DÜŞÜK | AC-45: onay panelinin kapatma düğmesi (×) 36 × 36 px, 48 px hedefin altında; öbür dokunma alanları, −/+ ve sabit alt çubuk ölçüldü | açık | MOD-0178 geliştirici | sonraki Web dilimi (DL-5)
+F-8 | DÜŞÜK | 375 px'te liste satır menüsü sağdan taşıyor: "Kalanı Kapat — Henüz işlenen yok — İptal kullan…" maddesi kesik (`row-menu-375.jpg`) | açık | MOD-0178 geliştirici | sonraki Web dilimi (DL-5)
+
+**F-3: AC-45 kolu kapandı** (canlı ölçüm yapıldı; iki DÜŞÜK bulgu F-7 / F-8 dev talimatına girer, S-101). §17 E4'ün 375 px dışındaki
+maddeleri bu ölçümde koşulmadı.

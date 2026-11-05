@@ -4,7 +4,7 @@
 - İncelenen: `e768b9b55` (feat(sce): MOD-0175-FU01 DL-2 — quarantine screens show Voided and the source-reversal conflict; MOD-0178
   open-predicate fix), ebeveyn `f96f7add6` (iş `b8500cc12` üzerinde ölçüldü; arada yalnız bir karar belgesi). MVP-1 hattında; push / PR yok.
 - Paket: `MOD-0175-FU01-quarantine-hold-source-reversal.md` @ sha256 `e070d6b6…5380` (r5, onaylı `79a6fa096`).
-- Sonuç: **VERIFIED** (E3 smoke hariç, aşağıda). Açılış DL-1 + DL-2 birlikte (§22 F-9): bu kayıtla iki dilim CT kabulünde.
+- Sonuç: **VERIFIED** (E3 smoke 2026-11-05'te geçti, aşağıda). Açılış DL-1 + DL-2 birlikte (§22 F-9): bu kayıtla iki dilim CT kabulünde.
 
 ## Ölçülenler
 
@@ -38,8 +38,32 @@ AC-27 ikinci sabotajının (`blocked.js:275` → `!['Closed', 'SampleRetained'].
 
 ## Açık kalanlar
 
-- **E3 smoke** (§17; DL-1 + DL-2 birlikte, en / tr / ar, `ar` RTL tarayıcıda): fleet kapalıydı, koşulmadı. CT, fleet açılınca koşar ve bu kayda ekler; açılış bu smoke'a bağlıdır.
+- ~~**E3 smoke**~~ — koşuldu, aşağıda (2026-11-05).
 - Web Planning kırmızıları (4) — main'de aynı gün kontrol (CT kuralı).
 - DL-3 (defter bekçisi, INVENTORY 1.8.0; kabul kapısı Q-10 MVP-6) başlamadı.
+
+## E3 smoke (§17; DL-1 + DL-2 birlikte) — 2026-11-05
+
+- Ortam: fleet açık (Web 5001 → Gateway 5000 → Inventory 5067, ana checkout `d6aff589e`), gerçek kullanıcı oturumu, kiracı dev JWT yok.
+  Şirket GMG, depo D01.
+- Test verisi (kullanıcı onayıyla, yalnız Inventory): `COUNT_GAIN` **INV-2026-0000017** (1 EA, lot AMX-2604, A-01-01-01, durum
+  QUARANTINE, belge `CT-E3-VOIDED-01`) → intake kaydı **KRN-2026-0005** (kaynak "Diğer giriş") açıldı; hareket Stok Hareketleri ekranından
+  ters kaydedildi → **INV-2026-0000018**. INV-2026-0000015 (otomatik müşteri iadesi) kullanılmadı: başka modülün kaydı, ters kaydı yalnız
+  kaynak modülden (XMC-001).
+- Sonuç (ekran görüntüleri `mod-0175-fu01-e3-smoke/`):
+
+| Ekran | tr | en | ar |
+|---|---|---|---|
+| Kuyruk satırı | "Geçersiz · Kaynak geri alındı" | "Void · Source reversed" | — (ayrıntıda ölçüldü) |
+| Ayrıntı rozeti + açıklama bandı | "Bu kayıt geçersiz: kaynak hareket INV-2026-0000018 ile … geri alındı." | "This record is void: the source movement was reversed with INV-2026-0000018 …" | çevrili, `dir=rtl`, ekranda Latin ham anahtar yok |
+| Karar düğmeleri | yok ("Onayda bekleyen karar yok") | yok | yok |
+| Karar geçmişi | "Kaynak geri alındı — kayıt geçersiz" + INV-2026-0000018 | — | — |
+| Stok hareketleri tablosu | INV-…17 (→ Karantina, 1) ve INV-…18 Ters kayıt (Karantina →, 1) | — | — |
+
+- Önceki tur (aynı gün, Voided kayıt yokken): kuyruk / ayrıntı / bloke stok ekranları tr, en, ar'da ham anahtarsız; yeni "Voided" süzgeç
+  seçeneği var. O turdaki kaynağı bilinmeyen tek konsol 403'ü açık not; bu turda konsol okunmadı.
+- Gözlem (bulgu değil, ebeveyn MOD-0175 ekranı): `ar`'da "Kuyruğa dön" okunun yönü RTL'ye çevrilmiyor (←).
+
+**E3: geçti.** DL-1 + DL-2 açılış kapısı (§22 F-9) bu smoke ile karşılandı.
 
 ACCEPTED, kod main'e girdiğinde yazılır (SOP §7).
