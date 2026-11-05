@@ -45,7 +45,9 @@ public sealed record ShipmentCreateWire(string SourceModule, string SourceType, 
         ManualSourceModule, ManualSourceType, model.SourceDocumentId!.Trim(), model.WarehouseReferenceId!.Trim(), shipToReference, customerRef,
         model.PlannedShipAt,
         model.Lines!.Select((l, i) => new ShipmentLineWire((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), l.ItemId, l.SkuId,
-            l.Quantity!, l.UomId!.Trim(), l.SkuLevel!, Blank(l.LotId), l.FromLocationId!.Trim(), Blank(l.FefoBypassReason))).ToList(),
+            l.Quantity!, l.UomId!.Trim(), l.SkuLevel!, Blank(l.LotId), l.FromLocationId!.Trim(),
+            // SB-8: the FEFO reason is sent unchanged (an empty one is left out); the contract's minLength applies to what the user typed.
+            string.IsNullOrWhiteSpace(l.FefoBypassReason) ? null : l.FefoBypassReason)).ToList(),
         model.PlannedDeliverAt);
 
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

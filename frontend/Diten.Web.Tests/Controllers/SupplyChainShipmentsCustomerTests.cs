@@ -199,6 +199,34 @@ public sealed class SupplyChainShipmentsCustomerTests
         Assert.Equal("http://localhost:5000/api/locations/search?type=Warehouse&status=Active&page=1&pageSize=50", handler.Uri);
     }
 
+    // SB-11 (VER F-8): the create adapter never treats a stored or sent shipToReference as the account id — a body carrying an
+    // account id only in shipToReference and no customerRef is refused with no call at all.
+    [Fact]
+    public async Task Create_NeverTakesTheAccountIdFromShipToReference()
+    {
+        var json = "{\"sourceDocumentId\":\"SO-1\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"" + Customer
+            + "\",\"plannedShipAt\":\"2026-09-25T08:00:00Z\",\"lines\":[{\"itemId\":\"" + Guid.NewGuid() + "\",\"skuId\":\"" + Guid.NewGuid()
+            + "\",\"skuLevel\":\"Lsku\",\"quantity\":\"1\",\"uomId\":\"EA\",\"fromLocationId\":\"loc-1\"}]}";
+        var model = JsonSerializer.Deserialize<CreateShipmentViewModel>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+        Assert.Null(model.CustomerRef);
+        var handler = new CaptureHandler(_ => throw new InvalidOperationException("no call"));
+        AssertCode(await CreateController(handler, CreateAndCrm, true).Create(model, CancellationToken.None), 400, ShipmentCustomer.InvalidAccountCode);
+        Assert.Equal(0, handler.CallCount);
+        Assert.DoesNotContain(typeof(CreateShipmentViewModel).GetProperties(), p => p.Name == "ShipToReference");
+    }
+
+    // SB-8 (VER F-5): the FEFO reason reaches the wire exactly as the user typed it.
+    [Fact]
+    public void FefoReason_IsSentUnchanged()
+    {
+        var model = NewShipment("1");
+        model.Lines![0].FefoBypassReason = "  short-dated lot accepted by QA  ";
+        var wire = ShipmentCreateWire.From(model, Customer, "TR");
+        Assert.Equal("  short-dated lot accepted by QA  ", wire.Lines[0].FefoBypassReason);
+        model.Lines![0].FefoBypassReason = "   ";
+        Assert.Null(ShipmentCreateWire.From(model, Customer, "TR").Lines[0].FefoBypassReason);
+    }
+
     [Fact]
     public void Destination_FollowsTheCrmOrderTrimsDropsEmptyAndCutsNothing()
     {

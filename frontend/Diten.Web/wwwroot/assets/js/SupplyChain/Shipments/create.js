@@ -79,11 +79,12 @@ const ShipmentCreate = (function () {
     const renderAddress = (address) => {
         const target = document.getElementById('customerAddress');
         target.textContent = '';
-        const parts = address ? [address.addressLine, address.districtRef, address.cityRef, address.countryRef].map((x) => (x || '').trim()).filter(Boolean) : [];
+        // VER F-6: the user confirms the same text the adapter stores — CountryRef, CityRef, DistrictRef, AddressLine (SB-23).
+        const parts = address ? [address.countryRef, address.cityRef, address.districtRef, address.addressLine].map((x) => (x || '').trim()).filter(Boolean) : [];
         customerAddressReady = parts.length > 0;
         if (!address) { target.textContent = '—'; return; }
         if (!customerAddressReady) { target.textContent = L.customerAddressMissing; return; }
-        parts.forEach((part, index) => { if (index) target.appendChild(document.createElement('br')); target.appendChild(document.createTextNode(part)); });
+        target.textContent = parts.join(', ');
     };
     const initCustomer = () => {
         const select = document.getElementById('customerRef');

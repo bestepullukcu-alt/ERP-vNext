@@ -65,6 +65,20 @@ public sealed class ShipmentFormContractTests
         Assert.DoesNotContain("isStockable=", script);
     }
 
+    // SB-20 (VER F-3): no picker writes an id as option text — every row text is a code/name label, a lot number or a localized
+    // fallback; ids ride only in the option value. Rendering row.id (or skuId / itemId / node.id) as text turns this red.
+    [Fact]
+    public void NoPickerShowsAnIdAsItsText()
+    {
+        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js");
+        var texts = Regex.Matches(script, @"\btext:\s*([^,}]+)").Select(m => m.Groups[1].Value.Trim()).ToList();
+        Assert.True(texts.Count >= 6, string.Join(" | ", texts));
+        Assert.All(texts, text => Assert.DoesNotMatch(@"\b(row|node|chosen)\.(id|skuId|itemId|lotId)\b|\bid\b(?!:)", text));
+        Assert.DoesNotContain(".title =", script);
+        Assert.DoesNotContain("setAttribute('title'", script);
+        Assert.Contains("text: row.lotNumber", script);
+    }
+
     // SB-8: the FEFO reason is hidden until a FEFO refusal names the line.
     [Fact]
     public void FefoReason_IsHiddenUntilAFefoRefusal()
