@@ -639,6 +639,9 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
 - (U-2, DL-2) Depo: `IAccountExternalReferenceRepository`'ye çözümleme sorgusu eklenir (kiracı + `IsDeleted = false` +
   tam eşitlik; en çok 2 satır okur, 2 satır = 409).
 - `isBillable = (Status == "active")`, sıradan karşılaştırma; faturalanabilirlik kuralı yalnız CRM'dedir.
+- Kiracı reddi (K-11) **yalnız U-1 ve U-3'e bağlı bir uç filtresinde** yapılır (iki eyleme konan eylem filtresi):
+  token'da `tenant_id` yoksa 400 döner, işleyici çağrılmaz. Ortak kiracı ara katmanı
+  (`Infrastructure/Middleware/TenantResolutionMiddleware.cs`) **değişmez**; öteki CRM uçlarının davranışı aynı kalır.
 - U-3 (K-8): `search` `Trim()` sonrası 2–100 karakter, aksi 400; düz metindir (regex değil) — mevcut sayfalı arama
   deposu `IAccountRepository.ListAsync` (`AccountRepository.cs:78-145`: kiracı + `IsDeleted = false`, ad ya da kodda
   "içerir", `TurkishInsensitivePattern` ile kaçışlı ve Türkçe i harflerine duyarsız) kullanılır; indeks
@@ -686,7 +689,7 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 - [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
 - [ ] **AC-AR-13** (U-3) Arama düz metindir: `.*` ya da `a.b(` her hesabı eşleştirmez ve hata vermez; ad ya da kodda "içerir"; `HAMİDİYE` kaydı `hamidiye` aramasıyla bulunur.
 - [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ad artan, eşit adda `Id` artan; aynı adlı üç hesap `pageSize=1` ile üç sayfada her biri tam bir kez görünür; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
-- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400; token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400 (K-11); üç durumda da veri dönmez ve depo sorgulanmaz (sözleşme §1).
+- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400; token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400 (K-11); üç durumda da veri dönmez ve depo sorgulanmaz (sözleşme §1). Red uca özel filtrededir: aynı `tenant_id`'siz token + `X-Tenant-Id` ile başka bir CRM ucu (ör. `GET /api/crm/accounts/{id}`) bugünkü davranışını korur.
 
 ### 30.6 Kabul ölçütleri — DL-2 (U-2 ertelendi)
 
@@ -726,6 +729,7 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | U-3'te `total`'ı filtresiz sayıdan ver | AC-AR-14 |
 | İşleyicide kiracı yoksa kiracı filtresiz sorguya devam et | AC-AR-15 (kiracısız çağrı veri döner) |
 | Token'da `tenant_id` yokken `X-Tenant-Id` başlığını kabul et | AC-AR-15 (başlıktaki kiracının verisi döner) |
+| K-11 reddini ortak `TenantResolutionMiddleware`'e taşı | AC-AR-15 (başka CRM ucu da 400 döner) |
 
 ### 30.8 Sabotaj beklentileri — DL-2
 
@@ -746,7 +750,8 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
   sayfalama ve depo hatası vakaları.
 - **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
 - **Kiracı (AC-AR-15):** U-1 ve U-3 için başlık ↔ token uyuşmazlığı (400), kiracısız çağrı (400, veri yok) ve
-  `tenant_id`'siz token + `X-Tenant-Id` başlığı (400, veri yok).
+  `tenant_id`'siz token + `X-Tenant-Id` başlığı (400, veri yok); aynı token'la başka bir CRM ucunun davranışının
+  değişmediği (red uca özel filtrede, ortak ara katman aynı).
 - **Depo testleri (gerçek mongod):** kiracı / `IsDeleted` filtresi, kaçışlı arama, filtreli `total` ve sıralama depoda
   olduğundan, sahte depolu işleyici testi bu sabotajları göremez. AC-AR-3 (U-1 depo okuması), AC-AR-11, AC-AR-13 ve
   AC-AR-14 test sahipli mongod ile koşar (`tests/Diten.CrmService.Application.Tests/CentralAudit/DisposableCrmMongod.cs`
@@ -784,7 +789,6 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-8 | MOD-0120 müşteri seçicisinin veri kaynağı (inceleme F-2) | **KAPANDI** (Beste, 2026-11-04, seçenek 1): dar arama ucu U-3 `GET /api/crm/accounts/lookup`, aynı `crm.account.lookup-validation` anahtarıyla; yalnız `accountId`, `code`, `name`, `status`, `isBillable` döner; DL-1'e girer. AR kullanıcısı `crm.account.read` almaz (K-1 korunur). MOD-0120:1146-1147 ve :1349-1350 U-3'e hizalanır (Finans'ın işi). |
 | K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 | K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (sözleşme §7) | **AÇIK** (sahip commercial-suite / K2): sözleşme 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar (§30.9); yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez. |
-
 | K-11 | `tenant_id` taşımayan token'la U-1 / U-3 çağrısı (inceleme 2026-11-05-999c7e29 F-3) | **KAPANDI** (Beste, 2026-11-05): reddedilir — token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400, veri yok (AC-AR-15). Gateway'in token'sız kiracı yolları (istemci başlığı, alt alan adı, Development yedeği) bu iki uca kiracı seçtiremez. |
 
 Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md` (durum: taslak — sahip okuması CT-APR-01 onayıyla

@@ -76,7 +76,8 @@ Kod yoktur; üç uç henüz yazılmadı. Bu dosya pack ekinin sözleşme hâlidi
   başlığı olsa bile **400**, veri dönmez. Gateway token'da kiracı yoksa istemcinin başlığını, alt alan adını ya da
   Development'ta yedek kiracıyı kullanabilir (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs:204-211`,
   `:229-235`, `:298`); CRM ise yalnız iki değer de doluysa karşılaştırır (`TenantResolutionMiddleware.cs:37`). K-11 bu
-  yolların bu sözleşmenin uçlarına kiracı seçtirmesini kapatır.
+  yolların bu sözleşmenin uçlarına kiracı seçtirmesini kapatır. Red yalnız bu uçlara bağlı bir filtrededir; CRM'in ortak
+  kiracı ara katmanı ve öteki CRM uçları değişmez (pack §30.2, AC-AR-15).
 - İzin: tek dar okuma anahtarı (§6); `crm.account.read` **gerekmez ve yetmez**.
 - Yalnız okuma: hiçbir uç kayıt yazmaz, denetim olayı üretmez (AUD-001 okuma; MOD-0149 §23 okuma olayı tanımlamaz).
 - Gateway: üç uç da mevcut `/api/crm/accounts/{everything}` rotasıyla taşınır (§8); `ocelot.json` bu sözleşmeyle değişmez.
@@ -339,10 +340,10 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
 | K-9 | MVP-6 seçici + adres için sözleşmeli yüzey | commercial-suite (Beste) | **AÇIK:** U-3 adres taşımaz; adres okuması bugün sözleşmesiz `GET /api/crm/accounts/{id}` (`crm.account.read`). Öneri: DL-1 sonrası 1.x eki |
 | K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (§7) | commercial-suite (K2) | **AÇIK:** 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar; yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez |
 | K-11 | `tenant_id` taşımayan token'la çağrı | commercial-suite (Beste) | **KAPANDI 2026-11-05:** reddedilir — başlık olsa bile 400, veri yok (§1; pack AC-AR-15) |
+| K-7 | U-2'nin MOD-0120'deki kullanım yeri | MOD-0120 sahibi | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md` (taslak; sahip okuması CT-APR-01 ile); K-7 = D112/2
 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`).
-| K-7 | U-2'nin MOD-0120'deki kullanım yeri | MOD-0120 sahibi | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 
 ## 12. Değişiklik geçmişi
 
@@ -365,3 +366,5 @@ Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup
 - 1.0.0 (2026-11-05, dar yeniden inceleme 2 `docs/records/reviews/MOD-0149/2026-11-05-999c7e29.md` sonrası) — §1 K-11:
   `tenant_id`'siz token reddedilir; künyede adaylar ayrıldı; §11'e karar kaydı atfı. U-3 sıralamasının yalnız U-3
   yolunda olduğu ve ek indeks pack §30.2'de.
+- 1.0.0 (2026-11-05, son dar yeniden inceleme 3 `docs/records/reviews/MOD-0149/2026-11-05-31972f8e.md` sonrası) — K-11
+  reddinin yeri: yalnız U-1 / U-3 uç filtresi, ortak ara katman değişmez; §11 tablosu onarıldı (K-7 satırı tabloda).
