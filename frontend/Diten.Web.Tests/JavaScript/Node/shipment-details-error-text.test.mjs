@@ -40,7 +40,7 @@ test('a line shows resolved names, and "name unavailable" with the reference whe
     const line = { lineNumber: '1', itemId: 'item', skuId: 'sku', quantity: '2.000', uomId: 'EA', issueTransactionId: 'tx-1',
         sku: { state: 'resolved', label: 'FG-1 · Tablet' }, lot: { state: 'resolved', label: 'L-0042' },
         fromLocation: { state: 'unavailable', reference: 'loc-1' }, fefoBypassReason: null };
-    assert.deepEqual([...lineCells(line)], ['1', 'FG-1 · Tablet', 'L-0042', 'nameUnavailable · loc-1', '2.000', 'EA', '—']);
+    assert.deepEqual(JSON.parse(JSON.stringify([...lineCells(line)])), ['1', 'FG-1 · Tablet', 'L-0042', { text: 'nameUnavailable', reference: 'loc-1' }, '2.000', 'EA', '—']);
     assert.ok(![...lineCells(line)].includes('tx-1'));
     assert.deepEqual([...lineCells({ lineNumber: '2', quantity: '1', uomId: 'KGM', lot: null, sku: { state: 'unavailable' } })],
         ['2', 'nameUnavailable', '—', 'nameUnavailable', '1', 'KGM', '—']);

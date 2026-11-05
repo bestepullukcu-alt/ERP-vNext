@@ -114,8 +114,17 @@ const ShipmentDetails = (function () {
     // The stock fields as the response carries them. issueTransactionId is INVENTORY's id: the response has no INV- number.
     // MOD-0183 r9 §24.4 (SB-10, SB-12): names the adapter resolved; a failed or denied read says "name unavailable" with the
     // reference as stored; never a blank. Product / SKU is one name + canonicalCode pair; issueTransactionId is not a column.
+    // VER F-3: an unresolved reference is returned apart, so the page shows it small and LTR after the text (SB-10).
     const nameCell = (cell) => cell?.state === 'resolved' ? cell.label
-        : (cell?.reference ? `${L.nameUnavailable} · ${cell.reference}` : L.nameUnavailable);
+        : (cell?.reference ? { text: L.nameUnavailable, reference: cell.reference } : L.nameUnavailable);
+    const fillCell = (element, value) => {
+        element.replaceChildren();
+        if (value && typeof value === 'object') {
+            const reference = document.createElement('small');
+            reference.className = 'text-muted ms-1'; reference.dir = 'ltr'; reference.textContent = value.reference;
+            element.append(document.createTextNode(value.text), reference);
+        } else element.textContent = value ?? L.unavailable;
+    };
     const lineCells = (line) => [line.lineNumber, nameCell(line.sku), line.lot ? nameCell(line.lot) : '—',
         nameCell(line.fromLocation), line.quantity, line.uomId || L.unavailable, line.fefoBypassReason || '—'];
     // SB-10 / SB-11a / SB-25: the customer cell never shows an id — a name and code, "old record", "not found" or "name unavailable".
@@ -140,7 +149,7 @@ const ShipmentDetails = (function () {
         const body = document.getElementById('detailLines'); body.replaceChildren();
         (lines || []).forEach((line) => { const row = body.insertRow();
             lineCells(line)
-                .forEach((item) => { const cell = row.insertCell(); cell.textContent = item; }); });
+                .forEach((item) => fillCell(row.insertCell(), item)); });
     };
     const renderPod = (pod) => {
         document.getElementById('podEmpty').classList.toggle('d-none', !!pod);
@@ -170,7 +179,7 @@ const ShipmentDetails = (function () {
         hideSkeleton(); setDetailSurfaceVisible(true);
         document.getElementById('detailsAlert')?.classList.add('d-none');
         shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusText(data.status, data.dispatchState));
-        text('detailSource', data.sourceDocumentId); text('detailWarehouse', nameCell(data.warehouse)); text('detailCustomer', customerText(data.customer));
+        text('detailSource', data.sourceDocumentId); fillCell(document.getElementById('detailWarehouse'), nameCell(data.warehouse)); text('detailCustomer', customerText(data.customer));
         text('detailShipTo', data.shipToReference); void loadCompany();
         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();

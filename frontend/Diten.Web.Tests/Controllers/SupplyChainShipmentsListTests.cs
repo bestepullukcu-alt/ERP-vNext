@@ -190,6 +190,28 @@ public sealed class SupplyChainShipmentsListTests
         Assert.NotNull(zip.GetEntry("[Content_Types].xml"));
     }
 
+    // VER F-4: a location read that throws keeps its reference; the page still loads (SB-10).
+    [Fact]
+    public async Task List_ALocationReadThatThrows_KeepsItsReference()
+    {
+        var handler = new CaptureHandler(r => r.RequestUri!.AbsolutePath.StartsWith("/api/locations/", StringComparison.Ordinal)
+            ? throw new HttpRequestException("down") : Route(r, Page(Row("SHP-1", null))));
+        var item = Json(await CreateController(handler, ReadAndCrm).List(null, null, 0, 50, null, null, null, 0, CancellationToken.None))["data"]!["items"]![0]!;
+        Assert.Equal(("unavailable", "wh-01"), (item["warehouse"]!["state"]!.GetValue<string>(), item["warehouse"]!["reference"]!.GetValue<string>()));
+    }
+
+    // VER F-7: characters XML 1.0 forbids are dropped from the workbook, so a stored free text cannot corrupt it.
+    [Fact]
+    public void Xlsx_DropsXmlIllegalControlCharacters()
+    {
+        var bytes = ShipmentExport.Xlsx(["A"], [new string?[] { "a\u0001b\u000Bc\td" }]);
+        using var zip = new ZipArchive(new MemoryStream(bytes));
+        using var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var xml = sheet.ReadToEnd();
+        System.Xml.Linq.XDocument.Parse(xml);
+        Assert.Contains("abc\td", xml);
+    }
+
     [Fact]
     public async Task Export_RefusesMoreThanTheCap_AndUnknownColumnsOrFormats()
     {

@@ -571,7 +571,7 @@ public sealed class SupplyChainShipmentsController : Controller
             // SB-25: a stored value that is not a lower-case "D" Guid is "not found", with no CRM call.
             if (!ShipmentCustomer.IsCustomerRef(customerRef)) return Task.FromResult(new JsonObject { ["state"] = "notFound" });
             if (!owner.HasPermission(CrmAccountReadPermission)) return Task.FromResult(new JsonObject { ["state"] = "unavailable" });
-            return Once(_customers, customerRef, async () =>
+            return Once(_customers, customerRef, keepReference: false, async () =>
             {
                 var reply = await owner.CrmGetAsync($"{CrmAccountsPath}/{customerRef}", ct);
                 if (reply.Status == StatusCodes.Status404NotFound) return new JsonObject { ["state"] = "notFound" };
@@ -584,7 +584,7 @@ public sealed class SupplyChainShipmentsController : Controller
         private Task<JsonObject> LocationAsync(string? locationId, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(locationId)) return Task.FromResult(new JsonObject { ["state"] = "unavailable" });
-            return Once(_locations, locationId, async () =>
+            return Once(_locations, locationId, keepReference: true, async () =>
             {
                 var gateway = Gateway;
                 if (gateway is null) return Unavailable(locationId);
@@ -595,7 +595,7 @@ public sealed class SupplyChainShipmentsController : Controller
             });
         }
 
-        private Task<JsonObject> LotAsync(string lotId, CancellationToken ct) => Once(_lots, lotId, async () =>
+        private Task<JsonObject> LotAsync(string lotId, CancellationToken ct) => Once(_lots, lotId, keepReference: true, async () =>
         {
             var trace = Diten.Web.Models.Traceability.TraceGatewayClient.For(owner._httpClient, owner._gatewayUrl, owner.Request, owner.User);
             if (trace is null) return Unavailable(lotId);
@@ -623,22 +623,26 @@ public sealed class SupplyChainShipmentsController : Controller
             return labels;
         }
 
-        private Task<JsonObject> Once(Dictionary<string, Task<JsonObject>> cache, string key, Func<Task<JsonObject>> read)
+        // VER F-4: a read that throws keeps its reference for warehouse, location and lot (SB-10); the customer never has one.
+        private Task<JsonObject> Once(Dictionary<string, Task<JsonObject>> cache, string key, bool keepReference, Func<Task<JsonObject>> read)
         {
             lock (_sync)
             {
                 if (cache.TryGetValue(key, out var existing)) return existing;
-                var task = Gate(read);
+                var task = Gate(read, keepReference ? key : null);
                 cache[key] = task;
                 return task;
             }
         }
 
-        private async Task<JsonObject> Gate(Func<Task<JsonObject>> read)
+        private async Task<JsonObject> Gate(Func<Task<JsonObject>> read, string? reference)
         {
             await _gate.WaitAsync();
             try { return await read(); }
-            catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException) { return new JsonObject { ["state"] = "unavailable" }; }
+            catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException)
+            {
+                return reference is null ? new JsonObject { ["state"] = "unavailable" } : Unavailable(reference);
+            }
             finally { _gate.Release(); }
         }
 

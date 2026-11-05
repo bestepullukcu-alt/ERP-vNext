@@ -179,7 +179,9 @@ public static class ShipmentExport
 
     public static byte[] Xlsx(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string?>> rows)
     {
-        static string X(string? value) => System.Security.SecurityElement.Escape(SafeCell(value)) ?? string.Empty;
+        // VER F-7: characters XML 1.0 forbids (C0 controls except tab, LF, CR) are dropped, so free text cannot corrupt the sheet.
+        static string X(string? value) => System.Security.SecurityElement.Escape(
+            System.Text.RegularExpressions.Regex.Replace(SafeCell(value), "[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]", string.Empty)) ?? string.Empty;
         static string Column(int index) { var name = string.Empty; for (index++; index > 0; index = (index - 1) / 26) name = (char)('A' + (index - 1) % 26) + name; return name; }
         var sheet = new System.Text.StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>");
         var r = 0;
