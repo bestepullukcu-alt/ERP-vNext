@@ -186,3 +186,11 @@ Onay kanıtı: K1 / gmg-10 (2026-11-05: "Readiness %100'e çıkartmamız gerekiy
 2. **D134/2 — künye:** `status: draft` → `ready-for-dev`; `approval_status` kaldırıldı (D127/2 gerekçesi; Frontmatter maddesi buna çekildi); Durum paragrafı güncellendi; ENGELLER metnine S-49 onay istisnası yazıldı (MOD-0289 D127/3 deseni).
 3. **D134/3 — sıra:** bu sürüm için CT-APR-02 fark incelemesi (Codex K1 tur 5) ve CT-APR-01 satırı aynı PR'da; onay, PR'ın birleştirilmesidir. Kod ayrıca DCP-011 `runtime_code_scope`'un MOD-0217'yi kapsamasını ister (bugün yalnız MOD-0289, D129).
 4. **D134/4 — sınır:** kapsam, izin, AC, dilimler ve Açık kararlar değişmedi.
+
+## D135 — Codex K2 tur 1 bulguları: ortak tanım sabitlemesi, DL-1 dilim kapıları (2026-11-05)
+
+Kaynak: Codex K2 tur 1 (`a586738a0`; MOD-0119 ve MOD-0126 UYGUN DEĞİL — 1 ENGEL + 2 ORTA); K1 / gmg-10 D132 soru kutusu ("Evet, hazırla"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
+
+1. **D135/1 — ortak tanım sabitlemesi (ENGEL):** MOD-0119, MOD-0120 ve MOD-0124 servis ortak tanımları MOD-0126 `40140c6e…817e` sürümüne sabitliyordu; o sürüm D125/2 türetme tanımını (`RecordCodeIdempotencyKey.Derive`, D126) içermiyordu. Üç paket bu dalın MOD-0126 sürümüne (`e483272a14958fbdc183278f630026f6f03ee46d445a1cad2983b8db1eac539d`; D126, D132, D133, D135) yeniden sabitlendi ("Kaynak ve kanıt"; MOD-0124 Dependencies satırı). MOD-0126'nın her yeni revizyonu bu sabitlemeyi yeniden ister.
+2. **D135/2 — DL-1 dilim kapıları (ORTA ×2):** DL-1 Önkoşul metni MOD-0126 DL-1'i (MOD-0119, 0120, 0124) ve TRM-14'ü (dört paket) "işaretsiz paket kapısı" listesinde sayıyordu; Checklist ikisini "— DL-1 için" dilim kapısı işaretliyor (D82/2). Dört pakette ikisi listeden çıkarıldı ve DL-1'in kendi dilim kapıları olarak ayrı yazıldı.
+3. **D135/3 — sınır:** kapsam, izin, AC ve `status` değişmedi. Codex K2 tur 2 bu sürümle.
