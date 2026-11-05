@@ -10,7 +10,7 @@ status: ready-for-dev
 owner: auth-owner
 branch: chore/ct/auth-ct-01
 started: 2026-11-01
-target: TBD
+target: 2026-11-20
 form_field_count: 0
 parent: MOD-0018
 ---
@@ -732,7 +732,7 @@ uygulanır. Tur gerekmez: "kullanıcı + rol kurulumu" akışında yazma adımı
 - [ ] **Kod izni:** `status: ready-for-dev` yalnız bağımsız inceleme ZIP'i içindir. Kod, CT-APR-01 onay satırı
   (`python3 scripts/pack_approval.py check <paket>` → 0) olmadan yazılmaz. Onay satırı yoksa kod yok.
 - [ ] Golden Reference: `golden_reference: none` gerekçesi okundu; yeni dosyalar Backend File Convention'a uyuyor
-- [ ] Frontmatter zorunlu alanları dolu (`service`, `shell`, `golden_reference`, `entity_base`); `target` TBD (Açık kararlar (g))
+- [ ] Frontmatter zorunlu alanları dolu (`service`, `shell`, `golden_reference`, `entity_base`); `target` 2026-11-20 (Açık kararlar (g), sahip 2026-11-05)
 - [ ] Layout & Shell Contract: üç sayfanın `Layout = "_LayoutTenantShell";` satırları yazılı ve AC-24 / AC-25'te sınanıyor
 - [ ] Validation Rules, Failure Path to Verify (en az 4 senaryo), Authorization Convention, Gateway kararı yazılı
 - [ ] Audited Events tablosu yedi komutu tam bir kez içeriyor; K2 davranışı ve testi yazılı
@@ -902,7 +902,7 @@ büyüyemez. AC-2 / AC-12 o iki komut için yeniden yazılır.
 | (d) | Sayı sabitlemesinin yeni değerleri | Bugün ölçülen: `Debt 18, Exceptions 1, K2Debt 11` (`AuditTrailStandardTests.cs:61`; defter 18 / 11, Implementation Notes madde 5) | **Tahmin yazılmaz.** Her dilim, defter satırını çıkardığı aynı değişiklikte sayıyı mimari testin ölçtüğü değere çeker (AC-9, AC-22). Beklenen fark (hesap, ölçüm değil): DL-1 değişiklik yok; DL-3 `Debt` −5 ve `K2Debt` −2 (18 → 13, 11 → 9); `Exceptions` değişmez. Yedek değer yoktur. İz kabul edilince beş rol komutu birlikte "denetleniyor" ölçülür ve borçta kalamaz (AC-22). (k) kapanmadan DL-3 başlamaz. Main bu arada değişirse (ör. FU27 DL-5 kendi sayısını değiştirmez — ct-06 AC-44) yeniden ölçülür | Dilimi yazan + CT (kabulde) | Her dilimin teslimi |
 | (e) | Kapsam | Yedi komut bu pakette · `CreateRole` / `UpdateRole` / `DeleteRole` ayrı | **Yedisi bu pakette** (CT iletisi). Üç komut aynı `IRoleAuditRecorder`'ı kullanıyor (Module Summary). Ayrılırsa iki yarım kalıp ve iki defter kararı doğar | MOD-0018 sahibi | Paket onayı |
 | (f) | Kiracı yalıtımı ve okuma izni adı (PKS-001) | Mevcut anahtarlar (`auth.roles.read`; `auth.users.assign-role` ya da `auth.users.read`) · yeni anahtarlar (`auth.roles.history.read`, `auth.users.role-history.read`) | **Mevcut anahtarlar:** rol geçmişi `auth.roles.read`, kişi-rol geçmişi `auth.users.assign-role` (ekranı açan anahtar). "Kaydı gören izini de görür" (§5.c-3). Yalıtım: kiracı JWT'den, süzgeç `TenantId + EntityType + EntityId`, başka kiracı 404 (Runtime Constraints) | MOD-0018 sahibi | DL-2 öncesi |
-| (g) | Hedef tarih | — | TBD | MOD-0018 sahibi | Onay öncesi |
+| (g) | Hedef tarih | — | **2026-11-20** (sahip 2026-11-05, "onayla, hedef 11-20") | MOD-0018 sahibi | Kapandı |
 | (h) | Reddedilen komutun kaydı (§3 "yetkisiz bir silme denemesi … denetim bilgisidir") | Bu pakete ekle (korumalardan sonra `Denied` satırı) · ayrı paket · bugünkü gibi kayıtsız | **Ayrı paket.** Bu paketin kararı önce-yaz / sonuçtur; reddi kaydetmek 7 komutun 401/403/404/409 dallarının hepsini değiştirir | MOD-0018 sahibi | DL-1 öncesi (kapsam) |
 | (i) | FU27 DL-5 temeli ve sıra | **(i1)** FU27 DL-5 önce; FU29, FU27'nin **onaylı** sürümüne (`yol@commit`) bağlanır · **(i2) alanları FU29 DL-1 ekler:** `AuthAuditLog.EntityType` / `EntityId` (yalnız ekleme) ve `(TenantId, EntityType, EntityId, OccurredAt)` dizini FU29 DL-1'e taşınır, FU27 DL-5 onları tüketir (iki pakette tek kopya; FU27 metni buna göre revize edilir) · ortak okuyucu (`IAuthAuditHistoryReader`, varlık türüyle) iki pakete tek tip | **(i1)**; FU27 onaylı sürümü FU29 onay satırına kadar yoksa **(i2)**. Hangisi seçilirse seçilsin onay satırından önce kapanır (başlık onay notu). ct-06 metni onaysızdır; değişirse Entity Fields, Validation Rules, AC-11, AC-16, AC-18 yeniden ölçülür. Ortak okuyucu önerisi FU27 sahibine iletilir; kabul edilirse bu paketin `IRbacAuditHistoryReader`'ı düşer (kopya kalmaz) | Treasury CT + MOD-0018 sahibi | DL-1 öncesi (onay satırından önce) |
 | (j) | Eylemi yapanın o andaki adı (§3 alan 2) | Yerel satıra maskeli ad yaz · okumada güncel adı çöz · bilinen boşluk olarak bırak | **Okumada güncel ad + bilinen boşluk kaydı.** Yerel kayıt kuralı kişisel veri yazmıyor (`IRbacAuditRecorder.cs:3-8`); Platform iletimi maskeli adı taşıyor | MOD-0018 sahibi | DL-3 öncesi |
