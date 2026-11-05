@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Features.Warehouse.Ports;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
+using Diten.InventoryService.Domain.Quarantine.Rules;
 
 namespace Diten.InventoryService.Application.Features.Warehouse.Services;
 
@@ -33,7 +34,7 @@ public sealed class WarehouseSerialReader : IWarehouseSerialReader
 
             var taken = new HashSet<string>(StringComparer.Ordinal);
             var holds = await _quarantine.ListHoldsAsync(new HoldQuery(null, warehouse, null, null, null, null, bucket.LotId, null, 1, 500), cancellationToken);
-            foreach (var hold in holds.Items.Where(h => h.Status != HoldStatus.Decided && Same(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, bucket)))
+            foreach (var hold in holds.Items.Where(h => QuarantineRecordStates.IsOpen(h.Status) && Same(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, bucket)))
             {
                 taken.UnionWith(hold.SerialIds ?? []);
             }

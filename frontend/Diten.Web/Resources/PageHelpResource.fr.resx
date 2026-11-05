@@ -1028,7 +1028,7 @@
     <value>Ouvrez un enregistrement</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Cliquez sur «Décider» sur un enregistrement ouvert pour libérer, rejeter ou bloquer le stock. Le stock ne bouge qu’après l’approbation de la décision.</value>
+    <value>Cliquez sur «Décider» sur un enregistrement ouvert pour libérer, rejeter ou bloquer le stock. Le stock ne bouge qu’après l’approbation de la décision. Une ligne « Annulé · Mouvement source extourné » est close car son mouvement de stock source a été extourné : aucune décision n’est nécessaire.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Décidez</value>
@@ -1043,7 +1043,7 @@
     <value>Enregistrement de la note d’analyse</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Vérifiez les informations du haut, la carte «Informations qualité» et les mouvements de stock créés par l’enregistrement ; un bandeau jaune signale un objectif d’attente dépassé.</value>
+    <value>Vérifiez les informations du haut, la carte «Informations qualité» et les mouvements de stock créés par l’enregistrement ; un bandeau jaune signale un objectif d’attente dépassé. Bandeau « Annulé » : le mouvement source a été extourné et l’enregistrement est clos. « Source extournée · écart » : le stock a changé hors de cet enregistrement ; la QA contrôle. Un enregistrement signalé encore ouvert reste ouvert et compte avec sa quantité entière dans les décomptes ouverts (KPI, statut qualité du lot, rappel) ; aucune action de clôture n’existe sur l’enregistrement — la QA corrige côté stock. Sur un enregistrement annulé, le signal indique qu’une ligne de sa décision a été comptabilisée après la clôture ; le stock est sorti du compartiment d’un autre enregistrement. Signal de changement de lot : la modification de lot de la décision (statut et / ou date de recontrôle) avait été appliquée avant la clôture ; le lot n’a pas été rétabli — la QA contrôle le statut du lot.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Lisez l’enregistrement</value>
@@ -1142,7 +1142,7 @@
     <value>«Bloquer le stock» → «Bloquer» : le stock choisi devient Bloqué immédiatement, sans flux d’approbation</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un motif de blocage, «En attente de disposition uniquement» ou un «Statut», puis cliquez sur «Appliquer».</value>
+    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un motif de blocage, «En attente de disposition uniquement» ou un «Statut», puis cliquez sur «Appliquer». « Annulé · Mouvement source extourné » dans « Statut » affiche les enregistrements clos parce que leur mouvement de stock source a été extourné. Un enregistrement bloqué ouvert signalé « Source extournée · écart » reste ouvert et compte avec sa quantité entière dans les décomptes ouverts ; aucune action de clôture n’existe sur l’enregistrement — la QA corrige côté stock.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Réduisez la liste</value>

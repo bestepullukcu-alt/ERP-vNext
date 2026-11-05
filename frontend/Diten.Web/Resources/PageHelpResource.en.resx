@@ -1028,7 +1028,7 @@
     <value>Open a record</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Click “Decide” on an open record to release, reject or block it. The stock moves only after the decision is approved.</value>
+    <value>Click “Decide” on an open record to release, reject or block it. The stock moves only after the decision is approved. A row marked “Void · Source reversed” closed because its source stock movement was reversed: no decision is needed and “Decide” is not offered.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Decide</value>
@@ -1043,7 +1043,7 @@
     <value>Saving the analysis note</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Check the facts at the top, the “Quality information” card and the stock movements the record made; a yellow band warns when the waiting target is exceeded.</value>
+    <value>Check the facts at the top, the “Quality information” card and the stock movements the record made; a yellow band warns when the waiting target is exceeded. “Void” banner: the source movement was reversed and the record closed. “Source reversed · conflict”: stock changed outside this record; QA checks. A flagged record that is open stays open and is counted with its full quantity in the open counts (KPI, lot quality status, recall); there is no close action on the record — QA corrects the stock side. On a void record the mark means a line of its decision was posted after the close; the stock left another record’s bucket. Lot change mark: the decision’s lot change (status and / or retest date) was applied before the record closed; the lot was not reverted — QA checks the lot status.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Read the record</value>
@@ -1142,7 +1142,7 @@
     <value>“Block stock” → “Block”: the chosen stock becomes Blocked at once, without an approval workflow</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Type in the search box or click the filter button (“Filter”), choose a block reason, “Awaiting disposition only” or a “Status”, then click “Apply”.</value>
+    <value>Type in the search box or click the filter button (“Filter”), choose a block reason, “Awaiting disposition only” or a “Status”, then click “Apply”. “Void · Source reversed” in “Status” lists the records closed because their source stock movement was reversed. An open blocked record marked “Source reversed · conflict” stays open and is counted with its full quantity in the open counts; there is no close action on the record — QA corrects the stock side.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Narrow the list</value>

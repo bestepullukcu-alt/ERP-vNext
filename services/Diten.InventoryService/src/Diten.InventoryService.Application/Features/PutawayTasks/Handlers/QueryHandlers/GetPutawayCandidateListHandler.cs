@@ -10,6 +10,7 @@ using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
+using Diten.InventoryService.Domain.Quarantine.Rules;
 using Diten.InventoryService.Domain.Recall.Repositories;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
@@ -182,7 +183,7 @@ public sealed class GetPutawayCandidateListHandler : IRequestHandler<GetPutawayC
             var warehouse = r.WarehouseId.ToString("D");
             var location = r.LocationId.ToString("D");
             var holds = await _quarantine.ListHoldsAsync(new HoldQuery(null, warehouse, null, null, null, null, r.LotId, null, 1, 200), ct);
-            var hold = holds.Items.FirstOrDefault(h => h.Status != HoldStatus.Decided && h.LocationId == location && h.SkuId == r.SkuId);
+            var hold = holds.Items.FirstOrDefault(h => QuarantineRecordStates.IsOpen(h.Status) && h.LocationId == location && h.SkuId == r.SkuId);
             if (hold is not null) return ("StockHeld", new BlockingDocumentDto("QuarantineHold", hold.Id.ToString("D"), hold.HoldNumber));
             var blocked = await _quarantine.ListBlockedAsync(new BlockedQuery(null, null, false, null, BlockedStatus.Open, warehouse, 1, 200), ct);
             var record = blocked.Items.FirstOrDefault(b => b.LocationId == location && b.SkuId == r.SkuId && string.Equals(b.LotId, r.LotId, StringComparison.Ordinal));

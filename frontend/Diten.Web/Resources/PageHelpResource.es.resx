@@ -1028,7 +1028,7 @@
     <value>Abra un registro</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Haga clic en «Decidir» en un registro abierto para liberar, rechazar o bloquear el stock. El stock solo se mueve cuando la decisión se aprueba.</value>
+    <value>Haga clic en «Decidir» en un registro abierto para liberar, rechazar o bloquear el stock. El stock solo se mueve cuando la decisión se aprueba. Una fila «Anulado · Origen revertido» se cerró porque su movimiento de stock de origen se revirtió: no se necesita ninguna decisión.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Decida</value>
@@ -1043,7 +1043,7 @@
     <value>Guardar la nota de análisis</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Revise los datos de arriba, la tarjeta «Información de calidad» y los movimientos de stock que creó el registro; una banda amarilla avisa si se superó el objetivo de espera.</value>
+    <value>Revise los datos de arriba, la tarjeta «Información de calidad» y los movimientos de stock que creó el registro; una banda amarilla avisa si se superó el objetivo de espera. Banda «Anulado»: el movimiento de origen se revirtió y el registro se cerró. «Origen revertido · discrepancia»: el stock cambió fuera de este registro; QA lo controla. Un registro marcado que sigue abierto permanece abierto y cuenta con su cantidad completa en los recuentos abiertos (KPI, estado de calidad del lote, retirada); no hay acción de cierre sobre el registro — QA corrige en el lado del stock. En un registro anulado, la marca indica que una línea de su decisión se contabilizó tras el cierre; el stock salió del compartimento de otro registro. Marca de cambio de lote: el cambio de lote de la decisión (estado y / o fecha de reanálisis) se aplicó antes del cierre; el lote no se revirtió — QA controla el estado del lote.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Lea el registro</value>
@@ -1142,7 +1142,7 @@
     <value>«Bloquear stock» → «Bloquear»: el stock elegido pasa a Bloqueado al instante, sin flujo de aprobación</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Escriba en el cuadro de búsqueda o haga clic en el botón de filtro («Filtrar»), elija un motivo de bloqueo, «Solo pendientes de disposición» o un «Estado» y haga clic en «Aplicar».</value>
+    <value>Escriba en el cuadro de búsqueda o haga clic en el botón de filtro («Filtrar»), elija un motivo de bloqueo, «Solo pendientes de disposición» o un «Estado» y haga clic en «Aplicar». «Anulado · Origen revertido» en «Estado» muestra los registros cerrados porque su movimiento de stock de origen se revirtió. Un registro bloqueado abierto marcado «Origen revertido · discrepancia» permanece abierto y cuenta con su cantidad completa en los recuentos abiertos; no hay acción de cierre sobre el registro — QA corrige en el lado del stock.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Acote la lista</value>

@@ -217,4 +217,21 @@ public sealed class SourceReversalOpenPredicateScanTests
             .Select(f => f.RelativePath).ToList();
         Assert.True(offenders.Count == 0, "HoldStatus.Decided comparison outside QuarantineRecordStates:\n" + string.Join("\n", offenders));
     }
+
+    /// <summary>
+    /// MOD-0175-FU01 DL-2 — owner decision XMC-001 MOD-0178 (Beste 2026-11-04, mod0175-fu01-owner-decisions-01.md): the scan covers MOD-0178's
+    /// two hold reads too (putaway candidate blocking document, warehouse serial reader). Both ask <c>QuarantineRecordStates.IsOpen</c>.
+    /// </summary>
+    [Fact]
+    public void AC18_the_two_MOD_0178_hold_reads_ask_the_predicate()
+    {
+        string[] files = ["PutawayTasks/Handlers/QueryHandlers/GetPutawayCandidateListHandler.cs", "Warehouse/Services/WarehouseSerialReader.cs"];
+        var sources = SourceScan.Production().Where(f => files.Any(n => f.RelativePath.EndsWith(n, StringComparison.Ordinal))).ToList();
+        Assert.Equal(2, sources.Count);
+        Assert.All(sources, f =>
+        {
+            Assert.False(DecidedComparison.IsMatch(f.Body), $"{f.RelativePath}: HoldStatus.Decided comparison");
+            Assert.Contains("QuarantineRecordStates.IsOpen(h.Status)", f.Body, StringComparison.Ordinal);
+        });
+    }
 }

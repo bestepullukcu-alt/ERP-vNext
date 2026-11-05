@@ -1028,7 +1028,7 @@
     <value>Kaydı açın</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Açık bir kayıtta “Karar Ver”e tıklayıp stoğu serbest bırakın, reddedin ya da bloke edin. Stok ancak karar onaylandıktan sonra hareket eder.</value>
+    <value>Açık bir kayıtta “Karar Ver”e tıklayıp stoğu serbest bırakın, reddedin ya da bloke edin. Stok ancak karar onaylandıktan sonra hareket eder. “Geçersiz · Kaynak geri alındı” rozetli satırda kaynak stok hareketi geri alındığı için kayıt kapandı; karar gerekmez ve “Karar Ver” görünmez.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Karar verin</value>
@@ -1043,7 +1043,7 @@
     <value>Analiz notunun kaydedilmesi</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Üstteki bilgileri, “Kalite bilgileri” kartını ve kaydın oluşturduğu stok hareketlerini kontrol edin; bekleme hedefi aşıldıysa sarı bir uyarı görünür.</value>
+    <value>Üstteki bilgileri, “Kalite bilgileri” kartını ve kaydın oluşturduğu stok hareketlerini kontrol edin; bekleme hedefi aşıldıysa sarı bir uyarı görünür. “Geçersiz” afişi: kaynak hareket geri alındı, kayıt kapandı. “Kaynak geri alındı · uyuşmazlık”: stok bu kaydın dışında değişti; QA kontrol eder. Uyuşmazlık işaretli kayıt açıksa açık kalır ve açık sayımlarda (KPI, lot kalite durumu, recall) tam miktarıyla görünür; kayıt üzerinde kapatma eylemi yoktur — QA düzeltmeyi stok tarafında yapar. Geçersiz kayıtta işaret: kararına ait bir satır kapanıştan sonra postlandı; stok başka bir kaydın kovasından çıktı. Lot değişikliği işareti: kayıt kapanmadan önce kararın lot değişikliği (durum ve / veya yeniden test tarihi) uygulanmıştı; lot geri alınmadı — lot durumunu QA kontrol eder.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Kaydı okuyun</value>
@@ -1142,7 +1142,7 @@
     <value>“Stoğu bloke et” → “Bloke et”: seçilen stok onay akışı olmadan hemen Bloke olur</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp bloke nedeni, “Yalnız disposition bekleyenler” veya “Durum” seçin ve “Uygula”ya tıklayın.</value>
+    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp bloke nedeni, “Yalnız disposition bekleyenler” veya “Durum” seçin ve “Uygula”ya tıklayın. “Durum” süzgecindeki “Geçersiz · Kaynak geri alındı”, kaynak stok hareketi geri alındığı için kapanan kayıtları gösterir. “Kaynak geri alındı · uyuşmazlık” işaretli açık bloke kayıt açık kalır ve açık sayımlarda tam miktarıyla görünür; kayıt üzerinde kapatma eylemi yoktur — QA düzeltmeyi stok tarafında yapar.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Listeyi daraltın</value>

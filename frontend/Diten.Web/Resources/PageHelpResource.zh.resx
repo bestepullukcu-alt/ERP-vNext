@@ -1028,7 +1028,7 @@
     <value>打开记录</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>在未关闭的记录上点击“作出决定”，放行、拒收或冻结库存。只有决定获批后库存才会移动。</value>
+    <value>在未关闭的记录上点击“作出决定”，放行、拒收或冻结库存。只有决定获批后库存才会移动。标记为“已作废 · 来源已冲销”的行因其来源库存移动已被冲销而关闭：无需作出决定。</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>作出决定</value>
@@ -1043,7 +1043,7 @@
     <value>保存分析备注</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>核对顶部信息、“质量信息”卡片以及该记录产生的库存移动；超过等待目标时会显示黄色提示。</value>
+    <value>核对顶部信息、“质量信息”卡片以及该记录产生的库存移动；超过等待目标时会显示黄色提示。“已作废”横幅：来源移动已被冲销，记录已关闭。“来源已冲销 · 不一致”：库存在此记录之外发生了变化；由质量保证检查。带此标记的记录若仍未关闭，则保持未关闭，并以全部数量计入未关闭统计（KPI、批次质量状态、召回）；记录上没有关闭操作 — 质量保证在库存一侧进行更正。在已作废记录上，该标记表示其决定的一行在关闭后过账；库存从另一记录的库位中流出。批次变更标记：记录关闭前，决定的批次变更（状态和/或复检日期）已应用；批次未还原 — 由质量保证检查批次状态。</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>阅读记录</value>
@@ -1142,7 +1142,7 @@
     <value>“冻结库存”→“冻结”：所选库存立即变为冻结，不经过审批流程</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择冻结原因、“仅显示待处置”或“状态”，然后点击“应用”。</value>
+    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择冻结原因、“仅显示待处置”或“状态”，然后点击“应用”。“状态”中的“已作废 · 来源已冲销”列出因来源库存移动被冲销而关闭的记录。标记为“来源已冲销 · 不一致”的未关闭冻结记录保持未关闭，并以全部数量计入未关闭统计；记录上没有关闭操作 — 质量保证在库存一侧进行更正。</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>缩小列表</value>
