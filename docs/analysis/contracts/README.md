@@ -67,6 +67,12 @@ Procurement domain'inin (Diten.ProcurementService, port 5062) sahibi olduğu con
 
 İskeletler: [wave0-contracts](../wave0-contracts-product-master-and-inventory.md) · INVENTORY detay: [inventory-bundle-contract-detailed-v0.1](../inventory-bundle-contract-detailed-v0.1.md)
 
+### Commercial-suite (CRM) sağlanan sözleşmeler (2026-11-05)
+
+| Contract | Owner | Format | Durum |
+|---|---|---|---|
+| **CRM-ACCOUNT-LOOKUP** | MOD-0149 (Diten.CrmService; tüketici MOD-0120 AR) | `crm-account-lookup.md` (HTTP uçları, `Response<T>` zarfı; OpenAPI değil) | ✅ **1.0.0 FROZEN** (2026-11-05, commercial-suite sahibi): U-1 `GET /api/crm/accounts/{accountId}/lookup-validation` ve U-3 `GET /api/crm/accounts/lookup` — izin `crm.account.lookup-validation`, `tenant_id`'siz token 400 (K-11); DL-1 main'de (PR #377, 38f7ea08d). U-2 `external-references/resolve` (§3) DL-2 ile (MOD-0120 O-10) 1.x içinde donar, o güne kadar bağlayıcı taslak. Onaylı taslak `drafts/crm-account-lookup-validation-v1.0-proposal.md` (sha256 `ec5a1062…`) değişmedi |
+
 ## Mock nasıl çalıştırılır (developer)
 
 OpenAPI dosyasından **tek komutla canlı mock** — el ile stub yazmaya gerek yok:
