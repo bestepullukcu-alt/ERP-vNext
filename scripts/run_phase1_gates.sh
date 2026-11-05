@@ -158,14 +158,21 @@ python3 -B scripts/check_pack_nav_keys.py
 # AC-TEST-01 step 1 (owner 2026-11-05, design v0.2 after Codex): a test name's [MOD-nnnn(-FUnn):AC-n] tag names a
 # criterion of a readable pack AT THE PR's BASE (a new criterion reaches main first, then a test carries it). Reports
 # only; no acceptance record, queue or coverage changes. Not a pull request (AC_TAG_BASE unset) = HEAD is the base.
+# A pull request whose base cannot be fetched is red (Codex KOŞULLU→review: a skip here would pass unchecked tags).
 check_ac_tags() {
   local base="${AC_TAG_BASE:-}"
   if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
-      base="$(git rev-parse FETCH_HEAD)"
-    else
-      echo "[phase1] acceptance criteria tags: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched. NOTHING WAS CHECKED."
-      return 0
+    local try
+    for try in 1 2 3; do
+      if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+        base="$(git rev-parse FETCH_HEAD)"
+        break
+      fi
+      sleep 5
+    done
+    if [ -z "$base" ]; then
+      echo "[phase1] acceptance criteria tags: *** FAILED *** — base branch '$GITHUB_BASE_REF' could not be fetched (3 tries)."
+      return 1
     fi
   fi
   if [ -z "$base" ]; then
