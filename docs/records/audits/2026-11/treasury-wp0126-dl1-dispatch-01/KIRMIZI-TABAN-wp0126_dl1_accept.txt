@@ -1,0 +1,41 @@
+# WP-0126-DL1 kabul betiği — kırmızı taban (Treasury Intake CT, 2026-11-06)
+# betik execution/domains/finance-treasury/work-packs/scripts/wp0126_dl1_accept.py @ b39caf49d sha256 c8df6e6a14810d894df503e03dd7e6c2adbc4849769d774bc950917f9df60925
+# koşu: HEAD b39caf49d (CT hazırlık commit'i) · --base 9dfba1894 · DOTNET_ROOT=$HOME/.dotnet · mongod 8.0.18 (bu Mac; CI 7.0.28)
+# beklenen: 22 FAIL — dal (CT dalı), İzinli yollar ve git diff --check (yalnız CT dosyaları: keşif raporunun ham araç çıktısındaki satır sonu boşluğu; --check-report bütünlüğü için düzeltilmez, işçinin farkında taban bu dosyayı içerir), servis yok (2 derleme, test projesi), 16 AC etiketi. PASS: taban, temiz worktree, paket sha, DL-2…DL-4 yolları, CT-DECISIONS, defter borcu, mongod, AC-18 (22 sonuç), scripts/tests.
+
+HEAD b39caf49d9e1aa59ca76504c5c734f6705790a98 · base 9dfba18942c1b6d13c01db548c73f74345741b4c · çıktı <scratchpad>
+FAIL dal — docs/ct/treasury-wp0126-dl1-p-01
+PASS taban HEAD'in atası
+PASS worktree temiz
+PASS paket değişmedi (onaylı sürüm) — e8e5ce47332273ef
+FAIL değişen dosyalar yalnız İzinli yollar — docs/records/audits/2026-11/treasury-wp0126-dl1-dispatch-01/DISCOVERY-payments-approvals.txt, execution/domains/finance-treasury/work-packs/scripts/wp0126_dl1_accept.py
+PASS DL-2…DL-4 yollarına dokunulmadı
+PASS yalnız ekleme dosyalarında silinen satır yok
+PASS denetim defterine borç satırı eklenmedi (D35/2)
+FAIL git diff --check temiz
+PASS mongod yolu mutlak ve var — /opt/homebrew/bin/mongod
+mongod: db version v8.0.18
+FAIL derleme services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api/Diten.FinanceTreasuryService.Api.csproj -c Release — çıkış 1
+FAIL derleme services/Diten.FinanceTreasuryService/src/Diten.FinanceTreasuryService.Api/Diten.FinanceTreasuryService.Api.csproj — çıkış 1
+FAIL servis test projeleri var — yok
+FAIL AC-01 etiketli testler geçti — 0 test
+FAIL AC-02 etiketli testler geçti — 0 test
+FAIL AC-03 etiketli testler geçti — 0 test
+FAIL AC-16 etiketli testler geçti — 0 test
+FAIL AC-17 etiketli testler geçti — 0 test
+FAIL AC-20 etiketli testler geçti — 0 test
+FAIL AC-21 etiketli testler geçti — 0 test
+FAIL AC-22 etiketli testler geçti — 0 test
+FAIL AC-23 etiketli testler geçti — 0 test
+FAIL AC-29 etiketli testler geçti — 0 test
+FAIL AC-32 etiketli testler geçti — 0 test
+FAIL AC-33 etiketli testler geçti — 0 test
+FAIL AC-39 etiketli testler geçti — 0 test
+FAIL AC-41 etiketli testler geçti — 0 test
+FAIL AC-45 etiketli testler geçti — 0 test
+FAIL AC-47 etiketli testler geçti — 0 test
+PASS AC-18 AuditTrailStandard — çıkış 0 · 22 sonuç
+PASS scripts/tests (yerel kapı) — çıkış 0
+SONUÇ: FAIL — 22 kontrol
+Sabotajlar bu betikte koşulmaz: her biri işçi raporunda kırmızı test adıyla verilir; kabulde CT yeniden koşar.
+exit=1
