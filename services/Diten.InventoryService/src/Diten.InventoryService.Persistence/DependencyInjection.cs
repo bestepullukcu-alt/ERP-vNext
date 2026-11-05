@@ -42,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
         // MOD-0173-FU03 §8.2: the lot rule of a scoped reservation, on the in-process lot master.
         services.AddScoped<Application.Features.Inventory.Ports.IReservationLotRule, ReservationLotRule>();
+        // MOD-0173-FU03 §8.5 (DL-3, Q-01 = A): the reserved quantity per lot — the FEFO hook's free base.
+        services.AddScoped<Application.Features.Inventory.Ports.ILotReservationReader, LotReservationReader>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
         // WP-0173-PM2 (INVENTORY-BUNDLE 1.1.0 getStockPresence): tenant-wide presence read + its access audit.

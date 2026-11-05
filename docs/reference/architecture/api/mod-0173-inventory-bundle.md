@@ -224,6 +224,15 @@ also through a held lot); a holder's release or an EXPIRED reservation stays clo
 (`InventoryReservationRestored` then `…Expired`). Without the flag the reservation stays closed. `reservationId` enters the idempotency
 fingerprint only when sent and `restoreReservation` only when true.
 
+### 4.3 FEFO and reserved lots (MOD-0173-FU03 DL-3 — no contract change)
+
+The MOD-0176 FEFO hook of `postMovement` (pre-check and in-transaction re-check alike) counts each lot by its **free** quantity: AVAILABLE
+on-hand − the remaining quantity of the ACTIVE, not yet due lot reservations of that warehouse (floor 0; a due but not yet closed reservation
+is not counted). A lot wholly reserved for another outbound is therefore not "the first eligible lot", and issuing a later lot with its own
+reservation is no FEFO bypass; a partly reserved early lot (free > 0) still is. Warehouse reservations without a lot do not count per lot.
+`getFefoOrder` is unchanged (FEFO-BUNDLE `basis: onHandAvailable`), so its order may now differ from the hook's verdict; the FEFO issue
+snapshot does not record the reserved quantity (the reservation audit rows reconstruct it).
+
 ## 5. Reads
 
 - **GET /availability** — `itemId` or `skuId` required; optional `skuLevel`, `warehouseId`, `locationId` (echoed in
