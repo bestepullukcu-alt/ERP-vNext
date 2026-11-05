@@ -24,7 +24,7 @@ import xml.etree.ElementTree as ET
 
 BRANCH = "feature/mdm/wp-0289-dl1"
 PACK = "execution/domains/master-data-management/module-packs/MOD-0289-bank-master-bank-account-registry.md"
-PACK_SHA256 = "fafef5c408e0e02687f60af4e7857520e66c66fc534f6dc822d3e4fbb7eb5c1b"
+PACK_SHA256 = "0056f86e84fc8a7cdacca746c839fb99009e7ac6a26fbfb74f1d98823fbd178f"
 AC_TAGS = ["01", "02", "03", "04", "05", "06", "08", "09", "27", "59", "60"]
 
 M = "services/Diten.MdmService/src/Diten.MdmService."
