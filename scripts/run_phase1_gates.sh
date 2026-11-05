@@ -155,6 +155,30 @@ echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
 
+# AC-TEST-01 step 1 (owner 2026-11-05, design v0.2 after Codex): a test name's [MOD-nnnn(-FUnn):AC-n] tag names a
+# criterion of a readable pack AT THE PR's BASE (a new criterion reaches main first, then a test carries it). Reports
+# only; no acceptance record, queue or coverage changes. Not a pull request (AC_TAG_BASE unset) = HEAD is the base.
+check_ac_tags() {
+  local base="${AC_TAG_BASE:-}"
+  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+    if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+      base="$(git rev-parse FETCH_HEAD)"
+    else
+      echo "[phase1] acceptance criteria tags: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched. NOTHING WAS CHECKED."
+      return 0
+    fi
+  fi
+  if [ -z "$base" ]; then
+    python3 -B scripts/ac_coverage.py check-tags
+  else
+    python3 -B scripts/ac_coverage.py check-tags --base "$base"
+  fi
+}
+
+echo "[phase1] acceptance criteria tags"
+python3 -B scripts/ac_coverage.py --self-test
+check_ac_tags
+
 
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
