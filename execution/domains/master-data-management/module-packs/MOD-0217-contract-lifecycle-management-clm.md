@@ -8,8 +8,7 @@ shell: tenant
 golden_reference: compact
 data_mode: server
 entity_base: EntityBase
-status: draft
-approval_status: not-approved
+status: ready-for-dev
 owner: mdm-domain-team
 branch: feature/mdm/mod-0217-contract-lifecycle-management-clm
 started: 2026-10-26
@@ -20,11 +19,13 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 
 # MOD-0217 — Contract Lifecycle Management (CLM)
 
+> **KARAR D134 (2026-11-05) — `ready-for-dev`:** paket kapısında işaretsiz kalan paket düzeyi maddeler yalnız CT-APR-02 ve CT-APR-01'dir (DCP üyeliği D132/3 ile kapandı); `draft` sürümün (`a2714afa…`) Codex incelemesi UYGUN (`docs/records/reviews/MOD-0217/2026-11-05-a2714afa.md`). Künye `status: ready-for-dev`, `approval_status` kaldırıldı (D127/2 gerekçesi); ENGELLER metnine S-49 onay istisnası yazıldı; Durum paragrafı güncellendi. Bu sürüm için CT-APR-02 (fark) ve CT-APR-01 bu PR'da gelir. Kapsam, izin, AC, dilimler ve Açık kararlar değişmedi.
+>
 > **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt (404 `LEGAL_ENTITY_NOT_FOUND` hariç — D133/5), zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-20 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_CONTRACT_LEGAL_ENTITY_NOT_ELIGIBLE` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar. Codex K1 ENGEL: RCS-001 satırı ve Runtime Constraints `Response<T>` zarfına çevrildi (D132/2); RCS-001 §3 `AGR` satırı DL-1 Önkoşul'da paket düzeyi listeden çıkarılıp Checklist'teki gibi DL-1 dilim kapısı yazıldı; satır sahibi Ali (D104/4).
 >
 > **KARAR D132/3 (2026-11-05):** DCP üyeliği maddesi kapandı — DCP-011 D129 revizyonu main'de (PR #371, `a38bab855`). Kapsam, izin, AC ve `status: draft` değişmedi.
 >
-> **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
+> **Durum: `ready-for-dev` (KARAR D134, 2026-11-05) — bu sürümün CT-APR-01 satırı main'de değilken paket kod için onaylı değildir; ayrıca DCP-011 kod alanı (`runtime_code_scope`, D129) bugün yalnız MOD-0289'dur, MOD-0217 kodu o alanın genişlemesini ister.** Önceki durum `draft` / `approval_status: not-approved` idi. Bu paket tek başına kod, servis değişikliği, gateway
 > rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. **Kod alma yok (KARAR D38/3):** kaynak (`S@da4abb20`)
 > yalnız okunur, başvuru malzemesidir; kod Recovery'de, MDM düzeninde sıfırdan yazılır. Kod ancak paket `approved` /
 > `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02) ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra
@@ -1507,7 +1508,7 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
 
 **Biçim maddeleri (paket içi):**
 - [x] Golden Reference Compact okundu (backend + frontend klasörü)
-- [x] Frontmatter tam (service, shell, golden_reference, data_mode, entity_base, form_field_count, approval_status)
+- [x] Frontmatter tam (service, shell, golden_reference, data_mode, entity_base, form_field_count; `approval_status` D134 ile kaldırıldı — onayın kaynağı `approvals.tsv`)
 - [x] Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık
 - [x] Backend / Frontend file convention Golden Reference ile (suffix yok, CommandHandlers/QueryHandlers ayrı)
 - [x] Validation her alan için yazılı; durum kuralları
@@ -1531,6 +1532,10 @@ maddeler paket düzeyinde engel **değildir**: yalnız o dilimin (ve sonrakileri
 kabul kapısı yeni kodun testlerinin geçmesidir. **RCS-001 / BL-565 servisi DL-1 kabul kapısıdır (KARAR D59/1), paket kapısı
 değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek servis DL-1 kabulünden önce
 main'de olmalıdır.
+**Tek istisna — onay maddeleri (S-49, KARAR D134; MOD-0289 D127/3 deseni):** CT-APR-02 ve CT-APR-01 künyesi `ready-for-dev`
+olan sürüme yazılır; bu yüzden sıra künye → inceleme → onay satırıdır ve bu iki madde künyeden **sonra** kapanır. Bu iki madde
+dışındaki paket düzeyi maddeler kapanmadan künye `ready-for-dev` yapılmaz. Künye `ready-for-dev` iken bu sürümün CT-APR-01
+satırı main'de değilse paket **kod için onaylı değildir**: kod, WP prompt'u ve dağıtım yok (`pack_approval.py check` geçmez).
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); paketi yazmamış onaylayıcı
 - [x] MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` — **kapandı (KARAR D129, D132/3):** DCP-011 D129 revizyonu MOD-0217'yi üye yaptı; onay satırı main'de (PR #371, `a38bab855`; onaylayıcı `bestepullukcu-alt`). DCP-011 kod alanı (`runtime_code_scope`) yalnız MOD-0289'dur — MOD-0217 kodu ayrıca o alanın genişlemesini ister
