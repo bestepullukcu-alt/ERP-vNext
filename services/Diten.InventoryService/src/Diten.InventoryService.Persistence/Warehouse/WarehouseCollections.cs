@@ -30,5 +30,14 @@ public static class WarehouseCollections
     /// </summary>
     public static readonly IReadOnlyList<string> SinceDl2 = [Tasks, TaskEvents];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceDl2);
+    /// <summary>DL-4 (S2, pack §4.5): the outbound shipments (mutable head + embedded lines / allocations, Version CAS). No stock total.</summary>
+    public const string OutboundShipments = "wms_outbound_shipments";
+
+    /// <summary>DL-4: the insert-only outbound timeline.</summary>
+    public const string OutboundEvents = "wms_outbound_events";
+
+    /// <summary>The collections added by DL-4, declared on their own line beside <see cref="SinceDl2"/> (the same single-SoR test pattern).</summary>
+    public static readonly IReadOnlyList<string> SinceDl4 = [OutboundShipments, OutboundEvents];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceDl2).Concat(SinceDl4);
 }

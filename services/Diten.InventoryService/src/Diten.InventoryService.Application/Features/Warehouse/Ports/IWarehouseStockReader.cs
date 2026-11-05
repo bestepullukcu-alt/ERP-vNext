@@ -26,4 +26,7 @@ public interface IWarehouseStockReader
 
     /// <summary>The locations of a warehouse where this SKU (and lot, if given) is stocked, most recent posting first (§8.6).</summary>
     Task<IReadOnlyList<Guid>> LastStockedLocationsAsync(Guid warehouseId, Guid skuId, SkuLevel skuLevel, string? lotId, CancellationToken cancellationToken = default);
+
+    /// <summary>S2 (DL-4, §8.17 steps 2 / 4): the company's AVAILABLE rows (OnHand &gt; 0) of this SKU in the warehouse, every location and lot.</summary>
+    Task<IReadOnlyList<WarehouseStockRow>> AvailableRowsOfSkuAsync(Guid warehouseId, Guid itemId, Guid skuId, SkuLevel skuLevel, CancellationToken cancellationToken = default);
 }

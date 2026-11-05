@@ -42,6 +42,16 @@ public static class WarehouseContract
     /// <summary>The rows one bulk assignment may carry (WMS draft §4: ≤ 100).</summary>
     public const int MaxBulkAssignItems = 100;
 
+    // WMS operationIds of the S2 outbound writes (WMS draft §11; pack §4.5 "RequestOp")
+    public const string OpCreateOutboundShipment = "createOutboundShipment";
+    public const string OpUpdateOutboundShipment = "updateOutboundShipment";
+
+    /// <summary>The maintenance service's operation (no request key; the fingerprint of the FU03 batch is the stored plan's).</summary>
+    public const string OpCompleteOutboundAllocation = "completeOutboundAllocation";
+
+    /// <summary>S2 (pack §8.10, FU03 Q-07): the source module of every 0178 reservation.</summary>
+    public const string ReservationSourceModule = ModuleId;
+
     // bulk-delete row results (WMS draft §4, rule 5)
     public const string RowDeleted = "Deleted";
     public const string RowConflict = "Conflict";

@@ -44,6 +44,20 @@ public static class WarehouseErrorCodes
     public const string ConfirmationInFlight = "WMS_CONFIRMATION_IN_FLIGHT";
     public const string SerialBucketMixedStatus = "WMS_SERIAL_BUCKET_MIXED_STATUS";
 
+    // S2 — DL-4 (WMS draft §5.1, pack §12 S2 rows)
+    public const string AllocationFailed = "WMS_ALLOCATION_FAILED";
+    public const string AllocationTooManyLines = "WMS_ALLOCATION_TOO_MANY_LINES";
+    public const string OutboundAllocationInProgress = "WMS_OUTBOUND_ALLOCATION_IN_PROGRESS";
+    public const string OutboundImmutable = "WMS_OUTBOUND_IMMUTABLE";
+    public const string StagingNotConfigured = "WMS_STAGING_NOT_CONFIGURED";
+    public const string UomNotBase = "WMS_UOM_NOT_BASE";
+    public const string LotNotAllocatable = "WMS_LOT_NOT_ALLOCATABLE";
+    public const string ItemNotResolvable = "WMS_ITEM_NOT_RESOLVABLE";
+    public const string OutboundLevelMixed = "WMS_OUTBOUND_LEVEL_MIXED";
+
+    /// <summary>The frozen WAREHOUSE-OUTBOUND 1.0.0 not-found code; the S2 outbound paths use it too (WMS draft §5.1 — no WMS_* twin).</summary>
+    public const string UnknownOutbound = "UNKNOWN_OUTBOUND";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         TaskNotFound, LocationRoleNotFound, Conflict, InvalidTransition, ConfirmationPending, ConfirmationConflictRetry, ConfirmationNotRetryable,
@@ -51,6 +65,8 @@ public static class WarehouseErrorCodes
         AssigneeInvalid, LocationRoleExists, LocationRoleConflict, LocationTypeNotAllowed, RecordCodeUnavailable, CompanyCodeInvalid,
         StorageConditionMismatch, StorageConditionsUnknown, StorageConditionInvalid, LocationHasOpenTasks, NotAssignee, TaskAlreadyAssigned,
         QuantityBelowConfirmed, SerialPartialNotSupported, SerialBucketChanged, ConfirmationNotResolvable, LocationRoleInheritedConflict,
-        PostingIntegrityError, ConfirmationInFlight, SerialBucketMixedStatus
+        PostingIntegrityError, ConfirmationInFlight, SerialBucketMixedStatus,
+        AllocationFailed, AllocationTooManyLines, OutboundAllocationInProgress, OutboundImmutable, StagingNotConfigured, UomNotBase, LotNotAllocatable,
+        ItemNotResolvable, OutboundLevelMixed, UnknownOutbound
     };
 }

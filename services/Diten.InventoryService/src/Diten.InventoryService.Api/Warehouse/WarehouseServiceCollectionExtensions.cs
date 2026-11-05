@@ -1,5 +1,6 @@
 using Diten.InventoryService.Application.Features.Inventory.Ports;
 using Diten.InventoryService.Application.Features.Inventory.Services;
+using Diten.InventoryService.Application.Features.OutboundShipments.Services;
 using Diten.InventoryService.Application.Features.PutawayTasks.Services;
 using Diten.InventoryService.Application.Features.Warehouse;
 using Diten.InventoryService.Application.Features.Warehouse.Ports;
@@ -60,6 +61,20 @@ public static class WarehouseServiceCollectionExtensions
         services.AddScoped<IWarehousePendingScan, WarehousePendingScan>();
         services.AddSingleton<PutawayReconciler>();
         services.AddHostedService<PendingConfirmationReconcilerHostedService>();
+
+        // DL-4 — the S2 outbound with its allocation (pack §8.17): the FEFO read over the MOD-0176 read model, the planner, the FU03 batch and
+        // transaction B (the reservation port is MOD-0173-FU03's in-process door, registered by the Application), the outbound store and the
+        // maintenance service that completes an interrupted allocation with the same keys. The lease setting is checked at start.
+        services.AddOptions<WarehouseOutboundOptions>().BindConfiguration(WarehouseOutboundOptions.SectionName).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<WarehouseOutboundOptions>, WarehouseOutboundOptionsValidator>();
+        services.AddScoped<IWarehouseFefoReader, WarehouseFefoReader>();
+        services.AddScoped<IOutboundShipmentRepository, OutboundShipmentRepository>();
+        services.AddScoped<OutboundShipmentReads>();
+        services.AddScoped<OutboundAllocationPlanner>();
+        services.AddScoped<OutboundAllocationService>();
+        services.AddScoped<IOutboundMaintenanceScan, OutboundMaintenanceScan>();
+        services.AddSingleton<OutboundMaintenance>();
+        services.AddHostedService<OutboundMaintenanceHostedService>();
 
         // Index gate (fail-closed): the unique indexes carry "one record per node", the request keys, the counter, the task number and the
         // serial slot.

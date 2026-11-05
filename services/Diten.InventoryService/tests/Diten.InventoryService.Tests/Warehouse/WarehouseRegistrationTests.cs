@@ -95,7 +95,9 @@ public sealed class WarehouseRegistrationTests
             ["LOCATION_ROLE_BULK_DELETE"] = (WarehousePermissions.LocationRolesManage, true)
         }, actions);
 
-        Assert.Equal([WarehousePermissions.OutboundShipmentsRead], (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey));
+        // DL-4: the S2 outbound create / update keys are API permissions until the DL-6 screen declares them as page actions
+        Assert.Equal([WarehousePermissions.OutboundShipmentsRead, WarehousePermissions.OutboundShipmentsCreate, WarehousePermissions.OutboundShipmentsUpdate],
+            (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey));
     }
 
     [Fact]
@@ -126,7 +128,7 @@ public sealed class WarehouseRegistrationTests
     public void The_warehouse_code_names_no_ledger_store_no_stock_total_and_no_sales_issue()
     {
         var warehouse = SourceScan.Production()
-            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks)/"))
+            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks|OutboundShipments)/")) // DL-4: the S2 outbound folder too
             .ToList();
         Assert.True(warehouse.Count >= 15, $"vacuous scan: {warehouse.Count} files");
 

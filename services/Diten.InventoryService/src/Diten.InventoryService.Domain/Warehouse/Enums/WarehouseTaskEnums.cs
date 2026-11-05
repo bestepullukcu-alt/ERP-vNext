@@ -23,7 +23,10 @@ public enum WarehouseTaskOrigin
     Receipt,
     Production,
     Cancellation,
-    External
+    External,
+
+    /// <summary>S2 (pack §4.5): a pick task opened by an outbound's allocation — only on <see cref="WarehouseTaskKind.Pick"/>.</summary>
+    Outbound
 }
 
 public enum WarehouseTargetSource

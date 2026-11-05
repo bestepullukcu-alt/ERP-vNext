@@ -35,8 +35,15 @@ public static class WarehouseIndexConfiguration
     public const string TaskEventKeyIndex = "ux_wms_task_event_key";
     public const string TaskBulkKeyIndex = "ix_wms_task_event_bulk_key";
 
+    // DL-4 (pack §4.6 S2)
+    public const string OutboundNumberIndex = "ux_wms_outbound_number";
+    public const string OutboundCreateKeyIndex = "ux_wms_outbound_create_key";
+    public const string OutboundEventSeqIndex = "ux_wms_outbound_event_seq";
+    public const string OutboundEventKeyIndex = "ux_wms_outbound_event_key";
+
     public static readonly IReadOnlyList<string> UniqueIndexes =
-        [LocationIndex, CreateKeyIndex, EventSeqIndex, EventKeyIndex, CounterIndex, TaskNumberIndex, TaskCreateKeyIndex, TaskSerialSlotIndex, TaskEventSeqIndex, TaskEventKeyIndex];
+        [LocationIndex, CreateKeyIndex, EventSeqIndex, EventKeyIndex, CounterIndex, TaskNumberIndex, TaskCreateKeyIndex, TaskSerialSlotIndex, TaskEventSeqIndex, TaskEventKeyIndex,
+         OutboundNumberIndex, OutboundCreateKeyIndex, OutboundEventSeqIndex, OutboundEventKeyIndex];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
 
@@ -106,6 +113,39 @@ public static class WarehouseIndexConfiguration
             new(taskEvents.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ActorUserId).Ascending(x => x.RequestOp).Ascending(x => x.IdempotencyKey),
                 new CreateIndexOptions<WarehouseTaskEvent>
                     { Name = TaskBulkKeyIndex, PartialFilterExpression = IsString(nameof(WarehouseTaskEvent.IdempotencyKey)) })
+        ], ct);
+
+        // DL-4 — the S2 pick tasks of an outbound (pack §4.6)
+        await database.GetCollection<WarehouseTask>(WarehouseCollections.Tasks).Indexes.CreateOneAsync(
+            new CreateIndexModel<WarehouseTask>(tasks.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.OutboundId).Ascending(x => x.Kind)
+                .Ascending(x => x.Status), new CreateIndexOptions { Name = "ix_wms_task_outbound" }), cancellationToken: ct);
+
+        var outbounds = Builders<OutboundShipment>.IndexKeys;
+        await database.GetCollection<OutboundShipment>(WarehouseCollections.OutboundShipments).Indexes.CreateManyAsync(
+        [
+            // the number is an identity: unique tenant-wide (RCS-001 §6)
+            new(outbounds.Ascending(x => x.TenantId).Ascending(x => x.OutboundNumber), new CreateIndexOptions { Name = OutboundNumberIndex, Unique = true }),
+            new(outbounds.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<OutboundShipment>
+                    { Name = OutboundCreateKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(OutboundShipment.IdempotencyKey)) }),
+            new(outbounds.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.Status).Ascending(x => x.WarehouseId),
+                new CreateIndexOptions { Name = "ix_wms_outbound_list" }),
+            // the maintenance scan (§8.17 step 6) and the release retry (DL-5)
+            new(outbounds.Ascending(x => x.TenantId).Ascending(x => x.Status).Ascending(x => x.AllocationLeaseUntilUtc),
+                new CreateIndexOptions { Name = "ix_wms_outbound_allocation_lease" }),
+            new(outbounds.Ascending(x => x.TenantId).Ascending("Lines.Allocations.ReservationReleaseState"),
+                new CreateIndexOptions { Name = "ix_wms_outbound_release_state" })
+        ], ct);
+
+        var outboundEvents = Builders<OutboundShipmentEvent>.IndexKeys;
+        await database.GetCollection<OutboundShipmentEvent>(WarehouseCollections.OutboundEvents).Indexes.CreateManyAsync(
+        [
+            new(outboundEvents.Ascending(x => x.TenantId).Ascending(x => x.OutboundId).Ascending(x => x.Seq),
+                new CreateIndexOptions { Name = OutboundEventSeqIndex, Unique = true }),
+            new(outboundEvents.Ascending(x => x.TenantId).Ascending(x => x.OutboundId).Ascending(x => x.ActorUserId).Ascending(x => x.RequestOp)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<OutboundShipmentEvent>
+                    { Name = OutboundEventKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(OutboundShipmentEvent.IdempotencyKey)) })
         ], ct);
 
         await database.GetCollection<BsonDocument>(WarehouseCollections.NumberCounters).Indexes.CreateOneAsync(

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.InventoryService.Application.Features.Warehouse.Services;
+using Diten.InventoryService.Application.Features.OutboundShipments;
 using Diten.InventoryService.Application.Features.PutawayTasks;
 using Diten.InventoryService.Application.Features.WarehouseLocationRoles;
 using Diten.InventoryService.Domain.Rules;
@@ -124,6 +125,55 @@ public static class WarehouseRequestReader
                 return new BulkAssignItem(Id(e, "taskId") ?? throw new FormatException($"{name}[].taskId is required and must be a canonical UUID."), version);
             }).ToList();
 
+        /// <summary>
+        /// S2 <c>createOutboundShipment</c> / <c>previewOutboundAllocation</c> (WMS draft §11): <c>warehouseId</c>, <c>stagingLocationId?</c>,
+        /// <c>orderRef?</c>, <c>shipTo</c> (frozen <c>Address</c> members), <c>note?</c>, <c>lines: [{ orderLineId, item { itemId, skuId?, skuLevel },
+        /// uomId, quantity, lotOverride? { lotId, fefoBypassReason? } }]</c> — closed objects, decimal strings.
+        /// </summary>
+        public CreateOutboundShipmentInput Outbound()
+        {
+            var lines = Array(Root, "lines").Select(e =>
+            {
+                if (e.ValueKind != JsonValueKind.Object) throw new FormatException("lines[] entries must be objects.");
+                Closed(e, "lines[]", "orderLineId", "item", "uomId", "quantity", "lotOverride");
+                if (!e.TryGetProperty("item", out var item) || item.ValueKind != JsonValueKind.Object) throw new FormatException("lines[].item is required and must be an object.");
+                Closed(item, "lines[].item", "itemId", "skuId", "skuLevel");
+                if (!WireNames.TryParseSkuLevel(Str(item, "skuLevel"), out var level)) throw new FormatException("lines[].item.skuLevel must be Gsku, Lsku, FinishedGood or Item.");
+                OutboundLotOverrideInput? lot = null;
+                if (e.TryGetProperty("lotOverride", out var o) && o.ValueKind != JsonValueKind.Null)
+                {
+                    if (o.ValueKind != JsonValueKind.Object) throw new FormatException("lines[].lotOverride must be an object.");
+                    Closed(o, "lines[].lotOverride", "lotId", "fefoBypassReason");
+                    lot = new OutboundLotOverrideInput(Str(o, "lotId"), Str(o, "fefoBypassReason"));
+                }
+
+                return new OutboundLineInput(Str(e, "orderLineId"),
+                    Id(item, "itemId") ?? throw new FormatException("lines[].item.itemId is required and must be a canonical UUID."),
+                    Id(item, "skuId"), level, Str(e, "uomId"), Str(e, "quantity"), lot);
+            }).ToList();
+            return new CreateOutboundShipmentInput(Uuid("warehouseId"), OptionalUuid("stagingLocationId"), String("orderRef"), Address("shipTo"), String("note"), lines);
+        }
+
+        /// <summary>S2 <c>updateOutboundShipment</c> — header members only; each one's presence is kept (absent = unchanged).</summary>
+        public UpdateOutboundShipmentInput OutboundChange()
+            => new(Has("orderRef"), String("orderRef"), Has("shipTo"), Address("shipTo"), Has("note"), String("note"));
+
+        private OutboundAddressInput? Address(string name)
+        {
+            if (!Root.TryGetProperty(name, out var a) || a.ValueKind == JsonValueKind.Null) return null;
+            if (a.ValueKind != JsonValueKind.Object) throw new FormatException($"{name} must be an object.");
+            Closed(a, name, "name", "country", "city", "postalCode", "line1", "line2");
+            return new OutboundAddressInput(Str(a, "name"), Str(a, "country"), Str(a, "city"), Str(a, "postalCode"), Str(a, "line1"), Str(a, "line2"));
+        }
+
+        private static void Closed(JsonElement e, string path, params string[] members)
+        {
+            foreach (var p in e.EnumerateObject())
+            {
+                if (!members.Contains(p.Name, StringComparer.Ordinal)) throw new FormatException($"Unknown member '{path}.{p.Name}'.");
+            }
+        }
+
         private static IEnumerable<JsonElement> Array(JsonElement e, string name)
             => e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Array
                 ? v.EnumerateArray().ToList()
@@ -200,6 +250,17 @@ public static class WarehouseRequestReader
         { "idempotencyKey", "quantity", "toLocationId", "deviationReason", "channel", "scanRef" };
 
     public static readonly HashSet<string> KeyMembers = new(StringComparer.Ordinal) { "idempotencyKey" };
+
+    // ── S2 outbound (WMS draft §11) ──
+    public static readonly HashSet<string> CreateOutboundMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "warehouseId", "stagingLocationId", "orderRef", "shipTo", "note", "lines" };
+
+    /// <summary>previewOutboundAllocation — the create body without a key (a preview writes nothing).</summary>
+    public static readonly HashSet<string> PreviewOutboundMembers = new(StringComparer.Ordinal)
+        { "warehouseId", "stagingLocationId", "orderRef", "shipTo", "note", "lines" };
+
+    /// <summary>updateOutboundShipment — the header only; the lines / allocation are not members (400).</summary>
+    public static readonly HashSet<string> UpdateOutboundMembers = new(StringComparer.Ordinal) { "idempotencyKey", "orderRef", "shipTo", "note" };
 
     public static readonly HashSet<string> ReasonMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason" };
 }

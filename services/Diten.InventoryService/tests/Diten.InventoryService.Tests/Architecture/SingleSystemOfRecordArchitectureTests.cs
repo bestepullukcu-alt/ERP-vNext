@@ -73,6 +73,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // confirmed task quantities, never a stock total (the ledger stays the one balance).
         Assert.Equal(["wms_task_events", "wms_tasks"],
             Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-4, XMC-001 decision Beste 2026-11-05) — the S2 outbound shipments and their insert-only timeline (pack §4.5);
+        // quantities there are requested / allocated / planned shipment quantities, never a stock total (the ledger stays the one balance,
+        // the hold is the FU03 reservation).
+        Assert.Equal(["wms_outbound_events", "wms_outbound_shipments"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -90,7 +95,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All) // MOD-0178 (DL-1)
-            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2).ToList(); // MOD-0178 (DL-2)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2) // MOD-0178 (DL-2)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4).ToList(); // MOD-0178 (DL-4)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)

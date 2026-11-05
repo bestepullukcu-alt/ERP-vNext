@@ -46,15 +46,18 @@ public sealed class WarehouseTaskRepository : IWarehouseTaskRepository
 
     // ── reads ─────────────────────────────────────────────────────────────────────────────────────────────
 
+    // DL-4: the S2 pick tasks share wms_tasks; the S1 putaway surface reads PUTAWAY tasks only — a pick task id is unknown to it (404)
+    private static FilterDefinition<WarehouseTask> Putaway() => Builders<WarehouseTask>.Filter.Eq(x => x.Kind, WarehouseTaskKind.Putaway);
+
     public async Task<WarehouseTask?> FindAsync(Guid taskId, CancellationToken cancellationToken = default)
-        => await _tasks.Find(Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.Eq(x => x.Id, taskId)).FirstOrDefaultAsync(cancellationToken);
+        => await _tasks.Find(Company<WarehouseTask>() & Putaway() & Builders<WarehouseTask>.Filter.Eq(x => x.Id, taskId)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<WarehouseTask?> FindByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default)
         => await _tasks.Find(Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.Eq(x => x.CreatedBy, createdBy)
                              & Builders<WarehouseTask>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<WarehouseTask>> FindManyAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken cancellationToken = default)
-        => await _tasks.Find(Company<WarehouseTask>() & Builders<WarehouseTask>.Filter.In(x => x.Id, taskIds)).ToListAsync(cancellationToken);
+        => await _tasks.Find(Company<WarehouseTask>() & Putaway() & Builders<WarehouseTask>.Filter.In(x => x.Id, taskIds)).ToListAsync(cancellationToken);
 
     public async Task<WarehouseTaskPage> ListAsync(WarehouseTaskQuery query, CancellationToken cancellationToken = default)
     {

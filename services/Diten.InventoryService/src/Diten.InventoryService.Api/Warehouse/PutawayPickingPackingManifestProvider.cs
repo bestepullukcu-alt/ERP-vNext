@@ -12,6 +12,7 @@ namespace Diten.InventoryService.Api.Warehouse;
 /// <para><b>DL-3:</b> the two S1 screens (pack §11.1) — <c>PUTAWAYTASKS</c> and <c>WAREHOUSELOCATIONROLES</c>, Scope Tenant, never under
 /// <c>/Platform/</c> — with one action per real §11.3 button; their keys leave <c>ApiPermissions</c>. Only the frozen outbound read stays an API
 /// permission (MVP-6 reads it; no S1 screen — pack §14.4). The "Uygula" suggestion button is a form control, not an action (§11.3).</para>
+/// <para><b>DL-4:</b> the S2 outbound create / update keys are API permissions until their screen (DL-6) declares them as page actions.</para>
 /// </summary>
 public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvider
 {
@@ -74,6 +75,9 @@ public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvi
             ApiPermissions:
             [
                 // the frozen outbound read (MVP-6 reads it — API-only by design, no S1 screen)
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRead, "Read outbound shipments", "Tenant")
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRead, "Read outbound shipments", "Tenant"),
+                // DL-4: the S2 outbound writes have no screen yet (DL-6 moves them onto the OUTBOUNDSHIPMENTS page's actions)
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsCreate, "Create outbound shipments", "Tenant"),
+                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsUpdate, "Edit outbound shipments", "Tenant")
             ]);
 }

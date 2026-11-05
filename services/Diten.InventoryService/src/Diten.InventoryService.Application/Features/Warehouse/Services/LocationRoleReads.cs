@@ -52,6 +52,33 @@ public sealed class LocationRoleReads
         return new LocationRoleView(node, LocationRoleRules.EffectiveRoles(nodes), LocationRoleRules.EffectiveConditions(nodes));
     }
 
+    /// <summary>
+    /// S2 (DL-4): <see cref="ViewAsync"/> for many nodes at once — one LOCATION read for the nodes, one for their ancestors and one role read;
+    /// a node not of the caller's company is absent.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<Guid, LocationRoleView>> ViewsAsync(IReadOnlyCollection<Guid> locationIds, CancellationToken ct)
+    {
+        if (locationIds.Count == 0) return new Dictionary<Guid, LocationRoleView>();
+        var nodes = await _locations.FindManyAsync(locationIds.Distinct().ToList(), ct);
+        var ancestors = await _locations.FindManyAsync(nodes.SelectMany(n => n.AncestorIds).Distinct().ToList(), ct);
+        var byId = nodes.Concat(ancestors).GroupBy(l => l.Id).ToDictionary(g => g.Key, g => g.First());
+        var records = await _roles.FindByLocationsAsync(byId.Keys.ToList(), ct);
+        var views = new Dictionary<Guid, LocationRoleView>();
+        foreach (var node in nodes)
+        {
+            var path = new List<Location> { node };
+            for (var i = node.AncestorIds.Count - 1; i >= 0; i--)
+            {
+                if (byId.TryGetValue(node.AncestorIds[i], out var ancestor)) path.Add(ancestor);
+            }
+
+            var roleNodes = RoleNodes(path, records);
+            views[node.Id] = new LocationRoleView(node, LocationRoleRules.EffectiveRoles(roleNodes), LocationRoleRules.EffectiveConditions(roleNodes));
+        }
+
+        return views;
+    }
+
     public async Task<WarehouseLocationRoleDto> DtoAsync(WarehouseLocationRole role, CancellationToken ct) => (await DtosAsync([role], ct))[0];
 
     /// <summary>The wire shape of each record (§3.5 + §3.6) — one LOCATION read and one role read for the whole page.</summary>

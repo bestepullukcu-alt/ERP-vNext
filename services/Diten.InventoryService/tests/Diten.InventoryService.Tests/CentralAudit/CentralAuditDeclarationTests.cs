@@ -36,7 +36,9 @@ public sealed class CentralAuditDeclarationTests
         // 71 after MOD-0178 DL-1 (the 4 location-role commands, pack §5 fifth seam); 82 after DL-2 (the 11 task commands: create, update,
         // claim, bulk assign — Q-13 A —, confirm, retry, close short, cancel, returned, resolve, reconcile).
         // 84 after MOD-0175-FU01 DL-1 (ApplySourceReversalToHoldCommand, ApplySourceReversalToBlockedCommand; measured 82 on the branch at 25e06fe08).
-        Assert.Equal(84, WriteCommands.Length);
+        // 87 after MOD-0178 DL-4 (pack §5 rule "82 + the slice's S2 write commands": CreateOutboundShipment, UpdateOutboundShipment,
+        // CompleteOutboundAllocation — 0178's count is 85; the 2 MOD-0175-FU01 commands above are outside that rule; measured 84 at d6aff589e).
+        Assert.Equal(87, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
@@ -110,8 +112,8 @@ public sealed class CentralAuditDeclarationTests
         }
 
         // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
-        // + WarehouseTaskRepository.InTransactionAsync (MOD-0178 DL-2)
-        Assert.Equal(12, seen);
+        // + WarehouseTaskRepository.InTransactionAsync (MOD-0178 DL-2) + OutboundShipmentRepository.InTransactionAsync (MOD-0178 DL-4)
+        Assert.Equal(13, seen);
         Assert.Empty(failures);
     }
 }

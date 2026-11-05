@@ -60,6 +60,23 @@ public sealed class WarehouseStockReads : IWarehouseStockReader
         }
     }
 
+    public async Task<IReadOnlyList<WarehouseStockRow>> AvailableRowsOfSkuAsync(Guid warehouseId, Guid itemId, Guid skuId, SkuLevel skuLevel,
+        CancellationToken cancellationToken = default)
+    {
+        var f = Builders<InventoryBalance>.Filter;
+        var filter = Scope() & f.Eq(x => x.WarehouseId, warehouseId.ToString("D")) & f.Eq(x => x.ItemId, itemId) & f.Eq(x => x.SkuId, skuId)
+                     & f.Eq(x => x.SkuLevel, skuLevel) & f.Eq(x => x.StockStatus, StockStatus.Available) & f.Eq(x => x.IsDeleted, false);
+        try
+        {
+            var rows = await _balances.Find(filter).Limit(5000).ToListAsync(cancellationToken);
+            return rows.Select(Row).OfType<WarehouseStockRow>().ToList();
+        }
+        catch (MongoException ex)
+        {
+            throw new WarehouseInventoryUnavailableException("The stock rows of the SKU could not be read.", ex);
+        }
+    }
+
     private static WarehouseStockRow? Row(InventoryBalance b)
         => Guid.TryParse(b.WarehouseId, out var warehouse) && Guid.TryParse(b.LocationId, out var location)
             ? new WarehouseStockRow(b.ItemId, b.SkuId, b.SkuLevel, warehouse, location, b.LotId, b.StockStatus, b.OnHand, b.BaseUomId, b.LastPostingDate)

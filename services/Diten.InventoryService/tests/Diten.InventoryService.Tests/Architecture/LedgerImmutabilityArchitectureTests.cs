@@ -153,6 +153,10 @@ public sealed class LedgerImmutabilityArchitectureTests
         // decision Beste 2026-10-30): exactly this one is taken out; any other PUT / DELETE still turns it red.
         Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "PutawayTasksController:putaway-tasks/{taskId}");
         routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "PutawayTasksController:putaway-tasks/{taskId}");
+        // WMS-BUNDLE updateOutboundShipment (PUT /api/warehouse/outbound-shipments/{outboundId} — the outbound's header, never stock nor the
+        // allocation; MOD-0178 DL-4, XMC-001 decision Beste 2026-11-05): exactly this one is taken out; any other PUT / DELETE still turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "OutboundShipmentsController:{outboundId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "OutboundShipmentsController:{outboundId}");
         Assert.DoesNotContain(routes, r => r.Verb == "DELETE");
         // RECALL-BUNDLE 1.0.0 updateSettings (PUT /api/recall/settings — the company's recall settings, master data, WP-0177-R1): exactly
         // this one recall PUT; it is taken out here so the list below stays as frozen (any other recall PUT still turns it red).

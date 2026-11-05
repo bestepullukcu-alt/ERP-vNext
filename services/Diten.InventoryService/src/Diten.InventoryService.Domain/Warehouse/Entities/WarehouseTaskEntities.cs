@@ -243,6 +243,20 @@ public sealed class WarehouseTask : EntityBase
     /// <summary>The last timeline <c>Seq</c> written for this task (every timeline row of a write takes the next one, in the same CAS write).</summary>
     public int EventSeq { get; set; }
 
+    // ── S2 pick task (pack §4.5, r20): Kind = Pick, Origin = Outbound; source = the planned bin, target = the outbound's Staging node (fixed) ──
+
+    /// <summary>The outbound the pick task serves (S2); null on a putaway task.</summary>
+    public Guid? OutboundId { get; set; }
+
+    public int? LineSeq { get; set; }
+
+    public int? AllocSeq { get; set; }
+
+    /// <summary>The MOD-0173-FU03 reservation of the allocation (copied; the pick movement names it, never consumes it — §8.19).</summary>
+    public Guid? ReservationId { get; set; }
+
+    public int? FefoRank { get; set; }
+
     public WarehouseTask Copy()
     {
         var copy = (WarehouseTask)MemberwiseClone();

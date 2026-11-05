@@ -77,8 +77,10 @@ public sealed class Mod0178WarehouseRouteTests
     public void Every_endpoint_of_the_InventoryService_warehouse_controllers_is_served_by_exactly_the_warehouse_route()
     {
         var endpoints = ControllerEndpoints();
-        // S1: 14 putaway + 6 location-role + 2 frozen outbound. S2 (pick / pack) adds its endpoints here.
-        Assert.Equal(22, endpoints.Count);
+        // S1: 14 putaway + 6 location-role + 2 frozen outbound (22). DL-4 (pack AC-74, WMS draft §11): + 6 outbound — POST /outbound-shipments,
+        // POST /outbound-shipments/allocation-preview, GET /outbound-shipments/search, GET /outbound-shipments/{outboundId}/view,
+        // PUT /outbound-shipments/{outboundId}, GET /outbound-shipments/{outboundId}/events (28). DL-5 / DL-7 add theirs here.
+        Assert.Equal(28, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
@@ -117,6 +119,13 @@ public sealed class Mod0178WarehouseRouteTests
     [InlineData("/api/warehouse/location-roles/3f2b5a1e-0000-4000-8000-000000000002", "DELETE")]
     [InlineData("/api/warehouse/location-roles/bulk-delete", "POST")]
     [InlineData("/api/warehouse/outbound-shipments", "GET")]
+    // DL-4 (S2 outbound, WMS draft §11)
+    [InlineData("/api/warehouse/outbound-shipments", "POST")]
+    [InlineData("/api/warehouse/outbound-shipments/allocation-preview", "POST")]
+    [InlineData("/api/warehouse/outbound-shipments/search", "GET")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/view", "GET")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003", "PUT")]
+    [InlineData("/api/warehouse/outbound-shipments/3f2b5a1e-0000-4000-8000-000000000003/events", "GET")]
     public void Named_operations_reach_the_warehouse_route_with_their_method(string path, string method)
     {
         var route = Assert.Single(Matching(path));

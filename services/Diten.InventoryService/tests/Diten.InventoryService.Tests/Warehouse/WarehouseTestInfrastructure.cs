@@ -92,6 +92,15 @@ public class WarehouseApiFactory : InventoryApiFactory
 
     public ConcurrentDictionary<Guid, int> AssigneeChecks { get; } = new();
 
+    /// <summary>
+    /// DL-4: tenant → wraps that tenant's FU03 batch reservations (the argument runs the REAL batch) — a race between plan and batch, a process
+    /// "stopped" before / after the batch, an exception after the commit, a key taken in between (AC-26 / AC-71).
+    /// </summary>
+    public ConcurrentDictionary<Guid, Func<IReadOnlyList<CreateReservationCommand>, Func<Task<ReservationBatchResponse>>, Task<ReservationBatchResponse>>> AroundBatch { get; } = new();
+
+    /// <summary>DL-4: tenant → number of FU03 batch calls.</summary>
+    public ConcurrentDictionary<Guid, int> BatchCalls { get; } = new();
+
     public void TrackWarehouseTenant(Guid tenant)
     {
         _warehouseTenants.Add(tenant);
@@ -103,6 +112,7 @@ public class WarehouseApiFactory : InventoryApiFactory
         base.ConfigureWebHost(builder);
         // the reconciler runs only when a test calls it (PutawayReconciler.RunOnceAsync for its own tenant) — never on a timer in the shared database
         builder.UseSetting("Warehouse:Putaway:ReconcilerEnabled", "false");
+        builder.UseSetting("Warehouse:Outbound:MaintenanceEnabled", "false"); // DL-4: the outbound maintenance runs only when a test calls one tick
         foreach (var (key, value) in _settings) builder.UseSetting(key, value);
         builder.ConfigureTestServices(services =>
         {
@@ -122,6 +132,9 @@ public class WarehouseApiFactory : InventoryApiFactory
             services.AddScoped<IWarehouseAssigneeDirectory>(sp => new FakeAssigneeDirectory(sp.GetRequiredService<ITenantContext>(), this));
             services.AddScoped<IWarehouseTaskRepository>(sp => new SeamedTaskRepository(sp.GetRequiredService<WarehouseTaskRepository>(),
                 sp.GetRequiredService<ITenantContext>(), this));
+            services.AddScoped<InventoryReservationPort>();
+            services.AddScoped<IInventoryReservationPort>(sp => new SeamedReservationPort(sp.GetRequiredService<InventoryReservationPort>(),
+                sp.GetRequiredService<ITenantContext>(), this));
         });
     }
 
@@ -130,7 +143,8 @@ public class WarehouseApiFactory : InventoryApiFactory
         if (disposing && !_warehouseTenants.IsEmpty)
         {
             var tenants = new BsonArray(_warehouseTenants.Select(t => t.ToString()));
-            foreach (var name in WarehouseCollections.Everything)
+            // DL-4: the S2 fixtures also write registered lots, their lot positions and the company FEFO policy (DB-010)
+            foreach (var name in WarehouseCollections.Everything.Concat(["trace_lots", "inventory_lot_positions", "expiry_policies"]))
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }
@@ -189,6 +203,34 @@ public sealed class SeamedMovementPoster(WarehouseMovementPoster inner, ITenantC
             ? await around(request, () => inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken))
             : await inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken);
     }
+}
+
+/// <summary>DL-4: the REAL MOD-0173-FU03 reservation port, its batch wrapped per tenant by <see cref="WarehouseApiFactory.AroundBatch"/> (no decision changed when unset).</summary>
+public sealed class SeamedReservationPort(InventoryReservationPort inner, ITenantContext tenant, WarehouseApiFactory factory) : IInventoryReservationPort
+{
+    public Task<Response<ReservationResponseDto>> CreateAsync(CreateReservationCommand request, Guid legalEntityId, Guid actorUserId, CancellationToken cancellationToken = default)
+        => inner.CreateAsync(request, legalEntityId, actorUserId, cancellationToken);
+
+    public Task<ReservationBatchResponse> CreateBatchAsync(IReadOnlyList<CreateReservationCommand> lines, Guid legalEntityId, Guid actorUserId,
+        CancellationToken cancellationToken = default)
+    {
+        factory.BatchCalls.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        return factory.AroundBatch.TryGetValue(tenant.TenantId, out var around)
+            ? around(lines, () => inner.CreateBatchAsync(lines, legalEntityId, actorUserId, cancellationToken))
+            : inner.CreateBatchAsync(lines, legalEntityId, actorUserId, cancellationToken);
+    }
+
+    public Task<Response<ReservationResponseDto>> ReleaseAsync(Guid reservationId, string? ifMatch, Guid actorUserId, CancellationToken cancellationToken = default)
+        => inner.ReleaseAsync(reservationId, ifMatch, actorUserId, cancellationToken);
+
+    public Task<ReservationViewDto?> GetAsync(Guid reservationId, CancellationToken cancellationToken = default) => inner.GetAsync(reservationId, cancellationToken);
+
+    public Task<decimal> GetScopeFreeAsync(Guid itemId, Guid skuId, SkuLevel skuLevel, string warehouseId, Guid? lotId = null, CancellationToken cancellationToken = default)
+        => inner.GetScopeFreeAsync(itemId, skuId, skuLevel, warehouseId, lotId, cancellationToken);
+
+    public Task<IReadOnlyList<ReservationKeyMatch>> FindByIdempotencyKeysAsync(Guid tenantId, Guid legalEntityId, IReadOnlyCollection<string> keys,
+        CancellationToken cancellationToken = default)
+        => inner.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys, cancellationToken);
 }
 
 /// <summary>The REAL recall reader (seeded <c>recall_lot_blocks</c>), failing for the tenants in <see cref="WarehouseApiFactory.RecallDown"/>.</summary>

@@ -45,15 +45,20 @@ public sealed class WarehouseTaskDuplicateException(WarehouseTaskUniqueIndex ind
 /// </summary>
 public interface IWarehouseTaskRepository
 {
+    /// <summary>A PUTAWAY task of the caller's company (DL-4: an S2 pick task in the same collection is not found here — the S1 surface is putaway only).</summary>
     Task<WarehouseTask?> FindAsync(Guid taskId, CancellationToken cancellationToken = default);
 
     Task<WarehouseTask?> FindByCreateKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    /// <summary>The PUTAWAY tasks among <paramref name="taskIds"/> (pick tasks are absent).</summary>
     Task<IReadOnlyList<WarehouseTask>> FindManyAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken cancellationToken = default);
 
     Task<WarehouseTaskPage> ListAsync(WarehouseTaskQuery query, CancellationToken cancellationToken = default);
 
-    /// <summary>The company's Open / InProgress tasks whose source is one of <paramref name="fromLocationIds"/> (open quantity, open-task rule).</summary>
+    /// <summary>
+    /// The company's Open / InProgress tasks — putaway AND pick (pack §8.17 step 4, r23) — whose source is one of <paramref name="fromLocationIds"/>
+    /// (open quantity, open-task rule, the S2 bin plan).
+    /// </summary>
     Task<IReadOnlyList<WarehouseTask>> OpenTasksFromAsync(IReadOnlyCollection<Guid> fromLocationIds, CancellationToken cancellationToken = default);
 
     Task<WarehouseTaskEventPage> EventsAsync(Guid taskId, int page, int pageSize, CancellationToken cancellationToken = default);
