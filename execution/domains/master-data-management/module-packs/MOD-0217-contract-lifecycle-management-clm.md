@@ -20,6 +20,8 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 
 # MOD-0217 — Contract Lifecycle Management (CLM)
 
+> **KARAR D132/3 (2026-11-05):** DCP üyeliği maddesi kapandı — DCP-011 D129 revizyonu main'de (PR #371, `a38bab855`). Kapsam, izin, AC ve `status: draft` değişmedi.
+>
 > **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
 > rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. **Kod alma yok (KARAR D38/3):** kaynak (`S@da4abb20`)
 > yalnız okunur, başvuru malzemesidir; kod Recovery'de, MDM düzeninde sıfırdan yazılır. Kod ancak paket `approved` /
@@ -1527,7 +1529,7 @@ değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla 
 main'de olmalıdır.
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); paketi yazmamış onaylayıcı
-- [ ] MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` (bugün DCP-011'de aday modül, TRM-S4; üyeliği DCP değişikliği ister)
+- [x] MOD-0217 bir DCP'nin onaylı üyesi ve o DCP `approved` — **kapandı (KARAR D129, D132/3):** DCP-011 D129 revizyonu MOD-0217'yi üye yaptı; onay satırı main'de (PR #371, `a38bab855`; onaylayıcı `bestepullukcu-alt`). DCP-011 kod alanı (`runtime_code_scope`) yalnız MOD-0289'dur — MOD-0217 kodu ayrıca o alanın genişlemesini ister
 - [x] MDM domain-config satırı (D38/2 önerisi) ve kimlik kaydı satırı main'de — `execution/domains/master-data-management/domain-config.md:49-51`, `execution/registries/module-id-registry.md:155` (origin/main @904dfd5c2; #242 ile, `2e7806372`)
 - [x] O-1 MOD-0144 sınırı karara bağlandı — **KARAR D39 (2026-10-26): (a)** — satın alma / tedarik sözleşmeleri MOD-0144'te;
   MOD-0217 satın alma dışı; `PURCHASE` türü yok (AC-59); MOD-0144'e dokunulmaz; procurement sahibine bilgi verilir (D39/3)
