@@ -28,18 +28,30 @@ const L10n = {
     dispatchInProgress: 'dispatchInProgress', dispatchCompensationFailed: 'dispatchCompensationFailed',
     dependencyUnavailable: 'dependencyUnavailable', inventoryCodeUnknown: 'inventoryCodeUnknown[{0}]',
     inventoryCodes: Object.fromEntries(closedList.map((code) => [code, `reason:${code}`])),
-    statuses: { Planned: 'status:Planned' }, unavailable: 'unavailable', skuLevels: { FinishedGood: 'level:FinishedGood' },
+    statuses: { Planned: 'status:Planned' }, unavailable: 'unavailable', nameUnavailable: 'nameUnavailable', nameNotFound: 'nameNotFound', oldRecord: 'oldRecord', skuLevels: { FinishedGood: 'level:FinishedGood' },
     dispatchStates: { InProgress: 'state:InProgress', CompensationFailed: 'state:CompensationFailed' }
 };
 const context = vm.createContext({ document: { getElementById: () => null, addEventListener: () => {} }, window: { L10n }, Intl, crypto });
-const { errorText, statusText, lineCells } = vm.runInContext(`${source}\n;ShipmentDetails`, context);
+const { errorText, statusText, lineCells, customerText } = vm.runInContext(`${source}\n;ShipmentDetails`, context);
 const body = (code, details) => ({ error: { code, details, correlationId: 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa' }, contractVersion: 'v1' });
 
-test('a line shows its stock fields from the response; a missing one says so', () => {
-    const line = { lineNumber: '1', itemId: 'item', skuId: 'sku', quantity: '2.000', uomId: 'EA', inventoryReferenceId: null,
-        skuLevel: 'FinishedGood', fromLocationId: 'loc-1', lotId: 'lot-1', issueTransactionId: 'tx-1' };
-    assert.deepEqual([...lineCells(line)].slice(5), ['unavailable', 'level:FinishedGood', 'loc-1', 'lot-1', 'tx-1']);
-    assert.deepEqual([...lineCells({ lineNumber: '2', skuLevel: 'Lsku' })].slice(6), ['Lsku', 'unavailable', 'unavailable', 'unavailable']);
+// MOD-0183 r9 §24.4 (SB-10, SB-12): names, not ids; a failed read says so with the reference; issueTransactionId is not a column.
+test('a line shows resolved names, and "name unavailable" with the reference when a read failed', () => {
+    const line = { lineNumber: '1', itemId: 'item', skuId: 'sku', quantity: '2.000', uomId: 'EA', issueTransactionId: 'tx-1',
+        sku: { state: 'resolved', label: 'FG-1 · Tablet' }, lot: { state: 'resolved', label: 'L-0042' },
+        fromLocation: { state: 'unavailable', reference: 'loc-1' }, fefoBypassReason: null };
+    assert.deepEqual([...lineCells(line)], ['1', 'FG-1 · Tablet', 'L-0042', 'nameUnavailable · loc-1', '2.000', 'EA', '—']);
+    assert.ok(![...lineCells(line)].includes('tx-1'));
+    assert.deepEqual([...lineCells({ lineNumber: '2', quantity: '1', uomId: 'KGM', lot: null, sku: { state: 'unavailable' } })],
+        ['2', 'nameUnavailable', '—', 'nameUnavailable', '1', 'KGM', '—']);
+});
+
+test('the customer cell never shows an id', () => {
+    assert.equal(customerText({ state: 'resolved', name: 'Acme', code: 'C-1' }), 'Acme · C-1');
+    assert.equal(customerText({ state: 'oldRecord', reference: 'free text' }), 'oldRecord');
+    assert.equal(customerText({ state: 'notFound' }), 'nameNotFound');
+    assert.equal(customerText({ state: 'unavailable' }), 'nameUnavailable');
+    assert.equal(customerText(undefined), 'nameUnavailable');
 });
 
 test('every closed-list inventoryCode shows the line and its own reason', () => {

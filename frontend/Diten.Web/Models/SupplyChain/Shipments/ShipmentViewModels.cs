@@ -151,3 +151,63 @@ public sealed class CaptureShipmentPodViewModel
     [Required, MinLength(1)] public List<string>? EvidenceReferenceIds { get; set; }
     [MaxLength(1000)] public string? Note { get; set; }
 }
+
+/// <summary>
+/// MOD-0183 DL-4 server export of the shipments list (BL-452, owner decision Natig 2026-11-05): every matching row, not the
+/// page, as CSV (RFC 4180, UTF-8 with BOM) or a minimal Office Open XML workbook written without a package (inline strings,
+/// one sheet). Cells that a spreadsheet would read as a formula (=, +, -, @, tab, CR) are prefixed with an apostrophe.
+/// </summary>
+public static class ShipmentExport
+{
+    /// <summary>The most rows one export writes (50 pages of 200).</summary>
+    public const int MaxRows = 10_000;
+
+    public static string SafeCell(string? value)
+    {
+        var text = value ?? string.Empty;
+        return text.Length > 0 && "=+-@\t\r".Contains(text[0]) ? "'" + text : text;
+    }
+
+    public static byte[] Csv(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string?>> rows)
+    {
+        var builder = new System.Text.StringBuilder();
+        void Line(IEnumerable<string?> cells) => builder.Append(string.Join(',', cells.Select(c => "\"" + SafeCell(c).Replace("\"", "\"\"") + "\""))).Append("\r\n");
+        Line(headers);
+        foreach (var row in rows) Line(row);
+        return System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
+    }
+
+    public static byte[] Xlsx(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string?>> rows)
+    {
+        static string X(string? value) => System.Security.SecurityElement.Escape(SafeCell(value)) ?? string.Empty;
+        static string Column(int index) { var name = string.Empty; for (index++; index > 0; index = (index - 1) / 26) name = (char)('A' + (index - 1) % 26) + name; return name; }
+        var sheet = new System.Text.StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>");
+        var r = 0;
+        void Row(IEnumerable<string?> cells)
+        {
+            r++;
+            sheet.Append("<row r=\"").Append(r).Append("\">");
+            var c = 0;
+            foreach (var cell in cells) sheet.Append("<c r=\"").Append(Column(c++)).Append(r).Append("\" t=\"inlineStr\"><is><t xml:space=\"preserve\">").Append(X(cell)).Append("</t></is></c>");
+            sheet.Append("</row>");
+        }
+        Row(headers);
+        foreach (var row in rows) Row(row);
+        sheet.Append("</sheetData></worksheet>");
+        using var stream = new MemoryStream();
+        using (var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        {
+            void Entry(string name, string content)
+            {
+                using var writer = new StreamWriter(zip.CreateEntry(name, System.IO.Compression.CompressionLevel.Optimal).Open(), new System.Text.UTF8Encoding(false));
+                writer.Write(content);
+            }
+            Entry("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/></Types>");
+            Entry("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>");
+            Entry("xl/workbook.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets><sheet name=\"Shipments\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
+            Entry("xl/_rels/workbook.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/></Relationships>");
+            Entry("xl/worksheets/sheet1.xml", sheet.ToString());
+        }
+        return stream.ToArray();
+    }
+}

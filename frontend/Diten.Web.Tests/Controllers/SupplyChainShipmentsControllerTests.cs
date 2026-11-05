@@ -16,14 +16,14 @@ public sealed class SupplyChainShipmentsControllerTests
     private static readonly Guid Tenant = Guid.Parse("11111111-1111-4111-8111-111111111111");
     private static readonly Guid LegalEntity = Guid.Parse("22222222-2222-4222-8222-222222222222");
     private static readonly Guid Correlation = Guid.Parse("33333333-3333-4333-8333-333333333333");
-    private static readonly Guid Shipment = Guid.Parse("44444444-4444-4444-8444-444444444444");
+    internal static readonly Guid Shipment = Guid.Parse("44444444-4444-4444-8444-444444444444");
 
     [Fact]
     public async Task List_ForwardsOnlyFrozenQueryAndScopeThroughGateway()
     {
         var handler = new CaptureHandler(_ => Response(HttpStatusCode.OK, "{\"items\":[],\"total\":0}"));
         var controller = CreateController(handler, ["supplychain.shipments.read"]);
-        var result = await controller.List("InTransit", "SO 1", 2, 25, CancellationToken.None);
+        var result = await controller.List("InTransit", "SO 1", 25, 25, null, null, null, 0, CancellationToken.None);
         Assert.Equal(StatusCodes.Status200OK, Assert.IsType<ContentResult>(result).StatusCode);
         Assert.Equal("http://localhost:5000/api/shipment-bundle/shipments?page=2&pageSize=25&status=InTransit&sourceDocumentId=SO 1", handler.Uri);
         Assert.Equal(Tenant.ToString("D"), handler.Headers["X-Tenant-Id"]);
@@ -54,7 +54,7 @@ public sealed class SupplyChainShipmentsControllerTests
         const string envelope = "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"x\",\"correlationId\":\"33333333-3333-4333-8333-333333333333\"},\"contractVersion\":\"v1\"}";
         var handler = new CaptureHandler(_ => Response(HttpStatusCode.InternalServerError, envelope));
         var controller = CreateController(handler, ["supplychain.shipments.read"]);
-        var result = Assert.IsType<ContentResult>(await controller.List(null, null, 1, 10, CancellationToken.None));
+        var result = Assert.IsType<ContentResult>(await controller.List(null, null, 0, 10, null, null, null, 0, CancellationToken.None));
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         Assert.Equal(envelope, result.Content);
     }
