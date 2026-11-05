@@ -1435,6 +1435,10 @@ public static class DependencyInjection
             accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
                 Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.AccountName),
                 new CreateIndexOptions { Name = "ix_accounts_tenant_name" }));
+            // MOD-0149 §30 U-3: the lookup sort (name ascending, _id ascending) as an index scan, never an in-memory sort.
+            accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
+                Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.AccountName).Ascending(a => a.Id),
+                new CreateIndexOptions { Name = "ix_accounts_tenant_name_id" }));
             accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
                 Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.ParentAccountId),
                 new CreateIndexOptions { Name = "ix_accounts_tenant_parent" }));
