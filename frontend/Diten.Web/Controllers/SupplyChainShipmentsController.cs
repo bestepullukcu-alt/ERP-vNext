@@ -18,6 +18,12 @@ public sealed class SupplyChainShipmentsController : Controller
     internal const string DispatchPermission = "supplychain.shipments.dispatch";
     internal const string CancelPermission = "supplychain.shipments.cancel";
     internal const string PodPermission = "supplychain.shipments.pod.capture";
+    // MOD-0183 r9 §24.1: the customer picker's display gate is create + CRM's own read key (not a SupplyChain key).
+    internal const string CrmAccountReadPermission = "crm.account.read";
+    internal const string CrmAccountsPath = "/api/crm/accounts";
+    internal const int CustomerPageSize = 20;
+    internal const int PickerPageSize = 50;
+    internal const int LocationLayerPageSize = 200;
 
     private const string CorrelationHeader = "X-Correlation-Id";
     private const string TenantHeader = "X-Tenant-Id";
@@ -77,15 +83,119 @@ public sealed class SupplyChainShipmentsController : Controller
         return ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/shipment-bundle/shipments/{shipmentId:D}", null, false, cancellationToken);
     }
 
+    // ── MOD-0183 r9 §24.1 customer picker: GET api/customers?search=&page= → GET /api/crm/accounts (name and code only) ──
+    // Contractless measured use (open item 1): only id, name and code reach the browser; nothing from CRM is logged (SB-21).
+    [HttpGet("api/customers")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Customers([FromQuery] string? search, [FromQuery] int page = 1, CancellationToken cancellationToken = default)
+    {
+        if (!HasPermission(CreatePermission) || !HasPermission(CrmAccountReadPermission)) return ContractFailure(StatusCodes.Status403Forbidden);
+        if (page < 1 || page > 50 || (search?.Length ?? 0) > 100) return ContractFailure(StatusCodes.Status400BadRequest);
+        var query = $"page={page}&pageSize={CustomerPageSize}" + (string.IsNullOrWhiteSpace(search) ? string.Empty : "&search=" + Uri.EscapeDataString(search.Trim()));
+        var reply = await CrmGetAsync($"{CrmAccountsPath}?{query}", cancellationToken);
+        if (reply.Status != StatusCodes.Status200OK) return CrmFailure(reply.Status, notFoundIsInvalid: false);
+        var rows = ShipmentCustomer.ReadList(reply.Body);
+        if (rows is null) return ContractFailure(StatusCodes.Status503ServiceUnavailable);
+        return Ok(new { items = rows.Items.Select(r => new { id = r.Id, name = r.Name, code = r.Code }), hasMore = (long)page * CustomerPageSize < rows.Total });
+    }
+
+    // ── §24.1 address after a choice: GET api/customers/{id} → GET /api/crm/accounts/{id} (name, code, four address fields) ──
+    [HttpGet("api/customers/{accountId:guid}")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Customer(Guid accountId, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(CreatePermission) || !HasPermission(CrmAccountReadPermission)) return ContractFailure(StatusCodes.Status403Forbidden);
+        var reply = await CrmGetAsync($"{CrmAccountsPath}/{accountId:D}", cancellationToken);
+        if (reply.Status != StatusCodes.Status200OK) return CrmFailure(reply.Status, notFoundIsInvalid: true);
+        var address = ShipmentCustomer.ReadDetail(reply.Body);
+        return address is null ? ContractFailure(StatusCodes.Status503ServiceUnavailable) : Ok(address);
+    }
+
+    // ── §24.2 warehouse picker: GET api/warehouses?search= → LOCATION /api/locations/search (Warehouse, Active) ──
+    [HttpGet("api/warehouses")]
+    [JsonAdapterEndpoint]
+    public Task<IActionResult> Warehouses([FromQuery] string? search, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(CreatePermission)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden));
+        if ((search?.Length ?? 0) > 100) return Task.FromResult(ContractFailure(StatusCodes.Status400BadRequest));
+        return LocationLayerAsync($"type=Warehouse&status=Active&page=1&pageSize={PickerPageSize}" + Search(search), cancellationToken);
+    }
+
+    // ── §24.2 tree picker: one layer at a time, parentId = the opened node, Active, WITHOUT isStockable (SB-7) ──
+    [HttpGet("api/locations")]
+    [JsonAdapterEndpoint]
+    public Task<IActionResult> Locations([FromQuery] string? parentId, [FromQuery] string? search, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(CreatePermission)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden));
+        if (!Guid.TryParse(parentId, out var parent) || (search?.Length ?? 0) > 100) return Task.FromResult(ContractFailure(StatusCodes.Status400BadRequest));
+        return LocationLayerAsync($"parentId={parent:D}&status=Active&page=1&pageSize={LocationLayerPageSize}" + Search(search), cancellationToken);
+    }
+
+    // ── §24.2 product / SKU picker: GET api/products?q= → PRODUCT-MASTER /stockable-items (Active), name + canonicalCode ──
+    // Accepted before G6 for display and selection only (OD-183-2); the service still does not validate products.
+    [HttpGet("api/products")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Products([FromQuery] string? q, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(CreatePermission)) return ContractFailure(StatusCodes.Status403Forbidden);
+        if ((q?.Length ?? 0) > 200) return ContractFailure(StatusCodes.Status400BadRequest);
+        var gateway = Diten.Web.Models.Inventory.InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (gateway is null) return ContractFailure(StatusCodes.Status403Forbidden);
+        var reply = await gateway.GetAsync("/api/product-master/stockable-items?status=Active&page=1&pageSize=" + PickerPageSize
+            + (string.IsNullOrWhiteSpace(q) ? string.Empty : "&q=" + Uri.EscapeDataString(q.Trim())), cancellationToken);
+        if (!reply.IsSuccess) return PickerFailure(reply.StatusCode);
+        var items = ReadItems(reply.Body)?.Select(i => new
+        {
+            skuId = Text(i, "skuId"), itemId = Text(i, "itemId"), skuLevel = Text(i, "skuLevel"), name = Text(i, "name"),
+            code = Text(i, "canonicalCode"), uomId = Text(i, "baseUomId"),
+            lotControlled = i.TryGetProperty("lotControlled", out var lot) && lot.ValueKind == JsonValueKind.True
+        }).Where(i => Guid.TryParse(i.skuId, out _) && Guid.TryParse(i.itemId, out _) && i.skuLevel is "Gsku" or "Lsku" or "FinishedGood" or "Item"
+            && !string.IsNullOrWhiteSpace(i.uomId)).ToList();
+        return items is null ? ContractFailure(StatusCodes.Status503ServiceUnavailable) : Ok(new { items });
+    }
+
+    // ── §24.2 lot picker: GET api/lots?skuId=&skuLevel=&q= → TRACE /api/trace/lots ──
+    [HttpGet("api/lots")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Lots([FromQuery] Guid skuId, [FromQuery] string? skuLevel, [FromQuery] string? q, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(CreatePermission)) return ContractFailure(StatusCodes.Status403Forbidden);
+        if (skuId == Guid.Empty || skuLevel is not ("Gsku" or "Lsku" or "FinishedGood" or "Item") || (q?.Length ?? 0) > 100)
+            return ContractFailure(StatusCodes.Status400BadRequest);
+        var trace = Diten.Web.Models.Traceability.TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
+        if (trace is null) return ContractFailure(StatusCodes.Status403Forbidden);
+        var reply = await trace.GetAsync($"/api/trace/lots?skuId={skuId:D}&skuLevel={skuLevel}&page=1&pageSize={PickerPageSize}"
+            + (string.IsNullOrWhiteSpace(q) ? string.Empty : "&q=" + Uri.EscapeDataString(q.Trim())), cancellationToken);
+        if (!reply.IsSuccess) return PickerFailure(reply.StatusCode);
+        var items = ReadItems(reply.Body)?.Select(i => new { id = Text(i, "lotId"), lotNumber = Text(i, "lotNumber") })
+            .Where(i => !string.IsNullOrWhiteSpace(i.id) && !string.IsNullOrWhiteSpace(i.lotNumber)).ToList();
+        return items is null ? ContractFailure(StatusCodes.Status503ServiceUnavailable) : Ok(new { items });
+    }
+
+    // ── §24.1 / §24.2 create adapter: format check → CRM account read (caller's token) → destination text → createShipment ──
+    // SB-2a: a missing, malformed or unreadable account (CRM 404, another tenant's id included) is 400 INVALID_CUSTOMER_ACCOUNT
+    // with no createShipment call; CRM 403 → 403; CRM unreachable → 503. An account with no address → 400 CUSTOMER_ADDRESS_MISSING.
     [HttpPost("api")]
     [JsonAdapterEndpoint]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Create([FromBody] CreateShipmentViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateShipmentViewModel model, CancellationToken cancellationToken)
     {
-        if (!HasPermission(CreatePermission)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden));
-        if (!ModelState.IsValid) return Task.FromResult(ContractFailure(StatusCodes.Status400BadRequest));
-        return ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/shipment-bundle/shipments",
-            JsonContent.Create(model, options: _jsonOptions), true, cancellationToken);
+        if (!HasPermission(CreatePermission) || !HasPermission(CrmAccountReadPermission)) return ContractFailure(StatusCodes.Status403Forbidden);
+        if (!ModelState.IsValid || model is null) return ContractFailure(StatusCodes.Status400BadRequest);
+        if (!ShipmentCustomer.IsCustomerRef(model.CustomerRef)) return ContractFailure(StatusCodes.Status400BadRequest, ShipmentCustomer.InvalidAccountCode);
+        if (!TryCreateGatewayRequest(HttpMethod.Post, $"{_gatewayUrl}/api/shipment-bundle/shipments", null, true, out var request, out var status))
+            return ContractFailure(status);
+        using (request)
+        {
+            var account = await CrmGetAsync($"{CrmAccountsPath}/{model.CustomerRef}", cancellationToken);
+            if (account.Status != StatusCodes.Status200OK) return CrmFailure(account.Status, notFoundIsInvalid: true);
+            var address = ShipmentCustomer.ReadDetail(account.Body);
+            if (address is null) return ContractFailure(StatusCodes.Status503ServiceUnavailable);
+            var destination = ShipmentCustomer.Destination(address);
+            if (destination is null) return ContractFailure(StatusCodes.Status400BadRequest, ShipmentCustomer.AddressMissingCode);
+            request.Content = JsonContent.Create(ShipmentCreateWire.From(model, model.CustomerRef!, destination), options: _jsonOptions);
+            return await SendAsync(request, HttpMethod.Post, request.RequestUri!.ToString(), cancellationToken);
+        }
     }
 
     [HttpPost("api/{shipmentId:guid}/transition")]
@@ -119,12 +229,16 @@ public sealed class SupplyChainShipmentsController : Controller
     {
         if (!TryCreateGatewayRequest(method, targetUrl, content, includeIdempotencyKey, out var request, out var status))
             return ContractFailure(status);
+        using (request) return await SendAsync(request, method, targetUrl, cancellationToken);
+    }
+
+    private async Task<IActionResult> SendAsync(HttpRequestMessage request, HttpMethod method, string targetUrl, CancellationToken cancellationToken)
+    {
         // Q372: the id TryCreateGatewayRequest validated and forwarded; every line below carries it, so one user action
         // can be followed through the Web, Gateway and service logs by the same value (MOD-0183 §8.1 O-1).
         var correlationId = request.Headers.GetValues(CorrelationHeader).Single();
         try
         {
-            using (request)
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 CopyCorrelationHeader(response);
@@ -227,6 +341,15 @@ public sealed class SupplyChainShipmentsController : Controller
         if (response.Headers.TryGetValues(CorrelationHeader, out var values)) Response.Headers[CorrelationHeader] = values.ToArray();
     }
 
+    private IActionResult ContractFailure(int statusCode, string adapterCode)
+    {
+        var correlationId = Request.Headers.TryGetValue(CorrelationHeader, out var values)
+            && values.Count == 1 && Guid.TryParse(values[0], out var parsed) ? parsed : Guid.NewGuid();
+        Response.Headers[CorrelationHeader] = correlationId.ToString("D");
+        // MOD-0183 r9 §24.7: INVALID_CUSTOMER_ACCOUNT / CUSTOMER_ADDRESS_MISSING are MVC adapter codes, not wire codes.
+        return StatusCode(statusCode, new { error = new { code = adapterCode, message = adapterCode, correlationId }, contractVersion = "v1" });
+    }
+
     private IActionResult ContractFailure(int statusCode)
     {
         var correlationId = Request.Headers.TryGetValue(CorrelationHeader, out var values)
@@ -260,6 +383,77 @@ public sealed class SupplyChainShipmentsController : Controller
             return false;
         }
     }
+
+    private sealed record CrmReply(int Status, string Body);
+
+    /// <summary>A CRM read with the caller's token and tenant (SB-15: no cache across requests). Status 0 = unreachable.
+    /// Only the status and correlation are logged, never the body (SB-21).</summary>
+    private async Task<CrmReply> CrmGetAsync(string pathAndQuery, CancellationToken cancellationToken)
+    {
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
+        if (string.IsNullOrWhiteSpace(token)) return new CrmReply(StatusCodes.Status401Unauthorized, string.Empty);
+        if (!TryResolveScopeClaim(["tenant_id", "tenantId"], "/tenantId", out var tenantId)) return new CrmReply(StatusCodes.Status403Forbidden, string.Empty);
+        using var request = new HttpRequestMessage(HttpMethod.Get, _gatewayUrl + pathAndQuery);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Headers.TryAddWithoutValidation(TenantHeader, tenantId.ToString("D"));
+        if (Request.Headers.TryGetValue(CorrelationHeader, out var values) && values.Count == 1 && Guid.TryParse(values[0], out var correlation))
+            request.Headers.TryAddWithoutValidation(CorrelationHeader, correlation.ToString("D"));
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogInformation("Shipment customer read answered {StatusCode}.", (int)response.StatusCode);
+            return new CrmReply((int)response.StatusCode, body);
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested) { _logger.LogWarning("Shipment customer read timed out."); }
+        catch (HttpRequestException) { _logger.LogWarning("Shipment customer read failed: CRM unreachable."); }
+        return new CrmReply(0, string.Empty);
+    }
+
+    private IActionResult CrmFailure(int status, bool notFoundIsInvalid) => status switch
+    {
+        StatusCodes.Status401Unauthorized => ContractFailure(StatusCodes.Status401Unauthorized),
+        StatusCodes.Status403Forbidden => ContractFailure(StatusCodes.Status403Forbidden),
+        StatusCodes.Status404NotFound or StatusCodes.Status400BadRequest when notFoundIsInvalid => ContractFailure(StatusCodes.Status400BadRequest, ShipmentCustomer.InvalidAccountCode),
+        _ => ContractFailure(StatusCodes.Status503ServiceUnavailable)
+    };
+
+    private IActionResult PickerFailure(int status) => status switch
+    {
+        StatusCodes.Status401Unauthorized => ContractFailure(StatusCodes.Status401Unauthorized),
+        StatusCodes.Status403Forbidden => ContractFailure(StatusCodes.Status403Forbidden),
+        _ => ContractFailure(StatusCodes.Status503ServiceUnavailable)
+    };
+
+    private async Task<IActionResult> LocationLayerAsync(string query, CancellationToken cancellationToken)
+    {
+        var gateway = Diten.Web.Models.Inventory.InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (gateway is null) return ContractFailure(StatusCodes.Status403Forbidden);
+        var reply = await gateway.GetAsync("/api/locations/search?" + query, cancellationToken);
+        if (!reply.IsSuccess) return PickerFailure(reply.StatusCode);
+        var items = ReadItems(reply.Body)?.Select(i => new
+        {
+            id = Text(i, "locationId"), code = Text(i, "code"), name = Text(i, "name"), type = Text(i, "type"),
+            isStockable = i.TryGetProperty("isStockable", out var s) && s.ValueKind == JsonValueKind.True
+        }).Where(i => !string.IsNullOrWhiteSpace(i.id)).ToList();
+        return items is null ? ContractFailure(StatusCodes.Status503ServiceUnavailable) : Ok(new { items });
+    }
+
+    private static string Search(string? search) => string.IsNullOrWhiteSpace(search) ? string.Empty : "&search=" + Uri.EscapeDataString(search.Trim());
+
+    private static List<JsonElement>? ReadItems(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            return doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array
+                ? items.EnumerateArray().Select(x => x.Clone()).ToList() : null;
+        }
+        catch (JsonException) { return null; }
+    }
+
+    private static string? Text(JsonElement item, string name) =>
+        item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
     private bool HasPermission(string permission) => PermissionClaims.HasPermission(User, permission);
 }

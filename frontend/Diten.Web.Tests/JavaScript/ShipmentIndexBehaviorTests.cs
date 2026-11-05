@@ -16,8 +16,10 @@ public sealed class ShipmentIndexBehaviorTests
         Assert.Contains("dataset.legalEntityId", _script);
         Assert.DoesNotContain("document.cookie", _script);
         Assert.Contains("'/SupplyChain/api/legal-entities'", create);
-        Assert.Contains("Shipments/api?legalEntityId=${encodeURIComponent(company)}", create);
-        Assert.Contains("if (!company) { showError(L.legalEntityRequired); return; }", create);
+        // MOD-0183 r9 §24.1 (SB-1): the sender is the shared selector's company, read-only; it rides the query, never the body.
+        Assert.Contains("${base}?legalEntityId=${encodeURIComponent(company())}", create);
+        Assert.Contains("if (!company()) { showError(L.senderCompanyRequired); return; }", create);
+        Assert.DoesNotContain("formLegalEntity", create);
     }
 
     // The shared selector, not a page of its own: the same cookie as the MVP-1 screens, and no list until a company is chosen.
@@ -36,7 +38,7 @@ public sealed class ShipmentIndexBehaviorTests
     public void TheCreatePageOpensOnTheChosenCompany()
     {
         Assert.Contains("data-company-id=\"@company?.ToString(\"D\")\"", Read("frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml"));
-        Assert.Contains("chosen ? item.id === chosen : index === 0", Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js"));
+        Assert.Contains("String(row.legalEntityId ?? row.LegalEntityId ?? '') === company()", Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js"));
     }
 
     [Fact] public void UsesDataTablesV2WithoutSavedState() { Assert.Contains("new DataTable", _script); Assert.Contains("serverSide: true", _script); Assert.Contains("stateSave: false", _script); Assert.Contains("window.DtDefaults", _script); }
