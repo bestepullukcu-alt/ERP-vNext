@@ -18,7 +18,7 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: not-approved
-owner: "Treasury Intake Control Tower (taslak) — commercial-suite domain sahibi atanmadı (yerleşim KARAR D61)"
+owner: "Treasury Intake Control Tower (taslak) — commercial-suite domain sahibi Beste (bestepullukcu-alt; KARAR D131)"
 branch: feature/crm/mod-0057-semantic-tagging-taxonomy
 started: 2026-10-27
 target: 2027-06-30
@@ -27,6 +27,8 @@ slice: "TRM-18 — v1 bağımsız: taksonomi ağaçları + düz etiket kümeleri
 ---
 
 # MOD-0057 — Semantic Tagging & Taxonomy Management
+
+> **KARAR D131 (2026-11-05, K1):** commercial-suite domain sahibi Beste (`bestepullukcu-alt`); O-13 kapandı. D61 yerleşim onayı ve bu paketin onayı ona bilgi olarak gider; paket onayını (CT-APR-01) bundan sonra domain sahibi olarak Beste verir. O-4 (MOD-0162 sahibi teyidi), O-5 (MOD-0018 kaydı) ve O-10 (DCP-011 sahibi teyidi) açık kalır. Kapsam, izin ve AC değişmedi; önceki revizyon notlarındaki "sahip atanana kadar" ifadeleri tarihçedir. `status: draft`.
 
 > **Revizyon (2026-10-28, CT-APR-02 Codex b91d61325 KOŞULLU bulguları):** `status: draft` ve `approval_status: not-approved`
 > değişmedi. Kaynak: `docs/records/reviews/MOD-0057/2026-10-28-002a3354.md` F-1 (DÜŞÜK) — temel koruma AC'lerinde üretim
@@ -770,7 +772,7 @@ maddeleri paket düzeyinde engel değildir; yalnız o dilimin (ve sonrakilerin) 
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi, açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı; paketi yazmamış onaylayıcı (ilk onay yüksek risk)
 
-**Ayrı açık nokta (yerleşimi yeniden açmaz):** commercial-suite domain sahibi ataması (O-13; TBD). D61 yerleşimi sahip
+**Ayrı açık nokta — kapandı (KARAR D131, 2026-11-05):** commercial-suite domain sahibi Beste (O-13). Aşağıdaki metin tarihçedir: D61 yerleşimi sahip
 atanana kadar K1 onayıyla kapattı; atamanın paket kapısını bekletip bekletmediği K1'in kararıdır — bu revizyon onu ENGELLER'e
 eklemez, açık nokta olarak taşır.
 
@@ -906,7 +908,7 @@ kayıttan aktarılmıştır (kısmi). Örtüşme riskleri ve bu paketteki önlem
 | O-10 | DCP üyeliği | (a) MOD-0057 tek modül paketi, DCP üyesi değil; DCP-011'in `parked_modules` satırını DCP sahibi günceller (b) DCP-011'e aday üye (c) yeni DCP | **K1 payı verildi — KARAR D90/3 (CT önerisi); DCP-011 sahibi (Beste) teyidi açık:** **(a)** — tek modül, finans dilimlerine bağımlılığı yok; DCP-011 finance-treasury intake'tir | sahip (K1) + DCP-011 sahibi |
 | O-11 | Etiket modeli | (a) etiket = düz taksonominin (`Kind = Flat`) terimi; tek terim / tek bağ modeli (b) ayrı `Tag` varlığı ve ayrı bağ türü | **KAPANDI — KARAR D90/1 (CT önerisi kabul):** **(a)** — tek kod yolu, tek okuma sözleşmesi; düz ve hiyerarşik kümeler aynı kurallarla yönetilir | sahip (K1) |
 | O-12 | Blueprint HARD bağımlılığı (MOD-0057 → MOD-0053) ile D55 bağımsız v1 | (a) v1 bağımsız: iş terimleri, eşanlamlılar ve terim onayı MOD-0053'ün; MOD-0057 v1 etiketi iş terimine bağlamaz; bağlantı Follow-up (b) MOD-0053 (ve onun HARD kapısı MOD-0052) Recovery'ye gelene kadar MOD-0057 bekler (c) MOD-0057 v1 kendi eşanlamlı / terim modelini kurar | **KAPANDI — KARAR D90/2 (CT önerisi kabul):** **v1 bağımsız (D55); Blueprint bağımlılığı MOD-0053 geldiğinde bağlantıyla karşılanır.** (b) D55/1'i fiilen geri alır (MOD-0052 de yok); (c) MOD-0053'ün SoR'unu çoğaltır. Örtüşme riskleri (eşanlamlı ↔ takma ad, iki onay akışı, terim–etiket bağı) Implementation Notes → "MOD-0053 sınırı"nda | sahip (K1) + EA (Blueprint bağımlılık sapması) |
-| O-13 | commercial-suite domain sahibi ataması | — (atama kararı; bu paket aday önermez) | — açık nokta, **kapı değil (KARAR D65/1)**: sahip atanana kadar paket onayını da K1 verir; yerleşimi yeniden açmaz (D61). Atanınca D61 ve paket onayı ona bilgi olarak gider | K1 (yönetim) |
+| O-13 | commercial-suite domain sahibi ataması | — (atama kararı; bu paket aday önermez) | **KAPANDI — KARAR D131 (2026-11-05, K1): sahip Beste (`bestepullukcu-alt`)**; D61 ve paket onayı ona bilgi olarak gider, paket onayını (CT-APR-01) domain sahibi verir. Önceki durum: açık nokta, **kapı değil (KARAR D65/1)**: sahip atanana kadar paket onayını da K1 verir; yerleşimi yeniden açmaz (D61). Atanınca D61 ve paket onayı ona bilgi olarak gider | K1 (yönetim) |
 
 ## Teslim dilimleri
 

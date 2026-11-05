@@ -156,6 +156,14 @@ Kaynak: CRM CT (MOD-0149) hizalama mesajı (K1 aktardı, 2026-11-05) ve K1 / gmg
    - MOD-0149 önkoşulu açık kalır. Bunun iki koşulu var: ekin onayı (CRM onay PR'ı) main'e girmeli ve sözleşme MOD-0149 DL-1 kabulüyle donmalı.
    - Bu revizyon yerel dalda bekler. RECORD-CODE-ALLOCATE dondurulunca zarf revizyonu aynı sürüme eklenir. Ardından Codex tek tur inceler. PR, CRM onay PR'ı main'e girince açılır.
 
+## D131 — commercial-suite domain sahibi: Beste (2026-11-05)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-05: "Beste (Önerilen)"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Ölçüm: `origin/main` @ `a38bab855`. Bağlam: CRM CT, MOD-0149 kararlarını (K-1…K-11) "commercial-suite sahibi Beste" olarak kaydediyor (`docs/crm/mod0149-review-01` @ `1ec2d1385`). Onay satırı değildir.
+
+1. **D131/1 — atama:** commercial-suite domain sahibi Beste (`bestepullukcu-alt`). MOD-0057 O-13 (D61, D65/1) kapandı.
+2. **D131/2 — sonuç:** D61 yerleşim onayı ve MOD-0057 paket onayı ona bilgi olarak gider. MOD-0057 paket onayını (CT-APR-01) domain sahibi olarak Beste verir. O-4 (MOD-0162 sahibi teyidi), O-5 (MOD-0018 kaydı, FU28) ve O-10 (DCP-011 sahibi teyidi) açık kalır.
+3. **D131/3 — sınır:** MOD-0057 kapsamı, izinleri ve AC'leri değişmedi; künye `draft`. `domain-config.md`'de sahip alanı yok, değişmedi. Sahiplik kaydının başka bir yere yazılması gerekiyorsa ayrı adımdır.
+
 ## D132 — SEC-002 kodu DL-1 kabul kapısına, RCS zarf revizyonu, kapanan iki madde (2026-11-05)
 
 Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-05: "Taşı (Önerilen)", "Şimdi yaz (Önerilen)", "Evet, hazırla (Önerilen)"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Ölçüm: `origin/main` @ `018f0119c`. Onay satırı değildir.
