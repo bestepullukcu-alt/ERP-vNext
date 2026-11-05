@@ -618,10 +618,14 @@ def self_test() -> int:
         put("r6/vitest.xml", '<testsuites><testsuite name="v"><testcase name="[MOD-0900:AC-1] positive"/>'
                              '<testcase name="[MOD-0900:AC-1] amount &gt; 0"><failure/></testcase>'
                              '<testcase name="[MOD-0900:AC-2 broken name"/></testsuite></testsuites>')
-        os.symlink(str(Path(td) / "r6" / "vitest.xml"), str(Path(td) / "r6" / "alias.xml"))
+        try:                             # Windows without admin / developer mode refuses links (WinError 1314; Beste)
+            os.symlink(str(Path(td) / "r6" / "vitest.xml"), str(Path(td) / "r6" / "alias.xml"))
+            linked = "a link to the same file is read once"
+        except (OSError, NotImplementedError, AttributeError):
+            linked = "no link on this system, that part not checked here (CI on Linux checks it)"
         _c, o = report(td, "MOD-0900", [str(Path(td) / "r6")], base)
         cases.append(("sabotage report (Codex 2nd): a failing test whose own name holds ' > ' stays a failure -> 'KALDI'; "
-                      "a link to the same file is read once", has("AC-1 (zorunlu)", "1/2 KALDI")))
+                      + linked, has("AC-1 (zorunlu)", "1/2 KALDI")))
         cases.append(("sabotage report (the boundary): a broken tag in a result name built at run time -> ENGEL, exit 1",
                       _c == 1 and any(l.startswith("ENGEL") and "biçimi bozuk" in l for l in o)))
         trx_names = ["plain &gt; [MOD-0900:AC-1] nonleading", "BoundaryTests.Data(data: &quot; &gt; [MOD-0900:AC-1]&quot;)",
