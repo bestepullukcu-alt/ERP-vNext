@@ -68,7 +68,9 @@ Kod yoktur; üç uç henüz yazılmadı. Bu dosya pack ekinin sözleşme hâlidi
 | U-3 | `GET /api/crm/accounts/lookup?search={q}&page={p}&pageSize={n}&billableOnly={b}` | müşteri seçici araması: ad ya da koda göre sayfalı liste, öğe başına U-1'in doğrulama alanları |
 | U-2 | `GET /api/crm/accounts/external-references/resolve?sourceSystem={s}&externalId={e}` | dış referanstan hesabı bul + U-1'in doğrulama alanları (DL-2, ertelendi) |
 
-- Kiracı yalnız token'dan (sunucu tarafı `ITenantContext`); istek parametresi, gövde ya da başlıkla kiracı verilmez.
+- Kiracı istemciden seçilmez: Gateway kiracıyı kullanıcının token'ından çözüp `X-Tenant-Id` başlığına yazar; CrmService kiracıyı bu başlıktan kurar ve token'daki `tenant_id` ile karşılaştırır (`services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs:21-59`;
+  Gateway `Middleware/TenantResolutionMiddleware.cs:203-239`). Başlık ile token farklıysa **400**; kiracısız çağrı (başlık
+  yok) **400** ve veri dönmez (`GetAccountByIdHandler.cs:30-33` emsali). İstek parametresi ya da gövdeyle kiracı verilmez.
 - İzin: tek dar okuma anahtarı (§6); `crm.account.read` **gerekmez ve yetmez**.
 - Yalnız okuma: hiçbir uç kayıt yazmaz, denetim olayı üretmez (AUD-001 okuma; MOD-0149 §23 okuma olayı tanımlamaz).
 - Gateway: üç uç da mevcut `/api/crm/accounts/{everything}` rotasıyla taşınır (§8); `ocelot.json` bu sözleşmeyle değişmez.
@@ -115,7 +117,8 @@ taşımaz. Değişmez kural: `isBillable = true` ⇔ `status = "active"`; ikisi 
 | `pageSize` | isteğe bağlı, varsayılan 20; `< 1` ya da `> 50` → **400** |
 | `billableOnly` | isteğe bağlı, varsayılan `false`; `true` → yalnız `status = "active"` hesaplar |
 
-Kiracı yalnız token'dan; silinmiş hesaplar dönmez. Sıralama ada göre artan. Eşleşme yoksa **200, boş liste** (404 yok).
+Kiracı §1'deki gibi; silinmiş hesaplar dönmez. Sıralama ad artan, eşit adlarda `accountId` artan (kararlı sayfalama:
+ardışık sayfalar çakışmaz, kayıt atlanmaz). Eşleşme yoksa **200, boş liste** (404 yok).
 
 ### 2a.2 200 gövdesi (`data`)
 
@@ -228,15 +231,18 @@ mükerrer `AccountExternalReference` satırının temizlenmesidir.
 
 ## 5a. Tüketiciler ve çağrı yolu
 
+Pack §30 bu ekin tek tüketicisi olarak MOD-0120'yi sayar. Öteki satırlar **aday (istek)**: sözleşmeyi bağlamaz; tüketici
+paketi bu sözleşmeye atıfla hizalanınca tüketici olur (sahip SCE) ve tablo 1.x içinde güncellenir.
+
 | Tüketici | Uçlar | Amaç | Durum |
 |---|---|---|---|
 | MOD-0120 Accounts Receivable (Treasury) | U-1, U-3; U-2 MOD-0120 O-10 ile (DL-2) | müşteri seçimi (U-3), kayıt öncesi uygunluk (U-1, §5) | ilk tüketici; Y-4/4b |
-| MOD-0177 Recall Readiness (MVP-1, Diten.InventoryService) | U-1 | geri çağırma ekranlarında müşteri adı ve kodu (`customerRef` = `Account.Id`, SHIPMENT-BUNDLE 3.5.0) | MVP-1 isteği 2026-11-03; 404'te kimlik tutulur, ad "bulunamadı" gösterilir |
-| MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics (MVP-6) | U-1, U-3 | alıcı seçimi ve doğrulaması, iadede müşteri adı | MVP-6 bugün sözleşmesiz iç uçları (`GET /api/crm/accounts`, `/{id}`, `crm.account.read`) kullanıyor; adres okuması U-3'te yok — seçici + adres sözleşmesi ayrı karardır |
+| MOD-0177 Recall Readiness (MVP-1, Diten.InventoryService) | U-1 | geri çağırma ekranlarında müşteri adı ve kodu (`customerRef` = `Account.Id`, SHIPMENT-BUNDLE 3.5.0) | **aday (istek)** — MVP-1 isteği 2026-11-03 (`customerRef` SHIPMENT-BUNDLE 3.5.0). MOD-0177 paketi henüz hizalı değil: MVP-6 dalındaki sürüm (`origin/docs/sce/mvp6-dilim-b-packs-01`, :611-612) `CustomerRef`'i `shipToReference` / `DOC:` olarak tanımlıyor. Hizalanınca: 404'te kimlik tutulur, ad "bulunamadı" gösterilir |
+| MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics (MVP-6) | U-1, U-3 | alıcı seçimi ve doğrulaması, iadede müşteri adı | **aday (istek)** — paketleri bugün sözleşmesiz iç uçları (`GET /api/crm/accounts`, `/{id}`, `crm.account.read`; MOD-0183:841-846, MOD-0186:1086) kullanıyor; U-1 / U-3'e geçiş paket revizyonuyla; adres okuması U-3'te yok — seçici + adres sözleşmesi K-9 |
 
 - **Çağrı yolu:** tüketici CRM'i **sunucu tarafında, Gateway (5000) üzerinden, oturumdaki kullanıcının token'ıyla** çağırır
   (emsal: MOD-0177'nin SHIPMENT okuması). Servis kimliğiyle (servis-servis token) çağrı bu sözleşmede tanımlı değildir;
-  kiracı her zaman kullanıcının token'ındandır. Tarayıcı CRM'i doğrudan çağırmaz.
+  kiracı kullanıcının token'ından gelir (Gateway başlığa yazar, CRM karşılaştırır; §1). Tarayıcı CRM'i doğrudan çağırmaz.
 - **İzin ataması:** `crm.account.lookup-validation` her tüketicinin ilgili rollerine verilir (AR: MOD-0018-FU27; geri
   çağırma, sevkiyat ve iade rolleri: kendi sahipleri). Anahtar atanmamış kullanıcı 403 alır (§5: 503).
 - Yeni bir tüketici bu tabloya eklenerek sözleşmeye girer (1.x içinde ekleme).
@@ -260,7 +266,7 @@ mükerrer `AccountExternalReference` satırının temizlenmesidir.
 - **Zarf:** CRM'in mevcut `Response<T>` zarfı (`data`, `errors`, `statusCode`, `isSuccessful`); emsallerdeki gibi
   `data` yalnız 200'de dolu. CRM zarfında makine-okur hata kodu alanı yoktur; tüketici **yalnız HTTP durum koduna**
   göre karar verir, `errors[]` metni sözleşmenin parçası değildir (yerelleştirilmez, değişebilir).
-- **Durum kodları:** 200 · 400 (U-3 ve U-2 girdisi; U-1'de rota kısıtı `:guid` uymazsa yönlendirme 404'tür) · 401 · 403 ·
+- **Durum kodları:** 200 · 400 (U-3 ve U-2 girdisi; her uçta kiracı uyuşmazlığı ya da kiracısız çağrı, §1; U-1'de rota kısıtı `:guid` uymazsa yönlendirme 404'tür) · 401 · 403 ·
   404 (U-1, U-2; U-3'te yok) · 409 (yalnız U-2) · 503.
 - **503 (kaynak okunamıyor):** CRM kendi deposunu okuyamazsa (Mongo istisnası, zaman aşımı) **503** döner; 500 ya da
   varsayılan değer dönmez, "uygun" ya da "bulunamadı" uydurmaz. Gövdede `data` yok. Bugün yakalanmamış Mongo istisnası
@@ -342,3 +348,6 @@ olur ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin 
   üretici uyumu gerçek işleyicilerle ölçülür, §9 fikstürleri tüketicinin testidir; §5 `isBillable = false` + `active`
   çelişkisi 503 (F-C4); §3.1 256 karakter sınırı bağlayıcı (DL-2); §4 sürüm atfı §10; §7 korelasyon K-10 olarak
   sahiplendi; K kararları kayda bağlandı.
+- 1.0.0 (2026-11-05, dar yeniden inceleme `docs/records/reviews/MOD-0149/2026-11-05-a7cdea72.md` sonrası) — F-1: U-3
+  kararlı sıralama (ad + `accountId`); F-2: §5a'da MOD-0177 / MOD-0183 / MOD-0186 aday (istek); F-3: §1 kiracı
+  mekanizması kodla hizalandı (Gateway token → `X-Tenant-Id`, CRM karşılaştırır; uyuşmazlık ve kiracısız çağrı 400).

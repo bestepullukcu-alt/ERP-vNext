@@ -615,6 +615,8 @@ reference **set/value authoring** (kod değil, MOD-0048 governance UI üzerinden
 - Kapsam dışı: AR'nin kendi port / sınıflandırıcı kodu (MOD-0120), Auth katalog kaydı ve rol ataması (MOD-0018),
   `ocelot.json` (integration-agent), müşteri seçici UI (MOD-0120 same-origin proxy). Seçicinin veri kaynağı bu ekin
   U-3 ucudur (K-8); seçimden sonra kimlik yazmadan önce U-1 ile doğrulanır.
+- Bu ekin tüketicisi yalnız MOD-0120'dir. MOD-0177, MOD-0183 ve MOD-0186 sözleşme §5a'da **aday (istek)** olarak durur;
+  kendi paketleri bu sözleşmeye atıfla hizalanınca tüketici olurlar (sahip SCE). Adaylar bu ekin kabulünü etkilemez.
 
 ### 30.2 Uçlar ve sözleşme
 
@@ -633,16 +635,21 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
 - Denetleyici: üç uç `Controllers/CRM/AccountController.cs`'e eklenir (§7'deki `Controllers/AccountController.cs` yolu
   bugün `Controllers/CRM/` altındadır). `lookup` ve `external-references/resolve` sabit yolları `{id:guid}` kısıtlı
   rotalarla çakışmaz (emsal aynı denetleyicide `filter-options`, `related`).
-- DTO: `AccountLookupValidationDto` `AccountModels.cs` içinde (tek dosya kuralı). Depo: `IAccountExternalReferenceRepository`'ye
-  çözümleme sorgusu eklenir (kiracı + `IsDeleted = false` + tam eşitlik; en çok 2 satır okur, 2 satır = 409).
+- DTO: `AccountLookupValidationDto` `AccountModels.cs` içinde (tek dosya kuralı).
+- (U-2, DL-2) Depo: `IAccountExternalReferenceRepository`'ye çözümleme sorgusu eklenir (kiracı + `IsDeleted = false` +
+  tam eşitlik; en çok 2 satır okur, 2 satır = 409).
 - `isBillable = (Status == "active")`, sıradan karşılaştırma; faturalanabilirlik kuralı yalnız CRM'dedir.
 - U-3 (K-8): `search` `Trim()` sonrası 2–100 karakter, aksi 400; düz metindir (regex değil) — mevcut sayfalı arama
   deposu `IAccountRepository.ListAsync` (`AccountRepository.cs:78-113`: kiracı + `IsDeleted = false`, ad ya da kodda
   "içerir", `TurkishInsensitivePattern` ile kaçışlı ve Türkçe i harflerine duyarsız) kullanılır; indeks
   `ix_accounts_tenant_name` var. `page` ≥ 1, `pageSize` 1–50 (varsayılan 20), aksi 400. `billableOnly=true` yalnız
-  `active` döner. Sıralama ada göre artan. Eşleşme yoksa 200 boş liste (404 yok). U-3 sonucu uygunluk kararı
+  `active` döner. Sıralama ad artan, eşit adlarda `Id` artan: ikinci anahtar zorunludur, yoksa sayfa sınırında bir
+  kayıt iki sayfada görünür ya da hiç görünmez. Bugünkü `BuildSort` (`AccountRepository.cs:150-162`) yalnız ada göre
+  sıralar; DL-1 ikinci anahtarı ekler. Uygulayıcı sıralamanın indeksle karşılandığını ölçer (Mongo bellek içi sıralama
+  sınırı 32 MB); karşılanmıyorsa `{TenantId, AccountName, _id}` ek indeksi açılır, mevcut indeks değişmez.
+  Eşleşme yoksa 200 boş liste (404 yok). U-3 sonucu uygunluk kararı
   değildir: tüketici seçilen kimliği yazmadan önce U-1 ile doğrular.
-- `sourceSystem` / `externalId`: yazma yoluyla aynı normalizasyon — yalnız `Trim()`, büyük/küçük harf korunur
+- (U-2, DL-2) `sourceSystem` / `externalId`: yazma yoluyla aynı normalizasyon — yalnız `Trim()`, büyük/küçük harf korunur
   (`CreateAccountHandler.cs:62-73`); çözümleme `"default"` kaynağını varsaymaz.
 - `account-status` kümesi sözleşmede yayımlanır: `active` (faturalanabilir), `inactive`, `draft`, `suspended` (Y-4/4c) ve
   `archived` (karar K-2, Beste 2026-10-30; faturalanamaz). AR tarafında sabit durum tablosu olmaz.
@@ -673,7 +680,8 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 - [ ] **AC-AR-11** (U-3) Yalnız çağıranın kiracısındaki silinmemiş hesaplar döner; öğe alanları birebir `accountId`, `code`, `name`, `status`, `isBillable` (sözleşme §2a); adres / sorumlu kişi / dış referans / öznitelik **yok**; `isBillable` U-1 kuralıyla aynı.
 - [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
 - [ ] **AC-AR-13** (U-3) Arama düz metindir: `.*` ya da `a.b(` her hesabı eşleştirmez ve hata vermez; ad ya da kodda "içerir"; `HAMİDİYE` kaydı `hamidiye` aramasıyla bulunur.
-- [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ada göre artan; ardışık sayfalar çakışmaz; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
+- [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ad artan, eşit adda `Id` artan; aynı adlı üç hesap `pageSize=1` ile üç sayfada her biri tam bir kez görünür; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
+- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400 ve veri dönmez; iki durumda da depo kiracı filtresiz sorgulanmaz (sözleşme §1).
 
 ### 30.6 Kabul ölçütleri — DL-2 (U-2 ertelendi)
 
@@ -704,6 +712,13 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | U-3'te en kısa arama sınırını kaldır | AC-AR-12 (tek harf aramada liste döner) |
 | U-3'te terimi kaçışsız regex olarak kullan | AC-AR-13 (`.*` her hesabı döner) |
 | U-3'te `billableOnly`'yi yok say | AC-AR-14 |
+| U-3'te 100 karakter üst sınırını kaldır | AC-AR-12 (101 karakterlik aramada liste döner) |
+| U-3'te `pageSize` üst sınırını kaldır | AC-AR-12 (`pageSize=51` liste döner) |
+| U-3'te `page < 1` kontrolünü kaldır | AC-AR-12 (`page=0` liste döner) |
+| U-3'te ikinci sıralama anahtarını (`Id`) kaldır | AC-AR-14 (aynı adlı hesap iki sayfada görünür ya da hiç görünmez) |
+| U-3'te sıralamayı azalan yap | AC-AR-14 |
+| U-3'te `total`'ı filtresiz sayıdan ver | AC-AR-14 |
+| İşleyicide kiracı yoksa kiracı filtresiz sorguya devam et | AC-AR-15 (kiracısız çağrı veri döner) |
 
 ### 30.8 Sabotaj beklentileri — DL-2
 
@@ -723,6 +738,7 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
   U-3 işleyicisi için kiracı, silme, arama ve sayfa sınırları, düz metin arama (`.*`, `a.b(`), Türkçe i, `billableOnly`,
   sayfalama ve depo hatası vakaları.
 - **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
+- **Kiracı (AC-AR-15):** U-1 ve U-3 için başlık ↔ token uyuşmazlığı (400) ve kiracısız çağrı (400, veri yok).
 - **Üretici uyumu (AC-AR-9a):** U-1 ve U-3 işleyicileri aynı veriyle çağrılır; her `account-status` değeri ve küme dışı
   bir kod için iki uç aynı `isBillable`'ı verir; `contractVersion` ve alan listesi sözleşmeyle karşılaştırılır. Sözleşme
   §9 fikstürleri tüketicinin (MOD-0120) testidir; CRM'de sınıflandırıcı kopyası yazılmaz (Çekirdek 10).
@@ -748,7 +764,7 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-2 | `archived` sözleşmede yayımlanır mı | **KAPANDI** (Beste, 2026-10-30): evet, `isBillable = false` |
 | K-3 | U-2 409 (çoklu eşleşme) karşısında tüketicinin davranışı | **ÜRETİCİ KURALI** (Beste, 2026-10-30): tüketici tahmin etmez, hesap seçmez, işlemi durdurur. Hata kalıcıdır (tekrar denemek çözmez; çözüm CRM'de mükerrer dış referansın temizlenmesidir) → öneri 422 ayrı kod (ör. `RECEIVABLE_CUSTOMER_AMBIGUOUS`), 503 değil. Kod adı MOD-0120 sahibinindir. |
 | K-4 | Gateway joker rotası | **KAPANDI** (Beste, 2026-10-30): yeterli; integration-agent teyidi yalnız not (§30.4) |
-| K-5 | `runtime_code_scope` künyesi | **KAPANDI** (Beste, 2026-10-30): değişmez — "external-ref surface" U-2'yi, "Account/WorkPlace master + 360" okuma yüzeyi U-1'i kapsar; yeni nesne / alan / komut yok |
+| K-5 | `runtime_code_scope` künyesi | **KAPANDI** (Beste, 2026-10-30): değişmez — "external-ref surface" U-2'yi, "Account/WorkPlace master + 360" okuma yüzeyi U-1'i ve U-3'ü (K-8) kapsar; yeni nesne / alan / komut yok |
 | K-6 | Teslim dilimleri tablosu | **KAPANDI** (Beste, 2026-10-30): yalnız bu ek için tablo (§31); §1–§29'un mevcut, teslim edilmiş işi geriye dönük dilimlere bölünmez |
 | K-8 | MOD-0120 müşteri seçicisinin veri kaynağı (inceleme F-2) | **KAPANDI** (Beste, 2026-11-04, seçenek 1): dar arama ucu U-3 `GET /api/crm/accounts/lookup`, aynı `crm.account.lookup-validation` anahtarıyla; yalnız `accountId`, `code`, `name`, `status`, `isBillable` döner; DL-1'e girer. AR kullanıcısı `crm.account.read` almaz (K-1 korunur). MOD-0120:1146-1147 ve :1349-1350 U-3'e hizalanır (Finans'ın işi). |
 | K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
