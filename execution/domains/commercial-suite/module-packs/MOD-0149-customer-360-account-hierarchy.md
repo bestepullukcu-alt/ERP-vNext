@@ -640,13 +640,18 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.0.0](../../../../docs/analysis/contracts/draft
   tam eşitlik; en çok 2 satır okur, 2 satır = 409).
 - `isBillable = (Status == "active")`, sıradan karşılaştırma; faturalanabilirlik kuralı yalnız CRM'dedir.
 - U-3 (K-8): `search` `Trim()` sonrası 2–100 karakter, aksi 400; düz metindir (regex değil) — mevcut sayfalı arama
-  deposu `IAccountRepository.ListAsync` (`AccountRepository.cs:78-113`: kiracı + `IsDeleted = false`, ad ya da kodda
+  deposu `IAccountRepository.ListAsync` (`AccountRepository.cs:78-145`: kiracı + `IsDeleted = false`, ad ya da kodda
   "içerir", `TurkishInsensitivePattern` ile kaçışlı ve Türkçe i harflerine duyarsız) kullanılır; indeks
   `ix_accounts_tenant_name` var. `page` ≥ 1, `pageSize` 1–50 (varsayılan 20), aksi 400. `billableOnly=true` yalnız
   `active` döner. Sıralama ad artan, eşit adlarda `Id` artan: ikinci anahtar zorunludur, yoksa sayfa sınırında bir
-  kayıt iki sayfada görünür ya da hiç görünmez. Bugünkü `BuildSort` (`AccountRepository.cs:150-162`) yalnız ada göre
-  sıralar; DL-1 ikinci anahtarı ekler. Uygulayıcı sıralamanın indeksle karşılandığını ölçer (Mongo bellek içi sıralama
-  sınırı 32 MB); karşılanmıyorsa `{TenantId, AccountName, _id}` ek indeksi açılır, mevcut indeks değişmez.
+  kayıt iki sayfada görünür ya da hiç görünmez.
+  - **Yalnız U-3 yolunda.** Mevcut hesap listesinin sıralaması (`BuildSort`, `AccountRepository.cs:150-162`;
+    `GetAccountListHandler.cs:75`) **değişmez**: kod alanı, azalan yön ve indeks garantisi olduğu gibi kalır, mevcut
+    Account testleri tabandaki sonuçla aynıdır (AC-AR-10). U-3 sabit sıralamayı (ad artan, `_id` artan) depoya ayrı
+    bir seçenek ya da ayrı bir yöntemle verir; liste sayfası bu seçeneği kullanmaz.
+  - **Ek indeks DL-1 işidir:** `{TenantId: 1, AccountName: 1, _id: 1}` (ad `ix_accounts_tenant_name_id`), mevcut
+    `ix_accounts_tenant_name` değişmez. Mevcut indeks ad + `_id` sıralamasını karşılamaz; bellek içi sıralama sınırı
+    (kod yorumu `AccountRepository.cs:147-149`) bu yüzden ek indeksle önlenir.
   Eşleşme yoksa 200 boş liste (404 yok). U-3 sonucu uygunluk kararı
   değildir: tüketici seçilen kimliği yazmadan önce U-1 ile doğrular.
 - (U-2, DL-2) `sourceSystem` / `externalId`: yazma yoluyla aynı normalizasyon — yalnız `Trim()`, büyük/küçük harf korunur
@@ -681,7 +686,7 @@ Mevcut `/api/crm/accounts/{everything}` rotası (`gateway/Diten.ApiGateway/ocelo
 - [ ] **AC-AR-12** (U-3) `search` `Trim()` sonrası 2 karakterden kısa ya da 100'den uzun → 400; `page < 1`, `pageSize < 1` ya da `> 50` → 400; hiçbirinde liste dönmez.
 - [ ] **AC-AR-13** (U-3) Arama düz metindir: `.*` ya da `a.b(` her hesabı eşleştirmez ve hata vermez; ad ya da kodda "içerir"; `HAMİDİYE` kaydı `hamidiye` aramasıyla bulunur.
 - [ ] **AC-AR-14** (U-3) `billableOnly=true` yalnız `active` hesapları döner; sıralama ad artan, eşit adda `Id` artan; aynı adlı üç hesap `pageSize=1` ile üç sayfada her biri tam bir kez görünür; `total` filtreli sayıdır; eşleşme yoksa 200 boş liste.
-- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400 ve veri dönmez; iki durumda da depo kiracı filtresiz sorgulanmaz (sözleşme §1).
+- [ ] **AC-AR-15** (U-1, U-3) Kiracı: `X-Tenant-Id` başlığı token'daki `tenant_id`'den farklıysa 400; kiracısız çağrı (başlık yok) 400; token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400 (K-11); üç durumda da veri dönmez ve depo sorgulanmaz (sözleşme §1).
 
 ### 30.6 Kabul ölçütleri — DL-2 (U-2 ertelendi)
 
@@ -715,10 +720,12 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | U-3'te 100 karakter üst sınırını kaldır | AC-AR-12 (101 karakterlik aramada liste döner) |
 | U-3'te `pageSize` üst sınırını kaldır | AC-AR-12 (`pageSize=51` liste döner) |
 | U-3'te `page < 1` kontrolünü kaldır | AC-AR-12 (`page=0` liste döner) |
-| U-3'te ikinci sıralama anahtarını (`Id`) kaldır | AC-AR-14 (aynı adlı hesap iki sayfada görünür ya da hiç görünmez) |
+| U-3'te ikinci sıralama anahtarını (`Id`) kaldır | AC-AR-14 (sıralama tanımı testi `_id`'yi bulamaz) |
+| U-3 sıralamasını liste sayfasının `BuildSort`'una da uygula | AC-AR-10 (liste sayfası sırası testi) |
 | U-3'te sıralamayı azalan yap | AC-AR-14 |
 | U-3'te `total`'ı filtresiz sayıdan ver | AC-AR-14 |
 | İşleyicide kiracı yoksa kiracı filtresiz sorguya devam et | AC-AR-15 (kiracısız çağrı veri döner) |
+| Token'da `tenant_id` yokken `X-Tenant-Id` başlığını kabul et | AC-AR-15 (başlıktaki kiracının verisi döner) |
 
 ### 30.8 Sabotaj beklentileri — DL-2
 
@@ -738,7 +745,15 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
   U-3 işleyicisi için kiracı, silme, arama ve sayfa sınırları, düz metin arama (`.*`, `a.b(`), Türkçe i, `billableOnly`,
   sayfalama ve depo hatası vakaları.
 - **xUnit (Api / yetki):** U-1 ve U-3 için `[HasPermission]` anahtar ataması; `crm.account.read` yalnız → 403.
-- **Kiracı (AC-AR-15):** U-1 ve U-3 için başlık ↔ token uyuşmazlığı (400) ve kiracısız çağrı (400, veri yok).
+- **Kiracı (AC-AR-15):** U-1 ve U-3 için başlık ↔ token uyuşmazlığı (400), kiracısız çağrı (400, veri yok) ve
+  `tenant_id`'siz token + `X-Tenant-Id` başlığı (400, veri yok).
+- **Depo testleri (gerçek mongod):** kiracı / `IsDeleted` filtresi, kaçışlı arama, filtreli `total` ve sıralama depoda
+  olduğundan, sahte depolu işleyici testi bu sabotajları göremez. AC-AR-3 (U-1 depo okuması), AC-AR-11, AC-AR-13 ve
+  AC-AR-14 test sahipli mongod ile koşar (`tests/Diten.CrmService.Application.Tests/CentralAudit/DisposableCrmMongod.cs`
+  kalıbı; geliştiricinin 27017'sine bağlanılmaz; CI'da `DITEN_TEST_MONGOD`). İkinci anahtar ayrıca doğrudan sınanır:
+  U-3'ün sıralama tanımı BSON'a çevrilir ve `{AccountName: 1, _id: 1}` olduğu doğrulanır (eşit adlı kayıtların
+  sayfalaması tek başına sabotajı yakalamayabilir). `ix_accounts_tenant_name_id` indeksinin açıldığı da bu testlerde
+  ölçülür. Liste sayfasının sıralama tanımı değişmediği ayrıca sınanır (AC-AR-10).
 - **Üretici uyumu (AC-AR-9a):** U-1 ve U-3 işleyicileri aynı veriyle çağrılır; her `account-status` değeri ve küme dışı
   bir kod için iki uç aynı `isBillable`'ı verir; `contractVersion` ve alan listesi sözleşmeyle karşılaştırılır. Sözleşme
   §9 fikstürleri tüketicinin (MOD-0120) testidir; CRM'de sınıflandırıcı kopyası yazılmaz (Çekirdek 10).
@@ -770,8 +785,10 @@ Her guard en az bir sabotajla kırmızıya döner (CT kendi sabotajını da koş
 | K-7 | U-2'nin (dış referans çözümleme) MOD-0120'deki kullanım yeri | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
 | K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (sözleşme §7) | **AÇIK** (sahip commercial-suite / K2): sözleşme 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar (§30.9); yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez. |
 
-Kayıt: K-1…K-6 ve K-8 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md`; K-7 = D112/2
-(`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`, MOD-0120 sahibi).
+| K-11 | `tenant_id` taşımayan token'la U-1 / U-3 çağrısı (inceleme 2026-11-05-999c7e29 F-3) | **KAPANDI** (Beste, 2026-11-05): reddedilir — token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400, veri yok (AC-AR-15). Gateway'in token'sız kiracı yolları (istemci başlığı, alt alan adı, Development yedeği) bu iki uca kiracı seçtiremez. |
+
+Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md` (durum: taslak — sahip okuması CT-APR-01 onayıyla
+birlikte kayda geçer); K-7 = D112/2 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`, MOD-0120 sahibi).
 
 ## 31. Teslim dilimleri
 

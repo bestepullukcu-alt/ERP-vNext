@@ -1,16 +1,17 @@
 ---
-status: taslak — sahip (Beste) okuması bekliyor; bu belge yeni bir karar vermez, alınmış kararları kayda geçirir
-decided: 2026-10-30 (K-1…K-6), 2026-11-04 (K-8)
+status: taslak — sahip (Beste) okuması bekliyor (CT-APR-01 onayıyla birlikte); bu belge yeni bir karar vermez, alınmış kararları kayda geçirir
+decided: 2026-10-30 (K-1…K-6), 2026-11-04 (K-8), 2026-11-05 (K-11)
 module: MOD-0149
 work_packages: MOD-0149 Treasury AR eki (pack §30–§31), CRM-ACCOUNT-LOOKUP 1.0.0
-decision_ids: K-1, K-2, K-3, K-4, K-5, K-6, K-8 (K-7 ayrı kayıtta, aşağıda)
+decision_ids: K-1, K-2, K-3, K-4, K-5, K-6, K-8, K-11 (K-7 ayrı kayıtta, aşağıda)
 ---
 
-# MOD-0149 Treasury AR eki — sahip kararları K-1…K-8
+# MOD-0149 Treasury AR eki — sahip kararları K-1…K-11
 
 > **Karar sahibi:** commercial-suite sahibi (Beste, K2); K-7 MOD-0120 sahibinindir.
 > **Neden bu kayıt:** Bağımsız inceleme (eski sürüm paket `4e6c020d`, sözleşme `ec4aaa16`) kararların pakette ve sözleşmede yalnız ad ve
-> tarihle anıldığını, dosya:satır kaynağı olmadığını buldu. Bu dosya o kaynaktır; paket §30.11 ve sözleşme §11 buraya atıf verir.
+> tarihle anıldığını, dosya:satır kaynağı olmadığını buldu. Bu dosya o kaynaktır; paket §30.11, sözleşme x-decisions ve
+> sözleşme §11 buraya atıf verir.
 > **Sınır:** Bu kayıt push, PR, birleştirme, kod ya da dağıtım izni değildir.
 
 ## Kaynaklar
@@ -23,6 +24,10 @@ decision_ids: K-1, K-2, K-3, K-4, K-5, K-6, K-8 (K-7 ayrı kayıtta, aşağıda)
   commit `c2c9a4a9f` ile işlendi.
 - **K-8 (2026-11-04):** CT · CRM oturumu (780dee5f), ilk bağımsız incelemenin F-2 bulgusu
   (`docs/records/reviews/MOD-0149/2026-11-04-6df3626c.md`) üzerine sorulan üç seçenekten sahibin cevabı: "1 olsun".
+  Cevabın ham kaydı repoda yok (yalnız CT oturum dökümünde); bu kayıt sahibin okumasıyla kesinleşir.
+- **K-11 (2026-11-05):** CT · CRM oturumu (780dee5f), dar yeniden inceleme 2'nin F-3 bulgusu
+  (`docs/records/reviews/MOD-0149/2026-11-05-999c7e29.md`) üzerine sorulan iki seçenekten sahibin seçimi: "Reddetsin".
+  Ham kaydı repoda yok (yalnız CT oturum dökümünde); bu kayıt sahibin okumasıyla kesinleşir.
 
 ## Kararlar
 
@@ -36,6 +41,7 @@ decision_ids: K-1, K-2, K-3, K-4, K-5, K-6, K-8 (K-7 ayrı kayıtta, aşağıda)
 | K-6 | Teslim dilimleri | Tablo yalnız bu ek için (§31); §1–§29'un teslim edilmiş işi geriye dönük dilimlenmez. |
 | K-7 | U-2'nin MOD-0120'deki yeri | (MOD-0120 sahibi, D112/2) Bu sürümde U-2'yi çağıran akış yok; DL-2 MOD-0120 O-10'a ertelendi; DL-1 ve sözleşme bu sürümün önkoşulu. |
 | K-8 | MOD-0120 müşteri seçicisinin veri kaynağı | Seçenek 1: dar arama ucu U-3 `GET /api/crm/accounts/lookup`, aynı `crm.account.lookup-validation` anahtarıyla, DL-1 içinde; yalnız `accountId`, `code`, `name`, `status`, `isBillable` döner. Seçicide görünmek uygunluk kararı değildir; seçilen kimlik U-1 ile doğrulanır. K-1 korunur. MOD-0120:1146-1147 ve :1349-1350'nin hizalanması Finans'ın işidir. |
+| K-11 | `tenant_id` taşımayan token'la U-1 / U-3 çağrısı | Reddedilir: token'da `tenant_id` yoksa `X-Tenant-Id` başlığı olsa bile 400, veri yok (pack AC-AR-15, sözleşme §1). Gateway'in token'sız kiracı yolları (istemci başlığı, alt alan adı, Development yedeği) bu uçlara kiracı seçtiremez. |
 
 ## Açık kalanlar (karar değil)
 
