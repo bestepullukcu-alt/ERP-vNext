@@ -31,9 +31,10 @@ by '+' or written with escapes) anywhere else it can see it. Comments never coun
                                 every criterion of the pack at the base, with the results of its tagged tests from the
                                 given TRX / JUnit files. Only tags that LEAD a test's name count — a TRX name's start; a
                                 JUnit name's start or right after its FIRST ' > ' (a tagged JS test sits at most one
-                                describe deep) — so a Theory's data never does. This pack's id anywhere else in a result
-                                name next to ':' or 'AC' (a broken tag: '[MOD-0900 AC-9]', '[MOD-0900;AC-9]', any case), or
-                                a criterion the pack does not have, is an ENGEL (exit 1). A test that did not pass (failed, error, timeout, not
+                                describe deep) — so a Theory's data never does. A tag of this pack anywhere else in a result
+                                name, in any spelling ('[MOD-0900 AC-9]', '[MOD-0900--AC-9]', 'mod0900ac9'; read from
+                                the name's normalized form, 'Account' / 'accepted' are no tag), or a criterion the pack
+                                does not have, is an ENGEL (exit 1). A test that did not pass (failed, error, timeout, not
                                 executed, skipped, todo) is never a pass and is never hidden by one that passed. A criterion
                                 without results is listed. The report says "the tests linked to this criterion ran and
                                 passed" — never "the criterion is met". It does NOT verify that the files belong to one CI
@@ -71,6 +72,18 @@ CS_NAME_CTX = re.compile(r"\[\s*(?:global\s*::\s*)?(?:[A-Za-z_]\w*\s*\.\s*)*\w*(
 # FIRST ' > ' (Vitest joins a describe's name to the test's with it; a tagged test sits at most one describe deep).
 # Codex 3rd: any later ' > ' or one in a TRX name (Theory data) never opens a name.
 RESULT_LEAD = re.compile(rf"(?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+")
+# a tag candidate in a result name, read from its normalized form (lower case, every run of other characters one space,
+# letters and digits apart): "[MOD-0900    AC-99]", "[MOD-0900--AC-99]", "mod0900ac99" all read "mod 0900 ac 99"; a
+# follow-up id reads "mod 0900 fu 01". 'ac' must be a word of its own followed by a number, so "Account" and
+# "accepted" are no tag (Codex 4th; a real test is named "MOD-0188 accepted history view").
+CANDIDATE = re.compile(r"(?<![a-z0-9])mod (\d{4})((?: fu \d+(?: [a-z](?![a-z0-9]))?)?) ac \d+(?![a-z0-9])")
+
+
+def normalized(text: str) -> str:
+    s = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    return " " + re.sub(r"(?<=[a-z])(?=\d)|(?<=\d)(?=[a-z])", " ", s).strip() + " "
+
+
 ESCAPE = re.compile(r"\\(?:u\{([0-9A-Fa-f]{1,6})\}|u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8})|x([0-9A-Fa-f]{1,4}))")
 # a JS '/' after one of these (or at the start) opens a regex literal, not a division
 REGEX_BEFORE = set("(,=:[!&|?{};+-*%<>~^") | {""}
@@ -394,10 +407,7 @@ def report(root: str, pack: str, paths: list[str], base: str | None) -> tuple[in
     rows, files = results_of(paths)
     runs: dict[int, list[str]] = {n: [] for n in crit}
     engel = []
-    # this pack's id followed by ':' or by an 'AC' a few non-word characters later ('[MOD-0900 AC-99]', '[MOD-0900;AC-99]',
-    # 'MOD-0900-AC-1'; any case) — never a longer id's ('MOD-0900-FU01:' is another pack). Codex 3rd: a broken tag must
-    # not pass the boundary.
-    mine = re.compile(rf"{re.escape(pack)}(?:(?![-\w])[^A-Za-z0-9\]\n]{{0,3}}AC|\s*:|-AC)", re.I)
+    pkey = normalized(pack).strip()
     for name, state, fmt in rows:
         lead = RESULT_LEAD.match(name)
         if lead is None and fmt == "junit" and " > " in name:
@@ -405,7 +415,8 @@ def report(root: str, pack: str, paths: list[str], base: str | None) -> tuple[in
         head = lead.group(0) if lead else ""
         tags = [(p, int(n)) for p, n in dict.fromkeys(TAG.findall(head)) if p == pack]
         rest = name[:lead.start()] + name[lead.end():] if lead else name
-        if mine.search(rest):            # the boundary: this pack's syntax anywhere but the leading tags (Codex)
+        if any(f"mod {m.group(1)}{m.group(2)}" == pkey for m in CANDIDATE.finditer(normalized(rest))):
+            # the boundary: a tag of this pack anywhere but the leading tags, however it is spelled (Codex 3rd, 4th)
             engel.append(f"{pack} etiketi bir test adının başında değil ya da biçimi bozuk — '{name[:90]}'")
         for _p, n in tags:
             if n in runs:
@@ -615,6 +626,20 @@ def self_test() -> int:
         cases.append(("sabotage report (Codex 3rd): in a TRX name a ' > ' never opens a name, and a tag with a missing or "
                       "wrong ':' or in another case is broken -> one ENGEL for each of the 5 names, nothing counted",
                       _c == 1 and len(bad) == 5 and has("AC-1 (zorunlu)", "sonuç yok")))
+        more = ["[MOD-0900    AC-99] four spaces", "[MOD-0900--AC-99] double dash", "[MOD-0900- AC-99] dash space",
+                "MOD0900AC99 compact", "MOD-0900 Account is created", "MOD-0900 accepted history view",
+                "[MOD-0900-FU01 AC-1] another pack, broken"]
+        put("r9/c.trx", '<?xml version="1.0"?><TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">'
+                        "<Results>" + "".join(f'<UnitTestResult testName="{t}" outcome="Passed"/>' for t in more)
+                        + "</Results></TestRun>")
+        _c, o = report(td, "MOD-0900", [str(Path(td) / "r9" / "c.trx")], base)
+        bad = [l for l in o if l.startswith("ENGEL")]
+        cases.append(("sabotage report (Codex 4th): a broken tag of this pack however it is separated (4 spaces, '--', "
+                      "'- ', none) -> ENGEL each; 'Account', 'accepted' and a follow-up pack's id are no ENGEL",
+                      _c == 1 and len(bad) == 4 and not any("Account" in l or "accepted" in l or "FU01" in l for l in bad)))
+        _c, o = report(td, "MOD-0900-FU01", [str(Path(td) / "r9" / "c.trx")], base)
+        cases.append(("sabotage report (Codex 4th): the follow-up pack's broken tag is that pack's ENGEL",
+                      _c == 1 and any(l.startswith("ENGEL") and "FU01 AC-1" in l for l in o)))
         put("r8/v.xml", '<testsuites><testsuite name="v">'
                         '<testcase name="suite &gt; plain &gt; [MOD-0900:AC-1] nonleading"/>'
                         '<testcase name="suite &gt; [MOD-0900;AC-99] semicolon"/>'
