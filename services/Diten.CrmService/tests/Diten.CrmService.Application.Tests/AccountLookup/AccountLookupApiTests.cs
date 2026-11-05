@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Diten.CrmService.Api.Filters;
 using Diten.CrmService.Application.Tests.CentralAudit;
@@ -143,6 +144,34 @@ public sealed class AccountLookupApiTests : IClassFixture<AccountLookupApiFactor
 
         await AssertRefusedAsync(response);
     }
+
+    /// <summary>K13-F1: a <c>tenant_id</c> of <see cref="Guid.Empty"/> parses as a GUID but names no tenant. The K-11
+    /// filter itself must refuse it (its problem body, not the handler's later "no tenant" 400), with no header and with
+    /// an <c>X-Tenant-Id</c> that is also <see cref="Guid.Empty"/> (the shared middleware sees no mismatch there and
+    /// would hand the empty tenant to the handler).</summary>
+    [Theory]
+    [MemberData(nameof(EmptyTenantCases))]
+    public async Task AC_AR_15_K11_a_token_whose_tenant_id_is_guid_empty_is_400_and_the_store_is_never_read(
+        string endpoint, bool emptyHeader)
+    {
+        var url = Url(endpoint, _repo.Add(_tenant, "active", name: "Kiracı Hesabı"));
+
+        var response = await SendAsync(
+            url, Token(tenant: null, LookupKey, rawTenantClaim: Guid.Empty.ToString()), emptyHeader ? Guid.Empty : null);
+
+        await AssertRefusedAsync(response);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.False(body.RootElement.TryGetProperty("data", out _));
+        Assert.Equal("Tenant token required", body.RootElement.GetProperty("title").GetString());
+    }
+
+    public static TheoryData<string, bool> EmptyTenantCases() => new()
+    {
+        { "u1", false },
+        { "u1", true },
+        { "u3", false },
+        { "u3", true }
+    };
 
     /// <summary>K-11 placement, read from the running host: the filter's metadata sits on U-1 and U-3 and on no other
     /// endpoint; it is not a global MVC filter. A rejection moved into the shared middleware (attribute removed) or the
