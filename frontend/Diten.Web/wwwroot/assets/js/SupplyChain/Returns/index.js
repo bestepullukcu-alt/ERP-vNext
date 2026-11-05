@@ -24,7 +24,7 @@ const ReturnsList = (function () {
     // ASSUMPTION A6: module/page codes of the §33 manifest; the integration owner confirms the personalization codes.
     const personalizationContext = { moduleKey: 'reverse-logistics', pageKey: 'RETURNS' };
     const filterCollapseId = 'inlineFilterCollapse';
-    const colvisColumns = [1, 2, 3];
+    // r10 §35.5: the customer column is drawn only with crm.account.read, so the column count follows the permission.
     const UUID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const LINE_NUMBER_PATTERN = /^[0-9A-Za-z._-]{1,64}$/;
 
@@ -158,6 +158,8 @@ const ReturnsList = (function () {
     let legalEntityScope = document.getElementById('returnsCompanyScope')?.dataset.legalEntityId || '';
     const rowsById = new Map();
     const permissions = readPermissions();
+    // Column-visibility indexes: RMA, [customer], shipment, status (the customer column needs crm.account.read).
+    const colvisColumns = permissions.canReadCustomers ? [1, 2, 3, 4] : [1, 2, 3];
 
     // Create intent and resolve state.
     let createIntent = null;           // { key, bodyText, blocked, blockedFailure }
@@ -175,7 +177,7 @@ const ReturnsList = (function () {
     // ─── Basics ──────────────────────────────────────────────────────────────
     function readPermissions() {
         const island = document.getElementById('returns-permissions');
-        const names = ['canCreate', 'canAuthorize', 'canTransit', 'canCancel', 'canReceive', 'canDisposition', 'canClose'];
+        const names = ['canCreate', 'canAuthorize', 'canTransit', 'canCancel', 'canReceive', 'canDisposition', 'canClose', 'canReadCustomers', 'canReadHolds'];
         const result = {};
         names.forEach((name) => { result[name] = false; });
         if (!island) return result;
@@ -263,6 +265,109 @@ const ReturnsList = (function () {
         return exact ? value : null;
     };
 
+    // ─── MOD-0186 r10 §35.3 pickers (Select2 through this module's same-origin adapters; no GUID as option text) ───
+    const label = (code, name) => [code, name].filter((x) => isText(x) && x.trim()).join(' · ');
+    const nameCell = (cell) => (cell?.state === 'resolved' && isText(cell.label) ? cell.label : t('NameUnavailable'));
+    // r10 §35.5 / RB-24, RB-25: a customer is a name and code, "old record", "not found" or "name unavailable"; never an id.
+    const customerText = (cell) => {
+        switch (cell?.state) {
+            case 'resolved': return label(cell.code, cell.name) || t('NameUnavailable');
+            case 'oldRecord': return t('OldRecord');
+            case 'notFound': return t('NameNotFound');
+            default: return t('NameUnavailable');
+        }
+    };
+    const getJson = async (url) => {
+        const response = await fetch(url, { credentials: 'same-origin', headers: traceHeaders() });
+        if (response.status === 401) { handleUnauthorized(); throw new Error('unauthorized'); }
+        if (!response.ok) throw new Error(`picker ${response.status}`);
+        return response.json();
+    };
+    // Select2 drops the answer of a superseded search, so a stale response never fills a changed field (RB-3).
+    const picker = (element, url, rows, extra = {}) => {
+        if (!element || !window.jQuery?.fn?.select2) return;
+        const $el = window.jQuery(element);
+        if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
+        $el.select2(Object.assign({
+            width: '100%', placeholder: element.dataset.placeholder || '', allowClear: true,
+            dropdownParent: window.jQuery(element.closest('.offcanvas') || document.body),
+            language: { searching: () => t('PickerSearching'), noResults: () => t('PickerNoResults'), errorLoading: () => t('PickerUnavailable') },
+            ajax: {
+                delay: 250,
+                transport: (params, success, failure) => {
+                    const target = url(params.data || {});
+                    if (!target) { success({ items: [] }); return { abort() { } }; }
+                    let cancelled = false;
+                    getJson(target).then((data) => { if (!cancelled) success(data); }).catch(() => { if (!cancelled) failure(); });
+                    return { abort() { cancelled = true; } };
+                },
+                processResults: (data) => ({ results: rows(data), pagination: { more: Boolean(data?.hasMore) } })
+            }
+        }, extra));
+    };
+    const setOption = (element, id, text) => {
+        if (!element) return;
+        element.replaceChildren();
+        element.value = '';
+        if (isText(id) && id) {
+            const option = document.createElement('option');
+            option.value = id; option.textContent = text || t('NameUnavailable'); option.selected = true;
+            element.replaceChildren(option);
+        }
+        if (window.jQuery) window.jQuery(element).trigger('change');
+    };
+    const shipmentRows = (data) => (Array.isArray(data?.items) ? data.items : []).filter((row) => isText(row?.id) && UUID_PATTERN.test(row.id))
+        .map((row) => {
+            const when = isText(row.date) && row.date ? new Date(row.date).toLocaleDateString(document.documentElement.lang || undefined) : '';
+            const customer = row.customer === null || row.customer === undefined ? '' : customerText(row.customer);
+            return { id: row.id, text: [row.number || t('NotProvided'), customer, when].filter(Boolean).join(' · ') };
+        });
+    const shipmentPicker = (element, any) => picker(element, (p) => withScope(`${endpoint}/eligible-shipments?page=${p.page || 1}${any ? '&any=true' : ''}${p.term ? `&search=${encodeURIComponent(p.term)}` : ''}`,
+        any ? legalEntityScope : formScope()), shipmentRows);
+
+    // Receiving place (RB-6): warehouse (Active), then the tree one layer at a time; only an isStockable node is chosen, a
+    // node that is not a Bin can be opened; the layers never carry isStockable, so non-stockable parents stay visible.
+    let placeLayers = [];
+    const resetLocation = () => {
+        const location = document.getElementById('transitionToLocationId');
+        const warehouse = document.getElementById('transitionToWarehouseId')?.value || '';
+        placeLayers = warehouse ? [warehouse] : [];
+        if (location) { setOption(location, '', ''); location.disabled = !warehouse; }
+        document.getElementById('transitionLocationHelp')?.classList.toggle('d-none', Boolean(warehouse));
+    };
+    const initPlacePickers = () => {
+        const warehouse = document.getElementById('transitionToWarehouseId');
+        const location = document.getElementById('transitionToLocationId');
+        picker(warehouse, (p) => withScope(`${endpoint}/warehouses${p.term ? `?search=${encodeURIComponent(p.term)}` : ''}`),
+            (data) => (data?.items || []).map((row) => ({ id: row.id, text: label(row.code, row.name) || t('NameUnavailable') })));
+        picker(location, (p) => {
+            const top = placeLayers[placeLayers.length - 1];
+            return top ? withScope(`${endpoint}/locations?parentId=${encodeURIComponent(top)}${p.term ? `&search=${encodeURIComponent(p.term)}` : ''}`) : null;
+        }, (data) => {
+            const rows = placeLayers.length > 1 ? [{ id: 'up:', text: `← ${t('LocationBack')}` }] : [];
+            (data?.items || []).forEach((node) => {
+                const text = label(node.code, node.name) || t('NameUnavailable');
+                if (node.isStockable) rows.push({ id: node.id, text });
+                if (node.type !== 'Bin') rows.push({ id: `open:${node.id}`, text: `▸ ${text}` });
+            });
+            return rows;
+        });
+        if (!window.jQuery || !location) return;
+        window.jQuery(warehouse).on('change', resetLocation);
+        window.jQuery(location).on('select2:selecting', (event) => {
+            const id = event.params?.args?.data?.id || '';
+            if (!id.startsWith('open:') && id !== 'up:') return;
+            event.preventDefault();
+            if (id === 'up:') placeLayers.pop(); else placeLayers.push(id.slice(5));
+            window.jQuery(location).select2('close'); window.jQuery(location).select2('open');
+        });
+    };
+    // RB-7: a stored place id is shown by its name (the adapter reads the label), never as raw text.
+    const placeName = async (id) => {
+        try { return nameCell(await getJson(withScope(`${endpoint}/places/${encodeURIComponent(id)}`))); }
+        catch (_) { return t('NameUnavailable'); }
+    };
+
     // ─── Failure envelope → localized message + support reference ────────────
     const readFailure = async (response) => {
         let body = null;
@@ -277,6 +382,11 @@ const ReturnsList = (function () {
         // A 422 with a code this page does not know is an INVENTORY answer it cannot name: shown with the code, never as a
         // validation text (pack §34.3).
         const unknownCode = response.status === 422 && envelopeCode && !ERROR_KEY[envelopeCode] ? envelopeCode : '';
+        // r10 §35.3 (RB-7): the stored receiving place of RETURN_RECEIPT_IN_PROGRESS is shown by name, never as raw ids.
+        if (code === 'RETURN_RECEIPT_IN_PROGRESS' && isText(details.toWarehouseId)) {
+            details.storedWarehouseName = await placeName(details.toWarehouseId);
+            details.storedLocationName = isText(details.toLocationId) && details.toLocationId ? await placeName(details.toLocationId) : '';
+        }
         return { status: response.status, code, reference, details, unknownCode };
     };
     const networkFailure = (code) => ({ status: 0, code, reference: '', details: {}, unknownCode: '' });
@@ -295,7 +405,9 @@ const ReturnsList = (function () {
         return `${localInputValue(when)}:${pad(when.getSeconds())}`;
     };
     const storedValues = (failure) => (failure.code === 'RETURN_RECEIPT_IN_PROGRESS' && isText(failure.details?.toWarehouseId)
-        ? [failure.details.toWarehouseId, failure.details.toLocationId, localStoredValue(failure.details.occurredAt).replace('T', ' ')] : null);
+        ? [failure.details.storedWarehouseName || t('NameUnavailable'),
+            isText(failure.details.toLocationId) && failure.details.toLocationId ? (failure.details.storedLocationName || t('NameUnavailable')) : '',
+            localStoredValue(failure.details.occurredAt).replace('T', ' ')] : null);
     const failureText = (failure) => {
         const details = failure.details || {};
         if (failure.unknownCode) return format(t('InventoryRefusedUnknown'), failure.unknownCode);
@@ -524,7 +636,10 @@ const ReturnsList = (function () {
     const renderActions = (row) => {
         if (!isText(row?.returnId) || !row.returnId) return ''; // no action without returnId (pack §32.5)
         const id = escapeHtml(row.returnId);
-        const quickView = `<button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill js-quick-view" `
+        // r10 §35.5: the Details link is navigation, not a manifest action.
+        const details = `<a class="btn btn-sm btn-icon btn-text-secondary rounded-pill" href="${escapeHtml(detailsUrl(row.returnId))}" `
+            + `title="${escapeHtml(t('ViewDetails'))}" aria-label="${escapeHtml(t('ViewDetails'))}"><i class="bx bx-detail" aria-hidden="true"></i></a>`;
+        const quickView = details + `<button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill js-quick-view" `
             + `data-return-id="${id}" title="${escapeHtml(t('QuickView'))}" aria-label="${escapeHtml(t('QuickView'))}">`
             + '<i class="bx bx-show" aria-hidden="true"></i></button>';
         const targets = isText(row.shipmentId) && UUID_PATTERN.test(row.shipmentId) ? allowedTargets(row) : [];
@@ -538,6 +653,8 @@ const ReturnsList = (function () {
             + `<div class="dropdown-menu dropdown-menu-end">${items}</div></div></div>`;
     };
 
+    const detailsUrl = (returnId) => withScope(`/SupplyChain/Returns/Details/${encodeURIComponent(returnId)}`);
+    const renderCustomer = (cell, type) => (type === 'display' ? escapeHtml(customerText(cell)) : customerText(cell));
     const renderStatus = (status, type) => {
         const label = returnStatusLabel(status);
         if (type !== 'display') return label || (isText(status) ? status : '');
@@ -570,6 +687,10 @@ const ReturnsList = (function () {
         if (status) status.innerHTML = renderStatus(row.status, 'display');
         const copy = document.getElementById('oc-return-id-copy');
         if (copy) copy.dataset.copyValue = row.returnId;
+        const link = document.getElementById('oc-details-link');
+        if (link) link.href = detailsUrl(row.returnId);
+        const customer = document.getElementById('oc-customer');
+        if (customer) customer.textContent = row.customer ? customerText(row.customer) : '';
         offcanvas('offcanvasDetailsPreview')?.show();
     };
 
@@ -623,6 +744,10 @@ const ReturnsList = (function () {
             row.querySelector('.js-line-number').textContent = isText(line.lineNumber) ? line.lineNumber : t('NotProvided');
             row.querySelector('.js-line-shipped').textContent = isText(line.quantity) ? line.quantity : t('NotProvided');
             row.querySelector('.js-line-uom').textContent = isText(line.uomId) ? line.uomId : t('NotProvided');
+            // r10 §35.2 (RB-1, RB-2): product / SKU and lot, read-only; a failed read says so and keeps the row.
+            row.querySelector('.js-line-sku').textContent = line.skuState === 'resolved' && isText(line.skuLabel) ? line.skuLabel : t('NameUnavailable');
+            row.querySelector('.js-line-lot').textContent = line.lotState === 'resolved' && isText(line.lotNumber) ? line.lotNumber
+                : (line.lotState === 'unavailable' ? t('NameUnavailable') : '—');
             const select = row.querySelector('.js-line-select');
             const quantity = row.querySelector('.js-line-quantity');
             select.id = `returnLineSelect_${index}_${uuid()}`;
@@ -643,6 +768,7 @@ const ReturnsList = (function () {
         const list = evidenceList();
         if (list) list.replaceChildren();
         hideAlert('formReturnAlert');
+        setOption(document.getElementById('returnShipmentId'), '', '');
         clearResolvedShipment();
         // R-2 (MODULE-RECIPE 3.1, Q371): one Idempotency-Key per opened form, kept across edits and failures. A key re-minted
         // per payload let an edited retry after an unknown commit create a second record; under one key it gets 409.
@@ -664,11 +790,7 @@ const ReturnsList = (function () {
         hideAlert('formReturnAlert');
         clearResolvedShipment();
         const requested = input.value;
-        if (!UUID_PATTERN.test(requested)) {
-            // The adapter route needs a UUID segment; nothing else is checked here.
-            showAlert('formReturnAlert', { status: 400, code: 'INVALID_REQUEST', reference: '' });
-            return;
-        }
+        if (!UUID_PATTERN.test(requested)) return; // nothing chosen (the picker clears to empty)
         const sequence = resolveSequence;
         const isCurrent = () => sequence === resolveSequence && input.value === requested;
         try {
@@ -833,10 +955,12 @@ const ReturnsList = (function () {
         if (occurredAt) occurredAt.value = localInputValue(now); // default now, local wall clock
         const zone = document.getElementById('transitionOccurredAtZone');
         if (zone) zone.textContent = zoneLabel(now);
-        ['transitionDispositionCode', 'transitionInventoryReference', 'transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
+        ['transitionDispositionCode', 'transitionInventoryReference'].forEach((id) => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
+        setOption(document.getElementById('transitionToWarehouseId'), '', '');
+        resetLocation();
         // The marks of the panel closed last: the new one opens empty, not red.
         ['transitionToWarehouseId', 'transitionToLocationId'].forEach((id) => {
             const el = document.getElementById(id);
@@ -880,8 +1004,9 @@ const ReturnsList = (function () {
         const details = failure.details;
         const warehouse = document.getElementById('transitionToWarehouseId');
         const location = document.getElementById('transitionToLocationId');
-        if (warehouse) warehouse.value = details.toWarehouseId;
-        if (location) location.value = isText(details.toLocationId) ? details.toLocationId : '';
+        setOption(warehouse, details.toWarehouseId, details.storedWarehouseName);
+        placeLayers = [details.toWarehouseId];
+        if (location) { location.disabled = false; setOption(location, isText(details.toLocationId) ? details.toLocationId : '', details.storedLocationName); }
         const fieldValue = localStoredValue(details.occurredAt);
         const occurredAt = document.getElementById('transitionOccurredAt');
         if (fieldValue && occurredAt) {
@@ -1130,13 +1255,13 @@ const ReturnsList = (function () {
             status.value = appliedFilters.status;
             if (window.jQuery) window.jQuery(status).trigger('change');
         }
-        if (shipment) shipment.value = appliedFilters.shipmentId;
+        if (shipment && shipment.value !== appliedFilters.shipmentId) setOption(shipment, appliedFilters.shipmentId, appliedFilters.shipmentId ? t('ShipmentChosen') : '');
     };
 
     const applyFilters = () => {
         appliedFilters = {
             status: document.getElementById('filterStatus')?.value || '',
-            shipmentId: document.getElementById('filterShipmentId')?.value ?? '' // as typed; backend validates
+            shipmentId: document.getElementById('filterShipmentId')?.value ?? '' // chosen in the picker; backend validates
         };
         if (dt) window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
         markViewDirty();
@@ -1298,6 +1423,7 @@ const ReturnsList = (function () {
             columns: [
                 { data: null, defaultContent: '', className: 'control', orderable: false, searchable: false },
                 { data: 'rmaNumber', render: (value, type) => (type === 'display' ? (isText(value) && value ? ltr(value) : notProvided()) : (isText(value) ? value : '')) },
+                ...(permissions.canReadCustomers ? [{ data: 'customer', orderable: false, render: renderCustomer }] : []),
                 { data: 'shipmentId', render: renderCopyable },
                 { data: 'status', render: renderStatus },
                 { data: null, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (_v, type, row) => (type === 'display' ? renderActions(row) : '') }
@@ -1360,11 +1486,14 @@ const ReturnsList = (function () {
             }
         });
 
-        document.getElementById('btnResolveShipment')?.addEventListener('click', () => { void resolveShipment(); });
-        document.getElementById('returnShipmentId')?.addEventListener('input', () => {
-            if (resolvedShipment || !document.getElementById('returnShipmentResolved')?.classList.contains('d-none')) clearResolvedShipment();
-            else resolveSequence += 1;
-        });
+        // r10 §35.3: choosing a shipment in the picker runs the resolve with its stale-response guard (RU-10).
+        const shipmentSelect = document.getElementById('returnShipmentId');
+        shipmentPicker(shipmentSelect, false);
+        shipmentPicker(document.getElementById('filterShipmentId'), true);
+        initPlacePickers();
+        const onShipmentChange = () => { clearResolvedShipment(); void resolveShipment(); };
+        if (window.jQuery && shipmentSelect) window.jQuery(shipmentSelect).on('change', onShipmentChange);
+        else shipmentSelect?.addEventListener('change', onShipmentChange);
         document.getElementById('returnLinesBody')?.addEventListener('change', (event) => {
             const select = event.target.closest('.js-line-select');
             if (!select) return;

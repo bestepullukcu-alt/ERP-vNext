@@ -61,6 +61,8 @@ const sent = [];
 let answers = [];
 const respond = (status, body) => ({ ok: status < 400, status, headers: { get: () => null }, json: async () => body });
 const fetchStub = async (url, options) => {
+    // r10 §35.3 (RB-7): the stored place is shown by name; the adapter answers its label.
+    if (!options?.method && url.includes('/places/')) return respond(200, { state: 'resolved', label: `name-of-${decodeURIComponent(url.split('/places/')[1].split('?')[0])}` });
     if (!options?.method) return respond(200, { items: [{ returnId: RETURN, rmaNumber: 'RMA-1', shipmentId: '44444444-4444-4444-8444-444444444444', status: 'InTransit' }], total: 1 });
     sent.push({ key: options.headers['Idempotency-Key'], body: JSON.parse(options.body), text: options.body });
     const next = answers.shift();
@@ -160,7 +162,8 @@ test('the 409 fills the stored values, shows the local time and resends the exac
     const alert = element('formReturnTransitionAlert');
     assert.ok(alert.text.includes(field.replace('T', ' ')), alert.text);
     assert.ok(!alert.text.includes(occurredAt));
-    assert.ok(alert.children[1].children.some((node) => node.dir === 'ltr' && node.textContent === 'wh-stored'), 'stored value in a bdi');
+    assert.ok(alert.children[1].children.some((node) => node.dir === 'ltr' && node.textContent === 'name-of-wh-stored'), 'stored place by name in a bdi');
+    assert.ok(!alert.text.includes('wh-stored') || alert.text.includes('name-of-wh-stored'), 'never the raw id alone');
     await submit();
     assert.equal(sent[1].body.occurredAt, occurredAt);
     assert.equal(sent[1].body.toWarehouseId, 'wh-stored');

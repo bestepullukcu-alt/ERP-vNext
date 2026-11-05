@@ -128,7 +128,8 @@ public sealed class SupplyChainReturnsControllerTests
         Assert.DoesNotContain("lifecycleCorrelationId", json);
         Assert.DoesNotContain("itemId", json);
         Assert.DoesNotContain("carrierId", json);
-        var request = Assert.Single(handler.Requests);
+        Assert.DoesNotContain("skuId", json); // r10 §35.2: ids stay server-side
+        var request = Assert.Single(handler.Requests, r => r.Uri.Contains("/shipments/", StringComparison.Ordinal));
         Assert.Equal($"{Gateway}/shipments/{Shipment:D}", request.Uri);
         Assert.Equal(Tenant.ToString("D"), request.Headers["X-Tenant-Id"]);
         Assert.Equal(LegalEntity.ToString("D"), request.Headers["X-Legal-Entity-Id"]);
@@ -383,7 +384,8 @@ public sealed class SupplyChainReturnsControllerTests
             .Where(template => !template.StartsWith("api", StringComparison.Ordinal))
             .Select(template => template.Length == 0 ? prefix : $"{prefix}/{template}")
             .ToHashSet(StringComparer.Ordinal);
-        Assert.Equal(new HashSet<string>(StringComparer.Ordinal) { "/SupplyChain/Returns" }, viewRoutes);
+        // MOD-0186 r10 §35.5 (DL-4): the details page joins the list page (manifest page RETURN_DETAILS).
+        Assert.Equal(new HashSet<string>(StringComparer.Ordinal) { "/SupplyChain/Returns", "/SupplyChain/Returns/Details/{returnId:guid}" }, viewRoutes);
     }
 
     [Fact]
@@ -396,8 +398,15 @@ public sealed class SupplyChainReturnsControllerTests
             .ToArray();
         Assert.Equal(new[]
         {
+            // r10 §35.3 / §35.5 (DL-3, DL-4): read-only picker, place and details adapters join the four bound operations.
             "GET api",
+            "GET api/eligible-shipments",
+            "GET api/locations",
+            "GET api/places/{locationId}",
             "GET api/shipments/{shipmentId:guid}",
+            "GET api/warehouses",
+            "GET api/{returnId:guid}",
+            "GET api/{returnId:guid}/holds",
             "POST api",
             "POST api/{returnId:guid}/transition"
         }, routes);
@@ -425,6 +434,195 @@ public sealed class SupplyChainReturnsControllerTests
     private static IEnumerable<MethodInfo> Actions() => typeof(SupplyChainReturnsController)
         .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
+
+    // ── MOD-0186 r10 DL-3 / DL-4 adapters (§35.2–35.5) ─────────────────────────────────────────────────────────────
+    private const string CrmRead = "crm.account.read";
+    private const string HoldsRead = "quarantine.holds.read";
+    private const string Account = "14900000-0000-4000-8000-000000000001";
+    private const string Sku = "88888888-8888-4888-8888-888888888888";
+    private const string AccountJson = "{\"data\":{\"accountName\":\"Acme\",\"accountCode\":\"C-1\",\"responsiblePersonEmail\":\"buyer@example.test\",\"addressLine\":\"Ataturk Cad\"}}";
+
+    private static string SummaryRow(string number, string? customerRef) =>
+        $"{{\"shipmentId\":\"{Guid.NewGuid():D}\",\"shipmentNumber\":\"{number}\",\"status\":\"Delivered\",\"plannedShipAt\":\"2026-09-20T08:00:00Z\",\"customerRef\":{(customerRef is null ? "null" : $"\"{customerRef}\"")}}}";
+
+    private static string ShipmentWithLot(string? customerRef = Account) =>
+        $"{{\"shipmentId\":\"{Shipment:D}\",\"shipmentNumber\":\"SHP-2026-000001\",\"status\":\"Delivered\",\"customerRef\":{(customerRef is null ? "null" : $"\"{customerRef}\"")},\"lifecycleCorrelationId\":\"{Root:D}\","
+        + $"\"lines\":[{{\"lineNumber\":\"1\",\"itemId\":\"77777777-7777-4777-8777-777777777777\",\"skuId\":\"{Sku}\",\"skuLevel\":\"Lsku\",\"lotId\":\"lot-1\",\"quantity\":\"2.000\",\"uomId\":\"EA\"}}],\"contractVersion\":\"v1\"}}";
+
+    private static HttpResponseMessage Names(CapturedRequest r, string fallback, bool namesUp = true)
+    {
+        var path = new Uri(r.Uri).AbsolutePath;
+        if (path == "/api/product-master/skus/bulk-read")
+            return namesUp ? Json(HttpStatusCode.OK, $"{{\"items\":[{{\"skuId\":\"{Sku}\",\"skuLevel\":\"Lsku\",\"canonicalCode\":\"LS-1\",\"name\":\"Tablet 16\",\"lifecycleStatus\":\"Active\"}}],\"notFound\":[],\"contractVersion\":\"v1\"}}")
+                : Json(HttpStatusCode.InternalServerError, "{}");
+        if (path == "/api/trace/lots/lot-1") return namesUp ? Json(HttpStatusCode.OK, "{\"lotId\":\"lot-1\",\"lotNumber\":\"L-0042\"}") : Json(HttpStatusCode.Forbidden, "{}");
+        if (path.StartsWith("/api/crm/accounts/", StringComparison.Ordinal)) return Json(HttpStatusCode.OK, AccountJson);
+        return Json(HttpStatusCode.OK, fallback);
+    }
+
+    // RB-1: the resolve projection carries the product / SKU name and code and the lot number; no id is a label.
+    [Fact]
+    public async Task Rb1_Resolve_carries_sku_name_and_code_and_lot_number_and_no_id()
+    {
+        var handler = new CaptureHandler(r => Names(r, ShipmentWithLot()));
+        var result = await CreateController(handler, [Create, ShipmentRead]).ResolveShipment(Shipment, CancellationToken.None);
+        var json = JsonSerializer.Serialize(Assert.IsType<JsonResult>(result).Value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var line = JsonDocument.Parse(json).RootElement.GetProperty("lines")[0];
+        Assert.Equal("LS-1 \u00B7 Tablet 16", line.GetProperty("skuLabel").GetString());
+        Assert.Equal("L-0042", line.GetProperty("lotNumber").GetString());
+        foreach (var id in new[] { Sku, "77777777-7777-4777-8777-777777777777", "lot-1", Account }) Assert.DoesNotContain(id, json);
+        Assert.Single(handler.Requests, x => x.Uri.EndsWith("/skus/bulk-read", StringComparison.Ordinal));
+    }
+
+    // RB-2: a failed or denied name read keeps the row with "unavailable", and the resolve still answers 200.
+    [Fact]
+    public async Task Rb2_Failed_name_reads_keep_the_row_and_say_unavailable()
+    {
+        var handler = new CaptureHandler(r => Names(r, ShipmentWithLot(), namesUp: false));
+        var json = JsonSerializer.Serialize(Assert.IsType<JsonResult>(await CreateController(handler, [Create, ShipmentRead]).ResolveShipment(Shipment, CancellationToken.None)).Value,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.Contains("\"skuState\":\"unavailable\"", json);
+        Assert.Contains("\"lotState\":\"unavailable\"", json);
+        Assert.Contains("\"lineNumber\":\"1\"", json);
+    }
+
+    // RB-3: the create picker asks Delivered and Closed with the search, draws the customer from the summary's customerRef
+    // (no per-row getShipment), shows "old record" without one, and never sends the id as text.
+    [Fact]
+    public async Task Rb3_Eligible_picker_asks_delivered_and_closed_with_search_and_resolves_the_customer()
+    {
+        var handler = new CaptureHandler(r => Names(r, $"{{\"items\":[{SummaryRow("SHP-1", Account)},{SummaryRow("SHP-2", null)}],\"total\":2,\"filteredTotal\":2}}"));
+        var result = Assert.IsType<ContentResult>(await CreateController(handler, [Create, ShipmentRead, CrmRead]).EligibleShipments(" 0042 ", 1, false, CancellationToken.None));
+        var shipments = handler.Requests.Where(x => new Uri(x.Uri).AbsolutePath == "/api/shipment-bundle/shipments").Select(x => x.Uri).ToList();
+        Assert.Equal(2, shipments.Count);
+        Assert.Contains(shipments, u => u.Contains("status=Delivered") && u.Contains("search=0042"));
+        Assert.Contains(shipments, u => u.Contains("status=Closed") && u.Contains("search=0042"));
+        Assert.DoesNotContain(handler.Requests, x => System.Text.RegularExpressions.Regex.IsMatch(new Uri(x.Uri).AbsolutePath, "/shipments/[0-9a-f-]{36}$"));
+        var body = JsonDocument.Parse(result.Content!).RootElement;
+        var items = body.GetProperty("items").EnumerateArray().ToList();
+        Assert.Contains(items, i => i.GetProperty("customer").GetProperty("state").GetString() == "resolved" && i.GetProperty("customer").GetProperty("name").GetString() == "Acme");
+        Assert.Contains(items, i => i.GetProperty("customer").GetProperty("state").GetString() == "oldRecord");
+        Assert.DoesNotContain(Account, result.Content!);
+    }
+
+    [Fact]
+    public async Task Rb3_Without_crm_read_the_picker_shows_number_and_date_and_asks_no_crm()
+    {
+        var handler = new CaptureHandler(r => Names(r, $"{{\"items\":[{SummaryRow("SHP-1", Account)}],\"total\":1}}"));
+        var result = Assert.IsType<ContentResult>(await CreateController(handler, [Create, ShipmentRead]).EligibleShipments(null, 1, false, CancellationToken.None));
+        Assert.DoesNotContain(handler.Requests, x => x.Uri.Contains("/api/crm/", StringComparison.Ordinal));
+        var item = JsonDocument.Parse(result.Content!).RootElement.GetProperty("items")[0];
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("customer").ValueKind);
+        Assert.Equal("SHP-1", item.GetProperty("number").GetString());
+    }
+
+    // RB-6: the layer asks the opened node's direct children, Active, and never isStockable; the warehouse picker asks Active.
+    [Fact]
+    public async Task Rb6_Location_layers_never_ask_isStockable()
+    {
+        var handler = new CaptureHandler(_ => Json(HttpStatusCode.OK, "{\"items\":[{\"locationId\":\"z1\",\"code\":\"Z-1\",\"name\":\"Zone\",\"type\":\"Zone\",\"isStockable\":false}]}"));
+        var parent = Guid.NewGuid();
+        Assert.IsType<ContentResult>(await CreateController(handler, [Receive]).Locations(parent.ToString(), null, CancellationToken.None));
+        Assert.IsType<ContentResult>(await CreateController(handler, [Receive]).Warehouses(null, CancellationToken.None));
+        Assert.Equal($"http://localhost:5000/api/locations/search?parentId={parent:D}&status=Active&page=1&pageSize=200", handler.Requests[0].Uri);
+        Assert.Equal("http://localhost:5000/api/locations/search?type=Warehouse&status=Active&page=1&pageSize=20", handler.Requests[1].Uri);
+        Assert.All(handler.Requests, x => Assert.DoesNotContain("isStockable", x.Uri, StringComparison.OrdinalIgnoreCase));
+        AssertFailure(await CreateController(handler, [Read]).Locations(parent.ToString(), null, CancellationToken.None), StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+    }
+
+    private static string ReturnDetailJson(string? customerRef) =>
+        $"{{\"returnId\":\"{ReturnIdValue:D}\",\"rmaNumber\":\"RMA-1\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Received\"{(customerRef is null ? string.Empty : $",\"customerRef\":\"{customerRef}\"")},\"reasonCode\":\"DAMAGED\",\"createdAt\":\"2026-09-22T09:00:00Z\","
+        + "\"lines\":[{\"shipmentLineNumber\":\"1\",\"quantity\":\"2.000\",\"uomId\":\"EA\",\"inventoryTransactionReferenceId\":\"17300000-0000-4000-8000-000000000001\",\"inventoryPosting\":\"Posted\",\"inventoryPostingReason\":null}],\"contractVersion\":\"v1\"}";
+
+    private static HttpResponseMessage DetailRoute(CapturedRequest r, string? returnCustomer, string? shipmentCustomer)
+    {
+        var path = new Uri(r.Uri).AbsolutePath;
+        if (path == $"/api/shipment-bundle/returns/{ReturnIdValue:D}") return Json(HttpStatusCode.OK, ReturnDetailJson(returnCustomer));
+        if (path == $"/api/shipment-bundle/shipments/{Shipment:D}") return Json(HttpStatusCode.OK, ShipmentWithLot(shipmentCustomer));
+        if (path == "/api/quarantine/holds/by-source")
+            return Json(HttpStatusCode.OK, $"[{{\"holdId\":\"99999999-9999-4999-8999-999999999999\",\"holdNumber\":\"KRN-2026-0007\",\"status\":\"Open\",\"item\":{{\"skuId\":\"{Sku}\"}},\"lot\":{{\"lotId\":\"lot-1\"}}}},{{\"holdId\":\"aaaaaaaa-9999-4999-8999-999999999999\",\"holdNumber\":\"KRN-2026-0008\",\"status\":\"Decided\",\"item\":{{\"skuId\":\"{Guid.NewGuid():D}\"}}}}]");
+        return Names(r, "{}");
+    }
+
+    // RB-8 / RB-9 adapter: getReturn with names; the return's own customerRef only, never the shipment's (single rule).
+    [Fact]
+    public async Task Rb25_Details_shows_the_returns_own_customer_and_never_falls_back_to_the_shipment()
+    {
+        var own = new CaptureHandler(r => DetailRoute(r, Account, null));
+        var body = JsonDocument.Parse(Assert.IsType<ContentResult>(await CreateController(own, [Read, ShipmentRead, CrmRead]).Detail(ReturnIdValue, CancellationToken.None)).Content!).RootElement;
+        Assert.Equal("resolved", body.GetProperty("customer").GetProperty("state").GetString());
+        Assert.False(body.TryGetProperty("customerRef", out _));
+        Assert.Equal("SHP-2026-000001", body.GetProperty("shipmentNumber").GetString());
+        var line = body.GetProperty("lines")[0];
+        Assert.Equal("LS-1 \u00B7 Tablet 16", line.GetProperty("sku").GetProperty("label").GetString());
+        Assert.Equal("L-0042", line.GetProperty("lot").GetProperty("label").GetString());
+        Assert.False(line.TryGetProperty("inventoryTransactionReferenceId", out _));
+
+        var old = new CaptureHandler(r => DetailRoute(r, null, Account));
+        var oldBody = JsonDocument.Parse(Assert.IsType<ContentResult>(await CreateController(old, [Read, ShipmentRead, CrmRead]).Detail(ReturnIdValue, CancellationToken.None)).Content!).RootElement;
+        Assert.Equal("oldRecord", oldBody.GetProperty("customer").GetProperty("state").GetString());
+        Assert.DoesNotContain(old.Requests, x => x.Uri.Contains("/api/crm/", StringComparison.Ordinal));
+    }
+
+    // RB-25 / SB-25: a stored value that is not a lower-case Guid is "not found", with no CRM call.
+    [Fact]
+    public async Task Rb25_A_malformed_stored_customer_is_not_found_with_no_crm_call()
+    {
+        var handler = new CaptureHandler(r => DetailRoute(r, "ACME-01", null));
+        var body = JsonDocument.Parse(Assert.IsType<ContentResult>(await CreateController(handler, [Read, ShipmentRead, CrmRead]).Detail(ReturnIdValue, CancellationToken.None)).Content!).RootElement;
+        Assert.Equal("notFound", body.GetProperty("customer").GetProperty("state").GetString());
+        Assert.DoesNotContain(handler.Requests, x => x.Uri.Contains("/api/crm/", StringComparison.Ordinal));
+    }
+
+    // RB-10: without quarantine.holds.read the holds adapter refuses before any request; with it, each line gets its KRN.
+    [Fact]
+    public async Task Rb10_Holds_need_the_quarantine_key_and_are_matched_to_lines()
+    {
+        var denied = new CaptureHandler(_ => throw new InvalidOperationException("no request"));
+        AssertFailure(await CreateController(denied, [Read, ShipmentRead]).Holds(ReturnIdValue, CancellationToken.None), StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        Assert.Empty(denied.Requests);
+
+        var handler = new CaptureHandler(r => DetailRoute(r, Account, Account));
+        var body = JsonDocument.Parse(Assert.IsType<ContentResult>(await CreateController(handler, [Read, ShipmentRead, HoldsRead]).Holds(ReturnIdValue, CancellationToken.None)).Content!).RootElement;
+        var line = body.GetProperty("lines")[0];
+        Assert.Equal("KRN-2026-0007", line.GetProperty("holds")[0].GetProperty("holdNumber").GetString());
+        Assert.Equal("KRN-2026-0008", body.GetProperty("other")[0].GetProperty("holdNumber").GetString());
+        Assert.Contains(handler.Requests, x => x.Uri.EndsWith($"/api/quarantine/holds/by-source?sourceModule=MOD-0186&sourceDocumentId={ReturnIdValue:D}", StringComparison.Ordinal));
+    }
+
+    // RB-25 (list): the customer column comes from the return's own customerRef; customerRef never reaches the page; without
+    // crm.account.read nothing is asked of CRM.
+    [Fact]
+    public async Task Rb25_List_resolves_the_returns_own_customer_and_drops_customerRef()
+    {
+        var list = $"{{\"items\":[{{\"returnId\":\"{ReturnIdValue:D}\",\"rmaNumber\":\"RMA-1\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Requested\",\"customerRef\":\"{Account}\"}},{{\"returnId\":\"{Guid.NewGuid():D}\",\"rmaNumber\":\"RMA-2\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Requested\"}}],\"total\":2,\"contractVersion\":\"v1\"}}";
+        var handler = new CaptureHandler(r => Names(r, list));
+        var content = Assert.IsType<ContentResult>(await CreateController(handler, [Read, CrmRead]).List(null, null, CancellationToken.None)).Content!;
+        Assert.DoesNotContain(Account, content);
+        var items = JsonDocument.Parse(content).RootElement.GetProperty("items");
+        Assert.Equal("resolved", items[0].GetProperty("customer").GetProperty("state").GetString());
+        Assert.Equal("oldRecord", items[1].GetProperty("customer").GetProperty("state").GetString());
+
+        var noCrm = new CaptureHandler(r => Names(r, list));
+        var plain = Assert.IsType<ContentResult>(await CreateController(noCrm, [Read]).List(null, null, CancellationToken.None)).Content!;
+        Assert.DoesNotContain(Account, plain);
+        Assert.DoesNotContain("\"customer\"", plain);
+        Assert.DoesNotContain(noCrm.Requests, x => x.Uri.Contains("/api/crm/", StringComparison.Ordinal));
+    }
+
+    // RB-26: nothing read from CRM reaches the log on the list, picker and details adapters.
+    [Fact]
+    public async Task Rb26_Nothing_read_from_crm_reaches_the_log()
+    {
+        var log = new SupplyChainShipmentsCustomerTests.ReturnsCapturingLogger();
+        var list = $"{{\"items\":[{{\"returnId\":\"{ReturnIdValue:D}\",\"rmaNumber\":\"RMA-1\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Requested\",\"customerRef\":\"{Account}\"}}],\"total\":1}}";
+        await CreateController(new CaptureHandler(r => Names(r, list)), [Read, CrmRead], logger: log).List(null, null, CancellationToken.None);
+        await CreateController(new CaptureHandler(r => Names(r, $"{{\"items\":[{SummaryRow("SHP-1", Account)}],\"total\":1}}")), [Create, ShipmentRead, CrmRead], logger: log).EligibleShipments(null, 1, false, CancellationToken.None);
+        await CreateController(new CaptureHandler(r => DetailRoute(r, Account, null)), [Read, ShipmentRead, CrmRead], logger: log).Detail(ReturnIdValue, CancellationToken.None);
+        Assert.NotEmpty(log.Lines);
+        foreach (var secret in new[] { "Acme", "C-1", "buyer@example.test", "Ataturk" }) Assert.DoesNotContain(log.Lines, l => l.Contains(secret, StringComparison.Ordinal));
+    }
+
     private static string ShipmentDetail(string? rootJson)
     {
         var root = rootJson is null ? string.Empty : $",\"lifecycleCorrelationId\":{rootJson}";
@@ -444,12 +642,13 @@ public sealed class SupplyChainReturnsControllerTests
     }
 
     private static SupplyChainReturnsController CreateController(CaptureHandler handler, string[] permissions,
-        string? body = null, string? idempotencyKey = null, string contentType = "application/json", bool includeScope = true)
+        string? body = null, string? idempotencyKey = null, string contentType = "application/json", bool includeScope = true,
+        Microsoft.Extensions.Logging.ILogger<SupplyChainReturnsController>? logger = null)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["GatewayUrl"] = "http://localhost:5000" }).Build();
         var controller = new SupplyChainReturnsController(new HttpClient(handler), configuration,
-            NullLogger<SupplyChainReturnsController>.Instance);
+            logger ?? NullLogger<SupplyChainReturnsController>.Instance);
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "returns-tester") };
         if (includeScope)
         {

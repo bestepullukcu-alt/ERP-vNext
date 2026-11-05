@@ -59,11 +59,27 @@ public sealed class ReturnIndexBehaviorTests
     [Fact]
     public void Omits_unsupported_surfaces()
     {
-        foreach (var token in new[] { "method: 'DELETE'", "method: 'PUT'", "method: 'PATCH'", "/bulk", "/upload", "/import", "/Details/",
-                     "js-edit-item", "delete-record", "/inventory", "/warehouse", "remaining" })
+        // r10 §35.3 / §35.5: the Details link and the receiving pickers are allowed now; the pickers go through this module's
+        // own adapter (endpoint), never to an Inventory or Warehouse service path.
+        foreach (var token in new[] { "method: 'DELETE'", "method: 'PUT'", "method: 'PATCH'", "/bulk", "/upload", "/import",
+                     "js-edit-item", "delete-record", "/inventory", "/api/warehouse", "/api/locations", "remaining" })
         {
             Assert.DoesNotContain(token, _script);
         }
+        Assert.Contains("`${endpoint}/warehouses", _script);
+        Assert.Contains("`${endpoint}/locations?parentId=", _script);
+        Assert.Contains("/SupplyChain/Returns/Details/", _script);
+    }
+
+    // MOD-0186 r10 RB-24: no picker writes an id as option text; ids ride only in the option value. Rendering row.id (or
+    // node.id) as text turns this red.
+    [Fact]
+    public void No_picker_shows_an_id_as_its_text()
+    {
+        var texts = System.Text.RegularExpressions.Regex.Matches(_script, @"\btext:\s*([^,}]+)").Select(m => m.Groups[1].Value.Trim()).ToList();
+        Assert.True(texts.Count >= 4, string.Join(" | ", texts));
+        Assert.All(texts, text => Assert.DoesNotMatch(@"\b(row|node)\.(id|shipmentId)\b|\bid\b(?!:)", text));
+        Assert.Contains("option.textContent = text || t('NameUnavailable');", _script);
     }
 
     [Fact]
