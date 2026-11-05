@@ -67,6 +67,9 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
         // skuLevel, lotId and the completed dispatch attempt's issueTransactionId feed the CUSTOMER_RETURN.
         Property(e, "stockIssued", x => x.ValueKind is JsonValueKind.Null or JsonValueKind.True or JsonValueKind.False);
         bool? stockIssued = e.TryGetProperty("stockIssued", out var issued) && issued.ValueKind != JsonValueKind.Null ? issued.GetBoolean() : null;
+        // 3.5.0 (MOD-0186 r10 §35.6): the shipment's customerRef, null or a string; stored on the return as given.
+        Property(e, "customerRef", x => x.ValueKind is JsonValueKind.Null or JsonValueKind.String);
+        var customerRef = e.TryGetProperty("customerRef", out var customer) && customer.ValueKind == JsonValueKind.String ? customer.GetString() : null;
         var lines = e.GetProperty("lines").EnumerateArray().Select(x => new ReturnSourceLine(x.GetProperty("lineNumber").GetString()!, x.GetProperty("quantity").GetString()!, x.GetProperty("uomId").GetString()!, Guid.Parse(x.GetProperty("itemId").GetString()!), Guid.Parse(x.GetProperty("skuId").GetString()!),
             OptionalText(x, "skuLevel"), OptionalText(x, "lotId"), OptionalText(x, "issueTransactionId"))).ToArray();
         if (lines.Select(x => x.LineNumber).Distinct(StringComparer.Ordinal).Count() != lines.Length) Invalid();
@@ -74,7 +77,7 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
         if (Guid.Parse(shipmentId.GetString()!) != expectedId) Invalid();
         if (!e.TryGetProperty("lifecycleCorrelationId", out var root) || root.ValueKind == JsonValueKind.Null) throw new ReturnFailureException(503, "RETURN_SHIPMENT_ROOT_UNAVAILABLE");
         if (!Uuid(root)) throw new ReturnFailureException(502, "RETURN_SHIPMENT_ROOT_INVALID");
-        return new(expectedId, status.GetString()!, Guid.Parse(root.GetString()!), observedAt, lines, stockIssued);
+        return new(expectedId, status.GetString()!, Guid.Parse(root.GetString()!), observedAt, lines, stockIssued, customerRef);
     }
     public async Task<ReturnReferenceSnapshot> ObserveAsync(ReturnOrder order, CancellationToken ct)
     {
