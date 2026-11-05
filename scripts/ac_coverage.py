@@ -12,25 +12,32 @@ test name):
 The id is the FULL pack id (a parent and its follow-up packs each have an AC-1) and the criterion number of that pack's
 '## Acceptance Criteria' section, read by acceptance_record.read_pack — the one pack reader; no looser second one.
 
-ONE way to write it (Codex review of 3a4bc6388: concatenation, interpolation, raw strings, it.each and describe.each
-slipped past a scanner that tried to understand every spelling). In a test file the tag syntax ("[MOD-…", "MOD-nnnn:AC-",
-":AC-n") may appear in exactly one place: a single, plain string literal that is a test's name — DisplayName = "…" of a
-[Fact]/[Theory] attribute (qualified names allowed), or the first argument of it()/test() (with .only/.skip/.todo/
-.concurrent/.fails). Tags lead the name. Anywhere else — another string, a concatenated or interpolated name, a raw
-string, it.each/test.each/describe — it is refused, so a tag can never reach a result unchecked. Comments never count.
+WHERE THE BOUNDARY IS (Codex reviews of 3a4bc6388 and 9d33ca311): reading source code can never be complete — regex
+literals, nested templates, escapes, names built at run time. The test RESULT is the ground truth: there a test's name
+is final, however it was written. So `report` is the boundary: every result name that carries the selected pack's tag
+syntax must open with valid tags of criteria the pack has at the base, or the report is red (exit 1). `check-tags` is an
+EARLY WARNING in phase1 for the normal spellings and the usual mistakes; it is not the boundary and does not claim to be.
 
-    check-tags [--base <ref>]   every tag names a criterion of a readable pack AT THE BASE (the PR's base tip; HEAD when
-                                none), and that pack's criteria are not changed in the same tree: a new or changed
-                                criterion reaches main first, then a test is tagged with it. Exit 0 / 1 / 2.
+The one supported spelling: a single plain string literal that is a test's name — DisplayName = "…" of a [Fact]/[Theory]
+attribute (qualified names, global:: too), or the first argument of it()/test() (.only/.skip/.todo/.concurrent/.fails) —
+with its tags leading. check-tags refuses the tag syntax ("[MOD-nnnn:", "MOD-nnnn:AC", ":AC-n", "AC-n]", also when split
+by '+' or written with escapes) anywhere else it can see it. Comments never count.
+
+    check-tags [--base <ref>]   every tag it sees names a criterion of a readable pack AT THE BASE (the PR's base tip;
+                                HEAD when none), and that pack's criteria are not changed in the same tree: a new or
+                                changed criterion reaches main first, then a test is tagged with it. Exit 0 / 1; 2 when a
+                                test file cannot be decoded.
     report --pack <id> --results <file|dir>... [--base <ref>]
                                 every criterion of the pack at the base, with the results of its tagged tests from the
-                                given TRX / JUnit files. Only tags that LEAD a result's name count (a Theory's data never
-                                does). A test that did not pass (failed, error, timeout, not executed, skipped, todo) is
-                                never a pass and is never hidden by one that passed. A criterion without results is listed.
-                                The report says "the tests linked to this criterion ran and passed" — never "the criterion
-                                is met". It does NOT verify that the files belong to one CI run (step 2 binds them to the
-                                run with a manifest); it says so. Exit 0 = complete report; 2 = incomplete evidence (an
-                                input without result files, an unreadable or empty file).
+                                given TRX / JUnit files. Only tags that LEAD a test's name count (a Theory's data never
+                                does); this pack's tag syntax anywhere else in a result name, or a criterion the pack does
+                                not have, is an ENGEL (exit 1). A test that did not pass (failed, error, timeout, not
+                                executed, skipped, todo) is never a pass and is never hidden by one that passed. A criterion
+                                without results is listed. The report says "the tests linked to this criterion ran and
+                                passed" — never "the criterion is met". It does NOT verify that the files belong to one CI
+                                run (step 2 binds them to the run with a manifest); it says so. Exit 0 = complete, no
+                                ENGEL; 1 = ENGEL; 2 = incomplete evidence (an input without result files, an unreadable
+                                or empty file).
 
 Step 1 decides nothing in the acceptance chain: no acceptance record, queue state or coverage count changes.
 """
@@ -56,8 +63,14 @@ LEADING = re.compile(rf"^(?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+")
 TRIGGER = re.compile(rf"\[\s*{PACK_ID}\s*:|{PACK_ID}\s*:\s*AC|:\s*AC-\d|AC-\d+\s*\]")
 CS_TEST = re.compile(r"(?:^|/)(?:tests?|[^/]+\.Tests?|[^/]*Tests)/(?:.*/)?[^/]+\.cs$")
 JS_TEST = re.compile(r"\.(?:test|spec)\.(?:[cm]?js|jsx|ts|tsx)$")
-CS_NAME_CTX = re.compile(r"\[\s*(?:[A-Za-z_]\w*\s*\.\s*)*\w*(?:Fact|Theory)(?:Attribute)?\s*\([^\]]*\bDisplayName\s*=\s*",
-                         re.S)
+CS_NAME_CTX = re.compile(r"\[\s*(?:global\s*::\s*)?(?:[A-Za-z_]\w*\s*\.\s*)*\w*(?:Fact|Theory)(?:Attribute)?\s*\("
+                         r"[^\]]*\bDisplayName\s*=\s*", re.S)
+# a test's name in a result: tags at its start, or right after a JUnit suite path's ' > ' (Vitest joins the describe
+# names with it) — the FIRST such place only, so a ' > ' inside the test's own name never hides it (Codex)
+RESULT_LEAD = re.compile(rf"(?:^|\s>\s)((?:\[{PACK_ID}:AC-[1-9][0-9]*\]\s*)+)")
+ESCAPE = re.compile(r"\\(?:u\{([0-9A-Fa-f]{1,6})\}|u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8})|x([0-9A-Fa-f]{1,4}))")
+# a JS '/' after one of these (or at the start) opens a regex literal, not a division
+REGEX_BEFORE = set("(,=:[!&|?{};+-*%<>~^") | {""}
 JS_NAME_CTX = re.compile(r"(?<![\w.$])(?:it|test)(?:\s*\.\s*(?:only|skip|todo|concurrent|fails))*\s*\(\s*$")
 TRX_NS = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
 PASS, FAIL, NOT_RUN = "geçti", "kaldı", "koşmadı"
@@ -113,6 +126,26 @@ def literals(text: str, js: bool) -> tuple[str, list[dict]]:
             blank(i, j)
             i = j
             continue
+        if js and c == "/":
+            k = i - 1
+            while k >= 0 and masked[k] in " \t\r\n":
+                k -= 1
+            prev = "".join(masked[max(0, k - 9):k + 1]) if k >= 0 else ""
+            word = re.search(r"(\w+)$", prev)
+            if (prev[-1:] in REGEX_BEFORE) or (word and word.group(1) in ("return", "typeof", "case", "in", "of",
+                                                                          "delete", "void", "throw", "new", "else")):
+                j, klass = i + 1, False                  # a regex literal (Codex: /"/ and /[/*]/ hid what followed)
+                while j < n and text[j] != "\n" and (klass or text[j] != "/"):
+                    if text[j] == "\\":
+                        j += 1
+                    elif text[j] == "[":
+                        klass = True
+                    elif text[j] == "]":
+                        klass = False
+                    j += 1
+                blank(i + 1, min(j, n))
+                i = j + 1
+                continue
         if js and c in "'\"`":
             j = i + 1
             while j < n and text[j] != c:
@@ -155,25 +188,56 @@ def literals(text: str, js: bool) -> tuple[str, list[dict]]:
     return "".join(masked), lits
 
 
+def decode(body: str) -> str:
+    """A literal's \\u / \\U / \\x escapes as the characters they stand for (what the test's name will really be)."""
+    def one(m: re.Match) -> str:
+        code = int(next(g for g in m.groups() if g), 16)
+        return chr(code) if code < 0x110000 else m.group(0)
+    return ESCAPE.sub(one, body)
+
+
+def read_source(root: str, path: str) -> str | None:
+    """A test file's text: UTF-8 (with or without BOM) or UTF-16 by its BOM; None when it cannot be decoded (Codex: a
+    UTF-16 file was skipped silently, its tag still reached the TRX)."""
+    raw = (Path(root) / path).read_bytes()
+    try:
+        if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+            return raw.decode("utf-16")
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return None
+
+
 def tags_in(path: str, text: str) -> tuple[list[tuple[int, str, int]], list[str]]:
     """([(line, pack id, n)], problems) for one test file: every literal that carries the tag syntax must be a plain test
     name in the one supported position, with its tags leading; anything else is a problem (RULE)."""
     js = not path.endswith(".cs")
     masked, lits = literals(text, js)
     found, problems = [], []
+    # literals joined by '+' are read as one text (Codex: "[MOD-" + "0900" + ":" + "AC-" + "99" + "]"), with their
+    # escapes decoded (Codex: "[MOD-0900:AC-99]")
+    groups: list[list[dict]] = []
     for lit in lits:
-        body = lit["body"]
-        if not TRIGGER.search(body):
+        if groups and re.fullmatch(r"\s*\+\s*", masked[groups[-1][-1]["end"]:lit["start"]]):
+            groups[-1].append(lit)
+        else:
+            groups.append([lit])
+    for group in groups:
+        joined = "".join(decode(g["body"]) for g in group)
+        if not TRIGGER.search(joined):
             continue
+        lit = group[0]
+        body = lit["body"]
         at = text.count("\n", 0, lit["start"]) + 1
-        before, after = masked[:lit["start"]], masked[lit["end"]:]
+        before, after = masked[:lit["start"]], masked[group[-1]["end"]:]
         if js:
             named = JS_NAME_CTX.search(before) is not None and re.match(r"\s*[,)]", after) is not None
         else:
             opened = before.rfind("[")
             named = (opened >= 0 and "]" not in before[opened:] and CS_NAME_CTX.fullmatch(before[opened:]) is not None
                      and re.match(r"\s*[,)]", after) is not None)
-        if lit["kind"] != "plain" or not named:
+        plain = len(group) == 1 and lit["kind"] == "plain" and decode(body) == body
+        if not plain or not named:
             problems.append(f"{path}:{at}: desteklenmeyen yazım ({'ad değil' if not named else 'tek parça düz metin değil'}) "
                             f"— {RULE}")
             continue
@@ -245,12 +309,15 @@ def base_ref(root: str, base: str | None) -> str:
 # ------------------------------------------------------------------------------------------------ check-tags
 def check_tags(root: str, base: str | None) -> tuple[int, list[str]]:
     at = base_ref(root, base)
-    problems, notes, tagged = [], [], {}
+    problems, notes, tagged, unread = [], [], {}, []
     for path in test_files(root):
         try:
-            text = (Path(root) / path).read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue                      # a file git lists but this tree cannot read is no tag source
+            text = read_source(root, path)
+        except OSError:
+            continue                      # listed by git but not in this tree (deleted, unchecked-out): no tag source
+        if text is None:
+            unread.append(path)
+            continue
         found, bad = tags_in(path, text)
         problems += bad
         for line, pack, n in found:
@@ -269,8 +336,10 @@ def check_tags(root: str, base: str | None) -> tuple[int, list[str]]:
     lines = [f"AC-TEST check-tags — taban {at[:12]} · {sum(len(u) for u in tagged.values())} etiket, {len(tagged)} paket"]
     lines += [f"NOT: {x}" for x in dict.fromkeys(notes)]
     lines += [f"ENGEL: {p}" for p in problems]
-    lines.append("sonuç: etiketler geçerli" if not problems else f"sonuç: {len(problems)} etiket sorunu")
-    return (1 if problems else 0), lines
+    lines += [f"OKUNAMADI: {p} — UTF-8 ya da BOM'lu UTF-16 değil; etiketleri denetlenemedi" for p in unread]
+    lines.append("sonuç: etiketler geçerli (erken uyarı; sınır, sonuç dosyasını okuyan rapordur)" if not problems
+                 and not unread else f"sonuç: {len(problems)} etiket sorunu, {len(unread)} okunamayan dosya")
+    return (1 if problems else 2 if unread else 0), lines
 
 
 # ------------------------------------------------------------------------------------------------ report
@@ -279,12 +348,17 @@ def results_of(paths: list[str]) -> tuple[list[tuple[str, str]], list[str]]:
     *.xml). Every input given must yield a file and every file result rows; a file is read once however often it is
     named. Each result row counts — never a summary counter (Codex: a NotExecuted row can sit under notExecuted = 0)."""
     files: list[str] = []
+    seen: set[str] = set()
     for p in paths:
         got = (sorted(str(f) for f in Path(p).rglob("*") if f.suffix.lower() in (".trx", ".xml"))
                if os.path.isdir(p) else [p])
         if not got:
             raise Incomplete(f"{p}: sonuç dosyası yok")
-        files += [f for f in got if os.path.realpath(f) not in {os.path.realpath(x) for x in files}]
+        for f in got:                     # a link or a second name of the same file is read once (Codex)
+            real = os.path.realpath(f)
+            if real not in seen:
+                seen.add(real)
+                files.append(f)
     out: list[tuple[str, str]] = []
     for f in files:
         try:
@@ -299,8 +373,8 @@ def results_of(paths: list[str]) -> tuple[list[tuple[str, str]], list[str]]:
         elif root.tag in ("testsuites", "testsuite"):
             for c in root.iter("testcase"):
                 kids = {k.tag for k in c}
-                name = c.get("name", "").split(" > ")[-1]     # a suite path before the test's own name never leads
-                rows.append((name, FAIL if kids & {"failure", "error"} else NOT_RUN if "skipped" in kids else PASS))
+                rows.append((c.get("name", ""), FAIL if kids & {"failure", "error"} else NOT_RUN if "skipped" in kids
+                             else PASS))
         else:
             raise Incomplete(f"{f}: TRX ya da JUnit değil ({root.tag[:40]})")
         if not rows:
@@ -316,16 +390,20 @@ def report(root: str, pack: str, paths: list[str], base: str | None) -> tuple[in
         raise Incomplete(why)
     rows, files = results_of(paths)
     runs: dict[int, list[str]] = {n: [] for n in crit}
-    foreign = []
+    engel = []
+    mine = re.compile(rf"{re.escape(pack)}(?![-\w])\s*:")   # this pack's tag syntax, never a longer id's
     for name, state in rows:
-        lead = LEADING.match(name)
-        for p, n in dict.fromkeys(TAG.findall(lead.group(0) if lead else "")):
-            if p != pack:
-                continue
-            if int(n) in runs:
-                runs[int(n)].append(state)
+        lead = RESULT_LEAD.search(name)
+        head = lead.group(1) if lead else ""
+        tags = [(p, int(n)) for p, n in dict.fromkeys(TAG.findall(head)) if p == pack]
+        rest = name[:lead.start(1)] + name[lead.end(1):] if lead else name
+        if mine.search(rest):            # the boundary: this pack's syntax anywhere but the leading tags (Codex)
+            engel.append(f"{pack} etiketi bir test adının başında değil ya da biçimi bozuk — '{name[:90]}'")
+        for _p, n in tags:
+            if n in runs:
+                runs[n].append(state)
             else:
-                foreign.append(f"AC-{n}: {name[:80]}")
+                engel.append(f"{pack} için pakette olmayan ölçüt AC-{n} — '{name[:90]}'")
     lines = [f"AC-TEST report — {ppath}@{at[:12]} · {len(files)} sonuç dosyası "
              f"({', '.join(os.path.basename(f) for f in files)[:160]}) — dosyaların tek bir CI koşusuna ait olduğu "
              "DOĞRULANMADI (adım 2: koşu künyesi)"]
@@ -344,10 +422,10 @@ def report(root: str, pack: str, paths: list[str], base: str | None) -> tuple[in
             verdict, key = f"bağlı {len(got)} test koştu ve geçti", "tamam"
         tally[key] += 1
         lines.append(f"AC-{n} ({kind}): {verdict} — {text[:70]}")
-    lines += [f"UYARI: sonuçta {pack} için pakette olmayan kimlik — {f}" for f in foreign]
-    lines.append("özet: " + " · ".join(f"{k} {v}" for k, v in tally.items())
+    lines += [f"ENGEL: {e}" for e in dict.fromkeys(engel)]
+    lines.append("özet: " + " · ".join(f"{k} {v}" for k, v in tally.items()) + (f" · ENGEL {len(set(engel))}" if engel else "")
                  + " — bu rapor ölçütün karşılandığını değil, bağlı testlerin sonucunu söyler")
-    return 0, lines
+    return (1 if engel else 0), lines
 
 
 # ------------------------------------------------------------------------------------------------ self-test
@@ -437,6 +515,29 @@ def self_test() -> int:
                  'it("x", () => { const s = "it(\'[MOD-0900:AC-99]\', f)"; });\n', "desteklenmeyen")
         bad_case("a template literal with ${} (Codex)", "frontend/u15.test.js",
                  'it(`[MOD-0900:AC-${n}] x`, () => {});\n', "desteklenmeyen")
+        bad_case("a regex literal with a quote before the test (Codex 2nd)", "frontend/u17.test.js",
+                 'const q = /"/;\nit("[MOD-0900:AC-99] x", () => {});\n', "AC-99 yok")
+        bad_case("a regex literal with /* inside a class before the test (Codex 2nd)", "frontend/u18.test.js",
+                 'const q = /[/*]/;\nit("[MOD-0900:AC-99] x", () => {});\n', "AC-99 yok")
+        bad_case("a name split into many pieces (Codex 2nd)", "tests/Demo/U19Tests.cs",
+                 fact('"[MOD-" + "0900" + ":" + "AC-" + "99" + "]"'), "desteklenmeyen")
+        bad_case("a name written with escapes (Codex 2nd)", "tests/Demo/U20Tests.cs",
+                 fact('"\\u005bMOD-0900\\u003aAC-99\\u005d"'), "desteklenmeyen")
+        bad_case("JS pieces in an it.each name (Codex 2nd)", "frontend/u21.test.js",
+                 'it.each([1])("[MOD-" + "0900" + ":" + "AC-" + "99" + "]", () => {});\n', "desteklenmeyen")
+        put("tests/Demo/GlobalTests.cs", fact('"[MOD-0900:AC-1] global"').replace("[Fact(", "[global::Xunit.Fact("))
+        c, o = check_tags(td, base)
+        cases.append(("check-tags (Codex 2nd): [global::Xunit.Fact(DisplayName = …)] is a test's name -> exit 0", c == 0))
+        (Path(td) / "tests/Demo/GlobalTests.cs").unlink()
+        (Path(td) / "tests/Demo/Utf16Tests.cs").write_bytes(fact('"[MOD-0900:AC-99] x"').encode("utf-16"))
+        c, o = check_tags(td, base)
+        cases.append(("sabotage check-tags (Codex 2nd): a UTF-16 (BOM) test file is read -> exit 1 'AC-99 yok'",
+                      c == 1 and any("AC-99 yok" in l for l in o)))
+        (Path(td) / "tests/Demo/Utf16Tests.cs").write_bytes(b"\x80\x81 [MOD-0900:AC-99]")
+        c, o = check_tags(td, base)
+        cases.append(("sabotage check-tags (Codex 2nd): a test file that cannot be decoded -> exit 2 'OKUNAMADI', never a "
+                      "silent pass", c == 2 and any(l.startswith("OKUNAMADI") for l in o)))
+        (Path(td) / "tests/Demo/Utf16Tests.cs").unlink()
         put(f"{d}/MOD-0900-demo.md", pack("MOD-0900", ["AC-1 (zorunlu) — kayıt açılır", "AC-2 (isteğe bağlı) — liste süzülür",
                                                      "AC-3 (zorunlu) — yeni ölçüt"]))
         put("tests/Demo/U16Tests.cs", fact('"[MOD-0900:AC-3] x"'))
@@ -471,8 +572,10 @@ def self_test() -> int:
         cases.append(("sabotage report: a Theory row NotExecuted under a notExecuted=0 counter -> 'eksik', not a pass; a "
                       "tag only in a Theory's data never counts (Codex); a duplicate tag in one name counts once (Codex)",
                       has("AC-2 (isteğe bağlı)", "eksik — 1/2")))
-        cases.append(("report: a tag of a criterion the base pack does not have -> named as a warning, not counted",
-                      any(l.startswith("UYARI") and "AC-7" in l for l in o)))
+        cases.append(("sabotage report (the boundary): a tag of a criterion the base pack does not have -> ENGEL, exit 1, "
+                      "not counted", _c == 1 and any(l.startswith("ENGEL") and "AC-7" in l for l in o)))
+        cases.append(("sabotage report (the boundary): this pack's tag in a Theory's data, not leading the name -> ENGEL",
+                      any(l.startswith("ENGEL") and "TagInDataOnly" in l for l in o)))
         cases.append(("report (Codex): it never claims the files are one CI run", any("DOĞRULANMADI" in l for l in o[:1])))
         _c, o = report(td, "MOD-0900", [str(Path(td) / "r" / "run.trx"), str(Path(td) / "r" / "run.trx")], base)
         cases.append(("sabotage report: the same file given twice is read once (Codex)",
@@ -484,6 +587,16 @@ def self_test() -> int:
                       "before the test's name does not hide its tag", has("AC-2 (zorunlu)", "eksik — 1/2")))
         cases.append(("report: a criterion of the base pack with results is listed; one without any stays visible",
                       len([l for l in o if re.match(r"AC-\d", l)]) == 3))
+        cases.append(("report: another pack's results raise no ENGEL for this pack", _c == 0))
+        put("r6/vitest.xml", '<testsuites><testsuite name="v"><testcase name="[MOD-0900:AC-1] positive"/>'
+                             '<testcase name="[MOD-0900:AC-1] amount &gt; 0"><failure/></testcase>'
+                             '<testcase name="[MOD-0900:AC-2 broken name"/></testsuite></testsuites>')
+        os.symlink(str(Path(td) / "r6" / "vitest.xml"), str(Path(td) / "r6" / "alias.xml"))
+        _c, o = report(td, "MOD-0900", [str(Path(td) / "r6")], base)
+        cases.append(("sabotage report (Codex 2nd): a failing test whose own name holds ' > ' stays a failure -> 'KALDI'; "
+                      "a link to the same file is read once", has("AC-1 (zorunlu)", "1/2 KALDI")))
+        cases.append(("sabotage report (the boundary): a broken tag in a result name built at run time -> ENGEL, exit 1",
+                      _c == 1 and any(l.startswith("ENGEL") and "biçimi bozuk" in l for l in o)))
         put("r2/only.xml", '<testsuites><testsuite name="x"><testcase name="untagged"/></testsuite></testsuites>')
         _c, o = report(td, "MOD-0900", [str(Path(td) / "r2")], base)
         cases.append(("report: a criterion no tagged test ran for -> 'sonuç yok' (never silently absent)",
