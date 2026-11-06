@@ -71,15 +71,24 @@
     function reason({ title, subtext, lines, confirmText, type, placeholder }) {
         return new Promise((resolve) => {
             if (typeof global.showConfirm !== 'function') { resolve(null); return; }
-            const said = [subtext].concat(Array.isArray(lines) ? lines : [])
-                .map((part) => String(part ?? '').trim()).filter(Boolean).join(' · ');
+            // The shared confirm escapes its text at the door, so text goes as it is. A change list is a body of markup:
+            // built here as DOM with every value through textContent, and handed over as subtextHtml (WP web-js-reds-01).
+            const body = Array.isArray(lines) && lines.length ? (() => {
+                const box = document.createElement('div');
+                if (subtext) { const p = document.createElement('p'); p.className = 'mb-0'; p.textContent = String(subtext); box.appendChild(p); }
+                const ul = document.createElement('ul'); ul.className = 'text-start small mb-0 mt-2';
+                lines.forEach((l) => { const li = document.createElement('li'); li.textContent = String(l); ul.appendChild(li); });
+                box.appendChild(ul);
+                return box.outerHTML;
+            })() : null;
             let settled = false;
             global.showConfirm(title, (value) => {
                 settled = true;
                 resolve(String(value || '').trim());
             }, {
                 type: type || 'danger',
-                subtext: said,
+                subtext: subtext ? String(subtext) : '',
+                subtextHtml: body, // null without a change list: the dialog then draws subtext as text
                 confirmButtonText: confirmText,
                 cancelButtonText: t('ESign.Dialog.Cancel'),
                 showInput: true,
@@ -100,7 +109,7 @@
             let settled = false;
             global.showConfirm(title, () => { settled = true; resolve(true); }, {
                 type: type || 'info',
-                subtext: subtext || '',
+                subtext: subtext ? String(subtext) : '',
                 confirmButtonText: confirmText,
                 cancelButtonText: t('ESign.Dialog.Cancel'),
                 onCancel: () => { if (!settled) { settled = true; resolve(false); } }

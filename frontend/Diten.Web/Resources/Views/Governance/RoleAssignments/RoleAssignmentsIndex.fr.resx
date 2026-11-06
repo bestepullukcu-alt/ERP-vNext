@@ -196,4 +196,10 @@
     <value>Le rôle dispose déjà de cette autorisation. Actualisez la page.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Retirer cette autorisation ne laisserait aucun autre compte actif pouvant ajouter des utilisateurs. Accordez d'abord ce droit à un autre utilisateur.</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve">
+    <value>Clôturer</value>
+  </data>
+  <data name="ActionVerb_Comment" xml:space="preserve">
+    <value>Commenter</value>
+  </data>
 </root>

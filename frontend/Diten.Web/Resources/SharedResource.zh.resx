@@ -1232,4 +1232,13 @@
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>包装作业</value>
   </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>产能计划情景</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP 计划签核</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP 计划快照</value>
+  </data>
 </root>

@@ -2194,4 +2194,36 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>Pulse «Cerrar el Bulto». Cuando todas las asignaciones estén embaladas, la salida pasa a «Embalada».</value>
   </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Esta página abre los planes de capacidad: cree un plan para la empresa seleccionada o abra uno existente por su ID.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Planificadores de capacidad y suministro</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>Elija la empresa en el selector superior; el plan se crea y se abre en esa empresa.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>Cree un plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>Haga clic en «Create plan», indique el nombre, el horizonte y el plan de demanda de origen y haga clic en «Save». El nuevo plan se abre en su espacio de trabajo.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>Abra un plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>Pegue el ID del plan en «Plan ID» y haga clic en «Open plan». El plan de otra empresa no se encuentra.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>Esta página es el espacio de trabajo de un plan de capacidad: sus datos de origen, sus escenarios y sus evaluaciones.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>Planificadores de capacidad y suministro</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>Compruebe el origen</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>«Plan provenance» muestra el plan de demanda, su versión, cuándo se capturó y su suma de control: cada escenario del plan trabaja con esos datos.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>Cree un escenario</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>Haga clic en «Create scenario», asígnele un nombre, añada sus referencias de restricción y ajustes de capacidad y haga clic en «Create scenario» en el panel.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>Evalúelo</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>Abra un escenario y haga clic en «Evaluate»: elija el modo y los recursos y envíe. El resultado aparece en el panel de evaluación cuando termina.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>Esta página abre los planes S&amp;OP: cree un plan para la empresa seleccionada o abra uno existente por su ID.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>Coordinadores de S&amp;OP y responsables de aprobación</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>Elija la empresa en el selector superior; el plan se crea y se abre en esa empresa.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>Cree un plan</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>Haga clic en «Create plan», indique el nombre, el horizonte y el plan de demanda de origen y haga clic en «Save». El nuevo plan se abre en su espacio de trabajo como «Draft».</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>Abra un plan</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>Pegue el ID del plan en «Plan ID» y haga clic en «Open plan». El plan de otra empresa no se encuentra.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>Esta página es el espacio de trabajo de un plan S&amp;OP: sus instantáneas y las aprobaciones registradas sobre ellas.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>Coordinadores de S&amp;OP y responsables de aprobación</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>Capture una instantánea</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>Haga clic en «Capture snapshot», indique el plan de demanda, su versión, cuándo se capturó el origen y su suma de control, y añada las referencias de suministro. Confirme con Ctrl+Intro o el botón.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>Registre una aprobación</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Haga clic en «Record sign-off», elija la instantánea, su rol y la decisión, añada un comentario si hace falta y confirme. Las aprobaciones solo se registran mientras el plan está en revisión.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Sepa qué es definitivo</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Una aprobación registrada es definitiva: no se puede cambiar ni eliminar, y se rechaza una segunda aprobación para el mismo rol e instantánea.</value></data>
 </root>

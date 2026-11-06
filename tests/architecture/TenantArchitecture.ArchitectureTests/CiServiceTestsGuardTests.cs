@@ -67,13 +67,14 @@ public class CiServiceTestsGuardTests
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
-        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
-            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
-        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
-            "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests. HCM's Application.Tests left
+        // it 2026-11-06, owner 'Evet, düzelt': its repository test starts its own mongod, row hcm-app. Management
+        // Governance's IntegrationTests left it the same day: DITEN_TEST_MONGOD, row mg-itest.)
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
-            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
+            "B + C (MG, measured 2026-11-06 with the sibling builds in place): 2 of 103 red. (1) FrontendLocalTestClosure "
+            + "expects the 09-01 provider-unavailable stub, which the 09-02 catalog replaced; (2) DWS isolation: AddDwsApplication "
+            + "registers ProcessModeling's MediatR handlers. And C: four test files git-show commits 204ed1aa3 / 2d354a97b, "
+            + "which are on no branch of main — CI's checkout cannot have them",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
             "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
             + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",

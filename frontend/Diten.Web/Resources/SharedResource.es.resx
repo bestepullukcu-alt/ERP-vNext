@@ -1233,4 +1233,13 @@
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Embalaje</value>
   </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Escenarios del plan de capacidad</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>Aprobaciones del plan S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>Instantáneas del plan S&amp;OP</value>
+  </data>
 </root>

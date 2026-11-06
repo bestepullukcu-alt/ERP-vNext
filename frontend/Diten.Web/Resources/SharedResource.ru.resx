@@ -1232,4 +1232,13 @@
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Упаковка</value>
   </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Сценарии плана мощностей</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>Согласования плана S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>Снимки плана S&amp;OP</value>
+  </data>
 </root>

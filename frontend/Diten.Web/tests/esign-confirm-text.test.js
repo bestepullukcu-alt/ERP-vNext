@@ -7,7 +7,8 @@ const path = require("path");
  * ESignature/esign-pages.js wraps the shared confirm twice: `reason(…)` (a reason of 10–1000 characters) and `confirm(…)`.
  * Both escaped the question with ESign.escapeHtml before handing it over — but the dialog turns `subtext` into text at
  * the door (window.DitenText), so a question with "&" reached the reader as "&amp;". `reason(…)` also built its change
- * lines as a `<ul><li>` list inside the same text value, so the policy save showed the reader its tags.
+ * lines as a `<ul><li>` list inside the same text value, so the policy save showed the reader its tags. Since the merge
+ * with main (#391) the list is built as DOM (textContent) and handed over as subtextHtml.
  *
  * HOW THIS IS TESTED. The production pieces, not a copy: the wrapper's script EXTRACTED from
  * Views/Shared/_GlobalConfirmation.cshtml (only Razor's localizer calls replaced), the REAL vendored SweetAlert, and the
@@ -73,14 +74,19 @@ describe("the e-signature confirms, through the shared confirm and the real Swee
     expect(body().querySelector("b"), "a tag was built from the question").toBeNull();
   });
 
-  it("reason(…): the question and its change lines are read as typed — no \"&amp;\", no list tags", () => {
+  // Merge with main (web-js-reds-01, #391): the change lines are a real list built as DOM, every value through
+  // textContent, handed over as subtextHtml. What is pinned stays the reader's view: the text as typed, no tag shown.
+  it("reason(…): the question and its change lines are read as typed — no \"&amp;\", no list tags shown", () => {
     loadPages().reason({
-      title: "Politika", subtext: "Kaydet & yayınla", lines: ["Onay: zorunlu → isteğe bağlı", "A & B"], confirmText: "OK",
+      title: "Politika", subtext: "Kaydet & yayınla", lines: ["Onay: zorunlu → isteğe bağlı", "A & B <b>x</b>"], confirmText: "OK",
     });
     expect(body(), "no dialog was drawn").toBeTruthy();
     const said = body().textContent;
-    expect(said).toContain("Kaydet & yayınla · Onay: zorunlu → isteğe bağlı · A & B");
+    expect(said).toContain("Kaydet & yayınla");
+    expect([...body().querySelectorAll("li")].map((li) => li.textContent))
+      .toEqual(["Onay: zorunlu → isteğe bağlı", "A & B <b>x</b>"]);
     expect(said).not.toContain("&amp;");
     expect(said, "the list was handed over as text and shown as its tags").not.toMatch(/<\/?(ul|li)\b/);
+    expect(body().querySelector("li b"), "a tag was built from a change line").toBeNull();
   });
 });
