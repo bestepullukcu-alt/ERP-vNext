@@ -33,9 +33,9 @@ parent: MOD-0018
 > Dependencies).
 > (3) Kayıt satırı `MOD-0018-FU29`: **açık, CT'nin işi**. Satır çalışma ağacında CT'nin commit'siz değişikliğinde var
 > (`module-id-registry.md:92`). `origin/main` üzerinde `grep -c` → 0.
-> (4) Karar kaydı 02 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md`): **açık, CT'nin işi**. Kayıt çalışma
-> ağacında izlenmiyor (`??`). Main'e girmesi onay satırından önce gerekir.
-> (5) Sahip kararı gereken yeni seçimler S-1…S-5 (paketin sonu) cevaplanır ve karar kaydına (CT) geçer.
+> (4) Karar kayıtları 02 ve 03 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md`, `-03.md`): kule dalında
+> commit'li; **main'e girmeleri onay satırından önce gerekir (CT'nin işi)**.
+> (5) Yeni seçimler S-1…S-5: **kapandı** (sahip 2026-11-06, "Hepsini kabul et"; karar kaydı 03, karar 9).
 > (6) Bu sürümün bağımsız incelemesi kod dosyalı ZIP'le geçer ve `execution/approvals/reviews.tsv` satırı yazılır.
 >
 > **Dağıtım ön koşulu (S2S anahtarı):** Geçmiş uçları meta-denetim teslim teyidi olmadan veri döndürmez (AC-18). Teyit için Auth'un
@@ -1123,7 +1123,7 @@ yalnız salt-okunur bölüm eklenir.
   (`809a42ffb`) Auth kaynağında `TryForwardAsync` / `IsMetaAudit` 0 eşleşme
 - [x] Açık kararlar (a)–(p) kapandı (sahip 2026-11-05, "onayla"; karar kaydı 02, karar 7). DL-3 için kalan iki şart karar değil,
   ölçümdür: CT defter kararı (`CT-DECISIONS.md`) ve AC-16 / AC-33 testlerinin yeşil olması
-- [ ] **Sahip kararı gereken yeni seçimler S-1…S-5** (sondaki liste) sahibe gösterildi ve cevaplandı. Onaylanmadan onay satırı yazılmaz
+- [x] **Yeni seçimler S-1…S-5** (sondaki liste) sahibe gösterildi ve kabul edildi (2026-11-06, karar kaydı 03, karar 9)
 - [ ] **S2S anahtarı:** DL-2 / DL-3 dağıtımından önce hedef ortamda `PlatformService:InternalApiKey`'in dolu olduğu ölçüldü (başlık
   "Dağıtım ön koşulu")
 - [ ] **XMC-001 Platform etiket isteği** (FU27 ile ortak) gönderildi; etiket DL-2 kabulünden önce main'de
@@ -1376,6 +1376,9 @@ satırı** gerekir. Bu sürümde doğan yeni seçimler ayrı listededir ("Sahip 
 | (p) | İki okuma / meta-denetim olayının adı ve Platform etiketi | **(p1)** FU27 DL-5 meta-denetim adının kalıbı ve etiket yolu · (p2) ayrı, onaylı yeni etiketler · (p3) etiketsiz (kabul edilmez) | **(p1)** | MOD-0018 sahibi + Platform sahibi (XMC-001) | **Kapandı (sahip 2026-11-05, onayla).** Adlar `auth.role.history.read`, `auth.user-role.history.read` (Entity Fields); tek XMC-001 isteği FU27 ile ortak (Dependencies). FU27 ile tek genel ad ya da (p2) seçilirse paket revizyonu + yeni onay satırı |
 
 ## Sahip kararı gereken yeni seçimler
+
+**Durum (2026-11-06): kapandı.** Sahip beş seçimin hepsini yazıldığı gibi kabul etti ("Hepsini kabul et"; karar kaydı 03,
+karar 9). Başka bir seçenek sonradan seçilirse paket revizyonu + yeni onay satırı gerekir. Aşağıdaki paragraf seçimlerin doğuşunu anlatır.
 
 2026-11-05 revizyonunda bulguları kapatırken beş yeni seçim doğdu. Her biri için yazılı önerilere en yakın ve güvenli tarafta kalan
 **tek** seçenek gövdeye yazıldı. Bunlar **onaylanmış sayılmaz**; "onayla, hedef 11-20" sözü bu seçimlerden önce verildi ve onları
