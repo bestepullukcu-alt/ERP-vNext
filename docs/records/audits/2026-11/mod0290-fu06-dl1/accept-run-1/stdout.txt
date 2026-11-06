@@ -1,0 +1,146 @@
+MDM-FU06-DL1 kabul kanıtı · betik execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_accept.py · repo HEAD edaab86104e2cecf7616889f649e5c5bdad0c07b · --out-dir docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1
+AC-7 kapsam: taban 1fc896e33cc3 · 47 yol · kod 4 · kapsam dışı kod 0 · yasak alan 0 · ModuleVersion 1.4.0 sayısı 1
+== testler (taban)
+yük (taban): 1 dakikalık 26.31 (eşik 12)
+yük (taban): 1 dakikalık 17.51 (eşik 12)
+yük (taban): 1 dakikalık 8.69 (eşik 12)
+dotnet test (taban) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx
+  taban: dotnet çıkış 0 · 28 / 28 geçti · kalan: yok
+  taban: YEŞİL (28 / 28 beklenir)
+== sabotaj a: Sağlayıcı:121 — READ_PRODUCT_MASTER satırı silindi
+yük (sabotaj a): 1 dakikalık 26.72 (eşik 12)
+yük (sabotaj a): 1 dakikalık 13.55 (eşik 12)
+yük (sabotaj a): 1 dakikalık 8.68 (eşik 12)
+dotnet test (sabotaj a) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.trx
+  sabotaj a: dotnet çıkış 1 · 23 / 28 geçti · kalan: T2, GP, T1, T4-b, T3
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj a: beklenen T1, T2, T3, T4-b, GP · görülen T2, GP, T1, T4-b, T3 · 23 / 28 · EŞİT
+== sabotaj b: Sağlayıcı:121 — `ProductMasterRead,` → `"mdm.product-master.reads",`
+yük (sabotaj b): 1 dakikalık 15.45 (eşik 12)
+yük (sabotaj b): 1 dakikalık 10.32 (eşik 12)
+dotnet test (sabotaj b) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.trx
+  sabotaj b: dotnet çıkış 1 · 23 / 28 geçti · kalan: T2, GP, T1, T4-b, T3
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj b: beklenen T1, T2, T3, T4-b, GP · görülen T2, GP, T1, T4-b, T3 · 23 / 28 · EŞİT
+== sabotaj b2: ProductMasterContract.cs:19 (§5 dışı, geçici) — ReadPermission → "mdm.product-master.sabotage"
+yük (sabotaj b2): 1 dakikalık 12.96 (eşik 12)
+yük (sabotaj b2): 1 dakikalık 17.51 (eşik 12)
+yük (sabotaj b2): 1 dakikalık 12.37 (eşik 12)
+yük (sabotaj b2): 1 dakikalık 11.79 (eşik 12)
+dotnet test (sabotaj b2) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.trx
+  sabotaj b2: dotnet çıkış 1 · 23 / 28 geçti · kalan: T2, GP, T1, T4-b, T3
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductMaster/ProductMasterContract.cs (sha256 1072b813f2c4, bayt eşit)
+  sabotaj b2: beklenen T1, T2, T3, T4-b, GP · görülen T2, GP, T1, T4-b, T3 · 23 / 28 · EŞİT
+== sabotaj c: Sağlayıcı:95 — RoutePath → "/Platform/MasterDataManagement/GlobalProducts"
+yük (sabotaj c): 1 dakikalık 22.89 (eşik 12)
+yük (sabotaj c): 1 dakikalık 15.98 (eşik 12)
+yük (sabotaj c): 1 dakikalık 44.83 (eşik 12)
+yük (sabotaj c): 1 dakikalık 40.70 (eşik 12)
+yük (sabotaj c): 1 dakikalık 25.23 (eşik 12)
+yük (sabotaj c): 1 dakikalık 28.14 (eşik 12)
+yük (sabotaj c): 1 dakikalık 16.61 (eşik 12)
+yük (sabotaj c): 1 dakikalık 9.30 (eşik 12)
+dotnet test (sabotaj c) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.trx
+  sabotaj c: dotnet çıkış 1 · 26 / 28 geçti · kalan: ID, T3
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj c: beklenen T3, ID · görülen ID, T3 · 26 / 28 · EŞİT
+== sabotaj d: Sağlayıcı:121 + Sağlayıcı:269 — eylem satırı silindi; belge sonuna ApiPermissions (T3 yeşil kalır; çapa `IsBaseline: false);` — belgenin son argümanı, Expected HEAD'te satır 270)
+yük (sabotaj d): 1 dakikalık 21.26 (eşik 12)
+yük (sabotaj d): 1 dakikalık 12.34 (eşik 12)
+yük (sabotaj d): 1 dakikalık 8.26 (eşik 12)
+dotnet test (sabotaj d) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.trx
+  sabotaj d: dotnet çıkış 1 · 25 / 28 geçti · kalan: GP, T1, T4-b
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj d: beklenen T1, T4-b, GP · görülen GP, T1, T4-b · 25 / 28 · EŞİT
+== sabotaj e: ProductMasterController.cs:24 (§5 dışı, geçici) — sınıf [HasPermission(...ReadPermission)] satırı silindi
+yük (sabotaj e): 1 dakikalık 33.05 (eşik 12)
+yük (sabotaj e): 1 dakikalık 18.34 (eşik 12)
+yük (sabotaj e): 1 dakikalık 12.41 (eşik 12)
+yük (sabotaj e): 1 dakikalık 8.51 (eşik 12)
+dotnet test (sabotaj e) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.trx
+  sabotaj e: dotnet çıkış 1 · 27 / 28 geçti · kalan: T2
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductMasterController.cs (sha256 eafdcc3e6ef0, bayt eşit)
+  sabotaj e: beklenen T2 · görülen T2 · 27 / 28 · EŞİT
+== sabotaj f: Sağlayıcı:121 — `"View", 60` → `"Operator", 60`
+yük (sabotaj f): 1 dakikalık 32.83 (eşik 12)
+yük (sabotaj f): 1 dakikalık 26.63 (eşik 12)
+yük (sabotaj f): 1 dakikalık 30.67 (eşik 12)
+yük (sabotaj f): 1 dakikalık 37.95 (eşik 12)
+yük (sabotaj f): 1 dakikalık 29.95 (eşik 12)
+yük (sabotaj f): 1 dakikalık 23.58 (eşik 12)
+yük (sabotaj f): 1 dakikalık 38.24 (eşik 12)
+yük (sabotaj f): 1 dakikalık 25.49 (eşik 12)
+yük (sabotaj f): 1 dakikalık 14.74 (eşik 12)
+yük (sabotaj f): 1 dakikalık 13.90 (eşik 12)
+yük (sabotaj f): 1 dakikalık 9.77 (eşik 12)
+dotnet test (sabotaj f) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.trx
+  sabotaj f: dotnet çıkış 1 · 27 / 28 geçti · kalan: T1
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj f: beklenen T1 · görülen T1 · 27 / 28 · EŞİT
+== sabotaj g: Sağlayıcı:121 — `IsRowAction: false)` → `IsRowAction: true)`
+yük (sabotaj g): 1 dakikalık 29.27 (eşik 12)
+yük (sabotaj g): 1 dakikalık 21.54 (eşik 12)
+yük (sabotaj g): 1 dakikalık 11.38 (eşik 12)
+dotnet test (sabotaj g) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.trx
+  sabotaj g: dotnet çıkış 1 · 27 / 28 geçti · kalan: T1
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj g: beklenen T1 · görülen T1 · 27 / 28 · EŞİT
+== sabotaj h: Sağlayıcı:121 — `IsToolbarAction: false` → `IsToolbarAction: true`
+yük (sabotaj h): 1 dakikalık 15.10 (eşik 12)
+yük (sabotaj h): 1 dakikalık 10.46 (eşik 12)
+dotnet test (sabotaj h) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.trx
+  sabotaj h: dotnet çıkış 1 · 27 / 28 geçti · kalan: T1
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj h: beklenen T1 · görülen T1 · 27 / 28 · EŞİT
+== sabotaj i: Sağlayıcı:121 — `IsRowAction: false)` → `IsRowAction: false, PermissionOwnerModuleCode: "brand-product-master")`
+yük (sabotaj i): 1 dakikalık 12.85 (eşik 12)
+yük (sabotaj i): 1 dakikalık 8.88 (eşik 12)
+dotnet test (sabotaj i) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.trx
+  sabotaj i: dotnet çıkış 1 · 25 / 28 geçti · kalan: T1, T4-b, T3
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj i: beklenen T1, T3, T4-b · görülen T1, T4-b, T3 · 25 / 28 · EŞİT
+== sabotaj j: Sağlayıcı:121 — `IsDangerous: false` → `IsDangerous: true`
+yük (sabotaj j): 1 dakikalık 22.83 (eşik 12)
+yük (sabotaj j): 1 dakikalık 22.06 (eşik 12)
+yük (sabotaj j): 1 dakikalık 24.50 (eşik 12)
+yük (sabotaj j): 1 dakikalık 48.01 (eşik 12)
+yük (sabotaj j): 1 dakikalık 52.10 (eşik 12)
+yük (sabotaj j): 1 dakikalık 32.51 (eşik 12)
+yük (sabotaj j): 1 dakikalık 21.97 (eşik 12)
+yük (sabotaj j): 1 dakikalık 19.35 (eşik 12)
+yük (sabotaj j): 1 dakikalık 15.76 (eşik 12)
+yük (sabotaj j): 1 dakikalık 13.65 (eşik 12)
+yük (sabotaj j): 1 dakikalık 13.81 (eşik 12)
+yük (sabotaj j): 1 dakikalık 18.06 (eşik 12)
+yük (sabotaj j): 1 dakikalık 14.72 (eşik 12)
+yük (sabotaj j): 1 dakikalık 11.08 (eşik 12)
+dotnet test (sabotaj j) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.trx
+  sabotaj j: dotnet çıkış 1 · 27 / 28 geçti · kalan: T1
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj j: beklenen T1 · görülen T1 · 27 / 28 · EŞİT
+== sabotaj k: Sağlayıcı:121 — `"Read Product Master"` → `"Read Product Master Data"`
+yük (sabotaj k): 1 dakikalık 32.84 (eşik 12)
+yük (sabotaj k): 1 dakikalık 27.53 (eşik 12)
+yük (sabotaj k): 1 dakikalık 27.99 (eşik 12)
+yük (sabotaj k): 1 dakikalık 18.89 (eşik 12)
+yük (sabotaj k): 1 dakikalık 16.10 (eşik 12)
+yük (sabotaj k): 1 dakikalık 29.71 (eşik 12)
+yük (sabotaj k): 1 dakikalık 20.42 (eşik 12)
+yük (sabotaj k): 1 dakikalık 10.99 (eşik 12)
+dotnet test (sabotaj k) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.trx
+  sabotaj k: dotnet çıkış 1 · 27 / 28 geçti · kalan: T1
+  geri alındı: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs (sha256 89aef2a18b54, bayt eşit)
+  sabotaj k: beklenen T1 · görülen T1 · 27 / 28 · EŞİT
+== testler (son)
+yük (son): 1 dakikalık 19.10 (eşik 12)
+yük (son): 1 dakikalık 10.61 (eşik 12)
+dotnet test (son) → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx
+  son: dotnet çıkış 0 · 28 / 28 geçti · kalan: yok
+  son: YEŞİL (28 / 28 beklenir)
+== E3
+yük (E3): 1 dakikalık 16.21 (eşik 12)
+yük (E3): 1 dakikalık 8.34 (eşik 12)
+E3 → docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stdout.txt
+E3: çıkış 0 · SONUÇ: E3 YEŞİL
+ÖZET: AC-1=GEÇTİ, AC-2=GEÇTİ, AC-3=GEÇTİ, AC-4=GEÇTİ, AC-5=GEÇTİ, AC-6=GEÇTİ, AC-7=GEÇTİ, AC-8=GEÇTİ, AC-9=GEÇTİ
+SONUÇ: KABUL KANITI YEŞİL — AC-1…AC-9

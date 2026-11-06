@@ -1,0 +1,224 @@
+{
+ "argv": [
+  "python3",
+  "execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_accept.py",
+  "--base-worktree",
+  "/private/tmp/mdm-fu06-dl1-base",
+  "--out-dir",
+  "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1"
+ ],
+ "artifacts": [
+  {
+   "bytes": 5572,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/diff-scope.json",
+   "sha256": "d0275dcc0996f51c83a6db6a6526ebec4663ae8cb764da767e43e3baba221bb7"
+  },
+  {
+   "bytes": 1094,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3-summary.json",
+   "sha256": "f88b0103be6521677ed2d3cd10e892cc13d168af2227fdc7c95d1b8c748d1f86"
+  },
+  {
+   "bytes": 198875,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/auth-1.tail200.log",
+   "sha256": "894f10aa49f87fcf1da62d0fc6cac2728e2add8971e3e91f015d3e212cf448c1"
+  },
+  {
+   "bytes": 199903,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/platform-2.tail200.log",
+   "sha256": "9b75857d588733680d5495bbf3b59e3584adc05443fd14400d7fc546028ef6b6"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 27477,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stdout.txt",
+   "sha256": "d92ffc12905703c1227971ff8712170bb15f59eb9ca0092a6d150de1818cb48b"
+  },
+  {
+   "bytes": 14629,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.log",
+   "sha256": "71ab83dcf1152e5ab6f7fd97902759863b6f0bb25a3fa3621f5752b3b2fc0d86"
+  },
+  {
+   "bytes": 69821,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.trx",
+   "sha256": "77c5286d6d2c0414df9b5b4c3bc83346dd0e44fcf1f7c431f4582ef085543f27"
+  },
+  {
+   "bytes": 15266,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.log",
+   "sha256": "8be88c792d25463abf2a8617497703715b9390f0f40a79c0722bea2e9d798ea0"
+  },
+  {
+   "bytes": 71127,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.trx",
+   "sha256": "8aba456e53ad6ff1f3ec5c8515756fafa30989b109faf841afc314e6bf3f09b8"
+  },
+  {
+   "bytes": 23023,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.log",
+   "sha256": "d0d6b57512978e51651b8ae04e4fd8635b4e7a2fd523c7dd28761fe9205f1af1"
+  },
+  {
+   "bytes": 64699,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.trx",
+   "sha256": "50c3b629a9bed81c17c29224da9ee0bbd65e40b4a6f9eb99b1fe8e08c4fb3039"
+  },
+  {
+   "bytes": 17852,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.log",
+   "sha256": "807a27d177fc7bef8e1a4c8e15864733f335e4ae3fd818a0104e3e6a67731eb4"
+  },
+  {
+   "bytes": 54778,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.trx",
+   "sha256": "f5cd84a701c04845653ec4897ed0c8c0300edada2ee74a4abbe94feed47106d9"
+  },
+  {
+   "bytes": 11463,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.log",
+   "sha256": "26130e6dec20552e7c749a1ed1244cabe2c3f27011035ce644e844605daf762e"
+  },
+  {
+   "bytes": 63831,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.trx",
+   "sha256": "0edf0dfa6d4643f1c945b84899aea6f461a5d9b3af67e56ac0f9a5df51ed84a3"
+  },
+  {
+   "bytes": 10054,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.log",
+   "sha256": "434cdddea2bc8291d89f6e9d1e2787615dc2a5debd3bf182160b3dd70c6561d4"
+  },
+  {
+   "bytes": 51919,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.trx",
+   "sha256": "624c3a1177da1a878e797a60cfd8b1947213e7ecef792a96df1f8b8e16f68b43"
+  },
+  {
+   "bytes": 10083,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.log",
+   "sha256": "94e2884e8ebcf3db849439accedf2cdda493642c3376d102af7278368067750c"
+  },
+  {
+   "bytes": 52077,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.trx",
+   "sha256": "8b77a8d921bdaa8a460f6789e4a11882e5827de6278de51a7a4c67f1c233ac20"
+  },
+  {
+   "bytes": 5392,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.log",
+   "sha256": "beaf8bf936bdf1760907379a69be208479635a0df424b31db7f0ed33e72ecfe3"
+  },
+  {
+   "bytes": 51879,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.trx",
+   "sha256": "ea068c7378bace290d3b327c9558040eec9a260a40d19ceccc66837fbfb460af"
+  },
+  {
+   "bytes": 5392,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.log",
+   "sha256": "6ba7d1eaa4ce9585200159ec5c25ab673526b32a0443fe8eca4d975bc01d2af4"
+  },
+  {
+   "bytes": 51879,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.trx",
+   "sha256": "0ae2e73b09e315c02fff88543d9b995990ea6d5268b1d89e5eaa2c926e2e8fa7"
+  },
+  {
+   "bytes": 7866,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.log",
+   "sha256": "e89a751ae8ecfe4150978eeee237953333def4df6a0cbd5fd8e1df187dcc9393"
+  },
+  {
+   "bytes": 56485,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.trx",
+   "sha256": "8f54876e1f78d67fdd1f089b5f2f24bc2c4d7776900db55b86901fc39f73c37c"
+  },
+  {
+   "bytes": 5392,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.log",
+   "sha256": "e819fb980de68256d99c11c0f06fbbfa487729b762e2ed548e863db8199d6c13"
+  },
+  {
+   "bytes": 51879,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.trx",
+   "sha256": "b771950e488edf5c6fdee6f5141d534b1a738c444c1e75fb3aebf6ba7a288c74"
+  },
+  {
+   "bytes": 5489,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.log",
+   "sha256": "a673764974a6b81b226e4810e748f4c58c1916ac4ca5a8922beba2399fb28e0a"
+  },
+  {
+   "bytes": 52103,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.trx",
+   "sha256": "76a61d6f6ba503bd4d488586486e268b8634907446e7cc347665340a6da5005f"
+  },
+  {
+   "bytes": 26387,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-summary.json",
+   "sha256": "b9a8382afe67065f69ba21d36a7955dc5f131706276a1b5a8e2cd70628a2d055"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 10571,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/stdout.txt",
+   "sha256": "dfd629694a62ab4a902c806f370301ca0d6105f30ae6cf2b479c0206920c21c1"
+  },
+  {
+   "bytes": 9614,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/summary.json",
+   "sha256": "93bc8b986e36cc88307c2484af5e5594accaac688bd30d5d4cf5081bdf8bb0d6"
+  },
+  {
+   "bytes": 7827,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json",
+   "sha256": "11740c99e63294740d06523555d23728e7e1f609d53990c966e4a82e6dc3d46b"
+  },
+  {
+   "bytes": 4319,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.log",
+   "sha256": "1e6e5df9409516a02b8ccf440320ee88603808f20ced290da0c1cd671183b0ab"
+  },
+  {
+   "bytes": 49853,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+   "sha256": "16319af5462965f443beb0cdd68f348ef68a29d1cc3e1398aef7dbc63736a11f"
+  },
+  {
+   "bytes": 7808,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json",
+   "sha256": "c30e25eb14f633f3b32bd8fa211ec5b4bcaf91b32e5803633cb06c793c4086c4"
+  },
+  {
+   "bytes": 19660,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.log",
+   "sha256": "42e38b910e8f036a921a97e8e5d1ce4740859510b8b1ab210b26224ed5394280"
+  },
+  {
+   "bytes": 49853,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+   "sha256": "0fc79d70c7af7539832b86d76be6fa88bd0f42551b8aec4c452b76018a16523e"
+  }
+ ],
+ "commit": "edaab86104e2cecf7616889f649e5c5bdad0c07b",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-06T15:54:01Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1",
+ "started_utc": "2026-11-06T14:42:29Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "1cdf3badd99188bffc8e2322ddf25c44ca36812b"
+}

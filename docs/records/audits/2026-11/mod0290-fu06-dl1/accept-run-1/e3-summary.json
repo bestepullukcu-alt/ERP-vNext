@@ -1,0 +1,31 @@
+{
+ "komut": [
+  "python3",
+  "execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py",
+  "--base-worktree",
+  "/private/tmp/mdm-fu06-dl1-base",
+  "--out-dir",
+  "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3"
+ ],
+ "sırlar": "E3_* ortamdan alt sürece geçti; değerler okunmadı, yazılmadı",
+ "çıkış": 0,
+ "süre_sn": 334.9,
+ "yük_1dk": 8.34,
+ "stdout": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stdout.txt",
+ "stderr": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stderr.txt",
+ "sonuç_satırı": {
+  "satır": 157,
+  "metin": "SONUÇ: E3 YEŞİL"
+ },
+ "özet_satırı": {
+  "satır": 156,
+  "metin": "ÖZET: P-taban=GEÇTİ, P-taban-worktree=GEÇTİ, P-derleme=GEÇTİ, F-15/auth=GEÇTİ, F-15/platform=GEÇTİ, F-15/gateway=GEÇTİ, F-15/mdm=GEÇTİ, Y1=GEÇTİ, Y2a=GEÇTİ, Y2b=GEÇTİ, Y3a=GEÇTİ, Y3b=GEÇTİ, Y4a=GEÇTİ, Y4b=GEÇTİ, Y5=GEÇTİ, Y4c=GEÇTİ, Y6=GEÇTİ"
+ },
+ "e3_dosyaları": [
+  "auth-1.tail200.log",
+  "platform-2.tail200.log",
+  "stderr.txt",
+  "stdout.txt"
+ ],
+ "yeşil": true
+}

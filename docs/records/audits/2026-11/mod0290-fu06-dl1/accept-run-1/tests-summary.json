@@ -1,0 +1,175 @@
+{
+ "komut": [
+  "DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod",
+  "dotnet",
+  "test",
+  "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+  "--filter",
+  "FullyQualifiedName~ModuleRegistration|FullyQualifiedName~CompositionRootGuardTests",
+  "--logger",
+  "trx;LogFileName=/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx"
+ ],
+ "dotnet_çıkış": 0,
+ "süre_sn": 85.0,
+ "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+ "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.log",
+ "trx_okundu": true,
+ "derleme_hatası": false,
+ "toplam": 28,
+ "geçen": 28,
+ "kalan": [],
+ "trx_sayaçları": {
+  "total": "28",
+  "executed": "28",
+  "passed": "28",
+  "failed": "0"
+ },
+ "adlandırılmış": {
+  "T1": {
+   "test": "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+   "sonuç": "Passed"
+  },
+  "T2": {
+   "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+   "sonuç": "Passed"
+  },
+  "T3": {
+   "test": "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope",
+   "sonuç": "Passed"
+  },
+  "T4-b": {
+   "test": "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+   "sonuç": "Passed"
+  },
+  "GP": {
+   "test": "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+   "sonuç": "Passed"
+  },
+  "ID": {
+   "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+   "sonuç": "Passed"
+  }
+ },
+ "testler": [
+  {
+   "ad": "Diten.MdmService.Application.Tests.CompositionRootGuardTests.EveryControllerConstructorParameter_IsResolvableFromTheProductionContainer",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.CompositionRootGuardTests.EveryOptionalDitenDependency_IsRegisteredInTheProductionContainer",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.BrandProductMasterManifestProviderTests.Declares_exactly_the_keys_the_brand_and_product_controllers_enforce_including_export",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.BrandProductMasterManifestProviderTests.Declares_its_own_tenant_assignable_module_with_the_brands_page_in_navigation",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.BrandProductMasterManifestProviderTests.No_other_mdm_manifest_declares_a_brand_or_product_master_key",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Declares_clean_slug_module_identity",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Every_frontend_view_route_has_exactly_one_manifest_page_and_vice_versa",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Every_permission_is_a_real_enforced_key",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Lifecycle_actions_gate_on_the_real_update_permission",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.List_is_the_single_top_level_nav_entry_at_the_real_route",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Page_routes_and_codes_and_action_codes_are_unique",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ModuleRegistrationHostedServiceTests.Missing_dedicated_credential_fails_closed_without_shared_key_fallback",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ModuleRegistrationHostedServiceTests.Sends_each_provider_independently_and_retries_only_the_failed_manifest",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ModuleRegistrationHostedServiceTests.Sends_only_dedicated_credential_headers_and_never_serializes_the_secret",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Finished_good_keeps_the_approved_four_key_contract_without_new_aliases",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Gsku_has_exact_lifecycle_actions_and_hidden_system_retire",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Product_abbreviations_page_declares_exact_eight_permission_actions_and_no_forbidden_alias",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Product_scope_page_is_navigation_hidden_and_declares_exact_six_permissions",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Recovery_is_an_exact_non_interactive_system_descriptor",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Stock_levels_declare_the_stock_behaviour_edit_with_todays_key(pageCode: \"FINISHED_GOODS\", key: \"mdm.finished-goods.create\")",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Stock_levels_declare_the_stock_behaviour_edit_with_todays_key(pageCode: \"GSKUS\", key: \"mdm.gskus.update\")",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductItemSkuMasterManifestProviderTests.Stock_levels_declare_the_stock_behaviour_edit_with_todays_key(pageCode: \"LSKUS\", key: \"mdm.lskus.create\")",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+   "sonuç": "Passed"
+  },
+  {
+   "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope",
+   "sonuç": "Passed"
+  }
+ ],
+ "bileşim_bekçisi": {
+  "sınıf": "CompositionRootGuardTests",
+  "beklenen_sayı": 2,
+  "sayı": 2,
+  "hepsi_geçti": true
+ },
+ "yük_1dk": 8.69,
+ "yeşil": true
+}

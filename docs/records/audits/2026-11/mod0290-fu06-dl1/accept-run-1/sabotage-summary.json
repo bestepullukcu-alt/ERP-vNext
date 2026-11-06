@@ -1,0 +1,657 @@
+{
+ "kaynak": "docs/records/audits/2026-11/mod0290-fu06-dl1/SABOTAJ.md (tablo a…k, birebir)",
+ "filtre": "FullyQualifiedName~ModuleRegistration|FullyQualifiedName~CompositionRootGuardTests",
+ "beklenen_toplam": 28,
+ "ölçülen": 12,
+ "tanımlı": 12,
+ "hepsi_eşit": true,
+ "sabotajlar": [
+  {
+   "harf": "a",
+   "tanım": "Sağlayıcı:121 — READ_PRODUCT_MASTER satırı silindi",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": "satır silindi"
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "f727a1858eb70bc98f14414c712b1386a6e01931fb1dee9219221db27f0f1398"
+    }
+   },
+   "yük_1dk": 8.68,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 23,
+   "toplam": 28,
+   "beklenen": [
+    "T1",
+    "T2",
+    "T3",
+    "T4-b",
+    "GP"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "görülen": [
+    "T2",
+    "GP",
+    "T1",
+    "T4-b",
+    "T3"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "b",
+   "tanım": "Sağlayıcı:121 — `ProductMasterRead,` → `\"mdm.product-master.reads\",`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "ProductMasterRead,",
+      "yeni": "\"mdm.product-master.reads\","
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "cd3a5821911919de88d162a5ca817067d0bba2b974fcc2f4253664f088e56d30"
+    }
+   },
+   "yük_1dk": 10.32,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 23,
+   "toplam": 28,
+   "beklenen": [
+    "T1",
+    "T2",
+    "T3",
+    "T4-b",
+    "GP"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "görülen": [
+    "T2",
+    "GP",
+    "T1",
+    "T4-b",
+    "T3"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "b2",
+   "tanım": "ProductMasterContract.cs:19 (§5 dışı, geçici) — ReadPermission → \"mdm.product-master.sabotage\"",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductMaster/ProductMasterContract.cs",
+     "çapa_satırı": 19,
+     "çapa": "    public const string ReadPermission = \"mdm.product-master.read\";",
+     "değişiklik": {
+      "eski": "\"mdm.product-master.read\"",
+      "yeni": "\"mdm.product-master.sabotage\""
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductMaster/ProductMasterContract.cs": {
+     "önce_sha256": "1072b813f2c4f15c71e1f51164fee0057f505bf706085a7b77b3afec7061fe50",
+     "sabotajlı_sha256": "1810922fcad78b656235c6a4051531b50e9829bfac1df7f36d651fec896f5604"
+    }
+   },
+   "yük_1dk": 11.79,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 23,
+   "toplam": 28,
+   "beklenen": [
+    "T1",
+    "T2",
+    "T3",
+    "T4-b",
+    "GP"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "görülen": [
+    "T2",
+    "GP",
+    "T1",
+    "T4-b",
+    "T3"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "c",
+   "tanım": "Sağlayıcı:95 — RoutePath → \"/Platform/MasterDataManagement/GlobalProducts\"",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 95,
+     "çapa": "                    RoutePath: \"/MasterDataManagement/GlobalProducts\",",
+     "değişiklik": {
+      "eski": "\"/MasterDataManagement/GlobalProducts\"",
+      "yeni": "\"/Platform/MasterDataManagement/GlobalProducts\""
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "384639512ae90c2c44f5b7498b4659de9c806ca8551d7a08fcb9bad031ccc4fe"
+    }
+   },
+   "yük_1dk": 9.3,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 26,
+   "toplam": 28,
+   "beklenen": [
+    "T3",
+    "ID"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "görülen": [
+    "ID",
+    "T3"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "d",
+   "tanım": "Sağlayıcı:121 + Sağlayıcı:269 — eylem satırı silindi; belge sonuna ApiPermissions (T3 yeşil kalır; çapa `IsBaseline: false);` — belgenin son argümanı, Expected HEAD'te satır 270)",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": "satır silindi"
+    },
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 270,
+     "çapa": "            IsBaseline: false);",
+     "değişiklik": {
+      "eski": "IsBaseline: false);",
+      "yeni": "IsBaseline: false,\n            ApiPermissions: [new ModuleManifestPermission(\"mdm.product-master.read\", \"Read Product Master\")]);"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "469459b91c5f3e1e230c5bbbe245497ca620766af3762894d15a3a0e5728e867"
+    }
+   },
+   "yük_1dk": 8.26,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 25,
+   "toplam": 28,
+   "beklenen": [
+    "T1",
+    "T4-b",
+    "GP"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set"
+   ],
+   "görülen": [
+    "GP",
+    "T1",
+    "T4-b"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions",
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "e",
+   "tanım": "ProductMasterController.cs:24 (§5 dışı, geçici) — sınıf [HasPermission(...ReadPermission)] satırı silindi",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductMasterController.cs",
+     "çapa_satırı": 24,
+     "çapa": "[HasPermission(ProductMasterContract.ReadPermission)]\npublic sealed class ProductMasterController",
+     "değişiklik": {
+      "eski": "[HasPermission(ProductMasterContract.ReadPermission)]\n",
+      "yeni": ""
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductMasterController.cs": {
+     "önce_sha256": "eafdcc3e6ef09adfc42caaf6369f4028d0bca095c9a6b54c6d5725ace4f6dc2a",
+     "sabotajlı_sha256": "8788b96349efacb8a9de28951c26c15775aba31303a7e325a144882f2aa7bc20"
+    }
+   },
+   "yük_1dk": 8.51,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T2"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement"
+   ],
+   "görülen": [
+    "T2"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "f",
+   "tanım": "Sağlayıcı:121 — `\"View\", 60` → `\"Operator\", 60`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "\"View\", 60",
+      "yeni": "\"Operator\", 60"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "e47373942c3394a551ae77162515d7442e91abfb943c8c83de3f3b3a77e6d0f6"
+    }
+   },
+   "yük_1dk": 9.77,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T1"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "görülen": [
+    "T1"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "g",
+   "tanım": "Sağlayıcı:121 — `IsRowAction: false)` → `IsRowAction: true)`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "IsRowAction: false)",
+      "yeni": "IsRowAction: true)"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "161fc511fa333f61263f624849d1fb45e7f4e96aba17f1e2596cc929d8ed2732"
+    }
+   },
+   "yük_1dk": 11.38,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T1"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "görülen": [
+    "T1"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "h",
+   "tanım": "Sağlayıcı:121 — `IsToolbarAction: false` → `IsToolbarAction: true`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "IsToolbarAction: false",
+      "yeni": "IsToolbarAction: true"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "64c89145ac56251a4149a342931ba9c361a9cd70319afcf585b86e40d864d91b"
+    }
+   },
+   "yük_1dk": 10.46,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T1"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "görülen": [
+    "T1"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "i",
+   "tanım": "Sağlayıcı:121 — `IsRowAction: false)` → `IsRowAction: false, PermissionOwnerModuleCode: \"brand-product-master\")`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "IsRowAction: false)",
+      "yeni": "IsRowAction: false, PermissionOwnerModuleCode: \"brand-product-master\")"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "7d8857a4c979192dfec25ea4a70067d85248ae6bd884cf8d13d2032e81186507"
+    }
+   },
+   "yük_1dk": 8.88,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 25,
+   "toplam": 28,
+   "beklenen": [
+    "T1",
+    "T3",
+    "T4-b"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "görülen": [
+    "T1",
+    "T4-b",
+    "T3"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+    "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+    "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "j",
+   "tanım": "Sağlayıcı:121 — `IsDangerous: false` → `IsDangerous: true`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "IsDangerous: false",
+      "yeni": "IsDangerous: true"
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "5b8ad329b1a5a4f42209b4aacd73955aed4f4eadef6059b6bd0de8c2dc605c11"
+    }
+   },
+   "yük_1dk": 11.08,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T1"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "görülen": [
+    "T1"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  },
+  {
+   "harf": "k",
+   "tanım": "Sağlayıcı:121 — `\"Read Product Master\"` → `\"Read Product Master Data\"`",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs",
+     "çapa_satırı": 121,
+     "çapa": "                        new ModuleManifestAction(\"READ_PRODUCT_MASTER\", \"Read Product Master\", ProductMasterRead, \"View\", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)",
+     "değişiklik": {
+      "eski": "\"Read Product Master\"",
+      "yeni": "\"Read Product Master Data\""
+     }
+    }
+   ],
+   "dosyalar": {
+    "services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs": {
+     "önce_sha256": "89aef2a18b541a37547e2739c0602df340f32b9d883762ad1ad5bb920d5c4755",
+     "sabotajlı_sha256": "cbb25790034611bd4c5407e79afa255f852f77ab0e5f4a33e6137e5b9728331e"
+    }
+   },
+   "yük_1dk": 10.99,
+   "geri_alma": {
+    "bayt_eşit": true,
+    "git_status_out_dir_dışı": []
+   },
+   "trx": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.trx",
+   "günlük": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.log",
+   "dotnet_çıkış": 1,
+   "derleme_hatası": false,
+   "trx_okundu": true,
+   "geçen": 27,
+   "toplam": 28,
+   "beklenen": [
+    "T1"
+   ],
+   "beklenen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "görülen": [
+    "T1"
+   ],
+   "görülen_testler": [
+    "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission"
+   ],
+   "beklenmeyen": [],
+   "eksik": [],
+   "eşit": true
+  }
+ ]
+}

@@ -1,0 +1,272 @@
+{
+ "betik": "execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_accept.py",
+ "out_dir": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1",
+ "çıkış": 0,
+ "sonuç": "KABUL KANITI YEŞİL — AC-1…AC-9",
+ "yük": [
+  {
+   "adım": "taban",
+   "yük_1dk": 8.69
+  },
+  {
+   "adım": "sabotaj a",
+   "yük_1dk": 8.68
+  },
+  {
+   "adım": "sabotaj b",
+   "yük_1dk": 10.32
+  },
+  {
+   "adım": "sabotaj b2",
+   "yük_1dk": 11.79
+  },
+  {
+   "adım": "sabotaj c",
+   "yük_1dk": 9.3
+  },
+  {
+   "adım": "sabotaj d",
+   "yük_1dk": 8.26
+  },
+  {
+   "adım": "sabotaj e",
+   "yük_1dk": 8.51
+  },
+  {
+   "adım": "sabotaj f",
+   "yük_1dk": 9.77
+  },
+  {
+   "adım": "sabotaj g",
+   "yük_1dk": 11.38
+  },
+  {
+   "adım": "sabotaj h",
+   "yük_1dk": 10.46
+  },
+  {
+   "adım": "sabotaj i",
+   "yük_1dk": 8.88
+  },
+  {
+   "adım": "sabotaj j",
+   "yük_1dk": 11.08
+  },
+  {
+   "adım": "sabotaj k",
+   "yük_1dk": 10.99
+  },
+  {
+   "adım": "son",
+   "yük_1dk": 10.61
+  },
+  {
+   "adım": "E3",
+   "yük_1dk": 8.34
+  }
+ ],
+ "adımlar": {
+  "kapsam": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/diff-scope.json",
+  "taban": {
+   "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json",
+   "yeşil": true
+  },
+  "sabotaj": {
+   "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-summary.json",
+   "ölçülen": 12,
+   "eşit": 12
+  },
+  "son": {
+   "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json",
+   "yeşil": true
+  },
+  "e3": {
+   "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3-summary.json",
+   "çıkış": 0,
+   "yeşil": true
+  }
+ },
+ "ac": {
+  "AC-1": {
+   "ölçüt": "T1 yeşil: anahtar GLOBAL_PRODUCTS üzerinde arayüzsüz View eylemi, ApiPermissions boş",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json"
+    }
+   ]
+  },
+  "AC-2": {
+   "ölçüt": "T2 yeşil: sınıf düzeyi öznitelik okunur, ProductMasterController listede, beyan 52 → 53",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json"
+    }
+   ]
+  },
+  "AC-3": {
+   "ölçüt": "T3 yeşil: üretim işleyicisi üretim manifestiyle; Auth çağrısı (anahtar, modül sahibi, Tenant)",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+     "test": "ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json"
+    }
+   ]
+  },
+  "AC-4": {
+   "ölçüt": "T4-b yeşil: modül sahibiyle eşitlenen küme plan okuma listesine eşit",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+     "test": "ProductMasterReadKeyPlatformPathTests.Every_key_synced_under_the_module_is_in_the_entitled_read_set",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json"
+    }
+   ]
+  },
+  "AC-5": {
+   "ölçüt": "§18 sabotajlarının her biri adı geçen testte kırmızı; çapa, kırmızı test adı, geri alma sonrası git status yalnız --out-dir",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-summary.json",
+     "satır": "sabotajlar[*].eşit"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-a.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-b2.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-c.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-d.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-e.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-f.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-g.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-h.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-i.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-j.trx",
+     "test": "outcome=Failed"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/sabotage-k.trx",
+     "test": "outcome=Failed"
+    }
+   ]
+  },
+  "AC-6": {
+   "ölçüt": "ModuleVersion 1.4.0; Declares_exact_identity_route_and_non_baseline_flags yeşil, sayfa sayısı 8",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final.trx",
+     "test": "ProductItemSkuMasterManifestProviderTests.Declares_exact_identity_route_and_non_baseline_flags",
+     "özet": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-final-summary.json"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/diff-scope.json",
+     "satır": "module_version.sayı == 1"
+    }
+   ]
+  },
+  "AC-7": {
+   "ölçüt": "git diff kod yolları yalnız paket §5; Auth, Platform, Web, Gateway boş (docs/ ve execution/ kod dışı — sınır)",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/diff-scope.json",
+     "satır": "kapsam_dışı_kod_yolları, yasak_alanda_değişen"
+    }
+   ]
+  },
+  "AC-8": {
+   "ölçüt": "CompositionRootGuardTests yeşil, T3 ile aynı süreçte (aynı dotnet test koşusu)",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests.trx",
+     "test": "CompositionRootGuardTests.* (2) + ProductMasterReadKeyPlatformPathTests.Production_manifest_syncs_the_read_key_with_the_module_owner_and_tenant_scope"
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/tests-summary.json",
+     "satır": "bileşim_bekçisi"
+    }
+   ]
+  },
+  "AC-9": {
+   "ölçüt": "§18 E3 yükseltme yolu (Y2–Y5), tek run_record koşusunun süzülmüş çıktısında; Y6 temizlik",
+   "sonuç": "geçti",
+   "kanıt": [
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/stdout.txt",
+     "satır": 157
+    },
+    {
+     "artefakt": "docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3-summary.json",
+     "satır": "yeşil"
+    }
+   ]
+  }
+ },
+ "sınır": "Kayıt yalnız bu koşuda bu sonuçların alındığını gösterir; sabotajın ölçütü ölçtüğünü, E3 betiğinin doğruluğunu ya da docs/ ve execution/ yollarının §18 kanıt dizini olduğunu kanıtlamaz (bağımsız inceleme)."
+}

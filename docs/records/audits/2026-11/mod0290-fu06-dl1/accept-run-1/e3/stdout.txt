@@ -1,0 +1,157 @@
+MDM-FU06-DL1 E3 · betik execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py · repo HEAD edaab86104e2cecf7616889f649e5c5bdad0c07b
+== Önkoşullar (yığın açılmadan)
+yük (başlangıç): 1 dakikalık 8.34 (eşik 12)
+port listesi (başlangıç): 5000=boş, 5001=boş, 5056=boş, 5057=boş, 5058=boş, 5059=boş, 5060=boş
+paylaşılan mongod (27017) veritabanları (ad, boyut): [["DitenERP_Dev", {"high": 0, "low": 303104, "unsigned": false}], ["DitenERP_Test", {"high": 0, "low": 888832, "unsigned": false}], ["DitenEnterpriseDb", {"high": 0, "low": 548864, "unsigned": false}], ["DitenPpmFinalEvidence", {"high": 0, "low": 176128, "unsigned": false}], ["admin", {"high": 0, "low": 81920, "unsigned": false}], ["config", {"high": 0, "low": 356352, "unsigned": false}], ["diten_auth_fu22_itest", {"high": 0, "low": 286720, "unsigned": false}], ["diten_auth_permission_onboarding_itest", {"high": 0, "low": 163840, "unsigned": false}], ["diten_auth_service_identity_itest", {"high": 0, "low": 172032, "unsigned": false}], ["diten_auth_v3", {"high": 0, "low": 2543616, "unsigned": false}], ["diten_background_jobs_dev", {"high": 0, "low": 6004736, "unsigned": false}], ["diten_deven_dev", {"high": 0, "low": 221184, "unsigned": false}], ["diten_mdm_product_scope_itest", {"high": 0, "low": 3747840, "unsigned": false}], ["diten_mdm_product_scope_itest_gp_identity_resilience", {"high": 0, "low": 528384, "unsigned": false}], ["diten_mod0117_acceptance_20260903", {"high": 0, "low": 4726784, "unsigned": false}], ["diten_mod0117_acceptance_jobs_20260903", {"high": 0, "low": 212992, "unsigned": false}], ["diten_mod0117_auth_acceptance_20260903", {"high": 0, "low": 1040384, "unsigned": false}], ["diten_mod0117_ppm_acceptance_20260903", {"high": 0, "low": 196608, "unsigned": false}], ["diten_personalization_dev", {"high": 0, "low": 34598912, "unsigned": false}], ["diten_platform", {"high": 0, "low": 49152, "unsigned": false}], ["diten_platform_brd_itest_asn_1dc482cb89ad4117924058124adb702d", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_asn_a2508e6e31b943e1955c96c59177d74e", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_asn_de504f2f5c4747deb6e1fd66265dc35e", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0095e168f9bf4f1eafeda93123e42999", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0278d4813b0143daa0c4c70f59ca9113", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_05df88c40b1b45d5b47191c9c858c49a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_061aeb7526974b5bb0e455fefdb1f9a8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_07b8515ef1d0432ea7a91ab79b103f09", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0834d1a685bd40da9f0e1b1c97d873b1", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_08a4a201efd148389a577965fc644687", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_091f614413d04c2b9e1bba330d812787", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0cf5629b49594ff5be6104aea48cdd5c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_276f4dff812e4e7aadbdce6d3c41ea49", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_2fd1202329d841419dbadd4f4ec3c05b", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_41797b59fe9b498f92a47f47dc35a91a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_426f74f51f6a40578d876c47a7ba84b4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_47fc8bb028514f358bfcd90a4ad45ff4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_4e9e2666b0c0466fbbadcd1225fbb252", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_527148b94746411e8de77a5f4fe4adc7", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_5ae97480e1fb4286808303fcc73efacc", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_6ba752409da34b1eb81152671a3cf7c7", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_7c7ca33cda954f0cac8d1a4d28f736c8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_8b9863d17dc44d20b4d97b70a7e9a664", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_8d87b6f0bfa24d74919d6912ca1e5f1d", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_96c77856d7314bd39fb4d7788d041f57", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_adbda0cb868947d0ad457b8ebce624fa", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_ade99549a05b4e0ea650463614b276c8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_aeb67b47e0654ce4a0a71e3575c731eb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_c29ff2821ac74234addbf1d5fc267ad5", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_d49257e0e9b0445b93855bd93a6c7251", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_d9420b6505b5444288fe7d65dbcf5ab4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_f311aebeb6c442f0b74a07564d47c0fb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_fe9451c3359644a4a84b70ac7fd41360", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_2a8885994d76400a83b630492f95a02c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_3e8504d2543b407cb8fc37fbc1c2ffeb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_5a442a9cce0c4251a8f780da46701f56", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_6de52ee08f27477f95d86f50f8ed6ff6", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_7efe8277b281461c8bb95a093394289c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_93bbdab28d9a466e8e746e71d13ad4d6", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_c089061904e44acd9e5f43221790cd75", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_c621ca1cd77f47ac8d66e4129d71098a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_d4952e0f1f90427b8f69100da7ad0940", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_febcb7aa90b74a2bacf8545454d37a32", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_composition_guard", {"high": 0, "low": 3936256, "unsigned": false}], ["diten_platform_fu21_itest", {"high": 0, "low": 176128, "unsigned": false}], ["diten_platform_itest", {"high": 0, "low": 1052672, "unsigned": false}], ["diten_platform_itest_container_validation", {"high": 0, "low": 5742592, "unsigned": false}], ["diten_platform_itest_email_shell_cfix1", {"high": 0, "low": 1064960, "unsigned": false}], ["diten_platform_itest_email_shell_retention", {"high": 0, "low": 561152, "unsigned": false}], ["diten_platform_itest_email_shell_seed", {"high": 0, "low": 2752512, "unsigned": false}], ["diten_platform_itest_email_shell_stage_c", {"high": 0, "low": 806912, "unsigned": false}], ["diten_platform_itest_email_shell_stage_d", {"high": 0, "low": 524288, "unsigned": false}], ["diten_platform_itest_email_shell_tenant_scope", {"high": 0, "low": 978944, "unsigned": false}], ["diten_platform_itest_eventing-outbox-idempotency", {"high": 0, "low": 290816, "unsigned": false}], ["diten_ppm_dev", {"high": 0, "low": 176128, "unsigned": false}], ["diten_ppm_mod0117_browser", {"high": 0, "low": 176128, "unsigned": false}], ["local", {"high": 0, "low": 43147264, "unsigned": false}]]
+taban commit (merge-base origin/main HEAD): 1fc896e33cc3012399468b3262e0f42082ef1584 · dal HEAD: edaab86104e2cecf7616889f649e5c5bdad0c07b
+KONTROL P-taban GEÇTİ: taban commit'te sağlayıcı 1.3.0 ve READ_PRODUCT_MASTER yok
+KONTROL P-taban-worktree GEÇTİ: taban worktree HEAD 1fc896e33cc3 = taban, temiz
+yük (derleme Diten.AuthService.Api.csproj): 1 dakikalık 8.15 (eşik 12)
+KONTROL P-derleme GEÇTİ: dal Diten.AuthService.Api.csproj derlendi (çıkış 0, hata ?)
+yük (derleme Diten.Platform.API.csproj): 1 dakikalık 18.18 (eşik 12)
+yük (derleme Diten.Platform.API.csproj): 1 dakikalık 10.23 (eşik 12)
+KONTROL P-derleme GEÇTİ: dal Diten.Platform.API.csproj derlendi (çıkış 0, hata ?)
+yük (derleme Diten.MdmService.Api.csproj): 1 dakikalık 18.93 (eşik 12)
+yük (derleme Diten.MdmService.Api.csproj): 1 dakikalık 10.43 (eşik 12)
+KONTROL P-derleme GEÇTİ: dal Diten.MdmService.Api.csproj derlendi (çıkış 0, hata ?)
+yük (derleme Diten.ApiGateway.csproj): 1 dakikalık 10.06 (eşik 12)
+KONTROL P-derleme GEÇTİ: dal Diten.ApiGateway.csproj derlendi (çıkış 0, hata ?)
+yük (derleme Diten.AuthService.FirstPlatformAdministrator.csproj): 1 dakikalık 10.06 (eşik 12)
+KONTROL P-derleme GEÇTİ: dal Diten.AuthService.FirstPlatformAdministrator.csproj derlendi (çıkış 0, hata ?)
+yük (derleme Diten.MdmService.Api.csproj): 1 dakikalık 9.99 (eşik 12)
+KONTROL P-derleme GEÇTİ: taban Diten.MdmService.Api.csproj derlendi (çıkış 0, hata ?)
+RabbitMQ vhost: e3fu06_1793980316 (guest izinli)
+MDM kayıt kimliği: Platform ve MDM aynı iki ortam değişkeninden (E3_MDM_REGISTRATION_ID / _SECRET) alır
+== Y1 — yığın, taban MDM
+başlatıldı: mongod PID 51348 başlangıç 'Fri Nov  6 18:51:57 2026'
+atılabilir mongod: port 37291, replSet rse3fu06, yeni dbpath (geçici dizin)
+başlatıldı: auth PID 51375 başlangıç 'Fri Nov  6 18:52:03 2026'
+auth: /health/live 200
+KONTROL F-15/auth GEÇTİ: F-15 betiğin servisleri paylaşılan mongod portlarına (27017–27021) bağlı değil
+başlatıldı: platform PID 51417 başlangıç 'Fri Nov  6 18:52:11 2026'
+platform: /health/live 200
+KONTROL F-15/platform GEÇTİ: F-15 betiğin servisleri paylaşılan mongod portlarına (27017–27021) bağlı değil
+başlatıldı: gateway PID 51503 başlangıç 'Fri Nov  6 18:52:34 2026'
+gateway: /health/live 200
+KONTROL F-15/gateway GEÇTİ: F-15 betiğin servisleri paylaşılan mongod portlarına (27017–27021) bağlı değil
+başlatıldı: mdm PID 51537 başlangıç 'Fri Nov  6 18:52:41 2026'
+mdm: günlükte 'Module manifest self-registered with Platform … ModuleCode=product-item-sku-master'
+KONTROL F-15/mdm GEÇTİ: F-15 betiğin servisleri paylaşılan mongod portlarına (27017–27021) bağlı değil
+KONTROL Y1 GEÇTİ: Platform kataloğunda modül sürümü 1.3.0 (beklenen 1.3.0)
+KONTROL Y1 GEÇTİ: Platform kataloğunda GLOBAL_PRODUCTS/READ_PRODUCT_MASTER 0 (beklenen 0)
+== Y2a — kiracı ve hak satırı
+== Kurulum — platform yöneticisi, iki kiracı, kullanıcılar ve roller
+platform: günlükte 'Permission auto-registration complete.'
+ÖLÇÜM (çalışma anı): Auth roles, platform kiracısında SuperAdmin sayısı 1
+FirstPlatformAdministrator aracı: çıkış 0 (0 oluştu · 1 bağlantı · 2 kullanım · 3 reddedildi · 4 yarıda)
+bağlantı dosyası okundu ve silindi (içerik yazılmaz)
+ÖLÇÜM (çalışma anı): Platform iç ucu platform-administrators/status, betiğin iç anahtarıyla → 200
+platform yöneticisi parola belirleme (reset-password) → 204
+platform yöneticisi jetonu: platform.tenants.commercial.subscription.assign var
+kiracı 1: POST /api/admin/tenants → 201
+kiracı 1: Auth'ta Admin + Viewer rol sayısı 2 (beklenen 2)
+kiracı 1: tenant-admin-invited (deneme 1) → 200
+kiracı 1: yönetici set-password → 204
+kiracı 2: POST /api/admin/tenants → 201
+kiracı 2: Auth'ta Admin + Viewer rol sayısı 2 (beklenen 2)
+kiracı 2: tenant-admin-invited (deneme 1) → 200
+kiracı 2: yönetici set-password → 204
+kiracı 1: kullanıcı viewer POST /api/users → 201
+kiracı 1: kullanıcı nokey POST /api/users → 201
+kiracı 1: kullanıcı steward POST /api/users → 201
+kiracı 1: kullanıcı approver POST /api/users → 201
+kiracı 1: kullanıcı retirement POST /api/users → 201
+kiracı 1: viewer → Viewer → 204
+kiracı 2: kullanıcı viewer POST /api/users → 201
+kiracı 2: viewer → Viewer → 204
+KONTROL Y2a GEÇTİ: hak satırı POST → 201
+KONTROL Y2a GEÇTİ: entitlement.sync.applied bu kiracı ve product-item-sku-master için görüldü (60 sn); sayaç tabanı 1
+== Y2a — adanmış üç rol (hak eşitlemesinden sonra, yalnız kiracı 1)
+kiracı 1: adanmış üç rol var (ProductDataSteward, ProductIdentityApprover, ProductIdentityRetirementSteward)
+kiracı 1: steward → ProductDataSteward → 204
+kiracı 1: approver → ProductIdentityApprover → 204
+kiracı 1: retirement → ProductIdentityRetirementSteward → 204
+yayılım modu: Enforced kayıt sayısı 0
+== Y2b — ön ölçüm (taban MDM)
+KONTROL Y2b GEÇTİ: kiracı1 admin: jetonda mdm.items.read var
+KONTROL Y2b GEÇTİ: kiracı1 admin: jetonda mdm.product-master.read yok
+KONTROL Y2b GEÇTİ: kiracı1 admin: GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y2b GEÇTİ: kiracı1 admin: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y2b GEÇTİ: kiracı1 viewer: jetonda mdm.items.read var
+KONTROL Y2b GEÇTİ: kiracı1 viewer: jetonda mdm.product-master.read yok
+KONTROL Y2b GEÇTİ: kiracı1 viewer: GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y2b GEÇTİ: kiracı1 viewer: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y2b GEÇTİ: Auth kataloğunda mdm.product-master.read satırı yok
+== Y3a — MDM yeni sürüm (bu dal)
+durduruldu: mdm PID 51537
+başlatıldı: mdm PID 51716 başlangıç 'Fri Nov  6 18:53:29 2026'
+mdm: günlükte 'Module manifest self-registered with Platform … ModuleCode=product-item-sku-master'
+KONTROL F-15/mdm GEÇTİ: F-15 betiğin servisleri paylaşılan mongod portlarına (27017–27021) bağlı değil
+KONTROL Y3a GEÇTİ: Platform kataloğunda modül sürümü 1.4.0 (beklenen 1.4.0)
+KONTROL Y3a GEÇTİ: Platform kataloğunda GLOBAL_PRODUCTS/READ_PRODUCT_MASTER 1 (beklenen 1)
+== Y3b — henüz kazanç yok
+KONTROL Y3b GEÇTİ: Auth kataloğunda Module = product-item-sku-master
+KONTROL Y3b GEÇTİ: Auth kataloğunda Scope = 0 (Tenant)
+KONTROL Y3b GEÇTİ: Platform hak listesi (iç uç, durum 200) modülde anahtarı listeler
+KONTROL Y3b GEÇTİ: kiracı1 admin: jetonda mdm.product-master.read yok
+KONTROL Y3b GEÇTİ: kiracı1 admin: GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y3b GEÇTİ: kiracı1 admin: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y3b GEÇTİ: kiracı1 viewer: jetonda mdm.product-master.read yok
+KONTROL Y3b GEÇTİ: kiracı1 viewer: GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y3b GEÇTİ: kiracı1 viewer: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y3b GEÇTİ: entitlement.sync.applied sayacı 1 = Y2a tabanı 1
+== Y4a — tetikleyici (PATCH uzlaştırma)
+KONTROL Y4a GEÇTİ: PATCH expiry (aynı bitiş, yeni neden, güncel RowVersion) → 204
+KONTROL Y4a GEÇTİ: yeni entitlement.sync.applied (60 sn): 1 → 2
+== Y4b — kazanç
+KONTROL Y4b GEÇTİ: kiracı1 admin: jetonda mdm.product-master.read var
+KONTROL Y4b GEÇTİ: kiracı1 admin: GET /api/product-master/stockable-items → 200 (beklenen 200)
+KONTROL Y4b GEÇTİ: kiracı1 admin: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y4b GEÇTİ: kiracı1 viewer: jetonda mdm.product-master.read var
+KONTROL Y4b GEÇTİ: kiracı1 viewer: GET /api/product-master/stockable-items → 200 (beklenen 200)
+KONTROL Y4b GEÇTİ: kiracı1 viewer: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y4b GEÇTİ: kiracı1 anahtarsız kullanıcı: jetonda mdm.product-master.read yok
+KONTROL Y4b GEÇTİ: kiracı1 anahtarsız kullanıcı: GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y4b GEÇTİ: kiracı1 anahtarsız kullanıcı: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y4b GEÇTİ: F-9 kiracı1 adanmış rol (steward): jetonda mdm.product-master.read yok
+KONTROL Y4b GEÇTİ: F-9 kiracı1 adanmış rol (approver): jetonda mdm.product-master.read yok
+KONTROL Y4b GEÇTİ: F-9 kiracı1 adanmış rol (retirement): jetonda mdm.product-master.read yok
+== Y5 — yeni kiracı, yeni hak
+KONTROL Y5 GEÇTİ: F-9 kiracı2 admin (hak yok): jetonda mdm.items.read yok
+KONTROL Y5 GEÇTİ: F-9 kiracı2 admin (hak yok): jetonda mdm.product-master.read yok
+KONTROL Y5 GEÇTİ: F-9 kiracı2 admin (hak yok): GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y5 GEÇTİ: F-9 kiracı2 admin (hak yok): gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y5 GEÇTİ: F-9 kiracı2 viewer (hak yok): jetonda mdm.items.read yok
+KONTROL Y5 GEÇTİ: F-9 kiracı2 viewer (hak yok): jetonda mdm.product-master.read yok
+KONTROL Y5 GEÇTİ: F-9 kiracı2 viewer (hak yok): GET /api/product-master/stockable-items → 403 (beklenen 403)
+KONTROL Y5 GEÇTİ: F-9 kiracı2 viewer (hak yok): gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y5 GEÇTİ: hak satırı POST → 201
+KONTROL Y5 GEÇTİ: kiracı2 entitlement.sync.applied (60 sn): 0 → 1
+KONTROL Y5 GEÇTİ: kiracı2 admin: jetonda mdm.items.read var
+KONTROL Y5 GEÇTİ: kiracı2 admin: jetonda mdm.product-master.read var
+KONTROL Y5 GEÇTİ: kiracı2 admin: GET /api/product-master/stockable-items → 200 (beklenen 200)
+KONTROL Y5 GEÇTİ: kiracı2 admin: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+KONTROL Y5 GEÇTİ: kiracı2 viewer: jetonda mdm.items.read var
+KONTROL Y5 GEÇTİ: kiracı2 viewer: jetonda mdm.product-master.read var
+KONTROL Y5 GEÇTİ: kiracı2 viewer: GET /api/product-master/stockable-items → 200 (beklenen 200)
+KONTROL Y5 GEÇTİ: kiracı2 viewer: gövdede LEGAL_ENTITY_SCOPE_FORBIDDEN yok (403 ise neden rol, kapsam değil)
+== Y6 — temizlik (her yolda)
+KONTROL Y4c GEÇTİ: Auth günlüğünde 'complete active module descriptor set' sayısı 0 (bütün koşu)
+durduruldu: mdm PID 51716
+durdu (zaten): mdm PID 51537
+durduruldu: gateway PID 51503
+durduruldu: platform PID 51417
+durduruldu: auth PID 51375
+durduruldu: mongod PID 51348
+günlük kopyası (süzülmüş, son 200 satır): docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/auth-1.tail200.log
+günlük kopyası (süzülmüş, son 200 satır): docs/records/audits/2026-11/mod0290-fu06-dl1/accept-run-1/e3/platform-2.tail200.log
+KONTROL Y6 GEÇTİ: vhost e3fu06_1793980316 silindi
+KONTROL Y6 GEÇTİ: vhost listede yok
+KONTROL Y6 GEÇTİ: taban worktree kaldırıldı (git worktree remove, çıkış 0)
+KONTROL Y6 GEÇTİ: port listesi boş (dinleyen yok)
+paylaşılan mongod (27017) veritabanları sonda (ad, boyut — boyut bilgi, karşılaştırılmaz): [["DitenERP_Dev", {"high": 0, "low": 303104, "unsigned": false}], ["DitenERP_Test", {"high": 0, "low": 888832, "unsigned": false}], ["DitenEnterpriseDb", {"high": 0, "low": 548864, "unsigned": false}], ["DitenPpmFinalEvidence", {"high": 0, "low": 176128, "unsigned": false}], ["admin", {"high": 0, "low": 81920, "unsigned": false}], ["config", {"high": 0, "low": 364544, "unsigned": false}], ["diten_auth_fu22_itest", {"high": 0, "low": 286720, "unsigned": false}], ["diten_auth_permission_onboarding_itest", {"high": 0, "low": 163840, "unsigned": false}], ["diten_auth_service_identity_itest", {"high": 0, "low": 172032, "unsigned": false}], ["diten_auth_v3", {"high": 0, "low": 2543616, "unsigned": false}], ["diten_background_jobs_dev", {"high": 0, "low": 6004736, "unsigned": false}], ["diten_deven_dev", {"high": 0, "low": 221184, "unsigned": false}], ["diten_mdm_product_scope_itest", {"high": 0, "low": 3747840, "unsigned": false}], ["diten_mdm_product_scope_itest_gp_identity_resilience", {"high": 0, "low": 528384, "unsigned": false}], ["diten_mod0117_acceptance_20260903", {"high": 0, "low": 4726784, "unsigned": false}], ["diten_mod0117_acceptance_jobs_20260903", {"high": 0, "low": 212992, "unsigned": false}], ["diten_mod0117_auth_acceptance_20260903", {"high": 0, "low": 1040384, "unsigned": false}], ["diten_mod0117_ppm_acceptance_20260903", {"high": 0, "low": 196608, "unsigned": false}], ["diten_personalization_dev", {"high": 0, "low": 34598912, "unsigned": false}], ["diten_platform", {"high": 0, "low": 49152, "unsigned": false}], ["diten_platform_brd_itest_asn_1dc482cb89ad4117924058124adb702d", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_asn_a2508e6e31b943e1955c96c59177d74e", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_asn_de504f2f5c4747deb6e1fd66265dc35e", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0095e168f9bf4f1eafeda93123e42999", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0278d4813b0143daa0c4c70f59ca9113", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_05df88c40b1b45d5b47191c9c858c49a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_061aeb7526974b5bb0e455fefdb1f9a8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_07b8515ef1d0432ea7a91ab79b103f09", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0834d1a685bd40da9f0e1b1c97d873b1", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_08a4a201efd148389a577965fc644687", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_091f614413d04c2b9e1bba330d812787", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_0cf5629b49594ff5be6104aea48cdd5c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_276f4dff812e4e7aadbdce6d3c41ea49", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_2fd1202329d841419dbadd4f4ec3c05b", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_41797b59fe9b498f92a47f47dc35a91a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_426f74f51f6a40578d876c47a7ba84b4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_47fc8bb028514f358bfcd90a4ad45ff4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_4e9e2666b0c0466fbbadcd1225fbb252", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_527148b94746411e8de77a5f4fe4adc7", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_5ae97480e1fb4286808303fcc73efacc", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_6ba752409da34b1eb81152671a3cf7c7", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_7c7ca33cda954f0cac8d1a4d28f736c8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_8b9863d17dc44d20b4d97b70a7e9a664", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_8d87b6f0bfa24d74919d6912ca1e5f1d", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_96c77856d7314bd39fb4d7788d041f57", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_adbda0cb868947d0ad457b8ebce624fa", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_ade99549a05b4e0ea650463614b276c8", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_aeb67b47e0654ce4a0a71e3575c731eb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_c29ff2821ac74234addbf1d5fc267ad5", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_d49257e0e9b0445b93855bd93a6c7251", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_d9420b6505b5444288fe7d65dbcf5ab4", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_f311aebeb6c442f0b74a07564d47c0fb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_gsku_fe9451c3359644a4a84b70ac7fd41360", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_2a8885994d76400a83b630492f95a02c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_3e8504d2543b407cb8fc37fbc1c2ffeb", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_5a442a9cce0c4251a8f780da46701f56", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_6de52ee08f27477f95d86f50f8ed6ff6", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_7efe8277b281461c8bb95a093394289c", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_93bbdab28d9a466e8e746e71d13ad4d6", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_c089061904e44acd9e5f43221790cd75", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_c621ca1cd77f47ac8d66e4129d71098a", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_d4952e0f1f90427b8f69100da7ad0940", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_brd_itest_pub_febcb7aa90b74a2bacf8545454d37a32", {"high": 0, "low": 40960, "unsigned": false}], ["diten_platform_composition_guard", {"high": 0, "low": 3936256, "unsigned": false}], ["diten_platform_fu21_itest", {"high": 0, "low": 176128, "unsigned": false}], ["diten_platform_itest", {"high": 0, "low": 1052672, "unsigned": false}], ["diten_platform_itest_container_validation", {"high": 0, "low": 5742592, "unsigned": false}], ["diten_platform_itest_email_shell_cfix1", {"high": 0, "low": 1064960, "unsigned": false}], ["diten_platform_itest_email_shell_retention", {"high": 0, "low": 561152, "unsigned": false}], ["diten_platform_itest_email_shell_seed", {"high": 0, "low": 2752512, "unsigned": false}], ["diten_platform_itest_email_shell_stage_c", {"high": 0, "low": 806912, "unsigned": false}], ["diten_platform_itest_email_shell_stage_d", {"high": 0, "low": 524288, "unsigned": false}], ["diten_platform_itest_email_shell_tenant_scope", {"high": 0, "low": 978944, "unsigned": false}], ["diten_platform_itest_eventing-outbox-idempotency", {"high": 0, "low": 290816, "unsigned": false}], ["diten_ppm_dev", {"high": 0, "low": 176128, "unsigned": false}], ["diten_ppm_mod0117_browser", {"high": 0, "low": 176128, "unsigned": false}], ["local", {"high": 0, "low": 43147264, "unsigned": false}]]
+KONTROL Y6 GEÇTİ: F-15 paylaşılan mongod'un veritabanı ADLARI başlangıçtakiyle aynı
+KONTROL Y6 GEÇTİ: git status: değişiklik yalnız docs/records/audits/2026-11/mod0290-fu06-dl1/ altında (0 başka satır)
+geçici dizin silindi (günlükler, mongod verisi)
+ÖZET: P-taban=GEÇTİ, P-taban-worktree=GEÇTİ, P-derleme=GEÇTİ, F-15/auth=GEÇTİ, F-15/platform=GEÇTİ, F-15/gateway=GEÇTİ, F-15/mdm=GEÇTİ, Y1=GEÇTİ, Y2a=GEÇTİ, Y2b=GEÇTİ, Y3a=GEÇTİ, Y3b=GEÇTİ, Y4a=GEÇTİ, Y4b=GEÇTİ, Y5=GEÇTİ, Y4c=GEÇTİ, Y6=GEÇTİ
+SONUÇ: E3 YEŞİL
