@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "python3",
+  "execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py",
+  "--base-worktree",
+  "/private/tmp/mdm-fu06-dl1-base"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 16939,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run/stdout.txt",
+   "sha256": "6376810967801552564253ea4aea5150dcdcae8584c04ad3f3834290b44035f7"
+  }
+ ],
+ "commit": "1896c7da8cd2ae5f4f95c2550f44e07672c7501f",
+ "cwd": ".",
+ "exit": 4,
+ "finished_utc": "2026-11-06T13:11:54Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run",
+ "started_utc": "2026-11-06T13:10:46Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "65d785022684125503f4e3e4e75fc66682e35958"
+}
