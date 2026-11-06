@@ -1,4 +1,7 @@
-const { loadScript } = require("./load-script");
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+let dataTable;
 
 function setupDom() {
   document.body.innerHTML = `
@@ -13,7 +16,7 @@ function setupDom() {
       <select id="planning-cycle-owner-filter"><option value="">All</option></select>
       <button id="planning-cycle-reset" type="button"></button>
       <button id="planning-cycle-refresh" type="button"></button>
-      <table id="planning-cycles-table"><tbody></tbody></table>
+      <table id="planning-cycles-table" class="planning-cycles-table"><tbody></tbody></table>
 
       <div id="planning-cycle-readiness-indicator"></div>
       <div id="planning-cycle-readiness-text"></div>
@@ -38,9 +41,26 @@ function setupDom() {
 
 async function boot() {
   setupDom();
+  const context = vm.createContext({
+    window, document, navigator: window.navigator, location: window.location, console,
+    setTimeout, clearTimeout, setInterval, clearInterval,
+    getComputedStyle: window.getComputedStyle.bind(window)
+  });
+  for (const key of Object.getOwnPropertyNames(window)) {
+    if (/^[A-Z]/.test(key) && typeof window[key] === "function") context[key] = window[key];
+  }
+  context.self = context;
+  const run = (file) => vm.runInContext(fs.readFileSync(path.resolve(__dirname, "..", file), "utf8"), context, { filename: file });
+  run("wwwroot/assets/vendor/libs/jquery/jquery.js");
+  context.$ = context.jQuery = window.jQuery;
+  run("wwwroot/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js");
+  context.DataTable = context.DataTable || context.jQuery.fn.dataTable;
+  context.DataTable.ext.errMode = "throw";
   global.bootstrap = {
     Modal: function () { return { show() { }, hide() { } }; }
   };
+  context.bootstrap = global.bootstrap;
+  context.DataTable.Responsive.bootstrap(global.bootstrap);
   window.enterpriseStrategyUi = {
     notify: vi.fn(),
     getErrorMessage: (err, fallback) => err?.message || fallback
@@ -69,6 +89,7 @@ async function boot() {
     userDisplayName: (id) => ({ "owner-1": "Beste Pullukcu" }[id] || id)
   };
   window.strategyEnterpriseMetaApi = {
+    getUsersByTenantId: vi.fn().mockResolvedValue([]),
     lookups: vi.fn().mockResolvedValue({
       planningLifecycleStatuses: ["Draft", "Active", "Archived"],
       planningCycleTypes: ["Annual Plan"],
@@ -76,6 +97,7 @@ async function boot() {
     })
   };
   window.strategyPlanningApi = {
+    getAllPositions: vi.fn().mockResolvedValue([]),
     listCycles: vi.fn().mockResolvedValue([
       {
         id: "pc-draft",
@@ -83,6 +105,7 @@ async function boot() {
         name: "Draft Cycle",
         planningCycleType: "Annual Plan",
         ownerId: "owner-1",
+        ownerCompanyId: "comp-1",
         status: "Draft",
         effectiveFrom: "2026-01-01",
         effectiveTo: "2026-12-31",
@@ -94,6 +117,7 @@ async function boot() {
         name: "Active Cycle",
         planningCycleType: "Annual Plan",
         ownerId: "owner-1",
+        ownerCompanyId: "comp-1",
         status: "Active",
         effectiveFrom: "2025-01-01",
         effectiveTo: "2025-12-31",
@@ -105,6 +129,7 @@ async function boot() {
         name: "Archived Cycle",
         planningCycleType: "Annual Plan",
         ownerId: "owner-1",
+        ownerCompanyId: "comp-1",
         status: "Archived",
         effectiveFrom: "2024-01-01",
         effectiveTo: "2024-12-31",
@@ -118,17 +143,19 @@ async function boot() {
     archiveCycle: vi.fn()
   };
 
-  loadScript("wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js");
-  loadScript("wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  run("wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js");
+  await window.planningCyclesApp.initPage();
+  await vi.waitFor(() => expect(document.querySelectorAll("#planning-cycles-table tbody tr")).toHaveLength(3));
+  dataTable = context.jQuery("#planning-cycles-table").DataTable();
 }
 
 describe("planning cycles register actions", () => {
   beforeEach(async () => {
     await boot();
   });
+  afterEach(() => dataTable?.destroy());
 
-  it("renders goal-style 3-dot action menus with lifecycle-specific items", () => {
+  it("renders DataTable view links and lifecycle-specific action items", () => {
     const rows = Array.from(document.querySelectorAll("#planning-cycles-table tbody tr"));
     expect(rows).toHaveLength(3);
 
@@ -141,9 +168,14 @@ describe("planning cycles register actions", () => {
     expect(activeRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
     expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
 
-    expect(actionLabels(draftRow)).toEqual(expect.arrayContaining(["View", "Edit", "Activate", "Archive / Delete"]));
-    expect(actionLabels(activeRow)).toEqual(expect.arrayContaining(["View", "Archive / Delete"]));
+    for (const [row, id] of [[draftRow, "pc-draft"], [activeRow, "pc-active"], [archivedRow, "pc-archived"]]) {
+      expect(row.querySelector(".bx-show").closest("a").getAttribute("href")).toBe(
+        `/management-governance/enterprise-strategy-business-performance/planning/cycles/${id}`);
+    }
+    expect(actionLabels(draftRow)).toEqual(["Edit", "Activate", "Archive / Delete"]);
+    expect(actionLabels(activeRow)).toEqual(["Archive / Delete"]);
     expect(actionLabels(activeRow)).not.toContain("Edit");
-    expect(actionLabels(archivedRow)).toEqual(["View"]);
+    // Re-archiving is currently accepted as a same-state transition by PlanningCycleService.
+    expect(actionLabels(archivedRow)).toEqual(["Archive / Delete"]);
   });
 });
