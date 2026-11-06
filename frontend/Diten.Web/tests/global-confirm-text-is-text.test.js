@@ -405,6 +405,7 @@ describe("the callers of the shared confirm", () => {
       // via textContent. Not text: `entityName` is one truncated line and would cut the quantity off a long item name.
       "wwwroot/assets/js/Quarantine/manual-hold.js",
       "wwwroot/assets/js/Traceability/LotMigration/index.js", // WP-MVP1-FU-CLEAN1: the migration confirmation body (values escaped, constant tags)
+      "wwwroot/assets/js/Traceability/Lots/status.js", // WP-MVP1-FU-CLEAN1 (FU-QUI1-LOTSTATUS): the status form body (radios + acknowledgement)
     ]);
   });
 
