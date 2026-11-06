@@ -45,7 +45,7 @@ F-10 | DÜŞÜK | MOD-0183 test file edited only to host ReturnsCapturingLogger 
 F-11 | DÜŞÜK | new Node assertion in return-receipt-flow.test.mjs is always true | kapandı | MVP-6 CT | 2026-11-10
 F-12 | DÜŞÜK | UXH-001: no "?" help entry or debt-ledger row for RETURN_DETAILS | açık | MVP-6 CT | 2026-11-10
 F-13 | DÜŞÜK | the list still shows the shipment GUID as text (existed before); decide keep or replace with the number | açık | MVP-6 CT | 2026-11-10
-F-14 | DÜŞÜK | no HTTP / middleware test for getReturn, none for RB-27 "400 and no return written" | açık | MVP-6 CT | 2026-11-10
+F-14 | DÜŞÜK | no HTTP / middleware test for getReturn, none for RB-27 "400 and no return written" | kapandı | MVP-6 CT | 2026-11-10
 
 ## Not measured (auditor)
 

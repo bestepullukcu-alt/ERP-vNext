@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Xunit;
+using MongoDB.Driver;
 using Diten.SupplyChainService.Application.Features.Returns;
 using Diten.SupplyChainService.Application.Features.Returns.Handlers.QueryHandlers;
 using Diten.SupplyChainService.Application.Features.Returns.Queries;
@@ -82,4 +83,59 @@ public sealed class ReturnDetailsReadTests
         var withCustomer = good.Replace("\"reasonCode\"", $"\"customerRef\":\"{Customer}\",\"reasonCode\"");
         Assert.False(ReturnWire.CreateValid(JsonDocument.Parse(withCustomer).RootElement));
     }
+}
+
+/// <summary>
+/// MOD-0186 DL-4 VER F-14: getReturn and the RB-27 refusal through the real HTTP pipeline (ReturnContextMiddleware, the
+/// controller, the repository), on the shared Returns/Claims host.
+/// </summary>
+[Collection("Returns Claims Http")]
+public sealed class ReturnDetailsHttpTests(Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost host)
+{
+    private async Task<string> CreateReturn()
+    {
+        var created = await host.Send("POST", "/api/shipment-bundle/returns", host.ReturnBody(), host.Token(), "dl4-" + Guid.NewGuid());
+        Assert.Equal(201, created.Status);
+        return created.Json!["returnId"]!.GetValue<string>();
+    }
+
+    [Fact]
+    public async Task GetReturn_OwnCompany_IsTheDetail_OverHttp()
+    {
+        var id = await CreateReturn();
+        var read = await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(), idempotencyKey: null);
+        Assert.Equal(200, read.Status);
+        Assert.Equal(id, read.Json!["returnId"]!.GetValue<string>());
+        Assert.Equal("damaged", read.Json!["reasonCode"]!.GetValue<string>());
+        Assert.NotNull(read.Json!["createdAt"]);
+        Assert.Single(read.Json!["lines"]!.AsArray());
+    }
+
+    [Fact]
+    public async Task GetReturn_OtherTenantOrCompanyOrUnknown_Is404_MalformedIs400_NoReadKeyIs403()
+    {
+        var id = await CreateReturn();
+        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(), idempotencyKey: null, legalEntity: Guid.NewGuid())));
+        var foreign = Guid.NewGuid();
+        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(tenant: foreign), idempotencyKey: null, tenant: foreign)));
+        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{Guid.NewGuid()}", token: host.Token(), idempotencyKey: null)));
+        Assert.Equal(400, (await host.Send("GET", "/api/shipment-bundle/returns/not-a-guid", token: host.Token(), idempotencyKey: null)).Status);
+        var noRead = host.Token(permissions: Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost.AllPermissions.Where(p => p != "supplychain.returns.read"));
+        Assert.Equal(403, (await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: noRead, idempotencyKey: null)).Status);
+    }
+
+    // RB-27: a create body that carries customerRef is refused with 400 INVALID_REQUEST and writes nothing.
+    [Fact]
+    public async Task Create_WithCustomerRef_Is400_AndWritesNothing()
+    {
+        var returns = host.Database.GetCollection<MongoDB.Bson.BsonDocument>("returns");
+        var tenant = new MongoDB.Bson.BsonDocument("TenantId", host.Tenant.ToString());
+        var before = await returns.CountDocumentsAsync(tenant);
+        var body = host.ReturnBody(); body["customerRef"] = "14900000-0000-4000-8000-000000000001";
+        var refused = await host.Send("POST", "/api/shipment-bundle/returns", body, host.Token(), "dl4-ref-" + Guid.NewGuid());
+        Assert.Equal((400, "INVALID_REQUEST"), Pair(refused));
+        Assert.Equal(before, await returns.CountDocumentsAsync(tenant));
+    }
+
+    private static (int, string?) Pair(Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost.Reply r) => (r.Status, r.Code);
 }

@@ -121,6 +121,40 @@ public sealed class SupplyChainShipmentsListTests
         Assert.Equal(2, handler.Uris.Count(u => u.Contains("/api/crm/", StringComparison.Ordinal)));
     }
 
+    // VER DL-4 F-5 (SB-15): at most four name reads run at once, whatever the page holds (12 customers, 12 warehouses).
+    [Fact]
+    public async Task List_NeverRunsMoreThanFourNameReadsAtOnce()
+    {
+        var rows = Enumerable.Range(1, 12).Select(i => Row($"SHP-{i}", $"14900000-0000-4000-8000-{i:D12}", warehouse: $"wh-{i}")).ToArray();
+        var handler = new ConcurrencyHandler(Page(rows));
+        var controller = SupplyChainShipmentsControllerTests.CreateController(new CaptureHandler(_ => throw new InvalidOperationException()), ReadAndCrm);
+        typeof(SupplyChainShipmentsController).GetField("_httpClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(controller, new HttpClient(handler));
+        Assert.IsType<ContentResult>(await controller.List(null, null, 0, 50, null, null, null, 0, CancellationToken.None));
+        Assert.Equal(24, handler.NameReads);
+        Assert.InRange(handler.MaxInFlight, 2, 4);
+    }
+
+    private sealed class ConcurrencyHandler(string list) : HttpMessageHandler
+    {
+        private int _inFlight;
+        public int MaxInFlight;
+        public int NameReads;
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/shipment-bundle/shipments") return Response(HttpStatusCode.OK, list);
+            Interlocked.Increment(ref NameReads);
+            var now = Interlocked.Increment(ref _inFlight);
+            lock (this) MaxInFlight = Math.Max(MaxInFlight, now);
+            await Task.Delay(40, cancellationToken);
+            Interlocked.Decrement(ref _inFlight);
+            return path.StartsWith("/api/crm/", StringComparison.Ordinal)
+                ? Response(HttpStatusCode.OK, """{"data":{"accountName":"A","accountCode":"C"}}""")
+                : Response(HttpStatusCode.OK, """{"code":"W","name":"N"}""");
+        }
+    }
+
     // SB-21: nothing read from CRM reaches the log on the list adapter.
     [Fact]
     public async Task List_LogsNothingReadFromCrm()

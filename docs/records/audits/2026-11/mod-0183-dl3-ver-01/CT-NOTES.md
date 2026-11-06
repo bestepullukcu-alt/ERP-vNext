@@ -27,3 +27,14 @@ Branch `feature/sce/mod0183-dl3-01`. Commits: `f6d99b5fa` (3.5.0 contract and se
 ## Not measured
 
 Gateway, CRM, LOCATION, PRODUCT-MASTER and TRACE live; mongod 7.0.28 (CI); rendered pages in 7 languages; Vitest.
+
+## Update 2026-11-06
+
+- F-10 + F-13 (CRM picker): CRM-ACCOUNT-LOOKUP 1.0.0 U-3 is FROZEN and on `main`, but it needs
+  `crm.account.lookup-validation` (not `crm.account.read`), a 2–100 character search and lists MOD-0183 / MOD-0186 only as
+  candidate consumers (§5a). The approved packs name `crm.account.read`, so the switch (with `billableOnly=true` as the status
+  filter) is a pack revision for the owner, not a code change in DL-3. Kept open as a decision.
+- SB-24 gate: MVP-1 CT (Beste) 2026-11-06: MOD-0177-FU01 DL-1 + DL-2 on their branch (f57172eed, a872e8c56), PR with the
+  MVP-1 line, target 2026-11-07. Q-2 confirmation received. Sequence agreed: FU01 code on `main`, then Dilim B with 3.5.0,
+  then their DL-1 acceptance once 3.5.0 is frozen on `main`.
+- Gateway: the getReturn route is added (integration lane, `8062bd97b`).

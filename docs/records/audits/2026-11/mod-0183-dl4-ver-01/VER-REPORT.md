@@ -34,7 +34,7 @@ F-3 | DÜŞÜK | Details shows an unresolved reference as plain text, not the sm
 F-4 | DÜŞÜK | Gate turns a thrown read into unavailable with no reference, so a warehouse or location cell loses it (controller :641) | kapandı | MVP-6 CT | 2026-11-10
 
 CT note on F-4 (measured): the INVENTORY and TRACE gateway clients catch transport errors and return a failed reply, so location and lot reads keep their reference without reaching Gate. The Gate change in `b7776f405` is defence in depth; its sabotage (passing no reference) stays green, so it is not counted as a guard. The SB-10 behaviour itself is tested.
-F-5 | DÜŞÜK | the concurrency bound has no test; the token and tenant check covers CRM reads only | açık | MVP-6 CT | 2026-11-10
+F-5 | DÜŞÜK | the concurrency bound has no test; the token and tenant check covers CRM reads only | kapandı | MVP-6 CT | 2026-11-10
 F-6 | DÜŞÜK | page = start / length + 1; a start that is not a multiple of length would misalign the pager (not measured in a browser) | açık | MVP-6 CT | 2026-11-10
 F-7 | DÜŞÜK | xlsx cells do not strip XML-illegal control characters; no styles.xml; not opened in a spreadsheet application | kapandı | MVP-6 CT | 2026-11-10
 F-8 | DÜŞÜK | Details still shows lifecycleCorrelationId, carrierId and loadId GUIDs as text; not an account id, against the §24.4 aim | açık | MVP-6 CT | 2026-11-10
