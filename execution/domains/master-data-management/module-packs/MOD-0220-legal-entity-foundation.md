@@ -894,9 +894,22 @@ review and approval do **not** carry over: this version has **no approval** and 
 new CT-APR-02 (independent review) and a new CT-APR-01 approval row bound to its hash. The amendment was authored by
 the Treasury Intake Control Tower under owner decisions D9 and D10/2
 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, took the MDM domain
-owner's decision for this change). It does **not** change this pack's frontmatter/status. Contract:
+owner's decision for this change). **Revision 2026-11-06 is made under the MDM domain owner's own decision** (Ali;
+`docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`), not under D10/2: it replaces D10/2's
+sentence "kod MOD-0126 ile birlikte (TRM-14)" (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`,
+D10/2). Open record: this replacement is to be reported to the Treasury Intake Control Tower (not done by this pack).
+**Authority basis for "MDM domain owner (Ali)":** `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`
+D84/4 and D97/5 name Ali as the person who decides the MOD-0220 §22 hold and re-approval (D84/4: Ali's note
+"§22 alanı netleşene kadar ready-for-dev yok", "Ali'ye soruldu"; D97/5: "Ali ayrıca cevaplayacak"); these two entries do
+not themselves use the title "MDM owner". The title is written in
+`docs/records/decisions/2026-10/treasury-intake-owner-decisions-03.md` D38/4 ("MDM sahibine (Ali)"),
+`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D91/4 ("sahip MDM / Ali") and
+`docs/records/decisions/2026-10/treasury-intake-owner-decisions-06.md` D125/3 ("MDM sahibi Ali"). It does **not** change
+this pack's frontmatter/status. Contract:
 [`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`](../../../../docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md)
-(LEGAL-ENTITY-LOOKUP 1.1.0, rev 3). Queue: `treasury-intake` TRM-14. This pack's existing `ready-for-dev` status covers
+(LEGAL-ENTITY-LOOKUP 1.1.0, rev 3). Queue: `mdm`, WP `MDM-0220-DL1`; TRM-14 stays a tracking row in Treasury
+(`treasury-intake`). The contract draft's header still reads `x-queue: treasury-intake TRM-14`; that file is not changed
+by this revision (follow-up, §22.6a Consumer-test follow-ups (owners, not this amendment)). This pack's existing `ready-for-dev` status covers
 the earlier slices only and does **not** approve §22; TRM-14 is not closed until §22 is approved, AC-T1…T5 have **passed** (running a test is not passing
 it), the MdmService build is green (AC-T5) and every AC-T4 consumer result is bound to that service owner's evidence
 (§22.6a).
@@ -953,12 +966,21 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
   (measured: no test file references it); its typed `System.Text.Json` read ignores unknown members by default. Adding a
   CRM test is another service (XMC-001) and is listed as a follow-up, not done here.
   **Status until run: expected compatibility, not tested** — for all 13 read points listed in the contract §3 (CRM ×2,
-  SupplyChain, Manufacturing, Planning ×2, Inventory, Platform ×2, HCM, SafetyStock, Web ×2). Running or adding a
-  consumer's test is that service owner's task (§22.6a Consumer-test follow-ups); only MdmService tests are in this
-  amendment's paths. **Split for the separate MDM WP (rev 2026-11-06):** AC-T4 (MDM part) — the existing MdmService
-  tests pass unchanged against the new body — is measured inside the MDM WP and is part of its acceptance; AC-T4
-  (consumer part) — the consumer tests above — is not an MDM WP acceptance gate, is tracked as a follow-up in §22.6a
-  Consumer-test follow-ups and stays a TRM-14 closure condition (see the status paragraph of this section).
+  SupplyChain, Manufacturing, Planning ×2, Inventory, Platform ×2, HCM, SafetyStock, Web ×2). Adding or changing a
+  consumer's test, and binding a consumer result to that service owner's evidence, is that service owner's task (§22.6a
+  Consumer-test follow-ups (owners, not this amendment)); only MdmService tests are in this amendment's write paths.
+  **Split for the separate MDM WP (rev 2026-11-06):**
+  - AC-T4 (MDM WP part) — the existing MdmService tests **and** the existing consumer tests named above (Manufacturing
+    `MdmLegalEntityReferenceValidatorTests`, SupplyChain `LegalEntityScopeValidatorTests`, Planning `MrpUpstreamReaderTests`
+    / `LiveHistoryImportReferencesTests`, Web `CompanySelectionTests`) are **run** inside the MDM WP with no test file
+    changed, and each result is written into the MDM WP evidence. This is an MDM WP acceptance condition. Running a test
+    writes no file outside the allowed paths (§22.3 Change (additive only)).
+  - AC-T4 (follow-up part) — binding each consumer result to that service owner's evidence, and consumer tests that put
+    `approvalStatus` into the test body (new or changed consumer tests, CRM parser tests), stay follow-ups in §22.6a
+    Consumer-test follow-ups (owners, not this amendment) and remain a TRM-14 closure condition (status paragraph of this
+    section). They are not an MDM WP acceptance gate.
+  - The owner decision record's "AC-T1…T5"
+    (`docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`) covers AC-T4 (MDM WP part).
 - AC-T5 — Code compatibility (separate from JSON): `dotnet build` of `Diten.MdmService` succeeds and the construction-site
   scan (`git grep -n "LegalEntityLookupDto"` over `services/ frontend/ tests/`) is re-run at code time and shows no
   construction outside `ToLookupDto`; any new site found is updated in the same commit or the change stops.
@@ -969,20 +991,36 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
   only), AC-T1…T5) is delivered **first, as its own MDM WP**, without waiting for MOD-0126 DL-1, inside the MdmService
   allowed paths above only; XMC-001 consent is D9 and must be restated in that WP prompt. Earlier wording, replaced:
   "Code lands together with MOD-0126 DL-1 (first Treasury consumer), as a separate commit inside the MdmService allowed
-  paths above". The MDM WP's acceptance is measured inside MdmService: AC-T1, AC-T2, AC-T3, AC-T4 (MDM part) and AC-T5
-  (§22.4 Acceptance criteria (defined; not implemented or run)). AC-T4 (consumer part) is a follow-up (§22.6a
-  Consumer-test follow-ups), not an MDM WP gate.
+  paths above". The MDM WP's acceptance is measured by the MDM WP: AC-T1, AC-T2, AC-T3, AC-T4 (MDM WP part: existing
+  MdmService tests and the existing consumer tests named in AC-T4, run unchanged, results in the WP evidence) and AC-T5
+  (§22.4 Acceptance criteria (defined; not implemented or run)). AC-T4 (follow-up part) is a follow-up (§22.6a
+  Consumer-test follow-ups (owners, not this amendment)), not an MDM WP gate.
 - Treasury consumers start using `approvalStatus` with their own DL-1 (MOD-0126 DL-1 first); the classification rules
   below are unchanged by this revision.
-- **D9 condition 2 is met, not waived:** D9 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`)
-  allows code only once this pack and the related Treasury pack are `ready-for-dev`; MOD-0126 is `ready-for-dev` and
-  approved on main since 2026-11-06 (`execution/approvals/approvals.tsv`, approver `bestepullukcu-alt`; Beste's answer of
-  2026-11-06 says the same).
+- **D9 condition 2 — two halves.** D9 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`, D9/2)
+  allows code only once this pack and the related Treasury pack are `ready-for-dev`.
+  - Treasury half: **met.** MOD-0126 (`execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`) is
+    `ready-for-dev` and approved on main since 2026-11-06 (`execution/approvals/approvals.tsv`, row for that pack at hash
+    `4fc00697…`, approver `bestepullukcu-alt`, 2026-11-06).
+  - MOD-0220 half: **not yet met.** It is met only by this revision's CT-APR-01 approval row, bound to its hash after a
+    new CT-APR-02. Until that row is on main, no §22 code is written.
+  - Hold in `docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D84/4 and D97/5: Ali's note "§22
+    alanı netleşene kadar ready-for-dev yok"; D97/5 left the outcome to a separate answer from Ali. The MDM domain owner's
+    decisions of 2026-11-06 (Ali, options "Ana veri önce, ayrı" and "Yeniden uygula";
+    `docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`) settle the §22 scope; the hold lifts
+    with this revision's CT-APR-01 approval row, not before.
 - **Why "together" no longer holds:** Treasury's later decisions make TRM-14 a **DL-1 slice gate** of four Treasury
   packs, MOD-0126 among them (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D82/2;
-  `treasury-intake-owner-decisions-06.md` D135/2): their DL-1 waits for TRM-14, so the MDM change cannot land inside
-  MOD-0126 DL-1. Owner decision record:
+  `docs/records/decisions/2026-10/treasury-intake-owner-decisions-06.md` D135/2): their DL-1 waits for TRM-14, so the
+  MDM change cannot land inside MOD-0126 DL-1. Owner decision record:
   `docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`.
+- **D82/2 gate — what the MDM side delivers:** for the Treasury DL-1 slice gate (D82/2, D135/2), the MDM side's delivery
+  is the MDM WP `MDM-0220-DL1` accepted: code on main, AC-T1…T5 passed, and the existing consumer tests run (AC-T4 (MDM
+  WP part)).
+  - **Recommendation (not a decision):** TRM-14's full closure (consumer results bound to their owners' evidence,
+    §22.6a Consumer-test follow-ups (owners, not this amendment)) should not hold Treasury DL-1.
+  - This needs a Treasury-side decision, because D82/2 and D135/2 are Treasury decisions. Open record: to be asked to
+    the Treasury Intake Control Tower; not decided in this pack. Until Treasury decides, D82/2 is read as written.
 - Treasury side (not this pack): `ILegalEntityEligibilityPort` classifies responses by the contract §2 table — invalid or
   contradictory 200 (missing / null / empty / unknown `approvalStatus`, missing or different `legalEntityId`,
   `referenceable = false`, `lifecycleState ≠ ACTIVE`) → 503; defined but not approved, or 404 → 422; never approved by
@@ -993,12 +1031,15 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
 | Service | Test to run / add with an `approvalStatus` body | Owner |
 |---|---|---|
 | CRM | add parser tests for `MdmCyclePeriodLegalEntityValidator` and `MdmCyclePeriodLegalEntityCatalog` (none exist) | commercial-suite |
-| SupplyChain, Manufacturing, Planning, Inventory, Platform, HCM, SafetyStock, Web | run existing tests (contract §3) with the new body | each service owner |
+| SupplyChain, Manufacturing, Planning, Inventory, Platform, HCM, SafetyStock, Web | bind the existing tests' results (contract §3) to the owner's evidence; add or change tests so the body includes `approvalStatus` | each service owner |
+| Web — MOD-0220's own Legal Entity wizard (not in contract §3) | `frontend/Diten.Web/Controllers/LegalEntitiesController.cs` `LookupListProxy` (`GET /LegalEntities/api/lookup` → Gateway `/api/legal-entities/lookup`, body passed through unchanged) and `frontend/Diten.Web/wwwroot/assets/js/MasterData/LegalEntities/wizard.js` `loadParentOptions` (reads `legalEntityId`, `code`, `legalName` / `displayName` from each item; other members are not read). Measured: no test references either. Add a read test or a recorded live check with a body that includes `approvalStatus`; frontend is outside §22's write paths, so this is a separate MDM item | MDM |
+| Contract draft (MDM) | `docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md` header `x-queue: treasury-intake TRM-14` → queue `mdm`, WP `MDM-0220-DL1` (TRM-14 tracking in Treasury); not changed by this revision | MDM |
 
-Rev 2026-11-06: the rule above is unchanged — each consumer result counts only when bound to that service owner's
-evidence. These results are **not** part of the separate MDM WP's acceptance (§22.5 Delivery); they are tracked as
-follow-ups after the MDM WP lands and are required before TRM-14 closes (status paragraph of this section). No
-earlier deadline is defined in this pack or in the owner decisions it cites.
+Rev 2026-11-06: each consumer result counts only when bound to that service owner's evidence. Running the existing
+consumer tests unchanged is part of the MDM WP (§22.4 Acceptance criteria (defined; not implemented or run), AC-T4 (MDM WP
+part)); the binding and the tests that put `approvalStatus` into the body are **not** part of the separate MDM WP's
+acceptance (§22.5 Delivery). They are tracked as follow-ups after the MDM WP lands and are required before TRM-14 closes
+(status paragraph of this section). No earlier deadline is defined in this pack or in the owner decisions it cites.
 
 ### 22.6 Out of scope
 
@@ -1012,10 +1053,13 @@ fixing the §4/§12 status-name drift; frontend; gateway; new permission; any ot
 | DL-1 | TRM-14 `approvalStatus` eki (yalnız §22) | Change (additive only), Acceptance criteria (defined; not implemented or run), Delivery |
 
 Bu tablo **yalnız §22 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25). §1–§21'in eski kapsamı ve pack'in mevcut
-`ready-for-dev` durumu bu dilime yetki **vermez**; bu dilim de eski kapsamdan yetki almaz. Bitiş (MDM WP kabulü,
-MdmService içinde ölçülür): AC-T1, AC-T2, AC-T3, AC-T4 (MDM kısmı), AC-T5. AC-T4 (tüketici kısmı, tüketici sahiplerinin
-kanıtıyla) bu dilimin kabul şartı değildir; Consumer-test follow-ups (owners, not this amendment) bölümünde takip edilir
-ve TRM-14 kapanışının şartı olarak kalır. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır
-(onaylayanın kararı); kod (rev 2026-11-06, MDM sahibinin 2026-11-06 kararı) MOD-0126 DL-1'e bağlı değildir: ayrı ve önce
-gelen bir MDM WP'sinde, yalnız Change (additive only) bölümündeki izinli yollarda; D9/2 ön şartının (ilgili Treasury
-pack'inin `ready-for-dev` olması) bu karar ile kalkıp kalkmadığı Delivery bölümünde açık karar olarak durur.
+`ready-for-dev` durumu bu dilime yetki **vermez**; bu dilim de eski kapsamdan yetki almaz. Bitiş (MDM WP kabulü, MDM WP
+içinde ölçülür): AC-T1, AC-T2, AC-T3, AC-T4 (MDM WP kısmı: var olan MdmService testleri ve AC-T4'te adı geçen var olan
+tüketici testleri, hiçbir test dosyası değiştirilmeden koşulur, sonuçları MDM WP kanıtına yazılır), AC-T5. AC-T4 (takip
+kısmı: tüketici sonuçlarının sahiplerinin kanıtına bağlanması ve gövdeye `approvalStatus` koyan tüketici testleri) bu
+dilimin kabul şartı değildir; Consumer-test follow-ups (owners, not this amendment) bölümünde takip edilir ve TRM-14
+kapanışının şartı olarak kalır. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır (onaylayanın
+kararı); kod (rev 2026-11-06, MDM sahibinin 2026-11-06 kararı) MOD-0126 DL-1'e bağlı değildir: ayrı ve önce gelen bir MDM
+WP'sinde, yalnız Change (additive only) bölümündeki izinli yollarda. D9/2 ön şartı (Delivery bölümü): Treasury yarısı
+karşılandı (MOD-0126 `ready-for-dev`, onaylı, 2026-11-06); MOD-0220 yarısı yalnız bu sürümün CT-APR-01 onay satırıyla
+karşılanır — o satır main'de değilken kod yazılmaz.
