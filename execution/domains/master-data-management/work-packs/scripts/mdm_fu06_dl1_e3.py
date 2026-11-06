@@ -165,10 +165,15 @@ def load_1min() -> float:
 
 
 def load_gate(where: str) -> None:
-    load = load_1min()
-    emit(f"yük ({where}): 1 dakikalık {load:.2f} (eşik {LOAD_LIMIT:.0f})")
-    if load > LOAD_LIMIT:
-        raise Stop(4, f"E3 BEKLER — 1 dakikalık yük {load:.2f} > {LOAD_LIMIT:.0f} ({where})")
+    # Card / prompt rule: above the limit, wait 60 s and measure again; stop only if it stays above for 15 minutes.
+    for attempt in range(16):
+        load = load_1min()
+        emit(f"yük ({where}): 1 dakikalık {load:.2f} (eşik {LOAD_LIMIT:.0f})")
+        if load <= LOAD_LIMIT:
+            return
+        if attempt < 15:
+            time.sleep(60)
+    raise Stop(4, f"E3 BEKLER — 1 dakikalık yük 15 dakika boyunca {LOAD_LIMIT:.0f} üstünde ({where})")
 
 
 def listeners(port: int) -> list[str]:
