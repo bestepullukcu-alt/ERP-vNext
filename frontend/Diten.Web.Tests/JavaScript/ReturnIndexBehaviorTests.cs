@@ -71,6 +71,38 @@ public sealed class ReturnIndexBehaviorTests
         Assert.Contains("/SupplyChain/Returns/Details/", _script);
     }
 
+    // RB-4: no UUID text input remains for the shipment on the form or the list filter (restoring one turns this red).
+    [Fact]
+    public void Rb4_No_uuid_text_input_remains_for_the_shipment()
+    {
+        var form = Read("frontend/Diten.Web/Views/SupplyChain/Returns/_CreateEditOffcanvas.cshtml");
+        var filter = Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml");
+        Assert.Matches("<select id=\"returnShipmentId\"", form);
+        Assert.Matches("<select id=\"filterShipmentId\"", filter);
+        Assert.DoesNotMatch("<input[^>]*id=\"(returnShipmentId|filterShipmentId)\"", form + filter);
+        Assert.DoesNotContain("btnResolveShipment", form + _script);
+    }
+
+    // RB-6: the location stays disabled until a warehouse is chosen and is cleared whenever the warehouse changes.
+    [Fact]
+    public void Rb6_Location_is_cleared_and_disabled_with_the_warehouse()
+    {
+        Assert.Contains("window.jQuery(warehouse).on('change', resetLocation);", _script);
+        Assert.Contains("if (location) { setOption(location, '', ''); location.disabled = !warehouse; }", _script);
+        Assert.Contains("aria-required=\"true\" disabled></select>", Read("frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml"));
+    }
+
+    // VER F-5: the customer column is always declared at one index and saved views store columns by name.
+    [Fact]
+    public void VerF5_Saved_views_store_columns_by_name_and_the_customer_column_never_moves()
+    {
+        Assert.Contains("{ data: 'customer', orderable: false, searchable: false, visible: permissions.canReadCustomers, render: renderCustomer },", _script);
+        Assert.Contains("const VIEW_COLUMNS = ['rmaNumber', 'customer', 'shipmentId', 'status'];", _script);
+        Assert.Contains("layout: 'r10',", _script);
+        Assert.Contains("const named = view.layout === 'r10' && view.columns && typeof view.columns === 'object';", _script);
+        Assert.DoesNotContain("columnVisibility:", _script);
+    }
+
     // MOD-0186 r10 RB-24: no picker writes an id as option text; ids ride only in the option value. Rendering row.id (or
     // node.id) as text turns this red.
     [Fact]

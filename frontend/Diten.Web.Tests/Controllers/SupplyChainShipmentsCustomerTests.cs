@@ -243,15 +243,6 @@ public sealed class SupplyChainShipmentsCustomerTests
         Assert.Equal(code, JsonSerializer.SerializeToNode(failure.Value)!["error"]!["code"]!.GetValue<string>());
     }
 
-    internal sealed class ReturnsCapturingLogger : ILogger<SupplyChainReturnsController>
-    {
-        public List<string> Lines { get; } = [];
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-        public bool IsEnabled(LogLevel logLevel) => true;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            => Lines.Add(formatter(state, exception) + (exception is null ? string.Empty : " " + exception));
-    }
-
     internal sealed class CapturingLogger : ILogger<SupplyChainShipmentsController>
     {
         public List<string> Lines { get; } = [];

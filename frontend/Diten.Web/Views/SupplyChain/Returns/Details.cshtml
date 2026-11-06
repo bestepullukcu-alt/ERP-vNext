@@ -9,6 +9,9 @@
     ViewData["Title"] = Localizer["ReturnDetails"].Value;
     Layout = "_LayoutTenantShell";
     var returnId = (Guid)ViewBag.ReturnId;
+    // UAS-001 (VER F-7, F-8): the quarantine column and the customer row are drawn only with their keys.
+    var canReadHolds = Perms.Has(Diten.Web.Controllers.SupplyChainReturnsController.QuarantineHoldsRead);
+    var canReadCustomers = Perms.Has(Diten.Web.Controllers.SupplyChainReturnsController.CrmAccountRead);
 }
 @if (!Perms.Has("supplychain.returns.read"))
 {
@@ -16,7 +19,7 @@
     return;
 }
 <div id="return-details" data-return-id="@returnId.ToString("D")" data-legal-entity-id="@ViewBag.LegalEntityId"
-     data-can-read-holds="@(Perms.Has(Diten.Web.Controllers.SupplyChainReturnsController.QuarantineHoldsRead) ? "true" : "false")">
+     data-can-read-holds="@(canReadHolds ? "true" : "false")">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
         <div><h4 class="mb-1"><bdi dir="ltr" id="detailRmaNumber">@Localizer["Loading"]</bdi></h4><nav aria-label="breadcrumb"><ol class="breadcrumb mb-0 py-0"><li class="breadcrumb-item"><a asp-action="Index">@Localizer["ReturnsTitle"]</a></li><li class="breadcrumb-item active text-primary">@Localizer["ReturnDetails"]</li></ol></nav></div>
         <a asp-action="Index" class="btn btn-label-secondary border">@Localizer["BackToList"]</a>
@@ -30,12 +33,12 @@
         <div class="col-12 col-lg-6"><section class="card backbone-preview-section h-100 p-4"><h5 class="card-title mb-4">@Localizer["ReturnSummary"]</h5><dl class="row mb-0">
             <dt class="col-5 mb-3">@SharedLocalizer["Status"]</dt><dd id="detailStatus" class="col-7 mb-3"></dd>
             <dt class="col-5 mb-3">@Localizer["ShipmentNumber"]</dt><dd id="detailShipment" class="col-7 mb-3"></dd>
-            <dt class="col-5 mb-3">@Localizer["ReturnCustomer"]</dt><dd id="detailCustomer" class="col-7 mb-3"></dd>
+            @if (canReadCustomers) {<dt class="col-5 mb-3">@Localizer["ReturnCustomer"]</dt><dd id="detailCustomer" class="col-7 mb-3"></dd>}
             <dt class="col-5 mb-3">@Localizer["ReasonCode"]</dt><dd id="detailReason" class="col-7 mb-3"></dd>
             <dt class="col-5 mb-3">@Localizer["CreatedAt"]</dt><dd id="detailCreated" class="col-7 mb-3"></dd>
         </dl></section></div>
         <div class="col-12"><section class="card backbone-preview-section p-4"><h5 class="card-title mb-4">@Localizer["ReturnLines"]</h5><div class="table-responsive"><table class="table"><thead><tr>
-            <th>@Localizer["LineNumber"]</th><th>@Localizer["ProductSku"]</th><th>@Localizer["LotNumber"]</th><th class="text-end">@Localizer["ReturnQuantity"]</th><th>@Localizer["UomId"]</th><th>@Localizer["InventoryPosting"]</th><th>@Localizer["QuarantineRecords"]</th>
+            <th>@Localizer["LineNumber"]</th><th>@Localizer["ProductSku"]</th><th>@Localizer["LotNumber"]</th><th class="text-end">@Localizer["ReturnQuantity"]</th><th>@Localizer["UomId"]</th><th>@Localizer["InventoryPosting"]</th>@if (canReadHolds) {<th>@Localizer["QuarantineRecords"]</th>}
         </tr></thead><tbody id="detailLines"></tbody></table></div>
         <div id="detailOtherHolds" class="small mt-3 d-none"><span class="text-muted">@Localizer["OtherHolds"]:</span> <span id="detailOtherHoldsList"></span></div>
         <div id="detailHoldsError" class="small text-danger mt-3 d-none">@Localizer["HoldsUnavailable"]</div>

@@ -293,21 +293,29 @@ public sealed class SupplyChainReturnsController : Controller
         var source = Guid.TryParse(Str(read.Detail!, "shipmentId"), out var shipmentId) && HasPermission(ReturnUiPermissions.ShipmentRead)
             ? await LookupShipmentAsync(shipmentId, scope, "SHIPMENT_NOT_FOUND", cancellationToken) : null;
         var sourceLines = ReturnShipmentProjection.LinesByNumber(source?.Failure is null && source is not null ? source.Detail : default);
+        // VER F-4: a hold goes to a line only when exactly one Posted line has its SKU and lot; an ambiguous or unmatched hold,
+        // and every hold when the shipment could not be read, is listed apart. A NotPosted line never receives a hold.
+        var returnLines = (read.Detail!["lines"] as JsonArray)?.OfType<JsonObject>().ToList() ?? [];
+        string Key(ReturnSourceLineIds? ids) => ids?.SkuId is null ? string.Empty : ids.SkuId.ToLowerInvariant() + "|" + (ids.LotId ?? string.Empty);
+        var postedKeys = returnLines.Where(l => Str(l, "inventoryPosting") == "Posted")
+            .Select(l => sourceLines.TryGetValue(Str(l, "shipmentLineNumber") ?? string.Empty, out var ids) ? Key(ids) : string.Empty)
+            .Where(k => k.Length > 0).GroupBy(k => k).Where(g => g.Count() == 1).Select(g => g.Key).ToHashSet(StringComparer.Ordinal);
+        string HoldKey(JsonObject h) => (Str(h["item"] as JsonObject ?? [], "skuId") ?? string.Empty).ToLowerInvariant() + "|" + (Str(h["lot"] as JsonObject ?? [], "lotId") ?? string.Empty);
         var used = new HashSet<JsonObject>();
         var lines = new JsonArray();
-        foreach (var line in (read.Detail!["lines"] as JsonArray)?.OfType<JsonObject>() ?? [])
+        foreach (var line in returnLines)
         {
             var number = Str(line, "shipmentLineNumber") ?? string.Empty;
             sourceLines.TryGetValue(number, out var origin);
-            var matched = holds.OfType<JsonObject>().Where(h => origin?.SkuId is not null
-                && string.Equals(Str(h["item"] as JsonObject ?? [], "skuId"), origin.SkuId, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(Str(h["lot"] as JsonObject ?? [], "lotId") ?? string.Empty, origin.LotId ?? string.Empty, StringComparison.Ordinal)).ToList();
+            var key = Key(origin);
+            var matched = Str(line, "inventoryPosting") == "Posted" && postedKeys.Contains(key)
+                ? holds.OfType<JsonObject>().Where(h => HoldKey(h) == key).ToList() : [];
             used.UnionWith(matched);
             lines.Add(new JsonObject { ["shipmentLineNumber"] = number, ["inventoryPosting"] = Str(line, "inventoryPosting"),
                 ["inventoryPostingReason"] = Str(line, "inventoryPostingReason"), ["holds"] = new JsonArray(matched.Select(HoldLink).ToArray<JsonNode?>()) });
         }
         var other = new JsonArray(holds.OfType<JsonObject>().Where(h => !used.Contains(h)).Select(HoldLink).ToArray<JsonNode?>());
-        return JsonOk(new JsonObject { ["lines"] = lines, ["other"] = other }.ToJsonString(), "application/json");
+        return JsonOk(new JsonObject { ["lines"] = lines, ["other"] = other, ["linesMatched"] = sourceLines.Count > 0 }.ToJsonString(), "application/json");
     }
 
     private static JsonObject HoldLink(JsonObject hold) => new()
@@ -575,7 +583,7 @@ public sealed class SupplyChainReturnsController : Controller
                 (int)response.StatusCode, targetUrl, scope.Trace, root.Root);
             return (int)response.StatusCode >= 400
                 ? await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken)
-                : await PassThroughAsync(response, cancellationToken);
+                : await PassThroughWithoutCustomerAsync(response, cancellationToken);
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
@@ -658,6 +666,17 @@ public sealed class SupplyChainReturnsController : Controller
         request.Headers.TryAddWithoutValidation(TenantHeader, scope.TenantId.ToString("D"));
         request.Headers.TryAddWithoutValidation(LegalEntityHeader, scope.LegalEntityId.ToString("D"));
         request.Headers.TryAddWithoutValidation(CorrelationHeader, correlation.ToString("D"));
+    }
+
+    /// <summary>VER F-2: the create and transition answers (ReturnResponse 3.5.0) carry customerRef; it is removed before the
+    /// body reaches the browser. Any other success body passes through unchanged.</summary>
+    private static async Task<IActionResult> PassThroughWithoutCustomerAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+        JsonNode? node = null;
+        try { node = JsonNode.Parse(text); } catch (JsonException) { }
+        if (node is JsonObject body && body.Remove("customerRef")) text = body.ToJsonString();
+        return new ContentResult { StatusCode = (int)response.StatusCode, ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json", Content = text };
     }
 
     private static async Task<IActionResult> PassThroughAsync(HttpResponseMessage response,

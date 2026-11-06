@@ -610,11 +610,58 @@ public sealed class SupplyChainReturnsControllerTests
         Assert.DoesNotContain(noCrm.Requests, x => x.Uri.Contains("/api/crm/", StringComparison.Ordinal));
     }
 
+
+    // VER F-2: the create answer (ReturnResponse 3.5.0) carries customerRef from the service; the browser never receives it.
+    [Fact]
+    public async Task VerF2_Create_answer_reaches_the_browser_without_customerRef()
+    {
+        const string body = "{\"shipmentId\":\"44444444-4444-4444-8444-444444444444\",\"reasonCode\":\"DAMAGED\",\"lines\":[{\"shipmentLineNumber\":\"1\",\"quantity\":\"1\",\"uomId\":\"EA\"}]}";
+        var handler = new CaptureHandler(request => request.Uri.EndsWith("/returns", StringComparison.Ordinal)
+            ? Json(HttpStatusCode.Created, $"{{\"returnId\":\"{ReturnIdValue:D}\",\"rmaNumber\":\"RMA-1\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Requested\",\"customerRef\":\"{Account}\",\"idempotentReplay\":false,\"contractVersion\":\"v1\"}}", Root)
+            : Json(HttpStatusCode.OK, ShipmentDetail("\"" + Root.ToString("D") + "\"")));
+        var result = Assert.IsType<ContentResult>(await CreateController(handler, [Create, ShipmentRead], body, idempotencyKey: "k").Create(CancellationToken.None));
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.DoesNotContain(Account, result.Content!);
+        Assert.Contains("RMA-1", result.Content!);
+    }
+
+    // VER F-4: two Posted lines with the same SKU and lot cannot be told apart, so their hold is listed apart, not twice.
+    [Fact]
+    public async Task VerF4_An_ambiguous_hold_is_listed_apart()
+    {
+        var twoLines = ReturnDetailJson(Account).Replace("\"lines\":[", "\"lines\":[{\"shipmentLineNumber\":\"2\",\"quantity\":\"1.000\",\"uomId\":\"EA\",\"inventoryPosting\":\"Posted\"},");
+        var shipment = ShipmentWithLot(Account).Replace("\"lines\":[", $"\"lines\":[{{\"lineNumber\":\"2\",\"skuId\":\"{Sku}\",\"lotId\":\"lot-1\",\"quantity\":\"1.000\",\"uomId\":\"EA\"}},");
+        var handler = new CaptureHandler(r =>
+        {
+            var path = new Uri(r.Uri).AbsolutePath;
+            if (path == $"/api/shipment-bundle/returns/{ReturnIdValue:D}") return Json(HttpStatusCode.OK, twoLines);
+            if (path == $"/api/shipment-bundle/shipments/{Shipment:D}") return Json(HttpStatusCode.OK, shipment);
+            return DetailRoute(r, Account, Account);
+        });
+        var body = JsonDocument.Parse(Assert.IsType<ContentResult>(await CreateController(handler, [Read, ShipmentRead, HoldsRead]).Holds(ReturnIdValue, CancellationToken.None)).Content!).RootElement;
+        Assert.All(body.GetProperty("lines").EnumerateArray(), l => Assert.Equal(0, l.GetProperty("holds").GetArrayLength()));
+        Assert.Equal(2, body.GetProperty("other").GetArrayLength());
+        Assert.True(body.GetProperty("linesMatched").GetBoolean());
+    }
+
+    // VER F-6 / RB-1: Item, Gsku, Lsku and FinishedGood lines all get their name and code from the one bulk read.
+    [Fact]
+    public async Task Rb1_Every_sku_level_gets_its_name()
+    {
+        var levels = new[] { ("Item", "99990000-0000-4000-8000-000000000001"), ("Gsku", "99990000-0000-4000-8000-000000000002"), ("Lsku", Sku), ("FinishedGood", "99990000-0000-4000-8000-000000000004") };
+        var lines = string.Join(',', levels.Select((l, i) => $"{{\"lineNumber\":\"{i + 1}\",\"itemId\":\"{l.Item2}\",\"skuId\":\"{l.Item2}\",\"skuLevel\":\"{l.Item1}\",\"quantity\":\"1\",\"uomId\":\"EA\"}}"));
+        var detail = $"{{\"shipmentId\":\"{Shipment:D}\",\"shipmentNumber\":\"SHP-1\",\"status\":\"Delivered\",\"lifecycleCorrelationId\":\"{Root:D}\",\"lines\":[{lines}],\"contractVersion\":\"v1\"}}";
+        var bulk = "{\"items\":[" + string.Join(',', levels.Select(l => $"{{\"skuId\":\"{l.Item2}\",\"skuLevel\":\"{l.Item1}\",\"canonicalCode\":\"C-{l.Item1}\",\"name\":\"N {l.Item1}\",\"lifecycleStatus\":\"Active\"}}")) + "],\"notFound\":[]}";
+        var handler = new CaptureHandler(r => new Uri(r.Uri).AbsolutePath == "/api/product-master/skus/bulk-read" ? Json(HttpStatusCode.OK, bulk) : Json(HttpStatusCode.OK, detail));
+        var json = JsonSerializer.Serialize(Assert.IsType<JsonResult>(await CreateController(handler, [Create, ShipmentRead]).ResolveShipment(Shipment, CancellationToken.None)).Value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var labels = JsonDocument.Parse(json).RootElement.GetProperty("lines").EnumerateArray().Select(l => l.GetProperty("skuLabel").GetString()).ToArray();
+        Assert.Equal(levels.Select(l => $"C-{l.Item1} \u00B7 N {l.Item1}").ToArray(), labels);
+    }
     // RB-26: nothing read from CRM reaches the log on the list, picker and details adapters.
     [Fact]
     public async Task Rb26_Nothing_read_from_crm_reaches_the_log()
     {
-        var log = new SupplyChainShipmentsCustomerTests.ReturnsCapturingLogger();
+        var log = new ReturnsCapturingLogger();
         var list = $"{{\"items\":[{{\"returnId\":\"{ReturnIdValue:D}\",\"rmaNumber\":\"RMA-1\",\"shipmentId\":\"{Shipment:D}\",\"status\":\"Requested\",\"customerRef\":\"{Account}\"}}],\"total\":1}}";
         await CreateController(new CaptureHandler(r => Names(r, list)), [Read, CrmRead], logger: log).List(null, null, CancellationToken.None);
         await CreateController(new CaptureHandler(r => Names(r, $"{{\"items\":[{SummaryRow("SHP-1", Account)}],\"total\":1}}")), [Create, ShipmentRead, CrmRead], logger: log).EligibleShipments(null, 1, false, CancellationToken.None);
@@ -680,6 +727,15 @@ public sealed class SupplyChainReturnsControllerTests
         var response = new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         response.Headers.TryAddWithoutValidation("X-Correlation-Id", (correlation ?? Trace).ToString("D"));
         return response;
+    }
+
+    private sealed class ReturnsCapturingLogger : Microsoft.Extensions.Logging.ILogger<SupplyChainReturnsController>
+    {
+        public List<string> Lines { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Lines.Add(formatter(state, exception) + (exception is null ? string.Empty : " " + exception));
     }
 
     private sealed record CapturedRequest(HttpMethod Method, string Uri, Dictionary<string, string> Headers, string Body);

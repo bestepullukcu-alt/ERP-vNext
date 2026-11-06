@@ -158,8 +158,10 @@ const ReturnsList = (function () {
     let legalEntityScope = document.getElementById('returnsCompanyScope')?.dataset.legalEntityId || '';
     const rowsById = new Map();
     const permissions = readPermissions();
-    // Column-visibility indexes: RMA, [customer], shipment, status (the customer column needs crm.account.read).
-    const colvisColumns = permissions.canReadCustomers ? [1, 2, 3, 4] : [1, 2, 3];
+    // Column-visibility indexes (VER F-5): the customer column is always index 2 and stays hidden without crm.account.read,
+    // so no index moves with a permission; saved views store columns by data name, never by position.
+    const colvisColumns = permissions.canReadCustomers ? [1, 2, 3, 4] : [1, 3, 4];
+    const VIEW_COLUMNS = ['rmaNumber', 'customer', 'shipmentId', 'status'];
 
     // Create intent and resolve state.
     let createIntent = null;           // { key, bodyText, blocked, blockedFailure }
@@ -1300,8 +1302,9 @@ const ReturnsList = (function () {
 
     // ─── Save View (shared personalizationClient only; no browser storage) ───
     const currentView = () => ({
-        columnVisibility: colvisColumns.map((index) => dt.column(index).visible()),
-        order: dt.order(),
+        layout: 'r10',
+        columns: Object.fromEntries(VIEW_COLUMNS.map((name, index) => [name, dt.column(index + 1).visible()])),
+        order: dt.order().map(([index, dir]) => [VIEW_COLUMNS[Number(index) - 1] || '', dir]).filter(([name]) => name),
         search: dt.search(),
         filters: Object.assign({}, appliedFilters)
     });
@@ -1333,9 +1336,12 @@ const ReturnsList = (function () {
 
     const applyView = (view) => {
         if (!dt || !view || typeof view !== 'object') return;
-        if (Array.isArray(view.columnVisibility)) {
-            colvisColumns.forEach((index, position) => {
-                if (typeof view.columnVisibility[position] === 'boolean') dt.column(index).visible(view.columnVisibility[position], false);
+        // VER F-5: only an r10 view carries named columns; a view saved before DL-4 keeps its filters, not its columns or order.
+        const named = view.layout === 'r10' && view.columns && typeof view.columns === 'object';
+        if (named) {
+            VIEW_COLUMNS.forEach((name, index) => {
+                if (name === 'customer' && !permissions.canReadCustomers) return;
+                if (typeof view.columns[name] === 'boolean') dt.column(index + 1).visible(view.columns[name], false);
             });
         }
         const filters = view.filters && typeof view.filters === 'object' ? view.filters : {};
@@ -1344,7 +1350,10 @@ const ReturnsList = (function () {
             shipmentId: isText(filters.shipmentId) ? filters.shipmentId : ''
         };
         syncFilterControls();
-        if (Array.isArray(view.order)) dt.order(view.order);
+        if (named && Array.isArray(view.order)) {
+            const order = view.order.map(([name, dir]) => [VIEW_COLUMNS.indexOf(name) + 1, dir === 'desc' ? 'desc' : 'asc']).filter(([index]) => index > 0);
+            if (order.length) dt.order(order);
+        }
         if (isText(view.search)) dt.search(view.search);
         try { dt.columns.adjust(); dt.responsive?.recalc?.(); } catch (_) { /* layout only */ }
         window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
@@ -1423,7 +1432,7 @@ const ReturnsList = (function () {
             columns: [
                 { data: null, defaultContent: '', className: 'control', orderable: false, searchable: false },
                 { data: 'rmaNumber', render: (value, type) => (type === 'display' ? (isText(value) && value ? ltr(value) : notProvided()) : (isText(value) ? value : '')) },
-                ...(permissions.canReadCustomers ? [{ data: 'customer', orderable: false, render: renderCustomer }] : []),
+                { data: 'customer', orderable: false, searchable: false, visible: permissions.canReadCustomers, render: renderCustomer },
                 { data: 'shipmentId', render: renderCopyable },
                 { data: 'status', render: renderStatus },
                 { data: null, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (_v, type, row) => (type === 'display' ? renderActions(row) : '') }

@@ -29,7 +29,16 @@ const ReturnDetails = (function () {
     const nameText = (cell) => (cell?.state === 'resolved' && isText(cell.label) ? cell.label : t('NameUnavailable'));
     // OD-186-2: a listed code shows its label; an old free-text return shows its stored text as written.
     const reasonText = (code) => (REASONS.includes(code) ? t(`Reason_${code}`) : (isText(code) && code ? code : t('NotProvided')));
-    const postingText = (line) => (own(POSTING_KEY, line?.inventoryPosting) ? t(POSTING_KEY[line.inventoryPosting]) : t('NotPostedYet'));
+    // VER F-3: a NotPosted line shows why (PRE_WP_P1 or the unpostedLines reason), as the list's receipt result does.
+    const POSTING_REASON_KEY = { PRE_WP_P1: 'ReceiptReasonPreWpP1', ITEM_NOT_ACTIVE: 'InventoryRefusedItemNotActive', SKU_LEVEL_NOT_STOCKABLE: 'InventoryRefusedSkuLevelNotStockable',
+        UNKNOWN_ITEM: 'InventoryRefusedUnknownItem', INTEGRITY_FAULT: 'ReceiptReasonIntegrityFault' };
+    const postingText = (line) => {
+        if (!own(POSTING_KEY, line?.inventoryPosting)) return t('NotPostedYet');
+        const label = t(POSTING_KEY[line.inventoryPosting]);
+        if (line.inventoryPosting !== 'NotPosted' || !isText(line.inventoryPostingReason) || !line.inventoryPostingReason) return label;
+        const reason = own(POSTING_REASON_KEY, line.inventoryPostingReason) ? t(POSTING_REASON_KEY[line.inventoryPostingReason]) : line.inventoryPostingReason;
+        return `${label}: ${reason}`;
+    };
     const date = (v) => (v ? new Intl.DateTimeFormat(document.documentElement.lang || 'en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(v)) : t('NotProvided'));
     const text = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
     const holdLinks = (holds) => {
@@ -65,7 +74,7 @@ const ReturnDetails = (function () {
             link.dir = 'ltr'; link.textContent = data.shipmentNumber;
             shipment.appendChild(link);
         } else shipment.textContent = t('NameUnavailable');
-        text('detailCustomer', data.customer === null || data.customer === undefined ? t('NameUnavailable') : customerText(data.customer));
+        if (data.customer !== null && data.customer !== undefined) text('detailCustomer', customerText(data.customer));
         text('detailReason', reasonText(data.reasonCode));
         text('detailCreated', date(data.createdAt));
         const body = document.getElementById('detailLines');
@@ -74,9 +83,7 @@ const ReturnDetails = (function () {
             const row = body.insertRow();
             row.dataset.lineNumber = line.shipmentLineNumber || '';
             lineCells(line).forEach((value, index) => { const cell = row.insertCell(); cell.textContent = value ?? ''; if (index === 3) cell.className = 'text-end'; });
-            const holds = row.insertCell();
-            holds.className = 'js-line-holds';
-            holds.textContent = canReadHolds ? '' : '—';
+            if (canReadHolds) { const holds = row.insertCell(); holds.className = 'js-line-holds'; }
         });
         document.getElementById('returnDetailsCards').hidden = false;
     };
@@ -90,7 +97,9 @@ const ReturnDetails = (function () {
             (body.lines || []).forEach((line) => {
                 const cell = Array.from(document.querySelectorAll('#detailLines tr')).find((row) => row.dataset.lineNumber === line.shipmentLineNumber)?.querySelector('.js-line-holds');
                 if (!cell) return;
-                cell.replaceChildren(line.holds?.length ? holdLinks(line.holds) : document.createTextNode(line.inventoryPosting === 'NotPosted' ? postingText(line) : t('NoHold')));
+                // VER F-4: without a readable shipment no line can be matched, so the cell says nothing rather than "no record".
+                const none = body.linesMatched === false ? '—' : (line.inventoryPosting === 'NotPosted' ? postingText(line) : t('NoHold'));
+                cell.replaceChildren(line.holds?.length ? holdLinks(line.holds) : document.createTextNode(none));
             });
             if (body.other?.length) {
                 document.getElementById('detailOtherHoldsList').replaceChildren(holdLinks(body.other));

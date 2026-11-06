@@ -163,7 +163,6 @@ test('the 409 fills the stored values, shows the local time and resends the exac
     assert.ok(alert.text.includes(field.replace('T', ' ')), alert.text);
     assert.ok(!alert.text.includes(occurredAt));
     assert.ok(alert.children[1].children.some((node) => node.dir === 'ltr' && node.textContent === 'name-of-wh-stored'), 'stored place by name in a bdi');
-    assert.ok(!alert.text.includes('wh-stored') || alert.text.includes('name-of-wh-stored'), 'never the raw id alone');
     await submit();
     assert.equal(sent[1].body.occurredAt, occurredAt);
     assert.equal(sent[1].body.toWarehouseId, 'wh-stored');
