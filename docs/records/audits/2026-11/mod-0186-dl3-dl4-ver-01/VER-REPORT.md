@@ -32,7 +32,7 @@ SupplyChain suite on `7e1d75ca8`: 1033 passed, 0 failed, 1 skipped.
 
 ## Findings
 
-F-1 | ENGEL | ocelot.json has no GET /api/shipment-bundle/returns/{returnId} route; live, the details page and holds show "return not found" for every return; integration-agent must add it (dependency, not a code defect) | açık | MVP-6 CT | 2026-11-10
+F-1 | ENGEL | ocelot.json has no GET /api/shipment-bundle/returns/{returnId} route; live, the details page and holds show "return not found" for every return; integration-agent must add it (dependency, not a code defect) | kapandı | MVP-6 CT | 2026-11-10
 F-2 | ORTA | customerRef reaches the browser in the create and transition answers (ReturnResponse passed through raw) | kapandı | MVP-6 CT | 2026-11-10
 F-3 | ORTA | RB-10: a NotPosted line shows only "Not posted", never its reason | kapandı | MVP-6 CT | 2026-11-10
 F-4 | ORTA | holds matched by skuId + lotId only: duplicate SKU/lot lines share holds, a NotPosted line can show another line's hold, an unreadable shipment shows "No quarantine record" on every line | kapandı | MVP-6 CT | 2026-11-10

@@ -24,7 +24,11 @@ Web: the two Node receipt tests (RB-7 changes their expected text). No file of a
 
 ## Dispositions
 
-- F-1 (getReturn Gateway route): open, owner integration-agent; message to be sent. Blocks the live run and E4.
+- F-1 (getReturn Gateway route): closed by the integration lane commit after this one (owner decision Natig 2026-11-06:
+  integration-agent lane in this session, `.antigravity/agents/integration-agent.md` read). One explicit route, GET + OPTIONS,
+  port 5066 = AGENTS.md §3, before the transition route; applied with `git apply` from
+  `docs/roadmap/plans/mvp6-integration-wp-p1-01/GATEWAY-getReturn-route.patch`. `Mvp6ExplicitRoutesTests` now pins 13 routes;
+  gateway tests 313/313; sabotage (route removed) red. Live run still not measured.
 - F-2…F-8, F-10, F-11: closed by the VER-fix commit.
 - F-9, F-12, F-13, F-14: follow-ups, owner MVP-6 CT, by 2026-11-10. F-13 (shipment GUID column on the list, pre-existing)
   needs a decision: replace with the shipment number needs a per-row shipment read or a contract field.
