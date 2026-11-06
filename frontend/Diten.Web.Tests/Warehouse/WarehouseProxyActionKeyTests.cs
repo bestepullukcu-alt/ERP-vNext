@@ -5,6 +5,9 @@ using System.Text.Json;
 using Diten.Web.Controllers;
 using Diten.Web.Models.Warehouse;
 using Diten.Web.Services;
+using Diten.Web.Views.Warehouse.OutboundShipments;
+using Diten.Web.Views.Warehouse.Packing;
+using Diten.Web.Views.Warehouse.PickTasks;
 using Diten.Web.Views.Warehouse.PutawayTasks;
 using Diten.Web.Views.Warehouse.WarehouseLocationRoles;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +25,8 @@ namespace Diten.Web.Tests.Warehouse;
 /// the page itself (Index — UAS-001 is the view's, WarehouseScreensSurfaceTests) must be in <see cref="Keys"/>; a new action without an entry is red.
 /// Each action is then called with every warehouse key EXCEPT its own → 403 with the localized refusal and no Gateway call; and with ONLY its own key →
 /// the key check is passed (never the 403 refusal). Display / proxy decisions — InventoryService's [HasPermission] stays the authority (UAS-001 §4).
+/// <para>DL-6 (AC-34 / AC-73, sabotage (cv)): the three S2 proxies (OutboundShipments, PickTasks, Packing) are in the same reflection — every data action
+/// of theirs is in the map; the pages themselves (Index, CreatePage, EditPage, DetailsPage) are the views' UAS-001 (WarehouseS2ScreensTests).</para>
 /// </summary>
 public sealed class WarehouseProxyActionKeyTests
 {
@@ -32,7 +37,11 @@ public sealed class WarehouseProxyActionKeyTests
     [
         WarehousePermissionKeys.PutawayTasksRead, WarehousePermissionKeys.PutawayTasksCreate, WarehousePermissionKeys.PutawayTasksUpdate,
         WarehousePermissionKeys.PutawayTasksConfirm, WarehousePermissionKeys.PutawayTasksCancel, WarehousePermissionKeys.PutawayTasksResolve,
-        WarehousePermissionKeys.LocationRolesRead, WarehousePermissionKeys.LocationRolesManage
+        WarehousePermissionKeys.LocationRolesRead, WarehousePermissionKeys.LocationRolesManage,
+        WarehousePermissionKeys.OutboundShipmentsRead, WarehousePermissionKeys.OutboundShipmentsCreate, WarehousePermissionKeys.OutboundShipmentsUpdate,
+        WarehousePermissionKeys.OutboundShipmentsCancel, WarehousePermissionKeys.OutboundShipmentsRelease, WarehousePermissionKeys.PickTasksRead,
+        WarehousePermissionKeys.PickTasksUpdate, WarehousePermissionKeys.PickTasksConfirm, WarehousePermissionKeys.PickTasksResolve,
+        WarehousePermissionKeys.PackagesRead, WarehousePermissionKeys.PackagesCreate, WarehousePermissionKeys.PackagesUpdate
     ];
 
     /// <summary>The key each proxy action needs (pack §11.3, §14.2) — "Controller.Action" → key.</summary>
@@ -63,15 +72,53 @@ public sealed class WarehouseProxyActionKeyTests
         ["WarehouseLocationRoles.Create"] = WarehousePermissionKeys.LocationRolesManage,
         ["WarehouseLocationRoles.Edit"] = WarehousePermissionKeys.LocationRolesManage,
         ["WarehouseLocationRoles.Delete"] = WarehousePermissionKeys.LocationRolesManage,
-        ["WarehouseLocationRoles.BulkDelete"] = WarehousePermissionKeys.LocationRolesManage
+        ["WarehouseLocationRoles.BulkDelete"] = WarehousePermissionKeys.LocationRolesManage,
+        // DL-6 — S2 (pack §11.3, §14.2)
+        ["OutboundShipments.List"] = WarehousePermissionKeys.OutboundShipmentsRead,
+        ["OutboundShipments.Export"] = WarehousePermissionKeys.OutboundShipmentsRead,
+        ["OutboundShipments.Outbound"] = WarehousePermissionKeys.OutboundShipmentsRead,
+        ["OutboundShipments.Warehouses"] = WarehousePermissionKeys.OutboundShipmentsRead,
+        ["OutboundShipments.Stagings"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.Products"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.Skus"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.SkuFacts"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.Preview"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.Create"] = WarehousePermissionKeys.OutboundShipmentsCreate,
+        ["OutboundShipments.Edit"] = WarehousePermissionKeys.OutboundShipmentsUpdate,
+        ["OutboundShipments.Release"] = WarehousePermissionKeys.OutboundShipmentsRelease,
+        ["OutboundShipments.Sync"] = WarehousePermissionKeys.OutboundShipmentsUpdate,
+        ["OutboundShipments.Cancel"] = WarehousePermissionKeys.OutboundShipmentsCancel,
+        ["PickTasks.List"] = WarehousePermissionKeys.PickTasksRead,
+        ["PickTasks.Export"] = WarehousePermissionKeys.PickTasksRead,
+        ["PickTasks.Detail"] = WarehousePermissionKeys.PickTasksRead,
+        ["PickTasks.Warehouses"] = WarehousePermissionKeys.PickTasksRead,
+        ["PickTasks.People"] = WarehousePermissionKeys.PickTasksRead,
+        ["PickTasks.Confirm"] = WarehousePermissionKeys.PickTasksConfirm,
+        ["PickTasks.Retry"] = WarehousePermissionKeys.PickTasksConfirm,
+        ["PickTasks.Claim"] = WarehousePermissionKeys.PickTasksConfirm,
+        ["PickTasks.Returned"] = WarehousePermissionKeys.PickTasksConfirm,
+        ["PickTasks.Resolve"] = WarehousePermissionKeys.PickTasksResolve,
+        ["PickTasks.CloseShort"] = WarehousePermissionKeys.PickTasksConfirm,
+        ["PickTasks.BulkAssign"] = WarehousePermissionKeys.PickTasksUpdate,
+        ["Packing.Packages"] = WarehousePermissionKeys.PackagesRead,
+        ["Packing.Create"] = WarehousePermissionKeys.PackagesCreate,
+        ["Packing.Edit"] = WarehousePermissionKeys.PackagesUpdate,
+        ["Packing.Close"] = WarehousePermissionKeys.PackagesUpdate
     };
 
-    private static readonly Type[] Controllers = [typeof(PutawayTasksController), typeof(WarehouseLocationRolesController)];
+    /// <summary>The page actions: each view draws its own UAS-001 (no data, no Gateway call from the action).</summary>
+    private static readonly string[] Pages = ["Index", "CreatePage", "EditPage", "DetailsPage"];
+
+    private static readonly Type[] Controllers =
+    [
+        typeof(PutawayTasksController), typeof(WarehouseLocationRolesController), typeof(OutboundShipmentsController), typeof(PickTasksController),
+        typeof(PackingController)
+    ];
 
     /// <summary>Every HTTP action of the two controllers but the page itself.</summary>
     private static IEnumerable<MethodInfo> Actions() => Controllers
         .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-        .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any() && m.Name != nameof(PutawayTasksController.Index));
+        .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any() && !Pages.Contains(m.Name));
 
     private static string Name(MethodInfo m) => $"{m.DeclaringType!.Name.Replace("Controller", string.Empty)}.{m.Name}";
 
@@ -86,7 +133,7 @@ public sealed class WarehouseProxyActionKeyTests
     public void Every_proxy_action_is_in_the_key_map_and_the_map_names_no_action_that_is_gone()
     {
         var reflected = Actions().Select(Name).Order(StringComparer.Ordinal).ToList();
-        Assert.True(reflected.Count >= 26, $"only {reflected.Count} actions reflected");
+        Assert.True(reflected.Count >= 56, $"only {reflected.Count} actions reflected");
         Assert.Equal(Keys.Keys.Order(StringComparer.Ordinal), reflected);
         Assert.All(Controllers, t => Assert.NotNull(t.GetMethod(nameof(PutawayTasksController.Index))));
     }
@@ -124,9 +171,16 @@ public sealed class WarehouseProxyActionKeyTests
     private static async Task<IActionResult> InvokeAsync(string action, string[] permissions, FakeGateway gateway)
     {
         var method = Actions().Single(m => Name(m) == action);
-        var controller = (Controller)(method.DeclaringType == typeof(PutawayTasksController)
-            ? new PutawayTasksController(new HttpClient(gateway), Configuration(), new Permissions(permissions), new KeyLocalizer<PutawayTasksIndex>(), NullLogger<PutawayTasksController>.Instance)
-            : new WarehouseLocationRolesController(new HttpClient(gateway), Configuration(), new Permissions(permissions), new KeyLocalizer<WarehouseLocationRolesIndex>(), NullLogger<WarehouseLocationRolesController>.Instance));
+        var http = new HttpClient(gateway);
+        var keys = new Permissions(permissions);
+        Controller controller = method.DeclaringType!.Name switch
+        {
+            nameof(PutawayTasksController) => new PutawayTasksController(http, Configuration(), keys, new KeyLocalizer<PutawayTasksIndex>(), NullLogger<PutawayTasksController>.Instance),
+            nameof(WarehouseLocationRolesController) => new WarehouseLocationRolesController(http, Configuration(), keys, new KeyLocalizer<WarehouseLocationRolesIndex>(), NullLogger<WarehouseLocationRolesController>.Instance),
+            nameof(OutboundShipmentsController) => new OutboundShipmentsController(http, Configuration(), keys, new KeyLocalizer<OutboundShipmentsIndex>(), NullLogger<OutboundShipmentsController>.Instance),
+            nameof(PickTasksController) => new PickTasksController(http, Configuration(), keys, new KeyLocalizer<PickTasksIndex>(), NullLogger<PickTasksController>.Instance),
+            _ => new PackingController(http, Configuration(), keys, new KeyLocalizer<PackingIndex>(), NullLogger<PackingController>.Instance)
+        };
         controller.ControllerContext = Context();
         var args = method.GetParameters().Select(Argument).ToArray();
         return await (Task<IActionResult>)method.Invoke(controller, args)!;
@@ -137,7 +191,22 @@ public sealed class WarehouseProxyActionKeyTests
     {
         var t when t == typeof(CancellationToken) => CancellationToken.None,
         var t when t == typeof(int) => 1,
-        var t when t == typeof(string) => p.Name is "id" or "warehouseId" ? Id : null,
+        var t when t == typeof(string) => p.Name is "id" or "warehouseId" or "outboundId" or "packageId" or "itemId" or "skuId" ? Id : p.Name == "skuLevel" ? "Lsku" : null,
+        var t when t == typeof(OutboundWriteRequest) => new OutboundWriteRequest
+        {
+            IdempotencyKey = Key, IfMatch = "W/\"1\"", WarehouseId = Id, Reason = "a reason of ten",
+            ShipTo = new OutboundAddressRequest { Name = "Recipient", Country = "TR" },
+            Lines = [new OutboundLineRequest { OrderLineId = "1", ItemId = Id, SkuId = Id, SkuLevel = "Lsku", UomId = "EA", Quantity = "1" }],
+            Changes = JsonDocument.Parse("""{"note":"x"}""").RootElement
+        },
+        var t when t == typeof(PickWriteRequest) => new PickWriteRequest
+        {
+            IdempotencyKey = Key, IfMatch = "W/\"1\"", Quantity = "1", Reason = "a reason of ten", AssigneeUserId = Id, Items = [new WriteItem { Id = Id, Version = 1 }]
+        },
+        var t when t == typeof(PackageWriteRequest) => new PackageWriteRequest
+        {
+            IdempotencyKey = Key, IfMatch = "W/\"1\"", Contents = [new PackageContentRequest { AllocSeq = 1, Quantity = "1" }]
+        },
         var t when t == typeof(PutawayWriteRequest) => new PutawayWriteRequest
         {
             IdempotencyKey = Key, IfMatch = "W/\"1\"", CandidateKey = "k", PlannedQuantity = "1", Quantity = "1", ToLocationId = Id, AssigneeUserId = Id,

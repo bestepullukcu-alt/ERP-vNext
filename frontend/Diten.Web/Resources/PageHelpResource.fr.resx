@@ -2098,4 +2098,100 @@
   <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
     <value>Pour ranger le stock reçu</value>
   </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Expédiez du stock hors de l'entrepôt : créez une sortie avec ses lignes, suivez le prélèvement et l'emballage, rendez-la prête à expédier et enregistrez le départ.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Planificateurs d'expédition et responsables d'entrepôt.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Entrepôt et préparation</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Appuyez sur « Nouvelle Sortie » et choisissez l'entrepôt. Choisissez une zone de préparation seulement si l'entrepôt en a plusieurs.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Lignes et aperçu</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Saisissez chaque ligne (produit, SKU, quantité, ligne de commande) et appuyez sur « Aperçu de l'Allocation » : les lots dans l'ordre FEFO et la quantité allouable s'affichent.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Changement de lot</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>Si besoin, choisissez un autre lot dans « Changement de lot » ; un lot qui n'est pas le premier dans l'ordre FEFO demande un motif selon la règle FEFO de votre société.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Suivre le prélèvement</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>L'enregistrement alloue le stock et ouvre les tâches de prélèvement ; suivez-les sur la page Détails jusqu'à ce que la sortie soit Prélevée.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Prête à expédier et départ</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Une fois emballée, appuyez sur « Prête à Expédier » ; après le départ des marchandises, appuyez sur « Vérifier l'Expédition ».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Une sortie prête à expédier ne peut plus être modifiée ni annulée.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Pour prélever le stock alloué</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Pour voir ce qui est bloqué et demande une action</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Déplacez le stock alloué de son emplacement vers la zone de préparation et confirmez chaque mouvement.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Opérateurs d'entrepôt (confirmation) et responsables d'entrepôt (affectation, rapprochement).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Prendre la tâche</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Ouvrez une tâche non affectée depuis le menu de la ligne et appuyez sur « Prendre en Charge ».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Déplacer et confirmer</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Apportez le stock de l'emplacement à la zone de préparation, appuyez sur « Confirmer » et vérifiez la quantité (−/+). L'emplacement et la cible ne peuvent pas être modifiés.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Emballer</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Quand la sortie est prélevée, le lien « Emballer » apparaît sur la tâche ; il ouvre la page Emballage.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Pour emballer le stock prélevé</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Emballez en colis le stock prélevé d'une sortie.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Opérateurs et responsables d'entrepôt.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Ouvrir un colis</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Appuyez sur « Nouveau Colis » ; ce n'est possible que lorsque la sortie est prélevée.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Contenu, poids, dimensions</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Saisissez la quantité de chaque allocation mise dans le colis (−/+), son poids en kg et ses dimensions en cm (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Fermer le colis</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Appuyez sur « Fermer le Colis ». Quand toutes les allocations sont emballées, la sortie passe à « Emballée ».</value>
+  </data>
 </root>

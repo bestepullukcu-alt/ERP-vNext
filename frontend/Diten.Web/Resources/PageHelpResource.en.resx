@@ -2098,4 +2098,100 @@
   <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
     <value>To put received stock away</value>
   </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Ship stock out of the warehouse: open an outbound with its lines, follow picking and packing, make it ready to ship and record the dispatch.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Shipping planners and warehouse supervisors.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Warehouse and staging</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Press “New Outbound” and choose the warehouse. Choose a staging location only when the warehouse has several.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Lines and preview</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Enter each line (product, SKU, quantity, order line) and press “Preview Allocation”: the lots in FEFO order and the quantity that can be allocated appear.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Lot change</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>If needed, choose another lot in “Lot change”; a lot that is not first in FEFO order needs a reason according to your company's FEFO rule.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Follow picking</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Saving allocates the stock and opens the pick tasks; follow them on the Details page until the outbound is Picked.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Ready to ship and dispatch</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>When it is packed press “Ready to Ship”; after the goods leave press “Check the Shipment”.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>An outbound that is ready to ship cannot be changed or cancelled.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>To pick the allocated stock</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>To see what is stuck and needs attention</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Move the allocated stock from its bin to the staging location and confirm each move.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Warehouse operators (confirm) and warehouse supervisors (assign, reconcile).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Claim the task</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Open an unassigned task from the row menu and press “Claim”.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Move and confirm</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Take the stock from the bin to the staging location, press “Confirm” and check the quantity (−/+). The bin and the target cannot be changed.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Pack</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>When the outbound is picked, the “Pack” link appears on the task; it opens the Packing page.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>To pack the picked stock</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Pack the picked stock of an outbound into packages.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Warehouse operators and warehouse supervisors.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Open a package</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Press “New Package”; it is possible only when the outbound is picked.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Contents, weight, dimensions</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Enter how much of each allocation goes into the package (−/+), its weight in kg and its dimensions in cm (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Close the package</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Press “Close Package”. When every allocation is packed, the outbound becomes “Packed”.</value>
+  </data>
 </root>

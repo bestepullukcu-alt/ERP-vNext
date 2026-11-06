@@ -2098,4 +2098,100 @@
   <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
     <value>Чтобы разместить принятый товар</value>
   </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Отгружайте запас со склада: создайте отгрузку со строками, следите за сборкой и упаковкой, сделайте её готовой к отправке и зафиксируйте отправку.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Планировщики отгрузок и руководители склада.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Склад и подготовка</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Отгрузка» и выберите склад. Зону подготовки выбирайте, только если их на складе несколько.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Строки и предпросмотр</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Заполните каждую строку (товар, SKU, количество, строка заказа) и нажмите «Предпросмотр Распределения»: появятся партии в порядке FEFO и количество, которое можно распределить.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Замена партии</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>При необходимости выберите другую партию в поле «Замена партии»; для партии не первой по FEFO нужна причина согласно правилу FEFO вашей компании.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Следите за сборкой</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Сохранение распределяет запас и открывает задачи сборки; следите за ними на странице сведений, пока отгрузка не будет собрана.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Готовность и отправка</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Когда упаковано, нажмите «Готова к Отправке»; после отправки товара нажмите «Проверить Поставку».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Отгрузку, готовую к отправке, нельзя изменить или отменить.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Чтобы собрать распределённый запас</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Чтобы увидеть, что застряло и требует внимания</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Переносите распределённый запас из ячейки в зону подготовки и подтверждайте каждое перемещение.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Операторы склада (подтверждение) и руководители склада (назначение, сверка).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Возьмите задачу</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Откройте неназначенную задачу из меню строки и нажмите «Взять».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Перенесите и подтвердите</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Перенесите запас из ячейки в зону подготовки, нажмите «Подтвердить» и проверьте количество (−/+). Ячейку и цель изменить нельзя.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Упакуйте</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Когда отгрузка собрана, в задаче появляется ссылка «Упаковать»; она открывает страницу упаковки.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Чтобы упаковать собранный запас</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Упакуйте собранный запас отгрузки в упаковки.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Операторы и руководители склада.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Откройте упаковку</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Упаковка»; это возможно, только когда отгрузка собрана.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Содержимое, вес, размеры</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Укажите, сколько каждого распределения входит в упаковку (−/+), её вес в кг и размеры в см (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Закройте упаковку</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Нажмите «Закрыть Упаковку». Когда все распределения упакованы, отгрузка становится «Упакована».</value>
+  </data>
 </root>

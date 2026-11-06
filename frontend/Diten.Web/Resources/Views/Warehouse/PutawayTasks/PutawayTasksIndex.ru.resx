@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>Ошибка целостности сверена.</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>Остаток закрыт.</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>Задача отменена.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>Источник</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>Приёмка</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>Производство</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>Возврат после отмены</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>Внешняя система</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>Сборка отгрузки</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>Возврат после недогрузки</value></data>
 </root>

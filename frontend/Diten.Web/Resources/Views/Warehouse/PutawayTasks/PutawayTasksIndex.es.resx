@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>Error de integridad conciliado.</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>Resto cerrado.</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>Tarea cancelada.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>Origen</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>Alta manual</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>Recepción</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>Producción</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>Reubicación por cancelación</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>Sistema externo</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>Preparación de salida</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>Reubicación por envío incompleto</value></data>
 </root>

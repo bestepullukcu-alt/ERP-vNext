@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>完整性错误已对账。</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>剩余已关闭。</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>任务已取消。</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>来源</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>手工</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>收货</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>生产</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>取消回库</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>外部系统</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>出库拣货</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>少发回库</value></data>
 </root>

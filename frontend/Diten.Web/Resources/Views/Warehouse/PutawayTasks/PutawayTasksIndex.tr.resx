@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>Bütünlük hatası uzlaştırıldı.</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>Kalan kapatıldı.</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>Görev iptal edildi.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>Köken</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>Elle</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>Mal kabul</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>Üretim</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>İptal geri yerleştirme</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>Dış sistem</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>Sevkiyat toplama</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>Eksik sevk geri yerleştirme</value></data>
 </root>

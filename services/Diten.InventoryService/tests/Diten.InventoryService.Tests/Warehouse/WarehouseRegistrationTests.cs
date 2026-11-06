@@ -66,9 +66,10 @@ public sealed class WarehouseRegistrationTests
     {
         var manifest = new PutawayPickingPackingManifestProvider().GetManifest();
 
+        var s1 = manifest.Pages.Where(p => p.PageCode is "PUTAWAYTASKS" or "WAREHOUSELOCATIONROLES").ToList();
         Assert.Equal(new[] { ("PUTAWAYTASKS", "/Warehouse/PutawayTasks", WarehousePermissions.PutawayTasksRead), ("WAREHOUSELOCATIONROLES", "/Warehouse/LocationRoles", WarehousePermissions.LocationRolesRead) },
-            manifest.Pages.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission)));
-        Assert.All(manifest.Pages, p =>
+            s1.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission)));
+        Assert.All(s1, p =>
         {
             Assert.True(p.IsNavigationVisible);
             Assert.Null(p.ParentPageCode);
@@ -76,7 +77,7 @@ public sealed class WarehouseRegistrationTests
             Assert.All(p.Actions, a => Assert.Contains(a.ActionType, new[] { "Toolbar", "RowAction", "BulkAction" }));
         });
 
-        var actions = manifest.Pages.SelectMany(p => p.Actions).ToDictionary(a => a.ActionCode, a => (a.PermissionKey, a.IsDangerous));
+        var actions = s1.SelectMany(p => p.Actions).ToDictionary(a => a.ActionCode, a => (a.PermissionKey, a.IsDangerous));
         Assert.Equal(new Dictionary<string, (string, bool)>
         {
             ["PUTAWAY_TASK_CREATE"] = (WarehousePermissions.PutawayTasksCreate, false),
@@ -95,11 +96,57 @@ public sealed class WarehouseRegistrationTests
             ["LOCATION_ROLE_BULK_DELETE"] = (WarehousePermissions.LocationRolesManage, true)
         }, actions);
 
-        // DL-4: the S2 outbound create / update keys are API permissions until the DL-6 screen declares them as page actions; DL-5 adds the cancel /
-        // release, pick task and package keys the same way (pack §14.2)
-        Assert.Equal([WarehousePermissions.OutboundShipmentsRead, WarehousePermissions.OutboundShipmentsCreate, WarehousePermissions.OutboundShipmentsUpdate,
-                .. WarehousePermissions.Dl5],
-            (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey));
+        // DL-6: the S2 keys that DL-4 / DL-5 declared as API permissions moved onto the S2 pages (AC34_… below); none is API-only any more
+        Assert.Empty(manifest.ApiPermissions ?? []);
+    }
+
+    /// <summary>
+    /// AC-34 (pack §11.1, §11.3, §14.4; DL-6): the three S2 pages under <c>/Warehouse/</c> (never <c>/Platform/</c>) — OUTBOUNDSHIPMENTS and PICKTASKS in
+    /// the menu, PACKINGSTATION not (reached from a pick task / an outbound) with <c>warehouse.packages.read</c> as its page key (NOT the outbound read —
+    /// the operator packs without the ship-to, Q-10a; sabotage (do)) — and one action per real §11.3 S2 button with its key; the frozen outbound read
+    /// MVP-6 uses is the OUTBOUNDSHIPMENTS page key, so nothing is left API-only.
+    /// </summary>
+    [Fact]
+    public void AC34_the_manifest_declares_the_three_S2_pages_and_one_action_per_S2_button()
+    {
+        var manifest = new PutawayPickingPackingManifestProvider().GetManifest();
+
+        var s2 = manifest.Pages.Where(p => p.PageCode is "OUTBOUNDSHIPMENTS" or "PICKTASKS" or "PACKINGSTATION").ToList();
+        Assert.Equal(new[]
+            {
+                ("OUTBOUNDSHIPMENTS", "/Warehouse/OutboundShipments", WarehousePermissions.OutboundShipmentsRead, true),
+                ("PICKTASKS", "/Warehouse/PickTasks", WarehousePermissions.PickTasksRead, true),
+                ("PACKINGSTATION", "/Warehouse/Packing/{outboundId}", WarehousePermissions.PackagesRead, false)
+            },
+            s2.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission, p.IsNavigationVisible)));
+        Assert.Equal(5, manifest.Pages.Count);
+        Assert.All(s2, p =>
+        {
+            Assert.DoesNotContain("/Platform/", p.RoutePath, StringComparison.OrdinalIgnoreCase);
+            Assert.All(p.Actions, a => Assert.Contains(a.ActionType, new[] { "Toolbar", "RowAction", "BulkAction" }));
+        });
+        Assert.Equal("PICKTASKS", s2.Single(p => p.PageCode == "PACKINGSTATION").ParentPageCode);
+
+        var actions = s2.SelectMany(p => p.Actions).ToDictionary(a => a.ActionCode, a => (a.PermissionKey, a.IsDangerous));
+        Assert.Equal(new Dictionary<string, (string, bool)>
+        {
+            ["OUTBOUND_CREATE"] = (WarehousePermissions.OutboundShipmentsCreate, false),
+            ["OUTBOUND_UPDATE"] = (WarehousePermissions.OutboundShipmentsUpdate, false),
+            ["OUTBOUND_PACK"] = (WarehousePermissions.PackagesCreate, false),
+            ["OUTBOUND_RELEASE"] = (WarehousePermissions.OutboundShipmentsRelease, false),
+            ["OUTBOUND_SYNC_DISPATCH"] = (WarehousePermissions.OutboundShipmentsUpdate, false),
+            ["OUTBOUND_CANCEL"] = (WarehousePermissions.OutboundShipmentsCancel, true),
+            ["PICK_TASK_CONFIRM"] = (WarehousePermissions.PickTasksConfirm, false),
+            ["PICK_TASK_RETRY"] = (WarehousePermissions.PickTasksConfirm, false),
+            ["PICK_TASK_RETURNED"] = (WarehousePermissions.PickTasksConfirm, false),
+            ["PICK_TASK_CLOSE_SHORT"] = (WarehousePermissions.PickTasksConfirm, false),
+            ["PICK_TASK_CLAIM"] = (WarehousePermissions.PickTasksConfirm, false),
+            ["PICK_TASK_ASSIGN"] = (WarehousePermissions.PickTasksUpdate, false),
+            ["PICK_TASK_RESOLVE_INTEGRITY"] = (WarehousePermissions.PickTasksResolve, true),
+            ["PACKAGE_CREATE"] = (WarehousePermissions.PackagesCreate, false),
+            ["PACKAGE_UPDATE"] = (WarehousePermissions.PackagesUpdate, false),
+            ["PACKAGE_CLOSE"] = (WarehousePermissions.PackagesUpdate, false)
+        }, actions);
     }
 
     [Fact]

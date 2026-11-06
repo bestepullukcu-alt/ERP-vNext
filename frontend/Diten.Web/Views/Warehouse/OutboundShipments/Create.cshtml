@@ -1,0 +1,51 @@
+@model Diten.Web.Models.Warehouse.OutboundShipmentFormViewModel
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    ViewData["PageCode"] = "OUTBOUNDSHIPMENTS";
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+@* MOD-0178 DL-6 — UAS-001: without warehouse.outbound-shipments.create only the access explanation is drawn (no form, no redirect). *@
+@if (!Perms.Has(WarehousePermissionKeys.OutboundShipmentsCreate))
+{
+    <partial name="_AccessDenied" model="@Localizer["OutboundShipmentsTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/OutboundShipments/_Form.cshtml" model="Model" />
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Warehouse/OutboundShipments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/OutboundShipments/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/OutboundShipments/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/OutboundShipments/form.js" asp-append-version="true"></script>
+    }
+}

@@ -22,6 +22,20 @@ public static class WarehousePermissionKeys
     public const string PutawayTasksResolve = "warehouse.putaway-tasks.resolve";
     public const string LocationRolesRead = "warehouse.location-roles.read";
     public const string LocationRolesManage = "warehouse.location-roles.manage";
+
+    // DL-6 — the S2 screens (pack §11.1 / §11.3 / §14.2)
+    public const string OutboundShipmentsRead = "warehouse.outbound-shipments.read";
+    public const string OutboundShipmentsCreate = "warehouse.outbound-shipments.create";
+    public const string OutboundShipmentsUpdate = "warehouse.outbound-shipments.update";
+    public const string OutboundShipmentsCancel = "warehouse.outbound-shipments.cancel";
+    public const string OutboundShipmentsRelease = "warehouse.outbound-shipments.release";
+    public const string PickTasksRead = "warehouse.pick-tasks.read";
+    public const string PickTasksUpdate = "warehouse.pick-tasks.update";
+    public const string PickTasksConfirm = "warehouse.pick-tasks.confirm";
+    public const string PickTasksResolve = "warehouse.pick-tasks.resolve";
+    public const string PackagesRead = "warehouse.packages.read";
+    public const string PackagesCreate = "warehouse.packages.create";
+    public const string PackagesUpdate = "warehouse.packages.update";
 }
 
 /// <summary>
@@ -190,6 +204,28 @@ public static class WarehouseErrorMessages
     /// <summary>Every key this class can return — the resx parity test asserts each is in all seven files of both families.</summary>
     public static IEnumerable<string> AllKeys =>
         Codes.Select(c => "Warehouse.Error." + c).Concat([NoPermission, SessionExpired, ServiceUnavailable, NotFound, Conflict, Invalid, Generic, TooLarge]);
+
+    /// <summary>
+    /// DL-6 — the codes only the S2 screens meet (pack §12 S2 rows; INVENTORY's RESERVATION_* / FEFO / lot codes passed through). The three S2
+    /// families carry <see cref="S2Keys"/> on top of <see cref="AllKeys"/>; the S1 families are unchanged (their parity test reads AllKeys).
+    /// </summary>
+    public static readonly IReadOnlyList<string> S2Codes =
+    [
+        "UNKNOWN_OUTBOUND", "WMS_ALLOCATION_FAILED", "WMS_ALLOCATION_TOO_MANY_LINES", "WMS_DISPATCH_AMBIGUOUS", "WMS_DISPATCH_READ_FORBIDDEN",
+        "WMS_DISPATCH_SOURCE_UNAVAILABLE", "WMS_ITEM_LEVEL_NOT_PUBLISHABLE", "WMS_ITEM_NOT_RESOLVABLE", "WMS_LOT_NOT_ALLOCATABLE",
+        "WMS_OUTBOUND_ALLOCATION_IN_PROGRESS", "WMS_OUTBOUND_CANCEL_NOT_ALLOWED", "WMS_OUTBOUND_IMMUTABLE", "WMS_OUTBOUND_LEVEL_MIXED", "WMS_PACKAGE_EMPTY",
+        "WMS_PACKAGE_EXCEEDS_PICKED", "WMS_PACKAGE_NOT_FOUND", "WMS_STAGING_NOT_CONFIGURED", "WMS_UOM_NOT_BASE",
+        // passed through from INVENTORY (FU03 reservations, the FEFO hook, the lot gates, LOCATION)
+        "FEFO_BYPASS_REASON_REQUIRED", "FEFO_ORDER_VIOLATION", "LOT_EXPIRED", "LOT_BLOCKED", "LOT_RETEST_DUE", "RESERVATION_NOT_ACTIVE", "RESERVATION_MISMATCH",
+        "RESERVATION_CONFLICT", "UNKNOWN_LOCATION"
+    ];
+
+    /// <summary>The S2 families' extra error keys.</summary>
+    public static IEnumerable<string> S2Keys => S2Codes.Select(c => "Warehouse.Error." + c);
+
+    /// <summary>The S2 screens' lookup: the S1 codes, the S2 codes, then the status fallback.</summary>
+    public static string KeyForS2(string? code, int status) =>
+        code is not null && S2Codes.Contains(code, StringComparer.Ordinal) ? "Warehouse.Error." + code : KeyFor(code, status);
 
     public static string KeyFor(string? code, int status)
     {

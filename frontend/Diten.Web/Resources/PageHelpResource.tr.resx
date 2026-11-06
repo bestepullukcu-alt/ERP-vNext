@@ -2098,4 +2098,100 @@
   <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
     <value>Mal kabul edilen stoğu yerleştirmek için</value>
   </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Stoğu depodan sevk edin: satırlarıyla bir outbound açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Sevkiyat planlayıcıları ve depo sorumluları.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Depo ve sevkiyat hazırlık</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>“Yeni Outbound”a basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Satırlar ve önizleme</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Her satırı girin (ürün, SKU, miktar, sipariş satırı) ve “Tahsisi Önizle”ye basın: FEFO sırasındaki lotlar ve tahsis edilebilecek miktar görünür.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Lot değişimi</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>Gerekirse “Lot değişimi” alanından başka bir lot seçin; FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Toplamayı izleyin</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; outbound Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Sevke hazır ve sevk</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Paketlenince “Sevke Hazır”a basın; mal çıktıktan sonra “Sevkiyatı Kontrol Et”e basın.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Tahsis edilen stoğu toplamak için</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Takılan ve ilgi bekleyen işleri görmek için</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Tahsis edilen stoğu rafından sevkiyat hazırlık lokasyonuna taşıyın ve her taşımayı onaylayın.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Depo operatörleri (onay) ve depo sorumluları (atama, uzlaştırma).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Görevi üstlenin</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Atanmamış bir görevi satır menüsünden açın ve “Üstlen”e basın.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Taşıyın ve onaylayın</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Stoğu raftan sevkiyat hazırlık lokasyonuna götürün, “Onayla”ya basın ve miktarı (−/+) kontrol edin. Raf ve hedef değiştirilemez.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Paketleyin</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Outbound toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Toplanan stoğu paketlemek için</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Bir outbound'un toplanan stoğunu kolilere paketleyin.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Depo operatörleri ve depo sorumluları.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Koli açın</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>“Yeni Koli”ye basın; yalnız outbound toplandığında mümkündür.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>İçerik, ağırlık, ölçü</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Her tahsisten koliye ne kadar girdiğini (−/+), ağırlığı kg ve ölçüyü cm olarak (40x30x20) girin.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Koliyi kapatın</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince outbound “Paketlendi” olur.</value>
+  </data>
 </root>

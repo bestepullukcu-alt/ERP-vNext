@@ -183,6 +183,7 @@ const PutawayTasksList = (function () {
             flagEl.textContent = flag ? W(flag.word) : '';
             flagEl.dataset.whFlag = task.integrationFlag || 'None';
         }
+        setText('oc-origin', task.origin ? W(`Warehouse.Origin.${task.origin}`) : ''); // DL-6 (§11.4 r24): Cancellation / ShortDispatch put-backs
         setText('oc-sku', task.sku);
         setText('oc-lot', task.lotNumber);
         setText('oc-warehouse', task.warehouse);

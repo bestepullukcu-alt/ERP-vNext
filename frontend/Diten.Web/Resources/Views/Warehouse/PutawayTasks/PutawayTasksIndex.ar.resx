@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>تمت تسوية خطأ السلامة.</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>أُغلق المتبقي.</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>أُلغيت المهمة.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>استلام البضائع</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>الإنتاج</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>إرجاع بسبب الإلغاء</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>نظام خارجي</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>انتقاء الصادر</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>إرجاع بسبب شحن ناقص</value></data>
 </root>

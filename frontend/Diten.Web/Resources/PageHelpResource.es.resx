@@ -2098,4 +2098,100 @@
   <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
     <value>Para ubicar el stock recibido</value>
   </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Envíe stock fuera del almacén: abra una salida con sus líneas, siga la preparación y el embalaje, déjela lista para enviar y registre el despacho.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Planificadores de envíos y responsables de almacén.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Almacén y preparación</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Pulse «Nueva Salida» y elija el almacén. Elija una zona de preparación solo si el almacén tiene varias.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Líneas y vista previa</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Introduzca cada línea (producto, SKU, cantidad, línea de pedido) y pulse «Vista Previa de Asignación»: aparecen los lotes en orden FEFO y la cantidad asignable.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Cambio de lote</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>Si hace falta, elija otro lote en «Cambio de lote»; un lote que no es el primero en orden FEFO pide un motivo según la regla FEFO de su empresa.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Seguir la preparación</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Al guardar se asigna el stock y se abren las tareas de preparación; sígalas en la página Detalles hasta que la salida esté Preparada.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Lista para enviar y despacho</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Cuando esté embalada pulse «Lista para Enviar»; cuando salga la mercancía pulse «Comprobar el Envío».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Una salida lista para enviar no se puede modificar ni cancelar.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Para preparar el stock asignado</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Para ver lo que está bloqueado y requiere atención</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Lleve el stock asignado de su ubicación a la zona de preparación y confirme cada movimiento.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Operarios de almacén (confirmación) y responsables de almacén (asignación, conciliación).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Asumir la tarea</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Abra una tarea sin asignar desde el menú de la fila y pulse «Asumir».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Mover y confirmar</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Lleve el stock de la ubicación a la zona de preparación, pulse «Confirmar» y revise la cantidad (−/+). La ubicación y el destino no se pueden cambiar.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Embalar</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Cuando la salida está preparada, aparece el enlace «Embalar» en la tarea; abre la página de Embalaje.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Para embalar el stock preparado</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Embale en bultos el stock preparado de una salida.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Operarios y responsables de almacén.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Abrir un bulto</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Pulse «Nuevo Bulto»; solo es posible cuando la salida está preparada.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Contenido, peso, medidas</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Indique cuánto de cada asignación va en el bulto (−/+), su peso en kg y sus medidas en cm (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Cerrar el bulto</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Pulse «Cerrar el Bulto». Cuando todas las asignaciones estén embaladas, la salida pasa a «Embalada».</value>
+  </data>
 </root>

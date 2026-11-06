@@ -12,7 +12,12 @@ namespace Diten.InventoryService.Api.Warehouse;
 /// <para><b>DL-3:</b> the two S1 screens (pack §11.1) — <c>PUTAWAYTASKS</c> and <c>WAREHOUSELOCATIONROLES</c>, Scope Tenant, never under
 /// <c>/Platform/</c> — with one action per real §11.3 button; their keys leave <c>ApiPermissions</c>. Only the frozen outbound read stays an API
 /// permission (MVP-6 reads it; no S1 screen — pack §14.4). The "Uygula" suggestion button is a form control, not an action (§11.3).</para>
-/// <para><b>DL-4:</b> the S2 outbound create / update keys are API permissions until their screen (DL-6) declares them as page actions.</para>
+/// <para><b>DL-4 / DL-5:</b> the S2 keys were API permissions until their screens existed.</para>
+/// <para><b>DL-6:</b> the three S2 screens (pack §11.1, §14.4) — <c>OUTBOUNDSHIPMENTS</c> (nav; Compact: list + Create / Edit / Details),
+/// <c>PICKTASKS</c> (nav) and <c>PACKINGSTATION</c> (not in the menu; reached from a pick task or an outbound — its page key is
+/// <c>warehouse.packages.read</c>, never the outbound read: the operator packs without seeing the ship-to, Q-10a / AC-34) — with one action per
+/// real §11.3 S2 button. Every S2 key is now a page or action key, so nothing is left API-only: the frozen outbound read MVP-6 uses is the
+/// OUTBOUNDSHIPMENTS page key (same key, same Tenant scope). "Paketle" on a pick task is a link (navigation), not an action (§11.3).</para>
 /// </summary>
 public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvider
 {
@@ -69,25 +74,62 @@ public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvi
                         new ModuleManifestAction("LOCATION_ROLE_UPDATE", "Edit location role", WarehousePermissions.LocationRolesManage, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("LOCATION_ROLE_DELETE", "Delete location role", WarehousePermissions.LocationRolesManage, "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("LOCATION_ROLE_BULK_DELETE", "Delete selected location roles", WarehousePermissions.LocationRolesManage, "BulkAction", 40, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+                // DL-6 — S2 (pack §11.1 / §11.3)
+                new ModuleManifestPage(
+                    PageCode: "OUTBOUNDSHIPMENTS",
+                    DisplayName: "Outbound shipments",
+                    RoutePath: "/Warehouse/OutboundShipments",
+                    RequiredPermission: WarehousePermissions.OutboundShipmentsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 30,
+                    Actions:
+                    [
+                        new ModuleManifestAction("OUTBOUND_CREATE", "New outbound shipment", WarehousePermissions.OutboundShipmentsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("OUTBOUND_UPDATE", "Edit outbound shipment", WarehousePermissions.OutboundShipmentsUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("OUTBOUND_PACK", "Pack", WarehousePermissions.PackagesCreate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("OUTBOUND_RELEASE", "Ready to ship", WarehousePermissions.OutboundShipmentsRelease, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("OUTBOUND_SYNC_DISPATCH", "Check the shipment", WarehousePermissions.OutboundShipmentsUpdate, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("OUTBOUND_CANCEL", "Cancel outbound shipment", WarehousePermissions.OutboundShipmentsCancel, "RowAction", 60, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "PICKTASKS",
+                    DisplayName: "Pick tasks",
+                    RoutePath: "/Warehouse/PickTasks",
+                    RequiredPermission: WarehousePermissions.PickTasksRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 40,
+                    Actions:
+                    [
+                        new ModuleManifestAction("PICK_TASK_CONFIRM", "Confirm pick", WarehousePermissions.PickTasksConfirm, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PICK_TASK_RETRY", "Retry a pending confirmation", WarehousePermissions.PickTasksConfirm, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PICK_TASK_RETURNED", "Mark a refused confirmation as moved back", WarehousePermissions.PickTasksConfirm, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PICK_TASK_CLOSE_SHORT", "Close the remainder", WarehousePermissions.PickTasksConfirm, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PICK_TASK_CLAIM", "Claim pick task", WarehousePermissions.PickTasksConfirm, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PICK_TASK_ASSIGN", "Assign pick tasks", WarehousePermissions.PickTasksUpdate, "BulkAction", 60, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("PICK_TASK_RESOLVE_INTEGRITY", "Resolve an integrity error", WarehousePermissions.PickTasksResolve, "RowAction", 70, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "PACKINGSTATION",
+                    DisplayName: "Packing",
+                    RoutePath: "/Warehouse/Packing/{outboundId}",
+                    RequiredPermission: WarehousePermissions.PackagesRead,
+                    ParentPageCode: "PICKTASKS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 50,
+                    Actions:
+                    [
+                        new ModuleManifestAction("PACKAGE_CREATE", "New package", WarehousePermissions.PackagesCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("PACKAGE_UPDATE", "Edit package", WarehousePermissions.PackagesUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PACKAGE_CLOSE", "Close package", WarehousePermissions.PackagesUpdate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],
             Icon: "bx-package",
-            ApiPermissions:
-            [
-                // the frozen outbound read (MVP-6 reads it — API-only by design, no S1 screen)
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRead, "Read outbound shipments", "Tenant"),
-                // DL-4: the S2 outbound writes have no screen yet (DL-6 moves them onto the OUTBOUNDSHIPMENTS page's actions)
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsCreate, "Create outbound shipments", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsUpdate, "Edit outbound shipments", "Tenant"),
-                // DL-5: the S2 cancel / release, pick task and package keys — API permissions until their screens (DL-6) declare them as page actions
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsCancel, "Cancel outbound shipments", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.OutboundShipmentsRelease, "Release outbound shipments for shipping", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PickTasksRead, "Read pick tasks", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PickTasksUpdate, "Assign pick tasks", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PickTasksConfirm, "Confirm pick tasks", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PickTasksResolve, "Resolve pick integrity errors", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PackagesRead, "Read packages", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PackagesCreate, "Create packages", "Tenant"),
-                new ModuleManifestPermission(WarehousePermissions.PackagesUpdate, "Edit and close packages", "Tenant")
-            ]);
+            // DL-6: every key is a page or an action key now (the frozen outbound read is the OUTBOUNDSHIPMENTS page key) — none is API-only
+            ApiPermissions: []);
 }

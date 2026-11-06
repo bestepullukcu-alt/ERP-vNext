@@ -1266,4 +1266,13 @@
   <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
     <value>Warehouse Location Roles</value>
   </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Outbound Shipments</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Pick Tasks</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Packing</value>
+  </data>
 </root>

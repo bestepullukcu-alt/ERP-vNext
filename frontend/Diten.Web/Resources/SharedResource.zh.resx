@@ -1207,4 +1207,13 @@
   <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
     <value>仓库库位角色</value>
   </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>出库单</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>拣货任务</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>包装作业</value>
+  </data>
 </root>

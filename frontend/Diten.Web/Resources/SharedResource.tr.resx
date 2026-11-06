@@ -1266,4 +1266,13 @@
   <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
     <value>Depo Lokasyon Rolleri</value>
   </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Outbound Sevkiyatlar</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Toplama Görevleri</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Paketleme</value>
+  </data>
 </root>

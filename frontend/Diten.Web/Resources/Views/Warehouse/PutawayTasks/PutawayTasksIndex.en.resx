@@ -212,4 +212,12 @@
   <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>Integrity error reconciled.</value></data>
   <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>Remainder closed.</value></data>
   <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>Task cancelled.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>Origin</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>Goods receipt</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>Production</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>Cancellation put-back</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>External system</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>Outbound picking</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>Short dispatch put-back</value></data>
 </root>

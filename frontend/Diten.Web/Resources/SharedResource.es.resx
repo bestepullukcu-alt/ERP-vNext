@@ -1208,4 +1208,13 @@
   <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
     <value>Roles de Ubicaciones de Almacén</value>
   </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Envíos de Salida</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Tareas de Preparación</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Embalaje</value>
+  </data>
 </root>

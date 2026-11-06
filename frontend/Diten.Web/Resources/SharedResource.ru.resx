@@ -1207,4 +1207,13 @@
   <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
     <value>Роли Мест Склада</value>
   </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Отгрузки</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Задачи Сборки</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Упаковка</value>
+  </data>
 </root>

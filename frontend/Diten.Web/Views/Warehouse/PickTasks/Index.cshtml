@@ -1,0 +1,98 @@
+@using Diten.Web.Views.Warehouse.PickTasks
+@using Diten.Web.Models.DataTable
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PickTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["PickTasksTitle"].Value;
+    ViewData["PageCode"] = "PICKTASKS"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-6 — Toplama Görevleri (Golden Reference Slim, server mode, proxy profile — pack §9, §11.1, §11.5).
+    Bilinçli sapma (§11.5, sahip onayı CT-APR-01): _CreateEditOffcanvas.cshtml YOK — pick görevlerini outbound'un tahsisi açar; ekran yalnız onaylar.
+
+    UAS-001 — nothing below is drawn without warehouse.pick-tasks.read: no heading, no filter, no empty table, no button. No redirect.
+
+    ⚠ Display only. InventoryService's [HasPermission] and its state rules stay the authority (UAS-001 §4, §8.19): a control whose key the
+    reader lacks is ABSENT (not disabled); a control the task's state forbids is disabled WITH its reason (AC-39 / AC-43).
+*@
+@if (!Perms.Has(WarehousePermissionKeys.PickTasksRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["PickTasksTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canUpdate = Perms.Has(WarehousePermissionKeys.PickTasksUpdate);
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel { Key = "assign", Text = Localizer["Warehouse.Action.Assign"].Value, Icon = "bx bx-user-check", ButtonClass = "btn btn-label-primary" }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/PickTasks/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PickTasksTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="pick-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @if (canUpdate)
+    {
+        @* "Ata" (Q-13 A) — the only bulk action; only for a supervisor (warehouse.pick-tasks.update). *@
+        <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+    }
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-picktasks" data-dt-standard="v2"> *@
+    <div class="wh-list">
+        <partial name="~/Views/Warehouse/PickTasks/_DataTable.cshtml" />
+    </div>
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" (+ the confirm panel and the reason / assign dialogs, each only
+       for the key that uses it — pack §11.5: the QuickView carries the "onay paneli") *@
+    <partial name="~/Views/Warehouse/PickTasks/_DetailsQuickView.cshtml" />
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/PickTasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/PickTasks/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/PickTasks/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/PickTasks/index.js" asp-append-version="true"></script>
+    }
+}
