@@ -1,0 +1,44 @@
+{
+ "argv": [
+  "python3",
+  "execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py",
+  "--base-worktree",
+  "/private/tmp/mdm-fu06-dl1-base",
+  "--out-dir",
+  "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3"
+ ],
+ "artifacts": [
+  {
+   "bytes": 198808,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3/auth-1.tail200.log",
+   "sha256": "4792c071ee3c8e05256a8f1bba69c07de3746889d8f0d267082417b626f48754"
+  },
+  {
+   "bytes": 199453,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3/platform-2.tail200.log",
+   "sha256": "df083c87873d047826d5374b3a6b17af970596d99faa42da1d88a8158f3701aa"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 27640,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3/stdout.txt",
+   "sha256": "75aae852a6219cf1fd0bfc0331707796889194d923dca2077009355d29146fff"
+  }
+ ],
+ "commit": "d27fab84a2909c062a35749bb607b94e23ec7de1",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-06T13:33:31Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run-3",
+ "started_utc": "2026-11-06T13:25:47Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "0f616d80cccb5821174792e163ff673a7ef94f9c"
+}
