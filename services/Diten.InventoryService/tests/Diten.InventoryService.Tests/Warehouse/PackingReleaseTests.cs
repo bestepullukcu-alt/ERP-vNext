@@ -70,6 +70,29 @@ public sealed class PackingReleaseTests : IClassFixture<WarehouseApiFactory>
         Assert.Equal("WMS_OUTBOUND_IMMUTABLE", Code(await Expect(f.CreatePackageAsync(id, OutboundFlow.Contents((1, 1))), 409)));
     }
 
+    /// <summary>
+    /// DL-5 CT F-1 (ORTA; mod-0178-dl5-ct-acceptance-2026-11-06): the §8.18 state × command table — Release on <c>Allocated</c> and on <c>Picked</c> is
+    /// <c>T</c> = 409 <c>WMS_INVALID_TRANSITION</c>, with no write: the status stays, no outbox row, no <c>Released</c> event. Only <c>Packed</c> releases.
+    /// CT sabotage CT-1: the release precondition also accepts <c>Picked</c> → red.
+    /// </summary>
+    [Fact]
+    public async Task CT_F1_release_on_Allocated_or_Picked_is_409_invalid_transition_without_a_write()
+    {
+        var (s, f, _, _) = await FS2Async();
+        var id = OutboundScenario.Id(await s.CreatedAsync(s.Line(30)));
+
+        Assert.Equal("WMS_INVALID_TRANSITION", Code(await Expect(f.ReleaseAsync(id), 409)));
+        Assert.Equal("Allocated", (await f.ViewAsync(id)).GetProperty("status").GetString());
+
+        await f.PickAllAsync(id);
+        Assert.Equal("Picked", (await f.ViewAsync(id)).GetProperty("status").GetString());
+        Assert.Equal("WMS_INVALID_TRANSITION", Code(await Expect(f.ReleaseAsync(id), 409)));
+        Assert.Equal("Picked", (await f.ViewAsync(id)).GetProperty("status").GetString());
+
+        Assert.Empty(f.Outbox(id));
+        Assert.DoesNotContain("Released", f.OutboundEventKinds(id));
+    }
+
     /// <summary>AC-29: the package commands replay (same key + body → 200, no new row), other body → 400; the Packing read carries no ship-to.</summary>
     [Fact]
     public async Task AC29_AC73_package_commands_replay_and_the_packing_read_carries_no_ship_to()

@@ -52,7 +52,8 @@ public sealed class CancelReleaseTests : IClassFixture<WarehouseApiFactory>
 
     /// <summary>
     /// AC-32: a Picked outbound (L1 30 on S-01) cancelled → a Cancellation putaway (S-01, L1, 30), put away by S1; a manual S1 task from Staging stays 422.
-    /// Sabotage (co): no Cancellation task → red.
+    /// Sabotage (co): no Cancellation task → red. DL-5 CT F-2: its packages (one Closed, one Open) become Cancelled with a PackageCancelled event each
+    /// (§8.22); CT sabotage CT-3 (the cancel leaves the packages) → red.
     /// </summary>
     [Fact]
     public async Task AC32_a_picked_cancel_puts_the_staged_stock_back_with_a_Cancellation_task()
@@ -60,7 +61,17 @@ public sealed class CancelReleaseTests : IClassFixture<WarehouseApiFactory>
         var (s, f, l1, _) = await FS2Async();
         var id = OutboundScenario.Id(await s.CreatedAsync(s.Line(30)));
         await f.PickAllAsync(id);
+        // DL-5 CT F-2 (DÜŞÜK): a Picked outbound with one Closed and one Open package — the cancel cancels both (§8.22) and says so per package
+        var closed = await Expect(f.CreatePackageAsync(id, OutboundFlow.Contents((1, 10))), 201);
+        await Expect(f.ClosePackageAsync(closed.GetProperty("packageId").GetString()!, OutboundFlow.ETag(closed)), 200);
+        await Expect(f.CreatePackageAsync(id, OutboundFlow.Contents((1, 5))), 201);
+        Assert.Equal("Picked", (await f.ViewAsync(id)).GetProperty("status").GetString());
         await Expect(f.CancelAsync(id), 200);
+
+        var packages = f.Packages(id);
+        Assert.Equal(2, packages.Count);
+        Assert.All(packages, p => Assert.Equal("Cancelled", p["Status"].AsString));
+        Assert.Equal(2, f.OutboundEventKinds(id).Count(k => k == "PackageCancelled"));
 
         var task = Assert.Single(f.PutawayTasks("Cancellation"));
         Assert.Equal((s.S01.ToString("D"), l1, 30m), (task["FromLocationId"].ToString(), task["LotId"].AsString, task["PlannedQuantity"].ToDecimal()));
