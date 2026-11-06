@@ -1,6 +1,6 @@
 @[.antigravity/agents/backend-architect.md]
 WP: MDM-FU06-DL1 · Prompt MDM-FU06-DL1-P v1.0
-Repository: /Users/alitufanoglu/ERP-vNext · Branch: feature/mdm/mdm-fu06-dl1-r1 · Expected HEAD: 13ca54a0165b54ad2acab653909c23cf7c9787e7 · Worktree: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-fu06-dl1-r1
+Repository: /Users/alitufanoglu/ERP-vNext · Branch: feature/mdm/mdm-fu06-dl1-r1 · Expected HEAD: a4e109322048382b279257616c876f76307006af · Worktree: /Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-fu06-dl1-r1
 Risk: HIGH · §9.1 sinyalleri: yetki, sözleşme
 Görev sınıfı: ürün · Paket: execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md
 İzinli yollar: services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs, services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs, services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductMasterReadKeyPlatformPathTests.cs, services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj, docs/records/audits/2026-11/mod0290-fu06-dl1/**
@@ -96,8 +96,8 @@ DOĞRULA: (komutlar worktree kökünde; her dotnet komutundan önce uptime)
 3. `dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Debug` → 0 hata.
 4. `git grep -nF '"mdm.product-master.read"' -- 'services/*/src/*'` → tam 4 satır.
 5. Sabotajlar a, b, b2, c, d, e, f, g, h, i, j, k (paket §18 tablosu; beklenen kırmızılar oradaki gibi, d'de T3 yeşil kalır): her biri SABOTAJ.md satırında (AC-5).
-6. `git diff --name-only 13ca54a0165b54ad2acab653909c23cf7c9787e7..HEAD` → yalnız İzinli yollar; `git diff --stat 13ca54a0165b54ad2acab653909c23cf7c9787e7..HEAD -- services/Diten.AuthService services/Diten.Platform services/Diten.InventoryService frontend gateway` boş (AC-7).
-7. F-13: `git diff --stat 13ca54a0165b54ad2acab653909c23cf7c9787e7..HEAD -- execution/` boş (paket ve betik değişmedi); paketin künye alanları (target, owner, branch) ve §20 işareti kule işidir, raporda açık kayıt.
+6. `git diff --name-only a4e109322048382b279257616c876f76307006af..HEAD` → yalnız İzinli yollar; `git diff --stat a4e109322048382b279257616c876f76307006af..HEAD -- services/Diten.AuthService services/Diten.Platform services/Diten.InventoryService frontend gateway` boş (AC-7).
+7. F-13: `git diff --stat a4e109322048382b279257616c876f76307006af..HEAD -- execution/` boş (paket ve betik değişmedi); paketin künye alanları (target, owner, branch) ve §20 işareti kule işidir, raporda açık kayıt.
 8. F-12: `grep -n "paths" .github/workflows/service-tests.yml .github/workflows/phase1-gates.yml` ve iki dosyanın `on:` bloğunu oku; MDM test satırının (mdm-app) her PR'da koşup koşmadığını, Platform değişikliğinin MDM testlerini tetikleyip tetiklemediğini rapora yaz (Expected HEAD'de iki dosyada `paths:` yok).
 9. E3: run_record kaydı `docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run/run-record-v1.json` yazıldı; `python3 scripts/run_record.py verify <kayıt>` geçer; stdout.txt'de "ÖZET" ve "SONUÇ" satırları, her yolda "== Y6" bloğu (F-11), "F-15" kontrol satırları, çıkışa göre F-9 satırları; stdout'ta jeton, Authorization ya da sır yok (betik süzer; yine de `grep -c "eyJ" stdout.txt` = 0). AC-9 yalnız çıkış 0 ile.
 10. `git diff --check` temiz; son commit'ten sonra `git status --porcelain` boş.
