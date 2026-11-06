@@ -96,6 +96,29 @@ public sealed class ReturnReceiptTests(ITestOutputHelper output)
         Assert.Equal(7m, app.Inventory.Quarantine);
     }
 
+    [Fact]
+    public async Task R34_2_AReceiptStoredWithoutALocation_StillReplays_ANewRequestWithoutOneIs400()
+    {
+        var (app, s) = Start();
+        using var _ = app;
+        var id = await s.InTransit(("1", "4"));
+        Assert.Equal(200, (await s.Receive(id, "receive-1")).Status);
+        // The receipt a Received without a location left before it was required.
+        var noLocation = Received(location: null);
+        var fingerprint = Diten.SupplyChainService.Application.Features.Returns.ReturnRequestFingerprint.Transition(System.Text.Json.JsonSerializer.SerializeToElement(noLocation));
+        Assert.Equal(1, (await app.Db.GetCollection<BsonDocument>("returns_receipts").UpdateOneAsync(new BsonDocument { { "TargetId", id.ToString() }, { "IdempotencyKey", "receive-1" } },
+            new BsonDocument("$set", new BsonDocument("Fingerprint", fingerprint)))).ModifiedCount);
+        var calls = app.Inventory.Calls.Count;
+
+        var replay = await s.Receive(id, "receive-1", noLocation);
+        var fresh = await s.Receive(id, "receive-2", noLocation);
+
+        Assert.Equal(200, replay.Status);
+        Assert.True(replay.Body["idempotentReplay"]!.GetValue<bool>());
+        Assert.Equal((400, "INVALID_REQUEST"), (fresh.Status, Code(fresh.Body)));
+        Assert.Equal(calls, app.Inventory.Calls.Count);
+    }
+
     // ---- R34-3 (non-text) --------------------------------------------------------------------------------------------
     [Fact]
     public async Task R34_3_ARefusedLine_LeavesTheReturnInTransit_KeepsPostedLines_AndTheRetryCompletes()

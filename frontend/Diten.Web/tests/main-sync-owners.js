@@ -34,7 +34,10 @@ const OWNER_BY_PATH = [["SupplyChain/", SCE], ["Procurement/", PROCUREMENT], ["C
 const MAIN_SYNC_WHY = "main-sync (2026-10-12) ile geldi; sahibi başka ekip; düzeltme sahibin işi";
 const MAIN_SYNC_2_WHY = "main-sync (2026-10-14) ile geldi; sahibi başka ekip; düzeltme sahibin işi";
 const MAIN_SYNC_4_WHY = "main-sync (2026-10-16) ile geldi; sahibi başka ekip; düzeltme sahibin işi";
-const MAIN_SYNC_REASONS = [MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, MAIN_SYNC_4_WHY];
+// web-js-reds-01 — a script that reached main with its owner's own step, not a sync: FU-0175-UI-MANUALHOLD-01
+// (2e11996bc, 2026-10-19, MOD-0175). Same rule: another team's file, the fix is the owner's.
+const MAIN_OWNER_STEP_WHY = "sahip adımıyla main'e geldi (2026-10-19, 2e11996bc); sahibi başka ekip; düzeltme sahibin işi";
+const MAIN_SYNC_REASONS = [MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, MAIN_SYNC_4_WHY, MAIN_OWNER_STEP_WHY];
 
 /** The owner a path belongs to, or undefined when it is none of the other teams'. */
 const ownerOf = (key) => (OWNER_BY_PATH.find(([segment]) => key.includes(segment)) || [])[1];
@@ -44,4 +47,4 @@ const misnamedRows = (rows) => Object.entries(rows)
   .filter(([key, row]) => !ownerOf(key) || !row || row.owner !== ownerOf(key) || !MAIN_SYNC_REASONS.includes(row.why))
   .map(([key]) => key);
 
-module.exports = { SCE, PROCUREMENT, CRM, STOCK, MANUFACTURING, ESIGN, PLANNING, OWNER_BY_PATH, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, MAIN_SYNC_4_WHY, ownerOf, misnamedRows };
+module.exports = { SCE, PROCUREMENT, CRM, STOCK, MANUFACTURING, ESIGN, PLANNING, OWNER_BY_PATH, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, MAIN_SYNC_4_WHY, MAIN_OWNER_STEP_WHY, ownerOf, misnamedRows };

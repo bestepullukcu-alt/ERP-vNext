@@ -58,10 +58,13 @@ internal sealed class WorkflowTaskTransitionSupport
         signatureId = string.IsNullOrWhiteSpace(signatureId) ? null : signatureId.Trim();
         reasonCode = reasonCode.Trim();
 
+        // DL-2 (§17.9/7) — only an Approve carries a signature; Reject never stores one.
+        var bodySignature = action == WorkflowTransitionAction.Approve ? signatureId : null;
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(taskId, action, idempotencyKey, ct);
         if (existingLog is not null)
         {
-            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
+            return await BuildBodyBoundIdempotentResponseAsync(
+                existingLog, actorId, reasonCode, comment, evidenceRef, bodySignature, null, correlationId, ct);
         }
 
         var task = await _taskRepository.GetByIdAsync(taskId, ct);
@@ -74,18 +77,31 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
+        // O-S17-3 (i) — a call whose key lookup ran before its twin committed, and whose task read ran after it, is told
+        // "stale" or "not decidable" by the twin's own commit. Before that refusal goes out the key is read once more:
+        // a row under it answers as the actor- and body-bound replay (200, 403 or 409), no row keeps today's refusal.
+        // The happy path reads nothing extra.
         if (expectedVersion.HasValue && task.Version != expectedVersion.Value)
         {
-            return StaleVersion(correlationId);
+            return await TwinOrAsync(StaleVersion(correlationId));
         }
 
         if (!IsDecidable(task))
         {
-            return Response<WorkflowTaskTransitionResponse>.Fail(
+            return await TwinOrAsync(Response<WorkflowTaskTransitionResponse>.Fail(
                 "Workflow task is not in a transitionable state.",
                 409,
                 WorkflowReasonCodes.WorkflowTaskInvalidState,
-                correlationId);
+                correlationId));
+        }
+
+        async Task<Response<WorkflowTaskTransitionResponse>> TwinOrAsync(Response<WorkflowTaskTransitionResponse> refusal)
+        {
+            var late = await _logRepository.GetByTaskActionIdempotencyKeyAsync(taskId, action, idempotencyKey, ct);
+            return late is null
+                ? refusal
+                : await BuildBodyBoundIdempotentResponseAsync(
+                    late, actorId, reasonCode, comment, evidenceRef, bodySignature, null, correlationId, ct);
         }
 
         var instance = await _instanceRepository.GetByIdAsync(task.WorkflowInstanceId, ct);
@@ -536,6 +552,15 @@ internal sealed class WorkflowTaskTransitionSupport
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
 
+        // DL-2 (§17.9/7) — what the request says, in the form the row stores it: the comment (target folded in) and the
+        // target on its own ("" when there is none), computed before the first read so the replay can compare them.
+        var target = string.IsNullOrWhiteSpace(targetPrincipalId) ? string.Empty : targetPrincipalId.Trim();
+        var logComment = target.Length == 0
+            ? comment
+            : string.IsNullOrWhiteSpace(comment)
+                ? $"target:{target}"
+                : $"{comment.Trim()} target:{target}";
+
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(
             taskId,
             WorkflowTransitionAction.RequestInfo,
@@ -543,7 +568,8 @@ internal sealed class WorkflowTaskTransitionSupport
             ct);
         if (existingLog is not null)
         {
-            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
+            return await BuildBodyBoundIdempotentResponseAsync(
+                existingLog, actorId, reasonCode, logComment, evidenceRef, null, target, correlationId, ct);
         }
 
         var context = await LoadTransitionContextAsync(taskId, correlationId, requireAssignment: true, ct);
@@ -584,12 +610,6 @@ internal sealed class WorkflowTaskTransitionSupport
         instance.Status = WorkflowInstanceStatus.Active;
         instance.LastTransitionAt = DateTimeOffset.UtcNow;
 
-        var logComment = string.IsNullOrWhiteSpace(targetPrincipalId)
-            ? comment
-            : string.IsNullOrWhiteSpace(comment)
-                ? $"target:{targetPrincipalId.Trim()}"
-                : $"{comment.Trim()} target:{targetPrincipalId.Trim()}";
-
         return await PersistAndLogAsync(
             task,
             instance,
@@ -602,7 +622,8 @@ internal sealed class WorkflowTaskTransitionSupport
             logComment,
             evidenceRef,
             correlationId,
-            ct);
+            ct,
+            targetPrincipalId: target);
     }
 
     public async Task<Response<WorkflowTaskTransitionResponse>> CancelAsync(
@@ -626,7 +647,9 @@ internal sealed class WorkflowTaskTransitionSupport
             ct);
         if (existingLog is not null)
         {
-            return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+            // DL-2 (§17.8/8, AC-W18) — a cancel replay is the canceller's and the same body's, like every transition.
+            return await BuildBodyBoundIdempotentResponseAsync(
+                existingLog, actorId, reasonCode, comment, null, null, null, correlationId, ct);
         }
 
         var context = await LoadTransitionContextAsync(taskId, correlationId, requireAssignment: false, ct);
@@ -699,7 +722,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string? evidenceRef,
         string correlationId,
         CancellationToken ct,
-        RuntimeAssignmentSnapshot? newSnapshot = null)
+        RuntimeAssignmentSnapshot? newSnapshot = null,
+        string? targetPrincipalId = null)
     {
         if (WorkflowOutcomes.For(instance.Status) is not null)
         {
@@ -717,8 +741,21 @@ internal sealed class WorkflowTaskTransitionSupport
         var log = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId, reasonCode,
             idempotencyKey, comment, evidenceRef, correlationId,
             await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+        log.TargetPrincipalId = targetPrincipalId;
         var written = await _terminal.CommitTransitionAsync(task, task.Version, instance, instance.Version, log,
             newSnapshot, escalationWrite: false, ct);
+        if (written.Outcome == WorkflowTerminalWriteOutcome.DuplicateKey)
+        {
+            // §17.9/17 — a twin of this (task, RequestInfo, key) committed between the lookup and this write. Its row
+            // answers like any replay: same actor and body 200, other actor 403, other body 409.
+            var twin = await _logRepository.GetByTaskActionIdempotencyKeyAsync(task.Id, action, idempotencyKey, ct);
+            return twin is null
+                ? Response<WorkflowTaskTransitionResponse>.Fail(
+                    "Workflow transition conflict.", 409, WorkflowReasonCodes.WorkflowTransitionConflict, correlationId)
+                : await BuildBodyBoundIdempotentResponseAsync(
+                    twin, actorId, reasonCode, comment, evidenceRef, null, targetPrincipalId, correlationId, ct);
+        }
+
         return TerminalResponse(written, task, instance, previousTaskStatus, previousInstanceStatus, action,
             correlationId);
     }
@@ -1025,6 +1062,42 @@ internal sealed class WorkflowTaskTransitionSupport
             !string.Equals(existingLog.ActorRef, actorId, StringComparison.Ordinal))
         {
             return ActorDenied(correlationId);
+        }
+
+        return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+    }
+
+    /// <summary>
+    /// DL-2 (§17.9/7) — THE REPLAY OF A TRANSITION THAT HAS A BODY (Approve, Reject, RequestInfo, Cancel): the actor is
+    /// asked first (another actor 403, as ever), then the body (the same actor with another body 409
+    /// WORKFLOW_TRANSITION_IDEMPOTENCY_CONFLICT, never a new row), and only then the recorded answer. Delegate keeps
+    /// <see cref="BuildActorBoundIdempotentResponseAsync"/> and compares no body.
+    /// </summary>
+    private async Task<Response<WorkflowTaskTransitionResponse>> BuildBodyBoundIdempotentResponseAsync(
+        WorkflowTransitionLog existingLog,
+        string actorId,
+        string? reasonCode,
+        string? comment,
+        string? evidenceRef,
+        string? signatureId,
+        string? targetPrincipalId,
+        string correlationId,
+        CancellationToken ct)
+    {
+        if (!string.Equals(existingLog.ActorId, actorId, StringComparison.Ordinal) ||
+            !string.Equals(existingLog.ActorRef, actorId, StringComparison.Ordinal))
+        {
+            return ActorDenied(correlationId);
+        }
+
+        if (!WorkflowTerminalTransitionWriter.SameBody(
+                existingLog, reasonCode, comment, evidenceRef, signatureId, targetPrincipalId))
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "The idempotency key is already bound to a different request body.",
+                409,
+                WorkflowReasonCodes.WorkflowTransitionIdempotencyConflict,
+                correlationId);
         }
 
         return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);

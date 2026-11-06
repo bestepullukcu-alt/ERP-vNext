@@ -22,6 +22,9 @@ namespace Diten.AuthService.Application.Tests.ESignReauth;
 /// with the measured tenant defaults (5 failed attempts / 15 minutes).
 /// </summary>
 [Trait("Category", "Mongo")]
+// Its log test tees the process-wide Console: it runs with the other console-capture classes, never in parallel
+// (CI 2026-11-03: in parallel the request line went missing in about one run in three).
+[Collection(Diten.AuthService.Application.Tests.ServiceIdentityTokens.ConsoleCaptureCollection.Name)]
 public sealed class ESignReauthEndpointTests : IClassFixture<ESignReauthEndpointTests.ESignReauthTestHost>
 {
     private const string Reauth = "api/tenant-auth/esign/reauth";

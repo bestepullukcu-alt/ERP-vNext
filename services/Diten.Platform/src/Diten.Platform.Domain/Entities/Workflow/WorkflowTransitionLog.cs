@@ -25,6 +25,14 @@ public sealed class WorkflowTransitionLog : TenantScopedEntity
 
     /// <summary>MOD-0022 E4 — the e-signature id an approve carried (validated on signature-required steps).</summary>
     public string? SignatureId { get; set; }
+
+    /// <summary>
+    /// MOD-0023 §17.9/7 (DL-2) — the target a RequestInfo named, trimmed, or <c>""</c> when it named none; every other
+    /// action leaves it null. Null also means "written before this field existed". Compared on its own by the same-key
+    /// body check, because the target is also folded into <see cref="Comment"/> and two different requests can store the
+    /// same comment. Not part of any read DTO.
+    /// </summary>
+    public string? TargetPrincipalId { get; set; }
     public string? CorrelationId { get; set; }
 
     // Monotonic per-instance sequence; the transition batch assigns it. Append-only (no update/delete).

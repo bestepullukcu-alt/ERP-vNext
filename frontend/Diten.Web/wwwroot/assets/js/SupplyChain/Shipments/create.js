@@ -18,7 +18,10 @@ const ShipmentCreate = (function () {
     const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId', 'skuLevel', 'fromLocationId', 'lotId'];
     const optionalStockFields = ['lotId']; // left out when empty: SHIPMENT-BUNDLE 3.4.0 keeps the fingerprint of a line without them
     const value = (id) => document.getElementById(id)?.value || '';
-    const toUtc = (input) => input ? new Date(input).toISOString() : null;
+    // DitenDateField binds `.flatpickr-date` and defaults to a date only; these two fields carry a time too.
+    const dateOptions = { enableTime: true, time_24hr: true, dateFormat: 'Y-m-d H:i' };
+    const enhanceDates = () => window.DitenDateField?.enhance(document, dateOptions);
+    const toUtc = (input) => input ? new Date(input.replace(' ', 'T')).toISOString() : null;
     const token = () => document.querySelector('#formShipment input[name="__RequestVerificationToken"]')?.value || '';
     const showError = (message) => {
         const alert = document.getElementById('formShipmentAlert');
@@ -95,11 +98,13 @@ const ShipmentCreate = (function () {
             if (legalEntities.length === 0) { showError(L.legalEntityNone); return false; }
             if (select) {
                 select.innerHTML = '';
+                // The company chosen on the list opens here; none chosen, exactly one auto-selects and several open on the first.
+                const chosen = document.getElementById('formShipment')?.dataset.companyId || '';
                 legalEntities.forEach((item, index) => {
                     const option = document.createElement('option');
                     option.value = item.id;
                     option.textContent = item.name;
-                    if (index === 0) option.selected = true;  // exactly one auto-selects; several open on the first
+                    if (chosen ? item.id === chosen : index === 0) option.selected = true;
                     select.appendChild(option);
                 });
             }
@@ -132,9 +137,9 @@ const ShipmentCreate = (function () {
         document.getElementById('btnAddLine')?.addEventListener('click', () => addLine(true));
         document.getElementById('formShipment')?.addEventListener('submit', submit);
         addLine();
-        window.DitenDateField?.enhance(document);
+        enhanceDates();
         await loadLegalEntities();
     };
     document.addEventListener('DOMContentLoaded', () => { void init(); });
-    return { init, payload };
+    return { init, payload, enhanceDates };
 })();

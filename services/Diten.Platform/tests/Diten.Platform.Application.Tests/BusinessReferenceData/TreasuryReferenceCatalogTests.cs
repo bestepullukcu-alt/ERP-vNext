@@ -56,6 +56,9 @@ public sealed class TreasuryReferenceCatalogTests
         return InvokeLoader<BusinessReferenceDataCatalogSetDocument>("NormalizeSet", set);
     }
 
+    internal static HashSet<string> SeededCurrencyCodes() =>
+        Set(CurrencyMinorUnits).Values.Select(v => v.ValueCode!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
     private static JsonElement ReadSettings(string file) => JsonDocument.Parse(File.ReadAllText(Path.Combine(ApiDirectory(), file)),
         new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }).RootElement;
 
@@ -174,9 +177,10 @@ public sealed class TreasuryReferenceCatalogTests
     {
         // The production lookup (GET /api/lookups/reference/currencies) — not a copy of its RegionInfo walk.
         var build = typeof(PlatformLookupProvider).GetMethod("BuildCurrencyOptions", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var lookupCodes = ((IReadOnlyList<LookupOptionDto>)build.Invoke(null, null)!).Select(o => o.Value).ToList();
-        var seeded = Set(CurrencyMinorUnits).Values.Select(v => v.ValueCode!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var seeded = SeededCurrencyCodes();
+        var lookupCodes = ((IReadOnlyList<LookupOptionDto>)build.Invoke(null, [seeded])!).Select(o => o.Value).ToList();
 
+        Assert.NotEmpty(lookupCodes);
         var missing = lookupCodes.Where(code => !seeded.Contains(code)).OrderBy(x => x, StringComparer.Ordinal).ToList();
         Assert.True(missing.Count == 0, "currency-minor-units lacks: " + string.Join(", ", missing));
     }

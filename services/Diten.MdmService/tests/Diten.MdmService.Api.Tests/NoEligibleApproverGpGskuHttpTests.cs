@@ -187,23 +187,31 @@ public sealed partial class GskuLifecycleHttpTests
             new { expectedVersion = 0 }, token, key));
         NeapAssertGpAnswer(first);
 
+        // Counted for THIS product only: the engine is shared, and the worker's cycle also reaches operations other tests
+        // left in the same database — the global StartCalls / one-shot NextLookupFailure slot made this test flaky.
+        var id = product.ToString("D");
+        int Starts() => host.Engine.StartObjectIds.Count(x => x == id);
+        int Lookups() => host.Engine.StartResultLookupObjectIds.Count(x => x == id);
+
         NeapRefuseTheNextStart();
         host.Engine.NextLookupFailure = (ProductIdentityWorkflowTransportOutcome.Incomplete, "WORKFLOW_START_NOT_COMPLETED");
-        var startsBefore = host.Engine.StartCalls;
+        var startsBefore = Starts();
+        var lookupsBefore = Lookups();
         var repeat = await Obs.ReadAsync(await SendAsync(HttpMethod.Post, $"/api/global-products/{product:D}/submit",
             new { expectedVersion = 0 }, token, key));
-        var lookupAsked = host.Engine.NextLookupFailure is null;
-        var startedAgain = host.Engine.StartCalls - startsBefore;
+        var lookupAsked = Lookups() > lookupsBefore;
+        var startedAgain = Starts() - startsBefore;
         host.Engine.NextLookupFailure = null;
         host.Engine.NextStartFailure = null;
 
         // The recovery worker is where a start result is looked up: one cycle with Platform's "start not completed".
         host.Engine.NextLookupFailure = (ProductIdentityWorkflowTransportOutcome.Incomplete, "WORKFLOW_START_NOT_COMPLETED");
-        var workerStartsBefore = host.Engine.StartCalls;
+        var workerStartsBefore = Starts();
+        var workerLookupsBefore = Lookups();
         await host.RunAsync<Diten.MdmService.Api.Services.ProductItemSkuMaster.ProductIdentityWorkflowRecoveryRunner>(
             runner => runner.RunCycleAsync());
-        var workerLookupAsked = host.Engine.NextLookupFailure is null;
-        var workerStarts = host.Engine.StartCalls - workerStartsBefore;
+        var workerLookupAsked = Lookups() > workerLookupsBefore;
+        var workerStarts = Starts() - workerStartsBefore;
         host.Engine.NextLookupFailure = null;
 
         var op = Assert.Single(await host.Database.GetCollection<GlobalProductIdentityWorkflowOperation>(

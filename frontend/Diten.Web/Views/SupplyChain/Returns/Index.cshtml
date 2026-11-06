@@ -4,6 +4,8 @@
 @inject IHtmlLocalizer<ReturnsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     // MOD-0186 Returns tenant list (pack §32). Built by R-2 (2026-10-04) from the Q160 draft overlay v2.
     ViewData["Title"] = Localizer["ReturnsTitle"].Value;
@@ -19,6 +21,24 @@
 @{
     var permissions = ReturnPagePermissions.From(Perms.Has);
 }
+@{
+    // The shared company selector (W-0173-02): same cookie as the MVP-1 screens, so the choice follows the user between them.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = SharedLocalizer["LegalEntity"].Value;
+    company.Placeholder = SharedLocalizer["LegalEntity"].Value;
+    company.SelectHint = SharedLocalizer["LegalEntityRequired"].Value;
+    company.UnavailableText = SharedLocalizer["LegalEntityUnavailable"].Value;
+    var companyScope = company.State == Diten.Web.Models.Inventory.CompanySelectorState.FromToken
+        ? Diten.Web.Models.Inventory.CompanySelection.TokenLegalEntity(User)?.ToString("D")
+        : company.SelectedId;
+}
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+@if (!company.Ready)
+{
+    return;
+}
+<div id="returnsCompanyScope" data-legal-entity-id="@companyScope" hidden></div>
 
 @* ① Inline Filter partial *@
 @* Contract marker: <partial name="_Filter" /> *@

@@ -64,8 +64,9 @@ public sealed class TimesheetNotificationHttpMongoTests : TimerScenario
         {
             Assert.Equal("Ayşe Yılmaz", r.Variables[TimeEntryNotificationVariables.PersonName]);
             Assert.Equal($"{TimeEntryHost.WebOrigin}/TimeEntry/Approvals/{weekId:D}", r.Variables[TimeEntryNotificationVariables.TimesheetUrl]);
-            // Minimal content (N7, D11): no minutes, no days, no task.
-            Assert.DoesNotContain(r.Variables.Values, v => v is int || Convert.ToString(v)!.Contains("120"));
+            // Minimal content (N7, D11): no minutes, no days, no task. The week id is a random GUID inside the link and
+            // can itself contain "120" (CI 2026-11-03: cd120745-…), so it is taken out before the minutes are looked for.
+            Assert.DoesNotContain(r.Variables.Values, v => v is int || Convert.ToString(v)!.Replace(weekId.ToString("D"), "").Contains("120"));
         });
         Assert.DoesNotContain(sent, r => r.To.Single().Email == TestRecipients.Address(Person));
     }

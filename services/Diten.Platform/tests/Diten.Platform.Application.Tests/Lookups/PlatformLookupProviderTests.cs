@@ -1,19 +1,31 @@
 using System.Text.Json;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.BusinessReferenceData.Models;
+using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.Lookups;
 using Diten.Platform.Application.Features.Lookups.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Lookups.Queries;
 using Diten.Platform.Application.Features.Lookups.Services;
+using Diten.Platform.Application.Tests.Tasks;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Lookups;
 
 public sealed class PlatformLookupProviderTests
 {
+    private static readonly Guid CallerTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid ReferenceTenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid OtherTenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
     [Fact]
     public async Task Currencies_return_canonical_shape_without_duplicates()
     {
@@ -25,6 +37,182 @@ public sealed class PlatformLookupProviderTests
         Assert.Contains(options, option => option.Code == "USD" && option.Value == "USD");
         AssertCanonicalShape(options);
         AssertNoDuplicateCodes(options);
+    }
+
+    [Fact]
+    public async Task Currencies_are_narrowed_to_the_published_currency_minor_units_set_and_cached_as_data()
+    {
+        var cache = new InMemoryLookupCache();
+        var referenceData = PublishedCurrencies("USD");
+        var provider = CreateProvider(cache, referenceData: referenceData);
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        // Every server's ICU data knows far more than one currency, so one option is the set working, not a short list.
+        Assert.Equal("USD", Assert.Single(options).Code);
+        referenceData.Verify(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(TimeSpan.FromMinutes(5), cache.LastExpiry);
+    }
+
+    [Fact]
+    public async Task Currencies_retry_the_set_in_the_reference_tenant_and_give_the_tenant_back()
+    {
+        // ⚠ MUTATION GUARD: the seed writes under the reference tenant, so remove TenantScope.Begin and a normal tenant
+        // reads reference_data_set_not_found twice here.
+        var tenant = new FakeTenantContext(CallerTenantId);
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => tenant.TenantId == ReferenceTenantId
+                ? PublishedModel("USD")
+                : throw new KeyNotFoundException("reference_data_set_not_found"));
+        var provider = CreateProvider(referenceData: referenceData, tenantContext: tenant);
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("USD", Assert.Single(options).Code);
+        Assert.Equal(CallerTenantId, tenant.TenantId);
+    }
+
+    [Fact]
+    public async Task Currencies_are_narrowed_from_the_callers_own_set_when_no_reference_tenant_is_configured()
+    {
+        var referenceData = PublishedCurrencies("USD");
+        var provider = CreateProvider(referenceData: referenceData, referenceTenantId: "");
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("USD", Assert.Single(options).Code);
+    }
+
+    [Fact]
+    public async Task Currencies_stop_at_the_callers_own_set_without_reading_the_reference_tenant()
+    {
+        var tenant = new FakeTenantContext(CallerTenantId);
+        var tenantsRead = new List<Guid>();
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                tenantsRead.Add(tenant.TenantId);
+                return PublishedModel("EUR");
+            });
+        var provider = CreateProvider(referenceData: referenceData, tenantContext: tenant);
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("EUR", Assert.Single(options).Code);
+        Assert.Equal(CallerTenantId, Assert.Single(tenantsRead));
+    }
+
+    [Fact]
+    public async Task One_tenants_currency_list_never_answers_another_tenant_from_the_shared_cache()
+    {
+        // ⚠ MUTATION GUARD: the set is read in the caller's tenant first, so drop the tenant from the cache key and the
+        // second tenant is answered with the first one's list.
+        var cache = new InMemoryLookupCache();
+        var tenant = new FakeTenantContext(CallerTenantId);
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => PublishedModel(tenant.TenantId == CallerTenantId ? "USD" : "EUR"));
+        var provider = CreateProvider(cache, referenceData: referenceData, tenantContext: tenant);
+
+        var first = await provider.GetCurrenciesAsync(CancellationToken.None);
+        tenant.SetTenant(OtherTenantId);
+        var second = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("USD", Assert.Single(first).Code);
+        Assert.Equal("EUR", Assert.Single(second).Code);
+    }
+
+    [Fact]
+    public async Task Currencies_fail_with_their_own_code_and_a_log_line_when_the_set_is_nowhere_and_no_reference_tenant_is_configured()
+    {
+        var cache = new InMemoryLookupCache();
+        var logger = new Mock<ILogger<PlatformLookupProvider>>();
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException("reference_data_set_not_found"));
+        var provider = CreateProvider(cache, referenceData: referenceData, referenceTenantId: "", logger: logger.Object);
+
+        await Assert.ThrowsAsync<CurrencySetUnavailableException>(() => provider.GetCurrenciesAsync(CancellationToken.None));
+
+        Assert.Equal("currency_set_unavailable", CurrencySetUnavailableException.ReasonCode);
+        Assert.Empty(cache.Entries);
+        logger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("currency_set_unavailable")),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Currencies_refuse_to_fall_back_to_ICU_when_the_set_has_no_published_version_anywhere()
+    {
+        var cache = new InMemoryLookupCache();
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("no_published_version"));
+        var provider = CreateProvider(cache, referenceData: referenceData);
+
+        await Assert.ThrowsAsync<CurrencySetUnavailableException>(() => provider.GetCurrenciesAsync(CancellationToken.None));
+
+        Assert.Empty(cache.Entries);
+    }
+
+    [Fact]
+    public async Task Currencies_never_answer_an_empty_list_for_a_published_set_without_active_codes()
+    {
+        var referenceData = PublishedCurrencies();
+        var provider = CreateProvider(referenceData: referenceData);
+
+        await Assert.ThrowsAsync<CurrencySetUnavailableException>(() => provider.GetCurrenciesAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task A_caller_without_a_resolved_tenant_still_gets_the_reference_tenants_list()
+    {
+        var tenant = new Mock<ITenantContext>();
+        tenant.SetupGet(x => x.IsResolved).Returns(false);
+        tenant.SetupGet(x => x.TenantId).Throws(new InvalidOperationException("TenantId has not been resolved yet."));
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .SetupSequence(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("TenantId has not been resolved yet."))
+            .ReturnsAsync(PublishedModel("USD"));
+        var provider = CreateProvider(referenceData: referenceData, tenantContext: tenant.Object);
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("USD", Assert.Single(options).Code);
+    }
+
+    [Fact]
+    public async Task A_withdrawn_code_in_the_published_set_does_not_reach_the_list()
+    {
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BusinessReferenceDataPublishedValuesModel(
+                "currency-minor-units",
+                1,
+                DateTimeOffset.UnixEpoch,
+                [
+                    new BusinessReferenceDataPublishedValueItemModel("USD", "USD", null, true, 0, null),
+                    new BusinessReferenceDataPublishedValueItemModel("EUR", "EUR", null, false, 1, null)
+                ]));
+        var provider = CreateProvider(referenceData: referenceData);
+
+        var options = await provider.GetCurrenciesAsync(CancellationToken.None);
+
+        Assert.Equal("USD", Assert.Single(options).Code);
     }
 
     [Fact]
@@ -294,12 +482,41 @@ public sealed class PlatformLookupProviderTests
         InMemoryFeatureCategoryRepository? repository = null,
         InMemoryModuleDomainRepository? moduleDomainRepository = null,
         InMemoryModuleServiceRepository? moduleServiceRepository = null,
-        IAuthPermissionModulesClient? authPermissionModulesClient = null) =>
+        IAuthPermissionModulesClient? authPermissionModulesClient = null,
+        Mock<IBusinessReferenceDataConsumerQueryService>? referenceData = null,
+        ITenantContext? tenantContext = null,
+        string? referenceTenantId = null,
+        ILogger<PlatformLookupProvider>? logger = null) =>
         new(cache ?? new InMemoryLookupCache(),
             repository ?? new InMemoryFeatureCategoryRepository(),
             moduleDomainRepository ?? new InMemoryModuleDomainRepository(),
             moduleServiceRepository ?? new InMemoryModuleServiceRepository(),
-            authPermissionModulesClient ?? new FakeAuthPermissionModulesClient([]));
+            authPermissionModulesClient ?? new FakeAuthPermissionModulesClient([]),
+            (referenceData ?? PublishedCurrencies("USD", "EUR")).Object,
+            tenantContext ?? new FakeTenantContext(CallerTenantId),
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["BusinessReferenceData:CatalogLoad:TenantId"] = referenceTenantId ?? ReferenceTenantId.ToString()
+                })
+                .Build(),
+            logger ?? NullLogger<PlatformLookupProvider>.Instance);
+
+    private static Mock<IBusinessReferenceDataConsumerQueryService> PublishedCurrencies(params string[] codes)
+    {
+        var referenceData = new Mock<IBusinessReferenceDataConsumerQueryService>();
+        referenceData
+            .Setup(x => x.GetPublishedValuesAsync("currency-minor-units", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PublishedModel(codes));
+        return referenceData;
+    }
+
+    private static BusinessReferenceDataPublishedValuesModel PublishedModel(params string[] codes) =>
+        new(
+            "currency-minor-units",
+            1,
+            DateTimeOffset.UnixEpoch,
+            codes.Select((code, index) => new BusinessReferenceDataPublishedValueItemModel(code, code, null, true, index, null)).ToList());
 
     private sealed class FakeAuthPermissionModulesClient(IReadOnlyList<AuthPermissionModule> modules) : IAuthPermissionModulesClient
     {
@@ -331,6 +548,7 @@ public sealed class PlatformLookupProviderTests
     {
         public Dictionary<string, IReadOnlyList<LookupOptionDto>> Entries { get; } = [];
         public int FactoryCallCount { get; private set; }
+        public TimeSpan? LastExpiry { get; private set; }
 
         public async Task<IReadOnlyList<LookupOptionDto>> GetOrCreateAsync(
             string cacheKey,
@@ -338,6 +556,7 @@ public sealed class PlatformLookupProviderTests
             Func<CancellationToken, Task<IReadOnlyList<LookupOptionDto>>> factory,
             CancellationToken ct)
         {
+            LastExpiry = absoluteExpirationRelativeToNow;
             if (Entries.TryGetValue(cacheKey, out var cached))
             {
                 return cached;

@@ -1,4 +1,7 @@
-const { loadScript } = require("./load-script");
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+let dataTable;
 
 function setupDom() {
   document.body.innerHTML = `
@@ -47,9 +50,26 @@ function setupDom() {
 
 async function boot() {
   setupDom();
+  const context = vm.createContext({
+    window, document, navigator: window.navigator, location: window.location, console,
+    setTimeout, clearTimeout, setInterval, clearInterval,
+    getComputedStyle: window.getComputedStyle.bind(window)
+  });
+  for (const key of Object.getOwnPropertyNames(window)) {
+    if (/^[A-Z]/.test(key) && typeof window[key] === "function") context[key] = window[key];
+  }
+  context.self = context;
+  const run = (file) => vm.runInContext(fs.readFileSync(path.resolve(__dirname, "..", file), "utf8"), context, { filename: file });
+  run("wwwroot/assets/vendor/libs/jquery/jquery.js");
+  context.$ = context.jQuery = window.jQuery;
+  run("wwwroot/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js");
+  context.DataTable = context.DataTable || context.jQuery.fn.dataTable;
+  context.DataTable.ext.errMode = "throw";
   global.bootstrap = {
     Modal: function () { return { show() { }, hide() { } }; }
   };
+  context.bootstrap = global.bootstrap;
+  context.DataTable.Responsive.bootstrap(global.bootstrap);
   window.enterpriseStrategyUi = {
     notify: vi.fn(),
     getErrorMessage: (err, fallback) => err?.message || fallback
@@ -102,6 +122,7 @@ async function boot() {
     })
   };
   window.strategyPlanningApi = {
+    getAllPositions: vi.fn().mockResolvedValue([]),
     listCycles: vi.fn().mockResolvedValue([
       {
         id: "cycle-1",
@@ -159,17 +180,19 @@ async function boot() {
     archivePeriod: vi.fn()
   };
 
-  loadScript("wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js");
-  loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  run("wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js");
+  await window.strategyPeriodsApp.initPage();
+  await vi.waitFor(() => expect(document.querySelectorAll("#strategy-periods-table tbody tr")).toHaveLength(3));
+  dataTable = context.jQuery("#strategy-periods-table").DataTable();
 }
 
 describe("strategy periods register actions", () => {
   beforeEach(async () => {
     await boot();
   });
+  afterEach(() => dataTable?.destroy());
 
-  it("renders goal-style 3-dot action menus with the correct items for each row status", () => {
+  it("renders DataTable view links and lifecycle-specific action items", () => {
     const rows = Array.from(document.querySelectorAll("#strategy-periods-table tbody tr"));
     expect(rows).toHaveLength(3);
 
@@ -180,14 +203,18 @@ describe("strategy periods register actions", () => {
 
     expect(draftRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
     expect(activeRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
-    expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
+    expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).toBeNull();
 
-    expect(actionLabels(draftRow)).toEqual(expect.arrayContaining(["View", "Edit", "Activate", "Archive / Delete"]));
+    for (const [row, id] of [[draftRow, "sp-draft"], [activeRow, "sp-active"], [archivedRow, "sp-archived"]]) {
+      expect(row.querySelector(".bx-show").closest("a").getAttribute("href")).toBe(
+        `/management-governance/enterprise-strategy-business-performance/planning/strategy-periods/${id}`);
+    }
+    expect(actionLabels(draftRow)).toEqual(["Edit", "Activate", "Archive / Delete"]);
 
-    expect(actionLabels(activeRow)).toEqual(expect.arrayContaining(["View", "Archive / Delete"]));
-    expect(actionLabels(activeRow)).not.toContain("Edit");
+    // Active periods retain Edit; the editor locks structural fields when the period is in use.
+    expect(actionLabels(activeRow)).toEqual(["Edit", "Archive / Delete"]);
     expect(actionLabels(activeRow)).not.toContain("Activate");
 
-    expect(actionLabels(archivedRow)).toEqual(["View"]);
+    expect(actionLabels(archivedRow)).toEqual([]);
   });
 });

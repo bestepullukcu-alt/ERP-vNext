@@ -517,29 +517,45 @@ public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTempo
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> ApproveAsync(
             Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null,
-            IApprovalTaskRepository? tasks = null) =>
+            IApprovalTaskRepository? tasks = null, int? expectedVersion = null, string reason = "APPROVED",
+            string? comment = null, string? evidenceRef = null) =>
             new ApproveWorkflowTaskHandler(tasks ?? Tasks, Instances, Snapshots, Logs, Versions,
                     transactions: executor ?? new PlatformTransactionExecutor(Context),
                     events: new MongoIntentWriter(Context),
                     templates: Templates)
                 .Handle(new ApproveWorkflowTaskCommand(taskId,
-                    new ApproveWorkflowTaskRequest(actor, "APPROVED", key, null, null), "corr-" + key), default);
+                    new ApproveWorkflowTaskRequest(actor, reason, key, comment, evidenceRef, expectedVersion), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> RejectAsync(
-            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null) =>
-            new RejectWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs,
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null,
+            IApprovalTaskRepository? tasks = null, int? expectedVersion = null, string reason = "REJECTED",
+            string? comment = "no", string? evidenceRef = null) =>
+            new RejectWorkflowTaskHandler(tasks ?? Tasks, Instances, Snapshots, Logs,
                     transactions: executor ?? new PlatformTransactionExecutor(Context),
                     events: new MongoIntentWriter(Context),
                     templates: Templates)
                 .Handle(new RejectWorkflowTaskCommand(taskId,
-                    new RejectWorkflowTaskRequest(actor, "REJECTED", key, "no", null), "corr-" + key), default);
+                    new RejectWorkflowTaskRequest(actor, reason, key, comment, evidenceRef, expectedVersion), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> RequestInfoAsync(
-            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null) =>
-            new RequestInfoWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs,
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null,
+            IApprovalTaskRepository? tasks = null, int? expectedVersion = null, string reason = "INFO",
+            string? comment = "please add", string? evidenceRef = null, string? target = null) =>
+            new RequestInfoWorkflowTaskHandler(tasks ?? Tasks, Instances, Snapshots, Logs,
                     executor ?? new PlatformTransactionExecutor(Context))
                 .Handle(new RequestInfoWorkflowTaskCommand(taskId,
-                    new RequestInfoWorkflowTaskRequest(actor, null, "INFO", key, "please add", null), "corr-" + key), default);
+                    new RequestInfoWorkflowTaskRequest(actor, target, reason, key, comment, evidenceRef, expectedVersion),
+                    "corr-" + key), default);
+
+        public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> CancelAsync(
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null,
+            IApprovalTaskRepository? tasks = null, string reason = "CANCELLED", string? comment = "withdrawn") =>
+            new CancelWorkflowTaskHandler(tasks ?? Tasks, Instances, Snapshots, Logs,
+                    transactions: executor ?? new PlatformTransactionExecutor(Context),
+                    events: new MongoIntentWriter(Context),
+                    templates: Templates)
+                .Handle(new CancelWorkflowTaskCommand(taskId,
+                    new CancelWorkflowTaskRequest(actor, reason, key, comment), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> DelegateAsync(
             Guid taskId, string actor, string target, string key, IPlatformTransactionExecutor? executor = null) =>

@@ -380,10 +380,13 @@ describe("the callers of the shared confirm", () => {
     expect(users).toEqual([
       "wwwroot/assets/js/CRM/Contacts/index.js",
       "wwwroot/assets/js/CRM/TerritoryManagement/resource-assignments.js",
+      // web-js-reds-01: the reason dialog's change list (DOM-built, every value through textContent); without lines it
+      // sends plain subtext. Before, the list went as escaped `subtext` and the reader saw the <ul> tags as text.
+      "wwwroot/assets/js/ESignature/esign-pages.js",
       "wwwroot/assets/js/Platform/AuditLog/index.js",
-      "wwwroot/assets/js/Quarantine/blocked.js", // WP-MVP1-FIX-QUI1: the unblock body (constant template, subject via textContent)
+      // FU-0175-UI-MANUALHOLD-01 (2e11996bc): the hold confirmation body — the chosen stock line written through textContent.
+      "wwwroot/assets/js/Quarantine/manual-hold.js",
       "wwwroot/assets/js/Traceability/LotMigration/index.js", // WP-MVP1-FU-CLEAN1: the migration confirmation body (values escaped, constant tags)
-      "wwwroot/assets/js/Traceability/Lots/status.js", // WP-MVP1-FU-CLEAN1 (FU-QUI1-LOTSTATUS): the status form body (radios + acknowledgement)
     ]);
   });
 

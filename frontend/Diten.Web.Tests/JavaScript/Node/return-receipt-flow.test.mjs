@@ -48,6 +48,7 @@ const element = (id) => {
     return ids.get(id);
 };
 ids.get('returns-permissions').textContent = JSON.stringify({ canReceive: true });
+element('returnsCompanyScope').dataset.legalEntityId = 'company-a';
 
 const RETURN = '66666666-6666-4666-8666-666666666666';
 const L10n = new Proxy({
@@ -71,7 +72,7 @@ const context = vm.createContext({
         addEventListener: () => {}, createElement: () => new FakeElement(false), createTextNode: (text) => ({ textContent: text }), body: {}, activeElement: null },
     window: { L10n, showConfirm: (_title, callback, options) => { context.lastConfirm = options; callback(); }, showToast: () => {} },
     bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show() {}, hide() {} }) } },
-    fetch: fetchStub, URLSearchParams, Intl, crypto, console: { error() {}, warn() {} }
+    fetch: fetchStub, URLSearchParams, Intl, crypto, Event, console: { error() {}, warn() {} }
 });
 const list = vm.runInContext(`${source}\n;ReturnsList`, context);
 list.bindEvents();
@@ -175,6 +176,37 @@ test('a stored attempt without a location asks for one before it resends', async
     element('transitionToLocationId').value = 'loc-new';
     await submit();
     assert.equal(sent[1].body.toLocationId, 'loc-new');
+});
+
+test('a return created under another company moves the shared selector to it', () => {
+    const fired = [];
+    const selector = new FakeElement(false);
+    selector.dispatchEvent = (event) => fired.push(event.type);
+    ids.set('inventoryCompany', selector);
+    list.adoptCompany('company-a');
+    assert.deepEqual(fired, []);
+    list.adoptCompany('company-b');
+    assert.equal(selector.value, 'company-b');
+    assert.deepEqual(fired, ['change']);
+    ids.delete('inventoryCompany');
+    list.adoptCompany('company-a');
+});
+
+test('a new panel opens without the marks of the one closed last', async () => {
+    open();
+    element('transitionToWarehouseId').value = '';
+    element('transitionToLocationId').value = '';
+    await submit();
+    const fields = [element('transitionToWarehouseId'), element('transitionToLocationId')];
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'true');
+        assert.equal(field.classList.contains('is-invalid'), true);
+    });
+    list.openTransition(RETURN, 'Received');
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'false');
+        assert.equal(field.classList.contains('is-invalid'), false);
+    });
 });
 
 test('an empty warehouse stops both paths and marks the field', async () => {

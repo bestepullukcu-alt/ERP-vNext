@@ -1396,29 +1396,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.DoesNotContain("SECRET", entry.Message);
     }
 
-    // ── FIX4 item 5: the seeder's own catch logs the type only ────────────────────────────────────────────
-
-    [Fact]
-    public async Task The_seeders_catch_writes_the_exception_type_and_never_its_message()
-    {
-        var output = new StringWriter();
-        var original = Console.Out;
-        Console.SetOut(output);
-        try
-        {
-            await DataSeeder.SeedAsync(_host.Database, null,
-                () => throw new InvalidOperationException("SECRET-outer", new FormatException("SECRET-inner")));
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
-
-        var text = output.ToString();
-        Assert.Contains("Critical Seeding Error: " + typeof(InvalidOperationException).FullName, text);
-        Assert.Contains("Inner: " + typeof(FormatException).FullName, text);
-        Assert.DoesNotContain("SECRET", text);
-    }
+    // FIX4 item 5 (the seeder's catch logs the type only) moved to SeederConsoleOutputTests: it redirects the
+    // process-wide Console and so runs in the console-capture collection, not in parallel with this class.
 
     // ── FIX4: a broken catalog row of one key ────────────────────────────────────────────────────────────
 

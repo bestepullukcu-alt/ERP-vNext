@@ -1,3 +1,4 @@
+using Diten.CrmService.Api.Filters;
 using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.Account.Commands;
 using Diten.CrmService.Application.Features.Account.Queries;
@@ -61,6 +62,29 @@ public sealed class AccountController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new Application.Features.AccountRelationship.Queries.ListRelatedAccountsBulkQuery(accountIds, relationType),
             cancellationToken));
+
+    /// <summary>MOD-0149 §30 U-3 (CRM-ACCOUNT-LOOKUP 1.0 §2a): the Treasury AR customer picker. Only
+    /// <c>crm.account.lookup-validation</c> (K-1; <c>crm.account.read</c> neither suffices nor is needed) and only with a
+    /// token that carries <c>tenant_id</c> (K-11).</summary>
+    [HttpGet("lookup")]
+    [HasPermission("crm.account.lookup-validation")]
+    [RequireTokenTenant]
+    public async Task<IActionResult> Lookup(
+        [FromQuery] string? search,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        [FromQuery] bool? billableOnly,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new SearchAccountLookupQuery(search, page, pageSize, billableOnly), cancellationToken));
+
+    /// <summary>MOD-0149 §30 U-1 (CRM-ACCOUNT-LOOKUP 1.0 §2): validation fields of one account. Same permission and
+    /// tenant-token rule as <see cref="Lookup"/>.</summary>
+    [HttpGet("{accountId:guid}/lookup-validation")]
+    [HasPermission("crm.account.lookup-validation")]
+    [RequireTokenTenant]
+    public async Task<IActionResult> LookupValidation(Guid accountId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetAccountLookupValidationQuery(accountId), cancellationToken));
 
     [HttpGet("{id:guid}")]
     [HasPermission("crm.account.read")]

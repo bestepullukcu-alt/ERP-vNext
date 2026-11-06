@@ -34,6 +34,11 @@ public sealed class ExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<T
             // with its reason code), for the same reason as the audit refusal above: never a 500/400 envelope here.
             throw;
         }
+        catch (Diten.Platform.Application.Features.Lookups.Services.CurrencySetUnavailableException)
+        {
+            // MOD-0048-FU01 §21 — same reason: the 503 and its code are answered by the API's exception handler.
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception for request {RequestType}", typeof(TRequest).Name);

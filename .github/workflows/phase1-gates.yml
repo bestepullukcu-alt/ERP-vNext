@@ -1,8 +1,9 @@
 name: phase1-gates
 
+# Owner decision 2026-11-02: a pushed branch is checked through its pull request; main is checked after every merge.
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
 
 # WP-CI-SERVICE-TESTS-03 (CT decision): the same rule as service-tests.yml — read-only token, no secret, and every action

@@ -68,14 +68,14 @@ public sealed class DefaultDeliveryExecutionManagementAuthorizationService : IDe
 
     public Task<bool> HasPermissionAsync(string permission, ClaimsPrincipal user, CancellationToken cancellationToken = default)
     {
+        if (user?.Identity?.IsAuthenticated != true)
+            return Task.FromResult(false);
+
         if (IsDevelopmentPermissionBootstrapEnabled() &&
             PermissionAliases.ContainsKey(permission))
         {
             return Task.FromResult(true);
         }
-
-        if (user?.Identity?.IsAuthenticated != true)
-            return Task.FromResult(false);
 
         var acceptedPermissions = PermissionAliases.TryGetValue(permission, out var aliases)
             ? aliases
@@ -98,11 +98,11 @@ public sealed class DefaultDeliveryExecutionManagementAuthorizationService : IDe
         {
             enforcePermissions = Environment.GetEnvironmentVariable("DITEN_ESBP_ENFORCE_PERMISSIONS");
         }
-        if (!string.IsNullOrWhiteSpace(enforcePermissions))
+        if (!string.IsNullOrWhiteSpace(enforcePermissions) &&
+            !string.Equals(enforcePermissions, "0", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(enforcePermissions, "false", StringComparison.OrdinalIgnoreCase))
         {
-            return !(string.Equals(enforcePermissions, "1", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "true", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "yes", StringComparison.OrdinalIgnoreCase));
+            return false;
         }
 
         var configured = Environment.GetEnvironmentVariable("DITEN_DELIVERY_EXECUTION_DEV_PERMISSION_BOOTSTRAP");
@@ -111,11 +111,7 @@ public sealed class DefaultDeliveryExecutionManagementAuthorizationService : IDe
             configured = Environment.GetEnvironmentVariable("DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP");
         }
 
-        if (string.IsNullOrWhiteSpace(configured))
-            return true;
-
         return string.Equals(configured, "1", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "true", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "yes", StringComparison.OrdinalIgnoreCase);
+               string.Equals(configured, "true", StringComparison.OrdinalIgnoreCase);
     }
 }

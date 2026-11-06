@@ -43,7 +43,7 @@ public sealed class ShipmentDetailActionTests
         Assert.Contains("await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`), {", _details);
         Assert.DoesNotContain("fetch(`/SupplyChain/Shipments/api/${shipmentId}", _details);
         Assert.Contains("if (!uuidPattern.test(legalEntityId)) { hideSkeleton(); text('shipmentNumber', L.unavailable); showError(L.legalEntityRequired); return; }", _details);
-        Assert.Contains("Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(document.getElementById('filterLegalEntity')?.value || '')}", _index);
+        Assert.Contains("Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(company())}", _index);
         Assert.Contains("Details/${encodeURIComponent(result.shipmentId)}?legalEntityId=${encodeURIComponent(company)}", _create);
         Assert.Contains("data-legal-entity-id=\"@ViewBag.LegalEntityId\"", _detailsView);
         Assert.Contains("ViewBag.LegalEntityId = LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId)", _controller);

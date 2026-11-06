@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Approvals;
 using Diten.CrmService.Domain.Entities;
@@ -91,7 +93,11 @@ public sealed record CreateObjectionResponseCommand(
     string? CategoryCode,
     string? Question,
     string? Answer,
-    IReadOnlyList<Guid>? ClaimIds) : IRequest<Response<Guid>>;
+    IReadOnlyList<Guid>? ClaimIds) : IRequest<Response<Guid>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<Guid>(response, id => id);
+}
 
 /// <summary>Only a draft is edited (an answer under review is locked; an approved one never changes — retire + new).</summary>
 public sealed record UpdateObjectionResponseCommand(
@@ -101,25 +107,53 @@ public sealed record UpdateObjectionResponseCommand(
     string? Question,
     string? Answer,
     IReadOnlyList<Guid>? ClaimIds,
-    int? ExpectedVersion = null) : IRequest<Response<bool>>;
+    int? ExpectedVersion = null) : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>The W3-BE-b direct approve — retired: 409 <c>approval_via_workflow_only</c>.</summary>
-public sealed record ApproveObjectionResponseCommand(Guid Id, int? ExpectedVersion = null) : IRequest<Response<bool>>;
+public sealed record ApproveObjectionResponseCommand(Guid Id, int? ExpectedVersion = null) : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>draft / approved → retired (the end of the record; a change is a new record).</summary>
-public sealed record RetireObjectionResponseCommand(Guid Id, int? ExpectedVersion = null) : IRequest<Response<bool>>;
+public sealed record RetireObjectionResponseCommand(Guid Id, int? ExpectedVersion = null) : IRequest<Response<bool>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-VW-W3 (W3-BE-c) — a complete draft → <c>in_review</c> (MOD-0023 round, template CRM-OBJ-RESP).</summary>
-public sealed record SubmitObjectionResponseCommand(Guid Id) : IRequest<Response<ObjectionResponseDto>>;
+public sealed record SubmitObjectionResponseCommand(Guid Id) : IRequest<Response<ObjectionResponseDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-VW-W3 (W3-BE-c) — only the submitter withdraws (the round is cancelled; the answer → draft).</summary>
-public sealed record WithdrawObjectionResponseCommand(Guid Id) : IRequest<Response<ObjectionResponseDto>>;
+public sealed record WithdrawObjectionResponseCommand(Guid Id) : IRequest<Response<ObjectionResponseDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-VW-W3 (W3-BE-c) — <c>approve</c> | <c>return</c> (a return needs a comment) on the Work Center task.</summary>
-public sealed record DecideObjectionResponseCommand(Guid Id, string? Decision, string? Comment) : IRequest<Response<ObjectionResponseDto>>;
+public sealed record DecideObjectionResponseCommand(Guid Id, string? Decision, string? Comment) : IRequest<Response<ObjectionResponseDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-VW-W3 (W3-BE-c) — a NEW draft with the same content (<c>copiedFromId</c> = the source).</summary>
-public sealed record CopyObjectionResponseCommand(Guid Id) : IRequest<Response<Guid>>;
+public sealed record CopyObjectionResponseCommand(Guid Id) : IRequest<Response<Guid>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("ObjectionResponse");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<Guid>(response, id => id);
+}
 
 public sealed record GetObjectionResponseQuery(Guid Id) : IRequest<Response<ObjectionResponseDto>>;
 
