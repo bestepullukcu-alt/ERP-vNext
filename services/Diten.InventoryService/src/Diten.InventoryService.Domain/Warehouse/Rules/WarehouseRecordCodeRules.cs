@@ -22,7 +22,10 @@ public static partial class WarehouseRecordCodeRules
     /// <summary>Package / handling unit (S2).</summary>
     public const string Package = "PKG";
 
-    public static readonly IReadOnlyList<string> TypePrefixes = [PutawayTask, PickTask, OutboundShipment, Package];
+    /// <summary>MOD-0181 cycle count (Q-7 = B, XMC-001 Beste 2026-11-06 — additive; moves to MOD-0040-FU02 with FU-0178-RCS-01).</summary>
+    public const string CycleCount = "CNT";
+
+    public static readonly IReadOnlyList<string> TypePrefixes = [PutawayTask, PickTask, OutboundShipment, Package, CycleCount];
 
     /// <summary>M-2: <c>^[A-Z]{2,5}$</c> — otherwise no new record is opened (422 <c>WMS_COMPANY_CODE_INVALID</c>).</summary>
     public static bool IsValidCompanyCode(string? code) => code is not null && CompanyCode().IsMatch(code);

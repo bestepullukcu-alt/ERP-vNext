@@ -8,6 +8,7 @@ using Diten.InventoryService.Api.Quarantine;
 using Diten.InventoryService.Api.Recall;
 using Diten.InventoryService.Api.Traceability;
 using Diten.InventoryService.Api.Warehouse;
+using Diten.InventoryService.Api.CycleCounting;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
@@ -58,6 +59,8 @@ builder.Services.AddSingleton<IModuleManifestProvider, RecallReadinessManifestPr
 builder.Services.AddRecall(builder.Configuration); // MOD-0177 slice R1
 builder.Services.AddSingleton<IModuleManifestProvider, PutawayPickingPackingManifestProvider>(); // MOD-0178 (pack §14.4)
 builder.Services.AddWarehouse(); // MOD-0178 slice DL-1
+builder.Services.AddSingleton<IModuleManifestProvider, CycleCountingManifestProvider>(); // MOD-0181 (pack §14)
+builder.Services.AddCycleCount(); // MOD-0181 slice DL-1 (XMC-001, Beste 2026-11-06)
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 // BL-501 (AUD-001 K4): every marked write command also lands in Platform's central audit log — outbox in this database, written in
 // the command's own transaction (RequireEnlistment: every Inventory write runs in an enlisting transaction, so a success that enlisted

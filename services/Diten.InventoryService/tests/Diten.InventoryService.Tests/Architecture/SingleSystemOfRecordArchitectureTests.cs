@@ -82,6 +82,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // total) and the outbound outbox (OutboundShipmentReady, Pending; pack §8.9).
         Assert.Equal(["wms_handling_units", "wms_outbox"],
             Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0181 (DL-1, XMC-001 decision Beste 2026-11-06) — the counts, their lines, the insert-only timeline and the open-bin claims, prefix
+        // wms_count_ (pack §3, own CycleCountCollections — Q-22). None is stock: a line's expected quantity is count evidence written once.
+        Assert.Equal(["wms_count_bin_claims", "wms_count_counts", "wms_count_events", "wms_count_lines"],
+            Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -101,7 +105,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All) // MOD-0178 (DL-1)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2) // MOD-0178 (DL-2)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4) // MOD-0178 (DL-4)
-            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5).ToList(); // MOD-0178 (DL-5)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5) // MOD-0178 (DL-5)
+            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All).ToList(); // MOD-0181 (DL-1)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
@@ -121,6 +126,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
             arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
             || arg.StartsWith("RecallCollections.", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
             || arg.StartsWith("WarehouseCollections.", StringComparison.Ordinal) // MOD-0178 (DL-1)
+            || arg.StartsWith("CycleCountCollections.", StringComparison.Ordinal) // MOD-0181 (DL-1, F-2)
             || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }

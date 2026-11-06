@@ -41,7 +41,9 @@ public sealed class CentralAuditDeclarationTests
         // 101 after MOD-0178 DL-5 (the 14 S2 write commands of the slice: Cancel / Release / SyncDispatch / ReleaseOutboundReservations, the 7 pick
         // commands — claim, bulk assign, confirm, retry, returned, resolve, close short — and the 3 package commands; 0178's count is 99 = 82 + 17;
         // the 2 MOD-0175-FU01 commands stay outside that rule — CT S-101, DÜŞÜK).
-        Assert.Equal(101, WriteCommands.Length);
+        // 106 after MOD-0181 DL-1 (XMC-001, Beste 2026-11-06; pack §5 "sayı + dilimin 0181 yazma komutları"): Create, Update, BulkDelete, Release,
+        // Cancel CycleCount — 5 of 0181's 16; measured 101 at 81546c373.
+        Assert.Equal(106, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
@@ -55,7 +57,8 @@ public sealed class CentralAuditDeclarationTests
             new QuarantineBlockedStockManifestProvider(),
             new ExpiryFefoManifestProvider(),
             new RecallReadinessManifestProvider(),
-            new PutawayPickingPackingManifestProvider() // MOD-0178 (pack §14.4)
+            new PutawayPickingPackingManifestProvider(), // MOD-0178 (pack §14.4)
+            new Diten.InventoryService.Api.CycleCounting.CycleCountingManifestProvider() // MOD-0181 (pack §14, XMC-001)
         }.Select(p => p.GetManifest().ModuleCode).ToHashSet(StringComparer.Ordinal);
 
         foreach (var type in WriteCommands)
@@ -116,7 +119,8 @@ public sealed class CentralAuditDeclarationTests
 
         // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
         // + WarehouseTaskRepository.InTransactionAsync (MOD-0178 DL-2) + OutboundShipmentRepository.InTransactionAsync (MOD-0178 DL-4)
-        Assert.Equal(13, seen);
+        // + CycleCountRepository.InTransactionAsync (MOD-0181 DL-1, XMC-001)
+        Assert.Equal(14, seen);
         Assert.Empty(failures);
     }
 }

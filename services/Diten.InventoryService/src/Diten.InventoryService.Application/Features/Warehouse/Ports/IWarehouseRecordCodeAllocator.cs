@@ -10,7 +10,7 @@ namespace Diten.InventoryService.Application.Features.Warehouse.Ports;
 public interface IWarehouseRecordCodeAllocator
 {
     /// <summary>
-    /// The next number of <paramref name="typePrefix"/> (<c>PUT</c>, <c>PCK</c>, <c>OUT</c>, <c>PKG</c>) under <paramref name="companyCodePrefix"/>
+    /// The next number of <paramref name="typePrefix"/> (<c>PUT</c>, <c>PCK</c>, <c>OUT</c>, <c>PKG</c>; MOD-0181 <c>CNT</c> — Q-7 = B) under <paramref name="companyCodePrefix"/>
     /// (already checked against <c>^[A-Z]{2,5}$</c> by the caller — an invalid one is an <see cref="ArgumentException"/>). The counter
     /// store unreachable → <see cref="WarehouseRecordCodeUnavailableException"/> (503 <c>WMS_RECORD_CODE_UNAVAILABLE</c>).
     /// </summary>
