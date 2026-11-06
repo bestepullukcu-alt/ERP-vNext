@@ -20,33 +20,45 @@
             <div class="row g-4">
                 <div class="col-12">
                     <label for="signOffSnapshot" class="form-label fw-medium">@Localizer["SignOffSnapshot"] <span class="text-danger">*</span></label>
-                    <select id="signOffSnapshot" class="form-select" dir="ltr"></select>
+                    <div class="diten-field">
+                        <i class="bx bx-camera diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffSnapshot" class="form-select" dir="ltr"></select>
+                    </div>
                     <div class="invalid-feedback" data-for="signOffSnapshot"></div>
                 </div>
                 <div class="col-12">
                     <label for="signOffRole" class="form-label fw-medium">@Localizer["SignOffRole"] <span class="text-danger">*</span></label>
-                    <select id="signOffRole" class="form-select">
-                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                        <option value="DemandPlanning">@Localizer["RoleDemandPlanning"]</option>
-                        <option value="SupplyPlanning">@Localizer["RoleSupplyPlanning"]</option>
-                        <option value="Finance">@Localizer["RoleFinance"]</option>
-                        <option value="Operations">@Localizer["RoleOperations"]</option>
-                        <option value="Executive">@Localizer["RoleExecutive"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-user-check diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffRole" class="form-select">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            <option value="DemandPlanning">@Localizer["RoleDemandPlanning"]</option>
+                            <option value="SupplyPlanning">@Localizer["RoleSupplyPlanning"]</option>
+                            <option value="Finance">@Localizer["RoleFinance"]</option>
+                            <option value="Operations">@Localizer["RoleOperations"]</option>
+                            <option value="Executive">@Localizer["RoleExecutive"]</option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback" data-for="signOffRole"></div>
                 </div>
                 <div class="col-12">
                     <label for="signOffDecision" class="form-label fw-medium">@Localizer["SignOffDecision"] <span class="text-danger">*</span></label>
-                    <select id="signOffDecision" class="form-select">
-                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                        <option value="Approved">@Localizer["DecisionApproved"]</option>
-                        <option value="Rejected">@Localizer["DecisionRejected"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                        <select id="signOffDecision" class="form-select">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            <option value="Approved">@Localizer["DecisionApproved"]</option>
+                            <option value="Rejected">@Localizer["DecisionRejected"]</option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback" data-for="signOffDecision"></div>
                 </div>
                 <div class="col-12">
                     <label for="signOffComment" class="form-label fw-medium">@Localizer["SignOffComment"]</label>
-                    <textarea id="signOffComment" class="form-control" rows="3"></textarea>
+                    <div class="diten-field">
+                        <i class="bx bx-comment-detail diten-field-icon" aria-hidden="true"></i>
+                        <textarea id="signOffComment" class="form-control" rows="3"></textarea>
+                    </div>
                     <div class="invalid-feedback" data-for="signOffComment"></div>
                 </div>
             </div>
@@ -54,6 +66,6 @@
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="btnSubmitSignOff" class="btn btn-primary">@Localizer["RecordSignOff"]</button>
+        <button type="button" id="btnSubmitSignOff" class="btn btn-primary" data-dt-primary="chord">@Localizer["RecordSignOff"]</button>
     </div>
 </div>

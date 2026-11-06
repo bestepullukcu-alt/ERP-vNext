@@ -1198,4 +1198,55 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>安全库存优化</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>产能计划情景</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP 计划签核</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP 计划快照</value>
+  </data>
+  <data name="Perm.Entity.CASES" xml:space="preserve">
+    <value>案例</value>
+  </data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
+    <value>消耗记录</value>
+  </data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
+    <value>仪表板</value>
+  </data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
+    <value>日期覆盖</value>
+  </data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve">
+    <value>演练</value>
+  </data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
+    <value>有效性检查</value>
+  </data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
+    <value>证据</value>
+  </data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
+    <value>例外</value>
+  </data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
+    <value>批次状态</value>
+  </data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve">
+    <value>策略</value>
+  </data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
+    <value>隔离请求</value>
+  </data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
+    <value>隔离存放</value>
+  </data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve">
+    <value>追溯</value>
+  </data>
 </root>
