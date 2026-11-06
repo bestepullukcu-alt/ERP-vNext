@@ -60,6 +60,7 @@
   <data name="HistoryUnit" xml:space="preserve"><value>Kabul edilen birim</value></data>
   <data name="HistoryQuantity" xml:space="preserve"><value>Kabul edilen miktar</value></data>
   <data name="HistoryUnitPending" xml:space="preserve"><value>Birim MOD-0290 ile doğrulanmadı</value></data>
+  <data name="HistoryUnitMismatch" xml:space="preserve"><value>Kabul edilen birim güncel temel birimden farklı</value></data>
   <data name="HistoryBatch" xml:space="preserve"><value>İçe aktarım partisi</value></data>
   <data name="HistoryDecision" xml:space="preserve"><value>Karar</value></data>
   <data name="HistoryActor" xml:space="preserve"><value>Kararı veren</value></data>

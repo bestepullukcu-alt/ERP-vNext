@@ -53,6 +53,7 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
               row.AcceptedUomId != row.OriginalUomId ||
               row.BaseQuantity != 0 || row.BaseUomId.Length != 0 ||
               row.ConversionFactor != 0 || row.ConversionContractId.Length != 0 ||
+              row.ConversionNumerator is not null || row.ConversionDenominator is not null ||
               row.ConversionContractVersion.Length != 0)) ||
             row.ContentSha256 != AcceptedHistoryFingerprint.Compute(row) ||
             audit.TenantId != row.TenantId || audit.LegalEntityId != row.LegalEntityId ||
@@ -242,6 +243,8 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
                (row.UnitVerificationPending ||
                 (source.BaseQuantity == row.BaseQuantity && source.BaseUomId == row.BaseUomId &&
                  source.ConversionFactor == row.ConversionFactor &&
+                 source.ConversionNumerator == row.ConversionNumerator &&
+                 source.ConversionDenominator == row.ConversionDenominator &&
                  source.ConversionContractId == row.ConversionContractId &&
                  source.ConversionContractVersion == row.ConversionContractVersion)) &&
                source.UnitVerificationPending == row.UnitVerificationPending &&
