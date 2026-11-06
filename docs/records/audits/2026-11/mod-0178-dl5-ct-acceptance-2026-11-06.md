@@ -66,3 +66,18 @@ ad alanı (331 test) → `git checkout` ile geri alma → sha256 eşit; iş sonu
 - DL-3 CT bulguları F-7 / F-8 (DÜŞÜK) DL-6 Web talimatında.
 
 ACCEPTED, kod main'e girdiğinde, F-1 kapandığında ve iki kapı (AC-76, E3) kapandığında yazılır (SOP §7).
+
+## F-1 / F-2 kapanışı (2aab920f1)
+
+- `2aab920f1` (test(sce): MOD-0178 DL-5 CT F-1/F-2 — release refuses Allocated / Picked; a picked cancel cancels its packages): yalnız iki
+  test dosyası (`PackingReleaseTests.cs`, `CancelReleaseTests.cs`); üretim kodu değişmedi (`OutboundFlowHandlers.cs` sha256 `4e66f26c…ddefe`,
+  `2005dc238` ile aynı).
+- CT aynı iki sabotajı `81546c373` ağacında yeniden uyguladı (Warehouse ad alanı, 333 test):
+
+| Sabotaj | Sonuç |
+|---|---|
+| CT-1 release ön koşulu `is not (Packed or Picked)` | kırmızı: `PackingReleaseTests.CT_F1_release_on_Allocated_or_Picked_is_409_invalid_transition_without_a_write` (332 / 333) |
+| CT-3 iptalde koli döngüsü `Where(p => false)` | kırmızı: `CancelReleaseTests.AC32_a_picked_cancel_puts_the_staged_stock_back_with_a_Cancellation_task` (332 / 333) |
+
+  İkisi de `git checkout` ile geri alındı, sha256 eşit, ağaç temiz.
+- **F-1 (ORTA) ve F-2 (DÜŞÜK) kapandı.** DL-5 sonucu **VERIFIED** (kod + test); ACCEPTED yine AC-76 Auth kapısına ve canlı E3'e bağlı.
