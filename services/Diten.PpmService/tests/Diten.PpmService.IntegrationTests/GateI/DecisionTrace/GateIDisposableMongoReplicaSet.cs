@@ -11,7 +11,6 @@ namespace Diten.PpmService.IntegrationTests.GateI.DecisionTrace;
 
 public sealed class GateIDisposableMongoReplicaSet : IAsyncLifetime
 {
-    private const string MongoExecutable = "/opt/homebrew/bin/mongod";
     private const string ReplicaSetName = "ppm-gate-i-rs";
     private static readonly HashSet<int> ForbiddenPorts = [27017, 27018, 27019, 27021];
     private Process? _process;
@@ -23,8 +22,7 @@ public sealed class GateIDisposableMongoReplicaSet : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        if (!File.Exists(MongoExecutable))
-            throw new FileNotFoundException("The test-owned mongod executable is unavailable.", MongoExecutable);
+        var mongoExecutable = PpmTestMongoExecutable.Resolve();
 
         try
         {
@@ -33,7 +31,7 @@ public sealed class GateIDisposableMongoReplicaSet : IAsyncLifetime
             var dataPath = Path.Combine(_temporaryRoot, "data");
             Directory.CreateDirectory(dataPath);
 
-            var start = new ProcessStartInfo(MongoExecutable)
+            var start = new ProcessStartInfo(mongoExecutable)
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,

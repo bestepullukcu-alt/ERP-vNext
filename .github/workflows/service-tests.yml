@@ -70,7 +70,7 @@ jobs:
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
           # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
           # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
-          # its reason: the guard's NotInThisJob (HCM, MG Integration / Architecture, PPM).
+          # its reason: the guard's NotInThisJob (HCM, MG Integration / Architecture).
           - suite: bb-secrets
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
@@ -83,6 +83,12 @@ jobs:
             project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
           - suite: mg-tests
             project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj
+          # Run both complete PPM projects. Integration fixtures own their standalone / replica-set mongod from
+          # DITEN_TEST_MONGOD below; the default shallow checkout deliberately exposes historical Git dependencies.
+          - suite: ppm-tests
+            project: services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj
+          - suite: ppm-itest
+            project: services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj
           - suite: procurement-api
             project: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj
           - suite: pvg-api

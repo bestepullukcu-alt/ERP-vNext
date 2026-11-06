@@ -13,7 +13,6 @@ public sealed class PpmDisposableMongo : IAsyncLifetime
 {
     public const string DatabaseName = "diten_ppm_integration_tests";
     private const string ReplicaSetName = "ppm-test-rs";
-    private const string MongoExecutable = "/opt/homebrew/bin/mongod";
     private static readonly HashSet<int> ForbiddenPorts = [27017, 27018, 27019, 27020, 27021];
     private readonly List<Process> _processes = [];
     private readonly List<string> _temporaryRoots = [];
@@ -24,15 +23,14 @@ public sealed class PpmDisposableMongo : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        if (!File.Exists(MongoExecutable))
-            throw new FileNotFoundException("The test-owned mongod executable is unavailable.", MongoExecutable);
+        var mongoExecutable = PpmTestMongoExecutable.Resolve();
 
         try
         {
             var replicaPort = SelectAllowedPort();
             var standalonePort = SelectAllowedPort();
-            var replica = StartMongo(replicaPort, ReplicaSetName);
-            _ = StartMongo(standalonePort, null);
+            var replica = StartMongo(mongoExecutable, replicaPort, ReplicaSetName);
+            _ = StartMongo(mongoExecutable, standalonePort, null);
 
             var direct = new MongoClient(
                 $"mongodb://127.0.0.1:{replicaPort}/?directConnection=true&serverSelectionTimeoutMS=1000");
@@ -100,7 +98,7 @@ public sealed class PpmDisposableMongo : IAsyncLifetime
             throw new InvalidOperationException("Disposable PPM Mongo listener residue remains.");
     }
 
-    private Process StartMongo(int port, string? replicaSet)
+    private Process StartMongo(string mongoExecutable, int port, string? replicaSet)
     {
         var root = Path.Combine(Path.GetTempPath(), $"diten-mod0117-mongo-{port}");
         var data = Path.Combine(root, "data");
@@ -108,7 +106,7 @@ public sealed class PpmDisposableMongo : IAsyncLifetime
         _temporaryRoots.Add(root);
         _ports.Add(port);
 
-        var start = new ProcessStartInfo(MongoExecutable)
+        var start = new ProcessStartInfo(mongoExecutable)
         {
             UseShellExecute = false,
             CreateNoWindow = true,

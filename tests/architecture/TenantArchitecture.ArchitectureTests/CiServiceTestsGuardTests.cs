@@ -47,7 +47,7 @@ namespace TenantArchitecture.ArchitectureTests;
  *
  * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
- * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * the "not yet" list (HCM, MG Integration / Architecture). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
@@ -73,12 +73,7 @@ public class CiServiceTestsGuardTests
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
             "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
-            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
-        ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
-            "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
-            + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
-        ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
-            "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
+            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)"
     };
 
     /// <summary>WP-CI-SERVICE-TESTS-04: every service and Building Blocks — the whole services/ tree.</summary>
