@@ -374,15 +374,19 @@ public class CiServiceTestsGuardTests
     {
         ["actions/checkout"] = "11d5960a326750d5838078e36cf38b85af677262",       // v4.4.0
         ["actions/setup-dotnet"] = "67a3573c9a986a3f9c594539f4ab511d57bb3ce9",   // v4.3.1
-        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02" // v4.6.2
+        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02", // v4.6.2
+        // JS-CI-01 (owner 2026-11-05): web-js-tests.yml's Node — measured `git ls-remote …/actions/setup-node refs/tags/v4.4.0`.
+        ["actions/setup-node"] = "49933ea5288caeca8642d1e84afbd3f7d6820020"       // v4.4.0
     };
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
     // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
     // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
     // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
+    // JS-CI-01 (owner 'Evet, başla' 2026-11-05): web-js-tests.yml runs the front end's Vitest tests (not required at first).
     private static readonly string[] NamedWorkflows =
-        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml"];
+        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml",
+         "web-js-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -448,6 +452,8 @@ public class CiServiceTestsGuardTests
         ["approvals-append-only.yml"] = [],
         ["phase1-gates.yml"] = [],
         ["ui-compliance.yml"] = ["always()"],
+        // JS-CI-01: the report upload only — the test step has none.
+        ["web-js-tests.yml"] = ["always()"],
         ["service-tests.yml"] =
         [
             "matrix.suite == 'mdm-app'",
@@ -479,6 +485,7 @@ public class CiServiceTestsGuardTests
         ["approvals-append-only.yml"] = 0,
         ["phase1-gates.yml"] = 0,
         ["ui-compliance.yml"] = 0,
+        ["web-js-tests.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its

@@ -1,0 +1,50 @@
+name: web-js-tests
+
+# JS-CI-01 (owner 'Evet, başla' 2026-11-05): the front end's own JavaScript tests (Vitest, frontend/Diten.Web/tests,
+# 317 files) ran in no workflow at all — a broken one was seen by nobody. This job runs them on every pull request and on
+# main. Measured before it existed (2026-11-05, ad1d06222, local): 301 of 317 files green, 32 of 5 415 tests red in 16
+# files, each owned by a module team. So it starts as a NOT required check: it shows the reds, it stops no merge; the
+# owner adds it to the required checks once main is green. Same rule as every workflow here — read-only token, no
+# secret, actions pinned to a COMMIT SHA, nothing that turns a red test green. The JUnit report is kept as an artifact
+# (scripts/ac_coverage.py report reads it).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  web-js-tests:
+    name: web-js-tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/Diten.Web/package-lock.json
+
+      - name: Install
+        working-directory: frontend/Diten.Web
+        run: npm ci --no-audit --no-fund
+
+      - name: Test
+        working-directory: frontend/Diten.Web
+        run: |
+          mkdir -p "$RUNNER_TEMP/test-results"
+          npx vitest run --reporter=default --reporter=junit --outputFile="$RUNNER_TEMP/test-results/vitest.xml"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-web-js
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn
