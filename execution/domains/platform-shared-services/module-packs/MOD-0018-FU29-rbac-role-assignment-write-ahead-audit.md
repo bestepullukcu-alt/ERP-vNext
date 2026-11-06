@@ -25,7 +25,7 @@ parent: MOD-0018
 > sırasıyla yazılır.
 >
 > **Onay satırının ön koşulları (yeniden ölçüm 2026-11-06 öğleden sonra; `origin/main` = `1fc896e33`; kule dalı `chore/ct/auth-ct-01`,
-> CT'nin son commit'i `241a49e4a`, 2026-11-06 12:06):**
+> CT'nin son commit'i `13abd4f30`):**
 > (1) Sahip karar kaydı 01 main'de: **kapandı**. Kayıt `c1288400a` ile yazıldı; PR #375 `68dcf9fa5` ile birleşti (2026-11-05).
 > `git diff origin/main -- <kayıt 01>` boş döndü.
 > (2) FU27 DL-5 temeli: **kapandı, (i2)**. FU27'nin onaylı sürümü yok: `origin/main` üzerindeki `execution/approvals/approvals.tsv`
@@ -34,13 +34,13 @@ parent: MOD-0018
 > Dependencies).
 > (3) Kayıt satırı `MOD-0018-FU29`: **açık, CT'nin işi**. Satır kule dalında commit'lidir (`25a03bebd`,
 > `module-id-registry.md:92`); `origin/main` (`1fc896e33`) üzerinde `grep -c` → 0. Main'e girmesi onay satırından önce gerekir.
-> (4) Karar kayıtları 02, 03 ve 04 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md` @ `25a03bebd`, `-03.md` @
-> `11fa9b94c`, `-04.md` @ `241a49e4a`): kule dalında commit'li, `origin/main` (`1fc896e33`) üzerinde yok; **main'e girmeleri onay
-> satırından önce gerekir (CT'nin işi)**. Kayıt 03 paketi `25a03bebd` sürümüne (sha256 `4fbe977c…`), kayıt 04 `af3f50cb1` sürümüne
+> (4) Karar kayıtları 02, 03, 04 ve 05 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md` @ `25a03bebd`, `-03.md` @
+> `11fa9b94c`, `-04.md` @ `241a49e4a`, `-05.md` kule dalında commit'siz): `origin/main` (`1fc896e33`) üzerinde yok; **main'e girmeleri onay
+> satırından önce gerekir (CT'nin işi)**. Kayıt 05 paketi `13abd4f30` sürümüne bağlar (sha256 `7c25668f…`). Kayıt 03 paketi `25a03bebd` sürümüne (sha256 `4fbe977c…`), kayıt 04 `af3f50cb1` sürümüne
 > bağlar (sha256 `b1f4a4b2…`; `git show af3f50cb1:<paket> | shasum -a 256` → `b1f4a4b27b20cb2b75dc0a711e6db0557a76743a0727feab07979d600127d197`,
 > ölçüldü 2026-11-06).
-> (5) Yeni seçimler S-1…S-5: **kapandı** (sahip 2026-11-06, "Hepsini kabul et"; karar kaydı 03, karar 9). S-6 ve S-7: **kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11)**. Bu sürümde
-> doğan S-8 ve S-9: **açık**; sahip cevabı karar kaydına (CT) geçmeden onay satırı yazılmaz.
+> (5) Yeni seçimler S-1…S-5: **kapandı** (sahip 2026-11-06, "Hepsini kabul et"; karar kaydı 03, karar 9). S-6 ve S-7: **kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11)**. S-8 ve S-9:
+> **kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 05, karar 13)**.
 > (6) Bu sürümün bağımsız incelemesi kod dosyalı ZIP'le geçer ve `execution/approvals/reviews.tsv` satırı yazılır.
 >
 > **Dağıtım ön koşulu (S2S anahtarı):** Geçmiş uçları meta-denetim teslim teyidi olmadan veri döndürmez (AC-18). Teyit için Auth'un
@@ -67,8 +67,9 @@ parent: MOD-0018
 > **Karar kayıtları:** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-01.md` (main, PR #375; karar 1-3 kapsam ve
 > önce-yaz, karar 3 Açık kararlar (e)), `…/mod-0018-fu29-owner-decisions-02.md` (kule dalı `25a03bebd`; karar 7 "onayla, hedef
 > 11-20", karar 8 "Evet, düzelt"), `…/mod-0018-fu29-owner-decisions-03.md` (kule dalı `11fa9b94c`; karar 9 "Hepsini kabul et",
-> S-1…S-5) ve `…/mod-0018-fu29-owner-decisions-04.md` (kule dalı `241a49e4a`; karar 10 "Evet, düzelttir", karar 11 "İkisini kabul et",
-> S-6 ve S-7). 02, 03 ve 04 main'de değildir (başlık ön koşul 4). "Karar n", kaydın `#` sütunudur, dosya satırı değildir. Kayıtları CT yazar; bu paket yalnız onlara
+> S-1…S-5), `…/mod-0018-fu29-owner-decisions-04.md` (kule dalı `241a49e4a`; karar 10 "Evet, düzelttir", karar 11 "İkisini kabul et",
+> S-6 ve S-7) ve `…/mod-0018-fu29-owner-decisions-05.md` (commit'siz, CT commit'ler; karar 12 "Evet, son tur", karar 13 "İkisini kabul
+> et", S-8 ve S-9). 02, 03, 04 ve 05 main'de değildir (başlık ön koşul 4). "Karar n", kaydın `#` sütunudur, dosya satırı değildir. Kayıtları CT yazar; bu paket yalnız onlara
 > atıf verir. Önceki ölçüm (2026-11-01): Karar o tarihte depoda yoktu.
 > U-5 ve Açık kararlar (l) bu kayıtla kapandı.
 >
@@ -511,7 +512,7 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
 - `.antigravity/**` (sahip onayı ister). `audit-trail-standard.md` §4.4'teki eski cümle bu pakette düzeltilmez; bkz. Implementation Notes.
 - `gateway/Diten.ApiGateway/**/ocelot.json` (yalnız `integration-agent`; bu pakette değişiklik gerekmiyor).
 - `services/Diten.Platform/**`, `services/Diten.MdmService/**` ve öteki domain servisleri.
-- `frontend/Diten.Web/Views/Platform/AuditLog/**` ve `AuditLogIndex.*.resx` (Platform ekranı etiketleri; Entity Fields "neden" maddesi). Tek istisna S-9'dur (sahip kararı bekliyor): kabul edilirse `AuditLogIndex.{en,tr}.resx` ve `_IndexL10n.cshtml`
+- `frontend/Diten.Web/Views/Platform/AuditLog/**` ve `AuditLogIndex.*.resx` (Platform ekranı etiketleri; Entity Fields "neden" maddesi). Tek istisna S-9'dur (kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 05, karar 13)): `AuditLogIndex.{en,tr}.resx` ve `_IndexL10n.cshtml`
   FU29 DL-2'de Platform sahibinin yazılı izniyle ve yalnız ekleme olarak değişir.
 - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IAuthAuditService.cs` ve
   `…/Persistence/Repositories/AuthAuditService.cs`. FU27 D98 "değişmez" diyor (ct-06 §5.3). Açık kararlar (c) (c-i) ile kapandı:
@@ -544,7 +545,7 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
 | FU-0022-AUD-02 (e-imza önce-yaz) | Açık (`MOD-0022-e-signature-service.md:1842`) | Bu paketin `IUserAuditRecorder.RecordAttemptAsync` üyesini kullanırsa yol `c` kredisi **otomatik gelmez**: çağıran sabit listesi (AC-34) kırmızıya döner. Kredi için kendi iz satırı ya da CT defter kararı ve bu paketin revizyonu gerekir (Follow-up Items) |
 | MOD-0021 / Platform merkezi günlük | Değişmez | İletim bugünkü gibi en iyi çabayla ve sonra. Platform dosyası değişmez |
 | Kayıt satırı | `origin/main`'de `MOD-0018-FU29` satırı yok (`grep -c` → 0, 2026-11-06, `6be9bc3d6`). Kule dalında commit'li (`25a03bebd`, `module-id-registry.md:92`) | CT'nin işi; onay satırından önce main'de (başlık ön koşul 3) |
-| Karar kayıtları 02, 03 ve 04 | Kule dalında commit'li (`25a03bebd`, `11fa9b94c`, `241a49e4a`), `origin/main` (`1fc896e33`) üzerinde yok | CT'nin işi; onay satırından önce main'de (başlık ön koşul 4) |
+| Karar kayıtları 02, 03, 04 ve 05 | 02–04 kule dalında commit'li (`25a03bebd`, `11fa9b94c`, `241a49e4a`), 05 commit'siz; `origin/main` (`1fc896e33`) üzerinde yok | CT'nin işi; onay satırından önce main'de (başlık ön koşul 4) |
 | S2S anahtarı (`PlatformService:InternalApiKey`) | Temel `appsettings.json:68` boş; `appsettings.Development.json:64` dolu | DL-2 / DL-3 dağıtım ön koşulu (başlık "Dağıtım ön koşulu") |
 | Onay kapısı (CT-APR-01) | Onay satırı yok | DL-1 dağıtımından önce CT, onay satırı yokken `prompt_gate.py check` / `pack_approval.py check`'in dağıtımı reddettiğini ölçer ve kaydeder (Ready-for-dev Checklist). Künyeye `approval_status` eklenmez |
 
@@ -1302,12 +1303,13 @@ onay satırı yazılabilir, ama o dilim ilerlemez.
   S-1…S-5 "Hepsini kabul et"). Ölçüm 2026-11-06: kule dalında `11fa9b94c`, main'de yok
 - [ ] **Sahip kararı kaydı 04 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-04.md` main'de (karar 11:
   S-6 ve S-7 "İkisini kabul et"; S-3'ün 2026-11-06 daraltması dahil). Ölçüm 2026-11-06: kule dalında `241a49e4a`, main'de yok
+- [ ] **Sahip kararı kaydı 05 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-05.md` main'de (karar 13:
+  S-8 ve S-9 "İkisini kabul et"). Ölçüm 2026-11-06: commit'siz, main'de yok
 - [x] **FU27 DL-5 temeli:** Açık kararlar (i) (i2) ile kapandı. Alanları ve dizini FU29 DL-1 ekler; FU27 metni Treasury CT'ce revize
   edilir (Dependencies)
 - [x] Açık kararlar (a)–(p) kapandı (sahip 2026-11-05, "onayla"; karar kaydı 02, karar 7)
 - [x] **Seçimler S-1…S-5** sahibe gösterildi ve kabul edildi (2026-11-06, karar kaydı 03, karar 9)
-- [ ] **Yeni seçimler S-8 ve S-9** (2026-11-06 ikinci liste) sahibe gösterildi, cevaplandı ve karar kaydına (CT) geçti. Cevaplanmadan
-  onay satırı yazılmaz
+- [x] **Yeni seçimler S-8 ve S-9** (2026-11-06 ikinci liste) sahibe gösterildi ve kabul edildi (2026-11-06, karar kaydı 05, karar 13)
 - [x] **Yeni seçimler S-6 ve S-7** (Sahip kararı gereken yeni seçimler, 2026-11-06 listesi) sahibe gösterildi ve kabul edildi
   (2026-11-06, karar kaydı 04, karar 11)
 - [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) **kod dosyalı ZIP'le** yapıldı (ZIP `--expand` ile kurulur) ve
@@ -1486,7 +1488,7 @@ Checklist). Son sütun yazarın okumasını söyler; yazar okuması bağımsız 
 
 - Ayrı iş, MOD-0018 sahibi kararı: `UserRoleRepository.RevokeAsync` ve `RolePermissionRepository.RevokeAsync` kaydı kalıcı siliyor;
   `RolePermissionRepository.RevokeAsync` silmeden önce bütün kiracıların hak satırlarını belleğe okuyor (inceleme 04, F-18; inceleme 05, F-10). Önerilen yol ve gerileme değerlendirmesi
-  S-8'dedir (sahip kararı bekliyor).
+  S-8'dedir (kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 05, karar 13)).
 
 - FU-0022-AUD-02: e-imza komutları aynı `IUserAuditRecorder.RecordAttemptAsync` yoluna geçebilir (MOD-0022 sahibi; ayrı iş). Geçerse yol
   `c` kredisi otomatik gelmez. AC-34'teki çağıran listesi kırmızıya döner. Kendi iz satırı ya da CT defter kararı ve bu paketin
@@ -1583,13 +1585,14 @@ onay "dilim tablosu yok" diye reddedilir (`:414-415`).
 | 2026-11-06 11:35 | İnceleme 04 bulguları düzeltildi | `af3f50cb1` |
 | 2026-11-06 12:06 | S-6, S-7 kabul (karar 11, kayıt 04) | `241a49e4a` |
 | 2026-11-06 | Bağımsız inceleme 05 KOŞULLU (1 engel: dilim tablosu) | `docs/records/reviews/MOD-0018-FU29/2026-11-06-241a49e4a.md` |
-| 2026-11-06 | Bu revizyon: inceleme 05 bulguları (sahip "Evet, son tur"); S-8, S-9 sahibe gösterilir | commit'siz (CT commit'ler) |
+| 2026-11-06 | Bu revizyon: inceleme 05 bulguları (sahip "Evet, son tur"); S-8, S-9 sahibe gösterilir | `13abd4f30` |
+| 2026-11-06 | S-8, S-9 kabul (karar 13, kayıt 05) | `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-05.md` |
 
 **Kalan plan:**
 
 | Tarih | Adım | Sahibi | Kayarsa |
 |---|---|---|---|
-| 2026-11-09 (Pzt) | Bağımsız inceleme 06 (kod dosyalı ZIP); S-8 ve S-9 cevabı karar kaydında; kayıt satırı ve karar kayıtları 02–04 main'de; engel ya da yüksek bulgu yoksa CT-APR-01 onay satırı. XMC-001 isteği Platform sahibine gider (FU27 ile ortak) | CT · Auth + onaylayıcı | Her gün DL-3 tamponundan düşer |
+| 2026-11-09 (Pzt) | Bağımsız inceleme 06 (kod dosyalı ZIP); kayıt satırı ve karar kayıtları 02–05 main'de; engel ya da yüksek bulgu yoksa CT-APR-01 onay satırı. XMC-001 isteği Platform sahibine gider (FU27 ile ortak) | CT · Auth + onaylayıcı | Her gün DL-3 tamponundan düşer |
 | 2026-11-10 (Salı) | DL-1 başlar | yazan + CT | — |
 | 2026-11-11 (Çar) | **S-5 tarih kapısı:** FU27 DL-5 ileticisi (`TryForwardAsync`, `IsMetaAudit`) main'de mi? Değilse FU29 DL-2'ye taşınır | CT · Auth + Treasury CT | Taşıma DL-2'ye bir gün ekler |
 | 2026-11-12 (Per) | DL-1 birleşir | yazan + CT | DL-2 bir gün kayar |
@@ -1602,7 +1605,7 @@ onay "dilim tablosu yok" diye reddedilir (`:414-415`).
 **Durum (2026-11-05):** Sahip, yazılı CT önerilerinin hepsini kabul etti ("onayla, hedef 11-20"; karar kaydı 02, karar 7). Aşağıdaki
 her satır **kapandı**. Gövde ve AC'ler bu kararlarla sabittir. Seçilmeyen bir dal sonradan seçilirse **paket revizyonu + yeni onay
 satırı** gerekir. Sonradan doğan seçimler ayrı listededir ("Sahip kararı gereken yeni seçimler"): S-1…S-5 kabul edildi (karar kaydı
-03, karar 9); S-6 ve S-7 kabul edildi (karar kaydı 04, karar 11); S-8 ve S-9 sahip kararı bekler ve kabul edilmiş sayılmaz.
+03, karar 9); S-6 ve S-7 kabul edildi (karar kaydı 04, karar 11); S-8 ve S-9 kabul edildi (karar kaydı 05, karar 13).
 
 | # | Konu | Seçenekler | Karar | Sahip | Durum / seçilmeyen dallar |
 |---|---|---|---|---|---|
@@ -1617,7 +1620,7 @@ satırı** gerekir. Sonradan doğan seçimler ayrı listededir ("Sahip kararı g
 | (i) | `AuthAuditLog` alanları ve dizin; FU27 DL-5 ile sıra | (i1) FU27 DL-5 önce; FU29 FU27'nin onaylı sürümüne bağlanır · **(i2)** alanları ve dizini FU29 DL-1 ekler, FU27 DL-5 tüketir (FU27 metni revize edilir) · ortak okuyucu | **(i1)**, FU27 onaylı sürümü onay satırına kadar yoksa **(i2)** | Treasury CT + MOD-0018 sahibi | **Kapandı: (i2)** (sahip 2026-11-05, onayla; karar kaydı 02 notu: FU27'nin onaylı sürümü yok). Gövde: Entity Fields, Repo Scope DL-1, Protected Paths, Dependencies. FU27 metnini Treasury CT revize eder; bu paket FU27 dosyasına dokunmaz. Ölçüm 2026-11-06: `approvals.tsv`'de FU27 satırı yok (başlık ön koşul 2). (i1) ya da ortak okuyucu seçilirse paket revizyonu + yeni onay satırı |
 | (j) | Eylemi yapanın o andaki adı (§3 alan 2) | Yerel satıra maskeli ad · **okumada güncel ad** · bilinen boşluk | **Okumada güncel ad + bilinen boşluk kaydı** | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** Platform hesabı için gösterim kuralı yeni seçimdir: S-2. Yerel satıra ad yazılması seçilirse paket revizyonu + yeni onay satırı |
 | (k) | Silinmiş rolün geçmişi ve giriş yolu | Uç: **bulur** · bulmaz. Giriş: **(k-1)** "Silinmiş roller" süzgeci, salt-okunur liste · (k-2) kişi-rol geçmişinden bağlantı · (k-3) giriş yok | **Bulur + (k-1).** Bulmazsa `role_deleted` satırı kendi ekranında okunamaz. (k-3) kabul edilemez | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** Uç tanımı: Owned Objects, Repo Scope DL-2, Validation Rules, Authorization Convention, AC-33; ekran AC-35. (k-2) / (k-3) ya da "bulmaz" seçilirse paket revizyonu + yeni onay satırı |
-| (l) | Sahip kararının ve kimliğin kaydı | Karar kaydı 01 + kayıt satırı | Kayıt onay satırından önce main'de | MOD-0018 sahibi + CT | **Kapandı:** karar kaydı 01 main'de (PR #375 birleşti, `68dcf9fa5`, 2026-11-05). Kayıt satırı ve karar kayıtları 02, 03, 04 kule dalında commit'li; main'e girmeleri CT'nin işidir (başlık ön koşul 3, 4) |
+| (l) | Sahip kararının ve kimliğin kaydı | Karar kaydı 01 + kayıt satırı | Kayıt onay satırından önce main'de | MOD-0018 sahibi + CT | **Kapandı:** karar kaydı 01 main'de (PR #375 birleşti, `68dcf9fa5`, 2026-11-05). Kayıt satırı ve karar kayıtları 02, 03, 04 kule dalında commit'li, 05 commit'siz; main'e girmeleri CT'nin işidir (başlık ön koşul 3, 4) |
 | (m) | Değişiklik uygulandı ama sonrası düştü ya da sonuç belirsiz: Platform'a iletim | **(m1)** bilinen ad + `Failed` · (m2) iletilmez · (m3) `Succeeded` · **(m4)** bilinen ad + `Unconfirmed = 4` | **Uygulandı + sonrası düştü → (m1); belirsiz (`null`) → (m4)**, Platform kabulü ölçülürse; 4 reddedilirse (m2). (m1) için `RoleAuditEvents`'e `int OutcomeFailed` eklenir (Repo Scope DL-2) | MOD-0018 sahibi + Control Tower | **Kapandı (sahip 2026-11-05, onayla)** (m1) için. Belirsiz dal için ölçüm iki şey buldu: Platform 4'ü reddetmiyor (`AuditService.cs:247-250`), ama 4'ün belgesi "veri işlendi" diyor (`AuditEnums.cs:63-67`; F-9). Bu yüzden `null` iki sınıfa ayrıldı (F-6) → seçim S-3 (kabul edildi, karar kaydı 03); çok belgeli yazım için daraltma S-7 (kabul edildi, karar kaydı 04, karar 11). (m3) seçilirse paket revizyonu + yeni onay satırı. S-3 reddedilir de bütün belirsiz dala tek başına (m2) ya da (m4) uygulanırsa yine paket revizyonu + yeni onay satırı |
 | (n) | DL-1'de erken K2 çıkışı | **Çıkış DL-3'te** · DL-1'de çıkış | **DL-3** | Control Tower | **Kapandı (sahip 2026-11-05, onayla).** DL-1'de çıkış seçilirse paket revizyonu + yeni onay satırı + `CT-DECISIONS.md` satırı |
 | (o) | Belirsiz `stage = mutation` hatası | **(o1)** `null` yaz, "Sonuçlanmadı" · (o2) depoyu yeniden oku | **(o1).** Yeniden okuma aynı kesintiye düşer; `null` yanlış bir "uygulanmadı" demez | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** (o2) seçilirse paket revizyonu + yeni onay satırı |
@@ -1663,11 +1666,11 @@ Seçimler dördüncü inceleme turunun bulgularını kapatırken doğdu. Gövded
 | S-6 | F-5 | Geçmiş okuma satırının Platform `Category` / `Operation` değerleri | `Category = IdentityAccess` (2), `Operation = Execute` (15), `EntityType = Role` / `User`, `Outcome = Succeeded`, `IsMetaAudit = true` | `Category = DataPrivacy` (10): Platform'un kendi denetim okuması bunu kullanır (`GetAuditEventListHandler.cs:38`, `GetAuditEventByIdHandler.cs:53`) | `AuditOperation`'da okuma değeri yok (`AuditEnums.cs:32-54`); `Execute` Platform emsalidir. Kategori Auth ileticisinin sabitidir (`PlatformAuditForwarder.cs:28`, `:88`); `DataPrivacy` için iletici kategoriyi olaydan almalıdır, yani `PlatformAuditEvent`'e bir alan daha ve ileticide bir dal daha gerekir. Güvenli taraf: iki değer de Platform doğrulamasından geçer (`AuditService.cs:227-245`); daha küçük değişiklik IdentityAccess'tir | Entity Fields "Okuma satırının Platform değerleri"; AC-18; Dependencies (XMC-001); Ready-for-dev Checklist B |
 | S-7 | F-12 | Çok belgeli değişiklik yazımında "kesin hata" sınıfı | Kesin hata → `false` yalnız tek belgeli yazımda. `RevokeRole`'un `DeleteManyAsync`'inde (`UserRoleRepository.cs:64-69`) her istisna `null` + `uncertainty = transport` ("sonuç bilinmiyor"); yeni değer yok | Yeni `uncertainty = partial` değeri; ekran, iletim kuralı ve sınıflandırıcıya yeni bir dal | Çok belgeli silmede yazma hatası kısmi silmeyle gelebilir; "uygulanmadı" demek yetkinin gerçekte kalktığını gizleyebilir. S-3'ün ilkesi "bilinmeyen hiçbir zaman `false` sayılmaz"dır; bu seçenek onu daraltır, yeni değer açmaz. Ekran "Sonuçlanmadı" der, Platform'a gitmez (S-3 dal 3) | Entity Fields; Owned Objects (sınıflandırıcı); Repo Scope DL-1 (`RbacMutationWrite`); AC-5, AC-14 |
 
-### 2026-11-06 — sahip kararı bekleyen yeni seçimler (S-8, S-9)
+### 2026-11-06 — yeni seçimler (S-8, S-9)
 
-Beşinci inceleme turunun bulgularını kapatırken iki yeni seçim doğdu. Gövdeye yazılı önerilere en yakın ve güvenli tarafta kalan **tek**
-seçenek yazıldı. **Bunlar kabul edilmiş sayılmaz.** Sahip cevabı karar kaydına (CT) geçmeden onay satırı yazılmaz (Ready-for-dev
-Checklist A).
+**Durum (2026-11-06): kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 05, karar 13).** Sahip iki seçimi `13abd4f30` sürümünde yazıldıkları gibi
+kabul etti. Başka bir seçenek sonradan seçilirse paket revizyonu + yeni onay satırı gerekir. Seçimler beşinci inceleme turunun
+bulgularını kapatırken doğdu; gövdede her biri için tek seçenek yazılıydı.
 
 | # | Bulgu | Seçim | Yazılan seçenek | Seçilmeyen seçenek | Gerekçe | Gövdedeki yeri |
 |---|---|---|---|---|---|---|
