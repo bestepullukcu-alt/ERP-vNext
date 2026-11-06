@@ -888,7 +888,8 @@ MOD-0126 DL-1") passed CT-APR-02 as `UYGUN` with 0 open findings
 (`execution/approvals/approvals.tsv`, rows for this pack at hash `91248a47…` dated 2026-10-26 and 2026-10-30, note
 `whole_pack=TRM-14 — yalnız §22`). **Revision 2026-11-06** changes only the delivery condition (§22.5 Delivery, §22.4
 AC-T4, §22.6a and the `Teslim dilimleri` section) after the MDM domain owner's decision of 2026-11-06 (Ali, MDM Control Tower
-chat, option "Ana veri önce, ayrı"; no decision-record file yet). This revision changes the pack hash, so the earlier
+chat, option "Ana veri önce, ayrı"; re-applied 2026-11-06 with option "Yeniden uygula";
+`docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`). This revision changes the pack hash, so the earlier
 review and approval do **not** carry over: this version has **no approval** and authorizes no code until it passes a
 new CT-APR-02 (independent review) and a new CT-APR-01 approval row bound to its hash. The amendment was authored by
 the Treasury Intake Control Tower under owner decisions D9 and D10/2
@@ -973,12 +974,15 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
   Consumer-test follow-ups), not an MDM WP gate.
 - Treasury consumers start using `approvalStatus` with their own DL-1 (MOD-0126 DL-1 first); the classification rules
   below are unchanged by this revision.
-- **Open (not decided by this revision):** decision D9 condition 2
-  (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`, D9) says code is written only once this pack
-  **and the related Treasury pack** are `ready-for-dev`, and D9 / D10/2 in the same record say "code together with
-  MOD-0126". The 2026-11-06 owner decision removes the wait for MOD-0126 DL-1; whether it also waives the D9/2
-  precondition that the MOD-0126 pack be `ready-for-dev` is not recorded and must be answered by the owner before the
-  MDM WP is dispatched.
+- **D9 condition 2 is met, not waived:** D9 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`)
+  allows code only once this pack and the related Treasury pack are `ready-for-dev`; MOD-0126 is `ready-for-dev` and
+  approved on main since 2026-11-06 (`execution/approvals/approvals.tsv`, approver `bestepullukcu-alt`; Beste's answer of
+  2026-11-06 says the same).
+- **Why "together" no longer holds:** Treasury's later decisions make TRM-14 a **DL-1 slice gate** of four Treasury
+  packs, MOD-0126 among them (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md` D82/2;
+  `treasury-intake-owner-decisions-06.md` D135/2): their DL-1 waits for TRM-14, so the MDM change cannot land inside
+  MOD-0126 DL-1. Owner decision record:
+  `docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`.
 - Treasury side (not this pack): `ILegalEntityEligibilityPort` classifies responses by the contract §2 table — invalid or
   contradictory 200 (missing / null / empty / unknown `approvalStatus`, missing or different `legalEntityId`,
   `referenceable = false`, `lifecycleState ≠ ACTIVE`) → 503; defined but not approved, or 404 → 422; never approved by
