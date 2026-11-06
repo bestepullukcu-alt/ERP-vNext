@@ -847,6 +847,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Conjunto de contenidos</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Elegibilidad</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Casos</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Declaraciones de consumo</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Panel de control</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Modificaciones de fecha</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Simulacros</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Controles de eficacia</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Evidencias</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Excepciones</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Estado de lotes</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Políticas</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Solicitudes de cuarentena</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Segregaciones</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Rastreo</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Roles de ubicación</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Paquetes</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Productos</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaña</value></data>

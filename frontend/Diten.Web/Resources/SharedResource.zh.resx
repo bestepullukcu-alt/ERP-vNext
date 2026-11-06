@@ -846,6 +846,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>内容集</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>资格</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>访问频率策略</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>案例</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>消耗申报</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>仪表板</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>日期覆盖</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>演练</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>有效性检查</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>证据</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>例外</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>批次状态</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>通知</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>策略</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>隔离请求</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>物理隔离</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>追溯</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>库位角色</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>包裹</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>营销活动</value></data>

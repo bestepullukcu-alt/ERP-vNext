@@ -67,6 +67,8 @@ const MAIN_SYNC_SHOW_INPUT = {
   "ESignature/esign-pages.js": { inputs: 1, typed: 1, owner: ESIGN, why: MAIN_SYNC_2_WHY },
   "Quarantine/blocked.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Quarantine/details.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  // MVP-1 ortak arayüz kuralları — the manual hold (FU-0175-UI-MANUALHOLD-01) asks for its reason; it names its type.
+  "Quarantine/manual-hold.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Quarantine/retest.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Traceability/LotMigration/index.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Traceability/Lots/status.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY }

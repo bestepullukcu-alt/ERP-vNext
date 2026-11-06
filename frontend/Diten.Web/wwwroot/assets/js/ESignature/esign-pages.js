@@ -62,20 +62,24 @@
 
     /**
      * The reasoned confirm: red (type danger) unless told otherwise, a textarea of 10–1000 characters, the reason or null.
-     * `lines` (optional) are shown as a list under the question (the policy save's change lines).
+     * `lines` (optional) follow the question, " · " between them (the policy save's change lines).
+     *
+     * The dialog turns `subtext` into text at the door (window.DitenText). Escaping it here as well showed the reader
+     * `&amp;`, and the `<ul><li>` list built here reached the reader as its tags — so the question and its lines go over
+     * as they are, as text (MVP-1 ortak arayüz kuralları; tests/esign-confirm-text.test.js).
      */
     function reason({ title, subtext, lines, confirmText, type, placeholder }) {
         return new Promise((resolve) => {
             if (typeof global.showConfirm !== 'function') { resolve(null); return; }
-            const list = Array.isArray(lines) && lines.length
-                ? `<ul class="text-start small mb-0 mt-2">${lines.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : '';
+            const said = [subtext].concat(Array.isArray(lines) ? lines : [])
+                .map((part) => String(part ?? '').trim()).filter(Boolean).join(' · ');
             let settled = false;
             global.showConfirm(title, (value) => {
                 settled = true;
                 resolve(String(value || '').trim());
             }, {
                 type: type || 'danger',
-                subtext: (subtext ? esc(subtext) : '') + list,
+                subtext: said,
                 confirmButtonText: confirmText,
                 cancelButtonText: t('ESign.Dialog.Cancel'),
                 showInput: true,
@@ -96,7 +100,7 @@
             let settled = false;
             global.showConfirm(title, () => { settled = true; resolve(true); }, {
                 type: type || 'info',
-                subtext: subtext ? esc(subtext) : '',
+                subtext: subtext || '',
                 confirmButtonText: confirmText,
                 cancelButtonText: t('ESign.Dialog.Cancel'),
                 onCancel: () => { if (!settled) { settled = true; resolve(false); } }
