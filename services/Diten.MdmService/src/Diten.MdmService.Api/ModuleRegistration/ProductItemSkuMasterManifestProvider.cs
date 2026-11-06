@@ -1,4 +1,5 @@
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
+using Diten.MdmService.Application.Features.ProductMaster;
 
 namespace Diten.MdmService.Api.ModuleRegistration;
 
@@ -46,6 +47,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductScopeRolloutRollback = "mdm.product-legal-entity-scope-rollout.rollback";
     private const string ProductIdentityLifecycleOperationRecover =
         "mdm.product-identity.lifecycle-operations.recover";
+    // MOD-0290-FU06 (pack §0.3, decision A): the product-master read contract ProductMasterController enforces at class
+    // level — declared as a non-UI View action, never as an ApiPermission (Auth's exact-set check for this module).
+    private const string ProductMasterRead = ProductMasterContract.ReadPermission;
 
     // MOD-0290-FU04 S5 (§23 #7): the Items page's keys (ItemsController). S2 lane merge FIX1: + the approval's withdraw key.
     private const string ItemsRead = "mdm.items.read";
@@ -79,7 +83,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
             Service: "DitenMdmService",
             // S5: + the ITEMS page and the EDIT_STOCK_BEHAVIOUR actions. S2 lane merge FIX1 (1.2.0): + ITEMS WITHDRAW_APPROVAL.
             // MOD-0290-FU05 slice 2 (1.3.0): + GLOBAL_PRODUCTS CHANGE_BRAND (mdm.global-products.update-brand).
-            ModuleVersion: "1.3.0",
+            // MOD-0290-FU06 (1.4.0): + GLOBAL_PRODUCTS READ_PRODUCT_MASTER
+            ModuleVersion: "1.4.0",
             IsTenantAssignable: true,
             SortOrder: 340,
             Pages:
@@ -112,7 +117,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                             50,
                             IsDangerous: true,
                             IsToolbarAction: false,
-                            IsRowAction: false)
+                            IsRowAction: false),
+                        new ModuleManifestAction("READ_PRODUCT_MASTER", "Read Product Master", ProductMasterRead, "View", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "FINISHED_GOODS",

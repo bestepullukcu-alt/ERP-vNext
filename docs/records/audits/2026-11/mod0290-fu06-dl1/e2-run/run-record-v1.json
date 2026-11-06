@@ -1,0 +1,33 @@
+{
+ "argv": [
+  "dotnet",
+  "test",
+  "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+  "--filter",
+  "FullyQualifiedName~ModuleRegistration|FullyQualifiedName~CompositionRootGuardTests"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e2-run/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 19937,
+   "path": "docs/records/audits/2026-11/mod0290-fu06-dl1/e2-run/stdout.txt",
+   "sha256": "62dcc1c40e310fdd5d10dcc489c975c08674b07970202182f5850ca6c062c28f"
+  }
+ ],
+ "commit": "649bc813cc431bf7007f93081dfc2d2f9d44654d",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-06T11:50:47Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/mod0290-fu06-dl1/e2-run",
+ "started_utc": "2026-11-06T11:50:26Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "182ea03da9a12171128f74278ee7f65443d50435"
+}

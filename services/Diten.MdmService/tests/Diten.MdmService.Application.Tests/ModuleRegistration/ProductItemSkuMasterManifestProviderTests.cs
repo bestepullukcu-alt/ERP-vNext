@@ -1,6 +1,7 @@
 using System.Reflection;
 using Diten.MdmService.Api.Controllers;
 using Diten.MdmService.Api.ModuleRegistration;
+using Diten.MdmService.Application.Features.ProductMaster;
 using Diten.MdmService.Infrastructure.Authorization;
 using Xunit;
 
@@ -35,7 +36,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(("mdm.items.withdraw", "RowAction", false, true),
             (withdraw.PermissionKey, withdraw.ActionType, withdraw.IsDangerous, withdraw.IsRowAction));
         // MOD-0290-FU05 slice 2: 1.2.0 → 1.3.0 (+ GLOBAL_PRODUCTS CHANGE_BRAND).
-        Assert.Equal("1.3.0", Manifest.ModuleVersion);
+        // MOD-0290-FU06: 1.3.0 → 1.4.0 (+ GLOBAL_PRODUCTS READ_PRODUCT_MASTER); still 8 pages.
+        Assert.Equal("1.4.0", Manifest.ModuleVersion);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -72,18 +74,25 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController), typeof(CompetitorProductsController) }
-            .SelectMany(controller => controller
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
+        // MOD-0290-FU06: + ProductMasterController, which enforces its one key at CLASS level — so the class attribute
+        // is read too. The other nine carry no class-level [HasPermission]: reading it leaves their sets unchanged.
+        var methodLevelOnly = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController), typeof(CompetitorProductsController) };
+        Assert.All(methodLevelOnly, controller => Assert.Empty(controller.GetCustomAttributes<HasPermissionAttribute>()));
+        var enforced = methodLevelOnly.Append(typeof(ProductMasterController))
+            .SelectMany(controller => controller.GetCustomAttributes<HasPermissionAttribute>()
+                .Concat(controller
+                    .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())))
             .Select(attribute => policyProperty?.GetValue(attribute) as string ?? string.Empty)
             .Where(policy => policy.StartsWith(prefix, StringComparison.Ordinal))
             // An any-of door (S5b items/options: "a|b|c") enforces each of its keys.
             .SelectMany(policy => policy[prefix.Length..].Split('|'))
             .ToHashSet(StringComparer.Ordinal);
 
+        // MOD-0290-FU06: API-only keys count as declared too (none in this module — pack §0.3).
         var declared = Manifest.Pages
             .SelectMany(page => page.Actions.Select(action => action.PermissionKey).Append(page.RequiredPermission))
+            .Concat((Manifest.ApiPermissions ?? []).Select(permission => permission.PermissionKey))
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(
@@ -143,11 +152,14 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.configure",
                 "mdm.product-legal-entity-scopes.end",
                 "mdm.product-legal-entity-scopes.read",
-                "mdm.product-legal-entity-scopes.replace"
+                "mdm.product-legal-entity-scopes.replace",
+                // MOD-0290-FU06: the product-master read contract (ProductMasterController, class level).
+                "mdm.product-master.read"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
         // MOD-0290-FU05 slice 2: 51 → 52 (+ mdm.global-products.update-brand).
-        Assert.Equal(52, declared.Count);
+        // MOD-0290-FU06: 52 → 53 (+ mdm.product-master.read)
+        Assert.Equal(53, declared.Count);
         Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
         Assert.All(declared, permission =>
         {
@@ -174,6 +186,33 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             .ToHashSet(StringComparer.Ordinal).SetEquals(enforced.Where(permission => !systemOnly.Contains(permission))));
     }
 
+    // MOD-0290-FU06 T1 (pack §0.3, decision A): the product-master read contract is declared as a non-UI View action
+    // on GLOBAL_PRODUCTS — never as an ApiPermission, which reaches the catalogue sync but not the entitled read set
+    // Auth's exact-set check compares with. The key is written out here, not read from the constant.
+    [Fact]
+    public void Product_master_read_is_a_non_ui_view_action_and_not_an_api_permission()
+    {
+        const string key = "mdm.product-master.read";
+        Assert.Equal(key, ProductMasterContract.ReadPermission);
+
+        var declaring = Assert.Single(Manifest.Pages.SelectMany(page => page.Actions.Select(action => (page, action))),
+            pair => pair.action.PermissionKey == key);
+        Assert.Equal("GLOBAL_PRODUCTS", declaring.page.PageCode);
+        Assert.DoesNotContain(Manifest.Pages, page => page.RequiredPermission == key);
+
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
+        var read = Assert.Single(page.Actions, action => action.ActionCode == "READ_PRODUCT_MASTER");
+        Assert.Equal(key, read.PermissionKey);
+        Assert.Equal("View", read.ActionType);
+        Assert.Equal("Read Product Master", read.DisplayName);
+        Assert.False(read.IsDangerous);
+        Assert.False(read.IsToolbarAction);
+        Assert.False(read.IsRowAction);
+        Assert.Null(read.PermissionOwnerModuleCode);
+
+        Assert.True(Manifest.ApiPermissions is null || Manifest.ApiPermissions.Count == 0);
+    }
+
     // S5 (O-12, CT decision 5): every stock-bearing level declares EDIT_STOCK_BEHAVIOUR with the key the stock door
     // enforces today (StockBehaviourPermissions) — never a new mdm.<level>.* key (Auth's exact lifecycle set).
     [Theory]
@@ -196,7 +235,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal(
-            ["ADD_NEW", "CHANGE_BRAND", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
+            // MOD-0290-FU06: + READ_PRODUCT_MASTER (the non-UI View action carrying the read contract).
+            ["ADD_NEW", "CHANGE_BRAND", "EDIT", "READ_PRODUCT_MASTER", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
             page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
         Assert.Equal(
             [
@@ -210,7 +250,9 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 // MOD-0290-FU05 slice 2: the approved product's brand change (CHANGE_BRAND).
                 "mdm.global-products.update-brand",
                 "mdm.global-products.withdraw",
-                "mdm.product-identity.lifecycle-operations.recover"
+                "mdm.product-identity.lifecycle-operations.recover",
+                // MOD-0290-FU06: READ_PRODUCT_MASTER.
+                "mdm.product-master.read"
             ],
             page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
         Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "EDIT").IsRowAction);
