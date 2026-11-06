@@ -6,12 +6,15 @@ Kule yazar (S-83); işçi DEĞİŞTİRMEZ, yalnız koşar. Tek koşu, run_record
 
     python3 scripts/run_record.py run --out docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run -- \
         python3 execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py \
-        --base-worktree <repo dışı mutlak yol>
+        --base-worktree <repo dışı mutlak yol> --out-dir docs/records/audits/2026-11/mod0290-fu06-dl1/e3-run
 
 --base-worktree   `git worktree add --detach <yol> $(git merge-base origin/main HEAD)` ile açılmış, repo DIŞINDA bir
                   worktree. Betik HEAD'ini, temizliğini ve taban koşulunu ölçer; orada yalnız MDM Api projesini derler;
                   Y6'da `git worktree remove` ile kaldırır (yalnız doğrulanmışsa).
 --mongo-port      atılabilir mongod portu (varsayılan 37291; 27017–27021 yasak).
+--out-dir         run_record'un --out dizini (aynı yol; run_record onu önceden açar). Y6'da geçici dizin silinmeden önce
+                  Auth ve Platform günlüklerinin son 200 satırı, çıktı süzgecinden geçirilerek buraya yazılır
+                  (<servis>-<sıra>.tail200.log). Verilmezse günlük kopyası yazılmaz ve bu çıktıda söylenir.
 
 Sırlar YALNIZ ortamdan okunur, argv'ye girmez, çıktıya yazılmaz (değerleri çıktıda süzülür):
     E3_JWT_SECRET               → JwtSettings__Secret (Auth, Platform, MDM, Gateway)
@@ -127,14 +130,18 @@ _SECRETS: list[str] = []
 RESULTS: list[tuple[str, bool, str]] = []
 
 
-def emit(line: str) -> None:
+def scrub(line: str) -> str:
     for secret in _SECRETS:
         if secret:
             line = line.replace(secret, "[SIR]")
     line = JWT_LIKE.sub("[JETON]", line)
     if "authorization" in line.lower():
         line = "[Authorization içeren satır yazılmadı]"
-    print(line, flush=True)
+    return line
+
+
+def emit(line: str) -> None:
+    print(scrub(line), flush=True)
 
 
 def check(step: str, ok: bool, what: str) -> bool:
@@ -254,6 +261,7 @@ class Ctx:
     shared_dbs_before: list | None = None
     shared_mongo_reachable: bool = False
     env_secrets: dict = field(default_factory=dict)
+    out_dir: Path | None = None
 
 
 def start_process(ctx: Ctx, name: str, argv: list[str], cwd: Path, env: dict) -> Owned:
@@ -782,14 +790,37 @@ def kurulum(ctx: Ctx) -> Setup:
     return Setup(platform_admin_token=token, tenant1=tenant1, tenant2=tenant2, t1=t1, t2=t2, platform_admin=admin)
 
 
-def adanmis_roller(setup: Setup) -> None:
-    """Y2a, after the entitlement sync: tenant 1 only; tenant 2 gets no dedicated role."""
+def auth_log_tail(ctx: Ctx, tenant: str, limit: int = 25) -> list[str]:
+    """The last Auth log lines about this tenant or the entitlement sync (printed only through emit's filter)."""
+    lines: list[str] = []
+    for owned in ctx.owned:
+        if owned.name == "auth" and owned.log.exists():
+            lines += [l for l in owned.log.read_text(encoding="utf-8", errors="replace").splitlines()
+                      if tenant.lower() in l.lower() or "entitlement" in l.lower() or "role name collision" in l.lower()]
+    return lines[-limit:]
+
+
+def adanmis_roller(ctx: Ctx, setup: Setup) -> None:
+    """Y2a, after the entitlement sync: tenant 1 only; tenant 2 gets no dedicated role. The roles are created by Auth's
+    Grant for this module (EntitlementPermissionSyncService.ReconcileSpecialProfilesAsync → ResolveDedicatedRolesAsync
+    createMissing: true), so they are polled for up to SYNC_WAIT_SECONDS instead of read once."""
     emit("== Y2a — adanmış üç rol (hak eşitlemesinden sonra, yalnız kiracı 1)")
     admin_token = login(setup.t1["admin"])
+    deadline = time.time() + SYNC_WAIT_SECONDS
     roles = tenant_roles(admin_token, 1)
     missing = [name for name in DEDICATED_ROLES.values() if name.lower() not in roles]
+    while missing and time.time() < deadline:
+        time.sleep(3)
+        roles = tenant_roles(admin_token, 1)
+        missing = [name for name in DEDICATED_ROLES.values() if name.lower() not in roles]
     if missing:
-        raise OwnerStop([f"kiracı 1: hak eşitlemesinden sonra adanmış rol yok: {', '.join(missing)}"])
+        emit(f"kiracı 1 rol adları ({len(roles)}): " + ", ".join(sorted(roles)))
+        emit(f"Auth günlüğü — kiracı 1 / entitlement satırlarının sonu (süzülmüş):")
+        for line in auth_log_tail(ctx, setup.tenant1):
+            emit(f"  auth| {line}")
+        raise OwnerStop([f"kiracı 1: hak eşitlemesinden sonra {SYNC_WAIT_SECONDS} sn içinde adanmış rol yok: "
+                         f"{', '.join(missing)}"])
+    emit("kiracı 1: adanmış üç rol var (" + ", ".join(DEDICATED_ROLES.values()) + ")")
     for label, role in DEDICATED_ROLES.items():
         assign_role(admin_token, 1, label, setup.t1[label], roles, role)
     del admin_token
@@ -848,12 +879,19 @@ def add_entitlement(ctx: Ctx, token: str, tenant: str, step: str) -> dict:
     return entitlement_row(token, tenant)
 
 
+def sync_count(ctx: Ctx, tenant: str) -> int:
+    """entitlement.sync.applied lines for this tenant AND this module. Tenant creation also writes one for the tenant
+    (TenantSubscriptionChangedV1 → Reconcile, no ModuleCode: RegisterTenantCommandHandler → TenantSubscriptionTransaction-
+    Writer.WriteIntentsAsync); counting by tenant alone took that line for the module's Grant (E3 run 2)."""
+    return log_count(ctx.owned, "auth", SYNC_APPLIED, tenant, MODULE)
+
+
 def wait_sync_count(ctx: Ctx, tenant: str, above: int) -> int:
     deadline = time.time() + SYNC_WAIT_SECONDS
-    count = log_count(ctx.owned, "auth", SYNC_APPLIED, tenant)
+    count = sync_count(ctx, tenant)
     while time.time() < deadline and count <= above:
         time.sleep(3)
-        count = log_count(ctx.owned, "auth", SYNC_APPLIED, tenant)
+        count = sync_count(ctx, tenant)
     return count
 
 
@@ -873,9 +911,10 @@ def y_steps(ctx: Ctx) -> None:
     setup = kurulum(ctx)
     row1 = add_entitlement(ctx, platform_token(setup), setup.tenant1, "Y2a")
     base_count = wait_sync_count(ctx, setup.tenant1, 0)
-    if not check("Y2a", base_count > 0, f"{SYNC_APPLIED} bu kiracı için görüldü ({SYNC_WAIT_SECONDS} sn); sayaç tabanı {base_count}"):
+    if not check("Y2a", base_count > 0, f"{SYNC_APPLIED} bu kiracı ve {MODULE} için görüldü ({SYNC_WAIT_SECONDS} sn); "
+                                        f"sayaç tabanı {base_count}"):
         raise Stop(1, "E3 KIRMIZI — Y2a eşitleme görülmedi")
-    adanmis_roller(setup)
+    adanmis_roller(ctx, setup)
     enforced = own_query(ctx, DB_MDM, "db.mdm_product_legal_entity_scope_rollout_states.countDocuments({Mode:{$in:[2,'Enforced']}})")
     emit(f"yayılım modu: Enforced kayıt sayısı {enforced}")
     if enforced:
@@ -906,7 +945,7 @@ def y_steps(ctx: Ctx) -> None:
     check("Y3b", status == 200 and KEY in keys, f"Platform hak listesi (iç uç, durum {status}) modülde anahtarı listeler")
     for role in ("admin", "viewer"):
         measure_user("Y3b", f"kiracı1 {role}", setup.t1[role], key_expected=False, items_expected=None)
-    count = log_count(ctx.owned, "auth", SYNC_APPLIED, setup.tenant1)
+    count = sync_count(ctx, setup.tenant1)
     check("Y3b", count == base_count, f"{SYNC_APPLIED} sayacı {count} = Y2a tabanı {base_count}")
 
     emit("== Y4a — tetikleyici (PATCH uzlaştırma)")
@@ -934,7 +973,7 @@ def y_steps(ctx: Ctx) -> None:
     emit("== Y5 — yeni kiracı, yeni hak")
     for role in ("admin", "viewer"):  # F-9: before the POST the tenant has no product module entitlement
         measure_user("Y5", f"F-9 kiracı2 {role} (hak yok)", setup.t2[role], key_expected=False, items_expected=False)
-    t2_before = log_count(ctx.owned, "auth", SYNC_APPLIED, setup.tenant2)
+    t2_before = sync_count(ctx, setup.tenant2)
     add_entitlement(ctx, platform_token(setup), setup.tenant2, "Y5")  # fresh 15-minute platform token
     t2_after = wait_sync_count(ctx, setup.tenant2, t2_before)
     check("Y5", t2_after > t2_before, f"kiracı2 {SYNC_APPLIED} ({SYNC_WAIT_SECONDS} sn): {t2_before} → {t2_after}")
@@ -943,6 +982,20 @@ def y_steps(ctx: Ctx) -> None:
 
 
 # ── Y6: always ─────────────────────────────────────────────────────────────────────────────────────────────────────
+def save_log_tails(ctx: Ctx, lines: int = 200) -> None:
+    """Before the temp directory goes: the last lines of each Auth / Platform log, through the same filter as stdout."""
+    if ctx.out_dir is None:
+        emit("günlük kopyası yazılmadı (--out-dir verilmedi)")
+        return
+    for owned in ctx.owned:
+        if owned.name not in ("auth", "platform") or not owned.log.exists():
+            continue
+        tail = owned.log.read_text(encoding="utf-8", errors="replace").splitlines()[-lines:]
+        target = ctx.out_dir / f"{owned.log.stem}.tail{lines}.log"
+        target.write_text("".join(scrub(line) + "\n" for line in tail), encoding="utf-8")
+        emit(f"günlük kopyası (süzülmüş, son {len(tail)} satır): {target.relative_to(ROOT).as_posix()}")
+
+
 def cleanup(ctx: Ctx) -> bool:
     emit("== Y6 — temizlik (her yolda)")
     ok = True
@@ -951,6 +1004,7 @@ def cleanup(ctx: Ctx) -> bool:
         ok &= check("Y4c", errors == 0, f"Auth günlüğünde '{EQUALITY_ERROR}' sayısı {errors} (bütün koşu)")
     for owned in reversed(ctx.owned):
         ok &= stop_process(owned)
+    save_log_tails(ctx)
     if ctx.vhost_created:
         ok &= check("Y6", run(["rabbitmqctl", "-q", "delete_vhost", ctx.vhost], timeout=60)[0] == 0, f"vhost {ctx.vhost} silindi")
         _, out = run(["rabbitmqctl", "-q", "list_vhosts"], timeout=60)
@@ -984,7 +1038,18 @@ def main() -> int:
     ap = argparse.ArgumentParser(prog="mdm_fu06_dl1_e3.py", description="MDM-FU06-DL1 E3 kanıt betiği (Y1–Y6)")
     ap.add_argument("--base-worktree", required=True)
     ap.add_argument("--mongo-port", type=int, default=37291)
+    ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
+
+    out_dir = None
+    if args.out_dir is not None:
+        raw_out = Path(args.out_dir)
+        out_dir = (ROOT / raw_out).resolve()
+        evidence = (ROOT / EVIDENCE_PREFIX).resolve()
+        if (raw_out.is_absolute() or ".." in raw_out.parts or not str(out_dir).startswith(str(evidence) + os.sep)
+                or not out_dir.is_dir() or (ROOT / raw_out).is_symlink()):
+            emit(f"SONUÇ: kullanım — --out-dir {EVIDENCE_PREFIX} altında var olan bir dizin olmalı (run_record --out)")
+            return 5
 
     missing = [v for v in SECRET_VARS if not os.environ.get(v)]
     if missing:
@@ -997,7 +1062,7 @@ def main() -> int:
         emit("SONUÇ: KULE DURUR — geçici dizin repo içinde")
         return 2
     (tmp / ".e3fu06").write_text("owned by mdm_fu06_dl1_e3.py\n")
-    ctx = Ctx(tmp=tmp, mongo_port=args.mongo_port, env_secrets={v: os.environ[v] for v in SECRET_VARS})
+    ctx = Ctx(tmp=tmp, mongo_port=args.mongo_port, env_secrets={v: os.environ[v] for v in SECRET_VARS}, out_dir=out_dir)
 
     def on_signal(signum, _frame):
         raise Stop(2, f"KULE DURUR — sinyal {signum}")
