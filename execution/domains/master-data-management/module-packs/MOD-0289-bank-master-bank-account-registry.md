@@ -16,8 +16,7 @@ screens:
     data_mode: client
     data_mode_max_rows: 200
 entity_base: EntityBase
-status: draft
-approval_status: not-approved
+status: ready-for-dev
 owner: mdm-domain-team
 branch: feature/mdm/mod-0289-bank-master-bank-account-registry
 started: 2026-10-25
@@ -27,6 +26,12 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 ---
 
 # MOD-0289 — Bank Master & Bank Account Registry
+
+> **KARAR D133 (2026-11-05, Codex K1 ORTA):** kod servisinin iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create 403 olur ve yeniden denenmez (RECORD-CODE-ALLOCATE 1.0.0 §4 tüketici davranışı); diğer 200 dışı her yanıt (404 `LEGAL_ENTITY_NOT_FOUND` hariç — D133/5), zaman aşımı ya da bağlı olmayan port Create 503 kalır (D59/1). Dependencies RCS-001 satırı, Runtime Constraints, Failure Path ve AC-60 buna çekildi. **D133/5 (Codex K1 tur 2):** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (taslak §4 "Create 422/404 (tüketicinin kodu)"), yeniden denenmez; Dependencies satırına geçersiz başarı yanıtı kuralı eklendi; Failure Path 503 maddesi iki izin hatasını ve 404'ü dışlar.
+>
+> **KARAR D132/2 (2026-11-05):** RCS-001 yanıtı RECORD-CODE-ALLOCATE 1.0.0 `Response<T>` zarfına çevrildi (KARAR D125/1, D132/2): 200'de kod `data.code`, sıra `data.sequence`; `isSuccessful` true değilse ya da `data` boşsa yanıt 200 dışı sayılır (fail-closed). Kaynak taslak `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (rev 10, sha256 `b7a2e036…`); dondurulan metin §3, §4 ya da §9'da farklıysa paket yeniden revize edilir. Dependencies ve Runtime Constraints RCS-001 satırları buna çekildi. Paket özeti değiştiği için bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir (D127/3, D128/4); önceki onaylı sürüm `fafef5c4…` (#368). Kapsam, izin, AC ve dilimler değişmedi.
+>
+> **KARAR D127 (2026-11-03) — `ready-for-dev`:** paket kapısında işaretsiz kalan paket düzeyi maddeler yalnız CT-APR-02 ve CT-APR-01'dir; ikisi önceki `draft` sürümü için main'de (inceleme `docs/records/reviews/MOD-0289/2026-11-02-691e9b05.md` UYGUN; onay satırı `execution/approvals/approvals.tsv`, `bestepullukcu-alt`, #354), bu sürüm için bu sürümün PR'ında gelir (S-49: onay satırı künyesi `ready-for-dev` olan sürüme yazılır; sıra künye → inceleme → onay). Kalan işaretsiz maddelerin hepsi "— DL-n için" dilim kapısıdır (D51/1). Künye `status: ready-for-dev`; `approval_status` alanı kaldırıldı (standart alan değil; onayın kaynağı `approvals.tsv`). Kod yalnız bu sürümün CT-APR-01 satırı main'de olunca yazılır. Kapsam, izin, AC ve dilimler değişmedi. Aşağıdaki eski revizyon notlarındaki `status: draft` ifadeleri kendi tarihlerindeki durumu anlatır.
 
 > **KARAR D115 (Codex D112 turu bulguları, 2026-10-31):** Dependencies ve kapanış satırları main'deki duruma çekildi (DCP-011 `approved`, SUPPLIER 1.3.0 FROZEN); MOD-0140 DL-3 canlı uç önkoşulu korundu; kapsam, izin ve AC değişmedi. `status: draft`.
 
@@ -100,11 +105,10 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > DL-2'de "tam kapanış" sayılıyordu; AC-60 bitişi bölündü: banka DL-1, şirket hesabı DL-2, tedarikçi hesabı DL-3 (tam
 > kapanış). Yeni AC yok; AC numaraları, AC aralığı (AC-1…60) ve dilim tablosu değişmedi. `status: draft`.
 >
-> **Durum: `draft` (planlama belgesi), `approval_status: not-approved`.** Bu paket kod, servis değişikliği, gateway
-> rotası, sözleşme dosyası ya da kaynak projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev`
-> olduktan ve bağımsız inceleme (CT-APR-02) ile sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır.
-> Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene
-> kadar kapalı (D1: kod alma izni modül modül verilir). Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
+> **Durum: `ready-for-dev` (KARAR D127).** Kod yalnız bu paket sürümüne bağlı CT-APR-01 onay satırı main'de olduktan
+> sonra, dilim sırasıyla ve her dilimin Önkoşulu kapanınca yazılır; satır yoksa ya da paket sonradan değişirse kod
+> yazılmaz. Gateway rotası (integration-agent) ve sözleşme dosyası kendi dilimlerinin işidir.
+> Kod alma izni D45/3 ile verildi (D1: kod alma izni modül modül verilir); DCP-011 `approved`. Engeller: "Ready-for-dev Checklist" (işaretsiz maddeler paket
 > kapısı; "— DL-n için" maddeleri o dilimin önkoşulu — D51/1) ve "Açık kararlar".
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D1 (doğrula, sonra uyarlayarak al), D7 (MDM yerleşim önerisi) —
@@ -277,11 +281,11 @@ suppliers while payment execution remains with treasury/payment gateway capabili
   (KARAR D72; Dependencies); MOD-0048 para birimi listesi;
   RCS-001 ortak kod servisi; SEC-002 veri kapsamı (MDM'de var olan `ITrustedLegalEntityScopeProvider` adayı); MDM'nin
   denetim izi (`mdm-guvenilir-kaynak-niyeti`, Audited Events).
-- **Domain-config ile ilişki:** MDM domain-config'te MOD-0289 "In-Scope Reserved Module" listesinde yok ve frontend /
-  gateway istisnası yalnız MOD-0290-FU02 için yazılı (`execution/domains/master-data-management/domain-config.md` "This
-  exception applies to no other MDM module pack"). Yetki sırası gereği module pack domain-config'in üstündedir, ama bu
-  paket domain-config'i değiştirmez; domain-config satırı ve MOD-0289 için frontend/gateway kapsam cümlesi follow-up'tır:
-  satır paket kapısıdır (ready-for-dev engeli), frontend/gateway kapsam cümlesi dilim kapısıdır — DL-4 için (D51/1).
+- **Domain-config ile ilişki:** MDM domain-config'te MOD-0289 satırı "In-Scope Reserved Modules" listesinde **var**
+  (PR #270; D127 ile `ready-for-dev` cümlesine güncellendi) — o paket kapısı maddesi kapalıdır. Frontend / gateway istisnası
+  bugün yalnız MOD-0290-FU02 için yazılı (`execution/domains/master-data-management/domain-config.md` "This exception
+  applies to no other MDM module pack"); MOD-0289 için frontend/gateway kapsam cümlesi açık ve dilim kapısıdır — DL-4 için
+  (D51/1). Yetki sırası gereği module pack domain-config'in üstündedir.
 
 ## Owned Objects
 
@@ -752,7 +756,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod; sözleşme dosyası yok) | MdmService commit SHA'sı DL-2 başında | master-data-management | kayıt yok / başka kiracı → 404 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` sınıfı 422; uygun değil → 422 | birim + entegrasyon (Active+Approved / Active+Draft / Suspended / silinmiş) · — (aynı süreç) | DL-2 |
 | MOD-0140 `validateSuppliers` + `getSupplierEligibility` + ilişkili tedarikçi listesi | `supplier.openapi.yaml` **1.3.0** — main'de FROZEN (`FROZEN 2026-10-29`, #289, MOD-0140 **DL-1**), uçlar **MOD-0140 DL-3**'te, C2 kodları DL-4'te; tanım MOD-0140 Revizyon 5 §3.1–§3.3 (pack sha256 `b3259e40…ce5c2`). Liste: **KARAR D58** (metni D72/5) — `GET /api/suppliers/eligible` (`listEligibleSuppliers`) = `eligibleForTransactions = true` = silinmemiş ve Active ilişkili bütün tedarikçiler, `onboardingStatus` / `purchasingEnabled` süzgeci yok, imleçli (sayfa 50), izin `procurement.suppliers.eligibility.read`, kullanıcı token'ı (D72/3) | 1.3.0 FROZEN dosyasının `shasum`'u DL-3 başında alınır | procurement (MOD-0140) | uygun (ilişkili) = `known` ∧ `eligibleForTransactions == true` (D72/2); `known: false` ya da `eligibleForTransactions: false` → ilişkisiz (D23/1: okumada 404, yazmada 422); 403 (`LEGAL_ENTITY_LOOKUP_FORBIDDEN` dahil), 401, 503 `DEPENDENCY_UNAVAILABLE`, 5xx, zaman aşımı, geçersiz / alanı eksik / çelişkili gövde → 503 `MDM_BANK_ACCOUNT_OWNER_UNAVAILABLE`; 404 `UNKNOWN_LEGAL_ENTITY` → 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`; yazma yok, hesap gösterilmez, otomatik yeniden deneme yok | sözleşme testi: sahte istemci / Prism, 1.3.0 FROZEN dosyasına karşı (AC-24, AC-25, AC-41, AC-61) · canlı kanıt: MOD-0140 DL-3 (C2 için DL-4) birleştikten ve MDM rollerinde bağımlı izinler verildikten sonra dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi + eski kodlu bir tedarikçi; DL-3'ten önce canlı bağlantı yok | DL-3 |
 | MOD-0048 para birimi | `GET /api/lookups/reference-data/consumable-sets/currency-minor-units/published-values` | DL-2 başında | platform-shared-services | erişilemez → 503, kümede yok → 400 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-2 |
-| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{prefixScope, legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan; `prefixScope` eklemeli alan, 3 Kasım — KARAR D93/1; port tek imza D95/1), 200 `{code, sequence}` (aynı anahtar aynı kod), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565). **O-14 KAPANDI — KARAR D93/1 (Beste, Y-24):** v0 sözleşmesine eklemeli alan `prefixScope` — `"LegalEntity"` (varsayılan; `legalEntityId` zorunlu, önek şirket kısa kodu), `"Group"` (`legalEntityId` boş, önek kiracının grup öneki, bugün `GMG`), `"Platform"` (`legalEntityId` boş, önek yok); tür başına izinli kapsamı servis belirler: `BNK` yalnız `Group`; `BAC` `LegalEntity` (şirket hesabı, `legalEntityId` = hesabın sahibi şirket — D65/2 teyit) ve `Group` (tedarikçi hesabı); uyumsuz istek 422 `RECORD_CODE_SCOPE_INVALID`; grup öneki tanımsız 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür) başına (3 Kasım'da sözleşmeye girer) | TBD (6 Kasım'da kesinleşince) | Beste (D44) | 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`, kayıt yazılmaz; yedek kod yok | sahte allocator (AC-60, sabotajlı) · dev ortamında gerçek servisle `BNK` (DL-1), şirket `BAC` (DL-2) ve tedarikçi `BAC` (DL-3) kodu — grup önekli ikisi `prefixScope = Group` ile (O-14 kapandı, D93/1) | DL-1 kabul kapısı (D59/1) |
+| RCS-001 | **v0 çağrı sözleşmesi (KARAR D59/1; Beste, Y-8 — 6 Kasım'da kesinleşir, değişiklik yalnız ekleme):** `POST /api/internal/record-codes/allocate`, gövde `{prefixScope, legalEntityId, recordType, idempotencyKey}` (kiracı güvenilir bağlamdan; `prefixScope` eklemeli alan, 3 Kasım — KARAR D93/1; port tek imza D95/1), 200 `Response<T>` zarfı, `data` = `{code, sequence}` (aynı anahtar aynı kod; `isSuccessful` true değil ya da `data` boşsa 200 dışı sayılır; 1.0.0 §3 — KARAR D125/1, D132/2), 422 `RECORD_TYPE_UNKNOWN`, 409 `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404 başka kiracı, 503 servis yok; servis kodu **yok** (BL-565). **O-14 KAPANDI — KARAR D93/1 (Beste, Y-24):** v0 sözleşmesine eklemeli alan `prefixScope` — `"LegalEntity"` (varsayılan; `legalEntityId` zorunlu, önek şirket kısa kodu), `"Group"` (`legalEntityId` boş, önek kiracının grup öneki, bugün `GMG`), `"Platform"` (`legalEntityId` boş, önek yok); tür başına izinli kapsamı servis belirler: `BNK` yalnız `Group`; `BAC` `LegalEntity` (şirket hesabı, `legalEntityId` = hesabın sahibi şirket — D65/2 teyit) ve `Group` (tedarikçi hesabı); uyumsuz istek 422 `RECORD_CODE_SCOPE_INVALID`; grup öneki tanımsız 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür) başına (3 Kasım'da sözleşmeye girer) | RECORD-CODE-ALLOCATE 1.0.0 — taslak `docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md@024e76fcd` (rev 10, sha256 `b7a2e036…`); dondurma bekleniyor (D132/2) | Beste (D44) | 403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING` → Create 403 (kullanıcının izni yok; yeniden denenmez; kayıt yazılmaz — KARAR D133); 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (şirket doğrulamasıyla aynı yanıt; yeniden denenmez; kayıt yazılmaz — KARAR D133/5); diğer 200 dışı her yanıt, zaman aşımı ya da port bağlı değil → Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`, kayıt yazılmaz; yedek kod yok | sahte allocator (AC-60, sabotajlı) · dev ortamında gerçek servisle `BNK` (DL-1), şirket `BAC` (DL-2) ve tedarikçi `BAC` (DL-3) kodu — grup önekli ikisi `prefixScope = Group` ile (O-14 kapandı, D93/1) | DL-1 kabul kapısı (D59/1) |
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` (MDM kodu) + Platform sağlayıcı ucu; MOD-0018 "permission onboarding" eki (Platform izin listesi + MDM istemcisinin modül kodu — KARAR D56/1) | ek kodu main'e girince (DL-1 kabulünden önce) | Treasury yazar, MOD-0018 sahibi teyit eder (MOD-0018 Treasury Auth eki DL-4, D56/1 — `…/MOD-0018-FU27-treasury-permission-onboarding.md`); platform-shared-services (Platform ucu; XMC-001 Beste) | hata → boş kapsam, boş liste, detay / yazma 404 | AC-17 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | paket kapısı (ek paket metni) · DL-1 kabul kapısı (ek kodu) · AC-17 DL-2 |
 | Şifreleme ve özet anahtarları | O-6 (D24/3 sahip onayı; **güvenlik onayı D33/1**) — `Mdm:BankData:EncryptionKeys` / `Mdm:BankData:HashKeys` (sürümlü); kaynak her ortamın gizli deposu, yerelde user-secrets (D33/2); hangi ürün olduğu ortam kurulumunda **ölçülür** | — | sahip + güvenlik | eksik / hatalı anahtar → servis açılmaz; kayıttaki sürüm yok → 503; doğrulama hatası → 500, değer yok | AC-13, AC-35, AC-37…AC-39 · dev ortamı anahtar döndürme denemesi | DL-2 |
 | IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi) | **yok**; sahibi referans veri (MOD-0048 / REF slotu) | — | MOD-0048 sahibi | kapı kapalı (v1) → `FormatAndChecksum`; kapı açık + kaynak yok / erişilemez → 503 | AC-40 (sahte kaynak) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
@@ -778,9 +782,9 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
   kodu alır; başarısız Create'te alınmış kod yeniden kullanılmaz (RCS-001 §6). **Önek kapsamı — **O-14 KAPANDI — KARAR D93/1 (Beste, Y-24):** v0 sözleşmesine eklemeli alan `prefixScope` — `"LegalEntity"` (varsayılan; `legalEntityId` zorunlu, önek şirket kısa kodu), `"Group"` (`legalEntityId` boş, önek kiracının grup öneki, bugün `GMG`), `"Platform"` (`legalEntityId` boş, önek yok); tür başına izinli kapsamı servis belirler: `BNK` yalnız `Group`; `BAC` `LegalEntity` (şirket hesabı, `legalEntityId` = hesabın sahibi şirket — D65/2 teyit) ve `Group` (tedarikçi hesabı); uyumsuz istek 422 `RECORD_CODE_SCOPE_INVALID`; grup öneki tanımsız 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür) başına.**
   Port çağrısı `prefixScope`'u taşır: banka `Group` + boş `legalEntityId`; şirket hesabı `LegalEntity` + sahip şirket;
   tedarikçi hesabı `Group` + boş `legalEntityId`; değer tek çağrı noktasında üretilir. 422 `RECORD_CODE_SCOPE_INVALID` ve 409
-  `GROUP_PREFIX_MISSING` da 200 dışı yanıttır (aşağıdaki 503). Bağdaştırıcı v0 sözleşmesini
-  (`POST /api/internal/record-codes/allocate`) çağırır; 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
-  `LEGAL_ENTITY_SHORT_CODE_MISSING`, 404, 503) ya da zaman aşımı Create'i 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE` ile başarısız
+  `GROUP_PREFIX_MISSING` da 200 dışı yanıttır (aşağıdaki 503). Bağdaştırıcı RECORD-CODE-ALLOCATE 1.0.0 sözleşmesini (200'de kod `data.code`, sıra `data.sequence`; `isSuccessful` true değil ya da `data` boşsa 200 dışı sayılır — D132/2)
+  (`POST /api/internal/record-codes/allocate`) çağırır; iki izin hatası (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) Create'i 403 ile başarısız kılar ve yeniden denenmez (KARAR D133); 404 `LEGAL_ENTITY_NOT_FOUND` Create'i 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` ile başarısız kılar (şirket doğrulamasıyla aynı; yeniden denenmez — KARAR D133/5); diğer 200 dışı yanıt (422 `RECORD_TYPE_UNKNOWN`, 409
+  `LEGAL_ENTITY_SHORT_CODE_MISSING`, 503) ya da zaman aşımı Create'i 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE` ile başarısız
   kılar. **Üretimde fail-closed:** port bağlı değilse (gerçek bağdaştırıcı kayıtlı değil) banka ve hesap Create 503, kodsuz
   kayıt açılmaz; kendi sayaç, yedek kod ya da `CodeReservation` ile kod üretimi yasak (RCS-001 §6). Sahte allocator yalnız
   test projesinde kayıtlıdır.
@@ -1321,8 +1325,10 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **Denetim niyeti yazılamıyor** (zorla hata) → komut başarısız 503, iş verisi yazılmaz.
 - **Şifreleme anahtarı yok** → servis açılmaz; çalışırken erişilemez → Create / Reveal 503 `MDM_BANK_PROTECTION_UNAVAILABLE`.
 - **RCS-001 ya da MOD-0048 erişilemez** → Create 503 ilgili kod; kayıt yok.
-- **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1) → banka ya da hesap Create 503
+- **Ortak kod servisi (RCS-001) yok, port bağlı değil ya da 200 dışı yanıt** (KARAR D59/1; iki izin hatası ve 404 `LEGAL_ENTITY_NOT_FOUND` hariç — aşağıdaki iki madde, D133) → banka ya da hesap Create 503
   `MDM_BANK_RECORD_CODE_UNAVAILABLE`; kayıt ve denetim niyeti yazılmaz (kodsuz kayıt yok), yedek kod üretilmez (AC-60).
+- **Kod servisi iki izin hatasından birini döner** (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`; KARAR D133) → Create 403, kayıt ve kod yazılmaz, yeniden denenmez; diğer 200 dışı yanıtlar (404 `LEGAL_ENTITY_NOT_FOUND` hariç — sonraki madde, D133/5) yukarıdaki 503 kuralındadır
+- **Kod servisi 404 `LEGAL_ENTITY_NOT_FOUND` döner** (şirket yok, silinmiş, başka kiracının ya da aktif değil; KARAR D133/5) → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN` (şirket doğrulamasıyla aynı yanıt), kayıt ve kod yazılmaz, yeniden denenmez
 
 ## Authorization Convention
 
@@ -1763,7 +1769,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   harf seçeneği kaldırılınca `ACME` vakası, uzunluk kuralı kaldırılınca 101 karakter vakası kırmızıya döner.
 - [ ] AC-60 (zorunlu) — **Kayıt kodu portu (KARAR D59/1):** sahte `IRecordCodeAllocator` ile banka Create `Code`'u
   (`recordType = BNK`) ve hesap Create `Code`'u (`recordType = BAC`) tek `AllocateAsync(prefixScope, legalEntityId, recordType, idempotencyKey)`
-  çağrısıyla alır (tek imza, KARAR D95/1); aynı denemenin yeniden çağrısı aynı kodu döner. Sahte allocator 422 / 409 / 404 / 503 ya
+  çağrısıyla alır (tek imza, KARAR D95/1); aynı denemenin yeniden çağrısı aynı kodu döner. Sahte allocator 422 / 409 / 503 (404 `LEGAL_ENTITY_NOT_FOUND` 422'dir — aşağıda, D133/5) ya
   da zaman aşımı döndürdüğünde Create 503 `MDM_BANK_RECORD_CODE_UNAVAILABLE`; kayıt ve denetim niyeti yazılmaz. **Sabotaj:**
   üretim kompozisyonunda port bağlı değilken (bağdaştırıcı kaydı kaldırılır) Create 503 döner ve koleksiyona yazma olmaz;
   fail-closed korunağı kaldırılıp kodsuz kayıt açılabildiğinde test kırmızıya döner. Mimari testi: MOD-0289 kodunda kendi
@@ -1772,7 +1778,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   tedarikçi hesabı `"Group"` + boş `legalEntityId`. Test, çağrıda bu iki alanın gittiğini doğrular; kapsam ya da değer
   değiştirildiğinde kırmızıya döner (sabotaj); sahte allocator 422 `RECORD_CODE_SCOPE_INVALID` / 409 `GROUP_PREFIX_MISSING`
   döndürdüğünde Create 503. Banka kısmı DL-1'de, şirket hesabı kısmı DL-2'de, tedarikçi hesabı kısmı DL-3'te (tam
-  kapanış).
+  kapanış). **KARAR D133:** sahte allocator iki izin hatasından birini (403 `RECORD_CODE_PERMISSION_MISSING` ve 403 `LEGAL_ENTITY_READ_PERMISSION_MISSING`) döndüğünde Create 403, kayıt ve kod yok; sabotaj — eşleme 503'e çevrilince test kırmızı. **KARAR D133/5:** 404 `LEGAL_ENTITY_NOT_FOUND` → Create 422 `MDM_BANK_LEGAL_ENTITY_UNKNOWN`, kayıt ve kod yok; sabotaj — eşleme 503'e çevrilince test kırmızı.
 - [ ] AC-61 (zorunlu) — **İlişkili tedarikçi listesi (KARAR D58, metni D72/5; D72/3; DL-3; sahte MOD-0140 / Prism, 1.3.0 FROZEN
   dosyasına karşı):** ilişkili şirket kullanıcısının tedarikçi hesabı listesi `GET /api/suppliers/eligible`'ın bütün sayfalarını
   (`nextCursor` `null` olana kadar, 50'lik sayfalar; en az üç sayfalık fikstür) okur ve listeyi yalnız öğelerin kanonik
@@ -1842,7 +1848,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 
 **Biçim maddeleri (paket içi):**
 - [x] Golden Reference Compact okundu (backend + frontend klasörü)
-- [x] Frontmatter tam (service, shell, golden_reference, data_mode, screens, entity_base, form_field_count, approval_status)
+- [x] Frontmatter tam (service, shell, golden_reference, data_mode, screens, entity_base, form_field_count)
 - [x] Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık
 - [x] Backend / Frontend file convention Golden Reference ile (suffix yok, CommandHandlers/QueryHandlers ayrı)
 - [x] Validation her alan için yazılı; dört göz ve sahiplik kuralları
@@ -1862,6 +1868,10 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 
 **ENGELLER — tasarım / onay kapısı = paket kapısı (D51/1).** Tek kural (MOD-0217 ve Treasury paketlerinin deseni): işaretsiz
 madde **paket düzeyidir** — bütün dilimleri ilgilendirir ya da DL-1'in kendi önkoşuludur; hepsi kapanmadan `ready-for-dev` olmaz.
+**Tek istisna — onay maddeleri (S-49, KARAR D127/3):** CT-APR-02 ve CT-APR-01 künyesi `ready-for-dev` olan sürüme yazılır;
+bu yüzden sıra künye → inceleme → onay satırıdır ve bu iki madde künyeden **sonra** kapanır. Bu iki madde dışındaki paket
+düzeyi maddeler kapanmadan künye `ready-for-dev` yapılmaz. Künye `ready-for-dev` iken bu sürümün CT-APR-01 satırı main'de
+değilse paket **kod için onaylı değildir**: kod, WP prompt'u ve dağıtım yok (`pack_approval.py check` geçmez).
 **"— DL-n için"** işaretli madde paket kapısı **değildir**: yalnız o dilimin (ve sonrakilerin) önkoşuludur, "Teslim dilimleri"nde
 o dilimin Önkoşul metninde yazılıdır ve o dilim başlamadan kapanır; önceki dilimler o madde açıkken ilerler. Auth (MOD-0018) iki
 parçadır (KARAR D53): paket metni paket kapısıdır — `ready-for-dev`'den önce main'de ve MOD-0018 sahibince teyitli (**KARAR D70/3**; şartlı teyit Y-19 / **KARAR D80/2** — DL-1'i bekletmez); kayıt kodu DL-1 kabul kapısıdır;
@@ -1870,9 +1880,14 @@ açık atama eki ayrı madde, DL-2 için. SEC-002 sağlayıcısının "permissio
 (KARAR D59/1), paket kapısı değildir:** DL-1 kodu `IRecordCodeAllocator` portuna karşı sahte uygulamayla yazılır; gerçek
 servis DL-1 kabulünden önce main'de olmalıdır. Grup önekli kayıtların `legalEntityId` / önek kapsamı kararı (O-14) **kapandı — KARAR D93/1**; gerçek
 servis kabulü sözleşme (3 Kasım) ve servis (6 Kasım) main'e girince.
-- [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
+- [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok —
+  **bu sürüm için henüz yok:** `2026-11-02-691e9b05.md` (UYGUN) önceki `draft` sürümüne aittir; bu sürümün inceleme satırı
+  bu sürümün PR'ında gelir (KARAR D127/3). Paket metni kendi özetini taşıyamadığı için kutu metinde açık kalır; kanıt
+  `reviews.tsv`'dir
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
-  paketi yazmamış, `high: evet` onaylayıcı
+  paketi yazmamış, `high: evet` onaylayıcı — **bu sürüm için henüz yok:** #354'teki `bestepullukcu-alt` satırı önceki
+  `draft` sürümüne aittir; bu sürümün satırı bu sürümün PR'ında gelir ve onay o PR'ın `bestepullukcu-alt` tarafından
+  birleştirilmesidir (KARAR D127/3). Satır main'de değilse `pack_approval.py check` geçmez ve kod yazılmaz
 - [x] **Sahip MOD-0289 için kod alma iznini verdi (D1)** — **KARAR D45/3** (2026-10-27; `treasury-intake-owner-decisions-05.md`): D27/5 ile aynı koşullar;
   kod yalnız onaylı paket sürümüyle ve dilim sırasıyla
 - [x] DCP (`DCP-011-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı — numara atandı: DCP-011 (Y-4/2; dosya adı 2026-10-27); `approved` — #309 ile main'de (D112/3)
@@ -1887,7 +1902,8 @@ servis kabulü sözleşme (3 Kasım) ve servis (6 Kasım) main'e girince.
 - [ ] SEC-002 sağlayıcısı eki kodu (o ekin DL-4 kodu) main'de (Platform izin listesi + MDM istemcisinin modül kodu) (**KARAR D56/1**) — DL-1 için (kabul kapısı)
 - [x] MDM domain-config'te MOD-0289 satırı main'de, güncel cümleyle (satır var — "In-Scope Reserved Modules"; "kod alma izni
   D45/3" cümlesi D51/5 ile güncellendi). Kaynak: PR #270 (`7495c4d27`; `git merge-base --is-ancestor 1c444a2c5 7495c4d27` → 0;
-  `origin/main` ile bu dalın domain-config farkı boş — ölçüm 2026-10-28)
+  `origin/main` ile o günkü dalın domain-config farkı boş — ölçüm 2026-10-28). MOD-0289 satırı D127 ile bu sürümde
+  `ready-for-dev` cümlesine güncellendi
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
 - [x] O-4, O-5, O-6 (sahip onayı), O-7, O-8, O-10, O-11, O-12 ve kiracısız hedef denetimi sahip kararıyla yazıldı (KARAR
   D24/1–9)

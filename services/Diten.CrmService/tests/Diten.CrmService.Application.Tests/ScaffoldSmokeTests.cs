@@ -15,6 +15,8 @@ namespace Diten.CrmService.Application.Tests;
 /// <summary>
 /// Service wiring smoke tests for Diten.CrmService. Proves the container resolves the core seams and the
 /// Account-foundation services (MOD-0149). Business behavior is covered by <see cref="AccountFoundationTests"/>.
+/// No Mongo server: the address is a port nothing listens on and startup index creation is off, so the test measures
+/// wiring only — never the developer's shared localhost:27017 (CI has none; a connection there would time out).
 /// </summary>
 public sealed class ScaffoldSmokeTests
 {
@@ -23,7 +25,8 @@ public sealed class ScaffoldSmokeTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Mongo:ConnectionString"] = "mongodb://localhost:27017",
+                ["Mongo:ConnectionString"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=2000",
+                ["Mongo:EnsureIndexesOnStartup"] = "false",
                 ["Mongo:DatabaseName"] = "DitenERP_Test",
                 ["Gateway:BaseUrl"] = "http://localhost:5000"
             })

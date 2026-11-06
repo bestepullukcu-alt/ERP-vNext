@@ -1194,6 +1194,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>مخطط تمارين الاستدعاء</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>إعدادات الاستدعاء</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>تخطيط احتياجات المواد وإعادة التزويد</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>تحسين مخزون الأمان</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">

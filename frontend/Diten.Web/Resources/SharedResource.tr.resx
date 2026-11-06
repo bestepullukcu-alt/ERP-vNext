@@ -1253,6 +1253,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Tatbikat Planlayıcı</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Geri Çağırma Kanıt Paketi</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Geri Çağırma Ayarları</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Malzeme İhtiyaç Planlaması ve İkmal</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Güvenlik Stoğu Optimizasyonu</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">

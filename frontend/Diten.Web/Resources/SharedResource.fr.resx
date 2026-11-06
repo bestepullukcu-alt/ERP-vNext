@@ -1195,6 +1195,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificateur d’exercices de rappel</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Dossier de preuves de rappel</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Paramètres de rappel</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Planification des besoins en matières et réapprovisionnement</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimisation du stock de sécurité</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">

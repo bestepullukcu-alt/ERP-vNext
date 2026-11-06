@@ -1195,6 +1195,8 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificador de simulacros de retirada</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Configuración de retirada</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Planificación de necesidades de materiales y reaprovisionamiento</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimización del stock de seguridad</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
