@@ -32,7 +32,7 @@ function buildDom() {
     <select id="planning-cycle-status-filter"></select>
     <select id="planning-cycle-type-filter"></select>
     <select id="planning-cycle-owner-filter"></select>
-    <table id="planning-cycles-table"><tbody></tbody></table>
+    <table id="planning-cycles-table" class="planning-cycles-table"><tbody></tbody></table>
   `;
 }
 
@@ -54,8 +54,13 @@ function fillSelect(el, items, options = {}) {
   if (current && Array.from(el.options).some((opt) => opt.value === current)) el.value = current;
 }
 
-async function boot() {
+async function boot(positions = [{ PositionId: "3", PositionName: "HEAD OF COUNTRY" }]) {
   buildDom();
+  loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
+  vi.stubGlobal("$", window.jQuery);
+  let tableConfig;
+  vi.stubGlobal("DataTable", function (_table, config) { tableConfig = config; });
+  global.DataTable.Responsive = { display: { modal: () => {} } };
   global.bootstrap = { Modal: function () { return { show() {}, hide() {} }; } };
   window.planningCycleEditorMode = "create-page";
   window.enterpriseStrategyUi = { notify: vi.fn(), getErrorMessage: (err, fallback) => err?.message || fallback };
@@ -72,10 +77,11 @@ async function boot() {
     positionDisplayName: (id) => ({ "3": "HEAD OF COUNTRY" }[id] || id),
     positionLoadState: () => ({ status: "success", error: "" }),
     positionOptionsForCompany: () => [],
-    positionOptions: () => [{ value: "3", label: "HEAD OF COUNTRY" }],
+    positionOptions: vi.fn(() => [{ value: "unscoped", label: "Unscoped position" }]),
     usersForOwnershipContext: () => []
   };
   window.strategyPlanningApi = {
+    getAllPositions: vi.fn().mockResolvedValue(positions),
     listCycles: vi.fn().mockResolvedValue([]),
     createCycle: vi.fn().mockResolvedValue({}),
     updateCycle: vi.fn().mockResolvedValue({}),
@@ -83,19 +89,20 @@ async function boot() {
     activateCycle: vi.fn().mockResolvedValue({}),
     archiveCycle: vi.fn().mockResolvedValue({})
   };
-  window.strategyEnterpriseMetaApi = { lookups: vi.fn().mockResolvedValue({ planningCycleTypes: ["Annual Plan"], planningLifecycleStatuses: ["Draft"] }) };
+  window.strategyEnterpriseMetaApi = {
+    getUsersByTenantId: vi.fn().mockResolvedValue([]),
+    lookups: vi.fn().mockResolvedValue({ planningCycleTypes: ["Annual Plan"], planningLifecycleStatuses: ["Draft"] })
+  };
 
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await window.planningCyclesApp.initPage();
+  await tableConfig.ajax({}, vi.fn());
 }
 
 describe("planning cycle owner position", () => {
-  beforeEach(async () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("uses positions from the planning API, not an unscoped workbook fallback", async () => {
     await boot();
-  });
-
-  it("falls back to API position list when company-scoped positions are unavailable", async () => {
     const companyEl = document.getElementById("planning-cycle-owner-company");
     companyEl.value = "comp-1";
     companyEl.dispatchEvent(new Event("change", { bubbles: true }));
@@ -103,7 +110,19 @@ describe("planning cycle owner position", () => {
 
     const positionEl = document.getElementById("planning-cycle-owner-position");
     expect(Array.from(positionEl.options).some((opt) => opt.value === "3")).toBe(true);
-    expect(document.getElementById("planning-cycle-owner-position-help").textContent).toContain("Showing API position list");
     expect(positionEl.disabled).toBe(false);
+    expect(window.strategyPlanningApi.getAllPositions).toHaveBeenCalledOnce();
+    expect(window.enterpriseWorkbookOptions.positionOptions).not.toHaveBeenCalled();
+    expect(Array.from(positionEl.options).some((opt) => opt.value === "unscoped")).toBe(false);
+  });
+
+  it("does not broaden an empty position result to workbook-wide positions", async () => {
+    await boot([]);
+    const companyEl = document.getElementById("planning-cycle-owner-company");
+    companyEl.value = "comp-1";
+    companyEl.dispatchEvent(new Event("change", { bubbles: true }));
+    await vi.waitFor(() => expect(document.getElementById("planning-cycle-owner-position").disabled).toBe(true));
+    expect(Array.from(document.getElementById("planning-cycle-owner-position").options).filter((opt) => opt.value)).toEqual([]);
+    expect(window.enterpriseWorkbookOptions.positionOptions).not.toHaveBeenCalled();
   });
 });
