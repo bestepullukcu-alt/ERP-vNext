@@ -16,8 +16,8 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-revision: "r1 (2026-11-06) — sahip kararları işlendi (Beste, 2026-11-06): Q-1…Q-24 kapandı (§19.4); Slim/Compact yeniden sayıldı (8 alan → slim, §4.1). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; bu sürümde onay satırı yoktur."
-status_note: "draft — açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, §19.4). Kalan: §19.4 'Kalan açık nokta' (PKS-001 §2 daraltma teyidi; Q-22 / Q-7 okunuşu), WMS-COUNT-BUNDLE taslağı, XMC-001 seam onayları (§5), bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01). Paket onaylanmadan (approved / ready-for-dev + onay satırı) geliştirme başlamaz."
+revision: "r2 (2026-11-06) — iki sahip teyidi işlendi (Beste, 2026-11-06): Q-21 = A (elle COUNT_* bugünkü izinle kalır, yeni izin yok, MOD-0173'e dokunulmaz; 0181 yalnız okuma tarafında \"elle\" ayrıştırır) ve Q-22 kapsamı (yalnız görev modeli; Q-7 = B geçerli). Önceki: r1 (2026-11-06) — sahip kararları işlendi, Q-1…Q-24 kapandı, Slim/Compact yeniden sayıldı (8 alan → slim). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; bu sürümde onay satırı yoktur."
+status_note: "draft — açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, §19.4); r1'in iki uygulama notu r2'de sahip teyidiyle kapandı. Kalan: §19.4 'Kalan açık nokta' (elle COUNT_* okuma performansı ölçümü), WMS-COUNT-BUNDLE taslağı, XMC-001 seam onayları (§5), bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01). Paket onaylanmadan (approved / ready-for-dev + onay satırı) geliştirme başlamaz."
 owner: supply-chain-execution / merkez (Beste) — MVP-5
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-05
@@ -28,14 +28,22 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03, MOD-0174, MOD-0175, MOD-0
 
 # MOD-0181 — Cycle Counting (Sayım)
 
-> **Taslak (r1, 2026-11-06).** Bu paket `status: draft`, `approval_status: pending`'dir. **Paket onaylanmadan geliştirme başlamaz:**
+> **Taslak (r2, 2026-11-06).** Bu paket `status: draft`, `approval_status: pending`'dir. **Paket onaylanmadan geliştirme başlamaz:**
 > kod yalnız `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01) ile yazılır
 > (AGENTS.md Çekirdek madde 7). Bu dosyada onay satırı yoktur; onay ayrı adımdır.
+>
+> **Revizyon notu (r2, 2026-11-06).** Yalnız iki sahip teyidi işlendi (Beste, 2026-11-06). **Q-21 = A:** MOD-0173'teki elle `COUNT_GAIN` /
+> `COUNT_LOSS` bugünkü izinle (`inventory.movements.create`) aynen kalır; PKS-001 §2 gereği yayımlanmış anahtar daraltılmaz — **yeni izin yok,
+> r1'in önerdiği ek izin anahtarı paketten çıktı, MOD-0173'e dokunulmaz, XMC yok**. Yerine 0181, elle `COUNT_*` hareketlerini yalnız okuma
+> tarafında "Elle" olarak ayrıştırır (kaynak alanları `c101e22fa`'da ölçüldü, §2.4). **Q-22 kapsamı:** "MOD-0178'e dokunulmaz" yalnız görev
+> modelini kapsar; Q-7 = B geçerlidir — `CNT` türü MOD-0178 kayıt kodu portuna XMC-001 ile eklenir (sahip Beste). Etkiler: künye, §2.2, §2.4
+> (yeniden yazıldı), §3, §5, §6, §7, §8.4, §8.12, §8.13, §12, §13, §14, §15, §16 (AC-40, AC-43 genişledi; AC-47 yeniden yazıldı), §17, §18,
+> §19.4 (Q-7 / Q-21 / Q-22 kararı, kalan açık nokta), §20, §23, §24, §25.
 >
 > **Revizyon notu (r1, 2026-11-06).** Yalnız sahip kararları işlendi (Beste, 2026-11-06); yeni ölçüm yapılmadı, r0 atıfları değişmedi.
 > Kapanan kararlar (§19.4): **Q-13** Build (Blueprint `Buy/Partner` sapması W-0181-01, §0); **Q-22** sayım görevi 0181'in kendi kaydı,
 > MOD-0178 görev modeli kullanılmaz, MOD-0178 görev koduna dokunulmaz; **Q-6** lokasyon kilidi yok — anlık görüntü + sonraki hareketler
-> farka eklenir, depo durmaz; **Q-21** MOD-0173'teki elle `COUNT_GAIN` / `COUNT_LOSS` kalır, izinle sınırlanır (XMC-001 eklemeli MOD-0173
+> farka eklenir, depo durmaz; **Q-21** MOD-0173'teki elle `COUNT_GAIN` / `COUNT_LOSS` kalır, izinle sınırlanır (r2'de geri alındı — yeni izin yok; XMC-001 eklemeli MOD-0173
 > değişikliği, §2.4); **Q-23** dal `feature/sce/mod-0173-inventory-ledger-valuation`; **Q-1…Q-5, Q-7…Q-12, Q-14…Q-20, Q-24** öneri kabul.
 > Etkiler: künye (revision, status_note, branch, dependencies — MOD-0023 / MOD-0022 / MOD-0048 v1 bağımlılığı değil), §0 (W-0181-01),
 > §1, §2.2, §2.4 (yeni — Q-21), §3, §4.1 (Slim yeniden sayıldı: 8 → slim), §4.2 (`SerialControlled`), §4.4–§4.6, §5, §6, §7, §8.2, §8.4–§8.9,
@@ -132,7 +140,7 @@ anlık görüntü alır, atar, iptal eder), **fark onaylayıcı** (modül içi o
 | Lot / seri kaydı | MOD-0174 | okur; lot / seri yaratmaz (Q-10) |
 | Karantina / bloke kararı | MOD-0175 | karar vermez; tutulan kovaların farkını v1'de post etmez (Q-8, karar 2026-11-06) |
 | FEFO / son kullanma, recall | MOD-0176 / MOD-0177 | kural eklemez; `COUNT_*` tür olarak muaftır (§8.10) |
-| Depo görevleri (putaway / pick), lokasyon rolleri | MOD-0178 | sayım görevi 0181'in kendi kaydıdır (`wms_count_*`); MOD-0178 görevi (`WarehouseTask` / `wms_tasks`) **kullanılmaz**, `Count` türü eklenmez, MOD-0178 görev koduna dokunulmaz (Q-22, karar 2026-11-06); lokasyon rolleri yalnız okunur |
+| Depo görevleri (putaway / pick), lokasyon rolleri | MOD-0178 | sayım görevi 0181'in kendi kaydıdır (`wms_count_*`); MOD-0178 görevi (`WarehouseTask` / `wms_tasks`) **kullanılmaz**, `Count` türü eklenmez, MOD-0178 görev koduna dokunulmaz (Q-22, karar 2026-11-06; kapsam yalnız görev modeli — r2, sahip teyidi 2026-11-06); lokasyon rolleri yalnız okunur; kayıt kodu portuna eklemeli `CNT` (Q-7 = B, XMC-001) |
 | Lokasyon kilidi | — | **yok** (Q-6, karar 2026-11-06): 0181 defter posting'ini bin bazında durdurmaz, MOD-0173'e kilit seam'i eklenmez |
 | Barkod / tarama | MOD-0182 (MOD-0365'e bağlı — plan `:78`) | v1'de yok; opak `scanRef` kapısı (Q-12, karar 2026-11-06) |
 | Dalga planlama | MOD-0180 | yok |
@@ -140,7 +148,7 @@ anlık görüntü alır, atar, iptal eder), **fark onaylayıcı** (modül içi o
 | AI Assist (Summarize / Extract / Recommend / Route) | Blueprint AI kapıları | v1'de yok (Q-14, karar 2026-11-06); FU-0181-AI |
 | ABC sınıfı ve otomatik döngü üretimi | TBD (ABC verisinin sahibi ölçülmedi) | v1'de elle planlama (Q-2, karar 2026-11-06); FU-0181-ABC |
 | Onay iş akışı / e-imza | MOD-0023 / MOD-0022 | v1'de kullanılmaz: onay modül içidir (Q-4), e-imza yok (Q-5) |
-| MOD-0173 elle `COUNT_GAIN` / `COUNT_LOSS` girişi | MOD-0173 | kalır; izinle sınırlanır — MOD-0173'e eklemeli değişiklik, 0181 kodu değil (Q-21, §2.4) |
+| MOD-0173 elle `COUNT_GAIN` / `COUNT_LOSS` girişi | MOD-0173 | bugünkü izinle aynen kalır; 0181 yeni izin eklemez, MOD-0173'e dokunmaz; elle hareketleri yalnız okuma tarafında "Elle" olarak ayrıştırır (Q-21 = A, §2.4) |
 
 ### 2.3 Sınır kuralları
 1. **İkinci bakiye yok.** 0181'in hiçbir varlığı `OnHand` / `Available` / `Reserved` adlı alan taşımaz; servis genelindeki mimari test
@@ -158,31 +166,43 @@ anlık görüntü alır, atar, iptal eder), **fark onaylayıcı** (modül içi o
 5. Her okuma ve yazma kiracı + şirket (`TenantId` + `LegalEntityId`, sunucuda çözülür) kapsamındadır (`domain-config.md` DEC-INV-18).
 6. 0181 yalnız `COUNT_GAIN` ve `COUNT_LOSS` yazar; başka hareket türü yazmaz (AC-29).
 
-### 2.4 MOD-0173 elle `COUNT_*` girişinin izinle sınırlanması (Q-21)
-**Karar (sahip, Beste, 2026-11-06):** MOD-0173'ün elle hareket türleri arasındaki `COUNT_GAIN` / `COUNT_LOSS`
-(`SCE/MOD-0173-inventory-ledger-valuation.md:714-717`, "Manual movement types (7)") 0181'den sonra **kalır**, ama **ayrı bir izinle
-sınırlanır**.
+### 2.4 MOD-0173 elle `COUNT_*` hareketlerinin 0181 görünümünde ayrışması (Q-21 = A)
+**Karar (sahip, Beste, 2026-11-06; r2 teyidi):** MOD-0173'ün elle hareket türleri arasındaki `COUNT_GAIN` / `COUNT_LOSS`
+(`SCE/MOD-0173-inventory-ledger-valuation.md:714-717`, "Manual movement types (7)") **bugünkü izinle aynen kalır**: `POST /api/inventory/movements`,
+`[HasPermission(InventoryPermissions.CreateMovements)]` = `inventory.movements.create` (`c101e22fa:INV/Api/Controllers/InventoryController.cs:27-28`;
+sabit `c101e22fa:INV/Infrastructure/Authorization/InventoryPermissions.cs:14`). **Yeni izin eklenmez, MOD-0173'e dokunulmaz, XMC yok.**
+Gerekçe: `inventory.movements.create` yayımlanmış bir anahtardır; PKS-001 §2 yayımlanmış anahtarın verdiği erişimin yeniden adlandırmadan
+daraltılmasını yasaklar (`.antigravity/rules/permission-key-standard.md` §2). **Sayım ekranı asıl yoldur**; elle `COUNT_*` onay / dört göz /
+anlık görüntü yönetişiminin dışındadır ve 0181 bunu yalnız **görünür kılar**.
 
-- **Bugün (ölçüm `c101e22fa`):** elle hareket tek uçtan girer — `POST /api/inventory/movements`,
-  `[HasPermission(InventoryPermissions.CreateMovements)]` = `inventory.movements.create`
-  (`c101e22fa:INV/Api/Controllers/InventoryController.cs:27-28`; sabit `c101e22fa:INV/Infrastructure/Authorization/InventoryPermissions.cs:14`).
-  Hareket türü gövdededir; `COUNT_*` için ayrı izin yoktur.
-- **İzin anahtarı (öneri):** `inventory.count-adjustments.create` — namespace `inventory.*` MOD-0173'ündür (PKS-001 §4;
-  `SCE/MOD-0173-inventory-ledger-valuation.md:267`); eylem Tier-1 `create` (PKS-001 §5), kaynak `count-adjustments`. 0181 bu anahtarı
-  **bildirmez ve tanımlamaz**; anahtarın kesin adı ve kaydı MOD-0173 paketinin revizyonundadır (PKS-001 §4 "tek sahip").
-- **Davranış:** `POST /api/inventory/movements` gövdesinde `movementType` `COUNT_GAIN` ya da `COUNT_LOSS` ise çağıran
-  `inventory.movements.create` **ve** `inventory.count-adjustments.create` taşımalıdır; yoksa 403, hareket ve ret satırı yazılmaz. Diğer
-  türler değişmez. Denetim **yalnız HTTP elle giriş yolundadır**: 0181'in süreç içi yolu (`CycleCountMovementPoster` →
-  `InternalMovementPostingService`) bu izni istemez — izin 0181'in kendi `cycle-count.variances.approve` / `.post` kapısıyla zaten
-  yönetilir (§14). MOD-0173-FU01 "New movement" ekranı izin yoksa `COUNT_*` türlerini listelemez (UAS-001).
-- **Bu bir MOD-0173 değişikliğidir (XMC-001, eklemeli):** dokunulacak dosyalar `InventoryPermissions.cs` (yeni sabit),
-  `InventoryController.cs` / hareket isteği yolu (tür bazlı ek denetim), `InventoryLedgerManifestProvider.cs` (anahtar bildirimi),
-  MOD-0173-FU01 yeni hareket ekranı (tür listesi) ve AuthService rol şablonu (anahtarın hangi role gideceği — Ali (Auth), ayrı WP).
-  **Sahibi: MOD-0173 → MVP-1 CT (Beste).** Dokunmadan önce sahibine sorulur ve kabul kaydına yazılır; 0181 dilimi bu dosyaları
-  sahip onayı olmadan değiştirmez (§5 seam tablosu, AC-47).
-- **PKS-001 §2 (değişmez anahtar) notu:** ek izin, `inventory.movements.create`'in tek başına verdiği erişimi `COUNT_*` için daraltır.
-  Anahtar "yayımlanmış" sayılıyorsa (seed / rol satırı / JWT / gönderilmiş `[HasPermission]`) daraltma PKS-001 §2'ye göre ayrı sahip
-  kararı ister; bu durum ölçülmedi (§19.4 "Kalan açık nokta").
+- **Ölçüm (`c101e22fa`, salt okuma):** defter hareketi kaynak alanlarını taşır — `SourceModule`, `SourceType`, `SourceDocumentId`,
+  `SourceLineId` (`c101e22fa:INV/Domain/Entities/InventoryTransaction.cs:56-62`). Değer HTTP gövdesinden okunur
+  (`c101e22fa:INV/Api/Contract/MovementRequestReader.cs:111`); `Features/Inventory/**` ve `Domain/Rules/**` altında `SourceModule` için bir
+  izin listesi / doğrulama bulunmadı (`git grep SourceModule`; çıkarım: alan çağıranın beyanıdır). Web'in elle hareket ekranı
+  `sourceModule = "MOD-0173"`, `sourceType = "MANUAL_MOVEMENT"` yazar (`c101e22fa:frontend/Diten.Web/Models/Inventory/InventoryListAdapter.cs:22`,
+  `c101e22fa:frontend/Diten.Web/Models/Inventory/MovementRules.cs:15`, `:286-287`); MOD-0173-FU01 hareket geçmişi "Automatic"i
+  `SourceModule != "MOD-0173"` ile ayırır (`InventoryListAdapter.cs:185`, `:230`).
+- **0181 sınıflandırma kuralı (yalnız okuma tarafı farkı; yazma yok):** aynı kiracı + şirketteki bir `COUNT_GAIN` / `COUNT_LOSS` defter
+  hareketi 0181 görünümünde **"Sayım"** sayılır ⇔ hareketin `Id`'si bir 0181 satırının `Adjustment.TransactionId`'sine eşittir. Diğer her
+  `COUNT_*` hareketi **"Elle"**dir ve `SourceModule` / `SourceType` / `CreatedBy` olduğu gibi gösterilir. `SourceModule = "MOD-0181"` beyanı tek
+  başına "Sayım" yapmaz (alan çağırandan gelir): 0181 kaydıyla eşleşmeyen böyle bir hareket "Elle" + **"kaynak beyanı uyuşmuyor"** işaretiyle
+  görünür.
+- **Nerede görünür:** Variance Trace listesi kaynak süzgeci taşır — `GET /count-variances?source=count|manual|all` (varsayılan `count`); `manual`
+  satırları salt okunur defter hareketleridir (tarih, depo / bin, SKU, lot, tür, miktar, `TransactionNumber`, `SourceModule` / `SourceType`,
+  kullanıcı), eylem düğmesi yoktur. Cycle Count Dashboard'da seçili depoda son 31 günün elle `COUNT_*` hareket sayısı KPI'ı (AC-40). Evidence Pack'te sayım
+  kapsamındaki bin'lerde `SnapshotAt` → kapanış arası elle `COUNT_*` hareketleri ayrı bölüm (AC-43). İzin `cycle-count.variances.read`
+  (dashboard KPI'ı `cycle-count.counts.read`, Evidence `cycle-count.evidence.*`); yeni anahtar yok.
+- **Okuma yolu:** 0181 Persistence'ta defter koleksiyonu üzerinde yalnız `Find` (§2.3 kural 2 — `InventoryCollections.*` sabitleri,
+  `IInventoryLedgerRepository` yok); kiracı + şirket yüklemi zorunlu. **Index ölçümü (`c101e22fa:INV/Persistence/InventoryIndexConfiguration.cs:29-58`):**
+  hareket koleksiyonunda `MovementType` üzerinde index **yok**; var olanlar arasında `ix_tenant_le_tolocation` (`:45`),
+  `ix_tenant_le_fromlocation` (`:48`), `ix_tenant_le_item_postingdate` (`:38`), `ix_tenant_le_source_document` (`:43`). Bu yüzden
+  `source=manual|all` sorgusu **depo (`warehouseId`) + tarih aralığı (≤ 31 gün) zorunlu** çalışır ve deponun bin'leri üzerinden bin index'lerini
+  kullanır (`COUNT_GAIN` → `ToLocationId`, `COUNT_LOSS` → `FromLocationId`); Evidence Pack ve satır okumaları zaten bin kapsamlıdır. Büyük
+  depoda bu sorgunun süresi ölçülmedi (DL-3 ilk ölçümü). 0181 kendi başına defter index'i eklemez; MOD-0173'e index talebi Q-21 = A
+  ("MOD-0173'e dokunulmaz") ile çeliştiği için ancak sahip kararıyla açılır.
+- **Fark hesabına etkisi:** elle `COUNT_*` hareketi de olağan bir defter hareketidir; anlık görüntü ile giriş arasında olursa
+  `MovementsSinceSnapshot`'a girer (§8.4) ve `MovementDuringCount` bayrağını yakar. Böylece aynı farkın elle ve sayımla iki kez düzeltilmesi
+  onaylayıcıya görünür.
 
 ## 3. Owned Objects
 
@@ -205,14 +225,14 @@ tanınır (`c101e22fa:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs
 `UpdateCycleCountSettingsCommand` (Q-3), `CreateCountEvidenceExportCommand` (DL-5).
 
 **Sorgular:** `GetCycleCountListQuery`, `GetCycleCountByIdQuery`, `GetCycleCountLineListQuery`, `GetCycleCountEventListQuery`,
-`GetCycleCountDashboardQuery`, `GetCountVarianceListQuery`, `GetCountVarianceByIdQuery`, `GetCycleCountSettingsQuery`,
+`GetCycleCountDashboardQuery`, `GetCountVarianceListQuery` (`Source` = `count` \| `manual` \| `all` — §2.4), `GetCountVarianceByIdQuery`, `GetCycleCountSettingsQuery`,
 `GetCountEvidenceExportListQuery`, `GetCountEvidenceExportFileQuery`.
 
 **API (taban `/api/warehouse` — Q-15 = A, karar 2026-11-06; yol adları sözleşme taslağında kesinleşir):**
 `GET/POST /cycle-counts` · `GET/PUT/DELETE /cycle-counts/{countId}` · `POST /cycle-counts/bulk-delete` · `POST /cycle-counts/{countId}/release` ·
 `POST /cycle-counts/{countId}/cancel` · `GET /cycle-counts/{countId}/lines` · `POST /cycle-counts/{countId}/lines` ·
 `PUT /cycle-counts/{countId}/lines/{lineId}` · `POST /cycle-counts/{countId}/submit` · `GET /cycle-counts/{countId}/events` ·
-`GET /cycle-counts/dashboard` · `GET /count-variances` · `GET /count-variances/{lineId}` · `POST /count-variances/{lineId}/approve` ·
+`GET /cycle-counts/dashboard` · `GET /count-variances` (`?source=count|manual|all`, §2.4) · `GET /count-variances/{lineId}` · `POST /count-variances/{lineId}/approve` ·
 `POST /count-variances/{lineId}/reject` · `POST /count-variances/{lineId}/recount` · `POST /count-variances/{lineId}/retry` ·
 `POST /count-variances/{lineId}/resolve-integrity` · `GET/PUT /count-settings` · DL-5: `POST /cycle-counts/{countId}/evidence-exports` ·
 `GET /count-evidence-exports` · `GET /count-evidence-exports/{exportId}/file`.
@@ -331,9 +351,8 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 | `INVT/Expiry/ExpiryQuarantineTypeExemptionTests.cs` | `:25-39` poster çağrı yerleri satırla sabit; `:118-134` `InternalMovementPostingService`'in tek kullanıcıları (0175 + 0178) | 0181 için `Mod0181StockDoor` ikilisi (çağrı yeri + poster dosyası) — 0175 / 0178 girdileri değişmez | MOD-0176 (MVP-1 CT, Beste) | DL-3 |
 | `INV/Api/Program.cs` | `:46-59` manifest kayıtları | `CycleCountingManifestProvider` + `AddCycleCount()` (kompozisyon kökü; SHA ile sabitlenmez — standard §13) | MOD-0173 (MVP-1 CT, Beste) | DL-1 |
 | `INV/Infrastructure/Middleware/InventoryScopeResolutionMiddleware.cs` | `:57-61` `ScopedBasePaths` (`/api/warehouse` dahil) | **değişmez** — Q-15 = A (karar 2026-11-06): uçlar `/api/warehouse` altında, mevcut taban kapsar | MOD-0173 (MVP-1 CT, Beste) | — |
-| `INV/Application/Features/Warehouse/Ports/IWarehouseRecordCodeAllocator.cs` | `:10-17` türler PUT / PCK / OUT / PKG | `CNT` türü (Q-7 = B, karar 2026-11-06); yalnız kayıt kodu portu — MOD-0178 görev modeli / görev kodu değişmez (Q-22) | MOD-0178 (MVP-1 CT, Beste) | DL-1 |
-| `INV/Infrastructure/Authorization/InventoryPermissions.cs`, `INV/Api/Controllers/InventoryController.cs` (`:27-28`, hareket isteği yolu), `INV/Api/ModuleRegistration/InventoryLedgerManifestProvider.cs`, MOD-0173-FU01 yeni hareket ekranı | `POST /api/inventory/movements` yalnız `inventory.movements.create` ister | `COUNT_GAIN` / `COUNT_LOSS` için ek izin `inventory.count-adjustments.create` (öneri ad; kayıt MOD-0173 paketinde) — §2.4, Q-21 | MOD-0173 (MVP-1 CT, Beste) | DL-3 |
-| `services/Diten.AuthService/**` rol şablonu (`DefaultRolePermissionTemplate`, `EntitlementPermissionSyncService` — MOD-0178 §14.2 ölçümü) | — | sayan / sayım sorumlusu / onaylayıcı rol önerisi (Q-4 = A) + `inventory.count-adjustments.create`'in rolü (Q-21) | AuthService — Ali (Auth) (`SCE/MOD-0178-putaway-picking-packing.md:2108`, `:2915`) | ayrı WP |
+| `INV/Application/Features/Warehouse/Ports/IWarehouseRecordCodeAllocator.cs` | `:10-17` türler PUT / PCK / OUT / PKG | `CNT` türü — **Q-7 = B geçerli** (karar 2026-11-06, r2 teyidi): eklemeli, XMC-001 ile, sahip Beste. Q-22'nin "MOD-0178'e dokunulmaz" kapsamı **yalnız görev modelidir** (`WarehouseTask*`, `wms_tasks`) — bu kayıt kodu portu o kapsamda değildir | MOD-0178 (MVP-1 CT, Beste) | DL-1 |
+| `services/Diten.AuthService/**` rol şablonu (`DefaultRolePermissionTemplate`, `EntitlementPermissionSyncService` — MOD-0178 §14.2 ölçümü) | — | sayan / sayım sorumlusu / onaylayıcı rol önerisi (Q-4 = A) | AuthService — Ali (Auth) (`SCE/MOD-0178-putaway-picking-packing.md:2108`, `:2915`) | ayrı WP |
 | `gateway/**` | `/api/warehouse/{everything}` → 5067 (`c101e22fa:gateway/Diten.ApiGateway/ocelot.json:1153-1161`) | yalnız 0181 uç kapsama testi; `ocelot.json` değişmez (Q-15 = A) | integration-agent | DL-6 |
 
 ## 6. Protected Paths
@@ -341,8 +360,9 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 - `gateway/Diten.ApiGateway/**/ocelot.json` (yalnız integration-agent).
 - `services/Diten.Building.Blocks/**` (BL-501 olduğu gibi — MOD-0178 §8.8).
 - MOD-0173 defter kodu (`INV/Application/Features/Inventory/**`, `INV/Persistence/Repositories/InventoryLedgerRepository.cs`, `INV/Domain/Rules/**`) —
-  0181 **çağırır**, değiştirmez; §5 tablosundaki seam'ler (test / kompozisyon, Q-7 kayıt kodu portu, Q-21 izin) dışında MOD-0173 / 0174 / 0175 /
-  0176 / 0177 / 0178 dosyası yok. MOD-0178 görev kodu (`WarehouseTask*`, `wms_tasks`) değişmez (Q-22).
+  0181 **çağırır**, değiştirmez; §5 tablosundaki seam'ler (test / kompozisyon, Q-7 kayıt kodu portu) dışında MOD-0173 / 0174 / 0175 /
+  0176 / 0177 / 0178 dosyası yok. MOD-0178 görev kodu (`WarehouseTask*`, `wms_tasks`) değişmez (Q-22). MOD-0173 izin / hareket uç kodu
+  (`InventoryPermissions.cs`, `InventoryController.cs`, `InventoryLedgerManifestProvider.cs`) ve MOD-0173-FU01 ekranları değişmez (Q-21 = A, r2).
 - Donmuş sözleşmeler (`docs/analysis/contracts/*.openapi.yaml`, `record-code-allocate.md`).
 - Başka domain servisleri; `services/Diten.AuthService/**` (ayrı WP); Archive; `_Layout.cshtml`.
 
@@ -350,9 +370,9 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 
 | Bağımlılık | Tür | Durum (ölçüm) | Kullanım | Değişiklik | Sahip |
 |---|---|---|---|---|---|
-| MOD-0173 defter + `InternalMovementPostingService` | HARD (süreç içi) | var — `c101e22fa:INV/Application/Features/Inventory/Services/InternalMovementPostingService.cs:35,82`; idempotency önce (`:96-102`) | `COUNT_GAIN` / `COUNT_LOSS` posting; kilit yok (Q-6) | yok (çağırma); elle `COUNT_*` izni §2.4 (Q-21, XMC) | MVP-1 CT (Beste) |
+| MOD-0173 defter + `InternalMovementPostingService` | HARD (süreç içi) | var — `c101e22fa:INV/Application/Features/Inventory/Services/InternalMovementPostingService.cs:35,82`; idempotency önce (`:96-102`) | `COUNT_GAIN` / `COUNT_LOSS` posting; kilit yok (Q-6) | yok (çağırma); elle `COUNT_*` bugünkü izinle kalır, 0181 dokunmaz (Q-21 = A, §2.4) | MVP-1 CT (Beste) |
 | MOD-0173 `IPostingKeyLookup` | HARD | var — `c101e22fa:INV/Application/Features/Inventory/Ports/IPostingKeyLookup.cs:6-58` | Pending kurtarma (NotCommitted / Committed / KeyReused) | yok | MVP-1 CT (Beste) |
-| MOD-0173 bakiye ve hareket okuması | HARD (okuma) | bakiye `Find` emsali `WarehouseStockReads.cs:14-44`; hareket `Find` emsali `QuarantineLedgerReads.cs:126-136`; konum index'leri `c101e22fa:INV/Persistence/InventoryIndexConfiguration.cs:45,48,74` | anlık görüntü, `MovementsSinceSnapshot` | yok (0181 Persistence'ta yeni okuma) | MVP-1 CT (Beste) |
+| MOD-0173 bakiye ve hareket okuması | HARD (okuma) | bakiye `Find` emsali `WarehouseStockReads.cs:14-44`; hareket `Find` emsali `QuarantineLedgerReads.cs:126-136`; konum index'leri `c101e22fa:INV/Persistence/InventoryIndexConfiguration.cs:45,48,74` | anlık görüntü, `MovementsSinceSnapshot`, elle `COUNT_*` ayrışması (kaynak alanları `InventoryTransaction.cs:56-62`, §2.4) | yok (0181 Persistence'ta yeni okuma) | MVP-1 CT (Beste) |
 | MOD-0173 mimari / denetim testleri | test seam | §5 tablosu | koleksiyon bildirimi, denetim sayısı | **yalnız eklemeli, XMC-001** | MVP-1 CT (Beste) |
 | MOD-0173-FU02 LOCATION | HARD | canlı (MOD-0178 §7 `:590`) | kapsamı stoklanabilir bin'lere açma | yok | MVP-1 CT (Beste) |
 | MOD-0173-FU03 rezervasyon | HARD (davranış) | `COUNT_LOSS` AVAILABLE azalışıdır, ayrılmış stoğu açıkta bırakamaz → 422 `INSUFFICIENT_STOCK` (`SCE/MOD-0173-FU03-inventory-lot-location-reservation.md:385-386`; kod `c101e22fa:INV/Persistence/Repositories/InventoryLedgerRepository.cs:306-330`, `InternalMovementPostingService.cs:198-212`) | ret iletimi; uzlaştırma §8.7 | yok; FU-03-COUNT kararı Q-9 = A — 0181 rezervasyona dokunmaz (`FU03 :1262`) | MVP-1 CT (Beste) |
@@ -360,7 +380,7 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 | MOD-0175 karantina | davranış | inbound → QUARANTINE / QI hareketi bir hold açar (`c101e22fa:INV/Application/Features/Quarantine/Services/QuarantineIntake.cs:45-61`; `QuarantineLedgerReads.cs:128-131` `COUNT_GAIN` dahil); REVERSAL hold'u `Voided` yapar (`SCE/MOD-0175-FU01-quarantine-hold-source-reversal.md:791`); tutulan kovadan MOD-0175 dışı çıkış hayalet kayıt (`…FU01…:1120-1124`) | Q-8 = A: tutulan kovalar sayılmaz / post edilmez | yok | MVP-1 CT (Beste) |
 | MOD-0176 FEFO / expiry | muafiyet | `COUNT_GAIN` / `COUNT_LOSS` muaf (`c101e22fa:INV/Domain/Expiry/Rules/FefoRules.cs:177-183`; `SCE/MOD-0176-expiry-fefo-management.md:347-349`) | — | test seam (§5) | MVP-1 CT (Beste) |
 | MOD-0177 recall | muafiyet | `COUNT_*` muaf, "count truth" (`c101e22fa:INV/Domain/Recall/Rules/RecallExitRule.cs:9-10`; `SCE/MOD-0177-recall-readiness.md:547`) | — | yok | MVP-1 CT (Beste) |
-| MOD-0178 S1 | okuma / XMC | lokasyon rolleri `Receiving` / `Staging` (`c101e22fa:INV/Domain/Warehouse/Enums/WarehouseEnums.cs:7-11`); görev türleri yalnız `Putaway` / `Pick` (`…/WarehouseTaskEnums.cs:5-9`); Staging farkı için çıkış yolu "sayım (MOD-0181)" (`SCE/MOD-0178-putaway-picking-packing.md:1580-1582`); 0181 kendi namespace'ini açar (`:2062-2064`) | rota ailesi onayı (Q-15 = A, dosya değişmez), geçici sayaca `CNT` (Q-7 = B); görev modeli **kullanılmaz** (Q-22) | yalnız `IWarehouseRecordCodeAllocator`'a eklemeli `CNT` (XMC) | MVP-1 CT (Beste) |
+| MOD-0178 S1 | okuma / XMC | lokasyon rolleri `Receiving` / `Staging` (`c101e22fa:INV/Domain/Warehouse/Enums/WarehouseEnums.cs:7-11`); görev türleri yalnız `Putaway` / `Pick` (`…/WarehouseTaskEnums.cs:5-9`); Staging farkı için çıkış yolu "sayım (MOD-0181)" (`SCE/MOD-0178-putaway-picking-packing.md:1580-1582`); 0181 kendi namespace'ini açar (`:2062-2064`) | rota ailesi onayı (Q-15 = A, dosya değişmez), geçici sayaca `CNT` (Q-7 = B); görev modeli **kullanılmaz** (Q-22 — kapsamı yalnız görev modeli, r2) | yalnız `IWarehouseRecordCodeAllocator`'a eklemeli `CNT` (XMC-001, sahip Beste) | MVP-1 CT (Beste) |
 | MOD-0040-FU02 RCS-001 | SOFT (Q-7 = B — geçiş hedefi) | paket `ready-for-dev`, `approval_status: pending`, `code_start: yok` (`execution/domains/platform-shared-services/module-packs/MOD-0040-FU02-record-code-service.md:1-25`); sözleşme `RECORD-CODE-ALLOCATE 1.0.0 FROZEN` (`docs/analysis/contracts/record-code-allocate.md:1-5`); WMS türleri onun DL-8'i (`…FU02…:1639`, `:1848`) | `CNT` kodu | `CNT` türünün DL-8'e eklenmesi (öneri) | Beste (K2) |
 | MOD-0018 RBAC + AuthService rol şablonu | HARD | `[HasPermission]` + manifest; rol şablonu ölçümü MOD-0178 §14.2 | izinler, roller | rol şablonu ayrı WP (XMC) | Ali (Auth) |
 | BL-501 merkezi denetim | HARD | InventoryService'te var — `c101e22fa:INV/Api/Program.cs:66` (`RequireEnlistment`); defter izi `tests/architecture/audit-ledger/Diten.InventoryService.md:12` (`inventory-merkezi-iletim`, yol b) | §21 | yok | Building.Blocks korunan yol; sahip TBD |
@@ -374,7 +394,7 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 | Gateway | Q-15 = A | `ocelot.json:1134-1161` (`c101e22fa`) | §15 — mevcut `/api/warehouse/{everything}` | `ocelot.json` değişmez; yalnız kapsama testi | integration-agent |
 
 **XMC-001 özeti:** 0181 yukarıdaki başka-modül dosyalarına **yalnız eklemeli** dokunur; her biri dokunmadan önce sahibine sorulur ve kabul
-kaydına yazılır. Sahip: MOD-0173 / FU02 / FU03 / 0174–0178 → MVP-1 CT (Beste) — Q-21 izin değişikliği (§2.4) ve Q-7 `CNT` portu dahil;
+kaydına yazılır. Sahip: MOD-0173 / FU02 / FU03 / 0174–0178 → MVP-1 CT (Beste) — Q-7 `CNT` portu dahil; Q-21 = A ile MOD-0173'e seam yok (r2);
 AuthService → Ali (Auth); RCS → Beste (K2). MOD-0023 / 0022 v1'de kullanılmaz (Q-4 / Q-5 = A); MOD-0048 v1'de bağlanmaz (Q-17 = A),
 sahibi TBD (yalnız FU-0181-REASON için).
 
@@ -434,6 +454,8 @@ sahibi TBD (yalnız FU-0181-REASON için).
 - `MovementDuringCount = true`: anahtara `SnapshotAt`–`CountedAt` arasında en az bir hareket dokunduysa (Q-6 = B, karar 2026-11-06). Bayraklı
   satır fark 0 olsa bile `AwaitingApproval`'a gider (tolerans uygulanmaz); onaylayıcı yeniden sayım isteyebilir.
 - `Found` satırda beklenen 0'dır; `MovementsSinceSnapshot` aynı kuralla hesaplanır.
+- Elle `COUNT_*` hareketleri (MOD-0173 elle giriş, §2.4) olağan hareket gibi `MovementsSinceSnapshot`'a girer ve `MovementDuringCount`'u yakar;
+  0181 onları dışlamaz, yalnız görünümde "Elle" olarak etiketler (Q-21 = A).
 - Hareket okuması 0181 Persistence'ta `Find` ile yapılır (emsal `QuarantineLedgerReads.cs:126-136`; konum index'leri
   `InventoryIndexConfiguration.cs:45,48`); okunamazsa 503 `COUNT_INVENTORY_UNAVAILABLE`, `Submit` yazılmaz.
 
@@ -516,8 +538,8 @@ sahibi TBD (yalnız FU-0181-REASON için).
 ### 8.12 Kayıt kodu üretimi
 `CycleCount.Number` = `{ŞİRKET}-CNT-{000001}` (RCS-001 biçimi, `.antigravity/rules/record-coding-standard.md:22-31`). `CNT` öneki RCS-001 §3
 tablosunda yok (ölçüldü, `:45-70`) ve servis kodunda 0 eşleşme (`git grep '"CNT"\|-CNT-' c101e22fa -- services`). **Üretici — Q-7 = B (karar 2026-11-06):**
-MOD-0178'in geçici portu `IWarehouseRecordCodeAllocator`'a `CNT` türü eklenir (XMC-001, eklemeli; MOD-0178 görev koduna dokunmaz —
-Q-22) ve FU-0178-RCS-01 geçişiyle birlikte ortak servise (MOD-0040-FU02 DL-8'e `CNT`) taşınır (FU-0181-RCS); RCS-001 §6 "kendi sayacını
+MOD-0178'in geçici portu `IWarehouseRecordCodeAllocator`'a `CNT` türü eklenir (XMC-001, eklemeli, sahip Beste; MOD-0178 görev koduna dokunmaz —
+Q-22'nin kapsamı yalnız görev modelidir, r2 sahip teyidi) ve FU-0178-RCS-01 geçişiyle birlikte ortak servise (MOD-0040-FU02 DL-8'e `CNT`) taşınır (FU-0181-RCS); RCS-001 §6 "kendi sayacını
 yazmaz" — 0181 ayrı sayaç **yazmaz**. RCS-001 §3 tablosuna `CNT` satırı korunan yol değişikliğidir, ayrı sahip onayıdır (§6, §22). Şirket
 öneki MDM tüzel kişilik `Code`'u (`^[A-Z]{2,5}$`, aksi 422 `COUNT_COMPANY_CODE_INVALID`; MOD-0178 §22 deseni).
 
@@ -526,7 +548,7 @@ yazmaz" — 0181 ayrı sayaç **yazmaz**. RCS-001 §3 tablosuna `CNT` satırı k
 |---|---|---|---|
 | Cycle Count Dashboard | `/Warehouse/CycleCounts` — KPI kartları (açık sayımlar, onay bekleyen fark, reddedilen / rezervasyon engelli düzeltme, dönem doğruluğu %) + sayım listesi (DataTable) | `CYCLECOUNTS` (nav) | KPI'lar okuma anında hesaplanır, saklanmaz |
 | (sayım formu) | `/Warehouse/CycleCounts/Sheet/{countId}` — bin bin satırlar, miktar girişi, "bulunan stok ekle", submit; 375 px zorunlu (Q-12 = A) | `COUNTSHEET` (nav değil) | kör sayımda beklenen yok |
-| Variance Trace | `/Warehouse/CountVariances` — fark satırları; süzgeç depo / SKU / lot / tarih / durum; satırdan defter hareketine (`TransactionNumber`) bağlantı; onay / ret / yeniden sayım / yeniden dene | `COUNTVARIANCES` (nav) | — |
+| Variance Trace | `/Warehouse/CountVariances` — fark satırları; süzgeç depo / SKU / lot / tarih / durum / **kaynak** (`Sayım` varsayılan \| `Elle` \| hepsi — §2.4); satırdan defter hareketine (`TransactionNumber`) bağlantı; onay / ret / yeniden sayım / yeniden dene (yalnız `Sayım` satırlarında; `Elle` satırlar salt okunur, "kaynak beyanı uyuşmuyor" işaretiyle) | `COUNTVARIANCES` (nav) | elle `COUNT_*` defterden okunur, saklanmaz |
 | Evidence Pack | `/Warehouse/CountEvidenceExports` — sayım başına dışa aktarım listesi ve indirme | `COUNTEVIDENCE` (nav) | DL-5, biçim PDF + CSV (Q-18 = A) |
 
 ### 8.14 Hata kodları
@@ -626,6 +648,7 @@ sunucu sayfalıdır.
 | Idempotency-Key | Evet (her yazma) | 8–100 karakter (`WarehouseContract.cs:15-16` emsali) | tekil kısmi index | anahtar araması |
 | If-Match | Evet (güncelleme / giriş / karar) | `Version` | — | — |
 | TenantId / LegalEntityId gövdede | Hayır | gelirse 400 | — | — |
+| `source` (Variance Trace sorgusu) | Hayır (varsayılan `count`) | `count` \| `manual` \| `all`; başka değer 400; `manual` / `all`'da `warehouseId` ve tarih aralığı (≤ 31 gün) zorunlu, yoksa 400 (§2.4) | — | — |
 
 ## 13. Failure Path to Verify
 - **Duplicate sayım (aynı Idempotency-Key, aynı gövde)** — Expected: 200 replay, yeni kayıt / olay / numara yok.
@@ -640,7 +663,8 @@ sunucu sayfalıdır.
 - **Kendi saydığını onaylama** — Expected: 403 `COUNT_SELF_APPROVAL_FORBIDDEN` (Q-5 = A).
 - **Kayıtsız lotla bulunan satır** — Expected: 422 `COUNT_LOT_UNKNOWN`; satır yazılmaz (Q-10 = A).
 - **Seri kontrollü satırda onay** — Expected: 422 `COUNT_SERIAL_NOT_POSTABLE`; defterde hareket yok (Q-10 = A).
-- **MOD-0173 elle `COUNT_*`, ek izin yok** — Expected: 403; hareket yok (Q-21, §2.4 — MOD-0173 seam).
+- **MOD-0173 elle `COUNT_*` hareketi, `sourceModule = "MOD-0181"` beyanıyla** — Expected: 0181 görünümünde "Sayım" değil "Elle" + "kaynak beyanı
+  uyuşmuyor"; Variance Trace'te eylem yok (Q-21 = A, §2.4). Elle hareketin kendisi MOD-0173'te bugünkü izinle kabul edilir (0181 engellemez).
 - **Eşik üstü fark, onaysız posting girişimi** (ör. `retry` onaysız satırda) — Expected: 409 `COUNT_INVALID_STATE`; defterde hareket yok.
 - **COUNT_LOSS rezervasyonu açıkta bırakır** — Expected: `Adjustment.Refused`, kod `INSUFFICIENT_STOCK` + `details.level` aynen; hareket yok.
 - **Defter 503 / 500 / 502 / 504 / iptal** — Expected: `Adjustment.Pending` + 503; `retry` ya da sweeper tek hareketle `Posted`.
@@ -678,8 +702,9 @@ bu pakette (`SCE/MOD-0178-putaway-picking-packing.md:2062-2064`). Depoda `cycle-
 `variances.read` + `variances.recount`; Onaylayıcı = `variances.*` + `settings.*` + `evidence.*` (rol adları öneri). Viewer'a otomatik
 gidecek `read` anahtarlarında kişisel veri yok (çıkarım: sayım kaydı kişi adı değil kullanıcı kimliği taşır).
 
-**0181 dışı anahtar (Q-21, §2.4):** MOD-0173 elle `COUNT_*` girişi için `inventory.count-adjustments.create` (öneri ad) `inventory.*`
-namespace'indedir, MOD-0173'ündür; 0181 manifesti onu bildirmez. Rol şablonunda Onaylayıcı rolüne gitmesi önerilir (AuthService WP).
+**0181 dışı anahtar yok (Q-21 = A, r2):** MOD-0173 elle `COUNT_*` girişi bugünkü `inventory.movements.create` ile aynen kalır; PKS-001 §2
+gereği yayımlanmış anahtar daraltılmaz, yeni `inventory.*` anahtarı önerilmez. Elle `COUNT_*` hareketlerinin 0181'deki görünümü mevcut
+`cycle-count.variances.read` / `cycle-count.counts.read` / `cycle-count.evidence.read` anahtarlarıyla okunur (§2.4).
 
 **Manifest (Q-16 = A, karar 2026-11-06):** ModuleCode `CYCLE-COUNTING` (MOD-0178 `PUTAWAY-PICKING-PACKING` emsali, `PutawayPickingPackingManifestProvider.cs:21`),
 SortOrder 181, Pages `CYCLECOUNTS` (nav), `COUNTSHEET` (nav değil), `COUNTVARIANCES` (nav), `COUNTEVIDENCE` (nav, DL-5); nav anahtarları
@@ -694,6 +719,8 @@ SortOrder 181, Pages `CYCLECOUNTS` (nav), `COUNTSHEET` (nav değil), `COUNTVARIA
   `Mod0181CycleCountRouteTests`; emsal `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs`, onun sabit listesine dokunulmaz) — ve
   `/api/warehouse` rota ailesinin sahibi MOD-0178'in onayı (XMC-001; aile tek-yazıcı seam'dir — `domain-config.md` K15).
 - **Seçilmeyen — B:** ayrı taban `/api/cycle-counts` (yeni rota + `ScopedBasePaths` eklemesi) — v1'de yok.
+- Elle `COUNT_*` görünümü (`GET /api/warehouse/count-variances?source=manual|all`) aynı aile altındadır; 0181 MOD-0173'ün `/api/inventory`
+  rotasını çağırmaz (defter okuması süreç içi, §2.4) — Gateway'de MOD-0173 rotası değişmez (Q-21 = A, r2).
 - İletilen başlıklar: `Authorization`, `X-Legal-Entity-Id`, `X-Correlation-Id`, `Idempotency-Key`, `If-Match`. Dev dilimi
   `ocelot.json`'a yazmaz.
 
@@ -744,7 +771,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-32 (zorunlu) — Yeniden sayım: seçili satırlar için `RecountOfId`'li yeni sayım açılır ve yeni anlık görüntü alır; eski satırlar `Recounted`; zincir `MaxRecounts`'u (varsayılan 2) aşınca 409 `COUNT_RECOUNT_LIMIT`; yeniden sayım yalnız elle tetiklenir, önceki sayanın yeniden atanması reddedilmez (Q-11 = A).
 - [ ] AC-33 (zorunlu) — Kapanış: her satır son durumunda iken sayım `Closed`; `Closed` sayımda her yazma 409 `COUNT_INVALID_STATE`.
 - [ ] AC-34 (zorunlu) — Muafiyet: recall'daki lotta `COUNT_LOSS` / `COUNT_GAIN` 0181 tarafından engellenmez ve defter tür muafiyetiyle kabul eder; FEFO gerekçesi istenmez. Sabotaj: 0181'e recall okuması ekleyip ret ver → kırmızı.
-- [ ] AC-47 (zorunlu, MOD-0173 seam — XMC-001 sahip onayıyla) — Elle `COUNT_*` izni (Q-21): `POST /api/inventory/movements` `movementType = COUNT_GAIN` ya da `COUNT_LOSS` ile, `inventory.movements.create` taşıyan ama `inventory.count-adjustments.create` (öneri ad) taşımayan kullanıcıdan 403, defterde hareket ve ret satırı yok; iki izinle 201; diğer elle türler yalnız `inventory.movements.create` ile değişmeden çalışır; 0181'in süreç içi posting'i (AC-23) bu izni istemez. Sabotaj (ayrı ayrı): tür bazlı ek denetimi kaldır → izinsiz `COUNT_GAIN` post edilir, kırmızı; denetimi `InternalMovementPostingService`'e taşı → 0181 posting'i 403 alır, AC-23 kırmızı.
+- [ ] AC-47 (zorunlu) — Elle `COUNT_*` ayrışması (Q-21 = A): aynı kiracı + şirkette (a) 0181 onayıyla post edilen `COUNT_GAIN`, (b) `POST /api/inventory/movements` ile `sourceModule = MOD-0173`, `sourceType = MANUAL_MOVEMENT` `COUNT_LOSS`, (c) aynı uçtan `sourceModule = MOD-0181` beyanlı `COUNT_GAIN` kurulur → `GET /count-variances?source=manual` (depo + ≤ 31 gün aralığıyla; eksikse 400) (b) ve (c)'yi "Elle" döndürür, (c) "kaynak beyanı uyuşmuyor" işaretli, (a)'yı döndürmez; `source=count` (a)'yı "Sayım" döndürür, (b) / (c)'yi döndürmez; `Elle` satırlarda eylem yok; başka kiracının / şirketin elle hareketi görünmez; 0181 tarafından hiçbir defter yazımı yapılmaz ve MOD-0173 dosyalarında fark yoktur (`git diff` boş). Sabotaj (ayrı ayrı): sınıflandırmayı `SourceModule == "MOD-0181"` beyanına çevir → (c) "Sayım" olur, kırmızı; okumadan `LegalEntityId` yüklemini düşür → başka şirketin elle hareketi görünür, kırmızı.
 - [ ] AC-48 (zorunlu) — Seri kontrollü satır (Q-10 = A): fark hesaplanır ve Variance Trace'te görünür; `approve` 422 `COUNT_SERIAL_NOT_POSTABLE`, hareket yok; tolerans içi olsa da otomatik `Approved` olmaz; `reject` / `recount` çalışır. Sabotaj: 0181'in seri denetimini kaldır → `approve` 422 `COUNT_SERIAL_NOT_POSTABLE` dönmez, kırmızı.
 
 **DL-4 — ekranlar, 7 dil, 375 px**
@@ -754,13 +781,13 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-37 (zorunlu) — 7 dil: her resx anahtarı en, tr, fr, es, zh, ar, ru'da var (parite testi); `ar` sağdan sola düzgün; kullanıcıya görünen hardcoded metin yok; hata kodlarının UI metinleri 7 dilde.
 - [ ] AC-38 (zorunlu) — UAS-001: `cycle-count.counts.read` olmayan kullanıcı `/Warehouse/CycleCounts`'ta başlık, kart, boş tablo ya da eylem düğmesi görmez; tek açıklama + ne yapılacağı; yönlendirme yok; `variances.read` olmayan için Variance Trace aynı. Sabotaj: izin denetimini kaldırıp iskeleti çiz → UAS-001 testi kırmızı.
 - [ ] AC-39 (zorunlu) — Sayım formu 375 px genişlikte canlı ölçülür: yatay kaydırma yok, miktar girişi, "bulunan stok ekle" ve submit kullanılabilir (Q-12 = A).
-- [ ] AC-40 (zorunlu) — Dashboard KPI'ları okuma anında hesaplanır (saklanan toplam yok): açık sayım, onay bekleyen fark, `Refused` düzeltme, dönem doğruluğu (fark 0 satır / sayılmış satır); test veriyle karşılaştırır.
+- [ ] AC-40 (zorunlu) — Dashboard KPI'ları okuma anında hesaplanır (saklanan toplam yok): açık sayım, onay bekleyen fark, `Refused` düzeltme, dönem doğruluğu (fark 0 satır / sayılmış satır), seçili depoda son 31 günün **elle `COUNT_*` hareket sayısı** (§2.4 kuralıyla; Q-21 = A); test veriyle karşılaştırır.
 - [ ] AC-41 (zorunlu) — Manifest sayfaları (`CYCLECOUNTS`, `COUNTSHEET`, `COUNTVARIANCES`) ve her gerçek düğme için bir eylem; `python3 scripts/check_pack_nav_keys.py` PASS.
 - [ ] AC-42 (zorunlu) — Sayfa yardımı: `Help.{KOD}.Purpose`, `.Audience`, `.Step{n}Title` / `.Step{n}` (§25) 7 dilde; metinsiz sayfa yok.
 
 **DL-5 — Evidence Pack**
 
-- [ ] AC-43 (zorunlu) — Dışa aktarım: sayım başlığı, kapsam, `SnapshotAt`, satırlar (beklenen, hareket farkı, sayılan, fark), kararlar (kim / ne zaman / gerekçe), defter `TransactionNumber`'ları ve zaman çizelgesi; dosya `wms_count_evidence_files`'ta saklanır, `Sha256` kayıtta; indirilen dosyanın özeti kayıttakiyle aynı; kayıt insert-only; biçim PDF ve CSV, ikisi de aynı içerik (Q-18 = A).
+- [ ] AC-43 (zorunlu) — Dışa aktarım: sayım başlığı, kapsam, `SnapshotAt`, satırlar (beklenen, hareket farkı, sayılan, fark), kararlar (kim / ne zaman / gerekçe), defter `TransactionNumber`'ları, kapsam bin'lerinde `SnapshotAt` → kapanış arası elle `COUNT_*` hareketleri ayrı bölümde (§2.4) ve zaman çizelgesi; dosya `wms_count_evidence_files`'ta saklanır, `Sha256` kayıtta; indirilen dosyanın özeti kayıttakiyle aynı; kayıt insert-only; biçim PDF ve CSV, ikisi de aynı içerik (Q-18 = A).
 - [ ] AC-44 (zorunlu) — Dışa aktarım ve indirme kiracı / şirket kapsamlı (başka kiracı 404) ve `cycle-count.evidence.export` / `.read` ister.
 
 **DL-6 — Gateway**
@@ -777,7 +804,8 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - **Entegrasyon (Mongo replica set):** InventoryService test paketi `INVENTORY_TEST_MONGO` yoksa kendi replica set'ini başlatır (çıkarım: MVP-1
   ortam notu; bu oturumda koşulmadı). AC-2, AC-4, AC-5, AC-8…AC-13, AC-17…AC-34 gerçek defter (`InternalMovementPostingService`) ile; sahte
   defter yalnız 5xx / iptal enjeksiyonunda (AC-25).
-- **MOD-0173 seam (AC-47):** elle `COUNT_*` izin testi MOD-0173'ün test ağacında, sahip onayıyla (XMC-001).
+- **Elle `COUNT_*` ayrışması (AC-47):** 0181 test ağacında, gerçek defterle (elle hareket `POST /api/inventory/movements` ya da
+  `InternalMovementPostingService` ile kurgulanır); MOD-0173 test / üretim dosyası değişmez (Q-21 = A).
 - **Mimari:** AC-3 (0181'e özel tarama + `SingleSystemOfRecordArchitectureTests` eklemeli bildirimi), AC-7 (`AuthorizationGuardTests`),
   AC-11 (`CentralAuditDeclarationTests`), AC-29 (`ExpiryQuarantineTypeExemptionTests`). Servise dokunulduğunda **bütün** InventoryService
   test paketi koşar (filtre yok; MVP-1 CT kuralı).
@@ -801,7 +829,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] Test expectations build / verifier / RESX / smoke kapsıyor
 - [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor (AUD-001)
 - [ ] Sayfa yardım metni her sayfa için yazılı (UXH-001); tur yok
-- [x] Açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, 2026-11-06, §19.4); iki uygulama notu teyit bekliyor (§19.4 "Kalan açık nokta": PKS-001 §2, Q-22 / Q-7 okunuşu)
+- [x] Açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, 2026-11-06, §19.4); r1'in iki uygulama notu (PKS-001 §2, Q-22 / Q-7 okunuşu) r2'de sahip teyidiyle kapandı
 - [ ] XMC-001 seam'leri (§5) sahiplerinden onay aldı
 - [ ] WMS-COUNT-BUNDLE taslağı yazıldı
 - [ ] Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01)
@@ -884,7 +912,8 @@ Hepsi `c101e22fa` (salt okuma, `git show` / `git grep`):
 ### 19.4 Kararlar (r0'da açık; r1'de sahip kararıyla kapandı)
 r0'da hiçbiri uydurulmadı; her biri öneri + seçenek + karar sahibi taşıyordu. **r1 (2026-11-06):** sahip (Beste) 24 kararın hepsini verdi —
 Q-6, Q-13, Q-21, Q-22, Q-23 adıyla; geri kalan 19'u (Q-1…Q-5, Q-7…Q-12, Q-14…Q-20, Q-24) "öneri kabul". Öneri metni olduğu gibi korundu;
-karar son sütundadır ve etkisi ilgili bölümlere işlendi (revizyon notu). "Q'ya bağlı" AC kalmadı.
+karar son sütundadır ve etkisi ilgili bölümlere işlendi (revizyon notu). "Q'ya bağlı" AC kalmadı. **r2 (2026-11-06):** sahip Q-21'i A
+olarak teyit etti (yeni izin yok) ve Q-22'nin kapsamını daralttı (yalnız görev modeli; Q-7 = B geçerli) — ilgili satırlar güncellendi.
 
 | Kimlik | Soru | Öneri | Seçenekler | Karar sahibi | Karar (r1) |
 |---|---|---|---|---|---|
@@ -894,7 +923,7 @@ karar son sütundadır ve etkisi ilgili bölümlere işlendi (revizyon notu). "Q
 | Q-4 | Onaylayan rol ve onay yolu | modül içi onay, `cycle-count.variances.approve`, "Onaylayıcı" rolü (AuthService WP) | A öneri · B MOD-0023 iş akışı (MOD-0175 emsali) | Beste; rol şablonu Ali (Auth) | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-5 | Dört göz | zorunlu: sayan / submit eden onaylayamaz; e-imza v1 yok | A öneri · B ayarlanabilir · C MOD-0022 e-imza | Beste | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-6 | Lokasyon kilidi mi, anlık görüntü + hareket farkı mı | B: kilit yok; anlık görüntü + `MovementsSinceSnapshot` + `MovementDuringCount` bayrağı + açık sayım çakışma yasağı | A defter posting'inde "sayımdaki bin" kilidi (MOD-0173 seam, XMC) · B öneri · C yalnız UI uyarısı | Beste (A seçilirse MOD-0173 sahibi MVP-1 CT) | **Karar (sahip, Beste, 2026-11-06): B** — lokasyon kilidi yok; anlık görüntü alınır, sonraki hareketler farka eklenir, depo durmaz; açık sayım çakışma yasağı (yalnız sayım–sayım, hareketi engellemez) kalır (§8.2, §8.4, AC-13, AC-19) |
-| Q-7 | Görünen kod `{ŞİRKET}-CNT-…` (RCS-001) | OTOMATİK, önek `CNT`; MOD-0178 geçici portuna `CNT` türü (XMC) → MOD-0040-FU02 DL-8'e `CNT` eklenir; RCS-001 §3 satırı ayrı sahip onayı (korunan yol) | A ortak servisi bekle · B öneri | Beste (RCS K2 + 0178 sahibi) | Karar (sahip, 2026-11-06): öneri kabul |
+| Q-7 | Görünen kod `{ŞİRKET}-CNT-…` (RCS-001) | OTOMATİK, önek `CNT`; MOD-0178 geçici portuna `CNT` türü (XMC) → MOD-0040-FU02 DL-8'e `CNT` eklenir; RCS-001 §3 satırı ayrı sahip onayı (korunan yol) | A ortak servisi bekle · B öneri | Beste (RCS K2 + 0178 sahibi) | Karar (sahip, 2026-11-06): öneri kabul. **r2 teyidi:** Q-7 = B geçerli — `CNT` türü MOD-0178 kayıt kodu portu `IWarehouseRecordCodeAllocator`'a XMC-001 ile eklemeli eklenir (sahip Beste); Q-22 buna engel değildir |
 | Q-8 | Karantina / tutulan stok sayımı; `COUNT_GAIN` statüsü | v1 yalnız `AVAILABLE` sayılır ve post edilir; tutulan kovalar salt okunur; kazanç `AVAILABLE`'a | A öneri · B tutulan kovaları say, farkı MOD-0175'e istisna olarak yönlendir · C GxP: bulunan stok `QUARANTINE`'e (MOD-0175 hold otomatik) | Beste (+ kalite TBD) | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-9 | Rezervasyonlu stok farkı (FU-03-COUNT) | A: reddet, `Refused` + "rezervasyon engeli", sahibi bırakınca `retry` | A öneri · B yalnız serbest miktarı post et, kalanı istisna · C 0181 rezervasyonu bırakır (FU03 seam) | Beste (FU03 sahibi MVP-1 CT) | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-10 | Seri / lot sayımı | lot düzeyi zorunlu; kayıtlı olmayan lot `Found`'da reddedilir; seri kontrollü SKU v1'de post edilmez | A öneri · B seri listesi girişi ve seri düzeyi düzeltme · C kayıtsız lotu kabul et | Beste | Karar (sahip, 2026-11-06): öneri kabul |
@@ -908,19 +937,18 @@ karar son sütundadır ve etkisi ilgili bölümlere işlendi (revizyon notu). "Q
 | Q-18 | Evidence Pack biçimi | PDF + CSV (expiry / recall kanıt dışa aktarımı emsali) | A öneri · B yalnız CSV | Beste | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-19 | Değerleme etkisi raporu / posting tarihi | v1 dışı; `postingDate` = ilk deneme günü | A öneri · B dönem kapanışına göre tarih kuralı | Beste (+ finans TBD) | Karar (sahip, 2026-11-06): öneri kabul |
 | Q-20 | Denetim sınıfı (BL-501 bağlı, ölçüldü) | K2 sınıfı: GxP stok kaydı; `RequireEnlistment` kapalı-başarısız | A öneri · B K1 | Beste | Karar (sahip, 2026-11-06): öneri kabul |
-| Q-21 | MOD-0173 elle `COUNT_GAIN` / `COUNT_LOSS` (`MOD-0173 :714-717`) 0181'den sonra kalır mı | v1 kalır, 0181 dokunmaz | A öneri · B elle `COUNT_*`'ı yalnız 0181'e bırak (MOD-0173 değişikliği, XMC) | Beste | **Karar (sahip, Beste, 2026-11-06):** elle `COUNT_GAIN` / `COUNT_LOSS` MOD-0173'te **kalır, izinle sınırlanır** — ek anahtar `inventory.count-adjustments.create` (öneri ad; MOD-0173 paketi kaydeder); MOD-0173'e XMC-001 eklemeli değişiklik, sahibi MVP-1 CT (Beste) (§2.4, §5, AC-47) |
-| Q-22 | Sayım görevi modeli | 0181'in kendi kaydı (`wms_count_*`); `wms_tasks`'a `Count` türü eklenmez | A öneri · B MOD-0178 `WarehouseTask` + `Kind = Count` (XMC) | Beste | **Karar (sahip, Beste, 2026-11-06): A** — sayım görevi MOD-0181'in kendi kaydı (`wms_count_*`); MOD-0178 görevi kullanılmaz, MOD-0178'e (görev modeli / görev kodu) dokunulmaz |
+| Q-21 | MOD-0173 elle `COUNT_GAIN` / `COUNT_LOSS` (`MOD-0173 :714-717`) 0181'den sonra kalır mı | v1 kalır, 0181 dokunmaz | A öneri · B elle `COUNT_*`'ı yalnız 0181'e bırak (MOD-0173 değişikliği, XMC) | Beste | **Karar (sahip, Beste, 2026-11-06; r2 teyidi): A** — elle `COUNT_GAIN` / `COUNT_LOSS` MOD-0173'te bugünkü izinle (`inventory.movements.create`) **aynen kalır**; PKS-001 §2 gereği yayımlanmış anahtar daraltılmaz — **yeni izin eklenmez, MOD-0173'e dokunulmaz, XMC yok**. 0181 elle `COUNT_*` hareketlerini yalnız okuma tarafında "Elle" olarak ayrıştırır; sayım ekranı asıl yoldur (§2.4, AC-47). (r1'deki ek izin yaklaşımı geri alındı.) |
+| Q-22 | Sayım görevi modeli | 0181'in kendi kaydı (`wms_count_*`); `wms_tasks`'a `Count` türü eklenmez | A öneri · B MOD-0178 `WarehouseTask` + `Kind = Count` (XMC) | Beste | **Karar (sahip, Beste, 2026-11-06): A** — sayım görevi MOD-0181'in kendi kaydı (`wms_count_*`); MOD-0178 görevi kullanılmaz. **r2 teyidi:** "MOD-0178'e dokunulmaz" **yalnız görev modelini** (`WarehouseTask*`, `wms_tasks`) kapsar; Q-7 = B geçerlidir — `CNT` türü MOD-0178 kayıt kodu portuna XMC-001 ile eklenir (sahip Beste, §5) |
 | Q-23 | Kod hattı / dal | sahip kararı: MVP-1 tek çalışma dalı mı, `feature/sce/mod-0181-cycle-counting` mı | A tek çalışma dalı · B ayrı dal | Beste | **Karar (sahip, Beste, 2026-11-06): A** — dal `feature/sce/mod-0173-inventory-ledger-valuation` (tek çalışma dalı; künye `branch`) |
 | Q-24 | Bir sayımın satır sınırı | 2000 satır (`MaxLinesPerCount`, ayarlanabilir) | A öneri · B sınır yok (bakiye okuması 5000 sınırı emsali) | Beste | Karar (sahip, 2026-11-06): öneri kabul |
 
-**Kalan açık nokta (r1 — yeni karar değil, kapanan kararların uygulama notu; sahip teyidi gerekir):**
-1. **Q-21 / PKS-001 §2:** `COUNT_*` için ek izin, `inventory.movements.create`'in tek başına verdiği erişimi daraltır. Anahtar "yayımlanmış"
-   sayılıyorsa (seed / rol satırı / JWT / gönderilmiş `[HasPermission]`) PKS-001 §2 daraltmayı yasaklar; yayımlanma durumu bu oturumda
-   ölçülmedi. Sahip (MVP-1 CT, Beste) ya anahtarın henüz yayımlanmadığını teyit eder ya da yolu seçer (ör. yeni anahtar + takma ad, PKS-001 §3).
-   Anahtar adı `inventory.count-adjustments.create` öneridir; kesin ad MOD-0173 paketinin revizyonundadır.
-2. **Q-22 ile Q-7 = B'nin okunuşu:** Q-22 "MOD-0178'e dokunulmaz" bu pakette **görev modeli / görev kodu** kapsamında okundu; Q-7 = B (kabul
-   edilen öneri) MOD-0178'in kayıt kodu portu `IWarehouseRecordCodeAllocator`'a eklemeli `CNT` türü ister (§5, §8.12). Sahip Q-22'yi MOD-0178'in
-   bütün dosyaları için kastettiyse Q-7 = B uygulanamaz ve Q-7 yeniden açılır (A: ortak servisi bekle). Teyit gerekir.
+**Kalan açık nokta (r2):**
+1. r1'in iki uygulama notu (Q-21 / PKS-001 §2; Q-22 ile Q-7 = B'nin okunuşu) **r2'de sahip teyidiyle kapandı** (Beste, 2026-11-06): Q-21 = A, yeni
+   izin yok; Q-22 yalnız görev modeli, Q-7 = B geçerli.
+2. **Elle `COUNT_*` okumasının performansı (ölçüm, karar değil):** defter hareketlerinde `MovementType` index'i yok (ölçüldü,
+   `InventoryIndexConfiguration.cs:29-58`). Paket bu yüzden `source=manual|all` sorgusunu depo + ≤ 31 günle sınırlar ve bin index'lerini kullanır
+   (§2.4). Büyük depoda süre ölçülmedi; DL-3 ilk ölçümüdür. Yetmezse tek yol MOD-0173'e index talebidir — Q-21 = A ("MOD-0173'e dokunulmaz")
+   ile çeliştiği için ancak sahip kararıyla (MVP-1 CT, Beste).
 
 **Plan hizalaması (2026-11-01 kuralı):** bu oturuma modülün plan satırı (`1.x.y` yetenek kimliği, plan MVP kimliği) verilmedi; plan dosyası depoda
 değildir. Dilim tablosunda `plan kimliği yok` / `plan satırı yok` yazıldı. Depodaki yol haritası belgesi MVP-5'i söyler (`integration-phase-and-mvp5-start-plan-2026-10-21.md:78`).
@@ -938,6 +966,8 @@ değildir. Dilim tablosunda `plan kimliği yok` / `plan satırı yok` yazıldı.
 - **FU-0181-EA** — Blueprint Build/Buy düzeltmesi (W-0181-01, Q-13 = Build) — EA'ya açık iş.
 - **FU-0181-READAUDIT** — kanıt indirme okumalarının denetimi (AUD-001 §7).
 - **FU-0181-BARCODE** — MOD-0182 tarama olaylarının `scanRef` kapısına bağlanması.
+- **MOD-0173 sahibine not (0181 işi değil, Q-21 = A):** defter `SourceModule`'ü çağıranın beyanıdır, sunucuda modül bazında doğrulanmıyor
+  (§2.4 ölçümü). 0181 bunu okuma tarafında `Adjustment.TransactionId` eşleşmesiyle aşar; sunucu tarafı doğrulama gerekirse MOD-0173'ün kararıdır.
 
 ## 21. Audited Events
 
@@ -986,7 +1016,7 @@ RCS-001 §3 tablosuna yazılması korunan yol değişikliğidir (ayrı sahip ona
 |---|---|---|---|---|---|
 | DL-1 | çekirdek: sayım kaydı ve plan (yarat / düzenle / sil) + salt okunur beklenen anlık görüntü (release) + izin + kiracı + denetim + kayıt kodu (arka uç) | Owned Objects, Entity Fields, Indexes, Repo Scope, Protected Paths, Dependencies, Servis ve kapsam, Beklenen miktar anlık görüntüsü, Durum makinesi, Merkezi denetim ve yerel iz, Kayıt kodu üretimi, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Audited Events, Record Codes | E4 | plan kimliği yok | plan satırı yok |
 | DL-2 | sayım girişi + bulunan stok + submit + fark hesabı + kör sayım (arka uç) | Fark hesabı, Durum makinesi, Lot ve seri, Validation Rules, Failure Path to Verify, Audited Events | E4 | plan kimliği yok | plan satırı yok |
-| DL-3 | onay + eşik + dört göz + COUNT_GAIN / COUNT_LOSS posting seam + kurtarma + rezervasyon reddi + yeniden sayım + seri satır kuralı (arka uç); MOD-0173 elle `COUNT_*` izni (XMC seam, Q-21) | Onay ve eşik, Defter kaydı ve kurtarma, Rezervasyon uzlaştırması, Karantina ve tutulan stok, Muafiyetler, Hata kodları, Failure Path to Verify, Audited Events | L3 + E5 | plan kimliği yok | plan satırı yok |
+| DL-3 | onay + eşik + dört göz + COUNT_GAIN / COUNT_LOSS posting seam + kurtarma + rezervasyon reddi + yeniden sayım + seri satır kuralı + elle `COUNT_*` ayrışması (salt okuma, Q-21 = A) (arka uç) | Onay ve eşik, Defter kaydı ve kurtarma, Rezervasyon uzlaştırması, Karantina ve tutulan stok, Muafiyetler, Hata kodları, Failure Path to Verify, Audited Events | L3 + E5 | plan kimliği yok | plan satırı yok |
 | DL-4 | ekranlar (Cycle Count Dashboard, sayım formu, Variance Trace) + manifest + 7 dil + 375 px + yardım | Layout & Shell Contract, Frontend File Contract, Ekranlar ve Blueprint soft pages, Page Help (UXH-001) | E4 | plan kimliği yok | plan satırı yok |
 | DL-5 | Evidence Pack dışa aktarımı (arka uç + ekran) | CountEvidenceExport, Ekranlar ve Blueprint soft pages, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 | DL-6 | Gateway kapsama testi ya da yeni rota (integration-agent; DL-1'den sonra) | Gateway / API Routing Decision | E3 | plan kimliği yok | plan satırı yok |
@@ -997,10 +1027,10 @@ Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kay
 
 | Dilim | Başlamadan kapanması gereken kararlar | Seam'ler (XMC-001) | AC |
 |---|---|---|---|
-| DL-1 | kararlar kapandı (Q-1, Q-6, Q-7, Q-13, Q-15, Q-16, Q-20, Q-22, Q-23, Q-24 — r1); kalan: WMS-COUNT-BUNDLE taslağı, Q-22 / Q-7 okunuş teyidi (§19.4) | `SingleSystemOfRecordArchitectureTests`, `CentralAuditDeclarationTests`, `Program.cs`, `IWarehouseRecordCodeAllocator` (`CNT`, Q-7 = B) | AC-1…AC-13 |
+| DL-1 | kararlar kapandı (Q-1, Q-6, Q-7, Q-13, Q-15, Q-16, Q-20, Q-22, Q-23, Q-24 — r1); kalan: WMS-COUNT-BUNDLE taslağı (Q-22 / Q-7 okunuşu r2'de teyit edildi) | `SingleSystemOfRecordArchitectureTests`, `CentralAuditDeclarationTests`, `Program.cs`, `IWarehouseRecordCodeAllocator` (`CNT`, Q-7 = B) | AC-1…AC-13 |
 | DL-2 | kararlar kapandı (Q-1, Q-6, Q-10 — r1) | `CentralAuditDeclarationTests` (sayı) | AC-14…AC-20 |
-| DL-3 | kararlar kapandı (Q-3, Q-4, Q-5, Q-8, Q-9, Q-10, Q-11, Q-17, Q-19, Q-21 — r1); kalan: Q-21 PKS-001 §2 notu (§19.4) | `ExpiryQuarantineTypeExemptionTests`, `CentralAuditDeclarationTests`; MOD-0173 izin seam'i (§2.4, Q-21) | AC-21…AC-34, AC-47, AC-48 |
-| DL-4 | karar kapandı (Q-12 — r1); AuthService rol şablonu WP'si (Q-4 = A, Q-21; Ali) kabul kapısı | — | AC-35…AC-42, AC-46 |
+| DL-3 | kararlar kapandı (Q-3, Q-4, Q-5, Q-8, Q-9, Q-10, Q-11, Q-17, Q-19, Q-21 — r1); kalan: elle `COUNT_*` okuma performansı ölçümü (§19.4) | `ExpiryQuarantineTypeExemptionTests`, `CentralAuditDeclarationTests`; MOD-0173'e seam yok (Q-21 = A, r2) | AC-21…AC-34, AC-47, AC-48 |
+| DL-4 | karar kapandı (Q-12 — r1); AuthService rol şablonu WP'si (Q-4 = A; Ali) kabul kapısı | — | AC-35…AC-42, AC-46 |
 | DL-5 | karar kapandı (Q-18 — r1) | `CentralAuditDeclarationTests`, `SingleSystemOfRecordArchitectureTests` (kanıt koleksiyonları) | AC-43, AC-44 |
 | DL-6 | karar kapandı (Q-15 = A — r1) | gateway test projesi (integration-agent); `ocelot.json` değişmez | AC-45 |
 
@@ -1014,6 +1044,8 @@ yürür (`SCE/MOD-0178-putaway-picking-packing.md:136`); paylaşılan test dosya
   gerekçe ister"); ilgili `Help.CYCLECOUNTS.Related.COUNTVARIANCES`.
 - `COUNTSHEET` → `Purpose`, `Audience`, `Step1..3` (bin bin say, bulunan stoğu ekle, gönder); kör sayımda beklenen gösterilmez notu.
 - `COUNTVARIANCES` → `Purpose`, `Audience`, `Step1..4` (farkı incele, onayla / reddet / yeniden say, rezervasyon engelinde "Yeniden dene",
-  defter hareketine git); `.Immediate` ("Onay stoğu hemen düzeltir; geri alma Stok Hareketleri'nde ters kayıttır"); `Related.CYCLECOUNTS`.
+  defter hareketine git); `.Immediate` ("Onay stoğu hemen düzeltir; geri alma Stok Hareketleri'nde ters kayıttır"); `.Note.ManualCount`
+  ("'Elle' satırlar Stok Hareketleri'nden girilmiş sayım düzeltmeleridir; onay ve dört göz dışındadır. Sayım farkı için asıl yol bu ekrandır.");
+  `Related.CYCLECOUNTS`.
 - `COUNTEVIDENCE` (DL-5) → `Purpose`, `Audience`, `Step1..2` (sayımı seç ve dışa aktar, dosyayı indir).
 - Kiracı modülü → 7 dil. **Tur yok** (beş akıştan biri değil).
