@@ -194,4 +194,10 @@
     <value>الدور يملك هذا الإذن بالفعل. حدّث الصفحة.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>إزالة هذا الإذن لن تترك أي حساب نشط آخر يمكنه إضافة المستخدمين. امنح هذا الحق لمستخدم آخر أولاً.</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="ActionVerb_Comment" xml:space="preserve">
+    <value>التعليق</value>
+  </data>
 </root>

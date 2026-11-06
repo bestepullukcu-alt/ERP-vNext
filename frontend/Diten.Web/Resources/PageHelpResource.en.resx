@@ -2032,4 +2032,36 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Leave your own sample</value>
   </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>This page opens capacity plans: create a plan for the selected company, or open an existing one by its ID.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Capacity and supply planners</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Choose the company</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>Choose the company in the company selector at the top; the plan is created and opened in that company.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>Create a plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>Click “Create plan”, fill in the name, the horizon and the demand plan it is based on, then click “Save”. The new plan opens in its workspace.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>Open a plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>Paste the plan ID into “Plan ID” and click “Open plan”. A plan of another company is not found.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>This page is the workspace of one capacity plan: its source data, its scenarios and their evaluations.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>Capacity and supply planners</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>Check the source</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>“Plan provenance” shows the demand plan, its version, when it was captured and its checksum: every scenario of this plan works on that data.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>Create a scenario</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>Click “Create scenario”, give it a name, add its constraint references and capacity adjustments, then click “Create scenario” in the panel.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>Evaluate it</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>Open a scenario and click “Evaluate”: choose the mode and the resources, then submit. The result appears in the evaluation panel when it is completed.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>This page opens S&amp;OP plans: create a plan for the selected company, or open an existing one by its ID.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>S&amp;OP coordinators and sign-off owners</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>Choose the company</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>Choose the company in the company selector at the top; the plan is created and opened in that company.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>Create a plan</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>Click “Create plan”, fill in the name, the horizon and the demand plan it is based on, then click “Save”. The new plan opens in its workspace as “Draft”.</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>Open a plan</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>Paste the plan ID into “Plan ID” and click “Open plan”. A plan of another company is not found.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>This page is the workspace of one S&amp;OP plan: its snapshots and the sign-offs recorded on them.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>S&amp;OP coordinators and sign-off owners</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>Capture a snapshot</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>Click “Capture snapshot”, fill in the demand plan, its version, when the source was captured and its checksum, and add the supply input references. Confirm with Ctrl+Enter or the button.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>Record a sign-off</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Click “Record sign-off”, choose the snapshot, your role and the decision, add a comment if needed and confirm. Sign-offs are recorded only while the plan is in review.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Know what is final</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>A recorded sign-off is final: it cannot be changed or deleted, and a second sign-off for the same role and snapshot is refused.</value></data>
 </root>

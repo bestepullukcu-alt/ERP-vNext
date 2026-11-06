@@ -1199,4 +1199,55 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimisation du stock de sécurité</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Scénarios de plan de capacité</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>Validations du plan S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>Instantanés du plan S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.CASES" xml:space="preserve">
+    <value>Dossiers</value>
+  </data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
+    <value>Consommations</value>
+  </data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
+    <value>Dérogations de date</value>
+  </data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve">
+    <value>Exercices</value>
+  </data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
+    <value>Contrôles d’efficacité</value>
+  </data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
+    <value>Preuves</value>
+  </data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
+    <value>Exceptions métier</value>
+  </data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
+    <value>Statut du lot</value>
+  </data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
+    <value>Notifications d’alerte</value>
+  </data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve">
+    <value>Politiques</value>
+  </data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
+    <value>Demandes de quarantaine</value>
+  </data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
+    <value>Ségrégations</value>
+  </data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve">
+    <value>Traçage</value>
+  </data>
 </root>

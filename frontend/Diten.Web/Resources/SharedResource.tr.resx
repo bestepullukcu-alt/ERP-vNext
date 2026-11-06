@@ -1257,4 +1257,55 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Güvenlik Stoğu Optimizasyonu</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Kapasite Planı Senaryoları</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP Planı Onayları</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP Planı Anlık Görüntüleri</value>
+  </data>
+  <data name="Perm.Entity.CASES" xml:space="preserve">
+    <value>Vakalar</value>
+  </data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
+    <value>Tüketimler</value>
+  </data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
+    <value>Pano</value>
+  </data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
+    <value>Tarih İstisnaları</value>
+  </data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve">
+    <value>Tatbikatlar</value>
+  </data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
+    <value>Etkinlik Kontrolleri</value>
+  </data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
+    <value>Kanıtlar</value>
+  </data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
+    <value>İstisnalar</value>
+  </data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
+    <value>Lot Durumu</value>
+  </data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
+    <value>Bildirimler</value>
+  </data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve">
+    <value>Politikalar</value>
+  </data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
+    <value>Karantina Talepleri</value>
+  </data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
+    <value>Ayırmalar</value>
+  </data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve">
+    <value>İzleme</value>
+  </data>
 </root>
