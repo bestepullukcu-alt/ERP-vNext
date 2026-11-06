@@ -27,15 +27,18 @@ Sırlar YALNIZ ortamdan okunur, argv'ye girmez, çıktıya yazılmaz (değerleri
     0  E3 YEŞİL — Y1–Y6 her beklenti tuttu
     1  E3 KIRMIZI — ölçülen bir beklenti tutmadı (adıyla yazılır)
     2  KULE DURUR — önkoşul tutmadı (port, paylaşılan veritabanı, RabbitMQ, derleme, taban commit, kayıt kimliği)
-    3  KULE DURUR, SAHİBE SORAR — ölçülmemiş kurulum yolu (kiracı, kullanıcı ve rol verme, modules.max, platform
-       yöneticisi jetonu); betik o noktada durur
+    3  KULE DURUR, SAHİBE SORAR — kurulum yolunun bir adımı tutmadı (platform yöneticisi jetonu, kiracı, kullanıcı ve
+       rol verme, adanmış roller, modules.max, kiracı girişi) ya da çalışma anında ölçülen iki nokta tutmadı (SuperAdmin
+       rolü boş veritabanında, Platform iç anahtar ayarı); betik o noktada adıyla durur
     4  E3 BEKLER — 1 dakikalık yük 12'den büyük
     5  kullanım ya da ortam değişkeni eksik
 Her yolda (hata, sinyal, erken çıkış) Y6 temizliği koşar: yalnız betiğin başlattığı süreçler, kayıtlı PID + başlangıç
 zamanı eşleşirse durdurulur; ada göre süreç öldürülmez.
 
 Ölçüm sınırı: servis ayar adları, uç yolları, günlük satırları ve koleksiyon adları kod okumasıdır (Expected HEAD
-13ca54a01); betik kule tarafından koşulmadan önce derlenmedi, çalıştırılmadı.
+13ca54a01); betik kule tarafından koşulmadan önce derlenmedi, çalıştırılmadı. `kurulum()` sırası
+docs/records/audits/2026-11/mdm-ct-02-dl1-inspection-01/E3-SETUP-PATH-MEASUREMENT.md §7'dir (kod okuması). Kurulumda
+üretilen parolalar ve tek kullanımlık bağlantılar yalnız bellektedir; çıktıda süzülür, --out altına yazılmaz.
 """
 from __future__ import annotations
 
@@ -44,6 +47,7 @@ import base64
 import json
 import os
 import re
+import secrets
 import shutil
 import signal
 import subprocess
@@ -51,6 +55,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -74,6 +79,17 @@ DB_AUTH, DB_PLATFORM, DB_PLATFORM_JOBS, DB_MDM = "e3_auth", "e3_platform", "e3_p
 SYNC_WAIT_SECONDS = 60
 START_WAIT_SECONDS = 180
 SECRET_VARS = ("E3_JWT_SECRET", "E3_INTERNAL_API_KEY", "E3_MDM_REGISTRATION_ID", "E3_MDM_REGISTRATION_SECRET")
+# kurulum (E3-SETUP-PATH-MEASUREMENT §7; kod okuması)
+PLATFORM_TENANT = "00000000-0000-0000-0000-000000000001"
+PERMISSIONS_READY = "Permission auto-registration complete."
+PLATFORM_ASSIGN = "platform.tenants.commercial.subscription.assign"
+TOOL_PROJECT = "services/Diten.AuthService/tools/Diten.AuthService.FirstPlatformAdministrator"
+TOOL_BINARY = "Diten.AuthService.FirstPlatformAdministrator"
+SETUP_DOMAIN = "e3.example.test"
+SETUP_PLAN = "STARTER"  # FREE değil: users.max 5, kiracı 1'in 6. kullanıcısı reddedilir
+DEDICATED_ROLES = {"steward": "ProductDataSteward", "approver": "ProductIdentityApprover",
+                   "retirement": "ProductIdentityRetirementSteward"}
+GUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 SERVICES = {
     # name: (port, project dir relative to a worktree root, binary name, health path or None)
@@ -87,6 +103,7 @@ BUILDS = (
     "services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj",
     "services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj",
     "gateway/Diten.ApiGateway/Diten.ApiGateway.csproj",
+    f"{TOOL_PROJECT}/{TOOL_BINARY}.csproj",
 )
 JWT_LIKE = re.compile(r"eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]*")
 
@@ -385,7 +402,7 @@ def preconditions(ctx: Ctx, base_worktree: Path) -> None:
         raise Stop(2, "KULE DURUR — taban worktree yanlış commit'te ya da kirli")
     ctx.base_worktree, ctx.base_verified = real, True
 
-    # builds: this branch's four projects, then the base MDM in its worktree (load gate before each)
+    # builds: this branch's four services + the FirstPlatformAdministrator tool, then the base MDM in its worktree (load gate before each)
     for csproj in BUILDS:
         build(ROOT, csproj)
     build(real, BUILDS[2])
@@ -439,24 +456,34 @@ def start_mongod(ctx: Ctx) -> None:
     raise Stop(2, "KULE DURUR — atılabilir mongod birincil olmadı")
 
 
+def mongo_uri(ctx: Ctx) -> str:
+    return f"mongodb://127.0.0.1:{ctx.mongo_port}/?replicaSet={RS_NAME}&directConnection=true"
+
+
 def service_env(ctx: Ctx, name: str) -> dict:
     env = {k: v for k, v in os.environ.items() if not k.startswith("E3_") and k != "ASPNETCORE_URLS"}
     s = ctx.env_secrets
-    uri = f"mongodb://127.0.0.1:{ctx.mongo_port}/?replicaSet={RS_NAME}&directConnection=true"
+    uri = mongo_uri(ctx)
     env.update({"ASPNETCORE_ENVIRONMENT": "Development", "DOTNET_ENVIRONMENT": "Development",
                 "JwtSettings__Secret": s["E3_JWT_SECRET"]})
     eventing = {"Eventing__Transport": "RabbitMQ", "Eventing__VirtualHost": ctx.vhost}
+    # A missing X-Tenant-Id is a 400 "Missing Tenant", never a silent fall to the platform tenant (dev bypass)
+    no_bypass = {"TenantResolution__DevBypassEnabled": "false"}
+    # The setup path needs no e-mail; nothing goes to the shared Mailpit (localhost:1025)
+    no_smtp = {"Smtp__Enabled": "false"}
     if name == "auth":
         env.update({"MongoDbSettings__ConnectionString": uri, "MongoDbSettings__DatabaseName": DB_AUTH,
                     "PlatformService__InternalApiKey": s["E3_INTERNAL_API_KEY"],
-                    "InternalEventAuth__ApiKey": s["E3_INTERNAL_API_KEY"], **eventing})
+                    "InternalEventAuth__ApiKey": s["E3_INTERNAL_API_KEY"], **eventing, **no_bypass, **no_smtp})
     elif name == "platform":
         env.update({"MongoDbSettings__ConnectionString": uri, "MongoDbSettings__DatabaseName": DB_PLATFORM,
                     "BackgroundJobs__StorageDatabaseName": DB_PLATFORM_JOBS,
                     "AuthService__InternalApiKey": s["E3_INTERNAL_API_KEY"],
                     "ModuleRegistrationCredentials__Mdm__Identifier": s["E3_MDM_REGISTRATION_ID"],
                     "ModuleRegistrationCredentials__Mdm__ActiveSecret": s["E3_MDM_REGISTRATION_SECRET"],
-                    "Eventing__WorkerEnabled": "true", **eventing})
+                    "Eventing__WorkerEnabled": "true", **eventing, **no_smtp})
+    elif name == "gateway":
+        env.update(no_bypass)
     elif name == "mdm":
         env.update({"Mongo__ConnectionString": uri, "Mongo__DatabaseName": DB_MDM,
                     "PlatformRegistration__InternalApiKey": s["E3_INTERNAL_API_KEY"],
@@ -489,11 +516,13 @@ def start_service(ctx: Ctx, name: str, worktree: Path) -> Owned:
     raise Stop(2, f"KULE DURUR — {name} {START_WAIT_SECONDS} sn içinde hazır olmadı")
 
 
-# ── the unmeasured setup: the tower stops and asks the owner ────────────────────────────────────────────────────────
+# ── setup (E3-SETUP-PATH-MEASUREMENT §7, code reading): any step that does not hold stops by name ─────────────────────
 @dataclass
 class User:
     email: str
     password: str
+    tenant: str = ""  # tenant guid, sent as X-Tenant-Id on the tenant login
+    id: str = ""
 
 
 @dataclass
@@ -503,24 +532,266 @@ class Setup:
     tenant2: str
     t1: dict          # role -> User: "admin", "viewer", "nokey", "steward", "approver", "retirement"
     t2: dict          # role -> User: "admin", "viewer"
+    platform_admin: User | None = None  # credentials kept in memory: the platform token lives 15 minutes
+
+
+def remember_secret(value) -> None:
+    if isinstance(value, str) and value:
+        _SECRETS.append(value)
+
+
+def new_password() -> str:
+    """Upper + lower + digit + special, ≥ 16 (platform and tenant default policy: ≥ 10, upper, special)."""
+    password = "Aa1!" + secrets.token_urlsafe(18)
+    remember_secret(password)
+    return password
+
+
+def bearer(token: str) -> dict:
+    return {"Authorization": f"Bearer {token}"}
+
+
+def guid_of(value) -> str | None:
+    if isinstance(value, dict):
+        value = field_ci(value, "id")
+    return value if isinstance(value, str) and GUID_RE.match(value) else None
+
+
+def rows_of(value) -> list:
+    if isinstance(value, list):
+        return value
+    for name in ("items", "data", "results"):
+        inner = field_ci(value, name)
+        if isinstance(inner, list):
+            return inner
+    return []
+
+
+def mongo_tenant(tenant: str) -> str:
+    """TenantId as written by Auth (standard UUID); the string form is matched too, nothing else."""
+    return f"{{$in:[UUID('{tenant}'),'{tenant}']}}"
+
+
+def wait_platform_permissions(ctx: Ctx) -> None:
+    deadline = time.time() + START_WAIT_SECONDS
+    while time.time() < deadline:
+        if log_count(ctx.owned, "platform", PERMISSIONS_READY) > 0:
+            emit(f"platform: günlükte '{PERMISSIONS_READY}'")
+            return
+        time.sleep(2)
+    raise OwnerStop([f"Platform günlüğünde '{PERMISSIONS_READY}' {START_WAIT_SECONDS} sn içinde görülmedi "
+                     "(platform.* izinleri SuperAdmin'e verilmedi)"])
+
+
+def measure_superadmin(ctx: Ctx) -> None:
+    """Runtime measurement (not read in DataSeeder): the platform tenant's SuperAdmin role exists on an empty database."""
+    js = (f"db.roles.countDocuments({{Name:'SuperAdmin', TenantId:{mongo_tenant(PLATFORM_TENANT)}, "
+          f"IsDeleted:{{$ne:true}}}})")
+    deadline = time.time() + 30
+    count = int(own_query(ctx, DB_AUTH, js) or 0)
+    while not count and time.time() < deadline:
+        time.sleep(3)
+        count = int(own_query(ctx, DB_AUTH, js) or 0)
+    emit(f"ÖLÇÜM (çalışma anı): Auth roles, platform kiracısında SuperAdmin sayısı {count}")
+    if not count:
+        raise OwnerStop(["SuperAdmin rolü boş veritabanında oluşmadı (DataSeeder satırı kod okumasıyla ölçülmemişti)"])
+
+
+def measure_platform_internal_key(ctx: Ctx, email: str) -> None:
+    """Runtime measurement: Platform compares the key this script gives it (AuthService__InternalApiKey) on its internal
+    surface. The record the tool just wrote is Active, so a matching key answers 200; a 401 means the setting differs."""
+    query = urllib.parse.urlencode({"email": email})
+    status, _ = http("GET", f"http://localhost:5057/api/internal/platform-administrators/status?{query}",
+                     headers={"X-Internal-Api-Key": ctx.env_secrets["E3_INTERNAL_API_KEY"]})
+    emit(f"ÖLÇÜM (çalışma anı): Platform iç ucu platform-administrators/status, betiğin iç anahtarıyla → {status}")
+    if status == 401:
+        raise OwnerStop(["Platform iç anahtar ayar adı: Platform, AuthService__InternalApiKey ile verilen anahtarı kabul "
+                         "etmedi (iç uç 401)"])
+    if status != 200:
+        raise OwnerStop([f"Platform yönetici kaydı iç uçta okunamadı (durum {status})"])
+
+
+def first_platform_admin(ctx: Ctx) -> User:
+    """FirstPlatformAdministrator tool → one-time link (read, then deleted) → reset-password."""
+    admin = User(f"e3-platform-admin@{SETUP_DOMAIN}", new_password(), PLATFORM_TENANT)
+    link = ctx.tmp / f"platform-admin-link-{secrets.token_hex(4)}"
+    dll = ROOT / TOOL_PROJECT / "bin" / "Debug" / "net8.0" / f"{TOOL_BINARY}.dll"
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("E3_", "DITEN_"))}
+    env.update({"DITEN_AUTH_MONGO_CONNECTION": mongo_uri(ctx), "DITEN_AUTH_MONGO_DATABASE": DB_AUTH,
+                "DITEN_PLATFORM_MONGO_CONNECTION": mongo_uri(ctx), "DITEN_PLATFORM_MONGO_DATABASE": DB_PLATFORM,
+                "JwtSettings__Secret": ctx.env_secrets["E3_JWT_SECRET"]})  # Auth's own secret: the link hash uses it
+    query: dict = {}
+    try:
+        code, _ = run(["dotnet", "exec", str(dll), "--email", admin.email, "--frontend-base-url", "http://localhost:5001",
+                       "--link-file", str(link)], cwd=ctx.tmp, env=env, timeout=300)
+        emit(f"FirstPlatformAdministrator aracı: çıkış {code} (0 oluştu · 1 bağlantı · 2 kullanım · 3 reddedildi · 4 yarıda)")
+        if code != 0:
+            raise OwnerStop([f"FirstPlatformAdministrator aracı çıkış {code}"])
+        if link.exists():
+            query = urllib.parse.parse_qs(urllib.parse.urlsplit(link.read_text(encoding="utf-8").strip()).query)
+    finally:
+        if link.exists():
+            link.unlink()
+    token = (query.get("token") or [""])[0]
+    if not token:
+        raise OwnerStop(["FirstPlatformAdministrator bağlantı dosyasında token yok"])
+    remember_secret(token)
+    emit("bağlantı dosyası okundu ve silindi (içerik yazılmaz)")
+
+    measure_platform_internal_key(ctx, admin.email)
+    status, _ = http("POST", "http://localhost:5056/api/platform-auth/reset-password",
+                     body={"email": admin.email, "token": token, "newPassword": admin.password})
+    del token
+    emit(f"platform yöneticisi parola belirleme (reset-password) → {status}")
+    if status not in (200, 204):
+        raise OwnerStop([f"platform yöneticisi parola belirleme (reset-password) → {status}"])
+    return admin
+
+
+def platform_login(admin: User) -> str:
+    status, raw = http("POST", "http://localhost:5056/api/platform-auth/login",
+                       body={"email": admin.email, "password": admin.password, "rememberMe": False})
+    token = field_ci(data_of(raw), "accessToken") if status == 200 else None
+    if not isinstance(token, str) or not token:
+        raise OwnerStop([f"platform yöneticisi girişi jeton vermedi (durum {status})"])
+    return token
+
+
+def platform_token(setup: Setup) -> str:
+    """Signs the platform administrator in again: the platform token lives 15 minutes (Y2a, Y4a, Y5 call it)."""
+    setup.platform_admin_token = platform_login(setup.platform_admin)
+    return setup.platform_admin_token
+
+
+def starter_plan(token: str) -> str:
+    status, raw = http("GET", "http://localhost:5057/api/platform/subscription-plans", headers=bearer(token))
+    for row in rows_of(data_of(raw)) if status == 200 else []:
+        if str(field_ci(row, "code") or "").upper() == SETUP_PLAN and guid_of(field_ci(row, "id")):
+            return field_ci(row, "id")
+    raise OwnerStop([f"{SETUP_PLAN} planı okunamadı (GET /api/platform/subscription-plans → {status})"])
+
+
+def create_tenant(ctx: Ctx, token: str, plan_id: str, n: int) -> tuple[str, User]:
+    """POST /api/admin/tenants → Admin/Viewer counted in Auth → tenant-admin-invited (internal key) → set-password."""
+    admin = User(f"e3-t{n}-admin@{SETUP_DOMAIN}", new_password())
+    first, last = "E3", f"Admin {n}"
+    status, raw = http("POST", "http://localhost:5057/api/admin/tenants", headers=bearer(token),
+                       body={"name": f"E3 Tenant {n}", "domain": f"e3-t{n}.example.test", "displayName": f"E3 Tenant {n}",
+                             "planId": plan_id, "tenantType": 0,  # Customer = 0 (no string enum converter found)
+                             "initialAdmin": {"firstName": first, "lastName": last, "email": admin.email}})
+    tenant = guid_of(data_of(raw)) if status in (200, 201) else None
+    emit(f"kiracı {n}: POST /api/admin/tenants → {status}")
+    if not tenant:
+        raise OwnerStop([f"kiracı {n} oluşturma (POST /api/admin/tenants → {status})"])
+    admin.tenant = tenant
+
+    roles = int(own_query(ctx, DB_AUTH, f"db.roles.countDocuments({{TenantId:{mongo_tenant(tenant)}, "
+                                        f"Name:{{$in:['Admin','Viewer']}}, IsDeleted:{{$ne:true}}}})") or 0)
+    emit(f"kiracı {n}: Auth'ta Admin + Viewer rol sayısı {roles} (beklenen 2)")
+    if roles != 2:
+        raise OwnerStop([f"kiracı {n}: tenant.activated sonrası Auth'ta Admin/Viewer {roles} (beklenen 2)"])
+
+    status, raw = http("GET", f"http://localhost:5057/api/admin/tenants/{tenant}", headers=bearer(token))
+    code = field_ci(data_of(raw), "code") if status == 200 else None
+    status2, raw2 = http("GET", f"http://localhost:5057/api/admin/tenants/{tenant}/admin-users", headers=bearer(token))
+    row = next((r for r in rows_of(data_of(raw2)) if status2 == 200
+                and str(field_ci(r, "email") or "").lower() == admin.email), None)
+    admin_user_id = guid_of(field_ci(row, "id")) if row else None
+    if not isinstance(code, str) or not code or not admin_user_id:
+        raise OwnerStop([f"kiracı {n}: kiracı kodu (durum {status}) ya da yönetici satırı (durum {status2}) okunamadı"])
+
+    body = {"tenantId": tenant, "adminUserId": admin_user_id, "tenantCode": code, "tenantName": f"E3 Tenant {n}",
+            "email": admin.email, "name": field_ci(row, "name") or f"{first} {last}", "trigger": "operator-invite"}
+    for attempt in range(1, 4):
+        status, raw = http("POST", "http://localhost:5056/internal/events/tenant-admin-invited",
+                           headers={"X-Internal-Api-Key": ctx.env_secrets["E3_INTERNAL_API_KEY"]}, body=body)
+        emit(f"kiracı {n}: tenant-admin-invited (deneme {attempt}) → {status}")
+        if status != 409:
+            break
+        time.sleep(2)
+    setup_token = field_ci(data_of(raw), "setupToken") if status == 200 else None
+    if not isinstance(setup_token, str) or not setup_token:
+        raise OwnerStop([f"kiracı {n}: ilk yönetici kurulum bağlantısı alınamadı (tenant-admin-invited → {status})"])
+    remember_secret(setup_token)
+    status, _ = http("POST", "http://localhost:5000/api/users/set-password",
+                     body={"email": admin.email, "token": setup_token, "newPassword": admin.password})
+    del setup_token
+    emit(f"kiracı {n}: yönetici set-password → {status}")
+    if status not in (200, 204):
+        raise OwnerStop([f"kiracı {n}: yönetici parola belirleme (set-password → {status})"])
+    return tenant, admin
+
+
+def create_user(admin_token: str, tenant: str, n: int, label: str) -> User:
+    user = User(f"e3-t{n}-{label}@{SETUP_DOMAIN}", new_password(), tenant)
+    status, raw = http("POST", "http://localhost:5000/api/users", headers=bearer(admin_token),
+                       body={"email": user.email, "password": user.password, "firstName": "E3", "lastName": f"T{n} {label}"})
+    user.id = guid_of(data_of(raw)) if status in (200, 201) else ""
+    emit(f"kiracı {n}: kullanıcı {label} POST /api/users → {status}")
+    if not user.id:
+        raise OwnerStop([f"kiracı {n}: kullanıcı {label} oluşturma (POST /api/users → {status})"])
+    return user
+
+
+def tenant_roles(admin_token: str, n: int) -> dict:
+    status, raw = http("GET", "http://localhost:5000/api/roles", headers=bearer(admin_token))
+    if status != 200:
+        raise OwnerStop([f"kiracı {n}: rol listesi (GET /api/roles → {status})"])
+    return {str(field_ci(r, "name") or "").lower(): guid_of(field_ci(r, "id"))
+            for r in rows_of(data_of(raw)) if guid_of(field_ci(r, "id"))}
+
+
+def assign_role(admin_token: str, n: int, label: str, user: User, roles: dict, role: str) -> None:
+    role_id = roles.get(role.lower())
+    if not role_id:
+        raise OwnerStop([f"kiracı {n}: {role} rolü yok"])
+    status, _ = http("POST", f"http://localhost:5000/api/users/{user.id}/roles", headers=bearer(admin_token),
+                     body={"roleId": role_id})
+    emit(f"kiracı {n}: {label} → {role} → {status}")
+    if status not in (200, 201, 204):
+        raise OwnerStop([f"kiracı {n}: {label} kullanıcısına {role} rolü verilemedi ({status})"])
 
 
 def kurulum(ctx: Ctx) -> Setup:
-    """Paket §18 "Ölçülemeyen": bu yollar ölçülmedi; uydurulmaz. Kule ölçüp bu işlevi yazana kadar betik burada durur."""
-    raise OwnerStop([
-        "platform yöneticisi jetonu (FirstPlatformAdministrator aracının girdileri ölçüldü: --email, --frontend-base-url, "
-        "--link-file + DITEN_AUTH_MONGO_*, DITEN_PLATFORM_MONGO_*, JwtSettings__Secret; araç parola değil tek kullanımlık "
-        "bağlantı yazar — bağlantıdan jetona yol ölçülmedi)",
-        "kiracı oluşturma yolu (iki kiracı)",
-        "kullanıcı oluşturma ve rol verme yolu (kiracı 1: Admin, Viewer, anahtarsız kullanıcı, ProductDataSteward, "
-        "ProductIdentityApprover, ProductIdentityRetirementSteward; kiracı 2: Admin, Viewer)",
-        "modules.max kotasının yeni kiracıda geçip geçmediği (AddTenantModuleEntitlementCommandHandler → "
-        "IQuotaService.TryConsumeEntitlementAsync)",
-    ])
+    """E3-SETUP-PATH-MEASUREMENT §7: platform administrator → two tenants (STARTER) → users and roles. The three dedicated
+    roles exist only after the entitlement sync, so they are assigned in Y2a (adanmis_roller)."""
+    emit("== Kurulum — platform yöneticisi, iki kiracı, kullanıcılar ve roller")
+    wait_platform_permissions(ctx)
+    measure_superadmin(ctx)
+    admin = first_platform_admin(ctx)
+    token = platform_login(admin)
+    if PLATFORM_ASSIGN not in token_permissions(token):
+        raise OwnerStop([f"platform yöneticisi jetonunda {PLATFORM_ASSIGN} yok (SuperAdmin'e platform.* eşitlemesi eksik)"])
+    emit(f"platform yöneticisi jetonu: {PLATFORM_ASSIGN} var")
+    plan_id = starter_plan(token)
+    tenant1, admin1 = create_tenant(ctx, token, plan_id, 1)
+    tenant2, admin2 = create_tenant(ctx, token, plan_id, 2)
+    t1, t2 = {"admin": admin1}, {"admin": admin2}
+    for n, tenant, users, labels in ((1, tenant1, t1, ("viewer", "nokey", "steward", "approver", "retirement")),
+                                     (2, tenant2, t2, ("viewer",))):
+        admin_token = login(users["admin"])
+        for label in labels:
+            users[label] = create_user(admin_token, tenant, n, label)
+        assign_role(admin_token, n, "viewer", users["viewer"], tenant_roles(admin_token, n), "Viewer")
+        del admin_token  # admin is already Admin (invitation path); nokey stays without a role
+    return Setup(platform_admin_token=token, tenant1=tenant1, tenant2=tenant2, t1=t1, t2=t2, platform_admin=admin)
+
+
+def adanmis_roller(setup: Setup) -> None:
+    """Y2a, after the entitlement sync: tenant 1 only; tenant 2 gets no dedicated role."""
+    emit("== Y2a — adanmış üç rol (hak eşitlemesinden sonra, yalnız kiracı 1)")
+    admin_token = login(setup.t1["admin"])
+    roles = tenant_roles(admin_token, 1)
+    missing = [name for name in DEDICATED_ROLES.values() if name.lower() not in roles]
+    if missing:
+        raise OwnerStop([f"kiracı 1: hak eşitlemesinden sonra adanmış rol yok: {', '.join(missing)}"])
+    for label, role in DEDICATED_ROLES.items():
+        assign_role(admin_token, 1, label, setup.t1[label], roles, role)
+    del admin_token
 
 
 def login(user: User) -> str:
-    status, raw = http("POST", "http://localhost:5000/api/tenant-auth/login",
+    status, raw = http("POST", "http://localhost:5000/api/tenant-auth/login", headers={"X-Tenant-Id": user.tenant},
                        body={"email": user.email, "password": user.password, "rememberMe": False})
     token = field_ci(data_of(raw), "accessToken") if status == 200 else None
     if not isinstance(token, str) or not token:
@@ -559,7 +830,8 @@ def entitlement_row(token: str, tenant: str) -> dict:
 
 def add_entitlement(ctx: Ctx, token: str, tenant: str, step: str) -> dict:
     expiry = time.strftime("%Y-%m-%dT00:00:00Z", time.gmtime(time.time() + 180 * 86400))
-    # EntitlementSource.Addon = 1 (Platform.Domain/Enums/EntitlementSource.cs; Platform.API has no string enum converter)
+    # EntitlementSource.Addon = 1 (Platform.Domain/Enums/EntitlementSource.cs; the enum carries JsonStringEnumConverter,
+    # so "Addon" would be accepted too — E3-SETUP-PATH-MEASUREMENT §2)
     status, raw = http("POST", f"http://localhost:5057/api/platform/tenants/{tenant}/commercial/module-entitlements",
                        headers={"Authorization": f"Bearer {token}"},
                        body={"moduleCode": MODULE, "source": 1, "isEnabled": True, "expiryDateUtc": expiry,
@@ -594,10 +866,11 @@ def y_steps(ctx: Ctx) -> None:
 
     emit("== Y2a — kiracı ve hak satırı")
     setup = kurulum(ctx)
-    row1 = add_entitlement(ctx, setup.platform_admin_token, setup.tenant1, "Y2a")
+    row1 = add_entitlement(ctx, platform_token(setup), setup.tenant1, "Y2a")
     base_count = wait_sync_count(ctx, setup.tenant1, 0)
     if not check("Y2a", base_count > 0, f"{SYNC_APPLIED} bu kiracı için görüldü ({SYNC_WAIT_SECONDS} sn); sayaç tabanı {base_count}"):
         raise Stop(1, "E3 KIRMIZI — Y2a eşitleme görülmedi")
+    adanmis_roller(setup)
     enforced = own_query(ctx, DB_MDM, "db.mdm_product_legal_entity_scope_rollout_states.countDocuments({Mode:{$in:[2,'Enforced']}})")
     emit(f"yayılım modu: Enforced kayıt sayısı {enforced}")
     if enforced:
@@ -632,11 +905,12 @@ def y_steps(ctx: Ctx) -> None:
     check("Y3b", count == base_count, f"{SYNC_APPLIED} sayacı {count} = Y2a tabanı {base_count}")
 
     emit("== Y4a — tetikleyici (PATCH uzlaştırma)")
-    row1 = entitlement_row(setup.platform_admin_token, setup.tenant1)
+    platform = platform_token(setup)  # 15-minute platform token: sign in again before the PATCH
+    row1 = entitlement_row(platform, setup.tenant1)
     entitlement_id = field_ci(row1, "physicalEntitlementId")
     status, _ = http("PATCH", f"http://localhost:5057/api/platform/tenants/{setup.tenant1}/commercial/module-entitlements/"
                               f"{entitlement_id}/expiry",
-                     headers={"Authorization": f"Bearer {setup.platform_admin_token}"},
+                     headers={"Authorization": f"Bearer {platform}"},
                      body={"expiryDateUtc": field_ci(row1, "expiryDateUtc"), "reason": "MDM-FU06-DL1 E3 uzlaştırma",
                            "rowVersion": field_ci(row1, "rowVersion")})
     check("Y4a", status in (200, 204), f"PATCH expiry (aynı bitiş, yeni neden, güncel RowVersion) → {status}")
@@ -656,7 +930,7 @@ def y_steps(ctx: Ctx) -> None:
     for role in ("admin", "viewer"):  # F-9: before the POST the tenant has no product module entitlement
         measure_user("Y5", f"F-9 kiracı2 {role} (hak yok)", setup.t2[role], key_expected=False, items_expected=False)
     t2_before = log_count(ctx.owned, "auth", SYNC_APPLIED, setup.tenant2)
-    add_entitlement(ctx, setup.platform_admin_token, setup.tenant2, "Y5")
+    add_entitlement(ctx, platform_token(setup), setup.tenant2, "Y5")  # fresh 15-minute platform token
     t2_after = wait_sync_count(ctx, setup.tenant2, t2_before)
     check("Y5", t2_after > t2_before, f"kiracı2 {SYNC_APPLIED} ({SYNC_WAIT_SECONDS} sn): {t2_before} → {t2_after}")
     for role in ("admin", "viewer"):
