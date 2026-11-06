@@ -1,0 +1,26 @@
+PROMPT İNCELEME KAYDI v1
+wp: MDM-FU06-DL1
+prompt: MDM-FU06-DL1-P v1.1
+prompt-sha256: c6cfbd17ae1713586b8faed009fe45fefe328a3a8443a5928001d91b3d3ba7df
+kaynak-paketi-sha256: 04d1225791eea6adaba21a95ee2caff62b4553a31ee2cf5ac6c2e035ec094a44
+yazar: CT · Ürün ana verisi (alt ajan a55ffc75539b0a710)
+inceleyen: Claude Opus 5.5 (claude-opus-5-5) · S-54 bağımsız inceleme alt ajanı, talimatın yazarı değil
+tarih: 2026-11-06
+ölçüm tabanı: chore/ct/mdm-ct-02 @ c60dd3315 (talimat commit'i 7450dc364; Expected HEAD 1ae33536c); salt okunur; derleme, test, servis koşulmadı; v1.0 ile fark diff ile ölçüldü (satır 2-3, 52, 82, 84, 99-100, 102, 124)
+
+kontrol sözleşme: tamam — v1.0'dan değişmeyen NE/NASIL/DOĞRULA execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md ile birebir: §10 eylem satırı (142-143), 1.3.0→1.4.0, ApiPermissions yok; §18 T1/T2/T3/T4-b (233-237), csproj (244-245), dublör tablosu (255-267), sabotaj a…k (277-288) talimat 105-112 ile aynı. Paket 1ae33536c'de değişmedi (sha256 6caba52d…fec97 ölçüldü); alıntılar paket :97, :211, :233, :237, :281 ve services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductMaster/ProductMasterContract.cs:19 aynı bloblarda; git grep '"mdm.product-master.read"' 1ae33536c 'services/*/src/*' = 4 dosya (talimat 79).
+kontrol dosyalar: tamam — İzinli yollar paket §5 dört dosya (execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md:109-112) + §18 kanıt dizini; Korunan yollar §6'nın (:116) daha dar üst kümesi. §5 dışı yalnız geçici sabotaj b2/e (paket :279, :282). v1.1'de E3 koşulmadığı için taban worktree ve betik koşusu yok; execution/domains/master-data-management/work-packs/scripts/mdm_fu06_dl1_e3.py yalnız okunur, SHA-256 1ae33536c'de 90d99371…11a9 (talimat 68 ile aynı). DOĞRULA 6-7 taban 1ae33536c'ye güncellendi; a4e109322..1ae33536c farkı paket ve kaynak dosyalarına dokunmuyor.
+kontrol ct-onayı: tamam — execution/approvals/approvals.tsv satır 59 değişmedi: execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md pack_sha256 6caba52d…fec97, approve, HIGH, whole_pack=MDM-FU06-DL1. Kuyruk satırı 1ae33536c'de MDM-FU06-DL1 · MOD-0290-FU06 · READY · kayıt docs/records/audits/2026-11/mdm-ct-02-dl1-inspection-01/INSPECTION-mdm-fu06-dl1.md; kuyruk 'mdm' ct-queue-registry'de confirmed, strict, sop7 (yerel origin/main'de). v1.0'daki DISCOVERED bulgusu kapandı.
+kontrol kabul: tamam — AC-1…AC-8 DOĞRULA 1-7 ve sabotaj 11-18 ile ölçülüyor; sabotajlar üretim kodunda, beklenen kırmızılar paket §18 tablosuyla aynı (execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md:277-288). AC-9 ertelemesi sahip kararıyla kayıtlı: docs/records/decisions/2026-11/mdm-fu06-dl1-e3-deferred-owner-decision-01.md (status approved — owner decision, sahip düğmesi «Şimdi, doğrulama sonra», 80973c30f); talimat 82 "KOŞULMAZ … AC-9 ve DL-1 kabulü bekler", DOĞRULA 9 e3-run dizininin oluşmamasını ölçer. Bu, paket :223 ve :324'ün sahibe sorma koşulunu karşılar. F-7, F-8, F-10, F-12, F-13, F-14 talimatta somut; F-9, F-11, F-15 E3 betiğinde, E3 ile birlikte ertelendi. Yeni test ad alanı yazıldı (talimat 82).
+kontrol durma: tamam — talimat 113-125: HEAD/dal/kirli, betik SHA'sı, taban kırmızı, CS0433/CA2255 (paket execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md:251), dublör dışı üye/NRE, bekçi kırmızı, git grep ≠ 4, T2 dokuz kontrolör, sabotaj kırmızı vermez, izinli yol dışı, yeni satır 124 "E3 betiğini koşman gerekiyormuş gibi görünürse → koşmadan DUR", push/PR. E3 koşulmadığından v1.0'daki çıkış 1-4 ve dinleyen port durakları gereksiz.
+kontrol risk: tamam — Risk HIGH; §9.1 yetki (izin beyanı ve rol verimi, paket execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md §14) ve sözleşme (Platform'a giden manifest, 1.4.0) doğru; gateway, migrasyon, modüller-arası-yazma yok (yeni uç yok, :211).
+
+bulgu: engelleyici · kapandı · v1.0 bulgusu (E3 kırmızı tabanı ve sahip sorusu dağıtımdan önce yok): sahip kararı docs/records/decisions/2026-11/mdm-fu06-dl1-e3-deferred-owner-decision-01.md ile E3 bu talimattan çıkarıldı, AC-9 ve DL-1 kabulü bekler.
+bulgu: diğer · kapandı · Kuyruk satırı READY (1ae33536c).
+bulgu: diğer · kapandı · Betik yeri kararı sahip kaydının 3. maddesinde.
+bulgu: diğer · kapandı · Yeni test dosyasının ad alanı talimat 82'de yazılı.
+bulgu: diğer · açık · Talimatta E3 kalıntısı: NASIL 81 "Kanıt sırası" hâlâ "(4) E3 (aşağıda), commit" der ve Rapor formatı (127) "E3 run_record yolları, E3 çıkışı, ÖZET ve SONUÇ", "E3 taban SHA'sı" ister; satır 82, DOĞRULA 9 ve durma 124 açıkça koşmamayı söylediği için zarar sınırlı, ama sonraki sürümde temizlenmeli (işçi raporunda bu alanlara "koşulmadı — sahip kararı" yazmalı).
+bulgu: diğer · açık · Worktree /Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-fu06-dl1-r1 dağıtımdan önce 1ae33536c'den açılmalı (v1.0 gate ölçümünde yoktu; bu turda check koşulmadı).
+kritik-açık: 0
+engelleyici-açık: 0
+sonuç: UYGUN — açık kritik ve engelleyici yok; iki diğer bulgu açık
