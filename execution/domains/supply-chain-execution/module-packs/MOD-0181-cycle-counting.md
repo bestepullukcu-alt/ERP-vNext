@@ -16,8 +16,8 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-revision: "r3 (2026-11-06) — bağımsız inceleme 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md) bulguları F-1…F-18 kapatıldı; F-1 sahip kararı A (Beste, 2026-11-06): PUT/DELETE yerine komut uçları, tek adlı istisna PUT /count-settings. Önceki: r2 (2026-11-06) — iki sahip teyidi işlendi (Beste, 2026-11-06): Q-21 = A (elle COUNT_* bugünkü izinle kalır, yeni izin yok, MOD-0173'e dokunulmaz; 0181 yalnız okuma tarafında \"elle\" ayrıştırır) ve Q-22 kapsamı (yalnız görev modeli; Q-7 = B geçerli). Önceki: r1 (2026-11-06) — sahip kararları işlendi, Q-1…Q-24 kapandı, Slim/Compact yeniden sayıldı (8 alan → slim). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; bu sürümde onay satırı yoktur."
-status_note: "draft — açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, §19.4); r1'in iki uygulama notu r2'de sahip teyidiyle kapandı; inceleme 01 bulguları F-1…F-18 r3'te kapatıldı (yeniden inceleme gerekir). Kalan: §19.4 'Kalan açık nokta' (elle COUNT_* okuma performansı ölçümü), WMS-COUNT-BUNDLE taslağı, XMC-001 seam onayları (§5), bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01). Paket onaylanmadan (approved / ready-for-dev + onay satırı) geliştirme başlamaz."
+revision: "r4 (2026-11-06) — bağımsız inceleme 02 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-170e4d66.md) yeni bulguları F-1…F-7 kapatıldı (SnapshotDrift kapalı-başarısız, iki yönlü Sayım eşleşmesi, dilim atamaları, tek olay türü, controller tabanı, G-0181-01 izin tarafı, .antigravity kapısı). Önceki: r3 (2026-11-06) — bağımsız inceleme 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md) bulguları F-1…F-18 kapatıldı; F-1 sahip kararı A (Beste, 2026-11-06): PUT/DELETE yerine komut uçları, tek adlı istisna PUT /count-settings. Önceki: r2 (2026-11-06) — iki sahip teyidi işlendi (Beste, 2026-11-06): Q-21 = A (elle COUNT_* bugünkü izinle kalır, yeni izin yok, MOD-0173'e dokunulmaz; 0181 yalnız okuma tarafında \"elle\" ayrıştırır) ve Q-22 kapsamı (yalnız görev modeli; Q-7 = B geçerli). Önceki: r1 (2026-11-06) — sahip kararları işlendi, Q-1…Q-24 kapandı, Slim/Compact yeniden sayıldı (8 alan → slim). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; bu sürümde onay satırı yoktur."
+status_note: "draft — açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, §19.4); r1'in iki uygulama notu r2'de sahip teyidiyle kapandı; inceleme 01 bulguları F-1…F-18 r3'te, inceleme 02 bulguları F-1…F-7 r4'te kapatıldı (yeniden inceleme gerekir). Kalan: §19.4 'Kalan açık nokta' (elle COUNT_* okuma performansı ölçümü), WMS-COUNT-BUNDLE taslağı, XMC-001 seam onayları (§5), bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01). Paket onaylanmadan (approved / ready-for-dev + onay satırı) geliştirme başlamaz."
 owner: supply-chain-execution / merkez (Beste) — MVP-5
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-05
@@ -28,9 +28,35 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03, MOD-0174, MOD-0175, MOD-0
 
 # MOD-0181 — Cycle Counting (Sayım)
 
-> **Taslak (r3, 2026-11-06).** Bu paket `status: draft`, `approval_status: pending`'dir. **Paket onaylanmadan geliştirme başlamaz:**
+> **Taslak (r4, 2026-11-06).** Bu paket `status: draft`, `approval_status: pending`'dir. **Paket onaylanmadan geliştirme başlamaz:**
 > kod yalnız `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01) ile yazılır
 > (AGENTS.md Çekirdek madde 7). Bu dosyada onay satırı yoktur; onay ayrı adımdır.
+>
+> **Revizyon notu (r4, 2026-11-06).** Bağımsız inceleme 02 (CT-APR-02, r3 @ `170e4d66…96e7fdef`, KOŞULLU, 0 ENGEL / 1 ORTA / 6 DÜŞÜK;
+> `docs/records/reviews/MOD-0181/2026-11-06-170e4d66.md`; inceleme 01'in 18 bulgusu orada kapandı sayıldı) yeni bulguları kapatıldı. Bulgu
+> kimlikleri bu notta **02/F-n** biçimindedir (inceleme 01'inkiler r3 notunda F-n).
+> - **02/F-1 (ORTA):** `SnapshotDrift = true` satır farkı ne olursa olsun (0 dahil) `AwaitingApproval`'a gider, onaysız kapanmaz; §8.3
+>   `NoVariance` = "fark 0 **ve** `MovementDuringCount = false` **ve** `SnapshotDrift = false`" (§4.2, §8.3, §8.4). AC-52'ye (c) fark-0 drift
+>   vakası + sabotaj (drift koşulunu `NoVariance` kararından çıkar → kırmızı).
+> - **02/F-2:** "Sayım" eşleşmesi iki yönlü: hareketten satıra (anahtar + `SourceModule` + `SourceLineId` + `SourceDocumentId`) **ve** satırın kendi
+>   kaydından harekete (`Adjustment.Status` `Posted` ise `TransactionId` = hareket `Id`'si; `Pending` ise hareket `CreatedAt ≥
+>   Adjustment.FirstAttemptAt`; `IntegrityError` / `Refused` ise eşleşme yok). Elle POST'un üç alanı beyan etmesi "Sayım" yapmaz
+>   (`c101e22fa:INV/Api/Contract/MovementRequestReader.cs:111-114`). Çift olumsuz cümle düzeltildi; `Adjustment.FirstAttemptAt` alanı
+>   eklendi; AC-47'ye (e) vakası + sabotaj (§2.4, §4.2, AC-47).
+> - **02/F-3:** AC-51 DL-1 **ve** DL-3'te listelendi (DL-1: GET/POST-only; DL-3: ayar istisnasıyla kapanır); AC-52 (a) DL-1'de, (b) / (c)
+>   DL-2'de kapanır; AC-2'ye snapshot sabotajı (§16, §24).
+> - **02/F-4:** toplu silme de her kayıt için `Cancelled` + `Data.SoftDeleted = true` (+ `Data.Bulk = true`) olayı yazar; `Deleted` olay türü
+>   kalktı (§4.3, §8.3, §21, AC-10). AC-41 metni gerçekten güncellendi (r3 notu AC-41'i yanlışlıkla "düzeltildi" saymıştı).
+> - **02/F-5:** üç controller'ın tabanı `[Route("api/warehouse")]`, eylem şablonları tam yol parçası (`cycle-counts…`, `count-variances…`,
+>   `count-settings`); bekçi rota adı `{Controller}:{şablon}` (`LedgerImmutabilityArchitectureTests.cs:143`) → `CountVariancesController:count-settings`.
+>   Emsal `c101e22fa:INV/Api/Controllers/Warehouse/PutawayTasksController.cs:23` `[Route("api/warehouse")]`, `:75` `[HttpPut("putaway-tasks/{taskId}")]`
+>   (§3, §5, AC-51).
+> - **02/F-6:** DEV-0000'ın tamamı (242 satır) okundu; G-0181-01'e izin tarafı eklendi (DEV-0000 `:195` standart eylemler Read / Create / Update /
+>   Delete / BulkDelete; 0181'de `delete` anahtarı yok, tekli silme `cancel` ile), smoke "delete" (`:218`) yerine "iptal"; DEV-0000 `:194` izin
+>   biçimi `Modules.{ModuleName}.{Action}` PKS-001 ile geçersizdir (`permission-key-standard.md:11`) (§10, §17, §18, §19.1).
+> - **02/F-7:** `.antigravity/**` satırları (PKS-001 §4 `cycle-count.*`, RCS-001 §3 `CNT`) izlenen kapı olarak yazıldı: onaylayan Beste
+>   (kullanıcı onayı, Çekirdek md. 6), yazan ayrı WP, kapanış modül PR'ı açılmadan önce; §18'e işaretsiz madde (§6, §18, §19.4).
+> Etkiler: künye, §2.4, §3, §4.2, §4.3, §5, §6, §8.3, §8.4, §10, §16 (AC-2, AC-10, AC-41, AC-47, AC-51, AC-52), §17, §18, §19.1, §19.4, §21, §24.
 >
 > **Revizyon notu (r3, 2026-11-06).** Bağımsız inceleme 01 (CT-APR-02, r2 @ `108cbf41…87c7a9c5`, KOŞULLU, 0 ENGEL / 6 ORTA / 12 DÜŞÜK;
 > `docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md`) bulgularının hepsi kapatıldı. Kanıt satırları `c101e22fa`'da ölçüldü.
@@ -63,7 +89,7 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03, MOD-0174, MOD-0175, MOD-0
 >   **F-17:** PKS-001 §4 `cycle-count.*` satırı ayrı sahip onayı (§6, §19.4). **F-18:** sweeper yalnız komut gönderir, kendi işlemi yok
 >   (emsal `PendingConfirmationReconcilerHostedService.cs:62`; `CentralAuditDeclarationTests.cs:83-86` listesi değişmez) (§5, §8.6).
 > Etkiler: künye, §2.4, §3, §4.1–§4.3, §4.6, §4.7 (yeni), §5, §6, §7, §8.1–§8.4, §8.6, §8.12–§8.14, §10, §11, §12, §13, §14, §16 (AC-2, AC-3, AC-5,
-> AC-8, AC-10, AC-12–AC-15, AC-18, AC-25, AC-26, AC-29, AC-38, AC-41, AC-47 düzeltildi; AC-49…AC-52 eklendi), §17, §18, §19.1, §19.2, §19.4,
+> AC-8, AC-10, AC-12–AC-15, AC-18, AC-25, AC-26, AC-29, AC-38, AC-47 düzeltildi — AC-41 burada yanlışlıkla sayılmıştı, r4'te güncellendi; AC-49…AC-52 eklendi), §17, §18, §19.1, §19.2, §19.4,
 > §21, §23, §24.
 >
 > **Revizyon notu (r2, 2026-11-06).** Yalnız iki sahip teyidi işlendi (Beste, 2026-11-06). **Q-21 = A:** MOD-0173'teki elle `COUNT_GAIN` /
@@ -216,14 +242,21 @@ anlık görüntü yönetişiminin dışındadır ve 0181 bunu yalnız **görün�
   `sourceModule = "MOD-0173"`, `sourceType = "MANUAL_MOVEMENT"` yazar (`c101e22fa:frontend/Diten.Web/Models/Inventory/InventoryListAdapter.cs:22`,
   `c101e22fa:frontend/Diten.Web/Models/Inventory/MovementRules.cs:15`, `:286-287`); MOD-0173-FU01 hareket geçmişi "Automatic"i
   `SourceModule != "MOD-0173"` ile ayırır (`InventoryListAdapter.cs:185`, `:230`).
-- **0181 sınıflandırma kuralı (yalnız okuma tarafı farkı; yazma yok):** aynı kiracı + şirketteki bir `COUNT_GAIN` / `COUNT_LOSS` defter
-  hareketi 0181 görünümünde **"Sayım"** sayılır ⇔ hareketin `IdempotencyKey`'i bir 0181 satırının **işlem 1'de** yazılan
-  `Adjustment.IdempotencyKey`'ine (`cycle-count:{lineId:D}`) eşittir **ve** hareketin `SourceModule = "MOD-0181"`, `SourceLineId` = o satırın
-  `Id`'sidir (F-4). Anahtar hareket üstünde saklanır (`c101e22fa:INV/Domain/Entities/InventoryTransaction.cs:77`) ve kiracı + şirkette tekildir
-  (`c101e22fa:INV/Persistence/InventoryIndexConfiguration.cs:34-35`); `Adjustment.TransactionId` (işlem 2'de yazılır) eşleşme ölçütü
-  **değildir**, bu yüzden `Pending` satırın commit olmuş hareketi de "Sayım" görünür. Anahtarı başka bir çağıranın önce kullanması
-  0181'in kendi posting'inde `KeyReusedDifferentPayload` → `IntegrityError` olur (AC-26); böyle bir hareket kaynak beyanı ne olursa olsun
-  0181 satırıyla eşleşmez sayılmaz — satır `IntegrityError`'dadır ve görünümde "Elle" + "kaynak beyanı uyuşmuyor" kalır. Diğer her
+- **0181 sınıflandırma kuralı (yalnız okuma tarafı farkı; yazma yok; r4 — iki yönlü, 02/F-2):** aynı kiracı + şirketteki bir `COUNT_GAIN` /
+  `COUNT_LOSS` defter hareketi H, 0181 görünümünde **"Sayım"** sayılır ⇔ bir 0181 satırı L için **iki yön de** tutar:
+  1. *Hareketten satıra:* `H.IdempotencyKey` = `L.Adjustment.IdempotencyKey` (`cycle-count:{L.Id:D}`, işlem 1'de yazılır) **ve**
+     `H.SourceModule = "MOD-0181"`, `H.SourceLineId` = `L.Id`, `H.SourceDocumentId` = `L.CountId`. Anahtar hareket üstünde saklanır
+     (`c101e22fa:INV/Domain/Entities/InventoryTransaction.cs:77`) ve kiracı + şirkette tekildir (`c101e22fa:INV/Persistence/InventoryIndexConfiguration.cs:34-35`).
+  2. *Satırın kendi kaydından harekete:* `L.Adjustment.Status = Posted` ise `L.Adjustment.TransactionId` = `H.Id` (resolve `AcceptHolder`'la
+     `Posted` olan satır dahil — tutucunun kimliği yazılır); `L.Adjustment.Status = Pending` ise `H.CreatedAt ≥ L.Adjustment.FirstAttemptAt`
+     (işlem 1'de, posting'ten önce yazılır — böylece `Pending` satırın commit olmuş kendi hareketi "Sayım" görünür, F-4, ama satırdan önce
+     yazılmış bir hareket görünmez); `L.Adjustment.Status` `IntegrityError` ya da `Refused` ise ya da `Adjustment` yoksa **eşleşme yoktur**.
+  Neden iki yön: `POST /api/inventory/movements` `sourceModule`, `sourceLineId`, `sourceDocumentId` ve `Idempotency-Key`'i çağıran olarak
+  beyan edebilir (kaynak alanları `c101e22fa:INV/Api/Contract/MovementRequestReader.cs:111-114`; anahtar başlıktan,
+  `c101e22fa:INV/Api/Controllers/InventoryController.cs:33`). Böyle bir hareket 0181 posting'inden önce yazılmışsa 0181'in
+  posting'i `KeyReusedDifferentPayload` → `IntegrityError` olur (AC-26) ve hareket **eşleşmiş sayılmaz**: görünümde "Elle" + "kaynak beyanı
+  uyuşmuyor" kalır; yalnız yetkili `resolve-integrity` `AcceptHolder` kararı onu satırın düzeltmesi olarak kabul ederse (`Posted`,
+  `TransactionId` = H) "Sayım" olur. Diğer her
   `COUNT_*` hareketi **"Elle"**dir ve `SourceModule` / `SourceType` / `CreatedBy` olduğu gibi gösterilir. `SourceModule = "MOD-0181"` beyanı tek
   başına "Sayım" yapmaz (alan çağırandan gelir): 0181 kaydıyla eşleşmeyen böyle bir hareket "Elle" + **"kaynak beyanı uyuşmuyor"** işaretiyle
   görünür.
@@ -279,6 +312,15 @@ tanınır (`c101e22fa:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs
 `POST /count-variances/{lineId}/reject` · `POST /count-variances/{lineId}/recount` · `POST /count-variances/{lineId}/retry` ·
 `POST /count-variances/{lineId}/resolve-integrity` · `GET /count-settings` · `PUT /count-settings` (**tek PUT istisnası**, AC-51) · DL-5: `POST /cycle-counts/{countId}/evidence-exports` ·
 `GET /count-evidence-exports` · `GET /count-evidence-exports/{exportId}/file`.
+
+**Controller tabanı (r4, 02/F-5):** `CycleCountsController`, `CountVariancesController`, `CountEvidenceExportsController` üçü de
+`[Route("api/warehouse")]` taşır; eylem şablonları yol parçasını tam yazar (`[HttpPost("cycle-counts/{countId}/update")]`,
+`[HttpPost("cycle-counts/{countId}/lines/{lineId}/count")]`, `[HttpGet("count-variances")]`, `[HttpPut("count-settings")]` …). Emsal
+`c101e22fa:INV/Api/Controllers/Warehouse/PutawayTasksController.cs:23` (`[Route("api/warehouse")]`), `:75`
+(`[HttpPut("putaway-tasks/{taskId}")]`). Bekçi rota adını `{Controller}:{şablon}` olarak kurar
+(`c101e22fa:INVT/Architecture/LedgerImmutabilityArchitectureTests.cs:143`); tek PUT istisnasının adı bu yüzden tam olarak
+`CountVariancesController:count-settings`'tir — ayar eylemi başka controller'a ya da başka tabana taşınırsa istisna satırı da paket
+revizyonuyla değişir.
 
 **Frontend rotaları:** `/Warehouse/CycleCounts` (Cycle Count Dashboard), `/Warehouse/CycleCounts/Sheet/{countId}` (sayım formu, nav değil),
 `/Warehouse/CountVariances` (Variance Trace), `/Warehouse/CountEvidenceExports` (Evidence Pack, DL-5).
@@ -336,17 +378,18 @@ alan compact'a geçiş ve paket revizyonu demektir (§19.3).
 | `ExpectedAtCount` | decimal string \| null | `ExpectedQuantity + MovementsSinceSnapshot` |
 | `VarianceQuantity` | decimal string \| null | `CountedQuantity − ExpectedAtCount` |
 | `MovementDuringCount` | bool | §8.4 bayrağı (Q-6 = B) |
-| `SnapshotDrift` | bool | `Submit`'te §8.4 bakiye denklemi tutmazsa `true`: satır tolerans almaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, yalnız `recount` / `reject` (F-5, F-12) |
+| `SnapshotDrift` | bool | `Submit`'te §8.4 bakiye denklemi tutmazsa `true`: satır **farkı ne olursa olsun (0 dahil)** `AwaitingApproval`'a gider, `NoVariance` olamaz, tolerans almaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, yalnız `recount` / `reject` (F-5, F-12; r4 02/F-1) |
 | `SerialControlled` | bool | `Release` / `Add`'de PRODUCT-MASTER'dan yazılır; `true` ise fark v1'de post edilmez (Q-10 = A, §8.9) |
 | `Status` | enum | §8.3 satır durumları |
 | `Decision` | gömülü \| null | `{ Kind: Approved \| Rejected \| Recount, By, At, Reason }`; `resolve-integrity` kararı `{ Kind: AcceptHolder \| Reject, By, At, Reason, HolderTransactionId }` olarak ayrıca yazılır (F-12) |
-| `Adjustment` | gömülü \| null | `{ MovementType: COUNT_GAIN \| COUNT_LOSS, Quantity, IdempotencyKey, Status: Pending \| Posted \| Refused \| IntegrityError, TransactionId?, TransactionNumber?, RefusalCode?, RefusalDetails?, TransactionDate, PostingDate, Attempts, LastAttemptAt }` |
+| `Adjustment` | gömülü \| null | `{ MovementType: COUNT_GAIN \| COUNT_LOSS, Quantity, IdempotencyKey, Status: Pending \| Posted \| Refused \| IntegrityError, TransactionId?, TransactionNumber?, RefusalCode?, RefusalDetails?, TransactionDate, PostingDate, Attempts, FirstAttemptAt, LastAttemptAt }`; `FirstAttemptAt` işlem 1'de (posting'ten önce) bir kez yazılır, değişmez — §2.4 eşleşmesinin `Pending` yönü (r4, 02/F-2) |
 | `ScanRef` | string \| null | opak; MOD-0182 doldurur, v1 doğrulamaz (Q-12 = A) |
 | `Version` | int | If-Match |
 
 ### 4.3 CycleCountEvent
-Insert-only (`wms_count_events`). Alanlar: `CountId`, `LineId?`, `Seq` (sayım içinde artan), `Kind` (`Created`, `Updated`, `Deleted`,
-`Released`, `Cancelled` (`Data.SoftDeleted` Draft iptalinde `true`), `LineCounted`, `LineAdded`, `Submitted`, `VarianceComputed`, `Approved`, `Rejected`, `RecountRequested`,
+Insert-only (`wms_count_events`). Alanlar: `CountId`, `LineId?`, `Seq` (sayım içinde artan), `Kind` (`Created`, `Updated`,
+`Released`, `Cancelled` (`Data.SoftDeleted` Draft iptalinde ve toplu silmede `true`; toplu silmede ayrıca `Data.Bulk = true` — r4 02/F-4:
+ayrı `Deleted` türü yok, aynı etki tek türle izlenir), `LineCounted`, `LineAdded`, `Submitted`, `VarianceComputed`, `Approved`, `Rejected`, `RecountRequested`,
 `AdjustmentPending`, `AdjustmentPosted`, `AdjustmentRefused`, `AdjustmentIntegrityError`, `IntegrityResolved`, `Closed`), `ActorUserId`,
 `At`, `RequestOp`, `IdempotencyKey?`, `RequestFingerprint?`, `Data` (önceki / sonraki değerler, ret kodu, `TransactionNumber`).
 İlgili iş yazımıyla **aynı Mongo işleminde** yazılır; yazılamazsa iş yazımı geri alınır; silinmez (MOD-0178 §8.8 "Yerel GxP izi" deseni).
@@ -395,7 +438,7 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 | `…/Application/Features/CountVariances/` | aynı yapı (onay / ret / yeniden sayım / retry / resolve / ayarlar) | DL-3 |
 | `…/Application/Features/CountEvidenceExports/` | aynı yapı | DL-5 |
 | `services/Diten.InventoryService/src/Diten.InventoryService.Persistence/CycleCount/` | depolar, `CycleCountCollections`, index yapılandırması, defter okumaları (`Find`), sweeper hosted service `PendingCountAdjustmentReconcilerHostedService` — **yalnız** `ReconcilePendingCountAdjustmentCommand`'ı `IMediator` ile gönderir, kendi `WithTransactionAsync` / `EnlistAsync`'i yoktur (emsal `c101e22fa:INV/Persistence/Warehouse/PendingConfirmationReconcilerHostedService.cs:62`); bu yüzden `CentralAuditDeclarationTests.cs:83-86` sweeper listesi değişmez (F-18) | DL-1…DL-3 |
-| `services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/CycleCount/` | `CycleCountsController`, `CountVariancesController`, `CountEvidenceExportsController` | DL-1…DL-3, DL-5 |
+| `services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/CycleCount/` | `CycleCountsController`, `CountVariancesController`, `CountEvidenceExportsController` — üçü de `[Route("api/warehouse")]`, şablon tam yol parçası (§3, 02/F-5) | DL-1…DL-3, DL-5 |
 | `services/Diten.InventoryService/src/Diten.InventoryService.Api/CycleCount/` | `CycleCountingManifestProvider`, `CycleCountServiceCollectionExtensions` | DL-1 |
 | `services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Authorization/CycleCountPermissions.cs` | izin sabitleri | DL-1 |
 | `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/CycleCount/` | birim, entegrasyon, mimari testler | her dilim |
@@ -421,6 +464,10 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 - PKS-001 §4 sahiplik tablosuna (`.antigravity/rules/permission-key-standard.md:94-103`) `cycle-count.*` satırının yazılması da korunan yol
   değişikliğidir — ayrı sahip onayı (F-17), RCS-001 §3 `CNT` satırı gibi; `inventory.*` ve `warehouse.*` de tabloda yok, bu yüzden geliştirme
   engeli değildir.
+- **İzlenen `.antigravity/**` kapısı (r4, 02/F-7):** iki satır — PKS-001 §4 `cycle-count.*` ve RCS-001 §3 `CNT`. **Onaylayan:** Beste
+  (kullanıcı onayı — AGENTS.md Çekirdek madde 6, `.antigravity/**` değişikliği kullanıcı onayı ister). **Yazan:** ayrı bir WP, bu onayla; geliştirme
+  dilimleri `.antigravity/**`'a yazmaz. **Kapanış adımı:** modül PR'ı (Q-23 tek çalışma dalının 0181 PR'ı) açılmadan önce; paket onayını ve
+  dilim başlangıcını engellemez. İzleme: §18 hazırlık listesindeki işaretsiz madde.
 - `gateway/Diten.ApiGateway/**/ocelot.json` (yalnız integration-agent).
 - `services/Diten.Building.Blocks/**` (BL-501 olduğu gibi — MOD-0178 §8.8).
 - MOD-0173 defter kodu (`INV/Application/Features/Inventory/**`, `INV/Persistence/Repositories/InventoryLedgerRepository.cs`, `INV/Domain/Rules/**`) —
@@ -507,7 +554,7 @@ sahibi TBD (yalnız FU-0181-REASON için).
 | Durum | Geçiş | Komut | Koşul |
 |---|---|---|---|
 | `Draft` | → `Released` | `ReleaseCycleCountCommand` | §8.2 |
-| `Draft` | → `Cancelled` + soft delete (`IsDeleted`, `DeletedAt`) | `CancelCycleCountCommand` (`POST …/cancel`) / `BulkDeleteCycleCountCommand` | gerekçe zorunlu (toplu silmede de); bin talebi yoktur |
+| `Draft` | → `Cancelled` + soft delete (`IsDeleted`, `DeletedAt`) | `CancelCycleCountCommand` (`POST …/cancel`) / `BulkDeleteCycleCountCommand` | gerekçe zorunlu (toplu silmede de); bin talebi yoktur; ikisi de aynı `Cancelled` + `SoftDeleted` olayını yazar (02/F-4) |
 | `Released` | → `Counting` | ilk `RecordCountLineCommand` / `AddCountLineCommand` | — |
 | `Released` \| `Counting` | → `Submitted` | `SubmitCycleCountCommand` | her `Snapshot` satırı sayılmış (422 `COUNT_LINES_UNCOUNTED`) |
 | `Released` \| `Counting` | → `Cancelled` (silinmez) | `CancelCycleCountCommand` | gerekçe zorunlu; hiçbir satırda posting yok; bin talepleri `Open = false` |
@@ -515,7 +562,8 @@ sahibi TBD (yalnız FU-0181-REASON için).
 | `Closed` \| `Cancelled` | son durum | — | her yazma 409 `COUNT_INVALID_STATE` |
 
 **Satır (`CycleCountLine.Status`):** `Open` → `Counted` (giriş; `Submit`'e kadar yeniden girilebilir, If-Match) → `Submit`'te:
-`NoVariance` (fark 0 ve bayrak yok) \| `AwaitingApproval` (fark ≠ 0) → `Approved` (onay ya da tolerans içi — §8.5) \| `Rejected` \|
+`NoVariance` (fark 0 **ve** `MovementDuringCount = false` **ve** `SnapshotDrift = false` — r4, 02/F-1) \| `AwaitingApproval` (fark ≠ 0 **ya da**
+`MovementDuringCount = true` **ya da** `SnapshotDrift = true`; drift'li satır farkı 0 olsa da onaysız kapanmaz) → `Approved` (onay ya da tolerans içi — §8.5) \| `Rejected` \|
 `Recounted`. `Approved` satırın `Adjustment.Status`'u: `Pending` → `Posted` \| `Refused` \| `IntegrityError`. `Refused` satır için yalnız
 `Reject` ya da `Recount` (rezervasyon engelinde ayrıca `Retry` — §8.7); `IntegrityError` için yalnız `resolve-integrity` (F-12):
 `AcceptHolder` — anahtarı tutan hareket bu satırın düzeltmesiyle **aynı** (tür, miktar, bin, lot, statü, `SourceLineId`) ve ters
@@ -531,8 +579,9 @@ yok. Her iki sonuç da satırı son duruma getirir; `Closed` koşulu böylece ul
 - `MovementsSinceSnapshot` = anlık görüntü sonrası hareketlerden `CreatedAt ≤ CountedAt` olanların net etkisi (gelen +, giden −).
 - **Bakiye denklemi (F-5):** `ExpectedQuantity + Σ(anlık görüntü sonrası hareketlerin tümü, üst sınır yok) = bugünkü bakiye OnHand` aynı
   snapshot okumasında denetlenir. Tutmazsa (pencereyi aşan geç commit, projeksiyon yeniden anahtarlama, saat kayması) satır
-  `SnapshotDrift = true` olur: tolerans uygulanmaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, yalnız `recount` / `reject` — fark sessizce yanlış
-  post edilmez (AC-52).
+  `SnapshotDrift = true` olur: satır **farkı ne olursa olsun (0 dahil)** `AwaitingApproval`'a gider, `NoVariance` olamaz, tolerans uygulanmaz,
+  `approve` 409 `COUNT_SNAPSHOT_DRIFT`, yalnız `recount` / `reject` — fark sessizce yanlış post edilmez, drift'li satır da onaysız kapanmaz
+  (AC-52; r4, 02/F-1).
 - `ExpectedAtCount = ExpectedQuantity + MovementsSinceSnapshot`; `VarianceQuantity = CountedQuantity − ExpectedAtCount`.
 - `MovementDuringCount = true`: anahtara `SnapshotAt`–`CountedAt` arasında en az bir hareket dokunduysa (Q-6 = B, karar 2026-11-06). Bayraklı
   satır fark 0 olsa bile `AwaitingApproval`'a gider (tolerans uygulanmaz); onaylayıcı yeniden sayım isteyebilir.
@@ -704,7 +753,12 @@ Features/CycleCount/       ortak: CycleCountContract.cs, CycleCountErrorCodes.cs
 kod `c101e22fa:services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceSlim/Commands/DeleteGoldenReferenceSlimCommand.cs`).
 InventoryService'in bekçisi PUT / DELETE'i yalnız ana veride kabul eder (`LedgerImmutabilityArchitectureTests.cs:130-135`), bu yüzden 0181'de
 `DeleteCycleCountCommand` yoktur (Draft iptali = soft delete, `CancelCycleCountCommand`), güncelleme ve sayım girişi `POST` komut uçlarıdır;
-klasör, adlandırma ve partial seti Golden Slim ile aynı kalır. DataTable satır eylemi "Sil" yerine "İptal"dir (AC-36'da
+izin tarafında DEV-0000 standart eylemleri Read / Create / Update / Delete / BulkDelete sayar (`DEV-0000…md:195`); 0181'de **`delete` izin
+anahtarı yoktur** — tekli silme `cycle-count.counts.cancel` ile, toplu silme `cycle-count.counts.bulk-delete` ile yapılır (§14; r4, 02/F-6);
+DEV-0000'ın izin biçimi `Modules.{ModuleName}.{Action}` (`:194`) PKS-001 tarafından geçersiz kılınmıştır (`.antigravity/rules/permission-key-standard.md:11`),
+0181 PKS-001'i izler (bu bir sapma değil, standart uyumudur). DEV-0000 smoke'undaki "delete" (`:218`) 0181'de "iptal"dir (§17). DEV-0000'ın
+`data_mode: client` (`:8`) ve kendi Gateway tabanı (`:200`) 0181'de `server` ve `/api/warehouse` (Q-15 = A) olarak modüle özgü seçilmiştir.
+Klasör, adlandırma ve partial seti Golden Slim ile aynı kalır. DataTable satır eylemi "Sil" yerine "İptal"dir (AC-36'da
 `verify_datatable_page.py` sapma verirse dokunma protokolüyle sahibine sorulur).
 
 Kurallar: Command / Query `sealed record`; Handler / Validator adında `Command` / `Query` soneki yok; bir dosyada tek `public` tip;
@@ -837,7 +891,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 **DL-1 — çekirdek kayıt ve anlık görüntü (arka uç)**
 
 - [ ] AC-1 (zorunlu) — `POST /cycle-counts` geçerli 8 alanla 201; `Status = Draft`; `Number` `{ŞİRKET}-CNT-` + 6 hane biçiminde ve kiracı genelinde tekil (üretici MOD-0178 geçici portu `CNT`, Q-7 = B); `wms_count_events`'te 1 `Created` olayı aynı işlemde. Sabotaj: olay yazımını işlemden çıkar → olay ya da kayıt tek başına kalır, test kırmızı.
-- [ ] AC-2 (zorunlu) — `release`: kapsam düğümleri stoklanabilir `Active` bin'lere açılır; her `AVAILABLE`, `OnHand > 0` bakiye satırı için tam bir satır, `ExpectedQuantity` o anki defter bakiyesine eşit (test defterle karşılaştırır); `SnapshotAt` ve `SnapshotTransactionIds` yazılır, okuma `ReadConcern.Snapshot` işlemindedir (F-5); bin yoksa 422 `COUNT_SCOPE_EMPTY`, sınır aşımında 422 `COUNT_SCOPE_TOO_LARGE`. Sabotaj: `ScopeSkuIds` süzgecini kaldır → fazla satır, kırmızı.
+- [ ] AC-2 (zorunlu) — `release`: kapsam düğümleri stoklanabilir `Active` bin'lere açılır; her `AVAILABLE`, `OnHand > 0` bakiye satırı için tam bir satır, `ExpectedQuantity` o anki defter bakiyesine eşit (test defterle karşılaştırır); `SnapshotAt` ve `SnapshotTransactionIds` yazılır, okuma `ReadConcern.Snapshot` işlemindedir (F-5; snapshot davranışı AC-52 (a) ile DL-1'de ölçülür — 02/F-3); bin yoksa 422 `COUNT_SCOPE_EMPTY`, sınır aşımında 422 `COUNT_SCOPE_TOO_LARGE`. Sabotaj (ayrı ayrı): `ScopeSkuIds` süzgecini kaldır → fazla satır, kırmızı; release okumasını snapshot işleminden çıkar (ayrı `Find`'ler) → AC-52 (a) kırmızı (02/F-3).
 - [ ] AC-3 (zorunlu) — İkinci bakiye yok: mimari test 0181 üretim kodunda (`CycleCount*` klasörleri) `IInventoryLedgerRepository`, `inventory_transactions`, `inventory_balances` metni ve `OnHand` / `Available` / `Reserved` özelliği bulmaz; `SingleSystemOfRecordArchitectureTests` `wms_count_*` koleksiyonlarını açıkça bildirir ve `Only_the_ledger_and_its_projection_carry_quantities` listesi (`:138-141`) değişmez; 0181'in tek stok kapısı `CycleCountMovementPoster`. Sabotaj (ayrı ayrı): satıra `OnHand` özelliği ekle → kırmızı; bir handler'a `IInventoryLedgerRepository` enjekte et → kırmızı; bildirilmemiş `wms_count_x` koleksiyonu aç → kırmızı; `:115-119` önek listesinden `CycleCountCollections.`'ı çıkar → ilk 0181 deposu kırmızı (F-2).
 - [ ] AC-4 (zorunlu) — Anlık görüntü değişmez: `release`'ten sonra kapsamda `LOCATION_TRANSFER` / `COUNT_*` / satış hareketi post edilir; satırın `ExpectedQuantity`'si ve `SnapshotAt` değişmez (okuma ve submit sonrası). Sabotaj: satır okumasında beklenen miktarı defterden yeniden doldur → kırmızı.
 - [ ] AC-5 (zorunlu) — Kiracı ve şirket izolasyonu: A kiracısının sayımına B kiracısından her uç (GET / update / release / cancel / lines / count / submit / variances / approve / retry / resolve / settings / evidence) 404; aynı kiracıda başka şirketten 404; listeler yalnız kendi şirketini döner. Sabotaj (ayrı ayrı): depodan `TenantId` yüklemini düşür → kırmızı; `LegalEntityId` yüklemini düşür → kırmızı.
@@ -845,11 +899,11 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-7 (zorunlu) — Her controller eylemi `[HasPermission(CycleCountPermissions.*)]` taşır ve manifest yalnız controller'ın uyguladığı `cycle-count.*` anahtarlarını bildirir (MOD-0178 `WarehouseRegistrationTests.cs:24-62` deseni). Sabotaj: bir eylemden özniteliği kaldır → `AuthorizationGuardTests` kırmızı.
 - [ ] AC-8 (zorunlu) — İdempotent yazma: her yazma komutu için aynı `Idempotency-Key` + aynı gövde (+ ilk isteğin `If-Match`'i) → 200 replay, `Version` ve olay sayısı değişmez; aynı anahtar + farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`, yazım yok. Ayrı testler: yarat, düzenle (`update`), toplu sil, release, iptal (Draft soft delete ve Released iptali ayrı), giriş (`count`), bulunan satır, submit, onay, ret, yeniden sayım, retry, resolve, ayar.
 - [ ] AC-9 (zorunlu) — Eşzamanlılık: eski `If-Match` ile düzenleme / giriş / karar → 409 `COUNT_CONFLICT`, sessiz üzerine yazma yok.
-- [ ] AC-10 (zorunlu) — Silme ucu yok, iptal var (F-1): `Draft` sayımda `POST …/cancel` → soft delete (`IsDeleted = true`, `DeletedAt` dolu, durum `Cancelled`, `Data.SoftDeleted = true` olayı), listeden düşer, GET 404; `Released` / `Counting`'de `cancel` → `Cancelled`, silinmez, GET 200, bin talepleri `Open = false`; `Submitted` ve sonrası 409 `COUNT_INVALID_STATE`; `bulk-delete` yalnız `Draft` satırları soft delete eder, `Draft` olmayanlar ayrı sonuçla döner (satır sonucu sözleşme taslağında). Sabotaj: Draft iptalinde `IsDeleted` yazımını kaldır → kayıt listede kalır, kırmızı.
+- [ ] AC-10 (zorunlu) — Silme ucu yok, iptal var (F-1): `Draft` sayımda `POST …/cancel` → soft delete (`IsDeleted = true`, `DeletedAt` dolu, durum `Cancelled`, `Cancelled` + `Data.SoftDeleted = true` olayı; toplu silmede de aynı tür, ayrıca `Data.Bulk = true` — `Deleted` türü yok, 02/F-4), listeden düşer, GET 404; `Released` / `Counting`'de `cancel` → `Cancelled`, silinmez, GET 200, bin talepleri `Open = false`; `Submitted` ve sonrası 409 `COUNT_INVALID_STATE`; `bulk-delete` yalnız `Draft` satırları soft delete eder, `Draft` olmayanlar ayrı sonuçla döner (satır sonucu sözleşme taslağında). Sabotaj: Draft iptalinde `IsDeleted` yazımını kaldır → kayıt listede kalır, kırmızı.
 - [ ] AC-11 (zorunlu) — Merkezi denetim: her 0181 yazma komutu `ICentralAuditDeclaration` taşır; `CentralAuditDeclarationTests` sayısı = 87 + dilimin 0181 yazma komutları ve sağlayıcı listesinde `CycleCountingManifestProvider`; başarılı yazma → 1 merkezi kayıt, replay → 0, başarısız → iletilen 0; yerel olay aynı işlemde. Sabotaj: bir callback'ten `CentralAuditTransaction.EnlistAsync`'i kaldır → `CentralAuditDeclarationTests` kırmızı.
 - [ ] AC-12 (zorunlu) — Kayıt kodu: `Number` API'den değiştirilemez (gövdede gelirse 400 ya da yok sayılır — sözleşme taslağında sabitlenir); eşzamanlı iki yaratma farklı numara alır; sayaç yazılamazsa 503 `COUNT_RECORD_CODE_UNAVAILABLE` ve sayım yok; 0181 kendi sayacını yazmaz (Q-7 = B); numara `CNT` önekiyle MOD-0178 sayacından alınır. Sabotaj: `WarehouseRecordCodeRules.TypePrefixes`'ten `CNT`'yi çıkar → sayaç `ArgumentException` atar, yaratma 503 `COUNT_RECORD_CODE_UNAVAILABLE` döner, AC-1 kırmızı (F-3).
 - [ ] AC-13 (zorunlu) — Kapsam çakışması, kilit yok (Q-6 = B, F-6): bir bin aynı anda en çok bir açık sayımda; (a) stoklu bin'de ikinci `release` 409 `COUNT_SCOPE_OVERLAP`; (b) **stoksuz** (satırsız) bin'de ikinci `release` de 409; (c) aynı bin'i kapsayan **iki eşzamanlı** `release` → tam biri başarılı, diğeri 409 ve kaybedende talep / satır / olay yok; (d) ilk sayım `Closed` ya da `Cancelled` olunca bin yeniden talep edilebilir; (e) yeniden sayım kaynağının bin'ini devralır, kaynakla çakışmaz. Açık sayımın kapsamındaki bin'e `release`'ten sonra post edilen `LOCATION_TRANSFER` / satış hareketi defterde **kabul edilir** (0181 hiçbir hareketi engellemez; MOD-0173'e kilit seam'i yok). Sabotaj (ayrı ayrı): `wms_count_bin_claims` tekil kısmi index'ini kaldır → (c)'de ikisi de başarılı, kırmızı; talebi yalnız satırlı bin'ler için yaz → (b) geçer, kırmızı.
-- [ ] AC-51 (zorunlu) — PUT / DELETE bekçisi (F-1 sahip kararı A): 0181 controller'ları yalnız GET / POST uçları açar; tek istisna `PUT /count-settings` (`CountVariancesController:count-settings`), `LedgerImmutabilityArchitectureTests` (`:137-171`) içinde tek eklemeli `Assert.Single` + `RemoveAll` satırıyla (XMC-001, sahip MVP-1 CT Beste; DL-3'te uçla birlikte eklenir); `:160` DELETE yasağı ve `:168-170` donmuş PUT listesi değişmez. Sabotaj (ayrı ayrı): sayım girişini `PUT …/lines/{lineId}` olarak aç → kırmızı; `DELETE /cycle-counts/{countId}` ekle → `:160` kırmızı; ayar istisnasını iki kez tanımla ya da ikinci bir 0181 PUT ekle → kırmızı.
+- [ ] AC-51 (zorunlu; DL-1'de kısmi, DL-3'te kapanır — 02/F-3) — PUT / DELETE bekçisi (F-1 sahip kararı A): DL-1'de `CycleCountsController` yalnız GET / POST açar ve bekçi istisnasız yeşildir; DL-3'te `CountVariancesController` ile birlikte ayar istisnası eklenir ve madde orada kapanır. 0181 controller'ları yalnız GET / POST uçları açar; tek istisna `PUT /count-settings` (`CountVariancesController:count-settings` — taban `[Route("api/warehouse")]` + `[HttpPut("count-settings")]`, rota biçimi `LedgerImmutabilityArchitectureTests.cs:143`, 02/F-5), `LedgerImmutabilityArchitectureTests` (`:137-171`) içinde tek eklemeli `Assert.Single` + `RemoveAll` satırıyla (XMC-001, sahip MVP-1 CT Beste; DL-3'te uçla birlikte eklenir); `:160` DELETE yasağı ve `:168-170` donmuş PUT listesi değişmez. Sabotaj (ayrı ayrı): sayım girişini `PUT …/lines/{lineId}` olarak aç → kırmızı; `DELETE /cycle-counts/{countId}` ekle → `:160` kırmızı; ayar istisnasını iki kez tanımla ya da ikinci bir 0181 PUT ekle → kırmızı.
 
 **DL-2 — sayım girişi ve fark hesabı (arka uç)**
 
@@ -860,7 +914,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-18 (zorunlu) — Fark formülü: release → kapsam bin'ine +3 `LOCATION_TRANSFER` (anlık görüntüden sonra, girişten önce) → sayılan = beklenen + 3 → `MovementsSinceSnapshot = 3`, `VarianceQuantity = 0`; aynı kurguda sayılan = beklenen + 1 → fark −2. `SnapshotTransactionIds`'teki hareket iki kez sayılmaz. Sabotaj (ayrı ayrı): hareket farkını hesaptan çıkar → fark +3 / +1, kırmızı; `SnapshotTransactionIds` dışlamasını kaldır → anlık görüntüdeki hareket iki kez sayılır, kırmızı.
 - [ ] AC-19 (zorunlu) — `MovementDuringCount`: anahtara `SnapshotAt`–`CountedAt` arası hareket dokunduysa bayrak `true` ve satır fark 0 olsa da `AwaitingApproval` (tolerans uygulanmaz) (Q-6 = B). Sabotaj: bayrak koşulunu kaldır → fark 0 bayraklı satır `NoVariance` olur, kırmızı.
 - [ ] AC-20 (zorunlu) — `Submit` defter okuması erişilemezse 503 `COUNT_INVENTORY_UNAVAILABLE`, sayım `Counting` kalır, satırlar değişmez.
-- [ ] AC-52 (zorunlu) — Anlık görüntü tutarlılığı (F-5): (a) release'in snapshot işlemiyle **eşzamanlı** enjekte edilen bir defter hareketi (test kancası release'in bakiye okuması ile işlemin sonu arasında posting yapar) sonuçta ya `ExpectedQuantity`'de ve `SnapshotTransactionIds`'te ya `MovementsSinceSnapshot`'tadır — iki kez ya da hiç sayılmaz; fark doğru çıkar; (b) `CreatedAt`'i `SnapshotAt − W`'den eski ama snapshot'tan sonra commit olan hareket (test saatiyle kurgulanır) bakiye denklemini bozar → satır `SnapshotDrift = true`, tolerans uygulanmaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, defterde hareket yok; `recount` çalışır. Sabotaj (ayrı ayrı): release okumasını snapshot işleminden çıkar (ayrı `Find`'ler) → (a) yarışında iki kez ya da hiç sayılır, kırmızı; bakiye denklemi denetimini kaldır → (b)'de yanlış fark onaylanır ve post edilir, kırmızı.
+- [ ] AC-52 (zorunlu; (a) DL-1'de, (b) ve (c) DL-2'de kapanır — 02/F-3) — Anlık görüntü tutarlılığı (F-5): (a) release'in snapshot işlemiyle **eşzamanlı** enjekte edilen bir defter hareketi (test kancası release'in bakiye okuması ile işlemin sonu arasında posting yapar) sonuçta ya `ExpectedQuantity`'de ve `SnapshotTransactionIds`'te ya `MovementsSinceSnapshot`'tadır — iki kez ya da hiç sayılmaz; fark doğru çıkar; (b) `CreatedAt`'i `SnapshotAt − W`'den eski ama snapshot'tan sonra commit olan hareket (test saatiyle kurgulanır) bakiye denklemini bozar → satır `SnapshotDrift = true`, tolerans uygulanmaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, defterde hareket yok; `recount` çalışır; (c) **fark-0 drift** (r4, 02/F-1): sayılan = beklenen + anlık görüntü sonrası hareketler (hesaplanan fark 0) ama bakiye denklemi tutmuyor → satır `SnapshotDrift = true` ve **`AwaitingApproval`** (`NoVariance` değil), sayım `Closed` olmaz, `approve` 409 `COUNT_SNAPSHOT_DRIFT`, yalnız `recount` / `reject` satırı son duruma getirir. Sabotaj (ayrı ayrı): release okumasını snapshot işleminden çıkar (ayrı `Find`'ler) → (a) yarışında iki kez ya da hiç sayılır, kırmızı; bakiye denklemi denetimini kaldır → (b)'de yanlış fark onaylanır ve post edilir, kırmızı; drift koşulunu `NoVariance` kararından çıkar → (c)'de satır `NoVariance` olur ve sayım onaysız `Closed`'a gider, kırmızı.
 
 **DL-3 — onay, defter kaydı, kurtarma (arka uç)**
 
@@ -878,7 +932,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-32 (zorunlu) — Yeniden sayım: seçili satırlar için `RecountOfId`'li yeni sayım açılır ve yeni anlık görüntü alır; eski satırlar `Recounted`; zincir `MaxRecounts`'u (varsayılan 2) aşınca 409 `COUNT_RECOUNT_LIMIT`; yeniden sayım yalnız elle tetiklenir, önceki sayanın yeniden atanması reddedilmez (Q-11 = A).
 - [ ] AC-33 (zorunlu) — Kapanış: her satır son durumunda iken sayım `Closed`; `Closed` sayımda her yazma 409 `COUNT_INVALID_STATE`.
 - [ ] AC-34 (zorunlu) — Muafiyet: recall'daki lotta `COUNT_LOSS` / `COUNT_GAIN` 0181 tarafından engellenmez ve defter tür muafiyetiyle kabul eder; FEFO gerekçesi istenmez. Sabotaj: 0181'e recall okuması ekleyip ret ver → kırmızı.
-- [ ] AC-47 (zorunlu) — Elle `COUNT_*` ayrışması (Q-21 = A, F-4): aynı kiracı + şirkette (a) 0181 onayıyla post edilen `COUNT_GAIN` (`Posted`), (b) `POST /api/inventory/movements` ile `sourceModule = MOD-0173`, `sourceType = MANUAL_MOVEMENT` `COUNT_LOSS`, (c) aynı uçtan `sourceModule = MOD-0181` beyanlı, başka anahtarlı `COUNT_GAIN`, (d) 0181 satırı `Pending` iken commit olmuş 0181 `COUNT_LOSS`'u (işlem 2 yazılmadan önce, `Adjustment.TransactionId` boş) kurulur → `GET /count-variances?source=manual` (depo + ≤ 31 gün aralığıyla; eksikse 400) (b) ve (c)'yi "Elle" döndürür, (c) "kaynak beyanı uyuşmuyor" işaretli, (a) ve (d)'yi döndürmez; `source=count` (a) ve (d)'yi "Sayım" döndürür; dashboard elle KPI'ı (AC-40) 2'dir, (d) sayılmaz; Evidence Pack'te (d) elle bölümüne düşmez; `Elle` satırlarda eylem yok; başka kiracının / şirketin elle hareketi görünmez; 0181 tarafından hiçbir defter yazımı yapılmaz ve MOD-0173 dosyalarında fark yoktur (`git diff` boş). Sabotaj (ayrı ayrı): eşleşmeyi `Adjustment.TransactionId`'ye geri çevir → (d) "Elle" görünür, kırmızı; sınıflandırmayı yalnız `SourceModule == "MOD-0181"` beyanına çevir → (c) "Sayım" olur, kırmızı; okumadan `LegalEntityId` yüklemini düşür → başka şirketin elle hareketi görünür, kırmızı.
+- [ ] AC-47 (zorunlu) — Elle `COUNT_*` ayrışması (Q-21 = A, F-4): aynı kiracı + şirkette (a) 0181 onayıyla post edilen `COUNT_GAIN` (`Posted`), (b) `POST /api/inventory/movements` ile `sourceModule = MOD-0173`, `sourceType = MANUAL_MOVEMENT` `COUNT_LOSS`, (c) aynı uçtan `sourceModule = MOD-0181` beyanlı, başka anahtarlı `COUNT_GAIN`, (d) 0181 satırı `Pending` iken commit olmuş 0181 `COUNT_LOSS`'u (işlem 2 yazılmadan önce, `Adjustment.TransactionId` boş) kurulur → `GET /count-variances?source=manual` (depo + ≤ 31 gün aralığıyla; eksikse 400) (b) ve (c)'yi "Elle" döndürür, (c) "kaynak beyanı uyuşmuyor" işaretli, (a) ve (d)'yi döndürmez; `source=count` (a) ve (d)'yi "Sayım" döndürür; dashboard elle KPI'ı (AC-40) 2'dir, (d) sayılmaz; Evidence Pack'te (d) elle bölümüne düşmez; `Elle` satırlarda eylem yok; başka kiracının / şirketin elle hareketi görünmez; 0181 tarafından hiçbir defter yazımı yapılmaz ve MOD-0173 dosyalarında fark yoktur (`git diff` boş). Sabotaj (ayrı ayrı): eşleşmeyi `Adjustment.TransactionId`'ye geri çevir → (d) "Elle" görünür, kırmızı; sınıflandırmayı yalnız `SourceModule == "MOD-0181"` beyanına çevir → (c) "Sayım" olur, kırmızı; okumadan `LegalEntityId` yüklemini düşür → başka şirketin elle hareketi görünür, kırmızı. **r4 (02/F-2) ek vaka:** (e) satır posting'inden **önce** `POST /api/inventory/movements` ile `idempotencyKey = cycle-count:{L.Id}`, `sourceModule = MOD-0181`, `sourceLineId = L.Id`, `sourceDocumentId = L.CountId` beyanlı bir `COUNT_GAIN` yazılır → 0181 onayı `KeyReusedDifferentPayload` → `IntegrityError`; görünümde bu hareket "Elle" + "kaynak beyanı uyuşmuyor"dur, `source=count`'ta yoktur; `resolve-integrity` `AcceptHolder` (aynı içerikse) sonrası "Sayım" olur, `Reject` sonrası "Elle" kalır. Sabotaj: satır yönünü (durum / `TransactionId` / `FirstAttemptAt` koşulu) kaldır, yalnız hareket alanlarına bak → (e) "Sayım" görünür, kırmızı.
 - [ ] AC-48 (zorunlu) — Seri kontrollü satır (Q-10 = A): fark hesaplanır ve Variance Trace'te görünür; `approve` 422 `COUNT_SERIAL_NOT_POSTABLE`, hareket yok; tolerans içi olsa da otomatik `Approved` olmaz; `reject` / `recount` çalışır. Sabotaj: 0181'in seri denetimini kaldır → `approve` 422 `COUNT_SERIAL_NOT_POSTABLE` dönmez, kırmızı.
 - [ ] AC-49 (zorunlu) — Şirket sayım ayarları (F-11): `GET /count-settings` `cycle-count.settings.read`, `PUT /count-settings` `cycle-count.settings.configure` ister (403 aksi); `ToleranceAbsolute` < 0, `TolerancePercent` 0..100 dışı, `MaxRecounts` < 0, `MaxLinesPerCount` < 1 → 400 ve kayıt değişmez; eski `If-Match` → 409 `COUNT_CONFLICT`; kayıt yokken varsayılanlar (0 / 0 / 2 / 2000) döner; başka şirketin ayarı görünmez; manifest `ApiPermissions` tam olarak `cycle-count.settings.read` ve `.configure`'dur (emsal `WarehouseRegistrationTests.cs:98-100`). Sabotaj: yüzde aralık denetimini kaldır → 150 kabul edilir, kırmızı.
 
@@ -890,7 +944,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-38 (zorunlu) — UAS-001: `cycle-count.counts.read` olmayan kullanıcı `/Warehouse/CycleCounts`'ta ve sayım formunda (`/Warehouse/CycleCounts/Sheet/{countId}`, `COUNTSHEET` — F-14) başlık, kart, boş tablo, satır ya da eylem düğmesi görmez; tek açıklama + ne yapılacağı; yönlendirme yok; `variances.read` olmayan için Variance Trace aynı. Sabotaj: izin denetimini kaldırıp iskeleti çiz → UAS-001 testi kırmızı.
 - [ ] AC-39 (zorunlu) — Sayım formu 375 px genişlikte canlı ölçülür: yatay kaydırma yok, miktar girişi, "bulunan stok ekle" ve submit kullanılabilir (Q-12 = A).
 - [ ] AC-40 (zorunlu) — Dashboard KPI'ları okuma anında hesaplanır (saklanan toplam yok): açık sayım, onay bekleyen fark, `Refused` düzeltme, dönem doğruluğu (fark 0 satır / sayılmış satır), seçili depoda son 31 günün **elle `COUNT_*` hareket sayısı** (§2.4 kuralıyla; Q-21 = A); test veriyle karşılaştırır.
-- [ ] AC-41 (zorunlu) — Manifest sayfaları (`CYCLECOUNTS`, `COUNTSHEET`, `COUNTVARIANCES`) ve her gerçek düğme için bir eylem; `python3 scripts/check_pack_nav_keys.py` PASS.
+- [ ] AC-41 (zorunlu) — Manifest sayfaları (`CYCLECOUNTS`, `COUNTSHEET`, `COUNTVARIANCES`) ve her gerçek düğme için bir eylem; `python3 scripts/check_pack_nav_keys.py` PASS. **r4 (02/F-4):** `CYCLECOUNTS` sayfa eylemleri: yarat (`counts.create`), düzenle (`counts.update`), release (`counts.update`), satır eylemi **"İptal"** (`counts.cancel`; Draft'ta soft delete — "Sil" eylemi ve `counts.delete` anahtarı yok), toplu sil (`counts.bulk-delete`); `COUNTSHEET`: miktar gir / bulunan stok / submit (`counts.record`); `COUNTVARIANCES`: onay, ret, yeniden sayım, yeniden dene, bütünlük çöz (`variances.*`); manifest `ApiPermissions` = `cycle-count.settings.read`, `.configure` (AC-49); `COUNTEVIDENCE` DL-5'te AC-50'dedir. Sabotaj: manifestte `counts.delete` eylemi bildir → manifest / controller uyum testi (AC-7) kırmızı.
 - [ ] AC-42 (zorunlu) — Sayfa yardımı: `Help.{KOD}.Purpose`, `.Audience`, `.Step{n}Title` / `.Step{n}` (§25) 7 dilde; metinsiz sayfa yok.
 
 **DL-5 — Evidence Pack**
@@ -921,12 +975,13 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
   test paketi koşar (filtre yok; MVP-1 CT kuralı).
 - **Sabotaj kanıtı:** §16'daki her "Sabotaj:" maddesi kabul kaydında komut + kırmızı çıktı + geri alma ile yazılır.
 - **Frontend:** `verify_datatable_page.py` (AC-36), RESX parite 7 dil (AC-37), UAS-001 (AC-38), 375 px canlı ölçüm (AC-39), tarayıcı smoke
-  (E3) — sayım aç → release → giriş → submit → onay → defter hareketi.
+  (E3) — sayım aç → release → giriş → submit → onay → defter hareketi; ayrıca Draft sayımı satır eylemi "İptal" ile soft delete (DEV-0000 smoke'undaki
+  "delete" `:218` karşılığı, 02/F-6).
 - **Build:** `Diten.InventoryService`, `Diten.Web` PASS; Gateway test projesi (AC-45) PASS (Q-15 = A — `ocelot.json` değişmez).
 - **Sözleşme:** WMS-COUNT-BUNDLE taslağına karşı sözleşme testi (`WmsDraftContract.cs` emsali, `c101e22fa:INVT/Warehouse/WmsDraftContract.cs`).
 
 ## 18. Ready-for-dev Checklist
-- [x] Golden Reference Slim (DEV-0000 + gerçek kod) referans olarak okundu — r3: DEV-0000 pack metni `:1-175` okundu, Golden Slim kod ağacı `c101e22fa`'da listelendi (F-16); form alan sayısı 8 → slim (§4.1); sapma G-0181-01 adıyla §10'da
+- [x] Golden Reference Slim (DEV-0000 + gerçek kod) referans olarak okundu — r4: DEV-0000 pack metninin tamamı `:1-242` okundu (r3'te `:1-175`; 02/F-6), Golden Slim kod ağacı `c101e22fa`'da listelendi (F-16); form alan sayısı 8 → slim (§4.1); sapma G-0181-01 adıyla §10'da
 - [ ] Frontmatter zorunlu alanları dolu (service, shell, golden_reference, data_mode, screens, entity_base)
 - [ ] Layout & Shell Contract'ta `_LayoutTenantShell` açıkça yazılı
 - [ ] Backend File Convention Golden Reference ile birebir
@@ -941,6 +996,8 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] Sayfa yardım metni her sayfa için yazılı (UXH-001); tur yok
 - [x] Açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, 2026-11-06, §19.4); r1'in iki uygulama notu (PKS-001 §2, Q-22 / Q-7 okunuşu) r2'de sahip teyidiyle kapandı
 - [ ] XMC-001 seam'leri (§5) sahiplerinden onay aldı
+- [ ] `.antigravity/**` kapısı (izlenen, 02/F-7): PKS-001 §4 `cycle-count.*` satırı ve RCS-001 §3 `CNT` satırı — onaylayan Beste (kullanıcı onayı,
+  Çekirdek md. 6), yazan ayrı WP, **kapanış: modül PR'ı açılmadan önce**; paket onayını ve dilim başlangıcını engellemez (§6)
 - [ ] WMS-COUNT-BUNDLE taslağı yazıldı
 - [ ] Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01)
 
@@ -968,8 +1025,9 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
   `localization-standard.md` (ad düzeyinde — 7 dil kuralı AGENTS Çekirdek madde 4'ten).
 - Golden Reference: `DEV-0001-golden-reference-compact.md:1-25`; `frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/` ve
   `GoldenReferenceCompact/` dosya listeleri; `services/Diten.DevEnablementService/…/Features/GoldenReferenceCompact/` ağacı.
-  r0–r2'de DEV-0000 pack metni açılmamıştı; **r3:** `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md:1-175`
-  okundu (Delete komutları `:46-47`, handler'lar `:54-55`, uçlar `:64-69`) ve Golden Slim ağacı `c101e22fa`'da `git ls-tree` ile listelendi
+  r0–r2'de DEV-0000 pack metni açılmamıştı; **r3:** `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md:1-175`,
+  **r4:** kalan `:175-242` (Validation, Failure Path, Authorization `:192-196`, Gateway `:198-201`, AC, Test Expectations `:213-219`, Ready-for-dev,
+  Notes, Follow-up) okundu — dosyanın tamamı (02/F-6); (Delete komutları `:46-47`, handler'lar `:54-55`, uçlar `:64-69`) ve Golden Slim ağacı `c101e22fa`'da `git ls-tree` ile listelendi
   (`Features/GoldenReferenceSlim/{Commands,Queries,Handlers/CommandHandlers,Handlers/QueryHandlers,Validators}` + `GoldenReferenceSlimModels.cs`;
   `Views/DevEnablement/GoldenReferenceSlim/` yedi dosya) (F-16).
 - r3: bağımsız inceleme 01 `docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md` (tamamı).
@@ -1078,8 +1136,11 @@ olarak teyit etti (yeni izin yok) ve Q-22'nin kapsamını daralttı (yalnız gö
 **r3 — inceleme 01 kapanışı:** F-1 sahip kararı A (Beste, 2026-11-06) ile, F-2…F-18 inceleyicinin önerileri doğrultusunda kapatıldı
 (eşleme revizyon notu r3'te). Kapanış bir belge kapanışıdır; yeniden bağımsız inceleme (CT-APR-02) gerekir.
 
-**Kalan açık nokta (r3):**
-1. **F-17 (onay, engel değil):** PKS-001 §4 tablosuna `cycle-count.*` satırı `.antigravity/**` değişikliğidir, ayrı sahip onayı ister.
+**r4 — inceleme 02 kapanışı:** 02/F-1…02/F-7 kapatıldı (eşleme revizyon notu r4'te); yeniden bağımsız inceleme gerekir.
+
+**Kalan açık nokta (r3, r4'te güncellendi):**
+1. **F-17 → izlenen kapı (02/F-7):** PKS-001 §4 `cycle-count.*` ve RCS-001 §3 `CNT` satırları `.antigravity/**` değişikliğidir; onaylayan Beste
+   (kullanıcı onayı, Çekirdek md. 6), yazan ayrı WP, kapanış modül PR'ı açılmadan önce; §18 işaretsiz maddesiyle izlenir (§6).
 2. **F-1 / G-0181-01:** Golden Slim'den adlı sapma (Delete komutu yok, PUT / DELETE yerine POST) — sahip kararıyla verildi; DL-4'te
     `verify_datatable_page.py` satır eylemi için sapma verirse dokunma protokolüyle sorulur.
 3. **F-5 / W:** W = 10 dk'nın dayanağı çıkarımdır (sürücü yeniden deneme süresi ölçülmedi); yanlışsa bakiye denklemi kapalı-başarısız
@@ -1125,7 +1186,7 @@ replay / 0 kayıt 0; başarısız iletilen 0 (§8.11). K2 sınıfı (Q-20 = A, k
 |---|---|---|---|---|---|
 | CreateCycleCountCommand | CreateCycleCountCommand + Create | CycleCount | b | Sonraki: Number, WarehouseId, CountType, Blind, kapsam, PlannedDate, AssignedTo, Note | — |
 | UpdateCycleCountCommand | UpdateCycleCountCommand + Update | CycleCount | b | Önceki / sonraki: değişen form alanları | — |
-| BulkDeleteCycleCountCommand | BulkDeleteCycleCountCommand + Delete | CycleCount (toplu, EntityId boş) | b | silinen her kaydın `Deleted` olayı | — |
+| BulkDeleteCycleCountCommand | BulkDeleteCycleCountCommand + Delete | CycleCount (toplu, EntityId boş) | b | silinen her kaydın `Cancelled` + `SoftDeleted` + `Bulk` olayı (tekli iptalle aynı tür, 02/F-4) | — |
 | ReleaseCycleCountCommand | ReleaseCycleCountCommand + LifecycleTransition | CycleCount | b | SnapshotAt, ScopeBinIds sayısı, satır sayısı, talep edilen bin sayısı (satır başına beklenen miktar yok — F-13) | — |
 | CancelCycleCountCommand | CancelCycleCountCommand + LifecycleTransition | CycleCount | b | önceki durum, gerekçe, `SoftDeleted` (Draft'ta `true`), bırakılan bin talepleri (r3: ayrı Delete komutu yok, F-1) | — |
 | RecordCountLineCommand | RecordCountLineCommand + Update | CycleCountLine | b | önceki / sonraki CountedQuantity, ScanRef | — |
@@ -1170,9 +1231,9 @@ Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kay
 
 | Dilim | Başlamadan kapanması gereken kararlar | Seam'ler (XMC-001) | AC |
 |---|---|---|---|
-| DL-1 | kararlar kapandı (Q-1, Q-6, Q-7, Q-13, Q-15, Q-16, Q-20, Q-22, Q-23, Q-24 — r1); kalan: WMS-COUNT-BUNDLE taslağı (Q-22 / Q-7 okunuşu r2'de teyit edildi) | `SingleSystemOfRecordArchitectureTests`, `CentralAuditDeclarationTests`, `Program.cs`, `WarehouseRecordCodeRules.TypePrefixes` (`CNT`, Q-7 = B, F-3) | AC-1…AC-13, AC-51 (bekçi; ayar istisnası satırı DL-3'te) |
-| DL-2 | kararlar kapandı (Q-1, Q-6, Q-10 — r1) | `CentralAuditDeclarationTests` (sayı) | AC-14…AC-20, AC-52 |
-| DL-3 | kararlar kapandı (Q-3, Q-4, Q-5, Q-8, Q-9, Q-10, Q-11, Q-17, Q-19, Q-21 — r1); kalan: elle `COUNT_*` okuma performansı ölçümü (§19.4) | `ExpiryQuarantineTypeExemptionTests`, `CentralAuditDeclarationTests`; MOD-0173'e seam yok (Q-21 = A, r2); `LedgerImmutabilityArchitectureTests` ayar istisnası (F-1) | AC-21…AC-34, AC-47, AC-48, AC-49 |
+| DL-1 | kararlar kapandı (Q-1, Q-6, Q-7, Q-13, Q-15, Q-16, Q-20, Q-22, Q-23, Q-24 — r1); kalan: WMS-COUNT-BUNDLE taslağı (Q-22 / Q-7 okunuşu r2'de teyit edildi) | `SingleSystemOfRecordArchitectureTests`, `CentralAuditDeclarationTests`, `Program.cs`, `WarehouseRecordCodeRules.TypePrefixes` (`CNT`, Q-7 = B, F-3) | AC-1…AC-13, AC-51 (kısmi: GET/POST-only), AC-52 (a) (release snapshot) |
+| DL-2 | kararlar kapandı (Q-1, Q-6, Q-10 — r1) | `CentralAuditDeclarationTests` (sayı) | AC-14…AC-20, AC-52 (b), (c) — AC-52 burada kapanır |
+| DL-3 | kararlar kapandı (Q-3, Q-4, Q-5, Q-8, Q-9, Q-10, Q-11, Q-17, Q-19, Q-21 — r1); kalan: elle `COUNT_*` okuma performansı ölçümü (§19.4) | `ExpiryQuarantineTypeExemptionTests`, `CentralAuditDeclarationTests`; MOD-0173'e seam yok (Q-21 = A, r2); `LedgerImmutabilityArchitectureTests` ayar istisnası (F-1) | AC-21…AC-34, AC-47, AC-48, AC-49, AC-51 (ayar istisnasıyla kapanır) |
 | DL-4 | karar kapandı (Q-12 — r1); AuthService rol şablonu WP'si (Q-4 = A; Ali) kabul kapısı | — | AC-35…AC-42, AC-46 |
 | DL-5 | karar kapandı (Q-18 — r1) | `CentralAuditDeclarationTests`, `SingleSystemOfRecordArchitectureTests` (kanıt koleksiyonları) | AC-43, AC-44, AC-50 |
 | DL-6 | karar kapandı (Q-15 = A — r1) | gateway test projesi (integration-agent); `ocelot.json` değişmez | AC-45 |
