@@ -35,8 +35,7 @@ parent: MOD-0018
 > `module-id-registry.md:92`); `origin/main` üzerinde `grep -c` → 0. Main'e girmesi onay satırından önce gerekir.
 > (4) Karar kayıtları 02 ve 03 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md` @ `25a03bebd`, `-03.md` @
 > `11fa9b94c`): kule dalında commit'li, `origin/main`'de yok; **main'e girmeleri onay satırından önce gerekir (CT'nin işi)**.
-> (5) Yeni seçimler S-1…S-5: **kapandı** (sahip 2026-11-06, "Hepsini kabul et"; karar kaydı 03, karar 9). Bu sürümde doğan S-6 ve
-> S-7: **açık**; sahip cevabı karar kaydına (CT) geçmeden onay satırı yazılmaz.
+> (5) Yeni seçimler S-1…S-5: **kapandı** (sahip 2026-11-06, "Hepsini kabul et"; karar kaydı 03, karar 9). S-6 ve S-7: **kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11)**.
 > (6) Bu sürümün bağımsız incelemesi kod dosyalı ZIP'le geçer ve `execution/approvals/reviews.tsv` satırı yazılır.
 >
 > **Dağıtım ön koşulu (S2S anahtarı):** Geçmiş uçları meta-denetim teslim teyidi olmadan veri döndürmez (AC-18). Teyit için Auth'un
@@ -212,8 +211,8 @@ kurucu (`AuthAuditLog.cs:7-15`) değişmez; alanları alan ek bir kurucu eklenir
   (yetki gerçekte kalktı ya da verildi). `Failed` + `stage = mutation` **üç** dala ayrılır. Sınıflandırmayı `RbacMutationFailureClassifier`
   yapar. Sınıflandırıcı istisnanın türüne ve hata alanlarına bakar. Sürücü `MongoDB.Driver` 2.27.0'dır
   (`Diten.AuthService.Persistence.csproj:13`). Seçim S-3 (kabul edildi, karar kaydı 03).
-  - **Kesin hata → `false`, `uncertainty` yok.** Bu dal yalnız **tek belgeli** değişiklik yazımına uygulanır (S-7, sahip kararı
-    bekliyor): `InsertOneAsync` (`RepositoryBase.cs:38-41`; rol ve rol-izin), `UpdateOneAsync` (`UserRoleRepository.cs:54`,
+  - **Kesin hata → `false`, `uncertainty` yok.** Bu dal yalnız **tek belgeli** değişiklik yazımına uygulanır (S-7,
+    kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11)): `InsertOneAsync` (`RepositoryBase.cs:38-41`; rol ve rol-izin), `UpdateOneAsync` (`UserRoleRepository.cs:54`,
     `RoleRepository.cs:143`), `ReplaceOneAsync` (`RepositoryBase.cs:44-50`), `DeleteOneAsync` (`RolePermissionRepository.cs:88`).
     **Çok belgeli** yazım `UserRoleRepository.RevokeAsync`'tir (`DeleteManyAsync`, `UserRoleRepository.cs:64-69`). Orada bir yazma
     hatası kısmi silmeyle birlikte gelebilir, yani "hiç uygulanmadı" denemez. Bu yüzden `RevokeRole`'un değişiklik adımında **her**
@@ -246,7 +245,7 @@ kurucu (`AuthAuditLog.cs:7-15`) değişmez; alanları alan ek bir kurucu eklenir
   `auth.user-role.history.read` (kişi-rol geçmişi). Silinmiş roller listesi denetim kaydı okumadığı için olay yazmaz. Etiket yolu da FU27
   ile aynıdır: Platform Audit Log etiketi, tek bir XMC-001 isteğiyle iki pakete birlikte istenir (Dependencies). FU27 ile ortak tek
   genel ad seçilirse paket revizyonu + yeni onay satırı gerekir.
-  **Okuma satırının Platform değerleri (bulgu F-5; S-6, sahip kararı bekliyor):** `RequestType` = olay adı; `Category` =
+  **Okuma satırının Platform değerleri (bulgu F-5; S-6, kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11)):** `RequestType` = olay adı; `Category` =
   `IdentityAccess` (2); `Operation` = `Execute` (15); `Outcome` = `Succeeded` (1); `EntityType` = `Role` / `User`
   (`RoleAuditEvents.EntityType`, `UserAuditEvents.EntityType`); `EntityId` = okunan rol / kullanıcı; `IsMetaAudit = true`;
   `Metadata` = `page`, `pageSize`, `returnedCount` (kişisel veri yok). Seçim gerekçesi: `AuditOperation`'da okuma değeri yoktur
@@ -1240,8 +1239,8 @@ onay satırı yazılabilir, ama o dilim ilerlemez.
   edilir (Dependencies)
 - [x] Açık kararlar (a)–(p) kapandı (sahip 2026-11-05, "onayla"; karar kaydı 02, karar 7)
 - [x] **Seçimler S-1…S-5** sahibe gösterildi ve kabul edildi (2026-11-06, karar kaydı 03, karar 9)
-- [ ] **Yeni seçimler S-6 ve S-7** (Sahip kararı gereken yeni seçimler, 2026-11-06 listesi) sahibe gösterildi, cevaplandı ve karar
-  kaydına (CT) geçti. Cevaplanmadan onay satırı yazılmaz
+- [x] **Yeni seçimler S-6 ve S-7** (Sahip kararı gereken yeni seçimler, 2026-11-06 listesi) sahibe gösterildi ve kabul edildi
+  (2026-11-06, karar kaydı 04, karar 11)
 - [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) **kod dosyalı ZIP'le** yapıldı (ZIP `--expand` ile kurulur) ve
   `execution/approvals/reviews.tsv` satırı var
 - [ ] CT-APR-01 onay satırı (yüksek risk: yetki, denetim, ürün kodu yolu) — paketi yazmamış ve `high: evet` olan onaylayıcı
@@ -1504,7 +1503,7 @@ gerekir;** bu sürüm o dalları uygulamaz.
 **Durum (2026-11-05):** Sahip, yazılı CT önerilerinin hepsini kabul etti ("onayla, hedef 11-20"; karar kaydı 02, karar 7). Aşağıdaki
 her satır **kapandı**. Gövde ve AC'ler bu kararlarla sabittir. Seçilmeyen bir dal sonradan seçilirse **paket revizyonu + yeni onay
 satırı** gerekir. Sonradan doğan seçimler ayrı listededir ("Sahip kararı gereken yeni seçimler"): S-1…S-5 kabul edildi (karar kaydı
-03, karar 9); S-6 ve S-7 sahip kararı bekler ve kabul edilmiş sayılmaz.
+03, karar 9); S-6 ve S-7 kabul edildi (karar kaydı 04, karar 11).
 
 | # | Konu | Seçenekler | Karar | Sahip | Durum / seçilmeyen dallar |
 |---|---|---|---|---|---|
@@ -1551,7 +1550,10 @@ dosyasını ve onu kullanan servisleri etkiler. (3) Auth'a yeni koleksiyon, bar�
 (`CentralAuditOptions.cs:6-7`, `PlatformRegistration:*`). S-5'in yolu ise mevcut ileticiye iki yalnız-ekleme üye koyar. `CentralAudit`
 seçilirse paket revizyonu + yeni onay satırı gerekir; bu bir öneri değil, kayıttır.
 
-### 2026-11-06 — sahip kararı bekleyen yeni seçimler (S-6, S-7)
+### 2026-11-06 — yeni seçimler (S-6, S-7)
+
+**Durum (2026-11-06): kapandı (sahip 2026-11-06, "İkisini kabul et"; karar kaydı 04, karar 11).** Başka bir seçenek sonradan seçilirse paket revizyonu + yeni onay
+satırı gerekir. Aşağıdaki paragraf seçimlerin doğuşunu anlatır.
 
 Dördüncü inceleme turunun bulgularını kapatırken iki yeni seçim doğdu. Gövdeye yazılı önerilere en yakın ve güvenli tarafta kalan
 **tek** seçenek yazıldı. **Bunlar kabul edilmiş sayılmaz.** Sahip cevabı karar kaydına (CT) geçmeden onay satırı yazılmaz
