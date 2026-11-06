@@ -24,8 +24,8 @@ parent: MOD-0018
 > yapılandırma, defter ya da kiracı verisi değiştirmez. Onaydan sonra kod, aşağıdaki Repo Scope listesiyle ve Teslim dilimleri
 > sırasıyla yazılır.
 >
-> **Onay satırının ön koşulları (yeniden ölçüm 2026-11-06 öğleden sonra; `origin/main` = `1fc896e33`; kule dalı `chore/ct/auth-ct-01`,
-> CT'nin son commit'i `13abd4f30`):**
+> **Onay satırının ön koşulları (yeniden ölçüm 2026-11-06 öğleden sonra; `origin/main` = `9e7d5cca0`; kule dalı `chore/ct/auth-ct-01`,
+> CT'nin son commit'i `0da5359eb`):**
 > (1) Sahip karar kaydı 01 main'de: **kapandı**. Kayıt `c1288400a` ile yazıldı; PR #375 `68dcf9fa5` ile birleşti (2026-11-05).
 > `git diff origin/main -- <kayıt 01>` boş döndü.
 > (2) FU27 DL-5 temeli: **kapandı, (i2)**. FU27'nin onaylı sürümü yok: `origin/main` üzerindeki `execution/approvals/approvals.tsv`
@@ -33,9 +33,9 @@ parent: MOD-0018
 > notu da aynısını söyler. Bu yüzden `AuthAuditLog.EntityType` / `EntityId` alanlarını ve dizini FU29 DL-1 ekler (Repo Scope DL-1,
 > Dependencies).
 > (3) Kayıt satırı `MOD-0018-FU29`: **açık, CT'nin işi**. Satır kule dalında commit'lidir (`25a03bebd`,
-> `module-id-registry.md:92`); `origin/main` (`1fc896e33`) üzerinde `grep -c` → 0. Main'e girmesi onay satırından önce gerekir.
+> `module-id-registry.md:92`); `origin/main` (`9e7d5cca0`) üzerinde `grep -c` → 0. Main'e girmesi onay satırından önce gerekir.
 > (4) Karar kayıtları 02, 03, 04 ve 05 (`docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md` @ `25a03bebd`, `-03.md` @
-> `11fa9b94c`, `-04.md` @ `241a49e4a`, `-05.md` kule dalında commit'siz): `origin/main` (`1fc896e33`) üzerinde yok; **main'e girmeleri onay
+> `11fa9b94c`, `-04.md` @ `241a49e4a`, `-05.md` @ `0da5359eb`): kule dalında commit'li, `origin/main` (`9e7d5cca0`) üzerinde yok; **main'e girmeleri onay
 > satırından önce gerekir (CT'nin işi)**. Kayıt 05 paketi `13abd4f30` sürümüne bağlar (sha256 `7c25668f…`). Kayıt 03 paketi `25a03bebd` sürümüne (sha256 `4fbe977c…`), kayıt 04 `af3f50cb1` sürümüne
 > bağlar (sha256 `b1f4a4b2…`; `git show af3f50cb1:<paket> | shasum -a 256` → `b1f4a4b27b20cb2b75dc0a711e6db0557a76743a0727feab07979d600127d197`,
 > ölçüldü 2026-11-06).
@@ -68,7 +68,7 @@ parent: MOD-0018
 > önce-yaz, karar 3 Açık kararlar (e)), `…/mod-0018-fu29-owner-decisions-02.md` (kule dalı `25a03bebd`; karar 7 "onayla, hedef
 > 11-20", karar 8 "Evet, düzelt"), `…/mod-0018-fu29-owner-decisions-03.md` (kule dalı `11fa9b94c`; karar 9 "Hepsini kabul et",
 > S-1…S-5), `…/mod-0018-fu29-owner-decisions-04.md` (kule dalı `241a49e4a`; karar 10 "Evet, düzelttir", karar 11 "İkisini kabul et",
-> S-6 ve S-7) ve `…/mod-0018-fu29-owner-decisions-05.md` (commit'siz, CT commit'ler; karar 12 "Evet, son tur", karar 13 "İkisini kabul
+> S-6 ve S-7) ve `…/mod-0018-fu29-owner-decisions-05.md` (kule dalı `0da5359eb`; karar 12 "Evet, son tur", karar 13 "İkisini kabul
 > et", S-8 ve S-9). 02, 03, 04 ve 05 main'de değildir (başlık ön koşul 4). "Karar n", kaydın `#` sütunudur, dosya satırı değildir. Kayıtları CT yazar; bu paket yalnız onlara
 > atıf verir. Önceki ölçüm (2026-11-01): Karar o tarihte depoda yoktu.
 > U-5 ve Açık kararlar (l) bu kayıtla kapandı.
@@ -157,7 +157,10 @@ yoktur ve görünmez (Frontend File Contract).
   `auth-sod-muafiyet-gecmisi` izi ve D80/2 (b) "dar yol".
 - Treasury / MOD-0057 anahtar-rol kayıtları (FU27 DL-1…DL-3, FU28).
 - Platform ve MDM dosyaları. Buna Platform Audit Log ekranının etiket kaynakları da dahildir
-  (`frontend/Diten.Web/Views/Platform/AuditLog/**`, `AuditLogIndex.*.resx`).
+  (`frontend/Diten.Web/Views/Platform/AuditLog/**`, `AuditLogIndex.*.resx`). **Tek istisna S-9'dur** (kapandı, karar kaydı 05, karar 13):
+  `frontend/Diten.Web/Resources/Views/Platform/AuditLog/AuditLogIndex.{en,tr}.resx` ve
+  `frontend/Diten.Web/Views/Platform/AuditLog/_IndexL10n.cshtml` FU29 DL-2'de, Platform sahibinin yazılı izniyle ve yalnız ekleme olarak
+  değişir (Repo Scope DL-2). Bu üç dosyanın dışında Platform dosyası kapsam dışıdır.
 - Sistem yolları (tohum, `RoleProvisioningService`, hak eşitlemesi, `InternalPermissionsController`, `Q358ShipmentGrantRetractionRunner`).
   Bu yollar işleyicilerden geçmez ve kendi denetim durumları vardır.
 - FU-0022-AUD-02 (e-imza komutlarının önce-yazı). Bu paketin temelini kullanabilir ama ayrı iştir (Follow-up Items).
@@ -224,6 +227,10 @@ kurucu (`AuthAuditLog.cs:7-15`) değişmez; alanları alan ek bir kurucu eklenir
     `AssignPermission`'ın ikinci adımı `UpdateOneAsync` (`RolePermissionRepository.ReactivateAsync`, `:61-77`; yinelenen anahtardan
     sonra, `:49-54`; bulgu F-11). `AssignAsync`'in iki adımı da tek belgelidir; sınıflandırıcıya yalnız son atılan istisna ulaşır, çünkü
     ilk adımın yinelenen anahtar hatası depoda yakalanır (`:49`).
+    **Bilinen davranış (bulgu F-11):** `AssignRole`'da iki eşzamanlı istek `ExistsAsync`'i (`AssignRoleCommandHandler.cs:57`) birlikte
+    geçebilir; depo yinelenen anahtarı sessizce yutar (`UserRoleRepository.cs:56-59`). İki komut da `Succeeded` sonuç satırı yazar ve
+    iki kez iletilir; atama tek belgedir. Bugün de iki yerel satır yazılır; FU29 bunu değiştirmez ve sonuç "Başarılı" doğrudur (rol
+    atanmıştır). Ayırmak ayrı iştir.
     **Çok belgeli** yazım `UserRoleRepository.RevokeAsync`'tir (`DeleteManyAsync`, `UserRoleRepository.cs:64-69`). Orada bir yazma
     hatası kısmi silmeyle birlikte gelebilir, yani "hiç uygulanmadı" denemez. Bu yüzden `RevokeRole`'un değişiklik adımında **her**
     istisna `null` + `uncertainty = transport` ("sonuç bilinmiyor") sınıflanır. Yazım türünü işleyici sınıflandırıcıya verir. Tek
@@ -246,7 +253,8 @@ kurucu (`AuthAuditLog.cs:7-15`) değişmez; alanları alan ek bir kurucu eklenir
 
 - **Neden olay adları `RoleAuditEvents` / `UserAuditEvents` sınıflarına girmez:** `UserAuditEventLabelGuardTests` iki sınıfın
   sabitlerini Platform Audit Log etiketleriyle eşitliyor (grep `-n`: `UserAuditEventLabelGuardTests.cs:20, :24, :31-45`). Yeni sabit
-  eklemek Platform ekranı kaynaklarına dokunmayı gerektirir ve o dosyalar kapsam dışıdır. Ekler (`:attempt`, `:failed`,
+  eklemek Platform ekranı kaynaklarına dokunmayı gerektirir; o dosyalar kapsam dışıdır, tek istisna iki okuma olayının etiketidir
+  (S-9; Repo Scope DL-2). Ekler (`:attempt`, `:failed`,
   `:not_applied`) ayrı bir sabit sınıfında durur. **Platform'a giden yazma olayı adları** (beş rol olayı ve iki kişi-rol olayı:
   `role_created`, `role_updated`, `role_deleted`, `role_permission_granted`, `role_permission_revoked`, `user_role_assigned`,
   `user_role_removed`) bugünküyle aynı kalır. **İki yeni okuma / meta-denetim olayı** bu cümlenin dışındadır. Adları Açık kararlar
@@ -371,7 +379,12 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
     `IRbacWriteAheadAuditWriter? writer = null` parametresi alır. Verilmezse yeni `Testing/RecordingWriteAheadWriter.cs` (yeni)
     kullanılır: deneme ve sonuç çağrılarını kaydeder, istenirse istisna atar ya da `false` döner. Mevcut çağıranlar değişmez.
   - **Sabotaj:** DIM sessiz no-op yapılırsa (`Task.FromResult<RbacAuditAttempt>(default!)` / `Task.CompletedTask`), önce-yaz üyesi olmayan bir sahteyle
-    kurulan işleyici testi 503 yerine 204 alır ve kırmızıya döner. Bu test ayrı yazılır: "DIM yolu fırlatır, komut değişiklik yapmaz".
+    kurulan işleyici testi 204 alır ve kırmızıya döner. Bu test ayrı yazılır: "DIM yolu fırlatır, komut değişiklik yapmaz".
+    **Beklenen sonuç (ölçüldü, bulgu F-3):** DIM'in `NotSupportedException`'ı `RbacAuditUnavailableException` değildir; işleyici onu
+    yakalamaz. İşleyici doğrudan çağrılan birim testinde istisna dışarı çıkar: test `Assert.ThrowsAsync<NotSupportedException>` bekler ve
+    değişiklik, sürüm ve oturum çağrı sayısının 0 olduğunu sınar. MediatR boru hattında aynı istisna `ExceptionHandlingBehavior`'ın genel
+    dalına düşer ve 500 "An unexpected error occurred." olur (`ExceptionHandlingBehavior.cs:63-73`). 503 beklenmez; güvence değişikliğin
+    yapılmamasıdır. Bu yalnız üyeyi uygulamayan sahteler içindir; üretim kaydedicisi üyeyi uygular.
 
 ### DL-2 — rol ve izin komutları + geçmiş uçları
 
@@ -379,6 +392,8 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
   `RevokePermissionCommandHandler`'a `ICurrentUserAccessor` enjekte edilir ve **yeni** eylemi yapan koruması eklenir. Bugün alanları
   `:12-21`'dedir ve `ICurrentUserAccessor` yoktur; `AssignPermissionCommandHandler.cs:44-45` deseni kullanılır.
 - (a1) `src/…/Common/Interfaces/IRbacAuditHistoryReader.cs` (yeni). `src/…/Persistence/Repositories/RbacAuditHistoryReader.cs` (yeni) (yalnız `Find`).
+  `src/Diten.AuthService.Persistence/DependencyInjection.cs` — okuyucu kaydı `services.AddScoped<IRbacAuditHistoryReader, RbacAuditHistoryReader>()`
+  (`:109` yanında; bulgu F-9). Yazıcı kaydı DL-1'dedir.
 - (a1) `src/…/Features/Roles/Queries/GetRoleAuditHistoryQuery.cs` (yeni), `…/Roles/Handlers/QueryHandlers/GetRoleAuditHistoryHandler.cs` (yeni).
 - (a1) `src/…/Features/Users/Queries/GetUserRoleAuditHistoryQuery.cs` (yeni), `…/Users/Handlers/QueryHandlers/GetUserRoleAuditHistoryHandler.cs` (yeni).
 - (a1) `src/…/Features/Roles/RoleAuditHistoryModels.cs` (yeni) (iki sorgunun DTO'ları tek dosyada).
@@ -410,6 +425,18 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
   Mevcut testler güncellenir: `…/Roles/AssignPermissionCommandHandlerTests.cs`, `…/Roles/RevokePermissionCommandHandlerTests.cs`,
   `…/Roles/RoleAuditRecorderTests.cs`, `…/Roles/RoleActorStampTests.cs`, `…/Roles/SystemGrantPathsActorGuardTests.cs`,
   `…/Testing/RoleAuditForTests.cs`, `…/Operational/ProductIdentityEntitlementReconciliationCommandContractTests.cs` (yalnız gerekiyorsa).
+  **Değişmeden yeşil kalması beklenen (bulgu F-10):** `…/Roles/RoleAuditForwardingEndpointTests.cs`. Test yerel satırı tam olay adı ve
+  rol kimliğiyle arar (`RoleEndpointWorld.cs:78-83`, `EventName == eventName`) ve `Assert.Single` bekler (`RoleAuditForwardingEndpointTests.cs:65`,
+  `:160`, `:164`). FU29'da sonuç satırı bugünkü olay adını taşır, deneme satırı `:attempt` ekini taşır ve Platform'a gitmez; bu yüzden
+  sayılar değişmez. Kırmızıya dönerse kod durur; test sessizce değiştirilmez.
+- **Platform etiketleri (S-9, kapandı: karar kaydı 05, karar 13; inceleme 06 F-1).** Koşul: Platform sahibinin XMC-001'e yazılı izni bu
+  üç dosyayla sınırlıdır ve Platform sahibi PR'da ikinci onaylayıcıdır; izin yoksa bu madde uygulanmaz ve DL-2 kabul edilmez (Dependencies).
+  Dosyalar, yalnız ekleme:
+  `frontend/Diten.Web/Resources/Views/Platform/AuditLog/AuditLogIndex.en.resx`, `…/AuditLogIndex.tr.resx` — iki anahtar
+  `AuditLog.Event.auth.role.history.read`, `AuditLog.Event.auth.user-role.history.read` (Platform ekranı 2 dil; etiket kapısının dil
+  listesi `UserAuditEventLabelGuardTests.cs:18`);
+  `frontend/Diten.Web/Views/Platform/AuditLog/_IndexL10n.cshtml` — `AuditLogEventLabels` sözlüğüne iki satır (desen `:136-145`).
+  Aşağıdaki etiket kapısı güncellemesiyle **tek commit**'te girer.
   `…/Users/UserAuditEventLabelGuardTests.cs` (mevcut; bulgu F-17): köprü deseni `:57` `[a-z_]+` → `[a-z_.\-]+`; beklenen küme `:20-26`
   iki sözlük + `RbacHistoryAuditEvents` (iki okuma adı). Değişiklik Platform etiketleriyle aynı değişiklikte girer (Dependencies, XMC-001).
   **`ct` geçişi testleriyle uyum (ölçüldü):** `RevokePermissionCommandHandlerTests.cs:179-183` istek belirtecinin `RevokeAsync`'e,
@@ -437,6 +464,17 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
 - `frontend/Diten.Web/Views/Governance/UserRoleAssignments/_UserRoleHistory.cshtml` (yeni) — kısmi görünüm.
 - `frontend/Diten.Web/wwwroot/assets/js/Governance/rbac-history.js` (yeni) — İki ekranın ortak okuyucu-çizici modülüdür (tek kopya).
 - `…/js/Governance/Roles/index.js`, `…/Roles/index.l10n.js`, `…/UserRoleAssignments/index.js`, `…/UserRoleAssignments/index.l10n.js`, iki `_IndexL10n.cshtml`.
+- **Betik yükleme (bulgu F-5):** `frontend/Diten.Web/Views/Governance/Roles/Index.cshtml` (mevcut) — `@section Scripts`'e (`:89-95`)
+  `~/assets/js/Governance/rbac-history.js` satırı, `index.js`'ten (`:95`) önce. `…/UserRoleAssignments/Index.cshtml` (mevcut; bölüm
+  satırı yukarıda) — aynı satır `@section Scripts`'e (`:205-211`), `index.js`'ten (`:211`) önce. Sayfa kapısı `return` ettiği için
+  izinsiz kullanıcıda betik yüklenmez (`Roles/Index.cshtml:15-17` yorumu).
+- **Sistem rol adları (bulgu F-7):** Geçmiş satırında konu bir rol adıysa `rbac-history.js` mevcut deseni uygular:
+  `L.RoleNames[roleName]` varsa o, yoksa kayıttaki ad (`RoleAssignments/index.js:37`, `UserRoleAssignments/index.js:99`). Sözlük
+  kullanıcı-rol ekranında zaten vardır (`UserRoleAssignments/_IndexL10n.cshtml:29-38`). `Roles/_IndexL10n.cshtml`'de yoktur (ölçüldü,
+  `grep RoleNames` → 0); aynı dört satır (`RoleName_SuperAdmin`, `RoleName_Admin`, `RoleName_Viewer`, `RoleName_ReadOnly`, `SharedLocalizer`)
+  oraya eklenir. Anahtarlar `SharedResource`'tadır; yeni resx anahtarı yoktur. Test: `rbac-history.test.mjs` `Admin` adlı satırın
+  `L.RoleNames.Admin` ile, sözlükte olmayan adın kayıttaki adla gösterildiğini sınar; sabotaj: eşleme kaldırılınca ham `Admin`
+  görünür ve test kırmızıya döner.
 - `frontend/Diten.Web/Controllers/RolesController.cs` (`:18` kökü) — bir yeni GET eylemi: `history/{id:guid}`.
   `…/Controllers/UserRoleAssignmentsController.cs` (`:18` kökü) — bir yeni GET eylemi: `role-history/{id:guid}`. Silinmiş roller
   listesi canlı liste gibi istemciden Gateway'e gider (`RolesController.cs:13-16` yorumu: liste istemci tarafında Gateway'den yüklenir);
@@ -465,7 +503,12 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
   yok) ve `RbacHistory.canEditInQuickView(row)` (`deletedAt` doluysa `false`). `Roles/index.js` satır eyleminde (`:175-192`) ve Düzenle
   düğmesi görünürlüğünde (`:114-119`) bu iki yardımcıyı çağırır. Veri modu değişmez
   (`_DataTable.cshtml:9`, istemci verisi); silinmiş roller ayrı uçtan (`GET /api/roles/deleted`) ve süzgeç açılınca yüklenir. Liste
-  ekranı protokolü uygulanır (AC-27).
+  ekranı protokolü uygulanır (AC-27). **Veri kaynağı değişimi (bulgu F-6; ölçüldü):** `createList` tutamağı DataTables nesnesini
+  açar (`wwwroot/assets/js/diten-datatable.js:1312-1313`, `dt`). Süzgeç açılınca `list.dt.ajax.url(apiUrl + '/api/roles/deleted').load()`,
+  kapanınca `/api/roles` geri yüklenir; fabrika dosyasına dokunulmaz. Cevap zarfı `{ data: { items, truncated } }` fabrikanın
+  varsayılan çözücüsüyle okunur (`unwrapResponseData`, `:60-66`, `:62` `json.data.items`; `:261`). `truncated` DataTables `xhr`
+  olayından okunur. Silinmiş moddayken KPI kartları canlı listeyi saymaz (`drawCallback`, `Roles/index.js:234`, silinmiş modda
+  güncellenmez).
 - Sayfa yardımı (UXH-001; Page Help bölümü): `frontend/Diten.Web/Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` — bu
   anahtarlar eklenir: `Help.ROLES.Step5` / `Help.ROLES.Step5Title` ve `Help.USERROLES.Step5` / `Help.USERROLES.Step5Title`.
   `frontend/Diten.Web/Services/Help/PageHelpCatalog.cs` — `ROLES` (`:30`) ve `USERROLES` (`:32`) simge listelerine birer
@@ -544,8 +587,8 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
 | Mongo | Roller, rol-izin, kullanıcı-rol ve `authAuditLogs` aynı veritabanında (`Persistence/DependencyInjection.cs:89-92` tek `IMongoDatabase`; depolar `:98-104`, denetim `:109`) | Kapalı-başarısız denetim ile acil geri alma dengesi: Açık kararlar (b) (b1), kapandı |
 | FU-0022-AUD-02 (e-imza önce-yaz) | Açık (`MOD-0022-e-signature-service.md:1842`) | Bu paketin `IUserAuditRecorder.RecordAttemptAsync` üyesini kullanırsa yol `c` kredisi **otomatik gelmez**: çağıran sabit listesi (AC-34) kırmızıya döner. Kredi için kendi iz satırı ya da CT defter kararı ve bu paketin revizyonu gerekir (Follow-up Items) |
 | MOD-0021 / Platform merkezi günlük | Değişmez | İletim bugünkü gibi en iyi çabayla ve sonra. Platform dosyası değişmez |
-| Kayıt satırı | `origin/main`'de `MOD-0018-FU29` satırı yok (`grep -c` → 0, 2026-11-06, `6be9bc3d6`). Kule dalında commit'li (`25a03bebd`, `module-id-registry.md:92`) | CT'nin işi; onay satırından önce main'de (başlık ön koşul 3) |
-| Karar kayıtları 02, 03, 04 ve 05 | 02–04 kule dalında commit'li (`25a03bebd`, `11fa9b94c`, `241a49e4a`), 05 commit'siz; `origin/main` (`1fc896e33`) üzerinde yok | CT'nin işi; onay satırından önce main'de (başlık ön koşul 4) |
+| Kayıt satırı | `origin/main`'de `MOD-0018-FU29` satırı yok (`grep -c` → 0, 2026-11-06, `9e7d5cca0`). Kule dalında commit'li (`25a03bebd`, `module-id-registry.md:92`) | CT'nin işi; onay satırından önce main'de (başlık ön koşul 3) |
+| Karar kayıtları 02, 03, 04 ve 05 | Kule dalında commit'li (`25a03bebd`, `11fa9b94c`, `241a49e4a`, `0da5359eb`); `origin/main` (`9e7d5cca0`) üzerinde yok | CT'nin işi; onay satırından önce main'de (başlık ön koşul 4) |
 | S2S anahtarı (`PlatformService:InternalApiKey`) | Temel `appsettings.json:68` boş; `appsettings.Development.json:64` dolu | DL-2 / DL-3 dağıtım ön koşulu (başlık "Dağıtım ön koşulu") |
 | Onay kapısı (CT-APR-01) | Onay satırı yok | DL-1 dağıtımından önce CT, onay satırı yokken `prompt_gate.py check` / `pack_approval.py check`'in dağıtımı reddettiğini ölçer ve kaydeder (Ready-for-dev Checklist). Künyeye `approval_status` eklenmez |
 
@@ -565,7 +608,10 @@ işaretleri yalnız izlenebilirlik içindir: iki karar kapandı (sahip 2026-11-0
   Bugünkü ret deseni budur (`RevokeRoleCommandHandler.cs:55`, `:68`). `CustomBaseController` 503'ü olduğu gibi taşır
   (`CustomBaseController.cs:22`, varsayılan dal) @`e3dc475bd`. Değişiklik, sürüm artırma, oturum kapatma ve iletim yapılmaz.
   **Zaman aşımında yetim deneme:** Deneme yazımı süre dolduğu için düşmüş ama satır gerçekte yazılmış olabilir. Bu yüzden 503'ten
-  önce en iyi çabayla bir sonuç satırı yazılır: `NotApplied`, `stage = attempt`, `mutationApplied = false`. Bu yazım da
+  önce en iyi çabayla bir sonuç satırı yazılır: `NotApplied`, `stage = attempt`, `mutationApplied = false`. **Bu satırı kaydedici yazar
+  (bulgu F-2):** deneme kimliğini `RecordAttemptAsync` yazıcıyı çağırmadan önce kendisi üretir. Yazım istisna atınca aynı metodun
+  `catch` dalı, bu kimlikle `IRbacWriteAheadAuditWriter.WriteOutcomeAsync`'i tam bir kez çağırır, sonra `RbacAuditUnavailableException`
+  atar. İstisna kimlik taşımaz; işleyici sonuç yazmaz, yalnız 503 döner. Platform'a iletim yoktur (`NotApplied`). Bu yazım da
   `CancellationToken.None` + `RbacAuditTimeouts.Outcome` kullanır. Deneme satırı varsa okuyucu onu "Yapılmadı" gösterir;
   "Sonuçlanmadı" göstermez. Deneme satırı yoksa bu sonuç satırı eşsiz kalır ve okuyucu onu göstermez, çünkü sayfalama deneme
   satırları üzerindendir (Backend File Convention "Okuyucu"). Kullanıcı ekranda 7 dilde "şu an yapılamadı, değişiklik yapılmadı"
@@ -704,7 +750,11 @@ Task<IReadOnlyList<Role>> GetDeletedByTenantAsync(Guid tenantId, int limit, Canc
 - **Okuyucu (a1):** `IRbacAuditHistoryReader.GetHistoryAsync(Guid tenantId, string entityType, Guid entityId, string[] eventFamily,
   int page, int pageSize, CancellationToken ct)` tek üyedir. Güncelleme / silme üyesi yoktur.
   **Sayfalama birimi öğedir. Bir öğe bir deneme satırıdır ve eşlenen sonucunu taşır.** Okuma iki adımlıdır.
-  (1) Deneme satırları okunur. Süzgeç: `TenantId + EntityType + EntityId` ve `EventName ∈ {aile}:attempt`. Sıralama `OccurredAt`
+  (1) Deneme satırları okunur. Süzgeç: `TenantId + EntityType + EntityId` ve `EventName ∈ {aile}:attempt`. **Aileler (bulgu F-4):**
+  rol geçmişi = `role_created`, `role_updated`, `role_deleted`, `role_permission_granted`, `role_permission_revoked`
+  (`RoleAuditEvents.cs:18-22`); kişi-rol geçmişi = `user_role_assigned`, `user_role_removed`. Aileler `RbacHistoryAuditEvents` içinde
+  sabittir. `EntityType = Role` ile yazan başka bir olay (bugün yok; FU27 `PaymentSodWaiverAssignment` kullanır, ct-06 satır 497) aile
+  dışında kalır ve görünmez. Sıralama `OccurredAt`
   azalan, eşitlikte `Id` azalandır. Bu sıralama anahtarı sabittir ve iki sayfa arasında öğe tekrar etmez. Sonra `Skip((page-1)*pageSize)`
   ve `Limit(pageSize)` uygulanır. `TotalCount` aynı süzgeçteki deneme satırı sayısıdır.
   (2) Sonuçlar tek sorguyla okunur. Süzgeç: `_id ∈ { RbacAuditIds.OutcomeId(d) | d sayfadaki denemeler }` **ve** adım (1)'in
@@ -951,7 +1001,7 @@ Karar: Gateway değişikliği **gereksiz**.
   sınanır. Sabotaj: deneme çağrısı değişiklikten sonraya taşınınca sıra testi kırmızıya döner.
 - [ ] AC-2 (zorunlu) — **Kapalı-başarısız (kişi-rol):** Deneme yazımı başarısız olunca iki komut 503 `RBAC_AUDIT_UNAVAILABLE` döner.
   Atama / geri alma, `IRoleAssignmentVersionService.IncrementAsync`, `RevokeAllByUserAsync` ve Platform iletimi **hiç çağrılmaz**.
-  Gerçek Mongo testinde `user_roles` değişmez. Sonuç yazıcısı tam bir kez çağrılır: `NotApplied`, `stage = attempt`,
+  Gerçek Mongo testinde `user_roles` değişmez. Kaydedicinin `catch` dalı yazıcının `WriteOutcomeAsync`'ini tam bir kez çağırır (F-2): `NotApplied`, `stage = attempt`,
   `mutationApplied = false` ve istek belirteci olmayan bir belirteçle (Runtime Constraints (3)). Gerçek Mongo testinde deneme satırı
   yazılmış ama yazıcı zaman aşımı almışsa (sahte gecikme) okuyucu o denemeyi "Yapılmadı" döner, "Sonuçlanmadı" dönmez. Sabotaj:
   kaydedici deneme hatasını yutup devam edince test kırmızıya döner. `stage = attempt` sonuç yazımı kaldırılınca zaman aşımı testi
@@ -1071,7 +1121,9 @@ Karar: Gateway değişikliği **gereksiz**.
   Sabotaj: `before` yakalaması değişiklikten sonraya alınınca test kırmızıya döner.
 - [ ] AC-16 (zorunlu) — **Rol geçmişi ucu (a1):** `GET /api/roles/{id}/history` yalnız o rolün (`EntityType Role`, `EntityId`) ve
   token kiracısının satırlarını döner. Satırlar en yeniden eskiye sıralanır ve deneme + sonuç tek öğede eşlenir. Sonucu olmayan deneme
-  `outcome = unknown` döner. **Sonuç değerleri (DL-2'de sabittir):** `succeeded` ← `Succeeded`; `failed` ← `Failed` +
+  `outcome = unknown` döner. **Olay ailesi (bulgu F-4):** test aynı `EntityType Role` / `EntityId` ile aile dışı bir deneme satırı
+  (`role_sod_waiver_assigned:attempt`) ve bir okuma satırı adı (`auth.role.history.read`) tohumlar; ikisi de dönmez. Sabotaj: aile
+  süzgeci kaldırılınca ya da aileye bir ad eklenince bu test kırmızıya döner. **Sonuç değerleri (DL-2'de sabittir):** `succeeded` ← `Succeeded`; `failed` ← `Failed` +
   `mutationApplied = false`; `applied_with_errors` ← `Failed` + `mutationApplied = true`; `not_applied` ← `NotApplied`; `unknown` ←
   sonuç yok ya da `mutationApplied = null`. İzinsiz 403. Başka kiracının rolü 404. Kiracıda hiç olmamış rol 404. **Silinmiş rol 200 döner** ve
   `role_created` … `role_deleted` çiftleri görünür. Bunu `IRoleRepository.GetByIdAndTenantIncludingDeletedAsync` sağlar (Açık
@@ -1099,7 +1151,11 @@ Karar: Gateway değişikliği **gereksiz**.
 - [ ] AC-18 (zorunlu) — **Meta-denetim teslimi (a1):** Her geçmiş okuması `IsMetaAudit = true` okuma satırını
   `TryForwardAsync` ile gönderir. Veri yalnız teslim teyidi gelince döner. Gerçek `PlatformAuditForwarder`, Platform iç ucunun
   sözleşmesine uyan saplama sunucuya karşı koşar: (i) 2xx → 200 + veri; (ii) anahtar boş → 503 `RBAC_HISTORY_AUDIT_UNAVAILABLE` ve
-  saplamaya çağrı yok; (iii) 500 / 401 → 503; (iv) bağlantı reddi / zaman aşımı → 503. Bu madde FU27 AC-46 (ct-06) desenidir
+  saplamaya çağrı yok; (iii) 500 / 401 → 503; (iv) bağlantı reddi / zaman aşımı → 503. **Test türleri (bulgu F-12):** (i), (iii) ve (iv)
+  HTTP testidir: `PlatformEdgeTestHost` + `FakePlatformEdge` (`Responder` ile 500 / 401, `Down = true` ile bağlantı hatası).
+  (ii) **birim testidir**: anahtar boşken Auth başlamaz (başlık "Dağıtım ön koşulu", `SecretRequirementValidator.cs:54-58`), bu yüzden
+  HTTP sunucusu bu dalı kuramaz. Test `PlatformAuditForwarder`'ı `Options.Create(new PlatformServiceOptions { InternalApiKey = "" })`
+  ve çağrı sayan bir `HttpMessageHandler` ile kurar; `TryForwardAsync` `false` döner, çağrı sayısı 0'dır; okuma işleyicisi bu sonuçla 503 döner. Bu madde FU27 AC-46 (ct-06) desenidir
   (ct-06). **Yük (bulgu F-5; S-6):** saplama sunucusu gelen gövdede `Category = 2`, `Operation = 15`, `Outcome = 1`, `EntityType`
   (`Role` / `User`), `EntityId` (okunan varlık), `RequestType` (iki okuma adından biri) ve `IsMetaAudit = true` olduğunu doğrular.
   Saplama Platform'un `ValidateRequest` kurallarını (`AuditService.cs:205-263`) uygular ve `Unknown` değerde 400 döner. Sabotaj:
@@ -1250,9 +1306,9 @@ Karar: Gateway değişikliği **gereksiz**.
 | Birim — çağıran sabit listesi | `RbacWriteAheadCallerPinTests` (AC-34) |
 | Birim — yeni aktör koruması | İki revoke: aktörsüz istek → 401, hiçbir depo / deneme / oturum çağrısı yok; aktörlü istek gerileme (AC-29, AC-30) |
 | Birim — kimlik | Sabit girdi → sabit `OutcomeId`; farklı deneme → farklı kimlik; `Guid.Empty` reddi (AC-3) |
-| Gerileme | `RoleAuditRecorderTests`, `AssignRoleCommandHandlerTests`, `RevokeRoleCommandHandlerTests`, `AssignPermissionCommandHandlerTests`, `RevokePermissionCommandHandlerTests`, `LastStewardPathsTests`, `RoleActorStampTests`, `SystemGrantPathsActorGuardTests`, `UserAuditEventLabelGuardTests` ve e-imza / kullanıcı yaşam döngüsü testleri yeşil (AC-8) |
+| Gerileme | `RoleAuditRecorderTests`, `AssignRoleCommandHandlerTests`, `RevokeRoleCommandHandlerTests`, `AssignPermissionCommandHandlerTests`, `RevokePermissionCommandHandlerTests`, `LastStewardPathsTests`, `RoleActorStampTests`, `SystemGrantPathsActorGuardTests`, `UserAuditEventLabelGuardTests`, `RoleAuditForwardingEndpointTests` (değişmeden; F-10) ve e-imza / kullanıcı yaşam döngüsü testleri yeşil (AC-8) |
 | Gerçek Mongo | Mevcut `Support/OwnedMongo.cs` ile: test kendi `mongod`'unu başlatır (`DITEN_TEST_MONGOD` / `DITEN_ITEST_MONGOD_BIN_DIR`), 27017'yi reddeder (`OwnedMongo.cs:29`), sabit veritabanı `diten_auth_service_client_registry_itest` (`:21`). Tek sonuç satırı; komut başına iki satır; deneme hatasında `user_roles` / `role_permissions` / `roles` değişmez; `EntityType` / `EntityId` dizini kurulur; FU29 öncesi biçimde satır süzgece girmez (AC-2, AC-3, AC-8, AC-16) |
-| HTTP (a1) | Gerçek denetleyici: izinsiz 403, başka kiracı 404, olmayan 404, silinmiş rol 200, silinmiş kullanıcı 404, gizli platform hesabı 404, sayfalama birimi ve 400, meta-denetim teslimi (i)–(iv), eylemi yapan gizleme, silinmiş roller ucu (AC-16, AC-17, AC-18, AC-32, AC-33) |
+| HTTP (a1) | Sunucu: mevcut `PlatformEdgeTestHost` (`Testing/FakePlatformEdge.cs:80-97`); Platform ucu `FakePlatformEdge` (`Down` bağlantı hatası, `Responder` 401 / 500 cevabı, `:24-35`). Gerçek denetleyici: izinsiz 403, başka kiracı 404, olmayan 404, silinmiş rol 200, silinmiş kullanıcı 404, gizli platform hesabı 404, sayfalama birimi ve 400, meta-denetim teslimi (i)–(iv), eylemi yapan gizleme, silinmiş roller ucu (AC-16, AC-17, AC-18, AC-32, AC-33) |
 | İnceleme kapıları (mekanik değil) | AC-9 son cümlesi, AC-19 ikinci yarısı, AC-23, AC-27. İnceleme teslim kaydında komutu ve çıktısını arar; sabotaj kanıtı aranmaz |
 | Mimari | `--filter AuditTrailStandard` yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ \| grep -E '^\+- '` boş; sayılar aynı değişiklikte (AC-9, AC-21, AC-22) |
 | Ön yüz | `Diten.Web.Tests` (dosyalar Repo Scope DL-1 / DL-2 / DL-3): üç ekranda hata kodu eşlemesi; bölümün sayfa kapısıyla çizilmesi; kullanıcı-rol vekilinin kendi kapısı (izinsiz → 403, Gateway çağrısı 0); vekilin kodu taşıması ve başarısızlıkta veri dönmemesi; 7 dil resx eşliği (İngilizce dışı ≠ en; metin tablosu anahtarları); `index.l10n.js` listesi; düzen satırları; `style=` ve fiziksel yön sınıfı yokluğu; `rbac-history.js` birim testi; sayfa yardımı eşliği (`GovernanceRbacHistoryHelpTests`, `PageHelpCatalogTests.cs:51` güncellemesi); `role-history` vekil eylemini doğrudan çağıran iki test (AC-10, AC-20, AC-24, AC-25, AC-28, AC-31, AC-35) |
@@ -1294,17 +1350,17 @@ onay satırı yazılabilir, ama o dilim ilerlemez.
 - [ ] Audited Events tablosu yedi komutu tam bir kez içeriyor; K2 davranışı ve testi yazılı
 - [ ] **Kayıt satırı (CT'nin işi):** `execution/registries/module-id-registry.md`'deki `MOD-0018-FU29` satırı main'de ve
   `verify_module_id.py --check-id` yeniden koşuldu. Ölçüm 2026-11-06: satır kule dalında commit'li (`25a03bebd`, `:92`), main'de
-  (`6be9bc3d6`) yok
+  (`9e7d5cca0`) yok
 - [x] **Sahip kararı kaydı 01:** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-01.md` main'de (PR #375, `68dcf9fa5`;
   Açık kararlar (l), U-5)
 - [ ] **Sahip kararı kaydı 02 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-02.md` main'de (karar 7:
-  "onayla, hedef 11-20"). Ölçüm 2026-11-06: kule dalında `25a03bebd`, main'de yok
+  "onayla, hedef 11-20"). Ölçüm 2026-11-06: kule dalında `25a03bebd`, main'de (`9e7d5cca0`) yok
 - [ ] **Sahip kararı kaydı 03 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-03.md` main'de (karar 9:
-  S-1…S-5 "Hepsini kabul et"). Ölçüm 2026-11-06: kule dalında `11fa9b94c`, main'de yok
+  S-1…S-5 "Hepsini kabul et"). Ölçüm 2026-11-06: kule dalında `11fa9b94c`, main'de (`9e7d5cca0`) yok
 - [ ] **Sahip kararı kaydı 04 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-04.md` main'de (karar 11:
-  S-6 ve S-7 "İkisini kabul et"; S-3'ün 2026-11-06 daraltması dahil). Ölçüm 2026-11-06: kule dalında `241a49e4a`, main'de yok
+  S-6 ve S-7 "İkisini kabul et"; S-3'ün 2026-11-06 daraltması dahil). Ölçüm 2026-11-06: kule dalında `241a49e4a`, main'de (`9e7d5cca0`) yok
 - [ ] **Sahip kararı kaydı 05 (CT'nin işi):** `docs/records/decisions/2026-11/mod-0018-fu29-owner-decisions-05.md` main'de (karar 13:
-  S-8 ve S-9 "İkisini kabul et"). Ölçüm 2026-11-06: commit'siz, main'de yok
+  S-8 ve S-9 "İkisini kabul et"). Ölçüm 2026-11-06: kule dalında `0da5359eb`, main'de yok
 - [x] **FU27 DL-5 temeli:** Açık kararlar (i) (i2) ile kapandı. Alanları ve dizini FU29 DL-1 ekler; FU27 metni Treasury CT'ce revize
   edilir (Dependencies)
 - [x] Açık kararlar (a)–(p) kapandı (sahip 2026-11-05, "onayla"; karar kaydı 02, karar 7)
@@ -1325,7 +1381,7 @@ onay satırı yazılabilir, ama o dilim ilerlemez.
 - [ ] **Her dilimin başında — ölçülmeyenler kapandı:** Implementation Notes "Ölçülmeyenler" tablosunda o dilime düşen her girdi, CT'nin
   numaralı ölçümüyle (`dosya:satır@commit`) kapatıldı
 - [ ] **DL-2 meta-denetim parçasından önce — FU27 DL-5 ileticisi** (`TryForwardAsync` + `IsMetaAudit`) main'de; ya da 2026-11-11 tarih
-  kapısı ölçümü CT'ce kaydedildi ve Repo Scope DL-2 "Koşullu (S-5)" maddesi uygulandı. Ölçüm 2026-11-06: `origin/main` (`6be9bc3d6`)
+  kapısı ölçümü CT'ce kaydedildi ve Repo Scope DL-2 "Koşullu (S-5)" maddesi uygulandı. Ölçüm 2026-11-06: `origin/main` (`9e7d5cca0`)
   Auth kaynağında `TryForwardAsync` / `IsMetaAudit` 0 eşleşme
 - [ ] **DL-2 kabulünden önce — XMC-001 Platform isteği** (FU27 ile ortak) gönderildi ve Platform sahibinin üç dosyalık yazılı izni
   alındı (S-9); iki etiket ve `UserAuditEventLabelGuardTests` güncellemesi FU29 DL-2 dalında tek commit'te main'de; Platform tarafı okuma satırı kabul testi (S-6 yükü) ve `Outcome = 4` kabul testi yazıldı
@@ -1405,6 +1461,13 @@ onay satırı yazılabilir, ama o dilim ilerlemez.
 - U-8 (2026-11-05): Önceki sürüm sayfa yardımını `SharedResource.en.resx`'te aramış ve "yok" yazmıştı. Yardım `PageHelpResource.*.resx`
   dosyalarındadır (Page Help (UXH-001)). Önceki sürüm Mongo testi için `MONGO_TEST_URI` yazmıştı. `OwnedMongo.cs` bu değişkeni okumaz;
   kendi `mongod`'unu başlatır (Repo Scope DL-1). İkisi bu sürümde düzeltildi.
+- U-12 (2026-11-06, inceleme 06 @`0da5359eb` bulguları; yeniden ölçüm aynı HEAD, `origin/main` `9e7d5cca0`): (a) S-9 gövdeye işlendi:
+  Repo Scope DL-2'de üç dosya ve koşul, "Kapsam dışı" ve Entity Fields istisnayla (F-1). (b) Yetim deneme sonucunu kaydedici yazar (F-2).
+  (c) DIM sahtesinde beklenen sonuç ölçüldü: birimde `NotSupportedException`, boru hattında 500 (F-3). (d) Olay aileleri ve sabotajı
+  (F-4). (e) Betik yükleme satırları (F-5). (f) Silinmiş roller veri kaynağı `dt.ajax.url` (F-6). (g) Sistem rol adları `L.RoleNames`
+  (F-7). (h) Okuyucu DI kaydı (F-9). (i) `RoleAuditForwardingEndpointTests` gerileme listesinde (F-10). (j) Eşzamanlı çift atama
+  (F-11). (k) HTTP sunucusu adlandı, AC-18 (ii) birim testi oldu (F-12). (l) Main çapaları tek değere çekildi, kayıt 05 commit'li
+  (F-13). (m) `AuditLedger.cs` okundu (F-15). F-8, F-14, F-16 CT'nin işidir.
 - U-11 (2026-11-06, inceleme 05 @`241a49e4a` bulguları; yeniden ölçüm aynı HEAD, `origin/main` `1fc896e33`): (a) Takvim kendi
   `## Takvim` başlığına taşındı; `pack_approval.slices()` önce `None`, sonra `['DL-1', 'DL-2', 'DL-3']` döndü (F-1). (b) Karar kaydı 04
   her ön koşul listesine girdi; S-3'ün `25a03bebd` sonrası eki ve kayıt 04 bağı yazıldı; çapa "kule dalı, CT'nin son commit'i" oldu;
@@ -1474,7 +1537,7 @@ Checklist). Son sütun yazarın okumasını söyler; yazar okuması bağımsız 
 | `ExceptionHandlingBehavior`, `CustomBaseController` (503 / 401 eşlemesi) | DL-1 | okundu: `CustomBaseController.cs:9-22` (varsayılan dal 503'ü taşır), `ExceptionHandlingBehavior.cs` yalnız grep (kodlu yanıt deseni `:52-55`) |
 | `IUserRepository`, `PlatformAccountScopedUserRepository`, `UserRepository` (404 / görünürlük) | DL-2 | okundu: `IUserRepository.cs:1-108` (2026-11-06; toplu üye yalnız `VisibleUserIdsAsync` `:84-87`), `PlatformAccountScopedUserRepository.cs:1-70`, `UserRepository.cs:44-52` |
 | `Support/OwnedMongo.cs` (sahipli örnek) | DL-1 | okundu (grep): `:21`, `:29`, `:52-58` |
-| Defter iz ayrıştırıcısı (`AuditTrailStandard/AuditLedger.cs`) — yeni iz satırının biçimi | DL-3 | **okunmadı**; defterdeki iz tablosu biçimi okundu (`Diten.AuthService.md:8-14`) |
+| Defter iz ayrıştırıcısı (`AuditTrailStandard/AuditLedger.cs`) — yeni iz satırının biçimi | DL-3 | **okundu (2026-11-06; bulgu F-15):** iz satırı 4 hücredir, tür `yazıcı`, belirteçte `+` zorunlu grupları, `/` grup içi seçenekleri, `!` yasakları ayırır (`AuditLedger.cs:162-185`). `IRoleAuditRecorder.RecordAttemptAsync/IUserAuditRecorder.RecordAttemptAsync` tek grup, iki seçenektir; ölçüm iki üyeden birini çağıran işleyiciye kredi verir (`AuditTrailMeasurement.cs:277-278`) |
 | `scripts/prompt_gate.py` (onaysız dağıtım reddi) | DL-1 dağıtımı öncesi | kısmen (940-1009) |
 | `frontend/Diten.Web.Tests` (izin kapısı, resx eşliği, düzen testleri) | DL-1 / DL-2 / DL-3 | dosya ve sınıf adları okundu (Repo Scope); `UserRoleAssignmentsAccessTests.cs:68-86` dışındaki test gövdeleri **okunmadı** (`MvpOnePageHelpTests.cs`, `HelpLabelTextTests.cs` dahil) |
 | `PageHelpResource.*.resx`, `PageHelpCatalog.cs`, `_PageHelpPanel.cshtml` | DL-3 | okundu (2026-11-06): yedi dilde `Help.ROLES.*` 13, `PageHelpCatalog.cs:28-35`, `_PageHelpPanel.cshtml:37-41` |
@@ -1620,7 +1683,7 @@ satırı** gerekir. Sonradan doğan seçimler ayrı listededir ("Sahip kararı g
 | (i) | `AuthAuditLog` alanları ve dizin; FU27 DL-5 ile sıra | (i1) FU27 DL-5 önce; FU29 FU27'nin onaylı sürümüne bağlanır · **(i2)** alanları ve dizini FU29 DL-1 ekler, FU27 DL-5 tüketir (FU27 metni revize edilir) · ortak okuyucu | **(i1)**, FU27 onaylı sürümü onay satırına kadar yoksa **(i2)** | Treasury CT + MOD-0018 sahibi | **Kapandı: (i2)** (sahip 2026-11-05, onayla; karar kaydı 02 notu: FU27'nin onaylı sürümü yok). Gövde: Entity Fields, Repo Scope DL-1, Protected Paths, Dependencies. FU27 metnini Treasury CT revize eder; bu paket FU27 dosyasına dokunmaz. Ölçüm 2026-11-06: `approvals.tsv`'de FU27 satırı yok (başlık ön koşul 2). (i1) ya da ortak okuyucu seçilirse paket revizyonu + yeni onay satırı |
 | (j) | Eylemi yapanın o andaki adı (§3 alan 2) | Yerel satıra maskeli ad · **okumada güncel ad** · bilinen boşluk | **Okumada güncel ad + bilinen boşluk kaydı** | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** Platform hesabı için gösterim kuralı yeni seçimdir: S-2. Yerel satıra ad yazılması seçilirse paket revizyonu + yeni onay satırı |
 | (k) | Silinmiş rolün geçmişi ve giriş yolu | Uç: **bulur** · bulmaz. Giriş: **(k-1)** "Silinmiş roller" süzgeci, salt-okunur liste · (k-2) kişi-rol geçmişinden bağlantı · (k-3) giriş yok | **Bulur + (k-1).** Bulmazsa `role_deleted` satırı kendi ekranında okunamaz. (k-3) kabul edilemez | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** Uç tanımı: Owned Objects, Repo Scope DL-2, Validation Rules, Authorization Convention, AC-33; ekran AC-35. (k-2) / (k-3) ya da "bulmaz" seçilirse paket revizyonu + yeni onay satırı |
-| (l) | Sahip kararının ve kimliğin kaydı | Karar kaydı 01 + kayıt satırı | Kayıt onay satırından önce main'de | MOD-0018 sahibi + CT | **Kapandı:** karar kaydı 01 main'de (PR #375 birleşti, `68dcf9fa5`, 2026-11-05). Kayıt satırı ve karar kayıtları 02, 03, 04 kule dalında commit'li, 05 commit'siz; main'e girmeleri CT'nin işidir (başlık ön koşul 3, 4) |
+| (l) | Sahip kararının ve kimliğin kaydı | Karar kaydı 01 + kayıt satırı | Kayıt onay satırından önce main'de | MOD-0018 sahibi + CT | **Kapandı:** karar kaydı 01 main'de (PR #375 birleşti, `68dcf9fa5`, 2026-11-05). Kayıt satırı ve karar kayıtları 02–05 kule dalında commit'li; main'e girmeleri CT'nin işidir (başlık ön koşul 3, 4) |
 | (m) | Değişiklik uygulandı ama sonrası düştü ya da sonuç belirsiz: Platform'a iletim | **(m1)** bilinen ad + `Failed` · (m2) iletilmez · (m3) `Succeeded` · **(m4)** bilinen ad + `Unconfirmed = 4` | **Uygulandı + sonrası düştü → (m1); belirsiz (`null`) → (m4)**, Platform kabulü ölçülürse; 4 reddedilirse (m2). (m1) için `RoleAuditEvents`'e `int OutcomeFailed` eklenir (Repo Scope DL-2) | MOD-0018 sahibi + Control Tower | **Kapandı (sahip 2026-11-05, onayla)** (m1) için. Belirsiz dal için ölçüm iki şey buldu: Platform 4'ü reddetmiyor (`AuditService.cs:247-250`), ama 4'ün belgesi "veri işlendi" diyor (`AuditEnums.cs:63-67`; F-9). Bu yüzden `null` iki sınıfa ayrıldı (F-6) → seçim S-3 (kabul edildi, karar kaydı 03); çok belgeli yazım için daraltma S-7 (kabul edildi, karar kaydı 04, karar 11). (m3) seçilirse paket revizyonu + yeni onay satırı. S-3 reddedilir de bütün belirsiz dala tek başına (m2) ya da (m4) uygulanırsa yine paket revizyonu + yeni onay satırı |
 | (n) | DL-1'de erken K2 çıkışı | **Çıkış DL-3'te** · DL-1'de çıkış | **DL-3** | Control Tower | **Kapandı (sahip 2026-11-05, onayla).** DL-1'de çıkış seçilirse paket revizyonu + yeni onay satırı + `CT-DECISIONS.md` satırı |
 | (o) | Belirsiz `stage = mutation` hatası | **(o1)** `null` yaz, "Sonuçlanmadı" · (o2) depoyu yeniden oku | **(o1).** Yeniden okuma aynı kesintiye düşer; `null` yanlış bir "uygulanmadı" demez | MOD-0018 sahibi | **Kapandı (sahip 2026-11-05, onayla).** (o2) seçilirse paket revizyonu + yeni onay satırı |
