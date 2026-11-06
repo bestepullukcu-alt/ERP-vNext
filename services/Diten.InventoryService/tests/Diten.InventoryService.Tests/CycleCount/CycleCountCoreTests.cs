@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Persistence.CycleCounting;
 using Diten.InventoryService.Tests.Warehouse;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -293,6 +294,32 @@ public sealed class CycleCountCoreTests(CycleCountApiFactory factory) : IClassFi
         Assert.Equal([200, 409], answers.Select(a => (int)a.StatusCode).Order());
         Assert.Equal(2, s.Events(Id(count)).Count);
         Assert.Equal(2, s.StoredCount(Id(count))["Version"].AsInt32);
+    }
+
+    /// <summary>
+    /// AC-9 at the production store itself: a replace with an outdated version writes nothing and answers false (the compare-and-set). Measured
+    /// on <see cref="CycleCountRepository"/> directly, because over HTTP the timeline's unique (count, seq) index is a second guard that would
+    /// also refuse the loser.
+    /// </summary>
+    [Fact]
+    public async Task AC9_the_store_replaces_a_count_only_at_its_stored_version()
+    {
+        var s = new CycleCountScenario(factory);
+        var count = await s.CreatedAsync();
+        using var scope = factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<global::Diten.InventoryService.Application.Common.ITenantContext>().SetScope(s.Tenant, s.LegalEntity, s.User);
+        var repository = scope.ServiceProvider.GetRequiredService<CycleCountRepository>();
+        var stored = (await repository.FindAsync(Guid.Parse(Id(count))))!;
+        stored.Note = "eski surumle";
+        stored.Version = 7;
+
+        var outcome = await repository.InTransactionAsync(async (session, ct) =>
+            new global::Diten.InventoryService.Domain.CycleCounting.Repositories.CycleCountWriteOutcome(await session.ReplaceCountAsync(stored, 5, ct) ? 1 : 0, stored.Id));
+
+        Assert.Equal(0, outcome.Affected);
+        var after = s.StoredCount(Id(count));
+        Assert.Equal(1, after["Version"].AsInt32);
+        Assert.False(after.Contains("Note") && after["Note"].IsString);
     }
 
     // ── AC-10 ────────────────────────────────────────────────────────────────────────────────────────────
