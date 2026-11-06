@@ -67,9 +67,8 @@ public class CiServiceTestsGuardTests
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
-        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
-            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests. HCM's Application.Tests left
+        // it 2026-11-06, owner 'Evet, düzelt': its repository test starts its own mongod, row hcm-app.)
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
             "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
