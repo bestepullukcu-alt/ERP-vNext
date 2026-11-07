@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>İstisna No</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>Evet</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>Hayır</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>Talep eksik ya da geçersiz değer içeriyor. Alanları kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>Bir satır tutarı miktar × birim fiyata eşit değil. Satır tutarları nettir (vergi hariç).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>Tedarikçi, satın alma siparişi ya da kalem bulunamadı.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>Fatura para birimi satın alma siparişinin para birimiyle eşleşmiyor.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>Bu tedarikçi için bu numarayla bir fatura zaten var.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>Bu işlem faturanın mevcut durumunda yapılamaz.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>Fatura ya da istisna bulunamadı.</value></data>
 </root>

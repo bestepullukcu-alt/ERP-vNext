@@ -22,13 +22,33 @@
     const toast = (msg, type) => window.showToast?.(msg, type);
     const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+    // Procurement error codes are never shown raw: each maps to a page resource (InvoiceMatchIndex.*.resx);
+    // an unmapped code falls back to the shared GatewayError text. Already-localized proxy texts pass through.
+    const ERROR_CODE_KEYS = {
+        VALIDATION_FAILED: 'ErrorValidationFailed',
+        LINE_AMOUNT_MISMATCH: 'ErrorLineAmountMismatch',
+        UNKNOWN_REFERENCE: 'ErrorUnknownReference',
+        CURRENCY_MISMATCH: 'ErrorCurrencyMismatch',
+        DUPLICATE_INVOICE: 'ErrorDuplicateInvoice',
+        INVALID_STATE: 'ErrorInvalidState',
+        NOT_FOUND: 'ErrorNotFound'
+    };
+    const ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9_]*$/;
+    const errorText = (value) => {
+        const text = String(value ?? '').trim();
+        const key = ERROR_CODE_KEYS[text];
+        if (key && L[key]) return L[key];
+        return ERROR_CODE_PATTERN.test(text) ? (L.GatewayError || L.ErrorOccurred) : text;
+    };
+
     const readErrors = async (res) => {
+        if (res.status === 403 && L.AccessDenied) return L.AccessDenied;
         try {
             const body = await res.json();
             const errs = body?.errors || body?.Errors;
-            if (Array.isArray(errs) && errs.length) return errs.join(' ');
+            if (Array.isArray(errs) && errs.length) return [...new Set(errs.map(errorText).filter(Boolean))].join(' ');
             const code = body?.error?.code || body?.data?.error?.code;
-            if (code) return code;
+            if (code) return errorText(code);
         } catch (e) { }
         return L.ErrorOccurred || 'Error';
     };
