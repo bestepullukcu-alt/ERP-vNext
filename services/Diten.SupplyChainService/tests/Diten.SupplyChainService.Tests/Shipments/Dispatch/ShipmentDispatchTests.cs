@@ -434,15 +434,79 @@ public sealed class ShipmentDispatchTests(ITestOutputHelper output)
         var client = typeof(Diten.SupplyChainService.Application.Features.Shipments.Dispatch.IInventoryMovementClient);
         var assemblies = new[] { client.Assembly, typeof(Program).Assembly, typeof(ShipmentRepository).Assembly,
             typeof(Diten.SupplyChainService.Infrastructure.Features.Shipments.InventoryMovementClient).Assembly };
-        var users = assemblies.Distinct().SelectMany(a => a.GetTypes())
+        var userTypes = assemblies.Distinct().SelectMany(a => a.GetTypes())
             .Where(t => t.GetConstructors(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Any(c => c.GetParameters().Any(p => p.ParameterType == client)))
-            .Select(t => t.Name).Order(StringComparer.Ordinal).ToArray();
+            .ToArray();
         // MOD-0186 DL-1 (§34): the return receipt coordinator and its late-writer policy post the CUSTOMER_RETURN / REVERSAL.
-        Assert.Equal(new[] { "LateWriterPolicy", "ReturnLateWriterPolicy", "ReturnReceiptCoordinator", "ShipmentDispatchCoordinator" }, users);
-        var hosted = assemblies.Distinct().SelectMany(a => a.GetTypes()).Where(t => typeof(IHostedService).IsAssignableFrom(t));
-        Assert.All(hosted, h => Assert.DoesNotContain(h.GetConstructors().SelectMany(c => c.GetParameters()), p =>
-            p.ParameterType == client || p.ParameterType.Name is "ShipmentDispatchCoordinator" or "LateWriterPolicy" or "ReturnReceiptCoordinator" or "ReturnLateWriterPolicy"));
+        Assert.Equal(new[] { "LateWriterPolicy", "ReturnLateWriterPolicy", "ReturnReceiptCoordinator", "ShipmentDispatchCoordinator" },
+            userTypes.Select(t => t.Name).Order(StringComparer.Ordinal).ToArray());
+        // Acceptance F-4: a hosted service must not reach them by injection either (constructor, field, Func/Lazy) or by
+        // resolving them itself (IServiceProvider / IServiceScopeFactory, typeof): every type its IL names is checked.
+        var forbidden = userTypes.Append(client).ToHashSet();
+        var hosted = assemblies.Distinct().SelectMany(a => a.GetTypes()).Where(t => typeof(IHostedService).IsAssignableFrom(t)).ToArray();
+        Assert.NotEmpty(hosted);
+        Assert.All(hosted, h => Assert.Empty(ReferencedTypes(h).Where(forbidden.Contains).Select(t => $"{h.Name} → {t.Name}")));
+    }
+
+    private static readonly Dictionary<short, System.Reflection.Emit.OpCode> OpCodesByValue = typeof(System.Reflection.Emit.OpCodes)
+        .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+        .Select(f => (System.Reflection.Emit.OpCode)f.GetValue(null)!).ToDictionary(o => o.Value);
+
+    /// <summary>Every type <paramref name="type"/> and its nested types (closures, async state machines) name: constructor
+    /// parameters, fields, and each type, method or field token in their IL, with generic arguments unfolded.</summary>
+    private static HashSet<Type> ReferencedTypes(Type type)
+    {
+        const System.Reflection.BindingFlags all = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly;
+        var found = new HashSet<Type>();
+        void Add(Type? t)
+        {
+            if (t is null || !found.Add(t)) return;
+            if (t.HasElementType) Add(t.GetElementType());
+            if (t.IsGenericType) foreach (var a in t.GetGenericArguments()) Add(a);
+        }
+        void Visit(Type t)
+        {
+            foreach (var f in t.GetFields(all)) Add(f.FieldType);
+            foreach (var m in t.GetConstructors(all).Cast<System.Reflection.MethodBase>().Concat(t.GetMethods(all)))
+            {
+                foreach (var p in m.GetParameters()) Add(p.ParameterType);
+                var il = m.GetMethodBody()?.GetILAsByteArray();
+                if (il is null) continue;
+                var typeArgs = t.IsGenericType ? t.GetGenericArguments() : null;
+                var methodArgs = m.IsGenericMethod ? m.GetGenericArguments() : null;
+                for (var i = 0; i < il.Length;)
+                {
+                    var op = il[i] == 0xFE ? OpCodesByValue[unchecked((short)(0xFE00 | il[i + 1]))] : OpCodesByValue[il[i]];
+                    i += op.Size;
+                    switch (op.OperandType)
+                    {
+                        case System.Reflection.Emit.OperandType.InlineMethod or System.Reflection.Emit.OperandType.InlineType
+                            or System.Reflection.Emit.OperandType.InlineTok or System.Reflection.Emit.OperandType.InlineField:
+                            var member = t.Module.ResolveMember(BitConverter.ToInt32(il, i), typeArgs, methodArgs);
+                            if (member is Type rt) Add(rt);
+                            else if (member is System.Reflection.FieldInfo rf) { Add(rf.DeclaringType); Add(rf.FieldType); }
+                            else if (member is System.Reflection.MethodBase rm)
+                            {
+                                Add(rm.DeclaringType);
+                                if (rm.IsGenericMethod) foreach (var a in rm.GetGenericArguments()) Add(a);
+                            }
+                            i += 4; break;
+                        case System.Reflection.Emit.OperandType.InlineSwitch: i += 4 + 4 * BitConverter.ToInt32(il, i); break;
+                        case System.Reflection.Emit.OperandType.InlineNone: break;
+                        case System.Reflection.Emit.OperandType.ShortInlineBrTarget or System.Reflection.Emit.OperandType.ShortInlineI
+                            or System.Reflection.Emit.OperandType.ShortInlineVar: i += 1; break;
+                        case System.Reflection.Emit.OperandType.InlineVar: i += 2; break;
+                        case System.Reflection.Emit.OperandType.InlineI8 or System.Reflection.Emit.OperandType.InlineR: i += 8; break;
+                        default: i += 4; break;
+                    }
+                }
+            }
+            foreach (var n in t.GetNestedTypes(all)) Visit(n);
+        }
+        Visit(type);
+        return found;
     }
 
     // ---- S23-13 ------------------------------------------------------------------------------------------------------

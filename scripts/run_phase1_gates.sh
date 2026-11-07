@@ -4,6 +4,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
+# The PR base TIP for the three steps below that compare with it, into FETCH_HEAD (owner 'Evet, düzelt' 2026-11-06).
+# In GitHub Actions the checkout is already shallow (actions/checkout, depth 1), so there the tip is fetched with depth
+# 1 — exactly as before. Everywhere else the fetch has NO depth: `--depth=1` marks the whole repository shallow (or cuts
+# an already-shallow one shorter), and every worktree of a clone shares that repository. Measured 2026-11-05: one local
+# run with GITHUB_BASE_REF=main cut main's history at its tip for every tower on the PC for ~21 h — pack_approval.py and
+# prompt_gate.py refuse a shallow repository, and `git log` blamed every file on the tip — until `git fetch --unshallow`.
+# Every base fetch in this file goes through here (scripts/tests/test_phase1_base_fetch.py holds it to that).
+fetch_base_tip() {
+  if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+    git fetch --no-tags --depth=1 origin "$1"
+  else
+    git fetch --no-tags origin "$1"
+  fi
+}
+
 # AUD-001 — "the audit debt ledger only shrinks", the CI half.
 #
 # The architecture test pins the ledger's COUNTS; this step looks at the DIFF: a pull request that ADDS a list line
@@ -11,8 +26,9 @@ cd "$ROOT_DIR"
 # writing query is a Control Tower decision, not a line in a PR.
 #
 # It needs the base branch. On a pull request that is GITHUB_BASE_REF; the checkout is shallow (actions/checkout
-# default depth 1 — measured 2026-10-02, phase1-gates.yml sets no fetch-depth), so the base TIP is fetched here with
-# depth 1 and compared tree-to-tree — no merge base, no history, the workflow file is not touched. Locally:
+# default depth 1 — measured 2026-10-02, phase1-gates.yml sets no fetch-depth), so the base TIP is fetched here
+# (fetch_base_tip: depth 1 in that shallow checkout) and compared tree-to-tree — no merge base, no history, the workflow
+# file is not touched. Locally:
 #   AUDIT_LEDGER_BASE=<ref> [AUDIT_LEDGER_HEAD=WORKTREE] ./scripts/run_phase1_gates.sh --audit-ledger-only
 # When no base is known, it cannot be fetched, or the diff cannot be produced, the step says SKIPPED in capitals.
 # It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file is not growth.
@@ -24,7 +40,7 @@ check_audit_ledger_growth() {
   [ "$head" = "WORKTREE" ] && head=""
 
   if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
       base="FETCH_HEAD"
     else
       echo "[phase1] audit ledger growth: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched."
@@ -108,12 +124,12 @@ check_audit_ledger_growth
 
 # BL-609 (WP-CI-SERVICE-TESTS-04) — the page-help ledger's ceilings only go down, against the BASE branch: the web test
 # measures rows under the ceiling but cannot see the ceiling raised in the same PR. Same base as the audit step (the
-# PR base tip, fetched with depth 1; locally PAGE_HELP_LEDGER_BASE=<ref>). No base, no ledger here or on the base →
+# PR base tip, fetch_base_tip; locally PAGE_HELP_LEDGER_BASE=<ref>). No base, no ledger here or on the base →
 # the script SKIPS by name. A deliberate raise is a reasoned CT line in the ledger (scripts/check_page_help_ledger_ceiling.py).
 check_page_help_ledger_ceiling() {
   local base="${PAGE_HELP_LEDGER_BASE:-}"
   if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
       base="FETCH_HEAD"
     else
       echo "[phase1] page-help ceiling: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched. NOTHING WAS CHECKED."
@@ -154,6 +170,37 @@ python3 -B scripts/pack_approval.py --self-test
 echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
+
+# AC-TEST-01 step 1 (owner 2026-11-05, design v0.2 after Codex): a test name's [MOD-nnnn(-FUnn):AC-n] tag names a
+# criterion of a readable pack AT THE PR's BASE (a new criterion reaches main first, then a test carries it). Reports
+# only; no acceptance record, queue or coverage changes. Not a pull request (AC_TAG_BASE unset) = HEAD is the base.
+# A pull request whose base cannot be fetched is red (Codex KOŞULLU→review: a skip here would pass unchecked tags).
+check_ac_tags() {
+  local base="${AC_TAG_BASE:-}"
+  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+    local try
+    for try in 1 2 3; do
+      if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+        base="$(git rev-parse FETCH_HEAD)"
+        break
+      fi
+      sleep 5
+    done
+    if [ -z "$base" ]; then
+      echo "[phase1] acceptance criteria tags: *** FAILED *** — base branch '$GITHUB_BASE_REF' could not be fetched (3 tries)."
+      return 1
+    fi
+  fi
+  if [ -z "$base" ]; then
+    python3 -B scripts/ac_coverage.py check-tags
+  else
+    python3 -B scripts/ac_coverage.py check-tags --base "$base"
+  fi
+}
+
+echo "[phase1] acceptance criteria tags"
+python3 -B scripts/ac_coverage.py --self-test
+check_ac_tags
 
 
 echo "[phase1] build gateway"

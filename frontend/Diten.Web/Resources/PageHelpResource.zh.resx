@@ -2032,4 +2032,36 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>自己的样本交给他人</value>
   </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>此页面用于打开产能计划：为所选公司创建计划，或按 ID 打开现有计划。</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>产能与供应计划员</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>选择公司</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>在顶部的公司选择器中选择公司；计划将在该公司中创建和打开。</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>创建计划</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>点击“Create plan”，填写名称、计划期间和所依据的需求计划，然后点击“Save”。新计划将在其工作区中打开。</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>打开计划</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>将计划 ID 粘贴到“Plan ID”中并点击“Open plan”。其他公司的计划无法找到。</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>此页面是单个产能计划的工作区：其源数据、情景及评估。</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>产能与供应计划员</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>核对来源</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>“Plan provenance”显示需求计划、其版本、采集时间和校验和：本计划的每个情景都基于这些数据。</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>创建情景</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>点击“Create scenario”，命名，添加约束引用和产能调整，然后点击面板中的“Create scenario”。</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>进行评估</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>打开情景并点击“Evaluate”：选择模式和资源，然后提交。完成后结果会显示在评估面板中。</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>此页面用于打开 S&amp;OP 计划：为所选公司创建计划，或按 ID 打开现有计划。</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>S&amp;OP 协调人与签核负责人</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>选择公司</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>在顶部的公司选择器中选择公司；计划将在该公司中创建和打开。</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>创建计划</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>点击“Create plan”，填写名称、计划期间和所依据的需求计划，然后点击“Save”。新计划将以“Draft”状态在其工作区中打开。</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>打开计划</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>将计划 ID 粘贴到“Plan ID”中并点击“Open plan”。其他公司的计划无法找到。</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>此页面是单个 S&amp;OP 计划的工作区：其快照以及在快照上记录的签核。</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>S&amp;OP 协调人与签核负责人</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>采集快照</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>点击“Capture snapshot”，填写需求计划、版本、源数据采集时间和校验和，并添加供应输入引用。按 Ctrl+Enter 或点击按钮确认。</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>记录签核</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>点击“Record sign-off”，选择快照、您的角色和决定，必要时添加备注并确认。只有在计划处于审核中时才能记录签核。</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>了解哪些内容不可更改</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>已记录的签核为最终结果：不能更改或删除，同一角色和快照的第二次签核会被拒绝。</value></data>
 </root>
