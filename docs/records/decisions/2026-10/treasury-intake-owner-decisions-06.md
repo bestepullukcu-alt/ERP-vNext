@@ -225,3 +225,13 @@ Kaynak: iki bağımsız prompt incelemesi (taze bağlamlı alt ajan, claude-opus
 3. **D141/3 — teslim keşfi (v1.3 engelleyici):** `AuditIntentTenantPartitionDiscoveryRepository.cs`'deki sabit `Collections` listesi, teslim işçisinin bekleyen niyeti olan kiracıları bulduğu tek yoldur. Paketin "teslim deposu koleksiyon listesi de aynı sırayla genişler" kuralının parçası sayıldı: dosya İzinli yollara alındı (yalnız `mdm_banks` / `mdm_bank_branches`), gerçek keşifle AC-6 testi ve sabotajı istendi.
 4. **D141/4 — Platform eşlemesi (v1.3 engelleyici):** MDM banka niyetleri için Platform `TrustedSourceAuditIntentOperationMap.cs`'de (aggregate, operation) satırları gerekir; yoksa Platform `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` döner. Paket bu bağımlılığı yazmıyor. Prompt'a DL-1 kabul kapısı P-12 olarak yazıldı (başlamayı bekletmez): sahibi Platform (Beste), XMC-001; işçi Platform'a dokunmaz, çift listesini raporlar. Paket metnine eklenmesi sonraki MOD-0289 revizyonunun işidir.
 5. **D141/5 — diğer:** RCS çağıran kimliği (`Mdm` bağlaması, `mdm.banks.create`, yapılandırma yoksa 503) prompt'a yazıldı; kırmızı taban bu Mac'te 8.0.18 ile, kabulde 7.0.28; kuyruk satırının metni (v1.2) ve kayıt yolu (v1.1) sonraki CT PR'ında v1.4'e çekilir; betik kontrol adı düzeltildi.
+
+
+## D142 — MOD-0289 DL-1: `MasterDataAuditOperation` için ortak niyet altyapısı eklemeli genişler (2026-11-07)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-07: "Altyapıyı genişlet (Önerilen)"); kaynak üçüncü bağımsız prompt incelemesi (v1.4, engelleyici: `LocalAuditIntent.Operation` ve `AuditIntentClaimedPayload.Operation` yalnız `ProductAuditOperation`; işlemci `payload.Operation.ToString()` gönderir). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; paket değişmez.
+
+1. **D142/1 — D24/2 aynen:** banka / şube işlemleri ayrı, genel `MasterDataAuditOperation` enum'undadır; `ProductAuditOperation`'a değer eklenmez.
+2. **D142/2 — eklemeli biçim:** `LocalAuditIntent` ve `AuditIntentClaimedPayload`'a boş geçilebilir `MasterDataAuditOperation? MasterDataOperation`; teslim işlemcisi işlem adını bu alan doluysa ondan, değilse `Operation`'dan alır. Ürün niyetlerinin alanları, BSON biçimi ve davranışı değişmez; eski biçimli belge okunur. Test ve sabotaj WP-0289-DL1 prompt'unda (Adım 2d).
+3. **D142/3 — XMC-001:** üç dosya MOD-0290 ürün ailesi alanındadır; MDM sahibi Ali'nin yazılı onayı prompt'un dağıtım kapısıdır (P-13). Ali aynı zamanda DL-1 uygulayıcısıdır.
+4. **D142/4 — son eleman kuralı:** yalnız ekleme dosyalarında (`AuditAggregateType.cs`, `AuditIntentDeliveryRepository.cs`) yeni satırlar son elemandan önce eklenir (v1.4 incelemesinin diğer bulgusu).
