@@ -235,3 +235,12 @@ Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-07: "Altyapıyı genişlet (Ön
 2. **D142/2 — eklemeli biçim:** `LocalAuditIntent` ve `AuditIntentClaimedPayload`'a boş geçilebilir `MasterDataAuditOperation? MasterDataOperation`; teslim işlemcisi işlem adını bu alan doluysa ondan, değilse `Operation`'dan alır. Ürün niyetlerinin alanları, BSON biçimi ve davranışı değişmez; eski biçimli belge okunur. Test ve sabotaj WP-0289-DL1 prompt'unda (Adım 2d).
 3. **D142/3 — XMC-001:** üç dosya MOD-0290 ürün ailesi alanındadır; MDM sahibi Ali'nin yazılı onayı prompt'un dağıtım kapısıdır (P-13). Ali aynı zamanda DL-1 uygulayıcısıdır.
 4. **D142/4 — son eleman kuralı:** yalnız ekleme dosyalarında (`AuditAggregateType.cs`, `AuditIntentDeliveryRepository.cs`) yeni satırlar son elemandan önce eklenir (v1.4 incelemesinin diğer bulgusu).
+
+
+## D143 — MOD-0289 DL-1: merkezi eşleme beklemesi (BL-566) banka işlemlerine eklemeli genişler (2026-11-08)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-08: "Bekleme korumasını genişlet (Önerilen)"); kaynak dördüncü bağımsız prompt incelemesi (v1.5, engelleyici: `AwaitsCentralMapping` ve `CentralMappingRollout.AwaitingCentralMapping` yalnız `ProductAuditOperation` tanır; Platform eşlemesi canlıda yokken banka niyeti beklemeden ölü listeye düşer, denetim satırı kaybolur). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; paket değişmez.
+
+1. **D143/1 — bekleme:** `CentralMappingRollout`'a `MasterDataAuditOperation` için eklemeli bir küme (aynı ad kuralı: `MappedByDeployedPlatform`'da olmayan beklenir); işlemcinin bekleme, zaman aşımı ve bekleme adı mantığı D142'nin "seçili işlem"ini kullanır. Ürün kümesi ve `MappedByDeployedPlatform` değişmez.
+2. **D143/2 — biçim ayrıntıları (incelemenin diğer bulguları):** `MasterDataOperation` belge alanı `[BsonIgnoreIfNull]` ile — yeni ürün niyetinde öğe yok (testle); `AuditIntentClaimedPayload`'a son parametre, varsayılan `null`.
+3. **D143/3 — XMC-001 kapsamı:** P-13 (Ali) dört dosyayı kapsar: `LocalAuditIntent.cs`, `AuditIntentClaimedPayload.cs`, `AuditIntentDeliveryProcessor.cs`, `CentralMappingRollout.cs`.
