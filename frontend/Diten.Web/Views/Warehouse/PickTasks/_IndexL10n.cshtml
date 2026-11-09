@@ -1,12 +1,21 @@
 @using Diten.Web.Views.Warehouse.PickTasks
-@using Diten.Web.Models.Warehouse
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<PickTasksIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @*
     The pick screen's words for the browser: the shared toolbar / list vocabulary (SharedResource) and the page's own Warehouse.* words
-    (WarehouseVocabulary.PickKeys → Words). No hardcoded fallback text in the JS (localization §4).
+    (the page resx, enumerated → Words). No hardcoded fallback text in the JS (localization §4).
 *@
+@{
+    // Bridge pattern A (dynamic-localization-standard "İKİ KÖPRÜ"; MOD-0286 CI-11): the page's whole resx (current culture + parents)
+    // goes to Words, so a key added to the resx can never miss the browser. WarehouseVocabulary.PickKeys stays the test-side list of the keys
+    // the script reads (every one of them must be in the resx — AC-23 / AC-34).
+    var words = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var entry in Localizer.GetAllStrings(true))
+    {
+        words[entry.Name] = entry.Value;
+    }
+}
 <script id="picktasks-l10n" type="application/json">
     @Json.Serialize(new
     {
@@ -37,6 +46,6 @@
         AddNew = string.Empty, // no create on this screen (§11.5) — the allocation opens the tasks
         BulkDelete = SharedLocalizer["BulkDelete"].Value,
         BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
-        Words = WarehouseVocabulary.PickKeys.Distinct().ToDictionary(k => k, k => Localizer[k].Value)
+        Words = words
     })
 </script>

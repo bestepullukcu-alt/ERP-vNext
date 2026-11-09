@@ -1,3 +1,4 @@
+@model Diten.Web.Models.Warehouse.LocationRoleWriteRequest
 @using Diten.Web.Views.Warehouse.WarehouseLocationRoles
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<WarehouseLocationRolesIndex> Localizer
@@ -5,6 +6,8 @@
 @*
     Create / edit (pack §9: 4 user fields, slim). There is no "storage" role (§11.3a): a record with NO role and only accepted storage
     conditions is valid. The node never changes after create (edit shows it read-only). The choices are the contract's enums.
+    The form is filled and sent by index.js (no asp-for binding, the Index passes no model); the model directive names the write contract it produces —
+    LocationRoleWriteRequest, the body the proxy controller reads (MOD-0286 UIC-3 "Form declares a strongly typed ViewModel").
 *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
     <div class="offcanvas-header p-4">

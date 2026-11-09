@@ -1,3 +1,4 @@
+@model Diten.Web.Models.Warehouse.PutawayWriteRequest
 @using Diten.Web.Views.Warehouse.PutawayTasks
 @using Diten.Web.Models.Warehouse
 @using Microsoft.AspNetCore.Mvc.Localization
@@ -9,6 +10,8 @@
     selectable with the "Saklama koşulu bilinmiyor" badge; the target bin and "Kaydet" are then closed and say why (§11.3a — rules.js
     applyConditionGate). The source never changes after create (edit shows it read-only).
     The bin suggestion never fills the form: "Uygula" takes it and the record carries targetSource = SuggestionApplied (§8.6, AC-42).
+    The form is filled and sent by index.js (no asp-for binding, the Index passes no model); the model directive names the write contract it produces —
+    PutawayWriteRequest, the body the proxy controller reads (MOD-0286 UIC-3 "Form declares a strongly typed ViewModel").
 *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
     <div class="offcanvas-header p-4">
