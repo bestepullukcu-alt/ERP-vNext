@@ -220,3 +220,6 @@ VERIFIED
 
 > CT notu (DÜŞÜK-5): geliştirici oturumu Ağ Geçidi düzeltmesini sahibe soru penceresiyle sordu ve sonra uyguladı; yanıt metni oturum kaydında görünmüyor. Sahibin teyidi bekleniyor; DÜŞÜK, kabulü engellemez.
 
+
+- **DÜŞÜK-5 kapandı (2026-11-09, CT):** sahip Beste, `3480daffd` Ağ Geçidi düzeltmesini (`Mod0173Pm2InternalInventoryRouteTests` 6 → 7, getReservation) onayladığını CT'ye teyit etti («evet onayladım»). XMC-001 onayı bu kayıtla depoya işlendi; integration-agent'a bilgi notu sahip tarafından gönderilecek.
+
