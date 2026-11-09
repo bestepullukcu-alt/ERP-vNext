@@ -1052,7 +1052,7 @@
     <value>Откройте запись</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Нажмите «Принять решение» в открытой записи, чтобы выпустить, отклонить или заблокировать запас. Запас движется только после утверждения решения.</value>
+    <value>Нажмите «Принять решение» в открытой записи, чтобы выпустить, отклонить или заблокировать запас. Запас движется только после утверждения решения. Строка с отметкой «Аннулировано · Источник сторнирован» закрыта, потому что исходное движение запаса сторнировано: решение не требуется.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Примите решение</value>
@@ -1067,7 +1067,7 @@
     <value>Сохранение заметки об анализе</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Проверьте данные вверху, карточку «Сведения о качестве» и движения запаса, созданные записью; жёлтая полоса предупреждает о превышении цели ожидания.</value>
+    <value>Проверьте данные вверху, карточку «Сведения о качестве» и движения запаса, созданные записью; жёлтая полоса предупреждает о превышении цели ожидания. Баннер «Аннулировано»: исходное движение сторнировано, запись закрыта. «Источник сторнирован · расхождение»: остаток изменился вне этой записи; проверяет QA. Помеченная открытая запись остаётся открытой и учитывается полным количеством в открытых подсчётах (KPI, статус качества партии, отзыв); действия закрытия для записи нет — QA исправляет остаток на стороне склада. На аннулированной записи отметка означает, что строка её решения была проведена после закрытия; остаток ушёл из ячейки другой записи. Отметка изменения партии: изменение партии по решению (статус и / или дата повторного контроля) было применено до закрытия записи; партия не возвращена — статус партии проверяет QA.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Изучите запись</value>
@@ -1166,7 +1166,7 @@
     <value>«Заблокировать запас» → «Заблокировать»: выбранный запас сразу становится заблокированным, без процесса утверждения</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Введите текст в поле поиска или нажмите кнопку фильтра («Фильтр»), выберите причину блокировки, «Только ожидающие распоряжения» или «Статус» и нажмите «Применить».</value>
+    <value>Введите текст в поле поиска или нажмите кнопку фильтра («Фильтр»), выберите причину блокировки, «Только ожидающие распоряжения» или «Статус» и нажмите «Применить». «Аннулировано · Источник сторнирован» в «Статусе» показывает записи, закрытые из‑за сторно исходного движения запаса. Открытая заблокированная запись с отметкой «Источник сторнирован · расхождение» остаётся открытой и учитывается полным количеством в открытых подсчётах; действия закрытия для записи нет — QA исправляет остаток на стороне склада.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Сузьте список</value>
@@ -1694,7 +1694,7 @@
     <value>Поместите запасы в карантин</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>На вкладке «Клиенты и отгрузки» используйте «Отметить как уведомлённого» и «Добавить декларацию потребления». На вкладке «Возвраты» «Оформить возврат клиента» открывает форму движения запасов; затем нажмите «Привязать возврат» у кандидата.</value>
+    <value>На вкладке «Клиенты и отгрузки» используйте «Отметить как уведомлённого» и «Добавить декларацию потребления». На вкладке «Возвраты» «Оформить возврат клиента» открывает форму движения запасов; затем нажмите «Привязать возврат» у кандидата. Значок «Старая запись» или «Без идентификатора CRM» отмечает клиента без идентификатора CRM; такая строка никогда не объединяется с клиентом CRM. Пока CRM недоступна или у вас нет права видеть имена клиентов CRM («Нет разрешения»), уведомление, декларация потребления и привязка возврата для этого клиента закрыты. Имена клиентов показываются страницами по 25 клиентов; для остальных используйте кнопки страниц.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Следите за клиентами и возвратами</value>
@@ -2056,4 +2056,198 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Свой образец оставьте другим</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Переместите принятый товар из зоны приёмки в его ячейку и подтвердите; подтверждение проводит движение в складском журнале.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Операторы склада (подтверждение) и руководители склада (создание, назначение, сверка).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Выберите товар</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Задача» и выберите строку в поле «Товар к размещению». Заблокированная строка показывает причину и блокирующий документ; выбрать её нельзя.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Ячейка и исполнитель</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>Введите или отсканируйте код ячейки в поле «Целевая ячейка»; принимается только точный код. Выберите оператора в поле «Исполнитель». Предлагаемая ячейка берётся только кнопкой «Применить».</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Подтвердите</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>Нажмите «Подтвердить», проверьте количество (−/+) и фактическую ячейку. Частичное количество допустимо; другая ячейка требует причины.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Повторите ожидающее подтверждение</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>Если на значке «Ожидает подтверждения», ответ склада не пришёл; откройте задачу и нажмите «Повторить». До завершения другие действия недоступны.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>Подтверждение сразу перемещает товар; отмена — это сторно в движениях запасов.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Чтобы отметить зоны приёмки и условия хранения</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>Чтобы увидеть товар, перемещённый подтверждениями</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Отметьте, какие места являются зонами приёмки или подготовки отгрузки и какие условия хранения принимает узел; нижние узлы их наследуют.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Руководители склада.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Выберите место</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Роль» и выберите узел в поле «Узел места».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Задайте роли и условия</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>Отметьте «Приёмка» или «Подготовка отгрузки» и принимаемые условия хранения; одни условия без роли тоже допустимы.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Проверьте зоны приёмки</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Задачи размещения начинаются только из зон приёмки; проверьте, что у каждого склада она есть. Унаследованный набор помечен значком «от вышестоящего узла».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>Чтобы разместить принятый товар</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Отгружайте запас со склада: создайте отгрузку со строками, следите за сборкой и упаковкой, сделайте её готовой к отправке и зафиксируйте отправку.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Планировщики отгрузок и руководители склада.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Склад и подготовка</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Отгрузка» и выберите склад. Зону подготовки выбирайте, только если их на складе несколько.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Строки и предпросмотр</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Заполните каждую строку (товар, SKU, количество, строка заказа) и нажмите «Предпросмотр Распределения»: появятся партии в порядке FEFO и количество, которое можно распределить.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Замена партии</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>При необходимости выберите другую партию в поле «Замена партии»; для партии не первой по FEFO нужна причина согласно правилу FEFO вашей компании.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Следите за сборкой</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Сохранение распределяет запас и открывает задачи сборки; следите за ними на странице сведений, пока отгрузка не будет собрана.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Готовность и отправка</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Когда упаковано, нажмите «Готова к Отправке»; после отправки товара нажмите «Проверить Поставку».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Отгрузку, готовую к отправке, нельзя изменить или отменить.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Чтобы собрать распределённый запас</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Чтобы увидеть, что застряло и требует внимания</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Переносите распределённый запас из ячейки в зону подготовки и подтверждайте каждое перемещение.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Операторы склада (подтверждение) и руководители склада (назначение, сверка).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Возьмите задачу</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Откройте неназначенную задачу из меню строки и нажмите «Взять».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Перенесите и подтвердите</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Перенесите запас из ячейки в зону подготовки, нажмите «Подтвердить» и проверьте количество (−/+). Ячейку и цель изменить нельзя.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Упакуйте</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Когда отгрузка собрана, в задаче появляется ссылка «Упаковать»; она открывает страницу упаковки.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Чтобы упаковать собранный запас</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Упакуйте собранный запас отгрузки в упаковки.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Операторы и руководители склада.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Откройте упаковку</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Нажмите «Новая Упаковка»; это возможно, только когда отгрузка собрана.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Содержимое, вес, размеры</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Укажите, сколько каждого распределения входит в упаковку (−/+), её вес в кг и размеры в см (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Закройте упаковку</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Нажмите «Закрыть Упаковку». Когда все распределения упакованы, отгрузка становится «Упакована».</value>
+  </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Эта страница открывает планы мощностей: создайте план для выбранной компании или откройте существующий по его ID.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Специалисты по планированию мощностей и поставок</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>Выберите компанию в селекторе вверху; план создаётся и открывается в этой компании.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>Создайте план</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>Нажмите «Create plan», укажите название, горизонт и исходный план спроса, затем нажмите «Save». Новый план откроется в своём рабочем пространстве.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>Откройте план</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>Вставьте ID плана в поле «Plan ID» и нажмите «Open plan». План другой компании не найден.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>Эта страница — рабочее пространство одного плана мощностей: исходные данные, сценарии и их оценки.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>Специалисты по планированию мощностей и поставок</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>Проверьте источник</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>«Plan provenance» показывает план спроса, его версию, время снимка и контрольную сумму: каждый сценарий плана работает с этими данными.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>Создайте сценарий</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>Нажмите «Create scenario», задайте имя, добавьте ссылки на ограничения и корректировки мощности, затем нажмите «Create scenario» на панели.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>Оцените его</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>Откройте сценарий и нажмите «Evaluate»: выберите режим и ресурсы, затем отправьте. Результат появится на панели оценки после завершения.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>Эта страница открывает планы S&amp;OP: создайте план для выбранной компании или откройте существующий по его ID.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>Координаторы S&amp;OP и ответственные за согласование</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>Выберите компанию в селекторе вверху; план создаётся и открывается в этой компании.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>Создайте план</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>Нажмите «Create plan», укажите название, горизонт и исходный план спроса, затем нажмите «Save». Новый план откроется в рабочем пространстве в статусе «Draft».</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>Откройте план</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>Вставьте ID плана в поле «Plan ID» и нажмите «Open plan». План другой компании не найден.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>Эта страница — рабочее пространство одного плана S&amp;OP: его снимки и согласования, записанные по ним.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>Координаторы S&amp;OP и ответственные за согласование</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>Сделайте снимок</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>Нажмите «Capture snapshot», укажите план спроса, его версию, время снимка источника и контрольную сумму, добавьте ссылки на входные данные поставок. Подтвердите Ctrl+Enter или кнопкой.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>Запишите согласование</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Нажмите «Record sign-off», выберите снимок, свою роль и решение, при необходимости добавьте комментарий и подтвердите. Согласования записываются только пока план на рассмотрении.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Знайте, что окончательно</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Записанное согласование окончательно: его нельзя изменить или удалить, повторное согласование для той же роли и снимка отклоняется.</value></data>
 </root>

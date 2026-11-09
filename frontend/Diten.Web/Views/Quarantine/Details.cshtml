@@ -64,6 +64,9 @@
         </div>
 
         <div class="alert alert-warning d-none d-flex gap-2" id="qr-d-late" role="status"><i class="bx bx-time-five mt-1"></i><span></span></div>
+        @* MOD-0175-FU01 DL-2 (pack §11, AC-26 / AC-28): the "Geçersiz" banner and the "Kaynak geri alındı · uyuşmazlık" banner — details.js fills them *@
+        <div class="alert alert-secondary d-none" id="qr-d-voided" role="status"><div class="d-flex gap-2"><i class="bx bx-block mt-1"></i><span></span></div></div>
+        <div class="alert alert-danger d-none" id="qr-d-conflict" role="status"><div data-qr-conflict-badge></div><div class="small mt-1" data-qr-conflict-text></div></div>
 
         <div class="row g-4">
             <div class="col-12 col-xl-8">

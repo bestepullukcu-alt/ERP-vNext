@@ -1,0 +1,87 @@
+@model Diten.Web.Models.Warehouse.LocationRoleWriteRequest
+@using Diten.Web.Views.Warehouse.WarehouseLocationRoles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseLocationRolesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Create / edit (pack §9: 4 user fields, slim). There is no "storage" role (§11.3a): a record with NO role and only accepted storage
+    conditions is valid. The node never changes after create (edit shows it read-only). The choices are the contract's enums.
+    The form is filled and sent by index.js (no asp-for binding, the Index passes no model); the model directive names the write contract it produces —
+    LocationRoleWriteRequest, the body the proxy controller reads (MOD-0286 UIC-3 "Form declares a strongly typed ViewModel").
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formLocationRoleAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formLocationRole" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="roleId" value="" />
+            <input type="hidden" id="roleETag" value="" />
+
+            <div class="row g-4">
+                <div class="col-12" id="roleLocationBlock">
+                    <label for="roleLocation" class="form-label fw-medium">@Localizer["FieldLocation"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
+                        <select id="roleLocation" class="form-select" data-placeholder="@Localizer["LocationPlaceholder"]" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback d-block" id="roleLocationError"></div>
+                </div>
+
+                <div class="col-12 d-none" id="roleLocationReadonly">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldLocation"]</span>
+                    <span id="roleLocationText" class="text-heading"></span>
+                </div>
+
+                <div class="col-12">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldRoles"]</span>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="roleReceiving" value="Receiving" data-role-choice />
+                            <label class="form-check-label" for="roleReceiving">@Localizer["Warehouse.Role.Receiving"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="roleStaging" value="Staging" data-role-choice />
+                            <label class="form-check-label" for="roleStaging">@Localizer["Warehouse.Role.Staging"]</label>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["RolesHint"]</small>
+                </div>
+
+                <div class="col-12">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldConditions"]</span>
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var code in Diten.Web.Controllers.WarehouseLocationRolesController.StorageConditions)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cond-@code" value="@code" data-condition-choice />
+                                <label class="form-check-label" for="cond-@code">@Localizer["Warehouse.StorageCondition." + code]</label>
+                            </div>
+                        }
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["ConditionsHint"]</small>
+                </div>
+
+                <div class="col-12">
+                    <label for="roleNote" class="form-label fw-medium">@Localizer["ColNote"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="roleNote" class="form-control" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button data-dt-primary="enter" type="button" id="btnSaveLocationRole" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

@@ -212,4 +212,14 @@
   <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>İnceleme</value></data>
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Serbest bırakma</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Hazırlayan</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>Çözülemedi</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>Bulunamadı</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>Çözülemedi ({0})</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>Bulunamadı ({0})</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0} (Eski kayıt)</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0} (CRM kimliği yok)</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>Müşteri adları</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>CRM'den, dışa aktarım anında</value></data>
 </root>

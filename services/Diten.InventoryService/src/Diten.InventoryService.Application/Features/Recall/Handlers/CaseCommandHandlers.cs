@@ -372,6 +372,12 @@ public sealed class AddRecallScopeItemsHandler : RecallCaseCommandHandler, IRequ
                             $"sourceDocumentId ≤ {RecallContract.MaxDocumentIdLength} and customerRef ≤ {RecallContract.MaxCustomerRefLength} characters.");
                     }
 
+                    // MOD-0177-FU01 Q-6: no CRM customer is chosen by hand — a "D" GUID customerRef refuses the whole request (the rule trims, §8.3)
+                    if (RecallCustomerKeyRules.IsDShaped(input.CustomerRef))
+                    {
+                        return RecallSupport.Invalid<RecallScopeViewDto>("customerRef of a hand-entered Shipment item cannot be a GUID (no CRM customer is chosen by hand).");
+                    }
+
                     if (input.WarehouseId is { } shipWh && await _locations.FindAsync(shipWh, ct) is not { Type: LocationType.Warehouse })
                     {
                         return RecallSupport.Fail<RecallScopeViewDto>(InventoryErrorCodes.UnknownLocation, "warehouseId is not a warehouse of the company.", 404);
@@ -419,6 +425,7 @@ public sealed class AddRecallScopeItemsHandler : RecallCaseCommandHandler, IRequ
                 StockStatus = input.Kind == RecallScopeItemKind.Stock ? input.StockStatus : null,
                 SourceDocumentId = input.Kind == RecallScopeItemKind.Shipment ? RecallSupport.Trimmed(input.SourceDocumentId) : null,
                 CustomerRef = input.Kind == RecallScopeItemKind.Shipment ? RecallSupport.Trimmed(input.CustomerRef) : null,
+                CustomerRefSource = input.Kind == RecallScopeItemKind.Shipment ? RecallCustomerRefSource.Manual : null,
                 Quantity = input.Kind == RecallScopeItemKind.Lot ? null : input.Quantity,
                 BaseUomId = input.Kind == RecallScopeItemKind.Lot ? null : input.BaseUomId!.Trim(),
                 Included = true,

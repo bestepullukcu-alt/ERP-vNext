@@ -11,6 +11,9 @@ namespace Diten.InventoryService.Application.Features.Inventory.Services;
 /// </summary>
 public static class ReservationRequestParser
 {
+    /// <summary>MOD-0173-FU03 §12.</summary>
+    public const int MaxWarehouseIdLength = 100;
+
     public static (ParsedReservation? Reservation, IReadOnlyList<FieldError> Errors) Parse(CreateReservationCommand command, DateTimeOffset now)
     {
         var errors = new List<FieldError>();
@@ -65,6 +68,14 @@ public static class ReservationRequestParser
                 expiresAt = e;
         }
 
+        // MOD-0173-FU03 §12: blank text = absent; a lot needs its warehouse.
+        var warehouseId = Blank(command.WarehouseId)?.Trim();
+        var lotId = Blank(command.LotId)?.Trim();
+        if (warehouseId is not null && warehouseId.Length > MaxWarehouseIdLength)
+            errors.Add(Invalid($"warehouseId must be at most {MaxWarehouseIdLength} characters."));
+        if (lotId is not null && warehouseId is null)
+            errors.Add(Invalid("lotId needs warehouseId: a lot reservation is held in one warehouse."));
+
         if (errors.Count > 0)
         {
             return (null, errors);
@@ -73,7 +84,7 @@ public static class ReservationRequestParser
         return (new ParsedReservation(
             headerKey!, itemId, skuId, skuLevel, quantity,
             command.ReservationType!.Trim(), command.SourceModule!.Trim(),
-            Blank(command.SourceDocumentId), Blank(command.SourceLineId), priority, expiresAt), errors);
+            Blank(command.SourceDocumentId), Blank(command.SourceLineId), priority, expiresAt, warehouseId, lotId), errors);
     }
 
     private static void RequireText(string? value, string name, List<FieldError> errors)

@@ -639,4 +639,30 @@
   <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Kişiyi adıyla ara</value></data>
   <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Bul</value></data>
   <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Bu adla eşleşen etkin kullanıcı yok.</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>Çözülemedi</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>Bulunamadı</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>Çözülemedi ({0})</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>Bulunamadı ({0})</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0} (Eski kayıt)</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0} (CRM kimliği yok)</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>Müşteri adları</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>CRM'den, dışa aktarım anında</value></data>
+  <data name="Recall.Customer.LegacyBadge" xml:space="preserve"><value>Eski kayıt</value></data>
+  <data name="Recall.Customer.NoCrmBadge" xml:space="preserve"><value>CRM kimliği yok</value></data>
+  <data name="Recall.Customer.LegacyHint" xml:space="preserve"><value>CRM müşteri kimliğinden önce kaydedildi; yeni kimliğe otomatik bağlanmaz.</value></data>
+  <data name="Recall.Customer.NoCrmHint" xml:space="preserve"><value>Sevkiyat okunduğunda CRM müşteri kimliği yoktu ya da okunamadı.</value></data>
+  <data name="Recall.Customer.ManualHint" xml:space="preserve"><value>Elle girildi; CRM müşteri kimliğine bağlanmaz.</value></data>
+  <data name="Recall.Customer.CrmUnavailable" xml:space="preserve"><value>CRM'e ulaşılamıyor, sonra tekrar deneyin</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>CRM'e ulaşılamıyor, sonra tekrar deneyin</value></data>
+  <data name="Recall.Customer.CrmForbidden" xml:space="preserve"><value>CRM müşteri adlarını görme izniniz yok; yöneticinize başvurun.</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN" xml:space="preserve"><value>CRM müşteri adlarını görme izniniz yok; yöneticinize başvurun.</value></data>
+  <data name="Recall.Customer.Deferred" xml:space="preserve"><value>Ad bu sayfada değil</value></data>
+  <data name="Recall.Customer.NamesPage" xml:space="preserve"><value>Müşteriler {0}–{1} / {2}</value></data>
+  <data name="Recall.Customer.PagePrev" xml:space="preserve"><value>Önceki</value></data>
+  <data name="Recall.Customer.PageNext" xml:space="preserve"><value>Sonraki</value></data>
+  <data name="Recall.Customer.Forbidden" xml:space="preserve"><value>İzin eksik</value></data>
+  <data name="Recall.Customer.ForbiddenWith" xml:space="preserve"><value>İzin eksik ({0})</value></data>
+  <data name="Recall.Customer.ExportForbidden" xml:space="preserve"><value>CRM müşteri adlarını görme izniniz yok; dışa aktarım yapılamaz. Yöneticinize başvurun.</value></data>
 </root>

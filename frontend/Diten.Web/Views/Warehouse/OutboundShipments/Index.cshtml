@@ -1,0 +1,81 @@
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["OutboundShipmentsTitle"].Value;
+    ViewData["PageCode"] = "OUTBOUNDSHIPMENTS"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-6 — Outbound Sevkiyatlar (Golden Reference Compact, server mode, proxy profile — pack §9, §11.1, §11.5): list + full Create / Edit /
+    Details pages (> 8 form fields — r20 binding). The list is searchOutboundShipments (not the frozen list): the six visible statuses only.
+
+    UAS-001 — nothing below is drawn without warehouse.outbound-shipments.read (it carries the ship-to — personal data, Q-10a): no heading, no filter,
+    no empty table, no button, no redirect. An operator (WarehouseOperator: no outbound read) gets only the explanation here (AC-34).
+
+    ⚠ Display only. The row menu is the §8.18 status menu (rules.js): a key the reader lacks hides the entry; an Item outbound's "Sevke hazır" is
+    disabled with its reason (§8.24, AC-33 (vi)). InventoryService's [HasPermission] and state machine stay the authority.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.OutboundShipmentsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["OutboundShipmentsTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/OutboundShipments/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["OutboundShipmentsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="outbound-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* ② No bulk action on this list (§11.3) — _DataTable declares HasSelection = false. *@
+
+    @* ③ DataTable Card *@
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-outboundshipments" data-dt-standard="v2"> *@
+    <div class="wh-list">
+        <partial name="~/Views/Warehouse/OutboundShipments/_DataTable.cshtml" />
+    </div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/OutboundShipments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/OutboundShipments/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/OutboundShipments/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/OutboundShipments/index.js" asp-append-version="true"></script>
+    }
+}
