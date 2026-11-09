@@ -38,3 +38,5 @@
 /scripts/status_report_v2.py                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /scripts/hooks/                                          @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /scripts/tests/                                          @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.github/ci/                                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/ci_select_suites.py                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
