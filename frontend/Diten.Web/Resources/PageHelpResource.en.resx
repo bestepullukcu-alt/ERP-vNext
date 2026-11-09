@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Use the keyboard</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>This page shows one return: its summary, its lines with product and lot, and the quarantine records its receipt created.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>Returns and warehouse staff</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Read the summary</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>The summary shows the status, the shipment (a link to its page), the customer, the reason and when the return was created. A return created before customers were recorded on returns is marked “Old record”.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Check the lines</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Each line shows the product / SKU, the lot, the quantity and unit, and how its stock was posted at receipt. A line that was not posted shows why.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Open the quarantine record</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>With access to quarantine records, each received line shows its KRN number; click it to open the quarantine record. Without that access the column is not shown.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>See how much of each product you hold, by warehouse, location, lot and stock status. The list is read-only: stock changes only through movements.</value>

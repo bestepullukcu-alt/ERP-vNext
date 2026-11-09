@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>使用键盘</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>此页面显示单个退货：摘要、包含产品和批次的行，以及收货时生成的隔离记录。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>退货与仓库人员</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>查看摘要</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>摘要显示状态、发货（链接到其页面）、客户、原因和退货创建时间。在退货记录客户之前创建的退货标记为“Old record”。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>核对行</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>每行显示产品 / SKU、批次、数量和单位，以及收货时库存的过账方式。未过账的行会显示原因。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>打开隔离记录</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>如有隔离记录的访问权限，每条已收货行会显示其 KRN 编号；点击即可打开隔离记录。没有该权限时不显示该列。</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>按仓库、库位、批次和库存状态查看每个产品的库存数量。此列表只读：库存只能通过库存移动发生变化。</value>

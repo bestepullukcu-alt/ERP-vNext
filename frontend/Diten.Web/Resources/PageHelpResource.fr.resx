@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Utiliser le clavier</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>Cette page affiche un retour : son résumé, ses lignes avec produit et lot, et les enregistrements de quarantaine créés à sa réception.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>Équipes des retours et de l’entrepôt</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Lire le résumé</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>Le résumé indique le statut, l’expédition (lien vers sa page), le client, le motif et la date de création du retour. Un retour créé avant l’enregistrement du client sur les retours est marqué « Old record ».</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Vérifier les lignes</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Chaque ligne indique le produit / SKU, le lot, la quantité et l’unité, et la comptabilisation du stock à la réception. Une ligne non comptabilisée en indique la raison.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Ouvrir l’enregistrement de quarantaine</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>Avec l’accès aux enregistrements de quarantaine, chaque ligne reçue affiche son numéro KRN ; cliquez dessus pour ouvrir l’enregistrement. Sans cet accès, la colonne n’est pas affichée.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>Consultez la quantité de chaque produit en stock, par entrepôt, emplacement, lot et statut. La liste est en lecture seule : le stock ne change que par des mouvements.</value>
