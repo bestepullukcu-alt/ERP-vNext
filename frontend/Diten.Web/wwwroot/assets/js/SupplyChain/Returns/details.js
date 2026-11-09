@@ -111,7 +111,7 @@ const ReturnDetails = (function () {
         if (!host) return;
         try {
             const response = await fetch(scoped(`/SupplyChain/Returns/api/${encodeURIComponent(returnId)}`), { credentials: 'same-origin', headers: { 'X-Correlation-Id': crypto.randomUUID() } });
-            document.getElementById('returnDetailsSkeleton').style.display = 'none';
+            document.getElementById('returnDetailsSkeleton').classList.add('d-none');
             if (response.status === 401) { window.DtDefaults?.handleUnauthorized?.(); return; }
             if (!response.ok) {
                 let body = null; try { body = await response.json(); } catch (_) { }
@@ -121,7 +121,7 @@ const ReturnDetails = (function () {
             render(await response.json());
             await loadHolds();
         } catch (_) {
-            document.getElementById('returnDetailsSkeleton').style.display = 'none';
+            document.getElementById('returnDetailsSkeleton').classList.add('d-none');
             showError(0, '');
         }
     };
