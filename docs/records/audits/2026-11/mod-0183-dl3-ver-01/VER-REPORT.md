@@ -43,7 +43,7 @@ and trace exist. Tenant: service queries still `Scoped(scope)`; CRM reads use ca
 F-1 | ORTA | FEFO reason field on the create form can never appear: create.js reveals it only on INVENTORY_REFUSED with a FEFO code, createShipment calls no INVENTORY; dispatch has no FEFO input and the contract has no update operation (pack:898, pack:996) | açık | MVP-6 CT | 2026-11-10
 F-2 | ORTA | SB-2a sabotage "adding a CRM client to the service" (pack:990) has no guard under services/Diten.SupplyChainService/tests | kapandı | MVP-6 CT | 2026-11-10
 F-3 | ORTA | SB-20 (pack:1008) has no test; rendering row.id as option text in create.js would keep every Web test green | kapandı | MVP-6 CT | 2026-11-10
-F-4 | ORTA | SB-24 merge gate not satisfied: no MOD-0177 FU commit on origin/main 018f0119c, no merge-base evidence; DL-3 must not merge, MOD-0186 DL-3/DL-4 wait | açık | MVP-6 CT | 2026-11-10
+F-4 | ORTA | SB-24 merge gate not satisfied: no MOD-0177 FU commit on origin/main 018f0119c, no merge-base evidence; DL-3 must not merge, MOD-0186 DL-3/DL-4 wait | kapandı | MVP-6 CT | 2026-11-10
 F-5 | DÜŞÜK | adapter trims fefoBypassReason though SB-8 says sent unchanged (ShipmentViewModels.cs:48,51) | kapandı | MVP-6 CT | 2026-11-10
 F-6 | DÜŞÜK | address shown AddressLine, District, City, Country (create.js:82) but stored Country, City, District, AddressLine (ShipmentViewModels.cs:80) | kapandı | MVP-6 CT | 2026-11-10
 F-7 | DÜŞÜK | JS rows (SB-1 selector, SB-6 renumber, SB-7 clears and stale guard, SB-8) guarded by source strings only; an open lot or location dropdown can still be filled by a stale response | açık | MVP-6 CT | 2026-11-10

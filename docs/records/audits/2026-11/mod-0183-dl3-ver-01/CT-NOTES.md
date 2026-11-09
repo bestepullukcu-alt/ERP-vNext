@@ -38,3 +38,13 @@ Gateway, CRM, LOCATION, PRODUCT-MASTER and TRACE live; mongod 7.0.28 (CI); rende
   MVP-1 line, target 2026-11-07. Q-2 confirmation received. Sequence agreed: FU01 code on `main`, then Dilim B with 3.5.0,
   then their DL-1 acceptance once 3.5.0 is frozen on `main`.
 - Gateway: the getReturn route is added (integration lane, `8062bd97b`).
+
+## SB-24 merge gate — measured 2026-11-10
+
+MOD-0177-FU01 reached `main` with the MVP-1 line, PR #397 (merge commit `7e8aa77d8`, parents `5e658dbfa` + `a9fd192ba`;
+a merge commit, not a squash). On `origin/main` `99c3cddc2`: `git merge-base --is-ancestor f57172eed origin/main` exit 0 and
+`git merge-base --is-ancestor a872e8c56 origin/main` exit 0. `git merge-tree --write-tree origin/main` against this branch:
+exit 0, no conflict. VER F-4 (DL-3) is closed by this measurement; MOD-0186 DL-3/DL-4 inherit it.
+MVP-1 CT note: their FU01 test `ShipmentBundle350AlignmentTests` (Inventory) is skipped until SHIPMENT-BUNDLE 3.5.0 is
+frozen on `main`; this branch carries 3.5.0 `x-status: FROZEN`, so they remove the Skip and the CI allow-list row after
+the Dilim B PR merges.
