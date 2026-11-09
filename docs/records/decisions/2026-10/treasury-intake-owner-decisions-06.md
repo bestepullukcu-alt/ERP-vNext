@@ -245,3 +245,13 @@ Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-08: "Bekleme korumasını geni�
 2. **D143/2 — biçim ayrıntıları (incelemenin diğer bulguları):** `MasterDataOperation` belge alanı `[BsonIgnoreIfNull]` ile — yeni ürün niyetinde öğe yok (testle); `AuditIntentClaimedPayload`'a son parametre, varsayılan `null`.
 3. **D143/3 — XMC-001 kapsamı:** P-13 (Ali) dört dosyayı kapsar: `LocalAuditIntent.cs`, `AuditIntentClaimedPayload.cs`, `AuditIntentDeliveryProcessor.cs`, `CentralMappingRollout.cs`.
 4. **D143/4 — düzeltme (beşinci bağımsız inceleme, v1.6 UYGUN; diğer bulgu):** Domain projesinde Bson referansı olmadığı için D143/2'deki `[BsonIgnoreIfNull]` derlenmez; eşdeğeri `LocalAuditIntent.ShouldSerializeMasterDataOperation()` (sürücü AutoMap'i bulur) — csproj ve `MdmDocumentClassMaps.cs` harita mantığı değişmez. P-13 onayının kaydı prompt metnine değil, dağıtım kaydına (bu dosyada bir D-satırı) yazılır. Auth çapraz koruma testlerinin banka bekleme kümesini ölçmemesi işçi raporunda "Known gaps" olarak istenir. Prompt v1.7.
+
+
+## D144 — FU27: `crm.account.lookup-validation` AR rolleri 14 ve 16'ya bağımlı anahtar; finans XMC-001 "verildi" (2026-11-09)
+
+Kaynak: Beste'nin mesajları (K1 aktardı, 2026-11-09: izin CRM manifestinde, PR #396; liste kesin — yalnız #14 ve #16, onayda müşteri yeniden doğrulanmaz); K1 / gmg-10 ("Yes, start"). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; MOD-0018 sahibinin (Ali) teyidine gider.
+
+1. **D144/1 — bağımlı anahtar:** `crm.account.lookup-validation` (MOD-0149) FU27 Bölüm 14.2'de bağımlı anahtar olarak roller 14 `TreasuryArOperator` ve 16 `TreasuryArOperationsManager`'a eklenir (D72/3–4 deseni, K-4 (b) — D70/1: Treasury manifestinde çapraz modül bağımlılığı, profil verir). Kaynak MOD-0120 Runtime Constraints "Müşteri uygunluğu güncel durumdur" (U-1 yalnız Create / Update / Issue; U-3 müşteri seçici). Roller 3, 15, 17 ve diğerleri almaz.
+2. **D144/2 — sayılar:** bağımlı anahtar sayısı 7 → 8; 117 modül anahtarı, 26 rol ve rol başına modül anahtarı sayıları değişmez; AC-3 genişletildi (sabotajlı); yeni AC yok.
+3. **D144/3 — XMC-001 ifadesi:** FU27 §5.2, Dependencies ve Checklist'te finans tüketicisi Platform XMC-001'i "verildi" (D139/1–2) yazıldı (D139/5'in açık maddesi kapandı).
+4. **D144/4 — sıra:** FU27 bağımsız incelemesi, sonra MOD-0018 sahibinin (Ali) teyidi; teyit gelince Beste'ye haber (takip tablosundan düşer). O zamana kadar kiracı yöneticisi izni bu iki role elle verebilir (Beste 2026-11-09).
