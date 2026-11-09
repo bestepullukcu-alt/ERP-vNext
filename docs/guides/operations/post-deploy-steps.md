@@ -300,19 +300,21 @@ verir.
 |---|---|
 | **Modül** | MOD-0290-FU04 S4 okuma sözleşmesi (`/api/product-master/*`, MDM) → Platform güvenilir tüzel kişi kapsamı; Auth ürün modülü hak profili (WP-MDM-PERMS-01) |
 | **Ne zaman** | BL-592'yi taşıyan deploy'da; MDM'nin Enforced kapsam yayılımı açık her ortamda |
-| **Sıra** | **1.** Platform KODU (BL-592: izin listesinde anahtar var, tavan 38). **2.** Platform yapılandırması: `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` listesine bir çift, `ModuleCode = product-item-sku-master`, `PermissionKey = mdm.product-master.read` (38 çift). **3.** Auth BL-592, kalem / `mdm.product-master.*` anahtarlarını **İLK beyan eden** MDM manifestinden ÖNCE. **4.** O MDM manifesti (S4 / S5 / S2 ve stock-gate hatta birleştikten sonraki küçük MDM adımı). |
+| **Sıra** | **1.** Platform KODU, bütün Platform kopyalarında (BL-592: izin listesinde anahtar var, tavan 38). **2.** Platform yapılandırması: `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` listesine bir çift, `ModuleCode = product-item-sku-master`, `PermissionKey = mdm.product-master.read` (38 çift). **3.** Auth ≥ `432c639ac` (BL-592), kalem / `mdm.product-master.*` anahtarlarını **İLK beyan eden** MDM manifestinden ÖNCE. **4.** En son MDM dağıtımı: MOD-0290-FU06 manifesti 1.4.0 (`GLOBAL_PRODUCTS` / `READ_PRODUCT_MASTER`, ekranda görünmeyen görüntüleme eylemi). MDM manifesti açılışta kendisi iter; ayrı bir itme adımı yoktur. **5.** Var olan kiracılar: manifest itmesi rol eşitlemesi başlatmaz. Hakkı olan bir pilot kiracıda eşitleme bir hak olayıyla tetiklenir (MOD-0290-FU06 §23: Addon / Trial / ManualOverride satırında aynı bitiş tarihi ve yeni nedenle expiry PATCH); toplu tetikleyici yoktur. |
 | **Ne** | Yapılandırma depoda değil, her ortam kendisi verir. Sır değişmez, yalnız çift eklenir. |
 | **Yapılmazsa / ters sırada** | (a) Çift hiç eklenmezse: Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN` (kapalı başarısızlık, sızıntı yok). Kalem satırları etkilenmez (kalem uçları kapsam sormaz). (b) **38 çiftli yapılandırma BL-592 ÖNCESİ Platform koduna verilirse** (tavan 37, anahtar listede yok): yapılandırma geçersiz sayılır, MDM kimlik bilgisi **tamamen** reddedilir, MDM'nin **her** güvenilir kapsam sorusu 403 — (a)'dan çok daha geniş. (c) **MDM manifesti Auth BL-592'den önce** anahtarları beyan ederse: eski Auth'ta bu iki anahtar düz "read" eylemidir; varsayılan Viewer tabanı (`RoleProvisioningService` / `DataSeeder`, yalnız ekler) `mdm.items.read`'i ve `mdm.product-master.read`'i **ürün modülü hakkı olmayan kiracılar dahil HER kiracının** Viewer'ına verir ve sonra hiçbir şey geri almaz (System hakkı eşitlemeyle silinmez). |
-| **Geri alma** | Ters sırada: **önce** yapılandırma 37 çifte (`mdm.product-master.read` çifti çıkarılır), **sonra** Platform kodu. Kod önce geri alınırsa 38 çiftli yapılandırma (b)'deki gibi bütün kimlik bilgisini düşürür. Auth geri alınacaksa önce manifest adımı geri alınmalı; geri alınmış Auth'ta beyan edilmiş anahtar (c)'deki kalıcı Viewer hakkını doğurur. |
+| **Geri alma** | Ters sırada: **önce** yapılandırma 37 çifte (`mdm.product-master.read` çifti çıkarılır), **sonra** Platform kodu. Kod önce geri alınırsa 38 çiftli yapılandırma (b)'deki gibi bütün kimlik bilgisini düşürür. **MDM manifest adımı (4) geri alınmaz, yalnız ileri düzeltme yapılır:** 1.3.0'a dönüş eylemi Platform kataloğundan budar ama Auth satırı kalır; ürün modülünün her hak eşitlemesi tam küme denetiminde durur (MOD-0290-FU06 §0.3, §13). Zorunluysa MOD-0290-FU06 §23'teki acil yol izlenir. Auth geri alınacaksa geri alınmış Auth'ta beyan edilmiş anahtar (c)'deki kalıcı Viewer hakkını doğurur. |
 | **Kim** | Deploy operatörü (Platform kodu + yapılandırması, Auth) · MDM sahibi (manifest adımı) |
 
 **Kontrol:**
 - Liste 38'i aşmamalı ve her çift bir kez geçmeli; aksi hâlde Platform MDM kimlik bilgisini reddeder (bütün güvenilir
   kapsam soruları 403).
-- Yeni çiftten sonra Enforced bir kiracıda `/api/product-master/…` bir ürün satırı döndürmeli. **Bu kontrol, MDM manifest
-  adımı (4) anahtarı rollere taşıyana kadar GEÇEMEZ:** o adıma kadar hiçbir rol `mdm.product-master.read` tutmaz, çağrı
-  yetkiyle düşer. Adım 2'den sonra bu kontrolün kırmızı olması tek başına hata değildir; adım 4'ten sonra kırmızıysa hatadır.
-- Adım 3'ten sonra, adım 4'ten önce: ürün modülü hakkı OLMAYAN bir kiracının Viewer'ı `mdm.items.read` tutmamalı.
+- Yeni çiftten sonra Enforced bir kiracıda `/api/product-master/…` bir ürün satırı döndürmeli. **Bu kontrol, adım 5'teki
+  eşitleme anahtarı rollere taşıyana kadar GEÇEMEZ:** o ana kadar hiçbir rol `mdm.product-master.read` tutmaz, çağrı
+  yetkiyle düşer. Adım 2'den sonra bu kontrolün kırmızı olması tek başına hata değildir; adım 5'ten sonra kırmızıysa hatadır.
+  Her ölçüm yeni bir girişle yapılır (izin jetondan okunur).
+- Adım 5'ten sonra: ürün modülü hakkı OLMAYAN bir kiracının Viewer'ı **ve** Admin'i ne `mdm.items.read` ne
+  `mdm.product-master.read` tutmalı.
 
 **Ön koşul (BL-592, CT kararı A):** anahtarlar Auth kataloğuna ve rollere yalnız manifest → Platform kataloğu → Auth
 eşitlemesi yoluyla girer. Ürün modülü hakkıyla: Admin her beyan edilen kalem anahtarını (altı; S2 birleşince
