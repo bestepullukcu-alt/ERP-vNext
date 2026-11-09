@@ -846,6 +846,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Набор контента</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Критерии допуска</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Политика частоты визитов</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Дела</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Декларации о потреблении</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Панель мониторинга</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Изменения дат</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Учения</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Проверки эффективности</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Исключения</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Статус партий</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Уведомления</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Политики</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Запросы на карантин</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Физическое разделение</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Прослеживание</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Роли мест хранения</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Упаковки</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Продукты</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Клиент</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Кампания</value></data>
@@ -1198,6 +1214,24 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Оптимизация страхового запаса</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Складские Операции</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Задачи Размещения</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Роли Мест Склада</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Отгрузки</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Задачи Сборки</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Упаковка</value>
+  </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Сценарии плана мощностей</value>
   </data>
@@ -1207,46 +1241,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>Снимки плана S&amp;OP</value>
   </data>
-  <data name="Perm.Entity.CASES" xml:space="preserve">
-    <value>Случаи</value>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Циклическая инвентаризация</value>
   </data>
-  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
-    <value>Потребления</value>
-  </data>
-  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
-    <value>Панель</value>
-  </data>
-  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
-    <value>Переопределения дат</value>
-  </data>
-  <data name="Perm.Entity.DRILLS" xml:space="preserve">
-    <value>Учения</value>
-  </data>
-  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
-    <value>Проверки эффективности</value>
-  </data>
-  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
-    <value>Доказательства</value>
-  </data>
-  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
-    <value>Исключения</value>
-  </data>
-  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
-    <value>Статус партии</value>
-  </data>
-  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
-    <value>Уведомления</value>
-  </data>
-  <data name="Perm.Entity.POLICIES" xml:space="preserve">
-    <value>Политики</value>
-  </data>
-  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
-    <value>Запросы на карантин</value>
-  </data>
-  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
-    <value>Обособления</value>
-  </data>
-  <data name="Perm.Entity.TRACE" xml:space="preserve">
-    <value>Трассировка</value>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Инвентаризации</value>
   </data>
 </root>

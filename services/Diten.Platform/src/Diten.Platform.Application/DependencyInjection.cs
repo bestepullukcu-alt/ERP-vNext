@@ -328,6 +328,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         // WP-PLATFORM-AUDIT-INTX-01 — the in-transaction audit door: what handlers get as ITransactionalAuditOutboxWriter.
         services.AddScoped<ITransactionalAuditOutboxWriter, CanonicalTransactionalAuditOutboxWriter>();
+        // MOD-0040-FU02 (K-10) — the same door for a refused request's record, in its own short transaction.
+        services.AddScoped<ITransactionalAuditRefusalWriter, CanonicalTransactionalAuditOutboxWriter>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
         // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
         services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();

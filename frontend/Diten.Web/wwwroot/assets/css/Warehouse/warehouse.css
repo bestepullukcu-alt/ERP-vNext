@@ -1,0 +1,70 @@
+/*
+ * MOD-0178 DL-3 — the two S1 warehouse screens (PUTAWAYTASKS, WAREHOUSELOCATIONROLES); DL-6 — the S2 screens (OUTBOUNDSHIPMENTS, PICKTASKS,
+ * PACKINGSTATION) share this one file (pack §11.5: no new CSS file).
+ * Mobile 375 px (pack §8.15, AC-45): an operator confirms on a phone or a tablet — every touch target of the confirm panel is at least
+ * 48 px, the quantity has −/+ buttons and the action bar stays at the bottom. Logical properties only (RTL for ar — localization §5).
+ */
+.wh-touch {
+    min-block-size: 48px;
+    min-inline-size: 48px;
+}
+
+.wh-stepper .form-control.wh-touch {
+    font-size: 1.125rem;
+}
+
+.wh-confirm-panel .offcanvas-body {
+    padding-block-end: 6rem;
+}
+
+.wh-action-bar {
+    position: sticky;
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 2;
+}
+
+.wh-locked-option {
+    opacity: 0.75;
+}
+
+.wh-locked-option .bx-lock-alt,
+.wh-unknown-option .bx-error {
+    margin-inline-end: 0.25rem;
+}
+
+.wh-menu-reason {
+    display: block;
+    font-size: 0.75rem;
+    white-space: normal;
+}
+
+@media (max-width: 575.98px) {
+    .wh-confirm-panel.offcanvas-end {
+        inline-size: 100%;
+    }
+}
+
+/*
+ * DL-6 — S2 (pack §11.5, AC-45 for the new screens; DL-3 CT findings F-7 / F-8).
+ * F-7: every panel's close × carries .wh-touch (≥ 48 × 48 px through the rule above) — markup, no extra rule.
+ * F-8: at 375 px a row menu entry with its reason ("Kalanı Kapat — …") was wider than the screen and was cut on the right; the menu is capped to the
+ * viewport and its entries wrap, so Popper can keep it inside the screen.
+ */
+.wh-list .dropdown-menu {
+    max-inline-size: calc(100vw - 2rem);
+}
+
+.wh-list .dropdown-menu .dropdown-item {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* The outbound Details' status menu sits after the content and stays at the bottom of the screen while it scrolls (AC-45). */
+.wh-details-actions {
+    margin-block-start: 1.5rem;
+}
+
+.wh-details-actions:empty {
+    display: none;
+}

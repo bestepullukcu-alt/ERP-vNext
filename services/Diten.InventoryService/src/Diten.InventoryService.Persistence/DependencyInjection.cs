@@ -40,6 +40,10 @@ public static class DependencyInjection
         // MOD-0177 R3 (CT-R12): the default "no lot under recall" for the FEFO candidate read; AddRecall replaces it.
         services.TryAddScoped<Application.Features.Recall.Ports.IRecallLotStatusReader, Application.Features.Recall.Ports.NoRecallLotStatusReader>();
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
+        // MOD-0173-FU03 §8.2: the lot rule of a scoped reservation, on the in-process lot master.
+        services.AddScoped<Application.Features.Inventory.Ports.IReservationLotRule, ReservationLotRule>();
+        // MOD-0173-FU03 §8.5 (DL-3, Q-01 = A): the reserved quantity per lot — the FEFO hook's free base.
+        services.AddScoped<Application.Features.Inventory.Ports.ILotReservationReader, LotReservationReader>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
         // WP-0173-PM2 (INVENTORY-BUNDLE 1.1.0 getStockPresence): tenant-wide presence read + its access audit.

@@ -164,6 +164,47 @@ public sealed class QuarantineSweeperOptions
     public bool RetestSweeperEnabled { get; set; } = true;
 
     public int RetestSweepIntervalSeconds { get; set; } = 900;
+
+    /// <summary>MOD-0175-FU01 §8.2: the source-reversal sweeper (<see cref="QuarantineSourceReversalSweeperHostedService"/>).</summary>
+    public bool SourceReversalSweeperEnabled { get; set; } = true;
+
+    public int SourceReversalSweepIntervalSeconds { get; set; } = 300;
+
+    /// <summary>REVERSALs younger than this are left to the post-commit observer.</summary>
+    public int SourceReversalSettleSeconds { get; set; } = 60;
+
+    /// <summary>Records read per feed, per collection, per round (the cursor moves on; N records are all read in ⌈N / size⌉ rounds).</summary>
+    public int SourceReversalPageSize { get; set; } = 500;
+
+    /// <summary>The void feed only (r4): how long a voided record with a voided decision is watched for a line posted after the close.</summary>
+    public int SourceReversalVoidedWatchHours { get; set; } = 72;
+}
+
+/// <summary>
+/// MOD-0175-FU01 §8.2 — READ-ONLY: the REVERSALs of a sweep page's source movements, one query per Tenant + company group on the
+/// prefix of <c>ux_tenant_le_reversestransactionid</c>; there is no cross-tenant ledger query. Only <c>Find</c>.
+/// </summary>
+public sealed class QuarantineReversalReads
+{
+    private readonly IMongoCollection<InventoryTransaction> _transactions;
+
+    public QuarantineReversalReads(IMongoDatabase database)
+        => _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
+
+    /// <summary>The query (AC-15 (d) explains it): tenant, company, the reversed ids, committed before the settle line.</summary>
+    public static FilterDefinition<InventoryTransaction> ReversalsOf(Guid tenantId, Guid legalEntityId, IReadOnlyCollection<Guid> sourceMovementIds, DateTimeOffset before)
+    {
+        var f = Builders<InventoryTransaction>.Filter;
+        return f.Eq(x => x.TenantId, tenantId) & f.Eq(x => x.LegalEntityId, legalEntityId)
+               & f.In(x => x.ReversesTransactionId, sourceMovementIds.Select(id => (Guid?)id)) & f.Type(x => x.ReversesTransactionId, MongoDB.Bson.BsonType.String)
+               & f.Eq(x => x.IsDeleted, false) & f.Lt(x => x.CreatedAt, before);
+    }
+
+    public async Task<IReadOnlyList<InventoryTransaction>> ReversalsOfAsync(
+        Guid tenantId, Guid legalEntityId, IReadOnlyCollection<Guid> sourceMovementIds, DateTimeOffset before, CancellationToken cancellationToken = default)
+        => sourceMovementIds.Count == 0
+            ? []
+            : await _transactions.Find(ReversalsOf(tenantId, legalEntityId, sourceMovementIds, before)).ToListAsync(cancellationToken);
 }
 
 /// <summary>

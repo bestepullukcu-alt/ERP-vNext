@@ -107,6 +107,8 @@
   <data name="ActionVerb_Change" xml:space="preserve"><value>Değiştir</value></data>
   <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Markayı Değiştir</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Durumu Değiştir</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ActionVerb_Comment" xml:space="preserve"><value>Yorum Yap</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Kesinleştir</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Yapılandır</value></data>
   <data name="ActionVerb_Confirm" xml:space="preserve"><value>Teyit Et</value></data>
@@ -194,10 +196,4 @@
     <value>Rol bu izne zaten sahip. Sayfayı yenileyin.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Bu izni kaldırmak, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
-  <data name="ActionVerb_Close" xml:space="preserve">
-    <value>Kapat</value>
-  </data>
-  <data name="ActionVerb_Comment" xml:space="preserve">
-    <value>Yorum yap</value>
-  </data>
 </root>

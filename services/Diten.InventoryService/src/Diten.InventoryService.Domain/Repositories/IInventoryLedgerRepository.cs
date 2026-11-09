@@ -20,6 +20,12 @@ public interface IInventoryLedgerRepository
     Task<bool> IsReversedAsync(Guid transactionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// MOD-0178 (pack §5, additive read): the REVERSAL of <paramref name="transactionId"/>, if any — the same filter as
+    /// <see cref="IsReversedAsync"/>; a transaction has at most one reversal (unique index).
+    /// </summary>
+    Task<InventoryTransaction?> FindReversalOfAsync(Guid transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Atomically: assigns the transaction number, applies every leg under its coverage condition, inserts the
     /// transaction (with its result snapshot), the audit record and the Pending outbox event — one Mongo
     /// transaction, no partial success.

@@ -7,17 +7,79 @@
  */
 'use strict';
 
+/**
+ * MOD-0177-FU01 (pack §8.8) — the customer of the case page, the PURE part (no DOM; the Node test runs it against THIS file): a customer is
+ * shown as "{name} · {code}" or as its state, never as its CRM key; a row without a CRM id keeps its label and a badge; a customer whose name
+ * cannot be read now (Unresolved) or may not be read (Forbidden) takes no command; customer names come in pages of 25 (the service's order).
+ */
+var RecallCustomerView = (function () {
+    const PAGE = 25;
+    const GUID = /^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*$/i;
+    const BASE = { Unresolved: 'Recall.Customer.Unresolved', NotFound: 'Recall.Customer.NotFound', Forbidden: 'Recall.Customer.Forbidden' };
+
+    /** The visible text; <c>fallback</c> (an old label) only when there is no display and it is not a GUID. */
+    const text = (c, t, fallback) => {
+        if (!c) return fallback && !GUID.test(fallback) ? fallback : '';
+        if (c.state === 'Resolved') return t('Recall.Customer.NameCode', c.name, c.code);
+        if (c.state === 'Deferred') return t('Recall.Customer.Deferred');
+        if (BASE[c.state]) {
+            const parts = [c.shipTo, c.shipmentNumber].filter((p) => p && !GUID.test(p));
+            const distinguisher = parts.length === 2 ? t('Recall.Customer.Distinguisher', parts[0], parts[1]) : parts[0];
+            return distinguisher ? t(BASE[c.state] + 'With', distinguisher) : t(BASE[c.state]);
+        }
+        return GUID.test(c.label || '') ? '' : c.label || '';
+    };
+
+    /** The badge of a row without a CRM id (Legacy / NoCrm) or of a kept CRM row the last re-trace could not confirm; null otherwise. */
+    const badge = (c) => {
+        if (!c) return null;
+        if (c.state === 'Legacy') return { key: 'Recall.Customer.LegacyBadge', hint: 'Recall.Customer.LegacyHint' };
+        if (c.state === 'NoCrm') return { key: 'Recall.Customer.NoCrmBadge', hint: c.source === 'Manual' ? 'Recall.Customer.ManualHint' : 'Recall.Customer.NoCrmHint' };
+        return c.source === 'Crm' && c.noCrmWarning ? { key: 'Recall.Customer.NoCrmBadge', hint: 'Recall.Customer.NoCrmHint' } : null;
+    };
+
+    /** Why the record commands are closed for this customer (the text drawn instead of them), or null when they are open. */
+    const blocked = (c) => (c?.state === 'Unresolved' ? 'Recall.Customer.CrmUnavailable' : c?.state === 'Forbidden' ? 'Recall.Customer.CrmForbidden' : null);
+
+    /** The distinct customer keys, ordinal (JS sort = UTF-16 code units — the service's order). */
+    const keys = (refs) => [...new Set(refs.filter(Boolean))].sort();
+
+    /** The rows of the requested customer page. */
+    const slice = (rows, page) => {
+        const inPage = new Set(keys(rows.map((r) => r.customerRef)).slice((page - 1) * PAGE, page * PAGE));
+        return rows.filter((r) => inPage.has(r.customerRef));
+    };
+
+    const pager = (total, page) => ({ show: total > PAGE, from: Math.min((page - 1) * PAGE + 1, total), to: Math.min(page * PAGE, total), total,
+        prev: page > 1, next: page * PAGE < total });
+
+    /** The return-link choice of a page: the customers that take a command, and the notes of those that do not. */
+    const linkChoice = (rows, page, t) => {
+        const own = slice(rows, page);
+        return {
+            options: own.filter((r) => !blocked(r.customer)).map((r) => ({ value: r.customerRef, text: text(r.customer, t, r.label) })),
+            notes: keys(own.map((r) => blocked(r.customer)))
+        };
+    };
+
+    return { PAGE, text, badge, blocked, keys, slice, pager, linkChoice };
+})();
+
+if (typeof window !== 'undefined') window.RecallCustomerView = RecallCustomerView;
+
 (function () {
     if (typeof document === 'undefined' || !window.RecallUi || !window.RecallCaseView || !window.RecallCaseDecision) return;
     const ui = window.RecallUi;
     const view = window.RecallCaseView;
     const decision = window.RecallCaseDecision;
+    const cv = window.RecallCustomerView;
     const { t, esc, byId } = ui;
     const root = byId('rc-case');
     if (!root) return;
     const caseId = root.dataset.caseId;
     const me = root.dataset.userId;
-    const state = { detail: null, offers: {}, loaded: {}, data: {}, selected: new Set(), diff: null, dialog: null, pendingReason: null, row: null };
+    const state = { detail: null, offers: {}, loaded: {}, data: {}, selected: new Set(), diff: null, dialog: null, pendingReason: null, row: null,
+        pages: { scope: 1, diff: 1, customers: 1, returns: 1, effectiveness: 1 } };
 
     // ── calls ─────────────────────────────────────────────────────────────────────────────────────────────────────
     const antiforgery = () => document.querySelector('#rc-antiforgery input[name="__RequestVerificationToken"]')?.value || '';
@@ -38,6 +100,9 @@
         sign: (subject) => (window.ESign?.open ? window.ESign.open(subject) : Promise.resolve(null))
     };
     const read = async (part, query = '') => {
+        // MOD-0177-FU01: the parts that carry customers ask for their customer page (the CRM names of that 25-customer slice)
+        const page = state.pages[part];
+        if (page > 1) query += `&customerPage=${page}`;
         const reply = await ui.get(`/Recall/data/cases/${encodeURIComponent(caseId)}${part ? `?part=${part}${query}` : ''}`);
         if (reply.ok && reply.json?.labelsAvailable === false) byId('rc-labels-unavailable')?.classList.remove('d-none');
         return reply;
@@ -63,6 +128,30 @@
     const modal = (id) => window.bootstrap.Modal.getOrCreateInstance(byId(id));
     const toast = (text) => window.showToast?.(text, 'success');
     const fail = (box, reply, kind) => { if (box) { box.textContent = sentence(reply, kind); box.classList.remove('d-none'); } };
+
+    // ── MOD-0177-FU01: the customer cell and the customer page selector ─────────────────────────────────────────────
+    const customerBadge = (c) => {
+        const b = cv.badge(c);
+        return b ? ` <span class="badge bg-label-warning" data-customer-badge="${esc(b.key)}" title="${esc(t(b.hint))}">${esc(t(b.key))}</span>` : '';
+    };
+    /** The selector of a part's customer page, drawn before / after <c>anchor</c> once there are more than 25 customers. */
+    const drawPager = (id, anchor, after, total, part, reload) => {
+        let box = byId(id);
+        if (!box) {
+            box = document.createElement('div');
+            box.id = id;
+            box.className = 'd-flex align-items-center gap-2 small my-2';
+            anchor.parentElement.insertBefore(box, after ? anchor.nextSibling : anchor);
+        }
+        const p = cv.pager(total, state.pages[part]);
+        box.classList.toggle('d-none', !p.show);
+        box.innerHTML = p.show
+            ? `<span>${esc(t('Recall.Customer.NamesPage', p.from, p.to, p.total))}</span>`
+              + `<button type="button" class="btn btn-xs btn-label-secondary" data-cpage="-1" ${p.prev ? '' : 'disabled'}>${esc(t('Recall.Customer.PagePrev'))}</button>`
+              + `<button type="button" class="btn btn-xs btn-label-secondary" data-cpage="1" ${p.next ? '' : 'disabled'}>${esc(t('Recall.Customer.PageNext'))}</button>`
+            : '';
+        box.querySelectorAll('[data-cpage]').forEach((b) => b.addEventListener('click', () => { state.pages[part] += Number(b.dataset.cpage); reload(); }));
+    };
 
     // ── the case head, steps, buttons ─────────────────────────────────────────────────────────────────────────────
     const drawHead = (c) => {
@@ -132,7 +221,7 @@
             : state.detail?.approvedScope ? t('Recall.Scope.LockedHint') : t('Recall.Scope.PendingHint');
         const editable = scope.editable && state.offers.mark;
         const rows = view.treeOrder(items).map(({ item: i, depth }) => {
-            const place = i.kind === 'Shipment' ? esc(i.customerRef || '') : esc([i.warehouseLabel, i.locationLabel].filter(Boolean).join(' · '));
+            const place = i.kind === 'Shipment' ? esc(cv.text(i.customer, t)) + customerBadge(i.customer) : esc([i.warehouseLabel, i.locationLabel].filter(Boolean).join(' · '));
             const quantity = i.quantity == null ? '' : qty(i.quantity, i.baseUomId);
             const markable = editable && !i.isRoot; // the root stays; excluding an item excludes its subtree (CT-R6, the server's rule)
             const markCell = i.isRoot
@@ -147,11 +236,18 @@
                 + `<td>${ui.productCell(i, i.lot?.lotNumber)}</td><td class="small">${place}</td><td class="text-end">${quantity}</td><td>${markCell}</td></tr>`;
         });
         byId('rc-scope-table').querySelector('tbody').innerHTML = rows.join('') || `<tr><td colspan="5" class="text-muted">${esc(t('Recall.Common.None'))}</td></tr>`;
+        drawPager('rc-scope-cpager', byId('rc-scope-table'), false, cv.keys(items.filter((i) => i.kind === 'Shipment').map((i) => i.customerRef)).length, 'scope', loaders.scope);
         byId('rc-scope-table').querySelectorAll('[data-mark]').forEach((box) => box.addEventListener('change', () => {
             const reason = byId('rc-scope-table').querySelector(`[data-reason="${CSS.escape(box.dataset.mark)}"]`);
             show(reason, !box.checked);
             box.nextElementSibling.textContent = t(box.checked ? 'Recall.Scope.Included' : 'Recall.Scope.Excluded');
         }));
+    };
+
+    /** The live diff (getCaseScopeDiff) of the current customer page. */
+    const rescanDiff = async () => {
+        const r = await read('diff');
+        if (r.ok) drawDiff(r.json.data); else ui.showError(byId('rc-error'), sentence(r));
     };
 
     const drawDiff = (diff) => {
@@ -162,11 +258,12 @@
         if (added.length > 0) {
             html += `<p class="small mb-1">${esc(t('Recall.Scope.DiffFound', added.length))}</p><ul class="list-unstyled small mb-2">`
                 + added.map((n) => `<li class="bg-label-warning rounded px-2 py-1 mb-1">${state.offers.revise ? `<input class="form-check-input me-2" type="checkbox" checked data-add="${esc(n.nodeKey)}">` : ''}`
-                    + `${esc(t('Recall.Kind.' + n.kind) || n.kind)} · ${esc(n.lot?.lotNumber || '')} ${n.quantity != null ? '· ' + qty(n.quantity, n.baseUomId) : ''} ${n.customerRef ? '· ' + esc(n.customerRef) : ''}</li>`).join('')
+                    + `${esc(t('Recall.Kind.' + n.kind) || n.kind)} · ${esc(n.lot?.lotNumber || '')} ${n.quantity != null ? '· ' + qty(n.quantity, n.baseUomId) : ''} ${n.customer ? '· ' + esc(cv.text(n.customer, t)) : ''}</li>`).join('')
                 + '</ul>';
         }
         if (removed.length > 0) html += `<p class="small text-muted mb-0">${esc(t('Recall.Scope.DiffRemoved', removed.length))}</p>`;
         byId('rc-diff-body').innerHTML = html;
+        drawPager('rc-diff-cpager', byId('rc-diff-body'), false, cv.keys(added.filter((n) => n.kind === 'Shipment').map((n) => n.customerRef)).length, 'diff', rescanDiff);
         show(byId('rc-diff'), true);
         show(byId('rc-revise-box'), state.offers.revise && added.length > 0);
     };
@@ -230,7 +327,8 @@
         state.data.customers = rows;
         const notified = rows.filter((r) => r.notification).length;
         byId('rc-cust-summary').textContent = t('Recall.Cust.Summary', notified, rows.length);
-        const body = rows.flatMap((r) => r.shipments.map((s, i) => {
+        // MOD-0177-FU01: the tab draws the requested customer page only (its CRM names are the ones the service read)
+        const body = cv.slice(rows, state.pages.customers).flatMap((r) => r.shipments.map((s, i) => {
             const eff = view.customerRows(effectiveness, r.customerRef).find((e) => e.skuId === s.item?.skuId && e.baseUomId === s.baseUomId);
             const doc = (s.movements || []).map((m) => `${esc(m.number || m.transactionId)} · ${esc(ui.date(m.postingDate))}`).join('<br>') || esc(s.sourceDocumentId || '');
             const first = i === 0;
@@ -240,28 +338,33 @@
                 ? `<span class="badge ${n ? 'bg-label-success' : 'bg-label-danger'}">${esc(t(n ? 'Recall.Cust.Notified' : 'Recall.Cust.NotNotified'))}</span>`
                   + (n ? `<div class="small text-muted">${esc(ui.date(n.notifiedOn))} · ${esc(t('Recall.Channel.' + n.channel))}${n.note ? ' · ' + esc(n.note) : ''}</div>` : '')
                   + (consumed > 0 ? `<div class="small text-muted">${esc(t('Recall.Cust.Consumed', ui.qty(consumed)))}</div>` : '')
-                  + `<div class="d-flex flex-wrap gap-1 mt-1">`
-                  + (state.offers.notify && byId('rc-notify-modal') ? `<button type="button" class="btn btn-sm btn-label-primary py-0" data-notify="${esc(r.customerRef)}">${esc(t('Recall.Cust.Mark'))}</button>` : '')
-                  + (state.offers.consume && byId('rc-consume-modal') ? `<button type="button" class="btn btn-sm btn-label-secondary py-0" data-consume="${esc(r.customerRef)}">${esc(t('Recall.Cust.Consumption'))}</button>` : '')
-                  + '</div>'
+                  + (cv.blocked(r.customer)
+                      // MOD-0177-FU01 (F-1, F-2@fbafd3af): no record on a customer whose CRM name cannot be read now / may not be read
+                      ? `<div class="small text-warning mt-1" data-customer-blocked="${esc(cv.blocked(r.customer))}">${esc(t(cv.blocked(r.customer)))}</div>`
+                      : `<div class="d-flex flex-wrap gap-1 mt-1">`
+                        + (state.offers.notify && byId('rc-notify-modal') ? `<button type="button" class="btn btn-sm btn-label-primary py-0" data-notify="${esc(r.customerRef)}">${esc(t('Recall.Cust.Mark'))}</button>` : '')
+                        + (state.offers.consume && byId('rc-consume-modal') ? `<button type="button" class="btn btn-sm btn-label-secondary py-0" data-consume="${esc(r.customerRef)}">${esc(t('Recall.Cust.Consumption'))}</button>` : '')
+                        + '</div>')
                 : '';
-            return `<tr><td>${first ? `<span class="fw-medium text-heading">${esc(r.label || r.customerRef)}</span><div class="small text-muted font-monospace">${esc(r.customerRef)}</div>` : ''}</td>`
+            return `<tr><td>${first ? `<span class="fw-medium text-heading">${esc(cv.text(r.customer, t, r.label))}</span>${customerBadge(r.customer)}` : ''}</td>`
                 + `<td class="small">${doc}<div class="text-muted">${product(s)} · <span class="font-monospace">${esc(s.lot?.lotNumber || '')}</span></div></td><td class="small">${delivery(s)}</td>`
                 + `<td class="text-end">${qty(s.quantity, s.baseUomId)}</td><td class="text-end">${eff ? qty(eff.returned, eff.baseUomId) : '—'}</td><td class="text-end">${eff ? qty(eff.open, eff.baseUomId) : '—'}</td><td>${noteCell}</td></tr>`;
         }));
         byId('rc-cust-table').querySelector('tbody').innerHTML = body.join('') || `<tr><td colspan="7" class="text-muted">${esc(t('Recall.Cust.Empty'))}</td></tr>`;
+        drawPager('rc-cust-cpager', byId('rc-cust-table'), true, cv.keys(rows.map((r) => r.customerRef)).length, 'customers', loaders.customers);
         byId('rc-cust-table').querySelectorAll('[data-notify]').forEach((b) => b.addEventListener('click', () => openNotify(rows.find((r) => r.customerRef === b.dataset.notify))));
         byId('rc-cust-table').querySelectorAll('[data-consume]').forEach((b) => b.addEventListener('click', () => openConsume(rows.find((r) => r.customerRef === b.dataset.consume))));
     };
 
     const drawReturns = (returns) => {
         const links = returns.links || [];
-        byId('rc-ret-links').querySelector('tbody').innerHTML = links.map((l) => `<tr><td class="font-monospace small">${esc(l.transactionNumber || l.transactionId)}</td><td class="small">${esc(l.customerRef)}</td>`
+        byId('rc-ret-links').querySelector('tbody').innerHTML = links.map((l) => `<tr><td class="font-monospace small">${esc(l.transactionNumber || l.transactionId)}</td><td class="small">${esc(cv.text(l.customer, t))}</td>`
             + `<td class="font-monospace small">${esc(l.lot?.lotNumber || '')}</td><td class="text-end">${qty(l.quantity, l.baseUomId)}</td><td class="small">${esc(ui.date(l.postedAtUtc))}</td>`
             + `<td><span class="badge bg-label-info">${esc(t('Recall.Ret.Source.' + l.source))}</span></td>`
             // D-28 (RECALL 1.7.0): the hold MOD-0175 opened for THIS movement → its quarantine record page; none → "—" (never another hold)
             + `<td>${l.holdId ? `<a href="/Quarantine/Details/${encodeURIComponent(l.holdId)}" class="font-monospace small">${esc(l.holdNumber || l.holdId)} →</a>` : '—'}</td></tr>`).join('')
             || `<tr><td colspan="7" class="text-muted">${esc(t('Recall.Ret.Empty'))}</td></tr>`;
+        drawPager('rc-ret-cpager', byId('rc-ret-links'), false, cv.keys(links.map((l) => l.customerRef)).length, 'returns', loaders.returns);
         const candidates = returns.candidates || [];
         byId('rc-ret-candidates').querySelector('tbody').innerHTML = candidates.map((c) => {
             const button = c.eligible && state.offers.link && byId('rc-link-modal')
@@ -284,10 +387,11 @@
             + `<div class="small">${esc(t('Recall.Eff.Shipped'))} ${qty(x.shipped)} − ${esc(t('Recall.Eff.Returned'))} ${qty(x.returned)} − ${esc(t('Recall.Eff.Consumed'))} ${qty(x.consumed)} = <strong>${esc(t('Recall.Eff.Open'))} ${qty(x.open, x.baseUomId)}</strong></div>`
             + `<div class="d-flex align-items-center gap-2 mt-2"><h5 class="mb-0">${esc(percent(x.percent))}</h5><span class="badge ${x.met ? 'bg-label-success' : 'bg-label-danger'}">${esc(t(x.met ? 'Recall.Eff.Met' : 'Recall.Eff.NotMet'))}</span><small class="text-muted">${esc(target)}</small></div>`
             + '</div></div></div>').join('') || `<div class="col-12 text-muted small">${esc(t('Recall.Eff.Empty'))}</div>`;
-        byId('rc-eff-table').querySelector('tbody').innerHTML = (eff.rows || []).map((r) => `<tr><td class="small">${esc(r.customerRef)}${r.notified ? '' : ` <span class="badge bg-label-danger">${esc(t('Recall.Cust.NotNotified'))}</span>`}</td>`
+        byId('rc-eff-table').querySelector('tbody').innerHTML = (eff.rows || []).map((r) => `<tr><td class="small">${esc(cv.text(r.customer, t))}${r.notified ? '' : ` <span class="badge bg-label-danger">${esc(t('Recall.Cust.NotNotified'))}</span>`}</td>`
             + `<td class="text-end">${qty(r.shipped, r.baseUomId)}</td><td class="text-end">${qty(r.returned)}</td><td class="text-end">${qty(r.consumed)}</td><td class="text-end">${qty(r.open)}</td>`
             + `<td><span class="badge ${r.met ? 'bg-label-success' : 'bg-label-warning'}">${esc(percent(r.percent))}</span></td></tr>`).join('')
             || `<tr><td colspan="6" class="text-muted">${esc(t('Recall.Eff.Empty'))}</td></tr>`;
+        drawPager('rc-eff-cpager', byId('rc-eff-table'), false, cv.keys((eff.rows || []).map((r) => r.customerRef)).length, 'effectiveness', loaders.effectiveness);
     };
 
     const drawTimeline = (page) => {
@@ -360,7 +464,7 @@
 
     const openNotify = (row) => {
         state.row = row;
-        byId('rc-notify-customer').textContent = row.label || row.customerRef;
+        byId('rc-notify-customer').textContent = cv.text(row.customer, t, row.label);
         byId('rc-notify-date').value = new Date().toISOString().slice(0, 10);
         byId('rc-notify-note').value = '';
         ui.hideError(byId('rc-notify-error'));
@@ -377,7 +481,7 @@
 
     const openConsume = (row) => {
         state.row = row;
-        byId('rc-consume-customer').textContent = row.label || row.customerRef;
+        byId('rc-consume-customer').textContent = cv.text(row.customer, t, row.label);
         const select = byId('rc-consume-sku');
         select.replaceChildren(...row.shipments.filter((s, i, all) => all.findIndex((x) => x.item?.skuId === s.item?.skuId && x.baseUomId === s.baseUomId) === i)
             .map((s) => { const o = new Option(`${s.itemLabel || s.item?.itemId} · ${s.baseUomId}`, s.item?.skuId); o.dataset.level = s.item?.skuLevel; o.dataset.unit = s.baseUomId; return o; }));
@@ -402,14 +506,41 @@
         byId('rc-link-movement').textContent = `${candidate.transactionNumber || candidate.transactionId} · ${candidate.lot?.lotNumber || ''} · ${ui.qty(candidate.quantity)} ${candidate.baseUomId}`;
         const customers = state.data.customers || (await read('customers')).json?.data || [];
         state.data.customers = customers;
-        byId('rc-link-customer').replaceChildren(...customers.map((c) => new Option(c.label || c.customerRef, c.customerRef)));
-        // WP-MVP1-FIX-LIVE2 (finding 7): no customer in the scope → say why; the fields and the bind button are not drawn (not merely disabled)
-        const none = view.linkable(customers) === false;
-        ['rc-link-fields', 'rc-link-reference-box', 'rc-link-submit'].forEach((id) => byId(id)?.classList.toggle('d-none', none));
-        byId('rc-link-none')?.classList.toggle('d-none', !none);
+        drawLinkChoice(customers);
         byId('rc-link-reference').value = '';
         ui.hideError(byId('rc-link-error'));
         modal('rc-link-modal').show();
+    };
+    /**
+     * The customers of the link dialog: the current customer page, without the ones that take no command (Unresolved / Forbidden) — their
+     * reason is said in the dialog; with no option left the fields and the bind button are not drawn (WP-MVP1-FIX-LIVE2 finding 7 pattern).
+     */
+    const drawLinkChoice = (customers) => {
+        const choice = cv.linkChoice(customers, state.pages.customers, t);
+        byId('rc-link-customer').replaceChildren(...choice.options.map((o) => new Option(o.text, o.value)));
+        const fields = byId('rc-link-fields');
+        let note = byId('rc-link-crm-note');
+        if (!note && fields) {
+            note = document.createElement('div');
+            note.id = 'rc-link-crm-note';
+            note.className = 'small text-warning mb-2';
+            fields.parentElement.insertBefore(note, fields);
+        }
+        if (note) {
+            note.textContent = choice.notes.map((k) => t(k)).join(' ');
+            note.classList.toggle('d-none', choice.notes.length === 0);
+        }
+        if (fields) {
+            drawPager('rc-link-cpager', note || fields, false, cv.keys(customers.map((c) => c.customerRef)).length, 'customers', async () => {
+                const reply = await read('customers');
+                if (reply.ok) { state.data.customers = reply.json?.data || []; drawLinkChoice(state.data.customers); }
+            });
+        }
+        const none = view.linkable(customers) === false;
+        ['rc-link-fields', 'rc-link-reference-box', 'rc-link-submit'].forEach((id) => byId(id)?.classList.toggle('d-none', none));
+        byId('rc-link-none')?.classList.toggle('d-none', !none);
+        // MOD-0177-FU01: customers in the case, but none of this page takes a command (Unresolved / Forbidden) — not drawn either
+        if (choice.options.length === 0) ['rc-link-fields', 'rc-link-reference-box', 'rc-link-submit'].forEach((id) => byId(id)?.classList.add('d-none'));
     };
     byId('rc-link-form')?.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -522,10 +653,7 @@
     on('eff-start', () => run(() => decision.command(deps, caseId, 'effectiveness/start', {}, state.detail.version), 'effectiveness'));
     on('eff-complete', () => openDecision('complete'));
     on('close', () => openDecision('close'));
-    on('rescan', async () => {
-        const r = await read('diff');
-        if (r.ok) drawDiff(r.json.data); else ui.showError(byId('rc-error'), sentence(r));
-    });
+    on('rescan', () => { state.pages.diff = 1; return rescanDiff(); });
     on('revise', () => {
         const addNodeKeys = [...document.querySelectorAll('#rc-diff [data-add]:checked')].map((b) => b.dataset.add);
         const reason = byId('rc-revise-reason').value.trim();
