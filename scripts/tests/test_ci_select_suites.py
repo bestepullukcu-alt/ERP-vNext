@@ -125,14 +125,14 @@ class GlobMatching(unittest.TestCase):
             ("services/A/**", "services/A/x/y/z.cs", True),
             ("services/A/**", "services/AB/z.cs", False),
             ("**/*.md", "README.md", True),
-            ("**/*.md", "docs/a/b/c.md", True),
-            ("**/*.md", "docs/a/b/c.mdx", False),
+            ("**/*.md", "docs/reference/a/c.md", True),
+            ("**/*.md", "docs/reference/a/c.mdx", False),
             ("**/appsettings*.json", "appsettings.json", True),
             ("**/appsettings*.json", "gateway/G/appsettings.Development.json", True),
             ("**/appsettings*.json", "gateway/G/appsettings/x.json", False),
             ("docs/**/supplier.openapi.yaml", "docs/supplier.openapi.yaml", True),
-            ("docs/**/supplier.openapi.yaml", "docs/a/b/supplier.openapi.yaml", True),
-            ("docs/**/supplier.openapi.yaml", "docs/a/xsupplier.openapi.yaml", False),
+            ("docs/**/supplier.openapi.yaml", "docs/reference/b/supplier.openapi.yaml", True),
+            ("docs/**/supplier.openapi.yaml", "docs/reference/xsupplier.openapi.yaml", False),
             ("scripts/test-env/mod0188-ci-mongo.sh", "scripts/test-env/mod0188-ci-mongo.sh", True),
             ("scripts/test-env/mod0188-ci-mongo.sh", "scripts/test-env/mod0188-ci-mongo.sh.bak", False),
             ("**/Dockerfile.*", "a/Dockerfile.api", True),
@@ -164,7 +164,7 @@ class Selection(unittest.TestCase):
 
     def test_runtime_reads_select_their_suite(self):
         self.assertEqual(["procurement-api"], select("execution/domains/procurement/module-packs/x/pack.yaml")["selected"])
-        self.assertIn("procurement-api", select("docs/analysis/other/supplier.openapi.yaml")["selected"])
+        self.assertIn("procurement-api", select("docs/reference/other/supplier.openapi.yaml")["selected"])
         self.assertIn("planning-tests", select("scripts/test-env/mod0188-ci-mongo.sh")["selected"])
         self.assertIn("auth-scr", select("scripts/dev/setup-service-trust.sh")["selected"])
         self.assertIn("pvg-api", select("tools/x/appsettings.Production.json")["selected"])
@@ -297,7 +297,7 @@ class ReviewFindings20261109(unittest.TestCase):
     """Dependencies found by the independent review of 2026-11-09 stay mapped."""
 
     def test_esign_contract_selects_platform_app(self):
-        self.assertIn("platform-app", select("docs/analysis/contracts/esign.openapi.yaml")["selected"])
+        self.assertIn("platform-app", select("docs/reference/x/esign.openapi.yaml")["selected"])
 
     def test_decision_records_select_pvg_api(self):
         self.assertIn("pvg-api", select("docs/records/decisions/2026-11/x.md")["selected"])
