@@ -1,7 +1,8 @@
 # MOCKUP BRIEF — MOD-0181 Sayım (Cycle Counting)
 
 > Tarih: 2026-11-06 · Hazırlayan: MVP-5 CT. Kaynak: `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md`
-> (r4, taslak; §4, §8.2–§8.5, §8.13, §25).
+> (r4, taslak; §4, §8.2–§8.5, §8.13, §25). **2026-11-09 güncellemesi:** pack r7 (ready-for-dev, onaylı) ile çelişen barkod ve yetkisiz
+> ekran maddeleri düzeltildi; kör sayım, seri satır ve izin kuralları eklendi (mockup r1 incelemesi).
 > **Mockup yapana not:** Görsel tasarım dili senin kararın. Aşağıdakiler amaç, içerik ve kurallardır. Mevcut ürün düzenine (sol menü, üst
 > çubuk, kart yapısı, açık / koyu tema) ve depo ekranlarının bugünkü görünümüne (Yerleştirme Görevleri, Lokasyon Rolleri) uy. Paket henüz
 > onaylanmadı; mockup kuralları değiştirmez, kural ile ekran çelişirse kural kazanır ve çelişkiyi not düş.
@@ -50,8 +51,8 @@
 - Raf raf gruplanmış satırlar. Satır: raf kodu, ürün (ad + kod), lot (lotlu üründe zorunlu), birim, **beklenen** (kör sayımda **gösterilmez**),
   **sayılan** (giriş), durum (Açık / Sayıldı).
 - **Miktar girişi:** büyük sayı alanı + −/+ düğmeleri; dokunma hedefleri en az 48 × 48 px; onay düğmesi ekranın altında sabit çubukta.
-- **Barkod:** üstte okutma alanı (USB / Bluetooth okuyucu klavye gibi yazar; kamera ile okutma ileride MOD-0182). Okutulan raf / ürün ilgili
-  satıra götürür. Aynı ürünün tekrar okutulması miktarı artırır ve ekranda görünür; seri numaralı üründe aynı seri iki kez okutulamaz.
+- **Barkod:** ilk sürümde **yok** (pack r7 §2.2; okuyucu ve kamera MOD-0182). Okutma alanı, okutmayla miktar artırma ve seri okutma çizilmez.
+  Miktar elle girilir; seri numaralı üründe elle **tam sayı** (seri listesi girişi ilk sürümde yok, §8.9).
 - **Bulunan stok ekle:** listede olmayan bir ürün / lot rafta bulunduysa yeni satır (beklenen 0). Yalnız sayımın ürün süzgecindeki ürünler;
   lot sistemde kayıtlı olmalı.
 - **Seri numaralı ürün:** satır sayılır ama fark **stok defterine otomatik yazılmaz**; satırda bilgi notu.
@@ -83,7 +84,11 @@
 
 ## 5) DURUMLAR (her ekranda çiz)
 - Boş liste; yükleniyor; hata (servis yok → "Stok servisine ulaşılamadı").
-- Yetkisiz kullanıcı: sayfa görünmez, iskelet çizilmez, yönlendirme yapılmaz.
+- Yetkisiz kullanıcı (UAS-001): sol menü ve üst çubuk kalır; içerik alanında **tek bir açıklama** ve ne yapılacağı ("Yöneticinizden yetki
+  isteyin"). Başlık, kart, tablo, düğme (iskelet) yok, yönlendirme yok, boş ekran ya da yalnız toast yok.
+- Kör sayımda gönderimden **sonra** da beklenen, hareket ve fark yalnız Fark İzi yetkisi (`variances.read`) olana görünür (AC-15).
+- Seri numaralı satır onaylanamaz (ilk sürümde deftere yazılmaz); yalnız Reddet ya da Yeniden say (§8.9, AC-48).
+- Ekranlar rol adına değil izne göre çizilir (§14).
 - Kapanmış / iptal sayım: her şey salt okunur, nedeni yazılı.
 - Çakışma: başka bir kullanıcı aynı satırı değiştirmişse "Kayıt değişti, yenileyin" uyarısı.
 - Kör sayımda beklenen ve fark alanları sayan rolüne gönderimden önce hiç görünmez.
