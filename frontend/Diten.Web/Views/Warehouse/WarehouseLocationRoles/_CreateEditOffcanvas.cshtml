@@ -23,9 +23,12 @@
             <div class="row g-4">
                 <div class="col-12" id="roleLocationBlock">
                     <label for="roleLocation" class="form-label fw-medium">@Localizer["FieldLocation"] <span class="text-danger">*</span></label>
-                    <select id="roleLocation" class="form-select" data-placeholder="@Localizer["LocationPlaceholder"]" required>
-                        <option value=""></option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
+                        <select id="roleLocation" class="form-select" data-placeholder="@Localizer["LocationPlaceholder"]" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback d-block" id="roleLocationError"></div>
                 </div>
 
@@ -65,7 +68,10 @@
 
                 <div class="col-12">
                     <label for="roleNote" class="form-label fw-medium">@Localizer["ColNote"]</label>
-                    <textarea id="roleNote" class="form-control" rows="3" maxlength="1000"></textarea>
+                    <div class="diten-field">
+                        <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="roleNote" class="form-control" rows="3" maxlength="1000"></textarea>
+                    </div>
                 </div>
             </div>
         </form>
