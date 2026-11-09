@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c568a684-57e6-481f-b8d9-2cd209e7bdd7" name="@192 2026-11-09 17:15:01" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-09T17:15:01.7524420+03:00" queuing="2026-11-09T17:15:01.7524420+03:00" start="2026-11-09T17:14:58.4282150+03:00" finish="2026-11-09T17:15:01.7562860+03:00" />
+  <TestSettings name="default" id="cf0ed846-f9ac-4d19-9add-b517c10ec126">
+    <Deployment runDeploymentRoot="_192_2026-11-09_17_15_01" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="da5aa8cf-8cf1-4e4c-a542-7b511c7e0f55" testId="3fad97d8-290e-fd16-c5fc-820e3cfb5fc4" testName="Diten.MdmService.Api.Tests.ProductLegalEntityScopeHostTests.The_api_host_resolves_a_debt_that_keeps_activation_shut" computerName="192" duration="00:00:00.0040029" startTime="2026-11-09T17:15:00.9888430+03:00" endTime="2026-11-09T17:15:00.9888760+03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="da5aa8cf-8cf1-4e4c-a542-7b511c7e0f55" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.MdmService.Api.Tests.ProductLegalEntityScopeHostTests.The_api_host_resolves_a_debt_that_keeps_activation_shut" storage="/users/alitufanoglu/erp-vnext/.claude/worktrees/mdm-ct-02/services/diten.mdmservice/tests/diten.mdmservice.api.tests/bin/debug/net8.0/diten.mdmservice.api.tests.dll" id="3fad97d8-290e-fd16-c5fc-820e3cfb5fc4">
+      <Execution id="da5aa8cf-8cf1-4e4c-a542-7b511c7e0f55" />
+      <TestMethod codeBase="/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/bin/Debug/net8.0/Diten.MdmService.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.MdmService.Api.Tests.ProductLegalEntityScopeHostTests" name="The_api_host_resolves_a_debt_that_keeps_activation_shut" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3fad97d8-290e-fd16-c5fc-820e3cfb5fc4" executionId="da5aa8cf-8cf1-4e4c-a542-7b511c7e0f55" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Bir Listede Olmayan Sonuçlar" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Yüklenen Tüm Sonuçlar" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.22)
+[xUnit.net 00:00:00.10]   Discovering: Diten.MdmService.Api.Tests
+[xUnit.net 00:00:00.24]   Discovered:  Diten.MdmService.Api.Tests
+[xUnit.net 00:00:00.24]   Starting:    Diten.MdmService.Api.Tests
+[xUnit.net 00:00:03.00]   Finished:    Diten.MdmService.Api.Tests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

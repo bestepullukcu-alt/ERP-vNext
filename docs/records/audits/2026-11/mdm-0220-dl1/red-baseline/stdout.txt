@@ -1,0 +1,18 @@
+MDM-0220-DL1 kabul kanıtı · betik execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py (sha256 8df2891e1a7e90033f7926187c28d222ec37ef529eb0bce69d1280b8c3d73e85) · repo HEAD 8c704272afd9559db94fa9c73f6a4169f0504f12 · --out-dir docs/records/audits/2026-11/mdm-0220-dl1/red-baseline
+kapsam: taban YOK · 0 yol · izinli dışı 0 · src [] · tests D/M 0 · TUTMADI
+== testler (taban)
+yük (taban app): 1 dakikalık 11.58 (eşik 12)
+dotnet test (taban app) → docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.trx
+  taban app: dotnet çıkış 1 · 431 / 433 geçti · NotExecuted 0 · kalan: ProductLegalEntityScopeMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts, ProductLegalEntityScopeRolloutMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts
+  taban app: KIRMIZI
+yük (taban api): 1 dakikalık 23.97 (eşik 12)
+yük (taban api): 1 dakikalık 26.17 (eşik 12)
+yük (taban api): 1 dakikalık 52.45 (eşik 12)
+yük (taban api): 1 dakikalık 54.72 (eşik 12)
+yük (taban api): 1 dakikalık 24.92 (eşik 12)
+yük (taban api): 1 dakikalık 14.05 (eşik 12)
+yük (taban api): 1 dakikalık 10.52 (eşik 12)
+dotnet test (taban api) → docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.trx
+  taban api: dotnet çıkış 0 · 1 / 1 geçti · NotExecuted 0 · kalan: yok
+  taban api: KIRMIZI
+çapa ön denetimi: 3 / 7 tamam

@@ -1,0 +1,1911 @@
+{
+ "süzgeç": "FullyQualifiedName~LegalEntity",
+ "projeler": {
+  "app": {
+   "komut": [
+    "DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod",
+    "dotnet",
+    "test",
+    "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+    "-c",
+    "Debug",
+    "--filter",
+    "FullyQualifiedName~LegalEntity",
+    "--logger",
+    "trx;LogFileName=docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.trx"
+   ],
+   "dotnet_çıkış": 1,
+   "süre_sn": 108.6,
+   "trx": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.trx",
+   "günlük": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.log",
+   "trx_okundu": true,
+   "derleme_hatası": false,
+   "toplam": 433,
+   "geçen": 431,
+   "not_executed": 0,
+   "kalan": [
+    "ProductLegalEntityScopeMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts",
+    "ProductLegalEntityScopeRolloutMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts"
+   ],
+   "trx_sayaçları": {
+    "total": "433",
+    "executed": "433",
+    "passed": "431",
+    "failed": "2",
+    "notExecuted": "0"
+   },
+   "testler": [
+    {
+     "ad": "Diten.MdmService.Application.Tests.AuditForwardingBehaviorTests.ArchiveLegalEntity_forwards_deactivate_with_entityId_from_command",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.AuditForwardingBehaviorTests.CreateLegalEntity_forwards_audit_with_entityId_from_response",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.No_action_uses_the_legacy_modules_legalentity_key",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Duplicate_data_property_is_contract_invalid",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Exact_success_contract_maps_bounded_sorted_candidates_without_retry",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.External_plaintext_transport_and_stale_scope_response_fail_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Invalid_pair_or_configuration_fails_before_dispatch",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Non_success_with_empty_errors_or_duplicate_root_property_is_contract_invalid(payload: \"{\\\"data\\\":null,\\\"data\\\":null,\\\"statusCode\\\":503,\\\"\"···)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Non_success_with_empty_errors_or_duplicate_root_property_is_contract_invalid(payload: \"{\\\"data\\\":null,\\\"statusCode\\\":503,\\\"isSuccessful\\\"\"···)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: BadRequest, expected: 400)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: Conflict, expected: 503)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: Forbidden, expected: 403)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: GatewayTimeout, expected: 504)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: ServiceUnavailable, expected: 503)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Provider_failure_is_mapped_once_without_retry(status: Unauthorized, expected: 401)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Response_over_32KiB_redirect_and_transport_failure_fail_closed_without_retry",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Strict_json_rejects_echo_drift_extra_fields_duplicates_unsorted_and_non_json",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Timeout_maps_504_and_caller_cancellation_propagates",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.PlatformTrustedLegalEntityScopeProviderClientTests.Unknown_content_length_stream_over_32KiB_is_rejected",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Bearer_and_dedicated_credential_are_forwarded_but_tenant_scope_headers_and_secrets_are_not_in_body",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Missing_or_invalid_bearer_wins_over_invalid_configuration_and_never_dispatches(authorization: \"\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Missing_or_invalid_bearer_wins_over_invalid_configuration_and_never_dispatches(authorization: \"Basic value\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Missing_or_invalid_bearer_wins_over_invalid_configuration_and_never_dispatches(authorization: \"Bearer \")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Missing_or_multiple_delegated_bearer_fails_before_dispatch",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeDelegatedTokenForwardingTests.Separate_requests_forward_only_their_current_bearer",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderContractTests.Exact_module_and_valid_permission_pair_is_dispatched_once",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderContractTests.Provider_is_authoritative_for_denial_of_an_exact_allowed_pair",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderContractTests.Provider_result_contract_contains_only_bounded_resolution_facts",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderContractTests.Unlisted_or_noncanonical_permission_is_rejected_without_http(permission: \"MDM.global-products.read\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderContractTests.Unlisted_or_noncanonical_permission_is_rejected_without_http(permission: \"mdm.global-products.read \")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderDependencyInjectionTests.Infrastructure_registers_distinct_typed_provider_and_request_scoped_facade_without_secret_defaults",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderDependencyInjectionTests.Options_bind_only_from_the_dedicated_section",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.TrustedLegalEntityScopeProviderDependencyInjectionTests.Typed_client_disables_redirects_and_redacts_all_sensitive_headers",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Activate_promotes_draft_to_active",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Activate_rejects_already_active_legal_entity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Activate_restores_archived_legal_entity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Activate_resumes_suspended_legal_entity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Archive_accepts_active_and_suspended",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Archive_rejects_draft_legal_entity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_payload_does_not_accept_tenant_id",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_persists_new_statutory_fields_and_maps_them_to_the_detail_dto",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_rejects_duplicate_code_in_current_tenant",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_rejects_unknown_parent",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_sets_tenant_server_side_and_starts_in_draft",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Create_succeeds_without_address_and_defaults_role_to_legal_entity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Lookup_dto_exposes_code_and_name_for_the_organization_select",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Suspend_requires_active_state",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Update_WhenLifecycleChangesAfterRead_ReturnsConflictAndDoesNotResurrect",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityCommandTests.Update_maps_fields_and_preserves_operational_status",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.UpdateEditableFieldsAsync_StaleCapturedEditCannotResurrectDeleteAndMakesZeroMutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.UpdateEditableFieldsAsync_StaleCapturedEditCannotResurrectLifecycleInvalidator(invalidatedStatus: Archived)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.UpdateEditableFieldsAsync_StaleCapturedEditCannotResurrectLifecycleInvalidator(invalidatedStatus: Suspended)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.UpdateEditableFieldsAsync_TwoConcurrentEditsFromOneVersionYieldOneSuccessAndOneConflict",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.Update_MissingForeignAndDeletedAreSameNonDisclosing404WithZeroMutation(visibility: \"deleted\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.Update_MissingForeignAndDeletedAreSameNonDisclosing404WithZeroMutation(visibility: \"foreign\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.Update_MissingForeignAndDeletedAreSameNonDisclosing404WithZeroMutation(visibility: \"missing\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityEditableCasMongoTests.Update_NormalEditUpdatesExactEditableSetAndPreservesAllProtectedStateAndUnknownBson",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityL10nContractTests.Every_language_has_full_key_parity_with_english",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityL10nContractTests.New_statutory_keys_exist_and_are_non_empty_in_all_seven_languages",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityL10nContractTests.Non_english_files_are_actually_translated_not_english_copies",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityListFilterTests.Filters_by_country_and_currency",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityListFilterTests.Filters_by_operational_status",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityListFilterTests.IncompleteOnly_returns_below_100_or_null",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityListFilterTests.No_filters_returns_all",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityMongoRoundTripTests.Bounded_batch_is_tenant_soft_delete_and_referenceability_safe",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityMongoRoundTripTests.Create_then_read_back_finds_the_entity_for_its_tenant",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Active_same_tenant_legal_entity_is_referenceable",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Bounded_batch_rejects_noncanonical_input_and_propagates_cancellation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Bounded_batch_returns_only_active_same_tenant_non_deleted_requested_entities",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Cross_tenant_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.In_memory_empty_batch_honors_pre_cancelled_token",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Missing_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Non_active_legal_entity_fails_closed(lifecycleStatus: Archived)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Non_active_legal_entity_fails_closed(lifecycleStatus: Draft)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Soft_deleted_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityUpdateContractTests.EditableCas_UsesExactFieldWhitelistAndNeverDelegatesToWholeDocumentBaseUpdate",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityUpdateContractTests.LegalEntityRepository_ExposesDedicatedEditableVersionCas",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityUpdateContractTests.LegalEntityWriteRequest_ExposesNullableExpectedVersion",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityUpdateContractTests.UpdateHandler_UsesDedicatedCasAndDoesNotUseGenericWholeDocumentUpdate",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Branch_with_parent_passes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Branch_without_parent_fails",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Create_WithExpectedVersion_Fails",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Invalid_registered_address_json_fails(addressJson: \"[]\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Invalid_registered_address_json_fails(addressJson: \"not-json\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Invalid_registered_address_json_fails(addressJson: \"{\\\"line1\\\":\\\"x\\\",\\\"city\\\":\\\"\\\",\\\"country\\\":\\\"TR\\\"}\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Invalid_registered_address_json_fails(addressJson: \"{\\\"line1\\\":\\\"x\\\",\\\"city\\\":\\\"y\\\"}\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Legal_entity_role_does_not_require_parent",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Missing_code_fails",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Omitted_organization_role_passes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Update_WithNegativeExpectedVersion_Fails",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Update_WithoutExpectedVersion_Fails",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityWriteRequestValidatorTests.Valid_request_passes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Declares_clean_slug_module_identity",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Every_frontend_view_route_has_exactly_one_manifest_page_and_vice_versa",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Every_permission_is_a_real_enforced_key",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Lifecycle_actions_gate_on_the_real_update_permission",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.List_is_the_single_top_level_nav_entry_at_the_real_route",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ModuleRegistration.LegalEntityManifestProviderTests.Page_routes_and_codes_and_action_codes_are_unique",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeActivationMongoTests.Commit_before_response_ambiguity_recovers_exact_transition_and_receipt_replay_is_single_cardinality",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeActivationMongoTests.Fence_exact_replay_is_idempotent_drift_denied_and_only_equal_stable_snapshots_quiesce",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeActivationMongoTests.Oversized_bound_snapshot_fails_before_rollout_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Controller_exposes_exactly_seven_nested_routes_and_no_completeness_or_lifecycle_surface",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Missing_empty_or_noncanonical_idempotency_header_fails_before_mediator(value: \"\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Missing_empty_or_noncanonical_idempotency_header_fails_before_mediator(value: \"00000000-0000-0000-0000-000000000000\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Missing_empty_or_noncanonical_idempotency_header_fails_before_mediator(value: \"not-a-guid\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Missing_empty_or_noncanonical_idempotency_header_fails_before_mediator(value: \"{5CB88EA0-EE09-4A32-8262-C77AD4F94E06}\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Public_write_models_have_only_business_fields_plus_extension_guard",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Replace_and_end_unknown_fields_and_multiple_idempotency_values_fail_before_mediator",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Unknown_or_technical_create_body_fields_fail_before_mediator(field: \"actorId\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Unknown_or_technical_create_body_fields_fail_before_mediator(field: \"auditEvidence\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Unknown_or_technical_create_body_fields_fail_before_mediator(field: \"effectiveFromUtc\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Unknown_or_technical_create_body_fields_fail_before_mediator(field: \"tenantId\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeApiContractTests.Unknown_or_technical_create_body_fields_fail_before_mediator(field: \"unknown\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeAuditEvidenceTests.A_replace_to_another_set_of_companies_or_another_mode_proves_a_different_change",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeAuditEvidenceTests.The_same_change_proves_the_same_whatever_order_the_companies_were_sent_in",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeAuthorizationTests.Controller_and_every_action_require_authentication_and_exact_permissions",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeAuthorizationTests.Create_options_requires_exact_three_policy_conjunction",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Caller_cancellation_propagates_without_fallback",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Echo_mismatch_duplicate_unsorted_empty_id_and_over_bound_fail_before_local_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Missing_tenant_or_subject_fails_before_provider_dispatch",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 400, expectedStatus: 400, expectedCode: \"LEGAL_ENTITY_SCOPE_REQUEST_INVALID\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 401, expectedStatus: 401, expectedCode: \"LEGAL_ENTITY_SCOPE_UNAUTHENTICATED\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 403, expectedStatus: 403, expectedCode: \"LEGAL_ENTITY_SCOPE_FORBIDDEN\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 409, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 500, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 503, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Provider_failures_map_to_stable_local_codes_without_local_fallback(providerStatus: 504, expectedStatus: 504, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Resolve_filters_provider_candidates_in_one_local_batch_and_preserves_canonical_order",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCandidateFacadeTests.Resolve_memoizes_exact_pair_only_within_the_facade_scope",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Every_mutation_fails_closed_outside_preparation(mode: Enforced)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Every_mutation_fails_closed_outside_preparation(mode: FailClosedSuspended)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Every_mutation_fails_closed_outside_preparation(mode: null)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Preparation_create_and_exact_replay_are_201_but_payload_drift_is_409",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Preparation_end_and_exact_replay_preserve_existing_unguarded_end_contract",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Replace_exact_replay_returns_committed_readback_without_duplicate_mutation_and_drift_conflicts",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Replace_handler_retains_lease_for_retention_required_zero_but_releases_ordinary_verified_zero",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Replace_handler_without_exact_human_permission_denies_before_lease_policy_or_audit_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Replace_release_failure_keeps_committed_result_replayable_without_duplicate_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Scoped_create_and_replace_use_their_exact_trusted_scope_permission_pairs",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeCommandTests.Scoped_create_requires_same_tenant_active_referenceable_legal_entities",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_Detail_maps_argument_shaped_corrupt_policy_to_nondisclosing_not_found",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_Detail_uses_current_policy_and_denies_without_disclosure_when_unmatched",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_GroupWide_requires_nonempty_effective_candidate_set",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_List_uses_one_candidate_resolution_and_server_side_scoped_page",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_Selector_uses_global_product_read_scope_and_server_side_filtered_count",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 400, expectedStatus: 400, expectedCode: \"LEGAL_ENTITY_SCOPE_REQUEST_INVALID\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 401, expectedStatus: 401, expectedCode: \"LEGAL_ENTITY_SCOPE_UNAUTHENTICATED\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 403, expectedStatus: 403, expectedCode: \"LEGAL_ENTITY_SCOPE_FORBIDDEN\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 404, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 409, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 503, expectedStatus: 503, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Enforced_provider_failures_are_propagated_without_product_page_read(providerStatus: 504, expectedStatus: 504, expectedCode: \"LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Fail_closed_suspended_List_and_detail_deny_without_provider_call",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Missing_rollout_List_and_detail_preserve_pre_FU03_access_without_provider_or_policy_calls",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeConsumerTests.Preparation_List_preserves_existing_access_without_provider_or_policy_calls",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.At_most_100_periods_and_one_current_period_are_enforced",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Complete_BSON_budget_is_fixed_and_over_limit_fails_before_transition",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Future_end_facts_and_noncanonical_period_order_fail_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Future_or_non_UTC_periods_and_duplicate_command_identity_fail_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.GroupWide_is_explicit_empty_and_Scoped_is_sorted_unique_nonempty",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Incomplete_or_duplicate_end_command_evidence_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Replace_and_end_use_server_time_half_open_periods_and_expected_int_version",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeDomainTests.Snapshot_contract_rejects_invalid_mode_empty_duplicate_and_over_200_without_truncation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.A_finished_good_orphan_is_repaired_by_the_same_scope_rule",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.A_policy_read_cancelled_by_its_own_caller_is_not_answered_as_an_unreachable_store",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.A_product_write_cancelled_by_its_own_caller_is_not_answered_as_an_unreachable_store",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.A_run_repairs_at_most_its_limit_of_in_scope_orphans",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.A_suspended_tenant_refuses_the_repair_by_name_before_any_orphan_is_read(mode: FailClosedSuspended)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Every_product_handler_answers_the_read_guards_own_status_never_its_own",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_a_preparation_tenant_the_repair_releases_every_orphan_as_before",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_an_enforced_tenant_a_finished_good_cancel_passes_the_scope_only_for_the_makers_legal_entity(policyForMaker: False, status: 404, code: \"FINISHED_GOOD_NOT_FOUND\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_an_enforced_tenant_a_finished_good_cancel_passes_the_scope_only_for_the_makers_legal_entity(policyForMaker: True, status: 409, code: \"FINISHED_GOOD_NOT_A_DRAFT\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_an_enforced_tenant_an_lsku_cancel_passes_the_scope_only_for_the_makers_legal_entity(policyForMaker: False, status: 404, code: \"LSKU_NOT_FOUND\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_an_enforced_tenant_an_lsku_cancel_passes_the_scope_only_for_the_makers_legal_entity(policyForMaker: True, status: 409, code: \"LSKU_NOT_A_DRAFT\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.In_an_enforced_tenant_the_repair_releases_only_in_scope_orphans_and_never_names_the_others",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Out_of_scope_orphans_in_front_no_longer_hide_the_in_scope_orphan_behind_them",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.The_walk_stops_at_its_page_bound_and_says_it_was_truncated",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Through_the_real_registration_a_fenced_writer_is_refused_by_name_never_reaches_its_handler_and_takes_no_lease(writer: \"CancelFinishedGoodDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Through_the_real_registration_a_fenced_writer_is_refused_by_name_never_reaches_its_handler_and_takes_no_lease(writer: \"CancelLskuDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Through_the_real_registration_a_fenced_writer_is_refused_by_name_never_reaches_its_handler_and_takes_no_lease(writer: \"RepairLskuChildAdmissionsCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Through_the_real_registration_an_invalid_repair_is_400_before_the_fence_and_takes_no_lease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntFix1Tests.Two_repair_calls_with_the_same_parameters_are_two_lease_identities",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"AssignFinishedGoodGtinCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"CancelFinishedGoodDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"CancelLskuDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"RepairLskuChildAdmissionsCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"SetFinishedGoodStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"SetGskuStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_goes_through_when_no_fence_is_up_and_frees_its_lease(writer: \"SetLskuStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"AssignFinishedGoodGtinCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"CancelFinishedGoodDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"CancelLskuDraftCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"RepairLskuChildAdmissionsCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"SetFinishedGoodStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"SetGskuStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_newly_fenced_writer_is_refused_by_name_while_a_fence_is_up_and_never_reaches_its_handler(writer: \"SetLskuStockBehaviourCommand\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_cancelled_by_its_own_client_is_not_answered_as_an_unreachable_store",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(failure: \"bson\", code: \"PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(failure: \"format\", code: \"PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(failure: \"invalid-record\", code: \"PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(failure: \"mongo\", code: \"PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(failure: \"timeout\", code: \"PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.A_rollout_written_before_the_fence_and_the_lease_slot_existed_admits_writers_the_slot_and_a_fence",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeIntegrationTests.In_an_enforced_tenant_a_finished_good_draft_cancel_outside_the_makers_scope_is_not_found",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Audit_enum_values_remain_append_only_and_numeric_compatible",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Audit_lifecycle_headroom_boundary_accepts_exact_ceiling_and_rejects_one_byte_over_without_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Concurrent_compare_and_swap_has_one_winner_and_applies_exactly_one_end",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Existing_policy_audit_intent_payload_drift_is_rejected_without_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Invalid_policy_create_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"aggregate-type\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Invalid_policy_create_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"operation\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Invalid_policy_create_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"source-service\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Invalid_policy_create_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"version\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Missing_policy_create_or_update_audit_intent_is_rejected_without_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts",
+     "sonuç": "Failed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Tenant_soft_delete_no_reuse_and_cancellation_fail_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 0)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 1)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 2)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 0)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 1)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 2)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMutationIdentityTests.A_write_is_keyed_by_the_objects_it_names_and_by_its_own_command",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeMutationIdentityTests.In_an_enforced_tenant_creating_a_global_product_and_reserving_its_code_are_the_refused_writes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.A_runner_composed_without_a_debt_registration_still_refuses_activation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.A_transition_repeated_after_its_commit_answer_was_lost_finishes_over_its_own_bound_fence",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Activate_then_suspend_leaves_a_readable_rollout_whose_evidence_is_each_transitions_own_snapshot",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Activation_is_refused_while_a_named_debt_is_open_even_in_development",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.An_activation_with_a_product_without_scope_is_refused_before_any_fence_and_writes_stay_open",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.An_activation_with_scope_audit_still_in_flight_is_refused_before_any_fence",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.An_inventory_that_moves_between_the_two_snapshots_abandons_the_fence_and_reopens_writes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Either_debt_list_alone_keeps_activation_shut(writers: False, runners: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Either_debt_list_alone_keeps_activation_shut(writers: True, runners: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Suspension_stays_open_while_the_debt_is_open",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.The_expired_leases_an_activation_fence_clears_are_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.The_runner_refuses_every_environment_but_development(environment: \"Production\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.The_runner_refuses_every_environment_but_development(environment: \"Staging\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.The_runner_refuses_every_environment_but_development(environment: \"Test\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.The_same_command_with_abort_lifts_its_fence_records_who_and_why_and_reopens_writes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.Two_runs_of_the_same_transition_at_once_never_let_the_loser_abandon_the_winners_fence",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeOperationalRunnerTests.With_both_debt_lists_empty_activation_goes_through",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.A_caller_of_company_A_does_not_see_the_other_companies_of_a_product_scoped_to_A_and_B",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.A_policy_whose_product_does_not_exist_is_not_shown",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.In_a_suspended_tenant_every_read_answers_like_a_missing_product",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.In_an_enforced_tenant_another_companys_product_answers_like_a_missing_one_on_every_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.In_an_enforced_tenant_the_callers_own_companys_product_is_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.In_preparation_every_product_of_the_tenant_is_read_as_before",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.In_preparation_the_scope_names_every_company_as_before",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.The_create_options_ask_for_the_companies_where_the_caller_may_configure_scopes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReadAccessTests.The_create_options_show_a_products_code_and_name_only_to_a_caller_who_may_read_the_product",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Ambiguous_create_and_update_return_only_202_reconciliation_required",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Bson_budget_failures_are_deterministic_409_not_500",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Completeness_counts_more_than_200_products_without_materializing_all_ids",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Completeness_reports_only_bounded_missing_ids_and_never_changes_rollout",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Definite_version_conflict_is_409_not_202",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeReconciliationTests.Real_mongo_completeness_counts_all_products_but_returns_only_bounded_missing_sample",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRecoveryRunnerFenceTests.The_first_gsku_retirement_runner_does_not_recover_while_a_fence_is_up",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRecoveryRunnerFenceTests.The_lsku_identity_runner_recovers_only_without_a_fence(fenced: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRecoveryRunnerFenceTests.The_lsku_identity_runner_recovers_only_without_a_fence(fenced: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRecoveryRunnerFenceTests.The_lsku_retirement_runner_recovers_only_without_a_fence(fenced: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRecoveryRunnerFenceTests.The_lsku_retirement_runner_recovers_only_without_a_fence(fenced: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Ambiguous_rollout_recovery_requires_exact_command_and_audit_proof(exceptionKind: 0)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Ambiguous_rollout_recovery_requires_exact_command_and_audit_proof(exceptionKind: 1)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Ambiguous_rollout_recovery_requires_exact_command_and_audit_proof(exceptionKind: 2)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Audit_lifecycle_headroom_boundary_is_enforced_for_rollout_update",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Concurrent_compare_and_swap_has_one_winner_without_whole_document_replacement",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Existing_rollout_audit_intent_payload_drift_is_rejected_without_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Invalid_rollout_update_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"aggregate-type\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Invalid_rollout_update_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"operation\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Invalid_rollout_update_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"source-service\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Invalid_rollout_update_audit_binding_is_rejected_without_business_or_audit_mutation(mismatch: \"version\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Malformed_persisted_rollout_fails_closed_for_get_lease_and_fence_without_mutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Preparation_create_rejects_supplied_audit_and_rollout_update_requires_one_intent",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Repository_indexes_are_exact_and_create_replay_is_idempotent_while_payload_drift_conflicts",
+     "sonuç": "Failed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Tenant_soft_delete_no_reuse_and_cancellation_fail_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 0)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 1)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_create_uses_exact_reread_without_false_success(exceptionKind: 2)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 0)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 1)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutMongoTests.Whitelisted_ambiguous_update_uses_exact_reread_without_false_success(exceptionKind: 2)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Candidate_contract_rejects_duplicate_empty_and_over_200_without_truncation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Cross_tenant_deleted_or_wrong_product_policy_evidence_denies_without_policy_facts(rolloutMode: Enforced)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Cross_tenant_deleted_or_wrong_product_policy_evidence_denies_without_policy_facts(rolloutMode: FailClosedSuspended)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Cross_tenant_deleted_or_wrong_product_policy_evidence_denies_without_policy_facts(rolloutMode: Preparation)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Cross_tenant_or_deleted_rollout_state_denies_before_evaluation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Ended_policy_has_no_current_period_and_denies_when_enforced",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Enforced_GroupWide_requires_nonempty_trusted_and_local_candidate_intersection",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Enforced_LegacyUnclassified_and_FailClosedSuspended_always_deny",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Enforced_Scoped_uses_full_multi_LE_intersection_without_first_value_truncation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Foundation_budget_model_has_exact_non_overridable_limits",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.H1b_activation_fence_requires_uppercase_hash_exact_action_reason_and_utc",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.H1b_snapshot_requires_schema_one_lf_payload_utc_and_uppercase_hashes",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.H1b_writer_lease_has_exact_non_configurable_duration_and_rejects_invalid_generation_or_baseline",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Non_enforced_modes_do_not_parse_candidate_payloads(rolloutMode: FailClosedSuspended, expectedAllowed: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Non_enforced_modes_do_not_parse_candidate_payloads(rolloutMode: Preparation, expectedAllowed: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Non_enforced_modes_do_not_parse_candidate_payloads(rolloutMode: Preparation, expectedAllowed: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Preparation_preserves_existing_tenant_only_behavior(existingTenantAccess: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Preparation_preserves_existing_tenant_only_behavior(existingTenantAccess: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeRolloutTests.Rollout_state_is_created_only_in_Preparation_with_expected_int_version_contract",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"/* ProductIdentityBackgroundScope … await scope.In\"···, reads: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"// rollout.ActiveFence is null\\nvar x = 1;\", reads: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"private readonly ProductIdentityBackgroundScope _s\"···, reads: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"return rollout.Mode == ProductLegalEntityScopeRoll\"···, reads: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"var mode = await backgroundScope.ResolveAsync(ct);\"···, reads: False)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.A_runner_reads_the_fence_only_when_it_asks_the_rule_not_when_it_merely_names_it(source: \"var s = sp.GetRequiredService<ProductIdentityBackg\"···, reads: True)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Comments_are_removed_but_never_what_a_string_holds(source: \"var a = \\\"/* not a comment */\\\"; Call();\", survives: \"Call();\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Comments_are_removed_but_never_what_a_string_holds(source: \"var b = @\\\"C:\\\\// path\\\"; Call();\", survives: \"Call();\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Comments_are_removed_but_never_what_a_string_holds(source: \"var c = '/'; /* gone */ Call(); // gone too\", survives: \"Call();\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Every_recovery_runner_reads_the_fence_or_is_a_named_debt",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Foreground_replace_authority_has_exactly_one_production_issuer_source",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Guarded_persistence_owns_one_transaction_rollout_write_policy_cas_and_never_uses_replace_one",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Guarded_repository_contract_requires_exact_authority_lease_policy_and_expected_version",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Mutation_inventory_is_exactly_the_frozen_26_commands_and_has_no_unclassified_twenty_seventh_writer",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.No_mdm_http_surface_moves_the_scope_rollout_and_no_source_checks_its_permission_keys",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Only_the_operational_runner_creates_moves_or_fences_the_scope_rollout",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Only_the_rollout_repository_and_the_guarded_replace_write_the_rollout_collection",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.The_application_registration_resolves_a_debt_that_blocks_activation_and_cannot_be_emptied",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.The_scope_hosted_services_are_registered_on_the_api_host",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Unguarded_policy_update_rejects_replace_transition_and_guarded_repository_delegates",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Verified_writer_authority_cannot_be_publicly_constructed_or_issued_by_a_caller",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionContractTests.Write_fence_behavior_is_registered_after_validation_and_before_audit_forwarding",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_product_writer_elsewhere_in_the_tenant_does_not_invalidate_a_running_Replace",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_meeting_other_products_lease_traffic_on_every_attempt_writes_nothing_and_says_exhausted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_refused_after_its_slot_was_taken_says_why(reason: \"replace_authority_mismatch\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_refused_after_its_slot_was_taken_says_why(reason: \"replace_baseline_conflict\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_refused_by_the_bson_budget_before_any_write_releases_its_slot",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_still_aborted_as_transient_after_every_retry_answers_a_named_503_and_frees_its_slot",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_fails_after_taking_its_slot_keeps_it_and_says_why(where: \"bind\", reason: \"replace_admission_exception\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_fails_after_taking_its_slot_keeps_it_and_says_why(where: \"capture\", reason: \"replace_admission_exception\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_fails_after_taking_its_slot_keeps_it_and_says_why(where: \"write\", reason: \"replace_exception\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_keeps_its_slot_says_why(reason: \"replace_ambiguous\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_keeps_its_slot_says_why(reason: \"replace_failed\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_that_keeps_its_slot_says_why(reason: \"replace_rejected\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_through_the_handler_succeeds_and_frees_its_slot",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_under_constant_lease_traffic_on_other_products_succeeds",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_whose_commit_answer_is_a_transient_error_and_did_not_land_is_ambiguous_not_409",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_whose_commit_landed_but_answered_a_transient_error_is_not_run_again",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_whose_slot_lost_every_round_answers_the_coordinators_503",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.A_replace_whose_slot_vanished_while_it_wrote_says_the_release_was_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Coordinator_allows_only_exact_GSKU_facade_inner_nesting",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Coordinator_ignores_delivery_owned_progress_but_retains_for_partial_immutable_intent",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Coordinator_zero_delta_releases_while_202_exception_and_cancellation_retain",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_CommitResponseLostAfterRealCommit_RecoversExactReadbackAndReplayCannotDuplicate",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_CommitResponseLostWithoutExactOutcome_RemainsAmbiguousAndRetainsLease(outcome: \"drift\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_CommitResponseLostWithoutExactOutcome_RemainsAmbiguousAndRetainsLease(outcome: \"missing\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_CompleteDocumentOverOneMiB_FailsBeforeMutationAndPreservesUnknownBson",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_DirectRepositoryBypass_DeniesReplaceWithoutPolicyOrAuditMutation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_ExactHumanLeaseAndPreparation_AtomicallyReplacesAndPreservesUnknownBson",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_PolicyCasFailureAfterRolloutGuard_RollsBackGuardPolicyAndAudit",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_PreparationChangesAfterLease_RollsBackPolicyAndAudit",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_TwoContenders_CommitExactlyOneMutationAndOneAudit",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_WrongTokenGenerationOrMutation_RollsBackAllEffects",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Pre_H1b_rollout_without_writer_fields_acquires_generation_one_without_migration",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Same_command_replays_exact_lease_and_stale_generation_cannot_release_no_ABA",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.Tenant_B_cannot_observe_or_release_tenant_A_lease_and_payload_drift_is_denied",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_ExpiredIdentityDrift_IsRejectedWithoutMutationAndRetainsOriginalLease(drift: \"actor\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_ExpiredIdentityDrift_IsRejectedWithoutMutationAndRetainsOriginalLease(drift: \"payload\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_ExpiredIdentityDrift_IsRejectedWithoutMutationAndRetainsOriginalLease(drift: \"tenant\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_InitiallyExpiredExactIdentity_UnappliedReplaceFailsWithZeroEffectsAndRetainsLease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_MissingOrMalformedExpiry_FailsClosedWithoutMutationAndCompletionRetainsLease(expiryShape: \"malformed\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_MissingOrMalformedExpiry_FailsClosedWithoutMutationAndCompletionRetainsLease(expiryShape: \"missing\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriteAdmissionMongoTests.WriterLease_ValidAtEntryButExpiredBeforePhysicalMongoUpdate_FailsWithZeroEffectsAndRetainsLease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterAuthorityTests.ResolveForegroundReplaceAsync_CancelledRequest_PropagatesWithoutAuthority",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterAuthorityTests.ResolveForegroundReplaceAsync_ExactCanonicalHumanAndPermission_IssuesBoundAuthority",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterAuthorityTests.ResolveForegroundReplaceAsync_MissingWrongDuplicateOrCaseDriftPermission_Denies",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterAuthorityTests.ResolveForegroundReplaceAsync_ServiceForgedOrConflictingHumanContext_Denies",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterAuthorityTests.ResolveForegroundReplaceAsync_WrongTenantPurposeOperationAggregateOrMutation_Denies",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_baseline_bound_while_another_writer_had_read_the_list_survives_that_writers_write",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_binding_that_throws_after_the_lease_was_taken_keeps_the_lease_and_counts_it",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_client_that_cancels_after_its_write_landed_still_frees_the_lease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_failed_write_that_changed_nothing_but_whose_lease_vanished_says_the_release_was_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_failed_write_that_changed_nothing_frees_its_product_and_one_that_changed_it_keeps_the_lease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_failed_write_that_half_added_a_child_below_its_product_keeps_its_lease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_fence_reports_the_expired_leases_it_clears",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_fence_waits_for_a_running_writer_and_clears_an_expired_one",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_fence_waits_out_the_clock_drift_margin_of_a_lease",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_full_product_bucket_answers_capacity_503_and_counts_the_product_bucket",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_lease_stored_with_another_duration_is_still_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_lease_within_the_clock_drift_margin_is_not_taken_and_one_past_it_is",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_lease_write_that_landed_but_lost_its_answer_is_ambiguous_kept_and_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_product_held_by_a_product_writer_refuses_the_foreground_slot",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_product_held_by_the_foreground_slot_refuses_a_product_writer",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_refused_admission_that_keeps_its_lease_is_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_release_between_a_fences_read_and_its_write_does_not_make_the_fence_conflict",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_release_with_a_wrong_token_or_an_old_generation_frees_nothing",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_repeat_whose_lease_ran_out_takes_a_fresh_lease_and_another_writer_is_then_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_repeat_whose_lease_was_taken_over_is_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_rollout_record_that_cannot_be_read_refuses_writes_and_reads_with_a_coded_503",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_rollout_record_the_serializer_cannot_map_answers_503_on_writes_and_on_the_completeness_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_rollout_written_before_FIX1_without_the_new_fields_admits_writers_and_a_fence",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_slot_and_a_product_writer_of_one_product_that_both_read_before_writing_admit_exactly_one(first: \"product\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_slot_and_a_product_writer_of_one_product_that_both_read_before_writing_admit_exactly_one(first: \"slot\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_slow_proof_index_build_holds_the_start_only_for_its_bounded_wait",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_store_that_fails_the_rollout_read_answers_503_on_writes_and_on_the_completeness_read",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_suspended_tenant_gives_no_writer_lease_of_either_kind",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_tenant_holds_at_most_the_maximum_number_of_running_product_leases",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_thousand_failed_creates_leave_a_bounded_lease_list",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_write_admitted_without_a_proof_of_its_objects_is_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_write_answered_202_is_finished_by_the_same_command_even_after_its_product_moved",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_write_whose_lease_vanished_while_it_ran_says_the_release_was_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_died_between_taking_its_lease_and_binding_it_is_taken_over_and_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_keeps_its_lease_says_why(reason: \"admission_exception\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_keeps_its_lease_says_why(reason: \"ambiguous\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_keeps_its_lease_says_why(reason: \"exception\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_keeps_its_lease_says_why(reason: \"failed_changed\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.A_writer_that_keeps_its_lease_says_why(reason: \"failed_unverifiable\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.An_acquisition_that_loses_every_round_answers_contended_503_and_is_counted",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.An_expired_lease_of_another_command_is_taken_over_and_an_unexpired_one_is_not",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.An_invalid_lease_request_a_store_timeout_and_a_lost_write_answer_three_different_ways",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Create_replace_and_end_on_a_rollout_record_that_cannot_be_read_answer_the_coded_503",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Eight_writers_of_eight_products_at_once_are_all_admitted_and_eight_of_one_product_admit_exactly_one",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_finished_goods\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_gskus\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_lskus\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_product_abbreviation_allocation_ledger\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_product_abbreviation_history\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_product_abbreviation_register\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_product_definition_revisions\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Every_clause_of_the_object_proof_query_uses_an_index(collection: \"mdm_product_legal_entity_scope_policies\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Failed_creates_cannot_refuse_the_writer_of_an_unrelated_product_and_their_own_bucket_counts_its_overflow",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Recovery_workers_do_not_write_while_a_fence_is_up",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_completeness_read_on_a_record_that_cannot_be_read_answers_the_coded_503",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_foreground_slot_gives_a_command_whose_lease_ran_out_a_fresh_generation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_foreground_slot_waits_out_the_clock_drift_margin_then_is_taken_over_and_the_old_command_is_refused",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_gauge_worker_counts_a_failed_refresh_and_keeps_the_last_values_whose_age_then_shows",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_guard_reads_now_from_its_time_provider",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_hold_gauges_show_a_fence_left_up_and_the_leases_held",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_hold_inventory_counts_a_rollout_written_before_FIX1",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_proof_index_build_never_fails_the_start_and_is_retried_until_it_succeeds",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.The_proof_index_initializer_builds_the_named_indexes_on_the_real_database",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.While_a_fence_is_up_a_product_writer_is_told_the_fence_is_active",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.ProductLegalEntityScopeWriterLeaseMongoTests.Writers_of_different_products_proceed_side_by_side_and_one_product_admits_one_writer",
+     "sonuç": "Passed"
+    }
+   ],
+   "proje": "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+   "süzgeç": "FullyQualifiedName~LegalEntity",
+   "adlandırılmış": {
+    "A1": {
+     "test": "LegalEntityLookupApprovalStatusTests.Active_entity_returns_approval_status_in_upper_case",
+     "sonuç": "yok"
+    },
+    "A2": {
+     "test": "LegalEntityLookupApprovalStatusTests.Non_active_entity_is_404_even_when_approved",
+     "sonuç": "yok"
+    },
+    "A3": {
+     "test": "LegalEntityLookupApprovalStatusTests.Active_rejected_entity_is_200_and_referenceable",
+     "sonuç": "yok"
+    },
+    "A4": {
+     "test": "LegalEntityLookupApprovalStatusTests.Contract_example_deserializes_unchanged",
+     "sonuç": "yok"
+    },
+    "E1": {
+     "test": "LegalEntityReferenceValidationTests.Active_same_tenant_legal_entity_is_referenceable",
+     "sonuç": "Passed"
+    }
+   },
+   "zorunlu_sınıflar": {
+    "LegalEntityLookupApprovalStatusTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    },
+    "LegalEntityReferenceValidationTests": {
+     "satır": 9,
+     "yöntemler": [
+      "Active_same_tenant_legal_entity_is_referenceable",
+      "Bounded_batch_rejects_noncanonical_input_and_propagates_cancellation",
+      "Bounded_batch_returns_only_active_same_tenant_non_deleted_requested_entities",
+      "Cross_tenant_legal_entity_fails_closed",
+      "In_memory_empty_batch_honors_pre_cancelled_token",
+      "Missing_legal_entity_fails_closed",
+      "Non_active_legal_entity_fails_closed",
+      "Soft_deleted_legal_entity_fails_closed"
+     ],
+     "hepsi_geçti": true
+    },
+    "LegalEntitiesControllerPermissionTests": {
+     "satır": 1,
+     "yöntemler": [
+      "No_action_uses_the_legacy_modules_legalentity_key"
+     ],
+     "hepsi_geçti": true
+    }
+   },
+   "yük_1dk": 11.58,
+   "yeşil": false
+  },
+  "api": {
+   "komut": [
+    "DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod",
+    "dotnet",
+    "test",
+    "services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj",
+    "-c",
+    "Debug",
+    "--filter",
+    "FullyQualifiedName~LegalEntity",
+    "--logger",
+    "trx;LogFileName=docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.trx"
+   ],
+   "dotnet_çıkış": 0,
+   "süre_sn": 10.7,
+   "trx": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.trx",
+   "günlük": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.log",
+   "trx_okundu": true,
+   "derleme_hatası": false,
+   "toplam": 1,
+   "geçen": 1,
+   "not_executed": 0,
+   "kalan": [],
+   "trx_sayaçları": {
+    "total": "1",
+    "executed": "1",
+    "passed": "1",
+    "failed": "0",
+    "notExecuted": "0"
+   },
+   "testler": [
+    {
+     "ad": "Diten.MdmService.Api.Tests.ProductLegalEntityScopeHostTests.The_api_host_resolves_a_debt_that_keeps_activation_shut",
+     "sonuç": "Passed"
+    }
+   ],
+   "proje": "services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj",
+   "süzgeç": "FullyQualifiedName~LegalEntity",
+   "adlandırılmış": {
+    "H1": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_validation_carries_approval_status_over_http",
+     "sonuç": "yok"
+    },
+    "H2": {
+     "test": "LegalEntityLookupValidationHttpTests.Not_found_answers_are_unchanged_for_missing_deleted_other_tenant_and_non_active_approved",
+     "sonuç": "yok"
+    },
+    "H3": {
+     "test": "LegalEntityLookupValidationHttpTests.Active_rejected_is_200_and_referenceable_over_http",
+     "sonuç": "yok"
+    },
+    "H4": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_validation_json_has_exactly_seven_properties",
+     "sonuç": "yok"
+    },
+    "H5": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_list_items_have_the_same_seven_properties",
+     "sonuç": "yok"
+    },
+    "R1": {
+     "test": "LegalEntityLookupConsumerReadFormTests.Lookup_validation_body_reads_in_both_consumer_forms",
+     "sonuç": "yok"
+    },
+    "R2": {
+     "test": "LegalEntityLookupConsumerReadFormTests.Lookup_list_item_reads_in_both_consumer_forms",
+     "sonuç": "yok"
+    }
+   },
+   "zorunlu_sınıflar": {
+    "LegalEntityLookupValidationHttpTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    },
+    "LegalEntityLookupConsumerReadFormTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    }
+   },
+   "yük_1dk": 10.52,
+   "yeşil": false
+  }
+ },
+ "yeşil": false
+}

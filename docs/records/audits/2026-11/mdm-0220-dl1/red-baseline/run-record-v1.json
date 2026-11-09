@@ -1,0 +1,77 @@
+{
+ "argv": [
+  "python3",
+  "execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py",
+  "--out-dir",
+  "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline"
+ ],
+ "artifacts": [
+  {
+   "bytes": 2943,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/anchors.json",
+   "sha256": "30d395ad56a6dd4fdffb38ad9fb4f8269088acc92e217d7b753f3b6639eb9577"
+  },
+  {
+   "bytes": 919,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/diff-scope.json",
+   "sha256": "701f424574e0d4e12c95dc6f2ce423fa843bbcc091e194ba52905a3c269d9035"
+  },
+  {
+   "bytes": 125,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/mongod-after.txt",
+   "sha256": "0376a95fd5098c385f1841cc98321d504be48b13779ea295f48a2a1026289bc4"
+  },
+  {
+   "bytes": 125,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/mongod-before.txt",
+   "sha256": "0376a95fd5098c385f1841cc98321d504be48b13779ea295f48a2a1026289bc4"
+  },
+  {
+   "bytes": 1236,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/stderr.txt",
+   "sha256": "2c85c18f976a8556bdcea9da6637e1ef1ff2631274110bdc881503b0c4c8c1a9"
+  },
+  {
+   "bytes": 1483,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/stdout.txt",
+   "sha256": "d1ee6a416f54a8d68a6194b130bbc4b409e79f2222a1283cec66df18f750220b"
+  },
+  {
+   "bytes": 4892,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.log",
+   "sha256": "4e7c883b9ae7bcbdcb62e468b8dec2dff5bb909d5e14d1922479c3b615594538"
+  },
+  {
+   "bytes": 3109,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-api.trx",
+   "sha256": "e9a3ceeab616800d2cbbe1baac766dd5c5d4ffcdc97c4539519bad6e2623a10b"
+  },
+  {
+   "bytes": 23164,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.log",
+   "sha256": "74f3fd6491e3a18e1441741299777721e5891fc2a86847d36fca1b9a8838c746"
+  },
+  {
+   "bytes": 750663,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-app.trx",
+   "sha256": "5b00ec9a8fd907a66c6c07f0bf8c3ccceea1675f3f0f6cadd0c61ee576a13724"
+  },
+  {
+   "bytes": 97611,
+   "path": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline/tests-summary.json",
+   "sha256": "8db3a909035b41e47b23e465f4d2bce9440e9c35389d0f0622e69275cfac0d67"
+  }
+ ],
+ "commit": "8c704272afd9559db94fa9c73f6a4169f0504f12",
+ "cwd": ".",
+ "exit": 1,
+ "finished_utc": "2026-11-09T14:15:01Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline",
+ "started_utc": "2026-11-09T14:07:01Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "25dbd2267a65012b6376cebe0cab73265dd8144c"
+}

@@ -1,0 +1,26 @@
+{
+ "head": "8c704272afd9559db94fa9c73f6a4169f0504f12",
+ "betiği_son_değiştiren_commit": "8c704272afd9559db94fa9c73f6a4169f0504f12",
+ "kod_commitleri": [],
+ "taban": null,
+ "taban_kuralı": "betiği son değiştiren commit'ten sonra LegalEntityModels.cs'e dokunan en eski commit'in ebeveyni (talimat: kod commit'inin ebeveyni = Expected HEAD)",
+ "talimat_v1_1_expected_head": "f304329e88600a6d3f9d7c486a6c740497b8b52d",
+ "talimat_head_tabanın_atası": null,
+ "commitler": [],
+ "değişen_yollar": [],
+ "izinli": {
+  "dosyalar": [
+   "services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs"
+  ],
+  "önekler": [
+   "services/Diten.MdmService/tests/",
+   "docs/records/audits/2026-11/mdm-0220-dl1/"
+  ]
+ },
+ "izinli_dışı": [],
+ "src_değişen": [],
+ "tests_silinen_ya_da_değişen": [],
+ "betik_tabanda_var": false,
+ "betik_taban_head_aynı": false,
+ "geçti": false
+}
