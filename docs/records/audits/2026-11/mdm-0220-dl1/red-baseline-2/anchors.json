@@ -1,0 +1,71 @@
+{
+ "ölçülen": 7,
+ "tamam": false,
+ "sabotajlar": [
+  {
+   "sabotaj": "S1a",
+   "çapa": "tam bir kez",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/QueryHandlers/ValidateLegalEntityReferenceHandler.cs",
+     "çapa_satırı": 20,
+     "çapa": "        if (entity is null || entity.OperationalStatus != LegalEntityOperationalStatus.Active)",
+     "değişiklik": {
+      "eski": "LegalEntityOperationalStatus.Active)",
+      "yeni": "LegalEntityOperationalStatus.Active || entity.ApprovalStatus != LegalEntityApprovalStatus.Approved)"
+     }
+    }
+   ]
+  },
+  {
+   "sabotaj": "S1b",
+   "çapa": "tam bir kez",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/QueryHandlers/ValidateLegalEntityReferenceHandler.cs",
+     "çapa_satırı": 20,
+     "çapa": "        if (entity is null || entity.OperationalStatus != LegalEntityOperationalStatus.Active)",
+     "değişiklik": {
+      "eski": "entity is null || entity.OperationalStatus != LegalEntityOperationalStatus.Active",
+      "yeni": "entity is null || (entity.OperationalStatus != LegalEntityOperationalStatus.Active && entity.ApprovalStatus != LegalEntityApprovalStatus.Approved)"
+     }
+    }
+   ]
+  },
+  {
+   "sabotaj": "S2",
+   "çapa": "YOK",
+   "neden": "DURUR — çapa yok: sabotaj S2, services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs dosyada 0 kez (tam 1 olmalı): 'bool Referenceable,\\n    string ApprovalStatus);'"
+  },
+  {
+   "sabotaj": "S3",
+   "çapa": "YOK",
+   "neden": "DURUR — çapa yok: sabotaj S3, services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs dosyada 0 kez (tam 1 olmalı): 'bool Referenceable,\\n    string ApprovalStatus);'"
+  },
+  {
+   "sabotaj": "S4",
+   "çapa": "YOK",
+   "neden": "DURUR — çapa yok: sabotaj S4, services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs dosyada 0 kez (tam 1 olmalı): 'e.IsReferenceable,\\n            e.ApprovalStatus.ToString().ToUpperInvariant());'"
+  },
+  {
+   "sabotaj": "S5",
+   "çapa": "tam bir kez",
+   "değişiklikler": [
+    {
+     "dosya": "services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs",
+     "çapa_satırı": 100,
+     "çapa": "public sealed record LegalEntityLookupDto(\n    Guid LegalEntityId,\n    string Code,",
+     "değişiklik": {
+      "eski": "    string Code,\n",
+      "yeni": "    string EntityCode,\n"
+     }
+    }
+   ]
+  },
+  {
+   "sabotaj": "S6",
+   "çapa": "YOK",
+   "neden": "DURUR — çapa yok: sabotaj S6, services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs dosyada 0 kez (tam 1 olmalı): 'bool Referenceable,\\n    string ApprovalStatus);'"
+  }
+ ]
+}

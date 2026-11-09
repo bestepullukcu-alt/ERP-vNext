@@ -1,0 +1,14 @@
+MDM-0220-DL1 kabul kanıtı · betik execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py (sha256 122f56a42fc406e15fa34c952704a25f707d80cd962c0fba9709530b5db6564d) · repo HEAD c1e5ae8bc8261eb9113c00549e9c73e143d5812e · --out-dir docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2
+kapsam: taban YOK · 0 yol · izinli dışı 0 · src [] · tests D/M 0 · TUTMADI
+== testler (taban)
+yük (taban app): 1 dakikalık 6.88 (eşik 12)
+dotnet test (taban app) → docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-app.trx
+  taban app: dotnet çıkış 0 · 18 / 18 geçti · NotExecuted 0 · kalan: yok
+  taban app: KIRMIZI
+yük (taban api): 1 dakikalık 40.79 (eşik 12)
+yük (taban api): 1 dakikalık 17.93 (eşik 12)
+yük (taban api): 1 dakikalık 8.63 (eşik 12)
+dotnet test (taban api) → docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-api.trx
+  taban api: dotnet çıkış 0 · 0 / 0 geçti · NotExecuted 0 · kalan: yok
+  taban api: KIRMIZI
+çapa ön denetimi: 3 / 7 tamam

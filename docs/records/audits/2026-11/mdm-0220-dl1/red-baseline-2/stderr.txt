@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py", line 987, in <module>
+    sys.exit(main())
+  File "/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py", line 939, in main
+    acs = ac_table()
+  File "/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py", line 824, in ac_table
+    "AC-T1": ac_entry("AC-T1", "Active varlıkta approvalStatus = ApprovalStatus büyük harfle, dört değer (işleyici + "
+  File "/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py", line 814, in ac_entry
+    sm, sok, sev = sabotage_part(ac)
+  File "/Users/alitufanoglu/ERP-vNext/.claude/worktrees/mdm-ct-02/execution/domains/master-data-management/work-packs/scripts/mdm_0220_dl1_accept.py", line 804, in sabotage_part
+    evidence = [{"artefakt": rel("sabotage-summary.json"), "satır": f"sabotajlar[{k}].tuttu"}]
+NameError: name 'k' is not defined

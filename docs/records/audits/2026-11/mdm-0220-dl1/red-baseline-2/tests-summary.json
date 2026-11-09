@@ -1,0 +1,244 @@
+{
+ "süzgeç": "FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.",
+ "projeler": {
+  "app": {
+   "komut": [
+    "DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod",
+    "dotnet",
+    "test",
+    "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+    "-c",
+    "Debug",
+    "--filter",
+    "FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.",
+    "--logger",
+    "trx;LogFileName=docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-app.trx"
+   ],
+   "dotnet_çıkış": 0,
+   "süre_sn": 29.7,
+   "trx": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-app.trx",
+   "günlük": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-app.log",
+   "trx_okundu": true,
+   "derleme_hatası": false,
+   "toplam": 18,
+   "geçen": 18,
+   "not_executed": 0,
+   "kalan": [],
+   "trx_sayaçları": {
+    "total": "18",
+    "executed": "18",
+    "passed": "18",
+    "failed": "0",
+    "notExecuted": "0"
+   },
+   "testler": [
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Activate\", expectedKey: \"mdm.legal-entities.update\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Archive\", expectedKey: \"mdm.legal-entities.update\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Create\", expectedKey: \"mdm.legal-entities.create\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Delete\", expectedKey: \"mdm.legal-entities.delete\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"GetById\", expectedKey: \"mdm.legal-entities.read\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Suspend\", expectedKey: \"mdm.legal-entities.update\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"Update\", expectedKey: \"mdm.legal-entities.update\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.Action_enforces_canonical_permission_key(methodName: \"ValidateReference\", expectedKey: \"mdm.legal-entities.read\")",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.Authorization.LegalEntitiesControllerPermissionTests.No_action_uses_the_legacy_modules_legalentity_key",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Active_same_tenant_legal_entity_is_referenceable",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Bounded_batch_rejects_noncanonical_input_and_propagates_cancellation",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Bounded_batch_returns_only_active_same_tenant_non_deleted_requested_entities",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Cross_tenant_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.In_memory_empty_batch_honors_pre_cancelled_token",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Missing_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Non_active_legal_entity_fails_closed(lifecycleStatus: Archived)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Non_active_legal_entity_fails_closed(lifecycleStatus: Draft)",
+     "sonuç": "Passed"
+    },
+    {
+     "ad": "Diten.MdmService.Application.Tests.LegalEntityReferenceValidationTests.Soft_deleted_legal_entity_fails_closed",
+     "sonuç": "Passed"
+    }
+   ],
+   "proje": "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj",
+   "süzgeç": "FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.",
+   "adlandırılmış": {
+    "A1": {
+     "test": "LegalEntityLookupApprovalStatusTests.Active_entity_returns_approval_status_in_upper_case",
+     "sonuç": "yok"
+    },
+    "A2": {
+     "test": "LegalEntityLookupApprovalStatusTests.Non_active_entity_is_404_even_when_approved",
+     "sonuç": "yok"
+    },
+    "A3": {
+     "test": "LegalEntityLookupApprovalStatusTests.Active_rejected_entity_is_200_and_referenceable",
+     "sonuç": "yok"
+    },
+    "A4": {
+     "test": "LegalEntityLookupApprovalStatusTests.Contract_example_deserializes_unchanged",
+     "sonuç": "yok"
+    },
+    "E1": {
+     "test": "LegalEntityReferenceValidationTests.Active_same_tenant_legal_entity_is_referenceable",
+     "sonuç": "Passed"
+    }
+   },
+   "zorunlu_sınıflar": {
+    "LegalEntityLookupApprovalStatusTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    },
+    "LegalEntityReferenceValidationTests": {
+     "satır": 9,
+     "yöntemler": [
+      "Active_same_tenant_legal_entity_is_referenceable",
+      "Bounded_batch_rejects_noncanonical_input_and_propagates_cancellation",
+      "Bounded_batch_returns_only_active_same_tenant_non_deleted_requested_entities",
+      "Cross_tenant_legal_entity_fails_closed",
+      "In_memory_empty_batch_honors_pre_cancelled_token",
+      "Missing_legal_entity_fails_closed",
+      "Non_active_legal_entity_fails_closed",
+      "Soft_deleted_legal_entity_fails_closed"
+     ],
+     "hepsi_geçti": true
+    },
+    "LegalEntitiesControllerPermissionTests": {
+     "satır": 9,
+     "yöntemler": [
+      "Action_enforces_canonical_permission_key",
+      "No_action_uses_the_legacy_modules_legalentity_key"
+     ],
+     "hepsi_geçti": true
+    }
+   },
+   "yük_1dk": 6.88,
+   "yeşil": false
+  },
+  "api": {
+   "komut": [
+    "DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod",
+    "dotnet",
+    "test",
+    "services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj",
+    "-c",
+    "Debug",
+    "--filter",
+    "FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.",
+    "--logger",
+    "trx;LogFileName=docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-api.trx"
+   ],
+   "dotnet_çıkış": 0,
+   "süre_sn": 6.6,
+   "trx": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-api.trx",
+   "günlük": "docs/records/audits/2026-11/mdm-0220-dl1/red-baseline-2/tests-api.log",
+   "trx_okundu": true,
+   "derleme_hatası": false,
+   "toplam": 0,
+   "geçen": 0,
+   "not_executed": 0,
+   "kalan": [],
+   "trx_sayaçları": {
+    "total": "0",
+    "executed": "0",
+    "passed": "0",
+    "failed": "0",
+    "notExecuted": "0"
+   },
+   "testler": [],
+   "proje": "services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj",
+   "süzgeç": "FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.",
+   "adlandırılmış": {
+    "H1": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_validation_carries_approval_status_over_http",
+     "sonuç": "yok"
+    },
+    "H2": {
+     "test": "LegalEntityLookupValidationHttpTests.Not_found_answers_are_unchanged_for_missing_deleted_other_tenant_and_non_active_approved",
+     "sonuç": "yok"
+    },
+    "H3": {
+     "test": "LegalEntityLookupValidationHttpTests.Active_rejected_is_200_and_referenceable_over_http",
+     "sonuç": "yok"
+    },
+    "H4": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_validation_json_has_exactly_seven_properties",
+     "sonuç": "yok"
+    },
+    "H5": {
+     "test": "LegalEntityLookupValidationHttpTests.Lookup_list_items_have_the_same_seven_properties",
+     "sonuç": "yok"
+    },
+    "R1": {
+     "test": "LegalEntityLookupConsumerReadFormTests.Lookup_validation_body_reads_in_both_consumer_forms",
+     "sonuç": "yok"
+    },
+    "R2": {
+     "test": "LegalEntityLookupConsumerReadFormTests.Lookup_list_item_reads_in_both_consumer_forms",
+     "sonuç": "yok"
+    }
+   },
+   "zorunlu_sınıflar": {
+    "LegalEntityLookupValidationHttpTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    },
+    "LegalEntityLookupConsumerReadFormTests": {
+     "satır": 0,
+     "yöntemler": [],
+     "hepsi_geçti": false
+    }
+   },
+   "yük_1dk": 8.63,
+   "yeşil": false
+  }
+ },
+ "yeşil": false
+}

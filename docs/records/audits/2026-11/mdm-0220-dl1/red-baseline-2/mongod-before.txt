@@ -1,0 +1,1 @@
+  900 Thu Nov  5 11:40:41 2026     /opt/homebrew/opt/mongodb-community@7.0/bin/mongod --config /opt/homebrew/etc/mongod.conf
