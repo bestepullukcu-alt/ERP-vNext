@@ -70,7 +70,7 @@ jobs:
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
           # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
           # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
-          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
+          # its reason: the guard's NotInThisJob (HCM, MG Integration / Architecture, PPM).
           - suite: bb-secrets
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
@@ -104,6 +104,25 @@ jobs:
           # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
           - suite: inventory-tests
             project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
+          # Owner decision 2026-11-02: Enterprise Strategy's two projects, green after the default-permission fix on this
+          # branch (138/138 and 4/4); they need nothing outside the process (no git, no mongod).
+          - suite: es-app
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj
+          - suite: es-e2e
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj
+          - suite: crm-app
+            project: services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (HR is the owner's module): MOD-0251's Application tests left NotInThisJob. The
+          # repository test starts its OWN mongod from DITEN_TEST_MONGOD (TestInfrastructure/DisposableHcmMongo.cs) instead
+          # of the shared 27017, and SharedMongoGuardTests keeps that URI out of the project.
+          - suite: hcm-app
+            project: services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (Management Governance is the owner's: MOD-0354 / MOD-0355 / MOD-0357): its
+          # integration tests left NotInThisJob. Their own mongods come from DITEN_TEST_MONGOD
+          # (TestInfrastructure/MongodBinary.cs) instead of a fixed /opt/homebrew path (96/96 locally). The architecture
+          # tests stay out: see NotInThisJob in CiServiceTestsGuardTests.
+          - suite: mg-itest
+            project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
@@ -381,3 +400,24 @@ jobs:
           name: test-results-${{ matrix.suite }}
           path: ${{ runner.temp }}/test-results
           if-no-files-found: warn
+
+  # One check name for branch protection (owner decision 2026-11-02): the matrix gives every suite its own check name,
+  # so the required check is this job. It is green only when both suite jobs above ended in success; failure,
+  # cancelled and skipped are all red.
+  service-tests-result:
+    name: service-tests result
+    if: always()
+    needs: [service-tests, service-tests-macos]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Every suite passed
+        env:
+          LINUX: ${{ needs.service-tests.result }}
+          MACOS: ${{ needs.service-tests-macos.result }}
+        run: |
+          echo "linux: $LINUX, macos: $MACOS"
+          case "$LINUX/$MACOS" in
+            success/success) echo "Bütün test takımları geçti." ;;
+            *) echo "En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır."; exit 1 ;;
+          esac

@@ -1,0 +1,38 @@
+WP-0289-DL1 kabul betiği kırmızı tabanı (kart S-83) — 2026-11-05, Treasury Intake CT (main #371 sonrası yeniden ölçüm)
+betik: execution/domains/master-data-management/work-packs/scripts/wp0289_dl1_accept.py @ 5c2d6270a (bb8c35cc9'un main a38bab855 üstüne taşınmışı) · sha256 50ec466235bb24812fb7a932740ce476c6e158cdceb26bcf6f0b789ddac1280d
+komut: python3 -I <betik> --base a38bab855c9ad7f7c259c5e80d7a03b8e0140a0c --mongod /opt/homebrew/bin/mongod (DOTNET_ROOT=$HOME/.dotnet)
+not: mongod 8.0.18 (CI 7.0.28); DL-1 kodu yokken koşuldu — beklenen sonuç FAIL. dal ve İzinli yol FAIL'i CT dalından (kod yok), AC FAIL'leri etiketli test yokluğundan.
+not: mdm-api'deki tek kırmızı (GskuLifecycleHttpTests.S8_Nothing_arrived_is_not_trusted_inside_the_settle_window: beklenen GSKU_CORRECTION_START_SETTLING, gelen …_NOT_RECEIVED) Treasury dışıdır (MDM GSKU, zaman penceresi); aynı test tek başına yeniden koşuldu: 1/1 geçti — yük altında zamanlamaya bağlı kararsız test. Önceki taban (05b8a9eb3, main 4dbcd67a8) 1221/0 yeşildi.
+---
+HEAD 5c2d6270a5ea73ae9d1c047b5705e745785c1f83 · base a38bab855c9ad7f7c259c5e80d7a03b8e0140a0c · çıktı <scratchpad>
+FAIL dal — docs/ct/treasury-wp0289-dl1-p-02
+PASS taban HEAD'in atası
+PASS worktree temiz
+PASS paket değişmedi (onaylı sürüm) — fafef5c408e0e026
+FAIL değişen dosyalar yalnız İzinli yollar — docs/records/audits/2026-11/treasury-wp0289-dl1-dispatch-01/DISCOVERY-bank-master.txt, execution/domains/master-data-management/work-packs/scripts/wp0289_dl1_accept.py
+PASS yalnız ekleme dosyalarında silinen satır yok
+PASS denetim defterine borç satırı eklenmedi (AC-7)
+PASS git diff --check temiz
+PASS mongod yolu mutlak ve var — /opt/homebrew/bin/mongod
+mongod: db version v8.0.18
+PASS derleme services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release — çıkış 0
+PASS derleme services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Release — çıkış 0
+PASS derleme services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj — çıkış 0
+PASS test mdm-app — çıkış 0 · 2923 sonuç · 0 kırmızı
+FAIL test mdm-api — çıkış 1 · 1221 sonuç · 1 kırmızı
+FAIL AC-01 etiketli testler geçti — 0 test
+FAIL AC-02 etiketli testler geçti — 0 test
+FAIL AC-03 etiketli testler geçti — 0 test
+FAIL AC-04 etiketli testler geçti — 0 test
+FAIL AC-05 etiketli testler geçti — 0 test
+FAIL AC-06 etiketli testler geçti — 0 test
+FAIL AC-08 etiketli testler geçti — 0 test
+FAIL AC-09 etiketli testler geçti — 0 test
+FAIL AC-27 etiketli testler geçti — 0 test
+FAIL AC-59 etiketli testler geçti — 0 test
+FAIL AC-60 etiketli testler geçti — 0 test
+PASS AC-07 AuditTrailStandard — çıkış 0 · 22 sonuç
+PASS scripts/tests (yerel kapı) — çıkış 0
+SONUÇ: FAIL — 14 kontrol
+Sabotajlar bu betikte koşulmaz: her biri işçi raporunda kırmızı test adıyla verilir; kabulde CT yeniden koşar.
+exit=1

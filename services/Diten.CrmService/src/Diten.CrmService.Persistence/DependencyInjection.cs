@@ -306,7 +306,13 @@ public static class DependencyInjection
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderApprovalLinkRepository, Repositories.Commercial.PreOrderApprovalLinkRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderCodeSequenceRepository, Repositories.Commercial.PreOrderCodeSequenceRepository>();
 
-        TryEnsureIndexes(client.GetDatabase(databaseName));
+        // Index creation talks to the server during registration. Mongo:EnsureIndexesOnStartup=false (default true) lets a
+        // wiring test resolve the container with no server at all — a missing server surfaces as System.TimeoutException,
+        // which the MongoException catch below does not cover.
+        if (!bool.TryParse(configuration["Mongo:EnsureIndexesOnStartup"], out var ensureIndexes) || ensureIndexes)
+        {
+            TryEnsureIndexes(client.GetDatabase(databaseName));
+        }
 
         return services;
     }
@@ -1604,6 +1610,10 @@ public static class DependencyInjection
             accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
                 Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.AccountName),
                 new CreateIndexOptions { Name = "ix_accounts_tenant_name" }));
+            // MOD-0149 §30 U-3: the lookup sort (name ascending, _id ascending) as an index scan, never an in-memory sort.
+            accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
+                Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.AccountName).Ascending(a => a.Id),
+                new CreateIndexOptions { Name = "ix_accounts_tenant_name_id" }));
             accounts.Indexes.CreateOne(new CreateIndexModel<Account>(
                 Builders<Account>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.ParentAccountId),
                 new CreateIndexOptions { Name = "ix_accounts_tenant_parent" }));

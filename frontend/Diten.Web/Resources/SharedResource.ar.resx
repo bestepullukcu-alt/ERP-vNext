@@ -1239,6 +1239,59 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>مخطط تمارين الاستدعاء</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>إعدادات الاستدعاء</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>تخطيط احتياجات المواد وإعادة التزويد</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>تحسين مخزون الأمان</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>سيناريوهات خطة السعة</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>اعتمادات خطة S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>لقطات خطة S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.CASES" xml:space="preserve">
+    <value>الحالات</value>
+  </data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
+    <value>الاستهلاكات</value>
+  </data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
+    <value>لوحة المعلومات</value>
+  </data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
+    <value>استثناءات التاريخ</value>
+  </data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve">
+    <value>التدريبات</value>
+  </data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
+    <value>فحوص الفعالية</value>
+  </data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
+    <value>الأدلة</value>
+  </data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
+    <value>الاستثناءات</value>
+  </data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
+    <value>حالة الدفعة</value>
+  </data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve">
+    <value>السياسات</value>
+  </data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
+    <value>طلبات الحجر</value>
+  </data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
+    <value>العزل</value>
+  </data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve">
+    <value>التتبّع</value>
+  </data>
 </root>

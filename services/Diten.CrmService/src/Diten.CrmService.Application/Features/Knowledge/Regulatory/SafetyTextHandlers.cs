@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
@@ -25,22 +26,50 @@ public sealed record ResolveSafetyTextQuery(Guid ProductId, string? CountryCode,
 public sealed record CreateSafetyTextCommand(
     Guid GlobalProductId, string? GlobalProductCodeDisplay, string? CountryCode, string? LanguageCode, string? Body,
     string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
-    string? ApprovalReference = null) : IRequest<Response<SafetyTextDto>>;
+    string? ApprovalReference = null) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<SafetyTextDto>(response, dto => dto.Id);
+}
 
 /// <summary>Content of a draft only (the key — product, country, language — is fixed at creation).</summary>
 public sealed record UpdateSafetyTextCommand(
     Guid Id, string? Body, string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
-    string? ApprovalReference = null, int? ExpectedVersion = null) : IRequest<Response<SafetyTextDto>>;
+    string? ApprovalReference = null, int? ExpectedVersion = null) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record NewSafetyTextVersionCommand(Guid Id) : IRequest<Response<SafetyTextDto>>;
+public sealed record NewSafetyTextVersionCommand(Guid Id) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<SafetyTextDto>(response, dto => dto.Id);
+}
 
-public sealed record SubmitSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>;
+public sealed record SubmitSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record WithdrawSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>;
+public sealed record WithdrawSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record DecideSafetyTextCommand(Guid Id, string? Decision, string? Comment) : IRequest<Response<SafetyTextDto>>;
+public sealed record DecideSafetyTextCommand(Guid Id, string? Decision, string? Comment) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record ArchiveSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>;
+public sealed record ArchiveSafetyTextCommand(Guid Id) : IRequest<Response<SafetyTextDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("SafetyText");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-KP-5a — every safety text request; the lifecycle is the shared <see cref="RegulatoryTextLifecycle{T}"/>.</summary>
 public sealed class SafetyTextHandlers :

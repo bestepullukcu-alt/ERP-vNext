@@ -20,7 +20,10 @@
             <div class="row g-4">
                 <div class="col-12">
                     <label for="scenarioNameInput" class="form-label fw-medium">@Localizer["ScenarioName"] <span class="text-danger">*</span></label>
-                    <input type="text" id="scenarioNameInput" class="form-control" autocomplete="off" />
+                    <div class="diten-field">
+                        <i class="bx bx-rename diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="scenarioNameInput" class="form-control" autocomplete="off" />
+                    </div>
                     <div class="invalid-feedback" data-for="scenarioNameInput"></div>
                 </div>
                 <div class="col-12">
@@ -63,6 +66,6 @@
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="btnSubmitScenario" class="btn btn-primary">@Localizer["CreateScenario"]</button>
+        <button type="button" id="btnSubmitScenario" class="btn btn-primary" data-dt-primary="enter">@Localizer["CreateScenario"]</button>
     </div>
 </div>

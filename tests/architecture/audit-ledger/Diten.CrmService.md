@@ -15,7 +15,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | crm-knowledge-yayinci | aday | yazıcı | IKnowledgeConceptAuditPublisher.PublishAsync |
 | crm-territory-yayinci | aday | yazıcı | ITerritoryLifecycleAuditPublisher.PublishAsync |
 | crm-visit-evidence-yayinci | aday | yazıcı | IVisitEvidenceAuditPublisher.PublishAsync |
-| crm-merkezi-iletim | b | işaret | IAuditableCommand |
+| crm-merkezi-iletim | b | işaret | ICentralAuditDeclaration |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
@@ -26,6 +26,12 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 > **crm-territory-yayinci** — Yalnız uygulama günlüğü; HTTP uygulaması yok.
 > **crm-visit-evidence-yayinci** — (WP-VW-W3L, kapsam yaz / kaldır) Aynı: varsayılan yalnız uygulama günlüğü; `Crm:Audit:Mode=http` ile `HttpCrmAuditPublisher` (SourceModule MOD-0155).
 > **crm-merkezi-iletim** — (WP-VW-W6 F8-a, 2026-10-20; AUD-001 K4) Ortak işaret ve davranış `Diten.Building.Blocks` (`Diten.BuildingBlocks.Auditing`): `AuditForwardingBehavior` CRM `AddApplication` içinde EN DIŞTA kayıtlı; `PlatformAuditForwarder` → Platform `POST /api/internal/audit/append` (`PlatformService:BaseUrl` + `AuthService:InternalApiKey`; geliştirme ortamında açık), kategori `Crm` (19; 2026-10-30 main senkronuna kadar 18 — 18 main'de Finance). Başarılı / reddedilen / hata ayrı kayıt; anahtar / adres boşsa başlangıçta ve her kayıtta uyarı + sayaç (K8). Kabulü CT kararıdır (`AcceptedTrails`).
+
+Ölçüm notları (2026-11-02, CRM-AUD-KN-01 / BL-501):
+
+> **crm-merkezi-iletim** — ortak iletici (`Diten.BuildingBlocks.CentralAudit`, kural §5 K4): `CentralAuditBehavior` (Building.Blocks, pipeline'ın en içi) işaretli komut BAŞARIYLA bitince (istisna yok, `Response<T>.IsSuccessful = true`) olayı servisin kendi `central_audit_outbox` koleksiyonuna yazar; `CentralAuditDispatcher` onu `POST /api/internal/audit/append`'e (X-Internal-Api-Key, `eventId` ile tekil) iletir. Kayıt bu serviste: `Program.cs` → `AddCentralAudit<CrmCentralAuditScope>(…, "Diten.CrmService")`. Kategori `Crm` (Platform `AuditCategory.Crm = 19`, K-AUD-1), modül kodu `CRM` (Platform `CrmManifestProvider`). İlk dilim: Knowledge grubunun 34 komutu (KnowledgePath 12, ObjectionResponse 8, SafetyText 7, CountryLegalProfile 7).
+> **İşlem bütünlüğü** — `RequireEnlistment = false`: Knowledge depoları Mongo işlemi açmıyor (ölçüldü: CRM'de işlem açan yalnız Territory / VisitPlanning / Concept birim-işleri), kayıt komut başarıyla bittikten HEMEN SONRA ayrı bir yazımla outbox'a girer. Sahip kararı K-AUD-2 (Beste, 2026-11-02): bu komutlar §4.4 K2 sınıfında DEĞİL — K2 borcu yok. Boşluk adıyla: komut yazdıktan sonra outbox yazımı düşerse kayıt kaybolur ve yalnız hata günlüğü söyler (`Central audit: the outbox row could not be written…`, LogError). Adres / anahtar boşsa komutlar durmaz, olaylar outbox'ta birikir, dakikada bir uyarı ve `/health/central-audit` Degraded (§4.3 "sessiz değil", K8).
+> **Eski yayıncılar AYNEN** — beş `aday` iz (yukarıda) değişmedi; merkezi kayıt onların yanına eklenir.
 
 ## İstisnalar
 

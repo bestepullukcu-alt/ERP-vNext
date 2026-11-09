@@ -1239,6 +1239,59 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Планировщик учений по отзыву</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Пакет доказательств отзыва</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Планирование потребности в материалах и пополнение запасов</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Оптимизация страхового запаса</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Сценарии плана мощностей</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>Согласования плана S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>Снимки плана S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.CASES" xml:space="preserve">
+    <value>Случаи</value>
+  </data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
+    <value>Потребления</value>
+  </data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
+    <value>Панель</value>
+  </data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
+    <value>Переопределения дат</value>
+  </data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve">
+    <value>Учения</value>
+  </data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
+    <value>Проверки эффективности</value>
+  </data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
+    <value>Доказательства</value>
+  </data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
+    <value>Исключения</value>
+  </data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
+    <value>Статус партии</value>
+  </data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
+    <value>Уведомления</value>
+  </data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve">
+    <value>Политики</value>
+  </data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
+    <value>Запросы на карантин</value>
+  </data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
+    <value>Обособления</value>
+  </data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve">
+    <value>Трассировка</value>
+  </data>
 </root>

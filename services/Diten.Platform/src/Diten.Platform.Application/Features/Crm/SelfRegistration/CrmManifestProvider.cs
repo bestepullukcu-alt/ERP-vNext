@@ -59,6 +59,12 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     // canonical write/resolve keys so an RBAC admin can grant them ahead of that follow-up.
     private const string VisitFrequencyPolicyReadFallback = TerritoryRead;
 
+    // WP-0149-AR-DL1-FU01 (MOD-0149 §30, CRM-ACCOUNT-LOOKUP 1.0.0) — the key CrmService AccountController enforces on
+    // the Treasury AR endpoints U-1 (lookup-validation) and U-3 (lookup). It has no page or button, so it is declared
+    // only as an API permission (FU-RSV-01) — never on a page or action — so it reaches the Auth catalog and a tenant
+    // admin can grant it.
+    private const string AccountLookupValidation = "crm.account.lookup-validation";
+
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "CRM",
@@ -71,6 +77,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             SortOrder: 60,
             Icon: "bx-buildings",
             IsBaseline: false, // HARD: CRM is a licensed module — tenant entitlement required (never entitlement-free).
+            ApiPermissions:
+            [
+                new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant")
+            ],
             Pages:
             [
                 // Each page's Actions declare the granular write operations (with the verbatim permission the CRM

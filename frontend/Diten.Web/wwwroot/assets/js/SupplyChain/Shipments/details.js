@@ -111,10 +111,14 @@ const ShipmentDetails = (function () {
         showError(L.validationError, alertId); failed[0].focus();
         return true;
     };
+    // The stock fields as the response carries them. issueTransactionId is INVENTORY's id: the response has no INV- number.
+    const lineCells = (line) => [line.lineNumber, line.itemId, line.skuId, line.quantity, line.uomId, line.inventoryReferenceId || L.unavailable,
+        own(L.skuLevels, line.skuLevel) || line.skuLevel || L.unavailable, line.fromLocationId || L.unavailable, line.lotId || L.unavailable,
+        line.issueTransactionId || L.unavailable];
     const renderLines = (lines) => {
         const body = document.getElementById('detailLines'); body.replaceChildren();
         (lines || []).forEach((line) => { const row = body.insertRow();
-            [line.lineNumber, line.itemId, line.skuId, line.quantity, line.uomId, line.inventoryReferenceId || L.unavailable]
+            lineCells(line)
                 .forEach((item) => { const cell = row.insertCell(); cell.textContent = item; }); });
     };
     const renderPod = (pod) => {
@@ -209,7 +213,7 @@ const ShipmentDetails = (function () {
         load();
     };
     document.addEventListener('DOMContentLoaded', init);
-    // localInputValue, parseLocalInput, errorText and statusText touch no DOM; they are returned for the Node tests (Q382,
-    // MOD-0183 DL-2), nothing else uses them.
-    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText };
+    // localInputValue, parseLocalInput, errorText, statusText and lineCells touch no DOM; they are returned for the Node tests
+    // (Q382, MOD-0183 DL-2), nothing else uses them.
+    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText, lineCells };
 })();

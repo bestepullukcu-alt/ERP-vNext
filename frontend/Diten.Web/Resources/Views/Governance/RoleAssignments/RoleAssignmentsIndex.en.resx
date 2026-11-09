@@ -194,4 +194,10 @@
     <value>The role already has this permission. Refresh the page.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Removing this permission would leave no other active account that can add users. Give another user that right first.</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ActionVerb_Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
 </root>

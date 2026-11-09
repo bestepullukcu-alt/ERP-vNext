@@ -2698,4 +2698,36 @@
   <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
     <value>Sipariş kendi günü ya da öncesindeki en son kuru kullanır; kur yoksa yerel karşılık gösterilmez.</value>
   </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Bu sayfa kapasite planlarını açar: seçili şirket için plan oluşturun ya da var olan bir planı kimliğiyle açın.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Kapasite ve tedarik planlamacıları</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Şirketi seçin</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>Üstteki şirket seçiciden şirketi seçin; plan o şirkette oluşturulur ve açılır.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>Plan oluşturun</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>“Create plan”e tıklayın; adı, ufku ve dayandığı talep planını girin, ardından “Save”e tıklayın. Yeni plan kendi çalışma alanında açılır.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>Bir planı açın</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>Plan kimliğini “Plan ID” alanına yapıştırın ve “Open plan”a tıklayın. Başka bir şirketin planı bulunamaz.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>Bu sayfa tek bir kapasite planının çalışma alanıdır: kaynak verileri, senaryoları ve değerlendirmeleri.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>Kapasite ve tedarik planlamacıları</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>Kaynağı kontrol edin</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>“Plan provenance” talep planını, sürümünü, ne zaman alındığını ve sağlama toplamını gösterir: bu planın her senaryosu o veriyle çalışır.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>Senaryo oluşturun</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>“Create scenario”ya tıklayın, ad verin, kısıt referanslarını ve kapasite düzeltmelerini ekleyin, ardından paneldeki “Create scenario”ya tıklayın.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>Değerlendirin</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>Bir senaryoyu açıp “Evaluate”e tıklayın: modu ve kaynakları seçip gönderin. Sonuç tamamlanınca değerlendirme panelinde görünür.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>Bu sayfa S&amp;OP planlarını açar: seçili şirket için plan oluşturun ya da var olan bir planı kimliğiyle açın.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>S&amp;OP koordinatörleri ve onay sahipleri</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>Şirketi seçin</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>Üstteki şirket seçiciden şirketi seçin; plan o şirkette oluşturulur ve açılır.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>Plan oluşturun</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>“Create plan”e tıklayın; adı, ufku ve dayandığı talep planını girin, ardından “Save”e tıklayın. Yeni plan çalışma alanında “Draft” olarak açılır.</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>Bir planı açın</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>Plan kimliğini “Plan ID” alanına yapıştırın ve “Open plan”a tıklayın. Başka bir şirketin planı bulunamaz.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>Bu sayfa tek bir S&amp;OP planının çalışma alanıdır: anlık görüntüleri ve bunlar üzerinde kaydedilen onaylar.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>S&amp;OP koordinatörleri ve onay sahipleri</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>Anlık görüntü alın</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>“Capture snapshot”a tıklayın; talep planını, sürümünü, kaynağın ne zaman alındığını ve sağlama toplamını girin, tedarik girdisi referanslarını ekleyin. Ctrl+Enter ya da düğmeyle onaylayın.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>Onay kaydedin</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>“Record sign-off”a tıklayın; anlık görüntüyü, rolünüzü ve kararı seçin, gerekirse yorum ekleyip onaylayın. Onaylar yalnız plan incelemedeyken kaydedilir.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Neyin kesin olduğunu bilin</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Kaydedilmiş bir onay kesindir: değiştirilemez ya da silinemez; aynı rol ve anlık görüntü için ikinci onay reddedilir.</value></data>
 </root>

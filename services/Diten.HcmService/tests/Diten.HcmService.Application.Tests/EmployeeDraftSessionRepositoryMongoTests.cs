@@ -1,3 +1,4 @@
+using Diten.HcmService.Application.Tests.TestInfrastructure;
 using Diten.HcmService.Domain.Entities;
 using Diten.HcmService.Domain.Repositories;
 using Diten.HcmService.Persistence;
@@ -14,12 +15,14 @@ public sealed class EmployeeDraftSessionRepositoryMongoTests
     [Fact]
     public async Task Repository_RoundTripsDraft_ByMongoIdAndTenant()
     {
+        // Its own mongod (TestInfrastructure/DisposableHcmMongo.cs), never the shared developer mongod on 27017.
+        await using var mongo = await DisposableHcmMongo.StartAsync();
         var databaseName = $"DitenERP_Mod0251_RepoTests_{Guid.NewGuid():N}";
         var services = new ServiceCollection();
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Mongo:ConnectionString"] = "mongodb://localhost:27017",
+                ["Mongo:ConnectionString"] = mongo.ConnectionString,
                 ["Mongo:DatabaseName"] = databaseName
             })
             .Build();

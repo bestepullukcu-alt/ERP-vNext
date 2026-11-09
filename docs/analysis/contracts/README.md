@@ -30,6 +30,7 @@
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **BANK-DISPATCH** | MOD-0269 (tüketici MOD-0126) | `bank-dispatch.md` (süreç içi port sözleşmesi, OpenAPI değil) | ✅ **0.1.0 FROZEN** (2026-10-25, D27/7): gönderim kapalı, tek sonuç `NotConfigured`; T32 sapması (MOD-0003 yok, D27/1) |
+| **RECORD-CODE-ALLOCATE** | MOD-0040-FU02 (tüketiciler: Treasury MOD-0119/0120/0124/0126, MDM MOD-0289/0217, sonra MOD-0178) | `record-code-allocate.md` (iç uç + süreç içi port sözleşmesi, OpenAPI değil) | ✅ **1.0.0 FROZEN** (2026-11-04): §12 bekleten noktalar kapandı (Treasury CT + Ali) |
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 
@@ -66,6 +67,12 @@ Procurement domain'inin (Diten.ProcurementService, port 5062) sahibi olduğu con
 > Procurement CONSUME eder (değiştirmez): **INVENTORY-BUNDLE** (0173, GRN post), **PRODUCT-MASTER-BUNDLE** (0290, item kimliği), **LOCATION** (GRN warehouse/location). Consumed frozen contract redefine edilmez (K16); envanter yalnız MOD-0173'e post edilir (shadow stock YOK).
 
 İskeletler: [wave0-contracts](../wave0-contracts-product-master-and-inventory.md) · INVENTORY detay: [inventory-bundle-contract-detailed-v0.1](../inventory-bundle-contract-detailed-v0.1.md)
+
+### Commercial-suite (CRM) sağlanan sözleşmeler (2026-11-05)
+
+| Contract | Owner | Format | Durum |
+|---|---|---|---|
+| **CRM-ACCOUNT-LOOKUP** | MOD-0149 (Diten.CrmService; tüketici MOD-0120 AR) | `crm-account-lookup.md` (HTTP uçları, `Response<T>` zarfı; OpenAPI değil) | ✅ **1.0.0 FROZEN** (2026-11-05, commercial-suite sahibi): U-1 `GET /api/crm/accounts/{accountId}/lookup-validation` ve U-3 `GET /api/crm/accounts/lookup` — izin `crm.account.lookup-validation`, `tenant_id`'siz token 400 (K-11); DL-1 main'de (PR #377, 38f7ea08d). U-2 `external-references/resolve` (§3) DL-2 ile (MOD-0120 O-10) 1.x içinde donar, o güne kadar bağlayıcı taslak. Onaylı taslak `drafts/crm-account-lookup-validation-v1.0-proposal.md` (sha256 `ec5a1062…`) değişmedi |
 
 ## Mock nasıl çalıştırılır (developer)
 

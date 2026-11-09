@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Domain.Enums;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.ESignature;
@@ -8,8 +9,15 @@ namespace Diten.Platform.Application.Features.ESignature;
 //
 // AUDIT. Every state-changing command owns its audit: the handler writes the MOD-0021 intent into the outbox INSIDE the
 // business transaction (ITransactionOwnedAuditCommand; authorized in AuditBehavior through ESignatureTransactionAudit), so
-// a signature, the request it fulfils and its audit event commit together. Verification changes nothing and writes its
-// own event with the computed status (IAuditExcludedRequest). Queries are not audited.
+// a signature, the request it fulfils and its audit event commit together. Two commands are audited by the central
+// AuditBehavior instead (IAuditableCommand + IAuditMetadataProvider, AUD-001 §5 path a), so a refusal is recorded too
+// (AUD-001 §3): verification, which changes no record, and the platform-global signable-action catalog registration,
+// which has no tenant transaction to write an intent into. A verification whose verdict was computed adds ONE result
+// record (esign.signature.verified: status + imageIntact + digestIntact) through the same central log — one attempt plus
+// one result, never more. Queries are not audited.
+//
+// The five commands that share their name with a MOD-0029-FU23 document-signature command carry "ESignature" in theirs
+// (VerifyESignatureCommand, …): the audit ledger tells commands apart by type name.
 //
 // ⚠ ToString of every record that carries a ticket or image bytes is overridden: MediatR logging behaviors and exception
 // paths may print a request, and a ticket or a PNG must never reach a log line (ESIGN-BUNDLE rule 8).
@@ -19,12 +27,11 @@ public static class ESignatureTransactionAudit
 {
     private static readonly HashSet<Type> Owners =
     [
-        typeof(SignSubjectCommand), typeof(InvalidateSignatureCommand),
-        typeof(CreateSignatureRequestCommand), typeof(RejectSignatureRequestCommand), typeof(CancelSignatureRequestCommand),
+        typeof(SignSubjectCommand), typeof(InvalidateESignatureCommand),
+        typeof(CreateESignatureRequestCommand), typeof(RejectESignatureRequestCommand), typeof(CancelESignatureRequestCommand),
         typeof(ExpireSignatureRequestsCommand),
         typeof(SavePolicyCommand), typeof(RevertLegalEntityPolicyCommand),
         typeof(CreateMeaningCommand), typeof(UpdateMeaningCommand), typeof(SetMeaningActiveCommand),
-        typeof(RegisterSignableActionsCommand),
         typeof(CreateExportCommand),
         // E3 — samples
         typeof(CreateSampleCommand), typeof(DecideSampleCommand), typeof(DeactivateSampleCommand), typeof(WithdrawSampleCommand)
@@ -60,12 +67,21 @@ public sealed record GetSignatureQuery(Guid Id) : IRequest<Response<SignatureRec
 
 public sealed record ListSignaturesBySubjectQuery(string? Module, string? SubjectType, string? SubjectId) : IRequest<Response<IReadOnlyList<SignatureRecordDto>>>;
 
-public sealed record VerifySignatureCommand(Guid Id) : IRequest<Response<VerificationResultDto>>, IAuditExcludedRequest;
+/// <summary>
+/// §4.7 — the ATTEMPT is audited by AuditBehavior on every run, a refused one (404) included; the record is never written.
+/// AuditBehavior runs before the verdict exists, so the result is a second record its handler writes (resultEvent).
+/// </summary>
+public sealed record VerifyESignatureCommand(Guid Id) : IRequest<Response<VerificationResultDto>>, IAuditableCommand, IAuditMetadataProvider
+{
+    public AuditRequestMetadata GetAuditMetadata() =>
+        new(AuditCategory.ESignature, AuditOperation.Execute, "ESignatureRecord", EntityId: Id, SourceModule: ESignAuditEvents.SourceModule,
+            Metadata: new Dictionary<string, object?> { ["resultEvent"] = ESignAuditEvents.Verified });
+}
 
-public sealed record InvalidateSignatureCommand(Guid Id, string? Ticket, string? Reason, string? IdempotencyKey)
+public sealed record InvalidateESignatureCommand(Guid Id, string? Ticket, string? Reason, string? IdempotencyKey)
     : IRequest<Response<SignatureRecordDto>>, ITransactionOwnedAuditCommand
 {
-    public override string ToString() => $"InvalidateSignatureCommand {{ Id = {Id} }}";
+    public override string ToString() => $"InvalidateESignatureCommand {{ Id = {Id} }}";
 }
 
 public sealed record SearchSignaturesQuery(
@@ -80,7 +96,7 @@ public sealed record SearchSignaturesQuery(
 
 // ── requests ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-public sealed record CreateSignatureRequestCommand(
+public sealed record CreateESignatureRequestCommand(
     string? Module,
     string? SubjectType,
     string? SubjectId,
@@ -96,10 +112,10 @@ public sealed record ListSignatureRequestsQuery(string? Scope, string? Module, s
 
 public sealed record GetSignatureRequestQuery(Guid Id) : IRequest<Response<SignatureRequestDto>>;
 
-public sealed record RejectSignatureRequestCommand(Guid Id, string? Reason, string? IdempotencyKey)
+public sealed record RejectESignatureRequestCommand(Guid Id, string? Reason, string? IdempotencyKey)
     : IRequest<Response<SignatureRequestDto>>, ITransactionOwnedAuditCommand;
 
-public sealed record CancelSignatureRequestCommand(Guid Id, string? Reason) : IRequest<Response<SignatureRequestDto>>, ITransactionOwnedAuditCommand;
+public sealed record CancelESignatureRequestCommand(Guid Id, string? Reason) : IRequest<Response<SignatureRequestDto>>, ITransactionOwnedAuditCommand;
 
 /// <summary>System-only (Hangfire sweeper): Waiting requests past their due date → Expired, in the current tenant scope.</summary>
 public sealed record ExpireSignatureRequestsCommand(int MaxItems) : IRequest<Response<int>>, ITransactionOwnedAuditCommand;
@@ -147,9 +163,22 @@ public sealed record SignableActionInput(
     string? DefaultMeaningCode,
     string? DefaultVisualMode);
 
-/// <summary>S2S (CT-D12): a consumer module registers its signable actions in the global catalog.</summary>
+/// <summary>
+/// S2S (CT-D12): a consumer module registers its signable actions in the global catalog. The catalog has no tenant, so
+/// the audit event is platform-global; AuditBehavior writes it, a refused registration included.
+/// </summary>
 public sealed record RegisterSignableActionsCommand(string? Module, IReadOnlyList<SignableActionInput>? Actions)
-    : IRequest<Response<RegisterActionsResultDto>>, ITransactionOwnedAuditCommand;
+    : IRequest<Response<RegisterActionsResultDto>>, IAuditableCommand, IAuditMetadataProvider
+{
+    public AuditRequestMetadata GetAuditMetadata() =>
+        new(AuditCategory.ESignature, AuditOperation.Update, "ESignableAction", SourceModule: ESignAuditEvents.SourceModule, IsPlatformGlobal: true,
+            Metadata: new Dictionary<string, object?>
+            {
+                ["event"] = ESignAuditEvents.ActionsRegistered,
+                ["module"] = Module,
+                ["actionCodes"] = Actions is null ? null : string.Join(",", Actions.Select(a => a.ActionCode))
+            });
+}
 
 // ── export ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 

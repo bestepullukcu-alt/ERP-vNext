@@ -1,4 +1,5 @@
 using System.Globalization;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
@@ -61,13 +62,27 @@ public sealed record CompetitorUsageDto(int Months, bool MergeResolved, IReadOnl
 public sealed record GetVisitReportV2PrefillQuery(Guid PlannedVisitId) : IRequest<Response<VisitReportV2PrefillDto>>;
 
 public sealed record SaveVisitReportV2DraftCommand(Guid PlannedVisitId, VisitReportV2Body Body, int? ExpectedVersion)
-    : IRequest<Response<VisitReportV2SaveResultDto>>;
+    : IRequest<Response<VisitReportV2SaveResultDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitReport");
+    public Guid? CentralAuditEntityId(object? response) =>
+        CrmCentralAudit.IdFrom<VisitReportV2SaveResultDto>(response, dto => dto.VisitReportId ?? Guid.Empty);
+}
 
 public sealed record SubmitVisitReportV2Command(Guid PlannedVisitId, VisitReportV2Body Body, int? ExpectedVersion, string? ReportedByResourceId = null)
-    : IRequest<Response<VisitReportV2SaveResultDto>>;
+    : IRequest<Response<VisitReportV2SaveResultDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitReport");
+    public Guid? CentralAuditEntityId(object? response) =>
+        CrmCentralAudit.IdFrom<VisitReportV2SaveResultDto>(response, dto => dto.VisitReportId ?? Guid.Empty);
+}
 
 public sealed record AmendVisitReportV2Command(Guid VisitReportId, string? Reason, VisitReportV2Body Body, int? ExpectedVersion, string? ReportedByResourceId = null)
-    : IRequest<Response<VisitReportV2SaveResultDto>>;
+    : IRequest<Response<VisitReportV2SaveResultDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitReport");
+    public Guid? CentralAuditEntityId(object? response) => VisitReportId;
+}
 
 public sealed record GetCompetitorUsageQuery(IReadOnlyList<Guid> CompetitorIds, int? Months) : IRequest<Response<CompetitorUsageDto>>;
 

@@ -174,6 +174,36 @@ public sealed class AccountRepository : IAccountRepository
         };
     }
 
+    /// <summary>MOD-0149 §30 U-3 sort: name ascending, then <c>_id</c> ascending. The second key is what makes paging
+    /// stable for equal names (a row never shows on two pages or none). Used ONLY by <see cref="SearchLookupAsync"/>;
+    /// <see cref="BuildSort"/> (the list page) is untouched. Served by <c>ix_accounts_tenant_name_id</c>.</summary>
+    public static readonly SortDefinition<Account> LookupSort =
+        Builders<Account>.Sort.Ascending(a => a.AccountName).Ascending(a => a.Id);
+
+    public async Task<(IReadOnlyList<Account> Items, long Total)> SearchLookupAsync(
+        Guid tenantId, string search, string? status, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        // The same predicate ListAsync builds for its search: tenant + not deleted, then a literal (escaped),
+        // Turkish-i insensitive "contains" on the name or the code.
+        var term = Application.Common.TurkishInsensitivePattern.Build(search.Trim());
+        var filter = ActiveTenant(tenantId)
+                     & (Builders<Account>.Filter.Regex(a => a.AccountName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
+                        | Builders<Account>.Filter.Regex(a => a.AccountCode, new MongoDB.Bson.BsonRegularExpression(term, "i")));
+        if (status is not null)
+        {
+            filter &= Builders<Account>.Filter.Eq(a => a.Status, status);
+        }
+
+        var total = await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _collection.Find(filter)
+            .Sort(LookupSort)
+            .Skip((page - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, total);
+    }
+
     public async Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken cancellationToken)
     {
         var filter = ActiveTenant(tenantId) & Builders<Account>.Filter.Eq(a => a.ParentAccountId, parentId);

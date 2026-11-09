@@ -72,7 +72,7 @@ public sealed class ShipmentTests(ITestOutputHelper output)
  {"sourceModule":"MOD-0141","sourceType":"SALES_ORDER","sourceDocumentId":"SO-900","warehouseReferenceId":"wh-01",
  "shipToReference":"CUST-100/ADDR-2","plannedShipAt":"2026-09-20T08:00:00Z","plannedDeliverAt":"2026-09-21T16:00:00Z",
  "lines":[{"lineNumber":"1","itemId":"b1f2c3d4-0000-0000-0000-000000000001","skuId":"c3d4e5f6-0000-0000-0000-000000000002",
- "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001","skuLevel":"Lsku"}]}
+ "quantity":"30.000","uomId":"EA","inventoryReferenceId":"rsv-4001","skuLevel":"Lsku","fromLocationId":"loc-01"}]}
  """)!.AsObject();
     private static JsonObject Transition(string status) => new() { ["targetStatus"] = status, ["occurredAt"] = "2026-09-20T08:15:00Z" };
     private static JsonObject Pod() => new()

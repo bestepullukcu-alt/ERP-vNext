@@ -227,13 +227,11 @@ public sealed class SignableActionHandlers :
 
     private readonly IESignActionRepository _actions;
     private readonly IPlatformTransactionExecutor _transactions;
-    private readonly IAuditService _audit;
 
-    public SignableActionHandlers(IESignActionRepository actions, IPlatformTransactionExecutor transactions, IAuditService audit)
+    public SignableActionHandlers(IESignActionRepository actions, IPlatformTransactionExecutor transactions)
     {
         _actions = actions;
         _transactions = transactions;
-        _audit = audit;
     }
 
     public async Task<Response<IReadOnlyList<SignableActionDto>>> Handle(ListSignableActionsQuery request, CancellationToken ct)
@@ -306,25 +304,7 @@ public sealed class SignableActionHandlers :
                 return changed;
             }, ct);
 
-            // The catalog is global (no tenant), so its audit event is platform-global, written by a service actor.
-            await _audit.AppendAsync(new AuditAppendRequest
-            {
-                CorrelationId = Guid.NewGuid(),
-                RequestType = ESignAuditEvents.ActionsRegistered,
-                ActorType = AuditActorType.Service,
-                Category = AuditCategory.ESignature,
-                EntityType = "ESignableAction",
-                Operation = AuditOperation.Update,
-                IsPlatformGlobal = true,
-                Metadata = new Dictionary<string, object?>
-                {
-                    ["module"] = request.Module,
-                    ["registered"] = registered,
-                    ["unchanged"] = actions.Count - registered,
-                    ["actionCodes"] = string.Join(",", actions.Select(a => a.ActionCode))
-                },
-                SourceModule = ESignAuditEvents.SourceModule
-            }, ct);
+            // The platform-global audit event is written by AuditBehavior (RegisterSignableActionsCommand.GetAuditMetadata).
             return Response<RegisterActionsResultDto>.Success(new RegisterActionsResultDto(registered, actions.Count - registered));
         }
         catch (ESignatureDuplicateException)

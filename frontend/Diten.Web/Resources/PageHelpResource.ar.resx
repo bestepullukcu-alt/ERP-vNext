@@ -2698,4 +2698,36 @@
   <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
     <value>يستخدم الطلب أحدث سعر في يومه أو قبله؛ وبدونه لا يُعرض معادل محلي.</value>
   </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>تفتح هذه الصفحة خطط السعة: أنشئ خطة للشركة المحددة أو افتح خطة موجودة بمعرّفها.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>مخططو السعة والإمداد</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>اختر الشركة</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>اختر الشركة من محدد الشركة في الأعلى؛ تُنشأ الخطة وتُفتح في تلك الشركة.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>أنشئ خطة</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>انقر «Create plan»، وأدخل الاسم والأفق وخطة الطلب التي تستند إليها، ثم انقر «Save». تُفتح الخطة الجديدة في مساحة عملها.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>افتح خطة</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>الصق معرّف الخطة في «Plan ID» وانقر «Open plan». لا يمكن العثور على خطة شركة أخرى.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>هذه الصفحة هي مساحة عمل خطة سعة واحدة: بيانات مصدرها وسيناريوهاتها وتقييماتها.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>مخططو السعة والإمداد</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>تحقّق من المصدر</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>يعرض «Plan provenance» خطة الطلب وإصدارها ووقت التقاطها ومجموع التحقق: يعمل كل سيناريو في هذه الخطة على تلك البيانات.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>أنشئ سيناريو</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>انقر «Create scenario»، وسمِّه، وأضف مراجع القيود وتعديلات السعة، ثم انقر «Create scenario» في اللوحة.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>قيّمه</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>افتح سيناريو وانقر «Evaluate»: اختر الوضع والموارد ثم أرسل. تظهر النتيجة في لوحة التقييم عند اكتمالها.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>تفتح هذه الصفحة خطط S&amp;OP: أنشئ خطة للشركة المحددة أو افتح خطة موجودة بمعرّفها.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>منسقو S&amp;OP وأصحاب الاعتماد</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>اختر الشركة</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>اختر الشركة من محدد الشركة في الأعلى؛ تُنشأ الخطة وتُفتح في تلك الشركة.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>أنشئ خطة</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>انقر «Create plan»، وأدخل الاسم والأفق وخطة الطلب التي تستند إليها، ثم انقر «Save». تُفتح الخطة الجديدة في مساحة عملها بحالة «Draft».</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>افتح خطة</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>الصق معرّف الخطة في «Plan ID» وانقر «Open plan». لا يمكن العثور على خطة شركة أخرى.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>هذه الصفحة هي مساحة عمل خطة S&amp;OP واحدة: لقطاتها والاعتمادات المسجلة عليها.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>منسقو S&amp;OP وأصحاب الاعتماد</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>التقط لقطة</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>انقر «Capture snapshot»، وأدخل خطة الطلب وإصدارها ووقت التقاط المصدر ومجموع التحقق، وأضف مراجع مدخلات الإمداد. أكّد بـ Ctrl+Enter أو بالزر.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>سجّل اعتمادًا</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>انقر «Record sign-off»، واختر اللقطة ودورك والقرار، وأضف تعليقًا عند الحاجة ثم أكّد. تُسجَّل الاعتمادات فقط أثناء مراجعة الخطة.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>اعرف ما هو نهائي</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>الاعتماد المسجَّل نهائي: لا يمكن تغييره أو حذفه، ويُرفض اعتماد ثانٍ لنفس الدور واللقطة.</value></data>
 </root>
