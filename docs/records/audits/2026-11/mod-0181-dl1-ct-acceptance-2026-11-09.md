@@ -123,3 +123,100 @@ Başlatılan mongod'lar test takımlarının kendi replica set'leriydi, takımla
 servisi; dokunulmadı) çalışıyor. Ağaç `141297097`'de, `git status --short` boş.
 
 KOŞULLU
+
+## Yeniden doğrulama (2026-11-09) — WP-0181-DL1-FIX-01
+
+- CT: MVP-5 WMS CT doğrulayıcısı (alt ajan, oturum `ca7382cf`). Ağaç: depo dışı detached `C:\Users\Ali\ct-verify-fu02-dl1`, HEAD
+  **`3480daffd`** (ana checkout'taki dalın ucu, `git -C C:\Users\Ali\erp-vnext rev-parse HEAD` ile ölçüldü; altında `7bd8688a7`, altında `141297097`).
+  Ana checkout'a dokunulmadı.
+- İncelenen: `141297097..3480daffd` — `7bd8688a7` (ORTA-1, ORTA-2, DÜŞÜK-2/3/4) ve `3480daffd` (Gateway `Mod0173Pm2` sayısı 6 → 7).
+- Sonuç: **VERIFIED** — önceki kaydın iki ORTA'sı ve üç DÜŞÜK'ü kodda kapandı; tam takımlarda yalnız bilinen taban kırmızıları kaldı;
+  CT'nin 9 sabotajından 8'i kırmızı, 1'i (S7, bilgi amaçlı) beklenen biçimde yeşil. Yeni bulgu: 1 DÜŞÜK (onay kaydı), ENGEL / ORTA yok.
+
+### Kapsam (diff `141297097..3480daffd`: 13 dosya, +77 / −14)
+
+| Dosya | Değişiklik | Kapsam içi mi |
+|---|---|---|
+| `SharedResource.{en,tr,fr,es,zh,ar,ru}.resx` | her birinde yalnız +6 satır (2 `<data>`), silinen / değişen satır **0** (`git diff --unified=0`) | evet (pack §5 eklemeli) |
+| `NavManifestL10nGuardTests.cs` | `PagelessUntil`'e tek girdi + yorum; önceki son girdiye yalnız virgül | evet, sahip onaylı (XMC-001, Beste 2026-11-09) |
+| `CycleCountingManifestProvider.cs` | yalnız yorum | evet (DÜŞÜK-3) |
+| `BulkDeleteCycleCountHandler.cs` | olay üretimi yazımdan öne alındı | evet (DÜŞÜK-4) |
+| `CycleCountArchitectureTests.cs`, `CycleCountCoreTests.cs` | AC-7 / AC-51 ad alanına genişledi; AC-10'a 2 assert | evet |
+| `gateway/Diten.ApiGateway.Tests/Mod0173Pm2InternalInventoryRouteTests.cs` | `:73` `Assert.Equal(6, routed)` → `Assert.Equal(7, routed)` + yorum | **kapsam dışı** (MOD-0173-PM2 testi, `gateway/**` integration-agent alanı) → DÜŞÜK-5 |
+
+Değişmeyenler (ölçüldü): `ocelot.json`, `docs/analysis/contracts/inventory-bundle.openapi.yaml`, `docs/roadmap/backlog/role-permission-label-ledger.md`
+(Tavan `:5` "satır 96" aynı), `_Layout.cshtml`, `.antigravity/**`.
+
+### Önceki bulguların kapanışı
+
+| Bulgu | Kapanış kanıtı | Durum |
+|---|---|---|
+| ORTA-1 (Nav anahtarı + sayfasız modül) | `Nav.Module.CYCLECOUNTING`: en `:1303`, tr `:1303`, fr `:1245`, es `:1245`, zh `:1244`, ar `:1244`, ru `:1244` (`SharedResource.*.resx`); `NavManifestL10nGuardTests.cs:195` `["CYCLE-COUNTING"]` (kontrol `:178`; süre dolumu bekçisi `:199-210` sayfa gelince girdiyi sildirir). Web.Tests `NavManifestL10nGuardTests` 8/8 yeşil; S1, S3 kırmızı | **kapandı** |
+| ORTA-2 (`Perm.Entity.COUNTS`) | en / tr `:1306`, fr / es `:1248`, zh / ar / ru `:1247`; defter ve Tavan dokunulmadı (diff'te yok). `role-assignments-label-ledger` tam vitest'te yeşil; S2 kırmızı | **kapandı** |
+| DÜŞÜK-2 (AC-7 tek tip) | `CycleCountArchitectureTests.cs:110-114` `Controllers()` = `.Controllers.CycleCounting` ad alanındaki tüm `ControllerBase` tipleri; `Actions()` `:117` onların üstünde; AC-7 `:81` (`CycleCountsController` kümede), `:84` (anahtarsız eylem adıyla), `:85` (anahtar kümesi eşitliği); AC-51 `:93` tüm controller'lar `api/warehouse`. S4, S4b kırmızı | **kapandı** |
+| DÜŞÜK-3 (yorum) | `CycleCountingManifestProvider.cs:17` gerçek test adını anıyor (`CycleCountArchitectureTests.AC7_…`) | **kapandı** |
+| DÜŞÜK-4 (BulkDelete olay sırası) | `BulkDeleteCycleCountHandler.cs:66` olay → `:71` `ReplaceCountAsync` → `:77` `events.Add(deleted)` (Cancel deseni; çakışmada olay listeye girmez); test `CycleCountCoreTests.cs:345`, `:400` saklı `EventSeq` = son olay `Seq`. S6 kırmızı | **kapandı** |
+| Hat kırmızısı Gateway `Mod0173Pm2…split_exactly…` | aşağıda | **kapandı** (DÜŞÜK-5 notuyla) |
+
+**Gevşetme var mı? Hayır.** AC-7'den sabit `9` kalktı; yerine (a) her eylemin anahtarı olduğu, adıyla (`:84`), (b) anahtar kümesinin manifestle
+tam eşitliği (`:85`), (c) kapsam tek tipten ad alanına genişledi. Mevcut bir anahtarla eklenen 10. eylemi AC-7 artık saymıyor; onu AC-51'in tam rota
+listesi yakalıyor (S4b'de AC-51 kırmızı — ölçüldü). Net: eşdeğer ya da daha sıkı.
+
+**Gateway 6 → 7 (ölçüldü):**
+- `372082aa0` (MOD-0173-FU03 DL-1, INVENTORY 1.6.0) sözleşmeye `/reservations/{id}` `get` `operationId: getReservation` ekliyor (`git show 372082aa0`);
+  `372082aa0~1`'de (1.5.0) yönlendirilen 6 + iç 1, `372082aa0`'da ve uçta (1.7.0) yönlendirilen **7** + iç 1 (`stock-presence`, `/api/internal/inventory`).
+- Uç var ve izinli: `InventoryController.cs:60-62` `[HttpGet("reservations/{id}")]` + `[HasPermission(InventoryPermissions.Read)]`, sınıf rotası `api/inventory`.
+- Rota: `ocelot.json:907` `/api/inventory/{everything}` GET / POST / OPTIONS taşıyor (S5b'de GET çıkarılınca kırmızı).
+- origin/main `ed722a700`: sözleşme 1.5.0, 6 yol; `git merge-base --is-ancestor 372082aa0 origin/main` → değil. Main'de 6 doğru, hatta 7 doğru.
+  Kırmızının kaynağı `372082aa0`'ın testi güncellememesi (MVP-1 hattı), DL-1 değil.
+- Test kesin eşitlik olarak kaldı (`Assert.Equal(7, routed)`, `:73`); `>=` yok; ayrıştırma tabanı `operations.Count >= 7` (`:51`) önceden vardı, değişmedi.
+
+**Çeviri değerleri (anlamca makul, hiçbiri İngilizceyle aynı değil):** Nav / Perm — en "Cycle Counting" / "Counts"; tr "Sayım" / "Sayımlar";
+fr "Inventaire tournant" / "Inventaires"; es "Recuento cíclico" / "Recuentos"; zh "循环盘点" / "盘点单"; ar "الجرد الدوري" / "عمليات الجرد";
+ru "Циклическая инвентаризация" / "Инвентаризации".
+
+### Tam takımlar (süzgeçsiz; `INVENTORY_TEST_MONGO` yok, `DITEN_TEST_MONGOD` = mongod 9.0, 27017 kullanılmadı; AccountKindAcceptanceHost.Tests koşulmadı)
+
+| Takım | `3480daffd` (CT) | Geliştirici iddiası | Kaynak ayrımı |
+|---|---|---|---|
+| Inventory (`Diten.InventoryService.Tests`, tek test projesi) | **1961 / 0 / 5 atlandı** (1966, 5 dk 37 sn) | 1961 / 0 / 5 | İlk koşu vitest ile eşzamanlıydı: 1379 kırmızı, hepsi `Replica set initialization took longer than … 10 seconds` (ortam, yük). Tek başına yeniden koşu temiz |
+| Gateway | **368 / 0** | 368 / 0 | önceki 367 / 1 kırmızısı kapandı |
+| TenantArchitecture | **222 / 5** | 222 / 5 | `DocsPathGuardTests` ×5 — `ce94f9fd1` ve `ed722a700`'de de kırmızı (önceki kayıt; main tabanı) |
+| TenancyTests | **3 / 0** | 3 / 0 | — |
+| Web.Tests | **4357 / 2** (4359, 8 dk 38 sn) | 4357 / 2 | `SandopPlansPageTests` + `CapacityPlansPageTests` `…no_loading_title` — bilinen taban; `NavManifestL10nGuardTests` ×2 kapandı |
+| Web JS (`npx vitest run`, tam) | **5438 / 13** (5451; 10 dosya) | 5438 / 13 | `role-assignments-label-ledger` kapandı; kalan 13 = önceki kaydın `ce94f9fd1` tabanındaki 13 (dialog-one-implementation, global-products-register, governance-users-error-codes(-ct), gsku-register, platform-administrators-own-record, wcn-detail-last-four, wcn-dialog-one-language, wcn-dialog-rhythm, wcn-dialog-seven-defects). origin/main'de bu turda koşulmadı |
+
+### CT sabotajları (`3480daffd`; her biri tek değişiklik, `git checkout --` / dosya silme ile geri alındı, sha256 eşit, ağaç temiz)
+
+| # | Sabotaj | Koşulan | Sonuç |
+|---|---|---|---|
+| S1 | tr'den `Nav.Module.CYCLECOUNTING` silindi | Web.Tests `NavManifestL10nGuardTests` | **kırmızı**: `Every_manifest_module_has_a_Nav_Module_key_in_all_seven_languages` ("tr: MISSING Nav.Module.CYCLECOUNTING"), 1/8 |
+| S2 | fr'den `Perm.Entity.COUNTS` silindi | vitest `role-assignments-label-ledger` | **kırmızı**: "row names with no words and no ledger row: ['counts']", 1/28 |
+| S3 | `PagelessUntil`'den `["CYCLE-COUNTING"]` silindi (Nav anahtarları 7 dilde dururken) | Web.Tests `NavManifestL10nGuardTests` | **kırmızı**: `Every_manifest_provider…yields…pages` ("CycleCountingManifestProvider.cs: no pages parsed"), 1/8 — davranış: Nav anahtarı varken de sayfasız manifest girdisiz kırmızı; istisna yalnız bu kontrolü açıyor |
+| S4 | `Controllers.CycleCounting` ad alanına `[HasPermission]`'sız `GET count-variances` eylemli `CtSabotageController` | Inventory (AC-7, AuthorizationGuard, LedgerManifestCompleteness, Access) | **kırmızı**: `AuthorizationGuardTests.Every_action_carries_its_key…`, `AC7_…` (`["CtSabotageController.List"]`), `AC51_…`; 3/17 |
+| S4b | aynı controller `[HasPermission("cycle-count.variances.read")]` ile (manifestte olmayan anahtar — DÜŞÜK-2'nin asıl açığı) | Inventory (AC-7, AuthorizationGuard, LedgerManifestCompleteness) | **kırmızı**: `AC7_…`, `AC51_…`; `InventoryLedgerManifestCompletenessTests` yeşil (ad alanı dışlanmış) → açığı AC-7 kapatıyor |
+| S5 | sözleşmeden `/reservations/{id}` (`getReservation`) bloğu çıkarıldı | Gateway `Mod0173Pm2…` | **kırmızı**: `…split_exactly…` Expected 7, Actual 6 |
+| S5b | `ocelot.json` `/api/inventory/{everything}` `UpstreamHttpMethod`'dan `GET` çıkarıldı (geçici; geri alındı, hash eşit) | Gateway `Mod0173Pm2…` | **kırmızı**: `Assert.Contains() Failure` |
+| S6 | `BulkDelete`'te olay `ReplaceCountAsync`'ten sonraya taşındı | Inventory `CycleCountCoreTests` | **kırmızı**: `AC10_bulk_delete_soft_deletes_Draft_rows_only…` Expected 2, Actual 1; 1/20 |
+| S7 (bilgi) | tr `Perm.Entity.COUNTS` = "Counts" (İngilizceyle aynı) | vitest `role-assignments-label-ledger` | yeşil 28/28 — defter testi varlığı ölçer, İngilizce yankıyı değil (o `resx-check`'in işi). Bulgu sayılmadı; bugünkü değerler İngilizceden farklı (yukarıda) |
+
+8 / 8 koruyucu sabotaj kırmızı. Not: S3'ün yazımı dosyaya BOM da ekledi (geri alındı, hash eşit); BOM derlemeyi / sonucu etkilemez.
+
+### Yeni bulgular
+
+- **ENGEL:** yok. **ORTA:** yok.
+- **DÜŞÜK-5** — `3480daffd` başka modülün testine (`Mod0173Pm2InternalInventoryRouteTests.cs:73`, MOD-0173-PM2) ve `gateway/**`'a (integration-agent
+  alanı) dokunuyor; XMC-001 onay kanıtı yalnız commit mesajında ("XMC-001: Beste 2026-11-09"), depoda kayıt yok (DÜŞÜK-1 ile aynı desen).
+  Değişiklik doğru ve zorunlu (ölçüldü: sözleşme 7 yol, uç ve rota var, eşitlik korunuyor). Kırmızının kökü `372082aa0`'ın (MOD-0173-FU03 DL-1)
+  testi güncellememesi. Yapılacak: sahip onayını bu kayda işle, integration-agent'a ve MOD-0173-FU03 sahibine bilgi notu; kod değişikliği gerekmez.
+
+### Süreçler
+
+Başlatılan mongod'lar takımların kendi replica set'leriydi, takımla kapandı. Koşu sonunda yalnız önceden var olan PID 5264 (27017, Windows servisi;
+dokunulmadı) çalışıyor; `dotnet.exe` yok. Ağaç `3480daffd`'de, `git status --short` boş.
+
+VERIFIED
+
+
+> CT notu (DÜŞÜK-5): geliştirici oturumu Ağ Geçidi düzeltmesini sahibe soru penceresiyle sordu ve sonra uyguladı; yanıt metni oturum kaydında görünmüyor. Sahibin teyidi bekleniyor; DÜŞÜK, kabulü engellemez.
+
