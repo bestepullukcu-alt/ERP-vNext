@@ -92,9 +92,13 @@ public sealed class ReturnDetailsReadTests
 [Collection("Returns Claims Http")]
 public sealed class ReturnDetailsHttpTests(Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost host)
 {
+    // Each test runs in a tenant of its own: the host's shipment entitlement is shared by every test of this collection, so a
+    // return created here in the host tenant would use up the quantity another test needs (measured 2026-11-09).
+    private readonly Guid _tenant = Guid.NewGuid();
+
     private async Task<string> CreateReturn()
     {
-        var created = await host.Send("POST", "/api/shipment-bundle/returns", host.ReturnBody(), host.Token(), "dl4-" + Guid.NewGuid());
+        var created = await host.Send("POST", "/api/shipment-bundle/returns", host.ReturnBody(), host.Token(tenant: _tenant), "dl4-" + Guid.NewGuid(), tenant: _tenant);
         Assert.Equal(201, created.Status);
         return created.Json!["returnId"]!.GetValue<string>();
     }
@@ -103,7 +107,7 @@ public sealed class ReturnDetailsHttpTests(Diten.SupplyChainService.Tests.Common
     public async Task GetReturn_OwnCompany_IsTheDetail_OverHttp()
     {
         var id = await CreateReturn();
-        var read = await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(), idempotencyKey: null);
+        var read = await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(tenant: _tenant), idempotencyKey: null, tenant: _tenant);
         Assert.Equal(200, read.Status);
         Assert.Equal(id, read.Json!["returnId"]!.GetValue<string>());
         Assert.Equal("damaged", read.Json!["reasonCode"]!.GetValue<string>());
@@ -115,13 +119,13 @@ public sealed class ReturnDetailsHttpTests(Diten.SupplyChainService.Tests.Common
     public async Task GetReturn_OtherTenantOrCompanyOrUnknown_Is404_MalformedIs400_NoReadKeyIs403()
     {
         var id = await CreateReturn();
-        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(), idempotencyKey: null, legalEntity: Guid.NewGuid())));
+        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(tenant: _tenant), idempotencyKey: null, tenant: _tenant, legalEntity: Guid.NewGuid())));
         var foreign = Guid.NewGuid();
         Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: host.Token(tenant: foreign), idempotencyKey: null, tenant: foreign)));
-        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{Guid.NewGuid()}", token: host.Token(), idempotencyKey: null)));
-        Assert.Equal(400, (await host.Send("GET", "/api/shipment-bundle/returns/not-a-guid", token: host.Token(), idempotencyKey: null)).Status);
-        var noRead = host.Token(permissions: Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost.AllPermissions.Where(p => p != "supplychain.returns.read"));
-        Assert.Equal(403, (await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: noRead, idempotencyKey: null)).Status);
+        Assert.Equal((404, "RETURN_NOT_FOUND"), Pair(await host.Send("GET", $"/api/shipment-bundle/returns/{Guid.NewGuid()}", token: host.Token(tenant: _tenant), idempotencyKey: null, tenant: _tenant)));
+        Assert.Equal(400, (await host.Send("GET", "/api/shipment-bundle/returns/not-a-guid", token: host.Token(tenant: _tenant), idempotencyKey: null, tenant: _tenant)).Status);
+        var noRead = host.Token(tenant: _tenant, permissions: Diten.SupplyChainService.Tests.Common.ReturnsClaimsHttpHost.AllPermissions.Where(p => p != "supplychain.returns.read"));
+        Assert.Equal(403, (await host.Send("GET", $"/api/shipment-bundle/returns/{id}", token: noRead, idempotencyKey: null, tenant: _tenant)).Status);
     }
 
     // RB-27: a create body that carries customerRef is refused with 400 INVALID_REQUEST and writes nothing.
@@ -129,10 +133,10 @@ public sealed class ReturnDetailsHttpTests(Diten.SupplyChainService.Tests.Common
     public async Task Create_WithCustomerRef_Is400_AndWritesNothing()
     {
         var returns = host.Database.GetCollection<MongoDB.Bson.BsonDocument>("returns");
-        var tenant = new MongoDB.Bson.BsonDocument("TenantId", host.Tenant.ToString());
+        var tenant = new MongoDB.Bson.BsonDocument("TenantId", _tenant.ToString());
         var before = await returns.CountDocumentsAsync(tenant);
         var body = host.ReturnBody(); body["customerRef"] = "14900000-0000-4000-8000-000000000001";
-        var refused = await host.Send("POST", "/api/shipment-bundle/returns", body, host.Token(), "dl4-ref-" + Guid.NewGuid());
+        var refused = await host.Send("POST", "/api/shipment-bundle/returns", body, host.Token(tenant: _tenant), "dl4-ref-" + Guid.NewGuid(), tenant: _tenant);
         Assert.Equal((400, "INVALID_REQUEST"), Pair(refused));
         Assert.Equal(before, await returns.CountDocumentsAsync(tenant));
     }
