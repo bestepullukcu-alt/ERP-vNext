@@ -342,6 +342,7 @@ public sealed class CycleCountCoreTests(CycleCountApiFactory factory) : IClassFi
         var e = s.Events(Id(count)).Last();
         Assert.Equal("Cancelled", e["Kind"].AsString);
         Assert.Equal("true", e["Data"]["softDeleted"].AsString);
+        Assert.Equal(e["Seq"].AsInt32, stored["EventSeq"].AsInt32);
     }
 
     [Fact]
@@ -395,6 +396,8 @@ public sealed class CycleCountCoreTests(CycleCountApiFactory factory) : IClassFi
         Assert.Equal("Cancelled", e["Kind"].AsString);
         Assert.Equal("true", e["Data"]["softDeleted"].AsString);
         Assert.Equal("true", e["Data"]["bulk"].AsString);
+        // CT DÜŞÜK-4: the stored count carries the Seq of its last event (the event is made before the count is written)
+        Assert.Equal(e["Seq"].AsInt32, s.StoredCount(Id(draft))["EventSeq"].AsInt32);
     }
 
     // ── AC-11 ────────────────────────────────────────────────────────────────────────────────────────────

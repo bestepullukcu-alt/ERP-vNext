@@ -13,7 +13,8 @@ namespace Diten.InventoryService.Api.CycleCounting;
 /// </summary>
 public sealed class CycleCountingManifestProvider : IModuleManifestProvider
 {
-    // a literal (the Web nav guard reads the manifest SOURCE and resolves literal constants only); CycleCountRegistrationTests holds it equal to
+    // a literal (the Web nav guard reads the manifest SOURCE and resolves literal constants only);
+    // CycleCountArchitectureTests.AC7_the_manifest_declares_exactly_the_cycle_count_keys_the_controller_enforces holds it equal to
     // CycleCountCentralAudit.Module
     public const string ModuleCode = "CYCLE-COUNTING";
 

@@ -1241,4 +1241,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>Снимки плана S&amp;OP</value>
   </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Циклическая инвентаризация</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Инвентаризации</value>
+  </data>
 </root>

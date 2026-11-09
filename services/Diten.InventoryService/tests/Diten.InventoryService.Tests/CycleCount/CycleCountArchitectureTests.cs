@@ -77,10 +77,12 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal(CycleCountPermissions.Implemented.Order(StringComparer.Ordinal), declared.Order(StringComparer.Ordinal));
         Assert.DoesNotContain(declared, k => k.EndsWith(".delete", StringComparison.Ordinal)); // G-0181-01: no delete key
 
-        var enforced = Actions().Select(m => m.GetCustomAttribute<HasPermissionAttribute>()?.Policy?.Replace("Permission:", string.Empty)).ToList();
-        Assert.Equal(9, enforced.Count);
-        Assert.All(enforced, p => Assert.NotNull(p));
-        Assert.Equal(declared.Order(StringComparer.Ordinal), enforced.Select(p => p!).Distinct().Order(StringComparer.Ordinal));
+        // every controller of the namespace the manifest completeness guard excludes (CT DÜŞÜK-2): the DL-3 / DL-5 controllers join it here
+        Assert.Contains(typeof(CycleCountsController), Controllers());
+        var enforced = Actions().Select(m => (Action: $"{m.DeclaringType!.Name}.{m.Name}", Key: m.GetCustomAttribute<HasPermissionAttribute>()?.Policy?.Replace("Permission:", string.Empty))).ToList();
+        Assert.NotEmpty(enforced);
+        Assert.Empty(enforced.Where(e => e.Key is null).Select(e => e.Action)); // an action without [HasPermission] is named here
+        Assert.Equal(declared.Order(StringComparer.Ordinal), enforced.Select(e => e.Key!).Distinct().Order(StringComparer.Ordinal));
     }
 
     // ── AC-51 (DL-1 part) ────────────────────────────────────────────────────────────────────────────────
@@ -88,7 +90,7 @@ public sealed class CycleCountArchitectureTests
     [Fact]
     public void AC51_the_cycle_count_controller_opens_GET_and_POST_only_under_api_warehouse()
     {
-        Assert.Equal("api/warehouse", typeof(CycleCountsController).GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()?.Template);
+        Assert.All(Controllers(), c => Assert.Equal("api/warehouse", c.GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()?.Template));
         var verbs = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>()).SelectMany(h => h.HttpMethods).Distinct().Order().ToList();
         Assert.Equal(["GET", "POST"], verbs);
         var routes = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().Select(h => $"{h.HttpMethods.Single()} {h.Template}")).Order(StringComparer.Ordinal);
@@ -101,8 +103,18 @@ public sealed class CycleCountArchitectureTests
             routes);
     }
 
+    /// <summary>
+    /// Every controller in <c>….Controllers.CycleCounting</c> — the namespace <c>InventoryLedgerManifestCompletenessTests</c> excludes, so AC-7 is
+    /// the only guard of its keys and must see all of it, not one type.
+    /// </summary>
+    private static IReadOnlyList<Type> Controllers()
+        => typeof(CycleCountsController).Assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Microsoft.AspNetCore.Mvc.ControllerBase).IsAssignableFrom(t)
+                        && t.Namespace?.EndsWith(".Controllers.CycleCounting", StringComparison.Ordinal) == true)
+            .ToList();
+
     private static IEnumerable<MethodInfo> Actions()
-        => typeof(CycleCountsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+        => Controllers().SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any());
 
     // ── SB3/F-2 ──────────────────────────────────────────────────────────────────────────────────────────

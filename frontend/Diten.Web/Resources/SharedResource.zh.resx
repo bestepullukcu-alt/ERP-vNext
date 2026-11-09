@@ -1241,4 +1241,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>S&amp;OP 计划快照</value>
   </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>循环盘点</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>盘点单</value>
+  </data>
 </root>

@@ -1300,4 +1300,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>S&amp;OP Planı Anlık Görüntüleri</value>
   </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Sayım</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Sayımlar</value>
+  </data>
 </root>

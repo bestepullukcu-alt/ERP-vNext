@@ -61,17 +61,20 @@ public sealed class BulkDeleteCycleCountHandler : IRequestHandler<BulkDeleteCycl
 
                     var count = stored[item.CountId];
                     var copy = CopyForDelete(count, reason, now);
+                    // the event is made BEFORE the count is written (the Cancel pattern, CT DÜŞÜK-4): Event advances copy.EventSeq, so the stored
+                    // count carries the Seq of its last event
+                    var deleted = _support.Event(copy, CycleCountEventKind.Cancelled, now, new Dictionary<string, string?>
+                    {
+                        ["previousStatus"] = count.Status.ToString(), ["reason"] = reason, ["softDeleted"] = "true", ["bulk"] = "true",
+                        ["version"] = CycleCountSupport.Int(copy.Version)
+                    }, request.IdempotencyKey, Op, fingerprint);
                     if (!await session.ReplaceCountAsync(copy, count.Version, tx))
                     {
                         results.Add(new CycleCountBulkRowDto(item.CountId.ToString("D"), CycleCountContract.RowConflict));
                         continue;
                     }
 
-                    events.Add(_support.Event(copy, CycleCountEventKind.Cancelled, now, new Dictionary<string, string?>
-                    {
-                        ["previousStatus"] = count.Status.ToString(), ["reason"] = reason, ["softDeleted"] = "true", ["bulk"] = "true",
-                        ["version"] = CycleCountSupport.Int(copy.Version)
-                    }, request.IdempotencyKey, Op, fingerprint));
+                    events.Add(deleted);
                     results.Add(new CycleCountBulkRowDto(item.CountId.ToString("D"), CycleCountContract.RowDeleted, copy.Version));
                 }
 

@@ -1242,4 +1242,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>Instantanés du plan S&amp;OP</value>
   </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Inventaire tournant</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Inventaires</value>
+  </data>
 </root>

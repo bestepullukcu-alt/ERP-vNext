@@ -1300,4 +1300,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>S&amp;OP Plan Snapshots</value>
   </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Cycle Counting</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Counts</value>
+  </data>
 </root>
