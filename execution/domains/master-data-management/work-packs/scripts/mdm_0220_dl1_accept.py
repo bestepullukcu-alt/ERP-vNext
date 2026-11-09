@@ -29,7 +29,14 @@ geri alınır, bekleme sırasında ağaç sabotajlı kalmaz.
         LegalEntityModels.cs; tests altında silinen / değişen yok (--diff-filter=DM boş); betik tabanda var ve taban..HEAD
         arasında değişmedi. Talimat v1.1'in Expected HEAD'i (f304329e8) tabanın atası mı, bilgi olarak yazılır.
   1  tests-app.trx/.log · tests-api.trx/.log · tests-summary.json
-        DOĞRULA 1–2 süzgeci (FullyQualifiedName~LegalEntity, -c Debug), DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod.
+        DOĞRULA 1–2 süzgeci (FILTER, -c Debug; iki projede aynı), DITEN_TEST_MONGOD=/opt/homebrew/bin/mongod. Süzgeç
+        §22'ye daraltılmıştır: yalnız AC-T1…T3 ve S1a…S6 beklenen kırmızılarının sınıfları ve
+        LegalEntitiesControllerPermissionTests'in tamamı; her terim `.Sınıf.` biçiminde (nokta sınırlı, Product* ya da
+        adı bu sınıfı içeren başka sınıf girmez):
+          FullyQualifiedName~.LegalEntityLookupApprovalStatusTests.|FullyQualifiedName~.LegalEntityReferenceValidationTests.|
+          FullyQualifiedName~.LegalEntitiesControllerPermissionTests.|FullyQualifiedName~.LegalEntityLookupValidationHttpTests.|
+          FullyQualifiedName~.LegalEntityLookupConsumerReadFormTests.
+        (tek satır, boşluksuz). Başlangıçta adı verilen her testin sınıfı süzgeçte mi denetlenir; değilse çıkış 5.
         Yeşil: dotnet çıkış 0, TRX okundu, derleme hatası yok, Failed yok, NotExecuted 0, adı verilen her test Passed,
         zorunlu sınıflar koştu ve geçti (Application: LegalEntityLookupApprovalStatusTests,
         LegalEntityReferenceValidationTests, LegalEntitiesControllerPermissionTests; Api: LegalEntityLookupValidationHttpTests,
@@ -70,7 +77,7 @@ süreç önce SIGTERM alır, süre dolunca SIGKILL. SIGKILL ile öldürülen bu 
 
 KIRMIZI TABAN (beklenen): betik kod yazılmadan önce yazıldı. Bugünkü ağaçta (talimat Expected HEAD, kod ve üç yeni test
 dosyası yok) koşulursa: KAPSAM kapısı tutmaz (tabandan sonra LegalEntityModels.cs commit'i yok), taban testleri yeşil
-değildir (yeni test sınıfları "yok"), çapa ön denetimi S2…S6'da LegalEntityModels.cs içinde `string ApprovalStatus);` /
+değildir (yeni test sınıfları "yok"; Api süzgeci bugün hiç test seçmez, toplam 0), çapa ön denetimi S2…S6'da LegalEntityModels.cs içinde `string ApprovalStatus);` /
 `e.ApprovalStatus.ToString().ToUpperInvariant());` çapasını bulamaz ve betik "DURUR — çapa yok" ile ÇIKIŞ 2 verir;
 sabotaj, son koşu, derleme ve duman koşmaz. Kırmızı tabanın beklenen sonucu budur.
 
@@ -79,10 +86,9 @@ talimatın tarif ettiği değişikliğin (üye son konumda, `e.ApprovalStatus.To
 `e.IsReferenceable,` satırından hemen sonra) mevcut dosyanın girintisiyle (üye 4, eşleme argümanı 12 boşluk) yazılmış
 hâlidir; işçi başka biçimde yazarsa çapa tutmaz ve betik çıkış 2 verir (kule çapayı düzeltir, betik ve sha256 yenilenir).
 TRX `testName` biçimi (Ad.Alanı.Sınıf.Yöntem[(argümanlar)]) xUnit varsayılanıdır; karşılaştırma Sınıf.Yöntem düzeyindedir,
-S1a satır denetimi argüman metninde büyük/küçük harf duyarsız sözcük aramasıdır. Süzgeç `~LegalEntity`
-LegalEntitiesControllerPermissionTests'ten yalnız adında "legalentity" geçen yöntemi seçer (VSTest `~` büyük/küçük harf
-duyarsız; "LegalEntities" "LegalEntity" içermez); betik o sınıfın koştuğunu ve geçtiğini ölçer, kaç yöntemin koştuğunu
-yazar. Kayıt, sabotajın kodu ölçtüğünü değil yalnız bu koşuda bu sonuçların alındığını gösterir (bağımsız inceleme).
+S1a satır denetimi argüman metninde büyük/küçük harf duyarsız sözcük aramasıdır. Süzgeç §22 dışındaki LegalEntity
+testlerini (Product*, LegalEntityCommandTests vb.) bilerek dışarıda bırakır; onların koşusu PR CI'ındaki tam mdm-app /
+mdm-api koşusudur. Kayıt, sabotajın kodu ölçtüğünü değil yalnız bu koşuda bu sonuçların alındığını gösterir (bağımsız inceleme).
 """
 from __future__ import annotations
 
@@ -108,7 +114,11 @@ SCRIPT = "execution/domains/master-data-management/work-packs/scripts/mdm_0220_d
 EVIDENCE_PREFIX = "docs/records/audits/2026-11/mdm-0220-dl1/"
 PROMPT_EXPECTED_HEAD = "f304329e88600a6d3f9d7c486a6c740497b8b52d"   # talimat v1.1 Expected HEAD (yalnız bilgi)
 MONGOD = "/opt/homebrew/bin/mongod"
-FILTER = "FullyQualifiedName~LegalEntity"
+FILTER_CLASSES = (
+    "LegalEntityLookupApprovalStatusTests", "LegalEntityReferenceValidationTests", "LegalEntitiesControllerPermissionTests",
+    "LegalEntityLookupValidationHttpTests", "LegalEntityLookupConsumerReadFormTests",
+)
+FILTER = "|".join(f"FullyQualifiedName~.{c}." for c in FILTER_CLASSES)   # talimat DOĞRULA 1–2 ile birebir
 LOAD_LIMIT = 12.0
 DOTNET_TIMEOUT = 1800
 DOTNET_GRACE = 30
@@ -852,6 +862,11 @@ def usage_problem(out: str) -> str | None:
     extra = sorted(p.name for p in (ROOT / out).iterdir() if p.name not in RUN_RECORD_FILES)
     if extra:
         return f"--out-dir yeni değil (içinde {extra[0]}) — her koşu yeni bir dizine yazar"
+    needed = ({TESTS[c][1].split(".")[0] for s in SABOTAGES for c in s.expected}
+              | {n.split(".")[0] for _, n in TESTS.values()} | {c for cs in REQUIRED_CLASSES.values() for c in cs})
+    uncovered = sorted(c for c in needed if f"FullyQualifiedName~.{c}." not in FILTER.split("|"))
+    if uncovered:
+        return "süzgeç şu sınıfları seçmiyor: " + ", ".join(uncovered)
     if os.environ.get("DITEN_TEST_MONGOD") not in (None, "", MONGOD):
         return f"DITEN_TEST_MONGOD {MONGOD} değil"
     if shutil.which("dotnet") is None:
