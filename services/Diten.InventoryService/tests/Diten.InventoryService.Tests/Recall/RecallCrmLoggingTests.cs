@@ -61,7 +61,9 @@ public sealed class RecallCrmLoggingTests : IClassFixture<RecallApiFactory>
 /// </summary>
 public sealed class ShipmentBundle350AlignmentTests
 {
-    [Fact(Skip = "MOD-0177-FU01 D-1: SHIPMENT-BUNDLE 3.5.0 not frozen")]
+    // The reason starts with its CI skip code (scripts/ci-skip-allowlist.tsv, inventory-tests SHIPMENT_BUNDLE_350, max 1);
+    // the line and this Skip go together when MVP-6 freezes 3.5.0.
+    [Fact(Skip = "SHIPMENT_BUNDLE_350: MOD-0177-FU01 D-1 — SHIPMENT-BUNDLE 3.5.0 not frozen")]
     public void CustomerRef_field_matches()
     {
         var path = RepoPaths.Contract("shipment-bundle.openapi.yaml");
