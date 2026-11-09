@@ -1,0 +1,1312 @@
+---
+id: MOD-0173-FU03
+name: Inventory Lot & Location Reservation
+parent: MOD-0173
+parent_name: Inventory Ledger & Valuation
+domain: supply-chain-execution
+service: Diten.InventoryService
+shell: none
+golden_reference: none
+entity_base: EntityBase
+status: ready-for-dev
+approval_status: pending
+status_note: "ready-for-dev (2026-11-02) — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\"), CT kararları CT-01, CT-02, CT-03, CT-04 ve CT-07 (sahip izni + CT kapsam hizası) verildi — §19.6. r4 (2026-11-02): bağımsız son bakış 01 (r3 üzerinde, KOŞULLU, 1 ORTA, 5 DÜŞÜK) bulguları F-1…F-6 tek geçişte işlendi (CT kararı MVP-1 CT 2026-11-02, hepsi kabul) — FEFO serbest tabanı ve kapsam rakamları vadesi geçmiş ama kapanmamış rezervasyonu saymaz, okuma portunun oturumu adlandırıldı, kullanılmayan exclude parametresi kaldırıldı, port fail-closed denetimlerine adlı sabotaj, geç yazan düzeltmesi için Q-09 (MVP-6 CT, TBD), reservationId'siz bekçi ret satırı DL-1'de (AC-40); 40 AC; yeni inceleme ve onay gerekir. r3 (2026-11-02): inceleme 01 tur 2 (KOŞULLU, 1 ORTA, 4 DÜŞÜK) bulguları ve MVP-6 CT notu (Natig) üzerine CT-08 sınırı — REVERSAL geri getirmesi yalnız açık `restoreReservation: true` ile — işlendi; yeni inceleme ve onay gerekir. r2 (2026-11-02): bağımsız inceleme 01 tur 1 (UYGUN DEĞİL, 1 ENGEL, 7 ORTA, 7 DÜŞÜK) bulgularının hepsi işlendi; CT-08 (REVERSAL rezervasyonu geri getirir) ve sahip kararı Q-01 = A (FEFO serbest miktar; DL-3 W-5'in parçası, CT-04 güncellendi; MOD-0176 XMC-001 izni) yazıldı; 39 AC'nin hepsi adlı sabotajlı (§17.1). Ready-for-dev önkoşullarından geriye yalnız r4'ün CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay satırı kaldı (§18); approval_status pending. Açık sorular Q-05, Q-07, Q-09 (§19.4); açık CT kararları CT-05, CT-06 (§19.5) — ready-for-dev önkoşulu değil. Kod yazılmaz: CT-APR-02 + CT-APR-01 onay satırı gerekir."
+owner: supply-chain-execution / mvp-1 control-tower
+branch: feature/sce/mod-0173-inventory-ledger-valuation
+started: 2026-11-02
+target: 2026-11-30
+form_field_count: 0
+dependencies: [MOD-0173, MOD-0173-FU02, MOD-0174, MOD-0175, MOD-0176, MOD-0177, INVENTORY-BUNDLE-v1.5.0, LOCATION-v1.1.0, BL-501 (central audit)]
+---
+
+# MOD-0173-FU03 — Inventory Lot & Location Reservation
+
+> **Kimlik (DCP-002) — ölçüldü 2026-11-02, dal `chore/ct/mod0178-dl1-accept-01` @ `703cbaec7`:**
+> `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0173-FU03 --name "Inventory Lot & Location Reservation" --parent MOD-0173`
+> → çıkış **0** ("OK MOD-0173-FU03: proven against Blueprint/registry"). Ebeveyn `--check-id MOD-0173 --name "Inventory Ledger & Valuation"`
+> → çıkış 0. Keşif ve kimlik gerekçesi §19.1'de. **Registry satırı bu paketle yazılmaz** — satırı CT ekledi (CT-01, `2265cce90`, §19.6). **Kanonik ad** "Inventory Lot & Location Reservation" (CT kararı 2026-11-02); kayıt satırındaki ad CT tarafından düzeltildi (`f2b2b3a96`; ölçüldü `4b9f7a023`, `module-id-registry.md` satır 304). Kayıt satırının durumu bugün `draft`, paket `ready-for-dev`: durum hizası CT'dedir (bu paket kayıt dosyasına yazmaz). **Satırdan sonraki ölçüm (r2, inceleme 01 F-11):** `703cbaec7` satır commit'inden (`2265cce90`) önceydi (`git merge-base --is-ancestor 2265cce90 703cbaec7` → değil); ön kontrol satır varken `4b9f7a023`'te yeniden koşuldu → çıkış **0** ("OK MOD-0173-FU03: proven against Blueprint/registry", Python 3.12.10).
+>
+> **Revizyon r4 (2026-11-02).** Hedef r3 `2bba39c1…ced981`; bağımsız son bakış 01 (`docs/records/reviews/MOD-0173-FU03/2026-11-02-2bba39c1-son-bakis-01.md`,
+> özet `7dbfa6b4…`; KOŞULLU, 1 ORTA, 5 DÜŞÜK); CT kararı MVP-1 CT 2026-11-02: hepsi kabul, tek geçiş. İşlenenler: F-1 (FEFO serbest
+> tabanı, kapsam rakamları ve `GetScopeFreeAsync` vadesi geçmiş ama kapanmamış rezervasyonu saymaz — mevcut okuma kuralı, §8.5, §8.7,
+> §8.8; AC-17 (e), AC-38 (d)), F-2 (okuma portunun oturumu: ambient `LedgerTransactionBinding.Session`; `FindByIdempotencyKeysAsync`
+> işlem dışında okur, §8.5, §8.7), F-3 (`excludeReservationId` kaldırıldı, port `ReservedByLotAsync` adını aldı; AC-31 üretim
+> davranışını ve kiracı / şirket süzgecini ölçer), F-4 (port fail-closed denetimlerine adlı sabotaj; `CreateAsync` / `CreateBatchAsync`
+> karşılaştırılan `legalEntityId`'yi imzada taşır, §8.7; AC-16, AC-39 (c)), F-5 (geç yazan kaydın düzeltmesi MVP-6 kararı — Q-09, iki
+> seçenek, öneri A, karar MVP-6 CT TBD, §7, §8.3.1), F-6 (`reservationId`'siz bekçi reddinin ret satırı DL-1'de, AC-40). Kapanışlar
+> §19.7 (`F-n@2bba39c1-son-bakis-01`). Ölçümler `c1a563cf7`'de (`d4176fbee`…`c1a563cf7` arası `services/Diten.InventoryService` değişmedi).
+> Künye `ready-for-dev` / `pending`: r4 yeni bağımsız inceleme ve yeni onay satırı ister.
+>
+> **Revizyon r3 (2026-11-02).** Hedef r2 `689bfaa3…6ded`; bağımsız inceleme 01 tur 2 (`docs/records/reviews/MOD-0173-FU03/2026-11-02-689bfaa3.md`,
+> özet `be1962c6…`; KOŞULLU, 1 ORTA, 4 DÜŞÜK). İşlenenler: F-1 (tutulu lotta geri getirme `HoldsStock` atlamasının dışında, §8.3.1,
+> AC-35 (g)), F-2 (MOD-0176 izninde yapıcı ve DI adları, §5), F-3 (FEFO kanıtı — §8.5'te kabul edilen sınır), F-5 (ret satırına aktörün
+> o andaki adı, §4.4); F-4 MOD-0178 r21'de kapandı (yalnız not). **CT-08 sınırı** (CT kararı MVP-1 CT 2026-11-02, MVP-6 CT notu Natig
+> 2026-11-02): geri getirme yalnız REVERSAL isteği isteğe bağlı eklemeli `restoreReservation: true` taşıdığında (varsayılan `false`) —
+> §8.3.1, §8.8 (1.7.0), AC-35 (h, i). Kapanışlar §19.7 (`F-n@be1962c6`). Ölçümler `aae9fac57`'de. Künye `ready-for-dev` / `pending`:
+> r3 yeni bağımsız inceleme ve yeni onay satırı ister.
+>
+> **Revizyon r2 (2026-11-02).** Hedef r1 `5a37560e…6675`; bağımsız inceleme 01 tur 1 (`docs/records/reviews/MOD-0173-FU03/2026-11-02-5a37560e.md`,
+> özet `23322d18…`; UYGUN DEĞİL, 1 ENGEL, 7 ORTA, 7 DÜŞÜK). Bulguların hepsi tek geçişte işlendi; kapanış tablosu §19.7 (`F-n@23322d18`).
+> Yeni kararlar: **CT-08** (MVP-1 CT, 2026-11-02 — rezervasyonu tüketen hareketin REVERSAL'ı o rezervasyonu geri getirir, §8.3.1) ve sahip
+> kararı **Q-01 = A** (Beste, 2026-11-02 — FEFO serbest miktar; DL-3 W-5'in parçası; MOD-0176 XMC-001 izni, §8.5). Ölçümler `4b9f7a023`'te.
+> Künye `ready-for-dev`, `approval_status: pending`: r2 yeni bağımsız inceleme ve yeni onay satırı ister.
+>
+> **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`. Ebeveyn paket
+> `MOD-0173-inventory-ledger-valuation.md` §19 ASSUMPTION-0173-12…17 (SKU düzeyinde rezervasyon tasarımı) bu paketin **tabanıdır**;
+> bu paket onları **genişletir**, hiçbirini geri almaz. **Bilinçli genişletmeler (r2, inceleme 01 F-15) — çelişki sayılmaz:**
+> ASSUMPTION-0173-12 "rezervasyon SKU düzeyindedir" → SKU düzeyi aynen kalır, yanına depo ve depo + lot kapsamı eklenir (§8.2);
+> ASSUMPTION-0173-14 "ayrılmış stok başkasına çıkmaz" → bekçi SKU'ya ek olarak kapsam düzeylerinde de çalışır; ASSUMPTION-0173-15
+> (kaynak üçlüsüyle tüketim) → `reservationId` doluyken üçlü eşleşme yapılmaz, boşken üçlü eşleşmeye kapsam koşulu eklenir (§8.3).
+> `inventory_balances.Reserved = 0` kuralı (ebeveyn ASSUMPTION-0173-12) değişmez. "Çelişkide ebeveyn kazanır" kuralı **bu sayılan
+> genişletmelerin dışındaki** çelişkiler içindir; öyle bir fark çıkarsa ebeveyn kazanır ve fark CT'ye sorulur.
+>
+> **Sözleşme:** yalnız eklemeli. INVENTORY-BUNDLE 1.5.0 (`docs/analysis/contracts/inventory-bundle.openapi.yaml`, `x-status: FROZEN`,
+> `x-owner: MOD-0173`) → **1.6.0** (DL-1) ve **1.7.0** (DL-2) önerisi (§8.8). Mevcut yol, parametre, alan, tür, enum değeri, zorunlu
+> liste ya da durum kodu değişmez.
+
+## 1. Module Summary
+
+Bugünkü rezervasyon (INVENTORY `createReservation`, `ReservationRequest`) yalnız **SKU düzeyindedir**: depo, lokasyon ve lot taşımaz
+(ebeveyn ASSUMPTION-0173-12; `InventoryReservation` varlığı; `ReservationPositionOperations` — tek `inventory_sku_positions` belgesi).
+Depo toplama akışı (MOD-0178 S2) bir outbound satırına **belirli bir lotu belirli bir depoda** ayırmak, o stoğu bin'den staging'e taşımak
+ve sevkiyatta (MVP-6, MOD-0183 `GOODS_ISSUE_SALES`) **o rezervasyonu tüketmek** zorundadır. Bu paket bunu INVENTORY'ye eklemeli olarak
+getirir:
+
+1. **Kapsamlı rezervasyon** — `ReservationRequest` isteğe bağlı `warehouseId` ve `lotId` alır (lot depo ister). Kapsam üç düzeyde
+   korunur: SKU, SKU + depo, SKU + depo + lot (§8.2). Lokasyon (bin) düzeyi v1'de yok (Q-02).
+2. **Rezervasyon kimliğiyle tüketim** — `postMovement` isteğe bağlı `reservationId` alır; adı verilen rezervasyon aynı işlemde
+   tüketilir; ayrılmış stoğu başkası çıkaramaz (§8.3).
+3. **Sahibinin yer değiştirmesi** — aynı depo içindeki `LOCATION_TRANSFER` (bin → staging) rezervasyonu düşürmez (§8.4).
+4. **FEFO kancası** — sahip kararı Q-01 = A (Beste, 2026-11-02): FEFO aday kümesi **serbest** (ayrılmamış) miktarı esas alır; başka
+   outbound'lara ayrılmış lot miktarı FEFO sırasında sayılmaz. DL-3 okuma portunu verir ve MOD-0176'nın aday okumasını (XMC-001 izniyle)
+   ona bağlar; DL-3 W-5'in parçasıdır (§8.5).
+5. **REVERSAL geri getirme** — rezervasyonu `reservationId` ile tüketen hareketin REVERSAL'ı, istek **`restoreReservation: true`**
+   taşıyorsa (isteğe bağlı, varsayılan `false`; INVENTORY 1.7.0 eklemeli alan) o rezervasyonu aynı işlemde geri getirir (CT-08 ve r3
+   sınırı, §8.3.1): MVP-6'nın Dispatched öncesi çok satırlı sevk telafisi `true` gönderir ve rezervasyonla yeniden denenebilir;
+   Shipped sonrası geri alma alanı göndermez, rezervasyon kapalı kalır. Geç yazan kaydın düzeltme REVERSAL'ının alanı gönderip
+   göndermeyeceği MVP-6 kararıdır (Q-09, öneri A; r4, son bakış 01 F-5) — INVENTORY davranışı iki seçenekte de aynıdır.
+
+Hedef kullanıcı yoktur (ekran yok): tüketiciler MOD-0178 (süreç içi port, §8.7), MOD-0183 (HTTP `postMovement`), ileride MOD-0172 ATP.
+Kiracı + şirket kapsamlıdır (`TenantId`, `LegalEntityId`, W-0173-02). Servis `Diten.InventoryService`, port **5067** (AGENTS.md §3).
+
+## 2. Ownership and Boundaries
+
+**Kapsamda (MOD-0173 SoR'unun genişlemesi):**
+- `InventoryReservation`'a kapsam alanları (`WarehouseId`, `LotId`) ve kapanış nedeni (`ClosedReason`).
+- Kapsam pozisyonu projeksiyonu `InventoryReservationPosition` (depo ve depo + lot düzeyi; SKU düzeyi mevcut `InventorySkuPosition`'da kalır).
+- `postMovement`'ta `reservationId` ile tüketim ve kapsam bekçileri; `InventoryTransaction.ReservationId`.
+- `getReservation` okuması; `getAvailability`'ye `lotId` parametresi ve kapsam rakamları.
+- Süreç içi rezervasyon portu (`IInventoryReservationPort`, §8.7) — MOD-0178'in tek rezervasyon kapısı.
+- INVENTORY-BUNDLE 1.6.0 / 1.7.0 eklemeli değişiklikleri ve hata kodları.
+
+**Kapsam dışı / sahibi başka:**
+
+| Şey | Sahibi | Bu paket nasıl dokunur |
+|---|---|---|
+| Tahsis kararı (hangi lot, hangi bin), pick görevi, outbound | MOD-0178 (S2) | dokunmaz; port verir. Tahsis INVENTORY'de **yapılmaz** |
+| FEFO sırası ve FEFO kancası (`FefoCandidateReader`, `FefoOrderRule`, `ExpiryPostingPolicy`) | MOD-0176 | DL-3'te **yalnız** FEFO kancasının aday miktarı okuması serbest miktara bağlanır — XMC-001 izni (Q-01 = A, Beste 2026-11-02; MOD-0176 MVP-1 modülü, sahibi Beste), dosya ve sembol §5 / §8.5; `FefoOrderRule`, `FefoIssueRule`, politika modları, FEFO-BUNDLE ve `getFefoOrder` okuması değişmez |
+| Satış çıkışını kimin yazdığı (W-4), sevkiyat satırı → `reservationId` eşlemesi | MOD-0183 (MVP-6) | dokunmaz; `MovementRequest.reservationId` sunar. 0183 revizyonu XMC-001 bağımlılığı (§7) |
+| Karantina / bloke kararları, `QUARANTINE_STOCK_RESERVED` | MOD-0175 | dokunmaz; ölçülen eşlemeye güvenir (§8.6) |
+| Lot kaydı ve durumu | MOD-0174 | okur (`LotPostingRules`, `Lot`) |
+| Recall durumu | MOD-0177 | okur (`IRecallLotStatusReader`) |
+| Lokasyon ağacı | MOD-0173-FU02 | okur (depo düğümü doğrulaması) |
+| ATP / sipariş tahsisi | MOD-0172 (commercial-suite) | dokunmaz; ATP-BUNDLE zaten "stok üzerinde reservation 0173'te yapılır" der (`docs/analysis/contracts/atp-bundle.openapi.yaml`, allocation özeti) |
+| Yedek parça rezervasyonu (bakım görünümü) | MOD-0201 (EAM, W-4) | dokunmaz; Blueprint SoR "reservations (maintenance view)" — ileride INVENTORY rezervasyonunu tüketen bir görünüm (FU-03-EAM, §20) |
+
+**Sınır kuralları:**
+1. **İkinci bakiye yok.** Pozisyonlar defter + rezervasyonların **projeksiyonudur**; her an yeniden kurulabilir (ebeveyn ASSUMPTION-0173-13
+   ile aynı sınıf). `inventory_balances` satırlarındaki `Reserved` alanı **0 kalır** (ebeveyn ASSUMPTION-0173-12; `BalanceView.reserved`
+   değişmez) — rezervasyon bin'e bağlı değildir (Q-02).
+2. **Stok yalnız defterin olağan yolundan değişir.** Rezervasyon stok hareketi yazmaz.
+3. **Geriye uyum:** `warehouseId` / `lotId` / `reservationId` taşımayan istek 1.5.0 ile **aynı** davranır ve **aynı parmak izini**
+   üretir (AC-7, AC-25).
+
+## 3. Owned Objects
+
+| Nesne | Dilim | Not |
+|---|---|---|
+| `InventoryReservation` (genişler) | DL-1 | + `WarehouseId?`, `LotId?`, `ClosedReason?` (§4.1) |
+| `InventoryReservationPosition` (yeni projeksiyon) | DL-1 | koleksiyon `inventory_reservation_positions` (§4.2) |
+| `InventorySkuPosition` (değişmez şema) | DL-1 | SKU düzeyi bekçisi aynen; kapsamlı rezervasyonlar da SKU `Reserved`'ına sayılır |
+| `InventoryTransaction` (genişler) | DL-2 | + `ReservationId?` (§4.3) |
+| `InventoryReservationAuditRecord` (genişler) | DL-1 / DL-2 | + kapsam alanları, ret alanları (§4.4) |
+| Komutlar | DL-1 / DL-2 | `CreateReservationCommand` (genişler), `PostMovementCommand` (genişler), `ReleaseReservationCommand` (şema değişmez, kapsamlı bırakma) |
+| Sorgular | DL-1 | `GetReservationByIdQuery` (yeni), `GetAvailabilityQuery` (genişler) |
+| Süreç içi port | DL-1 | `IInventoryReservationPort` (§8.7): `CreateAsync`, `CreateBatchAsync`, `ReleaseAsync`, `GetAsync`, `GetScopeFreeAsync`, `FindByIdempotencyKeysAsync` (r3) |
+| Okuma portu | DL-3 | `ILotReservationReader.ReservedByLotAsync` (§8.5; r4 adı — r3'te `ReservedByOthersAsync`, kullanılmayan `excludeReservationId` ile birlikte değişti, son bakış 01 F-3) — Q-01 = A (sahip kararı Beste 2026-11-02); W-5'in parçası |
+| API | DL-1 | `GET /api/inventory/reservations/{id}` (`getReservation`, yeni); `POST /reservations` ve `GET /availability` eklemeli |
+| API | DL-2 | `POST /api/inventory/movements` eklemeli (`reservationId`, `reservationConsumption`) |
+| İzinler | — | **yeni anahtar yok**: `inventory.reservations.manage` (yaratma, bırakma), `inventory.stock.read` (okumalar), `inventory.movements.create` (hareket) — `InventoryPermissions` sınıfında var |
+| Sözleşme | DL-1 / DL-2 | INVENTORY-BUNDLE 1.6.0 / 1.7.0 (§8.8) |
+
+## 4. Entity Fields
+
+Hepsi kiracı sahipli (`EntityBase`: `Id`, `TenantId`, `LegalEntityId`, `CreatedAt`, `UpdatedAt`, `Version`, `DeletedAt`); `TenantId` ve
+`LegalEntityId` sunucuda çözülür, gövdeden alınmaz (ReservationRequestReader `tenantId` / `legalEntityId` üyelerini zaten reddeder).
+Miktarlar SKU baz biriminde (`decimal`; ebeveyn ASSUMPTION-0173-09).
+
+### 4.1 InventoryReservation genişleyen alanlar
+
+| Alan | Tür | Zorunlu | Kural |
+|---|---|---|---|
+| `WarehouseId` | string? | hayır | LOCATION düğümü, `type = Warehouse`, `Active`, `legalEntityId` = çağıranın şirketi (FU02 `InventoryLocationDirectory` süreç içi okuma). Yaratıldıktan sonra değişmez |
+| `LotId` | Guid? | hayır | Kayıtlı lot (`Lot.Id`); `WarehouseId` ister; lot aynı `ItemId/SkuId/SkuLevel`'a ait. Değişmez |
+| `ClosedReason` | string? | hayır | `Released` (açık bırakma) \| `Consumed` (tam tüketim) \| `Expired`; `Status = ACTIVE` iken null. Wire `status` enum'u **değişmez** (`ACTIVE`, `RELEASED`, `EXPIRED`; tam tüketim `RELEASED` + `closedReason: Consumed`, ebeveyn ASSUMPTION-0173-15) |
+
+Kapsam türetilir: `LotId` dolu → **Lot** kapsamı; yalnız `WarehouseId` → **Warehouse** kapsamı; ikisi de boş → **Sku** kapsamı (bugünkü).
+
+### 4.2 InventoryReservationPosition (yeni)
+
+| Alan | Tür | Kural |
+|---|---|---|
+| `ItemId`, `SkuId`, `SkuLevel` | Guid, Guid, enum | SKU kimliği |
+| `Level` | enum | `Warehouse` \| `Lot` |
+| `WarehouseId` | string | her iki düzeyde dolu |
+| `LotId` | Guid | `Lot` düzeyinde lot kimliği; `Warehouse` düzeyinde **`Guid.Empty`** (null değil — tekil indeks null'a ve birleştirilmiş metne dayanmaz; her alan ayrı saklanır ve ayrı karşılaştırılır) |
+| `AvailableOnHand` | decimal | o kapsamdaki `AVAILABLE` balance satırlarının `OnHand` toplamı; Blocked / Expired / retest-tutulan lotların stoğu **sayılmaz** (SKU pozisyonuyla aynı kural, `SkuPositionRebuilder` açıklaması, MOD-0174 CT-D1, MOD-0175 CT-Q3) |
+| `Reserved` | decimal | o kapsamı içeren `ACTIVE` rezervasyonların kalan miktarı toplamı (depo düzeyi = o depodaki depo + lot rezervasyonları; lot düzeyi = yalnız o lotunkiler) |
+| `BaseUomId` | string | SKU baz birimi |
+
+Projeksiyondur: defter bacağıyla ve rezervasyon değişikliğiyle **aynı Mongo işleminde** yazılır, `SkuPositionRebuilder` deseniyle
+başlangıçta yeniden kurulur (§8.2). `warehouseId`'si boş `AVAILABLE` balance satırı varsa hiçbir depo pozisyonuna girmez (yalnız SKU'ya) —
+böyle satırın bugün olup olmadığı **geliştiricinin ilk ölçümü** (§19.2).
+
+### 4.3 InventoryTransaction genişleyen alan
+
+| Alan | Tür | Kural |
+|---|---|---|
+| `ReservationId` | Guid? | `postMovement` `reservationId` taşıdıysa ve kabul edildiyse; değişmez (defter append-only) |
+
+### 4.4 Denetim kayıtları
+
+`InventoryReservationAuditRecord` (`inventory_audit`) eklemeli alanlar: `WarehouseId?`, `LotId?`, `ClosedReason?`, `Outcome?`,
+`ErrorCode?`, `RequestedQuantity?`, `UncoveredQuantity?`, `Level?` (`SKU` \| `WAREHOUSE` \| `LOT`), `MovementType?` (tüketim retlerinde),
+`ReservationIdText?` (tüketim retinde istemcinin gönderdiği `reservationId` metni olduğu gibi, ≤ 100 karakter, kısaltılarak; Guid
+olmayan metin de yazılır), `SourceModule?`, `ActorDisplayName?` (r3, inceleme 01 tur 2 F-5 — aşağıda). Mevcut `Action` değerlerine eklenen: `InventoryReservationRefused`,
+`InventoryReservationConsumptionRefused`, `InventoryReservationRestored` (§8.3.1).
+
+**`Outcome` sözlüğü (r2, inceleme 01 F-7):** AUD-001 §3 satır 8'in değerleri — `Succeeded` \| `Failed` \| `Denied`. Bu paketin her
+reddi (doğrulama, iş kuralı, bulunamayan / başka kiracının kimliği, 503) **`Failed`** yazılır: başka kiracının kimliği depoda kapsam
+filtresiyle zaten görünmez, bilinmeyenden ayırt edilmez (§8.3), yetki reddi değildir. `Denied` (403 yetki reddi) bu pakette yazılmaz —
+403 handler'a ulaşmaz; servis geneli 403 denetimi FU-03-403AUDIT (§20). Mevcut satırlar `Outcome` taşımaz ve `Succeeded` okunur.
+
+**Ret satırında boş olamayan alanlar (yaratma reddinde rezervasyon yoktur):** `ReservationId` = `Guid.Empty`; `ItemId` / `SkuId` /
+`SkuLevel` ayrıştırılabildiyse istekten, ayrıştırılamadıysa `Guid.Empty` / enum varsayılanı (`ErrorCode` 400 `INVALID_REQUEST` iken
+okuyucu bu üç alana bakmaz); `ChangedQuantity` = 0; `RemainingQuantity` = 0; `Status` **null** (alan `ReservationStatus?` olur —
+mevcut satırlar dolu kalır; ret satırında rezervasyon durumu yoktur); `ActorUserId`, `CorrelationId`, `LeSource`, `OccurredAt`
+başarı satırıyla aynı kural. Tüketim reddinde `ReservationId` = gönderilen kimlik Guid'e çevrilebiliyor ve bu kapsamda varsa onun,
+yoksa `Guid.Empty`; metin her durumda `ReservationIdText`'te. Yazma kuralı §21.
+
+**Aktörün o andaki adı (AUD-001 §3 alan 2; r3, inceleme 01 tur 2 F-5 — ölçüldü `aae9fac57`).** Ret satırının merkezi karşılığı yoktur
+(merkezi kayıt yalnız başarıda iletilir, §21), bu yüzden ad yerel satıra yazılır: `ActorDisplayName` = mevcut
+`IPostingActorName.Current` (`Application/Common/IPostingActorName.cs`; uygulaması `Api/CentralAudit/PostingActorName.cs` — token adı,
+merkezi denetim kuyruğunun yazdığı değerle aynı, `ICentralAuditScope.ActorDisplayName`; arka plan akışında `Use(...)` ile verilen saklı
+ad; boş → null). Kural `InternalMovementPostingService.NameOf` ile aynıdır: ad **yalnız aktör çözülmüş kapsam kullanıcısıysa**
+(`actorUserId == ITenantContext.UserId`) yazılır, başka aktör kimliği kapsam kullanıcısının adını ödünç almaz → null. Servis Auth'u
+çağırmaz. Yazılan satırlar: `InventoryReservationRefused`, `InventoryReservationConsumptionRefused` (ve bu paketin eklediği başarı
+satırı `InventoryReservationRestored`; diğer başarı satırlarının adı merkezi kayıttadır, değişmez). Süre sweeper'ı (sistem aktörü) ad
+yazmaz.
+
+### 4.5 İndeksler (kiracı + şirket önce)
+
+- `inventory_reservation_positions`: **tekil** `{ TenantId, LegalEntityId, ItemId, SkuId, SkuLevel, Level, WarehouseId, LotId }`.
+- Metindeki `W:W` / `L:W:L` gösterimi yalnız kısaltmadır (depo düzeyi / depo + lot düzeyi pozisyonu); saklanan anahtar değildir.
+- `inventory_reservations`: `{ TenantId, LegalEntityId, SkuId, SkuLevel, WarehouseId, LotId, Status }` (kapsam tüketimi ve okuması);
+  mevcut indeksler değişmez.
+- `inventory_transactions`: `ReservationId` için seyrek değil **kısmi** indeks gerekmez (okuma yolu yok); eklenmez.
+- İndeks kurulumu `InventoryIndexConfiguration` / `InventoryIndexInitializerHostedService` içinde.
+
+## 5. Repo Scope
+
+Hepsi `services/Diten.InventoryService/` altında (MOD-0173 sahibi aynı: MVP-1 CT):
+
+- `src/Diten.InventoryService.Domain/Entities/InventoryReservation.cs`, `InventoryReservationAuditRecord.cs`,
+  `InventoryReservationChangedPayload.cs` (+ `WarehouseId?`, `LotId?`, `ClosedReason?`; `Change` değerlerine `Restored` — iç yük, sözleşme
+  değil, dosyanın kendi notu), `InventoryTransaction.cs`; yeni `InventoryReservationPosition.cs`; `ValueObjects/` altında yeni
+  `ReservationScope.cs`; `Repositories/` altında yeni port arayüzleri ve sonuç türleri (`ReservationCreateOutcome` vb. genişler).
+- `src/Diten.InventoryService.Application/Features/Inventory/`: `Commands/CreateReservationCommand.cs`, `Commands/PostMovementCommand.cs`;
+  yeni `Queries/GetReservationByIdQuery.cs`; `Queries/GetAvailabilityQuery.cs`; `Handlers/CommandHandlers/CreateReservationHandler.cs`,
+  `ReleaseReservationHandler.cs`; yeni `Handlers/QueryHandlers/GetReservationByIdHandler.cs`; `Handlers/QueryHandlers/GetAvailabilityHandler.cs`;
+  `Services/ReservationRequestParser.cs`, `ParsedReservation.cs`, `ReservationFingerprint.cs`, `MovementRequestParser.cs`,
+  `ParsedMovement.cs`, `RequestFingerprint.cs`, `InternalMovementPostingService.cs`; yeni `Services/InventoryReservationPort.cs`;
+  `Validators/` ilgili dosyalar; `InventoryModels.cs`, `InventoryMapping.cs`; `Common/InventoryErrorCodes.cs`.
+- `src/Diten.InventoryService.Persistence/`: `Repositories/ReservationPositionOperations.cs`, `InventoryReservationRepository.cs`,
+  `InventoryLedgerRepository.cs` (`ApplySkuPositionAsync` ve tüketim), `SkuPositionRebuilder.cs` (kapsam pozisyonlarını da kurar),
+  `ReservationExpirySweeper.cs`, `LedgerProjectionReKey.cs` (§8.2 yol 5); `InventoryCollections.cs`, `InventoryIndexConfiguration.cs`,
+  `InventoryBsonMappings.cs`, `DependencyInjection.cs`; `TransactionRetryCounter.cs` (yeni tür sabiti `Reservation = "reservation"`,
+  r2 — inceleme 01 F-3; ledger'ın kendi dosyası).
+- **CT-07 (XMC-001) onayıyla — sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) — kapsamı (CT kararı MVP-1 CT 2026-11-02 ile hizalandı) §8.2 yol 3–4: `ApplyAsync` / `ApplyRetestAsync` lot tutulup bırakıldığında lotun her depodaki `W:` ve `L:` kapsam pozisyonlarının `AvailableOnHand`'ini günceller; başka değişiklik yok:** `src/Diten.InventoryService.Persistence/Traceability/LotHeldStock.cs` (§8.2 yol 3 ve 4 — `ApplyAsync`,
+  `ApplyRetestAsync` kapsam pozisyonlarını da günceller; çağıranlar `LotRepository`, `LotExpirySweeper`, `RetestHoldSweeperHostedService`
+  değişmez). İzin bu dosyadaki değişikliği yukarıdaki kapsamla sınırlar; başka değişiklik yapılmaz, ihtiyaç çıkarsa durulur ve sorulur (değişmez başka türlü korunamaz).
+  **Değişikliğin yeri (r2, inceleme 01 F-13 — ölçüldü `4b9f7a023`):** `ApplyAsync` ve `ApplyRetestAsync` kendi gövdesi olmayan iki
+  girişdir; ikisi de aynı dosyadaki özel `MoveAsync(database, session, lot, wasHeld, isHeld, now, ct)`'u çağırır ve SKU pozisyonuna yazan
+  tek gövde odur. İzinli değişiklik **`MoveAsync`'te** yapılır: balance satırlarının gruplaması `(LegalEntityId, ItemId, SkuId, SkuLevel)`'den
+  depoyu da içerecek biçimde genişler ve her grup için SKU'ya ek olarak `W:` ve `L:` pozisyonlarının `AvailableOnHand`'i aynı yönde
+  güncellenir. Bu, iznin adlandırdığı iki üyenin davranışıdır — kapsam genişlemez; `MoveAsync` dışındaki hiçbir üye değişmez.
+- **Q-01 = A (XMC-001) — sahip kararı Beste 2026-11-02; MOD-0176 MVP-1 modülüdür, sahibi Beste; izin bu kararla verildi. Kapsam yalnız
+  FEFO kancasının aday kümesindeki serbest miktar okuması (DL-3):** `src/Diten.InventoryService.Persistence/Expiry/ExpiryReadModel.cs` →
+  `FefoCandidateReader.ReadAsync(session, warehouseId, itemId, skuId, level, ct)` isteğe bağlı bir "serbest taban" girdisi alır; verildiğinde
+  her lotun `FefoCandidate.AvailableOnHand`'i = o depodaki AVAILABLE on-hand − `ILotReservationReader.ReservedByLotAsync` (vadesi
+  geçmiş rezervasyon sayılmaz; oturum ambient `LedgerTransactionBinding.Session` — §8.5, r4) olur (alt sınır 0); `src/Diten.InventoryService.Persistence/Expiry/ExpiryPostingPolicy.cs` → özel `FefoAsync(...)` (FEFO kararı;
+  `_candidates.ReadAsync` → `FefoIssueRule.Evaluate(issued, FefoOrderRule.Order(...))`) bu girdiyi verir. **Yapıcılar ve DI (r3, inceleme 01
+  tur 2 F-2 — ölçüldü `aae9fac57`):** `FefoCandidateReader(IMongoDatabase database, ITenantContext tenant, IRecallLotStatusReader recall)`
+  yapıcısına **`ILotReservationReader reservations`** parametresi eklenir (iznin tek yapıcı değişikliği); `ExpiryPostingPolicy(FefoCandidateReader
+  candidates, ExpiryHookWriter writer, LedgerTransactionBinding binding, ITenantContext tenant)` yapıcısı **değişmez** (taban girdisi
+  `FefoAsync` içinde `ReadAsync`'e verilir). DI: `src/Diten.InventoryService.Api/Expiry/ExpiryServiceCollectionExtensions.cs`
+  `services.AddScoped<FefoCandidateReader>()` satırı **değişmez** (kapsayıcı yeni parametreyi çözer); `ILotReservationReader`'ın kaydı
+  bu paketin kendi `src/Diten.InventoryService.Persistence/DependencyInjection.cs`'ine eklenir (scoped). `new FefoCandidateReader(` ve
+  `new ExpiryPostingPolicy(` ile elle kurulum servis ve testlerde **yok** (ölçüldü, `grep`). Inventory test projesinde ayrı bir DI duman testi
+  yoktur (ölçüldü); yeni parametrenin çözüldüğünü AC-38 ölçer — test gerçek host (`InventoryApiFactory`) üzerinden `postMovement`
+  çağırır, kayıt eksikse istek 500 alır ve test kırmızıdır. **Değişmeyenler:** `FefoOrderRule`,
+  `FefoIssueRule`, `FefoCandidate` kaydı, politika modları, `ExpiryReadModel.FefoCandidatesAsync` (`getFefoOrder` okuması, FEFO-BUNDLE
+  `basis: onHandAvailable`), FEFO-BUNDLE sözleşmesi, `FefoIssueSnapshot` şeması ve `ExpiryHookWriter` (F-3 için kabul edilen sınır, §8.5),
+  `ExpiryServiceCollectionExtensions.cs`, `Features/Expiry/**`. Başka değişiklik gerekirse durulur ve sorulur.
+- `src/Diten.InventoryService.Api/`: `Controllers/InventoryController.cs` (yeni GET), `Contract/ReservationRequestReader.cs`,
+  `Contract/MovementRequestReader.cs`.
+- DL-3: `src/Diten.InventoryService.Application/Features/Inventory/Ports/ILotReservationReader.cs` + Persistence uygulaması
+  `src/Diten.InventoryService.Persistence/Repositories/LotReservationReader.cs` (yeni; yapıcı `IMongoDatabase`, `ITenantContext`,
+  `LedgerTransactionBinding` — r4, son bakış 01 F-2; `LedgerTransactionBinding` türü yalnız **okunur**, dosyası değişmez, §6).
+- DL-1 (r4, son bakış 01 F-1): yeni `src/Diten.InventoryService.Persistence/Repositories/ReservationActiveFilter.cs` — vade süzgecinin
+  tek yeri (`Status == ACTIVE` ve (`ExpiresAt == null` ya da `ExpiresAt > now`); bugün `InventoryReservationRepository.SumActiveReservedAsync`
+  içinde satır içi, `InventoryReservationRepository.cs:114-115`, ölçüldü `c1a563cf7`); `SumActiveReservedAsync`, kapsam okuması
+  (`SumActiveScopeReservedAsync`, §8.8) ve DL-3'te `LotReservationReader` onu kullanır.
+- Testler: `tests/Diten.InventoryService.Tests/Api/` altında yeni `LotReservationTests.cs`, `ReservationConsumptionTests.cs`,
+  `ReservationScopeInvariantTests.cs`, `ReservationRefusalAuditTests.cs`, `LotReservationQuarantineInteractionTests.cs`; `Contract/`
+  testleri (`ContractSchemaValidatorTests`, `InventoryBundleDescriptionNoteTests`, Prism smoke) ve `Contract/Fixtures/` (yeni donmuş
+  `inventory-bundle-v1.5.0.openapi.yaml` DL-1'de, `inventory-bundle-v1.6.0.openapi.yaml` DL-2'de — mevcut desen: bugün `v1.0.0`…`v1.4.0`
+  kopyaları var, 1.5.0 kopyası **yok**, ölçüldü `4b9f7a023`); `CentralAudit/` testleri yalnız kapsam ölçümü için (komut sayısı değişmez,
+  §21); `Architecture/` (port kullanımı kuralı). `AuditTrailStandardTests` bu test projesinde **değildir**:
+  `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` (ayrı proje, ayrı koşu; değiştirilmez — AC-32).
+- Sözleşme: `docs/analysis/contracts/inventory-bundle.openapi.yaml` (1.6.0 DL-1, 1.7.0 DL-2; tek yazıcı MOD-0173) ve
+  `docs/reference/architecture/api/mod-0173-inventory-bundle.md` §4 "Reservations" (açıklama).
+- `services/Diten.InventoryService/README.md` (rezervasyon notu).
+
+## 6. Protected Paths
+
+- `.antigravity/**` (kullanıcı onayı), `AGENTS.md`, `CLAUDE.md`.
+- `gateway/Diten.ApiGateway/**/ocelot.json` (yalnız integration-agent; bu paket gateway değiştirmez, §15).
+- `services/Diten.Building.Blocks/**` (BL-501 ortak iletici olduğu gibi kalır).
+- Başka modüllerin kodu: `Features/Expiry/**` (MOD-0176), `Features/Quarantine/**` (MOD-0175), `Features/Recall/**` (MOD-0177),
+  `Features/Traceability/**` (MOD-0174), `Features/Warehouse/**` (MOD-0178), `Persistence/Quarantine/**`, `Persistence/Recall/**`,
+  `Persistence/Expiry/**` (istisna yalnız `ExpiryReadModel.cs` `FefoCandidateReader.ReadAsync` ve `ExpiryPostingPolicy.cs` `FefoAsync`, Q-01 = A
+  XMC-001 izniyle ve yalnız §5'teki kapsamda — Beste 2026-11-02), `Persistence/Traceability/**` (tek istisna `LotHeldStock.cs`, CT-07 izniyle ve yalnız o kapsamda — Beste 2026-11-02) — **okunur, değiştirilmez**
+  (XMC-001). İhtiyaç çıkarsa durulur ve sorulur.
+- `docs/analysis/contracts/fefo.openapi.yaml`, `shipment-bundle.openapi.yaml`, `warehouse-outbound.openapi.yaml`,
+  `docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md` — başka sahiplerin.
+- `services/Diten.SupplyChainService/**` (MVP-6), `frontend/**` (ekran yok), `execution/registries/**` (kayıt CT kararı).
+- Arşiv ve `_Layout.cshtml`.
+
+## 7. Dependencies
+
+| Bağımlılık | Tür | Durum (ölçüldü 2026-11-02, `703cbaec7`) | Kullanım |
+|---|---|---|---|
+| MOD-0173 S2 rezervasyon çekirdeği | HARD (taban) | var: `InventoryReservation`, `InventorySkuPosition`, `ReservationPositionOperations` (`ApplyAvailableDeltaAsync`, `TryReserveAsync`, `ConsumeAsync`, `ExpireDueAsync`), `CreateReservationHandler`, `ReleaseReservationHandler`, `SkuPositionRebuilder` | genişletilir |
+| MOD-0173-FU02 LOCATION | HARD | var: `InventoryLocationDirectory` (süreç içi) | depo düğümü doğrulaması |
+| MOD-0174 lot | HARD | var: `Lot`, `LotPostingRules.Evaluate` | lot kuralı (yaratmada `GOODS_ISSUE_SALES` sınıfıyla) |
+| MOD-0177 recall | HARD | var: `IRecallLotStatusReader.UnderRecallAsync` | yaratmada `LOT_UNDER_RECALL` |
+| MOD-0175 karantina | etkileşim (okuma) | var: `QuarantineStockActions` defter `INSUFFICIENT_STOCK` reddini, SKU'nun aktif rezervasyonu varsa 409 `QUARANTINE_STOCK_RESERVED`'a çevirir | kod değişmez; AC-18 ölçer (§8.6) |
+| MOD-0176 FEFO | XMC-001 (Q-01 = A, izin verildi) | var: `ExpiryPostingPolicy.FefoAsync`, `FefoCandidateReader.ReadAsync` (KF-F: kanca ve `getFefoOrder` okuması aynı okuyucu), `FefoIssueRule.Evaluate` (verilen lot "diğer uygun lotlar"dan çıkarılır: `order.Eligible.Where(e => e.Lot.Id != issued.Id)`); FEFO-BUNDLE 1.3.0 `getFefoOrder` `basis: onHandAvailable` | DL-3: kancanın aday miktarı serbest tabana bağlanır (§5, §8.5); `getFefoOrder` ve FEFO-BUNDLE değişmez. 0176 paket metnindeki FU-0176-RES-01 düzeltmesi CT-06 |
+| MOD-0183 (MVP-6) | XMC-001 (tüketici) | `MovementRequest.reservationId` kullanılmıyor: MOD-0183 paketi §23.4 "Consuming an MVP-5 (MOD-0178) reservation needs `MovementRequest.reservationId` (W-5, MOD-0173 owner)"; satır alanı `inventoryReferenceId` v1'de kullanılmıyor (F-10) | 1.7.0'dan sonra 0183 revizyonu sevkiyat satırından `reservationId` gönderir — **MVP-6 CT (Natig) kararı**; o gelene kadar 0178 rezervasyonu açıkken 0183 çıkışı 422 `INSUFFICIENT_STOCK` ile reddedilebilir (0183 F-10'da kabul). **Telafi (CT-08, r2):** 0183'ün çok satırlı sevk telafisi (G4 (a), MOD-0183 §23.4 "The dispatch attempt": yazılmış satırlar REVERSAL ile geri alınır, yeni deneme yeni anahtarlarla **ilk yazımdır**) rezervasyonlu çıkışta çalışır: `restoreReservation: true` taşıyan REVERSAL rezervasyonu geri getirir (§8.3.1, AC-35; r3 — 0183'ün telafi gövdesi alanı göndermelidir, hiza notu aşağıda) |
+| MOD-0178 S2 revizyonu | tüketici | MOD-0178 §8.10, WMS taslağı §11 / §12 | portu kullanır; `expiresAt`, `reservationType`, kaynak üçlüsü 0178'in kararı (Q-07) |
+| BL-501 merkezi denetim | HARD | var: `AddCentralAudit<InventoryCentralAuditScope>(…, RequireEnlistment = true)`; defter izi `inventory-merkezi-iletim` yol b (`tests/architecture/audit-ledger/Diten.InventoryService.md` `## İzler`) | §21 |
+| Gateway `/api/inventory/{everything}` | var | `gateway/Diten.ApiGateway/ocelot.json`'da `/api/inventory` ve `/api/inventory/{everything}` → InventoryService | yeni GET aynı aileye düşer (§15) |
+| Mongo replika seti (işlem) | HARD | test paketi kendi replika setini açar (`INVENTORY_TEST_MONGO` yoksa) | §17 |
+
+**XMC-001:** Bu paket MOD-0173'ün kendi dosyalarına (Repo Scope) dokunur; **tek istisna** `Persistence/Traceability/LotHeldStock.cs`'tir
+(MOD-0174'ün lot durumu yolu, MOD-0175'in retest yolu da onu çağırır): kapsam pozisyonlarının değişmezi bu dosya güncellenmeden korunamaz
+(§8.2 yol 3–4), bu yüzden **CT-07 onayı DL-1'in önkoşuludur** — **verildi** (sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) — kapsamı (CT kararı MVP-1 CT 2026-11-02 ile hizalandı) §8.2 yol 3–4: `ApplyAsync` / `ApplyRetestAsync` lot tutulup bırakıldığında lotun her depodaki `W:` ve `L:` kapsam pozisyonlarının `AvailableOnHand`'ini günceller; başka değişiklik yok). MOD-0176 (Q-01), MOD-0183 (reservationId eşlemesi) ve MOD-0178 (S2 revizyonu)
+etkileri **o modüllerin paket revizyonudur**; bu paketin dilimleri onlara dokunmaz. MOD-0174…0177'nin sahibi de MVP-1 CT'dir; yine de
+onların başka bir dosyasına dokunmak gerekirse durulur ve sorulur. **İkinci istisna (r2, Q-01 = A):** MOD-0176'nın
+`ExpiryReadModel.cs` (`FefoCandidateReader.ReadAsync`) ve `ExpiryPostingPolicy.cs` (`FefoAsync`) dosyaları, yalnız §5'teki kapsamla
+(sahip izni Beste 2026-11-02; DL-3).
+
+**XMC-001 bilgi notu — MVP-6 (sahip Natig; r2 CT-08, r3 sınırı — MVP-6 CT notu Natig 2026-11-02, CT kararı MVP-1 CT 2026-11-02):**
+INVENTORY 1.7.0'dan sonra rezervasyonu `reservationId` ile tüketen bir satış çıkışının REVERSAL'ı, **istek `restoreReservation: true`
+taşıyorsa** o rezervasyonu geri getirir (§8.3.1); alan isteğe bağlıdır, varsayılan `false` — göndermeyen REVERSAL rezervasyonu kapalı
+bırakır. **MOD-0183 hiza notu (sahip Natig; MOD-0183 paket revizyonu, bu paket yazmaz):** 0183'ün **Dispatched öncesi** çok satırlı sevk
+telafisi (§23.4: yazılmış satırları REVERSAL ile geri al, `n` artar, yeni deneme yeni anahtarlarla ilk yazımdır) REVERSAL gövdesine
+`restoreReservation: true` **eklemelidir** — 0183'ün S23-17 kuralı ("only the §23.4 fields are sent") bu alanı §23.4 alan listesine almadan
+gönderemez; Shipped sonrası geri alma alanı **göndermez** (rezervasyon kapalı kalır — gerekçe §8.3.1). **Geç yazan kaydın düzeltmesi
+(r4, son bakış 01 F-5) MVP-6 kararıdır — Q-09, sahip MVP-6 CT (Natig), karar TBD; öneri A** (iki seçenek ve gerekçe §8.3.1 "Geç yazan
+kaydın düzeltmesi"). Bu, 0183'ün REVERSAL gövdesinde tek alanlık değişikliktir; 1.7.0 öncesi INVENTORY bilinmeyen üyeyi yok sayar (§8.8), sıra serbesttir. Bugün (1.5.0)
+0183 `reservationId` göndermez; not, 0183'ün `reservationId` gönderen revizyonu (Q-05) için yazılır. Bildirim MVP-1 CT'den MVP-6 CT'ye
+gider (bu paket MVP-6 dosyasına yazmaz).
+
+## 8. Runtime Constraints
+
+### 8.1 Servis ve kapsam
+
+- Servis `Diten.InventoryService`, port 5067; yeni servis, port ya da koleksiyon ailesi dışında altyapı yok.
+- Her okuma ve yazma `TenantId` + `LegalEntityId` ile sınırlı (W-0173-02 seçici kuralı aynen). `ReservationPositionOperations` yapıcısı kapsam
+  ister — yeni üyeler de kapsamsız çalışmaz.
+- Silme yok: rezervasyon kapanır (`RELEASED` / `EXPIRED`), pozisyon silinmez; `DeletedAt` kullanılmaz (ebeveynle aynı).
+- Gün sınırı UTC (E-6). Lot kuralının tarihi = sunucu UTC şimdi.
+
+### 8.2 Rezervasyon kapsamı ve pozisyonlar
+
+**Kapsam hiyerarşisi:** SKU ⊇ SKU + depo ⊇ SKU + depo + lot. Bir rezervasyon kendi kapsamını **ve onu içeren her düzeyi** ayırır:
+
+| Rezervasyon kapsamı | Artan `Reserved` |
+|---|---|
+| Sku (bugünkü) | SKU pozisyonu |
+| Warehouse (W) | SKU + `W:W` |
+| Lot (W, L) | SKU + `W:W` + `L:W:L` |
+
+**Defter bacağı:** `AVAILABLE` satıra dokunan bacakların deltası **her düzey için ayrı** toplanır: SKU düzeyinde hareketin net deltası
+(bugünkü), `W:` düzeyinde depo başına net delta, `L:` düzeyinde (depo, kayıtlı lot) başına net delta; hepsi aynı işlemde uygulanır.
+Kayıtsız (yazılmış metin) lotun stoğu `W:`'ye girer, `L:` pozisyonu yoktur (lot rezervasyonu kayıtlı lot ister). Tutulan lotun
+(`LotPostingRules.HoldsStock`) bacakları bugün SKU pozisyonuna yazılmaz (`InventoryLedgerRepository.PostAsync`:
+`if (lot is null || !LotPostingRules.HoldsStock(lot)) ApplySkuPositionAsync`) — kapsam düzeyleri aynı kuralla atlanır.
+
+**Net 0 erken dönüşü yalnız SKU düzeyi içindir (r2, inceleme 01 F-6; ölçüldü `4b9f7a023`).** `ApplySkuPositionAsync` bugün SKU net
+`AVAILABLE` deltası 0 ise hiçbir şey yapmadan döner. Bu kural yalnız SKU düzeyine uygulanır; kapsam düzeyleri kendi net deltalarıyla
+ayrıca değerlendirilir:
+- `LOCATION_TRANSFER` (aynı depo, aynı durum — `MovementDirectionRules`): SKU, `W:` ve `L:` net deltası 0 → hiçbir pozisyona dokunulmaz.
+- `WAREHOUSE_TRANSFER` W1 → W2 (aynı SKU, aynı lot): SKU net 0 (dokunulmaz); `W:W1` −q, `W:W2` +q; lotluysa `L:W1:L` −q, `L:W2:L` +q.
+  **Depo düzeyi bekçi yolu:** herhangi bir kapsam düzeyinde net azalış varsa önce SKU'nun vadesi gelen rezervasyonları kapatılır
+  (`ExpireDueAsync`, SKU net deltasından bağımsız), sonra azalan her kapsam düzeyinde `AvailableOnHand − Reserved ≥ 0` koşullu
+  güncellemeyle aranır; tutmazsa 422 `INSUFFICIENT_STOCK`, `details.level` = `WAREHOUSE` ya da `LOT` (kaynak depo). Böylece ayrılmış
+  stok depo dışına çıkamaz (§8.4). `WAREHOUSE_TRANSFER` bir rezervasyonu tüketmez (kaynak üçlüsüyle de — üçlü tüketim yalnız SKU net
+  azalışında koşar, bugünkü kural). AC-37.
+
+**Pozisyona yazan her yol (değişmezi bozabilecek hepsi — ölçüldü, `inventory_sku_positions`'a yazan her üye aranarak):**
+
+| # | Yol | Bugün SKU pozisyonuna yazar | Bu paketle |
+|---|---|---|---|
+| 1 | Defter bacakları — `InventoryLedgerRepository.ApplySkuPositionAsync` → `ReservationPositionOperations.ApplyAvailableDeltaAsync` | evet | `W:` / `L:` de, aynı işlem |
+| 2 | Rezervasyon yaratma / bırakma / süre / tüketim — `ReservationPositionOperations` (`TryReserveAsync`, `TryReleaseAsync`, `ExpireDueAsync`, `ConsumeAsync`) | evet | kapsamı içeren her düzey |
+| 3 | Lot durum değişikliği ve SKT sweeper'ı — `LotHeldStock.ApplyAsync` (`LotRepository`, `LotExpirySweeper`; MOD-0174) | evet (`AvailableOnHand` lotun AVAILABLE toplamı kadar iner / çıkar; gövde özel `MoveAsync`) | lotun her depodaki `W:` ve `L:` pozisyonları da, `MoveAsync`'te depo başına — **MOD-0174 dosyası, XMC-001 (CT-07)** |
+| 4 | Retest tutma — `LotHeldStock.ApplyRetestAsync` (`RetestHoldSweeperHostedService`; MOD-0175) | evet (aynı `MoveAsync`) | aynı — **XMC-001 (CT-07)** |
+| 5 | Elle lot göçü yeniden anahtarlama — `LedgerProjectionReKey.ApplyAsync` (`ManualLotMigrationRepository`; ledger'ın klasörü) | evet — yalnız hedef lot tutuluysa (`LedgerReKeyGroup.LotHoldsStock`): SKU `AvailableOnHand` −Σ taşınan AVAILABLE (şirket başına); tutulu değilse SKU değişmez | (şirket, depo) başına, iki dal (r2, inceleme 01 F-2): **hedef lot tutulu değil** → taşınan AVAILABLE miktar `L:W:lot`'a eklenir, `W:` değişmez (yazılmış metnin stoğu zaten `W:`'deydi); **hedef lot tutulu** (`LotHoldsStock = true`) → `L:` değişmez (tutulan lotun stoğu sayılmaz), `W:` −Σ taşınan AVAILABLE (SKU dalıyla aynı yön). Göç reddedilmez: hiçbir düzeyde bekçi yoktur (bugünkü SKU dalı gibi); serbest miktar negatif görünebilir — "Lot durumu sonradan değişirse" kuralı |
+| 6 | Yeniden kurucu — `SkuPositionRebuilder` (başlangıç) | evet | `W:` / `L:` de |
+
+Bunların dışında pozisyona yazan yol yoktur; yeni yol eklenirse aynı tabloya girer (AC-34).
+
+**Azalış türleri:** `SCRAP`, `WRITE_OFF`, `COUNT_LOSS`, `SUPPLIER_RETURN` de `AVAILABLE` azalışıdır ve bugünkü SKU kuralı gibi ayrılmış stoğu
+açıkta bırakamaz (422 `INSUFFICIENT_STOCK`; önce bırakma). Bu, mevcut davranışın kapsam düzeyine uzamasıdır; sayım (MOD-0181) için bilgi
+(FU-03-COUNT).
+
+**Bekçi (iki yönlü, her düzeyde):**
+- Yaratma: kapsamın **her** düzeyinde `AvailableOnHand − Reserved ≥ q`; biri tutmazsa 422 `INSUFFICIENT_AVAILABLE`, `details.level`
+  (`SKU` \| `WAREHOUSE` \| `LOT`, ilk tutmayan düzey: önce LOT, sonra WAREHOUSE, sonra SKU), `available` (o düzeyin serbest miktarı),
+  `requested`. Hiçbir şey yazılmaz.
+- Azalış: `AVAILABLE`'ı azaltan bacak, tüketimden (§8.3) **sonra** dokunduğu her düzeyde `AvailableOnHand − Reserved ≥ 0` bırakmalı; yoksa
+  422 **`INSUFFICIENT_STOCK`** (mevcut kod; `details.level` eklemeli). Kod bilerek yeni değildir: MOD-0175 ve MVP-6 G7 eşlemeleri bu koda
+  dayanır (§8.6).
+- Bekçiler Mongo'nun koşullu güncellemesiyle (filtre + `$inc`) tek adımdır (bugünkü `UnreservedAtLeast` deseni); eşzamanlı yazıcı
+  WriteConflict alır ve işlem yeniden denenir.
+- **Yeniden deneme sayacı (r2, inceleme 01 F-3; ölçüldü `4b9f7a023`).** `TransactionRetryCounter.Retried(kind)` bugün ledger
+  (`posting`), lokasyon (`location`), lot, göç, expiry, quarantine ve recall depolarında çağrılır; **`InventoryReservationRepository`'de
+  çağrılmaz** (`CreateAsync` / `ReleaseAsync` `WithTransactionAsync` gövdesinde deneme sayısı tutmaz). Bu paket yeni tür sabiti
+  `TransactionRetryCounter.Reservation = "reservation"` ekler; `InventoryReservationRepository.CreateAsync`, `ReleaseAsync` ve port
+  toplu yaratması (`CreateBatchAsync`) gövdenin ikinci ve sonraki koşusunda `Retried(TransactionRetryCounter.Reservation)` çağırır
+  (`InventoryLedgerRepository.PostAsync`'teki `if (++attempt > 1)` deseni). Tüketim ve kapsam bekçisi ledger işleminde koşar →
+  `posting` türü sayılır. AC-9 (b) `reservation`, AC-27 `posting` sayacını okur.
+
+**Lot kuralı (yaratmada):** `LotId` doluysa lot kayıtlı olmalı (yoksa 422 `UNKNOWN_LOT`), aynı SKU'ya ait olmalı (422 `LOT_SKU_MISMATCH`),
+`LotPostingRules.Evaluate(lot, skuId, skuLevel, GOODS_ISSUE_SALES, şimdi)` geçmeli (aynı kodlar: `LOT_BLOCKED`, `LOT_EXPIRED`,
+`LOT_RETEST_DUE`; Draft lot kabul — ASSUMPTION-0174-07) ve lot recall altında olmamalı (422 `LOT_UNDER_RECALL`, `IRecallLotStatusReader`,
+kiracı geneli — CT-R7). PRODUCT-MASTER çağrılmaz (bugünkü ASSUMPTION-S2-03 korunur: kayıtlı lotun varlığı SKU'nun lot kontrollü olduğunu
+gösterir).
+
+**Depo kuralı:** `WarehouseId` LOCATION'da `Warehouse` türü, `Active` ve çağıranın şirketinde olmalı; değilse 422 `UNKNOWN_LOCATION`;
+LOCATION okunamazsa 503 `LOCATION_MASTER_UNAVAILABLE` (mevcut kodlar).
+
+**Süre:** `expiresAt` kuralı aynen (ebeveyn ASSUMPTION-0173-16); süre dolan kapsamlı rezervasyon her düzeyde serbest kalır.
+**Bırakma:** `releaseReservation` aynen (If-Match, 409 `RESERVATION_CONFLICT`); kalan miktar her düzeyde serbest kalır, `ClosedReason = Released`.
+**Yeniden kurma:** `SkuPositionRebuilder` kapsam pozisyonlarını da kurar (başlangıçta, kiracı + şirket + SKU başına kendi işleminde); idempotent,
+belge silmez. Değişmez: her düzeyde `Σ AVAILABLE satır OnHand (tutulan lotlar hariç) == AvailableOnHand` ve `Σ ACTIVE kapsayan rezervasyon
+kalanı == Reserved`.
+
+**Lot durumu sonradan değişirse:** mevcut kural aynen — mevcut rezervasyon kalır (INVENTORY 1.0.1 / 1.0.2 notları); lot pozisyonunun
+`AvailableOnHand`'ı düşer, serbest miktar negatif görünebilir; tüketim lot kuralıyla reddedilir; sahibi bırakır.
+
+### 8.3 Rezervasyon kimliğiyle tüketim
+
+`MovementRequest.reservationId` (isteğe bağlı, string). Doluysa, **kaynak üçlüsüyle eşleştirme (ebeveyn ASSUMPTION-0173-15) bu istek için
+yapılmaz**; yalnız adı verilen rezervasyon tüketilir. Boşsa davranış 1.5.0 ile aynıdır (üçlü eşleştirme dahil).
+
+| Koşul | Sonuç |
+|---|---|
+| Kimlik bu kiracı + şirkette yok (başka kiracının / şirketin kimliği dahil) | 422 `RESERVATION_NOT_FOUND` — bilinmeyenle **aynı** kod ve mesaj (varlık sızmaz). **Neden 404 değil 422 (r2, inceleme 01 F-14):** kimlik URL'nin kaynağı değil, gövdedeki bir **referanstır**; INVENTORY'de gövde referansının bulunamaması 422'dir — emsal `postMovement` `UNKNOWN_LOCATION` (sözleşme `components.responses.UnprocessableMovement`, örnek `unknownLocation`) ve `UNKNOWN_LOT` (`InventoryErrorCodes.UnknownLot`, 422). Kiracı / şirket ayrımı bu kodda görünmez (kiracı izolasyonu kuralı: kiracılar arası erişim varlık sızdırmaz) |
+| Rezervasyon `ACTIVE` değil (bırakılmış, tüketilmiş, süresi dolmuş — işlem içinde vadesi gelenler önce kapatılır) | 422 `RESERVATION_NOT_ACTIVE` (`details.status`, `details.closedReason`) |
+| `itemId/skuId/skuLevel` farklı; rezervasyonun deposu varsa `fromWarehouseId` farklı; lotu varsa `lotId` farklı | 422 `RESERVATION_MISMATCH` (`details.field`: `sku` \| `warehouse` \| `lot`) |
+| Hareket türü / yönü tüketmez ve taşımaz | 422 `RESERVATION_NOT_APPLICABLE` — kabul edilenler yalnız: `GOODS_ISSUE_SALES`, `GOODS_ISSUE_PROD` (`fromStockStatus = AVAILABLE`, tüketir) ve `LOCATION_TRANSFER` (`AVAILABLE`, doğrular, tüketmez — §8.4). `WAREHOUSE_TRANSFER`, `STATUS_TRANSFER`, `SCRAP`, `WRITE_OFF`, `SUPPLIER_RETURN`, `COUNT_*`, girişler ve `REVERSAL` reddedilir |
+| Tüketen harekette baz miktar > rezervasyon kalanı | 422 `RESERVATION_QUANTITY_EXCEEDED` (`details.remaining`, `details.requested`) — fazlası serbest stoktan **alınmaz** (Q-04) |
+| Geçerli, tüketen hareket | aynı işlemde: rezervasyon kalanı düşer (tam → `RELEASED` + `ClosedReason = Consumed`; kısmi → `ACTIVE`, `Version` +1); her düzeyde `Reserved` düşer; sonra azalış bekçisi (§8.2) çalışır; `InventoryTransaction.ReservationId` yazılır; `MovementResponse.reservationConsumption` döner |
+
+- **Gerçek ret sırası (r2, inceleme 01 F-9; ölçüldü `InternalMovementPostingService.PostAsync` ve `InventoryLedgerRepository.PostAsync`,
+  `4b9f7a023`).** Bugünkü sıra korunur; `RESERVATION_*` adımları adı verilen yerlere girer. İlk tutmayan adımın kodu döner:
+  1. Ayrıştırma (`MovementRequestParser`) → 400 `INVALID_REQUEST` (r3: REVERSAL dışı türde `restoreReservation`, boolean olmayan
+     `restoreReservation` dahil).
+  2. Idempotency: işlenmiş anahtar → 200 tekrar ya da 400 `IDEMPOTENCY_KEY_REUSED` (rezervasyon okunmaz).
+  3. **(yeni, işlem dışı, yalnız `reservationId` doluysa)** statik uygunluk: hareket türü / yönü tüketmez ve taşımaz (`REVERSAL`
+     dahil) → 422 `RESERVATION_NOT_APPLICABLE`; `reservationId` Guid biçimi değil → 422 `RESERVATION_NOT_FOUND`.
+  4. REVERSAL kopyası (`BuildReversalAsync`, 400) ya da ana veri / lot ön kontrolü (`CheckWithLotsAsync`: 503 `PRODUCT_MASTER_UNAVAILABLE` /
+     `LOCATION_MASTER_UNAVAILABLE`, 422 ana veri, lot ve FEFO ön kontrol kodları).
+  5. Defter işlemi içinde: recall yeniden kontrolü (422 `LOT_UNDER_RECALL`) → expiry / FEFO yeniden kontrolü (422
+     `FEFO_BYPASS_REASON_REQUIRED` / `FEFO_ORDER_VIOLATION` …) → **(yeni, yalnız `reservationId` doluysa)** SKU'nun vadesi gelen
+     rezervasyonlarını kapat (`ExpireDueAsync` — SKU net deltasından **bağımsız**; net 0 `LOCATION_TRANSFER`'da da koşar) → adı verilen
+     rezervasyonu oku + doğrula (422 `RESERVATION_NOT_FOUND` / `RESERVATION_NOT_ACTIVE` / `RESERVATION_MISMATCH` /
+     `RESERVATION_QUANTITY_EXCEEDED`) → bacaklar (satır düzeyi 422 `INSUFFICIENT_STOCK`, 422 `UNKNOWN_LOCATION`) → lot pozisyonu →
+     SKU ve kapsam pozisyonları: (herhangi bir düzeyde net azalış varsa vade kapatma) → tüketim (adı verilen ya da üçlü) → deltalar +
+     bekçiler (422 `INSUFFICIENT_STOCK` + `details.level`) → işlem, denetim, kutu satırları.
+  Sonuç: recall, FEFO ve ön kontrol retleri `RESERVATION_*`'dan önce gelir; `RESERVATION_*` satır ve kapsam `INSUFFICIENT_STOCK`'undan
+  önce gelir. Herhangi bir ret işlemi geri alır; hiçbir şey yazılmaz. `reservationId`'siz ve SKU / kapsam net deltası 0 olan
+  `LOCATION_TRANSFER`'da vade kapatma **koşmaz** (bugünkü davranış: vadesi gelen rezervasyon sonraki dokunan işlemde ya da süre
+  sweeper'ında kapanır).
+- **`reservationId`'siz üçlü tüketim ve kapsamlı rezervasyon (r2, inceleme 01 F-5).** Bugünkü üçlü eşleşme (`ConsumeAsync`: aynı SKU,
+  `ACTIVE`, aynı `sourceModule` / `sourceDocumentId` / `sourceLineId`, eski önce) kapsamlı rezervasyonda **kapsam koşulu** da ister:
+  rezervasyonun `WarehouseId`'si doluysa hareketin kaynak deposu ona, `LotId`'si doluysa hareketin lotu ona eşit olmalı. Kapsam eşleşen
+  rezervasyon tüketilir ve `Reserved` **rezervasyonun kendi kapsamındaki her düzeyde** (SKU + `W:` [+ `L:`]) düşer; kapsam eşleşmeyen
+  rezervasyon tüketilmez, değişmez, hareket bekçiye normal girer (başkasının ayrılmış stoğu gibi). Böylece kapanmış bir rezervasyonun
+  `W:` / `L:`'de bıraktığı "hayalet" `Reserved` olamaz. AC-36.
+- **Ayrılmış stok başkasına çıkamaz:** `reservationId`'siz (ya da başka rezervasyonu adlandıran) bir azalış, kapsam düzeylerinde
+  `AvailableOnHand − Reserved ≥ 0` bırakmazsa 422 `INSUFFICIENT_STOCK`.
+- **Yetki:** tüketim `inventory.movements.create` ile yapılır; aynı kiracı + şirkette kapsamı eşleşen her hareket adı verilen rezervasyonu
+  tüketebilir; tüketen kaynak (`sourceModule`, belge, satır) denetime yazılır. Tüketiciyi daraltma Q-03.
+- **Tekrar:** `reservationId` istek parmak izine **yalnız doluysa** girer (1.3.0 `fefoBypassReason` deseni; `RequestFingerprint`); aynı anahtar +
+  aynı gövde → 200 `idempotentReplay: true`, ikinci tüketim yok. Aynı anahtar + farklı `reservationId` → 400 `IDEMPOTENCY_KEY_REUSED`.
+  Reddedilmiş istek saklanmaz: aynı anahtarla yeniden gönderim **ilk yazım** sayılır ve kurallar baştan çalışır (bugünkü ledger davranışı,
+  MVP-1 CT 2026-10-23 ek not 4). Cevabı kaybolan (commit sonucu bilinmeyen) istekte istemci aynı anahtar ve aynı gövdeyle yeniden gönderir:
+  yazılmışsa tekrar cevabı, yazılmamışsa ilk yazım — çift tüketim olmaz.
+- **REVERSAL:** rezervasyonu `reservationId` ile tüketen hareketin REVERSAL'ı, istek `restoreReservation: true` taşıyorsa o rezervasyonu
+  **geri getirir** — CT-08 ve r3 sınırı, §8.3.1; alan yoksa ya da `false` ise rezervasyon kapalı kalır. (r1'in
+  "geri getirmez" kuralı — MVP-1 CT G3 cevabı, `DECISION-DRAFT.md` §3b — bu pakette **kaldırıldı**: MOD-0183'ün çok satırlı telafisiyle
+  çelişiyordu, inceleme 01 F-1.)
+- **ETag:** kısmi tüketim `Version`'ı artırır; tutulan eski ETag ile bırakma 409 `RESERVATION_CONFLICT` verir; güncel ETag `getReservation`'dan
+  okunur (bugün okuma ucu olmadığı için eklenir).
+- **FEFO:** tüketen çıkış FEFO kancasından muaf **değildir**; ilk uygun lot değilse şirket politikası (`fefoBypassReason`) aynen uygulanır
+  (AC-29). DL-3'ten sonra "ilk uygun lot" serbest miktarla belirlenir (Q-01 = A, §8.5, AC-38): başka outbound'lara ayrılmış lot sırada
+  sayılmaz; ayrılmamış erken lot varken geç lotu çıkarmak (kendi rezervasyonuyla da) yine sapmadır. Vadesi geçmiş ama henüz kapanmamış
+  rezervasyon ayırmış sayılmaz (r4, son bakış 01 F-1; §8.5 "Vade kuralı"): tek rezervasyonunun süresi dolmuş erken lot serbesttir.
+
+#### 8.3.1 REVERSAL rezervasyonu geri getirir
+
+Karar CT-08 (MVP-1 CT, 2026-11-02; r2, inceleme 01 F-1); **sınırı r3'te** (CT kararı MVP-1 CT 2026-11-02, MVP-6 CT notu Natig
+2026-11-02). **Kural.** REVERSAL isteği **`restoreReservation: true`** taşıyorsa (isteğe bağlı eklemeli alan, varsayılan `false`;
+INVENTORY 1.7.0, §8.8), REVERSAL'ın aslı (`ReversesTransactionId` ile adlanan işlem) `InventoryTransaction.ReservationId` taşıyorsa ve
+aslı rezervasyonu **tüketmişse** (`GOODS_ISSUE_SALES` / `GOODS_ISSUE_PROD`; tüketilen miktar = aslının `BaseQuantity`'si — §8.3 fazlasını
+kabul etmez), REVERSAL **aynı defter işleminde** o rezervasyonu geri getirir. Bağ yalnız aslının `ReservationId`'sidir; REVERSAL kopyası
+kendisi `reservationId` taşımaz (§12; geri getirme izi denetim satırındadır).
+
+**Açık istek (r3):**
+- `restoreReservation` yok ya da `false` → REVERSAL rezervasyona **dokunmaz** (r1 davranışı): stok `AVAILABLE` döner, rezervasyon
+  `RELEASED` / `Consumed` (ya da kısmi tüketimde kalanıyla `ACTIVE`) kalır. Kullanım: Shipped sonrası geri alma — rezervasyon kapalı
+  kalmalıdır. **Gerekçe (r4, son bakış 01 F-5):** sevk edilmiş outbound'un işi bitmiştir; MOD-0178 `Shipped`'te artık `ACTIVE`
+  rezervasyonları bir kez bırakır ve tahsisi `ReservationReleaseState = Released` yapar (MOD-0178 @ `8ee5a000c` satır 1424-1428).
+  Bundan sonra geri getirilen rezervasyon `ACTIVE` kalır ama onu tüketecek ya da bırakacak sahip yoktur (öksüz rezervasyon); serbest
+  stoğu kapatır. Geç yazan kaydın düzeltmesi aşağıda (Q-09).
+- **Geç yazan kaydın düzeltmesi (r4, son bakış 01 F-5 — karar MVP-6 CT (Natig), TBD; Q-09).** MOD-0183 §23.4 "Late writer" maddesinde
+  (`d4176fbee` satır 751-756; `c1a563cf7`'de aynı dosya) kirası dolmuş ve 201'ini kaydedemeyen yazıcı, sevkiyatı yeniden okur; denemesi geçilmiş ya da telafi ediliyorsa kendi
+  **kaydedilmemiş** çıkışını §23.4 REVERSAL gövdesiyle geri alır. O çıkış R'yi `reservationId` ile tüketmişse:
+  - **A (öneri):** düzeltme REVERSAL'ı da `restoreReservation: true` gönderir — R geri gelir, sevkiyatın sonraki denemesi R'yi
+    tüketebilir (Dispatched öncesi telafinin gerekçesi bu durumda da geçerlidir: kaydedilmemiş çıkış sevk edilmemiştir). Önerilen sınır:
+    yazıcının yeniden okuduğu sevkiyatta tamamlanmış (`Completed` / Dispatched) bir deneme varsa alan gönderilmez — o durumda outbound
+    Shipped yoluna girmiştir ve yukarıdaki öksüz rezervasyon gerekçesi geçerlidir.
+  - **B:** düzeltme alanı göndermez — R `RELEASED` / `Consumed` kalır, stok `AVAILABLE` ve serbest döner. Sevkiyatın sonraki her
+    denemesi R ile 422 `RESERVATION_NOT_ACTIVE` (kısmi tüketimde kalan yetmezse `RESERVATION_QUANTITY_EXCEEDED`) alır; MOD-0178 outbound'u
+    `ReadyToShip`'te ve rezervasyonsuz kalır (MOD-0178 @ `8ee5a000c` satır 1432-1436). Kurtarma yolu **rezervasyonsuz yeniden
+    deneme**dir: (B1) MOD-0183 o satırı `reservationId`'siz yeniden gönderir — çıkış bekçiye ve FEFO'ya olağan biçimde girer, aradaki
+    sürede stok korunmaz; ya da (B2) MOD-0178 o tahsis için yeni anahtarla yeni rezervasyon açar. İkisi de başka paketin revizyonudur.
+  - **INVENTORY tarafı iki seçenekte de aynıdır:** alan isteğe bağlıdır, davranışı bu bölümün kuralıdır; bu paketin kodu, sözleşmesi ve
+    AC'leri Q-09'a göre değişmez (AC-35 (a) alanlı, (h) alansız yolu ölçer). Q-09 bu paketin ready-for-dev önkoşulu değildir; MOD-0183'ün
+    `reservationId` gönderen revizyonunun (Q-05) kapısıdır. Bildirim MVP-1 CT'den MVP-6 CT'ye gider (bu paket MVP-6 dosyasına yazmaz).
+- `restoreReservation: true` → aşağıdaki tablo. Kullanım: MOD-0183'ün **Dispatched öncesi** çok satırlı sevk telafisi (§7 hiza notu).
+- `true` ama aslı `ReservationId` taşımıyor ya da tüketim 0 (`LOCATION_TRANSFER`, üçlü tüketim) → **etkisiz** (ret yok): telafi her
+  satıra aynı gövdeyi gönderebilir; geri getirilecek rezervasyon yoksa REVERSAL olağan biçimde yazılır, `Restored` satırı yazılmaz.
+- `restoreReservation` REVERSAL dışındaki hareket türünde → 400 `INVALID_REQUEST` (zarf kuralı, `ReversalRules` 400 emsali; alan yalnız
+  REVERSAL'ın parçasıdır). Boolean olmayan değer → 400 `INVALID_REQUEST`.
+- Parmak izi: alan `RequestFingerprint`'e **yalnız `true` iken** girer (`reservationId` / 1.3.0 `fefoBypassReason` deseni) — yok ile
+  `false` aynı parmak izidir, 1.5.0 vektörü değişmez (AC-25); aynı anahtar + `true` ↔ `false` farkı → 400 `IDEMPOTENCY_KEY_REUSED`.
+
+| Rezervasyonun durumu (işlem içinde okunur) | Sonuç |
+|---|---|
+| `ACTIVE` (kısmi tüketilmiş) | `RemainingQuantity` += q, `Version` +1 |
+| `RELEASED` + `ClosedReason = Consumed` | → `ACTIVE`, `RemainingQuantity` += q, `ClosedReason` / `ClosedAt` null, `Version` +1 |
+| `RELEASED` + `ClosedReason = Released` (sahibi kalanı bıraktı) | **geri getirilmez** — sahibin açık bırakma kararı korunur; stok serbest döner |
+| `EXPIRED` | **geri getirilmez** — kapalı; vade kuralı aynı sonucu verirdi (aşağıda); stok serbest döner |
+| Rezervasyon yok (kapsam dışı olamaz: aslı aynı kiracı + şirkettedir) | değişmez durum; işlem "değişmez ihlali" ile durur (500, hata logu) |
+
+- **Pozisyonlar:** geri getirilen q, rezervasyonun kapsamındaki **her düzeyde** (SKU, `W:`, `L:`) `Reserved`'a eklenir. REVERSAL bacağı
+  aynı q'yu aynı depo / lot satırına `AVAILABLE` olarak geri yazdığından serbest miktar değişmez. Lot o arada tutulduysa (Blocked /
+  Expired / retest) `AvailableOnHand` artmaz ama `Reserved` artar — serbest miktar negatif görünebilir ("Lot durumu sonradan değişirse"
+  kuralı, §8.2); geri getirme reddedilmez.
+- **Tutulu lotta yer (r3, inceleme 01 tur 2 F-1 — ölçüldü `aae9fac57`).** `InventoryLedgerRepository.PostAsync` pozisyon dalını yalnız
+  `lot is null || !LotPostingRules.HoldsStock(lot)` iken çağırır (`ApplySkuPositionAsync`); tutulu lotun bacakları pozisyona yazılmaz ve
+  REVERSAL tutulu lottan geçebilir (CT-D4: `LotPostingContext.ForReversal`). Geri getirme bir **stok** değil **rezervasyon** değişikliğidir;
+  bu yüzden ayrı bir adım olarak **`HoldsStock` dalının dışında**, lot pozisyonundan sonra koşulsuz koşar: rezervasyon belgesi güncellenir,
+  `Reserved` her düzeyde (SKU, `W:`, `L:`) +q, `AvailableOnHand`'e dokunulmaz (tutulu lotun stoğu zaten sayılmıyordu), ardından aynı
+  adımda vade kapatma. Böylece "`Σ ACTIVE kapsayan kalan == Reserved`" değişmezi tutulu lotta da korunur; "`Σ AVAILABLE satır OnHand`
+  (tutulan lotlar hariç) `== AvailableOnHand`" değişmezi de (bacaklar tutulu lotu saymaz). Geri getirme pozisyon dalının içine konursa
+  tutulu lotta atlanır — AC-35 (g) bunu kırmızı yapar.
+- **Vade:** geri getirilen rezervasyonun `expiresAt ≤ şimdi` ise aynı işlemde mevcut vade kapatma yolu (`ReservationPositionOperations.ExpireDueAsync`,
+  SKU'nun `ACTIVE` ve vadesi geçmiş rezervasyonları → `EXPIRED`, kalanı her düzeyde bırakır) geri getirmeden **hemen sonra** koşar:
+  rezervasyon `EXPIRED` olur, stok serbest kalır; denetimde `InventoryReservationRestored` ardından `InventoryReservationExpired` satırı.
+  Bu, vadeyi lazy kapatan bugünkü kuralla tutarlıdır (yaratma, bırakma ve net azalışta da önce vade kapatılır).
+- **Değişmez:** `RemainingQuantity ≤ Quantity`; aşacaksa (programlama hatası) işlem durur.
+- **Tekrar / idempotency:** geri getirme REVERSAL'ın işleminin parçasıdır; REVERSAL'ın kendi tekrar kuralı yeter — aynı anahtar + aynı
+  gövde → 200 tekrar, ikinci geri getirme yok; aynı aslı ikinci kez geri alma → bugünkü `ReversalIndex` tekilliği (`ALREADY_REVERSED`),
+  ikinci geri getirme yok.
+- **Kapsam dışı:** `reservationId`'siz üçlü tüketimin REVERSAL'ı rezervasyonu **geri getirmez** (aslı `ReservationId` taşımaz; bugünkü
+  davranış). `reservationId` taşıyan `LOCATION_TRANSFER`'ın REVERSAL'ı hiçbir şey geri getirmez (tüketim 0).
+- **Denetim:** `inventory_audit` `InventoryReservationRestored` (`ReservationId`, `TransactionId` = REVERSAL işlemi, `ChangedQuantity` = q,
+  `RemainingQuantity`, `Status`, `WarehouseId`, `LotId`, `Outcome Succeeded`); kutu `InventoryReservationChanged` `Change = Restored`.
+  Merkezi kayıt REVERSAL'ın `PostMovementCommand` satırıdır (komut sayısı değişmez).
+- **Senaryo (MOD-0183 §23.4 G4 (a)):** iki satırlı sevk; satır 1 R1'i tüketir (201), satır 2 reddedilir; telafi satır 1'in REVERSAL'ını
+  `restoreReservation: true` ile yazar → R1 geri gelir (`ACTIVE`, kalan eski değer); yeni deneme yeni anahtarlarla ilk yazımdır ve satır 1 aynı `reservationId = R1` ile
+  201 alır. AC-35.
+
+### 8.4 Ayrılmış stokun yer değiştirmesi
+
+- `LOCATION_TRANSFER` aynı depoyu ve aynı stok durumunu ister (`MovementDirectionRules`, `MovementClass.LocationTransfer`: "requires the same
+  warehouse on both sides"; "single-step"). Bu yüzden depo ve depo + lot pozisyonlarında net delta **0**'dır: rezervasyon ve pozisyonlar
+  **değişmez**, bekçi tetiklenmez. Bin → staging taşıması `reservationId` olmadan da rezervasyonu düşürmez (MOD-0178 §8.10 gereksinim 3).
+- `reservationId` ile gönderilen `LOCATION_TRANSFER`: rezervasyon §8.3 tablosuyla doğrulanır (eşleşmezse 422), **tüketilmez**, `Version`
+  değişmez; işlem `ReservationId` taşır (iz için).
+- **Bilinen sınır (v1, bin pini yok):** rezervasyon bin'e bağlı olmadığından, aynı depo + lotta serbest miktar varsa başka bir çıkış o miktarı
+  ayrılmış stoğun durduğu bin'den (ör. staging) alabilir; toplam koruma bozulmaz ama fiziksel yer kayabilir. Bin pini Q-02.
+- `WAREHOUSE_TRANSFER` ayrılmış stoğu depo dışına çıkaramaz: SKU net deltası 0 olsa da kaynak depo (ve lotluysa kaynak lot) düzeyi
+  bekçisi çalışır → 422 `INSUFFICIENT_STOCK`, `details.level WAREHOUSE` / `LOT` (§8.2 "Net 0 erken dönüşü yalnız SKU düzeyi içindir",
+  AC-37); `reservationId` ile → 422 `RESERVATION_NOT_APPLICABLE`. Bu kural DL-1'dedir (defter bacağı); `reservationId`'li kısım DL-2.
+
+### 8.5 FEFO kancası ve ayrılmış lotlar
+
+**Ölçülen bugün (r1):** FEFO aday kümesi aynı şirket + depo + SKU'nun `AVAILABLE` on-hand > 0 olan lotlarıdır; rezervasyonlar sayılmaz
+(MOD-0176 paketi §8.2 "Allocation … basis onHandAvailable"; FEFO-BUNDLE `FefoOrder.basis` enum `[onHandAvailable]`; §8.3.1 "Reservation
+effect: none"). Lot rezervasyonu gelince: L1 (erken SKT) tümüyle outbound A'ya ayrılmışken outbound B'nin L2 çıkışı FEFO'da **sapma** sayılır
+ve şirket politikasına göre gerekçe ister ya da reddedilir — oysa L1 B için serbest değildir.
+
+**Karar Q-01 = A (sahip kararı Beste, 2026-11-02; r2, inceleme 01 F-8).** FEFO aday kümesi **serbest (ayrılmamış)** miktarı esas alır:
+başka outbound'lara ayrılmış lot miktarı FEFO sırasında sayılmaz; ayrılmış lotu kendi rezervasyonuyla çıkaran hareket bu yüzden FEFO
+sapması sayılmaz (kendi rezervasyonu o çıkış için serbesttir). (b) seçeneği (gerekçeyle sapma) reddedildi.
+
+**Mekanizma (DL-3):**
+- INVENTORY okuma portu `ILotReservationReader.ReservedByLotAsync(itemId, skuId, skuLevel, warehouseId, cancellationToken)` (r4 — son
+  bakış 01 F-3: r3'ün `ReservedByOthersAsync(…, excludeReservationId?)` imzası değişti; exclude parametresini üretimde çağıran yoktu,
+  kancada verilmiyordu, başka tüketici yok — **kaldırıldı**) → lot kimliği başına, o depodaki `ACTIVE` ve **vadesi gelmemiş** lot kapsamlı
+  rezervasyonların `RemainingQuantity` toplamı (`IReadOnlyDictionary<Guid, decimal>`; ayrılmamış lot sözlükte yoktur = 0). Okuma
+  `inventory_reservations`'tan yapılır (§4.5 kapsam indeksi `{ TenantId, LegalEntityId, SkuId, SkuLevel, WarehouseId, LotId, Status }`),
+  kiracı + şirket kapsamlı (`TenantId` ve `LegalEntityId` = çözülmüş kapsam, `IsDeleted = false`; `InventoryReservationRepository.Scope()`
+  deseni). Değer `L:W:lot` pozisyonunun `Reserved`'ından **vadesi geçmiş ama henüz kapanmamış** rezervasyonların kalanı kadar azdır
+  (pozisyon onları vade kapatma koşana kadar tutar — aşağıda "Vade kuralı"). Depo kapsamlı (lotsuz) rezervasyonlar bir lota bağlı
+  olmadığı için lot başına sayılmaz.
+- **Vade kuralı (r4, son bakış 01 F-1; ölçüldü `c1a563cf7`).** Pozisyondaki `Reserved` vadesi geçmiş rezervasyonu ancak
+  `ExpireDueAsync` koşunca bırakır (`ReservationPositionOperations.cs:177-183`); işlem içinde FEFO yeniden kontrolü vade kapatmadan önce
+  koşar (`InventoryLedgerRepository.cs:197` `_expiry.ReCheckAsync`, vade kapatma yalnız `ApplySkuPositionAsync` içinde `:291`), işlem
+  dışı ön kontrol hiç kapatmaz. Bu yüzden okuma pozisyondan değil, mevcut okuma kuralıyla yapılır: **`Status == ACTIVE` ve
+  (`ExpiresAt == null` ya da `ExpiresAt > now`)** — `SumActiveReservedAsync`'in bugünkü süzgeci (`InventoryReservationRepository.cs:114-115`;
+  emsal test `ReservationExpiryTests.Reads_stop_counting_a_due_reservation_immediately`, `ReservationExpiryTests.cs:23`), tek yeri
+  `ReservationActiveFilter` (§5). `now` = okuma anındaki sunucu UTC saati (`DateTimeOffset.UtcNow` — `transaction.CreatedAt`'in de kaynağı,
+  `InternalMovementPostingService.cs:285`). **Seçim ve gerekçe — "FEFO'dan önce vade kapatma" seçilmedi:** (1) işlem dışı ön kontrol yazmaz,
+  vade kapatma bir yazımdır — ön kontrolde süzgeç yine gerekirdi; (2) defter işlem sırası (§8.3) ve MOD-0176'nın `ReCheckAsync` çağrı yeri
+  değişmez, XMC-001 izni genişlemez; (3) okuma tarafında aynı kural zaten var ve aynı cevaptaki `reserved` onu kullanıyor (`getAvailability`);
+  (4) tahsis önerisi okuması (`GetScopeFreeAsync`, §8.7) ve kapsam rakamları (§8.8) aynı kuralı alınca MOD-0178'in "ilk uygun lot" planı
+  kancanın kararıyla aynı tabanı görür. **Bilinen sınır:** işlem içinde okuma anı `transaction.CreatedAt`'ten birkaç milisaniye sonradır;
+  bu aralıkta vadesi gelen rezervasyon FEFO'da serbest sayılır, aynı işlemin vade kapatması (`now = transaction.CreatedAt`) onu henüz
+  kapatmaz. Yön temkinlidir: erken lot uygun sayılır (sapma görünür, gizlenmez) ve sonraki dokunan işlem rezervasyonu kapatır.
+- **Oturum (r4, son bakış 01 F-2; ölçüldü `c1a563cf7`).** Port Application katmanındadır ve Application projesi MongoDB'ye referans
+  vermez (`Diten.InventoryService.Application.csproj:10-19`), bu yüzden imzada oturum **yoktur**. Uygulama (`LotReservationReader`, §5)
+  oturumu ambient **`LedgerTransactionBinding.Session`**'dan alır (`Persistence/Traceability/LedgerTransactionBinding.cs`; istek kapsamlı):
+  bağlıysa `Find(session, …)`, bağlı değilse işlem dışında `Find(…)` — `InventoryLotDirectory.cs:317-319` ile aynı desen. Bağlama defter
+  işleminin her denemesinde `InventoryLedgerRepository.cs:184`'te yapılır, `_expiry.ReCheckAsync`'ten (`:197`) önce; ön kontrol
+  (`ExpiryPostingPolicy.cs:62`, `FefoAsync(null, …)`) bağlamadan önce koşar. Böylece `FefoCandidateReader.ReadAsync`'in açık `session`
+  parametresi ile portun ambient oturumu iki yolda da aynıdır: ön kontrolde ikisi de işlem dışı, yeniden kontrolde ikisi de
+  `_binding.Session` (`ExpiryPostingPolicy.cs:76`). AC-31 (b) bunu ölçer.
+- MOD-0176 kancası (XMC-001 izni, §5): `ExpiryPostingPolicy.FefoAsync` → `FefoCandidateReader.ReadAsync`'i serbest tabanla çağırır;
+  her lotun `FefoCandidate.AvailableOnHand`'i = AVAILABLE on-hand − `ReservedByLotAsync`'in o lot için değeri (alt sınır 0). Serbest
+  miktarı 0 olan lot `FefoOrderRule.Order`'da uygun değildir (bugünkü `AvailableOnHand <= 0m` dalı). Çıkarılan lotun kendi
+  rezervasyonu da sayılır ama kararı etkilemez — `FefoIssueRule.Evaluate` verilen lotu "diğer uygun lotlar"dan zaten çıkarır
+  (`order.Eligible.Where(e => e.Lot.Id != issued.Id)`, ölçüldü `4b9f7a023`); bu yüzden porta "kendi rezervasyonunu düş" parametresi
+  gerekmez (r4, F-3).
+- Ön kontrol (işlem dışı, `CheckWithLotsAsync`) ve işlem içi yeniden kontrol aynı okuyucuyu kullandığı için ikisi de serbest tabanla
+  karar verir; işlem içi okuma yetkilidir (MOD-0176 CT-F2).
+- **Değişmeyenler:** `getFefoOrder` okuması (`ExpiryReadModel.FefoCandidatesAsync`, FEFO-BUNDLE `basis: onHandAvailable`), FEFO-BUNDLE,
+  politika modları (`Warn` / `RequireReason` / `Block`), `FefoOrderRule`, `FefoIssueRule`. **Bilinen fark:** `getFefoOrder`'ın sıralaması
+  bundan sonra kancanın kararından ayrılabilir (okuma ayrılmış lotu ilk gösterir, kanca onu saymaz). Okumanın da serbest tabana geçmesi
+  FEFO-BUNDLE eklemeli `basis` değeri ister — MOD-0176 sözleşme revizyonu, bu paketin kapsamı değil (FU-03-FEFO, §20).
+
+**FEFO kanıtı — kabul edilen sınır (r3, inceleme 01 tur 2 F-3).** `FefoIssueSnapshot` (MOD-0176, `ExpiryEntities.cs`; `ExpiryHookWriter.SnapshotAsync`)
+kararın tabanını ve atlanan ayrılmış lotu yazmaz: başka outbound'a ayrılmış erken lot atlanınca snapshot `Compliant = true`,
+`FirstEligibleLotId` = serbest tabandaki ilk lot olarak kaydedilir, nedeni ayrıca görünmez. **Seçim: snapshot şemasını değiştirmemek** —
+en az değişiklik ve izin sınırı: snapshot alanı eklemek MOD-0176 XMC-001 iznini (yalnız aday miktar okuması) şema ve yazıcıya genişletirdi
+ve FEFO uyum KPI'sının okuyucularını (`ExpiryReadModel.FefoIssuesAsync`) etkilerdi. Kanıt yeniden kurulabilir: kararın anındaki ayrılmış
+miktar `inventory_audit` rezervasyon satırlarından (`Created` / `Released` / `Expired` / `Consumed` / `Restored`, `OccurredAt`, `LotId`,
+`WarehouseId`) ve snapshot'ın `PostedAtUtc`'sinden okunur. Snapshot'a taban / ayrılmış miktar alanı gerekirse MOD-0176 paket revizyonu
+(FU-03-FEFO, §20). Uyum KPI'sı bu kararla doğru yönde değişir (ayrılmış lot yüzünden sapma sayılmaz — Q-01 = A'nın amacı).
+
+DL-3'e kadar (DL-1 / DL-2 kabulü) FEFO davranışı 1.3.0 ile aynıdır (AC-29); DL-3 W-5'in parçasıdır (CT-04 güncel, §19.6) — MOD-0178 S2
+DL-3 kabulünü de bekler. AC-31, AC-38.
+
+### 8.6 Lot durumu ve karantina etkileşimi
+
+- **Ölçülen (`QuarantineStockActions`, `StockActionHandlers.cs`):** karantina / bloke eylemi defterden `INSUFFICIENT_STOCK` alırsa ve SKU'nun aktif
+  rezervasyonu varsa 409 `QUARANTINE_STOCK_RESERVED` döner ve SKU'nun aktif rezervasyonlarını listeler (`ActiveReservationsAsync` SKU düzeyinde
+  okur → kapsamlı rezervasyonlar da listelenir). Lot bekçisi aynı kodu (`INSUFFICIENT_STOCK`) verdiği için 0175 değişmeden doğru cevabı
+  verir; recall karantina iletimi bunu `BlockedByReservation` sayar (`RecallQuarantineDispatcher`). AC-18 ölçer.
+- **Davranış farkı (bilinçli):** lot rezervasyonu olan lotun karantinası artık lot düzeyinde reddedilir; bugün SKU serbest miktarı yeterse geçerdi.
+  Bu yalnız kapsamlı rezervasyon varken olur (bugün yok) ve CT-Q6 kuralıyla ("ayrılmış stok karantinaya alınmaz, önce bırakılır") aynı yöndedir.
+  0175'in ön kontrolünü lot düzeyine indirmek (daha erken ve daha net mesaj) FU-03-QH (§20).
+- 0175'in ön kontrolü (`SkuUnreservedAsync`) SKU düzeyinde kalır; yarışı defter bekçisi yakalar (0175'in kendi notu).
+
+### 8.7 Süreç içi rezervasyon portu
+
+`IInventoryReservationPort` (Application, `Features/Inventory/Services/InventoryReservationPort.cs`) — MOD-0178'in tek rezervasyon kapısı
+(MOD-0178 §2 "rezervasyonu INVENTORY'nin rezervasyon komutuyla yapar — defter / bakiye / pozisyon koleksiyonuna doğrudan yazmaz"):
+
+| Üye | Davranış |
+|---|---|
+| `CreateAsync(request, legalEntityId, actorUserId)` | HTTP ile **aynı** ayrıştırıcı, parmak izi, idempotency, bekçi, lot / depo kuralı, denetim. **Şirket denetimi (r4, son bakış 01 F-4):** r3 imzası karşılaştırılacak şirketi taşımıyordu; `legalEntityId` = çağıranın kaydının şirketi (MOD-0178: outbound'un), `ITenantContext.LegalEntityId`'ye eşit değilse **ilk iş olarak**, hiçbir okuma ve yazımdan önce `InvalidOperationException` (`InternalMovementPostingService.PostAsync` deseni, `InternalMovementPostingService.cs:79-83` — ölçüldü `c1a563cf7`); programlama hatasıdır, iş reddi değildir: denetim satırı yazılmaz, istisna çağırana yükselir. Kiracı çözülmüş kapsamdan gelir (istekte kiracı yoktur) |
+| `CreateBatchAsync(lines, legalEntityId, actorUserId)` | Şirket denetimi `CreateAsync` ile aynı (r4, F-4): eşit değilse hiçbir satır okunmadan ve yazılmadan `InvalidOperationException`. En çok **100** satır; **hepsi ya da hiçbiri** — tek Mongo işlemi; bir satır reddedilirse hiçbir rezervasyon yazılmaz ve satır başına sonuç (kod, düzey, serbest miktar) döner; her satırın kendi idempotency anahtarı vardır; satırların hepsi önceden işlenmişse tekrar sonuçları döner, bir kısmı işlenmişse 400 `IDEMPOTENCY_KEY_REUSED` (karışık tekrar kabul edilmez) |
+| `ReleaseAsync(id, ifMatch, actorUserId)` | HTTP bırakma ile aynı |
+| `GetAsync(id)` | `getReservation` ile aynı görünüm |
+| `GetScopeFreeAsync(itemId, skuId, skuLevel, warehouseId, lotId?)` | kapsamın serbest miktarı — tahsis önerisi için okuma. r4 (son bakış 01 F-1): = kapsam pozisyonunun `AvailableOnHand`'i − `SumActiveScopeReservedAsync` (kapsamı içeren `ACTIVE` ve vadesi gelmemiş rezervasyonların kalanı, `ReservationActiveFilter`; §8.8 kapsam rakamlarıyla **aynı okuma**); pozisyonun `Reserved`'ı okunmaz (vadesi geçmiş ama kapanmamış rezervasyonu içerir, §8.5 "Vade kuralı"). Tabansız (negatif olabilir) |
+| `FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` (r3, CT kararı MVP-1 CT 2026-11-02; MOD-0178 r23 FU-0178-RSV-BYKEY) | Verilen idempotency anahtarlarıyla **yaratılmış** rezervasyonları döner: anahtar başına en çok bir satır `(IdempotencyKey, ReservationId, Status, ClosedReason, Version → etag)`; bulunmayan anahtar listede yer almaz; durum süzgeci yok (ACTIVE / RELEASED / EXPIRED hepsi döner). **Kiracı + şirket kapsamlı:** `tenantId` / `legalEntityId` çözülmüş kapsama eşit olmalı, değilse fail-closed `InvalidOperationException` (`InternalMovementPostingService.PostAsync` deseni); sorgu çözülmüş kapsamla ve mevcut tekil indeks `ux_tenant_le_reservation_idempotencykey` (`TenantId, LegalEntityId, IdempotencyKey`; ölçüldü `aae9fac57`) üzerinden çalışır — başka kiracının ya da şirketin aynı anahtarlı rezervasyonu dönmez. `keys`: 1…100 (toplu port sınırı), boş / null metin ve tekrar edilen anahtar → `ArgumentException`. Salt okuma: denetim satırı yazmaz (sorgu, AUD-001 §2), işlem açmaz ve **işlem oturumuna katılmaz** (r4, son bakış 01 F-2): imzada oturum yoktur, uygulama `LedgerTransactionBinding`'i okumaz (o yalnız defter işleminde bağlanır, `InventoryLedgerRepository.cs:184`); okuma her zaman işlem dışında, commit edilmiş durumu döner. MOD-0178'in kurtarması commit edilmiş durumu ister (MOD-0178 @ `8ee5a000c` §8.17 adım 6, satır 1281-1288: dönen satırla ayrı `ReleaseAsync` çağrısı). **Şirket / kiracı denetimi:** karşılaştırma okumadan önce; `tenantId` ≠ çözülmüş kiracı ya da `legalEntityId` ≠ çözülmüş şirket → `InvalidOperationException` (iki alan ayrı denetlenir, AC-39 (c) ayrı fixture'lar). Kullanım: MOD-0178'in tahsis kurtarması — `AllocationFailed` ve FU03 400 dalında yaratılmış rezervasyonları bulup `ReleaseAsync` ile bırakmak |
+
+- Port yalnız InventoryService içinden çağrılır; hiçbir controller portu çağırmaz, port HTTP izni denetlemez (çağıran 0178 komutu kendi
+  `warehouse.*` iznini taşır). Mimari test (AC-16).
+- Merkezi denetim: port çağıran 0178 komutunun içinde koştuğunda deponun `CentralAuditTransaction.EnlistAsync`'i **0178 komutunun satırına**
+  gider (MOD-0178 §8.8 ile aynı mekanizma); yerel `inventory_audit` satırları rezervasyon başına yazılır (§21).
+
+### 8.8 Sözleşme değişikliği (INVENTORY 1.6.0 ve 1.7.0)
+
+Hepsi **isteğe bağlı / eklemeli**; `x-changelog`'a sürüm satırı; `InventoryErrorCodes.All` ve sözleşme aynı değişiklikte. Ölçüm,
+`InventoryBundleDescriptionNoteTests`'in mevcut deseniyle: önceki sürümün donmuş fixture'ı bayt eşit, yeni sürüm farkı yalnız sayılan
+eklemeler, her yeni kod `InventoryErrorCodes.All`'da (1.3.0 / 1.4.0 testleri emsal).
+
+**1.6.0 (DL-1):**
+- `ReservationRequest` + `warehouseId` (string, nullable), `lotId` (string uuid, nullable; `warehouseId` ister).
+- `ReservationResponse` + `warehouseId`, `lotId`, `remainingQuantity`.
+- Yeni `GET /reservations/{id}` (`getReservation`, `x-permission: inventory.stock.read`) → yeni şema `ReservationView`: `reservationId`,
+  `status`, `closedReason`, `itemId`, `skuId`, `skuLevel`, `warehouseId`, `lotId`, `quantity`, `remainingQuantity`, `reservationType`,
+  `sourceModule`, `sourceDocumentId`, `sourceLineId`, `priority`, `expiresAt`, `createdAt`, `etag`, `contractVersion`; bilinmeyen / kapsam
+  dışı kimlik → 404, `releaseReservation`'ın bugünkü 404'üyle **aynı biçim** (`ReleaseReservationHandler`: kodsuz
+  `Response.Fail("Reservation not found.", 404)`; yeni kod yok). Cevap başlığı `ETag`.
+- `createReservation` 422 altına örnekler: `UNKNOWN_LOT`, `LOT_SKU_MISMATCH`, `LOT_BLOCKED`, `LOT_EXPIRED`, `LOT_RETEST_DUE`,
+  `LOT_UNDER_RECALL`, `UNKNOWN_LOCATION`; yeni durum kodları `400` (`INVALID_REQUEST`, `IDEMPOTENCY_KEY_REUSED` — bugün de dönüyor, beyan
+  ediliyor) ve `503` (`LOCATION_MASTER_UNAVAILABLE`). `INSUFFICIENT_AVAILABLE` `details.level` (eklemeli).
+- `getAvailability` + isteğe bağlı `lotId` (`warehouseId` ister); `AvailabilityView` + `scopeReserved`, `scopeAvailable` (yalnız
+  `warehouseId` verilip `locationId` verilmediğinde; tabansız). Mevcut `reserved` / `available` anlamı **değişmez** (bugünkü SKU
+  toplamı, kapsamda 0 tabanı — `GetAvailabilityHandler` ASSUMPTION-S2-05).
+  **Kapsam rakamlarının vade kuralı (r4, son bakış 01 F-1):** `scopeReserved` = yeni `IInventoryReservationRepository.SumActiveScopeReservedAsync(sku,
+  warehouseId, lotId?, now)` — kapsamı içeren (`WarehouseId` = W; lot düzeyinde ayrıca `LotId` = L) `ACTIVE` ve vadesi gelmemiş
+  rezervasyonların kalanı toplamı, `ReservationActiveFilter` ile; `now` = aynı cevaptaki `reserved`'ın `now`'ı (`GetAvailabilityHandler.cs:82-83`,
+  `SumActiveReservedAsync(…, DateTimeOffset.UtcNow, …)` — tek değişkene alınır). `scopeAvailable` = depo ya da depo + lot pozisyonunun
+  `AvailableOnHand`'i − `scopeReserved`. Pozisyonun `Reserved`'ı okunmaz. Böylece aynı cevapta `reserved` ve `scopeReserved` vadesi
+  geçmiş rezervasyonu aynı kuralla dışarıda bırakır (r3'te `scopeReserved` pozisyondan okunuyordu ve onu içeriyordu). Port
+  `GetScopeFreeAsync` (§8.7) aynı okumayı kullanır.
+  **Kapsam rakamlarının koşulu (r2, inceleme 01 F-10):** `scopeReserved` / `scopeAvailable` yalnız tek bir SKU adlandırıldığında
+  (`itemId` + `skuId` + `skuLevel`) ve `warehouseId` verildiğinde döner; SKU adlandırılmadan `warehouseId` verilirse alanlar **yoktur**
+  (çok SKU'lu toplam kapsam rakamı tanımsızdır); `lotId` verilip SKU adlandırılmamışsa 400 `INVALID_REQUEST`.
+- **`availableAfter` (yaratma cevabı, r2 F-10):** anlamı değişmez — SKU düzeyi serbest miktar (bugünkü `CreatedAvailableAfter` =
+  SKU pozisyonu `AvailableOnHand − Reserved`); kapsamlı rezervasyonda kapsamın serbest miktarı `getAvailability` kapsam rakamlarıyla
+  okunur. Yeni alan yok. Açıklamaya bir cümle eklenir (eklemeli, açıklama).
+- **Olay yükü (iç, sözleşme değil):** `InventoryReservationChangedPayload` + `WarehouseId?`, `LotId?`, `ClosedReason?`; `Change` +
+  `Restored`. Dosyanın kendi notu gereği bu yük donmuş pakette değildir; tüketici ona dayanmaz.
+
+**1.7.0 (DL-2):**
+- `MovementRequest` + `reservationId` (string, nullable).
+- `MovementRequest` + `restoreReservation` (boolean, isteğe bağlı, varsayılan `false`; yalnız `REVERSAL`'da anlamlı, başka türde 400
+  `INVALID_REQUEST`) — r3, CT-08 sınırı (§8.3.1).
+- `MovementResponse` + `reservationConsumption` { `reservationId`, `consumedQuantity`, `remainingQuantity`, `status`, `closedReason` } —
+  yalnız tüketen harekette; `LOCATION_TRANSFER` doğrulamasında `consumedQuantity: "0.000"`.
+- `TransactionItem` + `reservationId` (nullable).
+- `postMovement` 422 altına yeni kodlar: `RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`,
+  `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`; `INSUFFICIENT_STOCK` `details.level` (eklemeli).
+- **REVERSAL açıklaması (eklemeli, açıklama; r2 CT-08, r3 sınırı):** `postMovement` açıklamasına ve `x-changelog` 1.7.0 satırına: "A REVERSAL
+  with `restoreReservation: true` (optional, default false; REVERSAL only) of a movement that consumed a reservation by `reservationId`
+  restores that reservation in the same transaction (remaining quantity added back; RELEASED/Consumed → ACTIVE; Reserved written back
+  on every scope level); without it (or false) the reservation stays closed. A reservation the holder released, or one that expired, is
+  not restored; a restored reservation already past `expiresAt` expires in the same transaction; `true` on a REVERSAL whose original
+  consumed no reservation has no effect. A REVERSAL never carries `reservationId`." Yeni kod ya da durum kodu yok; yeni alan yalnız
+  `restoreReservation` (yukarıda).
+
+Bugün `ReservationRequestReader` / `MovementRequestReader` bilinmeyen üyeleri **yok sayar**: 1.6.0 / 1.7.0 öncesi `lotId` ya da
+`reservationId` gönderen istemci sessizce SKU düzeyinde rezerve eder / tüketmez. Bilinen tüketici yok (MOD-0183 v1 göndermiyor, §7).
+Sürüm iki adım mı tek adım mı: CT-03.
+
+### 8.9 Durum ve komut tablosu
+
+Rezervasyon durumları `ACTIVE`, `RELEASED` (`ClosedReason` `Released` \| `Consumed`), `EXPIRED`.
+
+| Komut / olay | ACTIVE | RELEASED | EXPIRED | Yok / başka kapsam |
+|---|---|---|---|---|
+| `createReservation` (yeni anahtar) | — (yeni kayıt ACTIVE) | — | — | 201 ya da 422 / 400 / 503 |
+| aynı anahtar, aynı gövde | 200 tekrar (ilk sonuç) | 200 tekrar (ilk sonuç, bugünkü `Replay`) | 200 tekrar | — |
+| `releaseReservation` (doğru If-Match) | 200 → RELEASED, `Released` | 409 `RESERVATION_CONFLICT` | 409 `RESERVATION_CONFLICT` | 404 |
+| `releaseReservation` (eski If-Match) | 409 | 409 | 409 | 404 |
+| `postMovement` tüketen, `reservationId` | tam → RELEASED `Consumed`; kısmi → ACTIVE | 422 `RESERVATION_NOT_ACTIVE` | 422 `RESERVATION_NOT_ACTIVE` | 422 `RESERVATION_NOT_FOUND` |
+| `postMovement` `LOCATION_TRANSFER`, `reservationId` | değişmez (doğrulama) | 422 `RESERVATION_NOT_ACTIVE` | 422 `RESERVATION_NOT_ACTIVE` | 422 `RESERVATION_NOT_FOUND` |
+| `postMovement` `reservationId`'siz azalış | bekçi; üçlü **ve kapsam** eşleşirse tüketir (§8.3, AC-36) | etkisiz | etkisiz | — |
+| `postMovement` REVERSAL `restoreReservation: true`, aslı `ReservationId` taşır ve tüketmiş (§8.3.1); alan yok / `false` → hiçbir sütunda değişmez | `RemainingQuantity` += q | `Consumed` → ACTIVE (+ q); `Released` → değişmez | değişmez | — (olamaz) |
+| süre sweeper'ı / işlem içi vade | `expiresAt ≤ şimdi` → EXPIRED | etkisiz | etkisiz | — |
+| `getReservation` | 200 | 200 | 200 | 404 (bırakmayla aynı biçim) |
+
+### 8.10 Kayıt kodu
+
+Rezervasyonun kullanıcıya görünen iş kodu **yoktur** (bugün de yok; `reservationId` sunucu Guid'i). Rezervasyon kullanıcıya sahibinin belgesi
+(0178 outbound numarası) üzerinden görünür; RCS-001 kapsamı dışında kalır (`record-coding-standard.md` giriş notu "Kapsam": "kullanıcıya görünen
+*iş kodu*"; veritabanı `Id`'si kuralın konusu değil). Görünür kod istenirse ayrı sahip kararı (Q-08).
+
+## 9. Layout & Shell Contract
+
+`shell: none` — ekran, Razor görünümü ve layout **yok**; `golden_reference: none`, `form_field_count: 0`, DataTable yok (bu yüzden
+`data_mode` yazılmaz; `module-pack-standard.md` §2 alan kuralı yalnız DataTable modülleri için). Ebeveyn MOD-0173 ve FU02'nin backend
+dilimleriyle aynı. Rezervasyon ekranı (FU01 BG-08 çekmecesi) bu paketin kapsamı değildir (FU-03-UI, §20).
+
+## 10. Backend File Convention
+
+Golden Reference (`services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceSlim/`) düzeni
+mevcut `Features/Inventory/` klasöründe zaten uygulanıyor; bu paket aynı klasörü genişletir:
+
+```text
+Features/Inventory/
+├── Commands/        CreateReservationCommand.cs (genişler) · PostMovementCommand.cs (genişler) · ReleaseReservationCommand.cs
+├── Queries/         GetReservationByIdQuery.cs (yeni, sealed record) · GetAvailabilityQuery.cs (genişler)
+├── Handlers/
+│   ├── CommandHandlers/   CreateReservationHandler.cs · ReleaseReservationHandler.cs
+│   └── QueryHandlers/     GetReservationByIdHandler.cs (yeni) · GetAvailabilityHandler.cs
+├── Validators/      CreateReservationValidator.cs · ReleaseReservationValidator.cs (+ gerekirse GetReservationByIdValidator.cs)
+├── Services/        InventoryReservationPort.cs (yeni) · ReservationRequestParser.cs · MovementRequestParser.cs · …
+└── InventoryModels.cs   (DTO'lar tek dosyada: ReservationViewDto, ReservationConsumptionDto, …)
+```
+
+- Adlandırma: Handler / Validator adında `Command` / `Query` eki yok; tek dosyada tek public tür.
+- Yeni sorgu adı `GetReservationByIdQuery` — ad `Query` ile biter (AUD-001 §2: sorgu sayılır, denetim kaydı yazılmaz; yazmaz).
+- Pozisyon işlemleri `Persistence/Repositories/ReservationPositionOperations.cs` içinde kalır (tek yer; defter, rezervasyon deposu ve sweeper
+  aynı sınıfı kullanır — sınıfın kendi gerekçesi).
+
+## 11. Frontend File Contract
+
+Yok (`shell: none`). Yeni hata kodlarının kullanıcı metni tüketici ekranlarında yazılır: MVP-6 Shipments `.resx` (G7: `INVENTORY_REFUSED` +
+`details.inventoryCode`, 7 dil) ve MOD-0178 S2 ekranları — o paketlerin işidir (§7). Bu servisin API `message` alanı bugünkü gibi İngilizce
+teknik metindir; kullanıcıya doğrudan gösterilmez (kod ile yerelleştirilir).
+
+## 12. Validation Rules
+
+**createReservation (genişleyen alanlar):**
+
+| Alan | Zorunlu | Biçim / kural | DB düzeyi | Ön kontrol |
+|---|---|---|---|---|
+| `warehouseId` | hayır | trim; boş metin = yok; ≤ 100 karakter | — | LOCATION `Warehouse` + `Active` + aynı şirket → yoksa 422 `UNKNOWN_LOCATION`; okunamazsa 503 |
+| `lotId` | hayır | boş metin = yok; UUID (`LotPostingRules.IsRegisteredLotForm`), değilse 422 `UNKNOWN_LOT`; `warehouseId` yoksa 400 `INVALID_REQUEST` | — | lot kayıtlı (422 `UNKNOWN_LOT`), aynı SKU (422 `LOT_SKU_MISMATCH`), lot kuralı (`LOT_BLOCKED` / `LOT_EXPIRED` / `LOT_RETEST_DUE`), recall (`LOT_UNDER_RECALL`) |
+| mevcut alanlar | — | değişmez (ebeveyn §12, `ReservationRequestParser`) | — | — |
+
+**getReservation:** `id` Guid değilse 404, bilinmeyenle aynı cevap (biçim bilgisi sızmaz).
+
+**getAvailability:** `lotId` UUID; `lotId` var `warehouseId` yok → 400 `INVALID_REQUEST`; `lotId` + `locationId` birlikte → 400
+`INVALID_REQUEST` (bin pini yok, Q-02); `lotId` var ama `itemId` / `skuId` / `skuLevel`'dan biri yok → 400 `INVALID_REQUEST`; `warehouseId`
+var, SKU adlandırılmamış → 200, kapsam rakamları yok (§8.8).
+
+**postMovement (1.7.0):**
+
+| Alan | Zorunlu | Biçim / kural | Ön kontrol |
+|---|---|---|---|
+| `reservationId` | hayır | Guid biçimi değilse 422 `RESERVATION_NOT_FOUND` (bilinmeyenle aynı; §8.3 sıra adımı 3, idempotency'den sonra) | §8.3 tablosu (işlem içinde, yetkili okuma) |
+
+İlişkili kurallar: `lotId` → `warehouseId` zorunlu; `reservationId` + `REVERSAL` → 422 `RESERVATION_NOT_APPLICABLE` (REVERSAL kopyası
+asla `reservationId` taşımaz); `restoreReservation` (boolean, isteğe bağlı, varsayılan `false`) yalnız `REVERSAL`'da — başka türde ya da
+boolean değilse 400 `INVALID_REQUEST` (r3, §8.3.1); miktar karşılaştırması baz birimde (`baseQuantity`, mevcut UoM dönüşümü).
+
+## 13. Failure Path to Verify
+
+- **Yetersiz serbest miktar (yaratma)** — Expected: 422 `INSUFFICIENT_AVAILABLE` + `details.level` / `available` / `requested`; rezervasyon yok,
+  pozisyonlar değişmez; ret denetim satırı 1, merkezi iletilen 0.
+- **Başkasının ayrılmış stoğunu çıkarma** — Expected: 422 `INSUFFICIENT_STOCK` + `details.level`; hareket yok; rezervasyon değişmez;
+  tek `InventoryReservationConsumptionRefused` ret satırı (`Outcome Failed`, `ReservationIdText` null) — DL-1'de ölçülür (AC-40; r4,
+  son bakış 01 F-6).
+- **Vadesi geçmiş ama kapanmamış rezervasyon** (r4, son bakış 01 F-1) — FEFO serbest tabanı (DL-3), kapsam rakamları ve
+  `GetScopeFreeAsync` (DL-1) onu saymaz: tek rezervasyonunun süresi dolmuş erken lot "Engelle" politikasında uygun ilk lottur, geç
+  lottan çıkış 422 `FEFO_ORDER_VIOLATION`, hiçbir şey yazılmaz, rezervasyon belgesi `ACTIVE` kalır (AC-38 (d), AC-17 (e)).
+- **Port, çözülmüş kapsamdan farklı şirket / kiracı** — `CreateAsync`, `CreateBatchAsync` (farklı `legalEntityId`) ve
+  `FindByIdempotencyKeysAsync` (farklı `tenantId` ya da `legalEntityId`) → `InvalidOperationException`, okuma ve yazım yok (AC-16, AC-39 (c)).
+- **Ayrılmış stoğu depo dışına taşıma** (`WAREHOUSE_TRANSFER`, SKU net 0) — 422 `INSUFFICIENT_STOCK`, `details.level WAREHOUSE`; W1 / W2
+  pozisyonları değişmez (AC-37).
+- **Sevk telafisi** (satır 1 R1'i tüketti, satır 2 reddedildi, satır 1 REVERSAL `restoreReservation: true`) — R1 geri gelir; alansız REVERSAL (Shipped sonrası geri alma; geç yazan düzeltmesi Q-09'a bağlı, §8.3.1) R1'i kapalı bırakır; yeni deneme aynı `reservationId` ile 201
+  (AC-35). Sahibinin bıraktığı ya da süresi dolmuş rezervasyon geri gelmez.
+- **Üçlü eşleşen ama kapsamı eşleşmeyen çıkış** — rezervasyon tüketilmez ve değişmez; çıkış bekçiye girer (AC-36).
+- **Eksik / geçersiz alan** — `lotId` var `warehouseId` yok → 400 `INVALID_REQUEST`; bilinmeyen lot → 422 `UNKNOWN_LOT`; kayıt yok.
+- **Tekrar (duplicate)** — aynı anahtar + aynı gövde → 200 ilk sonuç, ikinci kayıt / tüketim yok; aynı anahtar + farklı gövde → 400
+  `IDEMPOTENCY_KEY_REUSED`.
+- **Yetkisiz** — `inventory.reservations.manage` yok → 403 (yaratma, bırakma); `inventory.stock.read` yok → 403 (`getReservation`);
+  `inventory.movements.create` yok → 403 (tüketim). SuperAdmin atlatması yok (ebeveyn ASSUMPTION-0173-19).
+- **Kiracı / şirket dışı** — başka kiracının / şirketin rezervasyonu: `getReservation` 404; `releaseReservation` 404; `postMovement`
+  `reservationId` → 422 `RESERVATION_NOT_FOUND` (bilinmeyenle aynı).
+- **Eşzamanlılık** — (i) aynı lotta paralel yaratmalar toplam serbest miktarı aşamaz; (ii) aynı rezervasyonu iki çıkış paralel tüketirse en çok
+  kalan kadar tüketilir, öteki 422 `RESERVATION_QUANTITY_EXCEEDED` ya da `RESERVATION_NOT_ACTIVE`; (iii) bırakma ile tüketim yarışında biri
+  kazanır (öteki 409 / 422); her durumda değişmez test yeşil (AC-9, AC-27).
+- **Yarıda kalan toplu yaratma** — işlem içinde enjekte hata → hiçbir satır yazılmaz (AC-16).
+- **Merkezi denetim yazılamaz (K2)** — başarılı yaratma / tüketimde enjekte enlist hatası → komut başarısız, rezervasyon / tüketim yok.
+- **Ret denetim satırı yazılamaz** — cevap değişmez (ret zaten ret), uyarı logu + `inventory_refusal_audit_failed_total` sayacı (sessiz değil;
+  AUD-001 §4.3 "diğer iş kayıtları").
+- **LOCATION okunamaz** — 503 `LOCATION_MASTER_UNAVAILABLE`, yazım yok (fail-closed).
+
+## 14. Authorization Convention
+
+```text
+Policy:     [Authorize] (tenant JWT) + LE seçici (W-0173-02)
+Permission: [HasPermission(InventoryPermissions.*)] — yeni anahtar YOK
+  inventory.reservations.manage  POST /reservations, POST /reservations/{id}/release   (mevcut)
+  inventory.stock.read           GET /reservations/{id} (yeni uç), GET /availability   (mevcut anahtar)
+  inventory.movements.create     POST /movements (+ reservationId)                     (mevcut)
+Actor:      tenant_user; servis aktörü yok (MVP-6 kullanıcı token'ı, G5 kararı)
+Süreç içi:  IInventoryReservationPort HTTP izni denetlemez; çağıran komutun izni geçerlidir (MOD-0178 warehouse.*)
+```
+
+- `inventory.stock.read` varsayılan Görüntüleyici rolüne gider (`DefaultRolePermissionTemplate` kiracı okuma anahtarlarını verir — ölçülmedi,
+  CT kontrolü); rezervasyon görünümü kişisel veri taşımaz, ayrı istisna gerekmez.
+- Namespace `inventory.*` tek sahipli (PKS-001 §4; `InventoryPermissions` açıklaması). Manifest değişmez (yeni anahtar yok).
+
+## 15. Gateway / API Routing Decision
+
+Karar: Gateway değişikliği **gereksiz**. `ocelot.json`'da `/api/inventory` ve `/api/inventory/{everything}` InventoryService'e (5067) gider;
+yeni `GET /api/inventory/reservations/{id}` bu aileye düşer. Başlıklar (`Authorization`, `X-Legal-Entity-Id`, `X-Correlation-Id`,
+`Idempotency-Key`, `If-Match`) zaten iletiliyor (ebeveyn §15). Cevap başlığı `ETag`'in Gateway'den geçtiği **ölçülmedi** — DL-1 E3 smoke'u
+Gateway üzerinden ölçer (AC-19); geçmiyorsa gövdedeki `etag` alanı yeterlidir ve integration-agent'a not düşülür.
+
+## 16. Acceptance Criteria
+
+- [ ] AC-1 (zorunlu) — `POST /api/inventory/reservations` `warehouseId = W`, `lotId = L` ile → 201; cevapta `warehouseId`, `lotId`, `remainingQuantity` = `quantity`; `GET /api/inventory/reservations/{id}` aynı alanları, `status ACTIVE`, `closedReason` yok ve `etag` = `W/"1"` döner; `inventory_reservations` belgesinde `WarehouseId`, `LotId` dolu. Sabotaj: ayrıştırıcıda `lotId` okumayı kaldır → test kırmızı.
+- [ ] AC-2 (zorunlu) — Lot bekçisi: L / W'de `AVAILABLE` 50 (bin A 30 + bin B 20); **fixture koşulu (r2, F-4):** W'de ayrıca L2 lotu 50 (W serbest 100) ve SKU'nun W2 deposunda 50 (SKU serbest 150) — böylece yalnız lot düzeyi sınırlar; 40'lık lot rezervasyonu 201; ardından 11'lik → 422 `INSUFFICIENT_AVAILABLE`, `details.level = LOT`, `available "10.000"`, `requested "11.000"`; rezervasyon sayısı 1, üç pozisyon değişmemiş; 10'luk → 201. Sabotaj: lot düzeyi filtresini kaldır → 11'lik 201 alır, kırmızı.
+- [ ] AC-3 (zorunlu) — Depo ve SKU bekçisi ayrı fixture'larla: SKU W1'de 50, W2'de 50. (a) W1 depo rezervasyonu 50 → 201; W1'de L lot rezervasyonu 1 → 422 `level WAREHOUSE`; (b) W2 depo rezervasyonu 50 → 201; kapsamsız (SKU) rezervasyon 1 → 422 `level SKU`. Sabotaj (her biri ayrı): depo düzeyi artışını kaldır → (a) kırmızı; SKU düzeyi artışını kaldır → (b) kırmızı.
+- [ ] AC-4 (zorunlu) — Ayrılmış stok başkasına çıkmaz, iki ayrı fixture: (a) R = L / W 30 (`sourceModule MOD-0178`), L / W on-hand 50, W'de ayrıca L2 50 ve SKU'nun W2 deposunda 50 (fixture koşulu: W ve SKU serbest miktarı L'ninkinden büyük); `reservationId`'siz `GOODS_ISSUE_SALES` L / W 21 (`sourceModule MOD-0183`) → 422 `INSUFFICIENT_STOCK`, `details.level LOT`, hareket yok, R değişmez; 20 → 201 ve R `remainingQuantity` 30 kalır; (b) depo rezervasyonu (lotsuz) W 30, W'de lotsuz SKU on-hand 50 ve SKU'nun W2 deposunda 50 (SKU serbest W'ninkinden büyük); `reservationId`'siz çıkış 21 → 422 `level WAREHOUSE`; 20 → 201. Sabotaj (ayrı ayrı): azalışta lot bekçisini kaldır → (a) kırmızı; depo bekçisini kaldır → (b) kırmızı.
+- [ ] AC-5 (zorunlu) — Yer değiştirme: R = L / W 30, stok bin A'da 30; `reservationId`'siz `LOCATION_TRANSFER` 30 A → staging → 201; R `ACTIVE`, `remainingQuantity 30`, `Version` değişmemiş; `W:` ve `L:` pozisyonları bayt eşit. Sabotaj: transferi azalış + tüketim say → kırmızı.
+- [ ] AC-6 (zorunlu) — Yaratmada lot / depo retleri, her biri ayrı fixture ve her birinde yazım 0: kayıtsız lot → 422 `UNKNOWN_LOT`; başka SKU'nun lotu → 422 `LOT_SKU_MISMATCH`; Blocked → `LOT_BLOCKED`; Expired (tarih) → `LOT_EXPIRED`; retest tarihi geçmiş → `LOT_RETEST_DUE`; recall altında → `LOT_UNDER_RECALL`; başka şirketin / pasif / Warehouse olmayan düğüm → 422 `UNKNOWN_LOCATION`; `lotId` var `warehouseId` yok → 400 `INVALID_REQUEST`; Draft lot → 201 (ASSUMPTION-0174-07). Sabotaj (S-1): yaratma doğrulamasında lot durum denetimi (`LotPostingRules`: Blocked / Expired / retest / recall dalları) atlanır → `ScopedReservationTests.Create_refuses_each_lot_and_location_state` (en az `LOT_BLOCKED` fixture'ı 201 alır) kırmızı.
+- [ ] AC-7 (zorunlu) — Geriye uyum: `warehouseId` / `lotId` taşımayan yaratma isteğinin `ReservationFingerprint` değeri, bu değişiklikten önceki koddan sabitlenmiş test vektörüne bayt eşit; mevcut `ReservationTests`, `ReservationExpiryTests`, `ReservationAccessTests`, `ReservationInvariantTests` değiştirilmeden yeşil. Sabotaj (S-2): `ReservationFingerprint`'e boş `warehouseId` / `lotId` koşulsuz eklenir → `ReservationFingerprintVectorTests.Unscoped_request_matches_1_5_0_vector` kırmızı.
+- [ ] AC-8 (zorunlu) — Tekrar: aynı anahtar + aynı gövde → 200, aynı `reservationId`, pozisyonlar değişmez; aynı anahtar + farklı `lotId` → 400 `IDEMPOTENCY_KEY_REUSED`, yazım 0. Sabotaj (S-3): yaratma tekrar karşılaştırmasından `lotId` çıkarılır → `ScopedReservationTests.Same_key_different_lot_is_IDEMPOTENCY_KEY_REUSED` (200 alır) kırmızı.
+- [ ] AC-9 (zorunlu) — Eşzamanlılık, ayrı ayrı; fixture koşulu (r2, F-4): W'de ayrıca L2 lotu 50 ve SKU'nun W2 deposunda 50 (W serbest 100, SKU serbest 150 — yalnız `L:` sınırlar): (a) aynı L / W'de serbest 50'ye karşı 20 paralel 5'lik yaratma → tam 10 × 201, 10 × 422, `L:` `Reserved = 50`, değişmez test yeşil; (b) işlem içi örtüşme: aynı koşuda `TransactionRetryCounter.Count(TransactionRetryCounter.Reservation)` > 0 gözlenir (r2, F-3: rezervasyon deposu yeni türü sayar, §8.2; çakışma dalı gerçekten koştu; sayaç 0 ise test destekleyici sayılır ve yeniden yazılır), sonuç yine (a) sayılarıyla aynı; (c) paralel yaratma ile paralel azalış (`GOODS_ISSUE_SALES`) karışımında hiçbir düzeyde `AvailableOnHand − Reserved < 0` olmaz. Sabotaj (S-4): `ReservationPositionOperations.UnreservedAtLeast` koşulu `L:` düzeyinde kaldırılır (oku-yaz) → `ScopedReservationConcurrencyTests.Parallel_lot_reservations_never_exceed_free` (10'dan fazla 201) kırmızı.
+- [ ] AC-10 (zorunlu) — Bırakma ve süre: L / W rezervasyonu 30 bırakılınca SKU, `W:`, `L:` `Reserved` her biri 30 düşer, `closedReason Released`; `expiresAt` geçmiş rezervasyon sweeper ya da işlem içi vadeyle `EXPIRED` olur ve üç düzeyde serbest kalır. Sabotaj (S-5): bırakma / süre yalnız SKU düzeyini düşürür (`W:` / `L:` atlanır) → `ScopedReservationTests.Release_and_expiry_free_all_three_levels` kırmızı.
+- [ ] AC-11 (zorunlu) — Yeniden kurma: rastgele hareket + kapsamlı rezervasyon tohumlarıyla (en az 3 tohum) her düzeyde `Σ satır == AvailableOnHand` ve `Σ ACTIVE kapsayan kalan == Reserved`; bozulmuş bir `L:` pozisyonu başlangıç yeniden kurmasıyla düzelir ve ikinci koşu aynı sayıları yazar; FU03 öncesi defterde (pozisyonsuz) başlangıçta `W:` / `L:` pozisyonları oluşur. Sabotaj: yeniden kurucudan kapsam pozisyonlarını çıkar → kırmızı.
+- [ ] AC-12 (zorunlu) — Kiracı / şirket izolasyonu: kiracı A, kiracı B'nin rezervasyonunu `GET` → 404, `release` → 404; aynı kiracının başka şirketi → 404; başka şirketin deposuyla yaratma → 422 `UNKNOWN_LOCATION`; B'nin pozisyon ve rezervasyon belgeleri bayt eşit kalır. Sabotaj (S-6): `getReservation` okumasında `LegalEntityId` filtresi kaldırılır → `ScopedReservationIsolationTests.Other_legal_entity_reservation_is_404` (200 alır) kırmızı.
+- [ ] AC-13 (zorunlu) — Yetki: `inventory.stock.read`'siz `GET /reservations/{id}` → 403 (gövdede veri yok); `inventory.reservations.manage`'siz yaratma → 403; SuperAdmin rolü izin anahtarı olmadan 403. Sabotaj (S-7): `GET /reservations/{id}` eyleminden `[HasPermission(inventory.stock.read)]` kaldırılır → `AuthorizationGuardTests` (her uçta `[HasPermission]`) ve `ScopedReservationAccessTests.Get_without_stock_read_is_403` kırmızı.
+- [ ] AC-14 (zorunlu) — Başarı denetimi: lot rezervasyonu yaratma → aynı işlemde `inventory_audit` 1 satır `InventoryReservationCreated` (`WarehouseId`, `LotId`, `ActorUserId`, `CorrelationId`, `LeSource`, `Outcome Succeeded`) ve `central_audit_outbox` 1 satır (`RequestType CreateReservationCommand`); merkezi enlist'e enjekte hata → 201 dönmez, rezervasyon ve denetim satırı yok (K2); yerel denetim satırı ekleme hatası (`InsertCreatedAsync` içinde `inventory_audit` eklemesine enjekte hata) → 201 dönmez, rezervasyon yok. Sabotaj (S-8, r2 F-4 ile gerçeğiyle değişti): `CentralAuditTransaction.EnlistAsync` çağrısı `CreateAsync`'in işlem gövdesinden çıkarılıp commit sonrasına taşınır → `ScopedReservationAuditTests.Central_enlist_failure_leaves_no_reservation_and_no_audit_row` (rezervasyon kalır) kırmızı; ayrıca (S-8b) yerel denetim eklemesi işlem oturumu olmadan (`InsertOneAsync` session'sız) yapılır → `ScopedReservationAuditTests.Local_audit_failure_leaves_no_reservation` (rezervasyon kalır ya da satır işlem dışında kalır) kırmızı.
+- [ ] AC-15 (zorunlu) — Ret denetimi (AUD-001 §3), her ret türü ayrı fixture: `INSUFFICIENT_AVAILABLE`, `UNKNOWN_LOT`, `LOT_UNDER_RECALL`, `UNKNOWN_LOCATION`, 400 `INVALID_REQUEST`, 400 `IDEMPOTENCY_KEY_REUSED` ve 503 `LOCATION_MASTER_UNAVAILABLE` → her birinde tam 1 `InventoryReservationRefused` satırı (`Outcome Failed` — r2 F-7, AUD-001 §3 sözlüğü; `ErrorCode`, aktör, kiracı, şirket, korelasyon, istenen miktar, varsa düzey / lot / depo; `ReservationId = Guid.Empty`, `ChangedQuantity 0`, `RemainingQuantity 0`, `Status null` — §4.4), rezervasyon 0, iletilen merkezi kayıt 0; hiçbir satır `Outcome` dışında bir değer (`Refused` dahil) taşımaz; gövdesi okunamayan istek (handler'a ulaşmaz) → 0 satır. Sabotaj: ret yazımını kaldır → kırmızı; `Outcome = "Refused"` yazılır → sözlük testi (`ReservationRefusalAuditTests.Outcome_is_Failed_from_AUD_001_vocabulary`) kırmızı.
+- [ ] AC-16 (zorunlu) — Süreç içi port: `CreateBatchAsync` 3 satır, 3. satır yetersiz → hiçbir rezervasyon yok, 3. satır sonucu `INSUFFICIENT_AVAILABLE` + düzey; 3 satır da uygun → 3 rezervasyon tek işlemde; 2. ekleme sonrasına enjekte hata → 0 rezervasyon kalır; 100 satır → kabul, 101 satır → ret, yazım 0; satırların bir kısmı önceden işlenmişse 400 `IDEMPOTENCY_KEY_REUSED`, yazım 0; **şirket denetimi (r4, son bakış 01 F-4), iki ayrı fixture:** çözülmüş kapsam kiracı A / şirket E1 iken (i) `CreateAsync(request, legalEntityId: E2, …)` ve (ii) `CreateBatchAsync(3 uygun satır, legalEntityId: E2, …)` → her biri `InvalidOperationException`; `inventory_reservations`, pozisyonlar ve `inventory_audit` bayt eşit (E1'de de E2'de de yazım 0; istek E1 için geçerli olacak biçimde kurulur — denetim kaldırılırsa E1'e yazar); mimari test: hiçbir controller `IInventoryReservationPort`'u kullanmaz. Sabotaj (S-9): `CreateBatchAsync` her satırı ayrı işlemle yazar → `InventoryReservationPortTests.Batch_with_one_insufficient_line_writes_nothing` kırmızı; (S-37a) `CreateAsync`'teki `legalEntityId` eşitlik denetimi kaldırılır → (i) E1'de rezervasyon yazılır, `InventoryReservationPortTests.Create_with_foreign_company_throws_and_writes_nothing` kırmızı; (S-37b) `CreateBatchAsync`'teki aynı denetim kaldırılır → (ii) üç rezervasyon yazılır, `InventoryReservationPortTests.Batch_with_foreign_company_throws_and_writes_nothing` kırmızı.
+- [ ] AC-17 (zorunlu) — `getAvailability`; fixture koşulu (r2, F-4): W'de L 50 (L rezervasyonu 20) ve L2 30 (W serbest ≠ L serbest): `warehouseId = W` + `lotId = L` + SKU → `scopeReserved` / `scopeAvailable` `L:` pozisyonuna eşit (vadesi geçmiş rezervasyon yokken — r4, (e)) (`"20.000"` / `"30.000"`); yalnız `warehouseId` + SKU → `W:` pozisyonuna eşit (`"20.000"` / `"60.000"`); SKU adlandırılmadan `warehouseId` → 200, kapsam alanları yok; `lotId` + SKU yok → 400 (r2, F-10); mevcut `reserved` / `available` alanları bu değişiklikten önce sabitlenmiş fixture'la bayt eşit; `lotId` var `warehouseId` yok → 400; `lotId` + `locationId` → 400. **(e) vade (r4, son bakış 01 F-1):** aynı fixture'a L / W'de `expiresAt` = şimdi + 2 sn olan 10'luk lot rezervasyonu R_D **en son** eklenir (sonrasında yaratma / bırakma / hareket yok — onlar vadesi gelmişleri kapatır) (`ReservationExpiryTests` deseni; testlerde süre sweeper'ı kapalı — `TestSettings.cs:54`); eklendikten hemen sonra lot kapsamında `scopeReserved "30.000"`; 2,5 sn beklenir, sweeper ve dokunan işlem yok (R_D belgesi `ACTIVE`, `L:` pozisyonunun `Reserved`'ı 30) → lot ve depo kapsamında `scopeReserved "20.000"`, `scopeAvailable` (e) öncesiyle aynı, aynı cevaptaki `reserved` de R_D'yi saymaz; port `GetScopeFreeAsync(item, sku, level, W, L)` aynı anda `"30.000"` döner. Sabotaj (S-10): `scopeReserved` / `scopeAvailable` `lotId` yok sayılarak depo kapsamından (`W:` pozisyonu ve depo kapsamı rezervasyon toplamı) okunur → `ScopedAvailabilityTests.Lot_scope_figures_equal_L_position` kırmızı; (S-39) `SumActiveScopeReservedAsync`'te `ReservationActiveFilter` yerine yalnız `Status == ACTIVE` kullanılır (ya da kapsam rakamı pozisyonun `Reserved`'ından okunur) → (e)'de `scopeReserved "30.000"`, `ScopedAvailabilityTests.Due_reservation_is_not_counted_in_scope_figures` ve `InventoryReservationPortTests.Scope_free_excludes_due_reservation` kırmızı.
+- [ ] AC-18 (zorunlu) — Karantina etkileşimi (MOD-0175 kodu değişmeden): L / W'nin tamamı lot rezervasyonuyla ayrılmışken (fixture koşulu, r2 F-4: W'de ayrıca L2 stoğu var — W serbest miktarı da SKU serbest miktarı da karantina miktarına yeter; yalnız `L:` reddeder) 0175 "Karantinaya Al" aynı lot stoğu için → 409 `QUARANTINE_STOCK_RESERVED`, `details.reservations` lot rezervasyonunu içerir, hareket ve karantina kaydı yok. Sabotaj (S-11): defter azalış bekçisinde lot düzeyi kaldırılır (SKU serbest miktarı yeterli olduğu için karantina hareketi geçer) → `ReservationQuarantineInteractionTests.Quarantine_of_lot_reserved_stock_is_409` (201 / karantina kaydı oluşur) kırmızı.
+- [ ] AC-19 (zorunlu) — Sözleşme 1.6.0: `x-changelog` 1.6.0 satırı; **fixture koşulu (r2, F-4):** DL-1 1.5.0 dosyasını `Contract/Fixtures/inventory-bundle-v1.5.0.openapi.yaml` olarak dondurur (1.5.0'ın git blob'u, LF; bugün yok) ve "1.5.0 fixture'ı donmuş dosyaya bayt eşit" testi eklenir; `InventoryBundleDescriptionNoteTests` deseniyle (düzleştirilmiş anahtar karşılaştırması: 1.5.0'ın her anahtarı 1.6.0'da aynı değerle var, fark yalnız §8.8'de sayılan ek önekleri) 1.6.0 farkı yalnız sayılan eklemeler; `ContractSchemaValidatorTests` cevapları 1.6.0 şemasına karşı doğrular; Prism mock smoke yeşil; Gateway üzerinden (5000) gerçek login token'ıyla `GET /api/inventory/reservations/{id}` 200 + gövdede `etag` (E3). Sabotaj (S-12, r2 F-4 ile gerçeğiyle değişti): canlı 1.6.0 dosyasında **1.5.0'da var olan** bir alanın türü değiştirilir (`components.schemas.ReservationResponse.properties.availableAfter` `$ref: Decimal` → `type: number`) → `InventoryBundleDescriptionNoteTests.The_1_6_0_change_is_additive_reservation_scope` (1.5.0 anahtarı değişti) kırmızı.
+- [ ] AC-20 (zorunlu) — Tüketim: R (`MOD-0178`, L / W, 30); `GOODS_ISSUE_SALES` L / W 30, `sourceModule MOD-0183`, `reservationId = R` → 201; R `RELEASED`, `closedReason Consumed`, kalan 0; üç düzeyde `Reserved` 30 düşer; `reservationConsumption` = { R, `"30.000"`, `"0.000"`, `RELEASED`, `Consumed` }; `inventory_transactions.ReservationId = R`; `inventory_audit` `InventoryReservationConsumed` (`TransactionId` dolu). Sabotaj: `reservationId`'yi yok say → 422 `INSUFFICIENT_STOCK` → kırmızı.
+- [ ] AC-21 (zorunlu) — Kısmi tüketim ve ETag: R 30'dan 20 tüketilir → `ACTIVE`, kalan 10, `Version` 2; `getReservation` `etag W/"2"`; `W/"1"` ile bırakma → 409 `RESERVATION_CONFLICT`; `W/"2"` ile → 200, üç düzeyde `Reserved` 10 düşer. Sabotaj (S-13): bırakmada `If-Match` / `Version` karşılaştırması kaldırılır → `ReservationConsumptionTests.Release_with_stale_etag_is_409` (200 alır) kırmızı.
+- [ ] AC-22 (zorunlu) — Tüketim retleri, her biri ayrı fixture ve her birinde hareket 0, R bayt eşit: bilinmeyen kimlik → 422 `RESERVATION_NOT_FOUND`; Guid biçiminde olmayan metin → aynı kod ve aynı `message`; başka kiracının ve başka şirketin kimliği → aynı kod ve aynı `message`; bırakılmış / süresi dolmuş → `RESERVATION_NOT_ACTIVE`; SKU farklı / depo farklı / lot farklı (üç fixture) → `RESERVATION_MISMATCH` + `details.field`; miktar > kalan → `RESERVATION_QUANTITY_EXCEEDED`; `WAREHOUSE_TRANSFER`, `STATUS_TRANSFER`, `SCRAP`, `REVERSAL` ve `fromStockStatus QUARANTINE` (beş fixture) → `RESERVATION_NOT_APPLICABLE`. Sabotaj (S-14): tüketim bekçisinde rezervasyon okuması kiracı / şirket filtresiz yapılır → `ReservationConsumptionTests.Foreign_reservation_id_is_RESERVATION_NOT_FOUND_with_same_message` kırmızı.
+- [ ] AC-23 (zorunlu) — `reservationId` doluyken üçlü eşleşme yapılmaz: R1 (L / W) ve kaynak üçlüsü hareketinkiyle aynı olan R2 varken `reservationId = R1` ile çıkış yalnız R1'i tüketir, R2 bayt eşit. Sabotaj (S-15): `reservationId` doluyken de kaynak üçlüsü eşleşmesi koşturulur → `ReservationConsumptionTests.Reservation_id_consumes_only_named_reservation` (R2 değişir) kırmızı.
+- [ ] AC-24 (zorunlu) — `LOCATION_TRANSFER` + `reservationId`: eşleşen R → 201, R `remainingQuantity` ve `Version` değişmez, işlem `ReservationId = R`, `reservationConsumption.consumedQuantity "0.000"`; başka lotun R'si → 422 `RESERVATION_MISMATCH`. Sabotaj (S-16): `LOCATION_TRANSFER` + `reservationId` tüketim sayılır → `ReservationConsumptionTests.Transfer_with_reservation_id_does_not_consume` kırmızı.
+- [ ] AC-25 (zorunlu) — Geriye uyum (hareket): `reservationId`'siz ve `restoreReservation`'sız (ya da `restoreReservation: false`) isteğin `RequestFingerprint`'i 1.5.0 kodundan sabitlenmiş vektöre bayt eşit (REVERSAL vektörü dahil — r3); üçlü tüketim testleri (ebeveyn ASSUMPTION-0173-15) değiştirilmeden yeşil. Sabotaj (S-17): hareket `RequestFingerprint`'ine boş `reservationId` koşulsuz eklenir → `MovementFingerprintVectorTests.Request_without_reservation_id_matches_1_5_0_vector` kırmızı; (S-17b, r3) `restoreReservation` değeri (`false` dahil) parmak izine koşulsuz eklenir → `MovementFingerprintVectorTests.Reversal_without_restore_flag_matches_1_5_0_vector` kırmızı.
+- [ ] AC-26 (zorunlu) — Tekrar (tüketim): aynı anahtar + aynı gövdeyle ikinci gönderim → 200 `idempotentReplay: true`, aynı `reservationConsumption`, R ve pozisyonlar değişmez; aynı anahtar + farklı `reservationId` → 400 `IDEMPOTENCY_KEY_REUSED`. Sabotaj (S-18): hareket tekrar karşılaştırmasından `reservationId` çıkarılır → `ReservationConsumptionTests.Same_key_different_reservation_is_IDEMPOTENCY_KEY_REUSED` (200 alır) kırmızı.
+- [ ] AC-27 (zorunlu) — Eşzamanlılık (tüketim), ayrı ayrı ve aynı anda başlatılan isteklerle (`Task.WhenAll`; koşuda `TransactionRetryCounter` > 0 ya da işlem içi okumada çakışma kaydı — sayaç 0 ise test destekleyici sayılır ve yeniden yazılır): (a) R 30'a iki paralel 20'lik çıkış → tam biri 201, öteki 422 `RESERVATION_QUANTITY_EXCEEDED`; yazılan hareket 1, `InventoryReservationPartiallyConsumed` 1, R kalan 10; (b) bırakma ile 30'luk tüketim paralel → tam biri başarılı (hareket 1 ya da bırakma 1), öteki 409 `RESERVATION_CONFLICT` ya da 422 `RESERVATION_NOT_ACTIVE`; her iki durumda değişmez test yeşil. Sabotaj (S-19): tüketimde rezervasyon kalanı işlem dışında okunup koşulsuz düşülür → `ReservationConsumptionConcurrencyTests.Two_parallel_partial_consumptions_one_wins` (iki 201) kırmızı.
+- [ ] AC-28 (zorunlu, DL-2) — Tüketim ret denetimi: AC-22'nin her ret türünde ve **`reservationId`'li bir çıkışın kapsam / SKU bekçisi `INSUFFICIENT_STOCK` reddinde** (`details.level` dolu; fixture: W'de L 30 ve L2 10, L'nin SKT'si erken — FEFO uyumlu; depo rezervasyonu R1 = W 10, lot rezervasyonu R2 = L / W 30; L'den `reservationId = R1` ile 10'luk çıkış R1'i tüketir, L düzeyinde `30 − 10 − 30 < 0` → 422 `INSUFFICIENT_STOCK`, `details.level LOT`) tam 1 `InventoryReservationConsumptionRefused` satırı (`Outcome Failed`, `ReservationIdText` = gönderilen metin, `Level`, hareket türü, `ErrorCode`, aktör, korelasyon, `SourceModule`), iletilen merkezi kayıt 0. `reservationId`'siz bekçi reddinin ret satırı DL-1'dedir: AC-40 (r4, son bakış 01 F-6). Satır düzeyi `INSUFFICIENT_STOCK` (negatif stok bekçisi, `details.level` yok — ebeveynin bugünkü reddi) bu pakette denetim satırı yazmaz (değişmez). Sabotaj: tüketim retlerinde (`RESERVATION_*` ve `reservationId`'li bekçi reddi) ret satırı yazımı kaldırılır → `ReservationRefusalAuditTests.Consumption_refusal_writes_one_row_per_code` kırmızı.
+- [ ] AC-29 (zorunlu) — Rezervasyonla tüketim FEFO'dan muaf değildir (DL-2'de ve DL-3'ten sonra aynı sonuç): fixture koşulu (r2) — daha erken SKT'li lot L1 **hiçbir rezervasyona ayrılmamış** ve serbest; şirket politikası "Gerekçe iste" iken L2'deki R'yi tüketen çıkış `fefoBypassReason`'sız → 422 `FEFO_BYPASS_REASON_REQUIRED` (1.3.0 ile aynı); gerekçeyle → 201 + `expiryChecks.fefo Bypassed`. Sabotaj (S-20): `reservationId` taşıyan çıkışta FEFO denetimi atlanır → `ReservationConsumptionTests.Fefo_bypass_reason_still_required_with_reservation` (201 alır) kırmızı.
+- [ ] AC-30 (zorunlu) — Sözleşme 1.7.0: `x-changelog` 1.7.0; `InventoryBundleDescriptionNoteTests` deseniyle 1.6.0 fixture'ı bayt eşit ve 1.7.0 farkı yalnız §8.8'de sayılan eklemeler; beş yeni kod hem OpenAPI'de hem `InventoryErrorCodes.All`'da; şema testleri ve Prism smoke yeşil. Sabotaj (S-21): beş yeni koddan biri `InventoryErrorCodes.All`'dan çıkarılır → `InventoryBundle170ContractTests.New_codes_in_openapi_and_catalog` kırmızı.
+- [ ] AC-31 (zorunlu, DL-3) — Ayrılmış lot okuması (Q-01 = A, sahip kararı Beste 2026-11-02; r4, son bakış 01 F-2 / F-3): `ILotReservationReader.ReservedByLotAsync(item, sku, level, W)` gerçek DI'dan (`InventoryApiFactory` kapsamı) çözülür. Fixture — kiracı A / şirket E1, aynı SKU, her rezervasyon için yeterli stok: W'de L1 için R1 20 ve R2 5 (`ACTIVE`), L1 için R3 7 (`ACTIVE`, `expiresAt` şimdi + 2 sn; API ile **en son** yaratılır — yaratma yolu vadesi gelmişleri kapatır; ardından 2,5 sn beklenir, sweeper kapalı), L2 için R4 10 (`RELEASED`), W'de lotsuz depo rezervasyonu R5 8, W2'de L1 için R6 9; ayrıca **doğrudan belge eklemesiyle** (sabotajın gerçek olması için; API bu kapsamları yaratamaz) aynı item / SKU / W / L1 ile şirket E2'nin (kiracı A) `ACTIVE` R7 11'i ve kiracı B'nin (`LegalEntityId` = E1'in Guid'i, sentetik) `ACTIVE` R8 13'ü. (a) sonuç tam `{ L1: 25 }` — R3 (vadesi geçmiş, belge `ACTIVE`), R4, R5, R6 sayılmaz, L2 sözlükte yok; (b) **oturum (üretim yolu):** aynı DI kapsamında bir oturum açılır, işlem başlatılır, oturum `LedgerTransactionBinding.Bind(session)` ile bağlanır (defterin `InventoryLedgerRepository.cs:184`'teki çağrısının aynısı), o oturumda L1 / W için `ACTIVE` 3'lük rezervasyon belgesi eklenir → bağlıyken okuma `{ L1: 28 }`; aynı anda başka bir DI kapsamından (bağsız) okuma `{ L1: 25 }` (commit edilmemiş görünmez); işlem geri alınır; (c) **kiracı / şirket kapsamı:** (a)'nın sonucunda R7 ve R8 yoktur. Sabotaj (S-40): `LotReservationReader` `LedgerTransactionBinding.Session`'ı yok sayar (hep işlem dışında okur) → (b)'de bağlıyken 25, `LotReservationReaderTests.Bound_read_sees_same_transaction_change` kırmızı; (S-41) `LegalEntityId` süzgeci kaldırılır → R7 sayılır (36), `LotReservationReaderTests.Other_company_reservation_is_not_counted` kırmızı; (S-42) `TenantId` süzgeci kaldırılır → R8 sayılır (38), `LotReservationReaderTests.Other_tenant_reservation_is_not_counted` kırmızı; (S-38) vade süzgeci kaldırılır → (a)'da R3 sayılır (32), `LotReservationReaderTests.Due_reservation_is_not_counted` ve AC-38 (d) kırmızı.
+- [ ] AC-33 (zorunlu) — Altın akış (üç gereksinim birlikte, tek test): L / W on-hand 50 bin A'da; port `CreateBatchAsync` ile R = L / W 30 (`MOD-0178`) → `LOCATION_TRANSFER` 30 A → staging (`reservationId = R`) → başka kaynağın `reservationId`'siz staging'den 21'lik çıkışı 422 `INSUFFICIENT_STOCK` → `GOODS_ISSUE_SALES` 30 staging'den (`MOD-0183`, `reservationId = R`) 201; sonda R `RELEASED` / `Consumed`, staging 0, bin A 20, üç düzeyde `Reserved` 0, değişmez test yeşil. Sabotaj (S-23): `reservationId` taşıyan `LOCATION_TRANSFER` tüketim sayılır (staging'e taşınan R kapanır) → `ReservationGoldenFlowTests.Reserve_move_protect_consume` (son `GOODS_ISSUE_SALES` 422 alır) kırmızı.
+- [ ] AC-34 (zorunlu) — Pozisyona yazan diğer yollar (§8.2 tablosu, her yol ayrı fixture): (3) L'yi Blocked yapan lot durum değişikliği → lotun her depodaki `W:` ve `L:` `AvailableOnHand`'ı lotun AVAILABLE toplamı kadar iner, Released'a dönüş geri çıkarır; SKT sweeper'ı Expired yapınca aynı iniş; (4) retest tutma aynı; (5) elle lot göçü yeniden anahtarlama, iki fixture (r2, F-2): (5a) hedef lot Draft / Released → yazılmış metinden kayıtlı lota taşınan AVAILABLE miktarı `L:`'ye ekler, `W:` değişmez; (5b) hedef lot **tutulu** (Blocked; `LedgerReKeyGroup.LotHoldsStock = true`) ve W'de depo rezervasyonu var → `L:` değişmez, `W:` ve SKU `AvailableOnHand` taşınan AVAILABLE miktar kadar iner, göç reddedilmez; her yoldan sonra yeniden kurucu sayılarıyla bayt eşit. Sabotaj (ayrı ayrı): `LotHeldStock.MoveAsync`'te kapsam güncellemesini kaldır → (3) ve (4) kırmızı (iki giriş aynı gövdeyi çağırır — her biri ayrı koşuyla kaydedilir); `LedgerProjectionReKey`'de tutulu-olmayan dalın `L:` eklemesini kaldır → (5a) kırmızı; `LotHoldsStock` dalında `W:` düşüşünü kaldır ya da tutulu lota `L:` ekle → (5b) kırmızı (S-29).
+- [ ] AC-32 (zorunlu) — Tam paket: `services/Diten.InventoryService` test paketinin tamamı (süzgeçsiz) kendi Mongo replika setiyle yeşil; mimari testler (`SingleSystemOfRecordArchitectureTests`, `LedgerImmutabilityArchitectureTests`) yeşil; **ayrı proje** `tests/architecture/TenantArchitecture.ArchitectureTests` (içinde `AuditTrailStandardTests` defter sayıları) ayrıca süzgeçsiz koşar ve yeşil (r2, F-12); `dotnet build` uyarısız hata yok. Sabotaj (S-22): yeni bir teste `Skip` konur → kabul kaydının "atlanan test 0 / süzgeçsiz tam koşu" ölçümü (test sınıfı değil, toplu koşu kapısı) kırmızı.
+- [ ] AC-35 (zorunlu, DL-2) — REVERSAL rezervasyonu geri getirir (CT-08, §8.3.1; r2, inceleme 01 F-1; r3: yalnız açık istekle), ayrı fixture'lar; (a)…(g) REVERSAL isteği `restoreReservation: true` taşır: (a) **MOD-0183 çok satırlı sevk telafisi (G4 (a), MOD-0183 §23.4):** R1 = L / W 30 (`MOD-0178`), L / W on-hand 50, W'de ayrıca L2 20; satır 1 `GOODS_ISSUE_SALES` L / W 30 `reservationId = R1` (anahtar `S:1:a1`) → 201, R1 `RELEASED` / `Consumed`; satır 2 (anahtar `S:2:a1`) reddedilir (422); telafi: satır 1'in REVERSAL'ı (`S:1:reversal:a1`, `restoreReservation: true`) → 201, R1 `ACTIVE`, `remainingQuantity "30.000"`, `closedReason` yok, `Version` +1, SKU / `W:` / `L:` `Reserved` +30, `inventory_audit` 1 `InventoryReservationRestored` (`TransactionId` = REVERSAL); yeni deneme satır 1 (anahtar `S:1:a2`) aynı `reservationId = R1` ile → **201** (ilk yazım), R1 yine `RELEASED` / `Consumed`; değişmez test yeşil. (b) kısmi: R 30'dan 20 tüketilir, o hareketin REVERSAL'ı → R `ACTIVE`, kalan 30. (c) sahibi bıraktı: R 30'dan 20 tüketilir, kalan 10 `releaseReservation` ile bırakılır, tüketimin REVERSAL'ı → R `RELEASED` / `Released` kalır (bayt eşit), stok serbest. (d) vade: `expiresAt` geçmiş ama tam tüketilmiş R'nin tüketiminin REVERSAL'ı → aynı işlemde `Restored` ardından `Expired` satırları, R `EXPIRED`, üç düzeyde `Reserved` değişmemiş (net). (e) tekrar: aynı REVERSAL aynı anahtarla ikinci kez → 200 tekrar, ikinci `Restored` satırı yok; aynı aslı yeni anahtarla geri alma → 422 `ALREADY_REVERSED`, R değişmez. (f) üçlü (reservationId'siz) tüketimin REVERSAL'ı → R geri gelmez (bugünkü), `true` etkisizdir, REVERSAL 201. (g) **tutulu lot (r3, inceleme 01 tur 2 F-1):** R = L / W 30 tam tüketildikten sonra L Blocked yapılır (SKU / `W:` / `L:` `AvailableOnHand` lotun AVAILABLE'ı kadar iner); REVERSAL (CT-D4 ile tutulu lottan geçer) → 201, R `ACTIVE` kalan 30, SKU / `W:` / `L:` `Reserved` +30, `AvailableOnHand` üç düzeyde **değişmez**, `Σ ACTIVE kapsayan kalan == Reserved` ve `Σ AVAILABLE satır OnHand (tutulan lotlar hariç) == AvailableOnHand` değişmez testleri yeşil (serbest miktar negatif görünür — kabul). (h) **açık istek yok (r3, CT-08 sınırı):** (a)'nın aynı fixture'ında REVERSAL `restoreReservation` alanı olmadan ve ayrıca `false` ile (iki fixture) → 201, R `RELEASED` / `Consumed` bayt eşit, üç düzeyde `Reserved` değişmez, `Restored` satırı yok; yeni deneme aynı `reservationId = R1` ile → 422 `RESERVATION_NOT_ACTIVE`; alansız isteğin `RequestFingerprint`'i `false`'lu isteğinkine eşit. (i) `restoreReservation: true` + `GOODS_ISSUE_SALES` → 400 `INVALID_REQUEST`, yazım 0; `restoreReservation: "yes"` → 400; aynı anahtarla önce `true` sonra `false` → 400 `IDEMPOTENCY_KEY_REUSED`. Sabotaj (S-24): REVERSAL'daki geri getirme adımı kaldırılır → (a)'nın yeni denemesi 422 `RESERVATION_NOT_ACTIVE` alır, `ReservationReversalTests.Shipment_compensation_restores_reservation_and_retry_succeeds` kırmızı; (S-25) vade kapatma geri getirmeden sonra koşturulmaz → (d) R `ACTIVE` kalır, `ReservationReversalTests.Restored_past_due_reservation_expires_in_same_transaction` kırmızı; (S-26) `ClosedReason = Released` olan rezervasyon da geri getirilir → (c) `ReservationReversalTests.Holder_released_reservation_is_not_restored` kırmızı; (S-32) geri getirme `ApplySkuPositionAsync` dalının (`!HoldsStock`) içine konur → (g)'de R `RELEASED` kalır ya da `Reserved` artmaz, `ReservationReversalTests.Restore_on_held_lot_keeps_reserved_invariant` kırmızı; (S-33) `restoreReservation` varsayılanı `true` yapılır → (h) R `ACTIVE` olur, `ReservationReversalTests.Reversal_without_restore_flag_keeps_reservation_closed` kırmızı.
+- [ ] AC-36 (zorunlu, DL-1) — `reservationId`'siz üçlü tüketim ve kapsam (§8.3; r2, inceleme 01 F-5), iki fixture: (a) kapsam eşleşen: R = L / W 30, kaynak üçlüsü (`MOD-0183`, `D1`, `1`); aynı üçlüyle L / W'den 30 çıkış → 201, R `RELEASED`, SKU / `W:` / `L:` `Reserved` her biri 30 düşer (hayalet `Reserved` yok — değişmez test yeşil); (b) kapsam eşleşmeyen: R = L / W1 30 aynı üçlüyle, çıkış W2'den (aynı SKU, serbest stok) → 201, R `ACTIVE` ve bayt eşit, W1 pozisyonları değişmez. Sabotaj (S-27): üçlü eşleşmeden kapsam koşulu kaldırılır → (b)'de R tüketilir, `ScopedTripleConsumptionTests.Triple_match_with_other_warehouse_does_not_consume` kırmızı; (S-28) üçlü tüketim `Reserved`'ı yalnız SKU düzeyinde düşürür → (a)'da `W:` / `L:` hayalet `Reserved` kalır, `ScopedTripleConsumptionTests.Triple_consumption_frees_all_levels` (değişmez) kırmızı.
+- [ ] AC-37 (zorunlu, DL-1) — `WAREHOUSE_TRANSFER` ayrılmış stoğu depo dışına çıkaramaz (§8.2, §8.4; r2, inceleme 01 F-6): SKU W1'de 50 (depo rezervasyonu W1 40), W2'de 0, SKU'nun W3 deposunda 50 (SKU serbest W1'inkinden büyük); `reservationId`'siz `WAREHOUSE_TRANSFER` W1 → W2 11 → 422 `INSUFFICIENT_STOCK`, `details.level WAREHOUSE`, hareket yok, `W:W1` ve `W:W2` bayt eşit; 10 → 201, `W:W1.AvailableOnHand` −10, `W:W2.AvailableOnHand` +10, SKU pozisyonu bayt eşit (net 0); lotlu varyant (lot rezervasyonu L / W1) → `details.level LOT`, `L:W1:L` −q / `L:W2:L` +q; aynı fixture'da W1'in rezervasyonu vadesi geçmiş ama kapanmamışken transfer 11 → 201 (vade kapatma önce koşar). Sabotaj (S-30): kapsam düzeylerine de SKU'nun net 0 erken dönüşü uygulanır → 11'lik transfer 201 alır, `WarehouseTransferGuardTests.Transfer_out_of_reserved_warehouse_is_refused` kırmızı.
+- [ ] AC-38 (zorunlu, DL-3) — FEFO serbest miktar (Q-01 = A, §8.5; r2, inceleme 01 F-8): şirket FEFO politikası **"Engelle"** (`Block`); W'de L1 (SKT erken) 20 ve L2 (SKT geç) 20; R_B = L2 / W 20 (outbound B). (a) L1'in tamamı başka bir outbound'a ayrılmışken (R_A = L1 / W 20) L2'den `reservationId = R_B` ile çıkış → **201**, `FEFO_ORDER_VIOLATION` yok, `expiryChecks.fefo` uyumlu; (b) L1 **ayrılmamış** ve serbestken aynı çıkış → 422 `FEFO_ORDER_VIOLATION` (`details.firstEligibleLotId = L1`); (c) L1 kısmen ayrılmış (R_A 15, serbest 5) → (b) ile aynı (serbest > 0 olan erken lot uygundur); `getFefoOrder` cevabı (a)'da değişmez (bilinen fark, §8.5). **(d) vadesi geçmiş, kapanmamış rezervasyon (r4, son bakış 01 F-1):** R_B önce, R_A = L1 / W 20 `expiresAt` = şimdi + 2 sn ile **sonra** yaratılır (yaratma yolu SKU'nun vadesi gelmiş rezervasyonlarını kapatır — `ReservationExpiryTests.In_transaction_path_a_new_reservation_expires_due_ones_first`); 2,5 sn beklenir — süre sweeper'ı testlerde kapalı (`TestSettings.cs:54`), arada L1'e / SKU'ya dokunan işlem yok, R_A belgesi `ACTIVE` ve `L:W:L1` `Reserved = 20`; L2'den `reservationId = R_B` ile çıkış → 422 `FEFO_ORDER_VIOLATION` (`details.firstEligibleLotId = L1`), hareket ve FEFO snapshot'ı yok, R_A belgesi hâlâ `ACTIVE` (ret işlemi geri aldı — karar vade kapatmadan değil süzgeçten geldi); kontrol: aynı çıkış R_A'nın `expiresAt`'i 2099 iken → 201 ((a) ile aynı). Sabotaj (S-31): aday kümesi `onHandAvailable` tabanına döndürülür (`FefoAsync` serbest taban girdisini vermez) → (a) 422 `FEFO_ORDER_VIOLATION` alır, `FefoFreeQuantityTests.Early_lot_reserved_for_another_outbound_is_not_a_violation` kırmızı; (S-38) `LotReservationReader`'da `ReservationActiveFilter` yerine yalnız `Status == ACTIVE` kullanılır (ya da okuma `L:` pozisyonunun `Reserved`'ından yapılır) → (d) 201 alır, `FefoFreeQuantityTests.Due_unclosed_reservation_does_not_hide_early_lot` kırmızı.
+- [ ] AC-39 (zorunlu, DL-1) — Port anahtarla okuma (`IInventoryReservationPort.FindByIdempotencyKeysAsync`, §8.7; r3, CT kararı MVP-1 CT 2026-11-02, MOD-0178 FU-0178-RSV-BYKEY): fixture — kiracı A şirket E1'de anahtarlar `k1` (ACTIVE), `k2` (RELEASED), `k3` (EXPIRED), `k4` (ACTIVE, sorguda istenmez); kiracı A şirket E2'de `k1`; kiracı B'de `k1` ve `k2`. (a) `[k1, k2, k3, k-yok]` ile çağrı → tam 3 satır (`k1`, `k2`, `k3`), her biri doğru `ReservationId`, `Status`, `ClosedReason`, `etag`; `k4` ve `k-yok` yok; (b) **kiracı izolasyonu:** aynı çağrı E2 ve B'nin `k1` / `k2` rezervasyonlarını döndürmez (dönen kimlikler yalnız A / E1'inkiler); B kapsamında çağrı A'nınkileri döndürmez; (c) **fail-closed, iki ayrı fixture (r4, son bakış 01 F-4):** çözülmüş kapsam A / E1 iken (c1) `tenantId = B`, `legalEntityId = E1` ve (c2) `tenantId = A`, `legalEntityId = E2` ile `[k1, k2]` → her biri `InvalidOperationException`, sonuç dönmez (denetim kaldırılırsa sorgu çözülmüş kapsamla koşup A / E1'in `k1`, `k2`'sini sessizce döner — MOD-0178 bu istisnaya dayanır, MOD-0178 @ `8ee5a000c` satır 1283-1285); (d) 0 ya da 101 anahtar, boş metin, tekrar eden anahtar → `ArgumentException`; (e) `inventory_audit`'e satır yazılmaz; (f) MOD-0178 kurtarma akışı: dönen ACTIVE rezervasyonlar `ReleaseAsync` ile bırakılınca üç düzeyde `Reserved` serbest kalır. Sabotaj (S-34): sorgudan anahtar süzgeci kaldırılır (`IdempotencyKey ∈ keys`) → (a)'da `k4` döner, `InventoryReservationPortTests.Find_by_keys_returns_only_named_keys` kırmızı; (S-35) sorgu çözülmüş kapsam yerine yalnız `TenantId` ile yapılır (şirket süzgeci kaldırılır) → (b)'de E2'nin `k1`'i döner, `InventoryReservationPortTests.Find_by_keys_is_tenant_and_company_scoped` kırmızı; (S-36a) `tenantId` eşitlik denetimi kaldırılır → (c1) istisna atmaz, A / E1 satırlarını döner, `InventoryReservationPortTests.Find_by_keys_with_foreign_tenant_throws` kırmızı; (S-36b) `legalEntityId` eşitlik denetimi kaldırılır → (c2) aynı biçimde, `InventoryReservationPortTests.Find_by_keys_with_foreign_company_throws` kırmızı.
+- [ ] AC-40 (zorunlu, DL-1) — `reservationId`'siz bekçi reddinin denetimi (AUD-001 §3; r4, son bakış 01 F-6 — r3'te AC-28'in parçasıydı ve DL-2'deydi; §13 bu satırı DL-1 failure path'inde bekler): DL-1'in kapsam / SKU bekçisi `INSUFFICIENT_STOCK` reddi (`details.level` dolu), her düzey ayrı fixture — (a) `LOT`: AC-4 (a)'nın 21'lik çıkışı; (b) `WAREHOUSE`: AC-4 (b)'nin 21'lik çıkışı; (c) `SKU`: kapsamsız (SKU) rezervasyon 30, SKU on-hand 50, kaynak üçlüsü rezervasyonunkinden farklı `reservationId`'siz 21'lik çıkış; (d) `WAREHOUSE_TRANSFER`: AC-37'nin 11'lik transferi — her birinde tam 1 `InventoryReservationConsumptionRefused` satırı (`Outcome Failed`, `ReservationId = Guid.Empty`, `ReservationIdText` null, `Level`, `MovementType`, `ErrorCode INSUFFICIENT_STOCK`, `ActorUserId`, `ActorDisplayName` (§4.4 kuralı), kiracı, şirket, `CorrelationId`, `SourceModule`), hareket yok, iletilen merkezi kayıt 0; satır düzeyi `INSUFFICIENT_STOCK` (negatif stok bekçisi, `details.level` yok) → 0 satır. Sabotaj (S-43): `reservationId`'siz bekçi reddinde ret satırı yazımı kaldırılır → `ReservationRefusalAuditTests.Unnamed_issue_blocked_by_reservation_writes_one_row` kırmızı.
+
+## 17. Test Expectations
+
+- **Birim (Domain / Application):** kapsam türetme (`ReservationScope`), bekçi düzey sırası (LOT → WAREHOUSE → SKU), §8.3 tablosunun her satırı,
+  parmak izi vektörleri (AC-7, AC-25 — vektör, değişiklikten **önceki** kodla üretilip sabitlenir).
+- **Entegrasyon (gerçek Mongo replika seti, `InventoryApiFactory`):** AC-1…AC-31, AC-33…AC-40; her ret türü ayrı fixture; her sabotaj ayrı
+  koşu ve "kırmızı → geri al → yeşil, diff boş" kaydı kabul kaydına yazılır.
+- **Fixture kuralı (r2, inceleme 01 F-4):** bir düzeyin bekçisini ölçen her fixture'da **üst düzeylerin serbest miktarı o düzeyinkinden
+  büyüktür** — lot düzeyi ölçümünde W'de başka bir lot (L2) ve SKU'nun başka bir deposu (W2) stok taşır; depo düzeyi ölçümünde SKU'nun
+  başka bir deposu stok taşır. Aksi halde üst düzeyin bekçisi aynı sonucu verir ve alt düzeyin sabotajı yeşil kalır (S-4, S-10, AC-2,
+  AC-4, AC-17, AC-18, AC-37). Kapsam rakamı okuyan fixture'da W serbest miktarı L'ninkinden farklıdır (S-10).
+- **Eşzamanlılık:** AC-9, AC-27 — paralel istekler `Task.WhenAll` ile; çakışma dalının koştuğu `TransactionRetryCounter` ile kanıtlanır
+  (AC-9: `reservation` türü — r2'de rezervasyon deposuna eklenir, §8.2; AC-27: `posting` türü)
+  (pack-review §3: testin neyi zorladığı yazılır; sayaç 0 ise test "destekleyici" sayılır ve yeniden yazılır).
+- **Değişmez / yeniden kurma:** `ReservationInvariantTests` deseni kapsam düzeyleriyle (AC-11); pozisyona yazan her yol ayrı fixture (AC-34, §8.2 tablosu).
+- **Altın akış:** rezervasyon → staging transferi → başkasının reddi → rezervasyonla çıkış tek testte (AC-33).
+- **Kiracı izolasyonu:** AC-12; **yetki:** AC-13 (`AuthorizationGuardTests` her yeni uçta `[HasPermission]` arar).
+- **Denetim:** AC-14, AC-15, AC-28, AC-35 (`Restored`), AC-40 (`reservationId`'siz bekçi reddi, DL-1 — r4); `CentralAuditDeclarationTests` komut sayısı **değişmez** (yeni MediatR komutu yok;
+  yeni sorgu `Query` ekli); `AuditTrailStandardTests` (ayrı proje `tests/architecture/TenantArchitecture.ArchitectureTests`) defter sayıları
+  değişmez.
+- **REVERSAL / telafi:** AC-35 (MOD-0183 çok satırlı telafi senaryosu dahil). **Depo transferi:** AC-37. **FEFO serbest miktar:** AC-38 (DL-3).
+- **Vade süzgeci ve oturum (r4, son bakış 01 F-1 / F-2):** AC-17 (e), AC-31 (a, b), AC-38 (d). Vadesi geçmiş rezervasyonu ölçen
+  fixture'da vadeli rezervasyon **en son** yaratılır ve ardından yaratma / bırakma / hareket yapılmaz (o yollar SKU'nun vadesi gelenlerini
+  kapatır, ölçüm boşa düşer); bekleme `ReservationExpiryTests` deseni (2 sn vade, 2,5 sn bekleme; sweeper kapalı, `TestSettings.cs:54`).
+  Oturum ölçümü (AC-31 (b)) defterin bağlama çağrısının (`LedgerTransactionBinding.Bind`) aynısını kullanır — test kopyası değil
+  üretim türü.
+- **Sözleşme:** `ContractSchemaValidatorTests`, `InventoryBundleDescriptionNoteTests`, Prism smoke (AC-19, AC-30).
+- **Smoke (E3):** Gateway 5000 üzerinden yaratma → okuma → tüketim → okuma akışı, gerçek login token'ıyla (AC-19).
+- **Build:** `services/Diten.InventoryService` çözümü; Gateway ve Web değişmez (build yalnız ölçüm için).
+- **RESX / verifier:** uygulanmaz (ekran yok); tüketici metinleri tüketici paketlerinde.
+- Tam paket kuralı: servis dokunulduğunda süzgeçsiz tam koşu (AC-32); taban kırmızısı varsa aynı gün `main`'de karşılaştırılır.
+
+### 17.1 Sabotaj tablosu (2026-11-02 — §18 "AC ölçülebilir ve sabotajlı")
+
+Her satır tek tek uygulanıp geri alınır; kabul kaydına "kırmızı → geri al → yeşil, diff boş" yazılır. Sabotajı AC metninde olan
+ölçütler (AC-1…AC-5, AC-11, AC-15, AC-20, AC-28, AC-34; AC-34 (5b) ayrıca S-29) kendi satırlarında kalır; bu tablo kalan ölçütleri kapsar: r1'in 23 ölçütü,
+r2'de eklenen AC-35…AC-38 ile AC-34 (5b), r3'te eklenen AC-39 ve AC-25 / AC-35 ekleri S-17b, S-32, S-33 (r2: S-8 ve S-12 gerçeğiyle değişti, S-4 / S-10 fixture koşuluna bağlandı — inceleme 01 F-4);
+**r4 (son bakış 01):** AC-31 tabloya geçti (S-38, S-40…S-42; r3'ün "`exclude`'u yok say" sabotajı parametreyle birlikte kaldırıldı — üretimde
+çağıranı olmayan dalı ölçüyordu, F-3), AC-40 (S-43, F-6) ve AC-16 / AC-17 / AC-38 / AC-39 ekleri (S-37a, S-37b, S-39, S-38, S-36a, S-36b — F-1, F-4). Yeni test
+sınıflarının adları **yazılacak**tır (DL-1 / DL-2 kabulünde adlarıyla kayda geçer); mevcut sınıflar (`AuthorizationGuardTests`,
+`ContractSchemaValidatorTests`, `InventoryBundleDescriptionNoteTests`) değiştirilmeden kullanılır. Sabotajı uygulanamayan ölçüt yoktur;
+AC-32 toplu koşu kapısıdır — sabotajı test sınıfını değil kabul kaydının ölçümünü kırmızıya çevirir.
+
+| # | AC | Üretim kodunda bozulan | Kırmızıya dönen adlı test |
+|---|---|---|---|
+| S-1 | AC-6 | yaratma doğrulamasında lot durum denetimi (`LotPostingRules`: Blocked / Expired / retest / recall dalları) atlanır | `ScopedReservationTests.Create_refuses_each_lot_and_location_state` (en az `LOT_BLOCKED` fixture'ı 201 alır) |
+| S-2 | AC-7 | `ReservationFingerprint`'e boş `warehouseId` / `lotId` koşulsuz eklenir | `ReservationFingerprintVectorTests.Unscoped_request_matches_1_5_0_vector` |
+| S-3 | AC-8 | yaratma tekrar karşılaştırmasından `lotId` çıkarılır | `ScopedReservationTests.Same_key_different_lot_is_IDEMPOTENCY_KEY_REUSED` (200 alır) |
+| S-4 | AC-9 | `ReservationPositionOperations.UnreservedAtLeast` koşulu `L:` düzeyinde kaldırılır (oku-yaz). Fixture koşulu: W serbest 100, SKU serbest 150 (yalnız `L:` sınırlar) | `ScopedReservationConcurrencyTests.Parallel_lot_reservations_never_exceed_free` (10'dan fazla 201) |
+| S-5 | AC-10 | bırakma / süre yalnız SKU düzeyini düşürür (`W:` / `L:` atlanır) | `ScopedReservationTests.Release_and_expiry_free_all_three_levels` |
+| S-6 | AC-12 | `getReservation` okumasında `LegalEntityId` filtresi kaldırılır | `ScopedReservationIsolationTests.Other_legal_entity_reservation_is_404` (200 alır) |
+| S-7 | AC-13 | `GET /reservations/{id}` eyleminden `[HasPermission(inventory.stock.read)]` kaldırılır | `AuthorizationGuardTests` (her uçta `[HasPermission]`) ve `ScopedReservationAccessTests.Get_without_stock_read_is_403` |
+| S-8 | AC-14 | (r2) `CentralAuditTransaction.EnlistAsync` `CreateAsync`'in işlem gövdesinden çıkarılıp commit sonrasına taşınır (r1'in "yerel satır commit sonrası" sabotajı gerçek değildi: enlist hatasında commit sonrası kod hiç koşmaz, test yeşil kalırdı) | `ScopedReservationAuditTests.Central_enlist_failure_leaves_no_reservation_and_no_audit_row` (rezervasyon kalır) |
+| S-8b | AC-14 | (r2) yerel `inventory_audit` eklemesi işlem oturumu olmadan yapılır | `ScopedReservationAuditTests.Local_audit_failure_leaves_no_reservation` |
+| S-9 | AC-16 | `CreateBatchAsync` her satırı ayrı işlemle yazar | `InventoryReservationPortTests.Batch_with_one_insufficient_line_writes_nothing` |
+| S-10 | AC-17 | `scopeReserved` / `scopeAvailable` `lotId` yok sayılarak depo kapsamından (`W:` pozisyonu ve depo kapsamı rezervasyon toplamı; r4) okunur. Fixture koşulu: W'de L2 30 (W serbest 60 ≠ L serbest 30) | `ScopedAvailabilityTests.Lot_scope_figures_equal_L_position` |
+| S-11 | AC-18 | defter azalış bekçisinde lot düzeyi kaldırılır (SKU serbest miktarı yeterli olduğu için karantina hareketi geçer) | `ReservationQuarantineInteractionTests.Quarantine_of_lot_reserved_stock_is_409` (201 / karantina kaydı oluşur) |
+| S-12 | AC-19 | (r2) canlı 1.6.0 dosyasında 1.5.0'da var olan `components.schemas.ReservationResponse.properties.availableAfter` `$ref: Decimal` → `type: number` (r1'in örneği `ReservationView` 1.6.0'da yeni bir şemaydı — gerçek değildi). Fixture koşulu: donmuş `Contract/Fixtures/inventory-bundle-v1.5.0.openapi.yaml` DL-1'de eklenir | `InventoryBundleDescriptionNoteTests.The_1_6_0_change_is_additive_reservation_scope` |
+| S-13 | AC-21 | bırakmada `If-Match` / `Version` karşılaştırması kaldırılır | `ReservationConsumptionTests.Release_with_stale_etag_is_409` (200 alır) |
+| S-14 | AC-22 | tüketim bekçisinde rezervasyon okuması kiracı / şirket filtresiz yapılır | `ReservationConsumptionTests.Foreign_reservation_id_is_RESERVATION_NOT_FOUND_with_same_message` |
+| S-15 | AC-23 | `reservationId` doluyken de kaynak üçlüsü eşleşmesi koşturulur | `ReservationConsumptionTests.Reservation_id_consumes_only_named_reservation` (R2 değişir) |
+| S-16 | AC-24 | `LOCATION_TRANSFER` + `reservationId` tüketim sayılır | `ReservationConsumptionTests.Transfer_with_reservation_id_does_not_consume` |
+| S-17 | AC-25 | hareket `RequestFingerprint`'ine boş `reservationId` koşulsuz eklenir | `MovementFingerprintVectorTests.Request_without_reservation_id_matches_1_5_0_vector` |
+| S-17b | AC-25 | (r3) `restoreReservation` değeri (`false` dahil) `RequestFingerprint`'e koşulsuz eklenir | `MovementFingerprintVectorTests.Reversal_without_restore_flag_matches_1_5_0_vector` |
+| S-18 | AC-26 | hareket tekrar karşılaştırmasından `reservationId` çıkarılır | `ReservationConsumptionTests.Same_key_different_reservation_is_IDEMPOTENCY_KEY_REUSED` (200 alır) |
+| S-19 | AC-27 | tüketimde rezervasyon kalanı işlem dışında okunup koşulsuz düşülür | `ReservationConsumptionConcurrencyTests.Two_parallel_partial_consumptions_one_wins` (iki 201) |
+| S-20 | AC-29 | `reservationId` taşıyan çıkışta FEFO denetimi atlanır | `ReservationConsumptionTests.Fefo_bypass_reason_still_required_with_reservation` (201 alır) |
+| S-21 | AC-30 | beş yeni koddan biri `InventoryErrorCodes.All`'dan çıkarılır | `InventoryBundle170ContractTests.New_codes_in_openapi_and_catalog` |
+| S-22 | AC-32 | yeni bir teste `Skip` konur | kabul kaydının "atlanan test 0 / süzgeçsiz tam koşu" ölçümü (test sınıfı değil, toplu koşu kapısı) |
+| S-23 | AC-33 | `reservationId` taşıyan `LOCATION_TRANSFER` tüketim sayılır (staging'e taşınan R kapanır) | `ReservationGoldenFlowTests.Reserve_move_protect_consume` (son `GOODS_ISSUE_SALES` 422 alır) |
+| S-24 | AC-35 (a) | REVERSAL'daki rezervasyon geri getirme adımı kaldırılır | `ReservationReversalTests.Shipment_compensation_restores_reservation_and_retry_succeeds` (yeni deneme 422 `RESERVATION_NOT_ACTIVE`) |
+| S-25 | AC-35 (d) | geri getirmeden sonra vade kapatma (`ExpireDueAsync`) koşturulmaz | `ReservationReversalTests.Restored_past_due_reservation_expires_in_same_transaction` (R `ACTIVE` kalır) |
+| S-26 | AC-35 (c) | `ClosedReason = Released` rezervasyon da geri getirilir | `ReservationReversalTests.Holder_released_reservation_is_not_restored` |
+| S-27 | AC-36 (b) | üçlü eşleşmeden kapsam koşulu (depo / lot) kaldırılır | `ScopedTripleConsumptionTests.Triple_match_with_other_warehouse_does_not_consume` |
+| S-28 | AC-36 (a) | üçlü tüketim `Reserved`'ı yalnız SKU düzeyinde düşürür | `ScopedTripleConsumptionTests.Triple_consumption_frees_all_levels` (`W:` / `L:` hayalet `Reserved`) |
+| S-29 | AC-34 (5b) | `LedgerProjectionReKey`'in `LotHoldsStock` dalında `W:` düşüşü kaldırılır ya da tutulu hedef lota `L:` eklenir | `LotReservationPositionPathTests.Migration_to_held_lot_moves_scope_positions` |
+| S-30 | AC-37 | kapsam düzeylerine de SKU'nun net 0 erken dönüşü uygulanır (`ApplySkuPositionAsync` `netAvailable == 0m → return` bütün düzeyleri atlar) | `WarehouseTransferGuardTests.Transfer_out_of_reserved_warehouse_is_refused` (11'lik transfer 201) |
+| S-31 | AC-38 (a) | FEFO aday kümesi `onHandAvailable` tabanına döndürülür (`FefoAsync` serbest taban girdisini vermez) | `FefoFreeQuantityTests.Early_lot_reserved_for_another_outbound_is_not_a_violation` (422 `FEFO_ORDER_VIOLATION`) |
+| S-32 | AC-35 (g) | (r3, inceleme 01 tur 2 F-1) geri getirme `ApplySkuPositionAsync` dalının (`lot is null` ya da `!HoldsStock(lot)`) içine konur — tutulu lotta atlanır | `ReservationReversalTests.Restore_on_held_lot_keeps_reserved_invariant` |
+| S-33 | AC-35 (h) | (r3, CT-08 sınırı) `restoreReservation` varsayılanı `true` yapılır | `ReservationReversalTests.Reversal_without_restore_flag_keeps_reservation_closed` (R `ACTIVE` olur) |
+| S-34 | AC-39 (a) | (r3) `FindByIdempotencyKeysAsync` sorgusundan anahtar süzgeci kaldırılır | `InventoryReservationPortTests.Find_by_keys_returns_only_named_keys` (`k4` döner) |
+| S-35 | AC-39 (b) | (r3) `FindByIdempotencyKeysAsync` şirket süzgecisiz (yalnız `TenantId`) okur | `InventoryReservationPortTests.Find_by_keys_is_tenant_and_company_scoped` (E2'nin `k1`'i döner) |
+| S-36a | AC-39 (c1) | (r4, son bakış 01 F-4) `FindByIdempotencyKeysAsync`'te `tenantId` eşitlik denetimi kaldırılır (sorgu yine çözülmüş kapsamla koşar) | `InventoryReservationPortTests.Find_by_keys_with_foreign_tenant_throws` (istisna yok, A / E1 satırları döner) |
+| S-36b | AC-39 (c2) | (r4, F-4) `FindByIdempotencyKeysAsync`'te `legalEntityId` eşitlik denetimi kaldırılır | `InventoryReservationPortTests.Find_by_keys_with_foreign_company_throws` (istisna yok, A / E1 satırları döner) |
+| S-37a | AC-16 (i) | (r4, F-4) `CreateAsync`'te `legalEntityId` ↔ `ITenantContext.LegalEntityId` denetimi kaldırılır | `InventoryReservationPortTests.Create_with_foreign_company_throws_and_writes_nothing` (E1'de rezervasyon yazılır) |
+| S-37b | AC-16 (ii) | (r4, F-4) `CreateBatchAsync`'te aynı denetim kaldırılır | `InventoryReservationPortTests.Batch_with_foreign_company_throws_and_writes_nothing` (üç rezervasyon yazılır) |
+| S-38 | AC-38 (d), AC-31 (a) | (r4, son bakış 01 F-1) `LotReservationReader`'da `ReservationActiveFilter` yerine yalnız `Status == ACTIVE` (ya da `L:` pozisyonunun `Reserved`'ı) okunur | `FefoFreeQuantityTests.Due_unclosed_reservation_does_not_hide_early_lot` (201 alır) ve `LotReservationReaderTests.Due_reservation_is_not_counted` (32) |
+| S-39 | AC-17 (e) | (r4, F-1) `SumActiveScopeReservedAsync`'te `ReservationActiveFilter` yerine yalnız `Status == ACTIVE` (ya da kapsam rakamı pozisyonun `Reserved`'ından) okunur | `ScopedAvailabilityTests.Due_reservation_is_not_counted_in_scope_figures` ve `InventoryReservationPortTests.Scope_free_excludes_due_reservation` |
+| S-40 | AC-31 (b) | (r4, son bakış 01 F-2) `LotReservationReader` `LedgerTransactionBinding.Session`'ı yok sayar, hep işlem dışında okur | `LotReservationReaderTests.Bound_read_sees_same_transaction_change` (bağlıyken 25) |
+| S-41 | AC-31 (c) | (r4, son bakış 01 F-3) `LotReservationReader` `LegalEntityId` süzgecisiz okur | `LotReservationReaderTests.Other_company_reservation_is_not_counted` (36) |
+| S-42 | AC-31 (c) | (r4, F-3) `LotReservationReader` `TenantId` süzgecisiz okur | `LotReservationReaderTests.Other_tenant_reservation_is_not_counted` (38) |
+| S-43 | AC-40 | (r4, son bakış 01 F-6) `reservationId`'siz bekçi reddinde `InventoryReservationConsumptionRefused` yazımı kaldırılır | `ReservationRefusalAuditTests.Unnamed_issue_blocked_by_reservation_writes_one_row` |
+
+## 18. Ready-for-dev Checklist
+
+- [x] Golden Reference (`GoldenReferenceSlim` backend klasör düzeni) okundu; `Features/Inventory/` düzeni ile birebir (§10) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Frontmatter zorunlu alanlar dolu (`service`, `shell: none`, `golden_reference: none`, `entity_base`); ekran yok gerekçesi §9 — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Layout & Shell Contract: ekran yok, layout yok (§9) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Backend File Convention Golden Reference ile birebir (§10) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Frontend File Contract: yok, tüketici metinleri tüketici paketlerinde (§11) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Validation Rules her yeni alan için (§12) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Failure Path ≥ 4 senaryo: tekrar, eksik, yetkisiz, eşzamanlılık + kiracı dışı + K2 (§13) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Authorization: anahtarlar, politika, aktör; yeni anahtar yok (§14) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Gateway kararı: gereksiz (§15) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Platform lookup kararı: uygulanmaz (Platform/Admin modülü değil; lookup yok) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Acceptance criteria ölçülebilir ve sabotajlı (§16) — 40 AC'nin hepsinde sabotaj var (§17.1 S-1…S-43, S-8b, S-17b, S-36a/b, S-37a/b; AC-1…AC-5, AC-11, AC-15, AC-20, AC-28, AC-34'ün sabotajı AC metninde, AC-34 (5b) ayrıca S-29); sabotajsız AC yok; r4'te port fail-closed denetimleri (S-36a/b, S-37a/b), vade süzgeci (S-38, S-39), oturum ve kapsam süzgeci (S-40…S-42) ve DL-1 ret satırı (S-43) adlı sabotaj aldı — "sabotajı olmayan guard yok" iddiası bu guard'lar için de tutar (son bakış 01 F-4); r2'de gerçek olmayan sabotajlar (S-8, S-12) gerçeğiyle değişti, fixture'a bağlı olanların (S-4, S-10, AC-2, AC-4, AC-18) fixture koşulu yazıldı
+- [x] Test expectations build / sözleşme / izolasyon / denetim / smoke (§17) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Audited Events her yazma komutunu tam bir kez içeriyor (§21) — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Sayfa yardımı: sayfa yok (§23); tur yok — yapısal ölçüm 2026-11-02 (bölüm var ve içerik maddeyi karşılıyor; bağımsız incelemenin yerine geçmez)
+- [x] Q-02, Q-03, Q-04, Q-06, Q-08 kararları verildi (sahip kararı Beste 2026-11-02, §19.6)
+- [x] CT-01 registry satırı (`2265cce90`) ve CT-03 sürüm adımı (iki adım) yazıldı (MVP-1 CT 2026-11-02, §19.6); CT-04 dilim / W-5 koşulu da verildi
+- [x] CT-02 hata kataloğu yetkisi yazıldı — bu FU paketi; ebeveyne DL-1 kabulünde sürüm notu (MVP-1 CT 2026-11-02, §19.6)
+- [x] CT-07 `LotHeldStock.cs` XMC-001 onayı yazıldı — sahip izni Beste 2026-11-02; kapsam §8.2 yol 3–4 (CT hizası 2026-11-02, §19.6)
+- [x] Q-01 (FEFO) **kapandı** — sahip kararı A (Beste 2026-11-02); MOD-0176 XMC-001 izni yazıldı (§5, §7, §8.5); DL-3 W-5'in parçası (CT-04 güncel, §19.6)
+- [x] CT-08 REVERSAL geri getirme kararı yazıldı (MVP-1 CT 2026-11-02; §8.3.1, AC-35); MVP-6 XMC-001 bilgi notu (§7)
+- [x] Bağımsız inceleme 01 tur 1 (r1, UYGUN DEĞİL) bulguları F-1…F-15 r2'de işlendi (§19.7)
+- Not: Q-05, Q-07, Q-09 başka paketlerin kararıdır.
+- [x] Bağımsız inceleme 01 tur 2 (r2, KOŞULLU) bulguları F-1…F-5 ve CT-08 sınırı (`restoreReservation`), port anahtarla okuma üyesi r3'te işlendi (§19.7)
+- [x] Bağımsız son bakış 01 (r3, KOŞULLU) bulguları F-1…F-6 r4'te işlendi (§19.7; CT kararı MVP-1 CT 2026-11-02, hepsi kabul); F-5'in karar kısmı Q-09 olarak açık (MVP-6 CT, TBD — ready-for-dev önkoşulu değil, §8.3.1)
+- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — **r4'ün kendi incelemesi** (önceki sürümlerin incelemesi r4'ü kapsamaz) + CT-APR-01 onay satırı (yüksek risk: sözleşme + ürün kodu yolu + iki XMC-001 izni)
+- [x] `status: ready-for-dev` (2026-11-02; önkoşullardan yalnız CT-APR-02 ve CT-APR-01 açık — onay satırı bu sürümün sha256'sına yazılır, `approval_status` onunla güncellenir)
+
+## 19. Implementation Notes
+
+### 19.1 Kimlik ve keşif kanıtı
+
+Komutlar 2026-11-02, bu worktree, HEAD `703cbaec7`, Python 3.12.10:
+
+| Komut | Çıkış | Sonuç |
+|---|---|---|
+| `verify_module_id.py . --discover "inventory reservation"` | 3 | Blueprint 0 · SoR 0 · registry 0 · paket 0 · gateway 1 (`inventory` → 5067; mevcut servis ailesi, çakışma değil) · görev 0; rapor sha256 `d2ca8de7323aef7d8b73ca5635431287f826238f0a170b59d3a3effdc8542950` |
+| `--discover "lot reservation"` | 0 | hiç bulgu yok; rapor sha256 `dff49cd2610968f465aee86470810c7c5c6635628cd7fc051083304f0c0948ce` |
+| `--discover "reservation"`, `--discover "stock reservation"` | 0 / 0 | hiç bulgu yok |
+| `--check-id MOD-0173-FU03 --name "Inventory Lot & Location Reservation" --parent MOD-0173` | 0 | proven |
+| `--check-id MOD-0173 --name "Inventory Ledger & Valuation"` | 0 | proven |
+| (r2, F-11) `--check-id MOD-0173-FU03 --name "Inventory Lot & Location Reservation" --parent MOD-0173` — **kayıt satırı varken**, HEAD `4b9f7a023` | 0 | proven (yukarıdaki üç satır `703cbaec7`'de, satır commit'i `2265cce90`'dan önce koşulmuştu) |
+
+Keşif raporları commit edilmedi (CT kaydeder). Keşif paketleri yalnız dosya adı / künyeden eşler (raporun kendi "EKSİK" satırı); iş kapsamı
+aşağıdaki içerik aramasıyla ölçüldü.
+
+**Neden MOD-0173'ün FU'su (yeni MOD değil, MOD-0173 revizyonu değil):**
+- Blueprint 8.8 `Blueprint_Data` hiçbir satırda ayrı bir "reservation" modülü taşımaz; MOD-0173 SoR "inventory balances, movements, valuation,
+  locations (as scoped)", sözleşmesi INVENTORY-BUNDLE. Rezervasyon nesnesi zaten MOD-0173'ündür: INVENTORY-BUNDLE `createReservation` (sahibi
+  MOD-0173), ebeveyn paket §3 `InventoryReservation` (S2), ATP-BUNDLE "stok üzerinde reservation 0173'te yapılır", MOD-0178 §2 "Stok bakiyesi,
+  hareket, rezervasyon → MOD-0173", sahip kararı W-5 "sahibi MOD-0173, yani biz" (`docs/roadmap/plans/integration-phase-and-mvp5-start-plan-2026-10-21.md` §4).
+- Diğer Blueprint adayları kapsamı karşılamaz: MOD-0172 Allocation & ATP/CTP (commercial-suite) tahsis **kararıdır**, fiziksel tutmayı 0173'e
+  bırakır; MOD-0176 SoR "constrained allocations" FEFO kısıtıdır; MOD-0201 Spare Parts "reservations (maintenance view)" EAM görünümüdür (W-4).
+- Revizyon değil FU: ebeveyn paket `ready-for-dev`, bağlayıcı ASSUMPTION-0173-12…17 ile kapanmış bir dilim seti taşır; emsal FU01 (UI) ve FU02
+  (lokasyon master) ayrı FU paketleridir; `module-pack-standard.md` §16 "Büyük artış takip paketidir" kuralı onaylı pakete yeni yetenek
+  dilimi eklemeyi FU'ya yönlendirir.
+- Numara: registry'de MOD-0173 çocukları yalnız FU01, FU02 (`execution/registries/module-id-registry.md`); `git for-each-ref` ile bütün yerel
+  ve uzak ref'lerde `MOD-0173-FU0[3-9]` / `*reservation*` paket dosyası yok; 40 worktree'nin çalışma ağaçlarında da yok; depo içi metinde
+  `MOD-0173-FU03` geçmiyor → **FU03 ilk boş numara**.
+
+**Mükerrer iş araması (içerik):** `reservationId`, `lot reservation`, `W-5`, `ReservationRequest`, `reserve` aramaları — W-5'i kapsayan başka
+paket ya da WP **yok**. Bulunan atıflar yalnız bağımlılık / bekleme kaydıdır: MOD-0178 §7 / §8.10 / FU-0178-W5; WMS taslağı §2.3 / §11 / §13;
+MOD-0183 §23.4 ve "MVP-5 reservations (F-10)"; MVP-6 `DECISION-DRAFT.md` G2 ve DL-6 ("MOD-0173 sahibi W-5 ile, MVP-5 S2'den önce ekler");
+`execution/domains/supply-chain-execution/work-packs/mvp5-wms/CT-QUEUE.tsv` `WMS-MVP5-DL4` BLOCKED ("W-5 rezervasyonu main'de ve S2 paket
+revizyonu onaylı"); MOD-0176 FU-0176-RES-01 ("Lot-based reservation … MOD-0178") — **çelişki:** 0176 bu işi MOD-0178'e yazmış (KF-F,
+2026-10-12), sonraki sahip kararı W-5 (2026-10-21) INVENTORY'ye (MOD-0173) verir; W-5 kazanır, 0176 FU satırı bu paketle karşılanır
+(CT-06, 0176 paket metni düzeltmesi XMC-001).
+
+### 19.2 Ölçülen gerçekler (`703cbaec7`, salt okuma)
+
+- Rezervasyon yalnız SKU kapsamlı: `InventoryReservation` (depo / lot alanı yok), `ReservationRequest` (`inventory-bundle.openapi.yaml`
+  `components.schemas.ReservationRequest`), tek projeksiyon `InventorySkuPosition`.
+- Tüketim yalnız kaynak üçlüsüyle: `ReservationPositionOperations.ConsumeAsync` (birebir metin, boş `sourceDocumentId` eşleşmez);
+  `InventoryLedgerRepository.ApplySkuPositionAsync` net `AVAILABLE` deltası 0 ise hiçbir şey yapmaz ("a transfer between two AVAILABLE rows
+  nets 0").
+- `LOCATION_TRANSFER` aynı depo + aynı durum ister (`MovementDirectionRules`).
+- Bekçi koşullu güncelleme: `ReservationPositionOperations.UnreservedAtLeast` ile `FindOneAndUpdateAsync`; ret `UncoveredQuantityException` →
+  `INSUFFICIENT_STOCK`.
+- Yaratma reddi bugün **iz bırakmaz**: `CreateReservationHandler` `INSUFFICIENT_AVAILABLE`'da yalnız cevap döner; merkezi kayıt yalnız başarılı
+  komutta iletilir (BL-501, MOD-0178 §8.8). Ret izi emsali: `ExpiryPostingPolicy.FlushRefusalAuditAsync` (ret sonrası denetim satırı).
+- 0175 eşlemesi: `QuarantineStockActions` defter `INSUFFICIENT_STOCK` + aktif rezervasyon → 409 `QUARANTINE_STOCK_RESERVED`.
+- İstek okuyucuları bilinmeyen üyeleri yok sayar (`MovementRequestReader` açıklaması; `ReservationRequestReader` aynı kural).
+- Hata kataloğu kapalı: `InventoryErrorCodes.All` ("no other code without new pack version").
+- `GET /reservations/{id}` yok; `InventoryController` yalnız `POST reservations` ve `POST reservations/{id}/release` taşır.
+- İzinler: `InventoryPermissions.Read = inventory.stock.read`, `CreateMovements`, `ManageReservations`.
+- **Ölçülmedi (geliştiricinin ilk ölçümü):** `warehouseId`'si boş `AVAILABLE` balance satırı var mı (§4.2); `ETag` başlığının Gateway'den
+  geçişi (§15); `DefaultRolePermissionTemplate`'in `inventory.stock.read`'i varsayılan role verdiği (§14).
+
+**r2 ölçümleri (`4b9f7a023`, salt okuma):**
+- Defter işlem sırası: `InventoryLedgerRepository.PostAsync` gövdesi — merkezi enlist → lokasyon dokunuşu → lot çözümü → recall
+  yeniden kontrolü → expiry / FEFO yeniden kontrolü → işlem numarası → bacaklar (azalış önce) → lot pozisyonu → (lot tutulu değilse)
+  `ApplySkuPositionAsync` → seri → işlem / denetim / kutu ekleme. İşlem dışı sıra `InternalMovementPostingService.PostAsync`'te: ayrıştırma →
+  idempotency → REVERSAL kopyası ya da `CheckWithLotsAsync` → `PostAsync` (§8.3 ret sırası).
+- REVERSAL: `BuildReversalAsync` aslını kapsamlı okur, `ReversalRules.MatchOriginal` ile karşılaştırır, ters yönle yeni işlem kurar;
+  aynı aslın ikinci geri alınması `ReversalIndex` tekilliğiyle `ALREADY_REVERSED`. Bugün REVERSAL rezervasyona dokunmaz (net artış →
+  yalnız `ApplyAvailableDeltaAsync`).
+- `TransactionRetryCounter.Retried(...)` çağıranlar: `InventoryLedgerRepository` (`posting`), `LocationRepository` (`location`),
+  `LotRepository`, `ManualLotMigrationRepository`, `ExpiryRepository` (`expiry`), `QuarantineRepository` (`quarantine`), `RecallRepository` /
+  `RecallDrillRepository` (`recall`); `InventoryReservationRepository` **yok**.
+- `LedgerProjectionReKey.ApplyAsync`: `LedgerReKeyGroup.LotHoldsStock` doğruysa şirket başına SKU `AvailableOnHand` −Σ taşınan AVAILABLE;
+  değilse SKU'ya dokunmaz; bekçi yok.
+- `LotHeldStock`: `ApplyAsync` / `ApplyRetestAsync` → özel `MoveAsync`; gruplama `(LegalEntityId, ItemId, SkuId, SkuLevel)`.
+- FEFO: `ExpiryPostingPolicy.PreCheckAsync` ve `ReCheckAsync` ikisi de özel `FefoAsync`'i çağırır (`null` / işlem oturumu);
+  `FefoAsync` → `FefoCandidateReader.ReadAsync` → `FefoIssueRule.Evaluate(issued, FefoOrderRule.Order(...))`; `FefoIssueRule` verilen
+  lotu "diğerleri"nden çıkarır; `FefoOrderRule` `AvailableOnHand <= 0m` lotu uygun saymaz.
+- Rezervasyon denetim kaydı: `InventoryReservationAuditRecord.ReservationId` (Guid), `Status` (`ReservationStatus`, boş olamaz),
+  `ChangedQuantity` / `RemainingQuantity` (decimal) — yaratma reddinde değer kuralı §4.4.
+- Sözleşme fixture'ları: `Contract/Fixtures/inventory-bundle-v1.0.0` … `v1.4.0`; `v1.5.0` yok.
+- `AuditTrailStandardTests`: `tests/architecture/TenantArchitecture.ArchitectureTests/` (servis test projesinde değil).
+
+**r4 ölçümleri (`c1a563cf7`, salt okuma; son bakış 01; `git diff --stat d4176fbee c1a563cf7 -- services/Diten.InventoryService` boş):**
+- Vade süzgeci: `InventoryReservationRepository.SumActiveReservedAsync` (`:111`) `Status == Active` ve (`ExpiresAt == null` ya da
+  `ExpiresAt > now`) (`:114-115`); `GetAvailabilityHandler` onu `DateTimeOffset.UtcNow` ile çağırır (`:82-83`). Pozisyon `Reserved`'ı
+  vadesi geçeni yalnız `ReservationPositionOperations.ExpireDueAsync` (`:177-183`, `ExpiresAt ≤ now`) bırakır. Emsal test
+  `ReservationExpiryTests.Reads_stop_counting_a_due_reservation_immediately` (`:23`); testlerde süre sweeper'ı kapalı
+  (`TestSettings.cs:54` `Inventory__Reservations__SweeperEnabled=false`).
+- Defter sırası: `_lotBinding.Bind(s)` `InventoryLedgerRepository.cs:184`, recall yeniden kontrolü `:189`, `_expiry.ReCheckAsync` `:197`,
+  `ApplySkuPositionAsync` `:231-233`, onun içinde `ExpireDueAsync` `:291` (`now = transaction.CreatedAt`); `transaction.CreatedAt =
+  DateTimeOffset.UtcNow` (`InternalMovementPostingService.cs:285`).
+- Oturum: `LedgerTransactionBinding` (`Persistence/Traceability/LedgerTransactionBinding.cs`) istek kapsamlı (`TraceabilityServiceCollectionExtensions.cs:31`
+  `AddScoped`); ambient okuma deseni `InventoryLotDirectory.cs:317-319`, `RecallPostingGate.cs:65`, `ExpiryPostingPolicy.cs:76`; ön kontrol
+  `ExpiryPostingPolicy.cs:62` `FefoAsync(null, …)`. `FefoCandidateReader.ReadAsync(IClientSessionHandle? session, …)` (`ExpiryReadModel.cs:34-35`).
+  Application projesinde MongoDB paketi yok (`Diten.InventoryService.Application.csproj:10-19`).
+- Port fail-closed emsali: `InternalMovementPostingService.PostAsync(request, legalEntityId, actorUserId, ct)` `:79`, eşitlik denetimi `:81-83`
+  (`InvalidOperationException`).
+- MOD-0178 @ `8ee5a000c` (= `c1a563cf7`'deki dosya): `Shipped`'te artık `ACTIVE` rezervasyonların bırakılması satır 1424-1428;
+  `FindByIdempotencyKeysAsync` kullanımı satır 1281-1288; rezervasyonsuz `ReadyToShip` satır 1432-1436. MOD-0183 @ `d4176fbee`
+  (`c1a563cf7`'de aynı): geç yazan satır 751-756.
+
+### 19.3 Varsayımlar (yalnız yeni paket sürümüyle değişir)
+
+- **ASSUMPTION-0173-FU03-01:** v1 kapsamı depo + lot; bin (lokasyon) pini yok — Q-02 kapandı: **hayır** (sahip kararı Beste 2026-11-02, §19.6); gerekirse FU-03-BIN.
+- **ASSUMPTION-0173-FU03-02:** tam tüketim `RELEASED` + `closedReason Consumed`; wire `status` enum'u değişmez.
+- **ASSUMPTION-0173-FU03-03:** kapsam bekçisinin azalış reddi mevcut `INSUFFICIENT_STOCK` kodudur (0175 ve MVP-6 G7 eşlemeleri için).
+- **ASSUMPTION-0173-FU03-04:** `target 2026-11-30` şema zorunlu planlama değeridir, taahhüt değil.
+- **ASSUMPTION-0173-FU03-05:** plan hizalaması — plan dosyası depoda yok; dilim tablosunda `plan kimliği yok` / `plan satırı yok` yazılır,
+  kaynak: `module-pack-standard.md` §16 "Plan hizalaması". Plan satırı gelirse CT doldurur (CT-05).
+
+### 19.4 Açık sorular
+
+| # | Soru | Seçenekler / öneri | Sahip | Karar hedefi |
+|---|---|---|---|---|
+| Q-01 | FEFO kancası başka outbound'lara ayrılmış lotları nasıl sayar? (MOD-0178 §8.10 gereksinim 4) | **KAPANDI — A** (serbest miktar tabanı; DL-3 okuma portu + MOD-0176 kancasının aday okuması, XMC-001 izni; DL-3 W-5'in parçası) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-02 | Bin (lokasyon) pini v1'de gerekli mi? | **KAPANDI — hayır** (depo + lot; bin pini yok, gerekirse FU-03-BIN) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-03 | Rezervasyonu kim tüketebilir? | **KAPANDI** — v1'de kapsamı eşleşen her hareket (`inventory.movements.create`) + denetim; daraltma FU (FU-03-CONSUMER) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-04 | Tüketen çıkış kalandan fazlaysa? | **KAPANDI** — 422 `RESERVATION_QUANTITY_EXCEEDED`; fazlası serbest stoktan alınmaz | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-05 | MVP-6 sevkiyat satırından `reservationId` hangi alanla gelir? (`inventoryReferenceId` mi, 3.5.0 yeni alan mı) — MOD-0178 Q-M6-2 ile aynı | MVP-6'nın kararı; bu paket yalnız `MovementRequest.reservationId` sunar | MVP-6 CT (Natig) | MOD-0183 revizyonunda; MVP-5 S2 canlıya çıkmadan önce |
+| Q-06 | Toplu port (`CreateBatchAsync`) kabul mü? | **KAPANDI — evet**; toplu port hepsi ya da hiçbiri (§8.7) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-07 | 0178 rezervasyonları `expiresAt` taşır mı; `reservationType` / kaynak üçlüsü değeri? | 0178 S2 revizyonunun kararı; öneri `expiresAt` yok (MVP-6 sevkiyat rezervasyonu emsali, `DECISION-DRAFT.md` §3b ek not 2) | MVP-1 CT (MVP-5 S2 revizyonu) | 0178 S2 revizyonu |
+| Q-08 | Rezervasyona görünür kayıt kodu gerekir mi? | **KAPANDI — hayır** (§8.10) | Beste (sahip kararı 2026-11-02) | §19.6 |
+| Q-09 | (r4, son bakış 01 F-5) MOD-0183'ün geç yazanı, kaydedilmemiş ve rezervasyonu `reservationId` ile tüketmiş çıkışını geri alırken REVERSAL'a `restoreReservation: true` koyar mı? | **A (öneri):** koyar — sonraki deneme rezervasyonla geçer; önerilen sınır: sevkiyatta tamamlanmış (Dispatched) deneme varsa koymaz (öksüz rezervasyon). **B:** koymaz — rezervasyon kapalı kalır, kurtarma rezervasyonsuz yeniden deneme (B1 0183 `reservationId`'siz gönderir ya da B2 0178 yeni rezervasyon açar). INVENTORY davranışı iki seçenekte aynı (§8.3.1); bu paketin önkoşulu değil | MVP-6 CT (Natig) | **TBD** — MOD-0183'ün `reservationId` gönderen revizyonunda (Q-05) |
+
+### 19.5 CT kararları
+
+| # | Karar | Öneri |
+|---|---|---|
+| CT-01 | Registry'ye `MOD-0173-FU03` satırı | **KARAR VERİLDİ** — satır eklendi (`2265cce90`, MVP-1 CT 2026-11-02); ad farkı açık nokta (§19.6) |
+| CT-02 | Kapalı hata kataloğu (`InventoryErrorCodes.All`, "no other code without new pack version") için yeni kodların yetkisi (`RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`) | **KARAR VERİLDİ** — yetki bu FU paketidir; ebeveyn MOD-0173 paketine yalnız DL-1 kabulünde sürüm notu düşülür (MVP-1 CT 2026-11-02) |
+| CT-03 | Sözleşme iki adım (1.6.0 DL-1, 1.7.0 DL-2) mı, tek 1.6.0 mı? | **KARAR VERİLDİ — iki adım kalır** (1.6.0 / 1.7.0; MVP-1 CT 2026-11-02) |
+| CT-04 | Dilim sırası ve MOD-0178 S2'nin açılma koşulu | **KARAR VERİLDİ, r2'de güncellendi** — W-5 = DL-1 + DL-2 + **DL-3** CT kabulü; MOD-0178 S2 açılması DL-3 kabulünü de bekler (Q-01 = A, Beste 2026-11-02; ilk karar "DL-3 engel değildir" — MVP-1 CT 2026-11-02 — bununla değişti) |
+| CT-05 | Plan satırı (yetenek kimliği, plan MVP) | plan sahibinden alınıp dilim tablosuna yazılır |
+| CT-06 | MOD-0176 FU-0176-RES-01 sahibi (MOD-0178 yazıyor) W-5 ile çelişiyor | 0176 paket metni düzeltmesi (XMC-001, 0176 sahibi aynı) |
+| CT-07 | XMC-001: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 yolları) DL-1'de kapsam pozisyonlarını güncellemek için değişir | **KARAR VERİLDİ** — sahip izni Beste 2026-11-02: XMC-001, `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası) — kapsamı (CT kararı MVP-1 CT 2026-11-02 ile hizalandı) §8.2 yol 3–4: `ApplyAsync` / `ApplyRetestAsync` lot tutulup bırakıldığında lotun her depodaki `W:` ve `L:` kapsam pozisyonlarının `AvailableOnHand`'ini günceller; başka değişiklik yok. **Yer (r2, F-13):** iki girişin ortak özel gövdesi `MoveAsync` (§5) |
+| CT-08 | REVERSAL tüketilmiş rezervasyonu geri getirir mi? (inceleme 01 F-1, MOD-0183 G4 (a) telafisi) | **KARAR VERİLDİ** — MVP-1 CT 2026-11-02: evet, `InventoryTransaction.ReservationId` üzerinden, aynı işlemde, idempotent; kalan geri eklenir, `RELEASED` / `Consumed` → `ACTIVE`, bütün kapsam düzeylerine `Reserved` geri yazılır; vadesi geçmişse aynı işlemde vade kapatma; sahibinin bıraktığı ve `EXPIRED` geri gelmez (§8.3.1, AC-35); MVP-6 CT bilgilendirilir (XMC-001 bilgi notu, §7) **Sınır (r3, CT kararı MVP-1 CT 2026-11-02, MVP-6 CT notu Natig 2026-11-02):** yalnız REVERSAL isteği `restoreReservation: true` taşıyorsa (isteğe bağlı, varsayılan `false`); MOD-0183'ün Dispatched öncesi telafisi `true` gönderir, kayıt düzeltmesi ve Shipped sonrası geri alma göndermez. **r4 (CT kararı MVP-1 CT 2026-11-02, son bakış 01 F-5):** sınırın "kayıt düzeltmesi göndermez" kısmı gerekçesizdi; CT kararıyla açık soruya çevrildi — geç yazanın düzeltmesi Q-09 (MVP-6 CT, TBD; öneri A); Shipped sonrası geri almanın göndermemesi gerekçesiyle kalır (§8.3.1) |
+| CT-09 | MOD-0178 r23 tahsis kurtarması için portta anahtarla okuma (FU-0178-RSV-BYKEY) | **KARAR VERİLDİ** — MVP-1 CT 2026-11-02: `IInventoryReservationPort.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` eklemeli üye, kiracı + şirket kapsamlı, DL-1 (§8.7, AC-39) |
+
+### 19.6 Verilen kararlar (2026-11-02)
+
+Sahip kararları Beste'nin ("hepsi öneri gibi"), CT kararları MVP-1 CT'nin. r1 kararları paketin önerisini aynen kabul eder; paket gövdesi
+(§8.2, §8.3, §8.7, §8.10, §12) bu davranışı zaten yazıyordu, değişen yalnız kararın kaydıdır. r2 kararları: Q-01 = A paketin (a)
+önerisidir ve DL-3'ü W-5'e alır (CT-04 değişir); CT-08 r1'in REVERSAL kuralını **tersine çevirir** (inceleme 01 F-1) — gövde §8.3.1'de
+yeniden yazıldı.
+
+| # | Karar | Veren | Pakette nerede |
+|---|---|---|---|
+| Q-02 | Hayır — v1 kapsamı depo + lot; bin pini yok; gerekirse FU-03-BIN | Beste (sahip) | §1, §2, §8.4, §12, §19.3 ASSUMPTION-01, §20 |
+| Q-03 | v1'de kapsamı eşleşen her hareket tüketebilir (`inventory.movements.create`) + denetim; daraltma FU (FU-03-CONSUMER) | Beste (sahip) | §8.3, §14, §20, §21 |
+| Q-04 | 422 `RESERVATION_QUANTITY_EXCEEDED`; fazlası serbest stoktan alınmaz | Beste (sahip) | §8.3, §8.8 |
+| Q-06 | Evet — toplu port `CreateBatchAsync` hepsi ya da hiçbiri | Beste (sahip) | §8.7 |
+| Q-08 | Hayır — görünür kayıt kodu yok | Beste (sahip) | §8.10 |
+| CT-01 | Registry satırı eklendi (`2265cce90`) | MVP-1 CT | `execution/registries/module-id-registry.md` |
+| CT-03 | Sözleşme iki adım kalır: 1.6.0 (DL-1), 1.7.0 (DL-2) | MVP-1 CT | §8.8, §22 |
+| CT-04 | W-5 = DL-1 + DL-2 CT kabulü; DL-3 MOD-0178 S2 için engel değildir — **r2'de değişti:** W-5 = DL-1 + DL-2 + DL-3 kabulü; MOD-0178 S2 DL-3 kabulünü de bekler | MVP-1 CT; r2 güncellemesi Q-01 = A ile (Beste) | §22 |
+| CT-02 | Beş yeni hata kodunun (`RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`, `RESERVATION_NOT_APPLICABLE`, `RESERVATION_QUANTITY_EXCEEDED`) kapalı kataloğa `InventoryErrorCodes.All` eklenme yetkisi bu FU paketidir; ebeveyn MOD-0173 paketine yalnız DL-1 kabulünde sürüm notu düşülür | MVP-1 CT | §8.8, §12, §22 (DL-1 kabulü) |
+| Ad | Kanonik paket adı "Inventory Lot & Location Reservation" (künye ve DCP-002 ön kontrolüyle aynı); kayıt satırındaki ad CT tarafından düzeltildi (`f2b2b3a96`); satırın durum hizası (`draft` → paketin durumu) CT'de | MVP-1 CT | künye, §19.1 |
+| CT-07 | XMC-001 izni: `Persistence/Traceability/LotHeldStock.cs` (MOD-0174 / MOD-0175 dosyası). İznin kapsamı §8.2 yol 3–4: `ApplyAsync` / `ApplyRetestAsync` lot tutulup bırakıldığında lotun her depodaki `W:` ve `L:` kapsam pozisyonlarının `AvailableOnHand`'ini günceller; başka değişiklik yok. İzin metnindeki "ayrılmış miktarın tutulan stok hesabına eklenmesi" CT'nin özet ifadesiydi (CT kararı MVP-1 CT 2026-11-02) | Beste (sahip izni) + MVP-1 CT (kapsam hizası), 2026-11-02 | §5, §6, §7, §8.2 (yol 3–4), §22 |
+| Q-01 | **A** — FEFO aday kümesi serbest (ayrılmamış) miktarı esas alır; başka outbound'lara ayrılmış lotlar FEFO sırasında sayılmaz; ayrılmış lotu kendi rezervasyonuyla çıkaran hareket FEFO sapması sayılmaz. DL-3 W-5'in parçası (CT-04 güncellendi). MOD-0176 FEFO koduna XMC-001 izni (MOD-0176 MVP-1 modülü, sahibi Beste): kapsam yalnız FEFO aday kümesinin serbest miktar okuması — `ExpiryReadModel.cs` `FefoCandidateReader.ReadAsync`, `ExpiryPostingPolicy.cs` `FefoAsync` | Beste (sahip), 2026-11-02 | §1, §2, §5, §6, §7, §8.3, §8.5, §22; AC-29, AC-31, AC-38 |
+| CT-08 | REVERSAL, rezervasyonu `reservationId` ile tüketen hareketi geri alınca o rezervasyonu geri getirir (§8.3.1) — **r3 sınırı:** yalnız istek `restoreReservation: true` taşıdığında (varsayılan `false`; INVENTORY 1.7.0 eklemeli alan). r4: geç yazanın düzeltmesinin alanı gönderip göndermeyeceği Q-09'a çevrildi (MVP-6 CT, TBD; öneri A) | MVP-1 CT, 2026-11-02 (sınır: MVP-1 CT kararı, MVP-6 CT notu Natig 2026-11-02; r4: MVP-1 CT 2026-11-02) | §1, §7, §8.3, §8.3.1, §8.8, §8.9, §12, §13, §19.4, §21; AC-25, AC-35 |
+| CT-09 | Portta anahtarla okuma `FindByIdempotencyKeysAsync` (MOD-0178 FU-0178-RSV-BYKEY), DL-1 | MVP-1 CT, 2026-11-02 | §3, §8.7, §21, §22; AC-39 |
+| SB01 | Bağımsız son bakış 01 (r3) bulguları F-1…F-6 kabul; r4'te tek geçişte işlenir; F-5'in kararı MVP-6 CT (Natig) ile netleşir, o gelene kadar paket gerekçeyi ve iki seçeneği yazar (Q-09). F-1'de iki yoldan biri pakete bırakıldı — paketin seçimi vade süzgeci, gerekçe §8.5 "Vade kuralı" | MVP-1 CT, 2026-11-02 | §5, §7, §8.3, §8.3.1, §8.5, §8.7, §8.8, §13, §19.4, §19.7, §22; AC-16, AC-17, AC-28, AC-31, AC-38, AC-39, AC-40 |
+
+**Açık kalanlar:** Q-05 (MVP-6), Q-07 (MOD-0178 S2 revizyonu), Q-09 (MVP-6 CT, TBD — geç yazanın düzeltmesi; r4); CT-05 (plan satırı), CT-06 (MOD-0176 FU satırı düzeltmesi); kayıt satırının
+durum hizası (CT). **CT-07 ifade farkı kapandı** (CT kararı MVP-1 CT 2026-11-02): izin, paketin §8.2 yol 3–4 değişikliğidir; izin metnindeki ifade CT'nin özetiydi.
+
+### 19.7 Bağımsız inceleme 01 — kapanış tabloları (tur 1 → r2, tur 2 → r3)
+
+Bulgu dosyası `docs/records/reviews/MOD-0173-FU03/2026-11-02-5a37560e.md` (dosya özeti `23322d18…`, `git show 4b9f7a023:<yol> | sha256sum`;
+hedef r1 pack sha256 `5a37560e…6675`, kaynak `0b8d1e511`); UYGUN DEĞİL, 1 ENGEL, 7 ORTA, 7 DÜŞÜK; CT kabulü 2026-11-02; F-1 CT-08 ile,
+F-8 sahip kararı Q-01 = A ile.
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@23322d18 (ENGEL) | REVERSAL tüketilmiş rezervasyonu `InventoryTransaction.ReservationId` üzerinden aynı işlemde geri getirir; durum tablosu (Consumed → ACTIVE; sahibinin bıraktığı / EXPIRED geri gelmez); vadesi geçmişse aynı işlemde `ExpireDueAsync`; idempotency REVERSAL tekilliğiyle; MOD-0183 G4 (a) senaryosu AC; 1.7.0 açıklaması; MVP-6 XMC-001 bilgi notu | §1, §7, §8.3, §8.3.1, §8.8, §8.9, §13, §21; AC-35; S-24…S-26 |
+| F-2@23322d18 | Elle lot göçü iki dal: tutulu olmayan hedef → `L:` +; tutulu hedef (`LotHoldsStock`) → `L:` değişmez, `W:` −; tutulu hedef lot fixture'ı | §8.2 yol 5; AC-34 (5a, 5b); S-29 |
+| F-3@23322d18 | `TransactionRetryCounter.Reservation` türü; rezervasyon deposu sayar; AC-9 (b) bu türü okur | §5, §8.2, §17; AC-9 |
+| F-4@23322d18 | S-8 ve S-12 gerçeğiyle değişti (+ S-8b, 1.5.0 fixture'ı); S-4, S-10, AC-2, AC-4, AC-17, AC-18 fixture koşulu (üst düzey serbest > alt düzey); §17 fixture kuralı | §5, §17, §17.1; AC-2, AC-4, AC-9, AC-14, AC-17, AC-18, AC-19 |
+| F-5@23322d18 | `reservationId`'siz üçlü tüketime kapsam koşulu; `Reserved` rezervasyonun bütün düzeylerinde düşer; eşleşmeyen tüketilmez | §8.3, §8.9, §13; AC-36; S-27, S-28 |
+| F-6@23322d18 | Net 0 erken dönüşü yalnız SKU düzeyi; kapsam düzeyleri ayrı net delta; `WAREHOUSE_TRANSFER` depo / lot bekçisi, önce vade kapatma; W1 / W2 ölçümü | §8.2, §8.4, §13; AC-37; S-30 |
+| F-7@23322d18 | `Outcome` sözlüğü `Succeeded` / `Failed` / `Denied`, retler `Failed`; `ReservationIdText`; yaratma reddinde boş olamayan alanların değeri (`Status` null); `reservationId`'siz bekçi `INSUFFICIENT_STOCK` reddi denetlenir | §4.4, §13, §21; AC-15, AC-28 |
+| F-8@23322d18 | Q-01 = A; DL-3 W-5'in parçası; MOD-0176 XMC-001 izni (dosya / sembol ölçüldü); FEFO kancası serbest tabanla, `getFefoOrder` değişmez (bilinen fark) | §1, §2, §3, §5, §6, §7, §8.3, §8.5, §19.4, §19.5, §19.6, §20, §22; AC-29, AC-31, AC-38; S-31 |
+| F-9@23322d18 | Gerçek ret sırası koddan; `RESERVATION_*` önceliği; `reservationId`'li net 0 `LOCATION_TRANSFER`'da vade kapatma, `reservationId`'sizde koşmaz | §8.3, §12 |
+| F-10@23322d18 | `availableAfter` SKU anlamında kalır; olay yükü + `WarehouseId` / `LotId` / `ClosedReason`; kapsam rakamları yalnız SKU adlandırılınca | §5, §8.8, §12; AC-17 |
+| F-11@23322d18 | "CT düzeltecek" kaldırıldı (ad `f2b2b3a96`'da düzeldi); durum hizası CT'de; DCP-002 ön kontrolü satır varken `4b9f7a023`'te yeniden (çıkış 0) | künye bloğu, §19.1, §19.6 |
+| F-12@23322d18 | DL-1 bölümlerine "Ayrılmış stokun yer değiştirmesi" (`reservationId`'siz kısım); `AuditTrailStandardTests` ayrı projede, AC-32 ayrı koşu | §5, §17, §22; AC-32 |
+| F-13@23322d18 | CT-07 değişikliğinin yeri `LotHeldStock.MoveAsync` (iki girişin ortak gövdesi) | §5, §8.2, §19.5; AC-34 |
+| F-14@23322d18 | 422 `RESERVATION_NOT_FOUND` kural atfı: gövde referansı → 422 (emsal `UNKNOWN_LOCATION`, `UNKNOWN_LOT`) | §8.3 |
+| F-15@23322d18 | ASSUMPTION-0173-12 / -14 / -15'in genişletildiği açıkça yazıldı; "ebeveyn kazanır" yalnız sayılan genişletmelerin dışı için | künye bloğu (Yetki) |
+
+**Tur 2 (r3)** — bulgu dosyası `docs/records/reviews/MOD-0173-FU03/2026-11-02-689bfaa3.md` (dosya özeti `be1962c6…`, `git show aae9fac57:<yol> | sha256sum`;
+hedef r2 pack sha256 `689bfaa3…6ded`, kaynak `a3c0a9ae5`); KOŞULLU, 1 ORTA, 4 DÜŞÜK; CT kabulü 2026-11-02. Aynı geçişte iki CT kararı:
+CT-08 sınırı (`restoreReservation`) ve CT-09 (port anahtarla okuma).
+
+| Bulgu / girdi | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@be1962c6 (ORTA) | Geri getirme `HoldsStock` dalının dışında, ayrı rezervasyon adımı: `Reserved` her düzeyde +q, `AvailableOnHand`'e dokunulmaz; iki değişmez tutulu lotta da korunur; tutulu lot fixture'ı + sabotaj | §8.3.1; AC-35 (g); S-32 |
+| F-2@be1962c6 | MOD-0176 izni yapıcı ve DI adıyla: `FefoCandidateReader` yapıcısına `ILotReservationReader`; `ExpiryPostingPolicy` yapıcısı ve `ExpiryServiceCollectionExtensions` değişmez; kayıt FU03'ün `Persistence/DependencyInjection.cs`'inde; elle kurulum yok (ölçüldü) | §5 |
+| F-3@be1962c6 | En az değişiklik: `FefoIssueSnapshot` şeması değişmez — §8.5'te kabul edilen sınır (gerekçe: izin sınırı, KPI okuyucusu; kanıt `inventory_audit`'ten yeniden kurulur); gerekirse MOD-0176 revizyonu | §5, §8.5 |
+| F-4@be1962c6 | FU03'te değişiklik yok: MOD-0178 r21'de kapandı (`6c7416e89`: DL-4 kapısı FU03 DL-1 + DL-2 + DL-3, Q-01 = A); kanıt yeni turda verilir | — (not) |
+| F-5@be1962c6 | Ret satırlarına (ve `Restored` satırına) `ActorDisplayName` = `IPostingActorName.Current`, `InternalMovementPostingService.NameOf` kuralıyla (yalnız aktör kapsam kullanıcısıysa) | §4.4, §21 |
+| CT-08 sınırı (MVP-6 CT notu, Natig) | REVERSAL isteğine eklemeli `restoreReservation` (varsayılan `false`); yalnız `true` iken geri getirme; REVERSAL dışı türde 400; parmak izine yalnız `true` iken; MOD-0183 hiza notu | §1, §7, §8.3, §8.3.1, §8.8, §8.9, §12, §13, §19.5, §19.6; AC-25, AC-35 (h, i); S-17b, S-33 |
+| CT-09 (MOD-0178 r23) | `IInventoryReservationPort.FindByIdempotencyKeysAsync` — kiracı + şirket kapsamlı, salt okuma, DL-1 | §3, §8.7, §21, §22; AC-39; S-34, S-35 |
+
+**Son bakış 01 (r3 → r4)** — bulgu dosyası `docs/records/reviews/MOD-0173-FU03/2026-11-02-2bba39c1-son-bakis-01.md` (dosya özeti
+`7dbfa6b4b478c7fba598c56c18906815c5bd69e8bbf9af833612f8b9fdbbfec8`, `git show c1a563cf7:<yol> | sha256sum`; hedef r3 pack sha256
+`2bba39c170a7165230e01c556d9b8a61313a60f1b34309235973e70a63ced981`, kaynak `d4176fbee`); KOŞULLU, 1 ORTA, 5 DÜŞÜK; CT kararı MVP-1 CT
+2026-11-02: hepsi kabul, r4'te tek geçiş; F-5'in kararı MVP-6 CT (Natig) ile.
+
+| Bulgu | Düzeltme | Bölümler |
+|---|---|---|
+| F-1@2bba39c1-son-bakis-01 (ORTA) | Seçim: vade süzgeci (FEFO'dan önce vade kapatma değil) — gerekçe: ön kontrol yazmaz, defter sırası ve MOD-0176 çağrı yeri değişmez, aynı kural `SumActiveReservedAsync`'te var. `ReservedByLotAsync`, kapsam rakamları (`SumActiveScopeReservedAsync`) ve `GetScopeFreeAsync` `ReservationActiveFilter` ile okur (pozisyonun `Reserved`'ı okunmaz); aynı cevapta `reserved` ve `scopeReserved` aynı kural; bilinen ms sınırı yazıldı; süresi dolmuş erken lot fixture'ı + sabotaj | §5, §8.3, §8.5, §8.7, §8.8, §13, §17, §19.2; AC-17 (e), AC-31 (a), AC-38 (d); S-38, S-39 |
+| F-2@2bba39c1-son-bakis-01 | Oturum adlandırıldı: imzada oturum yok (Application MongoDB'siz); `LotReservationReader` ambient `LedgerTransactionBinding.Session` okur (bağlıysa oturumla, değilse işlem dışı — `InventoryLotDirectory` deseni); ön kontrol ve yeniden kontrolde `FefoCandidateReader`'ın açık oturumuyla aynı. `FindByIdempotencyKeysAsync` işlem oturumuna katılmaz, commit edilmiş durumu okur ("çağıran isterse" kaldırıldı) | §5, §8.5, §8.7, §17, §19.2; AC-31 (b); S-40 |
+| F-3@2bba39c1-son-bakis-01 | `excludeReservationId` kaldırıldı (üretim çağıranı yoktu); port `ReservedByLotAsync` adını aldı, dönüş türü yazıldı; kendi rezervasyonunun sayılmasının kararı etkilemediği `FefoIssueRule` ölçümüyle yazıldı; AC-31 üretim yolunu (gerçek DI, defterin bağlama çağrısı) ve kiracı / şirket süzgecini adlı sabotajla ölçer | §3, §5, §8.5, §17.1; AC-31; S-40, S-41, S-42 |
+| F-4@2bba39c1-son-bakis-01 | AC-39 (c) iki fixture (kiracı, şirket) + S-36a / S-36b; `CreateAsync` / `CreateBatchAsync` karşılaştırılan `legalEntityId`'yi imzada taşır (r3 imzası taşımıyordu), denetim okuma ve yazımdan önce, `InternalMovementPostingService` emsali; AC-16 iki fixture + S-37a / S-37b; §18 iddiası güncellendi | §8.7, §13, §17.1, §18, §20; AC-16, AC-39 (c); S-36a, S-36b, S-37a, S-37b |
+| F-5@2bba39c1-son-bakis-01 | Shipped sonrası geri almanın alanı göndermemesinin gerekçesi (MOD-0178 `Shipped`'te bırakma → öksüz rezervasyon); geç yazanın düzeltmesi için iki seçenek — A (öneri; Dispatched deneme varsa göndermez sınırıyla) ve B (rezervasyonsuz yeniden deneme: B1 / B2); karar **MVP-6 CT (Natig), TBD** — Q-09; INVENTORY davranışı iki seçenekte aynı, bu paketin önkoşulu değil | §1, §7, §8.3.1, §13, §19.4, §19.5, §19.6, §20 |
+| F-6@2bba39c1-son-bakis-01 | `reservationId`'siz bekçi reddinin ret satırı DL-1'e bağlandı: yeni AC-40 (LOT / WAREHOUSE / SKU / `WAREHOUSE_TRANSFER` fixture'ları, satır düzeyi ret 0 satır) + S-43; AC-28 DL-2'de yalnız `reservationId`'li retleri ölçer (yeni fixture, adlı test); §13 ve §22 hizalandı | §13, §16, §17, §17.1, §21, §22; AC-28, AC-40; S-43 |
+
+## 20. Follow-up Items
+
+- **FU-03-BIN** — bin (lokasyon) pini: rezervasyonun `locationId`'si, `LOCATION_TRANSFER`'da pinin taşınması — Q-02 = **hayır** (2026-11-02); yalnız ileride ihtiyaç doğarsa ayrı sahip kararıyla açılır.
+- **FU-03-FEFO** — Q-01 = A'nın kanca tarafı DL-3'te yapılır (§8.5). Kalan: `getFefoOrder` okumasının da serbest tabana geçmesi —
+  FEFO-BUNDLE eklemeli `basis` değeri, MOD-0176 sözleşme revizyonu (sahip Beste); o zamana kadar okuma ile kanca arasındaki fark bilinir.
+  Aynı revizyon gerekirse `FefoIssueSnapshot`'a karar tabanı / atlanan ayrılmış miktar alanını ekler (r3, inceleme 01 tur 2 F-3; §8.5).
+- **FU-03-TRIPLE-REV** — `reservationId`'siz üçlü tüketimin REVERSAL'ı rezervasyonu geri getirmez (aslı `ReservationId` taşımaz, §8.3.1);
+  ihtiyaç doğarsa üçlü tüketim de `ReservationId` yazacak biçimde ayrı kararla açılır.
+- **FU-03-QH** — MOD-0175 ön kontrolünü lot / depo düzeyine indirmek (daha net 409 mesajı); bugün defter bekçisi yakalıyor (§8.6).
+- **FU-03-UI** — MOD-0173-FU01 BG-08 rezervasyon çekmecesi (`getReservation` + liste okuması); 7 dil.
+- **FU-03-LIST** — `GET /reservations` listesi (kapsam / kaynak süzgeci) — tüketici isteyince.
+- **FU-03-CONSUMER** — tüketiciyi daraltma (ör. `consumerModule`) — Q-03 kararı (2026-11-02): v1'de eşleşen her hareket, daraltma bu FU'da.
+- **FU-03-403AUDIT** — 403 (`Denied`) denemelerinin servis genelinde denetimi (AUD-001 §3); servis geneli altyapı, bu paketin değil.
+- **FU-03-COUNT** — MOD-0181 sayımı: ayrılmış stoğu açıkta bırakan `COUNT_LOSS` reddedilir (§8.2); sayım akışının rezervasyon uzlaştırması MOD-0181 paketinde.
+- **FU-03-EAM** — MOD-0201 yedek parça "reservations (maintenance view)" bu rezervasyonu tüketecekse ayrı paket.
+- **XMC (başka sahipler):** MOD-0183 revizyonu (`reservationId` gönderimi, Q-05; r3: Dispatched öncesi telafinin REVERSAL gövdesine
+  `restoreReservation: true` — §7 hiza notu, sahip Natig; r4: geç yazanın düzeltmesi Q-09, MVP-6 CT TBD, öneri A — §8.3.1); MOD-0178 S2
+  revizyonu (portun kullanımı, Q-07; r3: tahsis kurtarmasında `FindByIdempotencyKeysAsync`, FU-0178-RSV-BYKEY; r4 hiza notu, son bakış
+  01 F-4 / F-1: port `CreateAsync` / `CreateBatchAsync` çağrıda `legalEntityId`'yi (outbound'un şirketi) taşır, farklıysa
+  `InvalidOperationException`; `GetScopeFreeAsync` vadesi geçmiş ama kapanmamış rezervasyonu saymaz — MOD-0178 §8.17 "alınabilir"
+  miktarı FEFO kancasıyla aynı tabanı görür. MOD-0178 metni bu imzayı sabitlemiyor (yalnız üye adı); bildirim MVP-1 CT içinde).
+
+## 21. Audited Events
+
+Servisin denetim altyapısı **bugün var:** `tests/architecture/audit-ledger/Diten.InventoryService.md` `## İzler` →
+`inventory-merkezi-iletim | b | işaret | ICentralAuditDeclaration`; `RequireEnlistment = true`; K2 borcu yok. Merkezi kayıt ad ve gövde taşımaz;
+değerler yerel `inventory_audit`'tedir (MOD-0178 §8.8 ile aynı ölçüm). Merkezi kayıt yalnız **başarılı ve yazan** komutta iletilir; **retler**
+(AUD-001 §3) yerel `inventory_audit`'e `Outcome Failed` satırı olarak yazılır (sözlük `Succeeded` / `Failed` / `Denied`; bu paket `Denied`
+yazmaz — §4.4; r2, inceleme 01 F-7): işlem geri alındıktan sonra tek ekleme
+(`ExpiryPostingPolicy.FlushRefusalAuditAsync` emsali), yazılamazsa cevap değişmez, uyarı logu + `inventory_refusal_audit_failed_total`
+(en iyi çaba, sessiz değil — AUD-001 §4.3 "diğer iş kayıtları"). `inventory_audit` yalnız ekleme yapılan, silinmeyen koleksiyondur.
+
+| Komut (= `RequestType`) | `Operation` / `EntityType` | Yol | Merkezi kayıt (iletilen) | Yerel `inventory_audit` (`Action` → alanlar) | İstisna sınıfı + gerekçe |
+|---|---|---|---|---|---|
+| `CreateReservationCommand` (genişler) | `Create` / `InventoryReservation` (mevcut) | b (K2) | 1 yalnız 201; tekrar 0; ret 0 | 201: `InventoryReservationCreated` → ReservationId, ItemId, SkuId, SkuLevel, WarehouseId, LotId, ChangedQuantity (= Quantity), RemainingQuantity, Status, SourceModule (ReservationType ve kaynak belge / satır rezervasyon belgesinde, aynı işlem); ret: `InventoryReservationRefused` → `Outcome Failed`, ErrorCode, RequestedQuantity, UncoveredQuantity, Level, WarehouseId, LotId (boş olamayan alanların değeri §4.4) | — |
+| `ReleaseReservationCommand` (şema değişmez) | `LifecycleTransition` / `InventoryReservation` (mevcut) | b (K2) | 1 yalnız 200; 409 / 404 → 0 | `InventoryReservationReleased` → ChangedQuantity (= bırakılan kalan), RemainingQuantity 0, Status, ClosedReason, WarehouseId, LotId | — |
+| `PostMovementCommand` (genişler, `reservationId`) | `Create` / `InventoryTransaction` (mevcut) | b (K2) | 1 yalnız 201; tekrar 0; ret 0 | hareketin mevcut defter izi + tüketimde `InventoryReservationConsumed` / `…PartiallyConsumed` (`TransactionId`, ChangedQuantity, RemainingQuantity, tüketen SourceModule); REVERSAL geri getirmesinde (yalnız istek `restoreReservation: true` iken, r3) `InventoryReservationRestored` (`TransactionId` = REVERSAL, ChangedQuantity = q, RemainingQuantity, Status, WarehouseId, LotId; vadesi geçmişse ardından `InventoryReservationExpired`) — §8.3.1; `RESERVATION_*` retinde ve kapsam / SKU bekçisinin `INSUFFICIENT_STOCK` reddinde (`reservationId`'li ya da `reservationId`'siz) `InventoryReservationConsumptionRefused` → `ReservationIdText` (yoksa null), Level, MovementType, ErrorCode, SourceModule, `Outcome Failed`; dilim (r4, son bakış 01 F-6): `reservationId`'siz bekçi reddinin satırı **DL-1** (AC-40), `RESERVATION_*` ve `reservationId`'li bekçi reddinin satırı DL-2 (AC-28); satır düzeyi `INSUFFICIENT_STOCK` (ebeveynin negatif stok reddi) yazılmaz | — |
+| `IInventoryReservationPort` (MediatR komutu değil; süreç içi; `GetAsync`, `GetScopeFreeAsync`, `FindByIdempotencyKeysAsync` salt okumadır, kayıt yazmaz — r3; kapsam denetimi `InvalidOperationException`'ı programlama hatasıdır, ret satırı yazılmaz — r4, §8.7) | çağıran 0178 komutunun bildirimi | b (çağıranın satırı) | çağıran komut başına 1 (enlist çağıranın satırına no-op katılım) | rezervasyon başına `InventoryReservationCreated` / `Released` / `Refused` (aynı alanlar), `ActorUserId` = çağıranın kullanıcısı | — (MOD-0178 S2 Audited Events kendi komutlarını yazar) |
+| Rezervasyon süre sweeper'ı (`ReservationExpirySweeperHostedService`, mevcut) | — | — | — | `InventoryReservationExpired` (kapsam alanlarıyla) | mevcut, değişmez: defterin "dört arka plan süpürücüsü" notu |
+| `GetReservationByIdQuery`, `GetAvailabilityQuery` | — | — | — | — | sorgu (AUD-001 §2); okuma denetimi gerekmez — §7'nin üç sınıfından hiçbirine girmez (kişisel / özel nitelikli veri yok) |
+
+Kayda yazılmayan alanlar: token, gizli anahtar; rezervasyon kişisel veri taşımaz.
+
+## 22. Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | çekirdek: kapsamlı rezervasyon + pozisyonlar + okuma + port + ret izi + INVENTORY 1.6.0 | Owned Objects, Entity Fields, Repo Scope, Servis ve kapsam, Rezervasyon kapsamı ve pozisyonlar, Ayrılmış stokun yer değiştirmesi, Lot durumu ve karantina etkileşimi, Süreç içi rezervasyon portu, Sözleşme değişikliği (INVENTORY 1.6.0 ve 1.7.0), Durum ve komut tablosu, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-2 | rezervasyon kimliğiyle tüketim + REVERSAL geri getirme (CT-08) + `reservationId`'li yer değiştirme + INVENTORY 1.7.0 | Rezervasyon kimliğiyle tüketim, REVERSAL rezervasyonu geri getirir, Ayrılmış stokun yer değiştirmesi, Sözleşme değişikliği (INVENTORY 1.6.0 ve 1.7.0), Durum ve komut tablosu, Validation Rules, Failure Path to Verify, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-3 | FEFO serbest miktar: ayrılmış lot okuma portu + MOD-0176 kancasının aday okuması (Q-01 = A; XMC-001) | FEFO kancası ve ayrılmış lotlar, Repo Scope, Protected Paths, Dependencies | E4 | plan kimliği yok | plan satırı yok |
+
+Kabul ölçütleri: DL-1 → AC-1…AC-19, AC-32, AC-34, AC-36, AC-37, AC-39, AC-40; DL-2 → AC-20…AC-30, AC-32, AC-33, AC-35; DL-3 → AC-31, AC-32, AC-38.
+`reservationId`'siz kapsam / SKU bekçi reddinin AUD-001 ret satırı DL-1'in kabulüdür (AC-40; r4, son bakış 01 F-6) — DL-1 kabulü denetimsiz
+bekçi retleriyle geçemez; `RESERVATION_*` ve `reservationId`'li bekçi reddinin satırı DL-2'dedir (AC-28). AC-17 (e) (kapsam rakamlarının
+vade kuralı) DL-1'de, AC-31 ve AC-38 (d) DL-3'tedir.
+"Ayrılmış stokun yer değiştirmesi" iki dilime bölünür (r2, inceleme 01 F-12): DL-1 `reservationId`'siz kısmı yapar (`LOCATION_TRANSFER`
+rezervasyonu düşürmez — AC-5; `WAREHOUSE_TRANSFER` depo / lot bekçisi — AC-37), DL-2 `reservationId`'li kısmı (doğrulama, tüketmez —
+AC-24). DL-3'ün Repo Scope / Protected Paths / Dependencies payı yalnız Q-01 = A XMC-001 maddeleridir (MOD-0176 dosyaları). DL-1'in önkoşulu CT-07 — sahip izniyle karşılandı (Beste 2026-11-02, yalnız izin kapsamında; §19.6). DL-1 kabulünde ebeveyn MOD-0173 paketine beş yeni hata kodu için sürüm notu düşülür (CT-02). DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
+iki dilimde geçer: DL-1 yalnız 1.6.0 maddelerini, DL-2 yalnız 1.7.0 maddelerini yapar. W-5'in kapanışı ve MOD-0178 S2'nin (DL-4) açılma
+koşulu: DL-1 + DL-2 + DL-3 CT kabulü (CT-04, r2'de Q-01 = A ile güncellendi). MVP-6'nın gerçek tüketimi (E5, iki modül birlikte) MOD-0183 revizyonunun kabulüdür, bu paketin değil.
+
+## 23. Page Help (UXH-001)
+
+Sayfa yok (`shell: none`) → yardım metni ve tur yok.

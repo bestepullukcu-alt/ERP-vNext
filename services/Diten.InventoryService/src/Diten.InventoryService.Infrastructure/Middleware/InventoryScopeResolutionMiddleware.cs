@@ -57,7 +57,8 @@ public sealed class InventoryScopeResolutionMiddleware
     public static readonly IReadOnlyList<string> ScopedBasePaths =
         [InventoryContract.BasePath, InventoryContract.LocationsBasePath, Application.Features.Traceability.TraceContract.BasePath,
          Application.Features.Recall.RecallContract.BasePath, // MOD-0177 (WP-0177-R1): /api/recall resolves the tenant + company scope
-         Application.Features.Quarantine.QuarantineContract.BasePath, Application.Features.Expiry.ExpiryContract.BasePath];
+         Application.Features.Quarantine.QuarantineContract.BasePath, Application.Features.Expiry.ExpiryContract.BasePath,
+         Application.Features.Warehouse.WarehouseContract.BasePath]; // MOD-0178 (DL-1): /api/warehouse resolves the tenant + company scope
 
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;

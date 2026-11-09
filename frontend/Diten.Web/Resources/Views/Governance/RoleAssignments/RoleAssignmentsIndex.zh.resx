@@ -107,6 +107,8 @@
   <data name="ActionVerb_Change" xml:space="preserve"><value>更改</value></data>
   <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>更改品牌</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>更改状态</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="ActionVerb_Comment" xml:space="preserve"><value>评论</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>确认生效</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>配置</value></data>
   <data name="ActionVerb_Confirm" xml:space="preserve"><value>确认</value></data>
@@ -194,10 +196,4 @@
     <value>该角色已拥有此权限。请刷新页面。</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>移除此权限后，将没有其他可以添加用户的活动账户。请先将此权限授予其他用户。</value></data>
-  <data name="ActionVerb_Close" xml:space="preserve">
-    <value>关闭</value>
-  </data>
-  <data name="ActionVerb_Comment" xml:space="preserve">
-    <value>评论</value>
-  </data>
 </root>

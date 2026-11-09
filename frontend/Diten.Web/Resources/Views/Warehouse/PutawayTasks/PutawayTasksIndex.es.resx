@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista Rápida</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Elija la empresa del almacén en el que trabaja. No se muestra nada hasta elegir una empresa.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La lista de empresas no se puede leer ahora; inténtelo de nuevo en breve.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>Modificado mientras tanto: actualice</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>No encontrado</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder al directorio de usuarios; no se verificó el asignado y no se guardó nada. Inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Elija como asignado a un usuario activo de su empresa.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>El código de empresa no es válido para los números de tarea; corrija primero el código de empresa.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>El stock cambió mientras se registraba la confirmación; la confirmación está pendiente: use «Reintentar».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Esta confirmación se está procesando ahora; espere un momento y actualice.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Solo se puede conciliar una confirmación con error de integridad.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Solo se puede reintentar una confirmación pendiente.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Una confirmación de esta tarea espera la respuesta del stock; solo «Reintentar» funciona hasta que se resuelva.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Otra persona modificó este registro mientras tanto; actualice e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Esta acción no es posible en el estado actual de la tarea.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>La ubicación tiene tareas de ubicación abiertas; ciérrelas o cancélelas primero.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Una ubicación no puede ser a la vez Recepción y Preparación de envío.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>Esta ubicación ya tiene un registro de rol; edite ese.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Un nodo superior o inferior ya tiene el rol opuesto; Recepción y Preparación de envío no pueden coincidir en la misma ruta.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>No se encontró el registro de rol; actualice la lista.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Solo se puede asignar un rol a un almacén, lugar de almacenamiento, zona o hueco.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Solo el operario asignado o un supervisor puede hacerlo.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>El libro de stock ya contiene otro movimiento con la clave de esta confirmación; un supervisor debe conciliarlo.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>La cantidad prevista no puede ser inferior a la ya confirmada o pendiente.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>La cantidad supera el stock aún abierto en esta fila.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>La cantidad supera lo que queda por ubicar.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>No se pudo emitir un número de tarea; inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Los números de serie en el origen cambiaron; cancele esta tarea y cree una nueva.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Parte de este lote en la misma ubicación está pendiente de calidad; complete primero la decisión de calidad.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Un producto con control de serie solo se ubica completo; no es posible la confirmación parcial ni cerrar el resto.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>La ubicación de origen no es una ubicación de recepción.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>No se encontró stock en la fila seleccionada; actualice la lista.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>El stock entró en cuarentena o está retenido; no se puede ubicar.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Condición de almacenamiento desconocida: complétela en la ficha del producto (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Las condiciones de almacenamiento no son válidas: elija como máximo una condición de temperatura.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>El hueco de destino no acepta la condición de almacenamiento de este producto.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>El destino debe ser un hueco activo y almacenable del mismo almacén que no sea de recepción ni de preparación de envío.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>La tarea ya tiene un asignado.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>No se encontró la tarea; actualice la lista.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otro contenido; cierre el cuadro y empiece de nuevo.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Escriba un motivo de al menos 10 caracteres.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>No hay stock suficiente en el origen para esta cantidad.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>El lote está en retirada; no se puede ubicar.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder al servicio de stock; no se guardó nada. Inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Algunos valores no son válidos; revise el formulario.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Su sesión ha finalizado; inicie sesión de nuevo.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>No se puede acceder al servicio de almacén ahora; inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>No se encontró el registro; actualice la lista.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>El registro cambió mientras tanto; actualice e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>La solicitud no fue aceptada; revise los valores e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Algo salió mal; inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Demasiadas filas para exportar; restrinja los filtros.</value></data>
+  <data name="PutawayTasksTitle" xml:space="preserve"><value>Tareas de Ubicación</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Mueva el stock recibido desde las ubicaciones de recepción a su hueco y confírmelo; la confirmación mueve el stock en el libro.</value></data>
+  <data name="AddNewPutawayTask" xml:space="preserve"><value>Nueva Tarea</value></data>
+  <data name="ColNumber" xml:space="preserve"><value>Número</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColFlag" xml:space="preserve"><value>Integración</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="ColFrom" xml:space="preserve"><value>Origen</value></data>
+  <data name="ColTo" xml:space="preserve"><value>Hueco de destino</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>Confirmado / previsto</value></data>
+  <data name="ColAssignee" xml:space="preserve"><value>Asignado</value></data>
+  <data name="ColPriority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>Asignado</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="FieldPlanned" xml:space="preserve"><value>Cantidad prevista</value></data>
+  <data name="FieldConfirmed" xml:space="preserve"><value>Confirmado</value></data>
+  <data name="FieldPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="FieldRemaining" xml:space="preserve"><value>Restante</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>Nota</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="FieldActualTarget" xml:space="preserve"><value>Hueco de destino real</value></data>
+  <data name="FieldDeviationReason" xml:space="preserve"><value>Motivo de la desviación</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Stock por ubicar</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Hueco de destino</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="SectionConfirmations" xml:space="preserve"><value>Confirmaciones</value></data>
+  <data name="SectionTimeline" xml:space="preserve"><value>Cronología</value></data>
+  <data name="NoConfirmations" xml:space="preserve"><value>Aún no hay confirmaciones.</value></data>
+  <data name="TimelineUnavailable" xml:space="preserve"><value>La cronología no se puede leer ahora.</value></data>
+  <data name="QuantityDecrease" xml:space="preserve"><value>Disminuir la cantidad</value></data>
+  <data name="QuantityIncrease" xml:space="preserve"><value>Aumentar la cantidad</value></data>
+  <data name="BinScanPlaceholder" xml:space="preserve"><value>Escriba o escanee el código del hueco</value></data>
+  <data name="DeviationHint" xml:space="preserve"><value>El hueco es distinto del previsto; escriba el motivo.</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>Al menos 10 caracteres; se registra en el historial de la tarea.</value></data>
+  <data name="AssigneePlaceholder" xml:space="preserve"><value>Buscar un usuario</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>Buscar por ubicación o lote</value></data>
+  <data name="SourceLockedHint" xml:space="preserve"><value>La fila de stock no puede cambiar; si es incorrecta, cancele la tarea y cree una nueva.</value></data>
+  <data name="SuggestionLabel" xml:space="preserve"><value>Hueco sugerido:</value></data>
+  <data name="CapacityNotChecked" xml:space="preserve"><value>No se comprueba la capacidad del hueco.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva tarea de ubicación</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar tarea de ubicación</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>No se pudieron leer algunos nombres de producto o ubicación; se muestran los identificadores.</value></data>
+  <data name="ValidationQuantity" xml:space="preserve"><value>Introduzca una cantidad mayor que cero con un máximo de 6 decimales.</value></data>
+  <data name="ValidationSource" xml:space="preserve"><value>Elija el stock por ubicar.</value></data>
+  <data name="BinNotFound" xml:space="preserve"><value>No hay ningún hueco con exactamente este código en este almacén.</value></data>
+  <data name="BinLookupUnavailable" xml:space="preserve"><value>La lista de huecos no se puede leer ahora; inténtelo de nuevo en breve.</value></data>
+  <data name="DeviationRequired" xml:space="preserve"><value>El hueco es distinto del previsto; el motivo de la desviación es obligatorio.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Escriba un motivo de al menos 10 caracteres.</value></data>
+  <data name="AssigneeRequired" xml:space="preserve"><value>Elija un usuario.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>No se ha cambiado nada.</value></data>
+  <data name="ConfirmationSeq" xml:space="preserve"><value>Confirmación {0}</value></data>
+  <data name="ConfirmationAttempts" xml:space="preserve"><value>Intentos: {0}</value></data>
+  <data name="ConfirmationLastAttempt" xml:space="preserve"><value>Último intento: {0}</value></data>
+  <data name="ConfirmationMovement" xml:space="preserve"><value>N.º de movimiento de stock: {0}</value></data>
+  <data name="ConfirmationBy" xml:space="preserve"><value>Por {0} el {1}</value></data>
+  <data name="RemainingHint" xml:space="preserve"><value>Restante: {0} {1}</value></data>
+  <data name="SystemActor" xml:space="preserve"><value>Sistema</value></data>
+  <data name="AssignResults" xml:space="preserve"><value>{0} de {1} tareas asignadas</value></data>
+  <data name="LockedSource" xml:space="preserve"><value>Este stock no se puede ubicar ahora.</value></data>
+  <data name="BlockingDocument" xml:space="preserve"><value>Documento bloqueante</value></data>
+  <data name="SourceOption" xml:space="preserve"><value>Fila de stock</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+  <data name="Warehouse.Status.Open" xml:space="preserve"><value>Abierta</value></data>
+  <data name="Warehouse.Status.InProgress" xml:space="preserve"><value>En curso</value></data>
+  <data name="Warehouse.Status.Completed" xml:space="preserve"><value>Completada</value></data>
+  <data name="Warehouse.Status.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Warehouse.Status.InFlight" xml:space="preserve"><value>En proceso</value></data>
+  <data name="Warehouse.Flag.PostingPending" xml:space="preserve"><value>Confirmación pendiente</value></data>
+  <data name="Warehouse.Flag.PostingPendingLong" xml:space="preserve"><value>Pendiente desde hace tiempo</value></data>
+  <data name="Warehouse.Flag.PostingRefused" xml:space="preserve"><value>Rechazado por el stock</value></data>
+  <data name="Warehouse.Flag.PostingIntegrityError" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="Warehouse.Priority.Low" xml:space="preserve"><value>Baja</value></data>
+  <data name="Warehouse.Priority.Normal" xml:space="preserve"><value>Media</value></data>
+  <data name="Warehouse.Priority.High" xml:space="preserve"><value>Alta</value></data>
+  <data name="Warehouse.ConfirmationStatus.Pending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="Warehouse.ConfirmationStatus.Posted" xml:space="preserve"><value>Registrada</value></data>
+  <data name="Warehouse.ConfirmationStatus.Refused" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="Warehouse.ConfirmationStatus.IntegrityError" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="Warehouse.Resolution.SupersededByNewConfirmation" xml:space="preserve"><value>Sustituida por una nueva confirmación</value></data>
+  <data name="Warehouse.Resolution.ReturnedToSource" xml:space="preserve"><value>Devuelta al origen</value></data>
+  <data name="Warehouse.Resolution.ResolvedPosted" xml:space="preserve"><value>Conciliada: registrada</value></data>
+  <data name="Warehouse.Resolution.ResolvedRefused" xml:space="preserve"><value>Conciliada: rechazada</value></data>
+  <data name="Warehouse.Action.Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="Warehouse.Action.Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="Warehouse.Action.Returned" xml:space="preserve"><value>Devuelto</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity" xml:space="preserve"><value>Conciliar</value></data>
+  <data name="Warehouse.Action.CloseShort" xml:space="preserve"><value>Cerrar el Resto</value></data>
+  <data name="Warehouse.Action.Cancel" xml:space="preserve"><value>Cancelar la Tarea</value></data>
+  <data name="Warehouse.Action.Claim" xml:space="preserve"><value>Asumir</value></data>
+  <data name="Warehouse.Action.Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Warehouse.Action.Assign" xml:space="preserve"><value>Asignar</value></data>
+  <data name="Warehouse.Action.ApplySuggestion" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Warehouse.Action.Returned.Confirm" xml:space="preserve"><value>Confirme que la cantidad rechazada se devolvió al origen.</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity.Confirm" xml:space="preserve"><value>Se vuelve a leer el libro; si el movimiento es de esta confirmación se registra, si no se rechaza.</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity.Reason" xml:space="preserve"><value>Motivo de la conciliación</value></data>
+  <data name="Warehouse.Action.CloseShort.Confirm" xml:space="preserve"><value>Se cierra la cantidad restante; la tarea se completa con lo registrado.</value></data>
+  <data name="Warehouse.Action.Cancel.Confirm" xml:space="preserve"><value>La tarea se cancela; no se mueve stock.</value></data>
+  <data name="Warehouse.Disabled.TaskTerminal" xml:space="preserve"><value>La tarea está cerrada</value></data>
+  <data name="Warehouse.Disabled.ConfirmationPending" xml:space="preserve"><value>Hay una confirmación pendiente: solo funciona Reintentar</value></data>
+  <data name="Warehouse.Disabled.IntegrityError" xml:space="preserve"><value>Primero debe conciliarse un error de integridad</value></data>
+  <data name="Warehouse.Disabled.AlreadyAssigned" xml:space="preserve"><value>La tarea ya tiene asignado</value></data>
+  <data name="Warehouse.Disabled.HasPostedConfirmations" xml:space="preserve"><value>Ya se registró stock: use Cerrar el Resto</value></data>
+  <data name="Warehouse.Disabled.SerialControlled" xml:space="preserve"><value>Los productos con serie se ubican completos</value></data>
+  <data name="Warehouse.Disabled.NoPostedConfirmation" xml:space="preserve"><value>Aún no hay nada registrado: use Cancelar</value></data>
+  <data name="Warehouse.Disabled.NoPendingConfirmation" xml:space="preserve"><value>No hay confirmaciones pendientes</value></data>
+  <data name="Warehouse.Disabled.NoRefusedConfirmation" xml:space="preserve"><value>No hay confirmaciones rechazadas</value></data>
+  <data name="Warehouse.Disabled.NoIntegrityError" xml:space="preserve"><value>No hay errores de integridad</value></data>
+  <data name="Warehouse.Candidate.LotUnderRecall" xml:space="preserve"><value>Lote en retirada</value></data>
+  <data name="Warehouse.Candidate.StockHeld" xml:space="preserve"><value>Stock en cuarentena o bloqueado</value></data>
+  <data name="Warehouse.Candidate.LotBlocked" xml:space="preserve"><value>Lote bloqueado</value></data>
+  <data name="Warehouse.Candidate.StorageConditionsUnknown" xml:space="preserve"><value>Condición de almacenamiento desconocida: complétela en la ficha del producto (MDM)</value></data>
+  <data name="Warehouse.Disabled.StorageConditionsUnknown" xml:space="preserve"><value>Se desconoce la condición de almacenamiento del producto; complete la ficha del producto antes de abrir una tarea</value></data>
+  <data name="Warehouse.Candidate.LotExpired" xml:space="preserve"><value>Lote caducado</value></data>
+  <data name="Warehouse.Blocking.RecallCase" xml:space="preserve"><value>Caso de retirada</value></data>
+  <data name="Warehouse.Blocking.QuarantineHold" xml:space="preserve"><value>Retención de cuarentena</value></data>
+  <data name="Warehouse.Blocking.BlockedStock" xml:space="preserve"><value>Registro de stock bloqueado</value></data>
+  <data name="Warehouse.Blocking.LotStatus" xml:space="preserve"><value>Estado del lote</value></data>
+  <data name="Warehouse.Event.Created" xml:space="preserve"><value>Creada</value></data>
+  <data name="Warehouse.Event.Updated" xml:space="preserve"><value>Actualizada</value></data>
+  <data name="Warehouse.Event.Assigned" xml:space="preserve"><value>Asignada</value></data>
+  <data name="Warehouse.Event.Claimed" xml:space="preserve"><value>Asumida</value></data>
+  <data name="Warehouse.Event.SuggestionApplied" xml:space="preserve"><value>Sugerencia aplicada</value></data>
+  <data name="Warehouse.Event.ConfirmationRecorded" xml:space="preserve"><value>Confirmación registrada</value></data>
+  <data name="Warehouse.Event.ConfirmationPosted" xml:space="preserve"><value>Confirmación contabilizada</value></data>
+  <data name="Warehouse.Event.ConfirmationRefused" xml:space="preserve"><value>Confirmación rechazada</value></data>
+  <data name="Warehouse.Event.ConfirmationRetried" xml:space="preserve"><value>Confirmación reintentada</value></data>
+  <data name="Warehouse.Event.ConfirmationReconciled" xml:space="preserve"><value>Confirmación reconciliada</value></data>
+  <data name="Warehouse.Event.ConfirmationIntegrityError" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="Warehouse.Event.IntegrityResolved" xml:space="preserve"><value>Error de integridad conciliado</value></data>
+  <data name="Warehouse.Event.ConfirmationDeviation" xml:space="preserve"><value>Desviación de hueco</value></data>
+  <data name="Warehouse.Event.ConfirmationSuperseded" xml:space="preserve"><value>Confirmación sustituida</value></data>
+  <data name="Warehouse.Event.ConfirmationReturned" xml:space="preserve"><value>Devuelto al origen</value></data>
+  <data name="Warehouse.Event.ClosedShort" xml:space="preserve"><value>Resto cerrado</value></data>
+  <data name="Warehouse.Event.Completed" xml:space="preserve"><value>Completada</value></data>
+  <data name="Warehouse.Event.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Warehouse.BulkOutcome.Assigned" xml:space="preserve"><value>Asignada</value></data>
+  <data name="Warehouse.BulkOutcome.InvalidTransition" xml:space="preserve"><value>No es posible en este estado</value></data>
+  <data name="Warehouse.BulkOutcome.PendingConfirmation" xml:space="preserve"><value>Hay una confirmación pendiente</value></data>
+  <data name="Warehouse.Saved.Created" xml:space="preserve"><value>Tarea de ubicación creada.</value></data>
+  <data name="Warehouse.Saved.Updated" xml:space="preserve"><value>Tarea guardada.</value></data>
+  <data name="Warehouse.Saved.Confirmed" xml:space="preserve"><value>Confirmación enviada; el stock se mueve cuando responde el libro.</value></data>
+  <data name="Warehouse.Saved.Retried" xml:space="preserve"><value>Confirmación reintentada.</value></data>
+  <data name="Warehouse.Saved.Claimed" xml:space="preserve"><value>Tarea asumida.</value></data>
+  <data name="Warehouse.Saved.Returned" xml:space="preserve"><value>Registrado como devuelto.</value></data>
+  <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>Error de integridad conciliado.</value></data>
+  <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>Resto cerrado.</value></data>
+  <data name="Warehouse.Saved.Cancelled" xml:space="preserve"><value>Tarea cancelada.</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>Origen</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>Alta manual</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>Recepción</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>Producción</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>Reubicación por cancelación</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>Sistema externo</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>Preparación de salida</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>Reubicación por envío incompleto</value></data>
+</root>

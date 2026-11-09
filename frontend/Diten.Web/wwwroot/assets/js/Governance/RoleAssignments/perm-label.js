@@ -83,6 +83,8 @@
      * by the same line: investigate reads; capture / generate / propose bring something new; amend / replace /
      * transition / migrate change; dispose destroys; decide / settle / dispatch / unblock advance; withdraw /
      * rollback / reopen / block / end step back; recover sets something going again.
+     * MVP-1 ortak arayüz kuralları (recall.cases.close, expiry.exceptions.close / .comment) added two by the same line:
+     * close finishes a record (it advances, like complete); comment adds something new to it.
      * `publishoverride` is deliberately NOT here: it reaches us as one word only because it was seeded
      * as PascalCase (BL-344), and adding it would bless the misspelling instead of fixing it. It keeps the cog
      * until the seed is normalised, and then it is `publish` and needs nothing.

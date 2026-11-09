@@ -1,0 +1,102 @@
+@using Diten.Web.Views.Warehouse.PutawayTasks
+@using Diten.Web.Models.DataTable
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PutawayTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["PutawayTasksTitle"].Value;
+    ViewData["PageCode"] = "PUTAWAYTASKS"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-3 — Yerleştirme Görevleri (Golden Reference Slim, server mode, proxy profile — pack §9, §11).
+
+    UAS-001 — nothing below is drawn without warehouse.putaway-tasks.read: no heading, no filter, no empty table, no button. No redirect.
+
+    ⚠ Display only. InventoryService's [HasPermission] and its state rules stay the authority (UAS-001 §4, §8.15): a control whose key the
+    reader lacks is ABSENT (not disabled); a control the task's state forbids is disabled WITH its reason (AC-39 / AC-43).
+*@
+@if (!Perms.Has(WarehousePermissionKeys.PutawayTasksRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["PutawayTasksTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canCreate = Perms.Has(WarehousePermissionKeys.PutawayTasksCreate);
+    var canUpdate = Perms.Has(WarehousePermissionKeys.PutawayTasksUpdate);
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel { Key = "assign", Text = Localizer["Warehouse.Action.Assign"].Value, Icon = "bx bx-user-check", ButtonClass = "btn btn-label-primary" }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/PutawayTasks/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PutawayTasksTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    @* The list's own failure surface (index.js writes the localized sentence). *@
+    <div id="putaway-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @if (canUpdate)
+    {
+        @* "Ata" (Q-13 A) — the only bulk action; only for a supervisor (warehouse.putaway-tasks.update). *@
+        <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+    }
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-putawaytasks" data-dt-standard="v2"> *@
+    <partial name="~/Views/Warehouse/PutawayTasks/_DataTable.cshtml" />
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" (+ the confirm panel and the reason / assign
+       dialogs, each only for the key that uses it — pack §11.2: the QuickView carries the "onay paneli") *@
+    <partial name="~/Views/Warehouse/PutawayTasks/_DetailsQuickView.cshtml" />
+
+    @if (canCreate || canUpdate)
+    {
+        <partial name="~/Views/Warehouse/PutawayTasks/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/PutawayTasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/PutawayTasks/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/PutawayTasks/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/PutawayTasks/index.js" asp-append-version="true"></script>
+    }
+}

@@ -1028,7 +1028,7 @@
     <value>Open a record</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Click “Decide” on an open record to release, reject or block it. The stock moves only after the decision is approved.</value>
+    <value>Click “Decide” on an open record to release, reject or block it. The stock moves only after the decision is approved. A row marked “Void · Source reversed” closed because its source stock movement was reversed: no decision is needed and “Decide” is not offered.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Decide</value>
@@ -1043,7 +1043,7 @@
     <value>Saving the analysis note</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Check the facts at the top, the “Quality information” card and the stock movements the record made; a yellow band warns when the waiting target is exceeded.</value>
+    <value>Check the facts at the top, the “Quality information” card and the stock movements the record made; a yellow band warns when the waiting target is exceeded. “Void” banner: the source movement was reversed and the record closed. “Source reversed · conflict”: stock changed outside this record; QA checks. A flagged record that is open stays open and is counted with its full quantity in the open counts (KPI, lot quality status, recall); there is no close action on the record — QA corrects the stock side. On a void record the mark means a line of its decision was posted after the close; the stock left another record’s bucket. Lot change mark: the decision’s lot change (status and / or retest date) was applied before the record closed; the lot was not reverted — QA checks the lot status.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Read the record</value>
@@ -1142,7 +1142,7 @@
     <value>“Block stock” → “Block”: the chosen stock becomes Blocked at once, without an approval workflow</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Type in the search box or click the filter button (“Filter”), choose a block reason, “Awaiting disposition only” or a “Status”, then click “Apply”.</value>
+    <value>Type in the search box or click the filter button (“Filter”), choose a block reason, “Awaiting disposition only” or a “Status”, then click “Apply”. “Void · Source reversed” in “Status” lists the records closed because their source stock movement was reversed. An open blocked record marked “Source reversed · conflict” stays open and is counted with its full quantity in the open counts; there is no close action on the record — QA corrects the stock side.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Narrow the list</value>
@@ -1670,7 +1670,7 @@
     <value>Quarantine the stock</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>On “Customers and shipments”, use “Mark as notified” and “Add consumption declaration”. On “Returns”, “Enter customer return” opens the stock movement form; then click “Link the return” on a candidate.</value>
+    <value>On “Customers and shipments”, use “Mark as notified” and “Add consumption declaration”. On “Returns”, “Enter customer return” opens the stock movement form; then click “Link the return” on a candidate. A “Legacy record” or “No CRM identity” badge marks a customer without a CRM identity; it is never merged with a CRM customer. While CRM cannot be reached, or while you may not read CRM customer names (“Permission missing”), notification, consumption declaration and return linking are closed for that customer. Customer names are shown 25 customers at a time; use the page buttons for the others.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Follow customers and returns</value>
@@ -2031,6 +2031,168 @@
   </data>
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Leave your own sample</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Move received stock from the receiving location to its bin and confirm it; the confirmation moves the stock in the stock ledger.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Warehouse operators (confirm) and warehouse supervisors (open, assign, reconcile).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Choose the stock</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>Press “New Task” and pick a row in “Stock to put away”. A locked row shows why and which document blocks it; it cannot be picked.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Bin and assignee</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>Type or scan the bin code in “Target bin”; only an exact code is accepted. Choose the operator in “Assignee”. A suggested bin is taken only with “Apply”.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>Press “Confirm”, check the quantity (−/+) and the actual bin. A partial quantity is allowed; a different bin needs a reason.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Retry a waiting confirmation</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>If the badge says “Awaiting confirmation”, the stock answer did not arrive; open the task and press “Retry”. Nothing else works until it is settled.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>A confirmation moves the stock immediately; undoing it is a reversal in Stock Movements.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>To mark receiving locations and storage conditions</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>To see the stock the confirmations moved</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Mark which locations are receiving or staging areas and which storage conditions a node accepts; lower nodes inherit them.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Warehouse supervisors.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Choose the location</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>Press “New Role” and pick the node in “Location node”.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Give roles and conditions</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>Tick “Receiving” or “Staging” and the accepted storage conditions; conditions alone, without a role, are valid.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Check receiving locations</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Putaway tasks start only from receiving locations; check that each warehouse has one. An inherited set shows the “from upper node” badge.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>To put received stock away</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Ship stock out of the warehouse: open an outbound with its lines, follow picking and packing, make it ready to ship and record the dispatch.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Shipping planners and warehouse supervisors.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Warehouse and staging</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Press “New Outbound” and choose the warehouse. Choose a staging location only when the warehouse has several.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Lines and preview</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Enter each line (product, SKU, quantity, order line) and press “Preview Allocation”: the lots in FEFO order and the quantity that can be allocated appear.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Lot change</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>If needed, choose another lot in “Lot change”; a lot that is not first in FEFO order needs a reason according to your company's FEFO rule.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Follow picking</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Saving allocates the stock and opens the pick tasks; follow them on the Details page until the outbound is Picked.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Ready to ship and dispatch</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>When it is packed press “Ready to Ship”; after the goods leave press “Check the Shipment”.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>An outbound that is ready to ship cannot be changed or cancelled.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>To pick the allocated stock</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>To see what is stuck and needs attention</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Move the allocated stock from its bin to the staging location and confirm each move.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Warehouse operators (confirm) and warehouse supervisors (assign, reconcile).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Claim the task</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Open an unassigned task from the row menu and press “Claim”.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Move and confirm</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Take the stock from the bin to the staging location, press “Confirm” and check the quantity (−/+). The bin and the target cannot be changed.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Pack</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>When the outbound is picked, the “Pack” link appears on the task; it opens the Packing page.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>To pack the picked stock</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Pack the picked stock of an outbound into packages.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Warehouse operators and warehouse supervisors.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Open a package</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Press “New Package”; it is possible only when the outbound is picked.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Contents, weight, dimensions</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Enter how much of each allocation goes into the package (−/+), its weight in kg and its dimensions in cm (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Close the package</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Press “Close Package”. When every allocation is packed, the outbound becomes “Packed”.</value>
   </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>This page opens capacity plans: create a plan for the selected company, or open an existing one by its ID.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Capacity and supply planners</value></data>

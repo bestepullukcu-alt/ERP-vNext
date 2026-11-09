@@ -34,6 +34,9 @@ public static class ContractSchemas
     public const string StockPresence = "StockPresence";
     public const string ReservationResponse = "ReservationResponse";
 
+    /// <summary>INVENTORY-BUNDLE 1.6.0 (MOD-0173-FU03) <c>getReservation</c>.</summary>
+    public const string ReservationView = "ReservationView";
+
     // LOCATION (v1 frozen + v1.1 owner).
     public const string LocationRef = "LocationRef";
     public const string LocationList = "LocationList";

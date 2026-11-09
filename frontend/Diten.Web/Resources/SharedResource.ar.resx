@@ -846,6 +846,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>الحالات</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>إقرارات الاستهلاك</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>لوحة المعلومات</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>تعديلات التاريخ</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>التدريبات</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>فحوصات الفعالية</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>الاستثناءات</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>حالة الدفعات</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>السياسات</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>طلبات الحجر الصحي</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>عمليات الفصل</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>التتبع</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>أدوار المواقع</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>الطرود</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>
@@ -1198,6 +1214,24 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>تحسين مخزون الأمان</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>عمليات المستودع</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>مهام التخزين</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>أدوار مواقع المستودع</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>شحنات الصادر</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>مهام الانتقاء</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>التغليف</value>
+  </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>سيناريوهات خطة السعة</value>
   </data>
@@ -1207,46 +1241,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>لقطات خطة S&amp;OP</value>
   </data>
-  <data name="Perm.Entity.CASES" xml:space="preserve">
-    <value>الحالات</value>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>الجرد الدوري</value>
   </data>
-  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
-    <value>الاستهلاكات</value>
-  </data>
-  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
-    <value>لوحة المعلومات</value>
-  </data>
-  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
-    <value>استثناءات التاريخ</value>
-  </data>
-  <data name="Perm.Entity.DRILLS" xml:space="preserve">
-    <value>التدريبات</value>
-  </data>
-  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
-    <value>فحوص الفعالية</value>
-  </data>
-  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
-    <value>الأدلة</value>
-  </data>
-  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
-    <value>الاستثناءات</value>
-  </data>
-  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
-    <value>حالة الدفعة</value>
-  </data>
-  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
-    <value>الإشعارات</value>
-  </data>
-  <data name="Perm.Entity.POLICIES" xml:space="preserve">
-    <value>السياسات</value>
-  </data>
-  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
-    <value>طلبات الحجر</value>
-  </data>
-  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
-    <value>العزل</value>
-  </data>
-  <data name="Perm.Entity.TRACE" xml:space="preserve">
-    <value>التتبّع</value>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>عمليات الجرد</value>
   </data>
 </root>

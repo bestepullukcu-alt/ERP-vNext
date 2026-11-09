@@ -1,0 +1,71 @@
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    var canCancel = Perms.Has(WarehousePermissionKeys.OutboundShipmentsCancel);
+    var canRelease = Perms.Has(WarehousePermissionKeys.OutboundShipmentsRelease);
+    var canSync = Perms.Has(WarehousePermissionKeys.OutboundShipmentsUpdate);
+}
+@*
+    The Details page's state dialogs (pack §11.3): each only for the key that uses it (absent otherwise — UAS-001 §6). "İptal" asks a reason (10-1000,
+    IsDangerous); "Sevke hazır" says what it freezes and, when the service answers 422 FEFO_BYPASS_REASON_REQUIRED, the SAME dialog lists the
+    deviating allocations and asks a reason for each (r22); "Sevkiyatı kontrol et" is a confirmation.
+*@
+@if (canCancel || canRelease || canSync)
+{
+    <form id="outboundActionToken" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@if (canCancel)
+{
+    <div class="modal fade" id="modalOutboundCancel" tabindex="-1" aria-labelledby="modalOutboundCancelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalOutboundCancelLabel">@Localizer["Warehouse.Outbound.Action.Cancel"]</h5>
+                    <button type="button" class="btn-close wh-touch" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3" id="cancel-intro">@Localizer["Warehouse.Outbound.Action.Cancel.Confirm"]</p>
+                    <div id="cancel-alert" class="alert alert-danger d-none" role="alert"></div>
+                    <label for="outboundCancelReason" class="form-label fw-medium">@Localizer["FieldReason"] <span class="text-danger">*</span></label>
+                    <textarea id="outboundCancelReason" class="form-control" rows="3" minlength="10" maxlength="1000"></textarea>
+                    <small class="text-muted">@Localizer["ReasonHint"]</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary wh-touch" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-danger wh-touch" id="btnOutboundCancel">@Localizer["Warehouse.Outbound.Action.Cancel"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (canRelease)
+{
+    <div class="modal fade" id="modalOutboundRelease" tabindex="-1" aria-labelledby="modalOutboundReleaseLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalOutboundReleaseLabel">@Localizer["Warehouse.Outbound.Action.Release"]</h5>
+                    <button type="button" class="btn-close wh-touch" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">@Localizer["Warehouse.Outbound.Action.Release.Confirm"]</p>
+                    <div id="release-alert" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="release-reasons" class="d-none">
+                        <p class="fw-medium mb-2">@Localizer["ReleaseReasonsIntro"]</p>
+                        <div id="release-reason-rows" class="d-flex flex-column gap-3"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary wh-touch" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary wh-touch" id="btnOutboundRelease">@Localizer["Warehouse.Outbound.Action.Release"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

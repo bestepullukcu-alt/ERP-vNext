@@ -847,6 +847,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Ensemble de contenus</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Éligibilité</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Politique de fréquence des visites</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Dossiers</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Déclarations de consommation</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Tableau de bord</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Modifications de date</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Exercices</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Contrôles d'efficacité</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Preuves</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Cas d'exception</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Statut des lots</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Avis</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Politiques</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Demandes de quarantaine</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Séparations physiques</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Traçage</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Rôles d'emplacement</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Colis</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Produits</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Compte</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campagne</value></data>
@@ -1199,6 +1215,24 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimisation du stock de sécurité</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Opérations d’Entrepôt</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Tâches de Rangement</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Rôles des Emplacements d’Entrepôt</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Expéditions Sortantes</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Tâches de Prélèvement</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Emballage</value>
+  </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Scénarios de plan de capacité</value>
   </data>
@@ -1208,46 +1242,10 @@
   <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
     <value>Instantanés du plan S&amp;OP</value>
   </data>
-  <data name="Perm.Entity.CASES" xml:space="preserve">
-    <value>Dossiers</value>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Inventaire tournant</value>
   </data>
-  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve">
-    <value>Consommations</value>
-  </data>
-  <data name="Perm.Entity.DASHBOARD" xml:space="preserve">
-    <value>Tableau de bord</value>
-  </data>
-  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve">
-    <value>Dérogations de date</value>
-  </data>
-  <data name="Perm.Entity.DRILLS" xml:space="preserve">
-    <value>Exercices</value>
-  </data>
-  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve">
-    <value>Contrôles d’efficacité</value>
-  </data>
-  <data name="Perm.Entity.EVIDENCE" xml:space="preserve">
-    <value>Preuves</value>
-  </data>
-  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve">
-    <value>Exceptions métier</value>
-  </data>
-  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve">
-    <value>Statut du lot</value>
-  </data>
-  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve">
-    <value>Notifications d’alerte</value>
-  </data>
-  <data name="Perm.Entity.POLICIES" xml:space="preserve">
-    <value>Politiques</value>
-  </data>
-  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve">
-    <value>Demandes de quarantaine</value>
-  </data>
-  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve">
-    <value>Ségrégations</value>
-  </data>
-  <data name="Perm.Entity.TRACE" xml:space="preserve">
-    <value>Traçage</value>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Inventaires</value>
   </data>
 </root>
