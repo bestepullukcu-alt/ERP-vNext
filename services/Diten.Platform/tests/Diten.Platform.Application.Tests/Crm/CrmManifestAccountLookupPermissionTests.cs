@@ -22,7 +22,8 @@ public sealed class CrmManifestAccountLookupPermissionTests
 
     private static readonly ModuleManifestDocument Manifest = new CrmManifestProvider().GetManifest();
 
-    // The 25 CRM pages on origin/main ed722a700 before this change, in manifest order. FU01 adds no page.
+    // The 25 CRM pages on origin/main ed722a700 before this change. A floor, not a freeze: later CRM work may add pages
+    // (test (d) still passes); dropping one of these fails it. That no page carries the lookup key is (b)'s job.
     private static readonly string[] PageCodesBefore =
     [
         "ACCOUNTS", "CONTACTS", "TERRITORY_MANAGEMENT", "SEGMENTS", "STRATEGY_TEMPLATES", "CAMPAIGNS", "VISIT_WORKSPACE",
@@ -68,15 +69,15 @@ public sealed class CrmManifestAccountLookupPermissionTests
         Assert.Equal(keys.Count, keys.Distinct(StringComparer.OrdinalIgnoreCase).Count());
     }
 
-    // (d) CrmManifestRegulatoryTextsTests / CrmManifestVisitPlanningTests pin individual pages and code uniqueness; this
-    // pins the whole page list, so an API-only key can never be "declared" by adding a page.
+    // (d) Declaring the API key changes neither the module identity nor removes an existing page. Order and new pages
+    // are not checked (CrmManifestRegulatoryTextsTests / CrmManifestVisitPlanningTests pin individual pages).
     [Fact]
-    public void The_module_identity_and_the_page_list_are_unchanged()
+    public void The_module_identity_is_unchanged_and_every_existing_page_is_still_registered()
     {
         Assert.Equal("CRM", Manifest.ModuleCode);
         Assert.Equal("1.0.0", Manifest.ModuleVersion);
         Assert.Equal(60, Manifest.SortOrder);
-        Assert.Equal(PageCodesBefore, Manifest.Pages.Select(p => p.PageCode).ToArray());
+        Assert.Subset(Manifest.Pages.Select(p => p.PageCode).ToHashSet(StringComparer.Ordinal), PageCodesBefore.ToHashSet(StringComparer.Ordinal));
     }
 
     // (e) The registration path: pushing the real CRM manifest through the real reconcile sends the key to the Auth
@@ -128,7 +129,7 @@ public sealed class CrmManifestAccountLookupPermissionTests
         var call = Assert.Single(synced, s => s.Key == Key);
         Assert.Equal("CRM", call.ModuleCode);
         Assert.Equal("Tenant", call.Scope);
-        Assert.Equal(PageCodesBefore.Length, createdPages.Count);
+        Assert.Equal(Manifest.Pages.Count, createdPages.Count);
         Assert.DoesNotContain(createdPages, p => string.Equals(p.RequiredPermission, Key, StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(createdActions, a => string.Equals(a.PermissionKey, Key, StringComparison.OrdinalIgnoreCase));
     }
