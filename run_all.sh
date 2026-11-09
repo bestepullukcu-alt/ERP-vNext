@@ -41,9 +41,10 @@ echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
-lsof -ti :4010,5067 | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
-killall -9 dotnet 2>/dev/null || true
+lsof -t -i :5000,5001,5056,5057,5058,5059,5060 -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
+lsof -t -i :4010,5067 -sTCP:LISTEN | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
+# EES 2.5 (2026-11-09): no machine-wide `killall dotnet` any more -- it stopped other sessions' and other projects'
+# .NET processes. Only the processes listening on this project's ports (the two lines above) are stopped.
 
 prefix_logs "[AUTH    ]" "dotnet run --no-build --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
 sleep 2 # Auth service needs more startup time for seeding
