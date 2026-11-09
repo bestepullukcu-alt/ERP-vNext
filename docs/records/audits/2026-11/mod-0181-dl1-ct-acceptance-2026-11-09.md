@@ -89,6 +89,10 @@
   yalnız commit mesajında; pack §15 (`:984`) 0178 rota testinin "sabit listesine dokunulmaz", §5 (`:528`) `gateway/**` integration-agent'ındır.
   Değişiklik sıkılaştırıcı ve zorunlu (9 uç kaynakta olunca 45 kırmızı olurdu). Geliştiriciye / CT'ye: "Beste'nin 2026-11-09 XMC-001 onayını bu kabul
   kaydına ve integration-agent'a bildirim olarak yaz; kod değişikliği gerekmez."
+  - **Kapandı (2026-11-09, CT):** Onay bulundu. Geliştirici oturumu iki satırı ve gerekçesini sahibe sordu (dışlama satırı; 45 → 54 sayısı);
+    sahip Beste yanıtı: «İkisini de ekle» (2026-11-09, MOD-0181 DL-1 geliştirici oturumu). XMC-001 onayı bu kayıtla depoya işlendi. Ölçüm:
+    rota testi sıkılaştırıldı (9 yeni uç tek rota → 5067 kontrolünde); dışlamanın açığını AC-7 kapatıyor, DÜŞÜK-2 ile ad alanına genişletilecek.
+    integration-agent'a bilgi notu gönderilecek (gateway/** alanı).
 - **DÜŞÜK-2** — Dışlama tüm `.Controllers.CycleCounting` ad alanını kapsıyor, telafi eden `AC7` yalnız `typeof(CycleCountsController)`'ı tarıyor
   (`CycleCountArchitectureTests.cs:104-106`). DL-3'ün `CountVariancesController`'ı ve DL-5 controller'ı aynı ad alanına girince iki bekçinin de dışında
   kalır. Geliştiriciye: "AC-7 `Actions()`'ı `.Controllers.CycleCounting` ad alanındaki bütün controller'lara genişlet (sayıyı `9` sabitinden çıkarıp
