@@ -68,6 +68,7 @@ Notta adı geçen türler (bağlayıcı) + yeni türler için önerilen önekler
 | Banka (MOD-0289) | OTOMATİK | `BNK` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); kiracı geneli kayıt — şirket öneki yerine grup öneki |
 | Banka Hesabı (MOD-0289) | OTOMATİK | `BAC` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok); şirket hesabında şirket öneki, tedarikçi hesabında grup öneki |
 | Sözleşme (MOD-0217) | OTOMATİK | `CTR` | yok — **yeni** (Treasury intake, sahip kararı D41/2, 2026-10-26; kod yok); şirket öneki yöneten şirketin kısa kodu |
+| Sayım (MOD-0181) | OTOMATİK | `CNT` | kod var — Inventory servisinde MOD-0178'in geçici sayacından (`IWarehouseRecordCodeAllocator`, Q-7 = B, sahip kararı 2026-11-06); ortak servise (MOD-0040-FU02) geçişte DL-8'e `CNT` eklenir |
 
 ## 4. Ürün kimliği ailesi (KALSIN'ın kapsamı)
 
