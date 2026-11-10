@@ -385,9 +385,10 @@ public class CiServiceTestsGuardTests
     // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
     // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
     // JS-CI-01 (owner 'Evet, başla' 2026-11-05): web-js-tests.yml runs the front end's Vitest tests (not required at first).
+    // EES 2.13 (owner 'Evet, başla' 2026-11-09): ci-selection-shadow.yml records which service-test suites a changed-paths rule would select (shadow mode, not required).
     private static readonly string[] NamedWorkflows =
-        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml",
-         "web-js-tests.yml"];
+        ["agent-adapters.yml", "approvals-append-only.yml", "ci-selection-shadow.yml", "phase1-gates.yml", "service-tests.yml",
+         "ui-compliance.yml", "web-js-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -451,6 +452,8 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = [],
         ["approvals-append-only.yml"] = [],
+        // EES 2.13: none — the selection and its upload run unconditionally.
+        ["ci-selection-shadow.yml"] = [],
         ["phase1-gates.yml"] = [],
         ["ui-compliance.yml"] = ["always()"],
         // JS-CI-01: the report upload only — the test step has none.
@@ -484,6 +487,7 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = 0,
         ["approvals-append-only.yml"] = 0,
+        ["ci-selection-shadow.yml"] = 0,
         ["phase1-gates.yml"] = 0,
         ["ui-compliance.yml"] = 0,
         ["web-js-tests.yml"] = 0,
