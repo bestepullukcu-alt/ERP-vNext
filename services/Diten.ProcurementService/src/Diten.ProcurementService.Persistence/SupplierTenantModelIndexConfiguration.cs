@@ -80,7 +80,20 @@ public static class SupplierTenantModelIndexConfiguration
 
             new(
                 b.Ascending(x => x.TenantId).Ascending(x => x.SupplierRef),
-                new CreateIndexOptions { Name = "ix_tenant_supplierref" })
+                new CreateIndexOptions { Name = "ix_tenant_supplierref" }),
+
+            // K-7 (Revizyon 9, §12): the same (Tenant, LE, Idempotency-Key) never opens a second write — the race loser gets the
+            // winner's record. Only filled keys of non-deleted records (`$type: string`; partial indexes cannot use $ne).
+            new(
+                b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<SupplierCompanyRelationship>
+                {
+                    Name = "ux_tenant_le_idempotencykey",
+                    Unique = true,
+                    PartialFilterExpression = f.And(
+                        f.Type(x => x.IdempotencyKey, BsonType.String),
+                        f.Eq(x => x.IsDeleted, false))
+                })
         };
     }
 

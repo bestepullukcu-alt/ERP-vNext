@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Diten.Shared.Core;
 
 public sealed class Response<T>
@@ -6,6 +8,15 @@ public sealed class Response<T>
     public int StatusCode { get; private set; }
     public bool IsSuccessful { get; private set; }
     public IReadOnlyList<string> Errors { get; private set; } = [];
+
+    /// <summary>
+    /// MOD-0140 DL-3 (pack §2 "Sunum", Revizyon 9.1 F-1): optional machine-readable details of a failure — today only the
+    /// 409 <c>DUPLICATE_SUPPLIER</c> body's <c>supplierId</c> (<c>errorDetails.supplierId</c>; the contract writes
+    /// <c>error.supplierId</c>, the envelope ↔ contract decision is §20 / §18). Not written when null, so every other
+    /// response keeps its shape.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ErrorDetails { get; private set; }
 
     private Response() { }
 
@@ -20,6 +31,10 @@ public sealed class Response<T>
 
     public static Response<T> Fail(IReadOnlyList<string> errors, int statusCode = 400)
         => new() { StatusCode = statusCode, IsSuccessful = false, Errors = errors };
+
+    /// <summary>A failure that also names machine-readable details (<see cref="ErrorDetails"/>).</summary>
+    public static Response<T> Fail(string error, int statusCode, object details)
+        => new() { StatusCode = statusCode, IsSuccessful = false, Errors = [error], ErrorDetails = details };
 }
 
 public sealed class NoContent { }

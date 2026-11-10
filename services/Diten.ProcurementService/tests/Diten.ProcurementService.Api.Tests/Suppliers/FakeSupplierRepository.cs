@@ -108,4 +108,7 @@ public sealed class FakeSupplierRepository : ISupplierRepository
 
     public Task<bool> ExistsByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default)
         => Task.FromResult(Scoped().Any(x => x.TaxId == taxId && (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+    public Task<Supplier?> GetByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Scoped().FirstOrDefault(x => x.TaxId == taxId && (!excludeId.HasValue || x.Id != excludeId.Value)));
 }

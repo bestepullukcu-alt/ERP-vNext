@@ -1,6 +1,9 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.ProcurementService.Application.Common;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using Diten.ProcurementService.Domain.Entities;
 using Diten.ProcurementService.Domain.Repositories;
+using Diten.ProcurementService.Persistence.Suppliers;
 using MongoDB.Driver;
 
 namespace Diten.ProcurementService.Persistence.Repositories;
@@ -9,16 +12,21 @@ namespace Diten.ProcurementService.Persistence.Repositories;
 /// Supplier Mongo repository. HER sorgu Tenant + LegalEntity + IsDeleted=false ile filtrelenir
 /// (multi-tenancy.md hard rules; cross-tenant/LE → boş sonuç → handler 404). Soft-delete zorunlu; hard delete YOK.
 /// Update optimistic concurrency: Version filtresi + increment (MOD-0140 §8, If-Match/rowVersion → 409).
+/// MOD-0140 DL-3 (<c>Suppliers:Model = PerLegalEntity</c>): every write runs in a Mongo transaction that enlists the running
+/// command's central-audit event (BL-501, <c>RequireEnlistment</c>, §7) — the record commits with the data or not at all.
+/// A unique-index refusal becomes <see cref="SupplierDuplicateException"/> naming the existing code (409, never 500, §12).
 /// </summary>
 public sealed class SupplierRepository : ISupplierRepository
 {
     private readonly IMongoCollection<Supplier> _collection;
+    private readonly IMongoClient _client;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
     public SupplierRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
         _collection = database.GetCollection<Supplier>(SupplierIndexConfiguration.CollectionName);
+        _client = database.Client;
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
     }
@@ -73,7 +81,20 @@ public sealed class SupplierRepository : ISupplierRepository
         entity.CreatedAt = DateTimeOffset.UtcNow;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
         entity.IsDeleted = false;
-        await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
+        try
+        {
+            await InTransactionAsync(entity.Id, async (s, ct) =>
+            {
+                await _collection.InsertOneAsync(s, entity, cancellationToken: ct);
+                return true;
+            }, cancellationToken);
+        }
+        catch (Exception ex) when (SupplierWriteErrors.IsDuplicateKey(ex, out _))
+        {
+            var existing = entity.TaxId is null ? null : await GetByTaxIdAsync(entity.TaxId, null, cancellationToken);
+            throw new SupplierDuplicateException(existing?.SupplierId, idempotencyRace: false, ex);
+        }
+
         return entity;
     }
 
@@ -91,8 +112,16 @@ public sealed class SupplierRepository : ISupplierRepository
             Builders<Supplier>.Filter.Eq(x => x.Version, expectedVersion));
 
         entity.Version = expectedVersion + 1;
-        var result = await _collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
+        try
+        {
+            return await InTransactionAsync(entity.Id, async (s, ct) =>
+                (await _collection.ReplaceOneAsync(s, filter, entity, cancellationToken: ct)).ModifiedCount > 0, cancellationToken);
+        }
+        catch (Exception ex) when (SupplierWriteErrors.IsDuplicateKey(ex, out _))
+        {
+            var existing = entity.TaxId is null ? null : await GetByTaxIdAsync(entity.TaxId, entity.Id, cancellationToken);
+            throw new SupplierDuplicateException(existing?.SupplierId, idempotencyRace: false, ex);
+        }
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -106,8 +135,8 @@ public sealed class SupplierRepository : ISupplierRepository
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
 
-        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
+        return await InTransactionAsync(id, async (s, ct) =>
+            (await _collection.UpdateOneAsync(s, filter, update, cancellationToken: ct)).ModifiedCount > 0, cancellationToken);
     }
 
     public async Task<int> BulkDeleteAsync(IReadOnlyList<Guid> ids, CancellationToken cancellationToken = default)
@@ -121,8 +150,9 @@ public sealed class SupplierRepository : ISupplierRepository
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
 
-        var result = await _collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
-        return (int)result.ModifiedCount;
+        var deleted = await InTransactionAsync(null, async (s, ct) =>
+            (int)(await _collection.UpdateManyAsync(s, filter, update, cancellationToken: ct)).ModifiedCount, cancellationToken);
+        return deleted;
     }
 
     public async Task<bool> ExistsByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default)
@@ -136,6 +166,37 @@ public sealed class SupplierRepository : ISupplierRepository
             filter &= Builders<Supplier>.Filter.Ne(x => x.Id, excludeId.Value);
         }
         return await _collection.Find(filter).AnyAsync(cancellationToken);
+    }
+
+    public async Task<Supplier?> GetByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<Supplier>.Filter.And(
+            TenantFilter(),
+            Builders<Supplier>.Filter.Eq(x => x.TaxId, taxId));
+        if (excludeId.HasValue)
+        {
+            filter &= Builders<Supplier>.Filter.Ne(x => x.Id, excludeId.Value);
+        }
+        return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// The one transaction of this repository: the write, then — only when it changed something — the running marked
+    /// command's central-audit event in the SAME transaction (BL-501; no marked command → no-op).
+    /// </summary>
+    private async Task<T> InTransactionAsync<T>(Guid? entityId, Func<IClientSessionHandle, CancellationToken, Task<T>> write, CancellationToken cancellationToken)
+    {
+        using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
+        return await session.WithTransactionAsync(async (s, ct) =>
+        {
+            var result = await write(s, ct);
+            if (result is not (false or 0))
+            {
+                await CentralAuditTransaction.EnlistAsync(s, entityId, ct);
+            }
+
+            return result;
+        }, cancellationToken: cancellationToken);
     }
 
     /// <summary>Tenant + LegalEntity + IsDeleted=false — her sorgunun zorunlu giriş filtresi.</summary>

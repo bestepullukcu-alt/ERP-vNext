@@ -1,69 +1,73 @@
 using Diten.Shared.Core;
 using Diten.ProcurementService.Application.Features.Supplier.Commands;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using Diten.ProcurementService.Domain.Entities;
-using Diten.ProcurementService.Domain.Repositories;
 using MediatR;
-using SupplierEntity = Diten.ProcurementService.Domain.Entities.Supplier;
 
 namespace Diten.ProcurementService.Application.Features.Supplier.Handlers.CommandHandlers;
 
-public sealed class CreateSupplierHandler : IRequestHandler<CreateSupplierCommand, Response<SupplierDetailDto>>
+/// <summary>
+/// "Link or create" (K-6, §12): a supplier the tenant already has (same country + normalized tax number, in ANY company
+/// under <c>TenantShared</c>) is not created again — 409 <c>DUPLICATE_SUPPLIER</c> naming its code
+/// (<c>errorDetails.supplierId</c>, Revizyon 9.1 F-1) so the screen can offer "link it to this company"; no silent link.
+/// </summary>
+public sealed class CreateSupplierHandler(ISupplierStore store) : IRequestHandler<CreateSupplierCommand, Response<SupplierDetailDto>>
 {
-    private readonly ISupplierRepository _repository;
-
-    public CreateSupplierHandler(ISupplierRepository repository)
-    {
-        _repository = repository;
-    }
-
     public async Task<Response<SupplierDetailDto>> Handle(CreateSupplierCommand request, CancellationToken cancellationToken)
     {
         // ── Idempotent create (MOD-0140 §8): aynı Idempotency-Key ile replay → mevcut kaydı döner, yeni yaratmaz ──
-        if (!string.IsNullOrWhiteSpace(request.IdempotencyKey))
+        var key = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey;
+        if (key is not null && await store.FindByIdempotencyKeyAsync(key, cancellationToken) is { } replay)
         {
-            var replay = await _repository.GetByIdempotencyKeyAsync(request.IdempotencyKey!, cancellationToken);
-            if (replay is not null)
-            {
-                return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(replay), 201);
-            }
+            return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(replay), 201);
         }
 
-        var taxId = string.IsNullOrWhiteSpace(request.TaxId) ? null : request.TaxId!.Trim();
-
-        // ── Duplicate aktif TaxId (tenant+LE) → 409 DUPLICATE_SUPPLIER ──
-        if (taxId is not null && await _repository.ExistsByTaxIdAsync(taxId, null, cancellationToken))
+        var country = SupplierWriteRules.NormalizeCountry(request.Country);
+        var taxId = SupplierWriteRules.NormalizeTaxId(request.TaxId);
+        if (taxId is not null && await store.FindDuplicateTaxIdAsync(country, taxId, null, cancellationToken) is { } existing)
         {
-            return Response<SupplierDetailDto>.Fail("DUPLICATE_SUPPLIER", 409);
+            return Duplicate(existing);
         }
 
-        var entity = new SupplierEntity
+        var now = DateTimeOffset.UtcNow;
+        var draft = new SupplierSnapshot
         {
-            SupplierId = GenerateSupplierId(),
+            SupplierId = SupplierWriteRules.GenerateSupplierId(),
             Name = request.Name.Trim(),
-            Status = SupplierStatus.Active,
-            Country = NormalizeCountry(request.Country),
+            Country = country,
             TaxId = taxId,
-            Contacts = MapContacts(request.Contacts),
-            OnboardingStatus = OnboardingStatus.Draft,
+            Contacts = SupplierWriteRules.MapContacts(request.Contacts),
             KycOutcome = KycOutcome.Pending,
             SanctionsOutcome = SanctionsOutcome.Pending,
+            Status = SupplierStatus.Active,
+            OnboardingStatus = OnboardingStatus.Draft,
+            PurchasingEnabled = true,          // K-4 (Revizyon 9): a new relationship is a purchasing relationship
+            PurchasingSince = now,
             SourceSystem = request.SourceSystem,
             ExternalRef = request.ExternalRef,
-            IdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey
+            IdempotencyKey = key
         };
 
-        var created = await _repository.CreateAsync(entity, cancellationToken);
-        return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(created), 201);
+        try
+        {
+            var created = await store.CreateAsync(draft, cancellationToken);
+            return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(created), 201);
+        }
+        catch (SupplierDuplicateException ex) when (ex.IdempotencyRace && key is not null)
+        {
+            // K-7: the same key won the race — return the winner's record (the losing transaction wrote nothing, no event).
+            var winner = await store.FindByIdempotencyKeyAsync(key, cancellationToken);
+            return winner is null
+                ? Response<SupplierDetailDto>.Fail("CONCURRENCY_CONFLICT", 409)
+                : Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(winner), 201);
+        }
+        catch (SupplierDuplicateException ex)
+        {
+            // Unique index race on (tenant, country, normalized tax number): 409, never 500 (§12).
+            return ex.ExistingSupplierId is { } code ? Duplicate(code) : Response<SupplierDetailDto>.Fail("DUPLICATE_SUPPLIER", 409);
+        }
     }
 
-    internal static List<SupplierContact> MapContacts(List<SupplierContactInput>? contacts)
-        => (contacts ?? new List<SupplierContactInput>())
-            .Select(c => new SupplierContact { Type = c.Type, Email = c.Email, Phone = c.Phone, Name = c.Name })
-            .ToList();
-
-    internal static string? NormalizeCountry(string? country)
-        => string.IsNullOrWhiteSpace(country) ? null : country.Trim().ToLowerInvariant();
-
-    private static string GenerateSupplierId()
-        => "SUP-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+    internal static Response<SupplierDetailDto> Duplicate(string existingSupplierId)
+        => Response<SupplierDetailDto>.Fail("DUPLICATE_SUPPLIER", 409, new SupplierDuplicateDetails(existingSupplierId));
 }

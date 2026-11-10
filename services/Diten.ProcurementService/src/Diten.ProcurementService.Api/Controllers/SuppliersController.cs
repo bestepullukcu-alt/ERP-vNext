@@ -13,7 +13,8 @@ namespace Diten.ProcurementService.Api.Controllers;
 /// Supplier master + onboarding API (MOD-0140). SUPPLIER contract (supplier.openapi.yaml) yüzeyini birebir uygular.
 /// Tenant + LegalEntity server-resolved (TenantResolutionMiddleware); payload'da YOK. Yanıtlar Response&lt;T&gt; zarfı
 /// (house style / golden reference) içinde contract alanlarını (items/nextCursor/contractVersion, supplierId/known/status)
-/// korur. Her aksiyon [HasPermission("procurement.suppliers.&lt;action&gt;")] ile korunur (pack §14, UAS-001).
+/// korur. Her aksiyon [HasPermission("procurement.suppliers.&lt;action&gt;")] ile korunur (pack §14, UAS-001); the three
+/// eligibility endpoints take <c>eligibility.read</c> OR <c>read</c> ([HasAnyPermission], MOD-0140 DL-3).
 /// </summary>
 [Authorize]
 [ApiController]
@@ -23,11 +24,74 @@ public sealed class SuppliersController : CustomBaseController
     private const string IdempotencyKeyHeader = "Idempotency-Key";
     private const string IfMatchHeader = "If-Match";
 
-    private readonly IMediator _mediator;
+    private const string MasterUpdatePolicy = "Permission:procurement.suppliers.master.update";
 
-    public SuppliersController(IMediator mediator)
+    private readonly IMediator _mediator;
+    private readonly IAuthorizationService _authorization;
+
+    public SuppliersController(IMediator mediator, IAuthorizationService authorization)
     {
         _mediator = mediator;
+        _authorization = authorization;
+    }
+
+    /// <summary>
+    /// listEligibleSuppliers — 1.3.0 GET /eligible (§3.1, F-2): the caller company's eligible suppliers, by code. A literal
+    /// segment, so it wins over <c>{supplierId}</c>. <c>eligibility.read</c> OR <c>read</c> (§14).
+    /// </summary>
+    [HttpGet("eligible")]
+    [HasAnyPermission("procurement.suppliers.eligibility.read", "procurement.suppliers.read")]
+    public async Task<IActionResult> GetEligible([FromQuery] string? cursor, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new ListEligibleSuppliersQuery(cursor), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>getSupplierEligibility — 1.3.0 GET /{supplierId}/eligibility (§3.1): code or supplierMasterId uuid.</summary>
+    [HttpGet("{supplierId}/eligibility")]
+    [HasAnyPermission("procurement.suppliers.eligibility.read", "procurement.suppliers.read")]
+    public async Task<IActionResult> GetEligibility(string supplierId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetSupplierEligibilityQuery(supplierId), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>getSupplierRelationship — 1.4.0 GET /{supplierId}/relationship (K-1): the caller company's relationship.</summary>
+    [HttpGet("{supplierId}/relationship")]
+    [HasPermission("procurement.suppliers.read")]
+    public async Task<IActionResult> GetRelationship(string supplierId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetSupplierRelationshipQuery(supplierId), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>linkSupplierToCompany — 1.4.0 POST /{supplierId}/relationship (K-1, K-6). Idempotency-Key; exists → 409.</summary>
+    [HttpPost("{supplierId}/relationship")]
+    [HasPermission("procurement.suppliers.create")]
+    public async Task<IActionResult> LinkRelationship(string supplierId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new LinkSupplierToCompanyCommand(supplierId, ReadHeader(IdempotencyKeyHeader)), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>changeRelationshipStatus — 1.4.0 PUT /{supplierId}/relationship/status (K-1). If-Match.</summary>
+    [HttpPut("{supplierId}/relationship/status")]
+    [HasPermission("procurement.suppliers.update")]
+    public async Task<IActionResult> ChangeRelationshipStatus(string supplierId, [FromBody] RelationshipStatusChangeRequest body, CancellationToken cancellationToken)
+    {
+        var command = new ChangeRelationshipStatusCommand(supplierId, body.Status, ParseIfMatch(ReadHeader(IfMatchHeader)));
+        var response = await _mediator.Send(command, cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>setRelationshipPaymentTerms — 1.4.0 PUT /{supplierId}/relationship/payment-terms (K-1, K-8). If-Match.</summary>
+    [HttpPut("{supplierId}/relationship/payment-terms")]
+    [HasPermission("procurement.suppliers.update")]
+    public async Task<IActionResult> SetRelationshipPaymentTerms(string supplierId, [FromBody] RelationshipPaymentTermsRequest body, CancellationToken cancellationToken)
+    {
+        var command = new SetRelationshipPaymentTermsCommand(supplierId, body.PaymentTermsCode, ParseIfMatch(ReadHeader(IfMatchHeader)));
+        var response = await _mediator.Send(command, cancellationToken);
+        return CreateActionResultInstance(response);
     }
 
     /// <summary>listSuppliers — contract GET /. Tenant+LE filtreli; opsiyonel status + cursor.</summary>
@@ -74,6 +138,26 @@ public sealed class SuppliersController : CustomBaseController
     [HasPermission("procurement.suppliers.update")]
     public async Task<IActionResult> Update(string supplierId, [FromBody] SupplierUpsertRequest body, CancellationToken cancellationToken)
     {
+        // K-1 (§14): the common fields need procurement.suppliers.master.update as well — checked with the SAME policy pipeline
+        // as [HasPermission]. With it: UpdateSupplierMaster; without it: UpdateSupplier, which refuses a common-field change
+        // with 403 MASTER_UPDATE_FORBIDDEN under TenantShared and writes nothing.
+        var expectedVersion = ParseIfMatch(ReadHeader(IfMatchHeader));
+        if ((await _authorization.AuthorizeAsync(User, MasterUpdatePolicy)).Succeeded)
+        {
+            var master = new UpdateSupplierMasterCommand
+            {
+                SupplierId = supplierId,
+                Name = body.Name,
+                Country = body.Country,
+                TaxId = body.TaxId,
+                Contacts = body.Contacts,
+                SourceSystem = body.SourceSystem,
+                ExternalRef = body.ExternalRef,
+                ExpectedVersion = expectedVersion
+            };
+            return CreateActionResultInstance(await _mediator.Send(master, cancellationToken));
+        }
+
         var command = new UpdateSupplierCommand
         {
             SupplierId = supplierId,
@@ -83,7 +167,7 @@ public sealed class SuppliersController : CustomBaseController
             Contacts = body.Contacts,
             SourceSystem = body.SourceSystem,
             ExternalRef = body.ExternalRef,
-            ExpectedVersion = ParseIfMatch(ReadHeader(IfMatchHeader))
+            ExpectedVersion = expectedVersion
         };
 
         var response = await _mediator.Send(command, cancellationToken);
@@ -110,7 +194,7 @@ public sealed class SuppliersController : CustomBaseController
 
     /// <summary>validateSuppliers — contract POST /validate. Bilinmeyen id → known:false (fail-closed).</summary>
     [HttpPost("validate")]
-    [HasPermission("procurement.suppliers.read")]
+    [HasAnyPermission("procurement.suppliers.read", "procurement.suppliers.eligibility.read")]
     public async Task<IActionResult> Validate([FromBody] ValidateSuppliersRequest body, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new ValidateSuppliersQuery(body.SupplierIds ?? new List<string>()), cancellationToken);

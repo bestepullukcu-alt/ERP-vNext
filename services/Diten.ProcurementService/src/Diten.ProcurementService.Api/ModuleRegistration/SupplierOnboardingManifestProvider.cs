@@ -33,5 +33,15 @@ public sealed class SupplierOnboardingManifestProvider : IModuleManifestProvider
                     PageType: "List",
                     SortOrder: 10,
                     Actions: [])
+            ],
+            // MOD-0140 DL-3 (§5, §14 "Kataloğa giriş"; Revizyon 8 F-1; K-2): keys of endpoints without a screen enter the Auth
+            // catalogue from here — eligibility.read (the three eligibility endpoints, MVP-6 / Treasury roles) and master.update
+            // (the common fields, K-1; ApiPermissions so module sync does not hand it to Admin — K-2). read-tenant-wide is NOT
+            // declared: it belongs to DL-3's deferred part, after Auth's ExplicitGrantOnlyPermissions is on main and deployed
+            // first (§7, §18). create/update/delete/bulk-delete/onboard become page actions with their screens in DL-5 (§20).
+            ApiPermissions:
+            [
+                new ModuleManifestPermission("procurement.suppliers.eligibility.read", "Supplier eligibility (read)", Scope: "Tenant"),
+                new ModuleManifestPermission("procurement.suppliers.master.update", "Supplier common fields (update)", Scope: "Tenant")
             ]);
 }
