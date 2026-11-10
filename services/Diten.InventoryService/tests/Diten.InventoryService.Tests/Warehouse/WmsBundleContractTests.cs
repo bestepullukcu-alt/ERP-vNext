@@ -315,16 +315,27 @@ public sealed class WmsBundleContractTests
     }
 
     /// <summary>
-    /// The WMS error catalogue names only codes the service defines (WarehouseErrorCodes), every WMS_* code the proposal §5.1 lists, and leaves out
-    /// the codes the service writes that neither the proposal nor the pack names — WMS_PACKAGE_NOT_FOUND (404 of the package paths) and
-    /// WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE (503 of the assignee check): open owner decision at the freeze (CT report), not frozen.
+    /// The WMS error catalogue names only codes the service defines (WarehouseErrorCodes) and every code the service writes: the proposal §5.1
+    /// codes plus the two the owner added at the freeze (K-2, Beste 2026-11-10) — WMS_PACKAGE_NOT_FOUND (404 of the package paths) and
+    /// WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE (503 of the assignee check, Q-13 A; the service writes it but WarehouseErrorCodes.All does not list it).
+    /// Each sits in the x-error-codes list of the operations that write it.
     /// </summary>
     [Fact]
-    public void The_error_catalogue_is_the_proposal_s_codes_and_the_service_defines_each()
+    public void The_error_catalogue_is_every_code_the_service_writes_and_the_service_defines_each()
     {
         var catalogue = Current["components"]!["x-error-codes"]!.AsObject().Select(c => c.Key).Where(k => !k.StartsWith("reused", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
-        Assert.All(catalogue, code => Assert.Contains(code, WarehouseErrorCodes.All));
-        Assert.Equal([WarehouseErrorCodes.PackageNotFound], WarehouseErrorCodes.All.Except(catalogue).ToArray());
-        Assert.DoesNotContain(WarehouseErrorCodes.AssigneeDirectoryUnavailable, catalogue); // not in WarehouseErrorCodes.All either
+        string[] written = [.. WarehouseErrorCodes.All, WarehouseErrorCodes.AssigneeDirectoryUnavailable];
+        Assert.All(catalogue, code => Assert.Contains(code, written));
+        Assert.Empty(written.Except(catalogue));
+        AssertListed(WarehouseErrorCodes.PackageNotFound, "updatePackage", "closePackage");
+        AssertListed(WarehouseErrorCodes.AssigneeDirectoryUnavailable, "createPutawayTask", "updatePutawayTask", "bulkAssignPutawayTasks", "bulkAssignPickTasks");
+    }
+
+    private static void AssertListed(string code, params string[] operationIds)
+    {
+        var lists = Current["paths"]!.AsObject()
+            .SelectMany(p => p.Value!.AsObject().Where(o => o.Value is JsonObject { } op && op["operationId"] is not null).Select(o => o.Value!.AsObject()))
+            .ToDictionary(op => op["operationId"]!.GetValue<string>(), op => op["x-error-codes"]?.AsArray().Select(c => c!.GetValue<string>()).ToArray() ?? [], StringComparer.Ordinal);
+        Assert.All(operationIds, id => Assert.Contains(code, lists[id]));
     }
 }

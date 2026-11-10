@@ -51,6 +51,11 @@ info:
     pick / packing read carries a ship-to (Q-10a). Rule 3 note: an unexpected 500 of the service-wide exception handler has the AuthError
     shape (code may be absent), like the middleware's 401 / 403.
 
+    CT FREEZE OWNER DECISIONS (Beste 2026-11-10). K-1: the listPackages allocation row carries lotId + lotNumber as the service writes
+    them (the proposal's lot member is not used). K-2: WMS_PACKAGE_NOT_FOUND (404 of the package paths) and
+    WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE (503 of the assignee check, Q-13 A), written by the service but named by neither the proposal
+    nor the pack, are in the 1.1.0 error catalogue.
+
     NAMED EXCEPTION TO RULE 4 (pack §8.23 wins over the proposal rule): in a ShortDispatchUnresolved exception's details,
     stagingDifference = null and differenceDeferredBy = null are written when they do not apply (stagingDifference null = the Staging
     difference was not computed, differenceDeferredBy names why; differenceDeferredBy null = it was computed). These two members of
@@ -355,7 +360,7 @@ paths:
       operationId: updatePackage
       summary: Only an Open package changes
       x-permission: warehouse.packages.update
-      x-error-codes: [WMS_PACKAGE_EXCEEDS_PICKED, WMS_OUTBOUND_IMMUTABLE, WMS_INVALID_TRANSITION, WMS_CONFLICT]
+      x-error-codes: [WMS_PACKAGE_EXCEEDS_PICKED, WMS_OUTBOUND_IMMUTABLE, WMS_INVALID_TRANSITION, WMS_CONFLICT, WMS_PACKAGE_NOT_FOUND]
       parameters: [{ $ref: '#/components/parameters/PackageId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
       requestBody:
         required: true
@@ -373,7 +378,7 @@ paths:
       operationId: closePackage
       summary: The last close makes the outbound Packed (an empty Open package of it is cancelled)
       x-permission: warehouse.packages.update
-      x-error-codes: [WMS_PACKAGE_EMPTY, WMS_INVALID_TRANSITION, WMS_CONFLICT]
+      x-error-codes: [WMS_PACKAGE_EMPTY, WMS_INVALID_TRANSITION, WMS_CONFLICT, WMS_PACKAGE_NOT_FOUND]
       parameters: [{ $ref: '#/components/parameters/PackageId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
       requestBody:
         required: true
@@ -413,7 +418,7 @@ paths:
       operationId: bulkAssignPickTasks
       summary: The bulkAssignPutawayTasks shape
       x-permission: warehouse.pick-tasks.update
-      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_ASSIGNEE_INVALID, WMS_CONFIRMATION_PENDING]
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_ASSIGNEE_INVALID, WMS_CONFIRMATION_PENDING, WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE]
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -672,7 +677,7 @@ paths:
       operationId: createPutawayTask
       summary: Open a putaway task on a source bucket (candidateKey, or the explicit source members)
       x-permission: warehouse.putaway-tasks.create
-      x-error-codes: [WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_DATA_INCOMPLETE]
+      x-error-codes: [WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_DATA_INCOMPLETE, WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE]
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -697,7 +702,7 @@ paths:
       operationId: bulkAssignPutawayTasks
       summary: Assign up to 100 tasks; one outcome per row, partial success marked
       x-permission: warehouse.putaway-tasks.update
-      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_ASSIGNEE_INVALID, WMS_CONFIRMATION_PENDING]
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_ASSIGNEE_INVALID, WMS_CONFIRMATION_PENDING, WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE]
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -729,7 +734,7 @@ paths:
       operationId: updatePutawayTask
       summary: Change planned quantity / target / assignee / priority / note — the source bucket members are not accepted (400); planned >= confirmed + pending
       x-permission: warehouse.putaway-tasks.update
-      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND, WMS_POSTING_INTEGRITY_ERROR]
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND, WMS_POSTING_INTEGRITY_ERROR, WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE]
       parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
       requestBody:
         required: true
@@ -2259,5 +2264,8 @@ components:
     WMS_DISPATCH_READ_FORBIDDEN: { status: 403, meaning: "the MVP-6 read answered 401 or 403 (no supplychain.shipments.read; r24, pack §5)" }
     WMS_DISPATCH_SOURCE_UNAVAILABLE: { status: 503, meaning: "MVP-6 unreachable / 5xx / another 4xx (the reader's default branch; r25) / 2 s read timeout / unreadable body / a queried candidate's detail 404 (r24, pack §5)" }
     UNKNOWN_OUTBOUND: { status: 404, meaning: "the frozen code (WAREHOUSE-OUTBOUND 1.0.0); the S2 outbound paths use it too — no separate WMS_* not-found code" }
+    # 1.1.0 — CT freeze owner decision K-2 (Beste 2026-11-10): codes the service writes that neither the proposal nor the pack named
+    WMS_PACKAGE_NOT_FOUND: { status: 404, meaning: "the package does not exist / another tenant or company (PUT /packages/{packageId}, POST /packages/{packageId}/close)" }
+    WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE: { status: 503, meaning: "AUTH could not confirm the assignee (no answer, 5xx, 401 / 403; Q-13 A) — nothing written" }
     reused-s2:
       - "S2 also forwards unchanged: the MOD-0176 FEFO codes FEFO_ORDER_VIOLATION (mode Block) and FEFO_BYPASS_REASON_REQUIRED (details.deviations[] on release), INVENTORY 1.7.0 RESERVATION_NOT_ACTIVE / RESERVATION_MISMATCH (the pick movement's reservationId check) and the FU03 batch reservation's line codes (WMS_ALLOCATION_FAILED.details.lines[].code)."
