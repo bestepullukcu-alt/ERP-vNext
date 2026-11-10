@@ -46,6 +46,8 @@ Geliştiricinin 22 sabotajı (başka ağaçta) CT tarafından tekrarlanmadı; yu
 - **DÜŞÜK-1** — `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` (integration-agent alanı) 57 → 60, "DL-4/DL-5 emsaliyle" sahibe
   sorulmadan güncellendi. Değişiklik sıkılaştırıcı ve zorunlu (3 yeni uç); kod değişikliği gerekmez. Yapılacak: sahip onayı bu kayda işlenir,
   integration-agent'a bilgi notu.
+  - **Kapandı (2026-11-10, CT):** sahip Beste 57 → 60 değişikliğini onayladı («2. yi onaylıyorum»). XMC-001 onayı bu kayıtla depoya işlendi;
+    integration-agent'a bilgi notu sahip tarafından gönderilecek.
 - Bir ara ölçüm commit'inde kancalar atlanmış, sonra kancalarla yeniden atılmış (dala girmedi; depoda kanca tanımlı değil) — not, bulgu değil.
 
 ## Açık kalanlar

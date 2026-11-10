@@ -27,6 +27,12 @@
   (b) `CNT`'yi şimdi `RecordCodeTypeCatalog`'a eklemek (FU02 DL-8 kapsamını öne çeker); (c) `.antigravity` satırını DL-8'e kadar geri çekmek.
   CT önerisi: (a). Sahip kararı bekleniyor. Not: planlı AS-2 (MOD-0178 geçici önekleri RCS-001 §3'e) aynı testi aynı nedenle kırar — AS-2 WP'sine
   girdi olarak eklenmeli.
+  - **Kapandı (2026-11-10, CT):** sahip Beste (a)'yı seçti («a ile devam et»; XMC-001 onayı). `RecordCodeTypeCatalogTests.cs`'e
+    `RuleAheadOfCatalogue` (`["CNT"] = "MOD-0040-FU02 DL-8"`) eklendi: beklenen kümeden çıkarılır; satır §3'ten kalkarsa ya da katalog `CNT`'yi
+    alırsa test kırmızı olur (istisna kendini sildirir). Ölçüm: `RecordCodeTypeCatalogTests` 13 / 13 yeşil. Sabotajlar (bayt-eşit geri yazıldı):
+    S1 §3'e sahte `OTOMATİK` `QQQ` satırı → kırmızı (istisna gevşetmiyor); S2 istisnadan `CNT` silindi → kırmızı; S3 §3'te `CNT` `ELLE` yapıldı →
+    kırmızı. Kural dosyasını okuyan başka test yok (`*.cs`, `*.js`, `*.mjs`, `*.py`, `*.ts` tarandı). MOD-0040-FU02 DL-8 `CNT`'yi kataloğa
+    eklediğinde istisna satırı silinir.
 - Platform takımının diğer 1585 kırmızısı ortam (`DITEN_TEST_MONGOD` verilmedi); `RecordCodeTypeCatalogTests`'in kalan 12 testi yeşil.
 
 ## Açık kalanlar (geliştirici raporundan, DL-3 / DL-4'e)
@@ -37,4 +43,4 @@
 - Seri kontrollü satırın tam sayı kuralı ve eşzamanlı giriş yolu testle ölçülmedi.
 - DL-6 `Mod0181CycleCountRouteTests` (integration-agent).
 
-VERIFIED (DL-2 kodu) — ORTA-1 açık
+VERIFIED (DL-2 kodu) — ORTA-1 kapandı (2026-11-10)
