@@ -1,0 +1,18 @@
+# EES 2.13 (shadow mode) - services/ paths that NO suite of service-tests.yml builds or reads, each with its reason.
+# scripts/ci_select_suites.py: a changed services/ or gateway/ path that no suite glob in service-suites.tsv names
+# selects EVERY suite (unknown code path, fail closed) - unless it matches a glob here. A suite glob always wins: a path
+# named both here and by a suite row selects that suite (e.g. services/Diten.PpmService/src/Diten.PpmService.Contracts
+# is in platform-app's closure). Whole-tree scans (platform-app's services/**, auth-app's services/**/*.cs) still apply.
+# scripts/tests/test_ci_select_suites.py: every glob here matches at least one tracked file (no stale line).
+# Columns (TAB-separated): glob, reason.
+glob	reason
+services/Diten.PpmService/**	PPM test projects are NotInThisJob in CiServiceTestsGuardTests (local-only commits, fixed mongod path)
+services/Diten.HumanCapitalService/**	no test project
+services/Diten.TalentEcosystemService/**	no test project
+services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/**	es-app / es-e2e reference only Application and Domain
+services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Infrastructure/**	es-app / es-e2e reference only Application and Domain
+services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Persistence/**	es-app / es-e2e reference only Application and Domain
+services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/**	NotInThisJob in CiServiceTestsGuardTests
+services/Diten.SupplyChainService/tests/**/*.py	Python runtime probes run by hand; no suite runs or reads them
+services/Diten.SafetyStockService/contracts/drafts/**	draft contracts; no SafetyStock test project reads them (measured 2026-11-09)
+services/**/*.md	documentation; a suite that reads markdown names it in its own row (platform-app services/**, auth-app **/*.md)
