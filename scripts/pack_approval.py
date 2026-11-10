@@ -644,6 +644,7 @@ def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
     rows git credits to an excused reordering merge are followed through it, as row_commit does)."""
     out, cur, res = git(root, "blame", "--porcelain", c, "--", path).decode("utf-8", "replace"), None, {}
     trusted = _reorder_excused(root, path)
+    main = main_line(root) if trusted else None
     copies: dict[str, int] = {}
     for l in _lines_at(root, c, path):
         copies[l] = copies.get(l, 0) + 1
@@ -652,7 +653,7 @@ def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
             text = l[1:].rstrip(" \r")
             if text.strip():
                 one = copies.get(text) == 1
-                res[text] = _follow_moves(root, cur, text, path) if cur in trusted and one else cur
+                res[text] = _follow_moves(root, cur, text, path, main) if cur in trusted and one else cur
         elif re.match(r"^[0-9a-f]{40} \d+ \d+", l):
             cur = l[:40]
     return res
@@ -720,8 +721,11 @@ def reorder_only_why(root: str, c: str, path: str) -> str | None:
     if race:
         return (f"(f) {race[0]} için yeni satırlar iki ayrı ebeveynden geliyor — hangisinin son olacağını merge seçerdi; "
                 "sıra istisnası bunu affetmez")
-    base = git(root, "merge-base", "--octopus", *parents).decode().strip()
-    gone = set(_lines_at(root, base, path)[1:]) if base else set()
+    base = git(root, "merge-base", "--octopus", *parents, ok_fail=True)
+    if not base or not base.decode().strip():
+        return "(h) ebeveynlerin ortak atası yok — silinen satır ölçülemez, sıra istisnası verilmez"
+    base = base.decode().strip()
+    gone = set(_lines_at(root, base, path)[1:])
     back = [l for l in new[1:] if l in gone and any(l not in sets[p] for p in parents)]
     if back:
         return (f"(h) {back[0].split(chr(9))[0]} için bir ebeveynin sildiği satır merge'de geri gelmiş — sıra istisnası "
@@ -950,16 +954,18 @@ def _ones(root: str, c: str, path: str, text: str) -> list[int]:
 _EXCUSED_MEMO: dict = {}      # (root, main, path) -> the validated S-91R merges (a set while it is being built)
 
 
-def _reorder_excused(root: str, path: str) -> frozenset:
+def _reorder_excused(root: str, path: str, main: str | None = None) -> frozenset:
     """S-91R (Codex rounds 3–4): the merges row_commit may follow — those main's EXCEPTIONS file lists as reorder-only
     ('S-91R:' reason, the empty-loss digest) AND that hold: the merge is on main's history and breaks append-only there
     (_append_only), and reorder_only_why accepts it. A listed row that names a merge that is no break, not on main, or
     not reorder-only is never trusted (Codex round 4: an unchecked row must not move attribution). Every other merge
-    keeps git's answer. Built oldest first, so a candidate's check follows only older, already validated merges."""
-    try:
-        main = main_line(root)
-    except Unreadable:
-        return frozenset()
+    keeps git's answer. Built oldest first, so a candidate's check follows only older, already validated merges.
+    `main`: the caller's main (row_commit passes the one its cache key carries); None = main_line now."""
+    if main is None:
+        try:
+            main = main_line(root)
+        except Unreadable:
+            return frozenset()
     key = (root, main, path)
     if key in _EXCUSED_MEMO:
         return frozenset(_EXCUSED_MEMO[key])
@@ -979,7 +985,11 @@ def _reorder_excused(root: str, path: str) -> frozenset:
     _EXCUSED_MEMO[key] = partial
     try:
         for c in sorted((c for c in listed if c in breaks and c in order), key=order.get):
-            if reorder_only_why(root, c, path) is None:
+            try:
+                ok = reorder_only_why(root, c, path) is None
+            except Unreadable:
+                ok = False          # review r4: a candidate that cannot be measured is not trusted, the rest still are
+            if ok:
                 partial.add(c)
     except BaseException:
         del _EXCUSED_MEMO[key]
@@ -1012,14 +1022,14 @@ def _blamed_line(root: str, commit: str, line_no: int, path: str) -> tuple[str, 
     return blame[0], next((l[1:].rstrip(" \r") for l in out.split("\n") if l.startswith("\t")), None)
 
 
-def _follow_moves(root: str, blamed: str, text: str | None, path: str) -> str:
+def _follow_moves(root: str, blamed: str, text: str | None, path: str, main: str | None = None) -> str:
     """S-91R: from git's answer, follow excused reorder steps (_moved_from) with a work list — never recursion — to the
     commit that really added the row. Every parent path must end at the SAME commit (Codex round 3: the same text from
     two different commits is ambiguous, never 'the first parent'); a revisited step, more than MOVE_STEPS steps or two
     different origins is unreadable."""
     if not text:
         return blamed
-    trusted = _reorder_excused(root, path)
+    trusted = _reorder_excused(root, path, main)
     if not trusted:
         return blamed
     todo, seen, origins = [(blamed, text)], set(), set()
@@ -1041,15 +1051,24 @@ def _follow_moves(root: str, blamed: str, text: str | None, path: str) -> str:
     return origins.pop()
 
 
-@cached(1)
 def row_commit(root: str, commit: str, line_no: int, path: str = APPROVALS) -> str:
-    """The commit that added line `line_no` of `path` at `commit`. Codex S-91R F-1R: moves are followed only for a row
-    that is ONE copy in the judged file — with two copies git's per-copy answer stands (which copy a later merge added
-    is not knowable from one blame step)."""
+    """The commit that added line `line_no` of `path` at `commit`. The answer depends on main (which S-91R merges it
+    may follow), so it is kept per (commit, main) — review r4: never a stale answer after main moved."""
+    try:
+        main = main_line(root)
+    except Unreadable:
+        main = None
+    return _row_commit_at(root, commit, line_no, path, main)
+
+
+@cached(1, 4)
+def _row_commit_at(root: str, commit: str, line_no: int, path: str, main: str | None) -> str:
+    """Codex S-91R F-1R: moves are followed only for a row that is ONE copy in the judged file — with two copies git's
+    per-copy answer stands (which copy a later merge added is not knowable from one blame step)."""
     blamed, text = _blamed_line(root, commit, line_no, path)
     if text is None or len(_ones(root, commit, path, text)) != 1:
         return blamed
-    return _follow_moves(root, blamed, text, path)
+    return _follow_moves(root, blamed, text, path, main)
 
 
 @cached(1, 2)
@@ -2947,6 +2966,15 @@ def self_test_reorder(cases: list) -> None:
     octo = g("commit-tree", tree, "-p", t1, "-p", t2, "-p", t3, "-m", "octopus reorder").strip()
     cases.append(("S-91R (Codex round 3 F-2): a three-parent reorder, one row in two parents -> no race, row printed",
                   reorder_only_why(root, octo, APPROVALS) is None and row_for(octo)[0] == 0))
+    # review r4: parents with no common history (--allow-unrelated-histories) -> a refusal naming (h), never a crash
+    orphan = g("commit-tree", tree, "-m", "unrelated root").strip()
+    unrelated = g("commit-tree", tree, "-p", t1, "-p", orphan, "-m", "unrelated merge").strip()
+    try:
+        why = reorder_only_why(root, unrelated, APPROVALS)
+    except Unreadable as e:
+        why = f"raised: {e}"
+    cases.append(("S-91R (review r4): a merge of unrelated histories -> refused naming (h), no Unreadable",
+                  why is not None and why.startswith("(h)") and "ortak atası" in why))
     g("reset", "-q", "--hard")
     # Codex S-91R F-3: exception-row refuses the people the checker would refuse
     for label, author, approver in (("an author not on the approver list", "ghost", "lead"),
