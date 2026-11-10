@@ -9,9 +9,9 @@ shell: tenant
 golden_reference: slim
 data_mode: server
 entity_base: EntityBase
-status: draft
-runtime_code_allowed: false
-runtime_code_scope: "YOK. Kod yalnız bu paket onaylanınca, dilim başına CT prompt'uyla açılır."
+status: ready-for-dev
+runtime_code_allowed: true
+runtime_code_scope: "Yalniz DL-1 ve DL-2, dilim basina; onay satiri ve prompt kapisi olmadan dagitilmaz."
 owner: module-pack-author
 branch: chore/ct/mdm-ct-02
 started: 2026-11-10
@@ -36,6 +36,8 @@ dependencies:
 > → `OK  MOD-0290-FU07: proven against Blueprint/registry.` (çıkış 0).
 > `git log --all -S 'MOD-0290-FU07'` ve `git log --all -- '*MOD-0290-FU07*'`: 0 commit.
 > `--discover "Product Identifiers GTIN Barcode"`: çıkış 0, "incelenen kaynaklarda eşleşme bulunamadı", bulgu 0 (blueprint · sor · registry · paket · gateway · görev), rapor-sha256 `0cdf07bba888…`. Kayıtlı keşif [`DISCOVERY-mod0290-fu07-p6.txt`](../../../../docs/records/audits/2026-11/mdm-ct-02-dl1-inspection-01/DISCOVERY-mod0290-fu07-p6.txt) (HEAD `d95c4df12`, rapor-sha256 `548c79266bb6…`) ile tek fark ref listesinin özeti (dal başları ilerledi); bulgular aynı. Keşif EKSİK satırları geçerli: başka makinedeki ve kayıtsız işler görülmedi.
+>
+> **Değişen bölümler:** 2026-11-10 (kule, `0d271a2e6` sonrası): §0.4 eklendi (AK-1…AK-9 ve Golden Reference sapması karara bağlandı); §7, §12, §16, §20, §21 N-3, §22 ve §25 bu kararlara hizalandı. Kapsam ve dilimler değişmedi.
 >
 > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
 
@@ -74,6 +76,23 @@ dependencies:
 - Kimlik doğrulayıcıları (`CreateLskuDraftValidator`, `CreateFinishedGoodDraftValidator`, `CreateFirstGskuDraft*Validator`, `ItemValidators`) `Gtin` alanını reddeder; değişmez.
 - GS1 şirket öneki: depoda yok (`CompanyPrefix` / "GS1 prefix" araması, MDM ve Platform kaynakları, 0 eşleşme).
 
+### 0.4 Kapanan açık kararlar (2026-11-10)
+
+Kaynak: kule sohbeti, 2026-11-10 (sahip kararları butonlarla verildi; kule kararları sahibin AK-6…AK-9 için bıraktığı yetkiyle). Gerekçe ve seçenekler §21 N-3 ve §25'te.
+
+| # | Karar | Veren | Kaynak | Pakete etkisi |
+|---|---|---|---|---|
+| AK-1 | **(b) geçici bağ:** koli / palet GTIN'i Bitmiş Ürün + düzey adına bağlanır, `PackagingLevelId` null; P9 düzey kaydını açınca sahiplenir | Sahip | kule sohbeti 2026-11-10, buton | §4, §21 N-3; `Case` / `Pallet` DL-1'de |
+| AK-2 | LSKU kendi GTIN'ini `Lsku` düzeyinde alır; sözleşmedeki `gtin` alanı null kalır, yeni GTIN'ler `identifiers[]` listesinde | Sahip | aynı | §16 |
+| AK-3 | Emekli ürünün GTIN'i hiç yeniden verilmez; iptal edilen taslağınki serbest; göçteki çakışmalar raporlanır | Sahip | aynı | §4 dizin, §12, §13 |
+| AK-4 / AK-5 | Önek kiracıya bağlı; birden çok önek listesi; tüzel kişi alanı sonra eklenebilir. Uzunluk 4–12 dış kaynak işaretiyle kalır | Sahip | aynı | §4, §12 |
+| AK-6 | Anahtarlar DL-2'de manifestte (sayfa / eylem); rol verimi DL-2 prompt'undan önce ölçülür; Auth değişikliği gerekirse XMC-001 ile sorulur | Kule | aynı | §14, §20 |
+| AK-7 | Çözümleme yolu `GET /product-master/identifiers/{gtin}` (W-04'teki `GET /skus?gtin=` yerine) | Kule | aynı | §16 |
+| AK-8 | v1'de otomatik GTIN üretimi yok; elle giriş | Kule | aynı | §2 |
+| AK-9 | Sözleşme eki ayrı v1.2'de (stok ekibinin v1.1'i karışmaz) | Kule | aynı | §16 |
+| GR-1 | Golden Reference'tan toplu silme sapması kabul: ana veri, toplu silme yerine tek tek emeklilik. Geri çekme (yumuşak silme) yalnız hedef `Draft` iken kalır; AK-3'teki "iptal edilen taslağınki serbest" kuralının yolu budur | Kule | aynı | §10, §12, §20 |
+| AK-10 | `target`, onaylayan, ikinci kişi | — | — | **TBD kalır**; tarih "2026-11-20 (tahmin)" |
+
 ## 1. Module Summary
 
 Kiracının ürün tanımlayıcılarını tek defterde tutar: her GTIN bir kayda ve bir ambalaj düzeyine bağlanır, atanır, geri çekilir, yeniden kullanılmaz. Kiracının GS1 şirket önekini tutar; depo SSCC üretirken onu okur. Stok ve depo tüketicileri GTIN'den kayda ulaşır. Kullanıcı: ürün ana veri sorumlusu (yazma), stok / depo kullanıcıları ve servisleri (okuma).
@@ -82,7 +101,7 @@ Kiracının ürün tanımlayıcılarını tek defterde tutar: her GTIN bir kayda
 
 **Kapsamda:** tanımlayıcı defteri (yalnız GTIN türü), düzey bağlama, yaşam döngüsü, GS1 şirket öneki, FG satış kutusu GTIN'inin deftere bağlanması (davranış korunur), okuma sözleşmesine ekleme, ekran (DL-2).
 
-**Kapsam dışı:** SSCC üretimi (MOD-0178 / MOD-0182, S-3) · (10) lot, (17) son kullanma (MOD-0174) · barkod dizgesi, etiket basımı (MOD-0182) · düzey hiyerarşisi ve adetler (P9, S-4) · GSKU GTIN'i (S-2 listesinde yok; FU04 §4.2 "gereksiz") · GTIN'i önekten otomatik üretme (§25 AK-8) · GS1 kayıt sistemine (GEPIR / Verified by GS1) bağlantı · İTS bildirimi.
+**Kapsam dışı:** SSCC üretimi (MOD-0178 / MOD-0182, S-3) · (10) lot, (17) son kullanma (MOD-0174) · barkod dizgesi, etiket basımı (MOD-0182) · düzey hiyerarşisi ve adetler (P9, S-4) · GSKU GTIN'i (S-2 listesinde yok; FU04 §4.2 "gereksiz") · GTIN'i önekten otomatik üretme (§0.4 AK-8) · GS1 kayıt sistemine (GEPIR / Verified by GS1) bağlantı · İTS bildirimi.
 
 ## 3. Owned Objects
 
@@ -109,14 +128,14 @@ RCS-001: kayıt kodu yok. GTIN GS1 tanımlayıcısıdır, kayıt kodu değildir 
 | `Gtin` | string(14) | Saklama hep GTIN-14 (§12) |
 | `PackagingLevel` | enum | `Item` · `Lsku` · `SalesBox` · `Case` · `Pallet` |
 | `TargetKind` / `TargetId` | enum / Guid | Düzeye göre: `Item` → Kalem; `Lsku` → LSKU; `SalesBox`, `Case`, `Pallet` → Bitmiş Ürün |
-| `PackagingLevelId` | Guid? | P9 düzey kaydı; P9 gelene kadar null (§25 AK-1) |
+| `PackagingLevelId` | Guid? | P9 düzey kaydı; P9 gelene kadar null (§0.4 AK-1) |
 | `Origin` | enum | `Own` (kiracının önekinden) · `External` (tedarikçi / lisans veren) |
 | `Gs1CompanyPrefixId` | Guid? | `Own` ise eşleşen önek |
 | `Status` | enum | `Active` → `Retired` (son) |
 | `AssignedAt`, `RetiredAt`, `RetirementReason` | | `RetirementReason` zorunlu, en çok 500 |
 | `Version`, `LastCommand` | | İyimser eşzamanlılık + `Idempotency-Key` tekrarı (FU04 deseni) |
 
-Dizinler: tekil (TenantId, Gtin) kısmi `IsDeleted = false` — **`Retired` dizinde kalır** (yeniden kullanım yok); tekil (TenantId, TargetKind, TargetId, PackagingLevel) kısmi `IsDeleted = false` ve `Status = Active` (düzey başına tek etkin GTIN, §25 AK-1).
+Dizinler: tekil (TenantId, Gtin) kısmi `IsDeleted = false` — **`Retired` dizinde kalır** (yeniden kullanım yok); tekil (TenantId, TargetKind, TargetId, PackagingLevel) kısmi `IsDeleted = false` ve `Status = Active` (düzey başına tek etkin GTIN, §0.4 AK-1).
 
 **`Gs1CompanyPrefix`** (`EntityBase`): `Prefix` (string, yalnız hane), `Status` (`Active` / `Retired`), `ValidFrom`, `RetiredAt`, `Version`. Tekil (TenantId, Prefix) kısmi `IsDeleted = false`. Bir önek başka bir önekin ön eki olamaz (kiracı içinde).
 
@@ -145,8 +164,8 @@ Dizinler: tekil (TenantId, Gtin) kısmi `IsDeleted = false` — **`Retired` dizi
 |---|---|---|
 | FU04 S3 | FG GTIN alanı, komutu, dizini | kodda var |
 | FU04 S1 Kalem | `Item` hedefi | kodda var (`Item.cs`) |
-| P9 | Koli / palet düzey kaydı | **yok** — §25 AK-1 |
-| Auth özel profili | `ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet`: `mdm.product-identifiers.*` ve `mdm.gs1-company-prefixes.*` hiçbir kümede sayılmıyor, reddedilmiyor (kod okuması). Rol verimi (Admin / Viewer / adanmış roller) **ölçülmedi** | DL-2 önkoşulu, §25 AK-6 |
+| P9 | Koli / palet düzey kaydı | **yok** — geçici bağ, P9 sahiplenir (§0.4 AK-1) |
+| Auth özel profili | `ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet`: `mdm.product-identifiers.*` ve `mdm.gs1-company-prefixes.*` hiçbir kümede sayılmıyor, reddedilmiyor (kod okuması). Rol verimi (Admin / Viewer / adanmış roller) **ölçülmedi** | DL-2 önkoşulu, §0.4 AK-6 |
 | Denetim altyapısı | `tests/architecture/audit-ledger/Diten.MdmService.md` `## İzler`: `mdm-merkezi-iletim`, yol b, kabul edilmiş | var |
 | MOD-0048 | Yok — düzey bir enum, birim listesi kullanılmaz | — |
 
@@ -176,7 +195,7 @@ Features/ProductIdentifiers/
 └── ProductIdentifiersModels.cs
 ```
 
-Handler / Validator adında `Command` / `Query` eki yok. `Response<T>` zarfı. Toplu silme yok: geri çekme ve emekliye ayırma tek tek, gerekçeli (DataTable `BulkDelete` bilinçli olarak yok; §20).
+Handler / Validator adında `Command` / `Query` eki yok. `Response<T>` zarfı. Toplu silme yok: geri çekme ve emekliye ayırma tek tek, gerekçeli (DataTable `BulkDelete` yok; kule kararı §0.4 GR-1).
 
 ## 11. Frontend File Contract
 
@@ -194,11 +213,11 @@ Yalnız DL-2. Slim dosya seti, `Views/MasterDataManagement/ProductIdentifiers/`:
 | `Origin` | evet | `Own` ise GTIN'in gösterge hanesinden sonraki 13 hanesi kiracının etkin öneklerinden biriyle başlar; `External` ise önek denetlenmez | 422 `GTIN_PREFIX_MISMATCH` |
 | `RetirementReason` | emekliye ayırmada | 1–500 karakter | 400 |
 | Geri çekme | — | Yalnız hedef `Draft` iken (hiç yayımlanmamış); yumuşak silme, GTIN serbest kalır | 409 `GTIN_WITHDRAW_NOT_DRAFT` |
-| `Prefix` | evet | Yalnız hane, 4–12 hane (GS1 Genel Spesifikasyonları; dış kaynak, depoda doğrulanmadı — §25 AK-4); kiracıda tekil; başka etkin önekin ön eki ya da uzantısı değil | 422 `GS1_PREFIX_INVALID` · 409 `GS1_PREFIX_CONFLICT` |
+| `Prefix` | evet | Yalnız hane, 4–12 hane (GS1 Genel Spesifikasyonları; dış kaynak, depoda doğrulanmadı; §0.4 AK-4); kiracıda tekil; başka etkin önekin ön eki ya da uzantısı değil | 422 `GS1_PREFIX_INVALID` · 409 `GS1_PREFIX_CONFLICT` |
 | Önek emekliye ayırma | — | O önekle `Own` etkin GTIN varsa da izin verilir (GTIN'ler geçerli kalır); yeni `Own` ataması o önekle reddedilir | — |
 | `ExpectedVersion`, `Idempotency-Key` | evet | FU04 deseni: sürüm uyuşmazlığı 409, aynı anahtar + aynı gövde aynı sonuç | 409 `VERSION_CONFLICT` |
 
-FG ucu (`PUT /api/finished-goods/{id}/gtin`) kendi kurallarını ve kodlarını (`FG_GTIN_INVALID` 422, `FG_GTIN_CONFLICT` 409, `STOCK_BEHAVIOUR_FIELD_LOCKED` 409) aynen korur; tek ek: çakışma denetimi artık defterin bütün düzeylerine bakar (§25 AK-3).
+FG ucu (`PUT /api/finished-goods/{id}/gtin`) kendi kurallarını ve kodlarını (`FG_GTIN_INVALID` 422, `FG_GTIN_CONFLICT` 409, `STOCK_BEHAVIOUR_FIELD_LOCKED` 409) aynen korur; tek ek: çakışma denetimi artık defterin bütün düzeylerine ve emekli GTIN'lere bakar (§0.4 AK-3).
 
 ## 13. Failure Path to Verify
 
@@ -212,7 +231,7 @@ FG ucu (`PUT /api/finished-goods/{id}/gtin`) kendi kurallarını ve kodlarını 
 | İzinsiz kullanıcı | 403; ekran iskelet çizmez (UAS-001) |
 | Eski sürümle yazma | 409 `VERSION_CONFLICT` |
 | `Own` + önek yok / eşleşmiyor | 422 `GTIN_PREFIX_MISMATCH` |
-| Göç: FG GTIN'i defterde başka kayıtta (emekli FG ile canlı FG aynı GTIN — bugün mümkün, §0.3) | Açılış durmaz; canlı FG `Active` alır, emekli FG satırı `Retired` + işaret; çakışma günlüğe ve sayaç olarak yazılır; ikinci koşu aynı sonucu verir (§25 AK-3) |
+| Göç: FG GTIN'i defterde başka kayıtta (emekli FG ile canlı FG aynı GTIN — bugün mümkün, §0.3) | Açılış durmaz; canlı FG `Active` alır, emekli FG satırı `Retired` + işaret; çakışma raporlanır (günlük + sayaç, kiracı ve GTIN ile); ikinci koşu aynı sonucu verir (§0.4 AK-3) |
 | FG ucu: deftere yazım başarılı, FG yazımı başarısız | Aynı `Idempotency-Key` ile tekrar yarım kalanı tamamlar; tutarsız durum okumada görünmez (`gtin` defterden okunur) — §21 N-2 |
 | Hedef emekliye ayrıldı | Tanımlayıcı `Active` kalır (piyasadaki ambalaj taranabilir); çözümleme hedefin `lifecycleStatus`'unu döner |
 | Denetim günlüğüne iletim başarısız | İş durmaz, uyarı kalır (yol b, FU04 sınıfı) |
@@ -232,7 +251,7 @@ Scope:      Tenant
 - **Her anahtar manifestte sayfa ya da eylem;** `ApiPermissions` kullanılmaz: bu modül özel profillidir, `ApiPermissions` plan okumasına girmez ve her hak verme çağrısını kırar (FU06 §0.3, "ApiPermissions katalog eşitlemesine ulaşır, plan okumasına ulaşmaz").
 - Manifest (DL-2): yeni sayfa `PRODUCT_IDENTIFIERS` (`RequiredPermission` = `.read`); eylemler `ASSIGN` (Toolbar, `.assign`), `WITHDRAW` (RowAction, `.assign`), `RETIRE` (RowAction, `IsDangerous`, `.retire`), `MANAGE_GS1_PREFIXES` (Toolbar, `mdm.gs1-company-prefixes.manage`). Modül sürümü bir küçük artar.
 - DL-1'de anahtarlar zorlanır ama beyan edilmez: rol tutmaz, yazma uçları yalnız testte çalışır. Bilinçli: ekransız sayfa menüde boş sayfa açardı. FG ucu ve okumalar DL-1'de canlı çalışır.
-- Rol verimi Auth'ta ölçülmeden DL-2 prompt'u yazılmaz (§25 AK-6).
+- Rol verimi Auth'ta ölçülmeden DL-2 prompt'u yazılmaz; Auth değişikliği gerekirse XMC-001 ile sorulur (§0.4 AK-6).
 
 ## 15. Audited Events (AUD-001)
 
@@ -254,16 +273,16 @@ Kişisel veri, gizli değer yok.
 - Sözleşme okumaları mevcut `/api/product-master/{everything}` altında; rota gerekmez. FG ucu `/api/finished-goods/{id}/gtin` var.
 - Tarayıcı servise gitmez: aynı kökenli MVC vekili → Gateway.
 
-**Okuma sözleşmesi eki — `product-master-bundle`, yalnız ekleme (stok sözleşmesinden ayrı başlık):**
+**Okuma sözleşmesi eki — `product-master-bundle` v1.2, yalnız ekleme (stok ekibinin v1.1'inden ayrı; §0.4 AK-9):**
 
 | Ek | Ne |
 |---|---|
-| `GET /product-master/identifiers/{gtin}` | Çözümleme (W-04): 8–14 hane kabul, 14'e tamamlanır; `{gtin, packagingLevel, targetKind, targetId, skuLevel, canonicalCode, status, origin, targetLifecycleStatus}`; bilinmeyen 404 `UNKNOWN_GTIN`; geçersiz 400. W-04 metni `GET /skus?gtin=` önerir; tek kayıt döndüğü ve düzeyi taşıdığı için yol önerisi bu (§25 AK-7) |
+| `GET /product-master/identifiers/{gtin}` | Çözümleme (W-04): 8–14 hane kabul, 14'e tamamlanır; `{gtin, packagingLevel, targetKind, targetId, skuLevel, canonicalCode, status, origin, targetLifecycleStatus}`; bilinmeyen 404 `UNKNOWN_GTIN`; geçersiz 400. W-04 metni `GET /skus?gtin=` önerir; tek kayıt döndüğü ve düzeyi taşıdığı için bu yol seçildi (§0.4 AK-7) |
 | `SkuRef.identifiers[]` (isteğe bağlı alan) | `getSku` yanıtında kaydın bütün tanımlayıcıları: `{gtin, packagingLevel, status, origin}` |
 | `GET /product-master/gs1-company-prefixes` | Kiracının etkin önekleri; SSCC üretimi için (MOD-0178 / MOD-0182) |
 | `gtin` (v1.0 alanı) | **Anlamı değişmez:** FG'de satış kutusu GTIN'i; LSKU ve Kalem'de null kalır. LSKU / Kalem GTIN'i yalnız `identifiers[]`'ta |
 
-**Stok tüketicisi etkisi:** MOD-0174 `gs1-check` SKU'nun `gtin`'i null iken GTIN denetimini uyarıyla atlar (`MOD-0174-lot-serial-tracking.md` K-B, §7 "PRODUCT-MASTER `gtin`" satırı). `gtin` anlamı değişmediği için o davranış sessizce değişmez. LSKU `gtin`'inin dolması stok ekibine haberli ayrı bir karardır (§25 AK-2). Bilinmeyen alan hata değildir (sözleşmenin açık enum / ek alan kuralı, `info.x-notes`).
+**Stok tüketicisi etkisi:** MOD-0174 `gs1-check` SKU'nun `gtin`'i null iken GTIN denetimini uyarıyla atlar (`MOD-0174-lot-serial-tracking.md` K-B, §7 "PRODUCT-MASTER `gtin`" satırı). `gtin` anlamı değişmediği için o davranış sessizce değişmez. LSKU `gtin` alanı null kalır; LSKU GTIN'i yalnız `identifiers[]`'ta (§0.4 AK-2). Bilinmeyen alan hata değildir (sözleşmenin açık enum / ek alan kuralı, `info.x-notes`).
 
 ## 17. Acceptance Criteria
 
@@ -277,7 +296,7 @@ Kişisel veri, gizli değer yok.
 - [ ] AC-8 (zorunlu) — DL-1: `GET /product-master/identifiers/{gtin}`, `identifiers[]` ve önek okuması sözleşme dosyasındaki şemaya uyar; FG `gtin` değeri ve LSKU / Kalem `gtin: null` değişmez (mevcut S4 testleri yeşil).
 - [ ] AC-9 (zorunlu) — DL-1: §15'teki her komut tam bir denetim niyeti bırakır; olay adları tablodakiyle aynı.
 - [ ] AC-10 (zorunlu) — DL-1: §18 sabotajlarının her biri adı geçen testte kırmızı, geri alınca yeşil; `git status --porcelain` boş.
-- [ ] AC-11 (zorunlu) — DL-2: manifestte §14 sayfa ve eylemleri; `ApiPermissions` boş; modül hakkı olan kiracıda rol verimi §25 AK-6 kararıyla aynı (yerel yığında ölçülür).
+- [ ] AC-11 (zorunlu) — DL-2: manifestte §14 sayfa ve eylemleri; `ApiPermissions` boş; modül hakkı olan kiracıda rol verimi DL-2 öncesi ölçümle aynı (§0.4 AK-6; yerel yığında ölçülür).
 - [ ] AC-12 (zorunlu) — DL-2: görünümler `Layout = "_LayoutTenantShell"` yazar; `verify_datatable_page.py` sapma 0; 7 dilde anahtar eşitliği; izinsiz kullanıcıya iskelet çizilmez.
 - [ ] AC-13 (zorunlu) — DL-2: FG, LSKU, Kalem ayrıntısında "Tanımlayıcılar" bölümü kaydın etkin ve emekli GTIN'lerini gösterir.
 - [ ] AC-14 (isteğe bağlı) — DL-2: sayfa yardımı ve tur (§19).
@@ -308,19 +327,19 @@ DL-2: sayfa yardımı 7 dilde — GTIN nedir, düzeyler, `Own` / `External`, eme
 - [x] Layout: `_LayoutTenantShell` açıkça (§9)
 - [x] Validation Rules, Failure Path, Authorization, Gateway kararı, Audited Events
 - [x] Teslim dilimleri tablosu, kanıt seviyesi, plan sütunları
-- [ ] §25 AK-1, AK-2, AK-3: DL-1 prompt'undan önce sahip kararı
-- [ ] §25 AK-6: DL-2 prompt'undan önce Auth ölçümü
-- [ ] Toplu silme yokluğu: Golden Reference'tan bilinçli sapma (tanımlayıcı gerekçesiz silinmez); kule onayı
+- [x] AK-1…AK-5, AK-7…AK-9: karara bağlandı (§0.4, 2026-11-10)
+- [ ] AK-6: karar verildi; Auth rol verimi ölçümü DL-2 prompt'undan önce (DL-1'i durdurmaz)
+- [x] Toplu silme yokluğu: Golden Reference'tan sapma, kule kararıyla kabul (§0.4 GR-1)
 - [ ] Gateway kuyruk satırı (integration-agent)
 - [ ] Bağımsız inceleme ve onay satırı (kule)
 
 ## 21. Implementation Notes
 
-- **N-1 Dilim önerisi: iki dilim.** DL-1 arka uç (defter, önek, FG bağlama, göç, sözleşme eki): MOD-0182 ve MOD-0174'ün ihtiyacı yalnız buradadır ve E4 kanıtını ekransız verebilir. DL-2 ekran + manifest + 7 dil: Auth ölçümüne (AK-6) bağlıdır, DL-1'i bekletmemelidir. Tek dilim FU04 deneyimine göre bir prompt'a sığmaz (FU04 S3 + S5 ayrı dilimlerdi) ve AK-6 belirsizliği arka ucu da durdururdu. Koli / palet için üçüncü dilim önerilmez: AK-1 (b) seçilirse DL-1'de, (a) seçilirse P9'un işidir.
+- **N-1 Dilim önerisi: iki dilim.** DL-1 arka uç (defter, önek, FG bağlama, göç, sözleşme eki): MOD-0182 ve MOD-0174'ün ihtiyacı yalnız buradadır ve E4 kanıtını ekransız verebilir. DL-2 ekran + manifest + 7 dil: Auth ölçümüne (AK-6) bağlıdır, DL-1'i bekletmemelidir. Tek dilim FU04 deneyimine göre bir prompt'a sığmaz (FU04 S3 + S5 ayrı dilimlerdi) ve AK-6 belirsizliği arka ucu da durdururdu. Koli / palet için üçüncü dilim yok: AK-1 (b) kararıyla DL-1'de.
 - **N-2 FG satış kutusu: defter tek kaynak.** `PUT /api/finished-goods/{id}/gtin` dış sözleşmesi (yol, gövde, izin, hata kodları, kilit, iptal edilen taslağın bırakması) değişmez. İşleyici önce defteri (tekil dizin bütün düzeyleri korur), sonra `FinishedGood.Gtin`'i yazar; okuma defterden. Mongo çoklu belge işlemi MDM'de kullanılıyor mu ölçülmedi; kullanılmıyorsa yarım yazım `Idempotency-Key` tekrarıyla tamamlanır ve göç / tutarlılık testi bunu yakalar. `FinishedGood.Gtin` ve `ux_finished_goods_tenant_gtin_live_v1` bu pakette kaldırılmaz (geri dönüş yolu).
-- **N-3 Koli / palet — P9 düzey kaydı gelene kadar (öneri, açık karar AK-1).** Seçenekler: **(a)** P9'u bekle: `Case` / `Pallet` DL-1'de reddedilir. 🟢 risk yok; MOD-0182 P9'u bekler. **(b) Önerilen:** geçici bağ — hedef Bitmiş Ürün + düzey, `PackagingLevelId = null`, hedef + düzey başına tek etkin GTIN. P9 düzey kaydını açınca tek seferlik "sahiplenme" komutuyla `PackagingLevelId`'yi doldurur (P9'un komutu, P9 paketinde); GTIN ve geçmişi değişmez. Aynı FG'nin iki farklı koli yapılandırması (12'li, 24'lü) P9'dan önce tutulamaz: 🟡 gerekirse P9'da yeni GTIN. **(c)** SAP tarzı birim başına bağ (FG + `XCS`): koli için FG'nin koli ↔ kutu çevrimi var, palet birimi `item-uom` listesinde yok (FU04 §16.2 "kutu `XBX`, koli `XCS`, rulo `XRO`"); MOD-0048 listesine dokunur, XMC-001.
+- **N-3 Koli / palet — P9 düzey kaydı gelene kadar (karar: (b), §0.4 AK-1).** Seçenekler: **(a)** P9'u bekle: `Case` / `Pallet` DL-1'de reddedilir. 🟢 risk yok; MOD-0182 P9'u bekler. **(b) Seçildi:** geçici bağ — hedef Bitmiş Ürün + düzey, `PackagingLevelId = null`, hedef + düzey başına tek etkin GTIN. P9 düzey kaydını açınca tek seferlik "sahiplenme" komutuyla `PackagingLevelId`'yi doldurur (P9'un komutu, P9 paketinde); GTIN ve geçmişi değişmez. Aynı FG'nin iki farklı koli yapılandırması (12'li, 24'lü) P9'dan önce tutulamaz: 🟡 gerekirse P9'da yeni GTIN. **(c)** SAP tarzı birim başına bağ (FG + `XCS`): koli için FG'nin koli ↔ kutu çevrimi var, palet birimi `item-uom` listesinde yok (FU04 §16.2 "kutu `XBX`, koli `XCS`, rulo `XRO`"); MOD-0048 listesine dokunur, XMC-001.
 - **N-4 Göç:** açılışta, kiracı başına, `TenantId + FinishedGoodId + SalesBox` anahtarıyla tekrarlanabilir; dizin kurucudan sonra.
-- **N-5 SAP / Oracle:** SAP malzeme ana kaydında ölçü birimi başına EAN / UPC (birim başına ek EAN'lar), şirket önekinden numara aralığıyla iç atama. Oracle kalem + birim GTIN çapraz başvurusu. Bu paket ikisinin ortası: GTIN kayıt + düzeye bağlanır (Oracle'a yakın), düzey P9'da birime eşlenir (SAP'ye yakın); otomatik atama yok (AK-8).
+- **N-5 SAP / Oracle:** SAP malzeme ana kaydında ölçü birimi başına EAN / UPC (birim başına ek EAN'lar), şirket önekinden numara aralığıyla iç atama. Oracle kalem + birim GTIN çapraz başvurusu. Bu paket ikisinin ortası: GTIN kayıt + düzeye bağlanır (Oracle'a yakın), düzey P9'da birime eşlenir (SAP'ye yakın); otomatik atama yok (§0.4 AK-8).
 - **N-6 Plan:** plan satırı bu pakete verilmedi; dilim sütunlarında `plan kimliği yok` / `plan satırı yok`. P6 tamamlama planı §4'tendir; MVP-5 ilişkisi W-7.
 - Dilim tablosu `## 24. Teslim dilimleri` başlığı altında (`scripts/pack_approval.py` `SLICE_HEADING`).
 - Okunacak kurallar: `.antigravity/rules/module-pack-standard.md`, `handler-design.md`, `erp-architecture.md`, `response-envelope.md`, `multi-tenancy`, `localization-standard`, `permission-key-standard.md`, `audit-trail-standard.md`.
@@ -329,9 +348,9 @@ DL-2: sayfa yardımı 7 dilde — GTIN nedir, düzeyler, `Own` / `External`, eme
 
 | # | Konu | Sahip | Regresyon riski |
 |---|---|---|---|
-| F-1 | P9 ambalaj hiyerarşisi paketi: düzey kaydı + AK-1 (b) seçilirse sahiplenme komutu | MDM | 🟡 P9 yoksa koli / palet düzeyi geçici kalır |
+| F-1 | P9 ambalaj hiyerarşisi paketi: düzey kaydı + sahiplenme komutu (AK-1 (b)) | MDM | 🟡 P9 yoksa koli / palet düzeyi geçici kalır |
 | F-2 | MOD-0182 paketi: SSCC üretimi önek okumasıyla, tarama `identifiers/{gtin}` ile | MVP-5 CT | 🟢 |
-| F-3 | Stok ekibine haber: `identifiers[]` ve çözümleme; LSKU `gtin` kararı (AK-2) | Kule | 🟡 haber verilmezse gs1-check LSKU'da atlamaya devam eder |
+| F-3 | Stok ekibine haber: `identifiers[]`, çözümleme ve LSKU `gtin`'in null kaldığı (AK-2) | Kule | 🟡 haber verilmezse stok LSKU GTIN'ini `identifiers[]`'tan okumaz, gs1-check LSKU'da atlamaya devam eder |
 | F-4 | `FinishedGood.Gtin` alanının ve eski dizinin kaldırılması (defter oturduktan sonra) | MDM | 🟡 ayrı paket |
 | F-5 | O-12: FG ucunun geçici anahtarı (`mdm.finished-goods.create`) — BL-573 ikinci yarı | MDM + Auth | 🟢 bugünkü durum |
 | F-6 | `execution/registries/module-implementation-status.md` satırı, kod gelince | Kule | 🟢 |
@@ -351,15 +370,15 @@ DL-1 çekirdektir. DL-2 DL-1'e dayanır.
 
 ## 25. Açık kararlar
 
-| # | Karar | Kim | Öneri |
-|---|---|---|---|
-| AK-1 | Koli / palet GTIN'i P9 düzey kaydı gelene kadar nasıl tutulur (S-4 sınırı) | Sahip | **(b) geçici bağ**, P9 sahiplenir (§21 N-3) |
-| AK-2 | LSKU GTIN'inin anlamı: FG satış kutusu GTIN'iyle aynı ticari ürün mü? (LSKU ile FG arasında doğrudan bağ yok, BL-018.) LSKU `gtin` sözleşme alanı dolsun mu? | Sahip + stok ekibi | LSKU kendi GTIN'ini `Lsku` düzeyinde alır, `gtin` alanı null kalır; dolması ayrı, haberli karar |
-| AK-3 | Emekli FG'nin GTIN'i: bugün serbest kalıyor; bu paketle yeniden kullanılmaz (GS1 GTIN Yönetim Standardı — dış kaynak, depoda doğrulanmadı). Göçteki çakışmalar | Sahip | Yeniden kullanım yok; iptal edilen taslağınki serbest (bugünkü gibi). 🟡 bugün izin verilen bir yeniden atama reddedilir |
-| AK-4 | GS1 önek uzunluk aralığı (4–12) ve tek mi çok mu önek | Sahip | Çok önek, kiracı başına liste |
-| AK-5 | Önek kiracıya mı, tüzel kişiye mi bağlı (GS1 öneki şirkete lisanslanır)? | Sahip | v1 kiracı (S-2); tüzel kişi alanı sonra eklenebilir |
-| AK-6 | Yeni anahtarların Auth rol verimi (Admin / Viewer / `ProductDataSteward` …) ve gerekirse Auth değişikliği (XMC-001) | Kule + Auth sahibi | DL-2'den önce kod okuması + yerel ölçüm; Viewer yalnız `.read` |
-| AK-7 | Çözümleme yolu: `GET /product-master/identifiers/{gtin}` mi, W-04'teki `GET /skus?gtin=` mi | Kule + MVP-5 CT | `identifiers/{gtin}` |
-| AK-8 | GTIN'i önekten otomatik üretme (SAP iç numara aralığı gibi) | Sahip | v1'de yok, elle giriş |
-| AK-9 | Sözleşme sürümü: v1.1 taslağına mı, ayrı v1.2'ye mi | Kule | Ayrı v1.2 (stok ekibinin v1.1'i karışmasın) |
-| AK-10 | `target` tarihi, onaylayan ve modül PR'ını birleştiren ikinci kişi | Kule | TBD; verilmedi, uydurulmadı (künyedeki tarih sahibin tahmini) |
+| # | Karar | Kim | Öneri | Durum |
+|---|---|---|---|---|
+| AK-1 | Koli / palet GTIN'i P9 düzey kaydı gelene kadar nasıl tutulur (S-4 sınırı) | Sahip | (b) geçici bağ, P9 sahiplenir (§21 N-3) | **Kapandı: (b)** (§0.4) |
+| AK-2 | LSKU GTIN'inin anlamı (LSKU ile FG arasında doğrudan bağ yok, BL-018); LSKU `gtin` sözleşme alanı dolsun mu? | Sahip | LSKU kendi GTIN'ini `Lsku` düzeyinde alır, `gtin` null kalır | **Kapandı: öneri** (§0.4) |
+| AK-3 | Emekli FG'nin GTIN'i (bugün serbest kalıyor); yeniden kullanmama (GS1 GTIN Yönetim Standardı — dış kaynak, depoda doğrulanmadı); göç çakışmaları | Sahip | Yeniden kullanım yok; iptal edilen taslağınki serbest. 🟡 bugün izin verilen bir yeniden atama reddedilir | **Kapandı: öneri + çakışmalar raporlanır** (§0.4) |
+| AK-4 | GS1 önek uzunluk aralığı (4–12, dış kaynak) ve tek mi çok mu önek | Sahip | Çok önek, kiracı başına liste | **Kapandı: çok önek, liste** (§0.4) |
+| AK-5 | Önek kiracıya mı, tüzel kişiye mi bağlı | Sahip | v1 kiracı; tüzel kişi alanı sonra | **Kapandı: kiracı** (§0.4) |
+| AK-6 | Yeni anahtarların Auth rol verimi ve gerekirse Auth değişikliği (XMC-001) | Kule + Auth sahibi | DL-2'de manifest; DL-2 öncesi ölçüm; Viewer yalnız `.read` | **Kapandı (karar);** ölçüm DL-2 öncesi açık iş (§20) |
+| AK-7 | Çözümleme yolu | Kule + MVP-5 CT | `GET /product-master/identifiers/{gtin}` | **Kapandı: öneri** (§0.4) |
+| AK-8 | GTIN'i önekten otomatik üretme | Kule | v1'de yok, elle giriş | **Kapandı: öneri** (§0.4) |
+| AK-9 | Sözleşme sürümü | Kule | Ayrı v1.2 | **Kapandı: öneri** (§0.4) |
+| AK-10 | `target` tarihi, onaylayan ve modül PR'ını birleştiren ikinci kişi | Kule | — | **Açık: TBD**; verilmedi, uydurulmadı; tarih "2026-11-20 (tahmin)" |
