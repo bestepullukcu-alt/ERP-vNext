@@ -39,7 +39,7 @@ dependencies:
 > `git log --all -S 'MOD-0290-FU07'` ve `git log --all -- '*MOD-0290-FU07*'`: 0 commit.
 > `--discover "Product Identifiers GTIN Barcode"`: çıkış 0, bulgu 0, rapor-sha256 `0cdf07bba888…`. Kayıtlı keşif [`DISCOVERY-mod0290-fu07-p6.txt`](../../../../docs/records/audits/2026-11/mdm-ct-02-dl1-inspection-01/DISCOVERY-mod0290-fu07-p6.txt) (rapor-sha256 `548c79266bb6…`) ile tek fark ref listesinin özeti. Keşif EKSİK satırları geçerli.
 >
-> **Değişen bölümler:** 2026-11-10 `0d271a2e6` sonrası: §0.4. İnceleme turu 1 (KOŞULLU): K-11…K-14; §2–§25 düzeltildi; §23 eklendi. İnceleme turu 2 (KOŞULLU, engel yok): künye; §4 durum anlamı, hedef kodu; §12 hane kuralı, GTIN-8, hedef durum matrisi; F-18 taslak iptalleri (§12, §13); §15 göç denetimi; §16 TRACE koli / palet; §17 AC numaraları tur 1'e döndü, yeniler AC-15…AC-19; §21 N-7 depo yollarıyla; §23 DL-1 canlı adımı; §24 DL-2 bölümleri.
+> **Değişen bölümler:** 2026-11-10 `0d271a2e6` sonrası: §0.4. İnceleme turu 1 (KOŞULLU): K-11…K-14; §2–§25 düzeltildi; §23 eklendi. İnceleme turu 2 (KOŞULLU, engel yok): künye; §4 durum anlamı, hedef kodu; §12 hane kuralı, GTIN-8, hedef durum matrisi; F-18 taslak iptalleri (§12, §13); §15 göç denetimi; §16 TRACE koli / palet; §17 AC numaraları tur 1'e döndü, yeniler AC-15…AC-19; §21 N-7 depo yollarıyla; §23 DL-1 canlı adımı; §24 DL-2 bölümleri. İnceleme turu 3 (KOŞULLU, engel yok): K-15 dizin hazırlığı, K-16 Viewer / Auth değişikliği, K-17 göç komutu; §8, §12 matrisi (LSKU iptali 404), §13, §14, §15, §17 (AC-7, AC-15, AC-17, AC-19, yeni AC-20), §18, §20, §21 N-2 / N-4 / N-7, §23, §25.
 >
 > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
 
@@ -76,6 +76,10 @@ dependencies:
 - Mongo işlemi MDM'de kullanılıyor: `FinishedGoodRepository` ve `LskuRepository` (snapshot / majority, `UnknownTransactionCommitResult` yeniden kesinleştirme), `MasterDataAtomicWrite`; denetim defterinin `mdm-guvenilir-kaynak-niyeti` satırı ("aynı Mongo işleminde"). Testler kendi replica set'ini açar (`MdmTestMongo`, `--replSet mdm-owned`; CI "every test owns its mongod").
 - Kalem yaşam döngüsü (`ItemLifecycle`): taslaktan yalnız güncelleme ve gönderme; taslak iptali komutu yok.
 - GS1 şirket öneki: depoda yok (0 eşleşme).
+- Dizin kurulumu: `ProductStockBehaviourIndexInitializer` açılışı durdurmaz (arka planda sürer); `MasterDataAtomicWrite.cs` içindeki `IndexOnce` dizin hazır olana kadar yazımı adlı 503 ile reddeder.
+- LSKU taslak iptali kaydı yumuşak siler (`LskuRepository.CancelDraftAsync`: `IsDeleted = true`); FG taslak iptali kaydı tutar (`DraftCancellation`).
+- Auth `DefaultRolePermissionTemplate.SelectFor`: varsayılan Viewer'a `read` eylemli her kiracı anahtarını verir; `EntitlementOnlyViewerPermissions` listesindekiler yalnız modül hakkıyla gider.
+- Arka plan yazıcıları `ProductIdentityBackgroundScope` ile çiti okur (kurtarma koşucuları); denetim `IAuditableCommand` → `AuditForwardingBehavior` (MediatR hattı), mimari testi `AuditTrailStandardTests`.
 
 ### 0.4 Kararlar (2026-11-10, kule sohbeti)
 
@@ -87,7 +91,7 @@ Sahip kararları butonlarla; kule kararları sahibin bıraktığı yetkiyle.
 | AK-2 | LSKU kendi GTIN'ini `Lsku` düzeyinde alır; sözleşmedeki `gtin` null kalır, yeni GTIN'ler `identifiers[]`'ta | Sahip | §16 (kalıcılığı AK-11) |
 | AK-3 | Emekli ürünün GTIN'i hiç yeniden verilmez; iptal edilen taslağınki serbest; göç çakışmaları raporlanır | Sahip | §4, §12, §13 |
 | AK-4 / AK-5 | Önek kiracıya bağlı, birden çok önek listesi; tüzel kişi alanı sonra eklenebilir. Uzunluk 4–12 dış kaynak işaretiyle | Sahip | §4, §12 |
-| AK-6 | Anahtarlar DL-2'de manifestte; rol verimi DL-2 öncesi ölçülür; Auth değişikliği gerekirse XMC-001 | Kule | §14 |
+| AK-6 | Anahtarlar DL-2'de manifestte; rol verimi DL-2 öncesi ölçülür; Auth değişikliği gerekirse XMC-001 (Viewer için gerekir: K-16) | Kule | §14 |
 | AK-7 | Çözümleme `GET /product-master/identifiers/{gtin}` | Kule | §16 |
 | AK-8 | v1'de otomatik GTIN üretimi yok | Kule | §2 |
 | ~~AK-9~~ | ~~Ayrı v1.2~~ — **K-13'le değişti** | Kule | — |
@@ -96,6 +100,9 @@ Sahip kararları butonlarla; kule kararları sahibin bıraktığı yetkiyle.
 | K-12 | **FG ucu tek Mongo işlemi:** defter + FG aynı işlemde | Kule | §13, §21 N-2, AC-6 |
 | K-13 | `identifiers[]` ve yeni okumalar mevcut **v1.1 taslağına** (dondurulmamış); v1.2 BL-584'e ayrılmış | Kule | §16 |
 | K-14 | **Tüzel kişi kapsamı:** FG / LSKU hedefli her uç `ProductLegalEntityScopeConsumerGuard` ile, kapsam dışı 404; yeni yazıcılar çitli, `KnownUnguardedWriters`'a girmez. Kalem kiracı geneli (FU04 Karar 6) | Kule | §8, §10, §12, §13 |
+| K-15 | **Dizin hazırlığı:** defter yazımları ve göç (TenantId, Gtin) tekil dizini hazır olmadan koşmaz; `IndexOnce` deseni, hazır değilse adlı 503 | Kule (tur 3) | §8, §13, AC-20 |
+| K-16 | **Viewer:** `mdm.product-identifiers.read`'in `EntitlementOnlyViewerPermissions`'a eklenmesi Auth değişikliğidir (XMC-001; sahip izni DL-2'den önce sorulur); bu değişiklik main'e girmeden DL-2 canlıya çıkmaz | Kule (tur 3) | §6, §7, §14, AC-19, §23 |
+| K-17 | **Göç:** koşucu kiracı başına sistem aktörlü `MigrateFinishedGoodGtinsCommand`'ı MediatR'dan gönderir (denetim `AuditForwardingBehavior`'dan); komut çitlidir (`IProductLegalEntityScopeInventoryMutation`), koşucu `ProductIdentityBackgroundScope`'u alır; `KnownUnfencedRecoveryRunners`'a girmez | Kule (tur 3) | §3, §15, §21 N-4 |
 | AK-10 | `target`, onaylayan, ikinci kişi | — | **TBD**; künyedeki tarih tahmin |
 
 ## 1. Module Summary
@@ -118,7 +125,7 @@ Kiracının ürün tanımlayıcılarını tek defterde tutar: her GTIN bir kayda
 | Komut | `AddGs1CompanyPrefixCommand` · `RetireGs1CompanyPrefixCommand` | yeni, kiracı geneli |
 | Komut | `AssignFinishedGoodGtinCommand` | değişir: defter + FG tek işlem (K-12) |
 | Komut | `CancelFinishedGoodDraftCommand` · `CancelLskuDraftCommand` | değişir: hedefin bütün etkin defter satırlarını aynı işlemde geri çeker |
-| Göç | FG `Gtin` → defter, açılışta, tekrarlanabilir, sistem aktörü | yeni (K-11) |
+| Göç | `MigrateFinishedGoodGtinsCommand` (kiracı başına, sistem aktörü, çitli) + açılış koşucusu; FG `Gtin` → defter, tekrarlanabilir | yeni (K-11, K-17) |
 | Sorgu | `GetProductIdentifierListQuery` · `GetProductIdentifierByIdQuery` · `ResolveGtinQuery` · `GetGs1CompanyPrefixListQuery` | yeni |
 | İzin (DL-2 manifest) | `mdm.product-identifiers.read` · `.assign` · `.retire` · `mdm.gs1-company-prefixes.manage` | yeni |
 | Sözleşme eki | `product-master-bundle` v1.1 taslağı (K-13) | yalnız ekleme |
@@ -152,7 +159,7 @@ Tam liste depo yollarıyla §21 N-7 (yeni dosyalar "(yeni)" işaretli; değişen
 
 ## 6. Protected Paths
 
-`.antigravity/**` · `services/Diten.AuthService/**` · `services/Diten.Platform/**` · `services/Diten.InventoryService/**` · `gateway/**` (`ocelot.json` yalnız integration-agent) · `execution/registries/**` · MOD-0174 / MOD-0177 / MOD-0178 paketleri ve `docs/analysis/contracts/trace.openapi.yaml`. Birine dokunmak gerekirse XMC-001.
+`.antigravity/**` · `services/Diten.AuthService/**` · `services/Diten.Platform/**` · `services/Diten.InventoryService/**` · `gateway/**` (`ocelot.json` yalnız integration-agent) · `execution/registries/**` · MOD-0174 / MOD-0177 / MOD-0178 paketleri ve `docs/analysis/contracts/trace.openapi.yaml`. Birine dokunmak gerekirse XMC-001. Auth'taki Viewer değişikliği (K-16) bu paketin kodu değildir; ayrı XMC-001 işi.
 
 ## 7. Dependencies
 
@@ -162,12 +169,13 @@ Tam liste depo yollarıyla §21 N-7 (yeni dosyalar "(yeni)" işaretli; değişen
 | P9 | Koli / palet düzey kaydı | yok — geçici bağ (AK-1) |
 | Tüzel kişi kapsamı | `ProductLegalEntityScopeConsumerGuard`, yazma çiti (`IProductLegalEntityScopeInventoryMutation`) | kodda var |
 | Auth özel profili | `ValidateExactDeclaredPermissionSet`: yeni kaynaklar hiçbir kümede sayılmıyor, reddedilmiyor (kod okuması); rol verimi ölçülmedi | DL-2 önkoşulu (§14) |
+| Auth Viewer listesi | `DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions`'a `mdm.product-identifiers.read` (K-16); XMC-001, sahip izni | **DL-2 canlı önkoşulu** — main'de olmadan DL-2 canlıya çıkmaz |
 | Denetim | `mdm-merkezi-iletim`, yol b, kabul edilmiş | var |
 | Gateway | `/api/product-identifiers`, `/api/gs1-company-prefixes` | integration-agent satırı (§16) |
 
 ## 8. Runtime Constraints
 
-MDM 5059, Gateway 5000, Web 5001. Her sorgu ve uç `TenantId` ile; başka kiracı 404. **FG / LSKU hedefli her uç** (atama, emekli, geri çekme, liste, ById, çözümleme) hedefin GSKU'su üzerinden `ProductLegalEntityScopeConsumerGuard` ile sınırlanır (`StockBehaviourContext.ResolveGskuAsync` deseni); kapsam dışı 404, listede görünmez ve sayılmaz. **Kalem satırları ve önekler kiracı genelidir** (FU04 Karar 6). Tekillik yalnız kiracı içinde; başka kiracı denetlenmez, sızdırılmaz. Silme yalnız yumuşak, yalnız taslak hedefte (GR-1). FG ucu ve FG / LSKU taslak iptali tek Mongo işlemi; işlem desteklemeyen sunucuda `MasterDataAtomicWrite` politikası (Development dışında 503). Dizinler ve göç açılışta (§23).
+MDM 5059, Gateway 5000, Web 5001. Her sorgu ve uç `TenantId` ile; başka kiracı 404. **FG / LSKU hedefli her uç** (atama, emekli, geri çekme, liste, ById, çözümleme) hedefin GSKU'su üzerinden `ProductLegalEntityScopeConsumerGuard` ile sınırlanır (`StockBehaviourContext.ResolveGskuAsync` deseni); kapsam dışı 404, listede görünmez ve sayılmaz. **Kalem satırları ve önekler kiracı genelidir** (FU04 Karar 6). Tekillik yalnız kiracı içinde; başka kiracı denetlenmez, sızdırılmaz. Silme yalnız yumuşak, yalnız taslak hedefte (GR-1). FG ucu ve FG / LSKU taslak iptali tek Mongo işlemi; işlem desteklemeyen sunucuda `MasterDataAtomicWrite` politikası (Development dışında 503). Dizinler ve göç açılışta (§23). **Dizin hazırlığı (K-15):** defter depoları ve göç (TenantId, Gtin) tekil dizinini `IndexOnce` deseniyle ister; dizin hazır değilse defter yazımı (FG ucu ve taslak iptalleri dahil) adlı 503 `PRODUCT_IDENTIFIER_STORE_UNAVAILABLE` ile reddedilir, göç o kiracıyı atlar ve sonraki açılışta dener. Dizinsiz yazım hiçbir yolda olmaz.
 
 ## 9. Layout & Shell Contract
 
@@ -222,10 +230,11 @@ Yalnız DL-2. Slim set `Views/MasterDataManagement/ProductIdentifiers/`: `Index.
 |---|---|---|---|---|
 | Taslak | ✔ | ✔ | ✔ | ✔ |
 | Onay bekliyor · onaylı · Kalem `PendingActivation` / `Active` / `Deactivated` | ✔ | 409 `GTIN_WITHDRAW_NOT_DRAFT` | ✔ | ✔ |
-| İptal edilmiş taslak (FG / LSKU) | 409 `TARGET_DRAFT_CANCELLED` | — (satırlar iptalde geri çekildi) | — | 404 `UNKNOWN_GTIN` |
+| İptal edilmiş taslak — FG (kayıt kalır) | 409 `TARGET_DRAFT_CANCELLED` | — (satırlar iptalde geri çekildi) | — | 404 `UNKNOWN_GTIN` |
+| İptal edilmiş taslak — LSKU (kayıt yumuşak silinir) | 404 `TARGET_NOT_FOUND` | — | — | 404 `UNKNOWN_GTIN` |
 | Emekli | 409 `TARGET_RETIRED` | 409 `GTIN_WITHDRAW_NOT_DRAFT` | ✔ | ✔ (`targetLifecycleStatus: Retired`) |
 
-**Taslaktan vazgeçme:** FG taslak iptali (`CancelFinishedGoodDraftCommand`) FG'nin **bütün** etkin satırlarını (satış kutusu + koli + palet) aynı işlemde geri çeker; LSKU taslak iptali (`CancelLskuDraftCommand`) LSKU satırını aynı işlemde geri çeker (`LskuRepository` işlemi). Kalem'de taslak iptali komutu yok (§0.3); taslak Kalem'in GTIN'i `WithdrawProductIdentifierCommand` ile serbest kalır.
+**Taslaktan vazgeçme:** FG taslak iptali (`CancelFinishedGoodDraftCommand`) FG'nin **bütün** etkin satırlarını (satış kutusu + koli + palet), LSKU taslak iptali (`CancelLskuDraftCommand`) LSKU satırını geri çeker. Geri çekme işleyicide değil, deponun mevcut işleminin **içinde** yazılır (`FinishedGoodRepository.CancelDraftAsync`, `LskuRepository.CancelDraftAsync`). Kalem'de taslak iptali komutu yok (§0.3); taslak Kalem'in GTIN'i `WithdrawProductIdentifierCommand` ile serbest kalır.
 
 **FG ucu** (`PUT /api/finished-goods/{id}/gtin`): yol, gövde, izin, kodlar (`FG_GTIN_INVALID`, `FG_GTIN_CONFLICT`, `STOCK_BEHAVIOUR_FIELD_LOCKED`) aynı; girdi bugünkü gibi yalnız 14 hane. Değişen: çakışma defterin bütün düzeylerine ve **emekli GTIN'lere** bakar (AK-3, 409 `FG_GTIN_CONFLICT`). Taslakta A → B değişimi aynı işlemde A satırını geri çeker, B'yi `Active` yazar.
 
@@ -243,6 +252,8 @@ Yalnız DL-2. Slim set `Views/MasterDataManagement/ProductIdentifiers/`: `Index.
 | Göç, çakışma (aynı GTIN'de canlı ve emekli FG'ler) | Canlı FG `Active`; emekliler satır almaz, raporda (K-11) |
 | Göç, yalnız emekli FG'ler | En son emekliye alınan FG `Retired` satır (`MigrationNote`), diğerleri raporda |
 | Göç ikinci koşu | Değişiklik yok; açılış hiçbir durumda durmaz |
+| Göç, kiracının çiti kapalı (`ProductIdentityBackgroundScope` yazıma izin vermiyor) | Kiracı atlanır, raporda; sonraki açılışta denenir |
+| (TenantId, Gtin) dizini hazır değil | Defter yazımı 503 `PRODUCT_IDENTIFIER_STORE_UNAVAILABLE`, hiçbir koleksiyon değişmez; göç kiracıyı atlar (K-15) |
 | Hedef P6'dan sonra emekliye ayrıldı | `Status` değişmez (§4); GTIN yeniden verilmez; çözümleme `status` ile `targetLifecycleStatus: Retired`'ı ayrı döner |
 | Denetim iletimi başarısız | İş durmaz, uyarı (yol b) |
 
@@ -272,7 +283,7 @@ Scope:      Tenant + tüzel kişi kapsamı (FG / LSKU hedefleri, K-14); Kalem ve
 | `mdm.product-identifiers.retire` | ✔ | — | ✔ | — |
 | `mdm.gs1-company-prefixes.manage` | ✔ | — | — | — |
 
-Admin / Viewer sütunları plan eşitlemesinin genel kuralıdır (`DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions`; ölçülmedi). Adanmış roller yalnız `DedicatedRoles` şablonundakini alır; `ProductDataSteward` sütunu Auth değişikliği ister → XMC-001. Ölçüm farklı çıkarsa DL-2 prompt'u yazılmaz, kule karar verir.
+Admin sütunu plan eşitlemesinin genel kuralıdır (ölçülmedi). **Viewer:** `DefaultRolePermissionTemplate.SelectFor` varsayılan Viewer'a `read` eylemli her kiracı anahtarını verir; anahtar `EntitlementOnlyViewerPermissions`'ta olmazsa modül hakkı olmayan kiracının Viewer'ına da gider. Tablodaki Viewer sütunu yalnız K-16 Auth değişikliğiyle doğrudur; modül hakkı olmayan kiracının Viewer'ı hiçbir anahtarı almaz. Adanmış roller yalnız `DedicatedRoles` şablonundakini alır; `ProductDataSteward` sütunu Auth değişikliği ister → XMC-001. Ölçüm farklı çıkarsa DL-2 prompt'u yazılmaz, kule karar verir.
 
 ## 15. Audited Events (AUD-001)
 
@@ -287,9 +298,9 @@ Tek yol: b, iz `mdm-merkezi-iletim` (`IAuditableCommand` + `IAuditMetadataProvid
 | `RetireGs1CompanyPrefixCommand` | `gs1-company-prefix.retired` | Gs1CompanyPrefix | b | Önce / sonra: durum | — |
 | `AssignFinishedGoodGtinCommand` (değişir) | `finished-good.gtin-assigned` (FU04 §21) | FinishedGood | b | Önce / sonra: GTIN; geri çekilen önceki GTIN | — |
 | `CancelFinishedGoodDraftCommand`, `CancelLskuDraftCommand` (değişir) | mevcut iptal olayları, ek alan: geri çekilen GTIN'ler | FinishedGood / Lsku | mevcut | Önce: GTIN'ler | — |
-| Göç (açılış) | `product-identifier.migrated`, yazılan satır başına | ProductIdentifier | b, **sistem aktörü** `system:mdm-gtin-migration` | Sonra: GTIN, hedef, durum, not | — |
+| `MigrateFinishedGoodGtinsCommand` (göç, K-17) | `product-identifier.migrated`, yazılan satır başına | ProductIdentifier | b, MediatR hattından, **sistem aktörü** `system:mdm-gtin-migration` | Sonra: GTIN, hedef, durum, not | — |
 
-Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (kiracı, GTIN, FG kimlikleri). **Test etkisi:** göç yalnız açılışta koşar; HTTP testlerinin verisi açılıştan sonra yazıldığı için göç olay üretmez, denetim sayan mevcut testler değişmez. Göç testleri göçü doğrudan çağırır.
+Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (kiracı, GTIN, FG kimlikleri). **Test etkisi:** göç komutu MediatR'dan gittiği için `AuditTrailStandardTests` onu öbür komutlar gibi kapsar. Göç yalnız açılışta koşar; HTTP testlerinin verisi açılıştan sonra yazıldığı için olay üretmez, denetim sayan mevcut testler değişmez. Göç testleri komutu doğrudan gönderir.
 
 ## 16. Gateway / API Routing Decision
 
@@ -322,7 +333,7 @@ Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (ki
 - [ ] AC-4 (zorunlu) — DL-1: emekliye ayırma gerekçesiz 400, gerekçeli 200; emekli GTIN çözümlemede `status: Retired`; geri çekme yalnız taslak hedefte, GTIN'i serbest bırakır; §12 durum matrisinin her hücresi test edilir.
 - [ ] AC-5 (zorunlu) — DL-1: `Own` önek kuralı 422 (GTIN-8 `Own` dahil); önek ekleme 422 / 409 (§12).
 - [ ] AC-6 (zorunlu) — DL-1: FG ucu — mevcut testler yeşil (`A_gtin_with_a_wrong_check_digit_is_refused_by_name`, `The_unique_index_refuses_a_gtin_race_the_pre_check_cannot_see_and_null_gtins_never_collide`, `A_cancelled_draft_gives_its_gtin_back_and_a_new_finished_good_takes_it`, `StockBehaviourHttpTests`); `A_gtin_held_by_another_live_finished_good_is_refused_and_a_retired_ones_is_free` emekli yarısında 409 bekleyecek biçimde değişir; koli düzeyindeki GTIN 409 `FG_GTIN_CONFLICT`; taslakta A → B'de A geri çekilir; işlem içi hata kancasıyla iki koleksiyonda değişiklik yok; aynı anahtar ikinci yazım yapmaz.
-- [ ] AC-7 (zorunlu) — DL-1: göç K-11'e uyar (canlı `Active`; canlı yoksa en son emekli `Retired`; diğerleri raporda); ikinci koşu değişiklik üretmez; açılış durmaz.
+- [ ] AC-7 (zorunlu) — DL-1: göç K-11'e uyar (canlı `Active`; canlı yoksa en son emekli `Retired`; diğerleri raporda); ikinci koşu değişiklik üretmez; açılış durmaz; komut MediatR'dan sistem aktörüyle gider, çiti kapalı kiracı atlanır.
 - [ ] AC-8 (zorunlu) — DL-1: çözümleme, `identifiers[]` ve önek okuması sözleşme dosyasındaki şemaya uyar; FG `gtin` ve LSKU / Kalem `gtin: null` değişmez (mevcut S4 testleri yeşil).
 - [ ] AC-9 (zorunlu) — DL-1: §15'teki her yazma tam bir yol b denetim kaydı üretir; göç kaydı sistem aktörüyle; olay adları tablodakiyle aynı.
 - [ ] AC-10 (zorunlu) — DL-1: §18 sabotajlarının her biri adlı testte kırmızı, geri alınca yeşil; `git status --porcelain` boş.
@@ -330,11 +341,12 @@ Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (ki
 - [ ] AC-12 (zorunlu) — DL-2: `Layout = "_LayoutTenantShell"`; `verify_datatable_page.py` sapma 0; 7 dilde anahtar eşitliği; izinsiz kullanıcıya iskelet yok.
 - [ ] AC-13 (zorunlu) — DL-2: FG, LSKU, Kalem ayrıntısında "Tanımlayıcılar" bölümü etkin ve emekli GTIN'leri gösterir; liste hedef kodunu ve adını gösterir (§11).
 - [ ] AC-14 (isteğe bağlı) — DL-2: sayfa yardımı turu (§19).
-- [ ] AC-15 (zorunlu) — DL-1: kapsam dışı FG / LSKU hedefinde atama, emekli, geri çekme, ById ve çözümleme 404, listede yok; Kalem satırı kapsamdan bağımsız görünür; yeni üç komut `ExactMutationCommands`'ta, `KnownUnguardedWriters` değişmez, `ProductLegalEntityScopeWriteAdmissionContractTests` yeşil.
+- [ ] AC-15 (zorunlu) — DL-1: kapsam dışı FG / LSKU hedefinde atama, emekli, geri çekme, ById ve çözümleme 404, listede yok; Kalem satırı kapsamdan bağımsız görünür; yeni dört komut (üç defter komutu + göç) `ExactMutationCommands`'ta, `KnownUnguardedWriters` değişmez, `ProductLegalEntityScopeWriteAdmissionContractTests` yeşil.
 - [ ] AC-16 (zorunlu) — DL-1: `SalesBox` satırı defter uçlarında 422 `GTIN_LEVEL_USE_FINISHED_GOOD_ENDPOINT`.
-- [ ] AC-17 (zorunlu) — DL-1: FG taslak iptali satış kutusu + koli + palet satırlarının hepsini, LSKU taslak iptali LSKU satırını aynı işlemde geri çeker; işlem içi hata kancasıyla hiçbiri değişmez; iptal edilen taslağa atama 409 `TARGET_DRAFT_CANCELLED`.
+- [ ] AC-17 (zorunlu) — DL-1: FG taslak iptali satış kutusu + koli + palet satırlarının hepsini, LSKU taslak iptali LSKU satırını deponun `CancelDraftAsync` işleminde geri çeker; işlem içi hata kancasıyla hiçbiri değişmez; iptal edilen FG taslağına atama 409 `TARGET_DRAFT_CANCELLED`, iptal edilen (yumuşak silinmiş) LSKU'ya atama 404 `TARGET_NOT_FOUND`.
 - [ ] AC-18 (zorunlu) — DL-1: emekli önekle `Own` atama 422 `GTIN_PREFIX_MISMATCH`; önek komutlarında aynı `Idempotency-Key` ikinci yazım yapmaz.
-- [ ] AC-19 (zorunlu) — DL-2: yerel yığında rol verimi §14 tablosuyla aynı (ya da kule kararıyla değişmiş tablo).
+- [ ] AC-19 (zorunlu) — DL-2: yerel yığında rol verimi §14 tablosuyla aynı (ya da kule kararıyla değişmiş tablo); **modül hakkı olmayan kiracının Viewer'ı `mdm.product-identifiers.read` almaz** (K-16 Auth değişikliği main'de).
+- [ ] AC-20 (zorunlu) — DL-1: (TenantId, Gtin) dizini hazır değilken atama, FG ucu ve taslak iptali 503 `PRODUCT_IDENTIFIER_STORE_UNAVAILABLE` döner ve hiçbir koleksiyon değişmez; göç o kiracıyı atlar; dizin hazır olunca aynı istek başarılı (`IndexOnce` deseni).
 
 ## 18. Test Expectations
 
@@ -349,10 +361,11 @@ Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (ki
 | `ProductIdentifierMigrationTests` (yeni) | AC-7 |
 | `ProductMasterIdentifierContractTests` (yeni) | AC-8 |
 | `ProductIdentifierAuditTests` (yeni) | AC-9 |
-| `ProductLegalEntityScopeWriteAdmissionContractTests` (değişir) | `ExactMutationCommands` 26 → 29; test adındaki sayı güncellenir |
+| `ProductLegalEntityScopeWriteAdmissionContractTests` (değişir) | `ExactMutationCommands` 26 → 30; test adındaki sayı güncellenir |
+| `ProductIdentifierIndexReadinessTests` (yeni) | AC-20 |
 | `ProductItemSkuMasterManifestProviderTests` (DL-2, değişir) | AC-11 |
 
-**Sabotajlar:** (1) tekil dizinden `Retired`'ı çıkar → AC-2; (2) kiracı süzgecini kaldır → AC-3; (3) atama işleyicisinden kapsam korumasını kaldır → AC-15; (4) tamamlamayı kaldır → AC-1; (5) FG ucunda defter denetimini kaldır → AC-6 koli satırı; (6) FG ucunda emekli GTIN'i serbest say → AC-6 emekli satırı; (7) FG ucunda işlemi iki ayrı yazıma böl → AC-6 atomiklik; (8) göçte "en son emekli" seçimini kaldır → AC-7; (9) LSKU `gtin`'ini defterden doldur → AC-8; (10) FG taslak iptalinde yalnız satış kutusu satırını geri çek → AC-17; (11) önek denetiminde emekli önekleri say → AC-18.
+**Sabotajlar:** (1) tekil dizinden `Retired`'ı çıkar → AC-2; (2) kiracı süzgecini kaldır → AC-3; (3) atama işleyicisinden kapsam korumasını kaldır → AC-15; (4) tamamlamayı kaldır → AC-1; (5) FG ucunda defter denetimini kaldır → AC-6 koli satırı; (6) FG ucunda emekli GTIN'i serbest say → AC-6 emekli satırı; (7) FG ucunda işlemi iki ayrı yazıma böl → AC-6 atomiklik; (8) göçte "en son emekli" seçimini kaldır → AC-7; (9) LSKU `gtin`'ini defterden doldur → AC-8; (10) FG taslak iptalinde yalnız satış kutusu satırını geri çek → AC-17; (11) önek denetiminde emekli önekleri say → AC-18; (12) defter deposunda dizin hazırlık denetimini kaldır → AC-20; (13) göçte satırı MediatR'sız doğrudan yaz → AC-9 (`AuditTrailStandardTests` / `ProductIdentifierAuditTests`); (14) LSKU iptalinde geri çekmeyi işleyiciye, işlem dışına taşı → AC-17 atomiklik.
 
 ## 19. Page Help (UXH-001)
 
@@ -371,14 +384,15 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
 - [ ] AK-10 (`target`, onaylayan, ikinci kişi) — TBD
 - [ ] AK-11 stok ekibinin yazılı kabulü — DL-1'i durdurmaz; sözleşme metni kabul gelene kadar "kalıcılığı kabule bağlı" der
 - [ ] AK-6 ölçümü — DL-2 prompt'undan önce
+- [ ] K-16 Auth Viewer değişikliği: sahip izni (XMC-001, AK-12) DL-2'den önce; main'e girmeden DL-2 canlıya çıkmaz
 - [ ] Gateway kuyruk satırı (integration-agent)
 
 ## 21. Implementation Notes
 
 - **N-1 İki dilim.** DL-1 arka uç: MOD-0182 / MOD-0174 ihtiyacı yalnız burada; E4 ekransız verilebilir. DL-2 ekran + manifest + 7 dil: AK-6 ölçümüne bağlı, DL-1'i bekletmez. Tek dilim bir prompt'a sığmaz (FU04'te S3 ile S5 ayrıydı).
-- **N-2 FG satış kutusu (K-12).** `AssignFinishedGoodGtinHandler`, `CancelFinishedGoodDraftHandler` ve `CancelLskuDraftHandler` defter satırlarını ve hedef belgeyi **tek Mongo işleminde** yazar (`FinishedGoodRepository` / `LskuRepository` işlem seçenekleri: snapshot okuma, majority yazma, `UnknownTransactionCommitResult` yeniden kesinleştirme). `gtin` okuması `FinishedGood.Gtin`'den sürer; `identifiers[]` defterden. `FinishedGood.Gtin`, `ReleasedGtin` ve `ux_finished_goods_tenant_gtin_live_v1` bu pakette kaldırılmaz.
+- **N-2 FG satış kutusu (K-12).** `AssignFinishedGoodGtinHandler` (depo yazımı üzerinden) ile `FinishedGoodRepository.CancelDraftAsync` ve `LskuRepository.CancelDraftAsync` defter satırlarını ve hedef belgeyi **tek Mongo işleminde** yazar; geri çekme işleyicide değil depo işleminin içindedir (`FinishedGoodRepository` / `LskuRepository` işlem seçenekleri: snapshot okuma, majority yazma, `UnknownTransactionCommitResult` yeniden kesinleştirme). `gtin` okuması `FinishedGood.Gtin`'den sürer; `identifiers[]` defterden. `FinishedGood.Gtin`, `ReleasedGtin` ve `ux_finished_goods_tenant_gtin_live_v1` bu pakette kaldırılmaz.
 - **N-3 Koli / palet (AK-1).** Geçici bağ: hedef FG + düzey, `PackagingLevelId = null`, hedef + düzey başına tek etkin GTIN. P9 kendi paketindeki sahiplenme komutuyla `PackagingLevelId`'yi doldurur; GTIN ve geçmişi değişmez. Aynı FG'nin iki koli yapılandırması P9'dan önce tutulamaz (🟡). Elenen seçenekler: P9'u beklemek (MOD-0182 gecikir); birim başına bağ (palet birimi `item-uom`'da yok, MOD-0048'e dokunur).
-- **N-4 Göç (K-11):** her açılışta, dizin kurucudan sonra, kiracı başına; anahtar (TenantId, Gtin); idempotent. İptal edilen taslağın `ReleasedGtin`'i taşınmaz (serbest, AK-3).
+- **N-4 Göç (K-11, K-17):** her açılışta, dizin hazır olduktan sonra (K-15); koşucu kiracı başına `ProductIdentityBackgroundScope`'u alır ve `MigrateFinishedGoodGtinsCommand`'ı sistem aktörüyle MediatR'dan gönderir; anahtar (TenantId, Gtin); idempotent. İptal edilen taslağın `ReleasedGtin`'i taşınmaz (serbest, AK-3).
 - **N-5 SAP / Oracle:** SAP malzeme ana kaydında ölçü birimi başına EAN / UPC, önekten iç numara aralığı. Oracle kalem + birim GTIN çapraz başvurusu. Burada GTIN kayıt + düzeye bağlanır (Oracle'a yakın), düzey P9'da birime eşlenir (SAP'ye yakın); otomatik atama yok.
 - **N-6 Plan:** plan satırı verilmedi; dilim sütunlarında `plan kimliği yok` / `plan satırı yok`. P6 tamamlama planı §4'ten; MVP-5 ilişkisi W-7.
 - **N-7 Dosyalar.** Yeni (her satırda bir yol):
@@ -390,7 +404,7 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
   - `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductIdentifierRepository.cs` (yeni)
   - `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/Gs1CompanyPrefixRepository.cs` (yeni)
   - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductIdentifiers/ProductIdentifierIndexInitializer.cs` (yeni)
-  - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductIdentifiers/ProductIdentifierMigrationHostedService.cs` (yeni)
+  - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductIdentifiers/ProductIdentifierMigrationRunner.cs` (yeni)
   - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductIdentifiers/` (yeni) — klasör, §10
   - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/Gs1CompanyPrefixes/` (yeni) — klasör, §10
   - `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductIdentifiersController.cs` (yeni)
@@ -421,6 +435,8 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
   - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeActivationDebt.cs`
   - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductsHandler.cs` (`ProductLegalEntityScopeConsumerGuard`)
   - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ItemMaster/ItemLifecycle.cs`
+  - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductIdentityBackgroundScope.cs`
+  - `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs`
   - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/StockBehaviour/ProductStockBehaviourIndexInitializer.cs`
   - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/MdmTestMongo.cs`
   - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/StockBehaviourRuleTests.cs`
@@ -456,7 +472,7 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
 
 **DL-1 canlı adımı (kademeli dağıtım):** yeni kopyalar açılışta göçü koşar; eski kopyalar o arada defter yazmadan FG GTIN'i atayabilir. Bu yüzden **bütün eski kopyalar durduktan sonra** yeni kopyalardan biri yeniden başlatılır ve göç yeniden koşar (idempotent; arada atananları alır, çakışmaları raporlar). Pilot kiracıda DL-1 denetimi: göç raporu okunur ve kuleye verilir; FG ucunda emekli bir FG'nin GTIN'i 409 `FG_GTIN_CONFLICT`; `GET /product-master/identifiers/{gtin}` bir FG satış kutusunu çözümler ve `getSku` `identifiers[]` döner.
 
-**Sıra:** 1. MDM DL-1 + göç yeniden koşusu + pilot denetimi. 2. Gateway rotası. 3. MDM DL-2 (manifest; FU06 dersi: son başlayan kopya yeni sürüm, eski kopyalar durmadan pilot başlamaz). 4. §14 rol verimi pilot kiracıda. 5. Stok ekibine haber (F-3).
+**Sıra:** 1. MDM DL-1 + göç yeniden koşusu + pilot denetimi. 2. Gateway rotası. 3. MDM DL-2 (manifest; FU06 dersi: son başlayan kopya yeni sürüm, eski kopyalar durmadan pilot başlamaz). DL-2 canlıya **K-16 Auth Viewer değişikliği main'e girmeden çıkmaz.** 4. §14 rol verimi pilot kiracıda; modül hakkı olmayan bir kiracıda Viewer'ın anahtarı almadığı denetlenir. 5. Stok ekibine haber (F-3).
 
 **Geri dönüş: yalnız ileri düzeltme.** Defter eklemelidir, `FinishedGood.Gtin` korunur. Eski MDM'ye dönülürse FG ucu eski davranışa döner (emekli GTIN yeniden serbest, defter yazılmaz); o arada atanan FG GTIN'leri ileri dönüşte göçün tekrarında deftere girer, çakışanlar raporlanır. DL-2 manifest sürümünün geri alınması FU06 §13 / §23'teki budama sorununu doğurur; aynı kural: geri alınmaz, gerekirse önce Auth satırları kaldırılır.
 
@@ -478,6 +494,8 @@ DL-1 çekirdektir; DL-2 DL-1'e dayanır.
 | AK-1…AK-8, GR-1 | §0.4 | Sahip / Kule | **Kapandı** |
 | AK-9 | Sözleşme sürümü | Kule | **Kapandı, K-13 ile değişti:** v1.1 taslağı |
 | K-11…K-14 | Göç, tek işlem, sözleşme sürümü, tüzel kişi kapsamı | Kule | **Kapandı** (inceleme turu 1) |
+| K-15…K-17 | Dizin hazırlığı, Viewer / Auth, göç komutu | Kule | **Kapandı** (inceleme turu 3) |
 | AK-6 | Rol verimi ölçümü | Kule + Auth sahibi | Karar kapandı; ölçüm DL-2 öncesi açık iş |
+| AK-12 | K-16 Auth Viewer değişikliği için sahip izni (XMC-001) | Sahip | **Açık;** DL-2'den önce sorulur |
 | AK-10 | `target` tarihi, onaylayan, ikinci kişi | Kule | **Açık: TBD**; künyedeki tarih sahibin tahmini |
 | AK-11 | LSKU `gtin`'in "P6'ya kadar null" vaadinin "kalıcı null" olması | Stok ekibi (yazılı kabul), kule | **Açık.** DL-1'i durdurmaz; kabul gelmezse `gtin`'in LSKU'da dolması ayrı karar (MOD-0174 / TRACE davranışı değişir) |
