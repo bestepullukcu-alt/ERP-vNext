@@ -43,13 +43,24 @@ denetleyicilerin sunduğu 48 rotanın her biri dosyada, eylemin `[HasPermission]
 A-S1…A-S4 alt ajanın (ölçüldü, tek tek test adları kaydedilmedi); CT-1 bağımsız.
 
 ## Açık kalanlar
-- **Sahip kararı K-1:** `listPackages` tahsis satırı — taslak `lot`, kod `lotId` + `lotNumber`, paket sessiz. Kodunki donduruldu; teyit bekleniyor.
-- **Sahip kararı K-2:** kodun yazdığı ama taslak / paketin adlandırmadığı iki hata kodu — `WMS_PACKAGE_NOT_FOUND` (404) ve
-  `WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` (503). Dondurulmadı; katalog testi yoklukları sabitliyor. Seçenek: hat main'e girmeden 1.1.0'a eklemek.
+- ~~K-1~~ → **karar verildi** (Beste 2026-11-10, CT önerisi): `listPackages` tahsis satırı kodun hâliyle `lotId` + `lotNumber`
+  (taslağın `lot` üyesi kullanılmaz). Sözleşme zaten böyle donduruldu; 1.1.0 açıklamasına not düşüldü.
+- ~~K-2~~ → **karar verildi** (Beste 2026-11-10, CT önerisi): iki kod 1.1.0'a eklendi — aşağıdaki "Ek: K-2" bölümü.
 - `OutboundShipmentReadyEvent.occurredAt` (taslak §7) kod yazmıyor → dondurulmadı.
 - Hiçbir testin çağırmadığı üç operasyon (`bulkAssignPickTasks`, `getPickTaskEvents`, `markPickConfirmationReturned`) — şema putaway'den; ölçülmedi.
 - Operasyon başına hata listeleri testle zorlanmıyor (yalnız başarı durumları).
 - `CycleCountDraftContract.cs` yorumu eski `WmsDraftContract` adını anıyor (MOD-0181, kapsam dışı; DL-3/DL-4'te düzeltilir).
 - WAREHOUSE-OUTBOUND 1.1.0 (MVP-6 ile) ayrı adım.
+
+## Ek: K-2 (sahip kararı Beste 2026-11-10) — iki hata kodu 1.1.0'a
+- Sözleşme: katalogda `WMS_PACKAGE_NOT_FOUND` (404) ve `WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` (503, Q-13 A); operasyon listeleri:
+  ilki `updatePackage`, `closePackage`; ikincisi `createPutawayTask`, `updatePutawayTask`, `bulkAssignPutawayTasks`, `bulkAssignPickTasks`
+  (kodda `AssigneeAsync` çağıranlar). 1.1.0 açıklamasına K-1 / K-2 notu. Yanıt kodları (404 / 503) bu operasyonlarda zaten vardı.
+  1.0.0 ve fikstürü değişmedi.
+- Test: `WmsBundleContractTests` katalog olgusu artık iki kodun **varlığını** ve operasyon listelerindeki yerini sabitliyor.
+- Tam takım (süzgeçsiz, CT): Inventory **2021 / 0 / 5 atlandı**. Sabotajlar (bayt-eşit geri): katalogdan `WMS_PACKAGE_NOT_FOUND`
+  silindi → kırmızı (1/8); `bulkAssignPickTasks` listesinden `WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` silindi → kırmızı (1/8).
+- **DÜŞÜK (geliştirici, sonraki 0178 dilimi):** `WarehouseErrorCodes.All` servisin yazdığı `AssigneeDirectoryUnavailable`'ı
+  listelemiyor; test bunu açıkça ekleyerek karşılaştırıyor. Kümeye eklenince testteki ek kaldırılır.
 
 VERIFIED
