@@ -659,6 +659,15 @@ def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
     return res
 
 
+@cached(1)
+def _ever_lines(root: str, c: str, path: str) -> frozenset:
+    """S-91R (h): every row `path` ever held in `c`'s history (every version git log reaches from `c`)."""
+    out: set = set()
+    for v in git(root, "log", "--full-history", "--format=%H", c, "--", path).decode().split():
+        out |= set(_lines_at(root, v, path)[1:])
+    return frozenset(out)
+
+
 def reorder_only_why(root: str, c: str, path: str) -> str | None:
     """S-91R: None when `c` is a merge whose `path` only REORDERED rows; else why not (Turkish, names the condition).
     (c) `c` has two or more parents. (a) no row lost (lost_rows empty) and no row added by the merge itself: every line
@@ -670,8 +679,9 @@ def reorder_only_why(root: str, c: str, path: str) -> str | None:
     else the merge's author would pick which row of that target is last (Codex round 3: the same row in two parents is
     one row, not a race). (g) one origin: a row held by two or more parents is credited (_blame_map) to the same commit
     in each — row_commit follows an excused merge into its parents, so two origins would be ambiguous. (h) no
-    resurrection: a row of the parents' merge base that some parent deleted is not in the result — a reorder never
-    brings back a row one side removed (Codex round 3: a lost row re-added from an old branch). (g) binds only the rows
+    resurrection: a row of the result that a parent lacks was never in that parent's history (_ever_lines) — a reorder
+    never brings back a row one side removed (Codex round 3: a lost row re-added from an old branch; Codex round 4: no
+    merge base is consulted, so criss-cross and many-parent histories cannot hide a deletion). (g) binds only the rows
     git credits to the merge itself (the moved ones, which row_commit follows); a row git credits to a parent's commit
     keeps git's answer, as on any other merge. Fail closed:
     the file missing or its header changed in any version, a row of the wrong width, or a line twice in one version
@@ -721,12 +731,7 @@ def reorder_only_why(root: str, c: str, path: str) -> str | None:
     if race:
         return (f"(f) {race[0]} için yeni satırlar iki ayrı ebeveynden geliyor — hangisinin son olacağını merge seçerdi; "
                 "sıra istisnası bunu affetmez")
-    base = git(root, "merge-base", "--octopus", *parents, ok_fail=True)
-    if not base or not base.decode().strip():
-        return "(h) ebeveynlerin ortak atası yok — silinen satır ölçülemez, sıra istisnası verilmez"
-    base = base.decode().strip()
-    gone = set(_lines_at(root, base, path)[1:])
-    back = [l for l in new[1:] if l in gone and any(l not in sets[p] for p in parents)]
+    back = [l for l in new[1:] for p in parents if l not in sets[p] and l in _ever_lines(root, p, path)]
     if back:
         return (f"(h) {back[0].split(chr(9))[0]} için bir ebeveynin sildiği satır merge'de geri gelmiş — sıra istisnası "
                 "silinen satırı geri getiremez")
@@ -2966,15 +2971,38 @@ def self_test_reorder(cases: list) -> None:
     octo = g("commit-tree", tree, "-p", t1, "-p", t2, "-p", t3, "-m", "octopus reorder").strip()
     cases.append(("S-91R (Codex round 3 F-2): a three-parent reorder, one row in two parents -> no race, row printed",
                   reorder_only_why(root, octo, APPROVALS) is None and row_for(octo)[0] == 0))
-    # review r4: parents with no common history (--allow-unrelated-histories) -> a refusal naming (h), never a crash
+    # review r4: parents with no common history (--allow-unrelated-histories) -> measured, never a crash
     orphan = g("commit-tree", tree, "-m", "unrelated root").strip()
     unrelated = g("commit-tree", tree, "-p", t1, "-p", orphan, "-m", "unrelated merge").strip()
     try:
-        why = reorder_only_why(root, unrelated, APPROVALS)
-    except Unreadable as e:
-        why = f"raised: {e}"
-    cases.append(("S-91R (review r4): a merge of unrelated histories -> refused naming (h), no Unreadable",
-                  why is not None and why.startswith("(h)") and "ortak atası" in why))
+        reorder_only_why(root, unrelated, APPROVALS)
+        no_crash = True
+    except Unreadable:
+        no_crash = False
+    cases.append(("S-91R (review r4): a merge of unrelated histories -> measured, no Unreadable", no_crash))
+    # Codex round 4: O adds A; D (from O) deletes A; K (from O) keeps A; T split off before A. An octopus of D, K, T
+    # brings A back — the octopus merge base (before A) does not show the deletion, D's own history does -> (h)
+    HA, HK, HT = ar("HA"), ar("HK"), ar("HT")
+    g("reset", "-q", "--hard")
+    g("checkout", "-q", "-b", f"h-o-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, HA])
+    ho = commit("O adds HA")
+    put(APPROVALS, [H_A, A0])
+    hd = commit("D deletes HA")
+    g("checkout", "-q", "-b", f"h-k-{n[0]}", ho)
+    put(APPROVALS, [H_A, A0, HA, HK])
+    hk = commit("K keeps HA")
+    g("checkout", "-q", "-b", f"h-t-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, HT])
+    ht = commit("T before HA")
+    put(APPROVALS, [H_A, A0, HT, HK, HA])
+    g("add", "-A")
+    htree = g("write-tree").strip()
+    hm = g("commit-tree", htree, "-p", hd, "-p", hk, "-p", ht, "-m", "octopus brings HA back").strip()
+    g("reset", "-q", "--hard")
+    why = reorder_only_why(root, hm, APPROVALS)
+    cases.append(("sabotage S-91R (h) (Codex round 4): a deletion hidden from the octopus merge base -> refused, (h)",
+                  why is not None and why.startswith("(h)")))
     g("reset", "-q", "--hard")
     # Codex S-91R F-3: exception-row refuses the people the checker would refuse
     for label, author, approver in (("an author not on the approver list", "ghost", "lead"),
