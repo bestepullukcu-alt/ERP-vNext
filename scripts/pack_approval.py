@@ -660,6 +660,9 @@ def _blame_map_uncached(root: str, c: str, path: str) -> dict[str, str]:
             text = l[1:].rstrip(" \r")
             if text.strip():
                 one = copies.get(text) == 1
+                if cur in trusted and not one:
+                    raise Unreadable(f"{path} satırı birden çok kopya ve git onu affedilmiş bir S-91R merge'üne bağlıyor — affedilmiş merge "
+                          "satır eklemez, kökeni belirsiz")
                 res[text] = _follow_moves(root, cur, text, path, main) if cur in trusted and one else cur
         elif re.match(r"^[0-9a-f]{40} \d+ \d+", l):
             cur = l[:40]
@@ -1073,6 +1076,9 @@ def _follow_moves(root: str, blamed: str, text: str | None, path: str, main: str
         b, t = todo.pop()
         steps = _moved_from(root, b, t, path, trusted)
         if not steps:
+            if b in trusted:
+                raise Unreadable(f"{path} satırı birden çok kopya ve git onu affedilmiş bir S-91R merge'üne bağlıyor — affedilmiş merge "
+                          "satır eklemez, kökeni belirsiz")
             origins.add(b)
             continue
         for step in steps:
@@ -1103,6 +1109,9 @@ def _row_commit_at(root: str, commit: str, line_no: int, path: str, main: str | 
     per-copy answer stands (which copy a later merge added is not knowable from one blame step)."""
     blamed, text = _blamed_line(root, commit, line_no, path)
     if text is None or len(_ones(root, commit, path, text)) != 1:
+        if text is not None and blamed in _reorder_excused(root, path, main):
+            raise Unreadable(f"{path} satırı birden çok kopya ve git onu affedilmiş bir S-91R merge'üne bağlıyor — affedilmiş merge "
+                          "satır eklemez, kökeni belirsiz")        # review r6: a trusted merge is never an adding commit
         return blamed
     return _follow_moves(root, blamed, text, path, main)
 
@@ -2937,7 +2946,8 @@ def self_test_reorder(cases: list) -> None:
         pass
     put(APPROVALS, [H_A, A0, QA, QB, S1, QA])
     y = commit("merge writes a second QA")
-    # main takes the excused reorder in and lists it, so the trusted set is not empty (the one-copy rule is what holds)
+    # main takes the reorder in and lists it (trusted: listed, a break on main, reorder-only — the row is committed on
+    # main directly, so it is not EXCUSED; the attribution rules are what this fixture tests)
     g("checkout", "-q", "main")
     g("reset", "-q", "--hard", inner)
     put(EXCEPTIONS, ["\t".join(EXCEPTION_COLUMNS),
@@ -2946,9 +2956,14 @@ def self_test_reorder(cases: list) -> None:
     globals()["_CACHE"].clear()
     trusted_now = _reorder_excused(root, APPROVALS) == frozenset({inner})
     raw, _ = _blamed_line(root, y, 6, APPROVALS)
-    cases.append(("S-91R (Codex F-1R): a second copy of a row after an excused reorder -> git's own answer for that "
-                  "copy, never the first copy's commit", trusted_now and row_commit(root, y, 6, APPROVALS) == raw
-                  and raw == inner
+    try:
+        row_commit(root, y, 6, APPROVALS)
+        second = "answered"
+    except Unreadable:
+        second = "unreadable"
+    cases.append(("S-91R (Codex F-1R, review r6): a second copy git credits to a trusted (listed) reorder -> unreadable "
+                  "(a trusted merge adds no row; never the merge, never the first copy's commit)", trusted_now
+                  and raw == inner and second == "unreadable"
                   and row_commit(root, y, 3, APPROVALS) == qa))
     # Codex S-91R round 3, F-1: a row lost on one side (D drops A) and brought back by a later, NOT excused merge with a
     # trailing space (git: a new line; the tool: the same row) — git's answer (the merge) stands, never the old commit
