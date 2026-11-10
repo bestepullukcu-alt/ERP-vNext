@@ -559,6 +559,15 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 # its ancestors is not checked again; ancestry is fixed by the hashes, so no later commit can ever fall under it, and
 # every break after it is still a break. A repository without this commit (a self-test) checks its whole history.
 HISTORY_BASELINE = "7e8aa77d87ff1f7fc30cc6a8fc35a11b6f057fcc"
+# The seven reorder merges under it. git blame credits a row such a merge MOVED to the merge itself, but the merge added
+# no row; so a row credited to one of them has no measurable human step (main_merge refuses it) — never the human step
+# of the pull request that carried the merge (review: 36 reviews.tsv rows are credited to 7bd1d0bae on main; their real
+# commits came in through a nested merge, which fails the human step).
+BASELINE_REORDERS = frozenset({
+    "2f02161a34163810f6311fdb8b29a132c53acfb3", "81546c373ed93f7f3837f511d690388184e7a4fc",
+    "7bd1d0bae30853df5fa3f06310f02e637a09311c", "25e06fe0851490d55f02fe45998f1ec8340e9675",
+    "48d217a22b0b20568a0729748fb34cca68708cea", "1936c9ba34fb19dae15cb9be292778a19710ff3c",
+    "8f9027ad87763927fb7377e9450986142a9bf3eb"})
 
 
 @cached(1)
@@ -1076,6 +1085,9 @@ def prefix_problem(root: str, ref: str, main: str, target: str) -> str | None:
 @cached(1, 2)
 def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     """The first-parent merge of the main line that brought `added` in, or (None, why)."""
+    if added in BASELINE_REORDERS:
+        return None, (f"satırı git'e göre {added[:12]} ekledi — o, başlangıç noktası öncesi yalnız sıra değiştiren bir "
+                      "merge; satırı eklemedi, gerçek geliş yolu ölçülemez (EES 2.14)")
     if git(root, "merge-base", "--is-ancestor", added, main, ok_fail=True) is None:
         return None, NOT_ON_MAIN
     line = git(root, "rev-list", "--first-parent", main).decode().split()
@@ -2264,6 +2276,14 @@ def self_test_baseline(cases: list) -> None:
         globals()["HISTORY_BASELINE"] = g("rev-parse", "main").strip()
         cases.append(("EES 2.14 baseline: the old reorder at or before the baseline -> not checked again (green)",
                       problems() == []))
+        saved_r = globals()["BASELINE_REORDERS"]
+        globals()["BASELINE_REORDERS"] = frozenset({old_break})
+        try:
+            refused = main_merge(root, g("rev-parse", "main").strip(), old_break)
+        finally:
+            globals()["BASELINE_REORDERS"] = saved_r
+        cases.append(("EES 2.14 baseline: a row git credits to a listed reorder merge has no human step (main_merge "
+                      "refuses for that reason)", refused[0] is None and "başlangıç noktası öncesi" in refused[1]))
         new_break = put([B, C, A], "a new reorder after the baseline")
         found = problems()
         cases.append(("sabotage EES 2.14 baseline: a reorder AFTER the baseline is still a break, and only it",
