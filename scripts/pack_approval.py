@@ -178,7 +178,9 @@ def cached(*rev_positions: int):
 def git(root: str, *args: str, ok_fail: bool = False) -> bytes | None:
     # Codex K3: `git replace` objects would make a full commit id name different history — they are ignored; a shallow
     # repository is refused (see Ctx), so a cached history answer cannot change when the history deepens
-    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1")
+    # EES 2.14 (Codex): a local .git/info/grafts file would rewrite ancestry too (HISTORY_BASELINE is an ancestry
+    # test) — the graft file is ignored like replace objects
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1", GIT_GRAFT_FILE=os.devnull)
     done = subprocess.run(["git", "-C", root, *args], capture_output=True, env=env)
     if done.returncode != 0:
         if ok_fail:
@@ -2284,10 +2286,31 @@ def self_test_baseline(cases: list) -> None:
             globals()["BASELINE_REORDERS"] = saved_r
         cases.append(("EES 2.14 baseline: a row git credits to a listed reorder merge has no human step (main_merge "
                       "refuses for that reason)", refused[0] is None and "başlangıç noktası öncesi" in refused[1]))
+        # Codex: a local graft that makes the new commit's parent look like the baseline is ignored
+        with open(os.path.join(root, ".git", "info", "grafts"), "w", encoding="utf-8") as f:
+            f.write(f"{g('rev-parse', 'main').strip()}\n")       # graft: main tip has no parents
+        globals()["_CACHE"].clear()
+        parents = git(root, "rev-list", "--parents", "-n", "1", "main").decode().split()[1:]
+        os.remove(os.path.join(root, ".git", "info", "grafts"))
+        cases.append(("sabotage EES 2.14 (Codex): a local .git/info/grafts file does not change ancestry for the tool",
+                      len(parents) == 1))
         new_break = put([B, C, A], "a new reorder after the baseline")
         found = problems()
         cases.append(("sabotage EES 2.14 baseline: a reorder AFTER the baseline is still a break, and only it",
                       len(found) == 1 and new_break[:12] in found[0] and old_break[:12] not in found[0]))
+        # Codex: history on a shallow clone is unreadable, never "clean"
+        stmp = tempfile.TemporaryDirectory()
+        shallow = os.path.join(stmp.name, "s")
+        subprocess.run(["git", "clone", "-q", "--depth", "1", f"file://{root}", shallow], capture_output=True,
+                       check=True, env=dict(os.environ, GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null"))
+        try:
+            history(shallow, "HEAD")
+            shallow_ok = False
+        except Unreadable as e:
+            shallow_ok = "sığ" in str(e)
+        finally:
+            stmp.cleanup()
+        cases.append(("sabotage EES 2.14 (Codex): history on a shallow clone -> unreadable", shallow_ok))
     finally:
         globals()["HISTORY_BASELINE"] = saved
         globals()["_CACHE"].clear()
@@ -4288,6 +4311,8 @@ def ci_main(root: str, before: str, after: str) -> tuple[int, list[str]]:
 def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
     """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
     already a problem at `base` (a pull request is red only for a break it brings)."""
+    if git(root, "rev-parse", "--is-shallow-repository").decode().strip() == "true":
+        raise Unreadable("sığ (shallow) depo — onay geçmişi tam değil; tam klonda koşun")   # EES 2.14 (Codex)
     main = main_line(root)
     c = commit_of(root, ref)
     if c is None:
