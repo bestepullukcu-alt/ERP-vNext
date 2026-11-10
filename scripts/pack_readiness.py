@@ -1,34 +1,37 @@
 #!/usr/bin/env python3
 """Pre-review readiness check for a Module Pack or DCP (EES pack-readiness-01). Read only; stdlib only.
 
-Of 613 findings in 136 failed pack reviews, about half were mechanical: contradictions between sections, stale decision
-text, references that do not match the repo, acceptance criteria not tied to tests, incomplete slice tables. This tool
-finds the deterministic part of that before a reviewer is asked. It is advisory: it is not an approval gate and does not
-replace the independent review (control-tower-sop §20.4).
+ADVISORY, NOT A GATE: it does not approve, does not replace the independent review (control-tower-sop §20.4), and its
+exit code is not read by any approval or dispatch tool.
 
-    python3 scripts/pack_readiness.py <pack.md> [--base REF]      # REF default origin/main (repo files, AGENTS.md §3)
+    python3 scripts/pack_readiness.py <pack.md> [--base REF] [--all]   # REF default origin/main
+    python3 scripts/pack_readiness.py --checklist                     # prompt for a readiness reader sub-agent
 
 Output: one line per item, `HAZIRLIK <code> satır N: [<severity>] <message>`, then a summary line.
 Exit: 0 no ENGEL item · 1 at least one ENGEL item · 2 unreadable (pack file or base ref).
 
-Rules (each one function, so a test can switch one off and show its own test turn red):
+Measured (2026-11, 35 packs, first-review version of each, against the 85 round-1 findings of categories A/B/F):
+this script caught ~11% (9/85, hand-checked; mostly slice tables). A blind fixed-checklist LLM reader (the six items of
+--checklist) caught ~38% with ~6% noise. So: run the reader first, the script as a cheap mechanical supplement.
+
+Default rules (each one function, so a test can switch one off and show its own test turn red):
   R1 (ENGEL)  `## Teslim dilimleri` (DCP: `## 8.1 Delivery slices`) present once; one table; every row has the header's
               cells filled; DL ids unique; every section named in `kapsadığı bölümler` is a heading of the pack
               (module-pack-standard §6 row 22, §16 CT-APR-02 / plan alignment; same reading as pack_approval.slices).
-  R2 (ENGEL)  a decision id (D30, D45/2, D-3, K-2, KR-1, OD-4, O-11) is written as open in one clause and as decided in
+  R2 (ÖNEMLİ) a decision id (D30, D45/2, D-3, K-2, KR-1, OD-4, O-11) is written as open in one clause and as decided in
               another clause of the pack — stale decision text. Both lines are reported.
   R3          `path:N` / `path:N-M` references: a full repo path exists at --base (ENGEL); the file has at least M
               lines (ÖNEMLİ); a backtick quote right after the reference shares a word with lines N-3..M+3 (ÖNEMLİ).
               A bare file name is read only if it resolves to exactly one path (planned code is not an alarm).
               `path:N@sha`, `sha:path:N`, or a commit named on the line: read at that commit. A backticked document
               path (docs/, execution/, .antigravity/) without a line must exist (ÖNEMLİ), unless described as to-write.
-  R4 (ÖNEMLİ) every acceptance criterion id defined under an Acceptance Criteria heading is referenced under a test
-              heading, and is mentioned together with a sabotage / negative test somewhere in the pack (AGENTS.md
-              Çekirdek 10: a guard without sabotage proof is not a guard).
   R5 (ÖNEMLİ) a port written right next to a service name (`MDM (5059)`, `5059 (MDM)`, `MdmService 5059`) equals that
               service's port in AGENTS.md §3 on --base; a `<Name>Service 50xx` absent from the table is reported.
-  R6 (ENGEL)  a pack whose künye status is approved / ready-for-dev carries no unresolved marker (TBD, "karar
-              verilmedi", "?" placeholder) outside history (block quotes, revision sections, code, quoted text).
+Only with --all (measured noisy: R4 394 items on the 9 packs first reviewed UYGUN; R6 152 items on current packs):
+  R4 (ÖNEMLİ) every acceptance criterion id defined under an Acceptance Criteria heading is referenced under a test
+              heading, and is mentioned together with a sabotage / negative test somewhere in the pack.
+  R6 (ÖNEMLİ) a pack whose künye status is approved / ready-for-dev carries no unresolved marker (TBD, "karar
+              verilmedi", "?" placeholder) outside history.
 
 History is not read by R2, R4, R5, R6: fenced code, block-quote lines, strikethrough, and sections whose heading names a
 revision / history / changelog / reconciliation.
@@ -320,7 +323,7 @@ def r2_decisions(pack: Pack, repo: Repo | None) -> list[Item]:
     out = []
     for i, n in sorted(opened.items(), key=lambda x: x[1]):
         if i in decided:
-            out.append(Item("R2", n, ENGEL, f"karar `{i}` burada açık yazılmış; satır {decided[i]} karar verildiğini "
+            out.append(Item("R2", n, ONEMLI, f"karar `{i}` burada açık yazılmış; satır {decided[i]} karar verildiğini "
                                             f"yazıyor — eski karar metni ya da çelişki (iki satırı hizalayın)",
                             [i, f"satır {decided[i]}"]))
     return out
@@ -593,7 +596,7 @@ def r6_markers(pack: Pack, repo: Repo | None) -> list[Item]:
     for l in pack.current():
         m = MARKER.search(strip_quoted(l.raw))
         if m:
-            out.append(Item("R6", l.n, ENGEL, f"künye durumu `{status}` ama satırda çözülmemiş işaret var: "
+            out.append(Item("R6", l.n, ONEMLI, f"künye durumu `{status}` ama satırda çözülmemiş işaret var: "
                                               f"`{m.group(1).strip()}`", [m.group(1).strip()]))
     return out
 
@@ -601,15 +604,50 @@ def r6_markers(pack: Pack, repo: Repo | None) -> list[Item]:
 # ---------------------------------------------------------------------------------------------------------------- main
 RULES = (("R1", "r1_slices"), ("R2", "r2_decisions"), ("R3", "r3_references"), ("R4", "r4_acceptance"),
          ("R5", "r5_ports"), ("R6", "r6_markers"))
+DEFAULT_RULES = ("R1", "R2", "R3", "R5")      # R4 and R6 only with --all (measured: noise without catches)
 
 
-def check(path: str, text: str, repo: Repo | None) -> list[Item]:
+def check(path: str, text: str, repo: Repo | None, all_rules: bool = False) -> list[Item]:
     pack = Pack(path, text)
     items: list[Item] = []
     this = sys.modules[__name__]
-    for _code, fn in RULES:
-        items.extend(getattr(this, fn)(pack, repo))      # looked up at call time: a test may switch one rule off
+    for code, fn in RULES:
+        if all_rules or code in DEFAULT_RULES:
+            items.extend(getattr(this, fn)(pack, repo))   # looked up at call time: a test may switch one rule off
     return sorted(items, key=lambda i: (i.line, i.code))
+
+
+CHECKLIST_ITEMS = (
+    "bölümler arası çelişki",
+    "karar değişmiş ama eski metin kalmış",
+    "depoyla uyuşmayan ad/numara/kimlik/port/izin anahtarı/yol",
+    "test edilemeyen ya da testi/bozma testi olmayan kabul ölçütü",
+    "dilim tablosu eksik ya da listelediği bölümlerle tutarsız",
+    "açıkça gereken işlemlerde eşzamanlılık/idempotency/durum geçişi boşluğu",
+)
+
+
+def checklist_prompt() -> str:
+    items = "\n".join(f"({n}) {t}" for n, t in enumerate(CHECKLIST_ITEMS, 1))
+    return f"""Hedef: hazırlık okuyucusu alt ajanı — bağımsız incelemeden ÖNCE çalışır.
+
+Görev: Sana verilen Module Pack sürümünü baştan sona oku ve yalnız aşağıdaki altı maddeye göre somut, denetlenebilir
+eksikleri bul. Bu bir inceleme DEĞİLDİR; onay, kabul ya da dağıtım izni vermez.
+
+Kim okur: paket yazarından ayrı bir oturum ve ayrı bir model. Var olan inceleme kayıtlarını
+(docs/records/reviews/**, execution/approvals/reviews.tsv) ve önceki bulguları OKUMA.
+
+Kontrol listesi:
+{items}
+
+Kurallar:
+- Her bulguda paketin satır numarasını ver (ör. "satır 412" ya da "satır 412 ↔ satır 980").
+- Yalnız somut ve denetlenebilir maddeler yaz; üslup ya da tasarım görüşü yazma.
+- Paketin kendisinin bilinen tutarsızlık / açık madde olarak listelediği konuları atla.
+- Önem derecesi: ENGEL, ÖNEMLİ ya da KÜÇÜK.
+- Çıktı numaralı liste: "<n>. [<önem>] (madde <1-6>) satır N: <kısa açıklama>". Bulgu yoksa "Bulgu yok." yaz.
+- Dosya değiştirme; kayıt, onay ya da inceleme satırı yazma; kimseye mesaj gönderme.
+"""
 
 
 def repo_root(start: str) -> str:
@@ -621,9 +659,17 @@ def repo_root(start: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Module Pack ön-inceleme hazırlık denetimi (salt okunur)")
-    ap.add_argument("pack")
+    ap.add_argument("pack", nargs="?")
+    ap.add_argument("--all", action="store_true", help="R4 ve R6 dahil bütün kurallar (gürültülü; ölçüm notuna bakın)")
+    ap.add_argument("--checklist", action="store_true",
+                    help="hazırlık okuyucusu alt ajanı için Türkçe istemi yazdırır; paket gerekmez")
     ap.add_argument("--base", default=DEFAULT_BASE, help="depo dosyaları ve AGENTS.md §3 için ref (varsayılan origin/main)")
     a = ap.parse_args(argv)
+    if a.checklist:
+        print(checklist_prompt(), end="")
+        return 0
+    if not a.pack:
+        ap.error("paket yolu gerekli (ya da --checklist)")
     try:
         with open(a.pack, encoding="utf-8") as f:
             text = f.read()
@@ -633,7 +679,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"HAZIRLIK okunamadı: {e}", file=sys.stderr)
         return 2
     rel = os.path.relpath(os.path.abspath(a.pack), root)
-    items = check(rel, text, repo)
+    items = check(rel, text, repo, all_rules=a.all)
     for i in items:
         print(i.render())
     engel = sum(i.severity == ENGEL for i in items)

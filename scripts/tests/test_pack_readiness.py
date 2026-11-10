@@ -4,7 +4,8 @@ Run by scripts/run_phase1_gates.sh:
 
     python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
-Each rule R1..R6 has one failing synthetic pack; a clean pack raises nothing. The sabotage proof lives here: for every
+Each rule R1..R6 has one failing synthetic pack; a clean pack raises nothing. The default run reads R1, R2, R3, R5;
+R4 and R6 only with --all. --checklist prints the readiness-reader prompt with its six items. The sabotage proof lives here: for every
 rule, SabotageProof switches that rule's function off (mock.patch on the module attribute `check` looks up at call time)
 and shows that the rule's own failing-case assertion then fails - so no rule test is green by accident.
 The repository the rules read (files for R3, AGENTS.md §3 for R5) is a real throw-away git repository, read through
@@ -133,18 +134,19 @@ class Fixture(unittest.TestCase):
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
 
-    def items(self, text: str):
-        return pr.check(PACK_PATH, text, self.repo)
+    def items(self, text: str, all_rules: bool = True):
+        return pr.check(PACK_PATH, text, self.repo, all_rules=all_rules)
 
-    def assert_fires(self, code: str, text: str):
-        got = [i for i in self.items(text) if i.code == code]
+    def assert_fires(self, code: str, text: str, all_rules: bool = True):
+        got = [i for i in self.items(text, all_rules) if i.code == code]
         self.assertTrue(got, f"{code} raised nothing")
         return got
 
 
 class CleanPack(Fixture):
     def test_clean_pack_raises_nothing(self):
-        self.assertEqual([i.render() for i in self.items(CLEAN)], [])
+        self.assertEqual([i.render() for i in self.items(CLEAN)], [])               # --all
+        self.assertEqual([i.render() for i in self.items(CLEAN, all_rules=False)], [])
 
     def test_history_is_not_read_as_an_open_decision(self):
         # the clean pack has "K-1 was açık karar" inside a revision block quote and "K-1 — KARAR D7" in the body
@@ -154,10 +156,17 @@ class CleanPack(Fixture):
         out = io.StringIO()
         with redirect_stdout(out):
             self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 0)
-        self.put(PACK_PATH, FAILING["R6"])
         self.addCleanup(self.put, PACK_PATH, CLEAN)
+        self.put(PACK_PATH, FAILING["R1"])                       # R1 is ENGEL: exit 1
         with redirect_stdout(out):
             self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 1)
+        self.assertIn("HAZIRLIK R1 satır", out.getvalue())
+        self.put(PACK_PATH, FAILING["R6"])                       # R6 is ÖNEMLİ and only under --all: exit 0
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 0)
+            self.assertNotIn("HAZIRLIK R6", out.getvalue())
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD", "--all"]), 0)
         self.assertIn("HAZIRLIK R6 satır", out.getvalue())
         with redirect_stdout(out), redirect_stderr(io.StringIO()):
             self.assertEqual(pr.main([os.path.join(self.root, "missing.md"), "--base", "HEAD"]), 2)
@@ -176,7 +185,7 @@ class Rules(Fixture):
 
     def test_r2_decision_open_and_decided(self):
         got = self.assert_fires("R2", FAILING["R2"])
-        self.assertEqual(got[0].severity, pr.ENGEL)
+        self.assertEqual(got[0].severity, pr.ONEMLI)
         self.assertIn("`K-1`", got[0].message)
         decided_line = next(n for n, l in enumerate(FAILING["R2"].split("\n"), 1) if "KARAR D7" in l)
         self.assertIn(f"satır {decided_line}", got[0].message)  # both lines are reported
@@ -204,9 +213,40 @@ class Rules(Fixture):
 
     def test_r6_unresolved_marker_in_ready_pack(self):
         got = self.assert_fires("R6", FAILING["R6"])
-        self.assertEqual(got[0].severity, pr.ENGEL)
+        self.assertEqual(got[0].severity, pr.ONEMLI)
         draft = FAILING["R6"].replace("status: ready-for-dev", "status: draft")
         self.assertNotIn("R6", {i.code for i in self.items(draft)})   # a draft may still carry TBD
+
+
+class RuleSets(Fixture):
+    def test_default_set_is_r1_r2_r3_r5(self):
+        self.assertEqual(pr.DEFAULT_RULES, ("R1", "R2", "R3", "R5"))
+        for code in ("R1", "R2", "R3", "R5"):
+            with self.subTest(rule=code):
+                self.assert_fires(code, FAILING[code], all_rules=False)
+        for code in ("R4", "R6"):
+            with self.subTest(rule=code):
+                self.assertNotIn(code, {i.code for i in self.items(FAILING[code], all_rules=False)})
+                self.assert_fires(code, FAILING[code], all_rules=True)
+
+    def test_only_r1_and_missing_files_are_engel(self):
+        sev = {(i.code, i.severity) for code in FAILING for i in self.items(FAILING[code])}
+        self.assertEqual({c for c, s_ in sev if s_ == pr.ENGEL}, {"R1", "R3"})
+
+    def test_checklist_needs_no_pack_and_has_the_six_items(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(pr.main(["--checklist"]), 0)
+        text = out.getvalue()
+        self.assertEqual(len(pr.CHECKLIST_ITEMS), 6)
+        for n, item in enumerate(pr.CHECKLIST_ITEMS, 1):
+            self.assertIn(f"({n}) {item}", text)
+        for rule in ("satır numarasını", "üslup ya da tasarım görüşü", "bilinen", "ENGEL, ÖNEMLİ ya da KÜÇÜK",
+                     "numaralı liste", "inceleme DEĞİLDİR", "ayrı bir oturum ve ayrı bir model",
+                     "inceleme kayıtlarını"):
+            self.assertIn(rule, text)
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            pr.main([])                                          # neither a pack nor --checklist
 
 
 class SabotageProof(Fixture):
