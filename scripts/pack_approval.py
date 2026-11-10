@@ -92,6 +92,8 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 # CT-APR-02 — independent review before approval, and sliced delivery (design: docs/roadmap/plans/ct-apr-02-pack-review/)
 REVIEWS = "execution/approvals/reviews.tsv"
 # S-91: a known, owner-approved break of append-only — one commit, one file, the exact rows it lost (never on main)
+# S-91R: the same file and columns, second kind — a merge that only reordered rows (reason "S-91R: …", lost_sha256 = the
+# digest of an empty loss; reorder_only_why)
 EXCEPTIONS = "execution/approvals/append-only-exceptions.tsv"
 EXCEPTION_COLUMNS = ["commit", "path", "lost_sha256", "reason", "author", "approver", "approved_at"]
 REVIEW_POLICY = "execution/approvals/POLICY-REVIEW-START.md"
@@ -634,12 +636,101 @@ def _positive_row(path: str, line: str) -> bool:
     return len(cells) == len(REVIEW_COLUMNS) and cells[4] in ("UYGUN", "KOŞULLU") and cells[5] == "0"
 
 
+REORDER_REASON = "S-91R:"      # S-91R: the second exception kind — a merge that only reordered rows, nothing lost
+
+
+def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
+    """S-91R: each non-empty line of `path` at `c` -> the commit row_commit names for it (one whole-file blame; only
+    rows git credits to a merge are followed through it, as row_commit does)."""
+    out, cur, res = git(root, "blame", "--porcelain", c, "--", path).decode("utf-8", "replace"), None, {}
+    merges: dict[str, bool] = {}
+    for l in out.split("\n"):
+        if l.startswith("\t"):
+            text = l[1:].rstrip(" \r")
+            if text.strip():
+                if cur not in merges:
+                    merges[cur] = len(git(root, "rev-list", "--parents", "-n", "1", cur).decode().split()) > 2
+                res[text] = _follow_moves(root, cur, text, path) if merges[cur] else cur
+        elif re.match(r"^[0-9a-f]{40} \d+ \d+", l):
+            cur = l[:40]
+    return res
+
+
+def reorder_only_why(root: str, c: str, path: str) -> str | None:
+    """S-91R: None when `c` is a merge whose `path` only REORDERED rows; else why not (Turkish, names the condition).
+    (c) `c` has two or more parents. (a) no row lost (lost_rows empty) and no row added by the merge itself: every line
+    of the result is a line of some parent. (b) the target order is kept: for every parent and every two rows of it of
+    the same target (column 0), the result keeps their order — the tool reads a target's LAST row, so no row of one
+    target may move across another of the same target (an approval across a revoke, an older approval past a newer
+    one, a positive review across a negative one); only rows of different targets may interleave. (e) the authorship
+    is kept: every row of the result is credited (row_commit's blame) to the same commit as in a parent that has it —
+    never to the merge — so no later check (review before approval, the human step) reads a false adding commit.
+    (f) no race: a target whose rows new to some parent (not in every parent) come from two or more parents is a
+    refusal — the merge's author would pick which row of that target is last. Fail closed:
+    the file missing or its header changed in any version, a row of the wrong width, or a line twice in one version
+    (its order could not be measured) is a refusal."""
+    parents = git(root, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]
+    if len(parents) < 2:
+        return "(c) tek ebeveynli commit — sıra istisnası yalnız iki ya da daha çok ebeveynli bir merge için geçerli"
+    columns = APPROVAL_COLUMNS if path == APPROVALS else REVIEW_COLUMNS
+    header = "\t".join(columns)
+    versions = {}
+    for v in [c] + parents:
+        if read(root, v, path) is None:
+            return f"{path} {v[:12]}'de okunamadı — sıra ölçülemez"
+        lines = _lines_at(root, v, path)
+        if not lines or lines[0] != header:
+            return f"{path} {v[:12]}'de başlık satırı beklenen değil — sıra ölçülemez"
+        if any(len(l.split("\t")) != len(columns) for l in lines[1:]):
+            return f"{path} {v[:12]}'de sütun sayısı yanlış bir satır var — sıra ölçülemez"
+        if len(set(lines)) != len(lines):
+            return f"{path} {v[:12]}'de bir satır birden çok kez geçiyor — sıra ölçülemez"
+        versions[v] = lines
+    new = versions[c]
+    if lost_rows(root, c, path):
+        return "(a) merge satır düşürmüş — sıra istisnası satır kaybını affetmez (kayıp için S-91 satırı gerekir)"
+    seen = set().union(*(set(versions[p]) for p in parents))
+    if any(l not in seen for l in new):
+        return "(a) merge sonucunda hiçbir ebeveynde olmayan bir satır var — merge çözümü satır ekleyemez"
+    at = {l: i for i, l in enumerate(new)}
+    for p in parents:
+        by_target: dict[str, list[str]] = {}
+        for l in versions[p][1:]:
+            by_target.setdefault(l.split("\t")[0], []).append(l)
+        for target, rows in by_target.items():
+            for i, x in enumerate(rows):
+                for y in rows[i + 1:]:
+                    if at[x] > at[y]:
+                        return (f"(b) {target} için iki satırın sırası {p[:12]}'dekinden farklı — araç bir paketin son "
+                                "satırını okur; aynı paketin satırları birbirinin önüne geçemez")
+    common = set.intersection(*(set(versions[p][1:]) for p in parents))
+    sources: dict[str, set[str]] = {}
+    for p in parents:
+        for l in versions[p][1:]:
+            if l not in common:
+                sources.setdefault(l.split("\t")[0], set()).add(p)
+    race = sorted(t for t, ps in sources.items() if len(ps) > 1)
+    if race:
+        return (f"(f) {race[0]} için iki ayrı ebeveynden yeni satır geliyor — hangisinin son olacağını merge seçerdi; "
+                "sıra istisnası bunu affetmez")
+    blamed = {p: _blame_map(root, p, path) for p in parents}
+    mine = _blame_map(root, c, path)
+    for l in new[1:]:
+        if mine.get(l) is None or mine[l] == c or not any(blamed[p].get(l) == mine[l] for p in parents):
+            return ("(e) bir satırı ekleyen commit merge'de ebeveyndekinden farklı görünüyor — sonraki kontroller "
+                    f"(onaydan önce inceleme, insan adımı) yanlış commit okur: {l.split(chr(9))[0]}")
+    return None
+
+
 def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
     """S-91: (True, "") when main's EXCEPTIONS file holds a row for exactly this commit and file, and: the rows `c`
     lost hash to its lost_sha256; nothing but that loss breaks append-only; none of the lost rows was ever in main's
     file (a row that never reached main never carried an approval there); the row reached main by another person's
     pull request merge, merged by its approver (high=evet, not the author's person). Read from MAIN only — a branch
-    cannot excuse itself. Else (False, why) — why is "" when there is no row."""
+    cannot excuse itself. Else (False, why) — why is "" when there is no row.
+    S-91R (second kind, reason starts with REORDER_REASON): instead of the loss conditions, lost_sha256 is
+    lost_digest([]) and reorder_only_why holds (a merge, nothing lost or added, each target's own order kept); every other
+    condition (the row on main, its merge, the people) is the same."""
     raw = read(root, main, EXCEPTIONS)
     if not raw:
         return False, ""
@@ -652,15 +743,22 @@ def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
     if not mine:
         return False, ""
     r, no = mine[-1], " — istisna satırı geçmez: "
-    lost = lost_rows(root, c, path)
-    if not lost or lost_digest(lost) != r["lost_sha256"]:
-        return False, no + "düşen satırlar kayıttaki özetle eşleşmiyor"
-    if any(not _positive_row(path, l) for l in lost):
-        return False, no + "düşen satırlardan biri olumsuz (iptal, UYGUN DEĞİL ya da açık ENGEL) — olumsuz satır affedilmez"
-    if not _only_loss(root, c, path, main, lost):
-        return False, no + "satır düşmesinin yanında sıra ya da içerik de değişmiş"
-    if _ever_on_main(root, main, path, lost):
-        return False, no + "düşen satırlardan biri bir zaman main'deydi"
+    if r["reason"].startswith(REORDER_REASON):
+        if r["lost_sha256"] != lost_digest([]):
+            return False, no + "S-91R satırının lost_sha256'sı boş kaybın özeti değil"
+        why = reorder_only_why(root, c, path)
+        if why is not None:
+            return False, no + "S-91R " + why
+    else:
+        lost = lost_rows(root, c, path)
+        if not lost or lost_digest(lost) != r["lost_sha256"]:
+            return False, no + "düşen satırlar kayıttaki özetle eşleşmiyor"
+        if any(not _positive_row(path, l) for l in lost):
+            return False, no + "düşen satırlardan biri olumsuz (iptal, UYGUN DEĞİL ya da açık ENGEL) — olumsuz satır affedilmez"
+        if not _only_loss(root, c, path, main, lost):
+            return False, no + "satır düşmesinin yanında sıra ya da içerik de değişmiş"
+        if _ever_on_main(root, main, path, lost):
+            return False, no + "düşen satırlardan biri bir zaman main'deydi"
     added = row_commit(root, main, r["_n"], EXCEPTIONS)
     merge, why = main_merge(root, main, added)
     if merge is None:
@@ -670,15 +768,21 @@ def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
         ok, why = pr_person_check(root, merge, approver=r["approver"])
     if not ok:
         return False, no + why
-    listed = approvers_at(root, f"{merge}^1")
-    w = listed.get(r["approver"].lower())
+    why = _exception_people_why(approvers_at(root, f"{merge}^1"), r["author"], r["approver"])
+    return (False, no + why) if why else (True, "")
+
+
+def _exception_people_why(listed: dict, author: str, approver: str) -> str | None:
+    """S-91 / S-91R: the approver is listed with high=evet, the author is listed, and they are different people; else
+    why not. One check for the checker (approvers at the merge) and the exception-row CLI (approvers on main)."""
+    w = listed.get(approver.lower())
     if w is None or w["high"] != "evet":
-        return False, no + f"onaylayan {r['approver']} listede yok ya da yüksek riskli işi onaylayamaz"
-    if person_of(listed, r["author"]) is None:
-        return False, no + f"yazan {r['author']} onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez"
-    if person_of(listed, r["approver"]) == person_of(listed, r["author"]):
-        return False, no + "yazan ve onaylayan aynı kişi"
-    return True, ""
+        return f"onaylayan {approver} listede yok ya da yüksek riskli işi onaylayamaz"
+    if person_of(listed, author) is None:
+        return f"yazan {author} onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez"
+    if person_of(listed, approver) == person_of(listed, author):
+        return "yazan ve onaylayan aynı kişi"
+    return None
 
 
 @cached(1)
@@ -811,12 +915,58 @@ def version_with_sha(root: str, commit: str, path: str, digest: str) -> str | No
     return None
 
 
-@cached(1)
-def row_commit(root: str, commit: str, line_no: int, path: str = APPROVALS) -> str:
-    blame = git(root, "blame", "--porcelain", "-L", f"{line_no},{line_no}", commit, "--", path).decode().split()
+RESOLVE_MERGE_MOVES = True   # S-91R: a merge is never the author of a row it only MOVED
+MOVE_STEPS = 10000           # Codex S-91R F-2: a bound on following moves (a loop, never recursion); beyond it, unreadable
+
+
+def _ones(root: str, c: str, path: str, text: str) -> list[int]:
+    data = read(root, c, path)
+    raw = data.decode("utf-8", errors="replace").split("\n") if data else []
+    return [n for n, l in enumerate(raw, 1) if l.rstrip(" \r") == text]
+
+
+def _moved_from(root: str, blamed: str, text: str, path: str) -> tuple[str, int] | None:
+    """S-91R: (parent, its line number) when git credits `blamed` with a row the merge only MOVED: `blamed` is a merge,
+    the row is in its file exactly once, and a parent holds it exactly once — the first such parent. Else None, and
+    git's answer stands. Codex S-91R F-1: a merge that holds the row twice ADDED a copy (git credits that copy to the
+    merge), so a duplicate is never followed — a re-added approval keeps the merge as its adding commit."""
+    parents = git(root, "rev-list", "--parents", "-n", "1", blamed).decode().split()[1:]
+    if not RESOLVE_MERGE_MOVES or len(parents) < 2 or len(_ones(root, blamed, path, text)) != 1:
+        return None
+    for parent in parents:
+        at = _ones(root, parent, path, text)
+        if len(at) == 1:
+            return parent, at[0]
+    return None
+
+
+def _blamed_line(root: str, commit: str, line_no: int, path: str) -> tuple[str, str | None]:
+    out = git(root, "blame", "--porcelain", "-L", f"{line_no},{line_no}", commit, "--", path).decode("utf-8", "replace")
+    blame = out.split()
     if not blame or not re.fullmatch(r"[0-9a-f]{40}", blame[0]):
         raise Unreadable(f"{path} satırını ekleyen commit bulunamadı")
-    return blame[0]
+    return blame[0], next((l[1:].rstrip(" \r") for l in out.split("\n") if l.startswith("\t")), None)
+
+
+def _follow_moves(root: str, blamed: str, text: str | None, path: str) -> str:
+    """S-91R: from git's answer, follow moved-only steps (_moved_from) parent by parent in a loop — never recursion —
+    to the commit that really added the row; a revisited step or more than MOVE_STEPS steps is unreadable."""
+    seen = set()
+    while text:
+        step = _moved_from(root, blamed, text, path)
+        if step is None:
+            return blamed
+        if step in seen or len(seen) >= MOVE_STEPS:
+            raise Unreadable(f"{path} satırını ekleyen commit izlenemedi — taşıma zinciri çok uzun ya da döngülü")
+        seen.add(step)
+        blamed, text = _blamed_line(root, step[0], step[1], path)
+    return blamed
+
+
+@cached(1)
+def row_commit(root: str, commit: str, line_no: int, path: str = APPROVALS) -> str:
+    blamed, text = _blamed_line(root, commit, line_no, path)
+    return _follow_moves(root, blamed, text, path)
 
 
 @cached(1, 2)
@@ -2194,6 +2344,7 @@ def self_test() -> int:
     tmp.cleanup()
     self_test_review(cases)
     self_test_exception(cases)
+    self_test_reorder(cases)
     self_test_deferred(cases)
     self_test_slice_deferred(cases)
     for label, ok in cases:
@@ -2406,6 +2557,235 @@ def self_test_exception(cases: list) -> None:
     commit("exception row removed")
     cases.append(("sabotage S-91 (review F-5): a pull request that deletes an exception row -> red with --base",
                   history(root, "edit-exc", "main")[0] == 1))
+    g("checkout", "-q", "main")
+    tmp.cleanup()
+
+
+def self_test_reorder(cases: list) -> None:
+    """S-91R: a merge that only reordered rows is excused by a 'S-91R:' row on main (empty-loss digest) — never when a
+    row was lost or added, a row moved across another of the same target, or the commit is no merge."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    DEV, LEAD = ("dev", "dev@x.invalid"), ("lead", "lead@x.invalid")
+    H_A, H_R = "\t".join(APPROVAL_COLUMNS), "\t".join(REVIEW_COLUMNS)
+
+    def g(*args, who=DEV):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, rows):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write("\n".join(rows) + "\n")
+
+    def commit(msg, who=DEV):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+        return g("rev-parse", "HEAD").strip()
+
+    def ar(name, action="approve"):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, action, "HIGH", "r", "dev", "lead",
+                          "2026-11-10", "0" * 64, "n"])
+
+    def rr(name, verdict, blockers="0", n="1"):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, f"docs/records/reviews/x/{name}-{n}.md",
+                          "0" * 64, verdict, blockers, "codex", "m", "high", "rs", "K4", "as", "dev", "2026-11-10"])
+    A0 = ar("A0")
+    g("init", "-q", "-b", "main")
+    put(APPROVERS, ["login\tperson\trole\thigh", "lead\tK1\tkıdemli\tevet", "dev\tK4\tgeliştirici\tevet"])
+    put(APPROVALS, [H_A, A0])
+    put(REVIEWS, [H_R])
+    start = commit("start", who=LEAD)
+    n, tip = [0], [start]
+
+    def reorder(path, feat_rows, side_rows, result, single=False):
+        """From `start`: a branch adds `feat_rows`, a side branch adds `side_rows`, the branch merges the side branch
+        writing `result` (or, `single`, one more commit writes it); main takes the branch in. Returns the bad commit."""
+        n[0] += 1
+        g("checkout", "-q", "main")
+        g("reset", "-q", "--hard", start)
+        base = [H_A, A0] if path == APPROVALS else [H_R]
+        if not single:
+            g("checkout", "-q", "-b", f"side-{n[0]}", start)
+            put(path, base + side_rows)
+            commit("side rows")
+        g("checkout", "-q", "-b", f"feat-{n[0]}", start)
+        put(path, base + feat_rows)
+        commit("feat rows")
+        if not single:
+            try:
+                g("merge", "-q", "--no-commit", "--no-ff", f"side-{n[0]}")
+            except subprocess.CalledProcessError:
+                pass
+        put(path, result)
+        bad = commit("sync side, rows reordered")
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge feat-{n[0]}", f"feat-{n[0]}", who=LEAD)
+        tip[0] = g("rev-parse", "HEAD").strip()
+        return bad
+
+    def excuse(row, author=DEV, merger=LEAD):
+        """Main at the last reorder's merge, then one exception row through a pull request merged by `merger`."""
+        n[0] += 1
+        g("checkout", "-q", "main")
+        g("reset", "-q", "--hard", tip[0])
+        g("checkout", "-q", "-b", f"exc-{n[0]}")
+        put(EXCEPTIONS, ["\t".join(EXCEPTION_COLUMNS), row])
+        commit("exception row", who=author)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge exc-{n[0]}", f"exc-{n[0]}", who=merger)
+
+    def hist():
+        code, out = history(root, "main")
+        return code, "\n".join(out)
+
+    def row_for(bad, path=APPROVALS, reason="S-91R: test"):
+        return exception_row(root, bad, path, reason, "dev", "lead", "2026-11-10")
+
+    B1, S1 = ar("B1"), ar("S1")
+    # (1)/(2) the side branch's row put before the branch's own: nothing lost, nothing added
+    bad = reorder(APPROVALS, [B1], [S1], [H_A, A0, S1, B1])
+    code, out = hist()
+    cases.append(("S-91R baseline (2): a merge that only reordered rows, no exception row -> history red",
+                  code == 1 and bad[:12] in out))
+    code, row = row_for(bad)
+    cases.append(("S-91R exception-row: a reorder-only merge -> prints the row with the empty-loss digest",
+                  code == 0 and row.split("\t")[:3] == [bad, APPROVALS, lost_digest([])]))
+    code2, msg = row_for(bad, reason="S-91: no prefix")
+    cases.append(("S-91R exception-row: a reorder-only merge without the 'S-91R:' reason -> refused",
+                  code2 == 2 and "S-91R:" in msg))
+    excuse(row)
+    code, out = hist()
+    cases.append(("S-91R positive control (1): the reorder row on main, merged by its approver -> history green",
+                  code == 0))
+    excuse(row, merger=DEV)
+    cases.append(("sabotage S-91R (d): the reorder row merged by its own author -> red", hist()[0] == 1))
+    excuse("\t".join([bad, APPROVALS, lost_digest([B1]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    cases.append(("sabotage S-91R: a reorder row whose lost_sha256 is not the empty-loss digest -> red",
+                  "boş kaybın" in hist()[1]))
+    # (3) a revoke of the same target moved before the approval it followed
+    A1, R1 = ar("T1"), ar("T1", "revoke")
+    bad = reorder(APPROVALS, [A1, R1], [S1], [H_A, A0, S1, R1, A1])
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (3): an approve moved across a revoke of the same target -> red even with the row",
+                  code == 1 and "(b)" in out))
+    cases.append(("sabotage S-91R (3): exception-row refuses that merge, naming (b)", "(b)" in row_for(bad)[1]
+                  and row_for(bad)[0] == 2))
+    # (4) a positive review moved across a negative review of the same target
+    NO, OK = rr("T2", "UYGUN DEĞİL", n="1"), rr("T2", "UYGUN", n="2")
+    SR = rr("T3", "UYGUN")
+    bad = reorder(REVIEWS, [NO, OK], [SR], [H_R, SR, OK, NO])
+    excuse("\t".join([bad, REVIEWS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (4): UYGUN moved across UYGUN DEĞİL of the same target -> red even with the row",
+                  code == 1 and "(b)" in out))
+    # (b) also binds rows of one polarity: the tool reads a target's last row, so two approvals may not swap
+    P1, P2 = ar("T4"), ar("T4")
+    P2 = P2.replace("2026-11-10", "2026-11-11")
+    bad = reorder(APPROVALS, [P1, P2], [S1], [H_A, A0, S1, P2, P1])
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (b): an older approval moved past a newer one of the same target -> red even with the row",
+                  code == 1 and "(b)" in out))
+    # positive control for (b): rows of different targets may interleave
+    P3, P4 = rr("T5", "UYGUN", n="1"), rr("T6", "UYGUN DEĞİL", n="1")
+    bad = reorder(REVIEWS, [P3, P4], [SR], [H_R, P3, SR, P4])
+    code, row = row_for(bad, REVIEWS)
+    excuse(row)
+    cases.append(("S-91R: rows of different targets interleaved -> a real break, excused (green)",
+                  code == 0 and hist()[0] == 0))
+    # (5) a merge that also drops a row: the reorder kind does not excuse it
+    B2 = ar("B2")
+    bad = reorder(APPROVALS, [B1, B2], [S1], [H_A, A0, S1, B2])
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (5): reorder plus a lost row -> red, the reorder kind excuses no loss",
+                  code == 1 and "(a)" in out and "düşürmüş" in out))
+    cases.append(("sabotage S-91R (5): exception-row with an 'S-91R:' reason refuses a loss",
+                  row_for(bad)[0] == 2 and "(a)" in row_for(bad)[1]))
+    code, msg = row_for(bad, reason="S-91: loss")
+    cases.append(("S-91 exception-row (review 4): a loss plus a reorder -> refused, as the checker refuses it",
+                  code == 2 and "sıra ya da içerik" in msg))
+    bad = reorder(APPROVALS, [B1], [S1], [H_A, A0, S1])
+    code, row = row_for(bad, reason="S-91: loss")
+    cases.append(("S-91 exception-row: a pure loss -> prints the loss row with the lost rows' digest",
+                  code == 0 and row.split("\t")[2] == lost_digest([B1])))
+    # (6) a merge that adds a row of its own
+    X9 = ar("X9")
+    bad = reorder(APPROVALS, [B1], [S1], [H_A, A0, S1, B1, X9])
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (6): a row added by the merge resolution -> red even with the row",
+                  code == 1 and "(a)" in out and "hiçbir ebeveynde" in out))
+    # (7) a single-parent commit that reorders
+    bad = reorder(APPROVALS, [B1, B2], [], [H_A, A0, B2, B1], single=True)
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (7): a single-parent reorder -> red even with the row", code == 1 and "(c)" in out))
+    cases.append(("sabotage S-91R (7): exception-row refuses a single-parent reorder, naming (c)",
+                  row_for(bad)[0] == 2 and "(c)" in row_for(bad)[1]))
+    # (e) review 1: two rows of DIFFERENT targets of one parent swapped — excused only because each row keeps the
+    # commit that added it (blame -M); without that the merge would become their author (sabotage: BLAME_FLAGS = [])
+    Z9 = ar("Z9")
+    bad = reorder(APPROVALS, [B1, Z9], [S1], [H_A, A0, S1, Z9, B1])
+    code, row = row_for(bad)
+    excuse(row)
+    credited = [row_commit(root, "main", n, APPROVALS) for n in (4, 5)]
+    feat = g("rev-parse", f"{bad}^1").strip()
+    cases.append(("S-91R (e): rows of different targets of one parent swapped -> excused, each credited to exactly the "
+                  "commit that added it (Codex: the expected sha, not only 'not the merge')", code == 0
+                  and hist()[0] == 0 and credited == [feat, feat]))
+    # Codex S-91R F-2: following moves is a bounded loop — over the bound it is unreadable, never a RecursionError
+    blamed, text = _blamed_line(root, bad, 5, APPROVALS)
+    saved_steps = globals()["MOVE_STEPS"]
+    globals()["MOVE_STEPS"] = 0
+    try:
+        _follow_moves(root, blamed, text, APPROVALS)
+        bounded = False
+    except Unreadable:
+        bounded = True
+    finally:
+        globals()["MOVE_STEPS"] = saved_steps
+    cases.append(("S-91R (Codex F-2): a move chain over MOVE_STEPS -> Unreadable (fail closed), no recursion",
+                  blamed == bad and bounded))
+    # Codex S-91R F-1: an append-only merge that ADDS a second copy of a row — that copy keeps the merge as its adding
+    # commit (a re-added approval is never back-dated to the old copy's commit)
+    bad = reorder(APPROVALS, [B1], [S1], [H_A, A0, B1, S1, A0])
+    code, out = hist()
+    cases.append(("S-91R (Codex F-1): a merge re-adding a row is append-only (no exception needed) and the new copy is "
+                  "credited to the merge, the old copy to its own commit",
+                  "istisna gerekmez" in row_for(bad)[1] and row_commit(root, bad, 5, APPROVALS) == bad
+                  and row_commit(root, bad, 2, APPROVALS) == start))
+    # Codex S-91R F-3: exception-row refuses the people the checker would refuse
+    for label, author, approver in (("an author not on the approver list", "ghost", "lead"),
+                                    ("the author as approver", "lead", "lead")):
+        code, msg = exception_row(root, bad, APPROVALS, "S-91R: test", author, approver, "2026-11-10")
+        cases.append((f"S-91R exception-row (Codex F-3): {label} -> refused", code == 2 and "basılmadı" in msg))
+    # (f) review 2: one target gets a new row from each parent — the merge would pick the last one
+    T7a, T7r = ar("T7"), ar("T7", "revoke")
+    bad = reorder(APPROVALS, [T7a], [T7r], [H_A, A0, T7r, T7a])
+    excuse("\t".join([bad, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    code, out = hist()
+    cases.append(("sabotage S-91R (f): new rows of one target from two parents -> red even with the row",
+                  code == 1 and "(f)" in out))
+    cases.append(("sabotage S-91R (f): exception-row refuses that merge, naming (f)",
+                  row_for(bad)[0] == 2 and "(f)" in row_for(bad)[1]))
+    # fail closed (review 3): a line twice, a wrong-width row, a changed header
+    for label, result, word in (
+            ("a line twice in the result", [H_A, A0, S1, B1, B1], "birden çok"),
+            ("a row of the wrong width", [H_A, A0, S1, B1, "x\ty"], "sütun sayısı"),
+            ("a changed header (the old header line counts as lost)", [H_A.replace("action", "eylem"), A0, S1, B1],
+             "düşürmüş")):
+        bad = reorder(APPROVALS, [B1], [S1], result)
+        code, msg = row_for(bad)
+        cases.append((f"sabotage S-91R fail-closed: {label} -> exception-row refuses", code == 2 and word in msg))
+    # a commit with no break at all needs no row
+    good = start
+    cases.append(("S-91R exception-row: an append-only commit -> refused, no exception needed",
+                  row_for(good)[0] == 2 and "istisna gerekmez" in row_for(good)[1]))
     g("checkout", "-q", "main")
     tmp.cleanup()
 
@@ -4216,6 +4596,40 @@ def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str
     return 0, head + ["yalnız ekleme — bozulma yok", "çıkış: 0"]
 
 
+def exception_row(root: str, commit: str, path: str, reason: str, author: str, approver: str,
+                  when: str) -> tuple[int, str]:
+    """S-91 / S-91R: (0, the exception row) or (2, why not). A loss: the S-91 row, its lost_sha256 the lost rows' digest
+    (unchanged). No loss: only an S-91R row (--reason starting REORDER_REASON) for a merge whose append-only break is a
+    reorder only (reorder_only_why), with lost_sha256 = lost_digest([]). Prints; never writes the file."""
+    c = commit_of(root, commit)
+    if c is None or any("\t" in v or "\n" in v for v in (reason, author, approver, when)):
+        return 2, "commit çözülemedi ya da bir alanda sekme var"
+    who = _exception_people_why(approvers_at(root, main_line(root)), author, approver)
+    if who:
+        return 2, f"istisna satırı basılmadı — {who} (main'deki onaylayıcı listesine göre; merge'de yeniden ölçülür)"
+    lost = lost_rows(root, c, path)
+    if lost:
+        if reason.startswith(REORDER_REASON):
+            return 2, ("S-91R reddedildi: (a) bu commit satır düşürmüş — sıra istisnası kaybı affetmez; kayıp için "
+                       "'S-91R:' olmayan bir S-91 gerekçesiyle yeniden çalıştırın")
+        main = main_line(root)
+        if any(not _positive_row(path, l) for l in lost):
+            return 2, "S-91 reddedildi: düşen satırlardan biri olumsuz (iptal, UYGUN DEĞİL ya da açık ENGEL)"
+        if not _only_loss(root, c, path, main, lost):
+            return 2, "S-91 reddedildi: satır düşmesinin yanında sıra ya da içerik de değişmiş"
+        if _ever_on_main(root, main, path, lost):
+            return 2, "S-91 reddedildi: düşen satırlardan biri bir zaman main'deydi"
+        return 0, "\t".join([c, path, lost_digest(lost), reason, author, approver, when])
+    if c not in [x for x, _ in _append_only(root, c, path, main_line(root))]:
+        return 2, f"düşen satır yok ve {path} {c[:12]}'de yalnız ekleme — istisna gerekmez"
+    why = reorder_only_why(root, c, path)
+    if why is not None:
+        return 2, f"düşen satır yok; S-91R sıra istisnası da geçmez: {why}"
+    if not reason.startswith(REORDER_REASON):
+        return 2, f"düşen satır yok, yalnız sıra değişmiş — gerekçe (--reason) '{REORDER_REASON}' ile başlamalı"
+    return 0, "\t".join([c, path, lost_digest([]), reason, author, approver, when])
+
+
 def main(argv: list[str]) -> int:
     import argparse
     import datetime
@@ -4256,7 +4670,8 @@ def main(argv: list[str]) -> int:
     h = sub.add_parser("history", help="S-91: onay ve inceleme dosyası yalnız ekleme mi; --base verilirse yalnız yeni "
                        "bozulmalar (0 temiz · 1 bozulma · 2 okunamadı)")
     h.add_argument("--ref", default="HEAD"); h.add_argument("--base")
-    x = sub.add_parser("exception-row", help="S-91: bilinen bir bozulma için istisna satırını basar (dosyaya yazmaz)")
+    x = sub.add_parser("exception-row", help="S-91: bilinen bir bozulma için istisna satırını basar (dosyaya yazmaz); "
+                       "S-91R: yalnız sıra değişmiş bir merge için --reason 'S-91R: …'")
     x.add_argument("commit"); x.add_argument("--path", default=APPROVALS, choices=[APPROVALS, REVIEWS])
     x.add_argument("--reason", required=True); x.add_argument("--author", required=True)
     x.add_argument("--approver", required=True); x.add_argument("--date", default=datetime.date.today().isoformat())
@@ -4277,13 +4692,12 @@ def main(argv: list[str]) -> int:
         print("\n".join(out))
         return code
     if a.cmd == "exception-row":
-        c = commit_of(root, a.commit)
-        lost = lost_rows(root, c, a.path) if c else []
-        if not lost or any("\t" in v or "\n" in v for v in (a.reason, a.author, a.approver, a.date)):
-            print("commit çözülemedi, düşen satır yok ya da bir alanda sekme var")
-            return 2
-        print("\t".join([c, a.path, lost_digest(lost), a.reason, a.author, a.approver, a.date]))
-        return 0
+        try:
+            code, out = exception_row(root, a.commit, a.path, a.reason, a.author, a.approver, a.date)
+        except Unreadable as e:
+            code, out = 2, f"okunamadı — {e}"
+        print(out)
+        return code
     if a.cmd == "check":
         code, out = evaluate(root, a.ref, a.pack, a.deferred)
         print("\n".join(out))
