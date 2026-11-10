@@ -174,7 +174,7 @@ public sealed class PutawayAssignmentTests : IClassFixture<WarehouseApiFactory>
         var items = new[] { (TaskId(locked), lockedNow.GetProperty("version").GetInt32()), (TaskId(cancelled), cancelledNow.GetProperty("version").GetInt32()) };
 
         // the draft's row outcomes (WMS draft §4) have no IntegrityError: a task locked by an integrity error is InvalidTransition, like a closed one;
-        // every answer passes WmsDraftContractHandler, so another outcome value also fails the draft's enum
+        // every answer passes WmsContractHandler, so another outcome value also fails the frozen contract's enum
         var result = await Expect(s.BulkAssignAsync(alice, items), 200);
         Assert.Equal("InvalidTransition", Row(result, TaskId(locked)).GetProperty("outcome").GetString());
         Assert.Equal("InvalidTransition", Row(result, TaskId(cancelled)).GetProperty("outcome").GetString());

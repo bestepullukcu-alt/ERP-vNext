@@ -52,12 +52,17 @@ public sealed class MonitoringWorld
 
     // ── fixture documents ──
 
+    /// <summary>The record numbers of the fixture documents in the RCS-001 format the service writes ({COMPANY}-{TYPE}-000001; AC-60 pins it).</summary>
+    private static int _number;
+
+    private static string Number(string type) => $"GMG-{type}-{Interlocked.Increment(ref _number).ToString("D6", System.Globalization.CultureInfo.InvariantCulture)}";
+
     public OutboundShipment Outbound(OutboundStatus status, Guid? staging = null, Guid? tenant = null, Guid? company = null, params OutboundLine[] lines)
     {
         var o = new OutboundShipment
         {
             Id = Guid.NewGuid(), TenantId = tenant ?? S.Tenant, LegalEntityId = company ?? S.LegalEntity, CreatedAt = Now, Version = 1,
-            OutboundNumber = "GMG-OUT-" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant(), CompanyCodePrefix = "GMG", WarehouseId = S.Warehouse,
+            OutboundNumber = Number("OUT"), CompanyCodePrefix = "GMG", WarehouseId = S.Warehouse,
             StagingLocationId = staging ?? S.S01, Status = status, ShipTo = new OutboundAddress { Name = "Ada Hastanesi", Country = "TR", Line1 = "Atatürk Blv. 1" },
             Lines = [.. lines], CreatedBy = S.User, CorrelationId = Guid.NewGuid()
         };
@@ -106,7 +111,7 @@ public sealed class MonitoringWorld
         => new()
         {
             Id = Guid.NewGuid(), TenantId = S.Tenant, LegalEntityId = S.LegalEntity, CreatedAt = Now, Version = 1,
-            Number = (kind == WarehouseTaskKind.Pick ? "GMG-PCK-" : "GMG-PUT-") + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant(), CompanyCodePrefix = "GMG",
+            Number = Number(kind == WarehouseTaskKind.Pick ? "PCK" : "PUT"), CompanyCodePrefix = "GMG",
             Kind = kind, Origin = origin, Status = status, WarehouseId = S.Warehouse, ItemId = S.Item, SkuId = sku, SkuLevel = SkuLevel.Lsku, LotId = lot,
             FromLocationId = from, PlannedQuantity = planned, BaseUomId = "EA", CreatedBy = S.User, CorrelationId = Guid.NewGuid()
         };
